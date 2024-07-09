@@ -1,0 +1,7 @@
+crucial:
+- libgretl_init() is somehow automatically called on module loading: how does it work?
+- libgretl_cleanup(): do we have memory leaks?
+
+important:
+- accepted pythons object on functions calls;
+- returned pythons types (currently dict);
