@@ -1,5 +1,6 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
+#include <pybind11/stl.h>
 #include "gretl_python_data.h"
 #include <iostream>
 
@@ -38,9 +39,10 @@ void numpy_array_to_gretl_matrix (const pybind11::array_t<double> &pynum_array,
 
     for (pybind11::ssize_t i=0; i<m->rows; i++) {
         for (pybind11::ssize_t j=0; j<m->cols; j++) {
-            gretl_matrix_set(m, i, j, DATA(i,j));
+            gretl_matrix_set(m, i, j, DATA(i,j)); // in future we'll use memcpy()
         }
     }
+
     #if GRETL_PYBIND11_DEBUG
     std::cout << "rows: " << m->rows << std::endl;
     std::cout << "cols: " << m->cols << std::endl;
@@ -48,13 +50,14 @@ void numpy_array_to_gretl_matrix (const pybind11::array_t<double> &pynum_array,
     #endif // defined
 }
 
-void numpy_dict_to_gretl_dstet (const pybind11::dict DICT)
+void numpy_dict_to_gretl_dstet (const pybind11::dict &DICT)
 {
     // we copy pynum_array to empty m
     DATASET *dset;
     dset = datainfo_new();
 
     char stobs[OBSLEN], endobs[OBSLEN];
+    pybind11::array_t<double> pynum_array;
     pybind11::str pyBUF;
     std::string stdBUF;
 
@@ -74,8 +77,22 @@ void numpy_dict_to_gretl_dstet (const pybind11::dict DICT)
     stdBUF = pybind11::cast<std::string>(pyBUF);
     stdBUF.copy(endobs, OBSLEN, 0);
 
+    pynum_array = pybind11::cast<pybind11::array>(DICT[pybind11::cast("data_array")]);
+    auto arrBUF = pynum_array.request();
+    double *data_array = (double*) arrBUF.ptr;
+
+    int rows = pynum_array.shape(0);
+    int cols = pynum_array.shape(1);
+    std::cout << "observations: " << rows << std::endl;
+    std::cout << "variables: " << cols << std::endl;
+
+    int i = 1;
+    int j = 2;
+    int offset = 0;
+    printf("[%d][%d] = %f\n", i, j+1, data_array[i*offset+j]);
     printf("stobs: %s\n", stobs);
     printf("endobs: %s\n", endobs);
+
     /*
     for (pybind11::ssize_t i=0; i<rows; i++) {
         for (pybind11::ssize_t j=0; j<cols; j++) {
