@@ -31,8 +31,8 @@ void dsettest (const pybind11::dict &DICT)
 
     print_data_in_columns(parmlist, NULL, dset, OPT_NONE, prn);
 
-
-    numpy_dict_to_gretl_dstet(DICT);
+    numpy_dict_to_gretl_dset(DICT, dsetnew);
+    //print_data_in_columns(parmlist, NULL, dsetnew, OPT_NONE, prn);
 
 
     free(parmlist);
@@ -57,7 +57,7 @@ void load_data (const pybind11::dict &DICT)
     //gretl_matrix *m = gretl_null_matrix_new();
     //numpy_array_to_gretl_matrix(pynum_array, m);
 
-    numpy_dict_to_gretl_dstet(DICT);
+    numpy_dict_to_gretl_dset(DICT, NULL);
 
     #if 0 //GRETL_PYBIND11_DEBUG
     std::cout << "rows: " << m->rows << std::endl;

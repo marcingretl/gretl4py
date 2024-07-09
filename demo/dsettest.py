@@ -20,9 +20,8 @@ with open('data9-7.csv', newline='') as csvfile:
         else:
             obs_labels.append(row[0])
             data_list.append(row[1:])
-            #print(', '.join(row[2:]))
 
-data_array = numpy.array(data_list, numpy.double)
+data_array = numpy.asfortranarray(numpy.array(data_list, numpy.double))
 stobs = obs_labels[0].replace("Q", ":", 1)
 endobs = obs_labels[-1].replace("Q", ":", 1)
 DSET["data_array"] = data_array

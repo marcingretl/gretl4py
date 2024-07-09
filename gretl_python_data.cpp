@@ -6,6 +6,19 @@
 
 #define GRETL_PYBIND11_DEBUG 0
 
+static void copy_string_from_python_dict (const pybind11::dict &DICT,
+                                          const char *key, char *dest,
+                                          int n_bytes, int offset = 0)
+{
+    std::string stdBUF;
+
+    //pybind11::str pyBUF;
+    //pyBUF = DICT[pybind11::cast(key)];
+
+    stdBUF = pybind11::cast<std::string>(DICT[pybind11::cast(key)]);
+    stdBUF.copy(dest, n_bytes, offset);
+}
+
 void gretl_model_to_dict (const MODEL *model, pybind11::dict &DICT)
 {
     pybind11::dict coeff, sderr;
@@ -50,48 +63,42 @@ void numpy_array_to_gretl_matrix (const pybind11::array_t<double> &pynum_array,
     #endif // defined
 }
 
-void numpy_dict_to_gretl_dstet (const pybind11::dict &DICT)
+void numpy_dict_to_gretl_dset (const pybind11::dict &DICT,
+                               DATASET *dset)
 {
     // we copy pynum_array to empty m
-    DATASET *dset;
-    dset = datainfo_new();
-
     char stobs[OBSLEN], endobs[OBSLEN];
     pybind11::array_t<double> pynum_array;
-    pybind11::str pyBUF;
-    std::string stdBUF;
+    double *data_array;
 
    /*
-    DICT["data_array"] = data_array
     DICT["varname"] = varname
     DICT["obs_labels"] = obs_labels
-    DICT["stobs"] = stobs
-    DICT["endobs"] = endobs
     */
 
-    pyBUF = DICT[pybind11::cast("stobs")];
-    stdBUF = pybind11::cast<std::string>(pyBUF);
-    stdBUF.copy(stobs, OBSLEN, 0);
-
-    pyBUF = DICT[pybind11::cast("endobs")];
-    stdBUF = pybind11::cast<std::string>(pyBUF);
-    stdBUF.copy(endobs, OBSLEN, 0);
-
     pynum_array = pybind11::cast<pybind11::array>(DICT[pybind11::cast("data_array")]);
+    if (pynum_array.ndim() > 2) {
+        throw std::runtime_error("Given array has more than two dimensions.");
+    }
+    dset->n = pynum_array.shape(0);
+    dset->v = pynum_array.shape(1) + 1;
+    if (allocate_Z(dset, OPT_NONE)) {
+        throw std::runtime_error("Matrix allocation failed.");
+    }
     auto arrBUF = pynum_array.request();
-    double *data_array = (double*) arrBUF.ptr;
+    data_array = (double*) arrBUF.ptr;
+    for (int i=0; i<dset->v-1; i++) {
+        std::memcpy(dset->Z[i+1], &data_array[i*dset->n], sizeof(double)*dset->n);
+    }
 
-    int rows = pynum_array.shape(0);
-    int cols = pynum_array.shape(1);
-    std::cout << "observations: " << rows << std::endl;
-    std::cout << "variables: " << cols << std::endl;
+    #if GRETL_PYBIND11_DEBUG
+    std::cout << "observations: " << dset->n << std::endl;
+    std::cout << "variables: " << dset->v << std::endl;
+    #endif // GRETL_PYBIND11_DEBUG
 
-    int i = 1;
-    int j = 2;
-    int offset = 0;
-    printf("[%d][%d] = %f\n", i, j+1, data_array[i*offset+j]);
-    printf("stobs: %s\n", stobs);
-    printf("endobs: %s\n", endobs);
+    // we copy strings
+    copy_string_from_python_dict(DICT, "stobs", stobs, OBSLEN);
+    copy_string_from_python_dict(DICT, "endobs", endobs, OBSLEN);
 
     /*
     for (pybind11::ssize_t i=0; i<rows; i++) {
