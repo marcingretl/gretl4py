@@ -1,6 +1,9 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
 
-void numpy_array_to_gretl_data (const pybind11::array_t<double> &pynum_array);
-
 pybind11::dict arma_estimate (int p, int d, int q, bool do_print);
+
+void load_matrix (const pybind11::array_t<double> &pynum_array);
+void load_data (const pybind11::dict &DICT);
+
+void dsettest (const pybind11::dict &DICT);

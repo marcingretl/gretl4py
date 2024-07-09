@@ -3,5 +3,6 @@ crucial:
 - libgretl_cleanup(): do we have memory leaks?
 
 important:
-- accepted pythons object on functions calls;
+- check if Makefile in fact is parallel
+- make load_matrix()/load_data() overloaded / for know template works, but Python has a problem /
 - returned pythons types (currently dict);
