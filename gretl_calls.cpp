@@ -43,7 +43,7 @@ void dsettest (const pybind11::dict &DICT)
 void load_matrix (const pybind11::array_t<double> &pynum_array)
 {
     gretl_matrix *m = gretl_null_matrix_new();
-    numpy_array_to_gretl_matrix(pynum_array, m);
+    numpy_array_to_gretl_storage(pynum_array, m);
 
     #if GRETL_PYBIND11_DEBUG
     std::cout << "rows: " << m->rows << std::endl;
