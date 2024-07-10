@@ -7,61 +7,7 @@
 #define F_CONTIGUOUS pybind11::detail::npy_api::constants::NPY_ARRAY_F_CONTIGUOUS_
 #define is_pynum_fortranarray(m) ((m.flags() & F_CONTIGUOUS))
 
-#define GRETL_PYBIND11_DEBUG 0
-
-static void copy_string_from_python_dict (const pybind11::dict &DICT,
-                                          const char *key, char *dest,
-                                          int n_bytes, int offset = 0)
-{
-    std::string stdBUF;
-
-    stdBUF = pybind11::cast<std::string>(DICT[pybind11::cast(key)]); //DICT[pybind11::cast(key)] is of pybind11::str type
-    stdBUF.copy(dest, n_bytes, offset);
-}
-
-static double *numpy_array_extract (const pybind11::array_t<double> &pynum_array,
-                                    ssize_t *rows, ssize_t *cols, int *fortranarray)
-{
-    // at first we check dimensions
-    if (pynum_array.ndim() > 2) {
-        throw std::runtime_error("Given array has more than two dimensions.");
-    }
-
-    *rows = pynum_array.shape(0);
-    *cols = pynum_array.shape(1);
-    *fortranarray = is_pynum_fortranarray(pynum_array);
-
-    auto arrBUF = pynum_array.request();
-    return (double*) arrBUF.ptr;
-}
-
-static void numpy_array_to_gretl_matrix (const double *data_array,
-                                         gretl_matrix *m, ssize_t rows,
-                                         ssize_t cols, int fortranarray)
-{
-    //
-    // from 'data_array' to 'm' total of rows*cols elements
-    //
-    if (gretl_matrix_realloc(m, rows, cols)) {
-        throw std::runtime_error("Matrix allocation failed.");
-    }
-
-    if (fortranarray) {
-        std::memcpy(m->val, data_array, rows*cols*sizeof(double));
-    } else {
-        for (int i=0; i<m->rows; i++) {
-            for (int j=0; j<m->cols; j++) {
-                gretl_matrix_set(m, i, j, *(data_array+i*rows+j)); //data_array[i*rows+j] in c++ makes no difference?
-            }
-        }
-    }
-
-    #if GRETL_PYBIND11_DEBUG
-    std::cout << "rows: " << m->rows << std::endl;
-    std::cout << "cols: " << m->cols << std::endl;
-    gretl_matrix_print(m, "m (libgretl)");
-    #endif // defined
-}
+#define GRETL_PYBIND11_DEBUG 1
 
 void gretl_model_to_dict (const MODEL *model, pybind11::dict &DICT)
 {
@@ -79,6 +25,38 @@ void gretl_model_to_dict (const MODEL *model, pybind11::dict &DICT)
     DICT[pybind11::cast("sderr")] = sderr;
 }
 
+static void copy_string_from_python_dict (const pybind11::dict &DICT,
+                                          const char *key, char *dest,
+                                          int n_bytes, int offset = 0)
+{
+    std::string stdBUF;
+
+    stdBUF = pybind11::cast<std::string>(DICT[pybind11::cast(key)]); //DICT[pybind11::cast(key)] is of pybind11::str type
+    stdBUF.copy(dest, n_bytes, offset);
+}
+
+static double *numpy_array_extract (const pybind11::array_t<double> &pynum_array,
+                                    ssize_t *rows, ssize_t *cols, int *fortranarray)
+{
+    //
+    // we check dimensions and if OK we extract most important 'pynum_array' metadata
+    //
+    if (pynum_array.ndim() > 2) {
+        throw std::runtime_error("Given array has more than two dimensions.");
+    } else if (pynum_array.ndim() == 1) {
+        *cols = 1;
+    } else {
+        *cols = pynum_array.shape(1);
+    }
+
+    *rows = pynum_array.shape(0);
+    *fortranarray = is_pynum_fortranarray(pynum_array);
+
+    auto arrBUF = pynum_array.request();
+    return (double*) arrBUF.ptr;
+}
+
+// two overloaded
 void numpy_array_to_gretl_storage (const pybind11::array_t<double> &pynum_array,
                                    gretl_matrix *m)
 {
@@ -92,61 +70,90 @@ void numpy_array_to_gretl_storage (const pybind11::array_t<double> &pynum_array,
     double *data_array;
 
     data_array = numpy_array_extract(pynum_array, &rows, &cols, &fortranarray);
-
     if (data_array == NULL) {
         throw std::runtime_error("Numpy array: null pointer.");
     }
-    numpy_array_to_gretl_matrix(data_array, m, rows, cols, fortranarray);
+
+    if (gretl_matrix_realloc(m, rows, cols)) {
+        throw std::runtime_error("Matrix allocation failed.");
+    }
+
+    if (fortranarray) {
+        std::memcpy(m->val, data_array, rows*cols*sizeof(double));
+    } else {
+        for (int i=0; i<rows; i++) {
+            for (int j=0; j<cols; j++) {
+                gretl_matrix_set(m, i, j, *(data_array+i*cols+j)); //data_array[i*cols+j] in c++ makes no difference?
+            }
+        }
+    }
+
+    #if GRETL_PYBIND11_DEBUG
+    std::cout << "rows: " << m->rows << std::endl;
+    std::cout << "cols: " << m->cols << std::endl;
+    gretl_matrix_print(m, "m (libgretl)");
+    #endif // defined
 }
 
+static void numpy_array_to_gretl_storage (const pybind11::dict &DICT, DATASET *dset)
+{
+    ssize_t rows, cols;
+    int fortranarray;
+    double *data_array;
+    pybind11::array_t<double> pynum_array;
+
+    pynum_array = pybind11::cast<pybind11::array>(DICT[pybind11::cast("data_array")]);
+
+    data_array = numpy_array_extract(pynum_array, &rows, &cols, &fortranarray);
+    if (data_array == NULL) {
+        throw std::runtime_error("Numpy array: null pointer.");
+    }
+
+    dset->n = rows;
+    dset->v = cols + 1;
+    if (allocate_Z(dset, OPT_NONE)) {
+        throw std::runtime_error("Matrix allocation failed.");
+    }
+
+    for (int i=0; i<dset->v-1; i++) {
+        if (fortranarray) {
+            std::memcpy(dset->Z[i+1], &data_array[i*rows], rows*sizeof(double));
+        } else {
+            for (int j=0; j<rows; j++) {
+                dset->Z[i+1][j] = *(data_array+i+j*cols); //data_array[i+j*cols] in c++ makes no difference?
+            }
+        }
+    }
+
+    #if GRETL_PYBIND11_DEBUG
+    std::cout << "observations: " << dset->n << std::endl;
+    std::cout << "variables: " << dset->v << std::endl;
+    std::cout << "Z[v=1][obs=0] = " << dset->Z[1][0] << std::endl;
+    std::cout << "Z[v=1][obs=n-1] = " << dset->Z[1][dset->n-1] << std::endl;
+    #endif // GRETL_PYBIND11_DEBUG
+
+}
 
 void numpy_dict_to_gretl_dset (const pybind11::dict &DICT,
                                DATASET *dset)
 {
     // we copy pynum_array to empty m
     char stobs[OBSLEN], endobs[OBSLEN];
-    pybind11::array_t<double> pynum_array;
-    double *data_array;
 
    /*
     DICT["varname"] = varname
     DICT["obs_labels"] = obs_labels
     */
 
-    pynum_array = pybind11::cast<pybind11::array>(DICT[pybind11::cast("data_array")]);
-    if (pynum_array.ndim() > 2) {
-        throw std::runtime_error("Given array has more than two dimensions.");
-    }
-    dset->n = pynum_array.shape(0);
-    dset->v = pynum_array.shape(1) + 1;
-    if (allocate_Z(dset, OPT_NONE)) {
-        throw std::runtime_error("Matrix allocation failed.");
-    }
-    auto arrBUF = pynum_array.request();
-    data_array = (double*) arrBUF.ptr;
-    for (int i=0; i<dset->v-1; i++) {
-        std::memcpy(dset->Z[i+1], &data_array[i*dset->n], sizeof(double)*dset->n);
-    }
-
-    #if GRETL_PYBIND11_DEBUG
-    std::cout << "observations: " << dset->n << std::endl;
-    std::cout << "variables: " << dset->v << std::endl;
-    #endif // GRETL_PYBIND11_DEBUG
+    numpy_array_to_gretl_storage(DICT, dset);
 
     // we copy strings
     copy_string_from_python_dict(DICT, "stobs", stobs, OBSLEN);
     copy_string_from_python_dict(DICT, "endobs", endobs, OBSLEN);
-
-    /*
-    for (pybind11::ssize_t i=0; i<rows; i++) {
-        for (pybind11::ssize_t j=0; j<cols; j++) {
-            //Z[i+offset][j] = DATA(i,j);
-           //gretl_matrix_set(Z, i+offset, j, DATA(i,j));
-        }
-    }
-    */
 }
 
+
+// the old code: to be REMOVED!!!
 void numpy_array_to_gretl_data (const pybind11::array_t<double> &pynum_array)
 {
     int rows = pynum_array.shape(0);

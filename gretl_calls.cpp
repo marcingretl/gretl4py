@@ -20,14 +20,14 @@ void dsettest (const pybind11::dict &DICT)
     parmlist[2] = 2;
     parmlist[3] = 3;
 
-    /*
+
     printf("the first observation of vaiable 1: %f\n", dset->Z[1][0]);
-    printf("the first observation of vaiable 7: %f\n", (double) dset->Z[7][0]);
+    printf("the first observation of vaiable 3: %f\n", (double) dset->Z[3][0]);
     printf("pierwsza etykieta obserwacji: %s\n", dset->stobs);
     printf("ostatnia etykieta obserwacji: %s\n", dset->endobs);
     printf("structure: %d\n", dset->structure);
     printf("sd0: %f\n", dset->sd0);
-    */
+
 
     print_data_in_columns(parmlist, NULL, dset, OPT_NONE, prn);
 
@@ -44,12 +44,7 @@ void load_matrix (const pybind11::array_t<double> &pynum_array)
 {
     gretl_matrix *m = gretl_null_matrix_new();
     numpy_array_to_gretl_storage(pynum_array, m);
-
-    #if GRETL_PYBIND11_DEBUG
-    std::cout << "rows: " << m->rows << std::endl;
-    std::cout << "cols: " << m->cols << std::endl;
-    gretl_matrix_print(m, "m (libgretl)");
-    #endif // defined
+    gretl_matrix_free(m);
 }
 
 void load_data (const pybind11::dict &DICT)
