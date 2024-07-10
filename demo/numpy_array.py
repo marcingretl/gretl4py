@@ -11,3 +11,4 @@ print(arr)
 
 print("\nC++ level:")
 gretl.load_matrix(arr)
+gretl.load_matrix(numpy.asfortranarray(arr))

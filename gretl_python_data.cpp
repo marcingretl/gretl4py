@@ -4,6 +4,9 @@
 #include "gretl_python_data.h"
 #include <iostream>
 
+#define F_CONTIGUOUS pybind11::detail::npy_api::constants::NPY_ARRAY_F_CONTIGUOUS_
+#define is_pynum_fortranarray(m) ((m.flags() & F_CONTIGUOUS))
+
 #define GRETL_PYBIND11_DEBUG 0
 
 static void copy_string_from_python_dict (const pybind11::dict &DICT,
@@ -49,6 +52,8 @@ void numpy_array_to_gretl_matrix (const pybind11::array_t<double> &pynum_array,
                               pynum_array.shape(1))) {
         throw std::runtime_error("Matrix allocation failed.");
     }
+
+    //is_pynum_fortranarray(pynum_array)
 
     for (pybind11::ssize_t i=0; i<m->rows; i++) {
         for (pybind11::ssize_t j=0; j<m->cols; j++) {
