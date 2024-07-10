@@ -27,12 +27,14 @@ void dsettest (const pybind11::dict &DICT)
     printf("ostatnia etykieta obserwacji: %s\n", dset->endobs);
     printf("structure: %d\n", dset->structure);
     printf("sd0: %f\n", dset->sd0);
+    printf("t1: %d\n", dset->t1);
+    printf("t2: %d\n", dset->t2);
 
 
     print_data_in_columns(parmlist, NULL, dset, OPT_NONE, prn);
 
     numpy_dict_to_gretl_dset(DICT, dsetnew);
-    //print_data_in_columns(parmlist, NULL, dsetnew, OPT_NONE, prn);
+    print_data_in_columns(parmlist, NULL, dsetnew, OPT_NONE, prn);
 
 
     free(parmlist);

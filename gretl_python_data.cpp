@@ -35,6 +35,22 @@ static void copy_string_from_python_dict (const pybind11::dict &DICT,
     stdBUF.copy(dest, n_bytes, offset);
 }
 
+static void copy_strings_from_python_list (const pybind11::list &LIST,
+                                           char **dest, int n_bytes,
+                                           int src_offset = 0,
+                                           int dst_offset = 0)
+{
+    std::string stdBUF;
+    int i = dst_offset;
+
+    for (auto item : LIST) {
+        stdBUF = std::string(pybind11::str(item));
+        stdBUF.copy(dest[i++], n_bytes, src_offset);
+    }
+}
+
+
+
 static double *numpy_array_extract (const pybind11::array_t<double> &pynum_array,
                                     ssize_t *rows, ssize_t *cols, int *fortranarray)
 {
@@ -67,7 +83,7 @@ void numpy_array_to_gretl_storage (const pybind11::array_t<double> &pynum_array,
 
     ssize_t rows, cols;
     int fortranarray;
-    double *data_array;
+    double *data_array = NULL;
 
     data_array = numpy_array_extract(pynum_array, &rows, &cols, &fortranarray);
     if (data_array == NULL) {
@@ -99,7 +115,7 @@ static void numpy_array_to_gretl_storage (const pybind11::dict &DICT, DATASET *d
 {
     ssize_t rows, cols;
     int fortranarray;
-    double *data_array;
+    double *data_array = NULL;
     pybind11::array_t<double> pynum_array;
 
     pynum_array = pybind11::cast<pybind11::array>(DICT[pybind11::cast("data_array")]);
@@ -131,53 +147,37 @@ static void numpy_array_to_gretl_storage (const pybind11::dict &DICT, DATASET *d
     std::cout << "Z[v=1][obs=0] = " << dset->Z[1][0] << std::endl;
     std::cout << "Z[v=1][obs=n-1] = " << dset->Z[1][dset->n-1] << std::endl;
     #endif // GRETL_PYBIND11_DEBUG
-
 }
 
 void numpy_dict_to_gretl_dset (const pybind11::dict &DICT,
                                DATASET *dset)
 {
-    // we copy pynum_array to empty m
-    char stobs[OBSLEN], endobs[OBSLEN];
-
-   /*
-    DICT["varname"] = varname
-    DICT["obs_labels"] = obs_labels
-    */
+    pybind11::list LIST;
 
     numpy_array_to_gretl_storage(DICT, dset);
 
-    // we copy strings
-    copy_string_from_python_dict(DICT, "stobs", stobs, OBSLEN);
-    copy_string_from_python_dict(DICT, "endobs", endobs, OBSLEN);
-}
-
-
-// the old code: to be REMOVED!!!
-void numpy_array_to_gretl_data (const pybind11::array_t<double> &pynum_array)
-{
-    int rows = pynum_array.shape(0);
-    int cols = pynum_array.shape(1);
-    auto DATA = pynum_array.unchecked<2>(); /* only dimensions are checked */
-    /*
-    if (pynum_array.ndim() != 2) {
-        throw std::runtime_error("I expected 2d array (row x cols).");
+    if (dataset_allocate_varnames(dset) || dataset_allocate_obs_markers(dset)) {
+        throw std::runtime_error("Dataset strings allocation failed.");
     }
-    auto buf = pynum_array.request();
-    double *ptr = (double*) buf.ptr;
-    */
 
-    std::cout << "I'm a 'pynum_array' with the following attributes:" << std::endl;
-    std::cout << "dimensions: " << pynum_array.ndim() << std::endl;
-    std::cout << "number of elements: " << pynum_array.size() << std::endl;
-    std::cout << "rows: " << rows << std::endl;
-    std::cout << "cols: " << cols << std::endl;
-    std::cout << "contents:" << std::endl;
-    for (pybind11::ssize_t i=0; i<rows; i++) {
-        for (pybind11::ssize_t j=0; j<cols; j++) {
-            //printf("[%ld][%ld] = %f ", i, j, ptr[i*cols+j]);
-            printf("[%ld][%ld] = %f ", i, j, DATA(i,j));
-        }
-        std::cout << std::endl;
+    LIST = DICT[pybind11::cast("varname")];
+    if (LIST.size() != dset->v-1) {
+        throw std::runtime_error("Number of varnames is different than number of variables.");
     }
+    copy_strings_from_python_list(LIST, dset->varname, 32, 0, 1);
+
+    LIST = DICT[pybind11::cast("obs_labels")];
+    if (LIST.size() != dset->n) {
+        throw std::runtime_error("Number of obs_labels is different than number of observations.");
+    }
+    copy_strings_from_python_list(LIST, dset->S, OBSLEN-1, 0, 0);
+
+
+    //some hardwired stuff
+    copy_string_from_python_dict(DICT, "stobs", dset->stobs, OBSLEN);
+    copy_string_from_python_dict(DICT, "endobs", dset->endobs, OBSLEN);
+    dset->sd0 = 1975.100000;
+    dset->structure = 1;
+    dset->t1 = 0;
+    dset->t2 = 63;
 }
