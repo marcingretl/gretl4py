@@ -21,10 +21,10 @@ void dsettest (const pybind11::dict &DICT)
     parmlist[3] = 3;
 
 
-    printf("the first observation of vaiable 1: %f\n", dset->Z[1][0]);
-    printf("the first observation of vaiable 3: %f\n", (double) dset->Z[3][0]);
-    printf("pierwsza etykieta obserwacji: %s\n", dset->stobs);
-    printf("ostatnia etykieta obserwacji: %s\n", dset->endobs);
+    printf("the first observation of variable 1: %f\n", dset->Z[1][0]);
+    printf("the first observation of variable 3: %f\n", (double) dset->Z[3][0]);
+    printf("first observation label: %s\n", dset->stobs);
+    printf("last observation label: %s\n", dset->endobs);
     printf("structure: %d\n", dset->structure);
     printf("sd0: %f\n", dset->sd0);
     printf("t1: %d\n", dset->t1);

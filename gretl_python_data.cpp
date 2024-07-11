@@ -161,13 +161,13 @@ void numpy_dict_to_gretl_dset (const pybind11::dict &DICT,
     }
 
     LIST = DICT[pybind11::cast("varname")];
-    if (LIST.size() != dset->v-1) {
+    if (LIST.size() != (long unsigned int) dset->v-1) {
         throw std::runtime_error("Number of varnames is different than number of variables.");
     }
     copy_strings_from_python_list(LIST, dset->varname, 32, 0, 1);
 
     LIST = DICT[pybind11::cast("obs_labels")];
-    if (LIST.size() != dset->n) {
+    if (LIST.size() != (long unsigned int) dset->n) {
         throw std::runtime_error("Number of obs_labels is different than number of observations.");
     }
     copy_strings_from_python_list(LIST, dset->S, OBSLEN-1, 0, 0);
