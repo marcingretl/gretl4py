@@ -1,6 +1,6 @@
-CC = clang
-CXX = clang++
-CFLAGS = -march=native -mtune=native -O3 -pipe -g -Wall #-Weverything
+ifndef CXX
+CXX = g++
+endif
 CXXFLAGS = -march=native -mtune=native -std=c++11 -O3 -pipe -g -Wall#-Weverything
 MAKE = gmake
 GRETLLD = $(shell pkg-config --libs gretl)
