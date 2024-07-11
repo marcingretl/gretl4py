@@ -4,47 +4,6 @@
 
 #define GRETL_PYBIND11_DEBUG 1
 
-<<<<<<< HEAD
-=======
-void dsettest (const pybind11::dict &DICT)
-{
-    DATASET *dset, *dsetnew;
-    int *parmlist;
-
-    dset = datainfo_new();
-    dsetnew = datainfo_new();
-    parmlist = gretl_list_new(3);
-    PRN *prn;
-    gretl_read_native_data("data9-7.gdt", dset);
-    prn = gretl_print_new(GRETL_PRINT_STDOUT, NULL);
-
-    parmlist[1] = 1;
-    parmlist[2] = 2;
-    parmlist[3] = 3;
-
-
-    printf("the first observation of variable 1: %f\n", dset->Z[1][0]);
-    printf("the first observation of variable 3: %f\n", (double) dset->Z[3][0]);
-    printf("first observation label: %s\n", dset->stobs);
-    printf("last observation label: %s\n", dset->endobs);
-    printf("structure: %d\n", dset->structure);
-    printf("sd0: %f\n", dset->sd0);
-    printf("t1: %d\n", dset->t1);
-    printf("t2: %d\n", dset->t2);
-
-
-    print_data_in_columns(parmlist, NULL, dset, OPT_NONE, prn);
-
-    numpy_dict_to_gretl_dset(DICT, dsetnew);
-    print_data_in_columns(parmlist, NULL, dsetnew, OPT_NONE, prn);
-
-
-    free(parmlist);
-    destroy_dataset(dset);
-    gretl_print_destroy(prn);
-}
-
->>>>>>> 4cfbc645e3cad7b2db1ac19f2ed7525d1314263a
 void load_matrix (const pybind11::array_t<double> &pynum_array)
 {
     gretl_matrix *m = gretl_null_matrix_new();
