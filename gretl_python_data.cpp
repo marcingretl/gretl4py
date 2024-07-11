@@ -1,13 +1,13 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
-#include <pybind11/stl.h>
+//#include <pybind11/stl.h>
 #include "gretl_python_data.h"
 #include <iostream>
 
 #define F_CONTIGUOUS pybind11::detail::npy_api::constants::NPY_ARRAY_F_CONTIGUOUS_
 #define is_pynum_fortranarray(m) ((m.flags() & F_CONTIGUOUS))
 
-#define GRETL_PYBIND11_DEBUG 1
+#define GRETL_PYBIND11_DEBUG 0
 
 void gretl_model_to_dict (const MODEL *model, pybind11::dict &DICT)
 {
@@ -118,6 +118,7 @@ static void numpy_array_to_gretl_storage (const pybind11::dict &DICT, DATASET *d
     double *data_array = NULL;
     pybind11::array_t<double> pynum_array;
 
+    // FIXME me: we want *ptr here, maybe unique_ptr/shared_ptr?
     pynum_array = pybind11::cast<pybind11::array>(DICT[pybind11::cast("data_array")]);
 
     data_array = numpy_array_extract(pynum_array, &rows, &cols, &fortranarray);
@@ -131,19 +132,23 @@ static void numpy_array_to_gretl_storage (const pybind11::dict &DICT, DATASET *d
         throw std::runtime_error("Matrix allocation failed.");
     }
 
+    // we set **Z
     for (int i=0; i<dset->v-1; i++) {
         if (fortranarray) {
             std::memcpy(dset->Z[i+1], &data_array[i*rows], rows*sizeof(double));
         } else {
             for (int j=0; j<rows; j++) {
+                // FIXME: maybe gretl_matrix_set(dset->Z[i+1], 1, j, *(data_array+i+j*cols))
                 dset->Z[i+1][j] = *(data_array+i+j*cols); //data_array[i+j*cols] in c++ makes no difference?
             }
         }
     }
+    dset->t1 = 0;
+    dset->t2 = dset->n - 1;
 
     #if GRETL_PYBIND11_DEBUG
     std::cout << "observations: " << dset->n << std::endl;
-    std::cout << "variables: " << dset->v << std::endl;
+    std::cout << "variables (including const): " << dset->v << std::endl;
     std::cout << "Z[v=1][obs=0] = " << dset->Z[1][0] << std::endl;
     std::cout << "Z[v=1][obs=n-1] = " << dset->Z[1][dset->n-1] << std::endl;
     #endif // GRETL_PYBIND11_DEBUG
@@ -153,6 +158,7 @@ void numpy_dict_to_gretl_dset (const pybind11::dict &DICT,
                                DATASET *dset)
 {
     pybind11::list LIST;
+    char buf[OBSLEN];
 
     numpy_array_to_gretl_storage(DICT, dset);
 
@@ -166,18 +172,20 @@ void numpy_dict_to_gretl_dset (const pybind11::dict &DICT,
     }
     copy_strings_from_python_list(LIST, dset->varname, 32, 0, 1);
 
+    copy_string_from_python_dict(DICT, "stobs", buf, OBSLEN);
+    set_obs ("4", buf, dset, OPT_T);
+
+    /*
     LIST = DICT[pybind11::cast("obs_labels")];
     if (LIST.size() != dset->n) {
         throw std::runtime_error("Number of obs_labels is different than number of observations.");
     }
     copy_strings_from_python_list(LIST, dset->S, OBSLEN-1, 0, 0);
 
-
     //some hardwired stuff
     copy_string_from_python_dict(DICT, "stobs", dset->stobs, OBSLEN);
     copy_string_from_python_dict(DICT, "endobs", dset->endobs, OBSLEN);
     dset->sd0 = 1975.100000;
     dset->structure = 1;
-    dset->t1 = 0;
-    dset->t2 = 63;
+    dset->auxiliary = 0; */
 }

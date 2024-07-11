@@ -1,20 +1,7 @@
 import sys
 sys.path.append("../")
 import gretl
-
-def gretl_model_print(RES):
-    '''Function prints results from libgretl'''
-    DASHEDLINE = "---------------------------------------------------------"
-    if isinstance(RES, dict) is not True:
-        print("I can print only dictionary!!!\n")
-        return -1
-    else:
-        print("\t\t coefficient\t std. error\n  " + DASHEDLINE)
-        coeff_names = RES["coeff"].keys()
-        for variable in coeff_names:
-            print(f'  {variable:s} \t {RES["coeff"][variable]:f}\t {RES["sderr"][variable]:f}')
-        print("\n")
-
+from gretl_print import gretl_model_print
 
 ''' demo, data still in gdt file '''
 # calling arma(1,0,0) [dafault]

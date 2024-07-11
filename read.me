@@ -7,4 +7,7 @@ To build the module, ensure you have the following installed:
 To build the module, simply type 'make' in the top-level directory. If successful, you should get a file named 'gretl.cpython-3xx-x86_64-linux-gnu.so' on Linux (where 'xx' is the minor Python version number).
 
 
-To test the module, go to the 'demo' directory and type 'python3 demo.py'.
+To test the module, go to the 'demo' directory and type :
+- 'python3 demo.py': arma estimation, data in native gretl format (gdt)
+- 'python3 dsettest.py': arma estimation, data took from csv file (pytnon level) and send to libgretl as dictionary
+- 'python3 numpy_array.py': simple example on sending Pynum arrays to ligretl
