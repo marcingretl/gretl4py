@@ -3,11 +3,5 @@ crucial:
 - libgretl_cleanup(): do we have memory leaks?
 
 important:
-- it looks like '-std=c++17' works well, but must be verified
 - character encoding workaround ("Dependent variable: (1-L) gF�!" for data from bjg.csv)
 - check if Makefile in fact is parallel
-- make load_matrix()/load_data() overloaded /* for now template works, but Python has a problem */
-    |
-    -> https://pybind11.readthedocs.io/en/stable/classes.html#overloaded-methods
-    ->  m.def("VectorCross", py::overload_cast<const Point3D&, const Point3D&, const Point3D&>(&VectorCross));
-        m.def("VectorCross", py::overload_cast<const float*, const float*, float*>(&VectorCross));

@@ -27,7 +27,7 @@ data_array = numpy.asfortranarray(numpy.array(data_list, numpy.double))
 DSET["data_array"] = data_array
 DSET["varname"] = varname
 DSET["obs_labels"] = obs_labels
-DSET["periodicity"] = 4 # may be string
+DSET["periodicity"] = 12 # may be string
 
 # arma(2,1,0)
 res = gretl.dsettest(2, 1, 0, 1, DSET)

@@ -11,6 +11,6 @@ print(arr)
 
 print("\nC++ level:")
 print("fortranarray (column-major):")
-gretl.load_matrix(numpy.asfortranarray(arr))
+gretl.load_data(numpy.asfortranarray(arr))
 print("row-major:")
-gretl.load_matrix(arr)
+gretl.load_data(arr)

@@ -4,7 +4,7 @@
 
 #define GRETL_PYBIND11_DEBUG 1
 
-void load_matrix (const pybind11::array_t<double> &pynum_array)
+void load_data (const pybind11::array_t<double> &pynum_array)
 {
     gretl_matrix *m = gretl_null_matrix_new();
     numpy_array_to_gretl_storage(pynum_array, m);
@@ -114,4 +114,3 @@ pybind11::dict dsettest (int p, int d, int q, bool do_print,
 
     return res;
 }
-
