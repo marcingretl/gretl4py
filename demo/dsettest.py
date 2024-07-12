@@ -30,6 +30,9 @@ DSET["obs_labels"] = obs_labels
 DSET["periodicity"] = 12 # may be string
 
 # arma(2,1,0)
-res = gretl.dsettest(2, 1, 0, 1, DSET)
+res = gretl.dsettest(DSET, 1, 0, 1, 1)
 print("\n\npython level:")
 gretl_model_print(res)
+
+print("\n\nloading global dataset:")
+gretl.load_data(DSET)

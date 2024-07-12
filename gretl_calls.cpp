@@ -4,6 +4,8 @@
 
 #define GRETL_PYBIND11_DEBUG 1
 
+DATASET *DSET = NULL; // global dataset
+
 void load_data (const pybind11::array_t<double> &pynum_array)
 {
     gretl_matrix *m = gretl_null_matrix_new();
@@ -14,10 +16,12 @@ void load_data (const pybind11::array_t<double> &pynum_array)
 
 void load_data (const pybind11::dict &pydict)
 {
-    //gretl_matrix *m = gretl_null_matrix_new();
-    //numpy_array_to_gretl_matrix(pynum_array, m);
-
-    numpy_dict_to_gretl_dset(pydict, NULL);
+    if (DSET == NULL) {
+        DSET = datainfo_new();
+    } else {
+        clear_datainfo(DSET, CLEAR_FULL);
+    }
+    numpy_dict_to_gretl_dset(pydict, DSET);
 
     #if 0 //GRETL_PYBIND11_DEBUG
     std::cout << "rows: " << m->rows << std::endl;
@@ -71,8 +75,8 @@ pybind11::dict arma_estimate (int p, int d, int q,
     return res;
 }
 
-pybind11::dict dsettest (int p, int d, int q, bool do_print,
-                         const pybind11::dict &pydict)
+pybind11::dict dsettest (const pybind11::dict &pydict,
+                         int p, int d, int q, bool do_print = false)
 {
     pybind11::dict res;
     DATASET *dset;

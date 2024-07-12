@@ -166,6 +166,10 @@ void numpy_dict_to_gretl_dset (const pybind11::dict &pydict,
     pybind11::list pylist;
     char periodicity[16];
 
+    if (dset == NULL) {
+        throw std::runtime_error("Dataset strings allocation failed.");
+    }
+
     numpy_array_to_gretl_storage(pydict, dset);
 
     if (dataset_allocate_varnames(dset) || dataset_allocate_obs_markers(dset)) {
