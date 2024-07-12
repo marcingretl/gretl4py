@@ -13,8 +13,7 @@ gretl_model_print(res)
 # calling arma(2,1,1,True)
 print("\nLets call arma_estimate(2,1,1,True) with default options:")
 res = gretl.arma_estimate(2,0,1,True)
-print("  object 'res' is of type: " + str(type(res)));
-type(res)
-print(res)
 print("\nResults on Python level:")
+print("object 'res' is of type: " + str(type(res)) + "\n");
+print(str(res) + "\n")
 gretl_model_print(res)

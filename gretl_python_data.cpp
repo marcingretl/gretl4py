@@ -9,7 +9,7 @@
 
 #define GRETL_PYBIND11_DEBUG 0
 
-void gretl_model_to_dict (const MODEL *model, pybind11::dict &DICT)
+void gretl_model_to_dict (const MODEL *model, pybind11::dict &pydict)
 {
     pybind11::dict coeff, sderr;
 
@@ -21,21 +21,21 @@ void gretl_model_to_dict (const MODEL *model, pybind11::dict &DICT)
         #endif // GRETL_PYBIND11_DEBUG
     }
 
-    DICT[pybind11::cast("coeff")] = coeff;
-    DICT[pybind11::cast("sderr")] = sderr;
+    pydict[pybind11::cast("coeff")] = coeff;
+    pydict[pybind11::cast("sderr")] = sderr;
 }
 
-static void copy_string_from_python_dict (const pybind11::dict &DICT,
+static void copy_string_from_python_dict (const pybind11::dict &pydict,
                                           const char *key, char *dest,
                                           int n_bytes, int offset = 0)
 {
     std::string stdBUF;
-
-    stdBUF = pybind11::cast<std::string>(DICT[pybind11::cast(key)]); //DICT[pybind11::cast(key)] is of pybind11::str type
+    //std::cout << pybind11::type::of(str(pydict[pybind11::cast(key)]));
+    stdBUF = pybind11::cast<std::string>(pydict[pybind11::cast(key)]); //pydict[pybind11::cast(key)] is of pybind11::str type
     stdBUF.copy(dest, n_bytes, offset);
 }
 
-static void copy_strings_from_python_list (const pybind11::list &LIST,
+static void copy_strings_from_python_list (const pybind11::list &pylist,
                                            char **dest, int n_bytes,
                                            int src_offset = 0,
                                            int dst_offset = 0)
@@ -43,7 +43,7 @@ static void copy_strings_from_python_list (const pybind11::list &LIST,
     std::string stdBUF;
     int i = dst_offset;
 
-    for (auto item : LIST) {
+    for (auto item : pylist) {
         stdBUF = std::string(pybind11::str(item));
         stdBUF.copy(dest[i++], n_bytes, src_offset);
     }
@@ -111,7 +111,7 @@ void numpy_array_to_gretl_storage (const pybind11::array_t<double> &pynum_array,
     #endif // defined
 }
 
-static void numpy_array_to_gretl_storage (const pybind11::dict &DICT, DATASET *dset)
+static void numpy_array_to_gretl_storage (const pybind11::dict &pylist, DATASET *dset)
 {
     ssize_t rows, cols;
     int fortranarray;
@@ -119,7 +119,7 @@ static void numpy_array_to_gretl_storage (const pybind11::dict &DICT, DATASET *d
     pybind11::array_t<double> pynum_array;
 
     // FIXME me: we want *ptr here, maybe unique_ptr/shared_ptr?
-    pynum_array = pybind11::cast<pybind11::array>(DICT[pybind11::cast("data_array")]);
+    pynum_array = pybind11::cast<pybind11::array>(pylist[pybind11::cast("data_array")]);
 
     data_array = numpy_array_extract(pynum_array, &rows, &cols, &fortranarray);
     if (data_array == NULL) {
@@ -132,10 +132,10 @@ static void numpy_array_to_gretl_storage (const pybind11::dict &DICT, DATASET *d
         throw std::runtime_error("Matrix allocation failed.");
     }
 
-    // we set **Z
+    // we fill in **Z
     for (int i=0; i<dset->v-1; i++) {
         if (fortranarray) {
-            std::memcpy(dset->Z[i+1], &data_array[i*rows], rows*sizeof(double));
+            std::memcpy(dset->Z[i+1], data_array+i*rows, rows*sizeof(double));
         } else {
             for (int j=0; j<rows; j++) {
                 // FIXME: maybe gretl_matrix_set(dset->Z[i+1], 1, j, *(data_array+i+j*cols))
@@ -154,37 +154,39 @@ static void numpy_array_to_gretl_storage (const pybind11::dict &DICT, DATASET *d
     #endif // GRETL_PYBIND11_DEBUG
 }
 
-void numpy_dict_to_gretl_dset (const pybind11::dict &DICT,
+void numpy_dict_to_gretl_dset (const pybind11::dict &pydict,
                                DATASET *dset)
 {
-    pybind11::list LIST;
-    char buf[OBSLEN];
+    pybind11::list pylist;
+    char stobs[OBSLEN], periodicity[16];
 
-    numpy_array_to_gretl_storage(DICT, dset);
+    numpy_array_to_gretl_storage(pydict, dset);
 
     if (dataset_allocate_varnames(dset) || dataset_allocate_obs_markers(dset)) {
         throw std::runtime_error("Dataset strings allocation failed.");
     }
 
-    LIST = DICT[pybind11::cast("varname")];
-    if (LIST.size() != (long unsigned int) dset->v-1) {
+    pylist = pydict[pybind11::cast("varname")];
+    if (pylist.size() != (long unsigned int) dset->v-1) {
         throw std::runtime_error("Number of varnames is different than number of variables.");
     }
-    copy_strings_from_python_list(LIST, dset->varname, 32, 0, 1);
+    copy_strings_from_python_list(pylist, dset->varname, VNAMELEN, 0, 1);
 
-    copy_string_from_python_dict(DICT, "stobs", buf, OBSLEN);
-    set_obs ("4", buf, dset, OPT_T);
+    copy_string_from_python_dict(pydict, "periodicity", periodicity, 16);
+    copy_string_from_python_dict(pydict, "stobs", stobs, OBSLEN);
+
+    set_obs(periodicity, stobs, dset, OPT_T);
 
     /*
-    LIST = DICT[pybind11::cast("obs_labels")];
-    if (LIST.size() != (long unsigned int) dset->n) {
+    pylist = pydict[pybind11::cast("obs_labels")];
+    if (pylist.size() != (long unsigned int) dset->n) {
         throw std::runtime_error("Number of obs_labels is different than number of observations.");
     }
-    copy_strings_from_python_list(LIST, dset->S, OBSLEN-1, 0, 0);
+    copy_strings_from_python_list(pylist, dset->S, OBSLEN-1, 0, 0);
 
     //some hardwired stuff
-    copy_string_from_python_dict(DICT, "stobs", dset->stobs, OBSLEN);
-    copy_string_from_python_dict(DICT, "endobs", dset->endobs, OBSLEN);
+    copy_string_from_python_dict(pydict, "stobs", dset->stobs, OBSLEN);
+    copy_string_from_python_dict(pydict, "endobs", dset->endobs, OBSLEN);
     dset->sd0 = 1975.100000;
     dset->structure = 1;
     dset->auxiliary = 0; */

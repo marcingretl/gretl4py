@@ -24,14 +24,13 @@ with open('data9-7.csv', newline='') as csvfile:
 data_array = numpy.asfortranarray(numpy.array(data_list, numpy.double))
 #data_array = numpy.array(data_list, numpy.double)
 stobs = obs_labels[0].replace("Q", ":", 1)
-endobs = obs_labels[-1].replace("Q", ":", 1)
 DSET["data_array"] = data_array
 DSET["varname"] = varname
 DSET["obs_labels"] = obs_labels
 DSET["stobs"] = stobs
-DSET["endobs"] = endobs
+DSET["periodicity"] = "4"
 
 # arma(2,1,0)
-res = gretl.dsettest(DSET, 2, 1, 0, 1)
+res = gretl.dsettest(2, 1, 0, 1, DSET)
 print("\n\npython level:")
 gretl_model_print(res)

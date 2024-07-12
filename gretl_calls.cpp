@@ -12,12 +12,12 @@ void load_matrix (const pybind11::array_t<double> &pynum_array)
     gretl_matrix_free(m);
 }
 
-void load_data (const pybind11::dict &DICT)
+void load_data (const pybind11::dict &pydict)
 {
     //gretl_matrix *m = gretl_null_matrix_new();
     //numpy_array_to_gretl_matrix(pynum_array, m);
 
-    numpy_dict_to_gretl_dset(DICT, NULL);
+    numpy_dict_to_gretl_dset(pydict, NULL);
 
     #if 0 //GRETL_PYBIND11_DEBUG
     std::cout << "rows: " << m->rows << std::endl;
@@ -71,7 +71,8 @@ pybind11::dict arma_estimate (int p, int d, int q,
     return res;
 }
 
-pybind11::dict dsettest (const pybind11::dict &DICT, int p, int d, int q, bool do_print)
+pybind11::dict dsettest (int p, int d, int q, bool do_print,
+                         const pybind11::dict &pydict)
 {
     pybind11::dict res;
     DATASET *dset;
@@ -86,7 +87,7 @@ pybind11::dict dsettest (const pybind11::dict &DICT, int p, int d, int q, bool d
     if (do_print) {
         prn = gretl_print_new(GRETL_PRINT_STDOUT, NULL);
     }
-    numpy_dict_to_gretl_dset(DICT, dset);
+    numpy_dict_to_gretl_dset(pydict, dset);
 
     parmlist[1] = p;        /* AR order */
     parmlist[2] = d;        /* order of integration */
