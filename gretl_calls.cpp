@@ -2,9 +2,9 @@
 #include "gretl_python_data.h"
 #include <iostream>
 
-#define GRETL_PYBIND11_DEBUG 1
+#define GRETL_PYBIND11_DEBUG 0
 
-DATASET *DSET = NULL; // global dataset
+static DATASET *DSET = NULL; // global dataset
 
 void load_data (const pybind11::array_t<double> &pynum_array)
 {
