@@ -1,7 +1,7 @@
 ifndef CXX
 CXX = g++
 endif
-CXXFLAGS = -march=native -mtune=native -std=c++11 -O3 -pipe -g -Wall#-Weverything
+CXXFLAGS = -march=native -mtune=native -O3 -pipe -g -Wall #-Weverything -std=c++11
 MAKE = gmake
 GRETLLD = $(shell pkg-config --libs gretl)
 GRETLIN = $(shell pkg-config --cflags gretl)

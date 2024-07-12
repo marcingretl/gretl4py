@@ -1,8 +1,9 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
-//#include <pybind11/stl.h>
+#include <pybind11/stl.h>
 #include "gretl_python_data.h"
 #include <iostream>
+#include <string>
 
 #define F_CONTIGUOUS pybind11::detail::npy_api::constants::NPY_ARRAY_F_CONTIGUOUS_
 #define is_pynum_fortranarray(m) ((m.flags() & F_CONTIGUOUS))
@@ -30,8 +31,14 @@ static void copy_string_from_python_dict (const pybind11::dict &pydict,
                                           int n_bytes, int offset = 0)
 {
     std::string stdBUF;
-    //std::cout << pybind11::type::of(str(pydict[pybind11::cast(key)]));
-    stdBUF = pybind11::cast<std::string>(pydict[pybind11::cast(key)]); //pydict[pybind11::cast(key)] is of pybind11::str type
+    auto element = pydict[pybind11::cast(key)]; //pydict[pybind11::cast(key)] is of pybind11::str type
+
+    if (pybind11::isinstance<pybind11::int_>(element)) {
+        stdBUF = std::to_string(pybind11::cast<int>(element));
+    } else {
+        stdBUF = pybind11::cast<std::string>(element);
+    }
+
     stdBUF.copy(dest, n_bytes, offset);
 }
 
@@ -138,8 +145,7 @@ static void numpy_array_to_gretl_storage (const pybind11::dict &pylist, DATASET 
             std::memcpy(dset->Z[i+1], data_array+i*rows, rows*sizeof(double));
         } else {
             for (int j=0; j<rows; j++) {
-                // FIXME: maybe gretl_matrix_set(dset->Z[i+1], 1, j, *(data_array+i+j*cols))
-                dset->Z[i+1][j] = *(data_array+i+j*cols); //data_array[i+j*cols] in c++ makes no difference?
+                *(dset->Z[i+1]+j) = *(data_array+i+j*cols); //data_array[i+j*cols] in c++ makes no difference?
             }
         }
     }
@@ -158,7 +164,7 @@ void numpy_dict_to_gretl_dset (const pybind11::dict &pydict,
                                DATASET *dset)
 {
     pybind11::list pylist;
-    char stobs[OBSLEN], periodicity[16];
+    char periodicity[16];
 
     numpy_array_to_gretl_storage(pydict, dset);
 
@@ -172,18 +178,17 @@ void numpy_dict_to_gretl_dset (const pybind11::dict &pydict,
     }
     copy_strings_from_python_list(pylist, dset->varname, VNAMELEN, 0, 1);
 
-    copy_string_from_python_dict(pydict, "periodicity", periodicity, 16);
-    copy_string_from_python_dict(pydict, "stobs", stobs, OBSLEN);
-
-    set_obs(periodicity, stobs, dset, OPT_T);
-
-    /*
     pylist = pydict[pybind11::cast("obs_labels")];
     if (pylist.size() != (long unsigned int) dset->n) {
         throw std::runtime_error("Number of obs_labels is different than number of observations.");
     }
     copy_strings_from_python_list(pylist, dset->S, OBSLEN-1, 0, 0);
 
+    copy_string_from_python_dict(pydict, "periodicity", periodicity, 16);
+
+    set_obs(periodicity, dset->S[0], dset, OPT_T);
+
+    /*
     //some hardwired stuff
     copy_string_from_python_dict(pydict, "stobs", dset->stobs, OBSLEN);
     copy_string_from_python_dict(pydict, "endobs", dset->endobs, OBSLEN);

@@ -4,6 +4,7 @@ crucial:
 
 important:
 - it looks like '-std=c++17' works well, but must be verified
+- character encoding where data from csv ("Dependent variable: (1-L) gF�!" for bjg.csv)
 - check if Makefile in fact is parallel
 - make load_matrix()/load_data() overloaded /* for now template works, but Python has a problem */
     |

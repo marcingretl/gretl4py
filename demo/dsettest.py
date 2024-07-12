@@ -9,7 +9,8 @@ from gretl_print import gretl_model_print
 DSET = dict()
 data_list = list()
 obs_labels = list()
-with open('data9-7.csv', newline='') as csvfile:
+FILE = 'bjg.csv' #data9-7.csv
+with open(FILE, newline='') as csvfile:
     gretlreader = csv.reader(csvfile, delimiter=',')
     row_nr = 0
     varname = list()
@@ -23,12 +24,10 @@ with open('data9-7.csv', newline='') as csvfile:
 
 data_array = numpy.asfortranarray(numpy.array(data_list, numpy.double))
 #data_array = numpy.array(data_list, numpy.double)
-stobs = obs_labels[0].replace("Q", ":", 1)
 DSET["data_array"] = data_array
 DSET["varname"] = varname
 DSET["obs_labels"] = obs_labels
-DSET["stobs"] = stobs
-DSET["periodicity"] = "4"
+DSET["periodicity"] = 4 # may be string
 
 # arma(2,1,0)
 res = gretl.dsettest(2, 1, 0, 1, DSET)
