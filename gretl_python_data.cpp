@@ -12,6 +12,9 @@
 
 void gretl_model_to_dict (const MODEL *model, pybind11::dict &pydict)
 {
+    //
+    // here we construct python's dict with estimation results which returned
+    //
     pybind11::dict coeff, sderr;
 
     for (int i=0; i<model->ncoeff; i++) {
@@ -30,6 +33,9 @@ static void copy_string_from_python_dict (const pybind11::dict &pydict,
                                           const char *key, char *dest,
                                           int n_bytes, int offset = 0)
 {
+    //
+    // here we take just one element (under the "key") and copy do dest
+    //
     std::string stdBUF;
     auto element = pydict[pybind11::cast(key)]; //pydict[pybind11::cast(key)] is of pybind11::str type
 
@@ -47,6 +53,9 @@ static void copy_strings_from_python_list (const pybind11::list &pylist,
                                            int src_offset = 0,
                                            int dst_offset = 0)
 {
+    //
+    // we copy the whole list to dest (length must be verified at the caller level)
+    //
     std::string stdBUF;
     int i = dst_offset;
 
@@ -55,8 +64,6 @@ static void copy_strings_from_python_list (const pybind11::list &pylist,
         stdBUF.copy(dest[i++], n_bytes, src_offset);
     }
 }
-
-
 
 static double *numpy_array_extract (const pybind11::array_t<double> &pynum_array,
                                     ssize_t *rows, ssize_t *cols, int *fortranarray)
@@ -118,15 +125,17 @@ void numpy_array_to_gretl_storage (const pybind11::array_t<double> &pynum_array,
     #endif // defined
 }
 
-static void numpy_array_to_gretl_storage (const pybind11::dict &pylist, DATASET *dset)
+static void numpy_array_to_gretl_storage (const pybind11::dict &pydict,
+                                          DATASET *dset)
 {
+    // we copy "data_array" which lives in pydict to dset->Z
     ssize_t rows, cols;
     int fortranarray;
     double *data_array = NULL;
     pybind11::array_t<double> pynum_array;
 
     // FIXME me: we want *ptr here, maybe unique_ptr/shared_ptr?
-    pynum_array = pybind11::cast<pybind11::array>(pylist[pybind11::cast("data_array")]);
+    pynum_array = pybind11::cast<pybind11::array>(pydict[pybind11::cast("data_array")]);
 
     data_array = numpy_array_extract(pynum_array, &rows, &cols, &fortranarray);
     if (data_array == NULL) {
@@ -138,8 +147,6 @@ static void numpy_array_to_gretl_storage (const pybind11::dict &pylist, DATASET 
     if (allocate_Z(dset, OPT_NONE)) {
         throw std::runtime_error("Matrix allocation failed.");
     }
-
-    // we fill in **Z
     for (int i=0; i<dset->v-1; i++) {
         if (fortranarray) {
             std::memcpy(dset->Z[i+1], data_array+i*rows, rows*sizeof(double));
@@ -163,6 +170,9 @@ static void numpy_array_to_gretl_storage (const pybind11::dict &pylist, DATASET 
 void numpy_dict_to_gretl_dset (const pybind11::dict &pydict,
                                DATASET *dset)
 {
+    //
+    // we fill dset with pydict content
+    //
     pybind11::list pylist;
     char periodicity[16];
 

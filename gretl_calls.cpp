@@ -6,6 +6,11 @@
 
 static DATASET *DSET = NULL; // global dataset
 
+void about (const char *info) {
+    lib_logo();
+    std::cout << info << std::endl;
+}
+
 void load_data (const pybind11::array_t<double> &pynum_array)
 {
     gretl_matrix *m = gretl_null_matrix_new();
