@@ -11,14 +11,6 @@ void about (const char *info) {
     std::cout << info << std::endl;
 }
 
-void load_data (const pybind11::array_t<double> &pynum_array)
-{
-    gretl_matrix *m = gretl_null_matrix_new();
-    numpy_array_to_gretl_storage(pynum_array, m);
-    gretl_matrix_print(m, "m (libgretl)");
-    gretl_matrix_free(m);
-}
-
 void load_data (const pybind11::dict &pydict)
 {
     if (DSET != NULL) {

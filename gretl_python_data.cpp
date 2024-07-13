@@ -15,7 +15,7 @@ void gretl_model_to_dict (const MODEL *model, pybind11::dict &pydict)
     //
     // here we construct python's dict with estimation results which returned
     //
-    pybind11::dict coeff, sderr;
+    pybind11::dict coeff, sderr, lnl;
 
     for (int i=0; i<model->ncoeff; i++) {
         coeff[pybind11::cast(model->params[i])] = model->coeff[i];
@@ -24,9 +24,11 @@ void gretl_model_to_dict (const MODEL *model, pybind11::dict &pydict)
         std::cout << "(debug) " << model->params[i] << ": " << model->coeff[i] << " (" << model->sderr[i] << ")" << std::endl;
         #endif // GRETL_PYBIND11_DEBUG
     }
-
+    
     pydict[pybind11::cast("coeff")] = coeff;
     pydict[pybind11::cast("sderr")] = sderr;
+    pydict[pybind11::cast("lnL")] = model->lnL;
+    
 }
 
 static void copy_string_from_python_dict (const pybind11::dict &pydict,
