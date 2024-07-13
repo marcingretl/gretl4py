@@ -10,4 +10,4 @@ def gretl_model_print(RES):
         for variable in coeff_names:
             print(f'  {variable:s} \t {RES["coeff"][variable]:f}\t {RES["sderr"][variable]:f}')
         print("\n")
-        print(f"Log-likelihood = {RES["lnL"]}\n")
+        print(f'Log-likelihood = {RES["lnL"]:f}\n')

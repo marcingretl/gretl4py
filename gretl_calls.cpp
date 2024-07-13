@@ -11,8 +11,21 @@ void about (const char *info) {
     std::cout << info << std::endl;
 }
 
+void load_data (const pybind11::array_t<double> &pynum_array)
+{
+    //
+    // interface for loading pure Numpy arrays (overloaded)
+    //
+    gretl_matrix *m = gretl_null_matrix_new();
+    numpy_array_to_gretl_storage(pynum_array, m);
+    gretl_matrix_print(m, "m (libgretl)");
+    gretl_matrix_free(m);
+}
 void load_data (const pybind11::dict &pydict)
 {
+    //
+    // interface for loading rich data from dictionary (overloaded)
+    //
     if (DSET != NULL) {
         destroy_dataset(DSET);
     }
@@ -29,6 +42,9 @@ void load_data (const pybind11::dict &pydict)
 static void do_arma (DATASET *dset, int p, int d, int q,
                      bool print, pybind11::dict &res)
 {
+    //
+    // arma estimation
+    //
     MODEL *model;
     PRN *prn = NULL;
     int *parmlist;
@@ -65,11 +81,13 @@ static void do_arma (DATASET *dset, int p, int d, int q,
 pybind11::dict arma (const pybind11::dict &data,
                      int p, int d, int q, bool print)
 {
+    //
+    // interface for arma estimation on bundled data (overloaded)
+    //
     pybind11::dict res;
     DATASET *dset = datainfo_new();
 
     numpy_dict_to_gretl_dset(data, dset);
-
     do_arma(dset, p, d, q, print, res);
 
     destroy_dataset(dset);
@@ -78,12 +96,14 @@ pybind11::dict arma (const pybind11::dict &data,
 }
 pybind11::dict arma (int p, int d, int q, bool print)
 {
+    //
+    // interface for arma estimation on global dataset (overloaded)
+    //
     pybind11::dict res;
 
     if (DSET == NULL) {
         throw std::runtime_error("No dataset in place");
     }
-
     do_arma(DSET, p, d, q, print, res);
 
     return res;
