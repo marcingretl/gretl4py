@@ -72,7 +72,7 @@ static void copy_strings_from_python_list2 (const pybind11::list &pylist,
                                             bool trim = false)
 {
     //
-    // we copy the whole list to dest (length must be verified at the caller level)
+    // we copy the whole list to stdBUF (length must be verified at the caller level)
     //
     int i = 0;
 
@@ -187,6 +187,45 @@ static void numpy_array_to_gretl_storage (const pybind11::dict &pydict,
     #endif // GRETL_PYBIND11_DEBUG
 }
 
+static void copy_strings_to_char_array (const std::string *strBUF,
+                                           char **dest, int n,
+                                           const char *for_dset = NULL,
+                                           int src_offset = 0,
+                                           int dst_offset = 0)
+{
+    //
+    // we copy the whole stdBUF to dest (length must be verified at the caller level)
+    // 'for_dset' indicates two spacial cases, namelly: dset->varname and dset->S
+    //
+
+    char *BUF = NULL;
+    int BUFsize = 0;
+
+    if (!std::strcmp(for_dset, "dset->varname")) {
+        BUFsize = VNAMELEN;
+    } else if (!std::strcmp(for_dset, "dset->S")) {
+        BUFsize = OBSLEN-1;
+    } else {
+        BUFsize = MAXLEN;
+    }
+
+    BUF = new char[BUFsize];
+
+    for (int i=0; i<n-1; i++) {
+        BUF[0] = '\0';
+        strBUF[i].copy(BUF, BUFsize, 0); // maybe std::strcpy would be better
+        if (!std::strcmp(for_dset, "dset->varname")) {
+            gretl_normalize_varname(BUF, strBUF[i].c_str(), 0, 0);
+        }
+        memset(dest[i+dst_offset], '\0', sizeof(dest));
+        strBUF[i].copy(dest[i+dst_offset], BUFsize-1, src_offset);
+        std::cout << i << " " << strBUF[i];
+        std::cout << BUF << std::endl;
+    }
+
+    delete []BUF;
+}
+
 void numpy_dict_to_gretl_dset (const pybind11::dict &pydict,
                                DATASET *dset)
 {
@@ -194,6 +233,7 @@ void numpy_dict_to_gretl_dset (const pybind11::dict &pydict,
     // we fill dset with pydict content
     //
     pybind11::list pylist;
+    std::string *strBUF; // maybe we would use vector of strings here
     char periodicity[16];
 
     if (dset == NULL) {
@@ -206,11 +246,13 @@ void numpy_dict_to_gretl_dset (const pybind11::dict &pydict,
         throw std::runtime_error("Dataset strings allocation failed.");
     }
 
+    /*
     pylist = pydict[pybind11::cast("varname")];
     if (pylist.size() != (long unsigned int) dset->v-1) {
         throw std::runtime_error("Number of varnames is different than number of variables.");
     }
     copy_strings_from_python_list(pylist, dset->varname, VNAMELEN, 0, 1);
+    */
 
     pylist = pydict[pybind11::cast("obs_labels")];
     if (pylist.size() != (long unsigned int) dset->n) {
@@ -218,19 +260,17 @@ void numpy_dict_to_gretl_dset (const pybind11::dict &pydict,
     }
     copy_strings_from_python_list(pylist, dset->S, OBSLEN-1, 0, 0);
 
-    std::string *strBUF;
-    char BUF[VNAMELEN];
+
     strBUF = new std::string[dset->v];
     pylist = pydict[pybind11::cast("varname")];
-    copy_strings_from_python_list2(pylist, strBUF);
-    for (int i=0; i<dset->v; i++) {
-        memset(BUF, '\0', sizeof(BUF));
-        strBUF[i].copy(BUF, VNAMELEN, 0);
-        gretl_normalize_varname(BUF, strBUF[i].c_str(), 0, 0);
-        std::cout << strBUF[i] << std::endl;
-        std::cout << BUF << std::endl;
+    if (pylist.size() != (long unsigned int) dset->v-1) {
+        throw std::runtime_error("Number of varnames is different than number of variables.");
     }
+    copy_strings_from_python_list2(pylist, strBUF);
+    copy_strings_to_char_array(strBUF, dset->varname, dset->v, "dset->varname", 0, 1);
     delete []strBUF;
+    for (int i=0; i<dset->v; i++)
+        printf("(debug) %i: %s\n", i, dset->varname[i]);
 
     copy_string_from_python_dict(pydict, "periodicity", periodicity, 16);
 
