@@ -46,6 +46,7 @@ static void copy_string_from_python_dict (const pybind11::dict &pydict,
         stdBUF = pybind11::cast<std::string>(element);
     }
 
+    stdBUF.erase(std::remove_if(stdBUF.begin(), stdBUF.end(), ::isspace), stdBUF.end());
     stdBUF.copy(dest, n_bytes, offset);
 }
 
@@ -62,6 +63,7 @@ static void copy_strings_from_python_list (const pybind11::list &pylist,
 
     for (auto item : pylist) {
         stdBUF = std::string(pybind11::str(item));
+        stdBUF.erase(std::remove_if(stdBUF.begin(), stdBUF.end(), ::isspace), stdBUF.end());
         stdBUF.copy(dest[i++], n_bytes, src_offset);
     }
 }
@@ -83,6 +85,7 @@ static double *numpy_array_extract (const pybind11::array_t<double> &pynum_array
     *rows = pynum_array.shape(0);
     *fortranarray = is_pynum_fortranarray(pynum_array);
 
+    // FIXME: we should try to use *ptr here
     auto arrBUF = pynum_array.request();
     return (double*) arrBUF.ptr;
 }
@@ -197,6 +200,12 @@ void numpy_dict_to_gretl_dset (const pybind11::dict &pydict,
     if (pylist.size() != (long unsigned int) dset->n) {
         throw std::runtime_error("Number of obs_labels is different than number of observations.");
     }
+    /*
+    gretl_normalize_varname (char *targ,
+                         const char *src,
+                         int underscore,
+                         int seq);
+    */
     copy_strings_from_python_list(pylist, dset->S, OBSLEN-1, 0, 0);
 
     copy_string_from_python_dict(pydict, "periodicity", periodicity, 16);
