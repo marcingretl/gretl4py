@@ -67,6 +67,22 @@ static void copy_strings_from_python_list (const pybind11::list &pylist,
         stdBUF.copy(dest[i++], n_bytes, src_offset);
     }
 }
+static void copy_strings_from_python_list2 (const pybind11::list &pylist,
+                                            std::string *stdBUF,
+                                            bool trim = false)
+{
+    //
+    // we copy the whole list to dest (length must be verified at the caller level)
+    //
+    int i = 0;
+
+    for (auto item : pylist) {
+        stdBUF[i++] = std::string(pybind11::str(item));
+    }
+    if (trim) {
+        //stdBUF.erase(std::remove_if(stdBUF.begin(), stdBUF.end(), ::isspace), stdBUF.end());
+    }
+}
 
 static double *numpy_array_extract (const pybind11::array_t<double> &pynum_array,
                                     ssize_t *rows, ssize_t *cols, int *fortranarray)
@@ -200,13 +216,21 @@ void numpy_dict_to_gretl_dset (const pybind11::dict &pydict,
     if (pylist.size() != (long unsigned int) dset->n) {
         throw std::runtime_error("Number of obs_labels is different than number of observations.");
     }
-    /*
-    gretl_normalize_varname (char *targ,
-                         const char *src,
-                         int underscore,
-                         int seq);
-    */
     copy_strings_from_python_list(pylist, dset->S, OBSLEN-1, 0, 0);
+
+    std::string *strBUF;
+    char BUF[VNAMELEN];
+    strBUF = new std::string[dset->v];
+    pylist = pydict[pybind11::cast("varname")];
+    copy_strings_from_python_list2(pylist, strBUF);
+    for (int i=0; i<dset->v; i++) {
+        memset(BUF, '\0', sizeof(BUF));
+        strBUF[i].copy(BUF, VNAMELEN, 0);
+        gretl_normalize_varname(BUF, strBUF[i].c_str(), 0, 0);
+        std::cout << strBUF[i] << std::endl;
+        std::cout << BUF << std::endl;
+    }
+    delete []strBUF;
 
     copy_string_from_python_dict(pydict, "periodicity", periodicity, 16);
 
