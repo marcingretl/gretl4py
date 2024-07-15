@@ -35,7 +35,7 @@ static void copy_string_from_python_dict (const pybind11::dict &pydict,
                                           int n_bytes, int offset = 0)
 {
     //
-    // here we take just one element (under the "key") and copy do dest
+    // here we take just one element (under the "key") and copy to dest
     //
     std::string stdBUF;
     auto element = pydict[pybind11::cast(key)]; //pydict[pybind11::cast(key)] is of pybind11::str type
@@ -199,11 +199,11 @@ void numpy_dict_to_gretl_dset (const pybind11::dict &pydict,
     // we fill dset with pydict content
     //
     pybind11::list pylist;
-    std::string *strBUF; // maybe we would use vector of strings here
+    std::string *strBUF; // maybe we should use vector of strings here?
     char periodicity[16];
 
     if (dset == NULL) {
-        throw std::runtime_error("Dataset strings allocation failed.");
+        throw std::runtime_error("Dataset allocation failed.");
     }
 
     numpy_array_to_gretl_storage(pydict, dset);

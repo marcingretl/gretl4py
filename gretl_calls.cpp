@@ -24,6 +24,7 @@ void about (const char *info) {
     std::cout << info << std::endl;
 }
 
+// two overloaded
 void load_data (const pybind11::array_t<double> &pynum_array)
 {
     //
@@ -56,7 +57,7 @@ static void do_arma (DATASET *dset, int p, int d, int q,
                      bool print, pybind11::dict &res)
 {
     //
-    // arma estimation
+    // arma estimation with two overloaded interfaces beneath
     //
     MODEL *model;
     PRN *prn = NULL;

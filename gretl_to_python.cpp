@@ -3,15 +3,9 @@
 
 class Module
 {
-public:
-    Module()
-    {
-        module_init();
-    }
-    ~Module()
-    {
-        module_cleanup();
-    }
+    public:
+        Module() { module_init(); }
+        ~Module() { module_cleanup(); }
 };
 
 const char *info = "This is a help text for module.";
