@@ -27,6 +27,24 @@ void gretl_model_to_dict (const MODEL *model, pybind11::dict &pydict)
 
     pydict[pybind11::cast("coeff")] = coeff;
     pydict[pybind11::cast("sderr")] = sderr;
+    pydict[pybind11::cast("ID")] = model->ID;
+    pydict[pybind11::cast("t1")] = model->t1;
+    pydict[pybind11::cast("t2")] = model->t2;
+    pydict[pybind11::cast("nobs")] = model->nobs;
+    pydict[pybind11::cast("full_n")] = model->full_n;
+    pydict[pybind11::cast("ncoeff")] = model->ncoeff;
+    pydict[pybind11::cast("dfn")] = model->dfn;
+    pydict[pybind11::cast("dfd")] = model->dfd;
+    pydict[pybind11::cast("ess")] = model->ess;
+    pydict[pybind11::cast("tss")] = model->tss;
+    pydict[pybind11::cast("sigma")] = model->sigma;
+    pydict[pybind11::cast("rsq")] = model->rsq;
+    pydict[pybind11::cast("adjrsq")] = model->adjrsq;
+    pydict[pybind11::cast("fstt")] = model->fstt;
+    pydict[pybind11::cast("chisq")] = model->chisq;
+    pydict[pybind11::cast("ybar")] = model->ybar;
+    pydict[pybind11::cast("sdy")] = model->sdy;
+    //
     pydict[pybind11::cast("lnL")] = model->lnL;
 }
 
