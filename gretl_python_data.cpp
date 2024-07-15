@@ -206,23 +206,26 @@ void numpy_dict_to_gretl_dset (const pybind11::dict &pydict,
         throw std::runtime_error("Dataset allocation failed.");
     }
 
+    // we fill up dset->Z
     numpy_array_to_gretl_storage(pydict, dset);
 
     if (dataset_allocate_varnames(dset) || dataset_allocate_obs_markers(dset)) {
         throw std::runtime_error("Dataset strings allocation failed.");
     }
 
+    // we fill up dset->S
     pylist = pydict[pybind11::cast("obs_labels")];
     if (pylist.size() != (long unsigned int) dset->n) {
         throw std::runtime_error("Number of obs_labels is different than number of observations.");
     }
     copy_strings_from_python_list(pylist, dset->S, OBSLEN-1, 0, 0, true);
 
-    strBUF = new std::string[dset->v];
+    // we fill up dset->varname
     pylist = pydict[pybind11::cast("varname")];
     if (pylist.size() != (long unsigned int) dset->v-1) {
         throw std::runtime_error("Number of varnames is different than number of variables.");
     }
+    strBUF = new std::string[dset->v];
     copy_strings_from_python_list(pylist, strBUF);
     for (int i=0; i<dset->v-1; i++) {
         std::memset(dset->varname[i+1], '\0', VNAMELEN);
@@ -230,8 +233,8 @@ void numpy_dict_to_gretl_dset (const pybind11::dict &pydict,
     }
     delete []strBUF;
 
+    // FIXME: maybe it's possible automatically, i.e. without sending it from Python
     copy_string_from_python_dict(pydict, "periodicity", periodicity, 16);
-
     set_obs(periodicity, dset->S[0], dset, OPT_T);
 
     /*
