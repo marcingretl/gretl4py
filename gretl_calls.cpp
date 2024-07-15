@@ -6,8 +6,21 @@
 
 static DATASET *DSET = NULL; // global dataset
 
+void module_init ()
+{
+    libgretl_init();
+    std::cout << "libgretl initialized" << std::endl;
+}
+
+void module_cleanup ()
+{
+    libgretl_cleanup();
+    std::cout << "libgretl cleaned up" << std::endl;
+}
+
 void about (const char *info) {
     lib_logo();
+    std::cout << "module ver: " << GRETL_MODULE_VERSION << std::endl;
     std::cout << info << std::endl;
 }
 

@@ -1,9 +1,23 @@
 #include "gretl_calls.h"
 #include <pybind11/numpy.h>
 
+class Module
+{
+public:
+    Module()
+    {
+        module_init();
+    }
+    ~Module()
+    {
+        module_cleanup();
+    }
+};
+
 const char *info = "This is a help text for module.";
 
 PYBIND11_MODULE(gretl, m) {
+    static Module module;
     m.doc() = info;
     m.def("about", &about, pybind11::arg("info") = info);
     m.def("load_data", pybind11::overload_cast<const pybind11::array_t<double> &>(&load_data));

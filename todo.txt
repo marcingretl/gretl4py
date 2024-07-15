@@ -1,12 +1,9 @@
 crucial:
 - parameters naming schema: we need to set up some things (f.e.: "print" or "do_print")
 - do we allow passing a regular command/script and execute it?
-- libgretl_init() is somehow automatically called on module loading: how does it work?
-- libgretl_cleanup(): do we have memory leaks?
 
 important:
 - do libgretl bindings (like "do_arma()") stay in gretl_calls.cpp or we place them in
     additional source (like "gretl_bindings.cpp")?
 - directory structure (including resulting binaries)
-- character encoding workaround ("Dependent variable: (1-L) gF�!" for data from bjg.csv)
-- check if Makefile in fact is parallel
+- check if Makefile in fact is parallel (Did Jack/Allin already check it?)

@@ -1,6 +1,10 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
 
+#define GRETL_MODULE_VERSION 0.1
+
+void module_init (void);
+void module_cleanup (void);
 void about (const char *info);
 
 void load_data (const pybind11::array_t<double> &pynum_array);
