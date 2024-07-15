@@ -30,5 +30,8 @@ $(MODULE_NAME): gretl_to_python.cpp gretl_calls.o gretl_python_data.o
 demoscript: all demo/demo.py
 	cd demo ; python3 demo.py
 
+tags:
+	etags *.cpp *.h
+
 clean:
 	@rm -f $(MODULE_NAME) gretl_calls.o gretl_python_data.o
