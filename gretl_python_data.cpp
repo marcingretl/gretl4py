@@ -50,37 +50,42 @@ static void copy_string_from_python_dict (const pybind11::dict &pydict,
     stdBUF.copy(dest, n_bytes, offset);
 }
 
+// two overloaded
 static void copy_strings_from_python_list (const pybind11::list &pylist,
-                                           char **dest, int n_bytes,
-                                           int src_offset = 0,
-                                           int dst_offset = 0)
+                                           char **dest, int n_bytes, int src_offset = 0,
+                                           int dst_offset = 0, bool trim = false)
 {
     //
     // we copy the whole list to dest (length must be verified at the caller level)
+    // with optional clearing
     //
     std::string stdBUF;
     int i = dst_offset;
 
     for (auto item : pylist) {
         stdBUF = std::string(pybind11::str(item));
-        stdBUF.erase(std::remove_if(stdBUF.begin(), stdBUF.end(), ::isspace), stdBUF.end());
+        if (trim) {
+            stdBUF.erase(std::remove_if(stdBUF.begin(), stdBUF.end(), ::isspace), stdBUF.end());
+        }
         stdBUF.copy(dest[i++], n_bytes, src_offset);
     }
 }
-static void copy_strings_from_python_list2 (const pybind11::list &pylist,
-                                            std::string *stdBUF,
-                                            bool trim = false)
+static void copy_strings_from_python_list (const pybind11::list &pylist,
+                                           std::string *strBUF, bool trim = false)
 {
     //
     // we copy the whole list to stdBUF (length must be verified at the caller level)
+    // with optional clearing
     //
     int i = 0;
+    std::string str;
 
     for (auto item : pylist) {
-        stdBUF[i++] = std::string(pybind11::str(item));
-    }
-    if (trim) {
-        //stdBUF.erase(std::remove_if(stdBUF.begin(), stdBUF.end(), ::isspace), stdBUF.end());
+        str = std::string(pybind11::str(item));
+        if (trim) {
+            str.erase(std::remove_if(str.begin(), str.end(), ::isspace), str.end());
+        }
+        strBUF[i++] = str;
     }
 }
 
@@ -187,6 +192,58 @@ static void numpy_array_to_gretl_storage (const pybind11::dict &pydict,
     #endif // GRETL_PYBIND11_DEBUG
 }
 
+void numpy_dict_to_gretl_dset (const pybind11::dict &pydict,
+                               DATASET *dset)
+{
+    //
+    // we fill dset with pydict content
+    //
+    pybind11::list pylist;
+    std::string *strBUF; // maybe we would use vector of strings here
+    char periodicity[16];
+
+    if (dset == NULL) {
+        throw std::runtime_error("Dataset strings allocation failed.");
+    }
+
+    numpy_array_to_gretl_storage(pydict, dset);
+
+    if (dataset_allocate_varnames(dset) || dataset_allocate_obs_markers(dset)) {
+        throw std::runtime_error("Dataset strings allocation failed.");
+    }
+
+    pylist = pydict[pybind11::cast("obs_labels")];
+    if (pylist.size() != (long unsigned int) dset->n) {
+        throw std::runtime_error("Number of obs_labels is different than number of observations.");
+    }
+    copy_strings_from_python_list(pylist, dset->S, OBSLEN-1, 0, 0, true);
+
+    strBUF = new std::string[dset->v];
+    pylist = pydict[pybind11::cast("varname")];
+    if (pylist.size() != (long unsigned int) dset->v-1) {
+        throw std::runtime_error("Number of varnames is different than number of variables.");
+    }
+    copy_strings_from_python_list(pylist, strBUF);
+    for (int i=0; i<dset->v-1; i++) {
+        std::memset(dset->varname[i+1], '\0', VNAMELEN);
+        gretl_normalize_varname(dset->varname[i+1], strBUF[i].c_str(), 1, 0);
+    }
+    delete []strBUF;
+
+    copy_string_from_python_dict(pydict, "periodicity", periodicity, 16);
+
+    set_obs(periodicity, dset->S[0], dset, OPT_T);
+
+    /*
+    //some hardwired stuff
+    copy_string_from_python_dict(pydict, "stobs", dset->stobs, OBSLEN);
+    copy_string_from_python_dict(pydict, "endobs", dset->endobs, OBSLEN);
+    dset->sd0 = 1975.100000;
+    dset->structure = 1;
+    dset->auxiliary = 0; */
+}
+
+/*
 static void copy_strings_to_char_array (const std::string *strBUF,
                                            char **dest, int n,
                                            const char *for_dset = NULL,
@@ -225,62 +282,4 @@ static void copy_strings_to_char_array (const std::string *strBUF,
 
     delete []BUF;
 }
-
-void numpy_dict_to_gretl_dset (const pybind11::dict &pydict,
-                               DATASET *dset)
-{
-    //
-    // we fill dset with pydict content
-    //
-    pybind11::list pylist;
-    std::string *strBUF; // maybe we would use vector of strings here
-    char periodicity[16];
-
-    if (dset == NULL) {
-        throw std::runtime_error("Dataset strings allocation failed.");
-    }
-
-    numpy_array_to_gretl_storage(pydict, dset);
-
-    if (dataset_allocate_varnames(dset) || dataset_allocate_obs_markers(dset)) {
-        throw std::runtime_error("Dataset strings allocation failed.");
-    }
-
-    /*
-    pylist = pydict[pybind11::cast("varname")];
-    if (pylist.size() != (long unsigned int) dset->v-1) {
-        throw std::runtime_error("Number of varnames is different than number of variables.");
-    }
-    copy_strings_from_python_list(pylist, dset->varname, VNAMELEN, 0, 1);
-    */
-
-    pylist = pydict[pybind11::cast("obs_labels")];
-    if (pylist.size() != (long unsigned int) dset->n) {
-        throw std::runtime_error("Number of obs_labels is different than number of observations.");
-    }
-    copy_strings_from_python_list(pylist, dset->S, OBSLEN-1, 0, 0);
-
-
-    strBUF = new std::string[dset->v];
-    pylist = pydict[pybind11::cast("varname")];
-    if (pylist.size() != (long unsigned int) dset->v-1) {
-        throw std::runtime_error("Number of varnames is different than number of variables.");
-    }
-    copy_strings_from_python_list2(pylist, strBUF);
-    copy_strings_to_char_array(strBUF, dset->varname, dset->v, "dset->varname", 0, 1);
-    delete []strBUF;
-    for (int i=0; i<dset->v; i++)
-        printf("(debug) %i: %s\n", i, dset->varname[i]);
-
-    copy_string_from_python_dict(pydict, "periodicity", periodicity, 16);
-
-    set_obs(periodicity, dset->S[0], dset, OPT_T);
-
-    /*
-    //some hardwired stuff
-    copy_string_from_python_dict(pydict, "stobs", dset->stobs, OBSLEN);
-    copy_string_from_python_dict(pydict, "endobs", dset->endobs, OBSLEN);
-    dset->sd0 = 1975.100000;
-    dset->structure = 1;
-    dset->auxiliary = 0; */
-}
+*/

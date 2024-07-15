@@ -69,5 +69,5 @@ res = gretl.arma()
 gretl_model_print(res)
 
 print("arma(1,0,1,False)\n")
-res = gretl.arma(p=1, q=1, print=True)
+res = gretl.arma(p=1, q=1, print=False)
 gretl_model_print(res)
