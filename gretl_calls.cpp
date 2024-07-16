@@ -53,7 +53,8 @@ void load_data (const pybind11::dict &pydict)
     #endif // defined
 }
 
-static void do_arma (DATASET *dset, int p, int d, int q,
+static void do_arma (DATASET *dset, const std::string y,
+                     int p, int d, int q,
                      bool print, pybind11::dict &res)
 {
     //
@@ -63,7 +64,11 @@ static void do_arma (DATASET *dset, int p, int d, int q,
     PRN *prn = NULL;
     int *parmlist;
     int err;
+    int y_number = current_series_index(dset, y.c_str());
 
+    if (y_number == -1) {
+        throw std::runtime_error(std::string("There is no variable: ") + y);
+    }
     model = gretl_model_new();
     parmlist = gretl_list_new(5);
     if (print) {
@@ -74,7 +79,7 @@ static void do_arma (DATASET *dset, int p, int d, int q,
     parmlist[2] = d;        /* order of integration */
     parmlist[3] = q;        /* MA order */
     parmlist[4] = LISTSEP;  /* separator */
-    parmlist[5] = 1;        /* position of dependent variable in dataset */
+    parmlist[5] = y_number; /* position of dependent variable in dataset */
 
     *model = arma(parmlist, NULL, dset, OPT_NONE, prn);
     err = model->errcode;
@@ -93,6 +98,7 @@ static void do_arma (DATASET *dset, int p, int d, int q,
     gretl_print_destroy(prn);
 }
 pybind11::dict arma (const pybind11::dict &data,
+                     const std::string y,
                      int p, int d, int q, bool print)
 {
     //
@@ -102,13 +108,14 @@ pybind11::dict arma (const pybind11::dict &data,
     DATASET *dset = datainfo_new();
 
     numpy_dict_to_gretl_dset(data, dset);
-    do_arma(dset, p, d, q, print, res);
+    do_arma(dset, y, p, d, q, print, res);
 
     destroy_dataset(dset);
 
     return res;
 }
-pybind11::dict arma (int p, int d, int q, bool print)
+pybind11::dict arma (const std::string y,
+                     int p, int d, int q, bool print)
 {
     //
     // interface for arma estimation on global dataset (overloaded)
@@ -118,7 +125,7 @@ pybind11::dict arma (int p, int d, int q, bool print)
     if (DSET == NULL) {
         throw std::runtime_error("No dataset in place");
     }
-    do_arma(DSET, p, d, q, print, res);
+    do_arma(DSET, y, p, d, q, print, res);
 
     return res;
 }

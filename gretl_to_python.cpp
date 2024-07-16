@@ -16,14 +16,16 @@ PYBIND11_MODULE(gretl, m) {
     m.def("about", &about, pybind11::arg("info") = info);
     m.def("load_data", pybind11::overload_cast<const pybind11::array_t<double> &>(&load_data));
     m.def("load_data", pybind11::overload_cast<const pybind11::dict &>(&load_data));
-    m.def("arma", pybind11::overload_cast<const pybind11::dict &,
+    m.def("arma", pybind11::overload_cast<const pybind11::dict &, const std::string,
           int, int, int, bool>(&arma), "some day",
           pybind11::arg("data").none(false),
+          pybind11::arg("y").none(false),
           pybind11::arg("p") = 1,
           pybind11::arg("d") = 0,
           pybind11::arg("q") = 0,
           pybind11::arg("print") = false);
-    m.def("arma", pybind11::overload_cast<int, int, int, bool>(&arma), "some day",
+    m.def("arma", pybind11::overload_cast<const std::string, int, int, int, bool>(&arma), "some day",
+          pybind11::arg("y").none(false),
           pybind11::arg("p") = 1,
           pybind11::arg("d") = 0,
           pybind11::arg("q") = 0,

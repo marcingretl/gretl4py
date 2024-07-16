@@ -13,20 +13,19 @@
 void gretl_model_to_dict (const MODEL *model, pybind11::dict &pydict)
 {
     //
-    // here we construct python's dict which is returned with estimation results
+    // here we construct python's dict which is returned (with estimation results)
     //
     pybind11::dict coeff, sderr;
 
     for (int i=0; i<model->ncoeff; i++) {
         coeff[pybind11::cast(model->params[i])] = model->coeff[i];
         sderr[pybind11::cast(model->params[i])] = model->sderr[i];
-        #if GRETL_PYBIND11_DEBUG
-        std::cout << "(debug) " << model->params[i] << ": " << model->coeff[i] << " (" << model->sderr[i] << ")" << std::endl;
-        #endif // GRETL_PYBIND11_DEBUG
     }
-
+    // dictionaries
     pydict[pybind11::cast("coeff")] = coeff;
     pydict[pybind11::cast("sderr")] = sderr;
+
+    // scalars
     pydict[pybind11::cast("ID")] = model->ID;
     pydict[pybind11::cast("t1")] = model->t1;
     pydict[pybind11::cast("t2")] = model->t2;
@@ -42,10 +41,13 @@ void gretl_model_to_dict (const MODEL *model, pybind11::dict &pydict)
     pydict[pybind11::cast("adjrsq")] = model->adjrsq;
     pydict[pybind11::cast("fstt")] = model->fstt;
     pydict[pybind11::cast("chisq")] = model->chisq;
+    pydict[pybind11::cast("lnL")] = model->lnL;
     pydict[pybind11::cast("ybar")] = model->ybar;
     pydict[pybind11::cast("sdy")] = model->sdy;
-    //
-    pydict[pybind11::cast("lnL")] = model->lnL;
+    pydict[pybind11::cast("dw")] = model->dw;
+    pydict[pybind11::cast("rho")] = model->rho;
+    pydict[pybind11::cast("nparams")] = model->nparams;
+    pydict[pybind11::cast("esttime")] = model->esttime;
 }
 
 static void copy_string_from_python_dict (const pybind11::dict &pydict,
@@ -92,7 +94,7 @@ static void copy_strings_from_python_list (const pybind11::list &pylist,
                                            std::string *strBUF, bool trim = false)
 {
     //
-    // we copy the whole list to stdBUF (length must be verified at the caller level)
+    // we copy the whole list to strBUF (length must be verified at the caller level)
     // with optional clearing
     //
     int i = 0;
@@ -120,7 +122,6 @@ static double *numpy_array_extract (const pybind11::array_t<double> &pynum_array
     } else {
         *cols = pynum_array.shape(1);
     }
-
     *rows = pynum_array.shape(0);
     *fortranarray = is_pynum_fortranarray(pynum_array);
 
