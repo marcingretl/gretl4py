@@ -15,15 +15,17 @@ void gretl_model_to_dict (const MODEL *model, pybind11::dict &pydict)
     //
     // here we construct python's dict which is returned (with estimation results)
     //
-    pybind11::dict coeff, sderr;
+    pybind11::dict coeff, sderr, pvalue;
 
     for (int i=0; i<model->ncoeff; i++) {
         coeff[pybind11::cast(model->params[i])] = model->coeff[i];
         sderr[pybind11::cast(model->params[i])] = model->sderr[i];
+        pvalue[pybind11::cast(model->params[i])] = normal_pvalue_2(std::abs(model->coeff[i]/model->sderr[i]));
     }
     // dictionaries
     pydict[pybind11::cast("coeff")] = coeff;
     pydict[pybind11::cast("sderr")] = sderr;
+    pydict[pybind11::cast("pvalue")] = pvalue;
 
     // scalars
     pydict[pybind11::cast("ID")] = model->ID;

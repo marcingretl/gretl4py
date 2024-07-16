@@ -5,7 +5,7 @@ import csv
 import numpy
 from gretl_print import gretl_model_print
 
-''' we load bjg.csv do dict() '''
+''' we load bjg.csv to dict() '''
 DSET = dict()
 data_list = list()
 obs_labels = list()
@@ -32,7 +32,7 @@ DSET["periodicity"] = 12 # may be string
 print("Loading global dataset:") #this dataset will be used later
 gretl.load_data(DSET)
 
-''' we load data9-7.csv do dict() '''
+''' we load data9-7.csv to dict() '''
 DSET = dict()
 data_list = list()
 obs_labels = list()
