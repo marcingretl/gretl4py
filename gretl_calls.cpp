@@ -97,35 +97,35 @@ static void do_arma (DATASET *dset, const std::string y,
     free(parmlist);
     gretl_print_destroy(prn);
 }
-pybind11::dict arma (const pybind11::dict &data,
-                     const std::string y,
-                     int p, int d, int q, bool print)
+pybind11::dict *arma (const pybind11::dict &data,
+                      const std::string y,
+                      int p, int d, int q, bool print)
 {
     //
     // interface for arma estimation on bundled data (overloaded)
     //
-    pybind11::dict res;
+    pybind11::dict *res = new pybind11::dict;
     DATASET *dset = datainfo_new();
 
     numpy_dict_to_gretl_dset(data, dset);
-    do_arma(dset, y, p, d, q, print, res);
+    do_arma(dset, y, p, d, q, print, *res);
 
     destroy_dataset(dset);
 
     return res;
 }
-pybind11::dict arma (const std::string y,
-                     int p, int d, int q, bool print)
+pybind11::dict *arma (const std::string y,
+                      int p, int d, int q, bool print)
 {
     //
     // interface for arma estimation on global dataset (overloaded)
     //
-    pybind11::dict res;
+    pybind11::dict *res = new pybind11::dict;
 
     if (DSET == NULL) {
         throw std::runtime_error("No dataset in place");
     }
-    do_arma(DSET, y, p, d, q, print, res);
+    do_arma(DSET, y, p, d, q, print, *res);
 
     return res;
 }

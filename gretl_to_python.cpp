@@ -23,11 +23,13 @@ PYBIND11_MODULE(gretl, m) {
           pybind11::arg("p") = 1,
           pybind11::arg("d") = 0,
           pybind11::arg("q") = 0,
-          pybind11::arg("print") = false);
+          pybind11::arg("print") = false,
+          pybind11::return_value_policy::take_ownership);
     m.def("arma", pybind11::overload_cast<const std::string, int, int, int, bool>(&arma), "some day",
           pybind11::arg("y").none(false),
           pybind11::arg("p") = 1,
           pybind11::arg("d") = 0,
           pybind11::arg("q") = 0,
-          pybind11::arg("print") = false);
+          pybind11::arg("print") = false,
+          pybind11::return_value_policy::take_ownership);
 }
