@@ -67,6 +67,7 @@ static void do_arma (DATASET *dset, const std::string y,
     int y_number = current_series_index(dset, y.c_str());
 
     if (y_number == -1) {
+        delete &res;
         throw std::runtime_error(std::string("There is no variable: ") + y);
     }
     model = gretl_model_new();
