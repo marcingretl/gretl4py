@@ -8,3 +8,4 @@ important:
     additional source (like "gretl_bindings.cpp")?
 - directory structure (including resulting binaries)
 - check if Makefile in fact is parallel (Did Jack/Allin already check it?)
+- can we automatically quess data periodicity (vide DSET["periodicity"] = "4")

@@ -1,6 +1,6 @@
 #include <gretl/libgretl.h>
 
-void gretl_model_to_dict (const MODEL *model, pybind11::dict &DICT);
+void gretl_model_to_dict (MODEL *model, pybind11::dict &DICT);
 
 void numpy_dict_to_gretl_dset (const pybind11::dict &DICT, DATASET *dset);
 
