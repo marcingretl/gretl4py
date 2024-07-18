@@ -16,6 +16,7 @@ void gretl_model_to_dict (const MODEL *model, pybind11::dict &pydict)
     // here we construct python's dict which is returned (with estimation results)
     //
     pybind11::dict coeff, sderr, pvalue, criterion;
+    pybind11::array_t<double, pybind11::array::f_style> vcv({model->ncoeff, model->ncoeff});
 
     // dictionaries
     for (int i=0; i<model->ncoeff; i++) {
@@ -32,7 +33,15 @@ void gretl_model_to_dict (const MODEL *model, pybind11::dict &pydict)
     pydict[pybind11::cast("pvalue")] = pvalue;
     pydict[pybind11::cast("criterion")] = criterion;
 
-    // py::array::f_style
+    // matrices
+    //gretl_matrix *mBUF = NULL;
+    //int err;
+    //mBUF = gretl_vcv_matrix_from_model(model, NULL, &err);
+
+    // this is wrong since model->vcv is upper triangle
+    std::memcpy((double*) vcv.request().ptr, model->vcv, model->ncoeff*model->ncoeff*sizeof(double));
+
+    pydict[pybind11::cast("vcv")] = vcv;
 
     // scalars
     pydict[pybind11::cast("ID")] = model->ID;
@@ -273,44 +282,3 @@ void numpy_dict_to_gretl_dset (const pybind11::dict &pydict,
     dset->structure = 1;
     dset->auxiliary = 0; */
 }
-
-/*
-static void copy_strings_to_char_array (const std::string *strBUF,
-                                           char **dest, int n,
-                                           const char *for_dset = NULL,
-                                           int src_offset = 0,
-                                           int dst_offset = 0)
-{
-    //
-    // we copy the whole stdBUF to dest (length must be verified at the caller level)
-    // 'for_dset' indicates two spacial cases, namelly: dset->varname and dset->S
-    //
-
-    char *BUF = NULL;
-    int BUFsize = 0;
-
-    if (!std::strcmp(for_dset, "dset->varname")) {
-        BUFsize = VNAMELEN;
-    } else if (!std::strcmp(for_dset, "dset->S")) {
-        BUFsize = OBSLEN-1;
-    } else {
-        BUFsize = MAXLEN;
-    }
-
-    BUF = new char[BUFsize];
-
-    for (int i=0; i<n-1; i++) {
-        BUF[0] = '\0';
-        strBUF[i].copy(BUF, BUFsize, 0); // maybe std::strcpy would be better
-        if (!std::strcmp(for_dset, "dset->varname")) {
-            gretl_normalize_varname(BUF, strBUF[i].c_str(), 0, 0);
-        }
-        memset(dest[i+dst_offset], '\0', sizeof(dest));
-        strBUF[i].copy(dest[i+dst_offset], BUFsize-1, src_offset);
-        std::cout << i << " " << strBUF[i];
-        std::cout << BUF << std::endl;
-    }
-
-    delete []BUF;
-}
-*/

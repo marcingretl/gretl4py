@@ -1,4 +1,5 @@
 crucial:
+- where should we use glib types?
 - parameters naming schema: we need to set up some things (f.e.: "print" or "do_print")
 - do we allow passing a regular command/script and execute it?
 

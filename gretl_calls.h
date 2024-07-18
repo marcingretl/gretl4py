@@ -5,7 +5,7 @@
 
 void module_init (void);
 void module_cleanup (void);
-void about (const char *info);
+void about (const std::string &info);
 
 void load_data (const pybind11::array_t<double> &pynum_array);
 void load_data (const pybind11::dict &pydict);

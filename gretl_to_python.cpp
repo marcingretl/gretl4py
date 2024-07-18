@@ -8,7 +8,7 @@ class Module
         ~Module() { module_cleanup(); }
 };
 
-const char *info = "This is a help text for module.";
+const std::string info = "This is a help text for module.";
 
 PYBIND11_MODULE(gretl, m) {
     static Module module;
