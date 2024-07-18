@@ -12,20 +12,17 @@ MODULE_NAME = $(MODULE_PREFIX)$(MODULE_SUFIX)
 
 .PHONY: clean
 
-all: part1 part2 $(MODULE_NAME)
+$(MODULE_NAME): gretl_to_python.o gretl_calls.o gretl_python_data.o
+	$(CXX) $(CXXFLAGS) $^ -shared -o $(MODULE_NAME) -fPIC $(PYBIND) $(GRETLLD)
 
-.PHONY: part1
-part1:
 gretl_python_data.o: gretl_python_data.cpp
-	$(CXX) $(CXXFLAGS) -c gretl_python_data.cpp -o gretl_python_data.o -fPIC $(PYBIND) $(GRETLIN)
+	$(CXX) $(CXXFLAGS) -c $< -o $@ -fPIC $(PYBIND) $(GRETLIN)
 
-.PHONY: part2
-part1:
 gretl_calls.o: gretl_calls.cpp
-	$(CXX) $(CXXFLAGS) -c gretl_calls.cpp -o gretl_calls.o -fPIC $(PYBIND) $(GRETLIN)
+	$(CXX) $(CXXFLAGS) -c $< -o $@ -fPIC $(PYBIND) $(GRETLIN)
 
-$(MODULE_NAME): gretl_to_python.cpp gretl_calls.o gretl_python_data.o
-	$(CXX) $(CXXFLAGS) gretl_to_python.cpp gretl_calls.o gretl_python_data.o -shared -o $(MODULE_NAME) -fPIC $(PYBIND) $(GRETLLD)
+gretl_to_python.o: gretl_to_python.cpp
+	$(CXX) $(CXXFLAGS) -c $< -o $@ -fPIC $(PYBIND) $(GRETLIN)
 
 demoscript: all demo/demo.py
 	cd demo ; python3 demo.py
@@ -34,4 +31,4 @@ tags:
 	etags *.cpp *.h
 
 clean:
-	@rm -f $(MODULE_NAME) gretl_calls.o gretl_python_data.o
+	@rm -f $(MODULE_NAME) *.o
