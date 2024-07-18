@@ -1,3 +1,4 @@
 *.so
 *.o
+TAGS
 demo/__pycache__
