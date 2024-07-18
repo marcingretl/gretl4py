@@ -182,6 +182,7 @@ pybind11::dict *ols (const pybind11::dict &data,
 
     numpy_dict_to_gretl_dset(data, dset);
     do_ols(dset, y, x1, x2, print, *res);
+    destroy_dataset(dset);
 
     return res;
 }
