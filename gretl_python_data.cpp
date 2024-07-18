@@ -2,6 +2,7 @@
 #include <pybind11/numpy.h>
 //#include <pybind11/stl.h>
 #include "gretl_python_data.h"
+//#include <gretl/matrix_extra.h>
 #include <iostream>
 #include <string>
 
@@ -38,6 +39,7 @@ void gretl_model_to_dict (const MODEL *model, pybind11::dict &pydict)
     //int err;
     //mBUF = gretl_vcv_matrix_from_model(model, NULL, &err);
 
+    //std::memcpy((double*) vcv.request().ptr, mBUF, model->ncoeff*model->ncoeff*sizeof(double));
     // this is wrong since model->vcv is upper triangle
     std::memcpy((double*) vcv.request().ptr, model->vcv, model->ncoeff*model->ncoeff*sizeof(double));
 
@@ -143,9 +145,9 @@ static double *numpy_array_extract (const pybind11::array_t<double> &pynum_array
     *rows = pynum_array.shape(0);
     *fortranarray = is_pynum_fortranarray(pynum_array);
 
-    // FIXME: we should try to use *ptr here
-    auto arrBUF = pynum_array.request();
-    return (double*) arrBUF.ptr;
+    //auto arrBUF = pynum_array.request();
+    //return (double*) arrBUF.ptr;
+    return (double*) pynum_array.request().ptr;
 }
 
 // two overloaded
