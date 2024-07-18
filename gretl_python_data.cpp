@@ -11,19 +11,21 @@
 
 #define GRETL_PYBIND11_DEBUG 0
 
-void gretl_model_to_dict (MODEL *model, pybind11::dict &pydict)
+void gretl_model_to_dict (MODEL *model, DATASET *dset, pybind11::dict &pydict)
 {
     //
     // here we construct python's dict which is returned (with estimation results)
     //
     pybind11::dict coeff, sderr, pvalue, criterion;
     pybind11::array_t<double, pybind11::array::f_style> vcv({model->ncoeff, model->ncoeff});
+    char pname[VNAMELEN];
 
     // dictionaries
     for (int i=0; i<model->ncoeff; i++) {
-        coeff[pybind11::cast(model->params[i])] = model->coeff[i];
-        sderr[pybind11::cast(model->params[i])] = model->sderr[i];
-        pvalue[pybind11::cast(model->params[i])] = normal_pvalue_2(std::abs(model->coeff[i]/model->sderr[i]));
+	gretl_model_get_param_name(model, dset, i, pname);
+        coeff[pybind11::cast(pname)] = model->coeff[i];
+        sderr[pybind11::cast(pname)] = model->sderr[i];
+        pvalue[pybind11::cast(pname)] = normal_pvalue_2(std::abs(model->coeff[i]/model->sderr[i]));
     }
     criterion[pybind11::cast("aic")] = model->criterion[0];
     criterion[pybind11::cast("bic")] = model->criterion[1];
@@ -34,16 +36,12 @@ void gretl_model_to_dict (MODEL *model, pybind11::dict &pydict)
     pydict[pybind11::cast("pvalue")] = pvalue;
     pydict[pybind11::cast("criterion")] = criterion;
 
-    // matrices
-    //gretl_matrix *mBUF = NULL;
-    //int err;
-    //mBUF = gretl_vcv_matrix_from_model(model, NULL, &err);
-    //std::memcpy((double*) vcv.request().ptr, mBUF, model->ncoeff*model->ncoeff*sizeof(double));
-
-    // this is wrong since model->vcv is upper triangle
-    std::memcpy((double*) vcv.request().ptr, model->vcv, model->ncoeff*model->ncoeff*sizeof(double));
-
+    // covariance matrix
+    int err = 0;
+    gretl_matrix *m = gretl_vcv_matrix_from_model(model, NULL, &err);
+    std::memcpy((double *) vcv.request().ptr, m->val, m->rows * m->cols * sizeof(double));
     pydict[pybind11::cast("vcv")] = vcv;
+    gretl_matrix_free(m);
 
     // scalars
     pydict[pybind11::cast("ID")] = model->ID;

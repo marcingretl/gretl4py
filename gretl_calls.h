@@ -12,4 +12,9 @@ void load_data (const pybind11::dict &pydict);
 
 pybind11::dict *arma (const pybind11::dict &data, const std::string y,
                       int p, int d, int q, bool print);
+
 pybind11::dict *arma (const std::string y, int p, int d, int q, bool print);
+
+pybind11::dict *ols (const pybind11::dict &data, const std::string y,
+		     const std::string x1, const std::string x2,
+		     bool print);

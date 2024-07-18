@@ -32,4 +32,11 @@ PYBIND11_MODULE(gretl, m) {
           pybind11::arg("q") = 0,
           pybind11::arg("print") = false,
           pybind11::return_value_policy::take_ownership);
+    m.def("ols", &ols,
+	  pybind11::arg("data").none(false),
+	  pybind11::arg("y").none(false),
+	  pybind11::arg("x1").none(false),
+	  pybind11::arg("x2").none(false),
+	  pybind11::arg("print") = false,
+	  pybind11::return_value_policy::take_ownership);
 }

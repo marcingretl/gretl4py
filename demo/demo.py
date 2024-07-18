@@ -62,6 +62,10 @@ res = gretl.arma(data=DSET, y="QNC", p=1, q=1, d=0, print=True)
 print("\n\npython level:")
 gretl_model_print(res)
 
+print("\nOLS example:\n")
+res = gretl.ols(data=DSET, y="QNC", x1="PRICE", x2="INCOME")
+gretl_model_print(res)
+
 '''Example 2: we use data send before function call ('bjg.csv')'''
 print("\nExample 2:")
 print("arma() [with default options]\n")
