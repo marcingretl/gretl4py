@@ -38,5 +38,3 @@ gretl_model_print(res)
 print("\nOLS example passing dataset as dict:\n")
 res = gretl.ols('QNC ~ 0 + PRICE + INCOME', print=True)
 gretl_model_print(res)
-
-

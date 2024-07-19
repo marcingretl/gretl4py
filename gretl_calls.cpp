@@ -138,6 +138,8 @@ pybind11::dict *arma (const std::string y,
     return res;
 }
 
+// convert from a simple R-style formula to a gretl list
+
 static int *list_from_formula (const char *formula,
 			       DATASET *dset)
 {
@@ -153,7 +155,8 @@ static int *list_from_formula (const char *formula,
     return list;
 }
 
-// "Proof of concept" for supporting more than one estimation method
+// "Proof of concept" function for supporting more than one
+// estimation method
 
 static void regression_wrapper (int ci,
 				const std::string formula,
@@ -194,43 +197,57 @@ static void regression_wrapper (int ci,
     gretl_print_destroy(prn);
 }
 
-pybind11::dict *ols (const std::string formula,
-		     const pybind11::dict &data,
-		     bool print)
+// intermediate wrappers to handle specified versus global data
+
+static pybind11::dict *
+regress_with_specified_data (int ci,
+			     const std::string formula,
+			     const pybind11::dict &data,
+			     bool print)
 {
     pybind11::dict *res = new pybind11::dict;
     DATASET *dset = datainfo_new();
 
     numpy_dict_to_gretl_dset(data, dset);
-    regression_wrapper(OLS, formula, print, dset, *res);
+    regression_wrapper(ci, formula, print, dset, *res);
     destroy_dataset(dset);
 
     return res;
 }
 
-pybind11::dict *ols (const std::string formula, bool print)
+pybind11::dict *
+regress_with_global_data (int ci,
+			  const std::string formula,
+			  bool print)
 {
     pybind11::dict *res = new pybind11::dict;
 
     if (DSET == NULL) {
 	throw std::runtime_error("No dataset in place");
     } else {
-	regression_wrapper(OLS, formula, print, DSET, *res);
+	regression_wrapper(ci, formula, print, DSET, *res);
     }
 
     return res;
+}
+
+// thin wrappers for specific estimators
+
+pybind11::dict *ols (const std::string formula,
+		     const pybind11::dict &data,
+		     bool print)
+{
+    return regress_with_specified_data(OLS, formula, data, print);
+}
+
+pybind11::dict *ols (const std::string formula, bool print)
+{
+    return regress_with_global_data(OLS, formula, print);
 }
 
 pybind11::dict *logit (const std::string formula,
 		       const pybind11::dict &data,
 		       bool print)
 {
-    pybind11::dict *res = new pybind11::dict;
-    DATASET *dset = datainfo_new();
-
-    numpy_dict_to_gretl_dset(data, dset);
-    regression_wrapper(LOGIT, formula, print, dset, *res);
-    destroy_dataset(dset);
-
-    return res;
+    return regress_with_specified_data(LOGIT, formula, data, print);
 }
