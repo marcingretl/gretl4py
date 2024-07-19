@@ -48,6 +48,16 @@ void load_data (const pybind11::dict &pydict)
     numpy_dict_to_gretl_dset(pydict, DSET);
 }
 
+pybind11::dict *get_gretl_data (const std::string fname)
+{
+    pybind11::dict *res = new pybind11::dict;
+    char tmp[2048];
+
+    strcpy(tmp, fname.c_str());
+    gretl_dset_to_numpy_dict(tmp, *res);
+    return res;
+}
+
 static void do_arma (DATASET *dset, const std::string y,
                      int p, int d, int q,
                      bool print, pybind11::dict &res)
@@ -128,71 +138,75 @@ pybind11::dict *arma (const std::string y,
     return res;
 }
 
-static void do_lsq (DATASET *dset, const std::string y,
-                    const std::string x1, const std::string x2,
-                    bool print, pybind11::dict &res)
+static int *list_from_formula (const char *formula,
+			       DATASET *dset)
 {
-    MODEL *model;
+    char *tmp = gretl_strdup(formula);
+    int *list;
+    int err = 0;
+
+    gretl_charsub(tmp, '~', ' ');
+    gretl_charsub(tmp, '+', ' ');
+    list = generate_list(tmp, dset, 0, &err);
+    free(tmp);
+
+    return list;
+}
+
+static void ols_wrapper (const std::string formula,
+			 bool print,
+			 DATASET *dset,
+			 pybind11::dict &res)
+{
+    MODEL *model = NULL;
     PRN *prn = NULL;
-    int *parmlist;
-    int err;
+    int *list = NULL;
+    int err = 0;
 
+    list = list_from_formula(formula.c_str(), dset);
     model = gretl_model_new();
-    parmlist = gretl_list_new(4);
     if (print) {
-        prn = gretl_print_new(GRETL_PRINT_STDOUT, NULL);
+	prn = gretl_print_new(GRETL_PRINT_STDOUT, NULL);
     }
-
-    parmlist[1] = current_series_index(dset, y.c_str());
-    parmlist[2] = 0;
-    parmlist[3] = current_series_index(dset, x1.c_str());
-    parmlist[4] = current_series_index(dset, x2.c_str());
-
-    *model = lsq(parmlist, dset, OLS, OPT_NONE);
+    
+    *model = lsq(list, dset, OLS, OPT_NONE);
     err = model->errcode;
-
     if (err) {
-        errmsg(err, prn);
+	errmsg(err, prn);
     } else {
-        gretl_model_to_dict(model, dset, res);
-        if (print) {
-            printmodel(model, dset, OPT_NONE, prn);
-        }
-    }
+	gretl_model_to_dict(model, dset, res);
+	if (print) {
+	    printmodel(model, dset, OPT_NONE, prn);
+	}
+    }	
 
-    gretl_model_free(model);
-    free(parmlist);
+    free(list);
     gretl_print_destroy(prn);
 }
 
-pybind11::dict *ols (const pybind11::dict &data, const std::string y,
-                     const std::string x1, const std::string x2, bool print)
+pybind11::dict *ols (const std::string formula,
+		     const pybind11::dict &data,
+		     bool print)
 {
-    //
-    // ols interface to lsq estimation on bundled data (overloaded)
-    //
     pybind11::dict *res = new pybind11::dict;
     DATASET *dset = datainfo_new();
-
+    
     numpy_dict_to_gretl_dset(data, dset);
-    do_lsq(dset, y, x1, x2, print, *res);
-
+    ols_wrapper(formula, print, dset, *res);
     destroy_dataset(dset);
-
+    
     return res;
 }
-pybind11::dict *ols (const std::string y, const std::string x1,
-                     const std::string x2, bool print)
-{
-    //
-    // ols interface to lsq estimation on global dataset (overloaded)
-    //
-    pybind11::dict *res = new pybind11::dict;
 
+pybind11::dict *ols (const std::string formula, bool print)
+{
+    pybind11::dict *res = new pybind11::dict;
+    
     if (DSET == NULL) {
-        throw std::runtime_error("No dataset in place");
+	throw std::runtime_error("No dataset in place");
+    } else {
+	ols_wrapper(formula, print, DSET, *res);
     }
-    do_lsq(DSET, y, x1, x2, print, *res);
 
     return res;
 }
