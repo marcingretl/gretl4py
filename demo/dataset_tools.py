@@ -60,5 +60,5 @@ print('All about data9-7.csv')
 gretl.printdata()
 
 # we print varnames only and bundled data
-print('Variables in bjg-7.csv')
+print('Variables in bjg.csv')
 gretl.printdata(data=bjg, varames_only=True)
