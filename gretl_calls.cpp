@@ -162,7 +162,7 @@ static void do_ols (DATASET *dset, const std::string y,
     } else {
         gretl_model_to_dict(model, dset, res);
         if (print) {
-            printmodel(model, dset, OPT_NONE, prn);
+            printmodel(model, dset, OPT_O, prn);
         }
     }
 

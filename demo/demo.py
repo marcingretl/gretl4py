@@ -63,7 +63,7 @@ print("\n\npython level:")
 gretl_model_print(res)
 
 print("\nOLS example:\n")
-res = gretl.ols(data=DSET, y="QNC", x1="PRICE", x2="INCOME")
+res = gretl.ols(data=DSET, y="QNC", x1="PRICE", x2="INCOME", print=True)
 gretl_model_print(res)
 
 '''Example 2: we use data send before function call ('bjg.csv')'''
