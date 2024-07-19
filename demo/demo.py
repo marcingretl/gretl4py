@@ -63,7 +63,7 @@ print('\n\npython level:')
 gretl_model_print(res)
 
 print('\nOLS:')
-res = gretl.ols(data=data97, y="QNC", x1="PRICE", x2="INCOME", print=True)
+res = gretl.ols('QNC ~ const + PRICE + INCOME', data=data97, print=True)
 gretl_model_print(res)
 
 '''Example 2: we use data send before function call ('bjg.csv')'''
@@ -78,5 +78,5 @@ gretl_model_print(res)
 
 print('\nOLS:\n')
 gretl.load_data(data97)
-res = gretl.ols(y="QNC", x1="PRICE", x2="INCOME", print=False)
+res = gretl.ols('QNC ~ const + PRICE + INCOME', print=False)
 gretl_model_print(res)

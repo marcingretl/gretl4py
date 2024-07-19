@@ -76,22 +76,23 @@ static void do_printdata (DATASET *dset, const std::string *varnames,
     }
 }
 
-void printdata (const pybind11::dict &data, bool varames_only)
+void printdata (const pybind11::dict &data, bool varnames_only)
 {
     DATASET *dset = datainfo_new();
 
     numpy_dict_to_gretl_dset(data, dset);
 
-    do_printdata(dset, NULL, NULL, OPT_O, varames_only);
+    do_printdata(dset, NULL, NULL, OPT_O, varnames_only);
+    destroy_dataset(dset);
 }
 
-void printdata (bool varames_only)
+void printdata (bool varnames_only)
 {
     if (DSET == NULL) {
         throw std::runtime_error("No dataset in place");
     }
 
-    do_printdata(DSET, NULL, NULL, OPT_O, varames_only);
+    do_printdata(DSET, NULL, NULL, OPT_O, varnames_only);
 }
 
 pybind11::dict *get_gretl_data (const std::string fname)
