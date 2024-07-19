@@ -153,10 +153,13 @@ static int *list_from_formula (const char *formula,
     return list;
 }
 
-static void ols_wrapper (const std::string formula,
-			 bool print,
-			 DATASET *dset,
-			 pybind11::dict &res)
+// "Proof of concept" for supporting more than one estimation method
+
+static void regression_wrapper (int ci,
+				const std::string formula,
+				bool print,
+				DATASET *dset,
+				pybind11::dict &res)
 {
     MODEL *model = NULL;
     PRN *prn = NULL;
@@ -168,8 +171,15 @@ static void ols_wrapper (const std::string formula,
     if (print) {
 	prn = gretl_print_new(GRETL_PRINT_STDOUT, NULL);
     }
-    
-    *model = lsq(list, dset, OLS, OPT_NONE);
+
+    if (ci == OLS) {
+	*model = lsq(list, dset, OLS, OPT_NONE);
+    } else if (ci == LOGIT) {
+	*model = binary_logit(list, dset, OPT_NONE, prn);
+    } else {
+	throw std::runtime_error("Unsupported estimator");
+    }
+
     err = model->errcode;
     if (err) {
 	errmsg(err, prn);
@@ -178,7 +188,7 @@ static void ols_wrapper (const std::string formula,
 	if (print) {
 	    printmodel(model, dset, OPT_NONE, prn);
 	}
-    }	
+    }
 
     free(list);
     gretl_print_destroy(prn);
@@ -190,23 +200,37 @@ pybind11::dict *ols (const std::string formula,
 {
     pybind11::dict *res = new pybind11::dict;
     DATASET *dset = datainfo_new();
-    
+
     numpy_dict_to_gretl_dset(data, dset);
-    ols_wrapper(formula, print, dset, *res);
+    regression_wrapper(OLS, formula, print, dset, *res);
     destroy_dataset(dset);
-    
+
     return res;
 }
 
 pybind11::dict *ols (const std::string formula, bool print)
 {
     pybind11::dict *res = new pybind11::dict;
-    
+
     if (DSET == NULL) {
 	throw std::runtime_error("No dataset in place");
     } else {
-	ols_wrapper(formula, print, DSET, *res);
+	regression_wrapper(OLS, formula, print, DSET, *res);
     }
+
+    return res;
+}
+
+pybind11::dict *logit (const std::string formula,
+		       const pybind11::dict &data,
+		       bool print)
+{
+    pybind11::dict *res = new pybind11::dict;
+    DATASET *dset = datainfo_new();
+
+    numpy_dict_to_gretl_dset(data, dset);
+    regression_wrapper(LOGIT, formula, print, dset, *res);
+    destroy_dataset(dset);
 
     return res;
 }

@@ -300,7 +300,6 @@ void gretl_dset_to_numpy_dict (char *fname, pybind11::dict &pydict)
 
     // copy across the series names */
     for (i=0; i<dset->v; i++) {
-	//vnames->append(strdup(dset->varname[i]));
 	vnames->append(dset->varname[i]);
     }
     pydict[pybind11::cast("varname")] = vnames;
@@ -312,7 +311,7 @@ void gretl_dset_to_numpy_dict (char *fname, pybind11::dict &pydict)
 	}
     } else {
 	char s[64];
-	
+
 	for (i=0; i<dset->n; i++) {
 	    sprintf(s, "%d", i+1);
 	    labels->append(s);

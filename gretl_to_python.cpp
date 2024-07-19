@@ -36,7 +36,7 @@ PYBIND11_MODULE(gretl, m) {
           pybind11::arg("print") = false,
           pybind11::return_value_policy::take_ownership);
     m.def("ols",
-	  pybind11::overload_cast<const std::string, const pybind11::dict &, bool> (&ols), 
+	  pybind11::overload_cast<const std::string, const pybind11::dict &, bool> (&ols),
           pybind11::arg("formula").none(false),
 	  pybind11::arg("data").none(false),
 	  pybind11::arg("print") = false,
@@ -44,6 +44,11 @@ PYBIND11_MODULE(gretl, m) {
     m.def("ols",
 	  pybind11::overload_cast<const std::string, bool> (&ols),
           pybind11::arg("formula").none(false),
+	  pybind11::arg("print") = false,
+          pybind11::return_value_policy::take_ownership);
+    m.def("logit", &logit,
+          pybind11::arg("formula").none(false),
+	  pybind11::arg("data").none(false),
 	  pybind11::arg("print") = false,
           pybind11::return_value_policy::take_ownership);    
 }
