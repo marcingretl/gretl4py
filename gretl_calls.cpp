@@ -19,10 +19,9 @@ void module_cleanup ()
     std::cout << std::endl << "libgretl cleaned up" << std::endl;
 }
 
-void about (const std::string &info) {
+void about () {
     lib_logo();
     std::cout << "module ver: " << GRETL_MODULE_VERSION << std::endl;
-    std::cout << info << std::endl;
 }
 
 // two overloaded
@@ -157,7 +156,7 @@ static void do_lsq (DATASET *dset, const std::string y,
     } else {
         gretl_model_to_dict(model, dset, res);
         if (print) {
-            printmodel(model, dset, OPT_O, prn);
+            printmodel(model, dset, OPT_NONE, prn);
         }
     }
 
@@ -167,9 +166,11 @@ static void do_lsq (DATASET *dset, const std::string y,
 }
 
 pybind11::dict *ols (const pybind11::dict &data, const std::string y,
-                     const std::string x1, const std::string x2,
-                     bool print)
+                     const std::string x1, const std::string x2, bool print)
 {
+    //
+    // ols interface to lsq estimation on bundled data (overloaded)
+    //
     pybind11::dict *res = new pybind11::dict;
     DATASET *dset = datainfo_new();
 
@@ -177,6 +178,21 @@ pybind11::dict *ols (const pybind11::dict &data, const std::string y,
     do_lsq(dset, y, x1, x2, print, *res);
 
     destroy_dataset(dset);
+
+    return res;
+}
+pybind11::dict *ols (const std::string y, const std::string x1,
+                     const std::string x2, bool print)
+{
+    //
+    // ols interface to lsq estimation on global dataset (overloaded)
+    //
+    pybind11::dict *res = new pybind11::dict;
+
+    if (DSET == NULL) {
+        throw std::runtime_error("No dataset in place");
+    }
+    do_lsq(DSET, y, x1, x2, print, *res);
 
     return res;
 }

@@ -148,8 +148,6 @@ static double *numpy_array_extract (const pybind11::array_t<double> &pynum_array
     *rows = pynum_array.shape(0);
     *fortranarray = is_pynum_fortranarray(pynum_array);
 
-    //auto arrBUF = pynum_array.request();
-    //return (double*) arrBUF.ptr;
     return (double*) pynum_array.request().ptr;
 }
 
@@ -192,15 +190,12 @@ static void numpy_array_to_gretl_storage (const pybind11::dict &pydict,
     ssize_t rows, cols;
     int fortranarray;
     double *data_array = NULL;
-    pybind11::array_t<double> pynum_array;
-    pybind11::array_t<double> *pynum_array_new;
 
-    // FIXME me: we want have *ptr here, but numpy_array_extract() must be fixed (SIGSEV)
-    pynum_array = pybind11::cast<pybind11::array>(pydict[pybind11::cast("data_array")]);
-    pynum_array_new = static_cast<pybind11::array_t<double>*> (pybind11::cast<pybind11::array>(pydict[pybind11::cast("data_array")]).mutable_data());
-
-    numpy_array_extract(pynum_array, &rows, &cols, &fortranarray);
-    data_array = (double *) pynum_array_new; //static_cast from 'pybind11::array_t<double> *' to 'double *' is not allowed
+    // the old code: do not delete for a while
+    //pybind11::array_t<double> pynum_array = pybind11::cast<pybind11::array>(pydict[pybind11::cast("data_array")]);
+    //pybind11::array_t<double> *pynum_array_new = static_cast<pybind11::array_t<double>*> (pybind11::cast<pybind11::array>(pydict[pybind11::cast("data_array")]).mutable_data());
+    data_array = numpy_array_extract(pybind11::cast<pybind11::array>(pydict[pybind11::cast("data_array")]),
+                                     &rows, &cols, &fortranarray);
     if (data_array == NULL) {
         throw std::runtime_error("Numpy array: null pointer.");
     }
