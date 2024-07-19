@@ -239,6 +239,7 @@ static void regression_wrapper (int ci,
 
     free(list);
     gretl_print_destroy(prn);
+    gretl_model_free(model);
 }
 
 // intermediate wrappers to handle specified versus global data
