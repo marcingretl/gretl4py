@@ -19,6 +19,8 @@ void gretl_model_to_dict (MODEL *model, DATASET *dset, pybind11::dict &pydict)
     pybind11::dict coeff, sderr, pvalue, criterion;
     pybind11::array_t<double, pybind11::array::f_style> vcv({model->ncoeff, model->ncoeff});
     char pname[VNAMELEN];
+    int err = 0;
+    gretl_matrix *m = NULL;
 
     // dictionaries
     for (int i=0; i<model->ncoeff; i++) {
@@ -37,8 +39,7 @@ void gretl_model_to_dict (MODEL *model, DATASET *dset, pybind11::dict &pydict)
     pydict[pybind11::cast("criterion")] = criterion;
 
     // covariance matrix
-    int err = 0;
-    gretl_matrix *m = gretl_vcv_matrix_from_model(model, NULL, &err);
+    m = gretl_vcv_matrix_from_model(model, NULL, &err);
     std::memcpy((double *) vcv.request().ptr, m->val, m->rows * m->cols * sizeof(double));
     pydict[pybind11::cast("vcv")] = vcv;
     gretl_matrix_free(m);
@@ -215,14 +216,7 @@ static void numpy_array_to_gretl_storage (const pybind11::dict &pydict,
         }
     }
     dset->t1 = 0;
-    dset->t2 = dset->n - 1;
-
-    #if GRETL_PYBIND11_DEBUG
-    std::cout << "observations: " << dset->n << std::endl;
-    std::cout << "variables (including const): " << dset->v << std::endl;
-    std::cout << "Z[v=1][obs=0] = " << dset->Z[1][0] << std::endl;
-    std::cout << "Z[v=1][obs=n-1] = " << dset->Z[1][dset->n-1] << std::endl;
-    #endif // GRETL_PYBIND11_DEBUG
+    dset->t2 = dset->n-1;
 }
 
 void numpy_dict_to_gretl_dset (const pybind11::dict &pydict,

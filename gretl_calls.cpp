@@ -9,13 +9,14 @@ static DATASET *DSET = NULL; // global dataset
 void module_init ()
 {
     libgretl_init();
-    std::cout << "libgretl initialized\n" << std::endl;
+    std::cout << "libgretl initialized";
+    std::cout  << std::endl << std::endl;
 }
 
 void module_cleanup ()
 {
     libgretl_cleanup();
-    std::cout << "\nlibgretl cleaned up" << std::endl;
+    std::cout << std::endl << "libgretl cleaned up" << std::endl;
 }
 
 void about (const std::string &info) {
@@ -46,12 +47,6 @@ void load_data (const pybind11::dict &pydict)
     }
     DSET = datainfo_new();
     numpy_dict_to_gretl_dset(pydict, DSET);
-
-    #if 0 //GRETL_PYBIND11_DEBUG
-    std::cout << "rows: " << m->rows << std::endl;
-    std::cout << "cols: " << m->cols << std::endl;
-    gretl_matrix_print(m, "m (libgretl)");
-    #endif // defined
 }
 
 static void do_arma (DATASET *dset, const std::string y,
@@ -134,9 +129,9 @@ pybind11::dict *arma (const std::string y,
     return res;
 }
 
-static void do_ols (DATASET *dset, const std::string y,
-		    const std::string x1, const std::string x2,
-		    bool print, pybind11::dict &res)
+static void do_lsq (DATASET *dset, const std::string y,
+                    const std::string x1, const std::string x2,
+                    bool print, pybind11::dict &res)
 {
     MODEL *model;
     PRN *prn = NULL;
@@ -171,17 +166,16 @@ static void do_ols (DATASET *dset, const std::string y,
     gretl_print_destroy(prn);
 }
 
-pybind11::dict *ols (const pybind11::dict &data,
-		     const std::string y,
-		     const std::string x1,
-		     const std::string x2,
-		     bool print)
+pybind11::dict *ols (const pybind11::dict &data, const std::string y,
+                     const std::string x1, const std::string x2,
+                     bool print)
 {
     pybind11::dict *res = new pybind11::dict;
     DATASET *dset = datainfo_new();
 
     numpy_dict_to_gretl_dset(data, dset);
-    do_ols(dset, y, x1, x2, print, *res);
+    do_lsq(dset, y, x1, x2, print, *res);
+
     destroy_dataset(dset);
 
     return res;

@@ -29,7 +29,7 @@ DSET["varname"] = varname
 DSET["obs_labels"] = obs_labels
 DSET["periodicity"] = 12 # may be string
 
-print("Loading global dataset:") #this dataset will be used later
+print('Loading global dataset: bjg.csv') #this dataset will be used later
 gretl.load_data(DSET)
 
 ''' we load data9-7.csv to dict() '''
@@ -56,22 +56,22 @@ DSET["obs_labels"] = obs_labels
 DSET["periodicity"] = "4"
 
 '''Example 1: data is send on function call ('data9-7.csv')'''
-print("\nExample 1:")
-print("arma(1,0,1,False)\n")
+print('\nExample 1:')
+print('arma(1,0,1,False)\n')
 res = gretl.arma(data=DSET, y="QNC", p=1, q=1, d=0, print=True)
-print("\n\npython level:")
+print('\n\npython level:')
 gretl_model_print(res)
 
-print("\nOLS example:\n")
+print('\nOLS example:\n')
 res = gretl.ols(data=DSET, y="QNC", x1="PRICE", x2="INCOME", print=True)
 gretl_model_print(res)
 
 '''Example 2: we use data send before function call ('bjg.csv')'''
-print("\nExample 2:")
-print("arma() [with default options]\n")
+print('\nExample 2:')
+print('arma() [with default options]\n')
 res = gretl.arma(y="g")
 gretl_model_print(res)
 
-print("arma(1,0,1,False)\n")
+print('arma(1,0,1,False)\n')
 res = gretl.arma(y="lg", p=1, q=1, print=False)
 gretl_model_print(res)
