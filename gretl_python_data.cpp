@@ -40,8 +40,12 @@ void gretl_model_to_dict (MODEL *model, DATASET *dset, pybind11::dict &pydict)
 
     // covariance matrix
     m = gretl_vcv_matrix_from_model(model, NULL, &err);
-    std::memcpy((double *) vcv.request().ptr, m->val, m->rows * m->cols * sizeof(double));
-    pydict[pybind11::cast("vcv")] = vcv;
+    if (err) {
+        pydict[pybind11::cast("vcv")] = NULL;
+    } else {
+        std::memcpy((double *) vcv.request().ptr, m->val, m->rows * m->cols * sizeof(double));
+        pydict[pybind11::cast("vcv")] = vcv;
+    }
     gretl_matrix_free(m);
 
     // scalars
