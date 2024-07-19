@@ -310,7 +310,7 @@ void gretl_dset_to_numpy_dict (char *fname, pybind11::dict &pydict)
 	    labels->append(dset->S[i]);
 	}
     } else {
-	char s[64];
+	char s[32];
 
 	for (i=0; i<dset->n; i++) {
 	    sprintf(s, "%d", i+1);
