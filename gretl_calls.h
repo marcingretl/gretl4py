@@ -12,6 +12,9 @@ void about (void);
 void load_data (const pybind11::array_t<double> &pynum_array);
 void load_data (const pybind11::dict &pydict);
 
+void printdata (const pybind11::dict &data, bool varames_only);
+void printdata (bool varames_only);
+
 pybind11::dict *arma (const pybind11::dict &data, const std::string y, int p, int d, int q, bool print);
 pybind11::dict *arma (const std::string y, int p, int d, int q, bool print);
 

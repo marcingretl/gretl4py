@@ -6,6 +6,7 @@
 
 static DATASET *DSET = NULL; // global dataset
 
+// some module related tools
 void module_init ()
 {
     libgretl_init();
@@ -24,6 +25,7 @@ void about () {
     std::cout << "module ver: " << GRETL_MODULE_VERSION << std::endl;
 }
 
+// data management
 // two overloaded
 void load_data (const pybind11::array_t<double> &pynum_array)
 {
@@ -35,7 +37,6 @@ void load_data (const pybind11::array_t<double> &pynum_array)
     gretl_matrix_print(m, "m (libgretl)");
     gretl_matrix_free(m);
 }
-
 void load_data (const pybind11::dict &pydict)
 {
     //
@@ -48,6 +49,53 @@ void load_data (const pybind11::dict &pydict)
     numpy_dict_to_gretl_dset(pydict, DSET);
 }
 
+static void do_printdata (DATASET *dset, const std::string *varnames,
+                          const std::string *ostr, gretlopt opt,
+                          bool varames_only = false)
+{
+    int *varlist = NULL;
+    int err;
+    PRN *prn = 0;
+
+    if (varnames == NULL) {
+        varlist = gretl_list_new(dset->v);
+        for (int i=1; i<dset->v; i++) {
+            if (varames_only) {
+                std::printf("%d %s\n", i, dset->varname[i]);
+            } else {
+                varlist[i] = current_series_index(dset, dset->varname[i]);
+            }
+        }
+    }
+
+    if (!varames_only) {
+        prn = gretl_print_new(GRETL_PRINT_STDOUT, NULL);
+        err = printdata(varlist, NULL, dset, opt, prn);
+        gretl_print_destroy(prn);
+        if (err) {
+            throw std::runtime_error("libgretl printdata() failed.");
+        }
+    }
+}
+void printdata (const pybind11::dict &data, bool varames_only)
+{
+    DATASET *dset = datainfo_new();
+
+    numpy_dict_to_gretl_dset(data, dset);
+
+    do_printdata(dset, NULL, NULL, OPT_O, varames_only);
+}
+void printdata (bool varames_only)
+{
+    if (DSET == NULL) {
+        throw std::runtime_error("No dataset in place");
+    }
+
+    do_printdata(DSET, NULL, NULL, OPT_O, varames_only);
+}
+
+// estimators (libgretl binding + interfaces)
+// ARMA
 static void do_arma (DATASET *dset, const std::string y,
                      int p, int d, int q,
                      bool print, pybind11::dict &res)
@@ -93,7 +141,6 @@ static void do_arma (DATASET *dset, const std::string y,
     free(parmlist);
     gretl_print_destroy(prn);
 }
-
 pybind11::dict *arma (const pybind11::dict &data,
                       const std::string y,
                       int p, int d, int q, bool print)
@@ -111,7 +158,6 @@ pybind11::dict *arma (const pybind11::dict &data,
 
     return res;
 }
-
 pybind11::dict *arma (const std::string y,
                       int p, int d, int q, bool print)
 {
@@ -128,6 +174,7 @@ pybind11::dict *arma (const std::string y,
     return res;
 }
 
+// least squares
 static void do_lsq (DATASET *dset, const std::string y,
                     const std::string x1, const std::string x2,
                     bool print, pybind11::dict &res)
@@ -164,7 +211,6 @@ static void do_lsq (DATASET *dset, const std::string y,
     free(parmlist);
     gretl_print_destroy(prn);
 }
-
 pybind11::dict *ols (const pybind11::dict &data, const std::string y,
                      const std::string x1, const std::string x2, bool print)
 {

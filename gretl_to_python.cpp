@@ -14,9 +14,15 @@ PYBIND11_MODULE(gretl, m) {
     static Module module;
     m.doc() = info;
     m.def("about", &about);
+
     // data management
     m.def("load_data", pybind11::overload_cast<const pybind11::array_t<double> &> (&load_data));
     m.def("load_data", pybind11::overload_cast<const pybind11::dict &> (&load_data));
+    m.def("printdata", pybind11::overload_cast<const pybind11::dict &, bool> (&printdata),
+          pybind11::arg("data").none(false),
+          pybind11::arg("varames_only") = false);
+    m.def("printdata", pybind11::overload_cast<bool> (&printdata),
+          pybind11::arg("varames_only") = false);
     // ARMA estimation
     m.def("arma", pybind11::overload_cast<const pybind11::dict &, const std::string,
           int, int, int, bool> (&arma),
@@ -35,6 +41,7 @@ PYBIND11_MODULE(gretl, m) {
           pybind11::arg("q") = 0,
           pybind11::arg("print") = false,
           pybind11::return_value_policy::take_ownership);
+
     // OLS estimation
     m.def("ols", pybind11::overload_cast<const pybind11::dict &, const std::string,
           const std::string, const std::string, bool> (&ols),
