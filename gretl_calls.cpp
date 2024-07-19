@@ -24,23 +24,21 @@ void about () {
     std::cout << "module ver: " << GRETL_MODULE_VERSION << std::endl;
 }
 
-// two overloaded
+// interface for loading pure Numpy arrays
+
 void load_data (const pybind11::array_t<double> &pynum_array)
 {
-    //
-    // interface for loading pure Numpy arrays (overloaded)
-    //
     gretl_matrix *m = gretl_null_matrix_new();
+
     numpy_array_to_gretl_storage(pynum_array, m);
     gretl_matrix_print(m, "m (libgretl)");
     gretl_matrix_free(m);
 }
 
+// interface for loading data from dictionary
+
 void load_data (const pybind11::dict &pydict)
 {
-    //
-    // interface for loading rich data from dictionary (overloaded)
-    //
     if (DSET != NULL) {
         destroy_dataset(DSET);
     }
@@ -58,13 +56,12 @@ pybind11::dict *get_gretl_data (const std::string fname)
     return res;
 }
 
+// arma estimation with two overloaded interfaces beneath
+
 static void do_arma (DATASET *dset, const std::string y,
                      int p, int d, int q,
                      bool print, pybind11::dict &res)
 {
-    //
-    // arma estimation with two overloaded interfaces beneath
-    //
     MODEL *model;
     PRN *prn = NULL;
     int *parmlist;
@@ -104,13 +101,12 @@ static void do_arma (DATASET *dset, const std::string y,
     gretl_print_destroy(prn);
 }
 
+// interface for arma estimation on specified data
+
 pybind11::dict *arma (const pybind11::dict &data,
                       const std::string y,
                       int p, int d, int q, bool print)
 {
-    //
-    // interface for arma estimation on bundled data (overloaded)
-    //
     pybind11::dict *res = new pybind11::dict;
     DATASET *dset = datainfo_new();
 
@@ -122,12 +118,11 @@ pybind11::dict *arma (const pybind11::dict &data,
     return res;
 }
 
+// interface for arma estimation on global dataset
+
 pybind11::dict *arma (const std::string y,
                       int p, int d, int q, bool print)
 {
-    //
-    // interface for arma estimation on global dataset (overloaded)
-    //
     pybind11::dict *res = new pybind11::dict;
 
     if (DSET == NULL) {
@@ -156,7 +151,7 @@ static int *list_from_formula (const char *formula,
 }
 
 // "Proof of concept" function for supporting more than one
-// estimation method
+//  estimation method
 
 static void regression_wrapper (int ci,
 				const std::string formula,
