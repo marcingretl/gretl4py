@@ -25,23 +25,21 @@ void about () {
     std::cout << "module ver: " << GRETL_MODULE_VERSION << std::endl;
 }
 
-// data management
-// two overloaded
+// interface for loading pure Numpy arrays
+
 void load_data (const pybind11::array_t<double> &pynum_array)
 {
-    //
-    // interface for loading pure Numpy arrays (overloaded)
-    //
     gretl_matrix *m = gretl_null_matrix_new();
+
     numpy_array_to_gretl_storage(pynum_array, m);
     gretl_matrix_print(m, "m (libgretl)");
     gretl_matrix_free(m);
 }
+
+// interface for loading data from dictionary
+
 void load_data (const pybind11::dict &pydict)
 {
-    //
-    // interface for loading rich data from dictionary (overloaded)
-    //
     if (DSET != NULL) {
         destroy_dataset(DSET);
     }
@@ -51,7 +49,7 @@ void load_data (const pybind11::dict &pydict)
 
 static void do_printdata (DATASET *dset, const std::string *varnames,
                           const std::string *ostr, gretlopt opt,
-                          bool varames_only = false)
+                          bool varnames_only = false)
 {
     int *varlist = NULL;
     int err;
@@ -60,7 +58,7 @@ static void do_printdata (DATASET *dset, const std::string *varnames,
     if (varnames == NULL) {
         varlist = gretl_list_new(dset->v);
         for (int i=1; i<dset->v; i++) {
-            if (varames_only) {
+            if (varnames_only) {
                 std::printf("%d %s\n", i, dset->varname[i]);
             } else {
                 varlist[i] = current_series_index(dset, dset->varname[i]);
@@ -68,7 +66,7 @@ static void do_printdata (DATASET *dset, const std::string *varnames,
         }
     }
 
-    if (!varames_only) {
+    if (!varnames_only) {
         prn = gretl_print_new(GRETL_PRINT_STDOUT, NULL);
         err = printdata(varlist, NULL, dset, opt, prn);
         gretl_print_destroy(prn);
@@ -77,6 +75,7 @@ static void do_printdata (DATASET *dset, const std::string *varnames,
         }
     }
 }
+
 void printdata (const pybind11::dict &data, bool varames_only)
 {
     DATASET *dset = datainfo_new();
@@ -85,6 +84,7 @@ void printdata (const pybind11::dict &data, bool varames_only)
 
     do_printdata(dset, NULL, NULL, OPT_O, varames_only);
 }
+
 void printdata (bool varames_only)
 {
     if (DSET == NULL) {
@@ -94,15 +94,22 @@ void printdata (bool varames_only)
     do_printdata(DSET, NULL, NULL, OPT_O, varames_only);
 }
 
-// estimators (libgretl binding + interfaces)
-// ARMA
+pybind11::dict *get_gretl_data (const std::string fname)
+{
+    pybind11::dict *res = new pybind11::dict;
+    char tmp[2048];
+
+    strcpy(tmp, fname.c_str());
+    gretl_dset_to_numpy_dict(tmp, *res);
+    return res;
+}
+
+// arma estimation with two overloaded interfaces beneath
+
 static void do_arma (DATASET *dset, const std::string y,
                      int p, int d, int q,
                      bool print, pybind11::dict &res)
 {
-    //
-    // arma estimation with two overloaded interfaces beneath
-    //
     MODEL *model;
     PRN *prn = NULL;
     int *parmlist;
@@ -141,13 +148,13 @@ static void do_arma (DATASET *dset, const std::string y,
     free(parmlist);
     gretl_print_destroy(prn);
 }
+
+// interface for arma estimation on specified data
+
 pybind11::dict *arma (const pybind11::dict &data,
                       const std::string y,
                       int p, int d, int q, bool print)
 {
-    //
-    // interface for arma estimation on bundled data (overloaded)
-    //
     pybind11::dict *res = new pybind11::dict;
     DATASET *dset = datainfo_new();
 
@@ -158,12 +165,12 @@ pybind11::dict *arma (const pybind11::dict &data,
 
     return res;
 }
+
+// interface for arma estimation on global dataset
+
 pybind11::dict *arma (const std::string y,
                       int p, int d, int q, bool print)
 {
-    //
-    // interface for arma estimation on global dataset (overloaded)
-    //
     pybind11::dict *res = new pybind11::dict;
 
     if (DSET == NULL) {
@@ -174,71 +181,116 @@ pybind11::dict *arma (const std::string y,
     return res;
 }
 
-// least squares
-static void do_lsq (DATASET *dset, const std::string y,
-                    const std::string x1, const std::string x2,
-                    bool print, pybind11::dict &res)
+// convert from a simple R-style formula to a gretl list
+
+static int *list_from_formula (const char *formula,
+			       DATASET *dset)
 {
-    MODEL *model;
+    char *tmp = gretl_strdup(formula);
+    int *list;
+    int err = 0;
+
+    gretl_charsub(tmp, '~', ' ');
+    gretl_charsub(tmp, '+', ' ');
+    list = generate_list(tmp, dset, 0, &err);
+    free(tmp);
+
+    return list;
+}
+
+// "Proof of concept" function for supporting more than one
+//  estimation method
+
+static void regression_wrapper (int ci,
+				const std::string formula,
+				bool print,
+				DATASET *dset,
+				pybind11::dict &res)
+{
+    MODEL *model = NULL;
     PRN *prn = NULL;
-    int *parmlist;
-    int err;
+    int *list = NULL;
+    int err = 0;
 
+    list = list_from_formula(formula.c_str(), dset);
     model = gretl_model_new();
-    parmlist = gretl_list_new(4);
     if (print) {
-        prn = gretl_print_new(GRETL_PRINT_STDOUT, NULL);
+	prn = gretl_print_new(GRETL_PRINT_STDOUT, NULL);
     }
 
-    parmlist[1] = current_series_index(dset, y.c_str());
-    parmlist[2] = 0;
-    parmlist[3] = current_series_index(dset, x1.c_str());
-    parmlist[4] = current_series_index(dset, x2.c_str());
-
-    *model = lsq(parmlist, dset, OLS, OPT_NONE);
-    err = model->errcode;
-
-    if (err) {
-        errmsg(err, prn);
+    if (ci == OLS) {
+	*model = lsq(list, dset, OLS, OPT_NONE);
+    } else if (ci == LOGIT) {
+	*model = binary_logit(list, dset, OPT_NONE, prn);
     } else {
-        gretl_model_to_dict(model, dset, res);
-        if (print) {
-            printmodel(model, dset, OPT_NONE, prn);
-        }
+	throw std::runtime_error("Unsupported estimator");
     }
 
-    gretl_model_free(model);
-    free(parmlist);
+    err = model->errcode;
+    if (err) {
+	errmsg(err, prn);
+    } else {
+	gretl_model_to_dict(model, dset, res);
+	if (print) {
+	    printmodel(model, dset, OPT_NONE, prn);
+	}
+    }
+
+    free(list);
     gretl_print_destroy(prn);
 }
-pybind11::dict *ols (const pybind11::dict &data, const std::string y,
-                     const std::string x1, const std::string x2, bool print)
+
+// intermediate wrappers to handle specified versus global data
+
+static pybind11::dict *
+regress_with_specified_data (int ci,
+			     const std::string formula,
+			     const pybind11::dict &data,
+			     bool print)
 {
-    //
-    // ols interface to lsq estimation on bundled data (overloaded)
-    //
     pybind11::dict *res = new pybind11::dict;
     DATASET *dset = datainfo_new();
 
     numpy_dict_to_gretl_dset(data, dset);
-    do_lsq(dset, y, x1, x2, print, *res);
-
+    regression_wrapper(ci, formula, print, dset, *res);
     destroy_dataset(dset);
 
     return res;
 }
-pybind11::dict *ols (const std::string y, const std::string x1,
-                     const std::string x2, bool print)
+
+pybind11::dict *
+regress_with_global_data (int ci,
+			  const std::string formula,
+			  bool print)
 {
-    //
-    // ols interface to lsq estimation on global dataset (overloaded)
-    //
     pybind11::dict *res = new pybind11::dict;
 
     if (DSET == NULL) {
-        throw std::runtime_error("No dataset in place");
+	throw std::runtime_error("No dataset in place");
+    } else {
+	regression_wrapper(ci, formula, print, DSET, *res);
     }
-    do_lsq(DSET, y, x1, x2, print, *res);
 
     return res;
+}
+
+// thin wrappers for specific estimators
+
+pybind11::dict *ols (const std::string formula,
+		     const pybind11::dict &data,
+		     bool print)
+{
+    return regress_with_specified_data(OLS, formula, data, print);
+}
+
+pybind11::dict *ols (const std::string formula, bool print)
+{
+    return regress_with_global_data(OLS, formula, print);
+}
+
+pybind11::dict *logit (const std::string formula,
+		       const pybind11::dict &data,
+		       bool print)
+{
+    return regress_with_specified_data(LOGIT, formula, data, print);
 }

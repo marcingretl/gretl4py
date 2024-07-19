@@ -113,6 +113,7 @@ static void copy_strings_from_python_list (const pybind11::list &pylist,
         stdBUF.copy(dest[i++], n_bytes, src_offset);
     }
 }
+
 static void copy_strings_from_python_list (const pybind11::list &pylist,
                                            std::string *strBUF, bool trim = false)
 {
@@ -183,6 +184,7 @@ void numpy_array_to_gretl_storage (const pybind11::array_t<double> &pynum_array,
         }
     }
 }
+
 static void numpy_array_to_gretl_storage (const pybind11::dict &pydict,
                                           DATASET *dset)
 {
@@ -270,4 +272,55 @@ void numpy_dict_to_gretl_dset (const pybind11::dict &pydict,
     dset->sd0 = 1975.100000;
     dset->structure = 1;
     dset->auxiliary = 0; */
+}
+
+void gretl_dset_to_numpy_dict (char *fname, pybind11::dict &pydict)
+{
+    pybind11::list *vnames = new pybind11::list;
+    pybind11::list *labels = new pybind11::list;
+    DATASET *dset;
+    double *tmp;
+    int i, j, k;
+    int err = 0;
+
+    dset = datainfo_new();
+    err = gretl_get_data(fname, dset, OPT_NONE, NULL);
+    // FIXME if (err) ...
+
+    // copy across the data values
+    pybind11::array_t<double> Z({dset->n, dset->v});
+    tmp = (double *) Z.request().ptr;
+    for (i=0, k=0; i<dset->n; i++) {
+	for (j=0; j<dset->v; j++) {
+	    *(tmp+k) = dset->Z[j][i];
+	    k++;
+	}
+    }
+    pydict[pybind11::cast("data_array")] = Z;
+
+    // copy across the series names */
+    for (i=0; i<dset->v; i++) {
+	vnames->append(dset->varname[i]);
+    }
+    pydict[pybind11::cast("varname")] = vnames;
+
+    // copy or manufacture obs labels
+    if (dset->S != NULL) {
+	for (i=0; i<dset->n; i++) {
+	    labels->append(dset->S[i]);
+	}
+    } else {
+	char s[64];
+
+	for (i=0; i<dset->n; i++) {
+	    sprintf(s, "%d", i+1);
+	    labels->append(s);
+	}
+    }
+    pydict[pybind11::cast("obs_labels")] = labels;
+
+    // copy dataset periodicity
+    pydict[pybind11::cast("periodicity")] = dset->pd;
+
+    destroy_dataset(dset);
 }

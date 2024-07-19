@@ -4,6 +4,8 @@ void gretl_model_to_dict (MODEL *model, DATASET *dset, pybind11::dict &DICT);
 
 void numpy_dict_to_gretl_dset (const pybind11::dict &DICT, DATASET *dset);
 
+void gretl_dset_to_numpy_dict (char *fname, pybind11::dict &pydict);
+
 // Note: only one is external
 void numpy_array_to_gretl_storage (const pybind11::array_t<double> &pynum_array,
                                    gretl_matrix *m);
