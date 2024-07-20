@@ -285,11 +285,15 @@ void gretl_dset_to_numpy_dict (char *fname, pybind11::dict &pydict)
 
     dset = datainfo_new();
     err = gretl_get_data(fname, dset, OPT_NONE, NULL);
-    // FIXME if (err) ...
+    if (err) {
+        delete vnames;
+        delete labels;
+        destroy_dataset(dset);
+        throw std::runtime_error("Reading data from gdt file failed.");
+    }
 
     // copy across the data values
-    // maybe FIXME: we would force f_style fortran (column-major) use std::memcpy (<double, pybind11::array::f_style>)
-    pybind11::array_t<double> Z({dset->n, dset->v});
+    pybind11::array_t<double, pybind11::array::f_style> Z({dset->n, dset->v});
     tmp = (double *) Z.request().ptr;
     for (i=0, k=0; i<dset->n; i++) {
         for (j=0; j<dset->v; j++) {
