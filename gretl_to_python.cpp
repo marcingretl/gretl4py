@@ -58,8 +58,13 @@ PYBIND11_MODULE(gretl, m) {
 	  pybind11::arg("print") = false,
           pybind11::return_value_policy::take_ownership);
 
-    // Logit estimation
+    // Logit and probit estimation
     m.def("logit", &logit,
+          pybind11::arg("formula").none(false),
+	  pybind11::arg("data").none(false),
+	  pybind11::arg("print") = false,
+          pybind11::return_value_policy::take_ownership);
+    m.def("probit", &probit,
           pybind11::arg("formula").none(false),
 	  pybind11::arg("data").none(false),
 	  pybind11::arg("print") = false,

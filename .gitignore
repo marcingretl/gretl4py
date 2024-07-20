@@ -2,3 +2,4 @@
 *.o
 TAGS
 demo/__pycache__
+demo/memcheck
