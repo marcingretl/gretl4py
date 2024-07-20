@@ -288,7 +288,7 @@ void gretl_dset_to_numpy_dict (char *fname, pybind11::dict &pydict)
     // FIXME if (err) ...
 
     // copy across the data values
-    // maybe FIXME: we would force f_style fortran (column-major) use std::memcpy (, pybind11::array::f_style)
+    // maybe FIXME: we would force f_style fortran (column-major) use std::memcpy (<double, pybind11::array::f_style>)
     pybind11::array_t<double> Z({dset->n, dset->v});
     tmp = (double *) Z.request().ptr;
     for (i=0, k=0; i<dset->n; i++) {
@@ -303,7 +303,8 @@ void gretl_dset_to_numpy_dict (char *fname, pybind11::dict &pydict)
     for (i=0; i<dset->v; i++) {
         vnames->append(dset->varname[i]);
     }
-    pydict[pybind11::cast("varname")] = vnames; // we have memory leak here (no 'delete vnames')
+    pydict[pybind11::cast("varname")] = *vnames;
+    delete vnames;
 
     // copy or manufacture obs labels
     if (dset->S != NULL) {
@@ -318,7 +319,8 @@ void gretl_dset_to_numpy_dict (char *fname, pybind11::dict &pydict)
 	    labels->append(s);
 	}
     }
-    pydict[pybind11::cast("obs_labels")] = labels; // we have memory leak here (no 'delete labels')
+    pydict[pybind11::cast("obs_labels")] = *labels;
+    delete labels;
 
     // copy dataset periodicity
     pydict[pybind11::cast("periodicity")] = dset->pd;
