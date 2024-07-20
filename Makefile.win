@@ -1,0 +1,37 @@
+ifndef CXX
+CXX = g++
+endif
+CXXFLAGS = -march=native -mtune=native -O3 -pipe -g -Wall -fms-extensions -fdelayed-template-parsing #-fms-compatibility -Weverything -std=c++17
+MAKE = gmake
+GRETLLD = $(shell pkg-config --libs gretl)
+GRETLIN = $(shell pkg-config --cflags gretl)
+PYBIND = $(shell python -m pybind11 --includes)
+PYTHONLD = $(shell python-config --embed --ldflags)
+PYTHONIN = $(shell python-config --cflags)
+
+MODULE_PREFIX = gretl
+MODULE_SUFIX = $(shell python-config --extension-suffix)
+MODULE_NAME = $(MODULE_PREFIX)$(MODULE_SUFIX)
+
+.PHONY: clean
+
+$(MODULE_NAME): gretl_to_python.o gretl_calls.o gretl_python_data.o
+	$(CXX) $(CXXFLAGS) $^ -shared -o $(MODULE_NAME) -fPIC $(PYBIND) $(GRETLLD) $(PYTHONLD)
+
+gretl_python_data.o: gretl_python_data.cpp
+	$(CXX) $(CXXFLAGS) -c $< -o $@ -fPIC $(PYBIND) $(GRETLIN) $(PYTHONIN)
+
+gretl_calls.o: gretl_calls.cpp
+	$(CXX) $(CXXFLAGS) -c $< -o $@ -fPIC $(PYBIND) $(GRETLIN) $(PYTHONIN)
+
+gretl_to_python.o: gretl_to_python.cpp
+	$(CXX) $(CXXFLAGS) -c $< -o $@ -fPIC $(PYBIND) $(GRETLIN) $(PYTHONIN)
+
+demoscript: $(MODULE_NAME) demo/demo.py
+	cd demo ; python3 demo.py
+
+tags:
+	etags *.cpp *.h
+
+clean:
+	@rm -f $(MODULE_NAME) *.o
