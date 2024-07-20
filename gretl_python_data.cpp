@@ -313,11 +313,8 @@ void gretl_dset_to_numpy_dict (char *fname, pybind11::dict &pydict)
 	    labels->append(dset->S[i]);
 	}
     } else {
-	char s[32];
-
 	for (i=0; i<dset->n; i++) {
-	    sprintf(s, "%d", i+1);
-	    labels->append(s);
+	    labels->append(std::to_string(i+1));
 	}
     }
     pydict[pybind11::cast("obs_labels")] = *labels;
