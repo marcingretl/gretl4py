@@ -280,8 +280,7 @@ void gretl_dset_to_numpy_dict (char *fname, pybind11::dict &pydict)
     pybind11::list *labels = new pybind11::list;
     DATASET *dset;
     double *tmp;
-    int i, j, k;
-    int err = 0;
+    int i, err = 0;
 
     dset = datainfo_new();
     err = gretl_get_data(fname, dset, OPT_NONE, NULL);
@@ -293,15 +292,11 @@ void gretl_dset_to_numpy_dict (char *fname, pybind11::dict &pydict)
     }
 
     // copy across the data values
-    // the following line breaks gdt reading
-    // pybind11::array_t<double, pybind11::array::f_style> Z({dset->n, dset->v});
-    pybind11::array_t<double> Z({dset->n, dset->v});
+    pybind11::array_t<double, pybind11::array::f_style> Z({dset->n, dset->v});
     tmp = (double *) Z.request().ptr;
-    for (i=0, k=0; i<dset->n; i++) {
-        for (j=0; j<dset->v; j++) {
-            *(tmp+k) = dset->Z[j][i];
-            k++;
-        }
+    for (i=0; i<dset->v; i++) {
+	memcpy(tmp, dset->Z[i], dset->n * sizeof *tmp);
+	tmp += dset->n;
     }
     pydict[pybind11::cast("data_array")] = Z;
 
