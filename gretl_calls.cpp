@@ -1,5 +1,6 @@
 #include "gretl_calls.h" /* MUST be at the first position!!! */
 #include "gretl_python_data.h"
+#include <gretl/gretl_drivers.h>
 #include <iostream>
 
 #define GRETL_PYBIND11_DEBUG 0
@@ -221,8 +222,8 @@ static void regression_wrapper (int ci,
 
     if (ci == OLS) {
 	*model = lsq(list, dset, OLS, OPT_NONE);
-    } else if (ci == LOGIT) {
-	*model = binary_logit(list, dset, OPT_NONE, prn);
+    } else if (ci == LOGIT || ci == PROBIT) {
+	*model = logit_probit(list, dset, ci, OPT_NONE, prn);
     } else {
 	throw std::runtime_error("Unsupported estimator");
     }
@@ -295,4 +296,11 @@ pybind11::dict *logit (const std::string formula,
 		       bool print)
 {
     return regress_with_specified_data(LOGIT, formula, data, print);
+}
+
+pybind11::dict *probit (const std::string formula,
+			const pybind11::dict &data,
+			bool print)
+{
+    return regress_with_specified_data(PROBIT, formula, data, print);
 }

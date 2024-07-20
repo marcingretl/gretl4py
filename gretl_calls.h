@@ -36,3 +36,7 @@ pybind11::dict *ols (const std::string formula,
 pybind11::dict *logit (const std::string formula,
 		       const pybind11::dict &data,
 		       bool print);
+
+pybind11::dict *probit (const std::string formula,
+			const pybind11::dict &data,
+			bool print);
