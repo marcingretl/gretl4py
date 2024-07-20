@@ -293,7 +293,8 @@ void gretl_dset_to_numpy_dict (char *fname, pybind11::dict &pydict)
     }
 
     // copy across the data values
-    pybind11::array_t<double, pybind11::array::f_style> Z({dset->n, dset->v});
+    //pybind11::array_t<double, pybind11::array::f_style> Z({dset->n, dset->v});
+    pybind11::array_t<double> Z({dset->n, dset->v});
     tmp = (double *) Z.request().ptr;
     for (i=0, k=0; i<dset->n; i++) {
         for (j=0; j<dset->v; j++) {
