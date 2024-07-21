@@ -295,7 +295,7 @@ void gretl_dset_to_numpy_dict (char *fname, pybind11::dict &pydict)
     pybind11::array_t<double, pybind11::array::f_style> Z({dset->n, dset->v});
     tmp = (double *) Z.request().ptr;
     for (i=0; i<dset->v; i++) {
-        memcpy(tmp, dset->Z[i], dset->n * sizeof *tmp);
+        std::memcpy(tmp, dset->Z[i], dset->n * sizeof *tmp);
         tmp += dset->n;
     }
     pydict[pybind11::cast("data_array")] = Z;
