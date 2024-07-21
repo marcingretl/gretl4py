@@ -1,5 +1,8 @@
 *.so
 *.o
+*~
 TAGS
 demo/__pycache__
 demo/memcheck
+automation/model_funcs
+automation/query.out
