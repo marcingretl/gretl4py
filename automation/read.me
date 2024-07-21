@@ -1,0 +1,12 @@
+In this subdirectory there's the beginnings of an automated system to
+write code for inclusion in gretl_to_python.cpp, gretl_calls.cpp and
+gretl_calls.h, via a C program that reads the libgretl headers.
+
+At present the apparatus is only concerned with libgretl functions
+that return a MODEL struct -- and it handles only those with a
+certain "basic" signature.
+
+Running model_funcs_query.sh exercises the apparatus. The output shows
+a regimented version of the model-function signatures that were found,
+and in the "basic" cases also shows content intended for inclusion in
+the C++ files.
