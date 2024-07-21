@@ -20,9 +20,9 @@ PYBIND11_MODULE(gretl, m) {
     m.def("load_data", pybind11::overload_cast<const pybind11::dict &> (&load_data));
     m.def("printdata", pybind11::overload_cast<const pybind11::dict &, bool> (&printdata),
           pybind11::arg("data").none(false),
-          pybind11::arg("varnames_only") = false);
+          pybind11::arg("varamesonly") = false);
     m.def("printdata", pybind11::overload_cast<bool> (&printdata),
-          pybind11::arg("varnames_only") = false);
+          pybind11::arg("varamesonly") = false);
     m.def("get_gretl_data", &get_gretl_data, pybind11::arg("fname").none(false));
 
     // ARMA estimation

@@ -77,13 +77,13 @@ static void do_printdata (DATASET *dset, const std::string *varnames,
     }
 }
 
-void printdata (const pybind11::dict &data, bool varnames_only)
+void printdata (const pybind11::dict &data, bool varamesonly)
 {
     DATASET *dset = datainfo_new();
 
     numpy_dict_to_gretl_dset(data, dset);
 
-    do_printdata(dset, NULL, NULL, OPT_O, varnames_only);
+    do_printdata(dset, NULL, NULL, OPT_O, varamesonly);
     destroy_dataset(dset);
 }
 
