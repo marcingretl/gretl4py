@@ -24,7 +24,7 @@ void gretl_model_to_dict (MODEL *model, DATASET *dset, pybind11::dict &pydict)
 
     // dictionaries
     for (int i=0; i<model->ncoeff; i++) {
-	gretl_model_get_param_name(model, dset, i, pname);
+        gretl_model_get_param_name(model, dset, i, pname);
         coeff[pybind11::cast(pname)] = model->coeff[i];
         sderr[pybind11::cast(pname)] = model->sderr[i];
         pvalue[pybind11::cast(pname)] = normal_pvalue_2(std::abs(model->coeff[i]/model->sderr[i]));
@@ -295,8 +295,8 @@ void gretl_dset_to_numpy_dict (char *fname, pybind11::dict &pydict)
     pybind11::array_t<double, pybind11::array::f_style> Z({dset->n, dset->v});
     tmp = (double *) Z.request().ptr;
     for (i=0; i<dset->v; i++) {
-	memcpy(tmp, dset->Z[i], dset->n * sizeof *tmp);
-	tmp += dset->n;
+        memcpy(tmp, dset->Z[i], dset->n * sizeof *tmp);
+        tmp += dset->n;
     }
     pydict[pybind11::cast("data_array")] = Z;
 
@@ -309,13 +309,13 @@ void gretl_dset_to_numpy_dict (char *fname, pybind11::dict &pydict)
 
     // copy or manufacture obs labels
     if (dset->S != NULL) {
-	for (i=0; i<dset->n; i++) {
-	    labels->append(dset->S[i]);
-	}
+        for (i=0; i<dset->n; i++) {
+            labels->append(dset->S[i]);
+        }
     } else {
-	for (i=0; i<dset->n; i++) {
-	    labels->append(std::to_string(i+1));
-	}
+        for (i=0; i<dset->n; i++) {
+            labels->append(std::to_string(i+1));
+        }
     }
     pydict[pybind11::cast("obs_labels")] = *labels;
     delete labels;
