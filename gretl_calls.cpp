@@ -30,7 +30,7 @@ void about () {
 
 // interface for loading pure Numpy arrays
 
-void load_data (const pybind11::array_t<double> &pynum_array)
+void load_data (const py::array_t<double> &pynum_array)
 {
     gretl_matrix *m = gretl_null_matrix_new();
 
@@ -41,7 +41,7 @@ void load_data (const pybind11::array_t<double> &pynum_array)
 
 // interface for loading data from dictionary
 
-void load_data (const pybind11::dict &pydict)
+void load_data (const py::dict &pydict)
 {
     if (DSET != NULL) {
         destroy_dataset(DSET);
@@ -79,7 +79,7 @@ static void do_printdata (DATASET *dset, const std::string *varnames,
     }
 }
 
-void printdata (const pybind11::dict &data, bool varamesonly)
+void printdata (const py::dict &data, bool varamesonly)
 {
     DATASET *dset = datainfo_new();
 
@@ -98,9 +98,9 @@ void printdata (bool varnames_only)
     do_printdata(DSET, NULL, NULL, OPT_O, varnames_only);
 }
 
-pybind11::dict *get_gretl_data (const std::string fname)
+py::dict *get_gretl_data (const std::string fname)
 {
-    pybind11::dict *res = new pybind11::dict;
+    py::dict *res = new py::dict;
     char tmp[2048];
 
     strcpy(tmp, fname.c_str());
@@ -112,7 +112,7 @@ pybind11::dict *get_gretl_data (const std::string fname)
 
 static void do_arma (DATASET *dset, const std::string y,
                      int p, int d, int q,
-                     bool print, pybind11::dict &res)
+                     bool print, py::dict &res)
 {
     MODEL *model;
     PRN *prn = NULL;
@@ -155,11 +155,11 @@ static void do_arma (DATASET *dset, const std::string y,
 
 // interface for arma estimation on specified data
 
-pybind11::dict *arma (const pybind11::dict &data,
-                      const std::string y,
-                      int p, int d, int q, bool print)
+py::dict *arma (const py::dict &data,
+                const std::string y,
+                int p, int d, int q, bool print)
 {
-    pybind11::dict *res = new pybind11::dict;
+    py::dict *res = new py::dict;
     DATASET *dset = datainfo_new();
 
     numpy_dict_to_gretl_dset(data, dset);
@@ -172,10 +172,10 @@ pybind11::dict *arma (const pybind11::dict &data,
 
 // interface for arma estimation on global dataset
 
-pybind11::dict *arma (const std::string y,
-                      int p, int d, int q, bool print)
+py::dict *arma (const std::string y,
+                int p, int d, int q, bool print)
 {
-    pybind11::dict *res = new pybind11::dict;
+    py::dict *res = new py::dict;
 
     if (DSET == NULL) {
         throw std::runtime_error("No dataset in place");
@@ -207,7 +207,7 @@ static int *list_from_formula (const char *formula,
 
 static void regression_wrapper (int ci, const std::string formula,
                                 bool print, DATASET *dset,
-                                pybind11::dict &res)
+                                py::dict &res)
 {
     MODEL *model = NULL;
     PRN *prn = NULL;
@@ -245,11 +245,11 @@ static void regression_wrapper (int ci, const std::string formula,
 
 // intermediate wrappers to handle specified versus global data
 
-static pybind11::dict
+static py::dict
 *regress_with_specified_data (int ci, const std::string formula,
-                             const pybind11::dict &data, bool print)
+                              const py::dict &data, bool print)
 {
-    pybind11::dict *res = new pybind11::dict;
+    py::dict *res = new py::dict;
     DATASET *dset = datainfo_new();
 
     numpy_dict_to_gretl_dset(data, dset);
@@ -259,11 +259,11 @@ static pybind11::dict
     return res;
 }
 
-pybind11::dict *regress_with_global_data (int ci,
-                                          const std::string formula,
-                                          bool print)
+py::dict *regress_with_global_data (int ci,
+                                    const std::string formula,
+                                    bool print)
 {
-    pybind11::dict *res = new pybind11::dict;
+    py::dict *res = new py::dict;
 
     if (DSET == NULL) {
         throw std::runtime_error("No dataset in place");
@@ -276,25 +276,25 @@ pybind11::dict *regress_with_global_data (int ci,
 
 // thin wrappers for specific estimators
 
-pybind11::dict *ols (const std::string formula,
-                     const pybind11::dict &data, bool print)
+py::dict *ols (const std::string formula,
+               const py::dict &data, bool print)
 {
     return regress_with_specified_data(OLS, formula, data, print);
 }
 
-pybind11::dict *ols (const std::string formula, bool print)
+py::dict *ols (const std::string formula, bool print)
 {
     return regress_with_global_data(OLS, formula, print);
 }
 
-pybind11::dict *logit (const std::string formula,
-                       const pybind11::dict &data, bool print)
+py::dict *logit (const std::string formula,
+                 const py::dict &data, bool print)
 {
     return regress_with_specified_data(LOGIT, formula, data, print);
 }
 
-pybind11::dict *probit (const std::string formula,
-                        const pybind11::dict &data, bool print)
+py::dict *probit (const std::string formula,
+                  const py::dict &data, bool print)
 {
     return regress_with_specified_data(PROBIT, formula, data, print);
 }

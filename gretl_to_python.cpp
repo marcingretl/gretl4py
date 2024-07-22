@@ -16,70 +16,70 @@ PYBIND11_MODULE(gretl, m) {
     m.def("about", &about);
 
     // data management
-    m.def("load_data", pybind11::overload_cast<const pybind11::array_t<double> &> (&load_data));
-    m.def("load_data", pybind11::overload_cast<const pybind11::dict &> (&load_data));
-    m.def("printdata", pybind11::overload_cast<const pybind11::dict &, bool> (&printdata),
-          pybind11::arg("data").none(false),
-          pybind11::arg("varamesonly") = false);
-    m.def("printdata", pybind11::overload_cast<bool> (&printdata),
-          pybind11::arg("varamesonly") = false);
-    m.def("get_gretl_data", &get_gretl_data, pybind11::arg("fname").none(false));
+    m.def("load_data", py::overload_cast<const py::array_t<double> &> (&load_data));
+    m.def("load_data", py::overload_cast<const py::dict &> (&load_data));
+    m.def("printdata", py::overload_cast<const py::dict &, bool> (&printdata),
+          py::arg("data").none(false),
+          py::arg("varamesonly") = false);
+    m.def("printdata", py::overload_cast<bool> (&printdata),
+          py::arg("varamesonly") = false);
+    m.def("get_gretl_data", &get_gretl_data, py::arg("fname").none(false));
 
     // ARMA estimation
     m.def("arma",
-	  pybind11::overload_cast<const pybind11::dict &, const std::string,
+	  py::overload_cast<const py::dict &, const std::string,
           int, int, int, bool> (&arma),
-          pybind11::arg("data").none(false),
-          pybind11::arg("y").none(false),
-          pybind11::arg("p") = 1,
-          pybind11::arg("d") = 0,
-          pybind11::arg("q") = 0,
-          pybind11::arg("print") = false,
-          pybind11::return_value_policy::take_ownership);
+          py::arg("data").none(false),
+          py::arg("y").none(false),
+          py::arg("p") = 1,
+          py::arg("d") = 0,
+          py::arg("q") = 0,
+          py::arg("print") = false,
+          py::return_value_policy::take_ownership);
     m.def("arma",
-	  pybind11::overload_cast<const std::string, int, int, int, bool> (&arma),
-          pybind11::arg("y").none(false),
-          pybind11::arg("p") = 1,
-          pybind11::arg("d") = 0,
-          pybind11::arg("q") = 0,
-          pybind11::arg("print") = false,
-          pybind11::return_value_policy::take_ownership);
+	  py::overload_cast<const std::string, int, int, int, bool> (&arma),
+          py::arg("y").none(false),
+          py::arg("p") = 1,
+          py::arg("d") = 0,
+          py::arg("q") = 0,
+          py::arg("print") = false,
+          py::return_value_policy::take_ownership);
 
     // OLS estimation
     m.def("ols",
-          pybind11::overload_cast<const std::string, const pybind11::dict &, bool> (&ols),
-          pybind11::arg("formula").none(false),
-          pybind11::arg("data").none(false),
-          pybind11::arg("print") = false,
-          pybind11::return_value_policy::take_ownership);
+          py::overload_cast<const std::string, const py::dict &, bool> (&ols),
+          py::arg("formula").none(false),
+          py::arg("data").none(false),
+          py::arg("print") = false,
+          py::return_value_policy::take_ownership);
     m.def("ols",
-          pybind11::overload_cast<const std::string, bool> (&ols),
-          pybind11::arg("formula").none(false),
-          pybind11::arg("print") = false,
-          pybind11::return_value_policy::take_ownership);
+          py::overload_cast<const std::string, bool> (&ols),
+          py::arg("formula").none(false),
+          py::arg("print") = false,
+          py::return_value_policy::take_ownership);
 
     // Logit and probit estimation
     m.def("logit", &logit,
-          pybind11::arg("formula").none(false),
-          pybind11::arg("data").none(false),
-          pybind11::arg("print") = false,
-          pybind11::return_value_policy::take_ownership);
+          py::arg("formula").none(false),
+          py::arg("data").none(false),
+          py::arg("print") = false,
+          py::return_value_policy::take_ownership);
     m.def("probit", &probit,
-          pybind11::arg("formula").none(false),
-          pybind11::arg("data").none(false),
-          pybind11::arg("print") = false,
-          pybind11::return_value_policy::take_ownership);
+          py::arg("formula").none(false),
+          py::arg("data").none(false),
+          py::arg("print") = false,
+          py::return_value_policy::take_ownership);
 
     // libset setting and reporting
     m.def("set",
-          pybind11::overload_cast<const std::string, const std::string> (&set),
-          pybind11::arg("key").none(false),
-          pybind11::arg("val").none(false));
+          py::overload_cast<const std::string, const std::string> (&set),
+          py::arg("key").none(false),
+          py::arg("val").none(false));
     m.def("set",
-          pybind11::overload_cast<const std::string, int> (&set),
-          pybind11::arg("key").none(false),
-          pybind11::arg("val").none(false));
+          py::overload_cast<const std::string, int> (&set),
+          py::arg("key").none(false),
+          py::arg("val").none(false));
     m.def("set",
-          pybind11::overload_cast<const std::string> (&set),
-          pybind11::arg("key").none(false));
+          py::overload_cast<const std::string> (&set),
+          py::arg("key").none(false));
 }

@@ -6,18 +6,20 @@
 #include <iostream>
 #include <string>
 
-#define F_CONTIGUOUS pybind11::detail::npy_api::constants::NPY_ARRAY_F_CONTIGUOUS_
+namespace py = pybind11;
+
+#define F_CONTIGUOUS py::detail::npy_api::constants::NPY_ARRAY_F_CONTIGUOUS_
 #define is_pynum_fortranarray(m) ((m.flags() & F_CONTIGUOUS))
 
 #define GRETL_PYBIND11_DEBUG 0
 
-void gretl_model_to_dict (MODEL *model, DATASET *dset, pybind11::dict &pydict)
+void gretl_model_to_dict (MODEL *model, DATASET *dset, py::dict &pydict)
 {
     //
     // here we construct python's dict which is returned (with estimation results)
     //
-    pybind11::dict coeff, sderr, pvalue, criterion;
-    pybind11::array_t<double, pybind11::array::f_style> vcv({model->ncoeff, model->ncoeff});
+    py::dict coeff, sderr, pvalue, criterion;
+    py::array_t<double, py::array::f_style> vcv({model->ncoeff, model->ncoeff});
     char pname[VNAMELEN];
     int err = 0;
     gretl_matrix *m = NULL;
@@ -25,55 +27,55 @@ void gretl_model_to_dict (MODEL *model, DATASET *dset, pybind11::dict &pydict)
     // dictionaries
     for (int i=0; i<model->ncoeff; i++) {
         gretl_model_get_param_name(model, dset, i, pname);
-        coeff[pybind11::cast(pname)] = model->coeff[i];
-        sderr[pybind11::cast(pname)] = model->sderr[i];
-        pvalue[pybind11::cast(pname)] = normal_pvalue_2(std::abs(model->coeff[i]/model->sderr[i]));
+        coeff[py::cast(pname)] = model->coeff[i];
+        sderr[py::cast(pname)] = model->sderr[i];
+        pvalue[py::cast(pname)] = normal_pvalue_2(std::abs(model->coeff[i]/model->sderr[i]));
     }
-    criterion[pybind11::cast("aic")] = model->criterion[0];
-    criterion[pybind11::cast("bic")] = model->criterion[1];
-    criterion[pybind11::cast("hqc")] = model->criterion[2];
+    criterion[py::cast("aic")] = model->criterion[0];
+    criterion[py::cast("bic")] = model->criterion[1];
+    criterion[py::cast("hqc")] = model->criterion[2];
 
-    pydict[pybind11::cast("coeff")] = coeff;
-    pydict[pybind11::cast("sderr")] = sderr;
-    pydict[pybind11::cast("pvalue")] = pvalue;
-    pydict[pybind11::cast("criterion")] = criterion;
+    pydict[py::cast("coeff")] = coeff;
+    pydict[py::cast("sderr")] = sderr;
+    pydict[py::cast("pvalue")] = pvalue;
+    pydict[py::cast("criterion")] = criterion;
 
     // covariance matrix
     m = gretl_vcv_matrix_from_model(model, NULL, &err);
     if (err) {
-        pydict[pybind11::cast("vcv")] = NULL;
+        pydict[py::cast("vcv")] = NULL;
     } else {
         std::memcpy((double *) vcv.request().ptr, m->val, m->rows * m->cols * sizeof(double));
-        pydict[pybind11::cast("vcv")] = vcv;
+        pydict[py::cast("vcv")] = vcv;
     }
     gretl_matrix_free(m);
 
     // scalars
-    pydict[pybind11::cast("ID")] = model->ID;
-    pydict[pybind11::cast("t1")] = model->t1;
-    pydict[pybind11::cast("t2")] = model->t2;
-    pydict[pybind11::cast("nobs")] = model->nobs;
-    pydict[pybind11::cast("full_n")] = model->full_n;
-    pydict[pybind11::cast("ncoeff")] = model->ncoeff;
-    pydict[pybind11::cast("dfn")] = model->dfn;
-    pydict[pybind11::cast("dfd")] = model->dfd;
-    pydict[pybind11::cast("ess")] = model->ess;
-    pydict[pybind11::cast("tss")] = model->tss;
-    pydict[pybind11::cast("sigma")] = model->sigma;
-    pydict[pybind11::cast("rsq")] = model->rsq;
-    pydict[pybind11::cast("adjrsq")] = model->adjrsq;
-    pydict[pybind11::cast("fstt")] = model->fstt;
-    pydict[pybind11::cast("chisq")] = model->chisq;
-    pydict[pybind11::cast("lnL")] = model->lnL;
-    pydict[pybind11::cast("ybar")] = model->ybar;
-    pydict[pybind11::cast("sdy")] = model->sdy;
-    pydict[pybind11::cast("dw")] = model->dw;
-    pydict[pybind11::cast("rho")] = model->rho;
-    pydict[pybind11::cast("nparams")] = model->nparams;
-    pydict[pybind11::cast("esttime")] = model->esttime;
+    pydict[py::cast("ID")] = model->ID;
+    pydict[py::cast("t1")] = model->t1;
+    pydict[py::cast("t2")] = model->t2;
+    pydict[py::cast("nobs")] = model->nobs;
+    pydict[py::cast("full_n")] = model->full_n;
+    pydict[py::cast("ncoeff")] = model->ncoeff;
+    pydict[py::cast("dfn")] = model->dfn;
+    pydict[py::cast("dfd")] = model->dfd;
+    pydict[py::cast("ess")] = model->ess;
+    pydict[py::cast("tss")] = model->tss;
+    pydict[py::cast("sigma")] = model->sigma;
+    pydict[py::cast("rsq")] = model->rsq;
+    pydict[py::cast("adjrsq")] = model->adjrsq;
+    pydict[py::cast("fstt")] = model->fstt;
+    pydict[py::cast("chisq")] = model->chisq;
+    pydict[py::cast("lnL")] = model->lnL;
+    pydict[py::cast("ybar")] = model->ybar;
+    pydict[py::cast("sdy")] = model->sdy;
+    pydict[py::cast("dw")] = model->dw;
+    pydict[py::cast("rho")] = model->rho;
+    pydict[py::cast("nparams")] = model->nparams;
+    pydict[py::cast("esttime")] = model->esttime;
 }
 
-static void copy_string_from_python_dict (const pybind11::dict &pydict,
+static void copy_string_from_python_dict (const py::dict &pydict,
                                           const char *key, char *dest,
                                           int n_bytes, int offset = 0)
 {
@@ -81,12 +83,12 @@ static void copy_string_from_python_dict (const pybind11::dict &pydict,
     // here we take just one element (under the "key") and copy to dest
     //
     std::string stdBUF;
-    auto element = pydict[pybind11::cast(key)]; //pydict[pybind11::cast(key)] is of pybind11::str type
+    auto element = pydict[py::cast(key)]; //pydict[py::cast(key)] is of py::str type
 
-    if (pybind11::isinstance<pybind11::int_>(element)) {
-        stdBUF = std::to_string(pybind11::cast<int>(element));
+    if (py::isinstance<py::int_>(element)) {
+        stdBUF = std::to_string(py::cast<int>(element));
     } else {
-        stdBUF = pybind11::cast<std::string>(element);
+        stdBUF = py::cast<std::string>(element);
     }
 
     stdBUF.erase(std::remove_if(stdBUF.begin(), stdBUF.end(), ::isspace), stdBUF.end());
@@ -94,7 +96,7 @@ static void copy_string_from_python_dict (const pybind11::dict &pydict,
 }
 
 // two overloaded
-static void copy_strings_from_python_list (const pybind11::list &pylist,
+static void copy_strings_from_python_list (const py::list &pylist,
                                            char **dest, int n_bytes, int src_offset = 0,
                                            int dst_offset = 0, bool trim = false)
 {
@@ -106,7 +108,7 @@ static void copy_strings_from_python_list (const pybind11::list &pylist,
     int i = dst_offset;
 
     for (auto item : pylist) {
-        stdBUF = std::string(pybind11::str(item));
+        stdBUF = std::string(py::str(item));
         if (trim) {
             stdBUF.erase(std::remove_if(stdBUF.begin(), stdBUF.end(), ::isspace), stdBUF.end());
         }
@@ -114,7 +116,7 @@ static void copy_strings_from_python_list (const pybind11::list &pylist,
     }
 }
 
-static void copy_strings_from_python_list (const pybind11::list &pylist,
+static void copy_strings_from_python_list (const py::list &pylist,
                                            std::string *strBUF, bool trim = false)
 {
     //
@@ -125,7 +127,7 @@ static void copy_strings_from_python_list (const pybind11::list &pylist,
     std::string str;
 
     for (auto item : pylist) {
-        str = std::string(pybind11::str(item));
+        str = std::string(py::str(item));
         if (trim) {
             str.erase(std::remove_if(str.begin(), str.end(), ::isspace), str.end());
         }
@@ -133,7 +135,7 @@ static void copy_strings_from_python_list (const pybind11::list &pylist,
     }
 }
 
-static double *numpy_array_extract (const pybind11::array_t<double> &pynum_array,
+static double *numpy_array_extract (const py::array_t<double> &pynum_array,
                                     ssize_t *rows, ssize_t *cols, int *fortranarray)
 {
     //
@@ -153,7 +155,7 @@ static double *numpy_array_extract (const pybind11::array_t<double> &pynum_array
 }
 
 // two overloaded
-void numpy_array_to_gretl_storage (const pybind11::array_t<double> &pynum_array,
+void numpy_array_to_gretl_storage (const py::array_t<double> &pynum_array,
                                    gretl_matrix *m)
 {
     // we copy pynum_array to empty m
@@ -185,7 +187,7 @@ void numpy_array_to_gretl_storage (const pybind11::array_t<double> &pynum_array,
     }
 }
 
-static void numpy_array_to_gretl_storage (const pybind11::dict &pydict,
+static void numpy_array_to_gretl_storage (const py::dict &pydict,
                                           DATASET *dset)
 {
     // we copy "data_array" which lives in pydict to dset->Z
@@ -194,9 +196,9 @@ static void numpy_array_to_gretl_storage (const pybind11::dict &pydict,
     double *data_array = NULL;
 
     // the old code: do not delete for a while
-    //pybind11::array_t<double> pynum_array = pybind11::cast<pybind11::array>(pydict[pybind11::cast("data_array")]);
-    //pybind11::array_t<double> *pynum_array_new = static_cast<pybind11::array_t<double>*> (pybind11::cast<pybind11::array>(pydict[pybind11::cast("data_array")]).mutable_data());
-    data_array = numpy_array_extract(pybind11::cast<pybind11::array>(pydict[pybind11::cast("data_array")]),
+    //py::array_t<double> pynum_array = py::cast<py::array>(pydict[py::cast("data_array")]);
+    //py::array_t<double> *pynum_array_new = static_cast<py::array_t<double>*> (py::cast<py::array>(pydict[py::cast("data_array")]).mutable_data());
+    data_array = numpy_array_extract(py::cast<py::array>(pydict[py::cast("data_array")]),
                                      &rows, &cols, &fortranarray);
     if (data_array == NULL) {
         throw std::runtime_error("Numpy array: null pointer.");
@@ -220,13 +222,13 @@ static void numpy_array_to_gretl_storage (const pybind11::dict &pydict,
     dset->t2 = dset->n-1;
 }
 
-void numpy_dict_to_gretl_dset (const pybind11::dict &pydict,
+void numpy_dict_to_gretl_dset (const py::dict &pydict,
                                DATASET *dset)
 {
     //
     // we fill dset with pydict content
     //
-    pybind11::list pylist;
+    py::list pylist;
     std::string *strBUF; // maybe we should use vector of strings here?
     char periodicity[16];
 
@@ -242,14 +244,14 @@ void numpy_dict_to_gretl_dset (const pybind11::dict &pydict,
     }
 
     // we fill up dset->S
-    pylist = pydict[pybind11::cast("obs_labels")];
+    pylist = pydict[py::cast("obs_labels")];
     if (pylist.size() != (long unsigned int) dset->n) {
         throw std::runtime_error("Number of obs_labels is different than number of observations.");
     }
     copy_strings_from_python_list(pylist, dset->S, OBSLEN-1, 0, 0, true);
 
     // we fill up dset->varname
-    pylist = pydict[pybind11::cast("varname")];
+    pylist = pydict[py::cast("varname")];
     if (pylist.size() != (long unsigned int) dset->v-1) {
         throw std::runtime_error("Number of varnames is different than number of variables.");
     }
@@ -274,10 +276,10 @@ void numpy_dict_to_gretl_dset (const pybind11::dict &pydict,
     dset->auxiliary = 0; */
 }
 
-void gretl_dset_to_numpy_dict (char *fname, pybind11::dict &pydict)
+void gretl_dset_to_numpy_dict (char *fname, py::dict &pydict)
 {
-    pybind11::list *vnames = new pybind11::list;
-    pybind11::list *labels = new pybind11::list;
+    py::list *vnames = new py::list;
+    py::list *labels = new py::list;
     DATASET *dset;
     double *tmp;
     int i, err = 0;
@@ -292,19 +294,19 @@ void gretl_dset_to_numpy_dict (char *fname, pybind11::dict &pydict)
     }
 
     // copy across the data values
-    pybind11::array_t<double, pybind11::array::f_style> Z({dset->n, dset->v});
+    py::array_t<double, py::array::f_style> Z({dset->n, dset->v});
     tmp = (double *) Z.request().ptr;
     for (i=0; i<dset->v; i++) {
         std::memcpy(tmp, dset->Z[i], dset->n * sizeof *tmp);
         tmp += dset->n;
     }
-    pydict[pybind11::cast("data_array")] = Z;
+    pydict[py::cast("data_array")] = Z;
 
     // copy across the series names */
     for (i=0; i<dset->v; i++) {
         vnames->append(dset->varname[i]);
     }
-    pydict[pybind11::cast("varname")] = *vnames;
+    pydict[py::cast("varname")] = *vnames;
     delete vnames;
 
     // copy or manufacture obs labels
@@ -317,11 +319,11 @@ void gretl_dset_to_numpy_dict (char *fname, pybind11::dict &pydict)
             labels->append(std::to_string(i+1));
         }
     }
-    pydict[pybind11::cast("obs_labels")] = *labels;
+    pydict[py::cast("obs_labels")] = *labels;
     delete labels;
 
     // copy dataset periodicity
-    pydict[pybind11::cast("periodicity")] = dset->pd;
+    pydict[py::cast("periodicity")] = dset->pd;
 
     destroy_dataset(dset);
 }
