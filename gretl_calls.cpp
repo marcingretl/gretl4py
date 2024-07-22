@@ -186,7 +186,7 @@ pybind11::dict *arma (const std::string y,
 // convert from a simple R-style formula to a gretl list
 
 static int *list_from_formula (const char *formula,
-			       DATASET *dset)
+                               DATASET *dset)
 {
     char *tmp = gretl_strdup(formula);
     int *list;
@@ -203,11 +203,9 @@ static int *list_from_formula (const char *formula,
 // "Proof of concept" function for supporting more than one
 //  estimation method
 
-static void regression_wrapper (int ci,
-				const std::string formula,
-				bool print,
-				DATASET *dset,
-				pybind11::dict &res)
+static void regression_wrapper (int ci, const std::string formula,
+                                bool print, DATASET *dset,
+                                pybind11::dict &res)
 {
     MODEL *model = NULL;
     PRN *prn = NULL;
@@ -217,25 +215,25 @@ static void regression_wrapper (int ci,
     list = list_from_formula(formula.c_str(), dset);
     model = gretl_model_new();
     if (print) {
-	prn = gretl_print_new(GRETL_PRINT_STDOUT, NULL);
+        prn = gretl_print_new(GRETL_PRINT_STDOUT, NULL);
     }
 
     if (ci == OLS) {
-	*model = lsq(list, dset, OLS, OPT_NONE);
+        *model = lsq(list, dset, OLS, OPT_NONE);
     } else if (ci == LOGIT || ci == PROBIT) {
-	*model = logit_probit(list, dset, ci, OPT_NONE, prn);
+        *model = logit_probit(list, dset, ci, OPT_NONE, prn);
     } else {
-	throw std::runtime_error("Unsupported estimator");
+        throw std::runtime_error("Unsupported estimator");
     }
 
     err = model->errcode;
     if (err) {
-	errmsg(err, prn);
+        errmsg(err, prn);
     } else {
-	gretl_model_to_dict(model, dset, res);
-	if (print) {
-	    printmodel(model, dset, OPT_NONE, prn);
-	}
+        gretl_model_to_dict(model, dset, res);
+        if (print) {
+            printmodel(model, dset, OPT_NONE, prn);
+        }
     }
 
     free(list);
@@ -245,11 +243,9 @@ static void regression_wrapper (int ci,
 
 // intermediate wrappers to handle specified versus global data
 
-static pybind11::dict *
-regress_with_specified_data (int ci,
-			     const std::string formula,
-			     const pybind11::dict &data,
-			     bool print)
+static pybind11::dict
+*regress_with_specified_data (int ci, const std::string formula,
+                             const pybind11::dict &data, bool print)
 {
     pybind11::dict *res = new pybind11::dict;
     DATASET *dset = datainfo_new();
@@ -261,17 +257,16 @@ regress_with_specified_data (int ci,
     return res;
 }
 
-pybind11::dict *
-regress_with_global_data (int ci,
-			  const std::string formula,
-			  bool print)
+pybind11::dict *regress_with_global_data (int ci,
+                                          const std::string formula,
+                                          bool print)
 {
     pybind11::dict *res = new pybind11::dict;
 
     if (DSET == NULL) {
-	throw std::runtime_error("No dataset in place");
+        throw std::runtime_error("No dataset in place");
     } else {
-	regression_wrapper(ci, formula, print, DSET, *res);
+        regression_wrapper(ci, formula, print, DSET, *res);
     }
 
     return res;
@@ -280,8 +275,7 @@ regress_with_global_data (int ci,
 // thin wrappers for specific estimators
 
 pybind11::dict *ols (const std::string formula,
-		     const pybind11::dict &data,
-		     bool print)
+                     const pybind11::dict &data, bool print)
 {
     return regress_with_specified_data(OLS, formula, data, print);
 }
@@ -292,15 +286,13 @@ pybind11::dict *ols (const std::string formula, bool print)
 }
 
 pybind11::dict *logit (const std::string formula,
-		       const pybind11::dict &data,
-		       bool print)
+                       const pybind11::dict &data, bool print)
 {
     return regress_with_specified_data(LOGIT, formula, data, print);
 }
 
 pybind11::dict *probit (const std::string formula,
-			const pybind11::dict &data,
-			bool print)
+                        const pybind11::dict &data, bool print)
 {
     return regress_with_specified_data(PROBIT, formula, data, print);
 }

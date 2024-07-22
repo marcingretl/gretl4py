@@ -17,26 +17,13 @@ void printdata (bool varamesonly);
 
 pybind11::dict *get_gretl_data (const std::string fname);
 
-pybind11::dict *arma (const pybind11::dict &data,
-		      const std::string y,
-		      int p, int d, int q,
-		      bool print);
+pybind11::dict *arma (const pybind11::dict &data, const std::string y,
+                      int p, int d, int q, bool print);
+pybind11::dict *arma (const std::string y, int p, int d, int q, bool print);
 
-pybind11::dict *arma (const std::string y,
-		      int p, int d, int q,
-		      bool print);
+pybind11::dict *ols (const std::string formula, const pybind11::dict &data,bool print);
+pybind11::dict *ols (const std::string formula, bool print);
 
-pybind11::dict *ols (const std::string formula,
-		     const pybind11::dict &data,
-		     bool print);
+pybind11::dict *logit (const std::string formula, const pybind11::dict &data, bool print);
 
-pybind11::dict *ols (const std::string formula,
-		     bool print);
-
-pybind11::dict *logit (const std::string formula,
-		       const pybind11::dict &data,
-		       bool print);
-
-pybind11::dict *probit (const std::string formula,
-			const pybind11::dict &data,
-			bool print);
+pybind11::dict *probit (const std::string formula, const pybind11::dict &data, bool print);
