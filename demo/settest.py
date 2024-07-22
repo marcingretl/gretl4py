@@ -11,3 +11,8 @@ print()
 gretl.set('horizon')
 gretl.set('horizon', 16)
 gretl.set('horizon')
+
+print()
+gretl.set('svd')
+gretl.set('svd', True)
+gretl.set('svd')
