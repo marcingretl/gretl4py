@@ -1,6 +1,7 @@
 #include "gretl_calls.h" /* MUST be at the first position!!! */
 #include "gretl_python_data.h"
 #include <gretl/gretl_drivers.h>
+#include <gretl/libset.h>
 #include <iostream>
 
 #define GRETL_PYBIND11_DEBUG 0
@@ -295,4 +296,40 @@ pybind11::dict *probit (const std::string formula,
                         const pybind11::dict &data, bool print)
 {
     return regress_with_specified_data(PROBIT, formula, data, print);
+}
+
+// set a string-valued "setvar"
+
+void set (const std::string key, const std::string val)
+{
+    int err = execute_set(key.c_str(), val.c_str(), NULL, OPT_NONE, NULL);
+
+    // temporary confirmation of result
+    printf("set: key='%s', val='%s', err=%d\n", key.c_str(), val.c_str(), err);
+}
+
+// set an integer-valued "setvar"
+
+void set (const std::string key, int val)
+{
+    char sval[32];
+    int err;
+
+    sprintf(sval, "%d", val);
+    err = execute_set(key.c_str(), sval, NULL, OPT_NONE, NULL);
+
+    // temporary confirmation of result
+    printf("set: key='%s', val=%d, err=%d\n", key.c_str(), val, err);
+}
+
+// report a current "setvar" setting
+
+void set (const std::string key)
+{
+    PRN *prn = gretl_print_new(GRETL_PRINT_STDOUT, NULL);
+    int err = execute_set(key.c_str(), NULL, NULL, OPT_NONE, prn);
+
+    // temporary confirmation of result
+    printf("set: key='%s', err=%d\n", key.c_str(), err);
+    gretl_print_destroy(prn);
 }

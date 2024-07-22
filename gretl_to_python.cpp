@@ -69,4 +69,17 @@ PYBIND11_MODULE(gretl, m) {
           pybind11::arg("data").none(false),
           pybind11::arg("print") = false,
           pybind11::return_value_policy::take_ownership);
+
+    // libset setting and reporting
+    m.def("set",
+          pybind11::overload_cast<const std::string, const std::string> (&set),
+          pybind11::arg("key").none(false),
+          pybind11::arg("val").none(false));
+    m.def("set",
+          pybind11::overload_cast<const std::string, int> (&set),
+          pybind11::arg("key").none(false),
+          pybind11::arg("val").none(false));
+    m.def("set",
+          pybind11::overload_cast<const std::string> (&set),
+          pybind11::arg("key").none(false));
 }

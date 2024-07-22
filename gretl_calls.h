@@ -27,3 +27,7 @@ pybind11::dict *ols (const std::string formula, bool print);
 pybind11::dict *logit (const std::string formula, const pybind11::dict &data, bool print);
 
 pybind11::dict *probit (const std::string formula, const pybind11::dict &data, bool print);
+
+void set (const std::string key, const std::string val);
+void set (const std::string key, int val);
+void set (const std::string key);
