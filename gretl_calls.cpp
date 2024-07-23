@@ -9,7 +9,8 @@
 
 static DATASET *DSET = NULL; // global dataset
 
-// some module related tools
+// module related tools
+
 void module_init ()
 {
     libgretl_init();
@@ -28,8 +29,52 @@ void about () {
     std::cout << "module ver: " << GRETL_MODULE_VERSION << std::endl;
 }
 
-// interface for loading pure Numpy arrays
+static void handle_gretl_error (int err)
+{
+    const char *msg = errmsg_get_with_default(err);
+    throw std::runtime_error(msg);
+}
 
+// set a string-valued "setvar"
+
+void set (const std::string key, const std::string val)
+{
+    int err = execute_set(key.c_str(), val.c_str(), NULL, OPT_NONE, NULL);
+
+    if (err) {
+        handle_gretl_error(err);
+    }
+}
+
+// set an integer-valued "setvar"
+
+void set (const std::string key, int val)
+{
+    char sval[32];
+    int err;
+
+    sprintf(sval, "%d", val);
+    err = execute_set(key.c_str(), sval, NULL, OPT_NONE, NULL);
+    if (err) {
+        handle_gretl_error(err);
+    }
+}
+
+// report a current "setvar" setting
+
+void set (const std::string key)
+{
+    PRN *prn = gretl_print_new(GRETL_PRINT_STDOUT, NULL);
+    int err = execute_set(key.c_str(), NULL, NULL, OPT_NONE, prn);
+
+    if (err) {
+        handle_gretl_error(err);
+    }
+}
+
+// data management
+
+// interface for loading pure Numpy arrays
 void load_data (const py::array_t<double> &pynum_array)
 {
     gretl_matrix *m = gretl_null_matrix_new();
@@ -107,6 +152,8 @@ py::dict *get_gretl_data (const std::string fname)
     gretl_dset_to_numpy_dict(tmp, *res);
     return res;
 }
+
+// model estimation
 
 // arma estimation with two overloaded interfaces beneath
 
@@ -297,47 +344,4 @@ py::dict *probit (const std::string formula,
                   const py::dict &data, bool print)
 {
     return regress_with_specified_data(PROBIT, formula, data, print);
-}
-
-static void handle_gretl_error (int err)
-{
-    const char *msg = errmsg_get_with_default(err);
-    throw std::runtime_error(msg);
-}
-
-// set a string-valued "setvar"
-
-void set (const std::string key, const std::string val)
-{
-    int err = execute_set(key.c_str(), val.c_str(), NULL, OPT_NONE, NULL);
-
-    if (err) {
-        handle_gretl_error(err);
-    }
-}
-
-// set an integer-valued "setvar"
-
-void set (const std::string key, int val)
-{
-    char sval[32];
-    int err;
-
-    sprintf(sval, "%d", val);
-    err = execute_set(key.c_str(), sval, NULL, OPT_NONE, NULL);
-    if (err) {
-        handle_gretl_error(err);
-    }
-}
-
-// report a current "setvar" setting
-
-void set (const std::string key)
-{
-    PRN *prn = gretl_print_new(GRETL_PRINT_STDOUT, NULL);
-    int err = execute_set(key.c_str(), NULL, NULL, OPT_NONE, prn);
-
-    if (err) {
-        handle_gretl_error(err);
-    }
 }

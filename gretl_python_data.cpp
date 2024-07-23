@@ -6,8 +6,6 @@
 #include <iostream>
 #include <string>
 
-namespace py = pybind11;
-
 #define F_CONTIGUOUS py::detail::npy_api::constants::NPY_ARRAY_F_CONTIGUOUS_
 #define is_pynum_fortranarray(m) ((m.flags() & F_CONTIGUOUS))
 
@@ -96,8 +94,8 @@ static void copy_string_from_python_dict (const py::dict &pydict,
 }
 
 // two overloaded
-static void copy_strings_from_python_list (const py::list &pylist,
-                                           char **dest, int n_bytes, int src_offset = 0,
+static void copy_strings_from_python_list (const py::list &pylist, char **dest,
+                                           int n_bytes, int src_offset = 0,
                                            int dst_offset = 0, bool trim = false)
 {
     //
@@ -181,7 +179,7 @@ void numpy_array_to_gretl_storage (const py::array_t<double> &pynum_array,
     } else {
         for (int i=0; i<rows; i++) {
             for (int j=0; j<cols; j++) {
-                gretl_matrix_set(m, i, j, *(data_array+i*cols+j)); //data_array[i*cols+j] in c++ makes no difference?
+                gretl_matrix_set(m, i, j, *(data_array+i*cols+j));
             }
         }
     }
@@ -214,7 +212,7 @@ static void numpy_array_to_gretl_storage (const py::dict &pydict,
             std::memcpy(dset->Z[i+1], data_array+i*rows, rows*sizeof(double));
         } else {
             for (int j=0; j<rows; j++) {
-                *(dset->Z[i+1]+j) = *(data_array+i+j*cols); //data_array[i+j*cols] in c++ makes no difference?
+                *(dset->Z[i+1]+j) = *(data_array+i+j*cols);
             }
         }
     }
@@ -229,7 +227,7 @@ void numpy_dict_to_gretl_dset (const py::dict &pydict,
     // we fill dset with pydict content
     //
     py::list pylist;
-    std::string *strBUF; // maybe we should use vector of strings here?
+    std::string *strBUF;
     char periodicity[16];
 
     if (dset == NULL) {
@@ -266,14 +264,6 @@ void numpy_dict_to_gretl_dset (const py::dict &pydict,
     // FIXME: maybe it's possible automatically, i.e. without sending it from Python
     copy_string_from_python_dict(pydict, "periodicity", periodicity, 16);
     set_obs(periodicity, dset->S[0], dset, OPT_T);
-
-    /*
-    //some hardwired stuff
-    copy_string_from_python_dict(pydict, "stobs", dset->stobs, OBSLEN);
-    copy_string_from_python_dict(pydict, "endobs", dset->endobs, OBSLEN);
-    dset->sd0 = 1975.100000;
-    dset->structure = 1;
-    dset->auxiliary = 0; */
 }
 
 void gretl_dset_to_numpy_dict (char *fname, py::dict &pydict)
@@ -302,7 +292,7 @@ void gretl_dset_to_numpy_dict (char *fname, py::dict &pydict)
     }
     pydict[py::cast("data_array")] = Z;
 
-    // copy across the series names */
+    // copy across the series names
     for (i=0; i<dset->v; i++) {
         vnames->append(dset->varname[i]);
     }

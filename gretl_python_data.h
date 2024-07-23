@@ -1,12 +1,12 @@
 #include <gretl/libgretl.h>
 
-void gretl_model_to_dict (MODEL *model, DATASET *dset, pybind11::dict &DICT);
+namespace py = pybind11;
 
-void numpy_dict_to_gretl_dset (const pybind11::dict &DICT, DATASET *dset);
+void gretl_model_to_dict (MODEL *model, DATASET *dset, py::dict &DICT);
 
-void gretl_dset_to_numpy_dict (char *fname, pybind11::dict &pydict);
+void numpy_dict_to_gretl_dset (const py::dict &DICT, DATASET *dset);
+
+void gretl_dset_to_numpy_dict (char *fname, py::dict &pydict);
 
 // Note: only one is external
-void numpy_array_to_gretl_storage (const pybind11::array_t<double> &pynum_array,
-                                   gretl_matrix *m);
-
+void numpy_array_to_gretl_storage (const py::array_t<double> &pynum_array, gretl_matrix *m);

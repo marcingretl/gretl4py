@@ -11,9 +11,21 @@ class Module
 const std::string info = "This is a help text for module.";
 
 PYBIND11_MODULE(gretl, m) {
+    // module related tools
     static Module module;
     m.doc() = info;
     m.def("about", &about);
+    m.def("set",
+          py::overload_cast<const std::string, const std::string> (&set),
+          py::arg("key").none(false),
+          py::arg("val").none(false));
+    m.def("set",
+          py::overload_cast<const std::string, int> (&set),
+          py::arg("key").none(false),
+          py::arg("val").none(false));
+    m.def("set",
+          py::overload_cast<const std::string> (&set),
+          py::arg("key").none(false));
 
     // data management
     m.def("load_data", py::overload_cast<const py::array_t<double> &> (&load_data));
@@ -25,7 +37,8 @@ PYBIND11_MODULE(gretl, m) {
           py::arg("varamesonly") = false);
     m.def("get_gretl_data", &get_gretl_data, py::arg("fname").none(false));
 
-    // ARMA estimation
+    // model estimation
+    // ARMA
     m.def("arma",
 	  py::overload_cast<const py::dict &, const std::string,
           int, int, int, bool> (&arma),
@@ -45,7 +58,7 @@ PYBIND11_MODULE(gretl, m) {
           py::arg("print") = false,
           py::return_value_policy::take_ownership);
 
-    // OLS estimation
+    // OLS
     m.def("ols",
           py::overload_cast<const std::string, const py::dict &, bool> (&ols),
           py::arg("formula").none(false),
@@ -58,7 +71,7 @@ PYBIND11_MODULE(gretl, m) {
           py::arg("print") = false,
           py::return_value_policy::take_ownership);
 
-    // Logit and probit estimation
+    // Logit and probit
     m.def("logit", &logit,
           py::arg("formula").none(false),
           py::arg("data").none(false),
@@ -69,17 +82,4 @@ PYBIND11_MODULE(gretl, m) {
           py::arg("data").none(false),
           py::arg("print") = false,
           py::return_value_policy::take_ownership);
-
-    // libset setting and reporting
-    m.def("set",
-          py::overload_cast<const std::string, const std::string> (&set),
-          py::arg("key").none(false),
-          py::arg("val").none(false));
-    m.def("set",
-          py::overload_cast<const std::string, int> (&set),
-          py::arg("key").none(false),
-          py::arg("val").none(false));
-    m.def("set",
-          py::overload_cast<const std::string> (&set),
-          py::arg("key").none(false));
 }
