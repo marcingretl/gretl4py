@@ -10,7 +10,7 @@ MODULE_PREFIX = gretl
 MODULE_SUFIX = $(shell python3-config --extension-suffix)
 MODULE_NAME = $(MODULE_PREFIX)$(MODULE_SUFIX)
 
-.PHONY: clean
+.PHONY: tags clean depend
 
 $(MODULE_NAME): gretl_to_python.o gretl_calls.o gretl_python_data.o
 	$(CXX) $(CXXFLAGS) $^ -shared -o $(MODULE_NAME) -fPIC $(PYBIND) $(GRETLLD)
@@ -32,3 +32,12 @@ tags:
 
 clean:
 	@rm -f $(MODULE_NAME) *.o
+
+depend:
+	makedepend -Y. *.cpp 2>/dev/null
+
+# DO NOT DELETE
+
+gretl_calls.o: gretl_calls.h gretl_python_data.h
+gretl_python_data.o: gretl_python_data.h
+gretl_to_python.o: gretl_calls.h
