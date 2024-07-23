@@ -7,4 +7,4 @@ important:
 - do libgretl bindings (like "do_arma()") stay in gretl_calls.cpp or we place them in
     additional source (like "gretl_bindings.cpp")?
 - directory structure (including resulting binaries)
-- can we automatically quess data periodicity (vide DSET["periodicity"] = "4")
+- can we automatically guess data periodicity (vide DSET["periodicity"] = "4")

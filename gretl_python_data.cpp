@@ -9,6 +9,8 @@
 #define F_CONTIGUOUS py::detail::npy_api::constants::NPY_ARRAY_F_CONTIGUOUS_
 #define is_pynum_fortranarray(m) ((m.flags() & F_CONTIGUOUS))
 
+static std::vector<GretlCmdIndex> ZscoreCI{ARMA};
+
 #define GRETL_PYBIND11_DEBUG 0
 
 void gretl_model_to_dict (MODEL *model, DATASET *dset, py::dict &pydict)
@@ -21,13 +23,25 @@ void gretl_model_to_dict (MODEL *model, DATASET *dset, py::dict &pydict)
     char pname[VNAMELEN];
     int err = 0;
     gretl_matrix *m = NULL;
+    std::vector<GretlCmdIndex>::iterator it;
+    double pval;
+
+    // we check if we deal with z-score or t-ratio based estimator
+    it = std::find(ZscoreCI.begin(), ZscoreCI.end(), model->ci);
+    bool zscore = (it != ZscoreCI.end() ? true : false);
+    pydict[py::cast("_zscore")] = zscore;
 
     // dictionaries
     for (int i=0; i<model->ncoeff; i++) {
         gretl_model_get_param_name(model, dset, i, pname);
         coeff[py::cast(pname)] = model->coeff[i];
         sderr[py::cast(pname)] = model->sderr[i];
-        pvalue[py::cast(pname)] = normal_pvalue_2(std::abs(model->coeff[i]/model->sderr[i]));
+        if (zscore) {
+            pval = normal_pvalue_2(std::abs(model->coeff[i]/model->sderr[i]));
+        } else {
+            pval = student_pvalue_2(model->dfd, std::abs(model->coeff[i]/model->sderr[i]));
+        }
+        pvalue[py::cast(pname)] = pval;
     }
     criterion[py::cast("aic")] = model->criterion[0];
     criterion[py::cast("bic")] = model->criterion[1];
