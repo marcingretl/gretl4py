@@ -21,7 +21,7 @@ void gretl_model_to_dict (MODEL *model, DATASET *dset, py::dict &pydict)
     char pname[VNAMELEN];
     int err = 0;
     gretl_matrix *m = NULL;
-    std::vector<GretlCmdIndex> ZscoreCI{ARMA};
+    std::vector<GretlCmdIndex> ZscoreCI{ARMA, LOGIT, PROBIT};
     std::vector<GretlCmdIndex>::iterator it;
     double pval;
 
