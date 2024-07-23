@@ -9,8 +9,6 @@
 #define F_CONTIGUOUS py::detail::npy_api::constants::NPY_ARRAY_F_CONTIGUOUS_
 #define is_pynum_fortranarray(m) ((m.flags() & F_CONTIGUOUS))
 
-static std::vector<GretlCmdIndex> ZscoreCI{ARMA};
-
 #define GRETL_PYBIND11_DEBUG 0
 
 void gretl_model_to_dict (MODEL *model, DATASET *dset, py::dict &pydict)
@@ -23,6 +21,7 @@ void gretl_model_to_dict (MODEL *model, DATASET *dset, py::dict &pydict)
     char pname[VNAMELEN];
     int err = 0;
     gretl_matrix *m = NULL;
+    std::vector<GretlCmdIndex> ZscoreCI{ARMA};
     std::vector<GretlCmdIndex>::iterator it;
     double pval;
 
@@ -189,7 +188,7 @@ void numpy_array_to_gretl_storage (const py::array_t<double> &pynum_array,
     }
 
     if (fortranarray) {
-        std::memcpy(m->val, data_array, rows*cols*sizeof(double));
+        std::memcpy(m->val, data_array, rows * cols * sizeof(double));
     } else {
         for (int i=0; i<rows; i++) {
             for (int j=0; j<cols; j++) {
@@ -223,7 +222,7 @@ static void numpy_array_to_gretl_storage (const py::dict &pydict,
     }
     for (int i=0; i<dset->v-1; i++) {
         if (fortranarray) {
-            std::memcpy(dset->Z[i+1], data_array+i*rows, rows*sizeof(double));
+            std::memcpy(dset->Z[i+1], data_array+i*rows, rows * sizeof(double));
         } else {
             for (int j=0; j<rows; j++) {
                 *(dset->Z[i+1]+j) = *(data_array+i+j*cols);
