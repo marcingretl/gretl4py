@@ -8,3 +8,4 @@ important:
     additional source (like "gretl_bindings.cpp")?
 - directory structure (including resulting binaries)
 - can we automatically guess data periodicity (vide DSET["periodicity"] = "4")
+- do we want to bundle some pure Python code as well (f.e. for translating Pandas dat-frame to dict)?
