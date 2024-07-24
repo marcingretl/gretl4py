@@ -18,16 +18,18 @@ void gretl_model_to_dict (MODEL *model, DATASET *dset, py::dict &pydict)
     //
     py::dict coeff, sderr, pvalue, criterion;
     py::array_t<double, py::array::f_style> vcv({model->ncoeff, model->ncoeff});
-    char pname[VNAMELEN];
-    int err = 0;
-    gretl_matrix *m = NULL;
-    std::vector<GretlCmdIndex> ZscoreCI{ARMA, LOGIT, PROBIT};
+    std::vector<GretlCmdIndex> ZscoreCI{ARMA, LOGIT, PROBIT}; // if number of such cases is small we may switch to simple if()
     std::vector<GretlCmdIndex>::iterator it;
+    char pname[VNAMELEN];
+    gretl_matrix *m = NULL;
+    int err = 0;
     double pval;
 
     // we check if we deal with z-score or t-ratio based estimator
     it = std::find(ZscoreCI.begin(), ZscoreCI.end(), model->ci);
     bool zscore = (it != ZscoreCI.end() ? true : false);
+
+    // "hidden" entries (for internal use only)
     pydict[py::cast("_zscore")] = zscore;
 
     // dictionaries
@@ -42,13 +44,13 @@ void gretl_model_to_dict (MODEL *model, DATASET *dset, py::dict &pydict)
         }
         pvalue[py::cast(pname)] = pval;
     }
-    criterion[py::cast("aic")] = model->criterion[0];
-    criterion[py::cast("bic")] = model->criterion[1];
-    criterion[py::cast("hqc")] = model->criterion[2];
-
     pydict[py::cast("coeff")] = coeff;
     pydict[py::cast("sderr")] = sderr;
     pydict[py::cast("pvalue")] = pvalue;
+
+    criterion[py::cast("aic")] = model->criterion[0];
+    criterion[py::cast("bic")] = model->criterion[1];
+    criterion[py::cast("hqc")] = model->criterion[2];
     pydict[py::cast("criterion")] = criterion;
 
     // covariance matrix
@@ -93,17 +95,17 @@ static void copy_string_from_python_dict (const py::dict &pydict,
     //
     // here we take just one element (under the "key") and copy to dest
     //
-    std::string stdBUF;
+    std::string str;
     auto element = pydict[py::cast(key)]; //pydict[py::cast(key)] is of py::str type
 
     if (py::isinstance<py::int_>(element)) {
-        stdBUF = std::to_string(py::cast<int>(element));
+        str = std::to_string(py::cast<int>(element));
     } else {
-        stdBUF = py::cast<std::string>(element);
+        str = py::cast<std::string>(element);
     }
 
-    stdBUF.erase(std::remove_if(stdBUF.begin(), stdBUF.end(), ::isspace), stdBUF.end());
-    stdBUF.copy(dest, n_bytes, offset);
+    str.erase(std::remove_if(str.begin(), str.end(), ::isspace), str.end());
+    str.copy(dest, n_bytes, offset);
 }
 
 // two overloaded
@@ -115,23 +117,23 @@ static void copy_strings_from_python_list (const py::list &pylist, char **dest,
     // we copy the whole list to dest (length must be verified at the caller level)
     // with optional clearing
     //
-    std::string stdBUF;
+    std::string str;
     int i = dst_offset;
 
     for (auto item : pylist) {
-        stdBUF = std::string(py::str(item));
+        str = std::string(py::str(item));
         if (trim) {
-            stdBUF.erase(std::remove_if(stdBUF.begin(), stdBUF.end(), ::isspace), stdBUF.end());
+            str.erase(std::remove_if(str.begin(), str.end(), ::isspace), str.end());
         }
-        stdBUF.copy(dest[i++], n_bytes, src_offset);
+        str.copy(dest[i++], n_bytes, src_offset);
     }
 }
 
 static void copy_strings_from_python_list (const py::list &pylist,
-                                           std::string *strBUF, bool trim = false)
+                                           std::string *dest, bool trim = false)
 {
     //
-    // we copy the whole list to strBUF (length must be verified at the caller level)
+    // we copy the whole list to dest (length must be verified at the caller level)
     // with optional clearing
     //
     int i = 0;
@@ -142,7 +144,7 @@ static void copy_strings_from_python_list (const py::list &pylist,
         if (trim) {
             str.erase(std::remove_if(str.begin(), str.end(), ::isspace), str.end());
         }
-        strBUF[i++] = str;
+        dest[i++] = str;
     }
 }
 
@@ -169,7 +171,9 @@ static double *numpy_array_extract (const py::array_t<double> &pynum_array,
 void numpy_array_to_gretl_storage (const py::array_t<double> &pynum_array,
                                    gretl_matrix *m)
 {
+    //
     // we copy pynum_array to empty m
+    //
     if (m->rows || m->cols) {
         throw std::runtime_error("Given matrix is not empty.");
     }
@@ -201,7 +205,9 @@ void numpy_array_to_gretl_storage (const py::array_t<double> &pynum_array,
 static void numpy_array_to_gretl_storage (const py::dict &pydict,
                                           DATASET *dset)
 {
+    //
     // we copy "data_array" which lives in pydict to dset->Z
+    //
     ssize_t rows, cols;
     int fortranarray;
     double *data_array = NULL;
@@ -281,11 +287,15 @@ void numpy_dict_to_gretl_dset (const py::dict &pydict,
 
 void gretl_dset_to_numpy_dict (char *fname, py::dict &pydict)
 {
+    //
+    // we load gretl data from file to pydict
+    //
     py::list *vnames = new py::list;
     py::list *labels = new py::list;
     DATASET *dset;
     double *tmp;
     int i, err = 0;
+    std::string fname_copy(fname);
 
     dset = datainfo_new();
     err = gretl_get_data(fname, dset, OPT_NONE, NULL);
@@ -293,7 +303,7 @@ void gretl_dset_to_numpy_dict (char *fname, py::dict &pydict)
         delete vnames;
         delete labels;
         destroy_dataset(dset);
-        throw std::runtime_error("Reading data from gdt file failed.");
+        throw std::runtime_error("Reading data from '" + fname_copy + "' file failed.");
     }
 
     // copy across the data values
