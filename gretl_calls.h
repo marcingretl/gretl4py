@@ -35,3 +35,5 @@ py::dict *ols (const std::string formula, bool print);
 py::dict *logit (const std::string formula, const py::dict &data, bool print);
 
 py::dict *probit (const std::string formula, const py::dict &data, bool print);
+
+void dict2opts (py::dict &d);

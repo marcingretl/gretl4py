@@ -249,6 +249,54 @@ static int *list_from_formula (const char *formula,
     return list;
 }
 
+// "Proof of concept" function for getting the options for
+//  a specified gretl command
+
+static gretlopt options_from_python_dict (py::dict &d, int ci)
+{
+    const char *cmd = gretl_command_word(ci);
+    int opt, opts = OPT_NONE;
+    OptStatus status;
+
+    for (auto &item : d) {
+        if (!py::isinstance<py::str>(item.first)) {
+            throw std::runtime_error("option key must be a string");
+        }
+        const std::string &key = item.first.cast<std::string>();
+        printf(" key: %s\n", key.c_str());
+
+        // check validity of @opt for @ci
+        opt = valid_long_opt(ci, key.c_str(), &status);
+        if (opt) {
+            printf("  option is OK for %s, status %d\n", cmd, status);
+            opts |= opt;
+        } else {
+            printf("  option is NOT OK for %s\n", cmd);
+        }
+        if (py::isinstance<py::str>(item.second)) {
+            const std::string &sval = item.second.cast<std::string>();
+            printf("  value is string: %s\n", sval.c_str());
+        } else if (py::isinstance<py::int_>(item.second)) {
+            int ival = item.second.cast<int>();
+            printf("  value is int: %d\n", ival);
+        } else if (py::isinstance<py::float_>(item.second)) {
+            double dval = item.second.cast<double>();
+            printf("  value is float: %g\n", dval);
+        } else {
+            throw std::runtime_error("unsupported option param type");
+        }
+    }
+
+    return (gretlopt) opts;
+}
+
+// temporary driver for options_from_python_dict()
+
+void dict2opts (py::dict &d)
+{
+    options_from_python_dict(d, OLS);
+}
+
 // "Proof of concept" function for supporting more than one
 //  estimation method
 

@@ -82,4 +82,8 @@ PYBIND11_MODULE(gretl, m) {
           py::arg("data").none(false),
           py::arg("print") = false,
           py::return_value_policy::take_ownership);
+
+    // proof of concept, testing
+    m.def("dict2opts", &dict2opts,
+          py::arg("options").none(false));
 }
