@@ -22,4 +22,3 @@ def csv2dict(FILE):
     d["obs_labels"] = obs_labels
     d["periodicity"] = 4
     return d
-

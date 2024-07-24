@@ -3,38 +3,26 @@ sys.path.append("../")
 import gretl
 import csv
 import numpy
+import pandas
 from gretl_print import gretl_model_print
+from csv2dict import csv2dict
+from df2dict import df2dict
 
-''' we load data9-7.csv to dict() '''
-DSET = dict()
-data_list = list()
-obs_labels = list()
-FILE = 'data9-7.csv'
-with open(FILE, newline='') as csvfile:
-    gretlreader = csv.reader(csvfile, delimiter=',')
-    row_nr = 0
-    varname = list()
-    for row in gretlreader:
-        row_nr += 1
-        if row_nr == 1:
-            varname = row[1:]
-        else:
-            obs_labels.append(row[0])
-            data_list.append(row[1:])
-
-data_array = numpy.asfortranarray(numpy.array(data_list, numpy.double))
-DSET["data_array"] = data_array
-DSET["varname"] = varname
-DSET["obs_labels"] = obs_labels
-DSET["periodicity"] = "4"
+DSET = csv2dict('data9-7.csv')
+DSET["periodicity"] = 4
 
 print("Loading global dataset:")
 gretl.load_data(DSET)
 
 print("\nOLS example using global dataset:\n")
-res = gretl.ols('QNC ~ 0 + PRICE + INCOME', True)
+res = gretl.ols('QNC ~ 0 + PRICE + INCOME', print=True)
 gretl_model_print(res)
 
 print("\nOLS example passing dataset as dict:\n")
-res = gretl.ols('QNC ~ 0 + PRICE + INCOME', print=True)
+res = gretl.ols('QNC ~ 0 + PRICE + INCOME', DSET, print=True)
+gretl_model_print(res)
+
+dframe = pandas.read_csv('data9-7.csv')
+MyDict = df2dict(dframe)
+res = gretl.ols('QNC ~ 0 + PRICE + INCOME', MyDict, print=True)
 gretl_model_print(res)
