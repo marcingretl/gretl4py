@@ -36,4 +36,5 @@ py::dict *logit (const std::string formula, const py::dict &data, bool print);
 
 py::dict *probit (const std::string formula, const py::dict &data, bool print);
 
+// testing
 void dict2opts (py::dict &d);

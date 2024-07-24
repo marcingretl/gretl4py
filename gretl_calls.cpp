@@ -254,7 +254,6 @@ static int *list_from_formula (const char *formula,
 
 static gretlopt options_from_python_dict (py::dict &d, int ci)
 {
-    const char *cmd = gretl_command_word(ci);
     int opt, opts = OPT_NONE;
     OptStatus status;
 
@@ -267,23 +266,44 @@ static gretlopt options_from_python_dict (py::dict &d, int ci)
 
         // check validity of @opt for @ci
         opt = valid_long_opt(ci, key.c_str(), &status);
-        if (opt) {
-            printf("  option is OK for %s, status %d\n", cmd, status);
-            opts |= opt;
-        } else {
-            printf("  option is NOT OK for %s\n", cmd);
+        if (opt == 0) {
+            throw std::runtime_error(std::string("invalid option flag ") + key);
         }
-        if (py::isinstance<py::str>(item.second)) {
-            const std::string &sval = item.second.cast<std::string>();
-            printf("  value is string: %s\n", sval.c_str());
-        } else if (py::isinstance<py::int_>(item.second)) {
-            int ival = item.second.cast<int>();
-            printf("  value is int: %d\n", ival);
-        } else if (py::isinstance<py::float_>(item.second)) {
-            double dval = item.second.cast<double>();
-            printf("  value is float: %g\n", dval);
+        if (status == 0) {
+            // no parameter wanted, but here we'll accept a boolean
+            if (py::isinstance<py::int_>(item.second)) {
+                int ival = item.second.cast<int>();
+
+                if (ival == 1) {
+                    opts |= opt;
+                } else if (ival != 0) {
+                    throw std::runtime_error("invalid option parameter");
+                }
+            }
         } else {
-            throw std::runtime_error("unsupported option param type");
+            // parameter accepted, or required
+            char numstr[32];
+
+            if (py::isinstance<py::str>(item.second)) {
+                const std::string &sval = item.second.cast<std::string>();
+
+                printf("  value is string: %s\n", sval.c_str());
+                push_option_param(ci, (gretlopt) opt, gretl_strdup(sval.c_str()));
+             } else if (py::isinstance<py::int_>(item.second)) {
+                int ival = item.second.cast<int>();
+
+                printf("  value is int: %d\n", ival);
+                sprintf(numstr, "%d", ival);
+                push_option_param(ci, (gretlopt) opt, gretl_strdup(numstr));
+            } else if (py::isinstance<py::float_>(item.second)) {
+                double dval = item.second.cast<double>();
+
+                printf("  value is float: %g\n", dval);
+                sprintf(numstr, "%g", (double) dval);
+                push_option_param(ci, (gretlopt) opt, gretl_strdup(numstr));
+            } else {
+                throw std::runtime_error("unsupported option param type");
+            }
         }
     }
 
