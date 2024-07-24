@@ -1,0 +1,137 @@
+\RequirePackage{graphicx, fancyvrb, url, color, geometry, calc, mathpazo}
+
+\@titlepagetrue
+
+
+\setlength\textwidth{14cm}
+\setlength\textheight{225mm}
+\setlength\oddsidemargin{(\paperwidth-\textwidth)/2 - 1in}
+\setlength\topmargin{(\paperheight-\textheight
+-\headheight-\headsep-\footskip)/2 - 1in}
+
+\def\baselinestretch{1.1}
+
+\newcommand\prognum[1]{\gdef\@prognum{#1}}
+\def\@prognum{\@latex@warning@no@line{No number given}}
+
+\newif\ifrev
+\newcommand\revision[1]{\gdef\@rev{#1}\revtrue}
+\def\@revision{}
+
+\newcommand\jelcodes[1]{\gdef\@jelcodes{#1}}
+\def\@jelcodes{\@latex@warning@no@line{No JEL codes given}}
+
+%\renewcommand\endtitlepage{\clearpage}
+
+%\renewcommand\maketitle{\begin{titlepage}%
+%    \let\footnotesize\small
+%    \let\footnoterule\relax
+%    \let \footnote \thanks
+%    {\hskip -2cm {\includegraphics{logo}\par}}
+%    \null\vfil
+%    \medskip
+%    \vskip 30\p@
+%    \noindent\fbox{
+%      \begin{minipage}{1.0\linewidth}
+%        \medskip
+%        \begin{center}%
+%          {\LARGE \@title \par}%
+%          \vskip 3em%
+%          {\large
+%            \lineskip .75em%
+%            \begin{tabular}[t]{c}%
+%              \@author
+%            \end{tabular}\par}%
+%          \vskip 1.5em%
+%          {\large working paper \#\@prognum%
+%            \ifrev
+%            {, revision \@rev}
+%            \fi
+%            \par}%
+%          \vskip 1em%
+%          {\large \@date \par}%       % Set date in \large size.
+%        \end{center}
+%        \smallskip
+%      \end{minipage}
+%    }
+%    \@thanks
+%    \vfil\null
+%  \end{titlepage}%
+%  \setcounter{footnote}{0}%
+%  \global\let\thanks\relax
+%  \global\let\maketitle\relax
+%  \global\let\@thanks\@empty
+%  \global\let\@author\@empty
+%  \global\let\@date\@empty
+%  \global\let\@title\@empty
+%  \global\let\@prognum\@empty
+%  \global\let\title\relax
+%  \global\let\author\relax
+%  \global\let\date\relax
+%  \global\let\and\relax
+%  \global\let\prognum\relax
+%}
+
+\renewenvironment{abstract}{%
+  \titlepage
+  \null\vfil
+  \@beginparpenalty\@lowpenalty
+  \begin{center}%
+    \bfseries \abstractname
+    \@endparpenalty\@M
+  \end{center}}%
+{\par\vfil\null}
+
+\newenvironment{keywords}{\bigskip\par\noindent\begin{tabular}{rp{0.8\textwidth}}%
+\emph{Keywords:}&}
+{\\[18pt]\textit{JEL codes:}&\@jelcodes%
+\end{tabular}%
+\normalfont\normalsize\par%
+\bigskip\noindent\par%
+\vfil\null\endtitlepage%
+}
+
+\newcommand{\scriptname}{Example}
+ 
+\newcommand{\app}[1]{\textsf{#1}}
+\newcommand{\cmd}[1]{\texttt{#1}}
+\newcommand{\varname}[1]{\texttt{#1}}
+\newcommand{\option}[1]{\texttt{-{}-#1}}
+\newcommand{\ttsl}[1]{\ttfamily{\textsl{#1}}\normalfont}
+
+\newenvironment{textcode}{\par\small\ttfamily}
+{\normalfont\normalsize\par}
+
+ 
+\DefineVerbatimEnvironment%
+{code}{Verbatim}
+{fontsize=\small, xleftmargin=1em}
+ 
+\DefineVerbatimEnvironment%
+{scode}{Verbatim}
+{frame=lines, framesep=2ex, fontsize=\footnotesize,
+ formatcom=\color{myteal}, rulecolor=\color{mygray}}
+ 
+\renewcommand{\arraystretch}{1.2}
+ 
+\definecolor{mygray}{rgb}{0.85,0.85,0.85} 
+\definecolor{myteal}{rgb}{0.0,0.25,0.15} 
+ 
+\def\floatpagefraction{.8}
+ 
+%% add script as float (Example)
+\newcounter{script}[section]
+\renewcommand \thescript
+     {\ifnum \c@chapter>\z@ \thechapter.\fi \@arabic\c@script}
+\def\fps@script{tbp}
+\def\ftype@script{1}
+\def\ext@script{los}
+\def\fnum@script{\scriptname\nobreakspace\thescript}
+\newenvironment{script}
+               {\@float{script}}
+               {\end@float}
+\newenvironment{script*}
+               {\@dblfloat{script}}
+               {\end@dblfloat}
+\newcommand\theHscript{\thechapter.\arabic{script}}
+ 

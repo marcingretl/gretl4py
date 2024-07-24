@@ -1,0 +1,67 @@
+\documentclass[a4paper]{gretl4pydoc}
+\usepackage{pdflscape}
+\usepackage{longtable}
+\usepackage{xargs,xspace}
+\usepackage{caption,subcaption,tabulary,multirow,bigdelim}
+\usepackage{soul}
+\usepackage[colorinlistoftodos,prependcaption,textsize=tiny,textwidth=2.8cm]{todonotes}
+
+\interfootnotelinepenalty=10000
+
+\newcommand{\gretlcmd}[1]{\lstinline!#1!\xspace}
+\newcommand{\gretlcmdf}[1]{\inline{#1}\xspace}
+\makeatletter
+\@mparswitchfalse%
+\makeatother
+
+\begin{document}
+	\pagestyle{headings}
+	\maketitle
+	\textbf{Project's main page:}
+	\begin{quote}
+		\centering
+		\url{https://sourceforge.net/p/gretl/gretl4py}
+	\end{quote}
+
+\begin{center}
+	\vspace*{100pt}{\Large Version 0.1}
+\end{center}
+	
+	\begin{abstract}
+		to be written...
+	\end{abstract}
+	
+	\tableofcontents
+	
+	\section*{Changelog}
+	\begin{description}
+		\item[0.1] Initial version.
+	\end{description}
+
+	\section*{To do}
+	\begin{enumerate}
+		\item crucial:
+			\begin{itemize}
+				\item where should we use glib types?
+				\item parameters naming schema: we need to set up
+					some things (for example: \Code{"print"} or \Code{"do\_print"})
+				\item do we allow passing a regular command/script and execute it?
+			\end{itemize}
+		\item important:
+			\begin{itemize}
+				\item do \pkg{libgretl} bindings (like \Code{"do\_arma()""}) stay in
+					gretl\_calls.cpp or we place them in additional source
+					(like ``gretl\_bindings.cpp'')?
+				\item directory structure (including resulting binaries)
+				\item can we automatically guess data periodicity
+					(vide \Code{DSET["periodicity"] = "4"})
+				\item do we want to bundle some pure Python code as well
+					(f.e. for translating Pandas dat-frame to dict)?
+			\end{itemize}
+	\end{enumerate}
+
+	\input{Introduction}
+	\input{Implementation}
+	\input{Usage}
+	\input{Examples}
+\end{document}
