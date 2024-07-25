@@ -11,7 +11,7 @@ MyDict = df2dict(ARMAtest)
 
 # arma model via gretl
 t0 = time.time()
-gmod = gretl.arma(data=MyDict, y="y", p=2, d=0, q=2)
+gmod = gretl.arma(y="y", order=(2,0,2), data=MyDict)
 t1 = time.time() - t0
 print(gmod["coeff"])
 

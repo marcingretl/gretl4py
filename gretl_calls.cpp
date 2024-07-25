@@ -155,100 +155,6 @@ py::dict *get_gretl_data (const std::string fname)
 
 // model estimation
 
-// arma estimation with two overloaded interfaces beneath
-
-static void do_arma (DATASET *dset, const std::string y,
-                     int p, int d, int q,
-                     bool print, py::dict &res)
-{
-    MODEL *model;
-    PRN *prn = NULL;
-    int *parmlist;
-    int err;
-    int y_number = current_series_index(dset, y.c_str());
-
-    if (y_number == -1) {
-        delete &res;
-        throw std::runtime_error(std::string("There is no variable: ") + y);
-    }
-    model = gretl_model_new();
-    parmlist = gretl_list_new(5);
-    if (print) {
-        prn = gretl_print_new(GRETL_PRINT_STDOUT, NULL);
-    }
-
-    parmlist[1] = p;        /* AR order */
-    parmlist[2] = d;        /* order of integration */
-    parmlist[3] = q;        /* MA order */
-    parmlist[4] = LISTSEP;  /* separator */
-    parmlist[5] = y_number; /* position of dependent variable in dataset */
-
-    *model = arma(parmlist, NULL, dset, OPT_NONE, prn);
-    err = model->errcode;
-
-    if (err) {
-        errmsg(err, prn);
-    } else {
-        gretl_model_to_dict(model, dset, res);
-        if (print) {
-            printmodel(model, dset, OPT_NONE, prn);
-        }
-    }
-
-    gretl_model_free(model);
-    free(parmlist);
-    gretl_print_destroy(prn);
-}
-
-// interface for arma estimation on specified data
-
-py::dict *arma (const py::dict &data,
-                const std::string y,
-                int p, int d, int q, bool print)
-{
-    py::dict *res = new py::dict;
-    DATASET *dset = datainfo_new();
-
-    numpy_dict_to_gretl_dset(data, dset);
-    do_arma(dset, y, p, d, q, print, *res);
-
-    destroy_dataset(dset);
-
-    return res;
-}
-
-// interface for arma estimation on global dataset
-
-py::dict *arma (const std::string y,
-                int p, int d, int q, bool print)
-{
-    py::dict *res = new py::dict;
-
-    if (DSET == NULL) {
-        throw std::runtime_error("No dataset in place");
-    }
-    do_arma(DSET, y, p, d, q, print, *res);
-
-    return res;
-}
-
-// convert from a simple R-style formula to a gretl list
-
-static int *list_from_formula (const char *formula,
-                               DATASET *dset)
-{
-    char *tmp = gretl_strdup(formula);
-    int *list;
-    int err = 0;
-
-    gretl_charsub(tmp, '~', ' ');
-    gretl_charsub(tmp, '+', ' ');
-    list = generate_list(tmp, dset, 0, &err);
-    free(tmp);
-
-    return list;
-}
-
 // Apparatus to handle named optional arguments, including 'print'
 // and 'data' as well as gretl option flags and their parameters.
 
@@ -339,6 +245,111 @@ static gretlopt unpack_kwargs (const py::kwargs &kwargs,
     return (gretlopt) opts;
 }
 
+static void get_arma_order (const py::tuple &tup,
+                            int *p, int *d, int *q)
+{
+    int n = py::len(tup);
+
+    if (n == 2) {
+        *p = tup[0].cast<int>();
+        *q = tup[1].cast<int>();
+    } else if (n == 3) {
+        *p = tup[0].cast<int>();
+        *d = tup[1].cast<int>();
+        *q = tup[2].cast<int>();
+    } else {
+        throw std::runtime_error(std::string("order must be of length 2 or 3"));
+    }
+}
+
+// arma estimation with two overloaded interfaces beneath
+
+py::dict *arma (const std::string y,
+                const py::tuple &tup,
+                const py::kwargs &kwargs)
+{
+    py::dict *res = new py::dict;
+    DATASET *dset = NULL;
+    MODEL *model;
+    gretlopt opt = OPT_NONE;
+    PRN *prn = NULL;
+    int y_number;
+    int *list;
+    int p, d, q;
+    int do_print = 0;
+    int err;
+
+    if (py::len(kwargs) > 0) {
+        opt = unpack_kwargs(kwargs, ARMA, &do_print, &dset);
+    } else {
+        dset = DSET;
+    }
+    if (dset == NULL) {
+        delete res;
+        throw std::runtime_error("No dataset is available");
+    }
+
+    y_number = current_series_index(dset, y.c_str());
+    if (y_number == -1) {
+        delete res;
+        throw std::runtime_error(std::string("There is no variable: ") + y);
+    }
+
+    p = d = q = 0;
+    get_arma_order(tup, &p, &d, &q);
+
+    model = gretl_model_new();
+    list = gretl_list_new(5);
+    if (do_print) {
+        prn = gretl_print_new(GRETL_PRINT_STDOUT, NULL);
+    }
+
+    list[1] = p;        /* AR order */
+    list[2] = d;        /* order of integration */
+    list[3] = q;        /* MA order */
+    list[4] = LISTSEP;  /* separator */
+    list[5] = y_number; /* position of dependent variable in dataset */
+
+    *model = arma(list, NULL, dset, opt, prn);
+    err = model->errcode;
+
+    if (err) {
+        errmsg(err, prn);
+    } else {
+        gretl_model_to_dict(model, dset, *res);
+        if (do_print) {
+            printmodel(model, dset, OPT_NONE, prn);
+        }
+    }
+
+    if (dset != DSET) {
+        destroy_dataset(dset);
+    }
+
+    gretl_model_free(model);
+    free(list);
+    gretl_print_destroy(prn);
+
+    return res;
+}
+
+// convert from a simple R-style formula to a gretl list
+
+static int *list_from_formula (const char *formula,
+                               DATASET *dset)
+{
+    char *tmp = gretl_strdup(formula);
+    int *list;
+    int err = 0;
+
+    gretl_charsub(tmp, '~', ' ');
+    gretl_charsub(tmp, '+', ' ');
+    list = generate_list(tmp, dset, 0, &err);
+    free(tmp);
+
+    return list;
+}
+
 // "Proof of concept" function for supporting more than one
 //  estimation method
 
@@ -360,7 +371,6 @@ static py::dict *regression_wrapper (const std::string formula,
     } else {
         dset = DSET;
     }
-
     if (dset == NULL) {
         throw std::runtime_error("No dataset is available");
     }

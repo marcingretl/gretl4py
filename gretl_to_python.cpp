@@ -39,30 +39,14 @@ PYBIND11_MODULE(gretl, m) {
 
     // model estimation
     // ARMA
-    m.def("arma",
-	  py::overload_cast<const py::dict &, const std::string,
-          int, int, int, bool> (&arma),
-          py::arg("data").none(false),
+    m.def("arma", &arma,
           py::arg("y").none(false),
-          py::arg("p") = 1,
-          py::arg("d") = 0,
-          py::arg("q") = 0,
-          py::arg("print") = false,
+          py::arg("order").none(false),
           py::return_value_policy::take_ownership);
-    m.def("arma",
-	  py::overload_cast<const std::string, int, int, int, bool> (&arma),
-          py::arg("y").none(false),
-          py::arg("p") = 1,
-          py::arg("d") = 0,
-          py::arg("q") = 0,
-          py::arg("print") = false,
-          py::return_value_policy::take_ownership);
-
     // OLS
     m.def("ols", &ols,
           py::arg("formula").none(false),
           py::return_value_policy::take_ownership);
-
     // Logit and probit
     m.def("logit", &logit,
           py::arg("formula").none(false),

@@ -26,8 +26,7 @@ void printdata (bool namesonly);
 py::dict *get_gretl_data (const std::string fname);
 
 // model estimation
-py::dict *arma (const py::dict &data, const std::string y, int p, int d, int q, bool print);
-py::dict *arma (const std::string y, int p, int d, int q, bool print);
+py::dict *arma (const std::string y, const py::tuple &tup, const py::kwargs &kwargs);
 
 py::dict *ols (const std::string formula, const py::kwargs &kwargs);
 
