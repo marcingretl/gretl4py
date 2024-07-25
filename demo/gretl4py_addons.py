@@ -27,13 +27,13 @@ def df2dict(dframe, pd=1):
     '''turns a pandas dataframe into a dictionary gretl understands'''
 
     mydata = dframe.to_numpy(copy=True)
-    test = dict()
-    test["varname"] = dframe.columns[1:]
-    test["data_array"] = numpy.asfortranarray(numpy.array([row[1:] for row in mydata], numpy.double))
-    test["periodicity"] = pd
-    test["obs_labels"] = [row[0] for row in mydata]
+    d = dict()
+    d["varname"] = dframe.columns[1:]
+    d["data_array"] = numpy.asfortranarray(numpy.array([row[1:] for row in mydata], numpy.double))
+    d["periodicity"] = pd
+    d["obs_labels"] = [row[0] for row in mydata]
 
-    return test
+    return d
 
 def gretl_model_print(MODEL):
     '''Function prints libgretl model'''
