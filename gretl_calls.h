@@ -30,7 +30,6 @@ py::dict *arma (const py::dict &data, const std::string y, int p, int d, int q, 
 py::dict *arma (const std::string y, int p, int d, int q, bool print);
 
 py::dict *ols (const std::string formula, const py::dict &data, bool print);
-py::dict *ols (const std::string formula, bool print);
 
 py::dict *logit (const std::string formula, const py::dict &data, bool print);
 

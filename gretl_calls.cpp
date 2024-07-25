@@ -392,24 +392,40 @@ py::dict *regress_with_global_data (int ci,
 // thin wrappers for specific estimators
 
 py::dict *ols (const std::string formula,
-               const py::dict &data, bool print)
+               const py::dict &data = py::dict(),
+               bool print = false)
 {
-    return regress_with_specified_data(OLS, formula, data, print);
-}
+    int n = py::len(data);
 
-py::dict *ols (const std::string formula, bool print)
-{
-    return regress_with_global_data(OLS, formula, print);
+    if (n == 0) {
+        return regress_with_global_data(OLS, formula, print);
+    } else {
+        return regress_with_specified_data(OLS, formula, data, print);
+    }
 }
 
 py::dict *logit (const std::string formula,
-                 const py::dict &data, bool print)
+                 const py::dict &data = py::dict(),
+                 bool print = false)
 {
-    return regress_with_specified_data(LOGIT, formula, data, print);
+    int n = py::len(data);
+
+    if (n == 0) {
+        return regress_with_global_data(LOGIT, formula, print);
+    } else {
+        return regress_with_specified_data(LOGIT, formula, data, print);
+    }
 }
 
 py::dict *probit (const std::string formula,
-                  const py::dict &data, bool print)
+                  const py::dict &data = py::dict(),
+                  bool print = false)
 {
-    return regress_with_specified_data(PROBIT, formula, data, print);
+    int n = py::len(data);
+
+    if (n == 0) {
+        return regress_with_global_data(PROBIT, formula, print);
+    } else {
+        return regress_with_specified_data(PROBIT, formula, data, print);
+    }
 }
