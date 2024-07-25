@@ -3,6 +3,7 @@
 //#include <pybind11/stl.h>
 #include "gretl_python_data.h"
 #include <gretl/matrix_extra.h>
+#include <gretl/gretl_model.h>
 #include <iostream>
 #include <string>
 
@@ -18,16 +19,11 @@ void gretl_model_to_dict (MODEL *model, DATASET *dset, py::dict &pydict)
     //
     py::dict coeff, sderr, pvalue, criterion;
     py::array_t<double, py::array::f_style> vcv({model->ncoeff, model->ncoeff});
-    std::vector<GretlCmdIndex> ZscoreCI{ARMA, LOGIT, PROBIT}; // if number of such cases is small we may switch to simple if()
-    std::vector<GretlCmdIndex>::iterator it;
+    bool zscore = ASYMPTOTIC_MODEL(model->ci);
     char pname[VNAMELEN];
     gretl_matrix *m = NULL;
     int err = 0;
     double pval;
-
-    // we check if we deal with z-score or t-ratio based estimator
-    it = std::find(ZscoreCI.begin(), ZscoreCI.end(), model->ci);
-    bool zscore = (it != ZscoreCI.end() ? true : false);
 
     // "hidden" entries (for internal use only)
     pydict[py::cast("_zscore")] = zscore;
