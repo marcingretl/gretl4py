@@ -10,3 +10,5 @@ print('seasonal arma (0 1 2, 0 1 1)\n')
 res = gretl.arma(y='lg', order=(0,1,2), seasonal=(0,1,1), nc=True, print=True)
 print('\n\at python level:')
 gretl_model_print(res)
+
+

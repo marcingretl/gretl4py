@@ -84,6 +84,8 @@ void gretl_model_to_dict (MODEL *model, DATASET *dset, py::dict &pydict)
     pydict[py::cast("esttime")] = model->esttime;
 }
 
+#if 0
+
 static void copy_string_from_python_dict (const py::dict &pydict,
                                           const char *key, char *dest,
                                           int n_bytes, int offset = 0)
@@ -102,6 +104,25 @@ static void copy_string_from_python_dict (const py::dict &pydict,
 
     str.erase(std::remove_if(str.begin(), str.end(), ::isspace), str.end());
     str.copy(dest, n_bytes, offset);
+}
+
+#endif
+
+static int get_int_from_python_dict (const py::dict &pydict,
+                                     const char *key,
+                                     int deflt)
+{
+    int ret = deflt;
+
+    if (pydict.contains(key)) {
+        auto element = pydict[py::cast(key)];
+
+        if (py::isinstance<py::int_>(element)) {
+            ret = py::cast<int>(element);
+        }
+    }
+
+    return ret;
 }
 
 // two overloaded
@@ -209,9 +230,10 @@ static void numpy_array_to_gretl_storage (const py::dict &pydict,
         throw std::runtime_error("Element 'data_array' of given dictionary is not of NumPy array type.");
     }
 
-    ssize_t rows, cols;
+    ssize_t rows, cols, colsize;
     int fortranarray;
     double *data_array = NULL;
+    int k;
 
     // the old code: do not delete for a while
     //py::array_t<double> pynum_array = py::cast<py::array>(pydict[py::cast("data_array")]);
@@ -227,12 +249,15 @@ static void numpy_array_to_gretl_storage (const py::dict &pydict,
     if (allocate_Z(dset, OPT_NONE)) {
         throw std::runtime_error("Matrix allocation failed.");
     }
-    for (int i=0; i<dset->v-1; i++) {
+
+    colsize = rows * sizeof(double);
+    for (int i=1; i<dset->v; i++) {
+        k = i - 1;
         if (fortranarray) {
-            std::memcpy(dset->Z[i+1], data_array+i*rows, rows * sizeof(double));
+            std::memcpy(dset->Z[i], data_array + k*rows, colsize);
         } else {
             for (int j=0; j<rows; j++) {
-                *(dset->Z[i+1]+j) = *(data_array+i+j*cols);
+                dset->Z[i][j] = *(data_array + k + j*cols);
             }
         }
     }
@@ -248,7 +273,8 @@ void numpy_dict_to_gretl_dset (const py::dict &pydict,
     //
     py::list pylist;
     std::string *strBUF;
-    char periodicity[16];
+    char pdstr[16];
+    int pd;
 
     if (dset == NULL) {
         throw std::runtime_error("Dataset allocation failed.");
@@ -281,9 +307,14 @@ void numpy_dict_to_gretl_dset (const py::dict &pydict,
     }
     delete []strBUF;
 
+    if (pydict.contains("structure")) {
+        dset->structure = pydict["structure"].cast<int>();
+    }
+
     // FIXME: maybe it's possible automatically, i.e. without sending it from Python
-    copy_string_from_python_dict(pydict, "periodicity", periodicity, 16);
-    set_obs(periodicity, dset->S[0], dset, OPT_T);
+    pd = get_int_from_python_dict(pydict, "pd", 1);
+    sprintf(pdstr, "%d", pd);
+    set_obs(pdstr, dset->S[0], dset, OPT_T);
 }
 
 void gretl_dset_to_numpy_dict (char *fname, py::dict &pydict)
@@ -307,7 +338,8 @@ void gretl_dset_to_numpy_dict (char *fname, py::dict &pydict)
         throw std::runtime_error("Reading data from '" + fname_copy + "' file failed.");
     }
 
-    pydict["periodicity"] = dset->pd;
+    pydict[py::cast("pd")] = dset->pd;
+    pydict[py::cast("structure")] = dset->structure;
 
     // copy across the data values
     py::array_t<double, py::array::f_style> Z({dset->n, dset->v});
@@ -345,7 +377,6 @@ void gretl_dset_to_numpy_dict (char *fname, py::dict &pydict)
 
 DATASET *gretl_load_global_dataset (char *fname)
 {
-    //
     // load gretl data from file to global DSET
     //
     DATASET *dset = datainfo_new();
