@@ -24,9 +24,6 @@ gretl_calls.o: gretl_calls.cpp
 gretl_to_python.o: gretl_to_python.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@ -fPIC $(PYBIND) $(GRETLIN)
 
-demoscript: $(MODULE_NAME) demo/demo.py
-	cd demo ; python3 demo.py
-
 tags:
 	etags *.cpp *.h
 

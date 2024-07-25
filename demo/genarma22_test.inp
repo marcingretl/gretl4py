@@ -1,0 +1,18 @@
+set verbose off
+set seed 2507241115
+
+nulldata 1024
+setobs 1 1 --special-time-series
+
+phi = {1.8, -0.9}
+theta = {1, 0.25, -0.5}
+
+series y = filter(normal(), theta, phi)
+
+# check
+
+arima 2 2 ; y
+
+# save the data
+
+store large_arma22.csv y
