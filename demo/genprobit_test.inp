@@ -1,0 +1,22 @@
+set verbose off
+set seed 13122507
+
+nulldata 4096
+k = 24
+cor = 0.5
+Cov = mshape(cor, k, k)
+Cov[diag] += 1 - cor
+mX = mnormal($nobs, k) * cholesky(Cov)'
+list X = mat2list(mX, "x")
+series y = (3 + sum(X) + normal()*sqrt(k)) > 0
+
+# check
+
+probit y const X
+
+# prepare formula string
+outfile prob_frml.txt --quiet
+    eval strsub(varname(X), ",", "+")
+end outfile
+
+store large_probit.csv index y X

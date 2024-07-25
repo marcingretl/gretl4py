@@ -9,5 +9,8 @@ pandas: pandas_test.py
 arma_speed: genarma22_test.inp arma_speed.py
 	gretlcli -b genarma22_test.inp; python3 arma_speed.py
 
+probit_speed: genprobit_test.inp probit_speed.py
+	gretlcli -b genprobit_test.inp; python3 probit_speed.py
+
 clean:
-	rm -f large_arma22.csv *~
+	rm -f large_arma22.csv large_probit.csv prob_frml.txt *~
