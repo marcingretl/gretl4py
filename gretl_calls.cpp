@@ -256,13 +256,13 @@ static gretlopt options_from_python_dict (const py::dict &d, int ci)
 {
     int opt, opts = OPT_NONE;
     OptStatus status;
+    char numstr[32];
 
     for (auto &item : d) {
         if (!py::isinstance<py::str>(item.first)) {
             throw std::runtime_error("option key must be a string");
         }
         const std::string &key = item.first.cast<std::string>();
-        printf(" key: %s\n", key.c_str());
 
         // check validity of @opt for @ci
         opt = valid_long_opt(ci, key.c_str(), &status);
@@ -270,7 +270,7 @@ static gretlopt options_from_python_dict (const py::dict &d, int ci)
             throw std::runtime_error(std::string("invalid option flag ") + key);
         }
         if (status == 0) {
-            // no parameter wanted, but here we'll accept a boolean
+            // no parameter wanted, but we'll accept a boolean
             if (py::isinstance<py::int_>(item.second)) {
                 int ival = item.second.cast<int>();
 
@@ -282,23 +282,18 @@ static gretlopt options_from_python_dict (const py::dict &d, int ci)
             }
         } else {
             // parameter accepted, or required
-            char numstr[32];
-
             if (py::isinstance<py::str>(item.second)) {
                 const std::string &sval = item.second.cast<std::string>();
 
-                printf("  value is string: %s\n", sval.c_str());
                 push_option_param(ci, (gretlopt) opt, gretl_strdup(sval.c_str()));
              } else if (py::isinstance<py::int_>(item.second)) {
                 int ival = item.second.cast<int>();
 
-                printf("  value is int: %d\n", ival);
                 sprintf(numstr, "%d", ival);
                 push_option_param(ci, (gretlopt) opt, gretl_strdup(numstr));
             } else if (py::isinstance<py::float_>(item.second)) {
                 double dval = item.second.cast<double>();
 
-                printf("  value is float: %g\n", dval);
                 sprintf(numstr, "%g", (double) dval);
                 push_option_param(ci, (gretlopt) opt, gretl_strdup(numstr));
             } else {

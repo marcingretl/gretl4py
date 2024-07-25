@@ -4,12 +4,12 @@ import gretl
 from gretl4py_addons import gretl_model_print
 
 mydata = gretl.get_gretl_data("data4-1.gdt")
-print("\nOLS example\n")
+
+print("\nOLS example, no options\n")
 res = gretl.ols('price ~ 0 + sqft + bedrms', data=mydata, print=True)
 gretl_model_print(res)
 
-mydata = gretl.get_gretl_data("data4-1.gdt")
-print("\nOLS example\n")
+print("\nOLS example with option\n")
 res = gretl.ols('price ~ 0 + sqft + bedrms', data=mydata, options={'robust':True}, print=True)
 gretl_model_print(res)
 
