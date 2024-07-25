@@ -1,15 +1,13 @@
 import sys
 sys.path.append("../")
 import gretl
-import csv
 import numpy
 import pandas
-from gretl_print import gretl_model_print
-from csv2dict import csv2dict
-from df2dict import df2dict
+from gretl4py_addons import gretl_model_print
+from gretl4py_addons import csv2dict
+from gretl4py_addons import df2dict
 
-DSET = csv2dict('data9-7.csv')
-DSET["periodicity"] = 4
+DSET = csv2dict('data9-7.csv', 4)
 
 print("Loading global dataset:")
 gretl.load_data(DSET)
