@@ -252,7 +252,7 @@ static int *list_from_formula (const char *formula,
 // "Proof of concept" function for getting the options for
 //  a specified gretl command
 
-static gretlopt options_from_python_dict (py::dict &d, int ci)
+static gretlopt options_from_python_dict (const py::dict &d, int ci)
 {
     int opt, opts = OPT_NONE;
     OptStatus status;
@@ -310,24 +310,23 @@ static gretlopt options_from_python_dict (py::dict &d, int ci)
     return (gretlopt) opts;
 }
 
-// temporary driver for options_from_python_dict()
-
-void dict2opts (py::dict &d)
-{
-    options_from_python_dict(d, OLS);
-}
-
 // "Proof of concept" function for supporting more than one
 //  estimation method
 
 static void regression_wrapper (int ci, const std::string formula,
                                 bool print, DATASET *dset,
+                                const py::dict &options,
                                 py::dict &res)
 {
     MODEL *model = NULL;
     PRN *prn = NULL;
     int *list = NULL;
+    gretlopt opt = OPT_NONE;
     int err = 0;
+
+    if (py::len(options) > 0) {
+        opt = options_from_python_dict(options, ci);
+    }
 
     list = list_from_formula(formula.c_str(), dset);
     model = gretl_model_new();
@@ -336,9 +335,9 @@ static void regression_wrapper (int ci, const std::string formula,
     }
 
     if (ci == OLS) {
-        *model = lsq(list, dset, OLS, OPT_NONE);
+        *model = lsq(list, dset, OLS, opt);
     } else if (ci == LOGIT || ci == PROBIT) {
-        *model = logit_probit(list, dset, ci, OPT_NONE, prn);
+        *model = logit_probit(list, dset, ci, opt, prn);
     } else {
         throw std::runtime_error("Unsupported estimator");
     }
@@ -362,13 +361,15 @@ static void regression_wrapper (int ci, const std::string formula,
 
 static py::dict
 *regress_with_specified_data (int ci, const std::string formula,
-                              const py::dict &data, bool print)
+                              const py::dict &data,
+                              const py::dict &options,
+                              bool print)
 {
     py::dict *res = new py::dict;
     DATASET *dset = datainfo_new();
 
     numpy_dict_to_gretl_dset(data, dset);
-    regression_wrapper(ci, formula, print, dset, *res);
+    regression_wrapper(ci, formula, print, dset, options, *res);
     destroy_dataset(dset);
 
     return res;
@@ -376,6 +377,7 @@ static py::dict
 
 py::dict *regress_with_global_data (int ci,
                                     const std::string formula,
+                                    const py::dict &options,
                                     bool print)
 {
     py::dict *res = new py::dict;
@@ -383,7 +385,7 @@ py::dict *regress_with_global_data (int ci,
     if (DSET == NULL) {
         throw std::runtime_error("No dataset in place");
     } else {
-        regression_wrapper(ci, formula, print, DSET, *res);
+        regression_wrapper(ci, formula, print, DSET, options, *res);
     }
 
     return res;
@@ -393,39 +395,42 @@ py::dict *regress_with_global_data (int ci,
 
 py::dict *ols (const std::string formula,
                const py::dict &data = py::dict(),
+               const py::dict &options = py::dict(),
                bool print = false)
 {
     int n = py::len(data);
 
     if (n == 0) {
-        return regress_with_global_data(OLS, formula, print);
+        return regress_with_global_data(OLS, formula, options, print);
     } else {
-        return regress_with_specified_data(OLS, formula, data, print);
+        return regress_with_specified_data(OLS, formula, data, options, print);
     }
 }
 
 py::dict *logit (const std::string formula,
                  const py::dict &data = py::dict(),
+                 const py::dict &options = py::dict(),
                  bool print = false)
 {
     int n = py::len(data);
 
     if (n == 0) {
-        return regress_with_global_data(LOGIT, formula, print);
+        return regress_with_global_data(LOGIT, formula, options, print);
     } else {
-        return regress_with_specified_data(LOGIT, formula, data, print);
+        return regress_with_specified_data(LOGIT, formula, data, options, print);
     }
 }
 
 py::dict *probit (const std::string formula,
                   const py::dict &data = py::dict(),
+                  const py::dict &options = py::dict(),
                   bool print = false)
 {
     int n = py::len(data);
 
     if (n == 0) {
-        return regress_with_global_data(PROBIT, formula, print);
+        return regress_with_global_data(PROBIT, formula, options, print);
     } else {
-        return regress_with_specified_data(PROBIT, formula, data, print);
+        return regress_with_specified_data(PROBIT, formula, data, options, print);
     }
 }
