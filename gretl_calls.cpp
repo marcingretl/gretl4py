@@ -419,31 +419,3 @@ py::dict *probit (const std::string formula,
 {
     return regression_wrapper(formula, kwargs, PROBIT);
 }
-
-static void pass_kwargs (const py::kwargs &kwargs)
-{
-    fprintf(stderr, "in pass_kwargs\n");
-    for (auto &item : kwargs) {
-        const std::string &key = item.first.cast<std::string>();
-
-        fprintf(stderr, " key: %s\n", key.c_str());
-    }
-}
-
-void kwtest (const std::string formula,
-             const py::kwargs &kwargs)
-{
-    int printval = 0;
-
-    for (auto &item : kwargs) {
-        const std::string &key = item.first.cast<std::string>();
-
-        if (key == "print") {
-            printval = item.second.cast<int>();
-        } else if (key == "data") {
-            fprintf(stderr, "got data argument\n");
-        }
-    }
-    fprintf(stderr, "printval = %d\n", printval);
-    pass_kwargs(kwargs);
-}

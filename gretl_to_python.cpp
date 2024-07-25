@@ -70,7 +70,4 @@ PYBIND11_MODULE(gretl, m) {
     m.def("probit", &probit,
           py::arg("formula").none(false),
           py::return_value_policy::take_ownership);
-
-    m.def("kwtest", &kwtest,
-          py::arg("formula").none(false));
 }

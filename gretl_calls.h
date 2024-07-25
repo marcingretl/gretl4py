@@ -35,4 +35,3 @@ py::dict *logit (const std::string formula, const py::kwargs &kwargs);
 
 py::dict *probit (const std::string formula, const py::kwargs &kwargs);
 
-void kwtest (const std::string formula, const py::kwargs &kwargs);

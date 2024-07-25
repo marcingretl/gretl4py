@@ -13,8 +13,6 @@ print("\nOLS example with option\n")
 res = gretl.ols('price ~ 0 + sqft + bedrms', data=mydata, robust=True, print=True)
 gretl_model_print(res)
 
-sys.exit()
-
 ldata = gretl.get_gretl_data("greene19_1.gdt")
 
 res = gretl.logit('GRADE ~ 0 GPA TUCE PSI', data=ldata, print=True)
