@@ -307,6 +307,8 @@ void gretl_dset_to_numpy_dict (char *fname, py::dict &pydict)
         throw std::runtime_error("Reading data from '" + fname_copy + "' file failed.");
     }
 
+    pydict["periodicity"] = dset->pd;
+
     // copy across the data values
     py::array_t<double, py::array::f_style> Z({dset->n, dset->v});
     tmp = (double *) Z.request().ptr;
@@ -329,15 +331,34 @@ void gretl_dset_to_numpy_dict (char *fname, py::dict &pydict)
             labels->append(dset->S[i]);
         }
     } else {
+        char s[OBSLEN];
+
         for (i=0; i<dset->n; i++) {
-            labels->append(std::to_string(i+1));
+            labels->append(ntolabel(s, i, dset));
         }
     }
     pydict[py::cast("obs_labels")] = *labels;
     delete labels;
 
-    // copy dataset periodicity
-    pydict[py::cast("periodicity")] = dset->pd;
-
     destroy_dataset(dset);
+}
+
+DATASET *gretl_load_global_dataset (char *fname)
+{
+    //
+    // load gretl data from file to global DSET
+    //
+    DATASET *dset = datainfo_new();
+    int err = 0;
+
+    dset = datainfo_new();
+    err = gretl_get_data(fname, dset, OPT_NONE, NULL);
+
+    if (err) {
+        std::string fname_copy(fname);
+        destroy_dataset(dset);
+        throw std::runtime_error("Reading data from '" + fname_copy + "' file failed.");
+    }
+
+    return dset;
 }

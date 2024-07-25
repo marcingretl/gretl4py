@@ -153,6 +153,15 @@ py::dict *get_gretl_data (const std::string fname)
     return res;
 }
 
+void attach_gretl_data (const std::string fname)
+{
+    DATASET *dset;
+    char tmp[2048];
+
+    strcpy(tmp, fname.c_str());
+    DSET = gretl_load_global_dataset(tmp);
+}
+
 // model estimation
 
 // Apparatus to handle named optional arguments, including 'print'
@@ -191,6 +200,9 @@ static gretlopt unpack_kwargs (const py::kwargs &kwargs,
             // special case: 'print' is not a gretl option
             is_print = true;
             status = OPT_NO_PARM;
+        } else if (key == "seasonal" && ci == ARMA) {
+            // arma special: ignore here
+            continue;
         } else {
             // should be a regular gretl option: check its validity in
             // the context of @ci
@@ -276,8 +288,10 @@ py::dict *arma (const std::string y,
     int y_number;
     int *list;
     int p, d, q;
+    int P, D, Q;
     int do_print = 0;
-    int err;
+    int seasonal = 0;
+    int i, err;
 
     if (py::len(kwargs) > 0) {
         opt = unpack_kwargs(kwargs, ARMA, &do_print, &dset);
@@ -296,19 +310,39 @@ py::dict *arma (const std::string y,
     }
 
     p = d = q = 0;
+    P = D = Q = 0;
     get_arma_order(tup, &p, &d, &q);
 
+    if (kwargs.contains("seasonal") && !kwargs["seasonal"].is_none()) {
+        if (py::isinstance<py::tuple>(kwargs["seasonal"])) {
+            const py::tuple seas = kwargs["seasonal"].cast<py::tuple>();
+
+            get_arma_order(seas, &P, &D, &Q);
+            if (P > 0 || D > 0 || Q > 0) {
+                seasonal = 1;
+            }
+        }
+    }
+
     model = gretl_model_new();
-    list = gretl_list_new(5);
+    list = gretl_list_new(seasonal? 9 : 5);
     if (do_print) {
         prn = gretl_print_new(GRETL_PRINT_STDOUT, NULL);
     }
 
-    list[1] = p;        /* AR order */
-    list[2] = d;        /* order of integration */
-    list[3] = q;        /* MA order */
-    list[4] = LISTSEP;  /* separator */
-    list[5] = y_number; /* position of dependent variable in dataset */
+    i = 1;
+    list[i++] = p;
+    list[i++] = d;
+    list[i++] = q;
+    if (seasonal) {
+        list[i++] = LISTSEP;
+        list[i++] = P;
+        list[i++] = D;
+        list[i++] = Q;
+    }
+    list[i++] = LISTSEP;
+    list[i++] = y_number;
+    printlist(list, "arma list");
 
     *model = arma(list, NULL, dset, opt, prn);
     err = model->errcode;
