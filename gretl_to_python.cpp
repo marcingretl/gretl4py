@@ -61,22 +61,16 @@ PYBIND11_MODULE(gretl, m) {
     // OLS
     m.def("ols", &ols,
           py::arg("formula").none(false),
-          py::arg("data") = py::dict(),
-          py::arg("options") = py::dict(),
-          py::arg("print") = false,
           py::return_value_policy::take_ownership);
 
     // Logit and probit
     m.def("logit", &logit,
           py::arg("formula").none(false),
-          py::arg("data") = py::dict(),
-          py::arg("options") = py::dict(),
-          py::arg("print") = false,
           py::return_value_policy::take_ownership);
     m.def("probit", &probit,
           py::arg("formula").none(false),
-          py::arg("data") = py::dict(),
-          py::arg("options") = py::dict(),
-          py::arg("print") = false,
           py::return_value_policy::take_ownership);
+
+    m.def("kwtest", &kwtest,
+          py::arg("formula").none(false));
 }

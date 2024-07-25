@@ -20,8 +20,8 @@ void set (const std::string key);
 void load_data (const py::array_t<double> &pynum_array);
 void load_data (const py::dict &pydict);
 
-void printdata (const py::dict &data, bool varamesonly);
-void printdata (bool varamesonly);
+void printdata (const py::dict &data, bool namesonly);
+void printdata (bool namesonly);
 
 py::dict *get_gretl_data (const std::string fname);
 
@@ -29,18 +29,10 @@ py::dict *get_gretl_data (const std::string fname);
 py::dict *arma (const py::dict &data, const std::string y, int p, int d, int q, bool print);
 py::dict *arma (const std::string y, int p, int d, int q, bool print);
 
-py::dict *ols (const std::string formula,
-               const py::dict &data,
-               const py::dict &options,
-               bool print);
+py::dict *ols (const std::string formula, const py::kwargs &kwargs);
 
-py::dict *logit (const std::string formula,
-                 const py::dict &data,
-                 const py::dict &options,
-                 bool print);
+py::dict *logit (const std::string formula, const py::kwargs &kwargs);
 
-py::dict *probit (const std::string formula,
-                  const py::dict &data,
-                  const py::dict &options,
-                  bool print);
+py::dict *probit (const std::string formula, const py::kwargs &kwargs);
 
+void kwtest (const std::string formula, const py::kwargs &kwargs);

@@ -124,13 +124,13 @@ static void do_printdata (DATASET *dset, const std::string *varnames,
     }
 }
 
-void printdata (const py::dict &data, bool varamesonly)
+void printdata (const py::dict &data, bool namesonly)
 {
     DATASET *dset = datainfo_new();
 
     numpy_dict_to_gretl_dset(data, dset);
 
-    do_printdata(dset, NULL, NULL, OPT_O, varamesonly);
+    do_printdata(dset, NULL, NULL, OPT_O, namesonly);
     destroy_dataset(dset);
 }
 
@@ -252,30 +252,57 @@ static int *list_from_formula (const char *formula,
 // "Proof of concept" function for getting the options for
 //  a specified gretl command
 
-static gretlopt options_from_python_dict (const py::dict &d, int ci)
+static gretlopt unpack_kwargs (const py::kwargs &kwargs,
+                               int ci, int *do_print,
+                               DATASET **pdset)
 {
     int opt, opts = OPT_NONE;
     OptStatus status;
+    bool got_data = false;
     char numstr[32];
 
-    for (auto &item : d) {
+    for (auto &item : kwargs) {
+        bool is_print = false;
+
         if (!py::isinstance<py::str>(item.first)) {
             throw std::runtime_error("option key must be a string");
         }
         const std::string &key = item.first.cast<std::string>();
 
-        // check validity of @opt for @ci
-        opt = valid_long_opt(ci, key.c_str(), &status);
-        if (opt == 0) {
-            throw std::runtime_error(std::string("invalid option flag ") + key);
+        if (!strcmp(key.c_str(), "data")) {
+            // special
+            got_data = true;
+            if (py::isinstance<py::dict>(item.second)) {
+                const py::dict data = item.second.cast<py::dict>();
+
+                *pdset = datainfo_new();
+                numpy_dict_to_gretl_dset(data, *pdset);
+            } else {
+                throw std::runtime_error("'data' must be a dictionary");
+            }
+            continue;
+        } if (!strcmp(key.c_str(), "print")) {
+            // special
+            is_print = true;
+            status = OPT_NO_PARM;
+        } else {
+            // a gretl option: check its validity in the context of @ci
+            opt = valid_long_opt(ci, key.c_str(), &status);
+            if (opt == 0) {
+                throw std::runtime_error(std::string("invalid option flag ") + key);
+            }
         }
-        if (status == 0) {
+        if (status == OPT_NO_PARM) {
             // no parameter wanted, but we'll accept a boolean
             if (py::isinstance<py::int_>(item.second)) {
                 int ival = item.second.cast<int>();
 
                 if (ival == 1) {
-                    opts |= opt;
+                    if (is_print) {
+                        *do_print = 1;
+                    } else {
+                        opts |= opt;
+                    }
                 } else if (ival != 0) {
                     throw std::runtime_error("invalid option parameter");
                 }
@@ -302,30 +329,42 @@ static gretlopt options_from_python_dict (const py::dict &d, int ci)
         }
     }
 
+    if (!got_data) {
+        *pdset = DSET;
+    }
+
     return (gretlopt) opts;
 }
 
 // "Proof of concept" function for supporting more than one
 //  estimation method
 
-static void regression_wrapper (int ci, const std::string formula,
-                                bool print, DATASET *dset,
-                                const py::dict &options,
-                                py::dict &res)
+static py::dict *regression_wrapper (const std::string formula,
+                                     const py::kwargs &kwargs,
+                                     int ci)
 {
+    py::dict *res = new py::dict;
+    DATASET *dset = NULL;
     MODEL *model = NULL;
     PRN *prn = NULL;
     int *list = NULL;
     gretlopt opt = OPT_NONE;
+    int do_print = 0;
     int err = 0;
 
-    if (py::len(options) > 0) {
-        opt = options_from_python_dict(options, ci);
+    if (py::len(kwargs) > 0) {
+        opt = unpack_kwargs(kwargs, ci, &do_print, &dset);
+    } else {
+        dset = DSET;
+    }
+
+    if (dset == NULL) {
+        throw std::runtime_error("No dataset is available");
     }
 
     list = list_from_formula(formula.c_str(), dset);
     model = gretl_model_new();
-    if (print) {
+    if (do_print) {
         prn = gretl_print_new(GRETL_PRINT_STDOUT, NULL);
     }
 
@@ -341,47 +380,19 @@ static void regression_wrapper (int ci, const std::string formula,
     if (err) {
         errmsg(err, prn);
     } else {
-        gretl_model_to_dict(model, dset, res);
-        if (print) {
+        gretl_model_to_dict(model, dset, *res);
+        if (do_print) {
             printmodel(model, dset, OPT_NONE, prn);
         }
+    }
+
+    if (dset != DSET) {
+        destroy_dataset(dset);
     }
 
     free(list);
     gretl_print_destroy(prn);
     gretl_model_free(model);
-}
-
-// intermediate wrappers to handle specified versus global data
-
-static py::dict
-*regress_with_specified_data (int ci, const std::string formula,
-                              const py::dict &data,
-                              const py::dict &options,
-                              bool print)
-{
-    py::dict *res = new py::dict;
-    DATASET *dset = datainfo_new();
-
-    numpy_dict_to_gretl_dset(data, dset);
-    regression_wrapper(ci, formula, print, dset, options, *res);
-    destroy_dataset(dset);
-
-    return res;
-}
-
-py::dict *regress_with_global_data (int ci,
-                                    const std::string formula,
-                                    const py::dict &options,
-                                    bool print)
-{
-    py::dict *res = new py::dict;
-
-    if (DSET == NULL) {
-        throw std::runtime_error("No dataset in place");
-    } else {
-        regression_wrapper(ci, formula, print, DSET, options, *res);
-    }
 
     return res;
 }
@@ -389,43 +400,47 @@ py::dict *regress_with_global_data (int ci,
 // thin wrappers for specific estimators
 
 py::dict *ols (const std::string formula,
-               const py::dict &data = py::dict(),
-               const py::dict &options = py::dict(),
-               bool print = false)
+               const py::kwargs &kwargs)
 {
-    int n = py::len(data);
-
-    if (n == 0) {
-        return regress_with_global_data(OLS, formula, options, print);
-    } else {
-        return regress_with_specified_data(OLS, formula, data, options, print);
-    }
+    return regression_wrapper(formula, kwargs, OLS);
 }
 
 py::dict *logit (const std::string formula,
-                 const py::dict &data = py::dict(),
-                 const py::dict &options = py::dict(),
-                 bool print = false)
+                 const py::kwargs &kwargs)
 {
-    int n = py::len(data);
-
-    if (n == 0) {
-        return regress_with_global_data(LOGIT, formula, options, print);
-    } else {
-        return regress_with_specified_data(LOGIT, formula, data, options, print);
-    }
+    return regression_wrapper(formula, kwargs, LOGIT);
 }
 
 py::dict *probit (const std::string formula,
-                  const py::dict &data = py::dict(),
-                  const py::dict &options = py::dict(),
-                  bool print = false)
+                  const py::kwargs &kwargs)
 {
-    int n = py::len(data);
+    return regression_wrapper(formula, kwargs, PROBIT);
+}
 
-    if (n == 0) {
-        return regress_with_global_data(PROBIT, formula, options, print);
-    } else {
-        return regress_with_specified_data(PROBIT, formula, data, options, print);
+static void pass_kwargs (const py::kwargs &kwargs)
+{
+    fprintf(stderr, "in pass_kwargs\n");
+    for (auto &item : kwargs) {
+        const std::string &key = item.first.cast<std::string>();
+
+        fprintf(stderr, " key: %s\n", key.c_str());
     }
+}
+
+void kwtest (const std::string formula,
+             const py::kwargs &kwargs)
+{
+    int printval = 0;
+
+    for (auto &item : kwargs) {
+        const std::string &key = item.first.cast<std::string>();
+
+        if (key == "print") {
+            printval = item.second.cast<int>();
+        } else if (key == "data") {
+            fprintf(stderr, "got data argument\n");
+        }
+    }
+    fprintf(stderr, "printval = %d\n", printval);
+    pass_kwargs(kwargs);
 }
