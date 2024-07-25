@@ -1,7 +1,6 @@
-import numpy
-
 import sys
 sys.path.append("../")
+import numpy
 import gretl
 
 print("Python level:")

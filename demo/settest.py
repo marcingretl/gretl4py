@@ -1,7 +1,6 @@
 import sys
 sys.path.append("../")
 import gretl
-import numpy
 
 gretl.set('csv_delim')
 gretl.set('csv_delim', 'tab')
