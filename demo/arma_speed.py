@@ -4,8 +4,7 @@ import time
 
 import gretl
 import pandas
-# from gretl_print import gretl_model_print
-from df2dict import df2dict
+from gretl4py_addons import df2dict
 
 ARMAtest = pandas.read_csv('large_arma22.csv')
 MyDict = df2dict(ARMAtest)
