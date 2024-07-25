@@ -249,8 +249,8 @@ static int *list_from_formula (const char *formula,
     return list;
 }
 
-// "Proof of concept" function for getting the options for
-//  a specified gretl command
+// Apparatus to handle named optional arguments, including 'print'
+// and 'data' as well as gretl option flags and their parameters.
 
 static gretlopt unpack_kwargs (const py::kwargs &kwargs,
                                int ci, int *do_print,
@@ -269,8 +269,8 @@ static gretlopt unpack_kwargs (const py::kwargs &kwargs,
         }
         const std::string &key = item.first.cast<std::string>();
 
-        if (!strcmp(key.c_str(), "data")) {
-            // special
+        if (key == "data") {
+            // special case: get hold of dict for dataset
             got_data = true;
             if (py::isinstance<py::dict>(item.second)) {
                 const py::dict data = item.second.cast<py::dict>();
@@ -281,12 +281,13 @@ static gretlopt unpack_kwargs (const py::kwargs &kwargs,
                 throw std::runtime_error("'data' must be a dictionary");
             }
             continue;
-        } if (!strcmp(key.c_str(), "print")) {
-            // special
+        } if (key == "print") {
+            // special case: 'print' is not a gretl option
             is_print = true;
             status = OPT_NO_PARM;
         } else {
-            // a gretl option: check its validity in the context of @ci
+            // should be a regular gretl option: check its validity in
+            // the context of @ci
             opt = valid_long_opt(ci, key.c_str(), &status);
             if (opt == 0) {
                 throw std::runtime_error(std::string("invalid option flag ") + key);
@@ -298,6 +299,7 @@ static gretlopt unpack_kwargs (const py::kwargs &kwargs,
                 int ival = item.second.cast<int>();
 
                 if (ival == 1) {
+                    /* activate the option */
                     if (is_print) {
                         *do_print = 1;
                     } else {
@@ -308,7 +310,7 @@ static gretlopt unpack_kwargs (const py::kwargs &kwargs,
                 }
             }
         } else {
-            // parameter accepted, or required
+            // an option parameter is accepted, perhaps required
             if (py::isinstance<py::str>(item.second)) {
                 const std::string &sval = item.second.cast<std::string>();
 
@@ -330,6 +332,7 @@ static gretlopt unpack_kwargs (const py::kwargs &kwargs,
     }
 
     if (!got_data) {
+        // if we didn't get a 'data' specification, try for the global dataset
         *pdset = DSET;
     }
 
