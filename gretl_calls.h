@@ -31,6 +31,8 @@ py::dict *arma (const std::string y, const py::tuple &tup, const py::kwargs &kwa
 
 py::dict *ols (const std::string formula, const py::kwargs &kwargs);
 
+py::dict *wls (const std::string formula, const py::kwargs &kwargs);
+
 py::dict *logit (const std::string formula, const py::kwargs &kwargs);
 
 py::dict *probit (const std::string formula, const py::kwargs &kwargs);

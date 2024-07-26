@@ -403,7 +403,7 @@ static py::dict *regression_wrapper (const std::string formula,
         prn = gretl_print_new(GRETL_PRINT_STDOUT, NULL);
     }
 
-    if (ci == OLS) {
+    if (ci == OLS || ci == WLS) {
         *model = lsq(list, dset, OLS, opt);
     } else if (ci == LOGIT || ci == PROBIT) {
         *model = logit_probit(list, dset, ci, opt, prn);
@@ -442,6 +442,12 @@ py::dict *ols (const std::string formula,
                const py::kwargs &kwargs)
 {
     return regression_wrapper(formula, kwargs, OLS, NULL, NULL);
+}
+
+py::dict *wls (const std::string formula,
+               const py::kwargs &kwargs)
+{
+    return regression_wrapper(formula, kwargs, WLS, NULL, NULL);
 }
 
 py::dict *logit (const std::string formula,

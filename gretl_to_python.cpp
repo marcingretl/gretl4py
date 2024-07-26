@@ -50,7 +50,11 @@ PYBIND11_MODULE(gretl, m) {
     m.def("ols", &ols,
           py::arg("formula").none(false),
           py::return_value_policy::take_ownership);
-    // Logit and probit
+    // WLS
+    m.def("wls", &wls,
+          py::arg("formula").none(false),
+          py::return_value_policy::take_ownership);
+     // Logit and probit
     m.def("logit", &logit,
           py::arg("formula").none(false),
           py::return_value_policy::take_ownership);
