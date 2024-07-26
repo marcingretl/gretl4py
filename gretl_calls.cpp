@@ -50,14 +50,7 @@ void set (const std::string key, const std::string val)
 
 void set (const std::string key, int val)
 {
-    char sval[32];
-    int err;
-
-    sprintf(sval, "%d", val);
-    err = execute_set(key.c_str(), sval, NULL, OPT_NONE, NULL);
-    if (err) {
-        handle_gretl_error(err);
-    }
+    set(key, std::to_string(val).c_str());
 }
 
 // report a current "setvar" setting
