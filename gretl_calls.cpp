@@ -139,20 +139,14 @@ void printdata (bool varnames_only)
 py::dict *get_gretl_data (const std::string fname)
 {
     py::dict *res = new py::dict;
-    char tmp[2048];
 
-    strcpy(tmp, fname.c_str());
-    gretl_dset_to_numpy_dict(tmp, *res);
+    gretl_dset_to_numpy_dict(fname, *res);
     return res;
 }
 
 void attach_gretl_data (const std::string fname)
 {
-    DATASET *dset; // really unused?
-    char tmp[2048];
-
-    strcpy(tmp, fname.c_str());
-    DSET = gretl_load_global_dataset(tmp);
+    DSET = gretl_load_global_dataset(fname);
 }
 
 // model estimation
