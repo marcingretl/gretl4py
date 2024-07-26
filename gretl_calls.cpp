@@ -9,6 +9,12 @@
 
 static DATASET *DSET = NULL; // global dataset
 
+typedef MODEL (*BASIC_MODEL_FUNC) (const int *, DATASET *,
+                                   gretlopt, PRN *);
+typedef MODEL (*BASIC_MODEL_FUNC2) (int *, DATASET *,
+                                    gretlopt, PRN *);
+
+
 // module related tools
 
 void module_init ()
@@ -161,7 +167,6 @@ static gretlopt unpack_kwargs (const py::kwargs &kwargs,
     int opt, opts = OPT_NONE;
     OptStatus status;
     bool got_data = false;
-    //char numstr[32];
 
     for (auto &item : kwargs) {
         bool is_print = false;
@@ -218,17 +223,12 @@ static gretlopt unpack_kwargs (const py::kwargs &kwargs,
             // an option parameter is accepted, perhaps required
             if (py::isinstance<py::str>(item.second)) {
                 const std::string &sval = item.second.cast<std::string>();
-
                 push_option_param(ci, (gretlopt) opt, gretl_strdup(sval.c_str()));
              } else if (py::isinstance<py::int_>(item.second)) {
                 int ival = item.second.cast<int>();
-
-                //sprintf(numstr, "%d", ival);
                 push_option_param(ci, (gretlopt) opt, gretl_strdup(std::to_string(ival).c_str()));
             } else if (py::isinstance<py::float_>(item.second)) {
                 double dval = item.second.cast<double>();
-
-                //sprintf(numstr, "%g", (double) dval);
                 push_option_param(ci, (gretlopt) opt, gretl_strdup(std::to_string(dval).c_str()));
             } else {
                 throw std::runtime_error("unsupported option param type");
@@ -370,12 +370,14 @@ static int *list_from_formula (const char *formula,
     return list;
 }
 
-// "Proof of concept" function for supporting more than one
-//  estimation method
+// Function to support several estimation methods that have
+// the same "basic" signature, plus a few special cases
 
 static py::dict *regression_wrapper (const std::string formula,
                                      const py::kwargs &kwargs,
-                                     int ci)
+                                     int ci,
+                                     BASIC_MODEL_FUNC bmf,
+                                     BASIC_MODEL_FUNC2 bmf2)
 {
     py::dict *res = new py::dict;
     DATASET *dset = NULL;
@@ -405,6 +407,10 @@ static py::dict *regression_wrapper (const std::string formula,
         *model = lsq(list, dset, OLS, opt);
     } else if (ci == LOGIT || ci == PROBIT) {
         *model = logit_probit(list, dset, ci, opt, prn);
+    } else if (bmf != NULL) {
+        *model = (*bmf)(list, dset, opt, prn);
+    } else if (bmf2 != NULL) {
+        *model = (*bmf2)(list, dset, opt, prn);
     } else {
         throw std::runtime_error("Unsupported estimator");
     }
@@ -435,17 +441,17 @@ static py::dict *regression_wrapper (const std::string formula,
 py::dict *ols (const std::string formula,
                const py::kwargs &kwargs)
 {
-    return regression_wrapper(formula, kwargs, OLS);
+    return regression_wrapper(formula, kwargs, OLS, NULL, NULL);
 }
 
 py::dict *logit (const std::string formula,
                  const py::kwargs &kwargs)
 {
-    return regression_wrapper(formula, kwargs, LOGIT);
+    return regression_wrapper(formula, kwargs, LOGIT, NULL, NULL);
 }
 
 py::dict *probit (const std::string formula,
                   const py::kwargs &kwargs)
 {
-    return regression_wrapper(formula, kwargs, PROBIT);
+    return regression_wrapper(formula, kwargs, PROBIT, NULL, NULL);
 }
