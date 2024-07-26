@@ -16,7 +16,8 @@ struct arg_data {
 };
 
 struct model_func {
-    char name[32];
+    char gretl_funcname[32];
+    char pyname[32];
     int argc;
     struct arg_data *args;
 };
@@ -52,6 +53,12 @@ int has_basic_model_sig (struct model_func *mf)
 {
     int ret = 0;
 
+    /* for now, cut out functions that don't take a trailing
+       PRN* argument */
+    if (mf->argc < 4) {
+        return 0;
+    }
+
     if (mf->argc == 3 || mf->argc == 4) {
         ret = 1;
         if ((mf->args[0].typecode != gretl_clist &&
@@ -71,7 +78,20 @@ void model_func_init (struct model_func *mf,
                       const char *name,
                       int argc)
 {
-    strcpy(mf->name, name);
+
+    strcpy(mf->gretl_funcname, name);
+    /* FIXME */
+    if (strchr(name, '_')) {
+        char *tmp = gretl_strdup(name);
+        char *p = strchr(tmp, '_');
+
+        if (p != NULL) {
+            *p = '\0';
+        }
+        strcpy(mf->pyname, tmp);
+    } else {
+        strcpy(mf->pyname, name);
+    }
     mf->argc = argc;
     mf->args = calloc(argc, sizeof *mf->args);
 }
@@ -89,7 +109,7 @@ void output_basic_module_info (struct model_func *mf)
             "    m.def(\"%s\", &%s,\n"
             "          py::arg(\"formula\").none(false),\n"
             "          py::return_value_policy::take_ownership);\n",
-            mf->name, mf->name);
+            mf->pyname, mf->pyname);
 }
 
 /* output signature for inclusion in gretl_calls.h */
@@ -98,7 +118,7 @@ void output_basic_pysig (struct model_func *mf, FILE *fp)
 {
     fprintf(fp,
             "\npy::dict *%s (const std::string formula, const py::kwargs &kwargs)",
-            mf->name);
+            mf->pyname);
     if (fp == calls_h) {
         fputs(";\n", fp);
     } else {
@@ -110,29 +130,24 @@ void output_basic_pysig (struct model_func *mf, FILE *fp)
 
 void output_basic_pywrap (struct model_func *mf)
 {
-    gchar *ci_str = g_ascii_strup(mf->name, -1);
+    gchar *ci_str = g_ascii_strup(mf->pyname, -1);
     int code = get_type_code(mf->args[0].argtype);
 
     /* FIXME @ci_str may be wrong in many cases; by intent it's the
        string representation of the gretl command index for the
        estimator in question; but only sometimes will it be the
-       uppercase version of the model function name. The following
+       uppercase version of the model function name.
        may help in some cases.
     */
-    char *p = strchr(ci_str, '_');
-    if (p != NULL) {
-        *p = '\0';
-    }
-
     output_basic_pysig(mf, calls_cpp);
     if (code == gretl_clist) {
         fprintf(calls_cpp,
                 "{\n    return regression_wrapper(formula, kwargs, %s, &%s, NULL);\n}\n",
-                ci_str, mf->name);
+                ci_str, mf->gretl_funcname);
     } else {
         fprintf(calls_cpp,
                 "{\n    return regression_wrapper(formula, kwargs, %s, NULL, &%s);\n}\n",
-                ci_str, mf->name);
+                ci_str, mf->gretl_funcname);
     }
 }
 
@@ -167,14 +182,14 @@ void model_func_print (struct model_func *mf)
     */
 
     /* show what we got from the header */
-    printf("\nMODEL function %s (%s):\n", mf->name,
+    printf("\nMODEL function %s (%s):\n", mf->gretl_funcname,
            basic ? "basic" : "non-basic");
     for (i=0; i<mf->argc; i++) {
         printf("  arg %d: type '%s', name '%s'\n", i,
                mf->args[i].argtype, mf->args[i].argname);
     }
 
-    if (basic && !skip_it(mf->name)) {
+    if (basic && !skip_it(mf->gretl_funcname)) {
         output_basic_module_info(mf);
         output_basic_pysig(mf, calls_h);
         output_basic_pywrap(mf);

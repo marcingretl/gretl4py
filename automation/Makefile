@@ -10,5 +10,8 @@ model_funcs: model_funcs.c
 test: model_funcs
 	./query.sh > query.out
 
+model_funcs_map: model_funcs_map.c
+	$(CC) $(GRCFLAGS) -o $@ $< $(GRLIBS)
+
 clean:
 	rm -f model_funcs query.out *~
