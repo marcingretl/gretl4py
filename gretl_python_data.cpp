@@ -184,12 +184,11 @@ static double *numpy_array_extract (const py::array_t<double> &pynum_array,
     return (double*) pynum_array.request().ptr;
 }
 
-// two overloaded
-void numpy_array_to_gretl_storage (const py::array_t<double> &pynum_array,
-                                   gretl_matrix *m)
+void numpy_array_to_gretl_matrix (const py::array_t<double> &pynum_array,
+                                  gretl_matrix *m)
 {
     //
-    // we copy pynum_array to empty m
+    // we copy pynum_array to empty m (for what purpose?)
     //
     if (m->rows || m->cols) {
         throw std::runtime_error("Given matrix is not empty.");

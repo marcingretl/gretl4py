@@ -28,8 +28,10 @@ PYBIND11_MODULE(gretl, m) {
           py::arg("key").none(false));
 
     // data management
-    m.def("load_data", py::overload_cast<const py::array_t<double> &> (&load_data));
-    m.def("load_data", py::overload_cast<const py::dict &> (&load_data));
+    m.def("numpy_array_test", &numpy_array_test,
+          py::arg("pynum_array").none(false));
+    m.def("load_data", &load_data,
+          py::arg("pydict").none(false));
     m.def("printdata", py::overload_cast<const py::dict &, bool> (&printdata),
           py::arg("data").none(false),
           py::arg("varamesonly") = false);

@@ -10,5 +10,4 @@ void gretl_dset_to_numpy_dict (const std::string fname, py::dict &pydict);
 
 DATASET *gretl_load_global_dataset (const std::string fname);
 
-// Note: only one is external
-void numpy_array_to_gretl_storage (const py::array_t<double> &pynum_array, gretl_matrix *m);
+void numpy_array_to_gretl_matrix (const py::array_t<double> &pynum_array, gretl_matrix *m);
