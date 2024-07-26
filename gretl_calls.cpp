@@ -155,7 +155,7 @@ py::dict *get_gretl_data (const std::string fname)
 
 void attach_gretl_data (const std::string fname)
 {
-    DATASET *dset;
+    DATASET *dset; // really unused?
     char tmp[2048];
 
     strcpy(tmp, fname.c_str());
@@ -174,7 +174,7 @@ static gretlopt unpack_kwargs (const py::kwargs &kwargs,
     int opt, opts = OPT_NONE;
     OptStatus status;
     bool got_data = false;
-    char numstr[32];
+    //char numstr[32];
 
     for (auto &item : kwargs) {
         bool is_print = false;
@@ -236,13 +236,13 @@ static gretlopt unpack_kwargs (const py::kwargs &kwargs,
              } else if (py::isinstance<py::int_>(item.second)) {
                 int ival = item.second.cast<int>();
 
-                sprintf(numstr, "%d", ival);
-                push_option_param(ci, (gretlopt) opt, gretl_strdup(numstr));
+                //sprintf(numstr, "%d", ival);
+                push_option_param(ci, (gretlopt) opt, gretl_strdup(std::to_string(ival).c_str()));
             } else if (py::isinstance<py::float_>(item.second)) {
                 double dval = item.second.cast<double>();
 
-                sprintf(numstr, "%g", (double) dval);
-                push_option_param(ci, (gretlopt) opt, gretl_strdup(numstr));
+                //sprintf(numstr, "%g", (double) dval);
+                push_option_param(ci, (gretlopt) opt, gretl_strdup(std::to_string(dval).c_str()));
             } else {
                 throw std::runtime_error("unsupported option param type");
             }
@@ -274,10 +274,9 @@ static void get_arma_order (const py::tuple &tup,
     }
 }
 
-// arma estimation with two overloaded interfaces beneath
+// arma estimation
 
-py::dict *arma (const std::string y,
-                const py::tuple &tup,
+py::dict *arma (const std::string y, const py::tuple &tup,
                 const py::kwargs &kwargs)
 {
     py::dict *res = new py::dict;
@@ -306,7 +305,7 @@ py::dict *arma (const std::string y,
     y_number = current_series_index(dset, y.c_str());
     if (y_number == -1) {
         delete res;
-        throw std::runtime_error(std::string("There is no variable: ") + y);
+        throw std::runtime_error("There is no variable: " + y);
     }
 
     p = d = q = 0;

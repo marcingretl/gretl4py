@@ -110,7 +110,7 @@ static void copy_string_from_python_dict (const py::dict &pydict,
 
 static int get_int_from_python_dict (const py::dict &pydict,
                                      const char *key,
-                                     int deflt)
+                                     int deflt = 1)
 {
     int ret = deflt;
 
@@ -273,7 +273,6 @@ void numpy_dict_to_gretl_dset (const py::dict &pydict,
     //
     py::list pylist;
     std::string *strBUF;
-    char pdstr[16];
     int pd;
 
     if (dset == NULL) {
@@ -312,9 +311,8 @@ void numpy_dict_to_gretl_dset (const py::dict &pydict,
     }
 
     // FIXME: maybe it's possible automatically, i.e. without sending it from Python
-    pd = get_int_from_python_dict(pydict, "pd", 1);
-    sprintf(pdstr, "%d", pd);
-    set_obs(pdstr, dset->S[0], dset, OPT_T);
+    pd = get_int_from_python_dict(pydict, "pd");
+    set_obs(std::to_string(pd).c_str(), dset->S[0], dset, OPT_T);
 }
 
 void gretl_dset_to_numpy_dict (char *fname, py::dict &pydict)
@@ -377,6 +375,7 @@ void gretl_dset_to_numpy_dict (char *fname, py::dict &pydict)
 
 DATASET *gretl_load_global_dataset (char *fname)
 {
+    //
     // load gretl data from file to global DSET
     //
     DATASET *dset = datainfo_new();
@@ -386,7 +385,7 @@ DATASET *gretl_load_global_dataset (char *fname)
     err = gretl_get_data(fname, dset, OPT_NONE, NULL);
 
     if (err) {
-        std::string fname_copy(fname);
+        std::string fname_copy(fname); // is fname always non-empty at that point?
         destroy_dataset(dset);
         throw std::runtime_error("Reading data from '" + fname_copy + "' file failed.");
     }
