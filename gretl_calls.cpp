@@ -404,7 +404,7 @@ static py::dict *regression_wrapper (const std::string formula,
     }
 
     if (ci == OLS || ci == WLS) {
-        *model = lsq(list, dset, OLS, opt);
+        *model = lsq(list, dset, ci, opt);
     } else if (ci == LOGIT || ci == PROBIT) {
         *model = logit_probit(list, dset, ci, opt, prn);
     } else if (bmf != NULL) {
