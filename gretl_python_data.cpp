@@ -184,12 +184,11 @@ static double *numpy_array_extract (const py::array_t<double> &pynum_array,
     return (double*) pynum_array.request().ptr;
 }
 
-// two overloaded
-void numpy_array_to_gretl_storage (const py::array_t<double> &pynum_array,
-                                   gretl_matrix *m)
+void numpy_array_to_gretl_matrix (const py::array_t<double> &pynum_array,
+                                  gretl_matrix *m)
 {
     //
-    // we copy pynum_array to empty m
+    // we copy pynum_array to empty m (for what purpose?)
     //
     if (m->rows || m->cols) {
         throw std::runtime_error("Given matrix is not empty.");
@@ -315,7 +314,7 @@ void numpy_dict_to_gretl_dset (const py::dict &pydict,
     set_obs(std::to_string(pd).c_str(), dset->S[0], dset, OPT_T);
 }
 
-void gretl_dset_to_numpy_dict (char *fname, py::dict &pydict)
+void gretl_dset_to_numpy_dict (const std::string fname, py::dict &pydict)
 {
     //
     // we load gretl data from file to pydict
@@ -328,7 +327,7 @@ void gretl_dset_to_numpy_dict (char *fname, py::dict &pydict)
     std::string fname_copy(fname);
 
     dset = datainfo_new();
-    err = gretl_get_data(fname, dset, OPT_NONE, NULL);
+    err = gretl_get_data(fname.c_str(), dset, OPT_NONE, NULL);
     if (err) {
         delete vnames;
         delete labels;
@@ -373,7 +372,7 @@ void gretl_dset_to_numpy_dict (char *fname, py::dict &pydict)
     destroy_dataset(dset);
 }
 
-DATASET *gretl_load_global_dataset (char *fname)
+DATASET *gretl_load_global_dataset (const std::string fname)
 {
     //
     // load gretl data from file to global DSET
@@ -381,13 +380,11 @@ DATASET *gretl_load_global_dataset (char *fname)
     DATASET *dset = datainfo_new();
     int err = 0;
 
-    dset = datainfo_new();
-    err = gretl_get_data(fname, dset, OPT_NONE, NULL);
+    err = gretl_get_data(fname.c_str(), dset, OPT_NONE, NULL);
 
     if (err) {
-        std::string fname_copy(fname); // is fname always non-empty at that point?
         destroy_dataset(dset);
-        throw std::runtime_error("Reading data from '" + fname_copy + "' file failed.");
+        throw std::runtime_error("Reading data from '" + fname + "' file failed.");
     }
 
     return dset;

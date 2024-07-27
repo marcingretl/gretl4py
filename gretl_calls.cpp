@@ -9,6 +9,10 @@
 
 static DATASET *DSET = NULL; // global dataset
 
+typedef MODEL (*BASIC_MODEL_FUNC1) (const int *, DATASET *, gretlopt, PRN *);
+typedef MODEL (*BASIC_MODEL_FUNC2) (const int *, DATASET *, gretlopt);
+
+
 // module related tools
 
 void module_init ()
@@ -50,14 +54,7 @@ void set (const std::string key, const std::string val)
 
 void set (const std::string key, int val)
 {
-    char sval[32];
-    int err;
-
-    sprintf(sval, "%d", val);
-    err = execute_set(key.c_str(), sval, NULL, OPT_NONE, NULL);
-    if (err) {
-        handle_gretl_error(err);
-    }
+    set(key, std::to_string(val).c_str());
 }
 
 // report a current "setvar" setting
@@ -74,12 +71,12 @@ void set (const std::string key)
 
 // data management
 
-// interface for loading pure Numpy arrays
-void load_data (const py::array_t<double> &pynum_array)
+// test of numpy array to gretl_matrix ??
+void numpy_array_test (const py::array_t<double> &pynum_array)
 {
     gretl_matrix *m = gretl_null_matrix_new();
 
-    numpy_array_to_gretl_storage(pynum_array, m);
+    numpy_array_to_gretl_matrix(pynum_array, m);
     gretl_matrix_print(m, "m (libgretl)");
     gretl_matrix_free(m);
 }
@@ -146,20 +143,14 @@ void printdata (bool varnames_only)
 py::dict *get_gretl_data (const std::string fname)
 {
     py::dict *res = new py::dict;
-    char tmp[2048];
 
-    strcpy(tmp, fname.c_str());
-    gretl_dset_to_numpy_dict(tmp, *res);
+    gretl_dset_to_numpy_dict(fname, *res);
     return res;
 }
 
 void attach_gretl_data (const std::string fname)
 {
-    DATASET *dset; // really unused?
-    char tmp[2048];
-
-    strcpy(tmp, fname.c_str());
-    DSET = gretl_load_global_dataset(tmp);
+    DSET = gretl_load_global_dataset(fname);
 }
 
 // model estimation
@@ -174,7 +165,6 @@ static gretlopt unpack_kwargs (const py::kwargs &kwargs,
     int opt, opts = OPT_NONE;
     OptStatus status;
     bool got_data = false;
-    //char numstr[32];
 
     for (auto &item : kwargs) {
         bool is_print = false;
@@ -231,17 +221,12 @@ static gretlopt unpack_kwargs (const py::kwargs &kwargs,
             // an option parameter is accepted, perhaps required
             if (py::isinstance<py::str>(item.second)) {
                 const std::string &sval = item.second.cast<std::string>();
-
                 push_option_param(ci, (gretlopt) opt, gretl_strdup(sval.c_str()));
              } else if (py::isinstance<py::int_>(item.second)) {
                 int ival = item.second.cast<int>();
-
-                //sprintf(numstr, "%d", ival);
                 push_option_param(ci, (gretlopt) opt, gretl_strdup(std::to_string(ival).c_str()));
             } else if (py::isinstance<py::float_>(item.second)) {
                 double dval = item.second.cast<double>();
-
-                //sprintf(numstr, "%g", (double) dval);
                 push_option_param(ci, (gretlopt) opt, gretl_strdup(std::to_string(dval).c_str()));
             } else {
                 throw std::runtime_error("unsupported option param type");
@@ -383,12 +368,14 @@ static int *list_from_formula (const char *formula,
     return list;
 }
 
-// "Proof of concept" function for supporting more than one
-//  estimation method
+// Function to support several estimation methods that have
+// the same "basic" signature, plus a few special cases
 
 static py::dict *regression_wrapper (const std::string formula,
                                      const py::kwargs &kwargs,
-                                     int ci)
+                                     GretlCmdIndex ci,
+                                     BASIC_MODEL_FUNC1 bmf1,
+                                     BASIC_MODEL_FUNC2 bmf2)
 {
     py::dict *res = new py::dict;
     DATASET *dset = NULL;
@@ -414,10 +401,14 @@ static py::dict *regression_wrapper (const std::string formula,
         prn = gretl_print_new(GRETL_PRINT_STDOUT, NULL);
     }
 
-    if (ci == OLS) {
-        *model = lsq(list, dset, OLS, opt);
+    if (ci == OLS || ci == WLS) {
+        *model = lsq(list, dset, ci, opt);
     } else if (ci == LOGIT || ci == PROBIT) {
         *model = logit_probit(list, dset, ci, opt, prn);
+    } else if (bmf1 != NULL) {
+        *model = (*bmf1)(list, dset, opt, prn);
+    } else if (bmf2 != NULL) {
+        *model = (*bmf2)(list, dset, opt);
     } else {
         throw std::runtime_error("Unsupported estimator");
     }
@@ -437,8 +428,8 @@ static py::dict *regression_wrapper (const std::string formula,
     }
 
     free(list);
-    gretl_print_destroy(prn);
     gretl_model_free(model);
+    gretl_print_destroy(prn);
 
     return res;
 }
@@ -448,17 +439,80 @@ static py::dict *regression_wrapper (const std::string formula,
 py::dict *ols (const std::string formula,
                const py::kwargs &kwargs)
 {
-    return regression_wrapper(formula, kwargs, OLS);
+    return regression_wrapper(formula, kwargs, OLS, NULL, NULL);
+}
+
+py::dict *wls (const std::string formula,
+               const py::kwargs &kwargs)
+{
+    return regression_wrapper(formula, kwargs, WLS, NULL, NULL);
 }
 
 py::dict *logit (const std::string formula,
                  const py::kwargs &kwargs)
 {
-    return regression_wrapper(formula, kwargs, LOGIT);
+    return regression_wrapper(formula, kwargs, LOGIT, NULL, NULL);
 }
 
 py::dict *probit (const std::string formula,
                   const py::kwargs &kwargs)
 {
-    return regression_wrapper(formula, kwargs, PROBIT);
+    return regression_wrapper(formula, kwargs, PROBIT, NULL, NULL);
+}
+
+// content from automation/more_calls.cpp
+
+py::dict *biprobit (const std::string formula, const py::kwargs &kwargs)
+{
+    return regression_wrapper(formula, kwargs, BIPROBIT, &biprobit_model, NULL);
+}
+
+py::dict *duration (const std::string formula, const py::kwargs &kwargs)
+{
+    return regression_wrapper(formula, kwargs, DURATION, &duration_model, NULL);
+}
+
+py::dict *heckit (const std::string formula, const py::kwargs &kwargs)
+{
+    return regression_wrapper(formula, kwargs, HECKIT, &heckit_model, NULL);
+}
+
+py::dict *logistic (const std::string formula, const py::kwargs &kwargs)
+{
+    return regression_wrapper(formula, kwargs, LOGISTIC, NULL, &logistic_driver);
+}
+
+py::dict *ar (const std::string formula, const py::kwargs &kwargs)
+{
+    return regression_wrapper(formula, kwargs, AR, &ar_model, NULL);
+}
+
+py::dict *ar1 (const std::string formula, const py::kwargs &kwargs)
+{
+    return regression_wrapper(formula, kwargs, AR1, &ar1_model, NULL);
+}
+
+py::dict *lad (const std::string formula, const py::kwargs &kwargs)
+{
+    return regression_wrapper(formula, kwargs, LAD, NULL, &lad_model);
+}
+
+py::dict *garch (const std::string formula, const py::kwargs &kwargs)
+{
+    return regression_wrapper(formula, kwargs, GARCH, &garch, NULL);
+}
+
+py::dict *mpols (const std::string formula, const py::kwargs &kwargs)
+{
+    return regression_wrapper(formula, kwargs, MPOLS, NULL, &mp_ols);
+}
+
+py::dict *panel (const std::string formula, const py::kwargs &kwargs)
+{
+    return regression_wrapper(formula, kwargs, PANEL, &panel_model, NULL);
+}
+
+py::dict *tsls (const std::string formula, const py::kwargs &kwargs)
+{
+    return regression_wrapper(formula, kwargs, IVREG, NULL, &ivreg);
 }

@@ -4,11 +4,18 @@
 #include <glib.h>
 
 enum typecodes {
+    gretl_clist,
     gretl_list,
     gretl_dset,
     gretl_opt,
     gretl_prn,
     gretl_other
+};
+
+enum basics {
+    B_TRUE     = 1 << 0,
+    B_NONCONST = 1 << 1,
+    B_NO_PRN   = 1 << 2
 };
 
 struct arg_data {
@@ -18,18 +25,59 @@ struct arg_data {
 };
 
 struct model_func {
-    char name[32];
+    char gretl_funcname[32];
     int argc;
     struct arg_data *args;
+    int basic;
 };
+
+FILE *calls_h;
+FILE *calls_cpp;
+FILE *mod_cpp;
+
+struct mf_info {
+    const char *gretl_funcname;
+    const char *cmdword;
+    const char *symbol;
+};
+
+struct mf_info mf_infos[] = {
+    { "ar_model", "ar", "AR" },
+    { "ar1_model", "ar1", "AR1" },
+    { "biprobit_model", "biprobit", "BIPROBIT" },
+    { "duration_model", "duration", "DURATION" },
+    { "garch", "garch", "GARCH" },
+    { "heckit_model", "heckit", "HECKIT" },
+    { "hsk_model" "hsk", "HSK" },
+    { "interval_model" "intreg", "INTREG" },
+    { "lad_model", "lad", "LAD" },
+    { "logistic_driver", "logistic", "LOGISTIC" },
+    { "mp_ols", "mpols", "MPOLS" },
+    { "panel_model", "panel", "PANEL" },
+    { "ivreg", "tsls", "IVREG" },
+    { NULL, NULL, NULL }
+};
+
+const struct mf_info *get_mf_info (const char *func)
+{
+    int i;
+
+    for (i=0; mf_infos[i].gretl_funcname != NULL; i++) {
+        if (!strcmp(func, mf_infos[i].gretl_funcname)) {
+            return &mf_infos[i];
+        }
+    }
+
+    return NULL;
+}
 
 /* numeric codes for common model-function argument types */
 
 int get_type_code (const char *argtype)
 {
-    if (!strcmp(argtype, "int *")) {
-        return gretl_list;
-    } else if (!strcmp(argtype, "const int *")) {
+    if (!strcmp(argtype, "const int *")) {
+        return gretl_clist;
+    } else if (!strcmp(argtype, "int *")) {
         return gretl_list;
     } else if (!strcmp(argtype, "DATASET *")) {
         return gretl_dset;
@@ -50,38 +98,33 @@ int has_basic_model_sig (struct model_func *mf)
 {
     int ret = 0;
 
-    if (mf->argc == 3 || mf->argc == 4) {
-        ret = 1;
-        if (mf->args[0].typecode != gretl_list ||
+    if (mf->argc == 4 || mf->argc == 3) {
+        ret = B_TRUE;
+        if ((mf->args[0].typecode != gretl_clist &&
+             mf->args[0].typecode != gretl_list) ||
             mf->args[1].typecode != gretl_dset ||
             mf->args[2].typecode != gretl_opt) {
             ret = 0;
         } else if (mf->argc == 4 && mf->args[3].typecode != gretl_prn) {
             ret = 0;
         }
+        if (ret && mf->args[0].typecode != gretl_clist) {
+            ret |= B_NONCONST;
+        }
+        if (ret && mf->argc == 3) {
+            ret |= B_NO_PRN;
+        }
     }
 
     return ret;
-}
-
-const char *basic_py_argname (struct arg_data *ad)
-{
-    if (ad->typecode == gretl_list) {
-        return "formula";
-    } else if (ad->typecode == gretl_dset) {
-        return "data";
-    } else if (ad->typecode == gretl_prn) {
-        return "print";
-    } else {
-        return NULL;
-    }
 }
 
 void model_func_init (struct model_func *mf,
                       const char *name,
                       int argc)
 {
-    strcpy(mf->name, name);
+
+    strcpy(mf->gretl_funcname, name);
     mf->argc = argc;
     mf->args = calloc(argc, sizeof *mf->args);
 }
@@ -91,76 +134,74 @@ void model_func_clear (struct model_func *mf)
     free(mf->args);
 }
 
-/* output code block for inclusion in gretl_to_python.cpp */
+/* output block for inclusion in gretl_to_python.cpp */
 
-void output_basic_module_info (struct model_func *mf)
+void output_basic_module_info (const struct mf_info *mfi)
 {
-    const char *s;
-    int i;
-
-    printf("\nm.def(\"%s\", &%s,\n", mf->name, mf->name);
-    for (i=0; i<mf->argc; i++) {
-        s = basic_py_argname(&mf->args[i]);
-        if (s != NULL) {
-            if (!strcmp(s, "print")) {
-                printf("pybind11::arg(\"print\") = false,\n");
-            } else {
-                printf("pybind11::arg(\"%s\").none(false),\n", s);
-            }
-        }
-    }
-
-    if (mf->argc == 3) {
-        // append a print argument
-        printf("pybind11::arg(\"print\") = false,\n");
-    }
-    
-    printf("pybind11::return_value_policy::take_ownership);\n");
+    fprintf(mod_cpp,
+            "    m.def(\"%s\", &%s,\n"
+            "          py::arg(\"formula\").none(false),\n"
+            "          py::return_value_policy::take_ownership);\n",
+            mfi->cmdword, mfi->cmdword);
 }
 
 /* output signature for inclusion in gretl_calls.h */
 
-void output_basic_pysig (struct model_func *mf, int sig_only)
+void output_basic_pysig (const struct mf_info *mfi, FILE *fp)
 {
-    printf("\npybind11::dict *%s (const std::string formula,\n", mf->name);
-    printf("const pybind11::dict &data,\n");
-    if (sig_only) {
-        printf("bool print);\n");
+    fprintf(fp,
+            "\npy::dict *%s (const std::string formula, const py::kwargs &kwargs)",
+            mfi->cmdword);
+    if (fp == calls_h) {
+        fputs(";\n", fp);
     } else {
-        printf("bool print)\n");
+        fputc('\n', fp);
     }
 }
 
 /* output code block for inclusion in gretl_calls.cpp */
 
-void output_basic_pywrap (struct model_func *mf)
+void output_basic_pywrap (const struct model_func *mf,
+                          const struct mf_info *mfi)
 {
-    gchar *ci_str = g_ascii_strup(mf->name, -1);
+    output_basic_pysig(mfi, calls_cpp);
 
-    /* FIXME @ci_str will be wrong in most cases; by intent it's the
-      string representation of the gretl command index for the
-      estimator in question; but only rarely will it be the uppercase
-      version of the model function name
-    */
-
-    /* this may help in some cases */
-    char *p = strchr(ci_str, '_');
-    if (p != NULL) {
-        *p = '\0';
+    if (mf->basic == B_TRUE) {
+        fprintf(calls_cpp,
+                "{\n    return regression_wrapper(formula, kwargs, %s, &%s, NULL);\n}\n",
+                mfi->symbol, mf->gretl_funcname);
+    } else {
+        fprintf(calls_cpp,
+                "{\n    return regression_wrapper(formula, kwargs, %s, NULL, &%s);\n}\n",
+                mfi->symbol, mf->gretl_funcname);
     }
+}
 
-    output_basic_pysig(mf, 0);
-    printf("{\n");
-    printf("return regress_with_specified_data(%s, formula, data, "
-           "print);\n", ci_str);
-    g_free(ci_str);
-    printf("}\n");
+int skip_it (const char *name)
+{
+    if (!strcmp(name, "ols") ||
+        !strcmp(name, "logit") ||
+        !strcmp(name, "probit") ||
+        !strncmp(name, "binary_", 7) ||
+        !strncmp(name, "multino", 7) ||
+        !strncmp(name, "ordered_", 8)) {
+        /* these are special, and already handled */
+        return 1;
+    } else if (!strncmp(name, "real_", 5) ||
+               !strncmp(name, "single_", 6) ||
+               !strcmp(name, "GNR")) {
+        /* don't expose these? */
+        return 1;
+    } else {
+        return 0;
+    }
 }
 
 void model_func_print (struct model_func *mf)
 {
-    int basic = has_basic_model_sig(mf);
     int i;
+
+    mf->basic = has_basic_model_sig(mf);
 
     /* note: "basic" means that the model function signature
        is such that the function can be handled by the existing
@@ -168,20 +209,34 @@ void model_func_print (struct model_func *mf)
     */
 
     /* show what we got from the header */
-    printf("\nMODEL function %s (%s):\n", mf->name,
-           basic ? "basic" : "non-basic");
+    printf("\nMODEL function %s (basic =", mf->gretl_funcname);
+    if (mf->basic == 0) {
+        printf(" false");
+    } else if (mf->basic == B_TRUE) {
+        printf(" true");
+    } else {
+        if (mf->basic & B_NONCONST) {
+            printf(" non-const");
+        }
+        if (mf->basic & B_NO_PRN) {
+            printf(" no_prn");
+        }
+    }
+    printf("):\n");
+
     for (i=0; i<mf->argc; i++) {
         printf("  arg %d: type '%s', name '%s'\n", i,
                mf->args[i].argtype, mf->args[i].argname);
     }
 
-    if (basic) {
-        /* once this stuff is working right, the output
-           should go to suitable files
-        */
-        output_basic_module_info(mf);
-        output_basic_pysig(mf, 1);
-        output_basic_pywrap(mf);
+    if (mf->basic && !skip_it(mf->gretl_funcname)) {
+        const struct mf_info *mfi = get_mf_info(mf->gretl_funcname);
+
+        if (mfi != NULL) {
+            output_basic_module_info(mfi);
+            output_basic_pysig(mfi, calls_h);
+            output_basic_pywrap(mf, mfi);
+        }
     }
 }
 
@@ -290,8 +345,21 @@ int main (int argc, char **argv)
         exit(EXIT_FAILURE);
     }
 
+    calls_h =   fopen("more_calls.h", "a");
+    calls_cpp = fopen("more_calls.cpp", "a");
+    mod_cpp =   fopen("more_mod.cpp", "a");
+
+    if (calls_h == NULL || calls_cpp == NULL || mod_cpp == NULL) {
+        fprintf(stderr, "%s: failed to open output files\n", argv[0]);
+        exit(EXIT_FAILURE);
+    }
+
     process_header(fp);
+
     fclose(fp);
+    fclose(calls_h);
+    fclose(calls_cpp);
+    fclose(mod_cpp);
 
     return 0;
 }

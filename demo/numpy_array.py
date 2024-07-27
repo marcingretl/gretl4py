@@ -10,6 +10,6 @@ print(arr)
 
 print("\nC++ level:")
 print("fortranarray (column-major):")
-gretl.load_data(numpy.asfortranarray(arr))
+gretl.numpy_array_test(numpy.asfortranarray(arr))
 print("row-major:")
-gretl.load_data(arr)
+gretl.numpy_array_test(arr)

@@ -28,8 +28,10 @@ PYBIND11_MODULE(gretl, m) {
           py::arg("key").none(false));
 
     // data management
-    m.def("load_data", py::overload_cast<const py::array_t<double> &> (&load_data));
-    m.def("load_data", py::overload_cast<const py::dict &> (&load_data));
+    m.def("numpy_array_test", &numpy_array_test,
+          py::arg("pynum_array").none(false));
+    m.def("load_data", &load_data,
+          py::arg("pydict").none(false));
     m.def("printdata", py::overload_cast<const py::dict &, bool> (&printdata),
           py::arg("data").none(false),
           py::arg("varamesonly") = false);
@@ -48,11 +50,49 @@ PYBIND11_MODULE(gretl, m) {
     m.def("ols", &ols,
           py::arg("formula").none(false),
           py::return_value_policy::take_ownership);
-    // Logit and probit
+    // WLS
+    m.def("wls", &wls,
+          py::arg("formula").none(false),
+          py::return_value_policy::take_ownership);
+     // Logit and probit
     m.def("logit", &logit,
           py::arg("formula").none(false),
           py::return_value_policy::take_ownership);
     m.def("probit", &probit,
+          py::arg("formula").none(false),
+          py::return_value_policy::take_ownership);
+    // content from automation/more_mod.cpp
+    m.def("biprobit", &biprobit,
+          py::arg("formula").none(false),
+          py::return_value_policy::take_ownership);
+    m.def("duration", &duration,
+          py::arg("formula").none(false),
+          py::return_value_policy::take_ownership);
+    m.def("heckit", &heckit,
+          py::arg("formula").none(false),
+          py::return_value_policy::take_ownership);
+    m.def("logistic", &logistic,
+          py::arg("formula").none(false),
+          py::return_value_policy::take_ownership);
+    m.def("ar", &ar,
+          py::arg("formula").none(false),
+          py::return_value_policy::take_ownership);
+    m.def("ar1", &ar1,
+          py::arg("formula").none(false),
+          py::return_value_policy::take_ownership);
+    m.def("lad", &lad,
+          py::arg("formula").none(false),
+          py::return_value_policy::take_ownership);
+    m.def("garch", &garch,
+          py::arg("formula").none(false),
+          py::return_value_policy::take_ownership);
+    m.def("mpols", &mpols,
+          py::arg("formula").none(false),
+          py::return_value_policy::take_ownership);
+    m.def("panel", &panel,
+          py::arg("formula").none(false),
+          py::return_value_policy::take_ownership);
+    m.def("tsls", &tsls,
           py::arg("formula").none(false),
           py::return_value_policy::take_ownership);
 }

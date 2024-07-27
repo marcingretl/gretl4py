@@ -8,7 +8,7 @@ model_funcs: model_funcs.c
 	$(CC) $(GCFLAGS) -o $@ $< $(GLIBS)
 
 test: model_funcs
-	./model_funcs_query.sh > query.out
+	./query.sh > query.out
 
 clean:
 	rm -f model_funcs query.out *~
