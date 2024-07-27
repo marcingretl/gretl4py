@@ -37,3 +37,26 @@ py::dict *logit (const std::string formula, const py::kwargs &kwargs);
 
 py::dict *probit (const std::string formula, const py::kwargs &kwargs);
 
+// content from automation/more_calls.h
+
+py::dict *biprobit (const std::string formula, const py::kwargs &kwargs);
+
+py::dict *duration (const std::string formula, const py::kwargs &kwargs);
+
+py::dict *heckit (const std::string formula, const py::kwargs &kwargs);
+
+py::dict *logistic (const std::string formula, const py::kwargs &kwargs);
+
+py::dict *ar (const std::string formula, const py::kwargs &kwargs);
+
+py::dict *ar1 (const std::string formula, const py::kwargs &kwargs);
+
+py::dict *lad (const std::string formula, const py::kwargs &kwargs);
+
+py::dict *garch (const std::string formula, const py::kwargs &kwargs);
+
+py::dict *mpols (const std::string formula, const py::kwargs &kwargs);
+
+py::dict *panel (const std::string formula, const py::kwargs &kwargs);
+
+py::dict *tsls (const std::string formula, const py::kwargs &kwargs);
