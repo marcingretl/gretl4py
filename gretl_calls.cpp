@@ -150,7 +150,12 @@ py::dict *get_gretl_data (const std::string fname)
 
 void attach_gretl_data (const std::string fname)
 {
-    DSET = gretl_load_global_dataset(fname);
+    DATASET *dset = gretl_load_global_dataset(fname);
+
+    if (dset != NULL) {
+        destroy_dataset(DSET);
+        DSET = dset;
+    }
 }
 
 // model estimation
@@ -326,7 +331,6 @@ py::dict *arma (const std::string y, const py::tuple &tup,
     }
     list[i++] = LISTSEP;
     list[i++] = y_number;
-    printlist(list, "arma list");
 
     *model = arma(list, NULL, dset, opt, prn);
     err = model->errcode;
