@@ -61,6 +61,13 @@ PYBIND11_MODULE(gretl, m) {
     m.def("probit", &probit,
           py::arg("formula").none(false),
           py::return_value_policy::take_ownership);
+    // Count models
+    m.def("poisson", &poisson,
+          py::arg("formula").none(false),
+          py::return_value_policy::take_ownership);
+    m.def("negbin", &negbin,
+          py::arg("formula").none(false),
+          py::return_value_policy::take_ownership);
     // content from automation/more_mod.cpp
     m.def("biprobit", &biprobit,
           py::arg("formula").none(false),

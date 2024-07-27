@@ -405,6 +405,8 @@ static py::dict *regression_wrapper (const std::string formula,
         *model = lsq(list, dset, ci, opt);
     } else if (ci == LOGIT || ci == PROBIT) {
         *model = logit_probit(list, dset, ci, opt, prn);
+    } else if (ci == POISSON || ci == NEGBIN) {
+        *model = count_model(list, ci, dset, opt, prn);
     } else if (bmf1 != NULL) {
         *model = (*bmf1)(list, dset, opt, prn);
     } else if (bmf2 != NULL) {
@@ -442,22 +444,29 @@ py::dict *ols (const std::string formula,
     return regression_wrapper(formula, kwargs, OLS, NULL, NULL);
 }
 
-py::dict *wls (const std::string formula,
-               const py::kwargs &kwargs)
+py::dict *wls (const std::string formula, const py::kwargs &kwargs)
 {
     return regression_wrapper(formula, kwargs, WLS, NULL, NULL);
 }
 
-py::dict *logit (const std::string formula,
-                 const py::kwargs &kwargs)
+py::dict *logit (const std::string formula, const py::kwargs &kwargs)
 {
     return regression_wrapper(formula, kwargs, LOGIT, NULL, NULL);
 }
 
-py::dict *probit (const std::string formula,
-                  const py::kwargs &kwargs)
+py::dict *probit (const std::string formula, const py::kwargs &kwargs)
 {
     return regression_wrapper(formula, kwargs, PROBIT, NULL, NULL);
+}
+
+py::dict *poisson (const std::string formula, const py::kwargs &kwargs)
+{
+    return regression_wrapper(formula, kwargs, POISSON, NULL, NULL);
+}
+
+py::dict *negbin (const std::string formula, const py::kwargs &kwargs)
+{
+    return regression_wrapper(formula, kwargs, NEGBIN, NULL, NULL);
 }
 
 // content from automation/more_calls.cpp
