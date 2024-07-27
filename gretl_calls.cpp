@@ -18,19 +18,25 @@ typedef MODEL (*BASIC_MODEL_FUNC2) (const int *, DATASET *, gretlopt);
 void module_init ()
 {
     libgretl_init();
-    std::cout << "libgretl initialized";
-    std::cout  << std::endl << std::endl;
+    printf("libgretl initialized\n");
+    //std::cout << "libgretl initialized";
+    //std::cout  << std::endl << std::endl;
 }
 
 void module_cleanup ()
 {
+    if (DSET != NULL) {
+        destroy_dataset(DSET);
+    }
     libgretl_cleanup();
-    std::cout << std::endl << "libgretl cleaned up" << std::endl;
+    printf("libgretl cleaned up\n");
+    // std::cout << std::endl << "libgretl cleaned up" << std::endl;
 }
 
 void about () {
     lib_logo();
-    std::cout << "module ver: " << GRETL_MODULE_VERSION << std::endl;
+    printf("module version: %g\n", GRETL_MODULE_VERSION);
+    // std::cout << "module ver: " << GRETL_MODULE_VERSION << std::endl;
 }
 
 static void handle_gretl_error (int err)
@@ -71,7 +77,7 @@ void set (const std::string key)
 
 // data management
 
-// test of numpy array to gretl_matrix ??
+// test of numpy array to gretl_matrix
 void numpy_array_test (const py::array_t<double> &pynum_array)
 {
     gretl_matrix *m = gretl_null_matrix_new();
@@ -247,6 +253,33 @@ static gretlopt unpack_kwargs (const py::kwargs &kwargs,
     return (gretlopt) opts;
 }
 
+void finalize_model (MODEL *model, DATASET *dset,
+                     int *list, int do_print,
+                     PRN *prn, py::dict *res)
+{
+    if (model->errcode) {
+        const char *msg = errmsg_get_with_default(model->errcode);
+        throw std::runtime_error(msg);
+    } else {
+        char *buf;
+
+        printmodel(model, dset, OPT_NONE, prn);
+        buf = gretl_print_steal_buffer(prn);
+        if (do_print) {
+            fputs(buf, stdout);
+        }
+        gretl_model_to_dict(model, dset, buf, *res);
+    }
+
+    if (dset != DSET) {
+        destroy_dataset(dset);
+    }
+
+    free(list);
+    gretl_model_free(model);
+    gretl_print_destroy(prn);
+}
+
 static void get_arma_order (const py::tuple &tup,
                             int *p, int *d, int *q)
 {
@@ -280,7 +313,7 @@ py::dict *arma (const std::string y, const py::tuple &tup,
     int P, D, Q;
     int do_print = 0;
     int seasonal = 0;
-    int i, err;
+    int i;
 
     if (py::len(kwargs) > 0) {
         opt = unpack_kwargs(kwargs, ARMA, &do_print, &dset);
@@ -315,8 +348,10 @@ py::dict *arma (const std::string y, const py::tuple &tup,
 
     model = gretl_model_new();
     list = gretl_list_new(seasonal? 9 : 5);
-    if (do_print) {
-        prn = gretl_print_new(GRETL_PRINT_STDOUT, NULL);
+    prn = gretl_print_new(GRETL_PRINT_BUFFER, NULL);
+
+    if (model == NULL || list == NULL || prn == NULL) {
+        throw std::runtime_error("Failed to allocate memory");
     }
 
     i = 1;
@@ -333,24 +368,7 @@ py::dict *arma (const std::string y, const py::tuple &tup,
     list[i++] = y_number;
 
     *model = arma(list, NULL, dset, opt, prn);
-    err = model->errcode;
-
-    if (err) {
-        errmsg(err, prn);
-    } else {
-        gretl_model_to_dict(model, dset, *res);
-        if (do_print) {
-            printmodel(model, dset, OPT_NONE, prn);
-        }
-    }
-
-    if (dset != DSET) {
-        destroy_dataset(dset);
-    }
-
-    gretl_model_free(model);
-    free(list);
-    gretl_print_destroy(prn);
+    finalize_model(model, dset, list, do_print, prn, res);
 
     return res;
 }
@@ -388,7 +406,6 @@ static py::dict *regression_wrapper (const std::string formula,
     int *list = NULL;
     gretlopt opt = OPT_NONE;
     int do_print = 0;
-    int err = 0;
 
     if (py::len(kwargs) > 0) {
         opt = unpack_kwargs(kwargs, ci, &do_print, &dset);
@@ -401,8 +418,10 @@ static py::dict *regression_wrapper (const std::string formula,
 
     list = list_from_formula(formula.c_str(), dset);
     model = gretl_model_new();
-    if (do_print) {
-        prn = gretl_print_new(GRETL_PRINT_STDOUT, NULL);
+    prn = gretl_print_new(GRETL_PRINT_BUFFER, NULL);
+
+    if (list == NULL || model == NULL || prn == NULL) {
+        throw std::runtime_error("Failed to allocate memory");
     }
 
     if (ci == OLS || ci == WLS) {
@@ -419,23 +438,7 @@ static py::dict *regression_wrapper (const std::string formula,
         throw std::runtime_error("Unsupported estimator");
     }
 
-    err = model->errcode;
-    if (err) {
-        errmsg(err, prn);
-    } else {
-        gretl_model_to_dict(model, dset, *res);
-        if (do_print) {
-            printmodel(model, dset, OPT_NONE, prn);
-        }
-    }
-
-    if (dset != DSET) {
-        destroy_dataset(dset);
-    }
-
-    free(list);
-    gretl_model_free(model);
-    gretl_print_destroy(prn);
+    finalize_model(model, dset, list, do_print, prn, res);
 
     return res;
 }

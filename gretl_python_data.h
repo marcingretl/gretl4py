@@ -2,7 +2,7 @@
 
 namespace py = pybind11;
 
-void gretl_model_to_dict (MODEL *model, DATASET *dset, py::dict &DICT);
+void gretl_model_to_dict (MODEL *model, DATASET *dset, char *buf, py::dict &DICT);
 
 void numpy_dict_to_gretl_dset (const py::dict &DICT, DATASET *dset);
 

@@ -12,7 +12,7 @@
 
 #define GRETL_PYBIND11_DEBUG 0
 
-void gretl_model_to_dict (MODEL *model, DATASET *dset, py::dict &pydict)
+void gretl_model_to_dict (MODEL *model, DATASET *dset, char *buf, py::dict &pydict)
 {
     //
     // here we construct python's dict which is returned (with estimation results)
@@ -82,6 +82,10 @@ void gretl_model_to_dict (MODEL *model, DATASET *dset, py::dict &pydict)
     pydict[py::cast("rho")] = model->rho;
     pydict[py::cast("nparams")] = model->nparams;
     pydict[py::cast("esttime")] = model->esttime;
+
+    if (buf != NULL) {
+        pydict[py::cast("output")] = buf;
+    }
 }
 
 #if 0
@@ -188,7 +192,7 @@ void numpy_array_to_gretl_matrix (const py::array_t<double> &pynum_array,
                                   gretl_matrix *m)
 {
     //
-    // we copy pynum_array to empty m (for what purpose?)
+    // we copy pynum_array to empty m (testing)
     //
     if (m->rows || m->cols) {
         throw std::runtime_error("Given matrix is not empty.");
