@@ -1,5 +1,6 @@
 import csv
 import numpy
+import subprocess
 
 def csv2dict(FILE, pd=1):
     data_list = list()
@@ -32,8 +33,13 @@ def df2dict(dframe, pd=1):
     d["data_array"] = numpy.asfortranarray(numpy.array([row[1:] for row in mydata], numpy.double))
     d["periodicity"] = pd
     d["obs_labels"] = [row[0] for row in mydata]
-
     return d
+
+def gretl_data_path(fname):
+    res = subprocess.run(['pkg-config', '--cflags-only-I', 'gretl'], stdout=subprocess.PIPE)
+    b = res.stdout.split()[0]
+    path = b.decode("utf-8")[2:]
+    return path[0:path.find("include")] + "share/gretl/data/" + fname
 
 def gretl_model_print(MODEL):
     '''Function prints libgretl model'''

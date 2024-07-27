@@ -1,4 +1,4 @@
-TESTS = demo.py pandas_test.py readgdt.py dset_test.py
+TESTS = demo.py demo2.py pandas_test.py dset_test.py
 
 .PHONY: clean tests
 

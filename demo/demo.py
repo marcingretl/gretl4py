@@ -2,7 +2,6 @@ import sys
 sys.path.append("../")
 import gretl
 import numpy
-#from gretl4py_addons import gretl_model_print
 from gretl4py_addons import csv2dict
 from gretl4py_classes import *
 
@@ -13,7 +12,7 @@ bjg = csv2dict('bjg.csv', 12)
 ''' we load data9-7.csv to dict() '''
 data97 = csv2dict('data9-7.csv', 4)
 
-print('Loading global dataset: bjg.csv') #this dataset will be used later
+print('Loading global dataset: bjg.csv') # this dataset will be used later
 gretl.load_data(bjg)
 
 '''Example 1: data is send on function call ('data9-7.csv')'''
