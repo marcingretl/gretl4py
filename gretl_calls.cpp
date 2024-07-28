@@ -201,7 +201,15 @@ static gretlopt unpack_kwargs (const py::kwargs &kwargs,
         } else {
             // should be a regular gretl option: check its validity in
             // the context of @ci
-            opt = valid_long_opt(ci, key.c_str(), &status);
+            if (strchr(key.c_str(), '_')) {
+                char tmp[32];
+
+                strcpy(tmp, key.c_str());
+                gretl_charsub(tmp, '_', '-');
+                opt = valid_long_opt(ci, tmp, &status);
+            } else {
+                opt = valid_long_opt(ci, key.c_str(), &status);
+            }
             if (opt == 0) {
                 throw std::runtime_error(std::string("invalid option flag ") + key);
             }
