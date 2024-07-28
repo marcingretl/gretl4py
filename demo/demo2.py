@@ -1,8 +1,7 @@
 import sys
 sys.path.append("../")
 import gretl
-from gretl4py_addons import gretl_data_path
-from gretl4py_addons import pretty_print
+from gretl4py_addons import gretl_data_path, pretty_print
 
 fname = gretl_data_path("ramanathan/data4-1.gdt")
 mydata = gretl.get_gretl_data(fname)
