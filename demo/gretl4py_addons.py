@@ -41,6 +41,15 @@ def gretl_data_path(fname):
     path = b.decode("utf-8")[2:]
     return path[0:path.find("include")] + "share/gretl/data/" + fname
 
+def pretty_print(d):
+    if isinstance(d, dict):
+        if 'output' in d.keys():
+            print(d['output'])
+        else:
+            print('output was not found')
+    else:
+        print('object is not a dictionary')
+
 def gretl_model_print(MODEL):
     '''Function prints libgretl model'''
     DASHEDLINE = "---------------------------------------------------------------"
@@ -65,4 +74,3 @@ def gretl_model_print(MODEL):
         print('\nvcv matrix')
         print(MODEL["vcv"])
         print('')
-
