@@ -228,7 +228,7 @@ static void numpy_array_to_gretl_storage (const py::dict &pydict,
     //
     // we copy "data_array" which lives in pydict to dset->Z
     //
-    // we check if pydict["data_array"] if <py::array_t> type
+    // we check if pydict["data_array"] is of <py::array_t> type
     if (!py::isinstance<py::array_t<double>>(pydict[py::cast("data_array")])) {
         throw std::runtime_error("Element 'data_array' of given dictionary is not of NumPy array type.");
     }
@@ -328,7 +328,6 @@ void gretl_dset_to_numpy_dict (const std::string fname, py::dict &pydict)
     DATASET *dset;
     double *tmp;
     int i, err = 0;
-    std::string fname_copy(fname);
 
     dset = datainfo_new();
     err = gretl_get_data(fname.c_str(), dset, OPT_NONE, NULL);
@@ -336,7 +335,7 @@ void gretl_dset_to_numpy_dict (const std::string fname, py::dict &pydict)
         delete vnames;
         delete labels;
         destroy_dataset(dset);
-        throw std::runtime_error("Reading data from '" + fname_copy + "' file failed.");
+        throw std::runtime_error("Reading data from '" + fname + "' file failed.");
     }
 
     pydict[py::cast("pd")] = dset->pd;

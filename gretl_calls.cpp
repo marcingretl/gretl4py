@@ -19,8 +19,6 @@ void module_init ()
 {
     libgretl_init();
     printf("libgretl initialized\n");
-    //std::cout << "libgretl initialized";
-    //std::cout  << std::endl << std::endl;
 }
 
 void module_cleanup ()
@@ -30,13 +28,11 @@ void module_cleanup ()
     }
     libgretl_cleanup();
     printf("libgretl cleaned up\n");
-    // std::cout << std::endl << "libgretl cleaned up" << std::endl;
 }
 
 void about () {
     lib_logo();
     printf("module version: %g\n", GRETL_MODULE_VERSION);
-    // std::cout << "module ver: " << GRETL_MODULE_VERSION << std::endl;
 }
 
 static void handle_gretl_error (int err)
@@ -266,7 +262,7 @@ void finalize_model (MODEL *model, DATASET *dset,
         printmodel(model, dset, OPT_NONE, prn);
         buf = gretl_print_steal_buffer(prn);
         if (do_print) {
-            fputs(buf, stdout);
+            std::fputs(buf, stdout);
         }
         gretl_model_to_dict(model, dset, buf, *res);
     }
@@ -445,8 +441,7 @@ static py::dict *regression_wrapper (const std::string formula,
 
 // thin wrappers for specific estimators
 
-py::dict *ols (const std::string formula,
-               const py::kwargs &kwargs)
+py::dict *ols (const std::string formula, const py::kwargs &kwargs)
 {
     return regression_wrapper(formula, kwargs, OLS, NULL, NULL);
 }
