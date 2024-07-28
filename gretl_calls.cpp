@@ -77,9 +77,7 @@ void set (const std::string key)
 void numpy_array_test (const py::array_t<double> &pynum_array)
 {
     gretl_matrix *m = gretl_null_matrix_new();
-
     numpy_array_to_gretl_matrix(pynum_array, m);
-    gretl_matrix_print(m, "m (libgretl)");
     gretl_matrix_free(m);
 }
 

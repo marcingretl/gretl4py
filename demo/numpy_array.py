@@ -1,15 +1,29 @@
 import sys
 sys.path.append("../")
+import time
 import numpy
 import gretl
 
-print("Python level:")
-arr = numpy.array([[1, 2, 3], [4, 5, 6]]) #, numpy.double)
-#arr = numpy.array([1, 2, 3]) #, numpy.double)
-print(arr)
+total_fstyle = 0.0
+total_cstyle = 0.0
 
-print("\nC++ level:")
-print("fortranarray (column-major):")
-gretl.numpy_array_test(numpy.asfortranarray(arr))
-print("row-major:")
-gretl.numpy_array_test(arr)
+Nrepl = 1000
+
+Ns = [50, 100, 500, 1000, 5000, 10000]
+ks = [5, 10, 15, 20, 25, 30]
+
+for i in range(Nrepl):
+    for N in Ns:
+        for k in ks:
+            arr = numpy.array(numpy.random.rand(N, k))
+            t0 = time.time()
+            gretl.numpy_array_test(numpy.asfortranarray(arr))
+            t1 = time.time() - t0
+            total_fstyle += t1
+            t0 = time.time()
+            gretl.numpy_array_test(arr)
+            t1 = time.time() - t0
+            total_cstyle += t1
+
+print(f'total time for f_style: {total_fstyle:f},\t total time for c_style: {total_cstyle:f}')
+
