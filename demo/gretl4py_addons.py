@@ -50,13 +50,6 @@ def pretty_print(d):
     else:
         print('object is not a dictionary')
 
-import builtins as __builtin__
-def print(d):
-    if isinstance(d, dict) and 'output' in d.keys():
-        __builtin__.print(d['output'])
-    else:
-        __builtin__.print(d)
-
 def gretl_model_print(MODEL):
     '''Function prints libgretl model'''
     DASHEDLINE = "---------------------------------------------------------------"
