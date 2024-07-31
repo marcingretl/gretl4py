@@ -30,7 +30,9 @@ for i in range(Nrepl):
             t1 = time.time() - t0
             total_cstyle += t1
 
-print(f'total time for f_style: {total_fstyle:f} (including asfortranarray() time: {f_style_trans:f})')
-print(f'total time for c_style: {total_cstyle:f}')
-print(f'ratio: {total_fstyle/total_cstyle:f}')
+print(f'pure f_style: {total_fstyle-f_style_trans:f}, total time (including asfortranarray()): {total_fstyle:f})')
+print(f'pure c_style: {total_cstyle:f}')
+
+print(f'pure f_style/c_style ratio: {(total_fstyle-f_style_trans)/total_cstyle:f}')
+print(f'total f_style/c_style ratio: {total_fstyle/total_cstyle:f}')
 
