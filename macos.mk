@@ -15,6 +15,7 @@ MODULE_NAME = $(MODULE_PREFIX)$(MODULE_SUFFIX)
 
 $(MODULE_NAME): gretl_to_python.o gretl_calls.o gretl_python_data.o
 	$(CXX) $(CXXFLAGS) $^ -v -shared -undefined dynamic_lookup -o $(MODULE_NAME) -fPIC $(PYBIND) $(GRETLLD)
+	./macos/fixlinks.sh $(MODULE_NAME)
 
 gretl_python_data.o: gretl_python_data.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@ -fPIC $(PYBIND) $(GRETLIN)
