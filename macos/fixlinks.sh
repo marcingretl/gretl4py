@@ -7,20 +7,16 @@ if [ "x$MODULE" = "x" ] ; then
    exit 1
 fi
 
-EXE_PATH="@executable_path"
+EXE_PATH="@executable_path../lib"
 LIB_PATH="/Applications/Gretl.app/Contents/Resources/lib"
 TOOL=install_name_tool
 
 for line in `otool -L ${MODULE}`; do
    if grep -q "${EXE_PATH}" <<< "$line"; then
       lib=`awk -F' ' '{print $1}' <<< $line`
-      echo $lib
+      targ=`basename $lib`
+      ${TOOL} -change ${EXE_PATH}/$targ ${APP_PATH}/$targ ${MODULE}
    fi
 done
 
-exit 0
-
-for dlb in libgretl-1.0.*.dylib libglib-2.0.0.dylib libfftw3.3.dylib libomp.dylib ; do
-   ${TOOL} -change ${EXE_PATH}/../lib/$dlb ${APP_PATH}/$dlb ${MODULE}
-done
 
