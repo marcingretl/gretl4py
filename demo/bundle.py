@@ -4,4 +4,5 @@ import gretl
 import json
 
 sysinfo = json.loads(gretl.sysinfo())
-print(sysinfo["cpuid"])
+print("cpuid: " + sysinfo["cpuid"])
+print("blas: " + sysinfo["blas"])

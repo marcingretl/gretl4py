@@ -361,16 +361,20 @@ DATASET *gretl_load_global_dataset (const std::string fname)
 
 std::string bundle_test (void)
 {
+    std::string res;
+    gretl_bundle *bundle;
     int err = 0;
-    gretl_bundle *somebundle;
-    char *jsonbuf;
 
-    somebundle = get_sysinfo_bundle(&err);
+    bundle = get_sysinfo_bundle(&err);
 
-    // Later we may switch back to char* !!!
-    jsonbuf = gretl_bundle_write_to_json_buffer(somebundle, &err);
-    std::string res(jsonbuf);
-    free(jsonbuf);
+    if (!err) {
+        char *jsonbuf = gretl_bundle_write_to_json_buffer(bundle, &err);
+
+        if (jsonbuf != NULL) {
+            res = jsonbuf;
+            free(jsonbuf);
+        }
+    }
 
     return res;
 }
