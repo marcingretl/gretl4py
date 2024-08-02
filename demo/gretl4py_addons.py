@@ -16,7 +16,7 @@ def csv2dict(FILE, pd=1):
             else:
                 obs_labels.append(row[0])
                 data_list.append(row[1:])
-    data_array = numpy.asfortranarray(numpy.array(data_list, numpy.double))
+    data_array = numpy.array(data_list, numpy.double)
     d = dict()
     d["data_array"] = data_array
     d["varname"] = varname
@@ -30,7 +30,7 @@ def df2dict(dframe, pd=1):
     mydata = dframe.to_numpy(copy=True)
     d = dict()
     d["varname"] = dframe.columns[1:]
-    d["data_array"] = numpy.asfortranarray(numpy.array([row[1:] for row in mydata], numpy.double))
+    d["data_array"] = numpy.array([row[1:] for row in mydata], numpy.double)
     d["periodicity"] = pd
     d["obs_labels"] = [row[0] for row in mydata]
     return d
