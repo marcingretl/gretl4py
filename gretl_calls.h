@@ -25,6 +25,8 @@ void printdata (bool namesonly);
 py::dict *get_gretl_data (const std::string fname);
 void attach_gretl_data (const std::string fname);
 
+std::string sysinfo (void);
+
 // model estimation
 py::dict *arma (const std::string y, const py::tuple &tup, const py::kwargs &kwargs);
 

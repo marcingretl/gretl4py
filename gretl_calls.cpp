@@ -148,6 +148,12 @@ void attach_gretl_data (const std::string fname)
     }
 }
 
+//Proof of concept !!!
+std::string sysinfo (void)
+{
+    return bundle_test();
+}
+
 // model estimation
 
 // Apparatus to handle named optional arguments, including 'print'
