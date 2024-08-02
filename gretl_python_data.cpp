@@ -188,40 +188,6 @@ static double *numpy_array_extract (const py::array_t<double> &pynum_array,
     return (double*) pynum_array.request().ptr;
 }
 
-void numpy_array_to_gretl_matrix (const py::array_t<double> &pynum_array,
-                                  gretl_matrix *m)
-{
-    //
-    // we copy pynum_array to empty m (testing)
-    //
-    if (m->rows || m->cols) {
-        throw std::runtime_error("Given matrix is not empty.");
-    }
-
-    ssize_t rows, cols;
-    int fortranarray;
-    double *data_array = NULL;
-
-    data_array = numpy_array_extract(pynum_array, &rows, &cols, &fortranarray);
-    if (data_array == NULL) {
-        throw std::runtime_error("Numpy array: null pointer.");
-    }
-
-    if (gretl_matrix_realloc(m, rows, cols)) {
-        throw std::runtime_error("Matrix allocation failed.");
-    }
-
-    if (fortranarray) {
-        std::memcpy(m->val, data_array, rows * cols * sizeof(double));
-    } else {
-        for (int i=0; i<rows; i++) {
-            for (int j=0; j<cols; j++) {
-                gretl_matrix_set(m, i, j, *(data_array+i*cols+j));
-            }
-        }
-    }
-}
-
 static void numpy_array_to_gretl_storage (const py::dict &pydict,
                                           DATASET *dset)
 {

@@ -18,7 +18,6 @@ void set (const std::string key);
 
 // data management
 void load_data (const py::dict &pydict);
-void numpy_array_test (const py::array_t<double> &pynum_array);
 
 void printdata (const py::dict &data, bool namesonly);
 void printdata (bool namesonly);

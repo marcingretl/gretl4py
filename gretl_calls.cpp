@@ -73,16 +73,6 @@ void set (const std::string key)
 
 // data management
 
-// test of numpy array to gretl_matrix
-void numpy_array_test (const py::array_t<double> &pynum_array)
-{
-    gretl_matrix *m = gretl_null_matrix_new();
-    numpy_array_to_gretl_matrix(pynum_array, m);
-    gretl_matrix_free(m);
-}
-
-// interface for loading data from dictionary
-
 void load_data (const py::dict &pydict)
 {
     if (DSET != NULL) {

@@ -28,14 +28,14 @@ PYBIND11_MODULE(gretl, m) {
           py::arg("key").none(false));
 
     // data management
-    m.def("numpy_array_test", &numpy_array_test,
-          py::arg("pynum_array").none(false));
     m.def("load_data", &load_data,
           py::arg("pydict").none(false));
-    m.def("printdata", py::overload_cast<const py::dict &, bool> (&printdata),
+    m.def("printdata",
+          py::overload_cast<const py::dict &, bool> (&printdata),
           py::arg("data").none(false),
           py::arg("varamesonly") = false);
-    m.def("printdata", py::overload_cast<bool> (&printdata),
+    m.def("printdata",
+          py::overload_cast<bool> (&printdata),
           py::arg("varamesonly") = false);
     m.def("get_gretl_data", &get_gretl_data, py::arg("fname").none(false));
     m.def("attach_gretl_data", &attach_gretl_data, py::arg("fname").none(false));
