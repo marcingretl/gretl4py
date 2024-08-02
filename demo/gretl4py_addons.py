@@ -1,6 +1,7 @@
 import csv
 import numpy
 import subprocess
+import os
 
 def csv2dict(FILE, pd=1):
     data_list = list()
@@ -36,10 +37,14 @@ def df2dict(dframe, pd=1):
     return d
 
 def gretl_data_path(fname):
-    res = subprocess.run(['pkg-config', '--cflags-only-I', 'gretl'], stdout=subprocess.PIPE)
-    b = res.stdout.split()[0]
-    path = b.decode("utf-8")[2:]
-    return path[0:path.find("include")] + "share/gretl/data/" + fname
+    s = os.getenv('GRETL_DATA_PATH')
+    if s is None:
+        res = subprocess.run(['pkg-config', '--cflags-only-I', 'gretl'], stdout=subprocess.PIPE)
+        b = res.stdout.split()[0]
+        path = b.decode("utf-8")[2:]
+        return path[0:path.find("include")] + "share/gretl/data/" + fname
+    else:
+        return s + '/' + fname
 
 def pretty_print(d):
     if isinstance(d, dict):
