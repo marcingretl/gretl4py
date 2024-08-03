@@ -1,11 +1,37 @@
-crucial:
-- where should we use glib types?
-- parameters naming schema: we need to set up some things (f.e.: "print" or "do_print")
-- do we allow passing a regular command/script and execute it?
+Source reorganization:
 
-important:
-- do libgretl bindings (like "do_arma()") stay in gretl_calls.cpp or we place them in
-    additional source (like "gretl_bindings.cpp")?
-- directory structure (including resulting binaries)
-- can we automatically guess data periodicity (vide DSET["periodicity"] = "4")
-- do we want to bundle some pure Python code as well (f.e. for translating Pandas dat-frame to dict)?
+Function names changes:
+load_data() -> attach_data()
+
+File names changes:
+gretl_to_python.cpp -> gretl4py.cpp
+gretl_calls.h -> gretl4py.h
+gretl_python_data.cpp -> gretl4py_data.cpp
+gretl_python_data.h -> gretl4py_data.h
+
+
+Tree proposal:
+./
+ |
+ -automation
+    |
+    -C/C++/scripts/Makefile/readme
+ -src
+    |
+    -C++ sources (following new naming schema)
+ -module
+    |
+    -__init__.py
+    -gretl.py (main module file, provides all required interfaces)
+    -_gretl.cpython-xxx.(so/pyd)
+ -doc
+    |
+    -LaTeX
+ -demo
+    |
+    -*.py
+ -macos
+    |
+    -gretl4py.env
+ -win (if needed)
+ -Makefiles/readme/todo/install/etc
