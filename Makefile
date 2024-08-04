@@ -8,27 +8,24 @@ GRETLIN = $(shell pkg-config --cflags gretl)
 PYBIND = $(shell python3 -m pybind11 --includes)
 MODULE_PREFIX = gretl
 MODULE_SUFIX = $(shell python3-config --extension-suffix)
-MODULE_NAME = $(MODULE_PREFIX)$(MODULE_SUFIX)
+MODULE = $(MODULE_PREFIX)$(MODULE_SUFIX)
+
+SRCS = gretl_to_python.cpp gretl_calls.cpp gretl_python_data.cpp
+OBJS = $(SRCS:.cpp=.o)
 
 .PHONY: tags clean depend
 
-$(MODULE_NAME): gretl_to_python.o gretl_calls.o gretl_python_data.o
-	$(CXX) $(CXXFLAGS) $^ -shared -o $(MODULE_NAME) -fPIC $(GRETLLD)
-
-gretl_python_data.o: gretl_python_data.cpp
+%.o: %.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@ -fPIC $(PYBIND) $(GRETLIN)
 
-gretl_calls.o: gretl_calls.cpp
-	$(CXX) $(CXXFLAGS) -c $< -o $@ -fPIC $(PYBIND) $(GRETLIN)
-
-gretl_to_python.o: gretl_to_python.cpp
-	$(CXX) $(CXXFLAGS) -c $< -o $@ -fPIC $(PYBIND) $(GRETLIN)
+$(MODULE): $(OBJS)
+	$(CXX) $(CXXFLAGS) $^ -shared -o $@ -fPIC $(GRETLLD)
 
 tags:
 	etags *.cpp *.h
 
 clean:
-	@rm -f $(MODULE_NAME) *.o
+	@rm -f $(MODULE) *.o
 
 depend:
 	makedepend -Y. *.cpp 2>/dev/null
