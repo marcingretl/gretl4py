@@ -5,6 +5,10 @@
 #include <gretl/libset.h>
 #include <iostream>
 
+#if defined(_WIN32)
+# include <gretl/gretl_win32.h>
+#endif
+
 #define GRETL_PYBIND11_DEBUG 0
 
 static DATASET *DSET = NULL; // global dataset
@@ -18,6 +22,11 @@ typedef MODEL (*BASIC_MODEL_FUNC2) (const int *, DATASET *, gretlopt);
 void module_init ()
 {
     libgretl_init();
+#if defined(_WIN32)
+    win32_cli_read_rc();
+#else
+    cli_read_rc();
+#endif
     printf("libgretl initialized\n");
 }
 
@@ -30,7 +39,8 @@ void module_cleanup ()
     printf("libgretl cleaned up\n");
 }
 
-void about () {
+void about ()
+{
     int err = 0;
     gretl_bundle *b = NULL;
     PRN *prn = NULL;
