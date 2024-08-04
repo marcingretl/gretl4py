@@ -13,7 +13,7 @@ MODULE_NAME = $(MODULE_PREFIX)$(MODULE_SUFIX)
 .PHONY: tags clean depend
 
 $(MODULE_NAME): gretl_to_python.o gretl_calls.o gretl_python_data.o
-	$(CXX) $(CXXFLAGS) $^ -shared -o $(MODULE_NAME) -fPIC $(PYBIND) $(GRETLLD)
+	$(CXX) $(CXXFLAGS) $^ -shared -o $(MODULE_NAME) -fPIC $(GRETLLD)
 
 gretl_python_data.o: gretl_python_data.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@ -fPIC $(PYBIND) $(GRETLIN)
