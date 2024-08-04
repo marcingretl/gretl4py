@@ -58,13 +58,14 @@ void about ()
     if (!err) {
         prn = gretl_print_new(GRETL_PRINT_STDOUT, NULL);
         if (prn != NULL) {
-            if (gretl_bundle_print(b, prn)) {
-                std::cerr << "error while printing 'sysinfo' bundle" << std::endl;
+            err = gretl_bundle_print(b, prn);
+            if (err) {
+                std::cerr << errmsg_get_with_default(err) << std::endl;
             }
             gretl_print_destroy(prn);
         }
     } else {
-        std::cerr << "error while getting 'sysinfo' bundle" << std::endl;
+        std::cerr << errmsg_get_with_default(err) << std::endl;
     }
 }
 
