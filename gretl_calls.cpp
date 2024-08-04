@@ -45,7 +45,12 @@ void about ()
     gretl_bundle *b = NULL;
     PRN *prn = NULL;
 
+    /*
+    gretl_push_c_numeric_locale();
     printf("module version: %g\n", GRETL_MODULE_VERSION);
+    gretl_pop_c_numeric_locale();
+    */
+    std::cout << "module version: " << GRETL_MODULE_VERSION << std::endl; // with stream we don't need to manually set LOCALE
     lib_logo();
     std::cout << std::endl;
 
@@ -53,17 +58,13 @@ void about ()
     if (!err) {
         prn = gretl_print_new(GRETL_PRINT_STDOUT, NULL);
         if (prn != NULL) {
-            err = gretl_bundle_print(b, prn);
-        }
-        if (err) {
-            std::cerr << "error while printing 'sysinfo' bundle" << std::endl;
+            if (gretl_bundle_print(b, prn)) {
+                std::cerr << "error while printing 'sysinfo' bundle" << std::endl;
+            }
+            gretl_print_destroy(prn);
         }
     } else {
         std::cerr << "error while getting 'sysinfo' bundle" << std::endl;
-    }
-
-    if (prn != NULL) {
-        gretl_print_destroy(prn);
     }
 }
 
