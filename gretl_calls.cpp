@@ -27,7 +27,7 @@ void module_init ()
 #else
     cli_read_rc();
 #endif
-    printf("libgretl initialized\n");
+    std::printf("libgretl initialized\n");
 }
 
 void module_cleanup ()
@@ -36,18 +36,18 @@ void module_cleanup ()
         destroy_dataset(DSET);
     }
     libgretl_cleanup();
-    printf("libgretl cleaned up\n");
+    std::printf("libgretl cleaned up\n");
 }
 
 void about ()
 {
-    int err = 0;
     gretl_bundle *b = NULL;
     PRN *prn = NULL;
+    int err = 0;
 
     /*
     gretl_push_c_numeric_locale();
-    printf("module version: %g\n", GRETL_MODULE_VERSION);
+    std::printf("module version: %g\n", GRETL_MODULE_VERSION);
     gretl_pop_c_numeric_locale();
     */
     std::cout << "module version: " << GRETL_MODULE_VERSION << std::endl; // with stream we don't need to manually set LOCALE
@@ -59,12 +59,13 @@ void about ()
         prn = gretl_print_new(GRETL_PRINT_STDOUT, NULL);
         if (prn != NULL) {
             err = gretl_bundle_print(b, prn);
-            if (err) {
-                std::cerr << errmsg_get_with_default(err) << std::endl;
-            }
             gretl_print_destroy(prn);
+        } else {
+            std::cerr << "Failed to allocate memory" << std::endl;
         }
-    } else {
+    }
+
+    if (err) {
         std::cerr << errmsg_get_with_default(err) << std::endl;
     }
 }
@@ -121,8 +122,8 @@ static void do_printdata (DATASET *dset, const std::string *varnames,
                           bool varnames_only = false)
 {
     int *varlist = NULL;
-    int err;
-    PRN *prn = 0;
+    PRN *prn = NULL;
+    int err = 0;
 
     if (varnames == NULL) {
         varlist = gretl_list_new(dset->v);
@@ -140,7 +141,7 @@ static void do_printdata (DATASET *dset, const std::string *varnames,
         err = printdata(varlist, NULL, dset, opt, prn);
         gretl_print_destroy(prn);
         if (err) {
-            throw std::runtime_error("libgretl printdata() failed.");
+            handle_gretl_error(err);
         }
     }
 }
@@ -241,7 +242,7 @@ static gretlopt unpack_kwargs (const py::kwargs &kwargs,
                 opt = valid_long_opt(ci, key.c_str(), &status);
             }
             if (opt == 0) {
-                throw std::runtime_error(std::string("invalid option flag ") + key);
+                throw std::runtime_error("invalid option flag " + key);
             }
         }
         if (status == OPT_NO_PARM) {
