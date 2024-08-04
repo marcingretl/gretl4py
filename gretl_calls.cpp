@@ -31,8 +31,30 @@ void module_cleanup ()
 }
 
 void about () {
-    lib_logo();
+    int err = 0;
+    gretl_bundle *b = NULL;
+    PRN *prn = NULL;
+
     printf("module version: %g\n", GRETL_MODULE_VERSION);
+    lib_logo();
+    std::cout << std::endl;
+
+    b = get_sysinfo_bundle(&err);
+    if (!err) {
+        prn = gretl_print_new(GRETL_PRINT_STDOUT, NULL);
+        if (prn != NULL) {
+            err = gretl_bundle_print(b, prn);
+        }
+        if (err) {
+            std::cerr << "error while printing 'sysinfo' bundle" << std::endl;
+        }
+    } else {
+        std::cerr << "error while getting 'sysinfo' bundle" << std::endl;
+    }
+
+    if (prn != NULL) {
+        gretl_print_destroy(prn);
+    }
 }
 
 static void handle_gretl_error (int err)
