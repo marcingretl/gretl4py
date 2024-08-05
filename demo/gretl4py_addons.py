@@ -48,10 +48,10 @@ def gretl_data_path(fname):
 
 def pretty_print(d):
     if isinstance(d, dict):
-        if 'output' in d.keys():
-            print(d['output'])
+        if '_gretlprn' in d.keys():
+            print(d['_gretlprn'])
         else:
-            print('output was not found')
+            print('_gretlprn was not found')
     else:
         print('object is not a dictionary')
 
