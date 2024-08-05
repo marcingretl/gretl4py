@@ -7,8 +7,8 @@ GRETLLD = $(shell pkg-config --libs gretl)
 GRETLIN = $(shell pkg-config --cflags gretl)
 PYBIND = $(shell python3 -m pybind11 --includes)
 MODULE_PREFIX = gretl
-MODULE_SUFIX = $(shell python3-config --extension-suffix)
-MODULE = $(MODULE_PREFIX)$(MODULE_SUFIX)
+MODULE_SUFFIX = $(shell python3-config --extension-suffix)
+MODULE = $(MODULE_PREFIX)$(MODULE_SUFFIX)
 
 SRCS = gretl_to_python.cpp gretl_calls.cpp gretl_python_data.cpp
 OBJS = $(SRCS:.cpp=.o)
