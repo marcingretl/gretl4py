@@ -20,8 +20,8 @@ ldata = gretl.get_gretl_data(fname)
 print('logit example:')
 res = gretl.logit('GRADE ~ 0 GPA TUCE PSI', data=ldata)
 pretty_print(res)
-print('probit example:')
-res = gretl.probit('GRADE ~ 0 GPA TUCE PSI', data=ldata)
+print('probit example with p-value option:')
+res = gretl.probit('GRADE ~ 0 GPA TUCE PSI', data=ldata, p_values=True)
 pretty_print(res)
 
 # load dataset using libgretl and set as global DSET

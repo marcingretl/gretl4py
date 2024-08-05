@@ -8,7 +8,7 @@ from gretl4py_addons import df2dict
 
 ARMAtest = pandas.read_csv('large_arma22.csv')
 MyDict = df2dict(ARMAtest)
-armaSpec = tuple((2,0,2))
+armaSpec = tuple((4,0,4))
 
 # arma model via gretl
 t0 = time.time()
