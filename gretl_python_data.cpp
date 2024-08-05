@@ -84,7 +84,7 @@ void gretl_model_to_dict (MODEL *model, DATASET *dset, char *buf, py::dict &pydi
     pydict[py::cast("esttime")] = model->esttime;
 
     if (buf != NULL) {
-        pydict[py::cast("output")] = buf;
+        pydict[py::cast("_gretlprn")] = buf;
     }
 }
 
