@@ -1,6 +1,4 @@
-import sys
-sys.path.append("../")
-import _gretl
+import _gretl # by I'd like to have 'import gretl' here
 
 class Model:
 

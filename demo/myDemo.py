@@ -20,7 +20,7 @@ print("Print result")
 print(OLS1)
 print("\n\n\n")
 
-# ARMA 
+# ARMA
 
 ARMA1 = gretl.arma(y="QNC", order=(1,1,1), data=data97, print=True)
 ARMA1.fit()
