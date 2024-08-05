@@ -39,18 +39,18 @@ void module_cleanup ()
     std::printf("libgretl cleaned up\n");
 }
 
-void about ()
+std::string about ()
 {
     gretl_bundle *b = NULL;
     PRN *prn = NULL;
+    std::string res;
     int err = 0;
 
-    /*
     gretl_push_c_numeric_locale();
+    res = std::to_string(libgretl_version()) + "_" + std::to_string(GRETL_MODULE_VERSION).substr(0,3);
     std::printf("module version: %g\n", GRETL_MODULE_VERSION);
     gretl_pop_c_numeric_locale();
-    */
-    std::cout << "module version: " << GRETL_MODULE_VERSION << std::endl; // with stream we don't need to manually set LOCALE
+
     lib_logo();
     std::cout << std::endl;
 
@@ -68,6 +68,8 @@ void about ()
     if (err) {
         std::cerr << errmsg_get_with_default(err) << std::endl;
     }
+
+    return res;
 }
 
 static void handle_gretl_error (int err)
