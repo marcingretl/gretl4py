@@ -6,7 +6,7 @@ MAKE = gmake
 GRETLLD = $(shell pkg-config --libs gretl)
 GRETLIN = $(shell pkg-config --cflags gretl)
 PYBIND = $(shell python3 -m pybind11 --includes)
-MODULE_PREFIX = gretl
+MODULE_PREFIX = gretl_cython
 MODULE_SUFIX = $(shell python3-config --extension-suffix)
 MODULE = $(MODULE_PREFIX)$(MODULE_SUFIX)
 
