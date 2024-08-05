@@ -3,8 +3,6 @@ import numpy
 from gretl4py_addons import csv2dict
 from gretl4py_classes import *
 
-print(gretl.test())
-
 data97 = csv2dict('data9-7.csv', 4)
 
 OLS1 = gretl.ols('QNC ~ const + PRICE + INCOME', data=data97, print=False)
@@ -21,8 +19,6 @@ OLS1.fit()
 print("Print result")
 print(OLS1)
 print("\n\n\n")
-
-
 
 # ARMA 
 
