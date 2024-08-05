@@ -5,6 +5,10 @@
 #include <gretl/libset.h>
 #include <iostream>
 
+#if defined(_WIN32)
+# include <gretl/gretl_win32.h>
+#endif
+
 #define GRETL_PYBIND11_DEBUG 0
 
 static DATASET *DSET = NULL; // global dataset
@@ -18,7 +22,12 @@ typedef MODEL (*BASIC_MODEL_FUNC2) (const int *, DATASET *, gretlopt);
 void module_init ()
 {
     libgretl_init();
-    printf("libgretl initialized\n");
+#if defined(_WIN32)
+    win32_cli_read_rc();
+#else
+    cli_read_rc();
+#endif
+    std::printf("libgretl initialized\n");
 }
 
 void module_cleanup ()
@@ -27,15 +36,21 @@ void module_cleanup ()
         destroy_dataset(DSET);
     }
     libgretl_cleanup();
-    printf("libgretl cleaned up\n");
+    std::printf("libgretl cleaned up\n");
 }
 
-void about () {
-    int err = 0;
+std::string about ()
+{
     gretl_bundle *b = NULL;
     PRN *prn = NULL;
+    std::string res;
+    int err = 0;
 
-    printf("module version: %g\n", GRETL_MODULE_VERSION);
+    gretl_push_c_numeric_locale();
+    res = std::to_string(libgretl_version()) + "_" + std::to_string(GRETL_MODULE_VERSION).substr(0,3);
+    std::printf("module version: %g\n", GRETL_MODULE_VERSION);
+    gretl_pop_c_numeric_locale();
+
     lib_logo();
     std::cout << std::endl;
 
@@ -44,17 +59,17 @@ void about () {
         prn = gretl_print_new(GRETL_PRINT_STDOUT, NULL);
         if (prn != NULL) {
             err = gretl_bundle_print(b, prn);
+            gretl_print_destroy(prn);
+        } else {
+            std::cerr << "Failed to allocate memory" << std::endl;
         }
-        if (err) {
-            std::cerr << "error while printing 'sysinfo' bundle" << std::endl;
-        }
-    } else {
-        std::cerr << "error while getting 'sysinfo' bundle" << std::endl;
     }
 
-    if (prn != NULL) {
-        gretl_print_destroy(prn);
+    if (err) {
+        std::cerr << errmsg_get_with_default(err) << std::endl;
     }
+
+    return res;
 }
 
 static void handle_gretl_error (int err)
@@ -109,8 +124,8 @@ static void do_printdata (DATASET *dset, const std::string *varnames,
                           bool varnames_only = false)
 {
     int *varlist = NULL;
-    int err;
-    PRN *prn = 0;
+    PRN *prn = NULL;
+    int err = 0;
 
     if (varnames == NULL) {
         varlist = gretl_list_new(dset->v);
@@ -128,7 +143,7 @@ static void do_printdata (DATASET *dset, const std::string *varnames,
         err = printdata(varlist, NULL, dset, opt, prn);
         gretl_print_destroy(prn);
         if (err) {
-            throw std::runtime_error("libgretl printdata() failed.");
+            handle_gretl_error(err);
         }
     }
 }
@@ -229,7 +244,7 @@ static gretlopt unpack_kwargs (const py::kwargs &kwargs,
                 opt = valid_long_opt(ci, key.c_str(), &status);
             }
             if (opt == 0) {
-                throw std::runtime_error(std::string("invalid option flag ") + key);
+                throw std::runtime_error("invalid option flag " + key);
             }
         }
         if (status == OPT_NO_PARM) {
