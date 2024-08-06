@@ -1,4 +1,4 @@
-#import _gretl
+import _gretl
 from gretl4py_addons import csv2dict
 import gretl4py_classes
 
@@ -11,6 +11,9 @@ def __getattr__(model_name):
 		return __model_initializer(model_name, *args, **kwargs)
 
 	return wrapper
+
+def about():
+    return _gretl.about()
 
 if __name__ == "__main__":
 	pass

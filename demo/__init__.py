@@ -1,2 +1,2 @@
-from _gretl import *
+#from _gretl import *
 
