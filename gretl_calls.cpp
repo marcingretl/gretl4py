@@ -19,7 +19,7 @@ typedef MODEL (*BASIC_MODEL_FUNC2) (const int *, DATASET *, gretlopt);
 
 // module related tools
 
-void module_init ()
+void module_init (void)
 {
     libgretl_init();
 #if defined(_WIN32)
@@ -30,7 +30,7 @@ void module_init ()
     std::printf("libgretl initialized\n");
 }
 
-void module_cleanup ()
+void module_cleanup (void)
 {
     if (DSET != NULL) {
         destroy_dataset(DSET);
@@ -39,25 +39,23 @@ void module_cleanup ()
     std::printf("libgretl cleaned up\n");
 }
 
-std::string about ()
+std::string about (void)
 {
+    std::string res;
     gretl_bundle *b = NULL;
     PRN *prn = NULL;
-    std::string res;
     int err = 0;
 
     gretl_push_c_numeric_locale();
-    res = std::to_string(libgretl_version()) + "_" + std::to_string(GRETL_MODULE_VERSION).substr(0,3);
-    std::printf("module version: %g\n", GRETL_MODULE_VERSION);
+    res = std::to_string(GRETL_MODULE_VERSION).substr(0,3) + "_" + std::to_string(libgretl_version());
+    std::printf("gretl4py version %g, libgretl-1.0 version %d\n", GRETL_MODULE_VERSION, libgretl_version());
     gretl_pop_c_numeric_locale();
-
-    lib_logo();
-    std::cout << std::endl;
 
     b = get_sysinfo_bundle(&err);
     if (!err) {
         prn = gretl_print_new(GRETL_PRINT_STDOUT, NULL);
         if (prn != NULL) {
+            std::cout << std::endl << "libgretl $sysinfo ";
             err = gretl_bundle_print(b, prn);
             gretl_print_destroy(prn);
         } else {
