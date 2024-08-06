@@ -1,6 +1,4 @@
-import sys
-sys.path.append("../")
-import gretl
+import _gretl as gretl
 from gretl4py_addons import gretl_model_print
 from gretl4py_addons import csv2dict
 

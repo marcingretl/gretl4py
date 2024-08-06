@@ -1,5 +1,5 @@
 import sys
-sys.path.append("../")
+#sys.path.append("../")
 import gretl
 import numpy
 from gretl4py_addons import csv2dict

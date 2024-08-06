@@ -1,6 +1,4 @@
-import sys
-sys.path.append("../")
-import gretl
+import _gretl as gretl
 
 gretl.set('csv_delim')
 gretl.set('csv_delim', 'tab')

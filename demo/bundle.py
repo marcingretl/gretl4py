@@ -1,6 +1,4 @@
-import sys
-sys.path.append("../")
-import gretl
+import _gretl as gretl
 import json
 
 sysinfo = json.loads(gretl.sysinfo())

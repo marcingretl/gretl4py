@@ -1,3 +1,4 @@
+#import _gretl
 from gretl4py_addons import csv2dict
 import gretl4py_classes
 
