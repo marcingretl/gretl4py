@@ -28,7 +28,7 @@ int gretl_model_to_dict (MODEL *model, DATASET *dset, char *summary, py::dict &p
     }
 
     if (json_buf != NULL) {
-        pydict[py::cast("json_buffer")] = json_buf;
+        pydict[py::cast("json_buffer")] = json_buf; //Allin: should't we have "= *json_buf" here?
         pydict[py::cast("summary")] = summary;
         g_free(json_buf);
     }
