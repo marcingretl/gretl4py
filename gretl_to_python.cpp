@@ -14,7 +14,8 @@ PYBIND11_MODULE(gretl, m) {
     // module related tools
     static Module module;
     m.doc() = info;
-    m.def("about", &about);
+    m.def("about", &about,
+          py::arg("do_print") = true);
     m.def("set",
           py::overload_cast<const std::string, const std::string> (&set),
           py::arg("key").none(false),

@@ -39,27 +39,30 @@ void module_cleanup (void)
     std::printf("libgretl cleaned up\n");
 }
 
-std::string about (void)
+std::string about (bool do_print)
 {
-    std::string res;
+    std::string mod_ver, lg_ver;
     gretl_bundle *b = NULL;
     PRN *prn = NULL;
     int err = 0;
 
     gretl_push_c_numeric_locale();
-    res = std::to_string(GRETL_MODULE_VERSION).substr(0,3) + "_" + std::to_string(libgretl_version());
-    std::printf("gretl4py version %g, libgretl-1.0 version %d\n", GRETL_MODULE_VERSION, libgretl_version());
+    mod_ver = std::to_string(GRETL_MODULE_VERSION).substr(0,3);
+    lg_ver = std::to_string(libgretl_version());
     gretl_pop_c_numeric_locale();
 
-    b = get_sysinfo_bundle(&err);
-    if (!err) {
-        prn = gretl_print_new(GRETL_PRINT_STDOUT, NULL);
-        if (prn != NULL) {
-            std::cout << std::endl << "libgretl $sysinfo ";
-            err = gretl_bundle_print(b, prn);
-            gretl_print_destroy(prn);
-        } else {
-            std::cerr << "Failed to allocate memory" << std::endl;
+    if (do_print) {
+        std::cout << "gretl4py version " << mod_ver << ", libgretl-1.0 version " << lg_ver << std::endl;
+        b = get_sysinfo_bundle(&err);
+        if (!err) {
+            prn = gretl_print_new(GRETL_PRINT_STDOUT, NULL);
+            if (prn != NULL) {
+                std::cout << std::endl << "libgretl $sysinfo ";
+                err = gretl_bundle_print(b, prn);
+                gretl_print_destroy(prn);
+            } else {
+                std::cerr << "Failed to allocate memory" << std::endl;
+            }
         }
     }
 
@@ -67,7 +70,7 @@ std::string about (void)
         std::cerr << errmsg_get_with_default(err) << std::endl;
     }
 
-    return res;
+    return mod_ver + "_" + lg_ver;
 }
 
 static void handle_gretl_error (int err)
