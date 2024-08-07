@@ -303,7 +303,7 @@ void finalize_model (MODEL *model, DATASET *dset,
         int err;
 
         printmodel(model, dset, OPT_NONE, prn);
-        summary = gretl_print_get_buffer(prn); //Allin: when compiling I'm getting the following here: 'error: assigning to 'char *' from 'const char *' discards qualifiers'
+        summary = gretl_print_get_buffer(prn);
         if (do_print) {
             std::fputs(summary, stdout);
         }
