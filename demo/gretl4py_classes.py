@@ -13,8 +13,8 @@ class Model:
 			print(f"Unexpected {err=}, {type(err)=}")
 			raise
 
-		self.model_args = args
-		self.model_kwargs = kwargs
+		self.args = args
+		self.options = kwargs
 		self.computed = False
 
 	def __repr__(self):
@@ -39,16 +39,19 @@ class Model:
 					d[key] = np.reshape(a, [r, c], order = 'F')
 				elif val['type'] == 'gretl_series':
 					s = pd.Series(val['data'])
-					d[key] = s
+					d[key] = s.replace('NA', np.nan)
+				elif val['type'] == 'gretl_list':
+					d[key] = list(val['data'])[1:]
 
 	def fit(self):
 		if self.cpython_function:
-			model_result = self.cpython_function(*self.model_args, **self.model_kwargs)
-			res = json.loads(model_result['json_buffer'])
-			self.__process_gretl_objects(res)
-			model_result['results'] = res
-			del model_result['json_buffer']
-			self.__load_dict_model(model_result)
+			model_dict = self.cpython_function(*self.args, **self.options)
+			json_dict = json.loads(model_dict['json_buffer'])
+			del json_dict['type']
+			self.__process_gretl_objects(json_dict)
+			model_dict['results'] = json_dict
+			del model_dict['json_buffer']
+			self.__load_dict_model(model_dict)
 
 		self.computed = True
 
