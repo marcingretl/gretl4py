@@ -1,4 +1,4 @@
-import _gretl as gretl
+import gretl
 
 gretl.set('csv_delim')
 gretl.set('csv_delim', 'tab')

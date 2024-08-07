@@ -15,6 +15,13 @@ def __getattr__(model_name):
 def about(print=True):
     return _gretl.about(do_print=print)
 
+def set(key, val=None):
+    if val is None:
+        _gretl.set(key)
+    else:
+        _gretl.set(key, val)
+
+
 if __name__ == "__main__":
 	pass
 
