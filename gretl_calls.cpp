@@ -301,7 +301,7 @@ void finalize_model (MODEL *model, DATASET *dset,
         int err;
 
         printmodel(model, dset, OPT_NONE, prn);
-        summary = gretl_print_steal_buffer(prn);
+        summary = gretl_print_get_buffer(prn);
         if (do_print) {
             std::fputs(summary, stdout);
         }
