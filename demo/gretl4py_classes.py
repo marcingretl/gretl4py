@@ -15,10 +15,7 @@ class Model:
 
 		self.args = args
 		self.options = kwargs
-		if 'fit' in self.options and self.options['fit'] is True:
-			self.fit()
-		else:
-			self.computed = False
+		self.computed = False
 
 	def __repr__(self):
 		if self.computed:
@@ -59,7 +56,7 @@ class Model:
 			self.__load_dict_model(model_dict)
 
 		self.computed = True
-
+		return self
 
 if __name__ == "__main__":
 	pass
