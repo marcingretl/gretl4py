@@ -16,7 +16,7 @@
 
 #if MODEL_USE_JSON
 
-int gretl_model_to_dict (MODEL *model, DATASET *dset, char *summary, py::dict &pydict)
+int gretl_model_to_dict (MODEL *model, DATASET *dset, const char *summary, py::dict &pydict)
 {
     char *json_buf = NULL;
     gretl_bundle *b;
@@ -40,7 +40,7 @@ int gretl_model_to_dict (MODEL *model, DATASET *dset, char *summary, py::dict &p
 
 #else
 
-int gretl_model_to_dict (MODEL *model, DATASET *dset, char *summary, py::dict &pydict)
+int gretl_model_to_dict (MODEL *model, DATASET *dset, const char *summary, py::dict &pydict)
 {
     //
     // here we construct python's dict which is returned (with estimation results)

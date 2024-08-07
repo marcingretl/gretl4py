@@ -15,7 +15,10 @@ class Model:
 
 		self.args = args
 		self.options = kwargs
-		self.computed = False
+		if 'fit' in self.options and self.options['fit'] is True:
+			self.fit()
+		else:
+			self.computed = False
 
 	def __repr__(self):
 		if self.computed:
@@ -25,23 +28,23 @@ class Model:
 			out += "Model " + self.name.upper()
 		return out
 
-	def __load_dict_model(self, dict_model):
-		if dict_model:
-			for _ in dict_model: setattr(self, _, dict_model[_])
+	def __load_dict_model(self, model_dict):
+		if model_dict:
+			for _ in model_dict: setattr(self, _, model_dict[_])
 
-	def __process_gretl_objects(self, d):
-		for key, val in d.items():
+	def __process_gretl_objects(self, json_dict):
+		for key, val in json_dict.items():
 			if isinstance(val, dict):
 				if val['type'] == 'gretl_matrix':
 					a = np.asarray(val['data'])
 					r = val['rows']
 					c = val['cols']
-					d[key] = np.reshape(a, [r, c], order = 'F')
+					json_dict[key] = np.reshape(a, [r, c], order = 'F')
 				elif val['type'] == 'gretl_series':
 					s = pd.Series(val['data'])
-					d[key] = s.replace('NA', np.nan)
+					json_dict[key] = s.replace('NA', np.nan)
 				elif val['type'] == 'gretl_list':
-					d[key] = list(val['data'])[1:]
+					json_dict[key] = list(val['data'])[1:]
 
 	def fit(self):
 		if self.cpython_function:

@@ -229,6 +229,8 @@ static gretlopt unpack_kwargs (const py::kwargs &kwargs,
             // special case: 'print' is not a gretl option
             is_print = true;
             status = OPT_NO_PARM;
+        } else if (key == "fit") {
+            continue; /* ignore here */
         } else if (key == "seasonal" && ci == ARMA) {
             // arma special: ignore here
             continue;
@@ -297,7 +299,7 @@ void finalize_model (MODEL *model, DATASET *dset,
         const char *msg = errmsg_get_with_default(model->errcode);
         throw std::runtime_error(msg);
     } else {
-        char *summary;
+        const char *summary;
         int err;
 
         printmodel(model, dset, OPT_NONE, prn);
