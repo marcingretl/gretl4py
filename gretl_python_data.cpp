@@ -118,7 +118,7 @@ int gretl_model_to_dict (MODEL *model, DATASET *dset, const char *summary, py::d
     return 0;
 }
 
-#endif
+#endif // MODEL_USE_JSON or not
 
 #if 0
 
@@ -142,7 +142,7 @@ static void copy_string_from_python_dict (const py::dict &pydict,
     str.copy(dest, n_bytes, offset);
 }
 
-#endif /* MODEL_USE_JSON or not */
+#endif // currently unused
 
 static int get_int_from_python_dict (const py::dict &pydict,
                                      const char *key,
