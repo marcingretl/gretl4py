@@ -12,8 +12,8 @@ def __getattr__(model_name):
 
 	return wrapper
 
-def about():
-    return _gretl.about()
+def about(print=True):
+    return _gretl.about(do_print=print)
 
 if __name__ == "__main__":
 	pass
