@@ -35,7 +35,9 @@ class Model:
 	def __process_gretl_objects(self, json_dict):
 		for key, val in json_dict.items():
 			if isinstance(val, dict):
-				if val['type'] == 'gretl_matrix':
+				if not 'type' in val:
+					continue
+				elif val['type'] == 'gretl_matrix':
 					a = np.asarray(val['data'])
 					r = val['rows']
 					c = val['cols']
