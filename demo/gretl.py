@@ -27,6 +27,9 @@ def get_gretl_data(fname):
 def attach_gretl_data(fname):
 	_gretl.attach_gretl_data(fname)
 
+def load_data(data_dict):
+	_gretl.load_data(data_dict)
+
 if __name__ == "__main__":
 	pass
 
