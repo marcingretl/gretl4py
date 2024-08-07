@@ -12,7 +12,32 @@
 
 #define GRETL_PYBIND11_DEBUG 0
 
-void gretl_model_to_dict (MODEL *model, DATASET *dset, char *buf, py::dict &pydict)
+#define MODEL_USE_JSON 1
+
+#if MODEL_USE_JSON
+
+int gretl_model_to_dict (MODEL *model, DATASET *dset, char *summary, py::dict &pydict)
+{
+    char *json_buf = NULL;
+    gretl_bundle *b;
+    int err = 0;
+
+    b = bundle_from_model(model, dset, &err);
+    if (!err) {
+        json_buf = gretl_bundle_write_to_json_buffer(b, &err);
+    }
+
+    if (json_buf != NULL) {
+        pydict[py::cast("json_buffer")] = json_buf;
+        pydict[py::cast("summary")] = summary;
+    }
+
+    return err;
+}
+
+#else
+
+int gretl_model_to_dict (MODEL *model, DATASET *dset, char *summary, py::dict &pydict)
 {
     //
     // here we construct python's dict which is returned (with estimation results)
@@ -83,10 +108,14 @@ void gretl_model_to_dict (MODEL *model, DATASET *dset, char *buf, py::dict &pydi
     pydict[py::cast("nparams")] = model->nparams;
     pydict[py::cast("esttime")] = model->esttime;
 
-    if (buf != NULL) {
-        pydict[py::cast("_gretlprn")] = buf;
+    if (summary != NULL) {
+        pydict[py::cast("_gretlprn")] = summary;
     }
+
+    return 0;
 }
+
+#endif
 
 #if 0
 
@@ -110,7 +139,7 @@ static void copy_string_from_python_dict (const py::dict &pydict,
     str.copy(dest, n_bytes, offset);
 }
 
-#endif
+#endif /* MODEL_USE_JSON or not */
 
 static int get_int_from_python_dict (const py::dict &pydict,
                                      const char *key,
