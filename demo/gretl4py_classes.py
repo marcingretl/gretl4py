@@ -5,7 +5,7 @@ class Model:
 	def __init__(self, name, *args, **kwargs):
 		self.name = name
 		try:
-			self.cython_function = getattr(_gretl, name)
+			self.cpython_function = getattr(_gretl, name)
 		except Exception as err:
 			print(f"Unexpected {err=}, {type(err)=}")
 			raise
@@ -27,8 +27,8 @@ class Model:
 			for _ in dict_model: setattr(self, _, dict_model[_])
 
 	def fit(self):
-		if self.cython_function:
-			model_result = self.cython_function(*self.model_args, **self.model_kwargs)
+		if self.cpython_function:
+			model_result = self.cpython_function(*self.model_args, **self.model_kwargs)
 			self.__load_dict_model(model_result)
 
 		self.computed = True
