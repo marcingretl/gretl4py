@@ -21,6 +21,11 @@ def set(key, val=None):
     else:
         _gretl.set(key, val)
 
+def get_gretl_data(fname):
+	return _gretl.get_gretl_data(fname)
+
+def attach_gretl_data(fname):
+	_gretl.attach_gretl_data(fname)
 
 if __name__ == "__main__":
 	pass
