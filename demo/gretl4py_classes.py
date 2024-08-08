@@ -48,7 +48,7 @@ class Model:
 					json_dict[key] = list(val['data'])[1:]
 
 	def fit(self):
-		if self.cpython_function:
+		if self.cpython_function and self.computed is False:
 			model_dict = self.cpython_function(*self.args, **self.options)
 			json_dict = json.loads(model_dict['json_buffer'])
 			del json_dict['type']
