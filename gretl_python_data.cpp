@@ -20,6 +20,7 @@ int gretl_model_to_dict (MODEL *model, DATASET *dset, const char *summary, py::d
 {
     char *json_buf = NULL;
     gretl_bundle *b;
+    bool zscore = ASYMPTOTIC_MODEL(model->ci);
     int err = 0;
 
     b = bundle_from_model(model, dset, &err);
@@ -28,6 +29,8 @@ int gretl_model_to_dict (MODEL *model, DATASET *dset, const char *summary, py::d
     }
 
     if (json_buf != NULL) {
+        pydict[py::cast("_id")] = model->ID;
+        pydict[py::cast("_zscore")] = zscore;
         pydict[py::cast("json_buffer")] = json_buf;
         pydict[py::cast("summary")] = summary;
         g_free(json_buf);
@@ -236,9 +239,6 @@ static void numpy_array_to_gretl_storage (const py::dict &pydict,
     double *data_array = NULL;
     int k;
 
-    // the old code: do not delete for a while
-    //py::array_t<double> pynum_array = py::cast<py::array>(pydict[py::cast("data_array")]);
-    //py::array_t<double> *pynum_array_new = static_cast<py::array_t<double>*> (py::cast<py::array>(pydict[py::cast("data_array")]).mutable_data());
     data_array = numpy_array_extract(py::cast<py::array>(pydict[py::cast("data_array")]),
                                      &rows, &cols, &fortranarray);
     if (data_array == NULL) {

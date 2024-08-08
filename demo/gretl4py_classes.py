@@ -1,4 +1,4 @@
-import _gretl # by I'd like to have 'import gretl' here
+import _gretl
 import numpy as np
 import pandas as pd
 import json
@@ -16,6 +16,8 @@ class Model:
 		self.args = args
 		self.options = kwargs
 		self.computed = False
+		self._id = None
+		self._zscore = None
 
 	def __repr__(self):
 		if self.computed:
@@ -54,9 +56,19 @@ class Model:
 			model_dict['results'] = json_dict
 			del model_dict['json_buffer']
 			self.__load_dict_model(model_dict)
+			self._id = model_dict['_id']
+			del model_dict['_id']
+			self._zscore = model_dict['_zscore']
+			del model_dict['_zscore']
 
 		self.computed = True
 		return self
+
+	def id(self):
+	    return self._id
+
+	def zscore(self):
+	    return self._zscore
 
 if __name__ == "__main__":
 	pass
