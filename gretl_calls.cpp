@@ -9,6 +9,7 @@
 # include <gretl/gretl_win32.h>
 #endif
 
+#define LIBGRETL_MIN_VER 48
 #define GRETL_PYBIND11_DEBUG 0
 
 static DATASET *DSET = NULL; // global dataset
@@ -21,6 +22,10 @@ typedef MODEL (*BASIC_MODEL_FUNC2) (const int *, DATASET *, gretlopt);
 
 void module_init (void)
 {
+    if (libgretl_version() < LIBGRETL_MIN_VER) {
+        throw std::runtime_error("gretl4py requires libgretl-1.0 version " + std::to_string(LIBGRETL_MIN_VER) + " or higher");
+    }
+
     libgretl_init();
 #if defined(_WIN32)
     win32_cli_read_rc();
