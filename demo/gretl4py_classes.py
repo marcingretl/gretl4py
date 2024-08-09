@@ -58,8 +58,6 @@ class Model:
 			self.__load_dict_model(model_dict)
 			self._id = model_dict['_id']
 			del model_dict['_id']
-			self._zscore = model_dict['_zscore']
-			del model_dict['_zscore']
 
 		self.computed = True
 		return self
@@ -67,8 +65,6 @@ class Model:
 	def id(self):
 	    return self._id
 
-	def zscore(self):
-	    return self._zscore
 
 if __name__ == "__main__":
 	pass

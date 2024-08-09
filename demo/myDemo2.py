@@ -10,4 +10,4 @@ OLS1 = gretl.ols('QNC ~ const + PRICE + INCOME', data=data97).fit()
 print(OLS1.args)
 print(OLS1) # print(OLS1.summary) works as well
 print(OLS1.results['vcv'])
-print(f'\nIs Model {OLS1.id():d} asymptotic?: {OLS1.zscore()}')
+print(f'\nIs Model {OLS1.id():d} asymptotic?: {OLS1.results["asymptotic"]}')

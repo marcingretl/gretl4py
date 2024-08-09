@@ -20,7 +20,6 @@ int gretl_model_to_dict (MODEL *model, DATASET *dset, const char *summary, py::d
 {
     char *json_buf = NULL;
     gretl_bundle *b;
-    bool zscore = ASYMPTOTIC_MODEL(model->ci);
     int err = 0;
 
     b = bundle_from_model(model, dset, &err);
@@ -30,7 +29,6 @@ int gretl_model_to_dict (MODEL *model, DATASET *dset, const char *summary, py::d
 
     if (json_buf != NULL) {
         pydict[py::cast("_id")] = model->ID;
-        pydict[py::cast("_zscore")] = zscore;
         pydict[py::cast("json_buffer")] = json_buf;
         pydict[py::cast("summary")] = summary;
         g_free(json_buf);
