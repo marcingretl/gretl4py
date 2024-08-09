@@ -41,16 +41,15 @@ void module_cleanup (void)
 
 std::string about (bool do_print)
 {
-    std::string mod_ver, lg_ver, old_lc_numeric;
+    std::string mod_ver, lg_ver;
     gretl_bundle *b = NULL;
     PRN *prn = NULL;
     int err = 0;
 
-    old_lc_numeric = std::setlocale(LC_NUMERIC, NULL);
-    std::setlocale(LC_NUMERIC, "C");
+    gretl_push_c_numeric_locale();
     mod_ver = std::to_string(GRETL_MODULE_VERSION).substr(0,3);
     lg_ver = std::to_string(libgretl_version());
-    std::setlocale(LC_NUMERIC, old_lc_numeric.c_str());
+    gretl_pop_c_numeric_locale();
 
     if (do_print) {
         std::cout << "gretl4py version " << mod_ver << ", libgretl-1.0 version " << lg_ver << std::endl;
