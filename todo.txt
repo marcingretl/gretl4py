@@ -19,10 +19,10 @@ Tree proposal:
  -src
     |
     -C++ sources (following new naming schema)
- -module
+ -gretl (due to what Federico said)
     |
     -__init__.py
-    -gretl.py (main module file, provides all required interfaces)
+    -gretl.py (main module file, provides all required interfaces; maybe additional python scripts as well)
     -_gretl.cpython-xxx.(so/pyd)
  -doc
     |
