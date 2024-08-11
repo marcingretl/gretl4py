@@ -13,7 +13,6 @@ gretl.load_data(bjg)
 print('\nExample 1:')
 print('arma(1,1,1,False)\n')
 res = gretl.arma(y="QNC", order=(1,1,1), data=data97).fit()
-print('\n\npython level:')
 print(res)
 
 print('\nOLS:')
