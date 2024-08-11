@@ -1,14 +1,10 @@
 import gretl
-import numpy
-from gretl4py_addons import csv2dict
-from gretl4py_classes import *
-
 
 ''' we load bjg.csv to dict() '''
-bjg = csv2dict('bjg.csv', 12)
+bjg = gretl.csv2dict('bjg.csv', 12)
 
 ''' we load data9-7.csv to dict() '''
-data97 = csv2dict('data9-7.csv', 4)
+data97 = gretl.csv2dict('data9-7.csv', 4)
 
 print('Loading global dataset: bjg.csv') # this dataset will be used later
 gretl.load_data(bjg)

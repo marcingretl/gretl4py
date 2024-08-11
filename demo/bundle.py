@@ -1,4 +1,4 @@
-import _gretl as gretl
+import gretl
 import json
 
 sysinfo = json.loads(gretl.sysinfo())

@@ -1,11 +1,8 @@
 import gretl
-import numpy
 import pandas
-from gretl4py_addons import df2dict
-from gretl4py_classes import *
 
 dframe = pandas.read_csv('data9-7.csv')
-MyDict = df2dict(dframe, 4)
+MyDict = gretl.df2dict(dframe, 4)
 
 # arma model
 armamod = gretl.arma(y='QNC', order=(1,0,1), data=MyDict).fit()

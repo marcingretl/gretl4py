@@ -1,9 +1,6 @@
 import gretl
-import numpy
-from gretl4py_addons import gretl_data_path
-from gretl4py_classes import *
 
-fname = gretl_data_path('ramanathan/data4-1.gdt')
+fname = gretl.gretl_data_path('ramanathan/data4-1.gdt')
 mydata = gretl.get_gretl_data(fname)
 
 print('OLS without options:')
@@ -14,7 +11,7 @@ print('OLS with robust option:')
 res = gretl.ols('price ~ 0 + sqft + bedrms', data=mydata, robust=True).fit()
 print(res)
 
-fname = gretl_data_path('greene/greene19_1.gdt')
+fname = gretl.gretl_data_path('greene/greene19_1.gdt')
 ldata = gretl.get_gretl_data(fname)
 
 print('logit example:')
@@ -28,7 +25,7 @@ print('normality test:')
 print(res.results['normality_test'])
 
 # load dataset using libgretl and set as global DSET
-fname = gretl_data_path('misc/kennan.gdt')
+fname = gretl.gretl_data_path('misc/kennan.gdt')
 gretl.attach_gretl_data(fname)
 
 print('\nduration: Kennan example variants:\n')

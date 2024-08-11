@@ -1,9 +1,7 @@
-import _gretl as gretl
-from gretl4py_addons import gretl_model_print
-from gretl4py_addons import csv2dict
+import gretl
 
-bjg = csv2dict('bjg.csv', 12)
-data97 = csv2dict('data9-7.csv', "4")
+bjg = gretl.csv2dict('bjg.csv', 12)
+data97 = gretl.csv2dict('data9-7.csv', "4")
 
 #this dataset will be used later
 gretl.load_data(data97)
