@@ -2,8 +2,5 @@
 *.o
 *~
 TAGS
-demo/__pycache__
+__pycache__
 demo/memcheck
-automation/model_funcs
-automation/query.out
-demo/gretl/__pycache__
