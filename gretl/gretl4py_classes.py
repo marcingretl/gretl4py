@@ -4,7 +4,7 @@ import pandas as pd
 import json
 
 class Model:
-    
+
     def __init__(self, name, *args, **kwargs):
         self.name = name
         try:
@@ -17,7 +17,6 @@ class Model:
         self.options = kwargs
         self.computed = False
         self._id = None
-        self._zscore = None
 
     def __repr__(self):
         if self.computed:

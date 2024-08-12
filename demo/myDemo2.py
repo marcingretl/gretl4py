@@ -1,3 +1,6 @@
+import sys
+sys.path.append('./')
+sys.path.append('../')
 import gretl
 
 fname = gretl.gretl_data_path('ramanathan/data9-7.gdt')

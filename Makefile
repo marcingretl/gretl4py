@@ -18,13 +18,13 @@ OBJS = $(SRCS:.cpp=.o)
 	$(CXX) $(CXXFLAGS) -c $< -o $@ -fPIC $(PYBIND) $(GRETLIN)
 
 $(MODULE): $(OBJS)
-	$(CXX) $(CXXFLAGS) $^ -shared -o $@ -fPIC $(GRETLLD)
+	$(CXX) $(CXXFLAGS) $^ -shared -o gretl/$@ -fPIC $(GRETLLD)
 
 tags:
 	etags *.cpp *.h
 
 clean:
-	@rm -f $(MODULE) *.o
+	@rm -f gretl/$(MODULE) *.o
 
 depend:
 	makedepend -Y. *.cpp 2>/dev/null

@@ -1,5 +1,8 @@
 """module import all necessary files"""
 
+import sys
+sys.path.append('gretl')
+sys.path.append('../gretl')
 import _gretl
 import gretl4py_addons
 import gretl4py_classes
