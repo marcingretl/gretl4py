@@ -3,7 +3,6 @@ import numpy
 import subprocess
 import os
 
-
 def csv2dict(FILE, pd=1):
     data_list = list()
     obs_labels = list()

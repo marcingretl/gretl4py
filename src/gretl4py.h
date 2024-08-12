@@ -17,7 +17,7 @@ void set (const std::string key, int val);
 void set (const std::string key);
 
 // data management
-void load_data (const py::dict &pydict);
+void attach_data (const py::dict &pydict);
 
 void printdata (const py::dict &data, bool namesonly);
 void printdata (bool namesonly);

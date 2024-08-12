@@ -1,6 +1,6 @@
 Source reorganization:
 
-Function names changes:
+Function names changes (DONE):
 load_data() -> attach_data()
 
 File names changes (DONE):

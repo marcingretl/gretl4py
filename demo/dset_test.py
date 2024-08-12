@@ -7,7 +7,7 @@ import pandas
 d97 = gretl.csv2dict('data9-7.csv', 4)
 
 print("Loading global dataset:")
-gretl.load_data(d97)
+gretl.attach_data(d97)
 
 print("\nOLS example using global dataset:\n")
 res = gretl.ols('QNC ~ 0 + PRICE + INCOME').fit()

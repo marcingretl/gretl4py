@@ -29,7 +29,7 @@ PYBIND11_MODULE(_gretl, m) {
           py::arg("key").none(false));
 
     // data management
-    m.def("load_data", &load_data,
+    m.def("attach_data", &attach_data,
           py::arg("pydict").none(false));
     m.def("printdata",
           py::overload_cast<const py::dict &, bool> (&printdata),

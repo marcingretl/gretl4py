@@ -10,7 +10,7 @@ bjg = gretl.csv2dict('bjg.csv', 12)
 data97 = gretl.csv2dict('data9-7.csv', 4)
 
 print('Loading global dataset: bjg.csv') # this dataset will be used later
-gretl.load_data(bjg)
+gretl.attach_data(bjg)
 
 '''Example 1: data is send on function call ('data9-7.csv')'''
 print('\nExample 1:')
@@ -29,6 +29,6 @@ res = gretl.arma(y="lg", order=(1,1)).fit()
 print(res)
 
 print('\nOLS:\n')
-gretl.load_data(data97)
+gretl.attach_data(data97)
 res = gretl.ols('QNC ~ const + PRICE + INCOME').fit()
 print(res)

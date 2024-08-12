@@ -25,7 +25,6 @@ void module_init (void)
     if (libgretl_version() < LIBGRETL_MIN_VER) {
         throw std::runtime_error("gretl4py requires libgretl-1.0 version " + std::to_string(LIBGRETL_MIN_VER) + " or higher");
     }
-
     libgretl_init();
 #if defined(_WIN32)
     win32_cli_read_rc();
@@ -116,7 +115,7 @@ void set (const std::string key)
 
 // data management
 
-void load_data (const py::dict &pydict)
+void attach_data (const py::dict &pydict)
 {
     if (DSET != NULL) {
         destroy_dataset(DSET);
