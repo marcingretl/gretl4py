@@ -29,7 +29,7 @@ clean:
 	@rm -f gretl/$(MODULE) *.o
 
 depend:
-	makedepend -Y. *.cpp 2>/dev/null
+	makedepend -Y. src/*.cpp 2>/dev/null
 
 # DO NOT DELETE
 

@@ -7,9 +7,10 @@ GPATH = /Applications/Gretl.app/Contents/Resources
 GRETLLD = -L$(GPATH)/lib -lgretl-1.0 -lglib-2.0 -lxml2 -lfftw3 -lomp -lm
 GRETLIN = -I$(GPATH)/include -I$(GPATH)/include/glib-2.0 -I$(GPATH)/lib/glib-2.0/include
 PYBIND = $(shell python3 -m pybind11 --includes)
-MODULE_PREFIX = gretl
-MODULE_SUFFIX = $(shell python3-config --extension-suffix)
-MODULE = $(MODULE_PREFIX)$(MODULE_SUFFIX)
+SUFFIX = $(shell python3-config --extension-suffix)
+MODULE = _gretl$(SUFFIX)
+
+VPATH = ./src
 
 SRCS = gretl_to_python.cpp gretl_calls.cpp gretl_python_data.cpp
 OBJS = $(SRCS:.cpp=.o)
@@ -20,19 +21,19 @@ OBJS = $(SRCS:.cpp=.o)
 	$(CXX) $(CXXFLAGS) -c $< -o $@ -fPIC $(PYBIND) $(GRETLIN)
 
 $(MODULE): $(OBJS)
-	$(CXX) $(CXXFLAGS) $^ -v -shared -undefined dynamic_lookup -o $@ -fPIC $(GRETLLD)
+	$(CXX) $(CXXFLAGS) $^ -v -shared -undefined dynamic_lookup -o gretl/$@ -fPIC $(GRETLLD)
 
 tags:
-	etags *.cpp *.h
+	etags src/*.cpp src/*.h
 
 clean:
-	@rm -f $(MODULE) *.o
+	rm -f gretl/$(MODULE) *.o
 
 depend:
-	makedepend -Y. *.cpp 2>/dev/null
+	makedepend -Y. src/*.cpp 2>/dev/null
 
 # DO NOT DELETE
 
-gretl_calls.o: gretl_calls.h gretl_python_data.h
-gretl_python_data.o: gretl_python_data.h
-gretl_to_python.o: gretl_calls.h
+gretl_calls.o: src/gretl4py.h src/gretl4py_data.h
+gretl4py_data.o: src/gretl4py_data.h
+gretl4py.o: src/gretl4py.h
