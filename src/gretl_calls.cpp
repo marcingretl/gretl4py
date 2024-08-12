@@ -1,5 +1,5 @@
-#include "gretl_calls.h" /* MUST be at the first position!!! */
-#include "gretl_python_data.h"
+#include "gretl4py.h" /* MUST be at the first position!!! */
+#include "gretl4py_data.h"
 #include <gretl/gretl_drivers.h>
 #include <gretl/gretl_errors.h>
 #include <gretl/libset.h>

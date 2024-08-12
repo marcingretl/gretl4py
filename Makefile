@@ -9,7 +9,7 @@ PYBIND = $(shell python3 -m pybind11 --includes)
 SUFFIX = $(shell python3-config --extension-suffix)
 MODULE = _gretl$(SUFFIX)
 
-SRCS = gretl_to_python.cpp gretl_calls.cpp gretl_python_data.cpp
+SRCS = gretl4py.cpp gretl_calls.cpp gretl4py_data.cpp
 OBJS = $(SRCS:.cpp=.o)
 
 .PHONY: tags clean depend
@@ -32,6 +32,6 @@ depend:
 
 # DO NOT DELETE
 
-gretl_calls.o: src/gretl_calls.h src/gretl_python_data.h
-gretl_python_data.o: src/gretl_python_data.h
-gretl_to_python.o: src/gretl_calls.h
+gretl_calls.o: src/gretl4py.h src/gretl4py_data.h
+gretl4py_data.o: src/gretl4py_data.h
+gretl4py.o: src/gretl4py.h

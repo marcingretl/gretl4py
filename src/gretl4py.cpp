@@ -1,4 +1,4 @@
-#include "gretl_calls.h"
+#include "gretl4py.h"
 #include <pybind11/numpy.h>
 
 class Module

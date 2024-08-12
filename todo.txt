@@ -3,14 +3,14 @@ Source reorganization:
 Function names changes:
 load_data() -> attach_data()
 
-File names changes:
+File names changes (DONE):
 gretl_to_python.cpp -> gretl4py.cpp
 gretl_calls.h -> gretl4py.h
 gretl_python_data.cpp -> gretl4py_data.cpp
 gretl_python_data.h -> gretl4py_data.h
 
 
-Tree proposal:
+Tree proposal (DONE):
 ./
  |
  -automation
