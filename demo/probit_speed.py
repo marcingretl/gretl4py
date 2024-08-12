@@ -1,13 +1,12 @@
 import sys
-sys.path.append("../")
-import time
-
+sys.path.append('./')
+sys.path.append('../')
 import gretl
+import time
 import pandas
-from gretl4py_addons import df2dict
 
 Ptest = pandas.read_csv('large_probit.csv')
-MyDict = df2dict(Ptest)
+MyDict = gretl.df2dict(Ptest)
 
 reglist = open('prob_frml.txt', 'r').read()
 
@@ -16,7 +15,7 @@ frml = 'y ~ const+' + reglist[0:-1]
 t0 = time.time()
 gmod = gretl.probit(frml, data=MyDict)
 t1 = time.time() - t0
-print(gmod["coeff"])
+print(gmod) #FIXME: ["coeff"]
 
 # probit model via statsmodels
 from statsmodels.discrete.discrete_model import Probit

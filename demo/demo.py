@@ -1,3 +1,6 @@
+import sys
+sys.path.append('./')
+sys.path.append('../')
 import gretl
 
 ''' we load bjg.csv to dict() '''

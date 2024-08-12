@@ -1,7 +1,7 @@
 import sys
-sys.path.append("../")
+sys.path.append('./')
+sys.path.append('../')
 import gretl
-from gretl4py_addons import gretl_model_print
 
 mydata = gretl.get_gretl_data("data4-1.gdt")
 

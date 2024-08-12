@@ -1,3 +1,6 @@
+import sys
+sys.path.append('./')
+sys.path.append('../')
 import gretl
 
 gretl.set('csv_delim')
