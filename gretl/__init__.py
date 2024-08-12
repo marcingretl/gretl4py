@@ -41,9 +41,9 @@ def set(key, val=None):
 
 def printdata(data=None, varamesonly=False):
     if data is None:
-        return _gretl.printdata(varamesonly)
+        _gretl.printdata(varamesonly)
     else:
-        return _gretl.printdata(data, varamesonly)
+        _gretl.printdata(data, varamesonly)
 
 def get_gretl_data(fname):
     return _gretl.get_gretl_data(fname)
