@@ -1,7 +1,7 @@
 ifndef CXX
 CXX = g++
 endif
-CXXFLAGS = -march=native -mtune=native -O3 -pipe -g -Wall #-Weverything -std=c++17
+CXXFLAGS = -march=native -mtune=native -O3 -pipe -g -Wall#-Weverything -std=c++17
 MAKE = gmake
 GRETLLD = $(shell pkg-config --libs gretl)
 GRETLIN = $(shell pkg-config --cflags gretl)
@@ -9,7 +9,7 @@ PYBIND = $(shell python3 -m pybind11 --includes)
 SUFFIX = $(shell python3-config --extension-suffix)
 MODULE = _gretl$(SUFFIX)
 
-SRCS = src/gretl_to_python.cpp src/gretl_calls.cpp src/gretl_python_data.cpp
+SRCS = gretl_to_python.cpp gretl_calls.cpp gretl_python_data.cpp
 OBJS = $(SRCS:.cpp=.o)
 
 .PHONY: tags clean depend
@@ -18,13 +18,14 @@ OBJS = $(SRCS:.cpp=.o)
 	$(CXX) $(CXXFLAGS) -c $< -o src/$@ -fPIC $(PYBIND) $(GRETLIN)
 
 $(MODULE): $(OBJS)
-	$(CXX) $(CXXFLAGS) $^ -shared -o gretl/$@ -fPIC $(GRETLLD)
+	#$(CXX) $(CXXFLAGS) $^ -shared -o gretl/$@ -fPIC $(GRETLLD) # FIXME!!! #
+	$(CXX) $(CXXFLAGS) src/*.o -shared -o gretl/$@ -fPIC $(GRETLLD)
 
 tags:
 	etags *.cpp *.h
 
 clean:
-	@rm -f gretl/$(MODULE) *.o
+	@rm -f gretl/$(MODULE) src/*.o
 
 depend:
 	makedepend -Y. *.cpp 2>/dev/null
