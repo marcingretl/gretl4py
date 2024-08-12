@@ -1,6 +1,7 @@
 *.so
 *.o
 *~
+*.zip
 TAGS
 __pycache__
 demo/memcheck
