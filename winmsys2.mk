@@ -1,0 +1,48 @@
+ifndef CXX
+CXX = clang++
+endif
+CXXFLAGS = -march=native -mtune=native -O3 -pipe -g -Wall -fms-extensions -fdelayed-template-parsing #-fms-compatibility -Weverything -std=c++17
+MAKE = gmake
+GRETLLD = $(shell pkg-config --libs gretl)
+GRETLIN = $(shell pkg-config --cflags gretl)
+PYBIND = $(shell python3 -m pybind11 --includes)
+PYTHONLD = $(shell python-config --embed --ldflags)
+PYTHONIN = $(shell python-config --cflags)
+SUFFIX = $(shell python3-config --extension-suffix)
+MODULE = gretl/_gretl$(SUFFIX)
+ZIPFILE = gretl4py.zip
+
+VPATH = ./src
+
+PYFILES = gretl/gretl4py_addons.py gretl/gretl4py_classes.py
+SRCS = gretl4py.cpp gretl_calls.cpp gretl4py_data.cpp
+OBJS = $(SRCS:.cpp=.o)
+
+.PHONY: tags clean depend
+
+%.o: %.cpp
+	$(CXX) $(CXXFLAGS) -c $< -o $@ -fPIC $(PYBIND) $(GRETLIN) $(PYTHONIN)
+
+$(MODULE): $(OBJS)
+	$(CXX) $(CXXFLAGS) $^ -shared -o $@ -fPIC $(GRETLLD) $(PYTHONLD)
+
+$(ZIPFILE): $(MODULE) $(PYFILES)
+	zip -r $@ gretl
+
+install: $(ZIPFILE)
+	./install.sh
+
+tags:
+	etags src/*.cpp src/*.h
+
+clean:
+	@rm -f $(MODULE) *.o $(ZIPFILE)
+
+depend:
+	makedepend -Y. src/*.cpp 2>/dev/null
+
+# DO NOT DELETE
+
+src/gretl4py.o: src/gretl4py.h
+src/gretl4py_data.o: src/gretl4py_data.h
+src/gretl_calls.o: src/gretl4py.h src/gretl4py_data.h
