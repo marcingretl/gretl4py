@@ -48,16 +48,15 @@ Generate libm.dll doing the following in MSYS2 (ucrt64 used):
 ar -x libm.a
 CC -shared lib64_libm_a-libm_dummy.o -o libm.dll (clang used)
 
-1.c.
-The same procedure apply to: libm.dll, libxml2-2.dll (as xml2.lib), libfftw3-3.dll (as fftw3.lib)
 
-1.d.
-Generate glib-2.0.lib using glib-2.0.def from tarball.
-
-
-2. Run "lib.exe /machine:x64 /def:libgretl-1.0-xx.def" (lib.exe /machine:x64 /def:libgretl-1.0-48.def).
+2.a.
+Run "lib.exe /machine:x64 /def:libgretl-1.0-xx.def" (lib.exe /machine:x64 /def:libgretl-1.0-48.def).
 Note: It should/must be called from within 'x64 Native Tools Command Prompt for VS'.
-As a result we should get two binary files, i.e. libgretl-1.0-xx.exp and libgretl-1.0-xx.lib (libgretl-1.0-48.exp and libgretl-1.0-48.lib used). Next, change names of both these binaries to gretl-1.0.*.
+As a result we should get two binary files, i.e. libgretl-1.0-xx.exp and libgretl-1.0-xx.lib (libgretl-1.0-48.exp and libgretl-1.0-48.lib used). Next, change names of both these binaries to gretl-1.0.* ("/out:" option may be used as well).
 Now libgretl-1.0-xx is ready to be used by native MS Windows compilers.
 
-3. Compile glib-2.0 native, since headers from MSYS2 are incompatible with MSVC. To be done!!!
+2.b.
+The same procedure apply to: libm.dll, libxml2-2.dll (as xml2.lib), libfftw3-3.dll (as fftw3.lib)
+
+2.c.
+Generate glib-2.0.lib using glib-2.0.def from tarball.
