@@ -1,5 +1,14 @@
 Steps needed to compile gretl4py for MS Windows native Python [MSC v.1936 64 bit (AMD64)]
 
+HowTos:
+1. https://stackoverflow.com/questions/64480618/msvc-programs-calling-an-mingw-dll
+2. https://stackoverflow.com/questions/9946322/how-to-generate-an-import-library-lib-file-from-a-dll
+3. https://github.com/OpenMathLib/OpenBLAS/wiki/How-to-generate-import-library-for-MinGW
+4. https://stackoverflow.com/questions/2576910/how-to-convert-a-dynamic-dll-to-static-lib
+5. https://www.msys2.org/wiki/Porting/
+6. https://stackoverflow.com/questions/78263887/how-can-i-statically-link-a-lib-file-using-mingw-w64
+7. https://www.asawicki.info/news_1420_generating_lib_file_for_dll_library
+
 Environment:
 1. Microsoft Visual Studio (2022 used).
 2. Native MS Windows Clang/LLVM compiler (18.1.8 used).
