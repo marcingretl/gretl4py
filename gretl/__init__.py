@@ -6,7 +6,7 @@ import os
 PATH = site.getusersitepackages()
 if os.name == 'nt':
     PATH = str(PATH + r'\gretl')
-    os.add_dll_directory(PATH)
+    os.add_dll_directory(PATH + r'\DLL')
 else:
     PATH = str(PATH + r'/gretl')
 sys.path.append(PATH)
