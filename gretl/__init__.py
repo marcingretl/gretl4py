@@ -1,6 +1,15 @@
 """module import all necessary files"""
 
 import sys
+import site
+import os
+PATH = site.getusersitepackages()
+if os.name == 'nt':
+    PATH = str(PATH + r'\gretl')
+    os.add_dll_directory(PATH)
+else:
+    PATH = str(PATH + r'/gretl')
+sys.path.append(PATH)
 sys.path.append('gretl')
 sys.path.append('../gretl')
 import _gretl
