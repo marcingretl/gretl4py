@@ -1,6 +1,6 @@
 @echo off
 rem paths to executables
-set "CMD=C:\"Program Files"\Python312\python.exe"
+set "CMD=C:\"Program Files"\Python312python.exe"
 set "CXX=clang++.exe"
 
 rem libgretl stack path
@@ -8,7 +8,7 @@ set "STACK_PATH=E:\Marcin\gretlapi\stack"
 
 rem Python main path and version
 for /f "tokens=*" %%i in ('%CMD% -c "import sysconfig; print(sysconfig.get_paths()[r'data'])"') do set "PYTHON_PATH=%%i"
-for /f %%i in ('%CMD% -c "import platform; print(platform.python_version_tuple()[0]+platform.python_version_tuple()[1])"') do set "PYTHON_VER=%%i"
+for /f %%i in ('%CMD% -c "import sysconfig; print(sysconfig.get_config_var(r'VERSION'))"') do set "PYTHON_VER=%%i"
 
 set "CXXFLAGS=-O2 -msahf -pipe -Wp,-D_FORTIFY_SOURCE=2 -fstack-protector-strong -fwrapv -Wall"
 rem -DNDEBUG -g
@@ -20,7 +20,6 @@ set "PYTHONIN=-I"%PYTHON_PATH%\Include""
 set "PYTHONLD=-L"%PYTHON_PATH%\libs" -lpython%PYTHON_VER% -lversion -lshlwapi -lpathcch -lbcrypt"
 
 for /f "tokens=*" %%i in ('%CMD% -c "import pybind11; print(pybind11.get_include())"') do set "PYBIND=-I%%i"
-rem set "PYBIND=-IC:\Users\Katedra\AppData\Roaming\Python\Python311\site-packages\pybind11\include"
 
 rem module suffix
 for /f %%i in ('%CMD% -c "import sysconfig; print(sysconfig.get_config_var(r'EXT_SUFFIX'))"') do set SUFFIX=%%i
