@@ -40,7 +40,6 @@ PYBIND11_MODULE(_gretl, m) {
           py::arg("varamesonly") = false);
     m.def("get_gretl_data", &get_gretl_data, py::arg("fname").none(false));
     m.def("attach_gretl_data", &attach_gretl_data, py::arg("fname").none(false));
-    m.def("sysinfo", &sysinfo);
 
     // model estimation
     // ARMA

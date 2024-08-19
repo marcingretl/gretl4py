@@ -389,6 +389,8 @@ DATASET *gretl_load_global_dataset (const std::string fname)
     return dset;
 }
 
+# if 0
+// I may need it in a near future, so please do not remove for a while
 std::string bundle_test (void)
 {
     std::string res;
@@ -408,3 +410,4 @@ std::string bundle_test (void)
 
     return res;
 }
+# endif // 0
