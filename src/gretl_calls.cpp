@@ -9,6 +9,12 @@
 # include <gretl/gretl_win32.h>
 #endif
 
+#if (defined __GNUC__) && !(defined __clang__)
+# define COMPILER_IDENT "GCC " __VERSION__
+#else
+# define COMPILER_IDENT __VERSION__
+#endif
+
 #define LIBGRETL_MIN_VER 48
 #define GRETL_PYBIND11_DEBUG 0
 
@@ -56,7 +62,9 @@ std::string about (bool do_print)
     gretl_pop_c_numeric_locale();
 
     if (do_print) {
-        std::cout << "gretl4py version " << mod_ver << ", libgretl-1.0 version " << lg_ver << std::endl;
+        std::cout << "gretl4py version " << mod_ver;
+        std::cout << " [" << COMPILER_IDENT << "]";
+        std::cout << ", libgretl-1.0 version " << lg_ver << std::endl;
         b = get_sysinfo_bundle(&err);
         if (!err) {
             prn = gretl_print_new(GRETL_PRINT_STDOUT, NULL);
