@@ -1,6 +1,6 @@
 @echo off
 rem paths to executables
-set "CMD=C:\"Program Files"\Python312python.exe"
+set "CMD=C:\"Program Files"\Python312\python.exe"
 set "CXX=clang++.exe"
 
 rem libgretl stack path
