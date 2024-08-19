@@ -42,7 +42,8 @@ class Model:
                     json_dict[key] = numpy.reshape(a, [r, c], order = 'F')
                 elif val['type'] == 'gretl_series':
                     s = pd.Series(val['data'])
-                    json_dict[key] = s.replace('NA', numpy.nan)
+                    s.replace('NA', numpy.nan)
+                    json_dict[key] = s.infer_objects()
                 elif val['type'] == 'gretl_list':
                     json_dict[key] = list(val['data'])[1:]
 
