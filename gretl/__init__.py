@@ -29,7 +29,7 @@ def __getattr__(fun):
     exist return it.
     Otherwise call __model_initializer
     """
-    cfunc = ("about", "set", "printdataget_gretl_data", "attach_gretl_data", "attach_data")
+    cfunc = ("about", "set", "printdata", "get_gretl_data", "attach_gretl_data", "attach_data")
     
     if fun in dir(gretl4py_addons):
         return getattr(gretl4py_addons, fun)
