@@ -25,15 +25,17 @@ def __model_initializer(model_name: str, *args, **kwargs):
 def __getattr__(fun):
     """
     Called when a gretl.fun is called.
-    First search in gretl4py_addons and gretl4py_classes. If function
+    First search in gretl4py_addons, gretl4py_classes and _gretl. If function
     exist return it.
     Otherwise call __model_initializer
     """
+    cfunc = ("about", "set", "printdataget_gretl_data", "attach_gretl_data", "attach_data")
+    
     if fun in dir(gretl4py_addons):
         return getattr(gretl4py_addons, fun)
     if fun in dir(gretl4py_classes):
         return getattr(gretl4py_classes, fun)
-    if fun in dir(_gretl):
+    if fun in dir(_gretl) and fun in cfunc:
         return getattr(_gretl, fun)
     def wrapper(*args, **kwargs):
         return __model_initializer(fun, *args, **kwargs)
