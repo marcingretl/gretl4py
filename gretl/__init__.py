@@ -11,8 +11,6 @@ if os.name == 'nt':
 else:
     PATH = str(PATH + r'/gretl')
 sys.path.append(PATH)
-sys.path.append('gretl')
-sys.path.append('../gretl')
 import _gretl
 import gretl4py_addons
 import gretl4py_classes
