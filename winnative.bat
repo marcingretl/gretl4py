@@ -10,7 +10,7 @@ rem Python main path and version
 for /f "tokens=*" %%i in ('%CMD% -c "import sysconfig; print(sysconfig.get_paths()[r'data'])"') do set "PYTHON_PATH=%%i"
 for /f %%i in ('%CMD% -c "import sysconfig; print(sysconfig.get_config_var(r'VERSION'))"') do set "PYTHON_VER=%%i"
 
-set "CXXFLAGS=-O2 -msahf -pipe -Wp,-D_FORTIFY_SOURCE=2 -fstack-protector-strong -fwrapv -Wall"
+set "CXXFLAGS=-O2 -msahf -pipe -Wp,-D_FORTIFY_SOURCE=2 -fstack-protector-strong -fwrapv -Wall -DNDEBUG -g -std=c++17"
 rem -DNDEBUG -g
 
 set "GRETLIN=-I%STACK_PATH%\include -I%STACK_PATH%\include\glib-2.0 -I%STACK_PATH%\lib\glib-2.0\include"
