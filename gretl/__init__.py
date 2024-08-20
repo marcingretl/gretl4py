@@ -33,34 +33,12 @@ def __getattr__(fun):
         return getattr(gretl4py_addons, fun)
     if fun in dir(gretl4py_classes):
         return getattr(gretl4py_classes, fun)
+    if fun in dir(_gretl):
+        return getattr(_gretl, fun)
     def wrapper(*args, **kwargs):
         return __model_initializer(fun, *args, **kwargs)
 
     return wrapper
-
-def about(print=True):
-    return _gretl.about(do_print=print)
-
-def set(key, val=None):
-    if val is None:
-        _gretl.set(key)
-    else:
-        _gretl.set(key, val)
-
-def printdata(data=None, varamesonly=False):
-    if data is None:
-        _gretl.printdata(varamesonly)
-    else:
-        _gretl.printdata(data, varamesonly)
-
-def get_gretl_data(fname):
-    return _gretl.get_gretl_data(fname)
-
-def attach_gretl_data(fname):
-    _gretl.attach_gretl_data(fname)
-
-def attach_data(data_dict):
-    _gretl.attach_data(data_dict)
 
 if __name__ == "__main__":
     pass
