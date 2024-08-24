@@ -57,9 +57,9 @@ std::string about (bool do_print)
     int err = 0;
 
     gretl_push_c_numeric_locale();
+
     mod_ver = std::to_string(GRETL_MODULE_VERSION).substr(0,3);
     lg_ver = std::to_string(libgretl_version());
-    gretl_pop_c_numeric_locale();
 
     if (do_print) {
         std::cout << "gretl4py version " << mod_ver;
@@ -77,6 +77,8 @@ std::string about (bool do_print)
             }
         }
     }
+
+    gretl_pop_c_numeric_locale();
 
     if (err) {
         std::cerr << errmsg_get_with_default(err) << std::endl;
