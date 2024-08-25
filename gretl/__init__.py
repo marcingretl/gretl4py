@@ -1,10 +1,10 @@
 """module import all necessary files"""
 
-import sys
-import site
-import os
-PATH = site.getusersitepackages()
-if os.name == 'nt':
+import sys as _sys
+import site as _site
+import os as _os
+PATH = _site.getusersitepackages()
+if _os.name == 'nt':
     PATH = str(PATH + r'\gretl')
     os.add_dll_directory(PATH + r'\DLL')
     os.add_dll_directory(PATH + r'\libgretl')
@@ -12,7 +12,7 @@ if os.name == 'nt':
     os.environ["GRETL_DATA_PATH"] = r'C:\Program Files\gretl\data'
 else:
     PATH = str(PATH + r'/gretl')
-sys.path.append(PATH)
+_sys.path.append(PATH)
 import _gretl
 import gretl4py_addons
 import gretl4py_classes
@@ -32,7 +32,7 @@ def __getattr__(fun):
     Otherwise call __model_initializer
     """
     cfunc = ("about", "set", "printdata", "get_gretl_data", "attach_gretl_data", "attach_data")
-    
+
     if fun in dir(gretl4py_addons):
         return getattr(gretl4py_addons, fun)
     if fun in dir(gretl4py_classes):
