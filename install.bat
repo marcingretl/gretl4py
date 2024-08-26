@@ -1,17 +1,29 @@
-@echo off
+@ECHO OFF
 
-set "CMD=C:\"Program Files"\Python312\python.exe"
+REM please specify path to python executable
+REM SET "CMD=C:\"Program Files"\Python311\python.exe"
+SET "CMD=python.exe"
 
-for /f "tokens=*" %%i in ('%CMD% -m site --user-site') do set "PYTHON_PATH=%%i"
-for /f %%i in ('%CMD% -c "import sysconfig; print(sysconfig.get_python_version())"') do set "PYTHON_VER=%%i"
-for /f %%i in ('%CMD% -c "import sysconfig; print(sysconfig.get_config_var(r'EXT_SUFFIX'))"') do set SUFFIX=%%i
-set "MODULE_PATH=%PYTHON_PATH%\gretl"
-set "MODULE=_gretl%SUFFIX%"
+FOR /F %%i IN ('%CMD% -c "import sysconfig; print(sysconfig.get_python_version())"') DO SET "PYTHON_VER=%%i"
+IF %PYTHON_VER% LSS 3.11 GOTO bailout
+FOR /F "tokens=*" %%i IN ('%CMD% -m site --user-site') DO SET "PYTHON_PATH=%%i"
+FOR /F %%i IN ('%CMD% -c "import sysconfig; print(sysconfig.get_config_var(r'EXT_SUFFIX'))"') DO SET SUFFIX=%%i
+SET "MODULE_PATH=%PYTHON_PATH%\gretl"
+SET "MODULE=_gretl%SUFFIX%"
 
 IF EXIST %MODULE_PATH% RMDIR /S /Q "%MODULE_PATH%"
-mkdir %MODULE_PATH%
-mkdir %MODULE_PATH%\DLL
+MKDIR %MODULE_PATH%
+MKDIR %MODULE_PATH%\DLL
 
-copy gretl\*.py "%MODULE_PATH%"
-copy builds\win64\DLL\*.dll "%MODULE_PATH%"\DLL
-copy "builds\win64\%PYTHON_VER%\%MODULE%" "%MODULE_PATH%"
+COPY gretl\*.py "%MODULE_PATH%"
+COPY builds\win64\DLL\*.dll "%MODULE_PATH%"\DLL
+ECHO builds\win64\%PYTHON_VER%\%MODULE%
+COPY "builds\win64\%PYTHON_VER%\%MODULE%" "%MODULE_PATH%"
+ECHO.
+ECHO run '%CMD% -c "import gretl; gretl.about()"' to verify installation
+GOTO exit
+
+:bailout
+ECHO gretl4py requires python 3.11 or higher, but %PYTHON_VER% was used
+
+:exit
