@@ -34,10 +34,10 @@ PYBIND11_MODULE(_gretl, m) {
     m.def("printdata",
           py::overload_cast<const py::dict &, bool> (&printdata),
           py::arg("data").none(false),
-          py::arg("varamesonly") = false);
+          py::arg("namesonly") = false);
     m.def("printdata",
           py::overload_cast<bool> (&printdata),
-          py::arg("varamesonly") = false);
+          py::arg("namesonly") = false);
     m.def("get_gretl_data", &get_gretl_data, py::arg("fname").none(false));
     m.def("attach_gretl_data", &attach_gretl_data, py::arg("fname").none(false));
 
