@@ -6,10 +6,15 @@ import os as _os
 PATH = _site.getusersitepackages()
 if _os.name == 'nt':
     PATH = str(PATH + r'\gretl')
-    _os.add_dll_directory(r'C:\Program Files\gretl')
     _os.add_dll_directory(PATH + r'\DLL')
-    _os.environ["GRETL_PLUGIN_PATH"] = r'C:\Program Files\gretl\plugins'
-    _os.environ["GRETL_DATA_PATH"] = r'C:\Program Files\gretl\data'
+    try:
+        RES = _os.environ['GRETL_PLUGIN_PATH'][0:_os.environ['GRETL_PLUGIN_PATH'].rindex("\\")]
+    except KeyError:
+        RES = r'C:\Program Files\gretl'
+        _os.environ["GRETL_PLUGIN_PATH"] = RES + r'\plugins'
+    if 'GRETL_DATA_PATH' not in _os.environ:
+        _os.environ["GRETL_DATA_PATH"] = RES + r'\data'
+    _os.add_dll_directory(RES)
 else:
     PATH = str(PATH + r'/gretl')
 _sys.path.append(PATH)
