@@ -1,3 +1,19 @@
-\section{Implementation in \pkg{gretl}}\label{sec:BACE_implementation}
-In this section, we will describe the basic idea of
-the package.
+\section{Implementation}\label{sec:implementation}
+
+\subsection{Binary bindings}\label{sec:binary_bindings}
+The \cpp binding are written with the use of \pkg{pybind11}
+package (\url{https://pybind11.readthedocs.io/en/stable/index.html}).
+The main aim of these bindings is to deliver \python interfaces to
+selected \lgretl estimators and utility functions in a standardized form:
+
+for \texttt{arma} estimation:
+\begin{lstlisting}[style=cppstyle]
+	py::dict *arma (const std::string y, const py::tuple &tup, const py::kwargs &kwargs);
+\end{lstlisting}
+
+default:
+\begin{lstlisting}[style=cppstyle]
+	py::dict *ols (const std::string formula, const py::kwargs &kwargs);
+\end{lstlisting}
+
+%\lstinputlisting[style=cppstyle]{../src/gretl4py.h}

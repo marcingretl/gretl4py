@@ -1,37 +1,4 @@
-Source reorganization:
+1. write docs
 
-Function names changes (DONE):
-load_data() -> attach_data()
+2. put MS SDK gretlapi stack somewhere on the Internet (gretl SF source tree)?
 
-File names changes (DONE):
-gretl_to_python.cpp -> gretl4py.cpp
-gretl_calls.h -> gretl4py.h
-gretl_python_data.cpp -> gretl4py_data.cpp
-gretl_python_data.h -> gretl4py_data.h
-
-
-Tree proposal (DONE):
-./
- |
- -automation
-    |
-    -C/C++/scripts/Makefile/readme
- -src
-    |
-    -C++ sources (following new naming schema)
- -gretl (due to what Federico said)
-    |
-    -__init__.py
-    -gretl.py (main module file, provides all required interfaces; maybe additional python scripts as well)
-    -_gretl.cpython-xxx.(so/pyd)
- -doc
-    |
-    -LaTeX
- -demo
-    |
-    -*.py
- -macos
-    |
-    -gretl4py.env
- -win (if needed)
- -Makefiles/readme/todo/install/etc

@@ -10,7 +10,7 @@
 \RequirePackage{pifont}
 \RequirePackage{url}
 \RequirePackage[pdftex]{color}
-\RequirePackage{amsmath,amssymb,amsfonts,textcomp}
+\RequirePackage{amsmath,amssymb,amsfonts,textcomp,dirtree}
 \RequirePackage{listings}
 \RequirePackage{color,ae,fancyvrb}
 
@@ -37,12 +37,33 @@
 
 \author{Marcin Błażejowski\\
 	{\small \url{marcin@gretlconference.org}}\\
+	Allin Cottrell\\
+	{\small \url{cottrell@wfu.edu}}\\
+	Federico Fiorani\\
+	{\small \url{deferoci@gmail.com}}\\
 	{\centering end}\\
 	\pkg{gretl} developers (dream) Team}
 \title{\pkg{gretl4py}: a package for calling \pkg{libgretl} from \proglang{Python}}
 \prognum{6}
 
 \date{\today}
+
+% C++ style
+\lstdefinestyle{cppstyle}{
+	language=C++,
+	basicstyle=\ttfamily\small,  % Use a monospaced font 
+	keywordstyle=\color{blue},    % Keywords in blue 
+	commentstyle=\color{green},    % Comments in green 
+	stringstyle=\color{red},      % Strings in red 
+	numbers=left,                 % Line numbers on the left 
+	numberstyle=\tiny\color{gray}, % Style for line numbers 
+	stepnumber=1,                 % Number every line 
+	numbersep=5pt,                % Distance between line numbers and code 
+	frame=L,
+	backgroundcolor=\color{white}, % Background color 
+	showstringspaces=false,       % Don't show spaces in strings 
+	tabsize=2                     % Tab size
+}
 
 % Hansl syntax highlight
 \lstdefinelanguage{Hansl}{
@@ -110,7 +131,7 @@
 }
 \lstset{escapechar=@,style=hansl}
 \def\inline{\lstinline[basicstyle={\footnotesize\ttfamily}]}
-% Definicja kolorów
+% Colors
 % \definecolor{hanslgreen}{cmyk}{.67,0,.37,.45}
 \definecolor{hanslgreen}{cmyk}{.87,0,.91,.45}
 \definecolor{hanslred}{cmyk}{0,.75,.75,.35}

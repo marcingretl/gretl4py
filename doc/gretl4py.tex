@@ -1,15 +1,22 @@
 \documentclass[a4paper]{gretl4pydoc}
-\usepackage{pdflscape}
-\usepackage{longtable}
-\usepackage{xargs,xspace}
-\usepackage{caption,subcaption,tabulary,multirow,bigdelim}
-\usepackage{soul}
+\usepackage{xargs,xspace,soul}
+%\usepackage{caption,subcaption,tabulary,multirow,bigdelim}
 \usepackage[colorinlistoftodos,prependcaption,textsize=tiny,textwidth=2.8cm]{todonotes}
 
+\hyphenation{libgretl}
+\hyphenation{libgretl}
 \interfootnotelinepenalty=10000
+
+\newcommand{\lgretl}{\pkg{libgretl}\xspace}
+\newcommand{\gretlpy}{\pkg{gretl4py}\xspace}
+\newcommand{\python}{\proglang{Python}\xspace}
+\newcommand{\cpp}{\proglang{C++}\xspace}
 
 \newcommand{\gretlcmd}[1]{\lstinline!#1!\xspace}
 \newcommand{\gretlcmdf}[1]{\inline{#1}\xspace}
+
+\newcommand{\error}[1]{\textcolor{red}{\textbf{#1}}\xspace}
+
 \makeatletter
 \@mparswitchfalse%
 \makeatother
@@ -39,26 +46,9 @@
 	\end{description}
 
 	\section*{To do}
-	\begin{enumerate}
-		\item crucial:
-			\begin{itemize}
-				\item where should we use glib types?
-				\item parameters naming schema: we need to set up
-					some things (for example: \Code{"print"} or \Code{"do\_print"})
-				\item do we allow passing a regular command/script and execute it?
-			\end{itemize}
-		\item important:
-			\begin{itemize}
-				\item do \pkg{libgretl} bindings (like \Code{"do\_arma()""}) stay in
-					gretl\_calls.cpp or we place them in additional source
-					(like ``gretl\_bindings.cpp'')?
-				\item directory structure (including resulting binaries)
-				\item can we automatically guess data periodicity
-					(vide \Code{DSET["periodicity"] = "4"})
-				\item do we want to bundle some pure Python code as well
-					(f.e. for translating Pandas dat-frame to dict)?
-			\end{itemize}
-	\end{enumerate}
+	\begin{quote}
+		\input{../todo.txt}
+	\end{quote}
 
 	\input{Introduction}
 	\input{Implementation}
