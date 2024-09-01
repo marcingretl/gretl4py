@@ -41,6 +41,9 @@ PYBIND11_MODULE(_gretl, m) {
     m.def("get_gretl_data", &get_gretl_data, py::arg("fname").none(false));
     m.def("attach_gretl_data", &attach_gretl_data, py::arg("fname").none(false));
 
+    // sampling (for gretl datasets only)
+    m.def("sample", &sample);
+
     // model estimation
     // ARMA
     m.def("arma", &arma,
