@@ -1,20 +1,22 @@
 \section{Implementation}\label{sec:implementation}
 
 \subsection{Binary Bindings}\label{sec:binary_bindings}
-The \cpp bindings are written using the \pkg{pybind11} package
-(\url{https://pybind11.readthedocs.io/en/stable/index.html}).
+The \cpp bindings are written using the \pkg{pybind11}
+\citep{pybind11} package.
 The main purpose of these bindings is to provide \python
 interfaces to selected \lgretl estimators and utility functions
-in a standardized form. With \cppcode{namespace py = pybind11}:
+in a standardized form. Each \cpp binding has its \python
+counterpart (see Section~\error{XXX} for details).
+With \cppcode{namespace py = pybind11}:
 %\lstinputlisting[style=cppstyle]{../src/gretl4py.h}
 
-for \texttt{arma} estimation:
+For \texttt{arma} estimation (specific case):
 \begin{lstlisting}[style=cppstyle]
 py::dict *arma (const std::string y, const py::tuple &tup,
 								const py::kwargs &kwargs);
 \end{lstlisting}
 
-default:
+For default case:
 \begin{lstlisting}[style=cppstyle]
 py::dict *ESTIMATOR (const std::string formula,
 								const py::kwargs &kwargs);
@@ -28,6 +30,8 @@ and accept the following arguments:
 		variable in a dataset (see Section~\error{XXX} for details).
 	\item \cppcode{const py::tuple \&tup}: A reference to a \python
 		tuple containing the SARIMA specification (see Section~\error{XXX} for details).
+	\item \cppcode{const std::string formula}: A formula that constitutes
+		an equation (see Section~\error{XXX} for details).
 	\item \cppcode{const py::kwargs \&kwargs}: A reference to optional
 		arguments (see Section~\error{XXX} for details).
 \end{enumerate}

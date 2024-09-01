@@ -1,17 +1,14 @@
 \documentclass[a4paper]{gretl4pydoc}
-\usepackage{xargs,xspace,soul}
 %\usepackage{caption,subcaption,tabulary,multirow,bigdelim}
 \usepackage[colorinlistoftodos,prependcaption,textsize=tiny,textwidth=2.8cm]{todonotes}
 
 \hyphenation{libgretl}
-\hyphenation{libgretl}
-\interfootnotelinepenalty=10000
 
 \newcommand{\lgretl}{\pkg{libgretl}\xspace}
 \newcommand{\gretlpy}{\pkg{gretl4py}\xspace}
-\newcommand{\python}{\proglang{Python}\xspace}
+\newcommand{\python}[1][]{\proglang{Python#1}\xspace}
 \newcommand{\cpp}{\proglang{C++}\xspace}
-
+% lstlistings
 \newcommand{\gretlcmd}[1]{\lstinline!#1!\xspace}
 \newcommand{\gretlcmdf}[1]{\inline{#1}\xspace}
 \newcommand{\cppcode}[1]{\lstinline[style=cppstyle]!#1!\xspace}
@@ -55,4 +52,7 @@
 	\input{Implementation}
 	\input{Usage}
 	\input{Examples}
+	
+	\bibliographystyle{abbrvnat}
+	\bibliography{gretl4py.bib}
 \end{document}

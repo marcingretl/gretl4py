@@ -4,15 +4,11 @@
 	\PassOptionsToClass{\CurrentOption}{article}}
 \ProcessOptions
 \LoadClass[a4paper,11pt,twoside]{article}
-\RequirePackage[]{graphicx}
 \RequirePackage[utf8]{inputenc}
-\RequirePackage{enumitem}
-\RequirePackage{pifont}
-\RequirePackage{url}
 \RequirePackage[pdftex]{color}
-\RequirePackage{amsmath,amssymb,amsfonts,textcomp,dirtree}
-\RequirePackage{listings}
-\RequirePackage{color,ae,fancyvrb}
+\RequirePackage[]{graphicx}
+\RequirePackage{dirtree,xargs,xspace,url,listings}
+\RequirePackage{pifont}
 
 \usepackage{gretlwp}
 
