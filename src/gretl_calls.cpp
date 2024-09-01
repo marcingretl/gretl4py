@@ -276,7 +276,13 @@ void sample (const py::kwargs &kwargs)
         err = restore_full_sample(DSET, NULL);
     } else if (restr) {
         // smpl <restr> --restrict [--replace]
-        err = restrict_sample(restr, NULL, DSET, NULL, replace ? OPT_P : OPT_NONE, prn, NULL);
+        gretlopt opt = OPT_R;
+
+        if (replace) {
+            // C++ !!
+            opt = (gretlopt) ((int) OPT_R | (int) OPT_P);
+        }
+        err = restrict_sample(restr, NULL, DSET, NULL, opt, prn, NULL);
     } else if (t1str || t2str) {
         // smpl <t1str> <t2str>
         if (t1str && !t2str) {
