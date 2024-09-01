@@ -7,4 +7,4 @@ if [ ! -d $MYDIR ] ; then
    mkdir -p $MYDIR || exit 1
 fi
 
-cd $MYDIR && unzip -o $HERE/gretl4py.zip
+cd $MYDIR && unzip -o -q $HERE/gretl4py.zip

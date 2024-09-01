@@ -25,7 +25,7 @@ $(MODULE): $(OBJS)
 	$(CXX) $(CXXFLAGS) $^ -shared -o $@ -fPIC $(GRETLLD)
 
 $(ZIPFILE): $(MODULE) $(PYFILES)
-	zip -r $@ gretl
+	zip -r -q $@ gretl
 
 install: $(ZIPFILE)
 	./install.sh
