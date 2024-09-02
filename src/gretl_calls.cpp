@@ -227,15 +227,16 @@ void sample (const py::kwargs &kwargs)
         }
         const std::string &key = item.first.cast<std::string>();
 
-        if (py::isinstance<py::int_>(item.second)) {
-            int ival = item.second.cast<int>();
-            val = std::to_string(ival).c_str();
+        if (py::isinstance<py::int_>(item.second) || py::isinstance<py::bool_>(item.second)) {
+            /*int ival = item.second.cast<int>();
+            val = std::to_string(ival).c_str();*/ /* Allin, please decide */
+            val = std::to_string(item.second.cast<int>()).c_str();
         } else if (py::isinstance<py::str>(item.second)) {
             val = std::string(py::str(item.second)).c_str();
-        } else if (py::isinstance<py::bool_>(item.second)) {
+        } /*else if (py::isinstance<py::bool_>(item.second)) {
             int ival = item.second.cast<int>();
             val = std::to_string(ival).c_str();
-        }
+        }*/ /* Allin, please decide */
         if (key == "t1") {
             t1str = gretl_strdup(val);
             argc++;
