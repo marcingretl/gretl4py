@@ -231,7 +231,7 @@ void sample (const py::kwargs &kwargs)
             int ival = item.second.cast<int>();
             val = std::to_string(ival).c_str();
         } else if (py::isinstance<py::str>(item.second)) {
-            const std::string &sval = item.second.cast<std::string>();
+            const std::string sval = std::string(py::str(item.second));
             val = sval.c_str();
         } else if (py::isinstance<py::bool_>(item.second)) {
             int ival = item.second.cast<int>();
@@ -247,10 +247,10 @@ void sample (const py::kwargs &kwargs)
             restr = gretl_strdup(val);
             argc++;
         } else if (key == "replace") {
-            replace = atoi(val);
+            replace = std::atoi(val);
             optc++;
         } else if (key == "full") {
-            full = atoi(val);
+            full = std::atoi(val);
             optc++;
         } else {
             throw std::runtime_error("invalid key '" + key + "' in 'sample' args");
@@ -296,7 +296,6 @@ void sample (const py::kwargs &kwargs)
 
     if (err) {
         const char *msg = errmsg_get_with_default(err);
-
         throw std::runtime_error(msg);
     } else if (argc > 0 || optc > 0) {
         print_smpl(DSET, get_full_length_n(), OPT_NONE, prn);
