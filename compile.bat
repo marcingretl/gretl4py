@@ -1,12 +1,13 @@
+@echo off
+
 rem This program is aimed for native MS Windows compilation only.
 rem If you want to compile gretl4py module under MSYS2,
 rem pleas look at 'winmsys2.mk'.
-
 rem Note: you need a gretlapi MS SDK stack.
 
-@echo off
 rem paths to executables
-set "CMD=C:\"Program Files"\Python312\python.exe"
+rem set "CMD=C:\"Program Files"\Python311\python.exe"
+set "CMD=python.exe"
 set "CXX=clang++.exe"
 
 rem libgretl stack path
