@@ -231,8 +231,7 @@ void sample (const py::kwargs &kwargs)
             int ival = item.second.cast<int>();
             val = std::to_string(ival).c_str();
         } else if (py::isinstance<py::str>(item.second)) {
-            const std::string sval = std::string(py::str(item.second));
-            val = sval.c_str();
+            val = std::string(py::str(item.second)).c_str();
         } else if (py::isinstance<py::bool_>(item.second)) {
             int ival = item.second.cast<int>();
             val = std::to_string(ival).c_str();
