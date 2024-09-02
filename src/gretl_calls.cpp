@@ -200,7 +200,11 @@ void attach_gretl_data (const std::string fname)
     }
 }
 
-// sampling of gretl datasets
+// Sampling of gretl datasets. As of 2024-09-02 this just covers basic usage of
+// the "smpl" command in gretl: setting of t1 and/or t2; sub-sampling by means of
+// a boolean condition expressed in hansl (with or without the --replace option);
+// and resetting the sample to include the entire dataset ("smpl full").
+// Further functionality could be added if we reckon it's worthwhile.
 
 void sample (const py::kwargs &kwargs)
 {
@@ -227,16 +231,12 @@ void sample (const py::kwargs &kwargs)
         }
         const std::string &key = item.first.cast<std::string>();
 
-        if (py::isinstance<py::int_>(item.second) || py::isinstance<py::bool_>(item.second)) {
-            /*int ival = item.second.cast<int>();
-            val = std::to_string(ival).c_str();*/ /* Allin, please decide */
+        if (py::isinstance<py::int_>(item.second) ||
+            py::isinstance<py::bool_>(item.second)) {
             val = std::to_string(item.second.cast<int>()).c_str();
         } else if (py::isinstance<py::str>(item.second)) {
             val = std::string(py::str(item.second)).c_str();
-        } /*else if (py::isinstance<py::bool_>(item.second)) {
-            int ival = item.second.cast<int>();
-            val = std::to_string(ival).c_str();
-        }*/ /* Allin, please decide */
+        }
         if (key == "t1") {
             t1str = gretl_strdup(val);
             argc++;
