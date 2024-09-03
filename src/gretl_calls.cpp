@@ -51,7 +51,7 @@ void module_cleanup (void)
 
 std::string about (bool do_print)
 {
-    std::string mod_ver, lg_ver;
+    std::string mod_ver, lg_ver, py11_ver;
     gretl_bundle *b = NULL;
     PRN *prn = NULL;
     int err = 0;
@@ -59,11 +59,15 @@ std::string about (bool do_print)
     gretl_push_c_numeric_locale();
 
     mod_ver = std::to_string(GRETL_MODULE_VERSION).substr(0,3);
+    py11_ver = std::to_string(PYBIND11_VERSION_MAJOR);
+    py11_ver += "." + std::to_string(PYBIND11_VERSION_MINOR);
+    py11_ver += "." + std::to_string(PYBIND11_VERSION_PATCH);
     lg_ver = std::to_string(libgretl_version());
 
     if (do_print) {
         std::cout << "gretl4py version " << mod_ver;
         std::cout << " [" << COMPILER_IDENT << "]";
+        std::cout << ", pybind11 version " << py11_ver;
         std::cout << ", libgretl-1.0 version " << lg_ver << std::endl;
         b = get_sysinfo_bundle(&err);
         if (!err) {
@@ -84,7 +88,7 @@ std::string about (bool do_print)
         std::cerr << errmsg_get_with_default(err) << std::endl;
     }
 
-    return mod_ver + "_" + lg_ver;
+    return mod_ver + "_" + py11_ver + "_" + lg_ver;
 }
 
 static void handle_gretl_error (int err)
