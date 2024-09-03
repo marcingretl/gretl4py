@@ -1,39 +1,36 @@
-@echo off
+@ECHO off
 
-rem This program is aimed for native MS Windows compilation only.
-rem If you want to compile gretl4py module under MSYS2,
-rem pleas look at 'winmsys2.mk'.
-rem Note: you need a gretlapi MS SDK stack.
+REM This program is aimed FOR native MS Windows compilation only.
+REM If you want to compile gretl4py module under MSYS2,
+REM pleas look at 'winmsys2.mk'.
+REM Note: you need a gretlapi MS SDK stack.
 
-rem paths to executables
-rem set "CMD=C:\"Program Files"\Python311\python.exe"
-set "CMD=python.exe"
-set "CXX=clang++.exe"
+REM paths to executables
+REM SET "CMD=C:\"Program Files"\Python311\python.exe"
+SET "CMD=python.exe"
+SET "CXX=clang++.exe"
 
-rem libgretl stack path
-set "STACK_PATH=E:\Marcin\gretlapi\stack"
+REM libgretl stack path
+SET "STACK_PATH=E:\Marcin\gretlapi\stack"
 
-rem Python main path and version
-for /f "tokens=*" %%i in ('%CMD% -c "import sysconfig; print(sysconfig.get_paths()[r'data'])"') do set "PYTHON_PATH=%%i"
-for /f %%i in ('%CMD% -c "import sysconfig; print(sysconfig.get_config_var(r'VERSION'))"') do set "PYTHON_VER=%%i"
+REM Python main path and version
+FOR /f "tokens=*" %%i IN ('%CMD% -c "import sysconfig; print(sysconfig.get_paths()[r'data'])"') DO SET "PYTHON_PATH=%%i"
+FOR /f %%i IN ('%CMD% -c "import sysconfig; print(sysconfig.get_config_var(r'VERSION'))"') DO SET "PYTHON_VER=%%i"
 
-set "CXXFLAGS=-O2 -msahf -pipe -Wp,-D_FORTIFY_SOURCE=2 -fstack-protector-strong -fwrapv -Wall -std=c++17"
-rem -DNDEBUG -g
+SET "CXXFLAGS=-march=x86-64 -mtune=generic -O3 -msahf -pipe -Wp,-D_FORTIFY_SOURCE=2 -fstack-protector-strong -fwrapv -Wall -std=c++17"
+REM -DNDEBUG -g
 
-set "GRETLIN=-I%STACK_PATH%\include -I%STACK_PATH%\include\glib-2.0 -I%STACK_PATH%\lib\glib-2.0\include"
-set "GRETLLD=-L%STACK_PATH%\lib -l"gretl-1.0" -lm -lxml2 -lfftw3 -l"glib-2.0" -lintl -l"gobject-2.0""
+SET "GRETLIN=-I%STACK_PATH%\include -I%STACK_PATH%\include\glib-2.0 -I%STACK_PATH%\lib\glib-2.0\include"
+SET "GRETLLD=-L%STACK_PATH%\lib -l"gretl-1.0" -lm -lxml2 -lfftw3 -l"glib-2.0" -lintl -l"gobject-2.0""
 
-set "PYTHONIN=-I"%PYTHON_PATH%\Include""
-set "PYTHONLD=-L"%PYTHON_PATH%\libs" -lpython%PYTHON_VER% -lversion -lshlwapi -lpathcch -lbcrypt"
+SET "PYTHONIN=-I"%PYTHON_PATH%\Include""
+SET "PYTHONLD=-L"%PYTHON_PATH%\libs" -lpython%PYTHON_VER% -lversion -lshlwapi -lpathcch -lbcrypt"
 
-for /f "tokens=*" %%i in ('%CMD% -c "import pybind11; print(pybind11.get_include())"') do set "PYBIND=-I%%i"
+FOR /f "tokens=*" %%i IN ('%CMD% -c "import pybind11; print(pybind11.get_include())"') DO SET "PYBIND=-I%%i"
 
-rem module suffix
-for /f %%i in ('%CMD% -c "import sysconfig; print(sysconfig.get_config_var(r'EXT_SUFFIX'))"') do set SUFFIX=%%i
-set "MODULE=gretl/_gretl%SUFFIX%"
-
-rem ZIPFILE = gretl4py.zip
-rem set "PYFILES=gretl/gretl4py_addons.py gretl/gretl4py_classes.py"
+REM module suffix
+FOR /f %%i IN ('%CMD% -c "import sysconfig; print(sysconfig.get_config_var(r'EXT_SUFFIX'))"') DO SET SUFFIX=%%i
+SET "MODULE=gretl/_gretl%SUFFIX%"
 
 %CXX% %CXXFLAGS% -c src\gretl4py_data.cpp -o gretl4py_data.o %PYBIND% %GRETLIN% %PYTHONIN%
 %CXX% %CXXFLAGS% -c src\gretl_calls.cpp -o gretl_calls.o %PYBIND% %GRETLIN% %PYTHONIN%

@@ -239,7 +239,11 @@ void sample (const py::kwargs &kwargs)
             py::isinstance<py::bool_>(item.second)) {
             val = std::to_string(item.second.cast<int>()).c_str();
         } else if (py::isinstance<py::str>(item.second)) {
+#if defined(__linux__) && defined(__clang__)
             val = std::string(py::str(item.second)).c_str();
+#else
+            val = item.second.cast<std::string>().c_str();
+#endif // defined
         }
         if (key == "t1") {
             t1str = gretl_strdup(val);
