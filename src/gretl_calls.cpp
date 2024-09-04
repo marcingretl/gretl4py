@@ -192,6 +192,7 @@ py::dict *get_gretl_data (const std::string fname)
     py::dict *res = new py::dict;
 
     gretl_dset_to_numpy_dict(fname, *res);
+
     return res;
 }
 
@@ -240,11 +241,12 @@ void sample (const py::kwargs &kwargs)
             py::isinstance<py::bool_>(item.second)) {
             val = std::to_string(item.second.cast<int>()).c_str();
         } else if (py::isinstance<py::str>(item.second)) {
-#if defined(__linux__) && defined(__clang__)
+            val = item.second.cast<std::string_view>().data(); /* workaround for differences between compilers and/or OSs, see commit be4b711cc8a97e03317368431e4a42f5636daa63 (be4b711) */
+/* #if defined(__linux__) && defined(__clang__)
             val = std::string(py::str(item.second)).c_str();
 #else
             val = item.second.cast<std::string>().c_str();
-#endif // defined
+#endif // defined */
         }
         if (key == "t1") {
             t1str = gretl_strdup(val);
