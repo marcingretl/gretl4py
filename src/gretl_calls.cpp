@@ -29,7 +29,8 @@ typedef MODEL (*BASIC_MODEL_FUNC2) (const int *, DATASET *, gretlopt);
 void module_init (void)
 {
     if (libgretl_version() < LIBGRETL_MIN_VER) {
-        throw std::runtime_error("gretl4py requires libgretl-1.0 version " + std::to_string(LIBGRETL_MIN_VER) + " or higher");
+        throw std::runtime_error("gretl4py requires libgretl-1.0 version "
+                                 + std::to_string(LIBGRETL_MIN_VER) + " or higher");
     }
     libgretl_init();
 #if defined(_WIN32)
@@ -217,7 +218,7 @@ void sample (const py::kwargs &kwargs)
     char *restr = NULL;
     const char *val;
     PRN *prn = NULL;
-    int replace = 0;
+    int opt_replace = 0;
     int full = 0;
     int argc = 0;
     int optc = 0;
@@ -255,7 +256,7 @@ void sample (const py::kwargs &kwargs)
             restr = gretl_strdup(val);
             argc++;
         } else if (key == "replace") {
-            replace = std::atoi(val);
+            opt_replace = std::atoi(val);
             optc++;
         } else if (key == "full") {
             full = std::atoi(val);
@@ -268,11 +269,11 @@ void sample (const py::kwargs &kwargs)
     prn = gretl_print_new(GRETL_PRINT_STDOUT, NULL);
 
     // reject invalid cases
-    if (full && (t1str || t2str || replace)) {
+    if (full && (t1str || t2str || opt_replace)) {
         throw std::runtime_error("invalid use of 'full' in 'sample' args");
     } else if (restr && (t1str || t2str)) {
         throw std::runtime_error("invalid use of 'restriction' in 'sample' args");
-    } else if (replace && !restr) {
+    } else if (opt_replace && !restr) {
         throw std::runtime_error("invalid use of 'replace' in 'sample' args");
     }
 
@@ -286,7 +287,7 @@ void sample (const py::kwargs &kwargs)
         // smpl <restr> --restrict [--replace]
         gretlopt opt = OPT_R;
 
-        if (replace) {
+        if (opt_replace) {
             // C++ !!
             opt = (gretlopt) ((int) OPT_R | (int) OPT_P);
         }
@@ -349,7 +350,7 @@ static gretlopt unpack_kwargs (const py::kwargs &kwargs,
                 throw std::runtime_error("'data' must be a dictionary");
             }
             continue;
-        } if (key == "print") {
+        } else if (key == "print") {
             // special case: 'print' is not a gretl option
             is_print = true;
             status = OPT_NO_PARM;
