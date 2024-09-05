@@ -66,7 +66,7 @@
 \lstdefinestyle{pythonstyle}{
 	language=Python,
 	basicstyle=\ttfamily\small,
-	morekeywords={self},           % Add keywords here
+	morekeywords={self,True,False},
 	keywordstyle=\color{blue},
 	%emph={MyClass,__init__},      % Custom highlighting
 	emphstyle=\color{red},     % Custom highlighting style

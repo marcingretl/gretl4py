@@ -50,21 +50,51 @@ by the \texttt{\_\_init\_\_.py} file.
 \subsubsection{Estimators}\label{sec:estimators_python}
 While Section~\ref{sec:estimators_c++} outlines only two
 \cpp bindings, the actual list of available \lgretl estimators
-is as follows: \gretlcmd{arima}, \gretlcmd{ols}, \gretlcmd{wls},
-\gretlcmd{logit}, \gretlcmd{probit}, \gretlcmd{poisson},
-\gretlcmd{negbin}, \gretlcmd{biprobit}, \gretlcmd{duration},
-\gretlcmd{heckit}, \gretlcmd{logistic}, \gretlcmd{ar},
-\gretlcmd{ar1}, \gretlcmd{lad}, \gretlcmd{garch}, \gretlcmd{mpols},
-\gretlcmd{panel}, and \gretlcmd{tsls}, with the following signatures:
+is as follows (in alphabetical order):
 
-\vspace{10pt}\noindent\gretlcmd{arima}
-\begin{lstlisting}[style=pythonstyle]
-arma(y=str(), order=tuple((p,d,q)), seasonal=tuple((P,D,Q)), data=dict())
-\end{lstlisting}
-\hspace*{17pt}maps to: \gretlcmd{arima p d q [; P D Q ] ; depvar}
+\vspace{10pt}\noindent\gretlcmd{ar}
+%\begin{lstlisting}[style=pythonstyle]
+%\end{lstlisting}
 
-\vspace{10pt}\noindent\gretlcmd{ols}
+\vspace{10pt}\noindent\gretlcmd{ar1}
+%\begin{lstlisting}[style=pythonstyle]
+%\end{lstlisting}
+
+\vspace{10pt}\noindent\gretlcmd{arima p d q [; P D Q ] ; depvar}
 \begin{lstlisting}[style=pythonstyle]
-ols(formula=str(), data=dict())
+arma(y=str(), order=tuple((p,d,q)), [seasonal=tuple((P,D,Q)), [data=dict()]])
 \end{lstlisting}
-\hspace*{17pt}maps to: \gretlcmd{ols depvar indepvars}
+%\hspace*{17pt}maps to: \gretlcmd{arima p d q [; P D Q ] ; depvar}
+
+\vspace{10pt}\noindent\gretlcmd{ols depvar indepvars}
+\begin{lstlisting}[style=pythonstyle]
+ols(formula=str(), [data=dict(), robust=False/True])
+\end{lstlisting}
+
+\vspace{10pt}\noindent\gretlcmd{biprobit}
+
+\vspace{10pt}\noindent\gretlcmd{duration}
+
+\vspace{10pt}\noindent\gretlcmd{garch}
+
+\vspace{10pt}\noindent\gretlcmd{heckit}
+
+\vspace{10pt}\noindent\gretlcmd{lad}
+
+\vspace{10pt}\noindent\gretlcmd{logistic}
+
+\vspace{10pt}\noindent\gretlcmd{logit}
+
+\vspace{10pt}\noindent\gretlcmd{mpols}
+
+\vspace{10pt}\noindent\gretlcmd{negbin}
+
+\vspace{10pt}\noindent\gretlcmd{panel}
+
+\vspace{10pt}\noindent\gretlcmd{poisson}
+
+\vspace{10pt}\noindent\gretlcmd{probit}
+
+\vspace{10pt}\noindent\noindent\gretlcmd{tsls}
+
+\vspace{10pt}\noindent\gretlcmd{wls}
