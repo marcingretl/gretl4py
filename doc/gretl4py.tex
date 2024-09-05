@@ -2,9 +2,13 @@
 %\usepackage{caption,subcaption,tabulary,multirow,bigdelim}
 \usepackage[colorinlistoftodos,prependcaption,textsize=tiny,textwidth=2.8cm]{todonotes}
 
+\graphicspath{{png/}}
+\DeclareGraphicsExtensions{.png}
+
 \hyphenation{libgretl}
 
 \newcommand{\lgretl}{\pkg{libgretl}\xspace}
+\newcommand{\gretl}{\pkg{gretl}\xspace}
 \newcommand{\gretlpy}{\pkg{gretl4py}\xspace}
 \newcommand{\python}[1][]{\proglang{Python#1}\xspace}
 \newcommand{\cpp}{\proglang{C++}\xspace}
@@ -12,6 +16,9 @@
 \newcommand{\gretlcmd}[1]{\lstinline!#1!\xspace}
 \newcommand{\gretlcmdf}[1]{\inline{#1}\xspace}
 \newcommand{\cppcode}[1]{\lstinline[style=cppstyle]!#1!\xspace}
+
+\newcommand{\reqpython}{[311], [312]\xspace}
+\newcommand{\installbat}{\texttt{install.bat}\xspace}
 
 \newcommand{\error}[1]{\textcolor{red}{\textbf{#1}}\xspace}
 
@@ -50,6 +57,7 @@
 
 	\input{Introduction}
 	\input{Implementation}
+	\input{Installation}
 	\input{Usage}
 	\input{Examples}
 	

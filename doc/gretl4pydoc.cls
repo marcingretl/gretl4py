@@ -63,6 +63,18 @@
 	tabsize=2                     % Tab size
 }
 
+\lstdefinestyle{python}{
+	language=Python,
+	basicstyle=\ttfamily\small,
+	morekeywords={self},           % Add keywords here
+	keywordstyle=\color{deepblue},
+	%emph={MyClass,__init__},      % Custom highlighting
+	emphstyle=\color{deepred},     % Custom highlighting style
+	stringstyle=\color{deepgreen},
+	frame=tb,                      % Any extra options here
+	showstringspaces=false
+}
+
 %% Hansl syntax highlight
 %\lstdefinelanguage{Hansl}{
 %	morekeywords={add, adf, anova, append, ar, ar1, arbond, arch, arima, biprobit, boxplot, break,
