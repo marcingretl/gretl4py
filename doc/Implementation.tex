@@ -7,6 +7,8 @@ The main purpose of these bindings is to provide \python
 interfaces to selected \lgretl estimators and utility functions
 in a standardized form. Each \cpp binding has its \python
 counterpart (see Section~\error{XXX} for details).
+
+\subsubsection{Estimators}\label{sec:estimators_c++}
 With \cppcode{namespace py = pybind11}:
 %\lstinputlisting[style=cppstyle]{../src/gretl4py.h}
 
@@ -35,3 +37,34 @@ and accept the following arguments:
 	\item \cppcode{const py::kwargs \&kwargs}: A reference to optional
 		arguments (see Section~\error{XXX} for details).
 \end{enumerate}
+
+
+\subsection{\python Side}
+All binary bindings described in Section~\ref{sec:binary_bindings}
+have their counterparts on the \python side, with access provided
+by two \python scripts: \texttt{gretl4py\_addons.py} and
+\texttt{gretl4py\_classes.py}. Additionally, \gretlpy is initialized
+by the \texttt{\_\_init\_\_.py} file.
+
+
+\subsubsection{Estimators}\label{sec:estimators_python}
+While Section~\ref{sec:estimators_c++} outlines only two
+\cpp bindings, the actual list of available \lgretl estimators
+is as follows: \gretlcmd{arima}, \gretlcmd{ols}, \gretlcmd{wls},
+\gretlcmd{logit}, \gretlcmd{probit}, \gretlcmd{poisson},
+\gretlcmd{negbin}, \gretlcmd{biprobit}, \gretlcmd{duration},
+\gretlcmd{heckit}, \gretlcmd{logistic}, \gretlcmd{ar},
+\gretlcmd{ar1}, \gretlcmd{lad}, \gretlcmd{garch}, \gretlcmd{mpols},
+\gretlcmd{panel}, and \gretlcmd{tsls}, with the following signatures:
+
+\vspace{10pt}\noindent\gretlcmd{arima}
+\begin{lstlisting}[style=pythonstyle]
+arma(y=str(), order=tuple((p,d,q)), seasonal=tuple((P,D,Q)), data=dict())
+\end{lstlisting}
+\hspace*{17pt}maps to: \gretlcmd{arima p d q [; P D Q ] ; depvar}
+
+\vspace{10pt}\noindent\gretlcmd{ols}
+\begin{lstlisting}[style=pythonstyle]
+ols(formula=str(), data=dict())
+\end{lstlisting}
+\hspace*{17pt}maps to: \gretlcmd{ols depvar indepvars}

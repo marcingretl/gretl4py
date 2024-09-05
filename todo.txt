@@ -2,3 +2,6 @@
 
 2. put MS SDK gretlapi stack somewhere on the Internet (gretl SF source tree)?
 
+3. (re)organize `demo' directory
+
+4. do we want to provide builds for macOS and Linux?
