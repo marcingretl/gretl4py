@@ -1,7 +1,11 @@
 ifndef CXX
-CXX = clang++
+CXX = g++
 endif
-CXXFLAGS =-fms-extensions -fdelayed-template-parsing -std=c++17
+ifeq ($(CXX), clang++)
+CXXFLAGS = -std=c++17 -fms-extensions -fdelayed-template-parsing
+else
+CXXFLAGS = -std=c++17
+endif
 MAKE = gmake
 GRETLLD = $(shell pkg-config --libs gretl)
 GRETLIN = $(shell pkg-config --cflags gretl)

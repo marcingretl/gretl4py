@@ -1,23 +1,22 @@
 """module import all necessary files"""
 
-import sys as _sys
+import sysconfig
 import site as _site
-import os as _os
 PATH = _site.getusersitepackages()
-if _os.name == 'nt':
+if sysconfig.get_platform() == 'win-amd64':
     PATH = str(PATH + r'\gretl')
-    _os.add_dll_directory(PATH + r'\DLL')
+    sysconfig.os.add_dll_directory(PATH + r'\DLL')
     try:
-        RES = _os.environ['GRETL_PLUGIN_PATH'][0:_os.environ['GRETL_PLUGIN_PATH'].rindex("\\")]
+        RES = sysconfig.os.environ['GRETL_PLUGIN_PATH'][0:sysconfig.os.environ['GRETL_PLUGIN_PATH'].rindex("\\")]
     except KeyError:
         RES = r'C:\Program Files\gretl'
-        _os.environ['GRETL_PLUGIN_PATH'] = RES + r'\plugins'
-    if 'GRETL_DATA_PATH' not in _os.environ:
-        _os.environ['GRETL_DATA_PATH'] = RES + r'\data'
-    _os.add_dll_directory(RES)
+        sysconfig.os.environ['GRETL_PLUGIN_PATH'] = RES + r'\plugins'
+    if 'GRETL_DATA_PATH' not in sysconfig.os.environ:
+        sysconfig.os.environ['GRETL_DATA_PATH'] = RES + r'\data'
+    sysconfig.os.add_dll_directory(RES)
 else:
     PATH = str(PATH + r'/gretl')
-_sys.path.append(PATH)
+sysconfig.sys.path.append(PATH)
 import _gretl
 import gretl4py_addons
 import gretl4py_classes
