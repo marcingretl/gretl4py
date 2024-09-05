@@ -1,6 +1,3 @@
-import sys
-sys.path.append('./')
-sys.path.append('../')
 import gretl
 
 data97 = gretl.csv2dict('data9-7.csv', 4)

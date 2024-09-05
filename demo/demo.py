@@ -1,6 +1,3 @@
-import sys
-sys.path.append('./')
-sys.path.append('../')
 import gretl
 
 ''' we load bjg.csv to dict() '''
@@ -17,7 +14,7 @@ print('\nExample 1:')
 print('arma(1,1,1,False)\n')
 res = gretl.arma(y="QNC", order=(1,1,1), data=data97).fit()
 print(res)
- 
+
 print('\nOLS:')
 res = gretl.ols('QNC ~ const + PRICE + INCOME', data=data97).fit()
 print(res)

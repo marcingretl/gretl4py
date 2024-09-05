@@ -1,4 +1,3 @@
-import sys
 import gretl
 
 fname = gretl.gretl_data_path('ramanathan/data4-10.gdt')

@@ -1,5 +1,3 @@
-import sys
-sys.path.append('../')
 import gretl
 
 fname = gretl.gretl_data_path('misc/longley.gdt')

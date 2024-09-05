@@ -1,6 +1,3 @@
-import sys
-sys.path.append('./')
-sys.path.append('../')
 import gretl
 
 mydata = gretl.get_gretl_data("data4-1.gdt")
