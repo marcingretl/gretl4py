@@ -6,7 +6,7 @@ The \cpp bindings are written using the \pkg{pybind11}
 The main purpose of these bindings is to provide \python
 interfaces to selected \lgretl estimators and utility functions
 in a standardized form. Each \cpp binding has its \python
-counterpart (see Section~\error{XXX} for details).
+counterpart (see Section~\ref{sec:python_side} for details).
 
 \subsubsection{Estimators}\label{sec:estimators_c++}
 With \cppcode{namespace py = pybind11}:
@@ -39,7 +39,7 @@ and accept the following arguments:
 \end{enumerate}
 
 
-\subsection{\python Side}
+\subsection{\python Side}\label{sec:python_side}
 All binary bindings described in Section~\ref{sec:binary_bindings}
 have their counterparts on the \python side, with access
 provided by two \python scripts: \texttt{gretl4py\_addons.py}
@@ -52,9 +52,9 @@ While Section~\ref{sec:estimators_c++} outlines only two
 \cpp bindings, the actual list of available \lgretl estimators
 is much more extensive. Keep in mind the following:
 \begin{itemize}
-	\vitem\pythcode{data=dict()} is a dictionary containing
+	\hitem\pythcode{data=dict()} is a dictionary containing
 		the data as described in~\error{XXX};
-	\vitem\pythcode{formula=str()} is a simple \proglang{R}-style
+	\hitem\pythcode{formula=str()} is a simple \proglang{R}-style
 		formula that maps the model equation using the following rule:
 		\begin{center}
 			$\displaystyle y = \beta_0 + \sum_{j=1}^{k}\beta_jx_j + \varepsilon\;\rightarrow\;$%
@@ -63,27 +63,40 @@ is much more extensive. Keep in mind the following:
 \end{itemize}
 The complete list of available estimators is as follows (options in square brackets are optional):
 
-\vspace{10pt}\noindent\gretlcmd{ar}
+\vspace{10pt}\noindent\gretlcmdn{ar}
 %\begin{lstlisting}[style=pythonstyle]
 %\end{lstlisting}
 
-\vspace{10pt}\noindent\gretlcmd{ar1}
+\vspace{10pt}\noindent\gretlcmdn{ar1}
 %\begin{lstlisting}[style=pythonstyle]
 %\end{lstlisting}
 
-\vspace{10pt}\noindent\gretlcmd{arima}
+\vspace{10pt}\noindent\gretlcmdn{arima}
 \begin{lstlisting}[style=pythonstyle]
 gretl.arma(y=str(), order=tuple((p,d,q)),
-	[seasonal=tuple((P,D,Q)), data=dict()])
+	[seasonal=tuple((P,D,Q)), OPTS, [data=dict()]])
 \end{lstlisting}
 \mapto{arima p d q [; P D Q ] ; depvar}
+\begin{itemize}
+	\item[]\maptoopt{--verbose}{verbose=True}
+	\item[]\maptoopt{--hessian}{hessian=True}
+	\item[]\maptoopt{--opg}{opg=True}
+	\item[]\maptoopt{--nc}{nc=True}
+	\item[]\maptoopt{--conditional}{conditional=True}
+	\item[]\maptoopt{--lbfgs}{lbfgs=True}
+	\item[]\maptoopt{--lagselect}{lagselect=True}
+\end{itemize}
+
 
 \vspace{10pt}\noindent\gretlcmd{ols}
 \begin{lstlisting}[style=pythonstyle]
-gretl.ols(formula=str(),
-	[data=dict(), robust=True/False])
+gretl.ols(formula=str(), [OPTS, [data=dict()]])
 \end{lstlisting}
 \mapto{ols depvar indepvars}
+\begin{itemize}
+	\item[]\maptoopt{--robust}{robust=True}
+	\item[]\maptoopt{--jackknife}{jackknife=True}
+\end{itemize}
 
 \vspace{10pt}\noindent\gretlcmd{biprobit}
 

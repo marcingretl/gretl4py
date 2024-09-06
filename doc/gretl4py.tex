@@ -6,7 +6,7 @@
 
 \hyphenation{libgretl}
 
-\newcommand{\vitem}{\item[] \hspace{-5mm}}
+\newcommand{\hitem}{\item[] \hspace{-5mm}}
 
 \newcommand{\lgretl}{\pkg{libgretl}\xspace}
 \newcommand{\gretl}{\pkg{gretl}\xspace}
@@ -16,12 +16,14 @@
 \newcommand{\installbat}{\texttt{install.bat}\xspace}
 % lstlistings
 \newcommand{\gretlcmd}[1]{\lstinline!#1!\xspace}
-\newcommand{\gretlcmdf}[1]{\inline{#1}\xspace}
+\newcommand{\gretlcmdn}[1]{\inline{#1}\xspace}
 \newcommand{\cppcode}[1]{\lstinline[style=cppstyle]!#1!\xspace}
 \newcommand{\pythcode}[1]{\lstinline[style=pythonstyle]!#1!\xspace}
 \newcommand{\reqpython}{[311], [312]\xspace}
-\newcommand{\mapto}[1]{\hspace*{17pt}maps to: \gretlcmd{#1}}
-
+\newcommand{\mapto}[1]{\hspace*{17pt}maps to: \gretlcmd{#1}\newline%
+	\hspace*{17pt}where \pythcode{OPTS} are the following options %
+	(\gretl to \gretlpy mappings):}
+\newcommand{\maptoopt}[2]{\gretlcmd{#1} $\rightarrow$ \pythcode{#2}}
 \newcommand{\error}[1]{\textcolor{red}{\textbf{#1}}\xspace}
 
 \makeatletter

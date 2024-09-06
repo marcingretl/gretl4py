@@ -134,7 +134,7 @@
 	xleftmargin=\parindent,
 	language=Hansl,
 	showstringspaces=false,
-	basicstyle={\normalsize\ttfamily},
+	basicstyle={\ttfamily\small},
 	keywordstyle={\bfseries\color{hanslred}},
 	keywordstyle=[2]{\color{hanslteal}},
 	keywordstyle=[3]{\bfseries\color{hanslgreen}},
@@ -143,7 +143,7 @@
 	stringstyle={\color{hanslmagenta}}
 }
 \lstset{escapechar=@,style=hansl}
-\def\inline{\lstinline[basicstyle={\footnotesize\ttfamily}]}
+\def\inline{\lstinline[basicstyle={\normalsize\ttfamily}]}
 % Colors
 % \definecolor{hanslgreen}{cmyk}{.67,0,.37,.45}
 \definecolor{hanslgreen}{cmyk}{.87,0,.91,.45}
