@@ -20,7 +20,7 @@
 #define GRETL_PYBIND11_DEBUG 0
 
 static DATASET *DSET = NULL; // global dataset
-static bool gretl4py_verbose = false;
+static int gretl4py_verbose = 0;
 
 typedef MODEL (*BASIC_MODEL_FUNC1) (const int *, DATASET *, gretlopt, PRN *);
 typedef MODEL (*BASIC_MODEL_FUNC2) (const int *, DATASET *, gretlopt);
@@ -34,8 +34,9 @@ void module_init (void)
         throw std::runtime_error("gretl4py requires libgretl-1.0 version "
                                  + std::to_string(LIBGRETL_MIN_VER) + " or higher");
     }
-    if (getenv("GRETL4PY_VERBOSE") != nullptr) {
-        gretl4py_verbose = true;
+    char *str = getenv("GRETL4PY_VERBOSE");
+    if (str != nullptr) {
+        gretl4py_verbose = std::atoi(str);
     }
     libgretl_init();
 #if defined(_WIN32)
