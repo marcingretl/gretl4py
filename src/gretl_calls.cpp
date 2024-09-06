@@ -34,7 +34,7 @@ void module_init (void)
         throw std::runtime_error("gretl4py requires libgretl-1.0 version "
                                  + std::to_string(LIBGRETL_MIN_VER) + " or higher");
     }
-    char *str = getenv("GRETL4PY_VERBOSE");
+    char *str = std::getenv("GRETL4PY_VERBOSE");
     if (str != nullptr) {
         gretl4py_verbose = std::atoi(str);
     }
