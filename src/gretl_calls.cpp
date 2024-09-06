@@ -4,6 +4,7 @@
 #include <gretl/gretl_errors.h>
 #include <gretl/libset.h>
 #include <iostream>
+#include <cstdlib>
 
 #if defined(_WIN32)
 # include <gretl/gretl_win32.h>
@@ -19,6 +20,7 @@
 #define GRETL_PYBIND11_DEBUG 0
 
 static DATASET *DSET = NULL; // global dataset
+static bool gretl4py_verbose = false;
 
 typedef MODEL (*BASIC_MODEL_FUNC1) (const int *, DATASET *, gretlopt, PRN *);
 typedef MODEL (*BASIC_MODEL_FUNC2) (const int *, DATASET *, gretlopt);
@@ -32,13 +34,18 @@ void module_init (void)
         throw std::runtime_error("gretl4py requires libgretl-1.0 version "
                                  + std::to_string(LIBGRETL_MIN_VER) + " or higher");
     }
+    if (getenv("GRETL4PY_VERBOSE") != nullptr) {
+        gretl4py_verbose = true;
+    }
     libgretl_init();
 #if defined(_WIN32)
     win32_cli_read_rc();
 #else
     cli_read_rc();
 #endif
-    std::printf("libgretl initialized\n");
+    if (gretl4py_verbose) {
+        std::printf("libgretl initialized\n");
+    }
 }
 
 void module_cleanup (void)
@@ -47,7 +54,9 @@ void module_cleanup (void)
         destroy_dataset(DSET);
     }
     libgretl_cleanup();
-    std::printf("libgretl cleaned up\n");
+    if (gretl4py_verbose) {
+        std::printf("libgretl cleaned up\n");
+    }
 }
 
 std::string about (bool do_print)
@@ -65,7 +74,7 @@ std::string about (bool do_print)
     py11_ver += "." + std::to_string(PYBIND11_VERSION_PATCH);
     lg_ver = std::to_string(libgretl_version());
 
-    if (do_print) {
+    if (do_print || gretl4py_verbose) {
         std::cout << "gretl4py version " << mod_ver;
         std::cout << " [" << COMPILER_IDENT << "]";
         std::cout << ", pybind11 version " << py11_ver;
