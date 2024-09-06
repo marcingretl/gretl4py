@@ -23,7 +23,7 @@ COPY builds\win64\DLL\*.dll "%MODULE_PATH%"\DLL
 ECHO builds\win64\%PYTHON_VER%\%MODULE%
 COPY "builds\win64\%PYTHON_VER%\%MODULE%" "%MODULE_PATH%"
 ECHO.
-ECHO run '%CMD% -c "import gretl; gretl.about()"' to verify installation
+ECHO run '%CMD% -c "import gretl; gretl.about(True)"' to verify installation
 GOTO exit
 
 :bailout_gretl

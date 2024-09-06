@@ -10,7 +10,7 @@ void module_init (void);
 
 void module_cleanup (void);
 
-std::string about (bool do_print = true);
+std::string about (bool do_print = false);
 
 void set (const std::string key, const std::string val);
 void set (const std::string key, int val);
