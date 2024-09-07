@@ -1,5 +1,5 @@
-#include <gretl/libgretl.h>
 #include <pybind11/stl.h>
+#include <gretl/libgretl.h>
 
 namespace py = pybind11;
 
@@ -22,9 +22,6 @@ public:
             dict[py::cast(item.first)] = item.second;
         }
     }
-    /*~MapToDict()
-    {
-    }*/
 
     const py::dict *ptr (void) { return &dict; }
 };

@@ -32,20 +32,16 @@ PYBIND11_MODULE(_gretl, m) {
     // data management
     m.def("attach_data", &attach_data,
           py::arg("pydict").none(false));
-
-    m.def("printdata",
+    /*m.def("printdata",
           py::overload_cast<const py::dict &, bool> (&printdata),
           py::arg("data").none(false),
           py::arg("namesonly") = false);
     m.def("printdata",
           py::overload_cast<bool> (&printdata),
-          py::arg("namesonly") = false);
-
-    m.def("printdata_new", &printdata_new,
+          py::arg("namesonly") = false);*/
+    m.def("printdata", &printdata,
           py::arg("data").none(true) = std::nullopt,
           py::arg("namesonly") = false);
-
-
     m.def("get_gretl_data", &get_gretl_data, py::arg("fname").none(false));
     m.def("attach_gretl_data", &attach_gretl_data, py::arg("fname").none(false));
 

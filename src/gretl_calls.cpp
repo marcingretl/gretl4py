@@ -178,6 +178,7 @@ static void do_printdata (DATASET *dset, const std::string *varnames,
     }
 }
 
+/*
 void printdata (const py::dict &data, bool namesonly)
 {
     DATASET *dset = datainfo_new();
@@ -195,10 +196,10 @@ void printdata (bool varnames_only)
     }
 
     do_printdata(DSET, NULL, NULL, OPT_O, varnames_only);
-}
+}*/
 
-void printdata_new (const std::optional<std::map<std::string, py::object>> &data,
-                    bool namesonly)
+void printdata (const std::optional<std::map<std::string, py::object>> &data,
+                bool namesonly)
 {
     DATASET *dset = NULL;
 
@@ -207,9 +208,8 @@ void printdata_new (const std::optional<std::map<std::string, py::object>> &data
     } else if (data == std::nullopt && DSET != NULL) {
         dset = DSET;
     } else {
-        MapToDict to_dict = MapToDict(data);
         dset = datainfo_new();
-        numpy_dict_to_gretl_dset(*to_dict.ptr(), dset);
+        numpy_dict_to_gretl_dset(*MapToDict(data).ptr(), dset);
     }
 
     do_printdata(dset, NULL, NULL, OPT_O, namesonly);
