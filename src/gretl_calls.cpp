@@ -207,12 +207,9 @@ void printdata_new (const std::optional<std::map<std::string, py::object>> &data
     } else if (data == std::nullopt && DSET != NULL) {
         dset = DSET;
     } else {
-        py::dict data_as_dict;
+        MapToDict to_dict = MapToDict(data);
         dset = datainfo_new();
-        for (const auto &item : *data) {
-            data_as_dict[py::cast(item.first)] = item.second;
-        }
-        numpy_dict_to_gretl_dset(data_as_dict, dset);
+        numpy_dict_to_gretl_dset(*to_dict.ptr(), dset);
     }
 
     do_printdata(dset, NULL, NULL, OPT_O, namesonly);
