@@ -197,6 +197,31 @@ void printdata (bool varnames_only)
     do_printdata(DSET, NULL, NULL, OPT_O, varnames_only);
 }
 
+void printdata_new (const std::optional<std::map<std::string, py::object>> &data,
+                    bool namesonly)
+{
+    DATASET *dset = NULL;
+
+    if (data == std::nullopt && DSET == NULL) {
+        throw std::runtime_error("No dataset in place");
+    } else if (data == std::nullopt && DSET != NULL) {
+        dset = DSET;
+    } else {
+        py::dict data_as_dict;
+        dset = datainfo_new();
+        for (const auto &item : *data) {
+            data_as_dict[py::cast(item.first)] = item.second;
+        }
+        numpy_dict_to_gretl_dset(data_as_dict, dset);
+    }
+
+    do_printdata(dset, NULL, NULL, OPT_O, namesonly);
+
+    if (data != std::nullopt) {
+        destroy_dataset(dset);
+    }
+}
+
 py::dict *get_gretl_data (const std::string fname)
 {
     py::dict *res = new py::dict;

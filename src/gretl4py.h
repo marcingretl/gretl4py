@@ -1,5 +1,6 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
+#include <pybind11/stl.h>
 
 #define GRETL_MODULE_VERSION 0.1
 
@@ -21,6 +22,10 @@ void attach_data (const py::dict &pydict);
 
 void printdata (const py::dict &data, bool namesonly);
 void printdata (bool namesonly);
+
+void printdata_new (const std::optional<std::map<std::string, py::object>> &data = std::nullopt,
+                    bool namesonly = false);
+
 
 py::dict *get_gretl_data (const std::string fname);
 void attach_gretl_data (const std::string fname);
