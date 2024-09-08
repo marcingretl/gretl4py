@@ -11,17 +11,25 @@ void gretl_dset_to_numpy_dict (const std::string fname, py::dict &pydict);
 
 DATASET *gretl_load_global_dataset (const std::string fname);
 
-class MapToDict
+class MapToPy
+{
+protected:
+    py::object *res = nullptr;
+public:
+    auto *ptr (void) { return res; }
+};
+
+class MapToPyDict : public MapToPy
 {
 private:
+    using MapToPy::res;
     py::dict dict;
 public:
-    MapToDict(const std::optional<std::map<std::string, py::object>> &data)
+    MapToPyDict(const std::optional<std::map<std::string, py::object>> &data)
     {
         for (const auto &item : *data) {
             dict[py::cast(item.first)] = item.second;
         }
+        res = &dict;
     }
-
-    const py::dict *ptr (void) { return &dict; }
 };
