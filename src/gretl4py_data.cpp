@@ -1,6 +1,5 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
-//#include <pybind11/stl.h>
 #include "gretl4py_data.h"
 #include <gretl/matrix_extra.h>
 #include <gretl/gretl_model.h>
@@ -411,3 +410,19 @@ std::string bundle_test (void)
     return res;
 }
 # endif // 0
+
+MapToPy::MapToPy (const std::optional<py::object> &pyobject)
+{
+    res = &*pyobject;
+
+    if (py::isinstance<py::str>(*pyobject)) {
+        as_str = py::cast<std::string>(*pyobject);
+    } else if (py::isinstance<py::int_>(*pyobject)) {
+        as_str = std::to_string(py::cast<int>(*pyobject));
+    } else {
+        as_str.clear();
+#if GRETL_PYBIND11_DEBUG
+        std::printf("%s to string?\n", py::cast<std::string>(pyobject->get_type()));
+# endif
+    }
+}
