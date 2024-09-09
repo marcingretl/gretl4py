@@ -17,7 +17,7 @@ PYBIND11_MODULE(_gretl, m) {
     m.doc() = info;
     m.def("about", &about,
           py::arg("do_print") = false);
-    m.def("set",
+    /*m.def("set",
           py::overload_cast<const std::string, const std::string> (&set),
           py::arg("key").none(false),
           py::arg("val").none(false));
@@ -27,7 +27,10 @@ PYBIND11_MODULE(_gretl, m) {
           py::arg("val").none(false));
     m.def("set",
           py::overload_cast<const std::string> (&set),
-          py::arg("key").none(false));
+          py::arg("key").none(false));*/
+    m.def("set", &set,
+          py::arg("key").none(false),
+          py::arg("val").none(true) = std::nullopt);
 
     // data management
     m.def("attach_data", &attach_data,

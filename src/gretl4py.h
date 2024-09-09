@@ -13,9 +13,11 @@ void module_cleanup (void);
 
 std::string about (bool do_print = false);
 
+/*
 void set (const std::string key, const std::string val);
 void set (const std::string key, int val);
-void set (const std::string key);
+void set (const std::string key);*/
+void set (const std::string key, const std::optional<py::object> &pyval);
 
 // data management
 void attach_data (const py::dict &pydict);

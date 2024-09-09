@@ -109,7 +109,7 @@ static void handle_gretl_error (int err)
 }
 
 // set a string-valued "setvar"
-
+/*
 void set (const std::string key, const std::string val)
 {
     int err = execute_set(key.c_str(), val.c_str(), NULL, OPT_NONE, NULL);
@@ -132,6 +132,25 @@ void set (const std::string key)
 {
     PRN *prn = gretl_print_new(GRETL_PRINT_STDOUT, NULL);
     int err = execute_set(key.c_str(), NULL, NULL, OPT_NONE, prn);
+
+    if (err) {
+        handle_gretl_error(err);
+    }
+}*/
+
+void set (const std::string key,
+          const std::optional<py::object> &pyval)
+{
+    int err = 0;
+
+    if (pyval == std::nullopt) {
+        PRN *prn = gretl_print_new(GRETL_PRINT_STDOUT, NULL);
+        err = execute_set(key.c_str(), NULL, NULL, OPT_NONE, prn);
+        gretl_print_destroy(prn);
+    } else {
+        err = execute_set(key.c_str(), MapToPy(pyval).to_string().c_str(),
+                          NULL, OPT_NONE, NULL);
+    }
 
     if (err) {
         handle_gretl_error(err);

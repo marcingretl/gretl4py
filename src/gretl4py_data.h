@@ -1,3 +1,5 @@
+#include <pybind11/pybind11.h>
+#include <iostream> // these two will be moved to gretl4py_data.cpp
 #include <pybind11/stl.h>
 #include <gretl/libgretl.h>
 
@@ -14,9 +16,37 @@ DATASET *gretl_load_global_dataset (const std::string fname);
 class MapToPy
 {
 protected:
-    py::object *res = nullptr;
+    const py::object *res;
+    std::string as_str;
 public:
+    MapToPy (void)
+    {
+        res = nullptr;
+        as_str.clear();
+    }
+    MapToPy (const std::optional<py::object> &pyobject)
+    {
+        res = &*pyobject;
+
+        if (py::isinstance<py::str>(*pyobject)) {
+            as_str = py::cast<std::string>(*pyobject);
+        } else if (py::isinstance<py::int_>(*pyobject)) {
+            as_str = std::to_string(py::cast<int>(*pyobject));
+        } else {
+            as_str.clear();
+            // DEBUG !!!
+            std::cerr << py::cast<std::string>(pyobject->get_type()) + " to string?";
+            std::cerr << std::endl;
+        }
+    }
+
     auto *ptr (void) { return res; }
+
+    std::string to_string (void)
+    {
+        //return (as_str.empty() ? nullptr : as_str); /* better? */
+        return as_str;
+    }
 };
 
 class MapToPyDict : public MapToPy
