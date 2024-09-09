@@ -413,6 +413,10 @@ std::string bundle_test (void)
 
 MapToPy::MapToPy (const std::optional<py::object> &pyobject)
 {
+#if GRETL_PYBIND11_DEBUG
+    std::printf("converting %s to string\n",
+                py::cast<std::string>(pyobject->get_type()));
+# endif
     res = &*pyobject;
 
     if (py::isinstance<py::str>(*pyobject)) {
@@ -421,8 +425,8 @@ MapToPy::MapToPy (const std::optional<py::object> &pyobject)
         as_str = std::to_string(py::cast<int>(*pyobject));
     } else {
         as_str.clear();
-#if GRETL_PYBIND11_DEBUG
-        std::printf("%s to string?\n", py::cast<std::string>(pyobject->get_type()));
-# endif
+        std::cerr << "I don't know how to convert '";
+        std::cerr << py::cast<std::string>(pyobject->get_type());
+        std::cerr << "' to std::string" << std::endl;
     }
 }

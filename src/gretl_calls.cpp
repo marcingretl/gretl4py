@@ -228,7 +228,7 @@ void printdata (const std::optional<std::map<std::string, py::object>> &data,
         dset = DSET;
     } else {
         dset = datainfo_new();
-        numpy_dict_to_gretl_dset(*MapToPyDict(data).ptr(), dset);
+        numpy_dict_to_gretl_dset(*MapToPy(data).ptr(), dset);
     }
 
     do_printdata(dset, NULL, NULL, OPT_O, namesonly);
