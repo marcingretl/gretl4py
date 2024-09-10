@@ -17,9 +17,10 @@ class MapToPy
 private:
     const py::object *res;
     std::string as_str;
-    py::dict dict;
+    //py::dict dict;
 public:
     MapToPy (const std::optional<py::object> &pyobject);
+    /*
     MapToPy (const std::optional<std::map<std::string, py::object>> &data)
     {
         for (const auto &item : *data) {
@@ -28,12 +29,9 @@ public:
         res = &dict;
         as_str.clear();
     }
+    */
 
     auto *ptr (void) { return res; }
 
-    std::string to_string (void)
-    {
-        //return (as_str.empty() ? nullptr : as_str); /* better? */
-        return as_str;
-    }
+    std::string to_string (void) { return as_str; }
 };

@@ -217,7 +217,7 @@ void printdata (bool varnames_only)
     do_printdata(DSET, NULL, NULL, OPT_O, varnames_only);
 }*/
 
-void printdata (const std::optional<std::map<std::string, py::object>> &data,
+void printdata (const std::optional<py::dict> &data,
                 bool namesonly)
 {
     DATASET *dset = NULL;
@@ -228,7 +228,7 @@ void printdata (const std::optional<std::map<std::string, py::object>> &data,
         dset = DSET;
     } else {
         dset = datainfo_new();
-        numpy_dict_to_gretl_dset(*MapToPy(data).ptr(), dset);
+        numpy_dict_to_gretl_dset(*data, dset);
     }
 
     do_printdata(dset, NULL, NULL, OPT_O, namesonly);
