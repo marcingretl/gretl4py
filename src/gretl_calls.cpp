@@ -283,15 +283,14 @@ void sample (const py::kwargs &kwargs)
     for (auto &item : kwargs) {
         val = NULL;
 
-        if (!py::isinstance<py::str>(item.first)) {
+        if (!is_pystr(item.first)) {
             throw std::runtime_error("option key must be a string");
         }
         const std::string &key = item.first.cast<std::string>();
 
-        if (py::isinstance<py::int_>(item.second) ||
-            py::isinstance<py::bool_>(item.second)) {
+        if (is_pyint(item.second) || is_pybool(item.second)) {
             val = std::to_string(item.second.cast<int>()).c_str();
-        } else if (py::isinstance<py::str>(item.second)) {
+        } else if (is_pystr(item.second)) {
             val = item.second.cast<std::string_view>().data(); /* workaround for differences between compilers and/or OSs, see commit be4b711cc8a97e03317368431e4a42f5636daa63 (be4b711) */
 /* #if defined(__linux__) && defined(__clang__)
             val = std::string(py::str(item.second)).c_str();
@@ -386,7 +385,7 @@ static gretlopt unpack_kwargs (const py::kwargs &kwargs,
     for (auto &item : kwargs) {
         bool is_print = false;
 
-        if (!py::isinstance<py::str>(item.first)) {
+        if (!is_pystr(item.first)) {
             throw std::runtime_error("option key must be a string");
         }
         const std::string &key = item.first.cast<std::string>();
@@ -394,7 +393,7 @@ static gretlopt unpack_kwargs (const py::kwargs &kwargs,
         if (key == "data") {
             // special case: get hold of dict for dataset
             got_data = true;
-            if (py::isinstance<py::dict>(item.second)) {
+            if (is_pydict(item.second)) {
                 const py::dict data = item.second.cast<py::dict>();
 
                 *pdset = datainfo_new();
@@ -428,7 +427,7 @@ static gretlopt unpack_kwargs (const py::kwargs &kwargs,
         }
         if (status == OPT_NO_PARM) {
             // no parameter wanted, but we'll accept a boolean
-            if (py::isinstance<py::int_>(item.second)) {
+            if (is_pyint(item.second)) {
                 int ival = item.second.cast<int>();
 
                 if (ival == 1) {
@@ -444,13 +443,13 @@ static gretlopt unpack_kwargs (const py::kwargs &kwargs,
             }
         } else {
             // an option parameter is accepted, perhaps required
-            if (py::isinstance<py::str>(item.second)) {
+            if (is_pystr(item.second)) {
                 const std::string &sval = item.second.cast<std::string>();
                 push_option_param(ci, (gretlopt) opt, gretl_strdup(sval.c_str()));
-             } else if (py::isinstance<py::int_>(item.second)) {
+             } else if (is_pyint(item.second)) {
                 int ival = item.second.cast<int>();
                 push_option_param(ci, (gretlopt) opt, gretl_strdup(std::to_string(ival).c_str()));
-            } else if (py::isinstance<py::float_>(item.second)) {
+            } else if (is_pyfloat(item.second)) {
                 double dval = item.second.cast<double>();
                 push_option_param(ci, (gretlopt) opt, gretl_strdup(std::to_string(dval).c_str()));
             } else {
@@ -554,7 +553,7 @@ py::dict *arma (const std::string y, const py::tuple &tup,
     get_arma_order(tup, &p, &d, &q);
 
     if (kwargs.contains("seasonal") && !kwargs["seasonal"].is_none()) {
-        if (py::isinstance<py::tuple>(kwargs["seasonal"])) {
+        if (is_pytuple(kwargs["seasonal"])) {
             const py::tuple seas = kwargs["seasonal"].cast<py::tuple>();
 
             get_arma_order(seas, &P, &D, &Q);

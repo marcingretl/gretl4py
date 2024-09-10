@@ -130,9 +130,9 @@ static void copy_string_from_python_dict (const py::dict &pydict,
     // here we take just one element (under the "key") and copy to dest
     //
     std::string str;
-    auto element = pydict[py::cast(key)]; //pydict[py::cast(key)] is of py::str type
+    auto element = pydict[py::cast(key)];
 
-    if (py::isinstance<py::int_>(element)) {
+    if (is_pyint(element)) {
         str = std::to_string(py::cast<int>(element));
     } else {
         str = py::cast<std::string>(element);
@@ -153,7 +153,7 @@ static int get_int_from_python_dict (const py::dict &pydict,
     if (pydict.contains(key)) {
         auto element = pydict[py::cast(key)];
 
-        if (py::isinstance<py::int_>(element)) {
+        if (is_pyint(element)) {
             ret = py::cast<int>(element);
         }
     }
@@ -419,9 +419,9 @@ MapToPy::MapToPy (const std::optional<py::object> &pyobject)
 # endif
     res = &*pyobject;
 
-    if (py::isinstance<py::str>(*pyobject)) {
+    if (is_pystr(*pyobject)) {
         as_str = py::cast<std::string>(*pyobject);
-    } else if (py::isinstance<py::int_>(*pyobject)) {
+    } else if (is_pyint(*pyobject)) {
         as_str = std::to_string(py::cast<int>(*pyobject));
     } else {
         as_str.clear();

@@ -3,6 +3,13 @@
 
 namespace py = pybind11;
 
+#define is_pybool(o) (py::isinstance<py::bool_>(o))
+#define is_pyint(o) (py::isinstance<py::int_>(o))
+#define is_pyfloat(o) (py::isinstance<py::float_>(o))
+#define is_pystr(o) (py::isinstance<py::str>(o))
+#define is_pydict(o) (py::isinstance<py::dict>(o))
+#define is_pytuple(o) (py::isinstance<py::tuple>(o))
+
 int gretl_model_to_dict (MODEL *model, DATASET *dset, const char *summary, py::dict &DICT);
 
 void numpy_dict_to_gretl_dset (const py::dict &DICT, DATASET *dset);
