@@ -39,12 +39,17 @@ class GretlBundle
 {
 private:
     gretl_bundle *b;
+    PRN *prn = nullptr;
     char *json_buf = nullptr;
+    bool free_b = true;
 public:
     int err = 0;
 
+    GretlBundle (void);
     GretlBundle (MODEL *model, DATASET *dset);
     ~GretlBundle (void);
 
-    char *to_json ();
+    char *to_json (void);
+
+    void print (void);
 };

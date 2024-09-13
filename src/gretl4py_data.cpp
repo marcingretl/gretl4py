@@ -349,6 +349,11 @@ MapToPy::MapToPy (const std::optional<py::object> &pyobject)
 }
 
 // GretlBundle class methods
+GretlBundle::GretlBundle (void)
+{
+    b = get_sysinfo_bundle(&err);
+    free_b = false;
+}
 GretlBundle::GretlBundle (MODEL *model, DATASET *dset)
 {
     b = bundle_from_model(model, dset, &err);
@@ -359,14 +364,25 @@ GretlBundle::~GretlBundle ()
     if (json_buf != nullptr) {
         g_free(json_buf);
     }
-    gretl_bundle_destroy(b);
+    if (prn != nullptr) {
+        gretl_print_destroy(prn);
+    }
+    if (free_b) {
+        gretl_bundle_destroy(b);
+    }
 }
 
-char *GretlBundle::to_json()
+char *GretlBundle::to_json (void)
 {
     if (!err) {
         json_buf = gretl_bundle_write_to_json_buffer(b, &err);
     }
 
     return json_buf;
+}
+
+void GretlBundle::print (void)
+{
+    prn = gretl_print_new(GRETL_PRINT_STDOUT, NULL);
+    err = gretl_bundle_print(b, prn);
 }

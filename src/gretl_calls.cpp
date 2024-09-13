@@ -60,12 +60,11 @@ void module_cleanup (void)
     }
 }
 
-std::string about (bool do_print)
+py::dict about (bool do_print)
 {
     std::string mod_ver, lg_ver, py11_ver;
-    gretl_bundle *b = NULL;
-    PRN *prn = NULL;
-    int err = 0;
+    py::dict res;
+    GretlBundle b = GretlBundle();
 
     gretl_push_c_numeric_locale();
 
@@ -75,31 +74,33 @@ std::string about (bool do_print)
     py11_ver += "." + std::to_string(PYBIND11_VERSION_PATCH);
     lg_ver = std::to_string(libgretl_version());
 
+    res[py::cast("mod_ver")] = mod_ver;
+    res[py::cast("py11_ver")] = py11_ver;
+    res[py::cast("lg_ver")] = lg_ver;
+    if (!b.err) {
+        res[py::cast("json_buffer")] = b.to_json();
+    } else {
+        res[py::cast("json_buffer")] = py::none();
+    }
+
     if (do_print || gretl4py_verbose) {
         std::cout << "gretl4py version " << mod_ver;
         std::cout << " [" << COMPILER_IDENT << "]";
         std::cout << ", pybind11 version " << py11_ver;
         std::cout << ", libgretl-1.0 version " << lg_ver << std::endl;
-        b = get_sysinfo_bundle(&err);
-        if (!err) {
-            prn = gretl_print_new(GRETL_PRINT_STDOUT, NULL);
-            if (prn != NULL) {
-                std::cout << std::endl << "libgretl $sysinfo ";
-                err = gretl_bundle_print(b, prn);
-                gretl_print_destroy(prn);
-            } else {
-                std::cerr << "Failed to allocate memory" << std::endl;
-            }
+        if (!b.err) {
+            std::cout << std::endl << "libgretl $sysinfo ";
+            b.print();
         }
     }
 
     gretl_pop_c_numeric_locale();
 
-    if (err) {
-        std::cerr << errmsg_get_with_default(err) << std::endl;
+    if (b.err) {
+        std::cerr << errmsg_get_with_default(b.err) << std::endl;
     }
 
-    return mod_ver + "_" + py11_ver + "_" + lg_ver;
+    return res;
 }
 
 static void handle_gretl_error (int err)
