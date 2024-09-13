@@ -359,7 +359,7 @@ GretlBundle::GretlBundle (MODEL *model, DATASET *dset)
     b = bundle_from_model(model, dset, &err);
 }
 
-GretlBundle::~GretlBundle ()
+GretlBundle::~GretlBundle (void)
 {
     if (json_buf != nullptr) {
         g_free(json_buf);
@@ -367,14 +367,14 @@ GretlBundle::~GretlBundle ()
     if (prn != nullptr) {
         gretl_print_destroy(prn);
     }
-    if (free_b) {
+    if (free_b && b != nullptr) {
         gretl_bundle_destroy(b);
     }
 }
 
 char *GretlBundle::to_json (void)
 {
-    if (!err) {
+    if (!err && json_buf == nullptr) {
         json_buf = gretl_bundle_write_to_json_buffer(b, &err);
     }
 
@@ -383,6 +383,10 @@ char *GretlBundle::to_json (void)
 
 void GretlBundle::print (void)
 {
-    prn = gretl_print_new(GRETL_PRINT_STDOUT, NULL);
-    err = gretl_bundle_print(b, prn);
+    if (!err && prn == nullptr) {
+        prn = gretl_print_new(GRETL_PRINT_STDOUT, NULL);
+    }
+    if (!err) {
+        err = gretl_bundle_print(b, prn);
+    }
 }

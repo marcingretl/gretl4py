@@ -47,6 +47,7 @@ public:
 
     GretlBundle (void);
     GretlBundle (MODEL *model, DATASET *dset);
+
     ~GretlBundle (void);
 
     char *to_json (void);
