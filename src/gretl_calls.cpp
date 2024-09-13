@@ -78,9 +78,9 @@ py::dict about (bool do_print)
     res[py::cast("py11_ver")] = py11_ver;
     res[py::cast("lg_ver")] = lg_ver;
     if (!b.err) {
-        res[py::cast("json_buffer")] = b.to_json();
+        res[py::cast("sysinfo")] = b.to_json();
     } else {
-        res[py::cast("json_buffer")] = py::none();
+        res[py::cast("sysinfo")] = py::none();
     }
 
     if (do_print || gretl4py_verbose) {
@@ -110,34 +110,6 @@ static void handle_gretl_error (int err)
 }
 
 // set a string-valued "setvar"
-/*
-void set (const std::string key, const std::string val)
-{
-    int err = execute_set(key.c_str(), val.c_str(), NULL, OPT_NONE, NULL);
-
-    if (err) {
-        handle_gretl_error(err);
-    }
-}
-
-// set an integer-valued "setvar"
-
-void set (const std::string key, int val)
-{
-    set(key, std::to_string(val).c_str());
-}
-
-// report a current "setvar" setting
-
-void set (const std::string key)
-{
-    PRN *prn = gretl_print_new(GRETL_PRINT_STDOUT, NULL);
-    int err = execute_set(key.c_str(), NULL, NULL, OPT_NONE, prn);
-
-    if (err) {
-        handle_gretl_error(err);
-    }
-}*/
 
 void set (const std::string key,
           const std::optional<py::object> &pyval)
@@ -197,26 +169,6 @@ static void do_printdata (DATASET *dset, const std::string *varnames,
         }
     }
 }
-
-/*
-void printdata (const py::dict &data, bool namesonly)
-{
-    DATASET *dset = datainfo_new();
-
-    numpy_dict_to_gretl_dset(data, dset);
-
-    do_printdata(dset, NULL, NULL, OPT_O, namesonly);
-    destroy_dataset(dset);
-}
-
-void printdata (bool varnames_only)
-{
-    if (DSET == NULL) {
-        throw std::runtime_error("No dataset in place");
-    }
-
-    do_printdata(DSET, NULL, NULL, OPT_O, varnames_only);
-}*/
 
 void printdata (const std::optional<py::dict> &data,
                 bool namesonly)

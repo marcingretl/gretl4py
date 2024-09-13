@@ -25,6 +25,7 @@ class Model:
             out = '\n'
             out += "Model " + self.name.upper()
         return out
+
     def __load_dict_model(self, model_dict):
         if model_dict:
             for _ in model_dict:

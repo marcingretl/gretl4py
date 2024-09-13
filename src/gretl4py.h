@@ -13,18 +13,12 @@ void module_cleanup (void);
 
 py::dict about (bool do_print = false);
 
-/*
-void set (const std::string key, const std::string val);
-void set (const std::string key, int val);
-void set (const std::string key);*/
 void set (const std::string key,
           const std::optional<py::object> &pyval = std::nullopt);
 
 // data management
 void attach_data (const py::dict &pydict);
 
-/*void printdata (const py::dict &data, bool namesonly);
-void printdata (bool namesonly);*/
 void printdata (const std::optional<py::dict> &data = std::nullopt,
                 bool namesonly = false);
 
