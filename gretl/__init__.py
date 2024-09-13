@@ -3,7 +3,8 @@
 import sysconfig
 import site as _site
 PATH = _site.getusersitepackages()
-if sysconfig.get_platform() == 'win-amd64':
+platform = sysconfig.get_platform()
+if platform == 'win-amd64':
     PATH = str(PATH + r'\gretl')
     sysconfig.os.add_dll_directory(PATH + r'\DLL')
     try:
@@ -14,6 +15,11 @@ if sysconfig.get_platform() == 'win-amd64':
     if 'GRETL_DATA_PATH' not in sysconfig.os.environ:
         sysconfig.os.environ['GRETL_DATA_PATH'] = RES + r'\data'
     sysconfig.os.add_dll_directory(RES)
+elif platform[0:5] == "macos":
+    RES = '/Applications/Gretl.app/Contents/Resources/'
+    sysconfig.os.environ['GRETL_PLUGIN_PATH'] = RES + 'lib/gretl-gtk2'
+    sysconfig.os.environ['GRETL_DATA_PATH'] = RES + 'share/gretl/data'
+    PATH = str(PATH + r'/gretl')
 else:
     PATH = str(PATH + r'/gretl')
 sysconfig.sys.path.append(PATH)

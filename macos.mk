@@ -13,7 +13,8 @@ ZIPFILE = gretl4py.zip
 
 VPATH = ./src
 
-SRCS = gretl/gretl4py_addons.py gretl/gretl4py_classes.py
+PYFILES = gretl/gretl4py_addons.py gretl/gretl4py_classes.py
+SRCS = gretl4py.cpp gretl_calls.cpp gretl4py_data.cpp
 OBJS = $(SRCS:.cpp=.o)
 
 .PHONY: tags clean depend
