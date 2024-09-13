@@ -35,7 +35,7 @@ tags:
 	etags src/*.cpp src/*.h
 
 clean:
-	rm -f gretl/$(MODULE) *.o
+	rm -f $(MODULE) *.o
 
 depend:
 	makedepend -Y. src/*.cpp 2>/dev/null
