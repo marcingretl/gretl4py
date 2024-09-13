@@ -11,12 +11,32 @@
 
 #define GRETL_PYBIND11_DEBUG 0
 
-#define MODEL_USE_JSON 1
 
-#if MODEL_USE_JSON
-
-int gretl_model_to_dict (MODEL *model, DATASET *dset, const char *summary, py::dict &pydict)
+int gretl_model_to_dict (MODEL *model, DATASET *dset,
+                         const char *summary, py::dict &pydict)
 {
+    //
+    // here we construct python's dict which is returned (with estimation results)
+    //
+    GretlBundle b = GretlBundle(model, dset);
+    char *json_buf = b.to_json();
+
+    if (!b.err) {
+        pydict[py::cast("_id")] = model->ID;
+        pydict[py::cast("json_buffer")] = json_buf;
+        pydict[py::cast("summary")] = summary;
+    }
+
+    return b.err;
+}
+
+#if 0
+int gretl_model_to_dict (MODEL *model, DATASET *dset,
+                         const char *summary, py::dict &pydict)
+{
+    //
+    // here we construct python's dict which is returned (with estimation results)
+    //
     char *json_buf = NULL;
     gretl_bundle *b;
     int err = 0;
@@ -37,88 +57,7 @@ int gretl_model_to_dict (MODEL *model, DATASET *dset, const char *summary, py::d
 
     return err;
 }
-
-#else
-
-int gretl_model_to_dict (MODEL *model, DATASET *dset, const char *summary, py::dict &pydict)
-{
-    //
-    // here we construct python's dict which is returned (with estimation results)
-    //
-    py::dict coeff, sderr, pvalue, criterion;
-    py::array_t<double, py::array::f_style> vcv({model->ncoeff, model->ncoeff});
-    bool zscore = ASYMPTOTIC_MODEL(model->ci);
-    char pname[VNAMELEN];
-    gretl_matrix *m = NULL;
-    int err = 0;
-    double pval;
-
-    // "hidden" entries (for internal use only)
-    pydict[py::cast("_zscore")] = zscore;
-
-    // dictionaries
-    for (int i=0; i<model->ncoeff; i++) {
-        gretl_model_get_param_name(model, dset, i, pname);
-        coeff[py::cast(pname)] = model->coeff[i];
-        sderr[py::cast(pname)] = model->sderr[i];
-        if (zscore) {
-            pval = normal_pvalue_2(std::abs(model->coeff[i]/model->sderr[i]));
-        } else {
-            pval = student_pvalue_2(model->dfd, std::abs(model->coeff[i]/model->sderr[i]));
-        }
-        pvalue[py::cast(pname)] = pval;
-    }
-    pydict[py::cast("coeff")] = coeff;
-    pydict[py::cast("sderr")] = sderr;
-    pydict[py::cast("pvalue")] = pvalue;
-
-    criterion[py::cast("aic")] = model->criterion[0];
-    criterion[py::cast("bic")] = model->criterion[1];
-    criterion[py::cast("hqc")] = model->criterion[2];
-    pydict[py::cast("criterion")] = criterion;
-
-    // covariance matrix
-    m = gretl_vcv_matrix_from_model(model, NULL, &err);
-    if (err) {
-        pydict[py::cast("vcv")] = NULL;
-    } else {
-        std::memcpy((double *) vcv.request().ptr, m->val, m->rows * m->cols * sizeof(double));
-        pydict[py::cast("vcv")] = vcv;
-    }
-    gretl_matrix_free(m);
-
-    // scalars
-    pydict[py::cast("ID")] = model->ID;
-    pydict[py::cast("t1")] = model->t1;
-    pydict[py::cast("t2")] = model->t2;
-    pydict[py::cast("nobs")] = model->nobs;
-    pydict[py::cast("full_n")] = model->full_n;
-    pydict[py::cast("ncoeff")] = model->ncoeff;
-    pydict[py::cast("dfn")] = model->dfn;
-    pydict[py::cast("dfd")] = model->dfd;
-    pydict[py::cast("ess")] = model->ess;
-    pydict[py::cast("tss")] = model->tss;
-    pydict[py::cast("sigma")] = model->sigma;
-    pydict[py::cast("rsq")] = model->rsq;
-    pydict[py::cast("adjrsq")] = model->adjrsq;
-    pydict[py::cast("fstt")] = model->fstt;
-    pydict[py::cast("chisq")] = model->chisq;
-    pydict[py::cast("lnL")] = model->lnL;
-    pydict[py::cast("ybar")] = model->ybar;
-    pydict[py::cast("sdy")] = model->sdy;
-    pydict[py::cast("dw")] = model->dw;
-    pydict[py::cast("rho")] = model->rho;
-    pydict[py::cast("nparams")] = model->nparams;
-    pydict[py::cast("esttime")] = model->esttime;
-
-    if (summary != NULL) {
-        pydict[py::cast("_gretlprn")] = summary;
-    }
-
-    return 0;
-}
-
-#endif // MODEL_USE_JSON or not
+#endif // 0
 
 #if 0
 
@@ -388,29 +327,7 @@ DATASET *gretl_load_global_dataset (const std::string fname)
     return dset;
 }
 
-# if 0
-// I may need it in a near future, so please do not remove for a while
-std::string bundle_test (void)
-{
-    std::string res;
-    gretl_bundle *bundle;
-    int err = 0;
-
-    bundle = get_sysinfo_bundle(&err);
-
-    if (!err) {
-        char *jsonbuf = gretl_bundle_write_to_json_buffer(bundle, &err);
-
-        if (jsonbuf != NULL) {
-            res = jsonbuf;
-            free(jsonbuf);
-        }
-    }
-
-    return res;
-}
-# endif // 0
-
+// MapToPy class methods
 MapToPy::MapToPy (const std::optional<py::object> &pyobject)
 {
 #if GRETL_PYBIND11_DEBUG
@@ -429,4 +346,27 @@ MapToPy::MapToPy (const std::optional<py::object> &pyobject)
         std::cerr << py::cast<std::string>(pyobject->get_type());
         std::cerr << "' to std::string" << std::endl;
     }
+}
+
+// GretlBundle class methods
+GretlBundle::GretlBundle (MODEL *model, DATASET *dset)
+{
+    b = bundle_from_model(model, dset, &err);
+}
+
+GretlBundle::~GretlBundle ()
+{
+    if (json_buf != nullptr) {
+        g_free(json_buf);
+    }
+    gretl_bundle_destroy(b);
+}
+
+char *GretlBundle::to_json()
+{
+    if (!err) {
+        json_buf = gretl_bundle_write_to_json_buffer(b, &err);
+    }
+
+    return json_buf;
 }

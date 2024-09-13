@@ -18,27 +18,33 @@ void gretl_dset_to_numpy_dict (const std::string fname, py::dict &pydict);
 
 DATASET *gretl_load_global_dataset (const std::string fname);
 
-// std::optional to pybind11 object mapper
 class MapToPy
 {
+    //
+    // This is general purpose py::object to py::<type> mapper
+    //
 private:
     const py::object *res;
     std::string as_str;
-    //py::dict dict;
 public:
-    MapToPy (const std::optional<py::object> &pyobject);
-    /*
-    MapToPy (const std::optional<std::map<std::string, py::object>> &data)
-    {
-        for (const auto &item : *data) {
-            dict[py::cast(item.first)] = item.second;
-        }
-        res = &dict;
-        as_str.clear();
-    }
-    */
+   MapToPy (const std::optional<py::object> &pyobject);
 
-    auto *ptr (void) { return res; }
+   auto *ptr (void) { return res; }
 
-    std::string to_string (void) { return as_str; }
+   std::string to_string (void) { return as_str; }
+};
+
+
+class GretlBundle
+{
+private:
+    gretl_bundle *b;
+    char *json_buf = nullptr;
+public:
+    int err = 0;
+
+    GretlBundle (MODEL *model, DATASET *dset);
+    ~GretlBundle (void);
+
+    char *to_json ();
 };
