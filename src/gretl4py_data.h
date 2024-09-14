@@ -18,11 +18,11 @@ void gretl_dset_to_numpy_dict (const std::string fname, py::dict &pydict);
 
 DATASET *gretl_load_global_dataset (const std::string fname);
 
+//
+// This is general purpose py::object to py::<type> mapper
+//
 class MapToPy
 {
-    //
-    // This is general purpose py::object to py::<type> mapper
-    //
 private:
     const py::object *res;
     std::string as_str;
@@ -34,7 +34,9 @@ public:
    std::string to_string (void) { return as_str; }
 };
 
-
+//
+// Class to handle 'gretl_bundle' type
+//
 class GretlBundle
 {
 private:

@@ -386,7 +386,7 @@ void GretlBundle::print (void)
     if (!err && prn == nullptr) {
         prn = gretl_print_new(GRETL_PRINT_STDOUT, NULL);
     }
-    if (!err) {
+    if (prn != nullptr) {
         err = gretl_bundle_print(b, prn);
     }
 }
