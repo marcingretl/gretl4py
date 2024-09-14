@@ -4,7 +4,7 @@ import sysconfig
 import site as _site
 PATH = _site.getusersitepackages()
 platform = sysconfig.get_platform()
-if platform == 'win-amd64':
+if platform == "win-amd64":
     PATH = str(PATH + r'\gretl')
     sysconfig.os.add_dll_directory(PATH + r'\DLL')
     try:
