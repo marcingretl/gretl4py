@@ -22,9 +22,6 @@
 static DATASET *DSET = NULL; // global dataset
 static int gretl4py_verbose = 0;
 
-typedef MODEL (*BASIC_MODEL_FUNC1) (const int *, DATASET *, gretlopt, PRN *);
-typedef MODEL (*BASIC_MODEL_FUNC2) (const int *, DATASET *, gretlopt);
-
 
 // module related tools
 
@@ -562,12 +559,13 @@ static int *list_from_formula (const char *formula,
 
 // Function to support several estimation methods that have
 // the same "basic" signature, plus a few special cases
+// F: function to call
+// T: F signature type (argument list)
 
+template <auto F, int T>
 static py::dict *regression_wrapper (const std::string formula,
                                      const py::kwargs &kwargs,
-                                     GretlCmdIndex ci,
-                                     BASIC_MODEL_FUNC1 bmf1,
-                                     BASIC_MODEL_FUNC2 bmf2)
+                                     GretlCmdIndex ci)
 {
     py::dict *res = new py::dict;
     DATASET *dset = NULL;
@@ -594,18 +592,17 @@ static py::dict *regression_wrapper (const std::string formula,
         throw std::runtime_error("Failed to allocate memory");
     }
 
-    if (ci == OLS || ci == WLS) {
-        *model = lsq(list, dset, ci, opt);
-    } else if (ci == LOGIT || ci == PROBIT) {
-        *model = logit_probit(list, dset, ci, opt, prn);
-    } else if (ci == POISSON || ci == NEGBIN) {
-        *model = count_model(list, ci, dset, opt, prn);
-    } else if (bmf1 != NULL) {
-        *model = (*bmf1)(list, dset, opt, prn);
-    } else if (bmf2 != NULL) {
-        *model = (*bmf2)(list, dset, opt);
-    } else {
-        throw std::runtime_error("Unsupported estimator");
+    if constexpr (T == 0) { // OLS || WLS
+        *model = F(list, dset, ci, opt);
+    } else if constexpr (T == 1) { // LOGIT || PROBIT
+        *model = F(list, dset, ci, opt, prn);
+    } else if constexpr (T == 2) { // POISSON || NEGBIN)
+        *model = F(list, ci, dset, opt, prn);
+    } else if constexpr (T == 3 ) {
+        *model = F(list, dset, opt, prn);
+        //auto exec_estimator = [&](void) { return std::invoke(F, list, dset, opt, prn); };
+    } else if constexpr (T == 4) {
+        *model = F(list, dset, opt);
     }
 
     finalize_model(model, dset, list, do_print, prn, res);
@@ -617,87 +614,87 @@ static py::dict *regression_wrapper (const std::string formula,
 
 py::dict *ols (const std::string formula, const py::kwargs &kwargs)
 {
-    return regression_wrapper(formula, kwargs, OLS, NULL, NULL);
+    return regression_wrapper<lsq, 0>(formula, kwargs, OLS);
 }
 
 py::dict *wls (const std::string formula, const py::kwargs &kwargs)
 {
-    return regression_wrapper(formula, kwargs, WLS, NULL, NULL);
+    return regression_wrapper<lsq, 0>(formula, kwargs, WLS);
 }
 
 py::dict *logit (const std::string formula, const py::kwargs &kwargs)
 {
-    return regression_wrapper(formula, kwargs, LOGIT, NULL, NULL);
+    return regression_wrapper<logit_probit, 1>(formula, kwargs, LOGIT);
 }
 
 py::dict *probit (const std::string formula, const py::kwargs &kwargs)
 {
-    return regression_wrapper(formula, kwargs, PROBIT, NULL, NULL);
+    return regression_wrapper<logit_probit, 1>(formula, kwargs, PROBIT);
 }
 
 py::dict *poisson (const std::string formula, const py::kwargs &kwargs)
 {
-    return regression_wrapper(formula, kwargs, POISSON, NULL, NULL);
+    return regression_wrapper<count_model, 2>(formula, kwargs, POISSON);
 }
 
 py::dict *negbin (const std::string formula, const py::kwargs &kwargs)
 {
-    return regression_wrapper(formula, kwargs, NEGBIN, NULL, NULL);
+    return regression_wrapper<count_model, 2>(formula, kwargs, NEGBIN);
 }
 
 // content from automation/more_calls.cpp
 
 py::dict *biprobit (const std::string formula, const py::kwargs &kwargs)
 {
-    return regression_wrapper(formula, kwargs, BIPROBIT, &biprobit_model, NULL);
+    return regression_wrapper<biprobit_model, 3>(formula, kwargs, BIPROBIT);
 }
 
 py::dict *duration (const std::string formula, const py::kwargs &kwargs)
 {
-    return regression_wrapper(formula, kwargs, DURATION, &duration_model, NULL);
+    return regression_wrapper<duration_model, 3>(formula, kwargs, DURATION);
 }
 
 py::dict *heckit (const std::string formula, const py::kwargs &kwargs)
 {
-    return regression_wrapper(formula, kwargs, HECKIT, &heckit_model, NULL);
+    return regression_wrapper<heckit_model, 3>(formula, kwargs, HECKIT);
 }
 
 py::dict *logistic (const std::string formula, const py::kwargs &kwargs)
 {
-    return regression_wrapper(formula, kwargs, LOGISTIC, NULL, &logistic_driver);
+    return regression_wrapper<logistic_driver, 4>(formula, kwargs, LOGISTIC);
 }
 
 py::dict *ar (const std::string formula, const py::kwargs &kwargs)
 {
-    return regression_wrapper(formula, kwargs, AR, &ar_model, NULL);
+    return regression_wrapper<ar_model, 3>(formula, kwargs, AR);
 }
 
 py::dict *ar1 (const std::string formula, const py::kwargs &kwargs)
 {
-    return regression_wrapper(formula, kwargs, AR1, &ar1_model, NULL);
+    return regression_wrapper<ar1_model, 3>(formula, kwargs, AR1);
 }
 
 py::dict *lad (const std::string formula, const py::kwargs &kwargs)
 {
-    return regression_wrapper(formula, kwargs, LAD, NULL, &lad_model);
+    return regression_wrapper<lad_model, 4>(formula, kwargs, LAD);
 }
-
+/*
 py::dict *garch (const std::string formula, const py::kwargs &kwargs)
 {
-    return regression_wrapper(formula, kwargs, GARCH, &garch, NULL);
-}
+    return regression_wrapper<garch, 3>(formula, kwargs, GARCH);
+}*/
 
 py::dict *mpols (const std::string formula, const py::kwargs &kwargs)
 {
-    return regression_wrapper(formula, kwargs, MPOLS, NULL, &mp_ols);
+    return regression_wrapper<mp_ols, 4>(formula, kwargs, MPOLS);
 }
 
 py::dict *panel (const std::string formula, const py::kwargs &kwargs)
 {
-    return regression_wrapper(formula, kwargs, PANEL, &panel_model, NULL);
+    return regression_wrapper<panel_model, 3>(formula, kwargs, PANEL);
 }
 
 py::dict *tsls (const std::string formula, const py::kwargs &kwargs)
 {
-    return regression_wrapper(formula, kwargs, IVREG, NULL, &ivreg);
+    return regression_wrapper<ivreg, 4>(formula, kwargs, IVREG);
 }

@@ -101,9 +101,9 @@ PYBIND11_MODULE(_gretl, m) {
     m.def("lad", &lad,
           py::arg("formula").none(false),
           py::return_value_policy::take_ownership);
-    m.def("garch", &garch,
+    /*m.def("garch", &garch,
           py::arg("formula").none(false),
-          py::return_value_policy::take_ownership);
+          py::return_value_policy::take_ownership);*/
     m.def("mpols", &mpols,
           py::arg("formula").none(false),
           py::return_value_policy::take_ownership);
