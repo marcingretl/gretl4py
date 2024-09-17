@@ -2,9 +2,9 @@ ifndef CXX
 CXX = g++
 endif
 ifeq ($(CXX), g++)
-CXXFLAGS = -march=x86-64 -mtune=generic -O3 -pipe -g -Wall -std=c++17 -fvisibility=hidden
+CXXFLAGS = -march=x86-64 -mtune=generic -O3 -pipe -Wall -std=c++17 -fvisibility=hidden
 else
-CXXFLAGS = -march=x86-64 -mtune=generic -O3 -pipe -g -Wall -std=c++17
+CXXFLAGS = -march=x86-64 -mtune=generic -O3 -pipe -Wall -std=c++17
 endif
 MAKE = gmake
 GRETLLD = $(shell pkg-config --libs gretl)
