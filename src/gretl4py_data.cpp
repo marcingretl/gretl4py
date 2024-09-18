@@ -327,26 +327,21 @@ DATASET *gretl_load_global_dataset (const std::string fname)
     return dset;
 }
 
-// MapToPy class methods
-MapToPy::MapToPy (const std::optional<py::object> &pyobject)
+//GretlDataset class methods
+GretlDataset::GretlDataset (const std::string fname, bool free_dict)
 {
-#if GRETL_PYBIND11_DEBUG
-    std::printf("converting %s to string\n",
-                py::cast<std::string>(pyobject->get_type()));
-# endif
-    res = &*pyobject;
-
-    if (is_pystr(*pyobject)) {
-        as_str = py::cast<std::string>(*pyobject);
-    } else if (is_pyint(*pyobject)) {
-        as_str = std::to_string(py::cast<int>(*pyobject));
-    } else {
-        as_str.clear();
-        std::cerr << "I don't know how to convert '";
-        std::cerr << py::cast<std::string>(pyobject->get_type());
-        std::cerr << "' to std::string" << std::endl;
+    if (free_dict) {
+        free_d = free_dict;
     }
 }
+
+GretlDataset::~GretlDataset (void)
+{
+    if (free_d && pydict != nullptr) {
+        delete pydict;
+    }
+}
+
 
 // GretlBundle class methods
 GretlBundle::GretlBundle (void)
@@ -388,5 +383,27 @@ void GretlBundle::print (void)
     }
     if (prn != nullptr) {
         err = gretl_bundle_print(b, prn);
+    }
+}
+
+
+// MapToPy class methods
+MapToPy::MapToPy (const std::optional<py::object> &pyobject)
+{
+#if GRETL_PYBIND11_DEBUG
+    std::printf("converting %s to string\n",
+                py::cast<std::string>(pyobject->get_type()));
+# endif
+    res = &*pyobject;
+
+    if (is_pystr(*pyobject)) {
+        as_str = py::cast<std::string>(*pyobject);
+    } else if (is_pyint(*pyobject)) {
+        as_str = std::to_string(py::cast<int>(*pyobject));
+    } else {
+        as_str.clear();
+        std::cerr << "I don't know how to convert '";
+        std::cerr << py::cast<std::string>(pyobject->get_type());
+        std::cerr << "' to std::string" << std::endl;
     }
 }

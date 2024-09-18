@@ -19,19 +19,22 @@ void gretl_dset_to_numpy_dict (const std::string fname, py::dict &pydict);
 DATASET *gretl_load_global_dataset (const std::string fname);
 
 //
-// This is general purpose py::object to py::<type> mapper
+// Class to handle gretl 'DATASET' type
 //
-class MapToPy
+class GretlDataset
 {
 private:
-    const py::object *res;
-    std::string as_str;
+    bool free_d = false;
+    py::dict *pydict = nullptr;
+
 public:
-   MapToPy (const std::optional<py::object> &pyobject);
+    DATASET *dset = nullptr;
+    int err = 0;
 
-   auto *ptr (void) { return res; }
+    GretlDataset (const std::string fname, bool free_dict = false);
+    ~GretlDataset (void);
 
-   std::string to_string (void) { return as_str; }
+    py::dict *to_dict ();
 };
 
 //
@@ -55,4 +58,20 @@ public:
     char *to_json (void);
 
     void print (void);
+};
+
+//
+// This is general purpose py::object to py::<type> mapper
+//
+class MapToPy
+{
+private:
+    const py::object *res;
+    std::string as_str;
+public:
+   MapToPy (const std::optional<py::object> &pyobject);
+
+   auto *ptr (void) { return res; }
+
+   std::string to_string (void) { return as_str; }
 };
