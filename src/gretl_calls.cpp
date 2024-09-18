@@ -562,7 +562,7 @@ static int *list_from_formula (const char *formula,
 // F: function to call
 // T: F signature type (argument list)
 
-template <auto F, int T>
+template <auto F, int T, GretlCmdIndex I>
 static py::dict *regression_wrapper (const std::string formula,
                                      const py::kwargs &kwargs,
                                      GretlCmdIndex ci)
@@ -593,11 +593,11 @@ static py::dict *regression_wrapper (const std::string formula,
     }
 
     if constexpr (T == 0) { // OLS || WLS
-        *model = F(list, dset, ci, opt);
+        *model = F(list, dset, I, opt);
     } else if constexpr (T == 1) { // LOGIT || PROBIT
-        *model = F(list, dset, ci, opt, prn);
+        *model = F(list, dset, I, opt, prn);
     } else if constexpr (T == 2) { // POISSON || NEGBIN)
-        *model = F(list, ci, dset, opt, prn);
+        *model = F(list, I, dset, opt, prn);
     } else if constexpr (T == 3 ) {
         *model = F(list, dset, opt, prn);
         //auto exec_estimator = [&](void) { return std::invoke(F, list, dset, opt, prn); };
@@ -614,69 +614,69 @@ static py::dict *regression_wrapper (const std::string formula,
 
 py::dict *ols (const std::string formula, const py::kwargs &kwargs)
 {
-    return regression_wrapper<lsq, 0>(formula, kwargs, OLS);
+    return regression_wrapper<lsq, 0, OLS>(formula, kwargs, OLS);
 }
 
 py::dict *wls (const std::string formula, const py::kwargs &kwargs)
 {
-    return regression_wrapper<lsq, 0>(formula, kwargs, WLS);
+    return regression_wrapper<lsq, 0, WLS>(formula, kwargs, WLS);
 }
 
 py::dict *logit (const std::string formula, const py::kwargs &kwargs)
 {
-    return regression_wrapper<logit_probit, 1>(formula, kwargs, LOGIT);
+    return regression_wrapper<logit_probit, 1, LOGIT>(formula, kwargs, LOGIT);
 }
 
 py::dict *probit (const std::string formula, const py::kwargs &kwargs)
 {
-    return regression_wrapper<logit_probit, 1>(formula, kwargs, PROBIT);
+    return regression_wrapper<logit_probit, 1, PROBIT>(formula, kwargs, PROBIT);
 }
 
 py::dict *poisson (const std::string formula, const py::kwargs &kwargs)
 {
-    return regression_wrapper<count_model, 2>(formula, kwargs, POISSON);
+    return regression_wrapper<count_model, 2, POISSON>(formula, kwargs, POISSON);
 }
 
 py::dict *negbin (const std::string formula, const py::kwargs &kwargs)
 {
-    return regression_wrapper<count_model, 2>(formula, kwargs, NEGBIN);
+    return regression_wrapper<count_model, 2, NEGBIN>(formula, kwargs, NEGBIN);
 }
 
 // content from automation/more_calls.cpp
 
 py::dict *biprobit (const std::string formula, const py::kwargs &kwargs)
 {
-    return regression_wrapper<biprobit_model, 3>(formula, kwargs, BIPROBIT);
+    return regression_wrapper<biprobit_model, 3, BIPROBIT>(formula, kwargs, BIPROBIT);
 }
 
 py::dict *duration (const std::string formula, const py::kwargs &kwargs)
 {
-    return regression_wrapper<duration_model, 3>(formula, kwargs, DURATION);
+    return regression_wrapper<duration_model, 3, DURATION>(formula, kwargs, DURATION);
 }
 
 py::dict *heckit (const std::string formula, const py::kwargs &kwargs)
 {
-    return regression_wrapper<heckit_model, 3>(formula, kwargs, HECKIT);
+    return regression_wrapper<heckit_model, 3, HECKIT>(formula, kwargs, HECKIT);
 }
 
 py::dict *logistic (const std::string formula, const py::kwargs &kwargs)
 {
-    return regression_wrapper<logistic_driver, 4>(formula, kwargs, LOGISTIC);
+    return regression_wrapper<logistic_driver, 4, LOGISTIC>(formula, kwargs, LOGISTIC);
 }
 
 py::dict *ar (const std::string formula, const py::kwargs &kwargs)
 {
-    return regression_wrapper<ar_model, 3>(formula, kwargs, AR);
+    return regression_wrapper<ar_model, 3, AR>(formula, kwargs, AR);
 }
 
 py::dict *ar1 (const std::string formula, const py::kwargs &kwargs)
 {
-    return regression_wrapper<ar1_model, 3>(formula, kwargs, AR1);
+    return regression_wrapper<ar1_model, 3, AR1>(formula, kwargs, AR1);
 }
 
 py::dict *lad (const std::string formula, const py::kwargs &kwargs)
 {
-    return regression_wrapper<lad_model, 4>(formula, kwargs, LAD);
+    return regression_wrapper<lad_model, 4, LAD>(formula, kwargs, LAD);
 }
 /*
 py::dict *garch (const std::string formula, const py::kwargs &kwargs)
@@ -686,15 +686,15 @@ py::dict *garch (const std::string formula, const py::kwargs &kwargs)
 
 py::dict *mpols (const std::string formula, const py::kwargs &kwargs)
 {
-    return regression_wrapper<mp_ols, 4>(formula, kwargs, MPOLS);
+    return regression_wrapper<mp_ols, 4, MPOLS>(formula, kwargs, MPOLS);
 }
 
 py::dict *panel (const std::string formula, const py::kwargs &kwargs)
 {
-    return regression_wrapper<panel_model, 3>(formula, kwargs, PANEL);
+    return regression_wrapper<panel_model, 3, PANEL>(formula, kwargs, PANEL);
 }
 
 py::dict *tsls (const std::string formula, const py::kwargs &kwargs)
 {
-    return regression_wrapper<ivreg, 4>(formula, kwargs, IVREG);
+    return regression_wrapper<ivreg, 4, IVREG>(formula, kwargs, IVREG);
 }
