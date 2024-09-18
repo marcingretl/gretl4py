@@ -24,27 +24,29 @@ DATASET *gretl_load_global_dataset (const std::string fname);
 class GretlDataset
 {
 private:
-    py::dict *res = nullptr;
-    py::dict &pydict = *res;
-    bool free_res = false;
+    py::dict *as_dict = nullptr;    // dict representation
+    bool free_as_dict = false;      // do we free 'as_dict'
+    py::dict &tmp_dict = *as_dict;
 
     inline void allocate_dset (void)
     {
         if (dset != nullptr) {
             destroy_dataset(dset);
-        } else {
-            dset = datainfo_new();
         }
+        dset = datainfo_new();
     }
+
+    void free_dict (void);
 
 public:
     DATASET *dset = nullptr;
     int err = 0;
 
-    GretlDataset (const std::string fname, bool free_dict = false);
+    GretlDataset (const std::string fname);
+    GretlDataset (const py::dict &pydict);
     ~GretlDataset (void);
 
-    py::dict *to_dict ();
+    py::dict *to_dict (bool do_free_dict = false);
 };
 
 //

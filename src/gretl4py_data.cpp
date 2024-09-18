@@ -327,9 +327,13 @@ DATASET *gretl_load_global_dataset (const std::string fname)
     return dset;
 }
 
+
 //GretlDataset class methods
-GretlDataset::GretlDataset (const std::string fname, bool free_dict)
+GretlDataset::GretlDataset (const std::string fname)
 {
+    //
+    // load gretl data from file
+    //
     allocate_dset();
     err = gretl_get_data(fname.c_str(), dset, OPT_NONE, NULL);
 
@@ -337,19 +341,76 @@ GretlDataset::GretlDataset (const std::string fname, bool free_dict)
         destroy_dataset(dset);
         throw std::runtime_error("Reading data from '" + fname + "' file failed.");
     }
+}
+GretlDataset::GretlDataset (const py::dict &pydict)
+{
+    //
+    // we fill dset with pydict content
+    //
+    py::list pylist;
+    std::string *strBUF;
+    int pd;
 
-    if (free_dict) {
-        free_res= free_dict;
+    allocate_dset();
+
+    // we fill up dset->Z
+    numpy_array_to_gretl_storage(pydict, dset);
+
+    if (dataset_allocate_varnames(dset) || dataset_allocate_obs_markers(dset)) {
+        throw std::runtime_error("Dataset strings allocation failed.");
     }
+
+    // we fill up dset->S
+    pylist = pydict[py::cast("obs_labels")];
+    if (pylist.size() != (long unsigned int) dset->n) {
+        throw std::runtime_error("Number of obs_labels is different than number of observations.");
+    }
+    copy_strings_from_python_list(pylist, dset->S, OBSLEN-1, 0, 0, true);
+
+    // we fill up dset->varname
+    pylist = pydict[py::cast("varname")];
+    if (pylist.size() != (long unsigned int) dset->v-1) {
+        throw std::runtime_error("Number of varnames is different than number of variables.");
+    }
+    strBUF = new std::string[dset->v];
+    copy_strings_from_python_list(pylist, strBUF);
+    for (int i=0; i<dset->v-1; i++) {
+        std::memset(dset->varname[i+1], '\0', VNAMELEN);
+        gretl_normalize_varname(dset->varname[i+1], strBUF[i].c_str(), 1, 0);
+    }
+    delete []strBUF;
+
+    if (pydict.contains("structure")) {
+        dset->structure = pydict["structure"].cast<int>();
+    }
+
+    // FIXME: maybe it's possible automatically, i.e. without sending it from Python
+    pd = get_int_from_python_dict(pydict, "pd");
+    set_obs(std::to_string(pd).c_str(), dset->S[0], dset, OPT_T);
 }
 
 GretlDataset::~GretlDataset (void)
 {
-    if (free_res && res != nullptr) {
-        delete res;
-    }
+    free_dict();
     if (dset != nullptr) {
         destroy_dataset(dset);
+    }
+}
+
+py::dict *GretlDataset::to_dict (bool do_free_dict)
+{
+    free_dict();
+    as_dict = new py::dict;
+
+    free_as_dict = do_free_dict;
+
+    return as_dict;
+}
+
+void GretlDataset::free_dict (void)
+{
+    if (free_as_dict && as_dict != nullptr) {
+        delete as_dict;
     }
 }
 
