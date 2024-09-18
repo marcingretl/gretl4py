@@ -330,15 +330,26 @@ DATASET *gretl_load_global_dataset (const std::string fname)
 //GretlDataset class methods
 GretlDataset::GretlDataset (const std::string fname, bool free_dict)
 {
+    allocate_dset();
+    err = gretl_get_data(fname.c_str(), dset, OPT_NONE, NULL);
+
+    if (err) {
+        destroy_dataset(dset);
+        throw std::runtime_error("Reading data from '" + fname + "' file failed.");
+    }
+
     if (free_dict) {
-        free_d = free_dict;
+        free_res= free_dict;
     }
 }
 
 GretlDataset::~GretlDataset (void)
 {
-    if (free_d && pydict != nullptr) {
-        delete pydict;
+    if (free_res && res != nullptr) {
+        delete res;
+    }
+    if (dset != nullptr) {
+        destroy_dataset(dset);
     }
 }
 

@@ -24,8 +24,18 @@ DATASET *gretl_load_global_dataset (const std::string fname);
 class GretlDataset
 {
 private:
-    bool free_d = false;
-    py::dict *pydict = nullptr;
+    py::dict *res = nullptr;
+    py::dict &pydict = *res;
+    bool free_res = false;
+
+    inline void allocate_dset (void)
+    {
+        if (dset != nullptr) {
+            destroy_dataset(dset);
+        } else {
+            dset = datainfo_new();
+        }
+    }
 
 public:
     DATASET *dset = nullptr;
