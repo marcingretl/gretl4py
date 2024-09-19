@@ -19,6 +19,7 @@
 #define LIBGRETL_MIN_VER 48
 #define GRETL_PYBIND11_DEBUG 0
 
+static GretlDataset *DSET_class = nullptr; // global dataset (class)
 static DATASET *DSET = NULL; // global dataset
 static int gretl4py_verbose = 0;
 
@@ -48,8 +49,8 @@ void module_init (void)
 
 void module_cleanup (void)
 {
-    if (DSET != NULL) {
-        destroy_dataset(DSET);
+    if (DSET_class) {
+        delete DSET_class;
     }
     libgretl_cleanup();
     if (gretl4py_verbose) {
@@ -131,11 +132,11 @@ void set (const std::string key,
 
 void attach_data (const py::dict &pydict)
 {
-    if (DSET != NULL) {
-        destroy_dataset(DSET);
+    if (DSET_class) {
+        delete DSET_class;
     }
-    DSET = datainfo_new();
-    numpy_dict_to_gretl_dset(pydict, DSET);
+    DSET_class = new GretlDataset(pydict);
+    DSET = DSET_class->dset;
 }
 
 static void do_printdata (DATASET *dset, const std::string *varnames,
@@ -190,21 +191,21 @@ void printdata (const std::optional<py::dict> &data,
 
 py::dict *get_gretl_data (const std::string fname)
 {
+    /*
     py::dict *res = new py::dict;
-
     gretl_dset_to_numpy_dict(fname, *res);
+    return res; */
 
-    return res;
+    return GretlDataset(fname).to_dict();
 }
 
 void attach_gretl_data (const std::string fname)
 {
-    DATASET *dset = gretl_load_global_dataset(fname);
-
-    if (dset != NULL) {
-        destroy_dataset(DSET);
-        DSET = dset;
+    if (DSET_class) {
+        delete DSET_class;
     }
+    DSET_class = new GretlDataset(fname);
+    DSET = DSET_class->dset;
 }
 
 // Sampling of gretl datasets. As of 2024-09-02 this just covers basic usage of

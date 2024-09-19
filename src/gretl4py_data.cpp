@@ -31,35 +31,6 @@ int gretl_model_to_dict (MODEL *model, DATASET *dset,
 }
 
 #if 0
-int gretl_model_to_dict (MODEL *model, DATASET *dset,
-                         const char *summary, py::dict &pydict)
-{
-    //
-    // here we construct python's dict which is returned (with estimation results)
-    //
-    char *json_buf = NULL;
-    gretl_bundle *b;
-    int err = 0;
-
-    b = bundle_from_model(model, dset, &err);
-    if (!err) {
-        json_buf = gretl_bundle_write_to_json_buffer(b, &err);
-    }
-
-    if (json_buf != NULL) {
-        pydict[py::cast("_id")] = model->ID;
-        pydict[py::cast("json_buffer")] = json_buf;
-        pydict[py::cast("summary")] = summary;
-        g_free(json_buf);
-    }
-
-    gretl_bundle_destroy(b);
-
-    return err;
-}
-#endif // 0
-
-#if 0
 
 static void copy_string_from_python_dict (const py::dict &pydict,
                                           const char *key, char *dest,
@@ -252,81 +223,6 @@ void numpy_dict_to_gretl_dset (const py::dict &pydict,
     set_obs(std::to_string(pd).c_str(), dset->S[0], dset, OPT_T);
 }
 
-void gretl_dset_to_numpy_dict (const std::string fname, py::dict &pydict)
-{
-    //
-    // we load gretl data from file to pydict
-    //
-    py::list *vnames = new py::list;
-    py::list *labels = new py::list;
-    DATASET *dset;
-    double *tmp;
-    int i, err = 0;
-
-    dset = datainfo_new();
-    err = gretl_get_data(fname.c_str(), dset, OPT_NONE, NULL);
-    if (err) {
-        delete vnames;
-        delete labels;
-        destroy_dataset(dset);
-        throw std::runtime_error("Reading data from '" + fname + "' file failed.");
-    }
-
-    pydict[py::cast("pd")] = dset->pd;
-    pydict[py::cast("structure")] = dset->structure;
-
-    // copy across the data values
-    py::array_t<double, py::array::f_style> Z({dset->n, dset->v});
-    tmp = (double *) Z.request().ptr;
-    for (i=0; i<dset->v; i++) {
-        std::memcpy(tmp, dset->Z[i], dset->n * sizeof *tmp);
-        tmp += dset->n;
-    }
-    pydict[py::cast("data_array")] = Z;
-
-    // copy across the series names
-    for (i=0; i<dset->v; i++) {
-        vnames->append(dset->varname[i]);
-    }
-    pydict[py::cast("varname")] = *vnames;
-    delete vnames;
-
-    // copy or manufacture obs labels
-    if (dset->S != NULL) {
-        for (i=0; i<dset->n; i++) {
-            labels->append(dset->S[i]);
-        }
-    } else {
-        char s[OBSLEN];
-
-        for (i=0; i<dset->n; i++) {
-            labels->append(ntolabel(s, i, dset));
-        }
-    }
-    pydict[py::cast("obs_labels")] = *labels;
-    delete labels;
-
-    destroy_dataset(dset);
-}
-
-DATASET *gretl_load_global_dataset (const std::string fname)
-{
-    //
-    // load gretl data from file to global DSET
-    //
-    DATASET *dset = datainfo_new();
-    int err = 0;
-
-    err = gretl_get_data(fname.c_str(), dset, OPT_NONE, NULL);
-
-    if (err) {
-        destroy_dataset(dset);
-        throw std::runtime_error("Reading data from '" + fname + "' file failed.");
-    }
-
-    return dset;
-}
-
 
 //GretlDataset class methods
 GretlDataset::GretlDataset (const std::string fname)
@@ -391,27 +287,56 @@ GretlDataset::GretlDataset (const py::dict &pydict)
 
 GretlDataset::~GretlDataset (void)
 {
-    free_dict();
-    if (dset != nullptr) {
-        destroy_dataset(dset);
-    }
+    free_dset();
 }
 
-py::dict *GretlDataset::to_dict (bool do_free_dict)
+py::dict *GretlDataset::to_dict (void)
 {
-    free_dict();
-    as_dict = new py::dict;
+    //
+    // we load gretl data from file to pydict
+    //
+    py::dict *as_dict = new py::dict;
+    auto &pydict = *as_dict;
+    py::list *vnames = new py::list;
+    py::list *labels = new py::list;
+    double *tmp;
+    int i = 0;
 
-    free_as_dict = do_free_dict;
+    pydict[py::cast("pd")] = dset->pd;
+    pydict[py::cast("structure")] = dset->structure;
+
+    // copy across the data values
+    py::array_t<double, py::array::f_style> Z({dset->n, dset->v});
+    tmp = (double *) Z.request().ptr;
+    for (i=0; i<dset->v; i++) {
+        std::memcpy(tmp, dset->Z[i], dset->n * sizeof *tmp);
+        tmp += dset->n;
+    }
+    pydict[py::cast("data_array")] = Z;
+
+    // copy across the series names
+    for (i=0; i<dset->v; i++) {
+        vnames->append(dset->varname[i]);
+    }
+    pydict[py::cast("varname")] = *vnames;
+    delete vnames;
+
+    // copy or manufacture obs labels
+    if (dset->S != NULL) {
+        for (i=0; i<dset->n; i++) {
+            labels->append(dset->S[i]);
+        }
+    } else {
+        char s[OBSLEN];
+
+        for (i=0; i<dset->n; i++) {
+            labels->append(ntolabel(s, i, dset));
+        }
+    }
+    pydict[py::cast("obs_labels")] = *labels;
+    delete labels;
 
     return as_dict;
-}
-
-void GretlDataset::free_dict (void)
-{
-    if (free_as_dict && as_dict != nullptr) {
-        delete as_dict;
-    }
 }
 
 
@@ -464,7 +389,7 @@ MapToPy::MapToPy (const std::optional<py::object> &pyobject)
 {
 #if GRETL_PYBIND11_DEBUG
     std::printf("converting %s to string\n",
-                py::cast<std::string>(pyobject->get_type()));
+                py::cast<std::string>(pyobject->get_type()).c_str());
 # endif
     res = &*pyobject;
 

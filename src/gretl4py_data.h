@@ -14,9 +14,6 @@ int gretl_model_to_dict (MODEL *model, DATASET *dset, const char *summary, py::d
 
 void numpy_dict_to_gretl_dset (const py::dict &DICT, DATASET *dset);
 
-void gretl_dset_to_numpy_dict (const std::string fname, py::dict &pydict);
-
-DATASET *gretl_load_global_dataset (const std::string fname);
 
 //
 // Class to handle gretl 'DATASET' type
@@ -24,20 +21,18 @@ DATASET *gretl_load_global_dataset (const std::string fname);
 class GretlDataset
 {
 private:
-    py::dict *as_dict = nullptr;    // dict representation
-    bool free_as_dict = false;      // do we free 'as_dict'
-    py::dict &tmp_dict = *as_dict;
-
     inline void allocate_dset (void)
+    {
+        free_dset();
+        dset = datainfo_new();
+    }
+
+    inline void free_dset (void)
     {
         if (dset != nullptr) {
             destroy_dataset(dset);
         }
-        dset = datainfo_new();
     }
-
-    void free_dict (void);
-
 public:
     DATASET *dset = nullptr;
     int err = 0;
@@ -46,7 +41,7 @@ public:
     GretlDataset (const py::dict &pydict);
     ~GretlDataset (void);
 
-    py::dict *to_dict (bool do_free_dict = false);
+    py::dict *to_dict (void); // memory must be freed at the caller level
 };
 
 //
@@ -64,7 +59,6 @@ public:
 
     GretlBundle (void);
     GretlBundle (MODEL *model, DATASET *dset);
-
     ~GretlBundle (void);
 
     char *to_json (void);
