@@ -191,11 +191,6 @@ void printdata (const std::optional<py::dict> &data,
 
 py::dict *get_gretl_data (const std::string fname)
 {
-    /*
-    py::dict *res = new py::dict;
-    gretl_dset_to_numpy_dict(fname, *res);
-    return res; */
-
     return GretlDataset(fname).to_dict();
 }
 
