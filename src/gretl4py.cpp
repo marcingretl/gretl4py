@@ -17,17 +17,6 @@ PYBIND11_MODULE(_gretl, m) {
     m.doc() = info;
     m.def("about", &about,
           py::arg("do_print") = false);
-    /*m.def("set",
-          py::overload_cast<const std::string, const std::string> (&set),
-          py::arg("key").none(false),
-          py::arg("val").none(false));
-    m.def("set",
-          py::overload_cast<const std::string, int> (&set),
-          py::arg("key").none(false),
-          py::arg("val").none(false));
-    m.def("set",
-          py::overload_cast<const std::string> (&set),
-          py::arg("key").none(false));*/
     m.def("set", &set,
           py::arg("key").none(false),
           py::arg("val").none(true) = std::nullopt);
@@ -35,18 +24,13 @@ PYBIND11_MODULE(_gretl, m) {
     // data management
     m.def("attach_data", &attach_data,
           py::arg("pydict").none(false));
-    /*m.def("printdata",
-          py::overload_cast<const py::dict &, bool> (&printdata),
-          py::arg("data").none(false),
-          py::arg("namesonly") = false);
-    m.def("printdata",
-          py::overload_cast<bool> (&printdata),
-          py::arg("namesonly") = false);*/
+    m.def("attach_gretl_data", &attach_gretl_data,
+          py::arg("fname").none(false));
+    m.def("get_gretl_data", &get_gretl_data,
+          py::arg("fname").none(false));
     m.def("printdata", &printdata,
           py::arg("data").none(true) = std::nullopt,
           py::arg("namesonly") = false);
-    m.def("get_gretl_data", &get_gretl_data, py::arg("fname").none(false));
-    m.def("attach_gretl_data", &attach_gretl_data, py::arg("fname").none(false));
 
     // sampling (for gretl datasets only)
     m.def("sample", &sample);
@@ -101,9 +85,9 @@ PYBIND11_MODULE(_gretl, m) {
     m.def("lad", &lad,
           py::arg("formula").none(false),
           py::return_value_policy::take_ownership);
-    m.def("garch", &garch,
+    /*m.def("garch", &garch,
           py::arg("formula").none(false),
-          py::return_value_policy::take_ownership);
+          py::return_value_policy::take_ownership);*/
     m.def("mpols", &mpols,
           py::arg("formula").none(false),
           py::return_value_policy::take_ownership);
