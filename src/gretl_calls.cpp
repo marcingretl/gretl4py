@@ -562,6 +562,11 @@ static int *list_from_formula (const char *formula,
 // F: function to call
 // CI: GretlCmdIndex
 // T: F signature type (argument list)
+//  -> 0: list, dset, CI, opt (OLS || WLS)
+//  -> 1: list, dset, CI, opt, prn (LOGIT || PROBIT)
+//  -> 2: list, CI, dset, opt, prn (POISSON || NEGBIN)
+//  -> 3: list, dset, opt, prn
+//  -> 4: list, dset, opt
 
 template <auto F, GretlCmdIndex CI, int T>
 static py::dict *regression_wrapper (const std::string &formula,
@@ -592,15 +597,14 @@ static py::dict *regression_wrapper (const std::string &formula,
         throw std::runtime_error("Failed to allocate memory");
     }
 
-    if constexpr (T == 0) { // OLS || WLS
+    if constexpr (T == 0) {
         *model = F(list, dset, CI, opt);
-    } else if constexpr (T == 1) { // LOGIT || PROBIT
+    } else if constexpr (T == 1) {
         *model = F(list, dset, CI, opt, prn);
-    } else if constexpr (T == 2) { // POISSON || NEGBIN)
+    } else if constexpr (T == 2) {
         *model = F(list, CI, dset, opt, prn);
     } else if constexpr (T == 3 ) {
         *model = F(list, dset, opt, prn);
-        //auto exec_estimator = [&](void) { return std::invoke(F, list, dset, opt, prn); };
     } else if constexpr (T == 4) {
         *model = F(list, dset, opt);
     }
