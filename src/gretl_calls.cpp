@@ -20,7 +20,7 @@
 #define GRETL_PYBIND11_DEBUG 0
 
 static GretlDataset *DSET_class = nullptr; // global dataset (class)
-static DATASET *DSET = NULL; // global dataset
+static DATASET *DSET = NULL; // global dataset [will be removed]
 static int gretl4py_verbose = 0;
 
 
@@ -173,11 +173,12 @@ void printdata (const std::optional<py::dict> &data,
 {
     DATASET *dset = NULL;
 
-    if (data == std::nullopt && DSET == NULL) {
+    if (data == std::nullopt && !DSET_class) {
         throw std::runtime_error("No dataset in place");
-    } else if (data == std::nullopt && DSET != NULL) {
-        dset = DSET;
+    } else if (data == std::nullopt && DSET_class) {
+        dset = DSET_class->dset;
     } else {
+        //FIXME: something is wrong (SIGSEGV) [related with *data]
         dset = datainfo_new();
         numpy_dict_to_gretl_dset(*data, dset);
     }
