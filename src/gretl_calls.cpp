@@ -139,54 +139,15 @@ void attach_data (const py::dict &pydict)
     DSET = DSET_class->dset;
 }
 
-static void do_printdata (DATASET *dset, const std::string *varnames,
-                          const std::string *ostr, gretlopt opt,
-                          bool varnames_only = false)
-{
-    int *varlist = NULL;
-    PRN *prn = NULL;
-    int err = 0;
-
-    if (varnames == NULL) {
-        varlist = gretl_list_new(dset->v);
-        for (int i=1; i<dset->v; i++) {
-            if (varnames_only) {
-                std::printf("%d %s\n", i, dset->varname[i]);
-            } else {
-                varlist[i] = current_series_index(dset, dset->varname[i]);
-            }
-        }
-    }
-
-    if (!varnames_only) {
-        prn = gretl_print_new(GRETL_PRINT_STDOUT, NULL);
-        err = printdata(varlist, NULL, dset, opt, prn);
-        gretl_print_destroy(prn);
-        if (err) {
-            handle_gretl_error(err);
-        }
-    }
-}
-
 void printdata (const std::optional<py::dict> &data,
                 bool namesonly)
 {
-    DATASET *dset = NULL;
-
     if (data == std::nullopt && !DSET_class) {
         throw std::runtime_error("No dataset in place");
     } else if (data == std::nullopt && DSET_class) {
-        dset = DSET_class->dset;
+        DSET_class->print(namesonly);
     } else {
-        //FIXME: something is wrong (SIGSEGV) [related with *data]
-        dset = datainfo_new();
-        numpy_dict_to_gretl_dset(*data, dset);
-    }
-
-    do_printdata(dset, NULL, NULL, OPT_O, namesonly);
-
-    if (data != std::nullopt) {
-        destroy_dataset(dset);
+        GretlDataset(*data).print(namesonly);
     }
 }
 

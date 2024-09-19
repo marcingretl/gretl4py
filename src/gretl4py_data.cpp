@@ -339,6 +339,33 @@ py::dict *GretlDataset::to_dict (void)
     return as_dict;
 }
 
+void GretlDataset::print (bool namesonly)
+{
+    PRN *prn = nullptr;
+    int *varlist = nullptr;
+
+    for (int i=1; i<dset->v; i++) {
+        if (namesonly) {
+            std::printf("%d %s\n", i, dset->varname[i]);
+        } else {
+            varlist = gretl_list_new(dset->v);
+            varlist[i] = current_series_index(dset, dset->varname[i]);
+        }
+    }
+
+    if (!namesonly) {
+        prn = gretl_print_new(GRETL_PRINT_STDOUT, NULL);
+        err = printdata(varlist, NULL, dset, OPT_O, prn);
+        gretl_print_destroy(prn);
+        if (err) {
+            //FIXME:!!! handle_gretl_error(err);
+        }
+    }
+
+    if (varlist) {
+        std::free(varlist);
+    }
+}
 
 // GretlBundle class methods
 GretlBundle::GretlBundle (void)

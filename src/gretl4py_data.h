@@ -42,6 +42,7 @@ public:
     ~GretlDataset (void);
 
     py::dict *to_dict (void); // memory must be freed at the caller level
+    void print (bool namesonly = false);
 };
 
 //
