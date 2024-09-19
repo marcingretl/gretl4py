@@ -106,7 +106,7 @@ static void handle_gretl_error (int err)
     throw std::runtime_error(msg);
 }
 
-// set a string-valued "setvar"
+// set a string or int valued "setvar"
 
 void set (const std::string key,
           const std::optional<py::object> &pyval)
@@ -242,11 +242,6 @@ void sample (const py::kwargs &kwargs)
             val = std::to_string(item.second.cast<int>()).c_str();
         } else if (is_pystr(item.second)) {
             val = item.second.cast<std::string_view>().data(); /* workaround for differences between compilers and/or OSs, see commit be4b711cc8a97e03317368431e4a42f5636daa63 (be4b711) */
-/* #if defined(__linux__) && defined(__clang__)
-            val = std::string(py::str(item.second)).c_str();
-#else
-            val = item.second.cast<std::string>().c_str();
-#endif // defined */
         }
         if (key == "t1") {
             t1str = gretl_strdup(val);
@@ -396,7 +391,7 @@ static gretlopt unpack_kwargs (const py::kwargs &kwargs,
             if (is_pystr(item.second)) {
                 const std::string &sval = item.second.cast<std::string>();
                 push_option_param(ci, (gretlopt) opt, gretl_strdup(sval.c_str()));
-             } else if (is_pyint(item.second)) {
+            } else if (is_pyint(item.second)) {
                 int ival = item.second.cast<int>();
                 push_option_param(ci, (gretlopt) opt, gretl_strdup(std::to_string(ival).c_str()));
             } else if (is_pyfloat(item.second)) {
