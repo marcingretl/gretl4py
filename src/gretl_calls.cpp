@@ -17,7 +17,7 @@
 #endif
 
 #define LIBGRETL_MIN_VER 48
-#define GRETL_PYBIND11_DEBUG 0
+#define GRETL_PYBIND11_DEBUG 1
 
 static GretlDataset *DSET_class = nullptr; // global dataset (class)
 static DATASET *DSET = NULL; // global dataset [will be removed]
@@ -273,7 +273,8 @@ void sample (const py::kwargs &kwargs)
 
 static gretlopt unpack_kwargs (const py::kwargs &kwargs,
                                int ci, int *do_print,
-                               DATASET **pdset)
+                               DATASET **pdset,
+                               GretlDataset *&pdset_class)
 {
     int opt, opts = OPT_NONE;
     OptStatus status;
@@ -293,8 +294,11 @@ static gretlopt unpack_kwargs (const py::kwargs &kwargs,
             if (is_pydict(item.second)) {
                 const py::dict data = item.second.cast<py::dict>();
 
-                *pdset = datainfo_new();
-                numpy_dict_to_gretl_dset(data, *pdset);
+                pdset_class = new GretlDataset(data);
+#if GRETL_PYBIND11_DEBUG
+                std::printf("we have the following variables in given dataset:\n");
+                pdset_class->printdset(true);
+#endif // GRETL_PYBIND11_DEBUG
             } else {
                 throw std::runtime_error("'data' must be a dictionary");
             }
@@ -357,7 +361,10 @@ static gretlopt unpack_kwargs (const py::kwargs &kwargs,
 
     if (!got_data) {
         // if we didn't get a 'data' specification, try for the global dataset
-        *pdset = DSET;
+#if GRETL_PYBIND11_DEBUG
+        std::printf("unpack_kwargs: we try for the global dataset\n");
+#endif // GRETL_PYBIND11_DEBUG
+        pdset_class = DSET_class;
     }
 
     return (gretlopt) opts;
@@ -383,10 +390,6 @@ void finalize_model (MODEL *model, DATASET *dset,
         if (err) {
             handle_gretl_error(err);
         }
-    }
-
-    if (dset != DSET) {
-        destroy_dataset(dset);
     }
 
     free(list);
@@ -417,7 +420,7 @@ py::dict *arma (const std::string y, const py::tuple &tup,
                 const py::kwargs &kwargs)
 {
     py::dict *res = new py::dict;
-    DATASET *dset = NULL;
+    GretlDataset *dset_class = nullptr;
     MODEL *model;
     gretlopt opt = OPT_NONE;
     PRN *prn = NULL;
@@ -430,16 +433,17 @@ py::dict *arma (const std::string y, const py::tuple &tup,
     int i;
 
     if (py::len(kwargs) > 0) {
-        opt = unpack_kwargs(kwargs, ARMA, &do_print, &dset);
+        opt = unpack_kwargs(kwargs, ARMA, &do_print, NULL, dset_class);
     } else {
-        dset = DSET;
+        //dset = DSET;
+        dset_class = DSET_class;
     }
-    if (dset == NULL) {
+    if (!dset_class) {
         delete res;
         throw std::runtime_error("No dataset is available");
     }
 
-    y_number = current_series_index(dset, y.c_str());
+    y_number = current_series_index(dset_class->dset, y.c_str());
     if (y_number == -1) {
         delete res;
         throw std::runtime_error("There is no variable: " + y);
@@ -481,8 +485,12 @@ py::dict *arma (const std::string y, const py::tuple &tup,
     list[i++] = LISTSEP;
     list[i++] = y_number;
 
-    *model = arma(list, NULL, dset, opt, prn);
-    finalize_model(model, dset, list, do_print, prn, *res);
+    *model = arma(list, NULL, dset_class->dset, opt, prn);
+    finalize_model(model, dset_class->dset, list, do_print, prn, *res);
+
+    if (dset_class && dset_class != DSET_class) {
+        delete dset_class;
+    }
 
     return res;
 }
@@ -520,7 +528,7 @@ static py::dict *regression_wrapper (const std::string &formula,
                                      const py::kwargs &kwargs)
 {
     py::dict *res = new py::dict;
-    DATASET *dset = NULL;
+    GretlDataset *dset_class = nullptr;
     MODEL *model = NULL;
     PRN *prn = NULL;
     int *list = NULL;
@@ -528,15 +536,16 @@ static py::dict *regression_wrapper (const std::string &formula,
     int do_print = 0;
 
     if (py::len(kwargs) > 0) {
-        opt = unpack_kwargs(kwargs, CI, &do_print, &dset);
+        opt = unpack_kwargs(kwargs, CI, &do_print, NULL, dset_class);
     } else {
-        dset = DSET;
+        //dset = DSET;
+        dset_class = DSET_class;
     }
-    if (dset == NULL) {
+    if (!dset_class) {
         throw std::runtime_error("No dataset is available");
     }
 
-    list = list_from_formula(formula.c_str(), dset);
+    list = list_from_formula(formula.c_str(), dset_class->dset);
     model = gretl_model_new();
     prn = gretl_print_new(GRETL_PRINT_BUFFER, NULL);
 
@@ -545,18 +554,22 @@ static py::dict *regression_wrapper (const std::string &formula,
     }
 
     if constexpr (T == 0) {
-        *model = F(list, dset, CI, opt);
+        *model = F(list, dset_class->dset, CI, opt);
     } else if constexpr (T == 1) {
-        *model = F(list, dset, CI, opt, prn);
+        *model = F(list, dset_class->dset, CI, opt, prn);
     } else if constexpr (T == 2) {
-        *model = F(list, CI, dset, opt, prn);
+        *model = F(list, CI, dset_class->dset, opt, prn);
     } else if constexpr (T == 3 ) {
-        *model = F(list, dset, opt, prn);
+        *model = F(list, dset_class->dset, opt, prn);
     } else if constexpr (T == 4) {
-        *model = F(list, dset, opt);
+        *model = F(list, dset_class->dset, opt);
     }
 
-    finalize_model(model, dset, list, do_print, prn, *res);
+    finalize_model(model, dset_class->dset, list, do_print, prn, *res);
+
+    if (dset_class && dset_class != DSET_class) {
+        delete dset_class;
+    }
 
     return res;
 }
