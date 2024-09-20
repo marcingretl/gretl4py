@@ -482,7 +482,7 @@ py::dict *arma (const std::string y, const py::tuple &tup,
     *model = arma(list, NULL, GD->dset, opt, prn);
     finalize_model(model, GD->dset, list, do_print, prn, *res);
 
-    if (GD && GD != DSET) {
+    if (GD != DSET) {
         delete GD;
     }
 
@@ -560,7 +560,7 @@ static py::dict *regression_wrapper (const std::string &formula,
 
     finalize_model(model, GD->dset, list, do_print, prn, *res);
 
-    if (GD && GD != DSET) {
+    if (GD != DSET) {
         delete GD;
     }
 
