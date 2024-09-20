@@ -19,8 +19,7 @@
 #define LIBGRETL_MIN_VER 48
 #define GRETL_PYBIND11_DEBUG 1
 
-static GretlDataset *DSET_class = nullptr; // global dataset (class)
-static DATASET *DSET = NULL; // global dataset [will be removed]
+static GretlDataset *DSET = nullptr; // global dataset (class)
 static int gretl4py_verbose = 0;
 
 
@@ -49,8 +48,8 @@ void module_init (void)
 
 void module_cleanup (void)
 {
-    if (DSET_class) {
-        delete DSET_class;
+    if (DSET) {
+        delete DSET;
     }
     libgretl_cleanup();
     if (gretl4py_verbose) {
@@ -126,20 +125,19 @@ void set (const std::string key,
 
 void attach_data (const py::dict &pydict)
 {
-    if (DSET_class) {
-        delete DSET_class;
+    if (DSET) {
+        delete DSET;
     }
-    DSET_class = new GretlDataset(pydict);
-    DSET = DSET_class->dset;
+    DSET = new GretlDataset(pydict);
 }
 
 void printdata (const std::optional<py::dict> &data,
                 bool namesonly)
 {
-    if (data == std::nullopt && !DSET_class) {
+    if (data == std::nullopt && !DSET) {
         throw std::runtime_error("No dataset in place");
-    } else if (data == std::nullopt && DSET_class) {
-        DSET_class->printdset(namesonly);
+    } else if (data == std::nullopt && DSET) {
+        DSET->printdset(namesonly);
     } else {
         GretlDataset(*data).printdset(namesonly);
     }
@@ -152,11 +150,10 @@ py::dict *get_gretl_data (const std::string fname)
 
 void attach_gretl_data (const std::string fname)
 {
-    if (DSET_class) {
-        delete DSET_class;
+    if (DSET) {
+        delete DSET;
     }
-    DSET_class = new GretlDataset(fname);
-    DSET = DSET_class->dset;
+    DSET = new GretlDataset(fname);
 }
 
 // Sampling of gretl datasets. As of 2024-09-02 this just covers basic usage of
@@ -178,7 +175,7 @@ void sample (const py::kwargs &kwargs)
     int optc = 0;
     int err = 0;
 
-    if (DSET == NULL) {
+    if (!DSET) {
         throw std::runtime_error("No gretl dataset in place");
     }
 
@@ -228,10 +225,10 @@ void sample (const py::kwargs &kwargs)
 
     if (argc == 0 && optc == 0) {
         // just report the current sample
-         print_smpl(DSET, get_full_length_n(), OPT_NONE, prn);
+         print_smpl(DSET->dset, get_full_length_n(), OPT_NONE, prn);
     } else if (argc == 0 && full) {
         // "smpl full"
-        err = restore_full_sample(DSET, NULL);
+        err = restore_full_sample(DSET->dset, NULL);
     } else if (restr) {
         // smpl <restr> --restrict [--replace]
         gretlopt opt = OPT_R;
@@ -240,15 +237,15 @@ void sample (const py::kwargs &kwargs)
             // C++ !!
             opt = (gretlopt) ((int) OPT_R | (int) OPT_P);
         }
-        err = restrict_sample(restr, NULL, DSET, NULL, opt, prn, NULL);
+        err = restrict_sample(restr, NULL, DSET->dset, NULL, opt, prn, NULL);
     } else if (t1str || t2str) {
         // smpl <t1str> <t2str>
         if (t1str && !t2str) {
-            err = set_sample(t1str, ";", DSET, OPT_NONE);
+            err = set_sample(t1str, ";", DSET->dset, OPT_NONE);
         } else if (t2str && !t1str) {
-            err = set_sample(";", t2str, DSET, OPT_NONE);
+            err = set_sample(";", t2str, DSET->dset, OPT_NONE);
         } else {
-            err = set_sample(t1str, t2str, DSET, OPT_NONE);
+            err = set_sample(t1str, t2str, DSET->dset, OPT_NONE);
         }
     }
 
@@ -256,7 +253,7 @@ void sample (const py::kwargs &kwargs)
         const char *msg = errmsg_get_with_default(err);
         throw std::runtime_error(msg);
     } else if (argc > 0 || optc > 0) {
-        print_smpl(DSET, get_full_length_n(), OPT_NONE, prn);
+        print_smpl(DSET->dset, get_full_length_n(), OPT_NONE, prn);
     }
 
     gretl_print_destroy(prn);
@@ -362,7 +359,7 @@ static gretlopt unpack_kwargs (const py::kwargs &kwargs,
 #if GRETL_PYBIND11_DEBUG
         std::printf("unpack_kwargs: we try for the global dataset\n");
 #endif // GRETL_PYBIND11_DEBUG
-        pdset = DSET_class;
+        pdset = DSET;
     }
 
     return (gretlopt) opts;
@@ -433,7 +430,7 @@ py::dict *arma (const std::string y, const py::tuple &tup,
     if (py::len(kwargs) > 0) {
         opt = unpack_kwargs(kwargs, ARMA, &do_print, GD);
     } else {
-        GD = DSET_class;
+        GD = DSET;
     }
     if (!GD) {
         delete res;
@@ -485,7 +482,7 @@ py::dict *arma (const std::string y, const py::tuple &tup,
     *model = arma(list, NULL, GD->dset, opt, prn);
     finalize_model(model, GD->dset, list, do_print, prn, *res);
 
-    if (GD && GD != DSET_class) {
+    if (GD && GD != DSET) {
         delete GD;
     }
 
@@ -535,7 +532,7 @@ static py::dict *regression_wrapper (const std::string &formula,
     if (py::len(kwargs) > 0) {
         opt = unpack_kwargs(kwargs, CI, &do_print, GD);
     } else {
-        GD = DSET_class;
+        GD = DSET;
     }
     if (!GD) {
         throw std::runtime_error("No dataset is available");
@@ -563,7 +560,7 @@ static py::dict *regression_wrapper (const std::string &formula,
 
     finalize_model(model, GD->dset, list, do_print, prn, *res);
 
-    if (GD && GD != DSET_class) {
+    if (GD && GD != DSET) {
         delete GD;
     }
 
