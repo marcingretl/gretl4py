@@ -273,7 +273,6 @@ void sample (const py::kwargs &kwargs)
 
 static gretlopt unpack_kwargs (const py::kwargs &kwargs,
                                int ci, int *do_print,
-                               DATASET **pdset,
                                GretlDataset *&pdset_class)
 {
     int opt, opts = OPT_NONE;
@@ -433,9 +432,8 @@ py::dict *arma (const std::string y, const py::tuple &tup,
     int i;
 
     if (py::len(kwargs) > 0) {
-        opt = unpack_kwargs(kwargs, ARMA, &do_print, NULL, dset_class);
+        opt = unpack_kwargs(kwargs, ARMA, &do_print, dset_class);
     } else {
-        //dset = DSET;
         dset_class = DSET_class;
     }
     if (!dset_class) {
@@ -536,9 +534,8 @@ static py::dict *regression_wrapper (const std::string &formula,
     int do_print = 0;
 
     if (py::len(kwargs) > 0) {
-        opt = unpack_kwargs(kwargs, CI, &do_print, NULL, dset_class);
+        opt = unpack_kwargs(kwargs, CI, &do_print, dset_class);
     } else {
-        //dset = DSET;
         dset_class = DSET_class;
     }
     if (!dset_class) {
