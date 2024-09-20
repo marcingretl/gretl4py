@@ -14,6 +14,8 @@ int gretl_model_to_dict (MODEL *model, DATASET *dset, const char *summary, py::d
 
 void numpy_dict_to_gretl_dset (const py::dict &DICT, DATASET *dset);
 
+void handle_gretl_error (int err);
+
 
 //
 // Class to handle gretl 'DATASET' type
@@ -42,7 +44,7 @@ public:
     ~GretlDataset (void);
 
     py::dict *to_dict (void); // memory must be freed at the caller level
-    void print (bool namesonly = false);
+    void printdset (bool namesonly = false);
 };
 
 //

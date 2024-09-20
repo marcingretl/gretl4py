@@ -223,6 +223,13 @@ void numpy_dict_to_gretl_dset (const py::dict &pydict,
     set_obs(std::to_string(pd).c_str(), dset->S[0], dset, OPT_T);
 }
 
+void handle_gretl_error (int err)
+{
+    const char *msg = errmsg_get_with_default(err);
+    throw std::runtime_error(msg);
+}
+
+/* classes */
 
 //GretlDataset class methods
 GretlDataset::GretlDataset (const std::string fname)
@@ -339,7 +346,7 @@ py::dict *GretlDataset::to_dict (void)
     return as_dict;
 }
 
-void GretlDataset::print (bool namesonly)
+void GretlDataset::printdset (bool namesonly)
 {
     PRN *prn = nullptr;
     int *varlist = nullptr;
@@ -357,13 +364,12 @@ void GretlDataset::print (bool namesonly)
         prn = gretl_print_new(GRETL_PRINT_STDOUT, NULL);
         err = printdata(varlist, NULL, dset, OPT_O, prn);
         gretl_print_destroy(prn);
-        if (err) {
-            //FIXME:!!! handle_gretl_error(err);
+        if (varlist) {
+            std::free(varlist);
         }
-    }
-
-    if (varlist) {
-        std::free(varlist);
+        if (err) {
+            handle_gretl_error(err);
+        }
     }
 }
 

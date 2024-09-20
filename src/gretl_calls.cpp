@@ -101,12 +101,6 @@ py::dict about (bool do_print)
     return res;
 }
 
-static void handle_gretl_error (int err)
-{
-    const char *msg = errmsg_get_with_default(err);
-    throw std::runtime_error(msg);
-}
-
 // set a string or int valued "setvar"
 
 void set (const std::string key,
@@ -145,9 +139,9 @@ void printdata (const std::optional<py::dict> &data,
     if (data == std::nullopt && !DSET_class) {
         throw std::runtime_error("No dataset in place");
     } else if (data == std::nullopt && DSET_class) {
-        DSET_class->print(namesonly);
+        DSET_class->printdset(namesonly);
     } else {
-        GretlDataset(*data).print(namesonly);
+        GretlDataset(*data).printdset(namesonly);
     }
 }
 
