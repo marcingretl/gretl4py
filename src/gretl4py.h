@@ -23,10 +23,10 @@ void attach_gretl_data (const std::string fname);
 
 py::dict *get_gretl_data (const std::string fname);
 
-void sample (const py::kwargs &kwargs);
-
 void printdata (const std::optional<py::dict> &data = std::nullopt,
                 bool namesonly = false);
+
+void sample (const py::kwargs &kwargs);
 
 // model estimation
 py::dict *arma (const std::string y, const py::tuple &tup, const py::kwargs &kwargs);

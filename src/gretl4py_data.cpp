@@ -373,6 +373,105 @@ void GretlDataset::printdset (bool namesonly)
     }
 }
 
+void GretlDataset::sample (const py::kwargs &kwargs)
+{
+    char *t1str = nullptr;
+    char *t2str = nullptr;
+    char *restr = nullptr;
+    const char *val;
+    PRN *prn = nullptr;
+    int opt_replace = 0;
+    int full = 0;
+    int argc = 0;
+    int optc = 0;
+    int err = 0;
+
+    for (auto &item : kwargs) {
+        val = NULL;
+
+        if (!is_pystr(item.first)) {
+            throw std::runtime_error("option key must be a string");
+        }
+        const std::string &key = item.first.cast<std::string>();
+
+        if (is_pyint(item.second) || is_pybool(item.second)) {
+            val = std::to_string(item.second.cast<int>()).c_str();
+        } else if (is_pystr(item.second)) {
+            val = item.second.cast<std::string_view>().data(); /* workaround for differences between compilers and/or OSs, see commit be4b711cc8a97e03317368431e4a42f5636daa63 (be4b711) */
+        }
+        if (key == "t1") {
+            t1str = gretl_strdup(val);
+            argc++;
+        } else if (key == "t2") {
+            t2str = gretl_strdup(val);
+            argc++;
+        } else if (key == "restriction") {
+            restr = gretl_strdup(val);
+            argc++;
+        } else if (key == "replace") {
+            opt_replace = std::atoi(val);
+            optc++;
+        } else if (key == "full") {
+            full = std::atoi(val);
+            optc++;
+        } else {
+            throw std::runtime_error("invalid key '" + key + "' in 'sample' args");
+        }
+    }
+
+    // reject invalid cases
+    if (full && (t1str || t2str || opt_replace)) {
+        throw std::runtime_error("invalid use of 'full' in 'sample' args");
+    } else if (restr && (t1str || t2str)) {
+        throw std::runtime_error("invalid use of 'restriction' in 'sample' args");
+    } else if (opt_replace && !restr) {
+        throw std::runtime_error("invalid use of 'replace' in 'sample' args");
+    }
+
+    prn = gretl_print_new(GRETL_PRINT_STDOUT, NULL);
+
+    if (argc == 0 && optc == 0) {
+        // just report the current sample
+         print_smpl(dset, get_full_length_n(), OPT_NONE, prn);
+    } else if (argc == 0 && full) {
+        // "smpl full"
+        err = restore_full_sample(dset, NULL);
+    } else if (restr) {
+        // smpl <restr> --restrict [--replace]
+        gretlopt opt = OPT_R;
+
+        if (opt_replace) {
+            // C++ !!
+            opt = (gretlopt) ((int) OPT_R | (int) OPT_P);
+        }
+        err = restrict_sample(restr, NULL, dset, NULL, opt, prn, NULL);
+    } else if (t1str || t2str) {
+        // smpl <t1str> <t2str>
+        if (t1str && !t2str) {
+            err = set_sample(t1str, ";", dset, OPT_NONE);
+        } else if (t2str && !t1str) {
+            err = set_sample(";", t2str, dset, OPT_NONE);
+        } else {
+            err = set_sample(t1str, t2str, dset, OPT_NONE);
+        }
+    }
+
+    if (err) {
+        if (prn) {
+            gretl_print_destroy(prn);
+        }
+        const char *msg = errmsg_get_with_default(err);
+        throw std::runtime_error(msg);
+    } else if (argc > 0 || optc > 0) {
+        print_smpl(dset, get_full_length_n(), OPT_NONE, prn);
+    }
+
+    gretl_print_destroy(prn);
+    free(t1str);
+    free(t2str);
+    free(restr);
+}
+
 // GretlBundle class methods
 GretlBundle::GretlBundle (void)
 {

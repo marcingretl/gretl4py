@@ -45,6 +45,7 @@ public:
 
     py::dict *to_dict (void); // memory must be freed at the caller level
     void printdset (bool namesonly = false);
+    void sample (const py::kwargs &kwargs);
 };
 
 //
