@@ -397,7 +397,7 @@ void GretlDataset::sample (const py::kwargs &kwargs)
         if (is_pyint(item.second) || is_pybool(item.second)) {
             val = std::to_string(item.second.cast<int>()).c_str();
         } else if (is_pystr(item.second)) {
-            val = item.second.cast<std::string_view>().data(); /* workaround for differences between compilers and/or OSs, see commit be4b711cc8a97e03317368431e4a42f5636daa63 (be4b711) */
+            val = item.second.cast<std::string_view>().data();
         }
         if (key == "t1") {
             t1str = gretl_strdup(val);

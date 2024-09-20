@@ -17,7 +17,7 @@
 #endif
 
 #define LIBGRETL_MIN_VER 48
-#define GRETL_PYBIND11_DEBUG 1
+#define GRETL_PYBIND11_DEBUG 0
 
 static GretlDataset *DSET = nullptr; // global dataset (class)
 static int gretl4py_verbose = 0;
@@ -148,7 +148,7 @@ void printdata (const std::optional<py::dict> &data,
                 bool namesonly)
 {
     if (data == std::nullopt && !DSET) {
-        throw std::runtime_error("No dataset in place");
+        throw std::runtime_error("No gretl dataset in place");
     } else if (data == std::nullopt && DSET) {
         DSET->printdset(namesonly);
     } else {
