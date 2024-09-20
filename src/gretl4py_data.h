@@ -12,8 +12,6 @@ namespace py = pybind11;
 
 int gretl_model_to_dict (MODEL *model, DATASET *dset, const char *summary, py::dict &DICT);
 
-void numpy_dict_to_gretl_dset (const py::dict &DICT, DATASET *dset);
-
 void handle_gretl_error (int err);
 
 
@@ -31,7 +29,7 @@ private:
 
     inline void free_dset (void)
     {
-        if (dset != nullptr) {
+        if (dset) {
             destroy_dataset(dset);
         }
     }
@@ -44,7 +42,9 @@ public:
     ~GretlDataset (void);
 
     py::dict *to_dict (void); // memory must be freed at the caller level
+
     void printdset (bool namesonly = false);
+
     void sample (const py::kwargs &kwargs);
 };
 
@@ -61,7 +61,7 @@ private:
 public:
     int err = 0;
 
-    GretlBundle (void);
+    GretlBundle (void); // here we generate $sysinfo
     GretlBundle (MODEL *model, DATASET *dset);
     ~GretlBundle (void);
 

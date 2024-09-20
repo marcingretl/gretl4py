@@ -173,56 +173,6 @@ static void numpy_array_to_gretl_storage (const py::dict &pydict,
     dset->t2 = dset->n-1;
 }
 
-void numpy_dict_to_gretl_dset (const py::dict &pydict,
-                               DATASET *dset)
-{
-    //
-    // we fill dset with pydict content
-    //
-    py::list pylist;
-    std::string *strBUF;
-    int pd;
-
-    if (dset == NULL) {
-        throw std::runtime_error("Dataset allocation failed.");
-    }
-
-    // we fill up dset->Z
-    numpy_array_to_gretl_storage(pydict, dset);
-
-    if (dataset_allocate_varnames(dset) || dataset_allocate_obs_markers(dset)) {
-        throw std::runtime_error("Dataset strings allocation failed.");
-    }
-
-    // we fill up dset->S
-    pylist = pydict[py::cast("obs_labels")];
-    if (pylist.size() != (long unsigned int) dset->n) {
-        throw std::runtime_error("Number of obs_labels is different than number of observations.");
-    }
-    copy_strings_from_python_list(pylist, dset->S, OBSLEN-1, 0, 0, true);
-
-    // we fill up dset->varname
-    pylist = pydict[py::cast("varname")];
-    if (pylist.size() != (long unsigned int) dset->v-1) {
-        throw std::runtime_error("Number of varnames is different than number of variables.");
-    }
-    strBUF = new std::string[dset->v];
-    copy_strings_from_python_list(pylist, strBUF);
-    for (int i=0; i<dset->v-1; i++) {
-        std::memset(dset->varname[i+1], '\0', VNAMELEN);
-        gretl_normalize_varname(dset->varname[i+1], strBUF[i].c_str(), 1, 0);
-    }
-    delete []strBUF;
-
-    if (pydict.contains("structure")) {
-        dset->structure = pydict["structure"].cast<int>();
-    }
-
-    // FIXME: maybe it's possible automatically, i.e. without sending it from Python
-    pd = get_int_from_python_dict(pydict, "pd");
-    set_obs(std::to_string(pd).c_str(), dset->S[0], dset, OPT_T);
-}
-
 void handle_gretl_error (int err)
 {
     const char *msg = errmsg_get_with_default(err);
@@ -245,6 +195,7 @@ GretlDataset::GretlDataset (const std::string fname)
         throw std::runtime_error("Reading data from '" + fname + "' file failed.");
     }
 }
+
 GretlDataset::GretlDataset (const py::dict &pydict)
 {
     //
@@ -432,7 +383,7 @@ void GretlDataset::sample (const py::kwargs &kwargs)
 
     if (argc == 0 && optc == 0) {
         // just report the current sample
-         print_smpl(dset, get_full_length_n(), OPT_NONE, prn);
+        print_smpl(dset, get_full_length_n(), OPT_NONE, prn);
     } else if (argc == 0 && full) {
         // "smpl full"
         err = restore_full_sample(dset, NULL);
@@ -467,9 +418,9 @@ void GretlDataset::sample (const py::kwargs &kwargs)
     }
 
     gretl_print_destroy(prn);
-    free(t1str);
-    free(t2str);
-    free(restr);
+    std::free(t1str);
+    std::free(t2str);
+    std::free(restr);
 }
 
 // GretlBundle class methods
@@ -478,6 +429,7 @@ GretlBundle::GretlBundle (void)
     b = get_sysinfo_bundle(&err);
     free_b = false;
 }
+
 GretlBundle::GretlBundle (MODEL *model, DATASET *dset)
 {
     b = bundle_from_model(model, dset, &err);
@@ -485,20 +437,20 @@ GretlBundle::GretlBundle (MODEL *model, DATASET *dset)
 
 GretlBundle::~GretlBundle (void)
 {
-    if (json_buf != nullptr) {
+    if (json_buf) {
         g_free(json_buf);
     }
-    if (prn != nullptr) {
+    if (prn) {
         gretl_print_destroy(prn);
     }
-    if (free_b && b != nullptr) {
+    if (free_b && b) {
         gretl_bundle_destroy(b);
     }
 }
 
 char *GretlBundle::to_json (void)
 {
-    if (!err && json_buf == nullptr) {
+    if (!err && !json_buf) {
         json_buf = gretl_bundle_write_to_json_buffer(b, &err);
     }
 
@@ -507,10 +459,10 @@ char *GretlBundle::to_json (void)
 
 void GretlBundle::print (void)
 {
-    if (!err && prn == nullptr) {
+    if (!err && !prn) {
         prn = gretl_print_new(GRETL_PRINT_STDOUT, NULL);
     }
-    if (prn != nullptr) {
+    if (prn) {
         err = gretl_bundle_print(b, prn);
     }
 }
