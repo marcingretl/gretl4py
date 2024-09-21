@@ -52,9 +52,9 @@ While Section~\ref{sec:estimators_c++} outlines only two
 \cpp bindings, the actual list of available \lgretl estimators
 is much more extensive. Keep in mind the following:
 \begin{itemize}
-	\hitem\pythcode{data=dict()} is a dictionary containing
+	\item\pythcode{data=dict()} is a dictionary containing
 		the data as described in~\error{XXX};
-	\hitem\pythcode{formula=str()} is a simple \proglang{R}-style
+	\item\pythcode{formula=str()} is a simple \proglang{R}-style
 		formula that maps the model equation using the following rule:
 		\begin{center}
 			$\displaystyle y = \beta_0 + \sum_{j=1}^{k}\beta_jx_j + \varepsilon\;\rightarrow\;$%
@@ -78,13 +78,16 @@ gretl.arma(y=str(), order=tuple((p,d,q)),
 \end{lstlisting}
 \mapto{arima p d q [; P D Q ] ; depvar}
 \begin{itemize}
-	\item[]\maptoopt{--verbose}{verbose=True}
-	\item[]\maptoopt{--hessian}{hessian=True}
-	\item[]\maptoopt{--opg}{opg=True}
-	\item[]\maptoopt{--nc}{nc=True}
-	\item[]\maptoopt{--conditional}{conditional=True}
-	\item[]\maptoopt{--lbfgs}{lbfgs=True}
-	\item[]\maptoopt{--lagselect}{lagselect=True}
+	\item[]\maptoopt{--verbose}{verbose=True}{print details of iterations}
+	\item[]\maptoopt{--hessian}{hessian=True}{disables the fallback to outer
+		product of the gradient (OPG)}
+	\item[]\maptoopt{--opg}{opg=True}{forces use of the OPG method}
+	\item[]\maptoopt{--nc}{nc=True}{do not include a constant}
+	\item[]\maptoopt{--conditional}{conditional=True}{use conditional maximum likelihood}
+	\item[]\maptoopt{--lbfgs}{lbfgs=True}{use L-BFGS-B maximizer}
+	\item[]\maptoopt{--lagselect}{lagselect=True}{information criteria
+		and log-likelihood for a number of ARMA or ARIMA specifications
+		are printed}
 \end{itemize}
 
 
@@ -94,9 +97,9 @@ gretl.ols(formula=str(), [OPTS, [data=dict()]])
 \end{lstlisting}
 \mapto{ols depvar indepvars}
 \begin{itemize}
-	\item[]\maptoopt{--robust}{robust=True}
-	\item[]\maptoopt{--jackknife}{jackknife=True}
-\end{itemize}
+	\item[]\maptoopt{--robust}{robust=True}{robust standard errors}
+	\item[]\maptoopt{--jackknife}{jackknife=True}{selecting an
+		\texttt{hc\_version} of 3a, \cite[see][]{gretl_command} for details}\end{itemize}
 
 \vspace{10pt}\noindent\gretlcmd{biprobit}
 
