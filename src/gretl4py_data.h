@@ -37,8 +37,8 @@ public:
     DATASET *dset = nullptr;
     int err = 0;
 
-    GretlDataset (const std::string fname);
-    GretlDataset (const py::dict &pydict);
+    GretlDataset (const std::string fname); // we load dataset from file
+    GretlDataset (const py::dict &pydict);  // we load dataset from Python's dictionary
     ~GretlDataset (void);
 
     py::dict *to_dict (void); // memory must be freed at the caller level
@@ -61,8 +61,8 @@ private:
 public:
     int err = 0;
 
-    GretlBundle (void); // here we generate $sysinfo
-    GretlBundle (MODEL *model, DATASET *dset);
+    GretlBundle (void);                         // we get contents of $sysinfo bundle
+    GretlBundle (MODEL *model, DATASET *dset);  // we produce bundle from MODEL struct
     ~GretlBundle (void);
 
     char *to_json (void);
@@ -79,7 +79,7 @@ private:
     const py::object *res;
     std::string as_str;
 public:
-   MapToPy (const std::optional<py::object> &pyobject);
+   MapToPy (const std::optional<py::object> &pyobject); // currently std::string and std::int are supported
 
    auto *ptr (void) { return res; }
 

@@ -12,23 +12,9 @@
 #define GRETL_PYBIND11_DEBUG 0
 
 
-int gretl_model_to_dict (MODEL *model, DATASET *dset,
-                         const char *summary, py::dict &pydict)
-{
-    //
-    // here we construct python's dict which is returned (with estimation results)
-    //
-    GretlBundle b = GretlBundle(model, dset);
-    char *json_buf = b.to_json();
-
-    if (!b.err) {
-        pydict[py::cast("_id")] = model->ID;
-        pydict[py::cast("json_buffer")] = json_buf;
-        pydict[py::cast("summary")] = summary;
-    }
-
-    return b.err;
-}
+//////////////////////////////////////////////////
+// static functions
+//////////////////////////////////////////////////
 
 #if 0
 
@@ -173,15 +159,43 @@ static void numpy_array_to_gretl_storage (const py::dict &pydict,
     dset->t2 = dset->n-1;
 }
 
+
+//////////////////////////////////////////////////
+// functions
+//////////////////////////////////////////////////
+
 void handle_gretl_error (int err)
 {
     const char *msg = errmsg_get_with_default(err);
     throw std::runtime_error(msg);
 }
 
-/* classes */
+int gretl_model_to_dict (MODEL *model, DATASET *dset,
+                         const char *summary, py::dict &pydict)
+{
+    //
+    // here we construct python's dict which is returned (with estimation results)
+    //
+    GretlBundle b = GretlBundle(model, dset);
+    char *json_buf = b.to_json();
 
+    if (!b.err) {
+        pydict[py::cast("_id")] = model->ID;
+        pydict[py::cast("json_buffer")] = json_buf;
+        pydict[py::cast("summary")] = summary;
+    }
+
+    return b.err;
+}
+
+
+//////////////////////////////////////////////////
+// classes
+//////////////////////////////////////////////////
+
+//
 //GretlDataset class methods
+//
 GretlDataset::GretlDataset (const std::string fname)
 {
     //
@@ -251,12 +265,12 @@ GretlDataset::~GretlDataset (void)
 py::dict *GretlDataset::to_dict (void)
 {
     //
-    // we load gretl data from file to pydict
+    // we convert gretl data to pydict
     //
     py::dict *as_dict = new py::dict;
-    auto &pydict = *as_dict;
     py::list *vnames = new py::list;
     py::list *labels = new py::list;
+    auto &pydict = *as_dict;
     double *tmp;
     int i = 0;
 
@@ -326,11 +340,14 @@ void GretlDataset::printdset (bool namesonly)
 
 void GretlDataset::sample (const py::kwargs &kwargs)
 {
+    //
+    // method which mimics gretl's 'smpl' command
+    //
     char *t1str = nullptr;
     char *t2str = nullptr;
     char *restr = nullptr;
-    const char *val;
     PRN *prn = nullptr;
+    const char *val;
     int opt_replace = 0;
     int full = 0;
     int argc = 0;
@@ -423,7 +440,9 @@ void GretlDataset::sample (const py::kwargs &kwargs)
     std::free(restr);
 }
 
+//
 // GretlBundle class methods
+//
 GretlBundle::GretlBundle (void)
 {
     b = get_sysinfo_bundle(&err);
@@ -467,8 +486,9 @@ void GretlBundle::print (void)
     }
 }
 
-
+//
 // MapToPy class methods
+//
 MapToPy::MapToPy (const std::optional<py::object> &pyobject)
 {
 #if GRETL_PYBIND11_DEBUG
