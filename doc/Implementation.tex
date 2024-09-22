@@ -78,15 +78,15 @@ gretl.arma(y=str(), order=tuple((p,d,q)),
 \end{lstlisting}
 \mapto{arima p d q [; P D Q ] ; depvar}
 \begin{itemize}
-	\item[]\maptoopt{--verbose}{verbose=True}{print details of iterations}
-	\item[]\maptoopt{--hessian}{hessian=True}{disables the fallback to outer
+	\item[]\maptoopt{verbose=True}{--verbose}{print details of iterations}
+	\item[]\maptoopt{hessian=True}{--hessian}{disables the fallback to outer
 		product of the gradient (OPG)}
-	\item[]\maptoopt{--opg}{opg=True}{forces use of the OPG method}
-	\item[]\maptoopt{--nc}{nc=True}{do not include a constant}
-	\item[]\maptoopt{--conditional}{conditional=True}{use conditional maximum likelihood}
-	\item[]\maptoopt{--lbfgs}{lbfgs=True}{use L-BFGS-B maximizer}
-	\item[]\maptoopt{--lagselect}{lagselect=True}{information criteria
-		and log-likelihood for a number of ARMA or ARIMA specifications
+	\item[]\maptoopt{opg=True}{--opg}{forces use of the OPG method}
+	\item[]\maptoopt{nc=True}{--nc}{do not include a constant}
+	\item[]\maptoopt{conditional=True}{--conditional}{use conditional maximum likelihood}
+	\item[]\maptoopt{lbfgs=True}{--lbfgs}{use L-BFGS-B maximizer}
+	\item[]\maptoopt{lagselect=True}{--lagselect}{information criteria
+		and log-likelihood for a number of AR(I)MA specifications
 		are printed}
 \end{itemize}
 
@@ -97,8 +97,8 @@ gretl.ols(formula=str(), [OPTS, [data=dict()]])
 \end{lstlisting}
 \mapto{ols depvar indepvars}
 \begin{itemize}
-	\item[]\maptoopt{--robust}{robust=True}{robust standard errors}
-	\item[]\maptoopt{--jackknife}{jackknife=True}{selecting an
+	\item[]\maptoopt{robust=True}{--robust}{robust standard errors}
+	\item[]\maptoopt{jackknife=True}{--jackknife}{selecting an
 		\texttt{hc\_version} of 3a, \cite[see][]{gretl_command} for details}\end{itemize}
 
 \vspace{10pt}\noindent\gretlcmd{biprobit}
