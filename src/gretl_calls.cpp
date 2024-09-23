@@ -135,6 +135,7 @@ void attach_gretl_data (const std::string fname)
 {
     if (DSET) {
         delete DSET;
+        DSET = nullptr; // this is because of SIGSEGV by free_Z
     }
     DSET = new GretlDataset(fname);
 }

@@ -1,5 +1,6 @@
 #include <pybind11/stl.h>
 #include <gretl/libgretl.h>
+#include <iostream>
 
 namespace py = pybind11;
 

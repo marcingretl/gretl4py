@@ -1,6 +1,5 @@
 BUGS:
 
-1. SIGSEGV when wrong gdt ``fname''
 
 TODOS:
 
