@@ -12,52 +12,9 @@
 #define GRETL_PYBIND11_DEBUG 0
 
 
-int gretl_model_to_dict (MODEL *model, DATASET *dset,
-                         const char *summary, py::dict &pydict)
-{
-    //
-    // here we construct python's dict which is returned (with estimation results)
-    //
-    GretlBundle b = GretlBundle(model, dset);
-    char *json_buf = b.to_json();
-
-    if (!b.err) {
-        pydict[py::cast("_id")] = model->ID;
-        pydict[py::cast("json_buffer")] = json_buf;
-        pydict[py::cast("summary")] = summary;
-    }
-
-    return b.err;
-}
-
-#if 0
-int gretl_model_to_dict (MODEL *model, DATASET *dset,
-                         const char *summary, py::dict &pydict)
-{
-    //
-    // here we construct python's dict which is returned (with estimation results)
-    //
-    char *json_buf = NULL;
-    gretl_bundle *b;
-    int err = 0;
-
-    b = bundle_from_model(model, dset, &err);
-    if (!err) {
-        json_buf = gretl_bundle_write_to_json_buffer(b, &err);
-    }
-
-    if (json_buf != NULL) {
-        pydict[py::cast("_id")] = model->ID;
-        pydict[py::cast("json_buffer")] = json_buf;
-        pydict[py::cast("summary")] = summary;
-        g_free(json_buf);
-    }
-
-    gretl_bundle_destroy(b);
-
-    return err;
-}
-#endif // 0
+//////////////////////////////////////////////////
+// static functions
+//////////////////////////////////////////////////
 
 #if 0
 
@@ -202,8 +159,58 @@ static void numpy_array_to_gretl_storage (const py::dict &pydict,
     dset->t2 = dset->n-1;
 }
 
-void numpy_dict_to_gretl_dset (const py::dict &pydict,
-                               DATASET *dset)
+
+//////////////////////////////////////////////////
+// functions
+//////////////////////////////////////////////////
+
+void handle_gretl_error (int err)
+{
+    const char *msg = errmsg_get_with_default(err);
+    throw std::runtime_error(msg);
+}
+
+int gretl_model_to_dict (MODEL *model, DATASET *dset,
+                         const char *summary, py::dict &pydict)
+{
+    //
+    // here we construct python's dict which is returned (with estimation results)
+    //
+    GretlBundle b = GretlBundle(model, dset);
+    char *json_buf = b.to_json();
+
+    if (!b.err) {
+        pydict[py::cast("_id")] = model->ID;
+        pydict[py::cast("json_buffer")] = json_buf;
+        pydict[py::cast("summary")] = summary;
+    }
+
+    return b.err;
+}
+
+
+//////////////////////////////////////////////////
+// classes
+//////////////////////////////////////////////////
+
+//
+//GretlDataset class methods
+//
+GretlDataset::GretlDataset (const std::string fname)
+{
+    //
+    // load gretl data from file
+    //
+    allocate_dset();
+    err = gretl_get_data(fname.c_str(), dset, OPT_NONE, NULL);
+
+    if (err) {
+        destroy_dataset(dset);
+        throw std::runtime_error("Reading data from '" + fname + "' file failed.");
+    }
+}
+
+GretlDataset::GretlDataset (const py::dict &pydict)
 {
     //
     // we fill dset with pydict content
@@ -212,9 +219,7 @@ void numpy_dict_to_gretl_dset (const py::dict &pydict,
     std::string *strBUF;
     int pd;
 
-    if (dset == NULL) {
-        throw std::runtime_error("Dataset allocation failed.");
-    }
+    allocate_dset();
 
     // we fill up dset->Z
     numpy_array_to_gretl_storage(pydict, dset);
@@ -252,25 +257,22 @@ void numpy_dict_to_gretl_dset (const py::dict &pydict,
     set_obs(std::to_string(pd).c_str(), dset->S[0], dset, OPT_T);
 }
 
-void gretl_dset_to_numpy_dict (const std::string fname, py::dict &pydict)
+GretlDataset::~GretlDataset (void)
+{
+    free_dset();
+}
+
+py::dict *GretlDataset::to_dict (void)
 {
     //
-    // we load gretl data from file to pydict
+    // we convert gretl data to pydict
     //
+    py::dict *as_dict = new py::dict;
     py::list *vnames = new py::list;
     py::list *labels = new py::list;
-    DATASET *dset;
+    auto &pydict = *as_dict;
     double *tmp;
-    int i, err = 0;
-
-    dset = datainfo_new();
-    err = gretl_get_data(fname.c_str(), dset, OPT_NONE, NULL);
-    if (err) {
-        delete vnames;
-        delete labels;
-        destroy_dataset(dset);
-        throw std::runtime_error("Reading data from '" + fname + "' file failed.");
-    }
+    int i = 0;
 
     pydict[py::cast("pd")] = dset->pd;
     pydict[py::cast("structure")] = dset->structure;
@@ -306,33 +308,192 @@ void gretl_dset_to_numpy_dict (const std::string fname, py::dict &pydict)
     pydict[py::cast("obs_labels")] = *labels;
     delete labels;
 
-    destroy_dataset(dset);
+    return as_dict;
 }
 
-DATASET *gretl_load_global_dataset (const std::string fname)
+void GretlDataset::printdset (bool namesonly)
 {
-    //
-    // load gretl data from file to global DSET
-    //
-    DATASET *dset = datainfo_new();
-    int err = 0;
+    PRN *prn = nullptr;
+    int *varlist = nullptr;
 
-    err = gretl_get_data(fname.c_str(), dset, OPT_NONE, NULL);
-
-    if (err) {
-        destroy_dataset(dset);
-        throw std::runtime_error("Reading data from '" + fname + "' file failed.");
+    for (int i=1; i<dset->v; i++) {
+        if (namesonly) {
+            std::printf("%d %s\n", i, dset->varname[i]);
+        } else {
+            varlist = gretl_list_new(dset->v);
+            varlist[i] = current_series_index(dset, dset->varname[i]);
+        }
     }
 
-    return dset;
+    if (!namesonly) {
+        prn = gretl_print_new(GRETL_PRINT_STDOUT, NULL);
+        err = printdata(varlist, NULL, dset, OPT_O, prn);
+        gretl_print_destroy(prn);
+        if (varlist) {
+            std::free(varlist);
+        }
+        if (err) {
+            handle_gretl_error(err);
+        }
+    }
 }
 
+void GretlDataset::sample (const py::kwargs &kwargs)
+{
+    //
+    // method which mimics gretl's 'smpl' command
+    //
+    char *t1str = nullptr;
+    char *t2str = nullptr;
+    char *restr = nullptr;
+    PRN *prn = nullptr;
+    const char *val;
+    int opt_replace = 0;
+    int full = 0;
+    int argc = 0;
+    int optc = 0;
+    int err = 0;
+
+    for (auto &item : kwargs) {
+        val = NULL;
+
+        if (!is_pystr(item.first)) {
+            throw std::runtime_error("option key must be a string");
+        }
+        const std::string &key = item.first.cast<std::string>();
+
+        if (is_pyint(item.second) || is_pybool(item.second)) {
+            val = std::to_string(item.second.cast<int>()).c_str();
+        } else if (is_pystr(item.second)) {
+            val = item.second.cast<std::string_view>().data();
+        }
+        if (key == "t1") {
+            t1str = gretl_strdup(val);
+            argc++;
+        } else if (key == "t2") {
+            t2str = gretl_strdup(val);
+            argc++;
+        } else if (key == "restriction") {
+            restr = gretl_strdup(val);
+            argc++;
+        } else if (key == "replace") {
+            opt_replace = std::atoi(val);
+            optc++;
+        } else if (key == "full") {
+            full = std::atoi(val);
+            optc++;
+        } else {
+            throw std::runtime_error("invalid key '" + key + "' in 'sample' args");
+        }
+    }
+
+    // reject invalid cases
+    if (full && (t1str || t2str || opt_replace)) {
+        throw std::runtime_error("invalid use of 'full' in 'sample' args");
+    } else if (restr && (t1str || t2str)) {
+        throw std::runtime_error("invalid use of 'restriction' in 'sample' args");
+    } else if (opt_replace && !restr) {
+        throw std::runtime_error("invalid use of 'replace' in 'sample' args");
+    }
+
+    prn = gretl_print_new(GRETL_PRINT_STDOUT, NULL);
+
+    if (argc == 0 && optc == 0) {
+        // just report the current sample
+        print_smpl(dset, get_full_length_n(), OPT_NONE, prn);
+    } else if (argc == 0 && full) {
+        // "smpl full"
+        err = restore_full_sample(dset, NULL);
+    } else if (restr) {
+        // smpl <restr> --restrict [--replace]
+        gretlopt opt = OPT_R;
+
+        if (opt_replace) {
+            // C++ !!
+            opt = (gretlopt) ((int) OPT_R | (int) OPT_P);
+        }
+        err = restrict_sample(restr, NULL, dset, NULL, opt, prn, NULL);
+    } else if (t1str || t2str) {
+        // smpl <t1str> <t2str>
+        if (t1str && !t2str) {
+            err = set_sample(t1str, ";", dset, OPT_NONE);
+        } else if (t2str && !t1str) {
+            err = set_sample(";", t2str, dset, OPT_NONE);
+        } else {
+            err = set_sample(t1str, t2str, dset, OPT_NONE);
+        }
+    }
+
+    if (err) {
+        if (prn) {
+            gretl_print_destroy(prn);
+        }
+        const char *msg = errmsg_get_with_default(err);
+        throw std::runtime_error(msg);
+    } else if (argc > 0 || optc > 0) {
+        print_smpl(dset, get_full_length_n(), OPT_NONE, prn);
+    }
+
+    gretl_print_destroy(prn);
+    std::free(t1str);
+    std::free(t2str);
+    std::free(restr);
+}
+
+//
+// GretlBundle class methods
+//
+GretlBundle::GretlBundle (void)
+{
+    b = get_sysinfo_bundle(&err);
+    free_b = false;
+}
+
+GretlBundle::GretlBundle (MODEL *model, DATASET *dset)
+{
+    b = bundle_from_model(model, dset, &err);
+}
+
+GretlBundle::~GretlBundle (void)
+{
+    if (json_buf) {
+        g_free(json_buf);
+    }
+    if (prn) {
+        gretl_print_destroy(prn);
+    }
+    if (free_b && b) {
+        gretl_bundle_destroy(b);
+    }
+}
+
+char *GretlBundle::to_json (void)
+{
+    if (!err && !json_buf) {
+        json_buf = gretl_bundle_write_to_json_buffer(b, &err);
+    }
+
+    return json_buf;
+}
+
+void GretlBundle::print (void)
+{
+    if (!err && !prn) {
+        prn = gretl_print_new(GRETL_PRINT_STDOUT, NULL);
+    }
+    if (prn) {
+        err = gretl_bundle_print(b, prn);
+    }
+}
+
+//
 // MapToPy class methods
+//
 MapToPy::MapToPy (const std::optional<py::object> &pyobject)
 {
 #if GRETL_PYBIND11_DEBUG
     std::printf("converting %s to string\n",
-                py::cast<std::string>(pyobject->get_type()));
+                py::cast<std::string>(pyobject->get_type()).c_str());
 # endif
     res = &*pyobject;
 
@@ -345,48 +506,5 @@ MapToPy::MapToPy (const std::optional<py::object> &pyobject)
         std::cerr << "I don't know how to convert '";
         std::cerr << py::cast<std::string>(pyobject->get_type());
         std::cerr << "' to std::string" << std::endl;
-    }
-}
-
-// GretlBundle class methods
-GretlBundle::GretlBundle (void)
-{
-    b = get_sysinfo_bundle(&err);
-    free_b = false;
-}
-GretlBundle::GretlBundle (MODEL *model, DATASET *dset)
-{
-    b = bundle_from_model(model, dset, &err);
-}
-
-GretlBundle::~GretlBundle (void)
-{
-    if (json_buf != nullptr) {
-        g_free(json_buf);
-    }
-    if (prn != nullptr) {
-        gretl_print_destroy(prn);
-    }
-    if (free_b && b != nullptr) {
-        gretl_bundle_destroy(b);
-    }
-}
-
-char *GretlBundle::to_json (void)
-{
-    if (!err && json_buf == nullptr) {
-        json_buf = gretl_bundle_write_to_json_buffer(b, &err);
-    }
-
-    return json_buf;
-}
-
-void GretlBundle::print (void)
-{
-    if (!err && prn == nullptr) {
-        prn = gretl_print_new(GRETL_PRINT_STDOUT, NULL);
-    }
-    if (prn != nullptr) {
-        err = gretl_bundle_print(b, prn);
     }
 }

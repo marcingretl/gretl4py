@@ -12,26 +12,40 @@ namespace py = pybind11;
 
 int gretl_model_to_dict (MODEL *model, DATASET *dset, const char *summary, py::dict &DICT);
 
-void numpy_dict_to_gretl_dset (const py::dict &DICT, DATASET *dset);
+void handle_gretl_error (int err);
 
-void gretl_dset_to_numpy_dict (const std::string fname, py::dict &pydict);
-
-DATASET *gretl_load_global_dataset (const std::string fname);
 
 //
-// This is general purpose py::object to py::<type> mapper
+// Class to handle gretl 'DATASET' type
 //
-class MapToPy
+class GretlDataset
 {
 private:
-    const py::object *res;
-    std::string as_str;
+    inline void allocate_dset (void)
+    {
+        free_dset();
+        dset = datainfo_new();
+    }
+
+    inline void free_dset (void)
+    {
+        if (dset) {
+            destroy_dataset(dset);
+        }
+    }
 public:
-   MapToPy (const std::optional<py::object> &pyobject);
+    DATASET *dset = nullptr;
+    int err = 0;
 
-   auto *ptr (void) { return res; }
+    GretlDataset (const std::string fname); // we load dataset from file
+    GretlDataset (const py::dict &pydict);  // we load dataset from Python's dictionary
+    ~GretlDataset (void);
 
-   std::string to_string (void) { return as_str; }
+    py::dict *to_dict (void); // memory must be freed at the caller level
+
+    void printdset (bool namesonly = false);
+
+    void sample (const py::kwargs &kwargs);
 };
 
 //
@@ -47,12 +61,27 @@ private:
 public:
     int err = 0;
 
-    GretlBundle (void);
-    GretlBundle (MODEL *model, DATASET *dset);
-
+    GretlBundle (void);                         // we get contents of $sysinfo bundle
+    GretlBundle (MODEL *model, DATASET *dset);  // we produce bundle from MODEL struct
     ~GretlBundle (void);
 
     char *to_json (void);
 
     void print (void);
+};
+
+//
+// This is general purpose py::object to py::<type> mapper
+//
+class MapToPy
+{
+private:
+    const py::object *res;
+    std::string as_str;
+public:
+   MapToPy (const std::optional<py::object> &pyobject); // currently std::string and std::int are supported
+
+   auto *ptr (void) { return res; }
+
+   std::string to_string (void) { return as_str; }
 };
