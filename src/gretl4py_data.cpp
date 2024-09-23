@@ -16,30 +16,6 @@
 // static functions
 //////////////////////////////////////////////////
 
-#if 0
-
-static void copy_string_from_python_dict (const py::dict &pydict,
-                                          const char *key, char *dest,
-                                          int n_bytes, int offset = 0)
-{
-    //
-    // here we take just one element (under the "key") and copy to dest
-    //
-    std::string str;
-    auto element = pydict[py::cast(key)];
-
-    if (is_pyint(element)) {
-        str = std::to_string(py::cast<int>(element));
-    } else {
-        str = py::cast<std::string>(element);
-    }
-
-    str.erase(std::remove_if(str.begin(), str.end(), ::isspace), str.end());
-    str.copy(dest, n_bytes, offset);
-}
-
-#endif // currently unused
-
 static int get_int_from_python_dict (const py::dict &pydict,
                                      const char *key,
                                      int deflt = 1)

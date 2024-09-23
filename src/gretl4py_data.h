@@ -32,6 +32,7 @@ private:
     {
         if (dset) {
             destroy_dataset(dset);
+            dset = nullptr;
         }
     }
 public:
