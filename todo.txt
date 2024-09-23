@@ -1,3 +1,9 @@
+BUGS:
+
+1. SIGSEGV when wrong gdt ``fname''
+
+TODOS:
+
 1. write docs
 
 2. put MS SDK gretlapi stack somewhere on the Internet (gretl SF source tree)?
