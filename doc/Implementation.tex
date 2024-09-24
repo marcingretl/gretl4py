@@ -67,11 +67,20 @@ The complete list of available estimators is as follows (options in square brack
 %\begin{lstlisting}[style=pythonstyle]
 %\end{lstlisting}
 
-\vspace{10pt}\noindent\gretlcmdn{ar1}
-%\begin{lstlisting}[style=pythonstyle]
-%\end{lstlisting}
+\vspace{10pt}\noindent\gretlcmdn{ar1}%
+\estdesc{Computes feasible GLS estimates for a model in which the error
+	term is assumed to follow a first-order autoregressive process.}
+\begin{lstlisting}[style=pythonstyle]
+gretl.ar1(formula=str(), [OPTS, [data=dict()]])
+\end{lstlisting}
+\mapto{ar1 depvar indepvars}
+\begin{itemize}
+	\item[]\maptoopt{hilu=True}{--hilu}{use Hildreth–Lu procedure}
+	\item[]\maptoopt{pwe=True}{--pwe}{use Prais–Winsten estimator}
+\end{itemize}
 
 \vspace{10pt}\noindent\gretlcmdn{arima}
+\estdesc{Estimates a univariate ARIMA (Autoregressive, Integrated, Moving Average) model.}
 \begin{lstlisting}[style=pythonstyle]
 gretl.arma(y=str(), order=tuple((p,d,q)),
 	[seasonal=tuple((P,D,Q)), OPTS, [data=dict()]])
@@ -92,6 +101,8 @@ gretl.arma(y=str(), order=tuple((p,d,q)),
 \end{itemize}
 
 \vspace{10pt}\noindent\gretlcmd{ols}
+\estdesc{Computes ordinary least squares (OLS) estimates with \texttt{depvar}
+	as the dependent variable and \texttt{indepvars} as the list of independent variables.}
 \begin{lstlisting}[style=pythonstyle]
 gretl.ols(formula=str(), [OPTS, [data=dict()]])
 \end{lstlisting}
@@ -107,6 +118,8 @@ gretl.ols(formula=str(), [OPTS, [data=dict()]])
 \vspace{10pt}\noindent\gretlcmd{biprobit}
 
 \vspace{10pt}\noindent\gretlcmd{duration}
+\estdesc{Estimates a duration model. By default the Weibull distribution is
+	used but the exponential, log-logistic and log-normal distributions are also available.}
 \begin{lstlisting}[style=pythonstyle]
 gretl.duration(formula=str(), [OPTS, [data=dict()]])
 \end{lstlisting}
@@ -141,6 +154,8 @@ gretl.logit(formula=str(), [OPTS, [data=dict()]])
 \end{itemize}
 
 \vspace{10pt}\noindent\gretlcmd{mpols}
+\estdesc{Computes OLS estimates for the specified model using multiple
+	precision floating-point arithmetic.}
 \begin{lstlisting}[style=pythonstyle]
 gretl.mpols(formula=str(), [OPTS, [data=dict()]])
 \end{lstlisting}
@@ -151,6 +166,8 @@ gretl.mpols(formula=str(), [OPTS, [data=dict()]])
 \vspace{10pt}\noindent\gretlcmd{negbin}
 
 \vspace{10pt}\noindent\gretlcmd{panel}
+\estdesc{By default the fixed effects estimator is used; this is implemented
+	by subtracting the group or unit means from the original data.}
 \begin{lstlisting}[style=pythonstyle]
 gretl.panel(formula=str(), [OPTS, [data=dict()]])
 \end{lstlisting}
