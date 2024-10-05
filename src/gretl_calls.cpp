@@ -22,6 +22,9 @@
 static GretlDataset *DSET = nullptr; // global dataset (class)
 static int gretl4py_verbose = 0;
 
+// workaround to manually resolve overloads ambiguity
+// FIXME: let's try to use concept from C++20 for this
+static MODEL (&garch_to_call)(const int*, DATASET*, gretlopt, PRN*) = garch;
 
 // module related tools
 
@@ -414,8 +417,8 @@ static int *list_from_formula (const char *formula,
     return list;
 }
 
-// Function to support several estimation methods that have
-// the same "basic" signature, plus a few special cases
+// Function template to support several estimation methods that
+// have the same "basic" signature, plus a few special cases
 // F: function to call
 // CI: GretlCmdIndex
 // T: F signature type (argument list)
@@ -544,9 +547,6 @@ py::dict *lad (const std::string formula, const py::kwargs &kwargs)
     return regression_wrapper<lad_model, LAD, 4>(formula, kwargs);
 }
 
-// workaround to manually resolve overloads ambiguity
-// FIXME: let's try to use concept from C++20
-MODEL (&garch_to_call)(const int*, DATASET*, gretlopt, PRN*) = garch;
 py::dict *garch (const std::string formula, const py::kwargs &kwargs)
 {
     return regression_wrapper<garch_to_call, GARCH, 3>(formula, kwargs);
