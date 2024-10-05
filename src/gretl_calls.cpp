@@ -543,11 +543,14 @@ py::dict *lad (const std::string formula, const py::kwargs &kwargs)
 {
     return regression_wrapper<lad_model, LAD, 4>(formula, kwargs);
 }
-/*
+
+// workaround to manually resolve overloads ambiguity
+// FIXME: let's try to use concept from C++20
+MODEL (&garch_to_call)(const int*, DATASET*, gretlopt, PRN*) = garch;
 py::dict *garch (const std::string formula, const py::kwargs &kwargs)
 {
-    return regression_wrapper<garch, 3>(formula, kwargs, GARCH);
-}*/
+    return regression_wrapper<garch_to_call, GARCH, 3>(formula, kwargs);
+}
 
 py::dict *mpols (const std::string formula, const py::kwargs &kwargs)
 {
