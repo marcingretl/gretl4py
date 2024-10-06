@@ -19,6 +19,15 @@
 #define LIBGRETL_MIN_VER 48
 #define GRETL_PYBIND11_DEBUG 0
 
+#define use_ldco_sig(c) (c == OLS || c == WLS) //const int *list, DATASET *dset, GretlCmdIndex ci, gretlopt opt
+#define use_ldcop_sig(c) (c == LOGIT || c == PROBIT) //int *list, DATASET *dset, int ci, gretlopt opt, PRN *prn
+#define use_ldo_sig(c) (c == LOGISTIC || c == LAD \
+                        || c == MPOLS || c == IVREG) //const int *list, DATASET *dset, gretlopt opt
+#define use_ldop_sig(c) (c == BIPROBIT || c == DURATION \
+                         || c == HECKIT || c == AR || c == AR1 \
+                         || c == GARCH || c == PANEL) //const int *list, DATASET *dset, gretlopt opt, PRN *prn
+#define use_lcdop_sig(c) (c == POISSON || c == NEGBIN) //const int *list, int ci, DATASET *dset, gretlopt opt, PRN *prn
+
 static GretlDataset *DSET = nullptr; // global dataset (class)
 static int gretl4py_verbose = 0;
 
@@ -451,19 +460,16 @@ static py::dict *regression_wrapper (const std::string &formula,
         throw std::runtime_error("Failed to allocate memory");
     }
 
-    if constexpr (CI == OLS || CI == WLS) {
+    if constexpr (use_ldco_sig(CI)) {
         *model = F(list, GD->dset, CI, opt);
-    } else if constexpr (CI == LOGIT || CI == PROBIT) {
+    } else if constexpr (use_ldcop_sig(CI)) {
         *model = F(list, GD->dset, CI, opt, prn);
-    } else if constexpr (CI == POISSON || CI == NEGBIN) {
-        *model = F(list, CI, GD->dset, opt, prn);
-    } else if constexpr (CI == BIPROBIT || CI == DURATION ||
-                         CI == HECKIT || CI == AR || CI == AR1 ||
-                         CI == GARCH || CI == PANEL) {
-        *model = F(list, GD->dset, opt, prn);
-    } else if constexpr (CI == LOGISTIC || CI == LAD ||
-                         CI == MPOLS || CI == IVREG) {
+    } else if constexpr (use_ldo_sig(CI)) {
         *model = F(list, GD->dset, opt);
+    } else if constexpr (use_ldop_sig(CI)) {
+        *model = F(list, GD->dset, opt, prn);
+    } else if constexpr (use_lcdop_sig(CI)) {
+        *model = F(list, CI, GD->dset, opt, prn);
     }
 
     finalize_model(model, GD->dset, list, do_print, prn, *res);
