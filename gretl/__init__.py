@@ -12,9 +12,12 @@ if platform == "win-amd64":
     except KeyError:
         RES = r'C:\Program Files\gretl'
         sysconfig.os.environ['GRETL_PLUGIN_PATH'] = RES + r'\plugins'
+        print("*** debug: GRETL_PLUGIN_PATH is: " + sysconfig.os.environ['GRETL_PLUGIN_PATH'])
     if 'GRETL_DATA_PATH' not in sysconfig.os.environ:
         sysconfig.os.environ['GRETL_DATA_PATH'] = RES + r'\data'
+        print("*** debug: GRETL_DATA_PATH is: " + sysconfig.os.environ['GRETL_DATA_PATH'])
     sysconfig.os.add_dll_directory(RES)
+    print("*** debug: path to libgretl is: " + RES)
 elif platform[0:5] == "macos":
     RES = '/Applications/Gretl.app/Contents/Resources/'
     sysconfig.os.environ['GRETL_PLUGIN_PATH'] = RES + 'lib/gretl-gtk2'
