@@ -58,4 +58,4 @@ Now libgretl-1.0-1.dll is ready to be used by native MS Windows compilers.
 The same procedure apply to: libm.dll, libxml2-2.dll (as xml2.lib), libfftw3-3.dll (as fftw3.lib)
 
 2.c.
-Generate glib-2.0.lib using glib-2.0.def from tarball.
+Generate intl.lib and glib-2.0.lib using intl.dll and libglib-2.0-0.dll from an official gretl distribution.
