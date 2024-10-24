@@ -5,7 +5,6 @@ import site as _site
 PATH = _site.getusersitepackages()
 platform = sysconfig.get_platform()
 if platform == "win-amd64":
-    import os
     PATH = str(PATH + r'\gretl')
     GDIR = r'C:\Program Files\gretl'
     if 'GRETL_PLUGIN_PATH' not in sysconfig.os.environ:
@@ -13,9 +12,9 @@ if platform == "win-amd64":
     if 'GRETL_DATA_PATH' not in sysconfig.os.environ:
         sysconfig.os.environ['GRETL_DATA_PATH'] = GDIR + r'\data'
     sysconfig.os.add_dll_directory(GDIR)
-    currpath = os.environ['PATH']
+    currpath = sysconfig.os.environ['PATH']
     if GDIR not in currpath:
-        os.environ['PATH'] = GDIR + os.pathsep + currpath
+        sysconfig.os.environ['PATH'] = GDIR + sysconfig.os.pathsep + currpath
 elif platform[0:5] == "macos":
     RES = '/Applications/Gretl.app/Contents/Resources/'
     sysconfig.os.environ['GRETL_PLUGIN_PATH'] = RES + 'lib/gretl-gtk2'

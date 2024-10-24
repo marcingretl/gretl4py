@@ -1,7 +1,7 @@
 @ECHO OFF
 
 REM please specify path to python executable
-REM SET "CMD=C:\"Program Files"\Python311\python.exe"
+REM SET "CMD=C:\"Program Files"\Python313\python.exe"
 SET "CMD=python.exe"
 
 IF NOT EXIST "C:\Program Files\gretl\plugins" GOTO bailout_gretl
