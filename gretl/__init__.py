@@ -7,7 +7,6 @@ platform = sysconfig.get_platform()
 if platform == "win-amd64":
     import os
     PATH = str(PATH + r'\gretl')
-    sysconfig.os.add_dll_directory(PATH + r'\DLL')
     GDIR = r'C:\Program Files\gretl'
     if 'GRETL_PLUGIN_PATH' not in sysconfig.os.environ:
         sysconfig.os.environ['GRETL_PLUGIN_PATH'] = GDIR + r'\plugins'
