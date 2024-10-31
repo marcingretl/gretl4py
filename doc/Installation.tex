@@ -5,7 +5,8 @@ the following components are installed:
 \begin{itemize}
 	\item One of the supported versions of \python: (\reqpython);
 	\item The following required \python packages: \pkg{csv},
-		\pkg{json}, \pkg{numpy}, \pkg{pandas}, and \pkg{subprocess};
+		\pkg{json}, \pkg{numpy}, \pkg{pandas}, \pkg{subprocess},
+		and \pkg{pybind11}\footnote{This package is required for compilation only.};
 	\item \lgretl~1.0 version 48 or higher (refer to
 		\url{https://gretl.sourceforge.net} for details);
 \end{itemize}
@@ -62,9 +63,8 @@ Before compiling \gretlpy on GNU/Linux, ensure that the
 following components are installed:
 \begin{enumerate}
 	\item \pkg{GNU make}, \pkg{(g)zip}, and \pkg{pkg-config};
-	\item The \python package \pkg{pybind11}; \item A \cpp compiler
-		with \texttt{std=c++17} support (\texttt{g++}, \texttt{clang++},
-		and \texttt{icpx} have been tested);
+	\item A \cpp compiler with \texttt{std=c++17} support
+		(\texttt{g++}, \texttt{clang++}, and \texttt{icpx} have been tested);
 \end{enumerate}
 Next, to compile the module, run `\texttt{make -j3}' in the \gretlpy
 root directory. This will generate the file
@@ -87,6 +87,7 @@ file is not compatible with the native MS Windows \python distribution.
 
 \subsection{Compiling on MS Windows -- native}
 \error{to be written$\ldots$}
+\url{https://sourceforge.net/projects/gretl/files/mscompile/}
 
 \subsection{Compiling on macOS}
 \error{to be written$\ldots$}
