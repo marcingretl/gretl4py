@@ -5,6 +5,7 @@ import statsmodels.api as sm
 import gretl
 
 np.random.seed(9876789)
+hashedline = "################################################################"
 
 def numpyarray2dict (X, periodicity=1, Y=None, with_const=False,
                      const_pos=1):    
@@ -55,6 +56,7 @@ def numpyarray2dict (X, periodicity=1, Y=None, with_const=False,
 
 
 """ OLS estimation """
+print(f'\n{hashedline:s}\n***\tOLS estimation\t***\n{hashedline:s}')
 nsample = 100
 x = np.linspace(0, 10, 100)
 X = np.column_stack((x, x ** 2))
@@ -70,11 +72,12 @@ gretl.attach_data(numpyarray2dict(X, Y=y, with_const=False))
 model = gretl.ols('y ~ const + x1 + x2')
 results = model.fit()
 print(results)
-print("Parameters: ", model.results['coeff'])
+print("Parameters: ", np.transpose(model.results['coeff']))
 print("R2: ", model.results['rsq'])
 
 
 """ OLS non-linear curve but linear in parameters """
+print(f'\n{hashedline:s}\n***\tOLS non-linear curve but linear in parameters\t***\n{hashedline:s}')
 nsample = 50
 sig = 0.5
 x = np.linspace(0, 20, nsample)
@@ -88,6 +91,6 @@ gretl.attach_data(numpyarray2dict(X, Y=y, with_const=True, const_pos=4))
 
 res = gretl.ols('y ~ const + x1 + x2 + x3').fit()
 print(res)
-print("Parameters: ", res.results['coeff'])
-print("Standard errors: ", res.results['stderr'])
+print("Parameters: ", np.transpose(res.results['coeff']))
+print("Standard errors: ", np.transpose(res.results['stderr']))
 print("Predicted values: ", None)
