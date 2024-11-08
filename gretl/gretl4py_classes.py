@@ -75,6 +75,9 @@ class Model:
     def stderr(self):
         return self.results['stderr'][:, 0]
     
+    def yhat(self):
+        return self.results['yhat']
+    
     def rsq(self):
         return self.results['rsq']
 
@@ -82,6 +85,7 @@ class Model:
     params = property(fget=coeff, fset=None, fdel=None)
     bse = property(fget=stderr, fset=None, fdel=None)
     rsquared = property(fget=rsq, fset=None, fdel=None)
+    fittedvalues = property(fget=yhat, fset=None, fdel=None)
 
 if __name__ == "__main__":
     pass
