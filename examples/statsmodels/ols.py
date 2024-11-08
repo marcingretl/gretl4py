@@ -6,10 +6,12 @@ import gretl
 
 np.random.seed(9876789)
 
-def printhead (title):
+def printhead (title, simple=False):
     hashedline = "################################################################"
-    print(f'\n{hashedline:s}\n***\t{title:s}\t***\n{hashedline:s}')
-    
+    if simple is True:
+        print(f'\n***\t{title:s}\t***')
+    else:
+        print(f'\n{hashedline:s}\n***\t{title:s}\t***\n{hashedline:s}')
 
 def numpyarray2dict (X, periodicity=1, Y=None, with_const=False,
                      const_pos=1):    
@@ -22,10 +24,10 @@ def numpyarray2dict (X, periodicity=1, Y=None, with_const=False,
     import numpy
     
     if not isinstance(X, numpy.ndarray):
-        print("an exception must be raised!!!")
+        print("X is not a numpay array!!!")
     if Y is not None:
         if not isinstance(Y, numpy.ndarray):
-            print("an exception must be raised!!!")
+            print("Y is not a numpay array!!!")
         if numpy.shape(Y)[0] != numpy.shape(X)[0]:
             print("an exception must be raised!!!")
 
@@ -56,6 +58,7 @@ def numpyarray2dict (X, periodicity=1, Y=None, with_const=False,
     d['varname'] = varname
     d['obs_labels'] = obs_labels
     d['periodicity'] = periodicity
+    
     return d
 
 """
@@ -192,3 +195,68 @@ ax.plot(x, res.fittedvalues, "r--.", label="Predicted")
 legend = ax.legend(loc="best")
 plt.show()
 # OLS with dummy variables: END
+
+
+"""
+################################################################
+***     Joint hypothesis test - Multicollinearity  ***
+################################################################
+"""
+printhead("Joint hypothesis test - Multicollinearity")
+"""
+Note, that longley dataset is available in standard gretl distribution:
+fname = gretl.gretl_data_path("misc/longley.gdt")
+longley = gretl.get_gretl_data(fname)
+"""
+from statsmodels.datasets.longley import load_pandas
+y = load_pandas().endog
+X = load_pandas().exog
+X = sm.add_constant(X)
+
+# statsmodels calls:
+if Do_StatsModels is True:
+    ols_model = sm.OLS(y, X)
+    ols_results = ols_model.fit()
+    print(ols_results.summary())
+
+# gretl calls
+df = pd.concat([X, y], axis=1)
+gretl.attach_data(gretl.df2dict(df, 1))
+ols_model = gretl.ols('TOTEMP ~ const + GNPDEFL + GNP + UNEMP + ARMED + POP + YEAR')
+ols_results = ols_model.fit()
+print(ols_results)
+
+printhead("Condition number - to be done", True)
+    
+printhead("Dropping an observation", True)
+# statsmodels calls:
+if Do_StatsModels is True:
+    ols_results2 = sm.OLS(y.iloc[:14], X.iloc[:14]).fit()
+    print(
+        "Percentage change %4.2f%%\n"
+        * 7
+        % tuple(
+            [
+                i
+                for i in (ols_results2.params - ols_results.params)
+                / ols_results.params
+                * 100
+            ]
+        )
+    )
+
+# gretl calls
+gretl.sample(t1=1, t2=14)
+ols_results2 = gretl.ols('TOTEMP ~ const + GNPDEFL + GNP + UNEMP + ARMED + POP + YEAR').fit()
+print(
+    "Percentage change %4.2f%%\n"
+    * 7
+    % tuple(
+        [
+            i
+            for i in (ols_results2.params - ols_results.params)
+            / ols_results.params
+            * 100
+        ]
+    )
+)
