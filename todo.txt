@@ -5,7 +5,7 @@ TODOS:
 
 1. write docs
 
-2. put MS SDK gretlapi stack somewhere on the Internet (gretl SF source tree)?
+2. do we want to have statsmodels like attributes (for know coded as @properties)
 
 3. (re)organize `demo' directory
 

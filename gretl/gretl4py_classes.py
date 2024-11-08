@@ -52,6 +52,7 @@ class Model:
         if self.cpython_function and self.computed is False:
             model_dict = self.cpython_function(*self.args, **self.options)
             json_dict = json.loads(model_dict['json_buffer'])
+            
             # Define summary property used for __repr__
             self.summary = model_dict['summary']
             del json_dict['type']
@@ -61,13 +62,26 @@ class Model:
             self.__load_dict_model(model_dict)
             self._id = model_dict['_id']
             del model_dict['_id']
-
+            
         self.computed = True
         return self
 
     def id(self):
         return self._id
+    
+    def coeff(self):
+        return self.results['coeff'][:, 0]
+    
+    def stderr(self):
+        return self.results['stderr'][:, 0]
+    
+    def rsq(self):
+        return self.results['rsq']
 
+    # statsmodels like attributes: properties
+    params = property(fget=coeff, fset=None, fdel=None)
+    bse = property(fget=stderr, fset=None, fdel=None)
+    rsquared = property(fget=rsq, fset=None, fdel=None)
 
 if __name__ == "__main__":
     pass

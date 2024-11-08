@@ -5,7 +5,11 @@ import statsmodels.api as sm
 import gretl
 
 np.random.seed(9876789)
-hashedline = "################################################################"
+
+def printhead (title):
+    hashedline = "################################################################"
+    print(f'\n{hashedline:s}\n***\t{title:s}\t***\n{hashedline:s}')
+    
 
 def numpyarray2dict (X, periodicity=1, Y=None, with_const=False,
                      const_pos=1):    
@@ -54,43 +58,74 @@ def numpyarray2dict (X, periodicity=1, Y=None, with_const=False,
     d['periodicity'] = periodicity
     return d
 
+"""
+Here, we have statsmodels OLS examples available at\n\
+https://www.statsmodels.org/stable/examples/notebooks/generated/ols.html,\n\
+rendered as gretl calls.
+"""
 
-""" OLS estimation """
-print(f'\n{hashedline:s}\n***\tOLS estimation\t***\n{hashedline:s}')
+"""
+################################################################
+***     OLS estimation  ***
+################################################################
+"""
+printhead("OLS estimation")
+# data generation (package independent)
 nsample = 100
 x = np.linspace(0, 10, 100)
 X = np.column_stack((x, x ** 2))
 beta = np.array([1, 0.1, 10])
 e = np.random.normal(size=nsample)
-
 X_sm = sm.add_constant(X)
 y = np.dot(X_sm, beta) + e
+# data generation: END
 
-gretl.attach_data(numpyarray2dict(X, Y=y, with_const=False))
-#gretl.attach_data(numpyarray2dict(X_sm, Y=y, with_const=True)) # this is alternative call
-
-model = gretl.ols('y ~ const + x1 + x2')
+# statsmodels calls:
+"""
+model = sm.OLS(y, X_sm)
 results = model.fit()
-print(results)
-print("Parameters: ", np.transpose(model.results['coeff']))
-print("R2: ", model.results['rsq'])
+print(results.summary())
+print("Parameters: ", results.params)
+print("R2: ", results.rsquared)
+"""
 
+# gretl calls
+model = gretl.ols('y ~ const + x1 + x2', data=numpyarray2dict(X, Y=y, with_const=False))
+#model = gretl.ols('y ~ const + x1 + x2', data=numpyarray2dict(X_sm, Y=y, with_const=True)) # this is an alternative call using X_sm
+results = model.fit()
+print(results.summary)
+print("Parameters: ", results.params)
+print("R2: ", results.rsquared)
+# OLS estimation: END
 
-""" OLS non-linear curve but linear in parameters """
-print(f'\n{hashedline:s}\n***\tOLS non-linear curve but linear in parameters\t***\n{hashedline:s}')
+"""
+################################################################
+***     OLS non-linear curve but linear in parameters   ***
+################################################################
+"""
+printhead("OLS non-linear curve but linear in parameters")
+# data generation (package independent)
 nsample = 50
 sig = 0.5
 x = np.linspace(0, 20, nsample)
 X = np.column_stack((x, np.sin(x), (x - 5) ** 2, np.ones(nsample)))
 beta = [0.5, 0.5, -0.02, 5.0]
-
 y_true = np.dot(X, beta)
 y = y_true + sig * np.random.normal(size=nsample)
+# data generation: END
 
-gretl.attach_data(numpyarray2dict(X, Y=y, with_const=True, const_pos=4))
+# statsmodels calls:
+"""
+res = sm.OLS(y, X).fit()
+print(res.summary())
+print("Parameters: ", res.params)
+print("Standard errors: ", res.bse)
+print("Predicted values: ", res.predict())
+"""
 
-res = gretl.ols('y ~ const + x1 + x2 + x3').fit()
+# gretl calls
+res = gretl.ols('y ~ const + x1 + x2 + x3', data=numpyarray2dict(X, Y=y, with_const=True, const_pos=4)).fit()
 print(res)
-print("Parameters: ", np.transpose(res.results['coeff']))
-print("Standard errors: ", np.transpose(res.results['stderr']))
+print("Parameters: ", res.params)
+print("Standard errors: ", res.bse)
 print("Predicted values: ", None)
