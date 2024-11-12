@@ -15,6 +15,6 @@ res = gretl.ols('QNC ~ 0 + PRICE + INCOME', data=d97).fit()
 print(res)
 
 dframe = pandas.read_csv('data9-7.csv')
-MyDict = gretl.df2dict(dframe)
+MyDict = gretl.df2dict(dframe, 1, 1)
 res = gretl.ols('QNC ~ 0 + PRICE + INCOME', data=MyDict).fit()
 print(res)

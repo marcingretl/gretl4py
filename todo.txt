@@ -10,3 +10,5 @@ TODOS:
 3. (re)organize `demo' directory
 
 4. do we want to provide builds for macOS and Linux?
+
+5. make a decision on df2dict() signature

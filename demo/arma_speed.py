@@ -3,7 +3,7 @@ import time
 import pandas
 
 ARMAtest = pandas.read_csv('large_arma22.csv')
-MyDict = gretl.df2dict(ARMAtest)
+MyDict = gretl.df2dict(ARMAtest, 1, 1)
 armaSpec = tuple((4,0,4))
 
 # arma model via gretl
