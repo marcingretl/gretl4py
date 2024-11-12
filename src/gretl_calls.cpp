@@ -423,6 +423,13 @@ static int *list_from_formula (const char *formula,
     list = generate_list(tmp, dset, 0, &err);
     free(tmp);
 
+    if (err) {
+        std::cerr << "libgretl error occurred: " << err << std::endl;
+        if (gretl4py_verbose) {
+            std::perror(gretl_errmsg_get());
+        }
+    }
+
     return list;
 }
 

@@ -296,11 +296,15 @@ void GretlDataset::printdset (bool namesonly)
         varlist = gretl_list_new(dset->v);
     }
 
-    for (int i=1; i<dset->v; i++) {
+    for (int i=0; i<dset->v; i++) {
         if (namesonly) {
             std::printf("%d %s\n", i, dset->varname[i]);
         } else {
-            varlist[i] = current_series_index(dset, dset->varname[i]);
+            if (!i) {
+                continue;
+            } else {
+                varlist[i] = current_series_index(dset, dset->varname[i]);
+            }
         }
     }
 

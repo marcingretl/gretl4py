@@ -28,12 +28,17 @@ def csv2dict(FILE, pd=1):
 def df2dict(dframe, pd=1):
     '''turns a pandas dataframe into a dictionary gretl understands'''
 
+    # hard rename of 'const' to 'constant'
+    dframe.rename(columns={"const": "constant"}, inplace=True)
+
     mydata = dframe.to_numpy(copy=True)
     d = dict()
-    d["varname"] = dframe.columns[1:]
-    d["data_array"] = numpy.array([row[1:] for row in mydata], numpy.double)
-    d["periodicity"] = pd
-    d["obs_labels"] = [row[0] for row in mydata]
+    #d["varname"] = dframe.columns[1:]
+    #d["data_array"] = numpy.array([row[1:] for row in mydata], numpy.double)
+    d['obs_labels'] = dframe.axes[0].tolist()
+    d['varname'] = dframe.axes[1].tolist()
+    d['data_array'] = numpy.array([row[0:] for row in mydata], numpy.double)
+    d['periodicity'] = pd
     return d
 
 def gretl_data_path(fname):
