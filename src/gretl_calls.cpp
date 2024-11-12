@@ -456,7 +456,9 @@ static py::dict *regression_wrapper (const std::string &formula,
     model = gretl_model_new();
     prn = gretl_print_new(GRETL_PRINT_BUFFER, NULL);
 
-    if (list == NULL || model == NULL || prn == NULL) {
+    if (list == NULL) {
+        throw std::runtime_error("Formula rendering failed");
+    } else if (model == NULL || prn == NULL) {
         throw std::runtime_error("Failed to allocate memory");
     }
 

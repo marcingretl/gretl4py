@@ -220,7 +220,7 @@ if Do_StatsModels is True:
     print(ols_results.summary())
 
 # gretl calls
-df = pd.concat([X, y], axis=1)
+df = pd.concat([X, y], axis=1) # let's try to use X.iloc[:, 1:7] (const term issue)
 gretl.attach_data(gretl.df2dict(df, 1))
 ols_model = gretl.ols('TOTEMP ~ const + GNPDEFL + GNP + UNEMP + ARMED + POP + YEAR')
 ols_results = ols_model.fit()
