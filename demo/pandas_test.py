@@ -2,7 +2,7 @@ import gretl
 import pandas
 
 dframe = pandas.read_csv('data9-7.csv')
-MyDict = gretl.df2dict(dframe, 4)
+MyDict = gretl.df2dict(dframe, 4, True)
 
 # arma model
 armamod = gretl.arma(y='QNC', order=(1,0,1), data=MyDict).fit()
