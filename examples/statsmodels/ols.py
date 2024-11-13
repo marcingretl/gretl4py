@@ -171,7 +171,7 @@ if Do_StatsModels is True:
     print(res2.summary())
     pred_ols2 = res2.get_prediction()
     iv_l = pred_ols2.summary_frame()["obs_ci_lower"]
-    iv_u = pred_ols2.summary_frame()["obs_ci_upper"]   
+    iv_u = pred_ols2.summary_frame()["obs_ci_upper"]
     fig, ax = plt.subplots(figsize=(8, 6))    
     ax.plot(x, y, "o", label="Data")
     ax.plot(x, y_true, "b-", label="True")

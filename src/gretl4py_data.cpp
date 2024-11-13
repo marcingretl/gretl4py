@@ -300,9 +300,7 @@ void GretlDataset::printdset (bool namesonly)
         if (namesonly) {
             std::printf("%d %s\n", i, dset->varname[i]);
         } else {
-            if (!i) {
-                continue;
-            } else {
+            if (i) {
                 varlist[i] = current_series_index(dset, dset->varname[i]);
             }
         }
