@@ -74,7 +74,10 @@ class Model:
     
     def yhat(self):
         return self.results['yhat']
-    
+
+    def uhat(self):
+        return self.results['uhat']
+
     # strings
     def parnames(self):
         return self.results['parnames']

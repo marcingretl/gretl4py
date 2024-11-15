@@ -61,6 +61,11 @@ if Do_StatsModels is True:
     fig = plt.figure(figsize=(12, 8))
     ax = fig.add_subplot(111)
     ax = arma_mod30.resid.plot(ax=ax)
+    resid = arma_mod30.resid
+    stats.normaltest(resid)
+    fig = plt.figure(figsize=(12, 8))
+    ax = fig.add_subplot(111)
+    fig = qqplot(resid, line="q", ax=ax, fit=True)
 
 # gretl calls
 gr_dta = gretl.df2dict(dta, 1)
@@ -76,3 +81,10 @@ print(arma_mod30.parnames(), arma_mod30.coeff())
 print("sigma2: " + str(arma_mod30.sigma()**2))
 linenr(13)
 print(arma_mod30.aic(), arma_mod30.bic(), arma_mod30.hqc())
+resid = arma_mod30.uhat()
+linenr(17)
+stats.normaltest(resid)
+linenr(18)
+fig = plt.figure(figsize=(12, 8))
+ax = fig.add_subplot(111)
+fig = qqplot(resid, line="q", ax=ax, fit=True)
