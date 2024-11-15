@@ -65,9 +65,6 @@ class Model:
             
         self.computed = True
         return self
-
-    def id(self):
-        return self._id
     
     def coeff(self):
         return self.results['coeff'][:, 0]
@@ -78,14 +75,29 @@ class Model:
     def yhat(self):
         return self.results['yhat']
     
+    # strings
+    def parnames(self):
+        return self.results['parnames']
+    
+    # scalars
+    def id(self):
+        return self._id
+    
     def rsq(self):
         return self.results['rsq']
-
-    # statsmodels like attributes: properties
-    params = property(fget=coeff, fset=None, fdel=None)
-    bse = property(fget=stderr, fset=None, fdel=None)
-    rsquared = property(fget=rsq, fset=None, fdel=None)
-    fittedvalues = property(fget=yhat, fset=None, fdel=None)
+    
+    def sigma(self):
+        return self.results['sigma']
+    
+    def aic(self):
+        return self.results['aic']
+    
+    def bic(self):
+        return self.results['bic']
+    
+    def hqc(self):
+        return self.results['hqc']
+    
 
 if __name__ == "__main__":
     pass

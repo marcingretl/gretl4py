@@ -45,6 +45,48 @@ def df2dict(dframe, pd=1, withobs=False):
     d['periodicity'] = pd
     return d
 
+def numpyarray2dict (X, periodicity=1, Y=None, with_const=False,
+                     const_pos=1):    
+    '''turns a 'raw' numpy array into a dictionary gretl understands
+    X - matrix with observations on explanatory variables
+    Y - vector with observations on endogeneus variable
+    with_const - boolean indicating if X contains constant term
+    const_pos - column number which holds constant term values
+    '''
+    
+    if not isinstance(X, numpy.ndarray):
+        print("X is not a numpay array!!!")
+    if Y is not None:
+        if not isinstance(Y, numpy.ndarray):
+            print("Y is not a numpay array!!!")
+        if numpy.shape(Y)[0] != numpy.shape(X)[0]:
+            print("X and Y are not comformable!!!")
+
+    d = dict()
+    obs_labels = list()
+    varname = list()
+
+    if Y is not None:
+        # force Tx1 vector
+        Y = numpy.vstack(Y)
+        varname.append("y")
+
+    # we create artificial variables names
+    for i in range(with_const, numpy.shape(X)[1]):
+        varname.append("x" + str(i+1-with_const))    
+    if with_const:
+        varname.insert(const_pos, "constant")
+        
+    # we create artificial obs labels
+    for i in range(numpy.shape(X)[0]):
+        obs_labels.append(i+1)
+    
+    d['data_array'] = numpy.hstack((Y, X))
+    d['varname'] = varname
+    d['obs_labels'] = obs_labels
+    d['periodicity'] = periodicity    
+    return d
+
 def gretl_data_path(fname):
     s = os.getenv('GRETL_DATA_PATH')
     if s is None:
