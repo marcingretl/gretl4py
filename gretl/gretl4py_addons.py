@@ -9,11 +9,13 @@ def _pdtostrformat (pd):
     if pd == 1:
         res = '%Y'
     elif pd == 4:
-        res = '%Y-%m'
+        res = '%Y:%q'
     elif pd == 12:
+        res = '%Y:%m'
+    elif pd in range(5,8):
         res = '%Y-%m-%d'
     else:
-        raise Exception("Unsupported periodicity: " + str(pd))
+        raise Exception("Unsupported date format for pd=" + str(pd))
     return res
 
 def csv2dict(FILE, pd=1):
@@ -41,14 +43,10 @@ def csv2dict(FILE, pd=1):
 
 def df2dict(dframe, pd=1, withobs=False):
     '''turns a pandas dataframe into a dictionary gretl understands'''
-
     d = {}
-
     # hard rename of 'const' to 'constant'
     dframe.rename(columns={"const": "constant"}, inplace=True)
     mydata = dframe.to_numpy(copy=True)
-    #d["varname"] = dframe.columns[1:]
-    #d["data_array"] = numpy.array([row[1:] for row in mydata], numpy.double)
     if withobs is True:
         d["obs_labels"] = [row[0] for row in mydata]
     else:
@@ -58,7 +56,7 @@ def df2dict(dframe, pd=1, withobs=False):
     d['periodicity'] = pd
     return d
 
-def numpyarray2dict (X, periodicity=1, Y=None, with_const=False,
+def numpyarray2dict (X, pd=1, Y=None, with_const=False,
                      const_pos=1):
     '''turns a 'raw' numpy array into a dictionary gretl understands
     X - matrix with observations on explanatory variables
@@ -66,46 +64,39 @@ def numpyarray2dict (X, periodicity=1, Y=None, with_const=False,
     with_const - boolean indicating if X contains constant term
     const_pos - column number which holds constant term values
     '''
-
     if not isinstance(X, numpy.ndarray):
         print("X is not a numpay array!!!")
     if Y is not None:
         if not isinstance(Y, numpy.ndarray):
-            print("Y is not a numpay array!!!")
+            raise Exception("Y is not a numpay array!!!")
         if numpy.shape(Y)[0] != numpy.shape(X)[0]:
-            print("X and Y are not comformable!!!")
-
+            raise Exception("X and Y are not comformable!!!")
     d = {}
     obs_labels = []
     varname = []
-
     if Y is not None:
         # force Tx1 vector
         Y = numpy.vstack(Y)
         varname.append("y")
-
     # we create artificial variables names
     for i in range(with_const, numpy.shape(X)[1]):
         varname.append("x" + str(i+1-with_const))
     if with_const:
         varname.insert(const_pos, "constant")
-
     # we create artificial obs labels
     for i in range(numpy.shape(X)[0]):
         obs_labels.append(i+1)
-
     d['data_array'] = numpy.hstack((Y, X))
     d['varname'] = varname
     d['obs_labels'] = obs_labels
-    d['periodicity'] = periodicity
+    d['periodicity'] = pd
     return d
 
 def series2dict (series, pd=1, varname="y"):
     '''turns a pandas series into a dictionary gretl understands'''
-
     d = {}
     try:
-        obs_dates = series.index.to_pydatetime()
+        obs_dates = series.index.to_period()
         d['obs_labels'] = [obs.strftime(_pdtostrformat(pd)) for obs in obs_dates]
     except AttributeError:
         d['obs_labels'] = series.index.to_list()
@@ -118,14 +109,16 @@ def series2dict (series, pd=1, varname="y"):
 
 def gretl_data_path(fname):
     """return full path to gretl data"""
+    res_path = None
     s = os.getenv('GRETL_DATA_PATH')
     if s is None:
         res = subprocess.run(['pkg-config', '--cflags-only-I', 'gretl'], stdout=subprocess.PIPE)
         b = res.stdout.split()[0]
         path = b.decode("utf-8")[2:]
-        return path[0:path.find("include")] + "share/gretl/data/" + fname
+        res_path = path[0:path.find("include")] + "share/gretl/data/" + fname
     else:
-        return s + '/' + fname
+        res_path = s + '/' + fname
+    return res_path
 
 def pretty_print(d):
     if isinstance(d, dict):

@@ -1,7 +1,7 @@
+import json
 import _gretl
 import numpy
 import pandas as pd
-import json
 
 class Model:
 
@@ -12,11 +12,12 @@ class Model:
         except Exception as err:
             print(f"Unexpected {err=}, {type(err)=}")
             raise
-
         self.args = args
         self.options = kwargs
         self.computed = False
         self._id = None
+        self.results = {}
+        self.summary = {}
 
     def __repr__(self):
         if self.computed:
@@ -52,9 +53,7 @@ class Model:
         if self.cpython_function and self.computed is False:
             model_dict = self.cpython_function(*self.args, **self.options)
             json_dict = json.loads(model_dict['json_buffer'])
-            
-            # Define summary property used for __repr__
-            self.summary = model_dict['summary']
+            self.summary = model_dict['summary'] # Define summary property used for __repr__
             del json_dict['type']
             self.__process_gretl_objects(json_dict)
             model_dict['results'] = json_dict
@@ -62,16 +61,15 @@ class Model:
             self.__load_dict_model(model_dict)
             self._id = model_dict['_id']
             del model_dict['_id']
-            
         self.computed = True
         return self
-    
+
     def coeff(self):
         return self.results['coeff'][:, 0]
-    
+
     def stderr(self):
         return self.results['stderr'][:, 0]
-    
+
     def yhat(self):
         return self.results['yhat']
 
@@ -81,26 +79,26 @@ class Model:
     # strings
     def parnames(self):
         return self.results['parnames']
-    
-    # scalars
+
+    #scalars
     def id(self):
         return self._id
-    
+
     def rsq(self):
         return self.results['rsq']
-    
+
     def sigma(self):
         return self.results['sigma']
-    
+
     def aic(self):
         return self.results['aic']
-    
+
     def bic(self):
         return self.results['bic']
-    
+
     def hqc(self):
         return self.results['hqc']
-    
+
 
 if __name__ == "__main__":
     pass
