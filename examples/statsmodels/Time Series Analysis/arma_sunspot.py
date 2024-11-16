@@ -1,13 +1,11 @@
 import matplotlib.pyplot as plt
-import numpy as np
+#import numpy as np
 import pandas as pd
 import statsmodels.api as sm
 from scipy import stats
 from statsmodels.tsa.arima.model import ARIMA
 from statsmodels.graphics.api import qqplot
 import gretl
-
-np.random.seed(9876789)
 
 def printhead (title, full=True):
     hashedline = "################################################################"
@@ -18,10 +16,10 @@ def printhead (title, full=True):
 
 def linenr (nr):
     print(f'\n[{nr:d}]:')
-    
+
 """
-Here, we have statsmodels OLS examples available at\n\
-https://www.statsmodels.org/stable/examples/notebooks/generated/ols.html,\n\
+Here, we have statsmodels ARMA examples available at\n\
+https://www.statsmodels.org/dev/examples/notebooks/generated/tsa_arma_0.html,\n\
 rendered as gretl calls.
 """
 
@@ -29,13 +27,13 @@ Do_StatsModels = True # if we want to see statsmodels results as well
 
 """
 ################################################################
-***     Autoregressive Moving Average (ARMA)  ***
+***     Autoregressive Moving Average (ARMA): Sunspots data  ***
 ################################################################
 """
 printhead("Sunspots Data")
 print(sm.datasets.sunspots.NOTE)
 
-# data 
+# data
 dta = sm.datasets.sunspots.load_pandas().data
 dta.index = pd.Index(sm.tsa.datetools.dates_from_range("1700", "2008"))
 dta.index.freq = dta.index.inferred_freq

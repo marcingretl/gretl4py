@@ -1,15 +1,29 @@
+import os
+import subprocess
 import csv
 import numpy
-import subprocess
-import os
+
+def _pdtostrformat (pd):
+    """produces date string formatter for given periodicity"""
+    res = None
+    if pd == 1:
+        res = '%Y'
+    elif pd == 4:
+        res = '%Y-%m'
+    elif pd == 12:
+        res = '%Y-%m-%d'
+    else:
+        raise Exception("Unsupported periodicity: " + str(pd))
+    return res
 
 def csv2dict(FILE, pd=1):
-    data_list = list()
-    obs_labels = list()
+    """turns a cvs into a dictionary gretl understands"""
+    data_list = []
+    obs_labels = []
     with open(FILE, newline='') as csvfile:
         gretlreader = csv.reader(csvfile, delimiter=',')
         row_nr = 0
-        varname = list()
+        varname = []
         for row in gretlreader:
             row_nr += 1
             if row_nr == 1:
@@ -18,7 +32,7 @@ def csv2dict(FILE, pd=1):
                 obs_labels.append(row[0])
                 data_list.append(row[1:])
     data_array = numpy.array(data_list, numpy.double)
-    d = dict()
+    d = {}
     d["data_array"] = data_array
     d["varname"] = varname
     d["obs_labels"] = obs_labels
@@ -28,12 +42,11 @@ def csv2dict(FILE, pd=1):
 def df2dict(dframe, pd=1, withobs=False):
     '''turns a pandas dataframe into a dictionary gretl understands'''
 
-    d = dict()
+    d = {}
 
     # hard rename of 'const' to 'constant'
     dframe.rename(columns={"const": "constant"}, inplace=True)
-    
-    mydata = dframe.to_numpy(copy=True)    
+    mydata = dframe.to_numpy(copy=True)
     #d["varname"] = dframe.columns[1:]
     #d["data_array"] = numpy.array([row[1:] for row in mydata], numpy.double)
     if withobs is True:
@@ -46,14 +59,14 @@ def df2dict(dframe, pd=1, withobs=False):
     return d
 
 def numpyarray2dict (X, periodicity=1, Y=None, with_const=False,
-                     const_pos=1):    
+                     const_pos=1):
     '''turns a 'raw' numpy array into a dictionary gretl understands
     X - matrix with observations on explanatory variables
     Y - vector with observations on endogeneus variable
     with_const - boolean indicating if X contains constant term
     const_pos - column number which holds constant term values
     '''
-    
+
     if not isinstance(X, numpy.ndarray):
         print("X is not a numpay array!!!")
     if Y is not None:
@@ -62,9 +75,9 @@ def numpyarray2dict (X, periodicity=1, Y=None, with_const=False,
         if numpy.shape(Y)[0] != numpy.shape(X)[0]:
             print("X and Y are not comformable!!!")
 
-    d = dict()
-    obs_labels = list()
-    varname = list()
+    d = {}
+    obs_labels = []
+    varname = []
 
     if Y is not None:
         # force Tx1 vector
@@ -73,21 +86,38 @@ def numpyarray2dict (X, periodicity=1, Y=None, with_const=False,
 
     # we create artificial variables names
     for i in range(with_const, numpy.shape(X)[1]):
-        varname.append("x" + str(i+1-with_const))    
+        varname.append("x" + str(i+1-with_const))
     if with_const:
         varname.insert(const_pos, "constant")
-        
+
     # we create artificial obs labels
     for i in range(numpy.shape(X)[0]):
         obs_labels.append(i+1)
-    
+
     d['data_array'] = numpy.hstack((Y, X))
     d['varname'] = varname
     d['obs_labels'] = obs_labels
-    d['periodicity'] = periodicity    
+    d['periodicity'] = periodicity
+    return d
+
+def series2dict (series, pd=1, varname="y"):
+    '''turns a pandas series into a dictionary gretl understands'''
+
+    d = {}
+    try:
+        obs_dates = series.index.to_pydatetime()
+        d['obs_labels'] = [obs.strftime(_pdtostrformat(pd)) for obs in obs_dates]
+    except AttributeError:
+        d['obs_labels'] = series.index.to_list()
+    mydata = series.to_numpy(copy=True, dtype=numpy.double)
+    #d['obs_labels'] = obs_labels
+    d['varname'] = [varname]
+    d['data_array'] = mydata
+    d['periodicity'] = pd
     return d
 
 def gretl_data_path(fname):
+    """return full path to gretl data"""
     s = os.getenv('GRETL_DATA_PATH')
     if s is None:
         res = subprocess.run(['pkg-config', '--cflags-only-I', 'gretl'], stdout=subprocess.PIPE)
@@ -113,7 +143,7 @@ def gretl_model_print(MODEL):
         print("I can print only dictionary!!!\n")
         return -1
     else:
-        ratio_type = 'z-score' if MODEL["_zscore"] == True else 't-ratio'
+        ratio_type = 'z-score' if MODEL["_zscore"] is True else 't-ratio'
         print(f'\t\tcoefficient\t std. error\t{ratio_type:s}\t p-value\n')
         print('  ' + DASHEDLINE)
         coeff_names = MODEL["coeff"].keys()

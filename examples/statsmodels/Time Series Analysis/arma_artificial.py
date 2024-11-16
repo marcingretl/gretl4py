@@ -1,0 +1,56 @@
+import numpy as np
+import pandas as pd
+from statsmodels.graphics.tsaplots import plot_predict
+from statsmodels.tsa.arima_process import arma_generate_sample
+from statsmodels.tsa.arima.model import ARIMA
+import gretl
+
+np.random.seed(12345)
+
+def printhead (title, full=True):
+    hashedline = "################################################################"
+    if full is False:
+        print(f'\n***\t{title:s}\t***')
+    else:
+        print(f'\n{hashedline:s}\n***\t{title:s}\t***\n{hashedline:s}')
+
+def linenr (nr):
+    print(f'\n[{nr:d}]:')
+
+"""
+Here, we have statsmodels ARMA examples available at\n\
+https://www.statsmodels.org/dev/examples/notebooks/generated/tsa_arma_1.html#,\n\
+rendered as gretl calls.
+"""
+
+Do_StatsModels = True # if we want to see statsmodels results as well
+
+"""
+################################################################
+***     Autoregressive Moving Average (ARMA): Artificial data  ***
+################################################################
+"""
+
+# data
+arparams = np.array([0.75, -0.25])
+maparams = np.array([0.65, 0.35])
+arparams = np.r_[1, -arparams]
+maparams = np.r_[1, maparams]
+nobs = 250
+y = arma_generate_sample(arparams, maparams, nobs)
+dates = pd.date_range("1980-1-1", freq="M", periods=nobs)
+y = pd.Series(y, index=dates)
+# data: END
+
+# statsmodels calls:
+if Do_StatsModels is True:
+    arma_mod = ARIMA(y, order=(2, 0, 2), trend="n")
+    arma_res = arma_mod.fit()
+    print(arma_res.summary())
+
+# gretl calls
+arma_mod = gretl.arma(y='y', order=(2, 0, 2), nc=True,
+                      data=gretl.series2dict(y, 12))
+arma_res = arma_mod.fit()
+linenr(6)
+print(arma_res.summary)
