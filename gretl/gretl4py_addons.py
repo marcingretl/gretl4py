@@ -15,11 +15,12 @@ def _pdtostrformat (pd):
     elif pd in range(5,8):
         res = '%Y-%m-%d'
     else:
-        raise Exception("Unsupported date format for pd=" + str(pd))
+        raise TypeError(f'date formatter for pd={pd:d} not supported')
     return res
 
 def csv2dict(FILE, pd=1):
     """turns a cvs into a dictionary gretl understands"""
+    d = {}
     data_list = []
     obs_labels = []
     with open(FILE, newline='') as csvfile:
@@ -34,7 +35,6 @@ def csv2dict(FILE, pd=1):
                 obs_labels.append(row[0])
                 data_list.append(row[1:])
     data_array = numpy.array(data_list, numpy.double)
-    d = {}
     d["data_array"] = data_array
     d["varname"] = varname
     d["obs_labels"] = obs_labels
@@ -65,7 +65,7 @@ def numpyarray2dict (X, pd=1, Y=None, with_const=False,
     const_pos - column number which holds constant term values
     '''
     if not isinstance(X, numpy.ndarray):
-        print("X is not a numpay array!!!")
+        raise Exception("X is not a numpay array!!!")
     if Y is not None:
         if not isinstance(Y, numpy.ndarray):
             raise Exception("Y is not a numpay array!!!")
@@ -98,10 +98,11 @@ def series2dict (series, pd=1, varname="y"):
     try:
         obs_dates = series.index.to_period()
         d['obs_labels'] = [obs.strftime(_pdtostrformat(pd)) for obs in obs_dates]
-    except AttributeError:
+    except (AttributeError, TypeError) as err:
+        if err:
+            print(f'Warning: {err}, fall back to original labels.')
         d['obs_labels'] = series.index.to_list()
     mydata = series.to_numpy(copy=True, dtype=numpy.double)
-    #d['obs_labels'] = obs_labels
     d['varname'] = [varname]
     d['data_array'] = mydata
     d['periodicity'] = pd
