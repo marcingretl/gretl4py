@@ -44,13 +44,15 @@ def csv2dict(FILE, pd=1):
 def df2dict(dframe, pd=1, withobs=False):
     '''turns a pandas dataframe into a dictionary gretl understands'''
     d = {}
+    obs_dates = []
     # hard rename of 'const' to 'constant'
     dframe.rename(columns={"const": "constant"}, inplace=True)
     mydata = dframe.to_numpy(copy=True)
     if withobs is True:
-        d["obs_labels"] = [row[0] for row in mydata]
+        obs_dates = [row[0] for row in mydata]
     else:
-        d['obs_labels'] = dframe.axes[0].tolist()
+        obs_dates = dframe.axes[0].tolist()
+    d['obs_labels'] = [obs.strftime(_pdtostrformat(pd)) for obs in obs_dates]
     d['varname'] = dframe.axes[1].tolist()[0+withobs:]
     d['data_array'] = numpy.array([row[0+withobs:] for row in mydata], numpy.double)
     d['periodicity'] = pd
