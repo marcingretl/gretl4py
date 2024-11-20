@@ -256,14 +256,14 @@ py::dict *GretlDataset::to_dict (void)
     // copy across the data values
     py::array_t<double, py::array::f_style> Z({dset->n, dset->v-1}); //20-11-2024: fix for double 'const' (dset->v)
     tmp = (double *) Z.request().ptr;
-    for (i=1; i<dset->v; i++) { //20-11-2024: fix for double 'const' (i=1)
+    for (i=1; i<dset->v; i++) { //20-11-2024: fix for double 'const' (i=0)
         std::memcpy(tmp, dset->Z[i], dset->n * sizeof *tmp);
         tmp += dset->n;
     }
     pydict[py::cast("data_array")] = Z;
 
     // copy across the series names
-    for (i=1; i<dset->v; i++) { //20-11-2024: fix for double 'const' (i=1)
+    for (i=1; i<dset->v; i++) { //20-11-2024: fix for double 'const' (i=0)
         vnames->append(dset->varname[i]);
     }
     pydict[py::cast("varname")] = *vnames;
