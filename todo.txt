@@ -1,5 +1,8 @@
 BUGS:
 
+1. const handling where data loaded from gdt file
+
+2. formula rendering (see PDF)
 
 TODOS:
 

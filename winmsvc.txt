@@ -1,7 +1,0 @@
-Steps needed to compile gretl4py for MS Windows native Python [MSC v.1936 64 bit (AMD64)]
-
-
-1. download MS Windows stack from: https://sourceforge.net/projects/gretl/files/mscompile/ (see read.me for details)
-2. make sure you have all Python's packages (see module documentation for details)
-3. make sure that %CMD% and %CXX% variables from compile.bat script are valid
-4. run compile.bat

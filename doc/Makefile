@@ -4,7 +4,7 @@ PKG = gretl4py
 SRCS = $(PKG).tex $(PKG).bib
 
 $(PKG).pdf: $(SRCS)
-	@pdflatex $(PKG) && bibtex $(PKG) && pdflatex $(PKG)
+	@pdflatex $(PKG) && bibtex $(PKG) && makeindex $(PKG) && pdflatex $(PKG)
 	@if grep 'Rerun to get' $(PKG).log ; then pdflatex $(PKG) ; fi
 
 clean:

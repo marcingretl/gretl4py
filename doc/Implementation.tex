@@ -54,20 +54,34 @@ is much more extensive. Keep in mind the following:
 \begin{itemize}
 	\item\pythcode{data=dict()} is a dictionary containing
 		the data as described in~\error{XXX};
-	\item\pythcode{formula=str()} is a simple \proglang{R}-style
-		formula that maps the model equation using the following rule:
-		\begin{center}
-			$\displaystyle y = \beta_0 + \sum_{j=1}^{k}\beta_jx_j + \varepsilon\;\rightarrow\;$%
-			\pythcode{'y ~ const + x1 + x2 + ... + xk'}
-		\end{center}
+	\item\pythcode{formula=str()} can take one of the
+		following forms:
+		\begin{itemize}
+			\item a simple \proglang{R}-style formula that
+				maps the model equation using the following rule:
+				\begin{center}
+					\addtocounter{equation}{1}
+					$\displaystyle y = \beta_0 + \sum_{j=1}^{k}\beta_jx_j + \varepsilon\;\rightarrow\;$%
+					\pythcode{'y ~ const + x1 + x2 + ... + xk'}%
+					\setcounter{rstylefomula}{\theequation}%
+					\hfil\hypertarget{theRstyleFomula}{(\textcolor{red}{\theequation})}
+				\end{center}
+			\item \gretl's default syntax, as described in \cite{gretl_manual}
+				and referred to here as the ``maps to'' syntax;
+		\end{itemize}
 \end{itemize}
 The complete list of available estimators is as follows (options in square brackets are optional):
 
-\vspace{10pt}\noindent\gretlcmdn{ar}
-%\begin{lstlisting}[style=pythonstyle]
-%\end{lstlisting}
+\est{ar}
+\estdesc{Computes parameter estimates using the
+	generalized Cochrane-Orcutt iterative procedure.}
+\begin{lstlisting}[style=pythonstyle]
+gretl.ar(formula=str(), [OPTS, [data=dict()]])
+\end{lstlisting}
+\mapto[0]{ar lags ; depvar indepvars}
+\noRformula
 
-\vspace{10pt}\noindent\gretlcmdn{ar1}%
+\est{ar1}
 \estdesc{Computes feasible GLS estimates for a model in which the error
 	term is assumed to follow a first-order autoregressive process.}
 \begin{lstlisting}[style=pythonstyle]
@@ -79,7 +93,7 @@ gretl.ar1(formula=str(), [OPTS, [data=dict()]])
 	\item[]\maptoopt{pwe=True}{--pwe}{use Prais–Winsten estimator}
 \end{itemize}
 
-\vspace{10pt}\noindent\gretlcmdn{arima}
+\est{arima}
 \estdesc{Estimates a univariate ARIMA (Autoregressive, Integrated, Moving Average) model.}
 \begin{lstlisting}[style=pythonstyle]
 gretl.arma(y=str(), order=tuple((p,d,q)),
@@ -100,7 +114,7 @@ gretl.arma(y=str(), order=tuple((p,d,q)),
 		are printed}
 \end{itemize}
 
-\vspace{10pt}\noindent\gretlcmd{ols}
+\est{ols}
 \estdesc{Computes ordinary least squares (OLS) estimates with \texttt{depvar}
 	as the dependent variable and \texttt{indepvars} as the list of independent variables.}
 \begin{lstlisting}[style=pythonstyle]
@@ -115,11 +129,23 @@ gretl.ols(formula=str(), [OPTS, [data=dict()]])
 	\item[]\maptoopt{no\_df\_corr=True}{--no-df-corr}{suppress degrees of freedom correction}
 \end{itemize}
 
-\vspace{10pt}\noindent\gretlcmd{biprobit}
+\est{biprobit}
+\estdesc{Estimates a bivariate probit model, using
+	the Newton-Raphson method to maximize the likelihood.}
+\begin{lstlisting}[style=pythonstyle]
+gretl.biprobit(formula=str(), [OPTS, [data=dict()]])
+\end{lstlisting}
+\mapto{biprobit depvar1 depvar2 indepvars1 [; indepvars2]}
+\begin{itemize}
+	\item[]\maptoopt{robust=True}{--robust}{robust standard errors}
+	\item[]\maptoopt{opg=True}{--opg}{forces use of the OPG method}
+\end{itemize}
+\noRformula
 
-\vspace{10pt}\noindent\gretlcmd{duration}
-\estdesc{Estimates a duration model. By default the Weibull distribution is
-	used but the exponential, log-logistic and log-normal distributions are also available.}
+\est{duration}
+\estdesc{By default the Weibull distribution is used
+	but the exponential, log-logistic and log-normal
+	distributions are also available.}
 \begin{lstlisting}[style=pythonstyle]
 gretl.duration(formula=str(), [OPTS, [data=dict()]])
 \end{lstlisting}
@@ -132,15 +158,63 @@ gretl.duration(formula=str(), [OPTS, [data=dict()]])
 	\item[]\maptoopt{verbose=True}{--verbose}{print details of iterations}
 \end{itemize}
 
-\vspace{10pt}\noindent\gretlcmd{garch}
+\est{garch}
+\estdesc{Estimates a GARCH model, either a univariate
+	model or, if indepvars are specified, including the
+	given exogenous variables.}\todo{\texttt{fcp} option must be verified}
+\begin{lstlisting}[style=pythonstyle]
+gretl.garch(formula=str(), [OPTS, [data=dict()]])
+\end{lstlisting}
+\mapto{garch p q ; depvar [indepvars]}
+\begin{itemize}
+	\item[]\maptoopt{robust=True}{--robust}{robust standard errors}
+	\item[]\maptoopt{nc=True}{--nc}{do not include a constant}
+	\item[]\maptoopt{stdresid=True}{--stdresid}{standardize the residuals}
+	\item[]\maptoopt{arma\_init=True}{--arma-init}{initial variance parameters from ARMA}
+\end{itemize}
+\noRformula
 
-\vspace{10pt}\noindent\gretlcmd{heckit}
+\est{heckit}
+\estdesc{Heckman-type selection model. In the specification,
+	the list before the semicolon represents the outcome equation,
+	and the second list represents the selection equation. The
+	dependent variable in the selection equation (ys in the
+	example above) must be a binary variable.}
+\begin{lstlisting}[style=pythonstyle]
+gretl.heckit(formula=str(), [OPTS, [data=dict()]])
+\end{lstlisting}\todo{formula rendering must be fixed}
+\error{Formula rendering failed}
 
-\vspace{10pt}\noindent\gretlcmd{lad}
+\est{lad}
+\estdesc{Calculates a regression that minimizes the sum of
+	the absolute deviations of the observed from the
+	fitted values of the dependent variable.}
+\begin{lstlisting}[style=pythonstyle]
+gretl.lad(formula=str(), [OPTS, [data=dict()]])
+\end{lstlisting}
+\mapto{lad depvar indepvars}
+\begin{itemize}
+	\item[]\maptoopt{no\_vcv=True}{--no-vcv}{don't compute covariance matrix}
+\end{itemize}
 
-\vspace{10pt}\noindent\gretlcmd{logistic}
+\est{logistic}
+\estdesc{Logistic regression: carries out an OLS
+	regression using the logistic transformation
+	of the dependent variable.}\todo{\texttt{ynax} option must be verified}
+\begin{lstlisting}[style=pythonstyle]
+gretl.logistic(formula=str(), [OPTS, [data=dict()]])
+\end{lstlisting}
+\mapto{logistic depvar indepvars}
+\begin{itemize}
+	\item[]\maptoopt{robust=True}{--robust}{robust standard errors}
+	\item[]\maptoopt{fixed\_effects=True}{--fixed-effects}{estimate with group fixed effects}
+\end{itemize}
 
-\vspace{10pt}\noindent\gretlcmd{logit}
+\est{logit}
+\estdesc{By default the slopes with respect to each of
+	the independent variables are calculated (at the means
+	of those variables) and these slopes replace the usual
+	p-values in the regression output.}
 \begin{lstlisting}[style=pythonstyle]
 gretl.logit(formula=str(), [OPTS, [data=dict()]])
 \end{lstlisting}
@@ -153,19 +227,31 @@ gretl.logit(formula=str(), [OPTS, [data=dict()]])
 	\item[]\maptoopt{estrella=True}{--estrella}{select pseudo-R-squared variant}
 \end{itemize}
 
-\vspace{10pt}\noindent\gretlcmd{mpols}
+\est{mpols}
 \estdesc{Computes OLS estimates for the specified model using multiple
 	precision floating-point arithmetic.}
 \begin{lstlisting}[style=pythonstyle]
 gretl.mpols(formula=str(), [OPTS, [data=dict()]])
 \end{lstlisting}
-\mapto{mpols depvar indepvars}
+\mapto[0]{mpols depvar indepvars}
 
-(do not apply)
+\est{negbin}
+\estdesc{Estimates a Negative Binomial model. The dependent
+	variable is taken to represent a count of the occurrence
+	of events of some sort, and must have only non-negative
+	integer values.}
+\begin{lstlisting}[style=pythonstyle]
+gretl.negbin(formula=str(), [OPTS, [data=dict()]])
+\end{lstlisting}
+\mapto{negbin depvar indepvars}
+\begin{itemize}
+	\item[]\maptoopt{model1=True}{--model1}{use NegBin 1 model}
+	\item[]\maptoopt{robust=True}{--robust}{QML covariance matrix}
+	\item[]\maptoopt{opg=True}{--opg}{forces use of the OPG method}
+	\item[]\maptoopt{verbose=True}{--verbose}{print details of iterations}
+\end{itemize}
 
-\vspace{10pt}\noindent\gretlcmd{negbin}
-
-\vspace{10pt}\noindent\gretlcmd{panel}
+\est{panel}
 \estdesc{By default the fixed effects estimator is used; this is implemented
 	by subtracting the group or unit means from the original data.}
 \begin{lstlisting}[style=pythonstyle]
@@ -184,10 +270,23 @@ gretl.panel(formula=str(), [OPTS, [data=dict()]])
 	\item[]\maptoopt{matrix\_diff=True}{--matrix-diff}{compute Hausman test via matrix difference}
 \end{itemize}
 
+\est{poisson}
+\estdesc{The dependent variable is taken to represent the occurrence
+	of events of some sort, and must take on only non-negative integer values.}
+\begin{lstlisting}[style=pythonstyle]
+gretl.poisson(formula=str(), [OPTS, [data=dict()]])
+\end{lstlisting}
+\mapto{poisson depvar indepvars [; offset]}
+\begin{itemize}
+	\item[]\maptoopt{robust=True}{--robust}{robust standard errors}
+\end{itemize}
+\noRformula
 
-\vspace{10pt}\noindent\gretlcmd{poisson}
-
-\vspace{10pt}\noindent\gretlcmd{probit}
+\est{probit}
+\estdesc{By default the slopes with respect to each of
+	the independent variables are calculated (at the means
+	of those variables) and these slopes replace the usual
+	p-values in the regression output.}
 \begin{lstlisting}[style=pythonstyle]
 gretl.probit(formula=str(), [OPTS, [data=dict()]])
 \end{lstlisting}
@@ -200,6 +299,26 @@ gretl.probit(formula=str(), [OPTS, [data=dict()]])
 	\item[]\maptoopt{random\_effects=True}{--random-effects}{estimates a random effects panel probit model}
 \end{itemize}
 
-\vspace{10pt}\noindent\noindent\gretlcmd{tsls}
+\est{tsls}
+\estdesc{Computes Instrumental Variables (IV) estimates,
+	by default using two-stage least squares (TSLS).}
+\begin{lstlisting}[style=pythonstyle]
+gretl.tsls(formula=str(), [OPTS, [data=dict()]])
+\end{lstlisting}
+\mapto[0]{tsls depvar indepvars ; instruments}\todo{formula rendering must be fixed}
+\error{Formula rendering failed}
 
-\vspace{10pt}\noindent\gretlcmd{wls}
+\est{wls}
+\estdesc{Computes weighted least squares (WLS) estimates
+	using \texttt{wtvar} as the weight, \texttt{depvar}
+	as the dependent variable, and \texttt{indepvars}
+	as the list of independent variables.}\todo{\texttt{allow\_zeros} option must be verified}
+\begin{lstlisting}[style=pythonstyle]
+gretl.wls(formula=str(), [OPTS, [data=dict()]])
+\end{lstlisting}
+\mapto{wls wtvar depvar indepvars}
+\begin{itemize}
+	\item[]\maptoopt{robust=True}{--robust}{robust standard errors}
+	\item[]\maptoopt{allow\_zeros=True}{--allow-zeros}{to mix zero weights with positive ones}
+\end{itemize}
+\noRformula

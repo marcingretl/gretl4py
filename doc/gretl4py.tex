@@ -1,6 +1,8 @@
 \documentclass[a4paper]{gretl4pydoc}
 \usepackage[colorinlistoftodos,prependcaption,textsize=tiny,textwidth=2.8cm]{todonotes}
 
+\makeindex
+
 \graphicspath{{png/}}
 \DeclareGraphicsExtensions{.png}
 
@@ -8,25 +10,38 @@
 
 \newcommand{\hitem}{\item[] \hspace{-5mm}}
 
-\newcommand{\lgretl}{\pkg{libgretl}\xspace}
-\newcommand{\gretl}{\pkg{gretl}\xspace}
-\newcommand{\gretlpy}{\pkg{gretl4py}\xspace}
-\newcommand{\python}[1][]{\proglang{Python#1}\xspace}
-\newcommand{\cpp}{\proglang{C++}\xspace}
-\newcommand{\installbat}{\texttt{install.bat}\xspace}
-\newcommand{\estdesc}[1]{\begin{minipage}[t]{0.95\columnwidth}%
-	\scriptsize#1\end{minipage}\vspace{3pt}}
 % lstlistings
 \newcommand{\gretlcmd}[1]{\lstinline!#1!\xspace}
 \newcommand{\gretlcmdn}[1]{\inline{#1}\xspace}
 \newcommand{\cppcode}[1]{\lstinline[style=cppstyle]!#1!\xspace}
 \newcommand{\pythcode}[1]{\lstinline[style=pythonstyle]!#1!\xspace}
 \newcommand{\reqpython}{[3.11], [3.12], [3.13]\xspace}
-\newcommand{\mapto}[1]{\hspace*{17pt}maps to: \gretlcmd{#1}\newline%
-	\hspace*{17pt}where \pythcode{OPTS} are the following options %
-	(\gretlpy to \gretl mappings):}
+\newcommand{\mapto}[2][]{\hspace*{17pt}maps to: \gretlcmd{#2}\newline%
+	\ifthenelse{\equal{#1}{}}%
+		{\hspace*{17pt}where \pythcode{OPTS} are the following options %
+				(\gretlpy to \gretl mappings):}%
+		{\hspace*{17pt}}%
+}
 \newcommand{\maptoopt}[3]{\pythcode{#1} $\rightarrow$ \gretlcmd{#2}\newline\hspace*{10pt}\footnotesize{#3}}
+
+\newcommand{\lgretl}{\pkg{libgretl}\xspace}
+\newcommand{\gretl}{\pkg{gretl}\xspace}
+\newcommand{\gretlpy}{\pkg{gretl4py}\xspace}
+\newcommand{\python}[1][]{\proglang{Python#1}\xspace}
+\newcommand{\cpp}{\proglang{C++}\xspace}
+\newcommand{\installbat}{\texttt{install.bat}\xspace}
+\newcommand{\est}[1]{\vspace{10pt}\noindent\gretlcmd{#1}\index{#1}}
+\newcommand{\estdesc}[1]{\begin{minipage}[t]{0.89\columnwidth}%
+	\scriptsize#1\end{minipage}\vspace{3pt}}
+\newcommand{\noRformula}{Note: In this case one cannot
+		use the \proglang{R}-style as outlined in
+		Equation~(\hyperlink{theRstyleFomula}{\therstylefomula}).
+		Instead, \pythcode{formula} takes \gretl's default syntax,
+		as described in \cite{gretl_manual} and referred to
+		as the ``maps to'' syntax (excluding estimator name).}
 \newcommand{\error}[1]{\textcolor{red}{\textbf{#1}}\xspace}
+
+\newcounter{rstylefomula}
 
 \makeatletter
 \@mparswitchfalse%
@@ -49,6 +64,7 @@
 %		to be written...
 %	\end{abstract}
 	
+	\listoftodos
 	\tableofcontents
 	
 	\section*{Changelog}
@@ -66,7 +82,14 @@
 	\input{Installation}
 	\input{Usage}
 	\input{Examples}
-	
+
+	\printindex
+
+	%\appendix
+	\begin{appendices}
+		\input{sourcetree.tex}
+	\end{appendices}
+
 	\bibliographystyle{abbrvnat}
 	\bibliography{gretl4py.bib}
 \end{document}

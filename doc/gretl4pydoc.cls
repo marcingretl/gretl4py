@@ -7,8 +7,9 @@
 \RequirePackage[utf8]{inputenc}
 \RequirePackage[pdftex]{color}
 \RequirePackage[]{graphicx}
-\RequirePackage{dirtree,xargs,xspace,url,listings,pifont}
+\RequirePackage{dirtree,xargs,xspace,url,listings,pifont,makeidx,ifthen}
 
+\RequirePackage[toc,title]{appendix}
 \usepackage{gretlwp}
 
 \usepackage[colorlinks]{hyperref}
