@@ -25,7 +25,8 @@ gretl.attach_gretl_data(fname=str())
 \generaldesc{This function registers the specified \texttt{gdt}
 	or \texttt{gdtb} file \citep[see][for details]{gretl_manual}
 	as the global dataset. Note that \pythcode{fname}
-	must be the absolute path to the file.}
+	must be the absolute path to the file (see
+	\pythcode{gretl.gretl\_data\_path()}).}
 
 \gretlfpycmd{csv2dict()}
 \begin{lstlisting}[style=pythonstyle]
@@ -87,7 +88,16 @@ dict() = gretl.get_gretl_data(fname=str())
 	or \texttt{gdtb} file \citep[see][for details]{gretl_manual}
 	as a dictionary for \gretlpy (as outlined in
 	Section~\ref{sec:data_management_c++}). Note that
-	\pythcode{fname} must be the absolute path to the file.}
+	\pythcode{fname} must be the absolute path to the file
+	(see \pythcode{gretl.gretl\_data\_path()}).}
+
+\gretlfpycmd{gretl\_data\_path()}
+\begin{lstlisting}[style=pythonstyle]
+str() = gretl.gretl_data_path(fname)
+\end{lstlisting}
+\generaldesc{This function returns the full path the
+	specified \texttt{gdt} or \texttt{gdtb} file
+	\citep[see][for details]{gretl_manual}.}
 
 \gretlfpycmd{printdata()}
 \begin{lstlisting}[style=pythonstyle]
@@ -128,14 +138,6 @@ dict() = gretl.series2dict(series,
 		\item \pythcode{ varname=str()}: If provided, it
 		contains the variable's name (default:~\pythcode{'y'}).
 \end{itemize}}
-
-\gretlfpycmd{gretl\_data\_path()}
-\begin{lstlisting}[style=pythonstyle]
-str() = gretl.gretl_data_path(fname)
-\end{lstlisting}
-\generaldesc{This function returns the full path the
-	specified \texttt{gdt} or \texttt{gdtb} file
-	\citep[see][for details]{gretl_manual}.}
 
 
 \subsubsection{Estimators}\label{sec:estimators_python}
