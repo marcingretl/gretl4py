@@ -86,7 +86,7 @@ py::dict about (bool do_print)
     res[py::cast("mod_ver")] = mod_ver;
     res[py::cast("py11_ver")] = py11_ver;
     res[py::cast("lg_ver")] = lg_ver;
-    if (!b.err) {
+    if (!b.myerr) {
         res[py::cast("sysinfo")] = b.to_json();
     } else {
         res[py::cast("sysinfo")] = py::none();
@@ -97,7 +97,7 @@ py::dict about (bool do_print)
         std::cout << " [" << COMPILER_IDENT << "]";
         std::cout << ", pybind11 version " << py11_ver;
         std::cout << ", libgretl-1.0 version " << lg_ver << std::endl;
-        if (!b.err) {
+        if (!b.myerr) {
             std::cout << std::endl << "libgretl $sysinfo ";
             b.print();
         }
@@ -105,8 +105,8 @@ py::dict about (bool do_print)
 
     gretl_pop_c_numeric_locale();
 
-    if (b.err) {
-        std::cerr << errmsg_get_with_default(b.err) << std::endl;
+    if (b.myerr) {
+        std::cerr << errmsg_get_with_default(b.myerr) << std::endl;
     }
 
     return res;
@@ -117,16 +117,19 @@ py::dict about (bool do_print)
 void set (const std::string key,
           const std::optional<py::object> &pyval)
 {
+    PRN *prn;
     int err = 0;
 
+    prn = get_buffered_printer();
+
     if (pyval == std::nullopt) {
-        PRN *prn = gretl_print_new(GRETL_PRINT_STDOUT, NULL);
         err = execute_set(key.c_str(), NULL, NULL, OPT_NONE, prn);
-        gretl_print_destroy(prn);
     } else {
         err = execute_set(key.c_str(), MapToPy(pyval).to_string().c_str(),
-                          NULL, OPT_NONE, NULL);
+                          NULL, OPT_NONE, prn);
     }
+
+    finalize_buffered_printer(prn);
 
     if (err) {
         handle_gretl_error(err);

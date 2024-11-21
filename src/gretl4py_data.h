@@ -15,6 +15,9 @@ int gretl_model_to_dict (MODEL *model, DATASET *dset, const char *summary, py::d
 
 void handle_gretl_error (int err);
 
+PRN *get_buffered_printer (void);
+
+void finalize_buffered_printer (PRN *prn);
 
 //
 // Class to handle gretl 'DATASET' type
@@ -37,7 +40,6 @@ private:
     }
 public:
     DATASET *dset = nullptr;
-    int err = 0;
 
     GretlDataset (const std::string fname); // we load dataset from file
     GretlDataset (const py::dict &pydict);  // we load dataset from Python's dictionary
@@ -57,11 +59,10 @@ class GretlBundle
 {
 private:
     gretl_bundle *b;
-    PRN *prn = nullptr;
     char *json_buf = nullptr;
     bool free_b = true;
 public:
-    int err = 0;
+    int myerr = 0;
 
     GretlBundle (void);                         // we get contents of $sysinfo bundle
     GretlBundle (MODEL *model, DATASET *dset);  // we produce bundle from MODEL struct
