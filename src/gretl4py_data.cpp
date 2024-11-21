@@ -11,7 +11,6 @@
 
 #define GRETL_PYBIND11_DEBUG 0
 
-
 //////////////////////////////////////////////////
 // static functions
 //////////////////////////////////////////////////
@@ -169,10 +168,10 @@ void handle_gretl_error (int err)
 }
 
 int gretl_model_to_dict (MODEL *model, DATASET *dset,
-                         char *summary, py::dict &pydict)
+                         const char *summary, py::dict &pydict)
 {
     //
-    // here we construct python's dict which is returned (with estimation results)
+    // here we construct a python dictionary holding estimation results
     //
     GretlBundle b = GretlBundle(model, dset);
     char *json_buf = b.to_json();
@@ -213,14 +212,30 @@ GretlDataset::GretlDataset (const std::string fname)
     }
 }
 
+static gretlopt setobs_opt_from_structure (int structure)
+{
+    if (structure == CROSS_SECTION) {
+        return OPT_X;
+    } else if (structure == TIME_SERIES) {
+        return OPT_T;
+    } else if (structure == STACKED_TIME_SERIES) {
+        return OPT_S;
+    } else if (structure == SPECIAL_TIME_SERIES) {
+        return OPT_N;
+    } else {
+        return OPT_NONE;
+    }
+}
+
 GretlDataset::GretlDataset (const py::dict &pydict)
 {
     //
-    // we fill dset with pydict content
+    // we fill a gretl DATASET struct with the content of @pydict
     //
     py::list pylist;
     std::string *strBUF;
     int pd;
+    gretlopt opt = OPT_NONE;
 
     allocate_dset();
 
@@ -251,13 +266,12 @@ GretlDataset::GretlDataset (const py::dict &pydict)
     }
     delete []strBUF;
 
-    if (pydict.contains("structure")) {
-        dset->structure = pydict["structure"].cast<int>();
-    }
+    dset->structure = get_int_from_python_dict(pydict, "structure", 0);
 
     // FIXME: maybe it's possible automatically, i.e. without sending it from Python
     pd = get_int_from_python_dict(pydict, "pd");
-    set_obs(std::to_string(pd).c_str(), dset->S[0], dset, OPT_T);
+    opt = setobs_opt_from_structure(dset->structure);
+    set_obs(std::to_string(pd).c_str(), dset->S[0], dset, opt);
 }
 
 GretlDataset::~GretlDataset (void)
@@ -280,17 +294,20 @@ py::dict *GretlDataset::to_dict (void)
     pydict[py::cast("pd")] = dset->pd;
     pydict[py::cast("structure")] = dset->structure;
 
+    // note 2024-11-20: we don't put 'const' into the python dictionary,
+    // so we skip series 0 when copying from GretlDataset.dset
+
     // copy across the data values
-    py::array_t<double, py::array::f_style> Z({dset->n, dset->v-1}); //20-11-2024: fix for double 'const' (dset->v)
+    py::array_t<double, py::array::f_style> Z({dset->n, dset->v-1});
     tmp = (double *) Z.request().ptr;
-    for (i=1; i<dset->v; i++) { //20-11-2024: fix for double 'const' (i=0)
+    for (i=1; i<dset->v; i++) {
         std::memcpy(tmp, dset->Z[i], dset->n * sizeof *tmp);
         tmp += dset->n;
     }
     pydict[py::cast("data_array")] = Z;
 
     // copy across the series names
-    for (i=1; i<dset->v; i++) { //20-11-2024: fix for double 'const' (i=0)
+    for (i=1; i<dset->v; i++) {
         vnames->append(dset->varname[i]);
     }
     pydict[py::cast("varname")] = *vnames;

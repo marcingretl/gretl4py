@@ -284,11 +284,11 @@ static void save_model (MODEL *model, DATASET *dset,
         const char *msg = errmsg_get_with_default(model->errcode);
         throw std::runtime_error(msg);
     } else {
-        char *summary;
+        const char *summary;
         int err;
 
         printmodel(model, dset, OPT_NONE, prn);
-        summary = gretl_print_steal_buffer(prn);
+        summary = gretl_print_get_buffer(prn);
         err = gretl_model_to_dict(model, dset, summary, res);
         if (err) {
             handle_gretl_error(err);
