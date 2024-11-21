@@ -289,16 +289,24 @@ py::dict *GretlDataset::to_dict (void)
 
 void GretlDataset::printdset (bool namesonly)
 {
+    const char *buf = NULL;
     PRN *prn;
 
-    prn = gretl_print_new(GRETL_PRINT_STDOUT, NULL);
+    prn = gretl_print_new(GRETL_PRINT_BUFFER, NULL);
 
-    if (namesonly) {
-        list_series(dset, OPT_NONE, prn);
-    } else {
-        err = printdata(NULL, NULL, dset, OPT_O, prn);
-        if (err) {
-            handle_gretl_error(err);
+    if (prn != NULL) {
+        if (namesonly) {
+            list_series(dset, OPT_NONE, prn);
+        } else {
+            int err = printdata(NULL, NULL, dset, OPT_O, prn);
+
+            if (err) {
+                handle_gretl_error(err);
+            }
+        }
+        buf = gretl_print_get_buffer(prn);
+        if (buf != NULL) {
+            py::print(buf);
         }
     }
 
