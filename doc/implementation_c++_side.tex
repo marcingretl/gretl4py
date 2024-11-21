@@ -1,0 +1,85 @@
+\subsection{Binary Bindings -- \proglang{C++} side}\label{sec:binary_bindings}
+The \cpp bindings are written using the \pkg{pybind11}
+\citep{pybind11} package.
+The main purpose of these bindings is to provide \python
+interfaces to selected \lgretl estimators and utility functions
+in a standardized form. Each \cpp binding has its \python
+counterpart (see Section~\ref{sec:python_side} for details).
+
+
+\subsubsection{Data management}\label{sec:data_management_c++}
+\gretlpy expects a dataset provided as a dictionary with
+the following entries:
+\begin{itemize}
+	\item \pythcode{varname}: A list containing the variable names.
+	\item \pythcode{obs\_labels}: A list containing the observation labels.
+	\item \pythcode{data\_array}: A \pkg{numpy} array (either column-major
+		or row-major format) containing the observations for the variables.
+	\item \pythcode{periodicity}: An integer indicating the data's periodicity,
+		as defined in \cite{gretl_command}. A brief explanation is as follows:
+		\begin{itemize}
+			\item For time-series data:
+				\begin{itemize}
+					\item 1 = annual,
+					\item 4 = quarterly,
+					\item 12 = monthly,
+					\item 52 = weekly,
+					\item 5, 6, or 7 = daily,
+					\item 24 = hourly.
+				\end{itemize}
+			\item For panel data: The periodicity represents the number
+				of rows per data block. This corresponds to:
+				\begin{itemize}
+					\item The number of cross-sectional units in the case
+						of stacked cross-sections, or
+					\item The number of time periods in the case of
+						stacked time-series data.
+				\end{itemize}
+			\item For simple cross-sectional data: The periodicity should
+				be set to~1.
+		\end{itemize}
+\end{itemize}
+A dictionary containing data for \gretlpy can be created
+manually or with the help of one of the utility functions
+described in Section~\ref{sec:data_management_python}.
+
+It is important to note that such a dictionary can be
+provided in two general and non-overlapping ways:
+\begin{itemize}
+	\item \textbf{As an individual dataset}: In this case,
+		the dataset is passed directly when calling a \gretlpy
+		function, such as an estimator or data-handling function.
+	\item \textbf{As a global dataset}: This is used whenever
+		an individual dataset is not explicitly provided.
+\end{itemize}
+
+\subsubsection{Estimators}\label{sec:estimators_c++}
+With \cppcode{namespace py = pybind11}:
+%\lstinputlisting[style=cppstyle]{../src/gretl4py.h}
+
+For \texttt{arma} estimation (specific case):
+\begin{lstlisting}[style=cppstyle]
+py::dict *arma (const std::string y, const py::tuple &tup,
+								const py::kwargs &kwargs);
+\end{lstlisting}
+
+For default case:
+\begin{lstlisting}[style=cppstyle]
+py::dict *ESTIMATOR (const std::string formula,
+								const py::kwargs &kwargs);
+\end{lstlisting}
+where \cppcode{ESTIMATOR} represents one of the supported
+estimator functions (see Section~\ref{sec:estimators_python}).
+These bindings return a \python dictionary (see
+Section~\ref{sec:data_management_c++} for details) and accept
+the following arguments:
+\begin{enumerate}
+	\item \cppcode{const std::string y}: The name of the dependent
+		variable in a dataset (see Section~\error{XXX} for details).
+	\item \cppcode{const py::tuple \&tup}: A reference to a \python
+		tuple containing the SARIMA specification (see Section~\error{XXX} for details).
+	\item \cppcode{const std::string formula}: A formula that constitutes
+		an equation (see Section~\error{XXX} for details).
+	\item \cppcode{const py::kwargs \&kwargs}: A reference to optional
+		arguments (see Section~\error{XXX} for details).
+\end{enumerate}

@@ -13,7 +13,7 @@
 \usepackage{gretlwp}
 
 \usepackage[colorlinks]{hyperref}
-\hypersetup{citecolor=blue}
+\hypersetup{citecolor=magenta}
 \usepackage[authoryear]{natbib}
 
 \newcommand{\proglang}[1]{\texttt{#1}}

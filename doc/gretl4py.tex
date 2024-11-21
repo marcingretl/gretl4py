@@ -8,6 +8,9 @@
 
 \hyphenation{libgretl}
 
+\newcounter{rstylefomula}
+
+\newcommand{\error}[1]{\textcolor{red}{\textbf{#1}}\xspace}
 \newcommand{\hitem}{\item[] \hspace{-5mm}}
 
 % lstlistings
@@ -33,15 +36,16 @@
 \newcommand{\est}[1]{\vspace{10pt}\noindent\gretlcmd{#1}\index{#1}}
 \newcommand{\estdesc}[1]{\begin{minipage}[t]{0.89\columnwidth}%
 	\scriptsize#1\end{minipage}\vspace{3pt}}
-\newcommand{\noRformula}{Note: In this case one cannot
+\newcommand{\noRformula}{\hspace*{17pt}\begin{minipage}[t]{0.89\columnwidth}\small%
+		Note: In this case one cannot
 		use the \proglang{R}-style as outlined in
 		Equation~(\hyperlink{theRstyleFomula}{\therstylefomula}).
 		Instead, \pythcode{formula} takes \gretl's default syntax,
 		as described in \cite{gretl_manual} and referred to
-		as the ``maps to'' syntax (excluding estimator name).}
-\newcommand{\error}[1]{\textcolor{red}{\textbf{#1}}\xspace}
-
-\newcounter{rstylefomula}
+		as the ``maps to'' syntax (excluding estimator name).\end{minipage}}
+\newcommand{\gretlfpycmd}[1]{\vspace{10pt}\noindent\pythcode{#1}\index{#1}}
+\newcommand{\generaldesc}[1]{\hspace*{17pt}\begin{minipage}[t]{0.89\columnwidth}%
+		\small#1\end{minipage}}
 
 \makeatletter
 \@mparswitchfalse%
@@ -77,9 +81,11 @@
 		\input{../todo.txt}
 	\end{quote}
 
-	\input{Introduction}
-	\input{Implementation}
-	\input{Installation}
+	\input{introduction}
+	\input{installation}
+	\section{Implementation}\label{sec:implementation}
+		\input{implementation_c++_side}
+		\input{implementation_python_side}
 	\input{Usage}
 	\input{Examples}
 

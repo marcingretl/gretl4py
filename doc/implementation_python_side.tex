@@ -1,44 +1,3 @@
-\section{Implementation}\label{sec:implementation}
-
-\subsection{Binary Bindings}\label{sec:binary_bindings}
-The \cpp bindings are written using the \pkg{pybind11}
-\citep{pybind11} package.
-The main purpose of these bindings is to provide \python
-interfaces to selected \lgretl estimators and utility functions
-in a standardized form. Each \cpp binding has its \python
-counterpart (see Section~\ref{sec:python_side} for details).
-
-\subsubsection{Estimators}\label{sec:estimators_c++}
-With \cppcode{namespace py = pybind11}:
-%\lstinputlisting[style=cppstyle]{../src/gretl4py.h}
-
-For \texttt{arma} estimation (specific case):
-\begin{lstlisting}[style=cppstyle]
-py::dict *arma (const std::string y, const py::tuple &tup,
-								const py::kwargs &kwargs);
-\end{lstlisting}
-
-For default case:
-\begin{lstlisting}[style=cppstyle]
-py::dict *ESTIMATOR (const std::string formula,
-								const py::kwargs &kwargs);
-\end{lstlisting}
-where \cppcode{ESTIMATOR} represents one of the supported
-estimator functions (see Section~\error{XXX}). These bindings
-return a \python dictionary (see Section~\error{XXX} for details)
-and accept the following arguments:
-\begin{enumerate}
-	\item \cppcode{const std::string y}: The name of the dependent
-		variable in a dataset (see Section~\error{XXX} for details).
-	\item \cppcode{const py::tuple \&tup}: A reference to a \python
-		tuple containing the SARIMA specification (see Section~\error{XXX} for details).
-	\item \cppcode{const std::string formula}: A formula that constitutes
-		an equation (see Section~\error{XXX} for details).
-	\item \cppcode{const py::kwargs \&kwargs}: A reference to optional
-		arguments (see Section~\error{XXX} for details).
-\end{enumerate}
-
-
 \subsection{\python Side}\label{sec:python_side}
 All binary bindings described in Section~\ref{sec:binary_bindings}
 have their counterparts on the \python side, with access
@@ -47,13 +6,145 @@ and \texttt{gretl4py\_classes.py}. Additionally, \gretlpy is
 initialized by the \texttt{\_\_init\_\_.py} file.
 
 
+\subsubsection{Data management}\label{sec:data_management_python}
+\gretlpy provides the following functions and/or methods
+for data management.
+
+\gretlfpycmd{attach\_data()}
+\begin{lstlisting}[style=pythonstyle]
+gretl.attach_data(pydict=dict())
+\end{lstlisting}
+\generaldesc{This function registers the given dictionary
+	(as outlined in Section~\ref{sec:data_management_c++})
+	as the global dataset.}
+
+\gretlfpycmd{attach\_gretl\_data()}
+\begin{lstlisting}[style=pythonstyle]
+gretl.attach_gretl_data(fname=str())
+\end{lstlisting}
+\generaldesc{This function registers the specified \texttt{gdt}
+	or \texttt{gdtb} file \citep[see][for details]{gretl_manual}
+	as the global dataset. Note that \pythcode{fname}
+	must be the absolute path to the file.}
+
+\gretlfpycmd{csv2dict()}
+\begin{lstlisting}[style=pythonstyle]
+dict() = gretl.csv2dict(FILE=str(), [pd=int()])
+\end{lstlisting}
+\generaldesc{This function converts a CSV file into a
+	dictionary compatible with \gretlpy (as described in
+	Section~\ref{sec:data_management_c++}). The
+	\pythcode{pd=int()} parameter is optional and
+	specifies the data's periodicity (default:~1).}
+
+\gretlfpycmd{df2dict()}
+\begin{lstlisting}[style=pythonstyle]
+dict() = gretl.df2dict(dframe, [pd=int(), withobs=bool()])
+\end{lstlisting}
+\generaldesc{This function converts a \pkg{pandas}
+	dataframe file into a dictionary compatible with
+	\gretlpy (as described in Section~\ref{sec:data_management_c++})
+	and accepts two optional arguments:
+	\begin{itemize}
+		\item \pythcode{pd=int()}: If provided, it
+			specifies the data's periodicity (default:~1).
+		\item \pythcode{withobs=bool()}: If set to \pythcode{True},
+			the first column of the given dataframe is
+			treated as containing observation labels
+			(default:~\pythcode{False}).
+		\end{itemize}}
+
+\gretlfpycmd{numpyarray2dict()}
+\begin{lstlisting}[style=pythonstyle]
+dict() = gretl.numpyarray2dict(X=numpy.array(),
+		[pd=int(), Y=numpy.array(),
+		with_const=bool(), const_pos=int()])
+\end{lstlisting}
+\generaldesc{This function converts a \pkg{numpy}
+	array file into a dictionary compatible with
+	\gretlpy (as described in Section~\ref{sec:data_management_c++})
+	and accepts four optional arguments:
+	\begin{itemize}
+		\item \pythcode{pd=int()}: If provided, it
+			specifies the data's periodicity (default:~1).
+		\item \pythcode{Y=numpy.array()}: If provided, it
+			contains observations for the dependent variable
+			(default:~\pythcode{None}).
+		\item \pythcode{with\_const=bool()}: If set to
+			\pythcode{True}, it specifies that the provided
+			array \textit{X} contains a constant term
+			(default:~\pythcode{False}).
+		\item \pythcode{const\_pos=int()}: Used only if
+			\pythcode{with\_const=True}, and specifies which
+			column holds the constant term (default:~1).
+	\end{itemize}}
+
+\gretlfpycmd{get\_gretl\_data()}
+\begin{lstlisting}[style=pythonstyle]
+dict() = gretl.get_gretl_data(fname=str())
+\end{lstlisting}
+\generaldesc{This function converts the specified \texttt{gdt}
+	or \texttt{gdtb} file \citep[see][for details]{gretl_manual}
+	as a dictionary for \gretlpy (as outlined in
+	Section~\ref{sec:data_management_c++}). Note that
+	\pythcode{fname} must be the absolute path to the file.}
+
+\gretlfpycmd{printdata()}
+\begin{lstlisting}[style=pythonstyle]
+gretl.printdata([data=dict(), namesonly=bool()])
+\end{lstlisting}
+\generaldesc{This function prints a specified dataset and
+	accepts two optional arguments:
+	\begin{itemize}
+		\item \pythcode{data=dict()}: If provided, the
+			specified dataset is printed; otherwise,
+			the global dataset is used.
+		\item \pythcode{namesonly=bool()}: If set to
+			\pythcode{True}, only the variable names are
+			printed (default:~\pythcode{False}).
+\end{itemize}}
+
+\gretlfpycmd{sample()}
+\begin{lstlisting}[style=pythonstyle]
+gretl.sample([OPTS])
+\end{lstlisting}
+\generaldesc{This function serves as an interface to the
+	\gretlcmd{smpl} command \citep[see][for details]{gretl_command}.
+	It defines the length of the current sample and accepts
+	the \gretlcmd{smpl} command's parameters as optional arguments.}
+
+\gretlfpycmd{series2dict()}
+\begin{lstlisting}[style=pythonstyle]
+dict() = gretl.series2dict(series,
+		[pd=int(), varname=str()])
+\end{lstlisting}
+\generaldesc{This function converts a \pkg{pandas}
+	series into a dictionary compatible with
+	\gretlpy (as described in Section~\ref{sec:data_management_c++})
+	and accepts two optional arguments:
+	\begin{itemize}
+		\item \pythcode{pd=int()}: If provided, it
+		specifies the data's periodicity (default:~1).
+		\item \pythcode{ varname=str()}: If provided, it
+		contains the variable's name (default:~\pythcode{'y'}).
+\end{itemize}}
+
+\gretlfpycmd{gretl\_data\_path()}
+\begin{lstlisting}[style=pythonstyle]
+str() = gretl.gretl_data_path(fname)
+\end{lstlisting}
+\generaldesc{This function returns the full path the
+	specified \texttt{gdt} or \texttt{gdtb} file
+	\citep[see][for details]{gretl_manual}.}
+
+
 \subsubsection{Estimators}\label{sec:estimators_python}
 While Section~\ref{sec:estimators_c++} outlines only two
 \cpp bindings, the actual list of available \lgretl estimators
 is much more extensive. Keep in mind the following:
 \begin{itemize}
 	\item\pythcode{data=dict()} is a dictionary containing
-		the data as described in~\error{XXX};
+		the data as described in~\ref{sec:data_management_c++};
 	\item\pythcode{formula=str()} can take one of the
 		following forms:
 		\begin{itemize}
@@ -76,7 +167,7 @@ The complete list of available estimators is as follows (options in square brack
 \estdesc{Computes parameter estimates using the
 	generalized Cochrane-Orcutt iterative procedure.}
 \begin{lstlisting}[style=pythonstyle]
-gretl.ar(formula=str(), [OPTS, [data=dict()]])
+gretl.Model = gretl.ar(formula=str(), [OPTS, [data=dict()]])
 \end{lstlisting}
 \mapto[0]{ar lags ; depvar indepvars}
 \noRformula
@@ -85,7 +176,7 @@ gretl.ar(formula=str(), [OPTS, [data=dict()]])
 \estdesc{Computes feasible GLS estimates for a model in which the error
 	term is assumed to follow a first-order autoregressive process.}
 \begin{lstlisting}[style=pythonstyle]
-gretl.ar1(formula=str(), [OPTS, [data=dict()]])
+gretl.Model = gretl.ar1(formula=str(), [OPTS, [data=dict()]])
 \end{lstlisting}
 \mapto{ar1 depvar indepvars}
 \begin{itemize}
@@ -96,7 +187,7 @@ gretl.ar1(formula=str(), [OPTS, [data=dict()]])
 \est{arima}
 \estdesc{Estimates a univariate ARIMA (Autoregressive, Integrated, Moving Average) model.}
 \begin{lstlisting}[style=pythonstyle]
-gretl.arma(y=str(), order=tuple((p,d,q)),
+gretl.Model = gretl.arma(y=str(), order=tuple((p,d,q)),
 	[seasonal=tuple((P,D,Q)), OPTS, [data=dict()]])
 \end{lstlisting}
 \mapto{arima p d q [; P D Q ] ; depvar}
@@ -118,7 +209,8 @@ gretl.arma(y=str(), order=tuple((p,d,q)),
 \estdesc{Computes ordinary least squares (OLS) estimates with \texttt{depvar}
 	as the dependent variable and \texttt{indepvars} as the list of independent variables.}
 \begin{lstlisting}[style=pythonstyle]
-gretl.ols(formula=str(), [OPTS, [data=dict()]])
+gretl.Model = gretl.ols(formula=str(),
+	[OPTS, [data=dict()]])
 \end{lstlisting}
 \mapto{ols depvar indepvars}
 \begin{itemize}
@@ -133,7 +225,8 @@ gretl.ols(formula=str(), [OPTS, [data=dict()]])
 \estdesc{Estimates a bivariate probit model, using
 	the Newton-Raphson method to maximize the likelihood.}
 \begin{lstlisting}[style=pythonstyle]
-gretl.biprobit(formula=str(), [OPTS, [data=dict()]])
+gretl.Model = gretl.biprobit(formula=str(),
+	[OPTS, [data=dict()]])
 \end{lstlisting}
 \mapto{biprobit depvar1 depvar2 indepvars1 [; indepvars2]}
 \begin{itemize}
@@ -147,7 +240,8 @@ gretl.biprobit(formula=str(), [OPTS, [data=dict()]])
 	but the exponential, log-logistic and log-normal
 	distributions are also available.}
 \begin{lstlisting}[style=pythonstyle]
-gretl.duration(formula=str(), [OPTS, [data=dict()]])
+gretl.Model = gretl.duration(formula=str(),
+	[OPTS, [data=dict()]])
 \end{lstlisting}
 \mapto{duration depvar indepvars [; censvar ]}
 \begin{itemize}
@@ -163,7 +257,8 @@ gretl.duration(formula=str(), [OPTS, [data=dict()]])
 	model or, if indepvars are specified, including the
 	given exogenous variables.}\todo{\texttt{fcp} option must be verified}
 \begin{lstlisting}[style=pythonstyle]
-gretl.garch(formula=str(), [OPTS, [data=dict()]])
+gretl.Model = gretl.garch(formula=str(),
+	[OPTS, [data=dict()]])
 \end{lstlisting}
 \mapto{garch p q ; depvar [indepvars]}
 \begin{itemize}
@@ -181,7 +276,8 @@ gretl.garch(formula=str(), [OPTS, [data=dict()]])
 	dependent variable in the selection equation (ys in the
 	example above) must be a binary variable.}
 \begin{lstlisting}[style=pythonstyle]
-gretl.heckit(formula=str(), [OPTS, [data=dict()]])
+gretl.Model = gretl.heckit(formula=str(),
+	[OPTS, [data=dict()]])
 \end{lstlisting}\todo{formula rendering must be fixed}
 \error{Formula rendering failed}
 
@@ -190,7 +286,8 @@ gretl.heckit(formula=str(), [OPTS, [data=dict()]])
 	the absolute deviations of the observed from the
 	fitted values of the dependent variable.}
 \begin{lstlisting}[style=pythonstyle]
-gretl.lad(formula=str(), [OPTS, [data=dict()]])
+gretl.Model = gretl.lad(formula=str(),
+	[OPTS, [data=dict()]])
 \end{lstlisting}
 \mapto{lad depvar indepvars}
 \begin{itemize}
@@ -202,7 +299,8 @@ gretl.lad(formula=str(), [OPTS, [data=dict()]])
 	regression using the logistic transformation
 	of the dependent variable.}\todo{\texttt{ynax} option must be verified}
 \begin{lstlisting}[style=pythonstyle]
-gretl.logistic(formula=str(), [OPTS, [data=dict()]])
+gretl.Model = gretl.logistic(formula=str(),
+	[OPTS, [data=dict()]])
 \end{lstlisting}
 \mapto{logistic depvar indepvars}
 \begin{itemize}
@@ -216,7 +314,8 @@ gretl.logistic(formula=str(), [OPTS, [data=dict()]])
 	of those variables) and these slopes replace the usual
 	p-values in the regression output.}
 \begin{lstlisting}[style=pythonstyle]
-gretl.logit(formula=str(), [OPTS, [data=dict()]])
+gretl.Model = gretl.logit(formula=str(),
+	[OPTS, [data=dict()]])
 \end{lstlisting}
 \mapto{logit depvar indepvars}
 \begin{itemize}
@@ -231,7 +330,8 @@ gretl.logit(formula=str(), [OPTS, [data=dict()]])
 \estdesc{Computes OLS estimates for the specified model using multiple
 	precision floating-point arithmetic.}
 \begin{lstlisting}[style=pythonstyle]
-gretl.mpols(formula=str(), [OPTS, [data=dict()]])
+gretl.Model = gretl.mpols(formula=str(),
+	[OPTS, [data=dict()]])
 \end{lstlisting}
 \mapto[0]{mpols depvar indepvars}
 
@@ -241,7 +341,8 @@ gretl.mpols(formula=str(), [OPTS, [data=dict()]])
 	of events of some sort, and must have only non-negative
 	integer values.}
 \begin{lstlisting}[style=pythonstyle]
-gretl.negbin(formula=str(), [OPTS, [data=dict()]])
+gretl.Model = gretl.negbin(formula=str(),
+	[OPTS, [data=dict()]])
 \end{lstlisting}
 \mapto{negbin depvar indepvars}
 \begin{itemize}
@@ -255,7 +356,8 @@ gretl.negbin(formula=str(), [OPTS, [data=dict()]])
 \estdesc{By default the fixed effects estimator is used; this is implemented
 	by subtracting the group or unit means from the original data.}
 \begin{lstlisting}[style=pythonstyle]
-gretl.panel(formula=str(), [OPTS, [data=dict()]])
+gretl.Model = gretl.panel(formula=str(),
+	[OPTS, [data=dict()]])
 \end{lstlisting}
 \mapto{panel depvar indepvars}
 \begin{itemize}
@@ -274,7 +376,8 @@ gretl.panel(formula=str(), [OPTS, [data=dict()]])
 \estdesc{The dependent variable is taken to represent the occurrence
 	of events of some sort, and must take on only non-negative integer values.}
 \begin{lstlisting}[style=pythonstyle]
-gretl.poisson(formula=str(), [OPTS, [data=dict()]])
+gretl.Model = gretl.poisson(formula=str(),
+	[OPTS, [data=dict()]])
 \end{lstlisting}
 \mapto{poisson depvar indepvars [; offset]}
 \begin{itemize}
@@ -288,7 +391,8 @@ gretl.poisson(formula=str(), [OPTS, [data=dict()]])
 	of those variables) and these slopes replace the usual
 	p-values in the regression output.}
 \begin{lstlisting}[style=pythonstyle]
-gretl.probit(formula=str(), [OPTS, [data=dict()]])
+gretl.Model = gretl.probit(formula=str(),
+	[OPTS, [data=dict()]])
 \end{lstlisting}
 \mapto{probit depvar indepvars}
 \begin{itemize}
@@ -303,7 +407,8 @@ gretl.probit(formula=str(), [OPTS, [data=dict()]])
 \estdesc{Computes Instrumental Variables (IV) estimates,
 	by default using two-stage least squares (TSLS).}
 \begin{lstlisting}[style=pythonstyle]
-gretl.tsls(formula=str(), [OPTS, [data=dict()]])
+gretl.Model = gretl.tsls(formula=str(),
+	[OPTS, [data=dict()]])
 \end{lstlisting}
 \mapto[0]{tsls depvar indepvars ; instruments}\todo{formula rendering must be fixed}
 \error{Formula rendering failed}
@@ -314,7 +419,8 @@ gretl.tsls(formula=str(), [OPTS, [data=dict()]])
 	as the dependent variable, and \texttt{indepvars}
 	as the list of independent variables.}\todo{\texttt{allow\_zeros} option must be verified}
 \begin{lstlisting}[style=pythonstyle]
-gretl.wls(formula=str(), [OPTS, [data=dict()]])
+gretl.Model = gretl.wls(formula=str(),
+	[OPTS, [data=dict()]])
 \end{lstlisting}
 \mapto{wls wtvar depvar indepvars}
 \begin{itemize}
