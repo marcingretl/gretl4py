@@ -169,7 +169,7 @@ void handle_gretl_error (int err)
 }
 
 int gretl_model_to_dict (MODEL *model, DATASET *dset,
-                         const char *summary, py::dict &pydict)
+                         char *summary, py::dict &pydict)
 {
     //
     // here we construct python's dict which is returned (with estimation results)

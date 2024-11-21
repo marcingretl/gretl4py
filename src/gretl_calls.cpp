@@ -192,16 +192,13 @@ void sample (const py::kwargs &kwargs)
 // and 'data' as well as gretl option flags and their parameters.
 
 static gretlopt unpack_kwargs (const py::kwargs &kwargs,
-                               int ci, int *do_print,
-                               GretlDataset *&pdset)
+                               int ci, GretlDataset *&pdset)
 {
     int opt, opts = OPT_NONE;
     OptStatus status;
     bool got_data = false;
 
     for (auto &item : kwargs) {
-        bool is_print = false;
-
         if (!is_pystr(item.first)) {
             throw std::runtime_error("option key must be a string");
         }
@@ -221,10 +218,6 @@ static gretlopt unpack_kwargs (const py::kwargs &kwargs,
                 throw std::runtime_error("'data' must be a dictionary");
             }
             continue;
-        } else if (key == "print") {
-            // special case: 'print' is not a gretl option
-            is_print = true;
-            status = OPT_NO_PARM;
         } else if (key == "seasonal" && ci == ARMA) {
             // arma special: ignore here
             continue;
@@ -251,11 +244,7 @@ static gretlopt unpack_kwargs (const py::kwargs &kwargs,
 
                 if (ival == 1) {
                     /* activate the option */
-                    if (is_print) {
-                        *do_print = 1;
-                    } else {
-                        opts |= opt;
-                    }
+                    opts |= opt;
                 } else if (ival != 0) {
                     throw std::runtime_error("invalid option parameter");
                 }
@@ -288,31 +277,23 @@ static gretlopt unpack_kwargs (const py::kwargs &kwargs,
     return (gretlopt) opts;
 }
 
-void finalize_model (MODEL *model, DATASET *dset,
-                     int *list, int do_print,
-                     PRN *prn, py::dict &res)
+static void save_model (MODEL *model, DATASET *dset,
+                        PRN *prn, py::dict &res)
 {
     if (model->errcode) {
         const char *msg = errmsg_get_with_default(model->errcode);
         throw std::runtime_error(msg);
     } else {
-        const char *summary;
+        char *summary;
         int err;
 
         printmodel(model, dset, OPT_NONE, prn);
-        summary = gretl_print_get_buffer(prn);
-        if (do_print) {
-            std::fputs(summary, stdout);
-        }
+        summary = gretl_print_steal_buffer(prn);
         err = gretl_model_to_dict(model, dset, summary, res);
         if (err) {
             handle_gretl_error(err);
         }
     }
-
-    free(list);
-    gretl_model_free(model);
-    gretl_print_destroy(prn);
 }
 
 static void get_arma_order (const py::tuple &tup,
@@ -346,12 +327,11 @@ py::dict *arma (const std::string y, const py::tuple &tup,
     int *list;
     int p, d, q;
     int P, D, Q;
-    int do_print = 0;
     int seasonal = 0;
     int i;
 
     if (py::len(kwargs) > 0) {
-        opt = unpack_kwargs(kwargs, ARMA, &do_print, GD);
+        opt = unpack_kwargs(kwargs, ARMA, GD);
     } else {
         GD = DSET;
     }
@@ -383,7 +363,7 @@ py::dict *arma (const std::string y, const py::tuple &tup,
 
     model = gretl_model_new();
     list = gretl_list_new(seasonal? 9 : 5);
-    prn = gretl_print_new(GRETL_PRINT_BUFFER, NULL);
+    prn = get_buffered_printer();
 
     if (model == NULL || list == NULL || prn == NULL) {
         throw std::runtime_error("Failed to allocate memory");
@@ -403,7 +383,10 @@ py::dict *arma (const std::string y, const py::tuple &tup,
     list[i++] = y_number;
 
     *model = arma(list, NULL, GD->dset, opt, prn);
-    finalize_model(model, GD->dset, list, do_print, prn, *res);
+    save_model(model, GD->dset, prn, *res);
+    gretl_model_free(model);
+    gretl_print_destroy(prn);
+    free(list);
 
     if (GD != DSET) {
         delete GD;
@@ -451,10 +434,9 @@ static py::dict *regression_wrapper (const std::string &formula,
     PRN *prn = NULL;
     int *list = NULL;
     gretlopt opt = OPT_NONE;
-    int do_print = 0;
 
     if (py::len(kwargs) > 0) {
-        opt = unpack_kwargs(kwargs, CI, &do_print, GD);
+        opt = unpack_kwargs(kwargs, CI, GD);
     } else {
         GD = DSET;
     }
@@ -464,7 +446,7 @@ static py::dict *regression_wrapper (const std::string &formula,
 
     list = list_from_formula(formula.c_str(), GD->dset);
     model = gretl_model_new();
-    prn = gretl_print_new(GRETL_PRINT_BUFFER, NULL);
+    prn = get_buffered_printer();
 
     if (list == NULL) {
         throw std::runtime_error("Formula rendering failed");
@@ -484,7 +466,10 @@ static py::dict *regression_wrapper (const std::string &formula,
         *model = F(list, CI, GD->dset, opt, prn);
     }
 
-    finalize_model(model, GD->dset, list, do_print, prn, *res);
+    save_model(model, GD->dset, prn, *res);
+    gretl_model_free(model);
+    gretl_print_destroy(prn);
+    free(list);
 
     if (GD != DSET) {
         delete GD;
