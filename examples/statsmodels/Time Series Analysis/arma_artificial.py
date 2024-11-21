@@ -4,18 +4,11 @@ from statsmodels.graphics.tsaplots import plot_predict
 from statsmodels.tsa.arima_process import arma_generate_sample
 from statsmodels.tsa.arima.model import ARIMA
 import gretl
+import sys
+sys.path.append('../')
+import helper_func as hf
 
 np.random.seed(12345)
-
-def printhead (title, full=True):
-    hashedline = "################################################################"
-    if full is False:
-        print(f'\n***\t{title:s}\t***')
-    else:
-        print(f'\n{hashedline:s}\n***\t{title:s}\t***\n{hashedline:s}')
-
-def linenr (nr):
-    print(f'\n[{nr:d}]:')
 
 """
 Here, we have statsmodels ARMA examples available at\n\
@@ -52,5 +45,5 @@ if Do_StatsModels is True:
 arma_mod = gretl.arma(y='y', order=(2, 0, 2), nc=True,
                       data=gretl.series2dict(y, 12))
 arma_res = arma_mod.fit()
-linenr(6)
+hf.linenr(6)
 print(arma_res.summary)

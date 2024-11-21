@@ -6,16 +6,9 @@ from scipy import stats
 from statsmodels.tsa.arima.model import ARIMA
 from statsmodels.graphics.api import qqplot
 import gretl
-
-def printhead (title, full=True):
-    hashedline = "################################################################"
-    if full is False:
-        print(f'\n***\t{title:s}\t***')
-    else:
-        print(f'\n{hashedline:s}\n***\t{title:s}\t***\n{hashedline:s}')
-
-def linenr (nr):
-    print(f'\n[{nr:d}]:')
+import sys
+sys.path.append('../')
+import helper_func as hf
 
 """
 Here, we have statsmodels ARMA examples available at\n\
@@ -30,7 +23,7 @@ Do_StatsModels = True # if we want to see statsmodels results as well
 ***     Autoregressive Moving Average (ARMA): Sunspots data  ***
 ################################################################
 """
-printhead("Sunspots Data")
+hf.printhead("Sunspots Data")
 print(sm.datasets.sunspots.NOTE)
 
 # data
@@ -68,21 +61,21 @@ if Do_StatsModels is True:
 # gretl calls
 gr_dta = gretl.df2dict(dta, 1)
 arma_mod20 = gretl.arma(y='SUNACTIVITY', order=(2, 0, 0), data=gr_dta).fit()
-linenr(9)
+hf.linenr(9)
 print(arma_mod20.parnames(), arma_mod20.coeff())
 print("sigma2: " + str(arma_mod20.sigma()**2))
 arma_mod30 = gretl.arma(y='SUNACTIVITY', order=(3, 0, 0), data=gr_dta).fit()
-linenr(11)
+hf.linenr(11)
 print(arma_mod20.aic(), arma_mod20.bic(), arma_mod20.hqc())
-linenr(12)
+hf.linenr(12)
 print(arma_mod30.parnames(), arma_mod30.coeff())
 print("sigma2: " + str(arma_mod30.sigma()**2))
-linenr(13)
+hf.linenr(13)
 print(arma_mod30.aic(), arma_mod30.bic(), arma_mod30.hqc())
 resid = arma_mod30.uhat()
-linenr(17)
-stats.normaltest(resid)
-linenr(18)
+hf.linenr(17)
+print(stats.normaltest(resid))
+hf.linenr(18)
 fig = plt.figure(figsize=(12, 8))
 ax = fig.add_subplot(111)
 fig = qqplot(resid, line="q", ax=ax, fit=True)

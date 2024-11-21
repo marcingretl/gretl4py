@@ -55,31 +55,6 @@ dict() = gretl.df2dict(dframe, [pd=int(), withobs=bool()])
 			(default:~\pythcode{False}).
 		\end{itemize}}
 
-\gretlfpycmd{numpyarray2dict()}
-\begin{lstlisting}[style=pythonstyle]
-dict() = gretl.numpyarray2dict(X=numpy.array(),
-		[pd=int(), Y=numpy.array(),
-		with_const=bool(), const_pos=int()])
-\end{lstlisting}
-\generaldesc{This function converts a \pkg{numpy}
-	array file into a dictionary compatible with
-	\gretlpy (as described in Section~\ref{sec:data_management_c++})
-	and accepts four optional arguments:
-	\begin{itemize}
-		\item \pythcode{pd=int()}: If provided, it
-			specifies the data's periodicity (default:~1).
-		\item \pythcode{Y=numpy.array()}: If provided, it
-			contains observations for the dependent variable
-			(default:~\pythcode{None}).
-		\item \pythcode{with\_const=bool()}: If set to
-			\pythcode{True}, it specifies that the provided
-			array \textit{X} contains a constant term
-			(default:~\pythcode{False}).
-		\item \pythcode{const\_pos=int()}: Used only if
-			\pythcode{with\_const=True}, and specifies which
-			column holds the constant term (default:~1).
-	\end{itemize}}
-
 \gretlfpycmd{get\_gretl\_data()}
 \begin{lstlisting}[style=pythonstyle]
 dict() = gretl.get_gretl_data(fname=str())
@@ -98,6 +73,31 @@ str() = gretl.gretl_data_path(fname)
 \generaldesc{This function returns the full path the
 	specified \texttt{gdt} or \texttt{gdtb} file
 	\citep[see][for details]{gretl_manual}.}
+
+\gretlfpycmd{numpyarray2dict()}
+\begin{lstlisting}[style=pythonstyle]
+	dict() = gretl.numpyarray2dict(X=numpy.array(),
+	[pd=int(), Y=numpy.array(),
+	with_const=bool(), const_pos=int()])
+\end{lstlisting}
+\generaldesc{This function converts a \pkg{numpy}
+	array file into a dictionary compatible with
+	\gretlpy (as described in Section~\ref{sec:data_management_c++})
+	and accepts four optional arguments:
+	\begin{itemize}
+		\item \pythcode{pd=int()}: If provided, it
+		specifies the data's periodicity (default:~1).
+		\item \pythcode{Y=numpy.array()}: If provided, it
+		contains observations for the dependent variable
+		(default:~\pythcode{None}).
+		\item \pythcode{with\_const=bool()}: If set to
+		\pythcode{True}, it specifies that the provided
+		array \textit{X} contains a constant term
+		(default:~\pythcode{False}).
+		\item \pythcode{const\_pos=int()}: Used only if
+		\pythcode{with\_const=True}, and specifies which
+		column holds the constant term (default:~1).
+\end{itemize}}
 
 \gretlfpycmd{printdata()}
 \begin{lstlisting}[style=pythonstyle]
@@ -280,8 +280,14 @@ gretl.Model = gretl.garch(formula=str(),
 \begin{lstlisting}[style=pythonstyle]
 gretl.Model = gretl.heckit(formula=str(),
 	[OPTS, [data=dict()]])
-\end{lstlisting}\todo{formula rendering must be fixed}
-\error{Formula rendering failed}
+\end{lstlisting}
+\mapto{heckit depvar indepvars ; selection equation}
+\begin{itemize}
+	\item[]\maptoopt{two\_step=True}{--two-step}{perform two-step estimation}
+	\item[]\maptoopt{opg=True}{--opg}{OPG standard errors}
+	\item[]\maptoopt{robust=True}{--robust}{robust standard errors}
+\end{itemize}
+\noRformula
 
 \est{lad}
 \estdesc{Calculates a regression that minimizes the sum of
@@ -407,13 +413,19 @@ gretl.Model = gretl.probit(formula=str(),
 
 \est{tsls}
 \estdesc{Computes Instrumental Variables (IV) estimates,
-	by default using two-stage least squares (TSLS).}
+	by default using two-stage least squares (TSLS).}\todo{\texttt{matrix-diff} option must be verified}
 \begin{lstlisting}[style=pythonstyle]
 gretl.Model = gretl.tsls(formula=str(),
 	[OPTS, [data=dict()]])
 \end{lstlisting}
-\mapto[0]{tsls depvar indepvars ; instruments}\todo{formula rendering must be fixed}
-\error{Formula rendering failed}
+\mapto{tsls depvar indepvars ; instruments}
+\begin{itemize}
+	\item[]\maptoopt{no\_tests=True}{--no-tests }{don't do diagnostic tests}
+	\item[]\maptoopt{no\_df\_corr=True}{--no-df-corr }{no degrees-of-freedom correction}
+	\item[]\maptoopt{robust=True}{--robust}{robust standard errors}
+	\item[]\maptoopt{liml=True}{--liml}{use Limited Information Maximum Likelihood}
+	\item[]\maptoopt{gmm=True}{--gmm}{use the Generalized Method of Moments}
+\end{itemize}
 
 \est{wls}
 \estdesc{Computes weighted least squares (WLS) estimates
