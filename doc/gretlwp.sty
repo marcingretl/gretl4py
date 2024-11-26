@@ -114,8 +114,8 @@
  
 \renewcommand{\arraystretch}{1.2}
  
-\definecolor{mygray}{rgb}{0.85,0.85,0.85} 
-\definecolor{myteal}{rgb}{0.0,0.25,0.15} 
+\definecolor{mygray}{rgb}{0.85,0.85,0.85}
+\definecolor{myteal}{rgb}{0.0,0.25,0.15}
  
 \def\floatpagefraction{.8}
  
@@ -133,5 +133,6 @@
 \newenvironment{script*}
                {\@dblfloat{script}}
                {\end@dblfloat}
-\renewcommand\theHscript{\thechapter.\arabic{script}}
- 
+\@ifundefined{theHscript}%
+	{\newcommand\theHscript{\thechapter.\arabic{script}}}%
+	{\renewcommand\theHscript{\thechapter.\arabic{script}}}
