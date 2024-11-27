@@ -1,12 +1,11 @@
 BUGS:
 
-1. formula rendering (see PDF)
 
 TODOS:
 
 1. write docs
 
-2. do we want to have statsmodels like attributes (for know coded as @properties)
+2. add variables names to numpyarray2dict()
 
 3. (re)organize `demo' directory
 

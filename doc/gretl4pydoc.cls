@@ -12,7 +12,7 @@
 \RequirePackage[toc,title]{appendix}
 \usepackage{gretlwp}
 
-\usepackage[colorlinks]{hyperref}
+\usepackage[colorlinks,pdfusetitle]{hyperref}
 \hypersetup{citecolor=magenta}
 \usepackage[authoryear]{natbib}
 

@@ -1,38 +1,63 @@
-\section{Examples}
-Below one can find very minimal \python's script to
-utilize given functionality. More comprehensive examples
-can be fund in \texttt{examples} directory of source tree.
-
+\section{Examples}\label{sec:examples}
+Below are minimal \python scripts demonstrating the
+use of this functionality. More comprehensive examples
+can be found in the \texttt{examples} directory of
+the source tree.
 
 \subsection{Data management}\label{sec:data_management_python_examples}
+This section outlines functions for reading, converting,
+and loading datasets into \gretlpy. Note that the
+\texttt{longley.csv} file used in the examples below
+can be found in the \texttt{examples} directory.
 
-\subsection{Attaching data}
+\subsection{Attaching data}\label{sec:attaching_data_python_examples}
+The following functions are designed to register
+a global dataset in \gretlpy.
 
-\gretlfpycmd{attach\_data()}
+\gretlfpycmd{attach\_data()}\newline
+To register an existing dictionary compatible with
+\gretlpy, the following minimal code snippet can be used:
+\begin{lstlisting}[style=pythonstyle]
+import gretl
 
-\gretlfpycmd{attach\_gretl\_data()}
+gretl.attach_data(gretl.csv2dict('longley.csv'))
+\end{lstlisting}
+
+\gretlfpycmd{attach\_gretl\_data()}\newline
+To register an existing \gretl's \texttt{gdt} or
+\texttt{gdtb} file as a global dataset, the
+following minimal code snippet can be used:
+\begin{lstlisting}[style=pythonstyle]
+import gretl
+
+gretl.attach_gretl_data(
+		gretl.gretl_data_path('misc/longley.gdt'))
+\end{lstlisting}
+
 
 \subsection{Loading data from external files}
 The following functions are designed to load external
-data files as a dictionary \gretlpy expects (see
-Section~\ref{sec:data_management_c++} for details).
+data files into a dictionary compatible with \gretlpy.
+For further details, refer to Section~\ref{sec:data_management_c++}.
 
 \gretlfpycmd{csv2dict()}\newline
-To load the contents of an existing CSV file as a
-dictionary \gretlpy expects, the very minimal snippet
-would be as follows:
+To load the contents of an existing CSV file into
+a dictionary compatible with \gretlpy, the following
+minimal code snippet can be used:
 \begin{lstlisting}[style=pythonstyle]
 import gretl
+
 d = gretl.csv2dict('longley.csv')
 print(d.keys())
 \end{lstlisting}
-See \texttt{'examples/csv2dict.py'}.
+See \texttt{'examples/csv2dict.py' for details}.
 
 \gretlfpycmd{df2dict()}\newline
-To load an existing \pkg{pandas} \texttt{dataframe}
-as a dictionary \gretlpy expects, the very minimal
-snippet would be as follows (we assume observation
-labels in the first column):
+To load the contents of an existing \pkg{pandas}
+\texttt{DataFrame} into a dictionary compatible
+with \gretlpy, the following minimal code snippet
+can be used (assuming the first column contains
+observation labels):
 \begin{lstlisting}[style=pythonstyle]
 import gretl
 import pandas
@@ -41,12 +66,13 @@ df = pandas.read_csv('longley.csv')
 d = gretl.df2dict(df, withobs=True)
 print(d.keys())
 \end{lstlisting}
-See \texttt{'examples/df2dict.py'}.
+See \texttt{'examples/df2dict.py' for details}.
 
 \gretlfpycmd{numpyarray2dict()}\newline
-To load an existing \pkg{numpy} \texttt{array}
-as a dictionary \gretlpy expects, the very minimal snippet
-would be as follows:
+To load the contents of an existing \pkg{numpy}
+\texttt{array} into a dictionary compatible
+with \gretlpy, the following minimal code snippet
+can be used:
 \begin{lstlisting}[style=pythonstyle]
 import gretl
 from numpy import genfromtxt
@@ -55,12 +81,13 @@ np = genfromtxt('longley.csv', delimiter=',')[1:,1:]
 d = gretl.numpyarray2dict(np)
 print(d.keys())
 \end{lstlisting}
-See \texttt{'examples/numpyarray2dict.py'}.
+See \texttt{'examples/numpyarray2dict.py' for details}.
 
 \gretlfpycmd{series2dict()}\newline
-To load an existing \pkg{pandas} \texttt{series}
-as a dictionary \gretlpy expects, the very minimal
-snippet would be as follows:
+To load the contents of an existing \pkg{pandas}
+\texttt{Series} into a dictionary compatible
+with \gretlpy, the following minimal code snippet
+can be used:
 \begin{lstlisting}[style=pythonstyle]
 import gretl
 import pandas
@@ -71,7 +98,60 @@ s = pandas.Series(df['employ'].to_list(),
 d = gretl.series2dict(s)
 print(d.keys())
 \end{lstlisting}
-See \texttt{'examples/series2dict.py'}.
+See \texttt{'examples/series2dict.py' for details}.
+
+
+\gretlfpycmd{get\_gretl\_data()}\newline
+To load the contents of an existing \gretl's
+\texttt{gdt} or \texttt{gdtb} file into a dictionary
+compatible with \gretlpy, the following minimal
+code snippet can be used:
+\begin{lstlisting}[style=pythonstyle]
+import gretl
+
+d = gretl.get_gretl_data(
+		gretl.gretl_data_path('misc/longley.gdt'))
+print(d.keys())
+\end{lstlisting}
+
+\subsection{Helper functions}\label{sec:helper_functions_data_python_examples}
+
+\gretlfpycmd{gretl\_data\_path()}\newline
+To obtain the full path to a bundled \texttt{gdt}
+or \texttt{gdtb} file, the following minimal code
+snippet can be used \citep[see][for details]{gretl_manual}:
+\begin{lstlisting}[style=pythonstyle]
+import gretl
+
+p = gretl.gretl_data_path('misc/longley.gdt')
+print(p)
+\end{lstlisting}
+
+\gretlfpycmd{printdata()}\newline
+To print the contents of the currently registered
+global dataset in \gretlpy, the following minimal
+code snippet can be used:
+\begin{lstlisting}[style=pythonstyle]
+import gretl
+
+gretl.attach_gretl_data(
+		gretl.gretl_data_path('misc/longley.gdt'))
+gretl.printdata()
+\end{lstlisting}
+
+\gretlfpycmd{sample()}\newline
+To modify the sample range of the currently registered
+global dataset in \gretlpy, the following minimal
+code snippet can be used:
+\begin{lstlisting}[style=pythonstyle]
+import gretl
+
+gretl.attach_gretl_data(
+		gretl.gretl_data_path('misc/longley.gdt'))
+gretl.sample(t1=5, t2=10)
+\end{lstlisting}
+See \texttt{'examples/sample.py' for details}.
+
 
 
 \subsection{\gretlpy as \pkg{statsmodels} replacement}
