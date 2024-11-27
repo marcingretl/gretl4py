@@ -43,14 +43,14 @@ dict() = gretl.csv2dict(FILE=str(), [pd=int()])
 dict() = gretl.df2dict(dframe, [pd=int(), withobs=bool()])
 \end{lstlisting}
 \generaldesc{This function converts a \pkg{pandas}
-	dataframe file into a dictionary compatible with
+	\texttt{DataFrame} file into a dictionary compatible with
 	\gretlpy (as described in Section~\ref{sec:data_management_c++})
 	and accepts two optional arguments:
 	\begin{itemize}
 		\item \pythcode{pd=int()}: If provided, it
 			specifies the data's periodicity (default:~1).
 		\item \pythcode{withobs=bool()}: If set to \pythcode{True},
-			the first column of the given dataframe is
+			the first column of the given \texttt{DataFrame} is
 			treated as containing observation labels
 			(default:~\pythcode{False}).
 		\end{itemize}}
@@ -68,7 +68,7 @@ dict() = gretl.get_gretl_data(fname=str())
 
 \gretlfpycmd{gretl\_data\_path()}
 \begin{lstlisting}[style=pythonstyle]
-str() = gretl.gretl_data_path(fname)
+str() = gretl.gretl_data_path(fname=str())
 \end{lstlisting}
 \generaldesc{This function returns the full path the
 	specified \texttt{gdt} or \texttt{gdtb} file
@@ -179,7 +179,8 @@ gretl.Model = gretl.ar(formula=str(), [OPTS, [data=dict()]])
 \estdesc{Computes feasible GLS estimates for a model in which the error
 	term is assumed to follow a first-order autoregressive process.}
 \begin{lstlisting}[style=pythonstyle]
-gretl.Model = gretl.ar1(formula=str(), [OPTS, [data=dict()]])
+gretl.Model = gretl.ar1(formula=str(),
+	[OPTS, [data=dict()]])
 \end{lstlisting}
 \mapto{ar1 depvar indepvars}
 \begin{itemize}

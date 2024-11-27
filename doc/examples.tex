@@ -31,7 +31,7 @@ following minimal code snippet can be used:
 import gretl
 
 gretl.attach_gretl_data(
-		gretl.gretl_data_path('misc/longley.gdt'))
+	gretl.gretl_data_path('misc/longley.gdt'))
 \end{lstlisting}
 
 
@@ -48,7 +48,6 @@ minimal code snippet can be used:
 import gretl
 
 d = gretl.csv2dict('longley.csv')
-print(d.keys())
 \end{lstlisting}
 See \texttt{'examples/csv2dict.py' for details}.
 
@@ -64,7 +63,6 @@ import pandas
 
 df = pandas.read_csv('longley.csv')
 d = gretl.df2dict(df, withobs=True)
-print(d.keys())
 \end{lstlisting}
 See \texttt{'examples/df2dict.py' for details}.
 
@@ -79,7 +77,6 @@ from numpy import genfromtxt
 
 np = genfromtxt('longley.csv', delimiter=',')[1:,1:]
 d = gretl.numpyarray2dict(np)
-print(d.keys())
 \end{lstlisting}
 See \texttt{'examples/numpyarray2dict.py' for details}.
 
@@ -94,9 +91,8 @@ import pandas
 
 df = pandas.read_csv('longley.csv')
 s = pandas.Series(df['employ'].to_list(),
-			index=df['obs'].to_list()) 
+	index=df['obs'].to_list())
 d = gretl.series2dict(s)
-print(d.keys())
 \end{lstlisting}
 See \texttt{'examples/series2dict.py' for details}.
 
@@ -110,8 +106,7 @@ code snippet can be used:
 import gretl
 
 d = gretl.get_gretl_data(
-		gretl.gretl_data_path('misc/longley.gdt'))
-print(d.keys())
+	gretl.gretl_data_path('misc/longley.gdt'))
 \end{lstlisting}
 
 \subsection{Helper functions}\label{sec:helper_functions_data_python_examples}
@@ -124,7 +119,6 @@ snippet can be used \citep[see][for details]{gretl_manual}:
 import gretl
 
 p = gretl.gretl_data_path('misc/longley.gdt')
-print(p)
 \end{lstlisting}
 
 \gretlfpycmd{printdata()}\newline
@@ -135,7 +129,7 @@ code snippet can be used:
 import gretl
 
 gretl.attach_gretl_data(
-		gretl.gretl_data_path('misc/longley.gdt'))
+	gretl.gretl_data_path('misc/longley.gdt'))
 gretl.printdata()
 \end{lstlisting}
 
@@ -147,7 +141,7 @@ code snippet can be used:
 import gretl
 
 gretl.attach_gretl_data(
-		gretl.gretl_data_path('misc/longley.gdt'))
+	gretl.gretl_data_path('misc/longley.gdt'))
 gretl.sample(t1=5, t2=10)
 \end{lstlisting}
 See \texttt{'examples/sample.py' for details}.

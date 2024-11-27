@@ -11,6 +11,6 @@ TODOS:
 
 4. do we want to provide builds for macOS and Linux?
 
-5. make a decision on df2dict() signature
+5. csv2dict(FILE=str(), [pd=int()]): change `FILE' to `fname'
 
 6. in result bundle we convert 'gretl\_series' to 'pandas.Series' object and this is the only one part of gretl4py\_classes.py we use pandas; maybe we could change it to native python's list? the rationale for this proposal is that 'pandas' library is huge and it's loding sometimes lasts for ages (so the 'gretl' package)
