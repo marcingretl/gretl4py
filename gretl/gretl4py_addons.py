@@ -92,7 +92,10 @@ def numpyarray2dict (X, pd=1, Y=None, with_const=False,
     # we create artificial obs labels
     for i in range(numpy.shape(X)[0]):
         obs_labels.append(i+1)
-    d['data_array'] = numpy.hstack((Y, X))
+    if Y is not None:
+        d['data_array'] = numpy.hstack((Y, X))
+    else:
+        d['data_array'] = X
     d['varname'] = varname
     d['obs_labels'] = obs_labels
     d['periodicity'] = pd

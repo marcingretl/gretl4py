@@ -1,0 +1,79 @@
+\section{Examples}
+Below one can find very minimal \python's script to
+utilize given functionality. More comprehensive examples
+can be fund in \texttt{examples} directory of source tree.
+
+
+\subsection{Data management}\label{sec:data_management_python_examples}
+
+\subsection{Attaching data}
+
+\gretlfpycmd{attach\_data()}
+
+\gretlfpycmd{attach\_gretl\_data()}
+
+\subsection{Loading data from external files}
+The following functions are designed to load external
+data files as a dictionary \gretlpy expects (see
+Section~\ref{sec:data_management_c++} for details).
+
+\gretlfpycmd{csv2dict()}\newline
+To load the contents of an existing CSV file as a
+dictionary \gretlpy expects, the very minimal snippet
+would be as follows:
+\begin{lstlisting}[style=pythonstyle]
+import gretl
+d = gretl.csv2dict('longley.csv')
+print(d.keys())
+\end{lstlisting}
+See \texttt{'examples/csv2dict.py'}.
+
+\gretlfpycmd{df2dict()}\newline
+To load an existing \pkg{pandas} \texttt{dataframe}
+as a dictionary \gretlpy expects, the very minimal
+snippet would be as follows (we assume observation
+labels in the first column):
+\begin{lstlisting}[style=pythonstyle]
+import gretl
+import pandas
+
+df = pandas.read_csv('longley.csv')
+d = gretl.df2dict(df, withobs=True)
+print(d.keys())
+\end{lstlisting}
+See \texttt{'examples/df2dict.py'}.
+
+\gretlfpycmd{numpyarray2dict()}\newline
+To load an existing \pkg{numpy} \texttt{array}
+as a dictionary \gretlpy expects, the very minimal snippet
+would be as follows:
+\begin{lstlisting}[style=pythonstyle]
+import gretl
+from numpy import genfromtxt
+
+np = genfromtxt('longley.csv', delimiter=',')[1:,1:]
+d = gretl.numpyarray2dict(np)
+print(d.keys())
+\end{lstlisting}
+See \texttt{'examples/numpyarray2dict.py'}.
+
+\gretlfpycmd{series2dict()}\newline
+To load an existing \pkg{pandas} \texttt{series}
+as a dictionary \gretlpy expects, the very minimal
+snippet would be as follows:
+\begin{lstlisting}[style=pythonstyle]
+import gretl
+import pandas
+
+df = pandas.read_csv('longley.csv')
+s = pandas.Series(df['employ'].to_list(),
+			index=df['obs'].to_list()) 
+d = gretl.series2dict(s)
+print(d.keys())
+\end{lstlisting}
+See \texttt{'examples/series2dict.py'}.
+
+
+\subsection{\gretlpy as \pkg{statsmodels} replacement}
+\error{to be written$\ldots$}
+\url{https://www.statsmodels.org/stable/examples}
