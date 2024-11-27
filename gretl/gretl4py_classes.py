@@ -1,7 +1,6 @@
 import json
 import _gretl
 import numpy
-import pandas as pd
 
 class Model:
 
@@ -43,9 +42,7 @@ class Model:
                     c = val['cols']
                     json_dict[key] = numpy.reshape(a, [r, c], order = 'F')
                 elif val['type'] == 'gretl_series':
-                    s = pd.Series(val['data'])
-                    s = pd.to_numeric(s, errors='coerce')
-                    json_dict[key] = s
+                    json_dict[key] = val['data']
                 elif val['type'] == 'gretl_list':
                     json_dict[key] = list(val['data'])[1:]
 

@@ -1,4 +1,5 @@
 import os
+import sys
 import subprocess
 import csv
 import numpy
@@ -43,6 +44,8 @@ def csv2dict(FILE, pd=1):
 
 def df2dict(dframe, pd=1, withobs=False):
     '''turns a pandas dataframe into a dictionary gretl understands'''
+    if 'pandas' not in sys.modules:
+        import pandas
     d = {}
     obs_dates = []
     # hard rename of 'const' to 'constant'
@@ -97,6 +100,8 @@ def numpyarray2dict (X, pd=1, Y=None, with_const=False,
 
 def series2dict (series, pd=1, varname="y"):
     '''turns a pandas series into a dictionary gretl understands'''
+    if 'pandas' not in sys.modules:
+        import pandas
     d = {}
     try:
         obs_dates = series.index.to_period()

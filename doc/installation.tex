@@ -5,10 +5,11 @@ the following components are installed:
 \begin{itemize}
 	\item One of the supported versions of \python: (\reqpython);
 	\item The following required \python packages: \pkg{csv},
-		\pkg{json}, \pkg{numpy}, \pkg{pandas}, \pkg{subprocess},
+		\pkg{json}, \pkg{numpy}, \pkg{subprocess},
 		and \pkg{pybind11}.\footnote{This package is required for compilation only.}
-		Note, that \pkg{pandas} is needed only for reading
-		\pkg{pandas}'s structures (like dataframes or series).
+		If you want to import \pkg{pandas}'s structures
+		(like dataframes or series), make sure that
+		\pkg{pandas} is installed in your system.
 	\item \lgretl~1.0 version 48 or higher (refer to
 		\url{https://gretl.sourceforge.net} for details);
 \end{itemize}
@@ -86,10 +87,12 @@ Currently, native compilation on MS Windows is supported
 only with the LLVM/Clang compiler. For more details, refer
 to the official documentation at \url{https://clang.llvm.org}
 and the LLVM project releases at \url{https://github.com/llvm/llvm-project/releases}.
-Support for Microsoft's \texttt{cl.exe} compiler is
-under development.\footnote{Note that \texttt{clang-cl.exe}
-	functions correctly, indicating that this is not a
-	syntax-related issue.}
+Support for Microsoft's \texttt{cl.exe} compiler is under
+development, which is related with that fact that
+\texttt{cl.exe} is not C99 standard compliant in terms
+of complex numbers (see
+\url{https://learn.microsoft.com/en-us/cpp/c-runtime-library/complex-math-support?view=msvc-170}
+for details).
 
 Before compiling \gretlpy on MS Windows, ensure the
 following components are installed:
