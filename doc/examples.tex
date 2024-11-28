@@ -148,6 +148,245 @@ See \texttt{'examples/sample.py' for details}.
 
 
 
-\subsection{\gretlpy as \pkg{statsmodels} replacement}
-\error{to be written$\ldots$}
-\url{https://www.statsmodels.org/stable/examples}
+\subsubsection{Estimators}\label{sec:estimators_python_examples}
+
+\gretlfpycmd{ar()}%
+\index{attach\_gretl\_data()}\index{gretl\_data\_path()}\newline
+To perform the generalized Cochrane-Orcutt iterative
+procedure estimation, the following minimal code snippet
+can be used:
+\begin{lstlisting}[style=pythonstyle]
+import gretl
+
+gretl.attach_gretl_data(
+	gretl.gretl_data_path('misc/longley.gdt'))
+m = gretl.ar('1 2 ; employ const prdefl gnp armfrc').fit()
+\end{lstlisting}
+See \texttt{'examples/ar.py' for details}.
+
+\gretlfpycmd{ar1()}%
+\index{attach\_gretl\_data()}\index{gretl\_data\_path()}\newline
+To perform feasible GLS estimates for a model in
+which the error term is assumed to follow a first-order
+autoregressive process, the following minimal code snippet
+can be used:
+\begin{lstlisting}[style=pythonstyle]
+import gretl
+
+gretl.attach_gretl_data(
+	gretl.gretl_data_path('misc/longley.gdt'))
+m = gretl.ar1('employ ~ const + prdefl + gnp').fit()
+\end{lstlisting}
+See \texttt{'examples/ar1.py' for details}.
+
+\gretlfpycmd{arma()}%
+\index{attach\_gretl\_data()}\index{gretl\_data\_path()}\newline
+To perform $ARIMA(1,1,1)$ estimation, the following
+minimal code snippet can be used:
+\begin{lstlisting}[style=pythonstyle]
+import gretl
+
+gretl.attach_gretl_data(
+	gretl.gretl_data_path('misc/bjg.gdt'))
+m = gretl.arma(y='lg', order=(1,1,1)).fit()
+\end{lstlisting}
+See \texttt{'examples/arma.py' for details}.
+
+\gretlfpycmd{biprobit()}%
+\index{attach\_gretl\_data()}\index{gretl\_data\_path()}\newline
+To perform bivariate probit model estimation,
+the following minimal code snippet can be used:
+\begin{lstlisting}[style=pythonstyle]
+import gretl
+
+gretl.attach_gretl_data(
+	gretl.gretl_data_path('greene/greene25_1.gdt'))
+m = gretl.biprobit('anydrg cardhldr const age avgexp ;
+	const age income ownrent selfempl').fit()
+\end{lstlisting}
+See \texttt{'examples/biprobit.py' for details}.
+
+\gretlfpycmd{duration()}%
+\index{attach\_gretl\_data()}\index{gretl\_data\_path()}\newline
+To perform duration model estimation,
+the following minimal code snippet can be used:
+\begin{lstlisting}[style=pythonstyle]
+import gretl
+
+gretl.attach_gretl_data(
+	gretl.gretl_data_path('misc/kennan.gdt'))
+m = gretl.duration('Ti ~ const + Prod').fit()
+\end{lstlisting}
+See \texttt{'examples/duration.py' for details}.
+
+\gretlfpycmd{garch()}%
+\index{attach\_gretl\_data()}\index{gretl\_data\_path()}\newline
+To perform $GARCH(1,1)$ model estimation,
+the following minimal code snippet can be used:
+\begin{lstlisting}[style=pythonstyle]
+import gretl
+
+gretl.attach_gretl_data(
+	gretl.gretl_data_path('misc/b-g.gdt'))
+m = gretl.garch('1 1 ; Y').fit()
+\end{lstlisting}
+See \texttt{'examples/garch.py' for details}.
+
+\gretlfpycmd{heckit()}%
+\index{attach\_gretl\_data()}\index{gretl\_data\_path()}\newline
+To perform Heckman-type selection model estimation,
+the following minimal code snippet can be used:
+\begin{lstlisting}[style=pythonstyle]
+import gretl
+
+gretl.attach_gretl_data(
+	gretl.gretl_data_path('misc/mroz87.gdt'))
+m = gretl.heckit('WW const AX WE CIT ;
+	LFP const WA FAMINC WE').fit()
+\end{lstlisting}
+See \texttt{'examples/heckit.py' for details}.
+
+\gretlfpycmd{lad()}%
+\index{attach\_gretl\_data()}\index{gretl\_data\_path()}\newline
+To perform the generalized Cochrane-Orcutt iterative
+procedure estimation, the following minimal code snippet
+can be used:
+\begin{lstlisting}[style=pythonstyle]
+import gretl
+
+gretl.attach_gretl_data(
+	gretl.gretl_data_path('misc/longley.gdt'))
+m = gretl.lad('employ ~ const + prdefl + gnp').fit()
+\end{lstlisting}
+See \texttt{'examples/lad.py' for details}.
+
+\gretlfpycmd{logistic()}%
+\index{attach\_gretl\_data()}\index{gretl\_data\_path()}\newline
+To perform Logistic regression estimation, the
+following minimal code snippet can be used:
+\begin{lstlisting}[style=pythonstyle]
+import gretl
+
+gretl.attach_gretl_data(
+	gretl.gretl_data_path('misc/longley.gdt'))
+m = gretl.logistic('employ ~ const + prdefl + gnp').fit()
+\end{lstlisting}
+See \texttt{'examples/logistic.py' for details}.
+
+\gretlfpycmd{logit()}%
+\index{attach\_gretl\_data()}\index{gretl\_data\_path()}\newline
+To perform logit regression estimation, the
+following minimal code snippet can be used:
+\begin{lstlisting}[style=pythonstyle]
+import gretl
+
+gretl.attach_gretl_data(
+	gretl.gretl_data_path('greene/greene22_2.gdt'))
+m = gretl.logit('Y ~ const + Z1 + Z2').fit()
+\end{lstlisting}
+See \texttt{'examples/logit.py' for details}.
+
+\gretlfpycmd{mpols()}%
+\index{attach\_gretl\_data()}\index{gretl\_data\_path()}\newline
+To perform multiple precision floating-point arithmetic OLS
+estimation, the following minimal code snippet can be used:
+\begin{lstlisting}[style=pythonstyle]
+import gretl
+
+gretl.attach_gretl_data(
+	gretl.gretl_data_path('misc/longley.gdt'))
+m = gretl.mpols('employ ~ const + prdefl + gnp').fit()
+\end{lstlisting}
+See \texttt{'examples/mpols.py' for details}.
+
+\gretlfpycmd{negbin()}%
+\index{attach\_gretl\_data()}\index{gretl\_data\_path()}\newline
+To perform Negative Binomial model estimation, the
+following minimal code snippet can be used:
+\begin{lstlisting}[style=pythonstyle]
+import gretl
+
+gretl.attach_gretl_data(
+	gretl.gretl_data_path('misc/rac3d.gdt'))
+m = gretl.negbin('DVISITS ~ const + SEX + AGE').fit()
+\end{lstlisting}
+See \texttt{'examples/negbin.py' for details}.
+
+\gretlfpycmd{ols()}%
+\index{attach\_gretl\_data()}\index{gretl\_data\_path()}\newline
+To perform OLS estimation, the following minimal
+code snippet can be used:
+\begin{lstlisting}[style=pythonstyle]
+import gretl
+
+gretl.attach_gretl_data(
+	gretl.gretl_data_path('misc/longley.gdt'))
+m = gretl.ols('employ ~ const + prdefl + gnp').fit()
+\end{lstlisting}
+See \texttt{'examples/ols.py' for details}.
+
+\gretlfpycmd{panel()}%
+\index{attach\_gretl\_data()}\index{gretl\_data\_path()}\newline
+To perform panel model estimation, the following minimal
+code snippet can be used:
+\begin{lstlisting}[style=pythonstyle]
+import gretl
+
+gretl.attach_gretl_data(
+	gretl.gretl_data_path('misc/penngrow.gdt'))
+m = gretl.panel('Y ~ const + Y(-1) + X').fit()
+\end{lstlisting}
+See \texttt{'examples/panel.py' for details}.
+
+\gretlfpycmd{poisson()}%
+\index{attach\_gretl\_data()}\index{gretl\_data\_path()}\newline
+To perform Poisson regression estimation, the
+following minimal code snippet can be used:
+\begin{lstlisting}[style=pythonstyle]
+import gretl
+
+gretl.attach_gretl_data(
+	gretl.gretl_data_path('misc/rac3d.gdt'))
+m = gretl.poisson('DVISITS ~ const + SEX + AGE').fit()
+\end{lstlisting}
+See \texttt{'examples/poisson.py' for details}.
+
+\gretlfpycmd{probit()}%
+\index{attach\_gretl\_data()}\index{gretl\_data\_path()}\newline
+To perform probit regression estimation, the
+following minimal code snippet can be used:
+\begin{lstlisting}[style=pythonstyle]
+import gretl
+
+gretl.attach_gretl_data(
+	gretl.gretl_data_path('greene/greene22_2.gdt'))
+m = gretl.probit('Y ~ const + Z1 + Z2').fit()
+\end{lstlisting}
+See \texttt{'examples/probit.py' for details}.
+
+\gretlfpycmd{tsls()}%
+\index{attach\_gretl\_data()}\index{gretl\_data\_path()}\newline
+To perform Instrumental Variables (IV) estimation
+using two-stage least squares (TSLS), the following
+minimal code snippet can be used:
+\begin{lstlisting}[style=pythonstyle]
+import gretl
+
+gretl.attach_gretl_data(
+	gretl.gretl_data_path('misc/penngrow.gdt'))
+m = gretl.tsls('Y Y(-1) X ; 0 X Y(-2)').fit()
+\end{lstlisting}
+See \texttt{'examples/tsls.py' for details}.
+
+\gretlfpycmd{wls()}%
+\index{attach\_gretl\_data()}\index{gretl\_data\_path()}\newline
+To perform weighted least squares (WLS) estimation,
+the following minimal code snippet can be used:
+\begin{lstlisting}[style=pythonstyle]
+import gretl
+
+gretl.attach_gretl_data(
+	gretl.gretl_data_path('misc/longley.gdt'))
+m = gretl.wls('year employ const prdefl gnp').fit()
+\end{lstlisting}
+See \texttt{'examples/wls.py' for details}.

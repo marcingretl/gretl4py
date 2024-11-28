@@ -34,7 +34,7 @@
 \newcommand{\python}[1][]{\proglang{Python#1}\xspace}
 \newcommand{\cpp}{\proglang{C++}\xspace}
 \newcommand{\installbat}{\texttt{install.bat}\xspace}
-\newcommand{\est}[1]{\vspace{10pt}\noindent\gretlcmd{#1}\index{#1}}
+\newcommand{\est}[1]{\vspace{10pt}\noindent\gretlcmd{#1}\index{#1()}}
 \newcommand{\estdesc}[1]{\newline\begin{minipage}[t]{\columnwidth}%
 	\footnotesize#1\end{minipage}\vspace{3pt}}
 \newcommand{\noRformula}{\hspace*{17pt}\begin{minipage}[t]{0.89\columnwidth}\small%
@@ -90,6 +90,8 @@
 		\input{implementation_python_side}
 	\input{Usage}
 	\input{examples}
+		\subsection{\gretlpy as \pkg{statsmodels} replacement}
+		\error{to be written$\ldots$}\url{https://www.statsmodels.org/stable/examples}
 
 	\printindex
 
