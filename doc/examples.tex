@@ -14,7 +14,7 @@ can be found in the \texttt{examples} directory.
 The following functions are designed to register
 a global dataset in \gretlpy.
 
-\gretlfpycmd{attach\_data()}\newline
+\gretlfpycmd{attach\_data()}\index{csv2dict()}\newline
 To register an existing dictionary compatible with
 \gretlpy, the following minimal code snippet can be used:
 \begin{lstlisting}[style=pythonstyle]
@@ -23,7 +23,7 @@ import gretl
 gretl.attach_data(gretl.csv2dict('longley.csv'))
 \end{lstlisting}
 
-\gretlfpycmd{attach\_gretl\_data()}\newline
+\gretlfpycmd{attach\_gretl\_data()}\index{gretl\_data\_path()}\newline
 To register an existing \gretl's \texttt{gdt} or
 \texttt{gdtb} file as a global dataset, the
 following minimal code snippet can be used:
@@ -97,7 +97,7 @@ d = gretl.series2dict(s)
 See \texttt{'examples/series2dict.py' for details}.
 
 
-\gretlfpycmd{get\_gretl\_data()}\newline
+\gretlfpycmd{get\_gretl\_data()}\index{gretl\_data\_path()}\newline
 To load the contents of an existing \gretl's
 \texttt{gdt} or \texttt{gdtb} file into a dictionary
 compatible with \gretlpy, the following minimal
@@ -121,7 +121,7 @@ import gretl
 p = gretl.gretl_data_path('misc/longley.gdt')
 \end{lstlisting}
 
-\gretlfpycmd{printdata()}\newline
+\gretlfpycmd{printdata()}\index{gretl\_data\_path()}\newline
 To print the contents of the currently registered
 global dataset in \gretlpy, the following minimal
 code snippet can be used:
@@ -133,7 +133,7 @@ gretl.attach_gretl_data(
 gretl.printdata()
 \end{lstlisting}
 
-\gretlfpycmd{sample()}\newline
+\gretlfpycmd{sample()}\index{gretl\_data\_path()}\newline
 To modify the sample range of the currently registered
 global dataset in \gretlpy, the following minimal
 code snippet can be used:

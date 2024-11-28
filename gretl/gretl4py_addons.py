@@ -19,12 +19,12 @@ def _pdtostrformat (pd):
         raise TypeError(f'date formatter for pd={pd:d} not supported')
     return res
 
-def csv2dict(FILE, pd=1):
+def csv2dict (fname, pd=1):
     """turns a cvs into a dictionary gretl understands"""
     d = {}
     data_list = []
     obs_labels = []
-    with open(FILE, newline='') as csvfile:
+    with open(fname, newline='') as csvfile:
         gretlreader = csv.reader(csvfile, delimiter=',')
         row_nr = 0
         varname = []
@@ -42,7 +42,7 @@ def csv2dict(FILE, pd=1):
     d["periodicity"] = pd
     return d
 
-def df2dict(dframe, pd=1, withobs=False):
+def df2dict (dframe, pd=1, withobs=False):
     '''turns a pandas dataframe into a dictionary gretl understands'''
     if 'pandas' not in sys.modules:
         import pandas
@@ -119,7 +119,7 @@ def series2dict (series, pd=1, varname="y"):
     d['periodicity'] = pd
     return d
 
-def gretl_data_path(fname):
+def gretl_data_path (fname):
     """return full path to gretl data"""
     res_path = None
     s = os.getenv('GRETL_DATA_PATH')
