@@ -94,11 +94,11 @@ py::dict about (bool do_print)
 
     if (do_print || gretl4py_verbose) {
         std::cout << "gretl4py version " << mod_ver;
-        std::cout << " [" << COMPILER_IDENT << "]";
-        std::cout << ", pybind11 version " << py11_ver;
-        std::cout << ", libgretl-1.0 version " << lg_ver << std::endl;
+        std::cout << " [" << COMPILER_IDENT << "]" << std::endl;
+        std::cout << "\t|_pybind11 version " << py11_ver << std::endl;
+        std::cout << "\t|_libgretl-1.0 version " << lg_ver << std::endl;
         if (!b.myerr) {
-            std::cout << std::endl << "libgretl $sysinfo ";
+            std::cout << std::endl << "libgretl $sysinfo:" << std::endl;
             b.print();
         }
     }
