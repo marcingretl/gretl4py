@@ -17,19 +17,19 @@ provided in Section~\ref{sec:estimators_python_examples}.
 \gretlfpycmd{aic()}
 \estdesc{Returns value of Akaike criterion.}
 \begin{lstlisting}[style=pythonstyle]
-	float = aic(self)
+float = aic(self)
 \end{lstlisting}
 
 \gretlfpycmd{bic()}
 \estdesc{Returns value of Schwartz criterion.}
 \begin{lstlisting}[style=pythonstyle]
-	float = bic(self)
+float = bic(self)
 \end{lstlisting}
 
 \gretlfpycmd{coeff()}
 \estdesc{Returns coefficient estimates.}
 \begin{lstlisting}[style=pythonstyle]
-	numpy.ndarray = coeff(self)
+numpy.ndarray = coeff(self)
 \end{lstlisting}
 
 \gretlfpycmd{fit()}
@@ -42,13 +42,13 @@ gretl.Model = fit(self)
 \gretlfpycmd{hqc()}
 \estdesc{Returns value of Hannan-Quinn criterion.}
 \begin{lstlisting}[style=pythonstyle]
-	float = hqc(self)
+float = hqc(self)
 \end{lstlisting}
 
 \gretlfpycmd{id()}
 \estdesc{Model's ID (assigned by \lgretl).}
 \begin{lstlisting}[style=pythonstyle]
-	int = id(self)
+int = id(self)
 \end{lstlisting}
 
 \gretlfpycmd{parnames()}
@@ -60,31 +60,31 @@ str = parnames(self)
 \gretlfpycmd{rsq()}
 \estdesc{Returns R-squared.}
 \begin{lstlisting}[style=pythonstyle]
-	float = rsq(self)
+float = rsq(self)
 \end{lstlisting}
 
 \gretlfpycmd{sigma()}
 \estdesc{Returns standard errors of residuals.}
 \begin{lstlisting}[style=pythonstyle]
-	float = sigma(self)
+float = sigma(self)
 \end{lstlisting}
 
 \gretlfpycmd{stderr()}
 \estdesc{Returns standard errors of coefficient estimates.}
 \begin{lstlisting}[style=pythonstyle]
-	numpy.ndarray = stderr(self)
+numpy.ndarray = stderr(self)
 \end{lstlisting}
 
 \gretlfpycmd{uhat()}
 \estdesc{Returns residuals.}
 \begin{lstlisting}[style=pythonstyle]
-	list = uhat(self)
+list = uhat(self)
 \end{lstlisting}
 
 \gretlfpycmd{yhat()}
 \estdesc{Returns fitted values.}
 \begin{lstlisting}[style=pythonstyle]
-	list = yhat(self)
+list = yhat(self)
 \end{lstlisting}
 
 \vspace*{20pt}\noindent The \classpymodel class provides the following public attributes:
@@ -92,26 +92,26 @@ str = parnames(self)
 \gretlfpycmd{args}
 \estdesc{Options passed as \pythcode{*args}.}
 \begin{lstlisting}[style=pythonstyle]
-	tuple = args
+tuple = args
 \end{lstlisting}
 
 \gretlfpycmd{computed}
 \estdesc{Indicated if the model was estimated.}
 \begin{lstlisting}[style=pythonstyle]
-	bool = computed
+bool = computed
 \end{lstlisting}
 
 \gretlfpycmd{options}
 \estdesc{Options passed as \pythcode{**kwargs}.}
 \begin{lstlisting}[style=pythonstyle]
-	dict = options
+dict = options
 \end{lstlisting}
 
 \gretlfpycmd{results}
 \estdesc{Contents of the \lgretl's \gretlcmd{\$model} bundle
 	\cite[see][]{gretl_command} for details.}
 \begin{lstlisting}[style=pythonstyle]
-	dict = results
+dict = results
 \end{lstlisting}
 
 \gretlfpycmd{summary}

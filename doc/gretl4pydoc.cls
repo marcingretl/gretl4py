@@ -120,7 +120,7 @@
 		mat2list, strftime, fzero, _},
 	morekeywords=[3]{bool, int, list, matrix, scalar, series, string, bundle,
 		void, bundles, null, const},
-	morekeywords=[4]{\$nobs, \$stopwatch, \$sysinfo, \$now},
+	morekeywords=[4]{\$nobs, \$stopwatch, \$sysinfo, \$now, \$model},
 	%   alsoletter={-},
 	sensitive=false,
 	morecomment=[l]{\#},

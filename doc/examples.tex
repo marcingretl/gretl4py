@@ -49,7 +49,7 @@ import gretl
 
 d = gretl.csv2dict('longley.csv')
 \end{lstlisting}
-See \texttt{'examples/csv2dict.py' for details}.
+See \texttt{`examples/csv2dict.py' for details}.
 
 \gretlfpycmd{df2dict()}\newline
 To load the contents of an existing \pkg{pandas}
@@ -64,7 +64,7 @@ import pandas
 df = pandas.read_csv('longley.csv')
 d = gretl.df2dict(df, withobs=True)
 \end{lstlisting}
-See \texttt{'examples/df2dict.py' for details}.
+See \texttt{`examples/df2dict.py' for details}.
 
 \gretlfpycmd{numpyarray2dict()}\newline
 To load the contents of an existing \pkg{numpy}
@@ -78,7 +78,7 @@ from numpy import genfromtxt
 np = genfromtxt('longley.csv', delimiter=',')[1:,1:]
 d = gretl.numpyarray2dict(np)
 \end{lstlisting}
-See \texttt{'examples/numpyarray2dict.py' for details}.
+See \texttt{`examples/numpyarray2dict.py' for details}.
 
 \gretlfpycmd{series2dict()}\newline
 To load the contents of an existing \pkg{pandas}
@@ -94,7 +94,7 @@ s = pandas.Series(df['employ'].to_list(),
 	index=df['obs'].to_list())
 d = gretl.series2dict(s)
 \end{lstlisting}
-See \texttt{'examples/series2dict.py' for details}.
+See \texttt{`examples/series2dict.py' for details}.
 
 
 \gretlfpycmd{get\_gretl\_data()}\index{gretl\_data\_path()}\newline
@@ -144,7 +144,7 @@ gretl.attach_gretl_data(
 	gretl.gretl_data_path('misc/longley.gdt'))
 gretl.sample(t1=5, t2=10)
 \end{lstlisting}
-See \texttt{'examples/sample.py' for details}.
+See \texttt{`examples/sample.py' for details}.
 
 
 
@@ -162,7 +162,7 @@ gretl.attach_gretl_data(
 	gretl.gretl_data_path('misc/longley.gdt'))
 m = gretl.ar('1 2 ; employ const prdefl gnp armfrc').fit()
 \end{lstlisting}
-See \texttt{'examples/ar.py' for details}.
+See \texttt{`examples/ar.py' for details}.
 
 \gretlfpycmd{ar1()}%
 \index{attach\_gretl\_data()}\index{gretl\_data\_path()}\newline
@@ -177,7 +177,7 @@ gretl.attach_gretl_data(
 	gretl.gretl_data_path('misc/longley.gdt'))
 m = gretl.ar1('employ ~ const + prdefl + gnp').fit()
 \end{lstlisting}
-See \texttt{'examples/ar1.py' for details}.
+See \texttt{`examples/ar1.py' for details}.
 
 \gretlfpycmd{arma()}%
 \index{attach\_gretl\_data()}\index{gretl\_data\_path()}\newline
@@ -190,7 +190,7 @@ gretl.attach_gretl_data(
 	gretl.gretl_data_path('misc/bjg.gdt'))
 m = gretl.arma(y='lg', order=(1,1,1)).fit()
 \end{lstlisting}
-See \texttt{'examples/arma.py' for details}.
+See \texttt{`examples/arma.py' for details}.
 
 \gretlfpycmd{biprobit()}%
 \index{attach\_gretl\_data()}\index{gretl\_data\_path()}\newline
@@ -204,7 +204,7 @@ gretl.attach_gretl_data(
 m = gretl.biprobit('anydrg cardhldr const age avgexp ;
 	const age income ownrent selfempl').fit()
 \end{lstlisting}
-See \texttt{'examples/biprobit.py' for details}.
+See \texttt{`examples/biprobit.py' for details}.
 
 \gretlfpycmd{duration()}%
 \index{attach\_gretl\_data()}\index{gretl\_data\_path()}\newline
@@ -217,7 +217,7 @@ gretl.attach_gretl_data(
 	gretl.gretl_data_path('misc/kennan.gdt'))
 m = gretl.duration('Ti ~ const + Prod').fit()
 \end{lstlisting}
-See \texttt{'examples/duration.py' for details}.
+See \texttt{`examples/duration.py' for details}.
 
 \gretlfpycmd{garch()}%
 \index{attach\_gretl\_data()}\index{gretl\_data\_path()}\newline
@@ -230,7 +230,7 @@ gretl.attach_gretl_data(
 	gretl.gretl_data_path('misc/b-g.gdt'))
 m = gretl.garch('1 1 ; Y').fit()
 \end{lstlisting}
-See \texttt{'examples/garch.py' for details}.
+See \texttt{`examples/garch.py' for details}.
 
 \gretlfpycmd{heckit()}%
 \index{attach\_gretl\_data()}\index{gretl\_data\_path()}\newline
@@ -244,7 +244,7 @@ gretl.attach_gretl_data(
 m = gretl.heckit('WW const AX WE CIT ;
 	LFP const WA FAMINC WE').fit()
 \end{lstlisting}
-See \texttt{'examples/heckit.py' for details}.
+See \texttt{`examples/heckit.py' for details}.
 
 \gretlfpycmd{lad()}%
 \index{attach\_gretl\_data()}\index{gretl\_data\_path()}\newline
@@ -258,7 +258,7 @@ gretl.attach_gretl_data(
 	gretl.gretl_data_path('misc/longley.gdt'))
 m = gretl.lad('employ ~ const + prdefl + gnp').fit()
 \end{lstlisting}
-See \texttt{'examples/lad.py' for details}.
+See \texttt{`examples/lad.py' for details}.
 
 \gretlfpycmd{logistic()}%
 \index{attach\_gretl\_data()}\index{gretl\_data\_path()}\newline
@@ -271,7 +271,7 @@ gretl.attach_gretl_data(
 	gretl.gretl_data_path('misc/longley.gdt'))
 m = gretl.logistic('employ ~ const + prdefl + gnp').fit()
 \end{lstlisting}
-See \texttt{'examples/logistic.py' for details}.
+See \texttt{`examples/logistic.py' for details}.
 
 \gretlfpycmd{logit()}%
 \index{attach\_gretl\_data()}\index{gretl\_data\_path()}\newline
@@ -284,7 +284,7 @@ gretl.attach_gretl_data(
 	gretl.gretl_data_path('greene/greene22_2.gdt'))
 m = gretl.logit('Y ~ const + Z1 + Z2').fit()
 \end{lstlisting}
-See \texttt{'examples/logit.py' for details}.
+See \texttt{`examples/logit.py' for details}.
 
 \gretlfpycmd{mpols()}%
 \index{attach\_gretl\_data()}\index{gretl\_data\_path()}\newline
@@ -297,7 +297,7 @@ gretl.attach_gretl_data(
 	gretl.gretl_data_path('misc/longley.gdt'))
 m = gretl.mpols('employ ~ const + prdefl + gnp').fit()
 \end{lstlisting}
-See \texttt{'examples/mpols.py' for details}.
+See \texttt{`examples/mpols.py' for details}.
 
 \gretlfpycmd{negbin()}%
 \index{attach\_gretl\_data()}\index{gretl\_data\_path()}\newline
@@ -310,7 +310,7 @@ gretl.attach_gretl_data(
 	gretl.gretl_data_path('misc/rac3d.gdt'))
 m = gretl.negbin('DVISITS ~ const + SEX + AGE').fit()
 \end{lstlisting}
-See \texttt{'examples/negbin.py' for details}.
+See \texttt{`examples/negbin.py' for details}.
 
 \gretlfpycmd{ols()}%
 \index{attach\_gretl\_data()}\index{gretl\_data\_path()}\newline
@@ -323,7 +323,7 @@ gretl.attach_gretl_data(
 	gretl.gretl_data_path('misc/longley.gdt'))
 m = gretl.ols('employ ~ const + prdefl + gnp').fit()
 \end{lstlisting}
-See \texttt{'examples/ols.py' for details}.
+See \texttt{`examples/ols.py' for details}.
 
 \gretlfpycmd{panel()}%
 \index{attach\_gretl\_data()}\index{gretl\_data\_path()}\newline
@@ -336,7 +336,7 @@ gretl.attach_gretl_data(
 	gretl.gretl_data_path('misc/penngrow.gdt'))
 m = gretl.panel('Y ~ const + Y(-1) + X').fit()
 \end{lstlisting}
-See \texttt{'examples/panel.py' for details}.
+See \texttt{`examples/panel.py' for details}.
 
 \gretlfpycmd{poisson()}%
 \index{attach\_gretl\_data()}\index{gretl\_data\_path()}\newline
@@ -349,7 +349,7 @@ gretl.attach_gretl_data(
 	gretl.gretl_data_path('misc/rac3d.gdt'))
 m = gretl.poisson('DVISITS ~ const + SEX + AGE').fit()
 \end{lstlisting}
-See \texttt{'examples/poisson.py' for details}.
+See \texttt{`examples/poisson.py' for details}.
 
 \gretlfpycmd{probit()}%
 \index{attach\_gretl\_data()}\index{gretl\_data\_path()}\newline
@@ -362,7 +362,7 @@ gretl.attach_gretl_data(
 	gretl.gretl_data_path('greene/greene22_2.gdt'))
 m = gretl.probit('Y ~ const + Z1 + Z2').fit()
 \end{lstlisting}
-See \texttt{'examples/probit.py' for details}.
+See \texttt{`examples/probit.py' for details}.
 
 \gretlfpycmd{tsls()}%
 \index{attach\_gretl\_data()}\index{gretl\_data\_path()}\newline
@@ -376,7 +376,7 @@ gretl.attach_gretl_data(
 	gretl.gretl_data_path('misc/penngrow.gdt'))
 m = gretl.tsls('Y Y(-1) X ; 0 X Y(-2)').fit()
 \end{lstlisting}
-See \texttt{'examples/tsls.py' for details}.
+See \texttt{`examples/tsls.py' for details}.
 
 \gretlfpycmd{wls()}%
 \index{attach\_gretl\_data()}\index{gretl\_data\_path()}\newline
@@ -389,4 +389,17 @@ gretl.attach_gretl_data(
 	gretl.gretl_data_path('misc/longley.gdt'))
 m = gretl.wls('year employ const prdefl gnp').fit()
 \end{lstlisting}
-See \texttt{'examples/wls.py' for details}.
+See \texttt{`examples/wls.py' for details}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Examples from \pkg{statsmodels}}
+In the \texttt{`examples/statsmodels'} directory, one can
+find examples for the \pkg{statsmodels} package, available at
+\url{https://www.statsmodels.org/stable/examples}, rendered
+as \gretlpy calls. It is important to note that any given
+\python script must be executed from within the subdirectory
+where the script is located. This is because each example
+imports functions from \texttt{`helper\_func.py'}, which resides
+in the \texttt{`examples/statsmodels'} directory.
