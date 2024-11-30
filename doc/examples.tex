@@ -152,9 +152,9 @@ See \texttt{`examples/sample.py' for details}.
 
 \gretlfpycmd{ar()}%
 \index{attach\_gretl\_data()}\index{gretl\_data\_path()}\newline
-To perform the generalized Cochrane-Orcutt iterative
-procedure estimation, the following minimal code snippet
-can be used:
+To perform the generalized Cochrane-Orcutt iterative procedure,
+the following minimal code snippet can be used. The corresponding
+results are presented in Figure~\ref{fig:ar_results}.
 \begin{lstlisting}[style=pythonstyle]
 import gretl
 
@@ -163,6 +163,13 @@ gretl.attach_gretl_data(
 m = gretl.ar('1 2 ; employ const prdefl gnp armfrc').fit()
 \end{lstlisting}
 See \texttt{`examples/ar.py' for details}.
+
+\begin{figure}[h!tb]
+	\centering
+	\includegraphics[width=0.6\columnwidth]{examples/ar}
+	\caption{Results of the \gretlfpycmd{ar()} model estimation.}
+	\label{fig:ar_results}
+\end{figure}
 
 \gretlfpycmd{ar1()}%
 \index{attach\_gretl\_data()}\index{gretl\_data\_path()}\newline

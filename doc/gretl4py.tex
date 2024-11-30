@@ -93,8 +93,6 @@
 	\input{Usage}
 	\input{examples}
 
-	\printindex
-
 	%\appendix
 	\begin{appendices}
 		\input{sourcetree.tex}
@@ -102,4 +100,10 @@
 
 	\bibliographystyle{abbrvnat}
 	\bibliography{gretl4py.bib}
+
+	\addcontentsline{toc}{section}{\listfigurename}
+	\listoffigures
+
+	\addcontentsline{toc}{section}{Index}
+	\printindex
 \end{document}
