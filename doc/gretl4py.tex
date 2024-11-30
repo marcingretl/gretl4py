@@ -48,6 +48,13 @@
 \newcommand{\generaldesc}[1]{\hspace*{17pt}\begin{minipage}[t]{0.89\columnwidth}%
 		\small#1\end{minipage}}
 \newcommand{\classpymodel}{\pythcode{class Model}\xspace}
+\newcommand{\examplefig}[2]{%
+	\begin{figure}[h!tb]
+		\centering
+		\includegraphics[width=0.6\columnwidth]{examples/#1}
+		\caption{Results of the \gretlfpycmd{#1()} model estimation.}
+		#2 %label
+	\end{figure}}
 
 \makeatletter
 \@mparswitchfalse%

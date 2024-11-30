@@ -164,19 +164,15 @@ m = gretl.ar('1 2 ; employ const prdefl gnp armfrc').fit()
 \end{lstlisting}
 See \texttt{`examples/ar.py' for details}.
 
-\begin{figure}[h!tb]
-	\centering
-	\includegraphics[width=0.6\columnwidth]{examples/ar}
-	\caption{Results of the \gretlfpycmd{ar()} model estimation.}
-	\label{fig:ar_results}
-\end{figure}
+\examplefig{ar}{\label{fig:ar_results}}
 
 \gretlfpycmd{ar1()}%
 \index{attach\_gretl\_data()}\index{gretl\_data\_path()}\newline
 To perform feasible GLS estimates for a model in
 which the error term is assumed to follow a first-order
-autoregressive process, the following minimal code snippet
-can be used:
+autoregressive process, the following minimal code
+snippet can be used. The corresponding results are
+presented in Figure~\ref{fig:ar1_results}.
 \begin{lstlisting}[style=pythonstyle]
 import gretl
 
@@ -185,6 +181,8 @@ gretl.attach_gretl_data(
 m = gretl.ar1('employ ~ const + prdefl + gnp').fit()
 \end{lstlisting}
 See \texttt{`examples/ar1.py' for details}.
+
+\examplefig{ar1}{\label{fig:ar1_results}}
 
 \gretlfpycmd{arma()}%
 \index{attach\_gretl\_data()}\index{gretl\_data\_path()}\newline
@@ -201,8 +199,9 @@ See \texttt{`examples/arma.py' for details}.
 
 \gretlfpycmd{biprobit()}%
 \index{attach\_gretl\_data()}\index{gretl\_data\_path()}\newline
-To perform bivariate probit model estimation,
-the following minimal code snippet can be used:
+To perform bivariate probit model estimation, the
+following minimal code snippet can be used. The corresponding
+results are presented in Figure~\ref{fig:biprobit_results}.
 \begin{lstlisting}[style=pythonstyle]
 import gretl
 
@@ -213,10 +212,15 @@ m = gretl.biprobit('anydrg cardhldr const age avgexp ;
 \end{lstlisting}
 See \texttt{`examples/biprobit.py' for details}.
 
+\examplefig{biprobit}{\label{fig:biprobit_results}}
+
 \gretlfpycmd{duration()}%
 \index{attach\_gretl\_data()}\index{gretl\_data\_path()}\newline
-To perform duration model estimation,
-the following minimal code snippet can be used:
+To perform duration model estimation, the following
+minimal code snippet can be used. The corresponding
+results are presented in Figure~\ref{fig:duration_results}.
+\begin{lstlisting}[style=pythonstyle]
+
 \begin{lstlisting}[style=pythonstyle]
 import gretl
 
@@ -226,10 +230,13 @@ m = gretl.duration('Ti ~ const + Prod').fit()
 \end{lstlisting}
 See \texttt{`examples/duration.py' for details}.
 
+\examplefig{duration}{\label{fig:duration_results}}
+
 \gretlfpycmd{garch()}%
 \index{attach\_gretl\_data()}\index{gretl\_data\_path()}\newline
-To perform $GARCH(1,1)$ model estimation,
-the following minimal code snippet can be used:
+To perform $GARCH(1,1)$ model estimation, the following
+minimal code snippet can be used. The corresponding
+results are presented in Figure~\ref{fig:garch_results}.
 \begin{lstlisting}[style=pythonstyle]
 import gretl
 
@@ -239,10 +246,13 @@ m = gretl.garch('1 1 ; Y').fit()
 \end{lstlisting}
 See \texttt{`examples/garch.py' for details}.
 
+\examplefig{garch}{\label{fig:garch_results}}
+
 \gretlfpycmd{heckit()}%
 \index{attach\_gretl\_data()}\index{gretl\_data\_path()}\newline
-To perform Heckman-type selection model estimation,
-the following minimal code snippet can be used:
+To perform Heckman-type selection model estimation, the
+following minimal code snippet can be used. The corresponding
+results are presented in Figure~\ref{fig:heckit_results}.
 \begin{lstlisting}[style=pythonstyle]
 import gretl
 
@@ -253,11 +263,15 @@ m = gretl.heckit('WW const AX WE CIT ;
 \end{lstlisting}
 See \texttt{`examples/heckit.py' for details}.
 
+\examplefig{heckit}{\label{fig:heckit_results}}
+
 \gretlfpycmd{lad()}%
 \index{attach\_gretl\_data()}\index{gretl\_data\_path()}\newline
-To perform the generalized Cochrane-Orcutt iterative
-procedure estimation, the following minimal code snippet
-can be used:
+To calculate a regression that minimizes the sum of the
+absolute deviations of the observed from the fitted values
+of the dependent variable, the following minimal code
+snippet can be used. The corresponding results are
+presented in Figure~\ref{fig:lad_results}.
 \begin{lstlisting}[style=pythonstyle]
 import gretl
 
@@ -267,10 +281,13 @@ m = gretl.lad('employ ~ const + prdefl + gnp').fit()
 \end{lstlisting}
 See \texttt{`examples/lad.py' for details}.
 
+\examplefig{lad}{\label{fig:lad_results}}
+
 \gretlfpycmd{logistic()}%
 \index{attach\_gretl\_data()}\index{gretl\_data\_path()}\newline
-To perform Logistic regression estimation, the
-following minimal code snippet can be used:
+To perform Logistic regression estimation, the following
+minimal code snippet can be used. The corresponding
+results are presented in Figure~\ref{fig:logistic_results}.
 \begin{lstlisting}[style=pythonstyle]
 import gretl
 
@@ -280,10 +297,13 @@ m = gretl.logistic('employ ~ const + prdefl + gnp').fit()
 \end{lstlisting}
 See \texttt{`examples/logistic.py' for details}.
 
+\examplefig{logistic}{\label{fig:logistic_results}}
+
 \gretlfpycmd{logit()}%
 \index{attach\_gretl\_data()}\index{gretl\_data\_path()}\newline
-To perform logit regression estimation, the
-following minimal code snippet can be used:
+To perform logit regression estimation, the following
+minimal code snippet can be used. The corresponding
+results are presented in Figure~\ref{fig:logit_results}.
 \begin{lstlisting}[style=pythonstyle]
 import gretl
 
@@ -293,10 +313,13 @@ m = gretl.logit('Y ~ const + Z1 + Z2').fit()
 \end{lstlisting}
 See \texttt{`examples/logit.py' for details}.
 
+\examplefig{logit}{\label{fig:logit_results}}
+
 \gretlfpycmd{mpols()}%
 \index{attach\_gretl\_data()}\index{gretl\_data\_path()}\newline
 To perform multiple precision floating-point arithmetic OLS
-estimation, the following minimal code snippet can be used:
+estimation, the following minimal code snippet can be used.
+The corresponding results are presented in Figure~\ref{fig:mpols_results}.
 \begin{lstlisting}[style=pythonstyle]
 import gretl
 
@@ -306,10 +329,13 @@ m = gretl.mpols('employ ~ const + prdefl + gnp').fit()
 \end{lstlisting}
 See \texttt{`examples/mpols.py' for details}.
 
+\examplefig{mpols}{\label{fig:mpols_results}}
+
 \gretlfpycmd{negbin()}%
 \index{attach\_gretl\_data()}\index{gretl\_data\_path()}\newline
 To perform Negative Binomial model estimation, the
-following minimal code snippet can be used:
+following minimal code snippet can be used. The corresponding
+results are presented in Figure~\ref{fig:negbin_results}.
 \begin{lstlisting}[style=pythonstyle]
 import gretl
 
@@ -319,10 +345,13 @@ m = gretl.negbin('DVISITS ~ const + SEX + AGE').fit()
 \end{lstlisting}
 See \texttt{`examples/negbin.py' for details}.
 
+\examplefig{negbin}{\label{fig:negbin_results}}
+
 \gretlfpycmd{ols()}%
 \index{attach\_gretl\_data()}\index{gretl\_data\_path()}\newline
-To perform OLS estimation, the following minimal
-code snippet can be used:
+To perform OLS estimation, the following minimal code
+snippet can be used. The corresponding results are
+presented in Figure~\ref{fig:ols_results}.
 \begin{lstlisting}[style=pythonstyle]
 import gretl
 
@@ -332,10 +361,13 @@ m = gretl.ols('employ ~ const + prdefl + gnp').fit()
 \end{lstlisting}
 See \texttt{`examples/ols.py' for details}.
 
+\examplefig{ols}{\label{fig:ols_results}}
+
 \gretlfpycmd{panel()}%
 \index{attach\_gretl\_data()}\index{gretl\_data\_path()}\newline
 To perform panel model estimation, the following minimal
-code snippet can be used:
+code snippet can be used. The corresponding
+results are presented in Figure~\ref{fig:panel_results}.
 \begin{lstlisting}[style=pythonstyle]
 import gretl
 
@@ -345,10 +377,13 @@ m = gretl.panel('Y ~ const + Y(-1) + X').fit()
 \end{lstlisting}
 See \texttt{`examples/panel.py' for details}.
 
+\examplefig{panel}{\label{fig:panel_results}}
+
 \gretlfpycmd{poisson()}%
 \index{attach\_gretl\_data()}\index{gretl\_data\_path()}\newline
-To perform Poisson regression estimation, the
-following minimal code snippet can be used:
+To perform Poisson regression estimation, the following
+minimal code snippet can be used. The corresponding
+results are presented in Figure~\ref{fig:poisson_results}.
 \begin{lstlisting}[style=pythonstyle]
 import gretl
 
@@ -358,10 +393,13 @@ m = gretl.poisson('DVISITS ~ const + SEX + AGE').fit()
 \end{lstlisting}
 See \texttt{`examples/poisson.py' for details}.
 
+\examplefig{poisson}{\label{fig:poisson_results}}
+
 \gretlfpycmd{probit()}%
 \index{attach\_gretl\_data()}\index{gretl\_data\_path()}\newline
-To perform probit regression estimation, the
-following minimal code snippet can be used:
+To perform probit regression estimation, the following
+minimal code snippet can be used. The corresponding
+results are presented in Figure~\ref{fig:probit_results}.
 \begin{lstlisting}[style=pythonstyle]
 import gretl
 
@@ -371,11 +409,14 @@ m = gretl.probit('Y ~ const + Z1 + Z2').fit()
 \end{lstlisting}
 See \texttt{`examples/probit.py' for details}.
 
+\examplefig{probit}{\label{fig:probit_results}}
+
 \gretlfpycmd{tsls()}%
 \index{attach\_gretl\_data()}\index{gretl\_data\_path()}\newline
 To perform Instrumental Variables (IV) estimation
 using two-stage least squares (TSLS), the following
-minimal code snippet can be used:
+minimal code snippet can be used. The corresponding
+results are presented in Figure~\ref{fig:tsls_results}.
 \begin{lstlisting}[style=pythonstyle]
 import gretl
 
@@ -385,10 +426,13 @@ m = gretl.tsls('Y Y(-1) X ; 0 X Y(-2)').fit()
 \end{lstlisting}
 See \texttt{`examples/tsls.py' for details}.
 
+\examplefig{tsls}{\label{fig:tsls_results}}
+
 \gretlfpycmd{wls()}%
 \index{attach\_gretl\_data()}\index{gretl\_data\_path()}\newline
 To perform weighted least squares (WLS) estimation,
-the following minimal code snippet can be used:
+the following minimal code snippet can be used. The corresponding
+results are presented in Figure~\ref{fig:wls_results}.
 \begin{lstlisting}[style=pythonstyle]
 import gretl
 
@@ -397,6 +441,8 @@ gretl.attach_gretl_data(
 m = gretl.wls('year employ const prdefl gnp').fit()
 \end{lstlisting}
 See \texttt{`examples/wls.py' for details}.
+
+\examplefig{wls}{\label{fig:wls_results}}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
