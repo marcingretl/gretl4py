@@ -153,6 +153,21 @@ static void numpy_array_to_gretl_storage (const py::dict &pydict,
     dset->t2 = dset->n-1;
 }
 
+static gretlopt setobs_opt_from_structure (int structure)
+{
+    if (structure == CROSS_SECTION) {
+        return OPT_X;
+    } else if (structure == TIME_SERIES) {
+        return OPT_T;
+    } else if (structure == STACKED_TIME_SERIES) {
+        return OPT_S;
+    } else if (structure == SPECIAL_TIME_SERIES) {
+        return OPT_N;
+    } else {
+        return OPT_NONE;
+    }
+}
+
 //////////////////////////////////////////////////
 // functions
 //////////////////////////////////////////////////
@@ -228,21 +243,6 @@ GretlDataset::GretlDataset (const std::string fname)
     if (err) {
         destroy_dataset(dset);
         throw std::runtime_error("Reading data from '" + fname + "' file failed.");
-    }
-}
-
-static gretlopt setobs_opt_from_structure (int structure)
-{
-    if (structure == CROSS_SECTION) {
-        return OPT_X;
-    } else if (structure == TIME_SERIES) {
-        return OPT_T;
-    } else if (structure == STACKED_TIME_SERIES) {
-        return OPT_S;
-    } else if (structure == SPECIAL_TIME_SERIES) {
-        return OPT_N;
-    } else {
-        return OPT_NONE;
     }
 }
 

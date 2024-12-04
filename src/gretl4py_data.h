@@ -46,7 +46,7 @@ class GretlDataset
 private:
     inline void allocate_dset (void)
     {
-        free_dset();
+        GretlDataset::free_dset();
         dset = datainfo_new();
     }
 
