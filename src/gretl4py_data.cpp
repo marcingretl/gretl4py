@@ -219,7 +219,7 @@ GretlDataset::GretlDataset (const std::string fname)
     //
     int err;
 
-    allocate_dset();
+    GretlDataset::allocate_dset();
     if (dset) {
         err = gretl_get_data(fname.c_str(), dset, OPT_NONE, NULL);
     } else {
@@ -256,7 +256,7 @@ GretlDataset::GretlDataset (const py::dict &pydict)
     int pd;
     gretlopt opt = OPT_NONE;
 
-    allocate_dset();
+    GretlDataset::allocate_dset();
 
     // we fill up dset->Z
     numpy_array_to_gretl_storage(pydict, dset);
@@ -295,7 +295,7 @@ GretlDataset::GretlDataset (const py::dict &pydict)
 
 GretlDataset::~GretlDataset (void)
 {
-    free_dset();
+    GretlDataset::free_dset();
 }
 
 py::dict *GretlDataset::to_dict (void)
