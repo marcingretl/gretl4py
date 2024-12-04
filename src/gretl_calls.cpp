@@ -32,7 +32,6 @@ static GretlDataset *DSET = nullptr; // global dataset (class)
 static int gretl4py_verbose = 0;
 
 // workaround to manually resolve overloads ambiguity
-// FIXME: let's try to use concept from C++20 instead
 static MODEL (&garch_to_call)(const int*, DATASET*, gretlopt, PRN*) = garch;
 
 // module related tools
@@ -93,10 +92,10 @@ py::dict about (bool do_print)
     }
 
     if (do_print || gretl4py_verbose) {
-        std::cout << "gretl4py version " << mod_ver;
+        std::cout << "gretl4py v" << mod_ver;
         std::cout << " [" << COMPILER_IDENT << "]" << std::endl;
-        std::cout << "  +pybind11 version " << py11_ver << std::endl;
-        std::cout << "  +libgretl-1.0 version " << lg_ver << std::endl;
+        std::cout << "\t+ pybind11     v" << py11_ver << std::endl;
+        std::cout << "\t+ libgretl-1.0 v" << lg_ver << std::endl;
         if (!b.myerr) {
             std::cout << std::endl << "libgretl $sysinfo:" << std::endl;
             b.print();

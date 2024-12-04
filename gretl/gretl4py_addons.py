@@ -36,10 +36,10 @@ def csv2dict (fname, pd=1):
                 obs_labels.append(row[0])
                 data_list.append(row[1:])
     data_array = numpy.array(data_list, numpy.double)
-    d["data_array"] = data_array
-    d["varname"] = varname
-    d["obs_labels"] = obs_labels
-    d["periodicity"] = pd
+    d['data_array'] = data_array
+    d['varname'] = varname
+    d['obs_labels'] = obs_labels
+    d['periodicity'] = pd
     return d
 
 def df2dict (dframe, pd=1, withobs=False):
