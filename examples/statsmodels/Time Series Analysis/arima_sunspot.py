@@ -60,11 +60,11 @@ if Do_StatsModels is True:
 
 # gretl calls
 gr_dta = gretl.df2dict(dta, 1)
-arma_mod20 = gretl.arma(y='SUNACTIVITY', order=(2, 0, 0), data=gr_dta).fit()
+arma_mod20 = gretl.arima(y='SUNACTIVITY', order=(2, 0, 0), data=gr_dta).fit()
 hf.linenr(9)
 print(arma_mod20.parnames(), arma_mod20.coeff())
 print("sigma2: " + str(arma_mod20.sigma()**2))
-arma_mod30 = gretl.arma(y='SUNACTIVITY', order=(3, 0, 0), data=gr_dta).fit()
+arma_mod30 = gretl.arima(y='SUNACTIVITY', order=(3, 0, 0), data=gr_dta).fit()
 hf.linenr(11)
 print(arma_mod20.aic(), arma_mod20.bic(), arma_mod20.hqc())
 hf.linenr(12)

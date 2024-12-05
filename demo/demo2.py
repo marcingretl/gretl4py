@@ -37,5 +37,5 @@ print(res)
 # replace the global dataset
 gretl.attach_gretl_data('bjg.csv')
 print('seasonal arma (0 1 2, 0 1 1):')
-res = gretl.arma(y='lg', order=(0,1,2), seasonal=(0,1,1), nc=True).fit()
+res = gretl.arima(y='lg', order=(0,1,2), seasonal=(0,1,1), nc=True).fit()
 print(res)

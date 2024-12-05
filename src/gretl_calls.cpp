@@ -237,7 +237,7 @@ static gretlopt unpack_kwargs (const py::kwargs &kwargs,
             }
             continue;
         } else if (key == "seasonal" && ci == ARMA) {
-            // arma special: ignore here
+            // arima special: ignore here
             continue;
         } else {
             // should be a regular gretl option: check its validity in
@@ -314,7 +314,7 @@ static void save_model (MODEL *model, DATASET *dset,
     }
 }
 
-static void get_arma_order (const py::tuple &tup,
+static void get_arima_order (const py::tuple &tup,
                             int *p, int *d, int *q)
 {
     int n = py::len(tup);
@@ -331,10 +331,10 @@ static void get_arma_order (const py::tuple &tup,
     }
 }
 
-// arma estimation
+// (s)arima estimation
 
-py::dict *arma (const std::string y, const py::tuple &tup,
-                const py::kwargs &kwargs)
+py::dict *arima (const std::string y, const py::tuple &tup,
+                 const py::kwargs &kwargs)
 {
     py::dict *res = new py::dict;
     GretlDataset *GD = nullptr;
@@ -366,13 +366,13 @@ py::dict *arma (const std::string y, const py::tuple &tup,
 
     p = d = q = 0;
     P = D = Q = 0;
-    get_arma_order(tup, &p, &d, &q);
+    get_arima_order(tup, &p, &d, &q);
 
     if (kwargs.contains("seasonal") && !kwargs["seasonal"].is_none()) {
         if (is_pytuple(kwargs["seasonal"])) {
             const py::tuple seas = kwargs["seasonal"].cast<py::tuple>();
 
-            get_arma_order(seas, &P, &D, &Q);
+            get_arima_order(seas, &P, &D, &Q);
             if (P > 0 || D > 0 || Q > 0) {
                 seasonal = 1;
             }

@@ -195,9 +195,9 @@ gretl.Model = gretl.ar1(formula=str, [OPTS, [data=dict]])
 \end{itemize}
 
 \est{arima}
-\estdesc{Estimates a univariate ARIMA (Autoregressive, Integrated, Moving Average) model.}
+\estdesc{Estimates a univariate SARIMA (Seasonal Autoregressive, Integrated, Moving Average) model.}
 \begin{lstlisting}[style=pythonstyle]
-gretl.Model = gretl.arma(y=str, order=tuple((p,d,q)),
+gretl.Model = gretl.arima(y=str, order=tuple((p,d,q)),
 	[seasonal=tuple((P,D,Q)), OPTS, [data=dict]])
 \end{lstlisting}
 \mapto{arima p d q [; P D Q ] ; depvar}

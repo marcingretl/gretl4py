@@ -185,7 +185,7 @@ See \texttt{`examples/ar1.py' for details}.
 
 \examplefig{ar1}{\label{fig:ar1_results}}
 
-\gretlfpycmd{arma()}%
+\gretlfpycmd{arima()}%
 \index{attach\_gretl\_data()}\index{gretl\_data\_path()}\newline
 To perform $ARIMA(1,1,1)$ estimation, the following
 minimal code snippet can be used:
@@ -194,9 +194,9 @@ import gretl
 
 gretl.attach_gretl_data(
 	gretl.gretl_data_path('misc/bjg.gdt'))
-m = gretl.arma(y='lg', order=(1,1,1)).fit()
+m = gretl.arima(y='lg', order=(1,1,1)).fit()
 \end{lstlisting}
-See \texttt{`examples/arma.py' for details}.
+See \texttt{`examples/arima.py' for details}.
 
 \gretlfpycmd{biprobit()}%
 \index{attach\_gretl\_data()}\index{gretl\_data\_path()}\newline

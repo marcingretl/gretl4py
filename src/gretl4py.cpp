@@ -55,8 +55,8 @@ PYBIND11_MODULE(_gretl, m) {
     m.def("sample", &sample);
 
     // model estimation
-    // ARMA
-    m.def("arma", &arma,
+    // (S)ARIMA
+    m.def("arima", &arima,
           py::arg("y").none(false),
           py::arg("order").none(false),
           py::return_value_policy::take_ownership);

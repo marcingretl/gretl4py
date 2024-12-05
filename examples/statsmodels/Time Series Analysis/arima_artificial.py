@@ -42,7 +42,7 @@ if Do_StatsModels is True:
     print(arma_res.summary())
 
 # gretl calls
-arma_mod = gretl.arma(y='y', order=(2, 0, 2), nc=True,
+arma_mod = gretl.arima(y='y', order=(2, 0, 2), nc=True,
                       data=gretl.series2dict(y, 12))
 arma_res = arma_mod.fit()
 hf.linenr(6)

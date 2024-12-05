@@ -12,7 +12,7 @@ gretl.attach_data(bjg)
 '''Example 1: data is send on function call ('data9-7.csv')'''
 print('\nExample 1:')
 print('arma(1,1,1,False)\n')
-res = gretl.arma(y="QNC", order=(1,1,1), data=data97).fit()
+res = gretl.arima(y="QNC", order=(1,1,1), data=data97).fit()
 print(res)
 
 print('\nOLS:')
@@ -22,7 +22,7 @@ print(res)
 '''Example 2: we use data send before function call ('bjg.csv')'''
 print('\nExample 2:')
 print('arma(1,0,1,print=False)\n')
-res = gretl.arma(y="lg", order=(1,1)).fit()
+res = gretl.arima(y="lg", order=(1,1)).fit()
 print(res)
 
 print('\nOLS:\n')

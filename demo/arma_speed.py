@@ -4,11 +4,11 @@ import pandas
 
 ARMAtest = pandas.read_csv('large_arma22.csv')
 MyDict = gretl.df2dict(ARMAtest, 1, 1)
-armaSpec = tuple((4,0,4))
+arimaSpec = tuple((4,0,4))
 
 # arma model via gretl
 t0 = time.time()
-gmod = gretl.arma(y="y", order=armaSpec, data=MyDict).fit()
+gmod = gretl.arima(y="y", order=arimaSpec, data=MyDict).fit()
 t1 = time.time() - t0
 print(gmod.results["coeff"])
 
@@ -18,7 +18,7 @@ from statsmodels.tsa.arima.model import ARIMA
 dta = MyDict["data_array"]
 t0 = time.time()
 
-smod = ARIMA(dta, order=armaSpec).fit()
+smod = ARIMA(dta, order=arimaSpec).fit()
 t2 = time.time() - t0
 print(smod.params)
 
