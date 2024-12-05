@@ -210,13 +210,13 @@ int gretl_model_to_dict (MODEL *model, DATASET *dset,
     GretlBundle b = GretlBundle(model, dset);
     char *json_buf = b.to_json();
 
-    if (!b.myerr) {
+    if (!b.err) {
         pydict[py::cast("_id")] = model->ID;
         pydict[py::cast("json_buffer")] = json_buf;
         pydict[py::cast("summary")] = summary;
     }
 
-    return b.myerr;
+    return b.err;
 }
 
 
@@ -232,7 +232,7 @@ GretlDataset::GretlDataset (const std::string fname)
     //
     // load gretl data from file
     //
-    int err;
+    int err = 0;
 
     GretlDataset::allocate_dset();
     if (dset) {
@@ -241,6 +241,7 @@ GretlDataset::GretlDataset (const std::string fname)
         err = E_ALLOC;
     }
     if (err) {
+        this->err = err;
         destroy_dataset(dset);
         throw std::runtime_error("Reading data from '" + fname + "' file failed.");
     }
@@ -360,8 +361,8 @@ void GretlDataset::printdset (bool namesonly)
         list_series(dset, OPT_NONE, prn);
     } else {
         int err = printdata(NULL, NULL, dset, OPT_O, prn);
-
         if (err) {
+            this->err = err;
             handle_gretl_error(err);
         }
     }
@@ -456,6 +457,7 @@ void GretlDataset::sample (const py::kwargs &kwargs)
     }
 
     if (err) {
+        this->err = err;
         const char *msg = errmsg_get_with_default(err);
         throw std::runtime_error(msg);
     } else if (argc > 0 || optc > 0) {
@@ -474,13 +476,13 @@ void GretlDataset::sample (const py::kwargs &kwargs)
 //
 GretlBundle::GretlBundle (void)
 {
-    b = get_sysinfo_bundle(&myerr);
+    b = get_sysinfo_bundle(&err);
     free_b = false;
 }
 
 GretlBundle::GretlBundle (MODEL *model, DATASET *dset)
 {
-    b = bundle_from_model(model, dset, &myerr);
+    b = bundle_from_model(model, dset, &err);
 }
 
 GretlBundle::~GretlBundle (void)
@@ -495,8 +497,8 @@ GretlBundle::~GretlBundle (void)
 
 char *GretlBundle::to_json (void)
 {
-    if (!myerr && !json_buf) {
-        json_buf = gretl_bundle_write_to_json_buffer(b, &myerr);
+    if (!err && !json_buf) {
+        json_buf = gretl_bundle_write_to_json_buffer(b, &err);
     }
 
     return json_buf;
@@ -504,7 +506,7 @@ char *GretlBundle::to_json (void)
 
 void GretlBundle::print (void)
 {
-    if (!myerr) {
+    if (!err) {
         PRN *prn = get_buffered_printer();
 
         if (prn) {

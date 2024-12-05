@@ -59,6 +59,7 @@ private:
     }
 public:
     DATASET *dset = nullptr;
+    int err = 0;
 
     GretlDataset (const std::string fname); // we load dataset from file
     GretlDataset (const py::dict &pydict);  // we load dataset from Python's dictionary
@@ -81,7 +82,7 @@ private:
     char *json_buf = nullptr;
     bool free_b = true;
 public:
-    int myerr = 0;
+    int err = 0;
 
     GretlBundle (void);                         // we get contents of $sysinfo bundle
     GretlBundle (MODEL *model, DATASET *dset);  // we produce bundle from MODEL struct
