@@ -232,7 +232,6 @@ GretlDataset::GretlDataset (const std::string fname)
     //
     // load gretl data from file
     //
-    int err = 0;
 
     GretlDataset::allocate_dset();
     if (dset) {
@@ -241,7 +240,6 @@ GretlDataset::GretlDataset (const std::string fname)
         err = E_ALLOC;
     }
     if (err) {
-        this->err = err;
         destroy_dataset(dset);
         throw std::runtime_error("Reading data from '" + fname + "' file failed.");
     }
@@ -353,16 +351,13 @@ py::dict *GretlDataset::to_dict (void)
 
 void GretlDataset::printdset (bool namesonly)
 {
-    PRN *prn;
-
-    prn = get_buffered_printer();
+    PRN *prn = get_buffered_printer();
 
     if (namesonly) {
         list_series(dset, OPT_NONE, prn);
     } else {
-        int err = printdata(NULL, NULL, dset, OPT_O, prn);
+        err = printdata(NULL, NULL, dset, OPT_O, prn);
         if (err) {
-            this->err = err;
             handle_gretl_error(err);
         }
     }
@@ -384,7 +379,6 @@ void GretlDataset::sample (const py::kwargs &kwargs)
     int full = 0;
     int argc = 0;
     int optc = 0;
-    int err = 0;
 
     for (auto &item : kwargs) {
         val = NULL;
@@ -457,7 +451,6 @@ void GretlDataset::sample (const py::kwargs &kwargs)
     }
 
     if (err) {
-        this->err = err;
         const char *msg = errmsg_get_with_default(err);
         throw std::runtime_error(msg);
     } else if (argc > 0 || optc > 0) {
@@ -510,8 +503,11 @@ void GretlBundle::print (void)
         PRN *prn = get_buffered_printer();
 
         if (prn) {
-            gretl_bundle_print(b, prn);
-            finalize_buffered_printer(prn);
+            err = gretl_bundle_print(b, prn);
+            if (!err) {
+                finalize_buffered_printer(prn);
+            }
+
         }
     }
 }
@@ -532,6 +528,7 @@ MapToPy::MapToPy (const std::optional<py::object> &pyobject)
     } else if (is_pyint(*pyobject)) {
         as_str = std::to_string(py::cast<int>(*pyobject));
     } else {
+        err = 1;
         as_str.clear();
         std::cerr << "I don't know how to convert '";
         std::cerr << py::cast<std::string>(pyobject->get_type());
