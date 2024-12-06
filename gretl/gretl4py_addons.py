@@ -24,6 +24,13 @@ import subprocess
 import csv
 import numpy
 
+def _correctvarnames (names):
+    """replace const with const_"""
+    # in principle we can have a dict with restricted names
+    for i in range(len(names)):
+        if names[i] == 'const':
+            names[i] = 'const_'
+
 def _pdtostrformat (pd):
     """produces date string formatter for given periodicity"""
     res = None
@@ -56,6 +63,7 @@ def csv2dict (fname, pd=1):
                 obs_labels.append(row[0])
                 data_list.append(row[1:])
     data_array = numpy.array(data_list, numpy.double)
+    _correctvarnames(varname)
     d['data_array'] = data_array
     d['varname'] = varname
     d['obs_labels'] = obs_labels
@@ -69,7 +77,7 @@ def df2dict (dframe, pd=1, withobs=False):
     d = {}
     obs_dates = []
     # hard rename of 'const' to 'constant'
-    dframe.rename(columns={"const": "constant"}, inplace=True)
+    dframe.rename(columns={"const": "const_"}, inplace=True)
     mydata = dframe.to_numpy(copy=True)
     if withobs is True:
         obs_dates = [row[0] for row in mydata]
@@ -108,10 +116,11 @@ def numpyarray2dict (X, pd=1, Y=None, with_const=False,
     for i in range(with_const, numpy.shape(X)[1]):
         varname.append("x" + str(i+1-with_const))
     if with_const:
-        varname.insert(const_pos, "constant")
+        varname.insert(const_pos, "const_")
     # we create artificial obs labels
     for i in range(numpy.shape(X)[0]):
         obs_labels.append(i+1)
+    _correctvarnames(varname)
     if Y is not None:
         d['data_array'] = numpy.hstack((Y, X))
     else:
@@ -126,6 +135,8 @@ def series2dict (series, pd=1, varname="y"):
     if 'pandas' not in sys.modules:
         import pandas
     d = {}
+    if varname == 'const':
+        varname = 'const_'
     try:
         obs_dates = series.index.to_period()
         d['obs_labels'] = [obs.strftime(_pdtostrformat(pd)) for obs in obs_dates]
