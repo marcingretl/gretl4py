@@ -26,7 +26,7 @@ import numpy
 
 def _correctvarnames (names):
     """replace const with const_"""
-    # in principle we can have a dict with restricted names
+    # in principle we can have a dict with restricted names and their substitutions
     for i in range(len(names)):
         if names[i] == 'const':
             names[i] = 'const_'
@@ -76,17 +76,18 @@ def df2dict (dframe, pd=1, withobs=False):
         import pandas
     d = {}
     obs_dates = []
-    # hard rename of 'const' to 'constant'
-    dframe.rename(columns={"const": "const_"}, inplace=True)
+    varname = []
+    varname = dframe.axes[1].tolist()[0+withobs:]
     mydata = dframe.to_numpy(copy=True)
     if withobs is True:
         obs_dates = [row[0] for row in mydata]
     else:
         obs_dates = dframe.axes[0].tolist()
     #d['obs_labels'] = [obs.strftime(_pdtostrformat(pd)) for obs in obs_dates]
-    d['obs_labels'] = obs_dates
-    d['varname'] = dframe.axes[1].tolist()[0+withobs:]
+    _correctvarnames(varname)
     d['data_array'] = numpy.array([row[0+withobs:] for row in mydata], numpy.double)
+    d['varname'] = varname
+    d['obs_labels'] = obs_dates
     d['periodicity'] = pd
     return d
 
@@ -137,6 +138,9 @@ def series2dict (series, pd=1, varname="y"):
     d = {}
     if varname == 'const':
         varname = 'const_'
+    mydata = series.to_numpy(copy=True, dtype=numpy.double)
+    d['data_array'] = mydata
+    d['varname'] = [varname]
     try:
         obs_dates = series.index.to_period()
         d['obs_labels'] = [obs.strftime(_pdtostrformat(pd)) for obs in obs_dates]
@@ -144,9 +148,6 @@ def series2dict (series, pd=1, varname="y"):
         if err:
             print(f'Warning: {err}, fall back to original labels.')
         d['obs_labels'] = series.index.to_list()
-    mydata = series.to_numpy(copy=True, dtype=numpy.double)
-    d['varname'] = [varname]
-    d['data_array'] = mydata
     d['periodicity'] = pd
     return d
 
