@@ -507,7 +507,6 @@ void GretlBundle::print (void)
             if (!err) {
                 finalize_buffered_printer(prn);
             }
-
         }
     }
 }
