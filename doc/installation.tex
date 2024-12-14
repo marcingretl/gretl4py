@@ -1,18 +1,21 @@
 \section{Installation or Compilation}
+
 \subsection{System Requirements}\label{sec:system_requirements}
 
 Before installing or compiling \gretlpy, please ensure
 the following components are installed:
 \begin{itemize}
-\item One of the supported versions of \python: (\reqpython);
-\item The following required \python packages: \pkg{csv}, \pkg{json},
-  \pkg{numpy}, \pkg{subprocess}, and \pkg{pybind11}.\footnote{This
+\item One of the supported versions of \python: (\reqpython).
+\item The following \python packages: \pkg{csv}, \pkg{json},
+  \pkg{numpy}, \pkg{subprocess} and \pkg{pybind11}.\footnote{The last
     package is required for compilation only.}  If you want to import
   \pkg{pandas} structures (such as \texttt{DataFrames} and
-  \texttt{Series}), make sure that \pkg{pandas} is installed on your
+  \texttt{Series}) make sure that \pkg{pandas} is installed on your
   system.
-\item \lgretl~1.0 version 48 or higher (refer to
-  \url{https://gretl.sourceforge.net} for details);
+\item \gretl version 2024c or higher (see
+  \url{https://gretl.sourceforge.net} for details).\footnote{In
+    principle only the shared library, \lgretl, should be needed,
+    but for now you need a full installation of \gretl.}
 \end{itemize}
 In addition, \cite{gretl_manual}, Appendix~B describes how to build
 \gretl on GNU/Linux, while \cite{gretl_build_msys2} describes building
@@ -43,22 +46,24 @@ from \installbat.
 
 \begin{figure}[h!tb]
   \centering
-  \includegraphics[width=.75\columnwidth,keepaspectratio]{mswindows_install.bat}
+  %\includegraphics[width=.9\columnwidth,keepaspectratio]{mswindows_install.bat}
+  \includegraphics[scale=0.85]{mswindows_install.bat}
   \label{fig:mswindows_install.bat}
   \caption{Example output from \installbat}
 \end{figure}
 To verify installation, type `python.exe -c "import gretl;
 gretl.about(True)"', which should result in something similar to what is
-presented on Figure~\ref{fig:mswindows_about}.
+shown in Figure~\ref{fig:mswindows_about}.
 
 \begin{figure}[h!tb]
   \centering
-  \includegraphics[width=.75\columnwidth,keepaspectratio]{mswindows_about}
+  % \includegraphics[width=.9\columnwidth,keepaspectratio]{mswindows_about}
+  \includegraphics[scale=0.7]{mswindows_about}
   \label{fig:mswindows_about}
   \caption{Example output from \texttt{gretl.about(True)}}
 \end{figure}
 
-\clearpage
+%\clearpage
 
 \subsection{Compilation on GNU/Linux}
 \label{sec:linux-compile}
