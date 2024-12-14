@@ -205,7 +205,10 @@ int gretl_model_to_dict (MODEL *model, DATASET *dset,
                          const char *summary, py::dict &pydict)
 {
     //
-    // here we construct a python dictionary holding estimation results
+    // Here we construct a python dictionary holding the ID number
+    // of @model; the @summary text produced by libgretl's printmodel();
+    // and a string holding the JSON representation of the gretl_bundle
+    // produced by libgretl's bundle_from_model().
     //
     GretlBundle b = GretlBundle(model, dset);
     char *json_buf = b.to_json();

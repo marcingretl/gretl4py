@@ -288,7 +288,7 @@ static gretlopt unpack_kwargs (const py::kwargs &kwargs,
         // if we didn't get a 'data' specification, try for the global dataset
 #if GRETL_PYBIND11_DEBUG
         std::printf("unpack_kwargs: we try for the global dataset\n");
-#endif // GRETL_PYBIND11_DEBUG
+#endif
         pdset = DSET;
     }
 
