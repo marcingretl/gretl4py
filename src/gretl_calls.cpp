@@ -35,7 +35,7 @@
 # define COMPILER_IDENT __VERSION__
 #endif
 
-#define LIBGRETL_MIN_VER 48
+#define LIBGRETL_MIN_VER 49
 #define GRETL_PYBIND11_DEBUG 0
 
 #define use_ldco_sig(c) (c == OLS || c == WLS) //const int *list, DATASET *dset, GretlCmdIndex ci, gretlopt opt
