@@ -1,6 +1,7 @@
 ifndef CXX
   CXX = g++
 endif
+
 OS = $(shell uname -s)
 ifeq ($(OS), Darwin)
   CXXFLAGS = -march=native -mtune=native -O3 -pipe -Wall -std=c++17
@@ -17,6 +18,7 @@ else
   GRETLLD = $(shell pkg-config --libs gretl)
   GRETLIN = $(shell pkg-config --cflags gretl)  
 endif
+
 MAKE = gmake
 PYBIND = $(shell python3 -m pybind11 --includes)
 SUFFIX = $(shell python3-config --extension-suffix)
