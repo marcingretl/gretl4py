@@ -4,6 +4,7 @@ import pandas as pd
 import statsmodels.api as sm
 import gretl
 import sys
+import time
 sys.path.append('../')
 import helper_func as hf
 
@@ -35,22 +36,28 @@ y = np.dot(X_sm, beta) + e
 
 # statsmodels calls:
 if Do_StatsModels is True:
+    t0 = time.time()
     model = sm.OLS(y, X_sm)
     results = model.fit()
+    t1 = time.time()
     print(results.summary())
     print("Parameters: ", results.params)
     print("R2: ", results.rsquared)
+    hf.runtime(t0, t1)
 
 # gretl calls
 hf.linenr(5)
+t0 = time.time()
 model = gretl.ols('y ~ const + x1 + x2',
                   data=gretl.numpyarray2dict(X, Y=y, with_const=False))
 #model = gretl.ols('y ~ const + x1 + x2', data=gretl.numpyarray2dict(X_sm, Y=y, with_const=True)) # this is an alternative call using X_sm
 results = model.fit()
+t1 = time.time()
 print(results.summary)
 hf.linenr(6)
 print("Parameters: ", results.coeff())
 print("R2: ", results.rsq())
+hf.runtime(t0, t1)
 # OLS estimation: END
 
 """
@@ -71,22 +78,27 @@ y = y_true + sig * np.random.normal(size=nsample)
 
 # statsmodels calls:
 if Do_StatsModels is True:
+    t0 = time.time()
     res = sm.OLS(y, X).fit()
+    t1 = time.time()    
     print(res.summary())
     print("Parameters: ", res.params)
     print("Standard errors: ", res.bse)
     print("Predicted values: ", res.predict())
+    hf.runtime(t0, t1)
 
 # gretl calls
 hf.linenr(8)
+t0 = time.time()
 res = gretl.ols('y ~ const + x1 + x2 + x3',
                 data=gretl.numpyarray2dict(X, Y=y,
                                            with_const=True, const_pos=4)).fit()
+t1 = time.time()
 print(res)
 hf.linenr(9)
 print("Parameters: ", res.coeff())
 print("Standard errors: ", res.stderr())
-print("Predicted values: ", None)
+hf.runtime(t0, t1)
 # OLS non-linear curve but linear in parameters: END
 
 """
@@ -120,7 +132,9 @@ print(dummy[:5, :])
 
 # statsmodels calls:
 if Do_StatsModels is True:
+    t0 = time.time()
     res2 = sm.OLS(y, X).fit()
+    t1 = time.time()
     print(res2.summary())
     pred_ols2 = res2.get_prediction()
     iv_l = pred_ols2.summary_frame()["obs_ci_lower"]
@@ -132,12 +146,15 @@ if Do_StatsModels is True:
     ax.plot(x, iv_u, "r--")
     ax.plot(x, iv_l, "r--")
     legend = ax.legend(loc="best")
+    hf.runtime(t0, t1)
 
 # gretl calls
 hf.linenr(13)
+t0 = time.time()
 res = gretl.ols('y ~ const + x1 + x2 + x3',
                 data=gretl.numpyarray2dict(X, Y=y,
                                            with_const=True, const_pos=4)).fit()
+t1 = time.time()
 print(res)
 hf.linenr(14)
 #pred_ols = res.get_prediction()
@@ -151,6 +168,7 @@ ax.plot(x, res.yhat(), "r--.", label="Predicted")
 #ax.plot(x, iv_l, "r--")
 legend = ax.legend(loc="best")
 plt.show()
+hf.runtime(t0, t1)
 # OLS with dummy variables: END
 
 """
@@ -171,22 +189,30 @@ X = sm.add_constant(X)
 
 # statsmodels calls:
 if Do_StatsModels is True:
+    t0 = time.time()
     sm_ols_model = sm.OLS(y, X)
     sm_ols_results = sm_ols_model.fit()
+    t1 = time.time()
     print(sm_ols_results.summary())
+    hf.runtime(t0, t1)
 
 # gretl calls
 hf.linenr(21)
+t0 = time.time()
 df = pd.concat([X, y], axis=1) # could it be X.iloc[:, 1:7]
 gretl.attach_data(gretl.df2dict(df, 1))
 ols_model = gretl.ols('TOTEMP ~ const + GNPDEFL + GNP + UNEMP + ARMED + POP + YEAR')
 ols_results = ols_model.fit()
+t1 = time.time()
 print(ols_results)
+hf.runtime(t0, t1)
    
 hf.printhead("Dropping an observation")
 # statsmodels calls:
 if Do_StatsModels is True:
+    t0 = time.time()
     sm_ols_results2 = sm.OLS(y.iloc[:14], X.iloc[:14]).fit()
+    t1 = time.time()
     print(
         "Percentage change %4.2f%%\n"
         * 7
@@ -199,11 +225,14 @@ if Do_StatsModels is True:
             ]
         )
     )
+    hf.runtime(t0, t1)
 
 # gretl calls
 hf.linenr(24)
+t0 = time.time()
 gretl.sample(t1=1, t2=14)
 ols_results2 = gretl.ols('TOTEMP ~ const + GNPDEFL + GNP + UNEMP + ARMED + POP + YEAR').fit()
+t1 = time.time()
 print(
     "Percentage change %4.2f%%\n"
     * 7
@@ -216,3 +245,4 @@ print(
         ]
     )
 )
+hf.runtime(t0, t1)

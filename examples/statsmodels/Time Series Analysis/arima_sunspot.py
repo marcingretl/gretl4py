@@ -7,6 +7,7 @@ from statsmodels.tsa.arima.model import ARIMA
 from statsmodels.graphics.api import qqplot
 import gretl
 import sys
+import time
 sys.path.append('../')
 import helper_func as hf
 
@@ -44,9 +45,14 @@ fig = sm.graphics.tsa.plot_pacf(dta, lags=40, ax=ax2)
 
 # statsmodels calls:
 if Do_StatsModels is True:
+    t0 = time.time()
     arma_mod20 = ARIMA(dta, order=(2, 0, 0)).fit()
+    t1 = time.time()
     print(arma_mod20.params)
+    hf.runtime(t0, t1)
+    t0 = time.time()
     arma_mod30 = ARIMA(dta, order=(3, 0, 0)).fit()
+    t1 = time.time()
     print(arma_mod20.aic, arma_mod20.bic, arma_mod20.hqic)
     sm.stats.durbin_watson(arma_mod30.resid.values)
     fig = plt.figure(figsize=(12, 8))
@@ -57,14 +63,20 @@ if Do_StatsModels is True:
     fig = plt.figure(figsize=(12, 8))
     ax = fig.add_subplot(111)
     fig = qqplot(resid, line="q", ax=ax, fit=True)
+    hf.runtime(t0, t1)
 
 # gretl calls
 gr_dta = gretl.df2dict(dta, 1)
+t0 = time.time()
 arma_mod20 = gretl.arima(y='SUNACTIVITY', order=(2, 0, 0), data=gr_dta).fit()
+t1 = time.time()
 hf.linenr(9)
 print(arma_mod20.parnames(), arma_mod20.coeff())
 print("sigma2: " + str(arma_mod20.sigma()**2))
+hf.runtime(t0, t1)
+t0 = time.time()
 arma_mod30 = gretl.arima(y='SUNACTIVITY', order=(3, 0, 0), data=gr_dta).fit()
+t1 = time.time()
 hf.linenr(11)
 print(arma_mod20.aic(), arma_mod20.bic(), arma_mod20.hqc())
 hf.linenr(12)
@@ -79,3 +91,4 @@ hf.linenr(18)
 fig = plt.figure(figsize=(12, 8))
 ax = fig.add_subplot(111)
 fig = qqplot(pd.Series(resid), line="q", ax=ax, fit=True)
+hf.runtime(t0, t1)

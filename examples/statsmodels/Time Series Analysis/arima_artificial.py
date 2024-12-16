@@ -5,6 +5,7 @@ from statsmodels.tsa.arima_process import arma_generate_sample
 from statsmodels.tsa.arima.model import ARIMA
 import gretl
 import sys
+import time
 sys.path.append('../')
 import helper_func as hf
 
@@ -37,13 +38,19 @@ y = pd.Series(y, index=dates)
 
 # statsmodels calls:
 if Do_StatsModels is True:
+    t0 = time.time()
     arma_mod = ARIMA(y, order=(2, 0, 2), trend="n")
     arma_res = arma_mod.fit()
+    t1 = time.time()
     print(arma_res.summary())
+    hf.runtime(t0, t1)
 
 # gretl calls
+t0 = time.time()
 arma_mod = gretl.arima(y='y', order=(2, 0, 2), nc=True,
                        data=gretl.series2dict(y, 12))
 arma_res = arma_mod.fit()
+t1 = time.time()
 hf.linenr(6)
 print(arma_res.summary)
+hf.runtime(t0, t1)

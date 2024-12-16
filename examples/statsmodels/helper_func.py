@@ -8,3 +8,6 @@ def printhead (title, full=True):
 def linenr (nr):
     print(f'\n[{nr:d}]:')
 
+def runtime (t0, t1):
+    total = t1 - t0
+    print(f'\n*** total execution time: {total:f} seconds ***\n')
