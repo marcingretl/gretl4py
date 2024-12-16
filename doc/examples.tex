@@ -4,6 +4,20 @@ use of this functionality. More comprehensive examples
 can be found in the \texttt{examples} directory of
 the source tree.
 
+\subsubsection{Module related tools}\label{sec:module_related_python_examples}
+\gretlfpycmd{about()}\newline
+To print basic information about the \gretlpy module,
+including the libraries it uses and the contents of
+\lgretl's \gretlcmd{\$sysinfo} bundle, the following
+minimal code snippet can be used:
+\begin{lstlisting}[style=pythonstyle]
+import gretl
+
+d = gretl.about()
+\end{lstlisting}
+The corresponding results are presented in Figure~\ref{fig:mswindows_about}.
+
+
 \subsection{Data management}\label{sec:data_management_python_examples}
 This section outlines functions for reading, converting,
 and loading datasets into \gretlpy. Note that the
@@ -475,7 +489,7 @@ Figure~\ref{fig:statsmodels_numbering_example_stats}.
   \centering
   \includegraphics[width=.8\columnwidth,keepaspectratio]%
     {examples/statsmodels/statsmodels_numbering_example_stats.png}
-  \caption{Numbering in \pkg{statsmodels} output---``[5]:'' example from \pkg{statsmodels}.}
+  \caption{Numbering in \pkg{statsmodels} output: example from \pkg{statsmodels}.}
   \label{fig:statsmodels_numbering_example_stats}
 \end{figure}
 
@@ -486,7 +500,7 @@ Figure~\ref{fig:statsmodels_numbering_example_gretl4py}.
   \centering
   \includegraphics[width=.8\columnwidth,keepaspectratio]%
     {examples/statsmodels/statsmodels_numbering_example_gretl4py.png}
-  \caption{Numbering in \pkg{statsmodels} output---``[5]:'' example from \gretlpy.}
+  \caption{Numbering in \pkg{statsmodels} output: example from \gretlpy.}
   \label{fig:statsmodels_numbering_example_gretl4py}
 \end{figure}
 
