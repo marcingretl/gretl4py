@@ -56,6 +56,9 @@
 		#2 %label
 	\end{figure}}
 
+\renewcommand{\thefigure}{\thesection.\arabic{figure}}
+%\numberwithin{figure}{section}
+
 \makeatletter
 \@mparswitchfalse%
 \hypersetup{pdfauthor={Marcin Błażejowski}}%
@@ -100,17 +103,17 @@
 	\input{Usage}
 	\input{examples}
 
-	%\appendix
-	\begin{appendices}
-		\input{sourcetree.tex}
-	\end{appendices}
-
-	\bibliographystyle{abbrvnat}
-	\bibliography{gretl4py.bib}
-
-	\addcontentsline{toc}{section}{\listfigurename}
+	\newpage\addcontentsline{toc}{section}{\listfigurename}
 	\listoffigures
 
 	\addcontentsline{toc}{section}{Index}
 	\printindex
+	
+	\bibliographystyle{abbrvnat}
+	\bibliography{gretl4py.bib}
+	
+	%\appendix
+	\newpage\begin{appendices}
+		\input{sourcetree.tex}
+	\end{appendices}
 \end{document}
