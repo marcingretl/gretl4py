@@ -1,14 +1,25 @@
 ifndef CXX
-CXX = g++
+  CXX = g++
 endif
-ifeq ($(CXX), g++)
-CXXFLAGS = -march=x86-64 -mtune=generic -O3 -pipe -Wall -std=c++17 -fvisibility=hidden
+
+OS = $(shell uname -s)
+ifeq ($(OS), Darwin)
+  CXXFLAGS = -march=native -mtune=native -O3 -pipe -Wall -std=c++17
+  GPATH = /Applications/Gretl.app/Contents/Resources
+  GRETLLD = -L$(GPATH)/lib -lgretl-1.0 -lglib-2.0 -lxml2 -lfftw3 -lomp -lm
+  GRETLIN = -I$(GPATH)/include -I$(GPATH)/include/glib-2.0 -I$(GPATH)/lib/glib-2.0/include
+  DL = -undefined dynamic_lookup
 else
-CXXFLAGS = -march=x86-64 -mtune=generic -O3 -pipe -Wall -std=c++17
+  ifeq ($(CXX), g++)
+    CXXFLAGS = -march=x86-64 -mtune=generic -O3 -pipe -Wall -std=c++17 -fvisibility=hidden
+  else
+    CXXFLAGS = -march=x86-64 -mtune=generic -O3 -pipe -Wall -std=c++17
+  endif
+  GRETLLD = $(shell pkg-config --libs gretl)
+  GRETLIN = $(shell pkg-config --cflags gretl)  
 endif
+
 MAKE = gmake
-GRETLLD = $(shell pkg-config --libs gretl)
-GRETLIN = $(shell pkg-config --cflags gretl)
 PYBIND = $(shell python3 -m pybind11 --includes)
 SUFFIX = $(shell python3-config --extension-suffix)
 MODULE = gretl/_gretl$(SUFFIX)
@@ -26,7 +37,7 @@ OBJS = $(SRCS:.cpp=.o)
 	$(CXX) $(CXXFLAGS) -c $< -o $@ -fPIC $(PYBIND) $(GRETLIN)
 
 $(MODULE): $(OBJS)
-	$(CXX) $(CXXFLAGS) $^ -shared -o $@ -fPIC $(GRETLLD)
+	$(CXX) $(CXXFLAGS) $^ -shared $(DL) -o $@ -fPIC $(GRETLLD)
 
 $(ZIPFILE): $(MODULE) $(PYFILES)
 	zip -r -q $@ gretl

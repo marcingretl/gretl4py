@@ -35,7 +35,7 @@
 # define COMPILER_IDENT __VERSION__
 #endif
 
-#define LIBGRETL_MIN_VER 48
+#define LIBGRETL_MIN_VER 49
 #define GRETL_PYBIND11_DEBUG 0
 
 #define use_ldco_sig(c) (c == OLS || c == WLS) //const int *list, DATASET *dset, GretlCmdIndex ci, gretlopt opt
@@ -288,7 +288,7 @@ static gretlopt unpack_kwargs (const py::kwargs &kwargs,
         // if we didn't get a 'data' specification, try for the global dataset
 #if GRETL_PYBIND11_DEBUG
         std::printf("unpack_kwargs: we try for the global dataset\n");
-#endif // GRETL_PYBIND11_DEBUG
+#endif
         pdset = DSET;
     }
 
