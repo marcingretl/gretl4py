@@ -88,10 +88,16 @@ class Model:
         return self.results['stderr'][:, 0]
 
     def yhat(self):
-        return self.results['yhat']
+        if self.name == 'biprobit':
+            return self.results['bp_yhat']
+        else:
+            return self.results['yhat']
 
     def uhat(self):
-        return self.results['uhat']
+        if self.name == 'biprobit':
+            return self.results['bp_uhat']
+        else:
+            return self.results['uhat']
 
     # strings
     def parnames(self):
