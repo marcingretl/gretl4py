@@ -13,11 +13,23 @@ initialized by the \texttt{\_\_init\_\_.py} file.
 
 \gretlfpycmd{about()}
 \begin{lstlisting}[style=pythonstyle]
-dict = gretl.about()
+dict = gretl.about(do_print=bool)
 \end{lstlisting}
-\generaldesc{This function prints basic information about
-	the \gretlpy module, including the libraries it uses
-	and the contents of \lgretl's \gretlcmd{\$sysinfo} bundle.}\todo{add `about()' details}
+\generaldesc{This function retrieves and optionally prints
+	basic information about the \gretlpy module, including
+	the libraries it utilizes and the contents of \lgretl's
+	\gretlcmd{\$sysinfo} bundle. The returned dictionary
+	contains the following entries:
+	\begin{itemize}
+		\item \pythcode{mod\_ver}: The version of the \gretlpy
+			module (\pythcode{string}).
+		\item \pythcode{py11\_ver}: The version of the \pkg{pybind11}
+			module, formatted as \texttt{MAJOR.MINOR.PATCH} (\pythcode{string}).
+		\item \pythcode{lg\_ver}: The version of the \lgretl-1.0
+			library (\pythcode{string}).
+		\item \pythcode{sysinfo}: The contents of \lgretl's
+			\gretlcmd{\$sysinfo} bundle (\pythcode{dict}).
+		\end{itemize}}
 
 \subsubsection{Data management}\label{sec:data_management_python}
 \gretlpy provides the following functions and methods

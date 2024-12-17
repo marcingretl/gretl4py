@@ -63,7 +63,7 @@ import gretl
 
 d = gretl.csv2dict('longley.csv')
 \end{lstlisting}
-See \texttt{`examples/csv2dict.py' for details}.
+See \texttt{`examples/csv2dict.py'} for details.
 
 \gretlfpycmd{df2dict()}\newline
 To load the contents of an existing \pkg{pandas}
@@ -78,7 +78,7 @@ import pandas
 df = pandas.read_csv('longley.csv')
 d = gretl.df2dict(df, withobs=True)
 \end{lstlisting}
-See \texttt{`examples/df2dict.py' for details}.
+See \texttt{`examples/df2dict.py'} for details.
 
 \gretlfpycmd{numpyarray2dict()}\newline
 To load the contents of an existing \pkg{numpy}
@@ -108,7 +108,7 @@ s = pandas.Series(df['employ'].to_list(),
 	index=df['obs'].to_list())
 d = gretl.series2dict(s)
 \end{lstlisting}
-See \texttt{`examples/series2dict.py' for details}.
+See \texttt{`examples/series2dict.py'} for details.
 
 
 \gretlfpycmd{get\_gretl\_data()}\index{gretl\_data\_path()}\newline
@@ -159,7 +159,7 @@ gretl.attach_gretl_data(
 	gretl.gretl_data_path('misc/longley.gdt'))
 gretl.sample(t1=5, t2=10)
 \end{lstlisting}
-See \texttt{`examples/sample.py' for details}.
+See \texttt{`examples/sample.py'} for details.
 
 
 
@@ -177,7 +177,7 @@ gretl.attach_gretl_data(
 	gretl.gretl_data_path('misc/longley.gdt'))
 m = gretl.ar('1 2 ; employ const prdefl gnp armfrc').fit()
 \end{lstlisting}
-See \texttt{`examples/ar.py' for details}.
+See \texttt{`examples/ar.py'} for details.
 
 \examplefig{ar}{\label{fig:ar_results}}
 
@@ -195,7 +195,7 @@ gretl.attach_gretl_data(
 	gretl.gretl_data_path('misc/longley.gdt'))
 m = gretl.ar1('employ ~ const + prdefl + gnp').fit()
 \end{lstlisting}
-See \texttt{`examples/ar1.py' for details}.
+See \texttt{`examples/ar1.py'} for details.
 
 \examplefig{ar1}{\label{fig:ar1_results}}
 
@@ -210,7 +210,7 @@ gretl.attach_gretl_data(
 	gretl.gretl_data_path('misc/bjg.gdt'))
 m = gretl.arima(y='lg', order=(1,1,1)).fit()
 \end{lstlisting}
-See \texttt{`examples/arima.py' for details}.
+See \texttt{`examples/arima.py'} for details.
 
 \examplefig{arima}{\label{fig:arima_results}}
 
@@ -227,7 +227,7 @@ gretl.attach_gretl_data(
 m = gretl.biprobit('anydrg cardhldr const age avgexp ;
 	const age income ownrent selfempl').fit()
 \end{lstlisting}
-See \texttt{`examples/biprobit.py' for details}.
+See \texttt{`examples/biprobit.py'} for details.
 
 \examplefig{biprobit}{\label{fig:biprobit_results}}
 
@@ -245,7 +245,7 @@ gretl.attach_gretl_data(
 	gretl.gretl_data_path('misc/kennan.gdt'))
 m = gretl.duration('Ti ~ const + Prod').fit()
 \end{lstlisting}
-See \texttt{`examples/duration.py' for details}.
+See \texttt{`examples/duration.py'} for details.
 
 \examplefig{duration}{\label{fig:duration_results}}
 
@@ -261,7 +261,7 @@ gretl.attach_gretl_data(
 	gretl.gretl_data_path('misc/b-g.gdt'))
 m = gretl.garch('1 1 ; Y').fit()
 \end{lstlisting}
-See \texttt{`examples/garch.py' for details}.
+See \texttt{`examples/garch.py'} for details.
 
 \examplefig{garch}{\label{fig:garch_results}}
 
@@ -278,7 +278,7 @@ gretl.attach_gretl_data(
 m = gretl.heckit('WW const AX WE CIT ;
 	LFP const WA FAMINC WE').fit()
 \end{lstlisting}
-See \texttt{`examples/heckit.py' for details}.
+See \texttt{`examples/heckit.py'} for details.
 
 \examplefig{heckit}{\label{fig:heckit_results}}
 
@@ -296,7 +296,7 @@ gretl.attach_gretl_data(
 	gretl.gretl_data_path('misc/longley.gdt'))
 m = gretl.lad('employ ~ const + prdefl + gnp').fit()
 \end{lstlisting}
-See \texttt{`examples/lad.py' for details}.
+See \texttt{`examples/lad.py'} for details.
 
 \examplefig{lad}{\label{fig:lad_results}}
 
@@ -312,7 +312,7 @@ gretl.attach_gretl_data(
 	gretl.gretl_data_path('misc/longley.gdt'))
 m = gretl.logistic('employ ~ const + prdefl + gnp').fit()
 \end{lstlisting}
-See \texttt{`examples/logistic.py' for details}.
+See \texttt{`examples/logistic.py'} for details.
 
 \examplefig{logistic}{\label{fig:logistic_results}}
 
@@ -344,7 +344,7 @@ gretl.attach_gretl_data(
 	gretl.gretl_data_path('misc/longley.gdt'))
 m = gretl.mpols('employ ~ const + prdefl + gnp').fit()
 \end{lstlisting}
-See \texttt{`examples/mpols.py' for details}.
+See \texttt{`examples/mpols.py'} for details.
 
 \examplefig{mpols}{\label{fig:mpols_results}}
 
@@ -360,7 +360,7 @@ gretl.attach_gretl_data(
 	gretl.gretl_data_path('misc/rac3d.gdt'))
 m = gretl.negbin('DVISITS ~ const + SEX + AGE').fit()
 \end{lstlisting}
-See \texttt{`examples/negbin.py' for details}.
+See \texttt{`examples/negbin.py'} for details.
 
 \examplefig{negbin}{\label{fig:negbin_results}}
 
@@ -408,7 +408,7 @@ gretl.attach_gretl_data(
 	gretl.gretl_data_path('misc/rac3d.gdt'))
 m = gretl.poisson('DVISITS ~ const + SEX + AGE').fit()
 \end{lstlisting}
-See \texttt{`examples/poisson.py' for details}.
+See \texttt{`examples/poisson.py'} for details.
 
 \examplefig{poisson}{\label{fig:poisson_results}}
 
@@ -441,7 +441,7 @@ gretl.attach_gretl_data(
 	gretl.gretl_data_path('misc/penngrow.gdt'))
 m = gretl.tsls('Y Y(-1) X ; 0 X Y(-2)').fit()
 \end{lstlisting}
-See \texttt{`examples/tsls.py' for details}.
+See \texttt{`examples/tsls.py'} for details.
 
 \examplefig{tsls}{\label{fig:tsls_results}}
 
@@ -457,7 +457,7 @@ gretl.attach_gretl_data(
 	gretl.gretl_data_path('misc/longley.gdt'))
 m = gretl.wls('year employ const prdefl gnp').fit()
 \end{lstlisting}
-See \texttt{`examples/wls.py' for details}.
+See \texttt{`examples/wls.py'} for details.
 
 \examplefig{wls}{\label{fig:wls_results}}
 
@@ -509,16 +509,16 @@ Currently, we provide examples for:
   \item Linear Regression Models:
     \begin{itemize}
       \item Ordinary Least Squares
-        (\url{https://www.statsmodels.org/dev/examples/notebooks/generated/ols.html}),
-        file: \texttt{ols.py}.
+        (\url{https://www.statsmodels.org/dev/examples/notebooks/generated/ols.html}),\newline
+        file: \texttt{examples/statsmodels/Linear Regression Models/ols.py}.
     \end{itemize}
   \item Time Series Analysis:
     \begin{itemize}
       \item ARMA: Sunspots Data
-        (\url{https://www.statsmodels.org/dev/examples/notebooks/generated/tsa_arma_0.html}),
-        file: \texttt{arima\_sunspot.py}.
+        (\url{https://www.statsmodels.org/dev/examples/notebooks/generated/tsa_arma_0.html}),\newline
+        file: \texttt{examples/statsmodels/Time Series Analysis/arima\_sunspot.py}.
       \item ARMA: Artificial Data
-        (\url{https://www.statsmodels.org/dev/examples/notebooks/generated/tsa_arma_1.html}),
-        file: \texttt{arima\_artificial.py}.
+        (\url{https://www.statsmodels.org/dev/examples/notebooks/generated/tsa_arma_1.html}),\newline
+        file: \texttt{examples/statsmodels/Time Series Analysis/arima\_artificial.py}.
     \end{itemize}
 \end{itemize}

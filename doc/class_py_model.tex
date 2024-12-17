@@ -80,12 +80,16 @@ numpy.ndarray = stderr(self)
 \begin{lstlisting}[style=pythonstyle]
 list = uhat(self)
 \end{lstlisting}
+\generaldesc{Note: in case of \gretlcmd{biprobit}\index{biprobit()},
+	\texttt{bp\_uhat} entry of \gretlcmd{\$model} bundle is returned.}
 
 \gretlfpycmd{yhat()}
 \estdesc{Returns fitted values.}
 \begin{lstlisting}[style=pythonstyle]
 list = yhat(self)
 \end{lstlisting}
+\generaldesc{Note: in case of \gretlcmd{biprobit}\index{biprobit()},
+	\texttt{bp\_yhat} entry of \gretlcmd{\$model} bundle is returned.}
 
 \vspace*{20pt}\noindent The \classpymodel class provides the following public attributes:
 
