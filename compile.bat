@@ -11,7 +11,7 @@ SET "CMD=python.exe"
 SET "CXX=clang++.exe"
 
 REM libgretl stack path
-SET "STACK_PATH=E:\Marcin\gretlapi\stack"
+SET "STACK_PATH=E:\Marcin\gretlapi\stack_minimal"
 
 REM Python main path and version
 FOR /f "tokens=*" %%i IN ('%CMD% -c "import sysconfig; print(sysconfig.get_paths()[r'data'])"') DO SET "PYTHON_PATH=%%i"
