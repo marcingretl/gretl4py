@@ -20,15 +20,15 @@
 \newcommand{\cppcode}[1]{\lstinline[style=cppstyle]!#1!\xspace}
 \newcommand{\pythcode}[1]{\lstinline[style=pythonstyle]!#1!\xspace}
 \newcommand{\reqpython}{[3.11], [3.12], [3.13]\xspace}
-\newcommand{\mapto}[2][]{\hspace*{17pt}maps to: \gretlcmd{#2}\newline%
+\newcommand{\mapto}[2][]{\hspace*{17pt}{\small maps to:} \gretlcmd{#2}\newline%
 	\ifthenelse{\equal{#1}{}}%
-		{\hspace*{17pt}where \pythcode{OPTS} are the following options %
-				(\gretlpy to \gretl mappings):}%
+		{\hspace*{17pt}{\small where \pythcode{OPTS} are the following options %
+				(\gretlpy to \gretl mappings):}}%
 		{\hspace*{17pt}}%
 }
 \newcommand{\maptoopt}[3]{\pythcode{#1} $\rightarrow$ \gretlcmd{#2}\newline\hspace*{10pt}\footnotesize{#3}}
 
-\newcommand{\lgretl}{\pkg{libgretl}\xspace}
+\newcommand{\lgretl}[1][]{\pkg{libgretl#1}\xspace}
 \newcommand{\gretl}{\pkg{gretl}\xspace}
 \newcommand{\gretlpy}{\pkg{gretl4py}\xspace}
 \newcommand{\python}[1][]{\proglang{Python#1}\xspace}
@@ -36,7 +36,7 @@
 \newcommand{\installbat}{\texttt{install.bat}\xspace}
 \newcommand{\est}[1]{\vspace{10pt}\noindent\gretlcmd{#1}\index{#1()}}
 \newcommand{\estdesc}[1]{\newline\begin{minipage}[t]{\columnwidth}%
-	\footnotesize#1\end{minipage}\vspace{3pt}}
+	\small#1\end{minipage}\vspace{3pt}}
 \newcommand{\noRformula}{\hspace*{17pt}\begin{minipage}[t]{0.89\columnwidth}\small%
 		Note: In this case one cannot use the \proglang{R}-style
 		like formula as outlined in
@@ -97,7 +97,6 @@
 	\input{introduction}
 	\input{installation}
 	\section{Implementation}\label{sec:implementation}
-		\input{implementation_c++_side}
 		\input{implementation_python_side}
 		\input{class_py_model}
 	\input{Usage}
