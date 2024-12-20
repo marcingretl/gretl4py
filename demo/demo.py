@@ -18,6 +18,10 @@ print(res)
 print('\nOLS:')
 res = gretl.ols('QNC ~ const + PRICE + INCOME', data=data97).fit()
 print(res)
+print(res.args)
+print(res) # print(res.summary)
+print(res.results['vcv'])
+print(f'\nIs Model {res.id():d} asymptotic?: {res.results["asymptotic"]}')
 
 '''Example 2: we use data send before function call ('bjg.csv')'''
 print('\nExample 2:')
