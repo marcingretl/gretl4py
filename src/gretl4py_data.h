@@ -54,11 +54,11 @@ private:
     {
         if (dset) {
             destroy_dataset(dset);
-            dset = nullptr;
+            dset = NULL;
         }
     }
 public:
-    DATASET *dset = nullptr;
+    DATASET *dset = NULL;
     int err = 0;
 
     GretlDataset (const std::string fname); // we load dataset from file
@@ -79,7 +79,7 @@ class GretlBundle
 {
 private:
     gretl_bundle *b;
-    char *json_buf = nullptr;
+    char *json_buf = NULL;
     bool free_b = true;
 public:
     int err = 0;
@@ -88,7 +88,7 @@ public:
     GretlBundle (MODEL *model, DATASET *dset);  // we produce bundle from MODEL struct
     ~GretlBundle (void);
 
-    char *to_json (void);
+    char *to_json (void);                       // serialize bundle to json_buf
 
     void print (void);
 };

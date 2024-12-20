@@ -184,7 +184,7 @@ void finalize_buffered_printer (PRN *prn)
 
 PRN *get_buffered_printer (void)
 {
-    PRN *prn = nullptr;
+    PRN *prn = NULL;
     int err = 0;
 
     prn = gretl_print_new(GRETL_PRINT_BUFFER, &err);
@@ -373,10 +373,10 @@ void GretlDataset::sample (const py::kwargs &kwargs)
     //
     // method which mimics gretl's 'smpl' command
     //
-    char *t1str = nullptr;
-    char *t2str = nullptr;
-    char *restr = nullptr;
-    PRN *prn = nullptr;
+    char *t1str = NULL;
+    char *t2str = NULL;
+    char *restr = NULL;
+    PRN *prn = NULL;
     const char *val;
     int opt_replace = 0;
     int full = 0;
@@ -486,6 +486,7 @@ GretlBundle::~GretlBundle (void)
     if (json_buf) {
         g_free(json_buf);
     }
+
     if (free_b && b) {
         gretl_bundle_destroy(b);
     }
@@ -530,7 +531,7 @@ MapToPy::MapToPy (const std::optional<py::object> &pyobject)
     } else if (is_pyint(*pyobject)) {
         as_str = std::to_string(py::cast<int>(*pyobject));
     } else {
-        err = 1;
+        err = E_TYPES;
         as_str.clear();
         std::cerr << "I don't know how to convert '";
         std::cerr << py::cast<std::string>(pyobject->get_type());

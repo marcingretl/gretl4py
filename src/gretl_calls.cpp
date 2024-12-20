@@ -338,11 +338,11 @@ py::dict *arima (const std::string y, const py::tuple &tup,
 {
     py::dict *res = new py::dict;
     GretlDataset *GD = nullptr;
-    MODEL *model;
+    MODEL *model = NULL;
     gretlopt opt = OPT_NONE;
     PRN *prn = NULL;
     int y_number;
-    int *list;
+    int *list = NULL;
     int p, d, q;
     int P, D, Q;
     int seasonal = 0;
@@ -402,9 +402,10 @@ py::dict *arima (const std::string y, const py::tuple &tup,
 
     *model = arma(list, NULL, GD->dset, opt, prn);
     save_model(model, GD->dset, prn, *res);
+
     gretl_model_free(model);
     gretl_print_destroy(prn);
-    free(list);
+    std::free(list);
 
     if (GD != DSET) {
         delete GD;
@@ -419,13 +420,13 @@ static int *list_from_formula (const char *formula,
                                DATASET *dset)
 {
     char *tmp = gretl_strdup(formula);
-    int *list;
+    int *list = NULL;
     int err = 0;
 
     gretl_charsub(tmp, '~', ' ');
     gretl_charsub(tmp, '+', ' ');
     list = generate_list(tmp, dset, 0, &err);
-    free(tmp);
+    std::free(tmp);
 
     if (err) {
         std::cerr << "libgretl error occurred: " << err << std::endl;
@@ -483,11 +484,11 @@ static py::dict *regression_wrapper (const std::string &formula,
     } else if constexpr (use_lcdop_sig(CI)) {
         *model = F(list, CI, GD->dset, opt, prn);
     }
-
     save_model(model, GD->dset, prn, *res);
+
     gretl_model_free(model);
     gretl_print_destroy(prn);
-    free(list);
+    std::free(list);
 
     if (GD != DSET) {
         delete GD;
