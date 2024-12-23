@@ -39,3 +39,23 @@ gretl.attach_gretl_data('bjg.csv')
 print('seasonal arma (0 1 2, 0 1 1):')
 res = gretl.arima(y='lg', order=(0,1,2), seasonal=(0,1,1), nc=True).fit()
 print(res)
+
+
+# mpols
+fname = gretl.gretl_data_path('misc/longley.gdt')
+gretl.attach_gretl_data(fname)
+res = gretl.mpols('1 0 2 3 4 5 6 7').fit()
+print(res)
+
+
+# panel
+fname = gretl.gretl_data_path('misc/abdata.gdt')
+gretl.attach_gretl_data(fname)
+
+print('panel, fixed effects')
+res = gretl.panel('n ~ 0 + w + k + ys').fit()
+print(res)
+
+print('panel, random effects')
+res = gretl.panel('n ~ 0 + w + k + ys', random_effects=True).fit()
+print(res)

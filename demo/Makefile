@@ -1,21 +1,21 @@
-TESTS = demo.py demo2.py pandas_test.py dset_test.py
+TESTS = about.py dataset_tools.py estimators.py na_check.py settest.py smpl.py
 
-.PHONY: clean tests
+.PHONY: clean alltests
 
-demo: demo.py
-	python3 demo.py
+dataset_tools: dataset_tools.py
+	python3 dataset_tools.py
 
-pandas: pandas_test.py
-	python3 pandas_test.py
+estimators: estimators.py
+	python3 estimators.py
 
-arma_speed: genarma22_test.inp arma_speed.py
-	gretlcli -b genarma22_test.inp; python3 arma_speed.py
+arma_speed: speed/genarma22_test.inp speed/arma_speed.py
+	gretlcli -b genarma22_test.inp; python3 speed/arma_speed.py
 
-probit_speed: genprobit_test.inp probit_speed.py
-	gretlcli -b genprobit_test.inp; python3 probit_speed.py
+probit_speed: speed/genprobit_test.inp speed/probit_speed.py
+	gretlcli -b genprobit_test.inp; python3 speed/probit_speed.py
 
-tests:
+alltests:
 	for f in $(TESTS) ; do python3 $$f ; done
 
 clean:
-	rm -f large_arma22.csv large_probit.csv prob_frml.txt *~
+	rm -f speed/large_arma22.csv speed/large_probit.csv speed/prob_frml.txt *~
