@@ -122,6 +122,8 @@ class Model:
     def hqc(self):
         return self.results['hqc']
 
+    def lnl(self):
+        return self.results['lnl']
 
 if __name__ == "__main__":
     pass
