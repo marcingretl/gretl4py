@@ -19,8 +19,15 @@ d = gretl.about()
   Figure~\ref{fig:mswindows_about}.}
 
 
-\gretlfpycmd{set()}\todo{must be written!!!}\newline
-\error{must be written!!!}
+\gretlfpycmd{set()}
+\gretlfpycmd{about()}
+\estdesc{To printdefault directory for writing and reading
+	files, the following minimal code snippet can be used:}
+\begin{lstlisting}[style=pythonstyle]
+import gretl
+
+gretl.set('workdir')
+\end{lstlisting}
 
 
 \subsection{Data management}\label{sec:data_management_python_examples}

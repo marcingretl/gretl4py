@@ -31,8 +31,21 @@ dict = gretl.about(do_print=bool)
 			\gretlcmd{\$sysinfo} bundle (\pythcode{dict}).
 		\end{itemize}}
 
-\gretlfpycmd{set()}\todo{must be written!!!}\newline
-\error{must be written!!!}
+\gretlfpycmd{set()}
+\begin{lstlisting}[style=pythonstyle]
+gretl.set(key=str, [val=str/int])
+\end{lstlisting}
+\mapto[0]{set variable value}
+\generaldesc{This function retrieves and optionally sets
+	the value of a specified \lgretl parameter (provided
+	as the \pythcode{key} argument). For further details,
+	refer to the documentation for \lgretl's \gretlcmd{set}
+	command \citep[see][]{gretl_command}. The function accepts
+	one optional parameter:
+	\begin{itemize}
+		\item \pythcode{val=str} or \pythcode{val=int}: The value
+			to assign to the \pythcode{key} parameter.
+	\end{itemize}}
 
 
 \subsection{Data management}\label{sec:data_management_python}
