@@ -1,9 +1,9 @@
-TESTS = about.py dataset_tools.py estimators.py na_check.py settest.py smpl.py
+TESTS = about.py data_management.py estimators.py
 
 .PHONY: clean alltests
 
-dataset_tools: dataset_tools.py
-	python3 dataset_tools.py
+data_management: data_management.py
+	python3 data_management.py
 
 estimators: estimators.py
 	python3 estimators.py
