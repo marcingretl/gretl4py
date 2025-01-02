@@ -2,13 +2,20 @@ import gretl
 import numpy as np
 np.set_printoptions(precision=4)
 
-#assertions
+#####################################
+# assertions                        #
+#####################################
 ols_bic = 146.9358272370446
 ols_lnl = -69.50932762409941
 logit_addsratios = np.array([[1.6879714826987978e+01, 2.1318085199908165e+01, 1.4201941279029757e+00, 2.0062382109771909e+02],
                              [1.0998322424583311e+00, 1.5568587945550874e-01, 8.3336506154669610e-01, 1.4515018895871261e+00],
                              [1.0790732404989523e+01, 1.1487427998195665e+01, 1.3393441542871571e+00, 8.6938002800381142e+01]])
 probit_normtest_pval = 0.16442606965148762
+############################################################################
+
+
+# we force libgretl to use the decimal point character
+gretl.set('force_decpoint', 'on')
 
 
 #####################################
@@ -77,6 +84,7 @@ gretl.attach_gretl_data('bjg.csv')
 
 print('SARIMA (0 1 2, 0 1 1):')
 res = gretl.arima(y='lg', order=(0,1,2), seasonal=(0,1,1), nc=True).fit()
+assert res.results['uhat'][0] == 'NA', 'the first element should be NaN!!!'
 print(res)
 ############################################################################
 

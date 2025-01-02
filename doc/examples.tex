@@ -18,9 +18,7 @@ d = gretl.about()
 \generaldesc{The corresponding results are presented in
   Figure~\ref{fig:mswindows_about}.}
 
-
 \gretlfpycmd{set()}
-\gretlfpycmd{about()}
 \estdesc{To printdefault directory for writing and reading
 	files, the following minimal code snippet can be used:}
 \begin{lstlisting}[style=pythonstyle]
@@ -28,6 +26,7 @@ import gretl
 
 gretl.set('workdir')
 \end{lstlisting}
+\generaldesc{See \texttt{`examples/module\_related\_tools/set.py'} for details.}
 
 
 \subsection{Data management}\label{sec:data_management_python_examples}
@@ -75,7 +74,7 @@ import gretl
 
 d = gretl.csv2dict('longley.csv')
 \end{lstlisting}
-\generaldesc{See \texttt{`examples/csv2dict.py'} for details.}
+\generaldesc{See \texttt{`examples/data\_management/csv2dict.py'} for details.}
 
 \gretlfpycmd{df2dict()}
 \estdesc{To load the contents of an existing \pkg{pandas}
@@ -89,7 +88,7 @@ import pandas
 df = pandas.read_csv('longley.csv')
 d = gretl.df2dict(df, withobs=True)
 \end{lstlisting}
-\generaldesc{See \texttt{`examples/df2dict.py'} for details.}
+\generaldesc{See \texttt{`examples/data\_management/df2dict.py'} for details.}
 
 \gretlfpycmd{numpyarray2dict()}
 \estdesc{To load the contents of an existing \pkg{numpy}
@@ -102,7 +101,7 @@ from numpy import genfromtxt
 np = genfromtxt('longley.csv', delimiter=',')[1:,1:]
 d = gretl.numpyarray2dict(np)
 \end{lstlisting}
-\generaldesc{See \texttt{`examples/numpyarray2dict.py'} for details.}
+\generaldesc{See \texttt{`examples/data\_management/numpyarray2dict.py'} for details.}
 
 \gretlfpycmd{series2dict()}
 \estdesc{To load the contents of an existing \pkg{pandas}
@@ -117,7 +116,7 @@ s = pandas.Series(df['employ'].to_list(),
 	index=df['obs'].to_list())
 d = gretl.series2dict(s)
 \end{lstlisting}
-\generaldesc{See \texttt{`examples/series2dict.py'} for details.}
+\generaldesc{See \texttt{`examples/data\_management/series2dict.py'} for details.}
 
 
 \gretlfpycmd{get\_gretl\_data()}\index{gretl\_data\_path()}
@@ -155,7 +154,7 @@ gretl.attach_gretl_data(
 	gretl.gretl_data_path('misc/longley.gdt'))
 gretl.printdata()
 \end{lstlisting}
-\generaldesc{See \texttt{`helper\_functions/printdata.py'} for details.}
+\generaldesc{See \texttt{`examples/helper\_functions/printdata.py'} for details.}
 
 \gretlfpycmd{sample()}\index{gretl\_data\_path()}
 \estdesc{To modify the sample range of the currently
@@ -168,7 +167,7 @@ gretl.attach_gretl_data(
 	gretl.gretl_data_path('misc/longley.gdt'))
 gretl.sample(t1=5, t2=10)
 \end{lstlisting}
-\generaldesc{See \texttt{`examples/sample.py'} for details.}
+\generaldesc{See \texttt{`examples/data\_management/sample.py'} for details.}
 
 
 
@@ -186,7 +185,7 @@ gretl.attach_gretl_data(
 	gretl.gretl_data_path('misc/longley.gdt'))
 m = gretl.ar('1 2 ; employ const prdefl gnp armfrc').fit()
 \end{lstlisting}
-\generaldesc{See \texttt{`examples/ar.py'} for details.}
+\generaldesc{See \texttt{`examples/estimators/ar.py'} for details.}
 
 \examplefig{ar}{\label{fig:ar_results}}
 
@@ -204,7 +203,7 @@ gretl.attach_gretl_data(
 	gretl.gretl_data_path('misc/longley.gdt'))
 m = gretl.ar1('employ ~ const + prdefl + gnp').fit()
 \end{lstlisting}
-\generaldesc{See \texttt{`examples/ar1.py'} for details.}
+\generaldesc{See \texttt{`examples/estimators/ar1.py'} for details.}
 
 \examplefig{ar1}{\label{fig:ar1_results}}
 
@@ -219,7 +218,7 @@ gretl.attach_gretl_data(
 	gretl.gretl_data_path('misc/bjg.gdt'))
 m = gretl.arima(y='lg', order=(1,1,1)).fit()
 \end{lstlisting}
-\generaldesc{See \texttt{`examples/arima.py'} for details.}
+\generaldesc{See \texttt{`examples/estimators/arima.py'} for details.}
 
 \examplefig{arima}{\label{fig:arima_results}}
 
@@ -236,7 +235,7 @@ gretl.attach_gretl_data(
 m = gretl.biprobit('anydrg cardhldr const age avgexp ;
 	const age income ownrent selfempl').fit()
 \end{lstlisting}
-\generaldesc{See \texttt{`examples/biprobit.py'} for details.}
+\generaldesc{See \texttt{`examples/estimators/biprobit.py'} for details.}
 
 \examplefig{biprobit}{\label{fig:biprobit_results}}
 
@@ -252,7 +251,7 @@ gretl.attach_gretl_data(
 	gretl.gretl_data_path('misc/kennan.gdt'))
 m = gretl.duration('Ti ~ const + Prod').fit()
 \end{lstlisting}
-\generaldesc{See \texttt{`examples/duration.py'} for details.}
+\generaldesc{See \texttt{`examples/estimators/duration.py'} for details.}
 
 \examplefig{duration}{\label{fig:duration_results}}
 
@@ -268,7 +267,7 @@ gretl.attach_gretl_data(
 	gretl.gretl_data_path('misc/b-g.gdt'))
 m = gretl.garch('1 1 ; Y').fit()
 \end{lstlisting}
-\generaldesc{See \texttt{`examples/garch.py'} for details.}
+\generaldesc{See \texttt{`examples/estimators/garch.py'} for details.}
 
 \examplefig{garch}{\label{fig:garch_results}}
 
@@ -285,7 +284,7 @@ gretl.attach_gretl_data(
 m = gretl.heckit('WW const AX WE CIT ;
 	LFP const WA FAMINC WE').fit()
 \end{lstlisting}
-\generaldesc{See \texttt{`examples/heckit.py'} for details.}
+\generaldesc{See \texttt{`examples/estimators/heckit.py'} for details.}
 
 \examplefig{heckit}{\label{fig:heckit_results}}
 
@@ -303,7 +302,7 @@ gretl.attach_gretl_data(
 	gretl.gretl_data_path('misc/longley.gdt'))
 m = gretl.lad('employ ~ const + prdefl + gnp').fit()
 \end{lstlisting}
-\generaldesc{See \texttt{`examples/lad.py'} for details.}
+\generaldesc{See \texttt{`examples/estimators/lad.py'} for details.}
 
 \examplefig{lad}{\label{fig:lad_results}}
 
@@ -319,7 +318,7 @@ gretl.attach_gretl_data(
 	gretl.gretl_data_path('misc/longley.gdt'))
 m = gretl.logistic('employ ~ const + prdefl + gnp').fit()
 \end{lstlisting}
-\generaldesc{See \texttt{`examples/logistic.py'} for details.}
+\generaldesc{See \texttt{`examples/estimators/logistic.py'} for details.}
 
 \examplefig{logistic}{\label{fig:logistic_results}}
 
@@ -335,7 +334,7 @@ gretl.attach_gretl_data(
 	gretl.gretl_data_path('greene/greene22_2.gdt'))
 m = gretl.logit('Y ~ const + Z1 + Z2').fit()
 \end{lstlisting}
-\generaldesc{See \texttt{`examples/logit.py'} for details.}
+\generaldesc{See \texttt{`examples/estimators/logit.py'} for details.}
 
 \examplefig{logit}{\label{fig:logit_results}}
 
@@ -352,7 +351,7 @@ gretl.attach_gretl_data(
 	gretl.gretl_data_path('misc/longley.gdt'))
 m = gretl.mpols('employ ~ const + prdefl + gnp').fit()
 \end{lstlisting}
-\generaldesc{See \texttt{`examples/mpols.py'} for details.}
+\generaldesc{See \texttt{`examples/estimators/mpols.py'} for details.}
 
 \examplefig{mpols}{\label{fig:mpols_results}}
 
@@ -368,7 +367,7 @@ gretl.attach_gretl_data(
 	gretl.gretl_data_path('misc/rac3d.gdt'))
 m = gretl.negbin('DVISITS ~ const + SEX + AGE').fit()
 \end{lstlisting}
-\generaldesc{See \texttt{`examples/negbin.py'} for details.}
+\generaldesc{See \texttt{`examples/estimators/negbin.py'} for details.}
 
 \examplefig{negbin}{\label{fig:negbin_results}}
 
@@ -384,7 +383,7 @@ gretl.attach_gretl_data(
 	gretl.gretl_data_path('misc/longley.gdt'))
 m = gretl.ols('employ ~ const + prdefl + gnp').fit()
 \end{lstlisting}
-\generaldesc{See \texttt{`examples/ols.py'} for details.}
+\generaldesc{See \texttt{`examples/estimators/ols.py'} for details.}
 
 \examplefig{ols}{\label{fig:ols_results}}
 
@@ -400,7 +399,7 @@ gretl.attach_gretl_data(
 	gretl.gretl_data_path('misc/penngrow.gdt'))
 m = gretl.panel('Y ~ const + Y(-1) + X').fit()
 \end{lstlisting}
-\generaldesc{See \texttt{`examples/panel.py'} for details.}
+\generaldesc{See \texttt{`examples/estimators/panel.py'} for details.}
 
 \examplefig{panel}{\label{fig:panel_results}}
 
@@ -416,7 +415,7 @@ gretl.attach_gretl_data(
 	gretl.gretl_data_path('misc/rac3d.gdt'))
 m = gretl.poisson('DVISITS ~ const + SEX + AGE').fit()
 \end{lstlisting}
-\generaldesc{See \texttt{`examples/poisson.py'} for details.}
+\generaldesc{See \texttt{`examples/estimators/poisson.py'} for details.}
 
 \examplefig{poisson}{\label{fig:poisson_results}}
 
@@ -432,7 +431,7 @@ gretl.attach_gretl_data(
 	gretl.gretl_data_path('greene/greene22_2.gdt'))
 m = gretl.probit('Y ~ const + Z1 + Z2').fit()
 \end{lstlisting}
-\generaldesc{See \texttt{`examples/probit.py'} for details.}
+\generaldesc{See \texttt{`examples/estimators/probit.py'} for details.}
 
 \examplefig{probit}{\label{fig:probit_results}}
 
@@ -449,7 +448,7 @@ gretl.attach_gretl_data(
 	gretl.gretl_data_path('misc/penngrow.gdt'))
 m = gretl.tsls('Y Y(-1) X ; 0 X Y(-2)').fit()
 \end{lstlisting}
-\generaldesc{See \texttt{`examples/tsls.py'} for details.}
+\generaldesc{See \texttt{`examples/estimators/tsls.py'} for details.}
 
 \examplefig{tsls}{\label{fig:tsls_results}}
 
@@ -465,7 +464,7 @@ gretl.attach_gretl_data(
 	gretl.gretl_data_path('misc/longley.gdt'))
 m = gretl.wls('year employ const prdefl gnp').fit()
 \end{lstlisting}
-\generaldesc{See \texttt{`examples/wls.py'} for details.}
+\generaldesc{See \texttt{`examples/estimators/wls.py'} for details.}
 
 \examplefig{wls}{\label{fig:wls_results}}
 
