@@ -1,9 +1,7 @@
 import gretl
 import time
-import pandas
 
-ARMAtest = pandas.read_csv('large_arma22.csv')
-MyDict = gretl.df2dict(ARMAtest, 1, 1)
+MyDict = gretl.csv2dict('large_arma22.csv', "1")
 arimaSpec = tuple((4,0,4))
 
 # arma model via gretl

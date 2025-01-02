@@ -3,10 +3,6 @@ BUGS:
 
 TODOS:
 
-1. write docs
+1. add variables names to numpyarray2dict()
 
-2. add variables names to numpyarray2dict()
-
-3. (re)organize `demo' directory
-
-4. do we want to provide builds for macOS and Linux?
+2. do we want to provide builds for macOS and Linux?
