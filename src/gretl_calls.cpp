@@ -135,19 +135,17 @@ py::dict about (bool do_print)
 void set (const std::string key,
           const std::optional<py::object> &pyval)
 {
-    PRN *prn;
+    GretlPrint GP = GretlPrint();
     int err = 0;
 
-    prn = get_buffered_printer();
-
     if (pyval == std::nullopt) {
-        err = execute_set(key.c_str(), NULL, NULL, OPT_NONE, prn);
+        err = execute_set(key.c_str(), NULL, NULL, OPT_NONE, GP.prn);
     } else {
         err = execute_set(key.c_str(), MapToPy(pyval).to_string().c_str(),
-                          NULL, OPT_NONE, prn);
+                          NULL, OPT_NONE, GP.prn);
     }
 
-    finalize_buffered_printer(prn);
+    GP.print();
 
     if (err) {
         handle_gretl_error(err);
@@ -340,7 +338,7 @@ py::dict *arima (const std::string y, const py::tuple &tup,
     GretlDataset *GD = nullptr;
     MODEL *model = NULL;
     gretlopt opt = OPT_NONE;
-    PRN *prn = NULL;
+    GretlPrint GP = GretlPrint();
     int y_number;
     int *list = NULL;
     int p, d, q;
@@ -381,9 +379,7 @@ py::dict *arima (const std::string y, const py::tuple &tup,
 
     model = gretl_model_new();
     list = gretl_list_new(seasonal? 9 : 5);
-    prn = get_buffered_printer();
-
-    if (model == NULL || list == NULL || prn == NULL) {
+    if (model == NULL || list == NULL || GP.prn == NULL) {
         throw std::runtime_error("Failed to allocate memory");
     }
 
@@ -400,11 +396,10 @@ py::dict *arima (const std::string y, const py::tuple &tup,
     list[i++] = LISTSEP;
     list[i++] = y_number;
 
-    *model = arma(list, NULL, GD->dset, opt, prn);
-    save_model(model, GD->dset, prn, *res);
+    *model = arma(list, NULL, GD->dset, opt, GP.prn);
+    save_model(model, GD->dset, GP.prn, *res);
 
     gretl_model_free(model);
-    gretl_print_destroy(prn);
     std::free(list);
 
     if (GD != DSET) {
@@ -450,7 +445,7 @@ static py::dict *regression_wrapper (const std::string &formula,
     py::dict *res = new py::dict;
     GretlDataset *GD = nullptr;
     MODEL *model = NULL;
-    PRN *prn = NULL;
+    GretlPrint GP = GretlPrint();
     int *list = NULL;
     gretlopt opt = OPT_NONE;
 
@@ -465,29 +460,27 @@ static py::dict *regression_wrapper (const std::string &formula,
 
     list = list_from_formula(formula.c_str(), GD->dset);
     model = gretl_model_new();
-    prn = get_buffered_printer();
 
     if (list == NULL) {
         throw std::runtime_error("Formula rendering failed");
-    } else if (model == NULL || prn == NULL) {
+    } else if (model == NULL || GP.prn == NULL) {
         throw std::runtime_error("Failed to allocate memory");
     }
 
     if constexpr (use_ldco_sig(CI)) {
         *model = F(list, GD->dset, CI, opt);
     } else if constexpr (use_ldcop_sig(CI)) {
-        *model = F(list, GD->dset, CI, opt, prn);
+        *model = F(list, GD->dset, CI, opt, GP.prn);
     } else if constexpr (use_ldo_sig(CI)) {
         *model = F(list, GD->dset, opt);
     } else if constexpr (use_ldop_sig(CI)) {
-        *model = F(list, GD->dset, opt, prn);
+        *model = F(list, GD->dset, opt, GP.prn);
     } else if constexpr (use_lcdop_sig(CI)) {
-        *model = F(list, CI, GD->dset, opt, prn);
+        *model = F(list, CI, GD->dset, opt, GP.prn);
     }
-    save_model(model, GD->dset, prn, *res);
+    save_model(model, GD->dset, GP.prn, *res);
 
     gretl_model_free(model);
-    gretl_print_destroy(prn);
     std::free(list);
 
     if (GD != DSET) {

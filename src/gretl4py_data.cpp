@@ -172,29 +172,6 @@ static gretlopt setobs_opt_from_structure (int structure)
 // functions
 //////////////////////////////////////////////////
 
-void finalize_buffered_printer (PRN *prn)
-{
-    const char *buf = gretl_print_get_buffer(prn);
-
-    if (buf != NULL) {
-        py::print(buf);
-    }
-    gretl_print_destroy(prn);
-}
-
-PRN *get_buffered_printer (void)
-{
-    PRN *prn = NULL;
-    int err = 0;
-
-    prn = gretl_print_new(GRETL_PRINT_BUFFER, &err);
-    if (err) {
-        handle_gretl_error(err);
-    }
-
-    return prn;
-}
-
 void handle_gretl_error (int err)
 {
     const char *msg = errmsg_get_with_default(err);
@@ -354,18 +331,18 @@ py::dict *GretlDataset::to_dict (void)
 
 void GretlDataset::printdset (bool namesonly)
 {
-    PRN *prn = get_buffered_printer();
+    GretlPrint GP = GretlPrint();
 
     if (namesonly) {
-        list_series(dset, OPT_NONE, prn);
+        list_series(dset, OPT_NONE, GP.prn);
     } else {
-        err = printdata(NULL, NULL, dset, OPT_O, prn);
+        err = printdata(NULL, NULL, dset, OPT_O, GP.prn);
         if (err) {
             handle_gretl_error(err);
         }
     }
 
-    finalize_buffered_printer(prn);
+    GP.print();
 }
 
 void GretlDataset::sample (const py::kwargs &kwargs)
@@ -376,7 +353,7 @@ void GretlDataset::sample (const py::kwargs &kwargs)
     char *t1str = NULL;
     char *t2str = NULL;
     char *restr = NULL;
-    PRN *prn = NULL;
+    GretlPrint GP = GretlPrint();
     const char *val;
     int opt_replace = 0;
     int full = 0;
@@ -425,11 +402,9 @@ void GretlDataset::sample (const py::kwargs &kwargs)
         throw std::runtime_error("invalid use of 'replace' in 'sample' args");
     }
 
-    prn = get_buffered_printer();
-
     if (argc == 0 && optc == 0) {
         // just report the current sample
-        print_smpl(dset, get_full_length_n(), OPT_NONE, prn);
+        print_smpl(dset, get_full_length_n(), OPT_NONE, GP.prn);
     } else if (argc == 0 && full) {
         // "smpl full"
         err = restore_full_sample(dset, NULL);
@@ -441,7 +416,7 @@ void GretlDataset::sample (const py::kwargs &kwargs)
             // C++ !!
             opt = (gretlopt) ((int) OPT_R | (int) OPT_P);
         }
-        err = restrict_sample(restr, NULL, dset, NULL, opt, prn, NULL);
+        err = restrict_sample(restr, NULL, dset, NULL, opt, GP.prn, NULL);
     } else if (t1str || t2str) {
         // smpl <t1str> <t2str>
         if (t1str && !t2str) {
@@ -457,10 +432,10 @@ void GretlDataset::sample (const py::kwargs &kwargs)
         const char *msg = errmsg_get_with_default(err);
         throw std::runtime_error(msg);
     } else if (argc > 0 || optc > 0) {
-        print_smpl(dset, get_full_length_n(), OPT_NONE, prn);
+        print_smpl(dset, get_full_length_n(), OPT_NONE, GP.prn);
     }
 
-    finalize_buffered_printer(prn);
+    GP.print();
 
     std::free(t1str);
     std::free(t2str);
@@ -504,12 +479,12 @@ char *GretlBundle::to_json (void)
 void GretlBundle::print (void)
 {
     if (!err) {
-        PRN *prn = get_buffered_printer();
+        GretlPrint GP = GretlPrint();
 
-        if (prn) {
-            err = gretl_bundle_print(b, prn);
+        if (!GP.err) {
+            err = gretl_bundle_print(b, GP.prn);
             if (!err) {
-                finalize_buffered_printer(prn);
+                GP.print();
             }
         }
     }
@@ -536,5 +511,32 @@ MapToPy::MapToPy (const std::optional<py::object> &pyobject)
         std::cerr << "I don't know how to convert '";
         std::cerr << py::cast<std::string>(pyobject->get_type());
         std::cerr << "' to std::string" << std::endl;
+    }
+}
+
+//
+// GretlPrint class methods
+//
+GretlPrint::GretlPrint (PrnType prn_type)
+{
+    prn = gretl_print_new(prn_type, &err);
+    if (err) {
+        handle_gretl_error(err);
+    }
+}
+
+GretlPrint::~GretlPrint (void)
+{
+    if (prn != NULL) {
+        gretl_print_destroy(prn);
+    }
+}
+
+void GretlPrint::print (void)
+{
+    const char *buf = gretl_print_get_buffer(prn);
+
+    if (buf != NULL) {
+        py::print(buf);
     }
 }

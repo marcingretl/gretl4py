@@ -16,7 +16,7 @@ else
     CXXFLAGS = -march=x86-64 -mtune=generic -O3 -pipe -Wall -std=c++17
   endif
   GRETLLD = $(shell pkg-config --libs gretl)
-  GRETLIN = $(shell pkg-config --cflags gretl)  
+  GRETLIN = $(shell pkg-config --cflags gretl)
 endif
 
 MAKE = gmake
@@ -33,7 +33,7 @@ OBJS = $(SRCS:.cpp=.o)
 
 .PHONY: tags clean depend
 
-%.o: %.cpp
+%.o: %.cpp gretl4py.h gretl4py_data.h
 	$(CXX) $(CXXFLAGS) -c $< -o $@ -fPIC $(PYBIND) $(GRETLIN)
 
 $(MODULE): $(OBJS)

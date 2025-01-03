@@ -34,10 +34,6 @@ int gretl_model_to_dict (MODEL *model, DATASET *dset, const char *summary, py::d
 
 void handle_gretl_error (int err);
 
-PRN *get_buffered_printer (void);
-
-void finalize_buffered_printer (PRN *prn);
-
 //
 // Class to handle gretl 'DATASET' type
 //
@@ -109,4 +105,19 @@ public:
    auto *ptr (void) { return res; }
 
    std::string to_string (void) { return as_str; }
+};
+
+//
+// Class to handle printing
+//
+class GretlPrint
+{
+public:
+    PRN *prn = NULL;
+    int err = 0;
+
+    GretlPrint (PrnType prn_type = GRETL_PRINT_BUFFER);  // by default we use buffered printer
+    ~GretlPrint (void);
+
+    void print (void); //
 };
