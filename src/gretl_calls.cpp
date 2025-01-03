@@ -89,9 +89,9 @@ void module_cleanup (void)
 
 py::dict about (bool do_print)
 {
+    GretlBundle b = GretlBundle();
     std::string mod_ver, lg_ver, py11_ver;
     py::dict res;
-    GretlBundle b = GretlBundle();
 
     gretl_push_c_numeric_locale();
 
@@ -211,8 +211,8 @@ static gretlopt unpack_kwargs (const py::kwargs &kwargs,
                                int ci, GretlDataset *&pdset)
 {
     int opt, opts = OPT_NONE;
-    OptStatus status;
     bool got_data = false;
+    OptStatus status;
 
     for (auto &item : kwargs) {
         if (!is_pystr(item.first)) {
@@ -335,15 +335,15 @@ py::dict *arima (const std::string y, const py::tuple &tup,
                  const py::kwargs &kwargs)
 {
     py::dict *res = new py::dict;
+    GretlPrint GP = GretlPrint();
+    gretlopt opt = OPT_NONE;
     GretlDataset *GD = nullptr;
     MODEL *model = NULL;
-    gretlopt opt = OPT_NONE;
-    GretlPrint GP = GretlPrint();
-    int y_number;
     int *list = NULL;
+    int seasonal = 0;
+    int y_number;
     int p, d, q;
     int P, D, Q;
-    int seasonal = 0;
     int i;
 
     if (py::len(kwargs) > 0) {
@@ -443,11 +443,11 @@ static py::dict *regression_wrapper (const std::string &formula,
                                      const py::kwargs &kwargs)
 {
     py::dict *res = new py::dict;
+    GretlPrint GP = GretlPrint();
+    gretlopt opt = OPT_NONE;
     GretlDataset *GD = nullptr;
     MODEL *model = NULL;
-    GretlPrint GP = GretlPrint();
     int *list = NULL;
-    gretlopt opt = OPT_NONE;
 
     if (py::len(kwargs) > 0) {
         opt = unpack_kwargs(kwargs, CI, GD);

@@ -54,8 +54,8 @@ private:
         }
     }
 public:
-    DATASET *dset = NULL;
     int err = 0;
+    DATASET *dset = NULL;
 
     GretlDataset (const std::string fname); // we load dataset from file
     GretlDataset (const py::dict &pydict);  // we load dataset from Python's dictionary
@@ -74,9 +74,9 @@ public:
 class GretlBundle
 {
 private:
-    gretl_bundle *b;
-    char *json_buf = NULL;
     bool free_b = true;
+    char *json_buf = NULL;
+    gretl_bundle *b;
 public:
     int err = 0;
 
@@ -113,8 +113,8 @@ public:
 class GretlPrint
 {
 public:
-    PRN *prn = NULL;
     int err = 0;
+    PRN *prn = NULL;
 
     GretlPrint (PrnType prn_type = GRETL_PRINT_BUFFER);  // by default we use buffered printer
     ~GretlPrint (void);

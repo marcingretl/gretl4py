@@ -121,14 +121,14 @@ static void numpy_array_to_gretl_storage (const py::dict &pydict,
         throw std::runtime_error("Element 'data_array' of given dictionary is not of NumPy array type.");
     }
 
+    double *data_array = nullptr;
     ssize_t rows, cols, colsize;
     int fortranarray;
-    double *data_array = NULL;
     int k;
 
     data_array = numpy_array_extract(py::cast<py::array>(pydict[py::cast("data_array")]),
                                      &rows, &cols, &fortranarray);
-    if (data_array == NULL) {
+    if (!data_array) {
         throw std::runtime_error("Numpy array: null pointer.");
     }
 
@@ -229,10 +229,10 @@ GretlDataset::GretlDataset (const py::dict &pydict)
     //
     // we fill a gretl DATASET struct with the content of @pydict
     //
+    gretlopt opt = OPT_NONE;
     py::list pylist;
     std::string *strBUF;
     int pd;
-    gretlopt opt = OPT_NONE;
 
     GretlDataset::allocate_dset();
 
@@ -285,8 +285,8 @@ py::dict *GretlDataset::to_dict (void)
     py::list *vnames = new py::list;
     py::list *labels = new py::list;
     auto &pydict = *as_dict;
-    double *tmp;
     int i = 0;
+    double *tmp;
 
     pydict[py::cast("pd")] = dset->pd;
     pydict[py::cast("structure")] = dset->structure;
@@ -349,15 +349,15 @@ void GretlDataset::sample (const py::kwargs &kwargs)
     //
     // method which mimics gretl's 'smpl' command
     //
-    char *t1str = NULL;
-    char *t2str = NULL;
-    char *restr = NULL;
     GretlPrint GP = GretlPrint();
-    const char *val;
     int opt_replace = 0;
     int full = 0;
     int argc = 0;
     int optc = 0;
+    char *t1str = NULL;
+    char *t2str = NULL;
+    char *restr = NULL;
+    const char *val;
 
     for (auto &item : kwargs) {
         val = NULL;

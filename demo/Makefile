@@ -1,4 +1,4 @@
-TESTS = about.py data_management.py estimators.py
+TESTS = module_related_tools.py data_management.py estimators.py
 
 .PHONY: clean alltests
 
