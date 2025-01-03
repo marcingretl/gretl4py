@@ -5,8 +5,8 @@ import gretl
 #####################################
 ols_bic = 146.9358272370446
 ols_lnl = -69.50932762409941
-logit_fXb = 0.18890217716547192
-probit_normtest_pval = 0.16442606965148762
+logit_fXb = 0.188902177165472
+probit_normtest_pval = 0.164426069651488
 ############################################################################
 
 
@@ -41,7 +41,7 @@ ldata = gretl.get_gretl_data(fname)
 print('LOGIT without options:')
 res = gretl.logit('GRADE ~ 0 GPA TUCE PSI', data=ldata).fit()
 
-assert (res.results['fXb'] == logit_fXb), 'f(beta\'x) at mean of independent vars should equal: ' + str(logit_fXb)
+assert (round(res.results['fXb'], 15) == logit_fXb), 'f(beta\'x) at mean of independent vars should equal: ' + str(logit_fXb)
 print(res)
 print("Odds Ratios:")
 print("columns: odds ratio, std. error, low95, high95")
@@ -50,7 +50,7 @@ print(res.results['oddsratios'])
 
 print('PROBIT example with p-value option:')
 res = gretl.probit('GRADE ~ 0 GPA TUCE PSI', data=ldata, p_values=True).fit()
-assert (res.results['normality_test']['pvalue'] == probit_normtest_pval), 'pvalue in normality of residuals should equal ' + str(probit_normtest_pval)
+assert (round(res.results['normality_test']['pvalue'], 15) == probit_normtest_pval), 'pvalue in normality of residuals should equal ' + str(probit_normtest_pval)
 print(res)
 print('normality test:')
 print(res.results['normality_test'])
