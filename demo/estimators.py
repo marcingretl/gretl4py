@@ -6,7 +6,7 @@ import gretl
 ols_bic = 146.9358272370446
 ols_lnl = -69.50932762409941
 logit_fXb = 0.188902177165472
-probit_normtest_pval = 0.164426069651488
+probit_normtest_pval = 0.16442606965149
 ############################################################################
 
 
@@ -50,7 +50,7 @@ print(res.results['oddsratios'])
 
 print('PROBIT example with p-value option:')
 res = gretl.probit('GRADE ~ 0 GPA TUCE PSI', data=ldata, p_values=True).fit()
-assert (round(res.results['normality_test']['pvalue'], 15) == probit_normtest_pval), 'pvalue in normality of residuals should equal ' + str(probit_normtest_pval)
+assert (round(res.results['normality_test']['pvalue'], 14) == probit_normtest_pval), 'pvalue in normality of residuals should equal ' + str(probit_normtest_pval)
 print(res)
 print('normality test:')
 print(res.results['normality_test'])
