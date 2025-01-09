@@ -38,7 +38,7 @@ if platform == "win-amd64":
         sysconfig.os.environ['PATH'] = GDIR + sysconfig.os.pathsep + currpath
 elif platform[0:5] == "macos":
     RES = '/Applications/Gretl.app/Contents/Resources/'
-    sysconfig.os.environ['GRETL_PLUGIN_PATH'] = RES + 'lib/gretl-gtk2'
+    sysconfig.os.environ['GRETL_PLUGIN_PATH'] = RES + 'lib/plugins'
     sysconfig.os.environ['GRETL_DATA_PATH'] = RES + 'share/gretl/data'
     PATH = str(PATH + r'/gretl')
 else:
