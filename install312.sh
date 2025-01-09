@@ -1,0 +1,10 @@
+#!/bin/sh
+
+HERE=`pwd`
+MYDIR=`python3.12 -m site --user-site`
+
+if [ ! -d $MYDIR ] ; then
+   mkdir -p $MYDIR || exit 1
+fi
+
+cd $MYDIR && unzip -o -q $HERE/gretl4py.zip

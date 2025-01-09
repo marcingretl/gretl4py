@@ -4,7 +4,7 @@ endif
 
 OS = $(shell uname -s)
 ifeq ($(OS), Darwin)
-  CXXFLAGS = -march=generic -mtune=generic -O3 -pipe -Wall -std=c++17
+  CXXFLAGS =-O3 -pipe -Wall -std=c++17
   GPATH = /Applications/Gretl.app/Contents/Resources
   GRETLLD = -L$(GPATH)/lib -lgretl-1.0 -lglib-2.0 -lxml2 -lfftw3 -lomp -lm
   GRETLIN = -I$(GPATH)/include -I$(GPATH)/include/glib-2.0 -I$(GPATH)/lib/glib-2.0/include
