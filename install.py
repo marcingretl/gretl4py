@@ -1,4 +1,5 @@
 import sysconfig
+import sys
 import site
 import os
 import shutil
@@ -10,22 +11,21 @@ if PYTHON_VER < 3.11:
 # we setup paths, names and so on
 PYTHON_PATH = site.getusersitepackages()
 SUFFIX = sysconfig.get_config_var(r'EXT_SUFFIX')
-MODULE_PATH = f'{PYTHON_PATH:s}\\gretl'
+MODULE_PATH = os.path.normpath(f'{PYTHON_PATH:s}/gretl')
 MODULE = f'_gretl{SUFFIX:s}'
+PYTHON_EXE = sys.executable
 
 if os.path.isdir(MODULE_PATH):
     shutil.rmtree(MODULE_PATH)
 os.mkdir(MODULE_PATH)
 
 for file in ["__init__.py", "gretl4py_addons.py", "gretl4py_classes.py"]:
-    SRC = f'gretl\\{file:s}'
+    SRC = os.path.normpath(f'gretl/{file:s}')
     print(f'copying {SRC:s} to {MODULE_PATH:s}')
     shutil.copy(SRC, MODULE_PATH)
 
-#shutil.copy('gretl\\gretl4py_addons.py ', MODULE_PATH)
-#shutil.copy('gretl\\gretl4py_classes.py', MODULE_PATH)
-SRC = f'builds\\{PYTHON_VER:.2f}\\{MODULE:s}'
+SRC = os.path.normpath(f'builds/{PYTHON_VER:.2f}/{MODULE:s}')
 print(f'copying {SRC:s} to {MODULE_PATH:s}')
 shutil.copy(SRC, MODULE_PATH)
 
-#print(f'run \'python{PYTHON_VER:.2f} -c "import gretl; gretl.about(True)"\' to verify installation')
+print(f'\nrun \'{PYTHON_EXE:s} -c "import gretl; gretl.about(True)"\' to verify installation')
