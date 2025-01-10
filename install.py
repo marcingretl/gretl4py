@@ -34,7 +34,7 @@ elif platform[0:5] == "macos":
     GRETL_PATH = '/Applications/Gretl.app'
     PYTHON_MIN = 3.12
 else:
-    exit(f'unsupported operating system (this istaller is either for MS Windows o MAC OS X')
+    exit('unsupported operating system (this istaller is either for MS Windows or macOS')
 
 # we look up for gretl installation
 if not os.path.isdir(os.path.normpath(GRETL_PATH)):
