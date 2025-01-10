@@ -18,7 +18,7 @@
  *
  """
 
-"""This module import all necessary files
+"""This module imports all necessary files
 and sets some required environmental variables."""
 
 import sysconfig

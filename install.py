@@ -1,12 +1,49 @@
+"""
+ *
+ *  gretl -- Gnu Regression, Econometrics and Time-series Library
+ *  Copyright (C) 2001 Allin Cottrell and Riccardo "Jack" Lucchetti
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ """
+
+"""This module installs all necessary gretl4py files."""
+
 import sysconfig
 import sys
 import site
 import os
 import shutil
 
+platform = sysconfig.get_platform()
+if platform == "win-amd64":
+    GRETL_PATH = r'C:\Program Files\gretl'
+    PYTHON_MIN = 3.11
+elif platform[0:5] == "macos":
+    GRETL = '/Applications/Gretl.app'
+    PYTHON_MIN = 3.12
+else:
+    exit(f'unsupported operating system (this istaller is either for MS Windows o MAC OS X')
+
+# we look up for gretl installation
+if not os.path.isdir(os.path.normpath(GRETL_PATH)):
+    exit(f'gretl4py requires gretl installed in: {GRETL_PATH:s}')
+
+# we verify python min version
 PYTHON_VER = float(sysconfig.get_python_version())
-if PYTHON_VER < 3.11:
-    exit(f'gretl4py requires python 3.11 or higher, but {PYTHON_VER:.2f} was used')
+if PYTHON_VER < PYTHON_MIN:
+    exit(f'gretl4py requires python {PYTHON_MIN:.2f} or higher, but {PYTHON_VER:.2f} was used')
 
 # we setup paths, names and so on
 PYTHON_PATH = site.getusersitepackages()
@@ -15,6 +52,7 @@ MODULE_PATH = os.path.normpath(f'{PYTHON_PATH:s}/gretl')
 MODULE = f'_gretl{SUFFIX:s}'
 PYTHON_EXE = sys.executable
 
+# we create directories and copy all files
 if os.path.isdir(MODULE_PATH):
     shutil.rmtree(MODULE_PATH)
 os.mkdir(MODULE_PATH)
