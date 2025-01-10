@@ -31,7 +31,7 @@ if platform == "win-amd64":
     GRETL_PATH = r'C:\Program Files\gretl'
     PYTHON_MIN = 3.11
 elif platform[0:5] == "macos":
-    GRETL = '/Applications/Gretl.app'
+    GRETL_PATH = '/Applications/Gretl.app'
     PYTHON_MIN = 3.12
 else:
     exit(f'unsupported operating system (this istaller is either for MS Windows o MAC OS X')
