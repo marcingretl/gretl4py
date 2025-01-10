@@ -29,10 +29,8 @@ import shutil
 platform = sysconfig.get_platform()
 if platform == "win-amd64":
     GRETL_PATH = r'C:\Program Files\gretl'
-    PYTHON_MIN = 3.11
 elif platform[0:5] == "macos":
     GRETL_PATH = '/Applications/Gretl.app'
-    PYTHON_MIN = 3.12
 else:
     exit('unsupported operating system (this installer is for MS Windows or macOS')
 
@@ -41,6 +39,7 @@ if not os.path.isdir(os.path.normpath(GRETL_PATH)):
     exit(f'gretl4py requires gretl installed in: {GRETL_PATH:s}')
 
 # we verify python min version
+PYTHON_MIN = 3.11
 PYTHON_VER = float(sysconfig.get_python_version())
 if PYTHON_VER < PYTHON_MIN:
     exit(f'gretl4py requires python {PYTHON_MIN:.2f} or higher, but {PYTHON_VER:.2f} was used')
