@@ -17,9 +17,9 @@ SET "MODULE=_gretl%SUFFIX%"
 IF EXIST %MODULE_PATH% RMDIR /S /Q "%MODULE_PATH%"
 MKDIR %MODULE_PATH%
 
-COPY gretl\*.py "%MODULE_PATH%"
-ECHO builds\%PYTHON_VER%\%MODULE%
-COPY "builds\%PYTHON_VER%\%MODULE%" "%MODULE_PATH%"
+COPY ..\gretl\*.py "%MODULE_PATH%"
+ECHO ..\builds\%PYTHON_VER%\%MODULE%
+COPY "..\builds\%PYTHON_VER%\%MODULE%" "%MODULE_PATH%"
 ECHO.
 ECHO run '%CMD% -c "import gretl; gretl.about(True)"' to verify installation
 GOTO exit
