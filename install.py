@@ -54,7 +54,7 @@ PYTHON_EXE = sys.executable
 # we create directories and copy all files
 if os.path.isdir(MODULE_PATH):
     shutil.rmtree(MODULE_PATH)
-os.mkdir(MODULE_PATH)
+os.makedirs(MODULE_PATH)
 
 for file in ["__init__.py", "gretl4py_addons.py", "gretl4py_classes.py"]:
     SRC = os.path.normpath(f'gretl/{file:s}')
