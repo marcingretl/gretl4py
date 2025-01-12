@@ -29,9 +29,9 @@ print(m)
 m = gretl.arima(y='lg', order=(1,1,1), conditional=True).fit()
 print(m)
 
-# use X-12- or X-13-ARIMA
-m = gretl.arima(y='lg', order=(1,1,1), x_12_arima=True).fit()
-print(m)
+# use X-12- or X-13-ARIMA: ensure you have x12 or x13 installed
+#m = gretl.arima(y='lg', order=(1,1,1), x_12_arima=True).fit()
+#print(m)
 
 # use L-BFGS-B maximizer
 m = gretl.arima(y='lg', order=(1,1,1), lbfgs=True).fit()
