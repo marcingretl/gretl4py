@@ -229,7 +229,8 @@ dict = gretl.series2dict(series, [pd=int, varname=str])
 
 
 \subsection{Estimators}\label{sec:estimators_python}
-Before using any \gretlpy estimator, consider the following points:
+In order to illustrate the \gretlpy estimating facilities, we take the
+following points as implicit:
 \begin{itemize}
 	\item\pythcode{data=dict} is a dictionary containing
 		the data as described in Section~\ref{sec:data_management_python};
@@ -526,3 +527,8 @@ gretl.Model = gretl.wls(formula=str, [OPTS, [data=dict]])
 	\item[]\maptoopt{allow\_zeros=True}{--allow-zeros}{to mix zero weights with positive ones}
 \end{itemize}
 \noRformula
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "gretl4py"
+%%% End:
