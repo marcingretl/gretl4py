@@ -10,7 +10,7 @@ print(m1)
 print(m2)
 print(m3)
 
-# robust option
+# robust standard errors
 m = gretl.ols('employ const prdefl gnp', robust=True).fit()
 print(m)
 
