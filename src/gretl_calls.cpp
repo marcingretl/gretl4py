@@ -303,7 +303,9 @@ static void save_model (MODEL *model, DATASET *dset,
         const char *summary;
         int err;
 
-        printmodel(model, dset, OPT_NONE, prn);
+        if (model->ci) { //2025-01-12: get rid of some artifact when ARIMA lagselect=True
+            printmodel(model, dset, OPT_NONE, prn);
+        }
         summary = gretl_print_get_buffer(prn);
         err = gretl_model_to_dict(model, dset, summary, res);
         if (err) {
