@@ -35,8 +35,8 @@
 \newcommand{\cpp}{\proglang{C++}\xspace}
 \newcommand{\installbat}{\texttt{install.bat}\xspace}
 \newcommand{\installpy}{\texttt{install.py}\xspace}
-\newcommand{\est}[1]{\vspace{10pt}\noindent\gretlcmd{#1}\index{#1()}}
-\newcommand{\estdesc}[1]{\newline\begin{minipage}[t]{\columnwidth}%
+\newcommand{\est}[1]{\bigskip\noindent\gretlcmd{#1}\index{#1()}}
+\newcommand{\estdesc}[1]{\newline\smallskip\begin{minipage}[t]{\columnwidth}%
 	\small#1\end{minipage}\vspace{3pt}}
 \newcommand{\noRformula}{\hspace*{17pt}\begin{minipage}[t]{0.89\columnwidth}\small%
 		Note: In this case one cannot use the \proglang{R}-style
@@ -117,3 +117,8 @@
 		\input{sourcetree.tex}
 	\end{appendices}
 \end{document}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:
