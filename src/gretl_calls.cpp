@@ -243,7 +243,7 @@ static gretlopt unpack_kwargs (const py::kwargs &kwargs,
             if (strchr(key.c_str(), '_')) {
                 char tmp[32];
 
-                strcpy(tmp, key.c_str());
+                std::strcpy(tmp, key.c_str());
                 gretl_charsub(tmp, '_', '-');
                 opt = valid_long_opt(ci, tmp, &status);
             } else {
@@ -293,8 +293,8 @@ static gretlopt unpack_kwargs (const py::kwargs &kwargs,
     return (gretlopt) opts;
 }
 
-static void save_model (MODEL *model, DATASET *dset,
-                        PRN *prn, py::dict &res)
+static void save_model (MODEL *model, DATASET *dset, PRN *prn,
+                        py::dict &res, gretlopt opt = OPT_NONE)
 {
     if (model->errcode) {
         const char *msg = errmsg_get_with_default(model->errcode);
@@ -304,7 +304,7 @@ static void save_model (MODEL *model, DATASET *dset,
         int err;
 
         if (model->ci) { //2025-01-12: get rid of some artifact when ARIMA lagselect=True
-            printmodel(model, dset, OPT_NONE, prn);
+            printmodel(model, dset, opt, prn);
         }
         summary = gretl_print_get_buffer(prn);
         err = gretl_model_to_dict(model, dset, summary, res);
@@ -399,7 +399,7 @@ py::dict *arima (const std::string y, const py::tuple &tup,
     list[i++] = y_number;
 
     *model = arma(list, NULL, GD->dset, opt, GP.prn);
-    save_model(model, GD->dset, GP.prn, *res);
+    save_model(model, GD->dset, GP.prn, *res, opt);
 
     gretl_model_free(model);
     std::free(list);
@@ -480,7 +480,7 @@ static py::dict *regression_wrapper (const std::string &formula,
     } else if constexpr (use_lcdop_sig(CI)) {
         *model = F(list, CI, GD->dset, opt, GP.prn);
     }
-    save_model(model, GD->dset, GP.prn, *res);
+    save_model(model, GD->dset, GP.prn, *res, opt);
 
     gretl_model_free(model);
     std::free(list);

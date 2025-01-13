@@ -22,7 +22,6 @@ print(m)
 # simple-print option
 m = gretl.ols('employ const prdefl gnp', simple_print=True).fit()
 print(m)
-print("Oups, wrong result!!!")
 
 # no-df-corr option
 m = gretl.ols('employ const prdefl gnp', no_df_corr=True).fit()
