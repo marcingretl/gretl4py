@@ -13,6 +13,14 @@ print(m3)
 m = gretl.logistic('employ ~ const + prdefl + gnp', robust=True).fit()
 print(m)
 
+# print covariance matrix
+m = gretl.logistic('employ ~ const + prdefl + gnp', vcv=True).fit()
+print(m)
+
 # estimate with group fixed effects: requires panel data
 #m = gretl.logistic('employ ~ const + prdefl + gnp', fixed_effects=True).fit()
 #print(m)
+
+# don't print anything
+m = gretl.logistic('employ ~ const + prdefl + gnp', quiet=True).fit()
+print(m)

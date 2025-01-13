@@ -21,6 +21,14 @@ print(m)
 m = gretl.negbin('DVISITS ~ const + SEX + AGE', opg=True).fit()
 print(m)
 
+# print covariance matrix
+m = gretl.negbin('DVISITS ~ const + SEX + AGE', vcv=True).fit()
+print(m)
+
 # print details of iterations
 m = gretl.negbin('DVISITS ~ const + SEX + AGE', verbose=True).fit()
+print(m)
+
+# don't print results
+m = gretl.negbin('DVISITS ~ const + SEX + AGE', quiet=True).fit()
 print(m)

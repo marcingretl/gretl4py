@@ -5,6 +5,12 @@ gretl.attach_gretl_data(
 m = gretl.biprobit('anydrg cardhldr const age avgexp ; const age income ownrent selfempl').fit()
 print(m)
 
+# print covariance matrix
+m = gretl.biprobit(
+    'anydrg cardhldr const age avgexp ; const age income ownrent selfempl',
+    vcv=True).fit()
+print(m)
+
 # robust standard errors
 m = gretl.biprobit(
     'anydrg cardhldr const age avgexp ; const age income ownrent selfempl',
@@ -15,4 +21,17 @@ print(m)
 m = gretl.biprobit(
     'anydrg cardhldr const age avgexp ; const age income ownrent selfempl',
     opg=True).fit()
+print(m)
+
+# save values of the index functions for the respective equations
+m = gretl.biprobit(
+    'anydrg cardhldr const age avgexp ; const age income ownrent selfempl',
+    save_xbeta=True).fit()
+print(m)
+print(m.yhat())
+
+# print extra information
+m = gretl.biprobit(
+    'anydrg cardhldr const age avgexp ; const age income ownrent selfempl',
+    verbose=True).fit()
 print(m)

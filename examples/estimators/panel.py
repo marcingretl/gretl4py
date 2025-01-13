@@ -7,6 +7,10 @@ m2 = gretl.panel('Y const Y(-1) X').fit()
 print(m1)
 print(m2)
 
+# print covariance matrix
+m = gretl.panel('Y ~ const + Y(-1) + X', vcv=True).fit()
+print(m)
+
 # estimate with group fixed effects
 m = gretl.panel('Y ~ const + Y(-1) + X', fixed_effects=True).fit()
 print(m)
@@ -31,6 +35,10 @@ print(m)
 m = gretl.panel('Y ~ const + Y(-1) + X', robust=True).fit()
 print(m)
 
+# include time dummy variables
+m = gretl.panel('Y ~ const + Y(-1) + X', time_dummies=True).fit()
+print(m)
+
 # weighted least squares
 m = gretl.panel('Y ~ const + Y(-1) + X', unit_weights=True).fit()
 print(m)
@@ -41,4 +49,12 @@ print(m)
 
 # compute Hausman test via matrix difference
 m = gretl.panel('Y ~ const + Y(-1) + X', matrix_diff=True).fit()
+print(m)
+
+# less verbose output
+m = gretl.panel('Y ~ const + Y(-1) + X', quiet=True).fit()
+print(m)
+
+# more verbose output
+m = gretl.panel('Y ~ const + Y(-1) + X', verbose=True).fit()
 print(m)

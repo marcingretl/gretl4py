@@ -21,10 +21,22 @@ print(m)
 m = gretl.duration('Ti ~ const + Prod', lognormal=True).fit()
 print(m)
 
+# fitted values are medians
+m = gretl.duration('Ti ~ const + Prod', medians=True).fit()
+print(m)
+
 # robust standard errors
 m = gretl.duration('Ti ~ const + Prod', robust=True).fit()
 print(m)
 
+# print covariance matrix
+m = gretl.duration('Ti ~ const + Prod', vcv=True).fit()
+print(m)
+
 # print details of iterations
 m = gretl.duration('Ti ~ const + Prod', verbose=True).fit()
+print(m)
+
+# don't print anything
+m = gretl.duration('Ti ~ const + Prod', quiet=True).fit()
 print(m)

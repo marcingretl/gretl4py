@@ -13,8 +13,16 @@ print(m3)
 m = gretl.probit('Y ~ const + Z1 + Z2', robust=True).fit()
 print(m)
 
+# print covariance matrix
+m = gretl.probit('Y ~ const + Z1 + Z2', vcv=True).fit()
+print(m)
+
 # print details of iterations
 m = gretl.probit('Y ~ const + Z1 + Z2', verbose=True).fit()
+print(m)
+
+# don't print results
+m = gretl.probit('Y ~ const + Z1 + Z2', quiet=True).fit()
 print(m)
 
 # show p-values instead of slopes

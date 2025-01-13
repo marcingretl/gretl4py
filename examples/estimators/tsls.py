@@ -9,6 +9,15 @@ print(m)
 m = gretl.tsls('Y Y(-1) X ; 0 X Y(-2)', no_tests=True).fit()
 print(m)
 
+# print covariance matrix
+m = gretl.tsls('Y Y(-1) X ; 0 X Y(-2)', vcv=True).fit()
+print(m)
+
+# don't print results
+print(1)
+m = gretl.tsls('Y Y(-1) X ; 0 X Y(-2)', quiet=True).fit()
+print(m)
+
 # no degrees-of-freedom correction
 m = gretl.tsls('Y Y(-1) X ; 0 X Y(-2)', no_df_corr=True).fit()
 print(m)
