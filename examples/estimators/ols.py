@@ -34,7 +34,6 @@ print(m)
 # print an ANOVA table
 m = gretl.ols('employ const prdefl gnp', anova=True).fit()
 print(m)
-raise SystemExit()
 
 # no-df-corr option
 m = gretl.ols('employ const prdefl gnp', no_df_corr=True).fit()

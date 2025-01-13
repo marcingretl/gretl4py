@@ -28,7 +28,6 @@ print(m)
 # don't print results
 m = gretl.logit('Y ~ const + Z1 + Z2', quiet=True).fit()
 print(m)
-raise SystemExit()
 
 # show p-values instead of slopes
 m = gretl.logit('Y ~ const + Z1 + Z2', p_values=True).fit()
