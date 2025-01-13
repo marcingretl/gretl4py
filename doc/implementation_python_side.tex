@@ -268,6 +268,10 @@ gretl.Model = gretl.ar(formula=str, [OPTS, [data=dict]])
 \end{lstlisting}
 \mapto[0]{ar lags ; depvar indepvars}
 \noRformula
+\begin{itemize}
+	\item[]\maptoopt{vcv=True}{--vcv}{print covariance matrix}
+	\item[]\maptoopt{quiet=True}{--quiet}{(don't print parameter estimates}
+\end{itemize}
 
 \est{ar1}
 \estdesc{Computes feasible GLS estimates for a model in which the error
@@ -279,6 +283,8 @@ gretl.Model = gretl.ar1(formula=str, [OPTS, [data=dict]])
 \begin{itemize}
 	\item[]\maptoopt{hilu=True}{--hilu}{use Hildreth–Lu procedure}
 	\item[]\maptoopt{pwe=True}{--pwe}{use Prais–Winsten estimator}
+	\item[]\maptoopt{vcv=True}{--vcv}{print covariance matrix}
+	\item[]\maptoopt{quiet=True}{--quiet}{don't print anything}
 \end{itemize}
 
 \est{arima}
@@ -290,6 +296,8 @@ gretl.Model = gretl.arima(y=str, order=tuple((p,d,q)),
 \mapto{arima p d q [; P D Q ] ; depvar}
 \begin{itemize}
 	\item[]\maptoopt{verbose=True}{--verbose}{print details of iterations}
+	\item[]\maptoopt{quiet=True}{--quiet}{don't print out results}
+	\item[]\maptoopt{vcv=True}{--vcv}{print covariance matrix}
 	\item[]\maptoopt{hessian=True}{--hessian}{disables the fallback to outer
 		product of the gradient (OPG)}
 	\item[]\maptoopt{opg=True}{--opg}{forces use of the OPG method}
@@ -436,12 +444,13 @@ gretl.Model = gretl.negbin(formula=str, [OPTS, [data=dict]])
 \est{ols}
 \estdesc{Computes ordinary least squares (OLS) estimates
 	with \texttt{depvar} as the dependent variable and
-	\texttt{indepvars} as the list of independent variables.}\todo{\texttt{simple\_print} option must be verified}
+	\texttt{indepvars} as the list of independent variables.}
 \begin{lstlisting}[style=pythonstyle]
 gretl.Model = gretl.ols(formula=str, [OPTS, [data=dict]])
 \end{lstlisting}
 \mapto{ols depvar indepvars}
 \begin{itemize}
+	\item[]\maptoopt{vcv=True}{--vcv}{print covariance matrix}
 	\item[]\maptoopt{robust=True}{--robust}{robust standard errors}
 	\item[]\maptoopt{jackknife=True}{--jackknife}{selecting an
 		\texttt{hc\_version} of 3a, \cite[see][]{gretl_command} for details}

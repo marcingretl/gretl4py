@@ -13,6 +13,14 @@ print(m)
 m = gretl.arima(y='lg', order=(1,1,1), verbose=True).fit()
 print(m)
 
+# don't print out results
+m = gretl.arima(y='lg', order=(1,1,1), quiet=True).fit()
+print(m)
+
+# print covariance matrix
+m = gretl.arima(y='lg', order=(1,1,1), vcv=True).fit()
+print(m)
+
 # disable the fallback to outer product of the gradient (OPG)
 m = gretl.arima(y='lg', order=(1,1,1), hessian=True).fit()
 print(m)

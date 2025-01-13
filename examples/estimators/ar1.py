@@ -16,3 +16,11 @@ print(m)
 # Prais–Winsten estimator
 m = gretl.ar1('employ ~ const + prdefl + gnp', pwe=True).fit()
 print(m)
+
+# print covariance matrix
+m = gretl.ar1('employ ~ const + prdefl + gnp', vcv=True).fit()
+print(m)
+
+# don't print anything
+m = gretl.ar1('employ ~ const + prdefl + gnp', quiet=True).fit()
+print(m)

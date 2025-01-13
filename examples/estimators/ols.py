@@ -10,6 +10,10 @@ print(m1)
 print(m2)
 print(m3)
 
+# print covariance matrix
+m = gretl.ols('employ const prdefl gnp', vcv=True).fit()
+print(m)
+
 # robust standard errors
 m = gretl.ols('employ const prdefl gnp', robust=True).fit()
 print(m)
