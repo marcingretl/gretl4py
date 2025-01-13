@@ -237,6 +237,8 @@ static gretlopt unpack_kwargs (const py::kwargs &kwargs,
         } else if (key == "seasonal" && ci == ARMA) {
             // arima special: ignore here
             continue;
+        } else if (key == "lagselect" && ci == ARMA) {
+            throw std::runtime_error("'lagselect' option for (S)ARIMA is temporarily unavailable");
         } else {
             // should be a regular gretl option: check its validity in
             // the context of @ci
@@ -303,9 +305,7 @@ static void save_model (MODEL *model, DATASET *dset, PRN *prn,
         const char *summary;
         int err;
 
-        if (model->ci) { //2025-01-12: get rid of some artifact when ARIMA lagselect=True
-            printmodel(model, dset, opt, prn);
-        }
+        printmodel(model, dset, opt, prn);
         summary = gretl_print_get_buffer(prn);
         err = gretl_model_to_dict(model, dset, summary, res);
         if (err) {

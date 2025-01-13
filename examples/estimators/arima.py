@@ -45,10 +45,12 @@ print(m)
 m = gretl.arima(y='lg', order=(1,1,1), lbfgs=True).fit()
 print(m)
 
-# ARIMA lag selection based on information criteria and log-likelihood 
-m = gretl.arima(y='lg', order=(1,1,1), lagselect=True).fit()
-print(m)
+# ARIMA lag selection based on information criteria and log-likelihood
+# warning: this option is temporarily unavailable
+#m = gretl.arima(y='lg', order=(1,1,1), lagselect=True).fit()
+#print(m)
 
-# SARIMA lag selection based on information criteria and log-likelihood 
-m = gretl.arima(y='lg', order=(1,1,1), seasonal=(1,1,1), lagselect=True).fit()
-print(m)
+# SARIMA lag selection based on information criteria and log-likelihood
+# warning: this option is temporarily unavailable
+#m = gretl.arima(y='lg', order=(1,1,1), seasonal=(1,1,1), lagselect=True).fit()
+#print(m)
