@@ -98,6 +98,22 @@ class Model:
             return self.results['bp_uhat']
         else:
             return self.results['uhat']
+        
+    def oddsratios(self, show=True):
+        if self.name != 'logit':
+            raise ValueError(f'oddsratios are not available for {self.name:s} estimator')
+        else:            
+            try:
+                res = self.results['oddsratios']
+                if show is True:
+                    from tabulate import tabulate
+                    print(tabulate(res, showindex=self.results['parnames'][1:],
+                                   headers=['odds ratio', 'std. error', 'low95', 'high9'],
+                                   tablefmt="plain"))
+                return res
+            except KeyError:
+                print('oddsratios are not available for current model')
+                return None
 
     # strings
     def parnames(self):

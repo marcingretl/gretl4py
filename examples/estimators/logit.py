@@ -9,6 +9,8 @@ print(m1)
 print(m2)
 print(m3)
 
+
+
 # robust standard errors
 m = gretl.logit('Y ~ const + Z1 + Z2', robust=True).fit()
 print(m)
@@ -36,3 +38,10 @@ print(m)
 # select pseudo-R-squared variant
 m = gretl.logit('Y ~ const + Z1 + Z2', estrella=True).fit()
 print(m)
+
+# oddsratios analysis
+gretl.attach_gretl_data(
+	gretl.gretl_data_path('misc/rac3d.gdt'))
+m = gretl.logit('SEX 0 AGE AGESQ INCOME LEVYPLUS').fit()
+print(m)
+odds = m.oddsratios(True)
