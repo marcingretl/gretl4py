@@ -102,7 +102,8 @@ class Model:
     def oddsratios(self, show=True):
         if self.name != 'logit':
             exit(f'*** error: oddsratios not available for {self.name:s} estimator ***\n')
-        else:            
+        else:
+            res = None
             try:
                 res = self.results['oddsratios']
                 if show is True:
@@ -110,12 +111,11 @@ class Model:
                     print(tabulate(res, showindex=self.results['parnames'][1:],
                                    headers=['odds ratio', 'std. error', 'low95', 'high95'],
                                    tablefmt="plain"))
-                return res
             except KeyError:
                 print('*** warning: oddsratios not available for current model ***\n')
-                return None
             except ModuleNotFoundError:
                 print('*** warning: oddsratios printing requires \'tabulate\' package ***\n')
+            finally:
                 return res
 
     # strings
