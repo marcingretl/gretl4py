@@ -29,7 +29,7 @@ class Model:
         try:
             self.cpython_function = getattr(_gretl, name)
         except Exception as err:
-            print(f"Unexpected {err=}, {type(err)=}")
+            print(f'Unexpected {err=}, {type(err)=}')
             raise
         self.args = args
         self.options = kwargs
@@ -101,7 +101,7 @@ class Model:
         
     def oddsratios(self, show=True):
         if self.name != 'logit':
-            raise ValueError(f'oddsratios are not available for {self.name:s} estimator')
+            exit(f'*** error: oddsratios not available for {self.name:s} estimator ***\n')
         else:            
             try:
                 res = self.results['oddsratios']
@@ -112,8 +112,11 @@ class Model:
                                    tablefmt="plain"))
                 return res
             except KeyError:
-                print('oddsratios are not available for current model')
+                print('*** warning: oddsratios not available for current model ***\n')
                 return None
+            except ModuleNotFoundError:
+                print('*** warning: oddsratios printing requires \'tabulate\' package ***\n')
+                return res
 
     # strings
     def parnames(self):
