@@ -22,6 +22,9 @@
 #include <gretl/gretl_drivers.h>
 #include <gretl/gretl_errors.h>
 #include <gretl/libset.h>
+extern "C" {
+    #include <gretl/gretl_string_table.h>
+}
 #include <iostream>
 #include <cstdlib>
 
@@ -90,8 +93,12 @@ void module_cleanup (void)
 py::dict about (bool do_print)
 {
     GretlBundle b = GretlBundle();
+    std::string lgretl_strings[12] =
+        {"gretldir", "dotdir", "workdir", "gnuplot",
+        "x12a", "x12adir", "tramo", "tramodir", "seats",
+        "pkgdir", "lang", "logfile"};
     std::string mod_ver, lg_ver, py11_ver;
-    py::dict res;
+    py::dict res, built_in_strings;
 
     gretl_push_c_numeric_locale();
 
@@ -101,6 +108,12 @@ py::dict about (bool do_print)
     py11_ver += "." + std::to_string(PYBIND11_VERSION_PATCH);
     lg_ver = std::to_string(libgretl_version());
 
+    // built-in strings
+    for (int i=0; i<12; i++ ) {
+        built_in_strings[py::cast(lgretl_strings[i])] =
+            get_built_in_string_by_name(lgretl_strings[i].c_str());
+    }
+
     res[py::cast("mod_ver")] = mod_ver;
     res[py::cast("py11_ver")] = py11_ver;
     res[py::cast("lg_ver")] = lg_ver;
@@ -109,6 +122,7 @@ py::dict about (bool do_print)
     } else {
         res[py::cast("sysinfo")] = py::none();
     }
+    res[py::cast("built_in_strings")] = built_in_strings;
 
     if (do_print || gretl4py_verbose) {
         std::cout << "gretl4py v" << mod_ver;
@@ -118,6 +132,10 @@ py::dict about (bool do_print)
         if (!b.err) {
             std::cout << std::endl << "libgretl $sysinfo:" << std::endl;
             b.print();
+        }
+        std::cout << "libgretl built-in strings:" << std::endl;
+        for (auto item : built_in_strings) {
+            std::cout << "  " << item.first << " = " << item.second << std::endl;
         }
     }
 
