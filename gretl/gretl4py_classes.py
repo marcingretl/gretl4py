@@ -108,7 +108,7 @@ class Model:
                 if show is True:
                     from tabulate import tabulate
                     print(tabulate(res, showindex=self.results['parnames'][1:],
-                                   headers=['odds ratio', 'std. error', 'low95', 'high9'],
+                                   headers=['odds ratio', 'std. error', 'low95', 'high95'],
                                    tablefmt="plain"))
                 return res
             except KeyError:

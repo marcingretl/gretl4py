@@ -9,8 +9,6 @@ print(m1)
 print(m2)
 print(m3)
 
-
-
 # robust standard errors
 m = gretl.logit('Y ~ const + Z1 + Z2', robust=True).fit()
 print(m)
