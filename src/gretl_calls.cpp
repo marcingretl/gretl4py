@@ -93,10 +93,9 @@ void module_cleanup (void)
 py::dict about (bool do_print)
 {
     GretlBundle b = GretlBundle();
-    std::string lgretl_strings[12] =
-        {"gretldir", "dotdir", "workdir", "gnuplot",
-        "x12a", "x12adir", "tramo", "tramodir", "seats",
-        "pkgdir", "lang", "logfile"};
+    std::string lgretl_strings[8] =
+        {"gretldir", "workdir", "dotdir", "gnuplot",
+        "tramo", "x12a", "tramodir", "x12adir"};
     std::string mod_ver, lg_ver, py11_ver;
     py::dict res, built_in_strings;
 
@@ -109,7 +108,7 @@ py::dict about (bool do_print)
     lg_ver = std::to_string(libgretl_version());
 
     // built-in strings
-    for (int i=0; i<12; i++ ) {
+    for (int i=0; i<8; i++ ) {
         built_in_strings[py::cast(lgretl_strings[i])] =
             get_built_in_string_by_name(lgretl_strings[i].c_str());
     }
