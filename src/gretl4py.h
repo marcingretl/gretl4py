@@ -25,7 +25,10 @@
 
 namespace py = pybind11;
 
+//////////////////////////////////////////////////
 // module related tools
+//////////////////////////////////////////////////
+
 void module_init (void);
 
 void module_cleanup (void);
@@ -35,7 +38,10 @@ py::dict about (bool do_print = false);
 void set (const std::string key,
           const std::optional<py::object> &pyval = std::nullopt);
 
+//////////////////////////////////////////////////
 // data management
+//////////////////////////////////////////////////
+
 void attach_data (const py::dict &pydict);
 
 void attach_gretl_data (const std::string fname);
@@ -47,7 +53,10 @@ void printdata (const std::optional<py::dict> &data = std::nullopt,
 
 void sample (const py::kwargs &kwargs);
 
+//////////////////////////////////////////////////
 // model estimation
+//////////////////////////////////////////////////
+
 py::dict *arima (const std::string y, const py::tuple &tup, const py::kwargs &kwargs);
 
 py::dict *ols (const std::string formula, const py::kwargs &kwargs);

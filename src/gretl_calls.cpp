@@ -56,7 +56,9 @@ static int gretl4py_verbose = 0;
 // workaround to manually resolve overloads ambiguity
 static MODEL (&garch_to_call)(const int*, DATASET*, gretlopt, PRN*) = garch;
 
+//////////////////////////////////////////////////
 // module related tools
+//////////////////////////////////////////////////
 
 void module_init (void)
 {
@@ -65,7 +67,7 @@ void module_init (void)
                                  + std::to_string(LIBGRETL_MIN_VER) + " or higher");
     }
     char *str = std::getenv("GRETL4PY_VERBOSE");
-    if (str != nullptr) {
+    if (str) {
         gretl4py_verbose = std::atoi(str);
     }
     libgretl_init();
@@ -93,7 +95,7 @@ void module_cleanup (void)
 py::dict about (bool do_print)
 {
     GretlBundle b = GretlBundle();
-    std::string lgretl_strings[8] =
+    const std::string lgretl_strings[8] =
         {"gretldir", "workdir", "dotdir", "gnuplot",
         "tramo", "x12a", "tramodir", "x12adir"};
     std::string mod_ver, lg_ver, py11_ver;
@@ -169,7 +171,9 @@ void set (const std::string key,
     }
 }
 
+//////////////////////////////////////////////////
 // data management
+//////////////////////////////////////////////////
 
 void attach_data (const py::dict &pydict)
 {
@@ -219,7 +223,9 @@ void sample (const py::kwargs &kwargs)
     DSET->sample(kwargs);
 }
 
+//////////////////////////////////////////////////
 // model estimation
+//////////////////////////////////////////////////
 
 // Apparatus to handle named optional arguments, including 'print'
 // and 'data' as well as gretl option flags and their parameters.
@@ -259,7 +265,7 @@ static gretlopt unpack_kwargs (const py::kwargs &kwargs,
         } else {
             // should be a regular gretl option: check its validity in
             // the context of @ci
-            if (strchr(key.c_str(), '_')) {
+            if (std::strchr(key.c_str(), '_')) {
                 char tmp[32];
 
                 std::strcpy(tmp, key.c_str());
