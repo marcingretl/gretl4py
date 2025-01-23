@@ -95,9 +95,9 @@ void module_cleanup (void)
 py::dict about (bool do_print)
 {
     GretlBundle b = GretlBundle();
-    const std::string lgretl_strings[8] =
-        {"gretldir", "workdir", "dotdir", "gnuplot",
-        "tramo", "x12a", "tramodir", "x12adir"};
+    const std::string lgretl_strings[10] =
+        {"dotdir", "gnuplot", "gretldir", "lang", "seats",
+        "tramo", "tramodir", "workdir", "x12a", "x12adir"};
     std::string mod_ver, lg_ver, py11_ver;
     py::dict res, built_in_strings;
 
@@ -110,7 +110,7 @@ py::dict about (bool do_print)
     lg_ver = std::to_string(libgretl_version());
 
     // built-in strings
-    for (int i=0; i<8; i++ ) {
+    for (int i=0; i<10; i++ ) {
         built_in_strings[py::cast(lgretl_strings[i])] =
             get_built_in_string_by_name(lgretl_strings[i].c_str());
     }
@@ -126,6 +126,8 @@ py::dict about (bool do_print)
     res[py::cast("built_in_strings")] = built_in_strings;
 
     if (do_print || gretl4py_verbose) {
+        std::string str;
+
         std::cout << "gretl4py v" << mod_ver;
         std::cout << " [" << COMPILER_IDENT << "]" << std::endl;
         std::cout << "\t+ pybind11     v" << py11_ver << std::endl;
@@ -136,7 +138,12 @@ py::dict about (bool do_print)
         }
         std::cout << "libgretl built-in strings:" << std::endl;
         for (auto item : built_in_strings) {
-            std::cout << "  " << item.first << " = " << item.second << std::endl;
+            std::cout << "  " << item.first << " = ";
+            str = item.second.cast<std::string>();
+            if (!str.empty()) {
+                std::cout << "\"" << item.second << "\"";
+            }
+            std::cout << std::endl;
         }
     }
 
