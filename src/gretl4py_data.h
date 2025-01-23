@@ -96,14 +96,14 @@ public:
 class MapToPy
 {
 private:
-    const py::object *res;
     std::string as_str;
 public:
     int err = 0;
 
    MapToPy (const std::optional<py::object> &pyobject); // currently std::string and std::int are supported
+   MapToPy (const py::handle &pyhandle); // currently std::string, std::int, and std::double are supported
 
-   auto *ptr (void) { return res; }
+   //auto *ptr (void) { return res; } // not used
 
    std::string to_string (void) { return as_str; }
 };

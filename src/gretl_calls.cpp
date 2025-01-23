@@ -126,8 +126,6 @@ py::dict about (bool do_print)
     res[py::cast("built_in_strings")] = built_in_strings;
 
     if (do_print || gretl4py_verbose) {
-        std::string str;
-
         std::cout << "gretl4py v" << mod_ver;
         std::cout << " [" << COMPILER_IDENT << "]" << std::endl;
         std::cout << "\t+ pybind11     v" << py11_ver << std::endl;
@@ -139,8 +137,7 @@ py::dict about (bool do_print)
         std::cout << "libgretl built-in strings:" << std::endl;
         for (auto item : built_in_strings) {
             std::cout << "  " << item.first << " = ";
-            str = item.second.cast<std::string>();
-            if (!str.empty()) {
+            if (!MapToPy(item.second).to_string().empty()) {
                 std::cout << "\"" << item.second << "\"";
             }
             std::cout << std::endl;
