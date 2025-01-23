@@ -43,6 +43,7 @@ elif platform[0:5] == "macos":
         PLUGDIR = RES + 'lib/gretl-gtk2' # we fall back to explicit gtk2-based path
     sysconfig.os.environ['GRETL_PLUGIN_PATH'] = PLUGDIR
     sysconfig.os.environ['GRETL_DATA_PATH'] = RES + 'share/gretl/data'
+    sysconfig.os.environ['PATH'] += ':' + str(RES + r'bin')
     PATH = str(PATH + r'/gretl')
 else:
     PATH = str(PATH + r'/gretl')
