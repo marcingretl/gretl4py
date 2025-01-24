@@ -51,7 +51,7 @@ static int get_int_from_python_dict (const py::dict &pydict,
     return ret;
 }
 
-// two overloaded
+// two overloads for copy_strings_from_python_list()
 static void copy_strings_from_python_list (const py::list &pylist, char **dest,
                                            int n_bytes, int src_offset = 0,
                                            int dst_offset = 0, bool trim = false)
@@ -367,11 +367,16 @@ void GretlDataset::sample (const py::kwargs &kwargs)
         }
         const std::string &key = item.first.cast<std::string>();
 
+#if 1
+        val = MapPyToCpp(item.second).to_string().c_str();
+#else
         if (is_pyint(item.second) || is_pybool(item.second)) {
             val = std::to_string(item.second.cast<int>()).c_str();
         } else if (is_pystr(item.second)) {
             val = item.second.cast<std::string_view>().data();
         }
+#endif // 1
+
         if (key == "t1") {
             t1str = gretl_strdup(val);
             argc++;
@@ -494,16 +499,16 @@ void GretlBundle::print (void)
 //
 MapPyToCpp::MapPyToCpp (const std::optional<py::object> &pyobject)
 {
-    convert<py::object>(&*pyobject);
+    MapPyToCpp::convert<py::object>(&*pyobject);
 }
 
 MapPyToCpp::MapPyToCpp (const py::handle &pyhandle)
 {
-    convert<py::handle>(&pyhandle);
+    MapPyToCpp::convert<py::handle>(&pyhandle);
 }
 
 template<typename T>
-void MapPyToCpp::convert(const T *pyobj)
+void MapPyToCpp::convert (const T *pyobj)
 {
 #if GRETL_PYBIND11_DEBUG
     std::printf("converting %s to string\n",
@@ -511,7 +516,7 @@ void MapPyToCpp::convert(const T *pyobj)
 # endif
     if (is_pystr(*pyobj)) {
         as_str = py::cast<std::string>(*pyobj);
-    } else if (is_pyint(*pyobj)) {
+    } else if (is_pyint(*pyobj) || is_pybool(*pyobj)) {
         as_str = std::to_string(py::cast<int>(*pyobj));
     } else if (is_pyfloat(*pyobj)) {
         as_str = std::to_string(py::cast<double>(*pyobj));

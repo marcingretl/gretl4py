@@ -296,6 +296,14 @@ static gretlopt unpack_kwargs (const py::kwargs &kwargs,
             }
         } else {
             // an option parameter is accepted, perhaps required
+#if 1
+            if (!is_pystr(item.second) && !is_pyint(item.second) && !is_pyfloat(item.second)) {
+                throw std::runtime_error("unsupported option param type");
+            } else {
+                push_option_param(ci, (gretlopt) opt,
+                                  gretl_strdup(MapPyToCpp(item.second).to_string().c_str()));
+            }
+#else
             if (is_pystr(item.second)) {
                 const std::string &sval = item.second.cast<std::string>();
                 push_option_param(ci, (gretlopt) opt, gretl_strdup(sval.c_str()));
@@ -308,6 +316,7 @@ static gretlopt unpack_kwargs (const py::kwargs &kwargs,
             } else {
                 throw std::runtime_error("unsupported option param type");
             }
+#endif // 1
         }
     }
 
