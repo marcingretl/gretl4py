@@ -97,15 +97,18 @@ class MapToPy
 {
 private:
     std::string as_str;
+
+    template<typename T>
+    void convert (const T *pyobj);
 public:
     int err = 0;
 
-   MapToPy (const std::optional<py::object> &pyobject); // currently std::string and std::int are supported
-   MapToPy (const py::handle &pyhandle); // currently std::string, std::int, and std::double are supported
+    MapToPy (const std::optional<py::object> &pyobject);
+    MapToPy (const py::handle &pyhandle);
 
-   //auto *ptr (void) { return res; } // not used
+    //auto *ptr (void) { return res; } // not used
 
-   std::string to_string (void) { return as_str; }
+    std::string to_string (void) { return as_str; }
 };
 
 //

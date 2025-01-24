@@ -492,41 +492,34 @@ void GretlBundle::print (void)
 //
 // MapToPy class methods
 //
-// FIXME: must be changed to template!!!
 MapToPy::MapToPy (const std::optional<py::object> &pyobject)
 {
-#if GRETL_PYBIND11_DEBUG
-    std::printf("converting %s to string\n",
-                py::cast<std::string>(pyobject->get_type()).c_str());
-# endif
-    //res = &*pyobject;
-
-    if (is_pystr(*pyobject)) {
-        as_str = py::cast<std::string>(*pyobject);
-    } else if (is_pyint(*pyobject)) {
-        as_str = std::to_string(py::cast<int>(*pyobject));
-    } else {
-        err = E_TYPES;
-        as_str.clear();
-        std::cerr << "I don't know how to convert '";
-        std::cerr << py::cast<std::string>(pyobject->get_type());
-        std::cerr << "' to std::string" << std::endl;
-    }
+    convert<py::object>(&*pyobject);
 }
 
 MapToPy::MapToPy (const py::handle &pyhandle)
 {
-    if (is_pystr(pyhandle)) {
-        as_str = py::cast<std::string>(pyhandle);
-    } else if (is_pyint(pyhandle)) {
-        as_str = std::to_string(py::cast<int>(pyhandle));
-    } else if (is_pyfloat(pyhandle)) {
-        as_str = std::to_string(py::cast<double>(pyhandle));
+    convert<py::handle>(&pyhandle);
+}
+
+template<typename T>
+void MapToPy::convert(const T *pyobj)
+{
+#if GRETL_PYBIND11_DEBUG
+    std::printf("converting %s to string\n",
+                py::cast<std::string>(pyobj->get_type()).c_str());
+# endif
+    if (is_pystr(*pyobj)) {
+        as_str = py::cast<std::string>(*pyobj);
+    } else if (is_pyint(*pyobj)) {
+        as_str = std::to_string(py::cast<int>(*pyobj));
+    } else if (is_pyfloat(*pyobj)) {
+        as_str = std::to_string(py::cast<double>(*pyobj));
     } else {
         err = E_TYPES;
         as_str.clear();
         std::cerr << "I don't know how to convert '";
-        std::cerr << py::cast<std::string>(pyhandle.get_type());
+        std::cerr << py::cast<std::string>(pyobj->get_type());
         std::cerr << "' to std::string" << std::endl;
     }
 }
