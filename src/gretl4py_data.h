@@ -91,9 +91,9 @@ public:
 };
 
 //
-// This is general purpose py::object to py::<type> mapper
+// This is general purpose py::object/py::handle to C++ types mapper
 //
-class MapToPy
+class MapPyToCpp
 {
 private:
     std::string as_str;
@@ -103,8 +103,8 @@ private:
 public:
     int err = 0;
 
-    MapToPy (const std::optional<py::object> &pyobject);
-    MapToPy (const py::handle &pyhandle);
+    MapPyToCpp (const std::optional<py::object> &pyobject);
+    MapPyToCpp (const py::handle &pyhandle);
 
     //auto *ptr (void) { return res; } // not used
 

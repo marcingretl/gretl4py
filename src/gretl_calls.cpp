@@ -137,7 +137,7 @@ py::dict about (bool do_print)
         std::cout << "libgretl built-in strings:" << std::endl;
         for (auto item : built_in_strings) {
             std::cout << "  " << item.first << " = ";
-            if (!MapToPy(item.second).to_string().empty()) {
+            if (!MapPyToCpp(item.second).to_string().empty()) {
                 std::cout << "\"" << item.second << "\"";
             }
             std::cout << std::endl;
@@ -164,7 +164,7 @@ void set (const std::string key,
     if (pyval == std::nullopt) {
         err = execute_set(key.c_str(), NULL, NULL, OPT_NONE, GP.prn);
     } else {
-        err = execute_set(key.c_str(), MapToPy(pyval).to_string().c_str(),
+        err = execute_set(key.c_str(), MapPyToCpp(pyval).to_string().c_str(),
                           NULL, OPT_NONE, GP.prn);
     }
 

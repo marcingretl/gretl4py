@@ -490,20 +490,20 @@ void GretlBundle::print (void)
 }
 
 //
-// MapToPy class methods
+// MapPyToCpp class methods
 //
-MapToPy::MapToPy (const std::optional<py::object> &pyobject)
+MapPyToCpp::MapPyToCpp (const std::optional<py::object> &pyobject)
 {
     convert<py::object>(&*pyobject);
 }
 
-MapToPy::MapToPy (const py::handle &pyhandle)
+MapPyToCpp::MapPyToCpp (const py::handle &pyhandle)
 {
     convert<py::handle>(&pyhandle);
 }
 
 template<typename T>
-void MapToPy::convert(const T *pyobj)
+void MapPyToCpp::convert(const T *pyobj)
 {
 #if GRETL_PYBIND11_DEBUG
     std::printf("converting %s to string\n",
