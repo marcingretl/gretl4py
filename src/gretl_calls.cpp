@@ -270,11 +270,10 @@ static gretlopt unpack_kwargs (const py::kwargs &kwargs,
             // should be a regular gretl option: check its validity in
             // the context of @ci
             if (std::strchr(key.c_str(), '_')) {
-                char tmp[32];
+                std::string tmp(key);
 
-                std::strcpy(tmp, key.c_str());
-                gretl_charsub(tmp, '_', '-');
-                opt = valid_long_opt(ci, tmp, &status);
+                gretl_charsub(tmp.data(), '_', '-');
+                opt = valid_long_opt(ci, tmp.c_str(), &status);
             } else {
                 opt = valid_long_opt(ci, key.c_str(), &status);
             }
