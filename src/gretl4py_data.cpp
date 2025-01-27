@@ -368,7 +368,7 @@ void GretlDataset::sample (const py::kwargs &kwargs)
         const std::string &key = item.first.cast<std::string>();
 
 #if 1
-        val = MapPyToCpp(item.second).to_string().c_str();
+        val = MapPyToCpp(item.second).to_string_view().data();
 #else
         if (is_pyint(item.second) || is_pybool(item.second)) {
             val = std::to_string(item.second.cast<int>()).c_str();
