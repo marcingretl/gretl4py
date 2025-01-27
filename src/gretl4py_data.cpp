@@ -107,7 +107,7 @@ static double *numpy_array_extract (const py::array_t<double> &pynum_array,
     *rows = pynum_array.shape(0);
     *fortranarray = is_pynum_fortranarray(pynum_array);
 
-    return (double*) pynum_array.request().ptr;
+    return static_cast<double*>(pynum_array.request().ptr);
 }
 
 static void numpy_array_to_gretl_storage (const py::dict &pydict,
@@ -286,7 +286,7 @@ py::dict *GretlDataset::to_dict (void)
     py::list *labels = new py::list;
     auto &pydict = *as_dict;
     int i = 0;
-    double *tmp;
+    double *tmp = nullptr;
 
     pydict[py::cast("pd")] = dset->pd;
     pydict[py::cast("structure")] = dset->structure;
@@ -296,7 +296,7 @@ py::dict *GretlDataset::to_dict (void)
 
     // copy across the data values
     py::array_t<double, py::array::f_style> Z({dset->n, dset->v-1});
-    tmp = (double *) Z.request().ptr;
+    tmp = static_cast<double*>(Z.request().ptr);
     for (i=1; i<dset->v; i++) {
         std::memcpy(tmp, dset->Z[i], dset->n * sizeof *tmp);
         tmp += dset->n;
