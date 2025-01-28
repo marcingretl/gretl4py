@@ -245,14 +245,14 @@ GretlDataset::GretlDataset (const py::dict &pydict)
 
     // we fill up dset->S
     pylist = pydict[py::cast("obs_labels")];
-    if (pylist.size() != (long unsigned int) dset->n) {
+    if (pylist.size() != static_cast<long unsigned int>(dset->n)) {
         throw std::runtime_error("Number of obs_labels is different than number of observations.");
     }
     copy_strings_from_python_list(pylist, dset->S, OBSLEN-1, 0, 0, true);
 
     // we fill up dset->varname
     pylist = pydict[py::cast("varname")];
-    if (pylist.size() != (long unsigned int) dset->v-1) {
+    if (pylist.size() != static_cast<long unsigned int>(dset->v-1)) {
         throw std::runtime_error("Number of varnames is different than number of variables.");
     }
     strBUF = new std::string[dset->v];
@@ -418,7 +418,7 @@ void GretlDataset::sample (const py::kwargs &kwargs)
 
         if (opt_replace) {
             // C++ !!
-            opt = (gretlopt) ((int) OPT_R | (int) OPT_P);
+            opt = static_cast<gretlopt>(static_cast<int>(OPT_R) | static_cast<int>(OPT_P));
         }
         err = restrict_sample(restr, NULL, dset, NULL, opt, GP.prn, NULL);
     } else if (t1str || t2str) {

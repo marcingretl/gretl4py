@@ -299,7 +299,7 @@ static gretlopt unpack_kwargs (const py::kwargs &kwargs,
             if (!is_pystr(item.second) && !is_pyint(item.second) && !is_pyfloat(item.second)) {
                 throw std::runtime_error("unsupported option param type");
             } else {
-                push_option_param(ci, (gretlopt) opt,
+                push_option_param(ci, static_cast<gretlopt>(opt),
                                   gretl_strdup(MapPyToCpp(item.second).to_string().c_str()));
             }
 #else
