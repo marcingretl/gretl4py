@@ -11,13 +11,15 @@ ifeq ($(OS), Darwin)
   DL = -undefined dynamic_lookup
 else
   ifeq ($(CXX), g++)
-    CXXFLAGS = -march=x86-64 -mtune=generic -O3 -pipe -Wall -std=c++17 -fvisibility=hidden
+    CXXFLAGS = -march=x86-64 -mtune=generic -O3 -pipe -Wall -std=c++23 -fvisibility=hidden
   else
-    CXXFLAGS = -march=x86-64 -mtune=generic -O3 -pipe -Wall -std=c++17
+    CXXFLAGS = -march=x86-64 -mtune=generic -O3 -pipe -Wall -std=c++23
   endif
   GRETLLD = $(shell pkg-config --libs gretl)
   GRETLIN = $(shell pkg-config --cflags gretl)
 endif
+
+GLAZEIN = -Iglaze/glaze-main/include
 
 MAKE = gmake
 PYBIND = $(shell python3 -m pybind11 --includes)
@@ -34,7 +36,7 @@ OBJS = $(SRCS:.cpp=.o)
 .PHONY: tags clean depend
 
 %.o: %.cpp gretl4py.h gretl4py_data.h
-	$(CXX) $(CXXFLAGS) -c $< -o $@ -fPIC $(PYBIND) $(GRETLIN)
+	$(CXX) $(CXXFLAGS) -c $< -o $@ -fPIC $(PYBIND) $(GRETLIN) $(GLAZEIN)
 
 $(MODULE): $(OBJS)
 	$(CXX) $(CXXFLAGS) $^ -shared $(DL) -o $@ -fPIC $(GRETLLD)

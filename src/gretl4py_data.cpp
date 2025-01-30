@@ -22,6 +22,7 @@
 #include "gretl4py_data.h"
 #include <gretl/matrix_extra.h>
 #include <gretl/gretl_model.h>
+#include <glaze/glaze.hpp>
 #include <iostream>
 #include <string>
 
@@ -446,6 +447,33 @@ void GretlDataset::sample (const py::kwargs &kwargs)
     std::free(restr);
 }
 
+static py::dict json_to_dict (glz::json_t &json)
+{
+    py::dict res;
+
+    auto &o = json.get<glz::json_t::object_t>();
+    for (auto &[key, value] : o) {
+        if (value.is_null()) {
+            res[py::cast(key)] = py::none();
+        } else if (value.is_number()) {
+            res[py::cast(key)] = value.get<double>();
+        } else if (value.is_string()) {
+            res[py::cast(key)] = value.get<std::string>();
+        } else if (value.is_array()) {
+            std::vector<double> tab(value.size());
+            for (int i=0; i<static_cast<int>(value.size()); i++) {
+                tab[i] = value[static_cast<int>(i)].get<double>();
+            }
+            res[py::cast(key)] = tab;
+        } else if (value.is_object()) {
+            std::cout << key << ": obiekt" << std::endl;
+            res[py::cast(key)] = json_to_dict(value);
+        }
+    }
+
+    return res;
+}
+
 //
 // GretlBundle class methods
 //
@@ -476,6 +504,14 @@ char *GretlBundle::to_json (void)
     if (!err && !json_buf) {
         json_buf = gretl_bundle_write_to_json_buffer(b, &err);
     }
+
+    glz::json_t json{};
+    err = glz::read_json(json, json_buf);
+
+    auto d = json_to_dict(json);
+    py::print(d);
+
+    std::cout << "*******************" << std::endl << std::endl;
 
     return json_buf;
 }
