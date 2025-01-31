@@ -447,9 +447,10 @@ void GretlDataset::sample (const py::kwargs &kwargs)
     std::free(restr);
 }
 
-static py::dict json_to_dict (glz::json_t &json)
+static py::dict *json_to_dict (glz::json_t &json)
 {
-    py::dict res;
+    py::dict *RES = new py::dict;
+    py::dict &res = *RES;
     auto &json_obj = json.get<glz::json_t::object_t>();
     std::string gr_type;
     int mat_cols = 0;
@@ -508,7 +509,7 @@ static py::dict json_to_dict (glz::json_t &json)
         }
     }
 
-    return res;
+    return RES;
 }
 
 //
@@ -545,8 +546,9 @@ char *GretlBundle::to_json (void)
     glz::json_t json{};
     err = glz::read_json(json, json_buf);
 
-    auto d = json_to_dict(json);
-    py::print(d);
+    py::dict *d = json_to_dict(json);
+    py::print(*d);
+    delete d;
 
     std::cout << "*******************" << std::endl << std::endl;
 
