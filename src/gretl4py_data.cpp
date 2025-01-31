@@ -450,24 +450,30 @@ void GretlDataset::sample (const py::kwargs &kwargs)
 static py::dict json_to_dict (glz::json_t &json)
 {
     py::dict res;
-
     auto &o = json.get<glz::json_t::object_t>();
-    for (auto &[key, value] : o) {
-        if (value.is_null()) {
+
+    // we iterate over all keys in json
+    // note: in json is object, we use recurssion
+    for (auto &[key, val] : o) {
+        if (val.is_null()) {
             res[py::cast(key)] = py::none();
-        } else if (value.is_number()) {
-            res[py::cast(key)] = value.get<double>();
-        } else if (value.is_string()) {
-            res[py::cast(key)] = value.get<std::string>();
-        } else if (value.is_array()) {
-            std::vector<double> tab(value.size());
-            for (int i=0; i<static_cast<int>(value.size()); i++) {
-                tab[i] = value[static_cast<int>(i)].get<double>();
+        } else if (val.is_number()) {
+            res[py::cast(key)] = val.get<double>();
+        } else if (val.is_string()) {
+            res[py::cast(key)] = val.get<std::string>();
+        } else if (val.is_array()) {
+            std::vector<std::variant<double, std::string>> vec(val.size());
+
+            for (int i=0; i<static_cast<int>(val.size()); i++) {
+                if (val[static_cast<int>(i)].is_string()) {
+                    vec[i] = val[static_cast<int>(i)].get<std::string>();
+                } else {
+                    vec[i] = val[static_cast<int>(i)].get<double>();
+                }
             }
-            res[py::cast(key)] = tab;
-        } else if (value.is_object()) {
-            std::cout << key << ": obiekt" << std::endl;
-            res[py::cast(key)] = json_to_dict(value);
+            res[py::cast(key)] = vec;
+        } else if (val.is_object()) {
+            res[py::cast(key)] = json_to_dict(val);
         }
     }
 
