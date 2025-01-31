@@ -447,7 +447,10 @@ void GretlDataset::sample (const py::kwargs &kwargs)
     std::free(restr);
 }
 
-static py::dict *json_to_dict (glz::json_t &json)
+static py::dict *json_to_dict (glz::json_t &json,
+                               py::dict *outer_json = nullptr,
+                               const char *outer_key = nullptr,
+                               bool *add_to_outer = nullptr)
 {
     py::dict *RES = new py::dict;
     py::dict &res = *RES;
@@ -456,6 +459,7 @@ static py::dict *json_to_dict (glz::json_t &json)
     int mat_cols = 0;
     int mat_rows = 0;
     int shift = 0; // this is because in case of gretl_list the first element just holds the list size
+    bool add_to_RES = true;
 
     if (json.contains("type")) {
         gr_type = json["type"].get<std::string>();
@@ -492,7 +496,9 @@ static py::dict *json_to_dict (glz::json_t &json)
                         }
                     }
                 }
-                res[py::cast(key)] = vec;
+                py::dict &res_outer_json = *outer_json;
+                res_outer_json[py::cast(outer_key)] = vec;
+                *add_to_outer = false;
             } else if (gr_type == "gretl_series" || gr_type == "gretl_list") {
                 std::vector<std::variant<double, std::string>> vec(val.size()-shift);
                 for (int i=0+shift; i<static_cast<int>(val.size()); i++) {
@@ -502,10 +508,16 @@ static py::dict *json_to_dict (glz::json_t &json)
                         vec[i-shift] = val[static_cast<int>(i)].get<double>();
                     }
                 }
-                res[py::cast(key)] = vec;
+                py::dict &res_outer_json = *outer_json;
+                res_outer_json[py::cast(outer_key)] = vec;
+                *add_to_outer = false;
             }
         } else if (val.is_object()) {
-            res[py::cast(key)] = json_to_dict(val);
+            py::dict *tmp_dict = json_to_dict(val, RES, key.c_str(), &add_to_RES);
+            if (add_to_RES) {
+                res[py::cast(key)] = *tmp_dict;
+            }
+            delete tmp_dict;
         }
     }
 
