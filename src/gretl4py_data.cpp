@@ -447,40 +447,29 @@ void GretlDataset::sample (const py::kwargs &kwargs)
     std::free(restr);
 }
 
-struct val_meta_info {
-    std::string type;
-    int cols = 0;
-    int rows = 0;
-    int size = 0;
-};
-
-static py::dict json_to_dict (glz::json_t &json, val_meta_info *info = nullptr)
+static py::dict json_to_dict (glz::json_t &json)
 {
     py::dict res;
     auto &o = json.get<glz::json_t::object_t>();
     std::string gr_type;
     int mat_cols = 0;
     int mat_rows = 0;
-    int ser_size = 0;
+    int shift = 0;
 
     if (json.contains("type")) {
-       if (json["type"].get<std::string>() == "gretl_matrix") {
-           gr_type = "gretl_matrix";
+        gr_type = json["type"].get<std::string>();
+       if (gr_type == "gretl_matrix") {
            mat_cols = json["cols"].as<int>();
            mat_rows = json["rows"].as<int>();
-       } else if (json["type"].get<std::string>() == "gretl_series") {
-           gr_type = "gretl_series";
-           ser_size = json["size"].as<int>();
        } else if (json["type"].get<std::string>() == "gretl_list") {
-           gr_type = "gretl_list";
-           ser_size = json["data"][0].as<int>();
+           shift = 1;
        }
     }
 
     // we iterate over all keys in json
     // note: in json is object, we use recurssion
     for (auto &[key, val] : o) {
-        std::printf("klucz: %s\n", key.c_str());
+        //std::printf("klucz: %s\n", key.c_str());
         if (val.is_null()) {
             res[py::cast(key)] = py::none();
         } else if (val.is_number()) {
@@ -488,66 +477,33 @@ static py::dict json_to_dict (glz::json_t &json, val_meta_info *info = nullptr)
         } else if (val.is_string()) {
             res[py::cast(key)] = val.get<std::string>();
         } else if (val.is_array()) {
-            std::vector< std::variant<double, std::string> > vec(val.size());
-
             if (gr_type == "gretl_matrix") {
-                std::cout << "#gretl_matrix#" << std::endl;
-                std::vector<std::vector<std::variant<double, std::string>>> QQQ(mat_rows, std::vector<std::variant<double, std::string>>(mat_cols));
+                //std::cout << "#gretl_matrix#" << std::endl;
+                std::vector<std::vector<std::variant<double, std::string>>> vec(mat_rows, std::vector<std::variant<double, std::string>>(mat_cols));
                 for (int i=0; i<mat_rows; i++) {
                     for (int j=0; j<mat_cols; j++) {
                         if (val[static_cast<int>(i*mat_rows + j)].is_string()) {
-                            QQQ[i][j] = val[static_cast<int>(i)].get<std::string>();
+                            vec[i][j] = val[static_cast<int>(i)].get<std::string>();
                         } else {
-                            QQQ[i][j] = val[static_cast<int>(i)].get<double>();
+                            vec[i][j] = val[static_cast<int>(i)].get<double>();
                         }
                     }
                 }
-                res[py::cast(key)] = QQQ;
-            } else if (gr_type == "gretl_series") {
-                std::cout << "#gretl_series#" << std::endl;
-                std::vector<std::variant<double, std::string>> QQQ(ser_size);
-                for (int i=0; i<static_cast<int>(ser_size); i++) {
+                res[py::cast(key)] = vec;
+            } else if (gr_type == "gretl_series" || gr_type == "gretl_list") {
+                //std::cout << "#gretl_series / gretl_list#" << std::endl;
+                std::vector<std::variant<double, std::string>> vec(val.size()-shift);
+                for (int i=0+shift; i<static_cast<int>(val.size()); i++) {
                     if (val[static_cast<int>(i)].is_string()) {
-                        QQQ[i] = val[static_cast<int>(i)].get<std::string>();
+                        vec[i-shift] = val[static_cast<int>(i)].get<std::string>();
                     } else {
-                        QQQ[i] = val[static_cast<int>(i)].get<double>();
+                        vec[i-shift] = val[static_cast<int>(i)].get<double>();
                     }
                 }
-                res[py::cast(key)] = QQQ;
-            } else if (gr_type == "gretl_list") {
-                std::cout << "#gretl_list#, size: " << ser_size << std::endl;
-                std::vector<std::variant<double, std::string>> QQQ(val.size());
-                for (int i=0; i<static_cast<int>(val.size()); i++) {
-                    if (val[static_cast<int>(i)].is_string()) {
-                        QQQ[i] = val[static_cast<int>(i)].get<std::string>();
-                    } else {
-                        QQQ[i] = val[static_cast<int>(i)].get<double>();
-                    }
-                }
-                res[py::cast(key)] = QQQ;
+                res[py::cast(key)] = vec;
             }
-
-            /*
-            for (int i=0; i<static_cast<int>(val.size()); i++) {
-                if (val[static_cast<int>(i)].is_string()) {
-                    vec[i] = val[static_cast<int>(i)].get<std::string>();
-                } else {
-                    vec[i] = val[static_cast<int>(i)].get<double>();
-                }
-            }
-            res[py::cast(key)] = vec;
-            */
         } else if (val.is_object()) {
-            val_meta_info val_info;
-
-            if (val.contains("type")) {
-              if (val["type"].get<std::string>() == "gretl_matrix") {
-                  val_info.type = "gretl_matrix";
-                  val_info.cols = val["cols"].as<int>();
-                  val_info.rows = val["rows"].as<int>();
-              }
-            }
-            res[py::cast(key)] = json_to_dict(val, &val_info);
+            res[py::cast(key)] = json_to_dict(val);
         }
     }
 
