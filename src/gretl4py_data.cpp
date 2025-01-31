@@ -489,10 +489,10 @@ static py::dict *json_to_dict (glz::json_t &json,
                 std::vector<std::vector<std::variant<double, std::string>>> vec(mat_rows, std::vector<std::variant<double, std::string>>(mat_cols));
                 for (int i=0; i<mat_rows; i++) {
                     for (int j=0; j<mat_cols; j++) {
-                        if (val[static_cast<int>(i*mat_rows + j)].is_string()) {
-                            vec[i][j] = val[static_cast<int>(i)].get<std::string>();
+                        if (val[static_cast<int>(j*mat_rows + i)].is_string()) {
+                            vec[i][j] = val[static_cast<int>(j*mat_rows + i)].get<std::string>();
                         } else {
-                            vec[i][j] = val[static_cast<int>(i)].get<double>();
+                            vec[i][j] = val[static_cast<int>(j*mat_rows + i)].get<double>();
                         }
                     }
                 }
@@ -555,14 +555,14 @@ char *GretlBundle::to_json (void)
         json_buf = gretl_bundle_write_to_json_buffer(b, &err);
     }
 
+    // new JSON to py::dict mapper
     glz::json_t json{};
     err = glz::read_json(json, json_buf);
-
-    py::dict *d = json_to_dict(json);
-    py::print(*d);
-    delete d;
-
-    std::cout << "*******************" << std::endl << std::endl;
+    if (!err) {
+        py::dict *d = json_to_dict(json);
+        py::print(*d);
+        delete d;
+    }
 
     return json_buf;
 }
