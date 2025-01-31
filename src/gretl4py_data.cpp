@@ -450,11 +450,11 @@ void GretlDataset::sample (const py::kwargs &kwargs)
 static py::dict json_to_dict (glz::json_t &json)
 {
     py::dict res;
-    auto &o = json.get<glz::json_t::object_t>();
+    auto &json_obj = json.get<glz::json_t::object_t>();
     std::string gr_type;
     int mat_cols = 0;
     int mat_rows = 0;
-    int shift = 0;
+    int shift = 0; // this is because in case of gretl_list the first element just holds the list size
 
     if (json.contains("type")) {
         gr_type = json["type"].get<std::string>();
@@ -467,9 +467,12 @@ static py::dict json_to_dict (glz::json_t &json)
     }
 
     // we iterate over all keys in json
-    // note: in json is object, we use recurssion
-    for (auto &[key, val] : o) {
-        //std::printf("klucz: %s\n", key.c_str());
+    // note: if val is an object (json basically), we use recurssion
+    for (auto &[key, val] : json_obj) {
+        if (key == "type" || key == "rows" || key == "cols" || key == "size") {
+            continue;
+        }
+
         if (val.is_null()) {
             res[py::cast(key)] = py::none();
         } else if (val.is_number()) {
@@ -478,7 +481,6 @@ static py::dict json_to_dict (glz::json_t &json)
             res[py::cast(key)] = val.get<std::string>();
         } else if (val.is_array()) {
             if (gr_type == "gretl_matrix") {
-                //std::cout << "#gretl_matrix#" << std::endl;
                 std::vector<std::vector<std::variant<double, std::string>>> vec(mat_rows, std::vector<std::variant<double, std::string>>(mat_cols));
                 for (int i=0; i<mat_rows; i++) {
                     for (int j=0; j<mat_cols; j++) {
@@ -491,7 +493,6 @@ static py::dict json_to_dict (glz::json_t &json)
                 }
                 res[py::cast(key)] = vec;
             } else if (gr_type == "gretl_series" || gr_type == "gretl_list") {
-                //std::cout << "#gretl_series / gretl_list#" << std::endl;
                 std::vector<std::variant<double, std::string>> vec(val.size()-shift);
                 for (int i=0+shift; i<static_cast<int>(val.size()); i++) {
                     if (val[static_cast<int>(i)].is_string()) {
