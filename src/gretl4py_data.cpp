@@ -452,14 +452,18 @@ static py::dict *json_to_dict (glz::json_t &json,
                                const char *outer_key = nullptr,
                                bool *add_to_outer = nullptr)
 {
+    //
+    // here we deserialize incoming gretl json to py::dict
+    // note: the last three arguments are for recursion only
+    //
     py::dict *RES = new py::dict;
     py::dict &res = *RES;
     auto &json_obj = json.get<glz::json_t::object_t>();
-    std::string gr_type;
     int mat_cols = 0;
     int mat_rows = 0;
     int shift = 0; // this is because in case of gretl_list the first element just holds the list size
-    bool add_to_RES = true;
+    bool add_to_res = true;
+    std::string gr_type;
 
     if (json.contains("type")) {
         gr_type = json["type"].get<std::string>();
@@ -489,6 +493,7 @@ static py::dict *json_to_dict (glz::json_t &json,
 
             if (gr_type == "gretl_matrix") {
                 vgretl_matrix vec(mat_rows, vgretl_vector(mat_cols));
+
                 for (int i=0; i<mat_rows; i++) {
                     for (int j=0; j<mat_cols; j++) {
                         idx = j*mat_rows + i;
@@ -504,11 +509,16 @@ static py::dict *json_to_dict (glz::json_t &json,
                 *add_to_outer = false;
             } else if (gr_type == "gretl_series" || gr_type == "gretl_list") {
                 vgretl_vector vec(val.size()-shift);
+
                 for (int i=0+shift; i<static_cast<int>(val.size()); i++) {
                     if (val[static_cast<int>(i)].is_string()) {
                         vec[i-shift] = val[static_cast<int>(i)].get<std::string>();
                     } else {
-                        vec[i-shift] = val[static_cast<int>(i)].get<double>();
+                        if (gr_type == "gretl_list") {
+                            vec[i-shift] = val[static_cast<int>(i)].as<int>();
+                        } else {
+                            vec[i-shift] = val[static_cast<int>(i)].get<double>();
+                        }
                     }
                 }
                 py::dict &res_outer_json = *outer_json;
@@ -516,8 +526,8 @@ static py::dict *json_to_dict (glz::json_t &json,
                 *add_to_outer = false;
             }
         } else if (val.is_object()) {
-            py::dict *tmp_dict = json_to_dict(val, RES, key.c_str(), &add_to_RES);
-            if (add_to_RES) {
+            py::dict *tmp_dict = json_to_dict(val, RES, key.c_str(), &add_to_res);
+            if (add_to_res) {
                 res[py::cast(key)] = *tmp_dict;
             }
             delete tmp_dict;
