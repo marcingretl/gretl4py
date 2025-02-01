@@ -463,13 +463,16 @@ static py::dict *json_to_dict (glz::json_t &json,
     int mat_rows = 0;
     int shift = 0; // this is because in case of gretl_list the first element just holds the list size
     bool add_to_res = true;
-    std::string gr_type;
+    std::string gr_type; // we introduce fake "gretl_vector" type which we use when gretl_matrix is in fact vector
 
     if (json.contains("type")) {
         gr_type = json["type"].get<std::string>();
        if (gr_type == "gretl_matrix") {
            mat_rows = json["rows"].as<int>();
            mat_cols = json["cols"].as<int>();
+           if (std::min(mat_rows, mat_cols) == 1) {
+               gr_type = "gretl_vector";
+           }
        } else if (gr_type == "gretl_list") {
            shift = 1;
        }
@@ -507,7 +510,7 @@ static py::dict *json_to_dict (glz::json_t &json,
                 py::dict &res_outer_json = *outer_json;
                 res_outer_json[py::cast(outer_key)] = vec;
                 *add_to_outer = false;
-            } else if (gr_type == "gretl_series" || gr_type == "gretl_list") {
+            } else if (gr_type == "gretl_series" || gr_type == "gretl_list" || gr_type == "gretl_vector") {
                 vgretl_vector vec(val.size()-shift);
 
                 for (int i=0+shift; i<static_cast<int>(val.size()); i++) {
