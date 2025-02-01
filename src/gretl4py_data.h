@@ -19,6 +19,7 @@
 
 #include <pybind11/stl.h>
 #include <gretl/libgretl.h>
+#include <glaze/glaze.hpp>
 #include <iostream>
 
 namespace py = pybind11;
@@ -82,6 +83,11 @@ private:
     char *json_buf = NULL;
     gretl_bundle *b;
     py::dict *as_dict = nullptr;
+
+    py::dict *json_to_dict (glz::json_t &json,
+                            py::dict *outer_json = nullptr,
+                            const char *outer_key = nullptr,
+                            bool *add_to_outer = nullptr);
 public:
     int err = 0;
 
@@ -89,7 +95,7 @@ public:
     GretlBundle (MODEL *model, DATASET *dset);  // we produce bundle from MODEL struct
     ~GretlBundle (void);
 
-    py::dict *to_dict (void);                 // bundle as dict: memory must be freed at the caller level
+    py::dict *to_dict (void);                   // bundle-to-dict mapper: memory must be freed at the caller level
 
     void print (void);
 };

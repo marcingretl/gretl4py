@@ -19,7 +19,7 @@ else
   GRETLIN = $(shell pkg-config --cflags gretl)
 endif
 
-GLAZEIN = -Iglaze/glaze-main/include
+GLAZEIN = -Iglaze/include
 
 MAKE = gmake
 PYBIND = $(shell python3 -m pybind11 --includes)
