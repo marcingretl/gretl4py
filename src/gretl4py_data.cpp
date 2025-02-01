@@ -189,12 +189,15 @@ int gretl_model_to_dict (MODEL *model, DATASET *dset,
     // produced by libgretl's bundle_from_model().
     //
     GretlBundle b = GretlBundle(model, dset);
-    char *json_buf = b.to_json();
+    //char *json_buf = b.to_json();
 
     if (!b.err) {
+        py::dict *results = b.to_dict();
+
         pydict[py::cast("_id")] = model->ID;
-        pydict[py::cast("json_buffer")] = json_buf;
+        pydict[py::cast("results")] = *results;
         pydict[py::cast("summary")] = summary;
+        delete results;
     }
 
     return b.err;
@@ -565,22 +568,22 @@ GretlBundle::~GretlBundle (void)
     }
 }
 
-char *GretlBundle::to_json (void)
+py::dict *GretlBundle::to_dict (void)
 {
     if (!err && !json_buf) {
         json_buf = gretl_bundle_write_to_json_buffer(b, &err);
     }
 
-    // new JSON to py::dict mapper
-    glz::json_t json{};
-    err = glz::read_json(json, json_buf);
-    if (!err) {
-        py::dict *d = json_to_dict(json);
-        py::print(*d);
-        delete d;
+    if (json_buf != NULL) {
+        glz::json_t json{};
+
+        err = glz::read_json(json, json_buf);
+        if (!err) {
+            as_dict = json_to_dict(json);
+        }
     }
 
-    return json_buf;
+    return as_dict;
 }
 
 void GretlBundle::print (void)

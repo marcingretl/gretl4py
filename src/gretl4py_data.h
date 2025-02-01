@@ -81,6 +81,7 @@ private:
     bool free_b = true;
     char *json_buf = NULL;
     gretl_bundle *b;
+    py::dict *as_dict = nullptr;
 public:
     int err = 0;
 
@@ -88,7 +89,7 @@ public:
     GretlBundle (MODEL *model, DATASET *dset);  // we produce bundle from MODEL struct
     ~GretlBundle (void);
 
-    char *to_json (void);                       // serialize bundle to json_buf
+    py::dict *to_dict (void);                 // bundle as dict: memory must be freed at the caller level
 
     void print (void);
 };
