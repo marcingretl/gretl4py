@@ -23,6 +23,9 @@
 
 namespace py = pybind11;
 
+typedef std::vector<std::variant<double, std::string>> vgretl_vector;
+typedef std::vector<vgretl_vector> vgretl_matrix;
+
 #define is_pybool(o) (py::isinstance<py::bool_>(o))
 #define is_pyint(o) (py::isinstance<py::int_>(o))
 #define is_pyfloat(o) (py::isinstance<py::float_>(o))

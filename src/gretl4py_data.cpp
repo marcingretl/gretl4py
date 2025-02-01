@@ -485,14 +485,17 @@ static py::dict *json_to_dict (glz::json_t &json,
         } else if (val.is_string()) {
             res[py::cast(key)] = val.get<std::string>();
         } else if (val.is_array()) {
+            int idx;
+
             if (gr_type == "gretl_matrix") {
-                std::vector<std::vector<std::variant<double, std::string>>> vec(mat_rows, std::vector<std::variant<double, std::string>>(mat_cols));
+                vgretl_matrix vec(mat_rows, vgretl_vector(mat_cols));
                 for (int i=0; i<mat_rows; i++) {
                     for (int j=0; j<mat_cols; j++) {
-                        if (val[static_cast<int>(j*mat_rows + i)].is_string()) {
-                            vec[i][j] = val[static_cast<int>(j*mat_rows + i)].get<std::string>();
+                        idx = j*mat_rows + i;
+                        if (val[static_cast<int>(idx)].is_string()) {
+                            vec[i][j] = val[static_cast<int>(idx)].get<std::string>();
                         } else {
-                            vec[i][j] = val[static_cast<int>(j*mat_rows + i)].get<double>();
+                            vec[i][j] = val[static_cast<int>(idx)].get<double>();
                         }
                     }
                 }
@@ -500,7 +503,7 @@ static py::dict *json_to_dict (glz::json_t &json,
                 res_outer_json[py::cast(outer_key)] = vec;
                 *add_to_outer = false;
             } else if (gr_type == "gretl_series" || gr_type == "gretl_list") {
-                std::vector<std::variant<double, std::string>> vec(val.size()-shift);
+                vgretl_vector vec(val.size()-shift);
                 for (int i=0+shift; i<static_cast<int>(val.size()); i++) {
                     if (val[static_cast<int>(i)].is_string()) {
                         vec[i-shift] = val[static_cast<int>(i)].get<std::string>();
