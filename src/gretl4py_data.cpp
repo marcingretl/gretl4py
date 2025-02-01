@@ -571,7 +571,7 @@ py::dict *GretlBundle::json_to_dict (glz::json_t &json,
                 py::dict &res_outer_json = *outer_json;
                 res_outer_json[py::cast(outer_key)] = vec;
                 *add_to_outer = false;
-            } else if (gr_type == "gretl_series" || gr_type == "gretl_list" || gr_type == "gretl_vector") {
+            } else {
                 vgretl_vector vec(val.size()-shift);
 
                 for (int i=0+shift; i<static_cast<int>(val.size()); i++) {
@@ -585,9 +585,14 @@ py::dict *GretlBundle::json_to_dict (glz::json_t &json,
                         }
                     }
                 }
-                py::dict &res_outer_json = *outer_json;
-                res_outer_json[py::cast(outer_key)] = vec;
-                *add_to_outer = false;
+
+                if (gr_type == "gretl_series" || gr_type == "gretl_list" || gr_type == "gretl_vector") {
+                    py::dict &res_outer_json = *outer_json;
+                    res_outer_json[py::cast(outer_key)] = vec;
+                    *add_to_outer = false;
+                } else {
+                    res[py::cast(key)] = vec;
+                }
             }
         } else if (val.is_object()) {
             py::dict *tmp_dict = GretlBundle::json_to_dict(val, RES, key.c_str(), &add_to_res);
