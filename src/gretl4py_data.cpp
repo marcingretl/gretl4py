@@ -255,6 +255,8 @@ static py::dict *json_to_dict (glz::json_t &json,
 
             if (add_to_res) {
                 res[py::cast(key)] = *tmp_dict;
+            } else {
+                add_to_res = true;
             }
             delete tmp_dict;
         }
