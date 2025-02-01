@@ -468,9 +468,9 @@ static py::dict *json_to_dict (glz::json_t &json,
     if (json.contains("type")) {
         gr_type = json["type"].get<std::string>();
        if (gr_type == "gretl_matrix") {
-           mat_cols = json["cols"].as<int>();
            mat_rows = json["rows"].as<int>();
-       } else if (json["type"].get<std::string>() == "gretl_list") {
+           mat_cols = json["cols"].as<int>();
+       } else if (gr_type == "gretl_list") {
            shift = 1;
        }
     }
