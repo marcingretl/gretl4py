@@ -169,6 +169,100 @@ static gretlopt setobs_opt_from_structure (int structure)
     }
 }
 
+static py::dict *json_to_dict (glz::json_t &json,
+                               py::dict *outer_json = nullptr,
+                               const char *outer_key = nullptr,
+                               bool *add_to_outer = nullptr)
+{
+    //
+    // here we deserialize incoming gretl json to py::dict
+    // note: the last three arguments are for recursion only
+    //
+    py::dict *RES = new py::dict;
+    py::dict &res = *RES;
+    auto &json_obj = json.get<glz::json_t::object_t>();
+    int mat_cols = 0;
+    int mat_rows = 0;
+    int shift = 0; // this is because in case of gretl_list the first element just holds the list size
+    bool add_to_res = true;
+    std::string gr_type; // we introduce fake "gretl_vector" type which we use when gretl_matrix is in fact vector
+
+    if (json.contains("type")) {
+        gr_type = json["type"].get<std::string>();
+       if (gr_type == "gretl_matrix") {
+           mat_rows = json["rows"].as<int>();
+           mat_cols = json["cols"].as<int>();
+           if (std::min(mat_rows, mat_cols) == 1) {
+               gr_type = "gretl_vector";
+           }
+       } else if (gr_type == "gretl_list") {
+           shift = 1;
+       }
+    }
+
+    // we iterate over all keys in json
+    // note: if val is an object (json basically), we use recurssion
+    for (auto &[key, val] : json_obj) {
+        if (key == "type" || key == "rows" || key == "cols" || key == "size") {
+            continue;
+        }
+
+        if (val.is_null()) {
+            res[py::cast(key)] = py::none();
+        } else if (val.is_number()) {
+            res[py::cast(key)] = val.get<double>();
+        } else if (val.is_string()) {
+            res[py::cast(key)] = val.get<std::string>();
+        } else if (val.is_array()) {
+            int idx;
+
+            if (gr_type == "gretl_matrix") {
+                vgretl_matrix vec(mat_rows, vgretl_vector(mat_cols));
+
+                for (int i=0; i<mat_rows; i++) {
+                    for (int j=0; j<mat_cols; j++) {
+                        idx = j*mat_rows + i;
+                        if (val[static_cast<int>(idx)].is_string()) {
+                            vec[i][j] = val[static_cast<int>(idx)].get<std::string>();
+                        } else {
+                            vec[i][j] = val[static_cast<int>(idx)].get<double>();
+                        }
+                    }
+                }
+                py::dict &res_outer_json = *outer_json;
+                res_outer_json[py::cast(outer_key)] = vec;
+                *add_to_outer = false;
+            } else if (gr_type == "gretl_series" || gr_type == "gretl_list" || gr_type == "gretl_vector") {
+                vgretl_vector vec(val.size()-shift);
+
+                for (int i=0+shift; i<static_cast<int>(val.size()); i++) {
+                    if (val[static_cast<int>(i)].is_string()) {
+                        vec[i-shift] = val[static_cast<int>(i)].get<std::string>();
+                    } else {
+                        if (gr_type == "gretl_list") {
+                            vec[i-shift] = val[static_cast<int>(i)].as<int>();
+                        } else {
+                            vec[i-shift] = val[static_cast<int>(i)].get<double>();
+                        }
+                    }
+                }
+                py::dict &res_outer_json = *outer_json;
+                res_outer_json[py::cast(outer_key)] = vec;
+                *add_to_outer = false;
+            }
+        } else if (val.is_object()) {
+            py::dict *tmp_dict = json_to_dict(val, RES, key.c_str(), &add_to_res);
+
+            if (add_to_res) {
+                res[py::cast(key)] = *tmp_dict;
+            }
+            delete tmp_dict;
+        }
+    }
+
+    return RES;
+}
+
 //////////////////////////////////////////////////
 // functions
 //////////////////////////////////////////////////
@@ -450,99 +544,6 @@ void GretlDataset::sample (const py::kwargs &kwargs)
     std::free(restr);
 }
 
-static py::dict *json_to_dict (glz::json_t &json,
-                               py::dict *outer_json = nullptr,
-                               const char *outer_key = nullptr,
-                               bool *add_to_outer = nullptr)
-{
-    //
-    // here we deserialize incoming gretl json to py::dict
-    // note: the last three arguments are for recursion only
-    //
-    py::dict *RES = new py::dict;
-    py::dict &res = *RES;
-    auto &json_obj = json.get<glz::json_t::object_t>();
-    int mat_cols = 0;
-    int mat_rows = 0;
-    int shift = 0; // this is because in case of gretl_list the first element just holds the list size
-    bool add_to_res = true;
-    std::string gr_type; // we introduce fake "gretl_vector" type which we use when gretl_matrix is in fact vector
-
-    if (json.contains("type")) {
-        gr_type = json["type"].get<std::string>();
-       if (gr_type == "gretl_matrix") {
-           mat_rows = json["rows"].as<int>();
-           mat_cols = json["cols"].as<int>();
-           if (std::min(mat_rows, mat_cols) == 1) {
-               gr_type = "gretl_vector";
-           }
-       } else if (gr_type == "gretl_list") {
-           shift = 1;
-       }
-    }
-
-    // we iterate over all keys in json
-    // note: if val is an object (json basically), we use recurssion
-    for (auto &[key, val] : json_obj) {
-        if (key == "type" || key == "rows" || key == "cols" || key == "size") {
-            continue;
-        }
-
-        if (val.is_null()) {
-            res[py::cast(key)] = py::none();
-        } else if (val.is_number()) {
-            res[py::cast(key)] = val.get<double>();
-        } else if (val.is_string()) {
-            res[py::cast(key)] = val.get<std::string>();
-        } else if (val.is_array()) {
-            int idx;
-
-            if (gr_type == "gretl_matrix") {
-                vgretl_matrix vec(mat_rows, vgretl_vector(mat_cols));
-
-                for (int i=0; i<mat_rows; i++) {
-                    for (int j=0; j<mat_cols; j++) {
-                        idx = j*mat_rows + i;
-                        if (val[static_cast<int>(idx)].is_string()) {
-                            vec[i][j] = val[static_cast<int>(idx)].get<std::string>();
-                        } else {
-                            vec[i][j] = val[static_cast<int>(idx)].get<double>();
-                        }
-                    }
-                }
-                py::dict &res_outer_json = *outer_json;
-                res_outer_json[py::cast(outer_key)] = vec;
-                *add_to_outer = false;
-            } else if (gr_type == "gretl_series" || gr_type == "gretl_list" || gr_type == "gretl_vector") {
-                vgretl_vector vec(val.size()-shift);
-
-                for (int i=0+shift; i<static_cast<int>(val.size()); i++) {
-                    if (val[static_cast<int>(i)].is_string()) {
-                        vec[i-shift] = val[static_cast<int>(i)].get<std::string>();
-                    } else {
-                        if (gr_type == "gretl_list") {
-                            vec[i-shift] = val[static_cast<int>(i)].as<int>();
-                        } else {
-                            vec[i-shift] = val[static_cast<int>(i)].get<double>();
-                        }
-                    }
-                }
-                py::dict &res_outer_json = *outer_json;
-                res_outer_json[py::cast(outer_key)] = vec;
-                *add_to_outer = false;
-            }
-        } else if (val.is_object()) {
-            py::dict *tmp_dict = json_to_dict(val, RES, key.c_str(), &add_to_res);
-            if (add_to_res) {
-                res[py::cast(key)] = *tmp_dict;
-            }
-            delete tmp_dict;
-        }
-    }
-
-    return RES;
-}
-
 //
 // GretlBundle class methods
 //
@@ -570,16 +571,19 @@ GretlBundle::~GretlBundle (void)
 
 py::dict *GretlBundle::to_dict (void)
 {
-    if (!err && !json_buf) {
-        json_buf = gretl_bundle_write_to_json_buffer(b, &err);
-    }
+    if (!as_dict) {
 
-    if (json_buf != NULL) {
-        glz::json_t json{};
+        if (!err && !json_buf) {
+            json_buf = gretl_bundle_write_to_json_buffer(b, &err);
+        }
 
-        err = glz::read_json(json, json_buf);
-        if (!err) {
-            as_dict = json_to_dict(json);
+        if (json_buf != NULL) {
+            glz::json_t json{};
+
+            err = glz::read_json(json, json_buf);
+            if (!err) {
+                as_dict = json_to_dict(json);
+            }
         }
     }
 
