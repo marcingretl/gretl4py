@@ -608,6 +608,11 @@ py::dict *GretlBundle::to_dict (void)
 
             //err = glz::read_json(json, json_buf);
             // simdjson
+
+            std::cout << "simdjson v" << SIMDJSON_VERSION << std::endl;
+            std::cout << "Detected the best implementation for your machine: " << simdjson::get_active_implementation()->name();
+            std::cout << "(" << simdjson::get_active_implementation()->description() << ")" << std::endl;
+
             simdjson::ondemand::parser parser; //should(?) be a global once-allocated global variable
             std::string json_cp(json_buf);
             simdjson::ondemand::document doc;
