@@ -23,6 +23,7 @@
 #include <gretl/matrix_extra.h>
 #include <gretl/gretl_model.h>
 #include <string>
+#include "simdjson.h"
 
 #define F_CONTIGUOUS py::detail::npy_api::constants::NPY_ARRAY_F_CONTIGUOUS_
 #define is_pynum_fortranarray(m) ((m.flags() & F_CONTIGUOUS))
@@ -473,6 +474,127 @@ GretlBundle::~GretlBundle (void)
     }
 }
 
+py::dict *json_to_dict_simd (simdjson::ondemand::object &json_obj,
+                             py::dict *outer_json = nullptr,
+                             std::string_view *outer_key = nullptr,
+                             bool *add_to_outer = nullptr)
+{
+    py::dict *RES = new py::dict;
+    py::dict &res = *RES;
+    int mat_rows = 0;
+    int mat_cols = 0;
+    int shift = 0; // this is because in case of gretl_list the first element just holds the list size
+    bool add_to_res = true;
+    std::string gr_type; // we introduce fake "gretl_vector" type which we use when gretl_matrix is in fact vector
+
+    simdjson::ondemand::value tmp_value;
+    simdjson::ondemand::number tmp_number;
+    simdjson::ondemand::array tmp_array;
+    std::string_view key;
+    std::string tmp_str;
+    simdjson::ondemand::value val;
+
+    //simdjson::ondemand::object json_obj_cp = json_obj;
+    if (!json_obj["type"].get_string(gr_type)) {
+        if (gr_type == "gretl_matrix") {
+            json_obj["rows"].get(tmp_value);
+            tmp_number = tmp_value.get_number();
+            mat_rows = tmp_number.get_int64();
+            json_obj["cols"].get(tmp_value);
+            tmp_number = tmp_value.get_number();
+            mat_cols = tmp_number.get_int64();
+           if (std::min(mat_rows, mat_cols) == 1) {
+               gr_type = "gretl_vector";
+           }
+        } else if (gr_type == "gretl_list") {
+           shift = 1;
+        }
+    }
+    json_obj.reset();
+
+    // we iterate over all keys in json
+    // note: if val is an object, we use recursion
+    for (auto field : json_obj) {
+        key = field.escaped_key();
+        val = field.value();
+
+        if (key == "type" || key == "rows" || key == "cols" || key == "size") {
+            continue;
+        }
+
+        if (val.type() == simdjson::ondemand::json_type::null) {
+            res[py::cast(key)] = py::none();
+        } else if (val.type() == simdjson::ondemand::json_type::number) {
+            res[py::cast(key)] = static_cast<double>(val);
+        } else if (val.type() == simdjson::ondemand::json_type::string) {
+            val.get_string(tmp_str);
+            res[py::cast(key)] = tmp_str;
+        } else if (val.type() == simdjson::ondemand::json_type::array) {
+            simdjson::ondemand::value item;
+            tmp_array = val.get_array();
+
+            if (gr_type == "gretl_matrix") {
+                vgretl_matrix vec(mat_rows, vgretl_vector(mat_cols));
+                //int idx;
+
+                for (int i=0; i<mat_rows; i++) {
+                    for (int j=0; j<mat_cols; j++) {
+                        //idx = j*mat_rows + i;
+                        item = tmp_array.at(j*mat_rows + i);
+                        if (item.type() == simdjson::ondemand::json_type::string) {
+                            item.get_string(tmp_str);
+                            vec[i][j] = tmp_str;
+                        } else {
+                            vec[i][j] = static_cast<double>(item);
+                        }
+                        tmp_array.reset();
+                    }
+                }
+                py::dict &res_outer_json = *outer_json;
+                res_outer_json[py::cast(*outer_key)] = vec;
+                *add_to_outer = false;
+            } else {
+                int tmp_array_size = tmp_array.count_elements();
+                vgretl_vector vec(tmp_array_size-shift);
+
+                for (int i=0+shift; i<tmp_array_size; i++) {
+                    item = tmp_array.at(i);
+                    if (item.type() == simdjson::ondemand::json_type::string) {
+                        item.get_string(tmp_str);
+                        vec[i-shift] = tmp_str;
+                    } else {
+                        if (gr_type == "gretl_list") {
+                            vec[i-shift] = static_cast<int>(item.get_int64());
+                        } else {
+                            vec[i-shift] = static_cast<double>(item);
+                        }
+                    }
+                    tmp_array.reset();
+                }
+
+                if (gr_type == "gretl_series" || gr_type == "gretl_list" || gr_type == "gretl_vector") {
+                    py::dict &res_outer_json = *outer_json;
+                    res_outer_json[py::cast(*outer_key)] = vec;
+                    *add_to_outer = false;
+                } else {
+                    res[py::cast(key)] = vec;
+                }
+            }
+        } else if (val.type() == simdjson::ondemand::json_type::object) {
+            simdjson::ondemand::object val_obj = val.get_object();
+            py::dict *tmp_dict = json_to_dict_simd(val_obj, RES, &key, &add_to_res);
+
+            if (add_to_res) {
+                res[py::cast(key)] = *tmp_dict;
+            } else {
+                add_to_res = true;
+            }
+        }
+    }
+
+    return RES;
+}
+
 py::dict *GretlBundle::to_dict (void)
 {
     if (!as_dict) {
@@ -482,11 +604,27 @@ py::dict *GretlBundle::to_dict (void)
         }
 
         if (json_buf != NULL) {
-            glz::json_t json{};
+            //glz::json_t json{};
 
-            err = glz::read_json(json, json_buf);
+            //err = glz::read_json(json, json_buf);
+            // simdjson
+            simdjson::ondemand::parser parser; //should(?) be a global once-allocated global variable
+            std::string json_cp(json_buf);
+            simdjson::ondemand::document doc;
+
+            auto error = parser.iterate(json_cp).get(doc);
+            simdjson::ondemand::object obj;
+            if (error) {
+                std::cerr << error << std::endl;
+            } else {
+                obj = doc.get_object();
+                //py::dict *D = json_to_dict_simd(obj);
+                //py::print(*D);
+            }
+            // simdjson: END
             if (!err) {
-                as_dict = GretlBundle::json_to_dict(json);
+                //as_dict = GretlBundle::json_to_dict(json);
+                as_dict = json_to_dict_simd(obj);
             }
         }
     }
