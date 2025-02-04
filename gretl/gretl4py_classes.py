@@ -60,10 +60,10 @@ class Model:
         return self
 
     def coeff(self):
-        return self.results['coeff'][:, 0]
+        return self.results['coeff']
 
     def stderr(self):
-        return self.results['stderr'][:, 0]
+        return self.results['stderr']
 
     def yhat(self):
         if self.name == 'biprobit':
