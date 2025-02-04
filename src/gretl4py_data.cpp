@@ -537,16 +537,29 @@ py::dict *json_to_dict_simd (simdjson::ondemand::object &json_obj,
             val.get_string(tmp_str);
             res[py::cast(key)] = tmp_str;
         } else if (val.type() == simdjson::ondemand::json_type::array) {
-            simdjson::ondemand::value item;
+            simdjson::ondemand::value item; //tmp_value
             tmp_array = val.get_array();
 
             if (gr_type == "gretl_matrix") {
                 vgretl_matrix vec(mat_rows, vgretl_vector(mat_cols));
-                //int idx;
+#if 1
+                int i = 0, j = 0;
+                for (auto item : tmp_array) {
+                    if (item.type() == simdjson::ondemand::json_type::string) {
+                        item.get_string(tmp_str);
+                        vec[i][j] = tmp_str;
+                    } else {
+                        vec[i][j] = static_cast<double>(item);
+                    }
 
+                    if (++i == mat_rows) {
+                        i = 0;
+                        j++;
+                    }
+                }
+#else
                 for (int i=0; i<mat_rows; i++) {
                     for (int j=0; j<mat_cols; j++) {
-                        //idx = j*mat_rows + i;
                         item = tmp_array.at(j*mat_rows + i);
                         if (item.type() == simdjson::ondemand::json_type::string) {
                             item.get_string(tmp_str);
@@ -557,6 +570,7 @@ py::dict *json_to_dict_simd (simdjson::ondemand::object &json_obj,
                         tmp_array.reset();
                     }
                 }
+#endif // 1
                 py::dict &res_outer_json = *outer_json;
                 res_outer_json[py::cast(*outer_key)] = vec;
                 *add_to_outer = false;
