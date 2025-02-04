@@ -19,13 +19,12 @@
 
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
+//#define SIMDJSON_DEVELOPMENT_CHECKS 0
+#include "simdjson.h"
 #include "gretl4py_data.h"
 #include <gretl/matrix_extra.h>
 #include <gretl/gretl_model.h>
 #include <string>
-
-#define SIMDJSON_DEVELOPMENT_CHECKS 0
-#include "simdjson.h"
 
 #define F_CONTIGUOUS py::detail::npy_api::constants::NPY_ARRAY_F_CONTIGUOUS_
 #define is_pynum_fortranarray(m) ((m.flags() & F_CONTIGUOUS))
@@ -202,6 +201,19 @@ int gretl_model_to_dict (MODEL *model, DATASET *dset,
     }
 
     return b.err;
+}
+
+std::string get_simdjson_runtime (const std::string sj_rt_val)
+{
+    if (sj_rt_val == "version") {
+        return SIMDJSON_VERSION;
+    } else if (sj_rt_val == "name") {
+        return simdjson::get_active_implementation()->name();
+    } else if (sj_rt_val == "description") {
+        return simdjson::get_active_implementation()->description();
+    } else {
+        return "simdjson runtime value unrecognized";
+    }
 }
 
 //////////////////////////////////////////////////
@@ -610,22 +622,14 @@ py::dict *json_to_dict_simd (simdjson::ondemand::object &json_obj,
 py::dict *GretlBundle::to_dict (void)
 {
     if (!as_dict) {
-
         if (!err && !json_buf) {
             json_buf = gretl_bundle_write_to_json_buffer(b, &err);
         }
 
         if (json_buf != NULL) {
-            /*
-            std::cout << "simdjson v" << SIMDJSON_VERSION << std::endl;
-            std::cout << "Detected the best implementation for your machine: " << simdjson::get_active_implementation()->name();
-            std::cout << "(" << simdjson::get_active_implementation()->description() << ")" << std::endl;
-            */
-
             sd_json_cp = json_buf;
-            auto error = sd_parser.iterate(sd_json_cp).get(sd_doc);
-            if (error) {
-                std::cerr << error << std::endl;
+            if (sd_parser.iterate(sd_json_cp).get(sd_doc)) {
+                err = E_DATA;
             } else {
                 sd_obj = sd_doc.get_object();
             }

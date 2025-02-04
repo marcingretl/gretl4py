@@ -11,9 +11,9 @@ ifeq ($(OS), Darwin)
   DL = -undefined dynamic_lookup
 else
   ifeq ($(CXX), g++)
-    CXXFLAGS = -march=x86-64 -mtune=generic -O3 -pipe -Wall -std=c++23 -fvisibility=hidden
+    CXXFLAGS = -march=x86-64 -mtune=generic -O3 -pipe -Wall -std=c++17 -fvisibility=hidden
   else
-    CXXFLAGS = -march=x86-64 -mtune=generic -O3 -pipe -std=c++23
+    CXXFLAGS = -O3 -pipe -Wall -std=c++17
   endif
   GRETLLD = $(shell pkg-config --libs gretl)
   GRETLIN = $(shell pkg-config --cflags gretl)

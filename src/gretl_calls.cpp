@@ -98,7 +98,7 @@ py::dict about (bool do_print)
     const std::string lgretl_strings[10] =
         {"dotdir", "gnuplot", "gretldir", "lang", "seats",
         "tramo", "tramodir", "workdir", "x12a", "x12adir"};
-    std::string mod_ver, lg_ver, py11_ver;
+    std::string mod_ver, lg_ver, py11_ver, sj_ver, sj_name, sj_desc;
     py::dict res, built_in_strings;
 
     gretl_push_c_numeric_locale();
@@ -108,6 +108,9 @@ py::dict about (bool do_print)
     py11_ver += "." + std::to_string(PYBIND11_VERSION_MINOR);
     py11_ver += "." + std::to_string(PYBIND11_VERSION_PATCH);
     lg_ver = std::to_string(libgretl_version());
+    sj_ver = get_simdjson_runtime("version");
+    sj_name = get_simdjson_runtime("name");
+    sj_desc = get_simdjson_runtime("description");
 
     // built-in strings
     for (int i=0; i<10; i++ ) {
@@ -126,11 +129,15 @@ py::dict about (bool do_print)
         res[py::cast("sysinfo")] = py::none();
     }
     res[py::cast("built_in_strings")] = built_in_strings;
+    res[py::cast("sj_ver")] = sj_ver;
+    res[py::cast("sj_name")] = sj_name;
+    res[py::cast("sj_desc")] = sj_desc;
 
     if (do_print || gretl4py_verbose) {
         std::cout << "gretl4py v" << mod_ver;
         std::cout << " [" << COMPILER_IDENT << "]" << std::endl;
         std::cout << "\t+ pybind11     v" << py11_ver << std::endl;
+        std::cout << "\t+ simdjson     v" << sj_ver << std::endl;
         std::cout << "\t+ libgretl-1.0 v" << lg_ver << std::endl;
         if (!b.err) {
             std::cout << std::endl << "libgretl $sysinfo:" << std::endl;
@@ -144,6 +151,9 @@ py::dict about (bool do_print)
             }
             std::cout << std::endl;
         }
+        std::cout << std::endl << "simdjson architecture implementation (runtime):" << std::endl;
+        std::cout << " name = " << sj_name << std::endl;
+        std::cout << " description = " << sj_desc << std::endl;
     }
 
     gretl_pop_c_numeric_locale();

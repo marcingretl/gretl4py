@@ -38,6 +38,8 @@ int gretl_model_to_dict (MODEL *model, DATASET *dset,
 
 void handle_gretl_error (int err);
 
+std::string get_simdjson_runtime (const std::string sj_rt_val);
+
 //
 // Class to handle gretl 'DATASET' type
 //
@@ -112,9 +114,9 @@ public:
 
     //auto *ptr (void) { return res; } // not used
 
-    std::string to_string (void) { return as_str; }
+    inline std::string to_string (void) { return as_str; }
 
-    std::string_view to_string_view (void) { return static_cast<std::string_view>(as_str); }
+    inline std::string_view to_string_view (void) { return static_cast<std::string_view>(as_str); }
 };
 
 //
