@@ -537,13 +537,13 @@ py::dict *json_to_dict_simd (simdjson::ondemand::object &json_obj,
             val.get_string(tmp_str);
             res[py::cast(key)] = tmp_str;
         } else if (val.type() == simdjson::ondemand::json_type::array) {
-            simdjson::ondemand::value item; //tmp_value
             tmp_array = val.get_array();
+            int i = 0;
 
             if (gr_type == "gretl_matrix") {
                 vgretl_matrix vec(mat_rows, vgretl_vector(mat_cols));
-#if 1
-                int i = 0, j = 0;
+                int j = 0;
+
                 for (auto item : tmp_array) {
                     if (item.type() == simdjson::ondemand::json_type::string) {
                         item.get_string(tmp_str);
@@ -557,28 +557,14 @@ py::dict *json_to_dict_simd (simdjson::ondemand::object &json_obj,
                         j++;
                     }
                 }
-#else
-                for (int i=0; i<mat_rows; i++) {
-                    for (int j=0; j<mat_cols; j++) {
-                        item = tmp_array.at(j*mat_rows + i);
-                        if (item.type() == simdjson::ondemand::json_type::string) {
-                            item.get_string(tmp_str);
-                            vec[i][j] = tmp_str;
-                        } else {
-                            vec[i][j] = static_cast<double>(item);
-                        }
-                        tmp_array.reset();
-                    }
-                }
-#endif // 1
+
                 py::dict &res_outer_json = *outer_json;
                 res_outer_json[py::cast(*outer_key)] = vec;
                 *add_to_outer = false;
             } else {
                 int tmp_array_size = tmp_array.count_elements();
                 vgretl_vector vec(tmp_array_size-shift);
-#if 1
-                int i = 0;
+
                 for (auto item : tmp_array) {
                     if ((gr_type == "gretl_list") && (i == 0)) {
                         i++;
@@ -598,22 +584,7 @@ py::dict *json_to_dict_simd (simdjson::ondemand::object &json_obj,
                     }
                     i++;
                 }
-#else
-                for (int i=0+shift; i<tmp_array_size; i++) {
-                    item = tmp_array.at(i);
-                    if (item.type() == simdjson::ondemand::json_type::string) {
-                        item.get_string(tmp_str);
-                        vec[i-shift] = tmp_str;
-                    } else {
-                        if (gr_type == "gretl_list") {
-                            vec[i-shift] = static_cast<int>(item.get_int64());
-                        } else {
-                            vec[i-shift] = static_cast<double>(item);
-                        }
-                    }
-                    tmp_array.reset();
-                }
-#endif // 1
+
                 if (gr_type == "gretl_series" || gr_type == "gretl_list" || gr_type == "gretl_vector") {
                     py::dict &res_outer_json = *outer_json;
                     res_outer_json[py::cast(*outer_key)] = vec;
