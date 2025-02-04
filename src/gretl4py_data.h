@@ -19,7 +19,6 @@
 
 #include <pybind11/stl.h>
 #include <gretl/libgretl.h>
-#include <glaze/glaze.hpp>
 #include <iostream>
 
 namespace py = pybind11;
@@ -83,11 +82,6 @@ private:
     char *json_buf = NULL;
     gretl_bundle *b;
     py::dict *as_dict = nullptr;
-
-    py::dict *json_to_dict (glz::json_t &json,
-                            py::dict *outer_json = nullptr,
-                            const char *outer_key = nullptr,
-                            bool *add_to_outer = nullptr);
 public:
     int err = 0;
 

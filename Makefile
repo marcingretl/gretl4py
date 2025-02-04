@@ -19,8 +19,6 @@ else
   GRETLIN = $(shell pkg-config --cflags gretl)
 endif
 
-GLAZEIN = -Iglaze/include
-
 MAKE = gmake
 PYBIND = $(shell python3 -m pybind11 --includes)
 SUFFIX = $(shell python3-config --extension-suffix)
@@ -36,7 +34,7 @@ OBJS = $(SRCS:.cpp=.o)
 .PHONY: tags clean depend
 
 %.o: %.cpp gretl4py.h gretl4py_data.h
-	$(CXX) $(CXXFLAGS) -c $< -o $@ -fPIC $(PYBIND) $(GRETLIN) $(GLAZEIN)
+	$(CXX) $(CXXFLAGS) -c $< -o $@ -fPIC $(PYBIND) $(GRETLIN)
 
 $(MODULE): $(OBJS)
 	$(CXX) $(CXXFLAGS) $^ -shared $(DL) -o $@ -fPIC $(GRETLLD)
