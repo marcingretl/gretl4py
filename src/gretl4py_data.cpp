@@ -632,8 +632,6 @@ py::dict *GretlBundle::to_dict (void)
                 err = E_DATA;
             } else {
                 sd_obj = sd_doc.get_object();
-            }
-            if (!err) {
                 as_dict = json_to_dict_simd(sd_obj);
             }
         }
