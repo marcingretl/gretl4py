@@ -152,8 +152,8 @@ py::dict about (bool do_print)
             std::cout << std::endl;
         }
         std::cout << std::endl << "simdjson architecture implementation (runtime):" << std::endl;
-        std::cout << "  name = " << sj_name << std::endl;
-        std::cout << "  description = " << sj_desc << std::endl;
+        std::cout << "  name = " << "\"" << sj_name << "\"" << std::endl;
+        std::cout << "  description = " << "\"" << sj_desc << "\"" << std::endl;
     }
 
     gretl_pop_c_numeric_locale();

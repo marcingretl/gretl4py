@@ -499,8 +499,8 @@ static std::string sd_json_cp; // those two strings we may change to char* buffe
 static std::string tmp_str;
 
 py::dict *json_to_dict_simd (simdjson::ondemand::object &json_obj,
-                             py::dict *outer_json = nullptr,
-                             std::string_view *outer_key = nullptr,
+                             py::dict *outer_dict = nullptr,
+                             const std::string_view *outer_key = nullptr,
                              bool *add_to_outer = nullptr)
 {
     py::dict *RES = new py::dict;
@@ -521,11 +521,11 @@ py::dict *json_to_dict_simd (simdjson::ondemand::object &json_obj,
             json_obj["cols"].get(tmp_value);
             tmp_number = tmp_value.get_number();
             mat_cols = tmp_number.get_int64();
-           if ((std::min)(mat_rows, mat_cols) == 1) { // this is to prevent 'min' macro expansion on MS SDK
-               gr_type = "gretl_vector";
-           }
+            if ((std::min)(mat_rows, mat_cols) == 1) { // this is to prevent 'min' macro expansion on MS SDK
+                gr_type = "gretl_vector";
+            }
         } else if (gr_type == "gretl_list") {
-           shift = 1;
+            shift = 1;
         }
     }
     json_obj.reset();
@@ -569,8 +569,8 @@ py::dict *json_to_dict_simd (simdjson::ondemand::object &json_obj,
                     }
                 }
 
-                py::dict &res_outer_json = *outer_json;
-                res_outer_json[py::cast(*outer_key)] = vec;
+                py::dict &res_outer_dict = *outer_dict;
+                res_outer_dict[py::cast(*outer_key)] = vec;
                 *add_to_outer = false;
             } else {
                 int tmp_array_size = tmp_array.count_elements();
@@ -597,8 +597,8 @@ py::dict *json_to_dict_simd (simdjson::ondemand::object &json_obj,
                 }
 
                 if (gr_type == "gretl_series" || gr_type == "gretl_list" || gr_type == "gretl_vector") {
-                    py::dict &res_outer_json = *outer_json;
-                    res_outer_json[py::cast(*outer_key)] = vec;
+                    py::dict &res_outer_dict = *outer_dict;
+                    res_outer_dict[py::cast(*outer_key)] = vec;
                     *add_to_outer = false;
                 } else {
                     res[py::cast(key)] = vec;
