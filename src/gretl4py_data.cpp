@@ -201,19 +201,6 @@ int gretl_model_to_dict (MODEL *model, DATASET *dset,
     return b.err;
 }
 
-std::string get_simdjson_runtime (const std::string sj_rt_val)
-{
-    if (sj_rt_val == "version") {
-        return SIMDJSON_VERSION;
-    } else if (sj_rt_val == "name") {
-        return simdjson::get_active_implementation()->name();
-    } else if (sj_rt_val == "description") {
-        return simdjson::get_active_implementation()->description();
-    } else {
-        return "simdjson runtime value unrecognized";
-    }
-}
-
 //////////////////////////////////////////////////
 // classes
 //////////////////////////////////////////////////

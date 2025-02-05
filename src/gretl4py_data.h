@@ -40,8 +40,6 @@ int gretl_model_to_dict (MODEL *model, DATASET *dset,
 
 void handle_gretl_error (int err);
 
-std::string get_simdjson_runtime (const std::string sj_rt_val);
-
 //
 // Class to handle gretl 'DATASET' type
 //

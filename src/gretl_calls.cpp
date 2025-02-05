@@ -108,9 +108,9 @@ py::dict about (bool do_print)
     py11_ver += "." + std::to_string(PYBIND11_VERSION_MINOR);
     py11_ver += "." + std::to_string(PYBIND11_VERSION_PATCH);
     lg_ver = std::to_string(libgretl_version());
-    sj_ver = get_simdjson_runtime("version");
-    sj_name = get_simdjson_runtime("name");
-    sj_desc = get_simdjson_runtime("description");
+    sj_ver = SIMDJSON_VERSION;
+    sj_name = simdjson::get_active_implementation()->name();
+    sj_desc = simdjson::get_active_implementation()->description();
 
     // built-in strings
     for (int i=0; i<10; i++ ) {
