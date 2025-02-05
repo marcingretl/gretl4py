@@ -19,8 +19,6 @@
 
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
-//#define SIMDJSON_DEVELOPMENT_CHECKS 0
-#include "simdjson.h"
 #include "gretl4py_data.h"
 #include <gretl/matrix_extra.h>
 #include <gretl/gretl_model.h>
@@ -488,20 +486,10 @@ GretlBundle::~GretlBundle (void)
     }
 }
 
-/* simdjson global buffers - must be moved to class as static variables */
-static simdjson::ondemand::parser sd_parser;
-static simdjson::ondemand::document sd_doc;
-static simdjson::ondemand::object sd_obj;
-static simdjson::ondemand::value tmp_value;
-static simdjson::ondemand::number tmp_number;
-static simdjson::ondemand::array tmp_array;
-static std::string sd_json_cp; // those two strings we may change to char* buffers
-static std::string tmp_str;
-
-py::dict *json_to_dict_simd (simdjson::ondemand::object &json_obj,
-                             py::dict *outer_dict = nullptr,
-                             const std::string_view *outer_key = nullptr,
-                             bool *add_to_outer = nullptr)
+py::dict *GretlBundle::json_to_dict (simdjson::ondemand::object &json_obj,
+                                     py::dict *outer_dict,
+                                     std::string_view *outer_key,
+                                     bool *add_to_outer)
 {
     py::dict *RES = new py::dict;
     py::dict &res = *RES;
@@ -515,12 +503,12 @@ py::dict *json_to_dict_simd (simdjson::ondemand::object &json_obj,
 
     if (!json_obj["type"].get_string(gr_type)) {
         if (gr_type == "gretl_matrix") {
-            json_obj["rows"].get(tmp_value);
-            tmp_number = tmp_value.get_number();
-            mat_rows = tmp_number.get_int64();
-            json_obj["cols"].get(tmp_value);
-            tmp_number = tmp_value.get_number();
-            mat_cols = tmp_number.get_int64();
+            json_obj["rows"].get(GretlBundle::sd_tmp_value);
+            GretlBundle::sd_tmp_number = GretlBundle::sd_tmp_value.get_number();
+            mat_rows = GretlBundle::sd_tmp_number.get_int64();
+            json_obj["cols"].get(GretlBundle::sd_tmp_value);
+            GretlBundle::sd_tmp_number = GretlBundle::sd_tmp_value.get_number();
+            mat_cols = GretlBundle::sd_tmp_number.get_int64();
             if ((std::min)(mat_rows, mat_cols) == 1) { // this is to prevent 'min' macro expansion on MS SDK
                 gr_type = "gretl_vector";
             }
@@ -545,20 +533,20 @@ py::dict *json_to_dict_simd (simdjson::ondemand::object &json_obj,
         } else if (val.type() == simdjson::ondemand::json_type::number) {
             res[py::cast(key)] = static_cast<double>(val);
         } else if (val.type() == simdjson::ondemand::json_type::string) {
-            val.get_string(tmp_str);
-            res[py::cast(key)] = tmp_str;
+            val.get_string(GretlBundle::sd_tmp_str);
+            res[py::cast(key)] = GretlBundle::sd_tmp_str;
         } else if (val.type() == simdjson::ondemand::json_type::array) {
-            tmp_array = val.get_array();
+            GretlBundle::sd_tmp_array = val.get_array();
             int i = 0;
 
             if (gr_type == "gretl_matrix") {
                 vgretl_matrix vec(mat_rows, vgretl_vector(mat_cols));
                 int j = 0;
 
-                for (auto item : tmp_array) {
+                for (auto item : GretlBundle::sd_tmp_array) {
                     if (item.type() == simdjson::ondemand::json_type::string) {
-                        item.get_string(tmp_str);
-                        vec[i][j] = tmp_str;
+                        item.get_string(GretlBundle::sd_tmp_str);
+                        vec[i][j] = GretlBundle::sd_tmp_str;
                     } else {
                         vec[i][j] = static_cast<double>(item);
                     }
@@ -573,21 +561,20 @@ py::dict *json_to_dict_simd (simdjson::ondemand::object &json_obj,
                 res_outer_dict[py::cast(*outer_key)] = vec;
                 *add_to_outer = false;
             } else {
-                int tmp_array_size = tmp_array.count_elements();
+                int tmp_array_size = GretlBundle::sd_tmp_array.count_elements();
                 vgretl_vector vec(tmp_array_size-shift);
 
-                for (auto item : tmp_array) {
+                for (auto item : GretlBundle::sd_tmp_array) {
                     if ((gr_type == "gretl_list") && (i == 0)) {
                         i++;
                         continue;
                     }
 
                     if (item.type() == simdjson::ondemand::json_type::string) {
-                        item.get_string(tmp_str);
-                        vec[i-shift] = tmp_str;
+                        item.get_string(GretlBundle::sd_tmp_str);
+                        vec[i-shift] = GretlBundle::sd_tmp_str;
                     } else {
                         if (gr_type == "gretl_list") {
-                            tmp_number = item.get_number();
                             vec[i-shift] = static_cast<int>(item.get_int64());
                         } else {
                             vec[i-shift] = static_cast<double>(item);
@@ -606,7 +593,7 @@ py::dict *json_to_dict_simd (simdjson::ondemand::object &json_obj,
             }
         } else if (val.type() == simdjson::ondemand::json_type::object) {
             simdjson::ondemand::object val_obj = val.get_object();
-            py::dict *tmp_dict = json_to_dict_simd(val_obj, RES, &key, &add_to_res);
+            py::dict *tmp_dict = GretlBundle::json_to_dict(val_obj, RES, &key, &add_to_res);
 
             if (add_to_res) {
                 res[py::cast(key)] = *tmp_dict;
@@ -627,12 +614,12 @@ py::dict *GretlBundle::to_dict (void)
         }
 
         if (json_buf != NULL) {
-            sd_json_cp = json_buf;
-            if (sd_parser.iterate(sd_json_cp).get(sd_doc)) {
+            GretlBundle::sd_json_cp = json_buf;
+            if (GretlBundle::sd_parser.iterate(GretlBundle::sd_json_cp).get(GretlBundle::sd_doc)) {
                 err = E_DATA;
             } else {
-                sd_obj = sd_doc.get_object();
-                as_dict = json_to_dict_simd(sd_obj);
+                GretlBundle::sd_obj = GretlBundle::sd_doc.get_object();
+                as_dict = GretlBundle::json_to_dict(GretlBundle::sd_obj);
             }
         }
     }

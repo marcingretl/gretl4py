@@ -17,6 +17,8 @@
  *
  */
 
+#define SIMDJSON_DEVELOPMENT_CHECKS 0
+#include "simdjson.h"
 #include <pybind11/stl.h>
 #include <gretl/libgretl.h>
 #include <iostream>
@@ -80,10 +82,25 @@ public:
 class GretlBundle
 {
 private:
+    // simdjson global buffers
+    static inline simdjson::ondemand::parser sd_parser{};
+    static inline simdjson::ondemand::document sd_doc;
+    static inline simdjson::ondemand::object sd_obj;
+    static inline simdjson::ondemand::value sd_tmp_value;
+    static inline simdjson::ondemand::number sd_tmp_number;
+    static inline simdjson::ondemand::array sd_tmp_array;
+    static inline std::string sd_json_cp; // those two strings we may change to char* buffers
+    static inline std::string sd_tmp_str;
+    //simdjson: end
     bool free_b = true;
     char *json_buf = NULL;
     gretl_bundle *b;
     py::dict *as_dict = nullptr;
+
+    py::dict *json_to_dict (simdjson::ondemand::object &json_obj,
+                            py::dict *outer_dict = nullptr,
+                            std::string_view *outer_key = nullptr,
+                            bool *add_to_outer = nullptr);
 public:
     int err = 0;
 
