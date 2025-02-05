@@ -521,7 +521,7 @@ py::dict *json_to_dict_simd (simdjson::ondemand::object &json_obj,
             json_obj["cols"].get(tmp_value);
             tmp_number = tmp_value.get_number();
             mat_cols = tmp_number.get_int64();
-           if (std::min(mat_rows, mat_cols) == 1) {
+           if ((std::min)(mat_rows, mat_cols) == 1) { // this is to prevent 'min' macro expansion on MS SDK
                gr_type = "gretl_vector";
            }
         } else if (gr_type == "gretl_list") {
