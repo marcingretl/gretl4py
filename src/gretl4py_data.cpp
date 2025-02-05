@@ -500,6 +500,7 @@ py::dict *GretlBundle::json_to_dict (simdjson::ondemand::object &json_obj,
     std::string gr_type; // we introduce fake "gretl_vector" type which we use when gretl_matrix is in fact vector
     std::string_view key;
     simdjson::ondemand::value val;
+    simdjson::ondemand::object val_obj;
 
     if (!json_obj["type"].get_string(gr_type)) {
         if (gr_type == "gretl_matrix") {
@@ -565,7 +566,7 @@ py::dict *GretlBundle::json_to_dict (simdjson::ondemand::object &json_obj,
                 vgretl_vector vec(tmp_array_size-shift);
 
                 for (auto item : GretlBundle::sd_tmp_array) {
-                    if ((gr_type == "gretl_list") && (i == 0)) {
+                    if (gr_type == "gretl_list" && i == 0) {
                         i++;
                         continue;
                     }
@@ -592,7 +593,7 @@ py::dict *GretlBundle::json_to_dict (simdjson::ondemand::object &json_obj,
                 }
             }
         } else if (val.type() == simdjson::ondemand::json_type::object) {
-            simdjson::ondemand::object val_obj = val.get_object();
+            val_obj = val.get_object();
             py::dict *tmp_dict = GretlBundle::json_to_dict(val_obj, RES, &key, &add_to_res);
 
             if (add_to_res) {
