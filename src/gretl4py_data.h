@@ -36,7 +36,7 @@ typedef std::vector<vgretl_vector> vgretl_matrix;
 #define is_pytuple(o) (py::isinstance<py::tuple>(o))
 
 py::dict *gretl_model_to_dict (MODEL *model, DATASET *dset,
-                         const char *summary, int *err);
+                               const char *summary, int *err);
 
 void handle_gretl_error (int err);
 

@@ -178,7 +178,7 @@ void handle_gretl_error (int err)
 }
 
 py::dict *gretl_model_to_dict (MODEL *model, DATASET *dset,
-                         const char *summary, int *err)
+                               const char *summary, int *err)
 {
     //
     // Here we construct a python dictionary which is
@@ -194,12 +194,17 @@ py::dict *gretl_model_to_dict (MODEL *model, DATASET *dset,
     GretlBundle b = GretlBundle(model, dset);
     *err = b.err;
 
-    if (err) {
+    if (!*err) {
         pydict = b.to_dict();
-        py::dict &res = *pydict;
 
-        res[py::cast("_id")] = model->ID;
-        res[py::cast("summary")] = summary;
+        if (!pydict) {
+            *err = E_DATA;
+            throw std::runtime_error("Model bundle to dict conversion failed.");
+        } else {
+            py::dict &d = *pydict;
+            d[py::cast("_id")] = model->ID;
+            d[py::cast("summary")] = summary;
+        }
     }
 
     return pydict;
