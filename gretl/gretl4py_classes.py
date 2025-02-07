@@ -33,7 +33,6 @@ class Model:
         self.options = kwargs
         self.computed = False
         self._id = None
-        self.results = {}
         self.summary = {}
 
     def __repr__(self):
@@ -58,69 +57,24 @@ class Model:
             del model_dict['_id']
         self.computed = True
         return self
-
-    def coeff(self):
-        return self.results['coeff']
-
-    def stderr(self):
-        return self.results['stderr']
-
-    def yhat(self):
-        if self.name == 'biprobit':
-            return self.results['bp_yhat']
-        else:
-            return self.results['yhat']
-
-    def uhat(self):
-        if self.name == 'biprobit':
-            return self.results['bp_uhat']
-        else:
-            return self.results['uhat']
-        
-    def oddsratios(self, show=True):
+       
+    def oddsratio(self):
         if self.name != 'logit':
             exit(f'*** error: oddsratios not available for {self.name:s} estimator ***\n')
         else:
-            res = None
             try:
-                res = self.results['oddsratios']
-                if show is True:
-                    from tabulate import tabulate
-                    print(tabulate(res, showindex=self.results['parnames'][1:],
-                                   headers=['odds ratio', 'std. error', 'low95', 'high95'],
-                                   tablefmt="plain"))
+                from tabulate import tabulate
+                print(tabulate(self.oddsratios, showindex=self.parnames[1:],
+                               headers=['odds ratio', 'std. error', 'low95', 'high95'],
+                               tablefmt="plain"))
             except KeyError:
                 print('*** warning: oddsratios not available for current model ***\n')
             except ModuleNotFoundError:
                 print('*** warning: oddsratios printing requires \'tabulate\' package ***\n')
-            finally:
-                return res
-
-    # strings
-    def parnames(self):
-        return self.results['parnames']
 
     #scalars
     def id(self):
         return self._id
-
-    def rsq(self):
-        return self.results['rsq']
-
-    def sigma(self):
-        return self.results['sigma']
-
-    def aic(self):
-        return self.results['aic']
-
-    def bic(self):
-        return self.results['bic']
-
-    def hqc(self):
-        return self.results['hqc']
-
-    def lnl(self):
-        return self.results['lnl']
 
 if __name__ == "__main__":
     pass

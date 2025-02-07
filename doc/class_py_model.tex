@@ -12,132 +12,130 @@ additional (including optional) arguments, as detailed
 in Section~\ref{sec:estimators_python}, with examples
 provided in Section~\ref{sec:estimators_python_examples}.
 
-\vspace*{20pt}\noindent The \classpymodel class provides the following public methods:
+\vspace*{20pt}\noindent The \classpymodel class provides the
+following public attributes:
 
-\gretlfpycmd{aic()}
-\estdesc{Returns value of Akaike criterion.}
+\gretlfpycmd{aic}
+\estdesc{Holds value of Akaike criterion.}
 \begin{lstlisting}[style=pythonstyle]
-float = aic(self)
+float = Model.aic
 \end{lstlisting}
-
-\gretlfpycmd{bic()}
-\estdesc{Returns value of Schwartz criterion.}
-\begin{lstlisting}[style=pythonstyle]
-float = bic(self)
-\end{lstlisting}
-
-\gretlfpycmd{coeff()}
-\estdesc{Returns coefficient estimates.}
-\begin{lstlisting}[style=pythonstyle]
-numpy.ndarray = coeff(self)
-\end{lstlisting}
-
-\gretlfpycmd{fit()}
-\estdesc{Executes the underlying implementation of
-  the specified estimator in \gretlpy.}
-\begin{lstlisting}[style=pythonstyle]
-gretl.Model = fit(self)
-\end{lstlisting}
-
-\gretlfpycmd{hqc()}
-\estdesc{Returns value of Hannan-Quinn criterion.}
-\begin{lstlisting}[style=pythonstyle]
-float = hqc(self)
-\end{lstlisting}
-
-\gretlfpycmd{id()}
-\estdesc{Model's ID (assigned by \lgretl).}
-\begin{lstlisting}[style=pythonstyle]
-int = id(self)
-\end{lstlisting}
-
-\gretlfpycmd{lnl()}
-\estdesc{Returns the log-likelihood for the last estimated model.}
-\begin{lstlisting}[style=pythonstyle]
-int = lnl(self)
-\end{lstlisting}
-
-\gretlfpycmd{oddsratios()}\index{logit()}
-\estdesc{Returns oddsratios for logit model (if available).}
-\begin{lstlisting}[style=pythonstyle]
-numpy.ndarray = oddsratios(self, show=bool)
-\end{lstlisting}
-\generaldesc{This methods retrieves and pretty prints
-	oddsratios for \gretlcmd{logit} model:
-	\begin{itemize}
-		\item \pythcode{show=bool}: If set to \pythcode{True},
-			table with oddsratios is printed (default:~\pythcode{True}).
-\end{itemize}}
-
-\gretlfpycmd{parnames()}
-\estdesc{Returns names of coefficients.}
-\begin{lstlisting}[style=pythonstyle]
-str = parnames(self)
-\end{lstlisting}
-
-\gretlfpycmd{rsq()}
-\estdesc{Returns R-squared.}
-\begin{lstlisting}[style=pythonstyle]
-float = rsq(self)
-\end{lstlisting}
-
-\gretlfpycmd{sigma()}
-\estdesc{Returns standard errors of residuals.}
-\begin{lstlisting}[style=pythonstyle]
-float = sigma(self)
-\end{lstlisting}
-
-\gretlfpycmd{stderr()}
-\estdesc{Returns standard errors of coefficient estimates.}
-\begin{lstlisting}[style=pythonstyle]
-numpy.ndarray = stderr(self)
-\end{lstlisting}
-
-\gretlfpycmd{uhat()}
-\estdesc{Returns residuals.}
-\begin{lstlisting}[style=pythonstyle]
-list = uhat(self)
-\end{lstlisting}
-\generaldesc{Note: in case of \gretlcmd{biprobit}\index{biprobit()},
-  \texttt{bp\_uhat} entry of \gretlcmd{\$model} bundle is returned.}
-
-\gretlfpycmd{yhat()}
-\estdesc{Returns fitted values.}
-\begin{lstlisting}[style=pythonstyle]
-list = yhat(self)
-\end{lstlisting}
-\generaldesc{Note: in case of \gretlcmd{biprobit}\index{biprobit()},
-  \texttt{bp\_yhat} entry of \gretlcmd{\$model} bundle is returned.}
-
-\vspace*{20pt}\noindent The \classpymodel class provides the following public attributes:
 
 \gretlfpycmd{args}
 \estdesc{Options passed as \pythcode{*args}.}
 \begin{lstlisting}[style=pythonstyle]
-tuple = args
+tuple = Model.args
+\end{lstlisting}
+
+\gretlfpycmd{bic}
+\estdesc{Holds value of Schwartz criterion.}
+\begin{lstlisting}[style=pythonstyle]
+float = Model.bic
 \end{lstlisting}
 
 \gretlfpycmd{computed}
-\estdesc{Indicated if the model was estimated.}
+\estdesc{Indicates if the model was estimated.}
 \begin{lstlisting}[style=pythonstyle]
-bool = computed
+bool = Model.computed
+\end{lstlisting}
+
+\gretlfpycmd{coeff}
+\estdesc{Holds coefficient estimates.}
+\begin{lstlisting}[style=pythonstyle]
+list = Model.coeff
+\end{lstlisting}
+
+\gretlfpycmd{hqc}
+\estdesc{Holds value of Hannan-Quinn criterion.}
+\begin{lstlisting}[style=pythonstyle]
+float = Model.hqc
+\end{lstlisting}
+
+\gretlfpycmd{lnl}
+\estdesc{Holds the log-likelihood for the last estimated model.}
+\begin{lstlisting}[style=pythonstyle]
+float = Model.lnl
+\end{lstlisting}
+
+\gretlfpycmd{oddsratios}\index{logit()}
+\estdesc{Holds oddsratios for logit model (if available).}
+\begin{lstlisting}[style=pythonstyle]
+list = Model.oddsratios
 \end{lstlisting}
 
 \gretlfpycmd{options}
 \estdesc{Options passed as \pythcode{**kwargs}.}
 \begin{lstlisting}[style=pythonstyle]
-dict = options
+dict = Model.options
 \end{lstlisting}
 
-\gretlfpycmd{results}
-\estdesc{Contents of the \lgretl's \gretlcmd{\$model} bundle
-  \cite[see][]{gretl_command} for details.}
+\gretlfpycmd{parnames}
+\estdesc{Holds names of coefficients.}
 \begin{lstlisting}[style=pythonstyle]
-dict = results
+list = Model.parnames
+\end{lstlisting}
+
+\gretlfpycmd{rsq}
+\estdesc{Holds R-squared.}
+\begin{lstlisting}[style=pythonstyle]
+float = Model.rsq
+\end{lstlisting}
+
+\gretlfpycmd{sigma}
+\estdesc{Holds standard errors of residuals.}
+\begin{lstlisting}[style=pythonstyle]
+float = Model.sigma
+\end{lstlisting}
+
+\gretlfpycmd{stderr}
+\estdesc{Holds standard errors of coefficient estimates.}
+\begin{lstlisting}[style=pythonstyle]
+list = Model.stderr
 \end{lstlisting}
 
 \gretlfpycmd{summary}
 \estdesc{Model's output.}
 \begin{lstlisting}[style=pythonstyle]
-str = summary
+str = Model.summary
 \end{lstlisting}
+
+\gretlfpycmd{uhat}
+\estdesc{Holds model residuals.}
+\begin{lstlisting}[style=pythonstyle]
+list = Model.uhat
+\end{lstlisting}
+\generaldesc{Note: in case of \gretlcmd{biprobit}\index{biprobit()},
+  \texttt{bp\_uhat} entry of \gretlcmd{\$model} bundle is returned.}
+
+\gretlfpycmd{yhat}
+\estdesc{Holds fitted values.}
+\begin{lstlisting}[style=pythonstyle]
+list = Model.yhat
+\end{lstlisting}
+\generaldesc{Note: in case of \gretlcmd{biprobit}\index{biprobit()},
+  \texttt{bp\_yhat} entry of \gretlcmd{\$model} bundle is returned.}
+
+
+\vspace*{20pt}\noindent The \classpymodel class provides the
+following public methods:
+
+\gretlfpycmd{fit()}
+\estdesc{Executes the underlying implementation of
+the specified estimator in \gretlpy.}
+\begin{lstlisting}[style=pythonstyle]
+gretl.Model = Model.fit(self)
+\end{lstlisting}
+
+\gretlfpycmd{id()}
+\estdesc{Model's ID (assigned by \lgretl).}
+\begin{lstlisting}[style=pythonstyle]
+int = Model.id(self)
+\end{lstlisting}
+
+\gretlfpycmd{oddsratio()}\index{logit()}
+\estdesc{Prints oddsratios for logit model (if available).}
+\begin{lstlisting}[style=pythonstyle]
+Model.oddsratio(self)
+\end{lstlisting}
+\generaldesc{This method pretty prints
+oddsratios for \gretlcmd{logit} model.}

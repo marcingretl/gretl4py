@@ -35,8 +35,8 @@ typedef std::vector<vgretl_vector> vgretl_matrix;
 #define is_pydict(o) (py::isinstance<py::dict>(o))
 #define is_pytuple(o) (py::isinstance<py::tuple>(o))
 
-int gretl_model_to_dict (MODEL *model, DATASET *dset,
-                         const char *summary, py::dict &DICT);
+py::dict *gretl_model_to_dict (MODEL *model, DATASET *dset,
+                         const char *summary, int *err);
 
 void handle_gretl_error (int err);
 
@@ -67,7 +67,7 @@ public:
     GretlDataset (const py::dict &pydict);  // we load dataset from Python's dictionary
     ~GretlDataset (void);
 
-    py::dict *to_dict (void); // memory must be freed at the caller level
+    py::dict *to_dict (void);               // memory must be deleted at the caller level
 
     void printdset (bool namesonly = false);
 
@@ -106,7 +106,7 @@ public:
     GretlBundle (MODEL *model, DATASET *dset);  // we produce bundle from MODEL struct
     ~GretlBundle (void);
 
-    py::dict *to_dict (void);                   // bundle-to-dict mapper: memory must be freed at the caller level
+    py::dict *to_dict (void);                   // bundle-to-dict mapper: memory must be deleted at the caller level
 
     void print (void);
 };

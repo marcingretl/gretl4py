@@ -28,7 +28,7 @@ m = gretl.biprobit(
     'anydrg cardhldr const age avgexp ; const age income ownrent selfempl',
     save_xbeta=True).fit()
 print(m)
-print(m.yhat())
+print(m.bp_yhat)
 
 # print extra information
 m = gretl.biprobit(

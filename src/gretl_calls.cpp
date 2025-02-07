@@ -342,9 +342,11 @@ static gretlopt unpack_kwargs (const py::kwargs &kwargs,
     return (gretlopt) opts;
 }
 
-static void save_model (MODEL *model, DATASET *dset, PRN *prn,
-                        py::dict &res, gretlopt opt = OPT_NONE)
+static py::dict *save_model (MODEL *model, DATASET *dset, PRN *prn,
+                             gretlopt opt = OPT_NONE)
 {
+    py::dict *res = nullptr;
+
     if (model->errcode) {
         const char *msg = errmsg_get_with_default(model->errcode);
         throw std::runtime_error(msg);
@@ -354,11 +356,13 @@ static void save_model (MODEL *model, DATASET *dset, PRN *prn,
 
         printmodel(model, dset, opt, prn);
         summary = gretl_print_get_buffer(prn);
-        err = gretl_model_to_dict(model, dset, summary, res);
+        res = gretl_model_to_dict(model, dset, summary, &err);
         if (err) {
             handle_gretl_error(err);
         }
     }
+
+    return res;
 }
 
 static void get_arima_order (const py::tuple &tup,
@@ -383,9 +387,9 @@ static void get_arima_order (const py::tuple &tup,
 py::dict *arima (const std::string y, const py::tuple &tup,
                  const py::kwargs &kwargs)
 {
-    py::dict *res = new py::dict;
     GretlPrint GP = GretlPrint();
     gretlopt opt = OPT_NONE;
+    py::dict *res = nullptr;
     GretlDataset *GD = nullptr;
     MODEL *model = NULL;
     int *list = NULL;
@@ -401,13 +405,11 @@ py::dict *arima (const std::string y, const py::tuple &tup,
         GD = DSET;
     }
     if (!GD) {
-        delete res;
         throw std::runtime_error("No dataset is available");
     }
 
     y_number = current_series_index(GD->dset, y.c_str());
     if (y_number == -1) {
-        delete res;
         throw std::runtime_error("There is no variable: " + y);
     }
 
@@ -446,7 +448,7 @@ py::dict *arima (const std::string y, const py::tuple &tup,
     list[i++] = y_number;
 
     *model = arma(list, NULL, GD->dset, opt, GP.prn);
-    save_model(model, GD->dset, GP.prn, *res, opt);
+    res = save_model(model, GD->dset, GP.prn, opt);
 
     gretl_model_free(model);
     std::free(list);
@@ -491,9 +493,9 @@ template <auto F, GretlCmdIndex CI>
 static py::dict *regression_wrapper (const std::string &formula,
                                      const py::kwargs &kwargs)
 {
-    py::dict *res = new py::dict;
     GretlPrint GP = GretlPrint();
     gretlopt opt = OPT_NONE;
+    py::dict *res = nullptr;
     GretlDataset *GD = nullptr;
     MODEL *model = NULL;
     int *list = NULL;
@@ -527,7 +529,7 @@ static py::dict *regression_wrapper (const std::string &formula,
     } else if constexpr (use_lcdop_sig(CI)) {
         *model = F(list, CI, GD->dset, opt, GP.prn);
     }
-    save_model(model, GD->dset, GP.prn, *res, opt);
+    res = save_model(model, GD->dset, GP.prn, opt);
 
     gretl_model_free(model);
     std::free(list);

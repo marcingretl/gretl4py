@@ -177,28 +177,32 @@ void handle_gretl_error (int err)
     throw std::runtime_error(msg);
 }
 
-int gretl_model_to_dict (MODEL *model, DATASET *dset,
-                         const char *summary, py::dict &pydict)
+py::dict *gretl_model_to_dict (MODEL *model, DATASET *dset,
+                         const char *summary, int *err)
 {
     //
-    // Here we construct a python dictionary holding the ID number
-    // of @model; the @summary text produced by libgretl's printmodel();
+    // Here we construct a python dictionary which is
+    // the representation of the gretl_bundle produced by
+    // libgretl's bundle_from_model(). We also add the
+    // @summary text produced by libgretl's printmodel();
+
     // and a string holding the JSON representation of the gretl_bundle
     // produced by libgretl's bundle_from_model().
     //
+    py::dict *pydict = nullptr;
+
     GretlBundle b = GretlBundle(model, dset);
-    //char *json_buf = b.to_json();
+    *err = b.err;
 
-    if (!b.err) {
-        py::dict *results = b.to_dict();
+    if (err) {
+        pydict = b.to_dict();
+        py::dict &res = *pydict;
 
-        pydict[py::cast("_id")] = model->ID;
-        pydict[py::cast("results")] = *results;
-        pydict[py::cast("summary")] = summary;
-        delete results;
+        res[py::cast("_id")] = model->ID;
+        res[py::cast("summary")] = summary;
     }
 
-    return b.err;
+    return pydict;
 }
 
 //////////////////////////////////////////////////
