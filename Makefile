@@ -26,10 +26,10 @@ SUFFIX = $(shell python3-config --extension-suffix)
 MODULE = gretl/_gretl$(SUFFIX)
 ZIPFILE = gretl4py.zip
 
-VPATH = ./src
+VPATH = ./src ./src/simdjson
 
 PYFILES = gretl/gretl4py_addons.py gretl/gretl4py_classes.py
-SRCS = gretl4py.cpp gretl_calls.cpp gretl4py_data.cpp simdjson/simdjson.cpp
+SRCS = gretl4py.cpp gretl_calls.cpp gretl4py_data.cpp simdjson.cpp
 OBJS = $(SRCS:.cpp=.o)
 
 .PHONY: tags clean depend
@@ -58,5 +58,6 @@ depend:
 # DO NOT DELETE
 
 src/gretl4py.o: src/gretl4py.h
-src/gretl4py_data.o: src/gretl4py_data.h src/simdjson.h
-src/gretl_calls.o: src/gretl4py.h src/gretl4py_data.h src/simdjson.h
+src/gretl4py_data.o: src/gretl4py_data.h src/simdjson/simdjson.h
+src/gretl_calls.o: src/gretl4py.h src/gretl4py_data.h src/simdjson/simdjson.h
+src/variant.o: src/mapbox/variant.hpp
