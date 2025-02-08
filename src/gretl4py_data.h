@@ -25,7 +25,7 @@
  #define USE_MAPBOX_VARIANT 0
 #endif // define USE_MAPBOX_VARIANT
 
-#include "simdjson.h"
+#include "simdjson/simdjson.h"
 #include <pybind11/stl.h>
 #include <gretl/libgretl.h>
 #include <iostream>

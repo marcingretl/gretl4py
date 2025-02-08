@@ -29,7 +29,7 @@ ZIPFILE = gretl4py.zip
 VPATH = ./src
 
 PYFILES = gretl/gretl4py_addons.py gretl/gretl4py_classes.py
-SRCS = gretl4py.cpp gretl_calls.cpp gretl4py_data.cpp simdjson.cpp
+SRCS = gretl4py.cpp gretl_calls.cpp gretl4py_data.cpp simdjson/simdjson.cpp
 OBJS = $(SRCS:.cpp=.o)
 
 .PHONY: tags clean depend
