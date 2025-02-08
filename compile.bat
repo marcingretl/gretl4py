@@ -32,7 +32,7 @@ REM module suffix
 FOR /f %%i IN ('%CMD% -c "import sysconfig; print(sysconfig.get_config_var(r'EXT_SUFFIX'))"') DO SET SUFFIX=%%i
 SET "MODULE=gretl/_gretl%SUFFIX%"
 
-%CXX% %CXXFLAGS% -c src\simdjson.cpp -o simdjson.o
+%CXX% %CXXFLAGS% -c src\simdjson\simdjson.cpp -o simdjson.o
 %CXX% %CXXFLAGS% -c src\gretl4py_data.cpp -o gretl4py_data.o %PYBIND% %GRETLIN% %PYTHONIN%
 %CXX% %CXXFLAGS% -c src\gretl_calls.cpp -o gretl_calls.o %PYBIND% %GRETLIN% %PYTHONIN%
 %CXX% %CXXFLAGS% -c src\gretl4py.cpp -o gretl4py.o %PYBIND% %GRETLIN% %PYTHONIN%
