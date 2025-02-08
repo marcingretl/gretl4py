@@ -13,7 +13,7 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *  along with this program. If not, see <http://www.gnu.org/licenses/>.
  *
  */
 
@@ -98,7 +98,7 @@ py::dict about (bool do_print)
     const std::string lgretl_strings[10] =
         {"dotdir", "gnuplot", "gretldir", "lang", "seats",
         "tramo", "tramodir", "workdir", "x12a", "x12adir"};
-    std::string mod_ver, lg_ver, py11_ver;
+    std::string mod_ver, lg_ver, py11_ver, sj_ver, sj_name, sj_desc;
     py::dict res, built_in_strings;
 
     gretl_push_c_numeric_locale();
@@ -108,6 +108,15 @@ py::dict about (bool do_print)
     py11_ver += "." + std::to_string(PYBIND11_VERSION_MINOR);
     py11_ver += "." + std::to_string(PYBIND11_VERSION_PATCH);
     lg_ver = std::to_string(libgretl_version());
+    sj_ver = SIMDJSON_VERSION;
+    sj_name = simdjson::get_active_implementation()->name();
+    sj_desc = simdjson::get_active_implementation()->description();
+#if USE_MAPBOX_VARIANT
+    std::string mbv_ver;
+    mbv_ver = std::to_string(VARIANT_MAJOR_VERSION);
+    mbv_ver += "." + std::to_string(VARIANT_MINOR_VERSION);
+    mbv_ver += "." + std::to_string(VARIANT_PATCH_VERSION);
+#endif // USE_MAPBOX_VARIANT
 
     // built-in strings
     for (int i=0; i<10; i++ ) {
@@ -119,16 +128,28 @@ py::dict about (bool do_print)
     res[py::cast("py11_ver")] = py11_ver;
     res[py::cast("lg_ver")] = lg_ver;
     if (!b.err) {
-        res[py::cast("sysinfo")] = b.to_json();
+        py::dict *sysinfo = b.to_dict();
+        res[py::cast("sysinfo")] = *sysinfo;
+        delete sysinfo;
     } else {
         res[py::cast("sysinfo")] = py::none();
     }
     res[py::cast("built_in_strings")] = built_in_strings;
+    res[py::cast("sj_ver")] = sj_ver;
+    res[py::cast("sj_name")] = sj_name;
+    res[py::cast("sj_desc")] = sj_desc;
+#if USE_MAPBOX_VARIANT
+    res[py::cast("mbv_ver")] = mbv_ver;
+#endif // USE_MAPBOX_VARIANT
 
     if (do_print || gretl4py_verbose) {
         std::cout << "gretl4py v" << mod_ver;
         std::cout << " [" << COMPILER_IDENT << "]" << std::endl;
         std::cout << "\t+ pybind11     v" << py11_ver << std::endl;
+        std::cout << "\t+ simdjson     v" << sj_ver << std::endl;
+#if USE_MAPBOX_VARIANT
+        std::cout << "\t+ mapbox       v" << mbv_ver << std::endl;
+#endif // USE_MAPBOX_VARIANT
         std::cout << "\t+ libgretl-1.0 v" << lg_ver << std::endl;
         if (!b.err) {
             std::cout << std::endl << "libgretl $sysinfo:" << std::endl;
@@ -142,6 +163,9 @@ py::dict about (bool do_print)
             }
             std::cout << std::endl;
         }
+        std::cout << std::endl << "simdjson architecture implementation (runtime):" << std::endl;
+        std::cout << "  name = " << "\"" << sj_name << "\"" << std::endl;
+        std::cout << "  description = " << "\"" << sj_desc << "\"" << std::endl;
     }
 
     gretl_pop_c_numeric_locale();
@@ -330,9 +354,11 @@ static gretlopt unpack_kwargs (const py::kwargs &kwargs,
     return (gretlopt) opts;
 }
 
-static void save_model (MODEL *model, DATASET *dset, PRN *prn,
-                        py::dict &res, gretlopt opt = OPT_NONE)
+static py::dict *save_model (MODEL *model, DATASET *dset, PRN *prn,
+                             gretlopt opt = OPT_NONE)
 {
+    py::dict *res = nullptr;
+
     if (model->errcode) {
         const char *msg = errmsg_get_with_default(model->errcode);
         throw std::runtime_error(msg);
@@ -342,11 +368,13 @@ static void save_model (MODEL *model, DATASET *dset, PRN *prn,
 
         printmodel(model, dset, opt, prn);
         summary = gretl_print_get_buffer(prn);
-        err = gretl_model_to_dict(model, dset, summary, res);
+        res = gretl_model_to_dict(model, dset, summary, &err);
         if (err) {
             handle_gretl_error(err);
         }
     }
+
+    return res;
 }
 
 static void get_arima_order (const py::tuple &tup,
@@ -371,9 +399,9 @@ static void get_arima_order (const py::tuple &tup,
 py::dict *arima (const std::string y, const py::tuple &tup,
                  const py::kwargs &kwargs)
 {
-    py::dict *res = new py::dict;
     GretlPrint GP = GretlPrint();
     gretlopt opt = OPT_NONE;
+    py::dict *res = nullptr;
     GretlDataset *GD = nullptr;
     MODEL *model = NULL;
     int *list = NULL;
@@ -389,13 +417,11 @@ py::dict *arima (const std::string y, const py::tuple &tup,
         GD = DSET;
     }
     if (!GD) {
-        delete res;
         throw std::runtime_error("No dataset is available");
     }
 
     y_number = current_series_index(GD->dset, y.c_str());
     if (y_number == -1) {
-        delete res;
         throw std::runtime_error("There is no variable: " + y);
     }
 
@@ -434,7 +460,7 @@ py::dict *arima (const std::string y, const py::tuple &tup,
     list[i++] = y_number;
 
     *model = arma(list, NULL, GD->dset, opt, GP.prn);
-    save_model(model, GD->dset, GP.prn, *res, opt);
+    res = save_model(model, GD->dset, GP.prn, opt);
 
     gretl_model_free(model);
     std::free(list);
@@ -479,9 +505,9 @@ template <auto F, GretlCmdIndex CI>
 static py::dict *regression_wrapper (const std::string &formula,
                                      const py::kwargs &kwargs)
 {
-    py::dict *res = new py::dict;
     GretlPrint GP = GretlPrint();
     gretlopt opt = OPT_NONE;
+    py::dict *res = nullptr;
     GretlDataset *GD = nullptr;
     MODEL *model = NULL;
     int *list = NULL;
@@ -515,7 +541,7 @@ static py::dict *regression_wrapper (const std::string &formula,
     } else if constexpr (use_lcdop_sig(CI)) {
         *model = F(list, CI, GD->dset, opt, GP.prn);
     }
-    save_model(model, GD->dset, GP.prn, *res, opt);
+    res = save_model(model, GD->dset, GP.prn, opt);
 
     gretl_model_free(model);
     std::free(list);

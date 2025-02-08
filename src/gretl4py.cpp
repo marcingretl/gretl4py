@@ -13,7 +13,7 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *  along with this program. If not, see <http://www.gnu.org/licenses/>.
  *
  */
 
@@ -30,7 +30,8 @@ class Module
 
 const std::string info = "This is a help text for module.";
 
-PYBIND11_MODULE(_gretl, m) {
+PYBIND11_MODULE(_gretl, m)
+{
     // module related tools
     static Module module;
     m.doc() = info;

@@ -28,12 +28,12 @@ mydata = gretl.get_gretl_data(fname)
 
 print('OLS without options:')
 res = gretl.ols('price ~ 0 + sqft + bedrms', data=mydata).fit()
-assert res.bic() == ols_bic, 'BIC should equal ' + str(ols_bic)
+assert res.bic == ols_bic, 'BIC should equal ' + str(ols_bic)
 print(res)
 
 print('OLS with robust option:')
 res = gretl.ols('price ~ 0 + sqft + bedrms', data=mydata, robust=True).fit()
-assert res.lnl() == ols_lnl, 'log-likelihood should equal ' + str(ols_bic)
+assert res.lnl == ols_lnl, 'log-likelihood should equal ' + str(ols_bic)
 print(res)
 ############################################################################
 
@@ -47,19 +47,19 @@ ldata = gretl.get_gretl_data(fname)
 print('LOGIT without options:')
 res = gretl.logit('GRADE ~ 0 GPA TUCE PSI', data=ldata).fit()
 
-assert (round(res.results['fXb'], 15) == logit_fXb), 'f(beta\'x) at mean of independent vars should equal: ' + str(logit_fXb)
+assert (round(res.fXb, 15) == logit_fXb), 'f(beta\'x) at mean of independent vars should equal: ' + str(logit_fXb)
 print(res)
 print("Odds Ratios:")
 print("columns: odds ratio, std. error, low95, high95")
 print("rows:\t GPA, TUCE, PSI")
-print(res.results['oddsratios'])
+print(res.oddsratios)
 
 print('PROBIT example with p-value option:')
 res = gretl.probit('GRADE ~ 0 GPA TUCE PSI', data=ldata, p_values=True).fit()
-assert (round(res.results['normality_test']['pvalue'], 14) == probit_normtest_pval), 'pvalue in normality of residuals should equal ' + str(probit_normtest_pval)
+assert (round(res.normality_test['pvalue'], 14) == probit_normtest_pval), 'pvalue in normality of residuals should equal ' + str(probit_normtest_pval)
 print(res)
 print('normality test:')
-print(res.results['normality_test'])
+print(res.normality_test)
 ############################################################################
 
 
@@ -86,7 +86,7 @@ gretl.attach_gretl_data('bjg.csv')
 
 print('SARIMA (0 1 2, 0 1 1):')
 res = gretl.arima(y='lg', order=(0,1,2), seasonal=(0,1,1), nc=True).fit()
-assert res.results['uhat'][0] == 'NA', 'the first element should be NaN!!!'
+assert res.uhat[0] == 'NA', 'the first element should be NaN!!!'
 print(res)
 ############################################################################
 

@@ -17,7 +17,7 @@ REM Python main path and version
 FOR /f "tokens=*" %%i IN ('%CMD% -c "import sysconfig; print(sysconfig.get_paths()[r'data'])"') DO SET "PYTHON_PATH=%%i"
 FOR /f %%i IN ('%CMD% -c "import sysconfig; print(sysconfig.get_config_var(r'VERSION'))"') DO SET "PYTHON_VER=%%i"
 
-SET "CXXFLAGS=-march=x86-64 -mtune=generic -O3 -msahf -pipe -Wp,-D_FORTIFY_SOURCE=2 -fstack-protector-strong -fwrapv -Wall -std=c++17"
+SET "CXXFLAGS=-O3 -msahf -pipe -Wp,-D_FORTIFY_SOURCE=2 -fstack-protector-strong -fwrapv -std=c++17"
 REM -DNDEBUG -g
 
 SET "GRETLIN=-I%STACK_PATH%\include -I%STACK_PATH%\include\glib-2.0 -I%STACK_PATH%\lib\glib-2.0\include"
@@ -32,7 +32,8 @@ REM module suffix
 FOR /f %%i IN ('%CMD% -c "import sysconfig; print(sysconfig.get_config_var(r'EXT_SUFFIX'))"') DO SET SUFFIX=%%i
 SET "MODULE=gretl/_gretl%SUFFIX%"
 
+%CXX% %CXXFLAGS% -c src\simdjson\simdjson.cpp -o simdjson.o
 %CXX% %CXXFLAGS% -c src\gretl4py_data.cpp -o gretl4py_data.o %PYBIND% %GRETLIN% %PYTHONIN%
 %CXX% %CXXFLAGS% -c src\gretl_calls.cpp -o gretl_calls.o %PYBIND% %GRETLIN% %PYTHONIN%
 %CXX% %CXXFLAGS% -c src\gretl4py.cpp -o gretl4py.o %PYBIND% %GRETLIN% %PYTHONIN%
-%CXX% %CXXFLAGS% gretl4py.o gretl4py_data.o gretl_calls.o -shared -o %MODULE% %GRETLLD% %PYTHONLD%
+%CXX% %CXXFLAGS% gretl4py.o gretl4py_data.o gretl_calls.o simdjson.o -shared -o %MODULE% %GRETLLD% %PYTHONLD%
