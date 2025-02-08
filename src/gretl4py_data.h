@@ -18,6 +18,8 @@
  */
 
 #define SIMDJSON_DEVELOPMENT_CHECKS 0
+#define USE_MAPBOX_VARIANT 1
+
 #include "simdjson.h"
 #include <pybind11/stl.h>
 #include <gretl/libgretl.h>
@@ -25,15 +27,49 @@
 
 namespace py = pybind11;
 
-typedef std::vector<std::variant<double, std::string, int>> vgretl_vector;
+//////////////////////////////////////////////////
+// types
+//////////////////////////////////////////////////
+#if USE_MAPBOX_VARIANT
+# include "mapbox/variant.hpp"
+  typedef std::vector<mapbox::util::variant<double, std::string, int>> vgretl_vector;
+#else
+  typedef std::vector<std::variant<double, std::string, int>> vgretl_vector;
+#endif // USE_MAPBOX_VARIANT
 typedef std::vector<vgretl_vector> vgretl_matrix;
 
+//////////////////////////////////////////////////
+// macros
+//////////////////////////////////////////////////
 #define is_pybool(o) (py::isinstance<py::bool_>(o))
 #define is_pyint(o) (py::isinstance<py::int_>(o))
 #define is_pyfloat(o) (py::isinstance<py::float_>(o))
 #define is_pystr(o) (py::isinstance<py::str>(o))
 #define is_pydict(o) (py::isinstance<py::dict>(o))
 #define is_pytuple(o) (py::isinstance<py::tuple>(o))
+
+//////////////////////////////////////////////////
+// pybind11 extensions
+//////////////////////////////////////////////////
+#if USE_MAPBOX_VARIANT
+namespace PYBIND11_NAMESPACE
+{
+    namespace detail
+    {
+        template <typename... Ts>
+        struct type_caster<mapbox::util::variant<Ts...>> : variant_caster<mapbox::util::variant<Ts...>> {};
+
+        template <>
+        struct visit_helper<mapbox::util::variant> {
+            template <typename... Args>
+            static auto call(Args &&...args) -> decltype(mapbox::util::apply_visitor(args...))
+            {
+                return mapbox::util::apply_visitor(args...);
+            }
+        };
+    }
+}
+#endif // USE_MAPBOX_VARIANT
 
 py::dict *gretl_model_to_dict (MODEL *model, DATASET *dset,
                                const char *summary, int *err);
