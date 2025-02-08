@@ -30,7 +30,8 @@ class Module
 
 const std::string info = "This is a help text for module.";
 
-PYBIND11_MODULE(_gretl, m) {
+PYBIND11_MODULE(_gretl, m)
+{
     // module related tools
     static Module module;
     m.doc() = info;
