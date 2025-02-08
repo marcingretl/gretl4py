@@ -1,33 +1,5 @@
 BUGS:
 
-not necessarily bugs, maybe suitably examples should be provided:
-
-ar1: no-corc, loose
-
-biprobit: cluster
-
-duration: cluster
-
-heckit: cluster
-
-logistic: ymax, cluster, fixed-effects
-
-logit: cluster
-
-mpols: simple-print (bug)
-
-negbin: cluster
-
-ols: print-final (make unavailable?)
-
-panel: cluster, time-dummies, unbalanced
-
-poisson: cluster
-
-probit: cluster, quadpoints
-
-tsls: cluster, matrix-diff, allow-zeros
-
 
 TODOS:
 
