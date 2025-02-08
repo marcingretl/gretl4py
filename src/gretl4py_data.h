@@ -18,7 +18,12 @@
  */
 
 #define SIMDJSON_DEVELOPMENT_CHECKS 0
-#define USE_MAPBOX_VARIANT 1
+
+#if defined(MB_VARIANT) && defined(__x86_64__) && defined(__APPLE__)
+ #define USE_MAPBOX_VARIANT 1
+#else
+ #define USE_MAPBOX_VARIANT 0
+#endif // define USE_MAPBOX_VARIANT
 
 #include "simdjson.h"
 #include <pybind11/stl.h>
