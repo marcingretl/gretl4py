@@ -10,6 +10,7 @@ ifeq ($(OS), Darwin)
   GPATH = /Applications/Gretl.app/Contents/Resources
   GRETLLD = -L$(GPATH)/lib -lgretl-1.0 -lglib-2.0 -lxml2 -lfftw3 -lomp -lm
   GRETLIN = -I$(GPATH)/include -I$(GPATH)/include/glib-2.0 -I$(GPATH)/lib/glib-2.0/include
+  MBVARIANTIN = -I./src
   DL = -undefined dynamic_lookup
 else
   ifeq ($(CXX), g++)
@@ -34,7 +35,7 @@ OBJS = $(SRCS:.cpp=.o)
 .PHONY: tags clean depend
 
 %.o: %.cpp gretl4py.h gretl4py_data.h
-	$(CXX) $(CXXFLAGS) -c $< -o $@ -fPIC $(PYBIND) $(GRETLIN)
+	$(CXX) $(CXXFLAGS) -c $< -o $@ -fPIC $(PYBIND) $(GRETLIN) $(MBVARIANTIN)
 
 $(MODULE): $(OBJS)
 	$(CXX) $(CXXFLAGS) $^ -shared $(DL) -o $@ -fPIC $(GRETLLD)
