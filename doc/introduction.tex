@@ -12,7 +12,11 @@ language and consists of the following elements:
 \end{itemize}
 On \cpp level, we use two additional libraries: \pkg{pyind11}
 \citep[see][for details]{pybind11} and \pkg{simdjson}
-\citep[see][for details]{simdjson_2024}.
+\citep[see][for details]{simdjson_2024}.%
+\footnote{For macOS version $<10.14$ we also use
+	\cppcode{mapbox::util::variant} class from
+	the \pkg{mapbox/variant} library, see
+	\url{https://github.com/mapbox/variant}.}
 
 To run, the package needs to be installed in the \python
 module search path, along with the required \python packages

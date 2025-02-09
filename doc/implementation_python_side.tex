@@ -19,19 +19,28 @@ dict = gretl.about(do_print=bool)
 	basic information about the \gretlpy module, including
 	the libraries it utilizes and the contents of \lgretl's
 	\gretlcmd{\$sysinfo} bundle. The returned dictionary
-	contains the following entries:
+	contains the following entries (alphabetical order):
 	\begin{itemize}
-		\item \pythcode{mod\_ver}: The version of the \gretlpy
-			module (\pythcode{string}).
-		\item \pythcode{py11\_ver}: The version of the \pkg{pybind11}
-			module, formatted as \texttt{MAJOR.MINOR.PATCH} (\pythcode{string}).
-		\item \pythcode{lg\_ver}: The version of the \lgretl[-1.0]
-			library (\pythcode{string}).
-		\item \pythcode{sysinfo}: The contents of \lgretl's
-			\gretlcmd{\$sysinfo} bundle (\pythcode{dict}).
 		\item \pythcode{built\_in\_strings}: The values of
 			\lgretl's built-in strings \citep[see][for details]{gretl_manual}
 			(\pythcode{dict}).
+		\item \pythcode{lg\_ver}: The version of the \lgretl[-1.0]
+			library (\pythcode{str}).
+		\item \pythcode{mbv\_ver}: [only for macOS $< 10.14$]
+			The version of \pkg{mapbox/variant} library, formatted as
+			\texttt{MAJOR.MINOR.PATCH} (\pythcode{str}).
+		\item \pythcode{mod\_ver}: The version of the \gretlpy
+			module (\pythcode{str}).
+		\item \pythcode{py11\_ver}: The version of the \pkg{pybind11}
+			module, formatted as \texttt{MAJOR.MINOR.PATCH} (\pythcode{str}).
+		\item \pythcode{sj\_desc}: An implementation of \pkg{simdjson}
+			for a particular CPU architecture --~description (\pythcode{str}).
+		\item \pythcode{sj\_name}: An implementation of \pkg{simdjson}
+			for a particular CPU architecture --~name (\pythcode{str}).
+		\item \pythcode{sj\_ver}: The version of \pkg{simdjson}
+			library, formatted as \texttt{MAJOR.MINOR.PATCH} (\pythcode{str}).
+		\item \pythcode{sysinfo}: The contents of \lgretl's
+			\gretlcmd{\$sysinfo} bundle (\pythcode{dict}).
 		\end{itemize}}
 
 \gretlfpycmd{set()}

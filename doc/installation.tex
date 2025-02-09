@@ -131,14 +131,14 @@ components are installed:
 Additionally, ensure your system meets all requirements outlined in
 Section~\ref{sec:system_requirements}.
 
-Next, to compile the module, run "\texttt{make -j3}" in the \gretlpy
+Next, to compile the module, run "\texttt{make -j4}" in the \gretlpy
 root directory. This will generate the file
 \texttt{\_gretl.cpython-3xx-x86\_64-linux-gnu.so} in the \texttt{gretl} directory,
 where \texttt{3.xx} refers to the version of \python being used.
 
-To install the generated files into the appropriate path , run "\texttt{make install}".
-To verify the installation, run "\texttt{python3 -c "import gretl;
-gretl.about(True)}"; this should produce output similar to Figure~\ref{fig:mswindows_about}.
+To install the generated files into the appropriate path, run ``\texttt{make install}''.
+To verify the installation, run ``\texttt{python3 -c "import gretl;
+gretl.about(True)"}''; this should produce output similar to Figure~\ref{fig:mswindows_about}.
 
 
 \subsection{Compilation on MS Windows -- Native}
@@ -181,7 +181,7 @@ Section~\ref{sec:windows_install}.
 \subsection{Compilation on MS Windows -- \pkg{MSYS2}}
 Compiling on MS Windows with \pkg{MSYS2} is very similar
 to the process on GNU/\-Linux. The only difference is that
-you should run `\texttt{make -f winmsys2.mk -j3}'.
+you should run ``\texttt{make -f winmsys2.mk -j4}''.
 
 Note that the resulting \texttt{\_gretl.cp3xx-mingw\_x86\_64\_ucrt.pyd}
 file is not compatible with the native MS Windows \python distribution.
@@ -199,12 +199,19 @@ installing python for macOS can be found at
 \gretl (version 2024c or higher) installed; see
 \url{https://gretl.sourceforge.net/osx.html}.
 
-Then all you have to do is run "\texttt{make}" in the top-level \gretlpy
-directory. This should create \texttt{\_gretl.cpython-3xx-darwin.so}
-(where \texttt{xx} represents two numbers that depend on the version of
-\texttt{python3}), in the \texttt{gretl} subdirectory. Follow up with
-"\texttt{make install}" to install the required files under
-\texttt{Library/Python} in your home directory.
+Then all you have to do is run ``\texttt{make -j4}'' in
+the top-level \gretlpy directory. This should create
+\texttt{\_gretl.cpython-3xx-darwin.so} (where \texttt{xx}
+represents two numbers that depend on the version of
+\texttt{python3}), in the \texttt{gretl} subdirectory.
+Follow up with ``\texttt{make install}'' to install the
+required files under \texttt{Library/Python} in your home directory.
+
+Note that if you are building \gretlpy for macOS version
+$\geq10.14$, you may comment out the line
+``\texttt{CXXFLAGS += -DMB\_VARIANT}'' in the \texttt{Makefile}.
+This is because macOS versions newer than $10.13$ fully
+support the \cppcode{std::variant} type.
 
 %%% Local Variables:
 %%% mode: latex
