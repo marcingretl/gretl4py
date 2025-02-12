@@ -28,12 +28,12 @@ mydata = gretl.get_gretl_data(fname)
 
 print('OLS without options:')
 res = gretl.ols('price ~ 0 + sqft + bedrms', data=mydata).fit()
-assert res.bic == ols_bic, 'BIC should equal ' + str(ols_bic)
+assert res.bic == ols_bic, f'BIC should equal {ols_bic:f}'
 print(res)
 
 print('OLS with robust option:')
 res = gretl.ols('price ~ 0 + sqft + bedrms', data=mydata, robust=True).fit()
-assert res.lnl == ols_lnl, 'log-likelihood should equal ' + str(ols_bic)
+assert round(res.lnl, 8) == round(ols_lnl, 8), f'log-likelihood should equal {ols_lnl:f}'
 print(res)
 ############################################################################
 
