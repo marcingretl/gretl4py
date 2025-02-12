@@ -247,8 +247,9 @@ void sample (const py::kwargs &kwargs)
 {
     if (!DSET) {
         throw std::runtime_error("No gretl dataset in place");
+    } else {
+        DSET->sample(kwargs);
     }
-    DSET->sample(kwargs);
 }
 
 //////////////////////////////////////////////////

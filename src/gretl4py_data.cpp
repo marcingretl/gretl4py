@@ -389,13 +389,13 @@ void GretlDataset::sample (const py::kwargs &kwargs)
 #endif // 1
 
         if (key == "t1") {
-            t1str = gretl_strdup(val);
+            t1str = strdup(val);
             argc++;
         } else if (key == "t2") {
-            t2str = gretl_strdup(val);
+            t2str = strdup(val);
             argc++;
         } else if (key == "restriction") {
-            restr = gretl_strdup(val);
+            restr = strdup(val);
             argc++;
         } else if (key == "replace") {
             opt_replace = std::atoi(val);
