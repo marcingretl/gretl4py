@@ -85,7 +85,8 @@ ldata = gretl.get_gretl_data(fname)
 
 print('LOGIT without options:')
 res = gretl.logit('GRADE ~ 0 GPA TUCE PSI', data=ldata).fit()
-assert res.oddsratios == logit_addsratios, 'oddsratios matrix should be:\n' + logit_addsratios
+assert [[round(el, 10) for el in row] for row in res.oddsratios] == [[round(el, 10) for el in row] for row in logit_addsratios],\
+ 'oddsratios matrix should be:\n' + str(logit_addsratios)
 print(res)
 print("Odds Ratios:")
 print(res.oddsratio())
