@@ -3,21 +3,107 @@ import numpy as np
 np.set_printoptions(precision=4)
 
 #####################################
-# assertions                        #
+# benchmark results                 #
 #####################################
+ar_maxlag = 2
+ar1_rho_gls = 0.2616616334
+duration_iters = 6
+duration_ex_iters = 4
+mpols_const = -3.482258634595818 * 10**6
 ols_bic = 146.9358272370446
 ols_lnl = -69.50932762409941
+panel_fixed_effects_F_test = 123.0227754885
+panel_hausman_test = 56.19204895
 logit_fXb = 0.188902177165472
 probit_normtest_pval = 0.16442606965149
-logit_addsratios = np.array([[1.6879714826987978e+01, 2.1318085199908165e+01, 1.4201941279029757e+00, 2.0062382109771909e+02],
-                             [1.0998322424583311e+00, 1.5568587945550874e-01, 8.3336506154669610e-01, 1.4515018895871261e+00],
-                             [1.0790732404989523e+01, 1.1487427998195665e+01, 1.3393441542871571e+00, 8.6938002800381142e+01]])
-#assert (res.results['oddsratios'] == logit_addsratios).all(), 'oddsratios matrix should be:\n' + str(logit_addsratios)
+logit_addsratios = [[16.87971482698798, 21.318085199908165, 1.4201941279029757, 200.6238210977191],
+ [1.099832242458331, 0.15568587945550874, 0.8333650615466961, 1.4515018895871261],
+ [10.790732404989523, 11.487427998195665, 1.3393441542871571, 86.93800280038114]]
+#assert (round(res.fXb, 15) == logit_fXb), 'f(beta\'x) at mean of independent vars should equal: ' + str(logit_fXb)
 ############################################################################
 
 
 # we force libgretl to use the decimal point character
 gretl.set('force_decpoint', 'on')
+
+
+#####################################
+# ar                                #
+#####################################
+gretl.attach_gretl_data(gretl.gretl_data_path('misc/longley.gdt'))
+res = gretl.ar('1 2 ; employ const prdefl gnp armfrc').fit()
+assert res.maxlag == ar_maxlag, f'maxlag shuld equal {ar_maxlag:d}'
+print(res)
+############################################################################
+
+
+#####################################
+# ar1                               #
+#####################################
+gretl.attach_gretl_data(gretl.gretl_data_path('misc/longley.gdt'))
+res = gretl.ar1('employ const prdefl gnp').fit()
+assert round(res.rho_gls, 10) == ar1_rho_gls, f'rho_gls shuld equal {ar1_rho_gls:f}, is {res.rho_gls:f}'
+print(res)
+############################################################################
+
+
+#####################################
+# sarima                            #
+#####################################
+gretl.attach_gretl_data('bjg.csv')
+
+print('SARIMA (0 1 2, 0 1 1):')
+res = gretl.arima(y='lg', order=(0,1,2), seasonal=(0,1,1), nc=True).fit()
+assert res.uhat[0] == 'NA', 'the first element should be NaN!!!'
+print(res)
+############################################################################
+
+
+#####################################
+# duration                          #
+#####################################
+fname = gretl.gretl_data_path('misc/kennan.gdt')
+gretl.attach_gretl_data(fname)
+
+print('DURATION without options:')
+res = gretl.duration('Ti 0 Prod').fit()
+assert res.iters == duration_iters, f'no of iters should be {duration_iters:d}, is {res.iters:d}'
+print(res)
+
+print('DURATION: exponential:')
+res = gretl.duration('Ti 0 Prod', exponential=True).fit()
+assert res.iters == duration_ex_iters, f'no of iters should be {duration_iters:d}, is {res.iters:d}'
+print(res)
+############################################################################
+
+
+#####################################
+# logit                             #
+#####################################
+fname = gretl.gretl_data_path('greene/greene19_1.gdt')
+ldata = gretl.get_gretl_data(fname)
+
+print('LOGIT without options:')
+res = gretl.logit('GRADE ~ 0 GPA TUCE PSI', data=ldata).fit()
+assert res.oddsratios == logit_addsratios, 'oddsratios matrix should be:\n' + logit_addsratios
+print(res)
+print("Odds Ratios:")
+print(res.oddsratio())
+############################################################################
+
+
+#####################################
+# mols                              #
+#####################################
+fname = gretl.gretl_data_path('misc/longley.gdt')
+gretl.attach_gretl_data(fname)
+
+print('OLS with multiple precision floating-point')
+res = gretl.mpols('1 0 2 3 4 5 6 7').fit()
+print(res.coeff)
+assert round(res.coeff[0], 9) == mpols_const, f'const should equal {mpols_const:f}, is {res.coeff[0]:f}'
+print(res)
+############################################################################
 
 
 #####################################
@@ -39,72 +125,6 @@ print(res)
 
 
 #####################################
-# logit and probit                  #
-#####################################
-fname = gretl.gretl_data_path('greene/greene19_1.gdt')
-ldata = gretl.get_gretl_data(fname)
-
-print('LOGIT without options:')
-res = gretl.logit('GRADE ~ 0 GPA TUCE PSI', data=ldata).fit()
-
-assert (round(res.fXb, 15) == logit_fXb), 'f(beta\'x) at mean of independent vars should equal: ' + str(logit_fXb)
-print(res)
-print("Odds Ratios:")
-print("columns: odds ratio, std. error, low95, high95")
-print("rows:\t GPA, TUCE, PSI")
-print(res.oddsratios)
-
-print('PROBIT example with p-value option:')
-res = gretl.probit('GRADE ~ 0 GPA TUCE PSI', data=ldata, p_values=True).fit()
-assert (round(res.normality_test['pvalue'], 14) == probit_normtest_pval), 'pvalue in normality of residuals should equal ' + str(probit_normtest_pval)
-print(res)
-print('normality test:')
-print(res.normality_test)
-############################################################################
-
-
-#####################################
-# duration                          #
-#####################################
-fname = gretl.gretl_data_path('misc/kennan.gdt')
-gretl.attach_gretl_data(fname)
-
-print('DURATION without options:')
-res = gretl.duration('Ti 0 Prod').fit()
-print(res)
-
-print('DURATION: exponential:')
-res = gretl.duration('Ti 0 Prod', exponential=True).fit()
-print(res)
-############################################################################
-
-
-#####################################
-# sarima                            #
-#####################################
-gretl.attach_gretl_data('bjg.csv')
-
-print('SARIMA (0 1 2, 0 1 1):')
-res = gretl.arima(y='lg', order=(0,1,2), seasonal=(0,1,1), nc=True).fit()
-assert res.uhat[0] == 'NA', 'the first element should be NaN!!!'
-print(res)
-############################################################################
-
-
-#####################################
-# multiple precision ols            #
-#####################################
-print('OLS with multiple precision floating-point')
-
-fname = gretl.gretl_data_path('misc/longley.gdt')
-gretl.attach_gretl_data(fname)
-
-res = gretl.mpols('1 0 2 3 4 5 6 7').fit()
-print(res)
-############################################################################
-
-
-#####################################
 # panel                             #
 #####################################
 fname = gretl.gretl_data_path('misc/abdata.gdt')
@@ -112,9 +132,30 @@ gretl.attach_gretl_data(fname)
 
 print('PANEL: fixed effects')
 res = gretl.panel('n ~ 0 + w + k + ys').fit()
+assert round(res.fixed_effects_F['test'], 10) == panel_fixed_effects_F_test, \
+    f'F test for fixed effects should equal {panel_fixed_effects_F_test:f}, \
+    is {res.fixed_effects_F['test']:f}'
 print(res)
 
 print('PANEL: random effects')
 res = gretl.panel('n ~ 0 + w + k + ys', random_effects=True).fit()
+assert round(res.hausman_test['test'], 8) == panel_hausman_test, \
+    f'F test for fixed effects should equal {panel_hausman_test:f}, \
+    is {res.hausman_test['test']:f}'
 print(res)
+############################################################################
+
+
+#####################################
+# probit                            #
+#####################################
+fname = gretl.gretl_data_path('greene/greene19_1.gdt')
+ldata = gretl.get_gretl_data(fname)
+
+print('PROBIT example with p-value option:')
+res = gretl.probit('GRADE ~ 0 GPA TUCE PSI', data=ldata, p_values=True).fit()
+assert (round(res.normality_test['pvalue'], 14) == probit_normtest_pval), 'pvalue in normality of residuals should equal ' + str(probit_normtest_pval)
+print(res)
+print('normality test:')
+print(res.normality_test)
 ############################################################################
