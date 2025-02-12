@@ -464,7 +464,11 @@ py::dict *arima (const std::string y, const py::tuple &tup,
     res = save_model(model, GD->dset, GP.prn, opt);
 
     gretl_model_free(model);
+#if defined(_WIN32)
     gretl_list_free(list);
+#else
+    std::free(list);
+#endif
 
     if (GD != DSET) {
         delete GD;
@@ -545,7 +549,11 @@ static py::dict *regression_wrapper (const std::string &formula,
     res = save_model(model, GD->dset, GP.prn, opt);
 
     gretl_model_free(model);
+#if defined(_WIN32)
     gretl_list_free(list);
+#else
+    std::free(list);
+#endif
 
     if (GD != DSET) {
         delete GD;
