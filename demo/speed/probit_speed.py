@@ -12,7 +12,7 @@ frml = 'y ~ const+' + reglist[0:-1]
 t0 = time.time()
 gmod = gretl.probit(frml, data=MyDict).fit()
 t1 = time.time() - t0
-print(gmod.results["coeff"])
+print(gmod.coeff)
 
 # probit model via statsmodels
 from statsmodels.discrete.discrete_model import Probit
