@@ -91,7 +91,7 @@ static void copy_strings_from_python_list (const py::list &pylist,
 }
 
 static double *numpy_array_extract (const py::array_t<double> &pynum_array,
-                                    ssize_t *rows, ssize_t *cols, int *fortranarray)
+                                    size_t *rows, size_t *cols, int *fortranarray)
 {
     //
     // we check dimensions and if OK we extract most important 'pynum_array' metadata
@@ -121,7 +121,7 @@ static void numpy_array_to_gretl_storage (const py::dict &pydict,
     }
 
     double *data_array = nullptr;
-    ssize_t rows, cols, colsize;
+    size_t rows, cols, colsize;
     int fortranarray;
     int k;
 
