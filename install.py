@@ -27,15 +27,20 @@ import os
 import shutil
 
 platform = sysconfig.get_platform()
-if platform == "win-amd64":
+path_check = True
+if platform == 'win-amd64':
     GRETL_PATH = r'C:\Program Files\gretl'
 elif platform[0:5] == "macos":
     GRETL_PATH = '/Applications/Gretl.app'
+elif platform == 'linux-x86_64':
+    print("make sure gretl is in your PATH")
+    GRETL_PATH = ""
+    path_check = False
 else:
-    exit('unsupported operating system (this installer is for MS Windows or macOS')
+    exit("unsupported operating system (this installer is for MS Windows or macOS")
 
 # we look up for gretl installation
-if not os.path.isdir(os.path.normpath(GRETL_PATH)):
+if not os.path.isdir(os.path.normpath(GRETL_PATH)) and path_check:
     exit(f'gretl4py requires gretl installed in: {GRETL_PATH:s}')
 
 # we verify python min version
