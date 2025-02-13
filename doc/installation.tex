@@ -207,11 +207,11 @@ represents two numbers that depend on the version of
 Follow up with ``\texttt{make install}'' to install the
 required files under \texttt{Library/Python} in your home directory.
 
-Note that if you are building \gretlpy for macOS version
-$\geq10.14$, you may comment out the line
-``\texttt{CXXFLAGS += -DMB\_VARIANT}'' in the \texttt{Makefile}.
-This is because macOS versions newer than $10.13$ fully
-support the \cppcode{std::variant} type.
+Note that if you are using Intel-based Apple machine and you are
+building \gretlpy for macOS version $\geq10.14$, you may comment
+out the line ``\texttt{CXXFLAGS += -DMB\_VARIANT}'' in the
+\texttt{Makefile}. This is because macOS versions newer than
+$10.13$ fully support the \cppcode{std::variant} type.
 
 %%% Local Variables:
 %%% mode: latex

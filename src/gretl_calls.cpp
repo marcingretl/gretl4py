@@ -38,7 +38,11 @@ extern "C" {
 # define COMPILER_IDENT __VERSION__
 #endif
 
-#define LIBGRETL_MIN_VER 49
+#if defined(_WIN32)
+# define LIBGRETL_MIN_VER 50 //it is related with special function for memory free (msvcrt compatibility)
+#else
+# define LIBGRETL_MIN_VER 49
+#endif
 #define GRETL_PYBIND11_DEBUG 0
 
 #define use_ldco_sig(c) (c == OLS || c == WLS) //const int *list, DATASET *dset, GretlCmdIndex ci, gretlopt opt
@@ -247,8 +251,9 @@ void sample (const py::kwargs &kwargs)
 {
     if (!DSET) {
         throw std::runtime_error("No gretl dataset in place");
+    } else {
+        DSET->sample(kwargs);
     }
-    DSET->sample(kwargs);
 }
 
 //////////////////////////////////////////////////
@@ -463,7 +468,11 @@ py::dict *arima (const std::string y, const py::tuple &tup,
     res = save_model(model, GD->dset, GP.prn, opt);
 
     gretl_model_free(model);
+#if defined(_WIN32)
+    gretl_list_free(list);
+#else
     std::free(list);
+#endif
 
     if (GD != DSET) {
         delete GD;
@@ -477,7 +486,7 @@ py::dict *arima (const std::string y, const py::tuple &tup,
 static int *list_from_formula (const char *formula,
                                DATASET *dset)
 {
-    char *tmp = gretl_strdup(formula);
+    char *tmp = strdup(formula);
     int *list = NULL;
     int err = 0;
 
@@ -544,7 +553,11 @@ static py::dict *regression_wrapper (const std::string &formula,
     res = save_model(model, GD->dset, GP.prn, opt);
 
     gretl_model_free(model);
+#if defined(_WIN32)
+    gretl_list_free(list);
+#else
     std::free(list);
+#endif
 
     if (GD != DSET) {
         delete GD;

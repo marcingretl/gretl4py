@@ -91,7 +91,7 @@ static void copy_strings_from_python_list (const py::list &pylist,
 }
 
 static double *numpy_array_extract (const py::array_t<double> &pynum_array,
-                                    ssize_t *rows, ssize_t *cols, int *fortranarray)
+                                    int *rows, int *cols, int *fortranarray)
 {
     //
     // we check dimensions and if OK we extract most important 'pynum_array' metadata
@@ -121,7 +121,8 @@ static void numpy_array_to_gretl_storage (const py::dict &pydict,
     }
 
     double *data_array = nullptr;
-    ssize_t rows, cols, colsize;
+    int rows, cols;
+    size_t colsize;
     int fortranarray;
     int k;
 
@@ -389,13 +390,13 @@ void GretlDataset::sample (const py::kwargs &kwargs)
 #endif // 1
 
         if (key == "t1") {
-            t1str = gretl_strdup(val);
+            t1str = strdup(val);
             argc++;
         } else if (key == "t2") {
-            t2str = gretl_strdup(val);
+            t2str = strdup(val);
             argc++;
         } else if (key == "restriction") {
-            restr = gretl_strdup(val);
+            restr = strdup(val);
             argc++;
         } else if (key == "replace") {
             opt_replace = std::atoi(val);

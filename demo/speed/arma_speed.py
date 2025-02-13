@@ -8,7 +8,7 @@ arimaSpec = tuple((4,0,4))
 t0 = time.time()
 gmod = gretl.arima(y="y", order=arimaSpec, data=MyDict).fit()
 t1 = time.time() - t0
-print(gmod.results["coeff"])
+print(gmod.coeff)
 
 # arma model via statsmodels
 from statsmodels.tsa.arima.model import ARIMA
