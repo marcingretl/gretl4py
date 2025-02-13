@@ -21,9 +21,7 @@
 """This module installs all necessary gretl4py files."""
 
 import sysconfig
-import sys
 import site
-import os
 import shutil
 
 platform = sysconfig.get_platform()
@@ -40,7 +38,7 @@ else:
     exit("unsupported operating system (this installer is for MS Windows or macOS")
 
 # we look up for gretl installation
-if not os.path.isdir(os.path.normpath(GRETL_PATH)) and path_check:
+if not sysconfig.os.path.isdir(sysconfig.os.path.normpath(GRETL_PATH)) and path_check:
     exit(f'gretl4py requires gretl installed in: {GRETL_PATH:s}')
 
 # we verify python min version
@@ -52,21 +50,21 @@ if PYTHON_VER < PYTHON_MIN:
 # we setup paths, names and so on
 PYTHON_PATH = site.getusersitepackages()
 SUFFIX = sysconfig.get_config_var(r'EXT_SUFFIX')
-MODULE_PATH = os.path.normpath(f'{PYTHON_PATH:s}/gretl')
+MODULE_PATH = sysconfig.os.path.normpath(f'{PYTHON_PATH:s}/gretl')
 MODULE = f'_gretl{SUFFIX:s}'
-PYTHON_EXE = sys.executable
+PYTHON_EXE = sysconfig.sys.executable
 
 # we create directories and copy all files
-if os.path.isdir(MODULE_PATH):
+if sysconfig.os.path.isdir(MODULE_PATH):
     shutil.rmtree(MODULE_PATH)
-os.makedirs(MODULE_PATH)
+sysconfig.os.makedirs(MODULE_PATH)
 
 for file in ["__init__.py", "gretl4py_addons.py", "gretl4py_classes.py"]:
-    SRC = os.path.normpath(f'gretl/{file:s}')
+    SRC = sysconfig.os.path.normpath(f'gretl/{file:s}')
     print(f'copying {SRC:s} to {MODULE_PATH:s}')
     shutil.copy(SRC, MODULE_PATH)
 
-SRC = os.path.normpath(f'builds/{PYTHON_VER:.2f}/{MODULE:s}')
+SRC = sysconfig.os.path.normpath(f'builds/{PYTHON_VER:.2f}/{MODULE:s}')
 print(f'copying {SRC:s} to {MODULE_PATH:s}')
 shutil.copy(SRC, MODULE_PATH)
 
