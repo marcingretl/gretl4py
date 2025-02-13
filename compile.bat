@@ -21,7 +21,7 @@ SET "CXXFLAGS=-O3 -msahf -pipe -Wp,-D_FORTIFY_SOURCE=2 -fstack-protector-strong 
 REM -DNDEBUG -g
 
 SET "GRETLIN=-I%STACK_PATH%\include -I%STACK_PATH%\include\glib-2.0 -I%STACK_PATH%\lib\glib-2.0\include"
-SET "GRETLLD=-L%STACK_PATH%\lib -l"gretl-1.0" -lm -lxml2 -lfftw3 -l"glib-2.0" -lintl -l"gobject-2.0""
+SET "GRETLLD=-L%STACK_PATH%\lib -l"gretl-1.0" -lxml2 -lfftw3 -l"glib-2.0" -lintl -l"gobject-2.0""
 
 SET "PYTHONIN=-I"%PYTHON_PATH%\Include""
 SET "PYTHONLD=-L"%PYTHON_PATH%\libs" -lpython%PYTHON_VER% -lversion -lshlwapi -lpathcch -lbcrypt"

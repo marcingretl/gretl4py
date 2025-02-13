@@ -135,14 +135,14 @@ print('PANEL: fixed effects')
 res = gretl.panel('n ~ 0 + w + k + ys').fit()
 assert round(res.fixed_effects_F['test'], 10) == panel_fixed_effects_F_test, \
     f'F test for fixed effects should equal {panel_fixed_effects_F_test:f}, \
-    is {res.fixed_effects_F['test']:f}'
+    is {res.fixed_effects_F["test"]:f}'
 print(res)
 
 print('PANEL: random effects')
 res = gretl.panel('n ~ 0 + w + k + ys', random_effects=True).fit()
 assert round(res.hausman_test['test'], 8) == panel_hausman_test, \
     f'F test for fixed effects should equal {panel_hausman_test:f}, \
-    is {res.hausman_test['test']:f}'
+    is {res.hausman_test["test"]:f}'
 print(res)
 ############################################################################
 
