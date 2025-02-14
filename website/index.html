@@ -2,11 +2,10 @@
 <html>
 <head>
 <!-- Google Tag Manager -->
-<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-})(window,document,'script','dataLayer','GTM-TJVFS2D6');</script>
+<script type="text/javascript">(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+  j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})
+  (window,document,'script','dataLayer','GTM-TJVFS2D6');
+</script>
 <!-- End Google Tag Manager -->
  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
  <meta http-equiv="pragma" content="no-cache">
@@ -19,8 +18,9 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
 <body>
 <!-- Google Tag Manager (noscript) -->
-<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-TJVFS2D6"
-height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<noscript>
+  <iframe src="https://www.googletagmanager.com/ns.html?id=GTM-TJVFS2D6" height="0" width="0" style="display:none;visibility:hidden"></iframe>
+</noscript>
 <!-- End Google Tag Manager (noscript) -->
   <pre>
                 _   _   ___
@@ -57,23 +57,26 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <li>a set of utility functions implemented in Python.</li>
 </ul>
 
-The source code is available as git repository <a href="https://sourceforge.net/p/gretl/gretl4py/ci/master/tree/" target="_new">here</a>.
+The source code is available as git repository
+<a href="https://sourceforge.net/p/gretl/gretl4py/ci/master/tree/" target="_new">here</a>.
+
 
 <h1>Preliminaries</h1>
 <h2>Preparation</h2>
-
 Before installing <b>gretl4py</b>, please make sure that the following components are installed:
 <ul>
-    <li>One of the supported versions of Python.</li>
-    <li>The following Python packages: <b>numpy</b>, and <b>tabulate</b> (not required).</li>
-    <li>macOS or Linux users: <b>gretl</b> version 2024d or higher:
-      <ul>
-          <li>Linux: <b>gretl</b> package (Debian/Ubuntu/Fedora).</li>
-          <li>macOS: see <a href="https://gretl.sourceforge.net/osx.html" target="_new">this</a> page.</li>
-      </ul>
-    </li>
-    <li>MS Windows users: <b>gretl</b> version 2025a or higher (snapshots may be downloaded from
-    <a href="https://users.wfu.edu/cottrell/gretl" target="_new">here</a>).</li>
+  <li>One of the supported versions of Python.</li>
+  <li>The following Python packages: <b>numpy</b>, and <b>tabulate</b> (not required).</li>
+  <li>macOS or Linux users: <b>gretl</b> version 2024d or higher:
+    <ul>
+      <li>Linux: <b>gretl</b> package (Debian/Ubuntu/Fedora).</li>
+      <li>macOS: see <a href="https://gretl.sourceforge.net/osx.html" target="_new">this</a> page.</li>
+    </ul>
+  </li>
+  <li>
+    MS Windows users: <b>gretl</b> version 2025a or higher (snapshots may be downloaded from
+    <a href="https://sourceforge.net/projects/gretl/files/snapshots" target="_new">here</a>).
+  </li>
 </ul>
 
 
@@ -94,11 +97,12 @@ Before installing <b>gretl4py</b>, please make sure that the following component
 </p>
 
 <ul>
-    <li>On MS Windows: <b><font style="font-family:'Courier New'">python.exe install.py</font></b></li>
-    <li>On macOS: <b><font style="font-family:'Courier New'">python3 install.py</font></b></li>
+  <li>On MS Windows: <b><font style="font-family:'Courier New'">python.exe install.py</font></b></li>
+  <li>On macOS: <b><font style="font-family:'Courier New'">python3 install.py</font></b></li>
 </ul>
 
-<p>The script assumes that <i>python.exe</i> (on MS Windows)
+<p>
+  The script assumes that <i>python.exe</i> (on MS Windows)
   or <i>python3</i> (on macOS) is available in the system's <b>PATH</b>.<br>
 </p>
 
@@ -109,41 +113,47 @@ on MS Windows or
 <b><font style="font-family:'Courier New'">python3 -m site --user-site</font></b>
 on macOS:
 <ul>
-    <li><font style="font-family:'Courier New'">__init__.py</font>,
+  <li>
+    <font style="font-family:'Courier New'">__init__.py</font>,
     <font style="font-family:'Courier New'">gretl4py_addons.py</font>,
     and <font style="font-family:'Courier New'">gretl4py_classes.py</font>
-    from the <font style="font-family:'Courier New'">[gretl]</font> directory.</li>
-	<li><font style="font-family:'Courier New'">_gretl.cp3xx-win_amd64.pyd</font>
-	(for MS Windows) or <font style="font-family:'Courier New'">_gretl.cpython-3xx-darwin.so</font>
-	(for macOS) from the <font style="font-family:'Courier New'">[builds/3.xx]</font> directory.</li>
+    from the <font style="font-family:'Courier New'">[gretl]</font> directory.
+  </li>
+  <li>
+    <font style="font-family:'Courier New'">_gretl.cp3xx-win_amd64.pyd</font>
+    (for MS Windows) or <font style="font-family:'Courier New'">_gretl.cpython-3xx-darwin.so</font>
+    (for macOS) from the <font style="font-family:'Courier New'">[builds/3.xx]</font> directory.
+  </li>
 </ul>
 Here, <i>3.xx</i> refers to the version of Python used to run the
 <i>install.py</i> script.
 
 
 <h3>Linux</h3>
-  <ul>
-      <li>For the time being, Linux users have to build and install <b>gretl4py</b>
-        by themselves. Instructions are 
-        <a href="https://w5.wsb.torun.pl/gretl/gretl4py/files/gretl4py.pdf">here</a>
-        (section 2.3). Apart from a C++ compiler (with support for
-        c++17 standard), the following development packages are needed (2024c or higher):
-        <ul>
-            <li>Debian/Ubuntu: <b>libgretl1-dev</b>, <b>python3-dev</b></li>
-            <li>Fedora: <b>gretl-devel</b></li>
-        </ul>
-      </li>
-      <li>We provide pre-build 3.12/3.13 binaries for Linux as well (experimental).
-          To install them, execute the <i>install.py</i> script located in
-          the <b>gretl4py</b> top-level directory using the desired Python interpreter.
-      </li>
-  </ul>
+<ul>
+  <li>
+    For the time being, Linux users have to build and install <b>gretl4py</b> by themselves.
+    Instructions are <a href="https://w5.wsb.torun.pl/gretl/gretl4py/files/gretl4py.pdf">here</a>
+    (section 2.3). Apart from a C++ compiler (with support for c++17 standard), the
+    following development packages are needed (2024c or higher):
+    <ul>
+      <li>Debian/Ubuntu: <b>libgretl1-dev</b>, <b>python3-dev</b></li>
+      <li>Fedora: <b>gretl-devel</b></li>
+    </ul>
+  </li>
+  <li>
+    We provide pre-build 3.12/3.13 binaries for Linux as well (experimental).
+    To install them, execute the <i>install.py</i> script located in the <b>gretl4py</b>
+    top-level directory using the desired Python interpreter.
+  </li>
+</ul>
 
 
 <h1>Running gretl4py</h1>
-  <p>
-    To verify if <b>gretl4py</b> was installed correctly please run
-    the following code snippet:</p>
+<p>
+  To verify if <b>gretl4py</b> was installed correctly please run
+  the following code snippet:
+</p>
 <p style="font-family:'Courier New'">python3 -c 'import gretl; gretl.about(1)'</p>
 
 This should give you some text output on

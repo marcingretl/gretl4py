@@ -94,11 +94,11 @@
 %	\begin{abstract}
 %		to be written...
 %	\end{abstract}
-	
-	\listoftodos
-	\tableofcontents
-	
-	\section*{Changelog}
+
+	%\listoftodos
+	\newpage\tableofcontents
+
+	\newpage\section*{Changelog}
 	\begin{description}
 		\item[0.1] Initial version.
 	\end{description}
@@ -108,13 +108,13 @@
 		\input{../todo.txt}
 	\end{quote}
 
-	\input{introduction}
+	\newpage\input{introduction}
 	\input{installation}
-	\section{Implementation}\label{sec:implementation}
+	\newpage\section{Implementation}\label{sec:implementation}
 		\input{implementation_python_side}
 		\input{class_py_model}
 	\input{usage}
-	\input{examples}
+	\newpage\input{examples}
 
 	\newpage\addcontentsline{toc}{section}{\listfigurename}
 	\listoffigures

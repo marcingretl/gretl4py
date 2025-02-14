@@ -4,15 +4,18 @@ Before installing or compiling \gretlpy, please ensure
 the following components are installed:
 \begin{itemize}
 \item One of the supported versions of \python: (\reqpython).
-\item The following \python packages: \pkg{csv}, \pkg{numpy}, \pkg{subprocess}, \pkg{tabulate} and \pkg{pybind11}.%
+\item The following \python packages: \pkg{numpy}, \pkg{tabulate}
+  (not mandatory), and \pkg{pybind11}.%
   \footnote{The last package is required for compilation only.} If
   you want to import \pkg{pandas} structures (such as \texttt{DataFrames}
   and \texttt{Series}) make sure that \pkg{pandas} is also installed
   on your system.
 \item \gretl version 2024c or higher (see
-  \url{https://gretl.sourceforge.net} for details).\footnote{In
+  \url{https://gretl.sourceforge.net} for details)\footnote{In
     principle only the shared library, \lgretl, should be needed,
     but for now you need a full installation of \gretl.}
+    if you want to build \gretlpy for yourself, or 2024d (2025a
+    in MS Windows case) if you want to use pre-build binaries.
 \end{itemize}
 In addition, \cite{gretl_manual}, Appendix~B describes how to build
 \gretl on GNU/Linux, while \cite{gretl_build_msys2} describes building
@@ -27,6 +30,8 @@ the desired \python interpreter:
 \begin{itemize}
 	\item On MS Windows: \texttt{python.exe install.py}
 	\item On macOS: \texttt{python3 install.py}
+	\item On Linux: \texttt{python install.py} (experimental
+		for \python[3.12]/\python[3.13]).
 \end{itemize}
 The script assumes that \texttt{python.exe} (on MS Windows)
 or \texttt{python3} (on macOS) is available in the system's
