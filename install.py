@@ -43,8 +43,11 @@ if not sysconfig.os.path.isdir(sysconfig.os.path.normpath(GRETL_PATH)) and path_
 
 # we verify python min version
 PYTHON_MIN = 3.11
+PYTHON_MIN_INT = 3110
 PYTHON_VER = float(sysconfig.get_python_version())
-if PYTHON_VER < PYTHON_MIN:
+tmp = sysconfig.get_python_version().split(".")
+PYTHON_VER_INT = int(tmp[0])*1000 + int(tmp[1])*10
+if PYTHON_VER_INT < PYTHON_MIN_INT:
     exit(f'gretl4py requires python {PYTHON_MIN:.2f} or higher, but {PYTHON_VER:.2f} was used')
 
 # we setup paths, names and so on
