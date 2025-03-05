@@ -32,13 +32,16 @@ PYFILES = gretl/gretl4py_addons.py gretl/gretl4py_classes.py
 SRCS = gretl4py.cpp gretl_calls.cpp gretl4py_data.cpp simdjson.cpp
 OBJS = $(SRCS:.cpp=.o)
 
-.PHONY: tags clean depend
+.PHONY: tags clean depend patchelf
 
 %.o: %.cpp gretl4py.h gretl4py_data.h
 	$(CXX) $(CXXFLAGS) -c $< -o $@ -fPIC $(PYBIND) $(GRETLIN) $(MBVARIANTIN)
 
 $(MODULE): $(OBJS)
 	$(CXX) $(CXXFLAGS) $^ -shared $(DL) -o $@ -fPIC $(GRETLLD)
+
+patchelf: $(MODULE)
+	patchelf --replace-needed `ldd $(MODULE) | grep libgretl | cut -d' ' -f 1` libgretl-1.0.so $(MODULE)
 
 $(ZIPFILE): $(MODULE) $(PYFILES)
 	zip -r -q $@ gretl
