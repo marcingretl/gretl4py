@@ -610,7 +610,6 @@ py::dict *GretlBundle::to_dict (void)
         if (!err && !json_buf) {
             json_buf = gretl_bundle_write_to_json_buffer(b, &err);
         }
-
         if (json_buf != NULL) {
             GretlBundle::sd_json_cp = json_buf;
             if (GretlBundle::sd_parser.iterate(GretlBundle::sd_json_cp).get(GretlBundle::sd_doc)) {

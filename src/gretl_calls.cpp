@@ -290,6 +290,8 @@ static gretlopt unpack_kwargs (const py::kwargs &kwargs,
                 throw std::runtime_error("'data' must be a dictionary");
             }
             continue;
+        } else if (key == "quiet") {
+            throw std::runtime_error("invalid option flag: " + key);
         } else if (key == "seasonal" && ci == ARMA) {
             // arima special: ignore here
             continue;
@@ -307,7 +309,7 @@ static gretlopt unpack_kwargs (const py::kwargs &kwargs,
                 opt = valid_long_opt(ci, key.c_str(), &status);
             }
             if (opt == 0) {
-                throw std::runtime_error("invalid option flag " + key);
+                throw std::runtime_error("invalid option flag: " + key);
             }
         }
         if (status == OPT_NO_PARM) {
