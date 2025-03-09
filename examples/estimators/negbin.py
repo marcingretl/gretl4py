@@ -29,6 +29,3 @@ print(m)
 m = gretl.negbin('DVISITS ~ const + SEX + AGE', verbose=True).fit()
 print(m)
 
-# don't print results
-m = gretl.negbin('DVISITS ~ const + SEX + AGE', quiet=True).fit()
-print(m)

@@ -13,6 +13,3 @@ print(m)
 m = gretl.mpols('employ ~ const + prdefl + gnp', simple_print=True).fit()
 print(m)
 
-# suppress printing of results
-m = gretl.mpols('employ ~ const + prdefl + gnp', quiet=True).fit()
-print(m)

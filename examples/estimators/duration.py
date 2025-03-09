@@ -37,6 +37,3 @@ print(m)
 m = gretl.duration('Ti ~ const + Prod', verbose=True).fit()
 print(m)
 
-# don't print anything
-m = gretl.duration('Ti ~ const + Prod', quiet=True).fit()
-print(m)

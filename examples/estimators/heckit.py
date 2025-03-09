@@ -5,11 +5,6 @@ gretl.attach_gretl_data(
 m = gretl.heckit('WW const AX WE CIT ; LFP const WA FAMINC WE').fit()
 print(m)
 
-# suppress printing of results)
-# perform two-step estimation
-m = gretl.heckit('WW const AX WE CIT ; LFP const WA FAMINC WE', quiet=True).fit()
-print(m)
-
 # perform two-step estimation
 m = gretl.heckit('WW const AX WE CIT ; LFP const WA FAMINC WE', two_step=True).fit()
 print(m)

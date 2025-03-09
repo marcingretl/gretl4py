@@ -17,6 +17,3 @@ print(m)
 m = gretl.lad('employ ~ const + prdefl + gnp', no_vcv=True).fit()
 print(m)
 
-# don't print anything
-m = gretl.lad('employ ~ const + prdefl + gnp', quiet=True).fit()
-print(m)

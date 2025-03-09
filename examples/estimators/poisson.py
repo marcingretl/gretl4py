@@ -21,6 +21,3 @@ print(m)
 m = gretl.poisson('DVISITS ~ const + SEX + AGE', verbose=True).fit()
 print(m)
 
-# don't print results
-m = gretl.poisson('DVISITS ~ const + SEX + AGE', quiet=True).fit()
-print(m)

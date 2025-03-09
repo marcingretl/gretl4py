@@ -51,10 +51,6 @@ print(m)
 m = gretl.panel('Y ~ const + Y(-1) + X', matrix_diff=True).fit()
 print(m)
 
-# less verbose output
-m = gretl.panel('Y ~ const + Y(-1) + X', quiet=True).fit()
-print(m)
-
 # more verbose output
 m = gretl.panel('Y ~ const + Y(-1) + X', verbose=True).fit()
 print(m)

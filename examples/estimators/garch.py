@@ -13,10 +13,6 @@ print(m)
 m = gretl.garch('1 1 ; Y', verbose=True).fit()
 print(m)
 
-# don't print anything
-m = gretl.garch('1 1 ; Y', quiet=True).fit()
-print(m)
-
 # print covariance matrix
 m = gretl.garch('1 1 ; Y', vcv=True).fit()
 print(m)
