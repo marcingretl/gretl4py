@@ -57,7 +57,20 @@ class Model:
             del model_dict['_id']
         self.computed = True
         return self
-       
+
+    def attrs(self):
+        for attname in dir(self):
+            if not attname.startswith("_"):
+                attr = getattr(self, attname)
+                if isinstance(attr, float):
+                    print(f"{attname}: {attr:.8g}")
+                elif isinstance(attr, int):
+                    print(f"{attname}: {attr}")
+                elif isinstance(attr, str) and len(attr) < 32:
+                    print(f"{attname}: {attr}")
+                else:
+                    print(f"{attname}: {type(attr)}")
+
     def oddsratio(self):
         if self.name != 'logit':
             exit(f'*** error: oddsratios not available for {self.name:s} estimator ***\n')
@@ -72,7 +85,7 @@ class Model:
             except ModuleNotFoundError:
                 print('*** warning: oddsratios printing requires \'tabulate\' package ***\n')
 
-    #scalars
+    # scalars
     def id(self):
         return self._id
 
