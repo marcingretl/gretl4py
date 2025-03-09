@@ -71,4 +71,6 @@ SRC = sysconfig.os.path.normpath(f'builds/{PYTHON_VER:.2f}/{MODULE:s}')
 print(f'copying {SRC:s} to {MODULE_PATH:s}')
 shutil.copy(SRC, MODULE_PATH)
 
-print(f'\nrun \'{PYTHON_EXE:s} -c "import gretl; gretl.about(True)"\' to verify installation')
+print(f'\nVerifing installation...\n')
+import gretl
+gretl.about(True)
