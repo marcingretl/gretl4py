@@ -133,9 +133,15 @@ int = Model.id(self)
 \end{lstlisting}
 
 \gretlfpycmd{oddsratio()}\index{logit()}
-\estdesc{Prints oddsratios for logit model (if available).}
+\estdesc{Pretty-prints odds ratios for a logit model (if available).}
 \begin{lstlisting}[style=pythonstyle]
 Model.oddsratio(self)
 \end{lstlisting}
-\generaldesc{This method pretty prints
-oddsratios for \gretlcmd{logit} model.}
+
+\gretlfpycmd{attrs()}
+\estdesc{Prints a listing of the attributes of a model.}
+\begin{lstlisting}[style=pythonstyle]
+Model.attrs(self)
+\end{lstlisting}
+\generaldesc{For scalars and short strings the values of the attributes
+  are printed, otherwise the Python type is shown.}
