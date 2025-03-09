@@ -119,6 +119,14 @@ list = Model.yhat
 \vspace*{20pt}\noindent The \classpymodel class provides the
 following public methods:
 
+\gretlfpycmd{attrs()}
+\estdesc{Prints a listing of the attributes of a model.}
+\begin{lstlisting}[style=pythonstyle]
+Model.attrs(self)
+\end{lstlisting}
+\generaldesc{For scalars and short strings the values of the attributes
+  are printed, otherwise the Python type is shown.}
+
 \gretlfpycmd{fit()}
 \estdesc{Executes the underlying implementation of
 the specified estimator in \gretlpy.}
@@ -137,11 +145,3 @@ int = Model.id(self)
 \begin{lstlisting}[style=pythonstyle]
 Model.oddsratio(self)
 \end{lstlisting}
-
-\gretlfpycmd{attrs()}
-\estdesc{Prints a listing of the attributes of a model.}
-\begin{lstlisting}[style=pythonstyle]
-Model.attrs(self)
-\end{lstlisting}
-\generaldesc{For scalars and short strings the values of the attributes
-  are printed, otherwise the Python type is shown.}
