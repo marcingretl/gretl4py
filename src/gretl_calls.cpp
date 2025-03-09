@@ -99,9 +99,9 @@ void module_cleanup (void)
 py::dict about (bool do_print)
 {
     GretlBundle b = GretlBundle();
-    const std::string lgretl_strings[10] =
-        {"dotdir", "gnuplot", "gretldir", "lang", "seats",
-        "tramo", "tramodir", "workdir", "x12a", "x12adir"};
+    const std::string lgretl_strings[9] =
+        {"dotdir", "gnuplot", "gretldir", "seats", "tramo",
+         "tramodir", "workdir", "x12a", "x12adir"};
     std::string mod_ver, lg_ver, py11_ver, sj_ver, sj_name, sj_desc;
     py::dict res, built_in_strings;
 
@@ -123,7 +123,7 @@ py::dict about (bool do_print)
 #endif // USE_MAPBOX_VARIANT
 
     // built-in strings
-    for (int i=0; i<10; i++ ) {
+    for (int i=0; i<9; i++ ) {
         built_in_strings[py::cast(lgretl_strings[i])] =
             get_built_in_string_by_name(lgretl_strings[i].c_str());
     }
