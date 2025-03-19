@@ -49,14 +49,14 @@ if Do_StatsModels is True:
 hf.linenr(5)
 t0 = time.time()
 model = gretl.ols('y ~ const + x1 + x2',
-                  data=gretl.numpyarray2dict(X, Y=y, with_const=False))
+                  data=gretl.nparray2dict(X, Y=y, with_const=False))
 #model = gretl.ols('y ~ const + x1 + x2', data=gretl.numpyarray2dict(X_sm, Y=y, with_const=True)) # this is an alternative call using X_sm
 results = model.fit()
 t1 = time.time()
 print(results.summary)
 hf.linenr(6)
-print("Parameters: ", results.coeff())
-print("R2: ", results.rsq())
+print("Parameters: ", results.coeff)
+print("R2: ", results.rsq)
 hf.runtime(t0, t1)
 # OLS estimation: END
 
@@ -91,13 +91,13 @@ if Do_StatsModels is True:
 hf.linenr(8)
 t0 = time.time()
 res = gretl.ols('y ~ const + x1 + x2 + x3',
-                data=gretl.numpyarray2dict(X, Y=y,
-                                           with_const=True, const_pos=4)).fit()
+                data=gretl.nparray2dict(X, Y=y,
+                                        with_const=True, const_pos=4)).fit()
 t1 = time.time()
 print(res)
 hf.linenr(9)
-print("Parameters: ", res.coeff())
-print("Standard errors: ", res.stderr())
+print("Parameters: ", res.coeff)
+print("Standard errors: ", res.stderr)
 hf.runtime(t0, t1)
 # OLS non-linear curve but linear in parameters: END
 
@@ -152,8 +152,8 @@ if Do_StatsModels is True:
 hf.linenr(13)
 t0 = time.time()
 res = gretl.ols('y ~ const + x1 + x2 + x3',
-                data=gretl.numpyarray2dict(X, Y=y,
-                                           with_const=True, const_pos=4)).fit()
+                data=gretl.nparray2dict(X, Y=y,
+                                        with_const=True, const_pos=4)).fit()
 t1 = time.time()
 print(res)
 hf.linenr(14)
@@ -163,7 +163,7 @@ hf.linenr(14)
 fig, ax = plt.subplots(figsize=(8, 6))
 ax.plot(x, y, "o", label="Data")
 ax.plot(x, y_true, "b-", label="True")
-ax.plot(x, res.yhat(), "r--.", label="Predicted")
+ax.plot(x, res.yhat, "r--.", label="Predicted")
 #ax.plot(x, iv_u, "r--")
 #ax.plot(x, iv_l, "r--")
 legend = ax.legend(loc="best")
