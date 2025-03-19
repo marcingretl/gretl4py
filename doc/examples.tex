@@ -143,7 +143,7 @@ import gretl
 p = gretl.gretl_data_path('misc/longley.gdt')
 \end{lstlisting}
 
-\gretlfpycmd{printdata()}\index{gretl\_data\_path()}
+\gretlfpycmd{print\_data()}\index{gretl\_data\_path()}
 \estdesc{To print the contents of the currently registered
   global dataset in \gretlpy, the following minimal code
   snippet can be used:}
@@ -152,9 +152,9 @@ import gretl
 
 gretl.attach_gretl_data(
 	gretl.gretl_data_path('misc/longley.gdt'))
-gretl.printdata()
+gretl.print_data()
 \end{lstlisting}
-\generaldesc{See \texttt{`examples/helper\_functions/printdata.py'} for details.}
+\generaldesc{See \texttt{`examples/helper\_functions/print\_data.py'} for details.}
 
 \gretlfpycmd{sample()}\index{gretl\_data\_path()}
 \estdesc{To modify the sample range of the currently

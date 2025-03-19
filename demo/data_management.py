@@ -19,16 +19,16 @@ gretl.attach_data(data97_df)
 print("\nExample using global dataset:")
 gretl.sample(t1=1, t2=4)
 print('All about data9-7.csv (1975Q1:1975Q4)')
-gretl.printdata()
+gretl.print_data()
 gretl.sample(full=True)
 
 # we print only varnames in bjg.csv
 print('Variables in data97_df')
-gretl.printdata(namesonly=True)
+gretl.print_data(namesonly=True)
 
 print("\nExample passing dataset as dict:")
 print('Variables in data97_csv')
-gretl.printdata(data=data97_csv, namesonly=True)
+gretl.print_data(data=data97_csv, namesonly=True)
 
 print('Variables in data97_gdt')
-gretl.printdata(data=data97_gdt, namesonly=True)
+gretl.print_data(data=data97_gdt, namesonly=True)

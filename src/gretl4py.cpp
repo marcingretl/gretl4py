@@ -23,12 +23,14 @@
 
 class Module
 {
-    public:
-        Module() { module_init(); }
-        ~Module() { module_cleanup(); }
+public:
+    Module() { module_init(); }
+    ~Module() { module_cleanup(); }
 };
 
-const std::string info = "This is a help text for module.";
+const std::string info = "The gretlpy package is a software collection "
+    "that provides an interface to the libgretl for the python3.xx "
+    "(3.11, 3.12, and 3.13 were tested).";
 
 PYBIND11_MODULE(_gretl, m)
 {
@@ -48,7 +50,7 @@ PYBIND11_MODULE(_gretl, m)
           py::arg("fname").none(false));
     m.def("get_gretl_data", &get_gretl_data,
           py::arg("fname").none(false));
-    m.def("printdata", &printdata,
+    m.def("print_data", &printdata, // 2025-03-19: this is due to the style guidelines contained in PEP 8 (snake case)
           py::arg("data").none(true) = std::nullopt,
           py::arg("namesonly") = false);
 
