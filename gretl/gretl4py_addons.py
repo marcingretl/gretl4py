@@ -70,22 +70,22 @@ def csv2dict (fname, pd=1):
     d['periodicity'] = pd
     return d
 
-def df2dict (dframe, pd=1, withobs=False):
+def df2dict (dframe, pd=1, with_obs=False):
     '''turns a pandas dataframe into a dictionary gretl understands'''
     if 'pandas' not in sys.modules:
         import pandas
     d = {}
     obs_dates = []
     varname = []
-    varname = dframe.axes[1].tolist()[0+withobs:]
+    varname = dframe.axes[1].tolist()[0+with_obs:]
     mydata = dframe.to_numpy(copy=True)
-    if withobs is True:
+    if with_obs is True:
         obs_dates = [row[0] for row in mydata]
     else:
         obs_dates = dframe.axes[0].tolist()
     #d['obs_labels'] = [obs.strftime(_pdtostrformat(pd)) for obs in obs_dates]
     _correctvarnames(varname)
-    d['data_array'] = numpy.array([row[0+withobs:] for row in mydata], numpy.double)
+    d['data_array'] = numpy.array([row[0+with_obs:] for row in mydata], numpy.double)
     d['varname'] = varname
     d['obs_labels'] = obs_dates
     d['periodicity'] = pd

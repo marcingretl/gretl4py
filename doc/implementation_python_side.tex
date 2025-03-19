@@ -140,7 +140,7 @@ dict = gretl.csv2dict(fname=str, [pd=int])
 
 \gretlfpycmd{df2dict()}
 \begin{lstlisting}[style=pythonstyle]
-dict = gretl.df2dict(pandas.dframe, [pd=int, withobs=bool])
+dict = gretl.df2dict(pandas.dframe, [pd=int, with_obs=bool])
 \end{lstlisting}
 \generaldesc{This function converts a \pkg{pandas}
 	\texttt{DataFrame} file into a dictionary compatible with
@@ -149,7 +149,7 @@ dict = gretl.df2dict(pandas.dframe, [pd=int, withobs=bool])
 	\begin{itemize}
 		\item \pythcode{pd=int}: If provided, it
 			specifies the data's periodicity (default:~1).
-		\item \pythcode{withobs=bool}: If set to \pythcode{True},
+		\item \pythcode{with\_obs=bool}: If set to \pythcode{True},
 			the first column of the given \texttt{DataFrame} is
 			treated as containing observation labels
 			(default:~\pythcode{False}).
