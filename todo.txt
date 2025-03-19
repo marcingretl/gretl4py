@@ -3,4 +3,4 @@ BUGS:
 
 TODOS:
 
-1. add variables names to numpyarray2dict()
+1. add variables names to nparray2dict()

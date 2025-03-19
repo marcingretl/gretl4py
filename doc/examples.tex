@@ -90,7 +90,7 @@ d = gretl.df2dict(df, withobs=True)
 \end{lstlisting}
 \generaldesc{See \texttt{`examples/data\_management/df2dict.py'} for details.}
 
-\gretlfpycmd{numpyarray2dict()}
+\gretlfpycmd{nparray2dict()}
 \estdesc{To load the contents of an existing \pkg{numpy}
   \texttt{array} into a dictionary compatible with \gretlpy,
   the following minimal code snippet can be used:}
@@ -99,7 +99,7 @@ import gretl
 from numpy import genfromtxt
 
 np = genfromtxt('longley.csv', delimiter=',')[1:,1:]
-d = gretl.numpyarray2dict(np)
+d = gretl.nparray2dict(np)
 \end{lstlisting}
 \generaldesc{See \texttt{`examples/data\_management/numpyarray2dict.py'} for details.}
 

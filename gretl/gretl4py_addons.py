@@ -91,7 +91,7 @@ def df2dict (dframe, pd=1, withobs=False):
     d['periodicity'] = pd
     return d
 
-def numpyarray2dict (X, pd=1, Y=None, with_const=False,
+def nparray2dict (X, pd=1, Y=None, with_const=False,
                      const_pos=1):
     '''turns a 'raw' numpy array into a dictionary gretl understands
     X - matrix with observations on explanatory variables
