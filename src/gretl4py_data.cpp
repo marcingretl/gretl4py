@@ -275,10 +275,13 @@ GretlDataset::GretlDataset (const py::dict &pydict)
     }
     delete []strBUF;
 
-    dset->structure = get_int_from_python_dict(pydict, "structure", 0);
-
     // FIXME: maybe it's possible automatically, i.e. without sending it from Python
-    pd = get_int_from_python_dict(pydict, "pd");
+    pd = get_int_from_python_dict(pydict, "periodicity");
+    if (pd == 4 || pd == 12) { // for pd={4,12} we should be explicit here???
+        dset->structure = TIME_SERIES;
+    } else {
+        dset->structure = get_int_from_python_dict(pydict, "structure", 0);
+    }
     opt = setobs_opt_from_structure(dset->structure);
     set_obs(std::to_string(pd).c_str(), dset->S[0], dset, opt);
 }
