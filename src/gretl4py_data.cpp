@@ -275,13 +275,14 @@ GretlDataset::GretlDataset (const py::dict &pydict)
     }
     delete []strBUF;
 
-    // FIXME: maybe it's possible automatically, i.e. without sending it from Python
-    pd = get_int_from_python_dict(pydict, "periodicity");
-    if (pd == 4 || pd == 12) { // for pd={4,12} we should be explicit here???
-        dset->structure = TIME_SERIES;
-    } else {
-        dset->structure = get_int_from_python_dict(pydict, "structure", 0);
-    }
+    // The following actions work fine if the python dict we're working with
+    // was created by GretlDataset::to_dict (that is, starting from a gretl
+    // dataset in libgretl's memory-space). The more problematic case is when
+    // the source dictionary comes from csv2dict. In that case we don't know
+    // how smart the CSV reader is, and what the chances are of it's managing
+    // to understand time-series information in the source data file.
+    pd = get_int_from_python_dict(pydict, "pd");
+    dset->structure = get_int_from_python_dict(pydict, "structure", 0);
     opt = setobs_opt_from_structure(dset->structure);
     set_obs(std::to_string(pd).c_str(), dset->S[0], dset, opt);
 }
