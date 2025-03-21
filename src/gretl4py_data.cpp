@@ -281,7 +281,7 @@ GretlDataset::GretlDataset (const py::dict &pydict)
     // the source dictionary comes from csv2dict. In that case we don't know
     // how smart the CSV reader is, and what the chances are of it's managing
     // to understand time-series information in the source data file.
-    pd = get_int_from_python_dict(pydict, "pd");
+    pd = get_int_from_python_dict(pydict, "periodicity");
     dset->structure = get_int_from_python_dict(pydict, "structure", 0);
     opt = setobs_opt_from_structure(dset->structure);
     set_obs(std::to_string(pd).c_str(), dset->S[0], dset, opt);
@@ -304,7 +304,7 @@ py::dict *GretlDataset::to_dict (void)
     int i = 0;
     double *tmp = nullptr;
 
-    pydict[py::cast("pd")] = dset->pd;
+    pydict[py::cast("periodicity")] = dset->pd;
     pydict[py::cast("structure")] = dset->structure;
 
     // note 2024-11-20: we don't put 'const' into the python dictionary,
