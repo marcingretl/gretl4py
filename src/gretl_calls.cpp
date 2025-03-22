@@ -64,6 +64,22 @@ static MODEL (&garch_to_call)(const int*, DATASET*, gretlopt, PRN*) = garch;
 // module related tools
 //////////////////////////////////////////////////
 
+static std::string gretl4py_logo (void)
+{
+    std::string logo = "";
+
+    logo +="                _   _   ___\n";
+    logo +="               | | | | /   |\n";
+    logo +="  __ _ _ __ ___| |_| |/ /| |_ __  _   _\n";
+    logo +=" / _` | '__/ _ \\ __| / /_| | '_ \\| | | |\n";
+    logo +="| (_| | | |  __/ |_| \\___  | |_) | |_| |\n";
+    logo +=" \\__, |_|  \\___|\\__|_|   |_/ .__/ \\__, |\n";
+    logo +="  __/ |                    | |     __/ |\n";
+    logo +=" |___/                     |_|    |___/\n";
+
+    return logo;
+}
+
 void module_init (void)
 {
     if (libgretl_version() < LIBGRETL_MIN_VER) {
@@ -81,6 +97,7 @@ void module_init (void)
     cli_read_rc();
 #endif
     if (gretl4py_verbose) {
+        std::cout << gretl4py_logo() << std::endl;
         std::printf("libgretl initialized\n");
     }
 }
@@ -129,6 +146,7 @@ py::dict about (bool do_print)
     }
 
     res[py::cast("mod_ver")] = mod_ver;
+    res[py::cast("mod_logo")] = gretl4py_logo();
     res[py::cast("py11_ver")] = py11_ver;
     res[py::cast("lg_ver")] = lg_ver;
     if (!b.err) {
