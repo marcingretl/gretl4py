@@ -29,6 +29,7 @@ dict = gretl.about(do_print=bool)
 		\item \pythcode{mbv\_ver}: [only for macOS $< 10.14$]
 			The version of \pkg{mapbox/variant} library, formatted as
 			\texttt{MAJOR.MINOR.PATCH} (\pythcode{str}).
+		\item \pythcode{mod\_logo}: The official ASCII-style \gretlpy logo (\pythcode{str}).
 		\item \pythcode{mod\_ver}: The version of the \gretlpy
 			module (\pythcode{str}).
 		\item \pythcode{py11\_ver}: The version of the \pkg{pybind11}
@@ -61,37 +62,42 @@ gretl.set(key=str, [val=str/int])
 
 
 \subsection{Data management}\label{sec:data_management_python}
-\gretlpy expects a dataset provided as a dictionary with
-the following entries:
-\begin{itemize}
-	\item \pythcode{varname}: A list containing the variable names.
-	\item \pythcode{obs\_labels}: A list containing the observation labels.
-	\item \pythcode{data\_array}: A \pkg{numpy} array (either column-major
-	or row-major format) containing the observations for the variables.
-	\item \pythcode{periodicity}: An integer indicating the data's periodicity,
-	as defined in \cite{gretl_command}. A brief explanation is as follows:
-	\begin{itemize}
-		\item For time-series data:
+\gretlpy expects a dataset provided in one of the following formats:
+\begin{enumerate}
+	\item \texttt{gdt} or \texttt{gdtb} (\lgretl['s] native formats),
+		\texttt{csv}, \texttt{dta} (\pkg{Stata}), \texttt{wf1} (\pkg{Eviews}),
+		or spreadsheets (\texttt{xls}, \texttt{xlsx}, and \texttt{ods}).
+	\item as a \python['s] dictionary with the following entries:
 		\begin{itemize}
-			\item 1 = annual,
-			\item 4 = quarterly,
-			\item 12 = monthly,
-			\item 52 = weekly,
-			\item 5, 6, or 7 = daily,
-			\item 24 = hourly.
+			\item \pythcode{varname}: A list containing the variable names.
+			\item \pythcode{obs\_labels}: A list containing the observation labels.
+			\item \pythcode{data\_array}: A \pkg{numpy} array (either column-major
+			or row-major format) containing the observations for the variables.
+			\item \pythcode{periodicity}: An integer indicating the data's periodicity,
+			as defined in \cite{gretl_command}. A brief explanation is as follows:
+			\begin{itemize}
+				\item For time-series data:
+				\begin{itemize}
+					\item 1 = annual,
+					\item 4 = quarterly,
+					\item 12 = monthly,
+					\item 52 = weekly,
+					\item 5, 6, or 7 = daily,
+					\item 24 = hourly.
+				\end{itemize}
+				\item For panel data: The periodicity represents the number
+				of rows per data block. This corresponds to:
+				\begin{itemize}
+					\item The number of cross-sectional units in the case
+					of stacked cross-sections, or
+					\item The number of time periods in the case of
+					stacked time-series data.
+				\end{itemize}
+				\item For simple cross-sectional data: The periodicity should
+				be set to~1.
+			\end{itemize}
 		\end{itemize}
-		\item For panel data: The periodicity represents the number
-		of rows per data block. This corresponds to:
-		\begin{itemize}
-			\item The number of cross-sectional units in the case
-			of stacked cross-sections, or
-			\item The number of time periods in the case of
-			stacked time-series data.
-		\end{itemize}
-		\item For simple cross-sectional data: The periodicity should
-		be set to~1.
-	\end{itemize}
-\end{itemize}
+\end{enumerate}
 A dictionary containing data for \gretlpy can be created
 manually or with the help of one of the utility functions
 described in Section~\ref{sec:data_management_python}.
@@ -122,8 +128,10 @@ gretl.attach_data(pydict=dict)
 \begin{lstlisting}[style=pythonstyle]
 gretl.attach_gretl_data(fname=str)
 \end{lstlisting}
-\generaldesc{This function registers the specified \texttt{gdt}
-	or \texttt{gdtb} file \citep[see][for details]{gretl_manual}
+\generaldesc{This function registers the specified
+	\texttt{gdt}, \texttt{gdtb}, \texttt{csv}, \texttt{dta},
+	\texttt{wf1}, or spreadsheet (\texttt{xls}, \texttt{xlsx},
+	and \texttt{ods}) file \citep[see][for details]{gretl_manual}
 	as the global dataset. Note that \pythcode{fname}
 	must be the absolute path to the file (see
 	\pythcode{gretl.gretl\_data\_path()}).}
@@ -132,11 +140,14 @@ gretl.attach_gretl_data(fname=str)
 \begin{lstlisting}[style=pythonstyle]
 dict = gretl.csv2dict(fname=str, [pd=int])
 \end{lstlisting}
-\generaldesc{This function converts a CSV file into a
-	dictionary compatible with \gretlpy (as described in
-	Section~\ref{sec:data_management_python}). The
-	\pythcode{pd=int} parameter is optional and
-	specifies the data's periodicity (default:~1).}
+\generaldesc{This function converts a \texttt{csv} file
+	into a dictionary compatible with \gretlpy, as described
+	in Section~\ref{sec:data_management_python}. The optional
+	\pythcode{pd=int} parameter specifies the data's periodicity
+	(default:~1).\newline
+	Note that the preferred method for loading \texttt{csv}
+	files is through either \texttt{attach\_gretl\_data()}
+	or \texttt{get\_gretl\_data()}.}
 
 \gretlfpycmd{df2dict()}
 \begin{lstlisting}[style=pythonstyle]
@@ -159,8 +170,10 @@ dict = gretl.df2dict(pandas.dframe, [pd=int, with_obs=bool])
 \begin{lstlisting}[style=pythonstyle]
 dict = gretl.get_gretl_data(fname=str)
 \end{lstlisting}
-\generaldesc{This function converts the specified \texttt{gdt}
-	or \texttt{gdtb} file \citep[see][for details]{gretl_manual}
+\generaldesc{This function converts the specified
+	\texttt{gdt}, \texttt{gdtb}, \texttt{csv}, \texttt{dta},
+	\texttt{wf1}, or spreadsheet (\texttt{xls}, \texttt{xlsx},
+	and \texttt{ods}) file \citep[see][for details]{gretl_manual}
 	as a dictionary for \gretlpy (as outlined in
 	Section~\ref{sec:data_management_python}). Note that
 	\pythcode{fname} must be the absolute path to the file

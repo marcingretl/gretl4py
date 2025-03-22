@@ -49,9 +49,10 @@ gretl.attach_data(gretl.csv2dict('longley.csv'))
 \end{lstlisting}
 
 \gretlfpycmd{attach\_gretl\_data()}\index{gretl\_data\_path()}
-\estdesc{To register an existing \gretl's \texttt{gdt} or
-  \texttt{gdtb} file as a global dataset, the following
-  minimal code snippet can be used:}
+\estdesc{To register an existing \texttt{gdt}, \texttt{gdtb},
+	\texttt{csv}, \texttt{dta}, \texttt{wf1}, or spreadsheet
+	(\texttt{xls}, \texttt{xlsx}, and \texttt{ods}) file as a
+	global dataset, the following minimal code snippet can be used:}
 \begin{lstlisting}[style=pythonstyle]
 import gretl
 
@@ -66,15 +67,19 @@ data files into a dictionary compatible with \gretlpy.
 For further details, refer to Section~\ref{sec:data_management_python}.
 
 \gretlfpycmd{csv2dict()}
-\estdesc{To load the contents of an existing CSV file into
-a dictionary compatible with \gretlpy, the following
-minimal code snippet can be used:}
+\estdesc{To load the contents of an existing \texttt{csv}
+	file into a dictionary compatible with \gretlpy, the
+	following minimal code snippet can be used:}
 \begin{lstlisting}[style=pythonstyle]
 import gretl
 
 d = gretl.csv2dict('longley.csv')
 \end{lstlisting}
 \generaldesc{See \texttt{`examples/data\_management/csv2dict.py'} for details.}
+
+\noindent Note that the preferred method for loading \texttt{csv}
+files is through either \texttt{attach\_gretl\_data()}
+or \texttt{get\_gretl\_data()}.
 
 \gretlfpycmd{df2dict()}
 \estdesc{To load the contents of an existing \pkg{pandas}
@@ -120,10 +125,11 @@ d = gretl.series2dict(s)
 
 
 \gretlfpycmd{get\_gretl\_data()}\index{gretl\_data\_path()}
-\estdesc{To load the contents of an existing \gretl's
-  \texttt{gdt} or \texttt{gdtb} file into a dictionary
-  compatible with \gretlpy, the following minimal code
-  snippet can be used:}
+\estdesc{To load the contents of an existing \texttt{gdt},
+	\texttt{gdtb}, \texttt{csv}, \texttt{dta}, \texttt{wf1},
+	or spreadsheet (\texttt{xls}, \texttt{xlsx}, and \texttt{ods})
+	file into a dictionary compatible with \gretlpy, the
+	following minimal code snippet can be used:}
 \begin{lstlisting}[style=pythonstyle]
 import gretl
 
