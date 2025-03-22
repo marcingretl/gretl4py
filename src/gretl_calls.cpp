@@ -119,12 +119,13 @@ py::dict about (bool do_print)
     const std::string lgretl_strings[9] =
         {"dotdir", "gnuplot", "gretldir", "seats", "tramo",
          "tramodir", "workdir", "x12a", "x12adir"};
-    std::string mod_ver, lg_ver, py11_ver, sj_ver, sj_name, sj_desc;
+    std::string mod_ver, mod_logo, lg_ver, py11_ver, sj_ver, sj_name, sj_desc;
     py::dict res, built_in_strings;
 
     gretl_push_c_numeric_locale();
 
     mod_ver = std::to_string(GRETL_MODULE_VERSION).substr(0,3);
+    mod_logo = gretl4py_logo();
     py11_ver = std::to_string(PYBIND11_VERSION_MAJOR);
     py11_ver += "." + std::to_string(PYBIND11_VERSION_MINOR);
     py11_ver += "." + std::to_string(PYBIND11_VERSION_PATCH);
@@ -146,7 +147,7 @@ py::dict about (bool do_print)
     }
 
     res[py::cast("mod_ver")] = mod_ver;
-    res[py::cast("mod_logo")] = gretl4py_logo();
+    res[py::cast("mod_logo")] = mod_logo;
     res[py::cast("py11_ver")] = py11_ver;
     res[py::cast("lg_ver")] = lg_ver;
     if (!b.err) {
@@ -165,6 +166,7 @@ py::dict about (bool do_print)
 #endif // USE_MAPBOX_VARIANT
 
     if (do_print || gretl4py_verbose) {
+        std::cout << mod_logo << std::endl;
         std::cout << "gretl4py v" << mod_ver;
         std::cout << " [" << COMPILER_IDENT << "]" << std::endl;
         std::cout << "\t+ pybind11     v" << py11_ver << std::endl;
