@@ -34,8 +34,9 @@ const std::string info = "The gretlpy package is a software collection "
 
 PYBIND11_MODULE(_gretl, m)
 {
-    // module related tools
     static Module module;
+
+    // module related tools
     m.doc() = info;
     m.attr("_version") = GRETL4PY_VERSION;          // to changelog ; to doc
     m.def("about", &about,
