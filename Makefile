@@ -61,6 +61,7 @@ depend:
 # DO NOT DELETE
 
 src/gretl4py.o: src/gretl4py.h
-src/gretl4py_data.o: src/gretl4py_data.h src/simdjson/simdjson.h
-src/gretl_calls.o: src/gretl4py.h src/gretl4py_data.h src/simdjson/simdjson.h
-src/variant.o: src/mapbox/variant.hpp
+src/gretl4py_data.o: src/gretl4py_data.h src/gretl4py_types.h
+src/gretl4py_data.o: src/simdjson/simdjson.h
+src/gretl_calls.o: src/gretl4py.h src/gretl4py_data.h src/gretl4py_types.h
+src/gretl_calls.o: src/simdjson/simdjson.h
