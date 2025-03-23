@@ -37,6 +37,7 @@ PYBIND11_MODULE(_gretl, m)
     // module related tools
     static Module module;
     m.doc() = info;
+    m.attr("_version") = GRETL4PY_VERSION;          // to changelog ; to doc
     m.def("about", &about,
           py::arg("do_print") = false);
     m.def("set", &set,

@@ -39,7 +39,7 @@ extern "C" {
 #endif
 
 #if defined(_WIN32)
-# define LIBGRETL_MIN_VER 50 //it is related with special function for memory free (msvcrt compatibility)
+# define LIBGRETL_MIN_VER 50 // it is related with special function for memory free (msvcrt compatibility)
 #else
 # define LIBGRETL_MIN_VER 49
 #endif
@@ -124,7 +124,7 @@ py::dict about (bool do_print)
 
     gretl_push_c_numeric_locale();
 
-    mod_ver = std::to_string(GRETL_MODULE_VERSION).substr(0,3);
+    mod_ver = std::to_string(GRETL4PY_VERSION).substr(0,4);
     mod_logo = gretl4py_logo();
     py11_ver = std::to_string(PYBIND11_VERSION_MAJOR);
     py11_ver += "." + std::to_string(PYBIND11_VERSION_MINOR);

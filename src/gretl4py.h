@@ -17,11 +17,14 @@
  *
  */
 
+#ifndef GRETL4PY_H
+#define GRETL4PY_H
+
+#define GRETL4PY_VERSION 0.11
+
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
 #include <pybind11/stl.h>
-
-#define GRETL_MODULE_VERSION 0.1
 
 namespace py = pybind11;
 
@@ -94,3 +97,5 @@ py::dict *mpols (const std::string formula, const py::kwargs &kwargs);
 py::dict *panel (const std::string formula, const py::kwargs &kwargs);
 
 py::dict *tsls (const std::string formula, const py::kwargs &kwargs);
+
+#endif // GRETL4PY_H

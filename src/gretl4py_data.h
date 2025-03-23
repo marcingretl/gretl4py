@@ -17,12 +17,15 @@
  *
  */
 
+#ifndef GRETL4PY_DATA_H
+#define GRETL4PY_DATA_H
+
 #define SIMDJSON_DEVELOPMENT_CHECKS 0
 
 #if defined(MB_VARIANT) && defined(__x86_64__) && defined(__APPLE__)
- #define USE_MAPBOX_VARIANT 1
+# define USE_MAPBOX_VARIANT 1
 #else
- #define USE_MAPBOX_VARIANT 0
+# define USE_MAPBOX_VARIANT 0
 #endif // define USE_MAPBOX_VARIANT
 
 #include "simdjson/simdjson.h"
@@ -37,9 +40,9 @@ namespace py = pybind11;
 //////////////////////////////////////////////////
 #if USE_MAPBOX_VARIANT
 # include "mapbox/variant.hpp"
-  typedef std::vector<mapbox::util::variant<double, std::string, int>> vgretl_vector;
+ typedef std::vector<mapbox::util::variant<double, std::string, int>> vgretl_vector;
 #else
-  typedef std::vector<std::variant<double, std::string, int>> vgretl_vector;
+ typedef std::vector<std::variant<double, std::string, int>> vgretl_vector;
 #endif // USE_MAPBOX_VARIANT
 typedef std::vector<vgretl_vector> vgretl_matrix;
 
@@ -189,3 +192,5 @@ public:
 
     void print (void);
 };
+
+#endif // GRETL4PY_DATA_H
