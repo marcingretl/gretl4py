@@ -312,7 +312,7 @@ py::dict *GretlDataset::to_dict (void)
     // so we skip series 0 when copying from GretlDataset.dset
 
     // copy across the data values
-    py::array_t<double, py::array::f_style> Z({dset->n, dset->v-1});
+    DNumPyArrayFC Z({dset->n, dset->v-1});
     tmp = static_cast<double*>(Z.request().ptr);
     for (i=1; i<dset->v; i++) {
         std::memcpy(tmp, dset->Z[i], dset->n * sizeof *tmp);
