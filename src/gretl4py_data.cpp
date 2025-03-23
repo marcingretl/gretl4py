@@ -20,6 +20,7 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
 #include "gretl4py_data.h"
+#include "gretl4py_types.h"
 #include <gretl/matrix_extra.h>
 #include <gretl/gretl_model.h>
 #include <string>

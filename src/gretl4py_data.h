@@ -28,7 +28,6 @@
 # define USE_MAPBOX_VARIANT 0
 #endif // define USE_MAPBOX_VARIANT
 
-#include "gretl4py_types.h"
 #include "simdjson/simdjson.h"
 #include <gretl/libgretl.h>
 #include <iostream>
