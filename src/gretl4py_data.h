@@ -28,8 +28,10 @@
 # define USE_MAPBOX_VARIANT 0
 #endif // define USE_MAPBOX_VARIANT
 
+#include <pybind11/pybind11.h>
 #include "simdjson/simdjson.h"
 #include <gretl/libgretl.h>
+#include <gretl/matrix_extra.h>
 #include <iostream>
 
 namespace py = pybind11;

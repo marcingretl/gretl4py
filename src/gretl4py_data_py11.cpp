@@ -17,7 +17,6 @@
  *
  */
 
-#include <pybind11/pybind11.h>
 #include "gretl4py_data.h"
 
 namespace py = pybind11;
