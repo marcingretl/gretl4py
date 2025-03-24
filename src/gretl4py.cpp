@@ -32,9 +32,16 @@ const std::string info = "The gretlpy package is a software collection "
     "that provides an interface to the libgretl for the python3.xx "
     "(3.11, 3.12, and 3.13 were tested).";
 
+//////////////////////////////////////////////////
+// module extensions
+//////////////////////////////////////////////////
+void init_gretl4py_data_py11(py::module_ &);
+
 PYBIND11_MODULE(_gretl, m)
 {
     static Module module;
+
+    init_gretl4py_data_py11(m);
 
     // module related tools
     m.doc() = info;

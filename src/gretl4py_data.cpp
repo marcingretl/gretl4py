@@ -28,7 +28,7 @@
 #define F_CONTIGUOUS py::detail::npy_api::constants::NPY_ARRAY_F_CONTIGUOUS_
 #define is_pynum_fortranarray(m) ((m.flags() & F_CONTIGUOUS))
 
-#define GRETL_PYBIND11_DEBUG 0
+#define GRETL_PYBIND11_DEBUG 1
 
 //////////////////////////////////////////////////
 // static functions
@@ -290,6 +290,9 @@ GretlDataset::GretlDataset (const py::dict &pydict)
 
 GretlDataset::~GretlDataset (void)
 {
+#if GRETL_PYBIND11_DEBUG
+    std::printf("~GretlDataset: deallocating memory\n");
+#endif // GRETL_PYBIND11_DEBUG
     GretlDataset::free_dset();
 }
 

@@ -310,7 +310,13 @@ static gretlopt unpack_kwargs (const py::kwargs &kwargs,
                 throw std::runtime_error("'data' must be a dictionary");
             }
             continue;
-        } else if (key == "quiet") {
+        } else if (key == "gretl_dataset") {
+            // special case v2: we use already allocated object of GretlDataset class
+            got_data = true;
+            pdset = item.second.cast<GretlDataset *>();
+            continue;
+        }
+         else if (key == "quiet") {
             throw std::runtime_error("invalid option flag: " + key);
         } else if (key == "seasonal" && ci == ARMA) {
             // arima special: ignore here
