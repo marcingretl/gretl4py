@@ -34,7 +34,7 @@ OBJS = $(SRCS:.cpp=.o)
 
 .PHONY: tags clean depend patchelf
 
-%.o: %.cpp gretl4py.h gretl4py_data.h
+%.o: %.cpp gretl4py.h gretl4py_data.h gretl4py_types.h
 	$(CXX) $(CXXFLAGS) -c $< -o $@ -fPIC $(PYBIND) $(GRETLIN) $(MBVARIANTIN)
 
 $(MODULE): $(OBJS)
