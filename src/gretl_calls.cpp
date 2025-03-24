@@ -44,7 +44,7 @@ extern "C" {
 #else
 # define LIBGRETL_MIN_VER 49
 #endif
-#define GRETL_PYBIND11_DEBUG 0
+#define GRETL_PYBIND11_DEBUG 1
 
 #define use_ldco_sig(c) (c == OLS || c == WLS) //const int *list, DATASET *dset, GretlCmdIndex ci, gretlopt opt
 #define use_ldcop_sig(c) (c == LOGIT || c == PROBIT) //int *list, DATASET *dset, int ci, gretlopt opt, PRN *prn
@@ -316,8 +316,7 @@ static gretlopt unpack_kwargs (const py::kwargs &kwargs,
             got_data = true;
             pdset = item.second.cast<GretlDataset *>();
             continue;
-        }
-         else if (key == "quiet") {
+        } else if (key == "quiet") {
             throw std::runtime_error("invalid option flag: " + key);
         } else if (key == "seasonal" && ci == ARMA) {
             // arima special: ignore here
