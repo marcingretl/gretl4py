@@ -36,4 +36,5 @@ SET "MODULE=gretl/_gretl%SUFFIX%"
 %CXX% %CXXFLAGS% -c src\gretl4py_data.cpp -o gretl4py_data.o %PYBIND% %GRETLIN% %PYTHONIN%
 %CXX% %CXXFLAGS% -c src\gretl_calls.cpp -o gretl_calls.o %PYBIND% %GRETLIN% %PYTHONIN%
 %CXX% %CXXFLAGS% -c src\gretl4py.cpp -o gretl4py.o %PYBIND% %GRETLIN% %PYTHONIN%
-%CXX% %CXXFLAGS% gretl4py.o gretl4py_data.o gretl_calls.o simdjson.o -shared -o %MODULE% %GRETLLD% %PYTHONLD%
+%CXX% %CXXFLAGS% -c src\gretl4py_data_py11.cpp -o gretl4py_data_py11.o %PYBIND% %GRETLIN% %PYTHONIN%
+%CXX% %CXXFLAGS% gretl4py.o gretl4py_data_py11.o gretl4py_data.o gretl_calls.o simdjson.o -shared -o %MODULE% %GRETLLD% %PYTHONLD%
