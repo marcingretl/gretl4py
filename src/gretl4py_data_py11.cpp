@@ -26,5 +26,9 @@ void init_gretl4py_data_py11(py::module_ &m)
     py::class_<GretlDataset>(m, "GretlDataset")
         .def(py::init<const std::string>())
         .def(py::init<const py::dict &>())
-        .def("printdset", &GretlDataset::printdset);
+        .def("get_name", &GretlDataset::get_name)
+        .def("set_name", &GretlDataset::set_name)
+        .def("to_dict", &GretlDataset::to_dict)     // verify ownership!!!
+        .def("printdset", &GretlDataset::printdset)
+        .def("ptr", &GretlDataset::ptr);
 }

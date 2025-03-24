@@ -89,5 +89,23 @@ class Model:
     def id(self):
         return self._id
 
+
+# #######################################################
+#   GretlDataset class
+# #######################################################
+def get_data(source):
+    """source: either path to the file or dict"""
+    if isinstance(source, dict) is True:
+        name = "random_name"
+    elif isinstance(source, str) is True:
+        name = "random_name"
+
+    dset = _gretl.GretlDataset(source)
+    dset.set_name(name)
+    print(f'*** {dset.get_name():s} was set as name ***')
+
+    return dset
+
+
 if __name__ == "__main__":
     pass

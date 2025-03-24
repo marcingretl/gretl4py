@@ -23,6 +23,7 @@ import sys
 import subprocess
 import csv
 import numpy
+import gretl
 
 def _correctvarnames (names):
     """replace const with const_"""
@@ -48,6 +49,9 @@ def _pdtostrformat (pd):
 
 def csv2dict (fname, pd=1):
     """turns a cvs into a dictionary gretl understands"""
+    if gretl.version > 0.1:
+        print('*** This function is deprecated and will be remove in future versions. ***\n')
+
     d = {}
     data_list = []
     obs_labels = []

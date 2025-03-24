@@ -466,6 +466,17 @@ void GretlDataset::sample (const py::kwargs &kwargs)
     std::free(restr);
 }
 
+void GretlDataset::set_name (const std::string name)
+{
+    this->name = name;
+}
+
+std::string GretlDataset::get_name (void)
+{
+    return name;
+}
+
+
 //
 // GretlBundle class methods
 //

@@ -52,6 +52,10 @@ import _gretl
 import gretl4py_addons
 import gretl4py_classes
 
+# we import symbols
+from _gretl import version
+from gretl4py_classes import get_data
+
 def __model_initializer(model_name: str, *args, **kwargs):
     """
     Private function called by special method __getattr__
