@@ -95,14 +95,26 @@ class Model:
 # #######################################################
 def get_data(source):
     """source: either path to the file or dict"""
-    if isinstance(source, dict) is True:
-        name = "random_name"
-    elif isinstance(source, str) is True:
-        name = "random_name"
+    if isinstance(source, str) is True:
+        name = source
+    elif isinstance(source, dict) is True:
+        import inspect
+
+        frame = inspect.currentframe()
+        frame = inspect.getouterframes(frame)[1]
+        string = inspect.getframeinfo(frame[0]).code_context[0].strip()
+        args = string[string.find('(') + 1:-1].split(',')
+        assert len(args) == 1
+        if args[0].find('=') != -1:
+            name = args[0].split('=')[1].strip()
+        else:
+            name = args[0]
+    else:
+        raise RuntimeError(f'{str(type(source)):s} type is not supported\n')
 
     dset = _gretl.GretlDataset(source)
     dset.set_name(name)
-    print(f'*** {dset.get_name():s} was set as name ***')
+    print(f'Dataset loaded from: {dset.get_name():s}\n') # this should be controlled by GRETL4PY_VERBOSE env
 
     return dset
 
