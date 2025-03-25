@@ -502,7 +502,7 @@ py::dict *arima (const std::string y, const py::tuple &tup,
     std::free(list);
 #endif
 
-    if (GD != DSET) {
+    if (GD != DSET && GD->is_private) {
         delete GD;
     }
 
@@ -587,7 +587,7 @@ static py::dict *regression_wrapper (const std::string &formula,
     std::free(list);
 #endif
 
-    if (GD != DSET) {
+    if (GD != DSET && GD->is_private) { // FIXME: this must be changed later!!!
         delete GD;
     }
 

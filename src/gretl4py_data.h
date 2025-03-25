@@ -75,6 +75,7 @@ private:
     }
 public:
     int err = 0;
+    bool is_private = false;
     DATASET *dset = NULL;
 
     GretlDataset (const std::string fname); // we load dataset from file
