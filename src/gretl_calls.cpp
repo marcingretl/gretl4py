@@ -56,7 +56,7 @@ extern "C" {
 #define use_lcdop_sig(c) (c == POISSON || c == NEGBIN) //const int *list, int ci, DATASET *dset, gretlopt opt, PRN *prn
 
 static GretlDataset *DSET = nullptr;            // global dataset (class)
-static std::map<int, GretlDataset *> GD_list;    // container for holding global datasets
+static std::map<int, GretlDataset *> GD_list;   // container for holding global datasets
 static int gretl4py_verbose = 0;
 
 // workaround to manually resolve overloads ambiguity

@@ -109,6 +109,7 @@ def get_data(source):
             name = args[0].split('=')[1].strip()
         else:
             name = args[0]
+        name += " (dict)"
     else:
         raise RuntimeError(f'{str(type(source)):s} type is not supported\n')
 
