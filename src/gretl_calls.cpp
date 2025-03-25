@@ -106,7 +106,8 @@ void module_init (void)
 void module_cleanup (void)
 {
     if (DSET) {
-        delete DSET;
+        //delete DSET;
+        std::cout << "we don't delete DSET" << std::endl; //FIXME
     }
     libgretl_cleanup();
     if (gretl4py_verbose) {
@@ -275,6 +276,27 @@ void sample (const py::kwargs &kwargs)
     } else {
         DSET->sample(kwargs);
     }
+}
+
+void show_data_status (void)
+{
+    if (DSET) {
+        std::cout << "default dataset: " << DSET->get_name();
+        std::cout << ", id: " << DSET->get_id();
+        std::cout << ", address: " << DSET << std::endl;
+        std::cout << "total number of datasets: " << DSET->counter << std::endl;
+    } else {
+        std::cout << "default dataset was not set yet" << std::endl;
+    }
+}
+
+// functions below are not defined in a header!!!
+void set_default_dset (GretlDataset *GD)
+{
+    if (DSET) {
+        DSET->is_default = false;
+    }
+    DSET = GD;
 }
 
 //////////////////////////////////////////////////

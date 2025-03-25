@@ -28,6 +28,8 @@ void init_gretl4py_data_py11(py::module_ &m)
         .def(py::init<const py::dict &>())
         .def("get_name", &GretlDataset::get_name)
         .def("set_name", &GretlDataset::set_name)
+        .def("get_id", &GretlDataset::get_id)
+        .def("set_as_default", &GretlDataset::set_as_default)
         .def("to_dict", &GretlDataset::to_dict)     // verify ownership!!!
         .def("printdset", &GretlDataset::printdset)
         .def("ptr", &GretlDataset::ptr);

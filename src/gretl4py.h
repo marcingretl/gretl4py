@@ -56,6 +56,8 @@ void printdata (const std::optional<py::dict> &data = std::nullopt,
 
 void sample (const py::kwargs &kwargs);
 
+void show_data_status (void);
+
 //////////////////////////////////////////////////
 // model estimation
 //////////////////////////////////////////////////

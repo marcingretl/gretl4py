@@ -30,6 +30,9 @@
 
 #define GRETL_PYBIND11_DEBUG 0
 
+// functions from gretl_calls.cpp
+void set_default_dset (GretlDataset *GD);
+
 //////////////////////////////////////////////////
 // static functions
 //////////////////////////////////////////////////
@@ -224,7 +227,6 @@ GretlDataset::GretlDataset (const std::string fname)
     //
     // load gretl data from file
     //
-
     GretlDataset::allocate_dset();
     if (dset) {
         err = gretl_get_data(fname.c_str(), dset, OPT_NONE, NULL);
@@ -235,6 +237,9 @@ GretlDataset::GretlDataset (const std::string fname)
         destroy_dataset(dset);
         throw std::runtime_error("Reading data from '" + fname + "' file failed.");
     }
+
+    GretlDataset::counter++;
+    obj_id = GretlDataset::next_obj_id++;
 }
 
 GretlDataset::GretlDataset (const py::dict &pydict)
@@ -286,14 +291,36 @@ GretlDataset::GretlDataset (const py::dict &pydict)
     dset->structure = get_int_from_python_dict(pydict, "structure", 0);
     opt = setobs_opt_from_structure(dset->structure);
     set_obs(std::to_string(pd).c_str(), dset->S[0], dset, opt);
+
+    GretlDataset::counter++;
+    obj_id = GretlDataset::next_obj_id++;
 }
 
 GretlDataset::~GretlDataset (void)
 {
+    if (is_default) {
+        set_default_dset(nullptr);
+        std::printf("default dataset was deleted\n");
+    }
+    GretlDataset::free_dset();
+    GretlDataset::counter--;
 #if GRETL_PYBIND11_DEBUG
     std::printf("~GretlDataset: deallocating memory\n");
 #endif // GRETL_PYBIND11_DEBUG
+}
+
+void GretlDataset::allocate_dset (void)
+{
     GretlDataset::free_dset();
+    dset = datainfo_new();
+}
+
+void GretlDataset::free_dset (void)
+{
+    if (dset) {
+        destroy_dataset(dset);
+        dset = NULL;
+    }
 }
 
 py::dict *GretlDataset::to_dict (void)
@@ -476,6 +503,16 @@ std::string GretlDataset::get_name (void)
     return name;
 }
 
+void GretlDataset::set_as_default (void)
+{
+    set_default_dset(this);
+    is_default = true;
+}
+
+int GretlDataset::get_id (void)
+{
+    return obj_id;
+}
 
 //
 // GretlBundle class methods

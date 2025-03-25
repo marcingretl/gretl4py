@@ -53,7 +53,7 @@ import gretl4py_addons
 import gretl4py_classes
 
 # we import symbols
-from _gretl import version
+from _gretl import version, show_data_status
 from gretl4py_classes import get_data
 
 def __model_initializer(model_name: str, *args, **kwargs):

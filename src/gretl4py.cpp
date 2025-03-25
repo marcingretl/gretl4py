@@ -62,6 +62,7 @@ PYBIND11_MODULE(_gretl, m)
     m.def("print_data", &printdata, // 2025-03-19: this is due to the style guidelines contained in PEP 8 (snake case)
           py::arg("data").none(true) = std::nullopt,
           py::arg("namesonly") = false);
+    m.def("show_data_status", &show_data_status);
 
     // sampling (for gretl datasets only)
     m.def("sample", &sample);

@@ -58,31 +58,25 @@ void handle_gretl_error (int err);
 class GretlDataset
 {
 private:
+    static inline int next_obj_id = 1;
     std::string name;
+    int obj_id;
 
-    inline void allocate_dset (void)
-    {
-        GretlDataset::free_dset();
-        dset = datainfo_new();
-    }
+    void allocate_dset (void);
 
-    inline void free_dset (void)
-    {
-        if (dset) {
-            destroy_dataset(dset);
-            dset = NULL;
-        }
-    }
+    void free_dset (void);
 public:
+    static inline int counter = 0;
     int err = 0;
     bool is_private = false;
+    bool is_default = false;
     DATASET *dset = NULL;
 
     GretlDataset (const std::string fname); // we load dataset from file
     GretlDataset (const py::dict &pydict);  // we load dataset from Python's dictionary
     ~GretlDataset (void);
 
-    inline GretlDataset *ptr (void) { return this; }
+    inline GretlDataset *ptr (void) { return this; } // to be deleted!!!
 
     py::dict *to_dict (void);               // memory must be deleted at the caller level
 
@@ -93,6 +87,10 @@ public:
     void set_name (const std::string name);
 
     std::string get_name (void);
+
+    void set_as_default (void);
+
+    int get_id (void);
 };
 
 //
