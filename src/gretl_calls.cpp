@@ -55,7 +55,8 @@ extern "C" {
                          || c == GARCH || c == PANEL) //const int *list, DATASET *dset, gretlopt opt, PRN *prn
 #define use_lcdop_sig(c) (c == POISSON || c == NEGBIN) //const int *list, int ci, DATASET *dset, gretlopt opt, PRN *prn
 
-static GretlDataset *DSET = nullptr; // global dataset (class)
+static GretlDataset *DSET = nullptr;            // global dataset (class)
+static std::map<int, GretlDataset *> GD_list;    // container for holding global datasets
 static int gretl4py_verbose = 0;
 
 // workaround to manually resolve overloads ambiguity
@@ -288,6 +289,18 @@ void show_data_status (void)
     } else {
         std::cout << "default dataset was not set yet" << std::endl;
     }
+
+    if (!GD_list.empty()) {
+        std::cout << "list of available datasets:" << std::endl;
+        for (auto &el : GD_list) {
+            std::cout << "id: " << el.first;
+            std::cout << ", name: " << el.second->get_name();
+            if (el.second->is_default) {
+                std::cout << " (default)";
+            }
+            std::cout << std::endl;
+        }
+    }
 }
 
 // functions below are not defined in a header!!!
@@ -297,6 +310,16 @@ void set_default_dset (GretlDataset *GD)
         DSET->is_default = false;
     }
     DSET = GD;
+}
+
+void add_GD_to_list (GretlDataset *GD)
+{
+    GD_list.insert({GD->get_id(), GD});
+}
+
+void delete_GD_from_list (int id)
+{
+    GD_list.erase(id);
 }
 
 //////////////////////////////////////////////////
