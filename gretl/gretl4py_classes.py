@@ -19,6 +19,7 @@
  """
 
 import _gretl
+import sys
 
 class Model:
 
@@ -119,6 +120,25 @@ def get_data(source):
 
     return dset
 
+def show_data_status():
+    # get the caller's global and local variables
+    caller_globals = sys._getframe(1).f_globals
+    caller_locals = sys._getframe(1).f_locals
+
+    # combine both to search for datasets
+    all_globals = {**caller_globals, **caller_locals}
+
+    datasets_found = [name for name, value in all_globals.items() if isinstance(value, _gretl.GretlDataset)]
+
+    if len(datasets_found) == 0:
+        print('No datasets were loaded.')
+    else:
+        print('Available datasets (id, name):')
+        for d in datasets_found:
+            dset = all_globals[d]
+            print(f'{d}: {dset.get_id():d}, {dset.get_name():s}')
+        print('\ndatasets details:')
+        _gretl.show_data_status()
 
 if __name__ == "__main__":
     pass

@@ -281,17 +281,7 @@ void sample (const py::kwargs &kwargs)
 
 void show_data_status (void)
 {
-    if (DSET) {
-        std::cout << "default dataset: " << DSET->get_name();
-        std::cout << ", id: " << DSET->get_id();
-        std::cout << ", address: " << DSET << std::endl;
-        std::cout << "total number of datasets: " << DSET->counter << std::endl;
-    } else {
-        std::cout << "default dataset was not set yet" << std::endl;
-    }
-
     if (!GD_list.empty()) {
-        std::cout << "list of available datasets:" << std::endl;
         for (auto &el : GD_list) {
             std::cout << "id: " << el.first;
             std::cout << ", name: " << el.second->get_name();
@@ -300,6 +290,16 @@ void show_data_status (void)
             }
             std::cout << std::endl;
         }
+        std::cout << "total number of datasets: " << GD_list.begin()->second->counter << std::endl;
+    }
+
+    std::cout << std::endl;
+    if (!DSET) {
+        std::cout << "default dataset was not set yet" << std::endl;
+    } else {
+        std::cout << "default dataset: " << DSET->get_name();
+        std::cout << ", id: " << DSET->get_id();
+        std::cout << ", address: " << DSET << std::endl;
     }
 }
 
