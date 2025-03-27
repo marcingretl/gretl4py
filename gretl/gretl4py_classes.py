@@ -116,7 +116,7 @@ def get_data(source):
 
     dset = _gretl.GretlDataset(source)
     dset.set_name(name)
-    print(f'Dataset loaded from: {dset.get_name():s}\n') # this should be controlled by GRETL4PY_VERBOSE env
+    print(f'Dataset loaded from: {dset.name:s}\n') # this should be controlled by GRETL4PY_VERBOSE env
 
     return dset
 
@@ -136,9 +136,11 @@ def show_data_status():
         print('Available datasets (id, name):')
         for d in datasets_found:
             dset = all_globals[d]
-            print(f'{d}: {dset.get_id():d}, {dset.get_name():s}')
-        print('\ndatasets details:')
-        _gretl.show_data_status()
+            if dset.is_default is True:
+                defaut = "(default)"
+            else:
+                defaut = ""
+            print(f'{d}: {dset.get_id():d}, {dset.name:s} {defaut:s}')
 
 if __name__ == "__main__":
     pass

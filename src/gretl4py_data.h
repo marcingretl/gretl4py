@@ -59,7 +59,6 @@ class GretlDataset
 {
 private:
     static inline int next_obj_id = 1;
-    std::string name;
     int obj_id;
 
     void allocate_dset (void);
@@ -71,6 +70,7 @@ public:
     bool is_private = false;
     bool is_default = false;
     DATASET *dset = NULL;
+    std::string name;
 
     GretlDataset (const std::string fname); // we load dataset from file
     GretlDataset (const py::dict &pydict);  // we load dataset from Python's dictionary

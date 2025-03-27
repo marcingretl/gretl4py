@@ -32,8 +32,6 @@
 
 // functions from gretl_calls.cpp
 void set_default_dset (GretlDataset *GD);
-void add_GD_to_list (GretlDataset *GD);
-void delete_GD_from_list (int id);
 
 //////////////////////////////////////////////////
 // static functions
@@ -242,7 +240,6 @@ GretlDataset::GretlDataset (const std::string fname)
 
     GretlDataset::counter++;
     obj_id = GretlDataset::next_obj_id++;
-    add_GD_to_list(this);
 }
 
 GretlDataset::GretlDataset (const py::dict &pydict)
@@ -297,7 +294,6 @@ GretlDataset::GretlDataset (const py::dict &pydict)
 
     GretlDataset::counter++;
     obj_id = GretlDataset::next_obj_id++;
-    add_GD_to_list(this);
 }
 
 GretlDataset::~GretlDataset (void)
@@ -306,7 +302,6 @@ GretlDataset::~GretlDataset (void)
         set_default_dset(nullptr);
         std::printf("default dataset was deleted\n");
     }
-    delete_GD_from_list(obj_id);
     GretlDataset::free_dset();
     GretlDataset::counter--;
 #if GRETL_PYBIND11_DEBUG
@@ -501,11 +496,6 @@ void GretlDataset::sample (const py::kwargs &kwargs)
 void GretlDataset::set_name (const std::string name)
 {
     this->name = name;
-}
-
-std::string GretlDataset::get_name (void)
-{
-    return name;
 }
 
 void GretlDataset::set_as_default (void)
