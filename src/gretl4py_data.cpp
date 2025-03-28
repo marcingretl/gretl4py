@@ -414,8 +414,8 @@ void GretlDataset::print (const py::kwargs &kwargs)
     // int *list = NULL;
     int err = 0;
 
-    // could restrict printing to selected series via
-    // series = <whatever> in kwargs
+    // Could restrict printing to selected series via
+    // series = <whatever> in kwargs -> list.
 
     for (auto &item : kwargs) {
         const char *val = NULL;
@@ -441,6 +441,19 @@ void GretlDataset::print (const py::kwargs &kwargs)
     }
 
     if (summary) {
+        if (dataset_is_time_series(dset)) {
+            char s1[OBSLEN], s2[OBSLEN];
+
+            ntolabel(s1, 0, dset);
+            ntolabel(s2, dset->n-1, dset);
+            pprintf(GP.prn, "Time series, frequency %d, T = %d, %s to %s\n\n",
+                    dset->pd, dset->n, s1, s2);
+        } else if (dataset_is_panel(dset)) {
+            pprintf(GP.prn, "Panel data, N = %d, T = %d\n\n", dset->n / dset->pd,
+                    dset->pd);
+        } else {
+            pprintf(GP.prn, "Cross-sectional data, N = %d\n\n", dset->n);
+        }
         list_series(dset, OPT_NONE, GP.prn);
     } else {
         gretlopt opt = byobs ? OPT_O : OPT_NONE;
