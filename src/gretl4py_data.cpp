@@ -375,7 +375,7 @@ py::dict *GretlDataset::to_dict (void)
     return as_dict;
 }
 
-void GretlDataset::printdset (bool namesonly)
+void GretlDataset::print (bool namesonly)
 {
     GretlPrint GP = GretlPrint();
 

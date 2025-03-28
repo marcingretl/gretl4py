@@ -257,9 +257,9 @@ void printdata (const std::optional<py::dict> &data,
     if (data == std::nullopt && !DSET) {
         throw std::runtime_error("No gretl dataset in place");
     } else if (data == std::nullopt && DSET) {
-        DSET->printdset(namesonly);
+        DSET->print(namesonly);
     } else {
-        GretlDataset(*data).printdset(namesonly);
+        GretlDataset(*data).print(namesonly);
     }
 }
 
@@ -315,7 +315,7 @@ static gretlopt unpack_kwargs (const py::kwargs &kwargs,
                 pdset = new GretlDataset(data);
 #if GRETL_PYBIND11_DEBUG
                 std::printf("we have the following variables in given dataset:\n");
-                pdset->printdset(true);
+                pdset->print(true);
 #endif // GRETL_PYBIND11_DEBUG
             } else {
                 throw std::runtime_error("'data' must be a dictionary");

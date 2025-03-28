@@ -33,6 +33,6 @@ void init_gretl4py_data_py11(py::module_ &m)
         .def("set_as_default", &GretlDataset::set_as_default)
         .def("to_dict", &GretlDataset::to_dict,
              py::return_value_policy::take_ownership)
-        .def("printdset", &GretlDataset::printdset)
+        .def("print", &GretlDataset::print)
         .def("ptr", &GretlDataset::ptr);
 }

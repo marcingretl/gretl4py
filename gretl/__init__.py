@@ -60,10 +60,6 @@ import gretl4py_classes
 
 # we import symbols explicitly
 from _gretl import (about, version)
-from _gretl import (arima, ols, wls, logit, probit, poisson, negbin,
-    biprobit, duration, heckit, logistic, ar, ar1, lad, garch, mpols,
-    panel, tsls)
-
 from gretl4py_classes import (get_data, show_data_status)
 
 def __model_initializer(model_name: str, *args, **kwargs):
