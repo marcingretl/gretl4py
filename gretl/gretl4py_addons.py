@@ -23,6 +23,7 @@ import sys
 import subprocess
 import csv
 import numpy
+import gretl
 
 def _correctvarnames (names):
     """replace const with const_"""
@@ -45,30 +46,6 @@ def _pdtostrformat (pd):
     else:
         raise TypeError(f'date formatter for pd={pd:d} not supported')
     return res
-
-def csv2dict (fname, pd=1):
-    """turns a cvs into a dictionary gretl understands"""
-    d = {}
-    data_list = []
-    obs_labels = []
-    with open(fname, newline='') as csvfile:
-        gretlreader = csv.reader(csvfile, delimiter=',')
-        row_nr = 0
-        varname = []
-        for row in gretlreader:
-            row_nr += 1
-            if row_nr == 1:
-                varname = row[1:]
-            else:
-                obs_labels.append(row[0])
-                data_list.append(row[1:])
-    data_array = numpy.array(data_list, numpy.double)
-    _correctvarnames(varname)
-    d['data_array'] = data_array
-    d['varname'] = varname
-    d['obs_labels'] = obs_labels
-    d['periodicity'] = pd
-    return d
 
 def df2dict (dframe, pd=1, with_obs=False):
     '''turns a pandas dataframe into a dictionary gretl understands'''

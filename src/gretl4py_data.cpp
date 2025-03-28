@@ -30,6 +30,9 @@
 
 #define GRETL_PYBIND11_DEBUG 0
 
+// functions from gretl_calls.cpp
+void set_default_dset (GretlDataset *GD);
+
 //////////////////////////////////////////////////
 // static functions
 //////////////////////////////////////////////////
@@ -224,7 +227,6 @@ GretlDataset::GretlDataset (const std::string fname)
     //
     // load gretl data from file
     //
-
     GretlDataset::allocate_dset();
     if (dset) {
         err = gretl_get_data(fname.c_str(), dset, OPT_NONE, NULL);
@@ -235,6 +237,9 @@ GretlDataset::GretlDataset (const std::string fname)
         destroy_dataset(dset);
         throw std::runtime_error("Reading data from '" + fname + "' file failed.");
     }
+
+    GretlDataset::counter++;
+    id = GretlDataset::next_obj_id++;
 }
 
 GretlDataset::GretlDataset (const py::dict &pydict)
@@ -286,14 +291,39 @@ GretlDataset::GretlDataset (const py::dict &pydict)
     dset->structure = get_int_from_python_dict(pydict, "structure", 0);
     opt = setobs_opt_from_structure(dset->structure);
     set_obs(std::to_string(pd).c_str(), dset->S[0], dset, opt);
+
+    GretlDataset::counter++;
+    id = GretlDataset::next_obj_id++;
 }
 
 GretlDataset::~GretlDataset (void)
 {
+    if (is_default) {
+        set_default_dset(nullptr);
+        std::printf("default dataset was deleted\n");
+    }
     GretlDataset::free_dset();
+    GretlDataset::counter--;
+#if GRETL_PYBIND11_DEBUG
+    std::cout << "~GretlDataset: deallocating memory, id: " << this->id << std::endl;
+#endif // GRETL_PYBIND11_DEBUG
 }
 
-py::dict *GretlDataset::to_dict (void)
+void GretlDataset::allocate_dset (void)
+{
+    GretlDataset::free_dset();
+    dset = datainfo_new();
+}
+
+void GretlDataset::free_dset (void)
+{
+    if (dset) {
+        destroy_dataset(dset);
+        dset = NULL;
+    }
+}
+
+py::dict *GretlDataset::to_dict (void) const
 {
     //
     // we convert gretl data to pydict
@@ -345,7 +375,7 @@ py::dict *GretlDataset::to_dict (void)
     return as_dict;
 }
 
-void GretlDataset::printdset (bool namesonly)
+void GretlDataset::print (bool namesonly)
 {
     GretlPrint GP = GretlPrint();
 
@@ -383,16 +413,7 @@ void GretlDataset::sample (const py::kwargs &kwargs)
             throw std::runtime_error("option key must be a string");
         }
         const std::string &key = item.first.cast<std::string>();
-
-#if 1
         val = MapPyToCpp(item.second).to_string_view().data();
-#else
-        if (is_pyint(item.second) || is_pybool(item.second)) {
-            val = std::to_string(item.second.cast<int>()).c_str();
-        } else if (is_pystr(item.second)) {
-            val = item.second.cast<std::string_view>().data();
-        }
-#endif // 1
 
         if (key == "t1") {
             t1str = strdup(val);
@@ -461,6 +482,17 @@ void GretlDataset::sample (const py::kwargs &kwargs)
     std::free(t1str);
     std::free(t2str);
     std::free(restr);
+}
+
+void GretlDataset::set_as_default (void)
+{
+    set_default_dset(this);
+    is_default = true;
+}
+
+int GretlDataset::get_id (void)
+{
+    return id;
 }
 
 //

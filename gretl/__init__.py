@@ -23,6 +23,8 @@ and sets some required environmental variables."""
 
 import sysconfig
 import site as _site
+import sys
+
 PATH = _site.getusersitepackages()
 platform = sysconfig.get_platform()
 if platform == "win-amd64":
@@ -48,9 +50,34 @@ elif platform[0:5] == "macos":
 else:
     PATH = str(PATH + r'/gretl')
 sysconfig.sys.path.append(PATH)
+
+# ###################################
+# gretl4py stuff
+# ###################################
 import _gretl
 import gretl4py_addons
 import gretl4py_classes
+
+# we import some symbols explicitly
+from _gretl import (about, set, version)
+from gretl4py_classes import (get_data, show_data_status)
+
+# deprecations
+def csv2dict (fname, pd=1):
+    raise RuntimeError('*** This function is deprecated and was removed. Please use \'gretl.get_data()\' instead. ***\n')
+
+def attach_data (pydict):
+    raise RuntimeError('*** This function is deprecated and was removed. Please use \'gretl.get_data()\' instead. ***\n')
+
+def attach_gretl_data (fname):
+    raise RuntimeError('*** This function is deprecated and was removed. Please use \'gretl.get_data()\' instead. ***\n')
+
+def get_gretl_data (fname):
+    raise RuntimeError('*** This function is deprecated and was removed. Please use \'gretl.get_data()\' instead. ***\n')
+
+def printdata (data, namesonly):
+    raise RuntimeError('*** This function is deprecated and was removed. Please use GretlDataset class \'print()\' method instead. ***\n')
+# deprecations: END
 
 def __model_initializer(model_name: str, *args, **kwargs):
     """

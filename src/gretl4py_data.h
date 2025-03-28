@@ -28,8 +28,11 @@
 # define USE_MAPBOX_VARIANT 0
 #endif // define USE_MAPBOX_VARIANT
 
+#include <pybind11/pybind11.h>
+#include <pybind11/numpy.h>
 #include "simdjson/simdjson.h"
 #include <gretl/libgretl.h>
+#include <gretl/matrix_extra.h>
 #include <iostream>
 
 namespace py = pybind11;
@@ -55,32 +58,33 @@ void handle_gretl_error (int err);
 class GretlDataset
 {
 private:
-    inline void allocate_dset (void)
-    {
-        GretlDataset::free_dset();
-        dset = datainfo_new();
-    }
+    static inline int next_obj_id = 1;
+    int id;
 
-    inline void free_dset (void)
-    {
-        if (dset) {
-            destroy_dataset(dset);
-            dset = NULL;
-        }
-    }
+    void allocate_dset (void);
+
+    void free_dset (void);
 public:
+    static inline int counter = 0;
     int err = 0;
+    bool is_private = false;
+    bool is_default = false;
     DATASET *dset = NULL;
+    std::string description;
 
     GretlDataset (const std::string fname); // we load dataset from file
     GretlDataset (const py::dict &pydict);  // we load dataset from Python's dictionary
     ~GretlDataset (void);
 
-    py::dict *to_dict (void);               // memory must be deleted at the caller level
+    py::dict *to_dict (void) const;         // memory must be deleted at the caller level
 
-    void printdset (bool namesonly = false);
+    void print (bool namesonly = false);
 
     void sample (const py::kwargs &kwargs);
+
+    void set_as_default (void);
+
+    int get_id (void);
 };
 
 //

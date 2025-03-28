@@ -45,15 +45,6 @@ void set (const std::string key,
 // data management
 //////////////////////////////////////////////////
 
-void attach_data (const py::dict &pydict);
-
-void attach_gretl_data (const std::string fname);
-
-py::dict *get_gretl_data (const std::string fname);
-
-void printdata (const std::optional<py::dict> &data = std::nullopt,
-                bool namesonly = false);
-
 void sample (const py::kwargs &kwargs);
 
 //////////////////////////////////////////////////

@@ -44,7 +44,7 @@ extern "C" {
 #else
 # define LIBGRETL_MIN_VER 49
 #endif
-#define GRETL_PYBIND11_DEBUG 0
+#define GRETL_PYBIND11_DEBUG 1
 
 #define use_ldco_sig(c) (c == OLS || c == WLS) //const int *list, DATASET *dset, GretlCmdIndex ci, gretlopt opt
 #define use_ldcop_sig(c) (c == LOGIT || c == PROBIT) //int *list, DATASET *dset, int ci, gretlopt opt, PRN *prn
@@ -55,7 +55,7 @@ extern "C" {
                          || c == GARCH || c == PANEL) //const int *list, DATASET *dset, gretlopt opt, PRN *prn
 #define use_lcdop_sig(c) (c == POISSON || c == NEGBIN) //const int *list, int ci, DATASET *dset, gretlopt opt, PRN *prn
 
-static GretlDataset *DSET = nullptr; // global dataset (class)
+static GretlDataset *DSET = nullptr;            // global dataset (class)
 static int gretl4py_verbose = 0;
 
 // workaround to manually resolve overloads ambiguity
@@ -106,7 +106,8 @@ void module_init (void)
 void module_cleanup (void)
 {
     if (DSET) {
-        delete DSET;
+        //delete DSET;
+        std::cout << "we don't delete DSET" << std::endl; //FIXME
     }
     libgretl_cleanup();
     if (gretl4py_verbose) {
@@ -228,40 +229,6 @@ void set (const std::string key,
 // data management
 //////////////////////////////////////////////////
 
-void attach_data (const py::dict &pydict)
-{
-    if (DSET) {
-        delete DSET;
-    }
-    DSET = new GretlDataset(pydict);
-}
-
-void attach_gretl_data (const std::string fname)
-{
-    if (DSET) {
-        delete DSET;
-        DSET = nullptr; // this is because of SIGSEGV by free_Z
-    }
-    DSET = new GretlDataset(fname);
-}
-
-py::dict *get_gretl_data (const std::string fname)
-{
-    return GretlDataset(fname).to_dict();
-}
-
-void printdata (const std::optional<py::dict> &data,
-                bool namesonly)
-{
-    if (data == std::nullopt && !DSET) {
-        throw std::runtime_error("No gretl dataset in place");
-    } else if (data == std::nullopt && DSET) {
-        DSET->printdset(namesonly);
-    } else {
-        GretlDataset(*data).printdset(namesonly);
-    }
-}
-
 // Sampling of gretl datasets. As of 2024-09-02 this just covers basic usage of
 // the "smpl" command in gretl: setting of t1 and/or t2; sub-sampling by means of
 // a boolean condition expressed in hansl (with or without the --replace option);
@@ -275,6 +242,15 @@ void sample (const py::kwargs &kwargs)
     } else {
         DSET->sample(kwargs);
     }
+}
+
+// functions below are not defined in a header!!!
+void set_default_dset (GretlDataset *GD)
+{
+    if (DSET) {
+        DSET->is_default = false;
+    }
+    DSET = GD;
 }
 
 //////////////////////////////////////////////////
@@ -298,18 +274,9 @@ static gretlopt unpack_kwargs (const py::kwargs &kwargs,
         const std::string &key = item.first.cast<std::string>();
 
         if (key == "data") {
-            // special case: get hold of dict for dataset
+            // special case: we use already allocated object of GretlDataset class
             got_data = true;
-            if (is_pydict(item.second)) {
-                const py::dict data = item.second.cast<py::dict>();
-                pdset = new GretlDataset(data);
-#if GRETL_PYBIND11_DEBUG
-                std::printf("we have the following variables in given dataset:\n");
-                pdset->printdset(true);
-#endif // GRETL_PYBIND11_DEBUG
-            } else {
-                throw std::runtime_error("'data' must be a dictionary");
-            }
+            pdset = item.second.cast<GretlDataset *>();
             continue;
         } else if (key == "quiet") {
             throw std::runtime_error("invalid option flag: " + key);
@@ -347,27 +314,12 @@ static gretlopt unpack_kwargs (const py::kwargs &kwargs,
             }
         } else {
             // an option parameter is accepted, perhaps required
-#if 1
             if (!is_pystr(item.second) && !is_pyint(item.second) && !is_pyfloat(item.second)) {
                 throw std::runtime_error("unsupported option param type");
             } else {
                 push_option_param(ci, static_cast<gretlopt>(opt),
                                   gretl_strdup(MapPyToCpp(item.second).to_string().c_str()));
             }
-#else
-            if (is_pystr(item.second)) {
-                const std::string &sval = item.second.cast<std::string>();
-                push_option_param(ci, (gretlopt) opt, gretl_strdup(sval.c_str()));
-            } else if (is_pyint(item.second)) {
-                int ival = item.second.cast<int>();
-                push_option_param(ci, (gretlopt) opt, gretl_strdup(std::to_string(ival).c_str()));
-            } else if (is_pyfloat(item.second)) {
-                double dval = item.second.cast<double>();
-                push_option_param(ci, (gretlopt) opt, gretl_strdup(std::to_string(dval).c_str()));
-            } else {
-                throw std::runtime_error("unsupported option param type");
-            }
-#endif // 1
         }
     }
 
@@ -497,7 +449,7 @@ py::dict *arima (const std::string y, const py::tuple &tup,
     std::free(list);
 #endif
 
-    if (GD != DSET) {
+    if (GD != DSET && GD->is_private) {
         delete GD;
     }
 
@@ -582,7 +534,7 @@ static py::dict *regression_wrapper (const std::string &formula,
     std::free(list);
 #endif
 
-    if (GD != DSET) {
+    if (GD != DSET && GD->is_private) { // FIXME: this must be changed later!!!
         delete GD;
     }
 

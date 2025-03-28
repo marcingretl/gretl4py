@@ -17,8 +17,10 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  """
-
+import inspect
+import os
 import _gretl
+import sys
 
 class Model:
 
@@ -88,6 +90,92 @@ class Model:
     # scalars
     def id(self):
         return self._id
+
+
+# #######################################################
+#   GretlDataset class
+# #######################################################
+def get_data(source):
+    """Load dataset from file path or dictionary.
+
+    Parameters:
+    source (str | dict): Either a file path or a dictionary.
+
+    Returns:
+    GretlDataset: A dataset object.
+    """
+
+    if isinstance(source, str):
+        description = source  # file path case
+    elif isinstance(source, dict):
+        description = None
+        try:
+            frame = inspect.currentframe()
+            frame = inspect.getouterframes(frame)[1]
+            string = inspect.getframeinfo(frame[0]).code_context[0].strip()
+
+            # extract variable name from the function call
+            args = string[string.find('(') + 1:-1].split(',')
+            assert len(args) == 1
+
+            if '=' in args[0]:
+                description = args[0].split('=')[1].strip()
+            else:
+                description = args[0].strip()
+
+        except Exception:
+            pass  # don't immediately fall back, but try scanning variables
+
+        # If name extraction failed, search for the dictionary in caller's scope
+        if not description:
+            caller_globals = frame[0].f_globals
+            caller_locals = frame[0].f_locals
+
+            # find the variable in locals or globals
+            for var_name, var_value in {**caller_globals, **caller_locals}.items():
+                if var_value is source:  # check if value matches our dictionary
+                    description = var_name
+                    break
+
+        if not description:
+            description = "unknown"  # fallback if we couldn't find any reference
+
+        description += " (dict)"
+    else:
+        raise RuntimeError(f'Unsupported data source type: {type(source).__name__}\n')
+
+    # Create dataset
+    dset = _gretl.GretlDataset(source)
+    dset.description = description
+
+    # if os.getenv("GRETL4PY_VERBOSE", "1") == "1":
+    print(f'Dataset loaded from: {dset.description}\n')
+
+    return dset
+
+def show_data_status():
+    """List of available dataset."""
+
+    # get the caller's global and local variables
+    caller_globals = sys._getframe(1).f_globals
+    caller_locals = sys._getframe(1).f_locals
+
+    # combine both to search for datasets
+    all_globals = {**caller_globals, **caller_locals}
+
+    datasets_found = [name for name, value in all_globals.items() if isinstance(value, _gretl.GretlDataset)]
+
+    if len(datasets_found) == 0:
+        print('No datasets were loaded.')
+    else:
+        print('Available datasets (id, description):')
+        for d in datasets_found:
+            dset = all_globals[d]
+            if dset.is_default is True:
+                defaut = "(default)"
+            else:
+                defaut = ""
+            print(f'{d}: {dset.get_id():d}, {dset.description:s} {defaut:s}')
 
 if __name__ == "__main__":
     pass

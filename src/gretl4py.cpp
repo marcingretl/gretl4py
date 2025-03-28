@@ -32,13 +32,20 @@ const std::string info = "The gretlpy package is a software collection "
     "that provides an interface to the libgretl for the python3.xx "
     "(3.11, 3.12, and 3.13 were tested).";
 
+//////////////////////////////////////////////////
+// module extensions
+//////////////////////////////////////////////////
+void init_gretl4py_data_py11(py::module_ &);
+
 PYBIND11_MODULE(_gretl, m)
 {
     static Module module;
 
+    init_gretl4py_data_py11(m);
+
     // module related tools
     m.doc() = info;
-    m.attr("_version") = GRETL4PY_VERSION;          // to changelog ; to doc
+    m.attr("version") = GRETL4PY_VERSION;           // to changelog ; to doc
     m.def("about", &about,
           py::arg("do_print") = false);
     m.def("set", &set,
@@ -46,17 +53,6 @@ PYBIND11_MODULE(_gretl, m)
           py::arg("val").none(true) = std::nullopt);
 
     // data management
-    m.def("attach_data", &attach_data,
-          py::arg("pydict").none(false));
-    m.def("attach_gretl_data", &attach_gretl_data,
-          py::arg("fname").none(false));
-    m.def("get_gretl_data", &get_gretl_data,
-          py::arg("fname").none(false));
-    m.def("print_data", &printdata, // 2025-03-19: this is due to the style guidelines contained in PEP 8 (snake case)
-          py::arg("data").none(true) = std::nullopt,
-          py::arg("namesonly") = false);
-
-    // sampling (for gretl datasets only)
     m.def("sample", &sample);
 
     // model estimation
