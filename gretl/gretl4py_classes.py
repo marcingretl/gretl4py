@@ -95,6 +95,7 @@ class Model:
 # #######################################################
 #   GretlDataset class
 # #######################################################
+
 def get_data(source):
     """Load dataset from file path or dictionary.
 
@@ -154,7 +155,7 @@ def get_data(source):
     return dset
 
 def show_data_status():
-    """List of available dataset."""
+    """List of available datasets."""
 
     # get the caller's global and local variables
     caller_globals = sys._getframe(1).f_globals

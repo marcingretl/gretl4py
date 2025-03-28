@@ -65,8 +65,6 @@ py::dict *poisson (const std::string formula, const py::kwargs &kwargs);
 
 py::dict *negbin (const std::string formula, const py::kwargs &kwargs);
 
-// content from automation/more_calls.h
-
 py::dict *biprobit (const std::string formula, const py::kwargs &kwargs);
 
 py::dict *duration (const std::string formula, const py::kwargs &kwargs);

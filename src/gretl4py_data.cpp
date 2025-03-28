@@ -186,13 +186,10 @@ py::dict *gretl_model_to_dict (MODEL *model, DATASET *dset,
                                const char *summary, int *err)
 {
     //
-    // Here we construct a python dictionary which is
-    // the representation of the gretl_bundle produced by
-    // libgretl's bundle_from_model(). We also add the
-    // @summary text produced by libgretl's printmodel();
-
-    // and a string holding the JSON representation of the gretl_bundle
-    // produced by libgretl's bundle_from_model().
+    // Here we construct a python dictionary to represent a gretl
+    // MODEL, using as intermediate step the gretl_bundle produced by
+    // libgretl's bundle_from_model(). We also add the @summary text
+    // produced by libgretl's printmodel().
     //
     py::dict *pydict = nullptr;
 
@@ -201,7 +198,6 @@ py::dict *gretl_model_to_dict (MODEL *model, DATASET *dset,
 
     if (!*err) {
         pydict = b.to_dict();
-
         if (!pydict) {
             *err = E_DATA;
             throw std::runtime_error("Model bundle to dict conversion failed.");
@@ -222,6 +218,7 @@ py::dict *gretl_model_to_dict (MODEL *model, DATASET *dset,
 //
 //GretlDataset class methods
 //
+
 GretlDataset::GretlDataset (const std::string fname)
 {
     //
@@ -245,7 +242,7 @@ GretlDataset::GretlDataset (const std::string fname)
 GretlDataset::GretlDataset (const py::dict &pydict)
 {
     //
-    // we fill a gretl DATASET struct with the content of @pydict
+    // alternative initializer: we fill a gretl DATASET with the content of @pydict
     //
     gretlopt opt = OPT_NONE;
     py::list pylist;
