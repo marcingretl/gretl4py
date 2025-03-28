@@ -26,13 +26,21 @@ void init_gretl4py_data_py11(py::module_ &m)
     py::class_<GretlDataset>(m, "GretlDataset")
         .def(py::init<const std::string>())
         .def(py::init<const py::dict &>())
+        .def("__copy__",  [](GretlDataset &src)
+             {
+                 const py::dict *src_as_dict = src.to_dict();
+                 GretlDataset *dst = new GretlDataset(*src_as_dict);
+                 delete src_as_dict;
+                 dst->description = src.description + " (copy)";
+
+                 return dst;
+             })
         .def_readonly("is_default", &GretlDataset::is_default)
-        .def_readonly("name", &GretlDataset::name)
-        .def("set_name", &GretlDataset::set_name)
+        .def_readwrite("description", &GretlDataset::description)
         .def("get_id", &GretlDataset::get_id)
         .def("set_as_default", &GretlDataset::set_as_default)
         .def("to_dict", &GretlDataset::to_dict,
              py::return_value_policy::take_ownership)
-        .def("print", &GretlDataset::print)
-        .def("ptr", &GretlDataset::ptr);
+        .def("print", &GretlDataset::print,
+             py::arg("namesonly") = false);
 }

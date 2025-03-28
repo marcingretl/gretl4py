@@ -305,7 +305,7 @@ GretlDataset::~GretlDataset (void)
     GretlDataset::free_dset();
     GretlDataset::counter--;
 #if GRETL_PYBIND11_DEBUG
-    std::printf("~GretlDataset: deallocating memory\n");
+    std::cout << "~GretlDataset: deallocating memory, id: " << this->obj_id << std::endl;
 #endif // GRETL_PYBIND11_DEBUG
 }
 
@@ -491,11 +491,6 @@ void GretlDataset::sample (const py::kwargs &kwargs)
     std::free(t1str);
     std::free(t2str);
     std::free(restr);
-}
-
-void GretlDataset::set_name (const std::string name)
-{
-    this->name = name;
 }
 
 void GretlDataset::set_as_default (void)

@@ -70,23 +70,17 @@ public:
     bool is_private = false;
     bool is_default = false;
     DATASET *dset = NULL;
-    std::string name;
+    std::string description;
 
     GretlDataset (const std::string fname); // we load dataset from file
     GretlDataset (const py::dict &pydict);  // we load dataset from Python's dictionary
     ~GretlDataset (void);
-
-    inline GretlDataset *ptr (void) { return this; } // to be deleted!!!
 
     py::dict *to_dict (void);               // memory must be deleted at the caller level
 
     void print (bool namesonly = false);
 
     void sample (const py::kwargs &kwargs);
-
-    void set_name (const std::string name);
-
-    std::string get_name (void);
 
     void set_as_default (void);
 

@@ -106,9 +106,9 @@ def get_data(source):
     """
 
     if isinstance(source, str):
-        name = source  # file path case
+        description = source  # file path case
     elif isinstance(source, dict):
-        name = None
+        description = None
         try:
             frame = inspect.currentframe()
             frame = inspect.getouterframes(frame)[1]
@@ -119,38 +119,37 @@ def get_data(source):
             assert len(args) == 1
 
             if '=' in args[0]:
-                name = args[0].split('=')[1].strip()
+                description = args[0].split('=')[1].strip()
             else:
-                name = args[0].strip()
+                description = args[0].strip()
 
         except Exception:
             pass  # don't immediately fall back, but try scanning variables
 
         # If name extraction failed, search for the dictionary in caller's scope
-        if not name:
+        if not description:
             caller_globals = frame[0].f_globals
             caller_locals = frame[0].f_locals
 
             # find the variable in locals or globals
             for var_name, var_value in {**caller_globals, **caller_locals}.items():
                 if var_value is source:  # check if value matches our dictionary
-                    name = var_name
+                    description = var_name
                     break
 
-        if not name:
-            name = "unknown"  # fallback if we couldn't find any reference
+        if not description:
+            description = "unknown"  # fallback if we couldn't find any reference
 
-        name += " (dict)"
-
+        description += " (dict)"
     else:
         raise RuntimeError(f'Unsupported data source type: {type(source).__name__}\n')
 
     # Create dataset
     dset = _gretl.GretlDataset(source)
-    dset.set_name(name)
+    dset.description = description
 
     # if os.getenv("GRETL4PY_VERBOSE", "1") == "1":
-    print(f'Dataset loaded from: {dset.name}\n')
+    print(f'Dataset loaded from: {dset.description}\n')
 
     return dset
 
@@ -169,14 +168,14 @@ def show_data_status():
     if len(datasets_found) == 0:
         print('No datasets were loaded.')
     else:
-        print('Available datasets (id, name):')
+        print('Available datasets (id, description):')
         for d in datasets_found:
             dset = all_globals[d]
             if dset.is_default is True:
                 defaut = "(default)"
             else:
                 defaut = ""
-            print(f'{d}: {dset.get_id():d}, {dset.name:s} {defaut:s}')
+            print(f'{d}: {dset.get_id():d}, {dset.description:s} {defaut:s}')
 
 if __name__ == "__main__":
     pass

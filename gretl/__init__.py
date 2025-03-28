@@ -58,7 +58,7 @@ import _gretl
 import gretl4py_addons
 import gretl4py_classes
 
-# we import symbols explicitly
+# we import some symbols explicitly
 from _gretl import (about, version)
 from gretl4py_classes import (get_data, show_data_status)
 
