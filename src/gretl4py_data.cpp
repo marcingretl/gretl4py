@@ -436,7 +436,7 @@ void GretlDataset::print (const py::kwargs &kwargs)
             }
         } else {
             summary = byobs = 0;
-            throw std::runtime_error("invalid key '" + key + "' in 'sample' args");
+            throw std::runtime_error("print: invalid key '" + key + "'");
         }
     }
 
