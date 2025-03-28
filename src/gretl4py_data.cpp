@@ -323,7 +323,7 @@ void GretlDataset::free_dset (void)
     }
 }
 
-py::dict *GretlDataset::to_dict (void)
+py::dict *GretlDataset::to_dict (void) const
 {
     //
     // we convert gretl data to pydict

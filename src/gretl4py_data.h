@@ -76,7 +76,7 @@ public:
     GretlDataset (const py::dict &pydict);  // we load dataset from Python's dictionary
     ~GretlDataset (void);
 
-    py::dict *to_dict (void);               // memory must be deleted at the caller level
+    py::dict *to_dict (void) const;         // memory must be deleted at the caller level
 
     void print (bool namesonly = false);
 

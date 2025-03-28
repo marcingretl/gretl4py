@@ -26,7 +26,7 @@ void init_gretl4py_data_py11(py::module_ &m)
     py::class_<GretlDataset>(m, "GretlDataset")
         .def(py::init<const std::string>())
         .def(py::init<const py::dict &>())
-        .def("__copy__",  [](GretlDataset &src)
+        .def("__copy__",  [](const GretlDataset &src)
              {
                  const py::dict *src_as_dict = src.to_dict();
                  GretlDataset *dst = new GretlDataset(*src_as_dict);

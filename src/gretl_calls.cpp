@@ -229,40 +229,6 @@ void set (const std::string key,
 // data management
 //////////////////////////////////////////////////
 
-void attach_data (const py::dict &pydict)
-{
-    if (DSET) {
-        delete DSET;
-    }
-    DSET = new GretlDataset(pydict);
-}
-
-void attach_gretl_data (const std::string fname)
-{
-    if (DSET) {
-        delete DSET;
-        DSET = nullptr; // this is because of SIGSEGV by free_Z
-    }
-    DSET = new GretlDataset(fname);
-}
-
-py::dict *get_gretl_data (const std::string fname)
-{
-    return GretlDataset(fname).to_dict();
-}
-
-void printdata (const std::optional<py::dict> &data,
-                bool namesonly)
-{
-    if (data == std::nullopt && !DSET) {
-        throw std::runtime_error("No gretl dataset in place");
-    } else if (data == std::nullopt && DSET) {
-        DSET->print(namesonly);
-    } else {
-        GretlDataset(*data).print(namesonly);
-    }
-}
-
 // Sampling of gretl datasets. As of 2024-09-02 this just covers basic usage of
 // the "smpl" command in gretl: setting of t1 and/or t2; sub-sampling by means of
 // a boolean condition expressed in hansl (with or without the --replace option);

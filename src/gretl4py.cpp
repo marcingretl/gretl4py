@@ -53,17 +53,6 @@ PYBIND11_MODULE(_gretl, m)
           py::arg("val").none(true) = std::nullopt);
 
     // data management
-    m.def("attach_data", &attach_data,
-          py::arg("pydict").none(false));
-    m.def("attach_gretl_data", &attach_gretl_data,
-          py::arg("fname").none(false));
-    m.def("get_gretl_data", &get_gretl_data,
-          py::arg("fname").none(false));
-    m.def("print_data", &printdata, // 2025-03-19: this is due to the style guidelines contained in PEP 8 (snake case)
-          py::arg("data").none(true) = std::nullopt,
-          py::arg("namesonly") = false);
-
-    // sampling (for gretl datasets only)
     m.def("sample", &sample);
 
     // model estimation
