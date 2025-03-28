@@ -24,6 +24,7 @@ and sets some required environmental variables."""
 import sysconfig
 import site as _site
 import sys
+
 PATH = _site.getusersitepackages()
 platform = sysconfig.get_platform()
 if platform == "win-amd64":
@@ -49,13 +50,21 @@ elif platform[0:5] == "macos":
 else:
     PATH = str(PATH + r'/gretl')
 sysconfig.sys.path.append(PATH)
+
+# ###################################
+# gretl4py stuff
+# ###################################
 import _gretl
 import gretl4py_addons
 import gretl4py_classes
 
-# we import symbols
-from _gretl import version
-from gretl4py_classes import get_data, show_data_status
+# we import symbols explicitly
+from _gretl import (about, version)
+from _gretl import (arima, ols, wls, logit, probit, poisson, negbin,
+    biprobit, duration, heckit, logistic, ar, ar1, lad, garch, mpols,
+    panel, tsls)
+
+from gretl4py_classes import (get_data, show_data_status)
 
 def __model_initializer(model_name: str, *args, **kwargs):
     """
