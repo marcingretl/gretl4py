@@ -44,6 +44,8 @@ void init_gretl4py_data_py11(py::module_ &m)
         .def("setobs", &GretlDataset::setobs)
         .def("to_dict", &GretlDataset::to_dict,
              py::return_value_policy::take_ownership)
+        .def("to_file", &GretlDataset::to_file)
+        .def("new_series", &GretlDataset::new_series)
         .def("print", &GretlDataset::print,
              py::arg("namesonly") = false);
 }

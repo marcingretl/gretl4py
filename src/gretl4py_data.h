@@ -78,6 +78,8 @@ public:
 
     py::dict *to_dict (void) const;         // memory must be deleted at the caller level
 
+    void to_file (const std::string fname) const;
+
     void print (bool namesonly = false);
 
     void sample (const py::kwargs &kwargs);
@@ -85,6 +87,8 @@ public:
     void set_as_default (void);
 
     void setobs (const py::kwargs &kwargs);
+
+    void new_series (const std::string formula) const;
 
     int get_id (void);
 };

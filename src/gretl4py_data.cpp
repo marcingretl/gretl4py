@@ -369,6 +369,34 @@ py::dict *GretlDataset::to_dict (void) const
     return as_dict;
 }
 
+void GretlDataset::to_file (const std::string fname) const
+{
+    //
+    // we write gretl data to file named by @fname
+    // FIXME should have a second (list) argument
+    //
+    int err;
+
+    err = write_data(fname.c_str(), NULL, dset, OPT_NONE, NULL);
+    if (err) {
+        handle_gretl_error(err);
+    }
+}
+
+void GretlDataset::new_series (const std::string formula) const
+{
+    //
+    // we create a series according to @formula
+    //
+    const char *line = formula.c_str();
+    int err;
+
+    err = generate(line, dset, GRETL_TYPE_SERIES, OPT_NONE, NULL);
+    if (err) {
+        handle_gretl_error(err);
+    }
+}
+
 void GretlDataset::print (bool namesonly)
 {
     GretlPrint GP = GretlPrint();
