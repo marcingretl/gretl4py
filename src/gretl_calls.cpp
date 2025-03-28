@@ -274,21 +274,7 @@ static gretlopt unpack_kwargs (const py::kwargs &kwargs,
         const std::string &key = item.first.cast<std::string>();
 
         if (key == "data") {
-            // special case: get hold of dict for dataset
-            got_data = true;
-            if (is_pydict(item.second)) {
-                const py::dict data = item.second.cast<py::dict>();
-                pdset = new GretlDataset(data);
-#if GRETL_PYBIND11_DEBUG
-                std::printf("we have the following variables in given dataset:\n");
-                pdset->print(true);
-#endif // GRETL_PYBIND11_DEBUG
-            } else {
-                throw std::runtime_error("'data' must be a dictionary");
-            }
-            continue;
-        } else if (key == "gretl_dataset") {
-            // special case v2: we use already allocated object of GretlDataset class
+            // special case: we use already allocated object of GretlDataset class
             got_data = true;
             pdset = item.second.cast<GretlDataset *>();
             continue;
@@ -328,27 +314,12 @@ static gretlopt unpack_kwargs (const py::kwargs &kwargs,
             }
         } else {
             // an option parameter is accepted, perhaps required
-#if 1
             if (!is_pystr(item.second) && !is_pyint(item.second) && !is_pyfloat(item.second)) {
                 throw std::runtime_error("unsupported option param type");
             } else {
                 push_option_param(ci, static_cast<gretlopt>(opt),
                                   gretl_strdup(MapPyToCpp(item.second).to_string().c_str()));
             }
-#else
-            if (is_pystr(item.second)) {
-                const std::string &sval = item.second.cast<std::string>();
-                push_option_param(ci, (gretlopt) opt, gretl_strdup(sval.c_str()));
-            } else if (is_pyint(item.second)) {
-                int ival = item.second.cast<int>();
-                push_option_param(ci, (gretlopt) opt, gretl_strdup(std::to_string(ival).c_str()));
-            } else if (is_pyfloat(item.second)) {
-                double dval = item.second.cast<double>();
-                push_option_param(ci, (gretlopt) opt, gretl_strdup(std::to_string(dval).c_str()));
-            } else {
-                throw std::runtime_error("unsupported option param type");
-            }
-#endif // 1
         }
     }
 

@@ -239,7 +239,7 @@ GretlDataset::GretlDataset (const std::string fname)
     }
 
     GretlDataset::counter++;
-    obj_id = GretlDataset::next_obj_id++;
+    id = GretlDataset::next_obj_id++;
 }
 
 GretlDataset::GretlDataset (const py::dict &pydict)
@@ -293,7 +293,7 @@ GretlDataset::GretlDataset (const py::dict &pydict)
     set_obs(std::to_string(pd).c_str(), dset->S[0], dset, opt);
 
     GretlDataset::counter++;
-    obj_id = GretlDataset::next_obj_id++;
+    id = GretlDataset::next_obj_id++;
 }
 
 GretlDataset::~GretlDataset (void)
@@ -305,7 +305,7 @@ GretlDataset::~GretlDataset (void)
     GretlDataset::free_dset();
     GretlDataset::counter--;
 #if GRETL_PYBIND11_DEBUG
-    std::cout << "~GretlDataset: deallocating memory, id: " << this->obj_id << std::endl;
+    std::cout << "~GretlDataset: deallocating memory, id: " << this->id << std::endl;
 #endif // GRETL_PYBIND11_DEBUG
 }
 
@@ -413,16 +413,7 @@ void GretlDataset::sample (const py::kwargs &kwargs)
             throw std::runtime_error("option key must be a string");
         }
         const std::string &key = item.first.cast<std::string>();
-
-#if 1
         val = MapPyToCpp(item.second).to_string_view().data();
-#else
-        if (is_pyint(item.second) || is_pybool(item.second)) {
-            val = std::to_string(item.second.cast<int>()).c_str();
-        } else if (is_pystr(item.second)) {
-            val = item.second.cast<std::string_view>().data();
-        }
-#endif // 1
 
         if (key == "t1") {
             t1str = strdup(val);
@@ -501,7 +492,7 @@ void GretlDataset::set_as_default (void)
 
 int GretlDataset::get_id (void)
 {
-    return obj_id;
+    return id;
 }
 
 //

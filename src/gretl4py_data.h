@@ -59,7 +59,7 @@ class GretlDataset
 {
 private:
     static inline int next_obj_id = 1;
-    int obj_id;
+    int id;
 
     void allocate_dset (void);
 
