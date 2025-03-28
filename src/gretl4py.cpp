@@ -28,8 +28,8 @@ public:
     ~Module() { module_cleanup(); }
 };
 
-const std::string info = "The gretlpy package is a software collection "
-    "that provides an interface to the libgretl for the python3.xx "
+const std::string info = "The gretl4py package provides "
+    "an interface to the gretl library for python3 "
     "(3.11, 3.12, and 3.13 were tested).";
 
 //////////////////////////////////////////////////
@@ -45,7 +45,7 @@ PYBIND11_MODULE(_gretl, m)
 
     // module related tools
     m.doc() = info;
-    m.attr("version") = GRETL4PY_VERSION;           // to changelog ; to doc
+    m.attr("version") = GRETL4PY_VERSION;
     m.def("about", &about,
           py::arg("do_print") = false);
     m.def("set", &set,
@@ -56,34 +56,28 @@ PYBIND11_MODULE(_gretl, m)
     m.def("sample", &sample);
 
     // model estimation
-    // (S)ARIMA
     m.def("arima", &arima,
           py::arg("y").none(false),
           py::arg("order").none(false),
           py::return_value_policy::take_ownership);
-    // OLS
     m.def("ols", &ols,
           py::arg("formula").none(false),
           py::return_value_policy::take_ownership);
-    // WLS
     m.def("wls", &wls,
           py::arg("formula").none(false),
           py::return_value_policy::take_ownership);
-    // Logit and probit
     m.def("logit", &logit,
           py::arg("formula").none(false),
           py::return_value_policy::take_ownership);
     m.def("probit", &probit,
           py::arg("formula").none(false),
           py::return_value_policy::take_ownership);
-    // Count models
     m.def("poisson", &poisson,
           py::arg("formula").none(false),
           py::return_value_policy::take_ownership);
     m.def("negbin", &negbin,
           py::arg("formula").none(false),
           py::return_value_policy::take_ownership);
-    // content from automation/more_mod.cpp
     m.def("biprobit", &biprobit,
           py::arg("formula").none(false),
           py::return_value_policy::take_ownership);
