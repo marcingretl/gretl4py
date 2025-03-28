@@ -84,6 +84,8 @@ public:
 
     void set_as_default (void);
 
+    void setobs (const py::kwargs &kwargs);
+
     int get_id (void);
 };
 

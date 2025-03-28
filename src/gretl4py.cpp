@@ -52,9 +52,6 @@ PYBIND11_MODULE(_gretl, m)
           py::arg("key").none(false),
           py::arg("val").none(true) = std::nullopt);
 
-    // data management
-    m.def("sample", &sample);
-
     // model estimation
     m.def("arima", &arima,
           py::arg("y").none(false),

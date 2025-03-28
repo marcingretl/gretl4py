@@ -39,6 +39,8 @@ void init_gretl4py_data_py11(py::module_ &m)
         .def_readwrite("description", &GretlDataset::description)
         .def("get_id", &GretlDataset::get_id)
         .def("set_as_default", &GretlDataset::set_as_default)
+        .def("sample", &GretlDataset::sample)
+        .def("setobs", &GretlDataset::setobs)
         .def("to_dict", &GretlDataset::to_dict,
              py::return_value_policy::take_ownership)
         .def("print", &GretlDataset::print,
