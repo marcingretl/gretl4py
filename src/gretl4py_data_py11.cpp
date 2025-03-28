@@ -31,13 +31,13 @@ void init_gretl4py_data_py11(py::module_ &m)
                  const py::dict *src_as_dict = src.to_dict();
                  GretlDataset *dst = new GretlDataset(*src_as_dict);
                  delete src_as_dict;
-                 dst->description = src.description + " (copy)";
+                 dst->source = src.source + " (copy)";
 
                  return dst;
              })
         .def_readonly("is_default", &GretlDataset::is_default)
-        .def_readwrite("description", &GretlDataset::description)
-        // .def("__repr__", &GretlDataset::repr);
+        .def_readwrite("source", &GretlDataset::source)
+        .def("__repr__", &GretlDataset::repr)
         .def("get_id", &GretlDataset::get_id)
         .def("set_as_default", &GretlDataset::set_as_default)
         .def("sample", &GretlDataset::sample)
@@ -46,6 +46,5 @@ void init_gretl4py_data_py11(py::module_ &m)
              py::return_value_policy::take_ownership)
         .def("to_file", &GretlDataset::to_file)
         .def("new_series", &GretlDataset::new_series)
-        .def("print", &GretlDataset::print,
-             py::arg("namesonly") = false);
+        .def("print", &GretlDataset::print);
 }

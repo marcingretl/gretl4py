@@ -70,7 +70,7 @@ public:
     bool is_private = false;
     bool is_default = false;
     DATASET *dset = NULL;
-    std::string description;
+    std::string source;
 
     GretlDataset (const std::string fname); // we load dataset from file
     GretlDataset (const py::dict &pydict);  // we load dataset from Python's dictionary
@@ -80,7 +80,9 @@ public:
 
     void to_file (const std::string fname) const;
 
-    void print (bool namesonly = false);
+    py::str repr (void);
+
+    void print (const py::kwargs &kwargs);
 
     void sample (const py::kwargs &kwargs);
 

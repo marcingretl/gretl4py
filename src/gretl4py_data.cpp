@@ -397,6 +397,65 @@ void GretlDataset::new_series (const std::string formula) const
     }
 }
 
+py::str GretlDataset::repr (void)
+{
+    py::str ret = "GretlDataset, source " + source;
+
+    return ret;
+}
+
+#if 1 // suggestion from Allin
+
+void GretlDataset::print (const py::kwargs &kwargs)
+{
+    GretlPrint GP = GretlPrint();
+    int summary = 0;
+    int byobs = 0;
+    // int *list = NULL;
+    int err = 0;
+
+    // could restrict printing to selected series via
+    // series = <whatever> in kwargs
+
+    for (auto &item : kwargs) {
+        const char *val = NULL;
+
+        if (!is_pystr(item.first)) {
+            throw std::runtime_error("option key must be a string");
+        }
+        const std::string &key = item.first.cast<std::string>();
+        val = MapPyToCpp(item.second).to_string_view().data();
+
+        if (key == "summary") {
+            summary = strcmp(val, "1") == 0;
+        } else if (key == "byobs") {
+            byobs = strcmp(val, "1") == 0;
+        } else if (key == "byvar") {
+            if (strcmp(val, "1") == 0) {
+                summary = byobs = 0;
+            }
+        } else {
+            summary = byobs = 0;
+            throw std::runtime_error("invalid key '" + key + "' in 'sample' args");
+        }
+    }
+
+    if (summary) {
+        list_series(dset, OPT_NONE, GP.prn);
+    } else {
+        gretlopt opt = byobs ? OPT_O : OPT_NONE;
+
+        err = printdata(NULL, NULL, dset, opt, GP.prn);
+        if (err) {
+            handle_gretl_error(err);
+        }
+    }
+
+    GP.print();
+}
+
+#else
+
 void GretlDataset::print (bool namesonly)
 {
     GretlPrint GP = GretlPrint();
@@ -412,6 +471,8 @@ void GretlDataset::print (bool namesonly)
 
     GP.print();
 }
+
+#endif
 
 void GretlDataset::sample (const py::kwargs &kwargs)
 {
@@ -430,7 +491,6 @@ void GretlDataset::sample (const py::kwargs &kwargs)
 
     for (auto &item : kwargs) {
         val = NULL;
-
         if (!is_pystr(item.first)) {
             throw std::runtime_error("option key must be a string");
         }

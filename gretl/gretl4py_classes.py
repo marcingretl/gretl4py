@@ -96,20 +96,20 @@ class Model:
 #   GretlDataset class
 # #######################################################
 
-def get_data(source):
+def get_data(src):
     """Load dataset from file path or dictionary.
 
     Parameters:
-    source (str | dict): Either a file path or a dictionary.
+    src (str | dict): Either a file path or a dictionary.
 
     Returns:
     GretlDataset: A dataset object.
     """
 
-    if isinstance(source, str):
-        description = source  # file path case
-    elif isinstance(source, dict):
-        description = None
+    if isinstance(src, str):
+        source = src  # file path case
+    elif isinstance(src, dict):
+        source = None
         try:
             frame = inspect.currentframe()
             frame = inspect.getouterframes(frame)[1]
@@ -120,37 +120,37 @@ def get_data(source):
             assert len(args) == 1
 
             if '=' in args[0]:
-                description = args[0].split('=')[1].strip()
+                source = args[0].split('=')[1].strip()
             else:
-                description = args[0].strip()
+                source = args[0].strip()
 
         except Exception:
             pass  # don't immediately fall back, but try scanning variables
 
         # If name extraction failed, search for the dictionary in caller's scope
-        if not description:
+        if not source:
             caller_globals = frame[0].f_globals
             caller_locals = frame[0].f_locals
 
             # find the variable in locals or globals
             for var_name, var_value in {**caller_globals, **caller_locals}.items():
-                if var_value is source:  # check if value matches our dictionary
-                    description = var_name
+                if var_value is src:  # check if value matches our dictionary
+                    source = var_name
                     break
 
-        if not description:
-            description = "unknown"  # fallback if we couldn't find any reference
+        if not source:
+            source = "unknown"  # fallback if we couldn't find any reference
 
-        description += " (dict)"
+        source += " (dict)"
     else:
-        raise RuntimeError(f'Unsupported data source type: {type(source).__name__}\n')
+        raise RuntimeError(f'Unsupported data src type: {type(src).__name__}\n')
 
     # Create dataset
-    dset = _gretl.GretlDataset(source)
-    dset.description = description
+    dset = _gretl.GretlDataset(src)
+    dset.source = source
 
     # if os.getenv("GRETL4PY_VERBOSE", "1") == "1":
-    print(f'Dataset loaded from: {dset.description}\n')
+    # print(f'Dataset loaded from: {dset.source}\n')
 
     return dset
 
