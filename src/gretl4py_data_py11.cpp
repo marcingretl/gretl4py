@@ -37,6 +37,7 @@ void init_gretl4py_data_py11(py::module_ &m)
              })
         .def_readonly("is_default", &GretlDataset::is_default)
         .def_readwrite("description", &GretlDataset::description)
+        // .def("__repr__", &GretlDataset::repr);
         .def("get_id", &GretlDataset::get_id)
         .def("set_as_default", &GretlDataset::set_as_default)
         .def("sample", &GretlDataset::sample)

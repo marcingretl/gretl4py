@@ -280,10 +280,7 @@ GretlDataset::GretlDataset (const py::dict &pydict)
 
     // The following actions work fine if the python dict we're working with
     // was created by GretlDataset::to_dict (that is, starting from a gretl
-    // dataset in libgretl's memory-space). The more problematic case is when
-    // the source dictionary comes from csv2dict. In that case we don't know
-    // how smart the CSV reader is, and what the chances are of it's managing
-    // to understand time-series information in the source data file.
+    // dataset in libgretl's memory-space).
     pd = get_int_from_python_dict(pydict, "periodicity");
     dset->structure = get_int_from_python_dict(pydict, "structure", 0);
     opt = setobs_opt_from_structure(dset->structure);
@@ -434,11 +431,11 @@ void GretlDataset::sample (const py::kwargs &kwargs)
 
     // reject invalid cases
     if (full && (t1str || t2str || opt_replace)) {
-        throw std::runtime_error("invalid use of 'full' in 'sample' args");
+        throw std::runtime_error("sample: invalid use of 'full'");
     } else if (restr && (t1str || t2str)) {
-        throw std::runtime_error("invalid use of 'restriction' in 'sample' args");
+        throw std::runtime_error("sample: invalid use of 'restriction'");
     } else if (opt_replace && !restr) {
-        throw std::runtime_error("invalid use of 'replace' in 'sample' args");
+        throw std::runtime_error("sample: invalid use of 'replace'");
     }
 
     if (argc == 0 && optc == 0) {
