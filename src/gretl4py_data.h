@@ -31,6 +31,7 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
 #include "simdjson/simdjson.h"
+#include "gretl4py_types.h"
 #include <gretl/libgretl.h>
 #include <gretl/matrix_extra.h>
 extern "C" {
@@ -176,4 +177,5 @@ public:
     void print (void);
 };
 
+GretlTypes *gretl_script_exec (GretlDataset *GD, const std::string accessor);
 #endif // GRETL4PY_DATA_H
