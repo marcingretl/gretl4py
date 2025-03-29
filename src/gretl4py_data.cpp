@@ -592,57 +592,57 @@ void GretlDataset::setobs (const py::kwargs &kwargs)
     int argc = 0;
 
     for (auto &item : kwargs) {
-	if (!is_pystr(item.first)) {
-	    throw std::runtime_error("option key must be a string");
-	}
-	const std::string &akey = item.first.cast<std::string>();
-	const char *val = MapPyToCpp(item.second).to_string_view().data();
+        if (!is_pystr(item.first)) {
+            throw std::runtime_error("option key must be a string");
+        }
+        const std::string &akey = item.first.cast<std::string>();
+        const char *val = MapPyToCpp(item.second).to_string_view().data();
 
-	if (akey == "periodicity") {
-	    arg1 = strdup(val);
-	    rcount++;
-	} else if (akey == "unitvar") {
-	    arg1 = strdup(val);
-	    pcount++;
-	} else if (akey == "startobs") {
-	    arg2 = strdup(val);
-	    rcount++;
-	} else if (akey == "timevar") {
-	    arg2 = strdup(val);
-	    pcount++;
-	} else if (akey == "structure") {
-	    if (!strcmp(val, "cross-section")) {
-		opt = OPT_X;
-	    } else if (!strcmp(val, "time-series")) {
-		opt = OPT_T;
-	    } else if (!strcmp(val, "stacked-time-series")) {
-		opt = OPT_S;
-	    } else {
-	       throw std::runtime_error("setobs: invalid 'structure' specification");
-	    }
-	} else {
-	    throw std::runtime_error("setobs: invalid key '" + akey + "'");
-	}
+        if (akey == "periodicity") {
+            arg1 = strdup(val);
+            rcount++;
+        } else if (akey == "unitvar") {
+            arg1 = strdup(val);
+            pcount++;
+        } else if (akey == "startobs") {
+            arg2 = strdup(val);
+            rcount++;
+        } else if (akey == "timevar") {
+            arg2 = strdup(val);
+            pcount++;
+        } else if (akey == "structure") {
+            if (!strcmp(val, "cross-section")) {
+                opt = OPT_X;
+            } else if (!strcmp(val, "time-series")) {
+                opt = OPT_T;
+            } else if (!strcmp(val, "stacked-time-series")) {
+                opt = OPT_S;
+            } else {
+                throw std::runtime_error("setobs: invalid 'structure' specification");
+            }
+        } else {
+            throw std::runtime_error("setobs: invalid key '" + akey + "'");
+        }
     }
 
     if (argc == 0 && opt == OPT_NONE) {
-	GretlPrint GP = GretlPrint();
+        GretlPrint GP = GretlPrint();
 
-	print_smpl(dset, 0, OPT_NONE, GP.prn);
-	GP.print();
-	return;
+        print_smpl(dset, 0, OPT_NONE, GP.prn);
+        GP.print();
+        return;
     }
 
     argc = rcount + pcount;
     if (argc < 2) {
-	throw std::runtime_error("too few arguments for 'setobs'");
+        throw std::runtime_error("too few arguments for 'setobs'");
     } else if (pcount > 0) {
-	if (rcount > 0 || opt != OPT_NONE) {
-	    throw std::runtime_error("invalid mixed modes in 'setobs'");
-	} else {
-	    /* equiv. to --panel-vars */
-	    opt = OPT_P;
-	}
+        if (rcount > 0 || opt != OPT_NONE) {
+            throw std::runtime_error("invalid mixed modes in 'setobs'");
+        } else {
+            /* equiv. to --panel-vars */
+            opt = OPT_P;
+        }
     }
 
     err = set_obs(arg1, arg2, dset, opt);

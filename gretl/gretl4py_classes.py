@@ -169,14 +169,14 @@ def show_data_status():
     if len(datasets_found) == 0:
         print('No datasets were loaded.')
     else:
-        print('Available datasets (id, description):')
+        print('Available datasets (id, source):')
         for d in datasets_found:
             dset = all_globals[d]
             if dset.is_default is True:
                 defaut = "(default)"
             else:
                 defaut = ""
-            print(f'{d}: {dset.get_id():d}, {dset.description:s} {defaut:s}')
+            print(f'{d}: {dset.get_id():d}, {dset.source:s} {defaut:s}')
 
 if __name__ == "__main__":
     pass
