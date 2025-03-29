@@ -38,8 +38,6 @@ typedef py::array_t<double, py::array::f_style> DNumPyArrayFC; //double contiguo
 
 typedef std::vector<vgretl_vector> vgretl_matrix;
 
-typedef std::variant<double, std::string, DNumPyArrayFC, py::dict, py::none> GretlTypes; // this is for handling gretl_types (in future)
-
 //////////////////////////////////////////////////
 // pybind11 extensions
 //////////////////////////////////////////////////

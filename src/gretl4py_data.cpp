@@ -23,13 +23,6 @@
 #include "gretl4py_types.h"
 #include <gretl/matrix_extra.h>
 #include <gretl/gretl_model.h>
-extern "C" {
-    /* for script execution */
-    #include <gretl/uservar.h>
-    #include <gretl/gretl_foreign.h>
-    #include "libgretl/cmd_private.h"
-    #include "libgretl/uservar_priv.h"
-}
 #include <string>
 
 #define F_CONTIGUOUS py::detail::npy_api::constants::NPY_ARRAY_F_CONTIGUOUS_
@@ -683,12 +676,6 @@ GretlBundle::GretlBundle (MODEL *model, DATASET *dset)
     b = bundle_from_model(model, dset, &err);
 }
 
-GretlBundle::GretlBundle (user_var *uv)
-{
-    b = static_cast<gretl_bundle*>(uv->ptr);
-    free_b = false;
-}
-
 GretlBundle::~GretlBundle (void)
 {
     if (json_buf) {
@@ -916,147 +903,3 @@ void GretlPrint::print (void)
         py::print(buf);
     }
 }
-
-
-GretlTypes *gretl_script_exec (const GretlDataset *GD,
-                               const std::string gretl_var_name,
-                               const std::string script)
-{
-    //
-    // We execute the contents of pre-manufactured script in the
-    // context of @GD and (in future) @model
-    //
-    std::string line(MAXLINE, '\0');
-    bool free_dset = false;
-    GretlPrint GP = GretlPrint(); //GretlPrint(GRETL_PRINT_STDOUT)
-    GretlTypes *res = new GretlTypes;
-    MODEL *model = NULL;
-    user_var *uv = NULL;
-    DATASET *dset = NULL;
-    ExecState state;
-    CMD cmd;
-    int err = 0;
-
-    // dataset to use
-    if (GD) {
-        dset = GD->dset;
-    } else {
-        std::cout << "No dataset given, falling back to empty one" << std::endl;
-	    dset = datainfo_new();
-	    free_dset = true;
-	}
-
-	// model to use
-    model = allocate_working_model();
-    if (model == NULL || dset == NULL) {
-        throw std::runtime_error("memory allocation failed");
-    }
-
-    gretl_cmd_init(&cmd);
-    gretl_exec_state_init(&state, CONSOLE_EXEC, line.data(),
-                          &cmd, model, GP.prn);
-
-    // we finalize pre-manufactured script
-    *state.line = '\0';
-    std::strncat(state.line, script.c_str(), MAXLINE - 2);
-    std::strcat(state.line, "\n");
-
-    err = parse_command_line(&state, dset, NULL);
-    if (err) {
-        delete res;
-        handle_gretl_error(err);
-    } else {
-        err = gretl_cmd_exec(&state, dset);
-    }
-
-    if (err) {
-        delete res;
-        handle_gretl_error(err);
-    } else {
-        uv = get_user_var_by_name(gretl_var_name.c_str());
-    }
-
-    // we extract the returned value
-    if (uv == NULL) {
-        std::cerr << "got NULL value" << std::endl;
-        *res = py::none();
-    } else {
-        if (uv->type == GRETL_TYPE_DOUBLE) {
-            *res = *(static_cast<double*>(uv->ptr));
-        } else if (uv->type == GRETL_TYPE_STRING) {
-            *res = static_cast<char*>(uv->ptr);
-        } else if (uv->type == GRETL_TYPE_MATRIX) {
-            gretl_matrix *gretl_mat = static_cast<gretl_matrix*>(uv->ptr);
-            *res = DNumPyArrayFC({gretl_mat->rows, gretl_mat->cols});
-
-            std::memcpy(static_cast<double*>(std::get<DNumPyArrayFC>(*res).request().ptr),
-                        gretl_mat->val, gretl_mat->rows * gretl_mat->cols * sizeof(double));
-            /*
-            note: if py_mat_ptr is not F_CONTIGUOUS we'll get SIGSEGV
-                => we must switch to element-by-element or column-by-column copying
-
-            double *py_mat_ptr = static_cast<double*>(py_mat.request().ptr);
-            auto colsize = gretl_mat->rows * sizeof(double);
-            for (int i=0; i<gretl_mat->cols; i++) {
-                std::memcpy(py_mat_ptr, gretl_mat->val + i * gretl_mat->rows, colsize);
-                py_mat_ptr += gretl_mat->rows;
-            }*/
-        } else if (uv->type == GRETL_TYPE_BUNDLE) {
-            py::dict *tmpdict = GretlBundle(uv).to_dict();
-            *res = *tmpdict;
-            delete tmpdict;
-        } else {
-            delete res;
-            throw std::runtime_error("type " + std::to_string(uv->type) + " is not supported (yet)");
-        }
-    }
-
-    if (free_dset) {
-        destroy_dataset(dset);
-    }
-    gretl_model_free(model);
-
-    return res;
-}
-
-/*
-GRETL_TYPE_NONE,
-    GRETL_TYPE_BOOL,
-    GRETL_TYPE_INT,
-    GRETL_TYPE_UNSIGNED,
-    GRETL_TYPE_OBS,
-    GRETL_TYPE_LIST,
-    GRETL_TYPE_DOUBLE,
-    GRETL_TYPE_INT_ARRAY,
-    GRETL_TYPE_DOUBLE_ARRAY,
-    GRETL_TYPE_STRING,
-10    GRETL_TYPE_CMPLX_ARRAY,
-    GRETL_TYPE_SERIES,
-    GRETL_TYPE_MATRIX,
-    GRETL_TYPE_STRUCT,
-    GRETL_TYPE_SCALAR_REF,
-    GRETL_TYPE_SERIES_REF,
-    GRETL_TYPE_MATRIX_REF,
-    GRETL_TYPE_STRING_REF,
-    GRETL_TYPE_LIST_REF,
-    GRETL_TYPE_USERIES,
-20    GRETL_TYPE_DATE,
-    GRETL_TYPE_BUNDLE,
-    GRETL_TYPE_BUNDLE_REF,
-    GRETL_TYPE_ARRAY,
-    GRETL_TYPE_ARRAY_REF,
-    GRETL_TYPE_STRINGS,
-    GRETL_TYPE_MATRICES,
-    GRETL_TYPE_BUNDLES,
-    GRETL_TYPE_LISTS,
-    GRETL_TYPE_ARRAYS,
-    GRETL_TYPE_STRINGS_REF,
-    GRETL_TYPE_MATRICES_REF,
-    GRETL_TYPE_BUNDLES_REF,
-    GRETL_TYPE_LISTS_REF,
-    GRETL_TYPE_ARRAYS_REF,
-    GRETL_TYPE_VOID,
-    GRETL_TYPE_NUMERIC,
-    GRETL_TYPE_ANY
-*/
-

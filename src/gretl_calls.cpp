@@ -629,20 +629,3 @@ py::dict *tsls (const std::string formula, const py::kwargs &kwargs)
 {
     return regression_wrapper<ivreg, IVREG>(formula, kwargs);
 }
-
-///////////////////////////////////////////////
-/////// EXPERIMENTAL
-///////////////////////////////////////////////
-GretlTypes *get_accessor (const std::string accessor)
-{
-    if (accessor.length() < 2) {
-        throw std::runtime_error("given string is too short");
-    } else if (accessor.substr(0, 1) != "$") {
-        throw std::runtime_error("accessor begins with '$'");
-    }
-
-    std::string gretl_var_name = accessor.substr(1, accessor.length());
-    std::string script = gretl_var_name + "=" + accessor;
-
-    return gretl_script_exec(DSET, gretl_var_name, script);
-}

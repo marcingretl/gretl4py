@@ -34,11 +34,6 @@
 #include "gretl4py_types.h"
 #include <gretl/libgretl.h>
 #include <gretl/matrix_extra.h>
-extern "C" {
-    /* for script execution */
-    #include <gretl/uservar.h>
-    #include "libgretl/uservar_priv.h"
-}
 #include <iostream>
 
 namespace py = pybind11;
@@ -131,7 +126,6 @@ public:
 
     GretlBundle (void);                         // we get contents of $sysinfo bundle
     GretlBundle (MODEL *model, DATASET *dset);  // we produce bundle from MODEL struct
-    GretlBundle (user_var *uv);                 // bundle incoming as user_var
     ~GretlBundle (void);
 
     py::dict *to_dict (void);                   // bundle-to-dict mapper: memory must be deleted at the caller level
@@ -177,7 +171,4 @@ public:
     void print (void);
 };
 
-GretlTypes *gretl_script_exec (const GretlDataset *GD,
-                               const std::string gretl_var_name,
-                               const std::string script);
 #endif // GRETL4PY_DATA_H

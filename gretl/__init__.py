@@ -59,7 +59,7 @@ import gretl4py_addons
 import gretl4py_classes
 
 # we import some symbols explicitly
-from _gretl import (about, set, version, get_accessor)
+from _gretl import (about, set, version)
 from gretl4py_classes import (get_data, show_data_status)
 
 # deprecations
@@ -93,7 +93,7 @@ def __getattr__(fun):
     exist return it.
     Otherwise call __model_initializer
     """
-    cfunc = ("about", "attach_gretl_data", "attach_data", "get_accessor", "get_gretl_data", "print_data", "sample", "set")
+    cfunc = ("about", "attach_gretl_data", "attach_data", "get_gretl_data", "print_data", "sample", "set")
 
     if fun in dir(gretl4py_addons):
         return getattr(gretl4py_addons, fun)

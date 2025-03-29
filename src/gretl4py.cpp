@@ -51,9 +51,6 @@ PYBIND11_MODULE(_gretl, m)
     m.def("set", &set,
           py::arg("key").none(false),
           py::arg("val").none(true) = std::nullopt);
-    m.def("get_accessor", &get_accessor,
-          py::arg("accessor").none(false),
-          py::return_value_policy::take_ownership);
 
     // model estimation
     m.def("arima", &arima,
