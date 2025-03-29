@@ -918,16 +918,16 @@ void GretlPrint::print (void)
 }
 
 
-GretlTypes *gretl_script_exec (GretlDataset *GD, const std::string accessor)
+GretlTypes *gretl_script_exec (const GretlDataset *GD,
+                               const std::string gretl_var_name,
+                               const std::string script)
 {
-    if (accessor.length() < 2) {
-        throw std::runtime_error("given string is too short");
-    } else if (accessor.substr(0, 1) != "$") {
-        throw std::runtime_error("accessor begins with '$'");
-    }
-
-    std::string gretl_var_name = accessor.substr(1, accessor.length());
+    //
+    // We execute the contents of pre-manufactured script in the
+    // context of @GD and (in future) @model
+    //
     std::string line(MAXLINE, '\0');
+    bool free_dset = false;
     GretlPrint GP = GretlPrint(); //GretlPrint(GRETL_PRINT_STDOUT)
     GretlTypes *res = new GretlTypes;
     MODEL *model = NULL;
@@ -935,10 +935,9 @@ GretlTypes *gretl_script_exec (GretlDataset *GD, const std::string accessor)
     DATASET *dset = NULL;
     ExecState state;
     CMD cmd;
-    std::string script;
     int err = 0;
-    bool free_dset = false;
 
+    // dataset to use
     if (GD) {
         dset = GD->dset;
     } else {
@@ -946,16 +945,18 @@ GretlTypes *gretl_script_exec (GretlDataset *GD, const std::string accessor)
 	    dset = datainfo_new();
 	    free_dset = true;
 	}
+
+	// model to use
     model = allocate_working_model();
     if (model == NULL || dset == NULL) {
         throw std::runtime_error("memory allocation failed");
     }
 
     gretl_cmd_init(&cmd);
-    gretl_exec_state_init(&state, CONSOLE_EXEC, line.data(), &cmd, model, GP.prn);
+    gretl_exec_state_init(&state, CONSOLE_EXEC, line.data(),
+                          &cmd, model, GP.prn);
 
-    // we manufacture a "script"
-    script = gretl_var_name + "=" + accessor;
+    // we finalize pre-manufactured script
     *state.line = '\0';
     std::strncat(state.line, script.c_str(), MAXLINE - 2);
     std::strcat(state.line, "\n");
@@ -975,6 +976,7 @@ GretlTypes *gretl_script_exec (GretlDataset *GD, const std::string accessor)
         uv = get_user_var_by_name(gretl_var_name.c_str());
     }
 
+    // we extract the returned value
     if (uv == NULL) {
         std::cerr << "got NULL value" << std::endl;
         *res = py::none();

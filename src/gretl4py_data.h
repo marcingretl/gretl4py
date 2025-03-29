@@ -177,5 +177,7 @@ public:
     void print (void);
 };
 
-GretlTypes *gretl_script_exec (GretlDataset *GD, const std::string accessor);
+GretlTypes *gretl_script_exec (const GretlDataset *GD,
+                               const std::string gretl_var_name,
+                               const std::string script);
 #endif // GRETL4PY_DATA_H
