@@ -676,6 +676,12 @@ GretlBundle::GretlBundle (MODEL *model, DATASET *dset)
     b = bundle_from_model(model, dset, &err);
 }
 
+GretlBundle::GretlBundle (user_var *uv)
+{
+    b = static_cast<gretl_bundle*>(uv->ptr);
+    free_b = false;
+}
+
 GretlBundle::~GretlBundle (void)
 {
     if (json_buf) {

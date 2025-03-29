@@ -33,6 +33,11 @@
 #include "simdjson/simdjson.h"
 #include <gretl/libgretl.h>
 #include <gretl/matrix_extra.h>
+extern "C" {
+    /* for script execution */
+    #include <gretl/uservar.h>
+    #include "libgretl/uservar_priv.h"
+}
 #include <iostream>
 
 namespace py = pybind11;
@@ -125,6 +130,7 @@ public:
 
     GretlBundle (void);                         // we get contents of $sysinfo bundle
     GretlBundle (MODEL *model, DATASET *dset);  // we produce bundle from MODEL struct
+    GretlBundle (user_var *uv);                 // bundle incoming as user_var
     ~GretlBundle (void);
 
     py::dict *to_dict (void);                   // bundle-to-dict mapper: memory must be deleted at the caller level
