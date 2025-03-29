@@ -1014,6 +1014,7 @@ GretlTypes *gretl_script_exec (const GretlDataset *GD,
     if (free_dset) {
         destroy_dataset(dset);
     }
+    gretl_model_free(model);
 
     return res;
 }
