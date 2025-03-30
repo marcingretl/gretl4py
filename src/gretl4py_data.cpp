@@ -770,7 +770,7 @@ py::dict *GretlBundle::json_to_dict (simdjson::ondemand::object &json_obj,
                 *add_to_outer = false;
             } else {
                 int tmp_array_size = GretlBundle::sd_tmp_array.count_elements();
-                vgretl_vector vec(tmp_array_size-shift);
+                vgretl_vector vec;
 
                 for (auto item : GretlBundle::sd_tmp_array) {
                     if (gr_type == "gretl_list" && i == 0) {
@@ -780,12 +780,12 @@ py::dict *GretlBundle::json_to_dict (simdjson::ondemand::object &json_obj,
 
                     if (item.type() == simdjson::ondemand::json_type::string) {
                         item.get_string(GretlBundle::sd_tmp_str);
-                        vec[i-shift] = GretlBundle::sd_tmp_str;
+                        vec.push_back(GretlBundle::sd_tmp_str);
                     } else {
                         if (gr_type == "gretl_list") {
-                            vec[i-shift] = static_cast<int>(item.get_int64());
+                            vec.push_back(static_cast<int>(item.get_int64()));
                         } else {
-                            vec[i-shift] = static_cast<double>(item);
+                            vec.push_back(static_cast<double>(item));
                         }
                     }
                     i++;
