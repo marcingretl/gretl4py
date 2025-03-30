@@ -771,6 +771,7 @@ py::dict *GretlBundle::json_to_dict (simdjson::ondemand::object &json_obj,
             } else {
                 int tmp_array_size = GretlBundle::sd_tmp_array.count_elements();
                 vgretl_vector vec;
+                vec.reserve(tmp_array_size-shift);
 
                 for (auto item : GretlBundle::sd_tmp_array) {
                     if (gr_type == "gretl_list" && i == 0) {
