@@ -67,7 +67,7 @@ private:
     void free_dset (void);
 public:
     static inline int counter = 0;
-    int err = 0;
+    mutable int err = 0;
     bool is_private = false;
     bool is_default = false;
     DATASET *dset = NULL;
