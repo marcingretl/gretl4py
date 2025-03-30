@@ -93,6 +93,8 @@ public:
 
     void new_series (const std::string formula) const;
 
+    std::vector<std::string> *varnames (void);
+
     int get_id (void);
 };
 

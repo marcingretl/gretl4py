@@ -657,6 +657,17 @@ int GretlDataset::get_id (void)
     return id;
 }
 
+std::vector<std::string> *GretlDataset::varnames (void)
+{
+    std::vector<std::string> *names = new std::vector<std::string>();
+
+    for (int i=0; i<dset->v; i++) {
+        names->push_back(dset->varname[i]);
+    }
+
+    return names;
+}
+
 //
 // GretlBundle class methods
 //
