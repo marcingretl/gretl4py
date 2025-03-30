@@ -657,12 +657,12 @@ int GretlDataset::get_id (void)
     return id;
 }
 
-std::vector<std::string> *GretlDataset::varnames (void)
+py::list *GretlDataset::varnames (void)
 {
-    std::vector<std::string> *names = new std::vector<std::string>();
+    py::list *names = new py::list;
 
     for (int i=0; i<dset->v; i++) {
-        names->push_back(dset->varname[i]);
+        names->append(dset->varname[i]);
     }
 
     return names;

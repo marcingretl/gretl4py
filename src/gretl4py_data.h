@@ -93,7 +93,7 @@ public:
 
     void new_series (const std::string formula) const;
 
-    std::vector<std::string> *varnames (void);
+    py::list *varnames (void);              // memory must be deleted at the caller level
 
     int get_id (void);
 };
