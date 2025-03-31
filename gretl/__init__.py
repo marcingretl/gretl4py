@@ -106,5 +106,20 @@ def __getattr__(fun):
 
     return wrapper
 
+def __dir__():
+    """
+    Extend the module's __dir__() so that dynamic model
+    functions appear in auto-completion.
+    """
+    static_members = list(globals().keys())
+
+    # dynamically resolvable functions
+    dynamic_functions = ["arima", "ols", "wls", "logit", "probit", "poisson", "negbin",
+        "biprobit", "duration", "heckit", "logistic", "ar", "ar1", "lad", "garch",
+        "mpols", "panel", "tsls"]
+
+    return sorted(static_members + dynamic_functions)
+
+
 if __name__ == "__main__":
     pass

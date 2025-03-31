@@ -95,7 +95,6 @@ class Model:
 # #######################################################
 #   GretlDataset class
 # #######################################################
-
 def get_data(src):
     """Load dataset from file path or dictionary.
 
@@ -105,52 +104,37 @@ def get_data(src):
     Returns:
     GretlDataset: A dataset object.
     """
-
     if isinstance(src, str):
         source = src  # file path case
     elif isinstance(src, dict):
         source = None
+        frame = inspect.currentframe()
         try:
-            frame = inspect.currentframe()
-            frame = inspect.getouterframes(frame)[1]
-            string = inspect.getframeinfo(frame[0]).code_context[0].strip()
+            outer_frame = inspect.getouterframes(frame)[1]
+            caller_frame = outer_frame[0]  # extract caller's frame
+            string = inspect.getframeinfo(caller_frame).code_context[0].strip()
 
             # extract variable name from the function call
             args = string[string.find('(') + 1:-1].split(',')
-            assert len(args) == 1
-
-            if '=' in args[0]:
-                source = args[0].split('=')[1].strip()
-            else:
-                source = args[0].strip()
-
+            if len(args) == 1:
+                source = args[0].split('=')[1].strip() if '=' in args[0] else args[0].strip()
         except Exception:
-            pass  # don't immediately fall back, but try scanning variables
+            pass  # if direct extraction fails, scan variables
+        finally:
+            del frame  # cleanup to prevent reference cycles
 
-        # If name extraction failed, search for the dictionary in caller's scope
+        # try to find the variable in caller's scope if name extraction failed
         if not source:
-            caller_globals = frame[0].f_globals
-            caller_locals = frame[0].f_locals
-
-            # find the variable in locals or globals
-            for var_name, var_value in {**caller_globals, **caller_locals}.items():
-                if var_value is src:  # check if value matches our dictionary
-                    source = var_name
-                    break
-
-        if not source:
-            source = "unknown"  # fallback if we couldn't find any reference
+            caller_globals, caller_locals = caller_frame.f_globals, caller_frame.f_locals
+            source = next((var for var, val in {**caller_globals, **caller_locals}.items() if val is src), "unknown")
 
         source += " (dict)"
     else:
         raise RuntimeError(f'Unsupported data src type: {type(src).__name__}\n')
 
-    # Create dataset
+    # create dataset
     dset = _gretl.GretlDataset(src)
     dset.source = source
-
-    # if os.getenv("GRETL4PY_VERBOSE", "1") == "1":
-    # print(f'Dataset loaded from: {dset.source}\n')
 
     return dset
 
