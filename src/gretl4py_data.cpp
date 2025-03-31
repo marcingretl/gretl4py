@@ -702,7 +702,6 @@ py::dict *GretlBundle::json_to_dict (simdjson::ondemand::object &json_obj,
     py::dict &res = *RES;
     int mat_rows = 0;
     int mat_cols = 0;
-    int shift = 0; // this is because in case of gretl_list the first element just holds the list size
     bool add_to_res = true;
     std::string gr_type; // we introduce fake "gretl_vector" type which we use when gretl_matrix is in fact vector
     std::string_view key;
@@ -720,8 +719,6 @@ py::dict *GretlBundle::json_to_dict (simdjson::ondemand::object &json_obj,
             if ((std::min)(mat_rows, mat_cols) == 1) { // this is to prevent 'min' macro expansion on MS SDK
                 gr_type = "gretl_vector";
             }
-        } else if (gr_type == "gretl_list") {
-            shift = 1;
         }
     }
     json_obj.reset();
@@ -769,9 +766,7 @@ py::dict *GretlBundle::json_to_dict (simdjson::ondemand::object &json_obj,
                 res_outer_dict[py::cast(*outer_key)] = vec;
                 *add_to_outer = false;
             } else {
-                int tmp_array_size = GretlBundle::sd_tmp_array.count_elements();
-                vgretl_vector vec;
-                vec.reserve(tmp_array_size-shift);
+                py::list li;
 
                 for (auto item : GretlBundle::sd_tmp_array) {
                     if (gr_type == "gretl_list" && i == 0) {
@@ -781,23 +776,22 @@ py::dict *GretlBundle::json_to_dict (simdjson::ondemand::object &json_obj,
 
                     if (item.type() == simdjson::ondemand::json_type::string) {
                         item.get_string(GretlBundle::sd_tmp_str);
-                        vec.push_back(GretlBundle::sd_tmp_str);
+                        li.append(GretlBundle::sd_tmp_str);
                     } else {
                         if (gr_type == "gretl_list") {
-                            vec.push_back(static_cast<int>(item.get_int64()));
+                            li.append(static_cast<int>(item.get_int64()));
                         } else {
-                            vec.push_back(static_cast<double>(item));
+                            li.append(static_cast<double>(item));
                         }
                     }
-                    i++;
                 }
 
                 if (gr_type == "gretl_series" || gr_type == "gretl_list" || gr_type == "gretl_vector") {
                     py::dict &res_outer_dict = *outer_dict;
-                    res_outer_dict[py::cast(*outer_key)] = vec;
+                    res_outer_dict[py::cast(*outer_key)] = li;
                     *add_to_outer = false;
                 } else {
-                    res[py::cast(key)] = vec;
+                    res[py::cast(key)] = li;
                 }
             }
         } else if (val.type() == simdjson::ondemand::json_type::object) {
