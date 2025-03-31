@@ -21,20 +21,25 @@
 
 namespace py = pybind11;
 
+// signature from libgretl
+const char *gretl_dotdir (void);
+
 void init_gretl4py_data_py11(py::module_ &m)
 {
     py::class_<GretlDataset>(m, "GretlDataset")
         .def(py::init<const std::string>())
         .def(py::init<const py::dict &>())
-        .def("__copy__",  [](const GretlDataset &src)
+        .def("__copy__", [](const GretlDataset &src)
              {
-                 const py::dict *src_as_dict = src.to_dict();
-                 GretlDataset *dst = new GretlDataset(*src_as_dict);
-                 delete src_as_dict;
-                 dst->source = src.source + " (copy)";
+                 const std::string dotdir = gretl_dotdir();
+                 const std::string fname = dotdir + "gretl4py_tmp.gdt";
+
+                 src.to_file(fname);
+                 GretlDataset *dst = new GretlDataset(fname);
+                 dst->source = src.source + " (copy of " + std::to_string(src.get_id()) + ")";
 
                  return dst;
-             })
+             }, py::return_value_policy::take_ownership)
         .def_readonly("is_default", &GretlDataset::is_default)
         .def_readwrite("source", &GretlDataset::source)
         .def("__repr__", &GretlDataset::repr)

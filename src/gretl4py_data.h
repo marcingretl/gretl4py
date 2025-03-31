@@ -66,7 +66,6 @@ private:
 
     void free_dset (void);
 public:
-    static inline int counter = 0;
     mutable int err = 0;
     bool is_private = false;
     bool is_default = false;
@@ -95,7 +94,7 @@ public:
 
     py::list *varnames (void);              // memory must be deleted at the caller level
 
-    int get_id (void);
+    int get_id (void) const;
 };
 
 //
@@ -150,8 +149,6 @@ public:
 
     MapPyToCpp (const std::optional<py::object> &pyobject);
     MapPyToCpp (const py::handle &pyhandle);
-
-    //auto *ptr (void) { return res; } // not used
 
     inline std::string to_string (void) { return as_str; }
 

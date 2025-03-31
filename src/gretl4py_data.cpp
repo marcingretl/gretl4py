@@ -235,7 +235,6 @@ GretlDataset::GretlDataset (const std::string fname)
         throw std::runtime_error("Reading data from '" + fname + "' file failed.");
     }
 
-    GretlDataset::counter++;
     id = GretlDataset::next_obj_id++;
 }
 
@@ -286,7 +285,6 @@ GretlDataset::GretlDataset (const py::dict &pydict)
     opt = setobs_opt_from_structure(dset->structure);
     set_obs(std::to_string(pd).c_str(), dset->S[0], dset, opt);
 
-    GretlDataset::counter++;
     id = GretlDataset::next_obj_id++;
 }
 
@@ -297,7 +295,6 @@ GretlDataset::~GretlDataset (void)
         std::printf("default dataset was deleted\n");
     }
     GretlDataset::free_dset();
-    GretlDataset::counter--;
 #if GRETL_PYBIND11_DEBUG
     std::cout << "~GretlDataset: deallocating memory, id: " << this->id << std::endl;
 #endif // GRETL_PYBIND11_DEBUG
@@ -652,7 +649,7 @@ void GretlDataset::set_as_default (void)
     is_default = true;
 }
 
-int GretlDataset::get_id (void)
+int GretlDataset::get_id (void) const
 {
     return id;
 }
