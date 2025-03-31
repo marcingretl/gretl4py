@@ -29,6 +29,10 @@ extern "C" {
 #include <iostream>
 #include <cstdlib>
 
+#if USE_MAPBOX_VARIANT
+# include "mapbox/variant.hpp"
+#endif // USE_MAPBOX_VARIANT
+
 #if defined(_WIN32)
 # include <gretl/gretl_win32.h>
 #endif
