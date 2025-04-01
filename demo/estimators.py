@@ -122,7 +122,7 @@ longley.set_as_default()
 print('OLS with multiple precision floating-point')
 res = gretl.mpols('1 0 2 3 4 5 6 7').fit()
 print(res.coeff)
-assert round(res.coeff[0], 9) == mpols_const, f'const should equal {mpols_const:f}, is {res.coeff[0]:f}'
+assert res.coeff[0].round(9) == mpols_const, f'const should equal {mpols_const:f}, is {format(res.coeff[0])}'
 print(res)
 ############################################################################
 

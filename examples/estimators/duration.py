@@ -1,7 +1,7 @@
 import gretl
 
-gretl.attach_gretl_data(
-	gretl.gretl_data_path('misc/kennan.gdt'))
+d1 = gretl.get_data(gretl.gretl_data_path('misc/kennan.gdt'))
+d1.set_as_default()
 m1 = gretl.duration('Ti ~ const + Prod').fit()
 m2 = gretl.duration('Ti const Prod').fit()
 m3 = gretl.duration('1 0 2').fit()

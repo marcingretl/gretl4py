@@ -700,23 +700,18 @@ py::dict *GretlBundle::json_to_dict (simdjson::ondemand::object &json_obj,
     int mat_rows = 0;
     int mat_cols = 0;
     bool add_to_res = true;
-    std::string gr_type; // we introduce fake "gretl_vector" type which we use when gretl_matrix is in fact vector
+    std::string gr_type;
     std::string_view key;
     simdjson::ondemand::value val;
     simdjson::ondemand::object val_obj;
 
-    if (!json_obj["type"].get_string(gr_type)) {
-        if (gr_type == "gretl_matrix") {
-            json_obj["rows"].get(GretlBundle::sd_tmp_value);
-            GretlBundle::sd_tmp_number = GretlBundle::sd_tmp_value.get_number();
-            mat_rows = GretlBundle::sd_tmp_number.get_int64();
-            json_obj["cols"].get(GretlBundle::sd_tmp_value);
-            GretlBundle::sd_tmp_number = GretlBundle::sd_tmp_value.get_number();
-            mat_cols = GretlBundle::sd_tmp_number.get_int64();
-            if ((std::min)(mat_rows, mat_cols) == 1) { // this is to prevent 'min' macro expansion on MS SDK
-                gr_type = "gretl_vector";
-            }
-        }
+    if (!json_obj["type"].get_string(gr_type) && gr_type == "gretl_matrix") {
+        json_obj["rows"].get(GretlBundle::sd_tmp_value);
+        GretlBundle::sd_tmp_number = GretlBundle::sd_tmp_value.get_number();
+        mat_rows = GretlBundle::sd_tmp_number.get_int64();
+        json_obj["cols"].get(GretlBundle::sd_tmp_value);
+        GretlBundle::sd_tmp_number = GretlBundle::sd_tmp_value.get_number();
+        mat_cols = GretlBundle::sd_tmp_number.get_int64();
     }
     json_obj.reset();
 
@@ -742,10 +737,12 @@ py::dict *GretlBundle::json_to_dict (simdjson::ondemand::object &json_obj,
             int i = 0;
 
             if (gr_type == "gretl_matrix") {
-                vgretl_matrix vec(mat_rows, vgretl_vector(mat_cols));
-                int j = 0;
+                //vgretl_matrix vec(mat_rows, vgretl_vector(mat_cols));
+                DNumPyArrayFC vec({mat_rows, mat_cols});
+                double *vec_ptr = static_cast<double*>(vec.request().ptr);
 
                 for (auto item : GretlBundle::sd_tmp_array) {
+                    /*
                     if (item.type() == simdjson::ondemand::json_type::string) {
                         item.get_string(GretlBundle::sd_tmp_str);
                         vec[i][j] = GretlBundle::sd_tmp_str;
@@ -757,17 +754,28 @@ py::dict *GretlBundle::json_to_dict (simdjson::ondemand::object &json_obj,
                         i = 0;
                         j++;
                     }
+                    */
+                    if (item.type() == simdjson::ondemand::json_type::string) {
+                        item.get_string(GretlBundle::sd_tmp_str);
+                        vec_ptr[i++] = std::nan("");
+                    } else {
+                        vec_ptr[i++] = static_cast<double>(item);
+                    }
                 }
 
                 py::dict &res_outer_dict = *outer_dict;
-                res_outer_dict[py::cast(*outer_key)] = vec;
+                if ((std::min)(mat_rows, mat_cols) == 1) { // this is to prevent 'min' macro expansion on MS SDK
+                    res_outer_dict[py::cast(*outer_key)] = vec.reshape({vec.size()});
+                } else {
+                    res_outer_dict[py::cast(*outer_key)] = vec;
+                }
                 *add_to_outer = false;
             } else {
                 py::list li;
 
                 for (auto item : GretlBundle::sd_tmp_array) {
                     if (gr_type == "gretl_list" && i == 0) {
-                        i++;
+                        i = 1;
                         continue;
                     }
 
@@ -783,7 +791,7 @@ py::dict *GretlBundle::json_to_dict (simdjson::ondemand::object &json_obj,
                     }
                 }
 
-                if (gr_type == "gretl_series" || gr_type == "gretl_list" || gr_type == "gretl_vector") {
+                if (gr_type == "gretl_series" || gr_type == "gretl_list") {
                     py::dict &res_outer_dict = *outer_dict;
                     res_outer_dict[py::cast(*outer_key)] = li;
                     *add_to_outer = false;
