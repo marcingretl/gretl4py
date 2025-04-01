@@ -236,6 +236,9 @@ GretlDataset::GretlDataset (const std::string fname)
     }
 
     id = GretlDataset::next_obj_id++;
+    if (id == 1) {
+        GretlDataset::set_as_default();
+    }
 }
 
 GretlDataset::GretlDataset (const py::dict &pydict)
@@ -286,6 +289,9 @@ GretlDataset::GretlDataset (const py::dict &pydict)
     set_obs(std::to_string(pd).c_str(), dset->S[0], dset, opt);
 
     id = GretlDataset::next_obj_id++;
+    if (id == 1) {
+        GretlDataset::set_as_default();
+    }
 }
 
 GretlDataset::~GretlDataset (void)
@@ -738,8 +744,8 @@ py::dict *GretlBundle::json_to_dict (simdjson::ondemand::object &json_obj,
 
             if (gr_type == "gretl_matrix") {
                 //vgretl_matrix vec(mat_rows, vgretl_vector(mat_cols));
-                DNumPyArrayFC vec({mat_rows, mat_cols});
-                double *vec_ptr = static_cast<double*>(vec.request().ptr);
+                DNumPyArrayFC mat({mat_rows, mat_cols});
+                double *mat_ptr = static_cast<double*>(mat.request().ptr);
 
                 for (auto item : GretlBundle::sd_tmp_array) {
                     /*
@@ -756,18 +762,17 @@ py::dict *GretlBundle::json_to_dict (simdjson::ondemand::object &json_obj,
                     }
                     */
                     if (item.type() == simdjson::ondemand::json_type::string) {
-                        item.get_string(GretlBundle::sd_tmp_str);
-                        vec_ptr[i++] = std::nan("");
+                        mat_ptr[i++] = std::nan("");
                     } else {
-                        vec_ptr[i++] = static_cast<double>(item);
+                        mat_ptr[i++] = static_cast<double>(item);
                     }
                 }
 
                 py::dict &res_outer_dict = *outer_dict;
                 if ((std::min)(mat_rows, mat_cols) == 1) { // this is to prevent 'min' macro expansion on MS SDK
-                    res_outer_dict[py::cast(*outer_key)] = vec.reshape({vec.size()});
+                    res_outer_dict[py::cast(*outer_key)] = mat.reshape({mat.size()});
                 } else {
-                    res_outer_dict[py::cast(*outer_key)] = vec;
+                    res_outer_dict[py::cast(*outer_key)] = mat;
                 }
                 *add_to_outer = false;
             } else {

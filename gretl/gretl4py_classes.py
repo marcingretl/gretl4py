@@ -75,7 +75,7 @@ class Model:
 
     def oddsratio(self):
         if self.name != 'logit':
-            exit(f'*** error: oddsratios not available for {self.name:s} estimator ***\n')
+            raise RuntimeError(f'*** error: oddsratios not available for {self.name:s} estimator ***\n')
         else:
             try:
                 from tabulate import tabulate
