@@ -384,7 +384,7 @@ void GretlDataset::to_file (const std::string fname) const
     }
 }
 
-void GretlDataset::new_series (const std::string formula) const
+void GretlDataset::new_series (const std::string formula)
 {
     //
     // we create a series according to @formula
@@ -395,7 +395,7 @@ void GretlDataset::new_series (const std::string formula) const
     }
 }
 
-py::str GretlDataset::repr (void)
+py::str GretlDataset::repr (void) const
 {
     py::str ret = "GretlDataset, source " + source;
 
@@ -425,11 +425,11 @@ void GretlDataset::print (const py::kwargs &kwargs)
         val = MapPyToCpp(item.second).to_string_view().data();
 
         if (key == "summary") {
-            summary = strcmp(val, "1") == 0;
+            summary = std::strcmp(val, "1") == 0;
         } else if (key == "byobs") {
-            byobs = strcmp(val, "1") == 0;
+            byobs = std::strcmp(val, "1") == 0;
         } else if (key == "byvar") {
-            if (strcmp(val, "1") == 0) {
+            if (std::strcmp(val, "1") == 0) {
                 summary = byobs = 0;
             }
         } else {
@@ -609,11 +609,11 @@ void GretlDataset::setobs (const py::kwargs &kwargs)
             arg2 = strdup(val);
             pcount++;
         } else if (akey == "structure") {
-            if (!strcmp(val, "cross-section")) {
+            if (!std::strcmp(val, "cross-section")) {
                 opt = OPT_X;
-            } else if (!strcmp(val, "time-series")) {
+            } else if (!std::strcmp(val, "time-series")) {
                 opt = OPT_T;
-            } else if (!strcmp(val, "stacked-time-series")) {
+            } else if (!std::strcmp(val, "stacked-time-series")) {
                 opt = OPT_S;
             } else {
                 throw std::runtime_error("setobs: invalid 'structure' specification");
@@ -660,7 +660,7 @@ int GretlDataset::get_id (void) const
     return id;
 }
 
-py::list *GretlDataset::varnames (void)
+py::list *GretlDataset::varnames (void) const
 {
     py::list *names = new py::list;
 

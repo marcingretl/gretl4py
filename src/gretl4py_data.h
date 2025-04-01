@@ -80,7 +80,7 @@ public:
 
     void to_file (const std::string fname) const;
 
-    py::str repr (void);
+    py::str repr (void) const;
 
     void print (const py::kwargs &kwargs);
 
@@ -90,9 +90,9 @@ public:
 
     void setobs (const py::kwargs &kwargs);
 
-    void new_series (const std::string formula) const;
+    void new_series (const std::string formula);
 
-    py::list *varnames (void);              // memory must be deleted at the caller level
+    py::list *varnames (void) const;         // memory must be deleted at the caller level
 
     int get_id (void) const;
 };
