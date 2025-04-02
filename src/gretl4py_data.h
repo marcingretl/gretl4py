@@ -102,7 +102,7 @@ public:
 
     void linked_models_del (const int model_id);
 
-    //std::unordered_set linked_models_list (void) const;
+    std::unordered_set<int> linked_models_list (void) const;
 };
 
 //

@@ -680,11 +680,11 @@ void GretlDataset::linked_models_del (const int model_id)
 {
     linked_models.erase(model_id);
 }
-/*
-std::unordered_set GretlDataset::linked_models_list (void) const
+
+std::unordered_set<int> GretlDataset::linked_models_list (void) const
 {
     return linked_models;
-}*/
+}
 
 //
 // GretlBundle class methods

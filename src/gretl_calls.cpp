@@ -125,13 +125,14 @@ void module_cleanup (void)
         std::cout << "we don't delete DSET" << std::endl; //FIXME
     }
 
-    // we delete estimated_models
-    std::cout << "*** FIXME: this must be done by deconstructor on the Python side!!! ***" << std::endl;
-    for (auto el = estimated_models.begin(); el != estimated_models.end(); el++) {
+    // we delete models somehow not deleted by Python
+    if (!estimated_models.empty()) {
+        for (auto el = estimated_models.begin(); el != estimated_models.end(); el++) {
 #if GRETL_PYBIND11_DEBUG
-        std::cout << "we delete model id = " << el->first << std::endl;
+            std::cout << "we delete model id = " << el->first << std::endl;
 #endif // GRETL_PYBIND11_DEBUG
-        delete el->second;
+            delete el->second;
+        }
     }
 
     libgretl_cleanup();
@@ -228,17 +229,6 @@ py::dict about (bool do_print)
     return res;
 }
 
-// estimated_models list management
-void estimated_models_add (int id, GretlModel *GM)
-{
-    estimated_models.emplace(id, GM);
-}
-
-void estimated_models_del (int id)
-{
-    estimated_models.erase(id);
-}
-
 // set a string or int valued "setvar"
 
 void set (const std::string key,
@@ -260,6 +250,23 @@ void set (const std::string key,
         handle_gretl_error(err);
     }
 }
+
+// estimated_models list management
+void estimated_models_add (int id, GretlModel *GM)
+{
+    estimated_models.emplace(id, GM);
+}
+
+void estimated_models_del (int id)
+{
+    estimated_models.erase(id);
+}
+
+void GretlModel_destructor (void)
+{
+    std::cout << "\t -> this is a GretlModel_destructor called from python side\n";
+}
+
 
 //////////////////////////////////////////////////
 // data management

@@ -21,6 +21,7 @@ import inspect
 import os
 import _gretl
 import sys
+from gretl.model_registry import register_model
 
 class Model:
 
@@ -36,6 +37,11 @@ class Model:
         self.computed = False
         self._id = None
         self.summary = {}
+        register_model(self)  # track the wrapper instance
+
+    def __del__(self):
+        print('python side: call a Model class destructor')
+        _gretl.GretlModel_destructor()
 
     def __repr__(self):
         if self.computed:
@@ -160,7 +166,7 @@ def show_data_status():
                 defaut = "(default)"
             else:
                 defaut = ""
-            print(f'{d}: {dset.get_id():d}, {dset.source:s} {defaut:s}')
+            print(f'{d}: {dset.get_id():d}, {dset.source:s} {defaut:s} - referenced by models: {dset.linked_models_list()}')
 
 if __name__ == "__main__":
     pass

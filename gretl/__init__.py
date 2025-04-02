@@ -60,6 +60,7 @@ import gretl4py_classes
 
 # we import some symbols explicitly
 from _gretl import (about, set, version)
+from .model_registry import register_model
 from gretl4py_classes import (get_data, show_data_status)
 
 # deprecations

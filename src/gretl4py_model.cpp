@@ -37,8 +37,6 @@ GretlModel::GretlModel (void)
 GretlModel::~GretlModel (void)
 {
     std::cout << "~GretlModel base: destructor | id = " << id << std::endl;
-    //estimated_models_del(id); //FIXME: later in deconstructor on the Python side
-    //std::cout << "\t model id = " << id << " removed from the estimated_models" << std::endl;
 }
 
 int GretlModel::get_id (void) const
