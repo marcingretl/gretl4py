@@ -35,6 +35,7 @@
 #include <gretl/libgretl.h>
 #include <gretl/matrix_extra.h>
 #include <iostream>
+#include <unordered_set>
 
 namespace py = pybind11;
 
@@ -61,6 +62,7 @@ class GretlDataset
 private:
     static inline int next_obj_id = 1;
     int id;
+    std::unordered_set<int> linked_models;  // models (id-1) which use this dataset
 
     void allocate_dset (void);
 
@@ -95,6 +97,12 @@ public:
     py::list *varnames (void) const;         // memory must be deleted at the caller level
 
     int get_id (void) const;
+
+    void linked_models_add (const int model_id);
+
+    void linked_models_del (const int model_id);
+
+    //std::unordered_set linked_models_list (void) const;
 };
 
 //

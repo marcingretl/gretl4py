@@ -20,6 +20,7 @@
 #include "gretl4py.h" /* MUST be at the first position!!! */
 #include "gretl4py_data.h"
 #include "gretl4py_types.h"
+#include "gretl4py_model.h"
 #include <gretl/gretl_drivers.h>
 #include <gretl/gretl_errors.h>
 #include <gretl/libset.h>
@@ -28,6 +29,7 @@ extern "C" {
 }
 #include <iostream>
 #include <cstdlib>
+#include <unordered_map>
 
 #if USE_MAPBOX_VARIANT
 # include "mapbox/variant.hpp"
@@ -59,7 +61,8 @@ extern "C" {
                          || c == GARCH || c == PANEL) //const int *list, DATASET *dset, gretlopt opt, PRN *prn
 #define use_lcdop_sig(c) (c == POISSON || c == NEGBIN) //const int *list, int ci, DATASET *dset, gretlopt opt, PRN *prn
 
-static GretlDataset *DSET = nullptr;            // global dataset (class)
+static GretlDataset *DSET = nullptr;                            // default dataset
+static std::unordered_map<int, GretlModel*> estimated_models;   // list of already estimated models
 static int gretl4py_verbose = 0;
 
 // workaround to manually resolve overloads ambiguity
@@ -105,6 +108,14 @@ void module_init (void)
         std::cout << gretl4py_logo() << std::endl;
         std::printf("libgretl initialized\n");
     }
+
+    ////////////////////////////////////////////////////////////////////////
+    // for testing only and needs to be deleted!!!
+    ////////////////////////////////////////////////////////////////////////
+    GretlModel *wsk1 = new GretlModel_NSED(DSET);
+
+    std::cout << "wsk1->id = " << wsk1->get_id() << std::endl;
+    ////////////////////////////////////////////////////////////////////////
 }
 
 void module_cleanup (void)
@@ -113,6 +124,16 @@ void module_cleanup (void)
         //delete DSET;
         std::cout << "we don't delete DSET" << std::endl; //FIXME
     }
+
+    // we delete estimated_models
+    std::cout << "*** FIXME: this must be done by deconstructor on the Python side!!! ***" << std::endl;
+    for (auto el = estimated_models.begin(); el != estimated_models.end(); el++) {
+#if GRETL_PYBIND11_DEBUG
+        std::cout << "we delete model id = " << el->first << std::endl;
+#endif // GRETL_PYBIND11_DEBUG
+        delete el->second;
+    }
+
     libgretl_cleanup();
     if (gretl4py_verbose) {
         std::printf("libgretl cleaned up\n");
@@ -205,6 +226,17 @@ py::dict about (bool do_print)
     }
 
     return res;
+}
+
+// estimated_models list management
+void estimated_models_add (int id, GretlModel *GM)
+{
+    estimated_models.emplace(id, GM);
+}
+
+void estimated_models_del (int id)
+{
+    estimated_models.erase(id);
 }
 
 // set a string or int valued "setvar"
@@ -394,6 +426,10 @@ py::dict *arima (const std::string y, const py::tuple &tup,
     int p, d, q;
     int P, D, Q;
     int i;
+
+    //DELETE me later!!!
+    GretlModel *wsk3 = new GretlModel_NSED(DSET);
+    wsk3->fit();
 
     if (py::len(kwargs) > 0) {
         opt = unpack_kwargs(kwargs, ARMA, GD);

@@ -29,12 +29,12 @@ ZIPFILE = gretl4py.zip
 VPATH = ./src ./src/simdjson
 
 PYFILES = gretl/gretl4py_addons.py gretl/gretl4py_classes.py
-SRCS = gretl4py.cpp gretl4py_data_py11.cpp gretl_calls.cpp gretl4py_data.cpp simdjson.cpp
+SRCS = gretl4py.cpp gretl4py_data_py11.cpp gretl_calls.cpp gretl4py_data.cpp gretl4py_model.cpp simdjson.cpp
 OBJS = $(SRCS:.cpp=.o)
 
 .PHONY: tags clean depend patchelf
 
-%.o: %.cpp gretl4py.h gretl4py_data.h gretl4py_types.h
+%.o: %.cpp gretl4py.h gretl4py_data.h gretl4py_types.h gretl4py_model.h
 	$(CXX) $(CXXFLAGS) -c $< -o $@ -fPIC $(PYBIND) $(GRETLIN) $(MBVARIANTIN)
 
 $(MODULE): $(OBJS)
@@ -60,9 +60,13 @@ depend:
 
 # DO NOT DELETE
 
-src/gretl4py.o: src/gretl4py.h
+src/gretl4py.o: src/gretl4py.h src/gretl4py_types.h
 src/gretl4py_data.o: src/gretl4py_data.h src/simdjson/simdjson.h
-src/gretl4py_data.o: src/gretl4py_types.h src/mapbox/variant.hpp
+src/gretl4py_data.o: src/gretl4py_types.h
 src/gretl4py_data_py11.o: src/gretl4py_data.h src/simdjson/simdjson.h
-src/gretl_calls.o: src/gretl4py.h src/gretl4py_data.h src/simdjson/simdjson.h
-src/gretl_calls.o: src/gretl4py_types.h src/mapbox/variant.hpp
+src/gretl4py_data_py11.o: src/gretl4py_types.h
+src/gretl4py_model.o: src/gretl4py_data.h src/simdjson/simdjson.h
+src/gretl4py_model.o: src/gretl4py_types.h src/gretl4py_model.h
+src/gretl_calls.o: src/gretl4py.h src/gretl4py_types.h src/gretl4py_data.h
+src/gretl_calls.o: src/simdjson/simdjson.h src/gretl4py_model.h
+src/gretl_calls.o: src/mapbox/variant.hpp

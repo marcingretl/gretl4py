@@ -55,3 +55,5 @@ void init_gretl4py_data_py11(py::module_ &m)
         .def("varnames", &GretlDataset::varnames,
              py::return_value_policy::take_ownership);
 }
+
+//.def("linked_models_list", &GretlDataset::linked_models_list)
