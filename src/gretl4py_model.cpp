@@ -129,7 +129,6 @@ int *GretlModel::list_from_formula (const char *formula)
     // convert from a simple R-style formula to a gretl list
     char *tmp = strdup(formula);
     int *list = NULL;
-    int err = 0;
 
     gretl_charsub(tmp, '~', ' ');
     gretl_charsub(tmp, '+', ' ');
@@ -153,7 +152,6 @@ py::dict *GretlModel::save_model (PRN *prn, gretlopt opt)
         throw std::runtime_error(msg);
     } else {
         const char *summary;
-        int err;
 
         printmodel(model, GD->dset, opt, prn);
         summary = gretl_print_get_buffer(prn);
@@ -175,26 +173,19 @@ GretlModel_NSED<F, CI>::GretlModel_NSED(GretlDataset *GD) : GretlModel()  // exp
 {
     if (GD) {
         this->GD = GD;
-        this->GD->linked_models_add(this->get_id()); // FIXME: move this at the end of estimation!!!
     }
     std::cout << "GretlModel_NSED, id = " << this->get_id();
     std::cout << ", GD  = " << GD << std::endl;
 }
 
-template <auto F, GretlCmdIndex CI>
-GretlModel_NSED<F, CI>::~GretlModel_NSED (void)
-{
-    std::cout << "~GretlModel_SEND: destructor" << std::endl;
-}
-
+// Method template to support several estimation methods that
+// have the same "basic" signature, plus a few special cases
+// F: function to call
+// CI: GretlCmdIndex
 template <auto F, GretlCmdIndex CI>
 py::dict *GretlModel_NSED<F, CI>::fit (const std::string &formula,
                                        const py::kwargs &kwargs)
 {
-    std::cout << "GretlModel_SEND::fit()" << std::endl;
-    std::cout << "Running fit() with F = " << F << " and CI = " << CI << std::endl;
-    //some_function<F, CI>(formula, kwargs);
-
     GretlPrint GP = GretlPrint();
     gretlopt opt = OPT_NONE;
     py::dict *res = nullptr;
@@ -230,7 +221,9 @@ py::dict *GretlModel_NSED<F, CI>::fit (const std::string &formula,
     }
     res = save_model(GP.prn, opt);
 
-    gretl_model_free(model);
+    // we register model in model's map
+    GD->linked_models_add(get_id());
+
 #if defined(_WIN32)
     gretl_list_free(list);
 #else

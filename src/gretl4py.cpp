@@ -57,7 +57,7 @@ PYBIND11_MODULE(_gretl, m)
     m.def("ols2", &ols2,
           py::arg("formula").none(false),
           py::return_value_policy::take_ownership);
-
+    /*
     // model estimation
     m.def("arima", &arima,
           py::arg("y").none(false),
@@ -113,5 +113,5 @@ PYBIND11_MODULE(_gretl, m)
           py::return_value_policy::take_ownership);
     m.def("tsls", &tsls,
           py::arg("formula").none(false),
-          py::return_value_policy::take_ownership);
+          py::return_value_policy::take_ownership);*/
 }

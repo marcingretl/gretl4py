@@ -52,15 +52,6 @@ extern "C" {
 #endif
 #define GRETL_PYBIND11_DEBUG 1
 
-#define use_ldco_sig(c) (c == OLS || c == WLS) //const int *list, DATASET *dset, GretlCmdIndex ci, gretlopt opt
-#define use_ldcop_sig(c) (c == LOGIT || c == PROBIT) //int *list, DATASET *dset, int ci, gretlopt opt, PRN *prn
-#define use_ldo_sig(c) (c == LOGISTIC || c == LAD \
-                        || c == MPOLS || c == IVREG) //const int *list, DATASET *dset, gretlopt opt
-#define use_ldop_sig(c) (c == BIPROBIT || c == DURATION \
-                         || c == HECKIT || c == AR || c == AR1 \
-                         || c == GARCH || c == PANEL) //const int *list, DATASET *dset, gretlopt opt, PRN *prn
-#define use_lcdop_sig(c) (c == POISSON || c == NEGBIN) //const int *list, int ci, DATASET *dset, gretlopt opt, PRN *prn
-
 static GretlDataset *DSET = nullptr;                            // default dataset
 static std::unordered_map<int, GretlModel*> estimated_models;   // list of already estimated models
 static int gretl4py_verbose = 0;
@@ -108,24 +99,6 @@ void module_init (void)
         std::cout << gretl4py_logo() << std::endl;
         std::printf("libgretl initialized\n");
     }
-
-    ////////////////////////////////////////////////////////////////////////
-    // for testing only and needs to be deleted!!!
-    ////////////////////////////////////////////////////////////////////////
-    GretlModel *wsk1 = new GretlModel_NSED<lsq, OLS>(DSET);
-    std::cout << "wsk1->id = " << wsk1->get_id() << std::endl;
-    std::cout << "wsk1->fit() = \n";
-    //wsk1->fit("jakaś formula", nullptr);
-    std::cout << std::endl;
-
-    /*
-    GretlModel *wsk2 = new GretlModel_NSED<lsq, WLS>(DSET);
-    std::cout << "wsk2->id = " << wsk2->get_id() << std::endl;
-    std::cout << "wsk2->fit() = \n";
-    wsk2->fit();
-    std::cout << std::endl;
-    */
-    ////////////////////////////////////////////////////////////////////////
 }
 
 void module_cleanup (void)
@@ -284,21 +257,6 @@ py::dict *ols2 (const std::string formula, const py::kwargs &kwargs)
 //////////////////////////////////////////////////
 // data management
 //////////////////////////////////////////////////
-
-// Sampling of gretl datasets. As of 2024-09-02 this just covers basic usage of
-// the "smpl" command in gretl: setting of t1 and/or t2; sub-sampling by means of
-// a boolean condition expressed in hansl (with or without the --replace option);
-// and resetting the sample to include the entire dataset ("smpl full").
-// Further functionality could be added if we reckon it's worthwhile.
-
-void sample (const py::kwargs &kwargs)
-{
-    if (!DSET) {
-        throw std::runtime_error("No gretl dataset in place");
-    } else {
-        DSET->sample(kwargs);
-    }
-}
 
 // functions below are not defined in a header!!! -> to gretl4py_data.h!!!
 void set_default_dset (GretlDataset *GD)
@@ -512,93 +470,8 @@ py::dict *arima (const std::string y, const py::tuple &tup,
     return res;
 }
 
-// convert from a simple R-style formula to a gretl list
-
-static int *list_from_formula (const char *formula,
-                               DATASET *dset)
-{
-    char *tmp = strdup(formula);
-    int *list = NULL;
-    int err = 0;
-
-    gretl_charsub(tmp, '~', ' ');
-    gretl_charsub(tmp, '+', ' ');
-    list = generate_list(tmp, dset, 0, &err);
-    std::free(tmp);
-
-    if (err) {
-        std::cerr << "libgretl error occurred: " << err << std::endl;
-        if (gretl4py_verbose) {
-            std::perror(gretl_errmsg_get());
-        }
-    }
-
-    return list;
-}
-
-// Function template to support several estimation methods that
-// have the same "basic" signature, plus a few special cases
-// F: function to call
-// CI: GretlCmdIndex
-
-template <auto F, GretlCmdIndex CI>
-static py::dict *regression_wrapper (const std::string &formula,
-                                     const py::kwargs &kwargs)
-{
-    GretlPrint GP = GretlPrint();
-    gretlopt opt = OPT_NONE;
-    py::dict *res = nullptr;
-    GretlDataset *GD = nullptr;
-    MODEL *model = NULL;
-    int *list = NULL;
-
-    if (py::len(kwargs) > 0) {
-        opt = unpack_kwargs(kwargs, CI, GD);
-    } else {
-        GD = DSET;
-    }
-    if (!GD) {
-        throw std::runtime_error("No dataset is available");
-    }
-
-    list = list_from_formula(formula.c_str(), GD->dset);
-    model = gretl_model_new();
-
-    if (list == NULL) {
-        throw std::runtime_error("Formula rendering failed");
-    } else if (model == NULL || GP.prn == NULL) {
-        throw std::runtime_error("Failed to allocate memory");
-    }
-
-    if constexpr (use_ldco_sig(CI)) {
-        *model = F(list, GD->dset, CI, opt);
-    } else if constexpr (use_ldcop_sig(CI)) {
-        *model = F(list, GD->dset, CI, opt, GP.prn);
-    } else if constexpr (use_ldo_sig(CI)) {
-        *model = F(list, GD->dset, opt);
-    } else if constexpr (use_ldop_sig(CI)) {
-        *model = F(list, GD->dset, opt, GP.prn);
-    } else if constexpr (use_lcdop_sig(CI)) {
-        *model = F(list, CI, GD->dset, opt, GP.prn);
-    }
-    res = save_model(model, GD->dset, GP.prn, opt);
-
-    gretl_model_free(model);
-#if defined(_WIN32)
-    gretl_list_free(list);
-#else
-    std::free(list);
-#endif
-
-    if (GD != DSET && GD->is_private) { // FIXME: this must be changed later!!!
-        delete GD;
-    }
-
-    return res;
-}
-
 // thin wrappers for specific estimators
-
+/*
 py::dict *ols (const std::string formula, const py::kwargs &kwargs)
 {
     return regression_wrapper<lsq, OLS>(formula, kwargs);
@@ -685,3 +558,4 @@ py::dict *tsls (const std::string formula, const py::kwargs &kwargs)
 {
     return regression_wrapper<ivreg, IVREG>(formula, kwargs);
 }
+*/
