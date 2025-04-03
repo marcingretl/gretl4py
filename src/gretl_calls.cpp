@@ -112,8 +112,7 @@ void module_init (void)
     ////////////////////////////////////////////////////////////////////////
     // for testing only and needs to be deleted!!!
     ////////////////////////////////////////////////////////////////////////
-    GretlModel *wsk1 = new GretlModel_NSED(DSET);
-
+    GretlModel *wsk1 = new GretlModel_NSED<lsq, OLS>(DSET);
     std::cout << "wsk1->id = " << wsk1->get_id() << std::endl;
     ////////////////////////////////////////////////////////////////////////
 }
@@ -431,7 +430,7 @@ py::dict *arima (const std::string y, const py::tuple &tup,
     int i;
 
     //DELETE me later!!!
-    GretlModel *wsk3 = new GretlModel_NSED(DSET);
+    GretlModel *wsk3 = new GretlModel_NSED<lsq, OLS>(DSET);
     wsk3->fit();
 
     if (py::len(kwargs) > 0) {

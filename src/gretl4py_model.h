@@ -43,12 +43,16 @@ protected:
     mutable int err = 0;
     int id;
 
-    //gretlopt unpack_kwargs (const py::kwargs &kwargs, int ci); //FIXME ci as GretlCommand + gretlopt as instance field!!!
+    gretlopt unpack_kwargs (const py::kwargs &kwargs, int ci);  //FIXME ci as GretlCommand + gretlopt as instance field!!!
+    int *list_from_formula (const char *formula);
+    py::dict *save_model (PRN *prn, gretlopt opt = OPT_NONE);   //FIXME: PRN *prn as class field!!!
 public:
-    GretlModel (void);
+    explicit GretlModel (void);
     virtual ~GretlModel (void);
 
+    //virtual py::dict *fit (const std::string &formula, const py::kwargs &kwargs) = 0;
     virtual void fit (void) = 0;
+
     //virtual void forecast (void) = 0;
 
     int get_id (void) const;
@@ -57,13 +61,14 @@ public:
 //
 // Native Single Equation libgretl MODEL via dedicated Driver
 //
+template <auto F, GretlCmdIndex CI>
 class GretlModel_NSED : public GretlModel
 {
 public:
-    GretlModel_NSED (GretlDataset *GD);
-    ~GretlModel_NSED (void) override;
+    GretlModel_NSED(GretlDataset *GD);
+    ~GretlModel_NSED(void) override;
 
-    void fit (void) override;
+    void fit(void) override;
 };
 
 
