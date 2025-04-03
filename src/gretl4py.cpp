@@ -51,7 +51,7 @@ PYBIND11_MODULE(_gretl, m)
     m.def("set", &set,
           py::arg("key").none(false),
           py::arg("val").none(true) = std::nullopt);
-    m.def("GretlModel_destructor", &GretlModel_destructor);
+    m.def("GretlModel_destructor_wrapper", &GretlModel_destructor_wrapper);
 
     // model estimation
     m.def("arima", &arima,

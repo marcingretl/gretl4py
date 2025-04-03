@@ -120,11 +120,6 @@ void module_init (void)
 
 void module_cleanup (void)
 {
-    if (DSET) {
-        //delete DSET;
-        std::cout << "we don't delete DSET" << std::endl; //FIXME
-    }
-
     // we delete models somehow not deleted by Python
     if (!estimated_models.empty()) {
         for (auto el = estimated_models.begin(); el != estimated_models.end(); el++) {
@@ -254,7 +249,7 @@ void set (const std::string key,
 // estimated_models list management
 void estimated_models_add (int id, GretlModel *GM)
 {
-    estimated_models.emplace(id, GM);
+    estimated_models.try_emplace(id, GM);
 }
 
 void estimated_models_del (int id)
@@ -262,9 +257,10 @@ void estimated_models_del (int id)
     estimated_models.erase(id);
 }
 
-void GretlModel_destructor (void)
+void GretlModel_destructor_wrapper (void)
 {
-    std::cout << "\t -> this is a GretlModel_destructor called from python side\n";
+    //REMEMBER: _only_ if exits in estimated_models, otherwise I'll get SIGSEGV (double free)
+    std::cout << "\t -> this is a GretlModel_destructor_wrapper() called from python side\n";
 }
 
 
@@ -287,7 +283,7 @@ void sample (const py::kwargs &kwargs)
     }
 }
 
-// functions below are not defined in a header!!!
+// functions below are not defined in a header!!! -> to gretl4py_data.h!!!
 void set_default_dset (GretlDataset *GD)
 {
     if (DSET) {

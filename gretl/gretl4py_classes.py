@@ -41,7 +41,7 @@ class Model:
 
     def __del__(self):
         print('python side: call a Model class destructor')
-        _gretl.GretlModel_destructor()
+        _gretl.GretlModel_destructor_wrapper()
 
     def __repr__(self):
         if self.computed:
@@ -166,7 +166,7 @@ def show_data_status():
                 defaut = "(default)"
             else:
                 defaut = ""
-            print(f'{d}: {dset.get_id():d}, {dset.source:s} {defaut:s} - referenced by models: {dset.linked_models_list()}')
+            print(f'{d}: {dset.get_id():d}, {dset.source:s} {defaut:s} - referenced by models: {list(dset.linked_models_list())}')
 
 if __name__ == "__main__":
     pass

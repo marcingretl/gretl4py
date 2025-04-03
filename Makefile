@@ -55,6 +55,9 @@ tags:
 clean:
 	@rm -f $(MODULE) *.o $(ZIPFILE)
 
+clean-zip:
+	@rm -f $(ZIPFILE)
+
 depend:
 	makedepend -Y. src/*.cpp 2>/dev/null
 

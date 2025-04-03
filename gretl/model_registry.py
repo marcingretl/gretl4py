@@ -15,7 +15,7 @@ def cleanup_models():
     global _gretl_models
     for model in _gretl_models:
         model.__del__() # forces model destruction
-    #_gretl_models.clear()
+    _gretl_models.clear()
 
 # Register cleanup function to run when Python exits
 atexit.register(cleanup_models)

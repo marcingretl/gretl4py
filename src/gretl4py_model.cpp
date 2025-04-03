@@ -36,6 +36,14 @@ GretlModel::GretlModel (void)
 
 GretlModel::~GretlModel (void)
 {
+    if (GD) {
+        GD->linked_models_del(id);
+    }
+
+    if (model != NULL) {
+        gretl_model_free(model);
+    }
+    //FIXME: estimated_models_del(id) -> to GretlModel_destructor_wrapper()!!!
     std::cout << "~GretlModel base: destructor | id = " << id << std::endl;
 }
 
@@ -43,6 +51,17 @@ int GretlModel::get_id (void) const
 {
     return id;
 }
+
+
+
+
+
+
+
+
+
+
+
 
 //
 //  Native Single Equation libgretl MODEL via dedicated Driver
@@ -52,7 +71,7 @@ GretlModel_NSED::GretlModel_NSED (GretlDataset *GD)
     //FIXME: we need look for data in kwargs!!!
     if (GD) {
         this->GD = GD;
-        this->GD->linked_models_add(id);
+        this->GD->linked_models_add(id); // FIXME: move this at the end of estimation!!!
     }
     std::cout << "GretlModel_SEND, id = " << id;
     std::cout << ", GD  = " << GD << std::endl;

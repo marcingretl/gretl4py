@@ -42,7 +42,7 @@ py::dict about (bool do_print = false);
 void set (const std::string key,
           const std::optional<py::object> &pyval = std::nullopt);
 
-void GretlModel_destructor (void);
+void GretlModel_destructor_wrapper (void);
 
 //////////////////////////////////////////////////
 // model estimation

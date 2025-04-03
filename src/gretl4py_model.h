@@ -42,11 +42,14 @@ protected:
     MODEL *model = NULL;
     mutable int err = 0;
     int id;
+
+    //gretlopt unpack_kwargs (const py::kwargs &kwargs, int ci); //FIXME ci as GretlCommand + gretlopt as instance field!!!
 public:
     GretlModel (void);
     virtual ~GretlModel (void);
 
     virtual void fit (void) = 0;
+    //virtual void forecast (void) = 0;
 
     int get_id (void) const;
 };
