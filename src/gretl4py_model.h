@@ -50,8 +50,8 @@ public:
     explicit GretlModel (void);
     virtual ~GretlModel (void);
 
-    //virtual py::dict *fit (const std::string &formula, const py::kwargs &kwargs) = 0;
-    virtual void fit (void) = 0;
+    virtual py::dict *fit (const std::string &formula, const py::kwargs &kwargs) = 0;
+    //virtual void fit (void) = 0;
 
     //virtual void forecast (void) = 0;
 
@@ -68,7 +68,7 @@ public:
     GretlModel_NSED(GretlDataset *GD);
     ~GretlModel_NSED(void) override;
 
-    void fit(void) override;
+    py::dict *fit (const std::string &formula, const py::kwargs &kwargs) override;
 };
 
 

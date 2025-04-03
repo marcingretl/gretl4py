@@ -53,6 +53,11 @@ PYBIND11_MODULE(_gretl, m)
           py::arg("val").none(true) = std::nullopt);
     m.def("GretlModel_destructor_wrapper", &GretlModel_destructor_wrapper);
 
+    // new class-based apparatus
+    m.def("ols2", &ols2,
+          py::arg("formula").none(false),
+          py::return_value_policy::take_ownership);
+
     // model estimation
     m.def("arima", &arima,
           py::arg("y").none(false),

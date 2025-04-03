@@ -24,6 +24,15 @@
 #include <gretl/gretl_model.h>
 #include <string>
 
+#define use_ldco_sig(c) (c == OLS || c == WLS) //const int *list, DATASET *dset, GretlCmdIndex ci, gretlopt opt
+#define use_ldcop_sig(c) (c == LOGIT || c == PROBIT) //int *list, DATASET *dset, int ci, gretlopt opt, PRN *prn
+#define use_ldo_sig(c) (c == LOGISTIC || c == LAD \
+                        || c == MPOLS || c == IVREG) //const int *list, DATASET *dset, gretlopt opt
+#define use_ldop_sig(c) (c == BIPROBIT || c == DURATION \
+                         || c == HECKIT || c == AR || c == AR1 \
+                         || c == GARCH || c == PANEL) //const int *list, DATASET *dset, gretlopt opt, PRN *prn
+#define use_lcdop_sig(c) (c == POISSON || c == NEGBIN) //const int *list, int ci, DATASET *dset, gretlopt opt, PRN *prn
+
 //
 // GretlModel class methods
 //
@@ -179,12 +188,58 @@ GretlModel_NSED<F, CI>::~GretlModel_NSED (void)
 }
 
 template <auto F, GretlCmdIndex CI>
-void GretlModel_NSED<F, CI>::fit (void)
+py::dict *GretlModel_NSED<F, CI>::fit (const std::string &formula,
+                                       const py::kwargs &kwargs)
 {
     std::cout << "GretlModel_SEND::fit()" << std::endl;
     std::cout << "Running fit() with F = " << F << " and CI = " << CI << std::endl;
     //some_function<F, CI>(formula, kwargs);
+
+    GretlPrint GP = GretlPrint();
+    gretlopt opt = OPT_NONE;
+    py::dict *res = nullptr;
+    int *list = NULL;
+
+    if (py::len(kwargs) > 0) {
+        opt = unpack_kwargs(kwargs, CI);
+    }
+
+    if (!GD) {
+        throw std::runtime_error("No dataset is available");
+    }
+
+    list = list_from_formula(formula.c_str());
+    model = gretl_model_new();
+
+    if (list == NULL) {
+        throw std::runtime_error("Formula rendering failed");
+    } else if (model == NULL || GP.prn == NULL) {
+        throw std::runtime_error("Failed to allocate memory");
+    }
+
+    if constexpr (use_ldco_sig(CI)) {
+        *model = F(list, GD->dset, CI, opt);
+    } else if constexpr (use_ldcop_sig(CI)) {
+        *model = F(list, GD->dset, CI, opt, GP.prn);
+    } else if constexpr (use_ldo_sig(CI)) {
+        *model = F(list, GD->dset, opt);
+    } else if constexpr (use_ldop_sig(CI)) {
+        *model = F(list, GD->dset, opt, GP.prn);
+    } else if constexpr (use_lcdop_sig(CI)) {
+        *model = F(list, CI, GD->dset, opt, GP.prn);
+    }
+    res = save_model(GP.prn, opt);
+
+    gretl_model_free(model);
+#if defined(_WIN32)
+    gretl_list_free(list);
+#else
+    std::free(list);
+#endif
+
+    return res;
 }
 
 // Explicit instantiations for all required (F, CI) pairs
 template class GretlModel_NSED<lsq, OLS>;
+template class GretlModel_NSED<lsq, WLS>;

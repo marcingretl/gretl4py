@@ -114,6 +114,17 @@ void module_init (void)
     ////////////////////////////////////////////////////////////////////////
     GretlModel *wsk1 = new GretlModel_NSED<lsq, OLS>(DSET);
     std::cout << "wsk1->id = " << wsk1->get_id() << std::endl;
+    std::cout << "wsk1->fit() = \n";
+    //wsk1->fit("jakaś formula", nullptr);
+    std::cout << std::endl;
+
+    /*
+    GretlModel *wsk2 = new GretlModel_NSED<lsq, WLS>(DSET);
+    std::cout << "wsk2->id = " << wsk2->get_id() << std::endl;
+    std::cout << "wsk2->fit() = \n";
+    wsk2->fit();
+    std::cout << std::endl;
+    */
     ////////////////////////////////////////////////////////////////////////
 }
 
@@ -260,6 +271,13 @@ void GretlModel_destructor_wrapper (void)
 {
     //REMEMBER: _only_ if exits in estimated_models, otherwise I'll get SIGSEGV (double free)
     std::cout << "\t -> this is a GretlModel_destructor_wrapper() called from python side\n";
+}
+
+
+py::dict *ols2 (const std::string formula, const py::kwargs &kwargs)
+{
+    GretlModel *ptr = new GretlModel_NSED<lsq, OLS>(DSET);
+    return ptr->fit(formula, kwargs);
 }
 
 
@@ -428,10 +446,6 @@ py::dict *arima (const std::string y, const py::tuple &tup,
     int p, d, q;
     int P, D, Q;
     int i;
-
-    //DELETE me later!!!
-    GretlModel *wsk3 = new GretlModel_NSED<lsq, OLS>(DSET);
-    wsk3->fit();
 
     if (py::len(kwargs) > 0) {
         opt = unpack_kwargs(kwargs, ARMA, GD);
