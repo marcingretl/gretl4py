@@ -158,6 +158,9 @@ py::dict *GretlModel::save_model (PRN *prn, gretlopt opt)
         res = gretl_model_to_dict(model, GD->dset, summary, &err);
         if (err) {
             handle_gretl_error(err);
+        } else {
+            // we register model in model's map
+            GD->linked_models_add(id);
         }
     }
 
@@ -221,8 +224,114 @@ py::dict *GretlModel_NSED<F, CI>::fit (const std::string &formula,
     }
     res = save_model(GP.prn, opt);
 
-    // we register model in model's map
-    GD->linked_models_add(get_id());
+#if defined(_WIN32)
+    gretl_list_free(list);
+#else
+    std::free(list);
+#endif
+
+    return res;
+}
+// Explicit instantiations for all required (F, CI) pairs
+template class GretlModel_NSED<lsq, OLS>;
+template class GretlModel_NSED<lsq, WLS>;
+
+
+//
+// Native SARIMA libgretl MODEL
+//
+GretlModel_arima::GretlModel_arima(GretlDataset *GD,
+                                   const std::string y,
+                                   const py::tuple &tup)
+                                   : GretlModel(), y(y), tup(tup)  // explicitly call base class constructor!
+{
+    if (GD) {
+        this->GD = GD;
+    }
+
+    std::cout << "GretlModel_arima, id = " << this->get_id();
+    std::cout << ", GD  = " << GD << std::endl;
+}
+
+void GretlModel_arima::get_arima_order (const py::tuple &tup,
+                                        int *p, int *d, int *q)
+{
+    int n = py::len(tup);
+
+    if (n == 2) {
+        *p = tup[0].cast<int>();
+        *q = tup[1].cast<int>();
+    } else if (n == 3) {
+        *p = tup[0].cast<int>();
+        *d = tup[1].cast<int>();
+        *q = tup[2].cast<int>();
+    } else {
+        throw std::runtime_error(std::string("order must be of length 2 or 3"));
+    }
+}
+
+py::dict *GretlModel_arima::fit (const std::string &formula,
+                                 const py::kwargs &kwargs)
+{
+    GretlPrint GP = GretlPrint();
+    gretlopt opt = OPT_NONE;
+    py::dict *res = nullptr;
+    int *list = NULL;
+    int seasonal = 0;
+    int y_number;
+    int p, d, q;
+    int P, D, Q;
+    int i;
+
+    if (py::len(kwargs) > 0) {
+        opt = unpack_kwargs(kwargs, ARMA);
+    }
+
+    if (!GD) {
+        throw std::runtime_error("No dataset is available");
+    }
+
+    y_number = current_series_index(GD->dset, y.c_str());
+    if (y_number == -1) {
+        throw std::runtime_error("There is no variable: " + y);
+    }
+
+    p = d = q = 0;
+    P = D = Q = 0;
+    get_arima_order(tup, &p, &d, &q);
+
+    if (kwargs.contains("seasonal") && !kwargs["seasonal"].is_none()) {
+        if (is_pytuple(kwargs["seasonal"])) {
+            const py::tuple seas = kwargs["seasonal"].cast<py::tuple>();
+
+            get_arima_order(seas, &P, &D, &Q);
+            if (P > 0 || D > 0 || Q > 0) {
+                seasonal = 1;
+            }
+        }
+    }
+
+    model = gretl_model_new();
+    list = gretl_list_new(seasonal? 9 : 5);
+    if (model == NULL || list == NULL || GP.prn == NULL) {
+        throw std::runtime_error("Failed to allocate memory");
+    }
+
+    i = 1;
+    list[i++] = p;
+    list[i++] = d;
+    list[i++] = q;
+    if (seasonal) {
+        list[i++] = LISTSEP;
+        list[i++] = P;
+        list[i++] = D;
+        list[i++] = Q;
+    }
+    list[i++] = LISTSEP;
+    list[i++] = y_number;
+
+    *model = arma(list, NULL, GD->dset, opt, GP.prn);
+    res = save_model(GP.prn, opt);
 
 #if defined(_WIN32)
     gretl_list_free(list);
@@ -232,7 +341,3 @@ py::dict *GretlModel_NSED<F, CI>::fit (const std::string &formula,
 
     return res;
 }
-
-// Explicit instantiations for all required (F, CI) pairs
-template class GretlModel_NSED<lsq, OLS>;
-template class GretlModel_NSED<lsq, WLS>;

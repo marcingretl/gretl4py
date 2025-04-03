@@ -109,7 +109,7 @@ void module_cleanup (void)
 #if GRETL_PYBIND11_DEBUG
             std::cout << "we delete model id = " << el->first << std::endl;
 #endif // GRETL_PYBIND11_DEBUG
-            delete el->second;
+            //delete el->second;
         }
     }
 
@@ -253,6 +253,12 @@ py::dict *ols2 (const std::string formula, const py::kwargs &kwargs)
     return ptr->fit(formula, kwargs);
 }
 
+py::dict *arima (const std::string y, const py::tuple &tup,
+                 const py::kwargs &kwargs)
+{
+    GretlModel *ptr = new GretlModel_arima(DSET, y, tup);
+    return ptr->fit("", kwargs);
+}
 
 //////////////////////////////////////////////////
 // data management
@@ -270,205 +276,6 @@ void set_default_dset (GretlDataset *GD)
 //////////////////////////////////////////////////
 // model estimation
 //////////////////////////////////////////////////
-
-// Apparatus to handle named optional arguments, including 'print'
-// and 'data' as well as gretl option flags and their parameters.
-
-static gretlopt unpack_kwargs (const py::kwargs &kwargs,
-                               int ci, GretlDataset *&pdset)
-{
-    int opt, opts = OPT_NONE;
-    bool got_data = false;
-    OptStatus status;
-
-    for (auto &item : kwargs) {
-        if (!is_pystr(item.first)) {
-            throw std::runtime_error("option key must be a string");
-        }
-        const std::string &key = item.first.cast<std::string>();
-
-        if (key == "data") {
-            // special case: we use already allocated object of GretlDataset class
-            got_data = true;
-            pdset = item.second.cast<GretlDataset *>();
-            continue;
-        } else if (key == "quiet") {
-            throw std::runtime_error("invalid option flag: " + key);
-        } else if (key == "seasonal" && ci == ARMA) {
-            // arima special: ignore here
-            continue;
-        } else if (key == "lagselect" && ci == ARMA) {
-            throw std::runtime_error("'lagselect' option for (S)ARIMA is temporarily unavailable");
-        } else {
-            // should be a regular gretl option: check its validity in
-            // the context of @ci
-            if (std::strchr(key.c_str(), '_')) {
-                std::string tmp(key);
-
-                gretl_charsub(tmp.data(), '_', '-');
-                opt = valid_long_opt(ci, tmp.c_str(), &status);
-            } else {
-                opt = valid_long_opt(ci, key.c_str(), &status);
-            }
-            if (opt == 0) {
-                throw std::runtime_error("invalid option flag: " + key);
-            }
-        }
-        if (status == OPT_NO_PARM) {
-            // no parameter wanted, but we'll accept a boolean
-            if (is_pyint(item.second)) {
-                int ival = item.second.cast<int>();
-
-                if (ival == 1) {
-                    /* activate the option */
-                    opts |= opt;
-                } else if (ival != 0) {
-                    throw std::runtime_error("invalid option parameter");
-                }
-            }
-        } else {
-            // an option parameter is accepted, perhaps required
-            if (!is_pystr(item.second) && !is_pyint(item.second) && !is_pyfloat(item.second)) {
-                throw std::runtime_error("unsupported option param type");
-            } else {
-                push_option_param(ci, static_cast<gretlopt>(opt),
-                                  gretl_strdup(MapPyToCpp(item.second).to_string().c_str()));
-            }
-        }
-    }
-
-    if (!got_data) {
-        // if we didn't get a 'data' specification, try for the global dataset
-#if GRETL_PYBIND11_DEBUG
-        std::printf("unpack_kwargs: we try for the global dataset\n");
-#endif
-        pdset = DSET;
-    }
-
-    return (gretlopt) opts;
-}
-
-static py::dict *save_model (MODEL *model, DATASET *dset, PRN *prn,
-                             gretlopt opt = OPT_NONE)
-{
-    py::dict *res = nullptr;
-
-    if (model->errcode) {
-        const char *msg = errmsg_get_with_default(model->errcode);
-        throw std::runtime_error(msg);
-    } else {
-        const char *summary;
-        int err;
-
-        printmodel(model, dset, opt, prn);
-        summary = gretl_print_get_buffer(prn);
-        res = gretl_model_to_dict(model, dset, summary, &err);
-        if (err) {
-            handle_gretl_error(err);
-        }
-    }
-
-    return res;
-}
-
-static void get_arima_order (const py::tuple &tup,
-                            int *p, int *d, int *q)
-{
-    int n = py::len(tup);
-
-    if (n == 2) {
-        *p = tup[0].cast<int>();
-        *q = tup[1].cast<int>();
-    } else if (n == 3) {
-        *p = tup[0].cast<int>();
-        *d = tup[1].cast<int>();
-        *q = tup[2].cast<int>();
-    } else {
-        throw std::runtime_error(std::string("order must be of length 2 or 3"));
-    }
-}
-
-// (s)arima estimation
-
-py::dict *arima (const std::string y, const py::tuple &tup,
-                 const py::kwargs &kwargs)
-{
-    GretlPrint GP = GretlPrint();
-    gretlopt opt = OPT_NONE;
-    py::dict *res = nullptr;
-    GretlDataset *GD = nullptr;
-    MODEL *model = NULL;
-    int *list = NULL;
-    int seasonal = 0;
-    int y_number;
-    int p, d, q;
-    int P, D, Q;
-    int i;
-
-    if (py::len(kwargs) > 0) {
-        opt = unpack_kwargs(kwargs, ARMA, GD);
-    } else {
-        GD = DSET;
-    }
-    if (!GD) {
-        throw std::runtime_error("No dataset is available");
-    }
-
-    y_number = current_series_index(GD->dset, y.c_str());
-    if (y_number == -1) {
-        throw std::runtime_error("There is no variable: " + y);
-    }
-
-    p = d = q = 0;
-    P = D = Q = 0;
-    get_arima_order(tup, &p, &d, &q);
-
-    if (kwargs.contains("seasonal") && !kwargs["seasonal"].is_none()) {
-        if (is_pytuple(kwargs["seasonal"])) {
-            const py::tuple seas = kwargs["seasonal"].cast<py::tuple>();
-
-            get_arima_order(seas, &P, &D, &Q);
-            if (P > 0 || D > 0 || Q > 0) {
-                seasonal = 1;
-            }
-        }
-    }
-
-    model = gretl_model_new();
-    list = gretl_list_new(seasonal? 9 : 5);
-    if (model == NULL || list == NULL || GP.prn == NULL) {
-        throw std::runtime_error("Failed to allocate memory");
-    }
-
-    i = 1;
-    list[i++] = p;
-    list[i++] = d;
-    list[i++] = q;
-    if (seasonal) {
-        list[i++] = LISTSEP;
-        list[i++] = P;
-        list[i++] = D;
-        list[i++] = Q;
-    }
-    list[i++] = LISTSEP;
-    list[i++] = y_number;
-
-    *model = arma(list, NULL, GD->dset, opt, GP.prn);
-    res = save_model(model, GD->dset, GP.prn, opt);
-
-    gretl_model_free(model);
-#if defined(_WIN32)
-    gretl_list_free(list);
-#else
-    std::free(list);
-#endif
-
-    if (GD != DSET && GD->is_private) {
-        delete GD;
-    }
-
-    return res;
-}
 
 // thin wrappers for specific estimators
 /*

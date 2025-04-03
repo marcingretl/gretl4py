@@ -57,13 +57,13 @@ PYBIND11_MODULE(_gretl, m)
     m.def("ols2", &ols2,
           py::arg("formula").none(false),
           py::return_value_policy::take_ownership);
-    /*
+
     // model estimation
     m.def("arima", &arima,
           py::arg("y").none(false),
           py::arg("order").none(false),
           py::return_value_policy::take_ownership);
-    m.def("ols", &ols,
+/*    m.def("ols", &ols,
           py::arg("formula").none(false),
           py::return_value_policy::take_ownership);
     m.def("wls", &wls,

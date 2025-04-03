@@ -64,14 +64,29 @@ template <auto F, GretlCmdIndex CI>
 class GretlModel_NSED : public GretlModel
 {
 public:
-    GretlModel_NSED(GretlDataset *GD);
+    GretlModel_NSED (GretlDataset *GD);
 
     py::dict *fit (const std::string &formula, const py::kwargs &kwargs) override;
 };
-
-
 // signatures implemented in gretl_calls.cpp
 void estimated_models_add (int id, GretlModel *GM);
 void estimated_models_del (int id);
+
+
+//
+// Native SARIMA libgretl MODEL
+//
+class GretlModel_arima : public GretlModel
+{
+private:
+    const std::string y;
+    const py::tuple tup;
+
+    void get_arima_order (const py::tuple &tup, int *p, int *d, int *q);
+public:
+    GretlModel_arima (GretlDataset *GD, const std::string y, const py::tuple &tup);
+
+    py::dict *fit (const std::string &formula, const py::kwargs &kwargs) override;
+};
 
 #endif // GRETL4PY_MODEL_H
