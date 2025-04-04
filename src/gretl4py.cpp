@@ -18,7 +18,6 @@
  */
 
 #include "gretl4py.h"
-#include <pybind11/numpy.h>
 
 class Module
 {
@@ -53,7 +52,7 @@ PYBIND11_MODULE(_gretl, m)
     m.def("GretlModel_destructor_wrapper", &GretlModel_destructor_wrapper,
           py::arg("model_id").none(false));
 
-    // fcast
+    // forecasting
     m.def("fcast", &GretlModel_fcast,
           py::arg("model_id").none(false));
 

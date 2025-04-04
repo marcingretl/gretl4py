@@ -175,4 +175,7 @@ public:
     void print (void);
 };
 
+// function implemented in gretl_calls.cpp
+void set_default_dset (GretlDataset *GD);
+
 #endif // GRETL4PY_DATA_H

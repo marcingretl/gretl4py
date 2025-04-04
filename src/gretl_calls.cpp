@@ -19,7 +19,6 @@
 
 #include "gretl4py.h" /* MUST be at the first position!!! */
 #include "gretl4py_data.h"
-#include "gretl4py_types.h"
 #include "gretl4py_model.h"
 #include <gretl/gretl_drivers.h>
 #include <gretl/gretl_errors.h>
@@ -227,6 +226,23 @@ void set (const std::string key,
     }
 }
 
+//////////////////////////////////////////////////
+// data management
+//////////////////////////////////////////////////
+
+// signature in gretl4py_data.h
+void set_default_dset (GretlDataset *GD)
+{
+    if (DSET) {
+        DSET->is_default = false;
+    }
+    DSET = GD;
+}
+
+//////////////////////////////////////////////////
+// models management
+//////////////////////////////////////////////////
+
 // signatures in gretl_model.h
 void estimated_models_add (const int id, GretlModel *GM)
 {
@@ -237,7 +253,6 @@ void estimated_models_del (const int id)
 {
    estimated_models.erase(id);
 }
-
 
 void GretlModel_destructor_wrapper (const int model_id)
 {
@@ -253,17 +268,8 @@ void GretlModel_destructor_wrapper (const int model_id)
 }
 
 //////////////////////////////////////////////////
-// data management
+// forecasting
 //////////////////////////////////////////////////
-
-// functions below are not defined in a header!!! -> to gretl4py_data.h!!!
-void set_default_dset (GretlDataset *GD)
-{
-    if (DSET) {
-        DSET->is_default = false;
-    }
-    DSET = GD;
-}
 
 void GretlModel_fcast (const int model_id)
 {
@@ -277,111 +283,125 @@ py::dict *arima (const std::string y, const py::tuple &tup,
                  const py::kwargs &kwargs)
 {
     GretlModel *model = new GretlModel_arima(DSET, y, tup);
+
     return model->fit("", kwargs);
 }
-
-// thin wrappers for specific estimators
 
 py::dict *ols (const std::string formula, const py::kwargs &kwargs)
 {
     GretlModel *model = new GretlModel_NSED<lsq, OLS>(DSET);
+
     return model->fit(formula, kwargs);
 }
 
 py::dict *wls (const std::string formula, const py::kwargs &kwargs)
 {
     GretlModel *model = new GretlModel_NSED<lsq, WLS>(DSET);
+
     return model->fit(formula, kwargs);
 }
 
 py::dict *logit (const std::string formula, const py::kwargs &kwargs)
 {
     GretlModel *model = new GretlModel_NSED<logit_probit, LOGIT>(DSET);
+
     return model->fit(formula, kwargs);
 }
 
 py::dict *probit (const std::string formula, const py::kwargs &kwargs)
 {
     GretlModel *model = new GretlModel_NSED<logit_probit, PROBIT>(DSET);
+
     return model->fit(formula, kwargs);
 }
 
 py::dict *poisson (const std::string formula, const py::kwargs &kwargs)
 {
     GretlModel *model = new GretlModel_NSED<count_model, POISSON>(DSET);
+
     return model->fit(formula, kwargs);
 }
 
 py::dict *negbin (const std::string formula, const py::kwargs &kwargs)
 {
     GretlModel *model = new GretlModel_NSED<count_model, NEGBIN>(DSET);
+
     return model->fit(formula, kwargs);
 }
-
-// content from automation/more_calls.cpp
 
 py::dict *biprobit (const std::string formula, const py::kwargs &kwargs)
 {
     GretlModel *model = new GretlModel_NSED<biprobit_model, BIPROBIT>(DSET);
+
     return model->fit(formula, kwargs);
 }
 
 py::dict *duration (const std::string formula, const py::kwargs &kwargs)
 {
     GretlModel *model = new GretlModel_NSED<duration_model, DURATION>(DSET);
+
     return model->fit(formula, kwargs);
 }
 
 py::dict *heckit (const std::string formula, const py::kwargs &kwargs)
 {
     GretlModel *model = new GretlModel_NSED<heckit_model, HECKIT>(DSET);
+
     return model->fit(formula, kwargs);
 }
 
 py::dict *logistic (const std::string formula, const py::kwargs &kwargs)
 {
     GretlModel *model = new GretlModel_NSED<logistic_driver, LOGISTIC>(DSET);
+
     return model->fit(formula, kwargs);
 }
 
 py::dict *ar (const std::string formula, const py::kwargs &kwargs)
 {
     GretlModel *model = new GretlModel_NSED<ar_model, AR>(DSET);
+
     return model->fit(formula, kwargs);
 }
 
 py::dict *ar1 (const std::string formula, const py::kwargs &kwargs)
 {
     GretlModel *model = new GretlModel_NSED<ar1_model, AR1>(DSET);
+
     return model->fit(formula, kwargs);
 }
 
 py::dict *lad (const std::string formula, const py::kwargs &kwargs)
 {
     GretlModel *model = new GretlModel_NSED<lad_model, LAD>(DSET);
+
     return model->fit(formula, kwargs);
 }
 
 py::dict *garch (const std::string formula, const py::kwargs &kwargs)
 {
     GretlModel *model = new GretlModel_NSED<garch_to_call, GARCH>(DSET);
+
     return model->fit(formula, kwargs);
 }
 
 py::dict *mpols (const std::string formula, const py::kwargs &kwargs)
 {
     GretlModel *model = new GretlModel_NSED<mp_ols, MPOLS>(DSET);
+
     return model->fit(formula, kwargs);
 }
 
 py::dict *panel (const std::string formula, const py::kwargs &kwargs)
 {
     GretlModel *model = new GretlModel_NSED<panel_model, PANEL>(DSET);
+
     return model->fit(formula, kwargs);
 }
 
 py::dict *tsls (const std::string formula, const py::kwargs &kwargs)
 {
     GretlModel *model = new GretlModel_NSED<ivreg, IVREG>(DSET);
+
     return model->fit(formula, kwargs);
 }
