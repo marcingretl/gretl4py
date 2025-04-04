@@ -38,8 +38,8 @@
 //
 GretlModel::GretlModel (GretlDataset *GD)
 {
-    id = next_model_id++;
-    estimated_models_add(id, this);
+    this->id = next_model_id++;
+    estimated_models_add(this->id, this);
 
     if (GD) {
         this->GD = GD;
@@ -48,12 +48,12 @@ GretlModel::GretlModel (GretlDataset *GD)
 
 GretlModel::~GretlModel (void)
 {
-    if (GD) {
-        GD->linked_models_del(id);
+    if (this->GD) {
+        this->GD->linked_models_del(this->id);
     }
 
-    if (model != NULL) {
-        gretl_model_free(model);
+    if (this->model != NULL) {
+        gretl_model_free(this->model);
     }
 }
 
@@ -62,7 +62,7 @@ int GretlModel::get_id (void) const
     return id;
 }
 
-gretlopt GretlModel::unpack_kwargs (const py::kwargs &kwargs, int ci)
+gretlopt GretlModel::unpack_kwargs (const py::kwargs &kwargs, GretlCmdIndex ci)
 {
     int opt, opts = OPT_NONE;
     OptStatus status;
@@ -164,8 +164,6 @@ void GretlModel::save_model (PRN *prn, gretlopt opt)
     }
 }
 
-
-
 void GretlModel::gretl_model_to_dict (const char *summary)
 {
     //
@@ -193,7 +191,6 @@ void GretlModel::gretl_model_to_dict (const char *summary)
     }
     delete GB;
 }
-
 
 
 //
@@ -224,7 +221,6 @@ py::dict *GretlModel_NSED<F, CI>::fit (const std::string &formula,
     }
 
     if (!GD) {
-        estimated_models_del(id);   //FIXME:: it's better to have a method for this!!!
         throw std::runtime_error("No dataset is available");
     }
 
@@ -322,7 +318,7 @@ py::dict *GretlModel_arima::fit (const std::string &formula,
     }
 
     if (!GD) {
-        estimated_models_del(id);   //FIXME:: it's better to have a method for this!!!
+        estimated_models_del(id);   //FIXME: Fatal Python error: PyThreadState_Get:!!!!
         throw std::runtime_error("No dataset is available");
     }
 

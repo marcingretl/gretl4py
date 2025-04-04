@@ -34,7 +34,6 @@ static MODEL (&garch_to_call)(const int*, DATASET*, gretlopt, PRN*) = garch;
 
 //
 // Class to handle gretl 'MODEL' type
-// NOTE: instances MUST NOT be allocated at stack to avoid double free!!!
 //
 class GretlModel
 {
@@ -48,7 +47,7 @@ protected:
     mutable int err = 0;
     int id;                         // model ID
 
-    gretlopt unpack_kwargs (const py::kwargs &kwargs, int ci);  //FIXME ci as GretlCommand + gretlopt as instance field!!!
+    gretlopt unpack_kwargs (const py::kwargs &kwargs, GretlCmdIndex ci);
     int *list_from_formula (const char *formula);
     void save_model (PRN *prn, gretlopt opt = OPT_NONE);   //FIXME: PRN *prn as class field!!!
     void gretl_model_to_dict (const char *summary);
@@ -74,10 +73,6 @@ public:
 
     py::dict *fit (const std::string &formula, const py::kwargs &kwargs) override;
 };
-// signatures implemented in gretl_calls.cpp
-void estimated_models_add (const int id, GretlModel *GM);
-void estimated_models_del (const int id);
-
 
 //
 // Native SARIMA libgretl MODEL
@@ -96,5 +91,9 @@ public:
 
     py::dict *fit (const std::string &formula, const py::kwargs &kwargs) override;
 };
+
+// functions implemented in gretl_calls.cpp
+void estimated_models_add (const int id, GretlModel *GM);
+void estimated_models_del (const int id);
 
 #endif // GRETL4PY_MODEL_H

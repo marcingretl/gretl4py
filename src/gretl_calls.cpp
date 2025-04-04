@@ -227,7 +227,7 @@ void set (const std::string key,
     }
 }
 
-// estimated_models list management
+// signatures in gretl_model.h
 void estimated_models_add (const int id, GretlModel *GM)
 {
     estimated_models.try_emplace(id, GM);
