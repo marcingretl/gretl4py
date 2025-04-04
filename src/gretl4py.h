@@ -44,6 +44,8 @@ void set (const std::string key,
 
 void GretlModel_destructor_wrapper (const int model_id);
 
+void GretlModel_fcast (const int model_id);
+
 //////////////////////////////////////////////////
 // model estimation
 //////////////////////////////////////////////////

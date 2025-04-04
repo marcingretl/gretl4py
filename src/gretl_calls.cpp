@@ -265,6 +265,11 @@ void set_default_dset (GretlDataset *GD)
     DSET = GD;
 }
 
+void GretlModel_fcast (const int model_id)
+{
+    estimated_models.at(model_id)->forecast();
+}
+
 //////////////////////////////////////////////////
 // model estimation
 //////////////////////////////////////////////////

@@ -53,6 +53,10 @@ PYBIND11_MODULE(_gretl, m)
     m.def("GretlModel_destructor_wrapper", &GretlModel_destructor_wrapper,
           py::arg("model_id").none(false));
 
+    // fcast
+    m.def("fcast", &GretlModel_fcast,
+          py::arg("model_id").none(false));
+
     // model estimation
     m.def("arima", &arima,
           py::arg("y").none(false),
