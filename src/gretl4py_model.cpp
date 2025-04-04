@@ -44,8 +44,6 @@ GretlModel::GretlModel (GretlDataset *GD)
     if (GD) {
         this->GD = GD;
     }
-    std::cout << "GretlModel base: constructor | id = " << id;
-    std::cout << "\t pod adresem = " << this << std::endl;
 }
 
 GretlModel::~GretlModel (void)
@@ -57,7 +55,6 @@ GretlModel::~GretlModel (void)
     if (model != NULL) {
         gretl_model_free(model);
     }
-    std::cout << "~GretlModel base: destructor | id = " << id << std::endl;
 }
 
 int GretlModel::get_id (void) const

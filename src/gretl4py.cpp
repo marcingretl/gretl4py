@@ -19,7 +19,6 @@
 
 #include "gretl4py.h"
 #include <pybind11/numpy.h>
-#include <pybind11/stl.h>
 
 class Module
 {

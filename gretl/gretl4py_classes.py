@@ -41,7 +41,6 @@ class Model:
         register_model(self)  # track the wrapper instance
 
     def __del__(self):
-        print('python side: call a Model class destructor')
         try:
             if self._model_id is not None:
                 _gretl.GretlModel_destructor_wrapper(self._model_id)

@@ -50,7 +50,7 @@ extern "C" {
 #else
 # define LIBGRETL_MIN_VER 49
 #endif
-#define GRETL_PYBIND11_DEBUG 1
+#define GRETL_PYBIND11_DEBUG 0
 
 static GretlDataset *DSET = nullptr;                            // default dataset
 static std::unordered_map<int, GretlModel*> estimated_models;   // list of already estimated models
@@ -241,9 +241,9 @@ void estimated_models_del (const int id)
 
 void GretlModel_destructor_wrapper (const int model_id)
 {
-    std::printf("\t -> this is a GretlModel_destructor_wrapper(%d) called from python side\n", model_id);
     if (estimated_models.find(model_id) == estimated_models.end()) {
 #if GRETL_PYBIND11_DEBUG
+        std::printf("\t -> this is a GretlModel_destructor_wrapper(%d) called from python side\n", model_id);
         std::cerr << "model (id=" << model_id << ") does not exist" << std::endl;
 #endif // GRETL_PYBIND11_DEBUG
     } else {
@@ -251,14 +251,6 @@ void GretlModel_destructor_wrapper (const int model_id)
         estimated_models.erase(model_id);
     }
 }
-
-
-py::dict *ols2 (const std::string formula, const py::kwargs &kwargs)
-{
-    GretlModel *model = new GretlModel_NSED<lsq, OLS>(DSET);
-    return model->fit(formula, kwargs);
-}
-
 
 //////////////////////////////////////////////////
 // data management

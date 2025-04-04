@@ -94,7 +94,7 @@ def __getattr__(fun):
     exist return it.
     Otherwise call __model_initializer
     """
-    cfunc = ("about", "attach_gretl_data", "attach_data", "get_gretl_data", "print_data", "sample", "set")
+    cfunc = ("about", "set")
 
     if fun in dir(gretl4py_addons):
         return getattr(gretl4py_addons, fun)
@@ -118,7 +118,6 @@ def __dir__():
     dynamic_functions = ["arima", "ols", "wls", "logit", "probit", "poisson", "negbin",
         "biprobit", "duration", "heckit", "logistic", "ar", "ar1", "lad", "garch",
         "mpols", "panel", "tsls"]
-    dynamic_functions = []
 
     return sorted(static_members + dynamic_functions)
 

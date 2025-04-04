@@ -41,7 +41,7 @@ class GretlModel
 private:
     static inline int next_model_id = 1;
 protected:
-    py::dict *RES = nullptr;        // estimation results as dictionary (returned by ::fit())
+    py::dict *RES = nullptr;        // estimation results as dictionary (returned by ::fit(): FIXME: not pointer, pybind11 Object*!!!)
     GretlDataset *GD = nullptr;
     GretlBundle *GB = nullptr;
     MODEL *model = NULL;
