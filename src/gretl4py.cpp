@@ -51,7 +51,8 @@ PYBIND11_MODULE(_gretl, m)
     m.def("set", &set,
           py::arg("key").none(false),
           py::arg("val").none(true) = std::nullopt);
-    m.def("GretlModel_destructor_wrapper", &GretlModel_destructor_wrapper);
+    m.def("GretlModel_destructor_wrapper", &GretlModel_destructor_wrapper,
+          py::arg("model_id").none(false));
 
     // new class-based apparatus
     m.def("ols2", &ols2,

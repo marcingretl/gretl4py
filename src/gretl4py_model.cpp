@@ -44,7 +44,8 @@ GretlModel::GretlModel (GretlDataset *GD)
     if (GD) {
         this->GD = GD;
     }
-    std::cout << "GretlModel base: constructor | id = " << id << std::endl;
+    std::cout << "GretlModel base: constructor | id = " << id;
+    std::cout << "\t pod adresem = " << this << std::endl;
 }
 
 GretlModel::~GretlModel (void)
@@ -56,7 +57,6 @@ GretlModel::~GretlModel (void)
     if (model != NULL) {
         gretl_model_free(model);
     }
-    //FIXME: estimated_models_del(id) -> to GretlModel_destructor_wrapper()!!!
     std::cout << "~GretlModel base: destructor | id = " << id << std::endl;
 }
 
@@ -187,9 +187,11 @@ void GretlModel::gretl_model_to_dict (const char *summary)
             err = E_DATA;
             throw std::runtime_error("Model bundle to dict conversion failed.");
         } else {
-            py::dict &d = *RES;
-            d[py::cast("_id")] = model->ID;
-            d[py::cast("summary")] = summary;
+            py::dict _ids;
+            _ids[py::cast("_id")] = model->ID;
+            _ids[py::cast("_model_id")] = id;
+            (*RES)[py::cast("_ids")] = _ids;
+            (*RES)[py::cast("summary")] = summary;
         }
     }
     delete GB;
@@ -225,6 +227,7 @@ py::dict *GretlModel_NSED<F, CI>::fit (const std::string &formula,
     }
 
     if (!GD) {
+        estimated_models_del(id);   //FIXME:: it's better to have a method for this!!!
         throw std::runtime_error("No dataset is available");
     }
 
@@ -307,6 +310,7 @@ py::dict *GretlModel_arima::fit (const std::string &formula,
     }
 
     if (!GD) {
+        estimated_models_del(id);   //FIXME:: it's better to have a method for this!!!
         throw std::runtime_error("No dataset is available");
     }
 

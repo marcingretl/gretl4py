@@ -104,12 +104,13 @@ void module_init (void)
 void module_cleanup (void)
 {
     // we delete models somehow not deleted by Python
-    if (!estimated_models.empty()) {
+    if (estimated_models.size()) {
         for (auto el = estimated_models.begin(); el != estimated_models.end(); el++) {
 #if GRETL_PYBIND11_DEBUG
-            std::cout << "we delete model id = " << el->first << std::endl;
+            std::cout << "we delete model id = " << el->first;
+            std::cout << ", address = " << el->second << std::endl;
 #endif // GRETL_PYBIND11_DEBUG
-            //delete el->second;
+            delete el->second;
         }
     }
 
@@ -230,34 +231,42 @@ void set (const std::string key,
 }
 
 // estimated_models list management
-void estimated_models_add (int id, GretlModel *GM)
+void estimated_models_add (const int id, GretlModel *GM)
 {
     estimated_models.try_emplace(id, GM);
 }
 
-void estimated_models_del (int id)
+void estimated_models_del (const int id)
 {
-    estimated_models.erase(id);
+   estimated_models.erase(id);
 }
 
-void GretlModel_destructor_wrapper (void)
+
+void GretlModel_destructor_wrapper (const int model_id)
 {
-    //REMEMBER: _only_ if exits in estimated_models, otherwise I'll get SIGSEGV (double free)
-    std::cout << "\t -> this is a GretlModel_destructor_wrapper() called from python side\n";
+    std::printf("\t -> this is a GretlModel_destructor_wrapper(%d) called from python side\n", model_id);
+    if (estimated_models.find(model_id) == estimated_models.end()) {
+#if GRETL_PYBIND11_DEBUG
+        std::cerr << "model (id=" << model_id << ") does not exist" << std::endl;
+#endif // GRETL_PYBIND11_DEBUG
+    } else {
+        delete estimated_models.at(model_id);
+        estimated_models.erase(model_id);
+    }
 }
 
 
 py::dict *ols2 (const std::string formula, const py::kwargs &kwargs)
 {
-    GretlModel *ptr = new GretlModel_NSED<lsq, OLS>(DSET);
-    return ptr->fit(formula, kwargs);
+    GretlModel *model = new GretlModel_NSED<lsq, OLS>(DSET);
+    return model->fit(formula, kwargs);
 }
 
 py::dict *arima (const std::string y, const py::tuple &tup,
                  const py::kwargs &kwargs)
 {
-    GretlModel *ptr = new GretlModel_arima(DSET, y, tup);
-    return ptr->fit("", kwargs);
+    GretlModel *model = new GretlModel_arima(DSET, y, tup);
+    return model->fit("", kwargs);
 }
 
 //////////////////////////////////////////////////

@@ -36,12 +36,17 @@ class Model:
         self.options = kwargs
         self.computed = False
         self._id = None
+        self._model_id = None
         self.summary = {}
         register_model(self)  # track the wrapper instance
 
     def __del__(self):
         print('python side: call a Model class destructor')
-        _gretl.GretlModel_destructor_wrapper()
+        try:
+            if self._model_id is not None:
+                _gretl.GretlModel_destructor_wrapper(self._model_id)
+        except TypeError:
+            pass
 
     def __repr__(self):
         if self.computed:
@@ -61,8 +66,9 @@ class Model:
             model_dict = self.cpython_function(*self.args, **self.options)
             self.summary = model_dict['summary'] # Define summary property used for __repr__
             self.__load_dict_model(model_dict)
-            self._id = model_dict['_id']
-            del model_dict['_id']
+            self._id = model_dict['_ids']['_id']
+            self._model_id = model_dict['_ids']['_model_id']
+            del model_dict['_ids']
         self.computed = True
         return self
 
