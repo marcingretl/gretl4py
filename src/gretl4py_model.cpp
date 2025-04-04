@@ -36,10 +36,14 @@
 //
 // GretlModel class methods
 //
-GretlModel::GretlModel (void)
+GretlModel::GretlModel (GretlDataset *GD)
 {
     id = next_model_id++;
     estimated_models_add(id, this);
+
+    if (GD) {
+        this->GD = GD;
+    }
     std::cout << "GretlModel base: constructor | id = " << id << std::endl;
 }
 
@@ -143,10 +147,8 @@ int *GretlModel::list_from_formula (const char *formula)
     return list;
 }
 
-py::dict *GretlModel::save_model (PRN *prn, gretlopt opt)
+void GretlModel::save_model (PRN *prn, gretlopt opt)
 {
-    py::dict *res = nullptr;
-
     if (model->errcode) {
         const char *msg = errmsg_get_with_default(model->errcode);
         throw std::runtime_error(msg);
@@ -155,28 +157,53 @@ py::dict *GretlModel::save_model (PRN *prn, gretlopt opt)
 
         printmodel(model, GD->dset, opt, prn);
         summary = gretl_print_get_buffer(prn);
-        res = gretl_model_to_dict(model, GD->dset, summary, &err);
+        gretl_model_to_dict(summary);
         if (err) {
             handle_gretl_error(err);
         } else {
-            // we register model in model's map
+            // we link model with dataset used
             GD->linked_models_add(id);
         }
     }
-
-    return res;
 }
+
+
+
+void GretlModel::gretl_model_to_dict (const char *summary)
+{
+    //
+    // Here we construct a python dictionary to represent a gretl
+    // MODEL, using as intermediate step the gretl_bundle produced by
+    // libgretl's bundle_from_model(). We also add the @summary text
+    // produced by libgretl's printmodel().
+    //
+
+    GB = new GretlBundle(model, GD->dset);
+    err = GB->err;
+
+    if (!err) {
+        RES = GB->to_dict();
+        if (!RES) {
+            err = E_DATA;
+            throw std::runtime_error("Model bundle to dict conversion failed.");
+        } else {
+            py::dict &d = *RES;
+            d[py::cast("_id")] = model->ID;
+            d[py::cast("summary")] = summary;
+        }
+    }
+    delete GB;
+}
+
 
 
 //
 //  Native Single Equation libgretl MODEL via dedicated Driver
 //
 template <auto F, GretlCmdIndex CI>
-GretlModel_NSED<F, CI>::GretlModel_NSED(GretlDataset *GD) : GretlModel()  // explicitly call base class constructor!
+GretlModel_NSED<F, CI>::GretlModel_NSED(GretlDataset *GD)
+                                        : GretlModel(GD)  // explicitly call base class constructor!
 {
-    if (GD) {
-        this->GD = GD;
-    }
     std::cout << "GretlModel_NSED, id = " << this->get_id();
     std::cout << ", GD  = " << GD << std::endl;
 }
@@ -191,7 +218,6 @@ py::dict *GretlModel_NSED<F, CI>::fit (const std::string &formula,
 {
     GretlPrint GP = GretlPrint();
     gretlopt opt = OPT_NONE;
-    py::dict *res = nullptr;
     int *list = NULL;
 
     if (py::len(kwargs) > 0) {
@@ -222,7 +248,7 @@ py::dict *GretlModel_NSED<F, CI>::fit (const std::string &formula,
     } else if constexpr (use_lcdop_sig(CI)) {
         *model = F(list, CI, GD->dset, opt, GP.prn);
     }
-    res = save_model(GP.prn, opt);
+    save_model(GP.prn, opt);
 
 #if defined(_WIN32)
     gretl_list_free(list);
@@ -230,7 +256,7 @@ py::dict *GretlModel_NSED<F, CI>::fit (const std::string &formula,
     std::free(list);
 #endif
 
-    return res;
+    return RES;
 }
 // Explicit instantiations for all required (F, CI) pairs
 template class GretlModel_NSED<lsq, OLS>;
@@ -243,12 +269,8 @@ template class GretlModel_NSED<lsq, WLS>;
 GretlModel_arima::GretlModel_arima(GretlDataset *GD,
                                    const std::string y,
                                    const py::tuple &tup)
-                                   : GretlModel(), y(y), tup(tup)  // explicitly call base class constructor!
+                                   : GretlModel(GD), y(y), tup(tup)  // explicitly call base class constructor!
 {
-    if (GD) {
-        this->GD = GD;
-    }
-
     std::cout << "GretlModel_arima, id = " << this->get_id();
     std::cout << ", GD  = " << GD << std::endl;
 }
@@ -266,16 +288,15 @@ void GretlModel_arima::get_arima_order (const py::tuple &tup,
         d = tup[1].cast<int>();
         q = tup[2].cast<int>();
     } else {
-        throw std::runtime_error(std::string("order must be of length 2 or 3"));
+        throw std::runtime_error("order must be of length 2 or 3");
     }
 }
 
 py::dict *GretlModel_arima::fit (const std::string &formula,
                                  const py::kwargs &kwargs)
 {
-    GretlPrint GP = GretlPrint(); // ask Allin we PRN is re-usable
+    GretlPrint GP = GretlPrint(); // ask Allin if PRN is re-usable
     gretlopt opt = OPT_NONE;
-    py::dict *res = nullptr;
     int *list = NULL;
     int seasonal = 0;
     int y_number;
@@ -329,7 +350,7 @@ py::dict *GretlModel_arima::fit (const std::string &formula,
     list[i++] = y_number;
 
     *model = arma(list, NULL, GD->dset, opt, GP.prn);
-    res = save_model(GP.prn, opt);
+    save_model(GP.prn, opt);
 
 #if defined(_WIN32)
     gretl_list_free(list);
@@ -337,5 +358,5 @@ py::dict *GretlModel_arima::fit (const std::string &formula,
     std::free(list);
 #endif
 
-    return res;
+    return RES;
 }

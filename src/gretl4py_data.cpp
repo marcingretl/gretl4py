@@ -182,35 +182,6 @@ void handle_gretl_error (int err)
     throw std::runtime_error(msg);
 }
 
-py::dict *gretl_model_to_dict (MODEL *model, DATASET *dset,
-                               const char *summary, int *err)
-{
-    //
-    // Here we construct a python dictionary to represent a gretl
-    // MODEL, using as intermediate step the gretl_bundle produced by
-    // libgretl's bundle_from_model(). We also add the @summary text
-    // produced by libgretl's printmodel().
-    //
-    py::dict *pydict = nullptr;
-
-    GretlBundle b = GretlBundle(model, dset);
-    *err = b.err;
-
-    if (!*err) {
-        pydict = b.to_dict();
-        if (!pydict) {
-            *err = E_DATA;
-            throw std::runtime_error("Model bundle to dict conversion failed.");
-        } else {
-            py::dict &d = *pydict;
-            d[py::cast("_id")] = model->ID;
-            d[py::cast("summary")] = summary;
-        }
-    }
-
-    return pydict;
-}
-
 //////////////////////////////////////////////////
 // classes
 //////////////////////////////////////////////////

@@ -37,17 +37,19 @@ class GretlModel
 private:
     static inline int next_model_id = 1;
 protected:
+    py::dict *RES = nullptr;        // estimation results as dictionary (returned by ::fit())
     GretlDataset *GD = nullptr;
     GretlBundle *GB = nullptr;
     MODEL *model = NULL;
     mutable int err = 0;
-    int id;
+    int id;                         // model ID
 
     gretlopt unpack_kwargs (const py::kwargs &kwargs, int ci);  //FIXME ci as GretlCommand + gretlopt as instance field!!!
     int *list_from_formula (const char *formula);
-    py::dict *save_model (PRN *prn, gretlopt opt = OPT_NONE);   //FIXME: PRN *prn as class field!!!
+    void save_model (PRN *prn, gretlopt opt = OPT_NONE);   //FIXME: PRN *prn as class field!!!
+    void gretl_model_to_dict (const char *summary);
 public:
-    explicit GretlModel (void);
+    explicit GretlModel (GretlDataset *GD);
     virtual ~GretlModel (void);
 
     virtual py::dict *fit (const std::string &formula, const py::kwargs &kwargs) = 0;

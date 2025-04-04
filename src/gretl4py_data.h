@@ -49,9 +49,6 @@ namespace py = pybind11;
 #define is_pydict(o) (py::isinstance<py::dict>(o))
 #define is_pytuple(o) (py::isinstance<py::tuple>(o))
 
-py::dict *gretl_model_to_dict (MODEL *model, DATASET *dset,
-                               const char *summary, int *err);
-
 void handle_gretl_error (int err);
 
 //
