@@ -47,9 +47,6 @@ void GretlModel_destructor_wrapper (const int model_id);
 //////////////////////////////////////////////////
 // model estimation
 //////////////////////////////////////////////////
-py::dict *ols2 (const std::string formula, const py::kwargs &kwargs);
-
-
 py::dict *arima (const std::string y, const py::tuple &tup, const py::kwargs &kwargs);
 
 py::dict *ols (const std::string formula, const py::kwargs &kwargs);

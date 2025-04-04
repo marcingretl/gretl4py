@@ -264,6 +264,21 @@ py::dict *GretlModel_NSED<F, CI>::fit (const std::string &formula,
 // Explicit instantiations for all required (F, CI) pairs
 template class GretlModel_NSED<lsq, OLS>;
 template class GretlModel_NSED<lsq, WLS>;
+template class GretlModel_NSED<logit_probit, LOGIT>;
+template class GretlModel_NSED<logit_probit, PROBIT>;
+template class GretlModel_NSED<count_model, POISSON>;
+template class GretlModel_NSED<count_model, NEGBIN>;
+template class GretlModel_NSED<biprobit_model, BIPROBIT>;
+template class GretlModel_NSED<duration_model, DURATION>;
+template class GretlModel_NSED<heckit_model, HECKIT>;
+template class GretlModel_NSED<logistic_driver, LOGISTIC>;
+template class GretlModel_NSED<ar_model, AR>;
+template class GretlModel_NSED<ar1_model, AR1>;
+template class GretlModel_NSED<lad_model, LAD>;
+template class GretlModel_NSED<garch_to_call, GARCH>;
+template class GretlModel_NSED<mp_ols, MPOLS>;
+template class GretlModel_NSED<panel_model, PANEL>;
+template class GretlModel_NSED<ivreg, IVREG>;
 
 
 //

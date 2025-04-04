@@ -23,10 +23,14 @@
 #include <pybind11/pybind11.h>
 #include "gretl4py_data.h"
 #include <gretl/libgretl.h>
+#include <gretl/gretl_drivers.h>
 //#include <gretl/matrix_extra.h>
 #include <iostream>
 
 namespace py = pybind11;
+
+// workaround to manually resolve overloads ambiguity
+static MODEL (&garch_to_call)(const int*, DATASET*, gretlopt, PRN*) = garch;
 
 //
 // Class to handle gretl 'MODEL' type

@@ -56,9 +56,6 @@ static GretlDataset *DSET = nullptr;                            // default datas
 static std::unordered_map<int, GretlModel*> estimated_models;   // list of already estimated models
 static int gretl4py_verbose = 0;
 
-// workaround to manually resolve overloads ambiguity
-static MODEL (&garch_to_call)(const int*, DATASET*, gretlopt, PRN*) = garch;
-
 //////////////////////////////////////////////////
 // module related tools
 //////////////////////////////////////////////////
@@ -262,12 +259,6 @@ py::dict *ols2 (const std::string formula, const py::kwargs &kwargs)
     return model->fit(formula, kwargs);
 }
 
-py::dict *arima (const std::string y, const py::tuple &tup,
-                 const py::kwargs &kwargs)
-{
-    GretlModel *model = new GretlModel_arima(DSET, y, tup);
-    return model->fit("", kwargs);
-}
 
 //////////////////////////////////////////////////
 // data management
@@ -285,93 +276,115 @@ void set_default_dset (GretlDataset *GD)
 //////////////////////////////////////////////////
 // model estimation
 //////////////////////////////////////////////////
+py::dict *arima (const std::string y, const py::tuple &tup,
+                 const py::kwargs &kwargs)
+{
+    GretlModel *model = new GretlModel_arima(DSET, y, tup);
+    return model->fit("", kwargs);
+}
 
 // thin wrappers for specific estimators
-/*
+
 py::dict *ols (const std::string formula, const py::kwargs &kwargs)
 {
-    return regression_wrapper<lsq, OLS>(formula, kwargs);
+    GretlModel *model = new GretlModel_NSED<lsq, OLS>(DSET);
+    return model->fit(formula, kwargs);
 }
 
 py::dict *wls (const std::string formula, const py::kwargs &kwargs)
 {
-    return regression_wrapper<lsq, WLS>(formula, kwargs);
+    GretlModel *model = new GretlModel_NSED<lsq, WLS>(DSET);
+    return model->fit(formula, kwargs);
 }
 
 py::dict *logit (const std::string formula, const py::kwargs &kwargs)
 {
-    return regression_wrapper<logit_probit, LOGIT>(formula, kwargs);
+    GretlModel *model = new GretlModel_NSED<logit_probit, LOGIT>(DSET);
+    return model->fit(formula, kwargs);
 }
 
 py::dict *probit (const std::string formula, const py::kwargs &kwargs)
 {
-    return regression_wrapper<logit_probit, PROBIT>(formula, kwargs);
+    GretlModel *model = new GretlModel_NSED<logit_probit, PROBIT>(DSET);
+    return model->fit(formula, kwargs);
 }
 
 py::dict *poisson (const std::string formula, const py::kwargs &kwargs)
 {
-    return regression_wrapper<count_model, POISSON>(formula, kwargs);
+    GretlModel *model = new GretlModel_NSED<count_model, POISSON>(DSET);
+    return model->fit(formula, kwargs);
 }
 
 py::dict *negbin (const std::string formula, const py::kwargs &kwargs)
 {
-    return regression_wrapper<count_model, NEGBIN>(formula, kwargs);
+    GretlModel *model = new GretlModel_NSED<count_model, NEGBIN>(DSET);
+    return model->fit(formula, kwargs);
 }
 
 // content from automation/more_calls.cpp
 
 py::dict *biprobit (const std::string formula, const py::kwargs &kwargs)
 {
-    return regression_wrapper<biprobit_model, BIPROBIT>(formula, kwargs);
+    GretlModel *model = new GretlModel_NSED<biprobit_model, BIPROBIT>(DSET);
+    return model->fit(formula, kwargs);
 }
 
 py::dict *duration (const std::string formula, const py::kwargs &kwargs)
 {
-    return regression_wrapper<duration_model, DURATION>(formula, kwargs);
+    GretlModel *model = new GretlModel_NSED<duration_model, DURATION>(DSET);
+    return model->fit(formula, kwargs);
 }
 
 py::dict *heckit (const std::string formula, const py::kwargs &kwargs)
 {
-    return regression_wrapper<heckit_model, HECKIT>(formula, kwargs);
+    GretlModel *model = new GretlModel_NSED<heckit_model, HECKIT>(DSET);
+    return model->fit(formula, kwargs);
 }
 
 py::dict *logistic (const std::string formula, const py::kwargs &kwargs)
 {
-    return regression_wrapper<logistic_driver, LOGISTIC>(formula, kwargs);
+    GretlModel *model = new GretlModel_NSED<logistic_driver, LOGISTIC>(DSET);
+    return model->fit(formula, kwargs);
 }
 
 py::dict *ar (const std::string formula, const py::kwargs &kwargs)
 {
-    return regression_wrapper<ar_model, AR>(formula, kwargs);
+    GretlModel *model = new GretlModel_NSED<ar_model, AR>(DSET);
+    return model->fit(formula, kwargs);
 }
 
 py::dict *ar1 (const std::string formula, const py::kwargs &kwargs)
 {
-    return regression_wrapper<ar1_model, AR1>(formula, kwargs);
+    GretlModel *model = new GretlModel_NSED<ar1_model, AR1>(DSET);
+    return model->fit(formula, kwargs);
 }
 
 py::dict *lad (const std::string formula, const py::kwargs &kwargs)
 {
-    return regression_wrapper<lad_model, LAD>(formula, kwargs);
+    GretlModel *model = new GretlModel_NSED<lad_model, LAD>(DSET);
+    return model->fit(formula, kwargs);
 }
 
 py::dict *garch (const std::string formula, const py::kwargs &kwargs)
 {
-    return regression_wrapper<garch_to_call, GARCH>(formula, kwargs);
+    GretlModel *model = new GretlModel_NSED<garch_to_call, GARCH>(DSET);
+    return model->fit(formula, kwargs);
 }
 
 py::dict *mpols (const std::string formula, const py::kwargs &kwargs)
 {
-    return regression_wrapper<mp_ols, MPOLS>(formula, kwargs);
+    GretlModel *model = new GretlModel_NSED<mp_ols, MPOLS>(DSET);
+    return model->fit(formula, kwargs);
 }
 
 py::dict *panel (const std::string formula, const py::kwargs &kwargs)
 {
-    return regression_wrapper<panel_model, PANEL>(formula, kwargs);
+    GretlModel *model = new GretlModel_NSED<panel_model, PANEL>(DSET);
+    return model->fit(formula, kwargs);
 }
 
 py::dict *tsls (const std::string formula, const py::kwargs &kwargs)
 {
-    return regression_wrapper<ivreg, IVREG>(formula, kwargs);
+    GretlModel *model = new GretlModel_NSED<ivreg, IVREG>(DSET);
+    return model->fit(formula, kwargs);
 }
-*/
