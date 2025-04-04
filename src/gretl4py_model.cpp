@@ -254,17 +254,17 @@ GretlModel_arima::GretlModel_arima(GretlDataset *GD,
 }
 
 void GretlModel_arima::get_arima_order (const py::tuple &tup,
-                                        int *p, int *d, int *q)
+                                        int &p, int &d, int &q)
 {
     int n = py::len(tup);
 
     if (n == 2) {
-        *p = tup[0].cast<int>();
-        *q = tup[1].cast<int>();
+        p = tup[0].cast<int>();
+        q = tup[1].cast<int>();
     } else if (n == 3) {
-        *p = tup[0].cast<int>();
-        *d = tup[1].cast<int>();
-        *q = tup[2].cast<int>();
+        p = tup[0].cast<int>();
+        d = tup[1].cast<int>();
+        q = tup[2].cast<int>();
     } else {
         throw std::runtime_error(std::string("order must be of length 2 or 3"));
     }
@@ -273,14 +273,12 @@ void GretlModel_arima::get_arima_order (const py::tuple &tup,
 py::dict *GretlModel_arima::fit (const std::string &formula,
                                  const py::kwargs &kwargs)
 {
-    GretlPrint GP = GretlPrint();
+    GretlPrint GP = GretlPrint(); // ask Allin we PRN is re-usable
     gretlopt opt = OPT_NONE;
     py::dict *res = nullptr;
     int *list = NULL;
     int seasonal = 0;
     int y_number;
-    int p, d, q;
-    int P, D, Q;
     int i;
 
     if (py::len(kwargs) > 0) {
@@ -298,13 +296,13 @@ py::dict *GretlModel_arima::fit (const std::string &formula,
 
     p = d = q = 0;
     P = D = Q = 0;
-    get_arima_order(tup, &p, &d, &q);
+    get_arima_order(tup, p, d, q);
 
     if (kwargs.contains("seasonal") && !kwargs["seasonal"].is_none()) {
         if (is_pytuple(kwargs["seasonal"])) {
             const py::tuple seas = kwargs["seasonal"].cast<py::tuple>();
 
-            get_arima_order(seas, &P, &D, &Q);
+            get_arima_order(seas, P, D, Q);
             if (P > 0 || D > 0 || Q > 0) {
                 seasonal = 1;
             }
@@ -312,7 +310,7 @@ py::dict *GretlModel_arima::fit (const std::string &formula,
     }
 
     model = gretl_model_new();
-    list = gretl_list_new(seasonal? 9 : 5);
+    list = gretl_list_new(seasonal ? 9 : 5);
     if (model == NULL || list == NULL || GP.prn == NULL) {
         throw std::runtime_error("Failed to allocate memory");
     }

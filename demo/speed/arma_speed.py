@@ -1,7 +1,7 @@
 import gretl
 import time
 
-MyDict = gretl.csv2dict('large_arma22.csv', "1")
+MyDict = gretl.get_data('large_arma22.csv')
 arimaSpec = tuple((4,0,4))
 
 # arma model via gretl
@@ -13,7 +13,7 @@ print(gmod.coeff)
 # arma model via statsmodels
 from statsmodels.tsa.arima.model import ARIMA
 
-dta = MyDict["data_array"]
+dta = MyDict.to_dict()["data_array"]
 t0 = time.time()
 
 smod = ARIMA(dta, order=arimaSpec).fit()

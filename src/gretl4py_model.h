@@ -81,8 +81,10 @@ class GretlModel_arima : public GretlModel
 private:
     const std::string y;
     const py::tuple tup;
+    int p, d, q;
+    int P, D, Q;
 
-    void get_arima_order (const py::tuple &tup, int *p, int *d, int *q);
+    void get_arima_order (const py::tuple &tup, int &p, int &d, int &q);
 public:
     GretlModel_arima (GretlDataset *GD, const std::string y, const py::tuple &tup);
 
