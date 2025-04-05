@@ -135,6 +135,12 @@ gretlopt GretlModel::unpack_kwargs (const py::kwargs &kwargs, GretlCmdIndex ci)
 
 void GretlModel::save_model (gretlopt opt)
 {
+    //
+    // Here we construct a python dictionary to represent a gretl
+    // MODEL, using as intermediate step the gretl_bundle produced by
+    // libgretl's bundle_from_model(). We also add the @summary text
+    // produced by libgretl's printmodel().
+    //
     if (model->errcode) {
         const char *msg = errmsg_get_with_default(model->errcode);
         throw std::runtime_error(msg);
@@ -143,39 +149,29 @@ void GretlModel::save_model (gretlopt opt)
 
         printmodel(model, GD->dset, opt, GP.prn);
         summary = gretl_print_get_buffer(GP.prn);
-        gretl_model_to_dict(summary);
+        // gretl_model_to_dict(summary);: START
+        GretlBundle b = GretlBundle(model, GD->dset);
+        err = b.err;
+
+        if (!err) {
+            RES = b.to_dict();
+            if (!RES) {
+                err = E_DATA;
+                throw std::runtime_error("Model bundle to dict conversion failed.");
+            } else {
+                py::dict _ids;
+                _ids[py::cast("_id")] = model->ID;
+                _ids[py::cast("_model_id")] = id;
+                (*RES)[py::cast("_ids")] = _ids;
+                (*RES)[py::cast("summary")] = summary;
+            }
+        }
+        // gretl_model_to_dict(summary);: STOP
         if (err) {
             handle_gretl_error(err);
         } else {
             // we link model with dataset used
             GD->linked_models_add(id);
-        }
-    }
-}
-
-void GretlModel::gretl_model_to_dict (const char *summary)
-{
-    //
-    // Here we construct a python dictionary to represent a gretl
-    // MODEL, using as intermediate step the gretl_bundle produced by
-    // libgretl's bundle_from_model(). We also add the @summary text
-    // produced by libgretl's printmodel().
-    //
-
-    GretlBundle b = GretlBundle(model, GD->dset);
-    err = b.err;
-
-    if (!err) {
-        RES = b.to_dict();
-        if (!RES) {
-            err = E_DATA;
-            throw std::runtime_error("Model bundle to dict conversion failed.");
-        } else {
-            py::dict _ids;
-            _ids[py::cast("_id")] = model->ID;
-            _ids[py::cast("_model_id")] = id;
-            (*RES)[py::cast("_ids")] = _ids;
-            (*RES)[py::cast("summary")] = summary;
         }
     }
 }

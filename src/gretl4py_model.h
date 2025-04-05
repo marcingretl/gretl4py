@@ -42,7 +42,7 @@ private:
 protected:
     int id;                         // model ID
     py::dict *RES = nullptr;        // estimation results as dictionary //FIXME: not pointer, pybind11 Object*!!!
-    GretlDataset *GD = nullptr;     // dataset used                     //FIXME: (re)link_model on dataset substitution!!!
+    GretlDataset *GD = nullptr;     // dataset used
     GretlPrint GP = GretlPrint();   // printer
     MODEL *model = NULL;            // libgretl MODLEL struct
     int *var_list = NULL;           // libgretl list of variables
@@ -51,14 +51,13 @@ protected:
 
     gretlopt unpack_kwargs (const py::kwargs &kwargs, GretlCmdIndex ci);
     void save_model (gretlopt opt = OPT_NONE);                          //FIXME: do we need opt here? We already have: gretlopt opt = OPT_NONE
-    void gretl_model_to_dict (const char *summary);                     //FIXME: maybe move the contents to ::save_model()?
 public:
     explicit GretlModel (GretlDataset *GD);
     virtual ~GretlModel (void);
 
     virtual py::dict *fit (const std::string &formula, const py::kwargs &kwargs) = 0;
 
-    virtual void forecast (void) { std::cout << "this is model: " << id << ", in future I'll get you forecasts\n"; };
+    virtual void forecast (void) { std::cout << "this is model: " << id << ", in future I'll give you forecasts :-)\n"; };
 
     int get_id (void) const;
 };
