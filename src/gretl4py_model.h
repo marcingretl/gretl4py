@@ -40,15 +40,15 @@ class GretlModel
 private:
     static inline int next_model_id = 1;
 protected:
-    py::dict *RES = nullptr;        // estimation results as dictionary (returned by ::fit(): FIXME: not pointer, pybind11 Object*!!!)
-    GretlDataset *GD = nullptr;
-    GretlBundle *GB = nullptr;
-    MODEL *model = NULL;
-    mutable int err = 0;
     int id;                         // model ID
+    py::dict *RES = nullptr;        // estimation results as dictionary (returned by ::fit(): FIXME: not pointer, pybind11 Object*!!!)
+    GretlDataset *GD = nullptr;     // dataset used
+    GretlBundle *GB = nullptr;      // bundle with results
+    MODEL *model = NULL;            // libgretl MODLEL struct
+    gretlopt opt = OPT_NONE;        // model options
+    mutable int err = 0;
 
     gretlopt unpack_kwargs (const py::kwargs &kwargs, GretlCmdIndex ci);
-    int *list_from_formula (const char *formula);
     void save_model (PRN *prn, gretlopt opt = OPT_NONE);   //FIXME: PRN *prn as class field!!!
     void gretl_model_to_dict (const char *summary);
 public:
@@ -68,8 +68,12 @@ public:
 template <auto F, GretlCmdIndex CI>
 class GretlModel_NSED : public GretlModel
 {
+private:
+    std::string formula;               // equation
 public:
     GretlModel_NSED (GretlDataset *GD);
+
+    int *list_from_formula (void);
 
     py::dict *fit (const std::string &formula, const py::kwargs &kwargs) override;
 };

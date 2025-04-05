@@ -125,25 +125,6 @@ gretlopt GretlModel::unpack_kwargs (const py::kwargs &kwargs, GretlCmdIndex ci)
     return (gretlopt) opts;
 }
 
-int *GretlModel::list_from_formula (const char *formula)
-{
-    // convert from a simple R-style formula to a gretl list
-    char *tmp = strdup(formula);
-    int *list = NULL;
-
-    gretl_charsub(tmp, '~', ' ');
-    gretl_charsub(tmp, '+', ' ');
-    list = generate_list(tmp, GD->dset, 0, &err);
-    std::free(tmp);
-
-    if (err) {
-        std::cerr << "libgretl error occurred: " << err << std::endl;
-        //FIXME: if (gretl4py_verbose) { std::perror(gretl_errmsg_get()); }
-    }
-
-    return list;
-}
-
 void GretlModel::save_model (PRN *prn, gretlopt opt)
 {
     if (model->errcode) {
@@ -204,6 +185,26 @@ GretlModel_NSED<F, CI>::GretlModel_NSED(GretlDataset *GD)
     std::cout << ", GD  = " << GD << std::endl;
 }
 
+template <auto F, GretlCmdIndex CI>
+int *GretlModel_NSED<F, CI>::list_from_formula (void)
+{
+    // convert from a simple R-style formula to a gretl list
+    char *tmp = strdup(formula.c_str());
+    int *list = NULL;
+
+    gretl_charsub(tmp, '~', ' ');
+    gretl_charsub(tmp, '+', ' ');
+    list = generate_list(tmp, GD->dset, 0, &err);
+    std::free(tmp);
+
+    if (err) {
+        std::cerr << "libgretl error occurred: " << err << std::endl;
+        //FIXME: if (gretl4py_verbose) { std::perror(gretl_errmsg_get()); }
+    }
+
+    return list;
+}
+
 // Method template to support several estimation methods that
 // have the same "basic" signature, plus a few special cases
 // F: function to call
@@ -213,7 +214,6 @@ py::dict *GretlModel_NSED<F, CI>::fit (const std::string &formula,
                                        const py::kwargs &kwargs)
 {
     GretlPrint GP = GretlPrint();
-    gretlopt opt = OPT_NONE;
     int *list = NULL;
 
     if (py::len(kwargs) > 0) {
@@ -224,7 +224,8 @@ py::dict *GretlModel_NSED<F, CI>::fit (const std::string &formula,
         throw std::runtime_error("No dataset is available");
     }
 
-    list = list_from_formula(formula.c_str());
+    this->formula = formula;
+    list = list_from_formula();
     model = gretl_model_new();
 
     if (list == NULL) {
@@ -307,7 +308,6 @@ py::dict *GretlModel_arima::fit (const std::string &formula,
                                  const py::kwargs &kwargs)
 {
     GretlPrint GP = GretlPrint(); // ask Allin if PRN is re-usable
-    gretlopt opt = OPT_NONE;
     int *list = NULL;
     int seasonal = 0;
     int y_number;
