@@ -122,10 +122,10 @@ gretlopt GretlModel::unpack_kwargs (const py::kwargs &kwargs, GretlCmdIndex ci)
         }
     }
 
-    return (gretlopt) opts;
+    return static_cast<gretlopt>(opts);
 }
 
-void GretlModel::save_model (PRN *prn, gretlopt opt)
+void GretlModel::save_model (gretlopt opt)
 {
     if (model->errcode) {
         const char *msg = errmsg_get_with_default(model->errcode);
@@ -133,8 +133,8 @@ void GretlModel::save_model (PRN *prn, gretlopt opt)
     } else {
         const char *summary;
 
-        printmodel(model, GD->dset, opt, prn);
-        summary = gretl_print_get_buffer(prn);
+        printmodel(model, GD->dset, opt, GP.prn);
+        summary = gretl_print_get_buffer(GP.prn);
         gretl_model_to_dict(summary);
         if (err) {
             handle_gretl_error(err);
@@ -209,8 +209,6 @@ template <auto F, GretlCmdIndex CI>
 py::dict *GretlModel_NSED<F, CI>::fit (const std::string &formula,
                                        const py::kwargs &kwargs)
 {
-    GretlPrint GP = GretlPrint();
-
     if (py::len(kwargs) > 0) {
         opt = unpack_kwargs(kwargs, CI);
     }
@@ -241,7 +239,7 @@ py::dict *GretlModel_NSED<F, CI>::fit (const std::string &formula,
     } else if constexpr (use_lcdop_sig(CI)) {
         *model = F(var_list, CI, GD->dset, opt, GP.prn);
     }
-    save_model(GP.prn, opt);
+    save_model(opt);
 
 #if defined(_WIN32)
     gretl_list_free(var_list);  //FIXME: to destructor? (we must consider it)
@@ -251,7 +249,7 @@ py::dict *GretlModel_NSED<F, CI>::fit (const std::string &formula,
 
     return RES;
 }
-// Explicit instantiations for all required (F, CI) pairs
+// explicit instantiations for all required (F, CI) pairs
 template class GretlModel_NSED<lsq, OLS>;
 template class GretlModel_NSED<lsq, WLS>;
 template class GretlModel_NSED<logit_probit, LOGIT>;
@@ -303,7 +301,6 @@ void GretlModel_arima::get_arima_order (const py::tuple &tup,
 py::dict *GretlModel_arima::fit (const std::string &formula,
                                  const py::kwargs &kwargs)
 {
-    GretlPrint GP = GretlPrint(); // ask Allin if PRN is re-usable
     int seasonal = 0;
     int y_number;
     int i;
@@ -357,7 +354,7 @@ py::dict *GretlModel_arima::fit (const std::string &formula,
     var_list[i++] = y_number;
 
     *model = arma(var_list, NULL, GD->dset, opt, GP.prn);
-    save_model(GP.prn, opt);
+    save_model(opt);
 
 #if defined(_WIN32)
     gretl_list_free(var_list);  //FIXME: to destructor? (we must consider it)

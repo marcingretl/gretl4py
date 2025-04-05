@@ -370,8 +370,6 @@ py::str GretlDataset::repr (void) const
     return ret;
 }
 
-#if 1 // suggestion from Allin
-
 void GretlDataset::print (const py::kwargs &kwargs)
 {
     GretlPrint GP = GretlPrint();
@@ -432,26 +430,6 @@ void GretlDataset::print (const py::kwargs &kwargs)
 
     GP.print();
 }
-
-#else
-
-void GretlDataset::print (bool namesonly)
-{
-    GretlPrint GP = GretlPrint();
-
-    if (namesonly) {
-        list_series(dset, OPT_NONE, GP.prn);
-    } else {
-        err = printdata(NULL, NULL, dset, OPT_O, GP.prn);
-        if (err) {
-            handle_gretl_error(err);
-        }
-    }
-
-    GP.print();
-}
-
-#endif
 
 void GretlDataset::sample (const py::kwargs &kwargs)
 {
