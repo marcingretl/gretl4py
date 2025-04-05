@@ -186,7 +186,7 @@ GretlModel_NSED<F, CI>::GretlModel_NSED(GretlDataset *GD)
 }
 
 template <auto F, GretlCmdIndex CI>
-int *GretlModel_NSED<F, CI>::list_from_formula (void)
+int *GretlModel_NSED<F, CI>::list_from_formula (const std::string &formula)
 {
     // convert from a simple R-style formula to a gretl list
     char *tmp = strdup(formula.c_str());
@@ -224,8 +224,7 @@ py::dict *GretlModel_NSED<F, CI>::fit (const std::string &formula,
         throw std::runtime_error("No dataset is available");
     }
 
-    this->formula = formula;
-    list = list_from_formula();
+    list = list_from_formula(formula);
     model = gretl_model_new();
 
     if (list == NULL) {

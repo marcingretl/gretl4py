@@ -68,12 +68,10 @@ public:
 template <auto F, GretlCmdIndex CI>
 class GretlModel_NSED : public GretlModel
 {
-private:
-    std::string formula;               // equation
 public:
     GretlModel_NSED (GretlDataset *GD);
 
-    int *list_from_formula (void);
+    int *list_from_formula (const std::string &formula);
 
     py::dict *fit (const std::string &formula, const py::kwargs &kwargs) override;
 };
