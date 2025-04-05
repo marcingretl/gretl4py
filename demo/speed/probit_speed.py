@@ -3,14 +3,14 @@ import time
 import pandas
 
 Ptest = pandas.read_csv('large_probit.csv')
-MyDict = gretl.df2dict(Ptest)
+MyData = gretl.get_data('large_probit.csv')
 
 reglist = open('prob_frml.txt', 'r').read()
 
 # probit model via gretl
 frml = 'y ~ const+' + reglist[0:-1]
 t0 = time.time()
-gmod = gretl.probit(frml, data=MyDict).fit()
+gmod = gretl.probit(frml, data=MyData).fit()
 t1 = time.time() - t0
 print(gmod.coeff)
 

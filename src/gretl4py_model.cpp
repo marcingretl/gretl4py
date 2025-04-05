@@ -55,6 +55,14 @@ GretlModel::~GretlModel (void)
     if (this->model != NULL) {
         gretl_model_free(this->model);
     }
+
+    if (this->var_list != NULL) {
+#if defined(_WIN32)
+        gretl_list_free(var_list);
+#else
+        std::free(var_list);
+#endif
+    }
 }
 
 int GretlModel::get_id (void) const
@@ -75,7 +83,7 @@ gretlopt GretlModel::unpack_kwargs (const py::kwargs &kwargs, GretlCmdIndex ci)
 
         if (key == "data") {
             // special case: we use already allocated object of GretlDataset class
-            GD = item.second.cast<GretlDataset*>(); //FIXME: move it directly to the fit() method!!!
+            GD = item.second.cast<GretlDataset*>();
             continue;
         } else if (key == "quiet") {
             throw std::runtime_error("invalid option flag: " + key);
@@ -241,12 +249,6 @@ py::dict *GretlModel_NSED<F, CI>::fit (const std::string &formula,
     }
     save_model(opt);
 
-#if defined(_WIN32)
-    gretl_list_free(var_list);  //FIXME: to destructor? (we must consider it)
-#else
-    std::free(var_list);
-#endif
-
     return RES;
 }
 // explicit instantiations for all required (F, CI) pairs
@@ -355,12 +357,6 @@ py::dict *GretlModel_arima::fit (const std::string &formula,
 
     *model = arma(var_list, NULL, GD->dset, opt, GP.prn);
     save_model(opt);
-
-#if defined(_WIN32)
-    gretl_list_free(var_list);  //FIXME: to destructor? (we must consider it)
-#else
-    std::free(var_list);
-#endif
 
     return RES;
 }
