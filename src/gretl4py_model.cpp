@@ -154,11 +154,11 @@ void GretlModel::gretl_model_to_dict (const char *summary)
     // produced by libgretl's printmodel().
     //
 
-    GB = new GretlBundle(model, GD->dset);
-    err = GB->err;
+    GretlBundle b = GretlBundle(model, GD->dset);
+    err = b.err;
 
     if (!err) {
-        RES = GB->to_dict();
+        RES = b.to_dict();
         if (!RES) {
             err = E_DATA;
             throw std::runtime_error("Model bundle to dict conversion failed.");
@@ -170,7 +170,6 @@ void GretlModel::gretl_model_to_dict (const char *summary)
             (*RES)[py::cast("summary")] = summary;
         }
     }
-    delete GB;
 }
 
 
@@ -186,23 +185,20 @@ GretlModel_NSED<F, CI>::GretlModel_NSED(GretlDataset *GD)
 }
 
 template <auto F, GretlCmdIndex CI>
-int *GretlModel_NSED<F, CI>::list_from_formula (const std::string &formula)
+void GretlModel_NSED<F, CI>::list_from_formula (const std::string &formula)
 {
     // convert from a simple R-style formula to a gretl list
     char *tmp = strdup(formula.c_str());
-    int *list = NULL;
 
     gretl_charsub(tmp, '~', ' ');
     gretl_charsub(tmp, '+', ' ');
-    list = generate_list(tmp, GD->dset, 0, &err);
+    var_list = generate_list(tmp, GD->dset, 0, &err);
     std::free(tmp);
 
     if (err) {
         std::cerr << "libgretl error occurred: " << err << std::endl;
         //FIXME: if (gretl4py_verbose) { std::perror(gretl_errmsg_get()); }
     }
-
-    return list;
 }
 
 // Method template to support several estimation methods that
@@ -214,7 +210,6 @@ py::dict *GretlModel_NSED<F, CI>::fit (const std::string &formula,
                                        const py::kwargs &kwargs)
 {
     GretlPrint GP = GretlPrint();
-    int *list = NULL;
 
     if (py::len(kwargs) > 0) {
         opt = unpack_kwargs(kwargs, CI);
@@ -224,32 +219,34 @@ py::dict *GretlModel_NSED<F, CI>::fit (const std::string &formula,
         throw std::runtime_error("No dataset is available");
     }
 
-    list = list_from_formula(formula);
+    // we construct the model
+    list_from_formula(formula);
     model = gretl_model_new();
 
-    if (list == NULL) {
+    if (var_list == NULL) {
         throw std::runtime_error("Formula rendering failed");
     } else if (model == NULL || GP.prn == NULL) {
         throw std::runtime_error("Failed to allocate memory");
     }
 
+    // we call F as an estimator
     if constexpr (use_ldco_sig(CI)) {
-        *model = F(list, GD->dset, CI, opt);
+        *model = F(var_list, GD->dset, CI, opt);
     } else if constexpr (use_ldcop_sig(CI)) {
-        *model = F(list, GD->dset, CI, opt, GP.prn);
+        *model = F(var_list, GD->dset, CI, opt, GP.prn);
     } else if constexpr (use_ldo_sig(CI)) {
-        *model = F(list, GD->dset, opt);
+        *model = F(var_list, GD->dset, opt);
     } else if constexpr (use_ldop_sig(CI)) {
-        *model = F(list, GD->dset, opt, GP.prn);
+        *model = F(var_list, GD->dset, opt, GP.prn);
     } else if constexpr (use_lcdop_sig(CI)) {
-        *model = F(list, CI, GD->dset, opt, GP.prn);
+        *model = F(var_list, CI, GD->dset, opt, GP.prn);
     }
     save_model(GP.prn, opt);
 
 #if defined(_WIN32)
-    gretl_list_free(list);
+    gretl_list_free(var_list);  //FIXME: to destructor? (we must consider it)
 #else
-    std::free(list);
+    std::free(var_list);
 #endif
 
     return RES;
@@ -307,7 +304,6 @@ py::dict *GretlModel_arima::fit (const std::string &formula,
                                  const py::kwargs &kwargs)
 {
     GretlPrint GP = GretlPrint(); // ask Allin if PRN is re-usable
-    int *list = NULL;
     int seasonal = 0;
     int y_number;
     int i;
@@ -342,31 +338,31 @@ py::dict *GretlModel_arima::fit (const std::string &formula,
     }
 
     model = gretl_model_new();
-    list = gretl_list_new(seasonal ? 9 : 5);
-    if (model == NULL || list == NULL || GP.prn == NULL) {
+    var_list = gretl_list_new(seasonal ? 9 : 5);
+    if (model == NULL || var_list == NULL || GP.prn == NULL) {
         throw std::runtime_error("Failed to allocate memory");
     }
 
     i = 1;
-    list[i++] = p;
-    list[i++] = d;
-    list[i++] = q;
+    var_list[i++] = p;
+    var_list[i++] = d;
+    var_list[i++] = q;
     if (seasonal) {
-        list[i++] = LISTSEP;
-        list[i++] = P;
-        list[i++] = D;
-        list[i++] = Q;
+        var_list[i++] = LISTSEP;
+        var_list[i++] = P;
+        var_list[i++] = D;
+        var_list[i++] = Q;
     }
-    list[i++] = LISTSEP;
-    list[i++] = y_number;
+    var_list[i++] = LISTSEP;
+    var_list[i++] = y_number;
 
-    *model = arma(list, NULL, GD->dset, opt, GP.prn);
+    *model = arma(var_list, NULL, GD->dset, opt, GP.prn);
     save_model(GP.prn, opt);
 
 #if defined(_WIN32)
-    gretl_list_free(list);
+    gretl_list_free(var_list);  //FIXME: to destructor? (we must consider it)
 #else
-    std::free(list);
+    std::free(var_list);
 #endif
 
     return RES;

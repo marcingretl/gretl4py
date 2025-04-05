@@ -43,8 +43,8 @@ protected:
     int id;                         // model ID
     py::dict *RES = nullptr;        // estimation results as dictionary (returned by ::fit(): FIXME: not pointer, pybind11 Object*!!!)
     GretlDataset *GD = nullptr;     // dataset used
-    GretlBundle *GB = nullptr;      // bundle with results
     MODEL *model = NULL;            // libgretl MODLEL struct
+    int *var_list = NULL;           // libgretl list of variables
     gretlopt opt = OPT_NONE;        // model options
     mutable int err = 0;
 
@@ -71,7 +71,7 @@ class GretlModel_NSED : public GretlModel
 public:
     GretlModel_NSED (GretlDataset *GD);
 
-    int *list_from_formula (const std::string &formula);
+    void list_from_formula (const std::string &formula);
 
     py::dict *fit (const std::string &formula, const py::kwargs &kwargs) override;
 };
