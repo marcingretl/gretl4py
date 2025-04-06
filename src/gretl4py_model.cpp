@@ -39,7 +39,6 @@
 GretlModel::GretlModel (GretlDataset *GD)
 {
     this->id = next_model_id++;
-    estimated_models_add(this->id, this);
 
     if (GD) {
         this->GD = GD;
@@ -308,7 +307,6 @@ py::dict *GretlModel_arima::fit (const std::string &formula,
     }
 
     if (!GD) {
-        estimated_models_del(id);   //FIXME: Fatal Python error: PyThreadState_Get:!!!!
         throw std::runtime_error("No dataset is available");
     }
 

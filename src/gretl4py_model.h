@@ -94,8 +94,4 @@ public:
     py::dict *fit (const std::string &formula, const py::kwargs &kwargs) override;
 };
 
-// functions implemented in gretl_calls.cpp
-void estimated_models_add (const int id, GretlModel *GM);
-void estimated_models_del (const int id);
-
 #endif // GRETL4PY_MODEL_H
