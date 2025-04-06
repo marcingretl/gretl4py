@@ -61,7 +61,7 @@ public:
 
     virtual py::dict *fit (const std::string &formula, const py::kwargs &kwargs) = 0;
 
-    virtual void forecast (void) { std::cout << "this is model: " << id << ", in future I'll give you forecasts :-)\n"; };
+    virtual void forecast (void);
 };
 
 //

@@ -22,6 +22,8 @@
 #include "gretl4py_model.h"
 #include <gretl/matrix_extra.h>
 #include <gretl/gretl_model.h>
+#include <gretl/objstack.h>
+#include <gretl/forecast.h>
 #include <string>
 
 #define use_ldco_sig(c) (c == OLS || c == WLS) //const int *list, DATASET *dset, GretlCmdIndex ci, gretlopt opt
@@ -182,6 +184,24 @@ void GretlModel::save_model (gretlopt opt)
             GD->linked_models_add(id);
         }
     }
+}
+
+
+void GretlModel::forecast (void)
+{
+    std::cout << "I'm setting myself as 'last model'...\n";
+    set_as_last_model(model, GRETL_OBJ_EQN);
+    std::cout << "\tdone!!!\n";
+
+    std::cout << "I'm trying to do some forecasts...\n";
+    err = do_forecast ("", GD->dset, OPT_S, GP.prn);
+    std::cout << "\tdone!!!\n";
+
+    if (err) {
+        handle_gretl_error(err);
+        throw std::runtime_error("something went wrong...");
+    }
+    GP.print();
 }
 
 
