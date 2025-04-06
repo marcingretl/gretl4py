@@ -33,6 +33,8 @@
                          || c == GARCH || c == PANEL) //const int *list, DATASET *dset, gretlopt opt, PRN *prn
 #define use_lcdop_sig(c) (c == POISSON || c == NEGBIN) //const int *list, int ci, DATASET *dset, gretlopt opt, PRN *prn
 
+#define GRETL4PY_MODEL_DEBUG 0
+
 //
 // GretlModel class methods
 //
@@ -190,8 +192,10 @@ template <auto F, GretlCmdIndex CI>
 GretlModel_NSED<F, CI>::GretlModel_NSED(GretlDataset *GD)
                                         : GretlModel(GD)  // explicitly call base class constructor!
 {
+#if GRETL4PY_MODEL_DEBUG
     std::cout << "GretlModel_NSED, id = " << this->get_id();
     std::cout << ", GD  = " << GD << std::endl;
+#endif // GRETL4PY_MODEL_DEBUG
 }
 
 template <auto F, GretlCmdIndex CI>
@@ -281,8 +285,10 @@ GretlModel_arima::GretlModel_arima(GretlDataset *GD,
                                    const py::tuple &tup)
                                    : GretlModel(GD), y(y), tup(tup)  // explicitly call base class constructor!
 {
+#if GRETL4PY_MODEL_DEBUG
     std::cout << "GretlModel_arima, id = " << this->get_id();
     std::cout << ", GD  = " << GD << std::endl;
+#endif // GRETL4PY_MODEL_DEBUG
 }
 
 void GretlModel_arima::get_arima_order (const py::tuple &tup,

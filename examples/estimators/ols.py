@@ -1,6 +1,6 @@
 import gretl
 
-gretl.attach_gretl_data(gretl.gretl_data_path('misc/longley.gdt'))
+d1 = gretl.get_data(gretl.gretl_data_path('misc/longley.gdt'))
 
 # Alternative ways of calling OLS model
 m1 = gretl.ols('employ ~ const + prdefl + gnp').fit()

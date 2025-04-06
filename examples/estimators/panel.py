@@ -1,7 +1,6 @@
 import gretl
 
-gretl.attach_gretl_data(
-	gretl.gretl_data_path('misc/penngrow.gdt'))
+d1 = gretl.get_data(gretl.gretl_data_path('misc/penngrow.gdt'))
 m1 = gretl.panel('Y ~ const + Y(-1) + X').fit()
 m2 = gretl.panel('Y const Y(-1) X').fit()
 print(m1)

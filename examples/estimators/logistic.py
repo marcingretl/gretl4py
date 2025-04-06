@@ -1,7 +1,6 @@
 import gretl
 
-gretl.attach_gretl_data(
-	gretl.gretl_data_path('misc/longley.gdt'))
+d1 = gretl.get_data(gretl.gretl_data_path('misc/longley.gdt'))
 m1 = gretl.logistic('employ ~ const + prdefl + gnp').fit()
 m2 = gretl.logistic('employ const prdefl gnp').fit()
 m3 = gretl.logistic('1 0 2 3').fit()
