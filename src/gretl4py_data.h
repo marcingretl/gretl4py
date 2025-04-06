@@ -64,6 +64,8 @@ private:
     void allocate_dset (void);
 
     void free_dset (void);
+
+    gretlopt setobs_opt_from_structure (int structure);
 public:
     mutable int err = 0;
     bool is_private = false;

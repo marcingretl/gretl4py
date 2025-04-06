@@ -154,21 +154,6 @@ static void numpy_array_to_gretl_storage (const py::dict &pydict,
     dset->t2 = dset->n-1;
 }
 
-static gretlopt setobs_opt_from_structure (int structure)
-{
-    if (structure == CROSS_SECTION) {
-        return OPT_X;
-    } else if (structure == TIME_SERIES) {
-        return OPT_T;
-    } else if (structure == STACKED_TIME_SERIES) {
-        return OPT_S;
-    } else if (structure == SPECIAL_TIME_SERIES) {
-        return OPT_N;
-    } else {
-        return OPT_NONE;
-    }
-}
-
 //////////////////////////////////////////////////
 // functions
 //////////////////////////////////////////////////
@@ -631,6 +616,22 @@ std::unordered_set<int> GretlDataset::linked_models_list (void) const
 {
     return linked_models;
 }
+
+gretlopt GretlDataset::setobs_opt_from_structure (int structure)
+{
+    if (structure == CROSS_SECTION) {
+        return OPT_X;
+    } else if (structure == TIME_SERIES) {
+        return OPT_T;
+    } else if (structure == STACKED_TIME_SERIES) {
+        return OPT_S;
+    } else if (structure == SPECIAL_TIME_SERIES) {
+        return OPT_N;
+    } else {
+        return OPT_NONE;
+    }
+}
+
 
 //
 // GretlBundle class methods
