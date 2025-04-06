@@ -190,6 +190,7 @@ void GretlModel::save_model (gretlopt opt)
 void GretlModel::forecast (void)
 {
     std::cout << "I'm setting myself as 'last model'...\n";
+    gretl_model_protect(model);
     set_as_last_model(model, GRETL_OBJ_EQN);
     std::cout << "\tdone!!!\n";
 
