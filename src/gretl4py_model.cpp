@@ -69,6 +69,13 @@ int GretlModel::get_id (void) const
     return id;
 }
 
+void GretlModel::unlink_from_dataset (void) const
+{
+    if (GD) {
+        GD->linked_models_del(id);
+    }
+}
+
 gretlopt GretlModel::unpack_kwargs (const py::kwargs &kwargs, GretlCmdIndex ci)
 {
     int opt, opts = OPT_NONE;

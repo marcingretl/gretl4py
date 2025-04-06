@@ -55,11 +55,13 @@ public:
     explicit GretlModel (GretlDataset *GD);
     virtual ~GretlModel (void);
 
+    int get_id (void) const;
+
+    void unlink_from_dataset (void) const ;
+
     virtual py::dict *fit (const std::string &formula, const py::kwargs &kwargs) = 0;
 
     virtual void forecast (void) { std::cout << "this is model: " << id << ", in future I'll give you forecasts :-)\n"; };
-
-    int get_id (void) const;
 };
 
 //

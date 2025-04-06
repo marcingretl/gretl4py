@@ -232,16 +232,26 @@ void set_default_dset (GretlDataset *GD)
 // models management
 //////////////////////////////////////////////////
 
+// wrapper for calling GretlModel_NSED models
+template <auto F, GretlCmdIndex CI>
+static py::dict *GretlModel_NSED_wrapper (const std::string formula, const py::kwargs &kwargs)
+{
+    std::shared_ptr<GretlModel> model = std::make_shared<GretlModel_NSED<F, CI>>(DSET);
+    estimated_models.try_emplace(model->get_id(), model);
+
+    return model->fit(formula, kwargs);
+}
+
+// wrapper for "destructing" GretlModel_NSED models
 void GretlModel_destructor_wrapper (const int model_id)
 {
-    if (estimated_models.find(model_id) == estimated_models.end()) {
-#if GRETL_PYBIND11_DEBUG
-        std::printf("\t -> this is a GretlModel_destructor_wrapper(%d) called from python side\n", model_id);
-        std::cerr << "model (id=" << model_id << ") does not exist" << std::endl;
-#endif // GRETL_PYBIND11_DEBUG
-    } else {
+    if (estimated_models.find(model_id) != estimated_models.end()) {
+        estimated_models.at(model_id)->unlink_from_dataset();
         estimated_models.erase(model_id);
     }
+# if GRETL_PYBIND11_DEBUG
+    std::cout << "GretlModel_destructor_wrapper() called for model id=" << model_id << std::endl;
+# endif // GRETL_PYBIND11_DEBUG
 }
 
 //////////////////////////////////////////////////
@@ -265,7 +275,7 @@ py::dict *arima (const std::string y, const py::tuple &tup,
 {
     // note: custom deleter is needed because of (y, tup) initialisation by constructor
     std::shared_ptr<GretlModel> model =
-    std::shared_ptr<GretlModel>(new GretlModel_arima(DSET, y, tup), [](GretlModel* ptr)
+    std::shared_ptr<GretlModel>(new GretlModel_arima(DSET, y, tup), [](GretlModel *ptr)
                                 {
                                     if (Py_IsInitialized()) {
                                         delete ptr;  // delete manually when Python is alive
@@ -278,136 +288,85 @@ py::dict *arima (const std::string y, const py::tuple &tup,
 
 py::dict *ols (const std::string formula, const py::kwargs &kwargs)
 {
-    std::shared_ptr<GretlModel> model = std::make_shared<GretlModel_NSED<lsq, OLS>>(DSET);
-    estimated_models.try_emplace(model->get_id(), model);
-
-    return model->fit(formula, kwargs);
+    return GretlModel_NSED_wrapper<lsq, OLS>(formula, kwargs);
 }
 
 py::dict *wls (const std::string formula, const py::kwargs &kwargs)
 {
-    std::shared_ptr<GretlModel> model = std::make_shared<GretlModel_NSED<lsq, WLS>>(DSET);
-    estimated_models.try_emplace(model->get_id(), model);
-
-    return model->fit(formula, kwargs);
+    return GretlModel_NSED_wrapper<lsq, WLS>(formula, kwargs);
 }
 
 py::dict *logit (const std::string formula, const py::kwargs &kwargs)
 {
-    std::shared_ptr<GretlModel> model = std::make_shared<GretlModel_NSED<logit_probit, LOGIT>>(DSET);
-    estimated_models.try_emplace(model->get_id(), model);
-
-    return model->fit(formula, kwargs);
+    return GretlModel_NSED_wrapper<logit_probit, LOGIT>(formula, kwargs);
 }
 
 py::dict *probit (const std::string formula, const py::kwargs &kwargs)
 {
-    std::shared_ptr<GretlModel> model = std::make_shared<GretlModel_NSED<logit_probit, PROBIT>>(DSET);
-    estimated_models.try_emplace(model->get_id(), model);
-
-    return model->fit(formula, kwargs);
+    return GretlModel_NSED_wrapper<logit_probit, PROBIT>(formula, kwargs);
 }
 
 py::dict *poisson (const std::string formula, const py::kwargs &kwargs)
 {
-    std::shared_ptr<GretlModel> model = std::make_shared<GretlModel_NSED<count_model, POISSON>>(DSET);
-    estimated_models.try_emplace(model->get_id(), model);
-
-    return model->fit(formula, kwargs);
+    return GretlModel_NSED_wrapper<count_model, POISSON>(formula, kwargs);
 }
 
 py::dict *negbin (const std::string formula, const py::kwargs &kwargs)
 {
-    std::shared_ptr<GretlModel> model = std::make_shared<GretlModel_NSED<count_model, NEGBIN>>(DSET);
-    estimated_models.try_emplace(model->get_id(), model);
-
-    return model->fit(formula, kwargs);
+    return GretlModel_NSED_wrapper<count_model, NEGBIN>(formula, kwargs);
 }
 
 py::dict *biprobit (const std::string formula, const py::kwargs &kwargs)
 {
-    std::shared_ptr<GretlModel> model = std::make_shared<GretlModel_NSED<biprobit_model, BIPROBIT>>(DSET);
-    estimated_models.try_emplace(model->get_id(), model);
-
-    return model->fit(formula, kwargs);
+    return GretlModel_NSED_wrapper<biprobit_model, BIPROBIT>(formula, kwargs);
 }
 
 py::dict *duration (const std::string formula, const py::kwargs &kwargs)
 {
-    std::shared_ptr<GretlModel> model = std::make_shared<GretlModel_NSED<duration_model, DURATION>>(DSET);
-    estimated_models.try_emplace(model->get_id(), model);
-
-    return model->fit(formula, kwargs);
+    return GretlModel_NSED_wrapper<duration_model, DURATION>(formula, kwargs);
 }
 
 py::dict *heckit (const std::string formula, const py::kwargs &kwargs)
 {
-    std::shared_ptr<GretlModel> model = std::make_shared<GretlModel_NSED<heckit_model, HECKIT>>(DSET);
-    estimated_models.try_emplace(model->get_id(), model);
-
-    return model->fit(formula, kwargs);
+    return GretlModel_NSED_wrapper<heckit_model, HECKIT>(formula, kwargs);
 }
 
 py::dict *logistic (const std::string formula, const py::kwargs &kwargs)
 {
-    std::shared_ptr<GretlModel> model = std::make_shared<GretlModel_NSED<logistic_driver, LOGISTIC>>(DSET);
-    estimated_models.try_emplace(model->get_id(), model);
-
-    return model->fit(formula, kwargs);
+    return GretlModel_NSED_wrapper<logistic_driver, LOGISTIC>(formula, kwargs);
 }
 
 py::dict *ar (const std::string formula, const py::kwargs &kwargs)
 {
-    std::shared_ptr<GretlModel> model = std::make_shared<GretlModel_NSED<ar_model, AR>>(DSET);
-    estimated_models.try_emplace(model->get_id(), model);
-
-    return model->fit(formula, kwargs);
+    return GretlModel_NSED_wrapper<ar_model, AR>(formula, kwargs);
 }
 
 py::dict *ar1 (const std::string formula, const py::kwargs &kwargs)
 {
-    std::shared_ptr<GretlModel> model = std::make_shared<GretlModel_NSED<ar1_model, AR1>>(DSET);
-    estimated_models.try_emplace(model->get_id(), model);
-
-    return model->fit(formula, kwargs);
+    return GretlModel_NSED_wrapper<ar1_model, AR1>(formula, kwargs);
 }
 
 py::dict *lad (const std::string formula, const py::kwargs &kwargs)
 {
-    std::shared_ptr<GretlModel> model = std::make_shared<GretlModel_NSED<lad_model, LAD>>(DSET);
-    estimated_models.try_emplace(model->get_id(), model);
-
-    return model->fit(formula, kwargs);
+    return GretlModel_NSED_wrapper<lad_model, LAD>(formula, kwargs);
 }
 
 py::dict *garch (const std::string formula, const py::kwargs &kwargs)
 {
-    std::shared_ptr<GretlModel> model = std::make_shared<GretlModel_NSED<garch_to_call, GARCH>>(DSET);
-    estimated_models.try_emplace(model->get_id(), model);
-
-    return model->fit(formula, kwargs);
+    return GretlModel_NSED_wrapper<garch_to_call, GARCH>(formula, kwargs);
 }
 
 py::dict *mpols (const std::string formula, const py::kwargs &kwargs)
 {
-    std::shared_ptr<GretlModel> model = std::make_shared<GretlModel_NSED<mp_ols, MPOLS>>(DSET);
-    estimated_models.try_emplace(model->get_id(), model);
-
-    return model->fit(formula, kwargs);
+    return GretlModel_NSED_wrapper<mp_ols, MPOLS>(formula, kwargs);
 }
 
 py::dict *panel (const std::string formula, const py::kwargs &kwargs)
 {
-    std::shared_ptr<GretlModel> model = std::make_shared<GretlModel_NSED<panel_model, PANEL>>(DSET);
-    estimated_models.try_emplace(model->get_id(), model);
-
-    return model->fit(formula, kwargs);
+    return GretlModel_NSED_wrapper<panel_model, PANEL>(formula, kwargs);
 }
 
 py::dict *tsls (const std::string formula, const py::kwargs &kwargs)
 {
-    std::shared_ptr<GretlModel> model = std::make_shared<GretlModel_NSED<ivreg, IVREG>>(DSET);
-    estimated_models.try_emplace(model->get_id(), model);
-
-    return model->fit(formula, kwargs);
+    return GretlModel_NSED_wrapper<ivreg, IVREG>(formula, kwargs);
 }
