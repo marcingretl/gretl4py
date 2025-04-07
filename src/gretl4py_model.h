@@ -81,12 +81,12 @@ public:
 // extends: GretlModel_NSE
 //
 template <auto F, GretlCmdIndex CI>
-class GretlModel_NSED : public GretlModel
+class GretlModel_NSE_Driver : public GretlModel_NSE
 {
 public:
-    GretlModel_NSED (GretlDataset *GD);
+    GretlModel_NSE_Driver (GretlDataset *GD);
 
-    void list_from_formula (const std::string &formula);
+    void list_from_formula (const std::string &formula);        //FIXME: private!!!
 
     py::dict *fit (const std::string &formula, const py::kwargs &kwargs) override;
 };

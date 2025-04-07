@@ -240,20 +240,20 @@ GretlModel_NSE::GretlModel_NSE(GretlDataset *GD)
 
 
 //
-//  Native Single Equation libgretl MODEL via dedicated Driver
+// NSE via dedicated Driver
 //
 template <auto F, GretlCmdIndex CI>
-GretlModel_NSED<F, CI>::GretlModel_NSED(GretlDataset *GD)
-                                        : GretlModel(GD)  // explicitly call base class constructor!
+GretlModel_NSE_Driver<F, CI>::GretlModel_NSE_Driver(GretlDataset *GD)
+                                        : GretlModel_NSE(GD)  // explicitly call base class constructor!
 {
 #if GRETL4PY_MODEL_DEBUG
-    std::cout << "GretlModel_NSED, id = " << this->get_id();
+    std::cout << "GretlModel_NSE_Driver, id = " << this->get_id();
     std::cout << ", GD  = " << GD << std::endl;
 #endif // GRETL4PY_MODEL_DEBUG
 }
 
 template <auto F, GretlCmdIndex CI>
-void GretlModel_NSED<F, CI>::list_from_formula (const std::string &formula)
+void GretlModel_NSE_Driver<F, CI>::list_from_formula (const std::string &formula)
 {
     // convert from a simple R-style formula to a gretl list
     char *tmp = strdup(formula.c_str());
@@ -274,8 +274,8 @@ void GretlModel_NSED<F, CI>::list_from_formula (const std::string &formula)
 // F: function to call
 // CI: GretlCmdIndex
 template <auto F, GretlCmdIndex CI>
-py::dict *GretlModel_NSED<F, CI>::fit (const std::string &formula,
-                                       const py::kwargs &kwargs)
+py::dict *GretlModel_NSE_Driver<F, CI>::fit (const std::string &formula,
+                                             const py::kwargs &kwargs)
 {
     if (py::len(kwargs) > 0) {
         opt = unpack_kwargs(kwargs, CI);
@@ -312,27 +312,27 @@ py::dict *GretlModel_NSED<F, CI>::fit (const std::string &formula,
     return RES;
 }
 // explicit instantiations for all required (F, CI) pairs
-template class GretlModel_NSED<lsq, OLS>;
-template class GretlModel_NSED<lsq, WLS>;
-template class GretlModel_NSED<logit_probit, LOGIT>;
-template class GretlModel_NSED<logit_probit, PROBIT>;
-template class GretlModel_NSED<count_model, POISSON>;
-template class GretlModel_NSED<count_model, NEGBIN>;
-template class GretlModel_NSED<biprobit_model, BIPROBIT>;
-template class GretlModel_NSED<duration_model, DURATION>;
-template class GretlModel_NSED<heckit_model, HECKIT>;
-template class GretlModel_NSED<logistic_driver, LOGISTIC>;
-template class GretlModel_NSED<ar_model, AR>;
-template class GretlModel_NSED<ar1_model, AR1>;
-template class GretlModel_NSED<lad_model, LAD>;
-template class GretlModel_NSED<garch_to_call, GARCH>;
-template class GretlModel_NSED<mp_ols, MPOLS>;
-template class GretlModel_NSED<panel_model, PANEL>;
-template class GretlModel_NSED<ivreg, IVREG>;
+template class GretlModel_NSE_Driver<lsq, OLS>;
+template class GretlModel_NSE_Driver<lsq, WLS>;
+template class GretlModel_NSE_Driver<logit_probit, LOGIT>;
+template class GretlModel_NSE_Driver<logit_probit, PROBIT>;
+template class GretlModel_NSE_Driver<count_model, POISSON>;
+template class GretlModel_NSE_Driver<count_model, NEGBIN>;
+template class GretlModel_NSE_Driver<biprobit_model, BIPROBIT>;
+template class GretlModel_NSE_Driver<duration_model, DURATION>;
+template class GretlModel_NSE_Driver<heckit_model, HECKIT>;
+template class GretlModel_NSE_Driver<logistic_driver, LOGISTIC>;
+template class GretlModel_NSE_Driver<ar_model, AR>;
+template class GretlModel_NSE_Driver<ar1_model, AR1>;
+template class GretlModel_NSE_Driver<lad_model, LAD>;
+template class GretlModel_NSE_Driver<garch_to_call, GARCH>;
+template class GretlModel_NSE_Driver<mp_ols, MPOLS>;
+template class GretlModel_NSE_Driver<panel_model, PANEL>;
+template class GretlModel_NSE_Driver<ivreg, IVREG>;
 
 
 //
-// Native SARIMA libgretl MODEL
+// NSE via arima plugin
 //
 GretlModel_NSE_arima::GretlModel_NSE_arima(GretlDataset *GD,
                                            const std::string y,
