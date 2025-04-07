@@ -141,6 +141,13 @@ gretlopt GretlModel::unpack_kwargs (const py::kwargs &kwargs, GretlCmdIndex ci)
 }
 
 
+gretlopt GretlModel::unpack_kwargs_forecast (const py::kwargs &kwargs,
+                                             GretlCmdIndex ci)
+{
+    return OPT_NONE;
+}
+
+
 
 //
 // Native Single Equation libgretl MODEL (NSE)
@@ -209,7 +216,7 @@ void GretlModel_NSE::save_model (gretlopt opt)
 void GretlModel_NSE::forecast (void)
 {
     /* this code was rendered from gui/library.c */
-    GretlPrint fp = GretlPrint();           //FIXME: later let's try to use GP.prn!!!
+    //GretlPrint fp = GretlPrint();
     FITRESID *fr = NULL;
     gretlopt gopt;
     gretlopt opt = OPT_NONE;                //FIXME: change name, must be local!!!
@@ -320,7 +327,7 @@ void GretlModel_NSE::forecast (void)
         int width = 78;
 
         if (recursive) {
-            err = text_print_fit_resid(fr, GD->dset, fp.prn);
+            err = text_print_fit_resid(fr, GD->dset, GP.prn);
         } else {
             if (dataset_is_cross_section(GD->dset)) {
                 ols_special = gretl_is_simple_OLS(model);
@@ -332,7 +339,7 @@ void GretlModel_NSE::forecast (void)
                 gopt = static_cast<gretlopt>(gopt | OPT_P);
             }
             fr->alpha = 1 - conf;
-            err = text_print_forecast(fr, GD->dset, gopt, fp.prn);
+            err = text_print_forecast(fr, GD->dset, gopt, GP.prn);
         }
 
         if (ols_special) {
@@ -355,9 +362,9 @@ void GretlModel_NSE::forecast (void)
     if (fr != NULL) {
         free_fit_resid(fr);
     }
-    // @Allin: please verify: END
 
-    fp.print();
+    GP.print();     //FIXME: we use here instance-wide printer, but if that is not safe let's use GretlPrint fp = GretlPrint();
+    // @Allin: please verify: END
 }
 
 
