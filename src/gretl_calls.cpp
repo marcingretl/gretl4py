@@ -275,7 +275,7 @@ py::dict *arima (const std::string y, const py::tuple &tup,
 {
     // note: custom deleter is needed because of (y, tup) initialisation by constructor
     std::shared_ptr<GretlModel> model =
-    std::shared_ptr<GretlModel>(new GretlModel_arima(DSET, y, tup), [](GretlModel *ptr)
+    std::shared_ptr<GretlModel>(new GretlModel_NSE_arima(DSET, y, tup), [](GretlModel *ptr)
                                 {
                                     if (Py_IsInitialized()) {
                                         delete ptr;  // delete manually when Python is alive

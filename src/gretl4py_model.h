@@ -43,9 +43,9 @@ protected:
     int id;                         // model ID
     py::dict *RES = nullptr;        // estimation results as dictionary //FIXME: not pointer, pybind11 Object*!!!
     GretlDataset *GD = nullptr;     // dataset used
-    GretlPrint GP = GretlPrint();   // printer
-    MODEL *model = NULL;            // libgretl MODLEL struct
-    int *var_list = NULL;           // libgretl list of variables
+    GretlPrint GP = GretlPrint();   // printer (instance wide)
+    MODEL *model = NULL;            // libgretl MODLEL struct       //FIXME: to single_equation
+    int *var_list = NULL;           // libgretl list of variables   //FIXME: to single_equation (maybe arima)
     gretlopt opt = OPT_NONE;        // model options
     mutable int err = 0;
 
@@ -57,7 +57,7 @@ public:
 
     int get_id (void) const;
 
-    void unlink_from_dataset (void) const ;
+    void unlink_from_dataset (void) const;
 
     virtual py::dict *fit (const std::string &formula, const py::kwargs &kwargs) = 0;
 
@@ -65,7 +65,20 @@ public:
 };
 
 //
-// Native Single Equation libgretl MODEL via dedicated Driver
+// Native Single Equation libgretl MODEL (NSE)
+// extends: GretlModel
+//
+class GretlModel_NSE : public GretlModel
+{
+public:
+    GretlModel_NSE (GretlDataset *GD);
+
+    virtual py::dict *fit (const std::string &formula, const py::kwargs &kwargs) = 0;
+};
+
+//
+// NSE via dedicated Driver
+// extends: GretlModel_NSE
 //
 template <auto F, GretlCmdIndex CI>
 class GretlModel_NSED : public GretlModel
@@ -79,9 +92,10 @@ public:
 };
 
 //
-// Native SARIMA libgretl MODEL
+// NSE via arima plugin
+// extends: GretlModel_NSE
 //
-class GretlModel_arima : public GretlModel
+class GretlModel_NSE_arima : public GretlModel_NSE
 {
 private:
     const std::string y;
@@ -91,7 +105,7 @@ private:
 
     void get_arima_order (const py::tuple &tup, int &p, int &d, int &q);
 public:
-    GretlModel_arima (GretlDataset *GD, const std::string y, const py::tuple &tup);
+    GretlModel_NSE_arima (GretlDataset *GD, const std::string y, const py::tuple &tup);
 
     py::dict *fit (const std::string &formula, const py::kwargs &kwargs) override;
 };

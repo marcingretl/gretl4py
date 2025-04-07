@@ -35,7 +35,7 @@
                          || c == GARCH || c == PANEL) //const int *list, DATASET *dset, gretlopt opt, PRN *prn
 #define use_lcdop_sig(c) (c == POISSON || c == NEGBIN) //const int *list, int ci, DATASET *dset, gretlopt opt, PRN *prn
 
-#define GRETL4PY_MODEL_DEBUG 0
+#define GRETL4PY_MODEL_DEBUG 1
 
 //
 // GretlModel class methods
@@ -189,21 +189,54 @@ void GretlModel::save_model (gretlopt opt)
 
 void GretlModel::forecast (void)
 {
+    /*
     std::cout << "I'm setting myself as 'last model'...\n";
     gretl_model_protect(model);
     set_as_last_model(model, GRETL_OBJ_EQN);
     std::cout << "\tdone!!!\n";
+    */
+    FITRESID *fr = NULL;
+    GretlPrint fp = GretlPrint();
+    int t1 = 1;
+    int t2 = 10;
+    int pre_n = 10;
 
-    std::cout << "I'm trying to do some forecasts...\n";
-    err = do_forecast ("", GD->dset, OPT_S, GP.prn);
+    std::cout << "I'm trying to do some forecasting...\n";
+    //err = do_forecast ("", GD->dset, OPT_S, GP.prn);
+    fr = get_forecast(model, t1, t2, pre_n, GD->dset, OPT_S, &err);
     std::cout << "\tdone!!!\n";
+
+    std::cout << "I'm trying to print forecasts...\n";
+    if (!err) {
+        err = text_print_forecast(fr, GD->dset, OPT_NONE, fp.prn);
+    }
 
     if (err) {
         handle_gretl_error(err);
         throw std::runtime_error("something went wrong...");
     }
-    GP.print();
+    fp.print();
+
+    if (fr != NULL) {
+        free_fit_resid(fr);
+    }
 }
+
+
+
+//
+// Native Single Equation libgretl MODEL (NSE)
+// extends: GretlModel
+//
+GretlModel_NSE::GretlModel_NSE(GretlDataset *GD)
+                                        : GretlModel(GD)  // explicitly call base class constructor!
+{
+#if GRETL4PY_MODEL_DEBUG
+    std::cout << "GretlModel_NSE, id = " << this->get_id();
+    std::cout << ", GD  = " << GD << std::endl;
+#endif // GRETL4PY_MODEL_DEBUG
+}
+
 
 
 //
@@ -301,19 +334,19 @@ template class GretlModel_NSED<ivreg, IVREG>;
 //
 // Native SARIMA libgretl MODEL
 //
-GretlModel_arima::GretlModel_arima(GretlDataset *GD,
-                                   const std::string y,
-                                   const py::tuple &tup)
-                                   : GretlModel(GD), y(y), tup(tup)  // explicitly call base class constructor!
+GretlModel_NSE_arima::GretlModel_NSE_arima(GretlDataset *GD,
+                                           const std::string y,
+                                           const py::tuple &tup)
+                                           : GretlModel_NSE(GD), y(y), tup(tup)  // explicitly call base class constructor!
 {
 #if GRETL4PY_MODEL_DEBUG
-    std::cout << "GretlModel_arima, id = " << this->get_id();
+    std::cout << "GretlModel_NSE_arima, id = " << this->get_id();
     std::cout << ", GD  = " << GD << std::endl;
 #endif // GRETL4PY_MODEL_DEBUG
 }
 
-void GretlModel_arima::get_arima_order (const py::tuple &tup,
-                                        int &p, int &d, int &q)
+void GretlModel_NSE_arima::get_arima_order (const py::tuple &tup,
+                                            int &p, int &d, int &q)
 {
     int n = py::len(tup);
 
@@ -329,8 +362,8 @@ void GretlModel_arima::get_arima_order (const py::tuple &tup,
     }
 }
 
-py::dict *GretlModel_arima::fit (const std::string &formula,
-                                 const py::kwargs &kwargs)
+py::dict *GretlModel_NSE_arima::fit (const std::string &formula,
+                                     const py::kwargs &kwargs)
 {
     int seasonal = 0;
     int y_number;
