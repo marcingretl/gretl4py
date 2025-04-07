@@ -35,7 +35,7 @@
                          || c == GARCH || c == PANEL) //const int *list, DATASET *dset, gretlopt opt, PRN *prn
 #define use_lcdop_sig(c) (c == POISSON || c == NEGBIN) //const int *list, int ci, DATASET *dset, gretlopt opt, PRN *prn
 
-#define GRETL4PY_MODEL_DEBUG 1
+#define GRETL4PY_MODEL_DEBUG 0
 
 //
 // GretlModel class methods
@@ -338,7 +338,7 @@ template class GretlModel_NSE_Driver<ivreg, IVREG>;
 // NSE via arima plugin
 //
 GretlModel_NSE_arima::GretlModel_NSE_arima(GretlDataset *GD,
-                                           const std::string y,
+                                           const std::string &y,
                                            const py::tuple &tup)
                                            : GretlModel_NSE(GD), y(y), tup(tup)  // explicitly call base class constructor!
 {
