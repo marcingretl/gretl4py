@@ -480,7 +480,7 @@ void GretlDataset::sample (const py::kwargs &kwargs)
 
         if (opt_replace) {
             // C++ !!
-            opt = static_cast<gretlopt>(static_cast<int>(OPT_R) | static_cast<int>(OPT_P));
+            opt = static_cast<gretlopt>(static_cast<int>(OPT_R) | static_cast<int>(OPT_P));  //FIXME: static_cast<gretlopt>(OPT_R | OPT_P);!!!
         }
         err = restrict_sample(restr, NULL, dset, NULL, opt, GP.prn, NULL);
     } else if (t1str || t2str) {

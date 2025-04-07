@@ -69,9 +69,11 @@ public:
 class GretlModel_NSE : public GretlModel
 {
 protected:
-    MODEL *model = NULL;                        // libgretl MODLEL struct
+    MODEL *model = NULL;                            // libgretl MODLEL struct
 
-    void save_model (gretlopt opt = OPT_NONE);  //FIXME: do we need opt here? We already have: gretlopt opt = OPT_NONE
+    void save_model (gretlopt opt = OPT_NONE);      //FIXME: do we need opt here? We already have: gretlopt opt = OPT_NONE
+
+    //int out_of_sample_info (int add_ok, int *t2);   //FIXME: change to void!!!
 public:
     GretlModel_NSE (GretlDataset *GD);
     virtual ~GretlModel_NSE (void);

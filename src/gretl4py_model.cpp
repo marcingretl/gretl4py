@@ -24,6 +24,7 @@
 #include <gretl/gretl_model.h>
 #include <gretl/objstack.h>
 #include <gretl/forecast.h>
+#include <gretl/graphing.h>     //FIXME: needed?
 #include <string>
 
 #define use_ldco_sig(c) (c == OLS || c == WLS) //const int *list, DATASET *dset, GretlCmdIndex ci, gretlopt opt
@@ -207,37 +208,156 @@ void GretlModel_NSE::save_model (gretlopt opt)
 
 void GretlModel_NSE::forecast (void)
 {
-    /*
-    std::cout << "I'm setting myself as 'last model'...\n";
-    gretl_model_protect(model);
-    set_as_last_model(model, GRETL_OBJ_EQN);
-    std::cout << "\tdone!!!\n";
-    */
+    /* this code was rendered from gui/library.c */
+    GretlPrint fp = GretlPrint();           //FIXME: later let's try to use GP.prn!!!
     FITRESID *fr = NULL;
-    GretlPrint fp = GretlPrint();
-    int t1 = 1;
-    int t2 = 10;
-    int pre_n = 10;
+    gretlopt gopt;
+    gretlopt opt = OPT_NONE;                //FIXME: change name, must be local!!!
+    FcastFlags flags = static_cast<FcastFlags>(0);
+    int t2, t1 = 0;
+    int premax, pre_n = 0;
+    int t1min = 0;
+    int recursive = 0, k = 1, *kptr;        //FIXME: recursive as bool
+    int dt2 = GD->dset->n - 1;
+    int st2 = GD->dset->n - 1;
+    double conf = 0.95;
+    //??
+    char startobs[OBSLEN], endobs[OBSLEN];
 
-    std::cout << "I'm trying to do some forecasting...\n";
-    //err = do_forecast ("", GD->dset, OPT_S, GP.prn);
-    fr = get_forecast(model, t1, t2, pre_n, GD->dset, OPT_S, &err);
-    std::cout << "\tdone!!!\n";
+    // @Allin: please verify: BEGIN
+    // we do some sample problem
+    err = model_sample_problem(model, GD->dset);
+    if (err) {
+        handle_gretl_error(err);
+        throw std::runtime_error("model sample problem");
+    }
 
-    std::cout << "I'm trying to print forecasts...\n";
-    if (!err) {
-        err = text_print_forecast(fr, GD->dset, OPT_NONE, fp.prn);
+    // try to figure which options might be applicable
+    forecast_options_for_model(model, GD->dset, &flags, &dt2, &st2);
+
+    if (flags & (FC_DYNAMIC_OK | FC_AUTO_OK)) {
+        t2 = dt2;
+    } else {
+        t2 = st2;
+    }
+
+    // if no out-of-sample obs are available in case of time-series data, alert the user
+    /*
+    if (t2 <= model->t2 && dataset_is_time_series(GD->dset)) {
+        err = out_of_sample_info(flags & FC_ADDOBS_OK, &t2);
+        if (err) {
+            throw std::runtime_error("no out-of-sample obs are available");
+        }
+    }
+    */
+
+    // max number of pre-forecast obs in "best case"
+    premax = GD->dset->n - 1;
+
+    // if there are spare obs available, default to an out-of-sample forecast
+    if (t2 > model->t2) {
+        t1 = model->t2 + 1;
+        pre_n = model->t2 / 2;
+        if (pre_n > 100) {
+            pre_n = 100;
+        }
+        if (model->ci == GARCH) {               //FIXME: may be evaluate at compilation time as template option?
+            /* force out-of-sample fcast */
+            t1min = t1;
+        }
+    } else {
+        pre_n = 0;
+    }
+
+    if (flags & FC_INTEGRATE_OK) {
+        kptr = NULL;
+    } else {
+        kptr = &k;
+    }
+
+    // setting options
+    opt = OPT_S;                //FIXME: unpack_kwargs!!!
+    gopt = OPT_M;               //FIXME: unpack_kwargs!!!
+
+    if (gopt & OPT_I) {
+        // transfer OPT_I (integrate forecast) from graph to general options
+        opt = static_cast<gretlopt>(opt | OPT_I);
+        gopt = static_cast<gretlopt>(gopt & ~OPT_I);
+    }
+
+    if (gopt & OPT_M) {
+        // OPT_M (show interval for mean): copy to opt
+        opt = static_cast<gretlopt>(opt | OPT_M);
+    }
+
+    // let's forecast
+    if (recursive) {
+        fr = recursive_OLS_k_step_fcast(model, GD->dset,
+                                        t1, t2, k, pre_n, &err);
+    } else {
+        ntolabel(startobs, t1, GD->dset);
+        ntolabel(endobs, t2, GD->dset);
+        /*lib_command_sprintf("fcast %s %s%s", startobs, endobs, print_flags(opt, FCAST));
+        if (parse_lib_command()) {
+            throw std::runtime_error("parsing command failed");
+        }*/
+        fr = get_forecast(model, t1, t2, pre_n, GD->dset, opt, &err);
+        /*
+        if (!err) {
+            record_lib_command();
+        }*/
     }
 
     if (err) {
         handle_gretl_error(err);
-        throw std::runtime_error("something went wrong...");
+    } else {
+        //err = bufopen(&fp.prn);
+        std::cerr << "bufopen() unavailable\n";
     }
-    fp.print();
+
+    if (!err) {
+        int ols_special = 0;
+        int width = 78;
+
+        if (recursive) {
+            err = text_print_fit_resid(fr, GD->dset, fp.prn);
+        } else {
+            if (dataset_is_cross_section(GD->dset)) {
+                ols_special = gretl_is_simple_OLS(model);
+            }
+            if (LIMDEP(model->ci) || ols_special) {
+                // don't generate plot via text_print_forecast()
+                gopt = static_cast<gretlopt>(gopt & ~OPT_P);
+            } else {
+                gopt = static_cast<gretlopt>(gopt | OPT_P);
+            }
+            fr->alpha = 1 - conf;
+            err = text_print_forecast(fr, GD->dset, gopt, fp.prn);
+        }
+
+        if (ols_special) {
+            err = plot_simple_fcast_bands(model, fr, GD->dset, gopt);
+            gopt = static_cast<gretlopt>(gopt | OPT_P);
+        }
+        /*
+        if (!err && (gopt & OPT_P)) {
+            register_graph();
+        }
+        */
+        if (!recursive && fr->sderr == NULL) {
+            width = 60;
+        }
+    }
+
+    // don't remember the "mean" option
+    gopt = static_cast<gretlopt>(gopt & ~OPT_M);
 
     if (fr != NULL) {
         free_fit_resid(fr);
     }
+    // @Allin: please verify: END
+
+    fp.print();
 }
 
 
