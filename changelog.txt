@@ -1,0 +1,13 @@
+version 1.0-51:
+  - libgretl 1.0 version 51
+
+version 0.11:
+  - tobit added
+  - new datasets handling:
+    - get_data() as the only function for loading datasets
+    - new methods available
+  - new approach to model handling
+  - forecasting (in progress)
+
+version 0.1:
+  - initial version

@@ -33,7 +33,7 @@
                         || c == MPOLS || c == IVREG) //const int *list, DATASET *dset, gretlopt opt
 #define use_ldop_sig(c) (c == BIPROBIT || c == DURATION \
                          || c == HECKIT || c == AR || c == AR1 \
-                         || c == GARCH || c == PANEL) //const int *list, DATASET *dset, gretlopt opt, PRN *prn
+                         || c == GARCH || c == PANEL || c == TOBIT) //const int *list, DATASET *dset, gretlopt opt, PRN *prn
 #define use_lcdop_sig(c) (c == POISSON || c == NEGBIN) //const int *list, int ci, DATASET *dset, gretlopt opt, PRN *prn
 
 #define GRETL4PY_MODEL_DEBUG 0
@@ -459,6 +459,9 @@ template class GretlModel_NSE_Driver<garch_to_call, GARCH>;
 template class GretlModel_NSE_Driver<mp_ols, MPOLS>;
 template class GretlModel_NSE_Driver<panel_model, PANEL>;
 template class GretlModel_NSE_Driver<ivreg, IVREG>;
+template class GretlModel_NSE_Driver<tobit_driver, TOBIT>;
+
+
 
 
 //

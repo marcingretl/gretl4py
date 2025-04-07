@@ -112,4 +112,7 @@ PYBIND11_MODULE(_gretl, m)
     m.def("tsls", &tsls,
           py::arg("formula").none(false),
           py::return_value_policy::take_ownership);
+    m.def("tobit", &tobit,
+          py::arg("formula").none(false),
+          py::return_value_policy::take_ownership);
 }

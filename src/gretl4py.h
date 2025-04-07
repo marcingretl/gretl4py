@@ -85,4 +85,6 @@ py::dict *panel (const std::string formula, const py::kwargs &kwargs);
 
 py::dict *tsls (const std::string formula, const py::kwargs &kwargs);
 
+py::dict *tobit (const std::string formula, const py::kwargs &kwargs);
+
 #endif // GRETL4PY_H

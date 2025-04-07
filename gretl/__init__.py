@@ -117,7 +117,7 @@ def __dir__():
     # dynamically resolvable functions
     dynamic_functions = ["arima", "ols", "wls", "logit", "probit", "poisson", "negbin",
         "biprobit", "duration", "heckit", "logistic", "ar", "ar1", "lad", "garch",
-        "mpols", "panel", "tsls"]
+        "mpols", "panel", "tsls", "tobit"]
 
     return sorted(static_members + dynamic_functions)
 

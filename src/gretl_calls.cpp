@@ -370,3 +370,8 @@ py::dict *tsls (const std::string formula, const py::kwargs &kwargs)
 {
     return GretlModel_NSE_Driver_wrapper<ivreg, IVREG>(formula, kwargs);
 }
+
+py::dict *tobit (const std::string formula, const py::kwargs &kwargs)
+{
+    return GretlModel_NSE_Driver_wrapper<tobit_driver, TOBIT>(formula, kwargs);
+}

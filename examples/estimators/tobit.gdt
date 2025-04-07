@@ -1,0 +1,245 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE gretldata SYSTEM "gretldata.dtd">
+
+<gretldata version="1.5" name="tobit" frequency="1" n="200" startobs="1" endobs="200" type="cross-section">
+<description>Data imported from CSV file 'tobit.csv', 2023-01-17 11:24
+</description>
+<variables count="9">
+<variable name="id"
+/>
+<variable name="read"
+/>
+<variable name="math"
+/>
+<variable name="prog"
+/>
+<variable name="apt"
+/>
+<variable name="prog_orig"
+ discrete="true"
+/>
+<variable name="progvocational"
+ label="dummy for prog_orig = 'vocational'"
+ parent="prog_orig"
+ transform="dummify"
+ discrete="true"
+/>
+<variable name="proggeneral"
+ label="dummy for prog_orig = 'general'"
+ parent="prog_orig"
+ transform="dummify"
+ discrete="true"
+/>
+<variable name="progacademic"
+ label="dummy for prog_orig = 'academic'"
+ parent="prog_orig"
+ transform="dummify"
+ discrete="true"
+/>
+</variables>
+<observations count="200" labels="false">
+<obs>1 34 40 3 352 1 1 0 0 </obs>
+<obs>2 39 33 3 449 1 1 0 0 </obs>
+<obs>3 63 48 2 648 2 0 1 0 </obs>
+<obs>4 44 41 2 501 2 0 1 0 </obs>
+<obs>5 47 43 2 762 2 0 1 0 </obs>
+<obs>6 47 46 2 658 2 0 1 0 </obs>
+<obs>7 57 59 2 800 2 0 1 0 </obs>
+<obs>8 39 52 2 613 2 0 1 0 </obs>
+<obs>9 48 52 3 531 1 1 0 0 </obs>
+<obs>10 47 49 1 528 3 0 0 1 </obs>
+<obs>11 34 45 2 584 2 0 1 0 </obs>
+<obs>12 37 45 3 610 1 1 0 0 </obs>
+<obs>13 47 39 3 586 1 1 0 0 </obs>
+<obs>14 47 54 2 769 2 0 1 0 </obs>
+<obs>15 39 44 3 402 1 1 0 0 </obs>
+<obs>16 47 44 3 521 1 1 0 0 </obs>
+<obs>17 47 48 2 478 2 0 1 0 </obs>
+<obs>18 50 49 3 629 1 1 0 0 </obs>
+<obs>19 28 43 1 603 3 0 0 1 </obs>
+<obs>20 60 57 2 633 2 0 1 0 </obs>
+<obs>21 44 61 1 724 3 0 0 1 </obs>
+<obs>22 42 39 3 515 1 1 0 0 </obs>
+<obs>23 65 64 2 748 2 0 1 0 </obs>
+<obs>24 52 66 2 634 2 0 1 0 </obs>
+<obs>25 47 42 1 630 3 0 0 1 </obs>
+<obs>26 60 62 2 800 2 0 1 0 </obs>
+<obs>27 53 61 2 652 2 0 1 0 </obs>
+<obs>28 39 54 1 621 3 0 0 1 </obs>
+<obs>29 52 49 1 683 3 0 0 1 </obs>
+<obs>30 41 42 2 531 2 0 1 0 </obs>
+<obs>31 55 52 1 625 3 0 0 1 </obs>
+<obs>32 50 66 3 605 1 1 0 0 </obs>
+<obs>33 57 72 2 698 2 0 1 0 </obs>
+<obs>34 73 57 2 679 2 0 1 0 </obs>
+<obs>35 60 50 1 691 3 0 0 1 </obs>
+<obs>36 44 44 1 612 3 0 0 1 </obs>
+<obs>37 41 40 3 572 1 1 0 0 </obs>
+<obs>38 45 50 2 625 2 0 1 0 </obs>
+<obs>39 66 67 2 734 2 0 1 0 </obs>
+<obs>40 42 43 1 551 3 0 0 1 </obs>
+<obs>41 50 45 2 549 2 0 1 0 </obs>
+<obs>42 46 55 3 622 1 1 0 0 </obs>
+<obs>43 47 43 2 557 2 0 1 0 </obs>
+<obs>44 47 45 3 678 1 1 0 0 </obs>
+<obs>45 34 41 3 467 1 1 0 0 </obs>
+<obs>46 45 44 2 631 2 0 1 0 </obs>
+<obs>47 47 49 2 625 2 0 1 0 </obs>
+<obs>48 57 52 2 584 2 0 1 0 </obs>
+<obs>49 50 39 3 485 1 1 0 0 </obs>
+<obs>50 50 42 1 568 3 0 0 1 </obs>
+<obs>51 42 42 1 593 3 0 0 1 </obs>
+<obs>52 50 53 2 590 2 0 1 0 </obs>
+<obs>53 34 46 3 529 1 1 0 0 </obs>
+<obs>54 47 46 1 661 3 0 0 1 </obs>
+<obs>55 52 49 2 579 2 0 1 0 </obs>
+<obs>56 55 46 3 502 1 1 0 0 </obs>
+<obs>57 71 72 2 794 2 0 1 0 </obs>
+<obs>58 55 40 3 529 1 1 0 0 </obs>
+<obs>59 65 63 2 703 2 0 1 0 </obs>
+<obs>60 57 51 2 635 2 0 1 0 </obs>
+<obs>61 76 60 2 765 2 0 1 0 </obs>
+<obs>62 65 48 1 732 3 0 0 1 </obs>
+<obs>63 52 60 1 537 3 0 0 1 </obs>
+<obs>64 50 45 3 648 1 1 0 0 </obs>
+<obs>65 55 66 2 667 2 0 1 0 </obs>
+<obs>66 68 56 3 576 1 1 0 0 </obs>
+<obs>67 37 42 3 476 1 1 0 0 </obs>
+<obs>68 73 71 2 797 2 0 1 0 </obs>
+<obs>69 44 40 3 548 1 1 0 0 </obs>
+<obs>70 57 41 1 599 3 0 0 1 </obs>
+<obs>71 57 56 1 766 3 0 0 1 </obs>
+<obs>72 42 47 3 596 1 1 0 0 </obs>
+<obs>73 50 53 2 716 2 0 1 0 </obs>
+<obs>74 57 50 2 661 2 0 1 0 </obs>
+<obs>75 60 51 3 548 1 1 0 0 </obs>
+<obs>76 47 51 2 595 2 0 1 0 </obs>
+<obs>77 61 49 2 689 2 0 1 0 </obs>
+<obs>78 39 54 2 577 2 0 1 0 </obs>
+<obs>79 60 49 2 633 2 0 1 0 </obs>
+<obs>80 65 68 2 713 2 0 1 0 </obs>
+<obs>81 63 59 2 668 2 0 1 0 </obs>
+<obs>82 68 65 2 800 2 0 1 0 </obs>
+<obs>83 50 41 3 571 1 1 0 0 </obs>
+<obs>84 63 54 1 636 3 0 0 1 </obs>
+<obs>85 55 57 1 691 3 0 0 1 </obs>
+<obs>86 44 54 1 682 3 0 0 1 </obs>
+<obs>87 50 46 1 605 3 0 0 1 </obs>
+<obs>88 68 64 2 618 2 0 1 0 </obs>
+<obs>89 35 40 3 522 1 1 0 0 </obs>
+<obs>90 42 50 2 671 2 0 1 0 </obs>
+<obs>91 50 56 3 666 1 1 0 0 </obs>
+<obs>92 52 57 1 739 3 0 0 1 </obs>
+<obs>93 73 62 2 800 2 0 1 0 </obs>
+<obs>94 55 61 2 782 2 0 1 0 </obs>
+<obs>95 73 71 2 800 2 0 1 0 </obs>
+<obs>96 65 61 2 749 2 0 1 0 </obs>
+<obs>97 60 58 2 613 2 0 1 0 </obs>
+<obs>98 57 51 3 648 1 1 0 0 </obs>
+<obs>99 47 56 1 640 3 0 0 1 </obs>
+<obs>100 63 71 2 793 2 0 1 0 </obs>
+<obs>101 60 67 2 800 2 0 1 0 </obs>
+<obs>102 52 51 2 698 2 0 1 0 </obs>
+<obs>103 76 64 2 676 2 0 1 0 </obs>
+<obs>104 54 57 2 630 2 0 1 0 </obs>
+<obs>105 50 45 2 598 2 0 1 0 </obs>
+<obs>106 36 37 3 404 1 1 0 0 </obs>
+<obs>107 47 47 3 629 1 1 0 0 </obs>
+<obs>108 34 41 1 637 3 0 0 1 </obs>
+<obs>109 42 42 1 574 3 0 0 1 </obs>
+<obs>110 52 50 3 620 1 1 0 0 </obs>
+<obs>111 39 39 1 622 3 0 0 1 </obs>
+<obs>112 52 48 2 689 2 0 1 0 </obs>
+<obs>113 44 51 2 556 2 0 1 0 </obs>
+<obs>114 68 62 2 725 2 0 1 0 </obs>
+<obs>115 42 43 1 571 3 0 0 1 </obs>
+<obs>116 57 54 2 681 2 0 1 0 </obs>
+<obs>117 34 39 3 565 1 1 0 0 </obs>
+<obs>118 55 58 1 629 3 0 0 1 </obs>
+<obs>119 42 45 1 584 3 0 0 1 </obs>
+<obs>120 63 54 2 589 2 0 1 0 </obs>
+<obs>121 68 53 3 788 1 1 0 0 </obs>
+<obs>122 52 58 2 779 2 0 1 0 </obs>
+<obs>123 68 56 1 605 3 0 0 1 </obs>
+<obs>124 42 41 3 614 1 1 0 0 </obs>
+<obs>125 68 58 2 768 2 0 1 0 </obs>
+<obs>126 42 57 1 715 3 0 0 1 </obs>
+<obs>127 63 57 2 770 2 0 1 0 </obs>
+<obs>128 39 38 2 508 2 0 1 0 </obs>
+<obs>129 44 46 1 527 3 0 0 1 </obs>
+<obs>130 43 55 1 685 3 0 0 1 </obs>
+<obs>131 65 57 2 649 2 0 1 0 </obs>
+<obs>132 73 73 2 800 2 0 1 0 </obs>
+<obs>133 50 40 3 535 1 1 0 0 </obs>
+<obs>134 44 39 1 474 3 0 0 1 </obs>
+<obs>135 63 65 2 696 2 0 1 0 </obs>
+<obs>136 65 70 2 792 2 0 1 0 </obs>
+<obs>137 63 65 2 800 2 0 1 0 </obs>
+<obs>138 43 40 3 427 1 1 0 0 </obs>
+<obs>139 68 61 2 800 2 0 1 0 </obs>
+<obs>140 44 40 3 399 1 1 0 0 </obs>
+<obs>141 63 47 3 566 1 1 0 0 </obs>
+<obs>142 47 52 3 523 1 1 0 0 </obs>
+<obs>143 63 75 3 800 1 1 0 0 </obs>
+<obs>144 60 58 1 712 3 0 0 1 </obs>
+<obs>145 42 38 3 458 1 1 0 0 </obs>
+<obs>146 55 64 2 688 2 0 1 0 </obs>
+<obs>147 47 53 2 619 2 0 1 0 </obs>
+<obs>148 42 51 3 565 1 1 0 0 </obs>
+<obs>149 63 49 1 727 3 0 0 1 </obs>
+<obs>150 42 57 3 554 1 1 0 0 </obs>
+<obs>151 47 52 3 633 1 1 0 0 </obs>
+<obs>152 55 56 2 687 2 0 1 0 </obs>
+<obs>153 39 40 3 665 1 1 0 0 </obs>
+<obs>154 65 66 2 796 2 0 1 0 </obs>
+<obs>155 44 46 1 614 3 0 0 1 </obs>
+<obs>156 50 53 2 618 2 0 1 0 </obs>
+<obs>157 68 58 1 733 3 0 0 1 </obs>
+<obs>158 52 55 1 657 3 0 0 1 </obs>
+<obs>159 55 54 2 592 2 0 1 0 </obs>
+<obs>160 55 55 2 746 2 0 1 0 </obs>
+<obs>161 57 72 2 800 2 0 1 0 </obs>
+<obs>162 57 40 3 702 1 1 0 0 </obs>
+<obs>163 52 64 2 800 2 0 1 0 </obs>
+<obs>164 31 46 3 516 1 1 0 0 </obs>
+<obs>165 36 54 3 604 1 1 0 0 </obs>
+<obs>166 52 53 2 669 2 0 1 0 </obs>
+<obs>167 63 35 1 563 3 0 0 1 </obs>
+<obs>168 52 57 2 695 2 0 1 0 </obs>
+<obs>169 55 63 1 779 3 0 0 1 </obs>
+<obs>170 47 61 2 712 2 0 1 0 </obs>
+<obs>171 60 60 2 678 2 0 1 0 </obs>
+<obs>172 47 57 2 618 2 0 1 0 </obs>
+<obs>173 50 61 1 650 3 0 0 1 </obs>
+<obs>174 68 71 2 750 2 0 1 0 </obs>
+<obs>175 36 42 1 454 3 0 0 1 </obs>
+<obs>176 47 41 2 586 2 0 1 0 </obs>
+<obs>177 55 62 2 688 2 0 1 0 </obs>
+<obs>178 47 57 3 640 1 1 0 0 </obs>
+<obs>179 47 60 2 609 2 0 1 0 </obs>
+<obs>180 71 69 2 800 2 0 1 0 </obs>
+<obs>181 50 45 2 662 2 0 1 0 </obs>
+<obs>182 44 43 2 462 2 0 1 0 </obs>
+<obs>183 63 49 2 591 2 0 1 0 </obs>
+<obs>184 50 53 3 496 1 1 0 0 </obs>
+<obs>185 63 55 2 647 2 0 1 0 </obs>
+<obs>186 57 63 2 681 2 0 1 0 </obs>
+<obs>187 57 57 1 800 3 0 0 1 </obs>
+<obs>188 63 56 2 796 2 0 1 0 </obs>
+<obs>189 47 63 2 669 2 0 1 0 </obs>
+<obs>190 47 54 2 661 2 0 1 0 </obs>
+<obs>191 47 43 2 567 2 0 1 0 </obs>
+<obs>192 65 63 2 800 2 0 1 0 </obs>
+<obs>193 44 48 2 666 2 0 1 0 </obs>
+<obs>194 63 69 2 800 2 0 1 0 </obs>
+<obs>195 57 60 1 727 3 0 0 1 </obs>
+<obs>196 44 49 2 539 2 0 1 0 </obs>
+<obs>197 50 50 2 594 2 0 1 0 </obs>
+<obs>198 47 51 2 616 2 0 1 0 </obs>
+<obs>199 52 50 2 558 2 0 1 0 </obs>
+<obs>200 68 75 2 800 2 0 1 0 </obs>
+</observations>
+<string-tables count="1">
+<valstrings owner="prog_orig" count="3">"vocational" "general" "academic" </valstrings>
+</string-tables>
+</gretldata>

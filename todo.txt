@@ -3,4 +3,6 @@ BUGS:
 
 TODOS:
 
-1. add variables names to nparray2dict()
+1. add options for tobit
+
+2. update doc
