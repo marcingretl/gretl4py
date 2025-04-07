@@ -55,10 +55,6 @@ GretlModel::~GretlModel (void)
         this->GD->linked_models_del(this->id);
     }
 
-    if (this->model != NULL) {
-        gretl_model_free(this->model);
-    }
-
     if (this->var_list != NULL) {
 #if defined(_WIN32)
         gretl_list_free(var_list);
@@ -143,7 +139,29 @@ gretlopt GretlModel::unpack_kwargs (const py::kwargs &kwargs, GretlCmdIndex ci)
     return static_cast<gretlopt>(opts);
 }
 
-void GretlModel::save_model (gretlopt opt)
+
+
+//
+// Native Single Equation libgretl MODEL (NSE)
+// extends: GretlModel
+//
+GretlModel_NSE::GretlModel_NSE (GretlDataset *GD)
+                                        : GretlModel(GD)  // explicitly call base class constructor!
+{
+#if GRETL4PY_MODEL_DEBUG
+    std::cout << "GretlModel_NSE, id = " << this->get_id();
+    std::cout << ", GD  = " << GD << std::endl;
+#endif // GRETL4PY_MODEL_DEBUG
+}
+
+GretlModel_NSE::~GretlModel_NSE (void)
+{
+    if (this->model != NULL) {
+        gretl_model_free(this->model);
+    }
+}
+
+void GretlModel_NSE::save_model (gretlopt opt)
 {
     //
     // Here we construct a python dictionary to represent a gretl
@@ -187,7 +205,7 @@ void GretlModel::save_model (gretlopt opt)
 }
 
 
-void GretlModel::forecast (void)
+void GretlModel_NSE::forecast (void)
 {
     /*
     std::cout << "I'm setting myself as 'last model'...\n";
@@ -220,21 +238,6 @@ void GretlModel::forecast (void)
     if (fr != NULL) {
         free_fit_resid(fr);
     }
-}
-
-
-
-//
-// Native Single Equation libgretl MODEL (NSE)
-// extends: GretlModel
-//
-GretlModel_NSE::GretlModel_NSE(GretlDataset *GD)
-                                        : GretlModel(GD)  // explicitly call base class constructor!
-{
-#if GRETL4PY_MODEL_DEBUG
-    std::cout << "GretlModel_NSE, id = " << this->get_id();
-    std::cout << ", GD  = " << GD << std::endl;
-#endif // GRETL4PY_MODEL_DEBUG
 }
 
 

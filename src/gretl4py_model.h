@@ -44,13 +44,11 @@ protected:
     py::dict *RES = nullptr;        // estimation results as dictionary //FIXME: not pointer, pybind11 Object*!!!
     GretlDataset *GD = nullptr;     // dataset used
     GretlPrint GP = GretlPrint();   // printer (instance wide)
-    MODEL *model = NULL;            // libgretl MODLEL struct       //FIXME: to single_equation
-    int *var_list = NULL;           // libgretl list of variables   //FIXME: to single_equation (maybe arima)
+    int *var_list = NULL;           // libgretl list of variables
     gretlopt opt = OPT_NONE;        // model options
     mutable int err = 0;
 
     gretlopt unpack_kwargs (const py::kwargs &kwargs, GretlCmdIndex ci);
-    void save_model (gretlopt opt = OPT_NONE);                          //FIXME: do we need opt here? We already have: gretlopt opt = OPT_NONE
 public:
     explicit GretlModel (GretlDataset *GD);
     virtual ~GretlModel (void);
@@ -61,7 +59,7 @@ public:
 
     virtual py::dict *fit (const std::string &formula, const py::kwargs &kwargs) = 0;
 
-    virtual void forecast (void);
+    virtual void forecast (void) = 0;
 };
 
 //
@@ -70,10 +68,17 @@ public:
 //
 class GretlModel_NSE : public GretlModel
 {
+protected:
+    MODEL *model = NULL;                        // libgretl MODLEL struct
+
+    void save_model (gretlopt opt = OPT_NONE);  //FIXME: do we need opt here? We already have: gretlopt opt = OPT_NONE
 public:
     GretlModel_NSE (GretlDataset *GD);
+    virtual ~GretlModel_NSE (void);
 
-    virtual py::dict *fit (const std::string &formula, const py::kwargs &kwargs) = 0;
+    py::dict *fit (const std::string &formula, const py::kwargs &kwargs) override = 0;
+
+    void forecast (void) override;
 };
 
 //
@@ -83,10 +88,10 @@ public:
 template <auto F, GretlCmdIndex CI>
 class GretlModel_NSE_Driver : public GretlModel_NSE
 {
+private:
+    void list_from_formula (const std::string &formula);
 public:
     GretlModel_NSE_Driver (GretlDataset *GD);
-
-    void list_from_formula (const std::string &formula);        //FIXME: private!!!
 
     py::dict *fit (const std::string &formula, const py::kwargs &kwargs) override;
 };
