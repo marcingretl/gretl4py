@@ -223,7 +223,7 @@ void GretlModel_NSE::save_model (gretlopt opt)
 }
 
 
-void GretlModel_NSE::forecast (const py::kwargs &kwargs)
+py::dict *GretlModel_NSE::forecast (const py::kwargs &kwargs)
 {
     /* this code was rendered from gui/library.c */
     //GretlPrint fp = GretlPrint();
@@ -376,6 +376,8 @@ void GretlModel_NSE::forecast (const py::kwargs &kwargs)
 
     GP.print();     //FIXME: we use here instance-wide printer, but if that is not safe let's use GretlPrint fp = GretlPrint();
     // @Allin: please verify: END
+
+    return RES_fcast;
 }
 
 
