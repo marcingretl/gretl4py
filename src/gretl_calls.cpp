@@ -375,3 +375,16 @@ py::dict *tobit (const std::string formula, const py::kwargs &kwargs)
 {
     return GretlModel_NSE_Driver_wrapper<tobit_driver, TOBIT>(formula, kwargs);
 }
+
+py::dict *quantreg (const double tau, const std::string formula, const py::kwargs &kwargs)
+{
+    if (tau < 0.01 || tau > 0.99) {
+        throw std::runtime_error("tau value must be in the range 0.01 to 0.99");
+    }
+
+    std::shared_ptr<GretlModel> model = std::make_shared<GretlModel_NSE_Driver<quantreg_driver, QUANTREG>>(DSET);
+    estimated_models.try_emplace(model->get_id(), model);
+    model->set_optional_param(tau);
+
+    return model->fit(formula, kwargs);
+}

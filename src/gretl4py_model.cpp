@@ -157,6 +157,13 @@ gretlopt GretlModel::unpack_kwargs_forecast (const py::kwargs &kwargs,
     return OPT_NONE;
 }
 
+void GretlModel::set_optional_param (const double &val)
+{
+    optional_par = std::to_string(val);
+}
+
+
+
 
 
 //
@@ -449,6 +456,8 @@ py::dict *GretlModel_NSE_Driver<F, CI>::fit (const std::string &formula,
         *model = F(var_list, GD->dset, opt, GP.prn);
     } else if constexpr (use_lcdop_sig(CI)) {
         *model = F(var_list, CI, GD->dset, opt, GP.prn);
+    } else if constexpr (CI == QUANTREG) {
+        *model = F(optional_par.c_str(), var_list, GD->dset, opt, GP.prn);
     }
     save_model(opt);
 
@@ -473,6 +482,7 @@ template class GretlModel_NSE_Driver<mp_ols, MPOLS>;
 template class GretlModel_NSE_Driver<panel_model, PANEL>;
 template class GretlModel_NSE_Driver<ivreg, IVREG>;
 template class GretlModel_NSE_Driver<tobit_driver, TOBIT>;
+template class GretlModel_NSE_Driver<quantreg_driver, QUANTREG>;
 
 
 

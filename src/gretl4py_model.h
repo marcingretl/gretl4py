@@ -47,6 +47,7 @@ protected:
     GretlPrint GP = GretlPrint();   // printer (instance wide)
     int *var_list = NULL;           // libgretl list of variables
     gretlopt opt = OPT_NONE;        // model options
+    std::string optional_par = "";  // optional estimation parameter (tau for QUANTREG)
     mutable int err = 0;
 
     gretlopt unpack_kwargs (const py::kwargs &kwargs, GretlCmdIndex ci);
@@ -59,6 +60,8 @@ public:
     int get_id (void) const;
 
     void unlink_from_dataset (void) const;
+
+    void set_optional_param (const double &val);
 
     virtual py::dict *fit (const std::string &formula, const py::kwargs &kwargs) = 0;
 

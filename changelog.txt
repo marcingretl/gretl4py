@@ -1,7 +1,5 @@
-version 1.0-51:
-  - libgretl 1.0 version 51
-
 version 0.11:
+  - quantreg added
   - tobit added
   - new datasets handling:
     - get_data() as the only function for loading datasets

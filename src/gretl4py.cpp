@@ -115,4 +115,8 @@ PYBIND11_MODULE(_gretl, m)
     m.def("tobit", &tobit,
           py::arg("formula").none(false),
           py::return_value_policy::take_ownership);
+    m.def("quantreg", &quantreg,
+          py::arg("tau").none(false),
+          py::arg("formula").none(false),
+          py::return_value_policy::take_ownership);
 }
