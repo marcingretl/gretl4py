@@ -33,7 +33,7 @@
                         || c == MPOLS || c == IVREG) //const int *list, DATASET *dset, gretlopt opt
 #define use_ldop_sig(c) (c == BIPROBIT || c == DURATION \
                          || c == HECKIT || c == AR || c == AR1 \
-                         || c == GARCH || c == PANEL || c == TOBIT) //const int *list, DATASET *dset, gretlopt opt, PRN *prn
+                         || c == GARCH || c == PANEL) //const int *list, DATASET *dset, gretlopt opt, PRN *prn
 #define use_lcdop_sig(c) (c == POISSON || c == NEGBIN) //const int *list, int ci, DATASET *dset, gretlopt opt, PRN *prn
 
 #define GRETL4PY_MODEL_DEBUG 0
@@ -99,6 +99,9 @@ gretlopt GretlModel::unpack_kwargs (const py::kwargs &kwargs, GretlCmdIndex ci)
             continue;
         } else if (key == "lagselect" && ci == ARMA) {
             throw std::runtime_error("'lagselect' option for (S)ARIMA is temporarily unavailable");
+        } else if ((key == "llimit" || key == "rlimit") && ci == TOBIT) {
+            // TOBIT special: ignore here
+            continue;
         } else {
             // should be a regular gretl option: check its validity in
             // the context of @ci
@@ -157,9 +160,9 @@ gretlopt GretlModel::unpack_kwargs_forecast (const py::kwargs &kwargs,
     return OPT_NONE;
 }
 
-void GretlModel::set_optional_param (const double &val)
+void GretlModel::add_optional_param (const double &val, const int idx)
 {
-    optional_par = std::to_string(val);
+    optional_par.at(idx) = val;
 }
 
 
@@ -457,7 +460,11 @@ py::dict *GretlModel_NSE_Driver<F, CI>::fit (const std::string &formula,
     } else if constexpr (use_lcdop_sig(CI)) {
         *model = F(var_list, CI, GD->dset, opt, GP.prn);
     } else if constexpr (CI == QUANTREG) {
-        *model = F(optional_par.c_str(), var_list, GD->dset, opt, GP.prn);
+        *model = F(std::to_string(optional_par.at(0)).c_str(),
+                   var_list, GD->dset, opt, GP.prn);
+    } else if constexpr (CI == TOBIT) {
+        *model = F(var_list, optional_par.at(0), optional_par.at(1),
+                   GD->dset, opt, GP.prn);
     }
     save_model(opt);
 
@@ -481,7 +488,7 @@ template class GretlModel_NSE_Driver<garch_to_call, GARCH>;
 template class GretlModel_NSE_Driver<mp_ols, MPOLS>;
 template class GretlModel_NSE_Driver<panel_model, PANEL>;
 template class GretlModel_NSE_Driver<ivreg, IVREG>;
-template class GretlModel_NSE_Driver<tobit_driver, TOBIT>;
+template class GretlModel_NSE_Driver<tobit_model, TOBIT>;
 template class GretlModel_NSE_Driver<quantreg_driver, QUANTREG>;
 
 

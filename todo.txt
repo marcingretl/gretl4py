@@ -3,6 +3,6 @@ BUGS:
 
 TODOS:
 
-1. add options for tobit and quantreg
+1. verify options for tobit and quantreg
 
 2. update doc
