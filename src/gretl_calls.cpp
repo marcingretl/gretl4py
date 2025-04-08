@@ -258,12 +258,12 @@ void GretlModel_destructor_wrapper (const int model_id)
 // forecasting
 //////////////////////////////////////////////////
 
-void GretlModel_fcast (const int model_id)
+void GretlModel_fcast (const int model_id, const py::kwargs &kwargs)
 {
     if (estimated_models.find(model_id) == estimated_models.end()) {
         std::cerr << "model (id=" << model_id << ") does not exist" << std::endl;
     } else {
-        estimated_models.at(model_id)->forecast();
+        estimated_models.at(model_id)->forecast(kwargs);
     }
 }
 

@@ -98,9 +98,9 @@ class Model:
             except ModuleNotFoundError:
                 print('*** warning: oddsratios printing requires \'tabulate\' package ***\n')
 
-    def fcast(self):
+    def fcast(self, *args, **kwargs):
         if self.computed and self._model_id is not None:
-            _gretl.fcast(self._model_id)
+            _gretl.fcast(self._model_id, *args, **kwargs)
 
     # scalars
     def id(self):

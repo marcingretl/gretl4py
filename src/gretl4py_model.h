@@ -61,7 +61,7 @@ public:
 
     virtual py::dict *fit (const std::string &formula, const py::kwargs &kwargs) = 0;
 
-    virtual void forecast (void) = 0;
+    virtual void forecast (const py::kwargs &kwargs) = 0;
 };
 
 //
@@ -74,15 +74,13 @@ protected:
     MODEL *model = NULL;                            // libgretl MODLEL struct
 
     void save_model (gretlopt opt = OPT_NONE);      //FIXME: do we need opt here? We already have: gretlopt opt = OPT_NONE
-
-    //int out_of_sample_info (int add_ok, int *t2);   //FIXME: change to void!!!
 public:
     GretlModel_NSE (GretlDataset *GD);
     virtual ~GretlModel_NSE (void);
 
     py::dict *fit (const std::string &formula, const py::kwargs &kwargs) override = 0;
 
-    void forecast (void) override;
+    void forecast (const py::kwargs &kwargs) override;
 };
 
 //

@@ -144,6 +144,16 @@ gretlopt GretlModel::unpack_kwargs (const py::kwargs &kwargs, GretlCmdIndex ci)
 gretlopt GretlModel::unpack_kwargs_forecast (const py::kwargs &kwargs,
                                              GretlCmdIndex ci)
 {
+    for (auto &item : kwargs) {
+        if (!is_pystr(item.first)) {
+            throw std::runtime_error("option key must be a string");
+        }
+
+        std::cout << "the following pairs of forecasting options were passed:\n";
+        std::cout << item.first.cast<std::string>() << " : ";
+        std::cout << MapPyToCpp(item.second).to_string_view() << std::endl;
+    }
+
     return OPT_NONE;
 }
 
@@ -213,7 +223,7 @@ void GretlModel_NSE::save_model (gretlopt opt)
 }
 
 
-void GretlModel_NSE::forecast (void)
+void GretlModel_NSE::forecast (const py::kwargs &kwargs)
 {
     /* this code was rendered from gui/library.c */
     //GretlPrint fp = GretlPrint();
@@ -268,7 +278,7 @@ void GretlModel_NSE::forecast (void)
         if (pre_n > 100) {
             pre_n = 100;
         }
-        if (model->ci == GARCH) {               //FIXME: may be evaluate at compilation time as template option?
+        if (model->ci == GARCH) {
             /* force out-of-sample fcast */
             t1min = t1;
         }
@@ -283,8 +293,9 @@ void GretlModel_NSE::forecast (void)
     }
 
     // setting options
-    opt = OPT_S;                //FIXME: unpack_kwargs!!!
-    gopt = OPT_M;               //FIXME: unpack_kwargs!!!
+    unpack_kwargs_forecast(kwargs, static_cast<GretlCmdIndex>(model->ci));
+    opt = OPT_S;                //FIXME: unpack_kwargs_forecast!!!
+    gopt = OPT_M;               //FIXME: unpack_kwargs_forecast!!!
 
     if (gopt & OPT_I) {
         // transfer OPT_I (integrate forecast) from graph to general options
