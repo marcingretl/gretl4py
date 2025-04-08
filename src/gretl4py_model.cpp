@@ -160,12 +160,14 @@ gretlopt GretlModel::unpack_kwargs_forecast (const py::kwargs &kwargs,
     return OPT_NONE;
 }
 
-void GretlModel::add_optional_param (const double &val, const int idx)
+void GretlModel::add_optional_param (const double val, const int idx)
 {
-    optional_par.at(idx) = val;
+    if (idx > 0) {
+        optional_par.at(idx) = val;
+    } else {
+        optional_par.push_back(val);
+    }
 }
-
-
 
 
 
@@ -399,6 +401,9 @@ template <auto F, GretlCmdIndex CI>
 GretlModel_NSE_Driver<F, CI>::GretlModel_NSE_Driver(GretlDataset *GD)
                                         : GretlModel_NSE(GD)  // explicitly call base class constructor!
 {
+    if constexpr (CI == TOBIT) {
+        optional_par.resize(2);
+    }
 #if GRETL4PY_MODEL_DEBUG
     std::cout << "GretlModel_NSE_Driver, id = " << this->get_id();
     std::cout << ", GD  = " << GD << std::endl;

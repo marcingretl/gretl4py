@@ -48,6 +48,7 @@ namespace py = pybind11;
 #define is_pystr(o) (py::isinstance<py::str>(o))
 #define is_pydict(o) (py::isinstance<py::dict>(o))
 #define is_pytuple(o) (py::isinstance<py::tuple>(o))
+#define is_pynumeric(o) (is_pyint(o) || is_pyfloat(o))
 
 void handle_gretl_error (int err);
 

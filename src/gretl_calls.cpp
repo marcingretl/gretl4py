@@ -381,7 +381,7 @@ py::dict *tobit (const std::string formula, const py::kwargs &kwargs)
     for (i=0; i<2; i++) {
         key = py::cast(limits[i]);
         if (kwargs.contains(key) && !kwargs[key].is_none()) {
-            if (is_pyfloat(kwargs[key]) || is_pyint(kwargs[key])) {
+            if (is_pynumeric(kwargs[key])) {
                 limits_val[i] = py::cast<double>(kwargs[key]);
             } else {
                 throw std::runtime_error(limits[i] + " is not numeric");
@@ -400,13 +400,23 @@ py::dict *tobit (const std::string formula, const py::kwargs &kwargs)
 
 py::dict *quantreg (const double tau, const std::string formula, const py::kwargs &kwargs)
 {
-    if (tau < 0.01 || tau > 0.99) {
-        throw std::runtime_error("tau value must be in the range 0.01 to 0.99");
-    }
+    py::list tau_as_list;
+    tau_as_list.append(tau);
 
+    return quantreg(tau_as_list, formula, kwargs);
+}
+
+py::dict *quantreg (const py::list tau, const std::string formula, const py::kwargs &kwargs)
+{
     std::shared_ptr<GretlModel> model = std::make_shared<GretlModel_NSE_Driver<quantreg_driver, QUANTREG>>(DSET);
     estimated_models.try_emplace(model->get_id(), model);
-    model->add_optional_param(tau);
+    for (auto el : tau) {
+        if (is_pynumeric(el)) {
+            model->add_optional_param(py::cast<double>(el));
+        } else {
+            throw std::runtime_error(py::cast<std::string>(el) + " is not numeric");
+        }
+    }
 
     return model->fit(formula, kwargs);
 }
