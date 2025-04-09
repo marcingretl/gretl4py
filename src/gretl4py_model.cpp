@@ -168,15 +168,6 @@ gretlopt GretlModel::unpack_kwargs_forecast (const py::kwargs &kwargs,
     return OPT_NONE;
 }
 
-void GretlModel::add_optional_param (const double val, const int idx)
-{
-    if (idx > -1) {
-        optional_par.at(idx) = val;
-    } else {
-        optional_par.push_back(val);
-    }
-}
-
 
 
 //
