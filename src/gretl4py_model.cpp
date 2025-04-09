@@ -398,7 +398,7 @@ py::dict *GretlModel_NSE::forecast (const py::kwargs &kwargs)
 // NSE via dedicated Driver
 //
 template <auto F, GretlCmdIndex CI>
-GretlModel_NSE_Driver<F, CI>::GretlModel_NSE_Driver(GretlDataset *GD)
+GretlModel_NSE_Driver<F, CI>::GretlModel_NSE_Driver (GretlDataset *GD)
                                         : GretlModel_NSE(GD)  // explicitly call base class constructor!
 {
     if constexpr (CI == TOBIT) {
@@ -494,18 +494,16 @@ template class GretlModel_NSE_Driver<mp_ols, MPOLS>;
 template class GretlModel_NSE_Driver<panel_model, PANEL>;
 template class GretlModel_NSE_Driver<ivreg, IVREG>;
 template class GretlModel_NSE_Driver<tobit_model, TOBIT>;
-template class GretlModel_NSE_Driver<quantreg_driver, QUANTREG>;
-
 
 
 
 //
 // NSE via arima plugin
 //
-GretlModel_NSE_arima::GretlModel_NSE_arima(GretlDataset *GD,
-                                           const std::string &y,
-                                           const py::tuple &tup)
-                                           : GretlModel_NSE(GD), y(y), tup(tup)  // explicitly call base class constructor!
+GretlModel_NSE_arima::GretlModel_NSE_arima (GretlDataset *GD,
+                                            const std::string &y,
+                                            const py::tuple &tup)
+                                            : GretlModel_NSE(GD), y(y), tup(tup)  // explicitly call base class constructor!
 {
 #if GRETL4PY_MODEL_DEBUG
     std::cout << "GretlModel_NSE_arima, id = " << this->get_id();
@@ -589,3 +587,38 @@ py::dict *GretlModel_NSE_arima::fit (const std::string &formula,
 
     return RES;
 }
+
+
+//
+// NSE_Driver_quantreg via quantreg_driver
+// extends: GretlModel_NSE_Driver
+//
+template <auto F, GretlCmdIndex CI>
+GretlModel_NSE_Driver_quantreg<F, CI>::GretlModel_NSE_Driver_quantreg
+                                        (GretlDataset *GD, const double &tau)
+                                        : GretlModel_NSE_Driver<F, CI>(GD)  // explicitly call base class constructor!
+{
+    this->optional_par.push_back(tau);
+#if GRETL4PY_MODEL_DEBUG
+    std::cout << "GretlModel_NSE_Driver_quantreg, id = " << this->get_id();
+    std::cout << ", GD  = " << GD << std::endl;
+#endif // GRETL4PY_MODEL_DEBUG
+}
+
+template <auto F, GretlCmdIndex CI>
+GretlModel_NSE_Driver_quantreg<F, CI>::GretlModel_NSE_Driver_quantreg
+                                        (GretlDataset *GD, const py::list &tau)
+                                        : GretlModel_NSE_Driver<F, CI>(GD)  // explicitly call base class constructor!
+{
+    try {
+        this->optional_par = tau.cast<std::vector<double>>();
+    } catch (const py::cast_error &e) {
+        throw std::runtime_error("invalid 'tau' list: all elements must be numeric");
+    }
+#if GRETL4PY_MODEL_DEBUG
+    std::cout << "GretlModel_NSE_Driver_quantreg, id = " << this->get_id();
+    std::cout << ", GD  = " << GD << std::endl;
+#endif // GRETL4PY_MODEL_DEBUG
+}
+// explicit instantiations for all required (F, CI) pairs
+template class GretlModel_NSE_Driver_quantreg<quantreg_driver, QUANTREG>;

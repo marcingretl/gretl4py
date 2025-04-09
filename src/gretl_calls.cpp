@@ -398,25 +398,22 @@ py::dict *tobit (const std::string formula, const py::kwargs &kwargs)
     return model->fit(formula, kwargs);
 }
 
-py::dict *quantreg (const double tau, const std::string formula, const py::kwargs &kwargs)
+py::dict *quantreg (const double tau, const std::string formula,
+                    const py::kwargs &kwargs)
 {
-    py::list tau_as_list;
-    tau_as_list.append(tau);
+    std::shared_ptr<GretlModel> model =
+    std::make_shared<GretlModel_NSE_Driver_quantreg<quantreg_driver, QUANTREG>>(DSET, tau);
+    estimated_models.try_emplace(model->get_id(), model);
 
-    return quantreg(tau_as_list, formula, kwargs);
+    return model->fit(formula, kwargs);
 }
 
-py::dict *quantreg (const py::list tau, const std::string formula, const py::kwargs &kwargs)
+py::dict *quantreg (const py::list tau, const std::string formula,
+                    const py::kwargs &kwargs)
 {
-    std::shared_ptr<GretlModel> model = std::make_shared<GretlModel_NSE_Driver<quantreg_driver, QUANTREG>>(DSET);
+    std::shared_ptr<GretlModel> model =
+    std::make_shared<GretlModel_NSE_Driver_quantreg<quantreg_driver, QUANTREG>>(DSET, tau);
     estimated_models.try_emplace(model->get_id(), model);
-    for (auto el : tau) {
-        if (is_pynumeric(el)) {
-            model->add_optional_param(py::cast<double>(el));
-        } else {
-            throw std::runtime_error(py::cast<std::string>(el) + " is not numeric");
-        }
-    }
 
     return model->fit(formula, kwargs);
 }

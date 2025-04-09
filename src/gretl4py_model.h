@@ -103,6 +103,18 @@ public:
 };
 
 //
+// NSE_Driver_quantreg via quantreg_driver
+// extends: GretlModel_NSE_Driver
+//
+template <auto F, GretlCmdIndex CI>
+class GretlModel_NSE_Driver_quantreg : public GretlModel_NSE_Driver<F, CI>
+{
+public:
+    GretlModel_NSE_Driver_quantreg (GretlDataset *GD, const double &tau);
+    GretlModel_NSE_Driver_quantreg (GretlDataset *GD, const py::list &tau);
+};
+
+//
 // NSE via arima plugin
 // extends: GretlModel_NSE
 //
