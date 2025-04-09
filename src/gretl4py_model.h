@@ -24,6 +24,7 @@
 #include "gretl4py_data.h"
 #include <gretl/libgretl.h>
 #include <gretl/gretl_drivers.h>
+#include <gretl/objstack.h>
 //#include <gretl/matrix_extra.h>
 #include <iostream>
 
@@ -31,6 +32,7 @@ namespace py = pybind11;
 
 // workaround to manually resolve overloads ambiguity
 static MODEL (&garch_to_call)(const int*, DATASET*, gretlopt, PRN*) = garch;
+static MODEL (&quantreg_to_call)(const gretl_matrix*, const int*, DATASET*, gretlopt, PRN*) = quantreg;
 
 //
 // Class to handle gretl 'MODEL' type
@@ -94,6 +96,8 @@ class GretlModel_NSE_Driver : public GretlModel_NSE
 {
 private:
     void list_from_formula (const std::string &formula);
+protected:
+    gretl_matrix *optional_par_as_gr_matrix = NULL;
 public:
     GretlModel_NSE_Driver (GretlDataset *GD);
 
@@ -110,6 +114,8 @@ class GretlModel_NSE_Driver_quantreg : public GretlModel_NSE_Driver<F, CI>
 public:
     GretlModel_NSE_Driver_quantreg (GretlDataset *GD, const double &tau);
     GretlModel_NSE_Driver_quantreg (GretlDataset *GD, const py::list &tau);
+
+    virtual ~GretlModel_NSE_Driver_quantreg (void);
 };
 
 //

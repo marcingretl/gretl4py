@@ -101,15 +101,16 @@ gretlopt GretlModel::unpack_kwargs (const py::kwargs &kwargs, GretlCmdIndex ci)
             throw std::runtime_error("'lagselect' option for (S)ARIMA is temporarily unavailable");
         } else if ((key == "llimit" || key == "rlimit") && ci == TOBIT) {
             // TOBIT special: ignore here
-            if (is_pynumeric(item.second)) {
+            if (!is_pynumeric(item.second)) {
+                throw std::runtime_error("both llimit and rlimit must be numeric");
+            } else {
                 if (key == "llimit") {
                     optional_par.at(0) = item.second.cast<double>();
                 } else {
                     optional_par.at(1) = item.second.cast<double>();
                 }
-            } else {
-                throw std::runtime_error("both llimit and rlimit must be numeric");
             }
+            continue;
         } else {
             // should be a regular gretl option: check its validity in
             // the context of @ci
@@ -466,15 +467,13 @@ py::dict *GretlModel_NSE_Driver<F, CI>::fit (const std::string &formula,
     } else if constexpr (use_lcdop_sig(CI)) {
         *model = F(var_list, CI, GD->dset, opt, GP.prn);
     } else if constexpr (CI == QUANTREG) {
-        std::vector<std::string> optional_par_str;
-
-        optional_par_str.reserve(optional_par.size());
-        std::transform(optional_par.begin(), optional_par.end(),
-                       std::back_inserter(optional_par_str),
-                       [](double val) { return std::to_string(val); }
-                       );
-
-        *model = F(std::to_string(optional_par.at(0)).c_str(), var_list, GD->dset, opt, GP.prn);
+        if (this->optional_par_as_gr_matrix != NULL) {
+            *model = quantreg (this->optional_par_as_gr_matrix,
+                               var_list, GD->dset, opt, GP.prn);
+        } else {
+            *model = F(std::to_string(this->optional_par.at(0)).c_str(),
+                       var_list, GD->dset, opt, GP.prn);
+        }
     } else if constexpr (CI == TOBIT) {
         *model = F(var_list, optional_par.at(0), optional_par.at(1),
                    GD->dset, opt, GP.prn);
@@ -607,10 +606,6 @@ GretlModel_NSE_Driver_quantreg<F, CI>::GretlModel_NSE_Driver_quantreg
                                         : GretlModel_NSE_Driver<F, CI>(GD)  // explicitly call base class constructor!
 {
     this->optional_par.push_back(tau);
-#if GRETL4PY_MODEL_DEBUG
-    std::cout << "GretlModel_NSE_Driver_quantreg, id = " << this->get_id();
-    std::cout << ", GD  = " << GD << std::endl;
-#endif // GRETL4PY_MODEL_DEBUG
 }
 
 template <auto F, GretlCmdIndex CI>
@@ -623,10 +618,19 @@ GretlModel_NSE_Driver_quantreg<F, CI>::GretlModel_NSE_Driver_quantreg
     } catch (const py::cast_error &e) {
         throw std::runtime_error("invalid 'tau' list: all elements must be numeric");
     }
-#if GRETL4PY_MODEL_DEBUG
-    std::cout << "GretlModel_NSE_Driver_quantreg, id = " << this->get_id();
-    std::cout << ", GD  = " << GD << std::endl;
-#endif // GRETL4PY_MODEL_DEBUG
+
+    this->optional_par_as_gr_matrix = gretl_matrix_alloc(1, this->optional_par.size());
+    for (int i=0; i<this->optional_par.size(); i++) {
+        gretl_matrix_set(this->optional_par_as_gr_matrix, 0, i, this->optional_par.at(i));
+    }
+}
+
+template <auto F, GretlCmdIndex CI>
+GretlModel_NSE_Driver_quantreg<F, CI>::~GretlModel_NSE_Driver_quantreg (void)
+{
+    if (this->optional_par_as_gr_matrix != NULL) {
+        gretl_matrix_free(this->optional_par_as_gr_matrix);
+    }
 }
 // explicit instantiations for all required (F, CI) pairs
 template class GretlModel_NSE_Driver_quantreg<quantreg_driver, QUANTREG>;
