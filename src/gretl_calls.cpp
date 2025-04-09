@@ -373,29 +373,7 @@ py::dict *tsls (const std::string formula, const py::kwargs &kwargs)
 
 py::dict *tobit (const std::string formula, const py::kwargs &kwargs)
 {
-    const std::string limits[2] = {"llimit", "rlimit"};
-    double limits_val[2] = {NADBL, NADBL};
-    py::str key;
-    int i;
-
-    for (i=0; i<2; i++) {
-        key = py::cast(limits[i]);
-        if (kwargs.contains(key) && !kwargs[key].is_none()) {
-            if (is_pynumeric(kwargs[key])) {
-                limits_val[i] = py::cast<double>(kwargs[key]);
-            } else {
-                throw std::runtime_error(limits[i] + " is not numeric");
-            }
-        }
-    }
-
-    std::shared_ptr<GretlModel> model = std::make_shared<GretlModel_NSE_Driver<tobit_model, TOBIT>>(DSET);
-    estimated_models.try_emplace(model->get_id(), model);
-    for (i=0; i<2; i++) {
-        model->add_optional_param(limits_val[i], i);
-    }
-
-    return model->fit(formula, kwargs);
+    return GretlModel_NSE_Driver_wrapper<tobit_model, TOBIT>(formula, kwargs);
 }
 
 py::dict *quantreg (const double tau, const std::string formula,

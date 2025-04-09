@@ -101,7 +101,15 @@ gretlopt GretlModel::unpack_kwargs (const py::kwargs &kwargs, GretlCmdIndex ci)
             throw std::runtime_error("'lagselect' option for (S)ARIMA is temporarily unavailable");
         } else if ((key == "llimit" || key == "rlimit") && ci == TOBIT) {
             // TOBIT special: ignore here
-            continue;
+            if (is_pynumeric(item.second)) {
+                if (key == "llimit") {
+                    optional_par.at(0) = item.second.cast<double>();
+                } else {
+                    optional_par.at(1) = item.second.cast<double>();
+                }
+            } else {
+                throw std::runtime_error("both llimit and rlimit must be numeric");
+            }
         } else {
             // should be a regular gretl option: check its validity in
             // the context of @ci
@@ -403,6 +411,8 @@ GretlModel_NSE_Driver<F, CI>::GretlModel_NSE_Driver (GretlDataset *GD)
 {
     if constexpr (CI == TOBIT) {
         optional_par.resize(2);
+        optional_par.at(0) = NADBL;
+        optional_par.at(1) = NADBL;
     }
 #if GRETL4PY_MODEL_DEBUG
     std::cout << "GretlModel_NSE_Driver, id = " << this->get_id();
