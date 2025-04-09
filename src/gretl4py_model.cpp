@@ -466,8 +466,15 @@ py::dict *GretlModel_NSE_Driver<F, CI>::fit (const std::string &formula,
     } else if constexpr (use_lcdop_sig(CI)) {
         *model = F(var_list, CI, GD->dset, opt, GP.prn);
     } else if constexpr (CI == QUANTREG) {
-        *model = F(std::to_string(optional_par.at(0)).c_str(),
-                   var_list, GD->dset, opt, GP.prn);
+        std::vector<std::string> optional_par_str;
+
+        optional_par_str.reserve(optional_par.size());
+        std::transform(optional_par.begin(), optional_par.end(),
+                       std::back_inserter(optional_par_str),
+                       [](double val) { return std::to_string(val); }
+                       );
+
+        *model = F(std::to_string(optional_par.at(0)).c_str(), var_list, GD->dset, opt, GP.prn);
     } else if constexpr (CI == TOBIT) {
         *model = F(var_list, optional_par.at(0), optional_par.at(1),
                    GD->dset, opt, GP.prn);
