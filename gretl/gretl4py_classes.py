@@ -102,6 +102,10 @@ class Model:
         if self.computed and self._model_id is not None:
             _gretl.fcast(self._model_id, *args, **kwargs)
 
+    def get_accessor(self, accessor):
+        if self.computed and self._model_id is not None:
+            _gretl.get_accessor(self._model_id, accessor)
+
     # scalars
     def id(self):
         return self._id

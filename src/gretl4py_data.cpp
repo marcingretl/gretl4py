@@ -23,6 +23,8 @@
 #include "gretl4py_types.h"
 #include <gretl/matrix_extra.h>
 #include <gretl/gretl_model.h>
+#include <gretl/genmain.h>
+#include <gretl/objstack.h>
 #include <string>
 
 #define F_CONTIGUOUS py::detail::npy_api::constants::NPY_ARRAY_F_CONTIGUOUS_
@@ -162,6 +164,71 @@ void handle_gretl_error (int err)
 {
     const char *msg = errmsg_get_with_default(err);
     throw std::runtime_error(msg);
+}
+
+void get_gretl_object (const char *s, DATASET *dset,
+                       MODEL *model, GretlObjType obj_type)
+{
+    GretlType t = GRETL_TYPE_NONE;
+    void *resp;
+    int err = 0;
+    bool free_dset = false;
+
+    if (dset == NULL) {
+        dset = datainfo_new();
+        free_dset = true;
+    }
+
+    /* new interface in genmain.h */
+    if (model != NULL) {
+        set_genr_model(model, obj_type);
+    }
+    resp = generate_gretl_object(s, dset, &t, &err);
+    if (model != NULL) {
+        unset_genr_model();
+    }
+
+    if (!err) {
+        if (t == GRETL_TYPE_NONE) {
+            printf("gretl_grab: didn't get anything!\n");
+        } else if (t == GRETL_TYPE_DOUBLE) {
+            double x = *(static_cast<double*>(resp));
+
+            printf("gretl_grab: got a scalar: %g\n", x);
+        } else if (t == GRETL_TYPE_STRING) {
+            char *p = static_cast<char*>(resp);
+
+            printf("gretl_grab: got a string: %s\n", p);
+        } else if (t == GRETL_TYPE_MATRIX) {
+            gretl_matrix *m = static_cast<gretl_matrix*>(resp);
+
+            printf("gretl_grab: got a matrix at \n");
+            gretl_matrix_print(m, "grabbed");
+        } else if (t == GRETL_TYPE_BUNDLE) {
+            gretl_bundle *b = static_cast<gretl_bundle*>(resp);
+
+            printf("gretl_grab: got a bundle at \n" );
+        } else if (t == GRETL_TYPE_ARRAY) {
+            gretl_array *a = static_cast<gretl_array*>(resp);
+
+            printf("gretl_grab: got an array at \n");
+        } else if (t == GRETL_TYPE_LIST) {
+            int *list = static_cast<int*>(resp);
+
+            printf("gretl_grab: got a list at \n");
+        } else {
+            printf("gretl_grab: no error, got type = %d\n", t);
+        }
+    } else {
+        const char *msg = errmsg_get_with_default(err);
+
+        printf("%s\n", msg);
+    }
+
+    if (free_dset) {
+        destroy_dataset(dset);
+    }
+    //return err;
 }
 
 //////////////////////////////////////////////////

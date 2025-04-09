@@ -20,11 +20,7 @@
 #include <pybind11/pybind11.h>
 #include "gretl4py_data.h"
 #include "gretl4py_model.h"
-#include <gretl/matrix_extra.h>
-#include <gretl/gretl_model.h>
-#include <gretl/objstack.h>
 #include <gretl/forecast.h>
-#include <gretl/graphing.h>     //FIXME: needed?
 #include <string>
 
 #define use_ldco_sig(c) (c == OLS || c == WLS) //const int *list, DATASET *dset, GretlCmdIndex ci, gretlopt opt
@@ -168,7 +164,6 @@ gretlopt GretlModel::unpack_kwargs_forecast (const py::kwargs &kwargs,
 
     return OPT_NONE;
 }
-
 
 
 //
@@ -393,6 +388,11 @@ py::dict *GretlModel_NSE::forecast (const py::kwargs &kwargs)
 }
 
 
+void GretlModel_NSE::get_accessor (const std::string &accessor) const
+{
+    get_gretl_object(accessor.c_str(), GD->dset, model, GRETL_OBJ_EQN);
+}
+
 
 //
 // NSE via dedicated Driver
@@ -467,8 +467,8 @@ py::dict *GretlModel_NSE_Driver<F, CI>::fit (const std::string &formula,
     } else if constexpr (use_lcdop_sig(CI)) {
         *model = F(var_list, CI, GD->dset, opt, GP.prn);
     } else if constexpr (CI == QUANTREG) {
-        if (this->optional_par_as_gr_matrix != NULL) {
-            *model = quantreg (this->optional_par_as_gr_matrix,
+        if (this->optional_par_as_mat != NULL) {
+            *model = quantreg (this->optional_par_as_mat,
                                var_list, GD->dset, opt, GP.prn);
         } else {
             *model = F(std::to_string(this->optional_par.at(0)).c_str(),
@@ -619,17 +619,17 @@ GretlModel_NSE_Driver_quantreg<F, CI>::GretlModel_NSE_Driver_quantreg
         throw std::runtime_error("invalid 'tau' list: all elements must be numeric");
     }
 
-    this->optional_par_as_gr_matrix = gretl_matrix_alloc(1, this->optional_par.size());
-    for (int i=0; i<this->optional_par.size(); i++) {
-        gretl_matrix_set(this->optional_par_as_gr_matrix, 0, i, this->optional_par.at(i));
+    this->optional_par_as_mat = gretl_matrix_alloc(this->optional_par.size(), 1);
+    for (size_t i=0; i<this->optional_par.size(); i++) {
+        gretl_matrix_set(this->optional_par_as_mat, i, 0, this->optional_par.at(i));
     }
 }
 
 template <auto F, GretlCmdIndex CI>
 GretlModel_NSE_Driver_quantreg<F, CI>::~GretlModel_NSE_Driver_quantreg (void)
 {
-    if (this->optional_par_as_gr_matrix != NULL) {
-        gretl_matrix_free(this->optional_par_as_gr_matrix);
+    if (this->optional_par_as_mat != NULL) {
+        gretl_matrix_free(this->optional_par_as_mat);
     }
 }
 // explicit instantiations for all required (F, CI) pairs

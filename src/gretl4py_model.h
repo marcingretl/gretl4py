@@ -25,7 +25,6 @@
 #include <gretl/libgretl.h>
 #include <gretl/gretl_drivers.h>
 #include <gretl/objstack.h>
-//#include <gretl/matrix_extra.h>
 #include <iostream>
 
 namespace py = pybind11;
@@ -63,6 +62,8 @@ public:
 
     void unlink_from_dataset (void) const;
 
+    virtual void get_accessor (const std::string &accessor) const = 0;
+
     virtual py::dict *fit (const std::string &formula, const py::kwargs &kwargs) = 0;
 
     virtual py::dict *forecast (const py::kwargs &kwargs) = 0;
@@ -82,6 +83,8 @@ public:
     GretlModel_NSE (GretlDataset *GD);
     virtual ~GretlModel_NSE (void);
 
+    void get_accessor (const std::string &accessor) const override;
+
     py::dict *fit (const std::string &formula, const py::kwargs &kwargs) override = 0;
 
     py::dict *forecast (const py::kwargs &kwargs) override;
@@ -97,7 +100,7 @@ class GretlModel_NSE_Driver : public GretlModel_NSE
 private:
     void list_from_formula (const std::string &formula);
 protected:
-    gretl_matrix *optional_par_as_gr_matrix = NULL;
+    gretl_matrix *optional_par_as_mat = NULL;
 public:
     GretlModel_NSE_Driver (GretlDataset *GD);
 

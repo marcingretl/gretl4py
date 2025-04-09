@@ -51,6 +51,9 @@ PYBIND11_MODULE(_gretl, m)
           py::arg("val").none(true) = std::nullopt);
     m.def("GretlModel_destructor_wrapper", &GretlModel_destructor_wrapper,
           py::arg("model_id").none(false));
+    m.def("get_accessor", &GretlModel_get_accessor,
+          py::arg("model_id").none(false),
+          py::arg("accessor").none(false));
 
     // forecasting
     m.def("fcast", &GretlModel_fcast,

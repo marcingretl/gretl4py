@@ -34,6 +34,8 @@
 #include "gretl4py_types.h"
 #include <gretl/libgretl.h>
 #include <gretl/matrix_extra.h>
+#include <gretl/genmain.h>
+#include <gretl/objstack.h>
 #include <iostream>
 #include <unordered_set>
 
@@ -50,7 +52,15 @@ namespace py = pybind11;
 #define is_pytuple(o) (py::isinstance<py::tuple>(o))
 #define is_pynumeric(o) (is_pyint(o) || is_pyfloat(o))
 
+
+//////////////////////////////////////////////////
+// functions
+// Note: some signature(s) may be at the bottom of this header
+//////////////////////////////////////////////////
 void handle_gretl_error (int err);
+
+void get_gretl_object (const char *s, DATASET *dset = NULL,
+                       MODEL *model = NULL, GretlObjType obj_type = GRETL_OBJ_INFO);
 
 //
 // Class to handle gretl 'DATASET' type
