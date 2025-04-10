@@ -167,27 +167,37 @@ static GretlTypes *convert_GretlType_to_GretlTypes (const GretlType &t,
     GretlTypes *RES = new GretlTypes;   // gretl4py type
 
     if (t == GRETL_TYPE_NONE) {
-        printf("gretl_grab: didn't get anything!\n");
+        std::printf("gretl_grab: didn't get anything!\n");
     } else if (t == GRETL_TYPE_DOUBLE) {
         *RES = *(static_cast<double*>(gr_obj_ptr));
     } else if (t == GRETL_TYPE_STRING) {
         *RES = static_cast<char*>(gr_obj_ptr);
     } else if (t == GRETL_TYPE_MATRIX) {
         gretl_matrix *gretl_mat = static_cast<gretl_matrix*>(gr_obj_ptr);
-        *RES = DNumPyArrayFC({gretl_mat->rows, gretl_mat->cols});
-        std::memcpy(static_cast<double*>(std::get<DNumPyArrayFC>(*RES).request().ptr),
-                    gretl_mat->val, gretl_mat->rows * gretl_mat->cols * sizeof(double));
+        DNumPyArrayFC mat({gretl_mat->rows, gretl_mat->cols});
+
+        std::memcpy(static_cast<double*>(mat.request().ptr), gretl_mat->val,
+                    gretl_mat->rows * gretl_mat->cols * sizeof(double));
+        if ((std::min)(gretl_mat->rows, gretl_mat->cols) == 1) { // this is to prevent 'min' macro expansion on MS SDK
+            mat = mat.reshape({mat.size()});
+        }
+        *RES = mat;
     } else if (t == GRETL_TYPE_BUNDLE) {
         gretl_bundle *b = static_cast<gretl_bundle*>(gr_obj_ptr);
+
         py::dict *tmpdict = GretlBundle(b).to_dict();
         *RES = *tmpdict;
         delete tmpdict;
     } else if (t == GRETL_TYPE_ARRAY) {
         gretl_array *a = static_cast<gretl_array*>(gr_obj_ptr);
+
         printf("gretl_grab: got an array at \n");
     } else if (t == GRETL_TYPE_LIST) {
         int *list = static_cast<int*>(gr_obj_ptr);
-        printf("gretl_grab: got a list at \n");
+
+        std::printf("gretl_grab: got a list at \n");
+    } else {
+        std::printf("gretl_grab: got unsupported type!\n");
     }
 
     return RES;
