@@ -156,7 +156,7 @@ static void numpy_array_to_gretl_storage (const py::dict &pydict,
     dset->t2 = dset->n-1;
 }
 
-static GretlTypes *convert_GretlType_to_GretlTypes (const GretlType &t,
+static GretlTypes *convert_GretlType_to_GretlTypes (GretlType &t,
                                                     void *gr_obj_ptr)
 {
     //
@@ -165,6 +165,7 @@ static GretlTypes *convert_GretlType_to_GretlTypes (const GretlType &t,
     // note: memory must be deleted at caller level
     //
     GretlTypes *RES = new GretlTypes;   // gretl4py type
+    int err = 0;
 
     if (t == GRETL_TYPE_NONE) {
         std::printf("gretl_grab: didn't get anything!\n");
@@ -190,16 +191,27 @@ static GretlTypes *convert_GretlType_to_GretlTypes (const GretlType &t,
         delete tmpdict;
     } else if (t == GRETL_TYPE_ARRAY) {
         gretl_array *a = static_cast<gretl_array*>(gr_obj_ptr);
+        py::list py_list;
+        GretlType tmp;
 
-        std::printf("gretl_grab: got an array\n");
-        std::printf("\tgretl_array_get_length = %d \n", gretl_array_get_length(a));
-        std::printf("\tgretl_array_get_content_type = %d \n", gretl_array_get_length(a));
+        for (int i=0; i<gretl_array_get_length(a); i++) {
+            tmp = gretl_array_get_content_type(a);
+            py_list.append(convert_GretlType_to_GretlTypes(tmp, gretl_array_get_element(a, i, &tmp, &err)));
+        }
+        *RES = py_list;
+    } else if (t == GRETL_TYPE_SERIES) {
+        //gretl_array *a = static_cast<gretl_array*>(gr_obj_ptr);
+
+        std::printf("gretl_grab: got an series\n");
         *RES = py::none();
     } else if (t == GRETL_TYPE_LIST) {
-        int *list = static_cast<int*>(gr_obj_ptr);
+        int *gr_list = static_cast<int*>(gr_obj_ptr);
+        py::list py_list;
 
-        std::printf("gretl_grab: got a list at \n");
-        *RES = py::none();
+        for (int i=1; i<=gr_list[0]; i++) {
+            py_list.append(gr_list[i]);
+        }
+        *RES = py_list;
     } else {
         std::printf("gretl_grab: got unsupported type!\n");
         *RES = py::none();
