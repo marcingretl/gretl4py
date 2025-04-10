@@ -178,6 +178,8 @@ public:
 //
 class GretlPrint
 {
+private:
+    PrnType prn_type;
 public:
     int err = 0;
     PRN *prn = NULL;

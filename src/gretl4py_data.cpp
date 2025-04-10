@@ -922,7 +922,9 @@ void MapPyToCpp::convert (const T *pyobj)
 //
 GretlPrint::GretlPrint (PrnType prn_type)
 {
-    prn = gretl_print_new(prn_type, &err);
+    this->prn_type = prn_type;
+
+    prn = gretl_print_new(this->prn_type, &err);
     if (err) {
         handle_gretl_error(err);
     }
@@ -941,5 +943,11 @@ void GretlPrint::print (void)
 
     if (buf != NULL) {
         py::print(buf);
+        if (prn_type == GRETL_PRINT_BUFFER) {
+            err = gretl_print_reset_buffer(prn);
+            if (err) {
+                handle_gretl_error(err);
+            }
+        }
     }
 }
