@@ -725,6 +725,18 @@ gretlopt GretlDataset::setobs_opt_from_structure (int structure)
     }
 }
 
+GretlTypes *GretlDataset::get_accessor (const std::string &accessor) const
+{
+    GretlTypes *RES_other = gretl_generate_gretl_object(accessor.c_str(), err,
+                                                        GRETL_OBJ_DSET, dset);
+    if (err) {
+        handle_gretl_error(err);
+        throw std::runtime_error("grabbing '" + accessor + "' failed");
+    }
+
+    return RES_other;
+}
+
 
 //
 // GretlBundle class methods

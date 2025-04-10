@@ -72,7 +72,7 @@ class GretlDataset
 private:
     static inline int next_obj_id = 1;
     int id;
-    std::unordered_set<int> linked_models;  // models (id-1) which use this dataset
+    std::unordered_set<int> linked_models;  // models (id-s) which use this dataset
 
     void allocate_dset (void);
 
@@ -115,6 +115,8 @@ public:
     void linked_models_del (const int model_id);
 
     std::unordered_set<int> linked_models_list (void) const;
+
+    GretlTypes *get_accessor (const std::string &accessor) const;
 };
 
 //
