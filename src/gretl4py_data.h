@@ -59,8 +59,8 @@ namespace py = pybind11;
 //////////////////////////////////////////////////
 void handle_gretl_error (int err);
 
-void get_gretl_object (const char *s, DATASET *dset = NULL,
-                       MODEL *model = NULL, GretlObjType obj_type = GRETL_OBJ_INFO);
+void gretl_generate_gretl_object (const char *s, GretlObjType obj_type = GRETL_OBJ_INFO,
+                                  DATASET *dset = NULL, MODEL *model = NULL);
 
 //
 // Class to handle gretl 'DATASET' type

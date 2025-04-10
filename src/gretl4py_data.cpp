@@ -166,8 +166,8 @@ void handle_gretl_error (int err)
     throw std::runtime_error(msg);
 }
 
-void get_gretl_object (const char *s, DATASET *dset,
-                       MODEL *model, GretlObjType obj_type)
+void gretl_generate_gretl_object (const char *s, GretlObjType obj_type,
+                                  DATASET *dset, MODEL *model)
 {
     GretlType t = GRETL_TYPE_NONE;
     void *resp;

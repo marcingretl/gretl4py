@@ -171,7 +171,7 @@ gretlopt GretlModel::unpack_kwargs_forecast (const py::kwargs &kwargs,
 // extends: GretlModel
 //
 GretlModel_NSE::GretlModel_NSE (GretlDataset *GD)
-                                        : GretlModel(GD)  // explicitly call base class constructor!
+                                        : GretlModel(GD) // explicitly call base class constructor!
 {
 #if GRETL4PY_MODEL_DEBUG
     std::cout << "GretlModel_NSE, id = " << this->get_id();
@@ -390,7 +390,7 @@ py::dict *GretlModel_NSE::forecast (const py::kwargs &kwargs)
 
 void GretlModel_NSE::get_accessor (const std::string &accessor) const
 {
-    get_gretl_object(accessor.c_str(), GD->dset, model, GRETL_OBJ_EQN);
+    gretl_generate_gretl_object(accessor.c_str(), GRETL_OBJ_EQN, GD->dset, model);
 }
 
 
