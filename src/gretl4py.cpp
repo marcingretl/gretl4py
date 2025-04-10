@@ -53,7 +53,8 @@ PYBIND11_MODULE(_gretl, m)
           py::arg("model_id").none(false));
     m.def("get_accessor", &GretlModel_get_accessor,
           py::arg("model_id").none(false),
-          py::arg("accessor").none(false));
+          py::arg("accessor").none(false),
+          py::return_value_policy::take_ownership);
 
     // forecasting
     m.def("fcast", &GretlModel_fcast,

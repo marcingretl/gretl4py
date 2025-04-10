@@ -254,13 +254,17 @@ void GretlModel_destructor_wrapper (const int model_id)
 # endif // GRETL_PYBIND11_DEBUG
 }
 
-void GretlModel_get_accessor (const int model_id, const std::string &accessor)
+GretlTypes *GretlModel_get_accessor (const int model_id, const std::string &accessor)
 {
+    GretlTypes *RES = nullptr;
+
     if (estimated_models.find(model_id) == estimated_models.end()) {
         std::cerr << "model (id=" << model_id << ") does not exist" << std::endl;
     } else {
-        estimated_models.at(model_id)->get_accessor(accessor);
+        RES = estimated_models.at(model_id)->get_accessor(accessor);
     }
+
+    return RES;
 }
 
 //////////////////////////////////////////////////

@@ -104,7 +104,7 @@ class Model:
 
     def get_accessor(self, accessor):
         if self.computed and self._model_id is not None:
-            _gretl.get_accessor(self._model_id, accessor)
+            return _gretl.get_accessor(self._model_id, accessor)
 
     # scalars
     def id(self):

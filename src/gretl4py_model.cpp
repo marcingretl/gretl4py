@@ -388,9 +388,9 @@ py::dict *GretlModel_NSE::forecast (const py::kwargs &kwargs)
 }
 
 
-void GretlModel_NSE::get_accessor (const std::string &accessor) const
+GretlTypes *GretlModel_NSE::get_accessor (const std::string &accessor) const
 {
-    gretl_generate_gretl_object(accessor.c_str(), GRETL_OBJ_EQN, GD->dset, model);
+    return gretl_generate_gretl_object(accessor.c_str(), GRETL_OBJ_EQN, GD->dset, model);
 }
 
 

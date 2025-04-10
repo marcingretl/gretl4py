@@ -46,7 +46,7 @@ void GretlModel_destructor_wrapper (const int model_id);
 
 void GretlModel_fcast (const int model_id, const py::kwargs &kwargs);
 
-void GretlModel_get_accessor (const int model_id, const std::string &accessor);
+GretlTypes *GretlModel_get_accessor (const int model_id, const std::string &accessor);
 
 //////////////////////////////////////////////////
 // model estimation

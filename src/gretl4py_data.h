@@ -59,8 +59,9 @@ namespace py = pybind11;
 //////////////////////////////////////////////////
 void handle_gretl_error (int err);
 
-void gretl_generate_gretl_object (const char *s, GretlObjType obj_type = GRETL_OBJ_INFO,
-                                  DATASET *dset = NULL, MODEL *model = NULL);
+GretlTypes *gretl_generate_gretl_object (const char *s,
+                                         GretlObjType obj_type = GRETL_OBJ_INFO,
+                                         DATASET *dset = NULL, MODEL *model = NULL);
 
 //
 // Class to handle gretl 'DATASET' type
@@ -145,6 +146,7 @@ public:
 
     GretlBundle (void);                         // we get contents of $sysinfo bundle
     GretlBundle (MODEL *model, DATASET *dset);  // we produce bundle from MODEL struct
+    GretlBundle (gretl_bundle *b);              // incoming already allocated bundle
     ~GretlBundle (void);
 
     py::dict *to_dict (void);                   // bundle-to-dict mapper: memory must be deleted at the caller level

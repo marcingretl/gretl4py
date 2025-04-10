@@ -62,7 +62,7 @@ public:
 
     void unlink_from_dataset (void) const;
 
-    virtual void get_accessor (const std::string &accessor) const = 0;
+    virtual GretlTypes *get_accessor (const std::string &accessor) const = 0;
 
     virtual py::dict *fit (const std::string &formula, const py::kwargs &kwargs) = 0;
 
@@ -83,7 +83,7 @@ public:
     GretlModel_NSE (GretlDataset *GD);
     virtual ~GretlModel_NSE (void);
 
-    void get_accessor (const std::string &accessor) const override;
+    GretlTypes *get_accessor (const std::string &accessor) const override;
 
     py::dict *fit (const std::string &formula, const py::kwargs &kwargs) override = 0;
 
