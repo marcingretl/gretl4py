@@ -41,14 +41,15 @@ class GretlModel
 private:
     static inline int next_model_id = 1;
 protected:
-    int id;                         // model ID
-    py::dict *RES = nullptr;        // estimation results as dictionary //FIXME: not pointer, pybind11 Object*!!!
-    py::dict *RES_fcast = nullptr;  // forecasting results as dictionary //FIXME: not pointer, pybind11 Object*!!!
-    GretlDataset *GD = nullptr;     // dataset used
-    GretlPrint GP = GretlPrint();   // printer (instance wide)
-    int *var_list = NULL;           // libgretl list of variables
-    gretlopt opt = OPT_NONE;        // model options
-    std::vector<double> optional_par;  // optional estimation parameter (tau for QUANTREG, (l/r)limits for TOBIT)
+    int id;                                     // model ID
+    py::dict *RES = nullptr;                    // estimation results as dictionary     //FIXME: not pointer, pybind11 Object*!!!
+    py::dict *RES_fcast = nullptr;              // forecasting results as dictionary    //FIXME: not pointer, pybind11 Object*!!!
+    mutable GretlTypes *RES_other = nullptr;    // other results (accessor, test, ets)
+    GretlDataset *GD = nullptr;                 // dataset used
+    GretlPrint GP = GretlPrint();               // printer (instance wide)
+    int *var_list = NULL;                       // libgretl list of variables
+    gretlopt opt = OPT_NONE;                    // model options
+    std::vector<double> optional_par;           // optional estimation parameter (tau for QUANTREG, (l/r)limits for TOBIT)
     mutable int err = 0;
 
     gretlopt unpack_kwargs (const py::kwargs &kwargs, GretlCmdIndex ci);

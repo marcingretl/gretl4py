@@ -390,7 +390,15 @@ py::dict *GretlModel_NSE::forecast (const py::kwargs &kwargs)
 
 GretlTypes *GretlModel_NSE::get_accessor (const std::string &accessor) const
 {
-    return gretl_generate_gretl_object(accessor.c_str(), GRETL_OBJ_EQN, GD->dset, model);
+    RES_other = gretl_generate_gretl_object(accessor.c_str(),
+                                            err, GRETL_OBJ_EQN,
+                                            GD->dset, model);
+    if (err) {
+        handle_gretl_error(err);
+        throw std::runtime_error("grabbing '" + accessor + "' failed");
+    }
+
+    return RES_other;
 }
 
 

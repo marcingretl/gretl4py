@@ -156,6 +156,44 @@ static void numpy_array_to_gretl_storage (const py::dict &pydict,
     dset->t2 = dset->n-1;
 }
 
+static GretlTypes *convert_GretlType_to_GretlTypes (const GretlType &t,
+                                                    void *gr_obj_ptr)
+{
+    //
+    // function converts libgretl's GretlType to gretl4py's GretlTypes
+    // *gr_obj_ptr: pointer to libgretl's object
+    // note: memory must be deleted at caller level
+    //
+    GretlTypes *RES = new GretlTypes;   // gretl4py type
+
+    if (t == GRETL_TYPE_NONE) {
+        printf("gretl_grab: didn't get anything!\n");
+    } else if (t == GRETL_TYPE_DOUBLE) {
+        *RES = *(static_cast<double*>(gr_obj_ptr));
+    } else if (t == GRETL_TYPE_STRING) {
+        *RES = static_cast<char*>(gr_obj_ptr);
+    } else if (t == GRETL_TYPE_MATRIX) {
+        gretl_matrix *gretl_mat = static_cast<gretl_matrix*>(gr_obj_ptr);
+        *RES = DNumPyArrayFC({gretl_mat->rows, gretl_mat->cols});
+        std::memcpy(static_cast<double*>(std::get<DNumPyArrayFC>(*RES).request().ptr),
+                    gretl_mat->val, gretl_mat->rows * gretl_mat->cols * sizeof(double));
+    } else if (t == GRETL_TYPE_BUNDLE) {
+        gretl_bundle *b = static_cast<gretl_bundle*>(gr_obj_ptr);
+        py::dict *tmpdict = GretlBundle(b).to_dict();
+        *RES = *tmpdict;
+        delete tmpdict;
+    } else if (t == GRETL_TYPE_ARRAY) {
+        gretl_array *a = static_cast<gretl_array*>(gr_obj_ptr);
+        printf("gretl_grab: got an array at \n");
+    } else if (t == GRETL_TYPE_LIST) {
+        int *list = static_cast<int*>(gr_obj_ptr);
+        printf("gretl_grab: got a list at \n");
+    }
+
+    return RES;
+}
+
+
 //////////////////////////////////////////////////
 // functions
 //////////////////////////////////////////////////
@@ -166,17 +204,17 @@ void handle_gretl_error (int err)
     throw std::runtime_error(msg);
 }
 
-GretlTypes *gretl_generate_gretl_object (const char *s, GretlObjType obj_type,
+GretlTypes *gretl_generate_gretl_object (const char *s, int &err,
+                                         GretlObjType obj_type,
                                          DATASET *dset, MODEL *model)
 {
     //
     // we grab object from libgretl stack
     //
-    GretlTypes *RES = new GretlTypes;   // gretl4py type
-    GretlType t = GRETL_TYPE_NONE;      // libgretl type
-    bool free_dset = false;             // we free dset _only_ if was allocated here
+    GretlTypes *RES = nullptr;      // gretl4py type
+    GretlType t = GRETL_TYPE_NONE;  // libgretl type
+    bool free_dset = false;         // we free dset _only_ if was allocated here
     void *resp;
-    int err = 0;
 
     // we allocate dset if we didn't get one
     if (dset == NULL) {
@@ -194,40 +232,7 @@ GretlTypes *gretl_generate_gretl_object (const char *s, GretlObjType obj_type,
     }
 
     if (!err) {
-        if (t == GRETL_TYPE_NONE) {
-            printf("gretl_grab: didn't get anything!\n");
-        } else if (t == GRETL_TYPE_DOUBLE) {
-            *RES = *(static_cast<double*>(resp));
-        } else if (t == GRETL_TYPE_STRING) {
-            *RES = static_cast<char*>(resp);
-        } else if (t == GRETL_TYPE_MATRIX) {
-            gretl_matrix *gretl_mat = static_cast<gretl_matrix*>(resp);
-            *RES = DNumPyArrayFC({gretl_mat->rows, gretl_mat->cols});
-
-            std::memcpy(static_cast<double*>(std::get<DNumPyArrayFC>(*RES).request().ptr),
-                        gretl_mat->val, gretl_mat->rows * gretl_mat->cols * sizeof(double));
-        } else if (t == GRETL_TYPE_BUNDLE) {
-            gretl_bundle *b = static_cast<gretl_bundle*>(resp);
-            py::dict *tmpdict = GretlBundle(b).to_dict();
-            *RES = *tmpdict;
-            delete tmpdict;
-        } else if (t == GRETL_TYPE_ARRAY) {
-            gretl_array *a = static_cast<gretl_array*>(resp);
-
-            printf("gretl_grab: got an array at \n");
-        } else if (t == GRETL_TYPE_LIST) {
-            int *list = static_cast<int*>(resp);
-
-            GretlPrint GP = GretlPrint();
-            printf("gretl_grab: got a list at \n");
-            gretl_list_print(list, dset, GP.prn);
-        } else {
-            printf("gretl_grab: no error, got type = %d\n", t);
-        }
-    } else {
-        const char *msg = errmsg_get_with_default(err);
-
-        printf("%s\n", msg);
+        RES = convert_GretlType_to_GretlTypes(t, resp);
     }
 
     if (free_dset) {
