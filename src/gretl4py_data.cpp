@@ -191,13 +191,18 @@ static GretlTypes *convert_GretlType_to_GretlTypes (const GretlType &t,
     } else if (t == GRETL_TYPE_ARRAY) {
         gretl_array *a = static_cast<gretl_array*>(gr_obj_ptr);
 
-        printf("gretl_grab: got an array at \n");
+        std::printf("gretl_grab: got an array\n");
+        std::printf("\tgretl_array_get_length = %d \n", gretl_array_get_length(a));
+        std::printf("\tgretl_array_get_content_type = %d \n", gretl_array_get_length(a));
+        *RES = py::none();
     } else if (t == GRETL_TYPE_LIST) {
         int *list = static_cast<int*>(gr_obj_ptr);
 
         std::printf("gretl_grab: got a list at \n");
+        *RES = py::none();
     } else {
         std::printf("gretl_grab: got unsupported type!\n");
+        *RES = py::none();
     }
 
     return RES;
