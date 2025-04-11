@@ -30,15 +30,15 @@ namespace py = pybind11;
 typedef py::array_t<double, py::array::f_style> DNumPyArrayFC; //double contiguous column-major (fortran) NumPy array (F_CONTIGUOUS)
 
 #if USE_MAPBOX_VARIANT
-# include "mapbox/variant.hpp"
+#include "mapbox/variant.hpp"
  typedef std::vector<mapbox::util::variant<double, std::string, int>> vgretl_vector;
+ typedef mapbox::util::variant<double, std::string, DNumPyArrayFC, py::dict, py::list, py::none> GretlTypes;
 #else
  typedef std::vector<std::variant<double, std::string, int>> vgretl_vector;
+ typedef std::variant<double, std::string, DNumPyArrayFC, py::dict, py::list, py::none> GretlTypes;
 #endif // USE_MAPBOX_VARIANT
 
 typedef std::vector<vgretl_vector> vgretl_matrix;
-
-typedef std::variant<double, std::string, DNumPyArrayFC, py::dict, py::list, py::none> GretlTypes;
 
 //////////////////////////////////////////////////
 // pybind11 extensions

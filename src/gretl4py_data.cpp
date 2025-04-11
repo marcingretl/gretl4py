@@ -157,7 +157,8 @@ static void numpy_array_to_gretl_storage (const py::dict &pydict,
 }
 
 static GretlTypes *convert_GretlType_to_GretlTypes (GretlType &t,
-                                                    void *gr_obj_ptr)
+                                                    void *gr_obj_ptr,
+                                                    int  &err)
 {
     //
     // function converts libgretl's GretlType to gretl4py's GretlTypes
@@ -165,7 +166,6 @@ static GretlTypes *convert_GretlType_to_GretlTypes (GretlType &t,
     // note: memory must be deleted at caller level
     //
     GretlTypes *RES = new GretlTypes;   // gretl4py type
-    int err = 0;
 
     if (t == GRETL_TYPE_NONE) {
         std::printf("gretl_grab: didn't get anything!\n");
@@ -196,11 +196,11 @@ static GretlTypes *convert_GretlType_to_GretlTypes (GretlType &t,
 
         for (int i=0; i<gretl_array_get_length(a); i++) {
             tmp = gretl_array_get_content_type(a);
-            py_list.append(convert_GretlType_to_GretlTypes(tmp, gretl_array_get_element(a, i, &tmp, &err)));
+            py_list.append(convert_GretlType_to_GretlTypes(tmp, gretl_array_get_element(a, i, &tmp, &err), err));
         }
         *RES = py_list;
     } else if (t == GRETL_TYPE_SERIES) {
-        //gretl_array *a = static_cast<gretl_array*>(gr_obj_ptr);
+        // *a = static_cast<DATASET*>(gr_obj_ptr);
 
         std::printf("gretl_grab: got an series\n");
         *RES = py::none();
@@ -259,7 +259,7 @@ GretlTypes *gretl_generate_gretl_object (const char *s, int &err,
     }
 
     if (!err) {
-        RES = convert_GretlType_to_GretlTypes(t, resp);
+        RES = convert_GretlType_to_GretlTypes(t, resp, err);
     }
 
     if (free_dset) {

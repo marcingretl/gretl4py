@@ -44,11 +44,8 @@ extern "C" {
 # define COMPILER_IDENT __VERSION__
 #endif
 
-#if defined(_WIN32)
-# define LIBGRETL_MIN_VER 50 // it is related with special function for memory free (msvcrt compatibility)
-#else
-# define LIBGRETL_MIN_VER 49
-#endif
+#define LIBGRETL_MIN_VER 51
+
 #define GRETL_PYBIND11_DEBUG 0
 
 static GretlDataset *DSET = nullptr;                                            // default dataset
