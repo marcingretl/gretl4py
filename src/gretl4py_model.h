@@ -69,7 +69,7 @@ public:
 
     virtual py::dict *forecast (const py::kwargs &kwargs) = 0;
 
-    virtual GretlTypes *test (const std::string &test_name, const py::kwargs &kwargs) = 0;
+    virtual py::dict test (const std::string &test_name, const py::kwargs &kwargs) = 0;
 };
 
 //
@@ -92,7 +92,7 @@ public:
 
     py::dict *forecast (const py::kwargs &kwargs) override;
 
-    GretlTypes *test (const std::string &test_name, const py::kwargs &kwargs) override;
+    py::dict test (const std::string &test_name, const py::kwargs &kwargs) override;
 };
 
 //

@@ -264,18 +264,14 @@ GretlTypes *GretlModel_get_accessor (const int model_id, const std::string &acce
     return RES;
 }
 
-GretlTypes *GretlModel_test (const int model_id, const std::string &test_name,
-                             const py::kwargs &kwargs)
+py::dict GretlModel_test (const int model_id, const std::string &test_name,
+                          const py::kwargs &kwargs)
 {
-    GretlTypes *RES = nullptr;
-
     if (estimated_models.find(model_id) == estimated_models.end()) {
-        std::cerr << "model (id=" << model_id << ") does not exist" << std::endl;
-    } else {
-        RES = estimated_models.at(model_id)->test(test_name, kwargs);
+        throw std::runtime_error("model (id=" + std::to_string(model_id) + ") does not exist");
     }
 
-    return RES;
+    return estimated_models.at(model_id)->test(test_name, kwargs);
 }
 
 void GretlModel_fcast (const int model_id, const py::kwargs &kwargs)

@@ -401,8 +401,9 @@ GretlTypes *GretlModel_NSE::get_accessor (const std::string &accessor) const
     return RES_other;
 }
 
-GretlTypes *GretlModel_NSE::test (const std::string &test_name, const py::kwargs &kwargs)
+py::dict GretlModel_NSE::test (const std::string &test_name, const py::kwargs &kwargs)
 {
+    py::dict RES;
     RES_other = nullptr;
 
     std::cout << "welcome to GretlModel::test() method\n";
@@ -415,13 +416,18 @@ GretlTypes *GretlModel_NSE::test (const std::string &test_name, const py::kwargs
     err = model_test_driver(0, GD->dset, OPT_N, GP.prn);
 
     if (!err) {
-        RES_other = get_accessor("$pvalue");
-        GP.print();
+        RES_other = get_accessor("$test");
+        RES[py::cast("statistics")] = RES_other;
+        delete RES_other;
 
-        py::print(RES_other);
+        RES_other = get_accessor("$pvalue");
+        RES[py::cast("pvalue")] = RES_other;
+        delete RES_other;
+
+        GP.print();
     }
 
-    return RES_other;
+    return RES;
 }
 
 
