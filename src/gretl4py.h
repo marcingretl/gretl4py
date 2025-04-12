@@ -49,7 +49,7 @@ void GretlModel_fcast (const int model_id, const py::kwargs &kwargs);
 GretlTypes *GretlModel_get_accessor (const int model_id,
                                      const std::string &accessor);
 
-py::dict GretlModel_test (const int model_id, const std::string &test_name,
+py::dict GretlModel_test (const int model_id, const std::string &type,
                           const py::kwargs &kwargs);
 
 //////////////////////////////////////////////////

@@ -229,6 +229,13 @@ void set_default_dset (GretlDataset *GD)
 // model management
 //////////////////////////////////////////////////
 
+static void check_if_model_exists (const int model_id)
+{
+    if (estimated_models.find(model_id) == estimated_models.end()) {
+        throw std::runtime_error("model (id=" + std::to_string(model_id) + ") does not exist");
+    }
+}
+
 // wrapper for calling GretlModel_NSE_Driver models
 template <auto F, GretlCmdIndex CI>
 static py::dict *GretlModel_NSE_Driver_wrapper (const std::string formula, const py::kwargs &kwargs)
@@ -253,34 +260,27 @@ void GretlModel_destructor_wrapper (const int model_id)
 
 GretlTypes *GretlModel_get_accessor (const int model_id, const std::string &accessor)
 {
-    GretlTypes *RES = nullptr;
+    check_if_model_exists(model_id);
 
-    if (estimated_models.find(model_id) == estimated_models.end()) {
-        std::cerr << "model (id=" << model_id << ") does not exist" << std::endl;
-    } else {
-        RES = estimated_models.at(model_id)->get_accessor(accessor);
-    }
+    GretlTypes *RES = nullptr;
+    RES = estimated_models.at(model_id)->get_accessor(accessor);
 
     return RES;
 }
 
-py::dict GretlModel_test (const int model_id, const std::string &test_name,
+py::dict GretlModel_test (const int model_id, const std::string &type,
                           const py::kwargs &kwargs)
 {
-    if (estimated_models.find(model_id) == estimated_models.end()) {
-        throw std::runtime_error("model (id=" + std::to_string(model_id) + ") does not exist");
-    }
+    check_if_model_exists(model_id);
 
-    return estimated_models.at(model_id)->test(test_name, kwargs);
+    return estimated_models.at(model_id)->test(type, kwargs);
 }
 
 void GretlModel_fcast (const int model_id, const py::kwargs &kwargs)
 {
-    if (estimated_models.find(model_id) == estimated_models.end()) {
-        std::cerr << "model (id=" << model_id << ") does not exist" << std::endl;
-    } else {
-        estimated_models.at(model_id)->forecast(kwargs);
-    }
+    check_if_model_exists(model_id);
+
+    estimated_models.at(model_id)->forecast(kwargs);
 }
 
 //////////////////////////////////////////////////

@@ -59,7 +59,7 @@ PYBIND11_MODULE(_gretl, m)
           py::return_value_policy::take_ownership);
     m.def("test", &GretlModel_test,
           py::arg("model_id").none(false),
-          py::arg("test_name").none(false),
+          py::arg("type").none(false),
           py::return_value_policy::take_ownership);
     m.def("fcast", &GretlModel_fcast,
           py::arg("model_id").none(false));

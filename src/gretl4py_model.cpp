@@ -401,13 +401,13 @@ GretlTypes *GretlModel_NSE::get_accessor (const std::string &accessor) const
     return RES_other;
 }
 
-py::dict GretlModel_NSE::test (const std::string &test_name, const py::kwargs &kwargs)
+py::dict GretlModel_NSE::test (const std::string &type, const py::kwargs &kwargs)
 {
     py::dict RES;
     RES_other = nullptr;
 
     std::cout << "welcome to GretlModel::test() method\n";
-    std::cout << "\tyou'd like to perform: " + test_name + " test\n";
+    std::cout << "\tyou'd like to perform: " + type + " test\n";
 
     std::cout << "we're setting last model\n";
     set_as_last_model(model, GRETL_OBJ_EQN);
