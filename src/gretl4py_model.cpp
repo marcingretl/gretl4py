@@ -166,6 +166,68 @@ gretlopt GretlModel::unpack_kwargs_forecast (const py::kwargs &kwargs,
 }
 
 
+void GretlModel::unpack_kwargs_test (const std::string &type,
+                                    const py::kwargs &kwargs,
+                                    int &order)
+{
+    //
+    // we setup test options
+    // order: for autocorrelation or arch test (may chanche in future)
+    //
+
+    // we set basic opt for given test
+    if (type == "normality") {
+        opt = OPT_N;
+    } else if (type == "logs") {
+        opt = OPT_L;
+    } else if (type == "squares") {
+        opt = OPT_S;
+    } else if (type == "autocorr") {
+        opt = OPT_A;
+    } else if (type == "arch") {
+        opt = OPT_H;
+    } else if (type == "white") {
+        opt = OPT_W;
+    } else if (type == "white-nocross") {
+        opt = OPT_X;
+    } else if (type == "breusch-pagan") {
+        opt = OPT_B;
+    } else if (type == "panel") {
+        opt = OPT_P;
+    } else if (type == "comfac") {
+        opt = OPT_C;
+    } else if (type == "xdepend") {
+        opt = OPT_D;
+    } else {
+        throw std::runtime_error("unknown test");
+    }
+
+    // now we loop over kwargs;
+    for (auto &item : kwargs) {
+        if (!is_pystr(item.first)) {
+            throw std::runtime_error("option key must be a string");
+        }
+        const std::string &key = item.first.cast<std::string>();
+
+        if (key == "order") {
+            //special case for autocorrelation and arch: lag order
+            order = item.second.cast<int>();
+            continue;
+        } else if (key == "quiet" || key == "silent") {
+            throw std::runtime_error("invalid option flag: " + key);
+        } else if (key == "univariate" && item.second.cast<bool>() == true) {
+            opt = static_cast<gretlopt>(opt | OPT_U);
+            continue;
+        } else if (key == "robust" && item.second.cast<bool>() == true) { //FIXME: Allin, is that right?
+            opt = static_cast<gretlopt>(opt | OPT_R);
+            continue;
+        } else {
+            throw std::runtime_error("invalid option parameter");
+        }
+    }
+}
+
+
 //
 // Native Single Equation libgretl MODEL (NSE)
 // extends: GretlModel
@@ -408,71 +470,22 @@ py::dict GretlModel_NSE::test (const std::string &type,
     // this method mimics 'modtest' command
     //
     py::dict RES;
+    const char *summary;
     opt = OPT_NONE;
     int order = 0;
 
     // we set this model as the last in libgretl
     set_as_last_model(model, GRETL_OBJ_EQN);
 
-    // we set basic opt for given test
-    if (type == "normality") {
-        opt = OPT_N;
-    } else if (type == "logs") {
-        opt = OPT_L;
-    } else if (type == "squares") {
-        opt = OPT_S;
-    } else if (type == "autocorr") {
-        opt = OPT_A;
-    } else if (type == "arch") {
-        opt = OPT_H;
-    } else if (type == "white") {
-        opt = OPT_W;
-    } else if (type == "white-nocross") {
-        opt = OPT_X;
-    } else if (type == "breusch-pagan") {
-        opt = OPT_B;
-    } else if (type == "panel") {
-        opt = OPT_P;
-    } else if (type == "comfac") {
-        opt = OPT_C;
-    } else if (type == "xdepend") {
-        opt = OPT_D;
-    } else {
-        err = 1000; //FIXME: change to something resonable in terms of libgretl
-    }
-
-    // now we loop over kwargs;
-    for (auto &item : kwargs) {
-        if (!is_pystr(item.first)) {
-            throw std::runtime_error("option key must be a string");
-        }
-        const std::string &key = item.first.cast<std::string>();
-
-        if (key == "order") {
-            //special case for autocorrelation and arch: lag order
-            order = item.second.cast<int>();
-            continue;
-        } else if (key == "quiet" && item.second.cast<bool>() == true) {
-            opt = static_cast<gretlopt>(opt | OPT_Q);
-            continue;
-        } else if (key == "silent" && item.second.cast<bool>() == true) {
-            opt = static_cast<gretlopt>(opt | OPT_I);
-            continue;
-        } else if (key == "univariate" && item.second.cast<bool>() == true) {
-            opt = static_cast<gretlopt>(opt | OPT_U);
-            continue;
-        } else if (key == "robust" && item.second.cast<bool>() == true) { //FIXME: Allin, is that right?
-            opt = static_cast<gretlopt>(opt | OPT_R);
-            continue;
-        } else {
-            throw std::runtime_error("invalid option parameter");
-        }
-    }
+    // we set up options
+    unpack_kwargs_test(type, kwargs, order);
 
     // we perform the test
     err = model_test_driver(order, GD->dset, opt, GP.prn);
 
-    if (!err) {
+    if (err) {
+        handle_gretl_error(err);
+    } else {
         RES_other = get_accessor("$test");
         RES[py::cast("test")] = RES_other;
         delete RES_other;
@@ -481,7 +494,8 @@ py::dict GretlModel_NSE::test (const std::string &type,
         RES[py::cast("pvalue")] = RES_other;
         delete RES_other;
 
-        GP.print();
+        summary = gretl_print_get_buffer(GP.prn);
+        RES[py::cast("summary")] = summary;
     }
 
     return RES;
