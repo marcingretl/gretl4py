@@ -106,9 +106,9 @@ class Model:
         if self.computed and self._model_id is not None:
             return _gretl.get_accessor(self._model_id, accessor)
 
-    def test(self, test_name, *args, **kwargs):
+    def test(self, type, *args, **kwargs):
         if self.computed and self._model_id is not None:
-            return _gretl.test(self._model_id, test_name, *args, **kwargs)
+            return _gretl.test(self._model_id, type, *args, **kwargs)
 
     # scalars
     def id(self):
