@@ -243,7 +243,7 @@ GretlModel_NSE::GretlModel_NSE (GretlDataset *GD)
 
 GretlModel_NSE::~GretlModel_NSE (void)
 {
-    if (this->model != NULL) {
+    if (this->model != NULL && model_free) {
         gretl_model_free(this->model);
     }
 }
@@ -476,6 +476,7 @@ py::dict GretlModel_NSE::test (const std::string &type,
 
     // we set this model as the last in libgretl
     set_as_last_model(model, GRETL_OBJ_EQN);
+    model_free = false;   // as of 2025-04-12: double free
 
     // we set up options
     unpack_kwargs_test(type, kwargs, order);
@@ -487,11 +488,11 @@ py::dict GretlModel_NSE::test (const std::string &type,
         handle_gretl_error(err);
     } else {
         RES_other = get_accessor("$test");
-        RES[py::cast("test")] = RES_other;
+        RES[py::cast("test")] = *RES_other;
         delete RES_other;
 
         RES_other = get_accessor("$pvalue");
-        RES[py::cast("pvalue")] = RES_other;
+        RES[py::cast("pvalue")] = *RES_other;
         delete RES_other;
 
         summary = gretl_print_get_buffer(GP.prn);
