@@ -401,6 +401,29 @@ GretlTypes *GretlModel_NSE::get_accessor (const std::string &accessor) const
     return RES_other;
 }
 
+GretlTypes *GretlModel_NSE::test (const std::string &test_name, const py::kwargs &kwargs)
+{
+    RES_other = nullptr;
+
+    std::cout << "welcome to GretlModel::test() method\n";
+    std::cout << "\tyou'd like to perform: " + test_name + " test\n";
+
+    std::cout << "we're setting last model\n";
+    set_as_last_model(model, GRETL_OBJ_EQN);
+
+    std::cout << "we're trying to perform normality test\n";
+    err = model_test_driver(0, GD->dset, OPT_N, GP.prn);
+
+    if (!err) {
+        RES_other = get_accessor("$pvalue");
+        GP.print();
+
+        py::print(RES_other);
+    }
+
+    return RES_other;
+}
+
 
 //
 // NSE via dedicated Driver

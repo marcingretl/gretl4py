@@ -226,7 +226,7 @@ void set_default_dset (GretlDataset *GD)
 }
 
 //////////////////////////////////////////////////
-// models management
+// model management
 //////////////////////////////////////////////////
 
 // wrapper for calling GretlModel_NSE_Driver models
@@ -264,9 +264,19 @@ GretlTypes *GretlModel_get_accessor (const int model_id, const std::string &acce
     return RES;
 }
 
-//////////////////////////////////////////////////
-// forecasting
-//////////////////////////////////////////////////
+GretlTypes *GretlModel_test (const int model_id, const std::string &test_name,
+                             const py::kwargs &kwargs)
+{
+    GretlTypes *RES = nullptr;
+
+    if (estimated_models.find(model_id) == estimated_models.end()) {
+        std::cerr << "model (id=" << model_id << ") does not exist" << std::endl;
+    } else {
+        RES = estimated_models.at(model_id)->test(test_name, kwargs);
+    }
+
+    return RES;
+}
 
 void GretlModel_fcast (const int model_id, const py::kwargs &kwargs)
 {
@@ -285,7 +295,8 @@ py::dict *arima (const std::string y, const py::tuple &tup,
 {
     // note: custom deleter is needed because of (y, tup) initialisation by constructor
     std::shared_ptr<GretlModel> model =
-    std::shared_ptr<GretlModel>(new GretlModel_NSE_arima(DSET, y, tup), [](GretlModel *ptr)
+    std::shared_ptr<GretlModel>(new GretlModel_NSE_arima(DSET, y, tup),
+                                [](GretlModel *ptr)
                                 {
                                     if (Py_IsInitialized()) {
                                         delete ptr;  // delete manually when Python is alive

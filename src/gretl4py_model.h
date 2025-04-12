@@ -44,12 +44,12 @@ protected:
     int id;                                     // model ID
     py::dict *RES = nullptr;                    // estimation results as dictionary     //FIXME: not pointer, pybind11 Object*!!!
     py::dict *RES_fcast = nullptr;              // forecasting results as dictionary    //FIXME: not pointer, pybind11 Object*!!!
-    mutable GretlTypes *RES_other = nullptr;    // other results (accessor, test, ets)
+    mutable GretlTypes *RES_other = nullptr;    // other results (accessor, tests, ets)
     GretlDataset *GD = nullptr;                 // dataset used
     GretlPrint GP = GretlPrint();               // printer (instance wide)
     int *var_list = NULL;                       // libgretl list of variables
     gretlopt opt = OPT_NONE;                    // model options
-    std::vector<double> optional_par;           // optional estimation parameter (tau for QUANTREG, (l/r)limits for TOBIT)
+    std::vector<double> optional_par;           // optional general purose parameter (tau for QUANTREG, (l/r)limits for TOBIT, tests...)
     mutable int err = 0;
 
     gretlopt unpack_kwargs (const py::kwargs &kwargs, GretlCmdIndex ci);
@@ -68,6 +68,8 @@ public:
     virtual py::dict *fit (const std::string &formula, const py::kwargs &kwargs) = 0;
 
     virtual py::dict *forecast (const py::kwargs &kwargs) = 0;
+
+    virtual GretlTypes *test (const std::string &test_name, const py::kwargs &kwargs) = 0;
 };
 
 //
@@ -89,6 +91,8 @@ public:
     py::dict *fit (const std::string &formula, const py::kwargs &kwargs) override = 0;
 
     py::dict *forecast (const py::kwargs &kwargs) override;
+
+    GretlTypes *test (const std::string &test_name, const py::kwargs &kwargs) override;
 };
 
 //
