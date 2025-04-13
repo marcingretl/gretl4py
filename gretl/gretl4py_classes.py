@@ -108,7 +108,9 @@ class Model:
 
     def test(self, type, *args, **kwargs):
         if self.computed and self._model_id is not None:
-            return _gretl.test(self._model_id, type, *args, **kwargs)
+            res = _gretl.test(self._model_id, type, *args, **kwargs)
+            setattr(self, type, res)
+            return res
 
     # scalars
     def id(self):
