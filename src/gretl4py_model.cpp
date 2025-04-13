@@ -211,16 +211,32 @@ void GretlModel::unpack_kwargs_test (const std::string &type,
 
         if (key == "order") {
             //special case for autocorrelation and arch: lag order
-            order = item.second.cast<int>();
-            continue;
+            if (is_pyint(item.second)) {
+                order = item.second.cast<int>();
+                continue;
+            } else {
+                throw std::runtime_error("'order' takes integers only");
+            }
         } else if (key == "quiet" || key == "silent") {
             throw std::runtime_error("invalid option flag: " + key);
-        } else if (key == "univariate" && item.second.cast<bool>() == true) {
-            opt = static_cast<gretlopt>(opt | OPT_U);
-            continue;
-        } else if (key == "robust" && item.second.cast<bool>() == true) { //FIXME: Allin, is that right?
-            opt = static_cast<gretlopt>(opt | OPT_R);
-            continue;
+        } else if (key == "univariate") {
+            if (is_pybool(item.second)) {
+                if (item.second.cast<bool>() == true) {
+                    opt = static_cast<gretlopt>(opt | OPT_U);
+                }
+                continue;
+            } else {
+                throw std::runtime_error("'univariate' takes true/false only");
+            }
+        } else if (key == "robust") { //FIXME: Allin, is that right?
+            if (is_pybool(item.second)) {
+                if (item.second.cast<bool>() == true) {
+                    opt = static_cast<gretlopt>(opt | OPT_R);
+                }
+                continue;
+            } else {
+                throw std::runtime_error("'robust' takes true/false only");
+            }
         } else {
             throw std::runtime_error("invalid option parameter");
         }
@@ -471,7 +487,6 @@ py::dict GretlModel_NSE::test (const std::string &type,
     //
     py::dict RES;
     const char *summary;
-    opt = OPT_NONE;
     int order = 0;
 
     // we set this model as the last in libgretl
@@ -479,6 +494,7 @@ py::dict GretlModel_NSE::test (const std::string &type,
     model_free = false;   // as of 2025-04-12: double free
 
     // we set up options
+    opt = OPT_NONE;
     unpack_kwargs_test(type, kwargs, order);
 
     // we perform the test
