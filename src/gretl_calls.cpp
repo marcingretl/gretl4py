@@ -199,10 +199,10 @@ void set (const std::string key,
     int err = 0;
 
     if (pyval == std::nullopt) {
-        err = execute_set(key.c_str(), NULL, NULL, OPT_NONE, GP.prn);
+        err = execute_set(key.c_str(), NULL, NULL, OPT_NONE, GP.prn_ptr());
     } else {
         err = execute_set(key.c_str(), MapPyToCpp(pyval).to_string().c_str(),
-                          NULL, OPT_NONE, GP.prn);
+                          NULL, OPT_NONE, GP.prn_ptr());
     }
 
     GP.print();
