@@ -306,7 +306,6 @@ void GretlModel_NSE::save_model (gretlopt opt)
 py::dict *GretlModel_NSE::forecast (const py::kwargs &kwargs)
 {
     /* this code was rendered from gui/library.c */
-    //GretlPrint fp = GretlPrint();
     FITRESID *fr = NULL;
     gretlopt gopt;
     gretlopt opt = OPT_NONE;                //FIXME: change name, must be local!!!
@@ -418,7 +417,7 @@ py::dict *GretlModel_NSE::forecast (const py::kwargs &kwargs)
         int width = 78;
 
         if (recursive) {
-            err = text_print_fit_resid(fr, GD->dset, GP.prn);
+            err = text_print_fit_resid(fr, GD->dset, GP.prn_ptr());
         } else {
             if (dataset_is_cross_section(GD->dset)) {
                 ols_special = gretl_is_simple_OLS(model);
@@ -430,7 +429,7 @@ py::dict *GretlModel_NSE::forecast (const py::kwargs &kwargs)
                 gopt = static_cast<gretlopt>(gopt | OPT_P);
             }
             fr->alpha = 1 - conf;
-            err = text_print_forecast(fr, GD->dset, gopt, GP.prn);
+            err = text_print_forecast(fr, GD->dset, gopt, GP.prn_ptr());
         }
 
         if (ols_special) {
@@ -579,24 +578,24 @@ py::dict *GretlModel_NSE_Driver<F, CI>::fit (const std::string &formula,
     if constexpr (use_ldco_sig(CI)) {
         *model = F(var_list, GD->dset, CI, opt);
     } else if constexpr (use_ldcop_sig(CI)) {
-        *model = F(var_list, GD->dset, CI, opt, GP.prn);
+        *model = F(var_list, GD->dset, CI, opt, GP.prn_ptr());
     } else if constexpr (use_ldo_sig(CI)) {
         *model = F(var_list, GD->dset, opt);
     } else if constexpr (use_ldop_sig(CI)) {
-        *model = F(var_list, GD->dset, opt, GP.prn);
+        *model = F(var_list, GD->dset, opt, GP.prn_ptr());
     } else if constexpr (use_lcdop_sig(CI)) {
-        *model = F(var_list, CI, GD->dset, opt, GP.prn);
+        *model = F(var_list, CI, GD->dset, opt, GP.prn_ptr());
     } else if constexpr (CI == QUANTREG) {
         if (this->optional_par_as_mat != NULL) {
             *model = quantreg (this->optional_par_as_mat,
-                               var_list, GD->dset, opt, GP.prn);
+                               var_list, GD->dset, opt, GP.prn_ptr());
         } else {
             *model = F(std::to_string(this->optional_par.at(0)).c_str(),
-                       var_list, GD->dset, opt, GP.prn);
+                       var_list, GD->dset, opt, GP.prn_ptr());
         }
     } else if constexpr (CI == TOBIT) {
         *model = F(var_list, optional_par.at(0), optional_par.at(1),
-                   GD->dset, opt, GP.prn);
+                   GD->dset, opt, GP.prn_ptr());
     }
     save_model(opt);
 
@@ -709,7 +708,7 @@ py::dict *GretlModel_NSE_arima::fit (const std::string &formula,
     var_list[i++] = LISTSEP;
     var_list[i++] = y_number;
 
-    *model = arma(var_list, NULL, GD->dset, opt, GP.prn);
+    *model = arma(var_list, NULL, GD->dset, opt, GP.prn_ptr());
     save_model(opt);
 
     return RES;
