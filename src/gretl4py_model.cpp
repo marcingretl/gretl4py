@@ -485,7 +485,9 @@ py::dict GretlModel_NSE::test (const std::string &type,
 
     // we set this model as the last in libgretl
     set_as_last_model(model, GRETL_OBJ_EQN);
-    model_free = false;   // as of 2025-04-12: double free
+    if (model_free) {   // as of 2025-04-12: double free
+        model_free = false;
+    }
 
     // we set up options
     opt = OPT_NONE;
