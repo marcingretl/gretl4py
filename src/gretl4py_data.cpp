@@ -462,7 +462,6 @@ py::str GretlDataset::repr (void) const
 
 void GretlDataset::print (const py::kwargs &kwargs)
 {
-    GretlPrint GP = GretlPrint();
     int summary = 0;
     int byobs = 0;
     // int *list = NULL;
@@ -500,19 +499,19 @@ void GretlDataset::print (const py::kwargs &kwargs)
 
             ntolabel(s1, 0, dset);
             ntolabel(s2, dset->n-1, dset);
-            pprintf(GP.prn, "Time series, frequency %d, T = %d, %s to %s\n\n",
+            pprintf(GP.prn_ptr(), "Time series, frequency %d, T = %d, %s to %s\n\n",
                     dset->pd, dset->n, s1, s2);
         } else if (dataset_is_panel(dset)) {
-            pprintf(GP.prn, "Panel data, N = %d, T = %d\n\n", dset->n / dset->pd,
+            pprintf(GP.prn_ptr(), "Panel data, N = %d, T = %d\n\n", dset->n / dset->pd,
                     dset->pd);
         } else {
-            pprintf(GP.prn, "Cross-sectional data, N = %d\n\n", dset->n);
+            pprintf(GP.prn_ptr(), "Cross-sectional data, N = %d\n\n", dset->n);
         }
-        list_series(dset, OPT_NONE, GP.prn);
+        list_series(dset, OPT_NONE, GP.prn_ptr());
     } else {
         gretlopt opt = byobs ? OPT_O : OPT_NONE;
 
-        err = printdata(NULL, NULL, dset, opt, GP.prn);
+        err = printdata(NULL, NULL, dset, opt, GP.prn_ptr());
         if (err) {
             handle_gretl_error(err);
         }
@@ -526,7 +525,6 @@ void GretlDataset::sample (const py::kwargs &kwargs)
     //
     // A method to mimic gretl's 'smpl' command
     //
-    GretlPrint GP = GretlPrint();
     int opt_replace = 0;
     int full = 0;
     int argc = 0;
@@ -575,7 +573,7 @@ void GretlDataset::sample (const py::kwargs &kwargs)
 
     if (argc == 0 && optc == 0) {
         // just report the current sample
-        print_smpl(dset, get_full_length_n(), OPT_NONE, GP.prn);
+        print_smpl(dset, get_full_length_n(), OPT_NONE, GP.prn_ptr());
     } else if (argc == 0 && full) {
         // "smpl full"
         err = restore_full_sample(dset, NULL);
@@ -587,7 +585,7 @@ void GretlDataset::sample (const py::kwargs &kwargs)
             // C++ !!
             opt = static_cast<gretlopt>(static_cast<int>(OPT_R) | static_cast<int>(OPT_P));  //FIXME: static_cast<gretlopt>(OPT_R | OPT_P);!!!
         }
-        err = restrict_sample(restr, NULL, dset, NULL, opt, GP.prn, NULL);
+        err = restrict_sample(restr, NULL, dset, NULL, opt, GP.prn_ptr(), NULL);
     } else if (t1str || t2str) {
         // smpl <t1str> <t2str>
         if (t1str && !t2str) {
@@ -603,7 +601,7 @@ void GretlDataset::sample (const py::kwargs &kwargs)
         const char *msg = errmsg_get_with_default(err);
         throw std::runtime_error(msg);
     } else if (argc > 0 || optc > 0) {
-        print_smpl(dset, get_full_length_n(), OPT_NONE, GP.prn);
+        print_smpl(dset, get_full_length_n(), OPT_NONE, GP.prn_ptr());
     }
 
     GP.print();
@@ -660,9 +658,7 @@ void GretlDataset::setobs (const py::kwargs &kwargs)
     }
 
     if (argc == 0 && opt == OPT_NONE) {
-        GretlPrint GP = GretlPrint();
-
-        print_smpl(dset, 0, OPT_NONE, GP.prn);
+        print_smpl(dset, 0, OPT_NONE, GP.prn_ptr());
         GP.print();
         return;
     }
@@ -927,10 +923,8 @@ py::dict *GretlBundle::to_dict (void)
 void GretlBundle::print (void)
 {
     if (!err) {
-        GretlPrint GP = GretlPrint();
-
         if (!GP.err) {
-            err = gretl_bundle_print(b, GP.prn);
+            err = gretl_bundle_print(b, GP.prn_ptr());
             if (!err) {
                 GP.print();
             }

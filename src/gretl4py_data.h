@@ -65,6 +65,28 @@ GretlTypes *gretl_generate_gretl_object (const char *s, int &err,
                                          MODEL *model = NULL);
 
 //
+// Class to handle printing
+//
+class GretlPrint
+{
+private:
+    PRN *prn = NULL;
+    PrnType prn_type;
+public:
+    int err = 0;
+
+    GretlPrint (PrnType prn_type = GRETL_PRINT_BUFFER);  // by default we use buffered printer
+    ~GretlPrint (void);
+
+    PRN *prn_ptr (void);
+
+    void print (void);
+
+    const char *get_buffer (void);
+};
+
+
+//
 // Class to handle gretl 'DATASET' type
 //
 class GretlDataset
@@ -73,6 +95,7 @@ private:
     static inline int next_obj_id = 1;
     int id;
     std::unordered_set<int> linked_models;  // models (id-s) which use this dataset
+    GretlPrint GP = GretlPrint();           // printer (instance wide)
 
     void allocate_dset (void);
 
@@ -135,6 +158,7 @@ private:
     static inline std::string sd_json_cp; // those two strings we may change to char* buffers
     static inline std::string sd_tmp_str;
     //simdjson: end
+    GretlPrint GP = GretlPrint();               // printer (instance wide)
     bool free_b = true;
     char *json_buf = NULL;
     gretl_bundle *b;
@@ -176,27 +200,6 @@ public:
     inline std::string to_string (void) { return as_str; }
 
     inline std::string_view to_string_view (void) { return static_cast<std::string_view>(as_str); }
-};
-
-//
-// Class to handle printing
-//
-class GretlPrint
-{
-private:
-    PrnType prn_type;
-public:
-    int err = 0;
-    PRN *prn = NULL;
-
-    GretlPrint (PrnType prn_type = GRETL_PRINT_BUFFER);  // by default we use buffered printer
-    ~GretlPrint (void);
-
-    PRN *prn_ptr (void);
-
-    void print (void);
-
-    const char *get_buffer (void);
 };
 
 // function implemented in gretl_calls.cpp

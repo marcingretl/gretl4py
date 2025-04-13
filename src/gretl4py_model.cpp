@@ -570,7 +570,7 @@ py::dict *GretlModel_NSE_Driver<F, CI>::fit (const std::string &formula,
 
     if (var_list == NULL) {
         throw std::runtime_error("Formula rendering failed");
-    } else if (model == NULL || GP.prn == NULL) {
+    } else if (model == NULL || GP.prn_ptr() == NULL) {
         throw std::runtime_error("Failed to allocate memory");
     }
 
@@ -691,7 +691,7 @@ py::dict *GretlModel_NSE_arima::fit (const std::string &formula,
 
     model = gretl_model_new();
     var_list = gretl_list_new(seasonal ? 9 : 5);
-    if (model == NULL || var_list == NULL || GP.prn == NULL) {
+    if (model == NULL || var_list == NULL || GP.prn_ptr() == NULL) {
         throw std::runtime_error("Failed to allocate memory");
     }
 
