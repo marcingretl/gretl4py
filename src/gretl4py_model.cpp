@@ -276,11 +276,7 @@ void GretlModel_NSE::save_model (gretlopt opt)
         const char *msg = errmsg_get_with_default(model->errcode);
         throw std::runtime_error(msg);
     } else {
-        const char *summary;
-
-        printmodel(model, GD->dset, opt, GP.prn);
-        summary = gretl_print_get_buffer(GP.prn);
-        // gretl_model_to_dict(summary);: START
+        printmodel(model, GD->dset, opt, GP.prn_ptr());
         GretlBundle b = GretlBundle(model, GD->dset);
         err = b.err;
 
@@ -294,10 +290,9 @@ void GretlModel_NSE::save_model (gretlopt opt)
                 _ids[py::cast("_id")] = model->ID;
                 _ids[py::cast("_model_id")] = id;
                 (*RES)[py::cast("_ids")] = _ids;
-                (*RES)[py::cast("summary")] = summary;
+                (*RES)[py::cast("summary")] = GP.get_buffer();
             }
         }
-        // gretl_model_to_dict(summary);: STOP
         if (err) {
             handle_gretl_error(err);
         } else {
@@ -486,7 +481,6 @@ py::dict GretlModel_NSE::test (const std::string &type,
     // this method mimics 'modtest' command
     //
     py::dict RES;
-    const char *summary;
     int order = 0;
 
     // we set this model as the last in libgretl
@@ -498,7 +492,7 @@ py::dict GretlModel_NSE::test (const std::string &type,
     unpack_kwargs_test(type, kwargs, order);
 
     // we perform the test
-    err = model_test_driver(order, GD->dset, opt, GP.prn);
+    err = model_test_driver(order, GD->dset, opt, GP.prn_ptr());
 
     if (err) {
         handle_gretl_error(err);
@@ -511,8 +505,7 @@ py::dict GretlModel_NSE::test (const std::string &type,
         RES[py::cast("pvalue")] = *RES_other;
         delete RES_other;
 
-        summary = gretl_print_get_buffer(GP.prn);
-        RES[py::cast("summary")] = summary;
+        RES[py::cast("summary")] = GP.get_buffer();
     }
 
     return RES;

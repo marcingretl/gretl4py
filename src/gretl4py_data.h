@@ -192,7 +192,11 @@ public:
     GretlPrint (PrnType prn_type = GRETL_PRINT_BUFFER);  // by default we use buffered printer
     ~GretlPrint (void);
 
+    PRN *prn_ptr (void);
+
     void print (void);
+
+    const char *get_buffer (void);
 };
 
 // function implemented in gretl_calls.cpp

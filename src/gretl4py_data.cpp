@@ -993,17 +993,29 @@ GretlPrint::~GretlPrint (void)
     }
 }
 
+PRN *GretlPrint::prn_ptr (void)
+{
+    // at first we always reset a buffer
+    if (prn_type == GRETL_PRINT_BUFFER) {
+        err = gretl_print_reset_buffer(prn);
+        if (err) {
+            handle_gretl_error(err);
+        }
+    }
+
+    return prn;
+}
+
 void GretlPrint::print (void)
 {
     const char *buf = gretl_print_get_buffer(prn);
 
     if (buf != NULL) {
         py::print(buf);
-        if (prn_type == GRETL_PRINT_BUFFER) {
-            err = gretl_print_reset_buffer(prn);
-            if (err) {
-                handle_gretl_error(err);
-            }
-        }
     }
+}
+
+const char *GretlPrint::get_buffer (void)
+{
+    return gretl_print_get_buffer(prn);
 }
