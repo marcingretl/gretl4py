@@ -481,7 +481,7 @@ py::dict GretlModel_NSE::test (const std::string &type,
     // this method mimics 'modtest' command
     //
     py::dict RES;
-    int order = 0;
+    int order = GD->dset->pd;
 
     // we set this model as the last in libgretl
     set_as_last_model(model, GRETL_OBJ_EQN);
