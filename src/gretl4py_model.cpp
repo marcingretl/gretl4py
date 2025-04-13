@@ -243,7 +243,7 @@ GretlModel_NSE::GretlModel_NSE (GretlDataset *GD)
 
 GretlModel_NSE::~GretlModel_NSE (void)
 {
-    if (this->model != NULL && model_free) {
+    if (this->model != NULL && this->model_free) {
         gretl_model_free(this->model);
     }
 }
