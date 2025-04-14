@@ -73,11 +73,52 @@ void GretlModel::unlink_from_dataset (void) const
     }
 }
 
-void GretlModel::unpack_kwargs (const py::kwargs &kwargs, GretlCmdIndex ci)
+void GretlModel::gretl_valid_long_opt (GretlCmdIndex ci,
+                                       const std::string &key,
+                                       const py::handle &val)
 {
-    int opt_local = OPT_NONE;
+    // should be a regular gretl option: check its validity in
+    // the context of @ci
+    gretlopt opt_local = OPT_NONE;
     OptStatus status;
 
+    if (std::strchr(key.c_str(), '_')) {
+        std::string tmp(key);
+
+        gretl_charsub(tmp.data(), '_', '-');
+        opt_local = valid_long_opt(ci, tmp.c_str(), &status);
+    } else {
+        opt_local = valid_long_opt(ci, key.c_str(), &status);
+    }
+    if (opt_local == 0) {
+        throw std::runtime_error("invalid option flag: " + key);
+    }
+
+    if (status == OPT_NO_PARM) {
+        // no parameter wanted, but we'll accept a boolean
+        if (is_pyint(val)) {
+            int ival = val.cast<int>();
+
+            if (ival == 1) {
+                // activate the option
+                opt = static_cast<gretlopt>(opt | opt_local);
+            } else if (ival != 0) {
+                throw std::runtime_error("invalid option parameter");
+            }
+        }
+    } else {
+        // an option parameter is accepted, perhaps required
+        if (!is_pystr(val) && !is_pyint(val) && !is_pyfloat(val)) {
+                throw std::runtime_error("unsupported option param type");
+        } else {
+            push_option_param(ci, static_cast<gretlopt>(opt_local),
+                              gretl_strdup(MapPyToCpp(val).to_string().c_str()));
+        }
+    }
+}
+
+void GretlModel::unpack_kwargs (const py::kwargs &kwargs, GretlCmdIndex ci)
+{
     opt = OPT_NONE;
     for (auto &item : kwargs) {
         if (!is_pystr(item.first)) {
@@ -109,40 +150,7 @@ void GretlModel::unpack_kwargs (const py::kwargs &kwargs, GretlCmdIndex ci)
             }
             continue;
         } else {
-            // should be a regular gretl option: check its validity in
-            // the context of @ci
-            if (std::strchr(key.c_str(), '_')) {
-                std::string tmp(key);
-
-                gretl_charsub(tmp.data(), '_', '-');
-                opt_local = valid_long_opt(ci, tmp.c_str(), &status);
-            } else {
-                opt_local = valid_long_opt(ci, key.c_str(), &status);
-            }
-            if (opt_local == 0) {
-                throw std::runtime_error("invalid option flag: " + key);
-            }
-        }
-        if (status == OPT_NO_PARM) {
-            // no parameter wanted, but we'll accept a boolean
-            if (is_pyint(item.second)) {
-                int ival = item.second.cast<int>();
-
-                if (ival == 1) {
-                    /* activate the option */
-                    opt = static_cast<gretlopt>(opt | opt_local);
-                } else if (ival != 0) {
-                    throw std::runtime_error("invalid option parameter");
-                }
-            }
-        } else {
-            // an option parameter is accepted, perhaps required
-            if (!is_pystr(item.second) && !is_pyint(item.second) && !is_pyfloat(item.second)) {
-                throw std::runtime_error("unsupported option param type");
-            } else {
-                push_option_param(ci, static_cast<gretlopt>(opt_local),
-                                  gretl_strdup(MapPyToCpp(item.second).to_string().c_str()));
-            }
+            gretl_valid_long_opt(ci, key, item.second);
         }
     }
 }
@@ -170,7 +178,7 @@ void GretlModel::unpack_kwargs_test (const std::string &type,
 {
     //
     // we setup test options
-    // order: for autocorrelation or arch test (may chanche in future)
+    // order: for autocorrelation or arch test (may change in future)
     //
 
     // we set basic opt for given test
@@ -217,26 +225,8 @@ void GretlModel::unpack_kwargs_test (const std::string &type,
             }
         } else if (key == "quiet" || key == "silent") {
             throw std::runtime_error("invalid option flag: " + key);
-        } else if (key == "univariate") {
-            if (is_pybool(item.second)) {
-                if (item.second.cast<bool>() == true) {
-                    opt = static_cast<gretlopt>(opt | OPT_U);
-                }
-                continue;
-            } else {
-                throw std::runtime_error("'univariate' takes true/false only");
-            }
-        } else if (key == "robust") { //FIXME: Allin, is that right?
-            if (is_pybool(item.second)) {
-                if (item.second.cast<bool>() == true) {
-                    opt = static_cast<gretlopt>(opt | OPT_R);
-                }
-                continue;
-            } else {
-                throw std::runtime_error("'robust' takes true/false only");
-            }
         } else {
-            throw std::runtime_error("invalid option parameter");
+            gretl_valid_long_opt(MODTEST, key, item.second);
         }
     }
 }

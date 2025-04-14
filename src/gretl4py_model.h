@@ -53,11 +53,13 @@ protected:
     bool model_free = true;                     // do we free model in deconstructor
     mutable int err = 0;
 
+    void gretl_valid_long_opt (GretlCmdIndex ci, const std::string &key, const py::handle &val);
+
     void unpack_kwargs (const py::kwargs &kwargs, GretlCmdIndex ci);
 
-    gretlopt unpack_kwargs_forecast (const py::kwargs &kwargs, GretlCmdIndex ci);
-
     void unpack_kwargs_test (const std::string &type, const py::kwargs &kwargs, int &order);
+
+    gretlopt unpack_kwargs_forecast (const py::kwargs &kwargs, GretlCmdIndex ci);
 public:
     explicit GretlModel (GretlDataset *GD);
     virtual ~GretlModel (void);
