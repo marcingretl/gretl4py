@@ -214,6 +214,8 @@ void GretlModel::unpack_kwargs_test (const std::string &type,
         ci = CUSUM;
     } else if (type == "leverage") {
         ci = LEVERAGE;
+    } else if (type == "panspec") {
+        ci = PANSPEC;
     } else {
         throw std::runtime_error("unknown test");
     }
@@ -492,6 +494,8 @@ py::dict GretlModel_NSE::test (const std::string &type,
         err = reset_test(model, GD->dset, opt, GP.prn_ptr());
     } else if (type == "qlrtest") {
         err = QLR_test(model, GD->dset, opt, GP.prn_ptr());
+    } else if (type == "panspec") {
+        err = panel_specification_test(model, GD->dset, opt, GP.prn_ptr());
     } else {
         // MODTEST
         set_as_last_model(model, GRETL_OBJ_EQN);
