@@ -216,6 +216,8 @@ void GretlModel::unpack_kwargs_test (const std::string &type,
         ci = LEVERAGE;
     } else if (type == "panspec") {
         ci = PANSPEC;
+    } else if (type == "vif") {
+        ci = VIF;
     } else {
         throw std::runtime_error("unknown test");
     }
@@ -496,6 +498,8 @@ py::dict GretlModel_NSE::test (const std::string &type,
         err = QLR_test(model, GD->dset, opt, GP.prn_ptr());
     } else if (type == "panspec") {
         err = panel_specification_test(model, GD->dset, opt, GP.prn_ptr());
+    } else if (type == "vif") {
+        err = vif_test(model, GD->dset, opt, GP.prn_ptr());
     } else {
         // MODTEST
         set_as_last_model(model, GRETL_OBJ_EQN);
