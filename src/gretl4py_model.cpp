@@ -208,6 +208,8 @@ void GretlModel::unpack_kwargs_test (const std::string &type,
         opt = OPT_D;
     } else if (type == "reset") {
         ci = RESET;
+    } else if (type == "qlrtest") {
+        ci = QLRTEST;
     } else {
         throw std::runtime_error("unknown test");
     }
@@ -480,6 +482,8 @@ py::dict GretlModel_NSE::test (const std::string &type,
     // we perform the test
     if (type == "reset") {
         err = reset_test(model, GD->dset, opt, GP.prn_ptr());
+    } else if (type == "qlrtest") {
+        err = QLR_test(model, GD->dset, opt, GP.prn_ptr());
     } else {
         // MODTEST
         set_as_last_model(model, GRETL_OBJ_EQN);
