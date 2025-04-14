@@ -2,6 +2,7 @@ import gretl
 
 d1 = gretl.get_data(gretl.gretl_data_path('misc/denmark.gdt'))
 d2 = gretl.get_data(gretl.gretl_data_path('misc/bjg.gdt'))
+d3 = gretl.get_data(gretl.gretl_data_path('misc/grunfeld.gdt'))
 #gretl.show_data_status()
 #print(d1.get_accessor("$pd"))
 
@@ -31,6 +32,17 @@ print("\n****************************")
 print("leverage")
 m1.test(type="leverage")
 print(m1.cusum['summary'])
+
+print("\n****************************")
+print("vif")
+m1.test(type="vif")
+print(m1.vif['summary'])
+
+print("\n****************************")
+print("bkw")
+m1.test(type="bkw")
+print(m1.bkw['summary'])
+
 
 # ARIMA
 m2 = gretl.arima(y='lg', order=(2,0,0), data=d2).fit()
@@ -62,4 +74,17 @@ print("\n****************************")
 print("autocorr")
 m2.test(type="autocorr", order=4)
 print(m2.autocorr['summary'])
+
+
+
+# PANEL
+m3 = gretl.ols(formula="invest ~ const value kstock", data=d3).fit()
+print(m3)
+m3.test(type="panspec")
+print(m3.panspec['summary'])
+
+m4 = gretl.panel(formula="invest ~ const value kstock", data=d3).fit()
+print(m4)
+m4.test(type="panel")
+print(m4.panel['summary'])
 
