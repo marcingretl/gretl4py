@@ -210,6 +210,8 @@ void GretlModel::unpack_kwargs_test (const std::string &type,
         ci = RESET;
     } else if (type == "qlrtest") {
         ci = QLRTEST;
+    } else if (type == "cusum") {
+        ci = CUSUM;
     } else {
         throw std::runtime_error("unknown test");
     }
@@ -480,7 +482,9 @@ py::dict GretlModel_NSE::test (const std::string &type,
     unpack_kwargs_test(type, kwargs, order);
 
     // we perform the test
-    if (type == "reset") {
+    if (type == "cusum") {
+        err = cusum_test(model, GD->dset, opt, GP.prn_ptr());
+    } else if (type == "reset") {
         err = reset_test(model, GD->dset, opt, GP.prn_ptr());
     } else if (type == "qlrtest") {
         err = QLR_test(model, GD->dset, opt, GP.prn_ptr());
