@@ -212,6 +212,8 @@ void GretlModel::unpack_kwargs_test (const std::string &type,
         ci = QLRTEST;
     } else if (type == "cusum") {
         ci = CUSUM;
+    } else if (type == "leverage") {
+        ci = LEVERAGE;
     } else {
         throw std::runtime_error("unknown test");
     }
@@ -484,6 +486,8 @@ py::dict GretlModel_NSE::test (const std::string &type,
     // we perform the test
     if (type == "cusum") {
         err = cusum_test(model, GD->dset, opt, GP.prn_ptr());
+    } else if (type == "leverage") {
+        err = leverage_test(model, GD->dset, opt, GP.prn_ptr());
     } else if (type == "reset") {
         err = reset_test(model, GD->dset, opt, GP.prn_ptr());
     } else if (type == "qlrtest") {
