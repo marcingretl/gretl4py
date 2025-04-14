@@ -173,15 +173,17 @@ gretlopt GretlModel::unpack_kwargs_forecast (const py::kwargs &kwargs,
 
 
 void GretlModel::unpack_kwargs_test (const std::string &type,
-                                    const py::kwargs &kwargs,
-                                    int &order)
+                                     const py::kwargs &kwargs,
+                                     int &order)
 {
     //
     // we setup test options
     // order: for autocorrelation or arch test (may change in future)
     //
+    GretlCmdIndex ci = MODTEST;
 
     // we set basic opt for given test
+    opt = OPT_NONE;
     if (type == "normality") {
         opt = OPT_N;
     } else if (type == "logs") {
@@ -204,6 +206,8 @@ void GretlModel::unpack_kwargs_test (const std::string &type,
         opt = OPT_C;
     } else if (type == "xdepend") {
         opt = OPT_D;
+    } else if (type == "reset") {
+        ci = RESET;
     } else {
         throw std::runtime_error("unknown test");
     }
@@ -226,7 +230,7 @@ void GretlModel::unpack_kwargs_test (const std::string &type,
         } else if (key == "quiet" || key == "silent") {
             throw std::runtime_error("invalid option flag: " + key);
         } else {
-            gretl_valid_long_opt(MODTEST, key, item.second);
+            gretl_valid_long_opt(ci, key, item.second);
         }
     }
 }
@@ -470,18 +474,20 @@ py::dict GretlModel_NSE::test (const std::string &type,
     py::dict RES;
     int order = GD->dset->pd;
 
-    // we set this model as the last in libgretl
-    set_as_last_model(model, GRETL_OBJ_EQN);
-    if (model_free) {   // as of 2025-04-12: double free
-        model_free = false;
-    }
-
     // we set up options
-    opt = OPT_NONE;
     unpack_kwargs_test(type, kwargs, order);
 
     // we perform the test
-    err = model_test_driver(order, GD->dset, opt, GP.prn_ptr());
+    if (type == "reset") {
+        err = reset_test(model, GD->dset, opt, GP.prn_ptr());
+    } else {
+        // MODTEST
+        set_as_last_model(model, GRETL_OBJ_EQN);
+        if (model_free) {   // as of 2025-04-12: double free
+            model_free = false;
+        }
+        err = model_test_driver(order, GD->dset, opt, GP.prn_ptr());
+    }
 
     if (err) {
         handle_gretl_error(err);
@@ -489,11 +495,9 @@ py::dict GretlModel_NSE::test (const std::string &type,
         RES_other = get_accessor("$test");
         RES[py::cast("test")] = *RES_other;
         delete RES_other;
-
         RES_other = get_accessor("$pvalue");
         RES[py::cast("pvalue")] = *RES_other;
         delete RES_other;
-
         RES[py::cast("summary")] = GP.get_buffer();
     }
 
