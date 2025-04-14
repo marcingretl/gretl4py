@@ -53,7 +53,7 @@ protected:
     bool model_free = true;                     // do we free model in deconstructor
     mutable int err = 0;
 
-    gretlopt unpack_kwargs (const py::kwargs &kwargs, GretlCmdIndex ci);
+    void unpack_kwargs (const py::kwargs &kwargs, GretlCmdIndex ci);
 
     gretlopt unpack_kwargs_forecast (const py::kwargs &kwargs, GretlCmdIndex ci);
 

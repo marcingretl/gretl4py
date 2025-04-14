@@ -73,18 +73,19 @@ void GretlModel::unlink_from_dataset (void) const
     }
 }
 
-gretlopt GretlModel::unpack_kwargs (const py::kwargs &kwargs, GretlCmdIndex ci)
+void GretlModel::unpack_kwargs (const py::kwargs &kwargs, GretlCmdIndex ci)
 {
-    int opt, opts = OPT_NONE;
+    int opt_local = OPT_NONE;
     OptStatus status;
 
+    opt = OPT_NONE;
     for (auto &item : kwargs) {
         if (!is_pystr(item.first)) {
             throw std::runtime_error("option key must be a string");
         }
         const std::string &key = item.first.cast<std::string>();
 
-        if (key == "data") {
+        if (key == "data") {    //FIXME: put a guard for estimators only (in context of @ci)
             // special case: we use already allocated object of GretlDataset class
             GD = item.second.cast<GretlDataset*>();
             continue;
@@ -96,7 +97,7 @@ gretlopt GretlModel::unpack_kwargs (const py::kwargs &kwargs, GretlCmdIndex ci)
         } else if (key == "lagselect" && ci == ARMA) {
             throw std::runtime_error("'lagselect' option for (S)ARIMA is temporarily unavailable");
         } else if ((key == "llimit" || key == "rlimit") && ci == TOBIT) {
-            // TOBIT special: ignore here
+            // TOBIT special: we set (l/r)limit
             if (!is_pynumeric(item.second)) {
                 throw std::runtime_error("both llimit and rlimit must be numeric");
             } else {
@@ -114,11 +115,11 @@ gretlopt GretlModel::unpack_kwargs (const py::kwargs &kwargs, GretlCmdIndex ci)
                 std::string tmp(key);
 
                 gretl_charsub(tmp.data(), '_', '-');
-                opt = valid_long_opt(ci, tmp.c_str(), &status);
+                opt_local = valid_long_opt(ci, tmp.c_str(), &status);
             } else {
-                opt = valid_long_opt(ci, key.c_str(), &status);
+                opt_local = valid_long_opt(ci, key.c_str(), &status);
             }
-            if (opt == 0) {
+            if (opt_local == 0) {
                 throw std::runtime_error("invalid option flag: " + key);
             }
         }
@@ -129,7 +130,7 @@ gretlopt GretlModel::unpack_kwargs (const py::kwargs &kwargs, GretlCmdIndex ci)
 
                 if (ival == 1) {
                     /* activate the option */
-                    opts |= opt;
+                    opt = static_cast<gretlopt>(opt | opt_local);
                 } else if (ival != 0) {
                     throw std::runtime_error("invalid option parameter");
                 }
@@ -139,15 +140,12 @@ gretlopt GretlModel::unpack_kwargs (const py::kwargs &kwargs, GretlCmdIndex ci)
             if (!is_pystr(item.second) && !is_pyint(item.second) && !is_pyfloat(item.second)) {
                 throw std::runtime_error("unsupported option param type");
             } else {
-                push_option_param(ci, static_cast<gretlopt>(opt),
+                push_option_param(ci, static_cast<gretlopt>(opt_local),
                                   gretl_strdup(MapPyToCpp(item.second).to_string().c_str()));
             }
         }
     }
-
-    return static_cast<gretlopt>(opts);
 }
-
 
 gretlopt GretlModel::unpack_kwargs_forecast (const py::kwargs &kwargs,
                                              GretlCmdIndex ci)
@@ -557,7 +555,7 @@ py::dict *GretlModel_NSE_Driver<F, CI>::fit (const std::string &formula,
                                              const py::kwargs &kwargs)
 {
     if (py::len(kwargs) > 0) {
-        opt = unpack_kwargs(kwargs, CI);
+        unpack_kwargs(kwargs, CI);
     }
 
     if (!GD) {
@@ -662,7 +660,7 @@ py::dict *GretlModel_NSE_arima::fit (const std::string &formula,
     int i;
 
     if (py::len(kwargs) > 0) {
-        opt = unpack_kwargs(kwargs, ARMA);
+        unpack_kwargs(kwargs, ARMA);
     }
 
     if (!GD) {
