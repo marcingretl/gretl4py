@@ -106,12 +106,16 @@ class Model:
         if self.computed and self._model_id is not None:
             return _gretl.get_accessor(self._model_id, accessor)
 
-    def test(self, type, vars=None, *args, **kwargs):
+    def test(self, type, vars=None, obs=None, *args, **kwargs):
         if self.computed and self._model_id is not None:
-            if vars is None:
-                res = _gretl.test(self._model_id, type, *args, **kwargs)
-            else:
+            if vars is not None and obs is not None:
+                raise RuntimeError("you cannot use 'vars' and 'obs' together")
+            elif vars is not None:
                 res = _gretl.test(self._model_id, type, vars, *args, **kwargs)
+            elif obs is not None:
+                res = _gretl.test(self._model_id, type, obs, *args, **kwargs)
+            else:
+                res = _gretl.test(self._model_id, type, *args, **kwargs)
             setattr(self, type, res)
             return res
 

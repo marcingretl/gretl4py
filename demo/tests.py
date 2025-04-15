@@ -59,7 +59,7 @@ print(m1.bkw['summary'])
 
 print("\n****************************")
 print("chow")
-m1.test(type="chow", vars="1980:1")
+m1.test(type="chow", obs="1980:1", vars="1980:2")
 print(m1.chow['summary'])
 
 
