@@ -18,6 +18,11 @@ print(m1.add['test'])
 print(m1.add['pvalue'])
 
 print("\n****************************")
+print("omit")
+m1.test(type="omit", vars="3")
+print(m1.omit['summary'])
+
+print("\n****************************")
 print("white")
 white = m1.test(type="white")
 print(white['summary'])

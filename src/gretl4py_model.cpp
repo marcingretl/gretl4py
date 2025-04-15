@@ -214,6 +214,8 @@ void GretlModel::unpack_kwargs_test (const std::string &type,
         ci = BKW;
     } else if (type == "add") {
         ci = ADD;
+    } else if (type == "omit") {
+        ci = OMIT;
     } else {
         throw std::runtime_error("unknown test");
     }
@@ -565,6 +567,8 @@ py::dict GretlModel_NSE::test (const std::string &type,
     // we perform the test
     if (type == "add") {
         err = add_test(model, ex_var.get(), GD->dset, opt, GP.prn_ptr());
+    } else if (type == "omit") {
+        err = omit_test(model, ex_var.get(), GD->dset, opt, GP.prn_ptr());
     }
 
     if (err) {
