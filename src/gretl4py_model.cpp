@@ -212,6 +212,8 @@ void GretlModel::unpack_kwargs_test (const std::string &type,
         ci = VIF;
     } else if (type == "bkw") {
         ci = BKW;
+    } else if (type == "add") {
+        ci = ADD;
     } else {
         throw std::runtime_error("unknown test");
     }
@@ -258,6 +260,27 @@ GretlModel_NSE::~GretlModel_NSE (void)
     if (this->model != NULL && this->model_free) {
         gretl_model_free(this->model);
     }
+}
+
+gretl_list_ptr GretlModel_NSE::list_from_formula(const std::string &formula) {
+    // we create a unique_ptr for the char* with std::free as the deleter.
+#if defined(_WIN32)
+    std::unique_ptr<char, decltype(&std::free)> tmp(_strdup(formula.c_str()), &std::free);
+#else
+    std::unique_ptr<char, decltype(&std::free)> tmp(strdup(formula.c_str()), &std::free);
+#endif
+
+    // convert from a simple R-style formula to a gretl list
+    gretl_charsub(tmp.get(), '~', ' ');
+    gretl_charsub(tmp.get(), '+', ' ');
+
+    // generate_list() returns a raw pointer; assign that to our unique_ptr.
+    int *raw_list = generate_list(tmp.get(), GD->dset, 0, &err);
+    if (err) {
+        handle_gretl_error(err);
+    }
+
+    return gretl_list_ptr(raw_list, gretl_list_deleter);
 }
 
 void GretlModel_NSE::save_model (gretlopt opt)
@@ -473,7 +496,7 @@ py::dict GretlModel_NSE::test (const std::string &type,
                                const py::kwargs &kwargs)
 {
     //
-    // this method mimics 'modtest' command
+    // this method performs test which do not take a variables list
     //
     py::dict RES;
     int order = GD->dset->pd;
@@ -520,6 +543,46 @@ py::dict GretlModel_NSE::test (const std::string &type,
     return RES;
 }
 
+py::dict GretlModel_NSE::test (const std::string &type,
+                               const std::string &vars,
+                               const py::kwargs &kwargs)
+{
+    //
+    // this method performs test which do take a variables list
+    //
+    py::dict RES;
+    int order = 0; //FIXME: default vale in unpack_kwargs_test() signature!!!
+
+    // we construct list of external variables
+    auto ex_var = list_from_formula(vars); // it's std::unique_ptr!!!
+    if (!ex_var) {
+        throw std::runtime_error("wrong list of variables");
+    }
+
+    // we set up options
+    unpack_kwargs_test(type, kwargs, order);
+
+    // we perform the test
+    if (type == "add") {
+        err = add_test(model, ex_var.get(), GD->dset, opt, GP.prn_ptr());
+    }
+
+    if (err) {
+        handle_gretl_error(err);
+    } else {
+        RES_other = get_accessor("$test");
+        RES[py::cast("test")] = *RES_other;
+        delete RES_other;
+        RES_other = get_accessor("$pvalue");
+        RES[py::cast("pvalue")] = *RES_other;
+        delete RES_other;
+        RES[py::cast("summary")] = GP.get_buffer();
+    }
+
+    return RES;
+}
+
+
 
 //
 // NSE via dedicated Driver
@@ -537,28 +600,6 @@ GretlModel_NSE_Driver<F, CI>::GretlModel_NSE_Driver (GretlDataset *GD)
     std::cout << "GretlModel_NSE_Driver, id = " << this->get_id();
     std::cout << ", GD  = " << GD << std::endl;
 #endif // GRETL4PY_MODEL_DEBUG
-}
-
-template <auto F, GretlCmdIndex CI>
-gretl_list_ptr GretlModel_NSE_Driver<F, CI>::list_from_formula(const std::string &formula) {
-    // we create a unique_ptr for the char* with std::free as the deleter.
-#if defined(_WIN32)
-    std::unique_ptr<char, decltype(&std::free)> tmp(_strdup(formula.c_str()), &std::free);
-#else
-    std::unique_ptr<char, decltype(&std::free)> tmp(strdup(formula.c_str()), &std::free);
-#endif
-
-    // convert from a simple R-style formula to a gretl list
-    gretl_charsub(tmp.get(), '~', ' ');
-    gretl_charsub(tmp.get(), '+', ' ');
-
-    // generate_list() returns a raw pointer; assign that to our unique_ptr.
-    int *raw_list = generate_list(tmp.get(), GD->dset, 0, &err);
-    if (err) {
-        handle_gretl_error(err);
-    }
-
-    return gretl_list_ptr(raw_list, gretl_list_deleter);
 }
 
 // Method template to support several estimation methods that

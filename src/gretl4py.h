@@ -52,6 +52,9 @@ GretlTypes *GretlModel_get_accessor (const int model_id,
 py::dict GretlModel_test (const int model_id, const std::string &type,
                           const py::kwargs &kwargs);
 
+py::dict GretlModel_test (const int model_id, const std::string &type,
+                          const std::string &vars, const py::kwargs &kwargs);
+
 //////////////////////////////////////////////////
 // model estimation
 //////////////////////////////////////////////////

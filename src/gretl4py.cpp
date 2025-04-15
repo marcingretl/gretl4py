@@ -57,9 +57,18 @@ PYBIND11_MODULE(_gretl, m)
           py::arg("model_id").none(false),
           py::arg("accessor").none(false),
           py::return_value_policy::take_ownership);
-    m.def("test", &GretlModel_test,
+    m.def("test",
+          py::overload_cast<const int, const std::string&,
+          const py::kwargs&>(&GretlModel_test),
           py::arg("model_id").none(false),
           py::arg("type").none(false),
+          py::return_value_policy::take_ownership);
+    m.def("test",
+          py::overload_cast<const int, const std::string&,
+          const std::string&, const py::kwargs&>(&GretlModel_test),
+          py::arg("model_id").none(false),
+          py::arg("type").none(false),
+          py::arg("vars").none(false),
           py::return_value_policy::take_ownership);
     m.def("fcast", &GretlModel_fcast,
           py::arg("model_id").none(false));

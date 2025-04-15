@@ -42,6 +42,8 @@ static inline void gretl_list_deleter(int* ptr) {
 #endif
 }
 
+
+
 //
 // Class to handle gretl 'MODEL' type
 //
@@ -56,7 +58,7 @@ protected:
     mutable GretlTypes *RES_other = nullptr;    // other results (accessor, tests, ets)
     GretlDataset *GD = nullptr;                 // dataset used
     GretlPrint GP = GretlPrint();               // printer (instance wide)
-    gretl_list_ptr var_list {nullptr, gretl_list_deleter}; // libgretl list of variables
+    gretl_list_ptr var_list{nullptr, gretl_list_deleter}; // libgretl list of variables
     gretlopt opt = OPT_NONE;                    // model options (including tests)
     std::vector<double> optional_par;           // optional general purose parameter (tau for QUANTREG, (l/r)limits for TOBIT, tests...)
     bool model_free = true;                     // do we free model in deconstructor
@@ -84,6 +86,8 @@ public:
     virtual py::dict *forecast (const py::kwargs &kwargs) = 0;
 
     virtual py::dict test (const std::string &type, const py::kwargs &kwargs) = 0;
+
+    virtual py::dict test (const std::string &type, const std::string &vars, const py::kwargs &kwargs) = 0;
 };
 
 //
@@ -94,6 +98,8 @@ class GretlModel_NSE : public GretlModel
 {
 protected:
     MODEL *model = NULL;                            // libgretl MODLEL struct
+
+    gretl_list_ptr list_from_formula (const std::string &formula);
 
     void save_model (gretlopt opt = OPT_NONE);      //FIXME: do we need opt here? We already have: gretlopt opt = OPT_NONE
 public:
@@ -107,6 +113,8 @@ public:
     py::dict *forecast (const py::kwargs &kwargs) override;
 
     py::dict test (const std::string &type, const py::kwargs &kwargs) override;
+
+    py::dict test (const std::string &type, const std::string &vars, const py::kwargs &kwargs) override;
 };
 
 //
@@ -116,8 +124,6 @@ public:
 template <auto F, GretlCmdIndex CI>
 class GretlModel_NSE_Driver : public GretlModel_NSE
 {
-private:
-    gretl_list_ptr list_from_formula (const std::string &formula);
 protected:
     gretl_matrix *optional_par_as_mat = NULL;
 public:

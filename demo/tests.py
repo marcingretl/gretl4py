@@ -7,8 +7,17 @@ d3 = gretl.get_data(gretl.gretl_data_path('misc/grunfeld.gdt'))
 #print(d1.get_accessor("$pd"))
 
 # OLS
-m1 = gretl.ols(formula='1 0 2 3 4').fit()
+m1 = gretl.ols(formula='1 0 2 3').fit()
 print(m1)
+
+print("\n****************************")
+print("add")
+m1.test(type="add", vars="IDE")
+print(m1.add['summary'])
+print(m1.add['test'])
+print(m1.add['pvalue'])
+
+print("\n****************************")
 print("white")
 white = m1.test(type="white")
 print(white['summary'])
