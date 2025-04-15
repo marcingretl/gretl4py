@@ -176,46 +176,46 @@ void GretlModel::unpack_kwargs_test (const std::string &type,
 
     // we set basic opt for given test
     opt = OPT_NONE;
-    if (type == "normality") {
-        opt = OPT_N;
-    } else if (type == "logs") {
-        opt = OPT_L;
-    } else if (type == "squares") {
-        opt = OPT_S;
-    } else if (type == "autocorr") {
-        opt = OPT_A;
+    if (type == "add") {
+        ci = ADD;
     } else if (type == "arch") {
         opt = OPT_H;
-    } else if (type == "white") {
-        opt = OPT_W;
-    } else if (type == "white-nocross") {
-        opt = OPT_X;
+    } else if (type == "autocorr") {
+        opt = OPT_A;
+    } else if (type == "bkw") {
+        ci = BKW;
     } else if (type == "breusch-pagan") {
         opt = OPT_B;
-    } else if (type == "panel") {
-        opt = OPT_P;
     } else if (type == "comfac") {
         opt = OPT_C;
-    } else if (type == "xdepend") {
-        opt = OPT_D;
-    } else if (type == "reset") {
-        ci = RESET;
-    } else if (type == "qlrtest") {
-        ci = QLRTEST;
     } else if (type == "cusum") {
         ci = CUSUM;
     } else if (type == "leverage") {
         ci = LEVERAGE;
-    } else if (type == "panspec") {
-        ci = PANSPEC;
-    } else if (type == "vif") {
-        ci = VIF;
-    } else if (type == "bkw") {
-        ci = BKW;
-    } else if (type == "add") {
-        ci = ADD;
+    } else if (type == "logs") {
+        opt = OPT_L;
+    } else if (type == "normality") {
+        opt = OPT_N;
     } else if (type == "omit") {
         ci = OMIT;
+    } else if (type == "panel") {
+        opt = OPT_P;
+    } else if (type == "panspec") {
+        ci = PANSPEC;
+    } else if (type == "qlrtest") {
+        ci = QLRTEST;
+    } else if (type == "reset") {
+        ci = RESET;
+    } else if (type == "squares") {
+        opt = OPT_S;
+    } else if (type == "white") {
+        opt = OPT_W;
+    } else if (type == "white-nocross") {
+        opt = OPT_X;
+    } else if (type == "vif") {
+        ci = VIF;
+    } else if (type == "xdepend") {
+        opt = OPT_D;
     } else {
         throw std::runtime_error("unknown test");
     }
