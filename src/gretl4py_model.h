@@ -33,6 +33,15 @@ namespace py = pybind11;
 static MODEL (&garch_to_call)(const int*, DATASET*, gretlopt, PRN*) = garch;
 static MODEL (&quantreg_to_call)(const gretl_matrix*, const int*, DATASET*, gretlopt, PRN*) = quantreg;
 
+// custom libgretl's list deleter
+static inline void gretl_list_deleter(int* ptr) {
+#if defined(_WIN32)
+    gretl_list_free(ptr);
+#else
+    std::free(ptr);
+#endif
+}
+
 //
 // Class to handle gretl 'MODEL' type
 //
@@ -47,7 +56,7 @@ protected:
     mutable GretlTypes *RES_other = nullptr;    // other results (accessor, tests, ets)
     GretlDataset *GD = nullptr;                 // dataset used
     GretlPrint GP = GretlPrint();               // printer (instance wide)
-    int *var_list = NULL;                       // libgretl list of variables
+    gretl_list_ptr var_list {nullptr, gretl_list_deleter}; // libgretl list of variables
     gretlopt opt = OPT_NONE;                    // model options (including tests)
     std::vector<double> optional_par;           // optional general purose parameter (tau for QUANTREG, (l/r)limits for TOBIT, tests...)
     bool model_free = true;                     // do we free model in deconstructor
@@ -108,7 +117,7 @@ template <auto F, GretlCmdIndex CI>
 class GretlModel_NSE_Driver : public GretlModel_NSE
 {
 private:
-    void list_from_formula (const std::string &formula);
+    gretl_list_ptr list_from_formula (const std::string &formula);
 protected:
     gretl_matrix *optional_par_as_mat = NULL;
 public:

@@ -51,14 +51,6 @@ GretlModel::~GretlModel (void)
     if (this->GD) {
         this->GD->linked_models_del(this->id);
     }
-
-    if (this->var_list != NULL) {
-#if defined(_WIN32)
-        gretl_list_free(var_list);
-#else
-        std::free(var_list);
-#endif
-    }
 }
 
 int GretlModel::get_id (void) const
@@ -548,20 +540,25 @@ GretlModel_NSE_Driver<F, CI>::GretlModel_NSE_Driver (GretlDataset *GD)
 }
 
 template <auto F, GretlCmdIndex CI>
-void GretlModel_NSE_Driver<F, CI>::list_from_formula (const std::string &formula)
-{
+gretl_list_ptr GretlModel_NSE_Driver<F, CI>::list_from_formula(const std::string &formula) {
+    // we create a unique_ptr for the char* with std::free as the deleter.
+#if defined(_WIN32)
+    std::unique_ptr<char, decltype(&std::free)> tmp(_strdup(formula.c_str()), &std::free);
+#else
+    std::unique_ptr<char, decltype(&std::free)> tmp(strdup(formula.c_str()), &std::free);
+#endif
+
     // convert from a simple R-style formula to a gretl list
-    char *tmp = strdup(formula.c_str());
+    gretl_charsub(tmp.get(), '~', ' ');
+    gretl_charsub(tmp.get(), '+', ' ');
 
-    gretl_charsub(tmp, '~', ' ');
-    gretl_charsub(tmp, '+', ' ');
-    var_list = generate_list(tmp, GD->dset, 0, &err);
-    std::free(tmp);
-
+    // generate_list() returns a raw pointer; assign that to our unique_ptr.
+    int *raw_list = generate_list(tmp.get(), GD->dset, 0, &err);
     if (err) {
-        std::cerr << "libgretl error occurred: " << err << std::endl;
-        //FIXME: if (gretl4py_verbose) { std::perror(gretl_errmsg_get()); }
+        handle_gretl_error(err);
     }
+
+    return gretl_list_ptr(raw_list, gretl_list_deleter);
 }
 
 // Method template to support several estimation methods that
@@ -581,10 +578,10 @@ py::dict *GretlModel_NSE_Driver<F, CI>::fit (const std::string &formula,
     }
 
     // we construct the model
-    list_from_formula(formula);
+    var_list = list_from_formula(formula); // it's std::unique_ptr!!!
     model = gretl_model_new();
 
-    if (var_list == NULL) {
+    if (var_list == nullptr) {
         throw std::runtime_error("Formula rendering failed");
     } else if (model == NULL || GP.prn_ptr() == NULL) {
         throw std::runtime_error("Failed to allocate memory");
@@ -592,25 +589,25 @@ py::dict *GretlModel_NSE_Driver<F, CI>::fit (const std::string &formula,
 
     // we call F as an estimator
     if constexpr (use_ldco_sig(CI)) {
-        *model = F(var_list, GD->dset, CI, opt);
+        *model = F(var_list.get(), GD->dset, CI, opt);
     } else if constexpr (use_ldcop_sig(CI)) {
-        *model = F(var_list, GD->dset, CI, opt, GP.prn_ptr());
+        *model = F(var_list.get(), GD->dset, CI, opt, GP.prn_ptr());
     } else if constexpr (use_ldo_sig(CI)) {
-        *model = F(var_list, GD->dset, opt);
+        *model = F(var_list.get(), GD->dset, opt);
     } else if constexpr (use_ldop_sig(CI)) {
-        *model = F(var_list, GD->dset, opt, GP.prn_ptr());
+        *model = F(var_list.get(), GD->dset, opt, GP.prn_ptr());
     } else if constexpr (use_lcdop_sig(CI)) {
-        *model = F(var_list, CI, GD->dset, opt, GP.prn_ptr());
+        *model = F(var_list.get(), CI, GD->dset, opt, GP.prn_ptr());
     } else if constexpr (CI == QUANTREG) {
         if (this->optional_par_as_mat != NULL) {
             *model = quantreg (this->optional_par_as_mat,
-                               var_list, GD->dset, opt, GP.prn_ptr());
+                               var_list.get(), GD->dset, opt, GP.prn_ptr());
         } else {
             *model = F(std::to_string(this->optional_par.at(0)).c_str(),
-                       var_list, GD->dset, opt, GP.prn_ptr());
+                       var_list.get(), GD->dset, opt, GP.prn_ptr());
         }
     } else if constexpr (CI == TOBIT) {
-        *model = F(var_list, optional_par.at(0), optional_par.at(1),
+        *model = F(var_list.get(), optional_par.at(0), optional_par.at(1),
                    GD->dset, opt, GP.prn_ptr());
     }
     save_model(opt);
@@ -706,25 +703,25 @@ py::dict *GretlModel_NSE_arima::fit (const std::string &formula,
     }
 
     model = gretl_model_new();
-    var_list = gretl_list_new(seasonal ? 9 : 5);
-    if (model == NULL || var_list == NULL || GP.prn_ptr() == NULL) {
+    var_list.reset(gretl_list_new(seasonal ? 9 : 5)); // it's std::unique_ptr!!!
+    if (model == NULL || var_list == nullptr || GP.prn_ptr() == NULL) {
         throw std::runtime_error("Failed to allocate memory");
     }
 
     i = 1;
-    var_list[i++] = p;
-    var_list[i++] = d;
-    var_list[i++] = q;
+    var_list.get()[i++] = p;
+    var_list.get()[i++] = d;
+    var_list.get()[i++] = q;
     if (seasonal) {
-        var_list[i++] = LISTSEP;
-        var_list[i++] = P;
-        var_list[i++] = D;
-        var_list[i++] = Q;
+        var_list.get()[i++] = LISTSEP;
+        var_list.get()[i++] = P;
+        var_list.get()[i++] = D;
+        var_list.get()[i++] = Q;
     }
-    var_list[i++] = LISTSEP;
-    var_list[i++] = y_number;
+    var_list.get()[i++] = LISTSEP;
+    var_list.get()[i++] = y_number;
 
-    *model = arma(var_list, NULL, GD->dset, opt, GP.prn_ptr());
+    *model = arma(var_list.get(), NULL, GD->dset, opt, GP.prn_ptr());
     save_model(opt);
 
     return RES;
