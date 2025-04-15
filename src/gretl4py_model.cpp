@@ -553,7 +553,7 @@ py::dict GretlModel_NSE::test (const std::string &type,
     // this method performs test which do take a variables list
     //
     py::dict RES;
-    int order = 0; //FIXME: default vale in unpack_kwargs_test() signature!!!
+    int order = -1;
 
     // we construct list of external variables
     auto ex_var = list_from_formula(vars); // it's std::unique_ptr!!!
