@@ -186,6 +186,8 @@ void GretlModel::unpack_kwargs_test (const std::string &type,
         ci = BKW;
     } else if (type == "breusch-pagan") {
         opt = OPT_B;
+    } else if (type == "chow") {
+        ci = CHOW;
     } else if (type == "comfac") {
         opt = OPT_C;
     } else if (type == "cusum") {
@@ -554,11 +556,14 @@ py::dict GretlModel_NSE::test (const std::string &type,
     //
     py::dict RES;
     int order = -1;
+    gretl_list_ptr ex_var{nullptr, gretl_list_deleter};
 
     // we construct list of external variables
-    auto ex_var = list_from_formula(vars); // it's std::unique_ptr!!!
-    if (!ex_var) {
-        throw std::runtime_error("wrong list of variables");
+    if (type != "chow") {
+        ex_var = list_from_formula(vars); // it's std::unique_ptr!!!
+        if (!ex_var) {
+            throw std::runtime_error("wrong list of variables");
+        }
     }
 
     // we set up options
@@ -567,6 +572,8 @@ py::dict GretlModel_NSE::test (const std::string &type,
     // we perform the test
     if (type == "add") {
         err = add_test(model, ex_var.get(), GD->dset, opt, GP.prn_ptr());
+    } else if (type == "chow") {
+        err = chow_test_driver(vars.c_str(), model, GD->dset, opt, GP.prn_ptr());
     } else if (type == "omit") {
         err = omit_test(model, ex_var.get(), GD->dset, opt, GP.prn_ptr());
     }

@@ -57,6 +57,11 @@ print("bkw")
 m1.test(type="bkw")
 print(m1.bkw['summary'])
 
+print("\n****************************")
+print("chow")
+m1.test(type="chow", vars="1980:1")
+print(m1.chow['summary'])
+
 
 # ARIMA
 m2 = gretl.arima(y='lg', order=(2,0,0), data=d2).fit()
