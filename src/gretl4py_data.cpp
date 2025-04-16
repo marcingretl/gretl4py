@@ -269,6 +269,49 @@ GretlTypes *gretl_generate_gretl_object (const char *s, int &err,
     return RES;
 }
 
+void gretl_valid_long_opt (gretlopt &opt, GretlCmdIndex ci,
+                           const std::string &key, const py::handle &val)
+{
+    // should be a regular gretl option: check its validity in
+    // the context of @ci
+    gretlopt opt_local = OPT_NONE;
+    OptStatus status;
+
+    if (std::strchr(key.c_str(), '_')) {
+        std::string tmp(key);
+
+        gretl_charsub(tmp.data(), '_', '-');
+        opt_local = valid_long_opt(ci, tmp.c_str(), &status);
+    } else {
+        opt_local = valid_long_opt(ci, key.c_str(), &status);
+    }
+    if (opt_local == 0) {
+        throw std::runtime_error("invalid option flag: " + key);
+    }
+
+    if (status == OPT_NO_PARM) {
+        // no parameter wanted, but we'll accept a boolean
+        if (is_pyint(val)) {
+            int ival = val.cast<int>();
+
+            if (ival == 1) {
+                // activate the option
+                opt = static_cast<gretlopt>(opt | opt_local);
+            } else if (ival != 0) {
+                throw std::runtime_error("invalid option parameter");
+            }
+        }
+    } else {
+        // an option parameter is accepted, perhaps required
+        if (!is_pystr(val) && !is_pyint(val) && !is_pyfloat(val)) {
+                throw std::runtime_error("unsupported option param type");
+        } else {
+            push_option_param(ci, static_cast<gretlopt>(opt_local),
+                              gretl_strdup(MapPyToCpp(val).to_string().c_str()));
+        }
+    }
+}
+
 //////////////////////////////////////////////////
 // classes
 //////////////////////////////////////////////////

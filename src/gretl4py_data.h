@@ -64,6 +64,9 @@ GretlTypes *gretl_generate_gretl_object (const char *s, int &err,
                                          DATASET *dset = NULL,
                                          MODEL *model = NULL);
 
+void gretl_valid_long_opt (gretlopt &opt, GretlCmdIndex ci,
+                           const std::string &key, const py::handle &val);
+
 //
 // Class to handle printing
 //

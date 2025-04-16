@@ -34,15 +34,13 @@ static MODEL (&garch_to_call)(const int*, DATASET*, gretlopt, PRN*) = garch;
 static MODEL (&quantreg_to_call)(const gretl_matrix*, const int*, DATASET*, gretlopt, PRN*) = quantreg;
 
 // custom libgretl's list deleter
-static inline void gretl_list_deleter(int* ptr) {
+static inline void gretl_list_deleter (int *ptr) {
 #if defined(_WIN32)
     gretl_list_free(ptr);
 #else
     std::free(ptr);
 #endif
 }
-
-
 
 //
 // Class to handle gretl 'MODEL' type
@@ -63,8 +61,6 @@ protected:
     std::vector<double> optional_par;           // optional general purose parameter (tau for QUANTREG, (l/r)limits for TOBIT, tests...)
     bool model_free = true;                     // do we free model in deconstructor
     mutable int err = 0;
-
-    void gretl_valid_long_opt (GretlCmdIndex ci, const std::string &key, const py::handle &val);
 
     void unpack_kwargs (const py::kwargs &kwargs, GretlCmdIndex ci);
 
