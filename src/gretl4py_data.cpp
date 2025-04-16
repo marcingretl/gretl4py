@@ -325,6 +325,8 @@ void unpack_kwargs_test (gretlopt &opt, const std::string &type,
     opt = OPT_NONE;
     if (type == "add") {
         ci = ADD;
+    } else if (type == "adf") {
+        ci = ADF;
     } else if (type == "arch") {
         opt = OPT_H;
     } else if (type == "autocorr") {
@@ -902,11 +904,9 @@ py::dict GretlDataset::test (const std::string &type, const std::string &vars,
     gretl_list_ptr ex_var{nullptr, gretl_list_deleter};
 
     // we construct list of external variables
-    if (type != "chow") {
-        ex_var = list_from_formula(vars, dset, err); // it's std::unique_ptr!!!
-        if (!ex_var) {
-            throw std::runtime_error("wrong list of variables");
-        }
+    ex_var = list_from_formula(vars, dset, err); // it's std::unique_ptr!!!
+    if (err) {
+        handle_gretl_error(err);
     }
 
     // we set up options
@@ -914,7 +914,7 @@ py::dict GretlDataset::test (const std::string &type, const std::string &vars,
 
     // we perform the test
     if (type == "adf") {
-        //err = add_test(model, ex_var.get(), GD->dset, opt, GP.prn_ptr());
+        err = adf_test(order, ex_var.get(), dset, opt, GP.prn_ptr());
     }
 
     if (err) {

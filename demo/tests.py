@@ -5,6 +5,9 @@ d2 = gretl.get_data(gretl.gretl_data_path('misc/bjg.gdt'))
 d3 = gretl.get_data(gretl.gretl_data_path('misc/grunfeld.gdt'))
 #gretl.show_data_status()
 #print(d1.get_accessor("$pd"))
+d = d1.test(type="adf", vars="LRM", order=1)
+print(d['summary'])
+
 
 # OLS
 m1 = gretl.ols(formula='1 0 2 3').fit()
