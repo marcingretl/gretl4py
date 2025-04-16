@@ -929,6 +929,10 @@ py::dict GretlDataset::test (const std::string &type, const std::string &vars,
         RES[py::cast("summary")] = GP.get_buffer();
     }
 
+    // we register result
+    py::object self = py::cast(this);
+    py::setattr(self, type.c_str(), RES);
+
     return RES;
 }
 

@@ -26,7 +26,7 @@ const char *gretl_dotdir (void);
 
 void init_gretl4py_data_py11(py::module_ &m)
 {
-    py::class_<GretlDataset>(m, "GretlDataset")
+    py::class_<GretlDataset>(m, "GretlDataset", py::dynamic_attr())
         .def(py::init<const std::string>())
         .def(py::init<const py::dict &>())
         .def("__copy__", [](const GretlDataset &src)

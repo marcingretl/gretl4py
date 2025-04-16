@@ -5,9 +5,8 @@ d2 = gretl.get_data(gretl.gretl_data_path('misc/bjg.gdt'))
 d3 = gretl.get_data(gretl.gretl_data_path('misc/grunfeld.gdt'))
 #gretl.show_data_status()
 #print(d1.get_accessor("$pd"))
-d = d1.test(type="adf", vars="LRM", order=1)
-print(d['summary'])
-
+d1.test(type="adf", vars="LRM", order=1)
+print(d1.adf['summary'])
 
 # OLS
 m1 = gretl.ols(formula='1 0 2 3').fit()
@@ -109,4 +108,3 @@ m4 = gretl.panel(formula="invest ~ const value kstock", data=d3).fit()
 print(m4)
 m4.test(type="panel")
 print(m4.panel['summary'])
-
