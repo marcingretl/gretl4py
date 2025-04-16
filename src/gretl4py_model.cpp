@@ -509,20 +509,20 @@ py::dict GretlModel_NSE::test (const std::string &type,
     unpack_kwargs_test(type, kwargs, order);
 
     // we perform the test
-    if (type == "cusum") {
+    if (type == "bkw") {
+        err = bkw_test(model, GD->dset, opt, GP.prn_ptr());
+    } else if (type == "cusum") {
         err = cusum_test(model, GD->dset, opt, GP.prn_ptr());
     } else if (type == "leverage") {
         err = leverage_test(model, GD->dset, opt, GP.prn_ptr());
+    } else if (type == "panspec") {
+        err = panel_specification_test(model, GD->dset, opt, GP.prn_ptr());
     } else if (type == "reset") {
         err = reset_test(model, GD->dset, opt, GP.prn_ptr());
     } else if (type == "qlrtest") {
         err = QLR_test(model, GD->dset, opt, GP.prn_ptr());
-    } else if (type == "panspec") {
-        err = panel_specification_test(model, GD->dset, opt, GP.prn_ptr());
     } else if (type == "vif") {
         err = vif_test(model, GD->dset, opt, GP.prn_ptr());
-    } else if (type == "bkw") {
-        err = bkw_test(model, GD->dset, opt, GP.prn_ptr());
     } else {
         // MODTEST
         set_as_last_model(model, GRETL_OBJ_EQN);
