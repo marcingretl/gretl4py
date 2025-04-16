@@ -52,6 +52,14 @@ namespace py = pybind11;
 #define is_pytuple(o) (py::isinstance<py::tuple>(o))
 #define is_pynumeric(o) (is_pyint(o) || is_pyfloat(o))
 
+// custom libgretl's list deleter
+static inline void gretl_list_deleter (int *ptr) {
+#if defined(_WIN32)
+    gretl_list_free(ptr);
+#else
+    std::free(ptr);
+#endif
+}
 
 //////////////////////////////////////////////////
 // functions
