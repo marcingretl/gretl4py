@@ -140,27 +140,6 @@ GretlModel_NSE::~GretlModel_NSE (void)
     }
 }
 
-gretl_list_ptr GretlModel_NSE::list_from_formula(const std::string &formula) {
-    // we create a unique_ptr for the char* with std::free as the deleter.
-#if defined(_WIN32)
-    std::unique_ptr<char, decltype(&std::free)> tmp(_strdup(formula.c_str()), &std::free);
-#else
-    std::unique_ptr<char, decltype(&std::free)> tmp(strdup(formula.c_str()), &std::free);
-#endif
-
-    // convert from a simple R-style formula to a gretl list
-    gretl_charsub(tmp.get(), '~', ' ');
-    gretl_charsub(tmp.get(), '+', ' ');
-
-    // generate_list() returns a raw pointer; assign that to our unique_ptr.
-    int *raw_list = generate_list(tmp.get(), GD->dset, 0, &err);
-    if (err) {
-        handle_gretl_error(err);
-    }
-
-    return gretl_list_ptr(raw_list, gretl_list_deleter);
-}
-
 void GretlModel_NSE::save_model (gretlopt opt)
 {
     //
@@ -434,7 +413,7 @@ py::dict GretlModel_NSE::test (const std::string &type,
 
     // we construct list of external variables
     if (type != "chow") {
-        ex_var = list_from_formula(vars); // it's std::unique_ptr!!!
+        ex_var = list_from_formula(vars, GD->dset, err); // it's std::unique_ptr!!!
         if (!ex_var) {
             throw std::runtime_error("wrong list of variables");
         }
@@ -466,7 +445,6 @@ py::dict GretlModel_NSE::test (const std::string &type,
 
     return RES;
 }
-
 
 
 //
@@ -504,7 +482,7 @@ py::dict *GretlModel_NSE_Driver<F, CI>::fit (const std::string &formula,
     }
 
     // we construct the model
-    var_list = list_from_formula(formula); // it's std::unique_ptr!!!
+    var_list = list_from_formula(formula, GD->dset, err); // it's std::unique_ptr!!!
     model = gretl_model_new();
 
     if (var_list == nullptr) {

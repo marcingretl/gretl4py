@@ -33,15 +33,6 @@ namespace py = pybind11;
 static MODEL (&garch_to_call)(const int*, DATASET*, gretlopt, PRN*) = garch;
 static MODEL (&quantreg_to_call)(const gretl_matrix*, const int*, DATASET*, gretlopt, PRN*) = quantreg;
 
-// custom libgretl's list deleter
-static inline void gretl_list_deleter (int *ptr) {
-#if defined(_WIN32)
-    gretl_list_free(ptr);
-#else
-    std::free(ptr);
-#endif
-}
-
 //
 // Class to handle gretl 'MODEL' type
 //
@@ -92,8 +83,6 @@ class GretlModel_NSE : public GretlModel
 {
 protected:
     MODEL *model = NULL;                            // libgretl MODLEL struct
-
-    gretl_list_ptr list_from_formula (const std::string &formula);
 
     void save_model (gretlopt opt = OPT_NONE);      //FIXME: do we need opt here? We already have: gretlopt opt = OPT_NONE
 public:

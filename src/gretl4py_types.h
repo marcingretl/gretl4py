@@ -42,6 +42,15 @@ using vgretl_matrix = std::vector<vgretl_vector>;
 
 using gretl_list_ptr = std::unique_ptr<int, void(*)(int*)>;
 
+// custom libgretl's list deleter
+static inline void gretl_list_deleter (int *ptr) {
+#if defined(_WIN32)
+    gretl_list_free(ptr);
+#else
+    std::free(ptr);
+#endif
+}
+
 //////////////////////////////////////////////////
 // pybind11 extensions
 //////////////////////////////////////////////////

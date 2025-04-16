@@ -392,6 +392,29 @@ void unpack_kwargs_test (gretlopt &opt, const std::string &type,
     }
 }
 
+gretl_list_ptr list_from_formula (const std::string &formula,
+                                  DATASET *dset, int &err)
+{
+    // we create a unique_ptr for the char* with std::free as the deleter.
+#if defined(_WIN32)
+    std::unique_ptr<char, decltype(&std::free)> tmp(_strdup(formula.c_str()), &std::free);
+#else
+    std::unique_ptr<char, decltype(&std::free)> tmp(strdup(formula.c_str()), &std::free);
+#endif
+
+    // convert from a simple R-style formula to a gretl list
+    gretl_charsub(tmp.get(), '~', ' ');
+    gretl_charsub(tmp.get(), '+', ' ');
+
+    // generate_list() returns a raw pointer; assign that to our unique_ptr.
+    int *raw_list = generate_list(tmp.get(), dset, 0, &err);
+    if (err) {
+        handle_gretl_error(err);
+    }
+
+    return gretl_list_ptr(raw_list, gretl_list_deleter);
+}
+
 //////////////////////////////////////////////////
 // classes
 //////////////////////////////////////////////////
@@ -858,14 +881,55 @@ gretlopt GretlDataset::setobs_opt_from_structure (int structure)
 
 GretlTypes *GretlDataset::get_accessor (const std::string &accessor) const
 {
-    GretlTypes *RES_other = gretl_generate_gretl_object(accessor.c_str(), err,
+    GretlTypes *RES_other_l = gretl_generate_gretl_object(accessor.c_str(), err,
                                                         GRETL_OBJ_DSET, dset);
     if (err) {
         handle_gretl_error(err);
         throw std::runtime_error("grabbing '" + accessor + "' failed");
     }
 
-    return RES_other;
+    return RES_other_l;
+}
+
+py::dict GretlDataset::test (const std::string &type, const std::string &vars,
+                             const py::kwargs &kwargs)
+{
+    //
+    // this method performs test which do take a variables list
+    //
+    py::dict RES;
+    int order = -1;
+    gretl_list_ptr ex_var{nullptr, gretl_list_deleter};
+
+    // we construct list of external variables
+    if (type != "chow") {
+        ex_var = list_from_formula(vars, dset, err); // it's std::unique_ptr!!!
+        if (!ex_var) {
+            throw std::runtime_error("wrong list of variables");
+        }
+    }
+
+    // we set up options
+    unpack_kwargs_test(opt, type, kwargs, order);
+
+    // we perform the test
+    if (type == "adf") {
+        //err = add_test(model, ex_var.get(), GD->dset, opt, GP.prn_ptr());
+    }
+
+    if (err) {
+        handle_gretl_error(err);
+    } else {
+        RES_other = get_accessor("$test");
+        RES[py::cast("test")] = *RES_other;
+        delete RES_other;
+        RES_other = get_accessor("$pvalue");
+        RES[py::cast("pvalue")] = *RES_other;
+        delete RES_other;
+        RES[py::cast("summary")] = GP.get_buffer();
+    }
+
+    return RES;
 }
 
 

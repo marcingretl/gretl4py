@@ -70,6 +70,9 @@ void gretl_valid_long_opt (gretlopt &opt, GretlCmdIndex ci,
 void unpack_kwargs_test (gretlopt &opt, const std::string &type,
                          const py::kwargs &kwargs, int &order);
 
+gretl_list_ptr list_from_formula (const std::string &formula,
+                                  DATASET *dset, int &err);
+
 //
 // Class to handle printing
 //
@@ -102,6 +105,8 @@ private:
     int id;
     std::unordered_set<int> linked_models;  // models (id-s) which use this dataset
     GretlPrint GP = GretlPrint();           // printer (instance wide)
+    mutable GretlTypes *RES_other = nullptr;// other results (accessor, tests, ets)
+    gretlopt opt = OPT_NONE;
 
     void allocate_dset (void);
 
@@ -146,6 +151,8 @@ public:
     std::unordered_set<int> linked_models_list (void) const;
 
     GretlTypes *get_accessor (const std::string &accessor) const; // memory must be deleted at the caller level
+
+    py::dict test (const std::string &type, const std::string &vars, const py::kwargs &kwargs);
 };
 
 //
