@@ -341,6 +341,8 @@ void unpack_kwargs_test (gretlopt &opt, const std::string &type,
         opt = OPT_C;
     } else if (type == "cusum") {
         ci = CUSUM;
+    } else if (type == "kpss") {
+        ci = KPSS;
     } else if (type == "leverage") {
         ci = LEVERAGE;
     } else if (type == "logs") {
@@ -915,6 +917,8 @@ py::dict GretlDataset::test (const std::string &type, const std::string &vars,
     // we perform the test
     if (type == "adf") {
         err = adf_test(order, ex_var.get(), dset, opt, GP.prn_ptr());
+    } else if (type == "kpss") {
+        err = kpss_test(order, ex_var.get(), dset, opt, GP.prn_ptr());
     }
 
     if (err) {
