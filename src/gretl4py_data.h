@@ -67,6 +67,9 @@ GretlTypes *gretl_generate_gretl_object (const char *s, int &err,
 void gretl_valid_long_opt (gretlopt &opt, GretlCmdIndex ci,
                            const std::string &key, const py::handle &val);
 
+void unpack_kwargs_test (gretlopt &opt, const std::string &type,
+                         const py::kwargs &kwargs, int &order);
+
 //
 // Class to handle printing
 //
@@ -142,7 +145,7 @@ public:
 
     std::unordered_set<int> linked_models_list (void) const;
 
-    GretlTypes *get_accessor (const std::string &accessor) const;
+    GretlTypes *get_accessor (const std::string &accessor) const; // memory must be deleted at the caller level
 };
 
 //

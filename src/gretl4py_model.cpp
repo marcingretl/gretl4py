@@ -120,88 +120,6 @@ gretlopt GretlModel::unpack_kwargs_forecast (const py::kwargs &kwargs,
 }
 
 
-void GretlModel::unpack_kwargs_test (const std::string &type,
-                                     const py::kwargs &kwargs,
-                                     int &order)
-{
-    //
-    // we setup test options
-    // order: for autocorrelation or arch test (may change in future)
-    //
-    GretlCmdIndex ci = MODTEST;
-
-    // we set basic opt for given test
-    opt = OPT_NONE;
-    if (type == "add") {
-        ci = ADD;
-    } else if (type == "arch") {
-        opt = OPT_H;
-    } else if (type == "autocorr") {
-        opt = OPT_A;
-    } else if (type == "bkw") {
-        ci = BKW;
-    } else if (type == "breusch-pagan") {
-        opt = OPT_B;
-    } else if (type == "chow") {
-        ci = CHOW;
-    } else if (type == "comfac") {
-        opt = OPT_C;
-    } else if (type == "cusum") {
-        ci = CUSUM;
-    } else if (type == "leverage") {
-        ci = LEVERAGE;
-    } else if (type == "logs") {
-        opt = OPT_L;
-    } else if (type == "normality") {
-        opt = OPT_N;
-    } else if (type == "omit") {
-        ci = OMIT;
-    } else if (type == "panel") {
-        opt = OPT_P;
-    } else if (type == "panspec") {
-        ci = PANSPEC;
-    } else if (type == "qlrtest") {
-        ci = QLRTEST;
-    } else if (type == "reset") {
-        ci = RESET;
-    } else if (type == "squares") {
-        opt = OPT_S;
-    } else if (type == "white") {
-        opt = OPT_W;
-    } else if (type == "white-nocross") {
-        opt = OPT_X;
-    } else if (type == "vif") {
-        ci = VIF;
-    } else if (type == "xdepend") {
-        opt = OPT_D;
-    } else {
-        throw std::runtime_error("unknown test");
-    }
-
-    // now we loop over kwargs;
-    for (auto &item : kwargs) {
-        if (!is_pystr(item.first)) {
-            throw std::runtime_error("option key must be a string");
-        }
-        const std::string &key = item.first.cast<std::string>();
-
-        if (key == "order") {
-            //special case for autocorrelation and arch: lag order
-            if (is_pyint(item.second)) {
-                order = item.second.cast<int>();
-                continue;
-            } else {
-                throw std::runtime_error("'order' takes integers only");
-            }
-        } else if (key == "quiet" || key == "silent") {
-            throw std::runtime_error("invalid option flag: " + key);
-        } else {
-            gretl_valid_long_opt(opt, ci, key, item.second);
-        }
-    }
-}
-
-
 //
 // Native Single Equation libgretl MODEL (NSE)
 // extends: GretlModel
@@ -462,7 +380,7 @@ py::dict GretlModel_NSE::test (const std::string &type,
     int order = GD->dset->pd;
 
     // we set up options
-    unpack_kwargs_test(type, kwargs, order);
+    unpack_kwargs_test(opt, type, kwargs, order);
 
     // we perform the test
     if (type == "bkw") {
@@ -523,7 +441,7 @@ py::dict GretlModel_NSE::test (const std::string &type,
     }
 
     // we set up options
-    unpack_kwargs_test(type, kwargs, order);
+    unpack_kwargs_test(opt, type, kwargs, order);
 
     // we perform the test
     if (type == "add") {
