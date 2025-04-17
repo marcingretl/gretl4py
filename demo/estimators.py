@@ -69,7 +69,7 @@ bjg.set_as_default()
 
 print('SARIMA (0 1 2, 0 1 1):')
 res = gretl.arima(y='lg', order=(0,1,2), seasonal=(0,1,1), nc=True).fit()
-assert res.uhat[0] == 'NA', 'the first element should be NaN!!!'
+assert np.isnan(res.uhat[0]), 'the first element should be NaN!!!'
 print(res)
 ############################################################################
 

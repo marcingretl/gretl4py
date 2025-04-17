@@ -987,13 +987,20 @@ py::dict *GretlBundle::json_to_dict (simdjson::ondemand::object &json_obj,
     simdjson::ondemand::value val;
     simdjson::ondemand::object val_obj;
 
-    if (!json_obj["type"].get_string(gr_type) && gr_type == "gretl_matrix") {
-        json_obj["rows"].get(GretlBundle::sd_tmp_value);
-        GretlBundle::sd_tmp_number = GretlBundle::sd_tmp_value.get_number();
-        mat_rows = GretlBundle::sd_tmp_number.get_int64();
-        json_obj["cols"].get(GretlBundle::sd_tmp_value);
-        GretlBundle::sd_tmp_number = GretlBundle::sd_tmp_value.get_number();
-        mat_cols = GretlBundle::sd_tmp_number.get_int64();
+    if (!json_obj["type"].get_string(gr_type)) {
+        if (gr_type == "gretl_matrix") {
+            json_obj["rows"].get(GretlBundle::sd_tmp_value);
+            GretlBundle::sd_tmp_number = GretlBundle::sd_tmp_value.get_number();
+            mat_rows = GretlBundle::sd_tmp_number.get_int64();
+            json_obj["cols"].get(GretlBundle::sd_tmp_value);
+            GretlBundle::sd_tmp_number = GretlBundle::sd_tmp_value.get_number();
+            mat_cols = GretlBundle::sd_tmp_number.get_int64();
+        } else if (gr_type == "gretl_series") {
+            json_obj["size"].get(GretlBundle::sd_tmp_value);
+            GretlBundle::sd_tmp_number = GretlBundle::sd_tmp_value.get_number();
+            mat_rows = GretlBundle::sd_tmp_number.get_int64();
+            mat_cols = 1;
+        }
     }
     json_obj.reset();
 
@@ -1018,7 +1025,7 @@ py::dict *GretlBundle::json_to_dict (simdjson::ondemand::object &json_obj,
             GretlBundle::sd_tmp_array = val.get_array();
             int i = 0;
 
-            if (gr_type == "gretl_matrix") {
+            if (gr_type == "gretl_matrix" || gr_type == "gretl_series") {
                 //vgretl_matrix vec(mat_rows, vgretl_vector(mat_cols));
                 DNumPyArrayFC mat({mat_rows, mat_cols});
                 double *mat_ptr = static_cast<double*>(mat.request().ptr);
@@ -1072,7 +1079,7 @@ py::dict *GretlBundle::json_to_dict (simdjson::ondemand::object &json_obj,
                     }
                 }
 
-                if (gr_type == "gretl_series" || gr_type == "gretl_list") {
+                if (gr_type == "gretl_list") {
                     py::dict &res_outer_dict = *outer_dict;
                     res_outer_dict[py::cast(*outer_key)] = li;
                     *add_to_outer = false;
