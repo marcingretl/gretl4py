@@ -50,7 +50,6 @@ protected:
     gretl_list_ptr var_list{nullptr, gretl_list_deleter}; // libgretl list of variables
     gretlopt opt = OPT_NONE;                    // model options (including tests)
     std::vector<double> optional_par;           // optional general purose parameter (tau for QUANTREG, (l/r)limits for TOBIT, tests...)
-    bool model_free = true;                     // do we free model in deconstructor
     mutable int err = 0;
 
     void unpack_kwargs (const py::kwargs &kwargs, GretlCmdIndex ci);

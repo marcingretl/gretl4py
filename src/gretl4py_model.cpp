@@ -135,7 +135,7 @@ GretlModel_NSE::GretlModel_NSE (GretlDataset *GD)
 
 GretlModel_NSE::~GretlModel_NSE (void)
 {
-    if (this->model != NULL && this->model_free) {
+    if (this->model != NULL) {
         gretl_model_free(this->model);
     }
 }
@@ -378,10 +378,8 @@ py::dict GretlModel_NSE::test (const std::string &type,
         err = vif_test(model, GD->dset, opt, GP.prn_ptr());
     } else {
         // MODTEST
+        gretl_model_protect(model);
         set_as_last_model(model, GRETL_OBJ_EQN);
-        if (model_free) {   // as of 2025-04-12: double free
-            model_free = false;
-        }
         err = model_test_driver(order, GD->dset, opt, GP.prn_ptr());
     }
 

@@ -381,7 +381,6 @@ void unpack_kwargs_test (gretlopt &opt, const std::string &type,
         const std::string &key = item.first.cast<std::string>();
 
         if (key == "order") {
-            //special case for autocorrelation and arch: lag order
             if (is_pyint(item.second)) {
                 order = item.second.cast<int>();
                 continue;
