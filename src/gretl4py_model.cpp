@@ -376,24 +376,27 @@ py::dict GretlModel_NSE::test (const std::string &type,
         err = QLR_test(model, GD->dset, opt, GP.prn_ptr());
     } else if (type == "vif") {
         err = vif_test(model, GD->dset, opt, GP.prn_ptr());
-    } else {
-        // MODTEST
-        gretl_model_protect(model);
-        set_as_last_model(model, GRETL_OBJ_EQN);
+    } else { // MODTEST
+        if (get_last_model(NULL) != model) {
+            err = gretl_model_protect(model);
+            if (err) {
+                handle_gretl_error(err);
+            }
+            set_as_last_model(model, GRETL_OBJ_EQN);
+        }
         err = model_test_driver(order, GD->dset, opt, GP.prn_ptr());
     }
-
     if (err) {
         handle_gretl_error(err);
-    } else {
-        RES_other = get_accessor("$test");
-        RES[py::cast("test")] = *RES_other;
-        delete RES_other;
-        RES_other = get_accessor("$pvalue");
-        RES[py::cast("pvalue")] = *RES_other;
-        delete RES_other;
-        RES[py::cast("summary")] = GP.get_buffer();
     }
+
+    RES_other = get_accessor("$test");
+    RES[py::cast("test")] = *RES_other;
+    delete RES_other;
+    RES_other = get_accessor("$pvalue");
+    RES[py::cast("pvalue")] = *RES_other;
+    delete RES_other;
+    RES[py::cast("summary")] = GP.get_buffer();
 
     return RES;
 }
@@ -428,18 +431,17 @@ py::dict GretlModel_NSE::test (const std::string &type,
     } else if (type == "omit") {
         err = omit_test(model, ex_var.get(), GD->dset, opt, GP.prn_ptr());
     }
-
     if (err) {
         handle_gretl_error(err);
-    } else {
-        RES_other = get_accessor("$test");
-        RES[py::cast("test")] = *RES_other;
-        delete RES_other;
-        RES_other = get_accessor("$pvalue");
-        RES[py::cast("pvalue")] = *RES_other;
-        delete RES_other;
-        RES[py::cast("summary")] = GP.get_buffer();
     }
+
+    RES_other = get_accessor("$test");
+    RES[py::cast("test")] = *RES_other;
+    delete RES_other;
+    RES_other = get_accessor("$pvalue");
+    RES[py::cast("pvalue")] = *RES_other;
+    delete RES_other;
+    RES[py::cast("summary")] = GP.get_buffer();
 
     return RES;
 }
