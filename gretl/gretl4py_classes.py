@@ -117,7 +117,6 @@ class Model:
             else:
                 res = _gretl.test(self._model_id, type, *args, **kwargs)
             setattr(self, type, res)
-            return res
 
     # scalars
     def id(self):

@@ -271,10 +271,12 @@ GretlTypes *gretl_generate_gretl_object (const char *s, int &err,
 }
 
 void gretl_valid_long_opt (gretlopt &opt, GretlCmdIndex ci,
-                           const std::string &key, const py::handle &val)
+                           const std::string &key, const py::handle &val,
+                           const char* ext_val)
 {
     // should be a regular gretl option: check its validity in
     // the context of @ci
+    // note: ext_val is to bypass kwargs and to force setting a given option
     gretlopt opt_local = OPT_NONE;
     OptStatus status;
 
@@ -292,7 +294,7 @@ void gretl_valid_long_opt (gretlopt &opt, GretlCmdIndex ci,
 
     if (status == OPT_NO_PARM) {
         // no parameter wanted, but we'll accept a boolean
-        if (is_pyint(val)) {
+        if (is_pyint(val) && !ext_val) {
             int ival = val.cast<int>();
 
             if (ival == 1) {
@@ -304,8 +306,10 @@ void gretl_valid_long_opt (gretlopt &opt, GretlCmdIndex ci,
         }
     } else {
         // an option parameter is accepted, perhaps required
-        if (!is_pystr(val) && !is_pyint(val) && !is_pyfloat(val)) {
-                throw std::runtime_error("unsupported option param type");
+        if (!is_pystr(val) && !is_pyint(val) && !is_pyfloat(val) && !ext_val) {
+            throw std::runtime_error("unsupported option param type");
+        } else if (ext_val) {
+            push_option_param(ci, static_cast<gretlopt>(opt_local), gretl_strdup(ext_val));
         } else {
             push_option_param(ci, static_cast<gretlopt>(opt_local),
                               gretl_strdup(MapPyToCpp(val).to_string().c_str()));
@@ -388,11 +392,17 @@ void unpack_kwargs_test (gretlopt &opt, const std::string &type,
             } else {
                 throw std::runtime_error("'order' takes integers only");
             }
-        } else if (key == "quiet" || key == "silent") {
+        } else if (key == "quiet" || key == "silent" || key == "plot") {
             throw std::runtime_error("invalid option flag: " + key);
         } else {
             gretl_valid_long_opt(opt, ci, key, item.second);
         }
+    }
+
+    // we force --plot=none for tests
+    // FIXME: either to preprocessor level or to dispatcher
+    if (type == "cusum" || type == "leverage" || type == "qlrtest") {
+        gretl_valid_long_opt(opt, ci, "plot", py::handle(), "0");
     }
 }
 

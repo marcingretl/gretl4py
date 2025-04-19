@@ -50,7 +50,6 @@ elif platform[0:5] == "macos":
 else:
     PATH = str(PATH + r'/gretl')
 sysconfig.sys.path.append(PATH)
-sysconfig.os.environ['CLI_NO_PLOTS'] = '1' # not working, needs investigation
 
 # ###################################
 # gretl4py stuff
