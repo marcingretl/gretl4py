@@ -56,6 +56,43 @@ void init_gretl4py_data_py11(py::module_ &m)
              py::return_value_policy::take_ownership)
         .def("linked_models_list", &GretlDataset::linked_models_list)
         .def("get_accessor", &GretlDataset::get_accessor)
-        .def("test", &GretlDataset::test,
-             py::arg("type"), py::arg("vars"), py::kw_only());
+        .def("test",
+             [](GretlDataset &self,
+                const std::string &type,
+                const py::kwargs &kwargs) -> py::dict
+             {
+                 std::string vars;
+                 py::dict clean_kwargs;
+
+                 if (type == "coint") {
+                     // we check if both 'y' and 'vars' exist
+                     if (kwargs.contains("y") && kwargs.contains("vars")) {
+                         vars = std::string(py::str(kwargs["y"])) + " " + std::string(py::str(kwargs["vars"]));
+                     } else {
+                         throw std::invalid_argument("Both 'y' and 'vars' are required");
+                     }
+                     for (auto item : kwargs) {
+                         std::string key = std::string(py::str(item.first));
+                         if (key != "y" && key != "vars") {
+                             clean_kwargs[item.first] = item.second;
+                         }
+                     }
+                 } else {
+                     if (kwargs.contains("vars")) {
+                         vars = std::string(py::str(kwargs["vars"]));
+                     } else {
+                         throw std::invalid_argument("'vars' are required");
+                     }
+                     for (auto item : kwargs) {
+                         std::string key = std::string(py::str(item.first));
+                         if (key != "vars") {
+                             clean_kwargs[item.first] = item.second;
+                         }
+                     }
+                 }
+
+                 return self.test(type, vars, clean_kwargs);
+             },
+             py::arg("type"), py::kw_only(),
+             py::return_value_policy::take_ownership);
 }

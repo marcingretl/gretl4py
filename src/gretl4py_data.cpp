@@ -340,6 +340,8 @@ void unpack_kwargs_test (gretlopt &opt, const std::string &type,
         ci = BKW;
     } else if (type == "breusch-pagan") {
         opt = OPT_B;
+    } else if (type == "coint") {
+        ci = COINT;
     } else if (type == "chow") {
         ci = CHOW;
     } else if (type == "comfac") {
@@ -927,6 +929,8 @@ py::dict GretlDataset::test (const std::string &type, const std::string &vars,
     // we perform the test
     if (type == "adf") {
         err = adf_test(order, ex_var.get(), dset, opt, GP.prn_ptr());
+    } else if (type == "coint") {
+        err = engle_granger_test(order, ex_var.get(), dset, opt, GP.prn_ptr());
     } else if (type == "kpss") {
         err = kpss_test(order, ex_var.get(), dset, opt, GP.prn_ptr());
     }
