@@ -11,6 +11,9 @@ print(d1.adf['summary'])
 d1.test(type="kpss", vars="LRM", order=1, seasonals=True, trend=True)
 print(d1.kpss['summary'])
 
+d1.test(type="coint", y="LRM", vars="LRY IBO", order=4)
+print(d1.coint['summary'])
+
 # OLS
 m1 = gretl.ols(formula='1 0 2 3').fit()
 print(m1)

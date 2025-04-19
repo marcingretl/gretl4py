@@ -377,13 +377,13 @@ void unpack_kwargs_test (gretlopt &opt, const std::string &type,
     } else if (type == "xdepend") {
         opt = OPT_D;
     } else {
-        throw std::runtime_error("unknown test");
+        throw std::invalid_argument("unknown test");
     }
 
     // now we loop over kwargs;
     for (auto &item : kwargs) {
         if (!is_pystr(item.first)) {
-            throw std::runtime_error("option key must be a string");
+            throw std::invalid_argument("option key must be a string");
         }
         const std::string &key = item.first.cast<std::string>();
 
@@ -392,10 +392,10 @@ void unpack_kwargs_test (gretlopt &opt, const std::string &type,
                 order = item.second.cast<int>();
                 continue;
             } else {
-                throw std::runtime_error("'order' takes integers only");
+                throw std::invalid_argument("'order' takes integers only");
             }
         } else if (key == "quiet" || key == "silent" || key == "plot") {
-            throw std::runtime_error("invalid option flag: " + key);
+            throw std::invalid_argument("invalid option flag: " + key);
         } else {
             gretl_valid_long_opt(opt, ci, key, item.second);
         }

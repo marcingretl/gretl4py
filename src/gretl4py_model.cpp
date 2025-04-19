@@ -70,7 +70,7 @@ void GretlModel::unpack_kwargs (const py::kwargs &kwargs, GretlCmdIndex ci)
     opt = OPT_NONE;
     for (auto &item : kwargs) {
         if (!is_pystr(item.first)) {
-            throw std::runtime_error("option key must be a string");
+            throw std::invalid_argument("option key must be a string");
         }
         const std::string &key = item.first.cast<std::string>();
 
@@ -79,16 +79,16 @@ void GretlModel::unpack_kwargs (const py::kwargs &kwargs, GretlCmdIndex ci)
             GD = item.second.cast<GretlDataset*>();
             continue;
         } else if (key == "quiet") {
-            throw std::runtime_error("invalid option flag: " + key);
+            throw std::invalid_argument("invalid option flag: " + key);
         } else if (key == "seasonal" && ci == ARMA) {
             // arima special: ignore here
             continue;
         } else if (key == "lagselect" && ci == ARMA) {
-            throw std::runtime_error("'lagselect' option for (S)ARIMA is temporarily unavailable");
+            throw std::invalid_argument("'lagselect' option for (S)ARIMA is temporarily unavailable");
         } else if ((key == "llimit" || key == "rlimit") && ci == TOBIT) {
             // TOBIT special: we set (l/r)limit
             if (!is_pynumeric(item.second)) {
-                throw std::runtime_error("both llimit and rlimit must be numeric");
+                throw std::invalid_argument("both llimit and rlimit must be numeric");
             } else {
                 if (key == "llimit") {
                     optional_par.at(0) = item.second.cast<double>();
@@ -108,7 +108,7 @@ gretlopt GretlModel::unpack_kwargs_forecast (const py::kwargs &kwargs,
 {
     for (auto &item : kwargs) {
         if (!is_pystr(item.first)) {
-            throw std::runtime_error("option key must be a string");
+            throw std::invalid_argument("option key must be a string");
         }
 
         std::cout << "the following pairs of forecasting options were passed:\n";
@@ -416,7 +416,7 @@ py::dict GretlModel_NSE::test (const std::string &type,
     if (type != "chow") {
         ex_var = list_from_formula(vars, GD->dset, err); // it's std::unique_ptr!!!
         if (!ex_var) {
-            throw std::runtime_error("wrong list of variables");
+            throw std::invalid_argument("wrong list of variables");
         }
     }
 

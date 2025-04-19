@@ -58,37 +58,31 @@ void init_gretl4py_data_py11(py::module_ &m)
         .def("get_accessor", &GretlDataset::get_accessor)
         .def("test",
              [](GretlDataset &self,
-                const std::string &type,
-                const py::kwargs &kwargs) -> py::dict
+                const std::string &type, const py::kwargs &kwargs) -> py::dict
              {
-                 std::string vars;
+                 std::string y_val, vars_val, vars;
                  py::dict clean_kwargs;
 
+                 for (auto item : kwargs) {
+                     std::string key = std::string(py::str(item.first));
+                     if (key == "y") {
+                         y_val = std::string(py::str(item.second));
+                     } else if (key == "vars") {
+                         vars_val = std::string(py::str(item.second));
+                     } else {
+                         clean_kwargs[item.first] = item.second;
+                     }
+                 }
                  if (type == "coint") {
-                     // we check if both 'y' and 'vars' exist
-                     if (kwargs.contains("y") && kwargs.contains("vars")) {
-                         vars = std::string(py::str(kwargs["y"])) + " " + std::string(py::str(kwargs["vars"]));
-                     } else {
-                         throw std::invalid_argument("Both 'y' and 'vars' are required");
+                     if (y_val.empty() || vars_val.empty()) {
+                         throw std::invalid_argument("Both 'y' and 'vars' are required for 'coint'");
                      }
-                     for (auto item : kwargs) {
-                         std::string key = std::string(py::str(item.first));
-                         if (key != "y" && key != "vars") {
-                             clean_kwargs[item.first] = item.second;
-                         }
-                     }
+                     vars = y_val + " " + vars_val;
                  } else {
-                     if (kwargs.contains("vars")) {
-                         vars = std::string(py::str(kwargs["vars"]));
-                     } else {
-                         throw std::invalid_argument("'vars' are required");
+                     if (vars_val.empty()) {
+                         throw std::invalid_argument("'vars' is required");
                      }
-                     for (auto item : kwargs) {
-                         std::string key = std::string(py::str(item.first));
-                         if (key != "vars") {
-                             clean_kwargs[item.first] = item.second;
-                         }
-                     }
+                     vars = vars_val;
                  }
 
                  return self.test(type, vars, clean_kwargs);
