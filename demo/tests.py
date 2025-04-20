@@ -31,6 +31,11 @@ print("normtest")
 d1.test(type="normtest", vars="LRY", swilk=True)
 print(d1.normtest['summary'])
 
+print("\n****************************")
+print("runs")
+d1.test(type="runs", vars="LRY", difference=True)
+print(d1.runs['summary'])
+
 # OLS
 m1 = gretl.ols(formula='1 0 2 3').fit()
 print(m1)

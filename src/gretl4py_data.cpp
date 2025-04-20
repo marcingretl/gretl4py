@@ -367,6 +367,8 @@ void unpack_kwargs_test (gretlopt &opt, const std::string &type,
         opt = OPT_P;
     } else if (type == "panspec") {
         ci = PANSPEC;
+    } else if (type == "runs") {
+        ci = RUNS;
     } else if (type == "qlrtest") {
         ci = QLRTEST;
     } else if (type == "reset") {
@@ -939,6 +941,11 @@ py::dict GretlDataset::test (const std::string &type, const std::string &vars,
             throw std::invalid_argument("normtest takes just one series");
         }
         err = gretl_normality_test(ex_var.get()[1], dset, opt, GP.prn_ptr());
+    } else if (type == "runs") {
+        if (ex_var.get()[0] > 1) {
+            throw std::invalid_argument("runs takes just one series");
+        }
+        err = runs_test(ex_var.get()[1], dset, opt, GP.prn_ptr());
     }
 
     if (err) {
