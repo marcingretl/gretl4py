@@ -25,6 +25,7 @@
 #include <gretl/gretl_model.h>
 #include <gretl/genmain.h>
 #include <gretl/objstack.h>
+#include <gretl/gretl_drivers.h>
 #include <string>
 
 #define F_CONTIGUOUS py::detail::npy_api::constants::NPY_ARRAY_F_CONTIGUOUS_
@@ -336,6 +337,8 @@ void unpack_kwargs_test (gretlopt &opt, const std::string &type,
         opt = OPT_H;
     } else if (type == "autocorr") {
         opt = OPT_A;
+    } else if (type == "bds") {
+        ci = BDS;
     } else if (type == "bkw") {
         ci = BKW;
     } else if (type == "breusch-pagan") {
@@ -923,6 +926,8 @@ py::dict GretlDataset::test (const std::string &type, const std::string &vars,
     // we perform the test
     if (type == "adf") {
         err = adf_test(order, ex_var.get(), dset, opt, GP.prn_ptr());
+    } else if (type == "bds") {
+        err = bds_test_driver(order, ex_var.get(), dset, opt, GP.prn_ptr());
     } else if (type == "coint") {
         err = engle_granger_test(order, ex_var.get(), dset, opt, GP.prn_ptr());
     } else if (type == "kpss") {

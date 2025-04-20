@@ -5,14 +5,26 @@ d2 = gretl.get_data(gretl.gretl_data_path('misc/bjg.gdt'))
 d3 = gretl.get_data(gretl.gretl_data_path('misc/grunfeld.gdt'))
 #gretl.show_data_status()
 #print(d1.get_accessor("$pd"))
+
+print("\n****************************")
+print("adf")
 d1.test(type="adf", vars="LRM", order=1)
 print(d1.adf['summary'])
 
+print("\n****************************")
+print("kpss")
 d1.test(type="kpss", vars="LRM", order=1, seasonals=True, trend=True)
 print(d1.kpss['summary'])
 
+print("\n****************************")
+print("coint")
 d1.test(type="coint", y="LRM", vars="LRY IBO", order=4)
 print(d1.coint['summary'])
+
+print("\n****************************")
+print("bds")
+d1.test(type="bds", vars="LRY", order=4)
+print(d1.bds['summary'])
 
 # OLS
 m1 = gretl.ols(formula='1 0 2 3').fit()
