@@ -521,9 +521,6 @@ GretlDataset::~GretlDataset (void)
         std::printf("default dataset was deleted\n");
     }
     GretlDataset::free_dset();
-#if GRETL_PYBIND11_DEBUG
-    std::cout << "~GretlDataset: deallocating memory, id: " << this->id << std::endl;
-#endif // GRETL_PYBIND11_DEBUG
 }
 
 void GretlDataset::allocate_dset (void)
@@ -546,8 +543,8 @@ py::dict *GretlDataset::to_dict (void) const
     // we convert gretl data to pydict
     //
     py::dict *as_dict = new py::dict;
-    py::list *vnames = new py::list;
-    py::list *labels = new py::list;
+    py::list vnames;
+    py::list labels;
     auto &pydict = *as_dict;
     int i = 0;
     double *tmp = nullptr;
@@ -569,25 +566,23 @@ py::dict *GretlDataset::to_dict (void) const
 
     // copy across the series names
     for (i=1; i<dset->v; i++) {
-        vnames->append(dset->varname[i]);
+        vnames.append(dset->varname[i]);
     }
-    pydict[py::cast("varname")] = *vnames;
-    delete vnames;
+    pydict[py::cast("varname")] = vnames;
 
     // copy or manufacture obs labels
     if (dset->S != NULL) {
         for (i=0; i<dset->n; i++) {
-            labels->append(dset->S[i]);
+            labels.append(dset->S[i]);
         }
     } else {
         char s[OBSLEN];
 
         for (i=0; i<dset->n; i++) {
-            labels->append(ntolabel(s, i, dset));
+            labels.append(ntolabel(s, i, dset));
         }
     }
-    pydict[py::cast("obs_labels")] = *labels;
-    delete labels;
+    pydict[py::cast("obs_labels")] = labels;
 
     return as_dict;
 }
@@ -636,7 +631,7 @@ void GretlDataset::print (const py::kwargs &kwargs)
         const char *val = NULL;
 
         if (!is_pystr(item.first)) {
-            throw std::runtime_error("option key must be a string");
+            throw std::invalid_argument("option key must be a string");
         }
         const std::string &key = item.first.cast<std::string>();
         val = MapPyToCpp(item.second).to_string_view().data();
@@ -651,7 +646,7 @@ void GretlDataset::print (const py::kwargs &kwargs)
             }
         } else {
             summary = byobs = 0;
-            throw std::runtime_error("print: invalid key '" + key + "'");
+            throw std::invalid_argument("print: invalid key '" + key + "'");
         }
     }
 
@@ -854,12 +849,12 @@ int GretlDataset::get_id (void) const
     return id;
 }
 
-py::list *GretlDataset::varnames (void) const
+py::list GretlDataset::varnames (void) const
 {
-    py::list *names = new py::list;
+    py::list names;
 
     for (int i=0; i<dset->v; i++) {
-        names->append(dset->varname[i]);
+        names.append(dset->varname[i]);
     }
 
     return names;
