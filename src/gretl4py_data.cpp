@@ -379,6 +379,8 @@ void unpack_kwargs_test (gretlopt &opt, const std::string &type,
         opt = OPT_W;
     } else if (type == "white-nocross") {
         opt = OPT_X;
+    } else if (type == "vartest") {
+        ci = VARTEST;
     } else if (type == "vif") {
         ci = VIF;
     } else if (type == "xdepend") {
@@ -946,6 +948,11 @@ py::dict GretlDataset::test (const std::string &type, const std::string &vars,
             throw std::invalid_argument("runs takes just one series");
         }
         err = runs_test(ex_var.get()[1], dset, opt, GP.prn_ptr());
+    } else if (type == "vartest") {
+        if (ex_var.get()[0] != 2) {
+            throw std::invalid_argument("vartest takes exactly two series");
+        }
+        err = vars_test(ex_var.get(), dset, opt, GP.prn_ptr());
     }
 
     if (err) {

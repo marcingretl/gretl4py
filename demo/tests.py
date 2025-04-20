@@ -36,6 +36,12 @@ print("runs")
 d1.test(type="runs", vars="LRY", difference=True)
 print(d1.runs['summary'])
 
+print("\n****************************")
+print("vartest")
+d1.test(type="vartest", vars="LRM IBO")
+print(d1.vartest['summary'])
+exit()
+
 # OLS
 m1 = gretl.ols(formula='1 0 2 3').fit()
 print(m1)
