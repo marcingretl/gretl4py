@@ -26,6 +26,11 @@ print("bds")
 d1.test(type="bds", vars="LRY", order=4)
 print(d1.bds['summary'])
 
+print("\n****************************")
+print("normtest")
+d1.test(type="normtest", vars="LRY", swilk=True)
+print(d1.normtest['summary'])
+
 # OLS
 m1 = gretl.ols(formula='1 0 2 3').fit()
 print(m1)

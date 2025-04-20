@@ -359,6 +359,8 @@ void unpack_kwargs_test (gretlopt &opt, const std::string &type,
         opt = OPT_L;
     } else if (type == "normality") {
         opt = OPT_N;
+    } else if (type == "normtest") {
+        ci = NORMTEST;
     } else if (type == "omit") {
         ci = OMIT;
     } else if (type == "panel") {
@@ -932,6 +934,11 @@ py::dict GretlDataset::test (const std::string &type, const std::string &vars,
         err = engle_granger_test(order, ex_var.get(), dset, opt, GP.prn_ptr());
     } else if (type == "kpss") {
         err = kpss_test(order, ex_var.get(), dset, opt, GP.prn_ptr());
+    } else if (type == "normtest") {
+        if (ex_var.get()[0] > 1) {
+            throw std::invalid_argument("normtest takes just one series");
+        }
+        err = gretl_normality_test(ex_var.get()[1], dset, opt, GP.prn_ptr());
     }
 
     if (err) {
