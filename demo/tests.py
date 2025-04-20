@@ -40,7 +40,6 @@ print("\n****************************")
 print("vartest")
 d1.test(type="vartest", vars="LRM IBO")
 print(d1.vartest['summary'])
-exit()
 
 # OLS
 m1 = gretl.ols(formula='1 0 2 3').fit()
