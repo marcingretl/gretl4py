@@ -694,7 +694,7 @@ void GretlDataset::sample (const py::kwargs &kwargs)
     for (auto &item : kwargs) {
         val = NULL;
         if (!is_pystr(item.first)) {
-            throw std::runtime_error("option key must be a string");
+            throw std::invalid_argument("option key must be a string");
         }
         const std::string &key = item.first.cast<std::string>();
         val = MapPyToCpp(item.second).to_string_view().data();
@@ -715,17 +715,17 @@ void GretlDataset::sample (const py::kwargs &kwargs)
             full = std::atoi(val);
             optc++;
         } else {
-            throw std::runtime_error("invalid key '" + key + "' in 'sample' args");
+            throw std::invalid_argument("invalid key '" + key + "' in 'sample' args");
         }
     }
 
     // reject invalid cases
     if (full && (t1str || t2str || opt_replace)) {
-        throw std::runtime_error("sample: invalid use of 'full'");
+        throw std::invalid_argument("sample: invalid use of 'full'");
     } else if (restr && (t1str || t2str)) {
-        throw std::runtime_error("sample: invalid use of 'restriction'");
+        throw std::invalid_argument("sample: invalid use of 'restriction'");
     } else if (opt_replace && !restr) {
-        throw std::runtime_error("sample: invalid use of 'replace'");
+        throw std::invalid_argument("sample: invalid use of 'replace'");
     }
 
     if (argc == 0 && optc == 0) {
@@ -739,8 +739,7 @@ void GretlDataset::sample (const py::kwargs &kwargs)
         gretlopt opt = OPT_R;
 
         if (opt_replace) {
-            // C++ !!
-            opt = static_cast<gretlopt>(static_cast<int>(OPT_R) | static_cast<int>(OPT_P));  //FIXME: static_cast<gretlopt>(OPT_R | OPT_P);!!!
+            opt = static_cast<gretlopt>(OPT_R | OPT_P);
         }
         err = restrict_sample(restr, NULL, dset, NULL, opt, GP.prn_ptr(), NULL);
     } else if (t1str || t2str) {
@@ -782,7 +781,7 @@ void GretlDataset::setobs (const py::kwargs &kwargs)
 
     for (auto &item : kwargs) {
         if (!is_pystr(item.first)) {
-            throw std::runtime_error("option key must be a string");
+            throw std::invalid_argument("option key must be a string");
         }
         const std::string &akey = item.first.cast<std::string>();
         const char *val = MapPyToCpp(item.second).to_string_view().data();
@@ -807,10 +806,10 @@ void GretlDataset::setobs (const py::kwargs &kwargs)
             } else if (!std::strcmp(val, "stacked-time-series")) {
                 opt = OPT_S;
             } else {
-                throw std::runtime_error("setobs: invalid 'structure' specification");
+                throw std::invalid_argument("setobs: invalid 'structure' specification");
             }
         } else {
-            throw std::runtime_error("setobs: invalid key '" + akey + "'");
+            throw std::invalid_argument("setobs: invalid key '" + akey + "'");
         }
     }
 
@@ -822,10 +821,10 @@ void GretlDataset::setobs (const py::kwargs &kwargs)
 
     argc = rcount + pcount;
     if (argc < 2) {
-        throw std::runtime_error("too few arguments for 'setobs'");
+        throw std::invalid_argument("too few arguments for 'setobs'");
     } else if (pcount > 0) {
         if (rcount > 0 || opt != OPT_NONE) {
-            throw std::runtime_error("invalid mixed modes in 'setobs'");
+            throw std::invalid_argument("invalid mixed modes in 'setobs'");
         } else {
             /* equiv. to --panel-vars */
             opt = OPT_P;
