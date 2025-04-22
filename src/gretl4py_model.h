@@ -43,7 +43,7 @@ private:
 protected:
     int id;                                     // model ID
     py::dict RES;                               // estimation results as dictionary
-    py::dict *RES_fcast = nullptr;              // forecasting results as dictionary    //FIXME: not pointer, pybind11 Object*!!!
+    py::dict RES_fcast;                         // forecasting results as dictionary
     mutable GretlTypes *RES_other = nullptr;    // other results (accessor, tests, ets)
     GretlDataset *GD = nullptr;                 // dataset used
     GretlPrint GP = GretlPrint();               // printer (instance wide)
@@ -67,7 +67,7 @@ public:
 
     virtual py::dict fit (const std::string &formula, const py::kwargs &kwargs) = 0;
 
-    virtual py::dict *forecast (const py::kwargs &kwargs) = 0;
+    virtual py::dict forecast (const py::kwargs &kwargs) = 0;
 
     virtual py::dict test (const std::string &type, const py::kwargs &kwargs) = 0;
 
@@ -92,7 +92,7 @@ public:
 
     py::dict fit (const std::string &formula, const py::kwargs &kwargs) override = 0;
 
-    py::dict *forecast (const py::kwargs &kwargs) override;
+    py::dict forecast (const py::kwargs &kwargs) override;
 
     py::dict test (const std::string &type, const py::kwargs &kwargs) override;
 

@@ -179,7 +179,7 @@ void GretlModel_NSE::save_model (gretlopt opt)
 }
 
 
-py::dict *GretlModel_NSE::forecast (const py::kwargs &kwargs)
+py::dict GretlModel_NSE::forecast (const py::kwargs &kwargs)
 {
     /* this code was rendered from gui/library.c */
     FITRESID *fr = NULL;
@@ -329,7 +329,7 @@ py::dict *GretlModel_NSE::forecast (const py::kwargs &kwargs)
         free_fit_resid(fr);
     }
 
-    GP.print();     //FIXME: we use here instance-wide printer, but if that is not safe let's use GretlPrint fp = GretlPrint();
+    GP.print();
     // @Allin: please verify: END
 
     return RES_fcast;
