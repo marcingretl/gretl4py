@@ -553,20 +553,19 @@ void GretlDataset::free_dset (void)
     }
 }
 
-py::dict *GretlDataset::to_dict (void) const
+py::dict GretlDataset::to_dict (void) const
 {
     //
     // we convert gretl data to pydict
     //
-    py::dict *as_dict = new py::dict;
+    py::dict as_dict;
     py::list vnames;
     py::list labels;
-    auto &pydict = *as_dict;
     int i = 0;
     double *tmp = nullptr;
 
-    pydict[py::cast("periodicity")] = dset->pd;
-    pydict[py::cast("structure")] = dset->structure;
+    as_dict[py::cast("periodicity")] = dset->pd;
+    as_dict[py::cast("structure")] = dset->structure;
 
     // note 2024-11-20: we don't put 'const' into the python dictionary,
     // so we skip series 0 when copying from GretlDataset.dset
@@ -578,13 +577,13 @@ py::dict *GretlDataset::to_dict (void) const
         std::memcpy(tmp, dset->Z[i], dset->n * sizeof *tmp);
         tmp += dset->n;
     }
-    pydict[py::cast("data_array")] = Z;
+    as_dict[py::cast("data_array")] = Z;
 
     // copy across the series names
     for (i=1; i<dset->v; i++) {
         vnames.append(dset->varname[i]);
     }
-    pydict[py::cast("varname")] = vnames;
+    as_dict[py::cast("varname")] = vnames;
 
     // copy or manufacture obs labels
     if (dset->S != NULL) {
@@ -598,7 +597,7 @@ py::dict *GretlDataset::to_dict (void) const
             labels.append(ntolabel(s, i, dset));
         }
     }
-    pydict[py::cast("obs_labels")] = labels;
+    as_dict[py::cast("obs_labels")] = labels;
 
     return as_dict;
 }
