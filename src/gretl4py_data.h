@@ -184,12 +184,12 @@ private:
     bool free_b = true;
     char *json_buf = NULL;
     gretl_bundle *b;
-    py::dict *as_dict = nullptr;
+    py::dict as_dict;
 
-    py::dict *json_to_dict (simdjson::ondemand::object &json_obj,
-                            py::dict *outer_dict = nullptr,
-                            std::string_view *outer_key = nullptr,
-                            bool *add_to_outer = nullptr);
+    py::dict json_to_dict (simdjson::ondemand::object &json_obj,
+                           py::dict *outer_dict = nullptr,
+                           std::string_view *outer_key = nullptr,
+                           bool *add_to_outer = nullptr);
 public:
     int err = 0;
 
@@ -198,7 +198,7 @@ public:
     GretlBundle (gretl_bundle *b);              // incoming already allocated bundle
     ~GretlBundle (void);
 
-    py::dict *to_dict (void);                   // bundle-to-dict mapper: memory must be deleted at the caller level
+    py::dict to_dict (void);                   // bundle-to-dict mapper
 
     void print (void);
 };

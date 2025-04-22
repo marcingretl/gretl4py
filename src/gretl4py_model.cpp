@@ -157,8 +157,8 @@ void GretlModel_NSE::save_model (gretlopt opt)
         err = b.err;
 
         if (!err) {
-            RES = *b.to_dict();
-            if (!RES) {
+            RES = b.to_dict();
+            if (RES.empty()) {
                 err = E_DATA;
                 throw std::runtime_error("Model bundle to dict conversion failed.");
             } else {

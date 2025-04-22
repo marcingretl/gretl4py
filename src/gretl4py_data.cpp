@@ -187,10 +187,7 @@ static GretlTypes *convert_GretlType_to_GretlTypes (GretlType &t,
         *RES = mat;
     } else if (t == GRETL_TYPE_BUNDLE) {
         gretl_bundle *b = static_cast<gretl_bundle*>(gr_obj_ptr);
-
-        py::dict *tmpdict = GretlBundle(b).to_dict();
-        *RES = *tmpdict;
-        delete tmpdict;
+        *RES = GretlBundle(b).to_dict();
     } else if (t == GRETL_TYPE_ARRAY) {
         gretl_array *a = static_cast<gretl_array*>(gr_obj_ptr);
         py::list py_list;
@@ -1016,13 +1013,12 @@ GretlBundle::~GretlBundle (void)
     }
 }
 
-py::dict *GretlBundle::json_to_dict (simdjson::ondemand::object &json_obj,
-                                     py::dict *outer_dict,
-                                     std::string_view *outer_key,
-                                     bool *add_to_outer)
+py::dict GretlBundle::json_to_dict (simdjson::ondemand::object &json_obj,
+                                    py::dict *outer_dict,
+                                    std::string_view *outer_key,
+                                    bool *add_to_outer)
 {
-    py::dict *RES = new py::dict;
-    py::dict &res = *RES;
+    py::dict RES;
     int mat_rows = 0;
     int mat_cols = 0;
     bool add_to_res = true;
@@ -1059,12 +1055,12 @@ py::dict *GretlBundle::json_to_dict (simdjson::ondemand::object &json_obj,
         }
 
         if (val.type() == simdjson::ondemand::json_type::null) {
-            res[py::cast(key)] = py::none();
+            RES[py::cast(key)] = py::none();
         } else if (val.type() == simdjson::ondemand::json_type::number) {
-            res[py::cast(key)] = static_cast<double>(val);
+            RES[py::cast(key)] = static_cast<double>(val);
         } else if (val.type() == simdjson::ondemand::json_type::string) {
             val.get_string(GretlBundle::sd_tmp_str);
-            res[py::cast(key)] = GretlBundle::sd_tmp_str;
+            RES[py::cast(key)] = GretlBundle::sd_tmp_str;
         } else if (val.type() == simdjson::ondemand::json_type::array) {
             GretlBundle::sd_tmp_array = val.get_array();
             int i = 0;
@@ -1095,11 +1091,10 @@ py::dict *GretlBundle::json_to_dict (simdjson::ondemand::object &json_obj,
                     }
                 }
 
-                py::dict &res_outer_dict = *outer_dict;
                 if ((std::min)(mat_rows, mat_cols) == 1) { // this is to prevent 'min' macro expansion on MS SDK
-                    res_outer_dict[py::cast(*outer_key)] = mat.reshape({mat.size()});
+                    (*outer_dict)[py::cast(*outer_key)] = mat.reshape({mat.size()});
                 } else {
-                    res_outer_dict[py::cast(*outer_key)] = mat;
+                    (*outer_dict)[py::cast(*outer_key)] = mat;
                 }
                 *add_to_outer = false;
             } else {
@@ -1124,19 +1119,18 @@ py::dict *GretlBundle::json_to_dict (simdjson::ondemand::object &json_obj,
                 }
 
                 if (gr_type == "gretl_list") {
-                    py::dict &res_outer_dict = *outer_dict;
-                    res_outer_dict[py::cast(*outer_key)] = li;
+                    (*outer_dict)[py::cast(*outer_key)] = li;
                     *add_to_outer = false;
                 } else {
-                    res[py::cast(key)] = li;
+                    RES[py::cast(key)] = li;
                 }
             }
         } else if (val.type() == simdjson::ondemand::json_type::object) {
             val_obj = val.get_object();
-            py::dict *tmp_dict = GretlBundle::json_to_dict(val_obj, RES, &key, &add_to_res);
+            py::dict tmp_dict = GretlBundle::json_to_dict(val_obj, &RES, &key, &add_to_res);
 
             if (add_to_res) {
-                res[py::cast(key)] = *tmp_dict;
+                RES[py::cast(key)] = tmp_dict;
             } else {
                 add_to_res = true;
             }
@@ -1146,9 +1140,9 @@ py::dict *GretlBundle::json_to_dict (simdjson::ondemand::object &json_obj,
     return RES;
 }
 
-py::dict *GretlBundle::to_dict (void)
+py::dict GretlBundle::to_dict (void)
 {
-    if (!as_dict) {
+    if (as_dict.empty()) {
         if (!err && !json_buf) {
             json_buf = gretl_bundle_write_to_json_buffer(b, &err);
         }
