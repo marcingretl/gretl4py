@@ -247,10 +247,12 @@ static py::dict *GretlModel_NSE_Driver_wrapper (const std::string formula, const
 }
 
 // wrapper for "destructing" GretlModel models
-void GretlModel_destructor_wrapper (const int model_id)
+void GretlModel_destructor_wrapper (const int model_id, const bool unlink)
 {
     if (estimated_models.find(model_id) != estimated_models.end()) {
-        estimated_models.at(model_id)->unlink_from_dataset();
+        if (unlink) {
+            estimated_models.at(model_id)->unlink_from_dataset();
+        }
         estimated_models.erase(model_id);
     }
 # if GRETL_PYBIND11_DEBUG

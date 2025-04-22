@@ -52,7 +52,8 @@ PYBIND11_MODULE(_gretl, m)
 
     // model management
     m.def("GretlModel_destructor_wrapper", &GretlModel_destructor_wrapper,
-          py::arg("model_id").none(false));
+          py::arg("model_id").none(false),
+          py::arg("unlink") = true);
     m.def("get_accessor", &GretlModel_get_accessor,
           py::arg("model_id").none(false),
           py::arg("accessor").none(false),

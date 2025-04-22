@@ -42,7 +42,7 @@ py::dict about (bool do_print = false);
 void set (const std::string key,
           const std::optional<py::object> &pyval = std::nullopt);
 
-void GretlModel_destructor_wrapper (const int model_id);
+void GretlModel_destructor_wrapper (const int model_id, const bool unlink = true);
 
 void GretlModel_fcast (const int model_id, const py::kwargs &kwargs);
 

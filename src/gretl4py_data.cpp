@@ -21,6 +21,7 @@
 #include <pybind11/numpy.h>
 #include "gretl4py_data.h"
 #include "gretl4py_types.h"
+#include "gretl4py.h" // FIXME: delete in GretlDataset class mapped to Python
 #include <gretl/matrix_extra.h>
 #include <gretl/gretl_model.h>
 #include <gretl/genmain.h>
@@ -525,6 +526,15 @@ GretlDataset::GretlDataset (const py::dict &pydict)
 
 GretlDataset::~GretlDataset (void)
 {
+    std::set<int> linked_models_srt;
+
+    for (int item : this->linked_models) {
+        linked_models_srt.insert(item);
+    }
+    for (auto item = linked_models_srt.rbegin(); item != linked_models_srt.rend(); item++) {
+        GretlModel_destructor_wrapper(*item, false);
+        std::cout << "model: " << *item << " destroyed" << std::endl;
+    }
     if (is_default) {
         set_default_dset(nullptr);
         std::printf("default dataset was deleted\n");
