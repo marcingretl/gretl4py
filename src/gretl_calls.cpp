@@ -140,7 +140,6 @@ py::dict about (bool do_print)
     res[py::cast("py11_ver")] = py11_ver;
     res[py::cast("lg_ver")] = lg_ver;
     if (!b.err) {
-        py::dict sysinfo = b.to_dict();
         res[py::cast("sysinfo")] = b.to_dict();
     } else {
         res[py::cast("sysinfo")] = py::none();
