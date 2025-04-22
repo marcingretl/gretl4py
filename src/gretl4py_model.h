@@ -42,7 +42,7 @@ private:
     static inline int next_model_id = 1;
 protected:
     int id;                                     // model ID
-    py::dict *RES = nullptr;                    // estimation results as dictionary     //FIXME: not pointer, pybind11 Object*!!!
+    py::dict RES;                               // estimation results as dictionary
     py::dict *RES_fcast = nullptr;              // forecasting results as dictionary    //FIXME: not pointer, pybind11 Object*!!!
     mutable GretlTypes *RES_other = nullptr;    // other results (accessor, tests, ets)
     GretlDataset *GD = nullptr;                 // dataset used
@@ -65,7 +65,7 @@ public:
 
     virtual GretlTypes *get_accessor (const std::string &accessor) const = 0;
 
-    virtual py::dict *fit (const std::string &formula, const py::kwargs &kwargs) = 0;
+    virtual py::dict fit (const std::string &formula, const py::kwargs &kwargs) = 0;
 
     virtual py::dict *forecast (const py::kwargs &kwargs) = 0;
 
@@ -90,7 +90,7 @@ public:
 
     GretlTypes *get_accessor (const std::string &accessor) const override;
 
-    py::dict *fit (const std::string &formula, const py::kwargs &kwargs) override = 0;
+    py::dict fit (const std::string &formula, const py::kwargs &kwargs) override = 0;
 
     py::dict *forecast (const py::kwargs &kwargs) override;
 
@@ -111,7 +111,7 @@ protected:
 public:
     GretlModel_NSE_Driver (GretlDataset *GD);
 
-    py::dict *fit (const std::string &formula, const py::kwargs &kwargs) override;
+    py::dict fit (const std::string &formula, const py::kwargs &kwargs) override;
 };
 
 //
@@ -144,7 +144,7 @@ private:
 public:
     GretlModel_NSE_arima (GretlDataset *GD, const std::string &y, const py::tuple &tup);
 
-    py::dict *fit (const std::string &formula, const py::kwargs &kwargs) override;
+    py::dict fit (const std::string &formula, const py::kwargs &kwargs) override;
 };
 
 #endif // GRETL4PY_MODEL_H

@@ -58,48 +58,48 @@ py::dict GretlModel_test (const int model_id, const std::string &type,
 //////////////////////////////////////////////////
 // model estimation
 //////////////////////////////////////////////////
-py::dict *arima (const std::string y, const py::tuple &tup, const py::kwargs &kwargs);
+py::dict arima (const std::string y, const py::tuple &tup, const py::kwargs &kwargs);
 
-py::dict *ols (const std::string formula, const py::kwargs &kwargs);
+py::dict ols (const std::string formula, const py::kwargs &kwargs);
 
-py::dict *wls (const std::string formula, const py::kwargs &kwargs);
+py::dict wls (const std::string formula, const py::kwargs &kwargs);
 
-py::dict *logit (const std::string formula, const py::kwargs &kwargs);
+py::dict logit (const std::string formula, const py::kwargs &kwargs);
 
-py::dict *probit (const std::string formula, const py::kwargs &kwargs);
+py::dict probit (const std::string formula, const py::kwargs &kwargs);
 
-py::dict *poisson (const std::string formula, const py::kwargs &kwargs);
+py::dict poisson (const std::string formula, const py::kwargs &kwargs);
 
-py::dict *negbin (const std::string formula, const py::kwargs &kwargs);
+py::dict negbin (const std::string formula, const py::kwargs &kwargs);
 
-py::dict *biprobit (const std::string formula, const py::kwargs &kwargs);
+py::dict biprobit (const std::string formula, const py::kwargs &kwargs);
 
-py::dict *duration (const std::string formula, const py::kwargs &kwargs);
+py::dict duration (const std::string formula, const py::kwargs &kwargs);
 
-py::dict *heckit (const std::string formula, const py::kwargs &kwargs);
+py::dict heckit (const std::string formula, const py::kwargs &kwargs);
 
-py::dict *logistic (const std::string formula, const py::kwargs &kwargs);
+py::dict logistic (const std::string formula, const py::kwargs &kwargs);
 
-py::dict *ar (const std::string formula, const py::kwargs &kwargs);
+py::dict ar (const std::string formula, const py::kwargs &kwargs);
 
-py::dict *ar1 (const std::string formula, const py::kwargs &kwargs);
+py::dict ar1 (const std::string formula, const py::kwargs &kwargs);
 
-py::dict *lad (const std::string formula, const py::kwargs &kwargs);
+py::dict lad (const std::string formula, const py::kwargs &kwargs);
 
-py::dict *garch (const std::string formula, const py::kwargs &kwargs);
+py::dict garch (const std::string formula, const py::kwargs &kwargs);
 
-py::dict *mpols (const std::string formula, const py::kwargs &kwargs);
+py::dict mpols (const std::string formula, const py::kwargs &kwargs);
 
-py::dict *panel (const std::string formula, const py::kwargs &kwargs);
+py::dict panel (const std::string formula, const py::kwargs &kwargs);
 
-py::dict *tsls (const std::string formula, const py::kwargs &kwargs);
+py::dict tsls (const std::string formula, const py::kwargs &kwargs);
 
-py::dict *tobit (const std::string formula, const py::kwargs &kwargs);
+py::dict tobit (const std::string formula, const py::kwargs &kwargs);
 
-py::dict *quantreg (const double tau, const std::string formula,
+py::dict quantreg (const double tau, const std::string formula,
                     const py::kwargs &kwargs);
 
-py::dict *quantreg (const py::list tau, const std::string formula,
+py::dict quantreg (const py::list tau, const std::string formula,
                     const py::kwargs &kwargs);
 
 #endif // GRETL4PY_H

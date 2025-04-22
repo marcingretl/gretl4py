@@ -157,7 +157,7 @@ void GretlModel_NSE::save_model (gretlopt opt)
         err = b.err;
 
         if (!err) {
-            RES = b.to_dict();
+            RES = *b.to_dict();
             if (!RES) {
                 err = E_DATA;
                 throw std::runtime_error("Model bundle to dict conversion failed.");
@@ -165,8 +165,8 @@ void GretlModel_NSE::save_model (gretlopt opt)
                 py::dict _ids;
                 _ids[py::cast("_id")] = model->ID;
                 _ids[py::cast("_model_id")] = id;
-                (*RES)[py::cast("_ids")] = _ids;
-                (*RES)[py::cast("summary")] = GP.get_buffer();
+                RES[py::cast("_ids")] = _ids;
+                RES[py::cast("summary")] = GP.get_buffer();
             }
         }
         if (err) {
@@ -470,8 +470,8 @@ GretlModel_NSE_Driver<F, CI>::GretlModel_NSE_Driver (GretlDataset *GD)
 // F: function to call
 // CI: GretlCmdIndex
 template <auto F, GretlCmdIndex CI>
-py::dict *GretlModel_NSE_Driver<F, CI>::fit (const std::string &formula,
-                                             const py::kwargs &kwargs)
+py::dict GretlModel_NSE_Driver<F, CI>::fit (const std::string &formula,
+                                            const py::kwargs &kwargs)
 {
     if (py::len(kwargs) > 0) {
         unpack_kwargs(kwargs, CI);
@@ -571,8 +571,8 @@ void GretlModel_NSE_arima::get_arima_order (const py::tuple &tup,
     }
 }
 
-py::dict *GretlModel_NSE_arima::fit (const std::string &formula,
-                                     const py::kwargs &kwargs)
+py::dict GretlModel_NSE_arima::fit (const std::string &formula,
+                                    const py::kwargs &kwargs)
 {
     int seasonal = 0;
     int y_number;
@@ -588,7 +588,7 @@ py::dict *GretlModel_NSE_arima::fit (const std::string &formula,
 
     y_number = current_series_index(GD->dset, y.c_str());
     if (y_number == -1) {
-        throw std::runtime_error("There is no variable: " + y);
+        throw std::invalid_argument("There is no variable: " + y);
     }
 
     p = d = q = 0;
