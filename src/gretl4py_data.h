@@ -67,10 +67,10 @@ static inline void gretl_list_deleter (int *ptr) {
 //////////////////////////////////////////////////
 void handle_gretl_error (int err);
 
-GretlTypes *gretl_generate_gretl_object (const char *s, int &err,
-                                         GretlObjType obj_type = GRETL_OBJ_INFO,
-                                         DATASET *dset = NULL,
-                                         MODEL *model = NULL);
+std::unique_ptr<GretlTypes> gretl_generate_gretl_object (const char *s, int &err,
+                                                         GretlObjType obj_type = GRETL_OBJ_INFO,
+                                                         DATASET *dset = NULL,
+                                                         MODEL *model = NULL);
 
 void gretl_valid_long_opt (gretlopt &opt, GretlCmdIndex ci,
                            const std::string &key, const py::handle &val,
@@ -112,9 +112,10 @@ class GretlDataset
 private:
     static inline int next_obj_id = 1;
     int id;
-    std::unordered_set<int> linked_models;  // models (id-s) which use this dataset
-    GretlPrint GP = GretlPrint();           // printer (instance wide)
-    mutable GretlTypes *RES_other = nullptr;// other results (accessor, tests, ets)
+    std::unordered_set<int> linked_models;          // models (id-s) which use this dataset
+    GretlPrint GP = GretlPrint();                   // printer (instance wide)
+    mutable std::unique_ptr<GretlTypes> RES_other;  // other results (accessor, tests, ets)
+
     gretlopt opt = OPT_NONE;
 
     void allocate_dset (void);
@@ -159,7 +160,7 @@ public:
 
     std::unordered_set<int> linked_models_list (void) const;
 
-    GretlTypes *get_accessor (const std::string &accessor) const; // memory must be deleted at the caller level
+    std::unique_ptr<GretlTypes> get_accessor (const std::string &accessor) const;
 
     py::dict test (const std::string &type, const std::string &vars, const py::kwargs &kwargs);
 };

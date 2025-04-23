@@ -261,11 +261,9 @@ void GretlModel_destructor_wrapper (const int model_id, const bool unlink)
 GretlTypes *GretlModel_get_accessor (const int model_id, const std::string &accessor)
 {
     check_if_model_exists(model_id);
+    auto res = estimated_models.at(model_id)->get_accessor(accessor);
 
-    GretlTypes *RES = nullptr;
-    RES = estimated_models.at(model_id)->get_accessor(accessor);
-
-    return RES;
+    return res.release();
 }
 
 py::dict GretlModel_test (const int model_id, const std::string &type,

@@ -158,16 +158,16 @@ static void numpy_array_to_gretl_storage (const py::dict &pydict,
     dset->t2 = dset->n-1;
 }
 
-static GretlTypes *convert_GretlType_to_GretlTypes (GretlType &t,
-                                                    void *gr_obj_ptr,
-                                                    const int n, int &err)
+static std::unique_ptr<GretlTypes> convert_GretlType_to_GretlTypes (GretlType &t,
+                                                                    void *gr_obj_ptr,
+                                                                    const int n, int &err)
 {
     //
     // function converts libgretl's GretlType to gretl4py's GretlTypes
     // *gr_obj_ptr: pointer to libgretl's object
     // note: memory must be deleted at caller level
     //
-    GretlTypes *RES = new GretlTypes;   // gretl4py type
+    auto RES = std::make_unique<GretlTypes>();
 
     if (t == GRETL_TYPE_NONE) {
         std::printf("gretl_grab: didn't get anything!\n");
@@ -195,21 +195,22 @@ static GretlTypes *convert_GretlType_to_GretlTypes (GretlType &t,
 
         for (int i=0; i<gretl_array_get_length(a); i++) {
             tmp = gretl_array_get_content_type(a);
-            py_list.append(convert_GretlType_to_GretlTypes(tmp, gretl_array_get_element(a, i, &tmp, &err), n, err));
+            auto element = convert_GretlType_to_GretlTypes(tmp, gretl_array_get_element(a, i, &tmp, &err), n, err);
+            py_list.append(*element);
         }
         *RES = py_list;
     } else if (t == GRETL_TYPE_SERIES) {
-        double *a = static_cast<double*>(gr_obj_ptr);
+        double *s = static_cast<double*>(gr_obj_ptr);
         DNumPyArrayFC mat(n);
 
-        std::memcpy(static_cast<double*>(mat.request().ptr), a, n * sizeof(double));
+        std::memcpy(static_cast<double*>(mat.request().ptr), s, n * sizeof(double));
         *RES = mat;
     } else if (t == GRETL_TYPE_LIST) {
-        int *gr_list = static_cast<int*>(gr_obj_ptr);
+        int *l = static_cast<int*>(gr_obj_ptr);
         py::list py_list;
 
-        for (int i=1; i<=gr_list[0]; i++) {
-            py_list.append(gr_list[i]);
+        for (int i=1; i<=l[0]; i++) {
+            py_list.append(l[i]);
         }
         *RES = py_list;
     } else {
@@ -231,16 +232,16 @@ void handle_gretl_error (int err)
     throw std::runtime_error(msg);
 }
 
-GretlTypes *gretl_generate_gretl_object (const char *s, int &err,
-                                         GretlObjType obj_type,
-                                         DATASET *dset, MODEL *model)
+std::unique_ptr<GretlTypes> gretl_generate_gretl_object (const char *s, int &err,
+                                                         GretlObjType obj_type,
+                                                         DATASET *dset, MODEL *model)
 {
     //
     // we grab object from libgretl stack
     //
-    GretlTypes *RES = nullptr;      // gretl4py type
-    GretlType t = GRETL_TYPE_NONE;  // libgretl type
-    bool free_dset = false;         // we free dset _only_ if was allocated here
+    std::unique_ptr<GretlTypes> RES; // gretl4py type
+    GretlType t = GRETL_TYPE_NONE;   // libgretl type
+    bool free_dset = false;          // we free dset _only_ if was allocated here
     void *resp;
 
     // we allocate dset if we didn't get one
@@ -904,10 +905,10 @@ gretlopt GretlDataset::setobs_opt_from_structure (int structure)
     }
 }
 
-GretlTypes *GretlDataset::get_accessor (const std::string &accessor) const
+std::unique_ptr<GretlTypes> GretlDataset::get_accessor (const std::string &accessor) const
 {
-    GretlTypes *RES_other_l = gretl_generate_gretl_object(accessor.c_str(), err,
-                                                        GRETL_OBJ_DSET, dset);
+    std::unique_ptr<GretlTypes> RES_other_l = gretl_generate_gretl_object(accessor.c_str(), err,
+                                                                          GRETL_OBJ_DSET, dset);
     if (err) {
         handle_gretl_error(err);
         throw std::runtime_error("grabbing '" + accessor + "' failed");
@@ -964,12 +965,10 @@ py::dict GretlDataset::test (const std::string &type, const std::string &vars,
     if (err) {
         handle_gretl_error(err);
     } else {
-        RES_other = get_accessor("$test");
-        RES[py::cast("test")] = *RES_other;
-        delete RES_other;
-        RES_other = get_accessor("$pvalue");
-        RES[py::cast("pvalue")] = *RES_other;
-        delete RES_other;
+        auto test_result = get_accessor("$test");
+        RES[py::cast("test")] = *test_result;
+        auto pval_result = get_accessor("$pvalue");
+        RES[py::cast("pvalue")] = *pval_result;
         RES[py::cast("summary")] = GP.get_buffer();
     }
 

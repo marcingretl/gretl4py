@@ -335,8 +335,7 @@ py::dict GretlModel_NSE::forecast (const py::kwargs &kwargs)
     return RES_fcast;
 }
 
-
-GretlTypes *GretlModel_NSE::get_accessor (const std::string &accessor) const
+std::unique_ptr<GretlTypes> GretlModel_NSE::get_accessor (const std::string &accessor) const
 {
     RES_other = gretl_generate_gretl_object(accessor.c_str(),
                                             err, GRETL_OBJ_EQN,
@@ -346,7 +345,7 @@ GretlTypes *GretlModel_NSE::get_accessor (const std::string &accessor) const
         throw std::runtime_error("grabbing '" + accessor + "' failed");
     }
 
-    return RES_other;
+    return std::make_unique<GretlTypes>(*RES_other);
 }
 
 py::dict GretlModel_NSE::test (const std::string &type,
@@ -390,12 +389,10 @@ py::dict GretlModel_NSE::test (const std::string &type,
         handle_gretl_error(err);
     }
 
-    RES_other = get_accessor("$test");
-    RES[py::cast("test")] = *RES_other;
-    delete RES_other;
-    RES_other = get_accessor("$pvalue");
-    RES[py::cast("pvalue")] = *RES_other;
-    delete RES_other;
+    auto test_result = get_accessor("$test");
+    RES[py::cast("test")] = *test_result;
+    auto pval_result = get_accessor("$pvalue");
+    RES[py::cast("pvalue")] = *pval_result;
     RES[py::cast("summary")] = GP.get_buffer();
 
     return RES;
@@ -435,12 +432,10 @@ py::dict GretlModel_NSE::test (const std::string &type,
         handle_gretl_error(err);
     }
 
-    RES_other = get_accessor("$test");
-    RES[py::cast("test")] = *RES_other;
-    delete RES_other;
-    RES_other = get_accessor("$pvalue");
-    RES[py::cast("pvalue")] = *RES_other;
-    delete RES_other;
+    auto test_result = get_accessor("$test");
+    RES[py::cast("test")] = *test_result;
+    auto pval_result = get_accessor("$pvalue");
+    RES[py::cast("pvalue")] = *pval_result;
     RES[py::cast("summary")] = GP.get_buffer();
 
     return RES;

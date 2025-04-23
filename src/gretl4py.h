@@ -46,8 +46,7 @@ void GretlModel_destructor_wrapper (const int model_id, const bool unlink = true
 
 void GretlModel_fcast (const int model_id, const py::kwargs &kwargs);
 
-GretlTypes *GretlModel_get_accessor (const int model_id,
-                                     const std::string &accessor);
+GretlTypes *GretlModel_get_accessor (const int model_id, const std::string &accessor);
 
 py::dict GretlModel_test (const int model_id, const std::string &type,
                           const py::kwargs &kwargs);

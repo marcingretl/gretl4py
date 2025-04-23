@@ -55,7 +55,12 @@ void init_gretl4py_data_py11(py::module_ &m)
         .def("varnames", &GretlDataset::varnames,
              py::return_value_policy::take_ownership)
         .def("linked_models_list", &GretlDataset::linked_models_list)
-        .def("get_accessor", &GretlDataset::get_accessor)
+        .def("get_accessor", [](GretlDataset &self, const std::string &accessor) -> GretlTypes*
+             {
+                 auto res = self.get_accessor(accessor);
+
+                 return res.release();
+             }, py::return_value_policy::take_ownership)
         .def("test",
              [](GretlDataset &self,
                 const std::string &type, const py::kwargs &kwargs) -> py::dict

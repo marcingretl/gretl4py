@@ -44,7 +44,7 @@ protected:
     int id;                                     // model ID
     py::dict RES;                               // estimation results as dictionary
     py::dict RES_fcast;                         // forecasting results as dictionary
-    mutable GretlTypes *RES_other = nullptr;    // other results (accessor, tests, ets)
+    mutable std::unique_ptr<GretlTypes> RES_other; // other results (accessor, tests, ets)
     GretlDataset *GD = nullptr;                 // dataset used
     GretlPrint GP = GretlPrint();               // printer (instance wide)
     gretl_list_ptr var_list{nullptr, gretl_list_deleter}; // libgretl list of variables
@@ -63,7 +63,7 @@ public:
 
     void unlink_from_dataset (void) const;
 
-    virtual GretlTypes *get_accessor (const std::string &accessor) const = 0;
+    virtual std::unique_ptr<GretlTypes> get_accessor (const std::string &accessor) const = 0;
 
     virtual py::dict fit (const std::string &formula, const py::kwargs &kwargs) = 0;
 
@@ -88,7 +88,7 @@ public:
     GretlModel_NSE (GretlDataset *GD);
     virtual ~GretlModel_NSE (void);
 
-    GretlTypes *get_accessor (const std::string &accessor) const override;
+    std::unique_ptr<GretlTypes> get_accessor (const std::string &accessor) const override;
 
     py::dict fit (const std::string &formula, const py::kwargs &kwargs) override = 0;
 
