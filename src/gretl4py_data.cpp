@@ -907,14 +907,14 @@ gretlopt GretlDataset::setobs_opt_from_structure (int structure)
 
 std::unique_ptr<GretlTypes> GretlDataset::get_accessor (const std::string &accessor) const
 {
-    std::unique_ptr<GretlTypes> RES_other_l = gretl_generate_gretl_object(accessor.c_str(), err,
-                                                                          GRETL_OBJ_DSET, dset);
+    std::unique_ptr<GretlTypes> RES = gretl_generate_gretl_object(accessor.c_str(), err,
+                                                                  GRETL_OBJ_DSET, dset);
     if (err) {
         handle_gretl_error(err);
         throw std::runtime_error("grabbing '" + accessor + "' failed");
     }
 
-    return RES_other_l;
+    return RES;
 }
 
 py::dict GretlDataset::test (const std::string &type, const std::string &vars,

@@ -44,7 +44,6 @@ protected:
     int id;                                     // model ID
     py::dict RES;                               // estimation results as dictionary
     py::dict RES_fcast;                         // forecasting results as dictionary
-    mutable std::unique_ptr<GretlTypes> RES_other; // other results (accessor, tests, ets)
     GretlDataset *GD = nullptr;                 // dataset used
     GretlPrint GP = GretlPrint();               // printer (instance wide)
     gretl_list_ptr var_list{nullptr, gretl_list_deleter}; // libgretl list of variables
