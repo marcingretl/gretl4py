@@ -49,7 +49,7 @@ extern "C" {
 #define GRETL_PYBIND11_DEBUG 0
 
 static GretlDataset *DSET = nullptr;                                            // default dataset
-static std::unordered_map<int, std::shared_ptr<GretlModel>> estimated_models;   // list of already estimated models
+static std::unordered_map<int, std::unique_ptr<GretlModel>> estimated_models;   // list of already estimated models
 static int gretl4py_verbose = 0;
 
 //////////////////////////////////////////////////
@@ -238,10 +238,12 @@ static void check_if_model_exists (const int model_id)
 template <auto F, GretlCmdIndex CI>
 static py::dict GretlModel_NSE_Driver_wrapper (const std::string formula, const py::kwargs &kwargs)
 {
-    std::shared_ptr<GretlModel> model = std::make_shared<GretlModel_NSE_Driver<F, CI>>(DSET);
-    estimated_models.try_emplace(model->get_id(), model);
+    auto model = std::make_unique<GretlModel_NSE_Driver<F, CI>>(DSET);
 
-    return model->fit(formula, kwargs);
+    py::dict RES = model->fit(formula, kwargs);
+    estimated_models.try_emplace(model->get_id(), std::move(model));
+
+    return RES;
 }
 
 // wrapper for "destructing" GretlModel models
@@ -261,9 +263,8 @@ void GretlModel_destructor_wrapper (const int model_id, const bool unlink)
 GretlTypes *GretlModel_get_accessor (const int model_id, const std::string &accessor)
 {
     check_if_model_exists(model_id);
-    auto res = estimated_models.at(model_id)->get_accessor(accessor);
 
-    return res.release();
+    return estimated_models.at(model_id).get()->get_accessor(accessor).release();
 }
 
 py::dict GretlModel_test (const int model_id, const std::string &type,
@@ -271,7 +272,7 @@ py::dict GretlModel_test (const int model_id, const std::string &type,
 {
     check_if_model_exists(model_id);
 
-    return estimated_models.at(model_id)->test(type, kwargs);
+    return estimated_models.at(model_id).get()->test(type, kwargs);
 }
 
 py::dict GretlModel_test (const int model_id, const std::string &type,
@@ -279,14 +280,14 @@ py::dict GretlModel_test (const int model_id, const std::string &type,
 {
     check_if_model_exists(model_id);
 
-    return estimated_models.at(model_id)->test(type, vars, kwargs);
+    return estimated_models.at(model_id).get()->test(type, vars, kwargs);
 }
 
 void GretlModel_fcast (const int model_id, const py::kwargs &kwargs)
 {
     check_if_model_exists(model_id);
 
-    estimated_models.at(model_id)->forecast(kwargs);
+    estimated_models.at(model_id).get()->forecast(kwargs);
 }
 
 //////////////////////////////////////////////////
@@ -295,18 +296,12 @@ void GretlModel_fcast (const int model_id, const py::kwargs &kwargs)
 py::dict arima (const std::string y, const py::tuple &tup,
                  const py::kwargs &kwargs)
 {
-    // note: custom deleter is needed because of (y, tup) initialisation by constructor
-    std::shared_ptr<GretlModel> model =
-    std::shared_ptr<GretlModel>(new GretlModel_NSE_arima(DSET, y, tup),
-                                [](GretlModel *ptr)
-                                {
-                                    if (Py_IsInitialized()) {
-                                        delete ptr;  // delete manually when Python is alive
-                                    }
-                                });
-    estimated_models.try_emplace(model->get_id(), model);
+    auto model = std::make_unique<GretlModel_NSE_arima>(DSET, y, tup);
 
-    return model->fit("", kwargs);
+    py::dict RES = model->fit("", kwargs);
+    estimated_models.try_emplace(model->get_id(), std::move(model));
+
+    return RES;
 }
 
 py::dict ols (const std::string formula, const py::kwargs &kwargs)
@@ -402,19 +397,21 @@ py::dict tobit (const std::string formula, const py::kwargs &kwargs)
 py::dict quantreg (const double tau, const std::string formula,
                    const py::kwargs &kwargs)
 {
-    std::shared_ptr<GretlModel> model =
-    std::make_shared<GretlModel_NSE_Driver_quantreg<quantreg_driver, QUANTREG>>(DSET, tau);
-    estimated_models.try_emplace(model->get_id(), model);
+    auto model = std::make_unique<GretlModel_NSE_Driver_quantreg<quantreg_driver, QUANTREG>>(DSET, tau);
 
-    return model->fit(formula, kwargs);
+    py::dict RES = model->fit(formula, kwargs);
+    estimated_models.try_emplace(model->get_id(), std::move(model));
+
+    return RES;
 }
 
 py::dict quantreg (const py::list tau, const std::string formula,
                    const py::kwargs &kwargs)
 {
-    std::shared_ptr<GretlModel> model =
-    std::make_shared<GretlModel_NSE_Driver_quantreg<quantreg_driver, QUANTREG>>(DSET, tau);
-    estimated_models.try_emplace(model->get_id(), model);
+    auto model = std::make_unique<GretlModel_NSE_Driver_quantreg<quantreg_driver, QUANTREG>>(DSET, tau);
 
-    return model->fit(formula, kwargs);
+    py::dict RES = model->fit(formula, kwargs);
+    estimated_models.try_emplace(model->get_id(), std::move(model));
+
+    return RES;
 }

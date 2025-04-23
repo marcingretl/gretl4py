@@ -402,7 +402,7 @@ void unpack_kwargs_test (gretlopt &opt, const std::string &type,
             } else {
                 throw std::invalid_argument("'order' takes integers only");
             }
-        } else if (key == "quiet" || key == "silent" || key == "plot") {
+        } else if (key == "quiet" || key == "silent" || key == "plot") { //quiet goes to libgretl, but silent does not!!!
             throw std::invalid_argument("invalid option flag: " + key);
         } else {
             gretl_valid_long_opt(opt, ci, key, item.second);
