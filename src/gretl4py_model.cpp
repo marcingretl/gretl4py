@@ -388,10 +388,8 @@ py::dict GretlModel_NSE::test (const std::string &type,
         handle_gretl_error(err);
     }
 
-    auto test_result = get_accessor("$test");
-    RES[py::cast("test")] = *test_result;
-    auto pval_result = get_accessor("$pvalue");
-    RES[py::cast("pvalue")] = *pval_result;
+    RES[py::cast("test")] = *get_accessor("$test");
+    RES[py::cast("pvalue")] = *get_accessor("$pvalue");
     RES[py::cast("summary")] = GP.get_buffer();
 
     return RES;
@@ -431,10 +429,8 @@ py::dict GretlModel_NSE::test (const std::string &type,
         handle_gretl_error(err);
     }
 
-    auto test_result = get_accessor("$test");
-    RES[py::cast("test")] = *test_result;
-    auto pval_result = get_accessor("$pvalue");
-    RES[py::cast("pvalue")] = *pval_result;
+    RES[py::cast("test")] = *get_accessor("$test");
+    RES[py::cast("pvalue")] = *get_accessor("$pvalue");
     RES[py::cast("summary")] = GP.get_buffer();
 
     return RES;
