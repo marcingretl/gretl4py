@@ -394,6 +394,9 @@ py::dict GretlModel_NSE::test (const std::string &type,
     RES[py::cast("test")] = *get_accessor("$test");
     RES[py::cast("pvalue")] = *get_accessor("$pvalue");
     RES[py::cast("summary")] = GP.get_buffer();
+    if (!kwargs.contains("silent")) {
+        GP.print();
+    }
 
     return RES;
 }
@@ -435,6 +438,9 @@ py::dict GretlModel_NSE::test (const std::string &type,
     RES[py::cast("test")] = *get_accessor("$test");
     RES[py::cast("pvalue")] = *get_accessor("$pvalue");
     RES[py::cast("summary")] = GP.get_buffer();
+    if (!kwargs.contains("silent")) {
+        GP.print();
+    }
 
     return RES;
 }
@@ -486,11 +492,13 @@ py::dict GretlModel_NSE::restrict (const py::list &impose,
     if (err) {
         handle_gretl_error(err);
     }
-    GP.print();
 
     RES[py::cast("test")] = *get_accessor("$test");
     RES[py::cast("pvalue")] = *get_accessor("$pvalue");
     RES[py::cast("summary")] = GP.get_buffer();
+    if (!kwargs.contains("silent")) {
+        GP.print();
+    }
 
     return RES;
 }

@@ -404,7 +404,10 @@ void unpack_kwargs_test (gretlopt &opt, const std::string &type,
             } else {
                 throw std::invalid_argument("'order' takes integers only");
             }
-        } else if (key == "quiet" || key == "silent" || key == "plot") { //quiet goes to libgretl, but silent does not!!!
+        } else if (key == "silent") {
+            // special case: silent is processed manually later on
+            continue;
+        } else if (key == "plot") {
             throw std::invalid_argument("invalid option flag: " + key);
         } else {
             gretl_valid_long_opt(opt, ci, key, item.second);
@@ -966,10 +969,13 @@ py::dict GretlDataset::test (const std::string &type, const std::string &vars,
 
     if (err) {
         handle_gretl_error(err);
-    } else {
-        RES[py::cast("test")] = *get_accessor("$test");
-        RES[py::cast("pvalue")] = *get_accessor("$pvalue");
-        RES[py::cast("summary")] = GP.get_buffer();
+    }
+
+    RES[py::cast("test")] = *get_accessor("$test");
+    RES[py::cast("pvalue")] = *get_accessor("$pvalue");
+    RES[py::cast("summary")] = GP.get_buffer();
+    if (!kwargs.contains("silent")) {
+        GP.print();
     }
 
     // we register result

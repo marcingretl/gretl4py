@@ -7,13 +7,6 @@ d4 = gretl.get_data(gretl.gretl_data_path('ramanathan/data4-10.gdt'))
 #gretl.show_data_status()
 
 print("\n****************************")
-print("restrict")
-m1 = gretl.ols(formula='1 0 2 3 4 5', data=d4).fit()
-m1.restrict(impose=['b[4] = 0', 'b[5] = 0'])
-print(m1.restrict['summary'])
-exit()
-
-print("\n****************************")
 print("adf")
 d1.test(type="adf", vars="LRM", order=1)
 print(d1.adf['summary'])
@@ -128,7 +121,6 @@ m2.test(type="autocorr", order=4)
 print(m2.autocorr['summary'])
 
 
-
 # PANEL
 m3 = gretl.ols(formula="invest ~ const value kstock", data=d3).fit()
 print(m3)
@@ -139,3 +131,10 @@ m4 = gretl.panel(formula="invest ~ const value kstock", data=d3).fit()
 print(m4)
 m4.test(type="panel")
 print(m4.panel['summary'])
+
+# RESTRICT
+print("\n****************************")
+print("restrict")
+m1 = gretl.ols(formula='1 0 2 3 4 5', data=d4).fit()
+m1.restrict(impose=['b[4] - b[5] = 0', 'b[3] = 0'], quiet=True)
+print(m1.restrict['pvalue'])
