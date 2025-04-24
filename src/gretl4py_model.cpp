@@ -106,22 +106,26 @@ void GretlModel::unpack_kwargs (const py::kwargs &kwargs, GretlCmdIndex ci)
     }
 }
 
-gretlopt GretlModel::unpack_kwargs_forecast (const py::kwargs &kwargs,
-                                             GretlCmdIndex ci)
+gretlopt GretlModel::unpack_kwargs_forecast (const py::kwargs &kwargs)
 {
+    gretlopt fopt = OPT_NONE;
+
     for (auto &item : kwargs) {
         if (!is_pystr(item.first)) {
             throw std::invalid_argument("option key must be a string");
         }
+        const std::string &key = item.first.cast<std::string>();
 
-        std::cout << "the following pairs of forecasting options were passed:\n";
-        std::cout << item.first.cast<std::string>() << " : ";
-        std::cout << MapPyToCpp(item.second).to_string_view() << std::endl;
+        if (key == "quiet") {
+            fopt = static_cast<gretlopt>(fopt | OPT_Q);
+        }
+        //std::cout << "the following pairs of forecasting options were passed:\n";
+        //std::cout << item.first.cast<std::string>() << " : ";
+        //std::cout << MapPyToCpp(item.second).to_string_view() << std::endl;
     }
 
-    return OPT_NONE;
+    return fopt;
 }
-
 
 //
 // Native Single Equation libgretl MODEL (NSE)
@@ -181,33 +185,54 @@ void GretlModel_NSE::save_model (gretlopt opt)
     }
 }
 
+static py::dict fr_to_dict (FITRESID *fr)
+{
+    py::dict fcdict;
+    double *tmp;
+    int offset;
+    int rows;
+    int cols;
+
+    cols = 2 + (fr->sderr != nullptr);
+    rows = fr->t2 - fr->t1 + 1;
+    offset = fr->nobs - rows;
+
+    DNumPyArrayFC F({rows, cols});
+    tmp = static_cast<double*>(F.request().ptr);
+    std::memcpy(tmp, fr->actual + offset, rows * sizeof *tmp);
+    tmp += rows;
+    std::memcpy(tmp, fr->fitted + offset, rows * sizeof *tmp);
+    if (fr->sderr != NULL) {
+        tmp += rows;
+        std::memcpy(tmp, fr->sderr + offset, rows * sizeof *tmp);
+    }
+
+    fcdict[py::cast("forecast data")] = F;
+    return fcdict;
+}
 
 py::dict GretlModel_NSE::forecast (const py::kwargs &kwargs)
 {
-    /* this code was rendered from gui/library.c */
+    py::dict fcdict;
     FITRESID *fr = NULL;
-    gretlopt gopt;
-    gretlopt opt = OPT_NONE;                //FIXME: change name, must be local!!!
+    gretlopt popt = OPT_NONE;
     FcastFlags flags = static_cast<FcastFlags>(0);
-    int t2, t1 = 0;
-    int premax, pre_n = 0;
-    int t1min = 0;
-    int recursive = 0, k = 1, *kptr;        //FIXME: recursive as bool
+    int t1, t2 = 0;
+#if 0 // not yet */
+    int recursive = 0, k = 1, *kptr;
+#endif
     int dt2 = GD->dset->n - 1;
     int st2 = GD->dset->n - 1;
     double conf = 0.95;
-    //??
-    char startobs[OBSLEN], endobs[OBSLEN];
 
-    // @Allin: please verify: BEGIN
-    // we do some sample problem
+    /* check for possible sample mismatch */
     err = model_sample_problem(model, GD->dset);
     if (err) {
         handle_gretl_error(err);
         throw std::runtime_error("model sample problem");
     }
 
-    // try to figure which options might be applicable
+    // try to figure which fcast options might be applicable
     forecast_options_for_model(model, GD->dset, &flags, &dt2, &st2);
 
     if (flags & (FC_DYNAMIC_OK | FC_AUTO_OK)) {
@@ -216,126 +241,32 @@ py::dict GretlModel_NSE::forecast (const py::kwargs &kwargs)
         t2 = st2;
     }
 
-    // if no out-of-sample obs are available in case of time-series data, alert the user
-    /*
-    if (t2 <= model->t2 && dataset_is_time_series(GD->dset)) {
-        err = out_of_sample_info(flags & FC_ADDOBS_OK, &t2);
-        if (err) {
-            throw std::runtime_error("no out-of-sample obs are available");
-        }
-    }
-    */
-
-    // max number of pre-forecast obs in "best case"
-    premax = GD->dset->n - 1;
-
-    // if there are spare obs available, default to an out-of-sample forecast
-    if (t2 > model->t2) {
+    // for now, we just do a default out-of-sample forecast
+    if (t2 <= model->t2) {
+        throw std::runtime_error("there are no suitable observations for prediction");
+    } else {
         t1 = model->t2 + 1;
-        pre_n = model->t2 / 2;
-        if (pre_n > 100) {
-            pre_n = 100;
-        }
-        if (model->ci == GARCH) {
-            /* force out-of-sample fcast */
-            t1min = t1;
-        }
-    } else {
-        pre_n = 0;
     }
 
-    if (flags & FC_INTEGRATE_OK) {
-        kptr = NULL;
-    } else {
-        kptr = &k;
-    }
-
-    // setting options
-    unpack_kwargs_forecast(kwargs, static_cast<GretlCmdIndex>(model->ci));
-    opt = OPT_S;                //FIXME: unpack_kwargs_forecast!!!
-    gopt = OPT_M;               //FIXME: unpack_kwargs_forecast!!!
-
-    if (gopt & OPT_I) {
-        // transfer OPT_I (integrate forecast) from graph to general options
-        opt = static_cast<gretlopt>(opt | OPT_I);
-        gopt = static_cast<gretlopt>(gopt & ~OPT_I);
-    }
-
-    if (gopt & OPT_M) {
-        // OPT_M (show interval for mean): copy to opt
-        opt = static_cast<gretlopt>(opt | OPT_M);
-    }
-
-    // let's forecast
-    if (recursive) {
-        fr = recursive_OLS_k_step_fcast(model, GD->dset,
-                                        t1, t2, k, pre_n, &err);
-    } else {
-        ntolabel(startobs, t1, GD->dset);
-        ntolabel(endobs, t2, GD->dset);
-        /*lib_command_sprintf("fcast %s %s%s", startobs, endobs, print_flags(opt, FCAST));
-        if (parse_lib_command()) {
-            throw std::runtime_error("parsing command failed");
-        }*/
-        fr = get_forecast(model, t1, t2, pre_n, GD->dset, opt, &err);
-        /*
-        if (!err) {
-            record_lib_command();
-        }*/
-    }
+    // setting options (FIXME)
+    popt = unpack_kwargs_forecast(kwargs);
+    fr = get_forecast(model, t1, t2, 0, GD->dset, popt, &err);
 
     if (err) {
         handle_gretl_error(err);
     } else {
-        //err = bufopen(&fp.prn);
-        std::cerr << "bufopen() unavailable\n";
+        fcdict = fr_to_dict(fr);
+        fr->alpha = 1 - conf;
+        err = text_print_forecast(fr, GD->dset, OPT_NONE, GP.prn_ptr());
     }
-
-    if (!err) {
-        int ols_special = 0;
-        int width = 78;
-
-        if (recursive) {
-            err = text_print_fit_resid(fr, GD->dset, GP.prn_ptr());
-        } else {
-            if (dataset_is_cross_section(GD->dset)) {
-                ols_special = gretl_is_simple_OLS(model);
-            }
-            if (LIMDEP(model->ci) || ols_special) {
-                // don't generate plot via text_print_forecast()
-                gopt = static_cast<gretlopt>(gopt & ~OPT_P);
-            } else {
-                gopt = static_cast<gretlopt>(gopt | OPT_P);
-            }
-            fr->alpha = 1 - conf;
-            err = text_print_forecast(fr, GD->dset, gopt, GP.prn_ptr());
-        }
-
-        if (ols_special) {
-            err = plot_simple_fcast_bands(model, fr, GD->dset, gopt);
-            gopt = static_cast<gretlopt>(gopt | OPT_P);
-        }
-        /*
-        if (!err && (gopt & OPT_P)) {
-            register_graph();
-        }
-        */
-        if (!recursive && fr->sderr == NULL) {
-            width = 60;
-        }
-    }
-
-    // don't remember the "mean" option
-    gopt = static_cast<gretlopt>(gopt & ~OPT_M);
 
     if (fr != NULL) {
         free_fit_resid(fr);
     }
 
     GP.print();
-    // @Allin: please verify: END
 
-    return RES_fcast;
+    return fcdict;
 }
 
 std::unique_ptr<GretlTypes> GretlModel_NSE::get_accessor (const std::string &accessor) const

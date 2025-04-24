@@ -291,11 +291,11 @@ py::dict GretlModel_restrict (const int model_id, const py::list &impose,
     return estimated_models.at(model_id).get()->restrict(impose, kwargs);
 }
 
-void GretlModel_fcast (const int model_id, const py::kwargs &kwargs)
+py::dict GretlModel_fcast (const int model_id, const py::kwargs &kwargs)
 {
     check_if_model_exists(model_id);
 
-    estimated_models.at(model_id).get()->forecast(kwargs);
+    return estimated_models.at(model_id).get()->forecast(kwargs);
 }
 
 //////////////////////////////////////////////////
