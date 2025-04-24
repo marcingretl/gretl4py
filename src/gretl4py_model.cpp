@@ -215,7 +215,7 @@ py::dict GretlModel_NSE::forecast (const py::kwargs &kwargs)
 {
     py::dict fcdict;
     FITRESID *fr = NULL;
-    gretlopt popt = OPT_NONE;
+    gretlopt fopt = OPT_NONE;
     FcastFlags flags = static_cast<FcastFlags>(0);
     int t1, t2 = 0;
 #if 0 // not yet */
@@ -248,16 +248,18 @@ py::dict GretlModel_NSE::forecast (const py::kwargs &kwargs)
         t1 = model->t2 + 1;
     }
 
-    // setting options (FIXME)
-    popt = unpack_kwargs_forecast(kwargs);
-    fr = get_forecast(model, t1, t2, 0, GD->dset, popt, &err);
+    // assembling options (FIXME)
+    fopt = unpack_kwargs_forecast(kwargs);
+    fr = get_forecast(model, t1, t2, 0, GD->dset, OPT_NONE, &err);
 
     if (err) {
         handle_gretl_error(err);
     } else {
         fcdict = fr_to_dict(fr);
         fr->alpha = 1 - conf;
-        err = text_print_forecast(fr, GD->dset, OPT_NONE, GP.prn_ptr());
+        if (!(fopt & OPT_Q)) {
+            err = text_print_forecast(fr, GD->dset, OPT_NONE, GP.prn_ptr());
+        }
     }
 
     if (fr != NULL) {
