@@ -21,6 +21,9 @@
 #include "gretl4py_data.h"
 #include "gretl4py_model.h"
 #include <gretl/forecast.h>
+extern "C" {
+    #include <gretl/gretl_restrict.h>
+}
 #include <string>
 
 #define use_ldco_sig(c) (c == OLS || c == WLS) //const int *list, DATASET *dset, GretlCmdIndex ci, gretlopt opt
@@ -428,6 +431,62 @@ py::dict GretlModel_NSE::test (const std::string &type,
     if (err) {
         handle_gretl_error(err);
     }
+
+    RES[py::cast("test")] = *get_accessor("$test");
+    RES[py::cast("pvalue")] = *get_accessor("$pvalue");
+    RES[py::cast("summary")] = GP.get_buffer();
+
+    return RES;
+}
+
+
+py::dict GretlModel_NSE::restrict (const py::list &impose,
+                                   const py::kwargs &kwargs)
+{
+    //
+    // we test a restriction given in impose
+    //
+    py::dict RES;
+    gretl_restriction *my_rset = NULL;
+    int save_t1 = GD->dset->t1;
+    int save_t2 = GD->dset->t2;
+    int order = -1;
+
+    // we set up options
+    unpack_kwargs_test(opt, "restrict", kwargs, order);
+
+    // this code was rendered from library.c
+    for (auto &item : impose) {
+        if (!is_pystr(item)) {
+            throw std::invalid_argument("given restriction is not string literal");
+        }
+        if (my_rset == NULL) {
+            my_rset = eqn_restriction_set_start(MapPyToCpp(item).to_string().c_str(),
+                                                model, GD->dset, opt);
+            if (my_rset == NULL) {
+                err = 1;
+                handle_gretl_error(err);
+            }
+        } else {
+            err = restriction_set_parse_line(my_rset,
+                                             MapPyToCpp(item).to_string().c_str(), GD->dset);
+            if (err) {
+                handle_gretl_error(err);
+            }
+        }
+    }
+
+    // actual work
+    GD->dset->t1 = model->t1;
+    GD->dset->t2 = model->t2;
+    err = gretl_restriction_finalize(my_rset, GD->dset, OPT_NONE, GP.prn_ptr());
+    GD->dset->t1 = save_t1;
+    GD->dset->t2 = save_t2;
+
+    if (err) {
+        handle_gretl_error(err);
+    }
+    GP.print();
 
     RES[py::cast("test")] = *get_accessor("$test");
     RES[py::cast("pvalue")] = *get_accessor("$pvalue");

@@ -3,7 +3,15 @@ import gretl
 d1 = gretl.get_data(gretl.gretl_data_path('misc/denmark.gdt'))
 d2 = gretl.get_data(gretl.gretl_data_path('misc/bjg.gdt'))
 d3 = gretl.get_data(gretl.gretl_data_path('misc/grunfeld.gdt'))
+d4 = gretl.get_data(gretl.gretl_data_path('ramanathan/data4-10.gdt'))
 #gretl.show_data_status()
+
+print("\n****************************")
+print("restrict")
+m1 = gretl.ols(formula='1 0 2 3 4 5', data=d4).fit()
+m1.restrict(impose=['b[4] = 0', 'b[5] = 0'])
+print(m1.restrict['summary'])
+exit()
 
 print("\n****************************")
 print("adf")

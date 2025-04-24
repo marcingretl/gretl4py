@@ -106,6 +106,11 @@ class Model:
         if self.computed and self._model_id is not None:
             return _gretl.get_accessor(self._model_id, accessor)
 
+    def restrict(self, impose, *args, **kwargs):
+        if self.computed and self._model_id is not None:
+            res = _gretl.restrict(self._model_id, impose, *args, **kwargs)
+            setattr(self, "restrict", res)
+
     def test(self, type, vars=None, obs=None, *args, **kwargs):
         if self.computed and self._model_id is not None:
             if vars is not None and obs is not None:

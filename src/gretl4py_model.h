@@ -71,6 +71,8 @@ public:
     virtual py::dict test (const std::string &type, const py::kwargs &kwargs) = 0;
 
     virtual py::dict test (const std::string &type, const std::string &vars, const py::kwargs &kwargs) = 0;
+
+    virtual py::dict restrict (const py::list &impose, const py::kwargs &kwargs) = 0;
 };
 
 //
@@ -96,6 +98,8 @@ public:
     py::dict test (const std::string &type, const py::kwargs &kwargs) override;
 
     py::dict test (const std::string &type, const std::string &vars, const py::kwargs &kwargs) override;
+
+    py::dict restrict (const py::list &impose, const py::kwargs &kwargs) override;
 };
 
 //

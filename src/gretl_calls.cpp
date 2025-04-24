@@ -283,6 +283,14 @@ py::dict GretlModel_test (const int model_id, const std::string &type,
     return estimated_models.at(model_id).get()->test(type, vars, kwargs);
 }
 
+py::dict GretlModel_restrict (const int model_id, const py::list &impose,
+                              const py::kwargs &kwargs)
+{
+    check_if_model_exists(model_id);
+
+    return estimated_models.at(model_id).get()->restrict(impose, kwargs);
+}
+
 void GretlModel_fcast (const int model_id, const py::kwargs &kwargs)
 {
     check_if_model_exists(model_id);

@@ -372,6 +372,8 @@ void unpack_kwargs_test (gretlopt &opt, const std::string &type,
         ci = QLRTEST;
     } else if (type == "reset") {
         ci = RESET;
+    } else if (type == "restrict") {
+        ci = RESTRICT;
     } else if (type == "squares") {
         opt = OPT_S;
     } else if (type == "white") {
