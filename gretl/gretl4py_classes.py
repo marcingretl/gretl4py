@@ -109,7 +109,7 @@ class Model:
     def restrict(self, impose, *args, **kwargs):
         if self.computed and self._model_id is not None:
             res = _gretl.restrict(self._model_id, impose, *args, **kwargs)
-            setattr(self, "restrict", res)
+            setattr(self, "restrictions", res)
 
     def test(self, type, vars=None, obs=None, *args, **kwargs):
         if self.computed and self._model_id is not None:
