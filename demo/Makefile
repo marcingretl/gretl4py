@@ -1,4 +1,4 @@
-TESTS = module_related_tools.py data_management.py estimators.py
+TESTS = module_related_tools.py data_management.py estimators.py tests.py accessors.py forecast.py
 
 .PHONY: clean alltests
 
@@ -7,6 +7,15 @@ data_management: data_management.py
 
 estimators: estimators.py
 	python3 estimators.py
+
+tests: tests.py
+	python3 tests.py
+
+accessors: accessors.py
+	python3 accessors.py
+
+forecast: forecast.py
+	python3 forecast.py
 
 arma_speed: speed/genarma22_test.inp speed/arma_speed.py
 	gretlcli -b genarma22_test.inp; python3 speed/arma_speed.py

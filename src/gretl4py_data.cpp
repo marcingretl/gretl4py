@@ -165,7 +165,6 @@ static std::unique_ptr<GretlTypes> convert_GretlType_to_GretlTypes (GretlType &t
     //
     // function converts libgretl's GretlType to gretl4py's GretlTypes
     // *gr_obj_ptr: pointer to libgretl's object
-    // note: memory must be deleted at caller level
     //
     auto RES = std::make_unique<GretlTypes>();
 
@@ -922,8 +921,8 @@ std::unique_ptr<GretlTypes> GretlDataset::get_accessor (const std::string &acces
     return RES;
 }
 
-py::dict GretlDataset::test (const std::string &type, const std::string &vars,
-                             const py::kwargs &kwargs)
+void GretlDataset::test (const std::string &type, const std::string &vars,
+                         const py::kwargs &kwargs)
 {
     //
     // this method performs test which do take a variables list
@@ -981,8 +980,6 @@ py::dict GretlDataset::test (const std::string &type, const std::string &vars,
     // we register result
     py::object self = py::cast(this);
     py::setattr(self, type.c_str(), RES);
-
-    return RES;
 }
 
 
@@ -1070,24 +1067,10 @@ py::dict GretlBundle::json_to_dict (simdjson::ondemand::object &json_obj,
             int i = 0;
 
             if (gr_type == "gretl_matrix" || gr_type == "gretl_series") {
-                //vgretl_matrix vec(mat_rows, vgretl_vector(mat_cols));
                 DNumPyArrayFC mat({mat_rows, mat_cols});
-                double *mat_ptr = static_cast<double*>(mat.request().ptr);
+                double *mat_ptr = mat.mutable_data();
 
                 for (auto item : GretlBundle::sd_tmp_array) {
-                    /*
-                    if (item.type() == simdjson::ondemand::json_type::string) {
-                        item.get_string(GretlBundle::sd_tmp_str);
-                        vec[i][j] = GretlBundle::sd_tmp_str;
-                    } else {
-                        vec[i][j] = static_cast<double>(item);
-                    }
-
-                    if (++i == mat_rows) {
-                        i = 0;
-                        j++;
-                    }
-                    */
                     if (item.type() == simdjson::ondemand::json_type::string) {
                         mat_ptr[i++] = std::nan("");
                     } else {

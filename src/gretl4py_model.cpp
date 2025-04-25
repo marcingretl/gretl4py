@@ -127,9 +127,11 @@ gretlopt GretlModel::unpack_kwargs_forecast (const py::kwargs &kwargs)
     return fopt;
 }
 
-py::dict GretlModel::fr_to_dict (FITRESID *fr)
+DNumPyArrayFC GretlModel::fr_to_dict (FITRESID *fr)
 {
-    py::dict fcdict;
+    //
+    // we transform FITRESID to DNumPyArrayFC
+    //
     double *tmp;
     int offset;
     int rows;
@@ -140,7 +142,8 @@ py::dict GretlModel::fr_to_dict (FITRESID *fr)
     offset = fr->nobs - rows;
 
     DNumPyArrayFC F({rows, cols});
-    tmp = static_cast<double*>(F.request().ptr);
+
+    tmp = F.mutable_data();
     std::memcpy(tmp, fr->actual + offset, rows * sizeof *tmp);
     tmp += rows;
     std::memcpy(tmp, fr->fitted + offset, rows * sizeof *tmp);
@@ -149,9 +152,7 @@ py::dict GretlModel::fr_to_dict (FITRESID *fr)
         std::memcpy(tmp, fr->sderr + offset, rows * sizeof *tmp);
     }
 
-    fcdict[py::cast("forecast data")] = F;
-
-    return fcdict;
+    return F;
 }
 
 
@@ -215,7 +216,7 @@ void GretlModel_NSE::save_model (gretlopt opt)
 
 py::dict GretlModel_NSE::forecast (const py::kwargs &kwargs)
 {
-    py::dict fcdict;
+    py::dict RES;
     FITRESID *fr = NULL;
     gretlopt fopt = OPT_NONE;
     FcastFlags flags = static_cast<FcastFlags>(0);
@@ -256,7 +257,7 @@ py::dict GretlModel_NSE::forecast (const py::kwargs &kwargs)
     if (err) {
         handle_gretl_error(err);
     } else {
-        fcdict = fr_to_dict(fr);
+        RES[py::cast("forecast data")] = fr_to_dict(fr);
         fr->alpha = 1 - conf;
         if (!(fopt & OPT_Q)) {
             err = text_print_forecast(fr, GD->dset, OPT_NONE, GP.prn_ptr());
@@ -269,7 +270,7 @@ py::dict GretlModel_NSE::forecast (const py::kwargs &kwargs)
 
     GP.print();
 
-    return fcdict;
+    return RES;
 }
 
 std::unique_ptr<GretlTypes> GretlModel_NSE::get_accessor (const std::string &accessor) const

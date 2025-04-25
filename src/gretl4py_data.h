@@ -162,7 +162,7 @@ public:
 
     std::unique_ptr<GretlTypes> get_accessor (const std::string &accessor) const;
 
-    py::dict test (const std::string &type, const std::string &vars, const py::kwargs &kwargs);
+    void test (const std::string &type, const std::string &vars, const py::kwargs &kwargs);
 };
 
 //

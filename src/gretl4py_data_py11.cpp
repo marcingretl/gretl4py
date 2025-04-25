@@ -63,7 +63,7 @@ void init_gretl4py_data_py11(py::module_ &m)
              }, py::return_value_policy::take_ownership)
         .def("test",
              [](GretlDataset &self,
-                const std::string &type, const py::kwargs &kwargs) -> py::dict
+                const std::string &type, const py::kwargs &kwargs)
              {
                  std::string y_val, vars_val, vars;
                  py::dict clean_kwargs;
@@ -90,7 +90,7 @@ void init_gretl4py_data_py11(py::module_ &m)
                      vars = vars_val;
                  }
 
-                 return self.test(type, vars, clean_kwargs);
+                 self.test(type, vars, clean_kwargs);
              },
              py::arg("type"), py::kw_only(),
              py::return_value_policy::take_ownership);
