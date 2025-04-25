@@ -106,9 +106,9 @@ void GretlModel::unpack_kwargs (const py::kwargs &kwargs, GretlCmdIndex ci)
     }
 }
 
-gretlopt GretlModel::unpack_kwargs_forecast (const py::kwargs &kwargs)
+void GretlModel::unpack_kwargs_forecast (const py::kwargs &kwargs)
 {
-    gretlopt fopt = OPT_NONE;
+    opt = OPT_NONE;
 
     for (auto &item : kwargs) {
         if (!is_pystr(item.first)) {
@@ -117,14 +117,12 @@ gretlopt GretlModel::unpack_kwargs_forecast (const py::kwargs &kwargs)
         const std::string &key = item.first.cast<std::string>();
 
         if (key == "quiet") {
-            fopt = static_cast<gretlopt>(fopt | OPT_Q);
+            opt = static_cast<gretlopt>(opt | OPT_Q);
         }
         //std::cout << "the following pairs of forecasting options were passed:\n";
         //std::cout << item.first.cast<std::string>() << " : ";
         //std::cout << MapPyToCpp(item.second).to_string_view() << std::endl;
     }
-
-    return fopt;
 }
 
 DNumPyArrayFC GretlModel::fr_to_dict (FITRESID *fr)
@@ -162,12 +160,7 @@ DNumPyArrayFC GretlModel::fr_to_dict (FITRESID *fr)
 //
 GretlModel_NSE::GretlModel_NSE (GretlDataset *GD)
                                         : GretlModel(GD) // explicitly call base class constructor!
-{
-#if GRETL4PY_MODEL_DEBUG
-    std::cout << "GretlModel_NSE, id = " << this->get_id();
-    std::cout << ", GD  = " << GD << std::endl;
-#endif // GRETL4PY_MODEL_DEBUG
-}
+{}
 
 GretlModel_NSE::~GretlModel_NSE (void)
 {
@@ -216,9 +209,8 @@ void GretlModel_NSE::save_model (gretlopt opt)
 
 py::dict GretlModel_NSE::forecast (const py::kwargs &kwargs)
 {
-    py::dict RES;
+    py::dict fcast;
     FITRESID *fr = NULL;
-    gretlopt fopt = OPT_NONE;
     FcastFlags flags = static_cast<FcastFlags>(0);
     int t1, t2 = 0;
 #if 0 // not yet
@@ -251,15 +243,15 @@ py::dict GretlModel_NSE::forecast (const py::kwargs &kwargs)
     }
 
     // assembling options (FIXME)
-    fopt = unpack_kwargs_forecast(kwargs);
+    unpack_kwargs_forecast(kwargs);
     fr = get_forecast(model, t1, t2, 0, GD->dset, OPT_NONE, &err);
 
     if (err) {
         handle_gretl_error(err);
     } else {
-        RES[py::cast("forecast data")] = fr_to_dict(fr);
+        fcast[py::cast("forecast data")] = fr_to_dict(fr);
         fr->alpha = 1 - conf;
-        if (!(fopt & OPT_Q)) {
+        if (!(opt & OPT_Q)) {
             err = text_print_forecast(fr, GD->dset, OPT_NONE, GP.prn_ptr());
         }
     }
@@ -270,17 +262,17 @@ py::dict GretlModel_NSE::forecast (const py::kwargs &kwargs)
 
     GP.print();
 
-    return RES;
+    return fcast;
 }
 
 std::unique_ptr<GretlTypes> GretlModel_NSE::get_accessor (const std::string &accessor) const
 {
-    auto RES = gretl_generate_gretl_object(accessor.c_str(), err, GRETL_OBJ_EQN, GD->dset, model);
+    auto res = gretl_generate_gretl_object(accessor.c_str(), err, GRETL_OBJ_EQN, GD->dset, model);
     if (err) {
         handle_gretl_error(err);
     }
 
-    return RES;
+    return res;
 }
 
 py::dict GretlModel_NSE::test (const std::string &type,
@@ -289,7 +281,7 @@ py::dict GretlModel_NSE::test (const std::string &type,
     //
     // this method performs test which do not take a variables list
     //
-    py::dict RES;
+    py::dict res;
     int order = GD->dset->pd;
 
     // we set up options
@@ -324,14 +316,14 @@ py::dict GretlModel_NSE::test (const std::string &type,
         handle_gretl_error(err);
     }
 
-    RES[py::cast("test")] = *get_accessor("$test");
-    RES[py::cast("pvalue")] = *get_accessor("$pvalue");
-    RES[py::cast("summary")] = GP.get_buffer();
+    res[py::cast("test")] = *get_accessor("$test");
+    res[py::cast("pvalue")] = *get_accessor("$pvalue");
+    res[py::cast("summary")] = GP.get_buffer();
     if (!kwargs.contains("silent")) {
         GP.print();
     }
 
-    return RES;
+    return res;
 }
 
 py::dict GretlModel_NSE::test (const std::string &type,
@@ -341,7 +333,7 @@ py::dict GretlModel_NSE::test (const std::string &type,
     //
     // this method performs test which do take a variables list
     //
-    py::dict RES;
+    py::dict res;
     int order = -1;
     gretl_list_ptr ex_var{nullptr, gretl_list_deleter};
 
@@ -368,14 +360,14 @@ py::dict GretlModel_NSE::test (const std::string &type,
         handle_gretl_error(err);
     }
 
-    RES[py::cast("test")] = *get_accessor("$test");
-    RES[py::cast("pvalue")] = *get_accessor("$pvalue");
-    RES[py::cast("summary")] = GP.get_buffer();
+    res[py::cast("test")] = *get_accessor("$test");
+    res[py::cast("pvalue")] = *get_accessor("$pvalue");
+    res[py::cast("summary")] = GP.get_buffer();
     if (!kwargs.contains("silent")) {
         GP.print();
     }
 
-    return RES;
+    return res;
 }
 
 
@@ -385,7 +377,7 @@ py::dict GretlModel_NSE::restrict (const py::list &impose,
     //
     // we test a restriction given in impose
     //
-    py::dict RES;
+    py::dict res;
     gretl_restriction *my_rset = NULL;
     int save_t1 = GD->dset->t1;
     int save_t2 = GD->dset->t2;
@@ -426,14 +418,14 @@ py::dict GretlModel_NSE::restrict (const py::list &impose,
         handle_gretl_error(err);
     }
 
-    RES[py::cast("test")] = *get_accessor("$test");
-    RES[py::cast("pvalue")] = *get_accessor("$pvalue");
-    RES[py::cast("summary")] = GP.get_buffer();
+    res[py::cast("test")] = *get_accessor("$test");
+    res[py::cast("pvalue")] = *get_accessor("$pvalue");
+    res[py::cast("summary")] = GP.get_buffer();
     if (!kwargs.contains("silent")) {
         GP.print();
     }
 
-    return RES;
+    return res;
 }
 
 
@@ -449,10 +441,6 @@ GretlModel_NSE_Driver<F, CI>::GretlModel_NSE_Driver (GretlDataset *GD)
         optional_par.at(0) = NADBL;
         optional_par.at(1) = NADBL;
     }
-#if GRETL4PY_MODEL_DEBUG
-    std::cout << "GretlModel_NSE_Driver, id = " << this->get_id();
-    std::cout << ", GD  = " << GD << std::endl;
-#endif // GRETL4PY_MODEL_DEBUG
 }
 
 // Method template to support several estimation methods that
@@ -537,12 +525,7 @@ GretlModel_NSE_arima::GretlModel_NSE_arima (GretlDataset *GD,
                                             const std::string &y,
                                             const py::tuple &tup)
                                             : GretlModel_NSE(GD), y(y), tup(tup)  // explicitly call base class constructor!
-{
-#if GRETL4PY_MODEL_DEBUG
-    std::cout << "GretlModel_NSE_arima, id = " << this->get_id();
-    std::cout << ", GD  = " << GD << std::endl;
-#endif // GRETL4PY_MODEL_DEBUG
-}
+{}
 
 void GretlModel_NSE_arima::get_arima_order (const py::tuple &tup,
                                             int &p, int &d, int &q)
@@ -557,7 +540,7 @@ void GretlModel_NSE_arima::get_arima_order (const py::tuple &tup,
         d = tup[1].cast<int>();
         q = tup[2].cast<int>();
     } else {
-        throw std::runtime_error("order must be of length 2 or 3");
+        throw std::invalid_argument("order must be of length 2 or 3");
     }
 }
 
@@ -642,7 +625,7 @@ GretlModel_NSE_Driver_quantreg<F, CI>::GretlModel_NSE_Driver_quantreg
     try {
         this->optional_par = tau.cast<std::vector<double>>();
     } catch (const py::cast_error &e) {
-        throw std::runtime_error("invalid 'tau' list: all elements must be numeric");
+        throw std::invalid_argument("invalid 'tau' list: all elements must be numeric");
     }
 
     this->optional_par_as_mat = gretl_matrix_alloc(this->optional_par.size(), 1);

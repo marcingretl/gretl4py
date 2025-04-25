@@ -122,7 +122,7 @@ static void numpy_array_to_gretl_storage (const py::dict &pydict,
     //
     // we check if pydict["data_array"] is of <py::array_t> type
     if (!py::isinstance<py::array_t<double>>(pydict[py::cast("data_array")])) {
-        throw std::runtime_error("Element 'data_array' of given dictionary is not of NumPy array type.");
+        throw std::invalid_argument("Element 'data_array' of given dictionary is not of NumPy array type.");
     }
 
     double *data_array = nullptr;
@@ -166,14 +166,14 @@ static std::unique_ptr<GretlTypes> convert_GretlType_to_GretlTypes (GretlType &t
     // function converts libgretl's GretlType to gretl4py's GretlTypes
     // *gr_obj_ptr: pointer to libgretl's object
     //
-    auto RES = std::make_unique<GretlTypes>();
+    auto res = std::make_unique<GretlTypes>();
 
     if (t == GRETL_TYPE_NONE) {
         std::printf("gretl_grab: didn't get anything!\n");
     } else if (t == GRETL_TYPE_DOUBLE) {
-        *RES = *(static_cast<double*>(gr_obj_ptr));
+        *res = *(static_cast<double*>(gr_obj_ptr));
     } else if (t == GRETL_TYPE_STRING) {
-        *RES = static_cast<char*>(gr_obj_ptr);
+        *res = static_cast<char*>(gr_obj_ptr);
     } else if (t == GRETL_TYPE_MATRIX) {
         gretl_matrix *gretl_mat = static_cast<gretl_matrix*>(gr_obj_ptr);
         DNumPyArrayFC mat({gretl_mat->rows, gretl_mat->cols});
@@ -183,10 +183,10 @@ static std::unique_ptr<GretlTypes> convert_GretlType_to_GretlTypes (GretlType &t
         if ((std::min)(gretl_mat->rows, gretl_mat->cols) == 1) { // this is to prevent 'min' macro expansion on MS SDK
             mat = mat.reshape({mat.size()});
         }
-        *RES = mat;
+        *res = mat;
     } else if (t == GRETL_TYPE_BUNDLE) {
         gretl_bundle *b = static_cast<gretl_bundle*>(gr_obj_ptr);
-        *RES = GretlBundle(b).to_dict();
+        *res = GretlBundle(b).to_dict();
     } else if (t == GRETL_TYPE_ARRAY) {
         gretl_array *a = static_cast<gretl_array*>(gr_obj_ptr);
         py::list py_list;
@@ -197,13 +197,13 @@ static std::unique_ptr<GretlTypes> convert_GretlType_to_GretlTypes (GretlType &t
             auto element = convert_GretlType_to_GretlTypes(tmp, gretl_array_get_element(a, i, &tmp, &err), n, err);
             py_list.append(*element);
         }
-        *RES = py_list;
+        *res = py_list;
     } else if (t == GRETL_TYPE_SERIES) {
         double *s = static_cast<double*>(gr_obj_ptr);
         DNumPyArrayFC mat(n);
 
         std::memcpy(static_cast<double*>(mat.request().ptr), s, n * sizeof(double));
-        *RES = mat;
+        *res = mat;
     } else if (t == GRETL_TYPE_LIST) {
         int *l = static_cast<int*>(gr_obj_ptr);
         py::list py_list;
@@ -211,13 +211,13 @@ static std::unique_ptr<GretlTypes> convert_GretlType_to_GretlTypes (GretlType &t
         for (int i=1; i<=l[0]; i++) {
             py_list.append(l[i]);
         }
-        *RES = py_list;
+        *res = py_list;
     } else {
         std::printf("gretl_grab: got unsupported type!\n");
-        *RES = py::none();
+        *res = py::none();
     }
 
-    return RES;
+    return res;
 }
 
 
@@ -238,7 +238,7 @@ std::unique_ptr<GretlTypes> gretl_generate_gretl_object (const char *s, int &err
     //
     // we grab object from libgretl stack
     //
-    std::unique_ptr<GretlTypes> RES; // gretl4py type
+    std::unique_ptr<GretlTypes> res; // gretl4py type
     GretlType t = GRETL_TYPE_NONE;   // libgretl type
     bool free_dset = false;          // we free dset _only_ if was allocated here
     void *resp;
@@ -259,14 +259,14 @@ std::unique_ptr<GretlTypes> gretl_generate_gretl_object (const char *s, int &err
     }
 
     if (!err) {
-        RES = convert_GretlType_to_GretlTypes(t, resp, dset->n, err);
+        res = convert_GretlType_to_GretlTypes(t, resp, dset->n, err);
     }
 
     if (free_dset) {
         destroy_dataset(dset);
     }
 
-    return RES;
+    return res;
 }
 
 void gretl_valid_long_opt (gretlopt &opt, GretlCmdIndex ci,
@@ -495,14 +495,14 @@ GretlDataset::GretlDataset (const py::dict &pydict)
     // we fill up dset->S
     pylist = pydict[py::cast("obs_labels")];
     if (pylist.size() != static_cast<long unsigned int>(dset->n)) {
-        throw std::runtime_error("Number of obs_labels is different than number of observations.");
+        throw std::invalid_argument("Number of obs_labels is different than number of observations.");
     }
     copy_strings_from_python_list(pylist, dset->S, OBSLEN-1, 0, 0, true);
 
     // we fill up dset->varname
     pylist = pydict[py::cast("varname")];
     if (pylist.size() != static_cast<long unsigned int>(dset->v-1)) {
-        throw std::runtime_error("Number of varnames is different than number of variables.");
+        throw std::invalid_argument("Number of varnames is different than number of variables.");
     }
     strBUF = new std::string[dset->v];
     copy_strings_from_python_list(pylist, strBUF);
@@ -911,12 +911,12 @@ gretlopt GretlDataset::setobs_opt_from_structure (int structure)
 
 std::unique_ptr<GretlTypes> GretlDataset::get_accessor (const std::string &accessor) const
 {
-    auto RES = gretl_generate_gretl_object(accessor.c_str(), err, GRETL_OBJ_DSET, dset);
+    auto res = gretl_generate_gretl_object(accessor.c_str(), err, GRETL_OBJ_DSET, dset);
     if (err) {
         handle_gretl_error(err);
     }
 
-    return RES;
+    return res;
 }
 
 void GretlDataset::test (const std::string &type, const std::string &vars,
@@ -925,7 +925,7 @@ void GretlDataset::test (const std::string &type, const std::string &vars,
     //
     // this method performs test which do take a variables list
     //
-    py::dict RES;
+    py::dict res;
     int order = -1;
     gretl_list_ptr ex_var{nullptr, gretl_list_deleter};
 
@@ -968,16 +968,16 @@ void GretlDataset::test (const std::string &type, const std::string &vars,
         handle_gretl_error(err);
     }
 
-    RES[py::cast("test")] = *get_accessor("$test");
-    RES[py::cast("pvalue")] = *get_accessor("$pvalue");
-    RES[py::cast("summary")] = GP.get_buffer();
+    res[py::cast("test")] = *get_accessor("$test");
+    res[py::cast("pvalue")] = *get_accessor("$pvalue");
+    res[py::cast("summary")] = GP.get_buffer();
     if (!kwargs.contains("silent")) {
         GP.print();
     }
 
     // we register result
     py::object self = py::cast(this);
-    py::setattr(self, type.c_str(), RES);
+    py::setattr(self, type.c_str(), res);
 }
 
 
@@ -1017,7 +1017,7 @@ py::dict GretlBundle::json_to_dict (simdjson::ondemand::object &json_obj,
                                     std::string_view *outer_key,
                                     bool *add_to_outer)
 {
-    py::dict RES;
+    py::dict res;
     int mat_rows = 0;
     int mat_cols = 0;
     bool add_to_res = true;
@@ -1054,12 +1054,12 @@ py::dict GretlBundle::json_to_dict (simdjson::ondemand::object &json_obj,
         }
 
         if (val.type() == simdjson::ondemand::json_type::null) {
-            RES[py::cast(key)] = py::none();
+            res[py::cast(key)] = py::none();
         } else if (val.type() == simdjson::ondemand::json_type::number) {
-            RES[py::cast(key)] = static_cast<double>(val);
+            res[py::cast(key)] = static_cast<double>(val);
         } else if (val.type() == simdjson::ondemand::json_type::string) {
             val.get_string(GretlBundle::sd_tmp_str);
-            RES[py::cast(key)] = GretlBundle::sd_tmp_str;
+            res[py::cast(key)] = GretlBundle::sd_tmp_str;
         } else if (val.type() == simdjson::ondemand::json_type::array) {
             GretlBundle::sd_tmp_array = val.get_array();
             int i = 0;
@@ -1107,22 +1107,22 @@ py::dict GretlBundle::json_to_dict (simdjson::ondemand::object &json_obj,
                     (*outer_dict)[py::cast(*outer_key)] = li;
                     *add_to_outer = false;
                 } else {
-                    RES[py::cast(key)] = li;
+                    res[py::cast(key)] = li;
                 }
             }
         } else if (val.type() == simdjson::ondemand::json_type::object) {
             val_obj = val.get_object();
-            py::dict tmp_dict = GretlBundle::json_to_dict(val_obj, &RES, &key, &add_to_res);
+            py::dict tmp_dict = GretlBundle::json_to_dict(val_obj, &res, &key, &add_to_res);
 
             if (add_to_res) {
-                RES[py::cast(key)] = tmp_dict;
+                res[py::cast(key)] = tmp_dict;
             } else {
                 add_to_res = true;
             }
         }
     }
 
-    return RES;
+    return res;
 }
 
 py::dict GretlBundle::to_dict (void)

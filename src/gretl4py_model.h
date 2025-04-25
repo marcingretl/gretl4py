@@ -46,13 +46,13 @@ protected:
     GretlDataset *GD = nullptr;                 // dataset used
     GretlPrint GP = GretlPrint();               // printer (instance wide)
     gretl_list_ptr var_list{nullptr, gretl_list_deleter}; // libgretl list of variables
-    gretlopt opt = OPT_NONE;                    // model options (including tests)
+    gretlopt opt = OPT_NONE;                    // model options (including tests and forecasts)
     std::vector<double> optional_par;           // optional general purpose parameter (tau for QUANTREG, (l/r)limits for TOBIT, tests...)
     mutable int err = 0;
 
     void unpack_kwargs (const py::kwargs &kwargs, GretlCmdIndex ci);
 
-    gretlopt unpack_kwargs_forecast (const py::kwargs &kwargs);
+    void unpack_kwargs_forecast (const py::kwargs &kwargs);
 
     DNumPyArrayFC fr_to_dict (FITRESID *fr);
 public:

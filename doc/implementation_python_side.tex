@@ -26,10 +26,6 @@ dict = gretl.about(do_print=bool)
 			(\pythcode{dict}).
 		\item \pythcode{lg\_ver}: The version of the \lgretl[-1.0]
 			library (\pythcode{str}).
-		\item \pythcode{mbv\_ver}: [only for macOS $< 10.14$]
-			The version of \pkg{mapbox/variant} library, formatted as
-			\texttt{MAJOR.MINOR.PATCH} (\pythcode{str}).
-		\item \pythcode{mod\_logo}: The official ASCII-style \gretlpy logo (\pythcode{str}).
 		\item \pythcode{mod\_ver}: The version of the \gretlpy
 			module (\pythcode{str}).
 		\item \pythcode{py11\_ver}: The version of the \pkg{pybind11}
@@ -59,6 +55,11 @@ gretl.set(key=str, [val=str/int])
 		\item \pythcode{val=str} or \pythcode{val=int}: The value
 			to assign to the \pythcode{key} parameter.
 	\end{itemize}}
+
+\gretlfpycmd{version}
+\begin{lstlisting}[style=pythonstyle]
+str = gretl.version
+\end{lstlisting}
 
 
 \subsection{Data management}\label{sec:data_management_python}
@@ -116,38 +117,11 @@ for data management.\newline
 Note: If the provided dataset contains a variable named
 `const', it will automatically be renamed to `const\_'.
 
-\gretlfpycmd{attach\_data()}
-\begin{lstlisting}[style=pythonstyle]
-gretl.attach_data(pydict=dict)
-\end{lstlisting}
-\generaldesc{This function registers the given dictionary
-	(as outlined in Section~\ref{sec:data_management_python})
-	as the global dataset.}
+\gretlfpycmd{attach\_data()}\newline\generaldesc{\deprecated}
 
-\gretlfpycmd{attach\_gretl\_data()}
-\begin{lstlisting}[style=pythonstyle]
-gretl.attach_gretl_data(fname=str)
-\end{lstlisting}
-\generaldesc{This function registers the specified
-	\texttt{gdt}, \texttt{gdtb}, \texttt{csv}, \texttt{dta},
-	\texttt{wf1}, or spreadsheet (\texttt{xls}, \texttt{xlsx},
-	and \texttt{ods}) file \citep[see][for details]{gretl_manual}
-	as the global dataset. Note that \pythcode{fname}
-	must be the absolute path to the file (see
-	\pythcode{gretl.gretl\_data\_path()}).}
+\gretlfpycmd{attach\_gretl\_data()}\newline\generaldesc{\deprecated}
 
-\gretlfpycmd{csv2dict()}
-\begin{lstlisting}[style=pythonstyle]
-dict = gretl.csv2dict(fname=str, [pd=int])
-\end{lstlisting}
-\generaldesc{This function converts a \texttt{csv} file
-	into a dictionary compatible with \gretlpy, as described
-	in Section~\ref{sec:data_management_python}. The optional
-	\pythcode{pd=int} parameter specifies the data's periodicity
-	(default:~1).\newline
-	Note that the preferred method for loading \texttt{csv}
-	files is through either \texttt{attach\_gretl\_data()}
-	or \texttt{get\_gretl\_data()}.}
+\gretlfpycmd{csv2dict()}\newline\generaldesc{\deprecated}
 
 \gretlfpycmd{df2dict()}
 \begin{lstlisting}[style=pythonstyle]
@@ -166,18 +140,19 @@ dict = gretl.df2dict(pandas.dframe, [pd=int, with_obs=bool])
 			(default:~\pythcode{False}).
 		\end{itemize}}
 
-\gretlfpycmd{get\_gretl\_data()}
+\gretlfpycmd{get\_data()}
 \begin{lstlisting}[style=pythonstyle]
-dict = gretl.get_gretl_data(fname=str)
+gretl.get_data(fname=str)
 \end{lstlisting}
-\generaldesc{This function converts the specified
+\generaldesc{This function registers the specified
 	\texttt{gdt}, \texttt{gdtb}, \texttt{csv}, \texttt{dta},
 	\texttt{wf1}, or spreadsheet (\texttt{xls}, \texttt{xlsx},
 	and \texttt{ods}) file \citep[see][for details]{gretl_manual}
-	as a dictionary for \gretlpy (as outlined in
-	Section~\ref{sec:data_management_python}). Note that
-	\pythcode{fname} must be the absolute path to the file
-	(see \pythcode{gretl.gretl\_data\_path()}).}
+	as the global dataset. Note that \pythcode{fname}
+	must be the absolute path to the file (see
+	\pythcode{gretl.gretl\_data\_path()}).}
+
+\gretlfpycmd{get\_gretl\_data()}\newline\generaldesc{\deprecated}
 
 \gretlfpycmd{gretl\_data\_path()}
 \begin{lstlisting}[style=pythonstyle]
@@ -212,20 +187,17 @@ dict = gretl.nparray2dict(X=numpy.array,
 		column holds the constant term (default:~1).
 \end{itemize}}
 
-\gretlfpycmd{print\_data()}
-\begin{lstlisting}[style=pythonstyle]
-gretl.print_data([data=dict, namesonly=bool])
-\end{lstlisting}
-\generaldesc{This function prints a specified dataset and
-	accepts two optional arguments:
-	\begin{itemize}
-		\item \pythcode{data=dict}: If provided, the
-			specified dataset is printed; otherwise,
-			the global dataset is used.
-		\item \pythcode{namesonly=bool}: If set to
-			\pythcode{True}, only the variable names are
-			printed (default:~\pythcode{False}).
-\end{itemize}}
+\gretlfpycmd{print\_data()}\newline\generaldesc{\deprecated}
+%\generaldesc{This function prints a specified dataset and
+%	accepts two optional arguments:
+%	\begin{itemize}
+%		\item \pythcode{data=dict}: If provided, the
+%			specified dataset is printed; otherwise,
+%			the global dataset is used.
+%		\item \pythcode{namesonly=bool}: If set to
+%			\pythcode{True}, only the variable names are
+%			printed (default:~\pythcode{False}).
+%\end{itemize}}
 
 \gretlfpycmd{sample()}
 \begin{lstlisting}[style=pythonstyle]
@@ -552,6 +524,26 @@ gretl.Model = gretl.probit(formula=str, [OPTS, [data=dict]])
 	\item[]\maptoopt{estrella=True}{--estrella}{select pseudo-R-squared variant}
 	\item[]\maptoopt{random\_effects=True}{--random-effects}{estimates a
 		random effects panel probit model}
+\end{itemize}
+
+\est{quantreg}
+\estdesc{X}
+\begin{lstlisting}[style=pythonstyle]
+gretl.Model = gretl.quantreg(tau=double/list, formula=str, [OPTS, [data=dict]])
+\end{lstlisting}
+\mapto{X}
+\begin{itemize}
+	\item[]\maptoopt{X}{X}{X}
+\end{itemize}
+
+\est{tobit}
+\estdesc{X}
+\begin{lstlisting}[style=pythonstyle]
+gretl.Model = gretl.tobit(formula=str, [OPTS, [data=dict]])
+\end{lstlisting}
+\mapto{X}
+\begin{itemize}
+	\item[]\maptoopt{X}{X}{X}
 \end{itemize}
 
 \est{tsls}

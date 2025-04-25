@@ -10,8 +10,7 @@ the following components are installed:
   you want to import \pkg{pandas} structures (such as \texttt{DataFrames}
   and \texttt{Series}) make sure that \pkg{pandas} is also installed
   on your system.
-\item \gretl version 2024c or later for macOS or Linux, and 2025a
-  for MS~Windows (see \url{https://gretl.sourceforge.net} for details).%
+\item \gretl version 2025b or later (see \url{https://gretl.sourceforge.net} for details).%
   \footnote{In principle, only the shared library \lgretl should be
     required, but currently, a full installation of \gretl is necessary.}
 \end{itemize}
@@ -27,7 +26,7 @@ script located in the \gretlpy top-level directory using
 the desired \python interpreter:
 \begin{itemize}
 	\item On MS~Windows: \texttt{python.exe install.py}
-	\item On macOS: \texttt{python3 install.py}
+	\item On macOS (10.15 or later): \texttt{python3 install.py}
 	\item On Linux: \texttt{python install.py} (experimental
 		for \python[3.12]/\python[3.13]).
 \end{itemize}
@@ -189,37 +188,32 @@ Section~\ref{sec:windows_install}.
 \subsection{Compilation on MS~Windows -- \pkg{MSYS2}}
 Compiling on MS~Windows with \pkg{MSYS2} is very similar
 to the process on GNU/\-Linux. The only difference is that
-you should run ``\texttt{make -f winmsys2.mk -j4}''.
+you should run ``\texttt{make -f winmsys2.mk}''.
 
 Note that the resulting \texttt{\_gretl.cp3xx-mingw\_x86\_64\_ucrt.pyd}
 file is not compatible with the native MS~Windows \python distribution.
 
 
 \subsection{Compilation on macOS}
-Compiling on macOS is also similar to GNU/Linux. In this case we
+Compiling on macOS\footnote{Note that compilation for macOS versions
+	earlier than 10.15 might be very difficult, if not impossible,
+	due to the requirement for full \texttt{C++17} support.}
+is also similar to GNU/Linux. In this case we
 assume that the Xcode Command Line Tools are installed. You also need
 a suitable version of \texttt{python3}---\textit{not} the one supplied
 with Xcode, which is really just for internal use. Good options for
 installing python for macOS can be found at
 \url{https://docs.python.org/3/using/mac.html} and
 \url{https://ports.macports.org/port/python313}. In addition, the
-\pkg{pybind11} module is needed. Last but not least, you need to have
-\gretl (version 2024c or higher) installed; see
-\url{https://gretl.sourceforge.net/osx.html}.
+\pkg{pybind11} module is needed.
 
-Then all you have to do is run ``\texttt{make -j4}'' in
+Then all you have to do is run ``\texttt{make}'' in
 the top-level \gretlpy directory. This should create
 \texttt{\_gretl.cpython-3xx-darwin.so} (where \texttt{xx}
 represents two numbers that depend on the version of
 \texttt{python3}), in the \texttt{gretl} subdirectory.
 Follow up with ``\texttt{make install}'' to install the
 required files under \texttt{Library/Python} in your home directory.
-
-Note that if you are using Intel-based Apple machine and you are
-building \gretlpy for macOS version $\geq10.14$, you may comment
-out the line ``\texttt{CXXFLAGS += -DMB\_VARIANT}'' in the
-\texttt{Makefile}. This is because macOS versions newer than
-$10.13$ fully support the \cppcode{std::variant} type.
 
 %%% Local Variables:
 %%% mode: latex
