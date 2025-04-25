@@ -43,12 +43,11 @@ private:
 protected:
     int id;                                     // model ID
     py::dict RES;                               // estimation results as dictionary
-    py::dict RES_fcast;                         // forecasting results as dictionary
     GretlDataset *GD = nullptr;                 // dataset used
     GretlPrint GP = GretlPrint();               // printer (instance wide)
     gretl_list_ptr var_list{nullptr, gretl_list_deleter}; // libgretl list of variables
     gretlopt opt = OPT_NONE;                    // model options (including tests)
-    std::vector<double> optional_par;           // optional general purose parameter (tau for QUANTREG, (l/r)limits for TOBIT, tests...)
+    std::vector<double> optional_par;           // optional general purpose parameter (tau for QUANTREG, (l/r)limits for TOBIT, tests...)
     mutable int err = 0;
 
     void unpack_kwargs (const py::kwargs &kwargs, GretlCmdIndex ci);
