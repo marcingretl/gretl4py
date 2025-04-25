@@ -30,10 +30,6 @@ extern "C" {
 #include <cstdlib>
 #include <unordered_map>
 
-#if USE_MAPBOX_VARIANT
-# include "mapbox/variant.hpp"
-#endif // USE_MAPBOX_VARIANT
-
 #if defined(_WIN32)
 # include <gretl/gretl_win32.h>
 #endif
@@ -122,12 +118,6 @@ py::dict about (bool do_print)
     sj_ver = SIMDJSON_VERSION;
     sj_name = simdjson::get_active_implementation()->name();
     sj_desc = simdjson::get_active_implementation()->description();
-#if USE_MAPBOX_VARIANT
-    std::string mbv_ver;
-    mbv_ver = std::to_string(VARIANT_MAJOR_VERSION);
-    mbv_ver += "." + std::to_string(VARIANT_MINOR_VERSION);
-    mbv_ver += "." + std::to_string(VARIANT_PATCH_VERSION);
-#endif // USE_MAPBOX_VARIANT
 
     // built-in strings
     for (int i=0; i<9; i++ ) {
@@ -148,9 +138,6 @@ py::dict about (bool do_print)
     res[py::cast("sj_ver")] = sj_ver;
     res[py::cast("sj_name")] = sj_name;
     res[py::cast("sj_desc")] = sj_desc;
-#if USE_MAPBOX_VARIANT
-    res[py::cast("mbv_ver")] = mbv_ver;
-#endif // USE_MAPBOX_VARIANT
 
     if (do_print || gretl4py_verbose) {
         std::cout << mod_logo << std::endl;
@@ -158,9 +145,6 @@ py::dict about (bool do_print)
         std::cout << " [" << COMPILER_IDENT << "]" << std::endl;
         std::cout << "\t+ pybind11     v" << py11_ver << std::endl;
         std::cout << "\t+ simdjson     v" << sj_ver << std::endl;
-#if USE_MAPBOX_VARIANT
-        std::cout << "\t+ mapbox       v" << mbv_ver << std::endl;
-#endif // USE_MAPBOX_VARIANT
         std::cout << "\t+ libgretl-1.0 v" << lg_ver << std::endl;
         if (!b.err) {
             std::cout << std::endl << "libgretl $sysinfo:" << std::endl;

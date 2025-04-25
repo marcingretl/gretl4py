@@ -29,40 +29,12 @@ namespace py = pybind11;
 //////////////////////////////////////////////////
 using DNumPyArrayFC = py::array_t<double, py::array::f_style>; //double contiguous column-major (fortran) NumPy array (F_CONTIGUOUS)
 
-#if USE_MAPBOX_VARIANT
-#include "mapbox/variant.hpp"
- using vgretl_vector = std::vector<mapbox::util::variant<double, std::string, int>>;
- using GretlTypes = mapbox::util::variant<double, std::string, DNumPyArrayFC, py::dict, py::list, py::none>;
-#else
- using vgretl_vector = std::vector<std::variant<double, std::string, int>>;
- using GretlTypes = std::variant<double, std::string, DNumPyArrayFC, py::dict, py::list, py::none>;
-#endif // USE_MAPBOX_VARIANT
+using GretlTypes = std::variant<double, std::string, DNumPyArrayFC, py::dict, py::list, py::none>;
+
+using vgretl_vector = std::vector<std::variant<double, std::string, int>>;
 
 using vgretl_matrix = std::vector<vgretl_vector>;
 
 using gretl_list_ptr = std::unique_ptr<int, void(*)(int*)>;
-
-//////////////////////////////////////////////////
-// pybind11 extensions
-//////////////////////////////////////////////////
-#if USE_MAPBOX_VARIANT
-namespace PYBIND11_NAMESPACE
-{
-    namespace detail
-    {
-        template <typename... Ts>
-        struct type_caster<mapbox::util::variant<Ts...>> : variant_caster<mapbox::util::variant<Ts...>> {};
-
-        template <>
-        struct visit_helper<mapbox::util::variant> {
-            template <typename... Args>
-            static auto call(Args &&...args) -> decltype(mapbox::util::apply_visitor(args...))
-            {
-                return mapbox::util::apply_visitor(args...);
-            }
-        };
-    }
-}
-#endif // USE_MAPBOX_VARIANT
 
 #endif // GRETL4PY_TYPES_H

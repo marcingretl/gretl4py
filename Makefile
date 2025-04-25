@@ -6,11 +6,9 @@ CXXFLAGS = -O3 -pipe -Wall -std=c++17
 
 OS = $(shell uname -s)
 ifeq ($(OS), Darwin)
-  CXXFLAGS += -DMB_VARIANT
   GPATH = /Applications/Gretl.app/Contents/Resources
   GRETLLD = -L$(GPATH)/lib -lgretl-1.0 -lglib-2.0 -lxml2 -lfftw3 -lomp -lm
   GRETLIN = -I$(GPATH)/include -I$(GPATH)/include/glib-2.0 -I$(GPATH)/lib/glib-2.0/include
-  MBVARIANTIN = -I./src
   DL = -undefined dynamic_lookup
 else
   ifeq ($(CXX), g++)
@@ -65,11 +63,10 @@ depend:
 
 src/gretl4py.o: src/gretl4py.h src/gretl4py_types.h
 src/gretl4py_data.o: src/gretl4py_data.h src/simdjson/simdjson.h
-src/gretl4py_data.o: src/gretl4py_types.h
+src/gretl4py_data.o: src/gretl4py_types.h src/gretl4py.h
 src/gretl4py_data_py11.o: src/gretl4py_data.h src/simdjson/simdjson.h
 src/gretl4py_data_py11.o: src/gretl4py_types.h
 src/gretl4py_model.o: src/gretl4py_data.h src/simdjson/simdjson.h
 src/gretl4py_model.o: src/gretl4py_types.h src/gretl4py_model.h
 src/gretl_calls.o: src/gretl4py.h src/gretl4py_types.h src/gretl4py_data.h
 src/gretl_calls.o: src/simdjson/simdjson.h src/gretl4py_model.h
-src/gretl_calls.o: src/mapbox/variant.hpp
