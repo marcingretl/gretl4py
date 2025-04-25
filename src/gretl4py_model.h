@@ -54,6 +54,8 @@ protected:
     void unpack_kwargs (const py::kwargs &kwargs, GretlCmdIndex ci);
 
     gretlopt unpack_kwargs_forecast (const py::kwargs &kwargs);
+
+    py::dict fr_to_dict (FITRESID *fr);
 public:
     explicit GretlModel (GretlDataset *GD);
     virtual ~GretlModel (void);

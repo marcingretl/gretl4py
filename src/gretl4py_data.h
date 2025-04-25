@@ -220,9 +220,9 @@ public:
     MapPyToCpp (const std::optional<py::object> &pyobject);
     MapPyToCpp (const py::handle &pyhandle);
 
-    inline std::string to_string (void) { return as_str; }
+    inline std::string to_string (void) const { return as_str; }
 
-    inline std::string_view to_string_view (void) { return static_cast<std::string_view>(as_str); }
+    inline std::string_view to_string_view (void) const { return static_cast<std::string_view>(as_str); }
 };
 
 // function implemented in gretl_calls.cpp
