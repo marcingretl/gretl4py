@@ -97,6 +97,7 @@ print(res)
 hf.linenr(9)
 print("Parameters: ", res.coeff)
 print("Standard errors: ", res.stderr)
+print("Predicted values: ", res.yhat)
 hf.runtime(t0, t1)
 # OLS non-linear curve but linear in parameters: END
 
@@ -149,23 +150,24 @@ if Do_StatsModels is True:
 
 # gretl calls
 hf.linenr(13)
+d3 = gretl.get_data(gretl.nparray2dict(X, Y=y,
+                                        with_const=True, const_pos=4))
 t0 = time.time()
-res = gretl.ols('y ~ const + x1 + x2 + x3', data=d2).fit()
+res = gretl.ols('y ~ const + x1 + x2 + x3', data=d3).fit()
 t1 = time.time()
 print(res)
 hf.linenr(14)
-#pred_ols = res.get_prediction()
-#iv_l = pred_ols.summary_frame()["obs_ci_lower"]
-#iv_u = pred_ols.summary_frame()["obs_ci_upper"]
+iv_l = res.yhat - 2.0129 * res.sigma
+iv_u = res.yhat + 2.0129 * res.sigma
 fig, ax = plt.subplots(figsize=(8, 6))
 ax.plot(x, y, "o", label="Data")
 ax.plot(x, y_true, "b-", label="True")
 ax.plot(x, res.yhat, "r--.", label="Predicted")
-#ax.plot(x, iv_u, "r--")
-#ax.plot(x, iv_l, "r--")
+ax.plot(x, iv_u, "r--")
+ax.plot(x, iv_l, "r--")
 legend = ax.legend(loc="best")
-plt.show()
 hf.runtime(t0, t1)
+plt.show()
 # OLS with dummy variables: END
 
 """
@@ -177,7 +179,7 @@ hf.printhead("Joint hypothesis test - Multicollinearity")
 """
 Note, that longley dataset is available in standard gretl distribution:
 fname = gretl.gretl_data_path("misc/longley.gdt")
-longley = gretl.get_gretl_data(fname)
+longley = gretl.get_data(fname)
 """
 from statsmodels.datasets.longley import load_pandas
 y = load_pandas().endog
@@ -196,8 +198,8 @@ if Do_StatsModels is True:
 # gretl calls
 hf.linenr(21)
 df = pd.concat([X, y], axis=1) # could it be X.iloc[:, 1:7]
-d3 = gretl.get_data(gretl.df2dict(df, 1))
-d3.set_as_default()
+d4 = gretl.get_data(gretl.df2dict(df, 1))
+d4.set_as_default()
 t0 = time.time()
 ols_model = gretl.ols('TOTEMP ~ const + GNPDEFL + GNP + UNEMP + ARMED + POP + YEAR')
 ols_results = ols_model.fit()
@@ -228,7 +230,7 @@ if Do_StatsModels is True:
 # gretl calls
 hf.linenr(24)
 t0 = time.time()
-d3.sample(t1=1, t2=14)
+d4.sample(t1=1, t2=14)
 ols_results2 = gretl.ols('TOTEMP ~ const + GNPDEFL + GNP + UNEMP + ARMED + POP + YEAR').fit()
 t1 = time.time()
 print(
@@ -237,7 +239,7 @@ print(
     % tuple(
         [
             i
-            for i in [100*(a - b)/b for a, b in zip(ols_results2.coeff(), ols_results.coeff())]
+            for i in [100*(a - b)/b for a, b in zip(ols_results2.coeff, ols_results.coeff)]
         ]
     )
 )
