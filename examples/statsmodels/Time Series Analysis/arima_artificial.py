@@ -46,9 +46,9 @@ if Do_StatsModels is True:
     hf.runtime(t0, t1)
 
 # gretl calls
+d1 = gretl.get_data(gretl.series2dict(y, 12))
 t0 = time.time()
-arma_mod = gretl.arima(y='y', order=(2, 0, 2), nc=True,
-                       data=gretl.series2dict(y, 12))
+arma_mod = gretl.arima(y='y', order=(2, 0, 2), nc=True, data=d1)
 arma_res = arma_mod.fit()
 t1 = time.time()
 hf.linenr(6)

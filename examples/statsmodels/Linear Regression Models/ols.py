@@ -47,10 +47,9 @@ if Do_StatsModels is True:
 
 # gretl calls
 hf.linenr(5)
+d1 = gretl.get_data(gretl.nparray2dict(X, Y=y, with_const=False))
 t0 = time.time()
-model = gretl.ols('y ~ const + x1 + x2',
-                  data=gretl.nparray2dict(X, Y=y, with_const=False))
-#model = gretl.ols('y ~ const + x1 + x2', data=gretl.numpyarray2dict(X_sm, Y=y, with_const=True)) # this is an alternative call using X_sm
+model = gretl.ols('y ~ const + x1 + x2', data=d1)
 results = model.fit()
 t1 = time.time()
 print(results.summary)
@@ -80,7 +79,7 @@ y = y_true + sig * np.random.normal(size=nsample)
 if Do_StatsModels is True:
     t0 = time.time()
     res = sm.OLS(y, X).fit()
-    t1 = time.time()    
+    t1 = time.time()
     print(res.summary())
     print("Parameters: ", res.params)
     print("Standard errors: ", res.bse)
@@ -90,9 +89,9 @@ if Do_StatsModels is True:
 # gretl calls
 hf.linenr(8)
 t0 = time.time()
-res = gretl.ols('y ~ const + x1 + x2 + x3',
-                data=gretl.nparray2dict(X, Y=y,
-                                        with_const=True, const_pos=4)).fit()
+d2 = gretl.get_data(gretl.nparray2dict(X, Y=y,
+                                        with_const=True, const_pos=4))
+res = gretl.ols('y ~ const + x1 + x2 + x3', data=d2).fit()
 t1 = time.time()
 print(res)
 hf.linenr(9)
@@ -139,7 +138,7 @@ if Do_StatsModels is True:
     pred_ols2 = res2.get_prediction()
     iv_l = pred_ols2.summary_frame()["obs_ci_lower"]
     iv_u = pred_ols2.summary_frame()["obs_ci_upper"]
-    fig, ax = plt.subplots(figsize=(8, 6))    
+    fig, ax = plt.subplots(figsize=(8, 6))
     ax.plot(x, y, "o", label="Data")
     ax.plot(x, y_true, "b-", label="True")
     ax.plot(x, res2.fittedvalues, "r--.", label="Predicted")
@@ -151,9 +150,7 @@ if Do_StatsModels is True:
 # gretl calls
 hf.linenr(13)
 t0 = time.time()
-res = gretl.ols('y ~ const + x1 + x2 + x3',
-                data=gretl.nparray2dict(X, Y=y,
-                                        with_const=True, const_pos=4)).fit()
+res = gretl.ols('y ~ const + x1 + x2 + x3', data=d2).fit()
 t1 = time.time()
 print(res)
 hf.linenr(14)
@@ -198,15 +195,16 @@ if Do_StatsModels is True:
 
 # gretl calls
 hf.linenr(21)
-t0 = time.time()
 df = pd.concat([X, y], axis=1) # could it be X.iloc[:, 1:7]
-gretl.attach_data(gretl.df2dict(df, 1))
+d3 = gretl.get_data(gretl.df2dict(df, 1))
+d3.set_as_default()
+t0 = time.time()
 ols_model = gretl.ols('TOTEMP ~ const + GNPDEFL + GNP + UNEMP + ARMED + POP + YEAR')
 ols_results = ols_model.fit()
 t1 = time.time()
 print(ols_results)
 hf.runtime(t0, t1)
-   
+
 hf.printhead("Dropping an observation")
 # statsmodels calls:
 if Do_StatsModels is True:
@@ -230,7 +228,7 @@ if Do_StatsModels is True:
 # gretl calls
 hf.linenr(24)
 t0 = time.time()
-gretl.sample(t1=1, t2=14)
+d3.sample(t1=1, t2=14)
 ols_results2 = gretl.ols('TOTEMP ~ const + GNPDEFL + GNP + UNEMP + ARMED + POP + YEAR').fit()
 t1 = time.time()
 print(

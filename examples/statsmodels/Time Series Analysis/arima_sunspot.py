@@ -66,7 +66,7 @@ if Do_StatsModels is True:
     hf.runtime(t0, t1)
 
 # gretl calls
-gr_dta = gretl.df2dict(dta, 1)
+gr_dta = gretl.get_data(gretl.df2dict(dta, 1))
 t0 = time.time()
 arma_mod20 = gretl.arima(y='SUNACTIVITY', order=(2, 0, 0), data=gr_dta).fit()
 t1 = time.time()
