@@ -101,7 +101,7 @@ public:
 //
 // Class to handle gretl 'DATASET' type
 //
-class GretlDataset
+class GretlDataset : public std::enable_shared_from_this<GretlDataset>
 {
 private:
     static inline int next_obj_id = 1;
@@ -220,6 +220,7 @@ public:
 };
 
 // function implemented in gretl_calls.cpp
-void set_default_dset (GretlDataset *GD);
+extern std::shared_ptr<GretlDataset> DSET;
+void set_default_dset(std::shared_ptr<GretlDataset> GD);
 
 #endif // GRETL4PY_DATA_H

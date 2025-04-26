@@ -40,7 +40,7 @@ extern "C" {
 //
 // GretlModel class methods
 //
-GretlModel::GretlModel (GretlDataset *GD)
+GretlModel::GretlModel (std::shared_ptr<GretlDataset> GD)
 {
     this->id = next_model_id++;
 
@@ -77,9 +77,9 @@ void GretlModel::unpack_kwargs (const py::kwargs &kwargs, GretlCmdIndex ci)
         }
         const std::string &key = item.first.cast<std::string>();
 
-        if (key == "data") {    //FIXME: put a guard for estimators only (in context of @ci)
+        if (key == "data") {
             // special case: we use already allocated object of GretlDataset class
-            GD = item.second.cast<GretlDataset*>();
+            GD = item.second.cast<std::shared_ptr<GretlDataset>>();
             continue;
         } else if (key == "quiet") {
             throw std::invalid_argument("invalid option flag: " + key);
@@ -158,8 +158,8 @@ DNumPyArrayFC GretlModel::fr_to_dict (FITRESID *fr)
 // Native Single Equation libgretl MODEL (NSE)
 // extends: GretlModel
 //
-GretlModel_NSE::GretlModel_NSE (GretlDataset *GD)
-                                        : GretlModel(GD) // explicitly call base class constructor!
+GretlModel_NSE::GretlModel_NSE (std::shared_ptr<GretlDataset> GD)
+                                : GretlModel(GD) // explicitly call base class constructor!
 {}
 
 GretlModel_NSE::~GretlModel_NSE (void)
@@ -433,7 +433,7 @@ py::dict GretlModel_NSE::restrict (const py::list &impose,
 // NSE via dedicated Driver
 //
 template <auto F, GretlCmdIndex CI>
-GretlModel_NSE_Driver<F, CI>::GretlModel_NSE_Driver (GretlDataset *GD)
+GretlModel_NSE_Driver<F, CI>::GretlModel_NSE_Driver (std::shared_ptr<GretlDataset> GD)
                                         : GretlModel_NSE(GD)  // explicitly call base class constructor!
 {
     if constexpr (CI == TOBIT) {
@@ -521,7 +521,7 @@ template class GretlModel_NSE_Driver<tobit_model, TOBIT>;
 //
 // NSE via arima plugin
 //
-GretlModel_NSE_arima::GretlModel_NSE_arima (GretlDataset *GD,
+GretlModel_NSE_arima::GretlModel_NSE_arima (std::shared_ptr<GretlDataset> GD,
                                             const std::string &y,
                                             const py::tuple &tup)
                                             : GretlModel_NSE(GD), y(y), tup(tup)  // explicitly call base class constructor!
@@ -611,7 +611,8 @@ py::dict GretlModel_NSE_arima::fit (const std::string &formula,
 //
 template <auto F, GretlCmdIndex CI>
 GretlModel_NSE_Driver_quantreg<F, CI>::GretlModel_NSE_Driver_quantreg
-                                        (GretlDataset *GD, const double &tau)
+                                        (std::shared_ptr<GretlDataset> GD,
+                                         const double &tau)
                                         : GretlModel_NSE_Driver<F, CI>(GD)  // explicitly call base class constructor!
 {
     this->optional_par.push_back(tau);
@@ -619,7 +620,8 @@ GretlModel_NSE_Driver_quantreg<F, CI>::GretlModel_NSE_Driver_quantreg
 
 template <auto F, GretlCmdIndex CI>
 GretlModel_NSE_Driver_quantreg<F, CI>::GretlModel_NSE_Driver_quantreg
-                                        (GretlDataset *GD, const py::list &tau)
+                                        (std::shared_ptr<GretlDataset> GD,
+                                         const py::list &tau)
                                         : GretlModel_NSE_Driver<F, CI>(GD)  // explicitly call base class constructor!
 {
     try {

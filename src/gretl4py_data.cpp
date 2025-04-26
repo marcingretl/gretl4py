@@ -468,9 +468,6 @@ GretlDataset::GretlDataset (const std::string fname)
     }
 
     id = GretlDataset::next_obj_id++;
-    if (id == 1) {
-        GretlDataset::set_as_default();
-    }
 }
 
 GretlDataset::GretlDataset (const py::dict &pydict)
@@ -521,22 +518,10 @@ GretlDataset::GretlDataset (const py::dict &pydict)
     set_obs(std::to_string(pd).c_str(), dset->S[0], dset, opt);
 
     id = GretlDataset::next_obj_id++;
-    if (id == 1) {
-        GretlDataset::set_as_default();
-    }
 }
 
 GretlDataset::~GretlDataset (void)
 {
-    std::set<int> linked_models_srt;
-
-    for (int item : this->linked_models) {
-        linked_models_srt.insert(item);
-    }
-    for (auto item = linked_models_srt.rbegin(); item != linked_models_srt.rend(); item++) {
-        GretlModel_destructor_wrapper(*item, false);
-        std::cout << "model: " << *item << " destroyed" << std::endl;
-    }
     if (is_default) {
         set_default_dset(nullptr);
         std::printf("default dataset was deleted\n");
@@ -859,7 +844,7 @@ void GretlDataset::setobs (const py::kwargs &kwargs)
 
 void GretlDataset::set_as_default (void)
 {
-    set_default_dset(this);
+    set_default_dset(shared_from_this());
     is_default = true;
 }
 

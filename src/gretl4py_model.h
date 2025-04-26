@@ -43,7 +43,7 @@ private:
 protected:
     int id;                                     // model ID
     py::dict RES;                               // estimation results as dictionary
-    GretlDataset *GD = nullptr;                 // dataset used
+    std::shared_ptr<GretlDataset> GD;           // dataset used
     GretlPrint GP = GretlPrint();               // printer (instance wide)
     gretl_list_ptr var_list{nullptr, gretl_list_deleter}; // libgretl list of variables
     gretlopt opt = OPT_NONE;                    // model options (including tests and forecasts)
@@ -56,7 +56,7 @@ protected:
 
     DNumPyArrayFC fr_to_dict (FITRESID *fr);
 public:
-    explicit GretlModel (GretlDataset *GD);
+    explicit GretlModel(std::shared_ptr<GretlDataset> GD);
     virtual ~GretlModel (void);
 
     int get_id (void) const;
@@ -87,7 +87,7 @@ protected:
 
     void save_model (gretlopt opt = OPT_NONE);      //FIXME: do we need opt here? We already have: gretlopt opt = OPT_NONE
 public:
-    GretlModel_NSE (GretlDataset *GD);
+    GretlModel_NSE (std::shared_ptr<GretlDataset> GD);
     virtual ~GretlModel_NSE (void);
 
     std::unique_ptr<GretlTypes> get_accessor (const std::string &accessor) const override;
@@ -113,7 +113,7 @@ class GretlModel_NSE_Driver : public GretlModel_NSE
 protected:
     gretl_matrix *optional_par_as_mat = NULL;
 public:
-    GretlModel_NSE_Driver (GretlDataset *GD);
+    GretlModel_NSE_Driver (std::shared_ptr<GretlDataset> GD);
 
     py::dict fit (const std::string &formula, const py::kwargs &kwargs) override;
 };
@@ -126,8 +126,8 @@ template <auto F, GretlCmdIndex CI>
 class GretlModel_NSE_Driver_quantreg : public GretlModel_NSE_Driver<F, CI>
 {
 public:
-    GretlModel_NSE_Driver_quantreg (GretlDataset *GD, const double &tau);
-    GretlModel_NSE_Driver_quantreg (GretlDataset *GD, const py::list &tau);
+    GretlModel_NSE_Driver_quantreg (std::shared_ptr<GretlDataset> GD, const double &tau);
+    GretlModel_NSE_Driver_quantreg (std::shared_ptr<GretlDataset> GD, const py::list &tau);
 
     virtual ~GretlModel_NSE_Driver_quantreg (void);
 };
@@ -146,7 +146,7 @@ private:
 
     void get_arima_order (const py::tuple &tup, int &p, int &d, int &q);
 public:
-    GretlModel_NSE_arima (GretlDataset *GD, const std::string &y, const py::tuple &tup);
+    GretlModel_NSE_arima (std::shared_ptr<GretlDataset> GD, const std::string &y, const py::tuple &tup);
 
     py::dict fit (const std::string &formula, const py::kwargs &kwargs) override;
 };

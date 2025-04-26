@@ -170,6 +170,8 @@ def get_data(src):
 
     # create dataset
     dset = _gretl.GretlDataset(src)
+    if dset.get_id() == 1:
+        dset.set_as_default()
     dset.source = source
 
     return dset

@@ -26,16 +26,16 @@ const char *gretl_dotdir (void);
 
 void init_gretl4py_data_py11(py::module_ &m)
 {
-    py::class_<GretlDataset>(m, "GretlDataset", py::dynamic_attr())
-        .def(py::init<const std::string>())
-        .def(py::init<const py::dict &>())
+    py::class_<GretlDataset, std::shared_ptr<GretlDataset>>(m, "GretlDataset", py::dynamic_attr())
+        .def(py::init([](const std::string &fname) { return std::make_shared<GretlDataset>(fname); }))
+        .def(py::init([](const py::dict &pydict) { return std::make_shared<GretlDataset>(pydict); }))
         .def("__copy__", [](const GretlDataset &src)
              {
                  const std::string dotdir = gretl_dotdir();
                  const std::string fname = dotdir + "gretl4py_tmp.gdt";
 
                  src.to_file(fname);
-                 GretlDataset *dst = new GretlDataset(fname);
+                 auto dst = std::make_shared<GretlDataset>(fname);
                  dst->source = src.source + " (copy of " + std::to_string(src.get_id()) + ")";
 
                  return dst;

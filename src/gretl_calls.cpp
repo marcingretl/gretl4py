@@ -44,7 +44,7 @@ extern "C" {
 
 #define GRETL_PYBIND11_DEBUG 0
 
-static GretlDataset *DSET = nullptr;                                            // default dataset
+std::shared_ptr<GretlDataset> DSET = nullptr;                            // default dataset
 static std::unordered_map<int, std::unique_ptr<GretlModel>> estimated_models;   // list of already estimated models
 static int gretl4py_verbose = 0;
 
@@ -199,7 +199,7 @@ void set (const std::string key,
 //////////////////////////////////////////////////
 
 // signature in gretl4py_data.h
-void set_default_dset (GretlDataset *GD)
+void set_default_dset (std::shared_ptr<GretlDataset> GD)
 {
     if (DSET) {
         DSET->is_default = false;
@@ -233,15 +233,14 @@ static py::dict GretlModel_NSE_Driver_wrapper (const std::string formula, const 
 // wrapper for "destructing" GretlModel models
 void GretlModel_destructor_wrapper (const int model_id, const bool unlink)
 {
-    if (estimated_models.find(model_id) != estimated_models.end()) {
+    auto model_it = estimated_models.find(model_id);
+
+    if (model_it != estimated_models.end()) {
         if (unlink) {
-            estimated_models.at(model_id)->unlink_from_dataset();
+            model_it->second->unlink_from_dataset();
         }
-        estimated_models.erase(model_id);
+        estimated_models.erase(model_it);
     }
-# if GRETL_PYBIND11_DEBUG
-    std::cout << "GretlModel_destructor_wrapper() called for model id=" << model_id << std::endl;
-# endif // GRETL_PYBIND11_DEBUG
 }
 
 GretlTypes *GretlModel_get_accessor (const int model_id, const std::string &accessor)
