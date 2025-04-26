@@ -27,7 +27,7 @@ namespace py = pybind11;
 //////////////////////////////////////////////////
 // types
 //////////////////////////////////////////////////
-using DNumPyArrayFC = py::array_t<double, py::array::f_style>; //double contiguous column-major (fortran) NumPy array (F_CONTIGUOUS)
+using DNumPyArrayFC = py::array_t<double, py::array::f_style>;  // double contiguous column-major (fortran) NumPy array (F_CONTIGUOUS)
 
 using GretlTypes = std::variant<double, std::string, DNumPyArrayFC, py::dict, py::list, py::none>;
 
@@ -35,6 +35,6 @@ using vgretl_vector = std::vector<std::variant<double, std::string, int>>;
 
 using vgretl_matrix = std::vector<vgretl_vector>;
 
-using gretl_list_ptr = std::unique_ptr<int, void(*)(int*)>;
+using gretl_list_ptr = std::unique_ptr<int, void(*)(int*)>;     // deleter must be defined elsewhere (see gretl4py_data.h)
 
 #endif // GRETL4PY_TYPES_H

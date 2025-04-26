@@ -44,7 +44,7 @@ extern "C" {
 
 #define GRETL_PYBIND11_DEBUG 0
 
-std::shared_ptr<GretlDataset> DSET = nullptr;                            // default dataset
+std::shared_ptr<GretlDataset> DSET = nullptr;                                   // default dataset
 static std::unordered_map<int, std::unique_ptr<GretlModel>> estimated_models;   // list of already estimated models
 static int gretl4py_verbose = 0;
 

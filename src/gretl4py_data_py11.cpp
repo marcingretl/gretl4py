@@ -29,7 +29,8 @@ void init_gretl4py_data_py11(py::module_ &m)
     py::class_<GretlDataset, std::shared_ptr<GretlDataset>>(m, "GretlDataset", py::dynamic_attr())
         .def(py::init([](const std::string &fname) { return std::make_shared<GretlDataset>(fname); }))
         .def(py::init([](const py::dict &pydict) { return std::make_shared<GretlDataset>(pydict); }))
-        .def("__copy__", [](const GretlDataset &src)
+        .def("__copy__",
+             [](const GretlDataset &src)
              {
                  const std::string dotdir = gretl_dotdir();
                  const std::string fname = dotdir + "gretl4py_tmp.gdt";
@@ -55,7 +56,8 @@ void init_gretl4py_data_py11(py::module_ &m)
         .def("varnames", &GretlDataset::varnames,
              py::return_value_policy::take_ownership)
         .def("linked_models_list", &GretlDataset::linked_models_list)
-        .def("get_accessor", [](GretlDataset &self, const std::string &accessor) -> GretlTypes*
+        .def("get_accessor",
+             [](GretlDataset &self, const std::string &accessor) -> GretlTypes*
              {
                  auto res = self.get_accessor(accessor);
 
