@@ -126,8 +126,10 @@ template <auto F, GretlCmdIndex CI>
 class GretlModel_NSE_Driver_quantreg : public GretlModel_NSE_Driver<F, CI>
 {
 public:
-    GretlModel_NSE_Driver_quantreg (std::shared_ptr<GretlDataset> GD, const double &tau);
-    GretlModel_NSE_Driver_quantreg (std::shared_ptr<GretlDataset> GD, const py::list &tau);
+    GretlModel_NSE_Driver_quantreg (std::shared_ptr<GretlDataset> GD,
+                                    const double &tau);
+    GretlModel_NSE_Driver_quantreg (std::shared_ptr<GretlDataset> GD,
+                                    const py::array_t<double> &tau);
 
     virtual ~GretlModel_NSE_Driver_quantreg (void);
 };

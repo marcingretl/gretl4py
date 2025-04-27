@@ -139,8 +139,8 @@ PYBIND11_MODULE(_gretl, m)
           py::arg("formula").none(false),
           py::return_value_policy::take_ownership);
     m.def("quantreg",
-          py::overload_cast<const py::list, const std::string,
-          const py::kwargs&>(&quantreg),
+          py::overload_cast<const py::array_t<double>&,
+          const std::string, const py::kwargs&>(&quantreg),
           py::arg("tau").none(false),
           py::arg("formula").none(false),
           py::return_value_policy::take_ownership);

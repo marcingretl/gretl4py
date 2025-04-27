@@ -101,7 +101,7 @@ py::dict tobit (const std::string formula, const py::kwargs &kwargs);
 py::dict quantreg (const double tau, const std::string formula,
                     const py::kwargs &kwargs);
 
-py::dict quantreg (const py::list tau, const std::string formula,
-                    const py::kwargs &kwargs);
+py::dict quantreg (const py::array_t<double> &tau, const std::string formula,
+                   const py::kwargs &kwargs);
 
 #endif // GRETL4PY_H

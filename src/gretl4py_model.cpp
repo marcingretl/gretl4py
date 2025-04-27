@@ -621,18 +621,15 @@ GretlModel_NSE_Driver_quantreg<F, CI>::GretlModel_NSE_Driver_quantreg
 template <auto F, GretlCmdIndex CI>
 GretlModel_NSE_Driver_quantreg<F, CI>::GretlModel_NSE_Driver_quantreg
                                         (std::shared_ptr<GretlDataset> GD,
-                                         const py::list &tau)
+                                         const py::array_t<double> &tau)
                                         : GretlModel_NSE_Driver<F, CI>(GD)  // explicitly call base class constructor!
 {
-    try {
-        this->optional_par = tau.cast<std::vector<double>>();
-    } catch (const py::cast_error &e) {
-        throw std::invalid_argument("invalid 'tau' list: all elements must be numeric");
+    if (tau.ndim() != 1) {
+        throw std::invalid_argument("'tau' is expected to be a vector");
     }
-
-    this->optional_par_as_mat = gretl_matrix_alloc(this->optional_par.size(), 1);
-    for (size_t i=0; i<this->optional_par.size(); i++) {
-        gretl_matrix_set(this->optional_par_as_mat, i, 0, this->optional_par.at(i));
+    this->optional_par_as_mat = gretl_matrix_alloc(tau.shape(0), 1);
+    for (size_t i=0; i<tau.shape(0); i++) {
+        gretl_matrix_set(this->optional_par_as_mat, i, 0, tau.at(i));
     }
 }
 
