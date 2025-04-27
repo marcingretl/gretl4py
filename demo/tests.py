@@ -4,6 +4,7 @@ d1 = gretl.get_data(gretl.gretl_data_path('misc/denmark.gdt'))
 d2 = gretl.get_data(gretl.gretl_data_path('misc/bjg.gdt'))
 d3 = gretl.get_data(gretl.gretl_data_path('misc/grunfeld.gdt'))
 d4 = gretl.get_data(gretl.gretl_data_path('ramanathan/data4-10.gdt'))
+d5 = gretl.get_data(gretl.gretl_data_path('misc/ooballot.gdt'))
 #gretl.show_data_status()
 
 print("\n****************************")
@@ -35,6 +36,12 @@ d1.test(type="runs", vars="LRY", difference=True)
 print("\n****************************")
 print("vartest")
 d1.test(type="vartest", vars="LRM IBO")
+
+print("\n****************************")
+print("difftest")
+d5.new_series("capp = (Vote > 1) ? CPI : NA")
+d5.new_series("cdis = (Vote == 0) ? CPI : NA")
+d5.test(type="difftest", vars="capp cdis", rank_sum=True)
 
 # OLS
 m1 = gretl.ols(formula='1 0 2 3').fit()
