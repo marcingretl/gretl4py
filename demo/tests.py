@@ -115,6 +115,10 @@ m4.test(type="panel")
 # RESTRICT
 print("\n****************************")
 print("restrict")
-m1 = gretl.ols(formula='1 0 2 3 4 5', data=d4).fit()
-m1.restrict(impose=['b[4] - b[5] = 0', 'b[3] = 0'])
-print(m1.restrictions['pvalue'])
+m4 = gretl.ols(formula='1 0 2 3 4 5', data=d4).fit()
+m4.restrict(impose=['b[4] - b[5] = 0', 'b[3] = 0'])
+print(m4.restrictions['pvalue'])
+
+print("\n****************************")
+print("coeffsum")
+m4.test(type="coeffsum", vars="WHITE ADMEXP")

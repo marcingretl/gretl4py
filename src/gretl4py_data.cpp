@@ -341,10 +341,12 @@ void unpack_kwargs_test (gretlopt &opt, const std::string &type,
         ci = BKW;
     } else if (type == "breusch-pagan") {
         opt = OPT_B;
-    } else if (type == "coint") {
-        ci = COINT;
     } else if (type == "chow") {
         ci = CHOW;
+    } else if (type == "coeffsum") {
+        ci = COEFFSUM;
+    } else if (type == "coint") {
+        ci = COINT;
     } else if (type == "comfac") {
         opt = OPT_C;
     } else if (type == "cusum") {

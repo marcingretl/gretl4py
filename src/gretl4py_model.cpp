@@ -353,6 +353,8 @@ py::dict GretlModel_NSE::test (const std::string &type,
         err = add_test(model, ex_var.get(), GD->dset, opt, GP.prn_ptr());
     } else if (type == "chow") {
         err = chow_test_driver(vars.c_str(), model, GD->dset, opt, GP.prn_ptr());
+    } else if (type == "coeffsum") {
+        err = gretl_sum_test(ex_var.get(), model, GD->dset, opt, GP.prn_ptr());
     } else if (type == "omit") {
         err = omit_test(model, ex_var.get(), GD->dset, opt, GP.prn_ptr());
     }
