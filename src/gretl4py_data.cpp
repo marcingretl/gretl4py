@@ -357,6 +357,8 @@ void unpack_kwargs_test (gretlopt &opt, const std::string &type,
         ci = KPSS;
     } else if (type == "leverage") {
         ci = LEVERAGE;
+    } else if (type == "levinlin") {
+        ci = LEVINLIN;
     } else if (type == "logs") {
         opt = OPT_L;
     } else if (type == "normality") {
@@ -915,7 +917,7 @@ void GretlDataset::test (const std::string &type, const std::string &vars,
     // this method performs test which do take a variables list
     //
     py::dict res;
-    int order = -1;
+    int order = 0;
     gretl_list_ptr ex_var{nullptr, gretl_list_deleter};
 
     // we construct list of external variables
@@ -938,6 +940,9 @@ void GretlDataset::test (const std::string &type, const std::string &vars,
         err = diff_test(ex_var.get(), dset, opt, GP.prn_ptr());
     } else if (type == "kpss") {
         err = kpss_test(order, ex_var.get(), dset, opt, GP.prn_ptr());
+    } else if (type == "levinlin") {
+        err = llc_test_driver(std::to_string(order).c_str(), ex_var.get(),
+                              dset, opt, GP.prn_ptr());
     } else if (type == "normtest") {
         if (ex_var.get()[0] > 1) {
             throw std::invalid_argument("normtest takes just one series");

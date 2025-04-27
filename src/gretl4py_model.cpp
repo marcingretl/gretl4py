@@ -302,7 +302,7 @@ py::dict GretlModel_NSE::test (const std::string &type,
         err = QLR_test(model, GD->dset, opt, GP.prn_ptr());
     } else if (type == "vif") {
         err = vif_test(model, GD->dset, opt, GP.prn_ptr());
-    } else { // MODTEST
+    } else { // MODTEST //FIXME: we must put list of test explicite here (levinlin case)
         if (get_last_model(NULL) != model) {
             err = gretl_model_protect(model);
             if (err) {

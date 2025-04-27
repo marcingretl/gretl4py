@@ -43,6 +43,11 @@ d5.new_series("capp = (Vote > 1) ? CPI : NA")
 d5.new_series("cdis = (Vote == 0) ? CPI : NA")
 d5.test(type="difftest", vars="capp cdis", rank_sum=True)
 
+print("\n****************************")
+print("levinlin")
+d3.test(type="levinlin", vars="invest")
+exit()
+
 # OLS
 m1 = gretl.ols(formula='1 0 2 3').fit()
 print(m1)
@@ -111,13 +116,15 @@ m2.test(type="autocorr", order=4)
 
 
 # PANEL
+print("\n****************************")
+print("panspec")
 m3 = gretl.ols(formula="invest ~ const value kstock", data=d3).fit()
 print(m3)
 m3.test(type="panspec")
 
-m4 = gretl.panel(formula="invest ~ const value kstock", data=d3).fit()
-print(m4)
-m4.test(type="panel")
+print("\n****************************")
+print("panel")
+m3.test(type="panel")
 
 # RESTRICT
 print("\n****************************")
