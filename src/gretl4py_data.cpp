@@ -945,8 +945,8 @@ void GretlDataset::test (const std::string &type, const std::string &vars,
         err = kpss_test(order, ex_var.get(), dset, opt, GP.prn_ptr());
     } else if (type == "levinlin") {
         // if we have 'order_m' it means that values were passed as matrix
-        // at this point it must be a py::array
         if (kwargs.contains("order_m")) {
+            // at this point it must be a py::array
             std::size_t order_m_size = kwargs["order_m"].cast<py::array>().size();
             double val;
             std::ostringstream mat;
