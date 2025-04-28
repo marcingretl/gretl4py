@@ -302,7 +302,12 @@ py::dict GretlModel_NSE::test (const std::string &type,
         err = QLR_test(model, GD->dset, opt, GP.prn_ptr());
     } else if (type == "vif") {
         err = vif_test(model, GD->dset, opt, GP.prn_ptr());
-    } else { // MODTEST //FIXME: we must put list of test explicite here (levinlin case)
+    } else if (type == "arch" || type == "autocorr" ||
+               type == "breusch-pagan" || type == "comfac" ||
+               type == "logs" || type == "normality" ||
+               type == "panel" || type == "squares" ||
+               type == "white" || type == "white-nocross" ||
+               type == "xdepend" ) {
         if (get_last_model(NULL) != model) {
             err = gretl_model_protect(model);
             if (err) {
@@ -311,6 +316,8 @@ py::dict GretlModel_NSE::test (const std::string &type,
             set_as_last_model(model, GRETL_OBJ_EQN);
         }
         err = model_test_driver(order, GD->dset, opt, GP.prn_ptr());
+    } else {
+        throw std::invalid_argument("unsupported test");
     }
     if (err) {
         handle_gretl_error(err);
@@ -357,6 +364,8 @@ py::dict GretlModel_NSE::test (const std::string &type,
         err = gretl_sum_test(ex_var.get(), model, GD->dset, opt, GP.prn_ptr());
     } else if (type == "omit") {
         err = omit_test(model, ex_var.get(), GD->dset, opt, GP.prn_ptr());
+    } else {
+        throw std::invalid_argument("unsupported test");
     }
     if (err) {
         handle_gretl_error(err);

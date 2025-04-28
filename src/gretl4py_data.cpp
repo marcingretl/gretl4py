@@ -958,6 +958,8 @@ void GretlDataset::test (const std::string &type, const std::string &vars,
             throw std::invalid_argument("vartest takes exactly two series");
         }
         err = vars_test(ex_var.get(), dset, opt, GP.prn_ptr());
+    } else {
+        throw std::invalid_argument("unsupported test");
     }
 
     if (err) {
