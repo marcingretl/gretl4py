@@ -317,7 +317,7 @@ py::dict GretlModel_NSE::test (const std::string &type,
         }
         err = model_test_driver(order, GD->dset, opt, GP.prn_ptr());
     } else {
-        throw std::invalid_argument("unsupported test");
+        throw std::invalid_argument(type + " is a dataset-based test");
     }
     if (err) {
         handle_gretl_error(err);
@@ -365,7 +365,7 @@ py::dict GretlModel_NSE::test (const std::string &type,
     } else if (type == "omit") {
         err = omit_test(model, ex_var.get(), GD->dset, opt, GP.prn_ptr());
     } else {
-        throw std::invalid_argument("unsupported test");
+        throw std::invalid_argument(type + " is a dataset-based test");
     }
     if (err) {
         handle_gretl_error(err);

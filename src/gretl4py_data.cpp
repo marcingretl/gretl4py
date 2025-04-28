@@ -959,7 +959,7 @@ void GretlDataset::test (const std::string &type, const std::string &vars,
         }
         err = vars_test(ex_var.get(), dset, opt, GP.prn_ptr());
     } else {
-        throw std::invalid_argument("unsupported test");
+        throw std::invalid_argument(type + " is a model-based test");
     }
 
     if (err) {
