@@ -373,14 +373,14 @@ void unpack_kwargs_test (gretlopt &opt, const std::string &type,
         opt = OPT_P;
     } else if (type == "panspec") {
         ci = PANSPEC;
-    } else if (type == "runs") {
-        ci = RUNS;
     } else if (type == "qlrtest") {
         ci = QLRTEST;
     } else if (type == "reset") {
         ci = RESET;
     } else if (type == "restrict") {
         ci = RESTRICT;
+    } else if (type == "runs") {
+        ci = RUNS;
     } else if (type == "squares") {
         opt = OPT_S;
     } else if (type == "white") {
