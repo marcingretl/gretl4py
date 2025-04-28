@@ -44,8 +44,8 @@ extern "C" {
 
 #define GRETL_PYBIND11_DEBUG 0
 
-std::shared_ptr<GretlDataset> DSET = nullptr;                                   // default dataset
-static std::unordered_map<int, std::unique_ptr<GretlModel>> estimated_models;   // list of already estimated models
+std::shared_ptr<GretlDataset> DSET = nullptr;                           // default dataset
+std::unordered_map<int, std::unique_ptr<GretlModel>> estimated_models;  // list of already estimated models
 static int gretl4py_verbose = 0;
 
 //////////////////////////////////////////////////
@@ -218,18 +218,6 @@ static void check_if_model_exists (const int model_id)
     }
 }
 
-// wrapper for calling GretlModel_NSE_Driver models
-template <auto F, GretlCmdIndex CI>
-static py::dict GretlModel_NSE_Driver_wrapper (const std::string formula, const py::kwargs &kwargs)
-{
-    auto model = std::make_unique<GretlModel_NSE_Driver<F, CI>>(DSET);
-
-    py::dict RES = model->fit(formula, kwargs);
-    estimated_models.try_emplace(model->get_id(), std::move(model));
-
-    return RES;
-}
-
 // wrapper for "destructing" GretlModel models
 void GretlModel_destructor_wrapper (const int model_id, const bool unlink)
 {
@@ -284,125 +272,32 @@ py::dict GretlModel_fcast (const int model_id, const py::kwargs &kwargs)
 //////////////////////////////////////////////////
 // model estimation
 //////////////////////////////////////////////////
-py::dict arima (const std::string y, const py::tuple &tup,
-                 const py::kwargs &kwargs)
+// wrapper for calling GretlModel_NSE_Driver models
+template <auto F, GretlCmdIndex CI>
+py::dict GretlModel_NSE_Driver_wrapper (const std::string formula, const py::kwargs &kwargs)
 {
-    auto model = std::make_unique<GretlModel_NSE_arima>(DSET, y, tup);
-
-    py::dict RES = model->fit("", kwargs);
-    estimated_models.try_emplace(model->get_id(), std::move(model));
-
-    return RES;
-}
-
-py::dict ols (const std::string formula, const py::kwargs &kwargs)
-{
-    return GretlModel_NSE_Driver_wrapper<lsq, OLS>(formula, kwargs);
-}
-
-py::dict wls (const std::string formula, const py::kwargs &kwargs)
-{
-    return GretlModel_NSE_Driver_wrapper<lsq, WLS>(formula, kwargs);
-}
-
-py::dict logit (const std::string formula, const py::kwargs &kwargs)
-{
-    return GretlModel_NSE_Driver_wrapper<logit_probit, LOGIT>(formula, kwargs);
-}
-
-py::dict probit (const std::string formula, const py::kwargs &kwargs)
-{
-    return GretlModel_NSE_Driver_wrapper<logit_probit, PROBIT>(formula, kwargs);
-}
-
-py::dict poisson (const std::string formula, const py::kwargs &kwargs)
-{
-    return GretlModel_NSE_Driver_wrapper<count_model, POISSON>(formula, kwargs);
-}
-
-py::dict negbin (const std::string formula, const py::kwargs &kwargs)
-{
-    return GretlModel_NSE_Driver_wrapper<count_model, NEGBIN>(formula, kwargs);
-}
-
-py::dict biprobit (const std::string formula, const py::kwargs &kwargs)
-{
-    return GretlModel_NSE_Driver_wrapper<biprobit_model, BIPROBIT>(formula, kwargs);
-}
-
-py::dict duration (const std::string formula, const py::kwargs &kwargs)
-{
-    return GretlModel_NSE_Driver_wrapper<duration_model, DURATION>(formula, kwargs);
-}
-
-py::dict heckit (const std::string formula, const py::kwargs &kwargs)
-{
-    return GretlModel_NSE_Driver_wrapper<heckit_model, HECKIT>(formula, kwargs);
-}
-
-py::dict logistic (const std::string formula, const py::kwargs &kwargs)
-{
-    return GretlModel_NSE_Driver_wrapper<logistic_driver, LOGISTIC>(formula, kwargs);
-}
-
-py::dict ar (const std::string formula, const py::kwargs &kwargs)
-{
-    return GretlModel_NSE_Driver_wrapper<ar_model, AR>(formula, kwargs);
-}
-
-py::dict ar1 (const std::string formula, const py::kwargs &kwargs)
-{
-    return GretlModel_NSE_Driver_wrapper<ar1_model, AR1>(formula, kwargs);
-}
-
-py::dict lad (const std::string formula, const py::kwargs &kwargs)
-{
-    return GretlModel_NSE_Driver_wrapper<lad_model, LAD>(formula, kwargs);
-}
-
-py::dict garch (const std::string formula, const py::kwargs &kwargs)
-{
-    return GretlModel_NSE_Driver_wrapper<garch_to_call, GARCH>(formula, kwargs);
-}
-
-py::dict mpols (const std::string formula, const py::kwargs &kwargs)
-{
-    return GretlModel_NSE_Driver_wrapper<mp_ols, MPOLS>(formula, kwargs);
-}
-
-py::dict panel (const std::string formula, const py::kwargs &kwargs)
-{
-    return GretlModel_NSE_Driver_wrapper<panel_model, PANEL>(formula, kwargs);
-}
-
-py::dict tsls (const std::string formula, const py::kwargs &kwargs)
-{
-    return GretlModel_NSE_Driver_wrapper<ivreg, IVREG>(formula, kwargs);
-}
-
-py::dict tobit (const std::string formula, const py::kwargs &kwargs)
-{
-    return GretlModel_NSE_Driver_wrapper<tobit_model, TOBIT>(formula, kwargs);
-}
-
-py::dict quantreg (const double tau, const std::string formula,
-                   const py::kwargs &kwargs)
-{
-    auto model = std::make_unique<GretlModel_NSE_Driver_quantreg<quantreg_driver, QUANTREG>>(DSET, tau);
+    auto model = std::make_unique<GretlModel_NSE_Driver<F, CI>>(DSET);
 
     py::dict RES = model->fit(formula, kwargs);
     estimated_models.try_emplace(model->get_id(), std::move(model));
 
     return RES;
 }
-
-py::dict quantreg (const py::array_t<double> &tau, const std::string formula,
-                   const py::kwargs &kwargs)
-{
-    auto model = std::make_unique<GretlModel_NSE_Driver_quantreg<quantreg_driver, QUANTREG>>(DSET, tau);
-
-    py::dict RES = model->fit(formula, kwargs);
-    estimated_models.try_emplace(model->get_id(), std::move(model));
-
-    return RES;
-}
+template py::dict GretlModel_NSE_Driver_wrapper<lsq, OLS>(const std::string, const py::kwargs&);
+template py::dict GretlModel_NSE_Driver_wrapper<lsq, WLS>(const std::string, const py::kwargs&);
+template py::dict GretlModel_NSE_Driver_wrapper<logit_probit, LOGIT>(const std::string, const py::kwargs&);
+template py::dict GretlModel_NSE_Driver_wrapper<logit_probit, PROBIT>(const std::string, const py::kwargs&);
+template py::dict GretlModel_NSE_Driver_wrapper<count_model, POISSON>(const std::string, const py::kwargs&);
+template py::dict GretlModel_NSE_Driver_wrapper<count_model, NEGBIN>(const std::string, const py::kwargs&);
+template py::dict GretlModel_NSE_Driver_wrapper<biprobit_model, BIPROBIT>(const std::string, const py::kwargs&);
+template py::dict GretlModel_NSE_Driver_wrapper<duration_model, DURATION>(const std::string, const py::kwargs&);
+template py::dict GretlModel_NSE_Driver_wrapper<heckit_model, HECKIT>(const std::string, const py::kwargs&);
+template py::dict GretlModel_NSE_Driver_wrapper<logistic_driver, LOGISTIC>(const std::string, const py::kwargs&);
+template py::dict GretlModel_NSE_Driver_wrapper<ar_model, AR>(const std::string, const py::kwargs&);
+template py::dict GretlModel_NSE_Driver_wrapper<ar1_model, AR1>(const std::string, const py::kwargs&);
+template py::dict GretlModel_NSE_Driver_wrapper<lad_model, LAD>(const std::string, const py::kwargs&);
+template py::dict GretlModel_NSE_Driver_wrapper<garch_to_call, GARCH>(const std::string, const py::kwargs&);
+template py::dict GretlModel_NSE_Driver_wrapper<mp_ols, MPOLS>(const std::string, const py::kwargs&);
+template py::dict GretlModel_NSE_Driver_wrapper<panel_model, PANEL>(const std::string, const py::kwargs&);
+template py::dict GretlModel_NSE_Driver_wrapper<ivreg, IVREG>(const std::string, const py::kwargs&);
+template py::dict GretlModel_NSE_Driver_wrapper<tobit_model, TOBIT>(const std::string, const py::kwargs&);

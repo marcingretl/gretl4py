@@ -25,7 +25,11 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
 #include <pybind11/stl.h>
+#include <gretl/libgretl.h>
+#undef gettext
 #include "gretl4py_types.h"
+#include "gretl4py_data.h"
+#include "gretl4py_model.h"
 
 namespace py = pybind11;
 
@@ -60,48 +64,7 @@ py::dict GretlModel_restrict (const int model_id, const py::list &impose,
 //////////////////////////////////////////////////
 // model estimation
 //////////////////////////////////////////////////
-py::dict arima (const std::string y, const py::tuple &tup, const py::kwargs &kwargs);
-
-py::dict ols (const std::string formula, const py::kwargs &kwargs);
-
-py::dict wls (const std::string formula, const py::kwargs &kwargs);
-
-py::dict logit (const std::string formula, const py::kwargs &kwargs);
-
-py::dict probit (const std::string formula, const py::kwargs &kwargs);
-
-py::dict poisson (const std::string formula, const py::kwargs &kwargs);
-
-py::dict negbin (const std::string formula, const py::kwargs &kwargs);
-
-py::dict biprobit (const std::string formula, const py::kwargs &kwargs);
-
-py::dict duration (const std::string formula, const py::kwargs &kwargs);
-
-py::dict heckit (const std::string formula, const py::kwargs &kwargs);
-
-py::dict logistic (const std::string formula, const py::kwargs &kwargs);
-
-py::dict ar (const std::string formula, const py::kwargs &kwargs);
-
-py::dict ar1 (const std::string formula, const py::kwargs &kwargs);
-
-py::dict lad (const std::string formula, const py::kwargs &kwargs);
-
-py::dict garch (const std::string formula, const py::kwargs &kwargs);
-
-py::dict mpols (const std::string formula, const py::kwargs &kwargs);
-
-py::dict panel (const std::string formula, const py::kwargs &kwargs);
-
-py::dict tsls (const std::string formula, const py::kwargs &kwargs);
-
-py::dict tobit (const std::string formula, const py::kwargs &kwargs);
-
-py::dict quantreg (const double tau, const std::string formula,
-                    const py::kwargs &kwargs);
-
-py::dict quantreg (const py::array_t<double> &tau, const std::string formula,
-                   const py::kwargs &kwargs);
+template <auto F, GretlCmdIndex CI>
+py::dict GretlModel_NSE_Driver_wrapper (const std::string formula, const py::kwargs &kwargs);
 
 #endif // GRETL4PY_H

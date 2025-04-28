@@ -639,7 +639,7 @@ GretlModel_NSE_Driver_quantreg<F, CI>::GretlModel_NSE_Driver_quantreg
         throw std::invalid_argument("'tau' is expected to be a vector");
     }
     this->optional_par_as_mat = gretl_matrix_alloc(tau.shape(0), 1);
-    for (size_t i=0; i<tau.shape(0); i++) {
+    for (int i=0; i<tau.shape(0); i++) {
         gretl_matrix_set(this->optional_par_as_mat, i, 0, tau.at(i));
     }
 }

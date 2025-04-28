@@ -949,7 +949,7 @@ void GretlDataset::test (const std::string &type, const std::string &vars,
         // if we have 'order_m' it means that values were passed as matrix
         if (kwargs.contains("order_m")) {
             // at this point it must be a py::array
-            std::size_t order_m_size = kwargs["order_m"].cast<py::array>().size();
+            int order_m_size = kwargs["order_m"].cast<py::array>().size();
             double val;
             std::ostringstream mat;
             int i = 1;
