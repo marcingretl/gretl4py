@@ -151,22 +151,22 @@ py::dict GretlModel::fr_to_dict (FITRESID *fr)
 
     /* actual values? */
     if (n_ok > 0) {
-        DNumPyArrayFC A({rows, 1});
-        tmp = static_cast<double*>(A.request().ptr);
+        DNumPyArrayFC A(rows);
+        tmp = A.mutable_data();
         std::memcpy(tmp, fr->actual + offset, rows * sizeof *tmp);
         fcdict[py::cast("actual")] = A;
     }
 
     /* predicted values */
-    DNumPyArrayFC P({rows, 1});
-    tmp = static_cast<double*>(P.request().ptr);
+    DNumPyArrayFC P(rows);
+    tmp = P.mutable_data();
     std::memcpy(tmp, fr->fitted + offset, rows * sizeof *tmp);
     fcdict[py::cast("predicted")] = P;
 
     /* standard errors? */
     if (fr->sderr != NULL) {
-        DNumPyArrayFC S({rows, 1});
-        tmp = static_cast<double*>(S.request().ptr);
+        DNumPyArrayFC S(rows);
+        tmp = S.mutable_data();
         std::memcpy(tmp, fr->sderr + offset, rows * sizeof *tmp);
         fcdict[py::cast("stderr")] = S;
     }
