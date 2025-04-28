@@ -361,6 +361,8 @@ void unpack_kwargs_test (gretlopt &opt, const std::string &type,
         ci = LEVINLIN;
     } else if (type == "logs") {
         opt = OPT_L;
+    } else if (type == "meantest") {
+        ci = MEANTEST;
     } else if (type == "normality") {
         opt = OPT_N;
     } else if (type == "normtest") {
@@ -969,6 +971,8 @@ void GretlDataset::test (const std::string &type, const std::string &vars,
             err = llc_test_driver(std::to_string(order).c_str(), ex_var.get(),
                                   dset, opt, GP.prn_ptr());
         }
+    } else if (type == "meantest") {
+        err = means_test(ex_var.get(), dset, opt, GP.prn_ptr());
     } else if (type == "normtest") {
         if (ex_var.get()[0] > 1) {
             throw std::invalid_argument("normtest takes just one series");
