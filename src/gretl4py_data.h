@@ -44,6 +44,9 @@ namespace py = pybind11;
 #define is_pystr(o) (py::isinstance<py::str>(o))
 #define is_pydict(o) (py::isinstance<py::dict>(o))
 #define is_pytuple(o) (py::isinstance<py::tuple>(o))
+#define is_pylist(o) (py::isinstance<py::list>(o))
+#define is_pynumarray(o) (py::isinstance<py::array>(o))
+#define is_pynumarrayd(o) (py::isinstance<py::array_t<double>>(o))
 #define is_pynumeric(o) (is_pyint(o) || is_pyfloat(o))
 
 // custom libgretl's list deleter

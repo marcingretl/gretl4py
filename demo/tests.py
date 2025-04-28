@@ -45,7 +45,7 @@ d5.test(type="difftest", vars="capp cdis", rank_sum=True)
 
 print("\n****************************")
 print("levinlin")
-d3.test(type="levinlin", vars="invest")
+d3.test(type="levinlin", vars="invest", order=[2,2,3,3,4,4,2,3,2,1])
 
 # OLS
 m1 = gretl.ols(formula='1 0 2 3').fit()

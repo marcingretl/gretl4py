@@ -64,9 +64,11 @@ void init_gretl4py_data_py11(py::module_ &m)
                  return res.release();
              }, py::return_value_policy::take_ownership)
         .def("test",
-             [](GretlDataset &self,
-                const std::string &type, const py::kwargs &kwargs)
+             [](GretlDataset &self, const std::string &type, const py::kwargs &kwargs)
              {
+                 //
+                 // here we do some things for certain tests
+                 //
                  std::string y_val, vars_val, vars;
                  py::dict clean_kwargs;
 
@@ -76,6 +78,12 @@ void init_gretl4py_data_py11(py::module_ &m)
                          y_val = std::string(py::str(item.second));
                      } else if (key == "vars") {
                          vars_val = std::string(py::str(item.second));
+                     } else if (key == "order" && type == "levinlin" && is_pynumarray(item.second)) {
+                         // order was passed as matrix: we cannot pass it to method as order (which is <int>)
+                         clean_kwargs[py::cast("order_m")] = item.second;
+                     } else if (key == "order" && type == "levinlin" && is_pylist(item.second)) {
+                         // order was passed as list: we cannot pass it to method as order (which is <int>)
+                         clean_kwargs[py::cast("order_m")] = py::cast<py::array>(item.second);
                      } else {
                          clean_kwargs[item.first] = item.second;
                      }

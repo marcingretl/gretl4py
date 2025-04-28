@@ -409,6 +409,9 @@ void unpack_kwargs_test (gretlopt &opt, const std::string &type,
             } else {
                 throw std::invalid_argument("'order' takes integers only");
             }
+        } else if (key == "order_m" && type == "levinlin") {
+            // special case: we must do something with it later
+            continue;
         } else if (key == "silent") {
             // special case: silent is processed manually later on
             continue;
@@ -941,8 +944,31 @@ void GretlDataset::test (const std::string &type, const std::string &vars,
     } else if (type == "kpss") {
         err = kpss_test(order, ex_var.get(), dset, opt, GP.prn_ptr());
     } else if (type == "levinlin") {
-        err = llc_test_driver(std::to_string(order).c_str(), ex_var.get(),
-                              dset, opt, GP.prn_ptr());
+        // if we have 'order_m' it means that values were passed as matrix
+        // at this point it must be a py::array
+        if (kwargs.contains("order_m")) {
+            std::size_t order_m_size = kwargs["order_m"].cast<py::array>().size();
+            double val;
+            std::ostringstream mat;
+            int i = 1;
+
+            mat << "{";
+            for (auto &item : kwargs["order_m"]) {
+                val = py::cast<double>(item);
+                mat << val;
+                if (i == order_m_size) {
+                    mat << "}";
+                } else {
+                    mat << ",";
+                    i++;
+                }
+            }
+            err = llc_test_driver(mat.str().c_str(), ex_var.get(),
+                                  dset, opt, GP.prn_ptr());
+        } else {
+            err = llc_test_driver(std::to_string(order).c_str(), ex_var.get(),
+                                  dset, opt, GP.prn_ptr());
+        }
     } else if (type == "normtest") {
         if (ex_var.get()[0] > 1) {
             throw std::invalid_argument("normtest takes just one series");
