@@ -54,7 +54,7 @@ protected:
 
     void unpack_kwargs_forecast (const py::kwargs &kwargs);
 
-    DNumPyArrayFC fr_to_dict (FITRESID *fr);
+    py::dict fr_to_dict (FITRESID *fr);
 public:
     explicit GretlModel(std::shared_ptr<GretlDataset> GD);
     virtual ~GretlModel (void);

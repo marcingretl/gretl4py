@@ -125,34 +125,70 @@ void GretlModel::unpack_kwargs_forecast (const py::kwargs &kwargs)
     }
 }
 
-DNumPyArrayFC GretlModel::fr_to_dict (FITRESID *fr)
+py::dict GretlModel::fr_to_dict (FITRESID *fr)
 {
-    //
-    // we transform FITRESID to DNumPyArrayFC
-    //
+    py::dict fcdict;
+    gretl_matrix *stats = NULL;
     double *tmp;
     int offset;
+    int n_ok;
     int rows;
-    int cols;
+    int t;
 
-    cols = 2 + (fr->sderr != nullptr);
     rows = fr->t2 - fr->t1 + 1;
     offset = fr->nobs - rows;
 
-    DNumPyArrayFC F({rows, cols});
+    fcdict[py::cast("t1")] = fr->t1 + 1;
+    fcdict[py::cast("t2")] = fr->t2 + 1;
 
-    tmp = F.mutable_data();
-    std::memcpy(tmp, fr->actual + offset, rows * sizeof *tmp);
-    tmp += rows;
-    std::memcpy(tmp, fr->fitted + offset, rows * sizeof *tmp);
-    if (fr->sderr != NULL) {
-        tmp += rows;
-        std::memcpy(tmp, fr->sderr + offset, rows * sizeof *tmp);
+    /* count of non-missing actual values */
+    n_ok = 0;
+    for (t=fr->t1; t<=fr->t2; t++) {
+        if (!na(fr->actual[t])) {
+            n_ok++;
+        }
     }
 
-    return F;
-}
+    /* actual values? */
+    if (n_ok > 0) {
+        DNumPyArrayFC A({rows, 1});
+        tmp = static_cast<double*>(A.request().ptr);
+        std::memcpy(tmp, fr->actual + offset, rows * sizeof *tmp);
+        fcdict[py::cast("actual")] = A;
+    }
 
+    /* predicted values */
+    DNumPyArrayFC P({rows, 1});
+    tmp = static_cast<double*>(P.request().ptr);
+    std::memcpy(tmp, fr->fitted + offset, rows * sizeof *tmp);
+    fcdict[py::cast("predicted")] = P;
+
+    /* standard errors? */
+    if (fr->sderr != NULL) {
+        DNumPyArrayFC S({rows, 1});
+        tmp = static_cast<double*>(S.request().ptr);
+        std::memcpy(tmp, fr->sderr + offset, rows * sizeof *tmp);
+        fcdict[py::cast("stderr")] = S;
+    }
+
+    n_ok = 0;
+    stats = forecast_stats(fr->actual, fr->fitted, fr->t1, fr->t2,
+                           &n_ok, OPT_O, &err);
+    if (stats != NULL) {
+        if (n_ok > 0) {
+            const char **rnames = gretl_matrix_get_rownames(stats);
+            const char *label;
+
+            for (t=0; t<stats->rows; t++) {
+                label = rnames[t];
+                fcdict[py::cast(label)] = stats->val[t];
+            }
+        }
+        gretl_matrix_free(stats);
+    }
+
+    return fcdict;
+}
 
 //
 // Native Single Equation libgretl MODEL (NSE)
