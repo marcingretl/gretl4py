@@ -374,7 +374,7 @@ py::dict GretlModel_NSE::test (const std::string &type,
     //
     py::dict res;
     int order = -1;
-    gretl_list_ptr ex_var{nullptr, gretl_list_deleter};
+    gretl_list_ptr ex_var{nullptr};
 
     // we construct list of external variables
     if (type != "chow") {

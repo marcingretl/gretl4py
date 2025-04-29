@@ -21,6 +21,7 @@
 #define GRETL4PY_TYPES_H
 
 #include <pybind11/stl.h>
+#include <gretl/libgretl.h>
 
 namespace py = pybind11;
 
@@ -35,6 +36,17 @@ using vgretl_vector = std::vector<std::variant<double, std::string, int>>;
 
 using vgretl_matrix = std::vector<vgretl_vector>;
 
-using gretl_list_ptr = std::unique_ptr<int, void(*)(int*)>;     // deleter must be defined elsewhere (see gretl4py_data.h)
+// gretl_list_ptr default deleter
+struct GretlListDeleter {
+    void operator()(int *ptr) const
+    {
+        #if defined(_WIN32)
+            gretl_list_free(ptr);
+        #else
+            std::free(ptr);
+        #endif
+    }
+};
+using gretl_list_ptr = std::unique_ptr<int, GretlListDeleter>;
 
 #endif // GRETL4PY_TYPES_H

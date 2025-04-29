@@ -451,7 +451,7 @@ gretl_list_ptr list_from_formula (const std::string &formula,
         handle_gretl_error(err);
     }
 
-    return gretl_list_ptr(raw_list, gretl_list_deleter);
+    return gretl_list_ptr(raw_list);
 }
 
 //////////////////////////////////////////////////
@@ -923,7 +923,7 @@ void GretlDataset::test (const std::string &type, const std::string &vars,
     //
     py::dict res;
     int order = 0;
-    gretl_list_ptr ex_var{nullptr, gretl_list_deleter};
+    gretl_list_ptr ex_var{nullptr};
 
     // we construct list of external variables
     ex_var = list_from_formula(vars, dset, err); // it's std::unique_ptr!!!
