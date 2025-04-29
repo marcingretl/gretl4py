@@ -125,9 +125,8 @@ void GretlModel::unpack_kwargs_forecast (const py::kwargs &kwargs)
     }
 }
 
-py::dict GretlModel::fr_to_dict (FITRESID *fr)
+void GretlModel::fr_to_dict (FITRESID *fr, py::dict &fcdict)
 {
-    py::dict fcdict;
     gretl_matrix *stats = NULL;
     double *tmp;
     int offset;
@@ -186,8 +185,6 @@ py::dict GretlModel::fr_to_dict (FITRESID *fr)
         }
         gretl_matrix_free(stats);
     }
-
-    return fcdict;
 }
 
 //
@@ -285,7 +282,7 @@ py::dict GretlModel_NSE::forecast (const py::kwargs &kwargs)
     if (err) {
         handle_gretl_error(err);
     } else {
-        fcast[py::cast("forecast data")] = fr_to_dict(fr);
+        fr_to_dict(fr, fcast);
         fr->alpha = 1 - conf;
         if (!(opt & OPT_Q)) {
             err = text_print_forecast(fr, GD->dset, OPT_NONE, GP.prn_ptr());
