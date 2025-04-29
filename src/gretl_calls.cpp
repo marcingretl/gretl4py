@@ -297,7 +297,7 @@ template py::dict GretlModel_NSE_Driver_wrapper<logistic_driver, LOGISTIC>(const
 template py::dict GretlModel_NSE_Driver_wrapper<ar_model, AR>(const std::string, const py::kwargs&);
 template py::dict GretlModel_NSE_Driver_wrapper<ar1_model, AR1>(const std::string, const py::kwargs&);
 template py::dict GretlModel_NSE_Driver_wrapper<lad_model, LAD>(const std::string, const py::kwargs&);
-template py::dict GretlModel_NSE_Driver_wrapper<garch_to_call, GARCH>(const std::string, const py::kwargs&);
+template py::dict GretlModel_NSE_Driver_wrapper<garch, GARCH>(const std::string, const py::kwargs&);
 template py::dict GretlModel_NSE_Driver_wrapper<mp_ols, MPOLS>(const std::string, const py::kwargs&);
 template py::dict GretlModel_NSE_Driver_wrapper<panel_model, PANEL>(const std::string, const py::kwargs&);
 template py::dict GretlModel_NSE_Driver_wrapper<ivreg, IVREG>(const std::string, const py::kwargs&);

@@ -525,8 +525,8 @@ py::dict GretlModel_NSE_Driver<F, CI>::fit (const std::string &formula,
         *model = F(var_list.get(), CI, GD->dset, opt, GP.prn_ptr());
     } else if constexpr (CI == QUANTREG) {
         if (this->optional_par_as_mat != NULL) {
-            *model = quantreg (this->optional_par_as_mat,
-                               var_list.get(), GD->dset, opt, GP.prn_ptr());
+            *model = quantreg(this->optional_par_as_mat,
+                              var_list.get(), GD->dset, opt, GP.prn_ptr());
         } else {
             *model = F(std::to_string(this->optional_par.at(0)).c_str(),
                        var_list.get(), GD->dset, opt, GP.prn_ptr());
@@ -553,12 +553,11 @@ template class GretlModel_NSE_Driver<logistic_driver, LOGISTIC>;
 template class GretlModel_NSE_Driver<ar_model, AR>;
 template class GretlModel_NSE_Driver<ar1_model, AR1>;
 template class GretlModel_NSE_Driver<lad_model, LAD>;
-template class GretlModel_NSE_Driver<garch_to_call, GARCH>;
+template class GretlModel_NSE_Driver<garch, GARCH>;
 template class GretlModel_NSE_Driver<mp_ols, MPOLS>;
 template class GretlModel_NSE_Driver<panel_model, PANEL>;
 template class GretlModel_NSE_Driver<ivreg, IVREG>;
 template class GretlModel_NSE_Driver<tobit_model, TOBIT>;
-
 
 
 //

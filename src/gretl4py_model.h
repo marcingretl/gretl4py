@@ -29,10 +29,6 @@
 
 namespace py = pybind11;
 
-// workaround to manually resolve overloads ambiguity
-static MODEL (&garch_to_call)(const int*, DATASET*, gretlopt, PRN*) = garch;
-static MODEL (&quantreg_to_call)(const gretl_matrix*, const int*, DATASET*, gretlopt, PRN*) = quantreg;
-
 //
 // Class to handle gretl 'MODEL' type
 //

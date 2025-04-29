@@ -179,7 +179,7 @@ PYBIND11_MODULE(_gretl, m)
     m.def("garch",
           [](const std::string formula, const py::kwargs &kwargs) -> py::dict
           {
-              return GretlModel_NSE_Driver_wrapper<garch_to_call, GARCH>(formula, kwargs);
+              return GretlModel_NSE_Driver_wrapper<garch, GARCH>(formula, kwargs);
           },
           py::arg("formula").none(false), py::kw_only(),
           py::return_value_policy::take_ownership);
