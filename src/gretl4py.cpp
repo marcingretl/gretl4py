@@ -86,126 +86,126 @@ PYBIND11_MODULE(_gretl, m)
     // model estimation
     // estimation via wrappers
     m.def("ols",
-          [](const std::string formula, const py::kwargs &kwargs) -> py::dict
+          [](const std::string &formula, const py::kwargs &kwargs) -> py::dict
           {
               return GretlModel_NSE_Driver_wrapper<lsq, OLS>(formula, kwargs);
           },
           py::arg("formula").none(false), py::kw_only(),
           py::return_value_policy::take_ownership);
     m.def("wls",
-          [](const std::string formula, const py::kwargs &kwargs) -> py::dict
+          [](const std::string &formula, const py::kwargs &kwargs) -> py::dict
           {
               return GretlModel_NSE_Driver_wrapper<lsq, WLS>(formula, kwargs);
           },
           py::arg("formula").none(false), py::kw_only(),
           py::return_value_policy::take_ownership);
     m.def("logit",
-          [](const std::string formula, const py::kwargs &kwargs) -> py::dict
+          [](const std::string &formula, const py::kwargs &kwargs) -> py::dict
           {
               return GretlModel_NSE_Driver_wrapper<logit_probit, LOGIT>(formula, kwargs);
           },
           py::arg("formula").none(false), py::kw_only(),
           py::return_value_policy::take_ownership);
     m.def("probit",
-          [](const std::string formula, const py::kwargs &kwargs) -> py::dict
+          [](const std::string &formula, const py::kwargs &kwargs) -> py::dict
           {
               return GretlModel_NSE_Driver_wrapper<logit_probit, PROBIT>(formula, kwargs);
           },
           py::arg("formula").none(false), py::kw_only(),
           py::return_value_policy::take_ownership);
     m.def("poisson",
-          [](const std::string formula, const py::kwargs &kwargs) -> py::dict
+          [](const std::string &formula, const py::kwargs &kwargs) -> py::dict
           {
               return GretlModel_NSE_Driver_wrapper<count_model, POISSON>(formula, kwargs);
           },
           py::arg("formula").none(false), py::kw_only(),
           py::return_value_policy::take_ownership);
     m.def("negbin",
-          [](const std::string formula, const py::kwargs &kwargs) -> py::dict
+          [](const std::string &formula, const py::kwargs &kwargs) -> py::dict
           {
               return GretlModel_NSE_Driver_wrapper<count_model, NEGBIN>(formula, kwargs);
           },
           py::arg("formula").none(false), py::kw_only(),
           py::return_value_policy::take_ownership);
     m.def("biprobit",
-          [](const std::string formula, const py::kwargs &kwargs) -> py::dict
+          [](const std::string &formula, const py::kwargs &kwargs) -> py::dict
           {
               return GretlModel_NSE_Driver_wrapper<biprobit_model, BIPROBIT>(formula, kwargs);
           },
           py::arg("formula").none(false), py::kw_only(),
           py::return_value_policy::take_ownership);
     m.def("duration",
-          [](const std::string formula, const py::kwargs &kwargs) -> py::dict
+          [](const std::string &formula, const py::kwargs &kwargs) -> py::dict
           {
               return GretlModel_NSE_Driver_wrapper<duration_model, DURATION>(formula, kwargs);
           },
           py::arg("formula").none(false), py::kw_only(),
           py::return_value_policy::take_ownership);
     m.def("heckit",
-          [](const std::string formula, const py::kwargs &kwargs) -> py::dict
+          [](const std::string &formula, const py::kwargs &kwargs) -> py::dict
           {
               return GretlModel_NSE_Driver_wrapper<heckit_model, HECKIT>(formula, kwargs);
           },
           py::arg("formula").none(false), py::kw_only(),
           py::return_value_policy::take_ownership);
     m.def("logistic",
-          [](const std::string formula, const py::kwargs &kwargs) -> py::dict
+          [](const std::string &formula, const py::kwargs &kwargs) -> py::dict
           {
               return GretlModel_NSE_Driver_wrapper<logistic_driver, LOGISTIC>(formula, kwargs);
           },
           py::arg("formula").none(false), py::kw_only(),
           py::return_value_policy::take_ownership);
     m.def("ar",
-          [](const std::string formula, const py::kwargs &kwargs) -> py::dict
+          [](const std::string &formula, const py::kwargs &kwargs) -> py::dict
           {
               return GretlModel_NSE_Driver_wrapper<ar_model, AR>(formula, kwargs);
           },
           py::arg("formula").none(false), py::kw_only(),
           py::return_value_policy::take_ownership);
     m.def("ar1",
-          [](const std::string formula, const py::kwargs &kwargs) -> py::dict
+          [](const std::string &formula, const py::kwargs &kwargs) -> py::dict
           {
               return GretlModel_NSE_Driver_wrapper<ar1_model, AR1>(formula, kwargs);
           },
           py::arg("formula").none(false), py::kw_only(),
           py::return_value_policy::take_ownership);
     m.def("lad",
-          [](const std::string formula, const py::kwargs &kwargs) -> py::dict
+          [](const std::string &formula, const py::kwargs &kwargs) -> py::dict
           {
               return GretlModel_NSE_Driver_wrapper<lad_model, LAD>(formula, kwargs);
           },
           py::arg("formula").none(false), py::kw_only(),
           py::return_value_policy::take_ownership);
     m.def("garch",
-          [](const std::string formula, const py::kwargs &kwargs) -> py::dict
+          [](const std::string &formula, const py::kwargs &kwargs) -> py::dict
           {
               return GretlModel_NSE_Driver_wrapper<garch, GARCH>(formula, kwargs);
           },
           py::arg("formula").none(false), py::kw_only(),
           py::return_value_policy::take_ownership);
     m.def("mpols",
-          [](const std::string formula, const py::kwargs &kwargs) -> py::dict
+          [](const std::string &formula, const py::kwargs &kwargs) -> py::dict
           {
               return GretlModel_NSE_Driver_wrapper<mp_ols, MPOLS>(formula, kwargs);
           },
           py::arg("formula").none(false), py::kw_only(),
           py::return_value_policy::take_ownership);
     m.def("panel",
-          [](const std::string formula, const py::kwargs &kwargs) -> py::dict
+          [](const std::string &formula, const py::kwargs &kwargs) -> py::dict
           {
               return GretlModel_NSE_Driver_wrapper<panel_model, PANEL>(formula, kwargs);
           },
           py::arg("formula").none(false), py::kw_only(),
           py::return_value_policy::take_ownership);
     m.def("tsls",
-          [](const std::string formula, const py::kwargs &kwargs) -> py::dict
+          [](const std::string &formula, const py::kwargs &kwargs) -> py::dict
           {
               return GretlModel_NSE_Driver_wrapper<ivreg, IVREG>(formula, kwargs);
           },
           py::arg("formula").none(false), py::kw_only(),
           py::return_value_policy::take_ownership);
     m.def("tobit",
-          [](const std::string formula, const py::kwargs &kwargs) -> py::dict
+          [](const std::string &formula, const py::kwargs &kwargs) -> py::dict
           {
               return GretlModel_NSE_Driver_wrapper<tobit_model, TOBIT>(formula, kwargs);
           },
@@ -213,7 +213,7 @@ PYBIND11_MODULE(_gretl, m)
           py::return_value_policy::take_ownership);
     // direct calls
     m.def("arima",
-          [](const std::string y, const py::tuple &order, const py::kwargs &kwargs) -> py::dict
+          [](const std::string &y, const py::tuple &order, const py::kwargs &kwargs) -> py::dict
           {
               auto model = std::make_unique<GretlModel_NSE_arima>(DSET, y, order);
 
@@ -225,7 +225,7 @@ PYBIND11_MODULE(_gretl, m)
           py::arg("y").none(false), py::arg("order").none(false), py::kw_only(),
           py::return_value_policy::take_ownership);
     m.def("quantreg",
-          [](const double tau, const std::string formula, const py::kwargs &kwargs) -> py::dict
+          [](const double &tau, const std::string &formula, const py::kwargs &kwargs) -> py::dict
           {
               auto model = std::make_unique<GretlModel_NSE_Driver_quantreg<quantreg_driver, QUANTREG>>(DSET, tau);
 
@@ -237,7 +237,7 @@ PYBIND11_MODULE(_gretl, m)
           py::arg("tau").none(false), py::arg("formula").none(false),
           py::kw_only(), py::return_value_policy::take_ownership);
     m.def("quantreg",
-          [](const py::array_t<double> &tau, const std::string formula, const py::kwargs &kwargs) -> py::dict
+          [](const py::array_t<double> &tau, const std::string &formula, const py::kwargs &kwargs) -> py::dict
           {
               auto model = std::make_unique<GretlModel_NSE_Driver_quantreg<quantreg_driver, QUANTREG>>(DSET, tau);
 
