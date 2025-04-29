@@ -283,6 +283,7 @@ py::dict GretlModel_NSE_Driver_wrapper (const std::string formula, const py::kwa
 
     return RES;
 }
+// explicit instantiations for all required (F, CI) pairs
 template py::dict GretlModel_NSE_Driver_wrapper<lsq, OLS>(const std::string, const py::kwargs&);
 template py::dict GretlModel_NSE_Driver_wrapper<lsq, WLS>(const std::string, const py::kwargs&);
 template py::dict GretlModel_NSE_Driver_wrapper<logit_probit, LOGIT>(const std::string, const py::kwargs&);

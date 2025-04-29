@@ -211,8 +211,7 @@ void GretlModel_NSE::save_model (gretlopt opt)
     // produced by libgretl's printmodel().
     //
     if (model->errcode) {
-        const char *msg = errmsg_get_with_default(model->errcode);
-        throw std::runtime_error(msg);
+        handle_gretl_error(model->errcode);
     } else {
         printmodel(model, GD->dset, opt, GP.prn_ptr());
         GretlBundle b = GretlBundle(model, GD->dset);
@@ -242,7 +241,7 @@ void GretlModel_NSE::save_model (gretlopt opt)
 
 py::dict GretlModel_NSE::forecast (const py::kwargs &kwargs)
 {
-    py::dict fcast;
+    py::dict res;
     FITRESID *fr = NULL;
     FcastFlags flags = static_cast<FcastFlags>(0);
     int t1, t2 = 0;
@@ -282,7 +281,7 @@ py::dict GretlModel_NSE::forecast (const py::kwargs &kwargs)
     if (err) {
         handle_gretl_error(err);
     } else {
-        fr_to_dict(fr, fcast);
+        fr_to_dict(fr, res);
         fr->alpha = 1 - conf;
         if (!(opt & OPT_Q)) {
             err = text_print_forecast(fr, GD->dset, OPT_NONE, GP.prn_ptr());
@@ -295,7 +294,7 @@ py::dict GretlModel_NSE::forecast (const py::kwargs &kwargs)
 
     GP.print();
 
-    return fcast;
+    return res;
 }
 
 std::unique_ptr<GretlTypes> GretlModel_NSE::get_accessor (const std::string &accessor) const
@@ -444,7 +443,8 @@ py::dict GretlModel_NSE::restrict (const py::list &impose,
             }
         } else {
             err = restriction_set_parse_line(my_rset,
-                                             MapPyToCpp(item).to_string().c_str(), GD->dset);
+                                             MapPyToCpp(item).to_string().c_str(),
+                                             GD->dset);
             if (err) {
                 handle_gretl_error(err);
             }
@@ -457,7 +457,6 @@ py::dict GretlModel_NSE::restrict (const py::list &impose,
     err = gretl_restriction_finalize(my_rset, GD->dset, OPT_NONE, GP.prn_ptr());
     GD->dset->t1 = save_t1;
     GD->dset->t2 = save_t2;
-
     if (err) {
         handle_gretl_error(err);
     }
