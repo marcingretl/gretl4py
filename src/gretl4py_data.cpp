@@ -114,14 +114,13 @@ static double *numpy_array_extract (const py::array_t<double> &pynum_array,
     return static_cast<double*>(pynum_array.request().ptr);
 }
 
-static void numpy_array_to_gretl_storage (const py::dict &pydict,
-                                          DATASET *dset)
+static void numpy_array_to_gretl_storage (const py::dict &pydict, DATASET *dset)
 {
     //
     // we copy "data_array" which lives in pydict to dset->Z
     //
     // we check if pydict["data_array"] is of <py::array_t> type
-    if (!py::isinstance<py::array_t<double>>(pydict[py::cast("data_array")])) {
+    if (!is_pynumarrayd(pydict[py::cast("data_array")])) {
         throw std::invalid_argument("Element 'data_array' of given dictionary is not of NumPy array type.");
     }
 
@@ -178,7 +177,7 @@ static std::unique_ptr<GretlTypes> convert_GretlType_to_GretlTypes (GretlType &t
         gretl_matrix *gretl_mat = static_cast<gretl_matrix*>(gr_obj_ptr);
         DNumPyArrayFC mat({gretl_mat->rows, gretl_mat->cols});
 
-        std::memcpy(static_cast<double*>(mat.request().ptr), gretl_mat->val,
+        std::memcpy(mat.mutable_data(), gretl_mat->val,
                     gretl_mat->rows * gretl_mat->cols * sizeof(double));
         if ((std::min)(gretl_mat->rows, gretl_mat->cols) == 1) { // this is to prevent 'min' macro expansion on MS SDK
             mat = mat.reshape({mat.size()});
@@ -202,7 +201,7 @@ static std::unique_ptr<GretlTypes> convert_GretlType_to_GretlTypes (GretlType &t
         double *s = static_cast<double*>(gr_obj_ptr);
         DNumPyArrayFC mat(n);
 
-        std::memcpy(static_cast<double*>(mat.request().ptr), s, n * sizeof(double));
+        std::memcpy(mat.mutable_data(), s, n * sizeof(double));
         *res = mat;
     } else if (t == GRETL_TYPE_LIST) {
         int *l = static_cast<int*>(gr_obj_ptr);
@@ -573,7 +572,7 @@ py::dict GretlDataset::to_dict (void) const
 
     // copy across the data values
     DNumPyArrayFC Z({dset->n, dset->v-1});
-    tmp = static_cast<double*>(Z.request().ptr);
+    tmp = Z.mutable_data();
     for (i=1; i<dset->v; i++) {
         std::memcpy(tmp, dset->Z[i], dset->n * sizeof *tmp);
         tmp += dset->n;

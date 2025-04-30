@@ -40,7 +40,8 @@ void init_gretl4py_data_py11(py::module_ &m)
                  dst->source = src.source + " (copy of " + std::to_string(src.get_id()) + ")";
 
                  return dst;
-             }, py::return_value_policy::take_ownership)
+             },
+             py::return_value_policy::take_ownership)
         .def_readonly("is_default", &GretlDataset::is_default)
         .def_readwrite("source", &GretlDataset::source)
         .def("__repr__", &GretlDataset::repr)
@@ -62,7 +63,8 @@ void init_gretl4py_data_py11(py::module_ &m)
                  auto res = self.get_accessor(accessor);
 
                  return res.release();
-             }, py::return_value_policy::take_ownership)
+             },
+             py::return_value_policy::take_ownership)
         .def("test",
              [](GretlDataset &self, const std::string &type, const py::kwargs &kwargs)
              {
