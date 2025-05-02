@@ -153,7 +153,7 @@ public:
 
     py::dict fit (const std::string &formula, const py::kwargs &kwargs) override;
 
-    py::dict fit2 (void);
+    void fit2 (void);
 };
 
 #endif // GRETL4PY_MODEL_H

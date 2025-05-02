@@ -55,12 +55,21 @@ void init_gretl4py_model_py11(py::module_ &m)
     py::class_<GretlModel_NSE_arima, GretlModel_NSE, std::unique_ptr<GretlModel_NSE_arima>>(m, "GretlModel_NSE_arima", py::dynamic_attr())
         .def(py::init<std::shared_ptr<GretlDataset>, const std::string&, const py::tuple&>())
         .def("fit", &GretlModel_NSE_arima::fit)
-        .def("fit2", &GretlModel_NSE_arima::fit2);
+        .def("fit2",
+             [](GretlModel_NSE_arima &self) -> GretlModel_NSE_arima&
+             {
+                 self.fit2();
+
+                 return self;
+             });
 
     m.def("arima2",
           [](const std::string &y, const py::tuple &order, const py::kwargs &kwargs) -> std::unique_ptr<GretlModel>
           {
               auto model = std::make_unique<GretlModel_NSE_arima>(DSET, y, order, kwargs);
+
+              //py::object self = py::cast(model.get());
+              //py::setattr(self, "res", res);
 
               return std::unique_ptr<GretlModel>(std::move(model));
           },

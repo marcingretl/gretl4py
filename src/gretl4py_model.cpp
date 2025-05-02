@@ -233,6 +233,10 @@ void GretlModel_NSE::save_model (gretlopt opt)
         if (err) {
             handle_gretl_error(err);
         } else {
+            // we register result
+            py::object self = py::cast(this);
+            py::setattr(self, "RES2", RES);
+
             // we link model with dataset used
             GD->linked_models_add(id);
         }
@@ -598,15 +602,9 @@ void GretlModel_NSE_arima::get_arima_order (const py::tuple &tup,
     }
 }
 
-py::dict GretlModel_NSE_arima::fit2 (void)
+void GretlModel_NSE_arima::fit2 (void)
 {
     fit("", kwargs);
-
-    // we register result
-    py::object self = py::cast(this);
-    py::setattr(self, "RES2", RES);
-
-    return RES;
 }
 
 py::dict GretlModel_NSE_arima::fit (const std::string &formula,

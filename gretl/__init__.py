@@ -94,7 +94,7 @@ def __getattr__(fun):
     exist return it.
     Otherwise call __model_initializer
     """
-    cfunc = ("about", "set")
+    cfunc = ("about", "set", "arima2")
 
     if fun in dir(gretl4py_addons):
         return getattr(gretl4py_addons, fun)
