@@ -30,20 +30,39 @@ void init_gretl4py_model_py11(py::module_ &m)
         .def("forecast", &GretlModel::forecast)
         .def("restrict", &GretlModel::restrict)
         .def("test",
-             py::overload_cast<const std::string&, const py::kwargs&>(&GretlModel::test))
+             py::overload_cast<const std::string&, const py::kwargs&>(&GretlModel::test),
+             py::arg("type").none(false),
+             py::kw_only())
         .def("test",
-             py::overload_cast<const std::string&, const std::string&, const py::kwargs&>(&GretlModel::test));
+             py::overload_cast<const std::string&, const std::string&, const py::kwargs&>(&GretlModel::test),
+             py::arg("type").none(false),
+             py::arg("vars").none(false),
+             py::kw_only());
 
     py::class_<GretlModel_NSE, GretlModel, std::unique_ptr<GretlModel_NSE>>(m, "GretlModel_NSE", py::dynamic_attr())
         .def("forecast", &GretlModel_NSE::forecast)
         .def("restrict", &GretlModel_NSE::restrict)
         .def("test",
-             py::overload_cast<const std::string&, const py::kwargs&>(&GretlModel_NSE::test))
+             py::overload_cast<const std::string&, const py::kwargs&>(&GretlModel_NSE::test),
+             py::arg("type").none(false),
+             py::kw_only())
         .def("test",
-             py::overload_cast<const std::string&, const std::string&, const py::kwargs&>(&GretlModel_NSE::test));
+             py::overload_cast<const std::string&, const std::string&, const py::kwargs&>(&GretlModel_NSE::test),
+             py::arg("type").none(false),
+             py::arg("vars").none(false),
+             py::kw_only());
 
     py::class_<GretlModel_NSE_arima, GretlModel_NSE, std::unique_ptr<GretlModel_NSE_arima>>(m, "GretlModel_NSE_arima", py::dynamic_attr())
         .def(py::init<std::shared_ptr<GretlDataset>, const std::string&, const py::tuple&>())
-        .def("fit", &GretlModel_NSE_arima::fit);
+        .def("fit", &GretlModel_NSE_arima::fit)
+        .def("fit2", &GretlModel_NSE_arima::fit2);
 
+    m.def("arima2",
+          [](const std::string &y, const py::tuple &order, const py::kwargs &kwargs) -> std::unique_ptr<GretlModel>
+          {
+              auto model = std::make_unique<GretlModel_NSE_arima>(DSET, y, order, kwargs);
+
+              return std::unique_ptr<GretlModel>(std::move(model));
+          },
+          py::arg("y").none(false), py::arg("order").none(false), py::kw_only());
 }

@@ -141,13 +141,19 @@ private:
     const py::tuple tup;
     int p, d, q;
     int P, D, Q;
+    py::kwargs kwargs;
 
     void get_arima_order (const py::tuple &tup, int &p, int &d, int &q);
 public:
-    GretlModel_NSE_arima (std::shared_ptr<GretlDataset> GD, const std::string &y, const py::tuple &tup);
+    GretlModel_NSE_arima (std::shared_ptr<GretlDataset> GD, const std::string &y,
+                          const py::tuple &tup);
+    GretlModel_NSE_arima (std::shared_ptr<GretlDataset> GD, const std::string &y,
+                          const py::tuple &tup, const py::kwargs &kwargs);
     ~GretlModel_NSE_arima (void);
 
     py::dict fit (const std::string &formula, const py::kwargs &kwargs) override;
+
+    py::dict fit2 (void);
 };
 
 #endif // GRETL4PY_MODEL_H

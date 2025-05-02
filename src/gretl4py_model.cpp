@@ -567,6 +567,16 @@ GretlModel_NSE_arima::~GretlModel_NSE_arima (void) = default;
 
 GretlModel_NSE_arima::GretlModel_NSE_arima (std::shared_ptr<GretlDataset> GD,
                                             const std::string &y,
+                                            const py::tuple &tup,
+                                            const py::kwargs &kwargs)
+                                            : GretlModel_NSE(GD), y(y), tup(tup)  // explicitly call base class constructor!
+{
+    this->kwargs = kwargs;
+    py::print(this->kwargs);
+}
+
+GretlModel_NSE_arima::GretlModel_NSE_arima (std::shared_ptr<GretlDataset> GD,
+                                            const std::string &y,
                                             const py::tuple &tup)
                                             : GretlModel_NSE(GD), y(y), tup(tup)  // explicitly call base class constructor!
 {}
@@ -586,6 +596,17 @@ void GretlModel_NSE_arima::get_arima_order (const py::tuple &tup,
     } else {
         throw std::invalid_argument("order must be of length 2 or 3");
     }
+}
+
+py::dict GretlModel_NSE_arima::fit2 (void)
+{
+    fit("", kwargs);
+
+    // we register result
+    py::object self = py::cast(this);
+    py::setattr(self, "RES2", RES);
+
+    return RES;
 }
 
 py::dict GretlModel_NSE_arima::fit (const std::string &formula,
