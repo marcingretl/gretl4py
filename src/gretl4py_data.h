@@ -120,7 +120,7 @@ public:
 
     GretlDataset (const std::string fname); // we load dataset from file
     GretlDataset (const py::dict &pydict);  // we load dataset from Python's dictionary
-    ~GretlDataset (void);
+    virtual ~GretlDataset (void);           // virtual, because GretlModel use it as std::shared_ptr
 
     py::dict to_dict (void) const;
 

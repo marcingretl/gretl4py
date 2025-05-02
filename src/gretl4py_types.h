@@ -20,8 +20,13 @@
 #ifndef GRETL4PY_TYPES_H
 #define GRETL4PY_TYPES_H
 
+// Ensure pybind11 and libgretl are included wherever this header is used
+#include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 #include <gretl/libgretl.h>
+
+// Workaround for gettext redefinition
+#undef gettext
 
 namespace py = pybind11;
 

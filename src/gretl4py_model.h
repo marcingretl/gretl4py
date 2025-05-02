@@ -145,6 +145,7 @@ private:
     void get_arima_order (const py::tuple &tup, int &p, int &d, int &q);
 public:
     GretlModel_NSE_arima (std::shared_ptr<GretlDataset> GD, const std::string &y, const py::tuple &tup);
+    ~GretlModel_NSE_arima (void);
 
     py::dict fit (const std::string &formula, const py::kwargs &kwargs) override;
 };

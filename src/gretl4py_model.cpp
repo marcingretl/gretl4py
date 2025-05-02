@@ -563,6 +563,8 @@ template class GretlModel_NSE_Driver<tobit_model, TOBIT>;
 //
 // NSE via arima plugin
 //
+GretlModel_NSE_arima::~GretlModel_NSE_arima (void) = default;
+
 GretlModel_NSE_arima::GretlModel_NSE_arima (std::shared_ptr<GretlDataset> GD,
                                             const std::string &y,
                                             const py::tuple &tup)
