@@ -29,15 +29,8 @@ void init_gretl4py_model_py11(py::module_ &m)
         .def("fit", &GretlModel::fit)
         .def("forecast", &GretlModel::forecast)
         .def("restrict", &GretlModel::restrict)
-        .def("test",
-             py::overload_cast<const std::string&, const py::kwargs&>(&GretlModel::test),
-             py::arg("type").none(false),
-             py::kw_only())
-        .def("test",
-             py::overload_cast<const std::string&, const std::string&, const py::kwargs&>(&GretlModel::test),
-             py::arg("type").none(false),
-             py::arg("vars").none(false),
-             py::kw_only());
+        .def("test", py::overload_cast<const std::string&, const py::kwargs&>(&GretlModel::test))
+        .def("test", py::overload_cast<const std::string&, const std::string&, const py::kwargs&>(&GretlModel::test));
 
     py::class_<GretlModel_NSE, GretlModel, std::unique_ptr<GretlModel_NSE>>(m, "GretlModel_NSE", py::dynamic_attr())
         .def("forecast", &GretlModel_NSE::forecast)
