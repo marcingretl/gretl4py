@@ -166,10 +166,10 @@ private:
     static inline simdjson::ondemand::value sd_tmp_value;
     static inline simdjson::ondemand::number sd_tmp_number;
     static inline simdjson::ondemand::array sd_tmp_array;
-    static inline std::string sd_json_cp; // those two strings we may change to char* buffers
+    static inline std::string sd_json_cp;
     static inline std::string sd_tmp_str;
     //simdjson: end
-    GretlPrint GP = GretlPrint();               // printer (instance wide)
+    GretlPrint GP = GretlPrint();       // printer (instance wide)
     bool free_b = true;
     char *json_buf = NULL;
     gretl_bundle *b;
@@ -183,11 +183,11 @@ public:
     int err = 0;
 
     GretlBundle (void);                         // we get contents of $sysinfo bundle
-    GretlBundle (MODEL *model, DATASET *dset);  // we produce bundle from MODEL struct
     GretlBundle (gretl_bundle *b);              // incoming already allocated bundle
+    GretlBundle (MODEL *model, DATASET *dset);  // we produce bundle from model
     ~GretlBundle (void);
 
-    py::dict to_dict (void);                   // bundle-to-dict mapper
+    py::dict to_dict (void);                    // bundle-to-dict mapper
 
     void print (void);
 };

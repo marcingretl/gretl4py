@@ -272,6 +272,10 @@ py::dict GretlModel_fcast (const int model_id, const py::kwargs &kwargs)
 //////////////////////////////////////////////////
 // model estimation
 //////////////////////////////////////////////////
+/* preparation for ModelClass binding:
+auto model = std::make_unique<GretlModel_NSE_Driver<F, CI>>(DSET);
+return std::unique_ptr<GretlModel>(std::move(model));
+*/
 // wrapper for calling GretlModel_NSE_Driver models
 template <auto F, GretlCmdIndex CI>
 py::dict GretlModel_NSE_Driver_wrapper (const std::string formula, const py::kwargs &kwargs)

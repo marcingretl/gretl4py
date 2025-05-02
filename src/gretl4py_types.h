@@ -38,7 +38,7 @@ using vgretl_matrix = std::vector<vgretl_vector>;
 
 // gretl_list_ptr default deleter
 struct GretlListDeleter {
-    void operator()(int *ptr) const
+    void operator() (int *ptr) const
     {
         #if defined(_WIN32)
             gretl_list_free(ptr);
