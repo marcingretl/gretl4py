@@ -498,7 +498,7 @@ GretlModel_NSE_Driver<F, CI>::GretlModel_NSE_Driver (std::shared_ptr<GretlDatase
 template <auto F, GretlCmdIndex CI>
 void GretlModel_NSE_Driver<F, CI>::fit2 (void)
 {
-    py::print("fit2");
+    fit(formula, kwargs);
 }
 
 template <auto F, GretlCmdIndex CI>

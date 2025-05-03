@@ -21,8 +21,6 @@
 
 namespace py = pybind11;
 
-using GretlModel_NSE_quantreg = GretlModel_NSE_Driver_quantreg<quantreg_driver, QUANTREG>;
-
 void init_gretl4py_model_py11(py::module_ &m)
 {
     py::class_<GretlModel, std::unique_ptr<GretlModel>>(m, "GretlModel", py::dynamic_attr())
@@ -68,6 +66,18 @@ void init_gretl4py_model_py11(py::module_ &m)
 
                  return self;
              });
+
+    m.def("arima3",
+          [](const std::string &y, const py::tuple &order, const py::kwargs &kwargs) -> std::unique_ptr<GretlModel>
+          {
+              auto model = std::make_unique<GretlModel_NSE_arima>(DSET, y, order, kwargs);
+
+              return std::unique_ptr<GretlModel>(std::move(model));
+          },
+          py::arg("y").none(false), py::arg("order").none(false), py::kw_only());
+
+
+
 }
 
 //py::object self = py::cast(model.get());

@@ -174,4 +174,9 @@ GretlModel_NSE_arima::GretlModel_NSE_arima(std::shared_ptr<GretlDataset> GD,
 {}
 */
 
+//////////////////////////////////////////////////
+// aliases
+//////////////////////////////////////////////////
+using GretlModel_NSE_quantreg = GretlModel_NSE_Driver_quantreg<quantreg_driver, QUANTREG>;
+
 #endif // GRETL4PY_MODEL_H

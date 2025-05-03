@@ -258,4 +258,20 @@ PYBIND11_MODULE(_gretl, m)
           },
           py::arg("tau").none(false), py::arg("formula").none(false),
           py::kw_only(), py::return_value_policy::take_ownership);
+    m.def("quantreg2",
+          [](const double &tau, const std::string &formula, const py::kwargs &kwargs) -> std::unique_ptr<GretlModel>
+          {
+              auto model = std::make_unique<GretlModel_NSE_quantreg>(DSET, formula, tau, kwargs);
+
+              return std::unique_ptr<GretlModel>(std::move(model));
+          },
+          py::arg("tau").none(false), py::arg("formula").none(false), py::kw_only());
+    m.def("quantreg2",
+          [](const py::array_t<double> &tau, const std::string &formula, const py::kwargs &kwargs) -> std::unique_ptr<GretlModel>
+          {
+              auto model = std::make_unique<GretlModel_NSE_quantreg>(DSET, formula, tau, kwargs);
+
+              return std::unique_ptr<GretlModel>(std::move(model));
+          },
+          py::arg("tau").none(false), py::arg("formula").none(false), py::kw_only());
 }
