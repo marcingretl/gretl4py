@@ -494,6 +494,13 @@ GretlModel_NSE_Driver<F, CI>::GretlModel_NSE_Driver (std::shared_ptr<GretlDatase
 // have the same "basic" signature, plus a few special cases
 // F: function to call
 // CI: GretlCmdIndex
+
+template <auto F, GretlCmdIndex CI>
+void GretlModel_NSE_Driver<F, CI>::fit2 (void)
+{
+    py::print("fit2");
+}
+
 template <auto F, GretlCmdIndex CI>
 py::dict GretlModel_NSE_Driver<F, CI>::fit (const std::string &formula,
                                             const py::kwargs &kwargs)
@@ -573,11 +580,8 @@ GretlModel_NSE_arima::GretlModel_NSE_arima (std::shared_ptr<GretlDataset> GD,
                                             const std::string &y,
                                             const py::tuple &tup,
                                             const py::kwargs &kwargs)
-                                            : GretlModel_NSE(GD), y(y), tup(tup)  // explicitly call base class constructor!
-{
-    this->kwargs = kwargs;
-    py::print(this->kwargs);
-}
+                                            : GretlModel_NSE(GD), y(y), tup(tup), kwargs(std::move(kwargs))  // explicitly call base class constructor!
+{}
 
 GretlModel_NSE_arima::GretlModel_NSE_arima (std::shared_ptr<GretlDataset> GD,
                                             const std::string &y,

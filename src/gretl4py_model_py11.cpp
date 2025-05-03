@@ -21,11 +21,12 @@
 
 namespace py = pybind11;
 
+using GretlModel_NSE_quantreg = GretlModel_NSE_Driver_quantreg<quantreg_driver, QUANTREG>;
+
 void init_gretl4py_model_py11(py::module_ &m)
 {
     py::class_<GretlModel, std::unique_ptr<GretlModel>>(m, "GretlModel", py::dynamic_attr())
         .def("get_id", &GretlModel::get_id)
-        .def("unlink_from_dataset", &GretlModel::unlink_from_dataset)
         .def("fit", &GretlModel::fit)
         .def("forecast", &GretlModel::forecast)
         .def("restrict", &GretlModel::restrict)
@@ -51,8 +52,19 @@ void init_gretl4py_model_py11(py::module_ &m)
         .def("fit2",
              [](GretlModel_NSE_arima &self) -> GretlModel_NSE_arima&
              {
+                 // we use such construct to make 'long' call working
                  self.fit2();
+                 return self;
+             });
 
+    py::class_<GretlModel_NSE_quantreg, GretlModel_NSE, std::unique_ptr<GretlModel_NSE_quantreg>>(m, "GretlModel_NSE_quantreg", py::dynamic_attr())
+        .def(py::init<std::shared_ptr<GretlDataset>, const double&>())
+        .def(py::init<std::shared_ptr<GretlDataset>, const py::array_t<double>&>())
+        .def("fit", &GretlModel_NSE_quantreg::fit)
+        .def("fit2",
+             [](GretlModel_NSE_quantreg &self) -> GretlModel_NSE_quantreg&
+             {
+                 self.fit2();
                  return self;
              });
 

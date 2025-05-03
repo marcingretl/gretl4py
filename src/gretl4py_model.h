@@ -41,6 +41,7 @@ protected:
     py::dict RES;                               // estimation results as dictionary
     std::shared_ptr<GretlDataset> GD;           // dataset used
     GretlPrint GP = GretlPrint();               // printer (instance wide)
+    //const py::kwargs kwargs;                    // kwargs passed to model
     gretl_list_ptr var_list{nullptr};           // libgretl list of variables
     gretlopt opt = OPT_NONE;                    // model options (including tests and forecasts)
     std::vector<double> optional_par;           // optional general purpose parameter (tau for QUANTREG, (l/r)limits for TOBIT, tests...)
@@ -62,6 +63,7 @@ public:
     virtual std::unique_ptr<GretlTypes> get_accessor (const std::string &accessor) const = 0;
 
     virtual py::dict fit (const std::string &formula, const py::kwargs &kwargs) = 0;
+    virtual void fit2 (void) = 0;
 
     virtual py::dict forecast (const py::kwargs &kwargs) = 0;
 
@@ -89,6 +91,7 @@ public:
     std::unique_ptr<GretlTypes> get_accessor (const std::string &accessor) const override;
 
     py::dict fit (const std::string &formula, const py::kwargs &kwargs) override = 0;
+    void fit2 (void) override = 0;
 
     py::dict forecast (const py::kwargs &kwargs) override;
 
@@ -112,6 +115,8 @@ public:
     GretlModel_NSE_Driver (std::shared_ptr<GretlDataset> GD);
 
     py::dict fit (const std::string &formula, const py::kwargs &kwargs) override;
+
+    void fit2 (void) override;
 };
 
 //
@@ -141,7 +146,7 @@ private:
     const py::tuple tup;
     int p, d, q;
     int P, D, Q;
-    py::kwargs kwargs;
+    const py::kwargs kwargs; // FIXME: to the base class!!!
 
     void get_arima_order (const py::tuple &tup, int &p, int &d, int &q);
 public:
@@ -153,7 +158,21 @@ public:
 
     py::dict fit (const std::string &formula, const py::kwargs &kwargs) override;
 
-    void fit2 (void);
+    void fit2 (void) override;
 };
+
+/*
+later, move kwargs to GeretModel()
+explicit GretlModel(std::shared_ptr<GretlDataset> GD, const py::kwargs &kwargs)
+  : kwargs(kwargs)
+{}
+
+GretlModel_NSE_arima::GretlModel_NSE_arima(std::shared_ptr<GretlDataset> GD,
+                                           const std::string &y,
+                                           const py::tuple &tup,
+                                           const py::kwargs &kwargs)
+  : GretlModel_NSE(GD, kwargs), y(y), tup(tup)
+{}
+*/
 
 #endif // GRETL4PY_MODEL_H
