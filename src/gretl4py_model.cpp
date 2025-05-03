@@ -126,11 +126,13 @@ static int unpack_forecast_kwargs (const py::kwargs &kwargs, int *pconf)
             }
         } else if (key == "plot") {
             if (!is_pybool(item.second)) {
+                // FIXME: in principle this could be a filename
                 throw std::invalid_argument("'plot' value must be a boolean");
             } else if (item.second.cast<int>() != 0) {
                 opt |= OPT_P;
             }
         } else if (key == "interval") {
+            // we want a percentage value for forecast confidence intervals
             if (!is_pyint(item.second)) {
                 err = 1;
             } else {
