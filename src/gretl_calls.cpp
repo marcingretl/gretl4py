@@ -280,7 +280,7 @@ return std::unique_ptr<GretlModel>(std::move(model));
 template <auto F, GretlCmdIndex CI>
 py::dict GretlModel_NSE_Driver_wrapper (const std::string formula, const py::kwargs &kwargs)
 {
-    auto model = std::make_unique<GretlModel_NSE_Driver<F, CI>>(DSET);
+    auto model = std::make_unique<GretlModel_NSE_Driver<F, CI>>(DSET, formula, kwargs);
 
     py::dict RES = model->fit(formula, kwargs);
     estimated_models.try_emplace(model->get_id(), std::move(model));

@@ -114,7 +114,8 @@ class GretlModel_NSE_Driver : public GretlModel_NSE
 protected:
     gretl_matrix *optional_par_as_mat = NULL;
 public:
-    GretlModel_NSE_Driver (std::shared_ptr<GretlDataset> GD);
+    GretlModel_NSE_Driver (std::shared_ptr<GretlDataset> GD,
+                           const std::string &formula, const py::kwargs &kwargs);
 
     py::dict fit (const std::string &formula, const py::kwargs &kwargs) override;
 

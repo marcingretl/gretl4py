@@ -480,14 +480,20 @@ py::dict GretlModel_NSE::restrict (const py::list &impose,
 // NSE via dedicated Driver
 //
 template <auto F, GretlCmdIndex CI>
-GretlModel_NSE_Driver<F, CI>::GretlModel_NSE_Driver (std::shared_ptr<GretlDataset> GD)
-                                        : GretlModel_NSE(GD)  // explicitly call base class constructor!
+GretlModel_NSE_Driver<F, CI>::GretlModel_NSE_Driver (std::shared_ptr<GretlDataset> GD,
+                                                     const std::string &formula,
+                                                     const py::kwargs &kwargs)
+                                                     : GretlModel_NSE(GD)  // explicitly call base class constructor!
 {
     if constexpr (CI == TOBIT) {
         optional_par.resize(2);
         optional_par.at(0) = NADBL;
         optional_par.at(1) = NADBL;
     }
+    if (!kwargs.empty()) {
+        this->kwargs = kwargs;
+    }
+    this->formula = formula;
 }
 
 // Method template to support several estimation methods that
@@ -680,7 +686,7 @@ GretlModel_NSE_Driver_quantreg<F, CI>::GretlModel_NSE_Driver_quantreg
                                          const std::string &formula,
                                          const double &tau,
                                          const py::kwargs &kwargs)
-                                        : GretlModel_NSE_Driver<F, CI>(GD)  // explicitly call base class constructor!
+                                        : GretlModel_NSE_Driver<F, CI>(GD, formula, kwargs)  // explicitly call base class constructor!
 {
     this->optional_par.push_back(tau);
     if (!kwargs.empty()) {
@@ -695,7 +701,7 @@ GretlModel_NSE_Driver_quantreg<F, CI>::GretlModel_NSE_Driver_quantreg
                                          const std::string &formula,
                                          const py::array_t<double> &tau,
                                          const py::kwargs &kwargs)
-                                        : GretlModel_NSE_Driver<F, CI>(GD)  // explicitly call base class constructor!
+                                        : GretlModel_NSE_Driver<F, CI>(GD, formula, kwargs)  // explicitly call base class constructor!
 {
     if (tau.ndim() != 1) {
         throw std::invalid_argument("'tau' is expected to be a vector");
