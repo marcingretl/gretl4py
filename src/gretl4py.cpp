@@ -261,6 +261,7 @@ PYBIND11_MODULE(_gretl, m)
           py::kw_only(), py::return_value_policy::take_ownership);
 
 // NEW definitions (for mapped class)
+    // direct calls
     m.def("arima2",
           [](const std::string &y, const py::tuple &order, const py::kwargs &kwargs) -> std::unique_ptr<GretlModel>
           {
@@ -286,6 +287,7 @@ PYBIND11_MODULE(_gretl, m)
           },
           py::arg("tau").none(false), py::arg("formula").none(false), py::kw_only());
 
+    // estimation via wrappers
     BIND_DRIVER_MODEL(ols, lsq, OLS)
     BIND_DRIVER_MODEL(wls, lsq, WLS)
     BIND_DRIVER_MODEL(logit, logit_probit, LOGIT)

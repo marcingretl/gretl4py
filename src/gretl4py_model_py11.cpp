@@ -22,6 +22,7 @@
 namespace py = pybind11;
 
 // template for NSE via dedicated Driver
+// on Python side class will be registered under 'name'
 template <typename T>
 static void bind_driver_model(py::module_ &m, const std::string &name)
 {
