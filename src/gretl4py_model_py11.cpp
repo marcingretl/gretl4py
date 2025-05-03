@@ -47,7 +47,7 @@ void init_gretl4py_model_py11(py::module_ &m)
              py::kw_only());
 
     py::class_<GretlModel_NSE_arima, GretlModel_NSE, std::unique_ptr<GretlModel_NSE_arima>>(m, "GretlModel_NSE_arima", py::dynamic_attr())
-        .def(py::init<std::shared_ptr<GretlDataset>, const std::string&, const py::tuple&>())
+        .def(py::init<std::shared_ptr<GretlDataset>, const std::string&, const py::tuple&, const py::kwargs&>())
         .def("fit", &GretlModel_NSE_arima::fit)
         .def("fit2",
              [](GretlModel_NSE_arima &self) -> GretlModel_NSE_arima&
@@ -58,8 +58,8 @@ void init_gretl4py_model_py11(py::module_ &m)
              });
 
     py::class_<GretlModel_NSE_quantreg, GretlModel_NSE, std::unique_ptr<GretlModel_NSE_quantreg>>(m, "GretlModel_NSE_quantreg", py::dynamic_attr())
-        .def(py::init<std::shared_ptr<GretlDataset>, const double&>())
-        .def(py::init<std::shared_ptr<GretlDataset>, const py::array_t<double>&>())
+        .def(py::init<std::shared_ptr<GretlDataset>, const std::string&, const double&, const py::kwargs&>())
+        .def(py::init<std::shared_ptr<GretlDataset>, const std::string&, const py::array_t<double>&, const py::kwargs&>())
         .def("fit", &GretlModel_NSE_quantreg::fit)
         .def("fit2",
              [](GretlModel_NSE_quantreg &self) -> GretlModel_NSE_quantreg&

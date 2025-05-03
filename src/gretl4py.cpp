@@ -217,7 +217,7 @@ PYBIND11_MODULE(_gretl, m)
     m.def("arima",
           [](const std::string &y, const py::tuple &order, const py::kwargs &kwargs) -> py::dict
           {
-              auto model = std::make_unique<GretlModel_NSE_arima>(DSET, y, order);
+              auto model = std::make_unique<GretlModel_NSE_arima>(DSET, y, order, py::kwargs());
 
               py::dict res = model->fit("", kwargs);
               estimated_models.try_emplace(model->get_id(), std::move(model));
@@ -229,7 +229,7 @@ PYBIND11_MODULE(_gretl, m)
     m.def("quantreg",
           [](const double &tau, const std::string &formula, const py::kwargs &kwargs) -> py::dict
           {
-              auto model = std::make_unique<GretlModel_NSE_Driver_quantreg<quantreg_driver, QUANTREG>>(DSET, tau);
+              auto model = std::make_unique<GretlModel_NSE_Driver_quantreg<quantreg_driver, QUANTREG>>(DSET, formula, tau, kwargs);
 
               py::dict res = model->fit(formula, kwargs);
               estimated_models.try_emplace(model->get_id(), std::move(model));
@@ -241,7 +241,7 @@ PYBIND11_MODULE(_gretl, m)
     m.def("quantreg",
           [](const py::array_t<double> &tau, const std::string &formula, const py::kwargs &kwargs) -> py::dict
           {
-              auto model = std::make_unique<GretlModel_NSE_Driver_quantreg<quantreg_driver, QUANTREG>>(DSET, tau);
+              auto model = std::make_unique<GretlModel_NSE_Driver_quantreg<quantreg_driver, QUANTREG>>(DSET, formula, tau, kwargs);
 
               py::dict res = model->fit(formula, kwargs);
               estimated_models.try_emplace(model->get_id(), std::move(model));

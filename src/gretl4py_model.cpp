@@ -580,14 +580,12 @@ GretlModel_NSE_arima::GretlModel_NSE_arima (std::shared_ptr<GretlDataset> GD,
                                             const std::string &y,
                                             const py::tuple &tup,
                                             const py::kwargs &kwargs)
-                                            : GretlModel_NSE(GD), y(y), tup(tup), kwargs(std::move(kwargs))  // explicitly call base class constructor!
-{}
-
-GretlModel_NSE_arima::GretlModel_NSE_arima (std::shared_ptr<GretlDataset> GD,
-                                            const std::string &y,
-                                            const py::tuple &tup)
                                             : GretlModel_NSE(GD), y(y), tup(tup)  // explicitly call base class constructor!
-{}
+{
+    if (!kwargs.empty()) {
+        this->kwargs = kwargs;
+    }
+}
 
 void GretlModel_NSE_arima::get_arima_order (const py::tuple &tup,
                                             int &p, int &d, int &q)
@@ -679,16 +677,24 @@ py::dict GretlModel_NSE_arima::fit (const std::string &formula,
 template <auto F, GretlCmdIndex CI>
 GretlModel_NSE_Driver_quantreg<F, CI>::GretlModel_NSE_Driver_quantreg
                                         (std::shared_ptr<GretlDataset> GD,
-                                         const double &tau)
+                                         const std::string &formula,
+                                         const double &tau,
+                                         const py::kwargs &kwargs)
                                         : GretlModel_NSE_Driver<F, CI>(GD)  // explicitly call base class constructor!
 {
     this->optional_par.push_back(tau);
+    if (!kwargs.empty()) {
+        this->kwargs = kwargs;
+    }
+    this->formula = formula;
 }
 
 template <auto F, GretlCmdIndex CI>
 GretlModel_NSE_Driver_quantreg<F, CI>::GretlModel_NSE_Driver_quantreg
                                         (std::shared_ptr<GretlDataset> GD,
-                                         const py::array_t<double> &tau)
+                                         const std::string &formula,
+                                         const py::array_t<double> &tau,
+                                         const py::kwargs &kwargs)
                                         : GretlModel_NSE_Driver<F, CI>(GD)  // explicitly call base class constructor!
 {
     if (tau.ndim() != 1) {
@@ -698,6 +704,10 @@ GretlModel_NSE_Driver_quantreg<F, CI>::GretlModel_NSE_Driver_quantreg
     for (int i=0; i<tau.shape(0); i++) {
         gretl_matrix_set(this->optional_par_as_mat, i, 0, tau.at(i));
     }
+    if (!kwargs.empty()) {
+        this->kwargs = kwargs;
+    }
+    this->formula = formula;
 }
 
 template <auto F, GretlCmdIndex CI>

@@ -41,7 +41,8 @@ protected:
     py::dict RES;                               // estimation results as dictionary
     std::shared_ptr<GretlDataset> GD;           // dataset used
     GretlPrint GP = GretlPrint();               // printer (instance wide)
-    //const py::kwargs kwargs;                    // kwargs passed to model
+    std::string formula;                  // formula defining model //FIXME: const !!!
+    py::kwargs kwargs;                    // kwargs passed to model //FIXME: const !!!
     gretl_list_ptr var_list{nullptr};           // libgretl list of variables
     gretlopt opt = OPT_NONE;                    // model options (including tests and forecasts)
     std::vector<double> optional_par;           // optional general purpose parameter (tau for QUANTREG, (l/r)limits for TOBIT, tests...)
@@ -53,7 +54,8 @@ protected:
 
     void fr_to_dict (FITRESID *fr, py::dict &fcdict);
 public:
-    explicit GretlModel(std::shared_ptr<GretlDataset> GD);
+    explicit GretlModel (std::shared_ptr<GretlDataset> GD); //FIXME: delete me after full GretlModel mapping
+    //explicit GretlModel (std::shared_ptr<GretlDataset> GD, const py::kwargs &kwargs);
     virtual ~GretlModel (void);
 
     int get_id (void) const;
@@ -127,10 +129,10 @@ template <auto F, GretlCmdIndex CI>
 class GretlModel_NSE_Driver_quantreg : public GretlModel_NSE_Driver<F, CI>
 {
 public:
-    GretlModel_NSE_Driver_quantreg (std::shared_ptr<GretlDataset> GD,
-                                    const double &tau);
-    GretlModel_NSE_Driver_quantreg (std::shared_ptr<GretlDataset> GD,
-                                    const py::array_t<double> &tau);
+    GretlModel_NSE_Driver_quantreg (std::shared_ptr<GretlDataset> GD, const std::string &formula,
+                                    const double &tau, const py::kwargs &kwargs);
+    GretlModel_NSE_Driver_quantreg (std::shared_ptr<GretlDataset> GD, const std::string &formula,
+                                    const py::array_t<double> &tau, const py::kwargs &kwargs);
 
     virtual ~GretlModel_NSE_Driver_quantreg (void);
 };
@@ -146,12 +148,9 @@ private:
     const py::tuple tup;
     int p, d, q;
     int P, D, Q;
-    const py::kwargs kwargs; // FIXME: to the base class!!!
 
     void get_arima_order (const py::tuple &tup, int &p, int &d, int &q);
 public:
-    GretlModel_NSE_arima (std::shared_ptr<GretlDataset> GD, const std::string &y,
-                          const py::tuple &tup);
     GretlModel_NSE_arima (std::shared_ptr<GretlDataset> GD, const std::string &y,
                           const py::tuple &tup, const py::kwargs &kwargs);
     ~GretlModel_NSE_arima (void);
