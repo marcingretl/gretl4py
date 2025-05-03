@@ -48,8 +48,6 @@ protected:
 
     void unpack_kwargs (const py::kwargs &kwargs, GretlCmdIndex ci);
 
-    void unpack_kwargs_forecast (const py::kwargs &kwargs);
-
     void fr_to_dict (FITRESID *fr, py::dict &fcdict);
 public:
     explicit GretlModel(std::shared_ptr<GretlDataset> GD);
