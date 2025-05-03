@@ -106,9 +106,9 @@ void GretlModel::unpack_kwargs (const py::kwargs &kwargs, GretlCmdIndex ci)
     }
 }
 
-static gretlopt unpack_forecast_kwargs (const py::kwargs &kwargs, int *pconf)
+static int unpack_forecast_kwargs (const py::kwargs &kwargs, int *pconf)
 {
-    gretlopt opt = OPT_NONE;
+    int opt = OPT_NONE;
     int conf = 95;
     int err = 0;
 
@@ -119,7 +119,17 @@ static gretlopt unpack_forecast_kwargs (const py::kwargs &kwargs, int *pconf)
         const std::string &key = item.first.cast<std::string>();
 
         if (key == "quiet") {
-            opt = static_cast<gretlopt>(opt | OPT_Q);
+            if (!is_pybool(item.second)) {
+                throw std::invalid_argument("'quiet' value must be a boolean");
+            } else if (item.second.cast<int>() != 0) {
+                opt |= OPT_Q;
+            }
+        } else if (key == "plot") {
+            if (!is_pybool(item.second)) {
+                throw std::invalid_argument("'plot' value must be a boolean");
+            } else if (item.second.cast<int>() != 0) {
+                opt |= OPT_P;
+            }
         } else if (key == "interval") {
             if (!is_pyint(item.second)) {
                 err = 1;
@@ -160,7 +170,7 @@ void GretlModel::fr_to_dict (FITRESID *fr, py::dict &fcdict)
 
     cols = 1; // predicted values
 
-    // count of non-missing actual values
+    // get count of non-missing actual values
     n_ok = 0;
     for (t=fr->t1; t<=fr->t2; t++) {
         if (!na(fr->actual[t])) {
@@ -175,7 +185,7 @@ void GretlModel::fr_to_dict (FITRESID *fr, py::dict &fcdict)
     if (fr->sderr != NULL) {
         double a2 = fr->alpha / 2.0;
 
-        cols += 3; // add sderr, add confidence interval
+        cols += 3; // add sderr + add confidence interval
         labels.append("stderr");
         labels.append("low");
         labels.append("high");
@@ -289,6 +299,7 @@ py::dict GretlModel_NSE::forecast (const py::kwargs &kwargs)
     py::dict res;
     FITRESID *fr = NULL;
     FcastFlags flags = static_cast<FcastFlags>(0);
+    gretlopt opt = OPT_NONE;
     int t1, t2 = 0;
 #if 0 // not yet
     int recursive = 0, k = 1, *kptr;
@@ -319,8 +330,8 @@ py::dict GretlModel_NSE::forecast (const py::kwargs &kwargs)
         t1 = model->t2 + 1;
     }
 
-    // assembling options (FIXME)
-    unpack_forecast_kwargs(kwargs, &conf);
+    // assemble options
+    opt = (gretlopt) unpack_forecast_kwargs(kwargs, &conf);
     fr = get_forecast(model, t1, t2, 0, GD->dset, OPT_NONE, &err);
 
     if (err) {
@@ -328,16 +339,16 @@ py::dict GretlModel_NSE::forecast (const py::kwargs &kwargs)
     } else {
         fr->alpha = (100.0 - conf) / 100.0;
         fr_to_dict(fr, res);
-        if (!(opt & OPT_Q)) {
-            err = text_print_forecast(fr, GD->dset, OPT_NONE, GP.prn_ptr());
-        }
+        text_print_forecast(fr, GD->dset, opt, GP.prn_ptr());
     }
 
     if (fr != NULL) {
         free_fit_resid(fr);
     }
 
-    GP.print();
+    if (!(opt & OPT_Q)) {
+        GP.print();
+    }
 
     return res;
 }
