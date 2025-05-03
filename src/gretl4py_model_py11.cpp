@@ -52,8 +52,8 @@ void init_gretl4py_model_py11(py::module_ &m)
         .def("fit2",
              [](GretlModel_NSE_arima &self) -> GretlModel_NSE_arima&
              {
-                 // we use such construct to make 'long' call working
                  self.fit2();
+
                  return self;
              });
 
@@ -65,18 +65,10 @@ void init_gretl4py_model_py11(py::module_ &m)
              [](GretlModel_NSE_quantreg &self) -> GretlModel_NSE_quantreg&
              {
                  self.fit2();
+
                  return self;
              });
-
-    m.def("arima2",
-          [](const std::string &y, const py::tuple &order, const py::kwargs &kwargs) -> std::unique_ptr<GretlModel>
-          {
-              auto model = std::make_unique<GretlModel_NSE_arima>(DSET, y, order, kwargs);
-
-              //py::object self = py::cast(model.get());
-              //py::setattr(self, "res", res);
-
-              return std::unique_ptr<GretlModel>(std::move(model));
-          },
-          py::arg("y").none(false), py::arg("order").none(false), py::kw_only());
 }
+
+//py::object self = py::cast(model.get());
+//py::setattr(self, "res", res);

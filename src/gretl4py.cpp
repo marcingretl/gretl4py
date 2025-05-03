@@ -226,6 +226,14 @@ PYBIND11_MODULE(_gretl, m)
           },
           py::arg("y").none(false), py::arg("order").none(false), py::kw_only(),
           py::return_value_policy::take_ownership);
+    m.def("arima2",
+          [](const std::string &y, const py::tuple &order, const py::kwargs &kwargs) -> std::unique_ptr<GretlModel>
+          {
+              auto model = std::make_unique<GretlModel_NSE_arima>(DSET, y, order, kwargs);
+
+              return std::unique_ptr<GretlModel>(std::move(model));
+          },
+          py::arg("y").none(false), py::arg("order").none(false), py::kw_only());
     m.def("quantreg",
           [](const double &tau, const std::string &formula, const py::kwargs &kwargs) -> py::dict
           {
