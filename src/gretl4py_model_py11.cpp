@@ -42,7 +42,7 @@ void init_gretl4py_model_py11(py::module_ &m)
     // base GretlModel class
     py::class_<GretlModel, std::unique_ptr<GretlModel>>(m, "GretlModel", py::dynamic_attr())
         .def("fit", &GretlModel::fit)
-        .def("forecast", &GretlModel::forecast)
+        .def("fcast", &GretlModel::forecast)
         // we cannot have this definition since due to: error: static assertion failed: Holder classes are only supported for custom types
         //.def("get_accessor", &GretlModel::get_accessor)
         .def("restrict", &GretlModel::restrict)
@@ -51,7 +51,7 @@ void init_gretl4py_model_py11(py::module_ &m)
 
     // Native Single Equation libgretl MODEL (NSE)
     py::class_<GretlModel_NSE, GretlModel, std::unique_ptr<GretlModel_NSE>>(m, "GretlModel_NSE", py::dynamic_attr())
-        .def("forecast", &GretlModel_NSE::forecast)
+        .def("fcast", &GretlModel_NSE::forecast)
         .def("get_accessor",
              [](GretlModel_NSE &self, const std::string &accessor) -> GretlTypes*
              {
