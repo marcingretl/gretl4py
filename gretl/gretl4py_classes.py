@@ -24,108 +24,66 @@ import sys
 from gretl.model_registry import register_model
 
 class Model:
-
     def __init__(self, name, *args, **kwargs):
         self.name = name
-        try:
-            self.cpython_function = getattr(_gretl, name)
-        except Exception as err:
-            print(f'Unexpected {err=}, {type(err)=}')
-            raise
         self.args = args
         self.options = kwargs
-        self.computed = False
-        self._id = None
-        self._model_id = None
-        self.summary = {}
-        register_model(self)  # track the wrapper instance
+        self._model = None
 
-    def __del__(self):
         try:
-            if self._model_id is not None:
-                _gretl.GretlModel_destructor_wrapper(self._model_id)
-        except TypeError:
-            pass
+            self.cpython_function = getattr(_gretl, name)
+        except AttributeError as err:
+            raise RuntimeError(f"Model type '{name}' not found in _gretl module") from err
+
+        # Actually create the C++ model instance
+        try:
+            self._model = self.cpython_function(*self.args, **self.options)
+        except Exception as err:
+            raise RuntimeError(f"Failed to instantiate model '{name}': {err}") from err
+
+        # Register the model (if needed)
+        register_model(self)
+
+    def __getattr__(self, name):
+        if name.startswith('__') and name.endswith('__'):
+            raise AttributeError(f"'{type(self).__name__}' object has no attribute '{name}'")
+
+        if self._model is not None and hasattr(self._model, name):
+            return getattr(self._model, name)
+
+        raise AttributeError(f"'{type(self).__name__}' object has no attribute '{name}'")
+
+    def __setattr__(self, name, value):
+        if name in ("name", "args", "options", "_model", "cpython_function"):
+            super().__setattr__(name, value)
+        elif "_model" in self.__dict__ and self._model is not None and hasattr(self._model, "__dict__"):
+            setattr(self._model, name, value)
+        else:
+            super().__setattr__(name, value)
 
     def __repr__(self):
-        if self.computed:
-            out = self.summary
-        else:
-            out = '\n'
-            out += "Model " + self.name.upper()
-        return out
+        if self._model is not None and hasattr(self._model, 'summary'):
+            return str(self._model.summary)
+        return f"\nModel {self.name.upper()}"
 
-    def __load_dict_model(self, model_dict):
-        if model_dict:
-            for _ in model_dict:
-                setattr(self, _, model_dict[_])
+    def fit2(self):
+        if self._model is None:
+            self._model = self.cpython_function(*self.args, **self.options)
+        return self._model  # Return the internal model, not self
 
-    def fit(self):
-        if self.cpython_function and self.computed is False:
-            model_dict = self.cpython_function(*self.args, **self.options)
-            self.summary = model_dict['summary'] # Define summary property used for __repr__
-            self.__load_dict_model(model_dict)
-            self._id = model_dict['_ids']['_id']
-            self._model_id = model_dict['_ids']['_model_id']
-            del model_dict['_ids']
-        self.computed = True
-        return self
-
-    def attrs(self):
-        for attname in dir(self):
-            if not attname.startswith("_"):
-                attr = getattr(self, attname)
-                if isinstance(attr, float):
-                    print(f"{attname}: {attr:.8g}")
-                elif isinstance(attr, int):
-                    print(f"{attname}: {attr}")
-                elif isinstance(attr, str) and len(attr) < 32:
-                    print(f"{attname}: {attr}")
-                else:
-                    print(f"{attname}: {type(attr)}")
-
-    def oddsratio(self):
-        if self.name != 'logit':
-            raise RuntimeError(f'*** error: oddsratios not available for {self.name:s} estimator ***\n')
-        else:
-            try:
-                from tabulate import tabulate
-                print(tabulate(self.oddsratios, showindex=self.parnames[1:],
-                               headers=['odds ratio', 'std. error', 'low95', 'high95'],
-                               tablefmt="plain"))
-            except KeyError:
-                print('*** warning: oddsratios not available for current model ***\n')
-            except ModuleNotFoundError:
-                print('*** warning: oddsratios printing requires \'tabulate\' package ***\n')
-
-    def fcast(self, *args, **kwargs):
-        if self.computed and self._model_id is not None:
-            return _gretl.fcast(self._model_id, *args, **kwargs)
-
-    def get_accessor(self, accessor):
-        if self.computed and self._model_id is not None:
-            return _gretl.get_accessor(self._model_id, accessor)
-
-    def restrict(self, impose, *args, **kwargs):
-        if self.computed and self._model_id is not None:
-            res = _gretl.restrict(self._model_id, impose, *args, **kwargs)
-            setattr(self, "restrictions", res)
-
-    def test(self, type, vars=None, obs=None, *args, **kwargs):
-        if self.computed and self._model_id is not None:
-            if vars is not None and obs is not None:
-                raise RuntimeError("you cannot use 'vars' and 'obs' together")
-            elif vars is not None:
-                res = _gretl.test(self._model_id, type, vars, *args, **kwargs)
-            elif obs is not None:
-                res = _gretl.test(self._model_id, type, obs, *args, **kwargs)
-            else:
-                res = _gretl.test(self._model_id, type, *args, **kwargs)
-            setattr(self, type, res)
-
-    # scalars
     def id(self):
-        return self._id
+        if self._model is not None:
+            return getattr(self._model, '_id', None)
+        return None
+
+    # Keep or adapt these as necessary
+    #def attrs(self): ...
+    #def fcast(self, *args, **kwargs): ...
+    #def get_accessor(self, accessor): ...
+    #def restrict(self, impose, *args, **kwargs): ...
+    #def test(self, type, vars=None, obs=None, *args, **kwargs): ...
+    #def oddsratio(self): ...
+
 
 
 # #######################################################

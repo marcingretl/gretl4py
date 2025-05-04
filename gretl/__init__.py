@@ -60,14 +60,13 @@ import gretl4py_classes
 
 # we import some symbols explicitly
 from _gretl import (about, set, version)
-from .model_registry import register_model
-from gretl4py_classes import (get_data, show_data_status)
+from gretl4py_classes import get_data, show_data_status
 
 # deprecations
 def csv2dict (fname, pd=1):
     raise RuntimeError('*** This function is deprecated and was removed. Please use \'gretl.get_data()\' instead. ***\n')
 
-def attach_data (pydict):
+def attach_data pydict):
     raise RuntimeError('*** This function is deprecated and was removed. Please use \'gretl.get_data()\' instead. ***\n')
 
 def attach_gretl_data (fname):
@@ -80,21 +79,23 @@ def printdata (data, namesonly):
     raise RuntimeError('*** This function is deprecated and was removed. Please use GretlDataset class \'print()\' method instead. ***\n')
 # deprecations: END
 
+# directly use GretlModel for the model instantiation
 def __model_initializer(model_name: str, *args, **kwargs):
     """
-    Private function called by special method __getattr__
-    Return Model class when an unknown function is called to gretl module.
+    Return GretlModel class when an unknown function is called to gretl module.
     """
-    return gretl4py_classes.Model(model_name, *args, **kwargs)
+    model_class = getattr(_gretl, model_name, None)
+    if model_class:
+        return model_class(*args, **kwargs)
+    else:
+        raise AttributeError(f"Model {model_name} not found in _gretl module.")
 
+# simplified __getattr__ to handle dynamic method calls
 def __getattr__(fun):
     """
     Called when a gretl.fun is called.
-    First search in gretl4py_addons, gretl4py_classes and _gretl. If function
-    exist return it.
-    Otherwise call __model_initializer
     """
-    cfunc = ("about", "set", "arima2")
+    cfunc = ("about", "set")
 
     if fun in dir(gretl4py_addons):
         return getattr(gretl4py_addons, fun)
@@ -102,6 +103,7 @@ def __getattr__(fun):
         return getattr(gretl4py_classes, fun)
     if fun in dir(_gretl) and fun in cfunc:
         return getattr(_gretl, fun)
+
     def wrapper(*args, **kwargs):
         return __model_initializer(fun, *args, **kwargs)
 
@@ -120,7 +122,6 @@ def __dir__():
         "mpols", "panel", "tsls", "tobit", "quantreg"]
 
     return sorted(static_members + dynamic_functions)
-
 
 if __name__ == "__main__":
     pass

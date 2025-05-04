@@ -18,5 +18,5 @@ def cleanup_models():
     _gretl_models.clear()
 
 # Register cleanup function to run when Python exits
-atexit.register(cleanup_models)
+#atexit.register(cleanup_models)
 # ###########################################################

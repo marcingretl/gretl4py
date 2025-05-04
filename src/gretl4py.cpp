@@ -23,7 +23,7 @@ extern std::shared_ptr<GretlDataset> DSET;
 extern std::unordered_map<int, std::unique_ptr<GretlModel>> estimated_models;
 
 #define BIND_DRIVER_MODEL(NAME, FUNC, CI) \
-    m.def(#NAME "2", \
+    m.def(#NAME, \
           [](const std::string &formula, const py::kwargs &kwargs) -> std::unique_ptr<GretlModel> \
           { \
               auto model = std::make_unique<GretlModel_NSE_Driver<FUNC, CI>>(DSET, formula, kwargs); \
@@ -96,7 +96,7 @@ PYBIND11_MODULE(_gretl, m)
 
     // model estimation
     // estimation via wrappers
-    m.def("ols",
+/*    m.def("ols",
           [](const std::string &formula, const py::kwargs &kwargs) -> py::dict
           {
               return GretlModel_NSE_Driver_wrapper<lsq, OLS>(formula, kwargs);
@@ -259,10 +259,10 @@ PYBIND11_MODULE(_gretl, m)
           },
           py::arg("tau").none(false), py::arg("formula").none(false),
           py::kw_only(), py::return_value_policy::take_ownership);
-
+*/
 // NEW definitions (for mapped class)
     // direct calls
-    m.def("arima2",
+    m.def("arima",
           [](const std::string &y, const py::tuple &order, const py::kwargs &kwargs) -> std::unique_ptr<GretlModel>
           {
               auto model = std::make_unique<GretlModel_NSE_arima>(DSET, y, order, kwargs);
@@ -270,7 +270,7 @@ PYBIND11_MODULE(_gretl, m)
               return std::unique_ptr<GretlModel>(std::move(model));
           },
           py::arg("y").none(false), py::arg("order").none(false), py::kw_only());
-    m.def("quantreg2",
+    m.def("quantreg",
           [](const double &tau, const std::string &formula, const py::kwargs &kwargs) -> std::unique_ptr<GretlModel>
           {
               auto model = std::make_unique<GretlModel_NSE_quantreg>(DSET, formula, tau, kwargs);
@@ -278,7 +278,7 @@ PYBIND11_MODULE(_gretl, m)
               return std::unique_ptr<GretlModel>(std::move(model));
           },
           py::arg("tau").none(false), py::arg("formula").none(false), py::kw_only());
-    m.def("quantreg2",
+    m.def("quantreg",
           [](const py::array_t<double> &tau, const std::string &formula, const py::kwargs &kwargs) -> std::unique_ptr<GretlModel>
           {
               auto model = std::make_unique<GretlModel_NSE_quantreg>(DSET, formula, tau, kwargs);
