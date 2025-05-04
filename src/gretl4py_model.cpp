@@ -235,8 +235,9 @@ void GretlModel_NSE::save_model (gretlopt opt)
         } else {
             // we register result
             py::object self = py::cast(this);
-            py::setattr(self, "RES2", RES);
-
+            for (auto item : RES) {
+                py::setattr(self, item.first, item.second);
+            }
             // we link model with dataset used
             GD->linked_models_add(id);
         }

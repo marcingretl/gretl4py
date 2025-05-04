@@ -18,72 +18,47 @@
  *
  """
 import inspect
-import os
 import _gretl
 import sys
-from gretl.model_registry import register_model
 
-class Model:
-    def __init__(self, name, *args, **kwargs):
-        self.name = name
-        self.args = args
-        self.options = kwargs
-        self._model = None
+# #######################################################
+#   GretlModel class
+# #######################################################
+def attrs(self):
+    for attname in dir(self):
+        if not attname.startswith("_"):
+            attr = getattr(self, attname)
+            if isinstance(attr, float):
+                print(f'{attname}: {attr:.8g}')
+            elif isinstance(attr, int):
+                print(f'{attname}: {attr}')
+            elif isinstance(attr, str) and len(attr) < 32:
+                print(f'{attname}: {attr}')
+            else:
+                print(f'{attname}: {type(attr)}')
 
-        try:
-            self.cpython_function = getattr(_gretl, name)
-        except AttributeError as err:
-            raise RuntimeError(f"Model type '{name}' not found in _gretl module") from err
+# model representation function (later bind as __repr__ do GretlModel)
+def model_repr(self):
+    if hasattr(self, "summary"):
+        return str(self.summary)
+    return f'\nModel {self.name.upper()}'
 
-        # Actually create the C++ model instance
-        try:
-            self._model = self.cpython_function(*self.args, **self.options)
-        except Exception as err:
-            raise RuntimeError(f"Failed to instantiate model '{name}': {err}") from err
+def oddsratio(self):
+    try:
+        from tabulate import tabulate
+    except ModuleNotFoundError:
+        print('*** warning: oddsratios printing requires \'tabulate\' package ***\n')
+        return
 
-        # Register the model (if needed)
-        register_model(self)
-
-    def __getattr__(self, name):
-        if name.startswith('__') and name.endswith('__'):
-            raise AttributeError(f"'{type(self).__name__}' object has no attribute '{name}'")
-
-        if self._model is not None and hasattr(self._model, name):
-            return getattr(self._model, name)
-
-        raise AttributeError(f"'{type(self).__name__}' object has no attribute '{name}'")
-
-    def __setattr__(self, name, value):
-        if name in ("name", "args", "options", "_model", "cpython_function"):
-            super().__setattr__(name, value)
-        elif "_model" in self.__dict__ and self._model is not None and hasattr(self._model, "__dict__"):
-            setattr(self._model, name, value)
-        else:
-            super().__setattr__(name, value)
-
-    def __repr__(self):
-        if self._model is not None and hasattr(self._model, 'summary'):
-            return str(self._model.summary)
-        return f"\nModel {self.name.upper()}"
-
-    def fit2(self):
-        if self._model is None:
-            self._model = self.cpython_function(*self.args, **self.options)
-        return self._model  # Return the internal model, not self
-
-    def id(self):
-        if self._model is not None:
-            return getattr(self._model, '_id', None)
-        return None
-
-    # Keep or adapt these as necessary
-    #def attrs(self): ...
-    #def fcast(self, *args, **kwargs): ...
-    #def get_accessor(self, accessor): ...
-    #def restrict(self, impose, *args, **kwargs): ...
-    #def test(self, type, vars=None, obs=None, *args, **kwargs): ...
-    #def oddsratio(self): ...
-
+    try:
+        data = self.oddsratios      # assumed to be a NumPy array
+        names = self.parnames[1:]   # skip constant/intercept
+        print(tabulate(data, showindex=names,
+                       headers=["odds ratio", "std. error", "low95", "high95"],
+                       tablefmt="plain"))
+    except Exception as e:
+        print('*** warning: oddsratios not available for current model ***\n')
+        print(f'Debug info: {e}')
 
 
 # #######################################################

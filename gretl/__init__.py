@@ -60,24 +60,30 @@ import gretl4py_classes
 
 # we import some symbols explicitly
 from _gretl import (about, set, version)
+from gretl4py_classes import attrs, model_repr, oddsratio
 from gretl4py_classes import get_data, show_data_status
 
 # deprecations
-def csv2dict (fname, pd=1):
+def csv2dict(fname, pd=1):
     raise RuntimeError('*** This function is deprecated and was removed. Please use \'gretl.get_data()\' instead. ***\n')
 
-def attach_data pydict):
+def attach_data(pydict):
     raise RuntimeError('*** This function is deprecated and was removed. Please use \'gretl.get_data()\' instead. ***\n')
 
-def attach_gretl_data (fname):
+def attach_gretl_data(fname):
     raise RuntimeError('*** This function is deprecated and was removed. Please use \'gretl.get_data()\' instead. ***\n')
 
-def get_gretl_data (fname):
+def get_gretl_data(fname):
     raise RuntimeError('*** This function is deprecated and was removed. Please use \'gretl.get_data()\' instead. ***\n')
 
-def printdata (data, namesonly):
+def printdata(data, namesonly):
     raise RuntimeError('*** This function is deprecated and was removed. Please use GretlDataset class \'print()\' method instead. ***\n')
 # deprecations: END
+
+# we attach additional symbols to certain classes
+setattr(_gretl.GretlModel, "__repr__", model_repr)
+setattr(_gretl.GretlModel, "attrs", attrs)
+setattr(_gretl.GretlModel_NSE_logit, "oddsratio", oddsratio)
 
 # directly use GretlModel for the model instantiation
 def __model_initializer(model_name: str, *args, **kwargs):
