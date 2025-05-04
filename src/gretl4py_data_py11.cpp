@@ -57,12 +57,10 @@ void init_gretl4py_data_py11(py::module_ &m)
         .def("varnames", &GretlDataset::varnames,
              py::return_value_policy::take_ownership)
         .def("linked_models_list", &GretlDataset::linked_models_list)
-        .def("get_accessor",
+        .def("get_accessor", // this is due to: error: static assertion failed: Holder classes are only supported for custom types
              [](GretlDataset &self, const std::string &accessor) -> GretlTypes*
              {
-                 auto res = self.get_accessor(accessor);
-
-                 return res.release();
+                 return self.get_accessor(accessor).release();
              },
              py::return_value_policy::take_ownership)
         .def("test",

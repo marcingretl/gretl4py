@@ -55,9 +55,7 @@ void init_gretl4py_model_py11(py::module_ &m)
         .def("get_accessor",
              [](GretlModel_NSE &self, const std::string &accessor) -> GretlTypes*
              {
-                 auto res = self.get_accessor(accessor);
-
-                 return res.release();
+                 return self.get_accessor(accessor).release();
              },
              py::return_value_policy::take_ownership)
         .def("restrict", &GretlModel_NSE::restrict,
