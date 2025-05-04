@@ -62,7 +62,7 @@ if sysconfig.os.path.isdir(MODULE_PATH):
     shutil.rmtree(MODULE_PATH)
 sysconfig.os.makedirs(MODULE_PATH)
 
-for file in ["__init__.py", "gretl4py_addons.py", "gretl4py_classes.py", "model_registry.py"]:
+for file in ["__init__.py", "gretl4py_addons.py", "gretl4py_classes.py"]:
     SRC = sysconfig.os.path.normpath(f'gretl/{file:s}')
     print(f'copying {SRC:s} to {MODULE_PATH:s}')
     shutil.copy(SRC, MODULE_PATH)
