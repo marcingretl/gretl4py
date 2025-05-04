@@ -46,6 +46,4 @@ py::dict about (bool do_print = false);
 void set (const std::string key,
           const std::optional<py::object> &pyval = std::nullopt);
 
-//GretlTypes *GretlModel_get_accessor (const int model_id, const std::string &accessor);
-
 #endif // GRETL4PY_H

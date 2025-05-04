@@ -64,12 +64,6 @@ PYBIND11_MODULE(_gretl, m)
           py::arg("key").none(false),
           py::arg("val").none(true) = std::nullopt);
 
-    // model management
-/*    m.def("get_accessor", &GretlModel_get_accessor,
-          py::arg("model_id").none(false),
-          py::arg("accessor").none(false),
-          py::return_value_policy::take_ownership);*/
-
     // model estimation
     // direct calls
     m.def("arima",

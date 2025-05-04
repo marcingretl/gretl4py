@@ -18,9 +18,6 @@
  */
 
 #include "gretl4py.h" /* MUST be at the first position!!! */
-/*#include "gretl4py_data.h"
-#include "gretl4py_model.h"
-#include <gretl/gretl_drivers.h>*/
 #include <gretl/gretl_errors.h>
 #include <gretl/libset.h>
 extern "C" {
@@ -28,7 +25,6 @@ extern "C" {
 }
 #include <iostream>
 #include <cstdlib>
-//#include <unordered_map>
 
 #if defined(_WIN32)
 # include <gretl/gretl_win32.h>
@@ -205,12 +201,3 @@ void set_default_dset (std::shared_ptr<GretlDataset> GD)
     }
     DSET = GD;
 }
-
-/*
-GretlTypes *GretlModel_get_accessor (const int model_id, const std::string &accessor)
-{
-    check_if_model_exists(model_id);
-
-    return estimated_models.at(model_id).get()->get_accessor(accessor).release();
-}
-*/
