@@ -99,7 +99,6 @@ print("\n****************************")
 print("chow")
 m1.test(type="chow", obs="1980:1")
 
-
 # ARIMA
 m2 = gretl.arima(y='lg', order=(2,0,0), data=d2).fit()
 print(m2)

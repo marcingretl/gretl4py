@@ -56,30 +56,28 @@ void init_gretl4py_model_py11(py::module_ &m)
              [](GretlModel_NSE &self, const std::string &type, const py::kwargs &kwargs)
              {
                  //
-                 // positional argument
+                 // lambda rationale:
+                 // 1. handles overload resolution cleanly (keyword vs positional)
+                 // 2. special-cases "chow" which uses 'obs' instead of 'vars'
                  //
                  py::dict res;
+                 std::string vars;
+                 bool with_vars = false;
+                 py::kwargs clean_kwargs = kwargs;
 
-                 // w check if "vars" is in kwargs
-                 if (!kwargs.contains("vars")) {
-                     res = self.test(type, kwargs);
-                 } else {
-                     // if "vars" is present, call the three-argument test method
-                     py::kwargs clean_kwargs;
-                     std::string vars;
-
-                     for (auto item : kwargs) {
-                         std::string key = std::string(py::str(item.first));
-
-                         if (key == "vars") {
-                             vars = kwargs["vars"].cast<std::string>();
-                         } else {
-                             clean_kwargs[item.first] = item.second;
-                         }
-                     }
-                     res = self.test(type, vars, clean_kwargs);
+                 // we check for "vars" or "obs" for chow test
+                 if (kwargs.contains("vars")) {
+                     vars = py::str(clean_kwargs.attr("pop")("vars"));
+                     with_vars = true;
+                 } else if (type == "chow" && kwargs.contains("obs")) {
+                     vars = py::str(clean_kwargs.attr("pop")("obs"));
+                     with_vars = true;
                  }
-                 py::cast(&self).attr(type.c_str()) = res;
+
+                 py::object self_obj = py::cast(&self);
+                 self_obj.attr(type.c_str()) = with_vars
+                    ? self.test(type, vars, clean_kwargs)
+                    : self.test(type, clean_kwargs);
              },
              py::arg("type").none(false), py::kw_only());
 
