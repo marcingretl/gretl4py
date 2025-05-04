@@ -46,25 +46,6 @@ py::dict about (bool do_print = false);
 void set (const std::string key,
           const std::optional<py::object> &pyval = std::nullopt);
 
-void GretlModel_destructor_wrapper (const int model_id, const bool unlink = true);
-
-py::dict GretlModel_fcast (const int model_id, const py::kwargs &kwargs);
-
-GretlTypes *GretlModel_get_accessor (const int model_id, const std::string &accessor);
-
-py::dict GretlModel_test (const int model_id, const std::string &type,
-                          const py::kwargs &kwargs);
-
-py::dict GretlModel_test (const int model_id, const std::string &type,
-                          const std::string &vars, const py::kwargs &kwargs);
-
-py::dict GretlModel_restrict (const int model_id, const py::list &impose,
-                              const py::kwargs &kwargs);
-
-//////////////////////////////////////////////////
-// model estimation
-//////////////////////////////////////////////////
-template <auto F, GretlCmdIndex CI>
-py::dict GretlModel_NSE_Driver_wrapper (const std::string formula, const py::kwargs &kwargs);
+//GretlTypes *GretlModel_get_accessor (const int model_id, const std::string &accessor);
 
 #endif // GRETL4PY_H

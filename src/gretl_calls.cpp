@@ -18,9 +18,9 @@
  */
 
 #include "gretl4py.h" /* MUST be at the first position!!! */
-#include "gretl4py_data.h"
+/*#include "gretl4py_data.h"
 #include "gretl4py_model.h"
-#include <gretl/gretl_drivers.h>
+#include <gretl/gretl_drivers.h>*/
 #include <gretl/gretl_errors.h>
 #include <gretl/libset.h>
 extern "C" {
@@ -28,7 +28,7 @@ extern "C" {
 }
 #include <iostream>
 #include <cstdlib>
-#include <unordered_map>
+//#include <unordered_map>
 
 #if defined(_WIN32)
 # include <gretl/gretl_win32.h>
@@ -44,8 +44,7 @@ extern "C" {
 
 #define GRETL_PYBIND11_DEBUG 0
 
-std::shared_ptr<GretlDataset> DSET = nullptr;                           // default dataset
-std::unordered_map<int, std::unique_ptr<GretlModel>> estimated_models;  // list of already estimated models
+std::shared_ptr<GretlDataset> DSET = nullptr;   // default dataset
 static int gretl4py_verbose = 0;
 
 //////////////////////////////////////////////////
@@ -207,102 +206,11 @@ void set_default_dset (std::shared_ptr<GretlDataset> GD)
     DSET = GD;
 }
 
-//////////////////////////////////////////////////
-// model management
-//////////////////////////////////////////////////
-
-static void check_if_model_exists (const int model_id)
-{
-    if (estimated_models.find(model_id) == estimated_models.end()) {
-        throw std::runtime_error("model (id=" + std::to_string(model_id) + ") does not exist");
-    }
-}
-
-// wrapper for "destructing" GretlModel models
-void GretlModel_destructor_wrapper (const int model_id, const bool unlink)
-{
-    auto model_it = estimated_models.find(model_id);
-
-    if (model_it != estimated_models.end()) {
-        if (unlink) {
-            model_it->second->unlink_from_dataset();
-        }
-        estimated_models.erase(model_it);
-    }
-}
-
+/*
 GretlTypes *GretlModel_get_accessor (const int model_id, const std::string &accessor)
 {
     check_if_model_exists(model_id);
 
     return estimated_models.at(model_id).get()->get_accessor(accessor).release();
 }
-
-py::dict GretlModel_test (const int model_id, const std::string &type,
-                          const py::kwargs &kwargs)
-{
-    check_if_model_exists(model_id);
-
-    return estimated_models.at(model_id).get()->test(type, kwargs);
-}
-
-py::dict GretlModel_test (const int model_id, const std::string &type,
-                          const std::string &vars, const py::kwargs &kwargs)
-{
-    check_if_model_exists(model_id);
-
-    return estimated_models.at(model_id).get()->test(type, vars, kwargs);
-}
-
-py::dict GretlModel_restrict (const int model_id, const py::list &impose,
-                              const py::kwargs &kwargs)
-{
-    check_if_model_exists(model_id);
-
-    return estimated_models.at(model_id).get()->restrict(impose, kwargs);
-}
-
-py::dict GretlModel_fcast (const int model_id, const py::kwargs &kwargs)
-{
-    check_if_model_exists(model_id);
-
-    return estimated_models.at(model_id).get()->forecast(kwargs);
-}
-
-//////////////////////////////////////////////////
-// model estimation
-//////////////////////////////////////////////////
-/* preparation for ModelClass binding:
-auto model = std::make_unique<GretlModel_NSE_Driver<F, CI>>(DSET);
-return std::unique_ptr<GretlModel>(std::move(model));
 */
-// wrapper for calling GretlModel_NSE_Driver models
-template <auto F, GretlCmdIndex CI>
-py::dict GretlModel_NSE_Driver_wrapper (const std::string formula, const py::kwargs &kwargs)
-{
-    auto model = std::make_unique<GretlModel_NSE_Driver<F, CI>>(DSET, formula, kwargs);
-
-    py::dict RES = model->fit(formula, kwargs);
-    estimated_models.try_emplace(model->get_id(), std::move(model));
-
-    return RES;
-}
-// explicit instantiations for all required (F, CI) pairs
-template py::dict GretlModel_NSE_Driver_wrapper<lsq, OLS>(const std::string, const py::kwargs&);
-template py::dict GretlModel_NSE_Driver_wrapper<lsq, WLS>(const std::string, const py::kwargs&);
-template py::dict GretlModel_NSE_Driver_wrapper<logit_probit, LOGIT>(const std::string, const py::kwargs&);
-template py::dict GretlModel_NSE_Driver_wrapper<logit_probit, PROBIT>(const std::string, const py::kwargs&);
-template py::dict GretlModel_NSE_Driver_wrapper<count_model, POISSON>(const std::string, const py::kwargs&);
-template py::dict GretlModel_NSE_Driver_wrapper<count_model, NEGBIN>(const std::string, const py::kwargs&);
-template py::dict GretlModel_NSE_Driver_wrapper<biprobit_model, BIPROBIT>(const std::string, const py::kwargs&);
-template py::dict GretlModel_NSE_Driver_wrapper<duration_model, DURATION>(const std::string, const py::kwargs&);
-template py::dict GretlModel_NSE_Driver_wrapper<heckit_model, HECKIT>(const std::string, const py::kwargs&);
-template py::dict GretlModel_NSE_Driver_wrapper<logistic_driver, LOGISTIC>(const std::string, const py::kwargs&);
-template py::dict GretlModel_NSE_Driver_wrapper<ar_model, AR>(const std::string, const py::kwargs&);
-template py::dict GretlModel_NSE_Driver_wrapper<ar1_model, AR1>(const std::string, const py::kwargs&);
-template py::dict GretlModel_NSE_Driver_wrapper<lad_model, LAD>(const std::string, const py::kwargs&);
-template py::dict GretlModel_NSE_Driver_wrapper<garch, GARCH>(const std::string, const py::kwargs&);
-template py::dict GretlModel_NSE_Driver_wrapper<mp_ols, MPOLS>(const std::string, const py::kwargs&);
-template py::dict GretlModel_NSE_Driver_wrapper<panel_model, PANEL>(const std::string, const py::kwargs&);
-template py::dict GretlModel_NSE_Driver_wrapper<ivreg, IVREG>(const std::string, const py::kwargs&);
-template py::dict GretlModel_NSE_Driver_wrapper<tobit_model, TOBIT>(const std::string, const py::kwargs&);
