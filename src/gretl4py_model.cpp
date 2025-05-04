@@ -106,9 +106,11 @@ void GretlModel::unpack_kwargs (const py::kwargs &kwargs, GretlCmdIndex ci)
     }
 }
 
-void GretlModel::unpack_kwargs_forecast (const py::kwargs &kwargs)
+static int unpack_forecast_kwargs (const py::kwargs &kwargs, int *pconf)
 {
-    opt = OPT_NONE;
+    int opt = OPT_NONE;
+    int conf = 95;
+    int err = 0;
 
     for (auto &item : kwargs) {
         if (!is_pystr(item.first)) {
@@ -117,21 +119,49 @@ void GretlModel::unpack_kwargs_forecast (const py::kwargs &kwargs)
         const std::string &key = item.first.cast<std::string>();
 
         if (key == "quiet") {
-            opt = static_cast<gretlopt>(opt | OPT_Q);
+            if (!is_pybool(item.second)) {
+                throw std::invalid_argument("'quiet' value must be a boolean");
+            } else if (item.second.cast<int>() != 0) {
+                opt |= OPT_Q;
+            }
+        } else if (key == "plot") {
+            if (!is_pybool(item.second)) {
+                // FIXME: in principle this could be a filename
+                throw std::invalid_argument("'plot' value must be a boolean");
+            } else if (item.second.cast<int>() != 0) {
+                opt |= OPT_P;
+            }
+        } else if (key == "interval") {
+            // we want a percentage value for forecast confidence intervals
+            if (!is_pyint(item.second)) {
+                err = 1;
+            } else {
+                conf = item.second.cast<int>();
+                if (conf < 50 || conf > 99) {
+                    err = 1;
+                } else {
+                    *pconf = conf;
+                }
+            }
+            if (err) {
+                throw std::invalid_argument("'interval' value must an integer >= 50 and <= 99");
+            }
         }
-        //std::cout << "the following pairs of forecasting options were passed:\n";
-        //std::cout << item.first.cast<std::string>() << " : ";
-        //std::cout << MapPyToCpp(item.second).to_string_view() << std::endl;
     }
+
+    return opt;
 }
 
 void GretlModel::fr_to_dict (FITRESID *fr, py::dict &fcdict)
 {
     gretl_matrix *stats = NULL;
-    double *tmp;
+    py::list labels;
+    double *tmp = NULL;
+    double tval = 0;
     int offset;
     int n_ok;
     int rows;
+    int cols;
     int t;
 
     rows = fr->t2 - fr->t1 + 1;
@@ -140,35 +170,55 @@ void GretlModel::fr_to_dict (FITRESID *fr, py::dict &fcdict)
     fcdict[py::cast("t1")] = fr->t1 + 1;
     fcdict[py::cast("t2")] = fr->t2 + 1;
 
-    /* count of non-missing actual values */
+    cols = 1; // predicted values
+
+    // get count of non-missing actual values
     n_ok = 0;
     for (t=fr->t1; t<=fr->t2; t++) {
         if (!na(fr->actual[t])) {
             n_ok++;
         }
     }
-
-    /* actual values? */
     if (n_ok > 0) {
-        DNumPyArrayFC A(rows);
-        tmp = A.mutable_data();
-        std::memcpy(tmp, fr->actual + offset, rows * sizeof *tmp);
-        fcdict[py::cast("actual")] = A;
+        cols++; // use actual
+        labels.append("actual");
     }
-
-    /* predicted values */
-    DNumPyArrayFC P(rows);
-    tmp = P.mutable_data();
-    std::memcpy(tmp, fr->fitted + offset, rows * sizeof *tmp);
-    fcdict[py::cast("predicted")] = P;
-
-    /* standard errors? */
+    labels.append("predicted");
     if (fr->sderr != NULL) {
-        DNumPyArrayFC S(rows);
-        tmp = S.mutable_data();
-        std::memcpy(tmp, fr->sderr + offset, rows * sizeof *tmp);
-        fcdict[py::cast("stderr")] = S;
+        double a2 = fr->alpha / 2.0;
+
+        cols += 3; // add sderr + add confidence interval
+        labels.append("stderr");
+        labels.append("low");
+        labels.append("high");
+        tval = (fr->asymp)? normal_critval(a2) : student_critval(fr->df, a2);
     }
+
+    // build array holding up to five columns
+    DNumPyArrayFC F({rows, cols});
+    tmp = F.mutable_data();
+    if (n_ok > 0) {
+        std::memcpy(tmp, fr->actual + offset, rows * sizeof *tmp);
+        tmp += rows;
+    }
+    std::memcpy(tmp, fr->fitted + offset, rows * sizeof *tmp);
+    if (fr->sderr != NULL) {
+        double maxerr;
+        int i;
+
+        tmp += rows;
+        std::memcpy(tmp, fr->sderr + offset, rows * sizeof *tmp);
+        tmp += rows;
+        for (i=0; i<rows; i++) {
+            maxerr = tval * fr->sderr[offset + i];
+            tmp[i] = fr->fitted[offset + i] - maxerr;
+            tmp[i+rows] = fr->fitted[offset + i] + maxerr;
+        }
+        fcdict[py::cast("confidence")] = 100 * (1 - fr->alpha);
+    }
+
+    fcdict[py::cast("data")] = F;
+    fcdict[py::cast("data_labels")] = labels;
 
     n_ok = 0;
     stats = forecast_stats(fr->actual, fr->fitted, fr->t1, fr->t2,
@@ -177,11 +227,18 @@ void GretlModel::fr_to_dict (FITRESID *fr, py::dict &fcdict)
         if (n_ok > 0) {
             const char **rnames = gretl_matrix_get_rownames(stats);
             const char *label;
+            // it seems we need a nominally 2-d array here for tabulate()
+            DNumPyArrayFC S({stats->rows,1});
+            py::list stats_labels;
 
+            tmp = S.mutable_data();
+            std::memcpy(tmp, stats->val, stats->rows * sizeof *tmp);
+            fcdict[py::cast("stats")] = S;
             for (t=0; t<stats->rows; t++) {
                 label = rnames[t];
-                fcdict[py::cast(label)] = stats->val[t];
+                stats_labels.append(label);
             }
+            fcdict[py::cast("stats_labels")] = stats_labels;
         }
         gretl_matrix_free(stats);
     }
@@ -249,13 +306,14 @@ py::dict GretlModel_NSE::forecast (const py::kwargs &kwargs)
     py::dict res;
     FITRESID *fr = NULL;
     FcastFlags flags = static_cast<FcastFlags>(0);
+    gretlopt opt = OPT_NONE;
     int t1, t2 = 0;
 #if 0 // not yet
     int recursive = 0, k = 1, *kptr;
 #endif
     int dt2 = GD->dset->n - 1;
     int st2 = GD->dset->n - 1;
-    double conf = 0.95;
+    int conf = 95;
 
     // check for possible sample mismatch
     err = model_sample_problem(model, GD->dset);
@@ -279,25 +337,25 @@ py::dict GretlModel_NSE::forecast (const py::kwargs &kwargs)
         t1 = model->t2 + 1;
     }
 
-    // assembling options (FIXME)
-    unpack_kwargs_forecast(kwargs);
+    // assemble options
+    opt = (gretlopt) unpack_forecast_kwargs(kwargs, &conf);
     fr = get_forecast(model, t1, t2, 0, GD->dset, OPT_NONE, &err);
 
     if (err) {
         handle_gretl_error(err);
     } else {
+        fr->alpha = (100.0 - conf) / 100.0;
         fr_to_dict(fr, res);
-        fr->alpha = 1 - conf;
-        if (!(opt & OPT_Q)) {
-            err = text_print_forecast(fr, GD->dset, OPT_NONE, GP.prn_ptr());
-        }
+        text_print_forecast(fr, GD->dset, opt, GP.prn_ptr());
     }
 
     if (fr != NULL) {
         free_fit_resid(fr);
     }
 
-    GP.print();
+    if (!(opt & OPT_Q)) {
+        GP.print();
+    }
 
     return res;
 }

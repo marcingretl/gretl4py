@@ -140,3 +140,12 @@ def gretl_data_path (fname):
     else:
         res_path = s + '/' + fname
     return res_path
+
+def fc_print (fc):
+    from tabulate import tabulate
+    print(f'\nForecast for obs {fc["t1"]} to {fc["t2"]} with {fc["confidence"]} percent interval\n')
+    print(tabulate(fc['data'], headers=fc['data_labels'], tablefmt="plain"))
+    print("")
+    print(f'Forecast evaluation statistics\n')
+    print(tabulate(fc['stats'], headers=[], showindex=fc['stats_labels'], tablefmt="plain"))
+    print("")
