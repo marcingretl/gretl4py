@@ -559,16 +559,8 @@ GretlModel_NSE_Driver<F, CI>::GretlModel_NSE_Driver (std::shared_ptr<GretlDatase
 // have the same "basic" signature, plus a few special cases
 // F: function to call
 // CI: GretlCmdIndex
-
 template <auto F, GretlCmdIndex CI>
-void GretlModel_NSE_Driver<F, CI>::fit2 (void)
-{
-    fit(formula, kwargs);
-}
-
-template <auto F, GretlCmdIndex CI>
-py::dict GretlModel_NSE_Driver<F, CI>::fit (const std::string &formula,
-                                            const py::kwargs &kwargs)
+void GretlModel_NSE_Driver<F, CI>::fit (void)
 {
     if (py::len(kwargs) > 0) {
         unpack_kwargs(kwargs, CI);
@@ -612,8 +604,6 @@ py::dict GretlModel_NSE_Driver<F, CI>::fit (const std::string &formula,
                    GD->dset, opt, GP.prn_ptr());
     }
     save_model(opt);
-
-    return RES;
 }
 // explicit instantiations for all required (F, CI) pairs
 template class GretlModel_NSE_Driver<lsq, OLS>;
@@ -669,13 +659,7 @@ void GretlModel_NSE_arima::get_arima_order (const py::tuple &tup,
     }
 }
 
-void GretlModel_NSE_arima::fit2 (void)
-{
-    fit("", kwargs);
-}
-
-py::dict GretlModel_NSE_arima::fit (const std::string &formula,
-                                    const py::kwargs &kwargs)
+void GretlModel_NSE_arima::fit (void)
 {
     int seasonal = 0;
     int y_number;
@@ -730,8 +714,6 @@ py::dict GretlModel_NSE_arima::fit (const std::string &formula,
 
     *model = arma(var_list.get(), NULL, GD->dset, opt, GP.prn_ptr());
     save_model(opt);
-
-    return RES;
 }
 
 

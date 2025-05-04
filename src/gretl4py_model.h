@@ -62,8 +62,7 @@ public:
 
     virtual std::unique_ptr<GretlTypes> get_accessor (const std::string &accessor) const = 0;
 
-    virtual py::dict fit (const std::string &formula, const py::kwargs &kwargs) = 0;
-    virtual void fit2 (void) = 0;
+    virtual void fit (void) = 0;
 
     virtual py::dict forecast (const py::kwargs &kwargs) = 0;
 
@@ -90,8 +89,7 @@ public:
 
     std::unique_ptr<GretlTypes> get_accessor (const std::string &accessor) const override;
 
-    py::dict fit (const std::string &formula, const py::kwargs &kwargs) override = 0;
-    void fit2 (void) override = 0;
+    void fit (void) override = 0;
 
     py::dict forecast (const py::kwargs &kwargs) override;
 
@@ -115,9 +113,7 @@ public:
     GretlModel_NSE_Driver (std::shared_ptr<GretlDataset> GD,
                            const std::string &formula, const py::kwargs &kwargs);
 
-    py::dict fit (const std::string &formula, const py::kwargs &kwargs) override;
-
-    void fit2 (void) override;
+    void fit (void) override;
 };
 
 //
@@ -154,9 +150,7 @@ public:
                           const py::tuple &tup, const py::kwargs &kwargs);
     ~GretlModel_NSE_arima (void);
 
-    py::dict fit (const std::string &formula, const py::kwargs &kwargs) override;
-
-    void fit2 (void) override;
+    void fit (void) override;
 };
 
 /*

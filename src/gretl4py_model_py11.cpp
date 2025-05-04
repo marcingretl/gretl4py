@@ -28,11 +28,10 @@ static void bind_driver_model(py::module_ &m, const std::string &name)
 {
     py::class_<T, GretlModel_NSE, std::unique_ptr<T>>(m, name.c_str(), py::dynamic_attr())
         .def(py::init<std::shared_ptr<GretlDataset>, const std::string&, const py::kwargs&>())
-        .def("fit", &T::fit)
-        .def("fit2",
+        .def("fit",
              [](T &self) -> T&
              {
-                 self.fit2();
+                 self.fit();
 
                  return self;
              })
@@ -75,11 +74,10 @@ void init_gretl4py_model_py11(py::module_ &m)
     // NSE via arima plugin
     py::class_<GretlModel_NSE_arima, GretlModel_NSE, std::unique_ptr<GretlModel_NSE_arima>>(m, "GretlModel_NSE_arima", py::dynamic_attr())
         .def(py::init<std::shared_ptr<GretlDataset>, const std::string&, const py::tuple&, const py::kwargs&>())
-        .def("fit", &GretlModel_NSE_arima::fit)
-        .def("fit2",
+        .def("fit",
              [](GretlModel_NSE_arima &self) -> GretlModel_NSE_arima&
              {
-                 self.fit2();
+                 self.fit();
 
                  return self;
              });
@@ -88,11 +86,10 @@ void init_gretl4py_model_py11(py::module_ &m)
     py::class_<GretlModel_NSE_quantreg, GretlModel_NSE, std::unique_ptr<GretlModel_NSE_quantreg>>(m, "GretlModel_NSE_quantreg", py::dynamic_attr())
         .def(py::init<std::shared_ptr<GretlDataset>, const std::string&, const double&, const py::kwargs&>())
         .def(py::init<std::shared_ptr<GretlDataset>, const std::string&, const py::array_t<double>&, const py::kwargs&>())
-        .def("fit", &GretlModel_NSE_quantreg::fit)
-        .def("fit2",
+        .def("fit",
              [](GretlModel_NSE_quantreg &self) -> GretlModel_NSE_quantreg&
              {
-                 self.fit2();
+                 self.fit();
 
                  return self;
              });
