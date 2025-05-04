@@ -34,16 +34,7 @@ static void bind_driver_model(py::module_ &m, const std::string &name)
                  self.fit();
 
                  return self;
-             })
-        .def("test",
-             py::overload_cast<const std::string&, const py::kwargs&>(&T::test),
-             py::arg("type").none(false),
-             py::kw_only())
-        .def("test",
-             py::overload_cast<const std::string&, const std::string&, const py::kwargs&>(&T::test),
-             py::arg("type").none(false),
-             py::arg("vars").none(false),
-             py::kw_only());
+             });
 }
 
 void init_gretl4py_model_py11(py::module_ &m)
@@ -53,23 +44,44 @@ void init_gretl4py_model_py11(py::module_ &m)
         .def("get_id", &GretlModel::get_id)
         .def("fit", &GretlModel::fit)
         .def("forecast", &GretlModel::forecast)
-        .def("restrict", &GretlModel::restrict)
-        .def("test", py::overload_cast<const std::string&, const py::kwargs&>(&GretlModel::test))
-        .def("test", py::overload_cast<const std::string&, const std::string&, const py::kwargs&>(&GretlModel::test));
+        .def("restrict", &GretlModel::restrict);
+        //.def("test", py::overload_cast<const std::string&, const py::kwargs&>(&GretlModel::test))
+        //.def("test", py::overload_cast<const std::string&, const std::string&, const py::kwargs&>(&GretlModel::test));
 
     // Native Single Equation libgretl MODEL (NSE)
     py::class_<GretlModel_NSE, GretlModel, std::unique_ptr<GretlModel_NSE>>(m, "GretlModel_NSE", py::dynamic_attr())
         .def("forecast", &GretlModel_NSE::forecast)
         .def("restrict", &GretlModel_NSE::restrict)
         .def("test",
-             py::overload_cast<const std::string&, const py::kwargs&>(&GretlModel_NSE::test),
-             py::arg("type").none(false),
-             py::kw_only())
-        .def("test",
-             py::overload_cast<const std::string&, const std::string&, const py::kwargs&>(&GretlModel_NSE::test),
-             py::arg("type").none(false),
-             py::arg("vars").none(false),
-             py::kw_only());
+             [](GretlModel_NSE &self, const std::string &type, const py::kwargs &kwargs)
+             {
+                 //
+                 // positional argument
+                 //
+                 py::dict res;
+
+                 // w check if "vars" is in kwargs
+                 if (!kwargs.contains("vars")) {
+                     res = self.test(type, kwargs);
+                 } else {
+                     // if "vars" is present, call the three-argument test method
+                     py::kwargs clean_kwargs;
+                     std::string vars;
+
+                     for (auto item : kwargs) {
+                         std::string key = std::string(py::str(item.first));
+
+                         if (key == "vars") {
+                             vars = kwargs["vars"].cast<std::string>();
+                         } else {
+                             clean_kwargs[item.first] = item.second;
+                         }
+                     }
+                     res = self.test(type, vars, clean_kwargs);
+                 }
+                 py::cast(&self).attr(type.c_str()) = res;
+             },
+             py::arg("type").none(false), py::kw_only());
 
     // NSE via arima plugin
     py::class_<GretlModel_NSE_arima, GretlModel_NSE, std::unique_ptr<GretlModel_NSE_arima>>(m, "GretlModel_NSE_arima", py::dynamic_attr())

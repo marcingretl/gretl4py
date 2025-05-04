@@ -72,7 +72,7 @@ void init_gretl4py_data_py11(py::module_ &m)
                  // here we do some things for certain tests
                  //
                  std::string y_val, vars_val, vars;
-                 py::dict clean_kwargs;
+                 py::kwargs clean_kwargs;
 
                  for (auto item : kwargs) {
                      std::string key = std::string(py::str(item.first));

@@ -50,7 +50,7 @@ d3.test(type="levinlin", vars="invest", order=[2,2,3,3,4,4,2,3,2,1])
 print("\n****************************")
 print("meantest")
 d3.test(type="meantest", vars="invest firm")
-exit()
+print(d3.meantest['pvalue'])
 
 # OLS
 m1 = gretl.ols(formula='1 0 2 3').fit()
