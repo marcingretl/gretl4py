@@ -51,7 +51,8 @@ void init_gretl4py_model_py11(py::module_ &m)
     // Native Single Equation libgretl MODEL (NSE)
     py::class_<GretlModel_NSE, GretlModel, std::unique_ptr<GretlModel_NSE>>(m, "GretlModel_NSE", py::dynamic_attr())
         .def("forecast", &GretlModel_NSE::forecast)
-        .def("restrict", &GretlModel_NSE::restrict)
+        .def("restrict", &GretlModel_NSE::restrict,
+             py::arg("impose").none(false), py::kw_only())
         .def("test",
              [](GretlModel_NSE &self, const std::string &type, const py::kwargs &kwargs)
              {
@@ -60,7 +61,6 @@ void init_gretl4py_model_py11(py::module_ &m)
                  // 1. handles overload resolution cleanly (keyword vs positional)
                  // 2. special-cases "chow" which uses 'obs' instead of 'vars'
                  //
-                 py::dict res;
                  std::string vars;
                  bool with_vars = false;
                  py::kwargs clean_kwargs = kwargs;

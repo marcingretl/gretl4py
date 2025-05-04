@@ -477,11 +477,11 @@ py::dict GretlModel_NSE::test (const std::string &type,
 }
 
 
-py::dict GretlModel_NSE::restrict (const py::list &impose,
-                                   const py::kwargs &kwargs)
+void GretlModel_NSE::restrict (const py::list &impose,
+                               const py::kwargs &kwargs)
 {
     //
-    // we test a restriction given in impose
+    // we test a restriction given as impose
     //
     py::dict res;
     gretl_restriction *my_rset = NULL;
@@ -531,7 +531,9 @@ py::dict GretlModel_NSE::restrict (const py::list &impose,
         GP.print();
     }
 
-    return res;
+    // we register result
+    py::object self = py::cast(this);
+    py::setattr(self, "restrictions", res);
 }
 
 

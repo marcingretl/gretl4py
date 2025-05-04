@@ -66,7 +66,7 @@ public:
 
     virtual py::dict forecast (const py::kwargs &kwargs) = 0;
 
-    virtual py::dict restrict (const py::list &impose, const py::kwargs &kwargs) = 0;
+    virtual void restrict (const py::list &impose, const py::kwargs &kwargs) = 0;
 
     virtual py::dict test (const std::string &type, const py::kwargs &kwargs) = 0;
 
@@ -93,7 +93,7 @@ public:
 
     py::dict forecast (const py::kwargs &kwargs) override;
 
-    py::dict restrict (const py::list &impose, const py::kwargs &kwargs) override;
+    void restrict (const py::list &impose, const py::kwargs &kwargs) override;
 
     py::dict test (const std::string &type, const py::kwargs &kwargs) override;
 
