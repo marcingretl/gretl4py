@@ -41,6 +41,7 @@ protected:
     py::dict RES;                               // estimation results as dictionary
     std::shared_ptr<GretlDataset> GD;           // dataset used
     GretlPrint GP = GretlPrint();               // printer (instance wide)
+    const GretlObjType model_obj_type;          // libgretl's object type
     const std::string formula;                  // formula defining model
     const py::kwargs kwargs;                    // kwargs passed to the model
     gretl_list_ptr var_list{nullptr};           // libgretl list of variables
@@ -52,7 +53,7 @@ protected:
 
     void fr_to_dict (FITRESID *fr, py::dict &fcdict);
 public:
-    explicit GretlModel (std::shared_ptr<GretlDataset> GD,
+    explicit GretlModel (GretlObjType model_obj_type, std::shared_ptr<GretlDataset> GD,
                          const std::string &formula, const py::kwargs &kwargs);
     virtual ~GretlModel (void);
 
