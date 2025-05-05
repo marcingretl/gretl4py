@@ -40,7 +40,9 @@ extern "C" {
 //
 // GretlModel class methods
 //
-GretlModel::GretlModel (std::shared_ptr<GretlDataset> GD)
+GretlModel::GretlModel (std::shared_ptr<GretlDataset> GD,
+                        const std::string &formula, const py::kwargs &kwargs)
+                        : formula(formula), kwargs(kwargs)
 {
     this->id = next_model_id++;
 
@@ -248,8 +250,9 @@ void GretlModel::fr_to_dict (FITRESID *fr, py::dict &fcdict)
 // Native Single Equation libgretl MODEL (NSE)
 // extends: GretlModel
 //
-GretlModel_NSE::GretlModel_NSE (std::shared_ptr<GretlDataset> GD)
-                                : GretlModel(GD) // explicitly call base class constructor!
+GretlModel_NSE::GretlModel_NSE (std::shared_ptr<GretlDataset> GD,
+                                const std::string &formula, const py::kwargs &kwargs)
+                                : GretlModel(GD, formula, kwargs) // explicitly call base class constructor!
 {}
 
 GretlModel_NSE::~GretlModel_NSE (void)
@@ -544,17 +547,13 @@ template <auto F, GretlCmdIndex CI>
 GretlModel_NSE_Driver<F, CI>::GretlModel_NSE_Driver (std::shared_ptr<GretlDataset> GD,
                                                      const std::string &formula,
                                                      const py::kwargs &kwargs)
-                                                     : GretlModel_NSE(GD)  // explicitly call base class constructor!
+                                                     : GretlModel_NSE(GD, formula, kwargs)  // explicitly call base class constructor!
 {
     if constexpr (CI == TOBIT) {
         optional_par.resize(2);
         optional_par.at(0) = NADBL;
         optional_par.at(1) = NADBL;
     }
-    if (!kwargs.empty()) {
-        this->kwargs = kwargs;
-    }
-    this->formula = formula;
 }
 
 // Method template to support several estimation methods that
@@ -637,12 +636,8 @@ GretlModel_NSE_arima::GretlModel_NSE_arima (std::shared_ptr<GretlDataset> GD,
                                             const std::string &y,
                                             const py::tuple &tup,
                                             const py::kwargs &kwargs)
-                                            : GretlModel_NSE(GD), y(y), tup(tup)  // explicitly call base class constructor!
-{
-    if (!kwargs.empty()) {
-        this->kwargs = kwargs;
-    }
-}
+                                            : GretlModel_NSE(GD, "", kwargs), y(y), tup(tup)  // explicitly call base class constructor!
+{}
 
 void GretlModel_NSE_arima::get_arima_order (const py::tuple &tup,
                                             int &p, int &d, int &q)
@@ -732,10 +727,6 @@ GretlModel_NSE_Driver_quantreg<F, CI>::GretlModel_NSE_Driver_quantreg
                                         : GretlModel_NSE_Driver<F, CI>(GD, formula, kwargs)  // explicitly call base class constructor!
 {
     this->optional_par.push_back(tau);
-    if (!kwargs.empty()) {
-        this->kwargs = kwargs;
-    }
-    this->formula = formula;
 }
 
 template <auto F, GretlCmdIndex CI>
@@ -753,10 +744,6 @@ GretlModel_NSE_Driver_quantreg<F, CI>::GretlModel_NSE_Driver_quantreg
     for (int i=0; i<tau.shape(0); i++) {
         gretl_matrix_set(this->optional_par_as_mat, i, 0, tau.at(i));
     }
-    if (!kwargs.empty()) {
-        this->kwargs = kwargs;
-    }
-    this->formula = formula;
 }
 
 template <auto F, GretlCmdIndex CI>
