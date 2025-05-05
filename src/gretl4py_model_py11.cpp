@@ -43,7 +43,7 @@ void init_gretl4py_model_py11(py::module_ &m)
     py::class_<GretlModel, std::unique_ptr<GretlModel>>(m, "GretlModel", py::dynamic_attr())
         .def("fit", &GretlModel::fit)
         .def("fcast", &GretlModel::forecast)
-        // we cannot have this definition since due to: error: static assertion failed: Holder classes are only supported for custom types
+        // we cannot have this definition due to: error: static assertion failed: Holder classes are only supported for custom types
         //.def("get_accessor", &GretlModel::get_accessor)
         .def("restrict", &GretlModel::restrict)
         .def("test", py::overload_cast<const std::string&, const py::kwargs&>(&GretlModel::test))
@@ -68,9 +68,9 @@ void init_gretl4py_model_py11(py::module_ &m)
                  // 1. handles overload resolution cleanly (keyword vs positional)
                  // 2. special-cases "chow" which uses 'obs' instead of 'vars'
                  //
-                 std::string vars;
-                 bool with_vars = false;
                  py::kwargs clean_kwargs = kwargs;
+                 bool with_vars = false;
+                 std::string vars;
 
                  // we check for "vars" or "obs" for chow test
                  if (kwargs.contains("vars")) {

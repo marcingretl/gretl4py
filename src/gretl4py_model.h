@@ -82,7 +82,7 @@ class GretlModel_NSE : public GretlModel
 protected:
     MODEL *model = NULL;                            // libgretl MODLEL struct
 
-    void save_model (gretlopt opt = OPT_NONE);      //FIXME: do we need opt here? We already have: gretlopt opt = OPT_NONE
+    void save_model (void);
 public:
     GretlModel_NSE (std::shared_ptr<GretlDataset> GD);
     virtual ~GretlModel_NSE (void);

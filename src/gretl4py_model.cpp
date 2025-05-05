@@ -259,7 +259,7 @@ GretlModel_NSE::~GretlModel_NSE (void)
     }
 }
 
-void GretlModel_NSE::save_model (gretlopt opt)
+void GretlModel_NSE::save_model (void)
 {
     //
     // Here we construct a python dictionary to represent a gretl
@@ -605,7 +605,7 @@ void GretlModel_NSE_Driver<F, CI>::fit (void)
         *model = F(var_list.get(), optional_par.at(0), optional_par.at(1),
                    GD->dset, opt, GP.prn_ptr());
     }
-    save_model(opt);
+    save_model();
 }
 // explicit instantiations for all required (F, CI) pairs
 template class GretlModel_NSE_Driver<lsq, OLS>;
@@ -715,7 +715,7 @@ void GretlModel_NSE_arima::fit (void)
     var_list.get()[i++] = y_number;
 
     *model = arma(var_list.get(), NULL, GD->dset, opt, GP.prn_ptr());
-    save_model(opt);
+    save_model();
 }
 
 
