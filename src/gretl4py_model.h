@@ -52,7 +52,7 @@ protected:
     template<typename T>
     void save_model (T *model);
 
-    void unpack_kwargs (const py::kwargs &kwargs, GretlCmdIndex ci);
+    void unpack_kwargs (GretlCmdIndex ci);
 
     void fr_to_dict (FITRESID *fr, py::dict &fcdict);
 public:

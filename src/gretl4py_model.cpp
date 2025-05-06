@@ -115,7 +115,7 @@ void GretlModel::save_model (T *model)
     }
 }
 
-void GretlModel::unpack_kwargs (const py::kwargs &kwargs, GretlCmdIndex ci)
+void GretlModel::unpack_kwargs (GretlCmdIndex ci)
 {
     opt = OPT_NONE;
     for (auto &item : kwargs) {
@@ -238,7 +238,7 @@ void GretlModel::fr_to_dict (FITRESID *fr, py::dict &fcdict)
         labels.append("stderr");
         labels.append("low");
         labels.append("high");
-        tval = (fr->asymp)? normal_critval(a2) : student_critval(fr->df, a2);
+        tval = (fr->asymp) ? normal_critval(a2) : student_critval(fr->df, a2);
     }
 
     // build array holding up to five columns
@@ -275,7 +275,7 @@ void GretlModel::fr_to_dict (FITRESID *fr, py::dict &fcdict)
             const char **rnames = gretl_matrix_get_rownames(stats);
             const char *label;
             // it seems we need a nominally 2-d array here for tabulate()
-            DNumPyArrayFC S({stats->rows,1});
+            DNumPyArrayFC S({stats->rows, 1});
             py::list stats_labels;
 
             tmp = S.mutable_data();
@@ -567,7 +567,7 @@ template <auto F, GretlCmdIndex CI>
 void GretlModel_NSE_Driver<F, CI>::fit (void)
 {
     if (py::len(kwargs) > 0) {
-        unpack_kwargs(kwargs, CI);
+        unpack_kwargs(CI);
     }
 
     if (!GD) {
@@ -667,7 +667,7 @@ void GretlModel_NSE_arima::fit (void)
     int i;
 
     if (py::len(kwargs) > 0) {
-        unpack_kwargs(kwargs, ARMA);
+        unpack_kwargs(ARMA);
     }
 
     if (!GD) {
