@@ -172,7 +172,7 @@ private:
     GretlPrint GP = GretlPrint();       // printer (instance wide)
     bool free_b = true;
     char *json_buf = NULL;
-    gretl_bundle *b;
+    gretl_bundle *b = NULL;
     py::dict as_dict;
 
     py::dict json_to_dict (simdjson::ondemand::object &json_obj,

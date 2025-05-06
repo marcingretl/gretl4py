@@ -1028,6 +1028,9 @@ GretlBundle::GretlBundle (MODEL *model, DATASET *dset)
 GretlBundle::GretlBundle (GRETL_VAR *model, DATASET *dset)
 {
     b = gretl_bundle_new();
+    if (b == NULL) {
+        handle_gretl_error(E_ALLOC);
+    }
     err = gretl_VAR_bundlize(model, dset, b);
 }
 

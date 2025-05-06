@@ -91,14 +91,19 @@ void GretlModel::save_model (T *model)
         handle_gretl_error(err);
     } else {
         if constexpr (std::is_same_v<T, MODEL>) {
-            printmodel(model, GD->dset, opt, GP.prn_ptr());
+            err = printmodel(model, GD->dset, opt, GP.prn_ptr());
         } else if constexpr (std::is_same_v<T, GRETL_VAR>) {
             err = gretl_VAR_print(model, GD->dset, opt, GP.prn_ptr());
+        }
+        if (err) {
+            handle_gretl_error(err);
         }
         GretlBundle b = GretlBundle(model, GD->dset);
         err = b.err;
 
-        if (!err) {
+        if (err) {
+            handle_gretl_error(err);
+        } else {
             RES = b.to_dict();
             if (RES.empty()) {
                 err = E_DATA;
@@ -110,10 +115,7 @@ void GretlModel::save_model (T *model)
                 RES[py::cast("_ids")] = _ids;
                 RES[py::cast("summary")] = GP.get_buffer();
             }
-        }
-        if (err) {
-            handle_gretl_error(err);
-        } else {
+
             // we register result
             py::object self = py::cast(this);
             for (auto item : RES) {
