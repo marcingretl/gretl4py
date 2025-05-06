@@ -39,7 +39,6 @@ private:
 protected:
     const int id;                               // model ID
     const GretlObjType model_obj_type;          // libgretl's object type (in model context)
-    const std::string formula;                  // formula defining model
     const py::kwargs kwargs;                    // kwargs passed to the model
     py::dict RES;                               // estimation results as dictionary
     std::shared_ptr<GretlDataset> GD;           // dataset used
@@ -57,7 +56,7 @@ protected:
     void fr_to_dict (FITRESID *fr, py::dict &fcdict);
 public:
     explicit GretlModel (GretlObjType model_obj_type, std::shared_ptr<GretlDataset> GD,
-                         const std::string &formula, const py::kwargs &kwargs);
+                         const py::kwargs &kwargs);
     virtual ~GretlModel (void);
 
     int get_id (void) const;
@@ -84,10 +83,9 @@ public:
 class GretlModel_NSE : public GretlModel
 {
 protected:
-    MODEL *model = NULL;    // libgretl MODLEL struct
+    MODEL *model = NULL;    // libgretl MODEL struct
 public:
-    GretlModel_NSE (std::shared_ptr<GretlDataset> GD,
-                    const std::string &formula, const py::kwargs &kwargs);
+    GretlModel_NSE (std::shared_ptr<GretlDataset> GD, const py::kwargs &kwargs);
     virtual ~GretlModel_NSE (void);
 
     std::unique_ptr<GretlTypes> get_accessor (const std::string &accessor) const override;
@@ -111,6 +109,7 @@ template <auto F, GretlCmdIndex CI>
 class GretlModel_NSE_Driver : public GretlModel_NSE
 {
 protected:
+    const std::string formula;                  // formula defining model
     gretl_matrix *optional_par_as_mat = NULL;
 public:
     GretlModel_NSE_Driver (std::shared_ptr<GretlDataset> GD,
@@ -154,6 +153,35 @@ public:
     ~GretlModel_NSE_arima (void);
 
     void fit (void) override;
+};
+
+
+//
+// VAR libgretl MODEL
+// extends: GretlModel
+//
+class GretlModel_VAR : public GretlModel
+{
+protected:
+    const std::string ylist;    // list of endogenous variables
+    std::string xlist;          // list of exogenous variables
+    GRETL_VAR *model = NULL;    // libgretl GRETL_VAR struct
+public:
+    GretlModel_VAR (std::shared_ptr<GretlDataset> GD,
+                    const std::string &ylist, const py::kwargs &kwargs);
+    virtual ~GretlModel_VAR (void);
+
+    std::unique_ptr<GretlTypes> get_accessor (const std::string &accessor) const override;
+
+    void fit (void) override;
+
+    py::dict forecast (const py::kwargs &kwargs) override;
+
+    void restrict (const py::list &impose, const py::kwargs &kwargs) override;
+
+    py::dict test (const std::string &type, const py::kwargs &kwargs) override;
+
+    py::dict test (const std::string &type, const std::string &vars, const py::kwargs &kwargs) override;
 };
 
 //////////////////////////////////////////////////

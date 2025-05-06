@@ -41,9 +41,9 @@ extern "C" {
 // GretlModel class methods
 //
 GretlModel::GretlModel (GretlObjType model_obj_type, std::shared_ptr<GretlDataset> GD,
-                        const std::string &formula, const py::kwargs &kwargs)
+                        const py::kwargs &kwargs)
                         : id(next_model_id++), model_obj_type(model_obj_type),
-                        formula(formula), kwargs(kwargs)
+                        kwargs(kwargs)
 {
     if (GD) {
         this->GD = GD;
@@ -295,9 +295,8 @@ void GretlModel::fr_to_dict (FITRESID *fr, py::dict &fcdict)
 // Native Single Equation libgretl MODEL (NSE)
 // extends: GretlModel
 //
-GretlModel_NSE::GretlModel_NSE (std::shared_ptr<GretlDataset> GD,
-                                const std::string &formula, const py::kwargs &kwargs)
-                                : GretlModel(GRETL_OBJ_EQN, GD, formula, kwargs)
+GretlModel_NSE::GretlModel_NSE (std::shared_ptr<GretlDataset> GD, const py::kwargs &kwargs)
+                                : GretlModel(GRETL_OBJ_EQN, GD, kwargs)
 {}
 
 GretlModel_NSE::~GretlModel_NSE (void)
@@ -550,7 +549,7 @@ template <auto F, GretlCmdIndex CI>
 GretlModel_NSE_Driver<F, CI>::GretlModel_NSE_Driver (std::shared_ptr<GretlDataset> GD,
                                                      const std::string &formula,
                                                      const py::kwargs &kwargs)
-                                                     : GretlModel_NSE(GD, formula, kwargs)
+                                                     : GretlModel_NSE(GD, kwargs), formula(formula)
 {
     if constexpr (CI == TOBIT) {
         optional_par.resize(2);
@@ -636,11 +635,9 @@ template class GretlModel_NSE_Driver<tobit_model, TOBIT>;
 GretlModel_NSE_arima::~GretlModel_NSE_arima (void) = default;
 
 GretlModel_NSE_arima::GretlModel_NSE_arima (std::shared_ptr<GretlDataset> GD,
-                                            const std::string &y,
-                                            const py::tuple &tup,
+                                            const std::string &y, const py::tuple &tup,
                                             const py::kwargs &kwargs)
-                                            : GretlModel_NSE(GD, "", kwargs),
-                                            y(y), tup(tup)
+                                            : GretlModel_NSE(GD, kwargs), y(y), tup(tup)
 {}
 
 void GretlModel_NSE_arima::get_arima_order (const py::tuple &tup,
