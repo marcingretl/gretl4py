@@ -131,6 +131,9 @@ void init_gretl4py_model_py11(py::module_ &m)
     bind_driver_model<GretlModel_NSE_Driver<panel_model, PANEL>>(m, "GretlModel_NSE_panel");
     bind_driver_model<GretlModel_NSE_Driver<ivreg, IVREG>>(m, "GretlModel_NSE_ivreg");
     bind_driver_model<GretlModel_NSE_Driver<tobit_model, TOBIT>>(m, "GretlModel_NSE_tobit");
+
+    // VAR
+    py::class_<GretlModel_VAR, GretlModel, std::unique_ptr<GretlModel_VAR>>(m, "GretlModel_var", py::dynamic_attr());
 }
 
 //py::object self = py::cast(model.get());

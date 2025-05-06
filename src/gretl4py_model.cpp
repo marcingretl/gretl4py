@@ -20,10 +20,11 @@
 #include <pybind11/pybind11.h>
 #include "gretl4py_data.h"
 #include "gretl4py_model.h"
-#include <gretl/forecast.h>
 extern "C" {
+    #include <gretl/var.h>
     #include <gretl/gretl_restrict.h>
 }
+#include <gretl/forecast.h>
 #include <string>
 
 #define use_ldco_sig(c) (c == OLS || c == WLS) //const int *list, DATASET *dset, GretlCmdIndex ci, gretlopt opt
@@ -290,6 +291,12 @@ void GretlModel::fr_to_dict (FITRESID *fr, py::dict &fcdict)
         gretl_matrix_free(stats);
     }
 }
+
+
+//////////////////////////////////////////////////
+// single equation models
+//////////////////////////////////////////////////
+
 
 //
 // Native Single Equation libgretl MODEL (NSE)
@@ -756,3 +763,69 @@ GretlModel_NSE_Driver_quantreg<F, CI>::~GretlModel_NSE_Driver_quantreg (void)
 }
 // explicit instantiations for all required (F, CI) pairs
 template class GretlModel_NSE_Driver_quantreg<quantreg_driver, QUANTREG>;
+
+
+//////////////////////////////////////////////////
+// VAR
+//////////////////////////////////////////////////
+
+GretlModel_VAR::GretlModel_VAR (std::shared_ptr<GretlDataset> GD,
+                                const std::string &ylist, const py::kwargs &kwargs)
+                                : GretlModel(GRETL_OBJ_VAR, GD, kwargs), ylist(ylist)
+{
+    py::print("GretlModel_VAR: constructor");
+}
+
+GretlModel_VAR::~GretlModel_VAR (void)
+{
+    if (this->model != NULL) {
+        gretl_VAR_free(this->model);
+    }
+    py::print("GretlModel_VAR: destructor");
+}
+
+std::unique_ptr<GretlTypes> GretlModel_VAR::get_accessor (const std::string &accessor) const
+{
+    std::unique_ptr<GretlTypes> res;
+
+    py::print("GretlModel_VAR::get_accessor()");
+
+    return res;
+}
+
+void GretlModel_VAR::fit (void)
+{
+    py::print("GretlModel_VAR::fit()");
+}
+
+py::dict GretlModel_VAR::forecast (const py::kwargs &kwargs)
+{
+    py::dict res;
+
+    py::print("GretlModel_VAR::forecast()");
+
+    return res;
+}
+
+void GretlModel_VAR::restrict (const py::list &impose, const py::kwargs &kwargs)
+{
+    py::print("GretlModel_VAR::restrict()");
+}
+
+py::dict GretlModel_VAR::test (const std::string &type, const py::kwargs &kwargs)
+{
+    py::dict res;
+
+    py::print("GretlModel_VAR::test()");
+
+    return res;
+}
+
+py::dict GretlModel_VAR::test (const std::string &type, const std::string &vars, const py::kwargs &kwargs)
+{
+    py::dict res;
+
+    py::print("GretlModel_VAR::test()");
+
+    return res;
+}
