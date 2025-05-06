@@ -63,6 +63,7 @@ depend:
 
 src/gretl4py.o: src/gretl4py.h src/gretl4py_types.h src/gretl4py_data.h
 src/gretl4py.o: src/simdjson/simdjson.h src/gretl4py_model.h
+src/gretl4py.o: src/gretl4py_model_instantiations.h
 src/gretl4py_data.o: src/gretl4py_data.h src/simdjson/simdjson.h
 src/gretl4py_data.o: src/gretl4py_types.h src/gretl4py.h src/gretl4py_model.h
 src/gretl4py_data_py11.o: src/gretl4py_data.h src/simdjson/simdjson.h
@@ -71,5 +72,6 @@ src/gretl4py_model.o: src/gretl4py_data.h src/simdjson/simdjson.h
 src/gretl4py_model.o: src/gretl4py_types.h src/gretl4py_model.h
 src/gretl4py_model_py11.o: src/gretl4py_model.h src/gretl4py_data.h
 src/gretl4py_model_py11.o: src/simdjson/simdjson.h src/gretl4py_types.h
+src/gretl4py_model_py11.o: src/gretl4py_model_instantiations.h
 src/gretl_calls.o: src/gretl4py.h src/gretl4py_types.h src/gretl4py_data.h
 src/gretl_calls.o: src/simdjson/simdjson.h src/gretl4py_model.h

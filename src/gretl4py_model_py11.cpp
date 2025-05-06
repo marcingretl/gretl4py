@@ -18,6 +18,7 @@
  */
 
 #include "gretl4py_model.h"
+#include "gretl4py_model_instantiations.h"
 
 namespace py = pybind11;
 

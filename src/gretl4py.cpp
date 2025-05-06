@@ -18,6 +18,7 @@
  */
 
 #include "gretl4py.h"
+#include "gretl4py_model_instantiations.h"
 
 extern std::shared_ptr<GretlDataset> DSET;
 
