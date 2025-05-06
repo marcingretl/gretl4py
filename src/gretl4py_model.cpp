@@ -69,6 +69,52 @@ void GretlModel::unlink_from_dataset (void) const
     }
 }
 
+template<typename T>
+void GretlModel::save_model (T *model)
+{
+    //
+    // Here we construct a python dictionary to represent a gretl
+    // MODEL, using as intermediate step the gretl_bundle produced by
+    // libgretl's bundle_from_model(). We also add the @summary text
+    // produced by libgretl's printmodel().
+    // FIXME: extend description for VAR, VECM, etc...
+    //
+    if (model->errcode) {
+        handle_gretl_error(model->errcode);
+    } else {
+        if constexpr (std::is_same_v<T, MODEL>) {
+            printmodel(model, GD->dset, opt, GP.prn_ptr());
+        }
+        GretlBundle b = GretlBundle(model, GD->dset);
+        err = b.err;
+
+        if (!err) {
+            RES = b.to_dict();
+            if (RES.empty()) {
+                err = E_DATA;
+                throw std::runtime_error("Model bundle to dict conversion failed.");
+            } else {
+                py::dict _ids;
+                _ids[py::cast("_id")] = model->ID;
+                _ids[py::cast("_model_id")] = id;
+                RES[py::cast("_ids")] = _ids;
+                RES[py::cast("summary")] = GP.get_buffer();
+            }
+        }
+        if (err) {
+            handle_gretl_error(err);
+        } else {
+            // we register result
+            py::object self = py::cast(this);
+            for (auto item : RES) {
+                py::setattr(self, item.first, item.second);
+            }
+            // we link model with dataset used
+            GD->linked_models_add(id);
+        }
+    }
+}
+
 void GretlModel::unpack_kwargs (const py::kwargs &kwargs, GretlCmdIndex ci)
 {
     opt = OPT_NONE;
@@ -258,48 +304,6 @@ GretlModel_NSE::~GretlModel_NSE (void)
 {
     if (this->model != NULL) {
         gretl_model_free(this->model);
-    }
-}
-
-void GretlModel_NSE::save_model (void)
-{
-    //
-    // Here we construct a python dictionary to represent a gretl
-    // MODEL, using as intermediate step the gretl_bundle produced by
-    // libgretl's bundle_from_model(). We also add the @summary text
-    // produced by libgretl's printmodel().
-    //
-    if (model->errcode) {
-        handle_gretl_error(model->errcode);
-    } else {
-        printmodel(model, GD->dset, opt, GP.prn_ptr());
-        GretlBundle b = GretlBundle(model, GD->dset);
-        err = b.err;
-
-        if (!err) {
-            RES = b.to_dict();
-            if (RES.empty()) {
-                err = E_DATA;
-                throw std::runtime_error("Model bundle to dict conversion failed.");
-            } else {
-                py::dict _ids;
-                _ids[py::cast("_id")] = model->ID;
-                _ids[py::cast("_model_id")] = id;
-                RES[py::cast("_ids")] = _ids;
-                RES[py::cast("summary")] = GP.get_buffer();
-            }
-        }
-        if (err) {
-            handle_gretl_error(err);
-        } else {
-            // we register result
-            py::object self = py::cast(this);
-            for (auto item : RES) {
-                py::setattr(self, item.first, item.second);
-            }
-            // we link model with dataset used
-            GD->linked_models_add(id);
-        }
     }
 }
 
@@ -603,7 +607,7 @@ void GretlModel_NSE_Driver<F, CI>::fit (void)
         *model = F(var_list.get(), optional_par.at(0), optional_par.at(1),
                    GD->dset, opt, GP.prn_ptr());
     }
-    save_model();
+    save_model<MODEL>(model);
 }
 // explicit instantiations for all required (F, CI) pairs
 template class GretlModel_NSE_Driver<lsq, OLS>;
@@ -710,7 +714,7 @@ void GretlModel_NSE_arima::fit (void)
     var_list.get()[i++] = y_number;
 
     *model = arma(var_list.get(), NULL, GD->dset, opt, GP.prn_ptr());
-    save_model();
+    save_model<MODEL>(model);
 }
 
 

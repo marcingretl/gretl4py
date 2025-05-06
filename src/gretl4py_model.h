@@ -49,6 +49,9 @@ protected:
     std::vector<double> optional_par;           // optional general purpose parameter (tau for QUANTREG, (l/r)limits for TOBIT, tests...)
     mutable int err = 0;
 
+    template<typename T>
+    void save_model (T *model);
+
     void unpack_kwargs (const py::kwargs &kwargs, GretlCmdIndex ci);
 
     void fr_to_dict (FITRESID *fr, py::dict &fcdict);
@@ -82,8 +85,6 @@ class GretlModel_NSE : public GretlModel
 {
 protected:
     MODEL *model = NULL;    // libgretl MODLEL struct
-
-    void save_model (void);
 public:
     GretlModel_NSE (std::shared_ptr<GretlDataset> GD,
                     const std::string &formula, const py::kwargs &kwargs);
