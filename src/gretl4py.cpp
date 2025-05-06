@@ -65,7 +65,9 @@ PYBIND11_MODULE(_gretl, m)
           py::arg("key").none(false),
           py::arg("val").none(true) = std::nullopt);
 
-    // model estimation
+    //////////////////////////////////////////////////
+    // single equation models
+    //////////////////////////////////////////////////
     // direct calls
     m.def("arima",
           [](const std::string &y, const py::tuple &order, const py::kwargs &kwargs) -> std::unique_ptr<GretlModel>
@@ -111,4 +113,16 @@ PYBIND11_MODULE(_gretl, m)
     BIND_DRIVER_MODEL(panel, panel_model, PANEL)
     BIND_DRIVER_MODEL(tsls, ivreg, IVREG)
     BIND_DRIVER_MODEL(tobit, tobit_model, TOBIT)
+
+    //////////////////////////////////////////////////
+    // var
+    //////////////////////////////////////////////////
+     m.def("var",
+          [](const std::string &ylist, const int &order, const py::kwargs &kwargs) -> std::unique_ptr<GretlModel>
+          {
+              auto model = std::make_unique<GretlModel_VAR>(DSET, ylist, order, kwargs);
+
+              return std::unique_ptr<GretlModel>(std::move(model));
+          },
+          py::arg("ylist").none(false), py::arg("order").none(false), py::kw_only());
 }

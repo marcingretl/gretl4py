@@ -23,6 +23,7 @@
 extern "C" {
     #include <gretl/var.h>
     #include <gretl/gretl_restrict.h>
+    #include <gretl/varprint.h>
 }
 #include <gretl/forecast.h>
 #include <string>
@@ -80,11 +81,19 @@ void GretlModel::save_model (T *model)
     // produced by libgretl's printmodel().
     // FIXME: extend description for VAR, VECM, etc...
     //
-    if (model->errcode) {
-        handle_gretl_error(model->errcode);
+    if constexpr (std::is_same_v<T, MODEL>) {
+        err = model->errcode;
+    } else if constexpr (std::is_same_v<T, GRETL_VAR>) {
+        err = model->err;
+    }
+
+    if (err) {
+        handle_gretl_error(err);
     } else {
         if constexpr (std::is_same_v<T, MODEL>) {
             printmodel(model, GD->dset, opt, GP.prn_ptr());
+        } else if constexpr (std::is_same_v<T, GRETL_VAR>) {
+            err = gretl_VAR_print(model, GD->dset, opt, GP.prn_ptr());
         }
         GretlBundle b = GretlBundle(model, GD->dset);
         err = b.err;
@@ -96,7 +105,7 @@ void GretlModel::save_model (T *model)
                 throw std::runtime_error("Model bundle to dict conversion failed.");
             } else {
                 py::dict _ids;
-                _ids[py::cast("_id")] = model->ID;
+                //_ids[py::cast("_id")] = model->ID; //FIXME: VARs!!!
                 _ids[py::cast("_model_id")] = id;
                 RES[py::cast("_ids")] = _ids;
                 RES[py::cast("summary")] = GP.get_buffer();
@@ -296,8 +305,6 @@ void GretlModel::fr_to_dict (FITRESID *fr, py::dict &fcdict)
 //////////////////////////////////////////////////
 // single equation models
 //////////////////////////////////////////////////
-
-
 //
 // Native Single Equation libgretl MODEL (NSE)
 // extends: GretlModel
@@ -769,9 +776,10 @@ template class GretlModel_NSE_Driver_quantreg<quantreg_driver, QUANTREG>;
 // VAR
 //////////////////////////////////////////////////
 
-GretlModel_VAR::GretlModel_VAR (std::shared_ptr<GretlDataset> GD,
-                                const std::string &ylist, const py::kwargs &kwargs)
-                                : GretlModel(GRETL_OBJ_VAR, GD, kwargs), ylist(ylist)
+GretlModel_VAR::GretlModel_VAR (std::shared_ptr<GretlDataset> GD, const std::string &ylist,
+                                const int order, const py::kwargs &kwargs)
+                                : GretlModel(GRETL_OBJ_VAR, GD, kwargs),
+                                ylist(ylist), order(order)
 {
     py::print("GretlModel_VAR: constructor");
 }
@@ -796,6 +804,29 @@ std::unique_ptr<GretlTypes> GretlModel_VAR::get_accessor (const std::string &acc
 void GretlModel_VAR::fit (void)
 {
     py::print("GretlModel_VAR::fit()");
+    if (py::len(kwargs) > 0) {
+        unpack_kwargs(VAR);
+    }
+
+    if (!GD) {
+        throw std::runtime_error("No dataset is available");
+    }
+
+    // we create list of endogenous variables
+    auto endog_var = list_from_formula(ylist, GD->dset, err); // it's std::unique_ptr!!!
+    if (!endog_var) {
+        throw std::invalid_argument("wrong list of variables");
+    }
+
+    // we estimate a model
+    model = gretl_VAR(order, NULL, endog_var.get(), GD->dset, opt, GP.prn_ptr(), &err);
+    if (err) {
+        handle_gretl_error(err);
+    }
+    save_model<GRETL_VAR>(model);
+
+    GP.print();
+
 }
 
 py::dict GretlModel_VAR::forecast (const py::kwargs &kwargs)

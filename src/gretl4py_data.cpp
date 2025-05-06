@@ -27,6 +27,9 @@
 #include <gretl/genmain.h>
 #include <gretl/objstack.h>
 #include <gretl/gretl_drivers.h>
+extern "C" {
+    #include <gretl/var.h>
+}
 #include <string>
 
 #define F_CONTIGUOUS py::detail::npy_api::constants::NPY_ARRAY_F_CONTIGUOUS_
@@ -1020,6 +1023,12 @@ GretlBundle::GretlBundle (void)
 GretlBundle::GretlBundle (MODEL *model, DATASET *dset)
 {
     b = bundle_from_model(model, dset, &err);
+}
+
+GretlBundle::GretlBundle (GRETL_VAR *model, DATASET *dset)
+{
+    b = gretl_bundle_new();
+    err = gretl_VAR_bundlize(model, dset, b);
 }
 
 GretlBundle::GretlBundle (gretl_bundle *b)

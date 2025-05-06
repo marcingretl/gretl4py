@@ -133,7 +133,8 @@ void init_gretl4py_model_py11(py::module_ &m)
     bind_driver_model<GretlModel_NSE_Driver<tobit_model, TOBIT>>(m, "GretlModel_NSE_tobit");
 
     // VAR
-    py::class_<GretlModel_VAR, GretlModel, std::unique_ptr<GretlModel_VAR>>(m, "GretlModel_var", py::dynamic_attr());
+    py::class_<GretlModel_VAR, GretlModel, std::unique_ptr<GretlModel_VAR>>(m, "GretlModel_var", py::dynamic_attr())
+        .def(py::init<std::shared_ptr<GretlDataset>, const std::string&, const int, const py::kwargs&>());
 }
 
 //py::object self = py::cast(model.get());

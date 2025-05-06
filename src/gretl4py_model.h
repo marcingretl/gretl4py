@@ -164,11 +164,12 @@ class GretlModel_VAR : public GretlModel
 {
 protected:
     const std::string ylist;    // list of endogenous variables
-    std::string xlist;          // list of exogenous variables
+    const std::string xlist;    // list of exogenous variables
+    const int order;            // VAR order
     GRETL_VAR *model = NULL;    // libgretl GRETL_VAR struct
 public:
-    GretlModel_VAR (std::shared_ptr<GretlDataset> GD,
-                    const std::string &ylist, const py::kwargs &kwargs);
+    GretlModel_VAR (std::shared_ptr<GretlDataset> GD, const std::string &ylist,
+                    const int order, const py::kwargs &kwargs);
     virtual ~GretlModel_VAR (void);
 
     std::unique_ptr<GretlTypes> get_accessor (const std::string &accessor) const override;

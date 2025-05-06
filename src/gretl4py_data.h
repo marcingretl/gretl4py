@@ -182,9 +182,10 @@ private:
 public:
     int err = 0;
 
-    GretlBundle (void);                         // we get contents of $sysinfo bundle
-    GretlBundle (gretl_bundle *b);              // incoming already allocated bundle
-    GretlBundle (MODEL *model, DATASET *dset);  // we produce bundle from model
+    GretlBundle (void);                             // we get contents of $sysinfo bundle
+    GretlBundle (gretl_bundle *b);                  // incoming already allocated bundle
+    GretlBundle (MODEL *model, DATASET *dset);      // we produce bundle from model
+    GretlBundle (GRETL_VAR *model, DATASET *dset);  // we produce bundle from VAR/VECM
     ~GretlBundle (void);
 
     py::dict to_dict (void);                    // bundle-to-dict mapper
