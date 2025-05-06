@@ -37,22 +37,22 @@ class GretlModel
 private:
     static inline int next_model_id = 1;
 protected:
-    int id;                                     // model ID
+    const int id;                               // model ID
+    const GretlObjType model_obj_type;          // libgretl's object type (in model context)
+    const std::string formula;                  // formula defining model
+    const py::kwargs kwargs;                    // kwargs passed to the model
     py::dict RES;                               // estimation results as dictionary
     std::shared_ptr<GretlDataset> GD;           // dataset used
     GretlPrint GP = GretlPrint();               // printer (instance wide)
-    const GretlObjType model_obj_type;          // libgretl's object type
-    const std::string formula;                  // formula defining model
-    const py::kwargs kwargs;                    // kwargs passed to the model
     gretl_list_ptr var_list{nullptr};           // libgretl list of variables
-    gretlopt opt = OPT_NONE;                    // model options (including tests and forecasts)
+    gretlopt opt = OPT_NONE;                    // instance wide options (including tests and forecasts)
     std::vector<double> optional_par;           // optional general purpose parameter (tau for QUANTREG, (l/r)limits for TOBIT, tests...)
     mutable int err = 0;
 
     template<typename T>
     void save_model (T *model);
 
-    void unpack_kwargs (GretlCmdIndex ci);
+    void unpack_kwargs (GretlCmdIndex ci);      // model kwargs unpacking
 
     void fr_to_dict (FITRESID *fr, py::dict &fcdict);
 public:
