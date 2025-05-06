@@ -27,38 +27,33 @@ namespace py = pybind11;
 template <typename T>
 static void bind_driver_model(py::module_ &m, const std::string &name)
 {
-    py::class_<T, GretlModel_NSE, std::unique_ptr<T>>(m, name.c_str(), py::dynamic_attr())
-        .def(py::init<std::shared_ptr<GretlDataset>, const std::string&, const py::kwargs&>())
-        .def("fit",
-             [](T &self) -> T&
-             {
-                 self.fit();
-
-                 return self;
-             });
+    py::class_<T, GretlModel_NSE, std::unique_ptr<T>>(m, name.c_str(), py::dynamic_attr());
 }
 
 void init_gretl4py_model_py11(py::module_ &m)
 {
     // base GretlModel class
     py::class_<GretlModel, std::unique_ptr<GretlModel>>(m, "GretlModel", py::dynamic_attr())
-        .def("fit", &GretlModel::fit)
+        .def("fit",
+             [](GretlModel &self) -> GretlModel&
+             {
+                 self.fit();
+
+                 return self;
+             })
+        .def("get_accessor",
+             [](GretlModel &self, const std::string &accessor) -> GretlTypes*
+             {
+                 return self.get_accessor(accessor).release();
+             },
+             py::return_value_policy::take_ownership)
         .def("fcast", &GretlModel::forecast)
-        // we cannot have this definition due to: error: static assertion failed: Holder classes are only supported for custom types
-        //.def("get_accessor", &GretlModel::get_accessor)
         .def("restrict", &GretlModel::restrict)
         .def("test", py::overload_cast<const std::string&, const py::kwargs&>(&GretlModel::test))
         .def("test", py::overload_cast<const std::string&, const std::string&, const py::kwargs&>(&GretlModel::test));
 
     // Native Single Equation libgretl MODEL (NSE)
     py::class_<GretlModel_NSE, GretlModel, std::unique_ptr<GretlModel_NSE>>(m, "GretlModel_NSE", py::dynamic_attr())
-        .def("fcast", &GretlModel_NSE::forecast)
-        .def("get_accessor",
-             [](GretlModel_NSE &self, const std::string &accessor) -> GretlTypes*
-             {
-                 return self.get_accessor(accessor).release();
-             },
-             py::return_value_policy::take_ownership)
         .def("restrict", &GretlModel_NSE::restrict,
              py::arg("impose").none(false), py::kw_only())
         .def("test",
@@ -90,27 +85,12 @@ void init_gretl4py_model_py11(py::module_ &m)
              py::arg("type").none(false), py::kw_only());
 
     // NSE via arima plugin
-    py::class_<GretlModel_NSE_arima, GretlModel_NSE, std::unique_ptr<GretlModel_NSE_arima>>(m, "GretlModel_NSE_arima", py::dynamic_attr())
-        .def(py::init<std::shared_ptr<GretlDataset>, const std::string&, const py::tuple&, const py::kwargs&>())
-        .def("fit",
-             [](GretlModel_NSE_arima &self) -> GretlModel_NSE_arima&
-             {
-                 self.fit();
-
-                 return self;
-             });
+    py::class_<GretlModel_NSE_arima, GretlModel_NSE, std::unique_ptr<GretlModel_NSE_arima>>(m, "GretlModel_NSE_arima", py::dynamic_attr());
 
     // NSE_Driver_quantreg via quantreg_driver
     py::class_<GretlModel_NSE_quantreg, GretlModel_NSE, std::unique_ptr<GretlModel_NSE_quantreg>>(m, "GretlModel_NSE_quantreg", py::dynamic_attr())
         .def(py::init<std::shared_ptr<GretlDataset>, const std::string&, const double&, const py::kwargs&>())
-        .def(py::init<std::shared_ptr<GretlDataset>, const std::string&, const py::array_t<double>&, const py::kwargs&>())
-        .def("fit",
-             [](GretlModel_NSE_quantreg &self) -> GretlModel_NSE_quantreg&
-             {
-                 self.fit();
-
-                 return self;
-             });
+        .def(py::init<std::shared_ptr<GretlDataset>, const std::string&, const py::array_t<double>&, const py::kwargs&>());
 
     // NSE via dedicated Driver
     bind_driver_model<GretlModel_NSE_Driver<lsq, OLS>>(m, "GretlModel_NSE_ols");
@@ -133,8 +113,7 @@ void init_gretl4py_model_py11(py::module_ &m)
     bind_driver_model<GretlModel_NSE_Driver<tobit_model, TOBIT>>(m, "GretlModel_NSE_tobit");
 
     // VAR
-    py::class_<GretlModel_VAR, GretlModel, std::unique_ptr<GretlModel_VAR>>(m, "GretlModel_var", py::dynamic_attr())
-        .def(py::init<std::shared_ptr<GretlDataset>, const std::string&, const int, const py::kwargs&>());
+    py::class_<GretlModel_VAR, GretlModel, std::unique_ptr<GretlModel_VAR>>(m, "GretlModel_var", py::dynamic_attr());
 }
 
 //py::object self = py::cast(model.get());
