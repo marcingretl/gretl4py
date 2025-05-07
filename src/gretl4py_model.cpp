@@ -154,7 +154,10 @@ void GretlModel::unpack_kwargs (GretlCmdIndex ci)
         } else if (key == "quiet") {
             throw std::invalid_argument("invalid option flag: " + key);
         } else if (key == "seasonal" && ci == ARMA) {
-            // arima special: ignore here
+            // arima special: we check seasonal
+            if (!is_pytuple(kwargs["seasonal"])) {
+                throw std::invalid_argument("seasonal must be a tuple");
+            }
             continue;
         } else if (key == "lagselect" && ci == ARMA) {
             throw std::invalid_argument("'lagselect' option for (S)ARIMA is temporarily unavailable");
@@ -164,7 +167,7 @@ void GretlModel::unpack_kwargs (GretlCmdIndex ci)
                 throw std::invalid_argument("both llimit and rlimit must be numeric");
             }
             continue;
-        } else if (key == "xlist" && ci == VAR) {
+        } else if (key == "xlist" && (ci == ARMA || ci == VAR)) {
             // var special: here we only check if xlist is a string, but we must do something with it elsewhere
             if (!is_pystr(item.second)) {
                 throw std::invalid_argument("xlist must be a string");
@@ -692,6 +695,8 @@ void GretlModel_NSE_arima::get_arima_order (const py::tuple &tup,
 void GretlModel_NSE_arima::fit (void)
 {
     int seasonal = 0;
+    int exogenous = 0;
+    gretl_list_ptr xlist;
     int y_number;
     int i;
 
@@ -703,28 +708,40 @@ void GretlModel_NSE_arima::fit (void)
         throw std::runtime_error("No dataset is available");
     }
 
+    // we set up "y"
     y_number = current_series_index(GD->dset, y.c_str());
     if (y_number == -1) {
         throw std::invalid_argument("There is no variable: " + y);
     }
 
+    // we set up non-seasonal parameters
     p = d = q = 0;
-    P = D = Q = 0;
     get_arima_order(tup, p, d, q);
 
+    // we set up seasonal parameters
     if (kwargs.contains("seasonal") && !kwargs["seasonal"].is_none()) {
-        if (is_pytuple(kwargs["seasonal"])) {
-            const py::tuple seas = kwargs["seasonal"].cast<py::tuple>();
+        const py::tuple seas = kwargs["seasonal"].cast<py::tuple>();
+        P = D = Q = 0;
 
-            get_arima_order(seas, P, D, Q);
-            if (P > 0 || D > 0 || Q > 0) {
-                seasonal = 1;
-            }
+        get_arima_order(seas, P, D, Q);
+        if (P > 0 || D > 0 || Q > 0) {
+            seasonal = 1;
         }
     }
 
+    // we add exogenous variables if present
+    if (kwargs.contains("xlist") && !kwargs["xlist"].is_none()) {
+        xlist = list_from_formula(kwargs["xlist"].cast<std::string>(), GD->dset, err);
+        if (!xlist) {
+            throw std::invalid_argument("wrong list of exogenous variables");
+        } else if (err) {
+            handle_gretl_error(err);
+        }
+        exogenous = xlist.get()[0];
+    }
+
     model = gretl_model_new();
-    var_list.reset(gretl_list_new(seasonal ? 9 : 5)); // it's std::unique_ptr!!!
+    var_list.reset(gretl_list_new(seasonal ? 9+exogenous : 5+exogenous)); // it's std::unique_ptr!!!
     if (model == NULL || var_list == nullptr || GP.prn_ptr() == NULL) {
         throw std::runtime_error("Failed to allocate memory");
     }
@@ -741,6 +758,11 @@ void GretlModel_NSE_arima::fit (void)
     }
     var_list.get()[i++] = LISTSEP;
     var_list.get()[i++] = y_number;
+    if (exogenous) {
+        for (int j=1; j<=exogenous; j++) {
+            var_list.get()[i++] = xlist.get()[j];
+        }
+    }
 
     *model = arma(var_list.get(), NULL, GD->dset, opt, GP.prn_ptr());
     save_model<MODEL>(model);
@@ -822,7 +844,7 @@ void GretlModel_VAR::fit (void)
         throw std::runtime_error("No dataset is available");
     }
 
-    // we add endogenous variables if present
+    // we add exogenous variables if present
     if (kwargs.contains("xlist") && !kwargs["xlist"].is_none()) {
         vars.append(";" + kwargs["xlist"].cast<std::string>());
     }
