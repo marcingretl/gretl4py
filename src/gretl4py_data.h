@@ -58,7 +58,7 @@ void handle_gretl_error (int err);
 std::unique_ptr<GretlTypes> gretl_generate_gretl_object (const char *s, int &err,
                                                          GretlObjType obj_type = GRETL_OBJ_INFO,
                                                          DATASET *dset = NULL,
-                                                         MODEL *model = NULL);
+                                                         void *model = NULL);
 
 void gretl_valid_long_opt (gretlopt &opt, GretlCmdIndex ci,
                            const std::string &key, const py::handle &val,

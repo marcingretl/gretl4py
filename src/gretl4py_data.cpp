@@ -235,7 +235,7 @@ void handle_gretl_error (int err)
 
 std::unique_ptr<GretlTypes> gretl_generate_gretl_object (const char *s, int &err,
                                                          GretlObjType obj_type,
-                                                         DATASET *dset, MODEL *model)
+                                                         DATASET *dset, void *model)
 {
     //
     // we grab object from libgretl stack

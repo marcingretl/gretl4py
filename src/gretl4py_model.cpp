@@ -383,7 +383,8 @@ py::dict GretlModel_NSE::forecast (const py::kwargs &kwargs)
 
 std::unique_ptr<GretlTypes> GretlModel_NSE::get_accessor (const std::string &accessor) const
 {
-    auto res = gretl_generate_gretl_object(accessor.c_str(), err, model_obj_type, GD->dset, model);
+    auto res = gretl_generate_gretl_object(accessor.c_str(), err,
+                                           model_obj_type, GD->dset, model);
     if (err) {
         handle_gretl_error(err);
     }
