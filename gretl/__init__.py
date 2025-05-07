@@ -81,9 +81,9 @@ def printdata(data, namesonly):
 # deprecations: END
 
 # we attach additional symbols to certain classes
-setattr(_gretl.GretlModel, "__repr__", model_repr)
-setattr(_gretl.GretlModel, "attrs", attrs)
-setattr(_gretl.GretlModel_NSE_logit, "oddsratio", oddsratio)
+setattr(_gretl.Model, "__repr__", model_repr)
+setattr(_gretl.Model, "attrs", attrs)
+setattr(_gretl.Model_logit, "oddsratio", oddsratio)
 
 # directly use GretlModel for the model instantiation
 def __model_initializer(model_name: str, *args, **kwargs):

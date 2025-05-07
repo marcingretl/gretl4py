@@ -824,7 +824,7 @@ void GretlModel_VAR::fit (void)
 
     // we add endogenous variables if present
     if (kwargs.contains("xlist") && !kwargs["xlist"].is_none()) {
-        vars.append(";" + py::cast<std::string>(kwargs["xlist"]));
+        vars.append(";" + kwargs["xlist"].cast<std::string>());
     }
 
     // be build variables list

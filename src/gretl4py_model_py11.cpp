@@ -33,7 +33,7 @@ static void bind_driver_model(py::module_ &m, const std::string &name)
 void init_gretl4py_model_py11(py::module_ &m)
 {
     // base GretlModel class
-    py::class_<GretlModel, std::unique_ptr<GretlModel>>(m, "GretlModel", py::dynamic_attr())
+    py::class_<GretlModel, std::unique_ptr<GretlModel>>(m, "Model", py::dynamic_attr())
         .def("fit",
              [](GretlModel &self) -> GretlModel&
              {
@@ -55,7 +55,7 @@ void init_gretl4py_model_py11(py::module_ &m)
              py::arg("type").none(false), py::arg("vars").none(false), py::kw_only());
 
     // Native Single Equation libgretl MODEL (NSE)
-    py::class_<GretlModel_NSE, GretlModel, std::unique_ptr<GretlModel_NSE>>(m, "GretlModel_NSE", py::dynamic_attr())
+    py::class_<GretlModel_NSE, GretlModel, std::unique_ptr<GretlModel_NSE>>(m, "Model_NSE", py::dynamic_attr())
         .def("restrict", &GretlModel_NSE::restrict,
              py::arg("impose").none(false), py::kw_only())
         .def("test",
@@ -88,34 +88,34 @@ void init_gretl4py_model_py11(py::module_ &m)
 
     // NSE via arima plugin
     py::class_<GretlModel_NSE_arima, GretlModel_NSE,
-        std::unique_ptr<GretlModel_NSE_arima>>(m, "GretlModel_NSE_arima", py::dynamic_attr());
+        std::unique_ptr<GretlModel_NSE_arima>>(m, "Model_arima", py::dynamic_attr());
 
     // NSE_Driver_quantreg via quantreg_driver
     py::class_<GretlModel_NSE_quantreg, GretlModel_NSE,
-        std::unique_ptr<GretlModel_NSE_quantreg>>(m, "GretlModel_NSE_quantreg", py::dynamic_attr());
+        std::unique_ptr<GretlModel_NSE_quantreg>>(m, "Model_quantreg", py::dynamic_attr());
 
     // NSE via dedicated Driver
-    bind_driver_model<GretlModel_NSE_Driver<lsq, OLS>>(m, "GretlModel_NSE_ols");
-    bind_driver_model<GretlModel_NSE_Driver<lsq, WLS>>(m, "GretlModel_NSE_wls");
-    bind_driver_model<GretlModel_NSE_Driver<logit_probit, LOGIT>>(m, "GretlModel_NSE_logit");
-    bind_driver_model<GretlModel_NSE_Driver<logit_probit, PROBIT>>(m, "GretlModel_NSE_probit");
-    bind_driver_model<GretlModel_NSE_Driver<count_model, POISSON>>(m, "GretlModel_NSE_poisson");
-    bind_driver_model<GretlModel_NSE_Driver<count_model, NEGBIN>>(m, "GretlModel_NSE_negbin");
-    bind_driver_model<GretlModel_NSE_Driver<biprobit_model, BIPROBIT>>(m, "GretlModel_NSE_biprobit");
-    bind_driver_model<GretlModel_NSE_Driver<duration_model, DURATION>>(m, "GretlModel_NSE_duration");
-    bind_driver_model<GretlModel_NSE_Driver<heckit_model, HECKIT>>(m, "GretlModel_NSE_heckit");
-    bind_driver_model<GretlModel_NSE_Driver<logistic_driver, LOGISTIC>>(m, "GretlModel_NSE_logistic");
-    bind_driver_model<GretlModel_NSE_Driver<ar_model, AR>>(m, "GretlModel_NSE_ar");
-    bind_driver_model<GretlModel_NSE_Driver<ar1_model, AR1>>(m, "GretlModel_NSE_ar1");
-    bind_driver_model<GretlModel_NSE_Driver<lad_model, LAD>>(m, "GretlModel_NSE_lad");
-    bind_driver_model<GretlModel_NSE_Driver<garch, GARCH>>(m, "GretlModel_NSE_garch");
-    bind_driver_model<GretlModel_NSE_Driver<mp_ols, MPOLS>>(m, "GretlModel_NSE_mpols");
-    bind_driver_model<GretlModel_NSE_Driver<panel_model, PANEL>>(m, "GretlModel_NSE_panel");
-    bind_driver_model<GretlModel_NSE_Driver<ivreg, IVREG>>(m, "GretlModel_NSE_ivreg");
-    bind_driver_model<GretlModel_NSE_Driver<tobit_model, TOBIT>>(m, "GretlModel_NSE_tobit");
+    bind_driver_model<GretlModel_NSE_Driver<lsq, OLS>>(m, "Model_ols");
+    bind_driver_model<GretlModel_NSE_Driver<lsq, WLS>>(m, "Model_wls");
+    bind_driver_model<GretlModel_NSE_Driver<logit_probit, LOGIT>>(m, "Model_logit");
+    bind_driver_model<GretlModel_NSE_Driver<logit_probit, PROBIT>>(m, "Model_probit");
+    bind_driver_model<GretlModel_NSE_Driver<count_model, POISSON>>(m, "Model_poisson");
+    bind_driver_model<GretlModel_NSE_Driver<count_model, NEGBIN>>(m, "Model_negbin");
+    bind_driver_model<GretlModel_NSE_Driver<biprobit_model, BIPROBIT>>(m, "Model_biprobit");
+    bind_driver_model<GretlModel_NSE_Driver<duration_model, DURATION>>(m, "Model_duration");
+    bind_driver_model<GretlModel_NSE_Driver<heckit_model, HECKIT>>(m, "Model_heckit");
+    bind_driver_model<GretlModel_NSE_Driver<logistic_driver, LOGISTIC>>(m, "Model_logistic");
+    bind_driver_model<GretlModel_NSE_Driver<ar_model, AR>>(m, "Model_ar");
+    bind_driver_model<GretlModel_NSE_Driver<ar1_model, AR1>>(m, "Model_ar1");
+    bind_driver_model<GretlModel_NSE_Driver<lad_model, LAD>>(m, "Model_lad");
+    bind_driver_model<GretlModel_NSE_Driver<garch, GARCH>>(m, "Model_garch");
+    bind_driver_model<GretlModel_NSE_Driver<mp_ols, MPOLS>>(m, "Model_mpols");
+    bind_driver_model<GretlModel_NSE_Driver<panel_model, PANEL>>(m, "Model_panel");
+    bind_driver_model<GretlModel_NSE_Driver<ivreg, IVREG>>(m, "Model_ivreg");
+    bind_driver_model<GretlModel_NSE_Driver<tobit_model, TOBIT>>(m, "Model_tobit");
 
     // VAR
-    py::class_<GretlModel_VAR, GretlModel, std::unique_ptr<GretlModel_VAR>>(m, "GretlModel_var", py::dynamic_attr());
+    py::class_<GretlModel_VAR, GretlModel, std::unique_ptr<GretlModel_VAR>>(m, "Model_var", py::dynamic_attr());
 }
 
 //py::object self = py::cast(model.get());
