@@ -166,7 +166,6 @@ class GretlModel_VAR : public GretlModel
 {
 protected:
     const std::string ylist;    // list of endogenous variables
-    const std::string xlist;    // list of exogenous variables
     const int order;            // VAR order
     GRETL_VAR *model = NULL;    // libgretl GRETL_VAR struct
 

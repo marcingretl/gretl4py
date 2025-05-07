@@ -170,6 +170,12 @@ void GretlModel::unpack_kwargs (GretlCmdIndex ci)
                 }
             }
             continue;
+        } else if (key == "xlist" && ci == VAR) {
+            // var special: here we only check if xlist is a string, but we must do something with it elsewhere
+            if (!is_pystr(item.second)) {
+                throw std::invalid_argument("xlist must be a string");
+            }
+            continue;
         } else {
             gretl_valid_long_opt(opt, ci, key, item.second);
         }
@@ -788,16 +794,13 @@ GretlModel_VAR::GretlModel_VAR (std::shared_ptr<GretlDataset> GD, const std::str
                                 const int order, const py::kwargs &kwargs)
                                 : GretlModel(GRETL_OBJ_VAR, GD, kwargs),
                                 ylist(ylist), order(order)
-{
-    py::print("GretlModel_VAR: constructor");
-}
+{}
 
 GretlModel_VAR::~GretlModel_VAR (void)
 {
     if (this->model != NULL) {
         gretl_VAR_free(this->model);
     }
-    py::print("GretlModel_VAR: destructor");
 }
 
 void *GretlModel_VAR::model_ptr (void) const
@@ -807,7 +810,8 @@ void *GretlModel_VAR::model_ptr (void) const
 
 void GretlModel_VAR::fit (void)
 {
-    py::print("GretlModel_VAR::fit()");
+    gretl_list_ptr vars_list = nullptr;
+
     if (py::len(kwargs) > 0) {
         unpack_kwargs(VAR);
     }
@@ -817,13 +821,18 @@ void GretlModel_VAR::fit (void)
     }
 
     // we create list of endogenous variables
-    auto endog_var = list_from_formula(ylist, GD->dset, err); // it's std::unique_ptr!!!
-    if (!endog_var) {
+    if (kwargs.contains("xlist") && !kwargs["xlist"].is_none()) {
+        vars_list = list_from_formula(ylist + ";" + py::cast<std::string>(kwargs["xlist"]),
+                                      GD->dset, err);
+    } else {
+        vars_list = list_from_formula(ylist, GD->dset, err);
+    }
+    if (!vars_list) {
         throw std::invalid_argument("wrong list of variables");
     }
 
     // we estimate a model
-    model = gretl_VAR(order, NULL, endog_var.get(), GD->dset, opt, GP.prn_ptr(), &err);
+    model = gretl_VAR(order, NULL, vars_list.get(), GD->dset, opt, GP.prn_ptr(), &err);
     if (err) {
         handle_gretl_error(err);
     }
