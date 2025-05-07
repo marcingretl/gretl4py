@@ -1,4 +1,4 @@
-TESTS = module_related_tools.py data_management.py estimators.py tests.py accessors.py forecast.py
+TESTS = module_related_tools.py data_management.py estimators.py var.py tests.py accessors.py forecast.py
 
 .PHONY: clean alltests
 
@@ -7,6 +7,9 @@ data_management: data_management.py
 
 estimators: estimators.py
 	python3 estimators.py
+
+var: var.py
+	python3 var.py
 
 tests: tests.py
 	python3 tests.py
