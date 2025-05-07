@@ -841,32 +841,26 @@ void GretlModel_VAR::fit (void)
 
 py::dict GretlModel_VAR::forecast (const py::kwargs &kwargs)
 {
-    py::dict res;
+    py::print("GretlModel_VAR::forecast(): not implemented yet!");
 
-    py::print("GretlModel_VAR::forecast()");
-
-    return res;
+    return py::dict();
 }
 
 void GretlModel_VAR::restrict (const py::list &impose, const py::kwargs &kwargs)
 {
-    py::print("GretlModel_VAR::restrict()");
+    py::print("GretlModel_VAR::restrict(): not implemented yet!");
 }
 
 py::dict GretlModel_VAR::test (const std::string &type, const py::kwargs &kwargs)
 {
-    py::dict res;
+    py::print("GretlModel_VAR::test(): not implemented yet!");
 
-    py::print("GretlModel_VAR::test()");
-
-    return res;
+    return py::dict();
 }
 
 py::dict GretlModel_VAR::test (const std::string &type, const std::string &vars, const py::kwargs &kwargs)
 {
-    py::dict res;
+    py::print("GretlModel_VAR::test(): not implemented yet!");
 
-    py::print("GretlModel_VAR::test()");
-
-    return res;
+    return py::dict();
 }
