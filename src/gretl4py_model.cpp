@@ -71,6 +71,17 @@ void GretlModel::unlink_from_dataset (void) const
     }
 }
 
+std::unique_ptr<GretlTypes> GretlModel::get_accessor (const std::string &accessor) const
+{
+    auto res = gretl_generate_gretl_object(accessor.c_str(), err, model_obj_type,
+                                           GD->dset, model_ptr());
+    if (err) {
+        handle_gretl_error(err);
+    }
+
+    return res;
+}
+
 template<typename T>
 void GretlModel::save_model (T *model)
 {
@@ -381,17 +392,6 @@ py::dict GretlModel_NSE::forecast (const py::kwargs &kwargs)
 
     if (!(opt & OPT_Q)) {
         GP.print();
-    }
-
-    return res;
-}
-
-std::unique_ptr<GretlTypes> GretlModel::get_accessor (const std::string &accessor) const
-{
-    auto res = gretl_generate_gretl_object(accessor.c_str(), err, model_obj_type,
-                                           GD->dset, model_ptr());
-    if (err) {
-        handle_gretl_error(err);
     }
 
     return res;
