@@ -159,15 +159,9 @@ void GretlModel::unpack_kwargs (GretlCmdIndex ci)
         } else if (key == "lagselect" && ci == ARMA) {
             throw std::invalid_argument("'lagselect' option for (S)ARIMA is temporarily unavailable");
         } else if ((key == "llimit" || key == "rlimit") && ci == TOBIT) {
-            // TOBIT special: we set (l/r)limit
+            // TOBIT special: we check (l/r)limit
             if (!is_pynumeric(item.second)) {
                 throw std::invalid_argument("both llimit and rlimit must be numeric");
-            } else {
-                if (key == "llimit") {
-                    optional_par.at(0) = item.second.cast<double>();
-                } else {
-                    optional_par.at(1) = item.second.cast<double>();
-                }
             }
             continue;
         } else if (key == "xlist" && ci == VAR) {
@@ -601,11 +595,21 @@ void GretlModel_NSE_Driver<F, CI>::fit (void)
         throw std::runtime_error("No dataset is available");
     }
 
+    // TOBIT special: we set (l/r)limit
+    if constexpr (CI == TOBIT) {
+        if (kwargs.contains("llimit") && !kwargs["llimit"].is_none()) {
+            optional_par.at(0) = py::cast<double>(kwargs["llimit"]);
+        }
+        if (kwargs.contains("rlimit") && !kwargs["rlimit"].is_none()) {
+            optional_par.at(1) = py::cast<double>(kwargs["rlimit"]);
+        }
+    }
+
     // we construct the model
     var_list = list_from_formula(formula, GD->dset, err); // it's std::unique_ptr!!!
     model = gretl_model_new();
 
-    if (var_list == nullptr) {
+    if (!var_list) {
         throw std::runtime_error("Formula rendering failed");
     } else if (model == NULL || GP.prn_ptr() == NULL) {
         throw std::runtime_error("Failed to allocate memory");
@@ -793,7 +797,7 @@ template class GretlModel_NSE_Driver_quantreg<quantreg_driver, QUANTREG>;
 GretlModel_VAR::GretlModel_VAR (std::shared_ptr<GretlDataset> GD, const std::string &ylist,
                                 const int order, const py::kwargs &kwargs)
                                 : GretlModel(GRETL_OBJ_VAR, GD, kwargs),
-                                ylist(ylist), order(order)
+                                vars(ylist), order(order)
 {}
 
 GretlModel_VAR::~GretlModel_VAR (void)
@@ -810,8 +814,6 @@ void *GretlModel_VAR::model_ptr (void) const
 
 void GretlModel_VAR::fit (void)
 {
-    gretl_list_ptr vars_list = nullptr;
-
     if (py::len(kwargs) > 0) {
         unpack_kwargs(VAR);
     }
@@ -820,19 +822,20 @@ void GretlModel_VAR::fit (void)
         throw std::runtime_error("No dataset is available");
     }
 
-    // we create list of endogenous variables
+    // we add endogenous variables if present
     if (kwargs.contains("xlist") && !kwargs["xlist"].is_none()) {
-        vars_list = list_from_formula(ylist + ";" + py::cast<std::string>(kwargs["xlist"]),
-                                      GD->dset, err);
-    } else {
-        vars_list = list_from_formula(ylist, GD->dset, err);
+        vars.append(";" + py::cast<std::string>(kwargs["xlist"]));
     }
-    if (!vars_list) {
+
+    // be build variables list
+    var_list = list_from_formula(vars, GD->dset, err);
+    if (!var_list) {
         throw std::invalid_argument("wrong list of variables");
     }
 
     // we estimate a model
-    model = gretl_VAR(order, NULL, vars_list.get(), GD->dset, opt, GP.prn_ptr(), &err);
+    model = gretl_VAR(order, NULL, var_list.get(), GD->dset,
+                      opt, GP.prn_ptr(), &err);
     if (err) {
         handle_gretl_error(err);
     }

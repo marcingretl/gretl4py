@@ -45,7 +45,6 @@ protected:
     GretlPrint GP = GretlPrint();               // printer (instance wide)
     gretl_list_ptr var_list{nullptr};           // libgretl list of variables
     gretlopt opt = OPT_NONE;                    // instance wide options (including tests and forecasts)
-    std::vector<double> optional_par;           // optional general purpose parameter (tau for QUANTREG, (l/r)limits for TOBIT, tests...)
     mutable int err = 0;
 
     template<typename T>
@@ -112,6 +111,7 @@ class GretlModel_NSE_Driver : public GretlModel_NSE
 {
 protected:
     const std::string formula;                  // formula defining model
+    std::vector<double> optional_par;           // optional general purpose parameter (tau for QUANTREG, (l/r)limits for TOBIT, tests...)
     gretl_matrix *optional_par_as_mat = NULL;
 public:
     GretlModel_NSE_Driver (std::shared_ptr<GretlDataset> GD,
@@ -165,7 +165,7 @@ public:
 class GretlModel_VAR : public GretlModel
 {
 protected:
-    const std::string ylist;    // list of endogenous variables
+    std::string vars;           // list of endogenous (+ exogenous) variables
     const int order;            // VAR order
     GRETL_VAR *model = NULL;    // libgretl GRETL_VAR struct
 
