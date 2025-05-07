@@ -54,6 +54,8 @@ protected:
     void unpack_kwargs (GretlCmdIndex ci);      // model kwargs unpacking
 
     void fr_to_dict (FITRESID *fr, py::dict &fcdict);
+
+    virtual void *model_ptr (void) const = 0;   // non-typed pointer to model
 public:
     explicit GretlModel (GretlObjType model_obj_type, std::shared_ptr<GretlDataset> GD,
                          const py::kwargs &kwargs);
@@ -63,7 +65,7 @@ public:
 
     void unlink_from_dataset (void) const;
 
-    virtual std::unique_ptr<GretlTypes> get_accessor (const std::string &accessor) const = 0;
+    virtual std::unique_ptr<GretlTypes> get_accessor (const std::string &accessor) const;
 
     virtual void fit (void) = 0;
 
@@ -84,11 +86,11 @@ class GretlModel_NSE : public GretlModel
 {
 protected:
     MODEL *model = NULL;    // libgretl MODEL struct
+
+    void *model_ptr (void) const override;
 public:
     GretlModel_NSE (std::shared_ptr<GretlDataset> GD, const py::kwargs &kwargs);
     virtual ~GretlModel_NSE (void);
-
-    std::unique_ptr<GretlTypes> get_accessor (const std::string &accessor) const override;
 
     void fit (void) override = 0;
 
@@ -167,12 +169,12 @@ protected:
     const std::string xlist;    // list of exogenous variables
     const int order;            // VAR order
     GRETL_VAR *model = NULL;    // libgretl GRETL_VAR struct
+
+    void *model_ptr (void) const override;
 public:
     GretlModel_VAR (std::shared_ptr<GretlDataset> GD, const std::string &ylist,
                     const int order, const py::kwargs &kwargs);
     virtual ~GretlModel_VAR (void);
-
-    std::unique_ptr<GretlTypes> get_accessor (const std::string &accessor) const override;
 
     void fit (void) override;
 

@@ -322,6 +322,11 @@ GretlModel_NSE::~GretlModel_NSE (void)
     }
 }
 
+void *GretlModel_NSE::model_ptr (void) const
+{
+    return static_cast<void*>(model);
+}
+
 py::dict GretlModel_NSE::forecast (const py::kwargs &kwargs)
 {
     py::dict res;
@@ -381,10 +386,10 @@ py::dict GretlModel_NSE::forecast (const py::kwargs &kwargs)
     return res;
 }
 
-std::unique_ptr<GretlTypes> GretlModel_NSE::get_accessor (const std::string &accessor) const
+std::unique_ptr<GretlTypes> GretlModel::get_accessor (const std::string &accessor) const
 {
-    auto res = gretl_generate_gretl_object(accessor.c_str(), err,
-                                           model_obj_type, GD->dset, model);
+    auto res = gretl_generate_gretl_object(accessor.c_str(), err, model_obj_type,
+                                           GD->dset, model_ptr());
     if (err) {
         handle_gretl_error(err);
     }
@@ -795,13 +800,9 @@ GretlModel_VAR::~GretlModel_VAR (void)
     py::print("GretlModel_VAR: destructor");
 }
 
-std::unique_ptr<GretlTypes> GretlModel_VAR::get_accessor (const std::string &accessor) const
+void *GretlModel_VAR::model_ptr (void) const
 {
-    std::unique_ptr<GretlTypes> res;
-
-    py::print("GretlModel_VAR::get_accessor()");
-
-    return res;
+    return static_cast<void*>(model);
 }
 
 void GretlModel_VAR::fit (void)
@@ -827,9 +828,6 @@ void GretlModel_VAR::fit (void)
         handle_gretl_error(err);
     }
     save_model<GRETL_VAR>(model);
-
-    GP.print();
-
 }
 
 py::dict GretlModel_VAR::forecast (const py::kwargs &kwargs)
