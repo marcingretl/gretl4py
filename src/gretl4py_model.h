@@ -75,6 +75,8 @@ public:
     virtual py::dict test (const std::string &type, const py::kwargs &kwargs) = 0;
 
     virtual py::dict test (const std::string &type, const std::string &vars, const py::kwargs &kwargs) = 0;
+
+    virtual std::string get_formula (void) const = 0;
 };
 
 //
@@ -100,6 +102,8 @@ public:
     py::dict test (const std::string &type, const py::kwargs &kwargs) override;
 
     py::dict test (const std::string &type, const std::string &vars, const py::kwargs &kwargs) override;
+
+    std::string get_formula (void) const override = 0;
 };
 
 //
@@ -118,6 +122,8 @@ public:
                            const std::string &formula, const py::kwargs &kwargs);
 
     void fit (void) override;
+
+    std::string get_formula (void) const override;
 };
 
 //
@@ -155,6 +161,8 @@ public:
     ~GretlModel_NSE_arima (void);
 
     void fit (void) override;
+
+    std::string get_formula (void) const override;
 };
 
 
@@ -171,6 +179,8 @@ protected:
 
     void *model_ptr (void) const override;
 public:
+    py::list irfs;              // list holding results with subsequently computed IRFs
+
     GretlModel_VAR (std::shared_ptr<GretlDataset> GD, const std::string &ylist,
                     const int order, const py::kwargs &kwargs);
     virtual ~GretlModel_VAR (void);
@@ -184,6 +194,10 @@ public:
     py::dict test (const std::string &type, const py::kwargs &kwargs) override;
 
     py::dict test (const std::string &type, const std::string &vars, const py::kwargs &kwargs) override;
+
+    void irf (int targ, int shock, double alpha = 0);
+
+    std::string get_formula (void) const override;
 };
 
 

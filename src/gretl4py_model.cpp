@@ -583,6 +583,12 @@ GretlModel_NSE_Driver<F, CI>::GretlModel_NSE_Driver (std::shared_ptr<GretlDatase
     }
 }
 
+template <auto F, GretlCmdIndex CI>
+std::string GretlModel_NSE_Driver<F, CI>::get_formula (void) const
+{
+    return formula;
+}
+
 // Method template to support several estimation methods that
 // have the same "basic" signature, plus a few special cases
 // F: function to call
@@ -674,6 +680,11 @@ GretlModel_NSE_arima::GretlModel_NSE_arima (std::shared_ptr<GretlDataset> GD,
                                             const py::kwargs &kwargs)
                                             : GretlModel_NSE(GD, kwargs), y(y), tup(tup)
 {}
+
+std::string GretlModel_NSE_arima::get_formula (void) const
+{
+    return y;
+}
 
 void GretlModel_NSE_arima::get_arima_order (const py::tuple &tup,
                                             int &p, int &d, int &q)
@@ -846,7 +857,7 @@ void GretlModel_VAR::fit (void)
 
     // we add exogenous variables if present
     if (kwargs.contains("xlist") && !kwargs["xlist"].is_none()) {
-        vars.append(";" + kwargs["xlist"].cast<std::string>());
+        vars.append(" ; " + kwargs["xlist"].cast<std::string>());
     }
 
     // be build variables list
@@ -888,4 +899,43 @@ py::dict GretlModel_VAR::test (const std::string &type, const std::string &vars,
     py::print("GretlModel_VAR::test(): not implemented yet!");
 
     return py::dict();
+}
+
+std::string GretlModel_VAR::get_formula() const
+{
+    return vars;
+}
+
+void GretlModel_VAR::irf (int targ, int shock, double alpha)
+{
+    //
+    // this method mimics gretl's irf() function
+    //
+    GretlType t = GRETL_TYPE_MATRIX;
+    gretl_matrix *irf = NULL;
+    py::dict res;
+
+    // we compute IRFs
+    irf = gretl_VAR_get_impulse_response(model, targ, shock,
+                                         default_VAR_horizon(GD->dset),
+                                         alpha, GD->dset, &err);
+    if (err) {
+        handle_gretl_error(err);
+    }
+
+    // we manufacture resulting object
+    res[py::cast("targ")] = targ;
+    res[py::cast("targ_name")] = GD->dset->varname[gretl_VAR_get_variable_number(model, targ)];
+    res[py::cast("shock")] = shock;
+    res[py::cast("shock_name")] = GD->dset->varname[gretl_VAR_get_variable_number(model, shock)];
+    if (alpha > 0.0) {
+        res[py::cast("alpha")] = alpha;
+    }
+    res[py::cast("results")] = *convert_GretlType_to_GretlTypes(t, irf, 0, err);
+    irfs.append(res);
+
+    // release a memory
+    if (irf != NULL) {
+        gretl_matrix_free(irf);
+    }
 }

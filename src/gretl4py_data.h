@@ -70,6 +70,10 @@ void unpack_kwargs_test (gretlopt &opt, const std::string &type,
 gretl_list_ptr list_from_formula (const std::string &formula,
                                   DATASET *dset, int &err);
 
+std::unique_ptr<GretlTypes> convert_GretlType_to_GretlTypes (GretlType &t,
+                                                             void *gr_obj_ptr,
+                                                             const int n, int &err);
+
 //
 // Class to handle printing
 //

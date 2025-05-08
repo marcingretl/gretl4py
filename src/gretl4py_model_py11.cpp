@@ -48,6 +48,7 @@ void init_gretl4py_model_py11(py::module_ &m)
              },
              py::return_value_policy::take_ownership)
         .def("fcast", &GretlModel::forecast)
+        .def("get_formula", &GretlModel::get_formula)
         .def("restrict", &GretlModel::restrict)
         .def("test", py::overload_cast<const std::string&, const py::kwargs&>(&GretlModel::test),
              py::arg("type").none(false), py::kw_only())
@@ -115,8 +116,57 @@ void init_gretl4py_model_py11(py::module_ &m)
     bind_driver_model<GretlModel_NSE_Driver<tobit_model, TOBIT>>(m, "Model_tobit");
 
     // VAR
-    py::class_<GretlModel_VAR, GretlModel, std::unique_ptr<GretlModel_VAR>>(m, "Model_var", py::dynamic_attr());
-}
+    py::class_<GretlModel_VAR, GretlModel, std::unique_ptr<GretlModel_VAR>>(m, "Model_var", py::dynamic_attr())
+        .def_readwrite("irfs", &GretlModel_VAR::irfs)
+        .def("irf", &GretlModel_VAR::irf,
+             py::arg("targ").none(false), py::arg("shock").none(false), py::arg("alpha").none(true) = 0)
+        .def("irf",
+             [](GretlModel_VAR &self, std::string &targ, std::string &shock, double alpha)
+             {
+                 auto vars = self.get_formula();
+                 int targ_int;
+                 int shock_int;
 
+                 auto find_idx = [](const std::string &names, const std::string &val) -> int
+                 {
+                     std::istringstream iss(names);
+                     std::string token;
+                     int pos = 0;
+
+                     while (iss >> token) {
+                        if (token == ";") {
+                            break;
+                        }
+                        if (token == val) {
+                            return pos;
+                        }
+                        ++pos;
+                    }
+                    return -1; // not found
+                 };
+
+                 // let's try to find our targ/shock numbers
+                 try {
+                     targ_int = std::stoi(targ);
+                 } catch (std::invalid_argument) {
+                     targ_int = find_idx(vars, targ);
+                 }
+                 try {
+                     shock_int = std::stoi(shock);
+                 } catch (std::invalid_argument) {
+                     shock_int = find_idx(vars, shock);
+                 }
+
+                 if (targ_int == -1) {
+                    throw std::invalid_argument("targ value is invalid");
+                 }
+                 if (shock_int == -1) {
+                    throw std::invalid_argument("shock value is invalid");
+                 }
+
+                 self.irf(targ_int, shock_int, alpha);
+             },
+             py::arg("targ").none(false), py::arg("shock").none(false), py::arg("alpha").none(true) = 0);
+}
 //py::object self = py::cast(model.get());
 //py::setattr(self, "res", res);

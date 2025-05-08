@@ -160,9 +160,13 @@ static void numpy_array_to_gretl_storage (const py::dict &pydict, DATASET *dset)
     dset->t2 = dset->n-1;
 }
 
-static std::unique_ptr<GretlTypes> convert_GretlType_to_GretlTypes (GretlType &t,
-                                                                    void *gr_obj_ptr,
-                                                                    const int n, int &err)
+
+//////////////////////////////////////////////////
+// functions
+//////////////////////////////////////////////////
+std::unique_ptr<GretlTypes> convert_GretlType_to_GretlTypes (GretlType &t,
+                                                             void *gr_obj_ptr,
+                                                             const int n, int &err)
 {
     //
     // function converts libgretl's GretlType to gretl4py's GretlTypes
@@ -221,11 +225,6 @@ static std::unique_ptr<GretlTypes> convert_GretlType_to_GretlTypes (GretlType &t
 
     return res;
 }
-
-
-//////////////////////////////////////////////////
-// functions
-//////////////////////////////////////////////////
 
 void handle_gretl_error (int err)
 {
