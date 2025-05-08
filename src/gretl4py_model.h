@@ -197,6 +197,8 @@ public:
 
     void irf (int targ, int shock, double alpha = 0);
 
+    void irf (const std::string &targ, const std::string &shock, double alpha = 0);
+
     std::string get_formula (void) const override;
 };
 
