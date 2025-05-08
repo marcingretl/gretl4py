@@ -400,8 +400,8 @@ py::dict GretlModel_NSE::forecast (const py::kwargs &kwargs)
     return res;
 }
 
-py::dict GretlModel_NSE::test (const std::string &type,
-                               const py::kwargs &kwargs)
+void GretlModel_NSE::test (const std::string &type,
+                           const py::kwargs &kwargs)
 {
     //
     // this method performs test which do not take a variables list
@@ -448,19 +448,19 @@ py::dict GretlModel_NSE::test (const std::string &type,
         handle_gretl_error(err);
     }
 
+    res[py::cast("type")] = type;
+    res[py::cast("options")] = kwargs;
     res[py::cast("test")] = *get_accessor("$test");
     res[py::cast("pvalue")] = *get_accessor("$pvalue");
     res[py::cast("summary")] = GP.get_buffer();
+    tests.append(res);
     if (!kwargs.contains("silent")) {
         GP.print();
     }
-
-    return res;
 }
 
-py::dict GretlModel_NSE::test (const std::string &type,
-                               const std::string &vars,
-                               const py::kwargs &kwargs)
+void GretlModel_NSE::test (const std::string &type, const std::string &vars,
+                           const py::kwargs &kwargs)
 {
     //
     // this method performs test which do take a variables list
@@ -496,16 +496,16 @@ py::dict GretlModel_NSE::test (const std::string &type,
         handle_gretl_error(err);
     }
 
+    res[py::cast("type")] = type;
+    res[py::cast("options")] = kwargs;
     res[py::cast("test")] = *get_accessor("$test");
     res[py::cast("pvalue")] = *get_accessor("$pvalue");
     res[py::cast("summary")] = GP.get_buffer();
+    tests.append(res);
     if (!kwargs.contains("silent")) {
         GP.print();
     }
-
-    return res;
 }
-
 
 void GretlModel_NSE::restrict (const py::list &impose,
                                const py::kwargs &kwargs)
@@ -887,18 +887,14 @@ void GretlModel_VAR::restrict (const py::list &impose, const py::kwargs &kwargs)
     py::print("GretlModel_VAR::restrict(): not implemented yet!");
 }
 
-py::dict GretlModel_VAR::test (const std::string &type, const py::kwargs &kwargs)
+void GretlModel_VAR::test (const std::string &type, const py::kwargs &kwargs)
 {
     py::print("GretlModel_VAR::test(): not implemented yet!");
-
-    return py::dict();
 }
 
-py::dict GretlModel_VAR::test (const std::string &type, const std::string &vars, const py::kwargs &kwargs)
+void GretlModel_VAR::test (const std::string &type, const std::string &vars, const py::kwargs &kwargs)
 {
     py::print("GretlModel_VAR::test(): not implemented yet!");
-
-    return py::dict();
 }
 
 std::string GretlModel_VAR::get_formula() const

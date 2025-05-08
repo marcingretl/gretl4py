@@ -37,14 +37,14 @@ class GretlModel
 private:
     static inline int next_model_id = 1;
 protected:
-    const int id;                               // model ID
-    const GretlObjType model_obj_type;          // libgretl's object type (in model context)
-    const py::kwargs kwargs;                    // kwargs passed to the model
-    py::dict RES;                               // estimation results as dictionary
-    std::shared_ptr<GretlDataset> GD;           // dataset used
-    GretlPrint GP = GretlPrint();               // printer (instance wide)
-    gretl_list_ptr var_list{nullptr};           // libgretl list of variables
-    gretlopt opt = OPT_NONE;                    // instance wide options (including tests and forecasts)
+    const int id;                       // model ID
+    const GretlObjType model_obj_type;  // libgretl's object type (in model context)
+    const py::kwargs kwargs;            // kwargs passed to the model
+    py::dict RES;                       // estimation results as dictionary
+    std::shared_ptr<GretlDataset> GD;   // dataset used
+    GretlPrint GP = GretlPrint();       // printer (instance wide)
+    gretl_list_ptr var_list{nullptr};   // libgretl list of variables
+    gretlopt opt = OPT_NONE;            // instance wide options (including tests and forecasts)
     mutable int err = 0;
 
     template<typename T>
@@ -56,6 +56,8 @@ protected:
 
     virtual void *model_ptr (void) const = 0;   // non-typed pointer to model
 public:
+    py::list tests;                     // list with results of preformed tests
+
     explicit GretlModel (GretlObjType model_obj_type, std::shared_ptr<GretlDataset> GD,
                          const py::kwargs &kwargs);
     virtual ~GretlModel (void);
@@ -72,9 +74,9 @@ public:
 
     virtual void restrict (const py::list &impose, const py::kwargs &kwargs) = 0;
 
-    virtual py::dict test (const std::string &type, const py::kwargs &kwargs) = 0;
+    virtual void test (const std::string &type, const py::kwargs &kwargs) = 0;
 
-    virtual py::dict test (const std::string &type, const std::string &vars, const py::kwargs &kwargs) = 0;
+    virtual void test (const std::string &type, const std::string &vars, const py::kwargs &kwargs) = 0;
 
     virtual std::string get_formula (void) const = 0;
 };
@@ -99,9 +101,9 @@ public:
 
     void restrict (const py::list &impose, const py::kwargs &kwargs) override;
 
-    py::dict test (const std::string &type, const py::kwargs &kwargs) override;
+    void test (const std::string &type, const py::kwargs &kwargs) override;
 
-    py::dict test (const std::string &type, const std::string &vars, const py::kwargs &kwargs) override;
+    void test (const std::string &type, const std::string &vars, const py::kwargs &kwargs) override;
 
     std::string get_formula (void) const override = 0;
 };
@@ -191,9 +193,9 @@ public:
 
     void restrict (const py::list &impose, const py::kwargs &kwargs) override;
 
-    py::dict test (const std::string &type, const py::kwargs &kwargs) override;
+    void test (const std::string &type, const py::kwargs &kwargs) override;
 
-    py::dict test (const std::string &type, const std::string &vars, const py::kwargs &kwargs) override;
+    void test (const std::string &type, const std::string &vars, const py::kwargs &kwargs) override;
 
     void irf (int targ, int shock, double alpha = 0);
 

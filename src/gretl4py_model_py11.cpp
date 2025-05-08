@@ -34,6 +34,7 @@ void init_gretl4py_model_py11(py::module_ &m)
 {
     // base GretlModel class
     py::class_<GretlModel, std::unique_ptr<GretlModel>>(m, "Model", py::dynamic_attr())
+        .def_readwrite("tests", &GretlModel::tests)
         .def("fit",
              [](GretlModel &self) -> GretlModel&
              {
@@ -80,10 +81,8 @@ void init_gretl4py_model_py11(py::module_ &m)
                      with_vars = true;
                  }
 
-                 py::object self_obj = py::cast(&self);
-                 self_obj.attr(type.c_str()) = with_vars
-                    ? self.test(type, vars, clean_kwargs)
-                    : self.test(type, clean_kwargs);
+                 // lest perform test
+                 with_vars ? self.test(type, vars, clean_kwargs) : self.test(type, clean_kwargs);
              },
              py::arg("type").none(false), py::kw_only());
 
