@@ -107,7 +107,7 @@ class GretlDataset : public std::enable_shared_from_this<GretlDataset>
 {
 private:
     static inline int next_obj_id = 1;
-    int id;
+    const int id;                                   // dataset's id
     std::unordered_set<int> linked_models;          // models (id-s) which use this dataset
     GretlPrint GP = GretlPrint();                   // printer (instance wide)
     mutable std::unique_ptr<GretlTypes> RES_other;  // other results (accessor, tests, ets)
@@ -121,7 +121,6 @@ private:
     gretlopt setobs_opt_from_structure (int structure);
 public:
     mutable int err = 0;
-    bool is_private = false;
     bool is_default = false;
     DATASET *dset = NULL;
     std::string source;

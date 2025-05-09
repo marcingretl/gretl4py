@@ -495,7 +495,7 @@ template void move_to_python_container<GretlModel, py::dict, py::list>
 //GretlDataset class methods
 //
 
-GretlDataset::GretlDataset (const std::string fname)
+GretlDataset::GretlDataset (const std::string fname) : id(next_obj_id++)
 {
     //
     // load gretl data from file
@@ -510,11 +510,9 @@ GretlDataset::GretlDataset (const std::string fname)
         destroy_dataset(dset);
         throw std::runtime_error("Reading data from '" + fname + "' file failed.");
     }
-
-    id = GretlDataset::next_obj_id++;
 }
 
-GretlDataset::GretlDataset (const py::dict &pydict)
+GretlDataset::GretlDataset (const py::dict &pydict) : id(next_obj_id++)
 {
     //
     // alternative initializer: we fill a gretl DATASET with the content of @pydict
@@ -560,8 +558,6 @@ GretlDataset::GretlDataset (const py::dict &pydict)
     dset->structure = get_int_from_python_dict(pydict, "structure", 0);
     opt = setobs_opt_from_structure(dset->structure);
     set_obs(std::to_string(pd).c_str(), dset->S[0], dset, opt);
-
-    id = GretlDataset::next_obj_id++;
 }
 
 GretlDataset::~GretlDataset (void)
