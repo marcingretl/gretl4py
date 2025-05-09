@@ -138,22 +138,37 @@ void GretlModel::save_model (T *model)
     }
 }
 
-void GretlModel::add_dict_to_list (const char *list_name, py::dict &dict)
+// S - source type
+// D - destination type
+template <typename S, typename D>
+void GretlModel::move_to_python_container (S &item, const char *container, std::string key)
 {
     //
-    // in this method we safety move given dict to the list
+    // in this method we safety move given item to the python's container
     //
     py::gil_scoped_acquire gil;
     py::object self = py::cast(this);
-    py::object irfs = self.attr(list_name);
+    py::object dst = self.attr(container);
 
-    // we check if list_name exists in instance and it is a list
-    if (!is_pylist(irfs)) {
-        throw std::runtime_error("attribute " + std::string(list_name) + " is not a list");
+    // we check if container exists
+    if (dst.is_none()) {
+        throw std::runtime_error("attribute '" + std::string(container) + "' does not exist");
     }
 
-    // we append results to the list
-    irfs.cast<py::list>().append(std::move(dict));
+    if constexpr (std::is_same_v<py::list, D>) {
+        if (!is_pylist(dst)) {
+            throw std::runtime_error("attribute '" + std::string(container) + "' is not a list");
+        }
+        // we append results to the list
+        dst.cast<py::list>().append(std::move(item));
+    } else if constexpr (std::is_same_v<py::dict, D>) {
+        if (!is_pydict(dst)) {
+            throw std::runtime_error("attribute '" + std::string(container) + "' is not a dictionary");
+        }
+        dst.cast<py::dict>()[py::cast(key)] = std::move(item);
+    } else {
+        throw std::runtime_error("unsupported container type for attribute '" + std::string(container) + "'");
+    }
 }
 
 void GretlModel::unpack_kwargs (GretlCmdIndex ci)
@@ -947,7 +962,7 @@ void GretlModel_VAR::irf (int targ, int shock, double alpha)
     }
     res[py::cast("results")] = std::move(*convert_GretlType_to_GretlTypes(t, irf, 0, err));
 
-    add_dict_to_list("irfs", res);
+    move_to_python_container<py::dict, py::list>(res, "irfs");
 
     // release a memory
     if (irf != NULL) {

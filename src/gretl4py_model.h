@@ -54,7 +54,8 @@ protected:
 
     void fr_to_dict (FITRESID *fr, py::dict &fcdict);
 
-    void add_dict_to_list (const char *list_name, py::dict &dict);
+    template <typename S, typename D>
+    void move_to_python_container (S &item, const char *container, std::string key = "");
 
     virtual void *model_ptr (void) const = 0;   // non-typed pointer to model
 public:
