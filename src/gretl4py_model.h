@@ -56,8 +56,6 @@ protected:
 
     virtual void *model_ptr (void) const = 0;   // non-typed pointer to model
 public:
-    py::list tests;                     // list with results of preformed tests
-
     explicit GretlModel (GretlObjType model_obj_type, std::shared_ptr<GretlDataset> GD,
                          const py::kwargs &kwargs);
     virtual ~GretlModel (void);

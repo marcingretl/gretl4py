@@ -102,7 +102,7 @@ def get_data(src):
         raise RuntimeError(f'Unsupported data src type: {type(src).__name__}\n')
 
     # create dataset
-    dset = _gretl.GretlDataset(src)
+    dset = _gretl.Dataset(src)
     if dset.get_id() == 1:
         dset.set_as_default()
     dset.source = source
@@ -119,7 +119,7 @@ def show_data_status():
     # combine both to search for datasets
     all_globals = {**caller_globals, **caller_locals}
 
-    datasets_found = [name for name, value in all_globals.items() if isinstance(value, _gretl.GretlDataset)]
+    datasets_found = [name for name, value in all_globals.items() if isinstance(value, _gretl.Dataset)]
 
     if len(datasets_found) == 0:
         print('No datasets were loaded.')

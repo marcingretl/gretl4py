@@ -448,12 +448,16 @@ void GretlModel_NSE::test (const std::string &type,
         handle_gretl_error(err);
     }
 
+    // we manufacture resulting object
     res[py::cast("type")] = type;
     res[py::cast("options")] = kwargs;
     res[py::cast("test")] = *get_accessor("$test");
     res[py::cast("pvalue")] = *get_accessor("$pvalue");
     res[py::cast("summary")] = GP.get_buffer();
-    tests.append(res);
+
+    // we register result
+    move_to_python_container<GretlModel, py::dict, py::list>(*this, std::move(res), "tests");
+
     if (!kwargs.contains("silent")) {
         GP.print();
     }
@@ -496,12 +500,16 @@ void GretlModel_NSE::test (const std::string &type, const std::string &vars,
         handle_gretl_error(err);
     }
 
+    // we manufacture resulting object
     res[py::cast("type")] = type;
     res[py::cast("options")] = kwargs;
     res[py::cast("test")] = *get_accessor("$test");
     res[py::cast("pvalue")] = *get_accessor("$pvalue");
     res[py::cast("summary")] = GP.get_buffer();
-    tests.append(res);
+
+    // we register result
+    move_to_python_container<GretlModel, py::dict, py::list>(*this, std::move(res), "tests");
+
     if (!kwargs.contains("silent")) {
         GP.print();
     }
