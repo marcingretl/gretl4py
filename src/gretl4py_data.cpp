@@ -469,12 +469,12 @@ void move_to_python_container (PyWrapped &wrapped_obj, Item &&item,
     }
 
     if constexpr (std::is_same_v<ContainerType, py::list>) {
-        if (!py::isinstance<py::list>(dst)) {
+        if (!is_pylist(dst)) {
             throw std::runtime_error("attribute '" + std::string(container) + "' is not a list");
         }
         dst.cast<py::list>().append(std::forward<Item>(item));
     } else if constexpr (std::is_same_v<ContainerType, py::dict>) {
-        if (!py::isinstance<py::dict>(dst)) {
+        if (!is_pydict(dst)) {
             throw std::runtime_error("attribute '" + std::string(container) + "' is not a dictionary");
         }
         dst.cast<py::dict>()[py::cast(key)] = std::forward<Item>(item);
