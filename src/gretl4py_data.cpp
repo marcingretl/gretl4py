@@ -1062,10 +1062,8 @@ GretlBundle::GretlBundle (GRETL_VAR *model, DATASET *dset)
     err = gretl_VAR_bundlize(model, dset, b);
 }
 
-GretlBundle::GretlBundle (gretl_bundle *b) : b(b)
-{
-    free_b = false;
-}
+GretlBundle::GretlBundle (gretl_bundle *b) : free_b(false), b(b)
+{}
 
 GretlBundle::~GretlBundle (void)
 {
