@@ -116,11 +116,11 @@ void init_gretl4py_model_py11(py::module_ &m)
 
     // VAR
     py::class_<GretlModel_VAR, GretlModel, std::unique_ptr<GretlModel_VAR>>(m, "Model_var", py::dynamic_attr())
-        .def_readwrite("irfs", &GretlModel_VAR::irfs)
         .def("irf", py::overload_cast<int, int, double>(&GretlModel_VAR::irf),
              py::arg("targ").none(false), py::arg("shock").none(false), py::arg("alpha").none(true) = 0)
         .def("irf", py::overload_cast<const std::string&, const std::string&, double>(&GretlModel_VAR::irf),
              py::arg("targ").none(false), py::arg("shock").none(false), py::arg("alpha").none(true) = 0);
 }
-//py::object self = py::cast(model.get());
-//py::setattr(self, "res", res);
+// py::object self = py::cast(model.get());
+// py::gil_scoped_acquire gil;
+// py::setattr(self, "res", res);

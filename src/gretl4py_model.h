@@ -181,8 +181,6 @@ protected:
 
     void *model_ptr (void) const override;
 public:
-    py::list irfs;              // list holding results with subsequently computed IRFs
-
     GretlModel_VAR (std::shared_ptr<GretlDataset> GD, const std::string &ylist,
                     const int order, const py::kwargs &kwargs);
     virtual ~GretlModel_VAR (void);
