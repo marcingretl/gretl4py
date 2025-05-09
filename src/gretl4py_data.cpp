@@ -1062,9 +1062,8 @@ GretlBundle::GretlBundle (GRETL_VAR *model, DATASET *dset)
     err = gretl_VAR_bundlize(model, dset, b);
 }
 
-GretlBundle::GretlBundle (gretl_bundle *b)
+GretlBundle::GretlBundle (gretl_bundle *b) : b(b)
 {
-    this->b = b;
     free_b = false;
 }
 
@@ -1262,10 +1261,8 @@ void MapPyToCpp::convert (const T *pyobj)
 //
 // GretlPrint class methods
 //
-GretlPrint::GretlPrint (PrnType prn_type)
+GretlPrint::GretlPrint (PrnType prn_type) : prn_type(prn_type)
 {
-    this->prn_type = prn_type;
-
     prn = gretl_print_new(this->prn_type, &err);
     if (err) {
         handle_gretl_error(err);
