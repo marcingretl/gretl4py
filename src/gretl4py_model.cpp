@@ -138,6 +138,24 @@ void GretlModel::save_model (T *model)
     }
 }
 
+void GretlModel::add_dict_to_list (const char *list_name, py::dict &dict)
+{
+    //
+    // in this method we safety move given dict to the list
+    //
+    py::gil_scoped_acquire gil;
+    py::object self = py::cast(this);
+    py::object irfs = self.attr(list_name);
+
+    // we check if list_name exists in instance and it is a list
+    if (!is_pylist(irfs)) {
+        throw std::runtime_error("attribute " + std::string(list_name) + " is not a list");
+    }
+
+    // we append results to the list
+    irfs.cast<py::list>().append(std::move(dict));
+}
+
 void GretlModel::unpack_kwargs (GretlCmdIndex ci)
 {
     opt = OPT_NONE;
@@ -929,20 +947,7 @@ void GretlModel_VAR::irf (int targ, int shock, double alpha)
     }
     res[py::cast("results")] = std::move(*convert_GretlType_to_GretlTypes(t, irf, 0, err));
 
-    // we append results to the object's 'irfs' attribute
-    py::gil_scoped_acquire gil;
-    py::object self = py::cast(this);
-    py::object irfs = self.attr("irfs");
-    if (!is_pylist(irfs)) {
-        throw std::runtime_error("attribute 'irfs' is not a list");
-    }
-
-    // create a temporary list and append
-    py::list irfs_tmp = irfs.cast<py::list>();
-    irfs_tmp.append(std::move(res));
-
-    // update the 'irfs' attribute with the new list
-    self.attr("irfs") = irfs_tmp;
+    add_dict_to_list("irfs", res);
 
     // release a memory
     if (irf != NULL) {

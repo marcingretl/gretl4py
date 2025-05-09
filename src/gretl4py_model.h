@@ -54,6 +54,8 @@ protected:
 
     void fr_to_dict (FITRESID *fr, py::dict &fcdict);
 
+    void add_dict_to_list (const char *list_name, py::dict &dict);
+
     virtual void *model_ptr (void) const = 0;   // non-typed pointer to model
 public:
     py::list tests;                     // list with results of preformed tests
