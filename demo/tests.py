@@ -10,7 +10,7 @@ d5 = gretl.get_data(gretl.gretl_data_path('misc/ooballot.gdt'))
 print("\n****************************")
 print("adf")
 d1.test(type="adf", vars="LRM", order=1, silent=True)
-print(d1.adf['summary'])
+print(d1.tests[-1]['summary'])
 
 print("\n****************************")
 print("kpss")
@@ -23,7 +23,7 @@ d1.test(type="coint", y="LRM", vars="LRY IBO", order=4)
 print("\n****************************")
 print("bds")
 d1.test(type="bds", vars="LRY", order=4, quiet=True)
-print(d1.bds['summary'])    # issue: empty printout!!!
+print(d1.tests[-1]['summary'])    # issue: empty printout!!!
 
 print("\n****************************")
 print("normtest")
@@ -50,7 +50,7 @@ d3.test(type="levinlin", vars="invest", order=[2,2,3,3,4,4,2,3,2,1])
 print("\n****************************")
 print("meantest")
 d3.test(type="meantest", vars="invest firm")
-print(d3.meantest['pvalue'])
+print(d3.tests[-1]['pvalue'])
 
 # OLS
 m1 = gretl.ols(formula='1 0 2 3').fit()

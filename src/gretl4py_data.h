@@ -74,6 +74,10 @@ std::unique_ptr<GretlTypes> convert_GretlType_to_GretlTypes (GretlType &t,
                                                              void *gr_obj_ptr,
                                                              const int n, int &err);
 
+template <typename PyWrapped, typename Item, typename ContainerType>
+void move_to_python_container (PyWrapped &wrapped_obj, Item &&item,
+                               const char *container, const std::string &key = "");
+
 //
 // Class to handle printing
 //

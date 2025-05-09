@@ -54,9 +54,6 @@ protected:
 
     void fr_to_dict (FITRESID *fr, py::dict &fcdict);
 
-    template <typename S, typename D>
-    void move_to_python_container (S &item, const char *container, std::string key = "");
-
     virtual void *model_ptr (void) const = 0;   // non-typed pointer to model
 public:
     py::list tests;                     // list with results of preformed tests

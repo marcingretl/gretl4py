@@ -455,6 +455,38 @@ gretl_list_ptr list_from_formula (const std::string &formula,
     return gretl_list_ptr(raw_list);
 }
 
+// Here we move item to named container for given instance
+template <typename PyWrapped, typename Item, typename ContainerType>
+void move_to_python_container (PyWrapped &wrapped_obj, Item &&item,
+                               const char *container, const std::string &key)
+{
+    py::gil_scoped_acquire gil;
+    py::object self = py::cast(wrapped_obj);
+    py::object dst = self.attr(container);
+
+    if (dst.is_none()) {
+        throw std::runtime_error("attribute '" + std::string(container) + "' does not exist");
+    }
+
+    if constexpr (std::is_same_v<ContainerType, py::list>) {
+        if (!py::isinstance<py::list>(dst)) {
+            throw std::runtime_error("attribute '" + std::string(container) + "' is not a list");
+        }
+        dst.cast<py::list>().append(std::forward<Item>(item));
+    } else if constexpr (std::is_same_v<ContainerType, py::dict>) {
+        if (!py::isinstance<py::dict>(dst)) {
+            throw std::runtime_error("attribute '" + std::string(container) + "' is not a dictionary");
+        }
+        dst.cast<py::dict>()[py::cast(key)] = std::forward<Item>(item);
+    } else {
+        throw std::runtime_error("Unsupported container type for attribute '" + std::string(container) + "'");
+    }
+}
+// instantiation for GretlModel class
+template void move_to_python_container<GretlModel, py::dict, py::list>
+    (GretlModel&, py::dict&&, const char*, const std::string&);
+
+
 //////////////////////////////////////////////////
 // classes
 //////////////////////////////////////////////////
@@ -1005,8 +1037,9 @@ void GretlDataset::test (const std::string &type, const std::string &vars,
     }
 
     // we register result
-    py::object self = py::cast(this);
-    py::setattr(self, type.c_str(), res);
+    move_to_python_container<GretlDataset, py::dict, py::list>(*this, std::move(res), "tests");
+    //py::object self = py::cast(this);
+    //py::setattr(self, type.c_str(), res);
 }
 
 
