@@ -463,13 +463,21 @@ void move_to_python_container (PyWrapped &wrapped_obj, Item &&item,
                                const char *container, const std::string &key)
 {
     py::gil_scoped_acquire gil;
-    py::object self = py::cast(wrapped_obj);
-    py::object dst = self.attr(container);
+    py::object obj = py::cast(wrapped_obj);
 
-    if (dst.is_none()) {
-        throw std::runtime_error("attribute '" + std::string(container) + "' does not exist");
+    // we check if given container exists, and if not we create it
+    if (!py::hasattr(obj, container)) {
+        py::print("brak");
+        if constexpr (std::is_same_v<ContainerType, py::list>) {
+            obj.attr(container) = py::list();
+            py::print("dodałem listę");
+        } else if constexpr (std::is_same_v<ContainerType, py::dict>) {
+            obj.attr(container) = py::dict();
+        }
     }
+    py::object dst = obj.attr(container);
 
+    // we move add item to container
     if constexpr (std::is_same_v<ContainerType, py::list>) {
         if (!is_pylist(dst)) {
             throw std::runtime_error("attribute '" + std::string(container) + "' is not a list");
