@@ -84,9 +84,10 @@ def printdata(data, namesonly):
 setattr(_gretl.Dataset, "tests", list())            # list holding results with subsequently computed dataset-based tests
 setattr(_gretl.Model, "__repr__", model_repr)
 setattr(_gretl.Model, "attrs", attrs)               # method for listing all object's attributes
-setattr(_gretl.Model, "tests", list())              # list holding results with subsequently computed model-based tests
+setattr(_gretl.Model_NSE, "tests", list())          # list holding results with subsequently computed model-based tests
 setattr(_gretl.Model_logit, "oddsratio", oddsratio) # method for pretty-printing oddsratios
 setattr(_gretl.Model_var, "irfs", list())           # list holding results with subsequently computed IRFs
+setattr(_gretl.Model_var, "tests", list())          # list holding results with subsequently computed model-based tests
 
 # directly use GretlModel for the model instantiation
 def __model_initializer(model_name: str, *args, **kwargs):

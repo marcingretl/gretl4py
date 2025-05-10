@@ -72,10 +72,6 @@ public:
 
     virtual void restrict (const py::list &impose, const py::kwargs &kwargs) = 0;
 
-    virtual void test (const std::string &type, const py::kwargs &kwargs) = 0;
-
-    virtual void test (const std::string &type, const std::string &vars, const py::kwargs &kwargs) = 0;
-
     virtual std::string get_formula (void) const = 0;
 };
 
@@ -99,9 +95,9 @@ public:
 
     void restrict (const py::list &impose, const py::kwargs &kwargs) override;
 
-    void test (const std::string &type, const py::kwargs &kwargs) override;
+    void test (const std::string &type, const py::kwargs &kwargs);
 
-    void test (const std::string &type, const std::string &vars, const py::kwargs &kwargs) override;
+    void test (const std::string &type, const std::string &vars, const py::kwargs &kwargs);
 
     std::string get_formula (void) const override = 0;
 };
@@ -165,7 +161,6 @@ public:
     std::string get_formula (void) const override;
 };
 
-
 //
 // VAR libgretl MODEL
 // extends: GretlModel
@@ -189,9 +184,7 @@ public:
 
     void restrict (const py::list &impose, const py::kwargs &kwargs) override;
 
-    void test (const std::string &type, const py::kwargs &kwargs) override;
-
-    void test (const std::string &type, const std::string &vars, const py::kwargs &kwargs) override;
+    void test (const std::string &type, const py::kwargs &kwargs);
 
     void irf (int targ, int shock, double alpha = 0);
 

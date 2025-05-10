@@ -49,11 +49,7 @@ void init_gretl4py_model_py11(py::module_ &m)
              py::return_value_policy::take_ownership)
         .def("fcast", &GretlModel::forecast)
         .def("get_formula", &GretlModel::get_formula)
-        .def("restrict", &GretlModel::restrict)
-        .def("test", py::overload_cast<const std::string&, const py::kwargs&>(&GretlModel::test),
-             py::arg("type").none(false), py::kw_only())
-        .def("test", py::overload_cast<const std::string&, const std::string&, const py::kwargs&>(&GretlModel::test),
-             py::arg("type").none(false), py::arg("vars").none(false), py::kw_only());
+        .def("restrict", &GretlModel::restrict);
 
     // Native Single Equation libgretl MODEL (NSE)
     py::class_<GretlModel_NSE, GretlModel, std::unique_ptr<GretlModel_NSE>>(m, "Model_NSE", py::dynamic_attr())
@@ -115,6 +111,8 @@ void init_gretl4py_model_py11(py::module_ &m)
 
     // VAR
     py::class_<GretlModel_VAR, GretlModel, std::unique_ptr<GretlModel_VAR>>(m, "Model_var", py::dynamic_attr())
+        .def("test", &GretlModel_VAR::test,
+             py::arg("type").none(false), py::kw_only())
         .def("irf", py::overload_cast<int, int, double>(&GretlModel_VAR::irf),
              py::arg("targ").none(false), py::arg("shock").none(false), py::arg("alpha").none(true) = 0)
         .def("irf", py::overload_cast<const std::string&, const std::string&, double>(&GretlModel_VAR::irf),

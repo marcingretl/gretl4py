@@ -897,12 +897,39 @@ void GretlModel_VAR::restrict (const py::list &impose, const py::kwargs &kwargs)
 
 void GretlModel_VAR::test (const std::string &type, const py::kwargs &kwargs)
 {
-    py::print("GretlModel_VAR::test(): not implemented yet!");
-}
+    py::dict res;
+    int order = GD->dset->pd;
 
-void GretlModel_VAR::test (const std::string &type, const std::string &vars, const py::kwargs &kwargs)
-{
-    py::print("GretlModel_VAR::test(): not implemented yet!");
+    // we set up options
+    unpack_kwargs_test(opt, type, kwargs, order);
+
+    // we perform test
+    if (type == "autocorr") {
+        err = gretl_VAR_autocorrelation_test(model, order, GD->dset, opt, GP.prn_ptr());
+    } else if (type == "arch") {
+        err = gretl_VAR_arch_test(model, order, GD->dset, opt, GP.prn_ptr());
+    } else if (type == "normality") {
+        err = gretl_VAR_normality_test(model, opt, GP.prn_ptr());
+    } else {
+        throw std::invalid_argument(type + ": unsupported test");
+    }
+    if (err) {
+        handle_gretl_error(err);
+    }
+
+     // we manufacture resulting object
+    res[py::cast("type")] = type;
+    res[py::cast("options")] = kwargs;
+    res[py::cast("test")] = *get_accessor("$test");
+    res[py::cast("pvalue")] = *get_accessor("$pvalue");
+    res[py::cast("summary")] = GP.get_buffer();
+
+    // we register result
+    move_to_python_container<GretlModel, py::dict, py::list>(*this, std::move(res), "tests");
+
+    if (!kwargs.contains("silent")) {
+        GP.print();
+    }
 }
 
 std::string GretlModel_VAR::get_formula() const
