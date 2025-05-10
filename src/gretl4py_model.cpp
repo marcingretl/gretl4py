@@ -900,6 +900,11 @@ void GretlModel_VAR::test (const std::string &type, const py::kwargs &kwargs)
     py::dict res;
     int order = GD->dset->pd;
 
+    // basic check
+    if (type == "normality" && kwargs.contains("order")) {
+        throw std::invalid_argument("normality test doesn't take 'order' option");
+    }
+
     // we set up options
     unpack_kwargs_test(opt, type, kwargs, order);
 

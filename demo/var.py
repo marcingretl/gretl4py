@@ -9,11 +9,16 @@ m1 = gretl.var(order=2, ylist='LRM LRY', xlist='IBO IDE', trend=True, seasonals=
 print(m1)
 print("sigma matrix:")
 print(m1.get_accessor("$sigma"))
+
 m1.test(type="autocorr", order=3)
+print("test statistics:")
+print(m1.tests[-1]['test'])
+
 m1.test(type="arch")
 print("pvalues:")
 print(m1.tests[-1]['pvalue'])
-m1.test(type="normality", silent=True, order=3)
+
+m1.test(type="normality", silent=True)
 print(m1.tests[-1]['summary'])
 #m1.fcast()
 m1.irf(targ=0, shock=0)
