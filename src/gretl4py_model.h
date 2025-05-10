@@ -173,6 +173,9 @@ protected:
     GRETL_VAR *model = NULL;    // libgretl GRETL_VAR struct
 
     void *model_ptr (void) const override;
+
+    template <GretlCmdIndex CI>
+    void do_var_vecm_fit (int rank = 0);
 public:
     GretlModel_VAR (std::shared_ptr<GretlDataset> GD, const std::string &ylist,
                     const int order, const py::kwargs &kwargs);
@@ -191,6 +194,21 @@ public:
     void irf (const std::string &targ, const std::string &shock, double alpha = 0);
 
     std::string get_formula (void) const override;
+};
+
+//
+// VECM libgretl MODEL
+// extends: GretlModel_VAR
+//
+class GretlModel_VAR_VECM : public GretlModel_VAR
+{
+private:
+    int rank;               // co-integration rank
+public:
+    GretlModel_VAR_VECM (std::shared_ptr<GretlDataset> GD, const std::string &ylist,
+                         const int order, const int rank, const py::kwargs &kwargs);
+
+    void fit (void) override;
 };
 
 

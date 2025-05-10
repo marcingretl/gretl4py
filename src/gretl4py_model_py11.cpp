@@ -117,6 +117,9 @@ void init_gretl4py_model_py11(py::module_ &m)
              py::arg("targ").none(false), py::arg("shock").none(false), py::arg("alpha").none(true) = 0)
         .def("irf", py::overload_cast<const std::string&, const std::string&, double>(&GretlModel_VAR::irf),
              py::arg("targ").none(false), py::arg("shock").none(false), py::arg("alpha").none(true) = 0);
+
+    // VCEM
+    py::class_<GretlModel_VAR_VECM, GretlModel_VAR, std::unique_ptr<GretlModel_VAR_VECM>>(m, "Model_vecm", py::dynamic_attr());
 }
 // py::object self = py::cast(model.get());
 // py::gil_scoped_acquire gil;

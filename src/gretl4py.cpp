@@ -115,9 +115,9 @@ PYBIND11_MODULE(_gretl, m)
     BIND_DRIVER_MODEL(tobit, tobit_model, TOBIT)
 
     //////////////////////////////////////////////////
-    // var
+    // VAR and VECM
     //////////////////////////////////////////////////
-     m.def("var",
+    m.def("var",
           [](const int &order, const std::string &ylist, const py::kwargs &kwargs) -> std::unique_ptr<GretlModel>
           {
               auto model = std::make_unique<GretlModel_VAR>(DSET, ylist, order, kwargs);
@@ -125,4 +125,13 @@ PYBIND11_MODULE(_gretl, m)
               return std::unique_ptr<GretlModel>(std::move(model));
           },
           py::arg("order").none(false), py::arg("ylist").none(false), py::kw_only());
+    m.def("vecm",
+          [](const int &order, const int &rank, const std::string &ylist, const py::kwargs &kwargs) -> std::unique_ptr<GretlModel>
+          {
+              auto model = std::make_unique<GretlModel_VAR_VECM>(DSET, ylist, order, rank, kwargs);
+
+              return std::unique_ptr<GretlModel>(std::move(model));
+          },
+          py::arg("order").none(false), py::arg("rank").none(false),
+          py::arg("ylist").none(false), py::kw_only());
 }

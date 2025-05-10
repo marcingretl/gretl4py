@@ -167,8 +167,14 @@ void GretlModel::unpack_kwargs (GretlCmdIndex ci)
                 throw std::invalid_argument("both llimit and rlimit must be numeric");
             }
             continue;
-        } else if (key == "xlist" && (ci == ARMA || ci == VAR)) {
+        } else if (key == "xlist" && (ci == ARMA || ci == VAR || ci == VECM)) {
             // var special: here we only check if xlist is a string, but we must do something with it elsewhere
+            if (!is_pystr(item.second)) {
+                throw std::invalid_argument("xlist must be a string");
+            }
+            continue;
+        } else if (key == "rxlist" && (ci == VECM)) {
+            // var special: here we only check if rxlist is a string, but we must do something with it elsewhere
             if (!is_pystr(item.second)) {
                 throw std::invalid_argument("xlist must be a string");
             }
@@ -832,10 +838,10 @@ GretlModel_NSE_Driver_quantreg<F, CI>::~GretlModel_NSE_Driver_quantreg (void)
 template class GretlModel_NSE_Driver_quantreg<quantreg_driver, QUANTREG>;
 
 
-//////////////////////////////////////////////////
-// VAR
-//////////////////////////////////////////////////
-
+//
+// VAR libgretl MODEL
+// extends: GretlModel
+//
 GretlModel_VAR::GretlModel_VAR (std::shared_ptr<GretlDataset> GD, const std::string &ylist,
                                 const int order, const py::kwargs &kwargs)
                                 : GretlModel(GRETL_OBJ_VAR, GD, kwargs),
@@ -854,19 +860,31 @@ void *GretlModel_VAR::model_ptr (void) const
     return static_cast<void*>(model);
 }
 
-void GretlModel_VAR::fit (void)
+// true VAR/VECM estimate
+template <GretlCmdIndex CI>
+void GretlModel_VAR::do_var_vecm_fit (int rank)
 {
+    //
+    // here we perform a real VAR/VECM estimation
+    // Note: for VAR case we do not use rank, of course
+    //
     if (py::len(kwargs) > 0) {
-        unpack_kwargs(VAR);
+        unpack_kwargs(CI);
     }
 
     if (!GD) {
         throw std::runtime_error("No dataset is available");
     }
 
-    // we add exogenous variables if present
+    // we add exogenous variables (if present)
     if (kwargs.contains("xlist") && !kwargs["xlist"].is_none()) {
         vars.append(" ; " + kwargs["xlist"].cast<std::string>());
+    }
+    // we add exogenous variables restricted to the cointegration space (if present)
+    if constexpr (CI == VECM) {
+        if (kwargs.contains("rxlist") && !kwargs["rxlist"].is_none()) {
+            vars.append(" ; " + kwargs["rxlist"].cast<std::string>());
+        }
     }
 
     // be build variables list
@@ -876,12 +894,23 @@ void GretlModel_VAR::fit (void)
     }
 
     // we estimate a model
-    model = gretl_VAR(order, NULL, var_list.get(), GD->dset,
-                      opt, GP.prn_ptr(), &err);
+    if constexpr (CI == VAR) {
+        model = gretl_VAR(order, NULL, var_list.get(), GD->dset,
+                          opt, GP.prn_ptr(), &err);
+    } else if constexpr (CI == VECM) {
+        model = gretl_VECM(order, rank, var_list.get(), GD->dset,
+                           opt, GP.prn_ptr(), &err);
+    }
+
     if (err) {
         handle_gretl_error(err);
     }
     save_model<GRETL_VAR>(model);
+}
+
+void GretlModel_VAR::fit (void)
+{
+    do_var_vecm_fit<VAR>();
 }
 
 py::dict GretlModel_VAR::forecast (const py::kwargs &kwargs)
@@ -1028,4 +1057,18 @@ void GretlModel_VAR::irf (const std::string &targ, const std::string &shock, dou
     }
 
     irf(targ_int, shock_int, alpha);
+}
+
+//
+// VECM libgretl MODEL
+// extends: GretlModel_VAR
+//
+GretlModel_VAR_VECM::GretlModel_VAR_VECM (std::shared_ptr<GretlDataset> GD, const std::string &ylist,
+                                          const int order, const int rank, const py::kwargs &kwargs)
+                                          : GretlModel_VAR(GD, ylist, order, kwargs), rank(rank)
+{}
+
+void GretlModel_VAR_VECM::fit (void)
+{
+    do_var_vecm_fit<VECM>(rank);
 }
