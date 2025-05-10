@@ -467,10 +467,8 @@ void move_to_python_container (PyWrapped &wrapped_obj, Item &&item,
 
     // we check if given container exists, and if not we create it
     if (!py::hasattr(obj, container)) {
-        py::print("brak");
         if constexpr (std::is_same_v<ContainerType, py::list>) {
             obj.attr(container) = py::list();
-            py::print("dodałem listę");
         } else if constexpr (std::is_same_v<ContainerType, py::dict>) {
             obj.attr(container) = py::dict();
         }
