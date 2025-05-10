@@ -3,22 +3,24 @@ project('gretl4py', 'cpp',
   default_options : ['cpp_std=c++17', 'buildtype=release']
 )
 
-python = import('python').find_installation('python3')
+# Use explicitly the Python 3.13 binary
+python = import('python').find_installation('/usr/bin/python3.13')
+#message('Python used by Meson: ' + python.full_path())
 
-# Try finding pybind11
+# Get the actual Python version (for logging/debug)
+python_version = run_command(python, '-c', 'import sys; print(".".join(map(str, sys.version_info[:3])))', check: true).stdout().strip()
+#message('Python version: ' + python_version)
+
+# pybind11 (via pkg-config preferred)
 pybind = dependency('pybind11', required: false)
 if not pybind.found()
-  pybind_inc = meson.get_external_property('pybind11_include_dir', '')
-  if pybind_inc != ''
-    pybind = declare_dependency(
-      include_directories: include_directories(pybind_inc)
-    )
-  else
-    error('pybind11 not found and no include path provided')
-  endif
+  pybind_inc = run_command(python, '-m', 'pybind11', '--includes', check: true).stdout().strip().split()
+  pybind = declare_dependency(
+    include_directories: include_directories(pybind_inc)
+  )
 endif
 
-# Try finding gretl via pkg-config (Linux)
+# gretl (via pkg-config preferred)
 gretl_dep = dependency('gretl', required: false)
 if not gretl_dep.found()
   gretl_inc = meson.get_external_property('gretl_include', '')
@@ -37,11 +39,13 @@ if not gretl_dep.found()
   endif
 endif
 
-python_dep = dependency('python3')
+# Python dependency (headers, etc.)
+python_dep = python.dependency()
 
-# Get user site-packages dir
-user_site = run_command('python', '-m', 'site', '--user-site', check: true).stdout().strip()
+# Get user site-packages dir (for install)
+user_site = run_command(python, '-m', 'site', '--user-site', check: true).stdout().strip()
 
+# Sources
 srcs = [
   'src/gretl4py.cpp',
   'src/gretl4py_data.cpp',
@@ -56,6 +60,7 @@ gretl4py_dep = declare_dependency(
   include_directories: include_directories('src'),
 )
 
+# Extension module
 python.extension_module(
   '_gretl',
   srcs,
