@@ -21,6 +21,10 @@ print("coint")
 d1.test(type="coint", y="LRM", vars="LRY IBO", order=4)
 
 print("\n****************************")
+print("johansen")
+d1.test(type="johansen", vars="LRM LRY IBO IDE", order=4, rc=True)
+
+print("\n****************************")
 print("bds")
 d1.test(type="bds", vars="LRY", order=4, quiet=True)
 print(d1.tests[-1]['summary'])    # issue: empty printout!!!

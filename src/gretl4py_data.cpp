@@ -354,6 +354,8 @@ void unpack_kwargs_test (gretlopt &opt, const std::string &type,
         ci = CUSUM;
     } else if (type == "difftest") {
         ci = DIFFTEST;
+    } else if (type == "johansen") {
+        ci = COINT2;
     } else if (type == "kpss") {
         ci = KPSS;
     } else if (type == "leverage") {
@@ -972,6 +974,8 @@ void GretlDataset::test (const std::string &type, const std::string &vars,
         err = engle_granger_test(order, ex_var.get(), dset, opt, GP.prn_ptr());
     } else if (type == "difftest") {
         err = diff_test(ex_var.get(), dset, opt, GP.prn_ptr());
+    } else if (type == "johansen") {
+        err = johansen_test_simple(order, ex_var.get(), dset, opt, GP.prn_ptr());
     } else if (type == "kpss") {
         err = kpss_test(order, ex_var.get(), dset, opt, GP.prn_ptr());
     } else if (type == "levinlin") {
