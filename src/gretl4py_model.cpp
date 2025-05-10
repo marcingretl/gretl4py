@@ -562,16 +562,17 @@ void GretlModel_NSE::restrict (const py::list &impose,
         handle_gretl_error(err);
     }
 
+    // we manufacture resulting object
     res[py::cast("test")] = *get_accessor("$test");
     res[py::cast("pvalue")] = *get_accessor("$pvalue");
     res[py::cast("summary")] = GP.get_buffer();
+
+    // we register result
+    move_to_python_container<GretlModel, py::dict, py::list>(*this, std::move(res), "restrictions");
+
     if (!kwargs.contains("silent")) {
         GP.print();
     }
-
-    // we register result
-    py::object self = py::cast(this);
-    py::setattr(self, "restrictions", res);
 }
 
 

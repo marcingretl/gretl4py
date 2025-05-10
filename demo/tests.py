@@ -141,7 +141,7 @@ print("\n****************************")
 print("restrict")
 m4 = gretl.ols(formula='1 0 2 3 4 5', data=d4).fit()
 m4.restrict(impose=['b[4] - b[5] = 0', 'b[3] = 0'])
-print(m4.restrictions['pvalue'])
+print(m4.restrictions[-1]['pvalue'])
 
 print("\n****************************")
 print("coeffsum")
