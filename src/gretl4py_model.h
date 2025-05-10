@@ -175,7 +175,7 @@ protected:
     void *model_ptr (void) const override;
 
     template <GretlCmdIndex CI>
-    void do_var_vecm_fit (int rank = 0);
+    void do_var_vecm_fit (const int coint_rank = 0);
 public:
     GretlModel_VAR (std::shared_ptr<GretlDataset> GD, const std::string &ylist,
                     const int order, const py::kwargs &kwargs);
@@ -203,7 +203,7 @@ public:
 class GretlModel_VAR_VECM : public GretlModel_VAR
 {
 private:
-    int rank;               // co-integration rank
+    const int coint_rank;               // co-integration rank
 public:
     GretlModel_VAR_VECM (std::shared_ptr<GretlDataset> GD, const std::string &ylist,
                          const int order, const int rank, const py::kwargs &kwargs);

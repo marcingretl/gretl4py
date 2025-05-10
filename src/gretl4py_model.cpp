@@ -862,7 +862,7 @@ void *GretlModel_VAR::model_ptr (void) const
 
 // true VAR/VECM estimate
 template <GretlCmdIndex CI>
-void GretlModel_VAR::do_var_vecm_fit (int rank)
+void GretlModel_VAR::do_var_vecm_fit (const int coint_rank)
 {
     //
     // here we perform a real VAR/VECM estimation
@@ -898,7 +898,7 @@ void GretlModel_VAR::do_var_vecm_fit (int rank)
         model = gretl_VAR(order, NULL, var_list.get(), GD->dset,
                           opt, GP.prn_ptr(), &err);
     } else if constexpr (CI == VECM) {
-        model = gretl_VECM(order, rank, var_list.get(), GD->dset,
+        model = gretl_VECM(order, coint_rank, var_list.get(), GD->dset,
                            opt, GP.prn_ptr(), &err);
     }
 
@@ -1065,10 +1065,10 @@ void GretlModel_VAR::irf (const std::string &targ, const std::string &shock, dou
 //
 GretlModel_VAR_VECM::GretlModel_VAR_VECM (std::shared_ptr<GretlDataset> GD, const std::string &ylist,
                                           const int order, const int rank, const py::kwargs &kwargs)
-                                          : GretlModel_VAR(GD, ylist, order, kwargs), rank(rank)
+                                          : GretlModel_VAR(GD, ylist, order, kwargs), coint_rank(rank)
 {}
 
 void GretlModel_VAR_VECM::fit (void)
 {
-    do_var_vecm_fit<VECM>(rank);
+    do_var_vecm_fit<VECM>(coint_rank);
 }
