@@ -3,15 +3,15 @@ project('gretl4py', 'cpp',
   default_options : ['cpp_std=c++17', 'buildtype=release']
 )
 
-# Use explicitly the Python 3.13 binary
-python = import('python').find_installation('/usr/bin/python3.13')
+# the Python 3.13 binary to use
+python = import('python').find_installation('/usr/bin/python3')
 #message('Python used by Meson: ' + python.full_path())
 
 # Get the actual Python version (for logging/debug)
 python_version = run_command(python, '-c', 'import sys; print(".".join(map(str, sys.version_info[:3])))', check: true).stdout().strip()
 #message('Python version: ' + python_version)
 
-# pybind11 (via pkg-config preferred)
+# pybind11 flags
 pybind = dependency('pybind11', required: false)
 if not pybind.found()
   pybind_inc = run_command(python, '-m', 'pybind11', '--includes', check: true).stdout().strip().split()
@@ -20,7 +20,7 @@ if not pybind.found()
   )
 endif
 
-# gretl (via pkg-config preferred)
+# libgretl (via pkg-config preferred)
 gretl_dep = dependency('gretl', required: false)
 if not gretl_dep.found()
   gretl_inc = meson.get_external_property('gretl_include', '')
