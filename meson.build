@@ -5,11 +5,11 @@ project('gretl4py', 'cpp',
 
 # the Python 3.13 binary to use
 python = import('python').find_installation('/usr/bin/python3')
-#message('Python used by Meson: ' + python.full_path())
+message('Python used by Meson: ' + python.full_path())
 
 # Get the actual Python version (for logging/debug)
 python_version = run_command(python, '-c', 'import sys; print(".".join(map(str, sys.version_info[:3])))', check: true).stdout().strip()
-#message('Python version: ' + python_version)
+message('Python version: ' + python_version)
 
 # pybind11 flags
 pybind = dependency('pybind11', required: false)
