@@ -5,7 +5,7 @@ To compile:
 meson setup builddir #--buildtype=release
 
 *MS Windows:
-meson setup builddir --native-file clang-windows.ini
+meson setup builddir --native-file windows-clang.toml
 
 2. Compilation
 meson install -C builddir #-j4
