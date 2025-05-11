@@ -1,18 +1,18 @@
 [binaries]
-cpp = "clang++"
-ar = "llvm-ar"
-strip = "llvm-strip"
-python = "python"
+cpp = 'clang++'
+ar = 'llvm-ar'
+strip = 'llvm-strip'
+python = 'python'
 
 [built-in options]
-cpp_args = ["-pipe"]
-cpp_std = "c++17"
-optimization = "2"
+cpp_args = ['-pipe']
+cpp_std = 'c++17'
+optimization = '2'
 
 [properties]
-STACK_PATH = "E:/Marcin/gretlapi/stack_minimal"
-gretl_include = "STACK_PATH + '/include'"
-gretl_include_glib = "STACK_PATH + '/include/glib-2.0'"
-gretl_include_glibconfig = "STACK_PATH + '/lib/glib-2.0/include'"
-gretl_lib = "STACK_PATH + '/lib'"
-pybind11_include_dir = "C:/Program Files/Python313/Lib/site-packages/pybind11/include"
+STACK_PATH = 'E:/Marcin/gretlapi/stack_minimal'
+gretl_include = STACK_PATH + '/include'
+gretl_include_glib = STACK_PATH + '/include/glib-2.0'
+gretl_include_glibconfig = STACK_PATH + '/lib/glib-2.0/include'
+gretl_lib = STACK_PATH + '/lib'
+pybind11_include_dir = 'C:/Program Files/Python313/Lib/site-packages/pybind11/include'

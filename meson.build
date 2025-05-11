@@ -3,15 +3,30 @@ project('gretl4py', 'cpp',
   default_options : ['cpp_std=c++17', 'optimization=2', 'buildtype=release']
 )
 
+#########################################################
 # c++ flags
+#########################################################
 cpp = meson.get_compiler('cpp')
-if cpp.get_id() == 'clang'
-  add_project_arguments('-pipe', '-fPIC', language: 'cpp')
-elif cpp.get_id() == 'gcc'
-  add_project_arguments('-pipe', '-fPIC', '-fvisibility=hidden', language: 'cpp')
+
+# Set common compiler flags
+cpp_args = ['-pipe', '-fstack-protector-strong', '-D_FORTIFY_SOURCE=2']
+
+if cpp.get_id() == 'gcc'
+  cpp_args += ['-fvisibility=hidden']
 endif
 
+# For ms windows, don't add -fPIC
+if host_machine.system() != 'windows'
+  cpp_args += ['-fPIC']
+endif
+
+# Apply the arguments
+add_project_arguments(cpp_args, language: 'cpp')
+
+
+#########################################################
 # python to use
+#########################################################
 python_mod = import('python')
 python = python_mod.find_installation()
 message('Python used by Meson: ' + python.full_path())
@@ -19,7 +34,10 @@ message('Python used by Meson: ' + python.full_path())
 python_version = run_command(python, '-c', 'import sys; print(".".join(map(str, sys.version_info[:3])))', check: true).stdout().strip()
 message('Python version: ' + python_version)
 
+
+#########################################################
 # pybind11
+#########################################################
 pybind = dependency('pybind11', required: false)
 if not pybind.found()
   pybind_inc = meson.get_external_property('pybind11_include_dir', '')
@@ -28,7 +46,10 @@ if not pybind.found()
   )
 endif
 
+
+#########################################################
 # libgretl
+#########################################################
 gretl_dep = dependency('gretl', required: false)
 if not gretl_dep.found()
   gretl_inc        = meson.get_external_property('gretl_include', '')
@@ -54,6 +75,9 @@ endif
 
 python_dep = python.dependency()
 
+#########################################################
+# installation
+#########################################################
 # by default, we install in user-space
 user_site = run_command(python, '-m', 'site', '--user-site', check: true).stdout().strip()
 
