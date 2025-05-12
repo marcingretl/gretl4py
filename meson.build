@@ -33,6 +33,9 @@ endif
 if is_unix
   cpp_args += ['-fPIC']
 endif
+if is_darwin
+  cpp_args += ['-undefined dynamic_lookup']
+endif
 add_project_arguments(cpp_args, language: 'cpp')
 
 #########################################################
@@ -76,8 +79,8 @@ if is_windows
   )
 elif is_darwin
   GPATH = '/Applications/Gretl.app/Contents/Resources'
-  GRETLLD = '-L' + GPATH + '/lib' + ' -lgretl-1.0 -lglib-2.0 -lxml2 -lfftw3 -lomp -lm'
   GRETLIN = '-I' + GPATH + '/include' + ' -I' + GPATH + '/include/glib-2.0' + ' -I' + GPATH + '/lib/glib-2.0/include'
+  GRETLLD = '-L' + GPATH + '/lib' + ' -lgretl-1.0 -lglib-2.0 -lxml2 -lfftw3 -lomp -lm'
 
   gretl_dep = declare_dependency(
     include_directories: include_directories([GRETLIN]),
