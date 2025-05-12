@@ -51,7 +51,15 @@ python = python_mod.find_installation()
 message('Using Python: ' + python.full_path())
 
 python_dep = python.dependency()
-pybind = dependency('pybind11', required: true)
+if is_darwin
+    pybind = dependency('pybind11',
+    method: 'cmake',
+    required: true,
+    dirs: ['/custom/path/to/pybind11/share/cmake/pybind11']
+)
+else
+    pybind = dependency('pybind11', required: true)
+endif
 
 user_site = run_command(
   python, '-m', 'site', '--user-site',
