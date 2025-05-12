@@ -3,82 +3,83 @@ project('gretl4py', 'cpp',
   default_options : ['cpp_std=c++17', 'optimization=2', 'buildtype=release']
 )
 
-# Detect platform
-is_windows = host_machine.system() == 'windows'
-is_unix    = not is_windows
+fs = import('fs')
+is_windows  = host_machine.system() == 'windows'
+is_darwin   = host_machine.system() == 'darwin'
+is_unix     = not is_windows
 
 #########################################################
-# C++ compiler flags
+# STACK_PATH for Windows
+#########################################################
+STACK_PATH = 'E:/Marcin/gretlapi/stack_minimal'
+
+if is_windows and not fs.exists(STACK_PATH)
+  error('STACK_PATH not found: ' + STACK_PATH + '\nPlease download the gretl Windows stack from:\n  https://sourceforge.net/projects/gretl/files/mscompile/')
+endif
+
+gretl_include              = STACK_PATH + '/include'
+gretl_include_glib         = STACK_PATH + '/include/glib-2.0'
+gretl_include_glibconfig   = STACK_PATH + '/lib/glib-2.0/include'
+gretl_lib                  = STACK_PATH + '/lib'
+
+#########################################################
+# Compiler flags
 #########################################################
 cpp = meson.get_compiler('cpp')
 cpp_args = ['-pipe', '-fstack-protector-strong', '-Wp,-D_FORTIFY_SOURCE=2', '-fwrapv']
-
 if cpp.get_id() == 'gcc'
   cpp_args += ['-fvisibility=hidden']
 endif
-
-# Only on Unix do we need -fPIC
 if is_unix
   cpp_args += ['-fPIC']
 endif
-
 add_project_arguments(cpp_args, language: 'cpp')
 
 #########################################################
-# Python detection
+# Python and pybind11
 #########################################################
+# to use different Python version, please define toml file with:
+# [options]
+# python_path = "/custom/path/to/python3.xx"
+# python = python_mod.find_installation(python_path)
+#
 python_mod = import('python')
-python     = python_mod.find_installation()
+python = python_mod.find_installation()
 message('Using Python: ' + python.full_path())
 
-python_version = run_command(
-  python, '-c',
-  'import sys; print(".".join(map(str, sys.version_info[:3])))',
-  check: true
-).stdout().strip()
-message('Python version: ' + python_version)
-
 python_dep = python.dependency()
+pybind = dependency('pybind11', required: true)
 
-# Where to install
 user_site = run_command(
   python, '-m', 'site', '--user-site',
   check: true
 ).stdout().strip()
 
 #########################################################
-# pybind11 (auto everywhere)
+# libgretl dependency (manually declared on Windows)
 #########################################################
-pybind = dependency('pybind11', required: true)
-
-#########################################################
-# libgretl
-#########################################################
-gretl_dep = dependency('gretl', required: false)
-if not gretl_dep.found()
-  # Expect user to pass -Dgretl_* via meson setup or env
-  g_inc        = meson.get_external_property('gretl_include', '')
-  g_inc_glib   = meson.get_external_property('gretl_include_glib', '')
-  g_inc_cfg    = meson.get_external_property('gretl_include_glibconfig', '')
-  g_lib        = meson.get_external_property('gretl_lib', '')
-
-  if g_inc == '' or g_lib == ''
-    error('libgretl not found: please set -Dgretl_include and -Dgretl_lib')
-  endif
-
-  link_args = ['-L' + g_lib, '-lgretl-1.0', '-lxml2', '-lfftw3', '-lglib-2.0', '-lintl', '-lgobject-2.0']
-  if is_windows
-    link_args += ['-lversion', '-lshlwapi', '-lpathcch', '-lbcrypt']
-  endif
+if is_windows
+  win_link_args = [
+    '-L' + gretl_lib,
+    '-lgretl-1.0', '-lxml2', '-lfftw3',
+    '-lglib-2.0', '-lintl', '-lgobject-2.0',
+    '-lversion', '-lshlwapi', '-lpathcch', '-lbcrypt'
+  ]
 
   gretl_dep = declare_dependency(
-    include_directories: include_directories([g_inc, g_inc_glib, g_inc_cfg]),
-    link_args: link_args
+    include_directories: include_directories([
+      gretl_include,
+      gretl_include_glib,
+      gretl_include_glibconfig
+    ]),
+    link_args: win_link_args
   )
+else
+  gretl_dep = dependency('gretl', required: true)
 endif
 
 #########################################################
-# Build and install
+# Source files
 #########################################################
 gretl4py_inc = include_directories('src')
 srcs = files(
@@ -91,15 +92,26 @@ srcs = files(
   'src/simdjson/simdjson.cpp',
 )
 
+#########################################################
+# Build the extension
+#########################################################
 python.extension_module(
   '_gretl',
   srcs,
-  dependencies: [pybind, gretl_dep, python_dep, declare_dependency(include_directories: gretl4py_inc)],
+  dependencies: [
+    pybind,
+    gretl_dep,
+    python_dep,
+    declare_dependency(include_directories: gretl4py_inc)
+  ],
   include_directories: gretl4py_inc,
   install: true,
   install_dir: user_site + '/gretl'
 )
 
+#########################################################
+# Python files
+#########################################################
 install_data(
   files(
     'gretl/__init__.py',
