@@ -9,6 +9,13 @@ is_darwin   = host_machine.system() == 'darwin'
 is_unix     = not is_windows
 
 #########################################################
+# Customizable path for pybind11-config (macOS only)
+#########################################################
+# Define your custom pybind11-config path here for macOS:
+# Set it to an empty string for automatic detection.
+pybind11_config_path = '/path/to/your/custom/pybind11-config' # Customize this for your setup (macOS only)
+
+#########################################################
 # STACK_PATH for Windows
 #########################################################
 STACK_PATH = 'E:/Marcin/gretlapi/stack_minimal'
@@ -51,14 +58,30 @@ python = python_mod.find_installation()
 message('Using Python: ' + python.full_path())
 
 python_dep = python.dependency()
+
 if is_darwin
-    pybind = dependency('pybind11',
-    method: 'cmake',
-    required: true,
-    dirs: ['/custom/path/to/pybind11/share/cmake/pybind11']
-)
+  if pybind11_config_path != ''
+    pybind11_config = find_program(pybind11_config_path, required: false)
+    if pybind11_config.found()
+      message('Using custom pybind11-config on macOS: ' + pybind11_config_path)
+      pybind_includes = run_command(pybind11_config, '--includes', check: true).stdout().strip().split()
+      pybind = declare_dependency(compile_args: pybind_includes)
+    else
+      error('Custom pybind11-config not found at: ' + pybind11_config_path)
+    endif
+  else
+    pybind11_config = find_program('pybind11-config', required: false)
+    if pybind11_config.found()
+      message('Using pybind11-config manually on macOS')
+      pybind_includes = run_command(pybind11_config, '--includes', check: true).stdout().strip().split()
+      pybind = declare_dependency(compile_args: pybind_includes)
+    else
+      warning('pybind11-config not found, falling back to built-in detection')
+      pybind = dependency('pybind11', required: true)
+    endif
+  endif
 else
-    pybind = dependency('pybind11', required: true)
+  pybind = dependency('pybind11', required: true)
 endif
 
 user_site = run_command(
