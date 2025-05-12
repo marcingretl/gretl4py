@@ -40,7 +40,7 @@ add_project_arguments(cpp_args, language: 'cpp')
 #########################################################
 # to use different Python version, please define toml file with:
 # [options]
-# python_path = "/custom/path/to/python3.xx"
+# python_path = '/custom/path/to/python3.xx'
 # python = python_mod.find_installation(python_path)
 #
 python_mod = import('python')
@@ -73,6 +73,15 @@ if is_windows
       gretl_include_glibconfig
     ]),
     link_args: win_link_args
+  )
+elif is_darwin
+  GPATH = '/Applications/Gretl.app/Contents/Resources'
+  GRETLLD = '-L' + GPATH + '/lib' + ' -lgretl-1.0 -lglib-2.0 -lxml2 -lfftw3 -lomp -lm'
+  GRETLIN = '-I' + GPATH + '/include' + ' -I' + GPATH + '/include/glib-2.0' + ' -I' + GPATH + '/lib/glib-2.0/include'
+
+  gretl_dep = declare_dependency(
+    include_directories: include_directories([GRETLIN]),
+    link_args: [GRETLLD]
   )
 else
   gretl_dep = dependency('gretl', required: true)
