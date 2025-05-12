@@ -86,12 +86,19 @@ if is_windows
   )
 elif is_darwin
   GPATH = '/Applications/Gretl.app/Contents/Resources'
-  GRETLLD = '-L' + GPATH + '/lib' + ' -lgretl-1.0 -lglib-2.0 -lxml2 -lfftw3 -lomp -lm'
-  GRETLIN = '-I' + GPATH + '/include' + ' -I' + GPATH + '/include/glib-2.0' + ' -I' + GPATH + '/lib/glib-2.0/include'
+  GRETL_INCLUDE_PATHS = [
+    GPATH + '/include',
+    GPATH + '/include/glib-2.0',
+    GPATH + '/lib/glib-2.0/include'
+  ]
+  GRETLLD = [
+    '-L' + GPATH + '/lib',
+    '-lgretl-1.0', '-lglib-2.0', '-lxml2', '-lfftw3', '-lomp', '-lm'
+  ]
 
   gretl_dep = declare_dependency(
-    include_directories: include_directories([GRETLIN]),
-    link_args: [GRETLLD]
+    include_directories: include_directories(GRETL_INCLUDE_PATHS),
+    link_args: GRETLLD
   )
 else
   gretl_dep = dependency('gretl', required: true)
