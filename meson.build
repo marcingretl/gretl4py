@@ -1,5 +1,6 @@
 project('gretl4py', 'cpp',
   version : '0.2',
+  #meson_version : '>= 1.8.0',
   default_options : ['cpp_std=c++17', 'optimization=2', 'buildtype=release']
 )
 
@@ -7,13 +8,6 @@ fs = import('fs')
 is_windows  = host_machine.system() == 'windows'
 is_darwin   = host_machine.system() == 'darwin'
 is_unix     = not is_windows
-
-#########################################################
-# Customizable path for pybind11-config (macOS only)
-#########################################################
-# Define your custom pybind11-config path here for macOS:
-# Set it to an empty string for automatic detection.
-pybind11_config_path = '/path/to/your/custom/pybind11-config' # Customize this for your setup (macOS only)
 
 #########################################################
 # STACK_PATH for Windows
@@ -40,19 +34,11 @@ endif
 if is_unix
   cpp_args += ['-fPIC']
 endif
-if is_darwin
-  cpp_args += ['-undefined dynamic_lookup']
-endif
 add_project_arguments(cpp_args, language: 'cpp')
 
 #########################################################
 # Python and pybind11
 #########################################################
-# to use different Python version, please define toml file with:
-# [options]
-# python_path = '/custom/path/to/python3.xx'
-# python = python_mod.find_installation(python_path)
-#
 python_mod = import('python')
 python = python_mod.find_installation()
 message('Using Python: ' + python.full_path())
@@ -60,26 +46,16 @@ message('Using Python: ' + python.full_path())
 python_dep = python.dependency()
 
 if is_darwin
-  if pybind11_config_path != ''
-    pybind11_config = find_program(pybind11_config_path, required: false)
-    if pybind11_config.found()
-      message('Using custom pybind11-config on macOS: ' + pybind11_config_path)
-      pybind_includes = run_command(pybind11_config, '--includes', check: true).stdout().strip().split()
-      pybind = declare_dependency(compile_args: pybind_includes)
-    else
-      error('Custom pybind11-config not found at: ' + pybind11_config_path)
-    endif
-  else
-    pybind11_config = find_program('pybind11-config', required: false)
-    if pybind11_config.found()
-      message('Using pybind11-config manually on macOS')
-      pybind_includes = run_command(pybind11_config, '--includes', check: true).stdout().strip().split()
-      pybind = declare_dependency(compile_args: pybind_includes)
-    else
-      warning('pybind11-config not found, falling back to built-in detection')
-      pybind = dependency('pybind11', required: true)
-    endif
-  endif
+  # macOS workaround: get correct pybind11 headers from the current Python
+  pybind_inc_flags = run_command(python, '-m', 'pybind11', '--includes', check: true).stdout().strip().split()
+  pybind_includes = []
+  foreach flag : pybind_inc_flags
+    pybind_includes += flag.strip('-I')
+  endforeach
+
+  pybind = declare_dependency(
+    include_directories: include_directories(pybind_includes)
+  )
 else
   pybind = dependency('pybind11', required: true)
 endif
@@ -90,7 +66,7 @@ user_site = run_command(
 ).stdout().strip()
 
 #########################################################
-# libgretl dependency (manually declared on Windows)
+# libgretl dependency
 #########################################################
 if is_windows
   win_link_args = [
@@ -110,8 +86,8 @@ if is_windows
   )
 elif is_darwin
   GPATH = '/Applications/Gretl.app/Contents/Resources'
-  GRETLIN = '-I' + GPATH + '/include' + ' -I' + GPATH + '/include/glib-2.0' + ' -I' + GPATH + '/lib/glib-2.0/include'
   GRETLLD = '-L' + GPATH + '/lib' + ' -lgretl-1.0 -lglib-2.0 -lxml2 -lfftw3 -lomp -lm'
+  GRETLIN = '-I' + GPATH + '/include' + ' -I' + GPATH + '/include/glib-2.0' + ' -I' + GPATH + '/lib/glib-2.0/include'
 
   gretl_dep = declare_dependency(
     include_directories: include_directories([GRETLIN]),
