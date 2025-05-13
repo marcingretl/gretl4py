@@ -1,13 +1,12 @@
 project('gretl4py', 'cpp',
   version : '0.2',
-  #meson_version : '>= 1.8.0',
   default_options : ['cpp_std=c++17', 'optimization=2', 'buildtype=release']
 )
 
 fs = import('fs')
-is_windows  = host_machine.system() == 'windows'
-is_darwin   = host_machine.system() == 'darwin'
-is_unix     = not is_windows
+is_windows = host_machine.system() == 'windows'
+is_darwin  = host_machine.system() == 'darwin'
+is_unix    = not is_windows
 
 
 #########################################################
@@ -22,14 +21,15 @@ GRETL_PATH = get_option('GRETL_PATH')   # for macOS only
 # libgretl stack (Windows only)
 #########################################################
 if is_windows
-    if not fs.exists(STACK_PATH)
-        error('STACK_PATH not found: ' + STACK_PATH + '\nPlease download the gretl Windows stack from:\n  https://sourceforge.net/projects/gretl/files/mscompile/')
-    else
-        gretl_include              = STACK_PATH + '/include'
-        gretl_include_glib         = STACK_PATH + '/include/glib-2.0'
-        gretl_include_glibconfig   = STACK_PATH + '/lib/glib-2.0/include'
-        gretl_lib                  = STACK_PATH + '/lib'
-    endif
+  STACK_PATH = STACK_PATH.replace('\\', '/')
+  if not fs.exists(STACK_PATH)
+    error('STACK_PATH not found: ' + STACK_PATH + '\nPlease download the gretl Windows stack from:\n  https://sourceforge.net/projects/gretl/files/mscompile/')
+  endif
+
+  gretl_include            = STACK_PATH + '/include'
+  gretl_include_glib       = STACK_PATH + '/include/glib-2.0'
+  gretl_include_glibconfig = STACK_PATH + '/lib/glib-2.0/include'
+  gretl_lib                = STACK_PATH + '/lib'
 endif
 
 
@@ -48,14 +48,17 @@ add_project_arguments(cpp_args, language: 'cpp')
 
 
 #########################################################
-# Python and pybind11
+# Python
 #########################################################
 python_mod = import('python')
 python = python_mod.find_installation(PYTHON_EXE)
 python_dep = python.dependency()
 message('Using Python: ' + python.full_path())
 
-# get correct pybind11 headers from the current Python
+
+#########################################################
+# pybind11
+#########################################################
 pybind_includes = []
 pybind_flags = run_command(python, '-m', 'pybind11', '--includes', check: true).stdout().strip()
 
@@ -66,14 +69,8 @@ foreach flag : pybind_flags.split()
 endforeach
 
 pybind = declare_dependency(
-	include_directories: include_directories(pybind_includes)
-	)
-#pybind = dependency('pybind11', required: true)
-
-user_site = run_command(
-  python, '-m', 'site', '--user-site',
-  check: true
-).stdout().strip()
+  include_directories: pybind_includes
+)
 
 
 #########################################################
@@ -88,28 +85,31 @@ if is_windows
   ]
 
   gretl_dep = declare_dependency(
-    include_directories: include_directories([
+    include_directories: [
       gretl_include,
       gretl_include_glib,
       gretl_include_glibconfig
-    ]),
+    ],
     link_args: win_link_args
   )
+
 elif is_darwin
-  GRETL_INCLUDE_PATHS = [
+  GRETL_PATH = GRETL_PATH.replace('\\', '/')
+  gretl_include_paths = [
     GRETL_PATH + '/include',
     GRETL_PATH + '/include/glib-2.0',
     GRETL_PATH + '/lib/glib-2.0/include'
   ]
-  GRETLLD = [
+  gretlld = [
     '-L' + GRETL_PATH + '/lib',
     '-lgretl-1.0', '-lglib-2.0', '-lxml2', '-lfftw3', '-lomp', '-lm'
   ]
 
   gretl_dep = declare_dependency(
-    include_directories: include_directories(GRETL_INCLUDE_PATHS),
-    link_args: GRETLLD
+    include_directories: gretl_include_paths,
+    link_args: gretlld
   )
+
 else
   gretl_dep = dependency('gretl', required: true)
 endif
@@ -128,6 +128,15 @@ srcs = files(
   'src/gretl4py_model_py11.cpp',
   'src/simdjson/simdjson.cpp',
 )
+
+
+#########################################################
+# Path to install
+#########################################################
+user_site = run_command(
+  python, '-m', 'site', '--user-site',
+  check: true
+).stdout().strip()
 
 
 #########################################################
