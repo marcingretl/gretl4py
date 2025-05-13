@@ -169,13 +169,11 @@ endif
 #########################################################
 # Python files install
 #########################################################
-if PYPI_BUILD or LOCAL_BUILD
-    install_data(
-      files(
-        'gretl/__init__.py',
-        'gretl/gretl4py_addons.py',
-        'gretl/gretl4py_classes.py'
-      ),
-      install_dir: destination
-    )
-endif
+install_data(
+  files(
+    'gretl/__init__.py',
+    'gretl/gretl4py_addons.py',
+    'gretl/gretl4py_classes.py'
+  ),
+  install_dir: destination
+)
