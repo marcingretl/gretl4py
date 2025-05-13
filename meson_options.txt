@@ -1,5 +1,8 @@
-# PyPI build
-option('PYPI_BUILD', type: 'boolean', value: true, description: 'do we build for PyPI')
+# build for PyPI
+option('PYPI_BUILD', type: 'boolean', value: false, description: 'do we build for PyPI')
+
+# build (local)
+option('LOCAL_BUILD', type: 'boolean', value: false, description: 'do we build for local machine')
 
 
 # path to Python executable

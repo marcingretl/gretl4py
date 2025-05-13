@@ -6,9 +6,7 @@ build-backend = "mesonpy"
 name = "gretl4py"
 version = "0.2"
 description = "Python bindings for gretl"
-authors = [
-  { name = "Marcin Błażejowski", email = "marcin@gretlconference.org" }
-  ]
+authors = [{ name = "Marcin Błażejowski", email = "marcin@gretlconference.org" }]
 readme = "README.md"
 license = { file = "LICENSE" }
 requires-python = ">=3.11"

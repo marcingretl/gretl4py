@@ -14,6 +14,7 @@ is_unix    = not is_windows
 #########################################################
 PYTHON_EXE = get_option('PYTHON_EXE')   # Python to use
 PYPI_BUILD = get_option('PYPI_BUILD')   # build for PyPI
+LOCAL_BUILD = get_option('LOCAL_BUILD') # local build
 STACK_PATH = get_option('STACK_PATH')   # for Windows only
 GRETL_PATH = get_option('GRETL_PATH')   # for macOS only
 
@@ -134,7 +135,7 @@ srcs = files(
 #########################################################
 # Path to install
 #########################################################
-if PYPI_BUILD
+if PYPI_BUILD or not LOCAL_BUILD
     destination = python.get_install_dir()
 else
     user_site = run_command(
@@ -146,31 +147,35 @@ endif
 
 
 #########################################################
-# Build the extension
+# Build the extension and install
 #########################################################
-python.extension_module(
-  '_gretl',
-  srcs,
-  dependencies: [
-    pybind,
-    gretl_dep,
-    python_dep,
-    declare_dependency(include_directories: gretl4py_inc)
-  ],
-  include_directories: gretl4py_inc,
-  install: true,
-  install_dir: destination
-)
+if PYPI_BUILD or LOCAL_BUILD
+    python.extension_module(
+      '_gretl',
+      srcs,
+      dependencies: [
+        pybind,
+        gretl_dep,
+        python_dep,
+        declare_dependency(include_directories: gretl4py_inc)
+      ],
+      include_directories: gretl4py_inc,
+      install: true,
+      install_dir: destination
+    )
+endif
 
 
 #########################################################
-# Python files
+# Python files install
 #########################################################
-install_data(
-  files(
-    'gretl/__init__.py',
-    'gretl/gretl4py_addons.py',
-    'gretl/gretl4py_classes.py'
-  ),
-  install_dir: destination
-)
+if PYPI_BUILD or LOCAL_BUILD
+    install_data(
+      files(
+        'gretl/__init__.py',
+        'gretl/gretl4py_addons.py',
+        'gretl/gretl4py_classes.py'
+      ),
+      install_dir: destination
+    )
+endif
