@@ -13,7 +13,7 @@ is_unix    = not is_windows
 # User defined options (see 'meson_options.txt')
 #########################################################
 PYTHON_EXE = get_option('PYTHON_EXE')   # Python to use
-PYPI_BUILD = get_option('PYPI_BUILD')   # Python to use
+PYPI_BUILD = get_option('PYPI_BUILD')   # build for PyPI
 STACK_PATH = get_option('STACK_PATH')   # for Windows only
 GRETL_PATH = get_option('GRETL_PATH')   # for macOS only
 
