@@ -9,19 +9,29 @@ is_windows  = host_machine.system() == 'windows'
 is_darwin   = host_machine.system() == 'darwin'
 is_unix     = not is_windows
 
-#########################################################
-# STACK_PATH for Windows
-#########################################################
-STACK_PATH = 'E:/Marcin/gretlapi/stack_minimal'
 
-if is_windows and not fs.exists(STACK_PATH)
-  error('STACK_PATH not found: ' + STACK_PATH + '\nPlease download the gretl Windows stack from:\n  https://sourceforge.net/projects/gretl/files/mscompile/')
+#########################################################
+# User defined options (see 'meson_options.txt')
+#########################################################
+PYTHON_EXE = get_option('PYTHON_EXE')   # Python to use
+STACK_PATH = get_option('STACK_PATH')   # for Windows only
+GRETL_PATH = get_option('GRETL_PATH')   # for macOS only
+
+
+#########################################################
+# libgretl stack (Windows only)
+#########################################################
+if is_windows
+    if not fs.exists(STACK_PATH)
+        error('STACK_PATH not found: ' + STACK_PATH + '\nPlease download the gretl Windows stack from:\n  https://sourceforge.net/projects/gretl/files/mscompile/')
+    else
+        gretl_include              = STACK_PATH + '/include'
+        gretl_include_glib         = STACK_PATH + '/include/glib-2.0'
+        gretl_include_glibconfig   = STACK_PATH + '/lib/glib-2.0/include'
+        gretl_lib                  = STACK_PATH + '/lib'
+    endif
 endif
 
-gretl_include              = STACK_PATH + '/include'
-gretl_include_glib         = STACK_PATH + '/include/glib-2.0'
-gretl_include_glibconfig   = STACK_PATH + '/lib/glib-2.0/include'
-gretl_lib                  = STACK_PATH + '/lib'
 
 #########################################################
 # Compiler flags
@@ -36,14 +46,14 @@ if is_unix
 endif
 add_project_arguments(cpp_args, language: 'cpp')
 
+
 #########################################################
 # Python and pybind11
 #########################################################
 python_mod = import('python')
-python = python_mod.find_installation()
-message('Using Python: ' + python.full_path())
-
+python = python_mod.find_installation(PYTHON_EXE)
 python_dep = python.dependency()
+message('Using Python: ' + python.full_path())
 
 if is_darwin
   # macOS workaround: get correct pybind11 headers from the current Python
@@ -65,6 +75,7 @@ user_site = run_command(
   check: true
 ).stdout().strip()
 
+
 #########################################################
 # libgretl dependency
 #########################################################
@@ -85,14 +96,13 @@ if is_windows
     link_args: win_link_args
   )
 elif is_darwin
-  GPATH = '/Applications/Gretl.app/Contents/Resources'
   GRETL_INCLUDE_PATHS = [
-    GPATH + '/include',
-    GPATH + '/include/glib-2.0',
-    GPATH + '/lib/glib-2.0/include'
+    GRETL_PATH + '/include',
+    GRETL_PATH + '/include/glib-2.0',
+    GRETL_PATH + '/lib/glib-2.0/include'
   ]
   GRETLLD = [
-    '-L' + GPATH + '/lib',
+    '-L' + GRETL_PATH + '/lib',
     '-lgretl-1.0', '-lglib-2.0', '-lxml2', '-lfftw3', '-lomp', '-lm'
   ]
 
@@ -103,6 +113,7 @@ elif is_darwin
 else
   gretl_dep = dependency('gretl', required: true)
 endif
+
 
 #########################################################
 # Source files
@@ -117,6 +128,7 @@ srcs = files(
   'src/gretl4py_model_py11.cpp',
   'src/simdjson/simdjson.cpp',
 )
+
 
 #########################################################
 # Build the extension
@@ -134,6 +146,7 @@ python.extension_module(
   install: true,
   install_dir: user_site + '/gretl'
 )
+
 
 #########################################################
 # Python files

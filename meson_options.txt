@@ -1,0 +1,11 @@
+# path to Python executable
+option('PYTHON_EXE', type: 'string', value: '', description: 'python executable to use')
+
+# Windows only
+# (see: https://sourceforge.net/projects/libgretl-for-ms-sdk/)
+option('STACK_PATH', type: 'string', value: 'E:/Marcin/gretlapi/stack_minimal', description: 'path to libgretl stack for MS SDK')
+#STACK_PATH = 'E:/Marcin/gretlapi/stack_minimal'
+
+# macOS only: path to gretl installation
+option('GRETL_PATH', type: 'string', value: '/Applications/Gretl.app/Contents/Resources', description: 'path to gretl installation')
+#GRETL_PATH = '/Applications/Gretl.app/Contents/Resources'
