@@ -55,20 +55,20 @@ python = python_mod.find_installation(PYTHON_EXE)
 python_dep = python.dependency()
 message('Using Python: ' + python.full_path())
 
-if is_darwin
-  # macOS workaround: get correct pybind11 headers from the current Python
-  pybind_inc_flags = run_command(python, '-m', 'pybind11', '--includes', check: true).stdout().strip().split()
-  pybind_includes = []
-  foreach flag : pybind_inc_flags
-    pybind_includes += flag.strip('-I')
-  endforeach
+# get correct pybind11 headers from the current Python
+pybind_includes = []
+pybind_flags = run_command(python, '-m', 'pybind11', '--includes', check: true).stdout().strip()
 
-  pybind = declare_dependency(
-    include_directories: include_directories(pybind_includes)
-  )
-else
-  pybind = dependency('pybind11', required: true)
-endif
+foreach flag : pybind_flags.split()
+  if flag.startswith('-I')
+    pybind_includes += flag.substring(2)
+  endif
+endforeach
+
+pybind = declare_dependency(
+	include_directories: include_directories(pybind_includes)
+	)
+#pybind = dependency('pybind11', required: true)
 
 user_site = run_command(
   python, '-m', 'site', '--user-site',
