@@ -13,6 +13,7 @@ is_unix    = not is_windows
 # User defined options (see 'meson_options.txt')
 #########################################################
 PYTHON_EXE = get_option('PYTHON_EXE')   # Python to use
+PYPI_BUILD = get_option('PYPI_BUILD')   # Python to use
 STACK_PATH = get_option('STACK_PATH')   # for Windows only
 GRETL_PATH = get_option('GRETL_PATH')   # for macOS only
 
@@ -133,10 +134,15 @@ srcs = files(
 #########################################################
 # Path to install
 #########################################################
-user_site = run_command(
-  python, '-m', 'site', '--user-site',
-  check: true
-).stdout().strip()
+if PYPI_BUILD
+    destination = python.get_install_dir()
+else
+    user_site = run_command(
+      python, '-m', 'site', '--user-site',
+      check: true
+    ).stdout().strip()
+    destination = user_site + '/gretl'
+endif
 
 
 #########################################################
@@ -153,7 +159,7 @@ python.extension_module(
   ],
   include_directories: gretl4py_inc,
   install: true,
-  install_dir: user_site + '/gretl'
+  install_dir: destination
 )
 
 
@@ -166,5 +172,5 @@ install_data(
     'gretl/gretl4py_addons.py',
     'gretl/gretl4py_classes.py'
   ),
-  install_dir: user_site + '/gretl'
+  install_dir: destination
 )
