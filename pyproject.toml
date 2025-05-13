@@ -25,3 +25,11 @@ classifiers = [
 Homepage = "https://gretl.sourceforge.net/gretl4py.html"
 Source = "https://sourceforge.net/p/gretl/gretl4py/ci/master/tree/"
 Issues = "https://sourceforge.net/p/gretl/gretl4py/ci/master/tree//issues"
+
+[tool.meson-python]
+include = [
+    "gretl/*.py",
+    "README.md",
+    "LICENSE",
+    "doc/*.pdf"
+    ]
