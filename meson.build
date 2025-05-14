@@ -129,7 +129,6 @@ srcs = files(
 ###########################################################################
 # Build the extension
 ###########################################################################
-message('[Build the extension] Build output directory: ' + build_output_dir)
 ext_mod = python.extension_module(
   '_gretl',
   srcs,
@@ -141,8 +140,9 @@ ext_mod = python.extension_module(
   ],
   include_directories: gretl4py_inc,
   install: true,
-  install_dir: python.platlib
+  #install_dir: python.platlib
 )
+
 
 
 ###########################################################################
