@@ -1,35 +1,3 @@
 [build-system]
-requires = ["meson-python", "pybind11", "setuptools"]
-build-backend = "mesonpy"
-
-[project]
-name = "gretl4py"
-version = "0.2"
-description = "Python bindings for gretl"
-authors = [{ name = "Marcin Błażejowski", email = "marcin@gretlconference.org" }]
-readme = "README.md"
-license = { file = "LICENSE" }
-requires-python = ">=3.11"
-dependencies = ["numpy"]
-
-classifiers = [
-  "Programming Language :: Python :: 3",
-  "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
-  "Operating System :: OS Independent",
-  "Development Status :: 4 - Beta",
-  "Intended Audience :: Developers",
-  "Topic :: Scientific/Engineering :: Information Analysis"
-  ]
-
-[project.urls]
-Homepage = "https://gretl.sourceforge.net/gretl4py.html"
-Source = "https://sourceforge.net/p/gretl/gretl4py/ci/master/tree/"
-Issues = "https://sourceforge.net/p/gretl/gretl4py/ci/master/tree//issues"
-
-[tool.meson-python]
-include = [
-    "gretl/*.py",
-    "README.md",
-    "LICENSE",
-    "doc/*.pdf"
-    ]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"

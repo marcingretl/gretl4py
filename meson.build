@@ -12,11 +12,10 @@ is_unix    = not is_windows
 #########################################################
 # User defined options (see 'meson_options.txt')
 #########################################################
-PYTHON_EXE = get_option('PYTHON_EXE')   # Python to use
-PYPI_BUILD = get_option('PYPI_BUILD')   # build for PyPI
-LOCAL_BUILD = get_option('LOCAL_BUILD') # local build
-STACK_PATH = get_option('STACK_PATH')   # for Windows only
-GRETL_PATH = get_option('GRETL_PATH')   # for macOS only
+PYTHON_EXE  = get_option('PYTHON_EXE')  # Python to use
+INSTALL     = get_option('INSTALL')     # local install
+STACK_PATH  = get_option('STACK_PATH')  # for Windows only
+GRETL_PATH  = get_option('GRETL_PATH')  # for macOS only
 
 
 #########################################################
@@ -94,7 +93,6 @@ if is_windows
     ],
     link_args: win_link_args
   )
-
 elif is_darwin
   GRETL_PATH = GRETL_PATH.replace('\\', '/')
   gretl_include_paths = [
@@ -111,7 +109,6 @@ elif is_darwin
     include_directories: gretl_include_paths,
     link_args: gretlld
   )
-
 else
   gretl_dep = dependency('gretl', required: true)
 endif
@@ -135,7 +132,7 @@ srcs = files(
 #########################################################
 # Path to install
 #########################################################
-if PYPI_BUILD or not LOCAL_BUILD
+if not INSTALL
     destination = python.get_install_dir()
 else
     user_site = run_command(
@@ -149,7 +146,7 @@ endif
 #########################################################
 # Build the extension and install
 #########################################################
-if PYPI_BUILD or LOCAL_BUILD
+if INSTALL
     python.extension_module(
       '_gretl',
       srcs,
@@ -169,11 +166,13 @@ endif
 #########################################################
 # Python files install
 #########################################################
-install_data(
-  files(
-    'gretl/__init__.py',
-    'gretl/gretl4py_addons.py',
-    'gretl/gretl4py_classes.py'
-  ),
-  install_dir: destination
-)
+if INSTALL
+    install_data(
+      files(
+        'gretl/__init__.py',
+        'gretl/gretl4py_addons.py',
+        'gretl/gretl4py_classes.py'
+      ),
+      install_dir: destination
+    )
+endif

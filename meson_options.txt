@@ -1,18 +1,12 @@
-# build for PyPI
-option('PYPI_BUILD', type: 'boolean', value: false, description: 'do we build for PyPI')
-
-# build (local)
-option('LOCAL_BUILD', type: 'boolean', value: false, description: 'do we build for local machine')
-
+# local install
+option('INSTALL', type: 'boolean', value: true, description: 'do we install on local machine')
 
 # path to Python executable
 option('PYTHON_EXE', type: 'string', value: '', description: 'python executable to use')
 
-
 # Windows only: any relative path to the source root
 # (see: https://sourceforge.net/projects/libgretl-for-ms-sdk/)
 option('STACK_PATH', type: 'string', value: 'C:/msys64/home/Katedra/cvs/gretl/libgretl-for-ms-sdk-code/trunk/stack', description: 'path to libgretl stack for MS SDK')
-
 
 # macOS only: path to gretl installation
 option('GRETL_PATH', type: 'string', value: '/Applications/Gretl.app/Contents/Resources', description: 'path to gretl installation')
