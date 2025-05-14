@@ -141,17 +141,16 @@ ext_mod = python.extension_module(
   ],
   include_directories: gretl4py_inc,
   install: true,
-  build_by_default: true,
-  install_dir: build_output_dir
+  build_by_default: true
+  # DO NOT specify install_dir here!
 )
 
 ###########################################################################
-# Copy binary
+# Copy binary to builds/x.y/ for dev/testing
 ###########################################################################
-# helper function to handle copying on ms windows
 python_cmd = [python, '-c', 'import sys, shutil; shutil.copy2(sys.argv[1], sys.argv[2])']
-
 copy_cmd = python_cmd + ['@INPUT@', join_paths(build_output_dir, gretl_mod_filename)]
+
 copy_binary_part = custom_target('copy_so_to_builds',
   input: ext_mod,
   output: 'copied-stamp',
@@ -163,7 +162,7 @@ copy_binary_part = custom_target('copy_so_to_builds',
 # Optional install step
 ###########################################################################
 if INSTALL
-	install_target = custom_target('run_install_py',
+  install_target = custom_target('run_install_py',
     output: 'install-stamp',
     command: [python, this_source_dir / 'install.py'],
     depends: [ext_mod, copy_binary_part],
