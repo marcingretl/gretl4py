@@ -1,5 +1,5 @@
+#!/usr/bin/env python3
 """
- *
  *  gretl -- Gnu Regression, Econometrics and Time-series Library
  *  Copyright (C) 2001 Allin Cottrell and Riccardo "Jack" Lucchetti
  *
@@ -15,62 +15,69 @@
  *
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *
- """
+"""
 
 """This module installs all necessary gretl4py files."""
 
+import os
+import sys
 import sysconfig
 import site
 import shutil
 
+# Determine platform and gretl install path
 platform = sysconfig.get_platform()
 path_check = True
 if platform == 'win-amd64':
     GRETL_PATH = r'C:\Program Files\gretl'
-elif platform[0:5] == "macos":
+elif platform.startswith("macos"):
     GRETL_PATH = '/Applications/Gretl.app'
 elif platform == 'linux-x86_64':
     print("make sure gretl is in your PATH")
     GRETL_PATH = ""
     path_check = False
 else:
-    exit("unsupported operating system (this installer is for MS Windows or macOS")
+    sys.exit("unsupported operating system (this installer is for MS Windows, macOS, or Linux)")
 
-# we look up for gretl installation
-if not sysconfig.os.path.isdir(sysconfig.os.path.normpath(GRETL_PATH)) and path_check:
-    exit(f'gretl4py requires gretl installed in: {GRETL_PATH:s}')
+if not os.path.isdir(os.path.normpath(GRETL_PATH)) and path_check:
+    sys.exit(f'gretl4py requires gretl installed in: {GRETL_PATH}')
 
-# we verify python min version
+# Verify Python version
 PYTHON_MIN = 3.11
-PYTHON_MIN_INT = 311
-PYTHON_VER = float(sysconfig.get_python_version())
-tmp = sysconfig.get_python_version().split(".")
-PYTHON_VER_INT = int(tmp[0])*100 + int(tmp[1])
-if PYTHON_VER_INT < PYTHON_MIN_INT:
-    exit(f'gretl4py requires python {PYTHON_MIN:.2f} or higher, but {PYTHON_VER:.2f} was used')
+major, minor = sys.version_info[:2]
+if (major * 100 + minor) < 311:
+    sys.exit(f'gretl4py requires Python {PYTHON_MIN:.2f} or higher, but {major}.{minor} was used')
 
-# we setup paths, names and so on
+# Setup directories
 PYTHON_PATH = site.getusersitepackages()
-SUFFIX = sysconfig.get_config_var(r'EXT_SUFFIX')
-MODULE_PATH = sysconfig.os.path.normpath(f'{PYTHON_PATH:s}/gretl')
-MODULE = f'_gretl{SUFFIX:s}'
-PYTHON_EXE = sysconfig.sys.executable
+SUFFIX = sysconfig.get_config_var('EXT_SUFFIX')
+MODULE = f'_gretl{SUFFIX}'
+MODULE_PATH = os.path.normpath(f'{PYTHON_PATH}/gretl')
 
-# we create directories and copy all files
-if sysconfig.os.path.isdir(MODULE_PATH):
+# Resolve source directory (this script's location)
+SOURCE_DIR = os.path.dirname(os.path.abspath(__file__))
+PYVER = f"{major}.{minor}"
+BUILD_DIR = os.path.join(SOURCE_DIR, 'builds', PYVER)
+
+# Clean target directory
+if os.path.isdir(MODULE_PATH):
     shutil.rmtree(MODULE_PATH)
-sysconfig.os.makedirs(MODULE_PATH)
+os.makedirs(MODULE_PATH)
 
+# Copy .py files from gretl/
 for file in ["__init__.py", "gretl4py_addons.py", "gretl4py_classes.py"]:
-    SRC = sysconfig.os.path.normpath(f'gretl/{file:s}')
-    print(f'copying {SRC:s} to {MODULE_PATH:s}')
+    SRC = os.path.join(SOURCE_DIR, 'gretl', file)
+    print(f'copying {SRC} to {MODULE_PATH}')
     shutil.copy(SRC, MODULE_PATH)
 
-SRC = sysconfig.os.path.normpath(f'builds/{PYTHON_VER:.2f}/{MODULE:s}')
-print(f'copying {SRC:s} to {MODULE_PATH:s}')
+# Copy compiled shared object
+SRC = os.path.join(BUILD_DIR, MODULE)
+print(f'copying {SRC} to {MODULE_PATH}')
 shutil.copy(SRC, MODULE_PATH)
 
-print(f'\nVerifing installation...\n')
+# Verify
+print(f'\nVerifying installation...\n')
+site.addsitedir(PYTHON_PATH)
 import gretl
-gretl.about(True)
+d = gretl.about(False)
+print(d['mod_logo'])

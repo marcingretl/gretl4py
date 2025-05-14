@@ -1,12 +1,15 @@
-# local install
-option('INSTALL', type: 'boolean', value: true, description: 'do we install on local machine')
+# Whether to install to the local Python environment using install.py
+option('INSTALL', type: 'boolean', value: true, description: 'Install to local Python environment (via install.py)')
 
-# path to Python executable
-option('PYTHON_EXE', type: 'string', value: '', description: 'python executable to use')
+# Path to the Python executable to use (e.g., /usr/bin/python3 or python.exe)
+option('PYTHON_EXE', type: 'string', value: '', description: 'Path to Python executable')
 
-# Windows only: any relative path to the source root
-# (see: https://sourceforge.net/projects/libgretl-for-ms-sdk/)
-option('STACK_PATH', type: 'string', value: 'C:/msys64/home/Katedra/cvs/gretl/libgretl-for-ms-sdk-code/trunk/stack', description: 'path to libgretl stack for MS SDK')
+# Windows only: Path to libgretl stack (relative or absolute) from https://sourceforge.net/projects/libgretl-for-ms-sdk/
+option('STACK_PATH', type: 'string',
+       value: 'C:/msys64/home/Katedra/cvs/gretl/libgretl-for-ms-sdk-code/trunk/stack',
+       description: 'Path to libgretl stack for Windows (MS SDK)')
 
-# macOS only: path to gretl installation
-option('GRETL_PATH', type: 'string', value: '/Applications/Gretl.app/Contents/Resources', description: 'path to gretl installation')
+# macOS only: Path to gretl installation (inside Gretl.app)
+option('GRETL_PATH', type: 'string',
+       value: '/Applications/Gretl.app/Contents/Resources',
+       description: 'Path to gretl installation (macOS)')

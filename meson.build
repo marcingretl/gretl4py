@@ -8,19 +8,13 @@ is_windows = host_machine.system() == 'windows'
 is_darwin  = host_machine.system() == 'darwin'
 is_unix    = not is_windows
 
+# User-defined options
+PYTHON_EXE  = get_option('PYTHON_EXE')
+INSTALL     = get_option('INSTALL')
+STACK_PATH  = get_option('STACK_PATH')
+GRETL_PATH  = get_option('GRETL_PATH')
 
-#########################################################
-# User defined options (see 'meson_options.txt')
-#########################################################
-PYTHON_EXE  = get_option('PYTHON_EXE')  # Python to use
-INSTALL     = get_option('INSTALL')     # local install
-STACK_PATH  = get_option('STACK_PATH')  # for Windows only
-GRETL_PATH  = get_option('GRETL_PATH')  # for macOS only
-
-
-#########################################################
-# libgretl stack (Windows only)
-#########################################################
+# Windows-specific libgretl
 if is_windows
   STACK_PATH = STACK_PATH.replace('\\', '/')
   if not fs.exists(STACK_PATH)
@@ -33,10 +27,7 @@ if is_windows
   gretl_lib                = STACK_PATH + '/lib'
 endif
 
-
-#########################################################
 # Compiler flags
-#########################################################
 cpp = meson.get_compiler('cpp')
 cpp_args = ['-pipe', '-fstack-protector-strong', '-Wp,-D_FORTIFY_SOURCE=2', '-fwrapv']
 if cpp.get_id() == 'gcc'
@@ -47,22 +38,23 @@ if is_unix
 endif
 add_project_arguments(cpp_args, language: 'cpp')
 
-
-#########################################################
 # Python
-#########################################################
 python_mod = import('python')
 python = python_mod.find_installation(PYTHON_EXE)
+python_version = python.language_version()
+python_major_minor = python_version.split('.').get(0) + '.' + python_version.split('.').get(1)
+this_source_dir = meson.current_source_dir()
+build_output_dir = this_source_dir / 'builds' / python_major_minor
+gretl_mod_suffix = run_command(python, '-c', 'import sysconfig; print(sysconfig.get_config_var("EXT_SUFFIX"))', check: true).stdout().strip()
+gretl_mod_filename = '_gretl' + gretl_mod_suffix
 python_dep = python.dependency()
 message('Using Python: ' + python.full_path())
+message('Build output directory: ' + build_output_dir)
 
 
-#########################################################
 # pybind11
-#########################################################
 pybind_includes = []
 pybind_flags = run_command(python, '-m', 'pybind11', '--includes', check: true).stdout().strip()
-
 foreach flag : pybind_flags.split()
   if flag.startswith('-I')
     pybind_includes += flag.substring(2)
@@ -73,10 +65,7 @@ pybind = declare_dependency(
   include_directories: pybind_includes
 )
 
-
-#########################################################
 # libgretl dependency
-#########################################################
 if is_windows
   win_link_args = [
     '-L' + gretl_lib,
@@ -84,7 +73,6 @@ if is_windows
     '-lglib-2.0', '-lintl', '-lgobject-2.0',
     '-lversion', '-lshlwapi', '-lpathcch', '-lbcrypt'
   ]
-
   gretl_dep = declare_dependency(
     include_directories: [
       gretl_include,
@@ -104,7 +92,6 @@ elif is_darwin
     '-L' + GRETL_PATH + '/lib',
     '-lgretl-1.0', '-lglib-2.0', '-lxml2', '-lfftw3', '-lomp', '-lm'
   ]
-
   gretl_dep = declare_dependency(
     include_directories: gretl_include_paths,
     link_args: gretlld
@@ -113,10 +100,7 @@ else
   gretl_dep = dependency('gretl', required: true)
 endif
 
-
-#########################################################
-# Source files
-#########################################################
+# Sources
 gretl4py_inc = include_directories('src')
 srcs = files(
   'src/gretl4py.cpp',
@@ -128,51 +112,40 @@ srcs = files(
   'src/simdjson/simdjson.cpp',
 )
 
+# Build the extension
+message('[Build the extension] Build output directory: ' + build_output_dir)
+ext_mod = python.extension_module(
+  '_gretl',
+  srcs,
+  dependencies: [
+    pybind,
+    gretl_dep,
+    python_dep,
+    declare_dependency(include_directories: gretl4py_inc)
+  ],
+  include_directories: gretl4py_inc,
+  install: true,
+  build_by_default: true
+)
 
-#########################################################
-# Path to install
-#########################################################
-if not INSTALL
-    destination = python.get_install_dir()
-else
-    user_site = run_command(
-      python, '-m', 'site', '--user-site',
-      check: true
-    ).stdout().strip()
-    destination = user_site + '/gretl'
-endif
+copy_so = custom_target('copy_so_to_builds',
+  input: ext_mod,
+  output: 'copied-stamp',
+  command: [
+    'cp',
+    '@INPUT@',
+    join_paths(build_output_dir, gretl_mod_filename)
+  ],
+  build_by_default: true
+)
 
 
-#########################################################
-# Build the extension and install
-#########################################################
+# Optional install step
 if INSTALL
-    python.extension_module(
-      '_gretl',
-      srcs,
-      dependencies: [
-        pybind,
-        gretl_dep,
-        python_dep,
-        declare_dependency(include_directories: gretl4py_inc)
-      ],
-      include_directories: gretl4py_inc,
-      install: true,
-      install_dir: destination
-    )
-endif
-
-
-#########################################################
-# Python files install
-#########################################################
-if INSTALL
-    install_data(
-      files(
-        'gretl/__init__.py',
-        'gretl/gretl4py_addons.py',
-        'gretl/gretl4py_classes.py'
-      ),
-      install_dir: destination
-    )
+  install_target = custom_target('run_install_py',
+    output: 'install-stamp',
+    command: [python, this_source_dir / 'install.py'],
+    depends: [ext_mod, copy_so],
+    build_by_default: true
+  )
 endif
