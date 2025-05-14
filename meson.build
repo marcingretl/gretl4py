@@ -141,9 +141,9 @@ ext_mod = python.extension_module(
   ],
   include_directories: gretl4py_inc,
   install: true,
-  build_by_default: true
-  # DO NOT specify install_dir here!
+  install_dir: python.platlib
 )
+
 
 ###########################################################################
 # Copy binary to builds/x.y/ for dev/testing
