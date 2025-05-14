@@ -8,13 +8,17 @@ is_windows = host_machine.system() == 'windows'
 is_darwin  = host_machine.system() == 'darwin'
 is_unix    = not is_windows
 
+###########################################################################
 # User-defined options
+###########################################################################
 PYTHON_EXE  = get_option('PYTHON_EXE')
 INSTALL     = get_option('INSTALL')
 STACK_PATH  = get_option('STACK_PATH')
 GRETL_PATH  = get_option('GRETL_PATH')
 
+###########################################################################
 # Windows-specific libgretl
+###########################################################################
 if is_windows
   STACK_PATH = STACK_PATH.replace('\\', '/')
   if not fs.exists(STACK_PATH)
@@ -27,7 +31,9 @@ if is_windows
   gretl_lib                = STACK_PATH + '/lib'
 endif
 
+###########################################################################
 # Compiler flags
+###########################################################################
 cpp = meson.get_compiler('cpp')
 cpp_args = ['-pipe', '-fstack-protector-strong', '-Wp,-D_FORTIFY_SOURCE=2', '-fwrapv']
 if cpp.get_id() == 'gcc'
@@ -38,7 +44,9 @@ if is_unix
 endif
 add_project_arguments(cpp_args, language: 'cpp')
 
+###########################################################################
 # Python
+###########################################################################
 python_mod = import('python')
 python = python_mod.find_installation(PYTHON_EXE)
 python_version = python.language_version()
@@ -50,9 +58,11 @@ gretl_mod_filename = '_gretl' + gretl_mod_suffix
 python_dep = python.dependency()
 message('Using Python: ' + python.full_path())
 message('Build output directory: ' + build_output_dir)
+message('python.get_install_dir(): ' + python.get_install_dir())
 
-
+###########################################################################
 # pybind11
+###########################################################################
 pybind_includes = []
 pybind_flags = run_command(python, '-m', 'pybind11', '--includes', check: true).stdout().strip()
 foreach flag : pybind_flags.split()
@@ -65,7 +75,9 @@ pybind = declare_dependency(
   include_directories: pybind_includes
 )
 
+###########################################################################
 # libgretl dependency
+###########################################################################
 if is_windows
   win_link_args = [
     '-L' + gretl_lib,
@@ -100,7 +112,9 @@ else
   gretl_dep = dependency('gretl', required: true)
 endif
 
+###########################################################################
 # Sources
+###########################################################################
 gretl4py_inc = include_directories('src')
 srcs = files(
   'src/gretl4py.cpp',
@@ -112,7 +126,9 @@ srcs = files(
   'src/simdjson/simdjson.cpp',
 )
 
+###########################################################################
 # Build the extension
+###########################################################################
 message('[Build the extension] Build output directory: ' + build_output_dir)
 ext_mod = python.extension_module(
   '_gretl',
@@ -125,27 +141,32 @@ ext_mod = python.extension_module(
   ],
   include_directories: gretl4py_inc,
   install: true,
-  build_by_default: true
+  build_by_default: true,
+  install_dir: build_output_dir
 )
 
-copy_so = custom_target('copy_so_to_builds',
+###########################################################################
+# Copy binary
+###########################################################################
+# helper function to handle copying on ms windows
+python_cmd = [python, '-c', 'import sys, shutil; shutil.copy2(sys.argv[1], sys.argv[2])']
+
+copy_cmd = python_cmd + ['@INPUT@', join_paths(build_output_dir, gretl_mod_filename)]
+copy_binary_part = custom_target('copy_so_to_builds',
   input: ext_mod,
   output: 'copied-stamp',
-  command: [
-    'cp',
-    '@INPUT@',
-    join_paths(build_output_dir, gretl_mod_filename)
-  ],
+  command: copy_cmd,
   build_by_default: true
 )
 
-
+###########################################################################
 # Optional install step
+###########################################################################
 if INSTALL
-  install_target = custom_target('run_install_py',
+	install_target = custom_target('run_install_py',
     output: 'install-stamp',
     command: [python, this_source_dir / 'install.py'],
-    depends: [ext_mod, copy_so],
+    depends: [ext_mod, copy_binary_part],
     build_by_default: true
   )
 endif
