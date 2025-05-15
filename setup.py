@@ -1,27 +1,33 @@
 import sys
 import os
 import sysconfig
+import shutil
 from setuptools import setup, find_packages
 
-# Determine Python version
 major, minor = sys.version_info[:2]
 EXT = sysconfig.get_config_var("EXT_SUFFIX")
-PATH = os.path.join(os.getcwd(), 'builds', str(major) + '.' + str(minor))  # Absolute path to 'builds/'
+build_dir = os.path.join(os.getcwd(), 'builds', f"{major}.{minor}")  # build path
+binary_src = os.path.join(build_dir, '_gretl' + EXT)
+binary_dst_dir = os.path.join(os.getcwd(), 'gretl')
+binary_dst = os.path.join(binary_dst_dir, '_gretl' + EXT)
 
-# Full path for the binary (absolute path)
-binary_file = os.path.join(PATH, '_gretl' + EXT)
-
-# Check if the binary exists
-if not os.path.exists(binary_file):
-    print(f"Error: Missing '_gretl' binary at {binary_file} — please build with Meson first.", file=sys.stderr)
+if not os.path.exists(binary_src):
+    print(f"Error: Missing '_gretl' binary at {binary_src} — please build with Meson first.", file=sys.stderr)
     sys.exit(1)
 
-# Get all Python files in the gretl directory manually
+# Ensure destination dir exists
+os.makedirs(binary_dst_dir, exist_ok=True)
+
+# Copy binary to gretl/
+shutil.copy2(binary_src, binary_dst)
+
+# Define files to pick up
 python_files = [
-    os.path.join('gretl', 'gretl4py_addons.py'),
-    os.path.join('gretl', 'gretl4py_classes.py'),
-    os.path.join('gretl', '__init__.py')
-]
+    'gretl4py_addons.py',
+    'gretl4py_classes.py',
+    '__init__.py',
+    f'_gretl{EXT}',
+    ]
 
 # Setup
 setup(
@@ -32,10 +38,8 @@ setup(
     python_requires='>=3.11',
     author='Marcin Błażejowski',
     packages=find_packages(),
-    package_data={
-        'gretl': python_files + [binary_file],  # Include both Python files and binary
-    },
-    include_package_data=True,
+    package_data = { 'gretl': python_files },
+    include_package_data=False,
     zip_safe=False,
     classifiers=[
         'Programming Language :: Python :: 3',
