@@ -1,6 +1,10 @@
+import importlib.resources as resources
 import gretl
 
-d1 = gretl.get_data(gretl.gretl_data_path('misc/denmark.gdt'))
+# get path object for the data directory inside the gretl package
+data_dir = resources.files('gretl').joinpath('data')
+
+d1 = gretl.get_data(str(data_dir.joinpath('denmark.gdt')))
 
 #print(d1.varnames())
 m1 = gretl.vecm(order=2, rank=1, ylist='LRM LRY', xlist='IBO IDE', rc=True, seasonals=True).fit()

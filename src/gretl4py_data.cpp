@@ -272,7 +272,7 @@ std::unique_ptr<GretlTypes> gretl_generate_gretl_object (const char *s, int &err
 
 void gretl_valid_long_opt (gretlopt &opt, GretlCmdIndex ci,
                            const std::string &key, const py::handle &val,
-                           const char* ext_val)
+                           const char *ext_val)
 {
     // should be a regular gretl option: check its validity in
     // the context of @ci
@@ -430,7 +430,7 @@ void unpack_kwargs_test (gretlopt &opt, const std::string &type,
     // we force --plot=none for tests
     // FIXME: either to preprocessor level or to dispatcher
     if (type == "cusum" || type == "leverage" || type == "qlrtest") {
-        gretl_valid_long_opt(opt, ci, "plot", py::handle(), "0");
+        gretl_valid_long_opt(opt, ci, "plot", py::handle(), "none");
     }
 }
 
@@ -475,7 +475,7 @@ void move_to_python_container (PyWrapped &wrapped_obj, Item &&item,
     }
     py::object dst = obj.attr(container);
 
-    // we move add item to container
+    // we move an item to the container
     if constexpr (std::is_same_v<ContainerType, py::list>) {
         if (!is_pylist(dst)) {
             throw std::runtime_error("attribute '" + std::string(container) + "' is not a list");
