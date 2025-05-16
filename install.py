@@ -24,6 +24,7 @@ import sys
 import sysconfig
 import site
 import shutil
+import glob
 
 # Determine platform and gretl install path
 platform = sysconfig.get_platform()
@@ -74,6 +75,14 @@ for file in ["__init__.py", "gretl4py_addons.py", "gretl4py_classes.py"]:
 SRC = os.path.join(BUILD_DIR, MODULE)
 print(f'copying {SRC} to {MODULE_PATH}')
 shutil.copy(SRC, MODULE_PATH)
+
+# We copy datasets
+DATA_DIR = os.path.join(MODULE_PATH, 'data')
+os.makedirs(DATA_DIR)
+data_files = glob.glob(os.path.join(SOURCE_DIR, 'gretl', 'data', '*'))
+for file in data_files:
+    print(f'copying {file} to {DATA_DIR}')
+    shutil.copy(file, DATA_DIR)
 
 # Verify
 print(f'\nVerifying installation...\n')

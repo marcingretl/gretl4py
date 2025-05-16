@@ -32,7 +32,7 @@ void init_gretl4py_data_py11(py::module_ &m)
         .def("__copy__",
              [](const GretlDataset &src)
              {
-                 const std::string dotdir = gretl_dotdir();
+                 const std::string dotdir = gretl_dotdir(); //FIXME: right now gretl_dotdir() returns empty string
                  const std::string fname = dotdir + "gretl4py_tmp.gdt";
 
                  src.to_file(fname);

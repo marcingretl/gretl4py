@@ -74,12 +74,14 @@ void module_init (void)
     // initialize libgretl
     libgretl_init();
 
+    /*
     // read gretl config
 #if defined(_WIN32)
     win32_cli_read_rc();
 #else
     cli_read_rc();
 #endif
+    */
 
     // read and set GRETL_PLUGIN_PATH if available
     if (const char* env = std::getenv("GRETL_PLUGIN_PATH"); env) {

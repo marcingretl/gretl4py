@@ -1,6 +1,11 @@
+import importlib.resources as resources
 import gretl
 
-d1 = gretl.get_data(gretl.gretl_data_path('ramanathan/data4-1.gdt'))
+# get path object for the data directory inside the gretl package
+data_dir = resources.files('gretl').joinpath('data')
+
+# load datasets
+d1 = gretl.get_data(str(data_dir.joinpath('data4-1.gdt')))
 d1.sample(t1=1, t2=10)
 
 m1 = gretl.ols(formula='1 0 2 3').fit()
