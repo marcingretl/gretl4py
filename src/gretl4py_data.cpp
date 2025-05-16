@@ -430,6 +430,7 @@ void unpack_kwargs_test (gretlopt &opt, const std::string &type,
     // we force --plot=none for tests
     // FIXME: either to preprocessor level or to dispatcher
     if (type == "cusum" || type == "leverage" || type == "qlrtest") {
+        opt = static_cast<gretlopt>(opt | OPT_U);
         gretl_valid_long_opt(opt, ci, "plot", py::handle(), "none");
     }
 }
@@ -490,6 +491,7 @@ void move_to_python_container (PyWrapped &wrapped_obj, Item &&item,
         throw std::runtime_error("Unsupported container type for attribute '" + std::string(container) + "'");
     }
 }
+
 // instantiation for GretlModel class
 template void move_to_python_container<GretlModel, py::dict, py::list>
     (GretlModel&, py::dict&&, const char*, const std::string&);
@@ -572,7 +574,7 @@ GretlDataset::~GretlDataset (void)
 {
     if (is_default) {
         set_default_dset(nullptr);
-        std::printf("default dataset was deleted\n");
+        // std::printf("default dataset was deleted\n");
     }
     GretlDataset::free_dset();
 }
