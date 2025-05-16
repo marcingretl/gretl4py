@@ -2,5 +2,10 @@
 *~
 *.zip
 TAGS
-__pycache__
+__pycache__/
 demo/memcheck
+
+# Build directories
+build/
+dist/
+*.egg-info/

@@ -1,5 +1,7 @@
+import importlib.resources as resources
 import gretl
 import numpy as np
+
 np.set_printoptions(precision=4)
 
 #####################################
@@ -16,28 +18,25 @@ panel_fixed_effects_F_test = 123.0227754885
 panel_hausman_test = 56.19204895
 logit_fXb = 0.188902177165472
 probit_normtest_pval = 0.16442606965149
-logit_addsratios = [[16.87971482698798, 21.318085199908165, 1.4201941279029757, 200.6238210977191],
- [1.099832242458331, 0.15568587945550874, 0.8333650615466961, 1.4515018895871261],
- [10.790732404989523, 11.487427998195665, 1.3393441542871571, 86.93800280038114]]
-#assert (round(res.fXb, 15) == logit_fXb), 'f(beta\'x) at mean of independent vars should equal: ' + str(logit_fXb)
-############################################################################
+logit_addsratios = [
+    [16.87971482698798, 21.318085199908165, 1.4201941279029757, 200.6238210977191],
+    [1.099832242458331, 0.15568587945550874, 0.8333650615466961, 1.4515018895871261],
+    [10.790732404989523, 11.487427998195665, 1.3393441542871571, 86.93800280038114]
+]
 
-
-# we force libgretl to use the decimal point character
+# force libgretl to use the decimal point character
 gretl.set('force_decpoint', 'on')
 
+# get path object for the data directory inside the gretl package
+data_dir = resources.files('gretl').joinpath('data')
 
-# we load datasets
-longley = gretl.get_data(gretl.gretl_data_path('misc/longley.gdt'))
-bjg = gretl.get_data('bjg.csv')
-fname = gretl.gretl_data_path('misc/kennan.gdt')
-kennan = gretl.get_data(fname)
-fname = gretl.gretl_data_path('greene/greene19_1.gdt')
-greene19_1 = gretl.get_data(fname)
-fname = gretl.gretl_data_path('ramanathan/data4-1.gdt')
-data4_1 = gretl.get_data(fname)
-fname = gretl.gretl_data_path('misc/abdata.gdt')
-abdata = gretl.get_data(fname)
+# load datasets
+longley    = gretl.get_data(str(data_dir.joinpath('longley.csv')))
+bjg        = gretl.get_data(str(data_dir.joinpath('bjg.csv')))
+kennan     = gretl.get_data(str(data_dir.joinpath('kennan.gdt')))
+greene19_1 = gretl.get_data(str(data_dir.joinpath('greene19_1.gdt')))
+data4_1    = gretl.get_data(str(data_dir.joinpath('data4-1.gdt')))
+abdata     = gretl.get_data(str(data_dir.joinpath('abdata.gdt')))
 
 # list available datasets
 gretl.show_data_status()

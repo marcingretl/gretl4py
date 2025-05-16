@@ -1,35 +1,54 @@
 import sys
 import os
 import sysconfig
-import shutil
-from setuptools import setup, find_packages
+from setuptools import setup, find_packages, Extension
+import glob
 
-major, minor = sys.version_info[:2]
+
 EXT = sysconfig.get_config_var("EXT_SUFFIX")
-build_dir = os.path.join(os.getcwd(), 'builds', f"{major}.{minor}")  # build path
-binary_src = os.path.join(build_dir, '_gretl' + EXT)
-binary_dst_dir = os.path.join(os.getcwd(), 'gretl')
-binary_dst = os.path.join(binary_dst_dir, '_gretl' + EXT)
+binary_path = os.path.join(os.getcwd(), 'gretl', '_gretl' + EXT)
+dll_dir = os.path.join(os.getcwd(), 'gretl', 'dll')
+ext_name = f'gretl._gretl'
+ext_path = os.path.join("gretl", f"_gretl{EXT}")
 
-if not os.path.exists(binary_src):
-    print(f"Error: Missing '_gretl' binary at {binary_src} — please build with Meson first.", file=sys.stderr)
+# Check _gretl binary exists in gretl/
+if not os.path.exists(binary_path):
+    print(f"Error: Missing '_gretl' binary at {binary_path}. Please copy it manually before packaging.", file=sys.stderr)
     sys.exit(1)
 
-# Ensure destination dir exists
-os.makedirs(binary_dst_dir, exist_ok=True)
+# On Windows 64-bit, check DLLs exist in gretl/dll/
+if sys.platform == "win32" and sys.maxsize > 2**32:
+    if not os.path.isdir(dll_dir):
+        print(f"Warning: DLL directory {dll_dir} does not exist. Please copy DLLs manually.", file=sys.stderr)
+    else:
+        dll_files = glob.glob(os.path.join(dll_dir, '*.dll'))
+        if not dll_files:
+            print(f"Warning: No DLL files found in {dll_dir}. Please copy DLLs manually.", file=sys.stderr)
 
-# Copy binary to gretl/
-shutil.copy2(binary_src, binary_dst)
-
-# Define files to pick up
-python_files = [
+# Files inside gretl/ to include
+package_files = [
     'gretl4py_addons.py',
     'gretl4py_classes.py',
     '__init__.py',
     f'_gretl{EXT}',
+    'dll/*.dll',
+    'data/*',
     ]
 
-# Setup
+# Include DLL files if on Windows 64-bit and dll_dir exists
+if sys.platform == "win32" and sys.maxsize > 2**32 and os.path.isdir(dll_dir):
+    dll_names = [os.path.join('dll', os.path.basename(f)) for f in glob.glob(os.path.join(dll_dir, '*.dll'))]
+    package_files.extend(dll_names)
+
+# We declare a dummy Extension that points to the existing binary.
+# This tricks setuptools into marking the wheel as platform-specific.
+ext_modules = [
+    Extension(
+        ext_name,
+        sources=[],  # no sources because you provide pre-built binary
+    )
+]
+
 setup(
     name='gretl4py',
     version='0.2',
@@ -38,8 +57,10 @@ setup(
     python_requires='>=3.11',
     author='Marcin Błażejowski',
     packages=find_packages(),
-    package_data = { 'gretl': python_files },
-    include_package_data=False,
+    package_data={
+        'gretl': package_files,
+    },
+    include_package_data=True,
     zip_safe=False,
     classifiers=[
         'Programming Language :: Python :: 3',
@@ -50,4 +71,5 @@ setup(
         'Intended Audience :: Developers',
         'Topic :: Scientific/Engineering',
     ],
+    ext_modules=ext_modules,
 )

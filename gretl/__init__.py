@@ -21,35 +21,54 @@
 """This module imports all necessary files
 and sets some required environmental variables."""
 
-import sysconfig
-import site as _site
+import os
 import sys
+import site as _site
+import sysconfig
 
-PATH = _site.getusersitepackages()
+package_dir = os.path.dirname(__file__)  # common package base path
+data_dir = os.path.join(package_dir, 'data')
+
+user_site = _site.getusersitepackages()
 platform = sysconfig.get_platform()
-if platform == "win-amd64":
-    PATH = str(PATH + r'\gretl')
-    GDIR = r'C:\Program Files\gretl'
-    if 'GRETL_PLUGIN_PATH' not in sysconfig.os.environ:
-        sysconfig.os.environ['GRETL_PLUGIN_PATH'] = GDIR + r'\plugins'
-    if 'GRETL_DATA_PATH' not in sysconfig.os.environ:
-        sysconfig.os.environ['GRETL_DATA_PATH'] = GDIR + r'\data'
-    sysconfig.os.add_dll_directory(GDIR)
-    currpath = sysconfig.os.environ['PATH']
-    if GDIR not in currpath:
-        sysconfig.os.environ['PATH'] = GDIR + sysconfig.os.pathsep + currpath
-elif platform[0:5] == "macos":
-    RES = '/Applications/Gretl.app/Contents/Resources/'
-    PLUGDIR = RES + 'lib/plugins'
-    if not sysconfig.os.path.exists(PLUGDIR):
-        PLUGDIR = RES + 'lib/gretl-gtk2' # we fall back to explicit gtk2-based path
-    sysconfig.os.environ['GRETL_PLUGIN_PATH'] = PLUGDIR
-    sysconfig.os.environ['GRETL_DATA_PATH'] = RES + 'share/gretl/data'
-    sysconfig.os.environ['PATH'] += ':' + str(RES + r'bin')
-    PATH = str(PATH + r'/gretl')
+
+# always set GRETL_DATA_PATH to package_dir/data if not already set
+os.environ.setdefault('GRETL_DATA_PATH', data_dir)
+
+if sys.platform == "win32":
+    package_dir = os.path.dirname(__file__)
+    dll_dir = os.path.join(package_dir, 'dll')
+    data_dir = os.path.join(package_dir, 'data')
+
+    os.environ.setdefault('GRETL_PLUGIN_PATH', dll_dir)
+    os.environ.setdefault('GRETL_DATA_PATH', data_dir)
+
+    # directly add DLL directory
+    os.add_dll_directory(dll_dir)
+
+    # ensure dll_dir is in PATH env var (exact match)
+    current_path = os.environ.get('PATH', '').split(os.pathsep)
+    if dll_dir not in current_path:
+        os.environ['PATH'] = dll_dir + os.pathsep + os.environ.get('PATH', '')
+
+    user_site = os.path.join(user_site, 'gretl')
+elif platform.startswith('macos'):
+    RES = '/Applications/Gretl.app/Contents/Resources'
+    plugdir = os.path.join(RES, 'lib/plugins')
+    if not os.path.exists(plugdir):
+        plugdir = os.path.join(RES, 'lib/gretl-gtk2')
+
+    os.environ.setdefault('GRETL_PLUGIN_PATH', plugdir)
+    os.environ['PATH'] += os.pathsep + os.path.join(RES, 'bin')
+
+    user_site = os.path.join(user_site, 'gretl')
 else:
-    PATH = str(PATH + r'/gretl')
-sysconfig.sys.path.append(PATH)
+    user_site = os.path.join(user_site, 'gretl')
+
+# add user_site (or equivalent) to sys.path if not already present
+if user_site not in sys.path:
+    sys.path.insert(0, user_site)  # prepend to give priority
+
 
 # ###################################
 # gretl4py stuff

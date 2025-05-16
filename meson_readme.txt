@@ -15,16 +15,18 @@ meson install -C builddir #-j4
 meson install -C builddir
 #ninja -C builddir install
 
-########## setutools ##########
+
+########## setuptools ##########
+Remember: before building a whl, copy:
+1. binary file from 'builds/3.xx' to 'gretl'
+2. (windows only): make sure all dll-s are in 'gretl/dll'
 python -m build
 
+
+########## tweaks ##########
 And later:
 linux:
 auditwheel repair dist/gretl4py-0.2-py3-none-any.whl
-
-ms windows:
-pip install wheel
-python setup.py bdist_wheel --plat-name=win_amd64
 
 macOS:
 pip install delocate

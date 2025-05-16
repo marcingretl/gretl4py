@@ -65,20 +65,33 @@ static std::string gretl4py_logo (void)
 
 void module_init (void)
 {
+    // check libgretl version
     if (libgretl_version() < LIBGRETL_MIN_VER) {
         throw std::runtime_error("gretl4py requires libgretl-1.0 version "
                                  + std::to_string(LIBGRETL_MIN_VER) + " or higher");
     }
-    char *str = std::getenv("GRETL4PY_VERBOSE");
-    if (str) {
-        gretl4py_verbose = std::atoi(str);
-    }
+
+    // initialize libgretl
     libgretl_init();
+
+    // read gretl config
 #if defined(_WIN32)
     win32_cli_read_rc();
 #else
     cli_read_rc();
 #endif
+
+    // read and set GRETL_PLUGIN_PATH if available
+    if (const char* env = std::getenv("GRETL_PLUGIN_PATH"); env) {
+        set_gretl_plugin_path(env);
+    }
+
+    // read and set GRETL4PY_VERBOSE if available
+    if (const char* env = std::getenv("GRETL4PY_VERBOSE"); env) {
+        gretl4py_verbose = std::atoi(env);
+    }
+
+    // verbose output
     if (gretl4py_verbose) {
         std::cout << gretl4py_logo() << std::endl;
         std::printf("libgretl initialized\n");
