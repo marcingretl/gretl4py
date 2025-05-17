@@ -52,7 +52,7 @@ python = python_mod.find_installation(PYTHON_EXE)
 python_version = python.language_version()
 python_major_minor = python_version.split('.').get(0) + '.' + python_version.split('.').get(1)
 this_source_dir = meson.current_source_dir()
-build_output_dir = this_source_dir / 'builds' / python_major_minor
+build_output_dir = this_source_dir / 'gretl'
 gretl_mod_suffix = run_command(python, '-c', 'import sysconfig; print(sysconfig.get_config_var("EXT_SUFFIX"))', check: true).stdout().strip()
 gretl_mod_filename = '_gretl' + gretl_mod_suffix
 python_dep = python.dependency()
@@ -60,7 +60,6 @@ python_dep = python.dependency()
 ###########################################################################
 # local (default) or system-wide installation
 ###########################################################################
-message('LOCAL_INST is ' + LOCAL_INST.to_string())
 if LOCAL_INST
   python_sitepkg_dir = run_command(
     python, '-c', 'import site; print(site.getusersitepackages())',
@@ -158,12 +157,12 @@ ext_mod = python.extension_module(
 )
 
 ###########################################################################
-# Copy binary to builds/x.y/
+# Copy binary to gretl
 ###########################################################################
 python_cmd = [python, '-c', 'import sys, shutil; shutil.copy2(sys.argv[1], sys.argv[2])']
 copy_cmd = python_cmd + ['@INPUT@', join_paths(build_output_dir, gretl_mod_filename)]
 
-copy_binary_part = custom_target('copy_so_to_builds',
+copy_binary_part = custom_target('copy_binary_to_gretl',
   input: ext_mod,
   output: 'copied-stamp',
   command: copy_cmd,
