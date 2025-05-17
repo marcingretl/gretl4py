@@ -34,7 +34,7 @@ MODULE_PATH = os.path.normpath(f'{PYTHON_PATH}/gretl')
 SOURCE_DIR = os.path.dirname(os.path.abspath(__file__))
 major, minor = sys.version_info[:2]
 PYVER = f"{major}.{minor}"
-BUILD_DIR = os.path.join(SOURCE_DIR, 'builds', PYVER)
+BUILD_DIR = os.path.join(SOURCE_DIR, 'gretl')
 
 # Copy compiled shared object
 SRC = os.path.join(BUILD_DIR, MODULE)
@@ -46,7 +46,7 @@ LIB_DIR = os.path.join(MODULE_PATH, 'lib')
 try:
     os.makedirs(LIB_DIR)
 except FileExistsError:
-    pass    
+    pass
 data_files = glob.glob(os.path.join(SOURCE_DIR, 'gretl', 'lib', '*'))
 for file in data_files:
     #print(f'copying {file} to {LIB_DIR}')
