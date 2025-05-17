@@ -14,6 +14,7 @@ is_unix    = not is_windows
 PYTHON_EXE  = get_option('PYTHON_EXE')
 STACK_PATH  = get_option('STACK_PATH')
 GRETL_PATH  = get_option('GRETL_PATH')
+LOCAL_INST  = get_option('LOCAL_INST')
 
 ###########################################################################
 # Windows-specific libgretl
@@ -56,7 +57,21 @@ gretl_mod_suffix = run_command(python, '-c', 'import sysconfig; print(sysconfig.
 gretl_mod_filename = '_gretl' + gretl_mod_suffix
 python_dep = python.dependency()
 
-python_sitepkg_dir = run_command(python, '-c', 'import site; print(site.getusersitepackages())', check: true).stdout().strip()
+###########################################################################
+# local (default) or system-wide installation
+###########################################################################
+message('LOCAL_INST is ' + LOCAL_INST.to_string())
+if LOCAL_INST
+  python_sitepkg_dir = run_command(
+    python, '-c', 'import site; print(site.getusersitepackages())',
+    check: true
+  ).stdout().strip()
+else
+  python_sitepkg_dir = run_command(
+    python, '-c', 'import sysconfig; print(sysconfig.get_paths()[\"platlib\"])',
+    check: true
+  ).stdout().strip()
+endif
 python_gretl_dir = python_sitepkg_dir / 'gretl'
 
 ###########################################################################
@@ -139,6 +154,7 @@ ext_mod = python.extension_module(
   ],
   include_directories: gretl4py_inc,
   install: true,
+  install_dir: python_sitepkg_dir,
 )
 
 ###########################################################################

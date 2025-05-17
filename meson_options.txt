@@ -1,6 +1,9 @@
 # Path to the Python executable to use (e.g., /usr/bin/python3 or python.exe)
 option('PYTHON_EXE', type: 'string', value: '', description: 'Path to Python executable')
 
+# Local or system-wide install
+option('LOCAL_INST', type: 'boolean', value: true, description: 'Install to user site-packages instead of system-wide')
+
 # Windows only: Path to libgretl stack (relative or absolute) from https://sourceforge.net/projects/libgretl-for-ms-sdk/
 option('STACK_PATH', type: 'string',
        value: 'C:/msys64/home/Katedra/cvs/gretl/libgretl-for-ms-sdk-code/trunk/stack',
