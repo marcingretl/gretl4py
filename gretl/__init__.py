@@ -37,19 +37,19 @@ os.environ.setdefault('GRETL_DATA_PATH', data_dir)
 
 if sys.platform == "win32":
     package_dir = os.path.dirname(__file__)
-    dll_dir = os.path.join(package_dir, 'dll')
+    lib_dir = os.path.join(package_dir, 'lib')
     data_dir = os.path.join(package_dir, 'data')
 
-    os.environ.setdefault('GRETL_PLUGIN_PATH', dll_dir)
+    os.environ.setdefault('GRETL_PLUGIN_PATH', lib_dir)
     os.environ.setdefault('GRETL_DATA_PATH', data_dir)
 
     # directly add DLL directory
-    os.add_dll_directory(dll_dir)
+    os.add_dll_directory(lib_dir)
 
-    # ensure dll_dir is in PATH env var (exact match)
+    # ensure lib_dir is in PATH env var (exact match)
     current_path = os.environ.get('PATH', '').split(os.pathsep)
-    if dll_dir not in current_path:
-        os.environ['PATH'] = dll_dir + os.pathsep + os.environ.get('PATH', '')
+    if lib_dir not in current_path:
+        os.environ['PATH'] = lib_dir + os.pathsep + os.environ.get('PATH', '')
 
     user_site = os.path.join(user_site, 'gretl')
 elif platform.startswith('macos'):

@@ -26,67 +26,47 @@ import site
 import shutil
 import glob
 
-# Determine platform and gretl install path
-platform = sysconfig.get_platform()
-path_check = True
-if platform == 'win-amd64':
-    GRETL_PATH = r'C:\Program Files\gretl'
-elif platform.startswith("macos"):
-    GRETL_PATH = '/Applications/Gretl.app'
-elif platform == 'linux-x86_64':
-    print("make sure gretl is in your PATH")
-    GRETL_PATH = ""
-    path_check = False
-else:
-    sys.exit("unsupported operating system (this installer is for MS Windows, macOS, or Linux)")
-
-if not os.path.isdir(os.path.normpath(GRETL_PATH)) and path_check:
-    sys.exit(f'gretl4py requires gretl installed in: {GRETL_PATH}')
-
-# Verify Python version
-PYTHON_MIN = 3.11
-major, minor = sys.version_info[:2]
-if (major * 100 + minor) < 311:
-    sys.exit(f'gretl4py requires Python {PYTHON_MIN:.2f} or higher, but {major}.{minor} was used')
-
 # Setup directories
 PYTHON_PATH = site.getusersitepackages()
 SUFFIX = sysconfig.get_config_var('EXT_SUFFIX')
 MODULE = f'_gretl{SUFFIX}'
 MODULE_PATH = os.path.normpath(f'{PYTHON_PATH}/gretl')
-
-# Resolve source directory (this script's location)
 SOURCE_DIR = os.path.dirname(os.path.abspath(__file__))
+major, minor = sys.version_info[:2]
 PYVER = f"{major}.{minor}"
 BUILD_DIR = os.path.join(SOURCE_DIR, 'builds', PYVER)
 
-# Clean target directory
-if os.path.isdir(MODULE_PATH):
-    shutil.rmtree(MODULE_PATH)
-os.makedirs(MODULE_PATH)
-
-# Copy .py files from gretl/
-for file in ["__init__.py", "gretl4py_addons.py", "gretl4py_classes.py"]:
-    SRC = os.path.join(SOURCE_DIR, 'gretl', file)
-    print(f'copying {SRC} to {MODULE_PATH}')
-    shutil.copy(SRC, MODULE_PATH)
-
 # Copy compiled shared object
 SRC = os.path.join(BUILD_DIR, MODULE)
-print(f'copying {SRC} to {MODULE_PATH}')
+#print(f'copying {SRC} to {MODULE_PATH}')
 shutil.copy(SRC, MODULE_PATH)
+
+# We copy libs
+LIB_DIR = os.path.join(MODULE_PATH, 'lib')
+try:
+    os.makedirs(LIB_DIR)
+except FileExistsError:
+    pass    
+data_files = glob.glob(os.path.join(SOURCE_DIR, 'gretl', 'lib', '*'))
+for file in data_files:
+    #print(f'copying {file} to {LIB_DIR}')
+    shutil.copy(file, LIB_DIR)
 
 # We copy datasets
 DATA_DIR = os.path.join(MODULE_PATH, 'data')
-os.makedirs(DATA_DIR)
+try:
+    os.makedirs(DATA_DIR)
+except FileExistsError:
+    pass
 data_files = glob.glob(os.path.join(SOURCE_DIR, 'gretl', 'data', '*'))
 for file in data_files:
-    print(f'copying {file} to {DATA_DIR}')
+    #print(f'copying {file} to {DATA_DIR}')
     shutil.copy(file, DATA_DIR)
 
-# Verify
-print(f'\nVerifying installation...\n')
-site.addsitedir(PYTHON_PATH)
-import gretl
-d = gretl.about(False)
-print(d['mod_logo'])
+# We printout summary
+print('gretl4py files were installed to:')
+print(sysconfig.os.path.normpath(f'{PYTHON_PATH:s}/gretl'))
+
+# We put stamp
+with open('resources-installed.stamp', 'w') as f:
+    f.write('done\n')

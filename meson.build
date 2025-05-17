@@ -12,7 +12,6 @@ is_unix    = not is_windows
 # User-defined options
 ###########################################################################
 PYTHON_EXE  = get_option('PYTHON_EXE')
-INSTALL     = get_option('INSTALL')
 STACK_PATH  = get_option('STACK_PATH')
 GRETL_PATH  = get_option('GRETL_PATH')
 
@@ -56,9 +55,9 @@ build_output_dir = this_source_dir / 'builds' / python_major_minor
 gretl_mod_suffix = run_command(python, '-c', 'import sysconfig; print(sysconfig.get_config_var("EXT_SUFFIX"))', check: true).stdout().strip()
 gretl_mod_filename = '_gretl' + gretl_mod_suffix
 python_dep = python.dependency()
-message('Using Python: ' + python.full_path())
-message('Build output directory: ' + build_output_dir)
-message('python.get_install_dir(): ' + python.get_install_dir())
+
+python_sitepkg_dir = run_command(python, '-c', 'import site; print(site.getusersitepackages())', check: true).stdout().strip()
+python_gretl_dir = python_sitepkg_dir / 'gretl'
 
 ###########################################################################
 # pybind11
@@ -140,13 +139,10 @@ ext_mod = python.extension_module(
   ],
   include_directories: gretl4py_inc,
   install: true,
-  #install_dir: python.platlib
 )
 
-
-
 ###########################################################################
-# Copy binary to builds/x.y/ for dev/testing
+# Copy binary to builds/x.y/
 ###########################################################################
 python_cmd = [python, '-c', 'import sys, shutil; shutil.copy2(sys.argv[1], sys.argv[2])']
 copy_cmd = python_cmd + ['@INPUT@', join_paths(build_output_dir, gretl_mod_filename)]
@@ -159,13 +155,12 @@ copy_binary_part = custom_target('copy_so_to_builds',
 )
 
 ###########################################################################
-# Optional install step
+# Standard install for .py files and resources
 ###########################################################################
-if INSTALL
-  install_target = custom_target('run_install_py',
-    output: 'install-stamp',
-    command: [python, this_source_dir / 'install.py'],
-    depends: [ext_mod, copy_binary_part],
-    build_by_default: true
-  )
-endif
+install_data(
+  'gretl/__init__.py',
+  'gretl/gretl4py_addons.py',
+  'gretl/gretl4py_classes.py',
+  install_dir: python_gretl_dir,
+)
+meson.add_install_script(python, join_paths(meson.project_source_root(), 'install.py'))

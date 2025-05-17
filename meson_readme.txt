@@ -19,7 +19,7 @@ meson install -C builddir
 ########## setuptools ##########
 Remember: before building a whl, copy:
 1. binary file from 'builds/3.xx' to 'gretl'
-2. (windows only): make sure all dll-s are in 'gretl/dll'
+2. copy required libraries to 'gretl/lib'
 python -m build
 
 

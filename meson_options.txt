@@ -1,6 +1,3 @@
-# Whether to install to the local Python environment using install.py
-option('INSTALL', type: 'boolean', value: true, description: 'Install to local Python environment (via install.py)')
-
 # Path to the Python executable to use (e.g., /usr/bin/python3 or python.exe)
 option('PYTHON_EXE', type: 'string', value: '', description: 'Path to Python executable')
 
