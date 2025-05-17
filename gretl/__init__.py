@@ -95,6 +95,9 @@ def attach_gretl_data(fname):
 def get_gretl_data(fname):
     raise RuntimeError('*** This function is deprecated and was removed. Please use \'gretl.get_data()\' instead. ***\n')
 
+def gretl_data_path(fname):
+    raise RuntimeError('*** This function is deprecated and was removed. Please use /path/to/file directly. ***\n')
+
 def printdata(data, namesonly):
     raise RuntimeError('*** This function is deprecated and was removed. Please use GretlDataset class \'print()\' method instead. ***\n')
 # deprecations: END

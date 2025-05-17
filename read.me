@@ -4,10 +4,33 @@ To build the module, ensure you have the following installed:
 - make framework (including pkg-config)
 - a modern C++ compiler (LLVM/Clang++ and g++ have been tested)
 
-To build the module, simply type 'make' in the top-level directory. If successful, you should get a file named 'gretl.cpython-3xx-x86_64-linux-gnu.so' on Linux (where 'xx' is the minor Python version number).
+###########################################################################
+# Compilation
+###########################################################################
+meson setup builddir
+meson install -C builddir #-j4
+meson install -C builddir
+# or, with Ninja:
+# ninja -C builddir -j4
+# ninja -C builddir install
 
 
-To test the module,
-- either type 'make demoscript', or
-- go to the 'demo' directory and type 'python3 demo.py'
-In 'demo' directory you'll find another examples as well.
+###########################################################################
+# Making a whl
+###########################################################################
+Before building a whl, make sure that:
+1. binary file exists in 'gretl'
+2. all required libraries exist in 'gretl/lib'
+
+python -m build
+
+
+########## tweaks ##########
+And later:
+linux:
+auditwheel repair dist/gretl4py-0.2-py3-none-any.whl
+
+macOS:
+pip install delocate
+delocate-listdeps dist/gretl4py-0.2-*.whl
+delocate-wheel -w wheelhouse dist/gretl4py-0.2-*.whl

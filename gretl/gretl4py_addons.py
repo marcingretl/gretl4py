@@ -128,19 +128,6 @@ def series2dict (series, pd=1, varname="y"):
     d['periodicity'] = pd
     return d
 
-def gretl_data_path (fname):
-    """return full path to gretl data"""
-    res_path = None
-    s = os.getenv('GRETL_DATA_PATH')
-    if s is None:
-        res = subprocess.run(['pkg-config', '--cflags-only-I', 'gretl'], stdout=subprocess.PIPE)
-        b = res.stdout.split()[0]
-        path = b.decode("utf-8")[2:]
-        res_path = path[0:path.find("include")] + "share/gretl/data/" + fname
-    else:
-        res_path = s + '/' + fname
-    return res_path
-
 def fc_print (fc):
     from tabulate import tabulate
     print(f'\nForecast for obs {fc["t1"]} to {fc["t2"]} with {fc["confidence"]} percent interval\n')
