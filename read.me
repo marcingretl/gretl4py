@@ -20,7 +20,7 @@ meson install -C builddir
 ###########################################################################
 Before building a whl, make sure that:
 1. binary file exists in 'gretl'
-2. all required libraries exist in 'gretl/lib'
+2. all required libraries exist in 'gretl/lib' (for ms windows: all DLLs, for linux/macos: plugins)
 
 python -m build
 

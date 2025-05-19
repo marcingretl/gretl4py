@@ -26,33 +26,18 @@ import sys
 import site as _site
 import sysconfig
 
-package_dir = os.path.dirname(__file__)  # common package base path
+# --- Basic paths and platform info ---
+package_dir = os.path.dirname(__file__)
 data_dir = os.path.join(package_dir, 'data')
-
-user_site = _site.getusersitepackages()
+lib_dir = os.path.join(package_dir, 'lib')
+user_site = os.path.join(_site.getusersitepackages(), 'gretl')
 platform = sysconfig.get_platform()
 
-# always set GRETL_DATA_PATH to package_dir/data if not already set
+# --- Set essential environment variables ---
 os.environ.setdefault('GRETL_DATA_PATH', data_dir)
 
-if sys.platform == "win32":
-    package_dir = os.path.dirname(__file__)
-    lib_dir = os.path.join(package_dir, 'lib')
-    data_dir = os.path.join(package_dir, 'data')
-
-    os.environ.setdefault('GRETL_PLUGIN_PATH', lib_dir)
-    os.environ.setdefault('GRETL_DATA_PATH', data_dir)
-
-    # directly add DLL directory
-    os.add_dll_directory(lib_dir)
-
-    # ensure lib_dir is in PATH env var (exact match)
-    current_path = os.environ.get('PATH', '').split(os.pathsep)
-    if lib_dir not in current_path:
-        os.environ['PATH'] = lib_dir + os.pathsep + os.environ.get('PATH', '')
-
-    user_site = os.path.join(user_site, 'gretl')
-elif platform.startswith('macos'):
+if platform.startswith("macosx"):
+    # macOS: point to system-installed gretl resources
     RES = '/Applications/Gretl.app/Contents/Resources'
     plugdir = os.path.join(RES, 'lib/plugins')
     if not os.path.exists(plugdir):
@@ -60,14 +45,21 @@ elif platform.startswith('macos'):
 
     os.environ.setdefault('GRETL_PLUGIN_PATH', plugdir)
     os.environ['PATH'] += os.pathsep + os.path.join(RES, 'bin')
-
-    user_site = os.path.join(user_site, 'gretl')
 else:
-    user_site = os.path.join(user_site, 'gretl')
+    # Windows and Linux: use local lib dir
+    os.environ.setdefault('GRETL_PLUGIN_PATH', lib_dir)
 
-# add user_site (or equivalent) to sys.path if not already present
+    # Add lib_dir to PATH if not already there
+    current_path = os.environ.get('PATH', '').split(os.pathsep)
+    if lib_dir not in current_path:
+        os.environ['PATH'] = lib_dir + os.pathsep + os.environ['PATH']
+
+    if sys.platform == "win32":
+        os.add_dll_directory(lib_dir)
+
+# --- Prepend user site for gretl if not already present ---
 if user_site not in sys.path:
-    sys.path.insert(0, user_site)  # prepend to give priority
+    sys.path.insert(0, user_site)
 
 
 # ###################################
