@@ -47,6 +47,18 @@ static int gretl4py_verbose = 0;
 // module related tools
 //////////////////////////////////////////////////
 
+/*
+std::string get_this_module_dir(const std::string &module_name) {
+    py::object sys = py::module_::import("sys");
+    py::object modules = sys.attr("modules");
+    py::object thismod = modules[module_name.c_str()];
+    py::str file = thismod.attr("__file__");
+    py::object os_path = py::module_::import("os.path");
+    py::object dirname = os_path.attr("dirname")(file);
+
+    return dirname.cast<std::string>();
+}*/
+
 static std::string gretl4py_logo (void)
 {
     std::string logo = "";
