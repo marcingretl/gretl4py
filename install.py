@@ -63,6 +63,12 @@ for file in data_files:
     #print(f'copying {file} to {DATA_DIR}')
     shutil.copy(file, DATA_DIR)
 
+# We add tmp for workdir
+try:
+    os.makedirs(os.path.join(MODULE_PATH, 'tmp'))
+except FileExistsError:
+    pass
+
 # We printout summary
 print('gretl4py files were installed to:')
 print(sysconfig.os.path.normpath(f'{PYTHON_PATH:s}/gretl'))
