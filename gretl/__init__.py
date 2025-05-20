@@ -33,6 +33,7 @@ lib_dir = os.path.join(package_dir, 'lib')
 user_site = os.path.join(_site.getusersitepackages(), 'gretl')
 
 # --- Set essential environment variables ---
+os.environ.setdefault('GRETL_HOME', package_dir)
 os.environ.setdefault('GRETL_DATA_PATH', data_dir)
 os.environ.setdefault('GRETL_PLUGIN_PATH', lib_dir)
 

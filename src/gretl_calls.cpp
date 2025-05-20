@@ -47,18 +47,6 @@ static int gretl4py_verbose = 0;
 // module related tools
 //////////////////////////////////////////////////
 
-/*
-std::string get_this_module_dir(const std::string &module_name) {
-    py::object sys = py::module_::import("sys");
-    py::object modules = sys.attr("modules");
-    py::object thismod = modules[module_name.c_str()];
-    py::str file = thismod.attr("__file__");
-    py::object os_path = py::module_::import("os.path");
-    py::object dirname = os_path.attr("dirname")(file);
-
-    return dirname.cast<std::string>();
-}*/
-
 static std::string gretl4py_logo (void)
 {
     std::string logo = "";
@@ -86,15 +74,6 @@ void module_init (void)
     // initialize libgretl
     libgretl_init();
 
-    /*
-    // read gretl config
-#if defined(_WIN32)
-    win32_cli_read_rc();
-#else
-    cli_read_rc();
-#endif
-    */
-
     // read and set GRETL_PLUGIN_PATH if available
     if (const char* env = std::getenv("GRETL_PLUGIN_PATH"); env) {
         set_gretl_plugin_path(env);
@@ -105,9 +84,16 @@ void module_init (void)
         gretl4py_verbose = std::atoi(env);
     }
 
+    // read GRETL_HOME and set as gretldir (if available)
+    if (const char* env = std::getenv("GRETL_HOME"); env) {
+        int err = gretl_set_path_by_name("gretldir", env);
+        if (err) {
+            handle_gretl_error(err);
+        }
+    }
+
     // verbose output
     if (gretl4py_verbose) {
-        std::cout << gretl4py_logo() << std::endl;
         std::printf("libgretl initialized\n");
     }
 }
@@ -180,7 +166,7 @@ py::dict about (bool do_print)
             }
             std::cout << std::endl;
         }
-        py::print("\ngretl_plugin_path = ", gretl_plugin_path());
+        py::print("\ngretl_plugin_path = \"" + std::string(gretl_plugin_path()) + "\"");
         std::cout << std::endl << "simdjson architecture implementation (runtime):" << std::endl;
         std::cout << "  name = " << "\"" << sj_name << "\"" << std::endl;
         std::cout << "  description = " << "\"" << sj_desc << "\"" << std::endl;
