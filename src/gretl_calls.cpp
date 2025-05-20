@@ -84,10 +84,12 @@ void module_init (void)
         gretl4py_verbose = std::atoi(env);
     }
 
-    // read GRETL_HOME and set as gretldir (if available)
+    // read GRETL_HOME and set as gretldir/workdir (if available)
     if (const char* env = std::getenv("GRETL_HOME"); env) {
-        int err = gretl_set_path_by_name("gretldir", env);
-        if (err) {
+        if (int err = gretl_set_path_by_name("gretldir", env)) {
+            handle_gretl_error(err);
+        }
+        if (int err = gretl_set_path_by_name("workdir", std::string(env).append("/tmp").c_str())) {
             handle_gretl_error(err);
         }
     }
