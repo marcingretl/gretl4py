@@ -33,6 +33,7 @@ package_files = [
     f'_gretl{EXT}',
     'dll/*.dll',
     'data/*',
+    'tmp/*',
     ]
 
 # Include DLL files if on Windows 64-bit and dll_dir exists
