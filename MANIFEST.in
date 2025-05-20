@@ -1,5 +1,4 @@
-exclude gretl4py/builds/*
-
 recursive-include gretl *.py
 recursive-include gretl/lib *
 recursive-include gretl/data *.csv *.gdt
+recursive-include gretl/tmp *
