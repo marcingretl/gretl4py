@@ -52,7 +52,7 @@ if sys.platform == "linux":
     libs_dir = Path(__file__).parent.parent / "gretl4py.libs"
     if libs_dir.is_dir():
         for file in libs_dir.iterdir():
-            if "openblas" in file.name:
+            if "libgretl" in file.name:
                 os.environ.setdefault('GRETL_LIB_NAME', str(file.resolve()))
                 break
 
