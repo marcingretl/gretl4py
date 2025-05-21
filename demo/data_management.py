@@ -1,13 +1,14 @@
+import importlib.resources as resources
 import gretl
 import pandas
+
+# get path object for the data directory inside the gretl package
+data_dir = resources.files('gretl').joinpath('data')
 
 dframe = pandas.read_csv('data9-7.csv')
 data97_dict = gretl.df2dict(dframe, 4, True)
 data97_df = gretl.get_data(data97_dict)
-
-fname = gretl.gretl_data_path('ramanathan/data9-7.gdt')
-data97_gdt = gretl.get_data(fname)
-
+data97_gdt = gretl.get_data(str(data_dir.joinpath('data9-7.gdt')))
 data97_csv = gretl.get_data('data9-7.csv')
 
 #global dataset: will be used later
