@@ -25,6 +25,7 @@ import os
 import sys
 import site as _site
 import sysconfig
+from pathlib import Path
 
 # --- Basic paths and platform info ---
 package_dir = os.path.dirname(__file__)
@@ -45,6 +46,15 @@ if lib_dir not in current_path:
 # --- Windows-specific DLL handling ---
 if sys.platform == "win32":
     os.add_dll_directory(lib_dir)
+
+# --- Linux-specific OpenBLAS handling ---
+if sys.platform == "linux":
+    libs_dir = Path(__file__).parent.parent / "gretl4py.libs"
+    if libs_dir.is_dir():
+        for file in libs_dir.iterdir():
+            if "openblas" in file.name:
+                os.environ.setdefault('GRETL_LIB_NAME', str(file.resolve()))
+                break
 
 # --- Ensure user site-packages include gretl ---
 if user_site not in sys.path:
