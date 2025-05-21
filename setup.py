@@ -57,6 +57,7 @@ setup(
     description='Python bindings for gretl',
     python_requires='>=3.11',
     author='Marcin Błażejowski',
+    author_email='marcin@gretlconference.org',
     packages=find_packages(),
     package_data={
         'gretl': package_files,
