@@ -185,6 +185,73 @@ void GretlModel::unpack_kwargs (GretlCmdIndex ci)
     }
 }
 
+template<typename T>
+void GretlModel::do_restrict (T *model, const py::list &impose,
+                              const py::kwargs &kwargs)
+{
+    //
+    // we test a restriction given as impose
+    //
+    py::print("nowy restrict");
+    py::dict res;
+    gretl_restriction *my_rset = NULL;
+    int save_t1 = GD->dset->t1;
+    int save_t2 = GD->dset->t2;
+    int order = -1;
+
+    // we set up options
+    unpack_kwargs_test(opt, "restrict", kwargs, order);
+
+    // this code was rendered from library.c
+    for (auto &item : impose) {
+        if (!is_pystr(item)) {
+            throw std::invalid_argument("given restriction is not string literal");
+        }
+        if (my_rset == NULL) {
+            if constexpr (std::is_same_v<T, MODEL>) {
+                my_rset = eqn_restriction_set_start(MapPyToCpp(item).to_string().c_str(),
+                                                    model, GD->dset, opt);
+            }
+            if (my_rset == NULL) {
+                err = 1;
+                handle_gretl_error(err);
+            }
+        } else {
+            err = restriction_set_parse_line(my_rset,
+                                             MapPyToCpp(item).to_string().c_str(),
+                                             GD->dset);
+            if (err) {
+                handle_gretl_error(err);
+            }
+        }
+    }
+
+    // actual work
+    if constexpr (std::is_same_v<T, MODEL>) {
+        GD->dset->t1 = model->t1;
+        GD->dset->t2 = model->t2;
+        err = gretl_restriction_finalize(my_rset, GD->dset,
+                                         OPT_NONE, GP.prn_ptr());
+    }
+    GD->dset->t1 = save_t1;
+    GD->dset->t2 = save_t2;
+    if (err) {
+        handle_gretl_error(err);
+    }
+
+    // we manufacture resulting object
+    res[py::cast("test")] = *get_accessor("$test");
+    res[py::cast("pvalue")] = *get_accessor("$pvalue");
+    res[py::cast("summary")] = GP.get_buffer();
+
+    // we register result
+    move_to_python_container<GretlModel, py::dict, py::list>(*this, std::move(res), "restrictions");
+
+    if (!kwargs.contains("silent")) {
+        GP.print();
+    }
+}
+
 static int unpack_forecast_kwargs (const py::kwargs &kwargs, int *pconf)
 {
     int opt = OPT_NONE;
@@ -524,6 +591,13 @@ void GretlModel_NSE::test (const std::string &type, const std::string &vars,
 void GretlModel_NSE::restrict (const py::list &impose,
                                const py::kwargs &kwargs)
 {
+    do_restrict<MODEL>(model, impose, kwargs);
+}
+
+/*
+void GretlModel_NSE::restrict (const py::list &impose,
+                               const py::kwargs &kwargs)
+{
     //
     // we test a restriction given as impose
     //
@@ -580,6 +654,7 @@ void GretlModel_NSE::restrict (const py::list &impose,
         GP.print();
     }
 }
+*/
 
 
 //

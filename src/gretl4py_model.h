@@ -50,6 +50,9 @@ protected:
     template<typename T>
     void save_model (T *model);
 
+    template<typename T>
+    void do_restrict (T *model, const py::list &impose, const py::kwargs &kwargs);
+
     void unpack_kwargs (GretlCmdIndex ci);      // model kwargs unpacking
 
     void fr_to_dict (FITRESID *fr, py::dict &fcdict);
