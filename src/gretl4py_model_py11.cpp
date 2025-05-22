@@ -48,8 +48,7 @@ void init_gretl4py_model_py11(py::module_ &m)
              },
              py::return_value_policy::take_ownership)
         .def("fcast", &GretlModel::forecast)
-        .def("get_formula", &GretlModel::get_formula)
-        .def("restrict", &GretlModel::restrict);
+        .def("get_formula", &GretlModel::get_formula);
 
     // Native Single Equation libgretl MODEL (NSE)
     py::class_<GretlModel_NSE, GretlModel, std::unique_ptr<GretlModel_NSE>>(m, "Model_NSE", py::dynamic_attr())
@@ -119,7 +118,9 @@ void init_gretl4py_model_py11(py::module_ &m)
              py::arg("targ").none(false), py::arg("shock").none(false), py::arg("alpha").none(true) = 0);
 
     // VECM
-    py::class_<GretlModel_VAR_VECM, GretlModel_VAR, std::unique_ptr<GretlModel_VAR_VECM>>(m, "Model_vecm", py::dynamic_attr());
+    py::class_<GretlModel_VAR_VECM, GretlModel_VAR, std::unique_ptr<GretlModel_VAR_VECM>>(m, "Model_vecm", py::dynamic_attr())
+        .def("restrict", &GretlModel_VAR_VECM::restrict,
+             py::arg("impose").none(false), py::kw_only());
 }
 // py::object self = py::cast(model.get());
 // py::gil_scoped_acquire gil;

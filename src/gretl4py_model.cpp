@@ -191,8 +191,9 @@ void GretlModel::do_restrict (T *model, const py::list &impose,
 {
     //
     // we test a restriction given as impose
+    // Note: this method is used in GretlModel_NSE
+    // and GretlModel_VAR_VECM
     //
-    py::print("nowy restrict");
     py::dict res;
     gretl_restriction *my_rset = NULL;
     int save_t1 = GD->dset->t1;
@@ -211,6 +212,9 @@ void GretlModel::do_restrict (T *model, const py::list &impose,
             if constexpr (std::is_same_v<T, MODEL>) {
                 my_rset = eqn_restriction_set_start(MapPyToCpp(item).to_string().c_str(),
                                                     model, GD->dset, opt);
+            } else if constexpr (std::is_same_v<T, GRETL_VAR>) {
+                my_rset = var_restriction_set_start(MapPyToCpp(item).to_string().c_str(),
+                                                    model);
             }
             if (my_rset == NULL) {
                 err = 1;
@@ -232,6 +236,10 @@ void GretlModel::do_restrict (T *model, const py::list &impose,
         GD->dset->t2 = model->t2;
         err = gretl_restriction_finalize(my_rset, GD->dset,
                                          OPT_NONE, GP.prn_ptr());
+    } else if constexpr (std::is_same_v<T, GRETL_VAR>) {
+        GRETL_VAR *vnew = gretl_restricted_vecm(my_rset, GD->dset,
+                                                opt, GP.prn_ptr(), &err);
+        gretl_VAR_free(vnew);
     }
     GD->dset->t1 = save_t1;
     GD->dset->t2 = save_t2;
@@ -594,68 +602,6 @@ void GretlModel_NSE::restrict (const py::list &impose,
     do_restrict<MODEL>(model, impose, kwargs);
 }
 
-/*
-void GretlModel_NSE::restrict (const py::list &impose,
-                               const py::kwargs &kwargs)
-{
-    //
-    // we test a restriction given as impose
-    //
-    py::dict res;
-    gretl_restriction *my_rset = NULL;
-    int save_t1 = GD->dset->t1;
-    int save_t2 = GD->dset->t2;
-    int order = -1;
-
-    // we set up options
-    unpack_kwargs_test(opt, "restrict", kwargs, order);
-
-    // this code was rendered from library.c
-    for (auto &item : impose) {
-        if (!is_pystr(item)) {
-            throw std::invalid_argument("given restriction is not string literal");
-        }
-        if (my_rset == NULL) {
-            my_rset = eqn_restriction_set_start(MapPyToCpp(item).to_string().c_str(),
-                                                model, GD->dset, opt);
-            if (my_rset == NULL) {
-                err = 1;
-                handle_gretl_error(err);
-            }
-        } else {
-            err = restriction_set_parse_line(my_rset,
-                                             MapPyToCpp(item).to_string().c_str(),
-                                             GD->dset);
-            if (err) {
-                handle_gretl_error(err);
-            }
-        }
-    }
-
-    // actual work
-    GD->dset->t1 = model->t1;
-    GD->dset->t2 = model->t2;
-    err = gretl_restriction_finalize(my_rset, GD->dset, OPT_NONE, GP.prn_ptr());
-    GD->dset->t1 = save_t1;
-    GD->dset->t2 = save_t2;
-    if (err) {
-        handle_gretl_error(err);
-    }
-
-    // we manufacture resulting object
-    res[py::cast("test")] = *get_accessor("$test");
-    res[py::cast("pvalue")] = *get_accessor("$pvalue");
-    res[py::cast("summary")] = GP.get_buffer();
-
-    // we register result
-    move_to_python_container<GretlModel, py::dict, py::list>(*this, std::move(res), "restrictions");
-
-    if (!kwargs.contains("silent")) {
-        GP.print();
-    }
-}
-*/
-
 
 //
 // NSE via dedicated Driver
@@ -995,11 +941,6 @@ py::dict GretlModel_VAR::forecast (const py::kwargs &kwargs)
     return py::dict();
 }
 
-void GretlModel_VAR::restrict (const py::list &impose, const py::kwargs &kwargs)
-{
-    py::print("GretlModel_VAR::restrict(): not implemented yet!");
-}
-
 void GretlModel_VAR::test (const std::string &type, const py::kwargs &kwargs)
 {
     py::dict res;
@@ -1146,4 +1087,10 @@ GretlModel_VAR_VECM::GretlModel_VAR_VECM (std::shared_ptr<GretlDataset> GD, cons
 void GretlModel_VAR_VECM::fit (void)
 {
     do_var_vecm_fit<VECM>(coint_rank);
+}
+
+void GretlModel_VAR_VECM::restrict (const py::list &impose,
+                                    const py::kwargs &kwargs)
+{
+    do_restrict<GRETL_VAR>(model, impose, kwargs);
 }

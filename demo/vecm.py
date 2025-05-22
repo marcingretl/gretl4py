@@ -25,6 +25,10 @@ print(m1.tests[-1]['pvalue'])
 m1.test(type="normality", silent=True)
 print(m1.tests[-1]['summary'])
 #m1.fcast()
+
+#IRFS
+print("\n****************************")
+print("IRFs")
 m1.irf(targ=0, shock=0)
 m1.irf(targ='LRM', shock='LRY', alpha=0.1)
 m1.irf(targ=1, shock=0, alpha=0.1)
@@ -40,12 +44,13 @@ print(m1.irfs[-1])
 try:
     import matplotlib.pyplot as plt
 
-    y = m1.irfs[-1]['results'][:, 0]
-    l = m1.irfs[-1]['results'][:, 1]
-    u = m1.irfs[-1]['results'][:, 2]
+    irf_res = m1.irfs[-1]
+    y = irf_res['results'][:, 0]
+    l = irf_res['results'][:, 1]
+    u = irf_res['results'][:, 2]
     x = list(range(1, len(y) + 1))
-    shock_name = m1.irfs[-1]['shock_name']
-    targ_name = m1.irfs[-1]['targ_name']
+    shock_name = irf_res['shock_name']
+    targ_name = irf_res['targ_name']
 
     fig, ax = plt.subplots()
     plt.title(targ_name + ": responses to a one-standard error shock in " + shock_name)
@@ -55,3 +60,10 @@ try:
     plt.show()
 except ModuleNotFoundError:
     print("pleas install 'matplotlib' module")
+
+
+# RESTRICT
+print("\n****************************")
+print("restrict")
+m1.restrict(impose=['b[2] = 0'], verbose=True)
+print(m1.restrictions[-1]['pvalue'])

@@ -73,8 +73,6 @@ public:
 
     virtual py::dict forecast (const py::kwargs &kwargs) = 0;
 
-    virtual void restrict (const py::list &impose, const py::kwargs &kwargs) = 0;
-
     virtual std::string get_formula (void) const = 0;
 };
 
@@ -92,11 +90,11 @@ public:
     GretlModel_NSE (std::shared_ptr<GretlDataset> GD, const py::kwargs &kwargs);
     virtual ~GretlModel_NSE (void);
 
+    void restrict (const py::list &impose, const py::kwargs &kwargs);
+
     void fit (void) override = 0;
 
     py::dict forecast (const py::kwargs &kwargs) override;
-
-    void restrict (const py::list &impose, const py::kwargs &kwargs) override;
 
     void test (const std::string &type, const py::kwargs &kwargs);
 
@@ -188,8 +186,6 @@ public:
 
     py::dict forecast (const py::kwargs &kwargs) override;
 
-    void restrict (const py::list &impose, const py::kwargs &kwargs) override;
-
     void test (const std::string &type, const py::kwargs &kwargs);
 
     void irf (int targ, int shock, double alpha = 0);
@@ -210,6 +206,8 @@ private:
 public:
     GretlModel_VAR_VECM (std::shared_ptr<GretlDataset> GD, const std::string &ylist,
                          const int order, const int rank, const py::kwargs &kwargs);
+
+    void restrict (const py::list &impose, const py::kwargs &kwargs);
 
     void fit (void) override;
 };
