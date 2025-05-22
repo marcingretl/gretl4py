@@ -5,28 +5,30 @@ To build the module, ensure you have the following installed:
 - a modern C++ compiler (LLVM/Clang++ and g++ have been tested)
 
 ###########################################################################
+# Preparation
+###########################################################################
+Before compiling a module, make sure required libraries exist in 'gretl/lib':
+ - for ms windows: all DLLs (libgretl and plugins + dependencies)
+ - for linux/macos: plugins
+    Note: in linux case, assuming plugins are in '/usr/local/lib/gretl-gtk3',
+    (being in 'gretl/lib') just type: "ln -s /usr/local/lib/gretl-gtk3/*.so ."
+
+###########################################################################
 # Compilation
 ###########################################################################
 meson setup builddir
 meson install -C builddir #-j4
 meson install -C builddir
 # or, with Ninja:
-# ninja -C builddir -j4
+# ninja -C builddir #-j4
 # ninja -C builddir install
 
 
 ###########################################################################
 # Making a whl
+# Note: before building a whl, make sure that binary file exists in 'gretl'
 ###########################################################################
-Before building a whl, make sure that:
-1. binary file exists in 'gretl'
-2. all required libraries exist in 'gretl/lib' (for ms windows: all DLLs,
-    for linux/macos: plugins)
-    in linux case, assuming plugins are in '/usr/local/lib/gretl-gtk3',
-    (being in 'gretl/lib') just type: "ln -s /usr/local/lib/gretl-gtk3/*.so ."
-
 python -m build --wheel
-
 
 ########## tweaks ##########
 And later:
