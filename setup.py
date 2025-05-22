@@ -31,9 +31,10 @@ package_files = [
     'gretl4py_classes.py',
     '__init__.py',
     f'_gretl{EXT}',
-    'dll/*.dll',
+    'lib/*',
     'data/*',
     'tmp/*',
+    'examples/*',
     ]
 
 # Include DLL files if on Windows 64-bit and dll_dir exists

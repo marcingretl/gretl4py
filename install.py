@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
  *  gretl -- Gnu Regression, Econometrics and Time-series Library
  *  Copyright (C) 2001 Allin Cottrell and Riccardo "Jack" Lucchetti
@@ -38,7 +37,6 @@ BUILD_DIR = os.path.join(SOURCE_DIR, 'gretl')
 
 # Copy compiled shared object
 SRC = os.path.join(BUILD_DIR, MODULE)
-#print(f'copying {SRC} to {MODULE_PATH}')
 shutil.copy(SRC, MODULE_PATH)
 
 # We copy libs
@@ -49,7 +47,6 @@ except FileExistsError:
     pass
 data_files = glob.glob(os.path.join(SOURCE_DIR, 'gretl', 'lib', '*'))
 for file in data_files:
-    #print(f'copying {file} to {LIB_DIR}')
     shutil.copy(file, LIB_DIR)
 
 # We copy datasets
@@ -60,8 +57,13 @@ except FileExistsError:
     pass
 data_files = glob.glob(os.path.join(SOURCE_DIR, 'gretl', 'data', '*'))
 for file in data_files:
-    #print(f'copying {file} to {DATA_DIR}')
     shutil.copy(file, DATA_DIR)
+
+# We copy examples
+EXAMPLES_DIR = os.path.join(MODULE_PATH, 'examples')
+if os.path.exists(EXAMPLES_DIR):
+    shutil.rmtree(EXAMPLES_DIR)
+shutil.copytree(os.path.join(SOURCE_DIR, 'gretl', 'examples'), EXAMPLES_DIR)
 
 # We add tmp for workdir
 try:

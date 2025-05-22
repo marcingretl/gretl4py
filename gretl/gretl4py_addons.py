@@ -23,6 +23,7 @@ import sys
 import subprocess
 import csv
 import numpy
+import inspect
 import gretl
 
 def _correctvarnames (names):
@@ -136,3 +137,21 @@ def fc_print (fc):
     print(f'Forecast evaluation statistics\n')
     print(tabulate(fc['stats'], headers=[], showindex=fc['stats_labels'], tablefmt="plain"))
     print("")
+
+def print_module_source (mod):
+    """
+    Prints the full source code of the given imported module.
+
+    Parameters:
+        mod: imported module (not a string)
+    """
+    try:
+        source_file = inspect.getsourcefile(mod)
+        if source_file is None:
+            print("Source file not found for the module.")
+            return
+        with open(source_file, "r") as f:
+            code = f.read()
+        print(code)
+    except Exception as e:
+        print(f"Error while trying to read source: {e}")
