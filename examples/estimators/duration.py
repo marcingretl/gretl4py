@@ -1,7 +1,10 @@
+import importlib.resources as resources
 import gretl
 
-d1 = gretl.get_data(gretl.gretl_data_path('misc/kennan.gdt'))
-d1.set_as_default()
+# get path object for the data directory inside the gretl package
+data_dir = resources.files('gretl').joinpath('data')
+
+d1 = gretl.get_data(str(data_dir.joinpath('kennan.gdt')))
 m1 = gretl.duration('Ti ~ const + Prod').fit()
 m2 = gretl.duration('Ti const Prod').fit()
 m3 = gretl.duration('1 0 2').fit()

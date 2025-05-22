@@ -1,6 +1,10 @@
+import importlib.resources as resources
 import gretl
 
-d1 = gretl.get_data(gretl.gretl_data_path('greene/greene22_2.gdt'))
+# get path object for the data directory inside the gretl package
+data_dir = resources.files('gretl').joinpath('data')
+
+d1 = gretl.get_data(str(data_dir.joinpath('greene22_2.gdt')))
 m1 = gretl.probit('Y ~ const + Z1 + Z2').fit()
 m2 = gretl.probit('Y const Z1 Z2').fit()
 m3 = gretl.probit('1 0 2 3').fit()

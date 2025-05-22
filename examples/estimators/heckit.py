@@ -1,6 +1,10 @@
+import importlib.resources as resources
 import gretl
 
-d1 = gretl.get_data(gretl.gretl_data_path('misc/mroz87.gdt'))
+# get path object for the data directory inside the gretl package
+data_dir = resources.files('gretl').joinpath('data')
+
+d1 = gretl.get_data(str(data_dir.joinpath('mroz87.gdt')))
 m = gretl.heckit('WW const AX WE CIT ; LFP const WA FAMINC WE').fit()
 print(m)
 

@@ -1,7 +1,11 @@
+import importlib.resources as resources
 import gretl
 import shutil
 
-d1 = gretl.get_data(gretl.gretl_data_path('misc/bjg.gdt'))
+# get path object for the data directory inside the gretl package
+data_dir = resources.files('gretl').joinpath('data')
+
+d1 = gretl.get_data(str(data_dir.joinpath('bjg.gdt')))
 m = gretl.arima(y='lg', order=(1,1,1)).fit()
 print(m)
 

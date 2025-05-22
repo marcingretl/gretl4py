@@ -1,6 +1,10 @@
+import importlib.resources as resources
 import gretl
 
-d1 = gretl.get_data(gretl.gretl_data_path('misc/longley.gdt'))
+# get path object for the data directory inside the gretl package
+data_dir = resources.files('gretl').joinpath('data')
+
+d1 = gretl.get_data(str(data_dir.joinpath('longley.csv')))
 
 # Alternative ways of calling OLS model
 m1 = gretl.ols('employ ~ const + prdefl + gnp').fit()

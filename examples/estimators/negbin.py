@@ -1,6 +1,10 @@
+import importlib.resources as resources
 import gretl
 
-d1 = gretl.get_data(gretl.gretl_data_path('misc/rac3d.gdt'))
+# get path object for the data directory inside the gretl package
+data_dir = resources.files('gretl').joinpath('data')
+
+d1 = gretl.get_data(str(data_dir.joinpath('rac3d.gdt')))
 m1 = gretl.negbin('DVISITS ~ const + SEX + AGE').fit()
 m2 = gretl.negbin('DVISITS const SEX AGE').fit()
 m3 = gretl.negbin('13 0 1 2').fit()
