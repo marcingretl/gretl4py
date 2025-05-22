@@ -20,7 +20,10 @@ meson install -C builddir
 ###########################################################################
 Before building a whl, make sure that:
 1. binary file exists in 'gretl'
-2. all required libraries exist in 'gretl/lib' (for ms windows: all DLLs, for linux/macos: plugins)
+2. all required libraries exist in 'gretl/lib' (for ms windows: all DLLs,
+    for linux/macos: plugins)
+    in linux case, assuming plugins are in '/usr/local/lib/gretl-gtk3',
+    (being in 'gretl/lib') just type: "ln -s /usr/local/lib/gretl-gtk3/*.so ."
 
 python -m build --wheel
 
