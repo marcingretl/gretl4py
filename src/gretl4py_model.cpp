@@ -260,8 +260,9 @@ void GretlModel::do_restrict (T *model, const py::list &impose,
     }
 }
 
-template<typename T>
-void GretlModel::do_forecast (T *model, const py::kwargs &kwargs)
+template<typename T, GretlCmdIndex CI>
+void GretlModel::do_forecast (T *model, const py::kwargs &kwargs,
+                              int variable_nr)
 {
     py::dict res;
     FITRESID *fr = NULL;
@@ -305,6 +306,9 @@ void GretlModel::do_forecast (T *model, const py::kwargs &kwargs)
     // actual work
     if constexpr (std::is_same_v<T, MODEL>) {
         fr = get_forecast(model, t1, t2, 0, GD->dset, OPT_NONE, &err);
+    } else if constexpr (std::is_same_v<T, GRETL_VAR>) {
+        fr = get_system_forecast(model, CI, variable_nr, t1, t2,
+                                 0, GD->dset, OPT_NONE, &err);
     }
 
     if (err) {
@@ -489,7 +493,7 @@ void *GretlModel_NSE::model_ptr (void) const
 
 void GretlModel_NSE::forecast (const py::kwargs &kwargs)
 {
-    do_forecast<MODEL>(model, kwargs);
+    do_forecast<MODEL, static_cast<GretlCmdIndex>(0)>(model, kwargs);
 }
 
 void GretlModel_NSE::test (const std::string &type,
@@ -947,7 +951,10 @@ void GretlModel_VAR::fit (void)
 
 void GretlModel_VAR::forecast (const py::kwargs &kwargs)
 {
-    py::print("GretlModel_VAR::forecast(): not implemented yet!");
+    for (int i=0; i<model->neqns; i++) {
+        py::print("Equation ", i+1);
+        do_forecast<GRETL_VAR, VAR>(model, kwargs, i);
+    }
 }
 
 void GretlModel_VAR::test (const std::string &type, const py::kwargs &kwargs)
@@ -1102,4 +1109,12 @@ void GretlModel_VAR_VECM::restrict (const py::list &impose,
                                     const py::kwargs &kwargs)
 {
     do_restrict<GRETL_VAR>(model, impose, kwargs);
+}
+
+void GretlModel_VAR_VECM::forecast (const py::kwargs &kwargs)
+{
+    for (int i=0; i<model->neqns; i++) {
+        py::print("Equation ", i+1);
+        do_forecast<GRETL_VAR, VECM>(model, kwargs, i);
+    }
 }

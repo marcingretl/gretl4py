@@ -5,6 +5,7 @@ import gretl
 data_dir = resources.files('gretl').joinpath('data')
 
 d1 = gretl.get_data(str(data_dir.joinpath('denmark.gdt')))
+d1.sample(t1=1, t2=51)
 
 #print(d1.varnames())
 m1 = gretl.var(order=2, ylist='LRM LRY', xlist='IBO IDE', trend=True, seasonals=True, impulse_responses=True).fit()
@@ -23,7 +24,15 @@ print(m1.tests[-1]['pvalue'])
 
 m1.test(type="normality", silent=True)
 print(m1.tests[-1]['summary'])
-#m1.fcast()
+
+#FORECASTS
+print("\n****************************")
+print("forecasts")
+m1.fcast()
+
+#IRFS
+print("\n****************************")
+print("IRFs")
 m1.irf(targ=0, shock=0)
 m1.irf(targ='LRM', shock='LRY', alpha=0.1)
 m1.irf(targ=1, shock=0, alpha=0.1)

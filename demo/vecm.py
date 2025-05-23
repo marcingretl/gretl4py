@@ -5,6 +5,7 @@ import gretl
 data_dir = resources.files('gretl').joinpath('data')
 
 d1 = gretl.get_data(str(data_dir.joinpath('denmark.gdt')))
+d1.sample(t1=1, t2=51)
 
 #print(d1.varnames())
 m1 = gretl.vecm(order=2, rank=1, ylist='LRM LRY', xlist='IBO IDE', rc=True, seasonals=True).fit()
@@ -24,7 +25,11 @@ print(m1.tests[-1]['pvalue'])
 
 m1.test(type="normality", silent=True)
 print(m1.tests[-1]['summary'])
-#m1.fcast()
+
+#FORECASTS
+print("\n****************************")
+print("forecasts")
+m1.fcast()
 
 #IRFS
 print("\n****************************")

@@ -53,8 +53,8 @@ protected:
     template<typename T>
     void do_restrict (T *model, const py::list &impose, const py::kwargs &kwargs);
 
-    template<typename T>
-    void do_forecast (T *model, const py::kwargs &kwargs);
+    template<typename T, GretlCmdIndex CI>
+    void do_forecast (T *model, const py::kwargs &kwargs, int variable_nr = 0);
 
     void unpack_kwargs (GretlCmdIndex ci);      // model kwargs unpacking
 
@@ -215,6 +215,8 @@ public:
     void restrict (const py::list &impose, const py::kwargs &kwargs);
 
     void fit (void) override;
+
+    void forecast (const py::kwargs &kwargs) override;
 };
 
 
