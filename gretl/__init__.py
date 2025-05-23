@@ -72,7 +72,7 @@ import gretl4py_classes
 from _gretl import (about, set, version)
 from gretl4py_classes import attrs, model_repr, oddsratio
 from gretl4py_classes import get_data, show_data_status
-from gretl4py_addons import print_module_source
+from gretl4py_addons import print_module_source, fc_print
 
 # deprecations
 def csv2dict(fname, pd=1):

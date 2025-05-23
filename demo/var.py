@@ -53,4 +53,4 @@ try:
     ax.plot(x, y, 'o', color='tab:brown')
     plt.show()
 except ModuleNotFoundError:
-    print("pleas install 'matplotlib' module")
+    print("please install 'matplotlib' module")

@@ -55,6 +55,8 @@ protected:
 
     void unpack_kwargs (GretlCmdIndex ci);      // model kwargs unpacking
 
+    void unpack_forecast_kwargs (const py::kwargs &kwargs, int &pconf);
+
     void fr_to_dict (FITRESID *fr, py::dict &fcdict);
 
     virtual void *model_ptr (void) const = 0;   // non-typed pointer to model
@@ -71,7 +73,7 @@ public:
 
     virtual void fit (void) = 0;
 
-    virtual py::dict forecast (const py::kwargs &kwargs) = 0;
+    virtual void forecast (const py::kwargs &kwargs) = 0;
 
     virtual std::string get_formula (void) const = 0;
 };
@@ -94,7 +96,7 @@ public:
 
     void fit (void) override = 0;
 
-    py::dict forecast (const py::kwargs &kwargs) override;
+    void forecast (const py::kwargs &kwargs) override;
 
     void test (const std::string &type, const py::kwargs &kwargs);
 
@@ -184,7 +186,7 @@ public:
 
     void fit (void) override;
 
-    py::dict forecast (const py::kwargs &kwargs) override;
+    void forecast (const py::kwargs &kwargs) override;
 
     void test (const std::string &type, const py::kwargs &kwargs);
 

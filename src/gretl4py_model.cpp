@@ -260,12 +260,12 @@ void GretlModel::do_restrict (T *model, const py::list &impose,
     }
 }
 
-static int unpack_forecast_kwargs (const py::kwargs &kwargs, int *pconf)
+void GretlModel::unpack_forecast_kwargs (const py::kwargs &kwargs, int &pconf)
 {
-    int opt = OPT_NONE;
     int conf = 95;
     int err = 0;
 
+    opt = OPT_NONE;
     for (auto &item : kwargs) {
         if (!is_pystr(item.first)) {
             throw std::invalid_argument("option key must be a string");
@@ -276,14 +276,14 @@ static int unpack_forecast_kwargs (const py::kwargs &kwargs, int *pconf)
             if (!is_pybool(item.second)) {
                 throw std::invalid_argument("'quiet' value must be a boolean");
             } else if (item.second.cast<int>() != 0) {
-                opt |= OPT_Q;
+                opt = static_cast<gretlopt>(opt | OPT_Q);
             }
         } else if (key == "plot") {
             if (!is_pybool(item.second)) {
                 // FIXME: in principle this could be a filename
                 throw std::invalid_argument("'plot' value must be a boolean");
             } else if (item.second.cast<int>() != 0) {
-                opt |= OPT_P;
+                opt = static_cast<gretlopt>(opt | OPT_P);
             }
         } else if (key == "interval") {
             // we want a percentage value for forecast confidence intervals
@@ -294,7 +294,7 @@ static int unpack_forecast_kwargs (const py::kwargs &kwargs, int *pconf)
                 if (conf < 50 || conf > 99) {
                     err = 1;
                 } else {
-                    *pconf = conf;
+                    pconf = conf;
                 }
             }
             if (err) {
@@ -302,8 +302,6 @@ static int unpack_forecast_kwargs (const py::kwargs &kwargs, int *pconf)
             }
         }
     }
-
-    return opt;
 }
 
 void GretlModel::fr_to_dict (FITRESID *fr, py::dict &fcdict)
@@ -422,7 +420,7 @@ void *GretlModel_NSE::model_ptr (void) const
     return static_cast<void*>(model);
 }
 
-py::dict GretlModel_NSE::forecast (const py::kwargs &kwargs)
+void GretlModel_NSE::forecast (const py::kwargs &kwargs)
 {
     py::dict res;
     FITRESID *fr = NULL;
@@ -459,7 +457,7 @@ py::dict GretlModel_NSE::forecast (const py::kwargs &kwargs)
     }
 
     // assemble options
-    opt = (gretlopt) unpack_forecast_kwargs(kwargs, &conf);
+    unpack_forecast_kwargs(kwargs, conf);
     fr = get_forecast(model, t1, t2, 0, GD->dset, OPT_NONE, &err);
 
     if (err) {
@@ -478,7 +476,8 @@ py::dict GretlModel_NSE::forecast (const py::kwargs &kwargs)
         GP.print();
     }
 
-    return res;
+    // we register result
+    move_to_python_container<GretlModel, py::dict, py::list>(*this, std::move(res), "forecasts");
 }
 
 void GretlModel_NSE::test (const std::string &type,
@@ -934,11 +933,9 @@ void GretlModel_VAR::fit (void)
     do_var_vecm_fit<VAR>();
 }
 
-py::dict GretlModel_VAR::forecast (const py::kwargs &kwargs)
+void GretlModel_VAR::forecast (const py::kwargs &kwargs)
 {
     py::print("GretlModel_VAR::forecast(): not implemented yet!");
-
-    return py::dict();
 }
 
 void GretlModel_VAR::test (const std::string &type, const py::kwargs &kwargs)
