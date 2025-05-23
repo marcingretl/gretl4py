@@ -58,6 +58,12 @@ def main():
         print("This installer script works only on Linux.")
         sys.exit(1)
 
+    # Clean up /tmp/whls if it already exists
+    tmp_whls_dir = Path("/tmp/whls")
+    if tmp_whls_dir.exists():
+        print(f"Removing existing directory: {tmp_whls_dir}")
+        shutil.rmtree(tmp_whls_dir)
+
     parser = argparse.ArgumentParser(description="Install gretl4py wheel into user site-packages without pip.")
     parser.add_argument(
         "--version", default="0.2", help="gretl4py version to install (default: 0.2)"
@@ -72,7 +78,6 @@ def main():
     base_url = "https://netcologne.dl.sourceforge.net/project/gretl/gretl4py/snapshots/"
     wheel_url = base_url + wheel_name
 
-    tmp_whls_dir = Path("/tmp/whls")
     extract_dir = tmp_whls_dir / "extracted"
 
     wheel_path = download_wheel(wheel_url, tmp_whls_dir)
