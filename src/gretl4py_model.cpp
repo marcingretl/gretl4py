@@ -260,6 +260,73 @@ void GretlModel::do_restrict (T *model, const py::list &impose,
     }
 }
 
+template<typename T>
+void GretlModel::do_forecast (T *model, const py::kwargs &kwargs)
+{
+    py::dict res;
+    FITRESID *fr = NULL;
+    FcastFlags flags = static_cast<FcastFlags>(0);
+    gretlopt opt = OPT_NONE;
+    int t1, t2 = 0;
+#if 0 // not yet
+    int recursive = 0, k = 1, *kptr;
+#endif
+    int dt2 = GD->dset->n - 1;
+    int st2 = GD->dset->n - 1;
+    int conf = 95;
+
+    if constexpr (std::is_same_v<T, MODEL>) {
+        // check for possible sample mismatch
+        err = model_sample_problem(model, GD->dset);
+        if (err) {
+            handle_gretl_error(err);
+        }
+
+        // try to figure which fcast options might be applicable
+        forecast_options_for_model(model, GD->dset, &flags, &dt2, &st2);
+    }
+
+    if (flags & (FC_DYNAMIC_OK | FC_AUTO_OK)) {
+        t2 = dt2;
+    } else {
+        t2 = st2;
+    }
+
+    // for now, we just do a default out-of-sample forecast
+    if (t2 <= model->t2) {
+        throw std::runtime_error("there are no suitable observations for prediction");
+    } else {
+        t1 = model->t2 + 1;
+    }
+
+    // assemble options
+    unpack_forecast_kwargs(kwargs, conf);
+
+    // actual work
+    if constexpr (std::is_same_v<T, MODEL>) {
+        fr = get_forecast(model, t1, t2, 0, GD->dset, OPT_NONE, &err);
+    }
+
+    if (err) {
+        handle_gretl_error(err);
+    } else {
+        fr->alpha = (100.0 - conf) / 100.0;
+        fr_to_dict(fr, res);
+        text_print_forecast(fr, GD->dset, opt, GP.prn_ptr());
+    }
+
+    if (fr != NULL) {
+        free_fit_resid(fr);
+    }
+
+    if (!(opt & OPT_Q)) {
+        GP.print();
+    }
+
+    // we register result
+    move_to_python_container<GretlModel, py::dict, py::list>(*this, std::move(res), "forecasts");
+}
+
 void GretlModel::unpack_forecast_kwargs (const py::kwargs &kwargs, int &pconf)
 {
     int conf = 95;
@@ -422,62 +489,7 @@ void *GretlModel_NSE::model_ptr (void) const
 
 void GretlModel_NSE::forecast (const py::kwargs &kwargs)
 {
-    py::dict res;
-    FITRESID *fr = NULL;
-    FcastFlags flags = static_cast<FcastFlags>(0);
-    gretlopt opt = OPT_NONE;
-    int t1, t2 = 0;
-#if 0 // not yet
-    int recursive = 0, k = 1, *kptr;
-#endif
-    int dt2 = GD->dset->n - 1;
-    int st2 = GD->dset->n - 1;
-    int conf = 95;
-
-    // check for possible sample mismatch
-    err = model_sample_problem(model, GD->dset);
-    if (err) {
-        handle_gretl_error(err);
-    }
-
-    // try to figure which fcast options might be applicable
-    forecast_options_for_model(model, GD->dset, &flags, &dt2, &st2);
-
-    if (flags & (FC_DYNAMIC_OK | FC_AUTO_OK)) {
-        t2 = dt2;
-    } else {
-        t2 = st2;
-    }
-
-    // for now, we just do a default out-of-sample forecast
-    if (t2 <= model->t2) {
-        throw std::runtime_error("there are no suitable observations for prediction");
-    } else {
-        t1 = model->t2 + 1;
-    }
-
-    // assemble options
-    unpack_forecast_kwargs(kwargs, conf);
-    fr = get_forecast(model, t1, t2, 0, GD->dset, OPT_NONE, &err);
-
-    if (err) {
-        handle_gretl_error(err);
-    } else {
-        fr->alpha = (100.0 - conf) / 100.0;
-        fr_to_dict(fr, res);
-        text_print_forecast(fr, GD->dset, opt, GP.prn_ptr());
-    }
-
-    if (fr != NULL) {
-        free_fit_resid(fr);
-    }
-
-    if (!(opt & OPT_Q)) {
-        GP.print();
-    }
-
-    // we register result
-    move_to_python_container<GretlModel, py::dict, py::list>(*this, std::move(res), "forecasts");
+    do_forecast<MODEL>(model, kwargs);
 }
 
 void GretlModel_NSE::test (const std::string &type,
