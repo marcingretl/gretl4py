@@ -371,6 +371,12 @@ void GretlModel::unpack_forecast_kwargs (const py::kwargs &kwargs, int &pconf)
             if (err) {
                 throw std::invalid_argument("'interval' value must an integer >= 50 and <= 99");
             }
+        } else if (key == "vname") {
+            // special case: we check if std::string and skip it here
+            if (!is_pystr(item.second)) {
+                throw std::invalid_argument("variable name must be a string");
+            }
+            continue;
         }
     }
 }
@@ -944,6 +950,29 @@ void GretlModel_VAR::do_var_vecm_fit (const int coint_rank)
     save_model<GRETL_VAR>(model);
 }
 
+// true VAR/VECM estimate
+template <GretlCmdIndex CI>
+void GretlModel_VAR::do_var_vecm_forecast (const py::kwargs &kwargs)
+{
+    int variable_nr = -2;   // print for all equations
+
+    // we check if we forecast for all variables or just one
+    if (kwargs.contains("vname") && !kwargs["vname"].is_none()) {
+        variable_nr = find_variable_nr(py::cast<std::string>(kwargs["vname"]));
+        if (variable_nr == -1) {
+            throw std::invalid_argument("unknown variable '" + py::cast<std::string>(kwargs["vname"]) + "'");
+        }
+    }
+
+    // actual work
+    for (int i=0; i<model->neqns; i++) {
+        if (variable_nr == -2 || variable_nr == i) {
+            py::print("Equation ", i+1);
+            do_forecast<GRETL_VAR, CI>(model, kwargs, i);
+        }
+    }
+}
+
 void GretlModel_VAR::fit (void)
 {
     do_var_vecm_fit<VAR>();
@@ -951,10 +980,7 @@ void GretlModel_VAR::fit (void)
 
 void GretlModel_VAR::forecast (const py::kwargs &kwargs)
 {
-    for (int i=0; i<model->neqns; i++) {
-        py::print("Equation ", i+1);
-        do_forecast<GRETL_VAR, VAR>(model, kwargs, i);
-    }
+    do_var_vecm_forecast<VAR>(kwargs);
 }
 
 void GretlModel_VAR::test (const std::string &type, const py::kwargs &kwargs)
@@ -1115,8 +1141,5 @@ void GretlModel_VAR_VECM::restrict (const py::list &impose,
 
 void GretlModel_VAR_VECM::forecast (const py::kwargs &kwargs)
 {
-    for (int i=0; i<model->neqns; i++) {
-        py::print("Equation ", i+1);
-        do_forecast<GRETL_VAR, VECM>(model, kwargs, i);
-    }
+    do_var_vecm_forecast<VECM>(kwargs);
 }

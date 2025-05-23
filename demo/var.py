@@ -28,7 +28,7 @@ print(m1.tests[-1]['summary'])
 #FORECASTS
 print("\n****************************")
 print("forecasts")
-m1.fcast()
+m1.fcast(vname="LRY")
 
 #IRFS
 print("\n****************************")
