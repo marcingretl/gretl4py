@@ -3,6 +3,6 @@ BUGS:
 
 TODOS:
 
-1. verify options for tobit and quantreg
+1. add copying plugins as meson option
 
 2. update doc

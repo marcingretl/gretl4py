@@ -10,7 +10,7 @@ d1.sample(t1=1, t2=10)
 
 m1 = gretl.ols(formula='1 0 2 3').fit()
 print(m1)
-m1.fcast()
+m1.fcast(quiet=True)
 gretl.fc_print(m1.forecasts[-1])
 
 m2 = gretl.arima(y="price", order=(1,1,1)).fit()

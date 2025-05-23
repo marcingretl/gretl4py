@@ -237,9 +237,13 @@ void GretlModel::do_restrict (T *model, const py::list &impose,
         err = gretl_restriction_finalize(my_rset, GD->dset,
                                          OPT_NONE, GP.prn_ptr());
     } else if constexpr (std::is_same_v<T, GRETL_VAR>) {
-        GRETL_VAR *vnew = gretl_restricted_vecm(my_rset, GD->dset,
-                                                opt, GP.prn_ptr(), &err);
-        gretl_VAR_free(vnew);
+        GRETL_VAR *vnew = NULL;
+
+        vnew = gretl_restricted_vecm(my_rset, GD->dset, opt,
+                                     GP.prn_ptr(), &err);
+        if (vnew != NULL) {
+            gretl_VAR_free(vnew);
+        }
     }
     GD->dset->t1 = save_t1;
     GD->dset->t2 = save_t2;
@@ -264,10 +268,14 @@ template<typename T, GretlCmdIndex CI>
 void GretlModel::do_forecast (T *model, const py::kwargs &kwargs,
                               int variable_nr)
 {
+    //
+    // here we perform native libgretl forecasting for NSE, VAR, VECM
+    // Note: variable_nr is used only for systems and indicates variable
+    // for which we generate forecasts
+    //
     py::dict res;
     FITRESID *fr = NULL;
     FcastFlags flags = static_cast<FcastFlags>(0);
-    gretlopt opt = OPT_NONE;
     int t1, t2 = 0;
 #if 0 // not yet
     int recursive = 0, k = 1, *kptr;
@@ -276,6 +284,7 @@ void GretlModel::do_forecast (T *model, const py::kwargs &kwargs,
     int st2 = GD->dset->n - 1;
     int conf = 95;
 
+    // single equation models only
     if constexpr (std::is_same_v<T, MODEL>) {
         // check for possible sample mismatch
         err = model_sample_problem(model, GD->dset);
@@ -372,11 +381,13 @@ void GretlModel::unpack_forecast_kwargs (const py::kwargs &kwargs, int &pconf)
                 throw std::invalid_argument("'interval' value must an integer >= 50 and <= 99");
             }
         } else if (key == "vname") {
-            // special case: we check if std::string and skip it here
+            // special case: here we only check if vname is a std::string
             if (!is_pystr(item.second)) {
                 throw std::invalid_argument("variable name must be a string");
             }
             continue;
+        } else {
+            throw std::invalid_argument("unknown option '" + key + "'");
         }
     }
 }
@@ -950,7 +961,7 @@ void GretlModel_VAR::do_var_vecm_fit (const int coint_rank)
     save_model<GRETL_VAR>(model);
 }
 
-// true VAR/VECM estimate
+// true VAR/VECM forecasting
 template <GretlCmdIndex CI>
 void GretlModel_VAR::do_var_vecm_forecast (const py::kwargs &kwargs)
 {
