@@ -182,6 +182,8 @@ protected:
 
     template <GretlCmdIndex CI>
     void do_var_vecm_fit (const int coint_rank = 0);
+
+    int find_variable_nr (const std::string &variable_name);
 public:
     GretlModel_VAR (std::shared_ptr<GretlDataset> GD, const std::string &ylist,
                     const int order, const py::kwargs &kwargs);

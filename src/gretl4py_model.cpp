@@ -1004,6 +1004,28 @@ std::string GretlModel_VAR::get_formula() const
     return vars;
 }
 
+int GretlModel_VAR::find_variable_nr (const std::string &variable_name)
+{
+    //
+    // here we find the number of given variable in the context of VAR/VECM
+    //
+    std::istringstream iss(vars);
+    std::string token;
+    int pos = 0;
+
+    while (iss >> token) {
+        if (token == ";") {
+            break;
+        }
+        if (token == variable_name) {
+            return pos;
+        }
+        ++pos;
+    }
+
+    return -1; // not found
+}
+
 void GretlModel_VAR::irf (int targ, int shock, double alpha)
 {
     //
@@ -1049,36 +1071,16 @@ void GretlModel_VAR::irf (const std::string &targ, const std::string &shock, dou
     int targ_int;
     int shock_int;
 
-    // here we looking for targ and shock IDs
-    auto find_idx = [](const std::string &names, const std::string &val) -> int
-    {
-        std::istringstream iss(names);
-        std::string token;
-        int pos = 0;
-
-        while (iss >> token) {
-            if (token == ";") {
-                break;
-            }
-            if (token == val) {
-                return pos;
-            }
-            ++pos;
-        }
-
-        return -1; // not found
-    };
-
     // let's try to find our targ/shock IDs
     try {
         targ_int = std::stoi(targ);
     } catch (std::invalid_argument &e) {
-        targ_int = find_idx(vars, targ);
+        targ_int = find_variable_nr(targ);
     }
     try {
         shock_int = std::stoi(shock);
     } catch (std::invalid_argument &e) {
-        shock_int = find_idx(vars, shock);
+        shock_int = find_variable_nr(shock);
     }
 
     if (targ_int == -1) {
