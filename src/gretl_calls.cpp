@@ -78,7 +78,7 @@ void module_init (void)
 
     // we set workdir
 #if defined(_WIN32)
-    if (int err = gretl_set_path_by_name("workdir", home_dir.append("/Documents/gretl").c_str())) {
+    if (int err = gretl_set_path_by_name("workdir", home_dir.append("\\Documents\\gretl").c_str())) {
         handle_gretl_error(err);
     }
 #else
