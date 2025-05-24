@@ -71,6 +71,22 @@ void module_init (void)
                                  + std::to_string(LIBGRETL_MIN_VER) + " or higher");
     }
 
+    // we set user home dir
+    py::module_ pathlib = py::module_::import("pathlib");
+    py::object home = pathlib.attr("Path").attr("home")();
+    std::string home_dir = py::str(home);
+
+    // we set workdir
+#if defined(_WIN32)
+    if (int err = gretl_set_path_by_name("workdir", home_dir.append("/Documents/gretl").c_str())) {
+        handle_gretl_error(err);
+    }
+#else
+    if (int err = gretl_set_path_by_name("workdir", home_dir.append("/gretl").c_str())) {
+        handle_gretl_error(err);
+    }
+#endif // defined
+
     // initialize libgretl
     libgretl_init();
 
@@ -84,12 +100,9 @@ void module_init (void)
         gretl4py_verbose = std::atoi(env);
     }
 
-    // read GRETL_HOME and set as gretldir/workdir (if available)
+    // read GRETL_HOME and set as gretldir (if available)
     if (const char* env = std::getenv("GRETL_HOME"); env) {
         if (int err = gretl_set_path_by_name("gretldir", env)) {
-            handle_gretl_error(err);
-        }
-        if (int err = gretl_set_path_by_name("workdir", std::string(env).append("/tmp").c_str())) {
             handle_gretl_error(err);
         }
     }
