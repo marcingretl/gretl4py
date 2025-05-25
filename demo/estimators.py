@@ -160,3 +160,13 @@ assert round(res.hausman_test['test'], 8) == panel_hausman_test, \
     is {res.hausman_test["test"]:f}'
 print(res)
 ############################################################################
+
+
+
+#####################################
+# hsk                               #
+#####################################
+print('HSK without options:')
+res = gretl.hsk('price ~ 0 + sqft + bedrms', data=data4_1).fit()
+#assert res.bic == ols_bic, f'BIC should equal {ols_bic:f}'
+print(res)

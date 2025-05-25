@@ -182,6 +182,7 @@ py::dict about (bool do_print)
             std::cout << std::endl;
         }
         py::print("\ngretl_plugin_path = \"" + std::string(gretl_plugin_path()) + "\"");
+        py::print("\ngretl_dotdir = \"" + std::string(gretl_dotdir()) + "\"");
         std::cout << std::endl << "simdjson architecture implementation (runtime):" << std::endl;
         std::cout << "  name = " << "\"" << sj_name << "\"" << std::endl;
         std::cout << "  description = " << "\"" << sj_desc << "\"" << std::endl;

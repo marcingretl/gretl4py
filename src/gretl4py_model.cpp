@@ -31,7 +31,7 @@ extern "C" {
 #define use_ldco_sig(c) (c == OLS || c == WLS) //const int *list, DATASET *dset, GretlCmdIndex ci, gretlopt opt
 #define use_ldcop_sig(c) (c == LOGIT || c == PROBIT) //int *list, DATASET *dset, int ci, gretlopt opt, PRN *prn
 #define use_ldo_sig(c) (c == LOGISTIC || c == LAD \
-                        || c == MPOLS || c == IVREG) //const int *list, DATASET *dset, gretlopt opt
+                        || c == MPOLS || c == IVREG || c == HSK) //const int *list, DATASET *dset, gretlopt opt
 #define use_ldop_sig(c) (c == BIPROBIT || c == DURATION \
                          || c == HECKIT || c == AR || c == AR1 \
                          || c == GARCH || c == PANEL) //const int *list, DATASET *dset, gretlopt opt, PRN *prn
@@ -736,6 +736,7 @@ template class GretlModel_NSE_Driver<mp_ols, MPOLS>;
 template class GretlModel_NSE_Driver<panel_model, PANEL>;
 template class GretlModel_NSE_Driver<ivreg, IVREG>;
 template class GretlModel_NSE_Driver<tobit_model, TOBIT>;
+template class GretlModel_NSE_Driver<hsk_model, HSK>;
 
 
 //
