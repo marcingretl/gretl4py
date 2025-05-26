@@ -166,10 +166,7 @@ print(res)
 # dpanel                            #
 #####################################
 print('DPANEL')
-print(abdata.varnames())
-print(abdata.get_accessor("$panelpd"))
-print(abdata.get_accessor("$pd"))
-res = gretl.dpanel(p=2, formula='n const w k ; k', data=abdata).fit()
+res = gretl.dpanel(p=2, formula='n  w  k ; GMM(k,2,3) k GMM(w,2,3)').fit()
 print(res)
 exit()
 

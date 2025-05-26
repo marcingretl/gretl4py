@@ -27,6 +27,7 @@ extern "C" {
 }
 #include <gretl/forecast.h>
 #include <string>
+#include <regex>
 
 #define use_ldco_sig(c) (c == OLS || c == WLS) //const int *list, DATASET *dset, GretlCmdIndex ci, gretlopt opt
 #define use_ldcop_sig(c) (c == LOGIT || c == PROBIT) //int *list, DATASET *dset, int ci, gretlopt opt, PRN *prn
@@ -669,8 +670,9 @@ std::string GretlModel_NSE_Driver<F, CI>::get_formula (void) const
 template <auto F, GretlCmdIndex CI>
 void GretlModel_NSE_Driver<F, CI>::fit (void)
 {
+    // local variables for DPANEL
     gretl_list_ptr dpanel_list;
-    std::string formula_left = "";
+    std::string formula_left;
     std::string formula_right = "";
 
     if (py::len(kwargs) > 0) {
@@ -681,32 +683,38 @@ void GretlModel_NSE_Driver<F, CI>::fit (void)
         throw std::runtime_error("No dataset is available");
     }
 
-    // special cases FIXME: move after var_list!!!
-    if constexpr (CI == TOBIT) {
-        // we set (l/r)limit
-        if (kwargs.contains("llimit") && !kwargs["llimit"].is_none()) {
-            optional_par.at(0) = py::cast<double>(kwargs["llimit"]);
-        }
-        if (kwargs.contains("rlimit") && !kwargs["rlimit"].is_none()) {
-            optional_par.at(1) = py::cast<double>(kwargs["rlimit"]);
-        }
-    } else if constexpr (CI == DPANEL) {
-        // we divide formula into: actual formula and instruments
-        std::size_t pos = formula.find(';');
-        if (pos != std::string::npos) {
-            formula_left = formula.substr(0, pos);
-            std::size_t after_pos = pos + 1;
-            while (after_pos < formula.size() && std::isspace(static_cast<unsigned char>(formula[after_pos]))) {
-                ++after_pos;
-            }
-            formula_right = formula.substr(after_pos);
-        } else {
-            formula_left = formula;
-        }
-    }
-
     // we construct the model
-    var_list = list_from_formula(formula, GD->dset, err);
+    if constexpr (CI == DPANEL) {
+        // trimmer
+        auto trim = [](std::string &s)
+        {
+            s.erase(s.begin(), std::find_if(s.begin(), s.end(),
+                                            [](unsigned char ch) {  return !std::isspace(ch); }));
+            s.erase(std::find_if(s.rbegin(), s.rend(),
+                                 [](unsigned char ch) { return !std::isspace(ch); }).base(), s.end());
+
+            return s;
+        };
+
+        // Extract GMM(...) blocks into formula_right, and remove them from formula_left
+        std::regex gmm_regex(R"(GMM\s*\([^()]*\))"); // matches GMM(...) with optional spaces
+
+        std::sregex_iterator begin(formula.begin(), formula.end(), gmm_regex);
+        std::sregex_iterator end;
+        formula_left = formula;
+        formula_right.clear();
+
+        for (auto it = begin; it != end; ++it) {
+            formula_right += it->str() + " ";
+            formula_left.erase(formula_left.find(it->str()), it->str().length());
+        }
+        trim(formula_left);
+        trim(formula_right);
+
+        var_list = list_from_formula(formula_left, GD->dset, err);
+    } else {
+        var_list = list_from_formula(formula, GD->dset, err);
+    }
     model = gretl_model_new();
 
     if (!var_list) {
@@ -717,16 +725,20 @@ void GretlModel_NSE_Driver<F, CI>::fit (void)
 
     // special cases
     if constexpr (CI == DPANEL) {
-        // at first, we setup dpanel_list
+        // we setup dpanel_list: lags + var_list
         int p = static_cast<int>(optional_par.at(0));
         dpanel_list.reset(gretl_list_new(var_list.get()[0] + 2));
         dpanel_list.get()[1] = p;
         dpanel_list.get()[2] = LISTSEP;
-        for (int i=1; i<=var_list.get()[0]; i++) {
-            dpanel_list.get()[i+2] = var_list.get()[i];
+        std::memcpy(dpanel_list.get() + 3, var_list.get() + 1, var_list.get()[0] * sizeof(int));
+    } else if constexpr (CI == TOBIT) {
+        // we set (l/r)limit
+        if (kwargs.contains("llimit") && !kwargs["llimit"].is_none()) {
+            optional_par.at(0) = py::cast<double>(kwargs["llimit"]);
         }
-        py::print("formula_left: ",formula_left);
-        py::print("formula_right: ",formula_right);
+        if (kwargs.contains("rlimit") && !kwargs["rlimit"].is_none()) {
+            optional_par.at(1) = py::cast<double>(kwargs["rlimit"]);
+        }
     }
 
     // we call F as an estimator
@@ -741,20 +753,9 @@ void GretlModel_NSE_Driver<F, CI>::fit (void)
     } else if constexpr (use_lcdop_sig(CI)) {
         *model = F(var_list.get(), CI, GD->dset, opt, GP.prn_ptr());
     } else if constexpr (CI == DPANEL) {
-        py::print("dpanel_list");
-        for (int i=0; i<=dpanel_list.get()[0]; i++) {
-            py::print(dpanel_list.get()[i]);
-        }
-        /*py::print("laglist");
-        for (int i=0; i<=laglist.get()[0]; i++) {
-            py::print(laglist.get()[i]);
-        }*/
         *model = dpd_model(dpanel_list.get(), NULL,
-                           NULL, GD->dset,
+                           formula_right.c_str(), GD->dset,
                            opt, GP.prn_ptr());
-        if (model->errcode) {
-            handle_gretl_error(model->errcode);
-        }
     } else if constexpr (CI == QUANTREG) {
         if (this->optional_par_as_mat != NULL) {
             *model = quantreg(this->optional_par_as_mat,
