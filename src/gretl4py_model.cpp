@@ -727,9 +727,13 @@ void GretlModel_NSE_Driver<F, CI>::fit (void)
     // special cases
     if constexpr (CI == DPANEL) {
         // we setup dpanel_list: lags + var_list
-        int p = static_cast<int>(optional_par.at(0));
         dpanel_list.reset(gretl_list_new(var_list.get()[0] + 2));
-        dpanel_list.get()[1] = p;
+        if (this->optional_par.size() == 1) {
+            dpanel_list.get()[1] = static_cast<int>(optional_par.at(0));
+        } else {
+            dpanel_list.get()[1] = static_cast<int>(*std::max_element(optional_par.begin(),
+                                                                      optional_par.end()));
+        }
         dpanel_list.get()[2] = LISTSEP;
         std::memcpy(dpanel_list.get() + 3, var_list.get() + 1, var_list.get()[0] * sizeof(int));
     } else if constexpr (CI == TOBIT) {
@@ -758,15 +762,12 @@ void GretlModel_NSE_Driver<F, CI>::fit (void)
 
         if (this->optional_par.size() > 1) {
             laglist.reset(gretl_list_new(this->optional_par.size()));
-            dpanel_list.get()[1] = static_cast<int>(*std::max_element(optional_par.begin(),
-                                                                      optional_par.end()));
             for (int i=0; i<optional_par.size(); i++) {
                 laglist.get()[i+1] = static_cast<int>(optional_par[i]);
             }
         }
         *model = dpd_model(dpanel_list.get(), laglist.get(),
-                           formula_right.c_str(), GD->dset,
-                           opt, GP.prn_ptr());
+                           formula_right.c_str(), GD->dset, opt, GP.prn_ptr());
     } else if constexpr (CI == QUANTREG) {
         if (this->optional_par_as_mat != NULL) {
             *model = quantreg(this->optional_par_as_mat,
