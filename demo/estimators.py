@@ -162,6 +162,16 @@ print(res)
 ############################################################################
 
 
+#####################################
+# dpanel                            #
+#####################################
+print('DPANEL')
+print(abdata.varnames())
+print(abdata.get_accessor("$panelpd"))
+print(abdata.get_accessor("$pd"))
+res = gretl.dpanel(p=2, formula='n const w k ; k', data=abdata).fit()
+print(res)
+exit()
 
 #####################################
 # hsk                               #

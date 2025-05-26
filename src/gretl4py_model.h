@@ -145,6 +145,18 @@ public:
 };
 
 //
+// NSE_Driver_dpanel via dpd_model
+// extends: GretlModel_NSE_Driver
+//
+template <auto F, GretlCmdIndex CI>
+class GretlModel_NSE_Driver_dpanel : public GretlModel_NSE_Driver<F, CI>
+{
+public:
+    GretlModel_NSE_Driver_dpanel (std::shared_ptr<GretlDataset> GD, const std::string &formula,
+                                  const int &p, const py::kwargs &kwargs);
+};
+
+//
 // NSE via arima plugin
 // extends: GretlModel_NSE
 //
@@ -229,5 +241,6 @@ public:
 // aliases
 //////////////////////////////////////////////////
 using GretlModel_NSE_quantreg = GretlModel_NSE_Driver_quantreg<quantreg_driver, QUANTREG>;
+using GretlModel_NSE_dpanel = GretlModel_NSE_Driver_dpanel<dpd_model, DPANEL>;
 
 #endif // GRETL4PY_MODEL_H

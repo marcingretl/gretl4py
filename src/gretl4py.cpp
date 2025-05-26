@@ -93,6 +93,14 @@ PYBIND11_MODULE(_gretl, m)
               return std::unique_ptr<GretlModel>(std::move(model));
           },
           py::arg("tau").none(false), py::arg("formula").none(false), py::kw_only());
+    m.def("dpanel",
+          [](const int &p, const std::string &formula, const py::kwargs &kwargs) -> std::unique_ptr<GretlModel>
+          {
+              auto model = std::make_unique<GretlModel_NSE_dpanel>(DSET, formula, p, kwargs);
+
+              return std::unique_ptr<GretlModel>(std::move(model));
+          },
+          py::arg("p").none(false), py::arg("formula").none(false), py::kw_only());
 
     // estimation via wrappers
     BIND_DRIVER_MODEL(ols, lsq, OLS)

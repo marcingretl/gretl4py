@@ -88,6 +88,10 @@ void init_gretl4py_model_py11(py::module_ &m)
     py::class_<GretlModel_NSE_quantreg, GretlModel_NSE,
         std::unique_ptr<GretlModel_NSE_quantreg>>(m, "Model_quantreg", py::dynamic_attr());
 
+    // NSE_Driver_dpanel via dpd_model
+    py::class_<GretlModel_NSE_dpanel, GretlModel_NSE,
+        std::unique_ptr<GretlModel_NSE_dpanel>>(m, "Model_dpanel", py::dynamic_attr());
+
     // NSE via dedicated Driver
     bind_driver_model<GretlModel_NSE_Driver<lsq, OLS>>(m, "Model_ols");
     bind_driver_model<GretlModel_NSE_Driver<lsq, WLS>>(m, "Model_wls");

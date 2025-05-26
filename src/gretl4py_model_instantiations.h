@@ -36,5 +36,7 @@ extern template class GretlModel_NSE_Driver<mp_ols, MPOLS>;
 extern template class GretlModel_NSE_Driver<panel_model, PANEL>;
 extern template class GretlModel_NSE_Driver<ivreg, IVREG>;
 extern template class GretlModel_NSE_Driver<tobit_model, TOBIT>;
-extern template class GretlModel_NSE_Driver_quantreg<quantreg_driver, QUANTREG>;
 extern template class GretlModel_NSE_Driver<hsk_model, HSK>;
+
+extern template class GretlModel_NSE_Driver_quantreg<quantreg_driver, QUANTREG>;
+extern template class GretlModel_NSE_Driver_dpanel<dpd_model, DPANEL>;

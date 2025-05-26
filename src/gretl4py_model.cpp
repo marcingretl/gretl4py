@@ -156,7 +156,7 @@ void GretlModel::unpack_kwargs (GretlCmdIndex ci)
         } else if (key == "seasonal" && ci == ARMA) {
             // arima special: we check seasonal
             if (!is_pytuple(kwargs["seasonal"])) {
-                throw std::invalid_argument("seasonal must be a tuple");
+                throw std::invalid_argument("'seasonal' must be a tuple");
             }
             continue;
         } else if (key == "lagselect" && ci == ARMA) {
@@ -164,21 +164,26 @@ void GretlModel::unpack_kwargs (GretlCmdIndex ci)
         } else if ((key == "llimit" || key == "rlimit") && ci == TOBIT) {
             // TOBIT special: we check (l/r)limit
             if (!is_pynumeric(item.second)) {
-                throw std::invalid_argument("both llimit and rlimit must be numeric");
+                throw std::invalid_argument("both 'llimit' and 'rlimit' must be numeric");
             }
             continue;
         } else if (key == "xlist" && (ci == ARMA || ci == VAR || ci == VECM)) {
             // var special: here we only check if xlist is a string, but we must do something with it elsewhere
             if (!is_pystr(item.second)) {
-                throw std::invalid_argument("xlist must be a string");
+                throw std::invalid_argument("'xlist' must be a string");
             }
             continue;
-        } else if (key == "rxlist" && (ci == VECM)) {
+        } else if (key == "rxlist" && ci == VECM) {
             // var special: here we only check if rxlist is a string, but we must do something with it elsewhere
             if (!is_pystr(item.second)) {
-                throw std::invalid_argument("rxlist must be a string");
+                throw std::invalid_argument("'rxlist' must be a string");
             }
             continue;
+        } else if (key == "instruments" && ci == DPANEL) {
+            // var special: here we only check if instruments is a string, but we must do something with it elsewhere
+            if (!is_pystr(item.second)) {
+                throw std::invalid_argument("'instruments' must be a string");
+            }
         } else {
             gretl_valid_long_opt(opt, ci, key, item.second);
         }
@@ -664,6 +669,10 @@ std::string GretlModel_NSE_Driver<F, CI>::get_formula (void) const
 template <auto F, GretlCmdIndex CI>
 void GretlModel_NSE_Driver<F, CI>::fit (void)
 {
+    gretl_list_ptr dpanel_list;
+    std::string formula_left = "";
+    std::string formula_right = "";
+
     if (py::len(kwargs) > 0) {
         unpack_kwargs(CI);
     }
@@ -672,24 +681,52 @@ void GretlModel_NSE_Driver<F, CI>::fit (void)
         throw std::runtime_error("No dataset is available");
     }
 
-    // TOBIT special: we set (l/r)limit
+    // special cases FIXME: move after var_list!!!
     if constexpr (CI == TOBIT) {
+        // we set (l/r)limit
         if (kwargs.contains("llimit") && !kwargs["llimit"].is_none()) {
             optional_par.at(0) = py::cast<double>(kwargs["llimit"]);
         }
         if (kwargs.contains("rlimit") && !kwargs["rlimit"].is_none()) {
             optional_par.at(1) = py::cast<double>(kwargs["rlimit"]);
         }
+    } else if constexpr (CI == DPANEL) {
+        // we divide formula into: actual formula and instruments
+        std::size_t pos = formula.find(';');
+        if (pos != std::string::npos) {
+            formula_left = formula.substr(0, pos);
+            std::size_t after_pos = pos + 1;
+            while (after_pos < formula.size() && std::isspace(static_cast<unsigned char>(formula[after_pos]))) {
+                ++after_pos;
+            }
+            formula_right = formula.substr(after_pos);
+        } else {
+            formula_left = formula;
+        }
     }
 
     // we construct the model
-    var_list = list_from_formula(formula, GD->dset, err); // it's std::unique_ptr!!!
+    var_list = list_from_formula(formula, GD->dset, err);
     model = gretl_model_new();
 
     if (!var_list) {
         throw std::runtime_error("Formula rendering failed");
     } else if (model == NULL || GP.prn_ptr() == NULL) {
         throw std::runtime_error("Failed to allocate memory");
+    }
+
+    // special cases
+    if constexpr (CI == DPANEL) {
+        // at first, we setup dpanel_list
+        int p = static_cast<int>(optional_par.at(0));
+        dpanel_list.reset(gretl_list_new(var_list.get()[0] + 2));
+        dpanel_list.get()[1] = p;
+        dpanel_list.get()[2] = LISTSEP;
+        for (int i=1; i<=var_list.get()[0]; i++) {
+            dpanel_list.get()[i+2] = var_list.get()[i];
+        }
+        py::print("formula_left: ",formula_left);
+        py::print("formula_right: ",formula_right);
     }
 
     // we call F as an estimator
@@ -703,6 +740,21 @@ void GretlModel_NSE_Driver<F, CI>::fit (void)
         *model = F(var_list.get(), GD->dset, opt, GP.prn_ptr());
     } else if constexpr (use_lcdop_sig(CI)) {
         *model = F(var_list.get(), CI, GD->dset, opt, GP.prn_ptr());
+    } else if constexpr (CI == DPANEL) {
+        py::print("dpanel_list");
+        for (int i=0; i<=dpanel_list.get()[0]; i++) {
+            py::print(dpanel_list.get()[i]);
+        }
+        /*py::print("laglist");
+        for (int i=0; i<=laglist.get()[0]; i++) {
+            py::print(laglist.get()[i]);
+        }*/
+        *model = dpd_model(dpanel_list.get(), NULL,
+                           NULL, GD->dset,
+                           opt, GP.prn_ptr());
+        if (model->errcode) {
+            handle_gretl_error(model->errcode);
+        }
     } else if constexpr (CI == QUANTREG) {
         if (this->optional_par_as_mat != NULL) {
             *model = quantreg(this->optional_par_as_mat,
@@ -891,6 +943,20 @@ GretlModel_NSE_Driver_quantreg<F, CI>::~GretlModel_NSE_Driver_quantreg (void)
 // explicit instantiations for all required (F, CI) pairs
 template class GretlModel_NSE_Driver_quantreg<quantreg_driver, QUANTREG>;
 
+//
+// NSE_Driver_dpanel via dpd_model
+// extends: GretlModel_NSE_Driver
+//
+template <auto F, GretlCmdIndex CI>
+GretlModel_NSE_Driver_dpanel<F, CI>::GretlModel_NSE_Driver_dpanel
+                                        (std::shared_ptr<GretlDataset> GD,
+                                         const std::string &formula,
+                                         const int &p, const py::kwargs &kwargs)
+                                        : GretlModel_NSE_Driver<F, CI>(GD, formula, kwargs)
+{
+    this->optional_par.push_back(p);
+}
+template class GretlModel_NSE_Driver_dpanel<dpd_model, DPANEL>;
 
 //
 // VAR libgretl MODEL
