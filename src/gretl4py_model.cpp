@@ -36,7 +36,7 @@ extern "C" {
                         || c == MPOLS || c == IVREG || c == HSK) //const int *list, DATASET *dset, gretlopt opt
 #define use_ldop_sig(c) (c == BIPROBIT || c == DURATION \
                          || c == HECKIT || c == AR || c == AR1 \
-                         || c == GARCH || c == PANEL) //const int *list, DATASET *dset, gretlopt opt, PRN *prn
+                         || c == GARCH || c == PANEL || c == INTREG) //const int *list, DATASET *dset, gretlopt opt, PRN *prn
 #define use_lcdop_sig(c) (c == POISSON || c == NEGBIN) //const int *list, int ci, DATASET *dset, gretlopt opt, PRN *prn
 
 #define GRETL4PY_MODEL_DEBUG 0
@@ -802,6 +802,7 @@ template class GretlModel_NSE_Driver<panel_model, PANEL>;
 template class GretlModel_NSE_Driver<ivreg, IVREG>;
 template class GretlModel_NSE_Driver<tobit_model, TOBIT>;
 template class GretlModel_NSE_Driver<hsk_model, HSK>;
+template class GretlModel_NSE_Driver<interval_model, INTREG>;
 
 
 //

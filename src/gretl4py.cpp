@@ -130,6 +130,7 @@ PYBIND11_MODULE(_gretl, m)
     BIND_DRIVER_MODEL(tsls, ivreg, IVREG)
     BIND_DRIVER_MODEL(tobit, tobit_model, TOBIT)
     BIND_DRIVER_MODEL(hsk, hsk_model, HSK)
+    BIND_DRIVER_MODEL(intreg, interval_model, INTREG)
 
     //////////////////////////////////////////////////
     // VAR and VECM

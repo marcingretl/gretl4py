@@ -37,6 +37,7 @@ kennan     = gretl.get_data(str(data_dir.joinpath('kennan.gdt')))
 greene19_1 = gretl.get_data(str(data_dir.joinpath('greene19_1.gdt')))
 data4_1    = gretl.get_data(str(data_dir.joinpath('data4-1.gdt')))
 abdata     = gretl.get_data(str(data_dir.joinpath('abdata.gdt')))
+wtp        = gretl.get_data(str(data_dir.joinpath('wtp.gdt')))
 
 # list available datasets
 gretl.show_data_status()
@@ -172,10 +173,29 @@ print('DPANEL: selected lags')
 res = gretl.dpanel(p=[2,3], formula='n  w  k ; GMM(k,2,3) k GMM(w,2,3)', two_step=True).fit()
 print(res)
 
+
 #####################################
 # hsk                               #
 #####################################
 print('HSK without options:')
 res = gretl.hsk('price ~ 0 + sqft + bedrms', data=data4_1).fit()
 #assert res.bic == ols_bic, f'BIC should equal {ols_bic:f}'
+print(res)
+
+
+#####################################
+# intreg                            #
+#####################################
+wtp.sample(restriction='depvar == 1')
+wtp.new_series('hi = bidl')
+wtp.sample(restriction='depvar == 2', replace=True)
+wtp.new_series('lo = bidl')
+wtp.new_series('hi = bid1')
+wtp.sample(restriction='depvar == 3', replace=True)
+wtp.new_series('lo = bid1')
+wtp.new_series('hi = bidh')
+wtp.sample(restriction='depvar == 4', replace=True)
+wtp.new_series('lo = bidh')
+wtp.sample(full=True)
+res = gretl.intreg('lo hi const age female income', data=wtp).fit()
 print(res)
