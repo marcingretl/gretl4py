@@ -154,6 +154,8 @@ class GretlModel_NSE_Driver_dpanel : public GretlModel_NSE_Driver<F, CI>
 public:
     GretlModel_NSE_Driver_dpanel (std::shared_ptr<GretlDataset> GD, const std::string &formula,
                                   const int &p, const py::kwargs &kwargs);
+    GretlModel_NSE_Driver_dpanel (std::shared_ptr<GretlDataset> GD, const std::string &formula,
+                                  const py::array_t<int> &p, const py::kwargs &kwargs);
 };
 
 //

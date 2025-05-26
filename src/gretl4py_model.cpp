@@ -28,6 +28,7 @@ extern "C" {
 #include <gretl/forecast.h>
 #include <string>
 #include <regex>
+#include <algorithm>
 
 #define use_ldco_sig(c) (c == OLS || c == WLS) //const int *list, DATASET *dset, GretlCmdIndex ci, gretlopt opt
 #define use_ldcop_sig(c) (c == LOGIT || c == PROBIT) //int *list, DATASET *dset, int ci, gretlopt opt, PRN *prn
@@ -753,7 +754,17 @@ void GretlModel_NSE_Driver<F, CI>::fit (void)
     } else if constexpr (use_lcdop_sig(CI)) {
         *model = F(var_list.get(), CI, GD->dset, opt, GP.prn_ptr());
     } else if constexpr (CI == DPANEL) {
-        *model = dpd_model(dpanel_list.get(), NULL,
+        gretl_list_ptr laglist{nullptr};
+
+        if (this->optional_par.size() > 1) {
+            laglist.reset(gretl_list_new(this->optional_par.size()));
+            dpanel_list.get()[1] = static_cast<int>(*std::max_element(optional_par.begin(),
+                                                                      optional_par.end()));
+            for (int i=0; i<optional_par.size(); i++) {
+                laglist.get()[i+1] = static_cast<int>(optional_par[i]);
+            }
+        }
+        *model = dpd_model(dpanel_list.get(), laglist.get(),
                            formula_right.c_str(), GD->dset,
                            opt, GP.prn_ptr());
     } else if constexpr (CI == QUANTREG) {
@@ -957,6 +968,22 @@ GretlModel_NSE_Driver_dpanel<F, CI>::GretlModel_NSE_Driver_dpanel
 {
     this->optional_par.push_back(p);
 }
+
+template <auto F, GretlCmdIndex CI>
+GretlModel_NSE_Driver_dpanel<F, CI>::GretlModel_NSE_Driver_dpanel
+                                        (std::shared_ptr<GretlDataset> GD,
+                                         const std::string &formula,
+                                         const py::array_t<int> &p, const py::kwargs &kwargs)
+                                        : GretlModel_NSE_Driver<F, CI>(GD, formula, kwargs)
+{
+    if (p.ndim() != 1) {
+        throw std::invalid_argument("'p' is expected to be a vector");
+    }
+    for (int i=0; i<p.shape(0); i++) {
+        this->optional_par.push_back(static_cast<double>(p.at(i)));
+    }
+}
+// explicit instantiations for all required (F, CI) pairs
 template class GretlModel_NSE_Driver_dpanel<dpd_model, DPANEL>;
 
 //
