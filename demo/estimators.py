@@ -186,6 +186,7 @@ print(res)
 #####################################
 # intreg                            #
 #####################################
+print('INTREG:')
 wtp.sample(restriction='depvar == 1')
 wtp.new_series('hi = bidl')
 wtp.sample(restriction='depvar == 2', replace=True)
