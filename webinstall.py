@@ -4,47 +4,73 @@ import sys
 import shutil
 import zipfile
 import urllib.request
-from pathlib import Path
-import site
 import argparse
 import platform
+from pathlib import Path
+import site
+from zipfile import BadZipFile
 
-def download_wheel(url, dest_folder):
+# Default location for wheel downloads and extraction
+TMP_WHLS_DIR = Path("/tmp/whls")
+DEFAULT_BASE_URL = "https://netcologne.dl.sourceforge.net/project/gretl/gretl4py/snapshots/"
+
+def download_wheel(url: str, dest_folder: Path) -> Path:
+    """
+    Downloads a .whl file from the specified URL into dest_folder.
+    Returns the path to the downloaded file.
+    """
     dest_folder.mkdir(parents=True, exist_ok=True)
     filename = url.split('/')[-1]
     dest_path = dest_folder / filename
+
     if dest_path.exists():
         print(f"{filename} already downloaded.")
         return dest_path
+
     print(f"Downloading {filename} ...")
     try:
         urllib.request.urlretrieve(url, dest_path)
     except Exception as e:
         print(f"Error downloading {filename}: {e}")
         sys.exit(1)
+
     print(f"Downloaded to {dest_path}")
     return dest_path
 
-def extract_wheel(wheel_path, extract_to):
+def extract_wheel(wheel_path: Path, extract_to: Path):
+    """
+    Extracts the contents of a wheel file to a directory.
+    """
     extract_to.mkdir(parents=True, exist_ok=True)
     print(f"Extracting {wheel_path.name} ...")
-    with zipfile.ZipFile(wheel_path, 'r') as zip_ref:
-        zip_ref.extractall(extract_to)
-    print(f"Extracted to {extract_to}")
+    try:
+        with zipfile.ZipFile(wheel_path, 'r') as zip_ref:
+            zip_ref.extractall(extract_to)
+        print(f"Extracted to {extract_to}")
+    except BadZipFile:
+        print(f"Error: {wheel_path.name} is not a valid zip file.")
+        sys.exit(1)
 
-def copy_packages(src_folder, site_packages, packages):
+def copy_packages(src_folder: Path, site_packages: Path, packages: list):
+    """
+    Copies specified packages from src_folder into the user site-packages directory.
+    Replaces existing copies if found.
+    """
     for pkg in packages:
         src = src_folder / pkg
         dest = site_packages / pkg
+
         if not src.exists():
-            print(f"Warning: {pkg} not found in wheel.")
+            print(f"Warning: {pkg} not found in extracted wheel.")
             continue
+
         if dest.exists():
             print(f"Removing existing {dest} ...")
             if dest.is_dir():
                 shutil.rmtree(dest)
             else:
                 dest.unlink()
+
         print(f"Copying {pkg} to site-packages ...")
         if src.is_dir():
             shutil.copytree(src, dest)
@@ -53,49 +79,66 @@ def copy_packages(src_folder, site_packages, packages):
     print("Copy complete.")
 
 def main():
-    # Enforce Linux only
+    # Enforce Linux platform only
     if platform.system() != "Linux":
         print("This installer script works only on Linux.")
         sys.exit(1)
 
-    # Clean up /tmp/whls if it already exists
-    tmp_whls_dir = Path("/tmp/whls")
-    if tmp_whls_dir.exists():
-        print(f"Removing existing directory: {tmp_whls_dir}")
-        shutil.rmtree(tmp_whls_dir)
+    # Remove any previous temporary download directory
+    if TMP_WHLS_DIR.exists():
+        print(f"Removing existing temporary directory: {TMP_WHLS_DIR}")
+        shutil.rmtree(TMP_WHLS_DIR)
 
+    # Parse command-line arguments
     parser = argparse.ArgumentParser(description="Install gretl4py wheel into user site-packages without pip.")
-    parser.add_argument(
-        "--version", default="0.2", help="gretl4py version to install (default: 0.2)"
-    )
+    parser.add_argument("--version", default="0.2", help="gretl4py version to install (default: 0.2)")
+    parser.add_argument("--base-url", default=DEFAULT_BASE_URL, help="Base URL for downloading wheels")
     args = parser.parse_args()
 
     version = args.version
-    major = sys.version_info.major
-    minor = sys.version_info.minor
-    py_version = f"cp{major}{minor}-cp{major}{minor}"
-    wheel_name = f"gretl4py-{version}-{py_version}-manylinux_2_28_x86_64.whl"
-    base_url = "https://netcologne.dl.sourceforge.net/project/gretl/gretl4py/snapshots/"
+    base_url = args.base_url
+
+    # Construct Python version tag used in wheel filenames
+    major, minor = sys.version_info.major, sys.version_info.minor
+    py_tag = f"cp{major}{minor}"
+    wheel_name = f"gretl4py-{version}-{py_tag}-{py_tag}-manylinux_2_28_x86_64.whl"
     wheel_url = base_url + wheel_name
 
-    extract_dir = tmp_whls_dir / "extracted"
+    extract_dir = TMP_WHLS_DIR / "extracted"
 
-    wheel_path = download_wheel(wheel_url, tmp_whls_dir)
+    # Download and extract the wheel
+    wheel_path = download_wheel(wheel_url, TMP_WHLS_DIR)
     extract_wheel(wheel_path, extract_dir)
 
+    # Locate user site-packages
     user_site = Path(site.getusersitepackages())
     if not user_site.exists():
         print(f"Creating user site-packages directory: {user_site}")
         user_site.mkdir(parents=True, exist_ok=True)
     print(f"User site-packages directory: {user_site}")
 
+    # Define packages to install from the wheel
     packages_to_copy = [
         "gretl",
         "gretl4py.libs",
         f"gretl4py-{version}.dist-info"
     ]
 
+    # Clean up old gretl4py-related directories from user_site
+    for dst_dir in packages_to_copy:
+        dst_path = user_site / dst_dir
+        if dst_path.exists():
+            print(f"Removing existing {dst_path}")
+            if dst_path.is_dir():
+                shutil.rmtree(dst_path)
+            else:
+                dst_path.unlink()
+
+    # Copy files from the extracted wheel into user site-packages
     copy_packages(extract_dir, user_site, packages_to_copy)
+
+    # Optional: Clean up temporary files (commented out in case you want to inspect them)
+    # shutil.rmtree(TMP_WHLS_DIR)
 
     print(f"gretl4py {version} installation complete. You can now 'import gretl'.")
 
