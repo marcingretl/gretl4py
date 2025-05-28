@@ -762,7 +762,7 @@ void GretlModel_NSE_Driver<F, CI>::fit (void)
 
         if (this->optional_par.size() > 1) {
             laglist.reset(gretl_list_new(this->optional_par.size()));
-            for (int i=0; i<optional_par.size(); i++) {
+            for (size_t i=0; i<optional_par.size(); i++) {
                 laglist.get()[i+1] = static_cast<int>(optional_par[i]);
             }
         }
