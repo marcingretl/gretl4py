@@ -85,8 +85,10 @@ void init_gretl4py_model_py11(py::module_ &m)
         std::unique_ptr<GretlModel_NSE_arima>>(m, "Model_arima", py::dynamic_attr());
 
     // NSE_Driver_quantreg via quantreg_driver
-    py::class_<GretlModel_NSE_quantreg, GretlModel_NSE,
-        std::unique_ptr<GretlModel_NSE_quantreg>>(m, "Model_quantreg", py::dynamic_attr());
+    py::class_<GretlModel_NSE_quantreg_scalar, GretlModel_NSE,
+        std::unique_ptr<GretlModel_NSE_quantreg_scalar>>(m, "Model_quantreg_scalar", py::dynamic_attr());
+    py::class_<GretlModel_NSE_quantreg_matrix, GretlModel_NSE,
+        std::unique_ptr<GretlModel_NSE_quantreg_matrix>>(m, "Model_quantreg_matrix", py::dynamic_attr());
 
     // NSE_Driver_dpanel via dpd_model
     py::class_<GretlModel_NSE_dpanel, GretlModel_NSE,

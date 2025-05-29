@@ -24,6 +24,7 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 #include <gretl/libgretl.h>
+#include <gretl/gretl_drivers.h>
 
 // Workaround for gettext redefinition
 #undef gettext
@@ -53,5 +54,19 @@ struct GretlListDeleter {
     }
 };
 using gretl_list_ptr = std::unique_ptr<int, GretlListDeleter>;
+
+//////////////////////////////////////////////////
+// model traits
+//////////////////////////////////////////////////
+enum class QuantregKind { Matrix, Scalar };
+
+template<typename T>
+inline constexpr QuantregKind quantreg_kind = QuantregKind::Matrix;
+
+template<>
+inline constexpr QuantregKind quantreg_kind<decltype(&quantreg_driver)> = QuantregKind::Scalar;
+
+template<>
+inline constexpr QuantregKind quantreg_kind<decltype(&quantreg)> = QuantregKind::Matrix;
 
 #endif // GRETL4PY_TYPES_H

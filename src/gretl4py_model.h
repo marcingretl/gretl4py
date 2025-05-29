@@ -242,7 +242,8 @@ public:
 //////////////////////////////////////////////////
 // aliases
 //////////////////////////////////////////////////
-using GretlModel_NSE_quantreg = GretlModel_NSE_Driver_quantreg<quantreg_driver, QUANTREG>;
+using GretlModel_NSE_quantreg_scalar = GretlModel_NSE_Driver_quantreg<quantreg_driver, QUANTREG>;
+using GretlModel_NSE_quantreg_matrix = GretlModel_NSE_Driver_quantreg<quantreg, QUANTREG>;
 using GretlModel_NSE_dpanel = GretlModel_NSE_Driver_dpanel<dpd_model, DPANEL>;
 
 #endif // GRETL4PY_MODEL_H

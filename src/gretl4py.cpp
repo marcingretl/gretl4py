@@ -80,7 +80,7 @@ PYBIND11_MODULE(_gretl, m)
     m.def("quantreg",
           [](const double &tau, const std::string &formula, const py::kwargs &kwargs) -> std::unique_ptr<GretlModel>
           {
-              auto model = std::make_unique<GretlModel_NSE_quantreg>(DSET, formula, tau, kwargs);
+              auto model = std::make_unique<GretlModel_NSE_quantreg_scalar>(DSET, formula, tau, kwargs);
 
               return std::unique_ptr<GretlModel>(std::move(model));
           },
@@ -88,7 +88,7 @@ PYBIND11_MODULE(_gretl, m)
     m.def("quantreg",
           [](const py::array_t<double> &tau, const std::string &formula, const py::kwargs &kwargs) -> std::unique_ptr<GretlModel>
           {
-              auto model = std::make_unique<GretlModel_NSE_quantreg>(DSET, formula, tau, kwargs);
+              auto model = std::make_unique<GretlModel_NSE_quantreg_matrix>(DSET, formula, tau, kwargs);
 
               return std::unique_ptr<GretlModel>(std::move(model));
           },
