@@ -770,10 +770,10 @@ void GretlModel_NSE_Driver<F, CI>::fit (void)
                    GD->dset, opt, GP.prn_ptr());
     } else if constexpr (quantreg_kind<decltype(F)> == QuantregKind::Scalar && CI == QUANTREG) {
         *model = F(std::to_string(this->optional_par.at(0)).c_str(),
-                   var_list.get(), this->GD->dset, this->opt, this->GP.prn_ptr());
+                   var_list.get(), GD->dset, opt, GP.prn_ptr());
     } else if constexpr (quantreg_kind<decltype(F)> == QuantregKind::Matrix && CI == QUANTREG) {
         *model = F(this->optional_par_as_mat, var_list.get(),
-                   this->GD->dset, this->opt, this->GP.prn_ptr());
+                   GD->dset, opt, GP.prn_ptr());
     } else if constexpr (CI == TOBIT) {
         *model = F(var_list.get(), optional_par.at(0), optional_par.at(1),
                    GD->dset, opt, GP.prn_ptr());
@@ -953,10 +953,8 @@ GretlModel_NSE_Driver_quantreg<F, CI>::~GretlModel_NSE_Driver_quantreg (void)
     }
 }
 // explicit instantiations for all required (F, CI) pairs
-constexpr auto quantreg_driver_ptr = &quantreg_driver;
-constexpr auto quantreg_ptr = &quantreg;
-template class GretlModel_NSE_Driver_quantreg<quantreg_driver_ptr, QUANTREG>;
-template class GretlModel_NSE_Driver_quantreg<quantreg_ptr, QUANTREG>;
+template class GretlModel_NSE_Driver_quantreg<quantreg_driver, QUANTREG>;
+template class GretlModel_NSE_Driver_quantreg<quantreg, QUANTREG>;
 
 
 //
