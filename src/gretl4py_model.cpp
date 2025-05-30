@@ -685,7 +685,10 @@ void GretlModel_NSE_Driver<F, CI>::fit (void)
     }
 
     // we construct the model
-    if constexpr (CI == DPANEL) {
+    if constexpr (CI == DPANEL || CI == MIDASREG) {
+        py::print("jestem w dpanel/midas");
+        std::regex formula_regex;
+
         // trimmer
         auto trim = [](std::string &s)
         {
@@ -697,10 +700,14 @@ void GretlModel_NSE_Driver<F, CI>::fit (void)
             return s;
         };
 
-        // Extract GMM(...) blocks into formula_right, and remove them from formula_left
-        std::regex gmm_regex(R"(GMM\s*\([^()]*\))"); // matches GMM(...) with optional spaces
+        // We extract GMM(...) or mds(l) blocks into formula_right, and remove them from formula_left
+        if constexpr (CI == DPANEL) {
+            formula_regex = std::regex(R"(GMM\s*\([^()]*\))");
+        } else if constexpr (CI == MIDASREG) {
+            formula_regex = std::regex(R"((mds|mdsl)\s*\([^()]*\))");
+        }
 
-        std::sregex_iterator begin(formula.begin(), formula.end(), gmm_regex);
+        std::sregex_iterator begin(formula.begin(), formula.end(), formula_regex);
         std::sregex_iterator end;
         formula_left = formula;
         formula_right.clear();
@@ -711,6 +718,9 @@ void GretlModel_NSE_Driver<F, CI>::fit (void)
         }
         trim(formula_left);
         trim(formula_right);
+        if (formula_left.back() == ';') {
+            formula_left.pop_back();
+        }
 
         var_list = list_from_formula(formula_left, GD->dset, err);
     } else {
@@ -768,6 +778,9 @@ void GretlModel_NSE_Driver<F, CI>::fit (void)
         }
         *model = F(dpanel_list.get(), laglist.get(), formula_right.c_str(),
                    GD->dset, opt, GP.prn_ptr());
+    } else if constexpr (CI == MIDASREG) {
+        *model = F(var_list.get(), formula_right.c_str(),
+                   GD->dset, opt, GP.prn_ptr());
     } else if constexpr (CI == QUANTREG) {
         std::string tau;
 
@@ -811,6 +824,7 @@ template class GretlModel_NSE_Driver<ivreg, IVREG>;
 template class GretlModel_NSE_Driver<tobit_model, TOBIT>;
 template class GretlModel_NSE_Driver<hsk_model, HSK>;
 template class GretlModel_NSE_Driver<interval_model, INTREG>;
+template class GretlModel_NSE_Driver<midas_model, MIDASREG>;
 
 
 //

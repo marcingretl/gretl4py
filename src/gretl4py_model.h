@@ -24,6 +24,9 @@
 #include "gretl4py_data.h"
 #include <gretl/libgretl.h>
 #include <gretl/gretl_drivers.h>
+extern "C" {
+    #include <gretl/gretl_midas.h>
+}
 #include <gretl/objstack.h>
 #include <iostream>
 

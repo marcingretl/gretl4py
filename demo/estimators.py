@@ -38,6 +38,7 @@ greene19_1 = gretl.get_data(str(data_dir.joinpath('greene19_1.gdt')))
 data4_1    = gretl.get_data(str(data_dir.joinpath('data4-1.gdt')))
 abdata     = gretl.get_data(str(data_dir.joinpath('abdata.gdt')))
 wtp        = gretl.get_data(str(data_dir.joinpath('wtp.gdt')))
+midas      = gretl.get_data(str(data_dir.joinpath('gdp_midas.gdt')))
 
 # list available datasets
 gretl.show_data_status()
@@ -199,4 +200,12 @@ wtp.sample(restriction='depvar == 4', replace=True)
 wtp.new_series('lo = bidh')
 wtp.sample(full=True)
 res = gretl.intreg('lo hi const age female income', data=wtp).fit()
+print(res)
+
+
+#####################################
+# midasreg                          #
+#####################################
+print('MIDAS without options:')
+res = gretl.midasreg(formula='ld_qgdp const ld_qgdp(-1) ; mdsl(dXL, 0)', data=midas).fit()
 print(res)

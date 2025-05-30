@@ -104,6 +104,7 @@ void init_gretl4py_model_py11(py::module_ &m)
     bind_driver_model<GretlModel_NSE_Driver<tobit_model, TOBIT>>(m, "Model_tobit");
     bind_driver_model<GretlModel_NSE_Driver<hsk_model, HSK>>(m, "Model_hsk");
     bind_driver_model<GretlModel_NSE_Driver<interval_model, INTREG>>(m, "Model_intreg");
+    bind_driver_model<GretlModel_NSE_Driver<midas_model, MIDASREG>>(m, "Model_midasreg");
 
     // VAR
     py::class_<GretlModel_VAR, GretlModel, std::unique_ptr<GretlModel_VAR>>(m, "Model_var", py::dynamic_attr())
