@@ -760,20 +760,30 @@ void GretlModel_NSE_Driver<F, CI>::fit (void)
     } else if constexpr (CI == DPANEL) {
         gretl_list_ptr laglist{nullptr};
 
-        if (this->optional_par.size() > 1) {
-            laglist.reset(gretl_list_new(this->optional_par.size()));
+        if (optional_par.size() > 1) {
+            laglist.reset(gretl_list_new(optional_par.size()));
             for (size_t i=0; i<optional_par.size(); i++) {
                 laglist.get()[i+1] = static_cast<int>(optional_par[i]);
             }
         }
         *model = F(dpanel_list.get(), laglist.get(), formula_right.c_str(),
                    GD->dset, opt, GP.prn_ptr());
-    } else if constexpr (quantreg_kind<decltype(F)> == QuantregKind::Scalar && CI == QUANTREG) {
-        *model = F(std::to_string(this->optional_par.at(0)).c_str(),
-                   var_list.get(), GD->dset, opt, GP.prn_ptr());
-    } else if constexpr (quantreg_kind<decltype(F)> == QuantregKind::Matrix && CI == QUANTREG) {
-        *model = F(this->optional_par_as_mat, var_list.get(),
-                   GD->dset, opt, GP.prn_ptr());
+    } else if constexpr (CI == QUANTREG) {
+        std::string tau;
+
+        if (optional_par.size() == 1) {
+            tau = std::to_string(optional_par.at(0));
+        } else {
+            tau = "{";
+            for (size_t i=0; i<optional_par.size(); i++) {
+                tau.append(std::to_string(optional_par.at(i)));
+                if (i < optional_par.size()-1) {
+                    tau.append(";");
+                }
+            }
+            tau.append("}");
+        }
+        *model = F(tau.c_str(), var_list.get(), GD->dset, opt, GP.prn_ptr());
     } else if constexpr (CI == TOBIT) {
         *model = F(var_list.get(), optional_par.at(0), optional_par.at(1),
                    GD->dset, opt, GP.prn_ptr());
@@ -939,22 +949,12 @@ GretlModel_NSE_Driver_quantreg<F, CI>::GretlModel_NSE_Driver_quantreg
     if (tau.ndim() != 1) {
         throw std::invalid_argument("'tau' is expected to be a vector");
     }
-    this->optional_par_as_mat = gretl_matrix_alloc(tau.shape(0), 1);
     for (int i=0; i<tau.shape(0); i++) {
-        gretl_matrix_set(this->optional_par_as_mat, i, 0, tau.at(i));
-    }
-}
-
-template <auto F, GretlCmdIndex CI>
-GretlModel_NSE_Driver_quantreg<F, CI>::~GretlModel_NSE_Driver_quantreg (void)
-{
-    if (this->optional_par_as_mat != NULL) {
-        gretl_matrix_free(this->optional_par_as_mat);
+        this->optional_par.push_back(tau.at(i));
     }
 }
 // explicit instantiations for all required (F, CI) pairs
 template class GretlModel_NSE_Driver_quantreg<quantreg_driver, QUANTREG>;
-template class GretlModel_NSE_Driver_quantreg<quantreg, QUANTREG>;
 
 
 //

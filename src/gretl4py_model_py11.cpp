@@ -80,15 +80,10 @@ void init_gretl4py_model_py11(py::module_ &m)
              },
              py::arg("type").none(false), py::kw_only());
 
-    // NSE_Driver_quantreg via quantreg_driver
-    py::class_<GretlModel_NSE_quantreg_scalar, GretlModel_NSE,
-        std::unique_ptr<GretlModel_NSE_quantreg_scalar>>(m, "Model_quantreg_scalar", py::dynamic_attr());
-    py::class_<GretlModel_NSE_quantreg_matrix, GretlModel_NSE,
-        std::unique_ptr<GretlModel_NSE_quantreg_matrix>>(m, "Model_quantreg_matrix", py::dynamic_attr());
-
     // NSE via dedicated Driver
     bind_driver_model<GretlModel_NSE_arima>(m, "Model_arima");
     bind_driver_model<GretlModel_NSE_Driver_dpanel<dpd_model, DPANEL>>(m, "Model_dpanel");
+    bind_driver_model<GretlModel_NSE_Driver_quantreg<quantreg_driver, QUANTREG>>(m, "Model_quantreg");
     bind_driver_model<GretlModel_NSE_Driver<lsq, OLS>>(m, "Model_ols");
     bind_driver_model<GretlModel_NSE_Driver<lsq, WLS>>(m, "Model_wls");
     bind_driver_model<GretlModel_NSE_Driver<logit_probit, LOGIT>>(m, "Model_logit");

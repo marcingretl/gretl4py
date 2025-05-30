@@ -118,7 +118,6 @@ class GretlModel_NSE_Driver : public GretlModel_NSE
 protected:
     const std::string formula;                  // formula defining model
     std::vector<double> optional_par;           // optional general purpose parameter (tau for QUANTREG, (l/r)limits for TOBIT, tests...)
-    gretl_matrix *optional_par_as_mat = NULL;
 public:
     GretlModel_NSE_Driver (std::shared_ptr<GretlDataset> GD,
                            const std::string &formula, const py::kwargs &kwargs);
@@ -140,8 +139,6 @@ public:
                                     const double &tau, const py::kwargs &kwargs);
     GretlModel_NSE_Driver_quantreg (std::shared_ptr<GretlDataset> GD, const std::string &formula,
                                     const py::array_t<double> &tau, const py::kwargs &kwargs);
-
-    virtual ~GretlModel_NSE_Driver_quantreg (void);
 };
 
 //
@@ -242,8 +239,7 @@ public:
 //////////////////////////////////////////////////
 // aliases
 //////////////////////////////////////////////////
-using GretlModel_NSE_quantreg_scalar = GretlModel_NSE_Driver_quantreg<quantreg_driver, QUANTREG>;
-using GretlModel_NSE_quantreg_matrix = GretlModel_NSE_Driver_quantreg<quantreg, QUANTREG>;
 using GretlModel_NSE_dpanel = GretlModel_NSE_Driver_dpanel<dpd_model, DPANEL>;
+using GretlModel_NSE_quantreg = GretlModel_NSE_Driver_quantreg<quantreg_driver, QUANTREG>;
 
 #endif // GRETL4PY_MODEL_H
