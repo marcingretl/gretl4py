@@ -53,6 +53,7 @@ void init_gretl4py_data_py11(py::module_ &m)
              py::return_value_policy::take_ownership)
         .def("to_file", &GretlDataset::to_file)
         .def("new_series", &GretlDataset::new_series)
+        .def("new_list", &GretlDataset::new_list)
         .def("print", &GretlDataset::print)
         .def("varnames", &GretlDataset::varnames,
              py::return_value_policy::take_ownership)

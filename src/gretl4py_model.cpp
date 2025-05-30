@@ -686,7 +686,6 @@ void GretlModel_NSE_Driver<F, CI>::fit (void)
 
     // we construct the model
     if constexpr (CI == DPANEL || CI == MIDASREG) {
-        py::print("jestem w dpanel/midas");
         std::regex formula_regex;
 
         // trimmer

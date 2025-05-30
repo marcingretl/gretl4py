@@ -654,12 +654,23 @@ void GretlDataset::to_file (const std::string fname) const
     }
 }
 
-void GretlDataset::new_series (const std::string formula)
+void GretlDataset::new_series (const std::string &formula)
 {
     //
     // we create a series according to @formula
     //
     err = generate(formula.c_str(), dset, GRETL_TYPE_SERIES, OPT_NONE, NULL);
+    if (err) {
+        handle_gretl_error(err);
+    }
+}
+
+void GretlDataset::new_list (const std::string &formula)
+{
+    //
+    // we create a list according to @formula
+    //
+    err = generate(formula.c_str(), dset, GRETL_TYPE_LIST, OPT_NONE, NULL);
     if (err) {
         handle_gretl_error(err);
     }

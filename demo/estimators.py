@@ -207,5 +207,7 @@ print(res)
 # midasreg                          #
 #####################################
 print('MIDAS without options:')
-res = gretl.midasreg(formula='ld_qgdp const ld_qgdp(-1) ; mdsl(dXL, 0)', data=midas).fit()
+midas.new_list('dX = deflist(ld_payems_m1, ld_payems_m2, ld_payems_m3)')
+midas.new_list('dXL = hflags(3, 11, dX)')
+res = gretl.midasreg(formula='ld_qgdp 0 ld_qgdp(-1) ; mdsl(dXL, 0)', data=midas).fit()
 print(res)

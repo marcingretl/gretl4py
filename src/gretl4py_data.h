@@ -143,7 +143,9 @@ public:
 
     void setobs (const py::kwargs &kwargs);
 
-    void new_series (const std::string formula);
+    void new_series (const std::string &formula);
+
+    void new_list (const std::string &formula);
 
     py::list varnames (void) const;
 
