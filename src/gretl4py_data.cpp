@@ -1058,8 +1058,6 @@ void GretlDataset::test (const std::string &type, const std::string &vars,
 
     // we register result
     move_to_python_container<GretlDataset, py::dict, py::list>(*this, std::move(res), "tests");
-    //py::object self = py::cast(this);
-    //py::setattr(self, type.c_str(), res);
 }
 
 
@@ -1120,16 +1118,16 @@ py::dict GretlBundle::json_to_dict (simdjson::ondemand::object &json_obj,
 
     if (!json_obj["type"].get_string(gr_type)) {
         if (gr_type == "gretl_matrix") {
-            json_obj["rows"].get(GretlBundle::sd_tmp_value);
-            GretlBundle::sd_tmp_number = GretlBundle::sd_tmp_value.get_number();
-            mat_rows = GretlBundle::sd_tmp_number.get_int64();
-            json_obj["cols"].get(GretlBundle::sd_tmp_value);
-            GretlBundle::sd_tmp_number = GretlBundle::sd_tmp_value.get_number();
-            mat_cols = GretlBundle::sd_tmp_number.get_int64();
+            json_obj["rows"].get(sd_tmp_value);
+            sd_tmp_number = sd_tmp_value.get_number();
+            mat_rows = sd_tmp_number.get_int64();
+            json_obj["cols"].get(sd_tmp_value);
+            sd_tmp_number = sd_tmp_value.get_number();
+            mat_cols = sd_tmp_number.get_int64();
         } else if (gr_type == "gretl_series") {
-            json_obj["size"].get(GretlBundle::sd_tmp_value);
-            GretlBundle::sd_tmp_number = GretlBundle::sd_tmp_value.get_number();
-            mat_rows = GretlBundle::sd_tmp_number.get_int64();
+            json_obj["size"].get(sd_tmp_value);
+            sd_tmp_number = sd_tmp_value.get_number();
+            mat_rows = sd_tmp_number.get_int64();
             mat_cols = 1;
         }
     }
@@ -1150,34 +1148,33 @@ py::dict GretlBundle::json_to_dict (simdjson::ondemand::object &json_obj,
         } else if (val.type() == simdjson::ondemand::json_type::number) {
             res[py::cast(key)] = static_cast<double>(val);
         } else if (val.type() == simdjson::ondemand::json_type::string) {
-            val.get_string(GretlBundle::sd_tmp_str);
-            res[py::cast(key)] = GretlBundle::sd_tmp_str;
+            val.get_string(sd_tmp_str);
+            res[py::cast(key)] = sd_tmp_str;
         } else if (val.type() == simdjson::ondemand::json_type::array) {
-            GretlBundle::sd_tmp_array = val.get_array();
+            sd_tmp_array = val.get_array();
             int i = 0;
 
             if (key == "midas_info") {
-                //special case: array of bundles
+                //special case: array of bundles (in future may be gneralized)
                 py::list li;
 
                 for (auto item : sd_tmp_array) {
                     assert(item.type() == simdjson::ondemand::json_type::object && "Element not a bundle.");
                     val_obj = item.get_object();
-                    li.append(json_to_dict(val_obj, &res, &key, &add_to_res));
+                    li.append(json_to_dict(val_obj));
                 }
                 res[py::cast(key)] = li;
             } else if (gr_type == "gretl_matrix" || gr_type == "gretl_series") {
                 DNumPyArrayFC mat({mat_rows, mat_cols});
                 double *mat_ptr = mat.mutable_data();
 
-                for (auto item : GretlBundle::sd_tmp_array) {
+                for (auto item : sd_tmp_array) {
                     if (item.type() == simdjson::ondemand::json_type::string) {
                         mat_ptr[i++] = std::nan("");
                     } else {
                         mat_ptr[i++] = static_cast<double>(item);
                     }
                 }
-
                 if ((std::min)(mat_rows, mat_cols) == 1) { // this is to prevent 'min' macro expansion on MS SDK
                     (*outer_dict)[py::cast(*outer_key)] = mat.reshape({mat.size()});
                 } else {
@@ -1187,15 +1184,15 @@ py::dict GretlBundle::json_to_dict (simdjson::ondemand::object &json_obj,
             } else {
                 py::list li;
 
-                for (auto item : GretlBundle::sd_tmp_array) {
+                for (auto item : sd_tmp_array) {
                     if (gr_type == "gretl_list" && i == 0) {
                         i = 1;
                         continue;
                     }
 
                     if (item.type() == simdjson::ondemand::json_type::string) {
-                        item.get_string(GretlBundle::sd_tmp_str);
-                        li.append(GretlBundle::sd_tmp_str);
+                        item.get_string(sd_tmp_str);
+                        li.append(sd_tmp_str);
                     } else {
                         if (gr_type == "gretl_list") {
                             li.append(static_cast<int>(item.get_int64()));
@@ -1204,7 +1201,6 @@ py::dict GretlBundle::json_to_dict (simdjson::ondemand::object &json_obj,
                         }
                     }
                 }
-
                 if (gr_type == "gretl_list") {
                     (*outer_dict)[py::cast(*outer_key)] = li;
                     *add_to_outer = false;
@@ -1214,7 +1210,7 @@ py::dict GretlBundle::json_to_dict (simdjson::ondemand::object &json_obj,
             }
         } else if (val.type() == simdjson::ondemand::json_type::object) {
             val_obj = val.get_object();
-            py::dict tmp_dict = GretlBundle::json_to_dict(val_obj, &res, &key, &add_to_res);
+            py::dict tmp_dict = json_to_dict(val_obj, &res, &key, &add_to_res);
 
             if (add_to_res) {
                 res[py::cast(key)] = tmp_dict;
@@ -1234,12 +1230,12 @@ py::dict GretlBundle::to_dict (void)
             json_buf = gretl_bundle_write_to_json_buffer(b, &err);
         }
         if (json_buf != NULL) {
-            GretlBundle::sd_json_cp = json_buf;
-            if (GretlBundle::sd_parser.iterate(GretlBundle::sd_json_cp).get(GretlBundle::sd_doc)) {
+            sd_json_cp = json_buf;
+            if (sd_parser.iterate(sd_json_cp).get(sd_doc)) {
                 err = E_DATA;
             } else {
-                GretlBundle::sd_obj = GretlBundle::sd_doc.get_object();
-                as_dict = GretlBundle::json_to_dict(GretlBundle::sd_obj);
+                sd_obj = sd_doc.get_object();
+                as_dict = json_to_dict(sd_obj);
             }
         }
     }

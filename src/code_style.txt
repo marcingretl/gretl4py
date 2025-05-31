@@ -6,6 +6,6 @@ Coding Style for the Source Code:
 
 3. For pointers to memory allocated at the C++ level, we use nullptr.
 
-4. We consistently include the class:: prefix when referring to types or methods (e.g., std::string or std::free()).
+4. We consistently include the std:: prefix when referring to types or methods (e.g., std::string or std::free()).
 
 Marcin
