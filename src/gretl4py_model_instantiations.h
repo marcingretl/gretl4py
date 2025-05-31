@@ -18,7 +18,7 @@
  */
 
 // explicit instantiations for all required (F, CI) pairs
-/*extern template class GretlModel_NSE_Driver<lsq, OLS>;
+extern template class GretlModel_NSE_Driver<lsq, OLS>;
 extern template class GretlModel_NSE_Driver<lsq, WLS>;
 extern template class GretlModel_NSE_Driver<logit_probit, LOGIT>;
 extern template class GretlModel_NSE_Driver<logit_probit, PROBIT>;
@@ -37,4 +37,8 @@ extern template class GretlModel_NSE_Driver<panel_model, PANEL>;
 extern template class GretlModel_NSE_Driver<ivreg, IVREG>;
 extern template class GretlModel_NSE_Driver<tobit_model, TOBIT>;
 extern template class GretlModel_NSE_Driver<hsk_model, HSK>;
-extern template class GretlModel_NSE_Driver<interval_model, INTREG>;*/
+extern template class GretlModel_NSE_Driver<interval_model, INTREG>;
+extern template class GretlModel_NSE_Driver<midas_model, MIDASREG>;
+
+extern template class GretlModel_NSE_Driver_dpanel<dpd_model, DPANEL>;
+extern template class GretlModel_NSE_Driver_quantreg<quantreg_driver, QUANTREG>;
