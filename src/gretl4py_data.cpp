@@ -508,7 +508,7 @@ GretlDataset::GretlDataset (const std::string fname) : id(next_obj_id++)
     //
     // load gretl data from file
     //
-    GretlDataset::allocate_dset();
+    allocate_dset();
     if (dset) {
         err = gretl_get_data(fname.c_str(), dset, OPT_NONE, NULL);
     } else {
@@ -530,7 +530,7 @@ GretlDataset::GretlDataset (const py::dict &pydict) : id(next_obj_id++)
     std::string *strBUF;
     int pd;
 
-    GretlDataset::allocate_dset();
+    allocate_dset();
 
     // we fill up dset->Z
     numpy_array_to_gretl_storage(pydict, dset);
@@ -574,12 +574,12 @@ GretlDataset::~GretlDataset (void)
         set_default_dset(nullptr);
         // std::printf("default dataset was deleted\n");
     }
-    GretlDataset::free_dset();
+    free_dset();
 }
 
 void GretlDataset::allocate_dset (void)
 {
-    GretlDataset::free_dset();
+    free_dset();
     dset = datainfo_new();
 }
 
@@ -1247,12 +1247,12 @@ void GretlBundle::print (void)
 //
 MapPyToCpp::MapPyToCpp (const std::optional<py::object> &pyobject)
 {
-    MapPyToCpp::convert<py::object>(&*pyobject);
+    convert<py::object>(&*pyobject);
 }
 
 MapPyToCpp::MapPyToCpp (const py::handle &pyhandle)
 {
-    MapPyToCpp::convert<py::handle>(&pyhandle);
+    convert<py::handle>(&pyhandle);
 }
 
 template<typename T>
