@@ -31,6 +31,7 @@ extern "C" {
     #include <gretl/var.h>
 }
 #include <string>
+#include <cassert>
 
 #define F_CONTIGUOUS py::detail::npy_api::constants::NPY_ARRAY_F_CONTIGUOUS_
 #define is_pynum_fortranarray(m) ((m.flags() & F_CONTIGUOUS))
@@ -1151,7 +1152,19 @@ py::dict GretlBundle::json_to_dict (simdjson::ondemand::object &json_obj,
             GretlBundle::sd_tmp_array = val.get_array();
             int i = 0;
 
-            if (gr_type == "gretl_matrix" || gr_type == "gretl_series") {
+            if (key == "midas_info") {
+                //special case: array of bundles
+                py::list li;
+                py::dict tmp_dict;
+
+                for (auto item : sd_tmp_array) {
+                    assert(item.type() == simdjson::ondemand::json_type::object && "Element not a bundle.");
+                    val_obj = simdjson::ondemand::object(item);
+                    tmp_dict = json_to_dict(val_obj, &res, &key, &add_to_res);
+                    li.append(tmp_dict);
+                }
+                res[py::cast(key)] = li;
+            } else if (gr_type == "gretl_matrix" || gr_type == "gretl_series") {
                 DNumPyArrayFC mat({mat_rows, mat_cols});
                 double *mat_ptr = mat.mutable_data();
 
