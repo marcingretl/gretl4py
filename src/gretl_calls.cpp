@@ -219,6 +219,19 @@ void set (const std::string key,
     }
 }
 
+template <GretlType GR_TYPE>
+void do_generate (const std::string &formula)
+{
+    //
+    // we create a gretl object of GR_TYPE according to @formula
+    //
+    int err = generate(formula.c_str(), DSET->dset, GR_TYPE, OPT_NONE, NULL);
+    if (err) {
+        handle_gretl_error(err);
+    }
+}
+template void do_generate<GRETL_TYPE_MATRIX>(const std::string&);
+
 //////////////////////////////////////////////////
 // data management
 //////////////////////////////////////////////////
