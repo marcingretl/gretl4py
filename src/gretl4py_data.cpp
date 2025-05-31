@@ -1105,6 +1105,10 @@ py::dict GretlBundle::json_to_dict (simdjson::ondemand::object &json_obj,
                                     std::string_view *outer_key,
                                     bool *add_to_outer)
 {
+    //
+    // Here we process given JSON object
+    // Note: the last 3 arguments are used only in recurssion
+    //
     py::dict res;
     int mat_rows = 0;
     int mat_cols = 0;
@@ -1155,13 +1159,11 @@ py::dict GretlBundle::json_to_dict (simdjson::ondemand::object &json_obj,
             if (key == "midas_info") {
                 //special case: array of bundles
                 py::list li;
-                py::dict tmp_dict;
 
                 for (auto item : sd_tmp_array) {
                     assert(item.type() == simdjson::ondemand::json_type::object && "Element not a bundle.");
-                    val_obj = simdjson::ondemand::object(item);
-                    tmp_dict = json_to_dict(val_obj, &res, &key, &add_to_res);
-                    li.append(tmp_dict);
+                    val_obj = item.get_object();
+                    li.append(json_to_dict(val_obj, &res, &key, &add_to_res));
                 }
                 res[py::cast(key)] = li;
             } else if (gr_type == "gretl_matrix" || gr_type == "gretl_series") {
