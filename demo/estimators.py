@@ -206,13 +206,12 @@ print(res)
 #####################################
 # midasreg                          #
 #####################################
-print('MIDAS without options:')
-midas.set_as_default()
+print('MIDAS:')
 gretl.new_matrix('theta = {1,5}')
 midas.new_list('dX = ld_payems*')
 midas.new_list('dXL = hflags(3, 11, dX)')
 midas.sample(t1='1985:1', t2='2009:1')
-res = gretl.midasreg(formula='ld_qgdp 0 ld_qgdp(-1) ; mdsl(dXL, 2, theta)').fit()
+res = gretl.midasreg(formula='ld_qgdp 0 ld_qgdp(-1) ; mdsl(dXL, 2, theta)', data=midas).fit()
 print(res)
-print('midas_info')
+print('midas_info:')
 print(res.midas_info)

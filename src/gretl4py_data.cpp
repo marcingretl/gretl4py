@@ -21,7 +21,7 @@
 #include <pybind11/numpy.h>
 #include "gretl4py_data.h"
 #include "gretl4py_types.h"
-#include "gretl4py.h" // FIXME: delete in GretlDataset class mapped to Python
+#include "gretl4py_model.h"
 #include <gretl/matrix_extra.h>
 #include <gretl/gretl_model.h>
 #include <gretl/genmain.h>
@@ -492,11 +492,8 @@ void move_to_python_container (PyWrapped &wrapped_obj, Item &&item,
         throw std::runtime_error("Unsupported container type for attribute '" + std::string(container) + "'");
     }
 }
-
-// instantiation for GretlModel class
 template void move_to_python_container<GretlModel, py::dict, py::list>
     (GretlModel&, py::dict&&, const char*, const std::string&);
-
 
 //////////////////////////////////////////////////
 // classes
@@ -657,24 +654,14 @@ void GretlDataset::to_file (const std::string fname) const
 
 void GretlDataset::new_series (const std::string &formula)
 {
-    //
-    // we create a series according to @formula
-    //
-    err = generate(formula.c_str(), dset, GRETL_TYPE_SERIES, OPT_NONE, NULL);
-    if (err) {
-        handle_gretl_error(err);
-    }
+    // new series according to @formula
+    do_generate<GRETL_TYPE_SERIES>(formula, shared_from_this());
 }
 
 void GretlDataset::new_list (const std::string &formula)
 {
-    //
-    // we create a list according to @formula
-    //
-    err = generate(formula.c_str(), dset, GRETL_TYPE_LIST, OPT_NONE, NULL);
-    if (err) {
-        handle_gretl_error(err);
-    }
+    // new list according to @formula
+    do_generate<GRETL_TYPE_LIST>(formula, shared_from_this());
 }
 
 py::str GretlDataset::repr (void) const

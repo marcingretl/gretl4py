@@ -46,7 +46,4 @@ py::dict about (bool do_print = false);
 void set (const std::string key,
           const std::optional<py::object> &pyval = std::nullopt);
 
-template <GretlType GR_TYPE>
-void do_generate (const std::string &formula);
-
 #endif // GRETL4PY_H

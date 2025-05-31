@@ -219,24 +219,11 @@ void set (const std::string key,
     }
 }
 
-template <GretlType GR_TYPE>
-void do_generate (const std::string &formula)
-{
-    //
-    // we create a gretl object of GR_TYPE according to @formula
-    //
-    int err = generate(formula.c_str(), DSET->dset, GR_TYPE, OPT_NONE, NULL);
-    if (err) {
-        handle_gretl_error(err);
-    }
-}
-template void do_generate<GRETL_TYPE_MATRIX>(const std::string&);
-
 //////////////////////////////////////////////////
 // data management
 //////////////////////////////////////////////////
 
-// signature in gretl4py_data.h
+// functions defined in gretl4py_data.h
 void set_default_dset (std::shared_ptr<GretlDataset> GD)
 {
     if (DSET) {
@@ -244,3 +231,26 @@ void set_default_dset (std::shared_ptr<GretlDataset> GD)
     }
     DSET = GD;
 }
+
+// General interface to libgretl's generate()
+// Note: some specializations must be generated manually
+template <GretlType GR_TYPE>
+void do_generate (const std::string &formula, std::shared_ptr<GretlDataset> GD)
+{
+    //
+    // we create a gretl object of GR_TYPE according to @formula
+    //
+    if constexpr (GR_TYPE == GRETL_TYPE_LIST || GR_TYPE == GRETL_TYPE_SERIES) {
+        if (!GD) {
+            throw std::runtime_error("Dataset is required for list and series generation");
+        }
+    }
+
+    int err = generate(formula.c_str(), GD ? GD->dset : NULL, GR_TYPE, OPT_NONE, NULL);
+    if (err) {
+        handle_gretl_error(err);
+    }
+}
+template void do_generate<GRETL_TYPE_LIST>(const std::string&, std::shared_ptr<GretlDataset>);
+template void do_generate<GRETL_TYPE_MATRIX>(const std::string&, std::shared_ptr<GretlDataset>);
+template void do_generate<GRETL_TYPE_SERIES>(const std::string&, std::shared_ptr<GretlDataset>);
