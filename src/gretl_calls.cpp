@@ -234,7 +234,7 @@ void set_default_dset (std::shared_ptr<GretlDataset> GD)
 
 // General interface to libgretl's generate()
 // Note: some specializations must be generated manually
-template <GretlType GR_TYPE>
+template<GretlType GR_TYPE>
 void do_generate (const std::string &formula, std::shared_ptr<GretlDataset> GD)
 {
     //

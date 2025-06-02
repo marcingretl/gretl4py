@@ -34,8 +34,6 @@
 	{\small \url{marcin@gretlconference.org}}\\
 	Allin Cottrell\\
 	{\small \url{cottrell@wfu.edu}}\\
-	Federico Fiorani\\
-	{\small \url{deferoci@gmail.com}}\\
 	{\centering end}\\
 	\pkg{gretl} developers (dream) Team}
 \title{\pkg{gretl4py}: a package for calling \pkg{libgretl} from \proglang{Python}}
@@ -91,7 +89,7 @@
 		qlrtest, qqplot, quantreg, quit, rename, reset, restrict, rmplot, run, runs, scatters,
 		sdiff, set, setinfo, setobs, setmiss, shell, smpl, spearman, sprintf, square, sscanf, store,
 		summary, system, tabprint, textplot, tobit, tsls, var, varlist, vartest, vecm, vif,
-		wls, xcorrgm, xtab, mpi, gibbs, return, params, pkg},
+		wls, xcorrgm, xtab, mpi, gibbs, return, params, pkg, midasreg},
 	morekeywords=[2]{abs, acos, acosh, aggregate, argname, asin, asinh, atan, atanh, bessel,
 		BFGSmax, bkfilt, boxcox, bwfilt, cdemean, cdf, cdiv, ceil, cholesky, chowlin,
 		cmult, cnorm, colname, colnames, cols, cos, cosh, cov,
