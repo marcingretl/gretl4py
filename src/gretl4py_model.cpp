@@ -645,7 +645,7 @@ void GretlModel_NSE::restrict (const py::list &impose,
 //
 // NSE via dedicated Driver
 //
-template <auto F, GretlCmdIndex CI>
+template<auto F, GretlCmdIndex CI>
 GretlModel_NSE_Driver<F, CI>::GretlModel_NSE_Driver (std::shared_ptr<GretlDataset> GD,
                                                      const std::string &formula,
                                                      const py::kwargs &kwargs)
@@ -658,7 +658,7 @@ GretlModel_NSE_Driver<F, CI>::GretlModel_NSE_Driver (std::shared_ptr<GretlDatase
     }
 }
 
-template <auto F, GretlCmdIndex CI>
+template<auto F, GretlCmdIndex CI>
 std::string GretlModel_NSE_Driver<F, CI>::get_formula (void) const
 {
     return formula;
@@ -668,7 +668,7 @@ std::string GretlModel_NSE_Driver<F, CI>::get_formula (void) const
 // have the same "basic" signature, plus a few special cases
 // F: function to call
 // CI: GretlCmdIndex
-template <auto F, GretlCmdIndex CI>
+template<auto F, GretlCmdIndex CI>
 void GretlModel_NSE_Driver<F, CI>::fit (void)
 {
     // local variables for DPANEL
@@ -940,7 +940,7 @@ void GretlModel_NSE_arima::fit (void)
 // NSE_Driver_quantreg via quantreg_driver
 // extends: GretlModel_NSE_Driver
 //
-template <auto F, GretlCmdIndex CI>
+template<auto F, GretlCmdIndex CI>
 GretlModel_NSE_Driver_quantreg<F, CI>::GretlModel_NSE_Driver_quantreg
                                         (std::shared_ptr<GretlDataset> GD,
                                          const std::string &formula,
@@ -951,7 +951,7 @@ GretlModel_NSE_Driver_quantreg<F, CI>::GretlModel_NSE_Driver_quantreg
     this->optional_par.push_back(tau);
 }
 
-template <auto F, GretlCmdIndex CI>
+template<auto F, GretlCmdIndex CI>
 GretlModel_NSE_Driver_quantreg<F, CI>::GretlModel_NSE_Driver_quantreg
                                         (std::shared_ptr<GretlDataset> GD,
                                          const std::string &formula,
@@ -974,7 +974,7 @@ template class GretlModel_NSE_Driver_quantreg<quantreg_driver, QUANTREG>;
 // NSE_Driver_dpanel via dpd_model
 // extends: GretlModel_NSE_Driver
 //
-template <auto F, GretlCmdIndex CI>
+template<auto F, GretlCmdIndex CI>
 GretlModel_NSE_Driver_dpanel<F, CI>::GretlModel_NSE_Driver_dpanel
                                         (std::shared_ptr<GretlDataset> GD,
                                          const std::string &formula,
@@ -984,7 +984,7 @@ GretlModel_NSE_Driver_dpanel<F, CI>::GretlModel_NSE_Driver_dpanel
     this->optional_par.push_back(p);
 }
 
-template <auto F, GretlCmdIndex CI>
+template<auto F, GretlCmdIndex CI>
 GretlModel_NSE_Driver_dpanel<F, CI>::GretlModel_NSE_Driver_dpanel
                                         (std::shared_ptr<GretlDataset> GD,
                                          const std::string &formula,
@@ -1024,7 +1024,7 @@ void *GretlModel_VAR::model_ptr (void) const
 }
 
 // true VAR/VECM estimate
-template <GretlCmdIndex CI>
+template<GretlCmdIndex CI>
 void GretlModel_VAR::do_var_vecm_fit (const int coint_rank)
 {
     //
@@ -1072,7 +1072,7 @@ void GretlModel_VAR::do_var_vecm_fit (const int coint_rank)
 }
 
 // true VAR/VECM forecasting
-template <GretlCmdIndex CI>
+template<GretlCmdIndex CI>
 void GretlModel_VAR::do_var_vecm_forecast (const py::kwargs &kwargs)
 {
     int variable_nr = -2;   // print for all equations

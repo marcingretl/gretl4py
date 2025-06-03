@@ -655,13 +655,13 @@ void GretlDataset::to_file (const std::string fname) const
 void GretlDataset::new_series (const std::string &formula)
 {
     // new series according to @formula
-    do_generate<GRETL_TYPE_SERIES>(formula, shared_from_this());
+    gretl_generate<GRETL_TYPE_SERIES>(formula, shared_from_this());
 }
 
 void GretlDataset::new_list (const std::string &formula)
 {
     // new list according to @formula
-    do_generate<GRETL_TYPE_LIST>(formula, shared_from_this());
+    gretl_generate<GRETL_TYPE_LIST>(formula, shared_from_this());
 }
 
 py::str GretlDataset::repr (void) const

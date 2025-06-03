@@ -67,7 +67,7 @@ PYBIND11_MODULE(_gretl, m)
     m.def("new_matrix",
           [] (const std::string &formula, std::shared_ptr<GretlDataset> data)
           {
-              do_generate<GRETL_TYPE_MATRIX>(formula, data ? data : DSET);
+              gretl_generate<GRETL_TYPE_MATRIX>(formula, data ? data : DSET);
           },
           py::arg("formula").none(false), py::arg("data").none(true) = std::nullopt);
 

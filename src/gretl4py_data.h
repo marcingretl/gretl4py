@@ -74,7 +74,7 @@ std::unique_ptr<GretlTypes> convert_GretlType_to_GretlTypes (GretlType &t,
                                                              void *gr_obj_ptr,
                                                              const int n, int &err);
 
-template <typename PyWrapped, typename Item, typename ContainerType>
+template<typename PyWrapped, typename Item, typename ContainerType>
 void move_to_python_container (PyWrapped &wrapped_obj, Item &&item,
                                const char *container, const std::string &key = "");
 
@@ -228,8 +228,8 @@ extern std::shared_ptr<GretlDataset> DSET;
 
 void set_default_dset(std::shared_ptr<GretlDataset> GD);
 
-template <GretlType GR_TYPE>
-void do_generate (const std::string &formula,
+template<GretlType GR_TYPE>
+void gretl_generate (const std::string &formula,
                   std::shared_ptr<GretlDataset> GD = DSET);
 
 #endif // GRETL4PY_DATA_H

@@ -115,12 +115,12 @@ public:
 // NSE via dedicated Driver
 // extends: GretlModel_NSE
 //
-template <auto F, GretlCmdIndex CI>
+template<auto F, GretlCmdIndex CI>
 class GretlModel_NSE_Driver : public GretlModel_NSE
 {
 protected:
-    const std::string formula;                  // formula defining model
-    std::vector<double> optional_par;           // optional general purpose parameter (tau for QUANTREG, (l/r)limits for TOBIT, tests...)
+    const std::string formula;          // formula defining model
+    std::vector<double> optional_par;   // optional general purpose parameter (tau for QUANTREG, (l/r)limits for TOBIT, tests...)
 public:
     GretlModel_NSE_Driver (std::shared_ptr<GretlDataset> GD,
                            const std::string &formula, const py::kwargs &kwargs);
@@ -134,7 +134,7 @@ public:
 // NSE_Driver_quantreg via quantreg_driver
 // extends: GretlModel_NSE_Driver
 //
-template <auto F, GretlCmdIndex CI>
+template<auto F, GretlCmdIndex CI>
 class GretlModel_NSE_Driver_quantreg : public GretlModel_NSE_Driver<F, CI>
 {
 public:
@@ -148,7 +148,7 @@ public:
 // NSE_Driver_dpanel via dpd_model
 // extends: GretlModel_NSE_Driver
 //
-template <auto F, GretlCmdIndex CI>
+template<auto F, GretlCmdIndex CI>
 class GretlModel_NSE_Driver_dpanel : public GretlModel_NSE_Driver<F, CI>
 {
 public:
@@ -194,10 +194,10 @@ protected:
 
     void *model_ptr (void) const override;
 
-    template <GretlCmdIndex CI>
+    template<GretlCmdIndex CI>
     void do_var_vecm_fit (const int coint_rank = 0);
 
-    template <GretlCmdIndex CI>
+    template<GretlCmdIndex CI>
     void do_var_vecm_forecast (const py::kwargs &kwargs);
 
     int find_variable_nr (const std::string &variable_name);

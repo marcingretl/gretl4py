@@ -235,7 +235,7 @@ void set_default_dset (std::shared_ptr<GretlDataset> GD)
 // General interface to libgretl's generate()
 // Note: some specializations must be generated manually
 template<GretlType GR_TYPE>
-void do_generate (const std::string &formula, std::shared_ptr<GretlDataset> GD)
+void gretl_generate (const std::string &formula, std::shared_ptr<GretlDataset> GD)
 {
     //
     // we create a gretl object of GR_TYPE according to @formula
@@ -251,6 +251,6 @@ void do_generate (const std::string &formula, std::shared_ptr<GretlDataset> GD)
         handle_gretl_error(err);
     }
 }
-template void do_generate<GRETL_TYPE_LIST>(const std::string&, std::shared_ptr<GretlDataset>);
-template void do_generate<GRETL_TYPE_MATRIX>(const std::string&, std::shared_ptr<GretlDataset>);
-template void do_generate<GRETL_TYPE_SERIES>(const std::string&, std::shared_ptr<GretlDataset>);
+template void gretl_generate<GRETL_TYPE_LIST>(const std::string&, std::shared_ptr<GretlDataset>);
+template void gretl_generate<GRETL_TYPE_MATRIX>(const std::string&, std::shared_ptr<GretlDataset>);
+template void gretl_generate<GRETL_TYPE_SERIES>(const std::string&, std::shared_ptr<GretlDataset>);
