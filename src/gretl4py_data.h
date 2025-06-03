@@ -125,13 +125,13 @@ public:
     DATASET *dset = NULL;
     std::string source;
 
-    GretlDataset (const std::string fname); // we load dataset from file
-    GretlDataset (const py::dict &pydict);  // we load dataset from Python's dictionary
-    virtual ~GretlDataset (void);           // virtual, because GretlModel use it as std::shared_ptr
+    GretlDataset (const std::string &fname);    // we load dataset from file
+    GretlDataset (const py::dict &pydict);      // we load dataset from Python's dictionary
+    virtual ~GretlDataset (void);               // virtual, because GretlModel use it as std::shared_ptr
 
     py::dict to_dict (void) const;
 
-    void to_file (const std::string fname) const;
+    void to_file (const std::string &fname) const;
 
     py::str repr (void) const;
 
@@ -193,11 +193,11 @@ public:
 
     GretlBundle (void);                             // we get contents of $sysinfo bundle
     GretlBundle (gretl_bundle *b);                  // incoming already allocated bundle
-    GretlBundle (MODEL *model, DATASET *dset);      // we produce bundle from model
+    GretlBundle (MODEL *model, DATASET *dset);      // we produce bundle from MODEL
     GretlBundle (GRETL_VAR *model, DATASET *dset);  // we produce bundle from VAR/VECM
     ~GretlBundle (void);
 
-    py::dict to_dict (void);                    // bundle-to-dict mapper
+    py::dict to_dict (void);                        // bundle-to-dict mapper
 
     void print (void);
 };

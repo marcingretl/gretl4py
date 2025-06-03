@@ -503,7 +503,7 @@ template void move_to_python_container<GretlModel, py::dict, py::list>
 //GretlDataset class methods
 //
 
-GretlDataset::GretlDataset (const std::string fname) : id(next_obj_id++)
+GretlDataset::GretlDataset (const std::string &fname) : id(next_obj_id++)
 {
     //
     // load gretl data from file
@@ -640,7 +640,7 @@ py::dict GretlDataset::to_dict (void) const
     return as_dict;
 }
 
-void GretlDataset::to_file (const std::string fname) const
+void GretlDataset::to_file (const std::string &fname) const
 {
     //
     // we write gretl data to file named by @fname
