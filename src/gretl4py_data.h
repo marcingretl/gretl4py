@@ -169,6 +169,8 @@ public:
                         bool trend = false, bool one_sided = false);
 
     GretlTypes *bwfilt (const std::string &series, int order, double omega);
+
+    GretlTypes *bkfilt (const std::string &series, int f1 = 0, int f2 = 0, int k = 0);
 };
 
 //

@@ -23,17 +23,24 @@ bw = d1.bwfilt(series='LRM', order=4, omega=90)
 print("\nResults from the Butterworth filter:")
 print(bw)
 
+# Baxter-King bandpass filter with default values
+bk = d1.bkfilt(series='LRM')
+print("\nResults from the Baxter-King filter:")
+print(bk)
+
 # we generate plot for filtering
 try:
     import matplotlib.pyplot as plt
 
     x = list(range(1, len(LRM) + 1))
+    bk_trend = LRM - bk
 
     fig, ax = plt.subplots()
-    plt.title("One-sided trend component from the Hodrick-Prescott filter")
+    plt.title("LRM series filtering results")
     ax.plot(x, LRM, label='LRM')
     ax.plot(x, t, label='HP')
     ax.plot(x, bw, label='Butterworth')
+    ax.plot(x, bk_trend, label='Baxter-King')
     plt.legend()
     plt.show()
 except ModuleNotFoundError:
