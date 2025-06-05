@@ -57,6 +57,9 @@ void init_gretl4py_data_py11(py::module_ &m)
         .def("print", &GretlDataset::print)
         .def("varnames", &GretlDataset::varnames,
              py::return_value_policy::take_ownership)
+        .def("get_series", &GretlDataset::get_series,
+             py::arg("series").none(false),
+             py::return_value_policy::take_ownership)
         .def("linked_models_list", &GretlDataset::linked_models_list)
         .def("hpfilt", &GretlDataset::hpfilt,
              py::arg("series").none(false), py::arg("hp_lambda").none(true) = NADBL,

@@ -591,6 +591,22 @@ void GretlDataset::free_dset (void)
     }
 }
 
+int GretlDataset::get_series_id (const std::string &series) const
+{
+    //
+    // method returns id of given series (in dset context)
+    //
+    int var_num = -1;
+
+    var_num = current_series_index(dset, series.c_str());
+    if (var_num < 0) {
+        throw std::invalid_argument("'" + series + "' does not exist");
+    }
+
+    return var_num;
+}
+
+// public methods
 py::dict GretlDataset::to_dict (void) const
 {
     //
@@ -1047,6 +1063,22 @@ void GretlDataset::test (const std::string &type, const std::string &vars,
     move_to_python_container<GretlDataset, py::dict, py::list>(*this, std::move(res), "tests");
 }
 
+GretlTypes *GretlDataset::get_series (const std::string &series) const
+{
+    //
+    // we return series as NumPy array
+    //
+    GretlType t = GRETL_TYPE_SERIES;
+    double *x = dset->Z[get_series_id(series)];
+
+    auto res = convert_GretlType_to_GretlTypes(t, x, dset->n, err);
+    if (err) {
+        handle_gretl_error(err);
+    }
+
+    return res.release();
+}
+
 GretlTypes *GretlDataset::hpfilt (const std::string &series, double hp_lambda,
                                   bool trend, bool one_sided)
 {
@@ -1056,17 +1088,8 @@ GretlTypes *GretlDataset::hpfilt (const std::string &series, double hp_lambda,
     //
     GretlType t = GRETL_TYPE_SERIES;
     gretlopt opt = trend ? OPT_T : OPT_NONE;
+    const double *x = dset->Z[get_series_id(series)];
     auto hp = std::make_unique<double[]>(dset->n);
-    int var_num = -1;
-
-    // we look for variable id
-    var_num = current_series_index(dset, series.c_str());
-    if (var_num < 0) {
-        throw std::invalid_argument("'" + series + "' does not exist");
-    }
-
-    // we take pointer to series
-    const double *x = dset->Z[var_num];
 
     // we do the job
     if (one_sided) {

@@ -119,6 +119,8 @@ private:
     void free_dset (void);
 
     gretlopt setobs_opt_from_structure (int structure);
+
+    int get_series_id (const std::string &series) const;
 public:
     mutable int err = 0;
     bool is_default = false;
@@ -160,6 +162,8 @@ public:
     std::unique_ptr<GretlTypes> get_accessor (const std::string &accessor) const;
 
     void test (const std::string &type, const std::string &vars, const py::kwargs &kwargs);
+
+    GretlTypes *get_series (const std::string &series) const;
 
     GretlTypes *hpfilt (const std::string &series, double hp_lambda = NADBL,
                         bool trend = false, bool one_sided = false);
