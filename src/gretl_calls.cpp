@@ -73,16 +73,16 @@ void module_init (void)
 
     // we set user home dir
     py::module_ pathlib = py::module_::import("pathlib");
-    py::object home = pathlib.attr("Path").attr("home")();
-    std::string home_dir = py::str(home);
+    py::object start = pathlib.attr("Path").attr("cwd")();
+    std::string start_dir = py::str(start);
 
     // we set workdir
 #if defined(_WIN32)
-    if (int err = gretl_set_path_by_name("workdir", home_dir.append("\\Documents\\gretl").c_str())) {
+    if (int err = gretl_set_path_by_name("workdir", start_dir.c_str())) {
         handle_gretl_error(err);
     }
 #else
-    if (int err = gretl_set_path_by_name("workdir", home_dir.append("/gretl").c_str())) {
+    if (int err = gretl_set_path_by_name("workdir", start_dir.c_str())) {
         handle_gretl_error(err);
     }
 #endif // defined
