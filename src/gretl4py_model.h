@@ -75,7 +75,7 @@ public:
 
     void unlink_from_dataset (void) const;
 
-    virtual std::unique_ptr<GretlTypes> get_accessor (const std::string &accessor) const;
+    virtual GretlTypes *get_accessor (const std::string &accessor) const;
 
     virtual void fit (void) = 0;
 

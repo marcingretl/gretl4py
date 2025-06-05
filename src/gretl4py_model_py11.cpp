@@ -41,11 +41,8 @@ void init_gretl4py_model_py11(py::module_ &m)
 
                  return self;
              })
-        .def("get_accessor",
-             [](GretlModel &self, const std::string &accessor) -> GretlTypes*
-             {
-                 return self.get_accessor(accessor).release();
-             },
+        .def("get_accessor", &GretlModel::get_accessor,
+             py::arg("accessor").none(false),
              py::return_value_policy::take_ownership)
         .def("fcast", &GretlModel::forecast)
         .def("get_formula", &GretlModel::get_formula);

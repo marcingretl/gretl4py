@@ -1054,8 +1054,8 @@ void GretlDataset::test (const std::string &type, const std::string &vars,
         handle_gretl_error(err);
     }
 
-    res[py::cast("test")] = *get_accessor("$test");
-    res[py::cast("pvalue")] = *get_accessor("$pvalue");
+    res[py::cast("test")] = get_accessor("$test");
+    res[py::cast("pvalue")] = get_accessor("$pvalue");
     res[py::cast("summary")] = GP.get_buffer();
     if (!kwargs.contains("silent")) {
         GP.print();

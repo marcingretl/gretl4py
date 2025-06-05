@@ -73,7 +73,7 @@ void GretlModel::unlink_from_dataset (void) const
     }
 }
 
-std::unique_ptr<GretlTypes> GretlModel::get_accessor (const std::string &accessor) const
+GretlTypes *GretlModel::get_accessor (const std::string &accessor) const
 {
     auto res = gretl_generate_gretl_object(accessor.c_str(), err, model_obj_type,
                                            GD->dset, model_ptr());
@@ -81,7 +81,7 @@ std::unique_ptr<GretlTypes> GretlModel::get_accessor (const std::string &accesso
         handle_gretl_error(err);
     }
 
-    return res;
+    return res.release();
 }
 
 template<typename T>
@@ -259,8 +259,8 @@ void GretlModel::do_restrict (T *model, const py::list &impose,
     }
 
     // we manufacture resulting object
-    res[py::cast("test")] = *get_accessor("$test");
-    res[py::cast("pvalue")] = *get_accessor("$pvalue");
+    res[py::cast("test")] = get_accessor("$test");
+    res[py::cast("pvalue")] = get_accessor("$pvalue");
     res[py::cast("summary")] = GP.get_buffer();
 
     // we register result
@@ -571,8 +571,8 @@ void GretlModel_NSE::test (const std::string &type,
     // we manufacture resulting object
     res[py::cast("type")] = type;
     res[py::cast("options")] = kwargs;
-    res[py::cast("test")] = *get_accessor("$test");
-    res[py::cast("pvalue")] = *get_accessor("$pvalue");
+    res[py::cast("test")] = get_accessor("$test");
+    res[py::cast("pvalue")] = get_accessor("$pvalue");
     res[py::cast("summary")] = GP.get_buffer();
 
     // we register result
@@ -623,8 +623,8 @@ void GretlModel_NSE::test (const std::string &type, const std::string &vars,
     // we manufacture resulting object
     res[py::cast("type")] = type;
     res[py::cast("options")] = kwargs;
-    res[py::cast("test")] = *get_accessor("$test");
-    res[py::cast("pvalue")] = *get_accessor("$pvalue");
+    res[py::cast("test")] = get_accessor("$test");
+    res[py::cast("pvalue")] = get_accessor("$pvalue");
     res[py::cast("summary")] = GP.get_buffer();
 
     // we register result
@@ -1134,8 +1134,8 @@ void GretlModel_VAR::test (const std::string &type, const py::kwargs &kwargs)
      // we manufacture resulting object
     res[py::cast("type")] = type;
     res[py::cast("options")] = kwargs;
-    res[py::cast("test")] = *get_accessor("$test");
-    res[py::cast("pvalue")] = *get_accessor("$pvalue");
+    res[py::cast("test")] = get_accessor("$test");
+    res[py::cast("pvalue")] = get_accessor("$pvalue");
     res[py::cast("summary")] = GP.get_buffer();
 
     // we register result
