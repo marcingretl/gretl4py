@@ -1050,8 +1050,8 @@ void GretlDataset::test (const std::string &type, const std::string &vars,
 std::unique_ptr<GretlTypes> GretlDataset::hpfilt (const std::string &series)
 {
     GretlType t = GRETL_TYPE_SERIES;
+    double *hp = new double[dset->n];
     const double *x;
-    double *hp = static_cast<double*>(std::malloc(dset->n * sizeof *hp));
     int var_num = -1;
 
     double lambda = NADBL;
@@ -1075,7 +1075,7 @@ std::unique_ptr<GretlTypes> GretlDataset::hpfilt (const std::string &series)
     // we convert series to NumPy array
     auto res = convert_GretlType_to_GretlTypes(t, hp, dset->n, err);
     if (hp) {
-        std::free(hp);
+        delete hp;
     }
     if (err) {
         handle_gretl_error(err);
