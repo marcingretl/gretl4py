@@ -1050,7 +1050,7 @@ void GretlDataset::test (const std::string &type, const std::string &vars,
 std::unique_ptr<GretlTypes> GretlDataset::hpfilt (const std::string &series)
 {
     GretlType t = GRETL_TYPE_SERIES;
-    double *hp = new double[dset->n];
+    auto hp = std::make_unique<double[]>(dset->n);
     const double *x;
     int var_num = -1;
 
@@ -1060,23 +1060,20 @@ std::unique_ptr<GretlTypes> GretlDataset::hpfilt (const std::string &series)
     // we look for variable id
     var_num = current_series_index(dset, series.c_str());
     if (var_num < 0) {
-        handle_gretl_error(E_DATA);
+        throw std::invalid_argument("'" + series + "' does not exist");
     }
 
     // we take pointer to series
     x = dset->Z[var_num];
 
     // we do the job
-    err = hp_filter(x, hp, dset, lambda, OPT_NONE);
+    err = hp_filter(x, hp.get(), dset, lambda, OPT_NONE);
     if (err) {
         handle_gretl_error(err);
     }
 
     // we convert series to NumPy array
-    auto res = convert_GretlType_to_GretlTypes(t, hp, dset->n, err);
-    if (hp) {
-        delete hp;
-    }
+    auto res = convert_GretlType_to_GretlTypes(t, hp.get(), dset->n, err);
     if (err) {
         handle_gretl_error(err);
     }
