@@ -1047,15 +1047,17 @@ void GretlDataset::test (const std::string &type, const std::string &vars,
     move_to_python_container<GretlDataset, py::dict, py::list>(*this, std::move(res), "tests");
 }
 
-std::unique_ptr<GretlTypes> GretlDataset::hpfilt (const std::string &series)
+GretlTypes *GretlDataset::hpfilt (const std::string &series, double hp_lambda,
+                                  bool trend, bool one_sided)
 {
+    //
+    // here we perform HP filtering
+    // Note: we use hp_lambda instead of just lambda due to names clash on Python side
+    //
     GretlType t = GRETL_TYPE_SERIES;
+    gretlopt opt = trend ? OPT_T : OPT_NONE;
     auto hp = std::make_unique<double[]>(dset->n);
-    const double *x;
     int var_num = -1;
-
-    double lambda = NADBL;
-    //bool one_sided = false;
 
     // we look for variable id
     var_num = current_series_index(dset, series.c_str());
@@ -1064,10 +1066,14 @@ std::unique_ptr<GretlTypes> GretlDataset::hpfilt (const std::string &series)
     }
 
     // we take pointer to series
-    x = dset->Z[var_num];
+    const double *x = dset->Z[var_num];
 
     // we do the job
-    err = hp_filter(x, hp.get(), dset, lambda, OPT_NONE);
+    if (one_sided) {
+        err = oshp_filter(x, hp.get(), dset, hp_lambda, opt);
+    } else {
+        err = hp_filter(x, hp.get(), dset, hp_lambda, opt);
+    }
     if (err) {
         handle_gretl_error(err);
     }
@@ -1078,7 +1084,7 @@ std::unique_ptr<GretlTypes> GretlDataset::hpfilt (const std::string &series)
         handle_gretl_error(err);
     }
 
-    return res;
+    return res.release();
 }
 
 

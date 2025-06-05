@@ -161,7 +161,8 @@ public:
 
     void test (const std::string &type, const std::string &vars, const py::kwargs &kwargs);
 
-    std::unique_ptr<GretlTypes> hpfilt (const std::string &series);
+    GretlTypes *hpfilt (const std::string &series, double hp_lambda = NADBL,
+                        bool trend = false, bool one_sided = false);
 };
 
 //
