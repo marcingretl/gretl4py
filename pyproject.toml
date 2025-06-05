@@ -2,5 +2,10 @@
 requires = ["setuptools", "wheel"]
 build-backend = "setuptools.build_meta"
 
+[project]
+name = "gretl4py"
+version = "0.2"
+requires-python = ">=3.11"
+
 [project.urls]
-"Documentation" = "https://gretl.sourceforge.net/gretl4py.html"
+Documentation = "https://gretl.sourceforge.net/gretl4py.html"

@@ -7,7 +7,7 @@ import glob
 
 EXT = sysconfig.get_config_var("EXT_SUFFIX")
 binary_path = os.path.join(os.getcwd(), 'gretl', '_gretl' + EXT)
-dll_dir = os.path.join(os.getcwd(), 'gretl', 'dll')
+dll_dir = os.path.join(os.getcwd(), 'gretl', 'lib')
 ext_name = f'gretl._gretl'
 ext_path = os.path.join("gretl", f"_gretl{EXT}")
 
@@ -16,7 +16,7 @@ if not os.path.exists(binary_path):
     print(f"Error: Missing '_gretl' binary at {binary_path}. Please copy it manually before packaging.", file=sys.stderr)
     sys.exit(1)
 
-# On Windows 64-bit, check DLLs exist in gretl/dll/
+# On Windows 64-bit, check DLLs exist in gretl/lib/
 if sys.platform == "win32" and sys.maxsize > 2**32:
     if not os.path.isdir(dll_dir):
         print(f"Warning: DLL directory {dll_dir} does not exist. Please copy DLLs manually.", file=sys.stderr)
@@ -39,7 +39,7 @@ package_files = [
 
 # Include DLL files if on Windows 64-bit and dll_dir exists
 if sys.platform == "win32" and sys.maxsize > 2**32 and os.path.isdir(dll_dir):
-    dll_names = [os.path.join('dll', os.path.basename(f)) for f in glob.glob(os.path.join(dll_dir, '*.dll'))]
+    dll_names = [os.path.join('lib', os.path.basename(f)) for f in glob.glob(os.path.join(dll_dir, '*.dll'))]
     package_files.extend(dll_names)
 
 # We declare a dummy Extension that points to the existing binary.
