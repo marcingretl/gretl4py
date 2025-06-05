@@ -29,6 +29,7 @@
 #include <gretl/gretl_drivers.h>
 extern "C" {
     #include <gretl/var.h>
+    #include <gretl/genfuncs.h>
 }
 #include <string>
 #include <cassert>
@@ -1103,6 +1104,31 @@ GretlTypes *GretlDataset::hpfilt (const std::string &series, double hp_lambda,
 
     // we convert series to NumPy array
     auto res = convert_GretlType_to_GretlTypes(t, hp.get(), dset->n, err);
+    if (err) {
+        handle_gretl_error(err);
+    }
+
+    return res.release();
+}
+
+
+GretlTypes *GretlDataset::bwfilt (const std::string &series, int order, double omega)
+{
+    //
+    // here we perform Butterworth filtering
+    //
+    GretlType t = GRETL_TYPE_SERIES;
+    const double *x = dset->Z[get_series_id(series)];
+    auto bw = std::make_unique<double[]>(dset->n);
+
+    // we do the job
+    err = butterworth_filter(x, bw.get(), dset, order, omega);
+    if (err) {
+        handle_gretl_error(err);
+    }
+
+    // we convert series to NumPy array
+    auto res = convert_GretlType_to_GretlTypes(t, bw.get(), dset->n, err);
     if (err) {
         handle_gretl_error(err);
     }

@@ -167,6 +167,8 @@ public:
 
     GretlTypes *hpfilt (const std::string &series, double hp_lambda = NADBL,
                         bool trend = false, bool one_sided = false);
+
+    GretlTypes *bwfilt (const std::string &series, int order, double omega);
 };
 
 //
