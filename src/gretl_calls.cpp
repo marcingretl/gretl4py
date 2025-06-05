@@ -71,36 +71,17 @@ void module_init (void)
                                  + std::to_string(LIBGRETL_MIN_VER) + " or higher");
     }
 
-    // we set user home dir
+    // initialize libgretl
+    libgretl_init();
+
+    // we set user workdir, gretldir and dotdir
     py::module_ pathlib = py::module_::import("pathlib");
     py::object start = pathlib.attr("Path").attr("cwd")();
     std::string start_dir = py::str(start);
 
-    // we set workdir
-#if defined(_WIN32)
     if (int err = gretl_set_path_by_name("workdir", start_dir.c_str())) {
         handle_gretl_error(err);
     }
-#else
-    if (int err = gretl_set_path_by_name("workdir", start_dir.c_str())) {
-        handle_gretl_error(err);
-    }
-#endif // defined
-
-    // initialize libgretl
-    libgretl_init();
-
-    // read and set GRETL_PLUGIN_PATH if available
-    if (const char* env = std::getenv("GRETL_PLUGIN_PATH"); env) {
-        set_gretl_plugin_path(env);
-    }
-
-    // read and set GRETL4PY_VERBOSE if available
-    if (const char* env = std::getenv("GRETL4PY_VERBOSE"); env) {
-        gretl4py_verbose = std::atoi(env);
-    }
-
-    // read GRETL_HOME and set as gretldir and dotdir (if available)
     if (const char* env = std::getenv("GRETL_HOME"); env) {
         if (int err = gretl_set_path_by_name("gretldir", env)) {
             handle_gretl_error(err);
@@ -113,6 +94,16 @@ void module_init (void)
         if (int err = gretl_set_path_by_name("dotdir", dotdir_path.c_str())) {
             handle_gretl_error(err);
         }
+    }
+
+    // read and set GRETL_PLUGIN_PATH if available
+    if (const char* env = std::getenv("GRETL_PLUGIN_PATH"); env) {
+        set_gretl_plugin_path(env);
+    }
+
+    // read and set GRETL4PY_VERBOSE if available
+    if (const char* env = std::getenv("GRETL4PY_VERBOSE"); env) {
+        gretl4py_verbose = std::atoi(env);
     }
 
     // verbose output
