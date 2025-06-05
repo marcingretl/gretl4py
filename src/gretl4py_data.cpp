@@ -960,14 +960,15 @@ gretlopt GretlDataset::setobs_opt_from_structure (int structure)
     }
 }
 
-std::unique_ptr<GretlTypes> GretlDataset::get_accessor (const std::string &accessor) const
+GretlTypes *GretlDataset::get_accessor (const std::string &accessor) const
 {
-    auto res = gretl_generate_gretl_object(accessor.c_str(), err, GRETL_OBJ_DSET, dset);
+    auto res = gretl_generate_gretl_object(accessor.c_str(), err,
+                                           GRETL_OBJ_DSET, dset);
     if (err) {
         handle_gretl_error(err);
     }
 
-    return res;
+    return res.release();
 }
 
 void GretlDataset::test (const std::string &type, const std::string &vars,

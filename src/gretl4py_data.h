@@ -159,7 +159,7 @@ public:
 
     std::unordered_set<int> linked_models_list (void) const;
 
-    std::unique_ptr<GretlTypes> get_accessor (const std::string &accessor) const;
+    GretlTypes *get_accessor (const std::string &accessor) const;
 
     void test (const std::string &type, const std::string &vars, const py::kwargs &kwargs);
 
