@@ -100,9 +100,17 @@ void module_init (void)
         gretl4py_verbose = std::atoi(env);
     }
 
-    // read GRETL_HOME and set as gretldir (if available)
+    // read GRETL_HOME and set as gretldir and dotdir (if available)
     if (const char* env = std::getenv("GRETL_HOME"); env) {
         if (int err = gretl_set_path_by_name("gretldir", env)) {
+            handle_gretl_error(err);
+        }
+#if defined(_WIN32)
+        std::string dotdir_path = std::string(env).append("\\tmp");
+#else
+        std::string dotdir_path = std::string(env).append("/tmp");
+#endif // defined
+        if (int err = gretl_set_path_by_name("dotdir", dotdir_path.c_str())) {
             handle_gretl_error(err);
         }
     }
@@ -182,7 +190,6 @@ py::dict about (bool do_print)
             std::cout << std::endl;
         }
         py::print("\ngretl_plugin_path = \"" + std::string(gretl_plugin_path()) + "\"");
-        py::print("\ngretl_dotdir = \"" + std::string(gretl_dotdir()) + "\"");
         std::cout << std::endl << "simdjson architecture implementation (runtime):" << std::endl;
         std::cout << "  name = " << "\"" << sj_name << "\"" << std::endl;
         std::cout << "  description = " << "\"" << sj_desc << "\"" << std::endl;
