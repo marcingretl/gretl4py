@@ -1047,17 +1047,32 @@ void GretlDataset::test (const std::string &type, const std::string &vars,
     move_to_python_container<GretlDataset, py::dict, py::list>(*this, std::move(res), "tests");
 }
 
-std::unique_ptr<GretlTypes> GretlDataset::hpfilt (const std::string &series, const double lambda, bool one_sided)
+std::unique_ptr<GretlTypes> GretlDataset::hpfilt (const std::string &series)
 {
     GretlType t = GRETL_TYPE_SERIES;
-    const double *x = dset->Z[current_series_index(dset, series.c_str())];
+    const double *x;
     double *hp = static_cast<double*>(std::malloc(dset->n * sizeof *hp));
+    int var_num = -1;
 
+    double lambda = NADBL;
+    //bool one_sided = false;
+
+    // we look for variable id
+    var_num = current_series_index(dset, series.c_str());
+    if (var_num < 0) {
+        handle_gretl_error(E_DATA);
+    }
+
+    // we take pointer to series
+    x = dset->Z[var_num];
+
+    // we do the job
     err = hp_filter(x, hp, dset, lambda, OPT_NONE);
     if (err) {
         handle_gretl_error(err);
     }
 
+    // we convert series to NumPy array
     auto res = convert_GretlType_to_GretlTypes(t, hp, dset->n, err);
     if (hp) {
         std::free(hp);

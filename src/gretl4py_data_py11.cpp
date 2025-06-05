@@ -61,7 +61,7 @@ void init_gretl4py_data_py11(py::module_ &m)
         .def("hpfilt",
              [](GretlDataset &self, const std::string &series) -> GretlTypes*
              {
-                 return self.hpfilt(series, 100, false).release();
+                 return self.hpfilt(series).release();
              },
              py::return_value_policy::take_ownership)
         .def("get_accessor", // this is due to: error: static assertion failed: Holder classes are only supported for custom types

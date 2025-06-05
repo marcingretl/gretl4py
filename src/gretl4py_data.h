@@ -161,7 +161,7 @@ public:
 
     void test (const std::string &type, const std::string &vars, const py::kwargs &kwargs);
 
-    std::unique_ptr<GretlTypes> hpfilt (const std::string &series, const double lambda = 100, bool one_sided = false);
+    std::unique_ptr<GretlTypes> hpfilt (const std::string &series);
 };
 
 //
