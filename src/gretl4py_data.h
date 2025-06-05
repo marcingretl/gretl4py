@@ -161,16 +161,18 @@ public:
 
     GretlTypes *get_accessor (const std::string &accessor) const;
 
-    void test (const std::string &type, const std::string &vars, const py::kwargs &kwargs);
+    void test (const std::string &type, const std::string &vars,
+               const py::kwargs &kwargs);
 
     GretlTypes *get_series (const std::string &series) const;
 
-    GretlTypes *hpfilt (const std::string &series, double hp_lambda = NADBL,
-                        bool trend = false, bool one_sided = false);
+    DNumPyArrayFC hpfilt (const std::string &series, double hp_lambda = NADBL,
+                          bool trend = false, bool one_sided = false);
 
-    GretlTypes *bwfilt (const std::string &series, int order, double omega);
+    DNumPyArrayFC bwfilt (const std::string &series, int order, double omega);
 
-    GretlTypes *bkfilt (const std::string &series, int f1 = 0, int f2 = 0, int k = 0);
+    DNumPyArrayFC bkfilt (const std::string &series, int f1 = 0,
+                          int f2 = 0, int k = 0);
 };
 
 //

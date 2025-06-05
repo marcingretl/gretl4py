@@ -33,16 +33,13 @@ try:
     import matplotlib.pyplot as plt
 
     x = list(range(1, len(LRM) + 1))
-    bk_trend = LRM - bk
-
     fig, ax = plt.subplots()
     plt.title("LRM series filtering results")
     ax.plot(x, LRM, label='LRM')
-    ax.plot(x, t, label='HP')
-    ax.plot(x, bw, label='Butterworth')
-    ax.plot(x, bk_trend, label='Baxter-King')
+    ax.plot(x, t, label='hpfilt')
+    ax.plot(x, bw, label='bwfilt')
+    ax.plot(x, LRM - bk, label='bkfilt')
     plt.legend()
     plt.show()
 except ModuleNotFoundError:
     print("please install 'matplotlib' module")
-

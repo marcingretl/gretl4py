@@ -1081,83 +1081,66 @@ GretlTypes *GretlDataset::get_series (const std::string &series) const
     return res.release();
 }
 
-GretlTypes *GretlDataset::hpfilt (const std::string &series, double hp_lambda,
-                                  bool trend, bool one_sided)
+DNumPyArrayFC GretlDataset::hpfilt (const std::string &series,
+                                    double hp_lambda, bool trend,
+                                    bool one_sided)
 {
     //
     // here we perform HP filtering
     // Note: we use hp_lambda instead of just lambda due to names clash on Python side
     //
-    GretlType t = GRETL_TYPE_SERIES;
+    DNumPyArrayFC res(dset->n);
     gretlopt opt = trend ? OPT_T : OPT_NONE;
-    auto hp = std::make_unique<double[]>(dset->n);
 
     // we do the job
     if (one_sided) {
         err = oshp_filter(dset->Z[get_series_id(series)],
-                          hp.get(), dset, hp_lambda, opt);
+                          res.mutable_data(), dset, hp_lambda, opt);
     } else {
         err = hp_filter(dset->Z[get_series_id(series)],
-                        hp.get(), dset, hp_lambda, opt);
+                        res.mutable_data(), dset, hp_lambda, opt);
     }
     if (err) {
         handle_gretl_error(err);
     }
 
-    // we convert series to NumPy array
-    auto res = convert_GretlType_to_GretlTypes(t, hp.get(), dset->n, err);
-    if (err) {
-        handle_gretl_error(err);
-    }
-
-    return res.release();
+    return res;
 }
 
-GretlTypes *GretlDataset::bwfilt (const std::string &series, int order, double omega)
+DNumPyArrayFC GretlDataset::bwfilt (const std::string &series,
+                                    int order, double omega)
 {
     //
     // here we perform Butterworth filtering
     //
-    GretlType t = GRETL_TYPE_SERIES;
-    auto bw = std::make_unique<double[]>(dset->n);
+    DNumPyArrayFC res(dset->n);
 
     // we do the job
     err = butterworth_filter(dset->Z[get_series_id(series)],
-                             bw.get(), dset, order, omega);
+                             res.mutable_data(), dset, order, omega);
     if (err) {
         handle_gretl_error(err);
     }
 
-    // we convert series to NumPy array
-    auto res = convert_GretlType_to_GretlTypes(t, bw.get(), dset->n, err);
-    if (err) {
-        handle_gretl_error(err);
-    }
-
-    return res.release();
+    return res;
 }
 
-GretlTypes *GretlDataset::bkfilt (const std::string &series, int f1, int f2, int k)
+DNumPyArrayFC GretlDataset::bkfilt (const std::string &series,
+                                    int f1, int f2, int k)
 {
     //
     // here we perform Baxter-King filtering
     //
-    GretlType t = GRETL_TYPE_SERIES;
-    auto bk = std::make_unique<double[]>(dset->n);
+    DNumPyArrayFC res(dset->n);
 
     // we do the job
-    err = bkbp_filter(dset->Z[get_series_id(series)], bk.get(), dset, f1, f2, k);
+    err = bkbp_filter(dset->Z[get_series_id(series)],
+                      res.mutable_data(), dset, f1, f2, k);
     if (err) {
         handle_gretl_error(err);
     }
 
-    // we convert series to NumPy array
-    auto res = convert_GretlType_to_GretlTypes(t, bk.get(), dset->n, err);
-    if (err) {
-        handle_gretl_error(err);
-    }
-
-    return res.release();
+    return res;
 }
 
 
