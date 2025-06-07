@@ -10,9 +10,10 @@ from pathlib import Path
 import site
 from zipfile import BadZipFile
 
-# Default location for wheel downloads and extraction
+# Default and fallback locations for wheel downloads
 TMP_WHLS_DIR = Path("/tmp/whls")
-DEFAULT_BASE_URL = "https://master.dl.sourceforge.net/project/gretl/gretl4py/snapshots/"
+DEFAULT_BASE_URL = "https://sourceforge.net/projects/gretl/files/gretl4py/"
+FALLBACK_URL = "https://master.dl.sourceforge.net/project/gretl/gretl4py/snapshots/"
 
 def download_wheel(url: str, dest_folder: Path) -> Path:
     """
@@ -20,7 +21,13 @@ def download_wheel(url: str, dest_folder: Path) -> Path:
     Returns the path to the downloaded file.
     """
     dest_folder.mkdir(parents=True, exist_ok=True)
-    filename = url.split('/')[-1]
+
+    # Extract filename smartly even if URL ends in /download
+    if url.endswith("/download"):
+        filename = url.split("/")[-2]
+    else:
+        filename = url.split("/")[-1]
+
     dest_path = dest_folder / filename
 
     if dest_path.exists():
@@ -31,8 +38,7 @@ def download_wheel(url: str, dest_folder: Path) -> Path:
     try:
         urllib.request.urlretrieve(url, dest_path)
     except Exception as e:
-        print(f"Error downloading {filename}: {e}")
-        sys.exit(1)
+        raise SystemExit(f"Error downloading {filename} from {url}: {e}")
 
     print(f"Downloaded to {dest_path}")
     return dest_path
@@ -96,18 +102,26 @@ def main():
     args = parser.parse_args()
 
     version = args.version
-    base_url = args.base_url
+    base_url = args.base_url.rstrip("/")
 
     # Construct Python version tag used in wheel filenames
     major, minor = sys.version_info.major, sys.version_info.minor
     py_tag = f"cp{major}{minor}"
     wheel_name = f"gretl4py-{version}-{py_tag}-{py_tag}-manylinux_2_28_x86_64.whl"
-    wheel_url = base_url + wheel_name
+
+    # Try versioned URL first
+    primary_url = f"{base_url}/v{version}/{wheel_name}/download"
+    fallback_url = f"{FALLBACK_URL}{wheel_name}"
 
     extract_dir = TMP_WHLS_DIR / "extracted"
 
-    # Download and extract the wheel
-    wheel_path = download_wheel(wheel_url, TMP_WHLS_DIR)
+    try:
+        wheel_path = download_wheel(primary_url, TMP_WHLS_DIR)
+    except SystemExit:
+        print("Falling back to snapshot URL...")
+        wheel_path = download_wheel(fallback_url, TMP_WHLS_DIR)
+
+    # Extract the wheel
     extract_wheel(wheel_path, extract_dir)
 
     # Locate user site-packages
@@ -137,8 +151,8 @@ def main():
     # Copy files from the extracted wheel into user site-packages
     copy_packages(extract_dir, user_site, packages_to_copy)
 
-    # Optional: Clean up temporary files (commented out in case you want to inspect them)
-    # shutil.rmtree(TMP_WHLS_DIR)
+    # Clean up temporary files (commented out in case you want to inspect them)
+    shutil.rmtree(TMP_WHLS_DIR)
 
     print(f"gretl4py {version} installation complete. You can now 'import gretl'.")
 
