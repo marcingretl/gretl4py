@@ -410,12 +410,11 @@ void unpack_kwargs_test (gretlopt &opt, const std::string &type,
         const std::string &key = item.first.cast<std::string>();
 
         if (key == "order") {
-            if (is_pyint(item.second)) {
-                order = item.second.cast<int>();
-                continue;
-            } else {
+            if (!is_pyint(item.second)) {
                 throw std::invalid_argument("'order' takes integers only");
             }
+            order = item.second.cast<int>();
+            continue;
         } else if (key == "order_m" && type == "levinlin") {
             // special case: we must do something with it later
             continue;

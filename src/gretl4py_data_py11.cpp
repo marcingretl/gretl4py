@@ -49,29 +49,24 @@ void init_gretl4py_data_py11(py::module_ &m)
         .def("set_as_default", &GretlDataset::set_as_default)
         .def("sample", &GretlDataset::sample)
         .def("setobs", &GretlDataset::setobs)
-        .def("to_dict", &GretlDataset::to_dict,
-             py::return_value_policy::take_ownership)
+        .def("to_dict", &GretlDataset::to_dict)
         .def("to_file", &GretlDataset::to_file)
         .def("new_series", &GretlDataset::new_series)
         .def("new_list", &GretlDataset::new_list)
         .def("print", &GretlDataset::print)
-        .def("varnames", &GretlDataset::varnames,
-             py::return_value_policy::take_ownership)
+        .def("varnames", &GretlDataset::varnames)
         .def("get_series", &GretlDataset::get_series,
-             py::arg("series").none(false),
-             py::return_value_policy::take_ownership)
+             py::arg("series").none(false))
         .def("linked_models_list", &GretlDataset::linked_models_list)
         .def("hpfilt", &GretlDataset::hpfilt,
              py::arg("series").none(false), py::arg("hp_lambda").none(true) = NADBL,
-             py::arg("trend").none(true) = false, py::arg("one_sided").none(true) = false,
-             py::return_value_policy::take_ownership)
+             py::arg("trend").none(true) = false, py::arg("one_sided").none(true) = false)
         .def("bwfilt", &GretlDataset::bwfilt,
              py::arg("series").none(false), py::arg("order").none(false),
-             py::arg("omega").none(false), py::return_value_policy::take_ownership)
+             py::arg("omega").none(false))
         .def("bkfilt", &GretlDataset::bkfilt,
              py::arg("series").none(false), py::arg("f1").none(true) = 0,
-             py::arg("f2").none(true) = 0, py::arg("k").none(true) = 0,
-             py::return_value_policy::take_ownership)
+             py::arg("f2").none(true) = 0, py::arg("k").none(true) = 0)
         .def("get_accessor", &GretlDataset::get_accessor,
              py::arg("accessor").none(false),
              py::return_value_policy::take_ownership)
