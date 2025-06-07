@@ -12,7 +12,7 @@ from zipfile import BadZipFile
 
 # Default location for wheel downloads and extraction
 TMP_WHLS_DIR = Path("/tmp/whls")
-DEFAULT_BASE_URL = "https://netcologne.dl.sourceforge.net/project/gretl/gretl4py/snapshots/"
+DEFAULT_BASE_URL = "https://master.dl.sourceforge.net/project/gretl/gretl4py/snapshots/"
 
 def download_wheel(url: str, dest_folder: Path) -> Path:
     """
