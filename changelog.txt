@@ -1,13 +1,17 @@
-version 0.11:
-  - quantreg added
-  - tobit added
-  - new datasets handling:
-    - get_data() as the only function for loading datasets
-    - new methods available
-  - new approach to model handling
-  - forecasting
-  - tests
-  - accessors
+version 0.2:
+Massive changes:
+    - The code was refactored (C++17 required)
+    - New estimators: hsk, midasreg, quantreg, tobit, var, vecm
+    - Dataset handling reworked:
+        - Introduced _gretl.Dataset class
+        - get_data() is now the sole entry point for loading datasets
+        - Added methods for filtering, testing, data access, and more
+    - Model handling redesigned:
+        - Introduced _gretl.Model base class with derived types
+        - Model instances are now created on the C++ side
+        - New methods for forecasting, testing, access, and diagnostics
+    - Packaging:
+        - Now distributed as .whl (wheel) files
 
 version 0.1:
-  - initial version
+    - Initial release
