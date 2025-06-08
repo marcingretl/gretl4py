@@ -6,6 +6,8 @@ build-backend = "setuptools.build_meta"
 name = "gretl4py"
 version = "0.2"
 requires-python = ">=3.11"
+description = "Python bindings for gretl"
+readme = { file = "README.md", content-type = "text/markdown" }
 
 [project.urls]
 Documentation = "https://gretl.sourceforge.net/gretl4py.html"
