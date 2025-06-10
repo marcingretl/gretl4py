@@ -1,17 +1,17 @@
 To build the module, ensure you have the following installed:
 - libgretl
 - python3-pybind11 package
-- make framework (including pkg-config)
+- pkg-config
 - a modern C++ compiler (LLVM/Clang++ and g++ have been tested)
 
 ###########################################################################
 # Preparation
 ###########################################################################
-Before compiling a module, make sure required libraries exist in 'gretl/lib':
- - for ms windows: all DLLs (libgretl and plugins + dependencies)
- - for linux/macos: plugins
-    Note: in linux case, assuming plugins are in '/usr/local/lib/gretl-gtk3',
-    (being in 'gretl/lib') just type: "ln -s /usr/local/lib/gretl-gtk3/*.so ."
+By design, to simplify the setup process, some libgretl-related libraries (i.e., plugins) must be placed in a specific directory: gretl/lib (assuming you are in the source root). Therefore, before compiling a module, ensure that the required libraries are present in gretl/lib:
+ - For Windows: all DLLs (libgretl, plugins, and their dependencies)
+ - For Linux/macOS: plugins only
+Note: In the case of Linux or macOS, it is sufficient to create symbolic links to these files (i.e. ln -s /path/to/plugins/*.so).
+
 
 ###########################################################################
 # Compilation
