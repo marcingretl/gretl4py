@@ -161,8 +161,8 @@ void GretlModel::unpack_kwargs (GretlCmdIndex ci)
                 throw std::invalid_argument("'seasonal' must be a tuple");
             }
             continue;
-        } else if (key == "lagselect" && ci == ARMA) {
-            throw std::invalid_argument("'lagselect' option for (S)ARIMA is temporarily unavailable");
+        } else if (key == "lagselect" && (ci == ARMA || ci == VAR)) {
+            throw std::invalid_argument("'lagselect' option for (S)ARIMA and VAR is temporarily unavailable");
         } else if ((key == "llimit" || key == "rlimit") && ci == TOBIT) {
             // TOBIT special: we check (l/r)limit
             if (!is_pynumeric(item.second)) {

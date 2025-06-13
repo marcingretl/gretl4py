@@ -5,8 +5,8 @@ import gretl
 
 gretl.set('force_decpoint', 'on')
 
-# mod_ver should be 0.1
+mod_ver = "0.21"
 d = gretl.about(0)
-assert d['mod_ver'] == '0.20',"module version should be 0.11!!!"
+assert d['mod_ver'] == mod_ver, f'module version should be {mod_ver}!!!'
 
 sysconfig.os.environ.pop('GRETL4PY_VERBOSE', None)
