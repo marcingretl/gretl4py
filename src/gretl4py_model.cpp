@@ -527,7 +527,7 @@ void GretlModel_NSE::test (const std::string &type,
     // this method performs test which do not take a variables list
     //
     py::dict res;
-    int order = GD->dset->pd;
+    int order = type == "corrgm" ? auto_acf_order(sample_size(GD->dset)) : GD->dset->pd;
 
     // we set up options
     unpack_kwargs_test(opt, type, kwargs, order);
@@ -548,13 +548,9 @@ void GretlModel_NSE::test (const std::string &type,
     } else if (type == "vif") {
         err = vif_test(model, GD->dset, opt, GP.prn_ptr());
     } else if (type == "corrgm") {
-        int npq = 0;
-        int T = sample_size(GD->dset);
-        int order = auto_acf_order(T);
-        if (model->ci == ARMA) {
-                npq = arma_model_get_n_arma_coeffs(model);
-        }
-        err = corrgram(GD->dset->v - 1, order, npq, GD->dset, static_cast<gretlopt>(opt | OPT_R), GP.prn_ptr());
+        err = corrgram(GD->dset->v - 1, order,
+                       model->ci == ARMA ? arma_model_get_n_arma_coeffs(model) : 0,
+                       GD->dset, static_cast<gretlopt>(opt | OPT_R), GP.prn_ptr());
     } else if (type == "arch" || type == "autocorr" ||
                type == "breusch-pagan" || type == "comfac" ||
                type == "logs" || type == "normality" ||

@@ -998,6 +998,8 @@ void GretlDataset::test (const std::string &type, const std::string &vars,
         err = bds_test_driver(order, ex_var.get(), dset, opt, GP.prn_ptr());
     } else if (type == "coint") {
         err = engle_granger_test(order, ex_var.get(), dset, opt, GP.prn_ptr());
+    } else if (type == "corrgm") {
+        err = corrgram(ex_var.get()[1], order, 0, dset, opt, GP.prn_ptr());
     } else if (type == "difftest") {
         err = diff_test(ex_var.get(), dset, opt, GP.prn_ptr());
     } else if (type == "johansen") {

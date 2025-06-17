@@ -14,8 +14,7 @@ def run_example():
     print(m)
 
     # correlogram
-    m.test(type="corrgm", silent=True)
-    print(m.tests[-1]['summary'])
+    m.test(type="corrgm")
 
 if __name__ == "__main__":
     run_example()

@@ -100,6 +100,11 @@ void init_gretl4py_data_py11(py::module_ &m)
                          throw std::invalid_argument("Both 'y' and 'vars' are required for 'coint'");
                      }
                      vars = y_val + " " + vars_val;
+                 } else if (type == "corrgm") {
+                     if (y_val.empty()) {
+                        throw std::invalid_argument("'y' is required");
+                     }
+                     vars = y_val;
                  } else {
                      if (vars_val.empty()) {
                          throw std::invalid_argument("'vars' is required");

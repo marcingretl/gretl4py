@@ -61,6 +61,11 @@ print("meantest")
 d3.test(type="meantest", vars="invest firm")
 print(d3.tests[-1]['pvalue'])
 
+print("\n****************************")
+print("corrgm")
+d1.test(type="corrgm", y="LRM", order=8)
+print(d1.tests[-1]['pvalue'])
+
 # OLS
 m1 = gretl.ols(formula='1 0 2 3').fit()
 print(m1)
@@ -128,6 +133,9 @@ print("\n****************************")
 print("autocorr")
 m2.test(type="autocorr", order=4)
 
+print("\n****************************")
+print("corrgm")
+m2.test(type="corrgm")
 
 # PANEL
 print("\n****************************")
