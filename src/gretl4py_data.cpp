@@ -352,6 +352,8 @@ void unpack_kwargs_test (gretlopt &opt, const std::string &type,
         ci = COINT;
     } else if (type == "comfac") {
         opt = OPT_C;
+    } else if (type == "corrgm") {
+        ci = CORRGM;
     } else if (type == "cusum") {
         ci = CUSUM;
     } else if (type == "difftest") {
@@ -430,7 +432,7 @@ void unpack_kwargs_test (gretlopt &opt, const std::string &type,
 
     // we force --plot=none for tests
     // FIXME: either to preprocessor level or to dispatcher
-    if (type == "cusum" || type == "leverage" || type == "qlrtest") {
+    if (type == "cusum" || type == "leverage" || type == "qlrtest" || type == "corrgm") {
         opt = static_cast<gretlopt>(opt | OPT_U);
         gretl_valid_long_opt(opt, ci, "plot", py::handle(), "none");
     }

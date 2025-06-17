@@ -547,6 +547,14 @@ void GretlModel_NSE::test (const std::string &type,
         err = QLR_test(model, GD->dset, opt, GP.prn_ptr());
     } else if (type == "vif") {
         err = vif_test(model, GD->dset, opt, GP.prn_ptr());
+    } else if (type == "corrgm") {
+        int npq = 0;
+        int T = sample_size(GD->dset);
+        int order = auto_acf_order(T);
+        if (model->ci == ARMA) {
+                npq = arma_model_get_n_arma_coeffs(model);
+        }
+        err = corrgram(GD->dset->v - 1, order, npq, GD->dset, static_cast<gretlopt>(opt | OPT_R), GP.prn_ptr());
     } else if (type == "arch" || type == "autocorr" ||
                type == "breusch-pagan" || type == "comfac" ||
                type == "logs" || type == "normality" ||

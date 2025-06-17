@@ -13,5 +13,9 @@ def run_example():
     m = gretl.ar('1 2 ; employ const prdefl gnp armfrc', vcv=True).fit()
     print(m)
 
+    # correlogram
+    m.test(type="corrgm", silent=True)
+    print(m.tests[-1]['summary'])
+
 if __name__ == "__main__":
     run_example()
