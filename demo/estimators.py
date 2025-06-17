@@ -51,14 +51,14 @@ longley.set_as_default()
 # ar                                #
 #####################################
 res = gretl.ar('1 2 ; employ const prdefl gnp armfrc').fit()
-assert res.maxlag == ar_maxlag, f'maxlag shuld equal {ar_maxlag:d}'
+assert res.maxlag == ar_maxlag, f'maxlag should equal {ar_maxlag:d}'
 print(res)
 
 #####################################
 # ar1                               #
 #####################################
 res = gretl.ar1('employ const prdefl gnp').fit()
-assert round(res.rho_gls, 10) == ar1_rho_gls, f'rho_gls shuld equal {ar1_rho_gls:f}, is {res.rho_gls:f}'
+assert round(res.rho_gls, 10) == ar1_rho_gls, f'rho_gls should equal {ar1_rho_gls:f}, is {res.rho_gls:f}'
 print(res)
 ############################################################################
 
@@ -68,7 +68,7 @@ print(res)
 #####################################
 bjg.set_as_default()
 
-print('SARIMA (0 1 2, 0 1 1):')
+print('SARIMA(0 1 2)(0 1 1):')
 res = gretl.arima(y='lg', order=(0,1,2), seasonal=(0,1,1), nc=True).fit()
 assert np.isnan(res.uhat[0]), 'the first element should be NaN!!!'
 print(res)

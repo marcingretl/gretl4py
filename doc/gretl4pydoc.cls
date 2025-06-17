@@ -34,7 +34,7 @@
 	{\small \url{marcin@gretlconference.org}}\\
 	Allin Cottrell\\
 	{\small \url{cottrell@wfu.edu}}\\
-	{\centering end}\\
+	{\centering and}\\
 	\pkg{gretl} developers (dream) Team}
 \title{\pkg{gretl4py}: a package for calling \pkg{libgretl} from \proglang{Python}}
 \prognum{6}

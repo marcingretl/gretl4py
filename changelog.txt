@@ -1,3 +1,7 @@
+version 0.21:
+    - 'lagselect' switched off for VAR due to SIGSEGV
+    - OpenBLAS 0.3.29 for linux packages
+
 version 0.2:
 Massive changes:
     - The code was refactored (C++17 required)
