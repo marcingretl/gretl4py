@@ -41,8 +41,10 @@ extern "C" {
 
 #define GRETL_PYBIND11_DEBUG 0
 
+// global variables (some used outside this file)
 std::shared_ptr<GretlDataset> DSET = nullptr;   // default dataset
 std::unordered_set<std::string> UserVars;       // registry of user variables
+GretlPrint GP = GretlPrint();                   // printer
 static int gretl4py_verbose = 0;
 
 //////////////////////////////////////////////////
@@ -215,7 +217,6 @@ py::dict about (bool do_print)
 void set (const std::string key,
           const std::optional<py::object> &pyval)
 {
-    GretlPrint GP = GretlPrint();
     int err = 0;
 
     if (pyval == std::nullopt) {
@@ -239,7 +240,10 @@ void set (const std::string key,
 void do_user_var_delete (const std::string &name)
 {
     if (UserVars.find(name) != UserVars.end()) {
-        user_var_delete_by_name(name.c_str(), NULL);
+        int err = user_var_delete_by_name(name.c_str(), GP.prn_ptr());
+        if (err) {
+            handle_gretl_error(err);
+        }
         UserVars.erase(name);
     } else {
         throw std::runtime_error("No such variable: '" + name + "'");
@@ -266,7 +270,7 @@ static std::string trim (std::string &s)
 {
     s.erase(s.begin(),
             std::find_if(s.begin(), s.end(),
-                         [](unsigned char ch) {  return !std::isspace(ch); }));
+                         [](unsigned char ch) { return !std::isspace(ch); }));
     s.erase(std::find_if(s.rbegin(), s.rend(),
                          [](unsigned char ch) { return !std::isspace(ch); }).base(), s.end());
 
@@ -290,22 +294,24 @@ void gretl_generate (const std::string &formula, std::shared_ptr<GretlDataset> G
         }
     }
 
-    // we setup user variable name
-    int eql_pos = formula.find("=");
-
-    if (eql_pos != std::string::npos) {
-        varname = formula.substr(0, eql_pos);
-        trim(varname);
-
-        if (!varname.empty()) {
-            UserVars.insert(varname);
-        }
-    }
-
     // we generate object of given type
     int err = generate(formula.c_str(), GD ? GD->dset : NULL, GR_TYPE, OPT_NONE, NULL);
     if (err) {
         handle_gretl_error(err);
+    }
+
+    // we setup user variable name and register it
+    if constexpr (GR_TYPE != GRETL_TYPE_SERIES) {
+        int eql_pos = formula.find("=");
+
+        if (eql_pos != std::string::npos) {
+            varname = formula.substr(0, eql_pos);
+            trim(varname);
+
+            if (!varname.empty()) {
+                UserVars.insert(varname);
+            }
+        }
     }
 }
 template void gretl_generate<GRETL_TYPE_LIST>(const std::string&, std::shared_ptr<GretlDataset>);

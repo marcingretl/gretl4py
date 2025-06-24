@@ -215,4 +215,3 @@ res = gretl.midasreg(formula='ld_qgdp 0 ld_qgdp(-1) ; mdsl(dXL, 2, theta)', data
 print(res)
 print('midas_info:')
 print(res.midas_info)
-gretl.delete('QQQ')
