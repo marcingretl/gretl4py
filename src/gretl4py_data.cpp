@@ -676,10 +676,22 @@ void GretlDataset::new_series (const std::string &formula)
     gretl_generate<GRETL_TYPE_SERIES>(formula, shared_from_this());
 }
 
+void GretlDataset::new_series (const std::string &name, const std::string &value)
+{
+    // new series according to @name and @value
+    gretl_generate<GRETL_TYPE_SERIES>(value, shared_from_this(), name);
+}
+
 void GretlDataset::new_list (const std::string &formula)
 {
     // new list according to @formula
     gretl_generate<GRETL_TYPE_LIST>(formula, shared_from_this());
+}
+
+void GretlDataset::new_list (const std::string &name, const std::string &value)
+{
+    // new list according to @name and @value
+    gretl_generate<GRETL_TYPE_LIST>(value, shared_from_this(), name);
 }
 
 py::str GretlDataset::repr (void) const

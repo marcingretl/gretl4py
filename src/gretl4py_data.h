@@ -147,7 +147,11 @@ public:
 
     void new_series (const std::string &formula);
 
+    void new_series (const std::string &name, const std::string &value);
+
     void new_list (const std::string &formula);
+
+    void new_list (const std::string &name, const std::string &value);
 
     py::list varnames (void) const;
 

@@ -51,8 +51,14 @@ void init_gretl4py_data_py11(py::module_ &m)
         .def("setobs", &GretlDataset::setobs)
         .def("to_dict", &GretlDataset::to_dict)
         .def("to_file", &GretlDataset::to_file)
-        .def("new_series", &GretlDataset::new_series)
-        .def("new_list", &GretlDataset::new_list)
+        .def("new_series", py::overload_cast<const std::string&>(&GretlDataset::new_series),
+             py::arg("formula").none(false))
+        .def("new_series", py::overload_cast<const std::string&, const std::string&>(&GretlDataset::new_series),
+             py::arg("name").none(false), py::arg("value").none(false))
+        .def("new_list", py::overload_cast<const std::string&>(&GretlDataset::new_list),
+             py::arg("formula").none(false))
+        .def("new_list", py::overload_cast<const std::string&, const std::string&>(&GretlDataset::new_list),
+             py::arg("name").none(false), py::arg("value").none(false))
         .def("print", &GretlDataset::print)
         .def("varnames", &GretlDataset::varnames)
         .def("get_series", &GretlDataset::get_series,
