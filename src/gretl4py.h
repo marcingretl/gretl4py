@@ -26,6 +26,9 @@
 #include <pybind11/numpy.h>
 #include <pybind11/stl.h>
 #include <gretl/libgretl.h>
+extern "C" {
+    #include <gretl/uservar.h>
+}
 #undef gettext
 #include "gretl4py_types.h"
 #include "gretl4py_data.h"
@@ -45,5 +48,9 @@ py::dict about (bool do_print = false);
 
 void set (const std::string key,
           const std::optional<py::object> &pyval = std::nullopt);
+
+void do_user_var_delete (const std::string &name);
+
+void new_matrix (const std::string &formula, std::shared_ptr<GretlDataset> data);
 
 #endif // GRETL4PY_H

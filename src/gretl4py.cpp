@@ -63,12 +63,11 @@ PYBIND11_MODULE(_gretl, m)
           py::arg("do_print") = false);
     m.def("set", &set,
           py::arg("key").none(false),
-          py::arg("val").none(true) = std::nullopt),
+          py::arg("val").none(true) = std::nullopt);
+    m.def("delete", &do_user_var_delete,
+          py::arg("name").none(false));
     m.def("new_matrix",
-          [] (const std::string &formula, std::shared_ptr<GretlDataset> data)
-          {
-              gretl_generate<GRETL_TYPE_MATRIX>(formula, data ? data : DSET);
-          },
+          py::overload_cast<const std::string&, std::shared_ptr<GretlDataset>>(&new_matrix),
           py::arg("formula").none(false), py::arg("data").none(true) = std::nullopt);
 
     //////////////////////////////////////////////////

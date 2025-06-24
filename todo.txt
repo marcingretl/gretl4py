@@ -6,3 +6,5 @@ TODOS:
 1. add copying plugins as meson option
 
 2. update doc
+
+3. consolidate all trimmer-s into one internal function

@@ -25,6 +25,7 @@ extern "C" {
 }
 #include <iostream>
 #include <cstdlib>
+#include <unordered_set>
 
 #if defined(_WIN32)
 # include <gretl/gretl_win32.h>
@@ -41,6 +42,7 @@ extern "C" {
 #define GRETL_PYBIND11_DEBUG 0
 
 std::shared_ptr<GretlDataset> DSET = nullptr;   // default dataset
+std::unordered_set<std::string> UserVars;       // registry of user variables
 static int gretl4py_verbose = 0;
 
 //////////////////////////////////////////////////
@@ -114,7 +116,20 @@ void module_init (void)
 
 void module_cleanup (void)
 {
+    int err = 0;
+
+    for (const auto &name : UserVars) {
+        err = user_var_delete_by_name(name.c_str(), NULL);
+        if (err) {
+            std::cerr << "Failed to delete '" + name + "': ";
+            std::cerr << errmsg_get_with_default(err) << std::endl;
+        } else {
+            std::cout << "Variable '" + name + "' deleted" << std::endl;
+        }
+    }
+
     libgretl_cleanup();
+
     if (gretl4py_verbose) {
         std::printf("libgretl cleaned up\n");
     }
@@ -221,6 +236,21 @@ void set (const std::string key,
 // data management
 //////////////////////////////////////////////////
 
+void do_user_var_delete (const std::string &name)
+{
+    if (UserVars.find(name) != UserVars.end()) {
+        user_var_delete_by_name(name.c_str(), NULL);
+        UserVars.erase(name);
+    } else {
+        throw std::runtime_error("No such variable: '" + name + "'");
+    }
+}
+
+void new_matrix (const std::string &formula, std::shared_ptr<GretlDataset> data)
+{
+    gretl_generate<GRETL_TYPE_MATRIX>(formula, data ? data : DSET);
+}
+
 // functions defined in gretl4py_data.h
 void set_default_dset (std::shared_ptr<GretlDataset> GD)
 {
@@ -230,6 +260,19 @@ void set_default_dset (std::shared_ptr<GretlDataset> GD)
     DSET = GD;
 }
 
+
+// trimmer
+static std::string trim (std::string &s)
+{
+    s.erase(s.begin(),
+            std::find_if(s.begin(), s.end(),
+                         [](unsigned char ch) {  return !std::isspace(ch); }));
+    s.erase(std::find_if(s.rbegin(), s.rend(),
+                         [](unsigned char ch) { return !std::isspace(ch); }).base(), s.end());
+
+    return s;
+}
+
 // General interface to libgretl's generate()
 // Note: some specializations must be generated manually
 template<GretlType GR_TYPE>
@@ -237,13 +280,29 @@ void gretl_generate (const std::string &formula, std::shared_ptr<GretlDataset> G
 {
     //
     // we create a gretl object of GR_TYPE according to @formula
+    // in the @GD context
     //
+    std::string varname;
+
     if constexpr (GR_TYPE == GRETL_TYPE_LIST || GR_TYPE == GRETL_TYPE_SERIES) {
         if (!GD) {
             throw std::runtime_error("Dataset is required for list and series generation");
         }
     }
 
+    // we setup user variable name
+    int eql_pos = formula.find("=");
+
+    if (eql_pos != std::string::npos) {
+        varname = formula.substr(0, eql_pos);
+        trim(varname);
+
+        if (!varname.empty()) {
+            UserVars.insert(varname);
+        }
+    }
+
+    // we generate object of given type
     int err = generate(formula.c_str(), GD ? GD->dset : NULL, GR_TYPE, OPT_NONE, NULL);
     if (err) {
         handle_gretl_error(err);
