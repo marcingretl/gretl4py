@@ -255,6 +255,12 @@ void new_matrix (const std::string &formula, std::shared_ptr<GretlDataset> data)
     gretl_generate<GRETL_TYPE_MATRIX>(formula, data ? data : DSET);
 }
 
+void new_matrix (const std::string &name, const std::string &value,
+                 std::shared_ptr<GretlDataset> data)
+{
+    gretl_generate<GRETL_TYPE_MATRIX>(value, data ? data : DSET, name);
+}
+
 // functions defined in gretl4py_data.h
 void set_default_dset (std::shared_ptr<GretlDataset> GD)
 {
@@ -278,15 +284,18 @@ static std::string trim (std::string &s)
 }
 
 // General interface to libgretl's generate()
+// If 'name' is empty, 'formula' must contain the full definition
 // Note: some specializations must be generated manually
 template<GretlType GR_TYPE>
-void gretl_generate (const std::string &formula, std::shared_ptr<GretlDataset> GD)
+void gretl_generate (const std::string &formula, std::shared_ptr<GretlDataset> GD,
+                     const std::string &name)
 {
     //
-    // we create a gretl object of GR_TYPE according to @formula
-    // in the @GD context
+    // create a gretl object of GR_TYPE according to @formula
+    // in the context of @GD
     //
     std::string varname;
+    int err = 0;
 
     if constexpr (GR_TYPE == GRETL_TYPE_LIST || GR_TYPE == GRETL_TYPE_SERIES) {
         if (!GD) {
@@ -294,26 +303,38 @@ void gretl_generate (const std::string &formula, std::shared_ptr<GretlDataset> G
         }
     }
 
-    // we generate object of given type
-    int err = generate(formula.c_str(), GD ? GD->dset : NULL, GR_TYPE, OPT_NONE, NULL);
+    // determine whether to use an explicit name or parse from formula
+    if (name.empty()) {
+        err = generate(formula.c_str(), GD ? GD->dset : NULL, GR_TYPE, OPT_NONE, NULL);
+
+        if constexpr (GR_TYPE != GRETL_TYPE_SERIES) {
+            const int eql_pos = formula.find("=");
+
+            if (eql_pos != std::string::npos) {
+                varname = formula.substr(0, eql_pos);
+                trim(varname);
+            }
+        }
+    } else {
+        const std::string expr = name + "=" + formula;
+        err = generate(expr.c_str(), GD ? GD->dset : NULL, GR_TYPE, OPT_NONE, NULL);
+
+        if constexpr (GR_TYPE != GRETL_TYPE_SERIES) {
+            varname = name;
+        }
+    }
+
     if (err) {
         handle_gretl_error(err);
     }
 
-    // we setup user variable name and register it
+    // register user-defined variable name if applicable
     if constexpr (GR_TYPE != GRETL_TYPE_SERIES) {
-        int eql_pos = formula.find("=");
-
-        if (eql_pos != std::string::npos) {
-            varname = formula.substr(0, eql_pos);
-            trim(varname);
-
-            if (!varname.empty()) {
-                UserVars.insert(varname);
-            }
+        if (!varname.empty()) {
+            UserVars.insert(varname);
         }
     }
 }
-template void gretl_generate<GRETL_TYPE_LIST>(const std::string&, std::shared_ptr<GretlDataset>);
-template void gretl_generate<GRETL_TYPE_MATRIX>(const std::string&, std::shared_ptr<GretlDataset>);
-template void gretl_generate<GRETL_TYPE_SERIES>(const std::string&, std::shared_ptr<GretlDataset>);
+template void gretl_generate<GRETL_TYPE_LIST>(const std::string&, std::shared_ptr<GretlDataset>, const std::string&);
+template void gretl_generate<GRETL_TYPE_MATRIX>(const std::string&, std::shared_ptr<GretlDataset>, const std::string&);
+template void gretl_generate<GRETL_TYPE_SERIES>(const std::string&, std::shared_ptr<GretlDataset>, const std::string&);

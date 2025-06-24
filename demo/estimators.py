@@ -208,6 +208,7 @@ print(res)
 #####################################
 print('MIDAS:')
 gretl.new_matrix('theta = {1,5}')
+#gretl.new_matrix(name='theta', value='{1,5}')
 midas.new_list('dX = ld_payems*')
 midas.new_list('dXL = hflags(3, 11, dX)')
 midas.sample(t1='1985:1', t2='2009:1')

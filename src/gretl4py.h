@@ -53,4 +53,7 @@ void do_user_var_delete (const std::string &name);
 
 void new_matrix (const std::string &formula, std::shared_ptr<GretlDataset> data);
 
+void new_matrix (const std::string &name, const std::string &value,
+                 std::shared_ptr<GretlDataset> data);
+
 #endif // GRETL4PY_H

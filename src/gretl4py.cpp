@@ -69,6 +69,11 @@ PYBIND11_MODULE(_gretl, m)
     m.def("new_matrix",
           py::overload_cast<const std::string&, std::shared_ptr<GretlDataset>>(&new_matrix),
           py::arg("formula").none(false), py::arg("data").none(true) = std::nullopt);
+    m.def("new_matrix",
+          py::overload_cast<const std::string&, const std::string&,
+            std::shared_ptr<GretlDataset>>(&new_matrix),
+          py::arg("name").none(false), py::arg("value").none(false),
+          py::arg("data").none(true) = std::nullopt);
 
     //////////////////////////////////////////////////
     // single equation models

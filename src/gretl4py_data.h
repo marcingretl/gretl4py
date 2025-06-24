@@ -243,6 +243,7 @@ void set_default_dset(std::shared_ptr<GretlDataset> GD);
 
 template<GretlType GR_TYPE>
 void gretl_generate (const std::string &formula,
-                     std::shared_ptr<GretlDataset> GD = DSET);
+                     std::shared_ptr<GretlDataset> GD = DSET,
+                     const std::string &name = {});
 
 #endif // GRETL4PY_DATA_H
