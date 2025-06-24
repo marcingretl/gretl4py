@@ -284,15 +284,15 @@ static std::string trim (std::string &s)
 }
 
 // General interface to libgretl's generate()
-// If 'name' is empty, 'formula' must contain the full definition
 // Note: some specializations must be generated manually
 template<GretlType GR_TYPE>
 void gretl_generate (const std::string &formula, std::shared_ptr<GretlDataset> GD,
                      const std::string &name)
 {
     //
-    // create a gretl object of GR_TYPE according to @formula
+    // create a gretl object of GR_TYPE according to @name and @formula
     // in the context of @GD
+    // Note: if 'name' is empty, 'formula' must contain the full definition
     //
     std::string varname;
     int err = 0;
@@ -308,7 +308,7 @@ void gretl_generate (const std::string &formula, std::shared_ptr<GretlDataset> G
         err = generate(formula.c_str(), GD ? GD->dset : NULL, GR_TYPE, OPT_NONE, NULL);
 
         if constexpr (GR_TYPE != GRETL_TYPE_SERIES) {
-            const int eql_pos = formula.find("=");
+            const size_t eql_pos = formula.find("=");
 
             if (eql_pos != std::string::npos) {
                 varname = formula.substr(0, eql_pos);
@@ -328,7 +328,7 @@ void gretl_generate (const std::string &formula, std::shared_ptr<GretlDataset> G
         handle_gretl_error(err);
     }
 
-    // register user-defined variable name if applicable
+    // register user-defined variable name (if applicable)
     if constexpr (GR_TYPE != GRETL_TYPE_SERIES) {
         if (!varname.empty()) {
             UserVars.insert(varname);
