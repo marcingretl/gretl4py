@@ -39,9 +39,23 @@ extern "C" {
 
 #define GRETL_PYBIND11_DEBUG 0
 
+extern std::unordered_set<std::string> UserVars;
+
 //////////////////////////////////////////////////
 // static functions
 //////////////////////////////////////////////////
+
+// general purpose trimmer
+static std::string trim (std::string &s)
+{
+    s.erase(s.begin(),
+            std::find_if(s.begin(), s.end(),
+                         [](unsigned char ch) { return !std::isspace(ch); }));
+    s.erase(std::find_if(s.rbegin(), s.rend(),
+                         [](unsigned char ch) { return !std::isspace(ch); }).base(), s.end());
+
+    return s;
+}
 
 static int get_int_from_python_dict (const py::dict &pydict,
                                      const char *key,
@@ -496,6 +510,73 @@ void move_to_python_container (PyWrapped &wrapped_obj, Item &&item,
 }
 template void move_to_python_container<GretlModel, py::dict, py::list>
     (GretlModel&, py::dict&&, const char*, const std::string&);
+
+// we set default dataset
+void set_default_dset (std::shared_ptr<GretlDataset> GD)
+{
+    if (DSET) {
+        DSET->is_default = false;
+    }
+    DSET = GD;
+}
+
+// General interface to libgretl's generate()
+// Note: some specializations must be generated manually
+template<GretlType GR_TYPE>
+void gretl_generate (const std::string &formula, std::shared_ptr<GretlDataset> GD,
+                     const std::string &name)
+{
+    //
+    // create a gretl object of GR_TYPE according to @name and @formula
+    // in the context of @GD
+    // Note: if 'name' is empty, 'formula' must contain the full definition
+    //
+    std::string varname;
+    int err = 0;
+
+    if constexpr (GR_TYPE == GRETL_TYPE_LIST || GR_TYPE == GRETL_TYPE_SERIES) {
+        if (!GD) {
+            throw std::runtime_error("Dataset is required for list and series generation");
+        }
+    }
+
+    // determine whether to use an explicit name or parse from formula
+    if (name.empty()) {
+        err = generate(formula.c_str(), GD ? GD->dset : NULL, GR_TYPE, OPT_NONE, NULL);
+
+        if constexpr (GR_TYPE != GRETL_TYPE_SERIES) {
+            const size_t eql_pos = formula.find("=");
+
+            if (eql_pos != std::string::npos) {
+                varname = formula.substr(0, eql_pos);
+                trim(varname);
+            }
+        }
+    } else {
+        const std::string expr = name + "=" + formula;
+        err = generate(expr.c_str(), GD ? GD->dset : NULL, GR_TYPE, OPT_NONE, NULL);
+
+        if constexpr (GR_TYPE != GRETL_TYPE_SERIES) {
+            varname = name;
+        }
+    }
+
+    if (err) {
+        handle_gretl_error(err);
+    }
+
+    // register user-defined variable name (if applicable)
+    if constexpr (GR_TYPE != GRETL_TYPE_SERIES) {
+        if (!varname.empty()) {
+            UserVars.insert(varname);
+        }
+    }
+}
+// Note: specializations for GRETL_TYPE_LIST and GRETL_TYPE_SERIES
+// are created by compiler
+template void gretl_generate<GRETL_TYPE_MATRIX>
+    (const std::string&, std::shared_ptr<GretlDataset>, const std::string&);
+
 
 //////////////////////////////////////////////////
 // classes
