@@ -29,22 +29,22 @@ gretl.uservar_print("theta")
 
 # int NumPy
 a2I = np.array([[1, 2], [3, 4]])
-gretl.new_matrix(name='theta2i', value=a2I)
+gretl.new_matrix(name='theta2i', nparray=a2I)
 gretl.uservar_print("theta2i")
 
 # double NumPy
 a2D = np.array([[1.1, 2.2], [3.3, 4.4]])
-gretl.new_matrix(name='theta2d', value=a2D)
+gretl.new_matrix(name='theta2d', nparray=a2D)
 gretl.uservar_print("theta2d")
 
 # Fortran-contiguous (column-major) NumPy
 a2DC = np.asfortranarray(a2D)
-gretl.new_matrix(name='theta2dc', value=a2DC)
+gretl.new_matrix(name='theta2dc', nparray=a2DC)
 gretl.uservar_print("theta2dc")
 
 
 # crash: 3D array
 #a3D = np.array([[[1, 2], [3, 4]], [[5, 6], [7, 8]]])
-#gretl.new_matrix(name='theta3', value=a3D)
+#gretl.new_matrix(name='theta3', nparray=a3D)
 
 gretl.uservars_list()

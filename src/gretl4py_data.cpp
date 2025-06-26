@@ -35,7 +35,7 @@ extern "C" {
 #include <cassert>
 
 #define F_CONTIGUOUS py::detail::npy_api::constants::NPY_ARRAY_F_CONTIGUOUS_
-#define is_pynum_fortranarray(m) ((m.flags() & F_CONTIGUOUS))
+#define is_NumPyArrayFC(m) ((m.flags() & F_CONTIGUOUS))
 
 #define GRETL_PYBIND11_DEBUG 0
 
@@ -194,7 +194,7 @@ void NumPyArray_extract (const py::array &arr, NumPyArrayView &view)
     view.data = arr.request().ptr;
     view.rows = arr.shape(0);
     view.cols = arr.ndim() == 1 ? 1 : arr.shape(1);
-    view.NumPyArrayFC = is_pynum_fortranarray(arr);
+    view.NumPyArrayFC = is_NumPyArrayFC(arr);
 
     const ssize_t itemsize = view.dtype.itemsize();
     const auto &strides = arr.strides();

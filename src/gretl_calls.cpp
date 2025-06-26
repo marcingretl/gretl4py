@@ -295,12 +295,12 @@ void new_matrix (const std::string &name, const std::string &value,
     gretl_generate<GRETL_TYPE_MATRIX>(value, data ? data : DSET, name);
 }
 
-void new_matrix (const std::string &name, const py::array &value)
+void new_matrix (const std::string &name, const py::array &nparray)
 {
     gretl_matrix *gretl_mat = NULL;
     NumPyArrayView view;
 
-    NumPyArray_extract(value, view);
+    NumPyArray_extract(nparray, view);
     gretl_mat = gretl_matrix_alloc(view.rows, view.cols);
     if (gretl_mat == NULL) {
         handle_gretl_error(E_ALLOC);
