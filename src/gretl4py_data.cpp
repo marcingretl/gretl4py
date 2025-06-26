@@ -114,25 +114,6 @@ static void copy_strings_from_python_list (const py::list &pylist,
     }
 }
 
-static double *numpy_array_extract (const py::array_t<double> &pynum_array,
-                                    int *rows, int *cols, int *fortranarray)
-{
-    //
-    // we check dimensions and if OK we extract most important 'pynum_array' metadata
-    //
-    if (pynum_array.ndim() > 2) {
-        throw std::runtime_error("Given array has more than two dimensions.");
-    } else if (pynum_array.ndim() == 1) {
-        *cols = 1;
-    } else {
-        *cols = pynum_array.shape(1);
-    }
-    *rows = pynum_array.shape(0);
-    *fortranarray = is_pynum_fortranarray(pynum_array);
-
-    return static_cast<double*>(pynum_array.request().ptr);
-}
-
 static void numpy_array_to_gretl_storage (const py::dict &pydict, DATASET *dset)
 {
     //
@@ -143,43 +124,89 @@ static void numpy_array_to_gretl_storage (const py::dict &pydict, DATASET *dset)
         throw std::invalid_argument("Element 'data_array' of given dictionary is not of NumPy array type.");
     }
 
-    double *data_array = nullptr;
-    int rows, cols;
-    size_t colsize;
-    int fortranarray;
-    int k;
+    NumPyArrayView arr_view;
+    int err = 0;
 
-    data_array = numpy_array_extract(py::cast<py::array>(pydict[py::cast("data_array")]),
-                                     &rows, &cols, &fortranarray);
-    if (!data_array) {
-        throw std::runtime_error("Numpy array: null pointer.");
+    NumPyArray_extract(py::cast<py::array>(pydict[py::cast("data_array")]), arr_view);
+    if (!arr_view.data) {
+        throw std::runtime_error("NumPy array: null pointer.");
     }
 
-    dset->n = rows;
-    dset->v = cols + 1;
-    if (allocate_Z(dset, OPT_NONE)) {
-        throw std::runtime_error("Matrix allocation failed.");
+    dset->n = arr_view.rows;
+    dset->v = arr_view.cols + 1;
+    err = allocate_Z(dset, OPT_NONE);
+    if (err) {
+        handle_gretl_error(err);
     }
 
-    colsize = rows * sizeof(double);
     for (int i=1; i<dset->v; i++) {
-        k = i - 1;
-        if (fortranarray) {
-            std::memcpy(dset->Z[i], data_array + k*rows, colsize);
-        } else {
-            for (int j=0; j<rows; j++) {
-                dset->Z[i][j] = *(data_array + k + j*cols);
-            }
-        }
+        NumPyArray_to_gretl_matrix(arr_view, dset->Z[i], i-1);
     }
     dset->t1 = 0;
     dset->t2 = dset->n-1;
 }
 
+template<typename T>
+static void NumPyArray_to_gretl_matrix_typed (const NumPyArrayView &view,
+                                              double *dst, int offset)
+{
+    const T *src = static_cast<const T*>(view.data);
+
+    // the fastest path: direct memcpy when layout and type match
+    if (view.is_fortran && std::is_same_v<T, double>) {
+        std::memcpy(dst, src + offset * view.rows, view.rows * sizeof(double));
+        return;
+    }
+
+    if (view.is_fortran) {
+        for (int i = 0; i < view.rows; ++i) {
+            dst[i] = static_cast<double>(src[offset * view.rows + i]);
+        }
+    } else {
+        for (int i = 0; i < view.rows; ++i) {
+            dst[i] = static_cast<double>(src[i * view.cols + offset]);
+        }
+    }
+}
 
 //////////////////////////////////////////////////
 // functions
 //////////////////////////////////////////////////
+void NumPyArray_extract (const py::array &arr, NumPyArrayView &view)
+{
+    if (arr.ndim() > 2) {
+        throw std::runtime_error("Given array has more than two dimensions.");
+    }
+
+    view.is_double = arr.dtype().is(py::dtype::of<double>());
+    view.dtype = arr.dtype();
+    view.base_array = arr;          // keep the NumPy array alive
+    view.data = arr.request().ptr;
+    view.rows = arr.shape(0);
+    view.cols = arr.ndim() == 1 ? 1 : arr.shape(1);
+    view.is_fortran = is_pynum_fortranarray(arr);
+}
+
+void NumPyArray_to_gretl_matrix (NumPyArrayView &view, double *dst, int offset)
+{
+    //
+    // here we copy contents of some NumPy array described by &view
+    // to storage available at *dst
+    // offset here is used when we copy to DATASET
+    //
+    if (view.is_double) {
+        NumPyArray_to_gretl_matrix_typed<double>(view, dst, offset);
+    } else if (view.dtype.is(py::dtype::of<float>())) {
+        NumPyArray_to_gretl_matrix_typed<float>(view, dst, offset);
+    } else if (view.dtype.is(py::dtype::of<int>())) {
+        NumPyArray_to_gretl_matrix_typed<int>(view, dst, offset);
+    } else if (view.dtype.is(py::dtype::of<int64_t>())) {
+        NumPyArray_to_gretl_matrix_typed<int64_t>(view, dst, offset);
+    } else {
+        throw std::runtime_error("Unsupported NumPy dtype for conversion.");
+    }
+}
+
 std::unique_ptr<GretlTypes> convert_GretlType_to_GretlTypes (GretlType &t,
                                                              void *gr_obj_ptr,
                                                              const int n, int &err)
@@ -521,7 +548,7 @@ void set_default_dset (std::shared_ptr<GretlDataset> GD)
 }
 
 // General interface to libgretl's generate()
-// Note: some specializations must be generated manually
+// Note: some specializations must be created manually
 template<GretlType GR_TYPE>
 void gretl_generate (const std::string &formula, std::shared_ptr<GretlDataset> GD,
                      const std::string &name)

@@ -42,6 +42,16 @@ using vgretl_vector = std::vector<std::variant<double, std::string, int>>;
 
 using vgretl_matrix = std::vector<vgretl_vector>;
 
+struct NumPyArrayView {
+    void *data = nullptr;   // untyped pointer
+    py::dtype dtype;        // numpy dtype info
+    py::array base_array;   // holds ownership
+    bool is_double = false; // for fast path
+    bool is_fortran = false;
+    int rows = 0;
+    int cols = 0;
+};
+
 // gretl_list_ptr default deleter
 struct GretlListDeleter {
     void operator() (int *ptr) const

@@ -55,6 +55,10 @@ namespace py = pybind11;
 //////////////////////////////////////////////////
 void handle_gretl_error (int err);
 
+void NumPyArray_extract (const py::array &arr, NumPyArrayView &view);
+
+void NumPyArray_to_gretl_matrix (NumPyArrayView &view, double *dst, int offset = 0);
+
 std::unique_ptr<GretlTypes> gretl_generate_gretl_object (const char *s, int &err,
                                                          GretlObjType obj_type = GRETL_OBJ_INFO,
                                                          DATASET *dset = NULL,
@@ -77,6 +81,7 @@ std::unique_ptr<GretlTypes> convert_GretlType_to_GretlTypes (GretlType &t,
 template<typename PyWrapped, typename Item, typename ContainerType>
 void move_to_python_container (PyWrapped &wrapped_obj, Item &&item,
                                const char *container, const std::string &key = "");
+
 
 //
 // Class to handle printing
