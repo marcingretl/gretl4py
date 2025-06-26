@@ -158,28 +158,25 @@ static void real_NumPyArray_to_gretl_matrix(const NumPyArrayView &view,
     // - onecol: true if we're copying one column only
     //
     const T *src = static_cast<const T*>(view.data);
-
     const bool fast_path = view.NumPyArrayFC && std::is_same_v<T, double>;
 
     if (onecol) {
         if (fast_path) {
             std::memcpy(dst, src + offset * view.rows, view.rows * sizeof(double));
         } else {
-            for (int i = 0; i < view.rows; ++i) {
-                dst[i] = static_cast<double>(
-                    src[i * view.row_stride + offset * view.col_stride]
-                );
+            for (int j = 0; j < view.cols; ++j) {
+                for (int i = 0; i < view.rows; ++i) {
+                    dst[j * view.rows + i] = static_cast<double>(src[i * view.row_stride + j * view.col_stride]);
+                }
             }
         }
     } else {
         if (fast_path) {
             std::memcpy(dst, src, view.rows * view.cols * sizeof(double));
         } else {
-            for (int i = 0; i < view.rows; ++i) {
-                for (int j = 0; j < view.cols; ++j) {
-                    dst[i * view.cols + j] = static_cast<double>(
-                        src[i * view.row_stride + j * view.col_stride]
-                    );
+            for (int j = 0; j < view.cols; ++j) {
+                for (int i = 0; i < view.rows; ++i) {
+                    dst[j * view.rows + i] = static_cast<double>(src[i * view.row_stride + j * view.col_stride]);
                 }
             }
         }
