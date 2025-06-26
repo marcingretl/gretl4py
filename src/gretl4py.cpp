@@ -64,8 +64,11 @@ PYBIND11_MODULE(_gretl, m)
     m.def("set", &set,
           py::arg("key").none(false),
           py::arg("val").none(true) = std::nullopt);
-    m.def("delete", &do_user_var_delete,
+    m.def("delete", &gretl_user_var_delete_by_name,
           py::arg("name").none(false));
+    m.def("uservar_print", &gretl_print_user_var_by_name,
+          py::arg("name").none(false), py::arg("data").none(true) = std::nullopt);
+    m.def("uservars_list", &uservars_list);
     m.def("new_matrix",
           py::overload_cast<const std::string&, std::shared_ptr<GretlDataset>>(&new_matrix),
           py::arg("formula").none(false), py::arg("data").none(true) = std::nullopt);
@@ -74,6 +77,9 @@ PYBIND11_MODULE(_gretl, m)
             std::shared_ptr<GretlDataset>>(&new_matrix),
           py::arg("name").none(false), py::arg("value").none(false),
           py::arg("data").none(true) = std::nullopt);
+    m.def("new_matrix",
+          py::overload_cast<const std::string&, const py::array&>(&new_matrix),
+          py::arg("name").none(false), py::arg("value").none(false));
 
     //////////////////////////////////////////////////
     // single equation models

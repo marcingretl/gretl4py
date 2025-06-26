@@ -237,7 +237,7 @@ void set (const std::string key,
 // data management
 //////////////////////////////////////////////////
 
-void do_user_var_delete (const std::string &name)
+void gretl_user_var_delete_by_name (const std::string &name)
 {
     if (UserVars.find(name) != UserVars.end()) {
         int err = user_var_delete_by_name(name.c_str(), GP.prn_ptr());
@@ -250,6 +250,35 @@ void do_user_var_delete (const std::string &name)
     }
 }
 
+void gretl_print_user_var_by_name (const std::string &name,
+                                   std::shared_ptr<GretlDataset> data)
+{
+    int err = print_user_var_by_name(name.c_str(), data ? data->dset : DSET->dset, OPT_N, GP.prn_ptr());
+    if (err) {
+        handle_gretl_error(err);
+    }
+    GP.print();
+}
+
+void uservars_list (void)
+{
+    py::str var_type_name;
+
+    py::print("Registered variables:");
+    for (const auto &name : UserVars) {
+        auto var_type = user_var_get_type_by_name(name.c_str());
+        if (var_type == GRETL_TYPE_MATRIX) {
+            var_type_name = "(matrix)";
+        } else if (var_type == GRETL_TYPE_LIST) {
+            var_type_name = "(list)";
+        } else {
+            var_type_name = "unknown type";
+        }
+        py::print(name, "\t", var_type_name);
+    }
+    py::print("\n");
+}
+
 void new_matrix (const std::string &formula, std::shared_ptr<GretlDataset> data)
 {
     gretl_generate<GRETL_TYPE_MATRIX>(formula, data ? data : DSET);
@@ -259,4 +288,24 @@ void new_matrix (const std::string &name, const std::string &value,
                  std::shared_ptr<GretlDataset> data)
 {
     gretl_generate<GRETL_TYPE_MATRIX>(value, data ? data : DSET, name);
+}
+
+void new_matrix (const std::string &name, const py::array &value)
+{
+    gretl_matrix *gretl_mat = NULL;
+    NumPyArrayView view;
+
+    NumPyArray_extract(value, view);
+    gretl_mat = gretl_matrix_alloc(view.rows, view.cols);
+    if (gretl_mat == NULL) {
+        handle_gretl_error(E_ALLOC);
+    }
+    NumPyArray_to_gretl_matrix<gretl_matrix>(view, gretl_mat);
+
+    int err = user_var_add(name.c_str(), GRETL_TYPE_MATRIX, gretl_mat);
+    if (err) {
+        handle_gretl_error(err);
+    }
+
+    UserVars.insert(name);
 }

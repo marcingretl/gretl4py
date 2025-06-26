@@ -50,6 +50,9 @@ struct NumPyArrayView {
     bool NumPyArrayFC = false;
     int rows = 0;
     int cols = 0;
+    // note strides in elements (not bytes!)
+    ssize_t row_stride = 0;
+    ssize_t col_stride = 0;
 };
 
 // gretl_list_ptr default deleter

@@ -49,11 +49,18 @@ py::dict about (bool do_print = false);
 void set (const std::string key,
           const std::optional<py::object> &pyval = std::nullopt);
 
-void do_user_var_delete (const std::string &name);
+void gretl_user_var_delete_by_name (const std::string &name);
+
+void gretl_print_user_var_by_name (const std::string &name,
+                                   std::shared_ptr<GretlDataset> data = nullptr);
+
+void uservars_list (void);
 
 void new_matrix (const std::string &formula, std::shared_ptr<GretlDataset> data);
 
 void new_matrix (const std::string &name, const std::string &value,
                  std::shared_ptr<GretlDataset> data);
+
+void new_matrix (const std::string &name, const py::array &value);
 
 #endif // GRETL4PY_H
