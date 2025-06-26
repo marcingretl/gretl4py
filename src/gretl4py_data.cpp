@@ -148,9 +148,7 @@ static void numpy_array_to_gretl_storage (const py::dict &pydict, DATASET *dset)
 
 template<typename T>
 static void real_NumPyArray_to_gretl_matrix(const NumPyArrayView &view,
-                                            double *dst,
-                                            int offset,
-                                            bool onecol)
+                                            double *dst, int offset, bool onecol)
 {
     //
     // Convert a NumPy array (T) to gretl_matrix (double*).
@@ -164,18 +162,16 @@ static void real_NumPyArray_to_gretl_matrix(const NumPyArrayView &view,
         if (fast_path) {
             std::memcpy(dst, src + offset * view.rows, view.rows * sizeof(double));
         } else {
-            for (int j = 0; j < view.cols; ++j) {
-                for (int i = 0; i < view.rows; ++i) {
-                    dst[j * view.rows + i] = static_cast<double>(src[i * view.row_stride + j * view.col_stride]);
-                }
+            for (int i=0; i<view.rows; ++i) {
+                dst[i] = static_cast<double>(src[i * view.row_stride + offset * view.col_stride]);
             }
         }
     } else {
         if (fast_path) {
             std::memcpy(dst, src, view.rows * view.cols * sizeof(double));
         } else {
-            for (int j = 0; j < view.cols; ++j) {
-                for (int i = 0; i < view.rows; ++i) {
+            for (int j=0; j<view.cols; ++j) {
+                for (int i=0; i<view.rows; ++i) {
                     dst[j * view.rows + i] = static_cast<double>(src[i * view.row_stride + j * view.col_stride]);
                 }
             }
