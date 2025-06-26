@@ -140,25 +140,25 @@ static void numpy_array_to_gretl_storage (const py::dict &pydict, DATASET *dset)
     }
 
     for (int i=1; i<dset->v; i++) {
-        NumPyArray_to_gretl_matrix(arr_view, dset->Z[i], i-1);
+        NumPyArray_to_gretl_matrix<double>(arr_view, dset->Z[i], i-1);
     }
     dset->t1 = 0;
     dset->t2 = dset->n-1;
 }
 
 template<typename T>
-static void NumPyArray_to_gretl_matrix_typed (const NumPyArrayView &view,
-                                              double *dst, int offset)
+static void real_NumPyArray_to_gretl_matrix (const NumPyArrayView &view,
+                                             double *dst, int offset)
 {
     const T *src = static_cast<const T*>(view.data);
 
     // the fastest path: direct memcpy when layout and type match
-    if (view.is_fortran && std::is_same_v<T, double>) {
+    if (view.NumPyArrayFC && std::is_same_v<T, double>) {
         std::memcpy(dst, src + offset * view.rows, view.rows * sizeof(double));
         return;
     }
 
-    if (view.is_fortran) {
+    if (view.NumPyArrayFC) {
         for (int i = 0; i < view.rows; ++i) {
             dst[i] = static_cast<double>(src[offset * view.rows + i]);
         }
@@ -184,24 +184,34 @@ void NumPyArray_extract (const py::array &arr, NumPyArrayView &view)
     view.data = arr.request().ptr;
     view.rows = arr.shape(0);
     view.cols = arr.ndim() == 1 ? 1 : arr.shape(1);
-    view.is_fortran = is_pynum_fortranarray(arr);
+    view.NumPyArrayFC = is_pynum_fortranarray(arr);
 }
 
-void NumPyArray_to_gretl_matrix (NumPyArrayView &view, double *dst, int offset)
+template<typename T>
+void NumPyArray_to_gretl_matrix (NumPyArrayView &view, T *dst, int offset)
 {
     //
     // here we copy contents of some NumPy array described by &view
     // to storage available at *dst
     // offset here is used when we copy to DATASET
     //
+    double *storage = NULL;
+
+    if constexpr (std::is_same_v<T, gretl_matrix>) {
+        storage = dst->val;
+    } else {
+        storage = dst;
+    }
+
+
     if (view.is_double) {
-        NumPyArray_to_gretl_matrix_typed<double>(view, dst, offset);
+        real_NumPyArray_to_gretl_matrix<double>(view, storage, offset);
     } else if (view.dtype.is(py::dtype::of<float>())) {
-        NumPyArray_to_gretl_matrix_typed<float>(view, dst, offset);
+        real_NumPyArray_to_gretl_matrix<float>(view, storage, offset);
     } else if (view.dtype.is(py::dtype::of<int>())) {
-        NumPyArray_to_gretl_matrix_typed<int>(view, dst, offset);
+        real_NumPyArray_to_gretl_matrix<int>(view, storage, offset);
     } else if (view.dtype.is(py::dtype::of<int64_t>())) {
-        NumPyArray_to_gretl_matrix_typed<int64_t>(view, dst, offset);
+        real_NumPyArray_to_gretl_matrix<int64_t>(view, storage, offset);
     } else {
         throw std::runtime_error("Unsupported NumPy dtype for conversion.");
     }

@@ -57,7 +57,8 @@ void handle_gretl_error (int err);
 
 void NumPyArray_extract (const py::array &arr, NumPyArrayView &view);
 
-void NumPyArray_to_gretl_matrix (NumPyArrayView &view, double *dst, int offset = 0);
+template<typename T>
+void NumPyArray_to_gretl_matrix (NumPyArrayView &view, T *dst, int offset = 0);
 
 std::unique_ptr<GretlTypes> gretl_generate_gretl_object (const char *s, int &err,
                                                          GretlObjType obj_type = GRETL_OBJ_INFO,
