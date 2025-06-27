@@ -241,11 +241,14 @@ std::unique_ptr<GretlTypes> convert_GretlType_to_GretlTypes (GretlType &t,
     //
     // function converts libgretl's GretlType to gretl4py's GretlTypes
     // *gr_obj_ptr: pointer to libgretl's object
+    // n - GRETL_TYPE_SERIES special case (series length)
     //
     auto res = std::make_unique<GretlTypes>();
 
     if (t == GRETL_TYPE_NONE) {
         std::printf("gretl_grab: didn't get anything!\n");
+    } else if (t == GRETL_TYPE_INT) {
+        *res = *(static_cast<int*>(gr_obj_ptr));
     } else if (t == GRETL_TYPE_DOUBLE) {
         *res = *(static_cast<double*>(gr_obj_ptr));
     } else if (t == GRETL_TYPE_STRING) {
@@ -630,6 +633,35 @@ void gretl_generate (const std::string &formula, std::shared_ptr<GretlDataset> G
 // are created by compiler
 template void gretl_generate<GRETL_TYPE_MATRIX>
     (const std::string&, std::shared_ptr<GretlDataset>, const std::string&);
+
+// we produce human readable GretlType string representation
+const char *gretl_type_to_string (GretlType t)
+{
+    switch (t) {
+    case GRETL_TYPE_NONE:
+        return "none";
+    case GRETL_TYPE_DOUBLE:
+        return "double";
+    case GRETL_TYPE_INT:
+        return "int";
+    case GRETL_TYPE_BOOL:
+        return "bool";
+    case GRETL_TYPE_STRING:
+        return "string";
+    case GRETL_TYPE_MATRIX:
+        return "matrix";
+    case GRETL_TYPE_LIST:
+        return "list";
+    case GRETL_TYPE_BUNDLE:
+        return "bundle";
+    case GRETL_TYPE_SERIES:
+        return "series";
+    case GRETL_TYPE_ARRAY:
+        return "array";
+    default:
+        return "unknown";
+    }
+}
 
 
 //////////////////////////////////////////////////
@@ -1457,6 +1489,36 @@ py::dict GretlBundle::json_to_dict (simdjson::ondemand::object &json_obj,
 }
 
 py::dict GretlBundle::to_dict (void)
+{
+    if (as_dict.empty()) {
+        void *data = NULL;  // pointer to data
+        GretlType t;
+        int n, n_keys = 0;  // note: n is used for special cases
+        auto keys = gretl_bundle_get_keys_raw(b, &n_keys);
+
+        for (int i=0; i<n_keys; i++) {
+            n = 0;
+            t = gretl_bundle_get_member_type(b, keys[i], &err);
+            if (err) {
+                handle_gretl_error(err);
+            }
+
+            data = gretl_bundle_get_target(b, keys[i], &t, &n, &err);
+            if (err) {
+                handle_gretl_error(err);
+            }
+
+            as_dict[py::cast(keys[i])] = convert_GretlType_to_GretlTypes(t, data, n, err).release();
+            if (err) {
+                handle_gretl_error(err);
+            }
+        }
+    }
+
+    return as_dict;
+}
+
+py::dict GretlBundle::to_dict2 (void)
 {
     if (as_dict.empty()) {
         if (!err && !json_buf) {

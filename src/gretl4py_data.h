@@ -84,6 +84,7 @@ template<typename PyWrapped, typename Item, typename ContainerType>
 void move_to_python_container (PyWrapped &wrapped_obj, Item &&item,
                                const char *container, const std::string &key = "");
 
+const char *gretl_type_to_string (GretlType t);
 
 //
 // Class to handle printing
@@ -222,6 +223,7 @@ public:
     ~GretlBundle (void);
 
     py::dict to_dict (void);                        // bundle-to-dict mapper
+    py::dict to_dict2 (void);                        // bundle-to-dict mapper
 
     void print (void);
 };

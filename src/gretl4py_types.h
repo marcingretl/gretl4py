@@ -36,7 +36,7 @@ namespace py = pybind11;
 //////////////////////////////////////////////////
 using DNumPyArrayFC = py::array_t<double, py::array::f_style>;  // double contiguous column-major (fortran) NumPy array (F_CONTIGUOUS)
 
-using GretlTypes = std::variant<double, std::string, DNumPyArrayFC, py::dict, py::list, py::none>;
+using GretlTypes = std::variant<int, double, std::string, DNumPyArrayFC, py::dict, py::list, py::none>;
 
 using vgretl_vector = std::vector<std::variant<double, std::string, int>>;
 
