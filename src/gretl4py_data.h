@@ -20,11 +20,8 @@
 #ifndef GRETL4PY_DATA_H
 #define GRETL4PY_DATA_H
 
-#define SIMDJSON_DEVELOPMENT_CHECKS 0
-
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
-#include "simdjson/simdjson.h"
 #include "gretl4py_types.h"
 #include <gretl/libgretl.h>
 #include <gretl/matrix_extra.h>
@@ -195,26 +192,10 @@ public:
 class GretlBundle
 {
 private:
-    // simdjson global buffers
-    static inline simdjson::ondemand::parser sd_parser{};
-    static inline simdjson::ondemand::document sd_doc;
-    static inline simdjson::ondemand::object sd_obj;
-    static inline simdjson::ondemand::value sd_tmp_value;
-    static inline simdjson::ondemand::number sd_tmp_number;
-    static inline simdjson::ondemand::array sd_tmp_array;
-    static inline std::string sd_json_cp;
-    static inline std::string sd_tmp_str;
-    //simdjson: end
     GretlPrint GP = GretlPrint();       // printer (instance wide)
     bool free_b = true;
-    char *json_buf = NULL;
     gretl_bundle *b = NULL;
     py::dict as_dict;
-
-    py::dict json_to_dict (simdjson::ondemand::object &json_obj,
-                           py::dict *outer_dict = nullptr,
-                           std::string_view *outer_key = nullptr,
-                           bool *add_to_outer = nullptr);
 public:
     int err = 0;
 
@@ -225,7 +206,6 @@ public:
     ~GretlBundle (void);
 
     py::dict to_dict (void);                        // bundle-to-dict mapper
-    py::dict to_dict2 (void);                        // bundle-to-dict mapper
 
     void print (void);
 };

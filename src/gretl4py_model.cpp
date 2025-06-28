@@ -1204,7 +1204,6 @@ void GretlModel_VAR::irf (int targ, int shock, double alpha)
     }
     auto val = convert_GretlType_to_GretlTypes(t, irf, 0, err);
     res[py::cast("results")] = variant_to_pyobject(std::move(*val));
-    //res[py::cast("results")] = std::move(*convert_GretlType_to_GretlTypes(t, irf, 0, err));
 
     // we register result
     move_to_python_container<GretlModel, py::dict, py::list>(*this, std::move(res), "irfs");

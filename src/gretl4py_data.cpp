@@ -1371,138 +1371,9 @@ GretlBundle::GretlBundle (gretl_bundle *b) : free_b(false), b(b)
 
 GretlBundle::~GretlBundle (void)
 {
-    if (json_buf) {
-        g_free(json_buf);
-    }
-
     if (free_b && b) {
         gretl_bundle_destroy(b);
     }
-}
-
-py::dict GretlBundle::json_to_dict (simdjson::ondemand::object &json_obj,
-                                    py::dict *outer_dict,
-                                    std::string_view *outer_key,
-                                    bool *add_to_outer)
-{
-    //
-    // Here we process given JSON object
-    // Note: the last 3 arguments are used only in recurssion
-    //
-    py::dict res;
-    int mat_rows = 0;
-    int mat_cols = 0;
-    bool add_to_res = true;
-    std::string gr_type;
-    std::string_view key;
-    simdjson::ondemand::value val;
-    simdjson::ondemand::object val_obj;
-
-    if (!json_obj["type"].get_string(gr_type)) {
-        if (gr_type == "gretl_matrix") {
-            json_obj["rows"].get(sd_tmp_value);
-            sd_tmp_number = sd_tmp_value.get_number();
-            mat_rows = sd_tmp_number.get_int64();
-            json_obj["cols"].get(sd_tmp_value);
-            sd_tmp_number = sd_tmp_value.get_number();
-            mat_cols = sd_tmp_number.get_int64();
-        } else if (gr_type == "gretl_series") {
-            json_obj["size"].get(sd_tmp_value);
-            sd_tmp_number = sd_tmp_value.get_number();
-            mat_rows = sd_tmp_number.get_int64();
-            mat_cols = 1;
-        }
-    }
-    json_obj.reset();
-
-    // we iterate over all keys in json
-    // note: if val is an object, we use recursion
-    for (auto field : json_obj) {
-        key = field.escaped_key();
-        val = field.value();
-
-        if (key == "type" || key == "rows" || key == "cols" || key == "size") {
-            continue;
-        }
-
-        if (val.type() == simdjson::ondemand::json_type::null) {
-            res[py::cast(key)] = py::none();
-        } else if (val.type() == simdjson::ondemand::json_type::number) {
-            res[py::cast(key)] = static_cast<double>(val);
-        } else if (val.type() == simdjson::ondemand::json_type::string) {
-            val.get_string(sd_tmp_str);
-            res[py::cast(key)] = sd_tmp_str;
-        } else if (val.type() == simdjson::ondemand::json_type::array) {
-            sd_tmp_array = val.get_array();
-            int i = 0;
-
-            if (key == "midas_info") {
-                //special case: array of bundles (in future may be gneralized)
-                py::list li;
-
-                for (auto item : sd_tmp_array) {
-                    assert(item.type() == simdjson::ondemand::json_type::object && "Element not a bundle.");
-                    val_obj = item.get_object();
-                    li.append(json_to_dict(val_obj));
-                }
-                res[py::cast(key)] = li;
-            } else if (gr_type == "gretl_matrix" || gr_type == "gretl_series") {
-                DNumPyArrayFC mat({mat_rows, mat_cols});
-                double *mat_ptr = mat.mutable_data();
-
-                for (auto item : sd_tmp_array) {
-                    if (item.type() == simdjson::ondemand::json_type::string) {
-                        mat_ptr[i++] = std::nan("");
-                    } else {
-                        mat_ptr[i++] = static_cast<double>(item);
-                    }
-                }
-                if ((std::min)(mat_rows, mat_cols) == 1) { // this is to prevent 'min' macro expansion on MS SDK
-                    (*outer_dict)[py::cast(*outer_key)] = mat.reshape({mat.size()});
-                } else {
-                    (*outer_dict)[py::cast(*outer_key)] = mat;
-                }
-                *add_to_outer = false;
-            } else {
-                py::list li;
-
-                for (auto item : sd_tmp_array) {
-                    if (gr_type == "gretl_list" && i == 0) {
-                        i = 1;
-                        continue;
-                    }
-
-                    if (item.type() == simdjson::ondemand::json_type::string) {
-                        item.get_string(sd_tmp_str);
-                        li.append(sd_tmp_str);
-                    } else {
-                        if (gr_type == "gretl_list") {
-                            li.append(static_cast<int>(item.get_int64()));
-                        } else {
-                            li.append(static_cast<double>(item));
-                        }
-                    }
-                }
-                if (gr_type == "gretl_list") {
-                    (*outer_dict)[py::cast(*outer_key)] = li;
-                    *add_to_outer = false;
-                } else {
-                    res[py::cast(key)] = li;
-                }
-            }
-        } else if (val.type() == simdjson::ondemand::json_type::object) {
-            val_obj = val.get_object();
-            py::dict tmp_dict = json_to_dict(val_obj, &res, &key, &add_to_res);
-
-            if (add_to_res) {
-                res[py::cast(key)] = tmp_dict;
-            } else {
-                add_to_res = true;
-            }
-        }
-    }
-
-    return res;
 }
 
 py::dict GretlBundle::to_dict (void)
@@ -1532,26 +1403,6 @@ py::dict GretlBundle::to_dict (void)
             }
 
             as_dict[py::cast(key)] = variant_to_pyobject(std::move(*val));
-        }
-    }
-
-    return as_dict;
-}
-
-py::dict GretlBundle::to_dict2 (void)
-{
-    if (as_dict.empty()) {
-        if (!err && !json_buf) {
-            json_buf = gretl_bundle_write_to_json_buffer(b, &err);
-        }
-        if (json_buf != NULL) {
-            sd_json_cp = json_buf;
-            if (sd_parser.iterate(sd_json_cp).get(sd_doc)) {
-                err = E_DATA;
-            } else {
-                sd_obj = sd_doc.get_object();
-                as_dict = json_to_dict(sd_obj);
-            }
         }
     }
 
