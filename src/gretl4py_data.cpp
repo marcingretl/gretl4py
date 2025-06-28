@@ -1491,27 +1491,22 @@ py::dict GretlBundle::json_to_dict (simdjson::ondemand::object &json_obj,
 py::dict GretlBundle::to_dict (void)
 {
     if (as_dict.empty()) {
-        void *data = NULL;  // pointer to data
+        void *data = NULL;          // pointer to data
         GretlType t;
-        int n, n_keys = 0;  // note: n is used for special cases
+        int n, n_keys = 0, i = 0;   // note: n is used for special cases
         auto keys = gretl_bundle_get_keys_raw(b, &n_keys);
 
-        for (int i=0; i<n_keys; i++) {
-            n = 0;
+        err = 0;
+        while (i<n_keys && !err) {
+            n = 0;  //FIXME: really neede?
             t = gretl_bundle_get_member_type(b, keys[i], &err);
-            if (err) {
-                handle_gretl_error(err);
-            }
-
             data = gretl_bundle_get_target(b, keys[i], &t, &n, &err);
-            if (err) {
-                handle_gretl_error(err);
-            }
-
             as_dict[py::cast(keys[i])] = convert_GretlType_to_GretlTypes(t, data, n, err).release();
-            if (err) {
-                handle_gretl_error(err);
-            }
+            i++;
+        }
+
+        if (err) {
+            handle_gretl_error(err);
         }
     }
 
