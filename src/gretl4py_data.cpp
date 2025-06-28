@@ -179,6 +179,7 @@ static void real_NumPyArray_to_gretl_matrix(const NumPyArrayView &view,
     }
 }
 
+
 //////////////////////////////////////////////////
 // functions
 //////////////////////////////////////////////////
@@ -661,6 +662,22 @@ const char *gretl_type_to_string (GretlType t)
     default:
         return "unknown";
     }
+}
+
+// Note: this is needed to avoid memory leaks when
+// transferring GretlTypes to Python inside py::dict
+py::object variant_to_pyobject (GretlTypes &&val)
+{
+    return std::visit([](auto &&arg) -> py::object
+    {
+        using T = std::decay_t<decltype(arg)>;
+
+        if constexpr (std::is_base_of_v<py::object, T>) {
+            return std::move(arg);  // steal py::dict, py::list, etc.
+        } else {
+            return py::cast(std::move(arg));  // move std::string, etc.
+        }
+    }, std::move(val));
 }
 
 
@@ -1491,22 +1508,30 @@ py::dict GretlBundle::json_to_dict (simdjson::ondemand::object &json_obj,
 py::dict GretlBundle::to_dict (void)
 {
     if (as_dict.empty()) {
-        void *data = NULL;          // pointer to data
-        GretlType t;
-        int n, n_keys = 0, i = 0;   // note: n is used for special cases
+        int n_keys = 0;
         auto keys = gretl_bundle_get_keys_raw(b, &n_keys);
 
-        err = 0;
-        while (i<n_keys && !err) {
-            n = 0;  //FIXME: really neede?
-            t = gretl_bundle_get_member_type(b, keys[i], &err);
-            data = gretl_bundle_get_target(b, keys[i], &t, &n, &err);
-            as_dict[py::cast(keys[i])] = convert_GretlType_to_GretlTypes(t, data, n, err).release();
-            i++;
-        }
+        for (int i=0; i<n_keys; ++i) {
+            int n = 0;  // note: n is _only_ used for special cases
+            const char *key = keys[i];
 
-        if (err) {
-            handle_gretl_error(err);
+            GretlType t = gretl_bundle_get_member_type(b, key, &err);
+            if (err) {
+                handle_gretl_error(err);
+            }
+
+            // we grab pointer to data
+            void *data = gretl_bundle_get_target(b, key, &t, &n, &err);
+            if (err) {
+                handle_gretl_error(err);
+            }
+
+            auto val = convert_GretlType_to_GretlTypes(t, data, n, err);
+            if (err) {
+                handle_gretl_error(err);
+            }
+
+            as_dict[py::cast(key)] = variant_to_pyobject(std::move(*val));
         }
     }
 
