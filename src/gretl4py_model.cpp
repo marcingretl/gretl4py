@@ -491,10 +491,9 @@ void GretlModel::fr_to_dict (FITRESID *fr, py::dict &fcdict)
     }
 }
 
-
-const char *GretlModel::repr (void) const
+std::string GretlModel::repr (void) const
 {
-    return summary.c_str();
+    return summary;
 }
 
 //////////////////////////////////////////////////
