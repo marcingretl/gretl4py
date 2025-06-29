@@ -37,12 +37,6 @@ def attrs(self):
             else:
                 print(f'{attname}: {type(attr)}')
 
-# model representation function (later bind as __repr__ do GretlModel)
-def model_repr(self):
-    if hasattr(self, "summary"):
-        return str(self.summary)
-    return f'\nModel {self.name.upper()}'
-
 def oddsratio(self):
     try:
         from tabulate import tabulate

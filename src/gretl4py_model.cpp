@@ -122,11 +122,11 @@ void GretlModel::save_model (T *model)
                 err = E_DATA;
                 throw std::runtime_error("Model bundle to dict conversion failed.");
             } else {
+                summary = GP.get_buffer();
                 py::dict _ids;
                 //_ids[py::cast("_id")] = model->ID; //FIXME: VARs!!!
                 _ids[py::cast("_model_id")] = id;
                 RES[py::cast("_ids")] = _ids;
-                RES[py::cast("summary")] = GP.get_buffer();
             }
 
             // we register result
@@ -491,6 +491,11 @@ void GretlModel::fr_to_dict (FITRESID *fr, py::dict &fcdict)
     }
 }
 
+
+const char *GretlModel::repr (void) const
+{
+    return summary.c_str();
+}
 
 //////////////////////////////////////////////////
 // single equation models

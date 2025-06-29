@@ -70,7 +70,7 @@ import gretl4py_classes
 
 # we import some symbols explicitly
 from _gretl import (about, set, version)
-from gretl4py_classes import attrs, model_repr, oddsratio
+from gretl4py_classes import attrs, oddsratio
 from gretl4py_classes import get_data, show_data_status
 from gretl4py_addons import print_module_source, fc_print
 
@@ -95,7 +95,6 @@ def printdata(data, namesonly):
 # deprecations: END
 
 # we attach additional symbols to certain classes
-setattr(_gretl.Model, "__repr__", model_repr)
 setattr(_gretl.Model, "attrs", attrs)               # method for listing all object's attributes
 setattr(_gretl.Model_logit, "oddsratio", oddsratio) # method for pretty-printing oddsratios
 

@@ -252,24 +252,13 @@ void gretl_print_user_var_by_name (const std::string &name,
 
 void uservars_list (void)
 {
-    py::str var_type_name;
+    std::string var_type_name;
 
     py::print("Registered variables:");
     for (const auto &name : UserVars) {
-        auto var_type = user_var_get_type_by_name(name.c_str());
+        var_type_name = gretl_type_to_string(user_var_get_type_by_name(name.c_str()));
 
-        switch (var_type) {
-        case GRETL_TYPE_MATRIX:
-            var_type_name = "(matrix)";
-            break;
-        case GRETL_TYPE_LIST:
-            var_type_name = "(list)";
-            break;
-        default:
-            var_type_name = "unknown type";
-        }
-
-        py::print(name, "\t", var_type_name);
+        py::print(name, "(" + var_type_name + ")");
     }
     py::print("\n");
 }

@@ -48,6 +48,7 @@ protected:
     GretlPrint GP = GretlPrint();       // printer (instance wide)
     gretl_list_ptr var_list{nullptr};   // libgretl list of variables
     gretlopt opt = OPT_NONE;            // instance wide options (including tests and forecasts)
+    std::string summary;                // model summary to print on python side
     mutable int err = 0;
 
     template<typename T>
@@ -72,6 +73,8 @@ public:
     virtual ~GretlModel (void);
 
     int get_id (void) const;
+
+    const char *repr (void) const;
 
     void unlink_from_dataset (void) const;
 
