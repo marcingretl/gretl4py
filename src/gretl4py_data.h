@@ -142,7 +142,7 @@ public:
 
     void to_file (const std::string &fname) const;
 
-    py::str repr (void) const;
+    std::string repr (void) const;
 
     void print (const py::kwargs &kwargs);
 

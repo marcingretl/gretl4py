@@ -30,6 +30,7 @@
 extern "C" {
     #include <gretl/var.h>
     #include <gretl/genfuncs.h>
+    #include <gretl/gretl_xml.h>
 }
 #include <string>
 #include <cassert>
@@ -878,9 +879,14 @@ void GretlDataset::new_list (const std::string &name, const std::string &value)
     gretl_generate<GRETL_TYPE_LIST>(value, shared_from_this(), name);
 }
 
-py::str GretlDataset::repr (void) const
+std::string GretlDataset::repr (void) const
 {
-    py::str ret = "GretlDataset, source " + source;
+    std::string ret = "GretlDataset, source " + source;
+
+    auto desc = gretl_get_gdt_description(source.c_str(), &err);
+    if (!err) {
+        ret.append("\n\n").append(desc);
+    }
 
     return ret;
 }
