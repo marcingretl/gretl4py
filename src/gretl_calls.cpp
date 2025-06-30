@@ -263,19 +263,24 @@ void uservars_list (void)
     py::print("\n");
 }
 
-void new_matrix (const std::string &formula, std::shared_ptr<GretlDataset> data)
+// interfaces to gretl's 'genr' command
+void genr (const std::string &formula, std::shared_ptr<GretlDataset> data)
 {
-    gretl_generate<GRETL_TYPE_MATRIX>(formula, data ? data : DSET);
+    // formula-based (mimics gretl's 'genr' command)
+    // GretlType genr_get_last_output_type (void);
+    gretl_generate<GRETL_TYPE_ANY>(formula, data ? data : DSET);
 }
 
-void new_matrix (const std::string &name, const std::string &value,
-                 std::shared_ptr<GretlDataset> data)
+void genr (const std::string &name, const std::string &value,
+           std::shared_ptr<GretlDataset> data)
 {
-    gretl_generate<GRETL_TYPE_MATRIX>(value, data ? data : DSET, name);
+    // name- and value- based
+    gretl_generate<GRETL_TYPE_ANY>(value, data ? data : DSET, name);
 }
 
-void new_matrix (const std::string &name, const py::array &nparray)
+void genr (const std::string &name, const py::array &nparray)
 {
+    // matrix special case: we pass NumPy directly
     gretl_matrix *gretl_mat = NULL;
     NumPyArrayView view;
 

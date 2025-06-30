@@ -590,6 +590,7 @@ void gretl_generate (const std::string &formula, std::shared_ptr<GretlDataset> G
     // in the context of @GD
     // Note: if 'name' is empty, 'formula' must contain the full definition
     //
+    GretlPrint GP;
     std::string varname;
     int err = 0;
 
@@ -601,7 +602,8 @@ void gretl_generate (const std::string &formula, std::shared_ptr<GretlDataset> G
 
     // determine whether to use an explicit name or parse from formula
     if (name.empty()) {
-        err = generate(formula.c_str(), GD ? GD->dset : NULL, GR_TYPE, OPT_NONE, NULL);
+        err = generate(formula.c_str(), GD ? GD->dset : NULL,
+                       GR_TYPE, OPT_NONE, GP.prn_ptr());
 
         if constexpr (GR_TYPE != GRETL_TYPE_SERIES) {
             const size_t eql_pos = formula.find("=");
@@ -613,7 +615,8 @@ void gretl_generate (const std::string &formula, std::shared_ptr<GretlDataset> G
         }
     } else {
         const std::string expr = name + "=" + formula;
-        err = generate(expr.c_str(), GD ? GD->dset : NULL, GR_TYPE, OPT_NONE, NULL);
+        err = generate(expr.c_str(), GD ? GD->dset : NULL,
+                       GR_TYPE, OPT_NONE, GP.prn_ptr());
 
         if constexpr (GR_TYPE != GRETL_TYPE_SERIES) {
             varname = name;
@@ -623,6 +626,7 @@ void gretl_generate (const std::string &formula, std::shared_ptr<GretlDataset> G
     if (err) {
         handle_gretl_error(err);
     }
+    GP.print();
 
     // register user-defined variable name (if applicable)
     if constexpr (GR_TYPE != GRETL_TYPE_SERIES) {
@@ -633,7 +637,7 @@ void gretl_generate (const std::string &formula, std::shared_ptr<GretlDataset> G
 }
 // Note: specializations for GRETL_TYPE_LIST and GRETL_TYPE_SERIES
 // are created by compiler
-template void gretl_generate<GRETL_TYPE_MATRIX>
+template void gretl_generate<GRETL_TYPE_ANY>
     (const std::string&, std::shared_ptr<GretlDataset>, const std::string&);
 
 // we produce human readable GretlType string representation
@@ -885,7 +889,7 @@ std::string GretlDataset::repr (void) const
 
     auto desc = gretl_get_gdt_description(source.c_str(), &err);
     if (!err) {
-        ret.append("\n\n").append(desc);
+        ret.append("\n").append(desc);
     }
 
     return ret;

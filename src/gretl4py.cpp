@@ -69,16 +69,16 @@ PYBIND11_MODULE(_gretl, m)
     m.def("uservar_print", &gretl_print_user_var_by_name,
           py::arg("name").none(false), py::arg("data").none(true) = std::nullopt);
     m.def("uservars_list", &uservars_list);
-    m.def("new_matrix",
-          py::overload_cast<const std::string&, std::shared_ptr<GretlDataset>>(&new_matrix),
+    m.def("genr",
+          py::overload_cast<const std::string&, std::shared_ptr<GretlDataset>>(&genr),
           py::arg("formula").none(false), py::arg("data").none(true) = std::nullopt);
-    m.def("new_matrix",
+    m.def("genr",
           py::overload_cast<const std::string&, const std::string&,
-            std::shared_ptr<GretlDataset>>(&new_matrix),
+            std::shared_ptr<GretlDataset>>(&genr),
           py::arg("name").none(false), py::arg("value").none(false),
           py::arg("data").none(true) = std::nullopt);
-    m.def("new_matrix",
-          py::overload_cast<const std::string&, const py::array&>(&new_matrix),
+    m.def("genr",
+          py::overload_cast<const std::string&, const py::array&>(&genr),
           py::arg("name").none(false), py::arg("nparray").none(false));
 
     //////////////////////////////////////////////////

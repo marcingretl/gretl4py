@@ -208,7 +208,7 @@ print(res)
 # midasreg                          #
 #####################################
 print('MIDAS:')
-gretl.new_matrix('theta = {1,5}')
+gretl.genr('theta = {1,5}')
 #gretl.new_matrix(name='theta', value='{1,5}')
 #midas.new_list('dX = ld_payems*')
 midas.new_list(name='dX', value='ld_payems*')
