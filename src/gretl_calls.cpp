@@ -243,7 +243,31 @@ void gretl_user_var_delete_by_name (const std::string &name)
 void gretl_print_user_var_by_name (const std::string &name,
                                    std::shared_ptr<GretlDataset> data)
 {
-    int err = print_user_var_by_name(name.c_str(), data ? data->dset : DSET->dset, OPT_N, GP.prn_ptr());
+    if (UserVars.find(name) == UserVars.end()) {
+        throw std::invalid_argument("Unknown variable: '" + name + "'");
+    }
+
+    int err = 0;
+    GretlType uv_type = user_var_get_type_by_name(name.c_str());
+
+    if (uv_type == GRETL_TYPE_BUNDLE) {
+        user_var *uv = get_user_var_by_name(name.c_str());
+
+        if (!uv) {
+            handle_gretl_error(E_UNKVAR);
+        } else {
+            gretl_bundle *b = static_cast<gretl_bundle*>(user_var_get_value(uv));
+
+            err = gretl_bundle_print(b, GP.prn_ptr());
+        }
+    } else if (uv_type == GRETL_TYPE_DOUBLE || uv_type == GRETL_TYPE_INT) {
+        print_scalar_by_name(name.c_str(), GP.prn_ptr());
+    } else {
+        err = print_user_var_by_name(name.c_str(),
+                                     data ? data->dset : DSET->dset,
+                                     OPT_N, GP.prn_ptr());
+    }
+
     if (err) {
         handle_gretl_error(err);
     }

@@ -24,7 +24,7 @@ gretl.uservar_print("dX")
 # matrix                          #
 #####################################
 print('matrix-es:')
-gretl.genr('theta = {1,5}')
+gretl.genr('matrix theta = {1,5}')
 gretl.uservar_print("theta")
 
 # int NumPy

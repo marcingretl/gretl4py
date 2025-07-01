@@ -611,6 +611,21 @@ void gretl_generate (const std::string &formula, std::shared_ptr<GretlDataset> G
             if (eql_pos != std::string::npos) {
                 varname = formula.substr(0, eql_pos);
                 trim(varname);
+            } else {
+                // fallback if user defines empty variable (like 'bundle b')
+                static const std::vector<std::string> keywords =
+                    {"arrays", "bundle", "list", "matrix", "scalar", "string", "series"};
+
+                std::istringstream iss(formula);
+                std::string first, second;
+                iss >> first >> second;
+
+                if (std::find(keywords.begin(), keywords.end(), first) != keywords.end()) {
+                    varname = second;
+                } else {
+                    // fallback: try to grab a single token
+                    varname = first;
+                }
             }
         }
     } else {
@@ -626,7 +641,6 @@ void gretl_generate (const std::string &formula, std::shared_ptr<GretlDataset> G
     if (err) {
         handle_gretl_error(err);
     }
-    GP.print();
 
     // register user-defined variable name (if applicable)
     if constexpr (GR_TYPE != GRETL_TYPE_SERIES) {
@@ -634,6 +648,8 @@ void gretl_generate (const std::string &formula, std::shared_ptr<GretlDataset> G
             UserVars.insert(varname);
         }
     }
+
+    GP.print();
 }
 // Note: specializations for GRETL_TYPE_LIST and GRETL_TYPE_SERIES
 // are created by compiler
