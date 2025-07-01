@@ -180,6 +180,40 @@ static void real_NumPyArray_to_gretl_matrix(const NumPyArrayView &view,
     }
 }
 
+static std::string extract_varname (std::string formula)
+{
+    //
+    // extract user var name from formula
+    // note: if used only in one place (gretl_generate) must be rewritten as lambda!!!
+    //
+    static const std::vector<std::string> keywords = {
+        "arrays", "bundle", "list", "matrix", "scalar", "series", "string"
+    };
+
+    trim(formula);
+
+    // step 1: remove leading keyword (if present)
+    std::istringstream iss(formula);
+    std::string first, second;
+    iss >> first >> second;
+
+    if (std::find(keywords.begin(), keywords.end(), first) != keywords.end() && !second.empty()) {
+        formula = formula.substr(formula.find(second));
+        trim(formula);
+    }
+
+    // step 2: if '=' is present, extract varname before it
+    const size_t eql_pos = formula.find('=');
+    std::string varname;
+
+    if (eql_pos != std::string::npos) {
+        varname = formula.substr(0, eql_pos);
+    } else {
+        varname = formula;
+    }
+
+    return trim(varname);
+}
 
 //////////////////////////////////////////////////
 // functions
@@ -606,27 +640,7 @@ void gretl_generate (const std::string &formula, std::shared_ptr<GretlDataset> G
                        GR_TYPE, OPT_NONE, GP.prn_ptr());
 
         if constexpr (GR_TYPE != GRETL_TYPE_SERIES) {
-            const size_t eql_pos = formula.find("=");
-
-            if (eql_pos != std::string::npos) {
-                varname = formula.substr(0, eql_pos);
-                trim(varname);
-            } else {
-                // fallback if user defines empty variable (like 'bundle b')
-                static const std::vector<std::string> keywords =
-                    {"arrays", "bundle", "list", "matrix", "scalar", "string", "series"};
-
-                std::istringstream iss(formula);
-                std::string first, second;
-                iss >> first >> second;
-
-                if (std::find(keywords.begin(), keywords.end(), first) != keywords.end()) {
-                    varname = second;
-                } else {
-                    // fallback: try to grab a single token
-                    varname = first;
-                }
-            }
+            varname = extract_varname(formula);
         }
     } else {
         const std::string expr = name + "=" + formula;

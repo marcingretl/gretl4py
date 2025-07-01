@@ -236,7 +236,7 @@ void gretl_user_var_delete_by_name (const std::string &name)
         }
         UserVars.erase(name);
     } else {
-        throw std::runtime_error("No such variable: '" + name + "'");
+        throw std::invalid_argument("no such variable: '" + name + "'");
     }
 }
 
@@ -244,7 +244,7 @@ void gretl_print_user_var_by_name (const std::string &name,
                                    std::shared_ptr<GretlDataset> data)
 {
     if (UserVars.find(name) == UserVars.end()) {
-        throw std::invalid_argument("Unknown variable: '" + name + "'");
+        throw std::invalid_argument("unknown variable: '" + name + "'");
     }
 
     int err = 0;
