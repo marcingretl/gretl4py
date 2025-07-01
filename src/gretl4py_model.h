@@ -242,6 +242,24 @@ public:
 };
 
 
+//
+// libgretl contributed packages
+// extends: GretlModel
+//
+class GretlModel_package : public GretlModel
+{
+private:
+    const std::string name;
+public:
+    GretlModel_package (std::shared_ptr<GretlDataset> GD,
+                        const std::string &name, const py::kwargs &kwargs);
+
+    void fit (void) override;
+
+    void forecast (const py::kwargs &kwargs) override;
+};
+
+
 //////////////////////////////////////////////////
 // aliases
 //////////////////////////////////////////////////

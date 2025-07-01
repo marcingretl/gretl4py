@@ -837,13 +837,13 @@ template class GretlModel_NSE_Driver<midas_model, MIDASREG>;
 //
 // NSE via arima plugin
 //
-GretlModel_NSE_arima::~GretlModel_NSE_arima (void) = default;
-
 GretlModel_NSE_arima::GretlModel_NSE_arima (std::shared_ptr<GretlDataset> GD,
                                             const std::string &y, const py::tuple &tup,
                                             const py::kwargs &kwargs)
                                             : GretlModel_NSE(GD, kwargs), y(y), tup(tup)
 {}
+
+GretlModel_NSE_arima::~GretlModel_NSE_arima (void) = default;
 
 std::string GretlModel_NSE_arima::get_formula (void) const
 {
@@ -1008,6 +1008,7 @@ GretlModel_NSE_Driver_dpanel<F, CI>::GretlModel_NSE_Driver_dpanel
 }
 // explicit instantiations for all required (F, CI) pairs
 template class GretlModel_NSE_Driver_dpanel<dpd_model, DPANEL>;
+
 
 //
 // VAR libgretl MODEL
@@ -1272,4 +1273,24 @@ void GretlModel_VAR_VECM::restrict (const py::list &impose,
 void GretlModel_VAR_VECM::forecast (const py::kwargs &kwargs)
 {
     do_var_vecm_forecast<VECM>(kwargs);
+}
+
+
+//
+// libgretl contributed packages
+// extends: GretlModel
+//
+GretlModel_package::GretlModel_package (std::shared_ptr<GretlDataset> GD,
+                                        const std::string &name, const py::kwargs &kwargs)
+                                        : GretlModel(GRETL_OBJ_MAX, GD, kwargs), name(name)
+{}
+
+void GretlModel_package::fit (void)
+{
+    py::print("GretlModel_package::fit");
+}
+
+void GretlModel_package::forecast (const py::kwargs &kwargs)
+{
+    py::print("GretlModel_package::forecast");
 }

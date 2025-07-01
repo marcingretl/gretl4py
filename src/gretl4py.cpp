@@ -79,7 +79,7 @@ PYBIND11_MODULE(_gretl, m)
           py::arg("data").none(true) = std::nullopt);
     m.def("genr",
           py::overload_cast<const std::string&, const py::array&>(&genr),
-          py::arg("name").none(false), py::arg("nparray").none(false));
+          py::arg("name").none(false), py::arg("value").none(false));
 
     //////////////////////////////////////////////////
     // single equation models

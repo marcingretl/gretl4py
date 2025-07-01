@@ -61,6 +61,6 @@ void genr (const std::string &formula, std::shared_ptr<GretlDataset> data);
 void genr (const std::string &name, const std::string &value,
            std::shared_ptr<GretlDataset> data);
 
-void genr (const std::string &name, const py::array &nparray);
+void genr (const std::string &name, const py::array &value);
 
 #endif // GRETL4PY_H
