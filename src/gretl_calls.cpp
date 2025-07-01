@@ -247,30 +247,19 @@ void gretl_print_user_var_by_name (const std::string &name,
         throw std::invalid_argument("unknown variable: '" + name + "'");
     }
 
-    int err = 0;
-    GretlType uv_type = user_var_get_type_by_name(name.c_str());
+    DATASET *dset = NULL;
 
-    if (uv_type == GRETL_TYPE_BUNDLE) {
-        user_var *uv = get_user_var_by_name(name.c_str());
-
-        if (!uv) {
-            handle_gretl_error(E_UNKVAR);
-        } else {
-            gretl_bundle *b = static_cast<gretl_bundle*>(user_var_get_value(uv));
-
-            err = gretl_bundle_print(b, GP.prn_ptr());
-        }
-    } else if (uv_type == GRETL_TYPE_DOUBLE || uv_type == GRETL_TYPE_INT) {
-        print_scalar_by_name(name.c_str(), GP.prn_ptr());
-    } else {
-        err = print_user_var_by_name(name.c_str(),
-                                     data ? data->dset : DSET->dset,
-                                     OPT_N, GP.prn_ptr());
+    if (data) {
+        dset = data->dset;
+    } else if (DSET) {
+        dset = DSET->dset;
     }
 
+    int err = print_user_var_by_name(name.c_str(), dset, OPT_NONE, GP.prn_ptr());
     if (err) {
         handle_gretl_error(err);
     }
+
     GP.print();
 }
 
