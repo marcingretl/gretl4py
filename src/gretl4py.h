@@ -58,9 +58,7 @@ void uservars_list (void);
 
 void genr (const std::string &formula, std::shared_ptr<GretlDataset> data);
 
-void genr (const std::string &name, const std::string &value,
-           std::shared_ptr<GretlDataset> data);
-
-void genr (const std::string &name, const py::array &value);
+template <typename T>
+void genr (const std::string &name, const T &value);
 
 #endif // GRETL4PY_H

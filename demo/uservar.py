@@ -42,6 +42,17 @@ a2DC = np.asfortranarray(a2D)
 gretl.genr(name='theta2dc', value=a2DC)
 gretl.uservar_print("theta2dc")
 
+# scalar
+gretl.genr(name='b', value=3.7)
+gretl.uservar_print("b")
+
+# int
+gretl.genr(name='a', value=4)
+gretl.uservar_print("a")
+
+# str
+gretl.genr(name='c', value="hello world!!!")
+gretl.uservar_print("c")
 
 # crash: 3D array
 #a3D = np.array([[[1, 2], [3, 4]], [[5, 6], [7, 8]]])

@@ -70,16 +70,12 @@ PYBIND11_MODULE(_gretl, m)
           py::arg("name").none(false), py::arg("data").none(true) = std::nullopt);
     m.def("uservars_list", &uservars_list);
     m.def("genr",
-          py::overload_cast<const std::string&, std::shared_ptr<GretlDataset>>(&genr),
+          static_cast<void(*)(const std::string&, std::shared_ptr<GretlDataset>)>(&genr),
           py::arg("formula").none(false), py::arg("data").none(true) = std::nullopt);
-    m.def("genr",
-          py::overload_cast<const std::string&, const std::string&,
-            std::shared_ptr<GretlDataset>>(&genr),
-          py::arg("name").none(false), py::arg("value").none(false),
-          py::arg("data").none(true) = std::nullopt);
-    m.def("genr",
-          py::overload_cast<const std::string&, const py::array&>(&genr),
-          py::arg("name").none(false), py::arg("value").none(false));
+    m.def("genr", &genr<py::array>, py::arg("name").none(false), py::arg("value").none(false));
+    m.def("genr", &genr<int>, py::arg("name").none(false), py::arg("value").none(false));
+    m.def("genr", &genr<double>, py::arg("name").none(false), py::arg("value").none(false));
+    m.def("genr", &genr<std::string>, py::arg("name").none(false), py::arg("value").none(false));
 
     //////////////////////////////////////////////////
     // single equation models

@@ -284,30 +284,57 @@ void genr (const std::string &formula, std::shared_ptr<GretlDataset> data)
     gretl_generate<GRETL_TYPE_ANY>(formula, data ? data : DSET);
 }
 
-void genr (const std::string &name, const std::string &value,
-           std::shared_ptr<GretlDataset> data)
+template <typename T>
+void genr (const std::string &name, const T &value)
 {
-    // name- and value- based
-    gretl_generate<GRETL_TYPE_ANY>(value, data ? data : DSET, name);
-}
+    GretlType uv_type = GRETL_TYPE_NONE;
+    void *uv_ptr = nullptr;
+    int err = 0;
 
-void genr (const std::string &name, const py::array &value)
-{
-    // matrix special case: we pass NumPy directly
-    gretl_matrix *gretl_mat = NULL;
-    NumPyArrayView view;
+    if constexpr (std::is_same_v<T, py::array>) {
+        uv_ptr = static_cast<gretl_matrix*>(NULL);
+        uv_type = GRETL_TYPE_MATRIX;
+        NumPyArrayView view;
 
-    NumPyArray_extract(value, view);
-    gretl_mat = gretl_matrix_alloc(view.rows, view.cols);
-    if (gretl_mat == NULL) {
-        handle_gretl_error(E_ALLOC);
+        NumPyArray_extract(value, view);
+        uv_ptr = gretl_matrix_alloc(view.rows, view.cols);
+        if (uv_ptr == NULL) {
+            handle_gretl_error(E_ALLOC);
+        }
+        NumPyArray_to_gretl_matrix<gretl_matrix>(view, static_cast<gretl_matrix*>(uv_ptr));
+    } else if constexpr (std::is_same_v<T, double> || std::is_same_v<T, int>) {
+        uv_ptr = std::malloc(sizeof(double));
+        if (uv_ptr == NULL) {
+            handle_gretl_error(E_ALLOC);
+        }
+
+        if constexpr (std::is_same_v<T, double>) {
+            uv_type = GRETL_TYPE_DOUBLE;
+        }
+        *static_cast<double*>(uv_ptr) = static_cast<double>(value);
+    } else if constexpr (std::is_same_v<T, std::string>) {
+        uv_ptr = std::malloc(value.size() + 1);
+        if (uv_ptr == NULL) {
+            handle_gretl_error(E_ALLOC);
+        }
+        uv_type = GRETL_TYPE_STRING;
+        std::strcpy(static_cast<char*>(uv_ptr), value.c_str());
     }
-    NumPyArray_to_gretl_matrix<gretl_matrix>(view, gretl_mat);
 
-    int err = user_var_add(name.c_str(), GRETL_TYPE_MATRIX, gretl_mat);
+    if constexpr (std::is_same_v<T, int>) {
+        err = gretl_scalar_add_mutable(name.c_str(), *static_cast<double*>(uv_ptr));
+        std::free(uv_ptr);
+    } else {
+        err = user_var_add(name.c_str(), uv_type, uv_ptr);
+    }
+
     if (err) {
         handle_gretl_error(err);
     }
 
     UserVars.insert(name);
 }
+template void genr<py::array>(const std::string&, const py::array&);
+template void genr<int>(const std::string&, const int&);
+template void genr<double>(const std::string&, const double&);
+template void genr<std::string>(const std::string&, const std::string&);
