@@ -22,6 +22,7 @@
 #include <gretl/libset.h>
 extern "C" {
     #include <gretl/gretl_string_table.h>
+    #include <gretl/gretl_typemap.h>
 }
 #include <iostream>
 #include <cstdlib>
@@ -269,7 +270,7 @@ void uservars_list (void)
 
     py::print("Registered variables:");
     for (const auto &name : UserVars) {
-        var_type_name = gretl_type_to_string(user_var_get_type_by_name(name.c_str()));
+        var_type_name = gretl_type_get_name(user_var_get_type_by_name(name.c_str()));
 
         py::print(name, "(" + var_type_name + ")");
     }
@@ -292,8 +293,8 @@ void genr (const std::string &name, const T &value)
     int err = 0;
 
     if constexpr (std::is_same_v<T, py::array>) {
-        uv_ptr = static_cast<gretl_matrix*>(NULL);
         uv_type = GRETL_TYPE_MATRIX;
+        uv_ptr = static_cast<gretl_matrix*>(NULL);
         NumPyArrayView view;
 
         NumPyArray_extract(value, view);
@@ -303,21 +304,20 @@ void genr (const std::string &name, const T &value)
         }
         NumPyArray_to_gretl_matrix<gretl_matrix>(view, static_cast<gretl_matrix*>(uv_ptr));
     } else if constexpr (std::is_same_v<T, double> || std::is_same_v<T, int>) {
+        if constexpr (std::is_same_v<T, double>) {
+            uv_type = GRETL_TYPE_DOUBLE;
+        }
         uv_ptr = std::malloc(sizeof(double));
         if (uv_ptr == NULL) {
             handle_gretl_error(E_ALLOC);
         }
-
-        if constexpr (std::is_same_v<T, double>) {
-            uv_type = GRETL_TYPE_DOUBLE;
-        }
         *static_cast<double*>(uv_ptr) = static_cast<double>(value);
     } else if constexpr (std::is_same_v<T, std::string>) {
+        uv_type = GRETL_TYPE_STRING;
         uv_ptr = std::malloc(value.size() + 1);
         if (uv_ptr == NULL) {
             handle_gretl_error(E_ALLOC);
         }
-        uv_type = GRETL_TYPE_STRING;
         std::strcpy(static_cast<char*>(uv_ptr), value.c_str());
     }
 

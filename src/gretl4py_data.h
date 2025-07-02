@@ -81,8 +81,6 @@ template<typename PyWrapped, typename Item, typename ContainerType>
 void move_to_python_container (PyWrapped &wrapped_obj, Item &&item,
                                const char *container, const std::string &key = "");
 
-const char *gretl_type_to_string (GretlType t);
-
 py::object variant_to_pyobject (GretlTypes &&val);
 
 //

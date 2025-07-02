@@ -670,34 +670,6 @@ void gretl_generate (const std::string &formula, std::shared_ptr<GretlDataset> G
 template void gretl_generate<GRETL_TYPE_ANY>
     (const std::string&, std::shared_ptr<GretlDataset>, const std::string&);
 
-// we produce human readable GretlType string representation
-const char *gretl_type_to_string (GretlType t)
-{
-    switch (t) {
-    case GRETL_TYPE_NONE:
-        return "none";
-    case GRETL_TYPE_DOUBLE:
-        return "double";
-    case GRETL_TYPE_INT:
-        return "int";
-    case GRETL_TYPE_BOOL:
-        return "bool";
-    case GRETL_TYPE_STRING:
-        return "string";
-    case GRETL_TYPE_MATRIX:
-        return "matrix";
-    case GRETL_TYPE_LIST:
-        return "list";
-    case GRETL_TYPE_BUNDLE:
-        return "bundle";
-    case GRETL_TYPE_SERIES:
-        return "series";
-    case GRETL_TYPE_ARRAY:
-        return "array";
-    default:
-        return "unknown";
-    }
-}
 
 // Note: this is needed to avoid memory leaks when
 // transferring GretlTypes to Python inside py::dict
