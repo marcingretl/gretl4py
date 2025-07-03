@@ -55,6 +55,14 @@ struct NumPyArrayView {
     ssize_t col_stride = 0;
 };
 
+struct PythonArgInfo {
+    py::handle obj;             // borrowed reference
+    GretlType gtype;
+    std::string pytype;         // human readable name of type
+    std::vector<ssize_t> shape; // for arrays/lists/tuples
+    bool valid = true;
+};
+
 // gretl_list_ptr default deleter
 struct GretlListDeleter {
     void operator() (int *ptr) const

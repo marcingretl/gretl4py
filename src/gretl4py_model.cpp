@@ -1359,16 +1359,29 @@ void GretlModel_package::fit (void)
     // we push arguments on stack
     py::print("c++: push arguments on stack");
     if (py::len(kwargs) > 0) {
-        for (auto &item : kwargs) {
-            std::string uv_name = py::cast<std::string>(item.second);
-            if (UserVars.find(uv_name) != UserVars.end()) {
-                user_var *uv = get_user_var_by_name(uv_name.c_str());
-                err = push_function_arg(func_name_call, py::cast<std::string>(item.first).c_str(),
-                                        uv, user_var_get_type(uv),
-                                        user_var_get_value(uv));
-                if (err) {
-                    handle_gretl_error(err);
+        for (auto [key, val] : kwargs) {
+            PythonArgInfo arginfo = inspect_pyobject(val);
+
+            // special case: we need to know if we deal with defined variable or string per se
+            if (arginfo.gtype == GRETL_TYPE_STRING) {
+                auto uv_name = py::cast<std::string>(val);
+                if (UserVars.find(uv_name) != UserVars.end()) {
+                    user_var *uv = get_user_var_by_name(uv_name.c_str());
+                    err = push_function_arg(func_name_call, py::cast<std::string>(key).c_str(),
+                                            uv, user_var_get_type(uv), user_var_get_value(uv));
+                    if (err) {
+                        handle_gretl_error(err);
+                    }
+                    continue;
+                } else {
+                    py::print("this is just a string");
                 }
+            } else if (arginfo.gtype == GRETL_TYPE_DOUBLE || arginfo.gtype == GRETL_TYPE_INT) {
+                double value = py::cast<double>(val);
+                err = push_function_arg(func_name_call, py::cast<std::string>(key).c_str(),
+                                        NULL, arginfo.gtype, &value);
+            } else {
+                throw std::runtime_error("unsupported type of variable " + py::cast<std::string>(key) + ": " + arginfo.pytype);
             }
         }
     }

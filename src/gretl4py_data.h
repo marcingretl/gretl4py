@@ -83,6 +83,8 @@ void move_to_python_container (PyWrapped &wrapped_obj, Item &&item,
 
 py::object variant_to_pyobject (GretlTypes &&val);
 
+PythonArgInfo inspect_pyobject (py::handle obj);
+
 //
 // Class to handle printing
 //

@@ -687,6 +687,74 @@ py::object variant_to_pyobject (GretlTypes &&val)
     }, std::move(val));
 }
 
+PythonArgInfo inspect_pyobject (py::handle obj)
+{
+    //
+    // here we check what kind of argument arrived from python
+    // and produce a struct with meta information
+    //
+    PythonArgInfo info;
+    info.obj = obj;
+
+    if (obj.is_none()) {
+        info.gtype = GRETL_TYPE_NONE;
+        info.pytype = "NoneType";
+        return info;
+    }
+
+    if (py::isinstance<py::bool_>(obj)) {
+        info.gtype = GRETL_TYPE_BOOL;
+        info.pytype = "bool";
+        return info;
+    }
+
+    if (py::isinstance<py::int_>(obj)) {
+        info.gtype = GRETL_TYPE_INT;
+        info.pytype = "int";
+        return info;
+    }
+
+    if (py::isinstance<py::float_>(obj)) {
+        info.gtype = GRETL_TYPE_DOUBLE;
+        info.pytype = "float";
+        return info;
+    }
+
+    if (py::isinstance<py::str>(obj)) {
+        info.gtype = GRETL_TYPE_STRING;
+        info.pytype = "str";
+        return info;
+    }
+
+    if (py::isinstance<py::dict>(obj)) {
+        info.gtype = GRETL_TYPE_BUNDLE;
+        info.pytype = "dict";
+        return info;
+    }
+
+    if (py::isinstance<py::array>(obj)) {
+        info.gtype = GRETL_TYPE_MATRIX;
+        info.pytype = "ndarray";
+        auto arr = py::cast<py::array>(obj);
+        info.shape.assign(arr.shape(), arr.shape() + arr.ndim());
+        return info;
+    }
+
+    if (py::isinstance<py::tuple>(obj) || py::isinstance<py::list>(obj)) {
+        info.gtype = GRETL_TYPE_LIST;
+        info.pytype = py::isinstance<py::tuple>(obj) ? "tuple" : "list";
+        auto seq = py::reinterpret_borrow<py::sequence>(obj);
+        info.shape.push_back(seq.size());
+        return info;
+    }
+
+    info.gtype = GRETL_TYPE_ANY;
+    info.pytype = py::str(obj.get_type());
+    info.valid = false;
+
+    return info;
+}
+
 
 //////////////////////////////////////////////////
 // classes
