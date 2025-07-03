@@ -67,8 +67,13 @@ gretl.uservar_print("c")
 
 gretl.uservars_list()
 
-#m1 = gretl.package(name="BMA", fname="BMA")
-m2 = gretl.package(name="/home/marcin/.gretl/functions/BMA/BMA.gfn", fname="BMA")
-m2.fit()
-print(type(m2))
+#m1 = gretl.package(name="BMA.gfn", fname="BMA")
+gretl.genr(name='ess', value=10.7)
+gretl.genr(name='k', value=2)
+gretl.genr(name='n', value=30)
+m1 = gretl.package(name="/usr/local/share/gretl/functions/criteria.gfn").fit()
+#m2 = gretl.package(name="/home/marcin/.gretl/functions/BMA/BMA.gfn", fname="BMA")
+#m2.fit()
+#print(type(m2))
+#del m2
 #m2.attrs()

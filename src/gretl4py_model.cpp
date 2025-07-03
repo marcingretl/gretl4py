@@ -25,6 +25,7 @@ extern "C" {
     #include <gretl/gretl_restrict.h>
     #include <gretl/varprint.h>
     #include <gretl/gretl_typemap.h>
+    #include <gretl/uservar.h>
 }
 #include <gretl/forecast.h>
 #include <string>
@@ -1288,49 +1289,103 @@ GretlModel_package::GretlModel_package (std::shared_ptr<GretlDataset> GD,
 {
     py::print("GretlModel_package: constructor");
     std::string name_ext = "";
-
-    // determine file extension (if any)
-    if (name.size() > 4) {
-        name_ext = name.substr(name.size() - 4);
-    }
+    int idxp = 0;
 
     // try to load a package
-    if (name_ext == ".gfn" || name_ext == ".zip") {
-        model = get_function_package_by_filename(name.c_str(), &err);
-        if (err) {
-            handle_gretl_error(err);
-        }
-    } else {
-        model = get_function_package_by_name(name.c_str());
-    }
-    if (!model) {
-        throw std::runtime_error("unable to load '" + name + "' package\n");
+    pkg = get_function_package_by_filename(name.c_str(), &err);
+    if (err) {
+        handle_gretl_error(err);
     }
 
     // setup some basic info about package
-    pkg_name = function_package_get_name(model);
-    pkg_ver = function_package_get_version(model);
+    pkg_name = function_package_get_name(pkg);
+    pkg_ver = function_package_get_version(pkg);
     py::print("We use " + pkg_name + " package, version: " + std::to_string(pkg_ver) + "\n");
 
+    // we grab public only function indexes and names
+    function_names_init();
+    while (const char* func_name = next_available_function_name(pkg, &idxp)) {
+        if (gretl_is_public_user_function(func_name)) {
+            pkg_pub_func_idx.push_back(idxp);
+            pkg_pub_func_names.emplace_back(func_name);
+        }
+    }
+
     // try to load a function to call
-    fname_ptr = get_function_from_package(fname.c_str(), model);
-    if (!fname_ptr) {
-        throw std::runtime_error("unable to load '" + fname + "' function\n");
+    if (fname.empty()) {
+        if (pkg_pub_func_names.size() == 1) {
+            func_name = pkg_pub_func_names[0];
+        } else {
+            throw std::invalid_argument("function to call not provided");
+        }
+    } else {
+        func_name = fname;
+    }
+    func_name_ptr = get_function_from_package(func_name.c_str(), pkg);
+    func_name_call = user_func_get_fncall(func_name_ptr);
+    if (!func_name_ptr || !func_name_call) {
+        throw std::runtime_error("unable to load '" + func_name + "' function\n");
     }
 
     // type returned by a function we'll call
-    res_type = static_cast<GretlType>(user_func_get_return_type(fname_ptr));
+    res_type = static_cast<GretlType>(user_func_get_return_type(func_name_ptr));
+}
+
+GretlModel_package::~GretlModel_package (void)
+{
+    std::cerr << "GretlModel_package::destructor" << std::endl;
+    int err = function_package_unload_full(pkg_name.c_str());
+    if (err) {
+        std::cerr << errmsg_get_with_default(err) << std::endl;
+    }
 }
 
 void *GretlModel_package::model_ptr (void) const
 {
-    return static_cast<void*>(model);
+    return static_cast<void*>(pkg);
 }
 
 void GretlModel_package::fit (void)
 {
     py::print("GretlModel_package::fit");
     py::print("Returned type: ", gretl_type_get_name(res_type), "\n");
+
+    if (py::len(kwargs) > 0) {
+        py::print("kwargs to unpack");
+    }
+
+    if (!GD) {
+        throw std::runtime_error("No dataset is available");
+    }
+
+    // we push arguments on stack
+    py::print("c++: push arguments on stack");
+    /*double ess = 10.7;
+    double n = 30.0;
+    double k = 5.0;
+    err = push_function_arg(func_name_call, "ess", NULL, GRETL_TYPE_DOUBLE, &ess);
+    err = push_function_arg(func_name_call, "n", NULL, GRETL_TYPE_DOUBLE, &n);
+    err = push_function_arg(func_name_call, "k", NULL, GRETL_TYPE_DOUBLE, &k);*/
+
+    err = push_function_arg(func_name_call, "ess", get_user_var_by_name("ess"),
+                            GRETL_TYPE_DOUBLE, user_var_get_value(get_user_var_by_name("ess")));
+    err = push_function_arg(func_name_call, "n", get_user_var_by_name("n"),
+                            GRETL_TYPE_DOUBLE, user_var_get_value(get_user_var_by_name("n")));
+    err = push_function_arg(func_name_call, "k", get_user_var_by_name("k"),
+                            GRETL_TYPE_DOUBLE, user_var_get_value(get_user_var_by_name("k")));
+    if (err) {
+        handle_gretl_error(err);
+    }
+
+    // function execution
+    py::print("c++: function execution");
+    void *res_ptr = gretl_null_matrix_new();
+    err = gretl_function_exec(func_name_call, res_type, GD->dset, res_ptr, GP.prn_ptr());
+    if (err) {
+        handle_gretl_error(err);
+    }
+
+    GP.print();
 }
 
 void GretlModel_package::forecast (const py::kwargs &kwargs)

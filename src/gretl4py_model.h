@@ -252,15 +252,20 @@ class GretlModel_package : public GretlModel
 private:
     std::string pkg_name;
     double pkg_ver;
-    fnpkg *model = NULL;
+    fnpkg *pkg = NULL;
     GretlType res_type;
-    ufunc *fname_ptr = NULL;
+    std::string func_name;                      // function to call: name
+    ufunc *func_name_ptr = NULL;                // function to call: pointer
+    fncall *func_name_call = NULL;              // pointer to function call
+    std::vector<int>pkg_pub_func_idx;           // indexes of public functions
+    std::vector<std::string>pkg_pub_func_names; // name of public functions
 
     void *model_ptr (void) const override;
 public:
     GretlModel_package (std::shared_ptr<GretlDataset> GD,
                         const std::string &name, const std::string &fname,
                         const py::kwargs &kwargs);
+    ~GretlModel_package (void);
 
     void fit (void) override;
 
