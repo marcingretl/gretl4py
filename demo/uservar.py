@@ -50,12 +50,25 @@ gretl.uservar_print("b")
 gretl.genr(name='a', value=4)
 gretl.uservar_print("a")
 
+gretl.genr(formula="a2 = 5")
+gretl.uservar_print("a2")
+
 # str
 gretl.genr(name='c', value="hello world!!!")
 gretl.uservar_print("c")
+
+# list
+#gretl.genr(name='d', value=[1,2])
+#gretl.uservar_print("d")
 
 # crash: 3D array
 #a3D = np.array([[[1, 2], [3, 4]], [[5, 6], [7, 8]]])
 #gretl.genr(name='theta3', value=a3D)
 
 gretl.uservars_list()
+
+#m1 = gretl.package(name="BMA", fname="BMA")
+m2 = gretl.package(name="/home/marcin/.gretl/functions/BMA/BMA.gfn", fname="BMA")
+m2.fit()
+print(type(m2))
+#m2.attrs()

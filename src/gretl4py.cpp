@@ -165,4 +165,17 @@ PYBIND11_MODULE(_gretl, m)
           },
           py::arg("order").none(false), py::arg("rank").none(false),
           py::arg("ylist").none(false), py::kw_only());
+
+    //////////////////////////////////////////////////
+    // packages
+    //////////////////////////////////////////////////
+    m.def("package",
+          [](const std::string &name, const std::string &fname, const py::kwargs &kwargs) -> std::unique_ptr<GretlModel>
+          {
+              auto model = std::make_unique<GretlModel_package>(DSET, name, fname, kwargs);
+
+              return std::unique_ptr<GretlModel>(std::move(model));
+          },
+          py::arg("name").none(false), py::arg("fname").none(false), py::kw_only());
+
 }

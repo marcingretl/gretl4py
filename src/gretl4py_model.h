@@ -26,6 +26,7 @@
 #include <gretl/gretl_drivers.h>
 extern "C" {
     #include <gretl/gretl_midas.h>
+    #include <gretl/gretl_func.h>
 }
 #include <gretl/objstack.h>
 #include <iostream>
@@ -249,14 +250,23 @@ public:
 class GretlModel_package : public GretlModel
 {
 private:
-    const std::string name;
+    std::string pkg_name;
+    double pkg_ver;
+    fnpkg *model = NULL;
+    GretlType res_type;
+    ufunc *fname_ptr = NULL;
+
+    void *model_ptr (void) const override;
 public:
     GretlModel_package (std::shared_ptr<GretlDataset> GD,
-                        const std::string &name, const py::kwargs &kwargs);
+                        const std::string &name, const std::string &fname,
+                        const py::kwargs &kwargs);
 
     void fit (void) override;
 
     void forecast (const py::kwargs &kwargs) override;
+
+    std::string get_formula (void) const override;
 };
 
 

@@ -117,6 +117,9 @@ void init_gretl4py_model_py11(py::module_ &m)
     py::class_<GretlModel_VAR_VECM, GretlModel_VAR, std::unique_ptr<GretlModel_VAR_VECM>>(m, "Model_vecm", py::dynamic_attr())
         .def("restrict", &GretlModel_VAR_VECM::restrict,
              py::arg("impose").none(false), py::kw_only());
+
+    // GretlModel_package
+    py::class_<GretlModel_package, GretlModel, std::unique_ptr<GretlModel_package>>(m, "Model_package", py::dynamic_attr());
 }
 // py::object self = py::cast(model.get());
 // py::gil_scoped_acquire gil;

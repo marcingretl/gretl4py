@@ -277,10 +277,9 @@ void uservars_list (void)
     py::print("\n");
 }
 
-// interfaces to gretl's 'genr' command
+// general inteface to gretl's 'genr' command
 void genr (const std::string &formula, std::shared_ptr<GretlDataset> data)
 {
-    // formula-based (mimics gretl's 'genr' command)
     // GretlType genr_get_last_output_type (void);
     gretl_generate<GRETL_TYPE_ANY>(formula, data ? data : DSET);
 }
@@ -304,9 +303,7 @@ void genr (const std::string &name, const T &value)
         }
         NumPyArray_to_gretl_matrix<gretl_matrix>(view, static_cast<gretl_matrix*>(uv_ptr));
     } else if constexpr (std::is_same_v<T, double> || std::is_same_v<T, int>) {
-        if constexpr (std::is_same_v<T, double>) {
-            uv_type = GRETL_TYPE_DOUBLE;
-        }
+        uv_type = GRETL_TYPE_DOUBLE;
         uv_ptr = std::malloc(sizeof(double));
         if (uv_ptr == NULL) {
             handle_gretl_error(E_ALLOC);
@@ -319,19 +316,15 @@ void genr (const std::string &name, const T &value)
             handle_gretl_error(E_ALLOC);
         }
         std::strcpy(static_cast<char*>(uv_ptr), value.c_str());
-    }
-
-    if constexpr (std::is_same_v<T, int>) {
-        err = gretl_scalar_add_mutable(name.c_str(), *static_cast<double*>(uv_ptr));
-        std::free(uv_ptr);
     } else {
-        err = user_var_add(name.c_str(), uv_type, uv_ptr);
+        throw std::runtime_error("unsupported type");
     }
 
+    // we finally register variable
+    err = user_var_add(name.c_str(), uv_type, uv_ptr);
     if (err) {
         handle_gretl_error(err);
     }
-
     UserVars.insert(name);
 }
 template void genr<py::array>(const std::string&, const py::array&);

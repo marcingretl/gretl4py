@@ -24,6 +24,7 @@ extern "C" {
     #include <gretl/var.h>
     #include <gretl/gretl_restrict.h>
     #include <gretl/varprint.h>
+    #include <gretl/gretl_typemap.h>
 }
 #include <gretl/forecast.h>
 #include <string>
@@ -1281,16 +1282,63 @@ void GretlModel_VAR_VECM::forecast (const py::kwargs &kwargs)
 // extends: GretlModel
 //
 GretlModel_package::GretlModel_package (std::shared_ptr<GretlDataset> GD,
-                                        const std::string &name, const py::kwargs &kwargs)
-                                        : GretlModel(GRETL_OBJ_MAX, GD, kwargs), name(name)
-{}
+                                        const std::string &name, const std::string &fname,
+                                        const py::kwargs &kwargs)
+                                        : GretlModel(GRETL_OBJ_ANY, GD, kwargs)
+{
+    py::print("GretlModel_package: constructor");
+    std::string name_ext = "";
+
+    // determine file extension (if any)
+    if (name.size() > 4) {
+        name_ext = name.substr(name.size() - 4);
+    }
+
+    // try to load a package
+    if (name_ext == ".gfn" || name_ext == ".zip") {
+        model = get_function_package_by_filename(name.c_str(), &err);
+        if (err) {
+            handle_gretl_error(err);
+        }
+    } else {
+        model = get_function_package_by_name(name.c_str());
+    }
+    if (!model) {
+        throw std::runtime_error("unable to load '" + name + "' package\n");
+    }
+
+    // setup some basic info about package
+    pkg_name = function_package_get_name(model);
+    pkg_ver = function_package_get_version(model);
+    py::print("We use " + pkg_name + " package, version: " + std::to_string(pkg_ver) + "\n");
+
+    // try to load a function to call
+    fname_ptr = get_function_from_package(fname.c_str(), model);
+    if (!fname_ptr) {
+        throw std::runtime_error("unable to load '" + fname + "' function\n");
+    }
+
+    // type returned by a function we'll call
+    res_type = static_cast<GretlType>(user_func_get_return_type(fname_ptr));
+}
+
+void *GretlModel_package::model_ptr (void) const
+{
+    return static_cast<void*>(model);
+}
 
 void GretlModel_package::fit (void)
 {
     py::print("GretlModel_package::fit");
+    py::print("Returned type: ", gretl_type_get_name(res_type), "\n");
 }
 
 void GretlModel_package::forecast (const py::kwargs &kwargs)
 {
     py::print("GretlModel_package::forecast");
+}
+
+std::string GretlModel_package::get_formula (void) const
+{
+    return "empty";
 }
