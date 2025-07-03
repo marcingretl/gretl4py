@@ -41,6 +41,8 @@ extern "C" {
                          || c == GARCH || c == PANEL || c == INTREG) //const int *list, DATASET *dset, gretlopt opt, PRN *prn
 #define use_lcdop_sig(c) (c == POISSON || c == NEGBIN) //const int *list, int ci, DATASET *dset, gretlopt opt, PRN *prn
 
+extern std::unordered_set<std::string> UserVars;
+
 #define GRETL4PY_MODEL_DEBUG 0
 
 //
@@ -1350,16 +1352,26 @@ void GretlModel_package::fit (void)
     py::print("GretlModel_package::fit");
     py::print("Returned type: ", gretl_type_get_name(res_type), "\n");
 
-    if (py::len(kwargs) > 0) {
-        py::print("kwargs to unpack");
-    }
-
     if (!GD) {
         throw std::runtime_error("No dataset is available");
     }
 
     // we push arguments on stack
     py::print("c++: push arguments on stack");
+    if (py::len(kwargs) > 0) {
+        for (auto &item : kwargs) {
+            std::string uv_name = py::cast<std::string>(item.second);
+            if (UserVars.find(uv_name) != UserVars.end()) {
+                user_var *uv = get_user_var_by_name(uv_name.c_str());
+                err = push_function_arg(func_name_call, py::cast<std::string>(item.first).c_str(),
+                                        uv, user_var_get_type(uv),
+                                        user_var_get_value(uv));
+                if (err) {
+                    handle_gretl_error(err);
+                }
+            }
+        }
+    }
     /*double ess = 10.7;
     double n = 30.0;
     double k = 5.0;
@@ -1367,15 +1379,12 @@ void GretlModel_package::fit (void)
     err = push_function_arg(func_name_call, "n", NULL, GRETL_TYPE_DOUBLE, &n);
     err = push_function_arg(func_name_call, "k", NULL, GRETL_TYPE_DOUBLE, &k);*/
 
-    err = push_function_arg(func_name_call, "ess", get_user_var_by_name("ess"),
+    /*err = push_function_arg(func_name_call, "ess", get_user_var_by_name("ess"),
                             GRETL_TYPE_DOUBLE, user_var_get_value(get_user_var_by_name("ess")));
     err = push_function_arg(func_name_call, "n", get_user_var_by_name("n"),
                             GRETL_TYPE_DOUBLE, user_var_get_value(get_user_var_by_name("n")));
     err = push_function_arg(func_name_call, "k", get_user_var_by_name("k"),
-                            GRETL_TYPE_DOUBLE, user_var_get_value(get_user_var_by_name("k")));
-    if (err) {
-        handle_gretl_error(err);
-    }
+                            GRETL_TYPE_DOUBLE, user_var_get_value(get_user_var_by_name("k")));*/
 
     // function execution
     py::print("c++: function execution");
@@ -1386,6 +1395,7 @@ void GretlModel_package::fit (void)
     }
 
     GP.print();
+    gretl_matrix_free(static_cast<gretl_matrix*>(res_ptr)); //FIXME: to destructor!!!
 }
 
 void GretlModel_package::forecast (const py::kwargs &kwargs)
