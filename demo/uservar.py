@@ -66,9 +66,3 @@ gretl.uservar_print("c")
 #gretl.genr(name='theta3', value=a3D)
 
 gretl.uservars_list()
-
-#m1 = gretl.package(name="BMA.gfn", fname="BMA")
-gretl.genr(name='ess', value=10.7)
-gretl.genr(name='k', value=2)
-gretl.genr(name='n', value=30)
-m1 = gretl.package(name="/usr/local/share/gretl/functions/criteria.gfn", ess="ess", n="n", k="k").fit()
