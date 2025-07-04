@@ -259,9 +259,8 @@ private:
     ufunc *func_name_ptr = NULL;                // function to call: pointer
     fncall *func_name_call = NULL;              // pointer to function call
     int func_name_n_args;
-    std::map<std::string, int> func_name_arg_names;
-    std::vector<int>pkg_pub_func_idx;           // indexes of public functions
-    std::vector<std::string>pkg_pub_func_names; // name of public functions
+    std::map<std::string, std::map<std::string, int>> func_args;
+    std::map<std::string, ufunc*> func_ptrs;    // map of pointers to functions in package
 
     void *model_ptr (void) const override;
 public:

@@ -1304,38 +1304,46 @@ GretlModel_package::GretlModel_package (std::shared_ptr<GretlDataset> GD,
     pkg_ver = function_package_get_version(pkg);
     py::print("We use " + pkg_name + " package, version: " + std::to_string(pkg_ver) + "\n");
 
-    // we grab public only function indexes and names
+    // we grab public only functions indexes and names
     function_names_init();
     while (const char* func_name = next_available_function_name(pkg, &idxp)) {
         if (gretl_is_public_user_function(func_name)) {
-            pkg_pub_func_idx.push_back(idxp);
-            pkg_pub_func_names.emplace_back(func_name);
+            // pointers
+            auto func_ptr = get_function_from_package(func_name, pkg);
+            func_ptrs.insert({func_name, func_ptr});
+            // arguments
+            int n_args = fn_n_params(func_ptr);
+            py::print(func_name, " no params: ", n_args);
+            std::map<std::string, int> arg_names_tmp;
+            for (int i=0; i<n_args; ++i) {
+                arg_names_tmp.insert({fn_param_name(func_ptr, i), i});
+            }
+            func_args.insert({func_name, arg_names_tmp});
         }
     }
 
     // try to load a function to call
     if (fname.empty()) {
-        if (pkg_pub_func_names.size() == 1) {
-            func_name = pkg_pub_func_names[0];
+        if (func_args.size() == 1) {
+            func_name = func_args.begin()->first;
         } else {
             throw std::invalid_argument("function to call not provided");
         }
     } else {
         func_name = fname;
     }
-    func_name_ptr = get_function_from_package(func_name.c_str(), pkg);
+
+    // we register some basic info about function to call
+    if (func_ptrs.find(func_name) != func_ptrs.end()) {
+        func_name_ptr = func_ptrs.at(func_name);
+    } else {
+        throw std::invalid_argument(func_name + ": there is no function in package: " + pkg_name);
+    }
     func_name_call = user_func_get_fncall(func_name_ptr);
     if (!func_name_ptr || !func_name_call) {
         throw std::runtime_error("unable to load '" + func_name + "' function\n");
     }
-
-    // we register some basic info about function to call
     res_type = static_cast<GretlType>(user_func_get_return_type(func_name_ptr));
-    func_name_n_args = fn_n_params(func_name_ptr);
-    py::print("no params: ", func_name_n_args);
-    for (int i=0; i<func_name_n_args; ++i) {
-        func_name_arg_names.insert({fn_param_name(func_name_ptr, i), i});
-    }
 }
 
 GretlModel_package::~GretlModel_package (void)
@@ -1363,15 +1371,30 @@ void GretlModel_package::fit (void)
 
     double darg_value;      // value to be pushed on stack (if double)
     void *arg_value = NULL; // pointer to value to be pushed on stack
+    std::map<std::string, int> func_name_args;
+
+    // map with arguments
+    if (func_args.find(func_name) != func_args.end()) {
+        func_name_args = func_args.at(func_name);
+    } else {
+        throw std::invalid_argument(func_name + ": function doesn't exist in " + pkg_name);
+    }
 
     // we push arguments on stack
     py::print("c++: push arguments on stack");
     if (py::len(kwargs) > 0) {
         for (auto [key, val] : kwargs) {
             auto key_str = py::cast<std::string>(key);
+            py::print("processing: ", key_str);
             arg_value = NULL;
             PythonArgInfo arginfo = inspect_pyobject(val);
-            int arg_no = func_name_arg_names.at(key_str);
+            int arg_no = -1;
+            if (func_name_args.find(key_str) != func_name_args.end()) {
+                arg_no = func_name_args.at(key_str);
+            } else {
+                throw std::invalid_argument(key_str + ": there is no such argument in function: " + func_name);
+            }
+            py::print("arg_no: ", arg_no);
             GretlType key_type = static_cast<GretlType>(fn_param_type(func_name_ptr, arg_no));
             //py::print(arg_no);
             //py::print(key, ": type: ", gretl_type_get_name(static_cast<GretlType>(fn_param_type(func_name_ptr, arg_no))), "\n");
