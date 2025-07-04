@@ -1417,16 +1417,16 @@ void GretlModel_package::fit (void)
 
     // function execution
     py::print("c++: function execution");
-    if (res_type == GRETL_TYPE_MATRIX) {
-        gretl_matrix *m = NULL;
-        res_ptr = m;
-    } else if (res_type == GRETL_TYPE_BUNDLE) {
-        gretl_bundle *b = NULL;
-        res_ptr = b;
-    } else {
-        throw std::runtime_error("unsupported res type");
+    switch (res_type) {
+        case GRETL_TYPE_MATRIX:
+            res_ptr = static_cast<gretl_matrix*>(nullptr);
+            break;
+        case GRETL_TYPE_BUNDLE:
+            res_ptr = static_cast<gretl_bundle*>(nullptr);
+            break;
+        default:
+            throw std::runtime_error("unsupported res type");
     }
-
     err = gretl_function_exec(func_name_call, res_type, GD->dset, &res_ptr, GP.prn_ptr());
     if (err) {
         handle_gretl_error(err);
@@ -1451,10 +1451,15 @@ void GretlModel_package::fit (void)
     }*/
 
     //FIXME: to destructor!!!
-    if (res_type == GRETL_TYPE_MATRIX) {
-        gretl_matrix_free(static_cast<gretl_matrix*>(res_ptr));
-    } else if (res_type == GRETL_TYPE_BUNDLE) {
-        gretl_bundle_destroy(static_cast<gretl_bundle*>(res_ptr));
+    switch (res_type) {
+        case GRETL_TYPE_MATRIX:
+            gretl_matrix_free(static_cast<gretl_matrix*>(res_ptr));
+            break;
+        case GRETL_TYPE_BUNDLE:
+            gretl_bundle_destroy(static_cast<gretl_bundle*>(res_ptr));
+            break;
+        default:
+            std::cerr << "unsupported type" << std::endl;
     }
 }
 
