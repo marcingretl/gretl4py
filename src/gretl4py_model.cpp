@@ -1401,8 +1401,7 @@ void GretlModel_package::fit (void)
 
             if (key_type == GRETL_TYPE_SERIES) {
                 auto uv_name = py::cast<std::string>(val);
-                int series_id = current_series_index(GD->dset, uv_name.c_str());
-                arg_value = GD->dset->Z[series_id];
+                arg_value = GD->dset->Z[GD->get_series_id(uv_name)];
                 err = push_function_arg(func_name_call, key_str.c_str(),
                                     NULL, GRETL_TYPE_SERIES, arg_value);
                 if (err) {

@@ -126,8 +126,6 @@ private:
     void free_dset (void);
 
     gretlopt setobs_opt_from_structure (int structure);
-
-    int get_series_id (const std::string &series) const;
 public:
     mutable int err = 0;
     bool is_default = false;
@@ -163,6 +161,8 @@ public:
     py::list varnames (void) const;
 
     int get_id (void) const;
+
+    int get_series_id (const std::string &series) const;
 
     void linked_models_add (const int model_id);
 
