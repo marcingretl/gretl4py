@@ -254,9 +254,12 @@ private:
     double pkg_ver;
     fnpkg *pkg = NULL;
     GretlType res_type;
+    void *res_ptr = NULL;
     std::string func_name;                      // function to call: name
     ufunc *func_name_ptr = NULL;                // function to call: pointer
     fncall *func_name_call = NULL;              // pointer to function call
+    int func_name_n_args;
+    std::map<std::string, int> func_name_arg_names;
     std::vector<int>pkg_pub_func_idx;           // indexes of public functions
     std::vector<std::string>pkg_pub_func_names; // name of public functions
 

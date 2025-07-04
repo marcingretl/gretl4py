@@ -1329,8 +1329,13 @@ GretlModel_package::GretlModel_package (std::shared_ptr<GretlDataset> GD,
         throw std::runtime_error("unable to load '" + func_name + "' function\n");
     }
 
-    // type returned by a function we'll call
+    // we register some basic info about function to call
     res_type = static_cast<GretlType>(user_func_get_return_type(func_name_ptr));
+    func_name_n_args = fn_n_params(func_name_ptr);
+    py::print("no params: ", func_name_n_args);
+    for (int i=0; i<func_name_n_args; ++i) {
+        func_name_arg_names.insert({fn_param_name(func_name_ptr, i), i});
+    }
 }
 
 GretlModel_package::~GretlModel_package (void)
@@ -1356,59 +1361,101 @@ void GretlModel_package::fit (void)
         throw std::runtime_error("No dataset is available");
     }
 
+    double darg_value;      // value to be pushed on stack (if double)
+    void *arg_value = NULL; // pointer to value to be pushed on stack
+
     // we push arguments on stack
     py::print("c++: push arguments on stack");
     if (py::len(kwargs) > 0) {
         for (auto [key, val] : kwargs) {
+            auto key_str = py::cast<std::string>(key);
+            arg_value = NULL;
             PythonArgInfo arginfo = inspect_pyobject(val);
+            int arg_no = func_name_arg_names.at(key_str);
+            GretlType key_type = static_cast<GretlType>(fn_param_type(func_name_ptr, arg_no));
+            //py::print(arg_no);
+            //py::print(key, ": type: ", gretl_type_get_name(static_cast<GretlType>(fn_param_type(func_name_ptr, arg_no))), "\n");
 
-            // special case: we need to know if we deal with defined variable or string per se
-            if (arginfo.gtype == GRETL_TYPE_STRING) {
+            if (key_type == GRETL_TYPE_SERIES) {
+                auto uv_name = py::cast<std::string>(val);
+                int series_id = current_series_index(GD->dset, uv_name.c_str());
+                arg_value = GD->dset->Z[series_id];
+                err = push_function_arg(func_name_call, key_str.c_str(),
+                                    NULL, GRETL_TYPE_SERIES, arg_value);
+                if (err) {
+                    handle_gretl_error(err);
+                }
+            } else if (arginfo.gtype == GRETL_TYPE_STRING) {
+                // special case: we need to know if we deal with defined variable or string per se
                 auto uv_name = py::cast<std::string>(val);
                 if (UserVars.find(uv_name) != UserVars.end()) {
                     user_var *uv = get_user_var_by_name(uv_name.c_str());
-                    err = push_function_arg(func_name_call, py::cast<std::string>(key).c_str(),
+                    //py::print("uv: 1");
+                    err = push_function_arg(func_name_call, key_str.c_str(),
                                             uv, user_var_get_type(uv), user_var_get_value(uv));
                     if (err) {
                         handle_gretl_error(err);
                     }
+                    //py::print("uv: 2");
                     continue;
                 } else {
                     py::print("this is just a string");
                 }
             } else if (arginfo.gtype == GRETL_TYPE_DOUBLE || arginfo.gtype == GRETL_TYPE_INT) {
-                double value = py::cast<double>(val);
-                err = push_function_arg(func_name_call, py::cast<std::string>(key).c_str(),
-                                        NULL, arginfo.gtype, &value);
+                darg_value = py::cast<double>(val);
+                arg_value = &darg_value;
             } else {
-                throw std::runtime_error("unsupported type of variable " + py::cast<std::string>(key) + ": " + arginfo.pytype);
+                throw std::runtime_error("unsupported type of variable " + key_str + ": " + arginfo.pytype);
+            }
+            err = push_function_arg(func_name_call, key_str.c_str(),
+                                    NULL, arginfo.gtype, arg_value);
+            if (err) {
+                handle_gretl_error(err);
             }
         }
     }
-    /*double ess = 10.7;
-    double n = 30.0;
-    double k = 5.0;
-    err = push_function_arg(func_name_call, "ess", NULL, GRETL_TYPE_DOUBLE, &ess);
-    err = push_function_arg(func_name_call, "n", NULL, GRETL_TYPE_DOUBLE, &n);
-    err = push_function_arg(func_name_call, "k", NULL, GRETL_TYPE_DOUBLE, &k);*/
-
-    /*err = push_function_arg(func_name_call, "ess", get_user_var_by_name("ess"),
-                            GRETL_TYPE_DOUBLE, user_var_get_value(get_user_var_by_name("ess")));
-    err = push_function_arg(func_name_call, "n", get_user_var_by_name("n"),
-                            GRETL_TYPE_DOUBLE, user_var_get_value(get_user_var_by_name("n")));
-    err = push_function_arg(func_name_call, "k", get_user_var_by_name("k"),
-                            GRETL_TYPE_DOUBLE, user_var_get_value(get_user_var_by_name("k")));*/
 
     // function execution
     py::print("c++: function execution");
-    void *res_ptr = gretl_null_matrix_new();
-    err = gretl_function_exec(func_name_call, res_type, GD->dset, res_ptr, GP.prn_ptr());
+    if (res_type == GRETL_TYPE_MATRIX) {
+        gretl_matrix *m = NULL;
+        res_ptr = m;
+    } else if (res_type == GRETL_TYPE_BUNDLE) {
+        gretl_bundle *b = NULL;
+        res_ptr = b;
+    } else {
+        throw std::runtime_error("unsupported res type");
+    }
+
+    err = gretl_function_exec(func_name_call, res_type, GD->dset, &res_ptr, GP.prn_ptr());
     if (err) {
         handle_gretl_error(err);
     }
 
-    GP.print();
-    gretl_matrix_free(static_cast<gretl_matrix*>(res_ptr)); //FIXME: to destructor!!!
+    // saving results
+    summary = GP.get_buffer();
+    py::object self = py::cast(this);
+    GretlType t = res_type;
+    auto val = convert_GretlType_to_GretlTypes(t, res_ptr, 0, err);
+    if (err) {
+        handle_gretl_error(err);
+    }
+    py::setattr(self, "results", variant_to_pyobject(std::move(*val)));
+    /* this code may be used if we decide how to deal with returning bundles
+    if (res_type == GRETL_TYPE_BUNDLE) {
+        RES = GretlBundle(static_cast<gretl_bundle*>(res_ptr)).to_dict();
+        for (auto item : RES) {
+            py::setattr(self, item.first, item.second);
+        }
+        py::print("returning bundle: to be added");
+    }*/
+
+    //FIXME: to destructor!!!
+    if (res_type == GRETL_TYPE_MATRIX) {
+        gretl_matrix_free(static_cast<gretl_matrix*>(res_ptr));
+    } else if (res_type == GRETL_TYPE_BUNDLE) {
+        gretl_bundle_destroy(static_cast<gretl_bundle*>(res_ptr));
+    }
 }
 
 void GretlModel_package::forecast (const py::kwargs &kwargs)
