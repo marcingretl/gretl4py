@@ -1306,7 +1306,6 @@ GretlModel_package::GretlModel_package (std::shared_ptr<GretlDataset> GD,
 
     // we grab public only functions indexes and names
     function_names_init();
-    py::print("we load public functions");
     while (const char* func_name = next_available_function_name(pkg, &idxp)) {
         if (gretl_is_public_user_function(func_name)) {
             // pointers
@@ -1314,7 +1313,6 @@ GretlModel_package::GretlModel_package (std::shared_ptr<GretlDataset> GD,
             func_ptrs.insert({func_name, func_ptr});
             // arguments
             int n_args = fn_n_params(func_ptr);
-            py::print(func_name, " (number of params: " + std::to_string(n_args) + ")");
             std::map<std::string, int> arg_names_tmp;
             for (int i=0; i<n_args; ++i) {
                 arg_names_tmp.insert({fn_param_name(func_ptr, i), i});
@@ -1382,11 +1380,9 @@ void GretlModel_package::fit (void)
     }
 
     // we push arguments on stack
-    py::print("c++: push arguments on stack");
     if (py::len(kwargs) > 0) {
         for (auto [key, val] : kwargs) {
             auto key_str = py::cast<std::string>(key);
-            py::print("processing: ", key_str);
             arg_value = NULL;
             PythonArgInfo arginfo = inspect_pyobject(val);
             int arg_no = -1;
@@ -1395,32 +1391,28 @@ void GretlModel_package::fit (void)
             } else {
                 throw std::invalid_argument(key_str + ": there is no such argument in function: " + func_name);
             }
-            py::print("arg_no: ", arg_no);
             GretlType key_type = static_cast<GretlType>(fn_param_type(func_name_ptr, arg_no));
-            //py::print(arg_no);
-            //py::print(key, ": type: ", gretl_type_get_name(static_cast<GretlType>(fn_param_type(func_name_ptr, arg_no))), "\n");
 
             if (key_type == GRETL_TYPE_SERIES) {
+                // special case: for series we swap situation and
+                // evaluate arg via type declared in a function
                 auto uv_name = py::cast<std::string>(val);
                 int vnum = GD->get_series_id(uv_name);
-                py::print("variable:", uv_name);
                 err = push_function_arg(func_name_call, uv_name.c_str(), NULL, GRETL_TYPE_USERIES, &vnum);
                 if (err) {
                     handle_gretl_error(err);
                 }
+                continue;
             } else if (arginfo.gtype == GRETL_TYPE_STRING) {
                 // special case: we need to know if we deal with defined variable or string per se
                 auto uv_name = py::cast<std::string>(val);
-                py::print("variable:", uv_name);
                 if (UserVars.find(uv_name) != UserVars.end()) {
                     user_var *uv = get_user_var_by_name(uv_name.c_str());
-                    //py::print("uv: 1");
                     err = push_function_arg(func_name_call, key_str.c_str(),
                                             uv, user_var_get_type(uv), user_var_get_value(uv));
                     if (err) {
                         handle_gretl_error(err);
                     }
-                    //py::print("uv: 2");
                     continue;
                 } else {
                     py::print("this is just a string");
@@ -1440,7 +1432,6 @@ void GretlModel_package::fit (void)
     }
 
     // function execution
-    py::print("c++: function execution");
     switch (res_type) {
         case GRETL_TYPE_MATRIX:
             res_ptr = static_cast<gretl_matrix*>(nullptr);

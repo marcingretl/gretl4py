@@ -20,13 +20,11 @@ gretl.genr(name='k', value=m1.ncoeff)
 gretl.genr(name='n', value=m1.T)
 p1 = gretl.package(name="/usr/local/share/gretl/functions/criteria.gfn", ess="ess", n=m1.T, k="k").fit()
 print(p1)
-print(p1.results)
+#print(p1.results)
 
 # let's try out BMA
 d1.new_list(name='Xes', value='unemp armfrc pop')
-gretl.uservar_print("Xes")
-#p2 = gretl.package(name="/home/marcin/.gretl/functions/TestPKG.gfn", Xes="Xes").fit()
 p2 = gretl.package(name="/home/marcin/.gretl/functions/BMA/BMA.gfn", fname="BMA", Y="prdefl", X_list="Xes").fit()
-print(p2.results)
-
+print(p2)
+#print(p2.results)
 
