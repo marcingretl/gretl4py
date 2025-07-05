@@ -1323,6 +1323,14 @@ GretlModel_package::GretlModel_package (std::shared_ptr<GretlDataset> GD,
     ready_to_fit = true;
 }
 
+GretlModel_package::GretlModel_package (std::shared_ptr<GretlDataset> GD,
+                                        const std::string &name)
+                                        : GretlModel(GRETL_OBJ_ANY, GD, py::kwargs())
+{
+    // constructor for inspecting package functions
+    init_gretl_package(name);
+}
+
 GretlModel_package::~GretlModel_package (void)
 {
     int err = function_package_unload_full(pkg_name.c_str());

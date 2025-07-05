@@ -64,6 +64,11 @@ PYBIND11_MODULE(_gretl, m)
     m.def("set", &set,
           py::arg("key").none(false),
           py::arg("val").none(true) = std::nullopt);
+    m.def("package_functions",
+          [](const std::string &name)
+          {
+              GretlModel_package(DSET, name).functions();
+          }, py::arg("name").none(false));
     m.def("delete", &gretl_user_var_delete_by_name,
           py::arg("name").none(false));
     m.def("uservar_print", &gretl_print_user_var_by_name,
