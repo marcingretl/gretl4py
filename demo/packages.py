@@ -27,8 +27,8 @@ gretl.genr(name='n', value=m1.T)
 p1 = gretl.package(name="/usr/local/share/gretl/functions/criteria.gfn", ess="ess", n=m1.T, k="k").fit()
 #print(p1)
 #print(type(p1.results))
-#p1.functions()
-#exit()
+p1.functions()
+exit()
 
 # let's try out BMA
 d2 = gretl.get_data("/home/marcin/.gretl/functions/BMA/examples/FLS_41t72.gdt")

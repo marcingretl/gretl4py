@@ -1506,18 +1506,20 @@ void GretlModel_package::fit (void)
     }*/
 
     //FIXME: to destructor!!!
-    switch (res_type) {
-        case GRETL_TYPE_MATRIX:
-            gretl_matrix_free(static_cast<gretl_matrix*>(res_ptr));
-            break;
-        case GRETL_TYPE_BUNDLE:
-            gretl_bundle_destroy(static_cast<gretl_bundle*>(res_ptr));
-            break;
-        case GRETL_TYPE_STRING:
-            std::free(static_cast<char*>(res_ptr));
-            break;
-        default:
-            std::cerr << "unsupported type" << std::endl;
+    if (res_ptr) {
+        switch (res_type) {
+            case GRETL_TYPE_MATRIX:
+                gretl_matrix_free(static_cast<gretl_matrix*>(res_ptr));
+                break;
+            case GRETL_TYPE_BUNDLE:
+                gretl_bundle_destroy(static_cast<gretl_bundle*>(res_ptr));
+                break;
+            case GRETL_TYPE_STRING:
+                std::free(static_cast<char*>(res_ptr));
+                break;
+            default:
+                std::cerr << "unsupported type" << std::endl;
+        }
     }
 }
 
@@ -1539,16 +1541,18 @@ void GretlModel_package::functions (void) const
 
     GretlType type;
     std::string type_str;
+    ufunc *func_ptr;
 
     py::print("Functions available in package '" + pkg_name + "':");
     for (const auto& [key, val] : func_args) {
-        type = static_cast<GretlType>(user_func_get_return_type(func_ptrs.at(key)));
+        func_ptr = func_ptrs.at(key);
+        type = static_cast<GretlType>(user_func_get_return_type(func_ptr));
         py::print(key, "->", gretl_type_get_name(type));
         for (const auto &it : val) {
-            type = static_cast<GretlType>(fn_param_type(func_ptrs.at(key), it.second));
+            type = static_cast<GretlType>(fn_param_type(func_ptr, it.second));
             type_str = "(";
-            type_str.append(gretl_type_get_name(type)).append(")");
-            py::print("  ", it.first, type_str);
+            py::print("  ", it.first,
+                      type_str.append(gretl_type_get_name(type)).append(")"));
         }
     }
 }
