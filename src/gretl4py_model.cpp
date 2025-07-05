@@ -103,45 +103,38 @@ void GretlModel::save_model (T *model)
     } else if constexpr (std::is_same_v<T, GRETL_VAR>) {
         err = model->err;
     }
-
     if (err) {
         handle_gretl_error(err);
-    } else {
-        if constexpr (std::is_same_v<T, MODEL>) {
-            err = printmodel(model, GD->dset, opt, GP.prn_ptr());
-        } else if constexpr (std::is_same_v<T, GRETL_VAR>) {
-            err = gretl_VAR_print(model, GD->dset, opt, GP.prn_ptr());
-        }
-        if (err) {
-            handle_gretl_error(err);
-        }
-        GretlBundle b = GretlBundle(model, GD->dset);
-        err = b.err;
-
-        if (err) {
-            handle_gretl_error(err);
-        } else {
-            RES = b.to_dict();
-            if (RES.empty()) {
-                err = E_DATA;
-                throw std::runtime_error("Model bundle to dict conversion failed.");
-            } else {
-                summary = GP.get_buffer();
-                py::dict _ids;
-                //_ids[py::cast("_id")] = model->ID; //FIXME: VARs!!!
-                _ids[py::cast("_model_id")] = id;
-                RES[py::cast("_ids")] = _ids;
-            }
-
-            // we register result
-            py::object self = py::cast(this);
-            for (auto item : RES) {
-                py::setattr(self, item.first, item.second);
-            }
-            // we link model with dataset used
-            GD->linked_models_add(id);
-        }
     }
+
+    // we print model
+    if constexpr (std::is_same_v<T, MODEL>) {
+        err = printmodel(model, GD->dset, opt, GP.prn_ptr());
+    } else if constexpr (std::is_same_v<T, GRETL_VAR>) {
+        err = gretl_VAR_print(model, GD->dset, opt, GP.prn_ptr());
+    }
+    if (err) {
+        handle_gretl_error(err);
+    }
+    summary = GP.get_buffer();
+
+    // we produce $model bundle based on estimated @model
+    GretlBundle bundle_model = GretlBundle(model, GD->dset);
+    err = bundle_model.err;
+    if (err) {
+        handle_gretl_error(err);
+    }
+
+    // we register result on python side
+    py::object self = py::cast(this);
+    bundle_model.python_register(self);
+
+    py::dict _ids;
+    //_ids[py::cast("_id")] = model->ID; //FIXME: VARs!!!
+    _ids[py::cast("_model_id")] = id;
+    py::setattr(self, "_ids", _ids);
+
+    GD->linked_models_add(id);
 }
 
 void GretlModel::unpack_kwargs (GretlCmdIndex ci)

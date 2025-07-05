@@ -31,7 +31,7 @@ p1 = gretl.package(name="/usr/local/share/gretl/functions/criteria.gfn", ess="es
 # let's try out BMA
 BMA_PATH="/home/marcin/.gretl/functions/BMA/BMA.gfn"
 gretl.package_functions(name=BMA_PATH)
-exit()
+#exit()
 d2 = gretl.get_data("/home/marcin/.gretl/functions/BMA/examples/FLS_41t72.gdt")
 d2.set_as_default()
 d2.new_list(name='Xes', value='2..10')
