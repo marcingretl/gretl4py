@@ -196,6 +196,9 @@ private:
     bool free_b = true;
     gretl_bundle *b = NULL;
     py::dict as_dict;
+
+    template<typename T>
+    void extract (T t);
 public:
     int err = 0;
 

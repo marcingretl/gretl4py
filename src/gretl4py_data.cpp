@@ -1456,34 +1456,48 @@ GretlBundle::~GretlBundle (void)
     }
 }
 
+template<typename T>
+void GretlBundle::extract (T t)
+{
+    //
+    // extract the bundle and either register on python side
+    // or store in as_dict
+    //
+    int n_keys = 0;
+    auto keys = gretl_bundle_get_keys_raw(b, &n_keys);
+
+    for (int i = 0; i < n_keys; ++i) {
+        int n = 0;
+        const char* key = keys[i];
+
+        GretlType gtype = gretl_bundle_get_member_type(b, key, &err);
+        if (err) {
+            handle_gretl_error(err);
+        }
+
+        void* data = gretl_bundle_get_target(b, key, &gtype, &n, &err);
+        if (err) {
+            handle_gretl_error(err);
+        }
+
+        auto val = convert_GretlType_to_GretlTypes(gtype, data, n, err);
+        if (err) {
+            handle_gretl_error(err);
+        }
+
+        // for py::object be register as attribute on python side
+        if constexpr (std::is_same_v<T, py::object>) {
+            py::print("py::object");
+        } else {
+            as_dict[py::cast(key)] = variant_to_pyobject(std::move(*val));
+        }
+    }
+}
+
 py::dict GretlBundle::to_dict (void)
 {
     if (as_dict.empty()) {
-        int n_keys = 0;
-        auto keys = gretl_bundle_get_keys_raw(b, &n_keys);
-
-        for (int i=0; i<n_keys; ++i) {
-            int n = 0;  // note: n is _only_ used for special cases
-            const char *key = keys[i];
-
-            GretlType t = gretl_bundle_get_member_type(b, key, &err);
-            if (err) {
-                handle_gretl_error(err);
-            }
-
-            // we grab pointer to data
-            void *data = gretl_bundle_get_target(b, key, &t, &n, &err);
-            if (err) {
-                handle_gretl_error(err);
-            }
-
-            auto val = convert_GretlType_to_GretlTypes(t, data, n, err);
-            if (err) {
-                handle_gretl_error(err);
-            }
-
-            as_dict[py::cast(key)] = variant_to_pyobject(std::move(*val));
-        }
+        extract<py::dict>(py::dict());
     }
 
     return as_dict;
