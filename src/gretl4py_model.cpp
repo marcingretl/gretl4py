@@ -1308,8 +1308,9 @@ GretlModel_package::GretlModel_package (std::shared_ptr<GretlDataset> GD,
     }
 
     // register some basic info about function to call
-    if (func_ptrs.find(func_name) != func_ptrs.end()) {
-        func_name_ptr = func_ptrs.at(func_name);
+    auto it = func_ptrs.find(func_name);
+    if (it != func_ptrs.end()) {
+        func_name_ptr = it->second;
     } else {
         throw std::invalid_argument(func_name + ": there is no function in package: " + pkg_name);
     }
@@ -1399,12 +1400,14 @@ void GretlModel_package::fit (void)
     // we push arguments on stack
     if (py::len(kwargs) > 0) {
         for (auto [key, val] : kwargs) {
-            auto key_str = py::cast<std::string>(key);
             arg_value = NULL;
-            PythonArgInfo arginfo = inspect_pyobject(val);
             int arg_no = -1;
-            if (func_name_args.find(key_str) != func_name_args.end()) {
-                arg_no = func_name_args.at(key_str);
+            auto key_str = py::cast<std::string>(key);
+            PythonArgInfo arginfo = inspect_pyobject(val);
+
+            auto it = func_name_args.find(key_str);
+            if (it != func_name_args.end()) {
+                arg_no = it->second;
             } else {
                 throw std::invalid_argument(key_str + ": there is no such argument in function: " + func_name);
             }
