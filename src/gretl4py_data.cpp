@@ -1457,7 +1457,7 @@ GretlBundle::~GretlBundle (void)
 }
 
 template<typename T>
-void GretlBundle::extract (T t)
+void GretlBundle::extract (const T &t)
 {
     //
     // extract the bundle and either register on python side
@@ -1487,7 +1487,7 @@ void GretlBundle::extract (T t)
 
         // for py::object be register as attribute on python side
         if constexpr (std::is_same_v<T, py::object>) {
-            py::print("py::object");
+            py::setattr(t, key, variant_to_pyobject(std::move(*val)));
         } else {
             as_dict[py::cast(key)] = variant_to_pyobject(std::move(*val));
         }
@@ -1501,6 +1501,11 @@ py::dict GretlBundle::to_dict (void)
     }
 
     return as_dict;
+}
+
+void GretlBundle::python_register (py::object &obj)
+{
+    extract<py::object>(obj);
 }
 
 void GretlBundle::print (void)

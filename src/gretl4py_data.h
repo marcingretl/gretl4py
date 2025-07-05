@@ -198,7 +198,7 @@ private:
     py::dict as_dict;
 
     template<typename T>
-    void extract (T t);
+    void extract (const T &t);
 public:
     int err = 0;
 
@@ -209,6 +209,8 @@ public:
     ~GretlBundle (void);
 
     py::dict to_dict (void);                        // bundle-to-dict mapper
+
+    void python_register (py::object &obj);         // register bundle contents in python object
 
     void print (void);
 };

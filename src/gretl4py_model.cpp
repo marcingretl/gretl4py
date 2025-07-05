@@ -1498,20 +1498,16 @@ void GretlModel_package::fit (void)
     // saving results
     summary = GP.get_buffer();
     py::object self = py::cast(this);
-    GretlType t = res_type;
-    auto val = convert_GretlType_to_GretlTypes(t, res_ptr, 0, err);
-    if (err) {
-        handle_gretl_error(err);
-    }
-    py::setattr(self, "results", variant_to_pyobject(std::move(*val)));
-    /* this code may be used if we decide how to deal with returning bundles
     if (res_type == GRETL_TYPE_BUNDLE) {
-        RES = GretlBundle(static_cast<gretl_bundle*>(res_ptr)).to_dict();
-        for (auto item : RES) {
-            py::setattr(self, item.first, item.second);
+        GretlBundle(static_cast<gretl_bundle*>(res_ptr)).python_register(self);
+    } else {
+        GretlType t = res_type;
+        auto val = convert_GretlType_to_GretlTypes(t, res_ptr, 0, err);
+        if (err) {
+            handle_gretl_error(err);
         }
-        py::print("returning bundle: to be added");
-    }*/
+        py::setattr(self, "results", variant_to_pyobject(std::move(*val)));
+    }
 
     //FIXME: to destructor!!!
     if (res_ptr) {

@@ -37,6 +37,6 @@ d2.set_as_default()
 d2.new_list(name='Xes', value='2..10')
 p2 = gretl.package(name=BMA_PATH, fname="BMA", Y="GDP_growth", X_list="Xes").fit()
 print(p2)
-#print(p2.results)
+print(p2.attrs())
 #p2.functions()
 
