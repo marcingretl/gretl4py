@@ -23,8 +23,10 @@ print(p1)
 #print(p1.results)
 
 # let's try out BMA
-d1.new_list(name='Xes', value='unemp armfrc pop')
-p2 = gretl.package(name="/home/marcin/.gretl/functions/BMA/BMA.gfn", fname="BMA", Y="prdefl", X_list="Xes").fit()
+d2 = gretl.get_data("/home/marcin/.gretl/functions/BMA/examples/FLS_41t72.gdt")
+d2.set_as_default()
+d2.new_list(name='Xes', value='2..10')
+p2 = gretl.package(name="/home/marcin/.gretl/functions/BMA/BMA.gfn", fname="BMA", Y="GDP_growth", X_list="Xes").fit()
 print(p2)
 #print(p2.results)
 

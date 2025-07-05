@@ -261,8 +261,11 @@ private:
     std::map<std::string,
         std::map<std::string, int>> func_args;  // map of arguments and their id-s for public functions
     std::map<std::string, ufunc*> func_ptrs;    // map of pointers to functions in package
+    bool ready_to_fit = false;                  // if a model can be fitted (required in 'query' mode)
 
     void *model_ptr (void) const override;
+
+    void init_gretl_package (const std::string &name);
 public:
     GretlModel_package (std::shared_ptr<GretlDataset> GD,
                         const std::string &name, const std::string &fname,
