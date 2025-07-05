@@ -1392,6 +1392,7 @@ void GretlModel_package::unpack_kwargs (const std::string &func_name,
                     }
                     continue;
                 } else {
+                    // here we deal with string per se
                     char *arg_name_copy = strdup(arg_name.c_str());
                     arg_value = static_cast<void*>(arg_name_copy);
                 }
@@ -1457,7 +1458,7 @@ void GretlModel_package::init_gretl_package (const std::string &name)
 void GretlModel_package::fit (void)
 {
     if (!ready_to_fit) {
-        throw std::runtime_error("model was not setup");
+        throw std::runtime_error("model was not fully setup");
     }
 
     // we unpack parameters
@@ -1528,4 +1529,26 @@ void GretlModel_package::forecast (const py::kwargs &kwargs)
 std::string GretlModel_package::get_formula (void) const
 {
     return "empty";
+}
+
+void GretlModel_package::functions (void) const
+{
+    if (func_args.empty()) {
+        throw std::runtime_error("no available functions");
+    }
+
+    GretlType type;
+    std::string type_str;
+
+    py::print("Functions available in package '" + pkg_name + "':");
+    for (const auto& [key, val] : func_args) {
+        type = static_cast<GretlType>(user_func_get_return_type(func_ptrs.at(key)));
+        py::print(key, "->", gretl_type_get_name(type));
+        for (const auto &it : val) {
+            type = static_cast<GretlType>(fn_param_type(func_ptrs.at(key), it.second));
+            type_str = "(";
+            type_str.append(gretl_type_get_name(type)).append(")");
+            py::print("  ", it.first, type_str);
+        }
+    }
 }

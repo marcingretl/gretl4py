@@ -25,8 +25,10 @@ gretl.genr(name='ess', value=m1.ess)
 gretl.genr(name='k', value=m1.ncoeff)
 gretl.genr(name='n', value=m1.T)
 p1 = gretl.package(name="/usr/local/share/gretl/functions/criteria.gfn", ess="ess", n=m1.T, k="k").fit()
-print(p1)
+#print(p1)
 #print(type(p1.results))
+#p1.functions()
+#exit()
 
 # let's try out BMA
 d2 = gretl.get_data("/home/marcin/.gretl/functions/BMA/examples/FLS_41t72.gdt")
@@ -35,4 +37,5 @@ d2.new_list(name='Xes', value='2..10')
 p2 = gretl.package(name="/home/marcin/.gretl/functions/BMA/BMA.gfn", fname="BMA", Y="GDP_growth", X_list="Xes").fit()
 print(p2)
 #print(p2.results)
+#p2.functions()
 

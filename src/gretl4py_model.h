@@ -280,6 +280,8 @@ public:
     void forecast (const py::kwargs &kwargs) override;
 
     std::string get_formula (void) const override;
+
+    void functions (void) const;
 };
 
 
