@@ -1325,74 +1325,30 @@ GretlModel_package::GretlModel_package (std::shared_ptr<GretlDataset> GD,
 
 GretlModel_package::~GretlModel_package (void)
 {
-    std::cerr << "\nGretlModel_package::destructor" << std::endl;
     int err = function_package_unload_full(pkg_name.c_str());
     if (err) {
         std::cerr << errmsg_get_with_default(err) << std::endl;
     }
 }
 
-void *GretlModel_package::model_ptr (void) const
+void GretlModel_package::unpack_kwargs (const std::string &func_name,
+                                        const py::kwargs &kwargs)
 {
-    return static_cast<void*>(pkg);
-}
-
-void GretlModel_package::init_gretl_package (const std::string &name)
-{
-    int idxp = 0;
-
-    // try to load a package
-    pkg = get_function_package_by_filename(name.c_str(), &err);
-    if (err) {
-        handle_gretl_error(err);
-    }
-
-    // setup some basic info about package
-    pkg_name = function_package_get_name(pkg);
-    pkg_ver = function_package_get_version(pkg);
-
-    // we grab public only functions indexes and names
-    function_names_init();
-    while (const char* func_name = next_available_function_name(pkg, &idxp)) {
-        if (gretl_is_public_user_function(func_name)) {
-            // pointers
-            auto func_ptr = get_function_from_package(func_name, pkg);
-            func_ptrs.insert({func_name, func_ptr});
-            // arguments
-            std::map<std::string, int> arg_names_tmp;
-            for (int i=0; i<fn_n_params(func_ptr); ++i) {
-                arg_names_tmp.insert({fn_param_name(func_ptr, i), i});
-            }
-            func_args.insert({func_name, arg_names_tmp});
-        }
-    }
-
-    if (func_ptrs.empty()) {
-        throw std::runtime_error("no public functions found in '"
-                                 + pkg_name + "' package");
-    }
-
-    py::print("We use " + pkg_name + " package, version: "
-              + std::to_string(pkg_ver) + "\n");
-}
-
-void GretlModel_package::fit (void)
-{
-    if (!ready_to_fit) {
-        throw std::runtime_error("model was not setup");
-    }
-
-    if (!GD) {
-        throw std::runtime_error("No dataset is available");
-    }
+    py::print("GretlModel_package::unpack_kwargs");
+    /* maybe we need it in future
+    const bool use_instance_kwargs = kwargs.contains("kwargs_mode") &&
+                                 is_pystr(kwargs["kwargs_mode"]) &&
+                                 kwargs["kwargs_mode"].cast<std::string>() == "instance";
+    py::kwargs local_kwargs = use_instance_kwargs ? this->kwargs : kwargs;*/
 
     double darg_value;      // value to be pushed on stack (if double)
     void *arg_value = NULL; // pointer to value to be pushed on stack
     std::map<std::string, int> func_name_args;
 
-    // map with arguments
-    if (func_args.find(func_name) != func_args.end()) {
-        func_name_args = func_args.at(func_name);
+    // map function to call with arguments
+    auto it = func_args.find(func_name);
+    if (it != func_args.end()) {
+        func_name_args = it->second;
     } else {
         throw std::invalid_argument(func_name + ": function doesn't exist in " + pkg_name);
     }
@@ -1449,6 +1405,64 @@ void GretlModel_package::fit (void)
                 handle_gretl_error(err);
             }
         }
+    }
+}
+
+void *GretlModel_package::model_ptr (void) const
+{
+    return static_cast<void*>(pkg);
+}
+
+void GretlModel_package::init_gretl_package (const std::string &name)
+{
+    int idxp = 0;
+
+    // try to load a package
+    pkg = get_function_package_by_filename(name.c_str(), &err);
+    if (err) {
+        handle_gretl_error(err);
+    }
+
+    // setup some basic info about package
+    pkg_name = function_package_get_name(pkg);
+    pkg_ver = function_package_get_version(pkg);
+
+    // we grab public only functions indexes and names
+    function_names_init();
+    while (const char* func_name = next_available_function_name(pkg, &idxp)) {
+        if (gretl_is_public_user_function(func_name)) {
+            // pointers
+            auto func_ptr = get_function_from_package(func_name, pkg);
+            func_ptrs.insert({func_name, func_ptr});
+            // arguments
+            std::map<std::string, int> arg_names_tmp;
+            for (int i=0; i<fn_n_params(func_ptr); ++i) {
+                arg_names_tmp.insert({fn_param_name(func_ptr, i), i});
+            }
+            func_args.insert({func_name, arg_names_tmp});
+        }
+    }
+
+    if (func_ptrs.empty()) {
+        throw std::runtime_error("no public functions found in '"
+                                 + pkg_name + "' package");
+    }
+
+    py::print("We use " + pkg_name + " package, version: "
+              + std::to_string(pkg_ver) + "\n");
+}
+
+void GretlModel_package::fit (void)
+{
+    if (!ready_to_fit) {
+        throw std::runtime_error("model was not setup");
+    }
+
+    // we unpack parameters
+    unpack_kwargs(func_name, kwargs);
+
+    if (!GD) {
+        throw std::runtime_error("No dataset is available");
     }
 
     // function execution

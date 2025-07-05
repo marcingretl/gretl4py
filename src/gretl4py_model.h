@@ -263,6 +263,9 @@ private:
     std::map<std::string, ufunc*> func_ptrs;    // map of pointers to functions in package
     bool ready_to_fit = false;                  // if a model can be fitted (required in 'query' mode)
 
+    void unpack_kwargs (const std::string &func_name,
+                        const py::kwargs &kwargs);// hides base-class method
+
     void *model_ptr (void) const override;
 
     void init_gretl_package (const std::string &name);
