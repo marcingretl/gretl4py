@@ -1341,8 +1341,9 @@ void GretlModel_package::unpack_kwargs (const std::string &func_name,
                                  kwargs["kwargs_mode"].cast<std::string>() == "instance";
     py::kwargs local_kwargs = use_instance_kwargs ? this->kwargs : kwargs;*/
 
-    double darg_value;      // value to be pushed on stack (if double)
+    std::string arg_name;
     void *arg_value = NULL; // pointer to value to be pushed on stack
+    double darg_value;      // value to be pushed on stack (if double)
     std::map<std::string, int> func_name_args;
 
     // map function to call with arguments
@@ -1372,18 +1373,18 @@ void GretlModel_package::unpack_kwargs (const std::string &func_name,
             if (key_type == GRETL_TYPE_SERIES) {
                 // special case: for series we swap situation and
                 // evaluate arg via type declared in a function
-                auto uv_name = py::cast<std::string>(val);
-                int vnum = GD->get_series_id(uv_name);
-                err = push_function_arg(func_name_call, uv_name.c_str(), NULL, GRETL_TYPE_USERIES, &vnum);
+                arg_name = py::cast<std::string>(val);
+                int vnum = GD->get_series_id(arg_name);
+                err = push_function_arg(func_name_call, arg_name.c_str(), NULL, GRETL_TYPE_USERIES, &vnum);
                 if (err) {
                     handle_gretl_error(err);
                 }
                 continue;
             } else if (arginfo.gtype == GRETL_TYPE_STRING) {
                 // special case: we need to know if we deal with defined variable or string per se
-                auto uv_name = py::cast<std::string>(val);
-                if (UserVars.find(uv_name) != UserVars.end()) {
-                    user_var *uv = get_user_var_by_name(uv_name.c_str());
+                arg_name = py::cast<std::string>(val);
+                if (UserVars.find(arg_name) != UserVars.end()) {
+                    user_var *uv = get_user_var_by_name(arg_name.c_str());
                     err = push_function_arg(func_name_call, key_str.c_str(),
                                             uv, user_var_get_type(uv), user_var_get_value(uv));
                     if (err) {
@@ -1391,7 +1392,8 @@ void GretlModel_package::unpack_kwargs (const std::string &func_name,
                     }
                     continue;
                 } else {
-                    py::print("this is just a string");
+                    char *arg_name_copy = strdup(arg_name.c_str());
+                    arg_value = static_cast<void*>(arg_name_copy);
                 }
             } else if (arginfo.gtype == GRETL_TYPE_DOUBLE || arginfo.gtype == GRETL_TYPE_INT) {
                 darg_value = py::cast<double>(val);
@@ -1473,10 +1475,13 @@ void GretlModel_package::fit (void)
         case GRETL_TYPE_BUNDLE:
             res_ptr = static_cast<gretl_bundle*>(nullptr);
             break;
+        case GRETL_TYPE_STRING:
+            break;
         default:
             throw std::runtime_error("unsupported res type");
     }
-    err = gretl_function_exec(func_name_call, res_type, GD->dset, &res_ptr, GP.prn_ptr());
+    err = gretl_function_exec(func_name_call, res_type,
+                              GD->dset, &res_ptr, GP.prn_ptr());
     if (err) {
         handle_gretl_error(err);
     }
@@ -1506,6 +1511,9 @@ void GretlModel_package::fit (void)
             break;
         case GRETL_TYPE_BUNDLE:
             gretl_bundle_destroy(static_cast<gretl_bundle*>(res_ptr));
+            break;
+        case GRETL_TYPE_STRING:
+            std::free(static_cast<char*>(res_ptr));
             break;
         default:
             std::cerr << "unsupported type" << std::endl;

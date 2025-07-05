@@ -14,13 +14,19 @@ d1 = gretl.get_data(str(data_dir.joinpath('longley.csv')))
 m1 = gretl.ols(formula="1 0 2 3 4 5 6 7").fit()
 print(m1)
 
+# for testing only
+#p = gretl.package(name="/home/marcin/.gretl/functions/TestPKG.gfn", S="abs").fit()
+#print(type(p.results))
+#print(p.results)
+#exit()
+
 # let's try out criteria
 gretl.genr(name='ess', value=m1.ess)
 gretl.genr(name='k', value=m1.ncoeff)
 gretl.genr(name='n', value=m1.T)
 p1 = gretl.package(name="/usr/local/share/gretl/functions/criteria.gfn", ess="ess", n=m1.T, k="k").fit()
 print(p1)
-#print(p1.results)
+#print(type(p1.results))
 
 # let's try out BMA
 d2 = gretl.get_data("/home/marcin/.gretl/functions/BMA/examples/FLS_41t72.gdt")
