@@ -1488,8 +1488,10 @@ void GretlBundle::extract (const T &t)
         // for py::object be register as attribute on python side
         if constexpr (std::is_same_v<T, py::object>) {
             py::setattr(t, key, variant_to_pyobject(std::move(*val)));
-        } else {
+        } else if constexpr (std::is_same_v<T, py::dict>) {
             as_dict[py::cast(key)] = variant_to_pyobject(std::move(*val));
+        } else {
+            throw std::runtime_error("unsupported type for conversion");
         }
     }
 }

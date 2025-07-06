@@ -112,6 +112,8 @@ void GretlModel::save_model (T *model)
         err = printmodel(model, GD->dset, opt, GP.prn_ptr());
     } else if constexpr (std::is_same_v<T, GRETL_VAR>) {
         err = gretl_VAR_print(model, GD->dset, opt, GP.prn_ptr());
+    } else {
+        throw std::runtime_error("unsupported model type");
     }
     if (err) {
         handle_gretl_error(err);
