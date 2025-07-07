@@ -1399,11 +1399,18 @@ void GretlModel_package::unpack_kwargs (const std::string &func_name,
                     char *arg_name_copy = strdup(arg_name.c_str());
                     arg_value = static_cast<void*>(arg_name_copy);
                 }
+            } else if (arginfo.gtype == GRETL_TYPE_BOOL) {
+                darg_value = py::cast<double>(val);
+                err = push_function_arg(func_name_call, key_str.c_str(), NULL, GRETL_TYPE_DOUBLE, &darg_value);
+                if (err) {
+                    handle_gretl_error(err);
+                }
+                continue;
             } else if (arginfo.gtype == GRETL_TYPE_DOUBLE || arginfo.gtype == GRETL_TYPE_INT) {
                 darg_value = py::cast<double>(val);
                 arg_value = &darg_value;
             } else {
-                throw std::runtime_error("unsupported type of variable " + key_str + ": " + arginfo.pytype);
+                throw std::runtime_error("variable " + key_str + ":, unsupported type: " + arginfo.pytype);
             }
             err = push_function_arg(func_name_call, key_str.c_str(),
                                     NULL, arginfo.gtype, arg_value);
@@ -1422,6 +1429,10 @@ void *GretlModel_package::model_ptr (void) const
 void GretlModel_package::init_gretl_package (const std::string &name)
 {
     int idxp = 0;
+
+    // we try to use find a path
+    /*std::string fullname(MAXLEN, '\0');
+    err = get_full_filename(name.c_str(), fullname.data(), OPT_I);*/
 
     // try to load a package
     pkg = get_function_package_by_filename(name.c_str(), &err);
@@ -1472,6 +1483,7 @@ void GretlModel_package::fit (void)
     }
 
     // function execution
+    gretl_list_ptr gr_list{nullptr};
     switch (res_type) {
         case GRETL_TYPE_MATRIX:
             res_ptr = static_cast<gretl_matrix*>(nullptr);
@@ -1479,10 +1491,18 @@ void GretlModel_package::fit (void)
         case GRETL_TYPE_BUNDLE:
             res_ptr = static_cast<gretl_bundle*>(nullptr);
             break;
+        case GRETL_TYPE_LIST:
+            res_ptr = gr_list.get();
+            break;
+        case GRETL_TYPE_SERIES:
+            res_ptr = static_cast<double*>(nullptr);
+            break;
         case GRETL_TYPE_STRING:
+        case GRETL_TYPE_DOUBLE:
+        case GRETL_TYPE_VOID:
             break;
         default:
-            throw std::runtime_error("unsupported res type");
+        throw std::runtime_error("unsupported function returning type");
     }
     err = gretl_function_exec(func_name_call, res_type,
                               GD->dset, &res_ptr, GP.prn_ptr());
@@ -1516,8 +1536,14 @@ void GretlModel_package::fit (void)
             case GRETL_TYPE_STRING:
                 std::free(static_cast<char*>(res_ptr));
                 break;
+            case GRETL_TYPE_SERIES:
+                std::free(static_cast<double*>(res_ptr));
+                break;
+            case GRETL_TYPE_DOUBLE:
+            case GRETL_TYPE_LIST:
+                break;
             default:
-                std::cerr << "unsupported type" << std::endl;
+                std::cerr << "~GretlModel_package: unsupported type" << std::endl;
         }
     }
 }

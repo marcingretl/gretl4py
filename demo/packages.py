@@ -15,7 +15,7 @@ m1 = gretl.ols(formula="1 0 2 3 4 5 6 7").fit()
 print(m1)
 
 # for testing only
-#p = gretl.package(name="/home/marcin/.gretl/functions/TestPKG.gfn", S="abs").fit()
+#p = gretl.package(name="/home/marcin/.gretl/functions/TestPKG.gfn", S=1.1).fit()
 #print(type(p.results))
 #print(p.results)
 #exit()
