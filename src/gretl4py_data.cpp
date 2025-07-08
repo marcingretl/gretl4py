@@ -302,7 +302,8 @@ std::unique_ptr<GretlTypes> convert_GretlType_to_GretlTypes (GretlType &t,
     } else if (t == GRETL_TYPE_BUNDLE) {
         gretl_bundle *b = static_cast<gretl_bundle*>(gr_obj_ptr);
         *res = GretlBundle(b).to_dict();
-    } else if (t == GRETL_TYPE_ARRAY || t == GRETL_TYPE_MATRICES) {
+    } else if (t == GRETL_TYPE_ARRAY || t == GRETL_TYPE_MATRICES ||
+               t == GRETL_TYPE_STRINGS || t == GRETL_TYPE_BUNDLES) {
         gretl_array *a = static_cast<gretl_array*>(gr_obj_ptr);
         py::list py_list;
         GretlType tmp;

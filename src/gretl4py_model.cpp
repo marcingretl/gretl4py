@@ -1360,6 +1360,8 @@ void GretlModel_package::free_results (void *res_to_free,
                 std::free(static_cast<double*>(res_to_free));
                 break;
             case GRETL_TYPE_MATRICES:
+            case GRETL_TYPE_STRINGS:
+            case GRETL_TYPE_BUNDLES:
                 gretl_array_destroy(static_cast<gretl_array*>(res_to_free));
                 break;
             case GRETL_TYPE_DOUBLE: // here we use stack-allocated variable
@@ -1535,6 +1537,8 @@ void GretlModel_package::fit (void)
             res_ptr = static_cast<double*>(nullptr);
             break;
         case GRETL_TYPE_MATRICES:
+        case GRETL_TYPE_STRINGS:
+        case GRETL_TYPE_BUNDLES:
             res_ptr = static_cast<gretl_array*>(nullptr);
             break;
         case GRETL_TYPE_STRING:
