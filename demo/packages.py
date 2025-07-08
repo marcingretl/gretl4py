@@ -25,8 +25,9 @@ gretl.genr(name='ess', value=m1.ess)
 gretl.genr(name='k', value=m1.ncoeff)
 gretl.genr(name='n', value=m1.T)
 p1 = gretl.package(name="/usr/local/share/gretl/functions/criteria.gfn", ess="ess", n=m1.T, k="k").fit()
-#print(p1)
+print(p1)
 #print(type(p1.results))
+#exit()
 
 # let's try out BMA
 BMA_PATH="/home/marcin/.gretl/functions/BMA/BMA.gfn"

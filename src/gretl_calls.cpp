@@ -126,9 +126,12 @@ void module_cleanup (void)
         if (err) {
             std::cerr << "Failed to delete '" + name + "': ";
             std::cerr << errmsg_get_with_default(err) << std::endl;
-        } else {
+        }
+#if GRETL_PYBIND11_DEBUG
+         else {
             std::cout << "Variable '" + name + "' deleted" << std::endl;
         }
+#endif // GRETL_PYBIND11_DEBUG
     }
 
     libgretl_cleanup();

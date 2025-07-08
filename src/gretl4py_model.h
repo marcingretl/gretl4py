@@ -269,6 +269,9 @@ private:
     void *model_ptr (void) const override;
 
     void init_gretl_package (const std::string &name);
+
+    void free_results (void *res_to_free,
+                       GretlType res_to_free_type);
 public:
     GretlModel_package (std::shared_ptr<GretlDataset> GD,
                         const std::string &name, const std::string &fname,
