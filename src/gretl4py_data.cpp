@@ -311,7 +311,8 @@ std::unique_ptr<GretlTypes> convert_GretlType_to_GretlTypes (GretlType &t,
         for (int i=0; i<gretl_array_get_length(a); i++) {
             tmp = gretl_array_get_content_type(a);
             auto element = convert_GretlType_to_GretlTypes(tmp, gretl_array_get_element(a, i, &tmp, &err), n, err);
-            py_list.append(*element);
+            //py_list.append(*element);
+            py_list.append(variant_to_pyobject(std::move(*element))); // as of 2025-07-08
         }
         *res = py_list;
     } else if (t == GRETL_TYPE_SERIES) {

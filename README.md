@@ -1,7 +1,7 @@
 gretl4py: Python Bindings for gretl
 ===================================
 
-This package provides Python bindings to the `gretl` econometrics library via its official C API.
+This package provides Python bindings to the ``gretl`` econometrics library via its official C API.
 
 For full documentation, please visit the `gretl4py project page <https://gretl.sourceforge.net/gretl4py.html>`_.
 
@@ -9,7 +9,7 @@ For full documentation, please visit the `gretl4py project page <https://gretl.s
 
    The official PDF documentation is still under development and requires updates and enhancements.
 
-   You can find useful example scripts in the ``demo/`` subdirectory. `<https://sourceforge.net/p/gretl/gretl4py/ci/v0.2/tree/demo/>`_.
+   You can find useful example scripts in the ``demo/`` subdirectory (`view on SourceForge <https://sourceforge.net/p/gretl/gretl4py/ci/v0.2/tree/demo/>`_).
 
 Package Contents
 ----------------

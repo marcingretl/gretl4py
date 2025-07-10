@@ -18,8 +18,8 @@
  *
  """
 import inspect
-import _gretl
 import sys
+from . import _gretl
 
 # #######################################################
 #   GretlModel class

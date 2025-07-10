@@ -1474,6 +1474,8 @@ void GretlModel_package::init_gretl_package (const std::string &name)
     err = get_full_filename(name.c_str(), fullname.data(), OPT_I);*/
 
     // try to load a package
+    //get_function_package_by_name
+    //char *fname = gretl_function_package_get_path(pkgname, PKG_ALL);
     pkg = get_function_package_by_filename(name.c_str(), &err);
     if (err) {
         handle_gretl_error(err);

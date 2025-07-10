@@ -64,15 +64,15 @@ if user_site not in sys.path:
 # ###################################
 # gretl4py stuff
 # ###################################
-import _gretl
-import gretl4py_addons
-import gretl4py_classes
+from . import _gretl
+from . import gretl4py_addons
+from . import gretl4py_classes
 
 # we import some symbols explicitly
-from _gretl import (about, set, version)
-from gretl4py_classes import attrs, oddsratio
-from gretl4py_classes import get_data, show_data_status
-from gretl4py_addons import print_module_source, fc_print
+from ._gretl import (about, set, version)
+from .gretl4py_classes import attrs, oddsratio
+from .gretl4py_classes import get_data, show_data_status
+from .gretl4py_addons import print_module_source, fc_print
 
 # deprecations
 def csv2dict(fname, pd=1):
