@@ -1,6 +1,6 @@
 version 0.21:
     - 'lagselect' switched off for VAR due to SIGSEGV
-    - OpenBLAS 0.3.29 for linux packages
+    - OpenBLAS 0.3.30 for linux packages
     - corrgm added as test (both: data-based and model-based)
     - eliminate any JSON-based data exchange
 
