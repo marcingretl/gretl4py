@@ -1468,15 +1468,16 @@ void *GretlModel_package::model_ptr (void) const
 void GretlModel_package::init_gretl_package (const std::string &name)
 {
     int idxp = 0;
+    std::string path(MAXLEN, '\0');
 
-    // we try to use find a path
-    /*std::string fullname(MAXLEN, '\0');
-    err = get_full_filename(name.c_str(), fullname.data(), OPT_I);*/
-
-    // try to load a package
-    //get_function_package_by_name
-    //char *fname = gretl_function_package_get_path(pkgname, PKG_ALL);
-    pkg = get_function_package_by_filename(name.c_str(), &err);
+    // we try to use find a path and load the package
+    if (has_suffix(name.c_str(), ".gfn")) {
+        err = get_full_filename(name.c_str(), path.data(), OPT_I);
+    } else {
+        std::string fullname = name + ".gfn";
+        err = get_full_filename(fullname.c_str(), path.data(), OPT_I);
+    }
+    pkg = get_function_package_by_filename(path.c_str(), &err);
     if (err) {
         handle_gretl_error(err);
     }
