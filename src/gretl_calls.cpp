@@ -296,6 +296,14 @@ void do_summary (const std::string &varlist, const py::kwargs &kwargs)
         throw std::runtime_error("no dataset available");
     }
 
+    // we handle special flags manually
+    // FIXME: this should be handled by 'gretl_valid_long_opt()'!!!
+    if (kwargs.contains("by")) {
+        opt = static_cast<gretlopt>(opt | OPT_B);
+    } else if (kwargs.contains("matrix")) {
+        opt = static_cast<gretlopt>(opt | OPT_X);
+    }
+
     // be build gretl_list
     if (!varlist.empty()) {
         varlist_ptr = list_from_formula(varlist, GD->dset, err);
