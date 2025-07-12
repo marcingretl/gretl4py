@@ -20,7 +20,7 @@
 #ifndef GRETL4PY_H
 #define GRETL4PY_H
 
-#define GRETL4PY_VERSION 0.21
+#define GRETL4PY_VERSION 0.22
 
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>

@@ -96,7 +96,7 @@ def main():
 
     # Parse command-line arguments
     parser = argparse.ArgumentParser(description="Install gretl4py wheel into user site-packages without pip.")
-    parser.add_argument("--version", default="0.2", help="gretl4py version to install (default: 0.2)")
+    parser.add_argument("--version", default="0.21", help="gretl4py version to install (default: 0.21)")
     parser.add_argument("--base-url", default=DEFAULT_BASE_URL, help="Base URL for downloading wheels")
     args = parser.parse_args()
 
