@@ -206,11 +206,12 @@ py::dict about (bool do_print)
     return res;
 }
 
-// set a string or int valued "setvar"
-
-void set (const std::string key,
-          const std::optional<py::object> &pyval)
+void do_set (const std::string key,
+             const std::optional<py::object> &pyval)
 {
+    //
+    // interface to libgretl's set
+    //
     int err = 0;
 
     if (pyval == std::nullopt) {
@@ -219,19 +220,19 @@ void set (const std::string key,
         err = execute_set(key.c_str(), MapPyToCpp(pyval).to_string().c_str(),
                           NULL, OPT_NONE, GP.prn_ptr());
     }
-
-    GP.print();
-
     if (err) {
         handle_gretl_error(err);
     }
+
+    GP.print();
 }
 
 //////////////////////////////////////////////////
 // static functions
 //////////////////////////////////////////////////
 
-static gretlopt unpack_kwargs_command (GretlCmdIndex ci, std::shared_ptr<GretlDataset> &GD,
+static gretlopt unpack_kwargs_command (GretlCmdIndex ci,
+                                       std::shared_ptr<GretlDataset> &GD,
                                        const py::kwargs &kwargs)
 {
     //
@@ -239,7 +240,6 @@ static gretlopt unpack_kwargs_command (GretlCmdIndex ci, std::shared_ptr<GretlDa
     //
     gretlopt opt = OPT_NONE;
 
-    // at first, we unpack kwargs
     if (len(kwargs) > 0) {
         for (auto &item : kwargs) {
             if (!is_pystr(item.first)) {
@@ -261,7 +261,7 @@ static gretlopt unpack_kwargs_command (GretlCmdIndex ci, std::shared_ptr<GretlDa
             }
         }
 
-        // we force --plot=none for tests
+        // we force --plot=none for certain commands
         if (ci == CORRGM) {
             opt = static_cast<gretlopt>(opt | OPT_U);
             gretl_valid_long_opt(opt, ci, "plot", py::handle(), "none");
@@ -289,7 +289,7 @@ void do_summary (const std::string &varlist, const py::kwargs &kwargs)
     gretl_list_ptr varlist_ptr{nullptr};
     int err = 0;
 
-    // we unpack kwargs
+    // we unpack kwargs at first
     // Note: GD is set here
     gretlopt opt = unpack_kwargs_command(SUMMARY, GD, kwargs);
     if (!GD) {
@@ -299,6 +299,9 @@ void do_summary (const std::string &varlist, const py::kwargs &kwargs)
     // be build gretl_list
     if (!varlist.empty()) {
         varlist_ptr = list_from_formula(varlist, GD->dset, err);
+    }
+    if (err) {
+        handle_gretl_error(err);
     }
 
     // this code was taken from 'interact.c'
@@ -314,7 +317,6 @@ void do_summary (const std::string &varlist, const py::kwargs &kwargs)
     } else {
         err = list_summary_driver(varlist_ptr.get(), GD->dset, opt, GP.prn_ptr());
     }
-
     if (err) {
         handle_gretl_error(err);
     }

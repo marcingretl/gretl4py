@@ -61,7 +61,7 @@ PYBIND11_MODULE(_gretl, m)
     m.attr("version") = GRETL4PY_VERSION;
     m.def("about", &about,
           py::arg("do_print") = false);
-    m.def("set", &set,
+    m.def("set", &do_set,
           py::arg("key").none(false),
           py::arg("val").none(true) = std::nullopt);
     m.def("summary", &do_summary,

@@ -46,8 +46,8 @@ void module_cleanup (void);
 
 py::dict about (bool do_print = false);
 
-void set (const std::string key,
-          const std::optional<py::object> &pyval = std::nullopt);
+void do_set (const std::string key,
+             const std::optional<py::object> &pyval = std::nullopt);
 
 void do_summary (const std::string &varlist, const py::kwargs &kwargs);
 
