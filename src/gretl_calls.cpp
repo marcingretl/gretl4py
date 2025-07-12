@@ -228,8 +228,99 @@ void set (const std::string key,
 }
 
 //////////////////////////////////////////////////
+// static functions
+//////////////////////////////////////////////////
+
+static gretlopt unpack_kwargs_command (GretlCmdIndex ci, std::shared_ptr<GretlDataset> &GD,
+                                       const py::kwargs &kwargs)
+{
+    //
+    // unpack kwargs for libgretl's command interfaces
+    //
+    gretlopt opt = OPT_NONE;
+
+    // at first, we unpack kwargs
+    if (len(kwargs) > 0) {
+        for (auto &item : kwargs) {
+            if (!is_pystr(item.first)) {
+                throw std::invalid_argument("option key must be a string");
+            }
+            const std::string &key = item.first.cast<std::string>();
+
+            if (key == "data") {
+                // special case: we use already allocated object of GretlDataset class
+                GD = item.second.cast<std::shared_ptr<GretlDataset>>();
+                continue;
+            } else if (key == "silent") {
+                // special case: silent is processed manually later on
+                continue;
+            } else if (key == "plot") {
+                throw std::invalid_argument("invalid option flag: " + key);
+            } else {
+                gretl_valid_long_opt(opt, ci, key, item.second);
+            }
+        }
+
+        // we force --plot=none for tests
+        if (ci == CORRGM) {
+            opt = static_cast<gretlopt>(opt | OPT_U);
+            gretl_valid_long_opt(opt, ci, "plot", py::handle(), "none");
+        }
+    }
+
+    // if we didn't get dataset, let use global
+    if (!GD) {
+        GD = DSET;
+    }
+
+    return opt;
+}
+
+//////////////////////////////////////////////////
 // data management
 //////////////////////////////////////////////////
+
+void do_summary (const std::string &varlist, const py::kwargs &kwargs)
+{
+    //
+    // this function mimics libgretl's 'summary' command
+    //
+    std::shared_ptr<GretlDataset> GD = nullptr;
+    gretl_list_ptr varlist_ptr{nullptr};
+    int err = 0;
+
+    // we unpack kwargs
+    // Note: GD is set here
+    gretlopt opt = unpack_kwargs_command(SUMMARY, GD, kwargs);
+    if (!GD) {
+        throw std::runtime_error("no dataset available");
+    }
+
+    // be build gretl_list
+    if (!varlist.empty()) {
+        varlist_ptr = list_from_formula(varlist, GD->dset, err);
+    }
+
+    // this code was taken from 'interact.c'
+    err = incompatible_options(opt, static_cast<gretlopt>(OPT_B | OPT_W));
+    if (err) {
+        handle_gretl_error(err);
+    }
+    if (opt & OPT_B) {
+        err = summary_statistics_by(varlist_ptr.get(), GD->dset, opt, GP.prn_ptr());
+    } else if (opt & OPT_X) {
+        throw std::invalid_argument("matrix option not available yet");
+        //err = matrix_command_driver(SUMMARY, varlist_ptr.get(), cmd->param, GD->dset, opt, GP.prn_ptr());
+    } else {
+        err = list_summary_driver(varlist_ptr.get(), GD->dset, opt, GP.prn_ptr());
+    }
+
+    if (err) {
+        handle_gretl_error(err);
+    }
+
+    GP.print();
+}
 
 void gretl_user_var_delete_by_name (const std::string &name)
 {

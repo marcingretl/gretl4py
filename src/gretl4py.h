@@ -49,6 +49,8 @@ py::dict about (bool do_print = false);
 void set (const std::string key,
           const std::optional<py::object> &pyval = std::nullopt);
 
+void do_summary (const std::string &varlist, const py::kwargs &kwargs);
+
 // these two functions are temporal and will be moved to class
 void gretl_user_var_delete_by_name (const std::string &name);
 
