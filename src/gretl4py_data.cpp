@@ -410,7 +410,7 @@ void gretl_valid_long_opt (gretlopt &opt, GretlCmdIndex ci,
 
             if (ival == 1) {
                 // activate the option
-                opt = static_cast<gretlopt>(opt | opt_local);
+                SET_OPT(opt, opt_local);
             } else if (ival != 0) {
                 throw std::invalid_argument("invalid option parameter");
             }
@@ -425,6 +425,8 @@ void gretl_valid_long_opt (gretlopt &opt, GretlCmdIndex ci,
             push_option_param(ci, static_cast<gretlopt>(opt_local),
                               gretl_strdup(MapPyToCpp(val).to_string().c_str()));
         }
+        // we finally tranfser opt_local to opt
+        SET_OPT(opt, opt_local);
     }
 }
 
@@ -542,7 +544,7 @@ void unpack_kwargs_test (gretlopt &opt, const std::string &type,
     // we force --plot=none for tests
     // FIXME: either to preprocessor level or to dispatcher
     if (type == "cusum" || type == "leverage" || type == "qlrtest" || type == "corrgm") {
-        opt = static_cast<gretlopt>(opt | OPT_U);
+        SET_OPT(opt, OPT_U);
         gretl_valid_long_opt(opt, ci, "plot", py::handle(), "none");
     }
 }
@@ -632,7 +634,7 @@ void gretl_generate (const std::string &formula, std::shared_ptr<GretlDataset> G
 
     if constexpr (GR_TYPE == GRETL_TYPE_LIST || GR_TYPE == GRETL_TYPE_SERIES) {
         if (!GD) {
-            throw std::runtime_error("Dataset is required for list and series generation");
+            throw std::runtime_error("dataset is required for list and series generation");
         }
     }
 

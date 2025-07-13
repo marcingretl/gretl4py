@@ -45,6 +45,7 @@ namespace py = pybind11;
 #define is_pynumarray(o) (py::isinstance<py::array>(o))
 #define is_pynumarrayd(o) (py::isinstance<py::array_t<double>>(o))
 #define is_pynumeric(o) (is_pyint(o) || is_pyfloat(o))
+#define SET_OPT(opt, flag) opt = static_cast<gretlopt>((opt) | (flag))
 
 //////////////////////////////////////////////////
 // functions
