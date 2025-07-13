@@ -1083,7 +1083,7 @@ void GretlDataset::sample (const py::kwargs &kwargs)
         err = restore_full_sample(dset, NULL);
     } else if (restr) {
         // smpl <restr> --restrict [--replace]
-        gretlopt opt = opt_replace ? static_cast<gretlopt>(OPT_R | OPT_P) : OPT_R;
+        opt = opt_replace ? static_cast<gretlopt>(OPT_R | OPT_P) : OPT_R;
         err = restrict_sample(restr, NULL, dset, NULL, opt, GP.prn_ptr(), NULL);
     } else {
         // use empty string as fallback when only one of t1/t2 is set (smpl <t1str> <t2str>)
@@ -1110,32 +1110,44 @@ void GretlDataset::setobs (const py::kwargs &kwargs)
     //
     // A method to mimic gretl's 'setobs' command
     //
-    gretlopt opt = OPT_NONE;
-    char *arg1 = NULL;
-    char *arg2 = NULL;
+    char *arg1 = nullptr;
+    char *arg2 = nullptr;
     int rcount = 0;
     int pcount = 0;
-    int argc = 0;
+
+    enum ArgTag { NONE, PERIODICITY, STARTOBS, UNITVAR, TIMEVAR };
 
     for (auto &item : kwargs) {
         if (!is_pystr(item.first)) {
             throw std::invalid_argument("option key must be a string");
         }
-        const std::string &akey = item.first.cast<std::string>();
+        const std::string akey = item.first.cast<std::string>();
         const char *val = MapPyToCpp(item.second).to_string_view().data();
 
-        if (akey == "periodicity") {
-            arg1 = strdup(val);
-            rcount++;
-        } else if (akey == "unitvar") {
-            arg1 = strdup(val);
-            pcount++;
-        } else if (akey == "startobs") {
-            arg2 = strdup(val);
-            rcount++;
-        } else if (akey == "timevar") {
-            arg2 = strdup(val);
-            pcount++;
+        if (akey == "periodicity" || akey == "startobs" ||
+            akey == "unitvar" || akey == "timevar") {
+            ArgTag tag = NONE;
+
+            if (akey == "periodicity") {
+                tag = PERIODICITY;
+                rcount++;
+            } else if (akey == "startobs") {
+                tag = STARTOBS;
+                rcount++;
+            } else if (akey == "unitvar") {
+                tag = UNITVAR;
+                pcount++;
+            } else if (akey == "timevar") {
+                tag = TIMEVAR;
+                pcount++;
+            }
+
+            // choose destination arg
+            if (tag == PERIODICITY || tag == UNITVAR) {
+                arg1 = strdup(val);
+            } else {
+                arg2 = strdup(val);
+            }
         } else if (akey == "structure") {
             if (!std::strcmp(val, "cross-section")) {
                 opt = OPT_X;
@@ -1151,22 +1163,24 @@ void GretlDataset::setobs (const py::kwargs &kwargs)
         }
     }
 
+    const int argc = rcount + pcount;
+
     if (argc == 0 && opt == OPT_NONE) {
         print_smpl(dset, 0, OPT_NONE, GP.prn_ptr());
         GP.print();
         return;
     }
 
-    argc = rcount + pcount;
     if (argc < 2) {
         throw std::invalid_argument("too few arguments for 'setobs'");
-    } else if (pcount > 0) {
+    }
+
+    if (pcount > 0) {
         if (rcount > 0 || opt != OPT_NONE) {
             throw std::invalid_argument("invalid mixed modes in 'setobs'");
-        } else {
-            /* equiv. to --panel-vars */
-            opt = OPT_P;
         }
+        // equiv. to --panel-vars
+        opt = OPT_P;
     }
 
     err = set_obs(arg1, arg2, dset, opt);
