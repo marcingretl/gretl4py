@@ -29,6 +29,10 @@ def run_example():
     m = gretl.ols('employ const prdefl gnp', robust=True, jackknife=True).fit()
     print(m)
 
+    # Clustered standard errors
+    m = gretl.ols('employ const prdefl gnp', cluster='gnp').fit()
+    print(m)
+
     # Simple print output
     m = gretl.ols('employ const prdefl gnp', simple_print=True).fit()
     print(m)
