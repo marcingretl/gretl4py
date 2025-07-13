@@ -1091,7 +1091,7 @@ void GretlDataset::sample (const py::kwargs &kwargs)
         gretlopt opt = OPT_R;
 
         if (opt_replace) {
-            opt = static_cast<gretlopt>(OPT_R | OPT_P);
+            SET_OPT(opt, OPT_R | OPT_P);
         }
         err = restrict_sample(restr, NULL, dset, NULL, opt, GP.prn_ptr(), NULL);
     } else if (t1str || t2str) {

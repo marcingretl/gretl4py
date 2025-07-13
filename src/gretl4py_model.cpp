@@ -362,14 +362,14 @@ void GretlModel::unpack_forecast_kwargs (const py::kwargs &kwargs, int &pconf)
             if (!is_pybool(item.second)) {
                 throw std::invalid_argument("'quiet' value must be a boolean");
             } else if (item.second.cast<int>() != 0) {
-                opt = static_cast<gretlopt>(opt | OPT_Q);
+                SET_OPT(opt, OPT_Q);
             }
         } else if (key == "plot") {
             if (!is_pybool(item.second)) {
                 // FIXME: in principle this could be a filename
                 throw std::invalid_argument("'plot' value must be a boolean");
             } else if (item.second.cast<int>() != 0) {
-                opt = static_cast<gretlopt>(opt | OPT_P);
+                SET_OPT(opt, OPT_P);
             }
         } else if (key == "interval") {
             // we want a percentage value for forecast confidence intervals
@@ -553,7 +553,7 @@ void GretlModel_NSE::test (const std::string &type,
     } else if (type == "corrgm") {
         err = corrgram(GD->dset->v - 1, order,
                        model->ci == ARMA ? arma_model_get_n_arma_coeffs(model) : 0,
-                       GD->dset, static_cast<gretlopt>(opt | OPT_R), GP.prn_ptr());
+                       GD->dset, SET_OPT(opt, OPT_R), GP.prn_ptr());
     } else if (type == "arch" || type == "autocorr" ||
                type == "breusch-pagan" || type == "comfac" ||
                type == "logs" || type == "normality" ||
