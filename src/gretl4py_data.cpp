@@ -1037,6 +1037,7 @@ void GretlDataset::sample (const py::kwargs &kwargs)
     //
     // A method to mimic gretl's 'smpl' command
     //
+    opt = OPT_NONE;
     int opt_replace = 0;
     int full = 0;
     char *t1str = nullptr;
@@ -1110,6 +1111,7 @@ void GretlDataset::setobs (const py::kwargs &kwargs)
     //
     // A method to mimic gretl's 'setobs' command
     //
+    opt = OPT_NONE;
     char *arg1 = nullptr;
     char *arg2 = nullptr;
     int rcount = 0;
