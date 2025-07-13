@@ -408,26 +408,29 @@ void gretl_valid_long_opt (gretlopt &opt, GretlCmdIndex ci,
         if (is_pyint(val) && !ext_val) {
             int ival = val.cast<int>();
 
-            if (ival == 1) {
-                // activate the option
-                SET_OPT(opt, opt_local);
-            } else if (ival != 0) {
+            if (ival != 0 && ival != 1) {
                 throw std::invalid_argument("invalid option parameter");
+            }
+            if (ival == 0) {
+                return; // do not activate the option
             }
         }
     } else {
         // an option parameter is accepted, perhaps required
         if (!is_pystr(val) && !is_pyint(val) && !is_pyfloat(val) && !ext_val) {
             throw std::invalid_argument("unsupported option parameter type");
-        } else if (ext_val) {
-            push_option_param(ci, static_cast<gretlopt>(opt_local), gretl_strdup(ext_val));
+        }
+
+        if (ext_val) {
+            push_option_param(ci, opt_local, gretl_strdup(ext_val));
         } else {
-            push_option_param(ci, static_cast<gretlopt>(opt_local),
+            push_option_param(ci, opt_local,
                               gretl_strdup(MapPyToCpp(val).to_string().c_str()));
         }
-        // we finally tranfser opt_local to opt
-        SET_OPT(opt, opt_local);
     }
+
+    // finally transfer the option
+    SET_OPT(opt, opt_local);
 }
 
 void unpack_kwargs_test (gretlopt &opt, const std::string &type,
