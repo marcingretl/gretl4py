@@ -1041,15 +1041,13 @@ void GretlDataset::sample (const py::kwargs &kwargs)
     char *t1str = NULL;
     char *t2str = NULL;
     char *restr = NULL;
-    const char *val;
 
     for (auto &item : kwargs) {
-        val = NULL;
         if (!is_pystr(item.first)) {
             throw std::invalid_argument("option key must be a string");
         }
         const std::string &key = item.first.cast<std::string>();
-        val = MapPyToCpp(item.second).to_string_view().data();
+        auto val = MapPyToCpp(item.second).to_string_view().data();
 
         if (key == "t1") {
             t1str = strdup(val);
