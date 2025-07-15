@@ -255,11 +255,8 @@ private:
     GretlType res_type;                         // type returned by 'func_name'
     void *res_ptr = NULL;                       // pointer to results from 'func_name'
     std::string func_name;                      // main function to call
-    ufunc *func_name_ptr = NULL;                // function to call: pointer
-    fncall *func_name_call = NULL;              // pointer to function call
-    std::map<std::string,
-        std::map<std::string, int>> func_args;  // map of arguments and their id-s for public functions
-    std::map<std::string, ufunc*> func_ptrs;    // map of pointers to functions in package
+    ufunc *func_name_ptr = NULL;                // main function to call: pointer
+    fncall *func_name_call = NULL;              // pointer to main function call
     bool ready_to_fit = false;                  // if a model can be fitted (required in 'query' mode)
 
     void unpack_kwargs (const std::string &func_name,
@@ -271,7 +268,7 @@ private:
                        GretlType res_to_free_type);
 public:
     GretlModel_package (std::shared_ptr<GretlDataset> GD,
-                        const GretlPackagePtr pkg, const py::kwargs &kwargs);
+                        const GretlPackagePtr PKG, const py::kwargs &kwargs);
     ~GretlModel_package (void);
 
     void fit (void) override;
