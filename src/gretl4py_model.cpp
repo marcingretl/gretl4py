@@ -1290,12 +1290,15 @@ GretlModel_package::GretlModel_package (std::shared_ptr<GretlDataset> GD,
     //
     // register some basic info about function to call
     func_name = GPKG->main_func_get_name();
+    if (func_name.empty()) {
+        throw std::runtime_error("no main function in package: " + GPKG->name());
+    }
     func_name_ptr = GPKG->main_func_get_ptr();
     res_type = GPKG->main_func_get_res_type();
     ready_to_fit = GPKG->is_estimator();
     func_name_call = user_func_get_fncall(func_name_ptr);
     if (!func_name_call) {
-        throw std::runtime_error("unable to load '" + func_name + "' function\n");
+        throw std::runtime_error("unable to load '" + func_name + "' function");
     }
 }
 
@@ -1309,7 +1312,7 @@ void GretlModel_package::free_results (void *res_to_free,
                                        GretlType res_to_free_type)
 {
     // method for releasing memory allocated for resources
-    // returned by function from a package
+    // returned by function main from a package
     // FIXME: later, this need a vector with function as a key,
     // pointer to be released and type this pointer
     if (res_to_free) {

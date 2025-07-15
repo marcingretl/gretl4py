@@ -43,9 +43,10 @@ extern "C" {
 #define GRETL_PYBIND11_DEBUG 0
 
 // global variables (some used outside this file)
-std::shared_ptr<GretlDataset> DSET = nullptr;   // default dataset
-std::unordered_set<std::string> UserVars;       // registry of user variables
-GretlPrint GP = GretlPrint();                   // printer
+std::shared_ptr<GretlDataset> DSET = nullptr;           // default dataset
+std::unordered_set<std::string> UserVars;               // registry of user variables
+static std::map<std::string, GretlPackagePtr> GPKGs;    // registry of loaded contributed packages
+static GretlPrint GP = GretlPrint();                    // printer
 static int gretl4py_verbose = 0;
 
 //////////////////////////////////////////////////
@@ -333,6 +334,7 @@ GretlPackagePtr do_include (const std::string &name)
     //
     std::string basename;
     std::string suffix = "";
+    GretlPackagePtr res = nullptr;
 
     // we check if we deal with suffix-ed string or just basename
     if (has_suffix(name.c_str(), ".gfn") || has_suffix(name.c_str(), ".zip")) {
@@ -344,7 +346,16 @@ GretlPackagePtr do_include (const std::string &name)
         basename = name;
     }
 
-    return std::make_shared<GretlPackage>(basename, suffix);
+    // we look up for package in registry
+    auto it = GPKGs.find(basename);
+    if (it != GPKGs.end()) {
+        res = it->second;
+    } else {
+        res = std::make_shared<GretlPackage>(basename, suffix);
+        GPKGs.emplace(basename, res);
+    }
+
+    return res;
 }
 
 // stuff below is volatile

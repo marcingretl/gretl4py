@@ -264,7 +264,7 @@ private:
     void main_func_set_properties (void);
 public:
     // Note: constructor does everything: load pkg, scan functions, register self
-    explicit GretlPackage (const std::string &pkg_name, const std::string &suffix);
+    GretlPackage (const std::string &pkg_name, const std::string &suffix);
     ~GretlPackage (void);
 
     void set_main (const std::string &name);

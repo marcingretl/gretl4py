@@ -1638,12 +1638,16 @@ GretlPackage::GretlPackage (const std::string &pkg_name,
     }
     pkg_ver = function_package_get_version(pkg);
 
-    // we grab public only functions indexes and names
+    // we grab public only functions (names and indexes)
     function_names_init();
     while (const char* func_name = next_available_function_name(pkg, &idxp)) {
         if (gretl_is_public_user_function(func_name)) {
             // pointers
             auto func_ptr = get_function_from_package(func_name, pkg);
+            if (!func_ptr) {
+                throw std::runtime_error("unable to get pointer to function: "
+                                         + std::string(func_name));
+            }
             func_ptrs.emplace(func_name, func_ptr);
             // arguments
             std::map<std::string, int> arg_names_tmp;
@@ -1682,8 +1686,7 @@ GretlPackage::GretlPackage (const std::string &pkg_name,
 
 GretlPackage::~GretlPackage (void)
 {
-    py::print("GretlPackage: destructor");
-    int err = function_package_unload_full(pkg_name.c_str());
+    err = function_package_unload_full(pkg_name.c_str());
     if (err) {
         std::cerr << errmsg_get_with_default(err) << std::endl;
     }
@@ -1730,13 +1733,13 @@ py::list GretlPackage::functions (void) const
         res.append(key);
         func_ptr = func_ptrs.at(key);
         type = static_cast<GretlType>(user_func_get_return_type(func_ptr));
-        py::print((main_func == key ? "(main) " : "") + key, "->", gretl_type_get_name(type));
         for (const auto &it : val) {
             type = static_cast<GretlType>(fn_param_type(func_ptr, it.second));
             type_str = "(";
             py::print("  ", it.first,
                       type_str.append(gretl_type_get_name(type)).append(")"));
         }
+        py::print((main_func == key ? "(main) " : "") + key, "->", gretl_type_get_name(type));
     }
 
     return res;
