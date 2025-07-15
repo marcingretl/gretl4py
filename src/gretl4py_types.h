@@ -25,6 +25,8 @@
 #include <pybind11/stl.h>
 #include <gretl/libgretl.h>
 #include <gretl/gretl_drivers.h>
+#pragma once
+#include <memory>
 
 // Workaround for gettext redefinition
 #undef gettext
@@ -75,5 +77,9 @@ struct GretlListDeleter {
     }
 };
 using gretl_list_ptr = std::unique_ptr<int, GretlListDeleter>;
+
+// class for handling contributed packages
+class GretlPackage;
+using GretlPackagePtr = std::shared_ptr<GretlPackage>;
 
 #endif // GRETL4PY_TYPES_H

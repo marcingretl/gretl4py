@@ -27,6 +27,9 @@
 #include <gretl/matrix_extra.h>
 #include <gretl/genmain.h>
 #include <gretl/objstack.h>
+extern "C" {
+    #include <gretl/gretl_func.h>
+}
 #include <iostream>
 #include <unordered_set>
 
@@ -236,6 +239,53 @@ public:
 
     inline std::string_view to_string_view (void) const { return static_cast<std::string_view>(as_str); }
 };
+
+//
+// Class to handle contributed packages
+//
+class GretlPackage {
+private:
+    using FunctionMap = std::map<std::string, ufunc*>;      // map of pointers to functions in package
+    using FunctionArgs =
+        std::map<std::string, std::map<std::string, int>>;  // map of arguments and their id-s for public functions
+
+    const std::string file_name;    // name of file to load
+    std::string pkg_name;           // package name
+    fnpkg *pkg = NULL;              // pointer to package
+    double pkg_ver;
+    FunctionMap func_ptrs;
+    FunctionArgs func_args;
+    int err = 0;
+
+    void init_gretl_package (void);
+public:
+    // Note: constructor does everything: load pkg, scan functions, register self
+    explicit GretlPackage (const std::string &name);
+    ~GretlPackage (void);
+
+    /*
+    // Factory function (safe loader that avoids duplicate loading)
+    static GretlPackagePtr load (const std::string &name) {
+        auto it = g_registry.find(name);
+        if (it != g_registry.end()) return it->second;
+
+        return std::make_shared<GretlPackage>(name);  // ctor does registration
+    }
+
+    const std::string &name() const noexcept { return m_name; }
+
+    const FunctionMap &functions() const noexcept { return m_functions; }
+
+    PackageFnPtr get_function (const std::string &fname) const {
+        auto it = m_functions.find(fname);
+
+        return (it != m_functions.end()) ? it->second : nullptr;
+    }
+
+    fnpkg *get_ptr() const noexcept { return m_pkg.get(); }
+    */
+};
+
 
 // function implemented in gretl_calls.cpp
 extern std::shared_ptr<GretlDataset> DSET;

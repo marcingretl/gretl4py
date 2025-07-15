@@ -1607,3 +1607,70 @@ const char *GretlPrint::get_buffer (void)
 {
     return gretl_print_get_buffer(prn);
 }
+
+//
+// GretlPackage class methods
+//
+GretlPackage::GretlPackage (const std::string &name) : file_name(name)
+{
+    py::print("GretlPackage: constructor");
+}
+
+GretlPackage::~GretlPackage (void)
+{
+    py::print("GretlPackage: destructor");
+    int err = function_package_unload_full(pkg_name.c_str());
+    if (err) {
+        std::cerr << errmsg_get_with_default(err) << std::endl;
+    }
+}
+
+void GretlPackage::init_gretl_package (void)
+{
+    int idxp = 0;
+    std::string path(MAXLEN, '\0');
+
+    // we try to use find a path and load the package
+    if (has_suffix(file_name.c_str(), ".gfn")) {
+        err = get_full_filename(file_name.c_str(), path.data(), OPT_I);
+    } else {
+        std::string fullname = file_name + ".gfn";
+        err = get_full_filename(fullname.c_str(), path.data(), OPT_I);
+    }
+    pkg = get_function_package_by_filename(path.c_str(), &err);
+    if (err) {
+        handle_gretl_error(err);
+    }
+
+    // setup some basic info about package
+    if (pkg_name != function_package_get_name(pkg)) {
+        throw std::runtime_error("package name mismatch: internal: '"
+                                 + std::string(function_package_get_name(pkg))
+                                 + "', provided: '" + pkg_name + "'");
+    }
+    pkg_ver = function_package_get_version(pkg);
+
+    // we grab public only functions indexes and names
+    function_names_init();
+    while (const char* func_name = next_available_function_name(pkg, &idxp)) {
+        if (gretl_is_public_user_function(func_name)) {
+            // pointers
+            auto func_ptr = get_function_from_package(func_name, pkg);
+            func_ptrs.emplace(func_name, func_ptr);
+            // arguments
+            std::map<std::string, int> arg_names_tmp;
+            for (int i=0; i<fn_n_params(func_ptr); ++i) {
+                arg_names_tmp.emplace(fn_param_name(func_ptr, i), i);
+            }
+            func_args.emplace(func_name, arg_names_tmp);
+        }
+    }
+
+    if (func_ptrs.empty()) {
+        throw std::runtime_error("no public functions found in '"
+                                 + pkg_name + "' package");
+    }
+
+    py::print("We use " + pkg_name + " package, version: "
+              + std::to_string(pkg_ver) + "\n");
+}

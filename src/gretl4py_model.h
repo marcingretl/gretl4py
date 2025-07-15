@@ -26,12 +26,13 @@
 #include <gretl/gretl_drivers.h>
 extern "C" {
     #include <gretl/gretl_midas.h>
-    #include <gretl/gretl_func.h>
 }
 #include <gretl/objstack.h>
 #include <iostream>
 
 namespace py = pybind11;
+
+using GretlPackageRegistry = std::map<std::string, GretlPackagePtr>;
 
 //
 // Class to handle gretl 'MODEL' type
@@ -287,7 +288,6 @@ public:
 
     void functions (void) const;
 };
-
 
 //////////////////////////////////////////////////
 // aliases

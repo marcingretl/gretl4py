@@ -51,6 +51,8 @@ void do_set (const std::string key,
 
 void do_summary (const std::string &varlist, const py::kwargs &kwargs);
 
+void do_include (const std::string &name);
+
 // these two functions are temporal and will be moved to class
 void gretl_user_var_delete_by_name (const std::string &name);
 

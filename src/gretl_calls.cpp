@@ -325,6 +325,31 @@ void do_summary (const std::string &varlist, const py::kwargs &kwargs)
     GP.print();
 }
 
+void do_include (const std::string &name)
+{
+    //
+    // this function mimics libgretl's 'include' command
+    // for now it acts as factory function for GretlPackage class
+    //
+    py::print("do_include");
+    std::string basename;
+    std::string suffix = "";
+
+    // we check if we deal with suffix-ed string or just basename
+    if (has_suffix(name.c_str(), ".gfn") || has_suffix(name.c_str(), ".zip")) {
+        size_t dot_pos = name.find('.');
+
+        basename = name.substr(0, dot_pos);
+        suffix = name.substr(dot_pos + 1);
+    } else {
+        basename = name;
+    }
+
+    py::print("basename: " + basename);
+    py::print("suffix: " + suffix);
+}
+
+// stuff below is volatile
 void gretl_user_var_delete_by_name (const std::string &name)
 {
     if (UserVars.find(name) != UserVars.end()) {
