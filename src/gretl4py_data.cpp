@@ -31,6 +31,7 @@ extern "C" {
     #include <gretl/var.h>
     #include <gretl/genfuncs.h>
     #include <gretl/gretl_xml.h>
+    #include <gretl/gretl_typemap.h>
 }
 #include <string>
 #include <cassert>
@@ -1652,14 +1653,31 @@ GretlPackage::GretlPackage (const std::string &pkg_name,
             func_args.emplace(func_name, arg_names_tmp);
         }
     }
-
     if (func_ptrs.empty()) {
         throw std::runtime_error("no public functions found in '"
                                  + pkg_name + "' package");
     }
 
+    // we try to register package 'main' function (i.e. the one to call via ::fit())
+    if (func_ptrs.size() == 1) {
+        main_func = func_ptrs.begin()->first;
+    } else {
+        // some heuristics here
+        auto it = func_ptrs.find(pkg_name);
+        if (it != func_ptrs.end()) {
+            main_func = it->first;
+        }
+    }
+    if (main_func.empty()) {
+        py::print("warning: package main function didn't found: please use ::set_main()");
+    } else {
+        main_func_set_properties();
+    }
+
+    // package summary
     py::print("We use " + pkg_name + " package, version: "
-              + std::to_string(pkg_ver) + "\n");
+              + std::to_string(pkg_ver) + "\n"
+              + "  main function: " + main_func);
 }
 
 GretlPackage::~GretlPackage (void)
@@ -1669,4 +1687,88 @@ GretlPackage::~GretlPackage (void)
     if (err) {
         std::cerr << errmsg_get_with_default(err) << std::endl;
     }
+}
+
+void GretlPackage::main_func_set_properties (void)
+{
+    auto it = func_ptrs.find(main_func);
+
+    main_func_ptr = it->second;
+    main_func_res_type = static_cast<GretlType>(user_func_get_return_type(main_func_ptr));
+}
+
+void GretlPackage::set_main (const std::string &name)
+{
+    auto it = func_ptrs.find(name);
+
+    if (it != func_ptrs.end()) {
+        main_func = name;
+        main_func_set_properties();
+    } else {
+        throw std::invalid_argument("there is no such function: " + name);
+    }
+}
+
+std::string GretlPackage::name (void) const
+{
+    return pkg_name;
+}
+
+py::list GretlPackage::functions (void) const
+{
+    if (func_args.empty()) {
+        throw std::runtime_error("no available functions");
+    }
+
+    GretlType type;
+    std::string type_str;
+    ufunc *func_ptr;
+    py::list res;
+
+    py::print("Functions available in " + pkg_name + " package:");
+    for (const auto& [key, val] : func_args) {
+        res.append(key);
+        func_ptr = func_ptrs.at(key);
+        type = static_cast<GretlType>(user_func_get_return_type(func_ptr));
+        py::print((main_func == key ? "(main) " : "") + key, "->", gretl_type_get_name(type));
+        for (const auto &it : val) {
+            type = static_cast<GretlType>(fn_param_type(func_ptr, it.second));
+            type_str = "(";
+            py::print("  ", it.first,
+                      type_str.append(gretl_type_get_name(type)).append(")"));
+        }
+    }
+
+    return res;
+}
+
+bool GretlPackage::is_estimator (void) const
+{
+    return defines_estimator;
+}
+
+std::map<std::string, int> GretlPackage::get_func_args (const std::string &fun_name) const
+{
+    auto it = func_args.find(fun_name);
+
+    if (it != func_args.end()) {
+        return it->second;
+    } else {
+        throw std::invalid_argument("there is no such function: " + fun_name);
+    }
+}
+
+std::string GretlPackage::main_func_get_name (void) const
+{
+    return main_func;
+}
+
+ufunc *GretlPackage::main_func_get_ptr (void) const
+{
+    return main_func_ptr;
+}
+
+GretlType GretlPackage::main_func_get_res_type (void) const
+{
+    return main_func_res_type;
 }

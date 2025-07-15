@@ -70,11 +70,6 @@ PYBIND11_MODULE(_gretl, m)
           py::arg("varlist").none(true) = "", py::kw_only());
     m.def("include", &do_include,
           py::arg("name").none(false));
-    m.def("package_functions",
-          [](const std::string &name)
-          {
-              GretlModel_package(DSET, name).functions();
-          }, py::arg("name").none(false));
     m.def("delete", &gretl_user_var_delete_by_name,
           py::arg("name").none(false));
     m.def("uservar_print", &gretl_print_user_var_by_name,
@@ -181,9 +176,9 @@ PYBIND11_MODULE(_gretl, m)
     // packages
     //////////////////////////////////////////////////
     m.def("package",
-          [](const std::string &name, const std::string &fname, const py::kwargs &kwargs) -> std::unique_ptr<GretlModel>
+          [](const GretlPackagePtr package, const py::kwargs &kwargs) -> std::unique_ptr<GretlModel>
           {
-              return std::make_unique<GretlModel_package>(DSET, name, fname, kwargs);
+              return std::make_unique<GretlModel_package>(DSET, package, kwargs);
           },
-          py::arg("name").none(false), py::arg("fname").none(true) = "", py::kw_only());
+          py::arg("package").none(false), py::kw_only());
 }

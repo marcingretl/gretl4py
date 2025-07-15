@@ -255,15 +255,33 @@ private:
     double pkg_ver;
     FunctionMap func_ptrs;
     FunctionArgs func_args;
+    std::string main_func = "";     // name of main package function
+    ufunc *main_func_ptr = NULL;    // pointer to main function
+    GretlType main_func_res_type = GRETL_TYPE_NONE; // type returned by main_func
+    bool defines_estimator = true;  // true if package implements estimation
     int err = 0;
+
+    void main_func_set_properties (void);
 public:
     // Note: constructor does everything: load pkg, scan functions, register self
     explicit GretlPackage (const std::string &pkg_name, const std::string &suffix);
     ~GretlPackage (void);
 
-    std::string name (void) const { return pkg_name; }
+    void set_main (const std::string &name);
 
-    void functions (void) const { py::print("GretlPackage:functions"); }
+    std::string name (void) const;
+
+    py::list functions (void) const;
+
+    bool is_estimator (void) const;
+
+    std::map<std::string, int> get_func_args (const std::string &fun_name) const;
+
+    std::string main_func_get_name (void) const;
+
+    ufunc *main_func_get_ptr (void) const;
+
+    GretlType main_func_get_res_type (void) const;
 
     /*
     // Factory function (safe loader that avoids duplicate loading)

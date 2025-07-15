@@ -128,8 +128,10 @@ void init_gretl4py_dataset_py11(py::module_ &m)
 // GretlPackage mappings
 void init_gretl4py_package_py11(py::module_ &m)
 {
-    py::class_<GretlPackage, GretlPackagePtr>(m, "GretlPackage")
+    py::class_<GretlPackage, GretlPackagePtr>(m, "Package")
     .def("name", &GretlPackage::name)
     .def("functions", &GretlPackage::functions)
+    .def("set_main", &GretlPackage::set_main,
+         py::arg("name").none(false))
     /*.def("get_ptr", &GretlPackage::get_ptr, py::return_value_policy::reference)*/;
 }

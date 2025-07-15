@@ -251,9 +251,7 @@ public:
 class GretlModel_package : public GretlModel
 {
 private:
-    std::string pkg_name;
-    double pkg_ver;
-    fnpkg *pkg = NULL;
+    const GretlPackagePtr GPKG;
     GretlType res_type;                         // type returned by 'func_name'
     void *res_ptr = NULL;                       // pointer to results from 'func_name'
     std::string func_name;                      // main function to call
@@ -269,15 +267,11 @@ private:
 
     void *model_ptr (void) const override;
 
-    void init_gretl_package (const std::string &name);
-
     void free_results (void *res_to_free,
                        GretlType res_to_free_type);
 public:
     GretlModel_package (std::shared_ptr<GretlDataset> GD,
-                        const std::string &name, const std::string &fname,
-                        const py::kwargs &kwargs);
-    GretlModel_package (std::shared_ptr<GretlDataset> GD, const std::string &name);
+                        const GretlPackagePtr pkg, const py::kwargs &kwargs);
     ~GretlModel_package (void);
 
     void fit (void) override;
