@@ -271,7 +271,9 @@ public:
 
     std::string name (void) const;
 
-    py::list functions (void) const;
+    void functions (void) const;
+
+    py::list get_functions (void) const;
 
     bool is_estimator (void) const;
 

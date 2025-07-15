@@ -1695,7 +1695,6 @@ GretlPackage::~GretlPackage (void)
 void GretlPackage::main_func_set_properties (void)
 {
     auto it = func_ptrs.find(main_func);
-
     main_func_ptr = it->second;
     main_func_res_type = static_cast<GretlType>(user_func_get_return_type(main_func_ptr));
 }
@@ -1703,7 +1702,6 @@ void GretlPackage::main_func_set_properties (void)
 void GretlPackage::set_main (const std::string &name)
 {
     auto it = func_ptrs.find(name);
-
     if (it != func_ptrs.end()) {
         main_func = name;
         main_func_set_properties();
@@ -1717,7 +1715,7 @@ std::string GretlPackage::name (void) const
     return pkg_name;
 }
 
-py::list GretlPackage::functions (void) const
+void GretlPackage::functions (void) const
 {
     if (func_args.empty()) {
         throw std::runtime_error("no available functions");
@@ -1726,11 +1724,9 @@ py::list GretlPackage::functions (void) const
     GretlType type;
     std::string type_str;
     ufunc *func_ptr;
-    py::list res;
 
     py::print("Functions available in " + pkg_name + " package:");
-    for (const auto& [key, val] : func_args) {
-        res.append(key);
+    for (const auto &[key, val] : func_args) {
         func_ptr = func_ptrs.at(key);
         type = static_cast<GretlType>(user_func_get_return_type(func_ptr));
         for (const auto &it : val) {
@@ -1740,6 +1736,19 @@ py::list GretlPackage::functions (void) const
                       type_str.append(gretl_type_get_name(type)).append(")"));
         }
         py::print((main_func == key ? "(main) " : "") + key, "->", gretl_type_get_name(type));
+    }
+}
+
+py::list GretlPackage::get_functions (void) const
+{
+    if (func_args.empty()) {
+        throw std::runtime_error("no available functions");
+    }
+
+    py::list res;
+
+    for (auto &it : func_args) {
+        res.append(it.first);
     }
 
     return res;
