@@ -1611,31 +1611,18 @@ const char *GretlPrint::get_buffer (void)
 //
 // GretlPackage class methods
 //
-GretlPackage::GretlPackage (const std::string &name) : file_name(name)
-{
-    py::print("GretlPackage: constructor");
-}
-
-GretlPackage::~GretlPackage (void)
-{
-    py::print("GretlPackage: destructor");
-    int err = function_package_unload_full(pkg_name.c_str());
-    if (err) {
-        std::cerr << errmsg_get_with_default(err) << std::endl;
-    }
-}
-
-void GretlPackage::init_gretl_package (void)
+GretlPackage::GretlPackage (const std::string &pkg_name,
+                            const std::string &suffix)
+                            : pkg_name(pkg_name), suffix(suffix)
 {
     int idxp = 0;
     std::string path(MAXLEN, '\0');
 
     // we try to use find a path and load the package
-    if (has_suffix(file_name.c_str(), ".gfn")) {
-        err = get_full_filename(file_name.c_str(), path.data(), OPT_I);
+    if (suffix.empty()) {
+        err = get_full_filename((pkg_name + ".gfn").c_str(), path.data(), OPT_I);
     } else {
-        std::string fullname = file_name + ".gfn";
-        err = get_full_filename(fullname.c_str(), path.data(), OPT_I);
+        err = get_full_filename((pkg_name + suffix).c_str(), path.data(), OPT_I);
     }
     pkg = get_function_package_by_filename(path.c_str(), &err);
     if (err) {
@@ -1673,4 +1660,13 @@ void GretlPackage::init_gretl_package (void)
 
     py::print("We use " + pkg_name + " package, version: "
               + std::to_string(pkg_ver) + "\n");
+}
+
+GretlPackage::~GretlPackage (void)
+{
+    py::print("GretlPackage: destructor");
+    int err = function_package_unload_full(pkg_name.c_str());
+    if (err) {
+        std::cerr << errmsg_get_with_default(err) << std::endl;
+    }
 }

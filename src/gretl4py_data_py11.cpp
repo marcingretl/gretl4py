@@ -24,7 +24,8 @@ namespace py = pybind11;
 // signature from libgretl
 const char *gretl_workdir (void);
 
-void init_gretl4py_data_py11(py::module_ &m)
+// GretlDataset mappings
+void init_gretl4py_dataset_py11(py::module_ &m)
 {
     py::class_<GretlDataset, std::shared_ptr<GretlDataset>>(m, "Dataset", py::dynamic_attr())
         .def(py::init([](const std::string &fname) { return std::make_shared<GretlDataset>(fname); }))
@@ -122,4 +123,13 @@ void init_gretl4py_data_py11(py::module_ &m)
              },
              py::arg("type"), py::kw_only(),
              py::return_value_policy::take_ownership);
+}
+
+// GretlPackage mappings
+void init_gretl4py_package_py11(py::module_ &m)
+{
+    py::class_<GretlPackage, GretlPackagePtr>(m, "GretlPackage")
+    .def("name", &GretlPackage::name)
+    .def("functions", &GretlPackage::functions)
+    /*.def("get_ptr", &GretlPackage::get_ptr, py::return_value_policy::reference)*/;
 }

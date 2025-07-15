@@ -249,19 +249,21 @@ private:
     using FunctionArgs =
         std::map<std::string, std::map<std::string, int>>;  // map of arguments and their id-s for public functions
 
-    const std::string file_name;    // name of file to load
-    std::string pkg_name;           // package name
+    const std::string pkg_name;     // package name (base of filename)
+    const std::string suffix;       // filename suffix
     fnpkg *pkg = NULL;              // pointer to package
     double pkg_ver;
     FunctionMap func_ptrs;
     FunctionArgs func_args;
     int err = 0;
-
-    void init_gretl_package (void);
 public:
     // Note: constructor does everything: load pkg, scan functions, register self
-    explicit GretlPackage (const std::string &name);
+    explicit GretlPackage (const std::string &pkg_name, const std::string &suffix);
     ~GretlPackage (void);
+
+    std::string name (void) const { return pkg_name; }
+
+    void functions (void) const { py::print("GretlPackage:functions"); }
 
     /*
     // Factory function (safe loader that avoids duplicate loading)

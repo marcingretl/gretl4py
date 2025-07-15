@@ -325,13 +325,12 @@ void do_summary (const std::string &varlist, const py::kwargs &kwargs)
     GP.print();
 }
 
-void do_include (const std::string &name)
+GretlPackagePtr do_include (const std::string &name)
 {
     //
     // this function mimics libgretl's 'include' command
     // for now it acts as factory function for GretlPackage class
     //
-    py::print("do_include");
     std::string basename;
     std::string suffix = "";
 
@@ -340,13 +339,12 @@ void do_include (const std::string &name)
         size_t dot_pos = name.find('.');
 
         basename = name.substr(0, dot_pos);
-        suffix = name.substr(dot_pos + 1);
+        suffix = name.substr(dot_pos);
     } else {
         basename = name;
     }
 
-    py::print("basename: " + basename);
-    py::print("suffix: " + suffix);
+    return std::make_shared<GretlPackage>(basename, suffix);
 }
 
 // stuff below is volatile
