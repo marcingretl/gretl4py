@@ -1679,21 +1679,15 @@ GretlPackage::GretlPackage (const std::string &pkg_name,
     }
 
     // we look up for JEL codes
-    jel = get_properties("tags");
+    jel = get_properties<std::vector<std::string>>("tags");
     check_if_defines_estimator();
 
     // package summary
-    std::string jel_str;
-    for (size_t i=0; i<jel.size(); ++i) {
-        jel_str.append(jel[i]);
-        if (i != jel.size() - 1) {
-            jel_str.append(" ");
-        }
-    }
     py::print("We use " + pkg_name + " package, version: "
               + std::to_string(pkg_ver)
-              + ", JEL codes: " + jel_str
-              + "\n  main function: " + main_func);
+              + ", JEL codes: " + get_properties<std::string>("tags")
+              + "\n  main function: " + main_func
+              + ", provides estimator: " + (defines_estimator ? "yes": "no"));
 }
 
 GretlPackage::~GretlPackage (void)
@@ -1711,27 +1705,36 @@ void GretlPackage::main_func_set_properties (void)
     main_func_res_type = static_cast<GretlType>(user_func_get_return_type(main_func_ptr));
 }
 
-std::vector<std::string> GretlPackage::get_properties (const char *prop)
+template<typename T>
+T GretlPackage::get_properties (const char *prop)
 {
     //
     // we get package properties
     //
-    std::vector<std::string> res;
+    T res;
     gchar *val = nullptr;
 
     err = function_package_get_properties(pkg, prop, &val, NULL);
     if (err) {
         handle_gretl_error(err);
     }
+    if (!val) {
+        handle_gretl_error(E_ALLOC);
+    }
 
-    if (val) {
+    // we produce output
+    if constexpr (std::is_same_v<T, std::vector<std::string>>) {
         std::istringstream iss(val);
         std::string token;
         while (iss >> token) {
-            res.push_back(token);
+            res.push_back(std::move(token));
         }
-        g_free(val);
+    } else if constexpr (std::is_same_v<T, std::string>) {
+        res = val;
+    } else {
+        throw std::runtime_error("get_properties: unsupported type");
     }
+    g_free(val);
 
     return res;
 }
