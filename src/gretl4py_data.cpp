@@ -1678,10 +1678,22 @@ GretlPackage::GretlPackage (const std::string &pkg_name,
         main_func_set_properties();
     }
 
+    // we look up for JEL codes
+    jel = get_properties("tags");
+    check_if_defines_estimator();
+
     // package summary
+    std::string jel_str;
+    for (size_t i=0; i<jel.size(); ++i) {
+        jel_str.append(jel[i]);
+        if (i != jel.size() - 1) {
+            jel_str.append(" ");
+        }
+    }
     py::print("We use " + pkg_name + " package, version: "
-              + std::to_string(pkg_ver) + "\n"
-              + "  main function: " + main_func);
+              + std::to_string(pkg_ver)
+              + ", JEL codes: " + jel_str
+              + "\n  main function: " + main_func);
 }
 
 GretlPackage::~GretlPackage (void)
@@ -1697,6 +1709,46 @@ void GretlPackage::main_func_set_properties (void)
     auto it = func_ptrs.find(main_func);
     main_func_ptr = it->second;
     main_func_res_type = static_cast<GretlType>(user_func_get_return_type(main_func_ptr));
+}
+
+std::vector<std::string> GretlPackage::get_properties (const char *prop)
+{
+    //
+    // we get package properties
+    //
+    std::vector<std::string> res;
+    gchar *val = nullptr;
+
+    err = function_package_get_properties(pkg, prop, &val, NULL);
+    if (err) {
+        handle_gretl_error(err);
+    }
+
+    if (val) {
+        std::istringstream iss(val);
+        std::string token;
+        while (iss >> token) {
+            res.push_back(token);
+        }
+        g_free(val);
+    }
+
+    return res;
+}
+
+void GretlPackage::check_if_defines_estimator (void)
+{
+    const std::unordered_set<std::string> estimation_codes = {
+        "C13", "C14", "C15", "C20", "C21", "C22", "C23", "C24",
+        "C25", "C26", "C30", "C31", "C32", "C33", "C34", "C35",
+        "C36", "C40", "C41", "C51", "C52", "C53", "C54", "C58"};
+
+    for (const auto &it : jel) {
+        if (estimation_codes.count(it)) {
+            defines_estimator = true;
+            return;
+        }
+    }
 }
 
 void GretlPackage::set_main (const std::string &name)

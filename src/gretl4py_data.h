@@ -259,9 +259,14 @@ private:
     ufunc *main_func_ptr = NULL;    // pointer to main function
     GretlType main_func_res_type = GRETL_TYPE_NONE; // type returned by main_func
     bool defines_estimator = true;  // true if package implements estimation
+    std::vector<std::string> jel;   // vector of JEL codes
     int err = 0;
 
     void main_func_set_properties (void);
+
+    void check_if_defines_estimator (void);
+
+    std::vector<std::string> get_properties (const char *prop);
 public:
     // Note: constructor does everything: load pkg, scan functions, register self
     GretlPackage (const std::string &pkg_name, const std::string &suffix);
