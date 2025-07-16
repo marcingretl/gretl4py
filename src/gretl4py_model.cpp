@@ -1288,14 +1288,17 @@ GretlModel_package::GretlModel_package (std::shared_ptr<GretlDataset> GD,
     //
     // basic constructor use for normal operations
     //
+    if (!GPKG->is_estimator()) {
+        throw std::runtime_error(GPKG->name() + " package doesn't provide an estimation method");
+    }
+
     // register some basic info about function to call
     func_name = GPKG->main_func_get_name();
     if (func_name.empty()) {
         throw std::runtime_error("no main function in package: " + GPKG->name());
     }
-    func_name_ptr = GPKG->main_func_get_ptr();
     res_type = GPKG->main_func_get_res_type();
-    func_name_call = user_func_get_fncall(func_name_ptr);
+    func_name_call = user_func_get_fncall(GPKG->main_func_get_ptr());
     if (!func_name_call) {
         throw std::runtime_error("unable to load '" + func_name + "' function");
     }
@@ -1356,6 +1359,7 @@ void GretlModel_package::unpack_kwargs (const std::string &func_name,
     void *arg_value = NULL; // pointer to value to be pushed on stack
     double darg_value;      // value to be pushed on stack (if double)
     std::map<std::string, int> func_name_args;
+    ufunc *func_name_ptr = GPKG->main_func_get_ptr();
 
     // map function to call with arguments
     func_name_args = GPKG->get_func_args(func_name);
@@ -1431,10 +1435,6 @@ void *GretlModel_package::model_ptr (void) const
 
 void GretlModel_package::fit (void)
 {
-    if (!GPKG->is_estimator()) {
-        throw std::runtime_error(GPKG->name() + " package doesn't provide an estimation method");
-    }
-
     // we unpack parameters
     unpack_kwargs(func_name, kwargs);
 

@@ -255,7 +255,6 @@ private:
     GretlType res_type;                         // type returned by 'func_name'
     void *res_ptr = NULL;                       // pointer to results from 'func_name'
     std::string func_name;                      // main function to call
-    ufunc *func_name_ptr = NULL;                // main function to call: pointer
     fncall *func_name_call = NULL;              // pointer to main function call
 
     void unpack_kwargs (const std::string &func_name,
