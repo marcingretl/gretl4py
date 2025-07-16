@@ -1636,7 +1636,6 @@ GretlPackage::GretlPackage (const std::string &pkg_name,
                                  + std::string(function_package_get_name(pkg))
                                  + "', provided: '" + pkg_name + "'");
     }
-    pkg_ver = function_package_get_version(pkg);
 
     // we grab public only functions (names and indexes)
     function_names_init();
@@ -1674,8 +1673,6 @@ GretlPackage::GretlPackage (const std::string &pkg_name,
     }
     if (main_func.empty()) {
         py::print("warning: package main function didn't found: please use ::set_main()");
-    } else {
-        main_func_set_properties();
     }
 
     // we look up for JEL codes
@@ -1684,7 +1681,7 @@ GretlPackage::GretlPackage (const std::string &pkg_name,
 
     // package summary
     py::print("We use " + pkg_name + " package, version: "
-              + std::to_string(pkg_ver)
+              + std::to_string(function_package_get_version(pkg))
               + ", JEL codes: " + get_properties<std::string>("tags")
               + "\n  main function: " + main_func
               + ", provides estimator: " + (defines_estimator ? "yes" : "no")
@@ -1697,13 +1694,6 @@ GretlPackage::~GretlPackage (void)
     if (err) {
         std::cerr << errmsg_get_with_default(err) << std::endl;
     }
-}
-
-void GretlPackage::main_func_set_properties (void)
-{
-    auto it = func_ptrs.find(main_func);
-    main_func_ptr = it->second;
-    main_func_res_type = static_cast<GretlType>(user_func_get_return_type(main_func_ptr));
 }
 
 template<typename T>
@@ -1760,7 +1750,6 @@ void GretlPackage::set_main (const std::string &name)
     auto it = func_ptrs.find(name);
     if (it != func_ptrs.end()) {
         main_func = name;
-        main_func_set_properties();
     } else {
         throw std::invalid_argument("there is no such function: " + name);
     }
@@ -1831,12 +1820,22 @@ std::string GretlPackage::main_func_get_name (void) const
     return main_func;
 }
 
-ufunc *GretlPackage::main_func_get_ptr (void) const
+ufunc *GretlPackage::func_get_ptr (const std::string &name) const
 {
-    return main_func_ptr;
+    auto it = func_ptrs.find(name);
+    if (it != func_ptrs.end()) {
+        return it->second;
+    } else {
+        throw std::invalid_argument("unknown function: " + name);
+    }
 }
 
-GretlType GretlPackage::main_func_get_res_type (void) const
+GretlType GretlPackage::func_get_res_type (const std::string &name) const
 {
-    return main_func_res_type;
+    auto it = func_ptrs.find(name);
+    if (it != func_ptrs.end()) {
+        return static_cast<GretlType>(user_func_get_return_type(it->second));;
+    } else {
+        throw std::invalid_argument("unknown function: " + name);
+    }
 }

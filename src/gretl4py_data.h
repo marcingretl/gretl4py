@@ -252,17 +252,12 @@ private:
     const std::string pkg_name;     // package name (base of filename)
     const std::string suffix;       // filename suffix
     fnpkg *pkg = NULL;              // pointer to package
-    double pkg_ver;
+    std::string main_func = "";     // name of main package function
+    std::vector<std::string> jel;   // vector of JEL codes
+    bool defines_estimator = false; // true if package implements estimation
     FunctionMap func_ptrs;
     FunctionArgs func_args;
-    std::string main_func = "";     // name of main package function
-    ufunc *main_func_ptr = NULL;    // pointer to main function
-    GretlType main_func_res_type = GRETL_TYPE_NONE; // type returned by main_func
-    bool defines_estimator = false; // true if package implements estimation
-    std::vector<std::string> jel;   // vector of JEL codes
     int err = 0;
-
-    void main_func_set_properties (void);
 
     void check_if_defines_estimator (void);
 
@@ -287,9 +282,9 @@ public:
 
     std::string main_func_get_name (void) const;
 
-    ufunc *main_func_get_ptr (void) const;
+    ufunc *func_get_ptr (const std::string &name) const;
 
-    GretlType main_func_get_res_type (void) const;
+    GretlType func_get_res_type (const std::string &name) const;
 
     /*
     // Factory function (safe loader that avoids duplicate loading)
