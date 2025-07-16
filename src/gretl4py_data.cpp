@@ -1687,7 +1687,8 @@ GretlPackage::GretlPackage (const std::string &pkg_name,
               + std::to_string(pkg_ver)
               + ", JEL codes: " + get_properties<std::string>("tags")
               + "\n  main function: " + main_func
-              + ", provides estimator: " + (defines_estimator ? "yes": "no"));
+              + ", provides estimator: " + (defines_estimator ? "yes" : "no")
+              + "\n");
 }
 
 GretlPackage::~GretlPackage (void)

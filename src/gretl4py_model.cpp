@@ -1295,7 +1295,6 @@ GretlModel_package::GretlModel_package (std::shared_ptr<GretlDataset> GD,
     }
     func_name_ptr = GPKG->main_func_get_ptr();
     res_type = GPKG->main_func_get_res_type();
-    ready_to_fit = GPKG->is_estimator();
     func_name_call = user_func_get_fncall(func_name_ptr);
     if (!func_name_call) {
         throw std::runtime_error("unable to load '" + func_name + "' function");
@@ -1432,8 +1431,8 @@ void *GretlModel_package::model_ptr (void) const
 
 void GretlModel_package::fit (void)
 {
-    if (!ready_to_fit) {
-        throw std::runtime_error("model was not fully setup");
+    if (!GPKG->is_estimator()) {
+        throw std::runtime_error(GPKG->name() + " package doesn't provide an estimation method");
     }
 
     // we unpack parameters

@@ -257,7 +257,6 @@ private:
     std::string func_name;                      // main function to call
     ufunc *func_name_ptr = NULL;                // main function to call: pointer
     fncall *func_name_call = NULL;              // pointer to main function call
-    bool ready_to_fit = false;                  // if a model can be fitted (required in 'query' mode)
 
     void unpack_kwargs (const std::string &func_name,
                         const py::kwargs &kwargs);// hides base-class method
