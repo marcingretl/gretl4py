@@ -258,8 +258,6 @@ private:
     void unpack_kwargs (void) {};       // hides base-class method
 
     void *model_ptr (void) const override;
-
-    void free_results (GretlPackageRes &res);
 public:
     GretlModel_package (std::shared_ptr<GretlDataset> GD,
                         const GretlPackagePtr PKG, const py::kwargs &kwargs);

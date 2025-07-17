@@ -1697,6 +1697,40 @@ GretlPackage::~GretlPackage (void)
     }
 }
 
+void GretlPackage::free_results (GretlPackageRes &res)
+{
+    // method for releasing memory allocated for resources
+    // returned by function main from a package
+    if (res.ptr) {
+        switch (res.type) {
+            case GRETL_TYPE_MATRIX:
+                gretl_matrix_free(static_cast<gretl_matrix*>(res.ptr));
+                break;
+            case GRETL_TYPE_BUNDLE:
+                gretl_bundle_destroy(static_cast<gretl_bundle*>(res.ptr));
+                break;
+            case GRETL_TYPE_STRING:
+                std::free(static_cast<char*>(res.ptr));
+                break;
+            case GRETL_TYPE_SERIES:
+                std::free(static_cast<double*>(res.ptr));
+                break;
+            case GRETL_TYPE_MATRICES:
+            case GRETL_TYPE_STRINGS:
+            case GRETL_TYPE_BUNDLES:
+                gretl_array_destroy(static_cast<gretl_array*>(res.ptr));
+                break;
+            case GRETL_TYPE_DOUBLE: // here we use stack-allocated variable
+            case GRETL_TYPE_LIST:   // here we use unique_ptr
+                break;
+            default:
+                std::cerr << "GretlModel_package::free_results(): unsupported type" << std::endl;
+        }
+        res.ptr = nullptr;
+        res.type = GRETL_TYPE_NONE;
+    }
+}
+
 void GretlPackage::check_if_defines_estimator (void)
 {
     const std::unordered_set<std::string> estimation_codes = {
@@ -1721,16 +1755,22 @@ T GretlPackage::get_properties (const char *prop)
     T res;
     gchar *val = nullptr;
 
-    err = function_package_get_properties(pkg, prop, &val, NULL);
+    if constexpr (std::is_same_v<T, DataReq>) {
+        err = function_package_get_properties(pkg, prop, &res, NULL);
+    } else {
+        err = function_package_get_properties(pkg, prop, &val, NULL);
+        if (!val) {
+            handle_gretl_error(E_ALLOC);
+        }
+    }
     if (err) {
         handle_gretl_error(err);
     }
-    if (!val) {
-        handle_gretl_error(E_ALLOC);
-    }
 
     // we produce output
-    if constexpr (std::is_same_v<T, std::vector<std::string>>) {
+    if constexpr (std::is_same_v<T, DataReq>) {
+        return res;
+    } else if constexpr (std::is_same_v<T, std::vector<std::string>>) {
         std::istringstream iss(val);
         std::string token;
         while (iss >> token) {
@@ -1741,22 +1781,18 @@ T GretlPackage::get_properties (const char *prop)
     } else {
         throw std::runtime_error("get_properties: unsupported type");
     }
+
+    // we free results (id needed)
     g_free(val);
 
     return res;
 }
 
-
-
-
-
 void GretlPackage::unpack_kwargs_package (const std::string &func_name,
                                           fncall *func_call,
-                                          GretlDatasetPtr GD,
+                                          GretlDatasetPtr &GD,
                                           const py::kwargs &kwargs)
 {
-    py::print("GretlPackage::unpack_kwargs_package");
-
     std::string arg_name;
     void *arg_value = NULL; // pointer to value to be pushed on stack
     double darg_value;      // value to be pushed on stack (if double)
@@ -1834,11 +1870,6 @@ void GretlPackage::unpack_kwargs_package (const std::string &func_name,
         }
     }
 }
-
-
-
-
-
 
 void GretlPackage::set_main (const std::string &name)
 {
@@ -1933,4 +1964,62 @@ GretlType GretlPackage::func_get_res_type (const std::string &name) const
     } else {
         throw std::invalid_argument("unknown function: " + name);
     }
+}
+
+GretlPackageRes GretlPackage::function_exec (const std::string &func_name,
+                                             GretlDatasetPtr &GD, GretlPrint &GP,
+                                             const py::kwargs &kwargs)
+{
+    // we prepare function to call
+    fncall *func_call = user_func_get_fncall(func_get_ptr(func_name));
+    if (!func_call) {
+        throw std::runtime_error("unable to load '" + func_name + "' function");
+    }
+
+    // we unpack parameters
+    unpack_kwargs_package(func_name, func_call, GD, kwargs);
+
+    if (!GD && !(get_properties<DataReq>("data-requirement") == FN_NODATA_OK)) {
+        throw std::runtime_error("No dataset is available");
+    }
+
+    // we must set returning type (must be released at the end)
+    GretlPackageRes res;
+    gretl_list_ptr gr_list{nullptr};
+
+    res.type = func_get_res_type(func_name);
+    switch (res.type) {
+        case GRETL_TYPE_MATRIX:
+            res.ptr = static_cast<gretl_matrix*>(nullptr);
+            break;
+        case GRETL_TYPE_BUNDLE:
+            res.ptr = static_cast<gretl_bundle*>(nullptr);
+            break;
+        case GRETL_TYPE_LIST:
+            res.ptr = gr_list.get();
+            break;
+        case GRETL_TYPE_SERIES:
+            res.ptr = static_cast<double*>(nullptr);
+            break;
+        case GRETL_TYPE_MATRICES:
+        case GRETL_TYPE_STRINGS:
+        case GRETL_TYPE_BUNDLES:
+            res.ptr = static_cast<gretl_array*>(nullptr);
+            break;
+        case GRETL_TYPE_STRING:
+        case GRETL_TYPE_DOUBLE:
+        case GRETL_TYPE_VOID:
+            break;
+        default:
+            throw std::runtime_error("unsupported function returning type");
+    }
+
+    // function execution
+    err = gretl_function_exec(func_call, res.type, GD->dset,
+                              &res.ptr, GP.prn_ptr());
+    if (err) {
+        handle_gretl_error(err);
+    }
+
+    return res;
 }

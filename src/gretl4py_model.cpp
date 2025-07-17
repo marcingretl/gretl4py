@@ -1295,41 +1295,7 @@ GretlModel_package::GretlModel_package (std::shared_ptr<GretlDataset> GD,
 
 GretlModel_package::~GretlModel_package (void)
 {
-    free_results(res);
-}
-
-void GretlModel_package::free_results (GretlPackageRes &res)
-{
-    // method for releasing memory allocated for resources
-    // returned by function main from a package
-    if (res.ptr) {
-        switch (res.type) {
-            case GRETL_TYPE_MATRIX:
-                gretl_matrix_free(static_cast<gretl_matrix*>(res.ptr));
-                break;
-            case GRETL_TYPE_BUNDLE:
-                gretl_bundle_destroy(static_cast<gretl_bundle*>(res.ptr));
-                break;
-            case GRETL_TYPE_STRING:
-                std::free(static_cast<char*>(res.ptr));
-                break;
-            case GRETL_TYPE_SERIES:
-                std::free(static_cast<double*>(res.ptr));
-                break;
-            case GRETL_TYPE_MATRICES:
-            case GRETL_TYPE_STRINGS:
-            case GRETL_TYPE_BUNDLES:
-                gretl_array_destroy(static_cast<gretl_array*>(res.ptr));
-                break;
-            case GRETL_TYPE_DOUBLE: // here we use stack-allocated variable
-            case GRETL_TYPE_LIST:   // here we use unique_ptr
-                break;
-            default:
-                std::cerr << "GretlModel_package::free_results(): unsupported type" << std::endl;
-        }
-        res.ptr = nullptr;
-        res.type = GRETL_TYPE_NONE;
-    }
+    GPKG->free_results(res);
 }
 
 void *GretlModel_package::model_ptr (void) const
@@ -1339,56 +1305,7 @@ void *GretlModel_package::model_ptr (void) const
 
 void GretlModel_package::fit (void)
 {
-    // we prepare function to call
-    fncall *func_name_call = user_func_get_fncall(GPKG->func_get_ptr(main_func_name));
-    if (!func_name_call) {
-        throw std::runtime_error("unable to load '" + main_func_name + "' function");
-    }
-
-    // we unpack parameters
-    GPKG->unpack_kwargs_package(main_func_name, func_name_call,
-                                GD, kwargs);
-
-    if (!GD) {
-        throw std::runtime_error("No dataset is available");
-    }
-
-    // we must set returning type (must be released at the end)
-    gretl_list_ptr gr_list{nullptr};
-    free_results(res);
-    res.type = GPKG->func_get_res_type(main_func_name);
-    switch (res.type) {
-        case GRETL_TYPE_MATRIX:
-            res.ptr = static_cast<gretl_matrix*>(nullptr);
-            break;
-        case GRETL_TYPE_BUNDLE:
-            res.ptr = static_cast<gretl_bundle*>(nullptr);
-            break;
-        case GRETL_TYPE_LIST:
-            res.ptr = gr_list.get();
-            break;
-        case GRETL_TYPE_SERIES:
-            res.ptr = static_cast<double*>(nullptr);
-            break;
-        case GRETL_TYPE_MATRICES:
-        case GRETL_TYPE_STRINGS:
-        case GRETL_TYPE_BUNDLES:
-            res.ptr = static_cast<gretl_array*>(nullptr);
-            break;
-        case GRETL_TYPE_STRING:
-        case GRETL_TYPE_DOUBLE:
-        case GRETL_TYPE_VOID:
-            break;
-        default:
-            throw std::runtime_error("unsupported function returning type");
-    }
-
-    // function execution
-    err = gretl_function_exec(func_name_call, res.type,
-                              GD->dset, &res.ptr, GP.prn_ptr());
-    if (err) {
-        handle_gretl_error(err);
-    }
+    res = GPKG->function_exec(main_func_name, GD, GP, kwargs);
 
     // saving results
     summary = GP.get_buffer();
@@ -1403,6 +1320,9 @@ void GretlModel_package::fit (void)
         }
         py::setattr(self, "results", variant_to_pyobject(std::move(*val)));
     }
+
+    // results free
+    GPKG->free_results(res);
 }
 
 void GretlModel_package::forecast (const py::kwargs &kwargs)

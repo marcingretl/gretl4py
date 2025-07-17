@@ -263,6 +263,11 @@ private:
 
     template<typename T>
     T get_properties (const char *prop);
+
+    void unpack_kwargs_package (const std::string &func_name,
+                                fncall *func_call,
+                                GretlDatasetPtr &GD,
+                                const py::kwargs &kwargs);
 public:
     // Note: constructor does everything: load pkg, scan functions, register self
     GretlPackage (const std::string &pkg_name, const std::string &suffix);
@@ -286,13 +291,14 @@ public:
 
     GretlType func_get_res_type (const std::string &name) const;
 
-    // FIXME: two below to private!!!
+    GretlPackageRes function_exec (const std::string &func_name,
+                                   GretlDatasetPtr &GD, GretlPrint &GP,
+                                   const py::kwargs &kwargs);
+
+    // FIXME: the one below to private!!!
     void free_results (GretlPackageRes &res);
 
-    void unpack_kwargs_package (const std::string &func_name,
-                                fncall *func_call,
-                                GretlDatasetPtr GD,
-                                const py::kwargs &kwargs);
+
     /*
     // Factory function (safe loader that avoids duplicate loading)
     static GretlPackagePtr load (const std::string &name) {
