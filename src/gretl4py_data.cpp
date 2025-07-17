@@ -32,6 +32,7 @@ extern "C" {
     #include <gretl/genfuncs.h>
     #include <gretl/gretl_xml.h>
     #include <gretl/gretl_typemap.h>
+    #include <gretl/uservar.h>
 }
 #include <string>
 #include <cassert>
@@ -1696,6 +1697,21 @@ GretlPackage::~GretlPackage (void)
     }
 }
 
+void GretlPackage::check_if_defines_estimator (void)
+{
+    const std::unordered_set<std::string> estimation_codes = {
+        "C13", "C14", "C15", "C20", "C21", "C22", "C23", "C24",
+        "C25", "C26", "C30", "C31", "C32", "C33", "C34", "C35",
+        "C36", "C40", "C41", "C51", "C52", "C53", "C54", "C58"};
+
+    for (const auto &it : jel) {
+        if (estimation_codes.count(it)) {
+            defines_estimator = true;
+            return;
+        }
+    }
+}
+
 template<typename T>
 T GretlPackage::get_properties (const char *prop)
 {
@@ -1730,20 +1746,99 @@ T GretlPackage::get_properties (const char *prop)
     return res;
 }
 
-void GretlPackage::check_if_defines_estimator (void)
-{
-    const std::unordered_set<std::string> estimation_codes = {
-        "C13", "C14", "C15", "C20", "C21", "C22", "C23", "C24",
-        "C25", "C26", "C30", "C31", "C32", "C33", "C34", "C35",
-        "C36", "C40", "C41", "C51", "C52", "C53", "C54", "C58"};
 
-    for (const auto &it : jel) {
-        if (estimation_codes.count(it)) {
-            defines_estimator = true;
-            return;
+
+
+
+void GretlPackage::unpack_kwargs_package (const std::string &func_name,
+                                          fncall *func_call,
+                                          GretlDatasetPtr GD,
+                                          const py::kwargs &kwargs)
+{
+    py::print("GretlPackage::unpack_kwargs_package");
+
+    std::string arg_name;
+    void *arg_value = NULL; // pointer to value to be pushed on stack
+    double darg_value;      // value to be pushed on stack (if double)
+    std::map<std::string, int> func_name_args;
+
+    // map function to call with arguments
+    func_name_args = get_func_args(func_name);
+
+    // we push arguments on stack
+    if (py::len(kwargs) > 0) {
+        for (auto [key, val] : kwargs) {
+            arg_value = NULL;
+            int arg_no = -1;
+            auto key_str = py::cast<std::string>(key);
+            PythonArgInfo arginfo = inspect_pyobject(val);
+
+            if (key_str == "data") {
+                // special case: we use already allocated object of GretlDataset class
+                GD = val.cast<GretlDatasetPtr>();
+                continue;
+            }
+
+            auto it = func_name_args.find(key_str);
+            if (it != func_name_args.end()) {
+                arg_no = it->second;
+            } else {
+                throw std::invalid_argument(key_str + ": there is no such argument in function: " + func_name);
+            }
+            GretlType key_type = static_cast<GretlType>(fn_param_type(func_get_ptr(func_name), arg_no));
+
+            if (key_type == GRETL_TYPE_SERIES && GD) {
+                // special case: for series we swap situation and
+                // evaluate arg via type declared in a function
+                arg_name = py::cast<std::string>(val);
+                int vnum = GD->get_series_id(arg_name);
+                err = push_function_arg(func_call, arg_name.c_str(), NULL, GRETL_TYPE_USERIES, &vnum);
+                if (err) {
+                    handle_gretl_error(err);
+                }
+                continue;
+            } else if (arginfo.gtype == GRETL_TYPE_STRING) {
+                // special case: we need to know if we deal with defined variable or string per se
+                arg_name = py::cast<std::string>(val);
+                if (UserVars.find(arg_name) != UserVars.end()) {
+                    user_var *uv = get_user_var_by_name(arg_name.c_str());
+                    err = push_function_arg(func_call, key_str.c_str(),
+                                            uv, user_var_get_type(uv), user_var_get_value(uv));
+                    if (err) {
+                        handle_gretl_error(err);
+                    }
+                    continue;
+                } else {
+                    // here we deal with string per se
+                    char *arg_name_copy = strdup(arg_name.c_str());
+                    arg_value = static_cast<void*>(arg_name_copy);
+                }
+            } else if (arginfo.gtype == GRETL_TYPE_BOOL) {
+                darg_value = py::cast<double>(val);
+                err = push_function_arg(func_call, key_str.c_str(), NULL, GRETL_TYPE_DOUBLE, &darg_value);
+                if (err) {
+                    handle_gretl_error(err);
+                }
+                continue;
+            } else if (arginfo.gtype == GRETL_TYPE_DOUBLE || arginfo.gtype == GRETL_TYPE_INT) {
+                darg_value = py::cast<double>(val);
+                arg_value = &darg_value;
+            } else {
+                throw std::runtime_error("variable " + key_str + ":, unsupported type: " + arginfo.pytype);
+            }
+            err = push_function_arg(func_call, key_str.c_str(),
+                                    NULL, arginfo.gtype, arg_value);
+            if (err) {
+                handle_gretl_error(err);
+            }
         }
     }
 }
+
+
+
+
+
 
 void GretlPackage::set_main (const std::string &name)
 {

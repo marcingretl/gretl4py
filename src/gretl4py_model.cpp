@@ -25,7 +25,7 @@ extern "C" {
     #include <gretl/gretl_restrict.h>
     #include <gretl/varprint.h>
     #include <gretl/gretl_typemap.h> //FIXME: to be deleted!!!
-    #include <gretl/uservar.h>
+    #include <gretl/uservar.h> //FIXME: to be deleted!!!
 }
 #include <gretl/forecast.h>
 #include <string>
@@ -1332,89 +1332,6 @@ void GretlModel_package::free_results (GretlPackageRes &res)
     }
 }
 
-void GretlModel_package::unpack_kwargs (const std::string &func_name,
-                                        fncall *func_call,
-                                        const py::kwargs &kwargs)
-{
-    py::print("GretlModel_package::unpack_kwargs");
-    /* maybe we need it in future
-    const bool use_instance_kwargs = kwargs.contains("kwargs_mode") &&
-                                 is_pystr(kwargs["kwargs_mode"]) &&
-                                 kwargs["kwargs_mode"].cast<std::string>() == "instance";
-    py::kwargs local_kwargs = use_instance_kwargs ? this->kwargs : kwargs;*/
-
-    std::string arg_name;
-    void *arg_value = NULL; // pointer to value to be pushed on stack
-    double darg_value;      // value to be pushed on stack (if double)
-    std::map<std::string, int> func_name_args;
-
-    // map function to call with arguments
-    func_name_args = GPKG->get_func_args(func_name);
-
-    // we push arguments on stack
-    if (py::len(kwargs) > 0) {
-        for (auto [key, val] : kwargs) {
-            arg_value = NULL;
-            int arg_no = -1;
-            auto key_str = py::cast<std::string>(key);
-            PythonArgInfo arginfo = inspect_pyobject(val);
-
-            auto it = func_name_args.find(key_str);
-            if (it != func_name_args.end()) {
-                arg_no = it->second;
-            } else {
-                throw std::invalid_argument(key_str + ": there is no such argument in function: " + func_name);
-            }
-            GretlType key_type = static_cast<GretlType>(fn_param_type(GPKG->func_get_ptr(func_name), arg_no));
-
-            if (key_type == GRETL_TYPE_SERIES) {
-                // special case: for series we swap situation and
-                // evaluate arg via type declared in a function
-                arg_name = py::cast<std::string>(val);
-                int vnum = GD->get_series_id(arg_name);
-                err = push_function_arg(func_call, arg_name.c_str(), NULL, GRETL_TYPE_USERIES, &vnum);
-                if (err) {
-                    handle_gretl_error(err);
-                }
-                continue;
-            } else if (arginfo.gtype == GRETL_TYPE_STRING) {
-                // special case: we need to know if we deal with defined variable or string per se
-                arg_name = py::cast<std::string>(val);
-                if (UserVars.find(arg_name) != UserVars.end()) {
-                    user_var *uv = get_user_var_by_name(arg_name.c_str());
-                    err = push_function_arg(func_call, key_str.c_str(),
-                                            uv, user_var_get_type(uv), user_var_get_value(uv));
-                    if (err) {
-                        handle_gretl_error(err);
-                    }
-                    continue;
-                } else {
-                    // here we deal with string per se
-                    char *arg_name_copy = strdup(arg_name.c_str());
-                    arg_value = static_cast<void*>(arg_name_copy);
-                }
-            } else if (arginfo.gtype == GRETL_TYPE_BOOL) {
-                darg_value = py::cast<double>(val);
-                err = push_function_arg(func_call, key_str.c_str(), NULL, GRETL_TYPE_DOUBLE, &darg_value);
-                if (err) {
-                    handle_gretl_error(err);
-                }
-                continue;
-            } else if (arginfo.gtype == GRETL_TYPE_DOUBLE || arginfo.gtype == GRETL_TYPE_INT) {
-                darg_value = py::cast<double>(val);
-                arg_value = &darg_value;
-            } else {
-                throw std::runtime_error("variable " + key_str + ":, unsupported type: " + arginfo.pytype);
-            }
-            err = push_function_arg(func_call, key_str.c_str(),
-                                    NULL, arginfo.gtype, arg_value);
-            if (err) {
-                handle_gretl_error(err);
-            }
-        }
-    }
-}
-
 void *GretlModel_package::model_ptr (void) const
 {
     return static_cast<void*>(nullptr);
@@ -1429,7 +1346,8 @@ void GretlModel_package::fit (void)
     }
 
     // we unpack parameters
-    unpack_kwargs(main_func_name, func_name_call, kwargs);
+    GPKG->unpack_kwargs_package(main_func_name, func_name_call,
+                                GD, kwargs);
 
     if (!GD) {
         throw std::runtime_error("No dataset is available");

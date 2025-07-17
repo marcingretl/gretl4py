@@ -255,9 +255,7 @@ private:
     const std::string main_func_name;   // main function to call
     GretlPackageRes res;                // function results
 
-    void unpack_kwargs (const std::string &func_name,
-                        fncall *func_call,
-                        const py::kwargs &kwargs);// hides base-class method
+    void unpack_kwargs (void) {};       // hides base-class method
 
     void *model_ptr (void) const override;
 

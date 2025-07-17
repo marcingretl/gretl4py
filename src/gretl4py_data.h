@@ -286,6 +286,13 @@ public:
 
     GretlType func_get_res_type (const std::string &name) const;
 
+    // FIXME: two below to private!!!
+    void free_results (GretlPackageRes &res);
+
+    void unpack_kwargs_package (const std::string &func_name,
+                                fncall *func_call,
+                                GretlDatasetPtr GD,
+                                const py::kwargs &kwargs);
     /*
     // Factory function (safe loader that avoids duplicate loading)
     static GretlPackagePtr load (const std::string &name) {

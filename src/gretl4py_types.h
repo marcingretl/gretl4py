@@ -87,8 +87,10 @@ struct GretlListDeleter {
 };
 using gretl_list_ptr = std::unique_ptr<int, GretlListDeleter>;
 
-// class for handling contributed packages
 class GretlPackage;
 using GretlPackagePtr = std::shared_ptr<GretlPackage>;
+
+class GretlDataset;
+using GretlDatasetPtr = std::shared_ptr<GretlDataset>;
 
 #endif // GRETL4PY_TYPES_H
