@@ -253,8 +253,7 @@ class GretlModel_package : public GretlModel
 private:
     const GretlPackagePtr GPKG;         // pointer to package to use
     const std::string main_func_name;   // main function to call
-    GretlType res_type;                 // type returned by 'func_name'
-    void *res_ptr = NULL;               // pointer to results from 'func_name'
+    GretlPackageRes res;                // function results
 
     void unpack_kwargs (const std::string &func_name,
                         fncall *func_call,
@@ -262,7 +261,7 @@ private:
 
     void *model_ptr (void) const override;
 
-    void free_results (void *res_to_free, GretlType res_to_free_type);
+    void free_results (GretlPackageRes &res);
 public:
     GretlModel_package (std::shared_ptr<GretlDataset> GD,
                         const GretlPackagePtr PKG, const py::kwargs &kwargs);

@@ -65,6 +65,15 @@ struct PythonArgInfo {
     bool valid = true;
 };
 
+struct GretlPackageRes {
+    GretlType type = GRETL_TYPE_NONE;
+    void *ptr = nullptr;
+};
+
+//////////////////////////////////////////////////
+// smart pointers
+//////////////////////////////////////////////////
+
 // gretl_list_ptr default deleter
 struct GretlListDeleter {
     void operator() (int *ptr) const

@@ -1295,36 +1295,31 @@ GretlModel_package::GretlModel_package (std::shared_ptr<GretlDataset> GD,
 
 GretlModel_package::~GretlModel_package (void)
 {
-    if (res_ptr) {
-        free_results(res_ptr, res_type);
-    }
+    free_results(res);
 }
 
-void GretlModel_package::free_results (void *res_to_free,
-                                       GretlType res_to_free_type)
+void GretlModel_package::free_results (GretlPackageRes &res)
 {
     // method for releasing memory allocated for resources
     // returned by function main from a package
-    // FIXME: later, this need a vector with function as a key,
-    // pointer to be released and type this pointer
-    if (res_to_free) {
-        switch (res_to_free_type) {
+    if (res.ptr) {
+        switch (res.type) {
             case GRETL_TYPE_MATRIX:
-                gretl_matrix_free(static_cast<gretl_matrix*>(res_to_free));
+                gretl_matrix_free(static_cast<gretl_matrix*>(res.ptr));
                 break;
             case GRETL_TYPE_BUNDLE:
-                gretl_bundle_destroy(static_cast<gretl_bundle*>(res_to_free));
+                gretl_bundle_destroy(static_cast<gretl_bundle*>(res.ptr));
                 break;
             case GRETL_TYPE_STRING:
-                std::free(static_cast<char*>(res_to_free));
+                std::free(static_cast<char*>(res.ptr));
                 break;
             case GRETL_TYPE_SERIES:
-                std::free(static_cast<double*>(res_to_free));
+                std::free(static_cast<double*>(res.ptr));
                 break;
             case GRETL_TYPE_MATRICES:
             case GRETL_TYPE_STRINGS:
             case GRETL_TYPE_BUNDLES:
-                gretl_array_destroy(static_cast<gretl_array*>(res_to_free));
+                gretl_array_destroy(static_cast<gretl_array*>(res.ptr));
                 break;
             case GRETL_TYPE_DOUBLE: // here we use stack-allocated variable
             case GRETL_TYPE_LIST:   // here we use unique_ptr
@@ -1332,8 +1327,9 @@ void GretlModel_package::free_results (void *res_to_free,
             default:
                 std::cerr << "GretlModel_package::free_results(): unsupported type" << std::endl;
         }
+        res.ptr = nullptr;
+        res.type = GRETL_TYPE_NONE;
     }
-    res_to_free = NULL;
 }
 
 void GretlModel_package::unpack_kwargs (const std::string &func_name,
@@ -1441,42 +1437,37 @@ void GretlModel_package::fit (void)
 
     // we must set returning type (must be released at the end)
     gretl_list_ptr gr_list{nullptr};
-
-    if (res_ptr) {
-        free_results(res_ptr, res_type);
-        res_type = GRETL_TYPE_NONE;
-    }
-
-    res_type = GPKG->func_get_res_type(main_func_name);
-    switch (res_type) {
+    free_results(res);
+    res.type = GPKG->func_get_res_type(main_func_name);
+    switch (res.type) {
         case GRETL_TYPE_MATRIX:
-            res_ptr = static_cast<gretl_matrix*>(nullptr);
+            res.ptr = static_cast<gretl_matrix*>(nullptr);
             break;
         case GRETL_TYPE_BUNDLE:
-            res_ptr = static_cast<gretl_bundle*>(nullptr);
+            res.ptr = static_cast<gretl_bundle*>(nullptr);
             break;
         case GRETL_TYPE_LIST:
-            res_ptr = gr_list.get();
+            res.ptr = gr_list.get();
             break;
         case GRETL_TYPE_SERIES:
-            res_ptr = static_cast<double*>(nullptr);
+            res.ptr = static_cast<double*>(nullptr);
             break;
         case GRETL_TYPE_MATRICES:
         case GRETL_TYPE_STRINGS:
         case GRETL_TYPE_BUNDLES:
-            res_ptr = static_cast<gretl_array*>(nullptr);
+            res.ptr = static_cast<gretl_array*>(nullptr);
             break;
         case GRETL_TYPE_STRING:
         case GRETL_TYPE_DOUBLE:
         case GRETL_TYPE_VOID:
             break;
         default:
-        throw std::runtime_error("unsupported function returning type");
+            throw std::runtime_error("unsupported function returning type");
     }
 
     // function execution
-    err = gretl_function_exec(func_name_call, res_type,
-                              GD->dset, &res_ptr, GP.prn_ptr());
+    err = gretl_function_exec(func_name_call, res.type,
+                              GD->dset, &res.ptr, GP.prn_ptr());
     if (err) {
         handle_gretl_error(err);
     }
@@ -1484,11 +1475,11 @@ void GretlModel_package::fit (void)
     // saving results
     summary = GP.get_buffer();
     py::object self = py::cast(this);
-    if (res_type == GRETL_TYPE_BUNDLE) {
-        GretlBundle(static_cast<gretl_bundle*>(res_ptr)).python_register(self);
+    if (res.type == GRETL_TYPE_BUNDLE) {
+        GretlBundle(static_cast<gretl_bundle*>(res.ptr)).python_register(self);
     } else {
-        GretlType t = res_type;
-        auto val = convert_GretlType_to_GretlTypes(t, res_ptr, 0, err);
+        GretlType t = res.type;
+        auto val = convert_GretlType_to_GretlTypes(t, res.ptr, 0, err);
         if (err) {
             handle_gretl_error(err);
         }
