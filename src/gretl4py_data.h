@@ -275,9 +275,9 @@ public:
 
     void set_main (const std::string &name);
 
-    std::string name (void) const;
+    std::string get_name (void) const;
 
-    void functions (void) const;
+    void show_functions (void) const;
 
     py::list get_functions (void) const;
 
@@ -294,32 +294,6 @@ public:
     GretlPackageRes function_exec (const std::string &func_name,
                                    GretlDatasetPtr &GD, GretlPrint &GP,
                                    const py::kwargs &kwargs);
-
-    // FIXME: the one below to private!!!
-    void free_results (GretlPackageRes &res);
-
-
-    /*
-    // Factory function (safe loader that avoids duplicate loading)
-    static GretlPackagePtr load (const std::string &name) {
-        auto it = g_registry.find(name);
-        if (it != g_registry.end()) return it->second;
-
-        return std::make_shared<GretlPackage>(name);  // ctor does registration
-    }
-
-    const std::string &name() const noexcept { return m_name; }
-
-    const FunctionMap &functions() const noexcept { return m_functions; }
-
-    PackageFnPtr get_function (const std::string &fname) const {
-        auto it = m_functions.find(fname);
-
-        return (it != m_functions.end()) ? it->second : nullptr;
-    }
-
-    fnpkg *get_ptr() const noexcept { return m_pkg.get(); }
-    */
 };
 
 

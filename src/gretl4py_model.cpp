@@ -1286,16 +1286,11 @@ GretlModel_package::GretlModel_package (std::shared_ptr<GretlDataset> GD,
                                         GPKG(PKG), main_func_name(PKG->main_func_get_name())
 {
     if (!GPKG->is_estimator()) {
-        throw std::runtime_error(GPKG->name() + " package doesn't provide an estimation method");
+        throw std::runtime_error(GPKG->get_name() + " package doesn't provide an estimation method");
     }
     if (main_func_name.empty()) {
-        throw std::runtime_error("no main function in package: " + GPKG->name());
+        throw std::runtime_error("no main function in package: " + GPKG->get_name());
     }
-}
-
-GretlModel_package::~GretlModel_package (void)
-{
-    GPKG->free_results(res);
 }
 
 void *GretlModel_package::model_ptr (void) const
@@ -1308,21 +1303,19 @@ void GretlModel_package::fit (void)
     res = GPKG->function_exec(main_func_name, GD, GP, kwargs);
 
     // saving results
-    summary = GP.get_buffer();
     py::object self = py::cast(this);
+
+    summary = GP.get_buffer();
     if (res.type == GRETL_TYPE_BUNDLE) {
-        GretlBundle(static_cast<gretl_bundle*>(res.ptr)).python_register(self);
+        GretlBundle(static_cast<gretl_bundle*>(res.get())).python_register(self);
     } else {
         GretlType t = res.type;
-        auto val = convert_GretlType_to_GretlTypes(t, res.ptr, 0, err);
+        auto val = convert_GretlType_to_GretlTypes(t, res.get(), 0, err);
         if (err) {
             handle_gretl_error(err);
         }
         py::setattr(self, "results", variant_to_pyobject(std::move(*val)));
     }
-
-    // results free
-    GPKG->free_results(res);
 }
 
 void GretlModel_package::forecast (const py::kwargs &kwargs)
@@ -1337,5 +1330,5 @@ std::string GretlModel_package::get_formula (void) const
 
 void GretlModel_package::functions (void) const
 {
-    GPKG->functions();
+    GPKG->show_functions();
 }

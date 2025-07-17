@@ -27,6 +27,7 @@
 #include <gretl/gretl_drivers.h>
 #pragma once
 #include <memory>
+#include <iostream>
 
 // Workaround for gettext redefinition
 #undef gettext
@@ -65,11 +66,6 @@ struct PythonArgInfo {
     bool valid = true;
 };
 
-struct GretlPackageRes {
-    GretlType type = GRETL_TYPE_NONE;
-    void *ptr = nullptr;
-};
-
 //////////////////////////////////////////////////
 // smart pointers
 //////////////////////////////////////////////////
@@ -87,6 +83,64 @@ struct GretlListDeleter {
 };
 using gretl_list_ptr = std::unique_ptr<int, GretlListDeleter>;
 
+// function results deleter
+struct GretlResourceDeleter {
+    GretlType type = GRETL_TYPE_NONE;
+
+    void operator() (void *p) const {
+        if (!p) return;
+
+        switch (type) {
+            case GRETL_TYPE_MATRIX:
+                gretl_matrix_free(static_cast<gretl_matrix*>(p));
+                break;
+            case GRETL_TYPE_BUNDLE:
+                gretl_bundle_destroy(static_cast<gretl_bundle*>(p));
+                break;
+            case GRETL_TYPE_STRING:
+                std::free(static_cast<char*>(p));
+                break;
+            case GRETL_TYPE_SERIES:
+                std::free(static_cast<double*>(p));
+                break;
+            case GRETL_TYPE_MATRICES:
+            case GRETL_TYPE_STRINGS:
+            case GRETL_TYPE_BUNDLES:
+                gretl_array_destroy(static_cast<gretl_array*>(p));
+                break;
+            case GRETL_TYPE_DOUBLE:
+            case GRETL_TYPE_LIST:
+                // not owned here
+                break;
+            default:
+                std::cerr << "GretlResourceDeleter: unsupported type" << std::endl;
+        }
+    }
+};
+using GretlResourcePtr = std::unique_ptr<void, GretlResourceDeleter>;
+
+// struct for holding results returned by functions from contributed packages
+struct GretlPackageRes {
+    void *raw_ptr = nullptr;            // pointer to returned value
+    GretlType type = GRETL_TYPE_NONE;   // type of returned object
+
+    void set_type (GretlType t) { type = t; }
+
+    void *get (void) const { return raw_ptr; }
+
+    void **out_ptr (void) { return &raw_ptr; }
+
+    bool valid (void) const { return ptr != nullptr; }
+
+    void transfer_ownership (void) {
+        ptr = GretlResourcePtr(raw_ptr, GretlResourceDeleter{type});
+    }
+
+private:
+    GretlResourcePtr ptr = {nullptr, GretlResourceDeleter{GRETL_TYPE_NONE}};
+};
+
+// gretl4py classes
 class GretlPackage;
 using GretlPackagePtr = std::shared_ptr<GretlPackage>;
 

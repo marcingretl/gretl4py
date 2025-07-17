@@ -1697,40 +1697,6 @@ GretlPackage::~GretlPackage (void)
     }
 }
 
-void GretlPackage::free_results (GretlPackageRes &res)
-{
-    // method for releasing memory allocated for resources
-    // returned by function main from a package
-    if (res.ptr) {
-        switch (res.type) {
-            case GRETL_TYPE_MATRIX:
-                gretl_matrix_free(static_cast<gretl_matrix*>(res.ptr));
-                break;
-            case GRETL_TYPE_BUNDLE:
-                gretl_bundle_destroy(static_cast<gretl_bundle*>(res.ptr));
-                break;
-            case GRETL_TYPE_STRING:
-                std::free(static_cast<char*>(res.ptr));
-                break;
-            case GRETL_TYPE_SERIES:
-                std::free(static_cast<double*>(res.ptr));
-                break;
-            case GRETL_TYPE_MATRICES:
-            case GRETL_TYPE_STRINGS:
-            case GRETL_TYPE_BUNDLES:
-                gretl_array_destroy(static_cast<gretl_array*>(res.ptr));
-                break;
-            case GRETL_TYPE_DOUBLE: // here we use stack-allocated variable
-            case GRETL_TYPE_LIST:   // here we use unique_ptr
-                break;
-            default:
-                std::cerr << "GretlModel_package::free_results(): unsupported type" << std::endl;
-        }
-        res.ptr = nullptr;
-        res.type = GRETL_TYPE_NONE;
-    }
-}
-
 void GretlPackage::check_if_defines_estimator (void)
 {
     const std::unordered_set<std::string> estimation_codes = {
@@ -1881,12 +1847,12 @@ void GretlPackage::set_main (const std::string &name)
     }
 }
 
-std::string GretlPackage::name (void) const
+std::string GretlPackage::get_name (void) const
 {
     return pkg_name;
 }
 
-void GretlPackage::functions (void) const
+void GretlPackage::show_functions (void) const
 {
     if (func_args.empty()) {
         throw std::runtime_error("no available functions");
@@ -1979,6 +1945,7 @@ GretlPackageRes GretlPackage::function_exec (const std::string &func_name,
     // we unpack parameters
     unpack_kwargs_package(func_name, func_call, GD, kwargs);
 
+    // we check dataset in the context of package's "data-requirement"
     if (!GD && !(get_properties<DataReq>("data-requirement") == FN_NODATA_OK)) {
         throw std::runtime_error("No dataset is available");
     }
@@ -1987,38 +1954,16 @@ GretlPackageRes GretlPackage::function_exec (const std::string &func_name,
     GretlPackageRes res;
     gretl_list_ptr gr_list{nullptr};
 
-    res.type = func_get_res_type(func_name);
-    switch (res.type) {
-        case GRETL_TYPE_MATRIX:
-            res.ptr = static_cast<gretl_matrix*>(nullptr);
-            break;
-        case GRETL_TYPE_BUNDLE:
-            res.ptr = static_cast<gretl_bundle*>(nullptr);
-            break;
-        case GRETL_TYPE_LIST:
-            res.ptr = gr_list.get();
-            break;
-        case GRETL_TYPE_SERIES:
-            res.ptr = static_cast<double*>(nullptr);
-            break;
-        case GRETL_TYPE_MATRICES:
-        case GRETL_TYPE_STRINGS:
-        case GRETL_TYPE_BUNDLES:
-            res.ptr = static_cast<gretl_array*>(nullptr);
-            break;
-        case GRETL_TYPE_STRING:
-        case GRETL_TYPE_DOUBLE:
-        case GRETL_TYPE_VOID:
-            break;
-        default:
-            throw std::runtime_error("unsupported function returning type");
-    }
+    res.set_type(func_get_res_type(func_name));
 
     // function execution
     err = gretl_function_exec(func_call, res.type, GD->dset,
-                              &res.ptr, GP.prn_ptr());
+                              res.out_ptr(), GP.prn_ptr());
     if (err) {
         handle_gretl_error(err);
+    }
+    if (res.valid()) {
+        handle_gretl_error(E_ALLOC);
     }
 
     return res;

@@ -261,7 +261,6 @@ private:
 public:
     GretlModel_package (std::shared_ptr<GretlDataset> GD,
                         const GretlPackagePtr PKG, const py::kwargs &kwargs);
-    ~GretlModel_package (void);
 
     void fit (void) override;
 
