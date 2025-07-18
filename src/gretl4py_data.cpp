@@ -1619,6 +1619,9 @@ GretlPackage::GretlPackage (const std::string &pkg_name,
 {
     int idxp = 0;
     std::string path(MAXLEN, '\0');
+    std::unordered_set<std::string> excluded_functions;
+    const std::unordered_set<UfunRole> excluded_roles = { UFUN_BUNDLE_PLOT,
+            UFUN_GUI_MAIN, UFUN_GUI_PRECHECK, UFUN_PLOT_PRECHECK, UFUN_UI_MAKER };
 
     // we try to use find a path and load the package
     if (suffix.empty()) {
@@ -1639,10 +1642,20 @@ GretlPackage::GretlPackage (const std::string &pkg_name,
     }
 
     // we grab public only functions (names and indexes)
+    // excluding specific roles
     function_names_init();
+
+    // we look for functions to exclude (mostly related with plotting and GUI
+    for (auto role : excluded_roles) {
+        auto func_name = get_properties<std::string>(package_role_get_key(role));
+        if (!func_name.empty()) {
+            excluded_functions.insert(std::move(func_name));
+        }
+    }
+
+    // we register functions metadata
     while (const char* func_name = next_available_function_name(pkg, &idxp)) {
-        if (gretl_is_public_user_function(func_name)) {
-            // pointers
+        if (gretl_is_public_user_function(func_name) && !excluded_functions.count(func_name)) {
             auto func_ptr = get_function_from_package(func_name, pkg);
             if (!func_ptr) {
                 throw std::runtime_error("unable to get pointer to function: "
@@ -1672,9 +1685,6 @@ GretlPackage::GretlPackage (const std::string &pkg_name,
             main_func = it->first;
         }
     }
-    if (main_func.empty()) {
-        py::print("warning: package main function didn't found: please use ::set_main()");
-    }
 
     // we look up for JEL codes
     jel = get_properties<std::vector<std::string>>("tags");
@@ -1684,9 +1694,12 @@ GretlPackage::GretlPackage (const std::string &pkg_name,
     py::print("We use " + pkg_name + " package, version: "
               + std::to_string(function_package_get_version(pkg))
               + ", JEL codes: " + get_properties<std::string>("tags")
-              + "\n  main function: " + main_func
-              + ", provides estimator: " + (defines_estimator ? "yes" : "no")
-              + "\n");
+              + "\n  main function: " + (main_func.empty() ? "none" : main_func)
+              + ", provides estimator: " + (defines_estimator ? "yes" : "no"));
+    if (main_func.empty()) {
+        py::print("warning: package main function didn't found: please use ::set_main()");
+    }
+    py::print();
 }
 
 GretlPackage::~GretlPackage (void)
@@ -1725,9 +1738,6 @@ T GretlPackage::get_properties (const char *prop)
         err = function_package_get_properties(pkg, prop, &res, NULL);
     } else {
         err = function_package_get_properties(pkg, prop, &val, NULL);
-        if (!val) {
-            handle_gretl_error(E_ALLOC);
-        }
     }
     if (err) {
         handle_gretl_error(err);
@@ -1736,6 +1746,8 @@ T GretlPackage::get_properties (const char *prop)
     // we produce output
     if constexpr (std::is_same_v<T, DataReq>) {
         return res;
+    } else if (!val) {
+        return {}; // gracefully return empty value
     } else if constexpr (std::is_same_v<T, std::vector<std::string>>) {
         std::istringstream iss(val);
         std::string token;
@@ -1745,6 +1757,7 @@ T GretlPackage::get_properties (const char *prop)
     } else if constexpr (std::is_same_v<T, std::string>) {
         res = val;
     } else {
+        g_free(val);
         throw std::runtime_error("get_properties: unsupported type");
     }
 
@@ -1866,14 +1879,16 @@ void GretlPackage::show_functions (void) const
     for (const auto &[key, val] : func_args) {
         func_ptr = func_ptrs.at(key);
         type = static_cast<GretlType>(user_func_get_return_type(func_ptr));
+        py::print(key, "->", gretl_type_get_name(type), (main_func == key ? "[main] " : ""));
         for (const auto &it : val) {
             type = static_cast<GretlType>(fn_param_type(func_ptr, it.second));
             type_str = "(";
             py::print("  ", it.first,
-                      type_str.append(gretl_type_get_name(type)).append(")"));
+                      type_str.append(gretl_type_get_name(type)).append(")"),
+                      (fn_param_optional(func_ptr, it.second) ? "[optional]" : ""));
         }
-        py::print((main_func == key ? "(main) " : "") + key, "->", gretl_type_get_name(type));
     }
+    py::print();
 }
 
 py::list GretlPackage::get_functions (void) const
@@ -1961,9 +1976,6 @@ GretlPackageRes GretlPackage::function_exec (const std::string &func_name,
                               res.out_ptr(), GP.prn_ptr());
     if (err) {
         handle_gretl_error(err);
-    }
-    if (res.valid()) {
-        handle_gretl_error(E_ALLOC);
     }
 
     return res;

@@ -130,8 +130,6 @@ struct GretlPackageRes {
 
     void **out_ptr (void) { return &raw_ptr; }
 
-    bool valid (void) const { return ptr != nullptr; }
-
     void transfer_ownership (void) {
         ptr = GretlResourcePtr(raw_ptr, GretlResourceDeleter{type});
     }
