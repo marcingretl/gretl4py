@@ -1680,9 +1680,17 @@ GretlPackage::GretlPackage (const std::string &pkg_name,
         main_func = func_ptrs.begin()->first;
     } else {
         // some heuristics here
+        // at first: name of the package
         auto it = func_ptrs.find(pkg_name);
         if (it != func_ptrs.end()) {
             main_func = it->first;
+        } else {
+            // second: we look for 'estimate' in function name
+            for (auto it : func_ptrs) {
+                if (it.first.find("estimate") != std::string::npos) {
+                    main_func = it.first;
+                }
+            }
         }
     }
 
