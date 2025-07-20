@@ -21,6 +21,8 @@
 
 namespace py = pybind11;
 
+extern GretlDatasetPtr DSET;
+
 // signature from libgretl
 const char *gretl_workdir (void);
 
@@ -135,13 +137,12 @@ void init_gretl4py_package_py11(py::module_ &m)
     .def("set_main", &GretlPackage::set_main,
          py::arg("name").none(false))
     .def("_function_exec",
-         [](GretlPackage &self, const std::string &name,
-            GretlDatasetPtr &data, const py::kwargs &kwargs) -> py::object
+         [](GretlPackage &self, const std::string &name, const py::kwargs &kwargs) -> py::object
          {
              GretlPrint GP = GretlPrint();
              int err = 0;
 
-             auto res = self.function_exec(name, data, GP, kwargs);
+             auto res = self.function_exec(name, DSET, GP, kwargs);
              GP.print();
 
              // we construct object to return
@@ -153,8 +154,7 @@ void init_gretl4py_package_py11(py::module_ &m)
 
              return variant_to_pyobject(std::move(*val));
          },
-         py::arg("name").none(false), py::arg("data").none(true) = nullptr,
-         py::kw_only());
+         py::arg("name").none(false), py::kw_only());
 }
 
 /*.def("get_ptr", &GretlPackage::get_ptr, py::return_value_policy::reference)*/

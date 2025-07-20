@@ -298,8 +298,7 @@ public:
                                    const py::kwargs &kwargs);
 };
 
-
-// function implemented in gretl_calls.cpp
+// implemented in gretl_calls.cpp
 extern std::shared_ptr<GretlDataset> DSET;
 
 void set_default_dset(std::shared_ptr<GretlDataset> GD);
