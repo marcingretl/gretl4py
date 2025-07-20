@@ -1662,7 +1662,7 @@ GretlPackage::GretlPackage (const std::string &pkg_name,
                 throw std::runtime_error("unable to get pointer to function: "
                                          + std::string(func_name));
             }
-            func_ptrs.emplace(func_name, func_ptr);
+            func_ptrs.emplace(func_name, std::move(func_ptr));
             // arguments
             std::map<std::string, int> arg_names_tmp;
             for (int i=0; i<fn_n_params(func_ptr); ++i) {
