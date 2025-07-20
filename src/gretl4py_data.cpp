@@ -2020,7 +2020,7 @@ GretlPackageRes GretlPackage::function_exec (const std::string &func_name,
     res.set_type(func_get_res_type(func_name));
 
     // function execution
-    err = gretl_function_exec(func_call, res.type, GD->dset,
+    err = gretl_function_exec(func_call, res.type, GD ? GD->dset : NULL,
                               res.out_ptr(), GP.prn_ptr());
     if (err) {
         handle_gretl_error(err);
