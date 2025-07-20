@@ -248,6 +248,7 @@ private:
     using FunctionMap = std::map<std::string, ufunc*>;      // map of pointers to functions in package
     using FunctionArgs =
         std::map<std::string, std::map<std::string, int>>;  // map of arguments and their id-s for public functions
+    using MainFuncNoOptDef = std::map<std::string, GretlType>;// map of non-optional main_func arguments without default values
 
     const std::string pkg_name;     // package name (base of filename)
     const std::string suffix;       // filename suffix
@@ -257,6 +258,7 @@ private:
     bool defines_estimator = false; // true if package implements estimation
     FunctionMap func_ptrs;
     FunctionArgs func_args;
+    MainFuncNoOptDef main_func_nd;
     int err = 0;
 
     void check_if_defines_estimator (void);

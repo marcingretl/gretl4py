@@ -1617,11 +1617,11 @@ GretlPackage::GretlPackage (const std::string &pkg_name,
                             const std::string &suffix)
                             : pkg_name(pkg_name), suffix(suffix)
 {
-    int idxp = 0;
-    std::string path(MAXLEN, '\0');
-    std::unordered_set<std::string> excluded_functions;
     const std::unordered_set<UfunRole> excluded_roles = { UFUN_BUNDLE_PLOT,
             UFUN_GUI_MAIN, UFUN_GUI_PRECHECK, UFUN_PLOT_PRECHECK, UFUN_UI_MAKER };
+    std::string path(MAXLEN, '\0');
+    int idxp = 0;
+    std::unordered_set<std::string> excluded_functions;
 
     // we try to use find a path and load the package
     if (suffix.empty()) {
@@ -1642,10 +1642,10 @@ GretlPackage::GretlPackage (const std::string &pkg_name,
     }
 
     // we grab public only functions (names and indexes)
-    // excluding specific roles
+    // Note: we exclude functions with specific roles
     function_names_init();
 
-    // we look for functions to exclude (mostly related with plotting and GUI
+    // we look for functions to exclude (mostly related with plotting and GUI)
     for (auto role : excluded_roles) {
         auto func_name = get_properties<std::string>(package_role_get_key(role));
         if (!func_name.empty()) {
@@ -1656,6 +1656,7 @@ GretlPackage::GretlPackage (const std::string &pkg_name,
     // we register functions metadata
     while (const char* func_name = next_available_function_name(pkg, &idxp)) {
         if (gretl_is_public_user_function(func_name) && !excluded_functions.count(func_name)) {
+            // pointers
             auto func_ptr = get_function_from_package(func_name, pkg);
             if (!func_ptr) {
                 throw std::runtime_error("unable to get pointer to function: "
@@ -1667,7 +1668,7 @@ GretlPackage::GretlPackage (const std::string &pkg_name,
             for (int i=0; i<fn_n_params(func_ptr); ++i) {
                 arg_names_tmp.emplace(fn_param_name(func_ptr, i), i);
             }
-            func_args.emplace(func_name, arg_names_tmp);
+            func_args.emplace(func_name, std::move(arg_names_tmp));
         }
     }
     if (func_ptrs.empty()) {
@@ -1677,18 +1678,18 @@ GretlPackage::GretlPackage (const std::string &pkg_name,
 
     // we try to register package 'main' function (i.e. the one to call via ::fit())
     if (func_ptrs.size() == 1) {
-        main_func = func_ptrs.begin()->first;
+        set_main(func_ptrs.begin()->first);
     } else {
         // some heuristics here
         // at first: name of the package
         auto it = func_ptrs.find(pkg_name);
         if (it != func_ptrs.end()) {
-            main_func = it->first;
+            set_main(it->first);
         } else {
             // second: we look for 'estimate' in function name
             for (auto it : func_ptrs) {
                 if (it.first.find("estimate") != std::string::npos) {
-                    main_func = it.first;
+                    set_main(it.first);
                 }
             }
         }
@@ -1780,13 +1781,12 @@ void GretlPackage::unpack_kwargs_package (const std::string &func_name,
                                           GretlDatasetPtr &GD,
                                           const py::kwargs &kwargs)
 {
-    std::string arg_name;
+    std::string arg_name;   // variable to be pushed on stack (name)
     void *arg_value = NULL; // pointer to value to be pushed on stack
     double darg_value;      // value to be pushed on stack (if double)
-    std::map<std::string, int> func_name_args;
 
-    // map function to call with arguments
-    func_name_args = get_func_args(func_name);
+    // map function to call with its arguments
+    std::map<std::string, int> func_name_args = get_func_args(func_name);
 
     // we push arguments on stack
     if (py::len(kwargs) > 0) {
@@ -1796,8 +1796,8 @@ void GretlPackage::unpack_kwargs_package (const std::string &func_name,
             auto key_str = py::cast<std::string>(key);
             PythonArgInfo arginfo = inspect_pyobject(val);
 
+            // special case: we use already allocated object of GretlDataset class
             if (key_str == "data") {
-                // special case: we use already allocated object of GretlDataset class
                 GD = val.cast<GretlDatasetPtr>();
                 continue;
             }
@@ -1808,14 +1808,15 @@ void GretlPackage::unpack_kwargs_package (const std::string &func_name,
             } else {
                 throw std::invalid_argument(key_str + ": there is no such argument in function: " + func_name);
             }
-            GretlType key_type = static_cast<GretlType>(fn_param_type(func_get_ptr(func_name), arg_no));
+            auto key_type = static_cast<GretlType>(fn_param_type(func_get_ptr(func_name), arg_no));
 
             if (key_type == GRETL_TYPE_SERIES && GD) {
                 // special case: for series we swap situation and
                 // evaluate arg via type declared in a function
                 arg_name = py::cast<std::string>(val);
                 int vnum = GD->get_series_id(arg_name);
-                err = push_function_arg(func_call, arg_name.c_str(), NULL, GRETL_TYPE_USERIES, &vnum);
+                err = push_function_arg(func_call, arg_name.c_str(),
+                                        NULL, GRETL_TYPE_USERIES, &vnum);
                 if (err) {
                     handle_gretl_error(err);
                 }
@@ -1826,7 +1827,8 @@ void GretlPackage::unpack_kwargs_package (const std::string &func_name,
                 if (UserVars.find(arg_name) != UserVars.end()) {
                     user_var *uv = get_user_var_by_name(arg_name.c_str());
                     err = push_function_arg(func_call, key_str.c_str(),
-                                            uv, user_var_get_type(uv), user_var_get_value(uv));
+                                            uv, user_var_get_type(uv),
+                                            user_var_get_value(uv));
                     if (err) {
                         handle_gretl_error(err);
                     }
@@ -1838,7 +1840,8 @@ void GretlPackage::unpack_kwargs_package (const std::string &func_name,
                 }
             } else if (arginfo.gtype == GRETL_TYPE_BOOL) {
                 darg_value = py::cast<double>(val);
-                err = push_function_arg(func_call, key_str.c_str(), NULL, GRETL_TYPE_DOUBLE, &darg_value);
+                err = push_function_arg(func_call, key_str.c_str(), NULL,
+                                        GRETL_TYPE_DOUBLE, &darg_value);
                 if (err) {
                     handle_gretl_error(err);
                 }
@@ -1860,11 +1863,35 @@ void GretlPackage::unpack_kwargs_package (const std::string &func_name,
 
 void GretlPackage::set_main (const std::string &name)
 {
+    // we register main_func
     auto it = func_ptrs.find(name);
     if (it != func_ptrs.end()) {
         main_func = name;
     } else {
         throw std::invalid_argument("there is no such function: " + name);
+    }
+
+    // we register all non-optional arguments with types
+    if (!main_func_nd.empty()) {
+        main_func_nd.clear();
+    }
+    auto main_func_args = func_args.at(name);
+    for (const auto &[key, val] : main_func_args) {
+        if (!fn_param_optional(it->second, val) && !fn_param_has_default(it->second, val)) {
+            main_func_nd.emplace(key, static_cast<GretlType>(fn_param_type(it->second, val)));
+            /*
+            auto main_type = static_cast<GretlType>(gretl_type_get_plain_type(static_cast<GretlType>(fn_param_type(it->second, val))));
+            auto ref_type = static_cast<GretlType>(gretl_type_get_ref_type(static_cast<GretlType>(fn_param_type(it->second, val))));
+            py::print("podstawowy:", gretl_type_get_name(main_type));
+            py::print("referencja:", gretl_type_get_name(ref_type));
+
+            if (static_cast<GretlType>(fn_param_type(it->second, val) == main_type)) {
+                py::print("\tzwykły");
+            } else {
+                py::print("\treferencja");
+            }
+            */
+        }
     }
 }
 
@@ -1887,7 +1914,7 @@ void GretlPackage::show_functions (void) const
     for (const auto &[key, val] : func_args) {
         func_ptr = func_ptrs.at(key);
         type = static_cast<GretlType>(user_func_get_return_type(func_ptr));
-        py::print(key, "->", gretl_type_get_name(type), (main_func == key ? "[main] " : ""));
+        py::print(key, "->", gretl_type_get_name(type), (key == main_func ? "[main] " : ""));
         for (const auto &it : val) {
             type = static_cast<GretlType>(fn_param_type(func_ptr, it.second));
             auto default_value = fn_param_default(func_ptr, it.second);
