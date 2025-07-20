@@ -130,7 +130,7 @@ void init_gretl4py_dataset_py11(py::module_ &m)
 // GretlPackage mappings
 void init_gretl4py_package_py11(py::module_ &m)
 {
-    py::class_<GretlPackage, GretlPackagePtr>(m, "Package")
+    py::class_<GretlPackage, GretlPackagePtr>(m, "Package", py::dynamic_attr())
     .def("get_name", &GretlPackage::get_name)
     .def("show_functions", &GretlPackage::show_functions)
     .def("get_functions", &GretlPackage::get_functions)

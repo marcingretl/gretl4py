@@ -51,7 +51,7 @@ void do_set (const std::string key,
 
 void do_summary (const std::string &varlist, const py::kwargs &kwargs);
 
-GretlPackagePtr do_include (const std::string &name);
+py::object load_package (const std::string &name);
 
 // these two functions are temporal and will be moved to class
 void gretl_user_var_delete_by_name (const std::string &name);

@@ -326,7 +326,7 @@ void do_summary (const std::string &varlist, const py::kwargs &kwargs)
     GP.print();
 }
 
-GretlPackagePtr do_include (const std::string &name)
+py::object load_package (const std::string &name)
 {
     //
     // this function mimics libgretl's 'include' command
@@ -334,7 +334,7 @@ GretlPackagePtr do_include (const std::string &name)
     //
     std::string basename;
     std::string suffix = "";
-    GretlPackagePtr res = nullptr;
+    GretlPackagePtr pkg = nullptr;
 
     // we check if we deal with suffix-ed string or just basename
     if (has_suffix(name.c_str(), ".gfn") || has_suffix(name.c_str(), ".zip")) {
@@ -349,13 +349,37 @@ GretlPackagePtr do_include (const std::string &name)
     // we look up for package in registry
     auto it = GPKGs.find(basename);
     if (it != GPKGs.end()) {
-        res = it->second;
+        pkg = it->second;
     } else {
-        res = std::make_shared<GretlPackage>(basename, suffix);
-        GPKGs.emplace(basename, res);
+        pkg = std::make_shared<GretlPackage>(basename, suffix);
+        GPKGs.emplace(basename, pkg);
     }
 
-    return res;
+    // get list of exported function names
+    py::object obj = py::cast(pkg);
+    py::object func_list = obj.attr("get_functions")();
+
+    // import the 'gretl' module dynamically
+    py::module_ gretl_mod = py::module_::import("gretl");
+
+    // for each function, attach a Python callable:
+    // pkg.fname = lambda **kwargs: ::_function_exec(fname, **kwargs)
+    for (const py::handle &py_fname : func_list) {
+        py::str fname = py::str(py_fname);
+
+        // create a wrapper bound to this function name and obj
+        py::object wrapper = py::cpp_function (
+            [obj, fname](const py::kwargs &kwargs) -> py::object
+            {
+                return obj.attr("_function_exec")(fname, **kwargs);
+            });
+
+        // set it as an attribute on the object
+        //obj.attr(fname) = wrapper;
+        gretl_mod.attr(fname) = wrapper;
+    }
+
+    return obj;
 }
 
 // stuff below is volatile
