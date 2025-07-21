@@ -1935,7 +1935,7 @@ void GretlPackage::show_functions (void) const
             auto default_value = fn_param_default(func_ptr, it.second);
             std::string default_value_str;
 
-            if (default_value != NADBL && !std::isnan(default_value)) {
+            if (default_value != NADBL && !(std::isnan)(default_value)) {
                 const char *tname = gretl_type_get_name(type);
 
                 if (!std::strcmp(tname, "int")) {
