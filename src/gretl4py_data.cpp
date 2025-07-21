@@ -1803,6 +1803,9 @@ void GretlPackage::unpack_kwargs_package (const std::string &func_name,
             if (key_str == "data") {
                 GD = val.cast<GretlDatasetPtr>();
                 continue;
+            } else if (key_str == "quiet" || key_str == "silent") {
+                // do something elsewhere
+                continue;
             }
 
             auto it = func_name_args.find(key_str);
@@ -1827,11 +1830,20 @@ void GretlPackage::unpack_kwargs_package (const std::string &func_name,
             } else if (arginfo.gtype == GRETL_TYPE_STRING) {
                 // special case: we need to know if we deal with defined variable or string per se
                 arg_name = py::cast<std::string>(val);
+                bool is_ref_user_var = false;
+                // here we check if we deal with reference
+                if (arg_name.substr(0, 1) == "&") {
+                    is_ref_user_var = true;
+                    arg_name = arg_name.substr(1);
+                }
                 if (UserVars.find(arg_name) != UserVars.end()) {
                     user_var *uv = get_user_var_by_name(arg_name.c_str());
-                    err = push_function_arg(func_call, key_str.c_str(),
-                                            uv, user_var_get_type(uv),
-                                            user_var_get_value(uv));
+                    // for reference, we change uv type!!!
+                    GretlType user_var_type = is_ref_user_var ?
+                        gretl_type_get_ref_type(user_var_get_type(uv))
+                        : user_var_get_type(uv);
+                    err = push_function_arg(func_call, arg_name.c_str(), uv,
+                                            user_var_type, user_var_get_value(uv));
                     if (err) {
                         handle_gretl_error(err);
                     }
@@ -2032,7 +2044,11 @@ GretlPackageRes GretlPackage::function_exec (const std::string &func_name,
 
     // we register results as uservar
     if (!output.empty()) {
-        py::print("variable to create: " + output);
+        err = check_varname(output.c_str());
+        if (err) {
+            handle_gretl_error(err);
+        }
+        //err = copy_as_arg(output.c_str(), res.type, res.get());
         err = user_var_add(output.c_str(), res.type, res.get());
         if (err) {
             handle_gretl_error(err);

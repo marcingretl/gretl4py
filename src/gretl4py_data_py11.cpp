@@ -88,7 +88,7 @@ void init_gretl4py_dataset_py11(py::module_ &m)
                  std::string y_val, vars_val, vars;
                  py::kwargs clean_kwargs;
 
-                 for (auto item : kwargs) {
+                 for (const auto &item : kwargs) {
                      std::string key = std::string(py::str(item.first));
                      if (key == "y") {
                          y_val = std::string(py::str(item.second));
@@ -144,13 +144,25 @@ void init_gretl4py_package_py11(py::module_ &m)
              int err = 0;
 
              auto res = self.function_exec(name, DSET, GP, kwargs, output);
-             GP.print();
 
              // we construct object to return
              GretlType t = res.type;
              auto val = convert_GretlType_to_GretlTypes(t, res.get(), 0, err);
              if (err) {
                  handle_gretl_error(err);
+             }
+
+             // we printout if needed
+             const char *no_printing[] = { "quiet", "silent" };
+             bool printout = true;
+             for (const char *key : no_printing) {
+                if (kwargs.contains(key) && is_pybool(kwargs[key]) && kwargs[key].cast<bool>()) {
+                     printout = false;
+                     break;
+                }
+             }
+             if (printout) {
+                 GP.print();
              }
 
              return variant_to_pyobject(std::move(*val));
