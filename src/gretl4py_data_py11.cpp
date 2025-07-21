@@ -143,7 +143,7 @@ void init_gretl4py_package_py11(py::module_ &m)
              GretlPrint GP = GretlPrint();
              int err = 0;
 
-             auto res = self.function_exec(name, DSET, GP, kwargs);
+             auto res = self.function_exec(name, DSET, GP, kwargs, output);
              GP.print();
 
              // we construct object to return

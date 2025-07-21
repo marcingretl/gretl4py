@@ -2000,7 +2000,8 @@ GretlType GretlPackage::func_get_res_type (const std::string &name) const
 
 GretlPackageRes GretlPackage::function_exec (const std::string &func_name,
                                              GretlDatasetPtr &GD, GretlPrint &GP,
-                                             const py::kwargs &kwargs)
+                                             const py::kwargs &kwargs,
+                                             const std::string &output)
 {
     // we prepare function to call
     fncall *func_call = user_func_get_fncall(func_get_ptr(func_name));
@@ -2027,6 +2028,17 @@ GretlPackageRes GretlPackage::function_exec (const std::string &func_name,
                               res.out_ptr(), GP.prn_ptr());
     if (err) {
         handle_gretl_error(err);
+    }
+
+    // we register results as uservar
+    if (!output.empty()) {
+        py::print("variable to create: " + output);
+        err = user_var_add(output.c_str(), res.type, res.get());
+        if (err) {
+            handle_gretl_error(err);
+
+        }
+        UserVars.insert(output);
     }
 
     return res;

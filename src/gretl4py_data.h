@@ -295,7 +295,8 @@ public:
 
     GretlPackageRes function_exec (const std::string &func_name,
                                    GretlDatasetPtr &GD, GretlPrint &GP,
-                                   const py::kwargs &kwargs);
+                                   const py::kwargs &kwargs,
+                                   const std::string &output = "");
 };
 
 // implemented in gretl_calls.cpp
