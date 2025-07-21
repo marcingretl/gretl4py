@@ -133,11 +133,12 @@ void init_gretl4py_package_py11(py::module_ &m)
     py::class_<GretlPackage, GretlPackagePtr>(m, "Package", py::dynamic_attr())
     .def("get_name", &GretlPackage::get_name)
     .def("show_functions", &GretlPackage::show_functions)
-    .def("get_functions", &GretlPackage::get_functions)
     .def("set_main", &GretlPackage::set_main,
          py::arg("name").none(false))
+    .def("_get_functions", &GretlPackage::get_functions)
     .def("_function_exec",
-         [](GretlPackage &self, const std::string &name, const py::kwargs &kwargs) -> py::object
+         [](GretlPackage &self, const std::string &name,
+            const std::string &output, const py::kwargs &kwargs) -> py::object
          {
              GretlPrint GP = GretlPrint();
              int err = 0;
@@ -154,7 +155,8 @@ void init_gretl4py_package_py11(py::module_ &m)
 
              return variant_to_pyobject(std::move(*val));
          },
-         py::arg("name").none(false), py::kw_only());
+         py::arg("name").none(false),
+         py::arg("output").none(true) = "", py::kw_only());
 }
 
 /*.def("get_ptr", &GretlPackage::get_ptr, py::return_value_policy::reference)*/

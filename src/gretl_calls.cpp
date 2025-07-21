@@ -357,7 +357,7 @@ py::object load_package (const std::string &name)
 
     // get list of exported function names
     py::object obj = py::cast(pkg);
-    py::object func_list = obj.attr("get_functions")();
+    py::object func_list = obj.attr("_get_functions")();
 
     // import the 'gretl' module dynamically
     py::module_ gretl_mod = py::module_::import("gretl");
@@ -369,10 +369,10 @@ py::object load_package (const std::string &name)
 
         // create a wrapper bound to this function name and obj
         py::object wrapper = py::cpp_function (
-            [obj, fname](const py::kwargs &kwargs) -> py::object
+            [obj, fname](const std::string &output, const py::kwargs &kwargs) -> py::object
             {
-                return obj.attr("_function_exec")(fname, **kwargs);
-            });
+                return obj.attr("_function_exec")(fname, output, **kwargs);
+            }, py::arg("output").none(true) = "", py::kw_only());
 
         // set it as an attribute on the object
         //obj.attr(fname) = wrapper;

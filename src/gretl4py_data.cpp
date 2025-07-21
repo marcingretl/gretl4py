@@ -36,6 +36,7 @@ extern "C" {
 }
 #include <string>
 #include <cassert>
+#include <iomanip>
 
 #define F_CONTIGUOUS py::detail::npy_api::constants::NPY_ARRAY_F_CONTIGUOUS_
 #define is_NumPyArrayFC(m) ((m.flags() & F_CONTIGUOUS))
@@ -1622,6 +1623,7 @@ GretlPackage::GretlPackage (const std::string &pkg_name,
     std::string path(MAXLEN, '\0');
     int idxp = 0;
     std::unordered_set<std::string> excluded_functions;
+    std::ostringstream oss;
 
     // we try to use find a path and load the package
     if (suffix.empty()) {
@@ -1700,9 +1702,10 @@ GretlPackage::GretlPackage (const std::string &pkg_name,
     check_if_defines_estimator();
 
     // package summary
-    py::print("We use " + pkg_name + " package, version: "
-              + std::to_string(function_package_get_version(pkg))
+    oss << std::fixed << std::setprecision(2) << function_package_get_version(pkg);
+    py::print("We use '" + pkg_name + "' package, version: " + oss.str()
               + ", JEL codes: " + get_properties<std::string>("tags")
+              + " (" + get_properties<std::string>("author") + ")"
               + "\n  main function: " + (main_func.empty() ? "none" : main_func)
               + ", provides estimator: " + (defines_estimator ? "yes" : "no"));
     if (main_func.empty()) {
@@ -1790,7 +1793,7 @@ void GretlPackage::unpack_kwargs_package (const std::string &func_name,
 
     // we push arguments on stack
     if (py::len(kwargs) > 0) {
-        for (auto [key, val] : kwargs) {
+        for (const auto &[key, val] : kwargs) {
             arg_value = NULL;
             int arg_no = -1;
             auto key_str = py::cast<std::string>(key);
@@ -1838,7 +1841,7 @@ void GretlPackage::unpack_kwargs_package (const std::string &func_name,
                     char *arg_name_copy = strdup(arg_name.c_str());
                     arg_value = static_cast<void*>(arg_name_copy);
                 }
-            } else if (arginfo.gtype == GRETL_TYPE_BOOL) {
+            } else if (arginfo.gtype == GRETL_TYPE_BOOL || arginfo.gtype == GRETL_TYPE_DOUBLE || arginfo.gtype == GRETL_TYPE_INT) {
                 darg_value = py::cast<double>(val);
                 err = push_function_arg(func_call, key_str.c_str(), NULL,
                                         GRETL_TYPE_DOUBLE, &darg_value);
@@ -1846,9 +1849,9 @@ void GretlPackage::unpack_kwargs_package (const std::string &func_name,
                     handle_gretl_error(err);
                 }
                 continue;
-            } else if (arginfo.gtype == GRETL_TYPE_DOUBLE || arginfo.gtype == GRETL_TYPE_INT) {
+            /*} else if (arginfo.gtype == GRETL_TYPE_DOUBLE || arginfo.gtype == GRETL_TYPE_INT) {
                 darg_value = py::cast<double>(val);
-                arg_value = &darg_value;
+                arg_value = &darg_value;*/
             } else {
                 throw std::runtime_error("variable " + key_str + ":, unsupported type: " + arginfo.pytype);
             }
