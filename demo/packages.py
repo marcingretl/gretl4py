@@ -11,23 +11,18 @@ data_dir = resources.files('gretl').joinpath('data')
 d1 = gretl.get_data(str(data_dir.joinpath('longley.csv')))
 d2 = gretl.get_data("/home/marcin/.gretl/functions/BMA/examples/FLS_41t72.gdt")
 
-# load packages
+# we load packages
 CRIT = gretl.include("criteria")
 BMA = gretl.include("BMA")
 StrucTiSM = gretl.include("StrucTiSM")
-BMA.show_functions()
-StrucTiSM.show_functions()
-
-
-# for testing only
-#p = gretl.package(name="/home/marcin/.gretl/functions/TestPKG.gfn", S=1.1).fit()
-#print(type(p.results))
-#print(p.results)
-#exit()
 
 # let's try out criteria
+print('##################################################')
+print(f'\t\tcriteria')
+print('##################################################')
+CRIT.show_functions()
 # OLS
-m1 = gretl.ols(formula="1 0 2 3 4 5 6 7").fit()
+m1 = gretl.ols(formula="1 0 2 3 4 5 6 7", simple=True).fit()
 print(m1)
 gretl.genr(name='ess', value=m1.ess)
 gretl.genr(name='k', value=m1.ncoeff)
@@ -36,20 +31,30 @@ res1 = gretl.criteria(ess="ess", n=m1.T, k="k")
 print(res1)
 #gretl.uservars_list()
 
+
 # let's try out BMA
+print('##################################################')
+print(f'\t\tBMA')
+print('##################################################')
 BMA.show_functions()
 d2.set_as_default()
 d2.new_list(name='Xes', value='2..13')
-gretl.genr('bundle OPT = _(Nrep=10^4, model_prior="beta-binomial")')
-res2 = gretl.BMA(output="bmares", data=d2, Y="GDP_growth", X_list="Xes", quiet=True)
+gretl.genr('bundle OPT = _(Nrep=10^5, model_prior="binomial", Nrank=5)')
+#res2 = gretl.BMA(output="bmares", data=d2, Y="GDP_growth", X_list="Xes", quiet=True)
+#gretl.BMA_Print(MODEL="&bmares")
 #print(type(res2))
-gretl.BMA_Print(MODEL="&bmares")
-#p2 = gretl.package(package=BMA, data=d2, Y="GDP_growth", X_list="Xes", Options="OPT").fit()
-#p2 = gretl.package(package=BMA, Y="GDP_growth", X_list="Xes").fit()
-#print(p2)
+p2 = gretl.package(package=BMA, Y="GDP_growth", X_list="Xes", Options="OPT").fit()
+print(p2)
 
 
 # let's try out StrucTiSM
-gretl.STSM_setup(output="model", data=d1, y="gnp")
-gretl.STSM_estimate(mod="&model")
-gretl.STSM_components(mod="model")
+print('##################################################')
+print(f'\t\tStrucTiSM')
+print('##################################################')
+StrucTiSM.show_functions()
+setup = gretl.STSM_setup(output="model", data=d1, y="gnp", epsilon=True, trend=1, slope=1)
+err = gretl.STSM_estimate(mod="&model")
+comps = gretl.STSM_components(mod="model")
+print(setup)
+print(err)
+print(comps)
