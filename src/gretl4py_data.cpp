@@ -1792,30 +1792,45 @@ void GretlPackage::unpack_kwargs_package (const std::string &func_name,
     // map function to call with its arguments
     std::map<std::string, int> func_name_args = get_func_args(func_name);
 
-    // we push arguments on stack
+    // vector of func_name_args items ordered by value (int)
+    std::vector<std::pair<std::string, int>> func_name_args_sorted(func_name_args.begin(),
+                                                                   func_name_args.end());
+    std::sort(func_name_args_sorted.begin(), func_name_args_sorted.end(),
+          [](const auto &a, const auto &b)
+              {
+                  return a.second < b.second; // sort by value
+              });
+
+    // general options (non function-based)
     if (py::len(kwargs) > 0) {
         for (const auto &[key, val] : kwargs) {
             auto key_str = py::cast<std::string>(key);
-            PythonArgInfo arginfo = inspect_pyobject(val);
-            arg_type = GRETL_TYPE_NONE;
-            arg_value = NULL;
-            int arg_no = -1;
 
-            // special case: we use already allocated object of GretlDataset class
             if (key_str == "data") {
+                // special case: we use already allocated object of GretlDataset class
                 GD = val.cast<GretlDatasetPtr>();
                 continue;
             } else if (key_str == "quiet" || key_str == "silent") {
                 // do something elsewhere
                 continue;
-            }
-
-            auto it = func_name_args.find(key_str);
-            if (it != func_name_args.end()) {
-                arg_no = it->second;
             } else {
-                throw std::invalid_argument(key_str + ": there is no such argument in function: " + func_name);
+                if (!func_name_args.count(key_str)) {
+                    throw std::invalid_argument(key_str +
+                                                ": there is no such argument in function: "
+                                                + func_name);
+                }
             }
+        }
+
+        // function-related options (arguments pushed on stack)
+        for (const auto &[key_str, arg_no] : func_name_args_sorted) {
+            if (!kwargs.contains(key_str)) {
+                continue;
+            }
+            auto val = kwargs[py::cast(key_str)];
+            PythonArgInfo arginfo = inspect_pyobject(val);
+            arg_type = GRETL_TYPE_NONE;
+            arg_value = NULL;
             auto key_type = static_cast<GretlType>(fn_param_type(func_get_ptr(func_name), arg_no));
 
             if (key_type == GRETL_TYPE_SERIES && GD) {
