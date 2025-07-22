@@ -27,7 +27,7 @@ print(m1)
 gretl.genr(name='ess', value=m1.ess)
 gretl.genr(name='k', value=m1.ncoeff)
 gretl.genr(name='n', value=m1.T)
-res1 = gretl.criteria(n=m1.T, k="k", ess0="ess") # arbitrary parameters order!!!!
+res1 = gretl.criteria(n=m1.T, k="k", ess="ess") # arbitrary parameters order!!!!
 print(res1)
 #gretl.uservars_list()
 

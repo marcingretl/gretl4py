@@ -1784,30 +1784,32 @@ void GretlPackage::unpack_kwargs_package (const std::string &func_name,
                                           GretlDatasetPtr &GD,
                                           const py::kwargs &kwargs)
 {
-    std::string arg_name;   // variable to be pushed on stack (name)
-    void *arg_value = NULL; // pointer to variable's value to be pushed on stack
-    GretlType arg_type;     // variable's type
-    double darg_value;      // value to be pushed on stack (if double)
+    //
+    // here we extract kwargs for any package function
+    // note: at first we look for general (not function-related) options
+    // next we push function arguments on stack keeping
+    // original function order, so thanks to that function arguments
+    // may be passed in kwargs in arbitrary order
+    //
+    if (py::len(kwargs) > 0) {
+        // map function to call with its arguments
+        std::map<std::string, int> func_name_args = get_func_args(func_name);
 
-    // map function to call with its arguments
-    std::map<std::string, int> func_name_args = get_func_args(func_name);
-
-    // vector of func_name_args items ordered by value (int)
-    std::vector<std::pair<std::string, int>> func_name_args_sorted(func_name_args.begin(),
-                                                                   func_name_args.end());
-    std::sort(func_name_args_sorted.begin(), func_name_args_sorted.end(),
+        // vector of func_name_args items ordered by value (int)
+        std::vector<std::pair<std::string, int>> func_name_args_sorted(func_name_args.begin(),
+                                                                       func_name_args.end());
+        std::sort(func_name_args_sorted.begin(), func_name_args_sorted.end(),
           [](const auto &a, const auto &b)
               {
                   return a.second < b.second; // sort by value
               });
 
-    // general options (non function-based)
-    if (py::len(kwargs) > 0) {
+        // general options (non function-based)
         for (const auto &[key, val] : kwargs) {
             auto key_str = py::cast<std::string>(key);
 
             if (key_str == "data") {
-                // special case: we use already allocated object of GretlDataset class
+                // we use GretlDataset object passed on function call
                 GD = val.cast<GretlDatasetPtr>();
                 continue;
             } else if (key_str == "quiet" || key_str == "silent") {
@@ -1823,11 +1825,16 @@ void GretlPackage::unpack_kwargs_package (const std::string &func_name,
         }
 
         // function-related options (arguments pushed on stack)
-        for (const auto &[key_str, arg_no] : func_name_args_sorted) {
-            if (!kwargs.contains(key_str)) {
+        std::string arg_name;   // variable to be pushed on stack (name)
+        void *arg_value;        // pointer to variable's value to be pushed on stack
+        GretlType arg_type;     // variable's type
+        double darg_value;      // value to be pushed on stack (if double)
+
+        for (const auto &[key, arg_no] : func_name_args_sorted) {
+            if (!kwargs.contains(key)) {
                 continue;
             }
-            auto val = kwargs[py::cast(key_str)];
+            auto val = kwargs[py::cast(key)];
             PythonArgInfo arginfo = inspect_pyobject(val);
             arg_type = GRETL_TYPE_NONE;
             arg_value = NULL;
@@ -1845,7 +1852,8 @@ void GretlPackage::unpack_kwargs_package (const std::string &func_name,
                 }
                 continue;
             } else if (arginfo.gtype == GRETL_TYPE_STRING) {
-                // special case: we need to know if we deal with defined variable uv or string per se
+                // special case: we need to know if we deal with
+                // user defined variable uv or string per se
                 arg_name = py::cast<std::string>(val);
                 bool is_ref_user_var = false;
                 // here we check if we deal with reference
@@ -1870,14 +1878,18 @@ void GretlPackage::unpack_kwargs_package (const std::string &func_name,
                     arg_value = static_cast<void*>(arg_name_copy);
                     arg_type = arginfo.gtype;
                 }
-            } else if (arginfo.gtype == GRETL_TYPE_BOOL || arginfo.gtype == GRETL_TYPE_DOUBLE || arginfo.gtype == GRETL_TYPE_INT) {
+            } else if (arginfo.gtype == GRETL_TYPE_BOOL ||
+                       arginfo.gtype == GRETL_TYPE_DOUBLE ||
+                       arginfo.gtype == GRETL_TYPE_INT) {
                 darg_value = py::cast<double>(val);
                 arg_value = &darg_value;
                 arg_type = GRETL_TYPE_DOUBLE;
             } else {
-                throw std::runtime_error("variable " + key_str + ":, unsupported type: " + arginfo.pytype);
+                throw std::runtime_error("variable " + key +
+                                         ":, unsupported type: "
+                                         + arginfo.pytype);
             }
-            err = push_function_arg(func_call, key_str.c_str(),
+            err = push_function_arg(func_call, key.c_str(),
                                     NULL, arg_type, arg_value);
             if (err) {
                 handle_gretl_error(err);
