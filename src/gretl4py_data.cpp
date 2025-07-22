@@ -1785,7 +1785,8 @@ void GretlPackage::unpack_kwargs_package (const std::string &func_name,
                                           const py::kwargs &kwargs)
 {
     std::string arg_name;   // variable to be pushed on stack (name)
-    void *arg_value = NULL; // pointer to value to be pushed on stack
+    void *arg_value = NULL; // pointer to variable's value to be pushed on stack
+    GretlType arg_type;     // variable's type
     double darg_value;      // value to be pushed on stack (if double)
 
     // map function to call with its arguments
@@ -1794,10 +1795,11 @@ void GretlPackage::unpack_kwargs_package (const std::string &func_name,
     // we push arguments on stack
     if (py::len(kwargs) > 0) {
         for (const auto &[key, val] : kwargs) {
-            arg_value = NULL;
-            int arg_no = -1;
             auto key_str = py::cast<std::string>(key);
             PythonArgInfo arginfo = inspect_pyobject(val);
+            arg_type = GRETL_TYPE_NONE;
+            arg_value = NULL;
+            int arg_no = -1;
 
             // special case: we use already allocated object of GretlDataset class
             if (key_str == "data") {
@@ -1828,7 +1830,7 @@ void GretlPackage::unpack_kwargs_package (const std::string &func_name,
                 }
                 continue;
             } else if (arginfo.gtype == GRETL_TYPE_STRING) {
-                // special case: we need to know if we deal with defined variable or string per se
+                // special case: we need to know if we deal with defined variable uv or string per se
                 arg_name = py::cast<std::string>(val);
                 bool is_ref_user_var = false;
                 // here we check if we deal with reference
@@ -1839,36 +1841,29 @@ void GretlPackage::unpack_kwargs_package (const std::string &func_name,
                 if (UserVars.find(arg_name) != UserVars.end()) {
                     user_var *uv = get_user_var_by_name(arg_name.c_str());
                     // for reference, we change uv type!!!
-                    GretlType user_var_type = is_ref_user_var ?
+                    arg_type = is_ref_user_var ?
                         gretl_type_get_ref_type(user_var_get_type(uv))
                         : user_var_get_type(uv);
                     err = push_function_arg(func_call, arg_name.c_str(), uv,
-                                            user_var_type, user_var_get_value(uv));
+                                            arg_type, user_var_get_value(uv));
                     if (err) {
                         handle_gretl_error(err);
                     }
                     continue;
                 } else {
-                    // here we deal with string per se
                     char *arg_name_copy = strdup(arg_name.c_str());
                     arg_value = static_cast<void*>(arg_name_copy);
+                    arg_type = arginfo.gtype;
                 }
             } else if (arginfo.gtype == GRETL_TYPE_BOOL || arginfo.gtype == GRETL_TYPE_DOUBLE || arginfo.gtype == GRETL_TYPE_INT) {
                 darg_value = py::cast<double>(val);
-                err = push_function_arg(func_call, key_str.c_str(), NULL,
-                                        GRETL_TYPE_DOUBLE, &darg_value);
-                if (err) {
-                    handle_gretl_error(err);
-                }
-                continue;
-            /*} else if (arginfo.gtype == GRETL_TYPE_DOUBLE || arginfo.gtype == GRETL_TYPE_INT) {
-                darg_value = py::cast<double>(val);
-                arg_value = &darg_value;*/
+                arg_value = &darg_value;
+                arg_type = GRETL_TYPE_DOUBLE;
             } else {
                 throw std::runtime_error("variable " + key_str + ":, unsupported type: " + arginfo.pytype);
             }
             err = push_function_arg(func_call, key_str.c_str(),
-                                    NULL, arginfo.gtype, arg_value);
+                                    NULL, arg_type, arg_value);
             if (err) {
                 handle_gretl_error(err);
             }
