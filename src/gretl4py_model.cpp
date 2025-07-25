@@ -766,13 +766,13 @@ void GretlModel_NSE_Driver<F, CI>::fit (void)
     if constexpr (use_ldco_sig(CI)) {
         *model = F(var_list.get(), GD->dset, CI, opt);
     } else if constexpr (use_ldcop_sig(CI)) {
-        *model = F(var_list.get(), GD->dset, CI, opt, GP.prn_ptr());
+        *model = F(var_list.get(), GD->dset, static_cast<int>(CI), opt, GP.prn_ptr());
     } else if constexpr (use_ldo_sig(CI)) {
         *model = F(var_list.get(), GD->dset, opt);
     } else if constexpr (use_ldop_sig(CI)) {
         *model = F(var_list.get(), GD->dset, opt, GP.prn_ptr());
     } else if constexpr (use_lcdop_sig(CI)) {
-        *model = F(var_list.get(), CI, GD->dset, opt, GP.prn_ptr());
+        *model = F(var_list.get(), static_cast<int>(CI), GD->dset, opt, GP.prn_ptr());
     } else if constexpr (CI == DPANEL) {
         gretl_list_ptr laglist{nullptr};
 
