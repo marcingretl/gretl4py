@@ -1635,6 +1635,7 @@ GretlPackage::GretlPackage (const std::string &pkg_name,
     if (err) {
         handle_gretl_error(err);
     }
+    base_dir = std::filesystem::path(path).parent_path();
 
     // setup some basic info about package
     if (pkg_name != function_package_get_name(pkg)) {
@@ -2080,4 +2081,11 @@ GretlPackageRes GretlPackage::function_exec (const std::string &func_name,
     }
 
     return res;
+}
+
+std::string GretlPackage::get_examples_path (void)
+{
+    std::filesystem::path examples_path = base_dir / "examples";
+
+    return examples_path.string();
 }

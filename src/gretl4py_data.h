@@ -32,6 +32,7 @@ extern "C" {
 }
 #include <iostream>
 #include <unordered_set>
+#include <filesystem>
 
 namespace py = pybind11;
 
@@ -259,6 +260,7 @@ private:
     FunctionMap func_ptrs;
     FunctionArgs func_args;
     MainFuncNoOptDef main_func_nd;
+    std::filesystem::path base_dir; // path to the package
     int err = 0;
 
     void check_if_defines_estimator (void);
@@ -297,6 +299,8 @@ public:
                                    GretlDatasetPtr &GD, GretlPrint &GP,
                                    const py::kwargs &kwargs,
                                    const std::string &output = "");
+
+    std::string get_examples_path (void);
 };
 
 // implemented in gretl_calls.cpp
