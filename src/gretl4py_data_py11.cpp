@@ -30,7 +30,12 @@ const char *gretl_workdir (void);
 void init_gretl4py_dataset_py11(py::module_ &m)
 {
     py::class_<GretlDataset, std::shared_ptr<GretlDataset>>(m, "Dataset", py::dynamic_attr())
-        .def(py::init([](const std::string &fname) { return std::make_shared<GretlDataset>(fname); }))
+        .def(py::init([](const std::string &fname, const py::dict &kwargs)
+                      {
+                          return std::make_shared<GretlDataset>(fname, kwargs);
+                      }),
+                      py::arg("fname").none(false), py::arg("kwargs") = py::dict(),
+                      py::kw_only())
         .def(py::init([](const py::dict &pydict) { return std::make_shared<GretlDataset>(pydict); }))
         .def("__copy__",
              [](const GretlDataset &src)
@@ -39,7 +44,7 @@ void init_gretl4py_dataset_py11(py::module_ &m)
                  const std::string fname = dotdir + "gretl4py_tmp.gdt";
 
                  src.to_file(fname);
-                 auto dst = std::make_shared<GretlDataset>(fname);
+                 auto dst = std::make_shared<GretlDataset>(fname, py::dict());
                  dst->source = src.source + " (copy of " + std::to_string(src.get_id()) + ")";
 
                  return dst;

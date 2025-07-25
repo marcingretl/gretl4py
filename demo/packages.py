@@ -9,7 +9,7 @@ data_dir = resources.files('gretl').joinpath('data')
 
 # load datasets
 d1 = gretl.get_data(str(data_dir.joinpath('longley.csv')))
-d2 = gretl.get_data("/home/marcin/.gretl/functions/BMA/examples/FLS_41t72.gdt")
+d2 = gretl.get_data("FLS_41t72.gdt", frompkg="BMA")
 
 # we load packages
 CRIT = gretl.include("criteria")

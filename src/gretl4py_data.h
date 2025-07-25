@@ -137,7 +137,8 @@ public:
     DATASET *dset = NULL;
     std::string source;
 
-    GretlDataset (const std::string &fname);    // we load dataset from file
+    GretlDataset (const std::string &fname,
+                  const py::dict &kwargs);      // we load dataset from file (with optional flags as kwargs)
     GretlDataset (const py::dict &pydict);      // we load dataset from Python's dictionary
     virtual ~GretlDataset (void);               // virtual, because GretlModel use it as std::shared_ptr
 
@@ -300,7 +301,7 @@ public:
                                    const py::kwargs &kwargs,
                                    const std::string &output = "");
 
-    std::string get_examples_path (void);
+    std::string get_examples_path (const std::string &fname);
 };
 
 // implemented in gretl_calls.cpp

@@ -774,14 +774,36 @@ PythonArgInfo inspect_pyobject (py::handle obj)
 //GretlDataset class methods
 //
 
-GretlDataset::GretlDataset (const std::string &fname) : id(next_obj_id++)
+GretlDataset::GretlDataset (const std::string &fname,
+                            const py::dict &kwargs)
+                            : id(next_obj_id++)
 {
     //
     // load gretl data from file
     //
+    std::string full_path = "";
+
+    if (len(kwargs) > 0) {
+        for (const auto &[key, val] : kwargs) {
+            auto key_str = key.cast<std::string>();
+
+            if (key_str == "frompkg" && is_pystr(val)) {
+                auto val_str = val.cast<std::string>();
+                auto GP = GretlPackage(val_str, "");
+                full_path = GP.get_examples_path(fname);
+            } else {
+                throw std::invalid_argument("unsupported option: '" + key_str + "'");
+            }
+        }
+    }
+
     allocate_dset();
     if (dset) {
-        err = gretl_get_data(fname.c_str(), dset, OPT_NONE, NULL);
+        if (full_path.empty()) {
+            err = gretl_get_data(fname.c_str(), dset, OPT_NONE, NULL);
+        } else {
+            err = gretl_get_data(full_path.c_str(), dset, OPT_NONE, NULL);
+        }
     } else {
         err = E_ALLOC;
     }
@@ -2083,9 +2105,13 @@ GretlPackageRes GretlPackage::function_exec (const std::string &func_name,
     return res;
 }
 
-std::string GretlPackage::get_examples_path (void)
+std::string GretlPackage::get_examples_path (const std::string &fname)
 {
     std::filesystem::path examples_path = base_dir / "examples";
+
+    if (!fname.empty()) {
+        examples_path = examples_path / fname;
+    }
 
     return examples_path.string();
 }

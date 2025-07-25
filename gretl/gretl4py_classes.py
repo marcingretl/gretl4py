@@ -58,7 +58,7 @@ def oddsratio(self):
 # #######################################################
 #   GretlDataset class
 # #######################################################
-def get_data(src):
+def get_data(src, **kwargs):
     """Load dataset from file path or dictionary.
 
     Parameters:
@@ -96,7 +96,10 @@ def get_data(src):
         raise RuntimeError(f'Unsupported data src type: {type(src).__name__}\n')
 
     # create dataset
-    dset = _gretl.Dataset(src)
+    if len(kwargs):
+        dset = _gretl.Dataset(src, kwargs)
+    else:
+        dset = _gretl.Dataset(src)
     if dset.get_id() == 1:
         dset.set_as_default()
     dset.source = source
