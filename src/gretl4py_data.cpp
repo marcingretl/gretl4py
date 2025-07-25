@@ -1642,18 +1642,19 @@ GretlPackage::GretlPackage (const std::string &pkg_name,
 {
     const std::unordered_set<UfunRole> excluded_roles = { UFUN_BUNDLE_PLOT,
             UFUN_GUI_MAIN, UFUN_GUI_PRECHECK, UFUN_PLOT_PRECHECK, UFUN_UI_MAKER };
-    std::string path(MAXLEN, '\0');
-    int idxp = 0;
     std::unordered_set<std::string> excluded_functions;
     std::ostringstream oss;
+    char path[MAXLEN];
+    int idxp = 0;
 
     // we try to use find a path and load the package
+    *path = '\0';
     if (suffix.empty()) {
-        err = get_full_filename((pkg_name + ".gfn").c_str(), path.data(), OPT_I);
+        err = get_full_filename((pkg_name + ".gfn").c_str(), path, OPT_I);
     } else {
-        err = get_full_filename((pkg_name + suffix).c_str(), path.data(), OPT_I);
+        err = get_full_filename((pkg_name + suffix).c_str(), path, OPT_I);
     }
-    pkg = get_function_package_by_filename(path.c_str(), &err);
+    pkg = get_function_package_by_filename(path, &err);
     if (err) {
         handle_gretl_error(err);
     }
