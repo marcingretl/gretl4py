@@ -1658,7 +1658,13 @@ GretlPackage::GretlPackage (const std::string &pkg_name,
     if (err) {
         handle_gretl_error(err);
     }
-    base_dir = std::filesystem::path(path).parent_path();
+    std::string full_path = path;
+    auto pos = full_path.find_last_of("/\\");
+    if (pos != std::string::npos) {
+        base_dir = full_path.substr(0, pos);
+    } else {
+        base_dir = "";
+    }
 
     // setup some basic info about package
     if (pkg_name != function_package_get_name(pkg)) {
@@ -2108,11 +2114,21 @@ GretlPackageRes GretlPackage::function_exec (const std::string &func_name,
 
 std::string GretlPackage::get_examples_path (const std::string &fname)
 {
-    std::filesystem::path examples_path = base_dir / "examples";
+    std::string examples_path = base_dir;
+
+#if defined(_WIN32)
+    examples_path.append("\\examples");
+#else
+    examples_path.append("/examples");
+#endif // defined
 
     if (!fname.empty()) {
-        examples_path = examples_path / fname;
+#if defined(_WIN32)
+        examples_path.append("\\").append(fname);
+#else
+        examples_path.append("/").append(fname);
+#endif // defined
     }
 
-    return examples_path.string();
+    return examples_path;
 }

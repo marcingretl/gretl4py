@@ -261,7 +261,7 @@ private:
     FunctionMap func_ptrs;
     FunctionArgs func_args;
     MainFuncNoOptDef main_func_nd;
-    std::filesystem::path base_dir; // path to the package
+    std::string base_dir;           // path to the package
     int err = 0;
 
     void check_if_defines_estimator (void);
