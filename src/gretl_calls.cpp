@@ -45,7 +45,7 @@ extern "C" {
 // global variables (some used outside this file)
 std::shared_ptr<GretlDataset> DSET = nullptr;           // default dataset
 std::unordered_set<std::string> UserVars;               // registry of user variables
-static std::map<std::string, GretlPackagePtr> GPKGs;    // registry of loaded contributed packages
+std::map<std::string, GretlPackagePtr> GPKGs;           // registry of loaded contributed packages
 static GretlPrint GP = GretlPrint();                    // printer
 static int gretl4py_verbose = 0;
 

@@ -44,6 +44,7 @@ extern "C" {
 #define GRETL_PYBIND11_DEBUG 0
 
 extern std::unordered_set<std::string> UserVars;
+extern std::map<std::string, GretlPackagePtr> GPKGs;
 
 //////////////////////////////////////////////////
 // static functions
@@ -789,8 +790,9 @@ GretlDataset::GretlDataset (const std::string &fname,
 
             if (key_str == "frompkg" && is_pystr(val)) {
                 auto val_str = val.cast<std::string>();
-                auto GP = GretlPackage(val_str, "");
-                full_path = GP.get_examples_path(fname);
+                auto pkg = std::make_shared<GretlPackage>(val_str, "");
+                GPKGs.emplace(val_str, pkg);
+                full_path = pkg->get_examples_path(fname);
             } else {
                 throw std::invalid_argument("unsupported option: '" + key_str + "'");
             }
