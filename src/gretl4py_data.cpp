@@ -783,6 +783,7 @@ GretlDataset::GretlDataset (const std::string &fname,
     // load gretl data from file
     //
     std::string full_path = "";
+    GretlPackagePtr pkg = nullptr;
 
     if (len(kwargs) > 0) {
         for (const auto &[key, val] : kwargs) {
@@ -790,8 +791,13 @@ GretlDataset::GretlDataset (const std::string &fname,
 
             if (key_str == "frompkg" && is_pystr(val)) {
                 auto val_str = val.cast<std::string>();
-                auto pkg = std::make_shared<GretlPackage>(val_str, "");
-                GPKGs.emplace(val_str, pkg);
+                auto it = GPKGs.find(val_str);
+                if (it != GPKGs.end()) {
+                    pkg = it->second;
+                } else {
+                    pkg = std::make_shared<GretlPackage>(val_str, "");
+                    GPKGs.emplace(val_str, pkg);
+                }
                 full_path = pkg->get_examples_path(fname);
             } else {
                 throw std::invalid_argument("unsupported option: '" + key_str + "'");
