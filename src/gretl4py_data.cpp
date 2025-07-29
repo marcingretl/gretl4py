@@ -761,6 +761,7 @@ PythonArgInfo inspect_pyobject (py::handle obj)
 
     info.gtype = GRETL_TYPE_ANY;
     info.pytype = py::str(obj.get_type());
+    // ? try: info.pytype = py::str(py::type::of(obj));
     info.valid = false;
 
     return info;
