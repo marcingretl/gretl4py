@@ -20,6 +20,17 @@ LOCAL_INST  = get_option('LOCAL_INST')
 # Windows-specific libgretl
 ###########################################################################
 if is_windows
+  arch = host_machine.cpu_family()
+  arch_subdir = ''
+
+  if arch == 'x86_64'
+    arch_subdir = 'x86_64'
+  elif arch == 'aarch64'
+    arch_subdir = 'aarch64'
+  else
+    error('Unsupported architecture: ' + arch)
+  endif
+
   STACK_PATH = STACK_PATH.replace('\\', '/')
   if not fs.exists(STACK_PATH)
     error('STACK_PATH not found: ' + STACK_PATH + '\nPlease download the gretl Windows stack from:\n  https://sourceforge.net/projects/gretl/files/mscompile/')
@@ -27,8 +38,8 @@ if is_windows
 
   gretl_include            = STACK_PATH + '/include'
   gretl_include_glib       = STACK_PATH + '/include/glib-2.0'
-  gretl_include_glibconfig = STACK_PATH + '/lib/glib-2.0/include'
-  gretl_lib                = STACK_PATH + '/lib'
+  gretl_include_glibconfig = STACK_PATH + '/lib/' + arch_subdir + '/glib-2.0/include'
+  gretl_lib                = STACK_PATH + '/lib/' + arch_subdir
 endif
 
 ###########################################################################
