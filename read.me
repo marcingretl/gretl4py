@@ -7,22 +7,28 @@ To build the module, ensure you have the following installed:
 ###########################################################################
 # Preparation
 ###########################################################################
-By design, to simplify the setup process, some libgretl-related libraries (i.e., plugins)
-must be placed in a specific directory: gretl/lib (assuming you are in the source root).
-Therefore, before compiling a module, ensure that the required libraries are present in
-gretl/lib:
+
+By design, to simplify the setup process, some libgretl-related libraries
+(e.g., plugins) must be placed in a specific directory: gretl/lib (assuming
+you are in the root directory of the gretl4py source tree).
+
+Therefore, before compiling a module, ensure that the required libraries
+are present in gretl/lib:
 
  - For Windows: all DLLs (libgretl, plugins, and their dependencies)
  - For Linux/macOS: plugins only
 
-In the case of Linux or macOS, it is sufficient to create symbolic links to these files,
-as in:
+In the case of Linux or macOS, it is sufficient to create symbolic links to
+these files, like this:
 
 cd gretl/lib && ln -s /path/to/plugins/*.so .
+
+where "/path/to/plugins" must be replaced by the correct path on your system.
 
 ###########################################################################
 # Compilation
 ###########################################################################
+
 meson setup builddir
 meson install -C builddir #-j4
 meson install -C builddir

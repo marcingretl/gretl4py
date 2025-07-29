@@ -79,6 +79,8 @@ void module_init (void)
 
     // initialize libgretl
     libgretl_init();
+    // flag the fact that we're coming from python
+    gretl_set_python_mode();
 
     // we set user workdir, gretldir and dotdir
     py::module_ pathlib = py::module_::import("pathlib");
