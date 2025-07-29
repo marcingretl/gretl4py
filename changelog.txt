@@ -1,5 +1,7 @@
 version 0.22:
     - add interface to 'summary'
+    - make gretl.get_data() more functional
+
 version 0.21:
     - 'lagselect' switched off for VAR due to SIGSEGV
     - OpenBLAS 0.3.30 for linux packages
