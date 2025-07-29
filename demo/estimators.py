@@ -1,4 +1,3 @@
-import importlib.resources as resources
 import gretl
 import numpy as np
 
@@ -27,18 +26,15 @@ logit_addsratios = [
 # force libgretl to use the decimal point character
 gretl.set('force_decpoint', 'on')
 
-# get path object for the data directory inside the gretl package
-data_dir = resources.files('gretl').joinpath('data')
-
 # load datasets
-longley    = gretl.get_data(str(data_dir.joinpath('longley.csv')))
-bjg        = gretl.get_data(str(data_dir.joinpath('bjg.csv')))
-kennan     = gretl.get_data(str(data_dir.joinpath('kennan.gdt')))
-greene19_1 = gretl.get_data(str(data_dir.joinpath('greene19_1.gdt')))
-data4_1    = gretl.get_data(str(data_dir.joinpath('data4-1.gdt')))
-abdata     = gretl.get_data(str(data_dir.joinpath('abdata.gdt')))
-wtp        = gretl.get_data(str(data_dir.joinpath('wtp.gdt')))
-midas      = gretl.get_data(str(data_dir.joinpath('gdp_midas.gdt')))
+longley    = gretl.get_data('longley.csv')
+bjg        = gretl.get_data('bjg.csv')
+kennan     = gretl.get_data('kennan.gdt')
+greene19_1 = gretl.get_data('greene19_1.gdt')
+data4_1    = gretl.get_data('data4-1.gdt')
+abdata     = gretl.get_data('abdata.gdt')
+wtp        = gretl.get_data('wtp.gdt')
+midas      = gretl.get_data('gdp_midas.gdt')
 
 # list available datasets
 gretl.show_data_status()
