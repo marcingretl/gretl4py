@@ -305,13 +305,12 @@ public:
 };
 
 // implemented in gretl_calls.cpp
-extern std::shared_ptr<GretlDataset> DSET;
+extern GretlDatasetPtr DSET;
 
-void set_default_dset(std::shared_ptr<GretlDataset> GD);
+void set_default_dset(GretlDatasetPtr GD);
 
 template<GretlType GR_TYPE>
-void gretl_generate (const std::string &formula,
-                     std::shared_ptr<GretlDataset> GD = DSET,
+void gretl_generate (const std::string &formula, GretlDatasetPtr GD = DSET,
                      const std::string &name = {});
 
 #endif // GRETL4PY_DATA_H

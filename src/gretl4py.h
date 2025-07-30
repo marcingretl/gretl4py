@@ -57,11 +57,11 @@ py::object load_package (const std::string &name);
 void gretl_user_var_delete_by_name (const std::string &name);
 
 void gretl_print_user_var_by_name (const std::string &name,
-                                   std::shared_ptr<GretlDataset> data = nullptr);
+                                   GretlDatasetPtr data = nullptr);
 
 void uservars_list (void);
 
-void genr (const std::string &formula, std::shared_ptr<GretlDataset> data);
+void genr (const std::string &formula, GretlDatasetPtr data);
 
 template <typename T>
 void genr (const std::string &name, const T &value);

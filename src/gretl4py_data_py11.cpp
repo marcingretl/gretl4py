@@ -29,7 +29,7 @@ const char *gretl_workdir (void);
 // GretlDataset mappings
 void init_gretl4py_dataset_py11(py::module_ &m)
 {
-    py::class_<GretlDataset, std::shared_ptr<GretlDataset>>(m, "Dataset", py::dynamic_attr())
+    py::class_<GretlDataset, GretlDatasetPtr>(m, "Dataset", py::dynamic_attr())
         .def(py::init([](const std::string &fname, const py::dict &kwargs)
                       {
                           return std::make_shared<GretlDataset>(fname, kwargs);

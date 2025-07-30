@@ -46,7 +46,7 @@ protected:
     const GretlObjType model_obj_type;  // libgretl's object type (in model context)
     const py::kwargs kwargs;            // kwargs passed to the model
     py::dict RES;                       // estimation results as dictionary
-    std::shared_ptr<GretlDataset> GD;   // dataset used
+    GretlDatasetPtr GD;                 // dataset used
     GretlPrint GP = GretlPrint();       // printer (instance wide)
     gretl_list_ptr var_list{nullptr};   // libgretl list of variables
     gretlopt opt = OPT_NONE;            // instance wide options (including tests and forecasts)
@@ -70,7 +70,7 @@ protected:
 
     virtual void *model_ptr (void) const = 0;   // non-typed pointer to model
 public:
-    explicit GretlModel (GretlObjType model_obj_type, std::shared_ptr<GretlDataset> GD,
+    explicit GretlModel (GretlObjType model_obj_type, GretlDatasetPtr GD,
                          const py::kwargs &kwargs);
     virtual ~GretlModel (void);
 
@@ -100,7 +100,7 @@ protected:
 
     void *model_ptr (void) const override;
 public:
-    GretlModel_NSE (std::shared_ptr<GretlDataset> GD, const py::kwargs &kwargs);
+    GretlModel_NSE (GretlDatasetPtr GD, const py::kwargs &kwargs);
     virtual ~GretlModel_NSE (void);
 
     void restrict (const py::list &impose, const py::kwargs &kwargs);
@@ -127,8 +127,8 @@ protected:
     const std::string formula;          // formula defining model
     std::vector<double> optional_par;   // optional general purpose parameter (tau for QUANTREG, (l/r)limits for TOBIT, tests...)
 public:
-    GretlModel_NSE_Driver (std::shared_ptr<GretlDataset> GD,
-                           const std::string &formula, const py::kwargs &kwargs);
+    GretlModel_NSE_Driver (GretlDatasetPtr GD, const std::string &formula,
+                           const py::kwargs &kwargs);
 
     void fit (void) override;
 
@@ -143,9 +143,9 @@ template<auto F, GretlCmdIndex CI>
 class GretlModel_NSE_Driver_quantreg : public GretlModel_NSE_Driver<F, CI>
 {
 public:
-    GretlModel_NSE_Driver_quantreg (std::shared_ptr<GretlDataset> GD, const std::string &formula,
+    GretlModel_NSE_Driver_quantreg (GretlDatasetPtr GD, const std::string &formula,
                                     const double &tau, const py::kwargs &kwargs);
-    GretlModel_NSE_Driver_quantreg (std::shared_ptr<GretlDataset> GD, const std::string &formula,
+    GretlModel_NSE_Driver_quantreg (GretlDatasetPtr GD, const std::string &formula,
                                     const py::array_t<double> &tau, const py::kwargs &kwargs);
 };
 
@@ -157,9 +157,9 @@ template<auto F, GretlCmdIndex CI>
 class GretlModel_NSE_Driver_dpanel : public GretlModel_NSE_Driver<F, CI>
 {
 public:
-    GretlModel_NSE_Driver_dpanel (std::shared_ptr<GretlDataset> GD, const std::string &formula,
+    GretlModel_NSE_Driver_dpanel (GretlDatasetPtr GD, const std::string &formula,
                                   const int &p, const py::kwargs &kwargs);
-    GretlModel_NSE_Driver_dpanel (std::shared_ptr<GretlDataset> GD, const std::string &formula,
+    GretlModel_NSE_Driver_dpanel (GretlDatasetPtr GD, const std::string &formula,
                                   const py::array_t<int> &p, const py::kwargs &kwargs);
 };
 
@@ -177,7 +177,7 @@ private:
 
     void get_arima_order (const py::tuple &tup, int &p, int &d, int &q);
 public:
-    GretlModel_NSE_arima (std::shared_ptr<GretlDataset> GD, const std::string &y,
+    GretlModel_NSE_arima (GretlDatasetPtr GD, const std::string &y,
                           const py::tuple &tup, const py::kwargs &kwargs);
     ~GretlModel_NSE_arima (void);
 
@@ -207,7 +207,7 @@ protected:
 
     int find_variable_nr (const std::string &variable_name);
 public:
-    GretlModel_VAR (std::shared_ptr<GretlDataset> GD, const std::string &ylist,
+    GretlModel_VAR (GretlDatasetPtr GD, const std::string &ylist,
                     const int order, const py::kwargs &kwargs);
     virtual ~GretlModel_VAR (void);
 
@@ -233,7 +233,7 @@ class GretlModel_VAR_VECM : public GretlModel_VAR
 private:
     const int coint_rank;               // co-integration rank
 public:
-    GretlModel_VAR_VECM (std::shared_ptr<GretlDataset> GD, const std::string &ylist,
+    GretlModel_VAR_VECM (GretlDatasetPtr GD, const std::string &ylist,
                          const int order, const int rank, const py::kwargs &kwargs);
 
     void restrict (const py::list &impose, const py::kwargs &kwargs);
@@ -259,8 +259,8 @@ private:
 
     void *model_ptr (void) const override;
 public:
-    GretlModel_package (std::shared_ptr<GretlDataset> GD,
-                        const GretlPackagePtr PKG, const py::kwargs &kwargs);
+    GretlModel_package (GretlDatasetPtr GD, const GretlPackagePtr PKG,
+                        const py::kwargs &kwargs);
 
     void fit (void) override;
 

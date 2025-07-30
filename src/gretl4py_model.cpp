@@ -48,7 +48,7 @@ extern std::unordered_set<std::string> UserVars;
 //
 // GretlModel class methods
 //
-GretlModel::GretlModel (GretlObjType model_obj_type, std::shared_ptr<GretlDataset> GD,
+GretlModel::GretlModel (GretlObjType model_obj_type, GretlDatasetPtr GD,
                         const py::kwargs &kwargs)
                         : id(next_model_id++), model_obj_type(model_obj_type),
                         kwargs(kwargs)
@@ -150,7 +150,7 @@ void GretlModel::unpack_kwargs (GretlCmdIndex ci)
 
         if (key == "data") {
             // special case: we use already allocated object of GretlDataset class
-            GD = item.second.cast<std::shared_ptr<GretlDataset>>();
+            GD = item.second.cast<GretlDatasetPtr>();
             continue;
         } else if (key == "quiet") {
             throw std::invalid_argument("invalid option flag: " + key);
@@ -502,7 +502,7 @@ std::string GretlModel::repr (void) const
 // Native Single Equation libgretl MODEL (NSE)
 // extends: GretlModel
 //
-GretlModel_NSE::GretlModel_NSE (std::shared_ptr<GretlDataset> GD, const py::kwargs &kwargs)
+GretlModel_NSE::GretlModel_NSE (GretlDatasetPtr GD, const py::kwargs &kwargs)
                                 : GretlModel(GRETL_OBJ_EQN, GD, kwargs)
 {}
 
@@ -653,7 +653,7 @@ void GretlModel_NSE::restrict (const py::list &impose,
 // NSE via dedicated Driver
 //
 template<auto F, GretlCmdIndex CI>
-GretlModel_NSE_Driver<F, CI>::GretlModel_NSE_Driver (std::shared_ptr<GretlDataset> GD,
+GretlModel_NSE_Driver<F, CI>::GretlModel_NSE_Driver (GretlDatasetPtr GD,
                                                      const std::string &formula,
                                                      const py::kwargs &kwargs)
                                                      : GretlModel_NSE(GD, kwargs), formula(formula)
@@ -836,7 +836,7 @@ template class GretlModel_NSE_Driver<midas_model, MIDASREG>;
 //
 // NSE via arima plugin
 //
-GretlModel_NSE_arima::GretlModel_NSE_arima (std::shared_ptr<GretlDataset> GD,
+GretlModel_NSE_arima::GretlModel_NSE_arima (GretlDatasetPtr GD,
                                             const std::string &y, const py::tuple &tup,
                                             const py::kwargs &kwargs)
                                             : GretlModel_NSE(GD, kwargs), y(y), tup(tup)
@@ -949,10 +949,8 @@ void GretlModel_NSE_arima::fit (void)
 //
 template<auto F, GretlCmdIndex CI>
 GretlModel_NSE_Driver_quantreg<F, CI>::GretlModel_NSE_Driver_quantreg
-                                        (std::shared_ptr<GretlDataset> GD,
-                                         const std::string &formula,
-                                         const double &tau,
-                                         const py::kwargs &kwargs)
+                                        (GretlDatasetPtr GD, const std::string &formula,
+                                         const double &tau, const py::kwargs &kwargs)
                                         : GretlModel_NSE_Driver<F, CI>(GD, formula, kwargs)
 {
     this->optional_par.push_back(tau);
@@ -960,10 +958,8 @@ GretlModel_NSE_Driver_quantreg<F, CI>::GretlModel_NSE_Driver_quantreg
 
 template<auto F, GretlCmdIndex CI>
 GretlModel_NSE_Driver_quantreg<F, CI>::GretlModel_NSE_Driver_quantreg
-                                        (std::shared_ptr<GretlDataset> GD,
-                                         const std::string &formula,
-                                         const py::array_t<double> &tau,
-                                         const py::kwargs &kwargs)
+                                        (GretlDatasetPtr GD, const std::string &formula,
+                                         const py::array_t<double> &tau, const py::kwargs &kwargs)
                                         : GretlModel_NSE_Driver<F, CI>(GD, formula, kwargs)
 {
     if (tau.ndim() != 1) {
@@ -983,8 +979,7 @@ template class GretlModel_NSE_Driver_quantreg<quantreg_driver, QUANTREG>;
 //
 template<auto F, GretlCmdIndex CI>
 GretlModel_NSE_Driver_dpanel<F, CI>::GretlModel_NSE_Driver_dpanel
-                                        (std::shared_ptr<GretlDataset> GD,
-                                         const std::string &formula,
+                                        (GretlDatasetPtr GD, const std::string &formula,
                                          const int &p, const py::kwargs &kwargs)
                                         : GretlModel_NSE_Driver<F, CI>(GD, formula, kwargs)
 {
@@ -993,8 +988,7 @@ GretlModel_NSE_Driver_dpanel<F, CI>::GretlModel_NSE_Driver_dpanel
 
 template<auto F, GretlCmdIndex CI>
 GretlModel_NSE_Driver_dpanel<F, CI>::GretlModel_NSE_Driver_dpanel
-                                        (std::shared_ptr<GretlDataset> GD,
-                                         const std::string &formula,
+                                        (GretlDatasetPtr GD, const std::string &formula,
                                          const py::array_t<int> &p, const py::kwargs &kwargs)
                                         : GretlModel_NSE_Driver<F, CI>(GD, formula, kwargs)
 {
@@ -1013,7 +1007,7 @@ template class GretlModel_NSE_Driver_dpanel<dpd_model, DPANEL>;
 // VAR libgretl MODEL
 // extends: GretlModel
 //
-GretlModel_VAR::GretlModel_VAR (std::shared_ptr<GretlDataset> GD, const std::string &ylist,
+GretlModel_VAR::GretlModel_VAR (GretlDatasetPtr GD, const std::string &ylist,
                                 const int order, const py::kwargs &kwargs)
                                 : GretlModel(GRETL_OBJ_VAR, GD, kwargs),
                                 vars(ylist), order(order)
@@ -1253,7 +1247,7 @@ void GretlModel_VAR::irf (const std::string &targ, const std::string &shock, dou
 // VECM libgretl MODEL
 // extends: GretlModel_VAR
 //
-GretlModel_VAR_VECM::GretlModel_VAR_VECM (std::shared_ptr<GretlDataset> GD, const std::string &ylist,
+GretlModel_VAR_VECM::GretlModel_VAR_VECM (GretlDatasetPtr GD, const std::string &ylist,
                                           const int order, const int rank, const py::kwargs &kwargs)
                                           : GretlModel_VAR(GD, ylist, order, kwargs), coint_rank(rank)
 {}
@@ -1279,8 +1273,7 @@ void GretlModel_VAR_VECM::forecast (const py::kwargs &kwargs)
 // libgretl contributed packages
 // extends: GretlModel
 //
-GretlModel_package::GretlModel_package (std::shared_ptr<GretlDataset> GD,
-                                        const GretlPackagePtr PKG,
+GretlModel_package::GretlModel_package (GretlDatasetPtr GD, const GretlPackagePtr PKG,
                                         const py::kwargs &kwargs)
                                         : GretlModel(GRETL_OBJ_ANY, GD, kwargs),
                                         GPKG(PKG), main_func_name(PKG->main_func_get_name())

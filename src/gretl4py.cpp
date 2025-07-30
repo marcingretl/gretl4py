@@ -20,14 +20,14 @@
 #include "gretl4py.h"
 #include "gretl4py_model_instantiations.h"
 
-extern std::shared_ptr<GretlDataset> DSET;
+extern GretlDatasetPtr DSET;
 
 #define BIND_DRIVER_MODEL(NAME, FUNC, CI) \
     m.def(#NAME, \
-          [](const std::string &formula, const py::kwargs &kwargs) -> std::unique_ptr<GretlModel> \
+          [](const std::string &formula, const py::kwargs &kwargs) -> GretlModelPtr \
           { \
               auto model = std::make_unique<GretlModel_NSE_Driver<FUNC, CI>>(DSET, formula, kwargs); \
-              return std::unique_ptr<GretlModel>(std::move(model)); \
+              return GretlModelPtr(std::move(model)); \
           }, \
           py::arg("formula").none(false), py::kw_only());
 
@@ -76,7 +76,7 @@ PYBIND11_MODULE(_gretl, m)
           py::arg("name").none(false), py::arg("data").none(true) = std::nullopt);
     m.def("uservars_list", &uservars_list);
     m.def("genr",
-          static_cast<void(*)(const std::string&, std::shared_ptr<GretlDataset>)>(&genr),
+          static_cast<void(*)(const std::string&, GretlDatasetPtr)>(&genr),
           py::arg("formula").none(false), py::arg("data").none(true) = std::nullopt);
     m.def("genr", &genr<py::array>, py::arg("name").none(false), py::arg("value").none(false));
     m.def("genr", &genr<int>, py::arg("name").none(false), py::arg("value").none(false));
@@ -88,43 +88,43 @@ PYBIND11_MODULE(_gretl, m)
     //////////////////////////////////////////////////
     // direct calls
     m.def("arima",
-          [](const std::string &y, const py::tuple &order, const py::kwargs &kwargs) -> std::unique_ptr<GretlModel>
+          [](const std::string &y, const py::tuple &order, const py::kwargs &kwargs) -> GretlModelPtr
           {
               auto model = std::make_unique<GretlModel_NSE_arima>(DSET, y, order, kwargs);
 
-              return std::unique_ptr<GretlModel>(std::move(model));
+              return GretlModelPtr(std::move(model));
           },
           py::arg("y").none(false), py::arg("order").none(false), py::kw_only());
     m.def("quantreg",
-          [](const double &tau, const std::string &formula, const py::kwargs &kwargs) -> std::unique_ptr<GretlModel>
+          [](const double &tau, const std::string &formula, const py::kwargs &kwargs) -> GretlModelPtr
           {
               auto model = std::make_unique<GretlModel_NSE_quantreg>(DSET, formula, tau, kwargs);
 
-              return std::unique_ptr<GretlModel>(std::move(model));
+              return GretlModelPtr(std::move(model));
           },
           py::arg("tau").none(false), py::arg("formula").none(false), py::kw_only());
     m.def("quantreg",
-          [](const py::array_t<double> &tau, const std::string &formula, const py::kwargs &kwargs) -> std::unique_ptr<GretlModel>
+          [](const py::array_t<double> &tau, const std::string &formula, const py::kwargs &kwargs) -> GretlModelPtr
           {
               auto model = std::make_unique<GretlModel_NSE_quantreg>(DSET, formula, tau, kwargs);
 
-              return std::unique_ptr<GretlModel>(std::move(model));
+              return GretlModelPtr(std::move(model));
           },
           py::arg("tau").none(false), py::arg("formula").none(false), py::kw_only());
     m.def("dpanel",
-          [](const int &p, const std::string &formula, const py::kwargs &kwargs) -> std::unique_ptr<GretlModel>
+          [](const int &p, const std::string &formula, const py::kwargs &kwargs) -> GretlModelPtr
           {
               auto model = std::make_unique<GretlModel_NSE_dpanel>(DSET, formula, p, kwargs);
 
-              return std::unique_ptr<GretlModel>(std::move(model));
+              return GretlModelPtr(std::move(model));
           },
           py::arg("p").none(false), py::arg("formula").none(false), py::kw_only());
     m.def("dpanel",
-          [](const py::array_t<int> &p, const std::string &formula, const py::kwargs &kwargs) -> std::unique_ptr<GretlModel>
+          [](const py::array_t<int> &p, const std::string &formula, const py::kwargs &kwargs) -> GretlModelPtr
           {
               auto model = std::make_unique<GretlModel_NSE_dpanel>(DSET, formula, p, kwargs);
 
-              return std::unique_ptr<GretlModel>(std::move(model));
+              return GretlModelPtr(std::move(model));
           },
           py::arg("p").none(false), py::arg("formula").none(false), py::kw_only());
 
@@ -155,19 +155,19 @@ PYBIND11_MODULE(_gretl, m)
     // VAR and VECM
     //////////////////////////////////////////////////
     m.def("var",
-          [](const int &order, const std::string &ylist, const py::kwargs &kwargs) -> std::unique_ptr<GretlModel>
+          [](const int &order, const std::string &ylist, const py::kwargs &kwargs) -> GretlModelPtr
           {
               auto model = std::make_unique<GretlModel_VAR>(DSET, ylist, order, kwargs);
 
-              return std::unique_ptr<GretlModel>(std::move(model));
+              return GretlModelPtr(std::move(model));
           },
           py::arg("order").none(false), py::arg("ylist").none(false), py::kw_only());
     m.def("vecm",
-          [](const int &order, const int &rank, const std::string &ylist, const py::kwargs &kwargs) -> std::unique_ptr<GretlModel>
+          [](const int &order, const int &rank, const std::string &ylist, const py::kwargs &kwargs) -> GretlModelPtr
           {
               auto model = std::make_unique<GretlModel_VAR_VECM>(DSET, ylist, order, rank, kwargs);
 
-              return std::unique_ptr<GretlModel>(std::move(model));
+              return GretlModelPtr(std::move(model));
           },
           py::arg("order").none(false), py::arg("rank").none(false),
           py::arg("ylist").none(false), py::kw_only());
@@ -176,9 +176,11 @@ PYBIND11_MODULE(_gretl, m)
     // packages
     //////////////////////////////////////////////////
     m.def("package",
-          [](const GretlPackagePtr package, const py::kwargs &kwargs) -> std::unique_ptr<GretlModel>
+          [](const GretlPackagePtr package, const py::kwargs &kwargs) -> GretlModelPtr
           {
-              return std::make_unique<GretlModel_package>(DSET, package, kwargs);
+              auto model = std::make_unique<GretlModel_package>(DSET, package, kwargs);
+
+              return GretlModelPtr(std::move(model));
           },
           py::arg("package").none(false), py::kw_only());
 }

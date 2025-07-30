@@ -616,7 +616,7 @@ template void move_to_python_container<GretlModel, py::dict, py::list>
     (GretlModel&, py::dict&&, const char*, const std::string&);
 
 // we set default dataset
-void set_default_dset (std::shared_ptr<GretlDataset> GD)
+void set_default_dset (GretlDatasetPtr GD)
 {
     if (DSET) {
         DSET->is_default = false;
@@ -627,7 +627,7 @@ void set_default_dset (std::shared_ptr<GretlDataset> GD)
 // General interface to libgretl's generate()
 // Note: some specializations must be created manually
 template<GretlType GR_TYPE>
-void gretl_generate (const std::string &formula, std::shared_ptr<GretlDataset> GD,
+void gretl_generate (const std::string &formula, GretlDatasetPtr GD,
                      const std::string &name)
 {
     //
@@ -678,8 +678,7 @@ void gretl_generate (const std::string &formula, std::shared_ptr<GretlDataset> G
 }
 // Note: specializations for GRETL_TYPE_LIST and GRETL_TYPE_SERIES
 // are created by compiler
-template void gretl_generate<GRETL_TYPE_ANY>
-    (const std::string&, std::shared_ptr<GretlDataset>, const std::string&);
+template void gretl_generate<GRETL_TYPE_ANY>(const std::string&, GretlDatasetPtr, const std::string&);
 
 
 // Note: this is needed to avoid memory leaks when
@@ -713,37 +712,37 @@ PythonArgInfo inspect_pyobject (py::handle obj)
         return info;
     }
 
-    if (py::isinstance<py::bool_>(obj)) {
+    if (is_pybool(obj)) {
         info.gtype = GRETL_TYPE_BOOL;
         info.pytype = "bool";
         return info;
     }
 
-    if (py::isinstance<py::int_>(obj)) {
+    if (is_pyint(obj)) {
         info.gtype = GRETL_TYPE_INT;
         info.pytype = "int";
         return info;
     }
 
-    if (py::isinstance<py::float_>(obj)) {
+    if (is_pyfloat(obj)) {
         info.gtype = GRETL_TYPE_DOUBLE;
         info.pytype = "float";
         return info;
     }
 
-    if (py::isinstance<py::str>(obj)) {
+    if (is_pystr(obj)) {
         info.gtype = GRETL_TYPE_STRING;
         info.pytype = "str";
         return info;
     }
 
-    if (py::isinstance<py::dict>(obj)) {
+    if (is_pydict(obj)) {
         info.gtype = GRETL_TYPE_BUNDLE;
         info.pytype = "dict";
         return info;
     }
 
-    if (py::isinstance<py::array>(obj)) {
+    if (is_pynumarray(obj)) {
         info.gtype = GRETL_TYPE_MATRIX;
         info.pytype = "ndarray";
         auto arr = py::cast<py::array>(obj);
@@ -751,7 +750,7 @@ PythonArgInfo inspect_pyobject (py::handle obj)
         return info;
     }
 
-    if (py::isinstance<py::tuple>(obj) || py::isinstance<py::list>(obj)) {
+    if (is_pytuple(obj) || is_pylist(obj)) {
         info.gtype = GRETL_TYPE_LIST;
         info.pytype = py::isinstance<py::tuple>(obj) ? "tuple" : "list";
         auto seq = py::reinterpret_borrow<py::sequence>(obj);
@@ -761,7 +760,7 @@ PythonArgInfo inspect_pyobject (py::handle obj)
 
     info.gtype = GRETL_TYPE_ANY;
     info.pytype = py::str(obj.get_type());
-    // ? try: info.pytype = py::str(py::type::of(obj));
+    // ? try: info.pytype = py::str(py::type::of(obj)); #Marcin: yes, this will work for sure; maybe I'll switch to pybind11 3.0 next week
     info.valid = false;
 
     return info;

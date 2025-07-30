@@ -43,7 +43,7 @@ extern "C" {
 #define GRETL_PYBIND11_DEBUG 0
 
 // global variables (some used outside this file)
-std::shared_ptr<GretlDataset> DSET = nullptr;           // default dataset
+GretlDatasetPtr DSET = nullptr;           // default dataset
 std::unordered_set<std::string> UserVars;               // registry of user variables
 std::map<std::string, GretlPackagePtr> GPKGs;           // registry of loaded contributed packages
 static GretlPrint GP = GretlPrint();                    // printer
@@ -235,7 +235,7 @@ void do_set (const std::string key,
 //////////////////////////////////////////////////
 
 static gretlopt unpack_kwargs_command (GretlCmdIndex ci,
-                                       std::shared_ptr<GretlDataset> &GD,
+                                       GretlDatasetPtr &GD,
                                        const py::kwargs &kwargs)
 {
     //
@@ -252,7 +252,7 @@ static gretlopt unpack_kwargs_command (GretlCmdIndex ci,
 
             if (key == "data") {
                 // special case: we use already allocated object of GretlDataset class
-                GD = item.second.cast<std::shared_ptr<GretlDataset>>();
+                GD = item.second.cast<GretlDatasetPtr>();
                 continue;
             } else if (key == "silent") {
                 // special case: silent is processed manually later on
@@ -288,7 +288,7 @@ void do_summary (const std::string &varlist, const py::kwargs &kwargs)
     //
     // this function mimics libgretl's 'summary' command
     //
-    std::shared_ptr<GretlDataset> GD = nullptr;
+    GretlDatasetPtr GD = nullptr;
     gretl_list_ptr varlist_ptr{nullptr};
     int err = 0;
 
@@ -377,7 +377,6 @@ py::object load_package (const std::string &name)
             }, py::arg("output").none(true) = "", py::kw_only());
 
         // set it as an attribute on the object
-        //obj.attr(fname) = wrapper;
         gretl_mod.attr(fname) = wrapper;
     }
 
@@ -398,8 +397,7 @@ void gretl_user_var_delete_by_name (const std::string &name)
     }
 }
 
-void gretl_print_user_var_by_name (const std::string &name,
-                                   std::shared_ptr<GretlDataset> data)
+void gretl_print_user_var_by_name (const std::string &name, GretlDatasetPtr data)
 {
     if (UserVars.find(name) == UserVars.end()) {
         throw std::invalid_argument("unknown variable: '" + name + "'");
@@ -435,7 +433,7 @@ void uservars_list (void)
 }
 
 // general inteface to gretl's 'genr' command
-void genr (const std::string &formula, std::shared_ptr<GretlDataset> data)
+void genr (const std::string &formula, GretlDatasetPtr data)
 {
     // GretlType genr_get_last_output_type (void);
     gretl_generate<GRETL_TYPE_ANY>(formula, data ? data : DSET);

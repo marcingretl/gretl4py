@@ -139,10 +139,13 @@ private:
 };
 
 // gretl4py classes
-class GretlPackage;
-using GretlPackagePtr = std::shared_ptr<GretlPackage>;
-
 class GretlDataset;
 using GretlDatasetPtr = std::shared_ptr<GretlDataset>;
+
+class GretlModel;
+using GretlModelPtr = std::unique_ptr<GretlModel>;
+
+class GretlPackage;
+using GretlPackagePtr = std::shared_ptr<GretlPackage>;
 
 #endif // GRETL4PY_TYPES_H
