@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE gretldata SYSTEM "gretldata.dtd">
+
+<gretldata version="1.3" name="oil5" frequency="4" startobs="1980:1" endobs="2016:1" type="time-series">
+<description>oil5.def
+
+   oil
+
+	Obs: 145 quarterly observations from 1980Q1 to 2016Q1
+
+	oil	Global price of West Texas Intermediate Crude in U.S. dollars
+
+Source: Federal Reserve Bank of St. Louis series POILWTIUSDQ
+
+
+
+    Variable |       Obs        Mean    Std. Dev.       Min        Max
+-------------+--------------------------------------------------------
+         oil |       145    41.08021    28.06795       12.9     123.97
+
+</description>
+<variables count="2">
+<variable name="dateid01"
+/>
+<variable name="oil"
+ label="Oil price (WTI Crude), $US"
+/>
+</variables>
+<observations count="145" labels="false">
+<obs>7305 37.85 </obs>
+<obs>7396 39.5 </obs>
+<obs>7487 37.84 </obs>
+<obs>7579 36.32 </obs>
+<obs>7671 38 </obs>
+<obs>7761 36.67 </obs>
+<obs>7852 35 </obs>
+<obs>7944 35 </obs>
+<obs>8036 34.02 </obs>
+<obs>8126 32 </obs>
+<obs>8217 32 </obs>
+<obs>8309 32.67 </obs>
+<obs>8401 30.4 </obs>
+<obs>8491 30.58 </obs>
+<obs>8582 31.59 </obs>
+<obs>8674 29.85 </obs>
+<obs>8766 30.21 </obs>
+<obs>8857 30.37 </obs>
+<obs>8948 29.08 </obs>
+<obs>9040 27.89 </obs>
+<obs>9132 27.11 </obs>
+<obs>9222 27.88 </obs>
+<obs>9313 27.79 </obs>
+<obs>9405 29.19 </obs>
+<obs>9497 16.91 </obs>
+<obs>9587 13.94 </obs>
+<obs>9678 13.87 </obs>
+<obs>9770 15.37 </obs>
+<obs>9862 18.29 </obs>
+<obs>9952 19.39 </obs>
+<obs>10043 20.39 </obs>
+<obs>10135 18.7 </obs>
+<obs>10227 16.69 </obs>
+<obs>10318 17.25 </obs>
+<obs>10409 15.19 </obs>
+<obs>10501 14.76 </obs>
+<obs>10593 18.49 </obs>
+<obs>10683 20.59 </obs>
+<obs>10774 19.32 </obs>
+<obs>10866 20.36 </obs>
+<obs>10958 21.83 </obs>
+<obs>11048 17.79 </obs>
+<obs>11139 26.48 </obs>
+<obs>11231 31.97 </obs>
+<obs>11323 21.86 </obs>
+<obs>11413 20.74 </obs>
+<obs>11504 21.69 </obs>
+<obs>11596 21.76 </obs>
+<obs>11688 18.89 </obs>
+<obs>11779 21.19 </obs>
+<obs>11870 21.66 </obs>
+<obs>11962 20.48 </obs>
+<obs>12054 19.81 </obs>
+<obs>12144 19.77 </obs>
+<obs>12235 17.79 </obs>
+<obs>12327 16.45 </obs>
+<obs>12419 14.81 </obs>
+<obs>12509 17.78 </obs>
+<obs>12600 18.49 </obs>
+<obs>12692 17.65 </obs>
+<obs>12784 18.37 </obs>
+<obs>12874 19.35 </obs>
+<obs>12965 17.84 </obs>
+<obs>13057 18.16 </obs>
+<obs>13149 19.76 </obs>
+<obs>13240 21.73 </obs>
+<obs>13331 22.41 </obs>
+<obs>13423 24.63 </obs>
+<obs>13515 22.78 </obs>
+<obs>13605 19.9 </obs>
+<obs>13696 19.77 </obs>
+<obs>13788 19.88 </obs>
+<obs>13880 15.96 </obs>
+<obs>13970 14.64 </obs>
+<obs>14061 14.17 </obs>
+<obs>14153 12.9 </obs>
+<obs>14245 12.9 </obs>
+<obs>14335 17.57 </obs>
+<obs>14426 21.53 </obs>
+<obs>14518 24.67 </obs>
+<obs>14610 28.79 </obs>
+<obs>14701 28.81 </obs>
+<obs>14792 31.72 </obs>
+<obs>14884 31.94 </obs>
+<obs>14976 28.78 </obs>
+<obs>15066 27.85 </obs>
+<obs>15157 26.49 </obs>
+<obs>15249 20.36 </obs>
+<obs>15341 21.6 </obs>
+<obs>15431 26.26 </obs>
+<obs>15522 28.32 </obs>
+<obs>15614 28.28 </obs>
+<obs>15706 34.02 </obs>
+<obs>15796 28.98 </obs>
+<obs>15887 30.2 </obs>
+<obs>15979 31.18 </obs>
+<obs>16071 35.23 </obs>
+<obs>16162 38.35 </obs>
+<obs>16253 43.89 </obs>
+<obs>16345 48.31 </obs>
+<obs>16437 49.65 </obs>
+<obs>16527 53.05 </obs>
+<obs>16618 63.06 </obs>
+<obs>16710 60.02 </obs>
+<obs>16802 63.33 </obs>
+<obs>16892 70.47 </obs>
+<obs>16983 70.42 </obs>
+<obs>17075 59.99 </obs>
+<obs>17167 58.03 </obs>
+<obs>17257 64.96 </obs>
+<obs>17348 75.48 </obs>
+<obs>17440 90.67 </obs>
+<obs>17532 97.94 </obs>
+<obs>17623 123.97 </obs>
+<obs>17714 117.99 </obs>
+<obs>17806 58.45 </obs>
+<obs>17898 42.95 </obs>
+<obs>17988 59.51 </obs>
+<obs>18079 68.21 </obs>
+<obs>18171 76.08 </obs>
+<obs>18263 78.63 </obs>
+<obs>18353 77.86 </obs>
+<obs>18444 76.01 </obs>
+<obs>18536 85.1 </obs>
+<obs>18628 93.93 </obs>
+<obs>18718 102.52 </obs>
+<obs>18809 89.71 </obs>
+<obs>18901 94.03 </obs>
+<obs>18993 102.85 </obs>
+<obs>19084 93.38 </obs>
+<obs>19175 92.2 </obs>
+<obs>19267 88.13 </obs>
+<obs>19359 94.36 </obs>
+<obs>19449 94.18 </obs>
+<obs>19540 105.8 </obs>
+<obs>19632 97.41 </obs>
+<obs>19724 98.76 </obs>
+<obs>19814 103.14 </obs>
+<obs>19905 97.57 </obs>
+<obs>19997 73.07 </obs>
+<obs>20089 48.7 </obs>
+<obs>20179 57.76 </obs>
+<obs>20270 46.5 </obs>
+<obs>20362 42.03 </obs>
+<obs>20454 33.28 </obs>
+</observations>
+</gretldata>

@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE gretldata SYSTEM "gretldata.dtd">
+
+<gretldata version="1.3" name="france_ep" frequency="1" startobs="1971" endobs="2007" type="time-series">
+<description>france_ep.def
+
+  consn hours inc
+
+	obs: 37 annual observations from 1971 to 2007
+
+	consn	growth in real per capita private consumption in France
+	hours	growth in per capita hours worked in France
+	inc	growth in per capita real disposable labour income in France
+
+
+Source: These data were constructed and used by Gerdie Everaert and Lorenzo Pozzi, &quot;The Predictability of Aggregate Consumption in OECD Countries: A Panel Data Analysis&quot;, Journal of Applied Econometrics, Vol. 29. No. 3, 2014, pp. 431-453.
+
+
+For details of how they were constructed see the file readme.ep.txt at 
+http://qed.econ.queensu.ca/jae/2014-v29.3/everaert-pozzi/readme.ep.txt
+
+The data are a subset of those provided in the files &quot;oecd&quot;.
+
+
+
+    Variable |       Obs        Mean    Std. Dev.       Min        Max
+-------------+--------------------------------------------------------
+       consn |        37    .0189863    .0142158   -.009751    .046948
+       hours |        37   -.0067121    .0125374   -.048808    .014448
+         inc |        37    .0169999    .0180529   -.017426    .059006
+
+
+
+
+</description>
+<variables count="4">
+<variable name="dateid01"
+/>
+<variable name="consn"
+ label="growth in real per capita private consumption"
+/>
+<variable name="hours"
+ label="growth in per capita hours worked"
+/>
+<variable name="inc"
+ label="growth in per capita real disposable labour income"
+/>
+</variables>
+<observations count="37" labels="false">
+<obs>4018 0.045188 -0.008979 0.054407 </obs>
+<obs>4383 0.042673 -0.008105 0.037263 </obs>
+<obs>4749 0.044823 -0.009396 0.059006 </obs>
+<obs>5114 0.016011 -0.011543 0.042675 </obs>
+<obs>5479 0.025286 -0.020935 0.044989 </obs>
+<obs>5844 0.046948 -0.013316 0.032895 </obs>
+<obs>6210 0.022231 0.000618 0.025622 </obs>
+<obs>6575 0.031255 -0.005641 0.041276 </obs>
+<obs>6940 0.024114 -0.00347 -0.000645 </obs>
+<obs>7305 0.002031 -0.006844 0.000582 </obs>
+<obs>7671 0.018379 -0.02348 0.012741 </obs>
+<obs>8036 0.024002 -0.048808 0.015271 </obs>
+<obs>8401 0.001753 -0.015301 -0.011975 </obs>
+<obs>8766 0.007354 -0.010417 -0.017426 </obs>
+<obs>9132 0.018691 -0.021081 -0.000648 </obs>
+<obs>9497 0.032521 -0.006049 0.02035 </obs>
+<obs>9862 0.023384 0.004625 -0.006654 </obs>
+<obs>10227 0.022247 0.008531 0.024794 </obs>
+<obs>10593 0.0327 0.006482 0.012961 </obs>
+<obs>10958 0.013796 -0.00233 0.023403 </obs>
+<obs>11323 -0.000483 -0.009793 0.008283 </obs>
+<obs>11688 0.001799 -0.010537 0.0051 </obs>
+<obs>12054 -0.009751 -0.024576 -0.001207 </obs>
+<obs>12419 0.004873 -0.006054 -0.003157 </obs>
+<obs>12784 0.005245 -0.009402 0.012748 </obs>
+<obs>13149 0.008225 0.002987 -0.003384 </obs>
+<obs>13515 -0.003118 -0.002914 0.013849 </obs>
+<obs>13880 0.02996 0.004653 0.028427 </obs>
+<obs>14245 0.019029 0.011287 0.023442 </obs>
+<obs>14610 0.03553 -0.004539 0.024791 </obs>
+<obs>14976 0.018235 0.002317 0.021606 </obs>
+<obs>15341 0.006112 -0.027134 0.022299 </obs>
+<obs>15706 0.011921 -0.008642 -0.001063 </obs>
+<obs>16071 0.014022 0.012427 0.012005 </obs>
+<obs>16437 0.018494 -0.00354 0.009333 </obs>
+<obs>16802 0.02359 0.014448 0.019316 </obs>
+<obs>17167 0.023423 0.006105 0.02572 </obs>
+</observations>
+</gretldata>

@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE gretldata SYSTEM "gretldata.dtd">
+
+<gretldata version="1.3" name="bachelor" frequency="1" startobs="1" endobs="51" type="cross-section">
+<description> bachelor.def(cross-sectional data)
+
+state income bachelor
+  
+  Obs:   51 State level measures from 2008, Census Bureau
+
+ 
+ state           = state
+ income          = state per capita income, $2008
+ bachelor        = percent of state population with bachelor degree
+
+
+    Variable |       Obs        Mean    Std. Dev.       Min        Max
+-------------+--------------------------------------------------------
+      income |        51    39.66886    6.845453     30.399     66.119
+    bachelor |        51    27.35686    5.574738       17.1       48.2
+
+
+</description>
+<variables count="3">
+<variable name="state"
+ label="state"
+ discrete="true"
+/>
+<variable name="income"
+ label="state per capita income, $2008"
+/>
+<variable name="bachelor"
+ label="percent of state population with bachelor degree"
+/>
+</variables>
+<observations count="51" labels="false">
+<obs>1 33.768 22 </obs>
+<obs>2 44.039 27.3 </obs>
+<obs>3 34.335 25.1 </obs>
+<obs>4 32.397 18.8 </obs>
+<obs>5 43.641 29.6 </obs>
+<obs>6 42.985 35.6 </obs>
+<obs>7 56.272 35.6 </obs>
+<obs>8 40.519 27.5 </obs>
+<obs>9 66.119 48.2 </obs>
+<obs>10 39.267 25.8 </obs>
+<obs>11 34.893 27.5 </obs>
+<obs>12 42.055 29.1 </obs>
+<obs>13 33.074 24 </obs>
+<obs>14 42.347 29.9 </obs>
+<obs>15 34.605 22.9 </obs>
+<obs>16 37.402 24.3 </obs>
+<obs>17 38.82 29.6 </obs>
+<obs>18 32.076 19.7 </obs>
+<obs>19 36.424 20.3 </obs>
+<obs>20 36.457 25.4 </obs>
+<obs>21 48.378 35.2 </obs>
+<obs>22 51.254 38.1 </obs>
+<obs>23 34.949 24.7 </obs>
+<obs>24 43.037 31.5 </obs>
+<obs>25 30.399 19.4 </obs>
+<obs>26 36.631 25 </obs>
+<obs>27 34.644 27.1 </obs>
+<obs>28 39.15 27.1 </obs>
+<obs>29 41.182 21.9 </obs>
+<obs>30 43.623 33.3 </obs>
+<obs>31 51.358 34.4 </obs>
+<obs>32 33.43 24.7 </obs>
+<obs>33 48.753 31.9 </obs>
+<obs>34 35.344 26.1 </obs>
+<obs>35 39.87 26.9 </obs>
+<obs>36 36.021 24.1 </obs>
+<obs>37 35.985 22.2 </obs>
+<obs>38 36.297 28.1 </obs>
+<obs>39 40.14 26.3 </obs>
+<obs>40 41.368 30 </obs>
+<obs>41 32.666 23.7 </obs>
+<obs>42 38.661 25.1 </obs>
+<obs>43 34.976 22.9 </obs>
+<obs>44 37.774 25.3 </obs>
+<obs>45 31.944 29.1 </obs>
+<obs>46 38.686 32.1 </obs>
+<obs>47 44.224 33.7 </obs>
+<obs>48 42.857 30.7 </obs>
+<obs>49 31.641 17.1 </obs>
+<obs>50 37.767 25.7 </obs>
+<obs>51 48.608 23.6 </obs>
+</observations>
+<string-tables count="1">
+<valstrings owner="state" count="51">"Alabama " "Alaska " "Arizona " "Arkansas " "California " "Colorado " "Connecticut " "Delaware " "District of Columbia" "Florida " "Georgia " "Hawaii " "Idaho " "Illinois " "Indiana " "Iowa " "Kansas " "Kentucky " "Louisiana " "Maine " "Maryland " "Massachusetts " "Michigan " "Minnesota " "Mississippi " "Missouri " "Montana " "Nebraska " "Nevada " "New Hampshire " "New Jersey " "New Mexico " "New York " "North Carolina " "North Dakota " "Ohio " "Oklahoma " "Oregon " "Pennsylvania " "Rhode Island " "South Carolina " "South Dakota " "Tennessee " "Texas " "Utah " "Vermont " "Virginia " "Washington " "West Virginia " "Wisconsin " "Wyoming " </valstrings>
+</string-tables>
+</gretldata>

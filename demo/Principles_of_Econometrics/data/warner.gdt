@@ -1,0 +1,291 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE gretldata SYSTEM "gretldata.dtd">
+
+<gretldata version="1.3" name="warner" frequency="1" startobs="1" endobs="260" type="cross-section">
+<description>warner.def
+
+warner
+
+  Obs: 260, daily (3.1.2008-31.12.2008)  
+
+warner : daily returns on shares in Time Warner Inc. 
+        (Share prices were not available on 21-January, 18-February, 21-March, 26-May, 4-July, and 1-September. 
+         The share price for each of those days were assummed to be the same as the closing share price of the day before.) 
+              
+Data source: http://wwww.google.com/finance   
+
+
+  Variable |       Obs        Mean    Std. Dev.       Min        Max
+-------------+--------------------------------------------------------
+   warner  |       260      -0.0018     .0338       -0.1409     .1385
+
+
+</description>
+<variables count="1">
+<variable name="warner"
+ label="daily returns on shares in Time Warner Inc."
+/>
+</variables>
+<observations count="260" labels="false">
+<obs>0.002452 </obs>
+<obs>-0.026056 </obs>
+<obs>-0.006938 </obs>
+<obs>-0.005076 </obs>
+<obs>0.01327 </obs>
+<obs>0.008128 </obs>
+<obs>-0.003118 </obs>
+<obs>0.013032 </obs>
+<obs>-0.030675 </obs>
+<obs>0.014516 </obs>
+<obs>-0.029891 </obs>
+<obs>0.003223 </obs>
+<obs>0 </obs>
+<obs>-0.023439 </obs>
+<obs>0.002632 </obs>
+<obs>0.013703 </obs>
+<obs>-0.030934 </obs>
+<obs>0.0192 </obs>
+<obs>-0.001312 </obs>
+<obs>0.010451 </obs>
+<obs>0.019306 </obs>
+<obs>0.023931 </obs>
+<obs>-0.014416 </obs>
+<obs>-0.028171 </obs>
+<obs>0.01993 </obs>
+<obs>-0.01088 </obs>
+<obs>0.003212 </obs>
+<obs>0.002562 </obs>
+<obs>0.037053 </obs>
+<obs>0.021952 </obs>
+<obs>-0.00848 </obs>
+<obs>0.015691 </obs>
+<obs>0 </obs>
+<obs>-0.003599 </obs>
+<obs>-0.009055 </obs>
+<obs>-0.010363 </obs>
+<obs>0.010363 </obs>
+<obs>0.00484 </obs>
+<obs>-0.000604 </obs>
+<obs>-0.001813 </obs>
+<obs>-0.031339 </obs>
+<obs>-0.025926 </obs>
+<obs>-0.007072 </obs>
+<obs>-0.013641 </obs>
+<obs>0.000872 </obs>
+<obs>-0.024698 </obs>
+<obs>-0.0047 </obs>
+<obs>-0.026595 </obs>
+<obs>0.025249 </obs>
+<obs>-0.005405 </obs>
+<obs>-0.017083 </obs>
+<obs>-0.03364 </obs>
+<obs>-0.00859 </obs>
+<obs>0.030445 </obs>
+<obs>0.00487 </obs>
+<obs>-0.01609 </obs>
+<obs>0 </obs>
+<obs>0.030558 </obs>
+<obs>0.018299 </obs>
+<obs>-0.034156 </obs>
+<obs>-0.008374 </obs>
+<obs>-0.028431 </obs>
+<obs>0.010757 </obs>
+<obs>0.039851 </obs>
+<obs>0.003421 </obs>
+<obs>-0.00823 </obs>
+<obs>0.005495 </obs>
+<obs>0.006145 </obs>
+<obs>0.002719 </obs>
+<obs>-0.020577 </obs>
+<obs>0.012397 </obs>
+<obs>-0.023547 </obs>
+<obs>-0.007032 </obs>
+<obs>0.002819 </obs>
+<obs>0.009804 </obs>
+<obs>0.017956 </obs>
+<obs>0.01562 </obs>
+<obs>0.007385 </obs>
+<obs>-0.020954 </obs>
+<obs>0.002047 </obs>
+<obs>0.025573 </obs>
+<obs>0.013857 </obs>
+<obs>-0.009878 </obs>
+<obs>0.010533 </obs>
+<obs>-0.02789 </obs>
+<obs>0.052471 </obs>
+<obs>0.007638 </obs>
+<obs>0.023811 </obs>
+<obs>0.009858 </obs>
+<obs>-0.022947 </obs>
+<obs>0.013088 </obs>
+<obs>-0.014972 </obs>
+<obs>0.008138 </obs>
+<obs>0.004355 </obs>
+<obs>0.009883 </obs>
+<obs>0.014643 </obs>
+<obs>-0.002426 </obs>
+<obs>-0.00365 </obs>
+<obs>-0.015971 </obs>
+<obs>0.005557 </obs>
+<obs>0.017094 </obs>
+<obs>-0.037624 </obs>
+<obs>0 </obs>
+<obs>0.019297 </obs>
+<obs>-0.017413 </obs>
+<obs>0.008745 </obs>
+<obs>-0.012516 </obs>
+<obs>-0.017149 </obs>
+<obs>0.012098 </obs>
+<obs>-0.003805 </obs>
+<obs>0.017008 </obs>
+<obs>-0.047323 </obs>
+<obs>-0.005911 </obs>
+<obs>-0.003299 </obs>
+<obs>-0.006631 </obs>
+<obs>-0.008016 </obs>
+<obs>0.034282 </obs>
+<obs>-0.015676 </obs>
+<obs>-0.011255 </obs>
+<obs>-0.019496 </obs>
+<obs>0.014156 </obs>
+<obs>-0.023021 </obs>
+<obs>0.001369 </obs>
+<obs>-0.001369 </obs>
+<obs>0.026362 </obs>
+<obs>-0.026362 </obs>
+<obs>-0.012405 </obs>
+<obs>0.026011 </obs>
+<obs>0.00135 </obs>
+<obs>-0.018387 </obs>
+<obs>0.009576 </obs>
+<obs>0 </obs>
+<obs>-0.013708 </obs>
+<obs>-0.009709 </obs>
+<obs>-0.032581 </obs>
+<obs>-0.002162 </obs>
+<obs>-0.005789 </obs>
+<obs>0.011544 </obs>
+<obs>-0.001436 </obs>
+<obs>0.051114 </obs>
+<obs>0 </obs>
+<obs>0.003407 </obs>
+<obs>-0.023401 </obs>
+<obs>0.010392 </obs>
+<obs>0.013689 </obs>
+<obs>-0.015069 </obs>
+<obs>0.008247 </obs>
+<obs>-0.031285 </obs>
+<obs>0.028544 </obs>
+<obs>-0.00827 </obs>
+<obs>-0.009037 </obs>
+<obs>-0.006305 </obs>
+<obs>0.011876 </obs>
+<obs>0.03279 </obs>
+<obs>-0.003366 </obs>
+<obs>-0.022504 </obs>
+<obs>0.073122 </obs>
+<obs>0.01779 </obs>
+<obs>-0.013951 </obs>
+<obs>-0.00898 </obs>
+<obs>0.02104 </obs>
+<obs>0.019988 </obs>
+<obs>-0.011194 </obs>
+<obs>-0.01703 </obs>
+<obs>-0.014094 </obs>
+<obs>0.000645 </obs>
+<obs>0.033601 </obs>
+<obs>-0.023338 </obs>
+<obs>0.013312 </obs>
+<obs>0 </obs>
+<obs>0.023032 </obs>
+<obs>0.007357 </obs>
+<obs>0 </obs>
+<obs>0.019958 </obs>
+<obs>-0.022405 </obs>
+<obs>-0.054748 </obs>
+<obs>-0.013677 </obs>
+<obs>0.030354 </obs>
+<obs>-0.034955 </obs>
+<obs>-0.021979 </obs>
+<obs>-0.029384 </obs>
+<obs>0.010348 </obs>
+<obs>-0.031372 </obs>
+<obs>-0.002837 </obs>
+<obs>-0.024444 </obs>
+<obs>0.015168 </obs>
+<obs>0.042111 </obs>
+<obs>-0.046422 </obs>
+<obs>-0.004329 </obs>
+<obs>0.009356 </obs>
+<obs>0.019859 </obs>
+<obs>-0.002109 </obs>
+<obs>-0.096719 </obs>
+<obs>0.016148 </obs>
+<obs>-0.003821 </obs>
+<obs>-0.043825 </obs>
+<obs>-0.030872 </obs>
+<obs>-0.076268 </obs>
+<obs>-0.045545 </obs>
+<obs>0.004649 </obs>
+<obs>-0.066148 </obs>
+<obs>-0.093429 </obs>
+<obs>0.12369 </obs>
+<obs>0.008617 </obs>
+<obs>-0.111843 </obs>
+<obs>0.023183 </obs>
+<obs>0.031781 </obs>
+<obs>0.087852 </obs>
+<obs>-0.042479 </obs>
+<obs>-0.076113 </obs>
+<obs>-0.012566 </obs>
+<obs>-0.041964 </obs>
+<obs>-0.032387 </obs>
+<obs>0.136648 </obs>
+<obs>-0.055994 </obs>
+<obs>0.042036 </obs>
+<obs>0.012968 </obs>
+<obs>-0.010962 </obs>
+<obs>0.081737 </obs>
+<obs>-0.064846 </obs>
+<obs>-0.060933 </obs>
+<obs>0.055994 </obs>
+<obs>-0.021011 </obs>
+<obs>-0.02043 </obs>
+<obs>-0.11817 </obs>
+<obs>0.06083 </obs>
+<obs>0 </obs>
+<obs>-0.052732 </obs>
+<obs>-0.03279 </obs>
+<obs>-0.031442 </obs>
+<obs>-0.14093 </obs>
+<obs>0.13847 </obs>
+<obs>-0.050516 </obs>
+<obs>0.078447 </obs>
+<obs>0.035298 </obs>
+<obs>0 </obs>
+<obs>0.045205 </obs>
+<obs>-0.061523 </obs>
+<obs>0.055983 </obs>
+<obs>0.012148 </obs>
+<obs>0.039812 </obs>
+<obs>0.00316 </obs>
+<obs>0.020812 </obs>
+<obs>-0.003094 </obs>
+<obs>0.048397 </obs>
+<obs>-0.009891 </obs>
+<obs>-0.002987 </obs>
+<obs>-0.022178 </obs>
+<obs>0.069876 </obs>
+<obs>-0.00381 </obs>
+<obs>-0.028062 </obs>
+<obs>-0.015826 </obs>
+<obs>-0.055342 </obs>
+<obs>-0.010593 </obs>
+<obs>0.012699 </obs>
+<obs>0 </obs>
+<obs>0.02287 </obs>
+<obs>-0.008256 </obs>
+<obs>0.042603 </obs>
+<obs>-0.000994 </obs>
+</observations>
+</gretldata>

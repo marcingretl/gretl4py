@@ -1,0 +1,249 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE gretldata SYSTEM "gretldata.dtd">
+
+<gretldata version="1.3" name="vacation" frequency="1" startobs="1" endobs="200" type="cross-section">
+<description>vacation.def
+
+ 	miles   income  age  kids
+
+  Obs:   200
+
+  	1. miles	miles traveled per year
+  	2. income       annual income in $1000's
+	3. age		average age of adult members of household
+	4. kids		number of children in household
+
+
+   A sample of Chicago households.
+
+
+
+    Variable |       Obs        Mean    Std. Dev.       Min        Max
+-------------+--------------------------------------------------------
+       miles |       200     1054.23     552.799          0       2609
+      income |       200      63.925    18.33412         19        119
+         age |       200      42.675    9.349139         23         59
+        kids |       200       1.635    1.260842          0          4
+
+</description>
+<variables count="4">
+<variable name="miles"
+ label="miles traveled per year"
+ discrete="true"
+/>
+<variable name="income"
+ label="annual income ($1000)"
+ discrete="true"
+/>
+<variable name="age"
+ label="average age of adult members of household"
+ discrete="true"
+/>
+<variable name="kids"
+ label="number of children in household"
+ discrete="true"
+/>
+</variables>
+<observations count="200" labels="false">
+<obs>902 41 26 0 </obs>
+<obs>491 31 38 3 </obs>
+<obs>1841 87 40 2 </obs>
+<obs>406 54 48 4 </obs>
+<obs>0 77 43 4 </obs>
+<obs>1899 70 55 2 </obs>
+<obs>724 43 24 0 </obs>
+<obs>1404 40 39 0 </obs>
+<obs>1367 69 55 2 </obs>
+<obs>560 38 29 2 </obs>
+<obs>1676 89 42 3 </obs>
+<obs>1376 65 50 3 </obs>
+<obs>1059 69 45 3 </obs>
+<obs>924 68 42 0 </obs>
+<obs>1382 59 59 3 </obs>
+<obs>700 70 54 3 </obs>
+<obs>254 47 32 2 </obs>
+<obs>808 60 46 3 </obs>
+<obs>938 80 32 1 </obs>
+<obs>1337 54 46 2 </obs>
+<obs>471 98 36 3 </obs>
+<obs>1426 84 26 0 </obs>
+<obs>1250 80 40 4 </obs>
+<obs>1077 57 51 3 </obs>
+<obs>660 27 49 0 </obs>
+<obs>1091 80 41 3 </obs>
+<obs>433 48 50 2 </obs>
+<obs>1135 51 48 2 </obs>
+<obs>915 78 59 3 </obs>
+<obs>2086 85 43 1 </obs>
+<obs>1454 71 33 2 </obs>
+<obs>844 56 32 2 </obs>
+<obs>1283 50 42 3 </obs>
+<obs>959 79 52 2 </obs>
+<obs>1383 62 33 1 </obs>
+<obs>1485 62 45 0 </obs>
+<obs>615 49 53 4 </obs>
+<obs>657 57 26 1 </obs>
+<obs>728 66 47 1 </obs>
+<obs>421 59 43 2 </obs>
+<obs>647 44 23 0 </obs>
+<obs>870 53 58 2 </obs>
+<obs>249 88 42 1 </obs>
+<obs>535 72 38 1 </obs>
+<obs>1265 56 33 1 </obs>
+<obs>1601 80 45 4 </obs>
+<obs>1513 82 30 2 </obs>
+<obs>1175 45 56 3 </obs>
+<obs>464 41 37 3 </obs>
+<obs>1115 44 55 2 </obs>
+<obs>701 55 35 2 </obs>
+<obs>1034 66 45 3 </obs>
+<obs>1820 91 48 0 </obs>
+<obs>1185 81 41 2 </obs>
+<obs>0 71 29 0 </obs>
+<obs>1288 60 32 1 </obs>
+<obs>1682 78 44 0 </obs>
+<obs>772 101 41 3 </obs>
+<obs>1419 92 58 3 </obs>
+<obs>1670 69 48 2 </obs>
+<obs>846 63 52 2 </obs>
+<obs>811 83 37 0 </obs>
+<obs>59 34 32 3 </obs>
+<obs>1311 61 49 2 </obs>
+<obs>61 44 26 1 </obs>
+<obs>1342 70 32 1 </obs>
+<obs>1863 65 44 4 </obs>
+<obs>1600 62 47 1 </obs>
+<obs>811 40 48 3 </obs>
+<obs>779 49 43 1 </obs>
+<obs>1849 84 51 1 </obs>
+<obs>1412 69 46 0 </obs>
+<obs>957 51 43 0 </obs>
+<obs>583 32 42 3 </obs>
+<obs>573 51 49 0 </obs>
+<obs>748 40 36 1 </obs>
+<obs>881 61 54 2 </obs>
+<obs>1698 92 54 3 </obs>
+<obs>1323 72 52 0 </obs>
+<obs>465 44 38 0 </obs>
+<obs>670 51 37 0 </obs>
+<obs>169 51 30 0 </obs>
+<obs>1888 72 42 1 </obs>
+<obs>594 82 37 2 </obs>
+<obs>1932 95 48 0 </obs>
+<obs>1534 45 44 0 </obs>
+<obs>2354 86 38 1 </obs>
+<obs>1045 75 50 0 </obs>
+<obs>702 53 34 2 </obs>
+<obs>1786 78 30 0 </obs>
+<obs>766 34 35 1 </obs>
+<obs>1055 52 40 1 </obs>
+<obs>155 59 39 3 </obs>
+<obs>504 51 31 0 </obs>
+<obs>1640 79 49 0 </obs>
+<obs>98 28 36 4 </obs>
+<obs>430 57 28 1 </obs>
+<obs>624 49 33 3 </obs>
+<obs>0 67 38 3 </obs>
+<obs>1034 52 34 0 </obs>
+<obs>956 81 46 1 </obs>
+<obs>1459 82 54 3 </obs>
+<obs>2185 76 55 3 </obs>
+<obs>926 44 56 2 </obs>
+<obs>0 67 35 1 </obs>
+<obs>863 50 36 2 </obs>
+<obs>980 62 42 3 </obs>
+<obs>939 43 52 0 </obs>
+<obs>696 86 52 3 </obs>
+<obs>1583 51 53 1 </obs>
+<obs>1757 71 42 0 </obs>
+<obs>1057 89 58 2 </obs>
+<obs>1341 74 52 2 </obs>
+<obs>841 56 42 1 </obs>
+<obs>1056 61 49 0 </obs>
+<obs>482 63 42 1 </obs>
+<obs>1151 57 51 0 </obs>
+<obs>890 56 49 0 </obs>
+<obs>100 39 40 3 </obs>
+<obs>1284 99 23 0 </obs>
+<obs>1100 54 52 2 </obs>
+<obs>537 55 33 0 </obs>
+<obs>881 62 29 0 </obs>
+<obs>1662 76 48 0 </obs>
+<obs>441 22 38 1 </obs>
+<obs>535 90 57 2 </obs>
+<obs>1623 85 50 1 </obs>
+<obs>1580 82 57 2 </obs>
+<obs>773 53 31 1 </obs>
+<obs>1722 67 39 0 </obs>
+<obs>792 52 23 0 </obs>
+<obs>1031 73 41 3 </obs>
+<obs>1957 73 34 2 </obs>
+<obs>479 49 35 2 </obs>
+<obs>1239 78 55 3 </obs>
+<obs>1154 65 45 1 </obs>
+<obs>1630 97 51 3 </obs>
+<obs>2609 84 32 3 </obs>
+<obs>1647 67 50 3 </obs>
+<obs>603 69 31 2 </obs>
+<obs>716 51 53 3 </obs>
+<obs>986 79 48 2 </obs>
+<obs>747 60 46 4 </obs>
+<obs>493 50 37 0 </obs>
+<obs>1581 59 52 0 </obs>
+<obs>358 95 31 1 </obs>
+<obs>552 52 55 3 </obs>
+<obs>1183 49 59 3 </obs>
+<obs>1200 58 24 0 </obs>
+<obs>2464 119 38 3 </obs>
+<obs>647 63 54 2 </obs>
+<obs>1135 69 54 3 </obs>
+<obs>498 60 31 2 </obs>
+<obs>553 25 49 1 </obs>
+<obs>1250 59 45 3 </obs>
+<obs>1007 48 42 3 </obs>
+<obs>742 61 51 0 </obs>
+<obs>1316 59 34 3 </obs>
+<obs>867 42 35 2 </obs>
+<obs>2327 85 42 1 </obs>
+<obs>914 43 33 0 </obs>
+<obs>1444 51 47 2 </obs>
+<obs>0 84 46 4 </obs>
+<obs>2211 100 52 0 </obs>
+<obs>201 19 26 1 </obs>
+<obs>806 46 50 2 </obs>
+<obs>867 39 41 4 </obs>
+<obs>1731 62 32 1 </obs>
+<obs>480 31 28 0 </obs>
+<obs>1060 38 56 4 </obs>
+<obs>586 51 36 3 </obs>
+<obs>853 74 34 0 </obs>
+<obs>1558 101 53 3 </obs>
+<obs>864 74 52 2 </obs>
+<obs>1496 93 43 1 </obs>
+<obs>1450 74 57 4 </obs>
+<obs>1654 101 50 3 </obs>
+<obs>1740 68 51 1 </obs>
+<obs>770 48 32 0 </obs>
+<obs>0 53 30 1 </obs>
+<obs>1093 68 49 3 </obs>
+<obs>2053 103 46 0 </obs>
+<obs>2474 82 55 1 </obs>
+<obs>1873 96 50 2 </obs>
+<obs>1012 55 27 1 </obs>
+<obs>1121 86 51 0 </obs>
+<obs>674 56 46 2 </obs>
+<obs>1080 62 36 1 </obs>
+<obs>1893 92 53 2 </obs>
+<obs>1374 66 50 1 </obs>
+<obs>734 83 47 3 </obs>
+<obs>1695 87 41 1 </obs>
+<obs>1552 53 50 2 </obs>
+<obs>290 51 24 0 </obs>
+<obs>841 56 51 2 </obs>
+<obs>330 52 35 1 </obs>
+<obs>1301 69 55 2 </obs>
+<obs>999 51 54 3 </obs>
+<obs>1467 63 38 0 </obs>
+<obs>764 39 28 0 </obs>
+</observations>
+</gretldata>

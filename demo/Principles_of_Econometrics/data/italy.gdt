@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE gretldata SYSTEM "gretldata.dtd">
+
+<gretldata version="1.3" name="italy" frequency="4" startobs="1990:1" endobs="2014:4" type="time-series">
+<description>italy.def
+
+      gap fngap inf infex t
+
+	Obs:  100 quarterly observations from 1990Q1 to 2014Q4
+
+	gap	Output gap for Italy: deviation of GDP from HP-filtered GDP in percentage of HP-filtered GDP.
+	fngap	Finance neutral output gap for Italy. The HP filter is augmented with financial cycle information.
+	inf	Inflation rate for Italy, percent. Year-over-year change in the CPI.
+	infex	Inflationary expectations for Italy. A survey measure for the coming 4 quarters.
+	t	A time trend, t=1 for 1990Q1, t=2 for 1990Q2, ...
+
+Note: HP refers to the Hodrick-Prescott filter (Journal of Money, Credit and Banking 29 (1997), p.1-16.)
+
+Data source: The data were kindly provided by Johanna Amberger from their study: Amberger, J., R Fendel and H. Stremmel (2017), ?Improved output gaps with financial cycle information? An application to G7 countries? new Keynesian Phillips curves?, Applied Economics Letters, 24(4), 219-228. 
+
+More details about the construction of the variables can be found in the Applied Economics Letters paper.
+
+
+    Variable |       Obs        Mean    Std. Dev.       Min        Max
+-------------+--------------------------------------------------------
+       fngap |       100      .36637    1.531035     -3.802      3.295
+         gap |       100      .00498    1.252769      -3.63      3.098
+         inf |       100     2.92145    1.633107      -.093      6.716
+       infex |       100     2.79121    1.519642         .5      6.642
+           t |       100        50.5    29.01149          1        100
+
+</description>
+<variables count="6">
+<variable name="dateid01"
+/>
+<variable name="fngap"
+ label="Finance neutral output gap for Italy"
+/>
+<variable name="gap"
+ label="Output gap for Italy"
+/>
+<variable name="inf"
+ label="Inflation rate for Italy, percent"
+/>
+<variable name="infex"
+ label="Inflationary expectations for Italy"
+/>
+<variable name="t"
+ label="A time trend, t=1 for 1990Q1, t=2 for 1990Q2, ..."
+ discrete="true"
+/>
+</variables>
+<observations count="100" labels="false">
+<obs>10958 1.904 1.561 6.42 6.545 1 </obs>
+<obs>11048 1.927 1.359 6.13 5.845 2 </obs>
+<obs>11139 1.804 1.047 6.452 5.618 3 </obs>
+<obs>11231 0.858 -0.045 6.716 6.323 4 </obs>
+<obs>11323 2.559 1.517 6.216 6.642 5 </obs>
+<obs>11413 1.709 0.582 6.498 6.204 6 </obs>
+<obs>11504 1.447 0.266 6.417 6.095 7 </obs>
+<obs>11596 2.34 1.109 5.769 5.796 8 </obs>
+<obs>11688 2.315 1.066 5.852 5.291 9 </obs>
+<obs>11779 1.952 0.709 5.424 5.209 10 </obs>
+<obs>11870 1.426 0.195 5.025 5.127 11 </obs>
+<obs>11962 0.431 -0.779 4.959 5.798 12 </obs>
+<obs>12054 -0.006 -1.201 4.553 5.68 13 </obs>
+<obs>12144 -0.55 -1.728 4.662 5.319 14 </obs>
+<obs>12235 -1.025 -2.181 4.785 4.773 15 </obs>
+<obs>12327 -0.639 -1.776 4.567 4.319 16 </obs>
+<obs>12419 -0.249 -1.356 4.355 3.773 17 </obs>
+<obs>12509 0.075 -0.986 3.994 3.695 18 </obs>
+<obs>12600 0.277 -0.729 3.805 3.785 19 </obs>
+<obs>12692 0.774 -0.173 3.916 3.831 20 </obs>
+<obs>12784 1.578 0.69 4.322 3.918 21 </obs>
+<obs>12874 1.178 0.361 5.318 4.788 22 </obs>
+<obs>12965 1.153 0.398 5.718 4.99 23 </obs>
+<obs>13057 1.518 0.81 5.507 4.725 24 </obs>
+<obs>13149 1.494 0.826 5.143 4.415 25 </obs>
+<obs>13240 0.816 0.182 4.348 4.001 26 </obs>
+<obs>13331 0.254 -0.361 3.467 3.618 27 </obs>
+<obs>13423 -0.542 -1.151 3.022 3.2 28 </obs>
+<obs>13515 -0.098 -0.719 2.582 2.631 29 </obs>
+<obs>13605 0.396 -0.24 1.882 2.403 30 </obs>
+<obs>13696 0.571 -0.072 1.877 2.143 31 </obs>
+<obs>13788 1.658 1.005 2 2.16 32 </obs>
+<obs>13880 0.57 -0.081 1.987 2.02 33 </obs>
+<obs>13970 0.657 -0.003 2.111 1.953 34 </obs>
+<obs>14061 0.285 -0.395 1.974 1.869 35 </obs>
+<obs>14153 -0.533 -1.236 1.699 1.606 36 </obs>
+<obs>14245 -0.562 -1.297 1.429 1.369 37 </obs>
+<obs>14335 -0.431 -1.2 1.421 1.386 38 </obs>
+<obs>14426 -0.117 -0.914 1.806 1.612 39 </obs>
+<obs>14518 0.751 -0.066 2.057 1.748 40 </obs>
+<obs>14610 1.279 0.459 2.305 1.914 41 </obs>
+<obs>14701 1.745 0.934 2.548 2.046 42 </obs>
+<obs>14792 1.858 1.066 2.535 2.15 43 </obs>
+<obs>14884 2.688 1.913 2.645 2.154 44 </obs>
+<obs>14976 2.956 2.202 2.879 2.175 45 </obs>
+<obs>15066 2.049 1.323 2.981 2.266 46 </obs>
+<obs>15157 1.297 0.586 2.843 2.364 47 </obs>
+<obs>15249 0.833 0.117 2.454 1.95 48 </obs>
+<obs>15341 0.685 -0.047 2.433 1.788 49 </obs>
+<obs>15431 0.789 0.034 2.292 2.065 50 </obs>
+<obs>15522 0.744 -0.034 2.404 2.125 51 </obs>
+<obs>15614 0.583 -0.216 2.754 2.077 52 </obs>
+<obs>15706 0.164 -0.656 2.732 2.149 53 </obs>
+<obs>15796 -0.363 -1.207 2.712 2.287 54 </obs>
+<obs>15887 -0.376 -1.251 2.817 2.219 55 </obs>
+<obs>15979 -0.088 -0.998 2.564 2.244 56 </obs>
+<obs>16071 0.201 -0.738 2.312 2.16 57 </obs>
+<obs>16162 0.269 -0.692 2.296 2.115 58 </obs>
+<obs>16253 0.288 -0.69 2.169 2.189 59 </obs>
+<obs>16345 0.197 -0.795 1.932 2.18 60 </obs>
+<obs>16437 -0.187 -1.186 1.921 2.076 61 </obs>
+<obs>16527 0.36 -0.65 1.908 1.977 62 </obs>
+<obs>16618 0.811 -0.198 2.011 1.91 63 </obs>
+<obs>16710 0.758 -0.228 2.118 2.04 64 </obs>
+<obs>16802 1.126 0.173 2.106 2.083 65 </obs>
+<obs>16892 1.488 0.583 2.203 2.002 66 </obs>
+<obs>16983 1.681 0.844 2.191 2.065 67 </obs>
+<obs>17075 2.595 1.835 1.856 2.011 68 </obs>
+<obs>17167 2.856 2.195 1.737 1.852 69 </obs>
+<obs>17257 2.721 2.174 1.616 1.797 70 </obs>
+<obs>17348 2.529 2.1 1.608 1.85 71 </obs>
+<obs>17440 2.335 2.025 2.358 1.917 72 </obs>
+<obs>17532 3.295 3.098 2.988 2.4 73 </obs>
+<obs>17623 2.584 2.501 3.499 2.703 74 </obs>
+<obs>17714 1.361 1.382 4.008 3.09 75 </obs>
+<obs>17806 -0.828 -0.732 2.827 2.682 76 </obs>
+<obs>17898 -3.634 -3.491 1.554 1.292 77 </obs>
+<obs>17988 -3.802 -3.63 0.922 0.975 78 </obs>
+<obs>18079 -3.019 -2.821 0.101 1.13 79 </obs>
+<obs>18171 -2.735 -2.49 0.611 1.291 80 </obs>
+<obs>18263 -2.033 -1.715 1.224 1.553 81 </obs>
+<obs>18353 -1.146 -0.736 1.421 1.571 82 </obs>
+<obs>18444 -0.489 0.029 1.621 1.619 83 </obs>
+<obs>18536 0.018 0.656 1.822 1.677 84 </obs>
+<obs>18628 0.55 1.313 2.419 1.7 85 </obs>
+<obs>18718 0.912 1.8 2.603 2.31 86 </obs>
+<obs>18809 0.56 1.561 2.792 2.368 87 </obs>
+<obs>18901 -0.272 0.825 3.28 2.16 88 </obs>
+<obs>18993 -1.055 0.121 3.248 2.279 89 </obs>
+<obs>19084 -1.425 -0.181 3.317 2.81 90 </obs>
+<obs>19175 -1.702 -0.398 3.201 2.512 91 </obs>
+<obs>19267 -1.961 -0.599 2.502 2.512 92 </obs>
+<obs>19359 -2.597 -1.185 1.907 1.958 93 </obs>
+<obs>19449 -2.365 -0.89 1.133 1.834 94 </obs>
+<obs>19540 -2.04 -0.498 1.128 1.55 95 </obs>
+<obs>19632 -1.84 -0.223 0.657 1.55 96 </obs>
+<obs>19724 -1.814 -0.116 0.468 1.1 97 </obs>
+<obs>19814 -1.719 0.065 0.467 0.875 98 </obs>
+<obs>19905 -1.597 0.277 -0.093 0.7 99 </obs>
+<obs>19997 -1.366 0.604 0.093 0.5 100 </obs>
+</observations>
+</gretldata>

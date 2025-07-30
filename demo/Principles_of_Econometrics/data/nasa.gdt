@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE gretldata SYSTEM "gretldata.dtd">
+
+<gretldata version="1.3" name="nasa" frequency="1" startobs="1950" endobs="2014" type="time-series">
+<description>nasa.def
+
+sunspots bcycle
+
+Obs: 65 annual observations from 1950-2014.
+
+	bcycle       annual rate of growth of real GDP
+	sunspots     monthly average of the number of sunspots
+	
+
+Source
+The data are sourced from http://solarscience.msfc.nasa.gov/SunspotCycle.html and from FRED (Federal Reserve Economic Data, Federal Reserve Bank of St.Louis) 
+ 
+
+
+    Variable |       Obs        Mean    Std. Dev.       Min        Max
+-------------+--------------------------------------------------------
+     bcycles |        65    3.349231    2.600067       -2.7       13.5
+    sunspots |        65    96.53846    71.73673          4        269
+
+
+</description>
+<variables count="3">
+<variable name="dateid01"
+/>
+<variable name="bcycles"
+ label="annual rate of growth of real GDP"
+/>
+<variable name="sunspots"
+ label="monthly average of the number of sunspots"
+ discrete="true"
+/>
+</variables>
+<observations count="65" labels="false">
+<obs>-3652 13.5 119 </obs>
+<obs>-3287 5.5 98 </obs>
+<obs>-2922 5.5 45 </obs>
+<obs>-2556 0.7 20 </obs>
+<obs>-2191 2.8 7 </obs>
+<obs>-1826 6.6 54 </obs>
+<obs>-1461 2.1 201 </obs>
+<obs>-1095 0.4 269 </obs>
+<obs>-730 3 261 </obs>
+<obs>-365 4.7 225 </obs>
+<obs>0 1 159 </obs>
+<obs>366 6.4 76 </obs>
+<obs>731 4.3 54 </obs>
+<obs>1096 5.2 40 </obs>
+<obs>1461 5.2 15 </obs>
+<obs>1827 8.5 22 </obs>
+<obs>2192 4.6 67 </obs>
+<obs>2557 2.7 133 </obs>
+<obs>2922 5 150 </obs>
+<obs>3288 2.1 149 </obs>
+<obs>3653 -0.1 148 </obs>
+<obs>4018 4.5 94 </obs>
+<obs>4383 6.9 98 </obs>
+<obs>4749 4.1 54 </obs>
+<obs>5114 -1.9 49 </obs>
+<obs>5479 2.7 22 </obs>
+<obs>5844 4.4 18 </obs>
+<obs>6210 5 39 </obs>
+<obs>6575 6.9 131 </obs>
+<obs>6940 1.3 220 </obs>
+<obs>7305 0.1 219 </obs>
+<obs>7671 1.4 199 </obs>
+<obs>8036 -1.3 163 </obs>
+<obs>8401 7.8 91 </obs>
+<obs>8766 5.7 61 </obs>
+<obs>9132 4.3 21 </obs>
+<obs>9497 3 15 </obs>
+<obs>9862 4.5 34 </obs>
+<obs>10227 3.9 123 </obs>
+<obs>10593 2.8 211 </obs>
+<obs>10958 0.7 191 </obs>
+<obs>11323 1.2 203 </obs>
+<obs>11688 4.3 133 </obs>
+<obs>12054 2.7 76 </obs>
+<obs>12419 4.2 45 </obs>
+<obs>12784 2.3 25 </obs>
+<obs>13149 4.5 12 </obs>
+<obs>13515 4.4 29 </obs>
+<obs>13880 5 88 </obs>
+<obs>14245 4.7 136 </obs>
+<obs>14610 3 174 </obs>
+<obs>14976 0.2 170 </obs>
+<obs>15341 2.1 164 </obs>
+<obs>15706 4.4 99 </obs>
+<obs>16071 3.1 65 </obs>
+<obs>16437 3 46 </obs>
+<obs>16802 2.4 25 </obs>
+<obs>17167 1.9 13 </obs>
+<obs>17532 -2.7 4 </obs>
+<obs>17898 -0.2 5 </obs>
+<obs>18263 2.7 25 </obs>
+<obs>18628 1.7 81 </obs>
+<obs>18993 1.3 84 </obs>
+<obs>19359 2.5 94 </obs>
+<obs>19724 2.5 114 </obs>
+</observations>
+</gretldata>

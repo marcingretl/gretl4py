@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE gretldata SYSTEM "gretldata.dtd">
+
+<gretldata version="1.3" name="mc1_fixed_x" frequency="1" startobs="1" endobs="40" type="cross-section">
+<description>mc1_fixed_x.def
+
+y x
+
+Obs:   40 
+
+The y-values are simulated data. The true model is y = 100 + 10*x + e, e has N(0, 2500) distribution.
+
+
+variable  	label
+---------------------------------------------------------------------------------------------------------------------------------------------------------
+y		y-variable
+x		x-variable
+
+
+    Variable |       Obs        Mean    Std. Dev.       Min        Max
+-------------+--------------------------------------------------------
+           y |        40    258.1933    63.84319   135.4082   394.0223
+           x |        40          15    5.063697         10         20
+
+
+
+</description>
+<variables count="2">
+<variable name="y"
+ label="y-variable"
+/>
+<variable name="x"
+ label="x-variable"
+ discrete="true"
+/>
+</variables>
+<observations count="40" labels="false">
+<obs>205.57704 10 </obs>
+<obs>135.40819 10 </obs>
+<obs>184.60799 10 </obs>
+<obs>308.58322 10 </obs>
+<obs>205.92912 10 </obs>
+<obs>271.11838 10 </obs>
+<obs>155.23868 10 </obs>
+<obs>225.11703 10 </obs>
+<obs>215.95946 10 </obs>
+<obs>186.31409 10 </obs>
+<obs>230.77954 10 </obs>
+<obs>203.34172 10 </obs>
+<obs>224.99223 10 </obs>
+<obs>273.50674 10 </obs>
+<obs>234.98715 10 </obs>
+<obs>271.22614 10 </obs>
+<obs>192.74031 10 </obs>
+<obs>174.00728 10 </obs>
+<obs>186.57843 10 </obs>
+<obs>204.60097 10 </obs>
+<obs>296.53134 20 </obs>
+<obs>291.6857 20 </obs>
+<obs>298.57349 20 </obs>
+<obs>173.18623 20 </obs>
+<obs>270.47159 20 </obs>
+<obs>284.23138 20 </obs>
+<obs>306.13309 20 </obs>
+<obs>315.92169 20 </obs>
+<obs>305.66669 20 </obs>
+<obs>314.94205 20 </obs>
+<obs>281.91354 20 </obs>
+<obs>283.12817 20 </obs>
+<obs>313.18518 20 </obs>
+<obs>228.98988 20 </obs>
+<obs>337.59552 20 </obs>
+<obs>357.31024 20 </obs>
+<obs>394.02234 20 </obs>
+<obs>388.99619 20 </obs>
+<obs>256.99985 20 </obs>
+<obs>337.63364 20 </obs>
+</observations>
+</gretldata>

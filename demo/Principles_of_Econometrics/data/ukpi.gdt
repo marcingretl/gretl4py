@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE gretldata SYSTEM "gretldata.dtd">
+
+<gretldata version="1.3" name="ukpi" frequency="12" startobs="1996:01" endobs="2009:12" type="time-series">
+<description>ukpi.def
+
+euro uk 
+
+  Obs: 168, monthly, (1996:1 - 2009.12)  
+
+        euro : Consumer Price Index for the Euro Area 
+
+        uk   : Consumer Price Index for the United Kingdom	
+
+
+Source:  Reserve Bank of Australia, Statitsical Bulletin
+
+
+   Variable |       Obs        Mean    Std. Dev.       Min        Max
+-------------+--------------------------------------------------------
+      euro  |       168     113.3161     9.4825        98.9     129.4
+      uk    |       168     110.6357     7.7023        98.5     127.8
+
+
+
+</description>
+<variables count="2">
+<variable name="euro"
+ label="Consumer Price Index for the Euro Area"
+/>
+<variable name="uk"
+ label="Consumer Price Index for the United Kingdom"
+/>
+</variables>
+<observations count="168" labels="false">
+<obs>98.9 98.5 </obs>
+<obs>99.3 99 </obs>
+<obs>99.7 99.3 </obs>
+<obs>99.9 99.9 </obs>
+<obs>100.1 100.2 </obs>
+<obs>100.1 100.3 </obs>
+<obs>100.1 99.6 </obs>
+<obs>100.1 100.2 </obs>
+<obs>100.3 100.7 </obs>
+<obs>100.4 100.7 </obs>
+<obs>100.4 100.7 </obs>
+<obs>100.7 101 </obs>
+<obs>101 100.5 </obs>
+<obs>101.2 100.8 </obs>
+<obs>101.4 101 </obs>
+<obs>101.3 101.5 </obs>
+<obs>101.6 101.7 </obs>
+<obs>101.6 101.9 </obs>
+<obs>101.7 101.6 </obs>
+<obs>101.9 102.1 </obs>
+<obs>102 102.5 </obs>
+<obs>102 102.5 </obs>
+<obs>102.2 102.6 </obs>
+<obs>102.3 102.7 </obs>
+<obs>102.2 102 </obs>
+<obs>102.5 102.5 </obs>
+<obs>102.6 102.7 </obs>
+<obs>102.8 103.3 </obs>
+<obs>103.1 103.8 </obs>
+<obs>103.1 103.6 </obs>
+<obs>103.1 103 </obs>
+<obs>103.1 103.5 </obs>
+<obs>103.1 104 </obs>
+<obs>103.1 104 </obs>
+<obs>103.1 104.1 </obs>
+<obs>103.2 104.3 </obs>
+<obs>103.1 103.7 </obs>
+<obs>103.3 103.8 </obs>
+<obs>103.6 104.4 </obs>
+<obs>104 104.9 </obs>
+<obs>104.1 105.2 </obs>
+<obs>104.1 105.1 </obs>
+<obs>104.2 104.4 </obs>
+<obs>104.3 104.7 </obs>
+<obs>104.5 105.2 </obs>
+<obs>104.5 105.1 </obs>
+<obs>104.7 105.2 </obs>
+<obs>105 105.5 </obs>
+<obs>105 104.5 </obs>
+<obs>105.4 104.9 </obs>
+<obs>105.8 105.1 </obs>
+<obs>105.9 105.4 </obs>
+<obs>106 105.8 </obs>
+<obs>106.4 105.9 </obs>
+<obs>106.5 105.3 </obs>
+<obs>106.6 105.3 </obs>
+<obs>107.1 106.2 </obs>
+<obs>107.1 106.1 </obs>
+<obs>107.3 106.3 </obs>
+<obs>107.7 106.3 </obs>
+<obs>107.2 105.4 </obs>
+<obs>107.6 105.7 </obs>
+<obs>108.2 106 </obs>
+<obs>108.8 106.7 </obs>
+<obs>109.3 107.5 </obs>
+<obs>109.5 107.7 </obs>
+<obs>109.3 106.9 </obs>
+<obs>109.2 107.2 </obs>
+<obs>109.5 107.6 </obs>
+<obs>109.6 107.5 </obs>
+<obs>109.5 107.2 </obs>
+<obs>110 107.5 </obs>
+<obs>110.1 107.1 </obs>
+<obs>110.3 107.2 </obs>
+<obs>110.9 107.7 </obs>
+<obs>111.4 108.2 </obs>
+<obs>111.6 108.4 </obs>
+<obs>111.6 108.4 </obs>
+<obs>111.5 108 </obs>
+<obs>111.5 108.4 </obs>
+<obs>111.8 108.6 </obs>
+<obs>112.1 108.8 </obs>
+<obs>112 108.8 </obs>
+<obs>112.5 109.3 </obs>
+<obs>112.5 108.6 </obs>
+<obs>112.9 108.9 </obs>
+<obs>113.6 109.3 </obs>
+<obs>113.8 109.7 </obs>
+<obs>113.7 109.7 </obs>
+<obs>113.8 109.5 </obs>
+<obs>113.6 109.5 </obs>
+<obs>113.8 109.9 </obs>
+<obs>114.2 110.2 </obs>
+<obs>114.4 110.3 </obs>
+<obs>114.4 110.3 </obs>
+<obs>114.8 110.6 </obs>
+<obs>114.5 110.1 </obs>
+<obs>114.8 110.3 </obs>
+<obs>115.6 110.5 </obs>
+<obs>116.1 111 </obs>
+<obs>116.5 111.3 </obs>
+<obs>116.6 111.3 </obs>
+<obs>116.3 111 </obs>
+<obs>116.5 111.3 </obs>
+<obs>116.7 111.4 </obs>
+<obs>117.1 111.7 </obs>
+<obs>117.1 111.9 </obs>
+<obs>117.5 112.5 </obs>
+<obs>116.8 111.9 </obs>
+<obs>117.2 112.1 </obs>
+<obs>118.1 112.7 </obs>
+<obs>118.5 113.1 </obs>
+<obs>118.8 113.5 </obs>
+<obs>118.9 113.5 </obs>
+<obs>118.8 113.6 </obs>
+<obs>119.1 113.9 </obs>
+<obs>119.7 114.2 </obs>
+<obs>120 114.3 </obs>
+<obs>119.7 114.3 </obs>
+<obs>120.2 114.6 </obs>
+<obs>119.6 114.1 </obs>
+<obs>120 114.5 </obs>
+<obs>120.7 114.7 </obs>
+<obs>121.5 115.4 </obs>
+<obs>121.8 116 </obs>
+<obs>121.9 116.3 </obs>
+<obs>121.7 116.3 </obs>
+<obs>121.8 116.8 </obs>
+<obs>121.8 116.9 </obs>
+<obs>121.9 117.1 </obs>
+<obs>122 117.3 </obs>
+<obs>122.5 118 </obs>
+<obs>121.8 117.1 </obs>
+<obs>122.2 117.7 </obs>
+<obs>123 118.3 </obs>
+<obs>123.8 118.6 </obs>
+<obs>124.1 118.9 </obs>
+<obs>124.2 119.2 </obs>
+<obs>123.9 118.5 </obs>
+<obs>124 118.8 </obs>
+<obs>124.4 118.9 </obs>
+<obs>125 119.5 </obs>
+<obs>125.7 119.8 </obs>
+<obs>126.2 120.5 </obs>
+<obs>125.7 119.7 </obs>
+<obs>126.2 120.6 </obs>
+<obs>127.4 121.1 </obs>
+<obs>127.8 122.1 </obs>
+<obs>128.6 122.9 </obs>
+<obs>129.1 123.7 </obs>
+<obs>128.9 123.7 </obs>
+<obs>128.7 124.5 </obs>
+<obs>129 125.2 </obs>
+<obs>129 124.8 </obs>
+<obs>128.4 124.7 </obs>
+<obs>128.2 124.3 </obs>
+<obs>127.2 123.4 </obs>
+<obs>127.7 124.4 </obs>
+<obs>128.2 124.6 </obs>
+<obs>128.6 124.9 </obs>
+<obs>128.7 125.6 </obs>
+<obs>128.9 126 </obs>
+<obs>128.1 125.9 </obs>
+<obs>128.5 126.4 </obs>
+<obs>128.5 126.5 </obs>
+<obs>128.8 126.8 </obs>
+<obs>129 127.1 </obs>
+<obs>129.4 127.8 </obs>
+</observations>
+</gretldata>

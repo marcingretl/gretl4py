@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE gretldata SYSTEM "gretldata.dtd">
+
+<gretldata version="1.3" name="food" frequency="1" startobs="1" endobs="40" type="cross-section">
+<description>food.def (cross-sectional data)
+
+food_exp income  
+
+  Obs:   40
+
+  1. food_exp (y)                  weekly food expenditure in $
+  2. income   (x)                  weekly income in $100
+
+
+
+    Variable |       Obs        Mean    Std. Dev.       Min        Max
+-------------+--------------------------------------------------------
+    food_exp |        40    283.5735    112.6752     109.71     587.66
+      income |        40    19.60475    6.847773       3.69       33.4
+</description>
+<variables count="2">
+<variable name="food_exp"
+ label="household food expenditure per week"
+/>
+<variable name="income"
+ label="weekly household income"
+/>
+</variables>
+<observations count="40" labels="false">
+<obs>115.22 3.69 </obs>
+<obs>135.98 4.39 </obs>
+<obs>119.34 4.75 </obs>
+<obs>114.96 6.03 </obs>
+<obs>187.05 12.47 </obs>
+<obs>243.92 12.98 </obs>
+<obs>267.43 14.2 </obs>
+<obs>238.71 14.76 </obs>
+<obs>295.94 15.32 </obs>
+<obs>317.78 16.39 </obs>
+<obs>216 17.35 </obs>
+<obs>240.35 17.77 </obs>
+<obs>386.57 17.93 </obs>
+<obs>261.53 18.43 </obs>
+<obs>249.34 18.55 </obs>
+<obs>309.87 18.8 </obs>
+<obs>345.89 18.81 </obs>
+<obs>165.54 19.04 </obs>
+<obs>196.98 19.22 </obs>
+<obs>395.26 19.93 </obs>
+<obs>406.34 20.13 </obs>
+<obs>171.92 20.33 </obs>
+<obs>303.23 20.37 </obs>
+<obs>377.04 20.43 </obs>
+<obs>194.35 21.45 </obs>
+<obs>213.48 22.52 </obs>
+<obs>293.87 22.55 </obs>
+<obs>259.61 22.86 </obs>
+<obs>323.71 24.2 </obs>
+<obs>275.02 24.39 </obs>
+<obs>109.71 24.42 </obs>
+<obs>359.19 25.2 </obs>
+<obs>201.51 25.5 </obs>
+<obs>460.36 26.61 </obs>
+<obs>447.76 26.7 </obs>
+<obs>482.55 27.14 </obs>
+<obs>438.29 27.16 </obs>
+<obs>587.66 28.62 </obs>
+<obs>257.95 29.4 </obs>
+<obs>375.73 33.4 </obs>
+</observations>
+</gretldata>

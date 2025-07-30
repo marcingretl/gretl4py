@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE gretldata SYSTEM "gretldata.dtd">
+
+<gretldata version="1.3" name="steel" frequency="1" startobs="1970" endobs="2015" type="time-series">
+<description>steel.def
+
+         eaf  t  
+
+	obs:  46 annual observations from 1970 to 2015
+
+  eaf  	The share of US steel production made by electric arc furnace technology.
+  t	year, t=1 for 1970 up to t=46 for 2015
+
+
+Source:  Steel Statistical Year Books published by the World Steel Association
+https://www.worldsteel.org/statistics/statistics-archive/yearbook-archive.html
+
+
+
+    Variable |       Obs        Mean    Std. Dev.       Min        Max
+-------------+--------------------------------------------------------
+         eaf |        46     .401087    .1463141       .153        .63
+           t |        46        23.5    13.42262          1         46
+</description>
+<variables count="3">
+<variable name="dateid01"
+/>
+<variable name="eaf"
+ label="Share of US steel production made by electric arc furnace technology"
+/>
+<variable name="t"
+ label="year, t=1 for 1970 up to t=46 for 2015"
+ discrete="true"
+/>
+</variables>
+<observations count="46" labels="false">
+<obs>3653 0.153 1 </obs>
+<obs>4018 0.174 2 </obs>
+<obs>4383 0.178 3 </obs>
+<obs>4749 0.184 4 </obs>
+<obs>5114 0.197 5 </obs>
+<obs>5479 0.194 6 </obs>
+<obs>5844 0.192 7 </obs>
+<obs>6210 0.222 8 </obs>
+<obs>6575 0.235 9 </obs>
+<obs>6940 0.246 10 </obs>
+<obs>7305 0.272 11 </obs>
+<obs>7671 0.283 12 </obs>
+<obs>8036 0.311 13 </obs>
+<obs>8401 0.315 14 </obs>
+<obs>8766 0.339 15 </obs>
+<obs>9132 0.339 16 </obs>
+<obs>9497 0.372 17 </obs>
+<obs>9862 0.381 18 </obs>
+<obs>10227 0.369 19 </obs>
+<obs>10593 0.359 20 </obs>
+<obs>10958 0.373 21 </obs>
+<obs>11323 0.384 22 </obs>
+<obs>11688 0.38 23 </obs>
+<obs>12054 0.394 24 </obs>
+<obs>12419 0.393 25 </obs>
+<obs>12784 0.404 26 </obs>
+<obs>13149 0.426 27 </obs>
+<obs>13515 0.438 28 </obs>
+<obs>13880 0.446 29 </obs>
+<obs>14245 0.451 30 </obs>
+<obs>14610 0.47 31 </obs>
+<obs>14976 0.474 32 </obs>
+<obs>15341 0.504 33 </obs>
+<obs>15706 0.51 34 </obs>
+<obs>16071 0.521 35 </obs>
+<obs>16437 0.55 36 </obs>
+<obs>16802 0.569 37 </obs>
+<obs>17167 0.581 38 </obs>
+<obs>17532 0.581 39 </obs>
+<obs>17898 0.617 40 </obs>
+<obs>18263 0.613 41 </obs>
+<obs>18628 0.603 42 </obs>
+<obs>18993 0.591 43 </obs>
+<obs>19359 0.606 44 </obs>
+<obs>19724 0.626 45 </obs>
+<obs>20089 0.63 46 </obs>
+</observations>
+</gretldata>

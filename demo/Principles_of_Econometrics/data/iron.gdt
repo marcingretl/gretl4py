@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE gretldata SYSTEM "gretldata.dtd">
+
+<gretldata version="1.3" name="iron" frequency="12" startobs="2010:01" endobs="2016:12" type="time-series">
+<description>iron.def
+
+  iron  xrate
+
+	Obs: 84 monthly observations from 2010M1 to 2016M12
+
+	iron	iron ore price in US$ per tonne.
+	xrate	Australian $ exchange rate in U.S.$.
+
+Source: The iron ore price is taken from http://www.marketindex.com.au/iron-ore
+	The exchange rate is taken from the Australian Bureau of Statistics series FXRUSD
+
+
+
+    Variable |       Obs        Mean    Std. Dev.       Min        Max
+-------------+--------------------------------------------------------
+        iron |        84    112.5894    43.10866       39.6     187.18
+       xrate |        84    .9069714    .1211518       .701     1.0954
+
+</description>
+<variables count="3">
+<variable name="dateid01"
+/>
+<variable name="iron"
+ label="iron ore price, US$ per tonne"
+/>
+<variable name="xrate"
+ label="Australian $ exchange rate in U.S.$."
+/>
+</variables>
+<observations count="84" labels="false">
+<obs>18263 125.91 0.8909 </obs>
+<obs>18294 127.62 0.8899 </obs>
+<obs>18322 139.77 0.9159 </obs>
+<obs>18353 172.47 0.93 </obs>
+<obs>18383 161.35 0.849 </obs>
+<obs>18414 143.63 0.8523 </obs>
+<obs>18444 126.36 0.8986 </obs>
+<obs>18475 145.34 0.8918 </obs>
+<obs>18506 140.63 0.9667 </obs>
+<obs>18536 148.48 0.9761 </obs>
+<obs>18567 160.55 0.9618 </obs>
+<obs>18597 168.53 1.0163 </obs>
+<obs>18628 179.63 0.9924 </obs>
+<obs>18659 187.18 1.0163 </obs>
+<obs>18687 169.36 1.0334 </obs>
+<obs>18718 179.26 1.09 </obs>
+<obs>18748 177.09 1.0709 </obs>
+<obs>18779 170.88 1.0739 </obs>
+<obs>18809 172.98 1.0954 </obs>
+<obs>18840 177.45 1.0691 </obs>
+<obs>18871 177.23 0.9781 </obs>
+<obs>18901 150.43 1.0509 </obs>
+<obs>18932 135.54 1.0021 </obs>
+<obs>18962 136.45 1.0156 </obs>
+<obs>18993 140.35 1.0637 </obs>
+<obs>19024 140.4 1.0816 </obs>
+<obs>19053 144.66 1.0402 </obs>
+<obs>19084 147.65 1.0453 </obs>
+<obs>19114 136.27 0.9727 </obs>
+<obs>19145 134.62 1.0191 </obs>
+<obs>19175 127.94 1.0526 </obs>
+<obs>19206 107.8 1.0301 </obs>
+<obs>19237 99.47 1.0464 </obs>
+<obs>19267 113.95 1.0378 </obs>
+<obs>19298 120.35 1.0431 </obs>
+<obs>19328 128.87 1.0384 </obs>
+<obs>19359 150.49 1.0394 </obs>
+<obs>19390 154.64 1.0275 </obs>
+<obs>19418 139.87 1.0426 </obs>
+<obs>19449 137.39 1.0368 </obs>
+<obs>19479 124.01 0.9649 </obs>
+<obs>19510 114.81 0.9275 </obs>
+<obs>19540 127.19 0.9037 </obs>
+<obs>19571 137.06 0.8947 </obs>
+<obs>19602 134.19 0.9309 </obs>
+<obs>19632 132.57 0.949 </obs>
+<obs>19663 136.32 0.9087 </obs>
+<obs>19693 135.79 0.8948 </obs>
+<obs>19724 128.12 0.8763 </obs>
+<obs>19755 121.37 0.8947 </obs>
+<obs>19783 111.83 0.9221 </obs>
+<obs>19814 114.58 0.9287 </obs>
+<obs>19844 100.56 0.9319 </obs>
+<obs>19875 92.74 0.942 </obs>
+<obs>19905 95.97 0.9324 </obs>
+<obs>19936 92.63 0.9349 </obs>
+<obs>19967 82.27 0.8752 </obs>
+<obs>19997 80.09 0.8805 </obs>
+<obs>20028 73.12 0.8491 </obs>
+<obs>20058 68.8 0.8202 </obs>
+<obs>20089 67.39 0.7781 </obs>
+<obs>20120 62.69 0.7792 </obs>
+<obs>20148 56.94 0.7634 </obs>
+<obs>20179 51.15 0.7981 </obs>
+<obs>20209 60.23 0.7663 </obs>
+<obs>20240 62.29 0.768 </obs>
+<obs>20270 51.5 0.7294 </obs>
+<obs>20301 55.38 0.7149 </obs>
+<obs>20332 56.43 0.701 </obs>
+<obs>20362 52.74 0.7099 </obs>
+<obs>20393 46.16 0.7189 </obs>
+<obs>20423 39.6 0.7306 </obs>
+<obs>20454 41.25 0.71 </obs>
+<obs>20485 46.18 0.714 </obs>
+<obs>20514 55.52 0.7657 </obs>
+<obs>20545 59.58 0.7655 </obs>
+<obs>20575 54.85 0.7242 </obs>
+<obs>20606 51.36 0.7426 </obs>
+<obs>20636 56.57 0.7522 </obs>
+<obs>20667 60.47 0.7514 </obs>
+<obs>20698 56.67 0.763 </obs>
+<obs>20728 58.02 0.7613 </obs>
+<obs>20759 72.25 0.7474 </obs>
+<obs>20789 79.43 0.7236 </obs>
+</observations>
+</gretldata>

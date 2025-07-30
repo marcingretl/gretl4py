@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE gretldata SYSTEM "gretldata.dtd">
+
+<gretldata version="1.3" name="inflation" frequency="4" startobs="1990:1" endobs="2014:4" type="time-series">
+<description>inflation.def
+
+      france germany
+
+	Obs:  100 quarterly observations from 1990Q1 to 2014Q4
+
+	france		Inflation rate for France, percent. Year-over-year change in the CPI.
+	germany		Inflation rate for Germany, percent. Year-over-year change in the CPI.
+
+
+Data source: The data were kindly provided by Johanna Amberger from their study: Amberger, J., R Fendel and H. Stremmel (2017), ?Improved output gaps with financial cycle information? An application to G7 countries? new Keynesian Phillips curves?, Applied Economics Letters, 24(4), 219-228. 
+
+More details about the construction of the variables can be found in the Applied Economics Letters paper.
+
+
+
+    Variable |       Obs        Mean    Std. Dev.       Min        Max
+-------------+--------------------------------------------------------
+      france |       100     1.72039    .8291715      -.505      3.438
+     germany |       100     1.96284    1.208718      -.302      6.043
+
+
+</description>
+<variables count="3">
+<variable name="dateid01"
+/>
+<variable name="france"
+ label="Inflation rate for France, percent."
+/>
+<variable name="germany"
+ label="Inflation rate for Germany, percent"
+/>
+</variables>
+<observations count="100" labels="false">
+<obs>10958 3.382 2.765 </obs>
+<obs>11048 3.052 2.435 </obs>
+<obs>11139 3.179 2.736 </obs>
+<obs>11231 3.438 3.021 </obs>
+<obs>11323 3.272 2.84 </obs>
+<obs>11413 3.244 3.269 </obs>
+<obs>11504 3.221 4.438 </obs>
+<obs>11596 2.909 5.425 </obs>
+<obs>11688 2.893 5.959 </obs>
+<obs>11779 2.869 6.043 </obs>
+<obs>11870 2.171 4.958 </obs>
+<obs>11962 1.884 3.338 </obs>
+<obs>12054 2.142 4.664 </obs>
+<obs>12144 1.859 4.342 </obs>
+<obs>12235 2.125 4.588 </obs>
+<obs>12327 1.982 4.307 </obs>
+<obs>12419 1.704 2.883 </obs>
+<obs>12509 1.695 2.861 </obs>
+<obs>12600 1.691 2.581 </obs>
+<obs>12692 1.684 2.452 </obs>
+<obs>12784 1.675 2.166 </obs>
+<obs>12874 1.667 1.643 </obs>
+<obs>12965 1.79 1.509 </obs>
+<obs>13057 1.911 1.511 </obs>
+<obs>13149 2.155 1.372 </obs>
+<obs>13240 2.396 1.493 </obs>
+<obs>13331 1.759 1.363 </obs>
+<obs>13423 1.75 1.489 </obs>
+<obs>13515 1.489 1.845 </obs>
+<obs>13605 0.862 1.593 </obs>
+<obs>13696 1.358 2.323 </obs>
+<obs>13788 1.106 2.2 </obs>
+<obs>13880 0.733 1.208 </obs>
+<obs>13970 0.977 1.327 </obs>
+<obs>14061 0.609 0.597 </obs>
+<obs>14153 0.243 0.359 </obs>
+<obs>14245 0.243 0.239 </obs>
+<obs>14335 0.363 0.476 </obs>
+<obs>14426 0.484 0.713 </obs>
+<obs>14518 1.091 0.954 </obs>
+<obs>14610 1.453 1.548 </obs>
+<obs>14701 1.566 1.185 </obs>
+<obs>14792 1.928 1.297 </obs>
+<obs>14884 1.799 1.771 </obs>
+<obs>14976 1.313 1.641 </obs>
+<obs>15066 2.017 2.459 </obs>
+<obs>15157 1.773 2.095 </obs>
+<obs>15249 1.413 1.624 </obs>
+<obs>15341 2.12 2.076 </obs>
+<obs>15431 1.628 1.371 </obs>
+<obs>15522 1.742 1.14 </obs>
+<obs>15614 2.207 1.256 </obs>
+<obs>15706 2.422 1.13 </obs>
+<obs>15796 1.945 0.789 </obs>
+<obs>15887 1.941 1.127 </obs>
+<obs>15979 2.159 1.127 </obs>
+<obs>16071 1.802 0.894 </obs>
+<obs>16162 2.357 1.79 </obs>
+<obs>16253 2.24 1.784 </obs>
+<obs>16345 2.113 2.007 </obs>
+<obs>16437 1.659 1.661 </obs>
+<obs>16527 1.645 1.319 </obs>
+<obs>16618 1.972 1.643 </obs>
+<obs>16710 1.634 1.639 </obs>
+<obs>16802 1.85 1.743 </obs>
+<obs>16892 1.942 1.844 </obs>
+<obs>16983 1.611 1.509 </obs>
+<obs>17075 1.286 1.29 </obs>
+<obs>17167 1.068 1.713 </obs>
+<obs>17257 1.164 2.023 </obs>
+<obs>17348 1.268 2.229 </obs>
+<obs>17440 2.328 3.079 </obs>
+<obs>17532 2.96 2.947 </obs>
+<obs>17623 3.347 2.923 </obs>
+<obs>17714 3.34 3.115 </obs>
+<obs>17806 1.861 1.648 </obs>
+<obs>17898 0.616 0.818 </obs>
+<obs>17988 -0.202 0.203 </obs>
+<obs>18079 -0.505 -0.302 </obs>
+<obs>18171 0.305 0.405 </obs>
+<obs>18263 1.327 0.811 </obs>
+<obs>18353 1.623 1.113 </obs>
+<obs>18444 1.624 1.111 </obs>
+<obs>18536 1.619 1.413 </obs>
+<obs>18628 1.813 1.911 </obs>
+<obs>18718 2.096 2.002 </obs>
+<obs>18809 2.098 2.198 </obs>
+<obs>18901 2.49 2.189 </obs>
+<obs>18993 2.374 2.172 </obs>
+<obs>19084 1.955 1.865 </obs>
+<obs>19175 1.957 2.053 </obs>
+<obs>19267 1.555 2.045 </obs>
+<obs>19359 1.063 1.546 </obs>
+<obs>19449 0.767 1.541 </obs>
+<obs>19540 0.96 1.628 </obs>
+<obs>19632 0.574 1.336 </obs>
+<obs>19724 0.669 1.142 </obs>
+<obs>19814 0.666 1.044 </obs>
+<obs>19905 0.38 0.848 </obs>
+<obs>19997 0.285 0.471 </obs>
+</observations>
+</gretldata>
