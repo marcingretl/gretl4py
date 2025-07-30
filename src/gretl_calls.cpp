@@ -105,12 +105,12 @@ void module_init (void)
     }
 
     // read and set GRETL_PLUGIN_PATH if available
-    if (const char* env = std::getenv("GRETL_PLUGIN_PATH"); env) {
+    if (const char *env = std::getenv("GRETL_PLUGIN_PATH"); env) {
         set_gretl_plugin_path(env);
     }
 
     // read and set GRETL4PY_VERBOSE if available
-    if (const char* env = std::getenv("GRETL4PY_VERBOSE"); env) {
+    if (const char *env = std::getenv("GRETL4PY_VERBOSE"); env) {
         gretl4py_verbose = std::atoi(env);
     }
 
@@ -209,27 +209,6 @@ py::dict about (bool do_print)
     return res;
 }
 
-void do_set (const std::string key,
-             const std::optional<py::object> &pyval)
-{
-    //
-    // interface to libgretl's set
-    //
-    int err = 0;
-
-    if (pyval == std::nullopt) {
-        err = execute_set(key.c_str(), NULL, NULL, OPT_NONE, GP.prn_ptr());
-    } else {
-        err = execute_set(key.c_str(), MapPyToCpp(pyval).to_string().c_str(),
-                          NULL, OPT_NONE, GP.prn_ptr());
-    }
-    if (err) {
-        handle_gretl_error(err);
-    }
-
-    GP.print();
-}
-
 //////////////////////////////////////////////////
 // static functions
 //////////////////////////////////////////////////
@@ -282,6 +261,27 @@ static gretlopt unpack_kwargs_command (GretlCmdIndex ci,
 //////////////////////////////////////////////////
 // data management
 //////////////////////////////////////////////////
+
+void do_set (const std::string key,
+             const std::optional<py::object> &pyval)
+{
+    //
+    // interface to libgretl's set
+    //
+    int err = 0;
+
+    if (pyval == std::nullopt) {
+        err = execute_set(key.c_str(), NULL, NULL, OPT_NONE, GP.prn_ptr());
+    } else {
+        err = execute_set(key.c_str(), MapPyToCpp(pyval).to_string().c_str(),
+                          NULL, OPT_NONE, GP.prn_ptr());
+    }
+    if (err) {
+        handle_gretl_error(err);
+    }
+
+    GP.print();
+}
 
 void do_summary (const std::string &varlist, const py::kwargs &kwargs)
 {
