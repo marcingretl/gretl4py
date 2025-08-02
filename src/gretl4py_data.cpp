@@ -759,8 +759,11 @@ PythonArgInfo inspect_pyobject (py::handle obj)
     }
 
     info.gtype = GRETL_TYPE_ANY;
+#if PYBIND11_VERSION_MAJOR < 3
     info.pytype = py::str(obj.get_type());
-    // ? try: info.pytype = py::str(py::type::of(obj)); #Marcin: yes, this will work for sure; maybe I'll switch to pybind11 3.0 next week
+#else
+    info.pytype = py::str(py::type::of(obj));
+#endif
     info.valid = false;
 
     return info;
@@ -1591,7 +1594,11 @@ void MapPyToCpp::convert (const T *pyobj)
         err = E_TYPES;
         as_str.clear();
         std::cerr << "I don't know how to convert '";
+#if PYBIND11_VERSION_MAJOR < 3
         std::cerr << py::cast<std::string>(pyobj->get_type());
+#else
+        std::cerr << py::cast<std::string>(py::type::of(*pyobj));
+#endif // PYBIND11_VERSION_MAJOR
         std::cerr << "' to std::string" << std::endl;
     }
 }
