@@ -169,7 +169,6 @@ py::dict about (bool do_print)
     }
 
     res[py::cast("mod_ver")] = mod_ver;
-    res[py::cast("mod_logo")] = mod_logo;
     res[py::cast("py11_ver")] = py11_ver;
     res[py::cast("lg_ver")] = lg_ver;
     if (!b.err) {

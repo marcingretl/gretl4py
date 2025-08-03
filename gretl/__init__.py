@@ -114,7 +114,7 @@ def __getattr__(fun):
     """
     Called when a gretl.fun is called.
     """
-    cfunc = ("about", "set")
+    cfunc = ("about", "set", "include")
 
     if fun in dir(gretl4py_addons):
         return getattr(gretl4py_addons, fun)
