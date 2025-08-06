@@ -1554,14 +1554,31 @@ void GretlBundle::python_register (py::object &obj)
 
 void GretlBundle::print (void)
 {
+    GretlPrint GP = GretlPrint();
+
     if (!err) {
-        if (!GP.err) {
-            err = gretl_bundle_print(b, GP.prn_ptr());
-            if (!err) {
-                GP.print();
-            }
+        err = gretl_bundle_print(b, GP.prn_ptr());
+        if (err) {
+            handle_gretl_error(err);
         }
+        GP.print();
     }
+}
+
+std::string GretlBundle::repr (void)
+{
+    GretlPrint GP = GretlPrint();
+    std::string summary = "";
+
+    if (!err) {
+        err = gretl_bundle_print(b, GP.prn_ptr());
+        if (err) {
+            handle_gretl_error(err);
+        }
+        summary = GP.get_buffer();
+    }
+
+    return summary;
 }
 
 //

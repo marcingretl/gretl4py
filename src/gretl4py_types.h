@@ -35,38 +35,6 @@
 namespace py = pybind11;
 
 //////////////////////////////////////////////////
-// types
-//////////////////////////////////////////////////
-using DNumPyArrayFC = py::array_t<double, py::array::f_style>;  // double contiguous column-major (fortran) NumPy array (F_CONTIGUOUS)
-
-using GretlTypes = std::variant<int, double, std::string, DNumPyArrayFC, py::dict, py::list, py::none>;
-
-using vgretl_vector = std::vector<std::variant<double, std::string, int>>;
-
-using vgretl_matrix = std::vector<vgretl_vector>;
-
-struct NumPyArrayView {
-    void *data = nullptr;   // untyped pointer
-    py::dtype dtype;        // numpy dtype info
-    py::array base_array;   // holds ownership
-    bool is_double = false; // for fast path
-    bool NumPyArrayFC = false;
-    int rows = 0;
-    int cols = 0;
-    // note strides in elements (not bytes!)
-    ssize_t row_stride = 0;
-    ssize_t col_stride = 0;
-};
-
-struct PythonArgInfo {
-    py::handle obj;             // borrowed reference
-    GretlType gtype;
-    std::string pytype;         // human readable name of type
-    std::vector<ssize_t> shape; // for arrays/lists/tuples
-    bool valid = true;
-};
-
-//////////////////////////////////////////////////
 // smart pointers
 //////////////////////////////////////////////////
 
@@ -142,10 +110,48 @@ private:
 class GretlDataset;
 using GretlDatasetPtr = std::shared_ptr<GretlDataset>;
 
+class GretlBundle;
+using GretlBundlePtr = std::shared_ptr<GretlBundle>;
+
 class GretlModel;
 using GretlModelPtr = std::unique_ptr<GretlModel>;
 
 class GretlPackage;
 using GretlPackagePtr = std::shared_ptr<GretlPackage>;
+
+
+//////////////////////////////////////////////////
+// types
+//////////////////////////////////////////////////
+using DNumPyArrayFC = py::array_t<double, py::array::f_style>;  // double contiguous column-major (fortran) NumPy array (F_CONTIGUOUS)
+
+using GretlTypes = std::variant<int, double, std::string, DNumPyArrayFC,
+                                py::dict, py::list, GretlBundlePtr,
+                                py::none>;
+
+using vgretl_vector = std::vector<std::variant<double, std::string, int>>;
+
+using vgretl_matrix = std::vector<vgretl_vector>;
+
+struct NumPyArrayView {
+    void *data = nullptr;   // untyped pointer
+    py::dtype dtype;        // numpy dtype info
+    py::array base_array;   // holds ownership
+    bool is_double = false; // for fast path
+    bool NumPyArrayFC = false;
+    int rows = 0;
+    int cols = 0;
+    // note strides in elements (not bytes!)
+    ssize_t row_stride = 0;
+    ssize_t col_stride = 0;
+};
+
+struct PythonArgInfo {
+    py::handle obj;             // borrowed reference
+    GretlType gtype;
+    std::string pytype;         // human readable name of type
+    std::vector<ssize_t> shape; // for arrays/lists/tuples
+    bool valid = true;
+};
 
 #endif // GRETL4PY_TYPES_H

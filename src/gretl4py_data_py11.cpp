@@ -146,13 +146,21 @@ void init_gretl4py_package_py11(py::module_ &m)
             const std::string &output, const py::kwargs &kwargs) -> py::object
          {
              GretlPrint GP = GretlPrint();
+             std::unique_ptr<GretlTypes> val;
              int err = 0;
 
              auto res = self.function_exec(name, DSET, GP, kwargs, output);
 
              // we construct object to return
              GretlType t = res.type;
-             auto val = convert_GretlType_to_GretlTypes(t, res.get(), 0, err);
+             if (t == GRETL_TYPE_BUNDLE) {
+                 // bundle special case: we return a GretlBundlePtr
+                 // instead of dict() representation
+                 GretlBundle GB(static_cast<gretl_bundle*>(res.get()));
+                 val = std::make_unique<GretlTypes>(std::make_shared<GretlBundle>(GB));
+             } else {
+                 val = convert_GretlType_to_GretlTypes(t, res.get(), 0, err);
+             }
              if (err) {
                  handle_gretl_error(err);
              }
@@ -174,6 +182,15 @@ void init_gretl4py_package_py11(py::module_ &m)
          },
          py::arg("name").none(false),
          py::arg("output").none(true) = "", py::kw_only());
+}
+
+
+//GretlBundle mappings
+void init_gretl4py_bundle_py11(py::module_ &m)
+{
+    py::class_<GretlBundle, GretlBundlePtr>(m, "Bundle", py::dynamic_attr())
+    .def("__repr__", &GretlBundle::repr)
+    .def("to_dict", &GretlBundle::to_dict);
 }
 
 /*.def("get_ptr", &GretlPackage::get_ptr, py::return_value_policy::reference)*/

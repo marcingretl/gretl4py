@@ -198,7 +198,6 @@ public:
 class GretlBundle
 {
 private:
-    GretlPrint GP = GretlPrint();       // printer (instance wide)
     bool free_b = true;
     gretl_bundle *b = NULL;
     py::dict as_dict;
@@ -219,6 +218,8 @@ public:
     void python_register (py::object &obj);         // register bundle contents in python object
 
     void print (void);
+
+    std::string repr (void);
 };
 
 //
