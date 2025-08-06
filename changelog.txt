@@ -2,10 +2,12 @@ version 0.22:
     - add interface to 'summary'
     - make gretl.get_data() more functional
     - add time-series filters: Hodrick-Prescott, Baxter-King, and Butterworth
-    - add intarface to contributed packages
+    - add 'include' as an interface for loading user-contributed packages
     - add 'frompkg' option for loading datasets
     - initial access to user-defined variables (gretl specific)
     - support for Windows on ARM64
+    - use LLVM/Clang 20.x as default compiler
+    - basic tweaks for pybind11 3.x
 
 version 0.21:
     - 'lagselect' switched off for VAR due to SIGSEGV
