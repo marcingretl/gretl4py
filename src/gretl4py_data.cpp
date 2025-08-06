@@ -736,9 +736,9 @@ PythonArgInfo inspect_pyobject (py::handle obj)
         return info;
     }
 
-    if (is_pydict(obj)) {
+    if (is_pyGretlBundle(obj)) {
         info.gtype = GRETL_TYPE_BUNDLE;
-        info.pytype = "dict";
+        info.pytype = "GretlBundle";
         return info;
     }
 
@@ -1581,6 +1581,11 @@ std::string GretlBundle::repr (void)
     return summary;
 }
 
+gretl_bundle *GretlBundle::get_ptr (void) const
+{
+    return b;
+}
+
 //
 // MapPyToCpp class methods
 //
@@ -1913,6 +1918,13 @@ void GretlPackage::unpack_kwargs_package (const std::string &func_name,
                     handle_gretl_error(err);
                 }
                 continue;
+            } else if (arginfo.gtype == GRETL_TYPE_BUNDLE) {
+                // note: here we deal with both: GRETL_TYPE_BUNDLE and GRETL_TYPE_BUNDLE_REF
+                // final distinction is made by key_type
+                auto GB = val.cast<GretlBundlePtr>();
+                err = push_function_arg(func_call, NULL, NULL,
+                                        key_type, GB->get_ptr());
+                continue;
             } else if (arginfo.gtype == GRETL_TYPE_STRING) {
                 // special case: we need to know if we deal with
                 // user defined variable uv or string per se
@@ -1948,7 +1960,7 @@ void GretlPackage::unpack_kwargs_package (const std::string &func_name,
                 arg_type = GRETL_TYPE_DOUBLE;
             } else {
                 throw std::runtime_error("variable " + key +
-                                         ":, unsupported type: "
+                                         ": unsupported type: "
                                          + arginfo.pytype);
             }
             err = push_function_arg(func_call, key.c_str(),
