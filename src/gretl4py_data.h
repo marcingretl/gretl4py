@@ -225,10 +225,12 @@ public:
 
     gretl_bundle *get_ptr (void) const;             // raw gretl_bundle pointer
 
+    py::list keys (void);
+
     template<typename T>
     T get_element (const std::string &key);         // get bundle element by name
 
-    py::list keys (void);
+    void set_element (const std::string &key, const py::handle obj);
 };
 
 //

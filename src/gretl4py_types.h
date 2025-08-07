@@ -153,7 +153,7 @@ struct PythonArgInfo {
     GretlType gtype;
     std::string pytype;         // human readable name of type
     std::vector<ssize_t> shape; // for arrays/lists/tuples
-    bool valid = true;
+    bool valid = true;          // if we deal with valid object (in terms of gretl4py)
 };
 
 #endif // GRETL4PY_TYPES_H

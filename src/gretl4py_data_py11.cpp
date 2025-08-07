@@ -191,6 +191,7 @@ void init_gretl4py_bundle_py11(py::module_ &m)
     py::class_<GretlBundle, GretlBundlePtr>(m, "Bundle", py::dynamic_attr())
     .def("__repr__", &GretlBundle::repr)
     .def("__getitem__", &GretlBundle::get_element<py::object>)
+    .def("__setitem__", &GretlBundle::set_element)
     .def("to_dict", &GretlBundle::to_dict)
     .def("keys", &GretlBundle::keys);
 }

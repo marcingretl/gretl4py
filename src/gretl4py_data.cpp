@@ -1575,12 +1575,33 @@ gretl_bundle *GretlBundle::get_ptr (void) const
     return b;
 }
 
+py::list GretlBundle::keys()
+{
+    //
+    // we return bundle keys as py::list
+    //
+    py::list res;
+    int n_keys = 0;
+
+    char **keys = gretl_bundle_get_keys_raw(b, &n_keys);
+    if (!keys || n_keys <= 0) {
+        throw std::runtime_error("didn't get any keys from bundle");
+    }
+
+    for (int i=0; i<n_keys; ++i) {
+        res.append(keys[i]);
+    }
+    std::free(keys);
+
+    return res;
+}
+
 template<typename T>
 T GretlBundle::get_element (const std::string &key)
 {
     //
-    // we get bundle element by name and returns
-    // either py::object or GretlTypesPtr
+    // we get bundle element by name (key)
+    // and return either py::object or GretlTypesPtr
     //
     int n = 0;
 
@@ -1608,24 +1629,29 @@ T GretlBundle::get_element (const std::string &key)
     }
 }
 
-py::list GretlBundle::keys()
+void GretlBundle::set_element (const std::string &key, const py::handle obj)
 {
-    py::list res;
-    int n_keys = 0;
+    //
+    // we set bundle element by name (key)
+    //
+    PythonArgInfo arginfo = inspect_pyobject(obj);
 
-    char **keys = gretl_bundle_get_keys_raw(b, &n_keys);
-    if (!keys || n_keys <= 0) {
-        throw std::runtime_error("didn't get any keys from bundle");
+    if (arginfo.gtype == GRETL_TYPE_BOOL || arginfo.gtype == GRETL_TYPE_INT) {
+        int val = obj.cast<int>();
+        err = gretl_bundle_set_int(b, key.c_str(), val);
+    } else if (arginfo.gtype == GRETL_TYPE_DOUBLE) {
+        double val = obj.cast<double>();
+        err = gretl_bundle_set_scalar(b, key.c_str(), val);
+    } else if (arginfo.gtype == GRETL_TYPE_STRING) {
+        std::string val = obj.cast<std::string>();
+        err = gretl_bundle_set_string(b, key.c_str(), val.c_str());
+    } else {
+        throw std::invalid_argument("invalid type of argument");
     }
-
-    for (int i=0; i<n_keys; ++i) {
-        res.append(keys[i]);
+    if (err) {
+        handle_gretl_error(err);
     }
-    std::free(keys);
-
-    return res;
 }
-
 
 
 //
