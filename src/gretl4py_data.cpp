@@ -1506,9 +1506,13 @@ void GretlBundle::extract (const T &t)
     // or store in as_dict
     //
     int n_keys = 0;
-    auto keys = gretl_bundle_get_keys_raw(b, &n_keys);
 
-    for (int i = 0; i < n_keys; ++i) {
+    char **keys = gretl_bundle_get_keys_raw(b, &n_keys);
+    if (!keys || n_keys <= 0) {
+        throw std::runtime_error("didn't get any keys from bundle");
+    }
+
+    for (int i=0; i<n_keys; ++i) {
         const char *key = keys[i];
 
         // py::object will be registered as an attribute on python side
@@ -1520,6 +1524,7 @@ void GretlBundle::extract (const T &t)
             throw std::runtime_error("unsupported type for conversion");
         }
     }
+    std::free(keys);
 }
 
 py::dict GretlBundle::to_dict (void)
@@ -1602,6 +1607,25 @@ T GretlBundle::get_element (const std::string &key)
         throw std::runtime_error("get_element: unsupported type");
     }
 }
+
+py::list GretlBundle::keys()
+{
+    py::list res;
+    int n_keys = 0;
+
+    char **keys = gretl_bundle_get_keys_raw(b, &n_keys);
+    if (!keys || n_keys <= 0) {
+        throw std::runtime_error("didn't get any keys from bundle");
+    }
+
+    for (int i=0; i<n_keys; ++i) {
+        res.append(keys[i]);
+    }
+    std::free(keys);
+
+    return res;
+}
+
 
 
 //

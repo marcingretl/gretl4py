@@ -227,6 +227,8 @@ public:
 
     template<typename T>
     T get_element (const std::string &key);         // get bundle element by name
+
+    py::list keys (void);
 };
 
 //
