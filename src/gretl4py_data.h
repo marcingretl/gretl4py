@@ -223,9 +223,10 @@ public:
 
     std::string repr (void);
 
-    gretl_bundle *get_ptr (void) const;
+    gretl_bundle *get_ptr (void) const;             // raw gretl_bundle pointer
 
-    py::object get_element (const std::string &key);
+    template<typename T>
+    T get_element (const std::string &key);         // get bundle element by name
 };
 
 //

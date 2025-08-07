@@ -1586,8 +1586,13 @@ gretl_bundle *GretlBundle::get_ptr (void) const
     return b;
 }
 
-py::object GretlBundle::get_element (const std::string &key)
+template<typename T>
+T GretlBundle::get_element (const std::string &key)
 {
+    //
+    // we get bundle element by name and returns
+    // either py::object or GretlTypesPtr
+    //
     int n = 0;
 
     GretlType gtype = gretl_bundle_get_member_type(b, key.c_str(), &err);
@@ -1605,8 +1610,15 @@ py::object GretlBundle::get_element (const std::string &key)
         handle_gretl_error(err);
     }
 
-    return variant_to_pyobject(std::move(*val));
+    if constexpr (std::is_same_v<py::object, T>) {
+        return variant_to_pyobject(std::move(*val));
+    } else if constexpr (std::is_same_v<GretlTypesPtr, T>) {
+        return val;
+    } else {
+        throw std::runtime_error("get_element: unsupported type");
+    }
 }
+template py::object GretlBundle::get_element<py::object>(const std::string&);
 
 //
 // MapPyToCpp class methods
