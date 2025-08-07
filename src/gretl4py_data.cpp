@@ -1644,8 +1644,18 @@ void GretlBundle::set_element (const std::string &key, const py::handle obj)
     } else if (arginfo.gtype == GRETL_TYPE_STRING) {
         std::string val = obj.cast<std::string>();
         err = gretl_bundle_set_string(b, key.c_str(), val.c_str());
+    } else if (arginfo.gtype == GRETL_TYPE_MATRIX) {
+        NumPyArrayView arr_view;
+        auto val = obj.cast<py::array>();
+        NumPyArray_extract(val, arr_view);
+        if (!arr_view.data) {
+            throw std::runtime_error("NumPy array: null pointer.");
+        }
+        gretl_matrix *mat = gretl_matrix_alloc(arr_view.rows, arr_view.cols);
+        NumPyArray_to_gretl_matrix<gretl_matrix>(arr_view, mat);
+        err = gretl_bundle_donate_data(b, key.c_str(), mat, GRETL_TYPE_MATRIX, 0);
     } else {
-        throw std::invalid_argument("invalid type of argument");
+        throw std::invalid_argument("unsupported type: " + arginfo.pytype);
     }
     if (err) {
         handle_gretl_error(err);
