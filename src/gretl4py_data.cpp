@@ -1510,14 +1510,14 @@ void GretlBundle::extract (const T &t)
 
     for (int i = 0; i < n_keys; ++i) {
         int n = 0;
-        const char* key = keys[i];
+        const char *key = keys[i];
 
         GretlType gtype = gretl_bundle_get_member_type(b, key, &err);
         if (err) {
             handle_gretl_error(err);
         }
 
-        void* data = gretl_bundle_get_target(b, key, &gtype, &n, &err);
+        void *data = gretl_bundle_get_target(b, key, &gtype, &n, &err);
         if (err) {
             handle_gretl_error(err);
         }
@@ -1584,6 +1584,28 @@ std::string GretlBundle::repr (void)
 gretl_bundle *GretlBundle::get_ptr (void) const
 {
     return b;
+}
+
+py::object GretlBundle::get_element (const std::string &key)
+{
+    int n = 0;
+
+    GretlType gtype = gretl_bundle_get_member_type(b, key.c_str(), &err);
+    if (err) {
+        handle_gretl_error(err);
+    }
+
+    void *data = gretl_bundle_get_target(b, key.c_str(), &gtype, &n, &err);
+    if (err) {
+        handle_gretl_error(err);
+    }
+
+    auto val = convert_GretlType_to_GretlTypes(gtype, data, n, err);
+    if (err) {
+        handle_gretl_error(err);
+    }
+
+    return variant_to_pyobject(std::move(*val));
 }
 
 //

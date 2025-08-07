@@ -129,6 +129,8 @@ using GretlTypes = std::variant<int, double, std::string, DNumPyArrayFC,
                                 py::dict, py::list, GretlBundlePtr,
                                 py::none>;
 
+using GretlTypesPtr = std::unique_ptr<GretlTypes>;
+
 using vgretl_vector = std::vector<std::variant<double, std::string, int>>;
 
 using vgretl_matrix = std::vector<vgretl_vector>;

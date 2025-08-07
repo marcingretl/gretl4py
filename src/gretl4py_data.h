@@ -224,6 +224,8 @@ public:
     std::string repr (void);
 
     gretl_bundle *get_ptr (void) const;
+
+    py::object get_element (const std::string &key);
 };
 
 //
