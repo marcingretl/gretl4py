@@ -38,12 +38,16 @@ print(f'\t\tBMA')
 print('##################################################')
 BMA.show_functions()
 d2.set_as_default()
-d2.new_list(name='Xes', value='2..13')
-gretl.genr('bundle OPT = _(Nrep=10^5, model_prior="binomial", Nrank=5)')
+#gretl.genr('bundle OPT = _(Nrep=10^5, model_prior="binomial", Nrank=5)')
 #res2 = gretl.BMA(output="bmares", data=d2, Y="GDP_growth", X_list="Xes", quiet=True)
 #gretl.BMA_Print(MODEL="&bmares")
 #print(type(res2))
-p2 = gretl.package(package=BMA, Y="GDP_growth", X_list="Xes", Options="OPT").fit()
+OPT = gretl.Bundle()
+OPT['Nrep'] = 10^5
+OPT['model_prior'] = "binomial"
+OPT['Nrank'] = 5
+d2.new_list(name='Xes', value='2..13')
+p2 = gretl.package(package=BMA, Y="GDP_growth", X_list="Xes", Options=OPT).fit()
 print(p2)
 
 

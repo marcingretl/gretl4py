@@ -192,7 +192,12 @@ void init_gretl4py_bundle_py11(py::module_ &m)
     .def(py::init<>())
     .def("__repr__", &GretlBundle::repr)
     .def("__getitem__", &GretlBundle::get_element<py::object>)
-    .def("__setitem__", &GretlBundle::set_element)
+    .def("__setitem__", &GretlBundle::set_element<bool>)
+    .def("__setitem__", &GretlBundle::set_element<int>)
+    .def("__setitem__", &GretlBundle::set_element<double>)
+    .def("__setitem__", &GretlBundle::set_element<std::string>)
+    .def("__setitem__", &GretlBundle::set_element<py::array>)
+    .def("__setitem__", &GretlBundle::set_element<GretlBundlePtr>)
     .def("to_dict", &GretlBundle::to_dict)
     .def("keys", &GretlBundle::keys);
 }

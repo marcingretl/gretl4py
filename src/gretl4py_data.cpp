@@ -1632,42 +1632,42 @@ T GretlBundle::get_element (const std::string &key)
     }
 }
 
-void GretlBundle::set_element (const std::string &key, const py::handle obj)
+template<typename T>
+void GretlBundle::set_element (const std::string &key, const T &t)
 {
     //
     // we set bundle element by name (key)
     //
-    PythonArgInfo arginfo = inspect_pyobject(obj);
-
-    if (arginfo.gtype == GRETL_TYPE_BOOL || arginfo.gtype == GRETL_TYPE_INT) {
-        int val = obj.cast<int>();
-        err = gretl_bundle_set_int(b, key.c_str(), val);
-    } else if (arginfo.gtype == GRETL_TYPE_DOUBLE) {
-        double val = obj.cast<double>();
-        err = gretl_bundle_set_scalar(b, key.c_str(), val);
-    } else if (arginfo.gtype == GRETL_TYPE_STRING) {
-        std::string val = obj.cast<std::string>();
-        err = gretl_bundle_set_string(b, key.c_str(), val.c_str());
-    } else if (arginfo.gtype == GRETL_TYPE_MATRIX) {
+    if constexpr (std::is_same_v<T, bool> || std::is_same_v<T, int>) {
+        err = gretl_bundle_set_int(b, key.c_str(), t);
+    } else if constexpr (std::is_same_v<T, double>) {
+        err = gretl_bundle_set_scalar(b, key.c_str(), t);
+    } else if constexpr (std::is_same_v<T, std::string>) {
+        err = gretl_bundle_set_string(b, key.c_str(), t.c_str());
+    } else if constexpr (std::is_same_v<T, py::array>) {
         NumPyArrayView arr_view;
-        auto val = obj.cast<py::array>();
-        NumPyArray_extract(val, arr_view);
+        NumPyArray_extract(t, arr_view);
         if (!arr_view.data) {
             throw std::runtime_error("NumPy array: null pointer.");
         }
         gretl_matrix *mat = gretl_matrix_alloc(arr_view.rows, arr_view.cols);
         NumPyArray_to_gretl_matrix<gretl_matrix>(arr_view, mat);
         err = gretl_bundle_donate_data(b, key.c_str(), mat, GRETL_TYPE_MATRIX, 0);
-    } else if (arginfo.gtype == GRETL_TYPE_BUNDLE) {
-        auto val = obj.cast<GretlBundlePtr>();
-        err = gretl_bundle_set_data(b, key.c_str(), val->get_ptr(), GRETL_TYPE_BUNDLE, 0);
+    } else if constexpr (std::is_same_v<T, GretlBundlePtr>) {
+        err = gretl_bundle_set_data(b, key.c_str(), t->get_ptr(), GRETL_TYPE_BUNDLE, 0);
     } else {
-        throw std::invalid_argument("unsupported type: " + arginfo.pytype);
+        throw std::invalid_argument("unsupported type");
     }
     if (err) {
         handle_gretl_error(err);
     }
 }
+template void GretlBundle::set_element<bool>(const std::string&, const bool&);
+template void GretlBundle::set_element<int>(const std::string&, const int&);
+template void GretlBundle::set_element<double>(const std::string&, const double&);
+template void GretlBundle::set_element<std::string>(const std::string&, const std::string&);
+template void GretlBundle::set_element<py::array>(const std::string&, const py::array&);
+template void GretlBundle::set_element<GretlBundlePtr>(const std::string&, const GretlBundlePtr&);
 
 
 //

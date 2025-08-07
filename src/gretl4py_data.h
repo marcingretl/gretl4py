@@ -228,7 +228,8 @@ public:
     template<typename T>
     T get_element (const std::string &key);         // get bundle element by name
 
-    void set_element (const std::string &key, const py::handle obj);
+    template<typename T>
+    void set_element (const std::string &key, const T &t);
 };
 
 //
