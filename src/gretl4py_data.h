@@ -207,7 +207,7 @@ private:
 public:
     int err = 0;
 
-    GretlBundle (void);                             // we get contents of $sysinfo bundle
+    GretlBundle (bool sysinfo = false);             // we get contents of $sysinfo bundle, or empty
     GretlBundle (gretl_bundle *b);                  // incoming already allocated bundle
     GretlBundle (MODEL *model, DATASET *dset);      // we produce bundle from MODEL
     GretlBundle (GRETL_VAR *model, DATASET *dset);  // we produce bundle from VAR/VECM

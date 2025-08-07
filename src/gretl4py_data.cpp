@@ -1467,10 +1467,14 @@ DNumPyArrayFC GretlDataset::bkfilt (const std::string &series,
 //
 // GretlBundle class methods
 //
-GretlBundle::GretlBundle (void)
+GretlBundle::GretlBundle (bool sysinfo)
 {
-    b = get_sysinfo_bundle(&err);
-    free_b = false;
+    if (sysinfo) {
+        b = get_sysinfo_bundle(&err);
+        free_b = false;
+    } else {
+        b = gretl_bundle_new();
+    }
 }
 
 GretlBundle::GretlBundle (MODEL *model, DATASET *dset)
@@ -1654,6 +1658,9 @@ void GretlBundle::set_element (const std::string &key, const py::handle obj)
         gretl_matrix *mat = gretl_matrix_alloc(arr_view.rows, arr_view.cols);
         NumPyArray_to_gretl_matrix<gretl_matrix>(arr_view, mat);
         err = gretl_bundle_donate_data(b, key.c_str(), mat, GRETL_TYPE_MATRIX, 0);
+    } else if (arginfo.gtype == GRETL_TYPE_BUNDLE) {
+        auto val = obj.cast<GretlBundlePtr>();
+        err = gretl_bundle_set_data(b, key.c_str(), val->get_ptr(), GRETL_TYPE_BUNDLE, 0);
     } else {
         throw std::invalid_argument("unsupported type: " + arginfo.pytype);
     }

@@ -146,7 +146,7 @@ void module_cleanup (void)
 
 py::dict about (bool do_print)
 {
-    GretlBundle b = GretlBundle();
+    GretlBundle b = GretlBundle(true);
     const std::string lgretl_strings[9] =
         {"dotdir", "gnuplot", "gretldir", "seats", "tramo",
          "tramodir", "workdir", "x12a", "x12adir"};
