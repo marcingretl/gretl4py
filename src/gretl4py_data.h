@@ -65,10 +65,9 @@ template<typename T>
 void NumPyArray_to_gretl_matrix (NumPyArrayView &view, T *dst,
                                  int offset = 0, bool onecol = false);
 
-std::unique_ptr<GretlTypes> gretl_generate_gretl_object (const char *s, int &err,
-                                                         GretlObjType obj_type = GRETL_OBJ_INFO,
-                                                         DATASET *dset = NULL,
-                                                         void *model = NULL);
+GretlTypesPtr gretl_generate_gretl_object (const char *s, int &err,
+                                           GretlObjType obj_type = GRETL_OBJ_INFO,
+                                           DATASET *dset = NULL, void *model = NULL);
 
 void gretl_valid_long_opt (gretlopt &opt, GretlCmdIndex ci,
                            const std::string &key, const py::handle &val,
@@ -80,9 +79,8 @@ void unpack_kwargs_test (gretlopt &opt, const std::string &type,
 gretl_list_ptr list_from_formula (const std::string &formula,
                                   DATASET *dset, int &err);
 
-std::unique_ptr<GretlTypes> convert_GretlType_to_GretlTypes (GretlType &t,
-                                                             void *gr_obj_ptr,
-                                                             const int n, int &err);
+GretlTypesPtr convert_GretlType_to_GretlTypes (GretlType &t, void *gr_obj_ptr,
+                                               const int n, int &err);
 
 template<typename PyWrapped, typename Item, typename ContainerType>
 void move_to_python_container (PyWrapped &wrapped_obj, Item &&item,
@@ -121,10 +119,10 @@ class GretlDataset : public std::enable_shared_from_this<GretlDataset>
 {
 private:
     static inline int next_obj_id = 1;
-    const int id;                                   // dataset's id
-    std::unordered_set<int> linked_models;          // models (id-s) which use this dataset
-    GretlPrint GP = GretlPrint();                   // printer (instance wide)
-    mutable std::unique_ptr<GretlTypes> RES_other;  // other results (accessor, tests, ets)
+    const int id;                           // dataset's id
+    std::unordered_set<int> linked_models;  // models (id-s) which use this dataset
+    GretlPrint GP = GretlPrint();           // printer (instance wide)
+    mutable GretlTypesPtr RES_other;        // other results (accessor, tests, ets)
 
     gretlopt opt = OPT_NONE;
 

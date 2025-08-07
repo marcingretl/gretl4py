@@ -274,9 +274,8 @@ void NumPyArray_to_gretl_matrix (NumPyArrayView &view, T *dst, int offset, bool 
 template void NumPyArray_to_gretl_matrix<gretl_matrix>(NumPyArrayView&, gretl_matrix*, int, bool);
 
 
-std::unique_ptr<GretlTypes> convert_GretlType_to_GretlTypes (GretlType &t,
-                                                             void *gr_obj_ptr,
-                                                             const int n, int &err)
+GretlTypesPtr convert_GretlType_to_GretlTypes (GretlType &t, void *gr_obj_ptr,
+                                               const int n, int &err)
 {
     //
     // function converts libgretl's GretlType to gretl4py's GretlTypes
@@ -347,16 +346,16 @@ void handle_gretl_error (int err)
     throw std::runtime_error(msg);
 }
 
-std::unique_ptr<GretlTypes> gretl_generate_gretl_object (const char *s, int &err,
-                                                         GretlObjType obj_type,
-                                                         DATASET *dset, void *model)
+GretlTypesPtr gretl_generate_gretl_object (const char *s, int &err,
+                                           GretlObjType obj_type,
+                                           DATASET *dset, void *model)
 {
     //
     // we grab object from libgretl stack
     //
-    std::unique_ptr<GretlTypes> res; // gretl4py type
-    GretlType t = GRETL_TYPE_NONE;   // libgretl type
-    bool free_dset = false;          // we free dset _only_ if was allocated here
+    GretlTypesPtr res;              // gretl4py type
+    GretlType t = GRETL_TYPE_NONE;  // libgretl type
+    bool free_dset = false;         // we free dset _only_ if was allocated here
     void *resp;
 
     // we allocate dset if we didn't get one
