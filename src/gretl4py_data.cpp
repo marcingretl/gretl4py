@@ -1509,29 +1509,13 @@ void GretlBundle::extract (const T &t)
     auto keys = gretl_bundle_get_keys_raw(b, &n_keys);
 
     for (int i = 0; i < n_keys; ++i) {
-        int n = 0;
         const char *key = keys[i];
 
-        GretlType gtype = gretl_bundle_get_member_type(b, key, &err);
-        if (err) {
-            handle_gretl_error(err);
-        }
-
-        void *data = gretl_bundle_get_target(b, key, &gtype, &n, &err);
-        if (err) {
-            handle_gretl_error(err);
-        }
-
-        auto val = convert_GretlType_to_GretlTypes(gtype, data, n, err);
-        if (err) {
-            handle_gretl_error(err);
-        }
-
-        // for py::object be register as attribute on python side
+        // py::object will be registered as an attribute on python side
         if constexpr (std::is_same_v<T, py::object>) {
-            py::setattr(t, key, variant_to_pyobject(std::move(*val)));
+            py::setattr(t, key, get_element<py::object>(key));
         } else if constexpr (std::is_same_v<T, py::dict>) {
-            as_dict[py::cast(key)] = variant_to_pyobject(std::move(*val));
+            as_dict[py::cast(key)] = get_element<py::object>(key);
         } else {
             throw std::runtime_error("unsupported type for conversion");
         }
@@ -1618,7 +1602,7 @@ T GretlBundle::get_element (const std::string &key)
         throw std::runtime_error("get_element: unsupported type");
     }
 }
-template py::object GretlBundle::get_element<py::object>(const std::string&);
+
 
 //
 // MapPyToCpp class methods
