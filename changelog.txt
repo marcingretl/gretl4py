@@ -8,6 +8,7 @@ version 0.22:
     - support for Windows on ARM64
     - use LLVM/Clang 20.x as default compiler
     - basic tweaks for pybind11 3.x
+    - GretlBundle class: an interface to libgretl's bundle
 
 version 0.21:
     - 'lagselect' switched off for VAR due to SIGSEGV
