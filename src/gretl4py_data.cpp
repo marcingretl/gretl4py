@@ -819,7 +819,7 @@ GretlDataset::GretlDataset (const std::string &fname,
     }
     if (err) {
         destroy_dataset(dset);
-        throw std::runtime_error("Reading data from '" + fname + "' file failed.");
+        handle_gretl_error(err);
     }
 }
 
