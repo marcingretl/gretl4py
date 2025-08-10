@@ -45,9 +45,12 @@ try:
     os.makedirs(LIB_DIR)
 except FileExistsError:
     pass
-data_files = glob.glob(os.path.join(SOURCE_DIR, 'gretl', 'lib', '*'))
-for file in data_files:
-    shutil.copy(file, LIB_DIR)
+libs = glob.glob(os.path.join(SOURCE_DIR, 'gretl', 'lib', '*'))
+for file in libs:
+    try:
+        shutil.copy(file, LIB_DIR)
+    except shutil.SameFileError:
+        pass
 
 # We copy datasets
 DATA_DIR = os.path.join(MODULE_PATH, 'data')
