@@ -999,10 +999,12 @@ std::string GretlDataset::repr (void) const
 {
     std::string ret = "GretlDataset, source " + source;
 
-    auto desc = gretl_get_gdt_description(source.c_str(), &err);
+    // FIXME: this is a temporal fix related with some spurious
+    // text being printed when there is no description at all
+    /*auto desc = gretl_get_gdt_description(source.c_str(), &err);
     if (!err) {
         ret.append("\n").append(desc);
-    }
+    }*/
 
     return ret;
 }
