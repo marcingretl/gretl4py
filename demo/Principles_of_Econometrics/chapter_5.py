@@ -6,8 +6,8 @@ gretl.set('verbose', 'off')
 # force libgretl to use the decimal point character
 gretl.set('force_decpoint', 'on')
 
-# dataset
-andy = gretl.get_data('../data/andy.gdt')
+# datasets
+andy = gretl.get_data('data/andy.gdt')
 
 # list of variables
 variables = andy.varnames()
@@ -58,8 +58,9 @@ print(f'-0.2*b[2] -0.5*b[3] > 0, pvalue: {m1.restrictions[-1]['pvalue']/2 : .3f}
 
 
 ############################################
-# 5.6.2
+# 5.6.2: extending the model
 ############################################
+print('\n\n5.6.2: extending the model')
 andy.new_series(name='advertsq', value='advert^2')
 msq = gretl.ols(formula='sales ~ const + price + advert + advertsq').fit()
 print(msq)
