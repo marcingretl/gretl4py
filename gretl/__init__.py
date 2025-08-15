@@ -69,7 +69,7 @@ from . import gretl4py_addons
 from . import gretl4py_classes
 
 # we import some symbols explicitly
-from ._gretl import (about, set, version, include, summary)
+from ._gretl import (about, set, version, include, summary, Bundle)
 from .gretl4py_classes import attrs, oddsratio
 from .gretl4py_classes import get_data, show_data_status
 from .gretl4py_addons import print_module_source, fc_print
@@ -114,7 +114,7 @@ def __getattr__(fun):
     """
     Called when a gretl.fun is called.
     """
-    cfunc = ("about", "set", "include", "summary")
+    cfunc = ("about", "set", "include", "summary", "Bundle")
 
     if fun in dir(gretl4py_addons):
         return getattr(gretl4py_addons, fun)

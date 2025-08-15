@@ -318,8 +318,7 @@ GretlTypesPtr convert_GretlType_to_GretlTypes (GretlType &t, void *gr_obj_ptr,
         break;
     }
     case GRETL_TYPE_BUNDLE: {
-        gretl_bundle *b = static_cast<gretl_bundle*>(gr_obj_ptr);
-        *res = GretlBundle(b).to_dict();
+        *res = std::make_shared<GretlBundle>(GretlBundle(static_cast<gretl_bundle*>(gr_obj_ptr))); // as of 2025-08-15 we return GretlBundlePtr
         break;
     }
     case GRETL_TYPE_ARRAY:
@@ -1517,8 +1516,13 @@ GretlBundle::GretlBundle (GRETL_VAR *model, DATASET *dset)
     err = gretl_VAR_bundlize(model, dset, b);
 }
 
-GretlBundle::GretlBundle (gretl_bundle *b) : free_b(false), b(b)
-{}
+GretlBundle::GretlBundle (gretl_bundle *src) : free_b(false)
+{
+    b = gretl_bundle_copy(src, &err);
+    if (err) {
+        handle_gretl_error(err);
+    }
+}
 
 GretlBundle::~GretlBundle (void)
 {

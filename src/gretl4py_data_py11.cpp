@@ -153,14 +153,7 @@ void init_gretl4py_package_py11(py::module_ &m)
 
              // we construct object to return
              GretlType t = res.type;
-             if (t == GRETL_TYPE_BUNDLE) {
-                 // bundle special case: we return a GretlBundlePtr
-                 // instead of dict() representation
-                 GretlBundle GB(static_cast<gretl_bundle*>(res.get()));
-                 val = std::make_unique<GretlTypes>(std::make_shared<GretlBundle>(GB));
-             } else {
-                 val = convert_GretlType_to_GretlTypes(t, res.get(), 0, err);
-             }
+             val = convert_GretlType_to_GretlTypes(t, res.get(), 0, err);
              if (err) {
                  handle_gretl_error(err);
              }
