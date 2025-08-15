@@ -284,17 +284,28 @@ GretlTypesPtr convert_GretlType_to_GretlTypes (GretlType &t, void *gr_obj_ptr,
     //
     auto res = std::make_unique<GretlTypes>();
 
-    if (t == GRETL_TYPE_NONE) {
+    switch (t) {
+    case GRETL_TYPE_NONE: {
         py::print("gretl_grab: didn't get anything!\n");
-    } else if (t == GRETL_TYPE_VOID) {
         *res = py::none();
-    } else if (t == GRETL_TYPE_INT) {
+        break;
+    }
+    case GRETL_TYPE_VOID: {
+        *res = py::none();
+        break;
+    }
+    case GRETL_TYPE_INT: {
         *res = *(static_cast<int*>(gr_obj_ptr));
-    } else if (t == GRETL_TYPE_DOUBLE) {
+        break;
+    }
+    case GRETL_TYPE_DOUBLE:
         *res = *(static_cast<double*>(gr_obj_ptr));
-    } else if (t == GRETL_TYPE_STRING) {
+        break;
+    case GRETL_TYPE_STRING: {
         *res = static_cast<char*>(gr_obj_ptr);
-    } else if (t == GRETL_TYPE_MATRIX) {
+        break;
+    }
+    case GRETL_TYPE_MATRIX: {
         gretl_matrix *gretl_mat = static_cast<gretl_matrix*>(gr_obj_ptr);
         DNumPyArrayFC mat({gretl_mat->rows, gretl_mat->cols});
 
@@ -304,11 +315,17 @@ GretlTypesPtr convert_GretlType_to_GretlTypes (GretlType &t, void *gr_obj_ptr,
             mat = mat.reshape({mat.size()});
         }
         *res = mat;
-    } else if (t == GRETL_TYPE_BUNDLE) {
+        break;
+    }
+    case GRETL_TYPE_BUNDLE: {
         gretl_bundle *b = static_cast<gretl_bundle*>(gr_obj_ptr);
         *res = GretlBundle(b).to_dict();
-    } else if (t == GRETL_TYPE_ARRAY || t == GRETL_TYPE_MATRICES ||
-               t == GRETL_TYPE_STRINGS || t == GRETL_TYPE_BUNDLES) {
+        break;
+    }
+    case GRETL_TYPE_ARRAY:
+    case GRETL_TYPE_MATRICES:
+    case GRETL_TYPE_STRINGS:
+    case GRETL_TYPE_BUNDLES: {
         gretl_array *a = static_cast<gretl_array*>(gr_obj_ptr);
         py::list py_list;
         GretlType tmp;
@@ -319,13 +336,17 @@ GretlTypesPtr convert_GretlType_to_GretlTypes (GretlType &t, void *gr_obj_ptr,
             py_list.append(variant_to_pyobject(std::move(*element)));
         }
         *res = py_list;
-    } else if (t == GRETL_TYPE_SERIES) {
+        break;
+    }
+    case GRETL_TYPE_SERIES: {
         double *s = static_cast<double*>(gr_obj_ptr);
         DNumPyArrayFC mat(n);
 
         std::memcpy(mat.mutable_data(), s, n * sizeof(double));
         *res = mat;
-    } else if (t == GRETL_TYPE_LIST) {
+        break;
+    }
+    case GRETL_TYPE_LIST: {
         int *l = static_cast<int*>(gr_obj_ptr);
         py::list py_list;
 
@@ -333,7 +354,9 @@ GretlTypesPtr convert_GretlType_to_GretlTypes (GretlType &t, void *gr_obj_ptr,
             py_list.append(l[i]);
         }
         *res = py_list;
-    } else {
+        break;
+    }
+    default:
         py::print("gretl_grab: got unsupported type:", gretl_type_get_name(t));
         *res = py::none();
     }
