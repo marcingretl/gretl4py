@@ -285,7 +285,9 @@ GretlTypesPtr convert_GretlType_to_GretlTypes (GretlType &t, void *gr_obj_ptr,
     auto res = std::make_unique<GretlTypes>();
 
     if (t == GRETL_TYPE_NONE) {
-        std::printf("gretl_grab: didn't get anything!\n");
+        py::print("gretl_grab: didn't get anything!\n");
+    } else if (t == GRETL_TYPE_VOID) {
+        *res = py::none();
     } else if (t == GRETL_TYPE_INT) {
         *res = *(static_cast<int*>(gr_obj_ptr));
     } else if (t == GRETL_TYPE_DOUBLE) {
@@ -314,8 +316,7 @@ GretlTypesPtr convert_GretlType_to_GretlTypes (GretlType &t, void *gr_obj_ptr,
         for (int i=0; i<gretl_array_get_length(a); i++) {
             tmp = gretl_array_get_content_type(a);
             auto element = convert_GretlType_to_GretlTypes(tmp, gretl_array_get_element(a, i, &tmp, &err), n, err);
-            //py_list.append(*element);
-            py_list.append(variant_to_pyobject(std::move(*element))); // as of 2025-07-08
+            py_list.append(variant_to_pyobject(std::move(*element)));
         }
         *res = py_list;
     } else if (t == GRETL_TYPE_SERIES) {
@@ -333,7 +334,7 @@ GretlTypesPtr convert_GretlType_to_GretlTypes (GretlType &t, void *gr_obj_ptr,
         }
         *res = py_list;
     } else {
-        std::printf("gretl_grab: got unsupported type!\n");
+        py::print("gretl_grab: got unsupported type:", gretl_type_get_name(t));
         *res = py::none();
     }
 
@@ -1648,11 +1649,13 @@ void GretlBundle::set_element (const std::string &key, const T &t)
         err = gretl_bundle_set_string(b, key.c_str(), t.c_str());
     } else if constexpr (std::is_same_v<T, py::array>) {
         NumPyArrayView arr_view;
+
         NumPyArray_extract(t, arr_view);
         if (!arr_view.data) {
             throw std::runtime_error("NumPy array: null pointer.");
         }
         gretl_matrix *mat = gretl_matrix_alloc(arr_view.rows, arr_view.cols);
+
         NumPyArray_to_gretl_matrix<gretl_matrix>(arr_view, mat);
         err = gretl_bundle_donate_data(b, key.c_str(), mat, GRETL_TYPE_MATRIX, 0);
     } else if constexpr (std::is_same_v<T, GretlBundlePtr>) {
@@ -1796,7 +1799,7 @@ GretlPackage::GretlPackage (const std::string &pkg_name,
                                  + "', provided: '" + pkg_name + "'");
     }
 
-    // we grab public only functions (names and indexes)
+    // we grab only public functions (names and indexes)
     // Note: we exclude functions with specific roles
     function_names_init();
 

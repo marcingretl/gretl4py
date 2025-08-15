@@ -6,7 +6,7 @@ version 0.22:
     - add 'frompkg' option for loading datasets
     - initial access to user-defined variables (gretl specific)
     - support for Windows on ARM64
-    - use LLVM/Clang 20.x as default compiler
+    - use LLVM/Clang 20.x as default compiler for non-linux builds
     - basic tweaks for pybind11 3.x
     - GretlBundle class: an interface to libgretl's bundle
 
