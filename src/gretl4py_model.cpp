@@ -77,7 +77,7 @@ void GretlModel::unlink_from_dataset (void) const
     }
 }
 
-GretlTypes *GretlModel::get_accessor (const std::string &accessor) const
+py::object GretlModel::get_accessor (const std::string &accessor) const
 {
     auto res = gretl_generate_gretl_object(accessor.c_str(), err, model_obj_type,
                                            GD->dset, model_ptr());
@@ -85,7 +85,7 @@ GretlTypes *GretlModel::get_accessor (const std::string &accessor) const
         handle_gretl_error(err);
     }
 
-    return res.release();
+    return variant_to_pyobject(std::move(*res));
 }
 
 template<typename T>

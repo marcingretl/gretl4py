@@ -43,8 +43,7 @@ void init_gretl4py_model_py11(py::module_ &m)
                  return self;
              })
         .def("get_accessor", &GretlModel::get_accessor,
-             py::arg("accessor").none(false),
-             py::return_value_policy::take_ownership)
+             py::arg("accessor").none(false))
         .def("fcast", &GretlModel::forecast)
         .def("get_formula", &GretlModel::get_formula);
 

@@ -176,12 +176,12 @@ public:
 
     std::unordered_set<int> linked_models_list (void) const;
 
-    GretlTypes *get_accessor (const std::string &accessor) const;
+    py::object get_accessor (const std::string &accessor) const;
 
     void test (const std::string &type, const std::string &vars,
                const py::kwargs &kwargs);
 
-    GretlTypes *get_series (const std::string &series) const;
+    py::object get_series (const std::string &series) const;
 
     DNumPyArrayFC hpfilt (const std::string &series, double hp_lambda = NADBL,
                           bool trend = false, bool one_sided = false);

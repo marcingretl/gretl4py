@@ -80,7 +80,7 @@ public:
 
     void unlink_from_dataset (void) const;
 
-    virtual GretlTypes *get_accessor (const std::string &accessor) const;
+    virtual py::object get_accessor (const std::string &accessor) const;
 
     virtual void fit (void) = 0;
 

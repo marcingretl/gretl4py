@@ -38,7 +38,7 @@ extern "C" {
 # define COMPILER_IDENT __VERSION__
 #endif
 
-#define LIBGRETL_MIN_VER 51
+#define LIBGRETL_MIN_VER 52
 
 #define GRETL_PYBIND11_DEBUG 0
 

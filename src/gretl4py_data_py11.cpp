@@ -82,8 +82,7 @@ void init_gretl4py_dataset_py11(py::module_ &m)
              py::arg("series").none(false), py::arg("f1").none(true) = 0,
              py::arg("f2").none(true) = 0, py::arg("k").none(true) = 0)
         .def("get_accessor", &GretlDataset::get_accessor,
-             py::arg("accessor").none(false),
-             py::return_value_policy::take_ownership)
+             py::arg("accessor").none(false))
         .def("test",
              [](GretlDataset &self, const std::string &type, const py::kwargs &kwargs)
              {

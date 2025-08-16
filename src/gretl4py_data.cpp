@@ -152,8 +152,8 @@ static void numpy_array_to_gretl_storage (const py::dict &pydict, DATASET *dset)
 }
 
 template<typename T>
-static void real_NumPyArray_to_gretl_matrix(const NumPyArrayView &view,
-                                            double *dst, int offset, bool onecol)
+static void real_NumPyArray_to_gretl_matrix (const NumPyArrayView &view,
+                                             double *dst, int offset, bool onecol)
 {
     //
     // Convert a NumPy array (T) to gretl_matrix (double*).
@@ -799,7 +799,6 @@ PythonArgInfo inspect_pyobject (py::handle obj)
 //
 //GretlDataset class methods
 //
-
 GretlDataset::GretlDataset (const std::string &fname,
                             const py::dict &kwargs)
                             : id(next_obj_id++)
@@ -817,6 +816,7 @@ GretlDataset::GretlDataset (const std::string &fname,
             if (key_str == "frompkg" && is_pystr(val)) {
                 auto val_str = val.cast<std::string>();
                 auto it = GPKGs.find(val_str);
+
                 if (it != GPKGs.end()) {
                     pkg = it->second;
                 } else {
@@ -932,17 +932,15 @@ int GretlDataset::get_series_id (const std::string &series) const
     return var_num;
 }
 
-// public methods
 py::dict GretlDataset::to_dict (void) const
 {
     //
     // we convert gretl data to pydict
     //
     py::dict as_dict;
-    py::list vnames;
-    py::list labels;
-    int i = 0;
+    py::list vnames, labels;
     double *tmp = nullptr;
+    int i = 0;
 
     as_dict[py::cast("periodicity")] = dset->pd;
     as_dict[py::cast("structure")] = dset->structure;
@@ -1022,12 +1020,11 @@ std::string GretlDataset::repr (void) const
 {
     std::string ret = "GretlDataset, source " + source;
 
-    // FIXME: this is a temporal fix related with some spurious
-    // text being printed when there is no description at all
-    /*auto desc = gretl_get_gdt_description(source.c_str(), &err);
+    auto desc = gretl_get_gdt_description(source.c_str(), &err);
     if (!err) {
         ret.append("\n").append(desc);
-    }*/
+        std::free(desc);
+    }
 
     return ret;
 }
@@ -1303,7 +1300,7 @@ gretlopt GretlDataset::setobs_opt_from_structure (int structure)
     }
 }
 
-GretlTypes *GretlDataset::get_accessor (const std::string &accessor) const
+py::object GretlDataset::get_accessor (const std::string &accessor) const
 {
     auto res = gretl_generate_gretl_object(accessor.c_str(), err,
                                            GRETL_OBJ_DSET, dset);
@@ -1311,7 +1308,7 @@ GretlTypes *GretlDataset::get_accessor (const std::string &accessor) const
         handle_gretl_error(err);
     }
 
-    return res.release();
+    return variant_to_pyobject(std::move(*res));
 }
 
 void GretlDataset::test (const std::string &type, const std::string &vars,
@@ -1410,7 +1407,7 @@ void GretlDataset::test (const std::string &type, const std::string &vars,
     move_to_python_container<GretlDataset, py::dict, py::list>(*this, std::move(res), "tests");
 }
 
-GretlTypes *GretlDataset::get_series (const std::string &series) const
+py::object GretlDataset::get_series (const std::string &series) const
 {
     //
     // we return series as NumPy array
@@ -1423,7 +1420,7 @@ GretlTypes *GretlDataset::get_series (const std::string &series) const
         handle_gretl_error(err);
     }
 
-    return res.release();
+    return variant_to_pyobject(std::move(*res));
 }
 
 DNumPyArrayFC GretlDataset::hpfilt (const std::string &series,
@@ -1741,6 +1738,7 @@ void MapPyToCpp::convert (const T *pyobj)
     }
 }
 
+
 //
 // GretlPrint class methods
 //
@@ -1785,6 +1783,7 @@ const char *GretlPrint::get_buffer (void)
 {
     return gretl_print_get_buffer(prn);
 }
+
 
 //
 // GretlPackage class methods
@@ -2106,18 +2105,6 @@ void GretlPackage::set_main (const std::string &name)
     for (const auto &[key, val] : main_func_args) {
         if (!fn_param_optional(it->second, val) && !fn_param_has_default(it->second, val)) {
             main_func_nd.emplace(key, static_cast<GretlType>(fn_param_type(it->second, val)));
-            /*
-            auto main_type = static_cast<GretlType>(gretl_type_get_plain_type(static_cast<GretlType>(fn_param_type(it->second, val))));
-            auto ref_type = static_cast<GretlType>(gretl_type_get_ref_type(static_cast<GretlType>(fn_param_type(it->second, val))));
-            py::print("podstawowy:", gretl_type_get_name(main_type));
-            py::print("referencja:", gretl_type_get_name(ref_type));
-
-            if (static_cast<GretlType>(fn_param_type(it->second, val) == main_type)) {
-                py::print("\tzwykły");
-            } else {
-                py::print("\treferencja");
-            }
-            */
         }
     }
 }
@@ -2260,7 +2247,6 @@ GretlPackageRes GretlPackage::function_exec (const std::string &func_name,
         if (err) {
             handle_gretl_error(err);
         }
-        //err = copy_as_arg(output.c_str(), res.type, res.get());
         err = user_var_add(output.c_str(), res.type, res.get());
         if (err) {
             handle_gretl_error(err);
@@ -2284,9 +2270,9 @@ std::string GretlPackage::get_examples_path (const std::string &fname)
 
     if (!fname.empty()) {
 #if defined(_WIN32)
-        examples_path.append("\\").append(fname);
+    examples_path.append("\\").append(fname);
 #else
-        examples_path.append("/").append(fname);
+    examples_path.append("/").append(fname);
 #endif // defined
     }
 
