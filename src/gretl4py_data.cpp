@@ -1489,33 +1489,39 @@ DNumPyArrayFC GretlDataset::bkfilt (const std::string &series,
 //
 // GretlBundle class methods
 //
-GretlBundle::GretlBundle (bool sysinfo)
+GretlBundle::GretlBundle (void) : b(gretl_bundle_new())
 {
-    if (sysinfo) {
-        b = get_sysinfo_bundle(&err);
-        free_b = false;
-    } else {
-        b = gretl_bundle_new();
+    if (!b) {
+        handle_gretl_error(E_ALLOC);
     }
 }
 
 GretlBundle::GretlBundle (MODEL *model, DATASET *dset)
 {
     b = bundle_from_model(model, dset, &err);
+
+    if (err) {
+        handle_gretl_error(err);
+    }
 }
 
-GretlBundle::GretlBundle (GRETL_VAR *model, DATASET *dset)
+GretlBundle::GretlBundle (GRETL_VAR *model, DATASET *dset) : b(gretl_bundle_new())
 {
-    b = gretl_bundle_new();
-    if (b == NULL) {
+    if (!b) {
         handle_gretl_error(E_ALLOC);
     }
+
     err = gretl_VAR_bundlize(model, dset, b);
+
+    if (err) {
+        handle_gretl_error(err);
+    }
 }
 
 GretlBundle::GretlBundle (gretl_bundle *src) : free_b(false)
 {
     b = gretl_bundle_copy(src, &err);
+
     if (err) {
         handle_gretl_error(err);
     }
