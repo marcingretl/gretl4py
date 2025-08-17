@@ -147,10 +147,11 @@ void module_cleanup (void)
 py::dict about (bool do_print)
 {
     int err = 0;
-    GretlBundle b = GretlBundle(get_sysinfo_bundle(&err));
+    gretl_bundle *b = get_sysinfo_bundle(&err);
     if (err) {
         handle_gretl_error(err);
     }
+    GretlBundle GB = GretlBundle(b);
     const std::string lgretl_strings[9] =
         {"dotdir", "gnuplot", "gretldir", "seats", "tramo",
          "tramodir", "workdir", "x12a", "x12adir"};
@@ -175,8 +176,8 @@ py::dict about (bool do_print)
     res[py::cast("mod_ver")] = mod_ver;
     res[py::cast("py11_ver")] = py11_ver;
     res[py::cast("lg_ver")] = lg_ver;
-    if (!b.err) {
-        res[py::cast("sysinfo")] = b.to_dict();
+    if (!GB.err) {
+        res[py::cast("sysinfo")] = GB.to_dict();
     } else {
         res[py::cast("sysinfo")] = py::none();
     }
@@ -188,9 +189,9 @@ py::dict about (bool do_print)
         std::cout << " [" << COMPILER_IDENT << "]" << std::endl;
         std::cout << "\t+ pybind11     v" << py11_ver << std::endl;
         std::cout << "\t+ libgretl-1.0 v" << lg_ver << std::endl;
-        if (!b.err) {
+        if (!GB.err) {
             std::cout << std::endl << "libgretl $sysinfo:" << std::endl;
-            b.print();
+            GB.print();
         }
         std::cout << "libgretl built-in strings:" << std::endl;
         for (auto item : built_in_strings) {
@@ -205,8 +206,8 @@ py::dict about (bool do_print)
 
     gretl_pop_c_numeric_locale();
 
-    if (b.err) {
-        std::cerr << errmsg_get_with_default(b.err) << std::endl;
+    if (GB.err) {
+        std::cerr << errmsg_get_with_default(GB.err) << std::endl;
     }
 
     return res;
