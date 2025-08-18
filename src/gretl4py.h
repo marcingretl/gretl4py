@@ -44,7 +44,7 @@ void module_init (void);
 
 void module_cleanup (void);
 
-py::object about (bool do_print = false);
+GretlBundlePtr about (bool do_print = false);
 
 void do_set (const std::string key,
              const std::optional<py::object> &pyval = std::nullopt);

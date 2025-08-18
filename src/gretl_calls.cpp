@@ -144,7 +144,7 @@ void module_cleanup (void)
     }
 }
 
-py::object about (bool do_print)
+GretlBundlePtr about (bool do_print)
 {
     int err = 0;
     gretl_bundle *b = get_sysinfo_bundle(&err);
@@ -153,15 +153,14 @@ py::object about (bool do_print)
     }
     GretlBundlePtr GB_sysinfo = std::make_shared<GretlBundle>(b);
     GretlBundlePtr GB_strings = std::make_shared<GretlBundle>();
-    GretlBundlePtr GB_about = std::make_shared<GretlBundle>();
+    GretlBundlePtr res = std::make_shared<GretlBundle>();
     const std::unordered_set<std::string> lgretl_strings =
     {"dotdir", "gnuplot", "gretldir", "seats", "tramo", "tramodir", "workdir", "x12a", "x12adir"};
-    std::string mod_ver, mod_logo, lg_ver, py11_ver, sj_ver, sj_name, sj_desc;
+    std::string mod_ver, lg_ver, py11_ver;
 
     gretl_push_c_numeric_locale();
 
     mod_ver = std::to_string(GRETL4PY_VERSION).substr(0,4);
-    mod_logo = gretl4py_logo();
     py11_ver = std::to_string(PYBIND11_VERSION_MAJOR);
     py11_ver += "." + std::to_string(PYBIND11_VERSION_MINOR);
     py11_ver += "." + std::to_string(PYBIND11_VERSION_PATCH);
@@ -173,18 +172,18 @@ py::object about (bool do_print)
         GB_strings->set_element<std::string>(it, val);
     }
 
-    GB_about->set_element<std::string>(std::string("mod_ver"), mod_ver);
-    GB_about->set_element<std::string>(std::string("py11_ver"), py11_ver);
-    GB_about->set_element<std::string>(std::string("lg_ver"), lg_ver);
+    res->set_element<std::string>(std::string("mod_ver"), mod_ver);
+    res->set_element<std::string>(std::string("py11_ver"), py11_ver);
+    res->set_element<std::string>(std::string("lg_ver"), lg_ver);
     if (GB_sysinfo->err) {
         std::cerr << errmsg_get_with_default(GB_sysinfo->err) << std::endl;
     } else {
-        GB_about->set_element<GretlBundlePtr>(std::string("sysinfo"), GB_sysinfo);
+        res->set_element<GretlBundlePtr>(std::string("sysinfo"), GB_sysinfo);
     }
-    GB_about->set_element<GretlBundlePtr>(std::string("built_in_strings"), GB_strings);
+    res->set_element<GretlBundlePtr>(std::string("built_in_strings"), GB_strings);
 
     if (do_print || gretl4py_verbose) {
-        std::cout << mod_logo << std::endl;
+        std::cout << gretl4py_logo() << std::endl;
         std::cout << "gretl4py v" << mod_ver;
         std::cout << " [" << COMPILER_IDENT << "]" << std::endl;
         std::cout << "\t+ pybind11     v" << py11_ver << std::endl;
@@ -200,17 +199,11 @@ py::object about (bool do_print)
 
     gretl_pop_c_numeric_locale();
 
-    if (GB_about->err) {
-        std::cerr << errmsg_get_with_default(GB_about->err) << std::endl;
+    if (res->err) {
+        std::cerr << errmsg_get_with_default(res->err) << std::endl;
     }
 
-    auto res = convert_GretlType_to_GretlTypes(GRETL_TYPE_BUNDLE,
-                                               GB_about->get_ptr(), 0, err);
-    if (err) {
-        handle_gretl_error(err);
-    }
-
-    return variant_to_pyobject(std::move(*res));
+    return res;
 }
 
 //////////////////////////////////////////////////
