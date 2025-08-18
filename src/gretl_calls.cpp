@@ -204,8 +204,8 @@ py::object about (bool do_print)
         std::cerr << errmsg_get_with_default(GB_about->err) << std::endl;
     }
 
-    GretlType t = GRETL_TYPE_BUNDLE;
-    auto res = convert_GretlType_to_GretlTypes(t, GB_about->get_ptr(), 0, err);
+    auto res = convert_GretlType_to_GretlTypes(GRETL_TYPE_BUNDLE,
+                                               GB_about->get_ptr(), 0, err);
     if (err) {
         handle_gretl_error(err);
     }

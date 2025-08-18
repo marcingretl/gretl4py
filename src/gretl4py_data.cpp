@@ -274,7 +274,7 @@ void NumPyArray_to_gretl_matrix (NumPyArrayView &view, T *dst, int offset, bool 
 template void NumPyArray_to_gretl_matrix<gretl_matrix>(NumPyArrayView&, gretl_matrix*, int, bool);
 
 
-GretlTypesPtr convert_GretlType_to_GretlTypes (GretlType &t, void *gr_obj_ptr,
+GretlTypesPtr convert_GretlType_to_GretlTypes (GretlType t, void *gr_obj_ptr,
                                                const int n, int &err)
 {
     //
@@ -1412,10 +1412,10 @@ py::object GretlDataset::get_series (const std::string &series) const
     //
     // we return series as NumPy array
     //
-    GretlType t = GRETL_TYPE_SERIES;
     double *x = dset->Z[get_series_id(series)];
 
-    auto res = convert_GretlType_to_GretlTypes(t, x, dset->n, err);
+    auto res = convert_GretlType_to_GretlTypes(GRETL_TYPE_SERIES,
+                                               x, dset->n, err);
     if (err) {
         handle_gretl_error(err);
     }

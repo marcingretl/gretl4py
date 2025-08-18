@@ -79,7 +79,7 @@ void unpack_kwargs_test (gretlopt &opt, const std::string &type,
 gretl_list_ptr list_from_formula (const std::string &formula,
                                   DATASET *dset, int &err);
 
-GretlTypesPtr convert_GretlType_to_GretlTypes (GretlType &t, void *gr_obj_ptr,
+GretlTypesPtr convert_GretlType_to_GretlTypes (GretlType t, void *gr_obj_ptr,
                                                const int n, int &err);
 
 template<typename PyWrapped, typename Item, typename ContainerType>
