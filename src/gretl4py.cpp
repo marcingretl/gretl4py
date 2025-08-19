@@ -70,7 +70,7 @@ PYBIND11_MODULE(_gretl, m)
           py::arg("val").none(true) = std::nullopt);
     m.def("summary", &do_summary,
           py::arg("varlist").none(true) = "", py::kw_only());
-    m.def("include", &load_package,
+    m.def("include", &do_include,
           py::arg("name").none(false));
     m.def("delete", &gretl_user_var_delete_by_name,
           py::arg("name").none(false));

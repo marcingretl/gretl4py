@@ -43,10 +43,10 @@ extern "C" {
 #define GRETL_PYBIND11_DEBUG 0
 
 // global variables (some used outside this file)
-GretlDatasetPtr DSET = nullptr;           // default dataset
-std::unordered_set<std::string> UserVars;               // registry of user variables
-std::map<std::string, GretlPackagePtr> GPKGs;           // registry of loaded contributed packages
-static GretlPrint GP = GretlPrint();                    // printer
+GretlDatasetPtr DSET = nullptr;                 // default dataset
+std::unordered_set<std::string> UserVars;       // registry of user variables
+std::map<std::string, GretlPackagePtr> GPKGs;   // registry of loaded contributed packages
+static GretlPrint GP = GretlPrint();            // printer
 static int gretl4py_verbose = 0;
 
 //////////////////////////////////////////////////
@@ -325,7 +325,27 @@ void do_summary (const std::string &varlist, const py::kwargs &kwargs)
     GP.print();
 }
 
-py::object load_package (const std::string &name)
+GretlPackagePtr load_package (const std::string &pkgname,
+                              const std::string &suffix)
+{
+    //
+    // here we register contributed package
+    // at first, we look up for package in registry
+    //
+    GretlPackagePtr res = nullptr;
+
+    auto it = GPKGs.find(pkgname);
+    if (it != GPKGs.end()) {
+        res = it->second;
+    } else {
+        res = std::make_shared<GretlPackage>(pkgname, suffix);
+        GPKGs.emplace(pkgname, res);
+    }
+
+    return res;
+}
+
+py::object do_include (const std::string &name)
 {
     //
     // this function mimics libgretl's 'include' command
@@ -333,7 +353,6 @@ py::object load_package (const std::string &name)
     //
     std::string basename;
     std::string suffix = "";
-    GretlPackagePtr pkg = nullptr;
 
     // we check if we deal with suffix-ed string or just basename
     if (has_suffix(name.c_str(), ".gfn") || has_suffix(name.c_str(), ".zip")) {
@@ -345,14 +364,8 @@ py::object load_package (const std::string &name)
         basename = name;
     }
 
-    // we look up for package in registry
-    auto it = GPKGs.find(basename);
-    if (it != GPKGs.end()) {
-        pkg = it->second;
-    } else {
-        pkg = std::make_shared<GretlPackage>(basename, suffix);
-        GPKGs.emplace(basename, pkg);
-    }
+    // we load the package
+    auto pkg = load_package(basename, suffix);
 
     // get list of exported function names
     py::object obj = py::cast(pkg);
