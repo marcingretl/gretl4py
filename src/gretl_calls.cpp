@@ -43,10 +43,10 @@ extern "C" {
 #define GRETL_PYBIND11_DEBUG 0
 
 // global variables (some used outside this file)
-GretlDatasetPtr DSET = nullptr;                 // default dataset
-std::unordered_set<std::string> UserVars;       // registry of user variables
-std::map<std::string, GretlPackagePtr> GPKGs;   // registry of loaded contributed packages
-static GretlPrint GP = GretlPrint();            // printer
+GretlDatasetPtr DSET = nullptr;                         // default dataset
+std::unordered_set<std::string> UserVars;               // registry of user variables
+static std::map<std::string, GretlPackagePtr> GPKGs;    // registry of loaded contributed packages
+static GretlPrint GP = GretlPrint();                    // printer
 static int gretl4py_verbose = 0;
 
 //////////////////////////////////////////////////

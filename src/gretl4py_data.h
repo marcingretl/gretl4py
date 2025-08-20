@@ -321,7 +321,7 @@ extern GretlDatasetPtr DSET;
 void set_default_dset(GretlDatasetPtr GD);
 
 GretlPackagePtr load_package (const std::string &pkgname,
-                              const std::string &suffix);
+                              const std::string &suffix = "");
 
 template<GretlType GR_TYPE>
 void gretl_generate (const std::string &formula, GretlDatasetPtr GD = DSET,
