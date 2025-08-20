@@ -1039,18 +1039,22 @@ void GretlDataset::print (const py::kwargs &kwargs)
 
         if (key == "summary") {
             summary = std::strcmp(val, "1") == 0;
+            continue;
         } else if (key == "byobs") {
             byobs = std::strcmp(val, "1") == 0;
+            continue;
         } else if (key == "byvar") {
             if (std::strcmp(val, "1") == 0) {
                 summary = byobs = 0;
             }
+            continue;
         } else if (key == "series") {
             // note: we print only specified variables
             var_list = list_from_formula(val, dset, err);
             if (err) {
                 handle_gretl_error(err);
             }
+            continue;
         } else {
             summary = byobs = 0;
             throw std::invalid_argument("print: invalid key '" + key + "'");
