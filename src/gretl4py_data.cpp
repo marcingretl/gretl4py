@@ -1025,8 +1025,8 @@ std::string GretlDataset::repr (void) const
 void GretlDataset::print (const py::kwargs &kwargs)
 {
     gretl_list_ptr var_list{nullptr};
-    int summary = 0;
-    int byobs = 0;
+    bool summary = false;
+    bool byobs = false;
 
     for (auto &item : kwargs) {
         const char *val = nullptr;
@@ -1045,7 +1045,7 @@ void GretlDataset::print (const py::kwargs &kwargs)
             continue;
         } else if (key == "byvar") {
             if (std::strcmp(val, "1") == 0) {
-                summary = byobs = 0;
+                summary = byobs = false;
             }
             continue;
         } else if (key == "series") {
@@ -1056,7 +1056,7 @@ void GretlDataset::print (const py::kwargs &kwargs)
             }
             continue;
         } else {
-            summary = byobs = 0;
+            summary = byobs = false;
             throw std::invalid_argument("print: invalid key '" + key + "'");
         }
     }
