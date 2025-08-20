@@ -807,6 +807,7 @@ GretlDataset::GretlDataset (const std::string &fname,
     //
     std::string full_path = "";
 
+    // we look for 'frompkg' option
     if (len(kwargs) > 0) {
         for (const auto &[key, val] : kwargs) {
             auto key_str = key.cast<std::string>();
@@ -1070,8 +1071,7 @@ void GretlDataset::print (const py::kwargs &kwargs)
         }
         list_series(dset, OPT_NONE, GP.prn_ptr());
     } else {
-        gretlopt opt = byobs ? OPT_O : OPT_NONE;
-
+        opt = byobs ? OPT_O : OPT_NONE;
         err = printdata(NULL, NULL, dset, opt, GP.prn_ptr());
         if (err) {
             handle_gretl_error(err);
@@ -1797,7 +1797,7 @@ GretlPackage::GretlPackage (const std::string &pkg_name,
     char path[MAXLEN];
     int idxp = 0;
 
-    // we try to use find a path and load the package
+    // we try to find a path and load the package
     *path = '\0';
     if (suffix.empty()) {
         err = get_full_filename((pkg_name + ".gfn").c_str(), path, OPT_I);
@@ -1822,12 +1822,13 @@ GretlPackage::GretlPackage (const std::string &pkg_name,
                                  + std::string(function_package_get_name(pkg))
                                  + "', provided: '" + pkg_name + "'");
     }
-
-    // we grab only public functions (names and indexes)
-    // Note: we exclude functions with specific roles
     function_names_init();
 
-    // we look for functions to exclude (mostly related with plotting and GUI)
+    // we look up for JEL codes
+    jel = get_properties<std::vector<std::string>>("tags");
+
+    // we grab only public functions (names and indexes)
+    // Note: we exclude functions with specific roles (mostly related with plotting and GUI)
     for (auto role : excluded_roles) {
         auto func_name = get_properties<std::string>(package_role_get_key(role));
         if (!func_name.empty()) {
@@ -1876,9 +1877,6 @@ GretlPackage::GretlPackage (const std::string &pkg_name,
             }
         }
     }
-
-    // we look up for JEL codes
-    jel = get_properties<std::vector<std::string>>("tags");
     check_if_defines_estimator();
 
     // package summary
@@ -1918,7 +1916,7 @@ void GretlPackage::check_if_defines_estimator (void)
 }
 
 template<typename T>
-T GretlPackage::get_properties (const char *prop)
+T GretlPackage::get_properties (const char *property)
 {
     //
     // we get package properties
@@ -1927,9 +1925,9 @@ T GretlPackage::get_properties (const char *prop)
     gchar *val = nullptr;
 
     if constexpr (std::is_same_v<T, DataReq>) {
-        err = function_package_get_properties(pkg, prop, &res, NULL);
+        err = function_package_get_properties(pkg, property, &res, NULL);
     } else {
-        err = function_package_get_properties(pkg, prop, &val, NULL);
+        err = function_package_get_properties(pkg, property, &val, NULL);
     }
     if (err) {
         handle_gretl_error(err);
@@ -1980,9 +1978,9 @@ void GretlPackage::unpack_kwargs_package (const std::string &func_name,
                                                                        func_name_args.end());
         std::sort(func_name_args_sorted.begin(), func_name_args_sorted.end(),
           [](const auto &a, const auto &b)
-              {
-                  return a.second < b.second; // sort by value
-              });
+          {
+              return a.second < b.second; // sort by value
+          });
 
         // general options (non function-based)
         for (const auto &[key, val] : kwargs) {
@@ -2190,6 +2188,7 @@ std::string GretlPackage::main_func_get_name (void) const
 ufunc *GretlPackage::func_get_ptr (const std::string &name) const
 {
     auto it = func_ptrs.find(name);
+
     if (it != func_ptrs.end()) {
         return it->second;
     } else {
@@ -2200,8 +2199,9 @@ ufunc *GretlPackage::func_get_ptr (const std::string &name) const
 GretlType GretlPackage::func_get_res_type (const std::string &name) const
 {
     auto it = func_ptrs.find(name);
+
     if (it != func_ptrs.end()) {
-        return static_cast<GretlType>(user_func_get_return_type(it->second));;
+        return static_cast<GretlType>(user_func_get_return_type(it->second));
     } else {
         throw std::invalid_argument("unknown function: " + name);
     }
@@ -2240,7 +2240,7 @@ GretlPackageRes GretlPackage::function_exec (const std::string &func_name,
     }
 
     // we register results as uservar
-    if (!output.empty()) {
+    /*if (!output.empty()) {
         err = check_varname(output.c_str());
         if (err) {
             handle_gretl_error(err);
@@ -2251,7 +2251,7 @@ GretlPackageRes GretlPackage::function_exec (const std::string &func_name,
 
         }
         UserVars.insert(output);
-    }
+    }*/
 
     return res;
 }

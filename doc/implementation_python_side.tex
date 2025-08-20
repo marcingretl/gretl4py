@@ -13,7 +13,7 @@ and \texttt{gretl4py\_classes.py}. Additionally,
 
 \gretlfpycmd{about()}
 \begin{lstlisting}[style=pythonstyle]
-dict = gretl.about(do_print=bool)
+_gretl.Bundle = gretl.about(do_print=bool)
 \end{lstlisting}
 \generaldesc{This function retrieves and optionally prints
 	basic information about the \gretlpy module, including
@@ -23,21 +23,15 @@ dict = gretl.about(do_print=bool)
 	\begin{itemize}
 		\item \pythcode{built\_in\_strings}: The values of
 			\lgretl's built-in strings \citep[see][for details]{gretl_manual}
-			(\pythcode{dict}).
+			(\pythcode{\_gretl.Bundle}).
 		\item \pythcode{lg\_ver}: The version of the \lgretl[-1.0]
 			library (\pythcode{str}).
 		\item \pythcode{mod\_ver}: The version of the \gretlpy
 			module (\pythcode{str}).
 		\item \pythcode{py11\_ver}: The version of the \pkg{pybind11}
 			module, formatted as \texttt{MAJOR.MINOR.PATCH} (\pythcode{str}).
-		\item \pythcode{sj\_desc}: An implementation of \pkg{simdjson}
-			for a particular CPU architecture --~description (\pythcode{str}).
-		\item \pythcode{sj\_name}: An implementation of \pkg{simdjson}
-			for a particular CPU architecture --~name (\pythcode{str}).
-		\item \pythcode{sj\_ver}: The version of \pkg{simdjson}
-			library, formatted as \texttt{MAJOR.MINOR.PATCH} (\pythcode{str}).
 		\item \pythcode{sysinfo}: The contents of \lgretl's
-			\gretlcmd{\$sysinfo} bundle (\pythcode{dict}).
+			\gretlcmd{\$sysinfo} bundle (\pythcode{\_gretl.Bundle}).
 		\end{itemize}}
 
 \gretlfpycmd{set()}
@@ -154,6 +148,8 @@ str = gretl.gretl_data_path(fname=str)
 	specified \texttt{gdt} or \texttt{gdtb} file
 	\citep[see][for details]{gretl_manual}.}
 
+\gretlfpycmd{include()}
+
 \gretlfpycmd{nparray2dict()}
 \begin{lstlisting}[style=pythonstyle]
 dict = gretl.nparray2dict(X=numpy.array,
@@ -203,6 +199,8 @@ dict = gretl.series2dict(series, [pd=int, varname=str])
 		contains the variable's name (default:~\pythcode{'y'}).
 \end{itemize}}
 
+\gretlfpycmd{summary()}
+
 
 
 \subsection{Estimators}\label{sec:estimators_python}
@@ -241,7 +239,8 @@ The complete list of available estimators is as follows
 \estdesc{Computes parameter estimates using the
 	generalized Cochrane-Orcutt iterative procedure.}
 \begin{lstlisting}[style=pythonstyle]
-gretl.Model = gretl.ar(formula=str, [OPTS, [data=dict]])
+_gretl.Model_ar = gretl.ar(formula=str,
+	[OPTS, [data=_gretl.Dataset]])
 \end{lstlisting}
 \mapto[0]{ar lags ; depvar indepvars}
 \noRformula
@@ -253,7 +252,8 @@ gretl.Model = gretl.ar(formula=str, [OPTS, [data=dict]])
 \estdesc{Computes feasible GLS estimates for a model in which the error
 	term is assumed to follow a first-order autoregressive process.}
 \begin{lstlisting}[style=pythonstyle]
-gretl.Model = gretl.ar1(formula=str, [OPTS, [data=dict]])
+_gretl.Model_ar1 = gretl.ar1(formula=str,
+	[OPTS, [data=_gretl.Dataset]])
 \end{lstlisting}
 \mapto{ar1 depvar indepvars}
 \begin{itemize}
@@ -265,8 +265,9 @@ gretl.Model = gretl.ar1(formula=str, [OPTS, [data=dict]])
 \est{arima}
 \estdesc{Estimates a univariate SARIMA (Seasonal Autoregressive, Integrated, Moving Average) model.}
 \begin{lstlisting}[style=pythonstyle]
-gretl.Model = gretl.arima(y=str, order=tuple((p,d,q)),
-	[seasonal=tuple((P,D,Q)), OPTS, [data=dict]])
+_gretl.Model_arima = gretl.arima(y=str,
+	order=tuple((p,d,q)), [seasonal=tuple((P,D,Q)),
+	OPTS, [data=_gretl.Dataset]])
 \end{lstlisting}
 \mapto{arima p d q [; P D Q ] ; depvar}
 \begin{itemize}
@@ -288,8 +289,8 @@ gretl.Model = gretl.arima(y=str, order=tuple((p,d,q)),
 \estdesc{Estimates a bivariate probit model, using
 	the Newton-Raphson method to maximize the likelihood.}
 \begin{lstlisting}[style=pythonstyle]
-gretl.Model = gretl.biprobit(formula=str,
-	[OPTS, [data=dict]])
+_gretl.Model_biprobit = gretl.biprobit(formula=str,
+	[OPTS, [data=_gretl.Dataset]])
 \end{lstlisting}
 \mapto{biprobit depvar1 depvar2 indepvars1 [; indepvars2]}
 \begin{itemize}
@@ -302,13 +303,15 @@ gretl.Model = gretl.biprobit(formula=str,
 \end{itemize}
 \noRformula
 
+\est{dpanel}
+
 \est{duration}
 \estdesc{By default the Weibull distribution is used
 	but the exponential, log-logistic and log-normal
 	distributions are also available.}
 \begin{lstlisting}[style=pythonstyle]
-gretl.Model = gretl.duration(formula=str,
-	[OPTS, [data=dict]])
+_gretl.Model_duration = gretl.duration(formula=str,
+	[OPTS, [data=_gretl.Dataset]])
 \end{lstlisting}
 \mapto{duration depvar indepvars [; censvar ]}
 \begin{itemize}
@@ -325,7 +328,8 @@ gretl.Model = gretl.duration(formula=str,
 \estdesc{Estimates a GARCH model, either a univariate model or,
 	if indepvars are specified, including the given exogenous variables.}
 \begin{lstlisting}[style=pythonstyle]
-gretl.Model = gretl.garch(formula=str, [OPTS, [data=dict]])
+_gretl.Model_garch = gretl.garch(formula=str,
+	[OPTS, [data=_gretl.Dataset]])
 \end{lstlisting}
 \mapto{garch p q ; depvar [indepvars]}
 \begin{itemize}
@@ -346,7 +350,8 @@ gretl.Model = gretl.garch(formula=str, [OPTS, [data=dict]])
 	dependent variable in the selection equation (ys in the
 	example above) must be a binary variable.}
 \begin{lstlisting}[style=pythonstyle]
-gretl.Model = gretl.heckit(formula=str, [OPTS, [data=dict]])
+_gretl.Model_heckit = gretl.heckit(formula=str,
+	[OPTS, [data=_gretl.Dataset]])
 \end{lstlisting}
 \mapto{heckit depvar indepvars ; selection equation}
 \begin{itemize}
@@ -363,7 +368,8 @@ gretl.Model = gretl.heckit(formula=str, [OPTS, [data=dict]])
 	the absolute deviations of the observed from the
 	fitted values of the dependent variable.}
 \begin{lstlisting}[style=pythonstyle]
-gretl.Model = gretl.lad(formula=str, [OPTS, [data=dict]])
+_gretl.Model_lad = gretl.lad(formula=str,
+	[OPTS, [data=_gretl.Dataset]])
 \end{lstlisting}
 \mapto{lad depvar indepvars}
 \begin{itemize}
@@ -376,8 +382,8 @@ gretl.Model = gretl.lad(formula=str, [OPTS, [data=dict]])
 	regression using the logistic transformation
 	of the dependent variable.}
 \begin{lstlisting}[style=pythonstyle]
-gretl.Model = gretl.logistic(formula=str,
-	[OPTS, [data=dict]])
+_gretl.Model_logistic = gretl.logistic(formula=str,
+	[OPTS, [data=_gretl.Dataset]])
 \end{lstlisting}
 \mapto{logistic depvar indepvars}
 \begin{itemize}
@@ -392,7 +398,8 @@ gretl.Model = gretl.logistic(formula=str,
 	of those variables) and these slopes replace the usual
 	p-values in the regression output.}
 \begin{lstlisting}[style=pythonstyle]
-gretl.Model = gretl.logit(formula=str, [OPTS, [data=dict]])
+_gretl.Model_logit = gretl.logit(formula=str,
+	[OPTS, [data=_gretl.Dataset]])
 \end{lstlisting}
 \mapto{logit depvar indepvars}
 \begin{itemize}
@@ -408,7 +415,8 @@ gretl.Model = gretl.logit(formula=str, [OPTS, [data=dict]])
 \estdesc{Carries out least-squares estimation (either NLS or OLS,
 	depending on the specification) of a MIDAS (Mixed Data Sampling) model.}
 \begin{lstlisting}[style=pythonstyle]
-_gretl.Model_midasreg = gretl.midasreg(formula=str, [OPTS, [data=dict]])
+_gretl.Model_midasreg = gretl.midasreg(formula=str,
+	[OPTS, [data=_gretl.Dataset]])
 \end{lstlisting}
 \mapto{midasreg depvar indepvars ; MIDAS-terms}
 \begin{itemize}
@@ -422,7 +430,8 @@ _gretl.Model_midasreg = gretl.midasreg(formula=str, [OPTS, [data=dict]])
 \estdesc{Computes OLS estimates for the specified model using multiple
 	precision floating-point arithmetic.}
 \begin{lstlisting}[style=pythonstyle]
-gretl.Model = gretl.mpols(formula=str, [OPTS, [data=dict]])
+_gretl.Model_mpols = gretl.mpols(formula=str,
+	[OPTS, [data=_gretl.Dataset]])
 \end{lstlisting}
 \mapto{mpols depvar indepvars}
 \begin{itemize}
@@ -436,7 +445,8 @@ gretl.Model = gretl.mpols(formula=str, [OPTS, [data=dict]])
 	of events of some sort, and must have only non-negative
 	integer values.}
 \begin{lstlisting}[style=pythonstyle]
-gretl.Model = gretl.negbin(formula=str, [OPTS, [data=dict]])
+_gretl.Model_negbin = gretl.negbin(formula=str,
+	[OPTS, [data=_gretl.Dataset]])
 \end{lstlisting}
 \mapto{negbin depvar indepvars}
 \begin{itemize}
@@ -452,7 +462,8 @@ gretl.Model = gretl.negbin(formula=str, [OPTS, [data=dict]])
 	with \texttt{depvar} as the dependent variable and
 	\texttt{indepvars} as the list of independent variables.}
 \begin{lstlisting}[style=pythonstyle]
-gretl.Model = gretl.ols(formula=str, [OPTS, [data=dict]])
+_gretl.Model_ols = gretl.ols(formula=str,
+	[OPTS, [data=_gretl.Dataset]])
 \end{lstlisting}
 \mapto{ols depvar indepvars}
 \begin{itemize}
@@ -469,7 +480,8 @@ gretl.Model = gretl.ols(formula=str, [OPTS, [data=dict]])
 \estdesc{By default the fixed effects estimator is used; this is implemented
 	by subtracting the group or unit means from the original data.}
 \begin{lstlisting}[style=pythonstyle]
-gretl.Model = gretl.panel(formula=str, [OPTS, [data=dict]])
+_gretl.Model_panel = gretl.panel(formula=str,
+	[OPTS, [data=_gretl.Dataset]])
 \end{lstlisting}
 \mapto{panel depvar indepvars}
 \begin{itemize}
@@ -490,8 +502,8 @@ gretl.Model = gretl.panel(formula=str, [OPTS, [data=dict]])
 \estdesc{The dependent variable is taken to represent the occurrence
 	of events of some sort, and must take on only non-negative integer values.}
 \begin{lstlisting}[style=pythonstyle]
-gretl.Model = gretl.poisson(formula=str,
-	[OPTS, [data=dict]])
+_gretl.Model_poisson = gretl.poisson(formula=str,
+	[OPTS, [data=_gretl.Dataset]])
 \end{lstlisting}
 \mapto{poisson depvar indepvars [; offset]}
 \begin{itemize}
@@ -507,7 +519,8 @@ gretl.Model = gretl.poisson(formula=str,
 	of those variables) and these slopes replace the usual
 	p-values in the regression output.}
 \begin{lstlisting}[style=pythonstyle]
-gretl.Model = gretl.probit(formula=str, [OPTS, [data=dict]])
+_gretl.Model_probit = gretl.probit(formula=str,
+	[OPTS, [data=_gretl.Dataset]])
 \end{lstlisting}
 \mapto{probit depvar indepvars}
 \begin{itemize}
@@ -523,7 +536,8 @@ gretl.Model = gretl.probit(formula=str, [OPTS, [data=dict]])
 \est{quantreg}
 \estdesc{Quantile regression}
 \begin{lstlisting}[style=pythonstyle]
-_gretl.Model_quantreg = gretl.quantreg(tau=double/list, formula=str, [OPTS, [data=dict]])
+_gretl.Model_quantreg = gretl.quantreg(tau=float/list,
+	formula=str, OPTS, [data=_gretl.Dataset]])
 \end{lstlisting}
 \mapto{quantreg tau depvar indepvars}
 \begin{itemize}
@@ -536,7 +550,8 @@ _gretl.Model_quantreg = gretl.quantreg(tau=double/list, formula=str, [OPTS, [dat
 \est{tobit}
 \estdesc{Estimates a Tobit model}
 \begin{lstlisting}[style=pythonstyle]
-_gretl.Model_tobit = gretl.tobit(formula=str, [OPTS, [data=dict]])
+_gretl.Model_tobit = gretl.tobit(formula=str,
+	[OPTS, [data=_gretl.Dataset]])
 \end{lstlisting}
 \mapto{tobit tau depvar indepvars}
 \begin{itemize}
@@ -553,7 +568,8 @@ _gretl.Model_tobit = gretl.tobit(formula=str, [OPTS, [data=dict]])
 \estdesc{Computes Instrumental Variables (IV) estimates,
 	by default using two-stage least squares (TSLS).}
 \begin{lstlisting}[style=pythonstyle]
-gretl.Model = gretl.tsls(formula=str, [OPTS, [data=dict]])
+_gretl.Model_tsls = gretl.tsls(formula=str,
+	[OPTS, [data=_gretl.Dataset]])
 \end{lstlisting}
 \mapto{tsls depvar indepvars ; instruments}
 \begin{itemize}
@@ -571,7 +587,8 @@ gretl.Model = gretl.tsls(formula=str, [OPTS, [data=dict]])
 	as the dependent variable, and \texttt{indepvars}
 	as the list of independent variables.}
 \begin{lstlisting}[style=pythonstyle]
-gretl.Model = gretl.wls(formula=str, [OPTS, [data=dict]])
+_gretl.Model_wls = gretl.wls(formula=str,
+	[OPTS, [data=_gretl.Dataset]])
 \end{lstlisting}
 \mapto{wls wtvar depvar indepvars}
 \begin{itemize}
@@ -584,7 +601,8 @@ gretl.Model = gretl.wls(formula=str, [OPTS, [data=dict]])
 \est{var}
 \estdesc{Sets up and estimates (using OLS) a vector autoregression (VAR)}
 \begin{lstlisting}[style=pythonstyle]
-_gretl.Model_var = gretl.var(order=int, ylist=str, [OPTS, [data=dict]])
+_gretl.Model_var = gretl.var(order=int, ylist=str,
+	[OPTS, [data=_gretl.Dataset]])
 \end{lstlisting}
 \mapto{var order ylist [;xlist]}
 \begin{itemize}
@@ -603,7 +621,8 @@ _gretl.Model_var = gretl.var(order=int, ylist=str, [OPTS, [data=dict]])
 \est{vecm}
 \estdesc{A VECM is a form of vector autoregression or VAR }
 \begin{lstlisting}[style=pythonstyle]
-_gretl.Model_var = gretl.wls(formula=str, [OPTS, [data=dict]])
+_gretl.Model_vecm = gretl.vecm(order=int, rank=int,
+	ylist=str, OPTS, [data=_gretl.Dataset]])
 \end{lstlisting}
 \mapto{var order ylist [;xlist]}
 \begin{itemize}

@@ -49,7 +49,11 @@
 \newcommand{\gretlfpycmd}[1]{\vspace{10pt}\noindent\textcolor{red}{\pythcode{#1}}\index{#1}}
 \newcommand{\generaldesc}[1]{\hspace*{17pt}\begin{minipage}[t]{0.89\columnwidth}%
 		\small#1\end{minipage}}
-\newcommand{\classpymodel}{\pythcode{class Model}\xspace}
+\newcommand{\gretldataset}{\_gretl.Dataset\xspace}
+\newcommand{\classpybundle}{\pythcode{class _gretl.Bundle}\xspace}
+\newcommand{\classpydataset}{\pythcode{class _gretl.Dataset}\xspace}
+\newcommand{\classpymodel}{\pythcode{class _gretl.Model}\xspace}
+\newcommand{\classpypackage}{\pythcode{class _gretl.Package}\xspace}
 \newcommand{\examplefig}[2]{%
 	\begin{figure}[h!tb]
 		\centering
@@ -89,7 +93,7 @@
 	\end{quote}
 
 \begin{center}
-	\vspace*{100pt}{\Large Version 0.11}
+	\vspace*{100pt}{\Large Version 0.22}
 	
 	\vfil{\Large\textbf{Acknowledgments}}
 	
@@ -121,7 +125,10 @@
 	\input{installation}
 	\newpage\section{Implementation}\label{sec:implementation}
 		\input{implementation_python_side}
+		\subsection{\classpybundle}
+		\subsection{\classpydataset}
 		\input{class_py_model}
+		\subsection{\classpypackage}
 	\input{usage}
 	\newpage\input{examples}
 

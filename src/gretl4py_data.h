@@ -278,7 +278,7 @@ private:
     void check_if_defines_estimator (void);
 
     template<typename T>
-    T get_properties (const char *prop);
+    T get_properties (const char *property);
 
     void unpack_kwargs_package (const std::string &func_name,
                                 fncall *func_call,
