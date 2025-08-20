@@ -1024,16 +1024,12 @@ std::string GretlDataset::repr (void) const
 
 void GretlDataset::print (const py::kwargs &kwargs)
 {
+    gretl_list_ptr var_list{nullptr};
     int summary = 0;
     int byobs = 0;
-    // int *list = NULL;
-    int err = 0;
-
-    // Could restrict printing to selected series via
-    // series = <whatever> in kwargs -> list.
 
     for (auto &item : kwargs) {
-        const char *val = NULL;
+        const char *val = nullptr;
 
         if (!is_pystr(item.first)) {
             throw std::invalid_argument("option key must be a string");
@@ -1048,6 +1044,12 @@ void GretlDataset::print (const py::kwargs &kwargs)
         } else if (key == "byvar") {
             if (std::strcmp(val, "1") == 0) {
                 summary = byobs = 0;
+            }
+        } else if (key == "series") {
+            // note: we print only specified variables
+            var_list = list_from_formula(val, dset, err);
+            if (err) {
+                handle_gretl_error(err);
             }
         } else {
             summary = byobs = 0;
@@ -1064,15 +1066,15 @@ void GretlDataset::print (const py::kwargs &kwargs)
             pprintf(GP.prn_ptr(), "Time series, frequency %d, T = %d, %s to %s\n\n",
                     dset->pd, dset->n, s1, s2);
         } else if (dataset_is_panel(dset)) {
-            pprintf(GP.prn_ptr(), "Panel data, N = %d, T = %d\n\n", dset->n / dset->pd,
-                    dset->pd);
+            pprintf(GP.prn_ptr(), "Panel data, N = %d, T = %d\n\n",
+                    dset->n / dset->pd, dset->pd);
         } else {
             pprintf(GP.prn_ptr(), "Cross-sectional data, N = %d\n\n", dset->n);
         }
         list_series(dset, OPT_NONE, GP.prn_ptr());
     } else {
         opt = byobs ? OPT_O : OPT_NONE;
-        err = printdata(NULL, NULL, dset, opt, GP.prn_ptr());
+        err = printdata(var_list.get(), NULL, dset, opt, GP.prn_ptr());
         if (err) {
             handle_gretl_error(err);
         }

@@ -34,3 +34,6 @@ print(data97_gdt.varnames())
 
 print('Variables in data97_csv')
 print(data97_csv.varnames())
+
+# we print only specified variables
+print(data97_gdt.print(series="QNC PRIME"))
