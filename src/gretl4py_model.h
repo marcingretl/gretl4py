@@ -51,6 +51,7 @@ protected:
     gretl_list_ptr var_list{nullptr};   // libgretl list of variables
     gretlopt opt = OPT_NONE;            // instance wide options (including tests and forecasts)
     std::string summary = "no results"; // model summary to print on python side
+    GretlBundlePtr GB_model = nullptr;  // bundle with results
     mutable int err = 0;
 
     template<typename T>
@@ -77,6 +78,8 @@ public:
     int get_id (void) const;
 
     std::string repr (void) const;
+
+    GretlBundlePtr get_bundle (void) const;     // return pointer to GB_model
 
     void unlink_from_dataset (void) const;
 

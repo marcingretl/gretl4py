@@ -45,7 +45,8 @@ void init_gretl4py_model_py11(py::module_ &m)
         .def("get_accessor", &GretlModel::get_accessor,
              py::arg("accessor").none(false))
         .def("fcast", &GretlModel::forecast)
-        .def("get_formula", &GretlModel::get_formula);
+        .def("get_formula", &GretlModel::get_formula)
+        .def("get_bundle", &GretlModel::get_bundle);
 
     // Native Single Equation libgretl MODEL (NSE)
     py::class_<GretlModel_NSE, GretlModel, std::unique_ptr<GretlModel_NSE>>(m, "Model_NSE", py::dynamic_attr())

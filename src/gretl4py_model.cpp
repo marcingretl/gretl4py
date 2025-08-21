@@ -121,15 +121,15 @@ void GretlModel::save_model (T *model)
     summary = GP.get_buffer();
 
     // we produce $model bundle based on estimated @model
-    GretlBundle bundle_model = GretlBundle(model, GD->dset);
-    err = bundle_model.err;
+    GB_model = std::make_shared<GretlBundle>(model, GD->dset);
+    err = GB_model->err;
     if (err) {
         handle_gretl_error(err);
     }
 
     // we register result on python side
     py::object self = py::cast(this);
-    bundle_model.python_register(self);
+    GB_model->python_register(self);
 
     py::dict _ids;
     //_ids[py::cast("_id")] = model->ID; //FIXME: VARs!!!
@@ -493,6 +493,11 @@ void GretlModel::fr_to_dict (FITRESID *fr, py::dict &fcdict)
 std::string GretlModel::repr (void) const
 {
     return summary;
+}
+
+GretlBundlePtr GretlModel::get_bundle (void) const
+{
+    return GB_model;
 }
 
 //////////////////////////////////////////////////
@@ -1297,9 +1302,9 @@ void GretlModel_package::fit (void)
     // saving results
     py::object self = py::cast(this);
 
-    summary = GP.get_buffer();
     if (res.type == GRETL_TYPE_BUNDLE) {
-        GretlBundle(static_cast<gretl_bundle*>(res.get())).python_register(self);
+        GB_model = std::make_shared<GretlBundle>(GretlBundle(static_cast<gretl_bundle*>(res.get())));
+        GB_model->python_register(self);
     } else {
         auto val = convert_GretlType_to_GretlTypes(res.type, res.get(), 0, err);
         if (err) {
@@ -1307,6 +1312,8 @@ void GretlModel_package::fit (void)
         }
         py::setattr(self, "results", variant_to_pyobject(std::move(*val)));
     }
+
+    summary = GP.get_buffer();
 }
 
 void GretlModel_package::forecast (const py::kwargs &kwargs)

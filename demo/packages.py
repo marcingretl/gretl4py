@@ -50,7 +50,6 @@ d2.new_list(name='Xes', value='2..13')
 p2 = gretl.package(package=BMA, Y="GDP_growth", X_list="Xes", Options=OPT).fit()
 print(p2)
 
-
 # let's try out StrucTiSM
 print('##################################################')
 print(f'\t\tStrucTiSM')
