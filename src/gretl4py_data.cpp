@@ -1518,6 +1518,11 @@ GretlBundle::GretlBundle (GRETL_VAR *model, DATASET *dset) : b(gretl_bundle_new(
 
 GretlBundle::GretlBundle (gretl_bundle *src) : free_b(false)
 {
+    //
+    // Here we make a copy of src
+    // Note: 'src. must be deallocated by libgretl, otherwise threre
+    // will be a memory leak
+    //
     b = gretl_bundle_copy(src, &err);
 
     if (err) {
@@ -2215,8 +2220,7 @@ GretlType GretlPackage::func_get_res_type (const std::string &name) const
 
 GretlPackageRes GretlPackage::function_exec (const std::string &func_name,
                                              GretlDatasetPtr &GD, GretlPrint &GP,
-                                             const py::kwargs &kwargs,
-                                             const std::string &output)
+                                             const py::kwargs &kwargs)
 {
     // we prepare function to call
     fncall *func_call = user_func_get_fncall(func_get_ptr(func_name));
@@ -2244,20 +2248,6 @@ GretlPackageRes GretlPackage::function_exec (const std::string &func_name,
     if (err) {
         handle_gretl_error(err);
     }
-
-    // we register results as uservar
-    /*if (!output.empty()) {
-        err = check_varname(output.c_str());
-        if (err) {
-            handle_gretl_error(err);
-        }
-        err = user_var_add(output.c_str(), res.type, res.get());
-        if (err) {
-            handle_gretl_error(err);
-
-        }
-        UserVars.insert(output);
-    }*/
 
     return res;
 }

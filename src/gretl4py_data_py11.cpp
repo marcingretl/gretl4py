@@ -142,13 +142,13 @@ void init_gretl4py_package_py11(py::module_ &m)
     .def("_get_functions", &GretlPackage::get_functions)
     .def("_function_exec",
          [](GretlPackage &self, const std::string &name,
-            const std::string &output, const py::kwargs &kwargs) -> py::object
+            const py::kwargs &kwargs) -> py::object
          {
              GretlPrint GP = GretlPrint();
              GretlTypesPtr val;
              int err = 0;
 
-             auto res = self.function_exec(name, DSET, GP, kwargs, output);
+             auto res = self.function_exec(name, DSET, GP, kwargs);
 
              // we construct object to return
              val = convert_GretlType_to_GretlTypes(res.type, res.get(), 0, err);
@@ -171,8 +171,7 @@ void init_gretl4py_package_py11(py::module_ &m)
 
              return variant_to_pyobject(std::move(*val));
          },
-         py::arg("name").none(false),
-         py::arg("output").none(true) = "", py::kw_only());
+         py::arg("name").none(false), py::kw_only());
 }
 
 

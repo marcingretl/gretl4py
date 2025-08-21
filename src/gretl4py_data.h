@@ -208,7 +208,7 @@ public:
     int err = 0;
 
     GretlBundle (void);                             // default constructor with empty bundle
-    GretlBundle (gretl_bundle *src);                // incoming already existing bundle (we make a copy)
+    GretlBundle (gretl_bundle *src);                // incoming already existing bundle Note: src must be deallocated by libgretl
     GretlBundle (MODEL *model, DATASET *dset);      // we produce bundle from MODEL
     GretlBundle (GRETL_VAR *model, DATASET *dset);  // we produce bundle from VAR/VECM
     ~GretlBundle (void);
@@ -309,8 +309,7 @@ public:
 
     GretlPackageRes function_exec (const std::string &func_name,
                                    GretlDatasetPtr &GD, GretlPrint &GP,
-                                   const py::kwargs &kwargs,
-                                   const std::string &output = "");
+                                   const py::kwargs &kwargs);
 
     std::string get_examples_path (const std::string &fname);
 };
