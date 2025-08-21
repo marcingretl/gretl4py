@@ -2272,3 +2272,9 @@ std::string GretlPackage::get_examples_path (const std::string &fname)
 
     return examples_path;
 }
+
+std::string GretlPackage::get_function_with_role (UfunRole role)
+{
+    return get_properties<std::string>(package_role_get_key(role));
+}
+

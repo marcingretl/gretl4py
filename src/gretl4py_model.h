@@ -254,15 +254,17 @@ public:
 class GretlModel_package : public GretlModel
 {
 private:
-    const GretlPackagePtr GPKG;         // pointer to package to use
-    const std::string main_func_name;   // main function to call
-    GretlPackageRes res;                // function results
+    GretlPackagePtr GPKG;           // pointer to package to use
+    std::string main_func_name;     // main function to call
+    std::string print_func_name;    // function with role: UFUN_BUNDLE_PRINT
+    std::string fcast_func_name;    // function with role: UFUN_BUNDLE_FCAST
+    GretlPackageRes res;            // function results
 
-    void unpack_kwargs (void) {};       // hides base-class method
+    void unpack_kwargs (void) {};   // hides base-class method
 
     void *model_ptr (void) const override;
 public:
-    GretlModel_package (GretlDatasetPtr GD, const GretlPackagePtr PKG,
+    GretlModel_package (GretlDatasetPtr GD, const std::string &name,
                         const py::kwargs &kwargs);
 
     void fit (void) override;

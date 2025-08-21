@@ -312,6 +312,8 @@ public:
                                    const py::kwargs &kwargs);
 
     std::string get_examples_path (const std::string &fname);
+
+    std::string get_function_with_role (UfunRole role);
 };
 
 // implemented in gretl_calls.cpp

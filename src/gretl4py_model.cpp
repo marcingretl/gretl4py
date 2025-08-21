@@ -1277,17 +1277,40 @@ void GretlModel_VAR_VECM::forecast (const py::kwargs &kwargs)
 // libgretl contributed packages
 // extends: GretlModel
 //
-GretlModel_package::GretlModel_package (GretlDatasetPtr GD, const GretlPackagePtr PKG,
+GretlModel_package::GretlModel_package (GretlDatasetPtr GD, const std::string &name,
                                         const py::kwargs &kwargs)
-                                        : GretlModel(GRETL_OBJ_ANY, GD, kwargs),
-                                        GPKG(PKG), main_func_name(PKG->main_func_get_name())
+                                        : GretlModel(GRETL_OBJ_ANY, GD, kwargs)
 {
+    std::string basename;
+    std::string suffix = "";
+
+    // we check if we deal with suffix-ed string or just basename
+    if (has_suffix(name.c_str(), ".gfn") || has_suffix(name.c_str(), ".zip")) {
+        size_t dot_pos = name.find('.');
+
+        basename = name.substr(0, dot_pos);
+        suffix = name.substr(dot_pos);
+    } else {
+        basename = name;
+    }
+
+    // we load the package
+    GPKG = load_package(basename, suffix);
+
+    // we setup some internal parameters
+    main_func_name = GPKG->main_func_get_name();
+
     if (!GPKG->is_estimator()) {
         throw std::runtime_error(GPKG->get_name() + " package doesn't provide an estimation method");
     }
+
     if (main_func_name.empty()) {
         throw std::runtime_error("no main function in package: " + GPKG->get_name());
     }
+
+    // we register special functions (if exists)
+    print_func_name = GPKG->get_function_with_role(UFUN_BUNDLE_PRINT);
+    fcast_func_name = GPKG->get_function_with_role(UFUN_BUNDLE_FCAST);
 }
 
 void *GretlModel_package::model_ptr (void) const
