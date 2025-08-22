@@ -653,6 +653,25 @@ void GretlModel_NSE::restrict (const py::list &impose,
     do_restrict<MODEL>(model, impose, kwargs);
 }
 
+template<ModelDataIndex IDX>
+char *GretlModel_NSE::do_genr_fit_resid (void) const
+{
+    //
+    // we save yhat, uhat, uhat^2, ahat, and h
+    // Note: we return name of newly added series
+    //
+    err = genr_fit_resid(model, GD->dset, IDX);
+    if (err) {
+        handle_gretl_error(err);
+    }
+
+    return GD->dset->varname[GD->dset->v-1];
+}
+template char *GretlModel_NSE::do_genr_fit_resid<M_YHAT>(void) const;
+template char *GretlModel_NSE::do_genr_fit_resid<M_UHAT>(void) const;
+template char *GretlModel_NSE::do_genr_fit_resid<M_UHAT2>(void) const;
+template char *GretlModel_NSE::do_genr_fit_resid<M_AHAT>(void) const;
+template char *GretlModel_NSE::do_genr_fit_resid<M_H>(void) const;
 
 //
 // NSE via dedicated Driver

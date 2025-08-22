@@ -1027,6 +1027,7 @@ void GretlDataset::print (const py::kwargs &kwargs)
     gretl_list_ptr var_list{nullptr};
     bool summary = false;
     bool byobs = false;
+    opt = OPT_NONE;
 
     for (auto &item : kwargs) {
         const char *val = nullptr;
@@ -1783,7 +1784,7 @@ void GretlPrint::print (void)
 {
     const char *buf = gretl_print_get_buffer(prn);
 
-    if (buf != NULL) {
+    if (buf != NULL && *buf != '\0') { //as of 2025-08-22 we don't print empty line
         py::print(buf);
     }
 }

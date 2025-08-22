@@ -108,6 +108,9 @@ public:
 
     void restrict (const py::list &impose, const py::kwargs &kwargs);
 
+    template<ModelDataIndex IDX>
+    char *do_genr_fit_resid (void) const;
+
     void fit (void) override = 0;
 
     void forecast (const py::kwargs &kwargs) override;

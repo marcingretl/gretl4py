@@ -10,6 +10,8 @@ version 0.22:
     - basic tweaks for pybind11 3.x
     - GretlBundle class: an interface to libgretl's bundle
     - about(): switch to GretlBundle based version
+    - new GretlModel methods: ::add_yhat(), ::add_uhat(), ::add_uhat_sq(), ::add_ahat(), and ::add_h()
+    - fix printing empty buffer
 
 version 0.21:
     - 'lagselect' switched off for VAR due to SIGSEGV
