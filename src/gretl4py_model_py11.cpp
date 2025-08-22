@@ -52,11 +52,11 @@ void init_gretl4py_model_py11(py::module_ &m)
     py::class_<GretlModel_NSE, GretlModel, std::unique_ptr<GretlModel_NSE>>(m, "Model_NSE", py::dynamic_attr())
         .def("restrict", &GretlModel_NSE::restrict,
              py::arg("impose").none(false), py::kw_only())
-        .def("add_yhat", &GretlModel_NSE::do_genr_fit_resid<M_YHAT>)
-        .def("add_uhat", &GretlModel_NSE::do_genr_fit_resid<M_UHAT>)
-        .def("add_uhat_sq", &GretlModel_NSE::do_genr_fit_resid<M_UHAT2>)
-        .def("add_ahat", &GretlModel_NSE::do_genr_fit_resid<M_AHAT>)
-        .def("add_h", &GretlModel_NSE::do_genr_fit_resid<M_H>)
+        .def("add_yhat", &GretlModel_NSE::do_genr_fit_resid<M_YHAT>, py::arg("name").none(true) = "")
+        .def("add_uhat", &GretlModel_NSE::do_genr_fit_resid<M_UHAT>, py::arg("name").none(true) = "")
+        .def("add_uhat_sq", &GretlModel_NSE::do_genr_fit_resid<M_UHAT2>, py::arg("name").none(true) = "")
+        .def("add_ahat", &GretlModel_NSE::do_genr_fit_resid<M_AHAT>, py::arg("name").none(true) = "")
+        .def("add_h", &GretlModel_NSE::do_genr_fit_resid<M_H>, py::arg("name").none(true) = "")
         .def("test",
              [](GretlModel_NSE &self, const std::string &type, const py::kwargs &kwargs)
              {
