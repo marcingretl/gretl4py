@@ -157,7 +157,7 @@ public:
     void setobs (const py::kwargs &kwargs);
 
     template <typename T>
-    char *add_series (T t, const std::string &name = "", int n = -1);
+    char *add_series (T data, const std::string &name, int n = -1);
 
     void new_series (const std::string &formula);
 

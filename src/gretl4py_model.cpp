@@ -132,7 +132,7 @@ void GretlModel::save_model (T *model)
     GB_model->python_register(self);
 
     py::dict _ids;
-    //_ids[py::cast("_id")] = model->ID; //FIXME: VARs!!!
+    //_ids[py::cast("_id")] = model->ID; //FIXME: VARs!!! gretl_VECM_id(var);
     _ids[py::cast("_model_id")] = id;
     py::setattr(self, "_ids", _ids);
 
@@ -1126,40 +1126,6 @@ void GretlModel_VAR::do_var_vecm_forecast (const py::kwargs &kwargs)
         }
     }
 }
-
-/*
-char *GretlModel_VAR::save_uhat (int eqn, const std::string &name) const
-{
-    //
-    // here we add residuals to dataset
-    // Note: eqn must be 1-based (not 0-based)
-    //
-    std::string uhat_name;
-    int var_number;
-
-    gretl_double_ptr uhat(gretl_VAR_get_resid_series(model, eqn-1, &err));
-    if (err) {
-        handle_gretl_error(err);
-    }
-
-    // actual work
-    err = dataset_add_series(GD->dset, 1);
-    if (err) {
-        handle_gretl_error(err);
-    }
-    var_number = GD->dset->v - 1;
-    std::memcpy(GD->dset->Z[var_number], uhat.get(), GD->dset->n * sizeof(double));
-
-    // we set name
-    if (name.empty()) {
-        uhat_name = std::string("m") + std::to_string(id)
-            + std::string("_uhat") + std::to_string(eqn);
-    }
-    strcpy(GD->dset->varname[var_number],
-           name.empty() ? uhat_name.c_str() : name.c_str());
-
-    return GD->dset->varname[var_number];
-}*/
 
 char *GretlModel_VAR::save_uhat (int eqn, const std::string &name) const
 {

@@ -989,19 +989,25 @@ void GretlDataset::to_file (const std::string &fname) const
 // gretl_double_ptr: the allocated array is grabbed by dset
 // py::array: underline data is copied (deep copy)
 template <typename T>
-char *GretlDataset::add_series (T t, const std::string &name, int n)
+char *GretlDataset::add_series (T data, const std::string &name, int n)
 {
     //
     // Here we add existing series to dataset
+    // Note: n is required only in case of gretl_double_ptr
     //
+    NumPyArrayView view;
+
     if constexpr (std::is_same_v<T, py::array>) {
-        py::print("py::array: not supported yet");
-        return '\0';
+        NumPyArray_extract(data, view);
+        if ((std::min)(view.cols, view.rows) > 1) {
+            throw std::invalid_argument("given variable is not a vector");
+        }
+        n = (std::max)(view.cols, view.rows);
     }
 
     // we do basic checks
     if (n != dset->n) {
-        handle_gretl_error(E_DATA);
+        throw std::invalid_argument(name + " is of wrong length (n=" + std::to_string(n) + ")");
     }
     if (name.empty()) {
         throw std::invalid_argument("empty variable name");
@@ -1009,7 +1015,12 @@ char *GretlDataset::add_series (T t, const std::string &name, int n)
 
     // actual work
     if constexpr (std::is_same_v<T, gretl_double_ptr>) {
-        err = dataset_add_allocated_series(dset, t.release());
+        err = dataset_add_allocated_series(dset, data.release());
+    } else if constexpr (std::is_same_v<T, py::array>) {
+        gretl_double_ptr data_new(static_cast<double*>(std::malloc(n * sizeof(double))));
+
+        NumPyArray_to_gretl_matrix<double>(view, data_new.get(), 0, true);
+        err = dataset_add_allocated_series(dset, data_new.release());
     } else {
         throw std::runtime_error("add_series: got unsupported type");
     }
@@ -1023,7 +1034,8 @@ char *GretlDataset::add_series (T t, const std::string &name, int n)
 
     return dset->varname[var_number];
 }
-template char *GretlDataset::add_series<gretl_double_ptr>(gretl_double_ptr, const std::string &, int);
+template char *GretlDataset::add_series<gretl_double_ptr>(gretl_double_ptr, const std::string&, int);
+template char *GretlDataset::add_series<py::array>(py::array, const std::string&, int);
 
 void GretlDataset::new_series (const std::string &formula)
 {
