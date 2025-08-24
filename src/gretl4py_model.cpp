@@ -1127,6 +1127,7 @@ void GretlModel_VAR::do_var_vecm_forecast (const py::kwargs &kwargs)
     }
 }
 
+/*
 char *GretlModel_VAR::save_uhat (int eqn, const std::string &name) const
 {
     //
@@ -1158,6 +1159,32 @@ char *GretlModel_VAR::save_uhat (int eqn, const std::string &name) const
            name.empty() ? uhat_name.c_str() : name.c_str());
 
     return GD->dset->varname[var_number];
+}*/
+
+char *GretlModel_VAR::save_uhat (int eqn, const std::string &name) const
+{
+    //
+    // here we add residuals to dataset
+    // Note: eqn must be 1-based (not 0-based)
+    //
+    std::string uhat_name;
+
+    // we retrive uhat
+    gretl_double_ptr uhat(gretl_VAR_get_resid_series(model, eqn-1, &err));
+    if (err) {
+        handle_gretl_error(err);
+    }
+
+    // we set name
+    if (name.empty()) {
+        uhat_name = std::string("m") + std::to_string(id)
+            + std::string("_uhat") + std::to_string(eqn);
+    }
+
+    // actual work
+    return GD->add_series<gretl_double_ptr>(std::move(uhat),
+                                            name.empty() ? uhat_name : name,
+                                            GD->dset->n);
 }
 
 void GretlModel_VAR::fit (void)

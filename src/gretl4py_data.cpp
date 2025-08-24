@@ -985,6 +985,46 @@ void GretlDataset::to_file (const std::string &fname) const
     }
 }
 
+// We accept two types as T:
+// gretl_double_ptr: the allocated array is grabbed by dset
+// py::array: underline data is copied (deep copy)
+template <typename T>
+char *GretlDataset::add_series (T t, const std::string &name, int n)
+{
+    //
+    // Here we add existing series to dataset
+    //
+    if constexpr (std::is_same_v<T, py::array>) {
+        py::print("py::array: not supported yet");
+        return '\0';
+    }
+
+    // we do basic checks
+    if (n != dset->n) {
+        handle_gretl_error(E_DATA);
+    }
+    if (name.empty()) {
+        throw std::invalid_argument("empty variable name");
+    }
+
+    // actual work
+    if constexpr (std::is_same_v<T, gretl_double_ptr>) {
+        err = dataset_add_allocated_series(dset, t.release());
+    } else {
+        throw std::runtime_error("add_series: got unsupported type");
+    }
+    if (err) {
+        handle_gretl_error(err);
+    }
+    int var_number = dset->v - 1;
+
+    // we setup name
+    strcpy(dset->varname[var_number], name.c_str());
+
+    return dset->varname[var_number];
+}
+template char *GretlDataset::add_series<gretl_double_ptr>(gretl_double_ptr, const std::string &, int);
+
 void GretlDataset::new_series (const std::string &formula)
 {
     // new series according to @formula
