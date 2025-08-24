@@ -52,11 +52,11 @@ void init_gretl4py_model_py11(py::module_ &m)
     py::class_<GretlModel_NSE, GretlModel, std::unique_ptr<GretlModel_NSE>>(m, "Model_NSE", py::dynamic_attr())
         .def("restrict", &GretlModel_NSE::restrict,
              py::arg("impose").none(false), py::kw_only())
-        .def("add_yhat", &GretlModel_NSE::do_genr_fit_resid<M_YHAT>, py::arg("name").none(true) = "")
-        .def("add_uhat", &GretlModel_NSE::do_genr_fit_resid<M_UHAT>, py::arg("name").none(true) = "")
-        .def("add_uhat_sq", &GretlModel_NSE::do_genr_fit_resid<M_UHAT2>, py::arg("name").none(true) = "")
-        .def("add_ahat", &GretlModel_NSE::do_genr_fit_resid<M_AHAT>, py::arg("name").none(true) = "")
-        .def("add_h", &GretlModel_NSE::do_genr_fit_resid<M_H>, py::arg("name").none(true) = "")
+        .def("save_yhat", &GretlModel_NSE::do_genr_fit_resid<M_YHAT>, py::arg("name").none(true) = "")
+        .def("save_uhat", &GretlModel_NSE::do_genr_fit_resid<M_UHAT>, py::arg("name").none(true) = "")
+        .def("save_uhat_sq", &GretlModel_NSE::do_genr_fit_resid<M_UHAT2>, py::arg("name").none(true) = "")
+        .def("save_ahat", &GretlModel_NSE::do_genr_fit_resid<M_AHAT>, py::arg("name").none(true) = "")
+        .def("save_h", &GretlModel_NSE::do_genr_fit_resid<M_H>, py::arg("name").none(true) = "")
         .def("test",
              [](GretlModel_NSE &self, const std::string &type, const py::kwargs &kwargs)
              {
@@ -116,7 +116,9 @@ void init_gretl4py_model_py11(py::module_ &m)
         .def("irf", py::overload_cast<int, int, double>(&GretlModel_VAR::irf),
              py::arg("targ").none(false), py::arg("shock").none(false), py::arg("alpha").none(true) = 0)
         .def("irf", py::overload_cast<const std::string&, const std::string&, double>(&GretlModel_VAR::irf),
-             py::arg("targ").none(false), py::arg("shock").none(false), py::arg("alpha").none(true) = 0);
+             py::arg("targ").none(false), py::arg("shock").none(false), py::arg("alpha").none(true) = 0)
+        .def("save_uhat", &GretlModel_VAR::save_uhat,
+             py::arg("eqn").none(false), py::arg("name").none(true) = "");
 
     // VECM
     py::class_<GretlModel_VAR_VECM, GretlModel_VAR, std::unique_ptr<GretlModel_VAR_VECM>>(m, "Model_vecm", py::dynamic_attr())

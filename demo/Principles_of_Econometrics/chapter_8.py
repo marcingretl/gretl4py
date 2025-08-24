@@ -41,7 +41,7 @@ gretl.set('hc_version', 0)
 LS_robust = gretl.ols('coke x', robust=True).fit()
 
 # GLS-omit
-yhat_name = LS.add_yhat()
+yhat_name = LS.save_yhat()
 coke.new_series(f'p = {yhat_name}')
 coke.new_series('varp = p*(1-p)')
 coke.new_series('pos = (varp>0)')

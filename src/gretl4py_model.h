@@ -217,6 +217,8 @@ public:
                     const int order, const py::kwargs &kwargs);
     virtual ~GretlModel_VAR (void);
 
+    char *save_uhat (int eqn, const std::string &name = "") const;
+
     void fit (void) override;
 
     void forecast (const py::kwargs &kwargs) override;

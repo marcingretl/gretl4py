@@ -25,6 +25,10 @@ print(m1.tests[-1]['pvalue'])
 m1.test(type="normality", silent=True)
 print(m1.tests[-1]['summary'])
 
+# add uhat to dataset
+uhat_name = m1.save_uhat(eqn=1)
+print(f'residuals added as: {uhat_name}')
+
 #FORECASTS
 print("\n****************************")
 print("forecasts")
