@@ -28,6 +28,7 @@ print(m1.tests[-1]['summary'])
 # add uhat to dataset
 uhat_name = m1.save_uhat(eqn=1)
 print(f'residuals added as: {uhat_name}')
+exit()
 
 #FORECASTS
 print("\n****************************")

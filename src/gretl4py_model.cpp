@@ -1136,7 +1136,7 @@ char *GretlModel_VAR::save_uhat (int eqn, const std::string &name) const
     std::string uhat_name;
     int var_number;
 
-    double *uhat = gretl_VAR_get_resid_series(model, eqn-1, &err); //FIXME: use as unique_ptr!!!
+    gretl_double_ptr uhat(gretl_VAR_get_resid_series(model, eqn-1, &err));
     if (err) {
         handle_gretl_error(err);
     }
@@ -1144,12 +1144,10 @@ char *GretlModel_VAR::save_uhat (int eqn, const std::string &name) const
     // actual work
     err = dataset_add_series(GD->dset, 1);
     if (err) {
-        std::free(uhat);
         handle_gretl_error(err);
     }
     var_number = GD->dset->v - 1;
-    std::memcpy(GD->dset->Z[var_number], uhat, GD->dset->n * sizeof(double));
-    std::free(uhat);
+    std::memcpy(GD->dset->Z[var_number], uhat.get(), GD->dset->n * sizeof(double));
 
     // we set name
     if (name.empty()) {

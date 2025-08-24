@@ -38,7 +38,6 @@ namespace py = pybind11;
 // smart pointers
 //////////////////////////////////////////////////
 
-// gretl_list_ptr default deleter
 struct GretlListDeleter {
     void operator() (int *ptr) const
     {
@@ -50,6 +49,15 @@ struct GretlListDeleter {
     }
 };
 using gretl_list_ptr = std::unique_ptr<int, GretlListDeleter>;
+
+struct GretlDoubleDeleter {
+    void operator() (double *ptr) const
+    {
+       std::free(ptr);
+    }
+};
+using gretl_double_ptr = std::unique_ptr<double, GretlDoubleDeleter>;
+
 
 // function results deleter
 struct GretlResourceDeleter {
