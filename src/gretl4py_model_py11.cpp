@@ -123,7 +123,9 @@ void init_gretl4py_model_py11(py::module_ &m)
     // VECM
     py::class_<GretlModel_VAR_VECM, GretlModel_VAR, std::unique_ptr<GretlModel_VAR_VECM>>(m, "Model_vecm", py::dynamic_attr())
         .def("restrict", &GretlModel_VAR_VECM::restrict,
-             py::arg("impose").none(false), py::kw_only());
+             py::arg("impose").none(false), py::kw_only())
+        .def("save_ec_term", &GretlModel_VAR_VECM::save_ec_term,
+            py::arg("nr").none(false), py::arg("name").none(true) = "");
 
     // GretlModel_package
     py::class_<GretlModel_package, GretlModel, std::unique_ptr<GretlModel_package>>(m, "Model_package", py::dynamic_attr())

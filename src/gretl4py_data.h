@@ -130,6 +130,10 @@ private:
 
     void free_dset (void);
 
+    void gretl_dataset_add_allocated_series (gretl_double_ptr data,
+                                             const std::string &name,
+                                             int n);
+
     gretlopt setobs_opt_from_structure (int structure);
 public:
     mutable int err = 0;
@@ -156,8 +160,10 @@ public:
 
     void setobs (const py::kwargs &kwargs);
 
-    template <typename T>
-    char *add_series (T data, const std::string &name, int n = -1);
+    char *add_series (gretl_double_ptr data,
+                      const std::string &name, int n);
+
+    void add_series (const py::array &data, const std::string &name);
 
     void new_series (const std::string &formula);
 

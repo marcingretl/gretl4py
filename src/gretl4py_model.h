@@ -246,6 +246,8 @@ public:
 
     void restrict (const py::list &impose, const py::kwargs &kwargs);
 
+    char *save_ec_term (const int nr, const std::string &name = "") const;
+
     void fit (void) override;
 
     void forecast (const py::kwargs &kwargs) override;

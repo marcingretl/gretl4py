@@ -1148,9 +1148,9 @@ char *GretlModel_VAR::save_uhat (int eqn, const std::string &name) const
     }
 
     // actual work
-    return GD->add_series<gretl_double_ptr>(std::move(uhat),
-                                            name.empty() ? uhat_name : name,
-                                            GD->dset->n);
+    return GD->add_series(std::move(uhat),
+                          name.empty() ? uhat_name : name,
+                          GD->dset->n);
 }
 
 void GretlModel_VAR::fit (void)
@@ -1317,6 +1317,33 @@ void GretlModel_VAR_VECM::restrict (const py::list &impose,
                                     const py::kwargs &kwargs)
 {
     do_restrict<GRETL_VAR>(model, impose, kwargs);
+}
+
+char *GretlModel_VAR_VECM::save_ec_term (const int nr,
+                                         const std::string &name) const
+{
+    //
+    // here we add EC to dataset of number nr
+    // Note: nr must be 1-based (not 0-based)
+    //
+    std::string ec_term_name;
+
+    // we retrive ec_term
+    gretl_double_ptr ec_term(gretl_VECM_get_EC(model, nr-1, GD->dset, &err));
+    if (err) {
+        handle_gretl_error(err);
+    }
+
+    // we set name
+    if (name.empty()) {
+        ec_term_name = std::string("m") + std::to_string(id)
+            + std::string("_EC") + std::to_string(nr);
+    }
+
+    // actual work
+    return GD->add_series(std::move(ec_term),
+                          name.empty() ? ec_term_name : name,
+                          GD->dset->n);
 }
 
 void GretlModel_VAR_VECM::forecast (const py::kwargs &kwargs)

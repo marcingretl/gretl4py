@@ -59,11 +59,7 @@ void init_gretl4py_dataset_py11(py::module_ &m)
         .def("setobs", &GretlDataset::setobs)
         .def("to_dict", &GretlDataset::to_dict)
         .def("to_file", &GretlDataset::to_file)
-        .def("add_series",
-             [](GretlDataset &self, const py::array &data, const std::string &name) -> char*
-             {
-                 return self.add_series<py::array>(data, name);
-             },
+        .def("add_series", py::overload_cast<const py::array&, const std::string&>(&GretlDataset::add_series),
              py::arg("data").none(false), py::arg("name").none(false))
         .def("new_series", py::overload_cast<const std::string&>(&GretlDataset::new_series),
              py::arg("formula").none(false))

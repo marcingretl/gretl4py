@@ -30,6 +30,11 @@ print(m1.tests[-1]['summary'])
 uhat_name = m1.save_uhat(eqn=2)
 print(f'residuals added as: {uhat_name}')
 
+# add EC term to dataset
+ec_name = m1.save_ec_term(nr=1)
+print(f'EC term added as: {ec_name}')
+exit()
+
 #FORECASTS
 print("\n****************************")
 print("forecasts")
