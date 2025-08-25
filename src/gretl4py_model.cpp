@@ -349,7 +349,6 @@ void GretlModel::do_forecast (T *model, const py::kwargs &kwargs,
 void GretlModel::unpack_forecast_kwargs (const py::kwargs &kwargs, int &pconf)
 {
     int conf = 95;
-    int err = 0;
 
     opt = OPT_NONE;
     for (auto &item : kwargs) {
