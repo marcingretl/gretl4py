@@ -928,8 +928,13 @@ void GretlDataset::gretl_dataset_add_allocated_series (gretl_double_ptr data,
     }
 
     // actual work
-    err = dataset_add_allocated_series(dset, data.release());
+    double *data_ptr = data.release();
+
+    err = dataset_add_allocated_series(dset, data_ptr);
     if (err) {
+        if (err == E_ALLOC) {
+            std::free(data_ptr);
+        }
         handle_gretl_error(err);
     }
 
