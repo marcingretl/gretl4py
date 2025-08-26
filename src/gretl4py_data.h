@@ -187,7 +187,7 @@ public:
 
     py::object get_accessor (const std::string &accessor) const;
 
-    void test (const std::string &type, const std::string &vars,
+    void test (const std::string &type, const std::string vars,
                const py::kwargs &kwargs);
 
     py::object get_series (const std::string &series) const;

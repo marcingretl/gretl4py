@@ -1370,18 +1370,20 @@ py::object GretlDataset::get_accessor (const std::string &accessor) const
     return variant_to_pyobject(std::move(*res));
 }
 
-void GretlDataset::test (const std::string &type, const std::string &vars,
+void GretlDataset::test (const std::string &type, const std::string vars,
                          const py::kwargs &kwargs)
 {
     //
     // this method performs test which do take a variables list
+    // Note: we use copy of vars, because of the buffer lifetime issue
+    // on different CRT implementations (mostly related with Windows CRT-s)
     //
     py::dict res;
     int order = 0;
     gretl_list_ptr ex_var{nullptr};
 
     // we construct list of external variables
-    ex_var = list_from_formula(vars, dset, err); // it's std::unique_ptr!!!
+    ex_var = list_from_formula(vars, dset, err);
     if (err) {
         handle_gretl_error(err);
     }
