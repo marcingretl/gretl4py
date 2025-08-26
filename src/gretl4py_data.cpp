@@ -1227,20 +1227,19 @@ void GretlDataset::setobs (const py::kwargs &kwargs)
     //
     // A method to mimic gretl's 'setobs' command
     //
-    opt = OPT_NONE;
-    char *arg1 = nullptr;
-    char *arg2 = nullptr;
+    enum ArgTag { NONE, PERIODICITY, STARTOBS, UNITVAR, TIMEVAR };
+    std::string arg1;
+    std::string arg2;
     int rcount = 0;
     int pcount = 0;
 
-    enum ArgTag { NONE, PERIODICITY, STARTOBS, UNITVAR, TIMEVAR };
-
+    opt = OPT_NONE;
     for (auto &item : kwargs) {
         if (!is_pystr(item.first)) {
             throw std::invalid_argument("option key must be a string");
         }
         const std::string akey = item.first.cast<std::string>();
-        const char *val = MapPyToCpp(item.second).to_string_view().data();
+        const std::string val = MapPyToCpp(item.second).to_string();
 
         if (akey == "periodicity" || akey == "startobs" ||
             akey == "unitvar" || akey == "timevar") {
@@ -1262,16 +1261,16 @@ void GretlDataset::setobs (const py::kwargs &kwargs)
 
             // choose destination arg
             if (tag == PERIODICITY || tag == UNITVAR) {
-                arg1 = strdup(val);
+                arg1 = val;
             } else {
-                arg2 = strdup(val);
+                arg2 = val;
             }
         } else if (akey == "structure") {
-            if (!std::strcmp(val, "cross-section")) {
+            if (val == "cross-section") {
                 opt = OPT_X;
-            } else if (!std::strcmp(val, "time-series")) {
+            } else if (val == "time-series") {
                 opt = OPT_T;
-            } else if (!std::strcmp(val, "stacked-time-series")) {
+            } else if (val == "stacked-time-series") {
                 opt = OPT_S;
             } else {
                 throw std::invalid_argument("setobs: invalid 'structure' specification");
@@ -1301,10 +1300,10 @@ void GretlDataset::setobs (const py::kwargs &kwargs)
         opt = OPT_P;
     }
 
-    err = set_obs(arg1, arg2, dset, opt);
-
-    std::free(arg1);
-    std::free(arg2);
+    err = set_obs(arg1.data(), arg2.data(), dset, opt);
+    if (err) {
+        handle_gretl_error(err);
+    }
 }
 
 void GretlDataset::set_as_default (void)
