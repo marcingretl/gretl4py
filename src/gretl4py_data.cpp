@@ -1093,32 +1093,29 @@ void GretlDataset::print (const py::kwargs &kwargs)
     opt = OPT_NONE;
 
     for (auto &item : kwargs) {
-        const char *val = nullptr;
-
+        // ensure the key is a string
         if (!is_pystr(item.first)) {
             throw std::invalid_argument("option key must be a string");
         }
         const std::string &key = item.first.cast<std::string>();
-        val = MapPyToCpp(item.second).to_string_view().data();
+
+        // we use ::to_string() to get an owned buffer
+        std::string val_str = MapPyToCpp(item.second).to_string();
 
         if (key == "summary") {
-            summary = std::strcmp(val, "1") == 0;
-            continue;
+            summary = (val_str == "1");
         } else if (key == "byobs") {
-            byobs = std::strcmp(val, "1") == 0;
-            continue;
+            byobs = (val_str == "1");
         } else if (key == "byvar") {
-            if (std::strcmp(val, "1") == 0) {
+            if (val_str == "1") {
                 summary = byobs = false;
             }
-            continue;
         } else if (key == "series") {
             // note: we print only specified variables
-            var_list = list_from_formula(val, dset, err);
+            var_list = list_from_formula(val_str, dset, err);
             if (err) {
                 handle_gretl_error(err);
             }
-            continue;
         } else {
             summary = byobs = false;
             throw std::invalid_argument("print: invalid key '" + key + "'");
