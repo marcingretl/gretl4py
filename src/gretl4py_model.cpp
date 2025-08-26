@@ -1235,13 +1235,12 @@ void GretlModel_VAR::irf (int targ, int shock, double alpha)
     //
     // this method mimics gretl's irf() function
     //
-    gretl_matrix *irf = NULL;
     py::dict res;
 
     // we compute IRFs
-    irf = gretl_VAR_get_impulse_response(model, targ, shock,
-                                         default_VAR_horizon(GD->dset),
-                                         alpha, GD->dset, &err);
+    gretl_matrix_ptr irf(gretl_VAR_get_impulse_response(model, targ, shock,
+                                                        default_VAR_horizon(GD->dset),
+                                                        alpha, GD->dset, &err));
     if (err) {
         handle_gretl_error(err);
     }
@@ -1254,16 +1253,11 @@ void GretlModel_VAR::irf (int targ, int shock, double alpha)
     if (alpha > 0.0) {
         res[py::cast("alpha")] = alpha;
     }
-    auto val = convert_GretlType_to_GretlTypes(GRETL_TYPE_MATRIX, irf, 0, err);
+    auto val = convert_GretlType_to_GretlTypes(GRETL_TYPE_MATRIX, irf.get(), 0, err);
     res[py::cast("results")] = variant_to_pyobject(std::move(*val));
 
     // we register result
     move_to_python_container<GretlModel, py::dict, py::list>(*this, std::move(res), "irfs");
-
-    // release a memory
-    if (irf != NULL) {
-        gretl_matrix_free(irf);
-    }
 }
 
 void GretlModel_VAR::irf (const std::string &targ, const std::string &shock, double alpha)
