@@ -1153,11 +1153,9 @@ void GretlDataset::sample (const py::kwargs &kwargs)
     //
     // A method to mimic gretl's 'smpl' command
     //
+    std::string t1str, t2str, restr;
     bool opt_replace = false;
     bool full = false;
-    std::string t1str;
-    std::string t2str;
-    std::string restr;
 
     opt = OPT_NONE;
     for (auto &item : kwargs) {
@@ -1206,15 +1204,16 @@ void GretlDataset::sample (const py::kwargs &kwargs)
         // use empty string as fallback when only one of t1/t2 is set (smpl <t1str> <t2str>)
         std::string ts1 = t1str.empty() ? ";" : t1str;
         std::string ts2 = t2str.empty() ? ";" : t2str;
+
         err = set_sample(ts1.c_str(), ts2.c_str(), dset, OPT_NONE);
     }
-
     if (err) {
-        throw std::runtime_error(errmsg_get_with_default(err));
-    } else if (have_args) {
-        print_smpl(dset, get_full_length_n(), OPT_NONE, GP.prn_ptr());
+        handle_gretl_error(err);
     }
 
+    if (have_args) {
+        print_smpl(dset, get_full_length_n(), OPT_NONE, GP.prn_ptr());
+    }
     GP.print();
 }
 
@@ -1224,8 +1223,7 @@ void GretlDataset::setobs (const py::kwargs &kwargs)
     // A method to mimic gretl's 'setobs' command
     //
     enum ArgTag { NONE, PERIODICITY, STARTOBS, UNITVAR, TIMEVAR };
-    std::string arg1;
-    std::string arg2;
+    std::string arg1, arg2;
     int rcount = 0;
     int pcount = 0;
 
