@@ -1153,44 +1153,44 @@ void GretlDataset::sample (const py::kwargs &kwargs)
     //
     // A method to mimic gretl's 'smpl' command
     //
-    opt = OPT_NONE;
     int opt_replace = 0;
     int full = 0;
-    char *t1str = nullptr;
-    char *t2str = nullptr;
-    char *restr = nullptr;
+    std::string t1str;
+    std::string t2str;
+    std::string restr;
 
+    opt = OPT_NONE;
     for (auto &item : kwargs) {
         if (!is_pystr(item.first)) {
             throw std::invalid_argument("option key must be a string");
         }
         const std::string key = item.first.cast<std::string>();
-        const auto val_str = MapPyToCpp(item.second).to_string_view();
+        const auto val_str = MapPyToCpp(item.second).to_string();
 
         if (key == "t1") {
-            t1str = strdup(val_str.data());
+            t1str = MapPyToCpp(item.second).to_string();
         } else if (key == "t2") {
-            t2str = strdup(val_str.data());
+            t2str = MapPyToCpp(item.second).to_string();
         } else if (key == "restriction") {
-            restr = strdup(val_str.data());
+            restr = MapPyToCpp(item.second).to_string();
         } else if (key == "replace") {
-            opt_replace = std::atoi(val_str.data());
+            opt_replace = item.second.cast<int>();
         } else if (key == "full") {
-            full = std::atoi(val_str.data());
+            full = item.second.cast<int>();
         } else {
             throw std::invalid_argument("invalid key '" + key + "' in 'sample' args");
         }
     }
 
     // reject invalid cases (mutually exclusive)
-    if (full && (t1str || t2str || opt_replace)) {
+    if (full && (!t1str.empty() || !t2str.empty() || opt_replace)) {
         throw std::invalid_argument("sample: invalid use of 'full'");
-    } else if (restr && (t1str || t2str)) {
+    } else if (!restr.empty() && (!t1str.empty() || !t2str.empty())) {
         throw std::invalid_argument("sample: invalid use of 'restriction'");
-    } else if (opt_replace && !restr) {
+    } else if (opt_replace && restr.empty()) {
         throw std::invalid_argument("sample: invalid use of 'replace'");
     }
-    bool have_args = (t1str || t2str || restr || opt_replace || full);
+    bool have_args = (!t1str.empty() || !t2str.empty() || !restr.empty() || opt_replace || full);
 
     if (!have_args) {
         // just report current sample
@@ -1198,15 +1198,15 @@ void GretlDataset::sample (const py::kwargs &kwargs)
     } else if (full) {
         // "smpl full"
         err = restore_full_sample(dset, NULL);
-    } else if (restr) {
+    } else if (!restr.empty()) {
         // smpl <restr> --restrict [--replace]
         opt = opt_replace ? static_cast<gretlopt>(OPT_R | OPT_P) : OPT_R;
-        err = restrict_sample(restr, NULL, dset, NULL, opt, GP.prn_ptr(), NULL);
+        err = restrict_sample(restr.data(), NULL, dset, NULL, opt, GP.prn_ptr(), NULL);
     } else {
         // use empty string as fallback when only one of t1/t2 is set (smpl <t1str> <t2str>)
-        const char *ts1 = t1str ? t1str : ";";
-        const char *ts2 = t2str ? t2str : ";";
-        err = set_sample(ts1, ts2, dset, OPT_NONE);
+        std::string ts1 = t1str.empty() ? ";" : t1str;
+        std::string ts2 = t2str.empty() ? ";" : t2str;
+        err = set_sample(ts1.c_str(), ts2.c_str(), dset, OPT_NONE);
     }
 
     if (err) {
@@ -1216,10 +1216,6 @@ void GretlDataset::sample (const py::kwargs &kwargs)
     }
 
     GP.print();
-
-    std::free(t1str);
-    std::free(t2str);
-    std::free(restr);
 }
 
 void GretlDataset::setobs (const py::kwargs &kwargs)
