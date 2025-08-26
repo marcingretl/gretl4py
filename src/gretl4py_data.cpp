@@ -1153,8 +1153,8 @@ void GretlDataset::sample (const py::kwargs &kwargs)
     //
     // A method to mimic gretl's 'smpl' command
     //
-    int opt_replace = 0;
-    int full = 0;
+    bool opt_replace = false;
+    bool full = false;
     std::string t1str;
     std::string t2str;
     std::string restr;
@@ -1174,9 +1174,9 @@ void GretlDataset::sample (const py::kwargs &kwargs)
         } else if (key == "restriction") {
             restr = MapPyToCpp(item.second).to_string();
         } else if (key == "replace") {
-            opt_replace = item.second.cast<int>();
+            opt_replace = item.second.cast<bool>();
         } else if (key == "full") {
-            full = item.second.cast<int>();
+            full = item.second.cast<bool>();
         } else {
             throw std::invalid_argument("invalid key '" + key + "' in 'sample' args");
         }
