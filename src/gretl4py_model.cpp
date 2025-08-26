@@ -399,7 +399,7 @@ void GretlModel::unpack_forecast_kwargs (const py::kwargs &kwargs, int &pconf)
 
 void GretlModel::fr_to_dict (FITRESID *fr, py::dict &fcdict)
 {
-    gretl_matrix *stats = NULL;
+    gretl_matrix_ptr stats{nullptr};
     py::list labels;
     double *tmp = NULL;
     double tval = 0;
@@ -466,11 +466,11 @@ void GretlModel::fr_to_dict (FITRESID *fr, py::dict &fcdict)
     fcdict[py::cast("data_labels")] = labels;
 
     n_ok = 0;
-    stats = forecast_stats(fr->actual, fr->fitted, fr->t1, fr->t2,
-                           &n_ok, OPT_O, &err);
-    if (stats != NULL) {
+    stats.reset(forecast_stats(fr->actual, fr->fitted, fr->t1,
+                               fr->t2, &n_ok, OPT_O, &err));
+    if (stats) {
         if (n_ok > 0) {
-            const char **rnames = gretl_matrix_get_rownames(stats);
+            const char **rnames = gretl_matrix_get_rownames(stats.get());
             const char *label;
             // it seems we need a nominally 2-d array here for tabulate()
             DNumPyArrayFC S({stats->rows, 1});
@@ -485,7 +485,6 @@ void GretlModel::fr_to_dict (FITRESID *fr, py::dict &fcdict)
             }
             fcdict[py::cast("stats_labels")] = stats_labels;
         }
-        gretl_matrix_free(stats);
     }
 }
 

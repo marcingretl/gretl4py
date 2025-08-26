@@ -34,6 +34,7 @@ extern "C" {
     #include <gretl/gretl_typemap.h>
     #include <gretl/uservar.h>
 }
+#include <algorithm>
 #include <string>
 #include <cassert>
 #include <iomanip>
@@ -580,19 +581,14 @@ void unpack_kwargs_test (gretlopt &opt, const std::string &type,
 gretl_list_ptr list_from_formula (const std::string &formula,
                                   DATASET *dset, int &err)
 {
-    // we create a unique_ptr for the char* with std::free as the deleter.
-#if defined(_WIN32)
-    std::unique_ptr<char, decltype(&std::free)> tmp(_strdup(formula.c_str()), &std::free);
-#else
-    std::unique_ptr<char, decltype(&std::free)> tmp(strdup(formula.c_str()), &std::free);
-#endif
+    std::string tmp = formula;
 
     // convert from a simple R-style formula to a gretl list
-    gretl_charsub(tmp.get(), '~', ' ');
-    gretl_charsub(tmp.get(), '+', ' ');
+    std::replace(tmp.begin(), tmp.end(), '~', ' ');
+    std::replace(tmp.begin(), tmp.end(), '+', ' ');
 
     // generate_list() returns a raw pointer; assign that to our unique_ptr.
-    int *raw_list = generate_list(tmp.get(), dset, 0, &err);
+    int *raw_list = generate_list(tmp.c_str(), dset, 0, &err);
     if (err) {
         handle_gretl_error(err);
     }
