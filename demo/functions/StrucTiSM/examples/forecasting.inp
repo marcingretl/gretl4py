@@ -1,0 +1,59 @@
+set verbose off
+include StrucTiSM.gfn
+
+example = 2
+
+if example == 1 
+    # Commandeur & Koopman, page 98
+    open nordic.gdt --quiet --frompkg=StrucTiSM
+    depvar = log(Norway)
+    horizon = 5
+
+    epsilon = 1   # boolean
+    trend = 1     # 1: stochastic, 2: deterministic
+    slope = 0     # 0: none, 1: stochastic, 2: deterministic
+    seasonal = 0  # 0: none, 1: stochastic (trig), 2: stochastic (dums), 3: deterministic dums
+elif example == 2 
+    # Commandeur & Koopman, page 99
+    open nordic.gdt --quiet --frompkg=StrucTiSM
+    depvar = log(Finland)
+    horizon = 5
+
+    epsilon = 1   
+    trend = 1     
+    slope = 1     
+    seasonal = 0  
+else
+    open data9-3.gdt --quiet
+    depvar = reskwh
+    horizon = 12
+
+    epsilon = 1   
+    trend = 2     
+    slope = 1     
+    seasonal = 2  
+endif
+
+# estimate first
+
+model = STSM_setup(depvar, epsilon, trend, slope, seasonal)
+scalar err = STSM_estimate(&model)
+
+# do forecast
+err = STSM_fcast(&model, horizon)
+T = $nobs
+
+# now extend the dataset and plot the forecasts
+
+dataset addobs horizon
+
+series f = mshape(NA, T, 1) | model.fcast
+series fse = zeros(T) | sqrt(model.fcastvar)
+list X = depvar f
+alpha = invcdf(z, 0.95)
+
+plot X
+    options time-series with-lines
+    options band=f,fse,alpha band-style=fill
+end plot --output=display
+

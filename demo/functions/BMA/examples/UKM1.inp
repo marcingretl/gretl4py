@@ -1,0 +1,20 @@
+set verbose off
+
+include BMA.gfn
+open UKM1.gdt --frompkg=BMA
+
+maxlag = 4
+
+list X = p y Rn
+list UKM1_GUM = m(-1 to -maxlag) X(0 to -maxlag) 
+
+#########################################################################################
+# We use RIC as g-prior and different model priors here: Binomial - 1, Binomial-Beta -2 #
+#########################################################################################
+set stopwatch
+matrix ModelPriors = { 1 ; 2 }
+loop i=1..nelem(ModelPriors) --quiet
+    sufix = sprintf("%d", ModelPriors[i])
+    set seed 1000000
+    BMA_model_prior_@sufix = BMA(m, UKM1_GUM, _(g_type="ric", model_prior=ModelPriors[i], Npredict=16))
+endloop

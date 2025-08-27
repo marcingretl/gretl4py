@@ -1,6 +1,9 @@
 import importlib.resources as resources
 import gretl
 
+CFfilt = gretl.include("cffilt")
+CFfilt.show_functions()
+
 # get path object for the data directory inside the gretl package
 data_dir = resources.files('gretl').joinpath('data')
 
@@ -28,6 +31,13 @@ bk = d1.bkfilt(series='LRM')
 print("\nResults from the Baxter-King filter:")
 print(bk)
 
+# Christiano-Fitzgerald asymmetric filter
+cf = gretl.cffilt(x='LRM') #, pl=6, pu=32
+print("\nResults from the Christiano-Fitzgerald asymmetric filter:")
+print(cf)
+print(type(cf))
+
+exit()
 # we generate plot for filtering
 try:
     import matplotlib.pyplot as plt
@@ -39,6 +49,7 @@ try:
     ax.plot(x, t, label='hpfilt')
     ax.plot(x, bw, label='bwfilt')
     ax.plot(x, LRM - bk, label='bkfilt')
+    ax.plot(x, LRM - cf, label='cffilt')
     plt.legend()
     plt.show()
 except ModuleNotFoundError:

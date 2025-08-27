@@ -1,0 +1,18 @@
+include StrucTiSM.gfn
+open UK-KSI.gdt --frompkg=StrucTiSM
+
+# data from the famous "road accidents" dataset
+# by Harvey & Durbin (1986) JRSS-A
+
+lk = ln(KSI)
+lp = ln(pprice)
+sb = (obs > "1983:1")
+
+list X = lp sb
+
+bundle a = STSM_setup(lk,1,1,0,2,X)
+err = STSM_estimate(&a)
+list c = STSM_components(a, 1)
+
+lk_hat = lk_level + lk_exo
+gnuplot lk lk_hat --with-lines --time-series --output=display
