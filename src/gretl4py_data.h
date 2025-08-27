@@ -131,8 +131,8 @@ private:
     void free_dset (void);
 
     void gretl_dataset_add_allocated_series (gretl_double_ptr data,
-                                             const std::string &name,
-                                             int n);
+                                             const std::string &name, int n,
+                                             gretl_gchar_ptr label = nullptr);
 
     gretlopt setobs_opt_from_structure (int structure);
 public:
@@ -161,7 +161,8 @@ public:
     void setobs (const py::kwargs &kwargs);
 
     char *add_series (gretl_double_ptr data,
-                      const std::string &name, int n);
+                      const std::string &name, int n,
+                      gretl_gchar_ptr label = nullptr);
 
     void add_series (const py::array &data, const std::string &name);
 
@@ -173,11 +174,13 @@ public:
 
     void new_list (const std::string &name, const std::string &value);
 
+    void do_series_set_label (const int number, char *label);
+
     py::list varnames (void) const;
 
     int get_id (void) const;
 
-    int get_series_id (const std::string &series) const;
+    int get_series_id (const std::string &series, const bool verbose = true) const;
 
     void linked_models_add (const int model_id);
 

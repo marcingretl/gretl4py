@@ -109,7 +109,7 @@ public:
     void restrict (const py::list &impose, const py::kwargs &kwargs);
 
     template<ModelDataIndex IDX>
-    char *do_genr_fit_resid (const std::string &name = "") const;
+    char *do_get_fit_or_resid (const std::string &name = "") const;
 
     void fit (void) override = 0;
 

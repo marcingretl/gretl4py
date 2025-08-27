@@ -908,7 +908,7 @@ void GretlDataset::free_dset (void)
 
 void GretlDataset::gretl_dataset_add_allocated_series (gretl_double_ptr data,
                                                        const std::string &name,
-                                                       int n)
+                                                       int n, gretl_gchar_ptr label)
 {
     //
     // Here we add allocated series to dataset
@@ -923,22 +923,33 @@ void GretlDataset::gretl_dataset_add_allocated_series (gretl_double_ptr data,
         throw std::invalid_argument("empty variable name");
     }
 
+    // we check if we add new or replace series
+    int v = current_series_index(dset, name.c_str());
+
     // actual work
     double *data_ptr = data.release();
 
-    err = dataset_add_allocated_series(dset, data_ptr);
+    if (v > 0) {
+        err = dataset_replace_series(dset, v, data_ptr, label.get(), DS_GRAB_VALUES);
+    } else {
+        err = dataset_add_allocated_series(dset, data_ptr);
+    }
     if (err) {
-        if (err == E_ALLOC) {
-            std::free(data_ptr);
-        }
+        std::free(data_ptr);
         handle_gretl_error(err);
     }
 
-    // we setup name
-    strcpy(dset->varname[dset->v-1], name.c_str());
+    if (v > 0) {
+        py::print("Replaced series " + name + " (ID " + std::to_string(v) + ")");
+    } else {
+        // we setup name and description for new series
+        v = dset->v - 1;
+        strcpy(dset->varname[v], name.c_str());
+        series_set_label(dset, v, label.get());
+    }
 }
 
-int GretlDataset::get_series_id (const std::string &series) const
+int GretlDataset::get_series_id (const std::string &series, const bool verbose) const
 {
     //
     // method returns id of given series (in dset context)
@@ -946,7 +957,7 @@ int GretlDataset::get_series_id (const std::string &series) const
     int var_num = -1;
 
     var_num = current_series_index(dset, series.c_str());
-    if (var_num < 0) {
+    if (var_num < 0 && verbose) {
         throw std::invalid_argument("'" + series + "': series does not exist");
     }
 
@@ -1014,15 +1025,17 @@ void GretlDataset::to_file (const std::string &fname) const
 }
 
 char *GretlDataset::add_series (gretl_double_ptr data,
-                                const std::string &name, int n)
+                                const std::string &name,
+                                int n, gretl_gchar_ptr label)
 {
     //
     // Here we add existing series to dataset
-    // Note: gretl_double_ptr: the allocated storage is grabbed by dset
+    // Note: gretl_double_ptr and gretl_gchar_ptr are grabbed by dset
     //
-    gretl_dataset_add_allocated_series(std::move(data), name, n);
+    gretl_dataset_add_allocated_series(std::move(data), name,
+                                       n, std::move(label));
 
-    return dset->varname[dset->v-1];
+    return dset->varname[get_series_id(name, false)];
 }
 
 void GretlDataset::add_series (const py::array &data,
@@ -1309,6 +1322,12 @@ void GretlDataset::set_as_default (void)
 int GretlDataset::get_id (void) const
 {
     return id;
+}
+
+void GretlDataset::do_series_set_label (const int number,
+                                        char *label)
+{
+    series_set_label(dset, number, label);
 }
 
 py::list GretlDataset::varnames (void) const
