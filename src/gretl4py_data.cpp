@@ -2303,6 +2303,11 @@ GretlPackageRes GretlPackage::function_exec (const std::string &func_name,
         handle_gretl_error(err);
     }
 
+    // for GRETL_TYPE_SERIES we must record length
+    if (res.type == GRETL_TYPE_SERIES) {
+        res.n = GD->dset->n;
+    }
+
     return res;
 }
 

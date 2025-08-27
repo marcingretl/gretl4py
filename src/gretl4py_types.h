@@ -106,6 +106,7 @@ using GretlResourcePtr = std::unique_ptr<void, GretlResourceDeleter>;
 struct GretlPackageRes {
     void *raw_ptr = nullptr;            // pointer to returned value
     GretlType type = GRETL_TYPE_NONE;   // type of returned object
+    int n = 0;                          // GRETL_TYPE_SERIES special case: length
 
     void set_type (GretlType t) { type = t; }
 

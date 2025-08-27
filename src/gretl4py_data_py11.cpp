@@ -153,7 +153,8 @@ void init_gretl4py_package_py11(py::module_ &m)
              auto res = self.function_exec(name, DSET, GP, kwargs);
 
              // we construct object to return
-             val = convert_GretlType_to_GretlTypes(res.type, res.get(), 0, err);
+             val = convert_GretlType_to_GretlTypes(res.type, res.get(),
+                                                   res.n, err);
              if (err) {
                  handle_gretl_error(err);
              }

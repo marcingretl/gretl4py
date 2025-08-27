@@ -32,12 +32,10 @@ print("\nResults from the Baxter-King filter:")
 print(bk)
 
 # Christiano-Fitzgerald asymmetric filter
-cf = gretl.cffilt(x='LRM') #, pl=6, pu=32
+cf = gretl.cffilt(x='LRM')
 print("\nResults from the Christiano-Fitzgerald asymmetric filter:")
 print(cf)
-print(type(cf))
 
-exit()
 # we generate plot for filtering
 try:
     import matplotlib.pyplot as plt
