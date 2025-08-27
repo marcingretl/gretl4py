@@ -130,9 +130,9 @@ private:
 
     void free_dset (void);
 
-    void gretl_dataset_add_allocated_series (gretl_double_ptr data,
-                                             const std::string &name, int n,
-                                             gretl_gchar_ptr label = nullptr);
+    void add_or_replace_allocated_series (gretl_double_ptr data,
+                                          const std::string &name, int n,
+                                          gretl_gchar_ptr label = nullptr);
 
     gretlopt setobs_opt_from_structure (int structure);
 public:
@@ -174,7 +174,7 @@ public:
 
     void new_list (const std::string &name, const std::string &value);
 
-    void do_series_set_label (const int number, char *label);
+    void gretl_series_set_label (const int number, char *label);
 
     py::list varnames (void) const;
 
