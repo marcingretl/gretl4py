@@ -59,5 +59,9 @@ GLS_trunc = gretl.wls('w_t coke x').fit()
 
 print(LS)
 print(LS_robust)
-print(GLS_omit)
 print(GLS_trunc)
+print(GLS_omit)
+
+# list of models to compare
+mdls = [LS, LS_robust, GLS_omit, GLS_trunc]
+gretl.modeltab(mdls)
