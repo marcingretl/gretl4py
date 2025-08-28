@@ -325,6 +325,27 @@ void do_summary (const std::string &varlist, const py::kwargs &kwargs)
     GP.print();
 }
 
+double do_gretl_get_pvalue (const std::string &dist, double value,
+                            const py::array_t<double> &params)
+{
+    //
+    // An interface to gretl's gretl_get_pvalue
+    //
+    NumPyArrayView arr_view;
+    auto dist_code = dist_code_from_string(dist.substr(0, 1).c_str());
+
+    NumPyArray_extract(params, arr_view);
+    if (dist_code == static_cast<int>(D_NONE)) {
+        throw std::invalid_argument("unknown distribution code: '" + dist + "'");
+    } else if (dist_code != static_cast<int>(D_NORMAL) && !params.size()) {
+        throw std::invalid_argument("given distribution requires params");
+    } else if ((std::min)(arr_view.cols, arr_view.rows) > 1) {
+        throw std::invalid_argument("params must be a vector");
+    }
+
+    return gretl_get_pvalue(dist_code, params.data(), value);
+}
+
 GretlPackagePtr load_package (const std::string &pkgname,
                               const std::string &suffix)
 {

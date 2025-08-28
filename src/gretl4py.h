@@ -51,6 +51,9 @@ void do_set (const std::string key,
 
 void do_summary (const std::string &varlist, const py::kwargs &kwargs);
 
+double do_gretl_get_pvalue (const std::string &dist, double value,
+                            const py::array_t<double> &params = py::array());
+
 py::object do_include (const std::string &name);
 
 // these two functions are temporal and will be moved to class

@@ -217,15 +217,17 @@ def modeltab (models, output="print", tablefmt="github", stars=True, coeff_fmt="
 
                 # Determine stars only if pvalues exist
                 star = ""
-                if stars and hasattr(m, "pvalues") and m.pvalues:
-                    pval = m.pvalues[idx]
-                    if pval is not None:
-                        if pval < 0.01:
-                            star = "***"
-                        elif pval < 0.05:
-                            star = "**"
-                        elif pval < 0.10:
-                            star = "*"
+                if m.asymptotic:
+                    pval = 2 * gretl.pvalue(dist="z", value=abs(coeff/stderr))
+                else:
+                    pval = 2 * gretl.pvalue(dist="t", value=abs(coeff/stderr), params=m.df)
+                if pval is not None:
+                    if pval < 0.01:
+                        star = "***"
+                    elif pval < 0.05:
+                        star = "**"
+                    elif pval < 0.10:
+                        star = "*"
 
                 cell = f"{format(coeff, coeff_fmt)}{star} ({format(stderr, stderr_fmt)})"
             else:
