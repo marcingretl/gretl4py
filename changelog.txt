@@ -13,7 +13,7 @@ version 0.22:
     - new GretlModel methods: ::get_bundle(), ::add_yhat(), ::add_uhat(), ::add_uhat_sq(), ::add_ahat(), and ::add_h()
     - fix printing empty buffer
     - new GretlDataset::add_series(), and GretlModel_VAR_VECM::save_ec_term() methods
-    - new pvalue() function (one-tailed)
+    - new pvalue() and critical() functions (one-tailed)
     - new modeltab() helper for models comparison
 
 version 0.21:

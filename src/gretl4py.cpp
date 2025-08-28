@@ -38,8 +38,6 @@ public:
     ~Module() { module_cleanup(); }
 };
 
-using ParamType = std::variant<std::monostate, double, py::array, py::sequence>;
-
 const std::string info = "The gretl4py package provides "
     "an interface to the gretl library for python3 "
     "(3.11, 3.12, and 3.13 were tested).";
@@ -76,38 +74,14 @@ PYBIND11_MODULE(_gretl, m)
           py::arg("name").none(false));
     m.def("delete", &gretl_user_var_delete_by_name,
           py::arg("name").none(false));
-    m.def("pvalue",
-      [](const std::string &dist, double value, py::object param) -> double
-      {
-          py::array params_array;
-
-          if (param.is_none()) {
-              params_array = py::array();
-          } else if (is_pynumarray(param)) {
-              params_array = param.cast<py::array>();
-          } else if (is_pynumeric(param)) {
-              double val = param.cast<double>();
-              params_array = py::array(1, &val);
-          } else if (is_pysequence(param)) {
-              // convert list/tuple to array
-              py::sequence seq = param.cast<py::sequence>();
-              std::vector<double> vec;
-
-              vec.reserve(seq.size());
-              for (auto item : seq) {
-                  vec.push_back(item.cast<double>());
-              }
-              params_array = py::array(vec.size(), vec.data());
-          } else {
-              throw std::invalid_argument("params must be None, int, float, list/tuple, or array");
-          }
-
-          return do_gretl_get_pvalue(dist, value, params_array);
-      },
-      py::arg("dist").none(false),
-      py::arg("value").none(false),
-      py::arg("params").none(true) = py::none());
-
+    m.def("pvalue", &gretl_get_pvalue_critval<1>,
+          py::arg("dist").none(false),
+          py::arg("value").none(false),
+          py::arg("params").none(true) = py::none());
+    m.def("critical", &gretl_get_pvalue_critval<2>,
+          py::arg("dist").none(false),
+          py::arg("value").none(false),
+          py::arg("params").none(true) = py::none());
     m.def("uservar_print", &gretl_print_user_var_by_name,
           py::arg("name").none(false), py::arg("data").none(true) = std::nullopt);
     m.def("uservars_list", &uservars_list);
