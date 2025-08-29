@@ -57,8 +57,8 @@ double do_gretl_get_pvalue (const std::string &dist, double value,
 py::object do_include (const std::string &name);
 
 template<int MODE>
-double gretl_get_pvalue_critval (const std::string &dist, double value,
-                                 const py::object &param = py::none());
+double gretl_get_pvalue_critval_pdf_cdf (const std::string &dist, double value,
+                                         const py::object &param = py::none());
 
 // these two functions are temporal and will be moved to class
 void gretl_user_var_delete_by_name (const std::string &name);

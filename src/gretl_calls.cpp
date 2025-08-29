@@ -416,10 +416,16 @@ py::object do_include (const std::string &name)
 
 // MODE == 1 : pvalue
 // MODE == 2 : critval
+// MODE == 3 : pdf
+// MODE == 4 : cdf
+// MODE == 5 : cdf_inverse
 template<int MODE>
-double gretl_get_pvalue_critval (const std::string &dist, double value,
-                                 const py::object &param)
+double gretl_get_pvalue_critval_pdf_cdf (const std::string &dist, double value,
+                                         const py::object &param)
 {
+    //
+    // general interface to selected libgretl functions from pvalues.c
+    //
     // we check if we got one char
     if (dist.size() != 1) {
         throw std::invalid_argument("'dist' takes just one character");
@@ -442,7 +448,13 @@ double gretl_get_pvalue_critval (const std::string &dist, double value,
         const double val = 0.0;
         params_ptr = &val;
     } else if (is_pynumarray(param)) {
+        NumPyArrayView arr_view;
         DNumPyArrayFC arr = py::cast<py::array>(param);
+
+        NumPyArray_extract(arr, arr_view);
+        if ((std::min)(arr_view.cols, arr_view.rows) > 1) {
+            throw std::invalid_argument("param must be a vector");
+        }
         if (arr.size() > 0) {
             params_ptr = arr.data();
         }
@@ -472,12 +484,21 @@ double gretl_get_pvalue_critval (const std::string &dist, double value,
         return gretl_get_pvalue(dist_code, params_ptr, value);
     } else if constexpr (MODE == 2) {
         return gretl_get_critval(dist_code, params_ptr, value);
-    } else {
+    } else if constexpr (MODE == 3) {
+        return gretl_get_pdf(dist_code, params_ptr, value);
+    } else if constexpr (MODE == 4) {
+        return gretl_get_cdf(dist_code, params_ptr, value);
+    } else if constexpr (MODE == 5) {
+        return gretl_get_cdf_inverse(dist_code, params_ptr, value);
+    }else {
         throw std::runtime_error("gretl_get_pvalue_critval: unknown MODE =", MODE);
     }
 }
-template double gretl_get_pvalue_critval<1>(const std::string&, double, const py::object&);
-template double gretl_get_pvalue_critval<2>(const std::string&, double, const py::object&);
+template double gretl_get_pvalue_critval_pdf_cdf<1>(const std::string&, double, const py::object&);
+template double gretl_get_pvalue_critval_pdf_cdf<2>(const std::string&, double, const py::object&);
+template double gretl_get_pvalue_critval_pdf_cdf<3>(const std::string&, double, const py::object&);
+template double gretl_get_pvalue_critval_pdf_cdf<4>(const std::string&, double, const py::object&);
+template double gretl_get_pvalue_critval_pdf_cdf<5>(const std::string&, double, const py::object&);
 
 // stuff below is volatile
 void gretl_user_var_delete_by_name (const std::string &name)
