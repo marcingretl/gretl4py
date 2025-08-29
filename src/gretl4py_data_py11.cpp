@@ -69,6 +69,12 @@ void init_gretl4py_dataset_py11(py::module_ &m)
              py::arg("formula").none(false))
         .def("new_list", py::overload_cast<const std::string&, const std::string&>(&GretlDataset::new_list),
              py::arg("name").none(false), py::arg("value").none(false))
+        .def("diff", &GretlDataset::gretl_list_diffgenr<DIFF>,
+             py::arg("vars").none(false))
+        .def("ldiff", &GretlDataset::gretl_list_diffgenr<LDIFF>,
+             py::arg("vars").none(false))
+        .def("sdiff", &GretlDataset::gretl_list_diffgenr<SDIFF>,
+             py::arg("vars").none(false))
         .def("print", &GretlDataset::print)
         .def("varnames", &GretlDataset::varnames)
         .def("get_series", &GretlDataset::get_series,

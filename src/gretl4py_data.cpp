@@ -1337,6 +1337,29 @@ void GretlDataset::gretl_series_set_label (const int number,
     series_set_label(dset, number, label);
 }
 
+template<GretlCmdIndex CI>
+void GretlDataset::gretl_list_diffgenr (const std::string &vars)
+{
+    //
+    // interface to libgretl's list_diffgenr
+    //
+    gretl_list_ptr varlist{nullptr};
+
+    // we construct list of external variables
+    varlist = list_from_formula(vars, dset, err);
+    if (err) {
+        handle_gretl_error(err);
+    }
+
+    err = list_diffgenr(varlist.get(), CI, dset);
+    if (err) {
+        handle_gretl_error(err);
+    }
+}
+template void GretlDataset::gretl_list_diffgenr<DIFF>(const std::string&);
+template void GretlDataset::gretl_list_diffgenr<LDIFF>(const std::string&);
+template void GretlDataset::gretl_list_diffgenr<SDIFF>(const std::string&);
+
 py::list GretlDataset::varnames (void) const
 {
     py::list names;

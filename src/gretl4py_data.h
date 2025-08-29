@@ -177,6 +177,9 @@ public:
 
     void gretl_series_set_label (const int number, char *label);
 
+    template<GretlCmdIndex CI>
+    void gretl_list_diffgenr (const std::string &vars);
+
     py::list varnames (void) const;
 
     int get_id (void) const;
