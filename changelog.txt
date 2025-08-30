@@ -15,6 +15,7 @@ version 0.22:
     - new GretlDataset::add_series(), and GretlModel_VAR_VECM::save_ec_term() methods
     - new pvalue(), critical() functions (one-tailed), pdf(), cdf(), and invcdf()
     - new modeltab() helper for models comparison
+    - new GretlDataset methods: diff(), ldiff(), and sdiff()
 
 version 0.21:
     - 'lagselect' switched off for VAR due to SIGSEGV
