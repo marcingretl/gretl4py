@@ -1,4 +1,5 @@
 import gretl
+import numpy
 
 # switch of verbosity
 gretl.set('verbose', 'off')
@@ -6,20 +7,22 @@ gretl.set('verbose', 'off')
 # force libgretl to use the decimal point character
 gretl.set('force_decpoint', 'on')
 
+# NumPy precision
+numpy.set_printoptions(precision = 4)
+
 # datasets
 andy = gretl.get_data('data/andy.gdt')
-
-# list of variables
-variables = andy.varnames()
-print(variables)
-
+pizza = gretl.get_data('data/pizza4.gdt')
+cps4s = gretl.get_data('data/cps4_small.gdt')
 
 ############################################
-# 5.2.2: OLS
+# 5.2: Estimating the Parameters of the Multiple Regression Model
 ############################################
-m1 = gretl.ols(formula='sales ~ const + price + advert').fit()
+print("\n5.2: Estimating the Parameters of the Multiple Regression Model")
+print("\n5.2.2: Least Squares Estimates Using Hamburger Chain Data")
+andy.print(byobs=True)
+m1 = gretl.ols(formula='sales ~ const + price + advert').fit()  # (5.6)
 print(m1)
-
 # alternative ways of defining a model
 m2 = gretl.ols('sales ~ 0 + price + advert').fit()
 m3 = gretl.ols('sales const price advert').fit()
@@ -37,30 +40,61 @@ m9 = gretl.ols('sales const Xes1').fit()
 m10 = gretl.ols('1 0 Xes2').fit()
 
 # coefficients estimates
-coeff = m1.coeff
-print(f'coefficients estimates:\n{coeff}')
+for i in range(0,3):
+    print(f'b{i} = {m1.coeff[i]:.5} ({m1.stderr[i]:.4})')
+
+# SSE
+print(f'SSE = {m1.ess:.7}')
 
 # standard errors
 stderr = m1.stderr
-print(f'\nstdandard errors:\n{stderr}')
+print(f'sigmahat = {m1.sigma:.5}')
 
 # covariance matrix
-vcv = m1.vcv
-print(f'\ncovariance matrix:\n{vcv}')
-
+print(f'\ncovariance matrix:\n{m1.vcv}')        # (5.10)
+for i in range(0,3):
+    print(f'var(b{i}) = {m1.vcv[i][i]:.5}')
 
 ############################################
-# 5.5.3: linear restrictions
+# 5.4. Interval Estimation
 ############################################
-print('\n\n5.5.3: linear restrictions')
+print("\n5.4. Interval Estimation")
+critval = gretl.critical('t', value=0.025, params=m1.df)
+print(f'({m1.coeff[1] - critval * m1.stderr[1]:.5}, \
+{m1.coeff[1] + critval * m1.stderr[1]:.5})')                # (5.16)
+
+############################################
+# 5.5: Hypothesis Testing
+############################################
+print("\n5.5: Hypothesis Testing")
+print("\n5.5.3: Hypothesis Testing for Linear Combination of Coefficients")
 m1.restrict(impose=['-0.2*b[2] -0.5*b[3] = 0'])
 print(f'-0.2*b[2] -0.5*b[3] > 0, pvalue: {m1.restrictions[-1]['pvalue']/2 : .3f}')
 
+############################################
+# 5.6: Polynomial Equations
+############################################
+print("\n5.6: Polynomial Equations")
+print("\n5.6.2: Extending the Model for Hamburger Barn Sales")
+andy.new_series(name='advertsq', value='advert^2')
+msq = gretl.ols(formula='sales ~ const + price + advert + advertsq').fit()  # (5.24)
+print(msq)
 
 ############################################
-# 5.6.2: extending the model
+# 5.7: Interaction Variables
 ############################################
-print('\n\n5.6.2: extending the model')
-andy.new_series(name='advertsq', value='advert^2')
-msq = gretl.ols(formula='sales ~ const + price + advert + advertsq').fit()
-print(msq)
+print("\n5.7: Interaction Variables")
+pizza.set_as_default()
+pizza.print(summary=True)
+pizza.new_series('ageincome = age * income')
+PZ_1 = gretl.ols('pizza const age income', simple=True).fit()               # (5.27)
+PZ_2 = gretl.ols('pizza const age income ageincome', simple=True).fit()     # (5.28)
+print(PZ_1)
+print(PZ_2)
+
+print("\n5.7.1: Log-Linear Model")
+cps4s.set_as_default()
+cps4s.print(summary=True)
+cps4s.new_series('educexper = educ * exper')
+CPS = gretl.ols('ln(wage) const educ exper educexper', simple=True).fit()   # (5.30)
+print(CPS)
