@@ -109,15 +109,17 @@ public:
     void restrict (const py::list &impose, const py::kwargs &kwargs);
 
     template<ModelDataIndex IDX>
-    char *do_get_fit_or_resid (const std::string &name = "") const;
-
-    void fit (void) override = 0;
+    char *gretl_get_fit_or_resid (const std::string &name = "") const;
 
     void forecast (const py::kwargs &kwargs) override;
 
     void test (const std::string &type, const py::kwargs &kwargs);
 
     void test (const std::string &type, const std::string &vars, const py::kwargs &kwargs);
+
+    double adj_rsq (void) const;
+
+    void fit (void) override = 0;
 
     std::string get_formula (void) const override = 0;
 };

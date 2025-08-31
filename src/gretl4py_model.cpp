@@ -652,7 +652,7 @@ void GretlModel_NSE::restrict (const py::list &impose,
 }
 
 template<ModelDataIndex IDX>
-char *GretlModel_NSE::do_get_fit_or_resid (const std::string &name) const
+char *GretlModel_NSE::gretl_get_fit_or_resid (const std::string &name) const
 {
     //
     // we save yhat, uhat, uhat^2, ahat, and h
@@ -673,11 +673,16 @@ char *GretlModel_NSE::do_get_fit_or_resid (const std::string &name) const
 
     return GD->add_series(std::move(data), vname, GD->dset->n, std::move(pdesc));
 }
-template char *GretlModel_NSE::do_get_fit_or_resid<M_YHAT>(const std::string&) const;
-template char *GretlModel_NSE::do_get_fit_or_resid<M_UHAT>(const std::string&) const;
-template char *GretlModel_NSE::do_get_fit_or_resid<M_UHAT2>(const std::string&) const;
-template char *GretlModel_NSE::do_get_fit_or_resid<M_AHAT>(const std::string&) const;
-template char *GretlModel_NSE::do_get_fit_or_resid<M_H>(const std::string&) const;
+template char *GretlModel_NSE::gretl_get_fit_or_resid<M_YHAT>(const std::string&) const;
+template char *GretlModel_NSE::gretl_get_fit_or_resid<M_UHAT>(const std::string&) const;
+template char *GretlModel_NSE::gretl_get_fit_or_resid<M_UHAT2>(const std::string&) const;
+template char *GretlModel_NSE::gretl_get_fit_or_resid<M_AHAT>(const std::string&) const;
+template char *GretlModel_NSE::gretl_get_fit_or_resid<M_H>(const std::string&) const;
+
+double GretlModel_NSE::adj_rsq (void) const
+{
+    return model->adjrsq;
+}
 
 //
 // NSE via dedicated Driver

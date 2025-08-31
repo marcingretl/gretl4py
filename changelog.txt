@@ -12,10 +12,11 @@ version 0.22:
     - about(): switch to GretlBundle based version
     - new GretlModel methods: ::get_bundle(), ::add_yhat(), ::add_uhat(), ::add_uhat_sq(), ::add_ahat(), and ::add_h()
     - fix printing empty buffer
-    - new GretlDataset::add_series(), and GretlModel_VAR_VECM::save_ec_term() methods
-    - new pvalue(), critical() functions (one-tailed), pdf(), cdf(), and invcdf()
-    - new modeltab() helper for models comparison
-    - new GretlDataset methods: diff(), ldiff(), and sdiff()
+    - add GretlDataset::add_series(), and GretlModel_VAR_VECM::save_ec_term() methods
+    - add pvalue(), critical() functions (one-tailed), pdf(), cdf(), and invcdf()
+    - add modeltab() helper for models comparison
+    - add GretlDataset methods: diff(), ldiff(), and sdiff()
+    - add GretlModel_NSE::adj_rsq() method
 
 version 0.21:
     - 'lagselect' switched off for VAR due to SIGSEGV

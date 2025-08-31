@@ -54,7 +54,6 @@ def oddsratio(self):
         print('*** warning: oddsratios not available for current model ***\n')
         print(f'Debug info: {e}')
 
-
 # #######################################################
 #   GretlDataset class
 # #######################################################

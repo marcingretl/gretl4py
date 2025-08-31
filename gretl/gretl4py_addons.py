@@ -243,7 +243,7 @@ def modeltab (models, output="print", tablefmt="github", stars=True, coeff_fmt="
             if stat == "n":
                 val = f"{m.T:.1f}"
             elif stat == "Adj. R²":
-                val = f"{1 - (1-m.rsq) * (m.T - 1) / (m.T - m.ncoeff - 2):.4f}"
+                val = f"{m.adj_rsq():.4f}"
             elif stat == "lnL":
                 val = f"{m.lnl:.2f}"
             else:
