@@ -46,7 +46,7 @@ void module_cleanup (void);
 
 GretlBundlePtr about (bool do_print = false);
 
-void do_set (const std::string key,
+void do_set (const std::string &key,
              const std::optional<py::object> &pyval = std::nullopt);
 
 void do_summary (const std::string &varlist, const py::kwargs &kwargs);

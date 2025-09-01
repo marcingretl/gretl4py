@@ -1237,6 +1237,90 @@ void GretlDataset::sample (const py::kwargs &kwargs)
     GP.print();
 }
 
+py::object GretlDataset::corr (const std::string &vars, const py::kwargs &kwargs)
+{
+    //
+    // general interface for computing correlations
+    //
+    gretl_list_ptr var_list{nullptr};
+
+    // we construct list of variables (if needed)
+    if (!vars.empty()) {
+        var_list = list_from_formula(vars, dset, err);
+        if (err) {
+            handle_gretl_error(err);
+        }
+    }
+
+    opt = OPT_NONE;
+    // now we loop over kwargs;
+    for (auto &item : kwargs) {
+        if (!is_pystr(item.first)) {
+            throw std::invalid_argument("option key must be a string");
+        }
+        const std::string &key = item.first.cast<std::string>();
+
+        if (key == "plot") {
+            throw std::invalid_argument("invalid option flag: " + key);
+        } else if (key == "matrix") {
+            throw std::invalid_argument("matrix: not supported yet");
+        } else {
+            gretl_valid_long_opt(opt, CORR, key, item.second);
+        }
+    }
+
+    // we switch off gnuplot
+    SET_OPT(opt, OPT_U);
+    gretl_valid_long_opt(opt, CORR, "plot", py::handle(), "none");
+
+    // actual work
+    if (opt & OPT_K) {
+        err = kendall_tau(var_list.get(), dset, opt, GP.prn_ptr());
+    } else if (opt & OPT_S) {
+        err = spearman_rho(var_list.get(), dset, opt, GP.prn_ptr());
+    } else {
+        err = gretl_corrmx(var_list.get(), dset, opt, GP.prn_ptr());
+    }
+    if (err) {
+        handle_gretl_error(err);
+    }
+
+    GP.print();
+
+    return get_accessor("$result");
+}
+
+py::object GretlDataset::cov (const std::string &vars)
+{
+    //
+    // we compute covariance for given variables
+    //
+    gretl_list_ptr var_list{nullptr};
+    gretl_matrix_ptr mat{nullptr};
+
+    // we construct list of variables
+    if (vars.empty()) {
+        var_list.reset(full_var_list(dset, NULL));
+    } else {
+        var_list = list_from_formula(vars, dset, err);
+        if (err) {
+            handle_gretl_error(err);
+        }
+    }
+
+    // actual work
+    mat.reset(gretl_covariance_matrix_from_varlist(var_list.get(),
+                                                   dset, NULL, &err));
+    if (err) {
+        handle_gretl_error(err);
+    }
+
+    auto res = convert_GretlType_to_GretlTypes(GRETL_TYPE_MATRIX,
+                                               mat.get(), 0, err);
+
+    return variant_to_pyobject(std::move(*res));
+}
+
 void GretlDataset::setobs (const py::kwargs &kwargs)
 {
     //

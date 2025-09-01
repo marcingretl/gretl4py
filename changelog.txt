@@ -15,7 +15,7 @@ version 0.22:
     - add GretlDataset::add_series(), and GretlModel_VAR_VECM::save_ec_term() methods
     - add pvalue(), critical() functions (one-tailed), pdf(), cdf(), and invcdf()
     - add modeltab() helper for models comparison
-    - add GretlDataset methods: diff(), ldiff(), and sdiff()
+    - add GretlDataset methods: ::diff(), ::ldiff(), ::sdiff(), ::corr(), and ::cov()
     - add GretlModel_NSE::adj_rsq() method
 
 version 0.21:

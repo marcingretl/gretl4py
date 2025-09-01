@@ -66,7 +66,7 @@ PYBIND11_MODULE(_gretl, m)
     m.def("about", &about,
           py::arg("do_print") = false);
     m.def("set", &do_set,
-          py::arg("key").none(false),
+          py::arg("key").none(true) = "",
           py::arg("val").none(true) = std::nullopt);
     m.def("summary", &do_summary,
           py::arg("varlist").none(true) = "", py::kw_only());

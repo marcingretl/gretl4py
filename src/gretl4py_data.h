@@ -157,6 +157,10 @@ public:
 
     void sample (const py::kwargs &kwargs);
 
+    py::object corr (const std::string &vars, const py::kwargs &kwargs);
+
+    py::object cov (const std::string &vars);
+
     void set_as_default (void);
 
     void setobs (const py::kwargs &kwargs);

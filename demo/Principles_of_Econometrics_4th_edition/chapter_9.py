@@ -1,21 +1,6 @@
 import math
 import gretl
 
-# we define AIC and SC according to formulas (9.54) and (9.55)
-def aic_sc (m, ver):
-    '''
-    m: GretlModel
-    ver: aic or sc (bic)
-    '''
-    if ver == 'aic':
-        corection = 2 * m.ncoeff / m.T
-    elif ver in ['sc', 'bic']:
-        corection = m.ncoeff * math.log(m.T) / m.T
-    else:
-        print("unknown parameter: " + ver)
-        exit()
-    return math.log(m.ess / m.T) + corection
-
 # switch of verbosity
 gretl.set('verbose', 'off')
 
@@ -121,9 +106,9 @@ for q in range(0,2):
     for p in range(1,7):
         spec = f'inf const inf(-1 to -{p}) d_u(0 to -{q})'
         m = gretl.ols(formula=spec, simple=True).fit()
-        aic = aic_sc(m, 'aic')
-        bic = aic_sc(m, 'sc')
-        print(p, q, f'{aic:.4}', f'{bic:.4}')
+        aic = m.aic/m.T - (1 + math.log(2*math.pi))
+        sc = m.bic/m.T - (1 + math.log(2*math.pi))
+        print(p, q, f'{aic:.4}', f'{sc:.4}')
 
 print("\n9.6.2: Okun's Law")
 okun.set_as_default()
@@ -141,9 +126,9 @@ for p in range(0,3):
         else:
             spec = f'd_u const d_u(-1 to -{p}) g(0 to -{q})'
         m = gretl.ols(formula=spec).fit()
-        aic = aic_sc(m, 'aic')
-        bic = aic_sc(m, 'sc')
-        print(p, q, f'{aic:.4}', f'{bic:.4}')
+        aic = m.aic/m.T - (1 + math.log(2*math.pi))
+        sc = m.bic/m.T - (1 + math.log(2*math.pi))
+        print(p, q, f'{aic:.4}', f'{sc:.4}')
 
 print("\n9.6.3: Autoregressive Models")
 okun.sample(t1='1985:2', t2='2009:3')

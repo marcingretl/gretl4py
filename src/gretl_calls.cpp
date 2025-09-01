@@ -259,7 +259,7 @@ static gretlopt unpack_kwargs_command (GretlCmdIndex ci,
 // data management
 //////////////////////////////////////////////////
 
-void do_set (const std::string key,
+void do_set (const std::string &key,
              const std::optional<py::object> &pyval)
 {
     //
@@ -267,11 +267,15 @@ void do_set (const std::string key,
     //
     int err = 0;
 
-    if (pyval == std::nullopt) {
+    if (key.empty() && pyval == std::nullopt) {
+        err = execute_set(NULL, NULL, NULL, OPT_NONE, GP.prn_ptr());
+    } else if (!key.empty() && pyval == std::nullopt) {
         err = execute_set(key.c_str(), NULL, NULL, OPT_NONE, GP.prn_ptr());
-    } else {
+    } else if (!key.empty() && pyval != std::nullopt) {
         err = execute_set(key.c_str(), MapPyToCpp(pyval).to_string().c_str(),
                           NULL, OPT_NONE, GP.prn_ptr());
+    } else {
+        throw std::invalid_argument("invalid parameters");
     }
     if (err) {
         handle_gretl_error(err);

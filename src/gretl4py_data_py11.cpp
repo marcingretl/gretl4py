@@ -91,6 +91,9 @@ void init_gretl4py_dataset_py11(py::module_ &m)
              py::arg("f2").none(true) = 0, py::arg("k").none(true) = 0)
         .def("get_accessor", &GretlDataset::get_accessor,
              py::arg("accessor").none(false))
+        .def("corr", &GretlDataset::corr,
+             py::arg("vars").none(true) = "", py::kw_only())
+        .def("cov", &GretlDataset::cov, py::arg("vars").none(true) = "")
         .def("test",
              [](GretlDataset &self, const std::string &type, const py::kwargs &kwargs)
              {
