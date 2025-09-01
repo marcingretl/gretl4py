@@ -494,8 +494,8 @@ double gretl_get_pvalue_critval_pdf_cdf (const std::string &dist, double value,
         return gretl_get_cdf(dist_code, params_ptr, value);
     } else if constexpr (MODE == 5) {
         return gretl_get_cdf_inverse(dist_code, params_ptr, value);
-    }else {
-        throw std::runtime_error("gretl_get_pvalue_critval: unknown MODE =", MODE);
+    } else {
+        throw std::runtime_error("gretl_get_pvalue_critval: unknown MODE = " + std::to_string(MODE));
     }
 }
 template double gretl_get_pvalue_critval_pdf_cdf<1>(const std::string&, double, const py::object&);
