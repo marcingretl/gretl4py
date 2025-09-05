@@ -1,5 +1,6 @@
 recursive-include gretl *.py
 recursive-include gretl/lib *
+recursive-include gretl/lib/data *.bin *.gz
 recursive-include gretl/data *.csv *.gdt
 recursive-include gretl/tmp *
 recursive-include gretl/examples *

@@ -108,13 +108,13 @@ print(ST_s)
 
 print("\n7.5.6: Estimating the Effect of a Wage Change")
 njmin3.set_as_default()
-njmin3.print(summary=1)
 njmin3.new_list(name='v1', value='nj d d_nj')
 njmin3.new_list(name='v2', value='kfc roys wendys co_owned')
 njmin3.new_list(name='v3', value='southj centralj pa1')
 NJ_1 = gretl.ols('fte const v1', simple=True).fit()        # (7.22)
 NJ_2 = gretl.ols('fte const v1 v2', simple=True).fit()
 NJ_3 = gretl.ols('fte const v1 v2 v3', simple=True).fit()
+print()
 mdls = [NJ_1, NJ_2, NJ_3]
 gretl.modeltab(mdls)
 
