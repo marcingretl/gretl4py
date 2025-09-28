@@ -53,7 +53,7 @@ ext_modules = [
 
 setup(
     name='gretl4py',
-    version='0.21',
+    version='0.30',
     license='GPL-3.0-or-later',
     description='Python bindings for gretl',
     python_requires='>=3.11',

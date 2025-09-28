@@ -1,4 +1,4 @@
-version 0.22:
+version 0.30:
     - add interface to 'summary'
     - make gretl.get_data() more functional
     - add time-series filters: Hodrick-Prescott, Baxter-King, and Butterworth

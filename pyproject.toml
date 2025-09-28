@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "gretl4py"
-version = "0.22"
+version = "0.30"
 requires-python = ">=3.11"
 description = "Python bindings for gretl"
 readme = { file = "README.md", content-type = "text/markdown" }
