@@ -18,6 +18,7 @@ version 0.30:
     - add GretlDataset methods: ::diff(), ::ldiff(), ::sdiff(), ::corr(), and ::cov()
     - add GretlModel_NSE::adj_rsq() method
     - fix bug related with missing ''lib/data' dir
+    - fix runtime numpy depndency
 
 version 0.21:
     - 'lagselect' switched off for VAR due to SIGSEGV

@@ -8,6 +8,9 @@ version = "0.30"
 requires-python = ">=3.11"
 description = "Python bindings for gretl"
 readme = { file = "README.md", content-type = "text/markdown" }
+dependencies = [
+    "numpy>=1.22",
+]
 
 [project.urls]
 Documentation = "https://gretl.sourceforge.net/gretl4py.html"
