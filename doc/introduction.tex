@@ -1,7 +1,7 @@
 \section{Introduction}\label{sec:introduction}
 The \gretlpy package is a software collection that
 provides an interface to \lgretl \citep{gretl_manual}
-for the \python{3.xx} (3.11, 3.12, and 3.13 were tested)
+for the \python{3.xx} (3.11, 3.12, 3.13, and 3.14 were tested)
 language and consists of the following elements:
 \begin{itemize}
   \item binary bindings written in \cpp,
@@ -10,12 +10,7 @@ language and consists of the following elements:
   \item a set of utility functions implemented in \python
     (see Sections~\ref{sec:module_related_python}--\ref{sec:data_management_python}).
 \end{itemize}
-On \cpp level, we use two additional libraries: \pkg{pyind11}
-\citep[see][for details]{pybind11} and \pkg{simdjson}
-\citep[see][for details]{simdjson_2024}.
+On \cpp level, we use \pkg{pyind11}
+\citep[see][for details]{pybind11}.
 
-To run, the package needs to be installed in the \python
-module search path, along with the required \python packages
-(see \ref{sec:system_requirements} for details).
-The source tree is organized according to scheme outlined
-in Appendix~\ref{sec:source_tree}.
+The package is distributed in \texttt{wheel} format (\url{https://packaging.python.org/en/latest/glossary/#term-Wheel}).

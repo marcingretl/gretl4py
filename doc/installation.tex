@@ -1,15 +1,17 @@
 \section{Installation or Compilation}
 \subsection{Installation}\label{sec:install}
 
-In the near future, the \gretlpy{} package will be available
-via the PyPI infrastructure, so installation will be possible
-using \texttt{pip}. For now, only \texttt{wheel}
-snapshots are available. To install the package, please
-download the appropriate \texttt{.whl} file from the following address:
-\url{https://sourceforge.net/projects/gretl/files/gretl4py/snapshots/}.
+The \gretlpy{} package is available
+via the PyPI infrastructure, so installation requires calling:
+\begin{verbatim}
+python3(.exe) -m pip install gretl4py
+\end{verbatim}
 
-For example, to install \gretlpy on MS~Windows for \python[3.13],
-run the following command:
+In addition, \texttt{wheel}
+snapshots are also available at
+\url{https://sourceforge.net/projects/gretl/files/gretl4py/snapshots/}.
+To install the package, please download the appropriate \texttt{.whl}
+file and run the following command:
 
 \begin{verbatim}
 python.exe -m pip install gretl4py-0.2-cp313-cp313-win_amd64.whl
@@ -85,75 +87,3 @@ of \python being used.
 To verify the installation, run \texttt{python3 -c "import gretl; gretl.about(True)"};
 this should produce output similar to Figure~\ref{fig:mswindows_about}.
 
-
-%\subsection{Compilation on MS~Windows -- Native}
-%Currently, native compilation on MS~Windows is supported only with the
-%LLVM/Clang compiler. For more details, refer to the official
-%documentation at \url{https://clang.llvm.org} and the LLVM project
-%releases at \url{https://github.com/llvm/llvm-project/releases}.
-%Support for Microsoft's \texttt{cl.exe} compiler is under development,
-%which is related with that fact that \texttt{cl.exe} is not C99 standard
-%compliant in terms of complex numbers (see
-%\url{https://learn.microsoft.com/en-us/cpp/c-runtime-library/complex-math-support?view=msvc-170}
-%for details).
-%
-%Before compiling \gretlpy on MS~Windows, ensure the following components
-%are installed:
-%\begin{enumerate}
-%\item Microsoft Visual Studio or, at a minimum, the Microsoft SDK;
-%\item The libgretl stack for the Microsoft SDK, available at:
-%  \url{https://sourceforge.net/projects/gretl/files/mscompile}\newline
-%  or \url{https://sourceforge.net/projects/libgretl-for-ms-sdk};
-%\item A \cpp compiler with support for \texttt{std=c++17} (tested
-%  versions include \texttt{clang++} 18.x and 19.x).
-%\end{enumerate}
-%Additionally, ensure your system meets all requirements outlined in
-%Section~\ref{sec:system_requirements}.
-%
-%To compile the module, execute the \texttt{compile.bat}
-%script in the \gretlpy top-level directory. This will
-%generate the following three files in the \texttt{gretl} directory:
-%\begin{itemize}
-%\item \texttt{\_gretl.cp3xx-win\_amd64.exp}
-%\item \texttt{\_gretl.cp3xx-win\_amd64.lib}
-%\item \texttt{\_gretl.cp3xx-win\_amd64.pyd}
-%\end{itemize}
-%Here, \texttt{3xx} refers to the version of \python in use.  For
-%installation instructions, refer to the procedure described in
-%Section~\ref{sec:windows_install}.
-%
-%
-%\subsection{Compilation on MS~Windows -- \pkg{MSYS2}}
-%Compiling on MS~Windows with \pkg{MSYS2} is very similar
-%to the process on GNU/\-Linux. The only difference is that
-%you should run ``\texttt{make -f winmsys2.mk}''.
-%
-%Note that the resulting \texttt{\_gretl.cp3xx-mingw\_x86\_64\_ucrt.pyd}
-%file is not compatible with the native MS~Windows \python distribution.
-%
-%
-%\subsection{Compilation on macOS}
-%Compiling on macOS\footnote{Note that compilation for macOS versions
-%	earlier than 10.15 might be very difficult, if not impossible,
-%	due to the requirement for full \texttt{C++17} support.}
-%is also similar to GNU/Linux. In this case we
-%assume that the Xcode Command Line Tools are installed. You also need
-%a suitable version of \texttt{python3}---\textit{not} the one supplied
-%with Xcode, which is really just for internal use. Good options for
-%installing python for macOS can be found at
-%\url{https://docs.python.org/3/using/mac.html} and
-%\url{https://ports.macports.org/port/python313}. In addition, the
-%\pkg{pybind11} module is needed.
-%
-%Then all you have to do is run ``\texttt{make}'' in
-%the top-level \gretlpy directory. This should create
-%\texttt{\_gretl.cpython-3xx-darwin.so} (where \texttt{xx}
-%represents two numbers that depend on the version of
-%\texttt{python3}), in the \texttt{gretl} subdirectory.
-%Follow up with ``\texttt{make install}'' to install the
-%required files under \texttt{Library/Python} in your home directory.
-
-%%% Local Variables:
-%%% mode: latex
-%%% TeX-master: "gretl4py"
-%%% End:
