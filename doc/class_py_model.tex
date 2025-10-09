@@ -1,103 +1,91 @@
 \subsection{\classpymodel}\label{sec:class_py_model}
 The \gretlpy module implements the \classpymodel class,
 which is used to manage the definition, estimation,
-and output of models. The constructor of this class
-has the following signature:
-\begin{lstlisting}[style=pythonstyle]
-def __init__(self, name, *args, **kwargs)
-\end{lstlisting}
-
-\vspace*{20pt}\noindent The \classpymodel class provides the
+and output of models. This class provides the
 following public attributes:
 
 \gretlfpycmd{aic}
 \estdesc{Holds value of Akaike criterion.}
 \begin{lstlisting}[style=pythonstyle]
-float = Model.aic
+gretl._gretl.Model.aic -> float
 \end{lstlisting}
 
 \gretlfpycmd{args}
 \estdesc{Options passed as \pythcode{*args}.}
 \begin{lstlisting}[style=pythonstyle]
-tuple = Model.args
+gretl._gretl.Model.args -> tuple
 \end{lstlisting}
 
 \gretlfpycmd{bic}
 \estdesc{Holds value of Schwartz criterion.}
 \begin{lstlisting}[style=pythonstyle]
-float = Model.bic
+gretl._gretl.Model.bic -> float
 \end{lstlisting}
 
 \gretlfpycmd{computed}
 \estdesc{Indicates if the model was estimated.}
 \begin{lstlisting}[style=pythonstyle]
-bool = Model.computed
+gretl._gretl.Model.computed -> bool
 \end{lstlisting}
 
 \gretlfpycmd{coeff}
 \estdesc{Holds coefficient estimates.}
 \begin{lstlisting}[style=pythonstyle]
-list = Model.coeff
+gretl._gretl.Model.coeff -> numpy.ndarray
 \end{lstlisting}
 
 \gretlfpycmd{hqc}
 \estdesc{Holds value of Hannan-Quinn criterion.}
 \begin{lstlisting}[style=pythonstyle]
-float = Model.hqc
+gretl._gretl.Model.hqc -> float
 \end{lstlisting}
 
 \gretlfpycmd{lnl}
 \estdesc{Holds the log-likelihood for the last estimated model.}
 \begin{lstlisting}[style=pythonstyle]
-float = Model.lnl
+gretl._gretl.Model.lnl -> float
 \end{lstlisting}
 
 \gretlfpycmd{oddsratios}\index{logit()}
 \estdesc{Holds oddsratios for logit model (if available).}
 \begin{lstlisting}[style=pythonstyle]
-list = Model.oddsratios
-\end{lstlisting}
-
-\gretlfpycmd{options}
-\estdesc{Options passed as \pythcode{**kwargs}.}
-\begin{lstlisting}[style=pythonstyle]
-dict = Model.options
+gretl._gretl.Model.oddsratios -> list
 \end{lstlisting}
 
 \gretlfpycmd{parnames}
 \estdesc{Holds names of coefficients.}
 \begin{lstlisting}[style=pythonstyle]
-list = Model.parnames
+gretl._gretl.Model.parnames -> list
 \end{lstlisting}
 
 \gretlfpycmd{rsq}
 \estdesc{Holds R-squared.}
 \begin{lstlisting}[style=pythonstyle]
-float = Model.rsq
+gretl._gretl.Model.rsq -> float
 \end{lstlisting}
 
 \gretlfpycmd{sigma}
 \estdesc{Holds standard errors of residuals.}
 \begin{lstlisting}[style=pythonstyle]
-float = Model.sigma
+Model.sigma -> float
 \end{lstlisting}
 
 \gretlfpycmd{stderr}
 \estdesc{Holds standard errors of coefficient estimates.}
 \begin{lstlisting}[style=pythonstyle]
-list = Model.stderr
+gretl._gretl.Model.stderr -> numpy.ndarray
 \end{lstlisting}
 
 \gretlfpycmd{summary}
 \estdesc{Model's output.}
 \begin{lstlisting}[style=pythonstyle]
-str = Model.summary
+gretl._gretl.Model.summary -> str
 \end{lstlisting}
 
 \gretlfpycmd{uhat}
 \estdesc{Holds model residuals.}
 \begin{lstlisting}[style=pythonstyle]
-list = Model.uhat
+gretl._gretl.Model.uhat -> numpy.ndarray
 \end{lstlisting}
 \generaldesc{Note: in case of \gretlcmd{biprobit}\index{biprobit()},
   \texttt{bp\_uhat} entry of \gretlcmd{\$model} bundle is returned.}
@@ -105,7 +93,7 @@ list = Model.uhat
 \gretlfpycmd{yhat}
 \estdesc{Holds fitted values.}
 \begin{lstlisting}[style=pythonstyle]
-list = Model.yhat
+gretl._gretl.Model.yhat -> numpy.ndarray
 \end{lstlisting}
 \generaldesc{Note: in case of \gretlcmd{biprobit}\index{biprobit()},
   \texttt{bp\_yhat} entry of \gretlcmd{\$model} bundle is returned.}
@@ -117,7 +105,7 @@ following public methods:
 \gretlfpycmd{attrs()}
 \estdesc{Prints a listing of the attributes of a model.}
 \begin{lstlisting}[style=pythonstyle]
-Model.attrs(self)
+gretl._gretl.Model.attrs(self)
 \end{lstlisting}
 \generaldesc{For scalars and short strings the values of the attributes
   are printed, otherwise the Python type is shown.}
@@ -126,17 +114,17 @@ Model.attrs(self)
 \estdesc{Executes the underlying implementation of
 the specified estimator in \gretlpy.}
 \begin{lstlisting}[style=pythonstyle]
-gretl.Model = Model.fit(self)
+Model.fit(self) -> self
 \end{lstlisting}
 
 \gretlfpycmd{id()}
 \estdesc{Model's ID (assigned by \lgretl).}
 \begin{lstlisting}[style=pythonstyle]
-int = Model.id(self)
+gretl._gretl.Model.id(self) -> int
 \end{lstlisting}
 
 \gretlfpycmd{oddsratio()}\index{logit()}
 \estdesc{Pretty-prints odds ratios for a logit model (if available).}
 \begin{lstlisting}[style=pythonstyle]
-Model.oddsratio(self)
+gretl._gretl.Model.oddsratio(self)
 \end{lstlisting}
