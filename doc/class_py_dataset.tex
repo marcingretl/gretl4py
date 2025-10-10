@@ -2,18 +2,30 @@
 The \classpydataset class provides the following public methods:
 
 \gretlfpycmd{\_\_copy\_\_()}
-\estdesc{XXX}
+\estdesc{Creates a deep copy of the \classpydataset object.}
 \begin{lstlisting}[style=pythonstyle]
-gretl._gretl.Dataset.XXX
+import copy
+dataset_copy = copy.copy(gretl._gretl.Dataset)
 \end{lstlisting}
-\generaldesc{XXX}
+\generaldesc{This method returns a new, fully independent
+	\pythcode{gretl.\_gretl.Dataset} object that duplicates
+	all elements of the original dataset. Changes made to
+	the copy do not affect the original object. Although
+	it is invoked by the standard \pythcode{copy.copy()}
+	function, it performs a deep copy of all dataset
+	contents.}
 
 \gretlfpycmd{\_\_repr\_\_()}
-\estdesc{XXX}
+\estdesc{Returns a string representation of the \classpydataset object.}
 \begin{lstlisting}[style=pythonstyle]
-gretl._gretl.Dataset.XXX
+repr(gretl._gretl.Dataset)
+print(gretl._gretl.Dataset)
 \end{lstlisting}
-\generaldesc{XXX}
+\generaldesc{This method returns a concise textual summary of the
+	\pythcode{gretl.\_gretl.Dataset} object, suitable for inspection
+	or debugging. It is automatically invoked by the built-in
+	\pythcode{repr()} function and when the object is printed
+	in an interactive session.}
 
 \gretlfpycmd{get\_id()}
 \estdesc{XXX}

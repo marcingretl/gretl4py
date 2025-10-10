@@ -2,13 +2,21 @@
 The \classpybundle class provides the following operators:
 
 \gretlfpycmd{[]}
-\estdesc{XXX}
+\estdesc{Operator for accessing or assigning a \gretlcmd{bundle}
+	element stored under a given \texttt{key}.}
 \begin{lstlisting}[style=pythonstyle]
-	gretl._gretl.Bundle.XXX
+object = gretl._gretl.Bundle[key]
+gretl._gretl.Bundle[key] = object
 \end{lstlisting}
-\generaldesc{XXX}
+\generaldesc{This operator retrieves or inserts (updates) the
+	\pythcode{object} associated with \texttt{key} in
+	\pythcode{gretl.\_gretl.Bundle}.
+	The \pythcode{object} may be one of the following types:
+	\pythcode{bool}, \pythcode{int}, \pythcode{float},
+	\pythcode{str}, \pythcode{numpy.ndarray},
+	or another \pythcode{gretl.\_gretl.Bundle}.}
 
-The \classpybundle class provides the following public methods:
+\vspace*{10pt}\noindent The \classpybundle class provides the following public methods:
 
 \gretlfpycmd{to\_dict()}
 \estdesc{XXX}

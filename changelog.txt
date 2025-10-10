@@ -19,6 +19,8 @@ version 0.30:
     - add GretlModel_NSE::adj_rsq() method
     - fix bug related with missing ''lib/data' dir
     - fix runtime numpy depndency
+    - add initial support for python 3.14
+    - some doc updated/upgrades
 
 version 0.21:
     - 'lagselect' switched off for VAR due to SIGSEGV
