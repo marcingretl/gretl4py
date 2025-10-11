@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools", "wheel"]
+requires = ["setuptools>=65", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -8,9 +8,26 @@ version = "0.30"
 requires-python = ">=3.11"
 description = "Python bindings for gretl"
 readme = { file = "README.md", content-type = "text/markdown" }
+dynamic = ["license"]
 dependencies = [
     "numpy>=1.22",
 ]
 
 [project.urls]
 Documentation = "https://gretl.sourceforge.net/gretl4py.html"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["gretl", "gretl.*"]
+exclude = ["**/__pycache__"]
+
+[tool.setuptools.package-data]
+"gretl" = [
+    "gretl4py_addons.py",
+    "gretl4py_classes.py",
+    "__init__.py",
+    "lib/*",
+    "data/*",
+    "tmp/*",
+    "examples/*",
+]
