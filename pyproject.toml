@@ -5,13 +5,25 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "gretl4py"
 version = "0.30"
+authors = [
+    { name = "Marcin Błażejowski", email = "marcin@gretlconference.org" }
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: C++",
+    "Operating System :: OS Independent",
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Topic :: Scientific/Engineering"
+]
 requires-python = ">=3.11"
 description = "Python bindings for gretl"
 readme = { file = "README.md", content-type = "text/markdown" }
-dynamic = ["license"]
 dependencies = [
     "numpy>=1.22",
 ]
+license = "GPL-3.0-or-later"
+license-files = ["LICENSE"]
 
 [project.urls]
 Documentation = "https://gretl.sourceforge.net/gretl4py.html"
@@ -23,6 +35,7 @@ exclude = ["**/__pycache__"]
 
 [tool.setuptools.package-data]
 "gretl" = [
+    "_gretl*",
     "gretl4py_addons.py",
     "gretl4py_classes.py",
     "__init__.py",

@@ -1,6 +1,12 @@
+include LICENSE
+include README.md
+
 recursive-include gretl *.py
 recursive-include gretl/lib *
 recursive-include gretl/lib/data *.bin *.gz
 recursive-include gretl/data *.csv *.gdt
 recursive-include gretl/tmp *
 recursive-include gretl/examples *
+
+# Exclude all bytecode, caches, and temp files
+global-exclude __pycache__ *.py[cod] *.pyo .DS_Store
