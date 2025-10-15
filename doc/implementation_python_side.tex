@@ -56,6 +56,88 @@ gretl.version -> str
 \end{lstlisting}
 
 
+\gretlfpycmd{summary()}
+\estdesc{XXX}
+\begin{lstlisting}[style=pythonstyle]
+gretl._gretl.summary(varlist=str, [OPTS])
+\end{lstlisting}
+\generaldesc{XXX}
+
+\gretlfpycmd{include()}
+\estdesc{XXX}
+\begin{lstlisting}[style=pythonstyle]
+gretl._gretl.include(name=str) -> gretl._gretl.Package
+\end{lstlisting}
+\generaldesc{XXX}
+
+\gretlfpycmd{delete()}
+\estdesc{XXX}
+\begin{lstlisting}[style=pythonstyle]
+gretl._gretl.delete(name=str)
+\end{lstlisting}
+\generaldesc{XXX}
+
+\gretlfpycmd{pvalue()}
+\estdesc{XXX}
+\begin{lstlisting}[style=pythonstyle]
+gretl._gretl.pvalue(dist=str, value=float, param=object) -> float
+\end{lstlisting}
+\generaldesc{XXX}
+
+\gretlfpycmd{critical()}
+\estdesc{XXX}
+\begin{lstlisting}[style=pythonstyle]
+gretl._gretl.critical(dist=str, value=float, param=object) -> float
+\end{lstlisting}
+\generaldesc{XXX}
+
+\gretlfpycmd{pdf()}
+\estdesc{XXX}
+\begin{lstlisting}[style=pythonstyle]
+gretl._gretl.pdf(dist=str, value=float, param=object) -> float
+\end{lstlisting}
+\generaldesc{XXX}
+
+\gretlfpycmd{cdf()}
+\estdesc{XXX}
+\begin{lstlisting}[style=pythonstyle]
+gretl._gretl.cdf(dist=str, value=float, param=object) -> float
+\end{lstlisting}
+\generaldesc{XXX}
+
+\gretlfpycmd{invcdf()}
+\estdesc{XXX}
+\begin{lstlisting}[style=pythonstyle]
+gretl._gretl.invcdf(dist=str, value=float, param=object) -> float
+\end{lstlisting}
+\generaldesc{XXX}
+
+\gretlfpycmd{uservar\_print()}
+\estdesc{XXX}
+\begin{lstlisting}[style=pythonstyle]
+gretl._gretl.uservar_print(name=str, data=gretl._gretl.Dataset)
+\end{lstlisting}
+\generaldesc{XXX}
+
+\gretlfpycmd{uservars\_list()}
+\estdesc{XXX}
+\begin{lstlisting}[style=pythonstyle]
+gretl._gretl.uservars_list(void)
+\end{lstlisting}
+\generaldesc{XXX}
+
+\gretlfpycmd{genr()}
+\estdesc{XXX}
+\begin{lstlisting}[style=pythonstyle]
+gretl._gretl.genr(formula=str, data=gretl._gretl.Dataset)
+gretl._gretl.genr(name=str, value=numpy.ndarray)
+gretl._gretl.genr(name=str, value=int)
+gretl._gretl.genr(name=str, value=float)
+gretl._gretl.genr(name=str, value=str)
+\end{lstlisting}
+\generaldesc{XXX}
+
+
 \subsection{Data management}\label{sec:data_management_python}
 \gretlpy expects a dataset provided in one of the following formats:
 \begin{enumerate}
@@ -131,6 +213,7 @@ gretl.df2dict(pandas.dframe, [pd=int, with_obs=bool]) -> dict
 \gretlfpycmd{get\_data()}
 \begin{lstlisting}[style=pythonstyle]
 gretl.get_data(fname=str) -> gretl._gretl.Dataset
+gretl.get_data(pydict=dict) -> gretl._gretl.Dataset
 \end{lstlisting}
 \generaldesc{This function registers the specified
 	\texttt{gdt}, \texttt{gdtb}, \texttt{csv}, \texttt{dta},
