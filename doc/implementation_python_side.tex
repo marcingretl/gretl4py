@@ -258,14 +258,14 @@ gretl.nparray2dict(X=numpy.array,
 		column holds the constant term (default:~1).
 \end{itemize}}
 
-\gretlfpycmd{sample()}
-\begin{lstlisting}[style=pythonstyle]
-gretl.sample([OPTS])
-\end{lstlisting}
-\generaldesc{This function serves as an interface to the
-	\gretlcmd{smpl} command \citep[see][for details]{gretl_command}.
-	It defines the length of the current sample and accepts
-	the \gretlcmd{smpl} command's parameters as optional arguments.}
+%\gretlfpycmd{sample()}
+%\begin{lstlisting}[style=pythonstyle]
+%gretl.sample([OPTS])
+%\end{lstlisting}
+%\generaldesc{This function serves as an interface to the
+%	\gretlcmd{smpl} command \citep[see][for details]{gretl_command}.
+%	It defines the length of the current sample and accepts
+%	the \gretlcmd{smpl} command's parameters as optional arguments.}
 
 \gretlfpycmd{series2dict()}
 \begin{lstlisting}[style=pythonstyle]
@@ -283,6 +283,18 @@ gretl.series2dict(series, [pd=int, varname=str]) -> dict
 \end{itemize}}
 
 \gretlfpycmd{summary()}
+
+\gretlfpycmd{fc\_print()}
+
+\gretlfpycmd{print\_module\_source()}
+
+\gretlfpycmd{modeltab()}
+
+\gretlfpycmd{show\_data\_status()}
+
+\gretlfpycmd{}
+
+\gretlfpycmd{}
 
 
 
