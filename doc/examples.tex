@@ -43,32 +43,6 @@ and loading datasets into \gretlpy. Note that the
 \texttt{longley.csv} file used in the examples below
 can be found in the \texttt{examples} directory.
 
-\subsection{Attaching data}\label{sec:attaching_data_python_examples}
-The following functions are designed to register
-a global dataset in \gretlpy.
-
-\gretlfpycmd{attach\_data()}\index{csv2dict()}
-\estdesc{To register an existing dictionary compatible with
-  \gretlpy, the following minimal code snippet can be used:}
-\begin{lstlisting}[style=pythonstyle]
-import gretl
-
-gretl.attach_data(gretl.csv2dict('longley.csv'))
-\end{lstlisting}
-
-\gretlfpycmd{attach\_gretl\_data()}\index{gretl\_data\_path()}
-\estdesc{To register an existing \texttt{gdt}, \texttt{gdtb},
-	\texttt{csv}, \texttt{dta}, \texttt{wf1}, or spreadsheet
-	(\texttt{xls}, \texttt{xlsx}, and \texttt{ods}) file as a
-	global dataset, the following minimal code snippet can be used:}
-\begin{lstlisting}[style=pythonstyle]
-import gretl
-
-gretl.attach_gretl_data(
-	gretl.gretl_data_path('misc/longley.gdt'))
-\end{lstlisting}
-
-
 \subsection{Loading data from external files}
 The following functions are designed to load external
 data files into a dictionary compatible with \gretlpy.
@@ -132,17 +106,15 @@ d = gretl.series2dict(s)
 \generaldesc{See \texttt{`examples/data\_management/series2dict.py'} for details.}
 
 
-\gretlfpycmd{get\_gretl\_data()}\index{gretl\_data\_path()}
+\gretlfpycmd{get\_data()}\index{gretl\_data\_path()}
 \estdesc{To load the contents of an existing \texttt{gdt},
 	\texttt{gdtb}, \texttt{csv}, \texttt{dta}, \texttt{wf1},
 	or spreadsheet (\texttt{xls}, \texttt{xlsx}, and \texttt{ods})
-	file into a dictionary compatible with \gretlpy, the
-	following minimal code snippet can be used:}
+	the following minimal code snippet can be used:}
 \begin{lstlisting}[style=pythonstyle]
 import gretl
 
-d = gretl.get_gretl_data(
-	gretl.gretl_data_path('misc/longley.gdt'))
+d = gretl.get_data(gretl.gretl_data_path('misc/longley.gdt'))
 \end{lstlisting}
 
 \subsection{Helper functions}\label{sec:helper_functions_data_python_examples}
@@ -157,7 +129,7 @@ import gretl
 p = gretl.gretl_data_path('misc/longley.gdt')
 \end{lstlisting}
 
-\gretlfpycmd{print\_data()}\index{gretl\_data\_path()}
+\gretlfpycmd{printdata()}
 \estdesc{To print the contents of the currently registered
   global dataset in \gretlpy, the following minimal code
   snippet can be used:}
@@ -170,18 +142,18 @@ gretl.print_data()
 \end{lstlisting}
 \generaldesc{See \texttt{`examples/helper\_functions/print\_data.py'} for details.}
 
-\gretlfpycmd{sample()}\index{gretl\_data\_path()}
-\estdesc{To modify the sample range of the currently
-  registered global dataset in \gretlpy, the following
-  minimal code snippet can be used:}
-\begin{lstlisting}[style=pythonstyle]
-import gretl
-
-gretl.attach_gretl_data(
-	gretl.gretl_data_path('misc/longley.gdt'))
-gretl.sample(t1=5, t2=10)
-\end{lstlisting}
-\generaldesc{See \texttt{`examples/data\_management/sample.py'} for details.}
+%\gretlfpycmd{sample()}
+%\estdesc{To modify the sample range of the currently
+%  registered global dataset in \gretlpy, the following
+%  minimal code snippet can be used:}
+%\begin{lstlisting}[style=pythonstyle]
+%import gretl
+%
+%gretl.attach_gretl_data(
+%	gretl.gretl_data_path('misc/longley.gdt'))
+%gretl.sample(t1=5, t2=10)
+%\end{lstlisting}
+%\generaldesc{See \texttt{`examples/data\_management/sample.py'} for details.}
 
 
 
