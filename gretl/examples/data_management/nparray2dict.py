@@ -9,3 +9,7 @@ d = gretl.nparray2dict(np)
 
 # Print keys of resulting dictionary
 print(d.keys())
+
+# Print dataset basic info
+dset = gretl.get_data(d)
+print(dset)

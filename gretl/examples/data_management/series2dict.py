@@ -10,5 +10,9 @@ s = pandas.Series(df['employ'].to_list(), index=df['obs'].to_list())
 # Convert the pandas Series into a dictionary compatible with gretl
 d = gretl.series2dict(s)
 
-print(d.keys())
 # Print the keys of the resulting dictionary
+print(d.keys())
+
+# Print dataset basic info
+dset = gretl.get_data(d)
+print(dset)

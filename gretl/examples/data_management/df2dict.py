@@ -9,3 +9,7 @@ d = gretl.df2dict(df, with_obs=True)
 
 # Print keys of the resulting dictionary
 print(d.keys())
+
+# Print dataset basic info
+dset = gretl.get_data(d)
+print(dset)
