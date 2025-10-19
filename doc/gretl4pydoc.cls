@@ -7,13 +7,15 @@
 \RequirePackage[utf8]{inputenc}
 \RequirePackage[pdftex]{xcolor}
 \RequirePackage[]{graphicx}
-\RequirePackage{dirtree,xargs,xspace,url,listings,pifont,makeidx,ifthen,caption,subcaption,fancyvrb}
+
+\RequirePackage{dirtree,xargs,xspace,url,listings,pifont,makeidx,ifthen,caption,subcaption,fancyvrb,tikz,pdflscape}
 \RequirePackage[toc,title]{appendix}
 \usepackage{gretlwp}
 
 \usepackage[colorlinks,pdfusetitle]{hyperref}
 \hypersetup{citecolor=magenta}
 \usepackage[authoryear]{natbib}
+\usetikzlibrary{positioning, arrows.meta, matrix}
 
 \newcommand{\proglang}[1]{\texttt{#1}}
 \newcommand{\pkg}[1]{{\fontseries{b}\selectfont #1}}

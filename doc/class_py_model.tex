@@ -1,8 +1,58 @@
 \subsection{\classpymodel}\label{sec:class_py_model}
 The \gretlpy module implements the \classpymodel class,
 which is used to manage the definition, estimation,
-and output of models. This class provides the
-following public attributes:
+and output of models. Hierarchy of this class is
+shown at Figure~\ref{fig:model_class_hierarchy}.
+
+\begin{landscape}
+	\begin{figure}
+		\begin{tikzpicture}[
+			every node/.style={draw, rounded corners, font=\ttfamily\scriptsize, align=center},
+			->,
+			level distance=3cm,
+			sibling distance=2.5cm
+			]
+
+			% Root
+			\node (model) {Model};
+
+			% Top-level children
+			\node[below left=3cm and 6cm of model] (nse) {Model\_NSE};
+			\node[below right=3cm and 6cm of model] (var) {Model\_VAR};
+
+			% Draw arrows from root
+			\draw (model) -- (nse);
+			\draw (model) -- (var);
+
+			% NSE Drivers grouped in columns
+			\matrix[column sep=1cm, row sep=1cm] at (nse.south) {
+				\node (arima) {Model\_arima}; & \node (ols) {Model\_ols}; & \node (wls) {Model\_wls}; & \node (logit) {Model\_logit}; & \node (probit) {Model\_probit}; \\
+				\node (poisson) {Model\_poisson}; & \node (negbin) {Model\_negbin}; & \node (biprobit) {Model\_biprobit}; & \node (duration) {Model\_duration}; & \node (heckit) {Model\_heckit}; \\
+				\node (logistic) {Model\_logistic}; & \node (ar) {Model\_ar}; & \node (ar1) {Model\_ar1}; & \node (lad) {Model\_lad}; & \node (garch) {Model\_garch}; \\
+				\node (mpols) {Model\_mpols}; & \node (panel) {Model\_panel}; & \node (ivreg) {Model\_ivreg}; & \node (tobit) {Model\_tobit}; & \node (hsk) {Model\_hsk}; \\
+				\node (intreg) {Model\_intreg}; & \node (midasreg) {Model\_midasreg}; & \node (dpanel) {Model\_dpanel}; & \node (quantreg) {Model\_quantreg}; & \node {}; \\};
+
+			% Connect NSE driver nodes to NSE root
+			\foreach \i in {arima, ols, wls, logit, probit,
+				poisson, negbin, biprobit, duration, heckit,
+				logistic, ar, ar1, lad, garch,
+				mpols, panel, ivreg, tobit, hsk,
+				intreg, midasreg, dpanel, quantreg}
+			{\draw (nse.south) -- (\i.north);}
+
+			% VAR and VECM
+			\node[below=1.5cm of var] (vecm) {Model\_vecm};
+			\draw (var.south) -- (vecm.north);
+		\end{tikzpicture}
+	\caption{\classpymodel hierarchy}
+	\label{fig:model_class_hierarchy}
+	\end{figure}
+\end{landscape}
+
+
+This class provides the following public attributes,
+thought some of them may be available for certain
+estimators only:
 
 \gretlfpycmd{aic}
 \estdesc{Holds value of Akaike criterion.}
