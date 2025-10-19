@@ -1,3 +1,6 @@
+version 0.31:
+    - allow 'quiet' option for VAR/VECM
+
 version 0.30:
     - add interface to 'summary'
     - make gretl.get_data() more functional

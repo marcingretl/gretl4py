@@ -152,7 +152,7 @@ void GretlModel::unpack_kwargs (GretlCmdIndex ci)
             // special case: we use already allocated object of GretlDataset class
             GD = item.second.cast<GretlDatasetPtr>();
             continue;
-        } else if (key == "quiet") {
+        } else if (key == "quiet" && !(ci == VAR || ci == VECM)) {
             throw std::invalid_argument("invalid option flag: " + key);
         } else if (key == "seasonal" && ci == ARMA) {
             // arima special: we check seasonal
