@@ -49,10 +49,146 @@ shown at Figure~\ref{fig:model_class_hierarchy}.
 	\end{figure}
 \end{landscape}
 
+\vspace*{20pt}\noindent The \classpymodel class provides the
+following public methods:
 
-This class provides the following public attributes,
-thought some of them may be available for certain
-estimators only:
+\gretlfpycmd{attrs()}
+\estdesc{Prints a listing of the attributes of a model.}
+\begin{lstlisting}[style=pythonstyle]
+gretl._gretl.Model.attrs(self)
+\end{lstlisting}
+\generaldesc{For scalars and short strings the values of the attributes
+	are printed, otherwise the Python type is shown.}
+
+\gretlfpycmd{fit()}
+\estdesc{Executes the underlying implementation of
+	the specified estimator in \gretlpy.}
+\begin{lstlisting}[style=pythonstyle]
+Model.fit(self) -> self
+\end{lstlisting}
+
+\gretlfpycmd{id()}
+\estdesc{Model's ID (assigned by \lgretl).}
+\begin{lstlisting}[style=pythonstyle]
+gretl._gretl.Model.id(self) -> int
+\end{lstlisting}
+
+\gretlfpycmd{oddsratio()}
+\estdesc{Pretty-prints odds ratios for a logit model (if available).}
+\begin{lstlisting}[style=pythonstyle]
+gretl._gretl.Model.oddsratio(self)
+\end{lstlisting}
+
+
+\gretlfpycmd{get\_accessor()}
+\estdesc{XXX}
+\begin{lstlisting}[style=pythonstyle]
+gretl._gretl.Model.get_accessor(accessor=str) -> object
+\end{lstlisting}
+
+\gretlfpycmd{fcast()}
+\estdesc{XXX}
+\begin{lstlisting}[style=pythonstyle]
+gretl._gretl.Model.fcast([OPT])
+\end{lstlisting}
+
+\gretlfpycmd{get\_formula()}
+\estdesc{XXX}
+\begin{lstlisting}[style=pythonstyle]
+gretl._gretl.Model.get_formula(self) -> str
+\end{lstlisting}
+
+\gretlfpycmd{get\_bundle()}
+\estdesc{XXX}
+\begin{lstlisting}[style=pythonstyle]
+gretl._gretl.Model.get_bundle(self) -> gretl._gretl.Bundle
+\end{lstlisting}
+
+\gretlfpycmd{restrict()}
+\estdesc{XXX}
+\begin{lstlisting}[style=pythonstyle]
+gretl._gretl.Model.restrict(impose=list, [OPTS])
+\end{lstlisting}
+
+\gretlfpycmd{save\_yhat()}
+\estdesc{XXX}
+\begin{lstlisting}[style=pythonstyle]
+gretl._gretl.Model.save_yhat(name=str) -> str
+\end{lstlisting}
+
+\gretlfpycmd{save\_yhat()}
+\estdesc{XXX}
+\begin{lstlisting}[style=pythonstyle]
+	gretl._gretl.Model.save_yhat(name=str) -> str
+\end{lstlisting}
+
+\gretlfpycmd{save\_uhat()}
+\estdesc{XXX}
+\begin{lstlisting}[style=pythonstyle]
+gretl._gretl.Model.save_uhat(name=str) -> str
+\end{lstlisting}
+
+\gretlfpycmd{save\_uhat\_sq()}
+\estdesc{XXX}
+\begin{lstlisting}[style=pythonstyle]
+gretl._gretl.Model.save_uhat_sq(name=str) -> str
+\end{lstlisting}
+
+\gretlfpycmd{save\_h()}
+\estdesc{XXX}
+\begin{lstlisting}[style=pythonstyle]
+gretl._gretl.Model.save_h(name=str) -> str
+\end{lstlisting}
+
+\gretlfpycmd{adj\_rsq()}
+\estdesc{XXX}
+\begin{lstlisting}[style=pythonstyle]
+gretl._gretl.Model.adj_rsq(self) -> float
+\end{lstlisting}
+
+\gretlfpycmd{test()}
+\estdesc{XXX}
+\begin{lstlisting}[style=pythonstyle]
+gretl._gretl.Model.test(type=str, [OPTS])
+\end{lstlisting}
+\generaldesc{\gretlcmd{bkw, cusum, leverage, panspec, reset, qlrtest, vif,
+		corrgm, arch, autocorr, breusch-pagan, comfac, logs, normality,
+		panel, squares, white, white-nocross, xdepend}}
+
+\vspace*{20pt}\noindent The \pythcode{gretl.\_gretl.Model\_var}
+class provides the following public methods:
+
+\gretlfpycmd{irf()}
+\estdesc{XXX}
+\begin{lstlisting}[style=pythonstyle]
+gretl._gretl.Model_var.irf(targ=int, shock=int, alpha=float)
+\end{lstlisting}
+
+\gretlfpycmd{irf()}
+\estdesc{XXX}
+\begin{lstlisting}[style=pythonstyle]
+gretl._gretl.Model_var.irf(targ=str, shock=str, alpha=float)
+\end{lstlisting}
+
+\gretlfpycmd{save\_uhat()}
+\estdesc{XXX}
+\begin{lstlisting}[style=pythonstyle]
+gretl._gretl.Model_var.save_uhat(eqn=int, name=str) -> str
+\end{lstlisting}
+
+\vspace*{20pt}\noindent The \pythcode{gretl.\_gretl.Model\_vecm}
+class provides the following public methods:
+
+\gretlfpycmd{save\_ec\_term()}
+\estdesc{XXX}
+\begin{lstlisting}[style=pythonstyle]
+gretl._gretl.Model_vecm.(nr=int, name=str) -> str
+\end{lstlisting}
+
+
+\vspace*{20pt}\noindent The \classpymodel class provides
+the following public attributes, thought some of them
+may be available for certain estimators only:
 
 \gretlfpycmd{aic}
 \estdesc{Holds value of Akaike criterion.}
@@ -96,7 +232,7 @@ gretl._gretl.Model.hqc -> float
 gretl._gretl.Model.lnl -> float
 \end{lstlisting}
 
-\gretlfpycmd{oddsratios}\index{logit()}
+\gretlfpycmd{oddsratios}
 \estdesc{Holds oddsratios for logit model (if available).}
 \begin{lstlisting}[style=pythonstyle]
 gretl._gretl.Model.oddsratios -> list
@@ -147,34 +283,3 @@ gretl._gretl.Model.yhat -> numpy.ndarray
 \end{lstlisting}
 \generaldesc{Note: in case of \gretlcmd{biprobit}\index{biprobit()},
   \texttt{bp\_yhat} entry of \gretlcmd{\$model} bundle is returned.}
-
-
-\vspace*{20pt}\noindent The \classpymodel class provides the
-following public methods:
-
-\gretlfpycmd{attrs()}
-\estdesc{Prints a listing of the attributes of a model.}
-\begin{lstlisting}[style=pythonstyle]
-gretl._gretl.Model.attrs(self)
-\end{lstlisting}
-\generaldesc{For scalars and short strings the values of the attributes
-  are printed, otherwise the Python type is shown.}
-
-\gretlfpycmd{fit()}
-\estdesc{Executes the underlying implementation of
-the specified estimator in \gretlpy.}
-\begin{lstlisting}[style=pythonstyle]
-Model.fit(self) -> self
-\end{lstlisting}
-
-\gretlfpycmd{id()}
-\estdesc{Model's ID (assigned by \lgretl).}
-\begin{lstlisting}[style=pythonstyle]
-gretl._gretl.Model.id(self) -> int
-\end{lstlisting}
-
-\gretlfpycmd{oddsratio()}\index{logit()}
-\estdesc{Pretty-prints odds ratios for a logit model (if available).}
-\begin{lstlisting}[style=pythonstyle]
-gretl._gretl.Model.oddsratio(self)
-\end{lstlisting}

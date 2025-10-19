@@ -137,6 +137,24 @@ gretl._gretl.genr(name=str, value=str)
 \end{lstlisting}
 \generaldesc{XXX}
 
+\gretlfpycmd{fc\_print()}
+\estdesc{XXX}
+\begin{lstlisting}[style=pythonstyle]
+gretl.fc_print(fc=dict)
+\end{lstlisting}
+
+\gretlfpycmd{print\_module\_source()}
+\estdesc{XXX}
+\begin{lstlisting}[style=pythonstyle]
+gretl.print_module_source(object)
+\end{lstlisting}
+
+\gretlfpycmd{modeltab()}
+\estdesc{XXX}
+\begin{lstlisting}[style=pythonstyle]
+gretl.modeltab(models=list, output=str, tablefmt=str, stars=bool, coeff_fmt=str, stderr_fmt=str)
+\end{lstlisting}
+
 
 \subsection{Data management}\label{sec:data_management_python}
 \gretlpy expects a dataset provided in one of the following formats:
@@ -231,8 +249,6 @@ gretl.gretl_data_path(fname=str) -> str
 	specified \texttt{gdt} or \texttt{gdtb} file
 	\citep[see][for details]{gretl_manual}.}
 
-\gretlfpycmd{include()}
-
 \gretlfpycmd{nparray2dict()}
 \begin{lstlisting}[style=pythonstyle]
 gretl.nparray2dict(X=numpy.array,
@@ -282,20 +298,11 @@ gretl.series2dict(series, [pd=int, varname=str]) -> dict
 		contains the variable's name (default:~\pythcode{'y'}).
 \end{itemize}}
 
-\gretlfpycmd{summary()}
-
-\gretlfpycmd{fc\_print()}
-
-\gretlfpycmd{print\_module\_source()}
-
-\gretlfpycmd{modeltab()}
-
 \gretlfpycmd{show\_data\_status()}
-
-\gretlfpycmd{}
-
-\gretlfpycmd{}
-
+\estdesc{XXX}
+\begin{lstlisting}[style=pythonstyle]
+gretl._gretl.show_data_status(self)
+\end{lstlisting}
 
 
 \subsection{Estimators}\label{sec:estimators_python}

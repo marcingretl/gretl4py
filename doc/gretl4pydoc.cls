@@ -91,7 +91,7 @@
 		qlrtest, qqplot, quantreg, quit, rename, reset, restrict, rmplot, run, runs, scatters,
 		sdiff, set, setinfo, setobs, setmiss, shell, smpl, spearman, sprintf, square, sscanf, store,
 		summary, system, tabprint, textplot, tobit, tsls, var, varlist, vartest, vecm, vif,
-		wls, xcorrgm, xtab, mpi, gibbs, return, params, pkg, midasreg, johansen},
+		wls, xcorrgm, xtab, mpi, gibbs, return, params, pkg, midasreg, johansen, bkw},
 	morekeywords=[2]{abs, acos, acosh, aggregate, argname, asin, asinh, atan, atanh, bessel,
 		BFGSmax, bkfilt, boxcox, bwfilt, cdemean, cdf, cdiv, ceil, cholesky, chowlin,
 		cmult, cnorm, colname, colnames, cols, cos, cosh, cov,
