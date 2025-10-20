@@ -196,14 +196,14 @@ meson.add_install_script(python, join_paths(meson.project_source_root(), 'instal
 version_str = run_command(
   python,
   '-c',
-  'print(open("VERSION").read().strip())',
+  'print(open("version.cfg").read().strip())',
   check: true
 ).stdout().strip()
 
 configure_file(
   input: 'gretl4py_version.h.in',
   output: 'gretl4py_version.h',
-  configuration: { 'VERSION': version_str }
+  configuration: { 'VERSION': '"' + version_str + '"' }
 )
 
 message('Building gretl4py version: ' + version_str)
