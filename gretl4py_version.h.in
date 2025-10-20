@@ -1,2 +1,2 @@
 #pragma once
-#define GRETL4PY_VERSION @VERSION@
+#define GRETL4PY_VERSION "@VERSION@"

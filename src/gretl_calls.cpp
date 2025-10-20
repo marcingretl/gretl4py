@@ -160,7 +160,7 @@ GretlBundlePtr about (bool do_print)
 
     gretl_push_c_numeric_locale();
 
-    mod_ver = std::to_string(GRETL4PY_VERSION).substr(0,4);
+    mod_ver = std::string(GRETL4PY_VERSION).substr(0,4);
     py11_ver = std::to_string(PYBIND11_VERSION_MAJOR);
     py11_ver += "." + std::to_string(PYBIND11_VERSION_MINOR);
     py11_ver += "." + std::to_string(PYBIND11_VERSION_PATCH);
