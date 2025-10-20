@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gretl-functions>
+<gretl-function-package name="logging" no-data-ok="true" minver="2025c" lives-in-subdir="true">
+<author email="atecon@posteo.de">Artur Tarassow</author>
+<version>2025c-git</version>
+<date>2021-07-08</date>
+<description>Structured logging for script execution</description>
+<tags>C81</tags>
+<help>
+pdfdoc:logging.pdf
+</help>
+<gretl-function name="Debug" type="void">
+ <params count="1">
+  <param name="msg" type="string" const="true"/>
+ </params>
+<code>/* Debug level.*/
+
+if $loglevel &lt;= 0
+  logger(msg, &quot;DEBUG&quot;)
+endif
+</code>
+</gretl-function>
+<gretl-function name="Info" type="void">
+ <params count="1">
+  <param name="msg" type="string" const="true"/>
+ </params>
+<code>/* Info level.*/
+
+if $loglevel &lt;= 1
+  logger(msg, &quot;INFO&quot;)
+endif
+</code>
+</gretl-function>
+<gretl-function name="Warn" type="void">
+ <params count="1">
+  <param name="msg" type="string" const="true"/>
+ </params>
+<code>/* Warning level.*/
+
+if $loglevel &lt;= 2
+  logger(msg, &quot;WARNING&quot;)
+endif
+</code>
+</gretl-function>
+<gretl-function name="Error" type="void">
+ <params count="1">
+  <param name="msg" type="string" const="true"/>
+ </params>
+<code>/* Error level.*/
+
+if $loglevel &lt;= 3
+  logger(msg, &quot;ERROR&quot;)
+endif
+</code>
+</gretl-function>
+<gretl-function name="Critical" type="void">
+ <params count="1">
+  <param name="msg" type="string" const="true"/>
+ </params>
+<code>/* Critical level.*/
+
+if $loglevel &lt;= 4
+  logger(msg, &quot;CRITICAL&quot;)
+endif
+</code>
+</gretl-function>
+<gretl-function name="logger" type="void" private="1">
+ <params count="2">
+  <param name="msg" type="string" const="true"/>
+  <param name="level" type="string" const="true"/>
+ </params>
+<code>/* Check whether to print the log message in stdout or to append it to a file.
+return: void */
+
+string logfile = $logfile
+
+if logfile != &quot;&quot;
+  outfile &quot;@logfile&quot; --quiet --append
+    print_log_msg(msg, level)
+  end outfile
+else
+  print_log_msg(msg, level)
+endif
+</code>
+</gretl-function>
+<gretl-function name="print_log_msg" type="void" private="1">
+ <params count="2">
+  <param name="msg" type="string" const="true"/>
+  <param name="level" type="string" const="true"/>
+ </params>
+<code>/* Print the log meesage with or without timestamp. */
+
+string format = &quot;%Y-%m-%d %H:%M:%S %Z&quot;
+
+if $logstamp
+  printf &quot;%s %s: %s\n&quot;, level, get_date_string(format), msg
+else
+  printf &quot;%s: %s\n&quot;, level, msg
+endif
+</code>
+</gretl-function>
+<gretl-function name="get_date_string" type="string" private="1">
+ <params count="1">
+  <param name="format" type="string" const="true"/>
+ </params>
+<code>/* Compile formated timestamp
+return: string, date and time string */
+
+return strftime($now[1], format)
+</code>
+</gretl-function>
+<sample-script>
+set verbose off
+include logging.gfn
+
+set logstamp off   # on/off: print timstamp or not
+
+set loglevel debug
+printf &quot;\n\nloglevel = %d\n&quot;, $loglevel
+Debug(&quot;Should be printed&quot;)
+Info(&quot;Should be printed&quot;)
+Warn(&quot;Should be printed&quot;)
+Error(&quot;Should be printed&quot;)
+Critical(&quot;Should be printed&quot;)
+
+set loglevel info
+printf &quot;\n\nloglevel = %d\n&quot;, $loglevel
+Debug(&quot;Should NOT be printed&quot;)
+Info(&quot;Should be printed&quot;)
+Warn(&quot;Should be printed&quot;)
+Error(&quot;Should be printed&quot;)
+Critical(&quot;Should be printed&quot;)
+
+set loglevel warn
+printf &quot;\n\nloglevel = %d\n&quot;, $loglevel
+Debug(&quot;Should NOT be printed&quot;)
+Info(&quot;Should NOT be printed&quot;)
+Warn(&quot;Should be printed&quot;)
+Error(&quot;Should be printed&quot;)
+Critical(&quot;Should be printed&quot;)
+
+set loglevel error
+printf &quot;\n\nloglevel = %d\n&quot;, $loglevel
+Debug(&quot;Should NOT be printed&quot;)
+Info(&quot;Should NOT be printed&quot;)
+Warn(&quot;Should NOT be printed&quot;)
+Error(&quot;Should be printed&quot;)
+Critical(&quot;Should be printed&quot;)
+
+set loglevel critical
+printf &quot;\n\nloglevel = %d\n&quot;, $loglevel
+Debug(&quot;Should NOT be printed&quot;)
+Info(&quot;Should NOT be printed&quot;)
+Warn(&quot;Should NOT be printed&quot;)
+Error(&quot;Should NOT be printed&quot;)
+Critical(&quot;Should be printed&quot;)
+
+print &quot;==========================================&quot;
+
+function void foo (void)
+    Debug(&quot;Some debug msg&quot;)
+    Info(&quot;Some info msg&quot;)
+    Warn(&quot;Some warning msg&quot;)
+    Error(&quot;Some error msg&quot;)
+    Critical(&quot;Some critical msg&quot;)
+end function
+
+printf &quot;\nCalls to messaging functions via function foo\n&quot;
+
+loop i=0..4
+   printf &quot;\nloglevel = %d:\n&quot;, i
+   set loglevel $i
+   foo()
+endloop
+printf &quot;\n&quot;
+
+# Log events in a separate file
+printf &quot;workdir = %s\n&quot;, $workdir
+set loglevel info
+string path_logfile = &quot;mylog.txt&quot; # target file where to append
+remove(path_logfile)
+set logfile &quot;@path_logfile&quot;
+
+Info(&quot;This message will not be printed but appended to a file.&quot;)
+print &quot;File content&quot;
+eval readfile(path_logfile)
+remove(path_logfile)
+</sample-script>
+</gretl-function-package>
+</gretl-functions>

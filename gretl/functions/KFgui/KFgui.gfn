@@ -1,0 +1,311 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gretl-functions>
+<gretl-function-package name="KFgui" minver="2025c" lives-in-subdir="true">
+<author email="r.lucchetti@univpm.it">Riccardo &quot;Jack&quot; Lucchetti</author>
+<version>2025c-git</version>
+<date>2022-01-15</date>
+<description>Kalman Filter GUI</description>
+<tags>C32</tags>
+<help filename="KFgui.txt">
+This addon provides a graphical interface for a limited subset of gretl's
+state space modeling functionality. For more information, please see
+
+• the chapter titled “State Space Modeling” in the Gretl User's Guide, in
+particular the section titled “Graphical interface”, and
+
+• the item “State space model” under the Model menu in the main gretl
+window (with a dataset loaded). The dialog box opened by this item has a
+Help button.
+</help>
+<data-files count="1">
+examples </data-files>
+<gretl-function name="KFgui" type="bundle" pkg-role="gui-main">
+ <params count="8">
+  <param name="y" type="list">
+<description>observables</description>
+  </param>
+  <param name="Z" type="matrix">
+<description>Observation matrix (Z)</description>
+  </param>
+  <param name="T" type="matrix">
+<description>State transition matrix (T)</description>
+  </param>
+  <param name="R_in" type="matrix" optional="true">
+<description>State variance factor matrix (R)</description>
+  </param>
+  <param name="has_obsvar" type="bool" default="1">
+<description>Disturbance in obs. equation?</description>
+  </param>
+  <param name="param_type" type="int" min="1" max="3" default="2">
+<description>Parametrization</description>
+<labels count="3">
+"Absolute value" "Square" "Exponential" </labels>
+  </param>
+  <param name="verbosity" type="int" min="0" max="2" default="1">
+<description>verbosity</description>
+<labels count="3">
+"Quiet" "Normal" "Verbose" </labels>
+  </param>
+  <param name="smooth" type="bool" default="1">
+<description>do smoothing</description>
+  </param>
+ </params>
+<code>scalar n = nelem(y)
+bundle ret = null
+scalar k = rows(T)
+matrix R = exists(R_in) ? R_in : I(k)
+scalar act_k = cols(R)
+
+ret.err = check_sizes(n, k, T, Z, R)
+if ret.err
+  return ret
+endif
+
+bundle ret = _(n, k, has_obsvar, act_k)
+
+bundle kmod = ksetup(y, Z, T, R*R')
+kmod.inivar = 1.0e4 * I(k)
+npar = has_obsvar ? n + act_k : act_k
+matrix param = ones(npar, 1)
+
+if verbosity == 2
+  setopt mle --verbose
+endif
+
+# matrix kmod.statevar = Omega
+if has_obsvar
+  matrix kmod.obsvar = I(n)
+endif
+
+# do the maximization
+
+set bfgs_richardson on
+series ll = NA
+catch mle llik = ll
+  ERR = handle_vars(&amp;kmod, R, param, param_type, n, act_k, has_obsvar)
+  moo = kmod.statevar
+  ERR = ERR || kfilter(&amp;kmod)
+  ll = ERR ? NA: kmod.llt
+  params param
+end mle --hessian --quiet
+
+ret.err = $error
+if !ret.err
+  if smooth
+    ksmooth(&amp;kmod)
+  endif
+  ret.kmod = kmod
+  matrix coeff = $coeff
+  matrix vcv = $vcv
+  fix_parametrization(&amp;coeff, &amp;vcv, param_type)
+  ret.coeff = coeff
+  ret.vcv = vcv
+  ret.state = kmod.state
+  if verbosity &gt; 0
+    KFgui_print(&amp;ret)
+  endif
+else
+  printf &quot;Filtering failed:\n%s\n&quot;, errmsg(ret.err)
+endif
+
+return ret
+</code>
+</gretl-function>
+<gretl-function name="KFgui_plot" type="void" pkg-role="bundle-plot">
+ <params count="1">
+  <param name="b" type="bundleref"/>
+ </params>
+<code>matrix P = b.kmod.obsy ~ b.kmod.state
+
+if cols(b.kmod.obsy) == 1 &amp;&amp; cols(b.kmod.state) == 1
+  cnameset(P, &quot;y state&quot;)
+else
+  n = b.n
+  k = b.k
+  strings S = array(n + k)
+  loop i = 1 .. n
+    S[i] = sprintf(&quot;y%d&quot;, i)
+  endloop
+  loop i = 1 .. k
+    S[n+i] = sprintf(&quot;state%d&quot;, i)
+  endloop
+  cnameset(P, S)
+endif
+
+gnuplot --matrix=P --time-series --with-lines --output=display
+</code>
+</gretl-function>
+<gretl-function name="KFgui_print" type="void" pkg-role="bundle-print">
+ <params count="1">
+  <param name="b" type="bundleref"/>
+ </params>
+<code>n = b.n
+k = b.act_k
+ini = 1
+fin = k
+if b.has_obsvar
+  printf &quot;\nObservation equation\n&quot;
+  strings pnames = array(n)
+  loop i = 1..n
+    pnames[i] = sprintf(&quot;stdev[%d]&quot;, i)
+  endloop
+  cs = b.coeff[1:n] ~ sqrt(diag(b.vcv)[1:n])
+  modprint cs pnames
+  printf &quot;\n&quot;
+  ini += n
+  fin += n
+endif
+
+printf &quot;State transition equation\n&quot;
+strings pnames = array(k)
+loop i = 1..k
+  pnames[i] = sprintf(&quot;stdev[%d]&quot;, i)
+endloop
+pnames += defarray(&quot;Log-likelihood&quot;)
+cs = b.coeff[ini:fin] ~ sqrt(diag(b.vcv)[ini:fin])
+matrix addstats = b.kmod.lnl
+modprint cs pnames addstats
+</code>
+</gretl-function>
+<gretl-function name="handle_vars" type="scalar" private="1">
+ <params count="7">
+  <param name="mod" type="bundleref"/>
+  <param name="R" type="matrix" const="true"/>
+  <param name="param" type="matrix"/>
+  <param name="type" type="scalar"/>
+  <param name="n" type="scalar"/>
+  <param name="act_k" type="scalar"/>
+  <param name="has_obsvar" type="bool"/>
+ </params>
+<code># inject parameters into variance matrices,
+# taking into account the the variance for the
+# observation equation shock may be 0
+
+err = 0
+
+if type==1   # variance
+  err = maxc(abs(param)) &gt; 1.0e20
+elif type==2 # st. dev.
+  err = maxc(abs(param)) &gt; 1.0e10
+elif type==3 # log(stdev)
+  err = maxc(abs(param)) &gt; 50
+endif
+
+if err
+  return err
+endif
+
+if has_obsvar
+  if type==1   # variance
+    matrix ovar = abs(param[1:n])
+    matrix se_teq = sqrt(abs(param[n+1:n+act_k]))
+  elif type==2 # st. dev.
+    matrix ovar = param[1:n].^2
+    matrix se_teq = abs(param[n+1:n+act_k])
+  elif type==3 # log(stdev)
+    matrix ovar = exp(2 * param[1:n])
+    matrix se_teq = exp(param[n+1:n+act_k])
+  endif
+
+  mod.obsvar[diag] = ovar
+else
+  if type==1   # variance
+    matrix se_teq = sqrt(abs(param[1:act_k]))
+  elif type==2 # st. dev.
+    matrix se_teq = abs(param[1:act_k])
+  elif type==3 # log(stdev)
+    matrix se_teq = exp(param[1:act_k])
+  endif
+endif
+
+matrix tmp = R .* se_teq'
+mod.statevar = tmp*tmp'
+
+return err
+</code>
+</gretl-function>
+<gretl-function name="fix_parametrization" type="void" private="1">
+ <params count="3">
+  <param name="coeff" type="matrixref"/>
+  <param name="vcv" type="matrixref"/>
+  <param name="type" type="scalar"/>
+ </params>
+<code>if type == 1   # variance
+  coeff = sqrt(abs(coeff))
+  vcv = 0.25 * vcv ./ (coeff * coeff')
+elif type == 2 # std. dev
+  coeff = abs(coeff)
+elif type == 3 # exp
+  coeff = exp(coeff)
+  vcv = vcv .* (coeff * coeff')
+endif
+</code>
+</gretl-function>
+<gretl-function name="check_sizes" type="scalar" private="1">
+ <params count="5">
+  <param name="n" type="scalar"/>
+  <param name="k" type="scalar"/>
+  <param name="T" type="matrix"/>
+  <param name="Z" type="matrix"/>
+  <param name="R" type="matrix"/>
+ </params>
+<code>err = 0
+if cols(T) != k
+  printf &quot;ERROR: The state transition matrix isn't square\n&quot;
+  printf &quot;%6.1f\n&quot;, T
+  err = 37
+elif rows(R) != k
+  printf &quot;ERROR: The rows of the R matrix don't match the number of states (%d)&quot;, k
+  printf &quot;%6.1f\n&quot;, R
+  err = 37
+elif rows(R) &lt; cols(R)
+  printf &quot;ERROR: R can't have more columns than rows&quot;
+  printf &quot;%6.1f\n&quot;, R
+  err = 37
+elif rows(Z) != k
+  printf &quot;ERROR: The rows of the Z matrix don't match the number of states (%d)&quot;, k
+  printf &quot;%6.1f\n&quot;, Z
+  err = 37
+elif cols(Z) != n
+  printf &quot;ERROR: The columns of the Z matrix don't match the number of series (%d)&quot;, n
+  printf &quot;%6.1f\n&quot;, Z
+  err = 37
+endif
+
+return err
+</code>
+</gretl-function>
+<sample-script>
+clear
+set verbose off
+include KFgui.gfn
+
+set seed 280921
+
+nulldata 256
+setobs 1 1 --special
+
+# example 1: random walk plus noise
+COMPARE = 0
+
+series m = cum(normal() * 0.25)
+series y = m + normal()
+Z = {1}
+T = {1}
+do_smooth = 1
+paramtype = 2
+b = KFgui(y, Z, T, 1, paramtype, 1, do_smooth)
+series mhat = b.state
+gnuplot m mhat --time-series --with-lines --output=display
+
+if COMPARE
+    # compare with StrucTiSM
+    include StrucTiSM.gfn
+    mod = STSM_setup(y, 1, 1, 0)
+    STSM_estimate(&amp;mod)
+    list C = STSM_components(mod)
+    ols mhat const y_level
+endif
+</sample-script>
+</gretl-function-package>
+</gretl-functions>

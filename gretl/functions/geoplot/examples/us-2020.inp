@@ -1,0 +1,36 @@
+set verbose off
+include geoplot.gfn
+
+open us-states.geojson --quiet --frompkg=geoplot
+bundle b = bread($mapfile)
+
+# Shrink Alaska and place underneath the "lower 48"
+matrix shift = {34, -35}
+matrix center = {-150.885, 62.5503}
+matrix scale = {0.3, 0.35}
+geoplot_translate_feature(&b, 48, shift, center, scale)
+
+# Shift Hawaii alongside Alaska
+shift = {51, 5}
+geoplot_translate_feature(&b, 5, shift)
+
+# Switch to revised map
+bwrite(b, "us-rearranged.geojson")
+open us-rearranged.geojson -q
+
+# Add per-state Democratic-win dummy
+strings dem_states = defarray("WA", "OR", "CA", "NV", "AZ", "NM",
+"CO", "MN", "WI", "IL", "MI", "GA", "VA", "PA", "NY", "VT", "NH",
+"ME", "MA", "RI", "CT", "NJ", "DE", "MD", "DC", "HI")
+series D = 0
+loop i=1..$nobs
+   D[i] = nelem(instrings(dem_states, postal[i]))
+endloop
+
+# Display electoral map
+bundle opts = _(title = "USA, 2020", projection = "EPSG2163")
+opts.literal = "set key bottom right"
+strings mycolors = defarray("#D22532", "#244999")
+strings zlabels = defarray("Republican", "Democratic")
+opts.palette = "mycolors,zlabels"
+geoplot(D, opts)

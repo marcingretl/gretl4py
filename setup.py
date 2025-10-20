@@ -4,6 +4,13 @@ import sysconfig
 from setuptools import setup, find_packages, Extension
 import glob
 
+# Version from single source
+version_file = Path(__file__).parent / "VERSION"
+if version_file.exists():
+    version = version_file.read_text().strip()
+else:
+    print("Warning: VERSION not found, defaulting to 0.0.0", file=sys.stderr)
+    version = "0.0.0"
 
 EXT = sysconfig.get_config_var("EXT_SUFFIX")
 binary_path = os.path.join(os.getcwd(), 'gretl', '_gretl' + EXT)
@@ -53,7 +60,7 @@ ext_modules = [
 
 setup(
     name='gretl4py',
-    version='0.30',
+    version=version,
     license='GPL-3.0-or-later',
     description='Python bindings for gretl',
     python_requires='>=3.11',

@@ -1,0 +1,21 @@
+set verbose off
+include dbnomics.gfn
+
+provlist = dbnomics_providers(1)
+n = nelem(provlist)
+printf "got %d providers\n", n
+if n >= 10
+    b = provlist[10]
+    print b
+endif
+
+dsetlist = dbnomics_search("interest rates", null, 30, 10, 1)
+print dsetlist
+if nelem(dsetlist) >= 10
+    b = dsetlist[10]
+    print b
+endif
+
+ctree = dbnomics_category_tree("CBO", 1)
+print ctree --tree
+

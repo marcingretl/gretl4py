@@ -1,5 +1,7 @@
 version 0.31:
     - allow 'quiet' option for VAR/VECM
+    - some tweaks with package versioning
+    - add addons
 
 version 0.30:
     - add interface to 'summary'

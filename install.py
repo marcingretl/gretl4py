@@ -70,6 +70,12 @@ if os.path.exists(EXAMPLES_DIR):
     shutil.rmtree(EXAMPLES_DIR)
 shutil.copytree(os.path.join(SOURCE_DIR, 'gretl', 'examples'), EXAMPLES_DIR)
 
+# We copy addons
+ADDONS_DIR = os.path.join(MODULE_PATH, 'functions')
+if os.path.exists(ADDONS_DIR):
+    shutil.rmtree(ADDONS_DIR)
+shutil.copytree(os.path.join(SOURCE_DIR, 'gretl', 'functions'), ADDONS_DIR)
+
 # We add tmp for workdir
 try:
     os.makedirs(os.path.join(MODULE_PATH, 'tmp'))

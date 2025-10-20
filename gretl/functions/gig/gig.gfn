@@ -1,0 +1,2058 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gretl-functions>
+<gretl-function-package name="gig" needs-time-series-data="true" minver="2025c" lives-in-subdir="true">
+<author email="r.lucchetti@univpm.it">Riccardo &quot;Jack&quot; Lucchetti and Stefano Balietti</author>
+<version>2025c-git</version>
+<date>2025-03-19</date>
+<description>An assortment of univariate GARCH models</description>
+<tags>C22</tags>
+<label>gig</label>
+<help>
+pdfdoc:gig.pdf
+</help>
+<data-files count="1">
+examples </data-files>
+<gretl-function name="GUI_gig" type="bundle" pkg-role="gui-main">
+ <params count="11">
+  <param name="y" type="series">
+<description>Dependent Variable</description>
+  </param>
+  <param name="type" type="int" min="1" max="7" default="1">
+<description>Model type</description>
+<labels count="7">
+"GARCH" "Taylor/Schwert GARCH" "GJR" "TARCH" "NARCH" "APARCH" "EGARCH" </labels>
+  </param>
+  <param name="p" type="int" default="1">
+<description>GARCH</description>
+  </param>
+  <param name="q" type="int" default="1">
+<description>ARCH</description>
+  </param>
+  <param name="X" type="list" optional="true">
+<description>Mean regressors</description>
+  </param>
+  <param name="hasconst" type="bool" default="1">
+<description>Constant</description>
+  </param>
+  <param name="ARlags" type="int" min="0" default="0">
+<description>AR lags</description>
+  </param>
+  <param name="Y" type="list" optional="true">
+<description>Variance regressors</description>
+  </param>
+  <param name="cdist" type="int" min="0" max="4" default="0">
+<description>Distribution</description>
+<labels count="5">
+"Normal" "t" "GED" "Skewed t" "Skewed GED" </labels>
+  </param>
+  <param name="vtype" type="int" min="0" max="2" default="0">
+<description>Covariance estimator</description>
+<labels count="3">
+"Sandwich" "Hessian" "OPG" </labels>
+  </param>
+  <param name="verb" type="int" min="0" max="2" default="1">
+<description>Verbosity</description>
+  </param>
+ </params>
+<code>if hasconst
+  list X = const || X
+endif
+
+bundle m = gig_setup(y, type, X, Y, ARlags)
+# this has to be forced
+m.depvarname = argname(y)
+
+gig_set_dist(&amp;m, cdist)
+gig_set_pq(&amp;m, p, q)
+m.vcvtype = vtype
+gig_estimate(&amp;m, verb)
+return m
+</code>
+</gretl-function>
+<gretl-function name="gig_setup" type="bundle">
+ <params count="5">
+  <param name="y" type="series"/>
+  <param name="type" type="int" default="1"/>
+  <param name="X" type="list" optional="true"/>
+  <param name="Y" type="list" optional="true"/>
+  <param name="ARlags" type="scalar" default="0"/>
+ </params>
+<code>/*
+autoscaling is much, much trickier that one would think: assume we
+have a suitable number to scale the dep. var.; what should we
+do with regressors? Surely we need to scale the lags accordingly, but we don't have atm a clean way to tell them apart.
+
+At the moment, we leave the regressors alone and leave all the
+scale accounting (coeff, vcv modification etc) for post-estimation.
+*/
+
+envvar = ngetenv(&quot;NOSCALE&quot;)
+AUTOSCALE = missing(envvar) || (envvar == 0)
+
+bundle model
+model.type = type
+
+model.AR = ARlags
+if (ARlags&gt;0)
+  list fullX = X || lags(ARlags, y)
+else
+  list fullX = X
+endif
+
+list everything = y || fullX || Y
+smpl everything --no-missing
+model.t1 = $t1
+model.t2 = $t2
+
+if (AUTOSCALE == 1) &amp;&amp; (type&lt;7) # skip EGARCH for the moment
+  if nelem(X) &gt; 0
+    ols y X --quiet
+    scalar scale = $sigma
+  else
+    scale = sd(y)
+  endif
+
+  model.scale = scale
+  model.y = y/scale
+else
+  model.scale = 1
+  model.y = y
+endif
+
+model.depvarname = argname(y)
+model.q = 1
+model.p = (type&gt;0)
+
+model.nobs = $nobs
+
+k = nelem(X)
+model.mk = k + ARlags
+if model.mk == 0
+  matrix mlistX = {}
+  matrix mX = {}
+  model.mXnames = &quot;&quot;
+else
+  if nelem(X)&gt;0
+    matrix mlistX = X
+  else
+    matrix mlistX = {}
+  endif
+  matrix mX = { fullX }
+  string names = varname(X)
+
+  if (ARlags&gt;0)
+    loop i = 1 .. ARlags
+      names = sprintf(&quot;%s,AR%d&quot;, names, i)
+    endloop
+  endif
+
+  model.mXnames = names
+endif
+
+model.mlistX = mlistX
+model.mX = mX
+
+list lY = const || Y
+vk = nelem(lY)
+model.vk = vk
+matrix vlistX = lY
+matrix mX = { lY }
+model.vXnames = varname(lY)
+
+model.vlistX = vlistX
+model.vX = mX
+
+gig_set_vQR(&amp;model, 0) # disable for now
+
+model.cdist = 0
+
+/* initialisation */
+coef_init(&amp;model)
+set_active_par(&amp;model)
+
+/* robust */
+model.vcvtype = 0
+
+return model
+</code>
+</gretl-function>
+<gretl-function name="gig_set_dist" type="void">
+ <params count="2">
+  <param name="model" type="bundleref"/>
+  <param name="cdist" type="scalar"/>
+ </params>
+<code>old_cdist = model.cdist
+
+if (old_cdist != cdist)
+  model.cdist = cdist
+
+  n_old = n_cdist_par(old_cdist)
+  n_new = n_cdist_par(cdist)
+
+  active = model.active
+  params = model.coeff
+  noldpar = rows(params)
+
+  # zap existing parameters
+  if n_old &gt; 0
+    active = trimr(active,0,n_old)
+    params = trimr(params,0,n_old)
+  endif
+
+  if n_new &gt; 0
+    active |= (rows(params)+seq(1,n_new)')
+    params |= cdist_initpar(cdist)
+  endif
+
+  model.active = active
+  model.coeff = params
+endif
+</code>
+</gretl-function>
+<gretl-function name="gig_set_pq" type="void">
+ <params count="3">
+  <param name="model" type="bundleref"/>
+  <param name="p" type="scalar"/>
+  <param name="q" type="scalar"/>
+ </params>
+<code>scalar old_p = model.p
+scalar old_q = model.q
+
+if (old_p != p) || (old_q != q)
+  model.p = p
+  model.q = q
+  theta = model.coeff
+
+  mk = model.mk
+  if (mk&gt;0)
+    matrix mpar = theta[1:mk]
+  else
+    matrix mpar = {}
+  endif
+
+  dpar = distpar(model.cdist, theta)
+  vpar = var_coef_init(&amp;model, model.s2)
+  model.coeff = mpar | vpar | dpar
+  set_active_par(&amp;model)
+endif
+</code>
+</gretl-function>
+<gretl-function name="gig_set_vQR" type="void">
+ <params count="2">
+  <param name="model" type="bundleref"/>
+  <param name="on_off" type="bool"/>
+ </params>
+<code>model.vX_QR = on_off
+
+if model.vX_QR
+  matrix vX_R
+  matrix QvX = vreg_QR(model.vX, &amp;vX_R)
+  model.vX_R = vX_R
+  model.QvX = QvX
+endif
+</code>
+</gretl-function>
+<gretl-function name="gig_set_vcvtype" type="void">
+ <params count="2">
+  <param name="model" type="bundleref"/>
+  <param name="s" type="string"/>
+ </params>
+<code>s = tolower(s)
+if s == &quot;sandwich&quot;
+  model.vcvtype = 0
+elif s == &quot;hessian&quot;
+  model.vcvtype = 1
+elif s == &quot;opg&quot;
+  model.vcvtype = 2
+endif
+</code>
+</gretl-function>
+<gretl-function name="gig_print" type="void">
+ <params count="2">
+  <param name="b" type="bundleref"/>
+  <param name="verbose" type="scalar" min="0" max="3" default="0"/>
+ </params>
+<code>err = b.errcode
+if err == 0
+  gig_printHeader(&amp;b)
+  maybe_gig_print(&amp;b, verbose)
+else
+  printf &quot;\nESTIMATION FAILED: %s\n&quot;, errmsg(err)
+endif
+</code>
+</gretl-function>
+<gretl-function name="gig_estimate" type="scalar">
+ <params count="2">
+  <param name="model" type="bundleref"/>
+  <param name="verbose" type="int" min="0" max="2" default="1"/>
+ </params>
+<code># verbose = 0 -&gt; quiet
+# verbose = 1 -&gt; show output
+# verbose = 2 -&gt; show iterations
+
+scalar garchType = model.type
+t1 = model.t1
+t2 = model.t2
+
+smpl t1 t2
+
+if garchType &lt;= 7 #APARCH &amp; EGARCH
+  scalar err = do_mle(&amp;model, verbose==2)
+
+elif garchType == 8
+  # GARCH-in-Mean
+  # Not yet, Buster!
+
+  # if verbose &gt; 1
+  #     printParList( parIndex, parList, rows(distrInit))
+  #     printf &quot;Proceeding with GARCH-in-mean by Engle et al. estimation.\n\n&quot;
+  # endif
+
+  # ret = garchmean( depVar, meanX, lagOrders, garchInit, distrType,\
+  # 		distrInit, verbose, vcv)
+  printf &quot;Not yet, Buster!\n&quot;
+endif
+
+if model.scale != 1
+  s = model.scale
+  adjust_for_scale(&amp;model, 1/s)
+endif
+
+if (verbose&gt;0)
+  gig_print(&amp;model)
+endif
+return err
+</code>
+</gretl-function>
+<gretl-function name="gig_var_fcast" type="matrix">
+ <params count="3">
+  <param name="mod" type="bundleref"/>
+  <param name="horizon" type="scalar"/>
+  <param name="rep" type="scalar"/>
+ </params>
+<code>DBG = 0
+
+matrix ret = {}
+# checks
+if mod.type == 7 || mod.vk &gt; 1 # EGARCH or exo in variance
+  printf &quot;Variance forecasting not available for this model (yet)\n&quot;
+  return ret
+endif
+
+if mod.type == 2 ||  mod.type &gt; 3
+  printf &quot;FIXME: results may be fishy for delta != 2\n&quot;
+endif
+
+# fetch stuff from the bundle first
+loop foreach i p q mk
+  scalar $i = mod.$i
+endloop
+
+# matrix e = s2m(mod.stduhat)
+matrix e = s2m(mod.uhat)
+matrix h = s2m(mod.h)
+
+scalar ini = mk+1
+scalar fin = mk+1
+scalar omega = mod.coeff[ini:fin]
+ini = fin+1
+fin += q
+matrix alpha = mod.coeff[ini:fin]
+ini = fin+1
+fin += q
+matrix gamma = mod.coeff[ini:fin]
+ini = fin+1
+fin += p
+matrix beta = mod.coeff[ini:fin]
+scalar delta = mod.coeff[fin+1]
+
+# --- debug ----------------------------------
+if DBG
+  printf &quot;real_do_fcast:\n&quot;
+  print omega alpha gamma beta delta
+endif
+
+# --------------------------------------------
+
+if horizon &gt; 1
+  matrix sel = ceil(muniform(horizon-1,rep) * rows(e)) # b'strap selector
+endif
+
+scalar back = xmax(p,q)
+matrix h0 = h[rows(h)-back+1:]
+matrix e0 = e[rows(e)-back+1:]
+
+# --- debug ----------------------------------
+if DBG
+  printf &quot;real_do_fcast:\n&quot;
+  print e0 h0
+endif
+# --------------------------------------------
+
+matrix ret = zeros(rep, horizon)
+
+loop i = 1 .. rep
+  if horizon &gt; 1
+    matrix ei = e[sel[,i]]
+    scalar chk = sumc(ei)
+    if !ok(chk)
+      printf &quot;%16.8f\n&quot;, ei ~ sel[,i]
+    endif
+  else
+    ei = {}
+  endif
+  ret[i,] = aparch_fcast(ei, e0, h0, omega, alpha, gamma, beta, delta)'
+endloop
+
+return ret
+</code>
+</gretl-function>
+<gretl-function name="gig_plot" type="void">
+ <params count="1">
+  <param name="model" type="bundleref"/>
+ </params>
+<code>string buffer = gig_grph(model.depvarname, model.uhat, model.h)
+gnuplot --inbuf=buffer --output=&quot;display&quot;
+</code>
+</gretl-function>
+<gretl-function name="gig_dplot" type="void">
+ <params count="1">
+  <param name="model" type="bundleref"/>
+ </params>
+<code>series eps = model.stduhat
+matrix X = kdensity(eps)
+scalar dtype = model.cdist
+theta = model.coeff
+ncoef = rows(theta)
+e = X[,1]
+
+if dtype == 0 # Normal
+  matrix d = pdf(z, e)
+  string descstr = &quot;Std Normal&quot;
+
+elif dtype == 1 # Student's t
+  scalar ni = theta[ncoef]
+  scalar hadj = sqrt(1-2/ni)
+  matrix d = pdf(t, ni, e/hadj)/hadj
+  descstr = sprintf(&quot;t(%g)&quot;, ni)
+
+elif dtype == 2 # GED
+  scalar ni = theta[ncoef]
+  scalar p = 1/ni
+  scalar lg1 = lngamma(p)
+  scalar lg3 = lngamma(3*p)
+
+  scalar lC = ln(ni/2) + 0.5*(lg3 - 3*lg1)
+  scalar k = exp(0.5*(lg1-lg3)) * (0.5^p)
+  matrix u = abs(e)/k
+  matrix d = exp(lC - 0.5*(u.^ni))
+  descstr = sprintf(&quot;GED(%g)&quot;, ni)
+
+elif dtype == 3 # Skewed-T
+  scalar ni = theta[ncoef-1]
+  scalar alpha = tanh(theta[ncoef])
+  matrix d = pdf_skt(&amp;e, ni, alpha)
+  descstr = sprintf(&quot;Skewed t(%g, %g)&quot;, ni, alpha)
+
+elif dtype == 4 # Skewed-GED
+  scalar ni = theta[ncoef-1]
+  scalar alpha = tanh(theta[ncoef])
+  matrix d = pdf_skged(&amp;e, ni, alpha)
+  descstr = sprintf(&quot;Skewed GED(%g, %g)&quot;, ni, alpha)
+
+endif
+
+string buffer = gig_dgrph(X~d, descstr)
+gnuplot --inbuf=buffer --output=&quot;display&quot;
+</code>
+</gretl-function>
+<gretl-function name="gig_vfgraph" type="void">
+ <params count="4">
+  <param name="f" type="matrix" const="true"/>
+  <param name="mod" type="bundle"/>
+  <param name="before" type="scalar"/>
+  <param name="alpha" type="scalar"/>
+ </params>
+<code>scalar horizon = cols(f)
+scalar a = (1-alpha)/2
+q0 = quantile(f, a)'
+q1 = quantile(f, 1-a)'
+m = meanc(f)'
+me = quantile(f,0.5)'
+matrix h = s2m(mod.h)
+
+matrix hinit = h[rows(h)-before:]
+matrix gp1 = ( hinit | me ) ~ seq(0,horizon+before)'
+matrix gp2 = ( hinit ~ 0 ) | ((q0+q1) ~ (q1-q0))/2
+
+string ylab = sprintf(&quot;set ylabel 'conditional variance for %s'&quot;,    mod.depvarname)
+string titlelab = sprintf(&quot;set title \&quot;%s\&quot;&quot;, s_modeltype(&amp;mod))
+plot gp1
+  option --with-lines
+  option --fit=none
+  option --band=gp2
+  option --band-style=fill
+  literal @ylab
+  literal @titlelab
+  literal unset xlabel
+end plot --output=display
+</code>
+</gretl-function>
+<gretl-function name="gig_bundle_print" type="void" pkg-role="bundle-print">
+ <params count="1">
+  <param name="b" type="bundleref"/>
+ </params>
+<code>gig_print(&amp;b, 1)
+</code>
+</gretl-function>
+<gretl-function name="GUI_gig_plot" type="void" pkg-role="bundle-plot">
+ <params count="2">
+  <param name="model" type="bundleref"/>
+  <param name="ptype" type="int" min="0" max="2" default="0">
+<description>Plot type</description>
+<labels count="3">
+"Time series" "Density" "Forecast" </labels>
+  </param>
+ </params>
+<code>if ptype == 0
+  gig_plot(&amp;model)
+elif ptype == 1
+  gig_dplot(&amp;model)
+elif ptype == 2
+  matrix tmp = gig_var_fcast(&amp;model, 15, 1024)
+  gig_vfgraph(tmp, model, 60, 0.9)
+endif
+</code>
+</gretl-function>
+<gretl-function name="ln_pdf_skt" type="series" private="1">
+ <params count="3">
+  <param name="u" type="series" const="true"/>
+  <param name="df" type="scalar"/>
+  <param name="ht_skew" type="scalar"/>
+ </params>
+<code>series ret = NA
+
+if (df&gt;2)
+  # sqrt(pi) = 1.77245385090551602729816748334
+  scalar q = lngamma((df+1)/2) - lngamma(df/2)
+  scalar c = exp(q)/(sqrt(df-2)*1.77245385090551602729816748334)
+
+  scalar a = 4 * ht_skew * c * ((df-2)/(df-1))
+  scalar b = sqrt(1 + 3*ht_skew^2 - a^2)
+  series d = (b*u + a)
+  d = (d&lt;0) ? d/(1-ht_skew) : d/(1+ht_skew)
+  ret = log(b) + log(c) - ((df+1)/2) * log(1+(d^2/(df-2)))
+endif
+
+return ret
+</code>
+</gretl-function>
+<gretl-function name="ln_pdf_skged" type="series" private="1">
+ <params count="3">
+  <param name="x" type="series" const="true"/>
+  <param name="ni" type="scalar"/>
+  <param name="ta" type="scalar"/>
+ </params>
+<code>scalar p  = 1/ni
+
+lgp  = lngamma(p)
+lg2p = lngamma(2*p)
+lg3p = lngamma(3*p)
+tap1 = 1 + ta
+tam1 = 1 - ta
+
+scalar beta = 0.5 * exp(lg3p - lgp) * (tap1^3 + tam1^3) - 4*ta^2 * exp(2 * (lg2p - lgp))
+beta = sqrt(beta)
+
+# m: mode
+scalar m = - 2*ta/beta * exp( lg2p - lgp )
+scalar lnorm = log(0.5 * beta) - lngamma(p+1)
+
+series z = (x&lt;m) ? (m-x)*beta/tam1 : (x-m)*beta/tap1
+ret = lnorm - (z^ni)
+return ret
+</code>
+</gretl-function>
+<gretl-function name="gig_loglik" type="series" private="1">
+ <params count="7">
+  <param name="e" type="series" const="true"/>
+  <param name="h" type="series" const="true"/>
+  <param name="distrType" type="scalar"/>
+  <param name="addpar" type="matrix"/>
+  <param name="de" type="seriesref"/>
+  <param name="dh" type="seriesref"/>
+  <param name="dd" type="matrixref"/>
+ </params>
+<code># e: residuals, h: variance, distrType: code for densiity, addpar: additional
+# parameters (eg df for Student's t), de: differential of residuals, dh:
+# differential for variance, dd: differential for addpar
+
+series ret = NA
+de = NA
+dh = NA
+dd = {}
+
+if distrType == 0 # Normal
+  series u = e/h
+  ret = -.91893853320467274177 - 0.5*(log(h) + e*u)
+  de = -u
+  dh = -0.5/h * (1 - e*u)
+
+elif distrType == 1 # Student's t
+  scalar ni = addpar[1]
+  if (ni&gt;2)
+
+    series e2 = e*e
+    scalar K1 = lngamma((ni+1)/2) - lngamma(ni/2) - 0.5*log($pi*(ni-2))
+    series ret = K1 - 0.5 * log(h) - 0.5*(ni+1) * log(1 + e2/(h*(ni-2)))
+
+    series den = e2 + (ni-2)*h
+    de = - (ni + 1) * e / den
+    dh = 0.5/h  * ((ni + 1)* e2 / den - 1)
+
+    scalar k1 = digamma((ni+1)/2) - digamma(ni/2) - 1/(ni-2)
+    series s1 = (ni + 1)/(ni - 2) * e2/den
+    series s2 = log(1 + e2/(h*(ni-2)))
+
+    matrix dd = 0.5*(k1 + s1 - s2)
+  endif
+
+elif distrType == 2 # GED
+  scalar ni = addpar[1]
+  if (ni&gt;0)
+    scalar p = 1/ni
+    scalar lg1 = lngamma(p)
+    scalar lg3 = lngamma(3*p)
+
+    scalar lC = log(ni/2) + 0.5*(lg3 - 3*lg1)
+    scalar k = exp(0.5*(lg1-lg3)) * (0.5^p)
+    series u = abs(e)/(k*sqrt(h))
+    ret = lC - 0.5*(u^ni + log(h))
+  endif
+
+elif distrType == 3 # Skewed-T
+  scalar ni = addpar[1]
+  if (ni&gt;2)
+    series u = e/sqrt(h)
+    alpha    = tanh(addpar[2])
+    ret      = ln_pdf_skt(u, ni, alpha) - 0.5*log(h)
+  endif
+
+elif distrType == 4 # Skewed-GED
+  scalar ni = addpar[1]
+  if (ni&gt;0)
+    series u = e/sqrt(h)
+    alpha    = tanh(addpar[2])
+    ret      = ln_pdf_skged(u, ni, alpha) - 0.5*log(h)
+  endif
+
+endif
+
+return ret
+</code>
+</gretl-function>
+<gretl-function name="aparchFilter" type="scalar" private="1">
+ <params count="11">
+  <param name="depVar" type="series" const="true"/>
+  <param name="h" type="seriesref"/>
+  <param name="e" type="seriesref"/>
+  <param name="mReg" type="matrix" const="true"/>
+  <param name="vX" type="matrix" const="true"/>
+  <param name="p" type="scalar"/>
+  <param name="q" type="scalar"/>
+  <param name="parameters" type="matrix" const="true"/>
+  <param name="is_asymmetric" type="scalar"/>
+  <param name="deriv_h" type="matrixref" optional="true"/>
+  <param name="deriv_e" type="matrixref" optional="true"/>
+ </params>
+<code>nmX = cols(mReg)
+nvX = cols(vX)
+scalar base = nmX + nvX
+
+a0pos = base + 1
+a1pos = a0pos + q -1
+g0pos = a1pos + 1
+g1pos = g0pos + q - 1
+b0pos = g1pos + 1
+b1pos = b0pos + p - 1
+dpos  = b1pos + 1
+
+matrix avec = {0}
+matrix gvec = {0}
+matrix bvec = {0}
+
+matrix omegas = parameters[nmX+1:base]
+
+if q &gt; 0
+  matrix avec = parameters[a0pos:a1pos]
+  matrix gvec = parameters[g0pos:g1pos]
+endif
+
+if p &gt; 0
+  matrix bvec = parameters[b0pos:b1pos]
+endif
+
+delta = parameters[dpos]
+
+err = 0
+
+# Checking
+# checks on alpha &amp; beta are disabled
+err = err || ((nvX==1) &amp;&amp; omegas[1] &lt; 0)
+#  err = err || (sumc(avec) + sumc(bvec)) &gt; 1
+#  err = err || minc(avec | bvec) &lt; 0
+err = err || delta &lt;= 0
+# shape? gamma?
+
+minh = 0
+
+if err == 0
+  # handle the conditional mean first
+  series e = depVar
+  if nmX &gt; 0
+    series e -= mReg * parameters[1:nmX]
+  endif
+
+  scalar e0 = mean(e^2)
+
+  matrix tmp_ae = mlag({abs(e)}, seq(1,q), e0 ^ (1/delta))
+  if is_asymmetric == 1
+    elag = mlag({e}, seq(1,q))
+    tmp_ae -= elag .* gvec'
+  endif
+
+  # Raising a negative value to a non-integer
+  # produces a complex number
+  err = (delta != floor(delta)) &amp;&amp; (minc(minr(tmp_ae)) &lt; 0)
+  if (!err)
+    Kd = tmp_ae .^ delta
+    series h = Kd * avec
+
+    # Var regressors
+    if (nvX&gt;1)
+      series h += vX * omegas
+    else
+      series h += omegas[1]
+    endif
+
+    if p&gt;0
+      h = filter(h, 1, bvec, e0)
+    endif
+
+    err = min(h)&lt;0 || max(!ok(h))
+    # the loglikelihood function needs sigma^2
+    if !err &amp;&amp; (delta != 2)
+      h = h^(2/delta)
+    endif
+  endif
+endif
+
+if (!err &amp;&amp; exists(deriv_h) &amp;&amp; exists(deriv_e))
+  # FIXME: incomplete and experimental --------------------------------
+  #
+  # deriv_e and deriv_h should contain (eventually), the derivatives
+  # of (doh!) e and h, WITH RESPECT TO THE PARAMETERS
+  # what we have atm is a rough attempt to have it working in the GARCH
+  # case; we'll see about generalising it later
+
+  # ----------- mean eq. --------------
+
+  deriv_e = nmX &gt; 0 ? -mReg : {}
+  scalar zcols = nvX + p + q * (1+is_asymmetric)
+  deriv_e ~= zeros(rows(vX), zcols)
+
+  # ----------- var eq. ---------------
+  # omega comes 2nd from last
+  # mu comes last
+
+  # alphas
+  me = Kd
+  matrix eeff = tmp_ae.^(delta-1)
+
+  if is_asymmetric == 1 # deltas
+    mh = -delta .* eeff .* ( elag .* avec' )
+    me ~= mh
+  endif
+
+  if (p &gt; 0) # betas
+    mh = mlag({h}, seq(1, p), e0)
+    me ~= mh
+  endif
+
+  dr = rows(me) - rows(vX)
+  if (dr&gt;0)
+    deriv_h = ( zeros(dr, cols(vX)) | vX ) ~ me
+  else
+    deriv_h = vX ~ me
+  endif
+
+  if nmX &gt; 0
+    series tmpser = (e&gt;0) ? -1 : 1
+    matrix sgn_ = {tmpser}
+
+    matrix mfocs = meanc({e} .* mReg)
+    matrix dmu = zeros(rows(deriv_h), nmX)
+
+    loop i = 1 .. q
+      matrix focs = eeff[,i] .* mlag(mReg, i)
+      matrix tmpmat = (mlag(sgn_, i) + gvec[i]) .* focs
+      dmu += avec[i] .* tmpmat
+    endloop
+    dmu = dmu .* delta
+
+    dmu[1,] = -2*mfocs*sumc(avec|bvec)
+    deriv_h = dmu ~ deriv_h
+  endif
+
+  if p &gt; 0
+    loop i = 1 .. cols(deriv_h)
+      series tmpser = deriv_h[,i]
+      tmpser = filter(tmpser, null, bvec)
+      deriv_h[,i] = tmpser
+    endloop
+  endif
+
+  if (delta != 2)
+    deriv_h =  h^(delta/2) .* deriv_h .* (2/delta)
+  endif
+endif
+# -------------------------------------------------------------------
+
+return err
+</code>
+</gretl-function>
+<gretl-function name="egarchFilter" type="scalar" private="1">
+ <params count="8">
+  <param name="y" type="series" const="true"/>
+  <param name="h" type="seriesref"/>
+  <param name="u" type="seriesref"/>
+  <param name="mReg" type="matrix" const="true"/>
+  <param name="vReg" type="matrix" const="true"/>
+  <param name="p" type="scalar"/>
+  <param name="q" type="scalar"/>
+  <param name="parms" type="matrix" const="true"/>
+ </params>
+<code>scalar n_mX = cols(mReg)
+scalar n_vX = cols(vReg)
+scalar err = 0
+
+series e = y
+if n_mX &gt; 0
+  e -= mReg * parms[1:n_mX]
+endif
+
+series u = misszero(e)   # Reassign residuals for the next computation
+scalar omegaini = n_mX + 1
+scalar base = n_mX + n_vX
+if n_vX == 1
+  series omega = parms[omegaini]
+else
+  series omega = vReg * parms[omegaini:base]
+endif
+
+series logh = log(var(e))
+
+# ERRORS
+series d = (e&gt;0)
+series ae = abs(e)
+
+if (p == 0) &amp;&amp; (q&lt;3)
+  if q == 1
+    scalar g = parms[base+1]
+    scalar a = parms[base+2]
+    series tmp = d(-1) ? (g+a) : (g-a)
+    series logh = omega + tmp*ae(-1)/exp(logh(-1)*0.5)
+  elif q == 2
+    scalar g1 = parms[base+1]
+    scalar g2 = parms[base+2]
+    scalar a1 = parms[base+3]
+    scalar a2 = parms[base+4]
+    series tmp1 = d(-1) ? (g1+a1) : (g1-a1)
+    series tmp2 = d(-2) ? (g2+a2) : (g2-a2)
+    series logh = omega + tmp1*ae(-1)/exp(logh(-1)*0.5) + tmp2*ae(-2)/exp(logh(-2)*0.5)
+  endif
+elif (p == 1) &amp;&amp; (q&lt;3)
+  if q == 1
+    scalar g = parms[base+1]
+    scalar a = parms[base+2]
+    scalar b = parms[base+3]
+    if (b&lt;1)
+      series tmp = d(-1) ? (g+a) : (g-a)
+      series logh = omega + tmp*ae(-1)/exp(logh(-1)*0.5) + b*logh(-1)
+    else
+      err = 1
+    endif
+
+  elif q == 2
+    scalar g1 = parms[base+1]
+    scalar g2 = parms[base+2]
+    scalar a1 = parms[base+3]
+    scalar a2 = parms[base+4]
+    scalar b  = parms[base+5]
+    series tmp1 = d(-1) ? (g1+a1) : (g1-a1)
+    series tmp2 = d(-2) ? (g2+a2) : (g2-a2)
+    series logh = omega + tmp1*ae(-1)/exp(logh(-1)*0.5)) + tmp2*ae(-2)/exp(logh(-2)*0.5)) + b*logh(-1)
+  endif
+else
+  string evalstr = &quot;omega&quot;
+
+  loop i = 1 .. q
+    scalar a$i = parms[base+i]
+    scalar g$i = parms[base+i+p+q]
+    evalstr += &quot; + a$i*abs(e(-$i)/exp(logh(-$i)*0.5)) + g$i*e(-$i)/exp(logh(-$i)*0.5)&quot;
+  endloop
+
+  loop i = 1 .. p
+    scalar b$i = parms[base+p+i]
+    evalstr += &quot; + b$i*logh(-$i)&quot;
+  endloop
+
+  series logh = @evalstr
+endif
+
+if (!err)
+  if max(logh) &gt; 100
+    #Overflow check
+    logh = NA
+  else
+    h = exp(logh)
+  endif
+endif
+
+return err
+</code>
+</gretl-function>
+<gretl-function name="gfilter" type="scalar" private="1">
+ <params count="11">
+  <param name="type" type="scalar"/>
+  <param name="depVar" type="series" const="true"/>
+  <param name="h" type="seriesref"/>
+  <param name="e" type="seriesref"/>
+  <param name="mReg" type="matrix" const="true"/>
+  <param name="vReg" type="matrix" const="true"/>
+  <param name="p" type="scalar"/>
+  <param name="q" type="scalar"/>
+  <param name="parameters" type="matrix" const="true"/>
+  <param name="DH" type="matrixref" optional="true"/>
+  <param name="DE" type="matrixref" optional="true"/>
+ </params>
+<code>ascore = exists(DH) &amp;&amp; exists(DE)
+
+if type &lt; 7 # aparch
+  if ascore
+    err = aparchFilter(depVar, &amp;h, &amp;e, mReg, vReg, p, q, parameters, has_asymm_fx(type), &amp;DH, &amp;DE)
+  else
+    err = aparchFilter(depVar, &amp;h, &amp;e, mReg, vReg, p, q, parameters, has_asymm_fx(type))
+  endif
+
+elif type == 7
+  err = egarchFilter(depVar, &amp;h, &amp;e, mReg, vReg, p, q, parameters)
+else
+  err = 1
+endif
+
+return err
+</code>
+</gretl-function>
+<gretl-function name="do_score" type="matrix" private="1">
+ <params count="5">
+  <param name="de" type="series" const="true"/>
+  <param name="dh" type="series" const="true"/>
+  <param name="DE" type="matrix" const="true"/>
+  <param name="DH" type="matrix" const="true"/>
+  <param name="dd" type="matrix" const="true"/>
+ </params>
+<code># ret = {}
+
+matrix mde = misszero(de)
+matrix mdh = misszero(dh)
+
+#    printf &quot;rows(mde) = %d, rows(mdh) = %d\n&quot;, rows(mde), rows(mdh)
+#    printf &quot;rows(DE)  = %d, rows(DH)  = %d\n&quot;, rows(DE), rows(DH)
+
+#    printf &quot;%16.9f\n&quot;, mde[1:10] ~ DE[1:10,]
+#    printf &quot;%16.9f\n&quot;, mdh[1:10] ~ DH[1:10,]
+
+matrix ret = (mde .* DE + mdh .* DH) ~ dd
+
+return ret
+</code>
+</gretl-function>
+<gretl-function name="do_mle" type="scalar" private="1">
+ <params count="2">
+  <param name="model" type="bundleref"/>
+  <param name="verbose" type="bool"/>
+ </params>
+<code>series depVar = model.y
+scalar type = model.type
+
+scalar cdist = model.cdist
+
+list mlX = model.mlistX
+list vlX = model.vlistX
+
+scalar p = model.p
+scalar q = model.q
+
+scalar nmX 	= model.mk
+scalar nvX 	= model.vk
+
+scalar err 	= 0
+series h, e, ll
+
+mleString = &quot;-&quot;
+
+if verbose
+  string mleString += &quot;v&quot;
+else
+  string mleString += &quot;q&quot;
+endif
+
+if model.vcvtype == 0 # robust
+  string mleString += &quot;r&quot;
+elif model.vcvtype == 1 # hessian
+  string mleString += &quot;h&quot;
+  # otherwise opg
+endif
+
+if mleString == &quot;-&quot;
+  mleString = &quot;&quot;
+endif
+
+fulltheta = model.coeff
+inipar = fulltheta
+sel = model.active
+theta = fulltheta[sel]
+
+filtpar_end = rows(fulltheta) - n_cdist_par(cdist)
+
+mX = model.mX
+if model.vX_QR == 1
+  vX = model.QvX
+  ini = model.mk+1
+  fin = ini+model.vk-1
+  theta[ini:fin] = model.vX_R * theta[ini:fin]
+else
+  vX = model.vX
+endif
+
+set warnings off
+
+# experimental
+set bfgs_toler 1.0e-13
+
+matrix DH = {}
+matrix DE = {}
+series dh = NA
+series de = NA
+matrix dd = {}
+matrix score = NA
+
+if !ascore_ok(type, cdist)
+  catch mle loglik = ll
+    # put the newly estimated values into the full param vector
+    fulltheta[sel] = theta
+    filtpar = fulltheta[1:filtpar_end]
+    matrix dpar = distpar(cdist, fulltheta)
+
+    # FILTER
+    err = gfilter(type, depVar, &amp;h, &amp;e, mX, vX, p, q, filtpar)
+    ll = err ? NA : gig_loglik(e, h, cdist, dpar, &amp;de, &amp;dh, &amp;dd)
+
+    params theta
+  end mle @mleString
+  err = $error
+else
+  catch mle loglik = ll
+    # put the newly estimated values into the full param vector
+    fulltheta[sel] = theta
+    filtpar = fulltheta[1:filtpar_end]
+    matrix dpar = distpar(cdist, fulltheta)
+
+    # FILTER
+    err = gfilter(type, depVar, &amp;h, &amp;e, mX, vX, p, q, filtpar, &amp;DH, &amp;DE)
+    ll = err ? NA : gig_loglik(e, h, cdist, dpar, &amp;de, &amp;dh, &amp;dd)
+
+    # SCORE
+    score = do_score(de, dh, DE, DH, dd)
+    deriv theta = score
+  end mle @mleString --no-gradient-check
+  err = $error
+endif
+
+# err = gfilter(type, &amp;depVar, &amp;h, &amp;e, &amp;mX, &amp;vX, p, q, &amp;filtpar, &amp;DH, &amp;DE)
+# score = do_score(&amp;de, &amp;dh, &amp;DE, &amp;DH, &amp;dd)
+# printf &quot;Score:\n%20.10f\n&quot;, sumc(score)
+
+if (err==0)
+  matrix crit = {$lnl; $aic; $bic; $hqc}
+  matrix V = $vcv
+else
+  matrix crit = zeros(4,1)
+  npar = rows(theta)
+  matrix V = zeros(npar, npar)
+endif
+
+gig_packResults(&amp;model, err, theta, &amp;h, &amp;e, inipar, V, crit)
+
+return err
+</code>
+</gretl-function>
+<gretl-function name="n_cdist_par" type="scalar" private="1">
+ <params count="1">
+  <param name="cdist" type="int"/>
+ </params>
+<code># number of parameters for given density
+ret = NA
+
+if (cdist == 0) # normal
+  ret = 0
+elif ((cdist == 1) || (cdist == 2)) # t and GED
+  ret = 1
+elif ((cdist == 3) || (cdist == 4)) # Skewed t/GED
+  ret = 2
+endif
+
+return ret
+</code>
+</gretl-function>
+<gretl-function name="cdist_initpar" type="matrix" private="1">
+ <params count="1">
+  <param name="cdist" type="int"/>
+ </params>
+<code>/*
+initial parameters for given density; in the future, this may
+be data-based, although it's not trivial
+*/
+
+ret = {}
+if (cdist == 0) # normal
+  ret = {}
+elif (cdist == 1) # t
+  ret = {10}
+elif (cdist == 2) # GED
+  ret = {2}
+elif (cdist == 3) # Skewed t
+  ret = {10; 0}
+elif (cdist == 4) # Skewed GED
+  ret = {2; 0}
+endif
+
+return ret
+</code>
+</gretl-function>
+<gretl-function name="distpar" type="matrix" private="1">
+ <params count="2">
+  <param name="type" type="scalar"/>
+  <param name="theta" type="matrix"/>
+ </params>
+<code># extract the density parameter from the full vector
+
+ret = {}
+if (type&gt;2)
+  ret = theta[rows(theta)-1:]
+elif (type&gt;0)
+  ret = theta[rows(theta)]
+endif
+return ret
+</code>
+</gretl-function>
+<gretl-function name="has_asymm_fx" type="scalar" private="1">
+ <params count="1">
+  <param name="code" type="int"/>
+ </params>
+<code># does the model accommodate asymmetry (eg GJR)?
+
+scalar ret = NA
+if (code == 0) || (code == 1) || (code == 2) || (code == 5)
+  ret = 0
+elif (code == 3) || (code == 4) || (code == 6) || (code == 7)
+  ret = 1
+endif
+return ret
+</code>
+</gretl-function>
+<gretl-function name="ascore_ok" type="scalar" private="1">
+ <params count="2">
+  <param name="code" type="scalar"/>
+  <param name="cdist" type="scalar"/>
+ </params>
+<code># do we have ascore in a usable state?
+
+scalar mod_ok = 0
+scalar dist_ok = 0
+
+if (code == 0) || (code == 1) || (code == 3)
+  # other models may be ok at this point too,
+  # need to investigate
+  mod_ok = 1
+endif
+
+if (cdist&lt;2)
+  # only normal and t so far
+  dist_ok = 1
+endif
+
+force_ascore = ngetenv(&quot;ASCORE&quot;)
+ret = ok(force_ascore) ? force_ascore : (mod_ok &amp;&amp; dist_ok)
+
+return ret
+</code>
+</gretl-function>
+<gretl-function name="gigDistString" type="string" private="1">
+ <params count="1">
+  <param name="code" type="int"/>
+ </params>
+<code>string dist = &quot;&quot;
+if code == 0
+  string garchName = &quot;Normal&quot;
+elif code == 1
+  string garchName = &quot;T&quot;
+elif code == 2
+  string garchName = &quot;GED&quot;
+elif code == 3
+  string garchName = &quot;Skewed T&quot;
+elif code == 4
+  string garchName = &quot;Skewed GED&quot;
+endif
+
+return dist
+</code>
+</gretl-function>
+<gretl-function name="var_coef_init" type="matrix" private="1">
+ <params count="2">
+  <param name="mod" type="bundleref"/>
+  <param name="s2" type="scalar"/>
+ </params>
+<code>/*
+build variance parameters in this order:
+
+1) omega + possible variance regressors
+2) alphas
+3) gammas
+4) betas
+5) delta
+*/
+
+scalar code = mod.type
+scalar p = mod.p
+scalar q = mod.q
+if (p &gt; 0)
+  scalar a = 0.1
+  scalar b = 0.8
+  scalar omega = s2 * (1 - a - b)
+else
+  scalar a = 0.9
+  scalar omega = s2 * (1 - a)
+endif
+
+vk = mod.vk # variance regressors
+matrix initv = {omega} | zeros(vk-1,1)
+matrix alphas = (a/q) * ones(q,1)
+initv |= alphas
+initv |= zeros(q,1) #gammas
+if (p &gt; 0)
+  initv |= {b} | zeros(p-1,1)
+endif
+
+# delta
+if (code == 0) || (code == 1) || (code == 3)
+  delta = 2
+elif (code == 2) || (code == 4)
+  delta = 1
+elif (code == 5) || (code == 6)
+  delta = 1.5 # totally made up
+else # eg EGARCH, though not really needed
+  delta = 2
+endif
+
+initv |= {delta}
+
+return initv
+</code>
+</gretl-function>
+<gretl-function name="coef_init" type="scalar" private="1">
+ <params count="1">
+  <param name="mod" type="bundleref"/>
+ </params>
+<code>/* for the moment, naive; we ought to try hannan-rissanen on
+the squared ols residuals
+*/
+
+series dep = mod.y
+if mod.mk &gt; 0
+  matrix e
+  matrix Reg = mod.mX
+  matrix initm = mols({dep}, Reg, &amp;e)
+  scalar s2 = meanc(e.^2)
+else
+  matrix initm = {}
+  scalar s2 = var(dep)
+endif
+
+mod.s2 = s2
+
+initv = var_coef_init(&amp;mod, s2)
+
+cdist = mod.cdist
+matrix initd = cdist_initpar(cdist)
+
+mod.coeff = initm | initv | initd
+
+return 0
+</code>
+</gretl-function>
+<gretl-function name="set_active_par" type="scalar" private="1">
+ <params count="1">
+  <param name="mod" type="bundleref"/>
+ </params>
+<code>scalar modeltype = mod.type
+
+scalar mk = mod.mk
+scalar vk = mod.vk
+scalar p  = mod.p
+scalar q  = mod.q
+
+/* mean and variance regressors are always in
+for any type of model
+*/
+
+matrix act = ones(mk+vk, 1)
+
+act |= ones(q, 1) # alphas
+
+if has_asymm_fx(modeltype) # gammas
+  act |= ones(q, 1)
+else
+  act |= zeros(q, 1)
+endif
+
+if (p&gt;0) # betas
+  act |= ones(p, 1)
+endif
+
+# delta is active only for NARCH and APARCH
+act |= {(modeltype == 5) || (modeltype == 6)}
+
+# density parameters
+scalar cdist = mod.cdist
+if (cdist == 1) || (cdist == 2)
+  act |= {1}
+elif (cdist == 3)
+  act |= {1;1}
+endif
+
+n = rows(act)
+mod.active = selifr(seq(1,n)', act)
+
+return 0
+</code>
+</gretl-function>
+<gretl-function name="vreg_QR" type="matrix" private="1">
+ <params count="2">
+  <param name="vX" type="matrix"/>
+  <param name="R" type="matrixref"/>
+ </params>
+<code>/* do a QR decomp of the variance regressors
+(seems to help)
+*/
+
+scale = 10 * sqrt(rows(vX)) # totally heuristic
+QvX = qrdecomp(vX, &amp;R)
+matrix flip = selifr(seq(1,cols(vX))', (R[diag] .&lt; 0))
+if rows(flip)&gt;0
+  QvX[,flip] = -QvX[,flip]
+  R[flip,] = -R[flip,]
+endif
+
+R = R ./ scale
+return QvX .* scale
+</code>
+</gretl-function>
+<gretl-function name="adjust_for_scale" type="void" private="1">
+ <params count="2">
+  <param name="m" type="bundleref"/>
+  <param name="scale" type="scalar"/>
+ </params>
+<code>sc2 = scale^2
+mk = m.mk
+vk = m.vk
+
+est_done = inbundle(m, &quot;vcv&quot;)
+if est_done
+  # we have two dimensions here: &quot;coeff&quot; contains all parameters,
+  # &quot;vcv&quot; and &quot;stderr&quot; only active ones; shit, what was I thinking?
+
+  J1 = ones(rows(m.coeff),1)
+  J2 = ones(rows(m.vcv),1)
+  if mk&gt;0
+    J1[1:mk] = 1/scale
+    J2[1:mk] = 1/scale
+  endif
+  J1[mk+1:mk+vk] = 1/sc2
+  J2[mk+1:mk+vk] = 1/sc2
+endif
+
+if inbundle(m, &quot;s2&quot;)
+  m.s2 = m.s2 / sc2
+endif
+
+if est_done
+  # FIXME: what happens to the variance equation if
+  # delta != 2?
+  m.coeff = m.coeff .* J1
+  m.stderr = m.stderr .* J2
+  m.vcv = m.vcv .* (J2*J2')
+  m.uhat = m.uhat / scale
+  m.h = m.h / sc2
+  crit_adj = ln(scale)*m.nobs .* {1; -2; -2; -2}
+  m.criteria = m.criteria + crit_adj
+endif
+</code>
+</gretl-function>
+<gretl-function name="gig_packResults" type="void" private="1">
+ <params count="8">
+  <param name="mod" type="bundleref"/>
+  <param name="err" type="scalar"/>
+  <param name="thetahat" type="matrix"/>
+  <param name="h" type="seriesref"/>
+  <param name="e" type="seriesref"/>
+  <param name="inipar" type="matrix"/>
+  <param name="Sigma" type="matrix"/>
+  <param name="crit" type="matrix"/>
+ </params>
+<code>mod.errcode = err
+
+if (err == 0)
+  theta = mod.coeff
+  sel = mod.active
+  theta[sel] = thetahat
+  mod.inipar = inipar
+
+  vk = mod.vk
+
+  if (vk&gt;1) &amp;&amp; (mod.vX_QR == 1)
+    J = I(rows(Sigma))
+    mk = mod.mk
+    sel = seq(mk+1, mk+vk)
+    invR = inv(mod.vX_R)
+    J[sel,sel] = invR
+    theta[sel] = invR * theta[sel]
+    Sigma = qform(J, Sigma)
+  endif
+
+  mod.coeff = theta
+  mod.vcv = Sigma
+  mod.stderr = sqrt(diag(Sigma))
+
+  mod.h = h
+  mod.uhat = e
+  mod.stduhat = e/sqrt(h)
+
+  mod.criteria = crit
+endif
+</code>
+</gretl-function>
+<gretl-function name="s_modeltype" type="string" private="1">
+ <params count="1">
+  <param name="mod" type="bundleref"/>
+ </params>
+<code>scalar type = mod.type
+scalar p    = mod.p
+scalar q    = mod.q
+
+if type ==  0
+  return sprintf(&quot;ARCH(%d) [Engle]&quot;, p)
+elif type ==  1
+  return sprintf(&quot;GARCH(%d,%d) [Bollerslev]&quot;, p, q)
+elif type ==  2
+  return sprintf(&quot;Taylor/Schwert's GARCH(%d,%d)&quot;, p, q)
+elif type ==  3
+  return sprintf(&quot;GJR(%d,%d) [Glosten et al.]&quot;, p, q)
+elif type ==  4
+  return sprintf(&quot;TARCH(%d,%d) [Zakoian]&quot;, p, q)
+elif type ==  5
+  return sprintf(&quot;NARCH(%d,%d) [Higgins and Bera]&quot;, p, q)
+elif type ==  6
+  return sprintf(&quot;APARCH(%d,%d) [Ding]&quot;, p, q)
+elif type ==  7
+  return sprintf(&quot;EGARCH(%d,%d) [Nelson]&quot;, p, q)
+elif type ==  8
+  return sprintf(&quot;GARCH-in-mean(%d,%d) [Engle]&quot;, p, q)
+elif type ==  9
+  return sprintf(&quot;free-APARCH(%d,%d)&quot;, p, q)
+endif
+</code>
+</gretl-function>
+<gretl-function name="gig_printHeader" type="void" private="1">
+ <params count="1">
+  <param name="mod" type="bundleref"/>
+ </params>
+<code>ncoeff  = rows(mod.coeff) # rows
+nfitted = rows(mod.active) # cols
+
+type  = mod.type
+dtype = mod.cdist
+vtype = mod.vcvtype
+
+p    = mod.p
+q    = mod.q
+t1   = mod.t1
+t2   = mod.t2
+T    = mod.nobs
+
+printf &quot;\nModel: %s&quot;, s_modeltype(&amp;mod)
+
+# DISTRIBUTIONS ordered by no. of extra params
+
+if dtype ==  0
+  printf &quot; (Normal)&quot;
+elif dtype ==  1
+  printf &quot; (Student's t)&quot;
+elif dtype ==  2
+  printf &quot; (GED)&quot;
+elif dtype ==  3
+  printf &quot; (Skewed T)&quot;
+elif dtype ==  4
+  printf &quot; (Skewed GED)&quot;
+endif
+
+if ascore_ok(type, dtype)
+  printf &quot;*&quot;
+endif
+
+# OBS used
+
+printf &quot;\nDependent variable: %s&quot;, mod.depvarname
+printf &quot;\nSample: %s -- %s (T = %d)&quot;, obslabel(t1), obslabel(t2), T
+
+# VCV
+
+printf &quot;, VCV method: &quot;
+
+if vtype ==  0
+  printf &quot;Robust&quot;
+elif vtype ==  1
+  printf &quot;Hessian&quot;
+else
+  printf &quot;OPG&quot;
+endif
+
+if (mod.vX_QR == 1) &amp;&amp; (mod.vk&gt;1)
+  printf &quot;\nQR decomposition used for variance regressors&quot;
+endif
+
+# if (mod.scale != 1)
+#     printf &quot;\nexperimental: scaling = %g\n&quot;, mod.scale
+# endif
+
+printf &quot;\n\n&quot;
+</code>
+</gretl-function>
+<gretl-function name="GJR_alt_param" type="void" private="1">
+ <params count="7">
+  <param name="coeff" type="matrix"/>
+  <param name="vcv" type="matrix"/>
+  <param name="p" type="scalar"/>
+  <param name="q" type="scalar"/>
+  <param name="nmX" type="scalar"/>
+  <param name="nvX" type="scalar"/>
+  <param name="svX" type="string"/>
+ </params>
+<code>matrix c_om = coeff[nmX+1:nmX+nvX]
+matrix v_om = vcv[nmX+1:nmX+nvX, nmX+1:nmX+nvX]
+
+matrix c_ag = coeff[nmX+nvX+1:nmX+nvX+2*q]
+matrix v_ag = vcv[nmX+nvX+1:nmX+nvX+2*q, nmX+nvX+1:nmX+nvX+2*q]
+
+matrix c_bt = coeff[nmX+nvX+2*q+1:nmX+nvX+2*q+p]
+matrix v_bt = vcv[nmX+nvX+2*q+1:nmX+nvX+2*q+p, nmX+nvX+2*q+1:nmX+nvX+2*q+p]
+
+if nvX == 1
+  parNames = &quot;delta&quot;
+else
+  parNames = svX
+endif
+
+cs = c_om ~ sqrt(diag(v_om))
+
+if q == 1
+  parNames += &quot;,alpha,gamma&quot;
+else
+  loop i = 1 .. q
+    parNames += &quot;,alpha_$i&quot;
+  endloop
+  loop i = 1 .. q
+    parNames += &quot;,gamma_$i&quot;
+  endloop
+endif
+
+matrix c_ag2 = zeros(2*q,1)
+matrix J = zeros(2*q,2*q) # Jacobian
+
+loop i = 1 .. q
+  alpha = c_ag[i]
+  gamma = c_ag[i+q]
+  c_ag2[i] = alpha * (1-gamma)^2
+  c_ag2[i+q] = 4 * alpha * gamma
+  J[i,i] = (1-gamma)^2
+  J[i,i+q] = -2 * alpha * (1-gamma)
+  J[i+q,i] = 4 * gamma
+  J[i+q,i+q] = 4 * alpha
+endloop
+
+matrix v_ag2 = qform(J, v_ag)
+cs |= (c_ag2 ~ sqrt(diag(v_ag2)))
+
+if p == 1
+  parNames += &quot;,beta&quot;
+else
+  loop i = 1 .. p
+    parNames += &quot;,beta_$i&quot;
+  endloop
+endif
+
+cs |= (c_bt ~ sqrt(diag(v_bt)))
+
+printf &quot;\n   (alt. parametrization)\n&quot;
+
+modprint cs parNames
+</code>
+</gretl-function>
+<gretl-function name="maybe_gig_print" type="void" private="1">
+ <params count="2">
+  <param name="mod" type="bundleref"/>
+  <param name="verbose" type="scalar" min="0" max="3" default="0"/>
+ </params>
+<code>ncoeff  = rows(mod.coeff) # rows
+nfitted = rows(mod.active) # cols
+
+type  = mod.type
+dtype = mod.cdist
+vtype = mod.vcvtype
+
+p    = mod.p
+q    = mod.q
+nmX  = mod.mk
+nvX  = mod.vk
+
+crit = mod.criteria
+vcv = mod.vcv
+
+# Composing print-out results
+
+coeff  = mod.coeff
+sel    = mod.active
+stderr = mod.stderr
+
+cs2 = coeff[sel] ~ stderr
+
+# MEAN REGR
+if nmX &gt; 0
+  parNames = mod.mXnames
+  cs = cs2[1:nmX,]
+
+  if cols(cs)&gt;0
+    printf &quot;    Conditional mean equation\n&quot;
+    modprint cs parNames
+  endif
+endif
+
+# VAR REGR
+
+if nvX == 1
+  parNames = &quot;omega&quot;
+else
+  parNames = mod.vXnames
+endif
+
+#ALPHAS
+counter = nmX+nvX
+if q == 1
+  parNames += &quot;,alpha&quot;
+else
+  loop i = 1 .. q
+    parNames += &quot;,alpha_$i&quot;
+  endloop
+endif
+counter += q
+
+#GAMMAS
+if has_asymm_fx(type)
+  if q == 1
+    parNames += &quot;,gamma&quot;
+  else
+    loop i = 1 .. q
+      parNames += &quot;,gamma_$i&quot;
+    endloop
+  endif
+endif
+counter += q
+
+#BETAS
+if type&gt;0
+  if p == 1
+    parNames += &quot;,beta&quot;
+  else
+    loop i = 1 .. p
+      parNames += &quot;,beta_$i&quot;
+    endloop
+  endif
+endif
+counter += p
+
+#DELTAS
+if (type==5) || (type==6)
+  parNames += &quot;,delta&quot;
+endif
+
+if type != 9
+  cs = cs2[nmX+1:nfitted,]
+  limit = nfitted-nmX
+else
+  cs = cs2[nmX+1:,]
+  limit = ncoeff-nmX
+endif
+
+printf &quot;    Conditional variance equation\n&quot;
+
+if dtype &gt; 0
+  ndenspar = n_cdist_par(dtype)
+  csdens = cs[limit-ndenspar+1:limit,]
+  cs = cs[1:limit-ndenspar,]
+endif
+
+modprint cs parNames
+if (type == 3) # GJR
+  GJR_alt_param(coeff, vcv, p, q, nmX, nvX, mod.vXnames)
+endif
+
+if dtype &gt; 0
+  # DENSITY FUNCTION PART
+
+  /*
+  FIXME (or maybe not):
+  for asymmetric densities what we're actually printing here
+  is not really \lambda, but rather atanh(\lambda). In most cases, the difference is so minuscule to be inconsequential. Besides, I don't think anyone is going to care. However, it's annoying.
+  What shall we do? Transform the estimated parameter (and vcv) into
+  \lambda or just correct its label? Note that when we plot the
+  density (see gig_plot.inp) we do transform the parameter back to
+  \lambda, so we should at least be consistent. Hmmm.
+  */
+
+  if dtype&lt;3
+    parNames = &quot;,ni&quot;
+  elif dtype&lt;5
+    parNames = &quot;ni,lambda&quot;
+  endif
+  printf &quot;    Conditional density parameters\n&quot;
+  modprint csdens parNames
+endif
+
+# INFO
+
+printf &quot;\tLlik: %12.5f\t&quot;, crit[1]
+printf &quot; AIC: %12.5f\n&quot;,   crit[2]
+printf &quot;\tBIC:  %12.5f\t&quot;, crit[3]
+printf &quot; HQC: %12.5f\n\n&quot;, crit[4]
+
+if verbose &gt; 2
+  # Starting Values
+  printf &quot;Starting/Fitted Values Comparison Matrix:\n\n&quot;
+  printf &quot;       Initial         Final    Difference\n\n&quot;
+
+  fitted  = mod.coeff
+  initial = mod.inipar
+  loop i = 1 .. ncoeff
+    difff = initial[i] - fitted[i]
+    printf &quot;%14.7f%14.7f%14.7f\n&quot;, initial[i], fitted[i], difff
+  endloop
+  printf &quot;\n&quot;
+endif
+</code>
+</gretl-function>
+<gretl-function name="dateton" type="scalar" private="1">
+ <params count="1">
+  <param name="t" type="scalar"/>
+ </params>
+<code>scalar ret dd mm yy
+string s = obslabel(t)
+scalar pd = $pd
+
+if $version&lt;10913
+  string datefmt = &quot;%d/%d/%d&quot;
+else
+  string datefmt = &quot;%d-%d-%d&quot;
+endif
+
+if (pd==5) || (pd==6) || (pd==7)
+  sscanf(s,datefmt, yy, mm, dd)
+  ret = yy + ok(mm)*(mm-1)/12 + ok(dd)*(dd-1)*12/365
+elif (pd==12) || (pd==4)
+  sscanf(s,&quot;%d:%d&quot;, yy, mm)
+  ret = yy + ok(mm)*(mm-1)/pd
+else
+  ret = t
+endif
+
+return ret
+</code>
+</gretl-function>
+<gretl-function name="do_xtics" type="string" private="1">
+ <params count="5">
+  <param name="t1" type="scalar"/>
+  <param name="t2" type="scalar"/>
+  <param name="d1" type="scalar"/>
+  <param name="d2" type="scalar"/>
+  <param name="n" type="scalar"/>
+ </params>
+<code>string ret = &quot;set xtics(&quot;
+s = seq(1,n)/n - 1/(2*n)
+s_d = d1 + s .* (d2 - d1)
+t = t1 + (t2 - t1)/(2*n)
+
+loop i = 1 .. n
+  string tmp = sprintf(&quot;'%s' %g&quot;, obslabel(round(t)), s_d[i])
+  ret += tmp
+  if i==n
+    ret += &quot;)&quot;
+  else
+    ret += &quot;, &quot;
+  endif
+  t += (t2 - t1)/n
+endloop
+
+return ret
+</code>
+</gretl-function>
+<gretl-function name="gig_grph" type="string" private="1">
+ <params count="3">
+  <param name="yname" type="string"/>
+  <param name="u" type="series"/>
+  <param name="h" type="series"/>
+ </params>
+<code>series s = sqrt(h)
+smpl ok(s) --restrict
+
+scalar t1 = $t1
+scalar t2 = $t2
+
+### FIXME 10/11/2020: this can probably be made much smarter by using
+### more recent calendar functions
+scalar d1 = dateton(t1)
+scalar d2 = dateton(t2)
+scalar incr = (d2-d1)/($nobs-1)
+series xt = d1 + incr*(time - min(time))
+
+set force_decpoint on
+string gpbuf = &quot;&quot;
+
+outfile --buffer=gpbuf
+  printf &quot;set nokey\n&quot;
+  #    printf &quot;unset xzeroaxis\n&quot;
+
+  printf &quot;set title '%s: Residuals and conditional sd'\n&quot;, yname
+  printf &quot;%s\n&quot;, do_xtics(t1, t2, d1, d2, 6)
+
+  printf &quot;plot '-' using 1:2 title 'residual' w lines, \\\n&quot;
+  printf &quot;'-' using 1:2 w lines lt 2, \\\n&quot;
+  printf &quot;'-' using 1:2 w lines lt 2 \n&quot;
+
+  loop t = t1 .. t2
+    printf &quot;%12.6f %12.6f\n&quot;, xt[t], u[t]
+  endloop
+  printf &quot;e\n&quot;
+  loop t = t1 .. t2
+    printf &quot;%12.6f %12.6f\n&quot;, xt[t], s[t]
+  endloop
+  printf &quot;e\n&quot;
+  loop t = t1 .. t2
+    printf &quot;%12.6f %12.6f\n&quot;, xt[t], -s[t]
+  endloop
+  printf &quot;e\n&quot;
+
+end outfile
+set force_decpoint off
+
+return gpbuf
+</code>
+</gretl-function>
+<gretl-function name="gig_dgrph" type="string" private="1">
+ <params count="2">
+  <param name="X" type="matrix"/>
+  <param name="desc" type="string"/>
+ </params>
+<code>n = rows(X)
+x  = X[,1]
+kd = X[,2]
+td = X[,3]
+
+set force_decpoint on
+string gpbuf = &quot;&quot;
+
+outfile --buffer=gpbuf
+  printf &quot;set nokey\n&quot;
+  printf &quot;set yzeroaxis\n&quot;
+
+  printf &quot;set title 'std residuals: kernel density vs %s'\n&quot;, desc
+
+  printf &quot;plot '-' using 1:2 title 'kernel' w lines, \\\n&quot;
+  printf &quot;'-' using 1:2 title 'theoretical' w lines lt 2 \n&quot;
+
+  loop i = 1 .. n
+    printf &quot;%12.6f %12.6f\n&quot;, x[i], kd[i]
+  endloop
+  printf &quot;e\n&quot;
+  loop i = 1 .. n
+    printf &quot;%12.6f %12.6f\n&quot;, x[i], td[i]
+  endloop
+  printf &quot;e\n&quot;
+
+end outfile
+set force_decpoint off
+
+return gpbuf
+</code>
+</gretl-function>
+<gretl-function name="pdf_skt" type="matrix" private="1">
+ <params count="3">
+  <param name="e" type="matrixref"/>
+  <param name="df" type="scalar"/>
+  <param name="ht_skew" type="scalar"/>
+ </params>
+<code>matrix ret = NA
+
+if (df&gt;2)
+  # sqrt(pi) = 1.77245385090551602729816748334
+  scalar q = lngamma((df+1)/2) - lngamma(df/2)
+  scalar c = exp(q)/(sqrt(df-2)*1.77245385090551602729816748334)
+
+  scalar a = 4 * ht_skew * c * ((df-2)/(df-1))
+  scalar b = sqrt(1 + 3*ht_skew^2 - a^2)
+  matrix d = (b.* e + a)
+  sk = (d.&lt;0) .* (1-ht_skew) + (d.&gt;0) .* (1+ht_skew)
+  d = d ./ sk
+  ret = b*c / exp( ((df+1)/2) * ln(1+(d.^2/(df-2))) )
+endif
+
+return ret
+</code>
+</gretl-function>
+<gretl-function name="pdf_skged" type="matrix" private="1">
+ <params count="3">
+  <param name="x" type="matrixref"/>
+  <param name="ni" type="scalar"/>
+  <param name="ta" type="scalar"/>
+ </params>
+<code>scalar p  = 1/ni
+
+lgp  = lngamma(p)
+lg2p = lngamma(2*p)
+lg3p = lngamma(3*p)
+tap1 = 1 + ta
+tam1 = 1 - ta
+
+scalar beta = 0.5 * exp(lg3p - lgp) * (tap1^3 + tam1^3) - 4*ta^2 * exp(2 * (lg2p - lgp))
+beta = sqrt(beta)
+
+# m: mode
+scalar m = - 2*ta/beta * exp( lg2p - lgp )
+scalar lnorm = ln(0.5 * beta) - lngamma(p+1)
+
+matrix sk = (x.&lt;m) .* (-tam1) + (x.&gt;m) .* tap1
+matrix z = (x-m) ./ sk
+matrix ret = lnorm - (z.^ni)
+return exp(ret)
+</code>
+</gretl-function>
+<gretl-function name="gig_plot_precheck" type="matrix" private="1" pkg-role="plot-precheck">
+ <params count="1">
+  <param name="model" type="bundleref"/>
+ </params>
+<code>if model.type == 7 || model.vk &gt; 1
+  # variance forecasting plot not yet available,
+  # see gig_var_fcast()
+  return {1,1,0}
+else
+  return {1,1,1}
+endif
+</code>
+</gretl-function>
+<gretl-function name="aparch_fcast" type="matrix" private="1">
+ <params count="8">
+  <param name="e" type="matrix"/>
+  <param name="e0" type="matrix"/>
+  <param name="h0" type="matrix"/>
+  <param name="omega" type="scalar"/>
+  <param name="alpha" type="matrix"/>
+  <param name="gamma" type="matrix"/>
+  <param name="beta" type="matrix"/>
+  <param name="delta" type="scalar"/>
+ </params>
+<code># in principle, we could just as well use the aparchFilter
+# function from gig_mle.inp, but this is lighter and more specialised
+
+q = rows(alpha)
+p = rows(beta)
+head = xmax(p,q)
+scalar hor = rows(e) + 1
+
+scalar is_asymmetric = maxc(abs(gamma)) .&gt; 1.0e-07
+
+matrix ee  = e0 | e
+matrix ae = abs(ee)
+h0init = h0.^(delta/2)
+scalar s = head + 1
+
+matrix elag = mlag(ee, seq(0,q-1))
+if is_asymmetric
+  tmp_ae = abs(elag) - elag .* gamma'
+else
+  tmp_ae = abs(elag)
+endif
+
+# print e e0 tmp_ae h0init
+
+matrix h = omega + (tmp_ae.^delta) * alpha
+matrix ret = p&gt;0 ? filter(h0init | h, 1, beta) : h
+scalar good = rows(ret) - hor
+ret = ret[good+1:]
+
+if delta != 2
+  ret = ret.^(2/delta)
+endif
+
+return ret
+</code>
+</gretl-function>
+<gretl-function name="s2m" type="matrix" private="1">
+ <params count="1">
+  <param name="x" type="series"/>
+ </params>
+<code>matrix a = ok(x)
+matrix b = misszero(x)
+return selifr(b,a)
+</code>
+</gretl-function>
+<sample-script filename="examples/example1.inp">
+# Example n. 1
+
+# GARCH(1,1) with Normal conditional distribution, 
+# no mean regressors.
+  
+
+set verbose off
+
+# Import the gig library.
+include gig.gfn
+open djclose
+rr = 100*ldiff(djclose)
+
+model = gig_setup(rr)
+gig_estimate(&amp;model)
+
+# Compare with native implementation
+garch 1 1 ; rr --nc --robust
+</sample-script>
+</gretl-function-package>
+</gretl-functions>

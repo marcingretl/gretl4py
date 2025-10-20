@@ -5,7 +5,7 @@ import gretl
 
 gretl.set('force_decpoint', 'on')
 
-mod_ver = "0.30"
+mod_ver = "0.31"
 d = gretl.about(0)
 assert d['mod_ver'] == mod_ver, f'module version should be {mod_ver}!!!'
 

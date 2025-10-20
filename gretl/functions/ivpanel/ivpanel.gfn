@@ -1,0 +1,520 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gretl-functions>
+<gretl-function-package name="ivpanel" needs-panel-data="true" minver="2025c" lives-in-subdir="true">
+<author email="cottrell@wfu.edu">Allin Cottrell</author>
+<version>2025c-git</version>
+<date>2021-02-15</date>
+<description>Within and Between TSLS models plus G2SLS</description>
+<tags>C23 C26</tags>
+<help>
+pdfdoc:ivpanel.pdf
+</help>
+<gretl-function name="ivpanel" type="bundle">
+ <params count="5">
+  <param name="y" type="series">
+<description>dependent variable</description>
+  </param>
+  <param name="X" type="list">
+<description>regressors</description>
+  </param>
+  <param name="Z" type="list">
+<description>instruments</description>
+  </param>
+  <param name="case" type="int" min="1" max="3" default="1">
+<labels count="3">
+"Fixed effects" "Between model" "G2SLS" </labels>
+  </param>
+  <param name="quiet" type="bool" default="0"/>
+ </params>
+<code>bundle b
+scalar Fpnum = NA
+
+# ensure we have a constant in first place in both lists
+X = 0 || X
+Z = 0 || Z
+
+list D = dropcoll(X)
+if nelem(X - D) &gt; 0
+  printf &quot;Regressor(s) %s dropped for collinearity\n&quot;, varname(X-D)
+  X = D
+endif
+list D = dropcoll(Z)
+if nelem(Z - D) &gt; 0
+  printf &quot;Instrument(s) %s dropped for collinearity\n&quot;, varname(Z-D)
+  Z = D
+endif
+
+scalar nendo = nelem(X - Z)
+scalar ninst = nelem(Z - X)
+if nendo &gt; ninst
+  funcerr &quot;Order condition for identification is not satisfied&quot;
+endif
+
+# fixed effects: test for time variation
+if case == 1 &amp;&amp; !all_varying(X, Z)
+  funcerr &quot;Fixed effects: all regressors and instruments must be time-varying&quot;
+endif
+
+# construct string for printing coeffs
+string Xstr = varname(X)
+
+# and the name of the dependent variable
+string ystr = argname(y)
+if strlen(ystr) == 0
+  ystr = &quot;anonymous&quot;
+endif
+
+# record cols for endogenous and exogenous regressors
+scalar k = nelem(X)
+matrix endocols = zeros(1, nendo)
+matrix exocols = zeros(1, k - nendo)
+scalar ce = 1
+scalar cx = 1
+loop foreach i X -q
+  if (inlist(Z, X.$i))
+    exocols[cx] = i
+    cx++
+  else
+    endocols[ce] = i
+    ce++
+  endif
+endloop
+
+# list of all vars
+list Lbig = y X || Z
+
+# create big data matrix and transform it
+series msk = ok(Lbig)
+set matrix_mask msk
+matrix All = {Lbig}
+matrix u = {$unit}
+if (u[1] &gt; 1)
+  # handle sample offset
+  u -= u[1] - 1
+endif
+if case == 1 # within, fixed-effects
+  matrix dims = panel_demean_1(&amp;All, &amp;u)
+  scalar N = dims[1]
+  scalar NT = rows(All)
+elif case == 2 # between
+  All = panel_means_matrix(All, u)
+  scalar N = rows(values(u))
+  NT = N
+elif case == 3 # G2SLS
+  matrix dims
+  matrix X1 = panel_demean_2(All, u, &amp;dims)
+  scalar N = dims[1]
+  scalar NT = rows(X1)
+  sw = panel_sigma(X1, k, endocols, exocols, N, 1)
+  matrix X2 = panel_means_matrix(All, u)
+  sb = panel_sigma(X2, k, endocols, exocols, N, 2)
+  if !quiet
+    printf &quot;sigma-hat(within)  = %.8g\n&quot;, sw
+    printf &quot;sigma-hat(between) = %.8g\n&quot;, sb
+  endif
+  # total s^2 for comparison
+  # stot = panel_sigma(All, k, endocols, exocols, N, 3)
+  # printf &quot;stot = %.8g\n&quot;, stot
+  All = (X1/sw) | (X2/sb)
+endif
+
+# break out the various required sub-matrices
+matrix my = All[,1]
+matrix mX = All[,2:k+1]
+matrix Endo = mX[,endocols]
+matrix mZ = mX[,exocols] ~ All[,k+2:]
+k = cols(mX)
+delete All
+
+# compute IV estimator plus residuals etc
+matrix V
+if case == 1
+  matrix S1 = mX[,endocols]
+  matrix beta = matrix_tsls(my, &amp;mX, &amp;mZ, &amp;V, &amp;S1)
+else
+  matrix beta = matrix_tsls(my, &amp;mX, &amp;mZ, &amp;V)
+endif
+matrix U = my - mX * beta
+
+if case == 1
+  # FE: components for poolability F-test
+  mX[,endocols] = S1
+  matrix u1 = my - mX * beta
+  scalar SSRu = u1'u1
+  matrix y0 = {y}
+  matrix X0 = {X}
+  matrix S0 = X0[,endocols]
+  get_panel_means(&amp;S0, u)
+  X0[,endocols] = S1 + S0
+  scalar SSRr = get_SSRr(y0, X0)
+  Fpnum = SSRr - SSRu
+  # end F-test stuff
+  scalar df = NT - k - N + 1
+elif case == 2
+  scalar df = N - k
+else
+  scalar df = NT - k
+endif
+
+scalar SSR = U'U
+scalar s2 = SSR / df
+matrix V *= s2
+matrix se = sqrt(diag(V))
+scalar wald = qform(beta[2:,]', invpd(V[2:,2:]))
+
+if case == 3
+  my = my[1:NT]
+  U = U[1:NT]
+endif
+
+matrix yhat = my - U
+scalar rsq = tsls_rsq(my, yhat)
+
+# lists of endog vars and additional instruments
+list tmp = X - Z
+string Estr = strsub(varname(tmp), &quot;,&quot;, &quot; &quot;)
+tmp = Z - X
+string Istr = strsub(varname(tmp), &quot;,&quot;, &quot; &quot;)
+
+# assemble bundle for return
+b[&quot;nobs&quot;] = NT
+b[&quot;coeff&quot;] = beta
+b[&quot;stderr&quot;] = se
+b[&quot;vcv&quot;] = V
+b[&quot;SSR&quot;] = SSR
+b[&quot;sigma&quot;] = sqrt(s2)
+b[&quot;df&quot;] = df
+b[&quot;rsq&quot;] = rsq
+b[&quot;wald&quot;] = wald
+b[&quot;modstr&quot;] = Xstr
+b[&quot;ystr&quot;] = ystr
+b[&quot;Estr&quot;] = Estr
+b[&quot;Istr&quot;] = Istr
+b[&quot;uhat&quot;] = U
+b[&quot;yhat&quot;] = yhat
+b[&quot;case&quot;] = case
+if (case == 1 || case == 3)
+  b[&quot;dims&quot;] = dims
+endif
+if ok(Fpnum)
+  b[&quot;Fpool&quot;] = (Fpnum/SSR) * df/(N-1)
+endif
+
+if quiet
+  print &quot;ivpanel: OK&quot;
+else
+  ivp_print(&amp;b)
+endif
+
+return b
+</code>
+</gretl-function>
+<gretl-function name="ivp_print" type="void" pkg-role="bundle-print">
+ <params count="1">
+  <param name="b" type="bundleref"/>
+ </params>
+<code>matrix result = b[&quot;coeff&quot;] ~ b[&quot;stderr&quot;]
+scalar case = b[&quot;case&quot;]
+scalar N = 0
+if case == 1
+  printf &quot;\nFixed-effects TSLS, using %d observations\n&quot;, b[&quot;nobs&quot;]
+elif case == 2
+  printf &quot;\nBetween TSLS, N = %d\n&quot;, b[&quot;nobs&quot;]
+else
+  printf &quot;\nG2SLS random effects, using %d observations\n&quot;, b[&quot;nobs&quot;]
+endif
+printf &quot;Dependent variable: %s\n&quot;, b[&quot;ystr&quot;]
+printf &quot;Endogenous: %s\n&quot;, b[&quot;Estr&quot;]
+printf &quot;Instruments: %s\n&quot;, b[&quot;Istr&quot;]
+
+string S = b[&quot;modstr&quot;]
+modprint result S
+
+printf &quot;  SSR = %g\n&quot;, b[&quot;SSR&quot;]
+printf &quot;  sigma-hat = %g (df = %d)\n&quot;, b[&quot;sigma&quot;], b[&quot;df&quot;]
+printf &quot;  R-squared = corr(y, yhat)^2 = %f\n&quot;, b[&quot;rsq&quot;]
+if (case == 1 || case == 3)
+  matrix dims = b[&quot;dims&quot;]
+  N = dims[1]
+  printf &quot;  Included units = %d\n&quot;, N
+  printf &quot;  Time-series length: min = %d, max = %d\n&quot;, dims[2], dims[3]
+endif
+scalar X2 = b[&quot;wald&quot;]
+scalar df = rows(b[&quot;coeff&quot;]) - 1
+scalar pv = pvalue(X, df, X2)
+printf &quot;  Wald chi-square(%d) = %g [%.4f]\n&quot;, df, X2, pv
+
+if inbundle(b, &quot;Fpool&quot;)
+  # poolability F-test for fixed effects
+  scalar Fp = b[&quot;Fpool&quot;]
+  scalar dfn = N-1
+  scalar dfd = b[&quot;df&quot;]
+  pv = pvalue(F, dfn, dfd, Fp)
+  printf &quot;  Null hypothesis: The groups have a common intercept\n&quot;
+  printf &quot;  Test statistic: F(%d, %d) = %g [%.4f]\n&quot;, dfn, dfd, Fp, pv
+endif
+
+printf &quot;\n&quot;
+</code>
+</gretl-function>
+<gretl-function name="GUI_ivpanel" type="bundle" pkg-role="gui-main">
+ <params count="4">
+  <param name="y" type="series">
+<description>dependent variable</description>
+  </param>
+  <param name="X" type="list">
+<description>regressors</description>
+  </param>
+  <param name="Z" type="list">
+<description>instruments</description>
+  </param>
+  <param name="case" type="int" min="1" max="3" default="1">
+<labels count="3">
+"Fixed effects" "Between model" "G2SLS" </labels>
+  </param>
+ </params>
+<code>bundle b = ivpanel(y, X, Z, case)
+return b
+</code>
+</gretl-function>
+<gretl-function name="tsls_rsq" type="scalar" private="1">
+ <params count="2">
+  <param name="y" type="matrix" const="true"/>
+  <param name="yh" type="matrix" const="true"/>
+ </params>
+<code>scalar r = corr(y, yh)
+return r^2
+</code>
+</gretl-function>
+<gretl-function name="panel_means_matrix" type="matrix" private="1">
+ <params count="2">
+  <param name="X" type="matrix" const="true"/>
+  <param name="u" type="matrix" const="true"/>
+ </params>
+<code>scalar NT = rows(X)
+matrix e = seq(1, NT)'
+
+matrix vU = values(u)
+scalar N = rows(vU)
+matrix umean = zeros(N, cols(X))
+
+loop i=1..N -q
+  matrix sel = selifr(e, u .= vU[i])
+  umean[i,] = meanc(X[sel,])
+endloop
+
+return umean
+</code>
+</gretl-function>
+<gretl-function name="get_panel_means" type="void" private="1">
+ <params count="2">
+  <param name="X" type="matrixref"/>
+  <param name="u" type="matrix" const="true"/>
+ </params>
+<code>matrix grand = meanc(X)
+matrix e = seq(1, rows(X))'
+matrix vU = values(u)
+scalar N = rows(vU)
+scalar k = cols(X)
+scalar Ti
+
+loop i=1..N -q
+  matrix sel = selifr(e, u .= vU[i])
+  Ti = rows(sel)
+  matrix tmp = X[sel,]
+  X[sel,] = zeros(Ti, k) .+ (meanc(tmp) - grand)
+endloop
+</code>
+</gretl-function>
+<gretl-function name="real_panel_demean" type="void" private="1">
+ <params count="3">
+  <param name="X" type="matrixref"/>
+  <param name="u" type="matrix" const="true"/>
+  <param name="dims" type="matrixref"/>
+ </params>
+<code>matrix grand = meanc(X)
+scalar NT = rows(X)
+matrix e = seq(1, NT)'
+
+matrix vU = values(u)
+scalar N = rows(vU)
+scalar minT = NT
+scalar maxT = 0
+
+loop i=1..N -q
+  matrix sel = selifr(e, u .= vU[i])
+  scalar Ti = rows(sel)
+  minT = (Ti &lt; minT) ? Ti : minT
+  maxT = (Ti &gt; maxT) ? Ti : maxT
+  matrix tmp = X[sel,]
+  X[sel,] = tmp .+ (grand - meanc(tmp))
+endloop
+
+dims = {N, minT, maxT}
+</code>
+</gretl-function>
+<gretl-function name="panel_demean_1" type="matrix" private="1">
+ <params count="2">
+  <param name="X" type="matrixref"/>
+  <param name="u" type="matrixref" const="true"/>
+ </params>
+<code>matrix dims
+real_panel_demean(&amp;X, u, &amp;dims)
+return dims
+</code>
+</gretl-function>
+<gretl-function name="panel_demean_2" type="matrix" private="1">
+ <params count="3">
+  <param name="X" type="matrix" const="true"/>
+  <param name="u" type="matrix" const="true"/>
+  <param name="dims" type="matrixref"/>
+ </params>
+<code>matrix ret = X
+real_panel_demean(&amp;ret, u, &amp;dims)
+return ret
+</code>
+</gretl-function>
+<gretl-function name="matrix_tsls" type="matrix" private="1">
+ <params count="5">
+  <param name="y" type="matrix" const="true"/>
+  <param name="X" type="matrixref"/>
+  <param name="Z" type="matrixref"/>
+  <param name="V" type="matrixref" optional="true"/>
+  <param name="S1" type="matrixref" optional="true"/>
+ </params>
+<code>matrix R
+matrix Q = qrdecomp(Z, &amp;R)
+if exists(S1)
+  # write first-stage fitted values into S1
+  S1 = Q*Q'S1
+endif
+matrix XQ = X'Q
+matrix Qy = Q'y
+matrix nonzero = (abs(R[diag]) .&gt; 1.0e-12)'
+if minr(nonzero) == 1
+  V = invpd(XQ * XQ')
+  ret = V * (XQ * Qy)
+else
+  R = selifc(R, nonzero)
+  P = qform(R, invpd(R'R))
+  V = ginv(qform(XQ, P))
+  ret = V * (XQ * (P * Qy))
+endif
+
+return ret
+</code>
+</gretl-function>
+<gretl-function name="get_SSRr" type="scalar" private="1">
+ <params count="2">
+  <param name="y" type="matrix" const="true"/>
+  <param name="X" type="matrix" const="true"/>
+ </params>
+<code>matrix u
+matrix b = mols(y, X, &amp;u)
+return u'u
+</code>
+</gretl-function>
+<gretl-function name="panel_sigma" type="scalar" private="1">
+ <params count="6">
+  <param name="All" type="matrix" const="true"/>
+  <param name="k" type="int"/>
+  <param name="endocols" type="matrix" const="true"/>
+  <param name="exocols" type="matrix" const="true"/>
+  <param name="ng" type="int"/>
+  <param name="code" type="int"/>
+ </params>
+<code># break out the various required sub-matrices
+matrix my = All[,1]
+matrix mX = All[,2:k+1]
+matrix Endo = mX[,endocols]
+matrix mZ = mX[,exocols] ~ All[,k+2:]
+
+# compute IV estimator
+matrix beta = matrix_tsls(my, &amp;mX, &amp;mZ)
+
+n = rows(mX)
+dfk = cols(mX)
+loop i=1..k -q
+  dfk -= isconst(mX[,i])
+endloop
+
+# compute residuals etc
+matrix U = my - mX * beta
+if code == 1   # fixed effects
+  scalar df = n - dfk - ng
+elif code == 2 # between
+  scalar df = ng - dfk - 1
+else           # straight TSLS
+  scalar df = n - dfk - 1
+endif
+
+return sqrt(U'U / df)
+</code>
+</gretl-function>
+<gretl-function name="all_varying" type="scalar" private="1">
+ <params count="2">
+  <param name="X" type="list"/>
+  <param name="Z" type="list"/>
+ </params>
+<code>scalar ret = 1
+X -= 0
+loop foreach i X -q
+  if isconst(X.$i, 0)
+    printf &quot;$i is not time-varying\n&quot;
+    ret = 0
+  endif
+endloop
+Z -= 0
+loop foreach i Z -q
+  if isconst(Z.$i, 0)
+    printf &quot;$i is not time-varying\n&quot;
+    ret = 0
+  endif
+endloop
+return ret
+</code>
+</gretl-function>
+<sample-script filename="nc_crime.inp">
+/* 
+  Replicate three of the models estimated by Baltagi
+  (Econometric Analysis of Panel Data, 3e, chapter 7),
+  based on North Carolina crime panel data from Cornwell 
+  and Trumbull
+*/
+
+set messages off
+include ivpanel.gfn
+
+open nc_crime.gdt --quiet
+
+# primary regressors
+list X = lprbarr lprbconv lprbpris lavgsen lpolpc ldensity \
+ lwcon lwtuc lwtrd lwfir lwser lwmfg lwfed lwsta lwloc lpctymle
+# time-invariant regressors
+list invariant = lpctmin west central urban
+# time dummies
+list TD = d82 d83 d84 d85 d86 d87
+# endogenous regressors
+list Endo = lpolpc lprbarr
+# instruments
+list Inst = ltaxpc lmix
+
+# fixed effects: can use time dummies
+list FX = X TD
+list FZ = FX - Endo Inst
+# Fixed-effects TSLS
+ivpanel(lcrmrte, FX, FZ, 1)
+
+# between: exclude time dummies but add time-invariant series
+list BX = X invariant
+list BZ = BX - Endo Inst
+# Between TSLS
+ivpanel(lcrmrte, BX, BZ, 2)
+
+# random effects (G2SLS): use all regressors
+list RX = X invariant TD
+list RZ = RX - Endo Inst
+ivpanel(lcrmrte, RX, RZ, 3)
+</sample-script>
+</gretl-function-package>
+</gretl-functions>

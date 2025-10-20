@@ -1,0 +1,602 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gretl-functions>
+<gretl-function-package name="geoplot" no-data-ok="true" minver="2025c" lives-in-subdir="true">
+<author email="cottrell@wfu.edu">Allin Cottrell and Riccardo &quot;Jack&quot; Lucchetti</author>
+<version>2025c-git</version>
+<date>2023-05-01</date>
+<description>geospatial plotting</description>
+<tags>C81 C88</tags>
+<help>
+pdfdoc:geoplot.pdf
+</help>
+<data-files count="1">
+examples </data-files>
+<gretl-function name="geoplot_describe_json" type="bundle">
+ <params count="2">
+  <param name="jb" type="bundle" const="true"/>
+  <param name="verbose" type="int" default="1"/>
+ </params>
+<code># as per RFC 7946, &quot;The GeoJSON Format&quot;
+
+bundle ret = null
+
+matrix bbox = get_bbox(jb)
+if rows(bbox) == 0
+  printf &quot;No bounding box\n&quot;
+else
+  nbb = nelem(bbox)
+  ndim = nbb / 2
+  printf &quot;%d-dimensional bounding box (SW; NE):\n&quot;, ndim
+  matrix rbb = vec(bbox)'
+  printf &quot;  [&quot;
+  loop i=1..nbb
+    tail = i==ndim ? &quot;; &quot; : i==nbb ? &quot;&quot; : &quot;,&quot;
+    printf &quot;%.3f%s&quot;, rbb[i], tail
+  endloop
+  printf &quot;]\n\n&quot;
+endif
+ret.bbox = bbox
+
+bundles feat = jb.features
+nf = nelem(feat)
+printf &quot;%d features\n&quot;, nf
+ret.nf = nf
+
+bundle ids = null
+
+loop i = 1 .. nf
+  props = feat[i].properties
+
+  if i == 1
+    ids = create_ids(props, nf)
+  endif
+
+  fill_ids(props, &amp;ids, i)
+
+  if verbose
+    describe_feature(feat[i], i, 0)
+  endif
+endloop
+
+ret.ids = ids
+return ret
+</code>
+</gretl-function>
+<gretl-function name="geoplot_translate_feature" type="void">
+ <params count="5">
+  <param name="b" type="bundleref"/>
+  <param name="f" type="int"/>
+  <param name="shift" type="matrix"/>
+  <param name="center" type="matrix" optional="true"/>
+  <param name="scale" type="matrix" optional="true"/>
+ </params>
+<code>if exists(center)
+  center = vec(center)
+else
+  center = {0;0}
+endif
+if exists(scale)
+  scale = vec(scale)
+else
+  scale = {1;1}
+endif
+shift = vec(shift)
+scalar single = b.features[f].geometry.type == &quot;Polygon&quot;
+arrays mod = b.features[f].geometry.coordinates
+loop i=1..nelem(mod)
+  loop j=1..nelem(mod[i])
+    if single
+      ctmp = scale .* (mod[i][j] - center)
+      mod[i][j] = ctmp + center + shift
+    else
+      loop k=1..nelem(mod[i][j])
+        ctmp = scale .* (mod[i][j][k] - center)
+        mod[i][j][k] = ctmp + center + shift
+      endloop
+    endif
+  endloop
+endloop
+b.features[f].geometry.coordinates = mod
+</code>
+</gretl-function>
+<gretl-function name="geoplot_set_properties" type="void">
+ <params count="2">
+  <param name="b" type="bundleref"/>
+  <param name="L" type="list"/>
+ </params>
+<code>strings keys = varnames(L)
+loop i=1..nelem(b.features)
+  bundle bpi = null
+  loop foreach j L
+    bpi[keys[j]] = L.$j[i]
+  endloop
+  b.features[i].properties = bpi
+endloop
+</code>
+</gretl-function>
+<gretl-function name="geoplot_seek_feature" type="matrix">
+ <params count="3">
+  <param name="b" type="bundle" const="true"/>
+  <param name="name" type="string"/>
+  <param name="do_plot" type="bool" default="1"/>
+ </params>
+<code>bundles feat = b.features
+nf = nelem(feat)
+matrix found = {}
+scalar nfound = 0
+strings where = array(0)
+loop i = 1 .. nf
+  bundle prop_i = feat[i].properties
+  strings keys = sort(getkeys(prop_i))
+  loop j = 1 .. nelem(keys)
+    type = inbundle(prop_i, keys[j])
+    if type == 4
+      if instring(tolower(prop_i[keys[j]]), tolower(name))
+        found = found ~ i
+        nfound++
+        where = where + defarray(keys[j])
+        break
+      endif
+    endif
+  endloop
+endloop
+
+if nfound == 0
+  printf &quot;\&quot;%s\&quot; not found\n&quot;, name
+elif nfound == 1
+  f = feat[found[1]]
+  extents = describe_feature(f, 0, 0)
+  string key = where[1]
+  string cont = f.properties[key]
+
+  if do_plot
+    plot_feature(b, found[1], cont, extents)
+  endif
+else
+  loop i = 1 .. nfound
+    k = found[i]
+    string key = where[i]
+    string cont = feat[k].properties[key]
+    printf &quot;Feature %4d: \&quot;%s\&quot; = %s\n&quot;, found[i], key, cont
+  endloop
+endif
+
+return found
+</code>
+</gretl-function>
+<gretl-function name="geoplot_simplify" type="void">
+ <params count="2">
+  <param name="b" type="bundleref"/>
+  <param name="preserve" type="scalar" min="0.1" max="1" default="0.75"/>
+ </params>
+<code>feat = b.features
+set stopwatch
+loop i = 1 .. nelem(feat)
+  feat[i] = simplify_feature(feat[i], preserve)
+endloop
+printf &quot;Simplification took %g seconds\n&quot;, $stopwatch
+flush
+b.features = feat
+</code>
+</gretl-function>
+<gretl-function name="get_bbox" type="matrix" private="1">
+ <params count="1">
+  <param name="jb" type="bundle" const="true"/>
+ </params>
+<code>matrix ret = {}
+if inbundle(jb, &quot;bbox&quot;)
+  if typeof(jb.bbox) == 3
+    # a matrix
+    ret = jb.bbox
+  else
+    sscanf(jb.bbox, &quot;%m&quot;, ret)
+  endif
+endif
+return ret
+</code>
+</gretl-function>
+<gretl-function name="ring2matrix" type="matrix" private="1">
+ <params count="1">
+  <param name="ring" type="arrays" const="true"/>
+ </params>
+<code>n = nelem(ring)
+matrix ret = zeros(2,n)
+m = {}
+loop i = 1 .. n
+  ri = ring[i]
+  sscanf(ri[1:2], &quot;%m&quot;, m)
+  ret[,i] = m
+endloop
+return ret'
+</code>
+</gretl-function>
+<gretl-function name="ring2matrix2" type="matrix" private="1">
+ <params count="1">
+  <param name="ring" type="matrices" const="true"/>
+ </params>
+<code>n = nelem(ring)
+matrix ret = zeros(2,n)
+loop i = 1 .. n
+  ri = ring[i]
+  ret[,i] = ri[1:2]
+endloop
+return ret'
+</code>
+</gretl-function>
+<gretl-function name="matrix2ring" type="matrices" private="1">
+ <params count="1">
+  <param name="coord" type="matrix" const="true"/>
+ </params>
+<code>n = rows(coord)
+matrices ret = array(n)
+loop i = 1 .. n
+  ret[i] = coord[i,1:2]
+endloop
+return ret
+</code>
+</gretl-function>
+<gretl-function name="polygon_area" type="scalar" private="1">
+ <params count="1">
+  <param name="XY" type="matrix" const="true"/>
+ </params>
+<code># taken from https://www.mathopenref.com/coordpolygonarea2.html
+scalar area = 0  # Accumulates area
+
+loop i = 2 .. rows(XY)
+  a = XY[i-1,1] * XY[i, 2]
+  b = XY[i,1] * XY[i-1, 2]
+  area += (a-b)
+endloop
+return abs(area/2)
+</code>
+</gretl-function>
+<gretl-function name="polygon_extents" type="void" private="1">
+ <params count="2">
+  <param name="XY" type="matrix" const="true"/>
+  <param name="minmax" type="matrixref"/>
+ </params>
+<code>loop i = 1 .. rows(XY)
+  if XY[i,1] &lt; minmax[1,1]
+    minmax[1,1] = XY[i,1]
+  endif
+  if XY[i,1] &gt; minmax[1,2]
+    minmax[1,2] = XY[i,1]
+  endif
+  if XY[i,2] &lt; minmax[2,1]
+    minmax[2,1] = XY[i,2]
+  endif
+  if XY[i,2] &gt; minmax[1,2]
+    minmax[2,2] = XY[2,2]
+  endif
+endloop
+</code>
+</gretl-function>
+<gretl-function name="describe_poly_coords" type="string" private="1">
+ <params count="4">
+  <param name="coar" type="arrays" const="true"/>
+  <param name="extents" type="matrixref" optional="true"/>
+  <param name="verbose" type="int"/>
+  <param name="i" type="int"/>
+ </params>
+<code>ext_ring = coar[1]
+if i &gt; 0
+  ret = sprintf(&quot;Exterior ring[%d]: %5d points &quot;, i, nelem(ext_ring))
+else
+  ret = sprintf(&quot;Exterior ring: %5d points &quot;, nelem(ext_ring))
+endif
+if typeof(ext_ring[1]) == 3
+  rm = ring2matrix2(ext_ring)
+else
+  rm = ring2matrix(ext_ring)
+endif
+scalar area = polygon_area(rm)
+ret = ret ~ sprintf(&quot;(area = %12.3f)&quot;, area*1000)
+if verbose &gt; 1
+  if nelem(coar) == 1
+    ret = ret ~ &quot;; no interior rings&quot;
+  else
+    ret = ret ~ sprintf(&quot;; %d interior rings&quot;, nelem(coar) - 1)
+  endif
+endif
+if exists(extents)
+  polygon_extents(rm, &amp;extents)
+endif
+return ret
+</code>
+</gretl-function>
+<gretl-function name="create_ids" type="bundle" private="1">
+ <params count="2">
+  <param name="f" type="bundle" const="true"/>
+  <param name="n" type="scalar"/>
+ </params>
+<code>bundle ret = null
+loop foreach i f
+  key = &quot;$i&quot;
+  t = typeof(f.$i)
+  if t == 1
+    # numeric
+    matrix ret[key] = zeros(n, 1)
+  elif t == 4
+    # string
+    strings ret[key] = array(n)
+  endif
+endloop
+return ret
+</code>
+</gretl-function>
+<gretl-function name="fill_ids" type="void" private="1">
+ <params count="3">
+  <param name="f" type="bundle" const="true"/>
+  <param name="ids" type="bundleref"/>
+  <param name="featnum" type="scalar"/>
+ </params>
+<code>loop foreach i ids
+  key = &quot;$i&quot;
+  if inbundle(f, key)
+    ids[key][featnum] = f[key]
+  else
+    t = typeof(ids.$i)
+    if t == 3
+      ids[key][featnum] = NA
+    elif t == 6
+      ids[key][featnum] = &quot;&quot;
+    endif
+  endif
+endloop
+</code>
+</gretl-function>
+<gretl-function name="describe_feature" type="matrix" private="1">
+ <params count="3">
+  <param name="feat" type="bundle" const="true"/>
+  <param name="index" type="scalar"/>
+  <param name="verbose" type="scalar"/>
+ </params>
+<code>if inbundle(feat, &quot;geometry&quot;)
+  ft = feat.geometry.type
+  if index == 0
+    printf &quot;\ngeometry type = %s, &quot;, ft
+  else
+    printf &quot;\n%4d: geometry type = %s, &quot;, index, ft
+  endif
+
+  if inbundle(feat, &quot;id&quot;)
+    if typeof(feat.id) == 1
+      printf &quot;id (numeric) = %g\n&quot;, feat.id
+    elif typeof(feat.id) == 4
+      printf &quot;id (string) = %s\n&quot;, feat.id
+    else
+      printf &quot;id present, but of unknown type\n&quot;
+    endif
+  else
+    printf &quot;no id\n&quot;
+  endif
+
+  print_properties(feat.properties)
+
+  matrix extents = {$huge, -$huge; $huge, -$huge}
+
+  if ft == &quot;Point&quot;
+    printf &quot;\t [ &quot;
+    pc = feat.geometry.coordinates
+    loop j = 1 .. nelem(pc)
+      printf &quot;%g&quot;, atof(pc[j])
+      if j == nelem(pc)
+        printf &quot; ]&quot;
+      else
+        printf &quot;, &quot;
+      endif
+    endloop
+    printf &quot;\n&quot;
+  elif ft == &quot;Polygon&quot;
+    printf &quot;\t%s\n&quot;, describe_poly_coords(feat.geometry.coordinates, &amp;extents, verbose, 0)
+    printf &quot;\tExtents: X = {%g,%g}; Y = {%g,%g}\n&quot;, extents[1,1], extents[1,2], extents[2,1], extents[2,2]
+  elif ft == &quot;MultiPolygon&quot;
+    mcoords = feat.geometry.coordinates
+    nmulti = nelem(mcoords)
+    printf &quot;\t%d Sub-polygons\n&quot;, nmulti
+    if verbose &gt; 1
+      loop j = 1 .. nmulti
+        printf &quot;\t%s\n&quot;, describe_poly_coords(mcoords[j], &amp;extents, verbose-1, j)
+      endloop
+      printf &quot;\tExtents: X = {%g,%g}; Y = {%g,%g}\n&quot;, extents[1,1], extents[1,2], extents[2,1], extents[2,2]
+    endif
+  endif
+else
+  printf &quot;\tNo geometry (???)\n&quot;
+endif
+
+return extents
+</code>
+</gretl-function>
+<gretl-function name="print_properties" type="void" private="1">
+ <params count="1">
+  <param name="f" type="bundle" const="true"/>
+ </params>
+<code>skeys = sort(getkeys(f))
+
+loop i = 1 .. nelem(skeys)
+  key = skeys[i]
+  t = typeof(f[key])
+  printf &quot;\t%20s: &quot;, key
+  if t == 1
+    printf &quot;%g\n&quot;, f[key]
+  elif t == 4
+    printf &quot;%s\n&quot;, f[key]
+  else
+    printf &quot;type = %d???\n&quot;, t
+  endif
+endloop
+</code>
+</gretl-function>
+<gretl-function name="polyplot" type="void" private="1">
+ <params count="3">
+  <param name="coords" type="matrices" const="true"/>
+  <param name="title" type="string"/>
+  <param name="extents" type="matrix"/>
+ </params>
+<code>npoly = nelem(coords)
+
+ratio = (extents[2,2] - extents[2,1]) / (extents[1,2] - extents[1,1])
+
+outfile &quot;@dotdir/temp.plt&quot;
+  printf &quot;set term wxt persist\n&quot;
+  printf &quot;unset border\n&quot;
+  printf &quot;set grid back\n&quot;
+  printf &quot;set size ratio %g\n&quot;, ratio
+
+  printf &quot;set title \&quot;%s\&quot;\n&quot;, title
+  printf &quot;unset key\n$coords &lt;&lt; EOD\n&quot;
+  loop i = 1 .. npoly
+    printf &quot;%8.3f\n&quot;, coords[i]
+  endloop
+  printf &quot;EOD\nplot for [i=0:*] $coords index i lc black with lines\n&quot;
+end outfile
+!gnuplot &quot;@dotdir/temp.plt&quot;
+</code>
+</gretl-function>
+<gretl-function name="plot_feature" type="void" private="1">
+ <params count="4">
+  <param name="b" type="bundle" const="true"/>
+  <param name="i" type="scalar"/>
+  <param name="title" type="string"/>
+  <param name="extents" type="matrix"/>
+ </params>
+<code>bundle geo = b.features[i].geometry
+string type = geo.type
+coord = geo.coordinates
+scalar nc = nelem(coord)
+# printf &quot;%4d: %s (%d)\n&quot;, i, type, nc
+if type == &quot;Polygon&quot;
+  matrix X = ring2matrix2(coord[1])
+  matrices aX = defarray(X)
+elif type == &quot;MultiPolygon&quot;
+  nc = nelem(coord)
+  matrices aX = array(nc)
+  loop j = 1 .. nc
+    matrix aX[j] = ring2matrix2(coord[j][1])
+  endloop
+endif
+
+polyplot(aX, title, extents)
+</code>
+</gretl-function>
+<gretl-function name="tri_areas" type="matrix" private="1">
+ <params count="1">
+  <param name="x" type="matrix" const="true"/>
+ </params>
+<code>scalar n = rows(x)
+matrix y = zeros(n-2, 1)
+matrix tmp = x ~ 1
+loop i = 2 .. n-1
+  y[i-1] = abs(det(tmp[i-1:i+1,]))
+endloop
+return y
+</code>
+</gretl-function>
+<gretl-function name="visvalingam" type="matrix" private="1">
+ <params count="2">
+  <param name="poly" type="matrix" const="true"/>
+  <param name="nout" type="scalar"/>
+ </params>
+<code># https://bost.ocks.org/mike/simplify/
+scalar nin = rows(poly)
+
+k = nin
+# augment polygon so as to &quot;go around&quot;
+ret = poly[nin-1,] | poly
+
+areas = $huge | tri_areas(ret) | $huge # first area &quot;goes around&quot;
+
+loop while k &gt; (nout+1)
+  d = iminc(areas)
+
+  if 0
+    printf &quot;\n\nbefore drop (d = %d, k = %d)\n&quot;, d, k
+    eval seq(1,k+1)' ~ ret ~ areas
+  endif
+
+  if (d &gt; 2) &amp;&amp; (d &lt; k)
+    # drop central triangle
+    ret = ret[-d, ]
+    areas = areas[-d]
+    areas[d-1:d] = tri_areas(ret[d-2:d+1,])
+  elif d == 2
+    # special case: drop first triangle (repeated at end)
+    ret = ret[-2,]
+    ret[k,] = ret[2,]
+    areas = areas[-2,]
+    # print &quot;after drop&quot;
+    # eval seq(1,k)' ~ ret ~ areas
+    areas[2] = tri_areas(ret[1:3,])
+    areas[k-1] = tri_areas(ret[k-2:k,])
+  elif d == k
+    # special case: drop last triangle
+    ret = ret[-k,]
+    ret[1,] = ret[k-1,]
+    areas = areas[-k,]
+    # print &quot;after drop&quot;
+    # eval seq(1,k)' ~ ret ~ areas
+    areas[2] = tri_areas(ret[1:3,])
+    areas[k-1] = tri_areas(ret[k-2:k,])
+  endif
+
+  # print &quot;after drop and subst&quot;
+  # eval seq(1,k)' ~ ret ~ areas
+  k--
+endloop
+
+return ret
+</code>
+</gretl-function>
+<gretl-function name="simplify_ring" type="matrices" private="1">
+ <params count="2">
+  <param name="ring" type="matrices" const="true"/>
+  <param name="alpha" type="scalar" default="0.5"/>
+ </params>
+<code>n = nelem(ring)
+if n &lt; 6
+  return ring
+endif
+
+h = round(6 + (n-6)^alpha)
+m0 = ring2matrix2(ring)
+m1 = visvalingam(m0, h)
+return matrix2ring(m1)
+</code>
+</gretl-function>
+<gretl-function name="simplify_feature" type="bundle" private="1">
+ <params count="2">
+  <param name="f" type="bundle" const="true"/>
+  <param name="param" type="scalar"/>
+ </params>
+<code>bundle cpy = f
+bundle geo = cpy.geometry
+string type = geo.type
+coord = geo.coordinates
+scalar nc = nelem(coord)
+# printf &quot;%4d: %s (%d)\n&quot;, i, type, nc
+if type == &quot;Polygon&quot;
+  loop j = 1 .. nc
+    coord[j] = simplify_ring(coord[j], param)
+  endloop
+elif type == &quot;MultiPolygon&quot;
+  loop j = 1 .. nc
+    coord[j][1] = simplify_ring(coord[j][1], param)
+  endloop
+endif
+cpy.geometry.coordinates = coord
+return cpy
+</code>
+</gretl-function>
+<sample-script>
+# This is a minimal script showing the simplest possible way
+# to create a map; you can find many more examples demonstrating
+# advanced usage of the map plotting facility in the &quot;examples&quot;
+# directory.
+
+include geoplot.gfn
+open us-states.geojson --frompkg=geoplot --quiet
+geoplot()
+</sample-script>
+</gretl-function-package>
+</gretl-functions>

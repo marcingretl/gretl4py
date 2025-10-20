@@ -1,0 +1,6047 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gretl-functions>
+<gretl-function-package name="SVAR" needs-time-series-data="true" minver="2025c" lives-in-subdir="true">
+<author email="r.lucchetti@univpm.it">Riccardo &quot;Jack&quot; Lucchetti and Sven Schreiber</author>
+<version>2025c-git</version>
+<date>2024-10-20</date>
+<description>Structural VARs</description>
+<tags>C32</tags>
+<label>Structural VARs</label>
+<help>
+pdfdoc:SVAR.pdf
+</help>
+<data-files count="1">
+examples </data-files>
+<depends count="1">
+extra </depends>
+<gretl-function name="SVAR_setup" type="bundle">
+ <params count="5">
+  <param name="type_string" type="string"/>
+  <param name="lY" type="list"/>
+  <param name="lX" type="list" optional="true"/>
+  <param name="varorder" type="int" min="1" default="1"/>
+  <param name="checkid_storeSRirfs" type="bool" default="1"/>
+ </params>
+<code>/*
+This creates a bundle holding the info on the SVAR; this will be
+filled in 3 steps: This function inserts the initial info: sample
+size, data and so on. Then, more stuff will have to be added later:
+the VAR estimates in packed form (see below), then the SVAR estimates.
+
+The scalar &quot;step&quot; keeps track of the stage we're at.
+(maybe not needed any more)
+
+The switch 'checkid_storeSRirf' is now &quot;overloaded&quot; with different
+meanings, depending on the model type:
+- For traditional types it takes the meaning of 'checkident'.
+(Default 1 = yes, do it.)
+- For set-identified (sign restriction) models checking the
+identification separately makes no sense, so here this becomes
+'storeSRirf', serving to decide whether the full IRF data of all
+accepted draws should be stored in the model bundle. This can
+inflate the bundle quite a bit, but in general shouldn't be a
+problem on modern computers.
+(Default 1 = yes, store all IRF data.)
+
+In both cases it is just copied into the model bundle and still needs
+to be processed later (e.g. within SVAR_estimate).
+*/
+
+# Drop collinear exogenous terms
+lX = dropcoll(lX)
+
+scalar type = modeltype(type_string)
+if type == 4	# SVEC
+  # SVEC treats restricted deterministic terms specially as per Johansen,
+  # so we'll drop them if present,
+  # any other exogenous regressors are under the user's responsibility
+  # (eg centred dummies)
+
+  list lX -= const time
+endif
+
+n = nelem(lY)
+k = nelem(lX)
+n2 = n*n
+
+bundle ret = empty
+
+/*-----------------------------------------------------------------------*/
+/* general info                                                          */
+/*-----------------------------------------------------------------------*/
+
+/* type goes from 1 to 4 (plain, &quot;C&quot;, &quot;AB&quot; or &quot;SVEC&quot;), plus 10 (&quot;SR&quot;) */
+ret.type = type
+
+/* the step we're at: 0 = no estimation done, 1 = VAR only, 2 = SVAR */
+ret.step = 0 # maybe not needed any more
+
+matrix mreg = set_default_dimensions(&amp;ret, lY, lX, varorder)
+
+/* the actual data */
+matrix ret.Y = mreg[,1:n]
+matrix ret.X = k&gt;0 ? mreg[, n+1 : n+k] : {}
+
+# variable names
+strings ret.Ynames = varnames(lY)
+strings ret.Xnames = varnames(lX) # needed?
+
+/* Names for shocks */
+# per default, we borrow variable names, following tradition
+strings ret.snames = ret.Ynames
+
+/* Don't calculate the long-run matrix by default.
+(This does not apply to the case of long-run restrictions.) */
+ret.calc_lr = 0
+
+/* Optimisation (not needed for SR, but is expected elsewhere...) */
+ret.optmeth = 4 # default = scoring
+
+/* Information for cumulating/normalizing IRFs */
+ret.ncumul    = 0
+matrix ret.cumul = {}
+ret.normalize = 0
+
+/* Other initializations */
+ret.nboot      = 0  # Bootstrap doesn't make sense for SR, but nboot must exist
+ret.bestdraw   = 0	# only for SR, but must exist, initialize as undefined
+ret.checkident = 0  # needs to exist, override below
+
+/* ----------------------------------------------------------------
+type-specific stuff
+----------------------------------------------------------------*/
+
+if type != 10    # (traditional, no sign restrictions)
+
+  /*
+  The constraint matrices.
+  &quot;Rd1&quot; contains short-run constraints on B (and therefore C in non-AB models); &quot;Rd1l&quot; contains long-run constraints on C (not supported in AB models); &quot;Rd0&quot; contains short-run constraints on A in AB; note that &quot;Rd1l&quot; and &quot;Rd0&quot; were both &quot;aux&quot; in previous versions.
+
+  Initially, they are empty. Except for the &quot;plain&quot; model, it's up to
+  the user to fill them up later, via SVAR_restrict() or by hand
+  */
+
+  matrix ret.Rd1 = type==1 ? cholRd(n) : {}
+  matrix ret.Rd1l = {}
+
+  if type == 3
+    matrix ret.Rd0 = {}
+  else
+    matrix ret.fullRd = {}	# short- and long-run restrictions together later
+
+    if type == 4
+      /* SVEC model: cointegration stuff */
+      matrix ret.jalpha = {}
+      matrix ret.jbeta  = {}
+      ret.jcase = 0
+    endif
+  endif
+
+  ## Other settings for traditional SVARs
+
+  /* Copy the id check choice */
+  ret.checkident = checkid_storeSRirfs
+
+  /* Bootstrap */
+  ret.boot_alpha = -1
+  matrix ret.bootdata = {}
+  ret.biascorr = 0
+  ret.boottype = 1  # standard resid resampl. (choice new 1.5)
+
+else #  10 (SR)
+
+  # mixed restrictions are for the moment limited to
+  # C-model-like zero restrictions. Possibly, we'll also
+  # add in the future long run (Blanchard-Quah-like) restrictions
+  # so we add to the bundle both kinds of matrices
+
+  matrix ret.Rd1 = {}
+  matrix ret.Rd1l = {}
+
+  # matrix for holding sign restrictions
+  matrix ret.SRest = {}
+
+  /* Since for sign restrictions the traditional estimation step doesn't apply,
+  but we need the reduced-form coefficients, we already do it here automatically. */
+
+  ret.storeSRirfs = checkid_storeSRirfs
+  SVAR_estimate(&amp;ret, 0)
+endif
+
+return ret
+</code>
+</gretl-function>
+<gretl-function name="SVAR_restrict" type="scalar">
+ <params count="5">
+  <param name="b" type="bundleref"/>
+  <param name="code" type="string"/>
+  <param name="rR" type="numeric" const="true"/>
+  <param name="c" type="int" default="0"/>
+  <param name="d" type="scalar" default="0"/>
+ </params>
+<code># This function specifies/applies short-run (impact) or long-run restrictions
+# New in 2024: overload the rR (old: r) argument, so that it can also work with a full
+# pattern matrix.
+
+# c gets a default so that it can be omitted with Adiag, Bdiag (?)
+# the d default is also natural
+
+# (maybe it would make sense to throw hard errors here instead of
+#  returning codes and doing nothing... (Sven))
+
+if typename(rR) == &quot;matrix&quot; &amp;&amp; nelem(rR) != 1
+  errorif(c != 0 || d != 0, &quot;c and d arguments incompatible with pattern matrix R&quot;)
+  return apply_patternrestr(&amp;b, code, rR)
+else
+  # explicitly cast the 1x1 case
+  scalar r = rR
+endif
+
+# The following is the old function path where r is the int row index.
+type = b.type
+n = b.n
+
+# check input for implemented restriction code
+if !instring(&quot;C lrC A B Adiag Bdiag&quot;, code) # code unknown
+  printf &quot;Unknown code '%s' in SVAR_restrict.\n&quot;, code
+  return 2
+
+  # check for unsupported case
+elif type==10 &amp;&amp; code != &quot;C&quot;	# 10 is set identification
+  # In particular, no long-run lrC restrictions are supported here.
+  print &quot;Only short-run C-type additional restrictions allowed in set-id'ed models.&quot;
+  return 10
+
+  # check for input mismatch
+elif (code==&quot;C&quot; || code==&quot;lrC&quot;) &amp;&amp; !contains(type, {1, 2, 4, 10})
+  print &quot;C-type restriction but not a C-compatible model.&quot;
+  return 1
+
+elif instring(&quot;A B Adiag Bdiag&quot;, code) &amp;&amp; type!=3
+  print &quot;AB type restriction but not an AB model.&quot;
+  return 1
+
+  # another unsupported case
+elif code == &quot;lrC&quot; &amp;&amp; type == 3
+  print &quot;Long-run restrictions only supported in C models.&quot;
+  return 3	# (Which code to return here? &lt;Sven&gt;)
+
+  # check for bogus long-run constraint
+elif code == &quot;lrC&quot; &amp;&amp; type == 4
+  if c &gt; n - b.crank
+    print &quot;Long-run constraints only make sense on permanent shocks.&quot;
+    printf &quot; (First %d shocks.)\n&quot;, n - b.crank
+    # (p.29, section 7 of the doc)
+    return 4
+  endif
+
+endif
+
+# if no input error, proceed with this:
+err = 0
+if code == &quot;C&quot;
+  matrix Rd = b.Rd1
+  err = add_constraint(&amp;Rd, n, r, c, d)
+  if !err
+    b.Rd1 = Rd
+  endif
+elif code == &quot;lrC&quot;
+  matrix Rd = b.Rd1l
+  err = add_constraint(&amp;Rd, n, r, c, d)
+  if !err
+    b.Rd1l = Rd
+  endif
+elif code == &quot;A&quot;
+  matrix Rd = b.Rd0
+  err = add_constraint(&amp;Rd, n, r, c, d)
+  if !err
+    b.Rd0 = Rd
+  endif
+elif code == &quot;B&quot;
+  matrix Rd = b.Rd1
+  err = add_constraint(&amp;Rd, n, r, c, d)
+  if !err
+    b.Rd1 = Rd
+  endif
+elif code == &quot;Adiag&quot;
+  matrix Rd = b.Rd0
+  if ok(r)
+    b.Rd0 = Rd | diag_Rd(n, r)
+  else
+    b.Rd0 = Rd | free_diag_Rd(n)
+  endif
+elif code == &quot;Bdiag&quot;
+  matrix Rd = b.Rd1
+  if ok(r)
+    b.Rd1 = Rd | diag_Rd(n, r)
+  else
+    b.Rd1 = Rd | free_diag_Rd(n)
+  endif
+endif
+
+## Inform the user if the restriction failed.
+/*
+At this point it should hold that:
+err == 0 : add_constraint worked ok, -- or Adiag/Bdiag: is it conceivable that this happens
+together with other A/B restrictions? Then it probably should
+also be checked in principle (but doesn't happen here).
+*/
+
+if err == -1
+  printf &quot;Imposing restriction failed, bad input to &quot;
+  printf &quot;add_constraint.\n&quot;
+
+elif err == 10
+  printf &quot;Imposing restriction failed, conflicting with &quot;
+  printf &quot;earlier restrictions.\n&quot;
+
+elif err == 20
+  printf &quot;Imposing restriction failed, redundant.\n&quot;
+endif
+
+if err
+  printf &quot;(Code %s, &quot;, code
+  if ok(r)
+    printf &quot;element %d,%d restricted to %f.)\n&quot;, r,c,d
+  else
+    printf &quot;no manual restriction.)\n&quot;
+  endif
+endif
+
+return err	# 0, -1, 10, or 20
+</code>
+</gretl-function>
+<gretl-function name="SVAR_namedrestrict" type="void">
+ <params count="5">
+  <param name="b" type="bundleref"/>
+  <param name="code" type="string">
+<description>model type code</description>
+  </param>
+  <param name="yname" type="string">
+<description>variable name</description>
+  </param>
+  <param name="sname" type="string">
+<description>shock name</description>
+  </param>
+  <param name="d" type="scalar" default="0">
+<description>restriction value</description>
+  </param>
+ </params>
+<code># compare also the signature of the associated function for set-id restrictions:
+# SVAR_SRfull(bundle *mod, string yname, string sname, scalar lo[NA], scalar hi[NA]...
+
+# error checking for 'code' and some other stuff happens downstream in SVAR_restrict
+# (We could also consider banning the &quot;A&quot; type code here, since the A matrix specifies
+#  relationships between variable pairs, not really involving a shock.)
+
+errorif(code == &quot;Adiag&quot; || code == &quot;Bdiag&quot;, &quot;'Adiag' or 'Bdiag' not possible with SVAR_namedrestrict&quot;)
+
+matrix col = instrings(b.snames, sname)
+errmsgnamematch(col, sname, &quot;shock&quot;)
+
+matrix row = instrings(b.Ynames, yname)
+errmsgnamematch(row, yname, &quot;variable&quot;)
+
+# At this point row, col should be 1x1-matrices, but need to make sure scalar args
+# for SVAR_restrict, especially for the overloaded arg there.
+scalar r = row
+scalar c = col
+err = SVAR_restrict(&amp;b, code, r, c, d)
+errorif(err, &quot;applying restriction failed&quot;)
+</code>
+</gretl-function>
+<gretl-function name="SVAR_ident" type="scalar">
+ <params count="2">
+  <param name="b" type="bundleref"/>
+  <param name="verbose" type="int" default="0"/>
+ </params>
+<code>/* Apparently returns a non-zero number if identification holds.
+(Coming from ident(); Which is perhaps against convention, usually 0 for &quot;no error&quot;?)
+*/
+
+if verbose
+  print &quot;Check for identification&quot;
+  print &quot;------------------------&quot;
+  print &quot; (It may happen that in special circumstances under-&quot;
+  print &quot;  identification goes unnoticed. If estimation fails,&quot;
+  print &quot;  perhaps try adding restrictions.)&quot;
+endif
+
+n2 = b.n * b.n
+
+if verbose
+  printf &quot;\nConstraints in implicit form:\n&quot;
+  if b.type == 3
+    printf &quot; Ra: %4.0f&quot;, b.Rd0[,1:n2]
+    printf &quot; da_T: %4.0f&quot;, b.Rd0[,n2+1]'
+    printf &quot; Rb: %4.0f&quot;, b.Rd1[,1:n2]
+    printf &quot; db_T: %4.0f&quot;, b.Rd1[,n2+1]'
+
+  else    # The A restrictions are trivial and confusing here.
+    matrix b.fullRd = get_full_Rd(&amp;b, 0)
+    # (maybe change get_full_Rd so that it saves its result directly in the model
+    #  bundle, just like it does with C1...)
+
+    printf &quot; Rc: %4.0f&quot;, b.fullRd[,1:n2]
+    printf &quot; dc_T: %4.0f&quot;, b.fullRd[,n2+1]'
+  endif
+  printf &quot;\n&quot;
+endif
+
+ret = ident(&amp;b, verbose) # was: &amp;Ra, &amp;da, &amp;Rb, &amp;db, verbose)
+
+return ret
+</code>
+</gretl-function>
+<gretl-function name="SVAR_estimate" type="scalar">
+ <params count="2">
+  <param name="obj" type="bundleref"/>
+  <param name="verbosity" type="int" default="1"/>
+ </params>
+<code>/*
+this function fills the bundle with the estimated structural
+matrices and the covariance matrix of their free elements; it also
+calls do_IRF at the end so that the structural VMA is stored into
+the bundle
+*/
+
+errorif(!inbundle(obj, &quot;type&quot;), &quot;Missing info, did you run SVAR_setup?&quot;)
+scalar type = obj.type
+scalar meth = obj.optmeth
+scalar n = obj.n
+scalar T = obj.T
+matrix vcv
+scalar errcode = 0
+
+if type == 4 # do VECM
+  errorif(!inbundle(obj, &quot;cointsetup&quot;), &quot;Need to do cointegration setup first for 'SVEC'.&quot;)
+  errorif(!obj.cointsetup, &quot;No valid cointegration setup found.&quot;)
+  # ( Not sure if this case (obj.cointsetup==0) can currently happen.)
+  vecm_est(&amp;obj)
+
+else # estimate ordinary VAR
+  base_est(&amp;obj)
+endif
+
+if obj.checkident
+  id = SVAR_ident(&amp;obj, (verbosity &gt; 1)) # output for verbosity &gt;= 2
+  errorif( !id, &quot;Identification check failed.&quot;)
+endif
+
+# grab the instantaneous covariance matrix
+matrix Sigma = obj.Sigma
+scalar obj.LL0 = VARloglik(obj.T, Sigma)
+
+if type == 1
+
+  # plain model: just Cholesky decomposition
+  matrix C = cholesky(Sigma)
+  matrix param = vech(C')
+
+  # compute the covariance matrix for C
+  matrix Ss = imp2exp(obj.Rd1)
+  vcv = coeffVCV(Ss[, 1: cols(Ss)-1], &amp;C)
+
+elif type==2 || type==4
+  # C models in a broad sense (including SVEC)
+
+  # Maybe redundant restrictions have already been detected
+  # by SVAR_ident and then removed; in this case we mustn't
+  # use the plain vanilla fullRd.
+  if inbundle(obj, &quot;cleanfullRd&quot;)
+    matrix fullRd = obj.cleanfullRd
+    # (obj.C1 and obj.fullRd already created by SVAR_ident then)
+
+  elif inbundle(obj, &quot;fullRd&quot;) &amp;&amp; inbundle(obj, &quot;C1&quot;)
+    matrix fullRd = obj.fullRd
+
+  else
+    matrix fullRd = get_full_Rd(&amp;obj, verbosity)
+    # (This also sets obj.C1.)
+    matrix obj.fullRd = fullRd
+
+  endif
+
+  # try to set some &quot;sensible&quot; initial values
+  matrix param = init_C(Sigma, fullRd)
+
+  # do estimation; note that vcv is estimated inside &quot;estC&quot;
+  matrix C = estC(&amp;param, Sigma, fullRd, &amp;vcv, &amp;errcode, meth, verbosity)
+
+elif type == 3
+  # AB-model
+
+  matrix U = obj.U     # grab the VAR residuals (needed for initialisation)
+  matrix bRd = obj.Rd1 # restrictions on B
+  matrix aRd = obj.Rd0 # restrictions on A
+
+  # try to set some &quot;sensible&quot; initial values
+  # (substitute out call to (former) init_AB)
+  matrix param = is_standard_AB(aRd, bRd) ? stdAB_init(U, aRd, bRd) : nonstdAB_init(U, aRd, bRd)
+
+  # do estimation; note that vcv is estimated inside &quot;estAB&quot;
+  # (no it actually wasn't, now it is &lt;Sven&gt;)
+  matrices transfer
+  matrix C = estAB(&amp;param, Sigma, aRd, bRd, &amp;vcv, &amp;errcode, meth, verbosity, &amp;transfer)
+
+elif type == 10    # SR
+  # just enter some dummy stuff, only needed for compatibility right now
+  matrix C = cholesky(Sigma)
+  matrix obj.theta = vech(C')
+
+  # the covariance matrix for C (just dummy!)
+  matrix Ss = imp2exp(cholRd(n))
+  matrix obj.vcv = coeffVCV(Ss[, 1: cols(Ss)-1], &amp;C)
+  matrix obj.C = C
+
+endif	# which type
+
+/*
+Post-estimation; transfers, long-run matrix, over-id test
+*/
+errorif( errcode, &quot;Estimation failed&quot;)
+
+if type != 10	# estimation ran fine, and we don't have a SR model
+
+  # Copy stuff into the bundle
+  if type == 3
+    matrix obj.S1 = transfer[1]	# A
+    matrix obj.S2 = transfer[2]	# B
+    scalar obj.ka = transfer[3]
+    scalar obj.kb = transfer[4]
+
+  endif
+  /*
+  We now also store C in the bundle because its computation
+  was repeated several times elsewhere
+  (This was obj.S1 for C models instead of obj.C, no idea why.)
+  */
+  matrix obj.C = C
+
+  matrix obj.theta = param
+  matrix obj.vcv = vcv
+
+  # Long-run matrix
+  # Jan 2018: add the type 4 possibility
+  if ( (type &lt; 3) &amp;&amp; ( rows(obj.Rd1l) || obj.calc_lr ) ) || type == 4
+    # a plain or C model with long-run constraints, or user switch;
+    # here we now (Oct 2017) calc and save the long-run matrix
+
+    # re-use the C1 matrix from above if possible
+    matrix C1 = (type == 2 || type == 4) ? obj.C1 : C1mat(obj.VARpar)
+    matrix obj.lrmat = C1 * obj.C
+  endif
+
+  # Indicate that estimation is done (still needed?)
+  obj.step = 2
+  # Store IRFs into the bundle
+  doIRF(&amp;obj)
+
+  # store the log-likelihood into the bundle
+  scalar obj.LL1 = VARloglik(obj.T, obj.Sigma, &amp;C)
+
+  # calculate the over-id test in any case (not just for verbosity)
+  # (C should hopefully be correctly depending on type)
+  overid = (n * (n+1) / 2 - rows(obj.theta))
+  if overid &gt; 0
+    LR = 2 * (obj.LL0 - obj.LL1)
+    matrix obj.LRoid = {LR; overid; pvalue(X, overid, LR)}
+    # this is: (stat| dof| pv)
+  endif
+
+  if verbosity
+    SVAR_est_printout(&amp;obj)
+  endif
+endif
+
+return errcode
+</code>
+</gretl-function>
+<gretl-function name="SVAR_cumulate" type="scalar">
+ <params count="2">
+  <param name="b" type="bundleref"/>
+  <param name="nv" type="int"/>
+ </params>
+<code>err = nv&gt;b.n || nv&lt;1 # was nv&lt;0, but 0 makes no sense (?)
+if !err
+  vn = b.Ynames
+  printf &quot;Variable %s cumulated\n&quot;,  vn[nv]
+  b.cumul  |= {nv}
+  b.ncumul += 1
+
+  # The following code was in doIRF but doesn't depend
+  # on the data, so slightly inefficient for the bootstrap.
+  # Instead we introduce b.cumsel which can be reused later
+  tmp = zeros(b.n, b.n)
+  tmp[b.cumul,] = 1
+  matrix b.cumsel = selifr(transp(seq(1, b.n * b.n)), vec(tmp))
+endif
+return err
+</code>
+</gretl-function>
+<gretl-function name="SVAR_boot" type="scalar">
+ <params count="6">
+  <param name="obj" type="bundleref"/>
+  <param name="rep" type="int" min="0" default="2000">
+<description>bootstrap iterations</description>
+  </param>
+  <param name="alpha" type="scalar" min="0" max="1" default="0.9">
+<description>CI coverage</description>
+  </param>
+  <param name="quiet" type="bool" default="1"/>
+  <param name="btypestr" type="string" optional="true">
+<description>bootstrap type</description>
+  </param>
+  <param name="biascorr" type="int" min="-1" max="2" default="-1">
+<description>bias correction (non-SVEC)</description>
+  </param>
+ </params>
+<code># btypestr: can be &quot;resample&quot; / &quot;resampling&quot;,
+#  &quot;wildN&quot;/&quot;wild&quot;, &quot;wildR&quot;, &quot;wildM&quot;
+
+# The default value for biascorr of -1 means:
+# Do not override the previous setting.
+
+## Copy some params and choices
+loop foreach i n k T p type
+  scalar $i = obj.$i
+endloop
+obj.nboot = rep         # record bootstrap details
+obj.boot_alpha = alpha  # into original model
+
+errorif( type == 10, &quot;Wrong turn: Set-ID not for bootstrapping...&quot;)
+
+## Bootstrap type choice (if different from default)
+if exists(btypestr)
+  boottypechoice(&amp;obj, btypestr)
+endif
+
+# Copy optional block length choice
+bundle bparams = empty
+if obj.boottype == 5 &amp;&amp; inbundle(obj, &quot;moveblocklen&quot;)
+  bparams.moveblocklen = obj.moveblocklen
+endif
+
+# Bias correction choice, leave or update?
+obj.biascorr = (biascorr == -1) ? obj.biascorr : biascorr
+
+# define default for bias correction iterations
+if obj.biascorr &amp;&amp; !inbundle(obj, &quot;BCiter&quot;)
+  obj.BCiter = 1024
+endif
+
+## Various needed stuff
+if type == 3 # AB
+  matrix bmA bmB # needed as memory for transfer
+elif type == 4
+  matrix J = zeros(n - obj.crank, obj.crank) | I(obj.crank)
+endif
+matrix start = obj.Y[1:p, ] # Y0
+
+# disentangle determ/exog:
+calc_bmu(&amp;obj)	# adds obj.bmu
+
+# store a copy of the model for bootstrap
+bundle bobj = obj
+
+# Do the bias correction pre-step if applicable
+maybe_do_biascorr(&amp;bobj, bparams)
+
+printf &quot;\nBootstrapping model (%d iterations)\n&quot;, rep
+printf &quot;Bootstrap type: %s\n&quot;, btypestring(obj.boottype)
+printf &quot;Bias correction: %s\n\n&quot;, BCstring(obj.biascorr)
+flush
+
+## Actual bootstrap simulation
+matrices bootout = SVAR_boot_innerloop(&amp;bobj, obj, bparams)
+/*
+&quot;bootirfs&quot;:
+each bootstrap replication on one row; each row contains
+the vectorisation of the complete IRF matrix
+*/
+matrix bootirfs = bootout[1] # zeros(rep, (h+1) * n2)
+# Spar_mat is probably somewhat redundant..., only for the printout
+matrix Spar_mat = bootout[2] # zeros(rep, n2) or zeros(rep, 2*n2)
+scalar failed   = bootout[3]
+
+if !quiet
+  boot_printout(type, n, rep, failed, Spar_mat)
+endif
+
+# quantiles of bootstrapped IRFs used in graphs
+q_alpha = 0.5 * (1 - alpha)	# changed in v1.5
+matrix locb = quantile(bootirfs, q_alpha)
+matrix hicb = quantile(bootirfs, 1 - q_alpha)
+matrix mdn  = quantile(bootirfs, 0.5)
+
+bundle bootdata = empty
+bootdata.rep   = rep                # no of replications
+bootdata.alpha = alpha              # alpha
+bootdata.biascorr  = obj.biascorr   # type of bias correction
+scalar h = obj.horizon
+scalar n2 = n*n
+matrix bootdata.lo_cb = mshape(locb, h+1, n2) # lower bounds
+matrix bootdata.hi_cb = mshape(hicb, h+1, n2) # upper bounds
+matrix bootdata.mdns  = mshape(mdn, h+1, n2)  # medians
+
+bundle obj.bootdata = bootdata
+return failed
+</code>
+</gretl-function>
+<gretl-function name="SVAR_hd" type="list">
+ <params count="3">
+  <param name="mod" type="bundleref"/>
+  <param name="nv" type="int" min="1" default="1"/>
+  <param name="drawix" type="int" min="0" default="0"/>
+ </params>
+<code># historical decomposition
+# (drawix only meant for the set id case (type 10))
+
+errorif(!inbundle(mod, &quot;type&quot;), &quot;Missing info, not a valid SVAR bundle&quot;)
+list ret = empty
+loop foreach i n p type T k
+  scalar $i = mod.$i
+endloop
+scalar t1 = mod.calinfo.t1
+scalar t2 = mod.calinfo.t2
+
+matrix B10 = {} # to be filled for type 10
+
+if nv &gt; n
+  printf &quot;Hm. There are %d variables in the model. &quot;, n
+  printf &quot;Chosen shock index: %d\n&quot;, nv
+  funcerr &quot;Shock index out of range&quot;
+  ## (further range check for SR partial id below) ##
+endif
+
+# Prepare the set id case
+if type == 10
+  errchkSRhisto(&amp;mod, drawix)
+  # allow drawix to override the setting in the bundle
+  whichdraw = drawix ? drawix : mod.bestdraw
+  bundle pickdraw = mod.acc_draws[whichdraw]
+  matrix B10 = pickdraw.B
+endif
+
+# The following might be redrawn in type10/Bayesian
+matrices muVARparU = muVARparU_mayberedr(mod, B10)
+
+# compute the exogenous part
+if type &lt; 4
+  matrix m = mod.X * mod.mu
+
+elif type == 4
+  # here we have to take into account the &quot;5 cases&quot;
+  dcase = mod.jcase
+  # T     = mod.T
+  matrix mreg = (dcase == 1) ? {} : ones(T,1)
+  if dcase &gt; 3
+    mreg ~= seq(1,T)'
+  endif
+
+  matrix m = (mreg ~ mod.X) * mod.mu
+
+elif type == 10
+  matrix m = mod.X * muVARparU[1]
+endif
+
+# grab the C matrix
+matrix C
+if type==1 || type==2 || type==4
+  C = mod.C
+
+elif type == 3
+  C = inbundle(mod, &quot;C&quot;) ? mod.C : mod.S1 \ mod.S2
+
+elif type == 10
+  C = pickdraw.irfs[1] # impact effect is C
+  errorif( cols(C) &lt; mod.n, &quot;partial id not supported for historical decomp&quot;)
+endif
+
+matrix iC = inv(C)
+strings Ynames = mod.Ynames
+strings snames = mod.snames
+string yn = Ynames[nv]
+
+smpl t1 t2
+if cols(m)&gt;0
+  Xdet = varsimul(muVARparU[2], m[p+1:,], mod.Y[1:p,]) # was VARpar
+else
+  Xdet = varsimul(muVARparU[2], zeros(T-p, n), mod.Y[1:p,]) # was mod.T
+endif
+
+ret += genseries( sprintf(&quot;hd_%s_det&quot;, yn), Xdet[,nv])
+
+# the structural shocks
+matrix U = muVARparU[3] * iC' # was E
+rotVARpar = iC * muVARparU[2] * (I(p) ** C)
+
+loop i = 1..n
+  a = (seq(1,n) .= i)
+  W = varsimul(rotVARpar, U .* a, zeros(p,n)) * C'
+  ret += genseries(sprintf(&quot;hd_%s_%s&quot;, yn, fixname(snames[i])), W[,nv])
+endloop
+
+return ret
+</code>
+</gretl-function>
+<gretl-function name="SVAR_coint" type="scalar">
+ <params count="6">
+  <param name="SVARobj" type="bundleref"/>
+  <param name="dcase" type="int" min="1" max="5" default="3"/>
+  <param name="jbeta" type="matrix"/>
+  <param name="jalpha" type="matrix" optional="true"/>
+  <param name="verbose" type="bool" default="0"/>
+  <param name="rexo" type="list" optional="true" const="true"/>
+ </params>
+<code>/*
+This function doesn't do very much, except setting
+up the model for subsequent VECM estimation; &quot;dcase&quot; tells you
+which of the &quot;five cases&quot; we want (no constant, restricted
+constant, etc), jbeta is simply checked for dimensions and then
+copied into the object.
+
+As for jalpha, if it's an empty matrix, that means &quot;just estimate it unrestrictedly&quot;, and we set up a
+flag accordingly. Otherwise, it's taken to be pre-set to some
+fixed value; the intermediate case (contraints on alpha) is not
+handled, and I doubt it will ever be.
+
+While we're at it, we also label the structural shocks as
+&quot;Perm_1&quot;, &quot;Perm_2&quot;, &quot;Trans_1&quot;, &quot;Trans_2&quot;, etc.
+*/
+
+if SVARobj.type != 4 &amp;&amp; verbose
+  print &quot;Putting cointegration information into a non-SVEC model --&quot;
+  print &quot; are you sure you know what you're doing?&quot;
+endif
+
+scalar n = SVARobj.n
+
+# define default
+if !exists(jalpha)
+  matrix jalpha = {}
+endif
+
+# syntax check
+err = (dcase&lt;1) || (dcase&gt;5)
+errorif( err, sprintf(&quot;Invalid dcase value %d&quot;, dcase))
+
+# dimensions check
+if dcase%2 # nice, huh?
+  err = rows(jbeta) != n
+else
+  err = rows(jbeta) != n+1
+endif
+errorif( err, sprintf(&quot;jbeta: has %d rows, should have %d&quot;, rows(jbeta), dcase%2 ? n : n+1))
+
+r = cols(jbeta)
+err = n &lt; r # should this be &lt;=? hmm.
+
+# rank check
+err = err || (rank(jbeta) &lt; r)
+
+# now check if alpha is ok
+d = rows(jalpha)
+
+# d==0 is ok, we'll estimate alpha later
+free_a = d==0
+if !free_a
+  err = err || d!=n || cols(jalpha)!=r
+endif
+
+# if anything goes wrong, return
+if err
+  # (currently err==1 here always, Sven believes)
+  outfile stderr --quiet
+    printf &quot;SVAR_coint: returning on err = %d\n&quot;, err
+  end outfile
+  return err
+endif
+
+# fill up the object with the info
+
+SVARobj.crank = r
+SVARobj.jcase = dcase
+SVARobj.jbeta = jbeta
+SVARobj.jalpha = jalpha
+SVARobj.free_a = free_a
+
+if verbose
+  if dcase == 1
+    printf &quot;No constant, &quot;
+  elif dcase == 2
+    printf &quot;Restricted constant, &quot;
+  elif dcase == 3
+    printf &quot;Unrestricted constant, &quot;
+  elif dcase == 4
+    printf &quot;Restricted trend, &quot;
+  elif dcase == 5
+    printf &quot;Unrestricted trend, &quot;
+  endif
+
+  printf &quot;beta =\n%11.5f\n&quot;, jbeta
+
+  if free_a
+    printf &quot;alpha is unrestricted\n&quot;
+  else
+    printf &quot;alpha =\n%9.5f\n&quot;, jalpha
+    printf &quot;PI =\n%9.5f\n&quot;, jalpha * jbeta'
+  endif
+endif
+
+# relabel transitory structural shocks
+strings sn = SVARobj.snames
+
+if n-r == 1
+  sn[1] = sprintf(&quot;Permanent&quot;)
+  if r == 1
+    sn[2] = &quot;Transitory&quot;
+  else
+    loop i = 2..n
+      sn[i] = sprintf(&quot;Transitory_%d&quot;, i-1)
+    endloop
+  endif
+else
+  loop i = 1..n
+    sn[i] = sprintf(&quot;Permanent_%d&quot;, i)
+  endloop
+  if r == 1
+    sn[n] = &quot;Transitory&quot;
+  else
+    loop i = 1..r
+      sn[n-r+i] = sprintf(&quot;Transitory_%d&quot;, i)
+    endloop
+  endif
+endif
+
+SVARobj.snames = sn
+if !err
+  SVARobj.cointsetup = 1	# flag success
+endif
+
+return err
+</code>
+</gretl-function>
+<gretl-function name="GetShock" type="series">
+ <params count="3">
+  <param name="SVARobj" type="bundleref"/>
+  <param name="i" type="int" min="1" default="1"/>
+  <param name="drawix" type="int" min="0" default="0"/>
+ </params>
+<code>/*
+Produces the series corresponding to the historical shock
+realizations associated with the point estimates of the model
+(and IRFs).
+For set identification (sign restrictions) there is no point
+estimate; however, we support that
+the user picks one of the accepted draws and then the shock series
+is based on that particular model draw.
+# (drawix only meant for the set id case (type 10))
+*/
+
+errorif(!inbundle(SVARobj, &quot;type&quot;), &quot;Missing info, not a valid SVAR bundle&quot;)
+series ret = NA
+type = SVARobj.type
+matrix B10 = {}	# to be filled in type 10
+
+## some error checks ##
+errorif( type&gt;4 &amp;&amp; type!=10, sprintf(&quot;Given type %d\nUnknown model type&quot;, type))
+errorif( i &gt; SVARobj.n, sprintf(&quot;Chosen shock index: %d\nShock index out of range&quot;, i))
+
+if type != 10 &amp;&amp; drawix &gt; 0
+  print &quot;Warning: 'drawix' arg meaningless for standard SVAR&quot;
+elif type == 10
+  errchkSRhisto(&amp;SVARobj, drawix)
+endif
+
+## get the C matrix (and then the inv) ##
+matrix C
+if type==1 || type==2 || type==4
+  C = SVARobj.C
+
+elif type == 3
+  # (maybe not yet computed)
+  C = inbundle(SVARobj, &quot;C&quot;) ? SVARobj.C : SVARobj.S1 \ SVARobj.S2
+
+elif type == 10 # set id
+  # allow drawix to override the setting in the bundle
+  whichdraw = drawix ? drawix : SVARobj.bestdraw
+  bundle pickdraw = SVARobj.acc_draws[whichdraw]
+  matrix C = pickdraw.irfs[1] # impact effect is C
+  B10 = pickdraw.B
+
+  errorif( cols(C) &lt; SVARobj.n, &quot;partial id not supported for shock retrieval&quot;)
+endif
+
+matrix iC = inv(C')
+
+matrix resids = muVARparU_mayberedr(SVARobj, B10)[3]
+
+## construct the wanted series ##
+extra = $nobs - rows(resids)
+matrix tmp = {}
+if extra &gt; 0
+  set warnings off
+  tmp = ones(extra,1) .* NA
+endif
+
+tmp |= resids * iC[,i]
+ret = tmp
+
+snames = SVARobj.snames # strings array?
+string vlab = snames[i]
+
+setinfo ret --description=&quot;@vlab&quot;
+
+return ret
+</code>
+</gretl-function>
+<gretl-function name="IRFplot" type="void">
+ <params count="5">
+  <param name="obj" type="bundleref"/>
+  <param name="snum" type="int" default="1"/>
+  <param name="vnum" type="int" default="1"/>
+  <param name="keypos" type="int" min="0" max="2" default="1"/>
+  <param name="drawix" type="int" min="0" default="0"/>
+ </params>
+<code>IRFsave(&quot;display&quot;, &amp;obj, snum, vnum, keypos, drawix)
+</code>
+</gretl-function>
+<gretl-function name="IRFsave" type="void">
+ <params count="6">
+  <param name="outfilename" type="string"/>
+  <param name="obj" type="bundleref"/>
+  <param name="snum" type="int"/>
+  <param name="vnum" type="int"/>
+  <param name="keypos" type="int" min="0" max="2" default="1"/>
+  <param name="drawix" type="int" min="0" default="0"/>
+ </params>
+<code># negative snum is allowed and means to flip the shock
+
+errorif(!inbundle(obj, &quot;type&quot;), &quot;Missing info, not a valid SVAR bundle&quot;)
+# copy and prepare some input
+string tmpfile, tmpout
+n = obj.n
+whichdraw = drawix ? drawix : obj.bestdraw
+
+if obj.type == 10	# SR
+  errchkSRhisto(&amp;obj, drawix)
+  putIrf_to_accdraw(&amp;obj, whichdraw)
+  matrix IRFmat = obj.acc_draws[whichdraw].IRFs
+else
+  matrix IRFmat = obj.IRFs
+endif
+
+scale = 1	# possibly changed later
+if obj.normalize == 1
+  matrix tmp = mshape(IRFmat[1,], n, n)
+endif
+
+if obj.nboot
+  boot = obj.bootdata	# bundle?
+  bc = boot.biascorr
+endif
+
+scalar sfrom sto vfrom vto
+is_srange = range(snum, n, &amp;sfrom, &amp;sto)
+is_vrange = range(vnum, n, &amp;vfrom, &amp;vto)
+
+# do checks
+loop snum = sfrom .. sto
+  loop vnum = vfrom .. vto
+    err = check_bounds(snum, vnum, n)
+    if err
+      break
+    endif
+  endloop
+endloop
+
+errorif(err == 1, sprintf(&quot;Shock number %d out of bounds\n&quot;, abs(snum)))
+errorif(err == 2, sprintf(&quot;Variable number %d out of bounds\n&quot;, abs(vnum)))
+
+# cycle through all (selected) shocks and variables
+loop snum = sfrom..sto
+
+  string sn = obj.snames[abs(snum)]
+  # normalization / scaling
+  if obj.normalize == 1
+    scale = tmp[abs(snum), abs(snum)]
+  endif
+
+  loop vnum = vfrom .. vto
+    string yn = obj.Ynames[vnum]
+
+    # produce plots
+    if obj.ncumul == 0
+      if obj.nboot == 0
+        tmpfile = IRFgrph(IRFmat, snum, vnum, scale, sn, yn, keypos, null, null, , whichdraw)
+      else
+        tmpfile = IRFgrph(IRFmat, snum, vnum, scale, sn, yn, keypos, null, &amp;boot, bc, whichdraw)
+      endif
+    else
+      matrix cumul = obj.cumul
+      if obj.nboot == 0
+        tmpfile = IRFgrph(IRFmat, snum, vnum, scale, sn, yn, keypos, &amp;cumul, null, , whichdraw)
+      else
+        tmpfile = IRFgrph(IRFmat, snum, vnum, scale, sn, yn, keypos, &amp;cumul, &amp;boot, bc, whichdraw)
+      endif
+    endif
+
+    if outfilename==&quot;display&quot; || (sfrom == sto &amp;&amp; vfrom == vto)
+      # (single plot, no indices)
+      tmpout = outfilename
+    else
+      strings be = splitfname(outfilename)[2:3]	# gives 2-elem array, was basename
+      if is_vrange	 # several v indices
+        if is_srange # several s indices
+          tmpout = sprintf(&quot;%s_%d%d.%s&quot;, be[1], snum, vnum, be[2])
+        else
+          tmpout = sprintf(&quot;%s_%d.%s&quot;, be[1], vnum, be[2])
+        endif
+      elif is_srange 	# several s indices
+        tmpout = sprintf(&quot;%s_%d.%s&quot;, be[1], snum, be[2])
+      else
+        funcerr &quot;shouldn't happen&quot;
+      endif
+    endif
+    gnuplot --input=&quot;@tmpfile&quot; --output=&quot;@tmpout&quot;
+  endloop
+endloop
+</code>
+</gretl-function>
+<gretl-function name="FEVD" type="matrix">
+ <params count="2">
+  <param name="SVARobj" type="bundleref"/>
+  <param name="drawix" type="int" min="0" default="0"/>
+ </params>
+<code># (drawix only meant for the set id case (type 10))
+
+errorif(!inbundle(SVARobj, &quot;type&quot;), &quot;Missing info, not a valid SVAR bundle&quot;)
+
+n = SVARobj.n
+h = SVARobj.horizon + 1
+
+if SVARobj.type == 10
+  # In the set id case in each accepted draw the impulse
+  # responses are already stored as &quot;irfs&quot;; however, the format
+  # there is an array of matrices.
+
+  errchkSRhisto(&amp;SVARobj, drawix)
+
+  errorif(!inbundle(SVARobj, &quot;acc_draws&quot;), &quot;Missing input for set-ID SVAR&quot;)
+
+  # allow drawix to override the setting in the bundle
+  whichdraw = drawix ? drawix : SVARobj.bestdraw
+  bundle pickdraw = SVARobj.acc_draws[whichdraw]
+
+  errorif( cols(pickdraw.irfs[1]) != n, &quot;partial id not supported for FEVD&quot;)
+  errorif( h != nelem(pickdraw.irfs), &quot;horizon mismatch&quot;)
+
+  if !inbundle(pickdraw, &quot;IRFs&quot;) # maybe have already been added there
+    putIrf_to_accdraw(&amp;SVARobj, whichdraw)
+  endif
+  matrix IRFs = SVARobj.acc_draws[whichdraw].IRFs
+
+else # standard non-SR model
+  errorif(!inbundle(SVARobj, &quot;IRFs&quot;), &quot;Missing IRFs, did you run SVAR_estimate?&quot;)
+  if drawix &gt; 0
+    print &quot;Warning: 'drawix' arg meaningless for standard SVAR, ignoring&quot;
+  endif
+  matrix IRFs = SVARobj.IRFs
+endif
+
+matrix ret = zeros(h, n*n)
+ctmp = cum(IRFs .* IRFs)
+
+loop i = 1..h
+  tmp = mshape(ctmp[i,],n,n)'
+  ret[i,] = vec(tmp ./ sumc(tmp))'
+endloop
+
+return ret
+</code>
+</gretl-function>
+<gretl-function name="GUI_SVAR" type="bundle" pkg-role="gui-main">
+ <params count="17">
+  <param name="type" type="int" min="1" max="3" default="1">
+<description>Model type</description>
+<labels count="3">
+"plain (Cholesky)" "C-model" "AB-model" </labels>
+  </param>
+  <param name="Y" type="list">
+<description>VAR variables</description>
+  </param>
+  <param name="X" type="list" optional="true">
+<description>Exogenous regressors</description>
+  </param>
+  <param name="hasconst" type="bool" default="1">
+<description>Constant</description>
+  </param>
+  <param name="hastrend" type="bool" default="0">
+<description>Time trend</description>
+  </param>
+  <param name="hasseas" type="bool" default="0">
+<description>Seasonal dummies</description>
+  </param>
+  <param name="l" type="int" min="1" default="1">
+<description>Lags</description>
+  </param>
+  <param name="h" type="int" min="0">
+<description>Horizon</description>
+  </param>
+  <param name="R1" type="matrix" optional="true">
+<description>Restriction pattern (short-run C or B)</description>
+  </param>
+  <param name="R2" type="matrix" optional="true">
+<description>Restriction pattern (long-run C or A)</description>
+  </param>
+  <param name="b" type="int" min="0">
+<description>Bootstrap replications</description>
+  </param>
+  <param name="alpha" type="scalar" min="0" max="1" default="0.9">
+<description>Bootstrap alpha</description>
+  </param>
+  <param name="biascorr" type="int" min="0" max="2" default="0">
+<description>Bias correction</description>
+<labels count="3">
+"None" "Partial" "Full" </labels>
+  </param>
+  <param name="boottype" type="int" min="1" max="5" default="1">
+<description>Bootstrap type</description>
+<labels count="5">
+"residual resampling" "wild/Normal" "wild/Rademacher" "wild/Mammen" "moving blocks" </labels>
+  </param>
+  <param name="checkident" type="bool" default="0">
+<description>Check identification</description>
+  </param>
+  <param name="cumix" type="matrix" optional="true">
+<description>Indices of responses to cumulate</description>
+  </param>
+  <param name="optmeth" type="int" min="0" max="4" default="4">
+<description>Optimization method</description>
+<labels count="5">
+"BFGS (numerical score)" "BFGS (analytical score)" "Newton-Raphson (numerical score)" "Newton-Raphson (analytical score)" "Scoring algorithm" </labels>
+  </param>
+ </params>
+<code>n = nelem(Y)
+
+# stick together deterministics and other exog.
+list lX = dropcoll(determ(X, hasconst, hastrend, hasseas))
+
+# initialize the model bundle
+bundle m = SVAR_setup(modelstring(type), Y, lX, l, checkident)
+if h &gt; 0
+  m.horizon = h
+endif
+
+# copy options and/or overwrite defaults
+m.biascorr = biascorr
+m.optmeth = optmeth
+m.boottype = boottype
+
+## implement the cumulation spec
+if exists(cumix)
+  # ensure column vector
+  cumix = vec(cumix)
+  # input checks (numbers out of bounds)
+  if max(cumix) &gt; nelem(Y) || min(cumix) &lt; 1
+    print &quot;Invalid cumulation specification!&quot;
+    print &quot;(No responses will be cumulated.)&quot;
+  else	# sensible cumulation spec
+    loop i = 1..rows(cumix)
+      SVAR_cumulate(&amp;m, cumix[i])
+    endloop
+  endif
+endif
+
+## process restrictions
+if type == 1
+  if exists(R1) || exists(R2)
+    print &quot;Estimating plain model. Discarding provided restrictions.&quot;
+  endif
+
+  if checkident
+    print &quot;(Identification trivially given in plain model.)&quot;
+  endif
+else # C or AB model
+  # input check
+  errorif(!exists(R1) &amp;&amp; !exists(R2), &quot;Need some restrictions for C and AB models!&quot;)
+  errorif(type==3 &amp;&amp; (!exists(R1) || !exists(R2)), &quot;Need restrictions on A and B for AB model!&quot;)
+
+  # transform the R1-matrix to SVAR-style restrictions
+  if exists(R1)
+    apply_patternrestr(&amp;m, (type==3 ? &quot;B&quot; : &quot;C&quot;), R1)
+    # old:
+
+    #             r = rows(R1)
+    #             c = cols(R1)
+    #             errorif( r != n || c != n, &quot;wrong R1 dimensions&quot;)
+    #
+    #             string sBorC = type==3 ? &quot;B&quot; : &quot;C&quot;
+    #             loop i = 1..n
+    #                 loop j = 1..n
+    #                     scalar rij = R1[i,j]
+    #                     if ok(rij) # valid number = restricted element
+    #                         SVAR_restrict(&amp;m, sBorC, i, j, rij)
+    #                     endif
+    #                 endloop
+    #             endloop
+  endif
+
+  # still need to consider the A or longrun-C matrix
+  # transform the R2-matrix to SVAR-style restrictions
+  if exists(R2)
+    apply_patternrestr(&amp;m, (type==3 ? &quot;A&quot; : &quot;lrC&quot;), R2)
+    # old:
+
+    #             r2 = rows(R2)
+    #             c2 = cols(R2)
+    #             errorif(r2 != n || c2 != n, &quot;wrong R2 dimension&quot;)
+    #
+    #             string sAorlrC = type == 3 ? &quot;A&quot; : &quot;lrC&quot;
+    #             loop i = 1..n
+    #                 loop j = 1..n
+    #                     scalar rij = R2[i,j]
+    #                     if ok(rij) # valid number = restricted element
+    #                         SVAR_restrict(&amp;m, sAorlrC, i, j, rij)
+    #                     endif
+    #                 endloop
+    #             endloop
+  endif
+endif
+
+# do an explicit ID check (sven 1.0.2)
+scalar id_ok = 1
+
+if checkident
+  if type == 2  &amp;&amp; exists(R2)  # longrun C
+    print &quot;FIXME: not yet implemented for models with long-run restrictions&quot;
+  else
+    print &quot;Check identification:&quot;
+    id_ok = SVAR_ident(&amp;m, 1)	# request verbosity==1 to get messages
+  endif
+endif
+
+# and of course estimate
+if !id_ok
+  return m
+else
+  SVAR_estimate(&amp;m)
+
+  if b &gt; 0
+    SVAR_boot(&amp;m, b, alpha, 0)
+  endif
+endif
+
+return m
+</code>
+</gretl-function>
+<gretl-function name="GUI_plot" type="void" pkg-role="bundle-plot">
+ <params count="2">
+  <param name="b" type="bundleref"/>
+  <param name="ptype" type="int" min="0" max="2" default="0">
+<description>Plot type</description>
+<labels count="3">
+"IRF" "FEVD" "Historical decomposition" </labels>
+  </param>
+ </params>
+<code>if ptype == 0
+  IRFplot(&amp;b, 0, 0, (b.nboot ? 2 : 0)) # all in one go / no key if no bands
+
+elif ptype == 1
+  FEVDplot(&amp;b, 0)
+
+elif ptype == 2
+  HDplot(&amp;b, 0)
+endif
+</code>
+</gretl-function>
+<gretl-function name="FEVDplot" type="void">
+ <params count="4">
+  <param name="obj" type="bundleref"/>
+  <param name="vnum" type="int" default="0"/>
+  <param name="keypos" type="int" min="0" max="2" default="1"/>
+  <param name="drawix" type="int" min="0" default="0"/>
+ </params>
+<code>FEVDsave(&quot;display&quot;, &amp;obj, vnum, keypos, drawix)
+</code>
+</gretl-function>
+<gretl-function name="FEVDsave" type="void">
+ <params count="5">
+  <param name="outfilename" type="string"/>
+  <param name="obj" type="bundleref"/>
+  <param name="vnum" type="int" default="0"/>
+  <param name="keypos" type="int" min="0" max="2" default="1"/>
+  <param name="drawix" type="int" min="0" default="0"/>
+ </params>
+<code>errorif(!inbundle(obj, &quot;type&quot;), &quot;Missing info, not a valid SVAR bundle&quot;)
+scalar n = obj.n
+scalar vfrom vto
+is_vrange = range(vnum, n, &amp;vfrom, &amp;vto)
+matrix Fmat = FEVD(&amp;obj, drawix)
+
+# prepare title amendment in SR case
+string titletail = &quot;&quot;
+if obj.type == 10
+  whichdraw = drawix ? drawix : obj.bestdraw
+  titletail = sprintf(&quot; (draw %d)&quot;, whichdraw)
+endif
+
+if outfilename == &quot;display&quot;
+  string tmpout = &quot;display&quot;
+else
+  strings be = splitfname(outfilename)[2:3]
+  string tmpout = sprintf(&quot;%s.%s&quot;, be[1], be[2]) # might be overriden
+endif
+
+loop vnum = vfrom..vto
+  errorif(vnum &lt; 1 || vnum &gt; n, sprintf(&quot;Variable number %d out of bounds\n&quot;, vnum))
+
+  if exists(be) &amp;&amp; vfrom != vto
+    tmpout = sprintf(&quot;%s_%d.%s&quot;, be[1], vnum, be[2])
+  endif
+
+  string tmpfile = FEVDgrph(Fmat, vnum, obj.Ynames[vnum], obj.snames, keypos, titletail)
+  gnuplot --input=&quot;@tmpfile&quot; --output=&quot;@tmpout&quot;
+
+endloop
+</code>
+</gretl-function>
+<gretl-function name="HDplot" type="void">
+ <params count="3">
+  <param name="obj" type="bundleref"/>
+  <param name="vnum" type="int" default="0"/>
+  <param name="drawix" type="int" min="0" default="0"/>
+ </params>
+<code>HDsave(&quot;display&quot;, &amp;obj, vnum, drawix)
+</code>
+</gretl-function>
+<gretl-function name="HDsave" type="void">
+ <params count="4">
+  <param name="outfilename" type="string"/>
+  <param name="obj" type="bundleref"/>
+  <param name="vnum" type="int" default="0"/>
+  <param name="drawix" type="int" min="0" default="0"/>
+ </params>
+<code>errorif(!inbundle(obj, &quot;type&quot;), &quot;Missing info, not a valid SVAR bundle&quot;)
+
+# Interpret vnum==0 as meaning &quot;all 1..n&quot;
+scalar n = obj.n
+scalar vfrom vto
+is_vrange = range(vnum, n, &amp;vfrom, &amp;vto)
+
+if outfilename == &quot;display&quot;
+  string tmpout = &quot;display&quot;
+else
+  strings be = splitfname(outfilename)[2:3]
+  string tmpout = sprintf(&quot;%s.%s&quot;, be[1], be[2]) # might be overriden
+endif
+
+OLD = 0
+loop vnum = vfrom..vto
+  errorif(vnum &lt; 1 || vnum &gt; n, sprintf(&quot;Variable number %d out of bounds\n&quot;, vnum))
+
+  # prepare extended plot title, only for SR
+  whichdraw = drawix ? drawix : obj.bestdraw
+  string drawinfo = obj.type == 10 ? sprintf(&quot; (draw %d)&quot;, whichdraw) : &quot;&quot;
+
+  list HDData = SVAR_hd(&amp;obj, vnum, drawix)
+
+  if exists(be) &amp;&amp; vfrom != vto	# no display, multiple plots
+    tmpout = sprintf(&quot;%s_%d.%s&quot;, be[1], vnum, be[2])
+  endif
+
+  string gnam = sprintf(&quot;%s (stoch. component)&quot;, obj.Ynames[vnum])
+
+  if OLD
+    HDData -= HDData[1] # take away deterministic component
+    loop i = 1..nelem(HDData)
+      string sn = obj.snames[i]
+      setinfo HDData[i] --graph-name=&quot;@sn&quot;
+    endloop
+
+    series tmpvar = sum(HDData)
+    setinfo tmpvar --graph-name=&quot;@gnam&quot;
+    # (put the line with the target var (stoch.comp) _last_
+    # such that the shock colors match those in FEVD
+    HDData += tmpvar
+
+    plot HDData
+      option time-series
+      option single-yaxis
+      option with-boxes
+      option with-lines=tmpvar
+      printf &quot;set title \&quot;HD for %s%s\&quot;&quot;, obj.Ynames[vnum], drawinfo
+    end plot --output=&quot;@tmpout&quot;
+  else
+
+    # more fashionable (=Dynare-like) style
+    mat = {HDData}[obj.p+1:,]
+
+    n = cols(mat)
+    # we use column 1 for the &quot;stochastic only&quot; variable
+    mat[,1] = sumr(mat[,2:])
+
+    ret = &quot;&quot;
+    set force_decpoint on
+
+    outfile --buffer=ret --quiet
+      printf &quot;set xlabel ''\n&quot;
+      printf &quot;set xzeroaxis\n&quot;
+      printf &quot;set key left top\n&quot;
+      printf &quot;set style histogram rowstacked\n&quot;
+      printf &quot;set key outside below\n&quot;
+      printf &quot;set style fill solid 0.5\n&quot;
+      printf &quot;\n&quot;
+      printf &quot;%s\n&quot;, make_xtics(obj.calinfo, obj.p)
+      printf &quot;\n&quot;
+      printf &quot;set title \&quot;HD for %s%s\&quot;\n\n&quot;, obj.Ynames[vnum], drawinfo
+
+      printf &quot;$data &lt;&lt; EOD\n&quot;
+      printf &quot;%12.5g&quot;, mat
+      printf &quot;EOD\n\n&quot;
+
+      printf &quot;plot&quot;
+      loop i = 2 .. n
+        printf &quot; $data u %d w hist t \&quot;%s\&quot;, \\\n&quot;, i, obj.snames[i-1]
+      endloop
+
+      printf &quot; $data using 1 w lines lc \&quot;black\&quot; lw 1.5 t '%s'\n&quot;, gnam
+    end outfile
+    gnuplot --inbuf=ret --output=&quot;@tmpout&quot;
+  endif
+
+endloop
+</code>
+</gretl-function>
+<gretl-function name="SVAR_bundle_print" type="void" pkg-role="bundle-print">
+ <params count="1">
+  <param name="b" type="bundleref"/>
+ </params>
+<code># Some specification echoing (sven 1.0.2)
+# (not sure whether this should go into SVAR_est_printout() instead...)
+
+errorif(!inbundle(b, &quot;type&quot;), &quot;Missing info, not a valid SVAR bundle!&quot;)
+loop foreach i type n k p
+  scalar $i = b.$i
+endloop
+
+printf &quot;Model type: %s\n&quot;, modelstring(type)
+
+strings Ynames = b.Ynames
+print &quot;Endogenous variables:&quot;
+loop i = 1..n
+  printf &quot;%s%s&quot;, Ynames[i], (i==n ? sprintf(&quot;\n&quot;) : &quot;, &quot;)
+endloop
+printf &quot;\n&quot;
+
+if k&gt;0
+  print &quot;Exogenous variables:&quot;
+  strings Xnames = b.Xnames
+  loop i = 1..k
+    printf &quot;%s%s&quot;, Xnames[i], (i==k ? sprintf(&quot;\n&quot;) : &quot;, &quot;)
+  endloop
+else
+  print &quot;(No exogenous variables.)&quot;
+endif
+printf &quot;\n&quot;
+
+printf &quot;Restriction patterns:\n\n&quot;
+
+if type == 1
+  print &quot;Lower-triangular C matrix (Choleski decomposition)\n&quot;
+elif type == 2 # C-model
+  if rows(b.Rd1)
+    printf &quot;Short-run restrictions:\n&quot;
+    printf &quot;%3.0f\n&quot;, b.Rd1
+  else
+    print &quot;(No short-run restrictions)&quot;
+  endif
+  if rows(b.Rd1l)
+    print &quot;Long-run restrictions:&quot;
+    printf &quot;%3.0f\n&quot;, b.Rd1l
+  else
+    print &quot;(No long-run restrictions.)&quot;
+  endif
+elif type == 3 # AB-model
+  if rows(b.Rd0)
+    print &quot;Restrictions on A:&quot;
+    printf &quot;%3.0f\n&quot;, b.Rd0
+  else
+    print &quot;(No restrictions on A.)&quot;
+  endif
+  if rows(b.Rd1)
+    print &quot;Restrictions on B:&quot;
+    printf &quot;%3.0f\n&quot;, b.Rd1
+  else
+    print &quot;(No restrictions on B.)&quot;
+  endif
+endif
+
+# only print this if actual estimation took place
+if inbundle(b, &quot;Sigma&quot;)
+  printf &quot;Sigma = \n%10.6f&quot;, b.Sigma
+  SVAR_est_printout(&amp;b)
+endif
+</code>
+</gretl-function>
+<gretl-function name="SVAR_SRplain" type="void">
+ <params count="6">
+  <param name="mod" type="bundleref"/>
+  <param name="yname" type="string"/>
+  <param name="sname" type="string"/>
+  <param name="what" type="string"/>
+  <param name="length" type="int" min="0" default="0"/>
+  <param name="ini" type="int" min="0" default="0"/>
+ </params>
+<code># shorthand for sign restrictions in narrow sense
+# (model type is checked downstream in SVAR_SRfull)
+scalar hi, lo
+if what == &quot;+&quot;
+  hi = NA
+  lo = 0
+elif what == &quot;-&quot;
+  hi = 0
+  lo = NA
+else
+  funcerr &quot;invalid restriction&quot;
+endif
+
+SVAR_SRfull(&amp;mod, yname, sname, lo, hi, ini, ini+length)
+</code>
+</gretl-function>
+<gretl-function name="SVAR_SRexotic" type="void">
+ <params count="6">
+  <param name="mod" type="bundleref"/>
+  <param name="chkstr" type="string"/>
+  <param name="involved_shocks" type="strings"/>
+  <param name="length" type="int" min="0" default="0"/>
+  <param name="ini" type="int" min="0" default="0"/>
+  <param name="needs_model" type="bool" default="0"/>
+ </params>
+<code>/* Allows to specify more &quot;exotic&quot; restrictions than just an interval
+for one IRF over some horizon. For example, a difference or ratio
+of two IRFs. But the format is necessarily more free-floating here, see the documentation.
+
+- chkstr: a string with a valid numerical evaluation of some function
+of the IRFs at a given horizon tau. The IRF_tau matrix must be
+hardcoded as &quot;M&quot;. Cross-horizon restrictions are impossible.
+(So this rules out things like shape restrictions, might be something
+for the future...)
+
+- length: length of the horizon span over which the restriction should
+hold
+
+- ini: first horizon after shock impact to consider
+(the span is then from ini to ini+length, where impact timing is 0; so the default settings just concern the impact effect)
+
+- involved_shocks: strings array with the names of the shocks that enter this
+restriction (it's the user's responsibility to get this right; in the future maybe we can verify or check this, TODO)
+
+Remark: It could also make a relevant difference whether the restriction
+concerns only one shock or several ones, because it's easier to check
+a restriction (in SVAR_SRdraw) if it only concerns a single shock.
+Example: &quot;M[2,1] / M[3,1] &gt; 0.5&quot; is an exotic restriction because two
+different IRF functions are concerned (for variables 2 and 3), but it
+only deals with shock 1. This is much easier (and probably more relevant)
+than having something like &quot;M[2,1] / M[2,2] &gt; 0.5&quot;.
+For lack of a better term, the former case with a single shock could
+be called &quot;semi-exotic&quot; for now.
+
+- needs_model: If yes, this becomes a &quot;super-exotic&quot; restriction, because it needs more input than just the boundaries; for example
+an estimated coefficient (or just the observed variables).
+
+* Output:
+Representations of the restrictions are stored in the sub-bundle
+mod.exoticSR.
+- checks (strings array): i-th string is a verbatim copy of the restriction formula
+- spans (2-col matrix): i-th row holds the start and end horizons (1-based)
+- super (col vector): i-th row indicates whether it's super-exotic (needs model)
+- eshocks (matrices array): i-th vector holds affected shock numbers
+(so if nelem(eshocks[i])==1, then it's only semi-exotic)
+
+*/
+
+errorif(!inbundle(mod, &quot;type&quot;), &quot;Missing info, not a valid SVAR bundle&quot;)
+errorif( mod.type != 10, &quot;Wrong model type for set identification restrictions&quot;)
+
+if !inbundle(mod, &quot;exoticSR&quot;)
+  strings checks = array(0)
+  matrices eshocks = array(0)
+  bundle mod.exoticSR = _(checks, spans={}, super={}, eshocks)
+endif
+
+# eshocks: store the relevant shock numbers and check validity
+matrix snums = zeros(nelem(involved_shocks))
+loop s = 1..nelem(involved_shocks)
+  matrix temp = instrings(mod.snames, involved_shocks[s])
+  errorif(!nelem(temp), sprintf(&quot;No shock named %s found\n&quot;, involved_shocks[s]))
+
+  # impose that exotic restrictions can only affect shocks that already
+  # have some standard set-ID restrictions
+  errorif(!sum(contains(mod.SRest[,6], temp[1])), sprintf(&quot;First apply non-exotic set-ID restriction on shock '%s'.\n&quot;, involved_shocks[s]))
+
+  snums[s] = temp[1]
+endloop
+mod.exoticSR.eshocks += snums
+
+finp1 = ini + length + 1 # the indexing convention here matches SRfull, +1
+if mod.horizon &lt;= finp1
+  mod.horizon = finp1 + 1 # on the safe side
+endif
+
+mod.exoticSR.checks += chkstr
+mod.exoticSR.spans = mod.exoticSR.spans | { ini + 1, finp1 }
+mod.exoticSR.super = mod.exoticSR.super | { needs_model }
+</code>
+</gretl-function>
+<gretl-function name="SVAR_spagplot" type="void">
+ <params count="4">
+  <param name="mod" type="bundle" const="true"/>
+  <param name="vname" type="string"/>
+  <param name="sname" type="string"/>
+  <param name="fname" type="string" optional="true"/>
+ </params>
+<code>string out = exists(fname) ? fname : &quot;display&quot;
+
+errorif( !inbundle(mod, &quot;acc_draws&quot;), &quot;Need collection acc_draws as model bundle member&quot;)
+
+# get shock number
+matrix snum = instrings(mod.SRid_snames, sname)
+errorif( !nelem(snum), sprintf(&quot;The given shock %s is not set-identified, not allowed&quot;, sname))
+
+# get var number
+matrix vnum = instrings(mod.Ynames, vname)
+if !nelem(vnum)
+  printf &quot;Regarding variable name %s:\n&quot;, vname
+  funcerr &quot;Variable unknown&quot;
+endif
+
+rep = nelem(mod.acc_draws)  # was bs
+numh = mod.horizon + 1
+
+matrix IRFs = zeros(numh, rep) ~ seq(0, mod.horizon)'
+
+loop i = 1..rep
+  # Vnum and snum should be 1x1 here.
+  # By using snum from above, it seems that this operation assumes that
+  #  the nested 'irfs' member only holds results for the set-ID'd case.
+  #  (Otherwise the index will be wrong if the SRid shocks aren't
+  #   all ordered before all the others.)
+  # TODO Is this assumption correct?
+
+  IRFs[,i] = drill(mod.acc_draws[i].irfs, vnum[1], snum[1])
+endloop
+
+plot IRFs
+  option with-lines
+  #    literal set linetype cycle 4
+  literal set linetype 1 lc rgb &quot;#000000&quot; lw 0.1
+  literal set linetype 2 lc rgb &quot;#000000&quot; lw 0.1
+  literal set linetype 3 lc rgb &quot;#000000&quot; lw 0.1
+  literal set linetype 4 lc rgb &quot;#000000&quot; lw 0.1
+  literal set linetype 5 lc rgb &quot;#000000&quot; lw 0.1
+  literal set linetype 6 lc rgb &quot;#000000&quot; lw 0.1
+  literal set linetype 7 lc rgb &quot;#000000&quot; lw 0.1
+  literal set linetype 8 lc rgb &quot;#000000&quot; lw 0.1
+  literal set xlabel 'lags'
+  literal set nokey
+  printf &quot;set title '%s -&gt; %s'\n&quot;, sname, vname
+end plot --output=&quot;@out&quot;
+</code>
+</gretl-function>
+<gretl-function name="SVAR_SRfull" type="void">
+ <params count="7">
+  <param name="mod" type="bundleref"/>
+  <param name="yname" type="string"/>
+  <param name="sname" type="string"/>
+  <param name="lo" type="scalar" default="NA"/>
+  <param name="hi" type="scalar" default="NA"/>
+  <param name="ini" type="int" min="0" default="0"/>
+  <param name="fin" type="int" min="0" default="0"/>
+ </params>
+<code># This function will add to the appropriate element of
+# the bundle &quot;mod&quot; (namely mod.SRest) the definition of
+# set restrictions relative to one variable and one shock,
+# organised as a row vector. Basically, the names of the
+# target variable and of the shock are mapped to their
+# position numbers, and some error checks are done;
+# input values are:
+#
+# mod      : the VAR model bundle (in pointer form)
+# yname    : a string with the name of the observable to examine
+# sname    : a string with the shock name
+# lo, hi   : bounds (NA for +- infty)
+# ini, fin : IRF interval to check (0-based)
+#
+# For example, if we assume that a monetary policy shock will
+# impact prices with a negative sign on lags from 0 to 4, then
+# the function call should be
+#
+# SVAR_SRfull(&amp;mod, &quot;p&quot;, &quot;mon_pol&quot;, NA, 0, 0, 4)
+#
+# assuming the series for prices is called &quot;p&quot;.
+# The output is then (adding) the row with elements:
+# 1) kpos  - variable number in system,
+# 2) lo    - lower interval bound,
+# 3) hi    - upper ...,
+# 4) ini+1 - period/lag start (1-based, not the actual horizon meaning!,
+#            i.e. impact is at 1)
+# 5) fin+1 - ... end (1-based)
+# 6) snum  - shock number
+#
+# This function only covers &quot;ordinary&quot;, i.e. non-exotic, set restrictions.
+
+# (Switched the yname/sname ordering to match SVAR_SRplain; Sven)
+
+errorif(!inbundle(mod, &quot;type&quot;), &quot;Missing info, not a valid SVAR bundle&quot;)
+errorif( mod.type != 10, &quot;Wrong model type for set identification restrictions&quot;)
+if !inbundle(mod, &quot;SRest&quot;)
+  matrix mod.SRest = {}
+endif
+
+# This determines the position among _all_ shocks, not just set-ID'd:
+matrix snum = instrings(mod.snames, sname)
+errmsgnamematch(snum, sname, &quot;shock&quot;)
+
+matrix kpos = instrings(mod.Ynames, yname)
+errmsgnamematch(kpos, yname, &quot;variable&quot;)
+
+errorif( missing(lo) &amp;&amp; missing(hi), &quot;No bounds specified!&quot;)
+
+lo = ok(lo) ? lo : -$huge
+hi = ok(hi) ? hi :  $huge
+
+if lo &gt; hi
+  printf &quot;Invalid bound specified! [%g : %g]\n&quot;, lo, hi
+  funcerr &quot;Provide valid interval&quot;
+endif
+
+if mod.horizon &lt;= fin
+  mod.horizon = fin + 1 # to be on the safe side
+endif
+
+mod.SRest |= {kpos, lo, hi, ini+1, fin+1, snum}
+</code>
+</gretl-function>
+<gretl-function name="SVAR_SRirf" type="void">
+ <params count="5">
+  <param name="mod" type="bundle" const="true">
+<description>the model bundle</description>
+  </param>
+  <param name="whichvars" type="strings" optional="true">
+<description>which variables</description>
+  </param>
+  <param name="whichshocks" type="strings" optional="true">
+<description>which shocks</description>
+  </param>
+  <param name="meanormed" type="bool" default="0">
+<description>choose TRUE for medians</description>
+  </param>
+  <param name="plotcodes" type="stringsref" optional="true"/>
+ </params>
+<code># The function now also returns all the plotting codes as strings array
+# for further use. (return value was void before)
+# (The plots are all still displayed; might become an option in the future.)
+
+# TODO: check if it makes sense to use the existing IRFgrph and
+#       IRFsave functions internally
+#       (perhaps the code here is actually better (more modern))
+
+# Omitting the strings array inputs means: do all.
+
+errorif( !inbundle(mod, &quot;SRid_snames&quot;), &quot;No SR (set restriction) specs found&quot;)
+errorif( !inbundle(mod, &quot;SRirfmeans&quot;),  &quot;No SR IRF results found - did you run SVAR_SRdraw?&quot;)
+
+STORE = exists(plotcodes)
+
+# Which variables:
+# default induces &quot;all&quot;
+if exists(whichvars)
+  matrix wvarix = values(multi_instrings(mod.Ynames, whichvars))
+else
+  matrix wvarix = seq(1, nelem(mod.Ynames))'
+endif
+errorif( !nelem(wvarix), &quot;No matching variable names found&quot;)
+
+# Which shocks:
+if exists(whichshocks)
+  matrix wshoix = values(multi_instrings(mod.SRid_snames, whichshocks))
+else
+  matrix wshoix = seq(1, nelem(mod.SRid_snames))'
+endif
+errorif( !nelem(wshoix), &quot;No matching shock names found&quot;)
+
+if STORE
+  # initialize containers for the plotting codes
+  string tempplotcode
+  strings plotcodes = array(nelem(wshoix) * nelem(wvarix))
+  gpopts = &quot;--outbuf=tempplotcode&quot;
+else
+  gpopts = &quot;--output=display&quot;
+endif
+
+count = 1
+
+## The actual plotting
+loop metaj = 1..nelem(wshoix) # for the shocks
+  j = wshoix[metaj]
+
+  loop metai = 1..nelem(wvarix)  # for the target variables
+    i = wvarix[metai]
+
+    # pick the right position in the matrix
+    k = (j-1) * nelem(mod.Ynames) + i
+
+    matrix center = meanormed ? mod.SRirfmeds : mod.SRirfmeans
+    matrix grph = center[,k] ~ seq(0, mod.horizon)' # IrfData.irfSRmeans
+    matrix band = mod.SRlo_cb[,k] ~ mod.SRhi_cb[,k] # IrfData.lo_cb, IrfData.hi_cb
+    band = 0.5 * band * {1, 1; 1, -1}
+    bundle bandspec = _(bandmat=band, style=&quot;fill&quot;)
+
+    plot grph
+      options with-lines fit=none
+      option band=bandspec
+      printf &quot;set title '%s shock -&gt; %s'&quot;, mod.SRid_snames[j], mod.Ynames[i]
+    end plot @gpopts
+
+    if STORE
+      # and store
+      string plotcodes[count++] = tempplotcode
+    endif
+  endloop
+endloop
+</code>
+</gretl-function>
+<gretl-function name="SVAR_SRdraw" type="bundles">
+ <params count="5">
+  <param name="mod" type="bundleref"/>
+  <param name="rep" type="int"/>
+  <param name="DO_BAYES" type="bool" default="0"/>
+  <param name="coveralpha" type="scalar" min="0" max="1" default="0.9"/>
+  <param name="maxiter" type="int" default="10000"/>
+ </params>
+<code># This function draws random rotations of the model Cholesky
+# until &quot;rep&quot; draws satisfying the sign restrictions have come up.
+# If the DO_BAYES flag is on, the VAR parameters (including Sigma)
+# are resampled too; otherwise, they are kept fixed at the ols
+# estimates.
+# (Since DO_BAYES just addresses parameter uncertainty using the
+# frequentist-estimate of the var-cov, it basically uses an
+# uninformative prior; perhaps call it something else in the future.)
+#
+# this version generalises a previous version of SVAR_SRdraw
+# so as to allow for mixed restrictions
+
+errorif( !inbundle(mod, &quot;SRest&quot;) &amp;&amp; !inbundle(mod, &quot;exoticSR&quot;), &quot;No set id restrictions found&quot;)
+
+#
+# Recover VAR parameters from the model bundle
+#
+
+matrix B = mod.mu | mod.VARpar'
+scalar numh = mod.horizon + 1
+
+matrix chol_iXX = {}
+if DO_BAYES     # this is only needed for sampling from the posterior
+  matrix Data = (mod.X ~ lags(mod.p, mod.Y, 1))[mod.p + 1 : ,]
+  chol_iXX = cholesky(invpd(Data'Data))
+  matrix mod.mreg = Data # needed to re-calc the residuals E (now U?) later
+endif
+
+if 0
+  # print a few parameters so we don't screw up with lags etc.
+  safetycheck1(mod.Sigma, iXX, B)
+endif
+
+#
+# prepare the output array and other auxiliary stuff
+#
+
+bundles drawn = array(0)
+scalar good = 0
+scalar iter = 1
+
+# which shocks are to be identified via (non-exotic) set restrictions?
+# (should not be empty now that we do not allow exotic restrictions by themselves)
+errorif(!rows(mod.SRest), &quot;Need some (non-exotic) set-ID restrictions!&quot;)
+matrix shocks = values(mod.SRest[,6])
+
+# do we have exotic restrictions?
+n_exotic = get_n_exotic(mod)
+
+# add the shocks (their positions among all shocks) from exotic restrictions
+# (this should be redundant now, since we impose earlier that a shock cannot only be
+#  identified through an exotic restriction)
+matrix allshocks = n_exotic ? values(shocks | flatten(mod.exoticSR.eshocks,TRUE)) : shocks
+errorif(nelem(allshocks) != nelem(shocks), &quot;shouldn't happen&quot;)
+
+# Now extract the corresponding shock names
+strings temp = mod.snames[allshocks]
+strings mod.SRid_snames = temp 	 # workaround (old?) gretl bug to ensure strings type even if 1 elem
+
+# responses to be cumulated?
+matrix to_cum = mod.ncumul ? mod.cumul : {}
+
+###
+### the main loop
+###
+
+# this bundle contains the necessary information for generating the rotations
+bundle b = _(B=B, Sigma=mod.Sigma, exoterms=rows(mod.mu),  df = mod.T - rows(B), T=mod.T)
+
+# Handle the zero constraints for the mixed case, if any (note: this puts zc into b).
+# (Remark: We fixed the problem that purely exotic-restricted shocks weren't really
+# covered by this setup simply by requiring that all set-ID'ed shocks must also have
+# a more standard [non-exotic] restriction underneath.)
+matrix zc_shocks = add_zero_constr(mod, shocks, &amp;b)
+
+# for the future: set a matrix for keeping some shocks from being rotated
+# eventually, this could probably be inferred from the model bundle
+# 05/07/24: maybe this doesn't apply now that we have zero restrictions
+# (Downstream this only applies to non-zero restrictions, but
+#  why would you not want to rotate?? (sven))
+rot_only = {}
+
+loop while good&lt;rep &amp;&amp; iter&lt;=maxiter
+
+  # --- first just using non-exotic restrictions ---
+  # We will always have at least one non-exotic set-id'd shock, by
+  # assumption/requirement. Otherwise id_matrix is empty.
+
+  # generate the random rotation matrix and, optionally, resample
+  rot_redraw(&amp;b, mod, DO_BAYES, B, chol_iXX, rot_only) 	# b.rot, b.B, b.Sigma
+
+  matrices irfs = gen_SRirfs(b, numh, to_cum)
+
+  # analyzing how the drawn potential C columns can be shuffled around
+  # and sign-flipped to fulfill the defined restrictions
+  matrix id_matrix = get_id_mat(mod, shocks, irfs) # DO_NORM now optional
+
+  if 0
+    printf &quot;iter = %d (good = %d)\n&quot;, iter, good
+    printf &quot;M[0] =\n%8.3f\n&quot;, irfs[1]
+    printf &quot;id_matrix =\n%8.3f\n&quot;, id_matrix
+  endif
+
+  # Start checking the results
+  chk = rows(id_matrix) == rows(shocks)
+
+  # For the standard set-ID'ed case, a check on whether
+  # all defined shock restrictions can be properly and uniquely
+  # matched; for the mixed-zero case, fail the check for those draws
+  # that would imply swapping the columns associated with the point
+  # restrictions.
+  chk = chk &amp;&amp; check_id(id_matrix, zc_shocks)
+
+  if chk
+    if mod.n == rows(shocks)
+      # complete system
+      # (was nSetIdShocks; 'shocks' refers to non-exotic set-ID'd,
+      #  so &quot;complete&quot; is defined against that measure)
+      b.Q = b.rot * id_matrix'
+
+      # So we save b.Q only if enough shocks are covered/addressed by
+      # restrictions. What do we need it for, down the road?
+    endif
+
+    # Perform the &quot;reflection-permutation&quot; step --
+    # so the IRFs are adapted to the findings of the previous
+    # id analysis that passed the checks.
+    # (basically, swapping and sign flips)
+
+    if nelem(id_matrix)
+      # (this id_matrix check should be redundant because could only
+      #  happen for purely exotic restrictions, which is disallowed)
+      loop i = 1..nelem(irfs)
+        irfs[i] = irfs[i] * id_matrix'
+      endloop
+    endif
+
+    # --- now check for exotic restrictions if necessary -------
+    # Here we are less clever than before, to reduce the
+    # complexity; no column swapping is attempted anymore,
+    # but the previously id'ed and created structure is taken
+    # as-is, running the additional restriction checks on it.
+    # (This should also be OK because this type of restrictions
+    #  is used less often.)
+    if n_exotic
+      loop i = 1..n_exotic
+
+        # With the SEMI_EXOT algorithm active
+        # in get_id_mat, we skip those restrictions in this round,
+        # analyzing only the really exotic
+        # (and of course super-exotic) restrictions.
+        # (Although in principle it should just be redundant
+        # and not do real harm.)
+
+        if inbundle(mod, &quot;SEMI_EXOT&quot;) &amp;&amp; mod.SEMI_EXOT == TRUE
+          # debug
+          #                         print &quot;in former exotic check...&quot;
+          #                         print i
+          #                         eval nelem(mod.exoticSR.eshocks[i])
+          #                         eval mod.exoticSR.super[i]
+
+          if nelem(mod.exoticSR.eshocks[i] &gt; 1) || mod.exoticSR.super[i] == TRUE
+            out = exotic_inner_check(&amp;chk, i, mod, irfs)
+          else
+            out = 0
+          endif
+        else
+          out = exotic_inner_check(&amp;chk, i, mod, irfs)
+        endif
+
+        if out
+          break
+        endif
+      endloop
+    endif
+
+    if chk
+      good++
+      b.irfs = irfs
+
+      # copy the results of accepted draw to output bundles array
+      drawn += b
+    endif
+  endif
+
+  # print some progress info on the way
+  factor = (DO_BAYES ? 100 : 500) * xmax(1,floor(sqrt(maxiter/1000)))
+
+  if (iter % factor == 0) || (iter % 1000 == 0)
+    printf &quot;draw %5d done (good so far = %5d)\n&quot;, iter, good
+    flush
+  endif
+
+  iter++
+endloop
+
+if good &lt; rep
+  printf &quot;\n\nWARNING: COULDN'T ACHIEVE THE DESIRED NUMBER OF DRAWS&quot;
+  printf &quot; (only %d out of %d)\n&quot;, good, rep
+else
+  printf &quot;draw %5d done (good = %5d)\n&quot;, iter-1, good
+endif
+printf &quot; (acceptance ratio: %g)\n&quot;, good/(iter-1)
+
+# copy info into model
+mod.SRiter = iter - 1
+mod.SRacc  = good
+mod.DO_BAYES = DO_BAYES
+mod.SRcoveralpha = coveralpha
+
+# integrate some summary results into the model bundle
+if good
+  bundle IrfData = IRF_plotdata(drawn, coveralpha)
+  matrix mod.SRirfmeans = IrfData.irfSRmeans
+  matrix mod.SRirfserrs = IrfData.irfSRserrs
+  matrix mod.SRlo_cb    = IrfData.lo_cb
+  matrix mod.SRhi_cb    = IrfData.hi_cb
+  matrix mod.SRirfmeds  = IrfData.irfSRmeds # medians
+
+  # also store everything in the main bundle if wanted
+  if inbundle(mod, storeSRirfs) &amp;&amp; mod.storeSRirfs
+    # (idiom possible because for SR we require recent gretl)
+    mod.acc_draws = drawn
+  endif
+
+else
+  print &quot;Warning: No accepted draws, plotting impossible&quot;
+endif
+
+return drawn	# may be 0-element
+</code>
+</gretl-function>
+<gretl-function name="SVAR_SRgetbest" type="scalar">
+ <params count="7">
+  <param name="mod" type="bundleref"/>
+  <param name="vname" type="string"/>
+  <param name="sname" type="string"/>
+  <param name="ini" type="int" min="0" default="0"/>
+  <param name="length" type="int" min="0" default="0"/>
+  <param name="disttarg" type="int" min="0" max="1" default="0">
+<description>measure to target</description>
+<labels count="2">
+"mean" "median" </labels>
+  </param>
+  <param name="loss" type="string" optional="true"/>
+ </params>
+<code># Function to find the set-id accepted draw which best fits a
+# a certain IRF center
+# vname: e.g. &quot;Y&quot;
+# sname: e.g. &quot;supply&quot; (naming must exist in the bundle)
+# ini: horizon range start (0 = impact)
+# length: horizon end is ini + length
+# disttarg: which part of the per-horizon distribution should be
+# targeted;
+# loss: how to evaluate deviations from the target;
+#      possible values: &quot;abs&quot;, &quot;quad&quot; (default), ...
+
+## implement defaults and error checks:
+if !exists(loss)
+  string loss = &quot;quad&quot;
+elif tolower(loss) != &quot;abs&quot; &amp;&amp; tolower(loss) != &quot;quad&quot;
+  print &quot;Warning, unrecognized loss, using 'quad'&quot;
+  loss = &quot;quad&quot;
+else
+  loss = tolower(loss)
+endif
+
+errorif( !inbundle(mod, &quot;SRacc&quot;), &quot;No info on accepted draws found&quot;)
+errorif( !inbundle(mod, &quot;acc_draws&quot;), &quot;Model must be set up to store accepted draws in its bundle&quot;)
+errorif( ini + length &gt; mod.horizon, &quot;ini + length too large (increase horizon)&quot;)
+
+startix = ini + 1	# offset for 1-based
+finix = startix + length
+matrix center = !disttarg ? mod.SRirfmeans : mod.SRirfmeds
+
+# pick the right position in the matrix:
+# (taking into account partial identification, i.e.
+#  less id'ed shocks than variables)
+scalar v_ix = instrings(mod.Ynames, vname)
+scalar s_ix = instrings(mod.SRid_snames, sname)
+k = (s_ix - 1) * nelem(mod.Ynames) + v_ix
+
+center = center[,k]
+
+best = $huge
+bestdraw = 0
+loop i = 1..mod.SRacc
+  matrix IRFvec = drill(mod.acc_draws[i].irfs, v_ix, s_ix)
+  matrix distance = (IRFvec - center)[startix : finix]
+  if loss == &quot;abs&quot;
+    scalar objective = sum(abs(distance))
+  elif loss == &quot;quad&quot;
+    scalar objective = sum(distance.^2)
+  endif
+  if objective &lt; best
+    best = objective
+    bestdraw = i
+  endif
+endloop
+
+errorif( !bestdraw, &quot;shouldn't happen&quot;)
+
+# store for further use
+mod.bestdraw = bestdraw
+return bestdraw
+</code>
+</gretl-function>
+<gretl-function name="SRgetbest" type="scalar">
+ <params count="7">
+  <param name="mod" type="bundleref"/>
+  <param name="vname" type="string"/>
+  <param name="sname" type="string"/>
+  <param name="ini" type="int" min="0" default="0"/>
+  <param name="length" type="int" min="0" default="0"/>
+  <param name="disttarg" type="int" min="0" max="1" default="0"/>
+  <param name="loss" type="string" optional="true"/>
+ </params>
+<code>printf &quot;==========================================================\n&quot;
+printf &quot;WARNING: the SRgetbest() function has been deprecated since\n&quot;
+printf &quot;SVAR version 2.0 and will stop working at some point.\n\n&quot;
+printf &quot;You may want to replace the call to SRgetbest() with the new\n&quot;
+printf &quot;name SVAR_SRgetbest().\n\n&quot;
+
+ret = SVAR_SRgetbest(&amp;mod, vname, sname, ini, length, disttarg, loss)
+return ret
+</code>
+</gretl-function>
+<gretl-function name="SVAR_getshock" type="series">
+ <params count="3">
+  <param name="mod" type="bundleref"/>
+  <param name="sname" type="string" optional="true"/>
+  <param name="drawix" type="int" min="0" default="0"/>
+ </params>
+<code># This is a wrapper to provide a nicer interface, using the
+# name of the shock instead of the number.
+# Default (as in GetShock) is to use the first shock.
+
+errorif(exists(sname) &amp;&amp; !inbundle(mod, &quot;snames&quot;), &quot;Missing info, not a valid SVAR bundle for shocks&quot;)
+s_ix = !exists(sname) ? 1 : instrings(mod.snames, sname)
+
+return GetShock(&amp;mod, s_ix, drawix)
+</code>
+</gretl-function>
+<gretl-function name="SVAR_HD" type="list">
+ <params count="3">
+  <param name="mod" type="bundleref"/>
+  <param name="vname" type="string" optional="true"/>
+  <param name="drawix" type="int" min="0" default="0"/>
+ </params>
+<code># wrapper around SVAR_hd to use a string interface for the
+# variable
+errorif(exists(vname) &amp;&amp; !inbundle(mod, &quot;Ynames&quot;), &quot;Missing info, not a valid SVAR bundle for var names&quot;)
+v_ix = !exists(vname) ? 1 : instrings(mod.Ynames, vname)
+return SVAR_hd(&amp;mod, v_ix, drawix)
+</code>
+</gretl-function>
+<gretl-function name="SVAR_SRresetalpha" type="void">
+ <params count="2">
+  <param name="Smod" type="bundleref"/>
+  <param name="alpha" type="scalar" min="0" max="1"/>
+ </params>
+<code># Public convenience function to implement the hack described
+# previously in fn 33 of the SVAR doc; allows to redefine
+# the confidence band coverage level after getting the draws.
+
+errorif( !inbundle(Smod, &quot;acc_draws&quot;), &quot;no accepted draws found&quot;)
+
+if Smod.SRcoveralpha == alpha
+  print &quot;Warning: desired coverage level already active&quot;
+else
+  Smod.SRcoveralpha = alpha
+endif
+
+bundle newIrfdata = IRF_plotdata(Smod.acc_draws, Smod.SRcoveralpha)
+matrix Smod.SRlo_cb    = newIrfdata.lo_cb
+matrix Smod.SRhi_cb    = newIrfdata.hi_cb
+
+# are the following two actually necessary or shouldn't
+# their contents really be the same before and after?
+matrix Smod.SRirfmeans = newIrfdata.irfSRmeans
+matrix Smod.SRirfmeds  = newIrfdata.irfSRmeds
+</code>
+</gretl-function>
+<gretl-function name="errmsgnamematch" type="void" private="1">
+ <params count="3">
+  <param name="pos" type="matrix" const="true"/>
+  <param name="name" type="string"/>
+  <param name="which" type="string">
+<description>shock or var</description>
+  </param>
+ </params>
+<code>#  pos is the result of an instrings() search, 0 to n-element vector
+
+which = tolower(strstrip(which))
+errorif( which != &quot;shock&quot; &amp;&amp; which != &quot;variable&quot;, &quot;choice must be 'shock' or 'variable'&quot;)
+
+if nelem(pos) != 1
+  printf &quot;You don't have a %s named %s in your model.\n&quot;, which, name
+  print &quot; (or several ones)&quot;
+  string msg = sprintf(&quot;Specify correct and unique %s names&quot;, which)
+  funcerr msg
+endif
+</code>
+</gretl-function>
+<gretl-function name="range" type="scalar" private="1">
+ <params count="4">
+  <param name="a" type="int"/>
+  <param name="n" type="int"/>
+  <param name="n0" type="scalarref"/>
+  <param name="n1" type="scalarref"/>
+ </params>
+<code># this is used in the plotting function to have
+# 0 as a synonym for &quot;all&quot;
+#
+# The flipping of the shock by passing a negative number
+# is then not possible to specify; users have to do it explicitly
+# in their own loop then.
+
+if a != 0
+  ret = 0
+  n0 = a
+  n1 = a
+else
+  ret = 1
+  n0 = 1
+  n1 = n
+endif
+return ret
+</code>
+</gretl-function>
+<gretl-function name="max_eval" type="scalar" private="1">
+ <params count="1">
+  <param name="A" type="matrix" const="true"/>
+ </params>
+<code># attention:
+# up to v1.94 this actually seemed to calculate the max _squared_ modulus (?)
+# from v1.95 we use abs() after eigen() to directly get the modulus.
+
+n = rows(A)
+p = cols(A) / n
+matrix compan = p==1 ? A : A | (I(n*(p-1)) ~ zeros(n*(p-1), n))
+matrix lambda = eigen(compan) # was eigengen(compan), deprecated
+# (lambda will be complex now)
+scalar maxmod = maxc(abs(lambda)) # was: maxc(sumr(lambda.^2))
+return maxmod
+</code>
+</gretl-function>
+<gretl-function name="determ" type="list" private="1">
+ <params count="4">
+  <param name="X" type="list" const="true"/>
+  <param name="cnst" type="bool"/>
+  <param name="trnd" type="bool"/>
+  <param name="seas" type="bool"/>
+ </params>
+<code>list ret = cnst ? const : deflist() # workaround for 'empty'
+
+if trnd
+  ret += time
+endif
+
+if seas
+  ret += seasonals(0, 1) # centered
+endif
+
+# stick together deterministics and other exog.
+ret = ret || X
+return ret
+</code>
+</gretl-function>
+<gretl-function name="vecm_det" type="matrix" private="1">
+ <params count="2">
+  <param name="T" type="int"/>
+  <param name="dcase" type="int"/>
+ </params>
+<code># build the deterministic matrix for the VECM; if alpha is
+# empty, it will be estimated via ols later
+
+# deterministics
+# note that in the &quot;even cases&quot; (restr. const or trend)
+# the restricted term is _not_ included in x, since its
+# parameter will be recovered later via alpha*beta
+
+matrix mreg = dcase&lt;3 ? {} : ones(T)
+if dcase == 5
+  matrix mreg ~= seq(1,T)'
+endif
+
+return mreg
+</code>
+</gretl-function>
+<gretl-function name="N2_ify" type="matrix" private="1">
+ <params count="1">
+  <param name="A" type="matrix" const="true"/>
+ </params>
+<code>n = int(sqrt(rows(A)))
+return commute(A, n, n, 0, 1)
+</code>
+</gretl-function>
+<gretl-function name="has_unit_diag" type="scalar" private="1">
+ <params count="1">
+  <param name="Rd" type="matrix" const="true"/>
+ </params>
+<code># this function analyses a matrix of constraints to check
+# whether it implies that the diagonal of the corresponding
+# parameter matrix is constrained to be 1; this is accomplished
+# by looking for a suitable tranformation of the row space of
+# Rd that returns a canonical constraint matrix
+
+n2 = cols(Rd) - 1
+n = sqrt(n2)
+matrix test = transp(seq(0,n2-1)) .= seq(0,n2-1,n+1)
+test |= ones(1,n)
+
+matrix e
+mols(test, Rd', &amp;e)
+
+return max(abs(e)) &lt; 1.0e-12
+</code>
+</gretl-function>
+<gretl-function name="has_free_diag" type="scalar" private="1">
+ <params count="1">
+  <param name="Rd" type="matrix" const="true"/>
+ </params>
+<code># this function analyses a matrix of constraints to check
+# whether it implies that the diagonal of the corresponding
+# parameter matrix is unconstrained; this is accomplished
+# by checking that the relevant columns of the Rd matrix
+# contain nothing but zeros
+
+n2 = cols(Rd) - 1
+n = sqrt(n2)
+matrix e = 1 + seq(0,n2-1,n+1)
+return min(abs(Rd[,e])) == 0
+</code>
+</gretl-function>
+<gretl-function name="mat_exp" type="matrix" private="1">
+ <params count="2">
+  <param name="theta" type="matrix" const="true"/>
+  <param name="Ss" type="matrix" const="true"/>
+ </params>
+<code># we don't check for conformability, but
+# cols(Ss) should be equal to rows(theta)+1
+
+n2 = rows(Ss)
+n = round(sqrt(n2))
+k = cols(Ss) - 1
+matrix C = k&gt;0 ? ( Ss[,1:k]*theta + Ss[,k+1] ) : Ss
+
+return mshape(C,n,n)
+</code>
+</gretl-function>
+<gretl-function name="maybe_flip_columns" type="void" private="1">
+ <params count="2">
+  <param name="C" type="matrix" const="true"/>
+  <param name="X" type="matrixref"/>
+ </params>
+<code>/*
+the objective here is to make X as similar as possible to C
+by flipping the sign of the columns. Used for bootstrapping, to have IRFs with comparable signs.
+*/
+n = rows(C)
+matrix sel = seq(1,n)
+matrix plus = sumc((C + X).^2)
+matrix minus = sumc((C - X).^2)
+
+matrix flip = plus .&lt; minus
+if sumr(flip) &gt; 0
+  sel = selifc(sel, flip)
+  X[,sel] = -X[,sel]
+endif
+</code>
+</gretl-function>
+<gretl-function name="printStrMat" type="void" private="1">
+ <params count="3">
+  <param name="X" type="matrix" const="true"/>
+  <param name="V" type="matrix"/>
+  <param name="name" type="string"/>
+ </params>
+<code>n = rows(X)
+matrix x = vec(X)
+
+matrix cfse = vec(X)
+matrix se = sqrt(diag(V))
+
+matrix numzero = selifr(seq(1,rows(se))', (se .&lt; 1.0e-15))
+if rows(numzero) &gt; 1
+  se[numzero] = 0.0
+endif
+
+cfse ~= se
+string parnames = &quot;&quot;
+
+loop j = 1..n
+  loop i = 1..n
+    parnames += sprintf(&quot;%s[%2d;%2d]&quot;, name, i, j)
+    if j&lt;n || i&lt;n
+      parnames += &quot;,&quot;
+    endif
+  endloop
+endloop
+
+modprint cfse parnames
+</code>
+</gretl-function>
+<gretl-function name="add_and_smash" type="scalar" private="1">
+ <params count="2">
+  <param name="A" type="matrixref"/>
+  <param name="Psi" type="matrix" const="true"/>
+ </params>
+<code># Note that Psi here seems to correspond to -\Psi
+# in Kilian (1998)! That's why it's added.
+
+matrix Ab = A + Psi
+# now check stationarity
+scalar maxmod = max_eval(Ab)
+
+h = 0.99
+H = 1
+maxiter = 1000
+iter = 0
+loop while (maxmod &gt; 0.9999) &amp;&amp; (iter &lt; maxiter)
+  iter++
+  H *= h
+  Ab = A + H .* Psi
+  maxmod = max_eval(Ab)
+endloop
+
+A = Ab
+return (iter &gt;= maxiter) ? NA : H
+</code>
+</gretl-function>
+<gretl-function name="transshockcheck" type="scalar" private="1">
+ <params count="1">
+  <param name="b" type="bundle" const="true"/>
+ </params>
+<code># only for SVEC case
+# check the last r columns of C (trans shocks),
+# shouldn't have more than r-1 zeros in each of them
+# according to Luetkepohl (2008, EL)
+# (for unrestricted alpha)
+# (passing this check doesn't mean everything is OK)
+
+if b.type != 4
+  print &quot;Transitory shocks only for SVEC models&quot;
+  return 1
+
+elif nelem(b.Rd1)	# else there are no short-run restr.
+
+  # check for weakly exogenous variables
+  weakexo = 0
+  if inbundle(b, &quot;jalpha&quot;)
+    if min(sumr(abs(b.jalpha))) &lt; 1e-8
+      weakexo = 1
+    endif
+  endif
+
+  if !weakexo
+    loop i = (b.n - b.crank)..(b.n - 1)
+      matrix part = b.Rd1[, i * b.n + 1: (i+1) * b.n]
+      # check for exclusion restrictions (RHS zero)
+      matrix mc = (sumr(part) .= 1) &amp;&amp; (b.Rd1[,cols(b.Rd1)] .= 0)
+      if sum(mc) &gt; b.crank - 1
+        printf &quot;Concerning shock %d\n&quot;, i+1
+        funcerr &quot;Too many zero restrictions&quot;
+      endif
+    endloop
+  endif
+
+else
+  print &quot;No short-run restrictions found (Rd1)&quot;
+endif
+
+return 0
+</code>
+</gretl-function>
+<gretl-function name="CheckNormalizeRd" type="scalar" private="1">
+ <params count="2">
+  <param name="R" type="matrixref"/>
+  <param name="d" type="matrixref"/>
+ </params>
+<code>/*
+Checks that
+(1) the constraints are consistent
+(2) the constraints are non-contradictory (??? non-redundant ? - Sven)
+
+if (1) fails, an error message is printed and R and d are replaced by
+  empty matrices; if (2) fails, redundant rows in R and d are dropped.
+  */
+
+  p = rows(R)
+  r = rank(R)
+  ret = 0
+
+  if r &lt; p
+    matrix Rd = R ~ d
+    if r &lt; rank(Rd) # contradictory
+      R = {}
+      d = {}
+      ret = 1
+
+    else # redundant
+      matrix RR
+      matrix QQ = qrdecomp(Rd', &amp;RR)
+      matrix e = abs(diag(RR)) .&gt; $macheps
+      QQ = selifc(QQ, e')
+      RR = selifr(selifc(RR, e'), e)
+      Rd = QQ * RR
+      R = Rd[1:rows(Rd)-1,]'
+      d = Rd[rows(Rd),]'
+      ret = 2
+    endif
+  endif
+
+  return ret
+</code>
+</gretl-function>
+<gretl-function name="add_constraint" type="scalar" private="1">
+ <params count="5">
+  <param name="Rd" type="matrixref"/>
+  <param name="n" type="int"/>
+  <param name="i" type="int"/>
+  <param name="j" type="int"/>
+  <param name="d" type="scalar"/>
+ </params>
+<code>err = i&gt;n || j&gt;n || i&lt;1 || j&lt;1
+if !err
+  n2 = n*n
+  matrix tmp = zeros(1,n2 + 1)
+  k = n*(j-1) + i
+  tmp[1,k] = 1
+  tmp[1,n2+1] = d
+
+  # check for consistency/redundancy
+  if rows(Rd) &gt; 0
+    matrix newR = Rd[,1:n2] | tmp[1:n2]
+    matrix newd = Rd[,n2+1] | d
+  else
+    matrix newR = tmp[1:n2]
+    matrix newd = d
+  endif
+
+  err2 = CheckNormalizeRd(&amp;newR, &amp;newd)
+  if err2 == 0
+    Rd |= tmp
+  elif err2 == 1
+    printf &quot;The restriction conflicts with previous ones and was ignored\n&quot;
+  elif err2 == 2
+    printf &quot;The restriction is redundant and was ignored\n&quot;
+  endif
+endif
+
+return err ? -err : 10*err2 # -1 for bad input, 10 or 20 upstream error
+</code>
+</gretl-function>
+<gretl-function name="cholRd" type="matrix" private="1">
+ <params count="1">
+  <param name="n" type="int"/>
+ </params>
+<code>n2 = n*n
+k = 1
+matrix ret = {}
+loop i = 1..n
+  loop j = 1..n
+    matrix tmp = zeros(1,n2+1)
+    if i &gt; j
+      tmp[k] = 1
+      ret |= tmp
+    endif
+    k++
+  endloop
+endloop
+return ret
+</code>
+</gretl-function>
+<gretl-function name="diag_Rd" type="matrix" private="1">
+ <params count="2">
+  <param name="n" type="int"/>
+  <param name="x" type="scalar"/>
+ </params>
+<code>return selifr(I(n*n), vec(I(n))) ~ (x * ones(n))
+</code>
+</gretl-function>
+<gretl-function name="free_diag_Rd" type="matrix" private="1">
+ <params count="1">
+  <param name="n" type="int"/>
+ </params>
+<code>n2 = n*n
+return selifr( I(n2) ~ zeros(n2), !vec(I(n)) )
+</code>
+</gretl-function>
+<gretl-function name="imp2exp" type="matrix" private="1">
+ <params count="1">
+  <param name="Rd" type="matrix"/>
+ </params>
+<code>/*
+Given the constraints in implicit form, returns the matrix [ S | s ]
+of the constraints in explicit form
+*/
+errorif( !nelem(Rd), &quot;No restrictions given.&quot;)
+
+p = cols(Rd)
+matrix R = Rd[, 1:(p-1)]
+matrix d = Rd[,p]
+catch matrix RRi = invpd(R*R')
+err = $error
+if err
+  print &quot;Processing of restrictions failed aborting.&quot;
+  print &quot;Perhaps redundant or incompatible restrictions?&quot;
+  printf &quot;%s\n&quot;, errmsg(err)
+  funcerr &quot;aborting&quot;
+endif
+
+matrix s = R'RRi * d
+matrix S = nullspace(R | s')
+return S ~ s
+</code>
+</gretl-function>
+<gretl-function name="check_const" type="void" private="1">
+ <params count="2">
+  <param name="K" type="matrix" const="true"/>
+  <param name="fullRd" type="matrix" const="true"/>
+ </params>
+<code>k = cols(fullRd) - 1
+matrix R = fullRd[,1:k]
+matrix d = fullRd[,k+1]
+
+printf &quot;Constraint matrix:\n&quot;
+print R
+matrix tmp = R * vec(K)
+print tmp
+printf &quot;Should be:\n&quot;
+print d
+</code>
+</gretl-function>
+<gretl-function name="lrConstr" type="matrix" private="1">
+ <params count="2">
+  <param name="C1" type="matrix" const="true"/>
+  <param name="lrRd" type="matrix" const="true"/>
+ </params>
+<code>if !rows(lrRd)
+  return {} # nothing to do
+else
+  n = rows(C1)
+  k = cols(lrRd) - 1
+  matrix d = lrRd[,k+1]
+  return ( lrRd[,1:k] * (I(n) ** C1) ) ~ d
+endif
+
+return ret
+</code>
+</gretl-function>
+<gretl-function name="get_full_Rd" type="matrix" private="1">
+ <params count="2">
+  <param name="obj" type="bundleref"/>
+  <param name="verbosity" type="int" default="0"/>
+ </params>
+<code>scalar type = obj.type
+scalar n = obj.n
+matrix fullRd = obj.Rd1 # grab sr-restrictions first
+# (for type 1 or type 2 with short-run only: nothing else to do)
+lr_constr = rows(obj.Rd1l) ? TRUE : FALSE	# further long-run constraints?
+
+if type == 3
+  funcerr &quot;This func not usable for AB models (yet)&quot;
+  # because long-run restrictions aren't implemented for them
+
+elif type==4 || lr_constr || obj.calc_lr
+  # generic C-model (includes SVEC) with some kind of long-run restr
+
+  # before ML estimation, we need to take into account the
+  # permanent/temporary shock classification in SVEC
+  if type == 4
+    matrix locjalpha = obj.jalpha
+    # trim beta from restr. exo terms if needed:
+    matrix beta = (obj.jcase % 2 == 0) ? obj.jbeta[1:n,] : obj.jbeta
+    r = cols(beta)
+    matrix C1 = C1mat(obj.VARpar, 1, locjalpha, beta)
+
+    matrix J = zeros(n-r, r) | I(r)
+    matrix permatransRd = (J ** nullspace(locjalpha'))' ~ zeros(r * (n-r))
+    fullRd |= permatransRd  # put the constraints together
+
+  else # can be type 2 (or 1 if obj.calc_lr)
+    matrix C1 = C1mat(obj.VARpar, 0) # compute the lr matrix
+  endif
+
+  if lr_constr
+    # TODO: Here we could also check whether in a SVEC model
+    # the additional long-run constraints are really related
+    # to the permanent shocks.
+    # (Otherwise they will probably be either redundant or
+    # impossible. Or should we do that in the ident check?)
+
+    fullRd |= lrConstr(C1, obj.Rd1l) # put the constraints together
+  endif
+
+  if verbosity &gt; 1
+    matrix lrSigma = qform(C1, obj.Sigma) # compute the lr cov matrix
+    printf &quot;Long-run matrix (C1): \n%8.3f\n&quot;, C1
+    printf &quot;Long-run Sigma: \n%8.3f\n&quot;, lrSigma
+  endif
+
+  # store the C1 matrix for possible future use
+  matrix obj.C1 = C1
+endif
+
+return fullRd
+</code>
+</gretl-function>
+<gretl-function name="SampleMatrices" type="matrices" private="1">
+ <params count="4">
+  <param name="Ra" type="matrix" const="true"/>
+  <param name="da" type="matrix" const="true"/>
+  <param name="Rb" type="matrix" const="true"/>
+  <param name="db" type="matrix" const="true"/>
+ </params>
+<code>/*
+Returns an array with A and B evaluated at a random point
+in the parameter space (useful for checking the constraint
+matrices).
+
+Parameters: Ra, da, Rb, db = constraint matrices; */
+
+n = sqrt(cols(Ra | Rb))
+matrices ret
+
+matrix tmp = imp2exp(Ra ~ da)
+if cols(tmp) &gt; 1
+  tmp *= muniform(cols(tmp)-1) | 1
+endif
+ret += mshape(tmp,n,n)
+
+matrix tmp = imp2exp(Rb ~ db)
+if cols(tmp) &gt; 1
+  tmp *= muniform(cols(tmp)-1) | 1
+endif
+ret += mshape(tmp,n,n)
+
+return ret
+</code>
+</gretl-function>
+<gretl-function name="Dtn" type="matrix" private="1">
+ <params count="1">
+  <param name="n" type="int"/>
+ </params>
+<code>/*
+Creates the matrix \tilde{D}_n.
+
+Output has n^2 rows and n*(n-1)/2 columns; any (n x n) skewsymmetric
+matrix has a vectorised form which lies in the space spanned by the
+columns of \tilde{D}_n
+*/
+
+p = round(n*(n-1)/2)
+
+matrix A = zeros(1,n) | (lower(unvech(seq(1,p)')) ~ zeros(n-1))
+matrix B = zeros(n^2,p)
+matrix C
+
+loop i = 1..p
+  C = A.=i
+  B[,i] = vec(C .- C')
+endloop
+
+return B
+</code>
+</gretl-function>
+<gretl-function name="Umat" type="matrix" private="1">
+ <params count="3">
+  <param name="n" type="int"/>
+  <param name="R" type="matrix" const="true"/>
+  <param name="S" type="matrix" const="true"/>
+ </params>
+<code># See Lucchetti(2006) -- left-hand side of matrix T;
+# see eq. 26 on page 248
+
+p = cols(S)
+matrix ret = {}
+loop i = 1..p
+  ret |= R * (mshape(S[,i],n,n)' ** I(n))
+endloop
+return ret
+</code>
+</gretl-function>
+<gretl-function name="Tmat" type="matrix" private="1">
+ <params count="3">
+  <param name="n" type="int"/>
+  <param name="R" type="matrix" const="true"/>
+  <param name="S" type="matrix" const="true"/>
+ </params>
+<code># See Lucchetti(2006) -- right-hand side of matrix T;
+# see eq. 26 on page 248
+
+p = cols(S)
+matrix ret = {}
+loop i = 1..p
+  ret |= R * (I(n) ** mshape(S[,i],n,n))
+endloop
+return ret
+</code>
+</gretl-function>
+<gretl-function name="strucond" type="scalar" private="1">
+ <params count="6">
+  <param name="n" type="int"/>
+  <param name="Ra" type="matrix" const="true"/>
+  <param name="da" type="matrix" const="true"/>
+  <param name="Rb" type="matrix" const="true"/>
+  <param name="db" type="matrix" const="true"/>
+  <param name="verbose" type="int" default="0"/>
+ </params>
+<code>/*
+Checks the structure condition and optionally
+prints out some of the relevant matrices:
+
+Parameters: Ra, da, Rb, db = constraint matrices; iprint = output mode:
+*/
+
+matrix Sa = imp2exp(Ra ~ da)
+matrix Sb = imp2exp(Rb ~ db)
+
+if verbose &gt; 1
+  print Ra da Rb db Sa Sb
+endif
+
+matrix Ua = Umat(n,Ra,Sa) # removed redundant da arg
+matrix Ub = Umat(n,Rb,Sb) # removed redundant db arg
+matrix Tb = Tmat(n,Rb,Sb) # removed redundant db arg
+
+if verbose &gt; 1
+  print Ua Ub Tb
+endif
+
+matrix C = Ua ~ zeros(rows(Ua), n*(n-1)/2)
+C |= Ub ~ Tb * Dtn(n)
+if verbose &gt; 1
+  print C
+endif
+
+/* purge zero rows from C */
+matrix e = maxr(abs(C)) .&gt; 0
+C = selifr(C,e)
+if verbose &gt; 1
+  printf &quot;After filtering zero rows, C is %d x %d\n&quot;, rows(C), cols(C)
+endif
+
+matrix CC = C'C
+if verbose &gt; 1
+  print CC
+endif
+
+d = det(CC)
+if d == 0
+  matrix nspace = nullspace(CC)
+  u_rank = cols(nspace)
+  if verbose
+    loop i = 1..u_rank
+      printf &quot;Q_%d = \n&quot;, i
+      printf &quot;%6.1f&quot;, mshape(nspace[1:n*n,i],n,n)
+      printf &quot;H_%d = \n&quot;, i
+      printf &quot;%6.1f&quot;, mshape(Dtn(n) * nspace[n*n+1:,i],n,n)
+    endloop
+  endif
+endif
+
+return (d &gt; 0)
+</code>
+</gretl-function>
+<gretl-function name="ordercond" type="scalar" private="1">
+ <params count="4">
+  <param name="n" type="int"/>
+  <param name="Ra" type="matrix" const="true"/>
+  <param name="Rb" type="matrix" const="true"/>
+  <param name="verbose" type="int" default="0"/>
+ </params>
+<code>/*
+Checks the order condition and optionally
+prints out some of the relevant matrices:
+
+Parameters: Ra, Rb = constraint matrices; iprint = output mode:
+*/
+
+p = 2*n*n - (n + 1)*n/2
+
+if verbose &gt; 0
+  print  &quot;Checking order condition:&quot;
+  printf &quot; no. of constraints on A:\t%d\n&quot;, rows(Ra)
+  printf &quot; no. of constraints on B /or C:\t%d\n&quot;, rows(Rb)
+  printf &quot; no. of total constraints:\t%d\n&quot;, rows(Ra) + rows(Rb)
+  printf &quot; no. of necessary constraints:\t%d\n&quot;, p
+endif
+
+return rank(Ra)+rank(Rb) &gt;= p
+</code>
+</gretl-function>
+<gretl-function name="rankcond" type="scalar" private="1">
+ <params count="6">
+  <param name="n" type="int"/>
+  <param name="Ra" type="matrix" const="true"/>
+  <param name="da" type="matrix" const="true"/>
+  <param name="Rb" type="matrix" const="true"/>
+  <param name="db" type="matrix" const="true"/>
+  <param name="verbose" type="int" default="0"/>
+ </params>
+<code>/*
+Checks the rank condition as per Amisano-Giannini and optionally
+prints out some of the relevant matrices:
+
+Parameters: Ra, da, Rb db, = constraint matrices; Note that in fact we check for the existence of solutions to
+the system given in eq. (9), chapter 4. The condition discussed later
+(matrix Q) is, sadly, wrong.
+*/
+
+matrices AB = SampleMatrices(Ra, da, Rb, db)
+matrix A = AB[1]
+matrix B = AB[2]
+
+matrix BB = B*B'
+
+matrix Q11 =  Ra * (A' ** BB)
+matrix Q21 = -Rb * (B' ** BB)
+matrix Q22 = Q21 * Dtn(n)
+matrix Q = (Q11 ~ zeros(rows(Ra), n*(n-1)/2)) | (Q21 ~ Q22)
+scalar r = rank(Q)
+
+if verbose &gt; 1
+  loop foreach m Q11 Q21 Q22 Q
+    printf &quot;\n$m:\n%7.2f&quot;, $m
+  endloop
+endif
+
+if verbose &gt; 0
+  print  &quot;Checking rank condition:&quot;
+  printf &quot; r = %d, cols(Q) = %d\n&quot;, r, cols(Q)
+endif
+
+return r == cols(Q)
+</code>
+</gretl-function>
+<gretl-function name="ident" type="scalar" private="1">
+ <params count="2">
+  <param name="mod" type="bundleref"/>
+  <param name="verbose" type="int" default="0"/>
+ </params>
+<code>/*
+Main function for checking identification.
+
+The function also rewrites the 'fullRd' matrix to the mod if empty, and adds or overwrites 'cleanfullRd' or 'Rd0' and 'Rd1'
+if redundant restrictions are found.
+
+  The algorithm is described fully in Lucchetti (2006), &quot;Identification Of Covariance Structures&quot;, Econometric
+  Theory, Cambridge University Press, vol. 22(02), p 235-257.
+  (currently partly unused due to some issues, work in progress)
+
+  The Ra, da, Rb, db constraint matrices are constructed from mod.Rd0, mod.Rd1 and oher ingredients if long-run constraints play a role
+  (in C and SVEC models).
+
+  Return value 0 means: no identification (check failed).
+  */
+
+  n2 = mod.n * mod.n
+
+  if mod.type == 3 # AB - Model
+    matrix Ra = mod.Rd0[, 1:n2] # restrictions on A
+    matrix da = mod.Rd0[, n2+1]
+    matrix Rb = mod.Rd1[, 1:n2] # restrictions on B
+    matrix db = mod.Rd1[, n2+1]
+
+    # check the constraints on A for inconsistencies
+    # and/or redundancies
+    # (for B further down, along with C)
+    err = CheckNormalizeRd(&amp;Ra, &amp;da)
+    if err == 1
+      printf &quot;--Contradictory constraints on A!--\n&quot;
+      return 0
+
+    elif err == 2
+      if verbose
+        print &quot;Warning: redundant constraints on A, dropping some.&quot;
+      endif
+      mod.Rd0 = Ra ~ da
+    endif
+
+  else             # plain, C-model or SVEC
+    if !nelem(mod.fullRd)
+      matrix mod.fullRd = get_full_Rd(&amp;mod, 0)
+      errorif( !nelem(mod.fullRd), &quot;No restrictions specified!&quot;) 	# possible only for C model?
+    endif
+
+    matrix Rb = mod.fullRd[, 1:n2]
+    matrix db = mod.fullRd[, n2+1]
+    matrix Ra = I(n2)	# just needed as a dummy below
+    matrix da = vec(I(mod.n))
+
+    if mod.type == 4    # special SVEC check
+      if verbose
+        print &quot; (The identification check for SVEC models is work in&quot;
+        print &quot;  progress. Be careful especially when loadings alpha&quot;
+        print &quot;  are restricted.)&quot;
+      endif
+      transshockcheck(mod)  # based on Luetkepohl 2008
+    endif
+  endif
+
+  # check the constraints on B and C (respectively) for inconsistencies
+  # and/or redundancies
+  err = CheckNormalizeRd(&amp;Rb, &amp;db)
+  if err == 1
+    printf &quot;--Contradictory constraints on B (or C, respectively)!--\n&quot;
+    return 0
+  elif err == 2
+    if verbose
+      print &quot;Warning: redundant constraints on B (or C), dropping some.&quot;
+    endif
+    if mod.type == 3
+      mod.Rd1 = Rb ~ db
+    else
+      matrix mod.cleanfullRd = Rb ~ db
+    endif
+  endif
+
+  # removed redundant calc: n = round(sqrt(cols(Ra | Rb)))
+
+  /* check for the order condition */
+
+  scalar id_o = ordercond(mod.n, Ra, Rb, verbose)
+  if verbose
+    string printout = id_o ? &quot;OK&quot; : &quot;fails!&quot;
+    printf &quot;=&gt; Order condition %s\n&quot;, printout
+  endif
+
+  # /* check for the structure condition */
+
+  # scalar id_s = strucond(n, locRa, locda, locRb, locdb, verbose)
+  # string printout = id_s ? &quot;OK&quot; : &quot;fails!&quot;
+  # printf &quot;Structure condition %s\n&quot;, printout
+
+  /* check for the rank condition */
+
+  scalar id_r = rankcond(mod.n, Ra, da, Rb, db, verbose)
+  if verbose
+    string printout = id_r ? &quot;OK&quot; : &quot;fails!&quot;
+    printf &quot;=&gt; Rank condition %s\n\n&quot;, printout
+  endif
+
+  return (id_o &amp;&amp; id_r)
+</code>
+</gretl-function>
+<gretl-function name="scoreC" type="void" private="1">
+ <params count="3">
+  <param name="ret" type="matrixref"/>
+  <param name="theta" type="matrix" const="true"/>
+  <param name="dat" type="matrices"/>
+ </params>
+<code>matrix Sigma = dat[1]
+matrix Ss = dat[2]
+# unscramble_dat(&amp;dat, &amp;Sigma, &amp;Ss)
+scalar n = rows(Sigma)
+scalar npar = cols(Ss) - 1
+
+matrix C = mat_exp(theta, Ss) # was: , 0)
+matrix S = Ss[,1:npar]
+
+matrix iC = inv(C)
+matrix ret = iC' (qform(iC,Sigma) - I(n))
+
+ret = vec(ret)'S
+</code>
+</gretl-function>
+<gretl-function name="C1mat" type="matrix" private="1">
+ <params count="4">
+  <param name="A" type="matrix" const="true"/>
+  <param name="VECM" type="bool" default="0"/>
+  <param name="jalpha" type="matrix" optional="true" const="true"/>
+  <param name="jbeta" type="matrix" optional="true" const="true"/>
+ </params>
+<code>/*
+computes C(1) out of the autoregressive matrices; jalpha and jbeta
+are alpha and beta, which are used only if VECM is nonzero, that
+is under cointegration
+
+(Remark Sven: jbeta / We now (Jan 2018) make sure only rows 1:n are used.) */
+
+n = rows(A)
+p = cols(A) / n
+matrix tmp = mshape(vec(A), n*n, p)
+
+if VECM == 0
+  tmp = mshape(sumr(tmp), n, n)
+  matrix ret = inv(I(n) - tmp)
+else # cointegrated
+  errorif( !exists(jalpha) || !exists(jbeta), &quot;Need cointegration params for C1 in VECM!&quot;)
+
+  matrix aperp = nullspace(jalpha')
+  matrix bperp = nullspace(jbeta[1:n, ]')
+  tmp = mshape(tmp*seq(1,p)', n, n)
+  matrix ret = bperp * inv(aperp'tmp*bperp) * aperp'
+endif
+
+return ret
+</code>
+</gretl-function>
+<gretl-function name="init_C" type="matrix" private="1">
+ <params count="2">
+  <param name="Sigma" type="matrix" const="true"/>
+  <param name="Rd" type="matrix" const="true"/>
+ </params>
+<code>matrix Ss = imp2exp(Rd)
+k = cols(Ss)
+if k == 1
+  # nothing to estimate
+  ret = {}
+else
+  n = rows(Sigma)
+
+  matrix S = k&gt;1 ? Ss[,1:k-1] : {}
+  matrix s = Ss[,k]
+  matrix K = cholesky(Sigma)
+  matrix bigmat = (K ** I(n))
+
+  matrix ret = mols(vec(Sigma) - bigmat*s, bigmat*S)
+endif
+
+return ret
+</code>
+</gretl-function>
+<gretl-function name="PseudoHessC" type="void" private="1">
+ <params count="3">
+  <param name="H" type="matrixref"/>
+  <param name="theta" type="matrix" const="true"/>
+  <param name="dat" type="matrices" const="true"/>
+ </params>
+<code>matrix Sigma = dat[1]
+matrix Ss = dat[2]
+n = rows(Sigma)
+npar = cols(Ss) - 1
+matrix S = Ss[,1:npar]
+
+# printf &quot;PseudoHessC\n%10.4f\n%4.1f\n&quot;, theta, Ss
+
+matrix C = mat_exp(theta, Ss) # was: , 0)
+H = InfoMat(C, S) # was InfoMatC
+</code>
+</gretl-function>
+<gretl-function name="estC" type="matrix" private="1">
+ <params count="7">
+  <param name="theta" type="matrixref"/>
+  <param name="Sigma" type="matrix" const="true"/>
+  <param name="Rd" type="matrix" const="true"/>
+  <param name="vcv" type="matrixref" optional="true"/>
+  <param name="errcode" type="scalarref"/>
+  <param name="method" type="int"/>
+  <param name="verbose" type="scalar" default="1"/>
+ </params>
+<code>matrix Ss = imp2exp(Rd)
+n = rows(Sigma)
+if cols(Ss) == 1
+  # nothing to estimate
+  matrix C = mshape(Ss, n, n)
+  if exists(vcv)
+    vcv = zeros(n*n,n*n)
+  endif
+  errcode = 0
+  return C
+endif
+
+scalar SCALE = 0 # EXPERIMENTAL
+npar = rows(theta)
+
+if SCALE == 1
+  printf &quot;Scale!\n&quot;
+  matrix s = sqrt(diag(Sigma))
+  matrix sSig = Sigma ./ (s*s')
+else
+  matrix sSig = Sigma
+endif
+
+matrix tmp = mat_exp(theta, Ss)
+
+if verbose &gt; 2
+  /* obsolete ? */
+  printf &quot;check within estC -- before estimation\n&quot;
+  check_const(tmp, Rd)
+endif
+matrices dat = defarray(sSig, Ss)
+
+matrix g H
+if verbose &gt; 1
+  set max_verbose 1
+else
+  set max_verbose 0
+endif
+err = 1
+iters = 0
+#set bfgs_toler 1.0e-03
+
+matrix theta0 = theta
+errcode = 0
+
+loop while (err==1 &amp;&amp; iters&lt;100)
+  if method == 0
+    catch scalar ll = BFGSmax(theta, &quot;loglik(theta, dat, -1)&quot;)
+    errcode = $error
+    scoreC(&amp;g, theta, dat)
+  elif method == 1
+    catch scalar ll = BFGSmax(theta, &quot;loglik(theta, dat, -1)&quot;, &quot;scoreC(&amp;g, theta, dat)&quot;)
+    errcode = $error
+  elif method == 2
+    catch scalar ll = NRmax(theta, &quot;loglik(theta, dat, -1)&quot;)
+    errcode = $error
+    scoreC(&amp;g, theta, dat)
+  elif method == 3
+    catch scalar ll = NRmax(theta, &quot;loglik(theta, dat, -1)&quot;, &quot;scoreC(&amp;g, theta, dat)&quot;)
+    errcode = $error
+  elif method == 4
+    catch scalar ll = NRmax(theta, &quot;loglik(theta, dat, -1)&quot;, &quot;scoreC(&amp;g, theta, dat)&quot;, &quot;PseudoHessC(&amp;H, theta, dat)&quot;)
+    errcode = $error
+  endif
+
+  if errcode&gt;0
+    printf &quot;errcode = %d\n&quot;, errcode
+  endif
+  scalar crit = maxr(abs(g))
+  err = (crit &gt; 1.0e-4)
+
+  if err==1
+    iters++
+    theta = 0.1*mnormal(npar,1) + theta0
+    if verbose&gt;1
+      printf &quot;Iter %3d: Restarting... ll = %12.7f, crit = %16.10f\n&quot;, iters, ll, crit
+      printf &quot;theta = %10.5f grad = %10.5f\n&quot;, theta', g
+    endif
+  endif
+
+endloop
+
+scalar crit = maxr(abs(g))
+warn = (crit &gt; 1.0e-1)
+
+if !err
+  if (iters &gt; 0) &amp;&amp; (verbose &gt; 1)
+    printf &quot;Converged after %d restarts\n&quot;, iters
+  endif
+  matrix C = mat_exp(theta, Ss)
+
+  if SCALE == 1
+    C = C .* s'
+  endif
+  if verbose &gt; 1
+    printf &quot;Estimated C matrix:\n%12.5f&quot;, C
+  endif
+
+  if exists(vcv)
+    vcv = coeffVCV(Ss[,1:npar], &amp;C)
+  endif
+
+  if verbose &gt; 1
+    matrix Info = InfoMat(C, Ss[,1:npar])	# was InfoMatC
+    printf &quot;estC : Info = \n%14.10f\n&quot;, Info
+    printf &quot;estC : score = \n%14.10f\n&quot;, g
+  endif
+
+else
+  if verbose &gt; 1
+    printf &quot;No convergence! :-( \n%12.6f\n&quot;, theta' | g
+  endif
+  matrix C = {}
+  errcode = 1
+endif
+
+return C
+</code>
+</gretl-function>
+<gretl-function name="is_standard_AB" type="scalar" private="1">
+ <params count="2">
+  <param name="aRd" type="matrix"/>
+  <param name="bRd" type="matrix"/>
+ </params>
+<code>return has_unit_diag(aRd) &amp;&amp; has_free_diag(bRd)
+</code>
+</gretl-function>
+<gretl-function name="scoreAB" type="void" private="1">
+ <params count="4">
+  <param name="ret" type="matrixref"/>
+  <param name="theta" type="matrix" const="true"/>
+  <param name="dat" type="matrices" const="true"/>
+  <param name="p1" type="int"/>
+ </params>
+<code># TODO: This func might benefit from getting the pre-computed C matrix
+
+matrix Sigma = dat[1]
+matrix Ss = dat[2]
+
+p2 = rows(theta)
+matrix aSs = Ss[,1:p1+1]
+matrix bSs = Ss[,p1+2:p2+2]
+
+n = rows(Sigma)
+matrix A B
+ABmat_exp(theta, aSs, bSs, &amp;A, &amp;B)
+matrix iA = inv(A)
+matrix C = iA*B
+
+if p1&gt;0
+  matrix S = aSs[,1:p1]
+  S = -((C') ** iA) * S
+else
+  matrix S = {}
+endif
+
+if p2&gt;p1
+  S ~= bSs[,1:cols(bSs)-1]
+endif
+
+matrix iC = inv(C)
+
+# fill the pointer arg
+ret = iC' (qform(iC,Sigma) - I(n))
+ret = vec(ret)'S
+</code>
+</gretl-function>
+<gretl-function name="stdAB_init" type="matrix" private="1">
+ <params count="3">
+  <param name="mX" type="matrix" const="true"/>
+  <param name="aRd" type="matrix" const="true"/>
+  <param name="bRd" type="matrix" const="true"/>
+ </params>
+<code># mX should contain the VAR residuals
+
+matrix aSs = imp2exp(aRd)
+matrix bSs = imp2exp(bRd)
+n = cols(mX)
+p = cols(aSs) - 1
+
+if p &gt; 0
+  matrix S = aSs[,1:p]
+  matrix s = aSs[,p+1]
+
+  matrix sel = vec(transp(mshape(seq(1,n*n),n,n)))
+  matrix dep = vec(mX)
+  matrix reg = (I(n) ** mX) * S[sel,]
+  matrix e
+  matrix b = -mols(dep, reg, &amp;e)
+  e = mshape(e, rows(mX), n)
+  e = sqrt(meanc(e.^2))'
+  S = bSs[, 1 : cols(bSs)-1]
+  sel = 1 + seq(0,n-1)*(n+1)
+  matrix a = zeros(n*n)
+  a[sel] = e
+  e = S'a
+  matrix ret = b | e
+else
+  matrix Sigma = (mX'mX) / rows(mX)
+  matrix ret = init_C(Sigma, bRd)
+endif
+
+return ret
+</code>
+</gretl-function>
+<gretl-function name="nonstdAB_init" type="matrix" private="1">
+ <params count="3">
+  <param name="U" type="matrix" const="true"/>
+  <param name="aRd" type="matrix" const="true"/>
+  <param name="bRd" type="matrix" const="true"/>
+ </params>
+<code>matrix aSs = imp2exp(aRd)
+matrix bSs = imp2exp(bRd)
+T = rows(U)
+n = cols(U)
+matrix Sigma = (U'U) ./ T
+matrix C = cholesky(Sigma)
+
+startA = (rows(aRd) &gt; rows(bRd))
+
+ka = cols(aSs) - 1
+if ka&gt;0
+  matrix Sa = aSs[,1:ka]
+endif
+matrix sa = aSs[,ka+1]
+
+kb = cols(bSs) - 1
+if kb&gt;0
+  matrix Sb = bSs[,1:kb]
+endif
+matrix sb = bSs[,kb+1]
+
+if startA == 1
+  matrix giSb = invpd(Sb'Sb) * Sb'
+  matrix tmp = giSb * (C' ** I(n))
+  if ka&gt;0
+    matrix giSa = invpd(Sa'Sa) * Sa'
+    matrix gama = 0.1 * ones(ka)
+    matrix gamb = tmp * (Sa*gama + sa) - giSb*sb
+    tmp = giSa * (inv(C)' ** I(n))
+    gama = tmp * (Sb*gamb + sb) - giSa*sa
+  else
+    matrix gama = {}
+    matrix gamb = tmp*sa - Sb'sb
+  endif
+else
+  matrix giSa = invpd(Sa'Sa)*Sa'
+  matrix tmp = giSa*(inv(C)' ** I(n))
+  if kb&gt;0
+    matrix giSb = invpd(Sb'Sb)*Sb'
+    matrix gamb = 0.1*ones(kb,1)
+    matrix gama = tmp * (Sb*gamb + sb) - giSa*sa
+    tmp = giSb*(C' ** I(n))
+    gamb = tmp * (Sa*gama + sa) - giSb*sb
+  else
+    matrix gama = tmp*sb - Sa'sa
+    matrix gamb = {}
+  endif
+endif
+
+if kb &gt; 0
+  scale = tr(Sigma) / tr(C*C')
+  printf &quot;nonstdAB_init: Scale = %g\n&quot;, scale
+  gamb = sqrt(scale) .* gamb
+  /*
+elif ka&gt;0
+  scalar scale = tr(Sigma) / tr(C*C')
+  printf &quot;nonstdAB_init: Scale = %g\n&quot;, scale
+  gama = sqrt(scale) ./ gama
+  */
+endif
+
+return gama | gamb
+</code>
+</gretl-function>
+<gretl-function name="ABmat_exp" type="void" private="1">
+ <params count="5">
+  <param name="theta" type="matrix" const="true"/>
+  <param name="aSs" type="matrix" const="true"/>
+  <param name="bSs" type="matrix" const="true"/>
+  <param name="A" type="matrixref"/>
+  <param name="B" type="matrixref"/>
+ </params>
+<code>p1 = cols(aSs) - 1
+p2 = rows(theta)
+
+matrix theta_a = p1&gt;0 ? theta[1:p1] : {}
+A = mat_exp(theta_a, aSs)
+
+matrix theta_b = p2&gt;p1 ? theta[p1+1:p2] : {}
+B = mat_exp(theta_b, bSs) # was: , 1)
+</code>
+</gretl-function>
+<gretl-function name="PseudoHessAB" type="void" private="1">
+ <params count="4">
+  <param name="H" type="matrixref"/>
+  <param name="theta" type="matrix" const="true"/>
+  <param name="dat" type="matrices" const="true"/>
+  <param name="p1" type="int"/>
+ </params>
+<code>matrix Sigma = dat[1]
+matrix Ss = dat[2]
+
+p2 = rows(theta)
+matrix aSs = Ss[, 1 : p1+1]
+matrix bSs = Ss[, p1+2 : p2+2]
+
+n = rows(Sigma)
+n2 = n*n
+matrix A B
+ABmat_exp(theta, aSs, bSs, &amp;A, &amp;B)
+
+ka = cols(aSs) - 1
+kb = cols(bSs) - 1
+matrix S = zeros(2*n2, ka+kb)
+if ka&gt;0
+  S[1:n2,1:ka] = aSs[,1:ka]
+endif
+if kb&gt;0
+  S[n2+1:, ka+1 : ka+kb] = bSs[,1:kb]
+endif
+
+H = InfoMat(B, S, &amp;A)
+</code>
+</gretl-function>
+<gretl-function name="estAB" type="matrix" private="1">
+ <params count="9">
+  <param name="theta" type="matrixref"/>
+  <param name="Sigma" type="matrix"/>
+  <param name="aRd" type="matrix"/>
+  <param name="bRd" type="matrix"/>
+  <param name="vcv" type="matrixref" optional="true"/>
+  <param name="errcode" type="scalarref"/>
+  <param name="method" type="int"/>
+  <param name="verbose" type="int" default="1"/>
+  <param name="transfABkakb" type="matricesref" optional="true"/>
+ </params>
+<code># new optional arg transfABkakb added by Sven for transfer/
+# to avoid calc duplication
+
+matrix aSs  = imp2exp(aRd)
+matrix bSs  = imp2exp(bRd)
+npar = rows(theta)
+n    = rows(Sigma)
+
+p1 = cols(aSs) - 1
+p2 = p1 + cols(bSs) - 1
+matrices dat = defarray(Sigma, aSs ~ bSs)
+
+matrix g H
+if verbose &gt; 1
+  set max_verbose 1
+else
+  set max_verbose 0
+endif
+err = 0
+
+if method == 0
+  catch scalar ll = BFGSmax(theta, &quot;loglik(theta, dat, p1)&quot;)
+  err = $error
+  scoreAB(&amp;g, theta, dat, p1)
+elif method == 1
+  catch scalar ll = BFGSmax(theta, &quot;loglik(theta, dat, p1)&quot;, &quot;scoreAB(&amp;g, theta, dat, p1)&quot;)
+  err = $error
+elif method == 2
+  catch scalar ll = NRmax(theta, &quot;loglik(theta, dat, p1)&quot;)
+  err = $error
+  scoreAB(&amp;g, theta, dat, p1)
+elif method == 3
+  catch scalar ll = NRmax(theta, &quot;loglik(theta, dat, p1)&quot;, &quot;scoreAB(&amp;g, theta, dat, p1)&quot;)
+  err = $error
+elif method == 4
+  catch scalar ll = NRmax(theta, &quot;loglik(theta, dat, p1)&quot;, &quot;scoreAB(&amp;g, theta, dat, p1)&quot;, &quot;PseudoHessAB(&amp;H, theta, dat, p1)&quot; )
+  err = $error
+endif
+
+scalar crit = maxr(abs(g))
+warn = (crit &gt; 1.0e-1)
+
+if err || warn
+  matrix C = {}
+  errcode = err + 10*warn
+  outfile stderr
+    printf &quot;err = %d; warn = %d; Gradient: %10.6f&quot;, err, warn, g
+  end outfile
+  return C
+endif
+
+matrix A B
+ABmat_exp(theta, aSs, bSs, &amp;A, &amp;B)
+
+# use matlab-style &quot;matrix division&quot; for speed and accuracy
+matrix C = A\B
+
+if verbose &gt; 1
+  printf &quot;Estimated A matrix:\n%12.5f&quot;, A
+  printf &quot;Estimated B matrix:\n%12.5f&quot;, B
+  printf &quot;Estimated C matrix:\n%12.5f&quot;, C
+  printf &quot;Check:\n%12.5f&quot;, cholesky(Sigma)
+endif
+
+# new transplanted block from SVAR_estimate():
+n2 = n*n
+ka = cols(aSs) - 1
+kb = cols(bSs) - 1
+matrix S = zeros(2*n2, ka+kb)
+
+if ka &gt; 0
+  S[1:n2,1:ka] = aSs[,1:ka]
+endif
+if kb &gt; 0
+  S[n2+1 : 2*n2, ka+1 : ka+kb] = bSs[,1:kb]
+endif
+
+if exists(vcv)
+  vcv = coeffVCV(S, &amp;B, &amp;A)  # was coeffVCV(S, &amp;mB, &amp;mA)
+endif
+
+# transfer back the A, B, ka, kb results (ugly hack &lt;Sven&gt;)
+if exists(transfABkakb)
+  transfABkakb = defarray(A, B, {ka}, {kb})
+endif
+
+return C
+</code>
+</gretl-function>
+<gretl-function name="doIRF" type="void" private="1">
+ <params count="1">
+  <param name="SVARobj" type="bundleref"/>
+ </params>
+<code># constructs the structural VMA representation via the native vma()
+# function and stores it into the bundle
+# (apparently this isn't used yet? - June 2021 ... activated in July 2024)
+
+scalar type = SVARobj.type
+matrix C
+
+if type==1 || type==2 || type==4
+  C = SVARobj.C
+elif type == 3
+  # (maybe not yet computed)
+  C = inbundle(SVARobj, &quot;C&quot;) ? SVARobj.C : SVARobj.S1 \ SVARobj.S2
+endif
+
+ret = vma(SVARobj.VARpar, C, SVARobj.horizon + 1)
+
+# switch the indices (necessary for compatibility)
+n = SVARobj.n
+s = vec(mshape(seq(1, n*n), n, n)')
+ret = ret[,s]
+
+if SVARobj.ncumul &gt; 0
+  ret[, SVARobj.cumsel] = cum(ret[, SVARobj.cumsel]) # .cumsel was sel
+endif
+
+matrix SVARobj.IRFs = ret
+</code>
+</gretl-function>
+<gretl-function name="doIRF_old" type="void" private="1">
+ <params count="1">
+  <param name="SVARobj" type="bundleref"/>
+ </params>
+<code>/*
+constructs the structural VMA representation. Note
+that the companion matrix is never used explicitly; The output is not returned by the function, but rather
+put into the bundle under the &quot;IRFs&quot; key.
+
+(Superseded by the new doIRF function which uses native vma(); just keeping it around for a while.)
+*/
+scalar type = SVARobj.type
+matrix varA = SVARobj.VARpar
+scalar H = SVARobj.horizon + 1
+scalar n = SVARobj.n
+matrix C
+
+if type==1 || type==2 || type==4
+  C = SVARobj.C	# was: SVARobj.S1
+
+elif type == 3
+  # (maybe not yet computed)
+  C = inbundle(SVARobj, &quot;C&quot;) ? SVARobj.C : SVARobj.S1 \ SVARobj.S2
+endif
+
+matrix ret = zeros(H,n*n)
+scalar np = SVARobj.p * n
+matrix tmp = I(np)
+matrix prd = zeros(np,np)
+
+loop i = 1..H
+  ret[i,] = vec(tmp[1:n,1:n] * C)'
+  if (np&gt;n)
+    prd[n+1:np, ] = tmp[1:np-n, ]
+  endif
+  prd[1:n,] = varA * tmp
+  tmp = prd
+endloop
+
+if SVARobj.ncumul &gt; 0
+  # The following code is now done in SVAR_cumulate
+  # once and for all:
+  # matrix to_cum = SVARobj.cumul
+  # tmp = zeros(n,n)
+  # tmp[to_cum,] = 1
+  # sel = selifr(transp(seq(1,n*n)), vec(tmp))
+  ret[, SVARobj.cumsel] = cum(ret[, SVARobj.cumsel]) # .cumsel was sel
+endif
+
+matrix SVARobj.IRFs = ret
+</code>
+</gretl-function>
+<gretl-function name="check_bounds" type="scalar" private="1">
+ <params count="3">
+  <param name="s" type="int"/>
+  <param name="v" type="int"/>
+  <param name="n" type="int"/>
+ </params>
+<code># s is the shock number, m is the variable number, n is the
+# system size
+
+scalar ret = 0
+if abs(s)&gt;n || s==0
+  # the number of the shock is greater than the system size
+  # however, negative s is allowed and means &quot;flip the shock&quot;
+  ret = 1
+
+elif v&gt;n || v&lt;1
+  # non-existent variable
+  ret = 2
+endif
+
+return ret
+</code>
+</gretl-function>
+<gretl-function name="IRFgrph" type="string" private="1">
+ <params count="11">
+  <param name="IRFmat" type="matrix" const="true"/>
+  <param name="snum" type="int"/>
+  <param name="vnum" type="int"/>
+  <param name="scale" type="scalar"/>
+  <param name="sname" type="string"/>
+  <param name="vname" type="string"/>
+  <param name="keypos" type="int" min="0" max="2" default="1"/>
+  <param name="cumul" type="matrixref" optional="true"/>
+  <param name="boot" type="bundleref" optional="true"/>
+  <param name="bc" type="int" min="0" max="2" default="0"/>
+  <param name="whichdraw" type="int" min="0" default="0"/>
+ </params>
+<code># bc: bias correction choice
+# (snum and sname belong together, as do vnum and vname, so it's a bit
+#  unfortunate that the scale arg is positioned in-between. But we need to
+#  have both the number and the string because [i] the number can be negative
+#  to signal flipping, and [ii] we avoid passing the whole bundle around here.)
+# (The number of args here is horrible, but fortunately this is a private
+#  function.)
+
+errorif( whichdraw &amp;&amp; (exists(boot) || bc), &quot;cannot have SR/whichdraw and bootstrap options together&quot;)
+
+flip = snum &lt; 0
+snum = abs(snum)
+n = round(sqrt(cols(IRFmat)))
+bootrep = exists(boot) ? boot.rep : 0 # didn't work due to gretl bug+
+
+# anything to cumulate?
+cumulate = exists(cumul) ? sum(cumul .= vnum) &gt; 0 : 0
+
+tmpfname = int(1000 * muniform(1))
+string tmpfile = $windows ? sprintf(&quot;%s\\irf%d.gp&quot;, $dotdir, tmpfname) : sprintf(&quot;%s/irf%d.gp&quot;, $dotdir, tmpfname)
+
+k = (snum-1) * n + vnum
+
+h = rows(IRFmat)
+matrix x = flip ? -IRFmat[,k]./scale : IRFmat[,k]./scale	# matrix?
+if bootrep &gt; 0
+  matrix hicb = flip ? -boot.lo_cb : boot.hi_cb	# matrix?
+  matrix locb = flip ? -boot.hi_cb : boot.lo_cb
+  matrix mdn  = flip ? -boot.mdns  : boot.mdns
+  matrix locb = locb[,k] ./ scale
+  matrix hicb = hicb[,k] ./ scale
+  matrix mdn  = mdn[,k]  ./ scale
+  scalar miny = minc((locb | x))
+  scalar maxy = maxc((hicb | x))
+else
+  scalar miny = minc(x)
+  scalar maxy = maxc(x)
+endif
+
+miny = miny&gt;0 ? 0 : miny
+maxy = maxy&lt;0 ? 0 : maxy
+
+set force_decpoint on
+
+## write the raw gnuplot code
+
+outfile &quot;@tmpfile&quot;
+  printf &quot;set yrange [%g:%g]\n&quot;, miny*1.05, maxy*1.05
+  printf &quot;set xrange [%g:%g]\n&quot;, 0, (h-1)*1.05
+  printf &quot;set xzeroaxis\n&quot;
+
+  string l_sname = sname==&quot;&quot; ? sprintf(&quot;%d&quot;, snum) : sname
+  string l_vname = vname==&quot;&quot; ? sprintf(&quot;%d&quot;, vnum) : vname
+
+  printf &quot;set title \&quot;IRF: %s -&gt; %s&quot;, l_sname, l_vname
+
+  if bc == 1
+    printf &quot;; bias-correction = partial&quot;
+  elif bc == 2
+    printf &quot;; bias-correction = full&quot;
+  elif whichdraw
+    printf &quot; (draw %d)&quot;, whichdraw
+  endif
+
+  if cumulate &gt; 0
+    printf &quot; (cumulated)&quot;
+  endif
+
+  printf &quot;\&quot;\n&quot;
+
+  if keypos == 0
+    printf &quot;set key off\n&quot;
+  elif keypos == 1
+    printf &quot;set key outside\n&quot;
+  elif keypos == 2
+    printf &quot;set key below\n&quot;
+  endif
+
+  if bootrep &gt; 0
+    printf &quot;set style fill solid 0.125\n&quot;
+    printf &quot;plot '-' using 1:2:3 w filledcurve t &quot;
+    printf &quot;'Bstrap %d%% CI', \\\n&quot;, floor(100 * boot.alpha)
+    printf &quot;'-' w l lw 1 lc 1 t 'Bstrap median', \\\n&quot;
+    printf &quot;'-' w l lw 2 lc -1 t 'IRF'\n&quot;
+    loop i = 1..h
+      printf &quot;%d\t%g\t%g\n&quot;, i-1, locb[i,], hicb[i,]
+    endloop
+    printf &quot;e\n&quot;
+    loop i = 1..h
+      printf &quot;%d\t%g\n&quot;, i-1, mdn[i,]
+    endloop
+    printf &quot;e\n&quot;
+  else
+    printf &quot;plot '-' w l lw 2\n&quot;
+  endif
+
+  loop i = 1..h
+    printf &quot;%d\t%g\n&quot;, i-1, x[i]
+  endloop
+  printf &quot;e\n&quot;
+end outfile
+set force_decpoint off # in gretl &gt;=2021b this is redundant
+
+return tmpfile
+</code>
+</gretl-function>
+<gretl-function name="FEVDgrph" type="string" private="1">
+ <params count="6">
+  <param name="FEVDmat" type="matrix" const="true"/>
+  <param name="v" type="scalar"/>
+  <param name="vname" type="string"/>
+  <param name="snames" type="strings"/>
+  <param name="keypos" type="int" min="0" max="2" default="1"/>
+  <param name="titletail" type="string" optional="true"/>
+ </params>
+<code># Final arg 'titletail' is a hack originally meant to put the draw number
+# in the output in the SR case. (In principle it can be anything.)
+
+if !exists(titletail)
+  string titletail = &quot;&quot;
+endif
+
+n = round(sqrt(cols(FEVDmat)))
+h = rows(FEVDmat) - 1
+
+scalar tmpfname = int(10000 * muniform(1))
+if $windows
+  string datfile = sprintf(&quot;%s\\fevd%d.txt&quot;, $dotdir, tmpfname)
+  string tmpfile = sprintf(&quot;%s\\fevd%d.gp&quot;, $dotdir, tmpfname)
+else
+  string datfile = sprintf(&quot;%s/fevd%d.txt&quot;, $dotdir, tmpfname)
+  string tmpfile = sprintf(&quot;%s/fevd%d.gp&quot;, $dotdir, tmpfname)
+endif
+
+matrix sel = (v-1)*n + seq(1,n)
+set force_decpoint on
+
+outfile &quot;@tmpfile&quot;
+  if keypos == 0
+    printf &quot;set key off\n&quot;
+  elif keypos == 1
+    printf &quot;set key outside\n&quot;
+  elif keypos == 2
+    printf &quot;set key below\n&quot;
+  endif
+  printf &quot;set yrange [0:100]\n&quot;
+  printf &quot;set xrange [%g:%g]\n&quot;, 0, h
+  printf &quot;set xzeroaxis\n&quot;
+
+  printf &quot;set title \&quot;FEVD for %s%s\&quot;\n&quot;, vname, titletail
+  printf &quot;set style fill solid 0.25\n&quot;
+  printf &quot;set style histogram rowstacked\n&quot;
+  printf &quot;set style data histogram\n&quot;
+
+  loop i = 1..n
+    string sname = snames[i]
+
+    if i == 1
+      printf &quot;plot '%s' using 2 t '%s', \\\n&quot;, datfile, sname
+    elif i == n
+      printf &quot;\t'' using %d t '%s'\n&quot;, i+1, sname
+    else
+      printf &quot;\t'' using %d t '%s', \\\n&quot;, i+1, sname
+    endif
+  endloop
+end outfile
+
+outfile &quot;@datfile&quot;
+  printf &quot;%12.4f\n&quot;, seq(0, h)' ~ 100*FEVDmat[,sel]
+end outfile
+
+set force_decpoint off # not needed in gretl &gt;= 2021b
+
+return tmpfile
+</code>
+</gretl-function>
+<gretl-function name="make_xtics" type="string" private="1">
+ <params count="3">
+  <param name="calinfo" type="bundle"/>
+  <param name="VARorder" type="scalar"/>
+  <param name="ntics" type="scalar" default="12"/>
+ </params>
+<code>string ret = &quot;set xtics (&quot;
+
+scalar pd = calinfo.pd
+scalar T = calinfo.t2 - (calinfo.t1 + VARorder) + 1
+matrix tt = (VARorder - 1) + seq(1, T)'
+omaj = calinfo.limitobs[1,1] + floor(tt/pd)
+if cols(calinfo.limitobs) &gt; 1
+  # not yearly
+  if calinfo.pd == 4 || calinfo.pd == 12
+    # quarterly/monthly
+    omin = 1 + (calinfo.limitobs[1,2] + (tt-2)) % pd
+  elif contains(calinfo.pd, {5,6,7})
+    # daily
+    d0 = calinfo.limitobs[1,]
+    y = d0[1]
+    m = d0[2]
+    d = d0[3]
+    ed = epochday(y, m, d)
+    wd = weekday(y, m, d)
+
+    omin = zeros(T, 1)
+    i = 1
+    loop while i&lt;=T
+      wd = weekday(y, m, d)
+      isgood = (pd == 7) || (pd == 6 &amp;&amp; wd &gt; 0) || (pd == 5 &amp;&amp; contains(wd, seq(1,5)))
+      if isgood
+        omaj[i] = y
+        omin[i] = m
+        i++
+      endif
+      cur = isodate(ed++)
+      d = cur % 100
+      cur = (cur-d)/100
+      m = cur % 100
+      y = (cur-m)/100
+    endloop
+  endif
+endif
+
+width = floor(T/ntics)
+head = floor((width + (T % ntics)) / 2)
+
+j = head
+loop i = 1 .. ntics
+  if pd == 1 || pd == 52
+    string xtic = sprintf(&quot;%d&quot;, omaj[j])
+  elif calinfo.pd == 4 || calinfo.pd == 12 || contains(calinfo.pd, {5,6,7})
+    string xtic = sprintf(&quot;%d:%d&quot;, omaj[j], omin[j])
+  endif
+  ret ~= sprintf(&quot;\&quot;%s\&quot; %d,&quot;, xtic, j)
+  j += width
+endloop
+
+ret[end] = &quot;)&quot;
+return ret
+</code>
+</gretl-function>
+<gretl-function name="boot_printout" type="void" private="1">
+ <params count="5">
+  <param name="type" type="int"/>
+  <param name="n" type="int"/>
+  <param name="rep" type="int"/>
+  <param name="failed" type="int"/>
+  <param name="Spar_mat" type="matrix" const="true"/>
+ </params>
+<code># Sep 2020: change from pointerized Spar_mat to const
+
+matrix bm = meanc(Spar_mat)
+matrix bV = mcov(Spar_mat)
+scalar nc = cols(Spar_mat)
+scalar n2 = n*n
+
+# force numerical zeros to real zeros
+e = diag(bV) .&lt; 1.0e-12
+if maxc(e)
+  e = selifc(seq(1, nc), e')
+  bV[e,] = 0
+  bV[,e] = 0
+endif
+
+printf &quot;Bootstrap results (%d replications, %d failed)\n&quot;, rep + failed, failed
+
+if (type != 3) &amp;&amp; ( nc == 2 * n2 )	# was cols(Spar_mat)
+  # Long-run matrix at the end exists!
+  # And so this is a model with long-run restrictions
+  # (Bl-Quah-style or SVEC),
+  # or the user forced it via calc_lr.
+
+  matrix bK = mshape( bm[1:n2], n, n)
+  printStrMat(bK, bV[1:n2, 1:n2], &quot;C&quot;)
+  matrix bL = mshape( bm[n2+1:], n, n)
+  printStrMat(bL, bV[1+n2: , 1+n2: ], &quot;LongRun&quot;)
+
+elif type != 3
+
+  # C model without printing the long-run matrix
+  # (SVEC / type 4 should not happen here, because it has
+  # long-run constraints by construction)
+
+  matrix bK = mshape(bm,n,n)
+  printStrMat(bK, bV, &quot;C&quot;)
+
+elif type == 3	# AB model
+  matrix bmA = mshape( bm[1:n2], n, n)
+  printStrMat(bmA, bV[1:n2, 1:n2], &quot;A&quot;)
+  matrix bmB = mshape( bm[n2+1:], n, n)
+  printStrMat(bmB, bV[1+n2:,1+n2:], &quot;B&quot;)
+
+else
+  funcerr &quot;shouldn't happen&quot;
+endif
+</code>
+</gretl-function>
+<gretl-function name="bias_correction" type="matrix" private="1">
+ <params count="4">
+  <param name="b" type="bundle" const="true"/>
+  <param name="Y0" type="matrix" const="true"/>
+  <param name="BC" type="matrixref"/>
+  <param name="bparams" type="bundle" optional="true" const="true"/>
+ </params>
+<code>/* This function implements a bias correction for
+the estimate of the VAR parameters as per Kilian, REStat (1998).
+(The SVEC case is not allowed here, but it must
+be checked on the outside.)
+
+Sep 2019: re-did interface to use bundle; the new
+'boottype' member means:
+1: standard resampling (default, as before)
+2-4: wild bootstrap (3 variants)
+5: moving-blocks bootstrap
+
+(So the check below for what we need in the bundle.)
+*/
+
+errorif( !inbundle(b,&quot;BCiter&quot;) || !inbundle(b,&quot;VARpar&quot;) || !inbundle(b,&quot;U&quot;) || !inbundle(b,&quot;X&quot;) || !inbundle(b,&quot;boottype&quot;) || !inbundle(b,&quot;bmu&quot;), &quot;needed input missing in bundle arg&quot;)
+
+# check for stationarity first
+scalar maxmod = max_eval(b.VARpar)
+
+if maxmod &lt; 0.9999
+
+  matrix innov = prepres(b.U, b.boottype)
+  bundle bootstuff = _(Y0, innov) # was: defbundle(&quot;Y0&quot;,Y0, &quot;innov&quot;,innov)
+  if exists(bparams)
+    bootstuff.bparams = bparams
+  endif
+  matrix Ab = avg_VARpar_boot(b, bootstuff)[1]
+  matrix BC = b.VARpar - Ab
+  add_and_smash(&amp;Ab, BC) 	 # was H = ..., unused
+
+else	# not stationary
+  matrix Ab = b.VARpar
+endif
+return Ab
+</code>
+</gretl-function>
+<gretl-function name="avg_VARpar_boot" type="matrices" private="1">
+ <params count="2">
+  <param name="b" type="bundle" const="true"/>
+  <param name="stuff" type="bundle" const="true"/>
+ </params>
+<code># In principle we could call base_est() below in the loop,
+# because that's what it's for, but since we only need
+# the reduced-form AR coefficients, it's not worth it...
+
+# This function returns an array (matrices) just in case in the
+# future we want to apply the parallel_func MPI approach to it.
+# (This is a requirement there.)
+# Of course in essence it's still just a single matrix.
+
+bundle bparams = inbundle(stuff, &quot;bparams&quot;) ? stuff.bparams : _() # workaround for 'empty'
+
+# simulate the average reduced-form coeffs
+matrix Absum = zeros(b.n, b.n*b.p)
+matrix lagseq = seq(1,b.p)
+matrix Uinit = zeros(b.p, b.n)
+
+if rows(stuff.Y0) != b.p
+  funcerr &quot;wrong assumption about length of Y initvals here!&quot;
+endif
+
+loop i = 1..b.BCiter
+  matrix U = Uinit | drawbootres(stuff.innov, bparams, b.boottype)
+  if cols(b.bmu) &gt; 0	# was mu
+    U += b.bmu
+  endif
+  matrix bY  = varsimul(b.VARpar, U[b.p + 1: ,], stuff.Y0) # was rows(stuff.Y0)+1
+  matrix reg = b.X ~ mlag(bY, lagseq)
+  matrix Pi  = mols(bY[b.p + 1: ,], reg[b.p + 1: ,])
+  Absum += transp(Pi[b.k + 1: b.k + b.n*b.p, ])
+endloop
+
+return defarray(Absum ./ b.BCiter)
+</code>
+</gretl-function>
+<gretl-function name="calc_bmu" type="void" private="1">
+ <params count="1">
+  <param name="obj" type="bundleref"/>
+ </params>
+<code># disentangle determ/exog
+# Sep 2020: add the result directly to the (pointerized) bundle
+
+matrix bmu = zeros(obj.T, obj.n)
+if obj.k &amp;&amp; obj.type == 4 # SVEC,
+  # (with some unrestr. exo apart from const/trend)
+  if obj.jcase == 1
+    bmu = obj.X * obj.mu
+
+  elif obj.jcase == 2 || obj.jcase == 3
+    bmu = obj.X * obj.mu[2:, ]
+    # need to add restr. or unrestr. const later
+
+  elif obj.jcase == 4 || obj.jcase == 5
+    bmu = obj.X * obj.mu[3:, ]
+    # need to add restr./unr. const &amp; trend later
+  endif
+
+elif obj.k    # no SVEC
+  bmu = obj.X * obj.mu    # this was the pre-1.4 handled case
+endif
+
+# more special treatment of SVEC
+if obj.type == 4
+  # add constant
+  if obj.jcase &gt; 2      # unrestricted
+    bmu = bmu .+  obj.mu[1, ]  # (use broadcasting)
+
+  elif obj.jcase == 2   # restricted
+    bmu = bmu .+ (obj.jbeta[obj.n + 1, ] * obj.jalpha')
+  endif
+
+  # add trend
+  if obj.jcase == 4	# restricted
+    bmu += seq(1, obj.T)' obj.jbeta[obj.n + 1, ] * obj.jalpha'
+
+  elif obj.jcase == 5 # unrestricted
+    bmu += seq(1, obj.T)' obj.mu[2, ]
+  endif
+endif
+
+matrix obj.bmu = bmu
+</code>
+</gretl-function>
+<gretl-function name="prepres" type="matrix" private="1">
+ <params count="2">
+  <param name="U" type="matrix" const="true"/>
+  <param name="boottype" type="int" min="1" max="5" default="1">
+<description>bootstrap type</description>
+<labels count="5">
+"resampling" "wildN" "wildR" "wildM" "moving blocks" </labels>
+  </param>
+ </params>
+<code># The input is demeaned (column-wise) only for
+# the resampling (type 1). It isn't done together with the
+# new draws to avoid repeating it many times.
+
+# (Can now have 'const matrix U' as gretl versions &gt;=2019d handle this fine
+#  when doing 'return U'.)
+
+if boottype == 1
+  return cdemean(U)
+else
+  return U
+endif
+</code>
+</gretl-function>
+<gretl-function name="boottypechoice" type="void" private="1">
+ <params count="2">
+  <param name="mod" type="bundleref"/>
+  <param name="btypestr" type="string"/>
+ </params>
+<code>temp = boottypecode(btypestr)
+if temp == 0
+  print &quot;Warning: ignoring unrecognized SVAR bootstrap type.&quot;
+else
+  mod.boottype = temp
+endif
+</code>
+</gretl-function>
+<gretl-function name="maybe_do_biascorr" type="void" private="1">
+ <params count="2">
+  <param name="bobj" type="bundleref"/>
+  <param name="bparams" type="bundle" const="true"/>
+ </params>
+<code># this function adds &quot;ABCorA&quot; and perhaps &quot;Psi&quot; to bobj
+
+if bobj.biascorr &amp;&amp; (bobj.type != 4)  # not available w/unit roots # BIASCORR
+  matrix Psi = {}
+  matrix start = bobj.Y[1: bobj.p, ]
+  matrix bobj.ABCorA = bias_correction(bobj, start, &amp;Psi, bparams) # ABC # moved up from inside the loop
+  matrix bobj.Psi = Psi
+else
+  matrix bobj.ABCorA = bobj.VARpar
+endif
+</code>
+</gretl-function>
+<gretl-function name="SVAR_boot_innerloop" type="matrices" private="1">
+ <params count="3">
+  <param name="bobj" type="bundleref"/>
+  <param name="obj" type="bundle" const="true"/>
+  <param name="bparams" type="bundle" const="true"/>
+ </params>
+<code># will return a three-matrix array:
+# 1: bootirfs
+# 2: Spar_mat
+# 3: number of failures (1x1 scalar)
+
+# copy
+type = obj.type
+n2   = obj.n * obj.n
+
+# Prepare the residuals
+matrix innov = prepres(obj.U, obj.boottype)
+
+## prepare output
+matrix bootirfs = zeros(obj.nboot, (obj.horizon + 1) * n2)
+# Spar_mat: the result matrix
+# (-- type==10 (set-ID) cannot/should not happen in here --)
+# need more cols if saving either A,B (for type 3) or C and the long-run matrix
+numcols = type&gt;2 || (rows(obj.Rd1l) || obj.calc_lr) ? 2*n2 : n2
+matrix Spar_mat = zeros(obj.nboot, numcols)
+
+if type == 3 &amp;&amp; inbundle(bobj, &quot;C&quot;)
+  # clean up object from pre-computed C matrix
+  delete bobj.C
+endif
+
+i = 1
+failed = 0
+set loop_maxiter 16384
+loop while i &lt;= obj.nboot
+  # clear previous bootstrap indicator
+  bobj.step = 0
+
+  # generate bootstrap disturbances (bmu may be zero)
+  matrix U = obj.bmu[obj.p + 1:, ] + drawbootres(innov, bparams, obj.boottype)
+
+  # generate bootstrap data and store it in bootstrap object
+  matrix bobj.Y = varsimul(bobj.ABCorA, U, obj.Y[1: obj.p, ] )
+
+  # estimate VAR parameters, special treatment VECM/SVEC
+  if type == 4
+    vecm_est(&amp;bobj)
+  else
+    base_est(&amp;bobj)
+  endif
+
+  matrix bA = bobj.VARpar  # estimates (first n rows of companion mat)
+  matrix bSigma = bobj.Sigma
+  matrix theta = obj.theta # init original SVAR params
+  # (C/A&amp;B apparently, in suitable form...)
+
+  errcode = 0
+
+  ## Full bias correction
+  /* (The bc-ed VARpar need to be done before the new C matrix is
+  calculated at least if there are long-run constraints, because
+  then they enter via C1 through fullRd into C.
+  Otherwise the new C only depends on Sigma. - BTW, we do not update
+  Sigma in the full biascorr case. (In theory we could, by
+  re-calculating the residuals using the bc-ed VARpar.
+  We shouldn't, should we?)
+  */
+
+  if obj.biascorr == 2 &amp;&amp; type != 4 # only for non-SVEC
+    scalar H = add_and_smash(&amp;bA, bobj.Psi)
+
+    if ok(H)
+      bobj.VARpar = bA
+    else
+      errcode = 101
+    endif
+  endif
+
+  /* now re-estimate C, according to model type */
+
+  if type == 1 # Cholesky
+    matrix K = cholesky(bSigma)
+
+  elif type == 2 || type == 4 # consolidate the SVEC case here
+
+    # Watch out for the possibility of constraints that were
+    # partly redundant originally.
+    #
+    # In the AB-model the cleaned restrictions are inherited
+    # from the original model, apart from the fact that they
+    # should already be caught at specification time (in
+    # SVAR_restrict).
+    #
+    # But with long-run constraints (C, and especially SVEC
+    # with weakly exog.) the restrictions depend on the
+    # bootstrap data, so the cleaning of the restrictions must
+    # be re-done here.
+
+    if type != 3 &amp;&amp; inbundle(obj, &quot;cleanfullRd&quot;)
+      bobj.fullRd = {}	 # reset
+      id = ident(&amp;bobj, 0) # re-creates fullRd and possibly cleanfullRd
+      if !id
+        printf &quot;Ident problem in bootstrap draw %d\n&quot;, i
+        funcerr &quot;Unexpected ID problem in bootstrap&quot;
+      endif
+
+    elif type == 4 || nelem(obj.Rd1l) # long-run constraints
+      bobj.fullRd = get_full_Rd(&amp;bobj, 0)	# update fullRd
+
+    endif
+
+    if inbundle(bobj, &quot;cleanfullRd&quot;)
+      matrix fullRd = bobj.cleanfullRd
+    else
+      matrix fullRd = bobj.fullRd
+    endif
+
+    matrix K = estC(&amp;theta, bSigma, fullRd, null, &amp;errcode, obj.optmeth, 0)
+
+  elif type == 3 # &quot;AB&quot;
+    matrices transferAB = array(0)
+    # matrix Rd2 = type==3 ? obj.Rd0 : obj.Rd1l
+
+    # new: get A,B instead of re-calc'ing it below
+    # (obj.Rd0 was Rd2 before, but redundant...)
+    matrix K = estAB(&amp;theta, bSigma, obj.Rd0, obj.Rd1, null, &amp;errcode, obj.optmeth, 0, &amp;transferAB)
+  endif
+
+  ## Process and store the simulated C results
+  if !errcode &amp;&amp; rows(K) == obj.n
+    bobj.step = 2
+    bobj.theta = theta
+
+    # we don't treat the AB-model specially here (no reason to)
+    maybe_flip_columns(obj.C, &amp;K)
+
+    if (type == 1) || (type == 2) || (type == 4)
+      bobj.C = K	# is used in doIRF()
+      Spar_mat[i, 1: n2] = vec(K)'
+
+      /* New Oct 2017: Also bootstrap the long-run matrix if wanted
+      Jan 2018: add type 4 */
+      if ( type &lt; 3 &amp;&amp; ( rows(bobj.Rd1l) || bobj.calc_lr ) ) || type == 4
+        # (a plain or C model w/ long-run constr, or user switch)
+        # long-run mat (C1 comes from get_full_Rd() above
+        # (except type 1)):
+
+        matrix C1 = (type == 2 || type == 4) ? bobj.C1 : C1mat(bobj.VARpar)
+        matrix bobj.lrmat = C1 * bobj.C
+
+        # attach it to the other bootstrap result
+        Spar_mat[i, n2+1 : 2*n2] = vec(bobj.lrmat)'
+      endif
+
+    elif type == 3
+      # (Sven): the following stuff comes from estAB above
+      bobj.S1 = transferAB[1]
+      bobj.S2 = transferAB[2]
+      Spar_mat[i,] = vec(bobj.S1)' ~ vec(bobj.S2)'
+    endif
+
+  endif
+
+  if !errcode &amp;&amp; rows(K) == obj.n
+    doIRF(&amp;bobj)
+    bootirfs[i,] = vec(bobj.IRFs)'
+    i++
+  else
+    failed++
+    outfile stderr
+      printf &quot;Iter %4d failed (error code = %d)\n&quot;, i, errcode
+    end outfile
+  endif
+endloop
+
+return defarray(bootirfs, Spar_mat, {failed})
+</code>
+</gretl-function>
+<gretl-function name="modelstring" type="string" private="1">
+ <params count="1">
+  <param name="type" type="int"/>
+ </params>
+<code>/*
+The original idea about the number 10 for sign restrictions was, apart fromit being very different from the other types (haha), that we could combine the types by summing them.
+(E.g. 12 == 2 + 10 would be zero restrictions on the C matrix
+coupled with sign stuff.)
+
+But in fact it turns out that this is not really needed, so 10 is
+probably going to stay that way.
+*/
+string ret = &quot;&quot;
+if type == 1
+  ret = &quot;plain&quot;
+elif type == 2
+  ret = &quot;C&quot;
+elif type == 3
+  ret = &quot;AB&quot;
+elif type == 4
+  ret = &quot;SVEC&quot;
+
+elif type == 10
+  ret = &quot;SR&quot; # sign restrictions
+endif
+
+return ret
+</code>
+</gretl-function>
+<gretl-function name="modeltype" type="scalar" private="1">
+ <params count="1">
+  <param name="s" type="string"/>
+ </params>
+<code>scalar ret = 0
+string s2 = toupper(s)	# case insensitive
+if s2 == &quot;PLAIN&quot;
+  ret = 1
+elif s2 == &quot;C&quot;
+  ret = 2
+elif s2 == &quot;AB&quot;
+  ret = 3
+elif s2 == &quot;SVEC&quot;
+  ret = 4
+elif s2 == &quot;KPSW&quot;
+  print &quot;Please use 'SVEC' for cointegrated SVARs,&quot;
+  print &quot;the code 'KPSW' is deprecated (but still works for now).&quot;
+  ret = 4
+
+elif s2 == &quot;SR&quot;	# sign restrictions
+  ret = 10
+endif
+
+return ret
+</code>
+</gretl-function>
+<gretl-function name="optimstring" type="string" private="1">
+ <params count="1">
+  <param name="type" type="int"/>
+ </params>
+<code>string ret = &quot;&quot;
+if type == 0
+  ret = &quot;BFGS (numerical)&quot;
+elif type == 1
+  ret = &quot;BFGS (analytical)&quot;
+elif type == 2
+  ret = &quot;Newton-Raphson (numerical)&quot;
+elif type == 3
+  ret = &quot;Newton-Raphson (analytical score)&quot;
+elif type == 4
+  ret = &quot;Scoring algorithm&quot;
+endif
+
+return ret
+</code>
+</gretl-function>
+<gretl-function name="btypestring" type="string" private="1">
+ <params count="1">
+  <param name="type" type="int"/>
+ </params>
+<code>string ret = &quot;&quot;
+if type == 1
+  ret = &quot;resampling&quot;
+elif type == 2
+  ret = &quot;wild (Normal)&quot;
+elif type == 3
+  ret = &quot;wild (Rademacher)&quot;
+elif type == 4
+  ret = &quot;wild (Mammen)&quot;
+elif type == 5
+  ret = &quot;MBB (moving blocks)&quot;
+endif
+
+return ret
+</code>
+</gretl-function>
+<gretl-function name="boottypecode" type="scalar" private="1">
+ <params count="1">
+  <param name="btypestr" type="string"/>
+ </params>
+<code>ret = 0
+string s = tolower(btypestr) # case insensitive!
+if s == &quot;resampling&quot; || s == &quot;resample&quot;
+  ret = 1
+elif s == &quot;wildn&quot; || s == &quot;wild&quot;
+  ret = 2
+elif s == &quot;wildr&quot;
+  ret = 3
+elif s == &quot;wildm&quot;
+  ret = 4
+elif s == &quot;mbb&quot; || s == &quot;moving blocks&quot;
+  ret = 5
+endif
+return ret
+</code>
+</gretl-function>
+<gretl-function name="BCstring" type="string" private="1">
+ <params count="1">
+  <param name="level" type="int"/>
+ </params>
+<code>string ret = &quot;&quot;
+if level == 0
+  ret = &quot;none&quot;
+elif level == 1
+  ret = &quot;partial&quot;
+elif level == 2
+  ret = &quot;full&quot;
+endif
+return ret
+</code>
+</gretl-function>
+<gretl-function name="calendar_info" type="bundle" private="1">
+<code>bundle ret
+ret.t1 = $t1
+ret.t2 = $t2
+pd = $pd
+ret.pd = pd
+limitobs = $obsmajor[$t1] | $obsmajor[$t2]
+if pd != 1
+  limitobs ~= $obsminor[$t1] | $obsminor[$t2]
+endif
+if contains(pd, {5,6,7,52})
+  limitobs ~= $obsmicro[$t1] | $obsmicro[$t2]
+endif
+ret.limitobs = limitobs
+return ret
+</code>
+</gretl-function>
+<gretl-function name="set_default_dimensions" type="matrix" private="1">
+ <params count="4">
+  <param name="mod" type="bundleref"/>
+  <param name="lY" type="list"/>
+  <param name="lX" type="list" optional="true"/>
+  <param name="varorder" type="int"/>
+ </params>
+<code># trivial stuff: set up dimensions etc.
+
+n = nelem(lY)
+k = nelem(lX)
+
+/* no of endogenous variables */
+mod.n = n
+/* no of exogenous variables */
+mod.k = k
+/* VAR order */
+mod.p = varorder
+/* horizon for IRFs etc */
+mod.horizon = 10
+if $pd == 4
+  /* quarterly: try 5 years */
+  mod.horizon = 20
+elif $pd == 12
+  /* monthly: two years */
+  mod.horizon = 24
+endif
+
+/* sample size */
+list everything = lY lX
+smpl everything --no-missing
+matrix mreg = { everything }
+mod.T = rows(mreg)
+mod.calinfo = calendar_info()
+
+return mreg
+</code>
+</gretl-function>
+<gretl-function name="apply_patternrestr" type="scalar" private="1">
+ <params count="3">
+  <param name="mod" type="bundleref"/>
+  <param name="rtype" type="string"/>
+  <param name="R" type="matrix" const="true"/>
+ </params>
+<code># Transform the given pattern matrix to SVAR-style restrictions.
+# (This is for impact and long-run restrictions.)
+# Each element of R can be some number, or NA for unrestricted.
+# (R used to be R1 or R2 internally.)
+#
+# The restriction type rtype must be:
+# - either &quot;B&quot; or &quot;C&quot; (that was the R1 case in the past)
+# - or &quot;A&quot; or &quot;lrC&quot; (the R2 case)
+
+n = mod.n
+
+errorif(!exists(R), &quot;need restriction pattern input&quot;)
+errorif( mod.type==1, &quot;plain/Cholesky model doesn't accept other restrictions&quot;)
+rtype = strstrip(rtype)
+r = rows(R)
+c = cols(R)
+errorif( r != n || c != n, &quot;wrong restriction pattern R dimensions&quot;)
+errorif( contains(mod.type, {2, 4, 10}) &amp;&amp; (rtype != &quot;C&quot; &amp;&amp; rtype != &quot;lrC&quot;), &quot;C model only accepts C and lrC restrictions&quot;)
+errorif( mod.type==3 &amp;&amp; (rtype != &quot;A&quot; &amp;&amp; rtype != &quot;B&quot;), &quot;AB model only accepts A and B restrictions&quot;)
+errorif( !instring(&quot;A B C lrC&quot;, rtype), &quot;restr type must be one of A, B, C, lrC&quot;)
+
+err = 0
+loop i = 1..n
+  loop j = 1..n
+    scalar rij = R[i,j]
+    if ok(rij) # valid number = restricted element
+      err = xmax(err, SVAR_restrict(&amp;mod, rtype, i, j, rij))
+    endif
+  endloop
+endloop
+
+if err
+  print &quot;Error(s) while applying restriction pattern;&quot;
+  print &quot; expect problems and check your results.&quot;
+endif
+
+return err
+</code>
+</gretl-function>
+<gretl-function name="base_est" type="scalar" private="1">
+ <params count="1">
+  <param name="SVARobj" type="bundleref"/>
+ </params>
+<code>/*
+takes a SVAR object and adds the basic VAR estimates
+to the bundle; returns an errcode (virginity check).
+*/
+
+scalar step = SVARobj.step
+err = step&gt;0
+
+if err
+  printf &quot;Base estimation done already!\n&quot;
+else
+  matrix mY  = SVARobj.Y
+  scalar p   = SVARobj.p
+  scalar n   = SVARobj.n
+  scalar k   = SVARobj.k
+
+  scalar T   = SVARobj.T
+
+  matrix U
+  matrix mreg = SVARobj.X ~ mlag(mY, seq(1,p))
+  matrix olspar = mols(mY[p+1:T,], mreg[p+1:T,], &amp;U)
+  matrix Sigma = (U'U) ./ (T - (n*p + k)) # was:  / df
+
+  matrix SVARobj.VARpar = transp(olspar[k+1 : k+n*p,])
+  matrix SVARobj.mu = k&gt;0 ? olspar[1:k,] : {} # was: d
+  matrix SVARobj.Sigma = Sigma
+  matrix SVARobj.U = U
+  SVARobj.step = 1
+  SVARobj.LL0 = T * (n* log(2*$pi) - 0.5 * log(det(Sigma)) - 0.5)
+
+  # compatibility for pre-1.95 -- removed three years later for 2024c
+
+endif
+
+return err
+</code>
+</gretl-function>
+<gretl-function name="vecm_est" type="scalar" private="1">
+ <params count="1">
+  <param name="SVARobj" type="bundleref"/>
+ </params>
+<code>/*
+We can't afford to be too flexible here, and the intended usage
+is as follows.
+
+We assume the model has already been declared as a SVEC (type=4)
+model. We also assume that the cointegration properties (beta mat plus
+deterministics) have already been set up via the SVAR_coint() function, so that we already have beta and alpha available as &quot;jbeta&quot; and
+&quot;jalpha&quot;, respectively. Finally, we take care of proper treatment of
+deterministics, via the scalar &quot;jcase&quot; (1 to 5).
+*/
+
+# --- preliminary checks
+
+if SVARobj.step &gt; 0
+  printf &quot;Base estimation done already!\n&quot;
+  return 1
+
+elif SVARobj.type != 4
+  printf &quot;Wrong model type!\n&quot;
+  return 1
+endif
+
+# --- grab stuff from the bundle
+
+matrix mY     = SVARobj.Y
+matrix jbeta  = SVARobj.jbeta
+matrix jalpha = SVARobj.jalpha
+scalar p	  = SVARobj.p
+scalar n	  = SVARobj.n
+scalar k	  = SVARobj.k
+scalar r      = cols(jbeta)
+scalar dcase  = SVARobj.jcase
+scalar ols_al = rows(jalpha) == 0
+
+scalar T      = SVARobj.T
+
+# --- first thing: do we have a pre-set value for alpha?
+
+matrix dY = diff(mY)
+matrix dep = dY[p+1:T,]
+matrix U = {}
+ng = n * (p-1) # number coming from Gammas /lagged diffs (p&gt;0 for SVEC)
+
+# deterministics
+matrix mreg = vecm_det(T, dcase)
+
+# ECM terms
+matrix ECM = mlag(mY * jbeta[1:n,], 1)
+if dcase == 2
+  ECM = ECM .+ jbeta[n+1, ]
+elif dcase == 4
+  ECM += seq(1,T)'jbeta[n+1, ]
+endif
+
+if ols_al
+  # alpha must be estimated together with the rest of the VECM
+  matrix mreg ~= SVARobj.X ~ ECM
+else
+  matrix dep -= (ECM[p+1:T,] * jalpha')
+  matrix mreg ~= SVARobj.X
+endif
+
+# extra lags
+if p &gt; 1
+  mreg ~= mlag(dY, seq(1,p-1))
+endif
+
+# trim the first rows
+if rows(mreg)
+  mreg = mreg[p+1:T,]
+  matrix olspar = mols(dep, mreg, &amp;U)
+else
+  matrix olspar = {}
+  U = dep
+endif
+
+matrix Sigma = (U'U) ./ T
+
+# --- construct the various matrices required later
+
+rp = rows(olspar)
+
+# alpha first (should be before the gammas, if estimated)
+if ols_al
+  jalpha = olspar[rp-ng-r+1 : rp-ng,]'
+endif
+
+# exogenous
+
+if dcase == 1
+  matrix mu = {}
+  scalar nd = 0
+elif dcase == 2
+  matrix mu = jbeta[n+1,] * jalpha'
+  scalar nd = 0
+elif dcase == 3
+  matrix mu = olspar[1,]
+  scalar nd = 1
+elif dcase == 4
+  matrix mu =  olspar[1,] | (jbeta[n+1,] * jalpha')
+  scalar nd = 1
+elif dcase == 5
+  matrix mu = olspar[1:2,]
+  scalar nd = 2
+endif
+
+if k &gt; 0
+  mu |= olspar[nd + 1 : nd + k,] # was: mu ~ olspar[sel,]
+endif
+
+/*
+companion form in levels
+*/
+Pi = jalpha * jbeta[1:n,]'
+
+if p &gt; 1
+  # the Gammas are always at the back:
+  ini = rp - ng + 1
+
+  matrix A = olspar[ini: ,] | zeros(n,n)	# was: ini:fin
+  A += I(n) + Pi' | -olspar[ini: ,]
+else
+  matrix A = I(n) + Pi'
+endif
+
+matrix SVARobj.VARpar = A'
+matrix SVARobj.mu     = mu
+matrix SVARobj.Sigma  = Sigma
+matrix SVARobj.U      = U
+matrix SVARobj.jalpha = jalpha
+SVARobj.step = 1
+SVARobj.LL0 = T* (n*log(2*$pi) - 0.5*log(det(Sigma)) - 0.5)
+
+# compatibility for pre-1.95 -- removed three years later for 2024c
+
+return 0
+</code>
+</gretl-function>
+<gretl-function name="VARloglik" type="scalar" private="1">
+ <params count="3">
+  <param name="T" type="scalar"/>
+  <param name="Sigma" type="matrix"/>
+  <param name="C" type="matrixref" optional="true"/>
+ </params>
+<code># computes the (concentrated) loglikelihood for a VAR
+# the matrix C (such that in theory CC' = Sigma) may be null,
+# for just-identified models
+
+n = rows(Sigma)
+ll = n * 1.83787706640934548355 # ln(2*$pi)
+
+if !exists(C) # just-identified model
+  ll += log(det(Sigma)) + n
+else
+  matrix KK = invpd(C*C')
+  ll += -log(det(KK)) + tr(KK*Sigma)
+endif
+
+return -(T/2) * ll
+</code>
+</gretl-function>
+<gretl-function name="loglik" type="scalar" private="1">
+ <params count="3">
+  <param name="theta" type="matrix" const="true"/>
+  <param name="dat" type="matrices"/>
+  <param name="modeltype" type="scalar"/>
+ </params>
+<code># modeltype &lt; 0-&gt;C; modeltype&gt;=0: AB (contains free elements of a)
+matrix Sigma = dat[1]
+matrix Ss = dat[2]
+
+if modeltype &lt; 0
+  matrix C = mat_exp(theta, Ss) # was: , 0)
+else
+  p1 = modeltype
+  p2 = rows(theta)
+  matrix aSs = Ss[,1:p1+1]
+  matrix bSs = Ss[,p1+2:p2+2]
+  matrix A B
+  ABmat_exp(theta, aSs, bSs, &amp;A, &amp;B)
+  # was: matrix C = B/A
+  matrix C = A\B
+endif
+
+matrix KK = invpd(C*C')
+ll = det(KK) # should always be positive
+ll = (ll&lt;=0) ? NA : -0.5 * (tr(KK*Sigma) - log(ll))
+
+return ll
+</code>
+</gretl-function>
+<gretl-function name="InfoMat" type="matrix" private="1">
+ <params count="3">
+  <param name="CorB" type="matrix"/>
+  <param name="S" type="matrix"/>
+  <param name="A" type="matrixref" optional="true"/>
+ </params>
+<code>/*
+merged from InfoMatC and InfoMatAB
+First case C model (A is null), latter AB model.
+*/
+matrix tmp = !exists(A) ? I(rows(CorB)) : (A\CorB) | -I(rows(A))
+tmp = S' (tmp ** inv(CorB'))
+return tmp * N2_ify(tmp')
+</code>
+</gretl-function>
+<gretl-function name="coeffVCV" type="matrix" private="1">
+ <params count="3">
+  <param name="S" type="matrix"/>
+  <param name="rhs" type="matrixref"/>
+  <param name="lhs" type="matrixref" optional="true"/>
+ </params>
+<code># C or AB model
+matrix IM = !exists(lhs) ? InfoMat(rhs, S) : InfoMat(rhs, S, &amp;lhs)
+# (should be correct with new InfoMat)
+
+# quick-dirty check for singularity
+if rcond(IM) &gt; 1.0e-10
+  matrix iIM = invpd(IM) / $nobs
+else
+  matrix evec
+  l = eigensym(IM, &amp;evec)
+  printf &quot;\n\nInformation matrix is not pd!!\n\n%12.5f\n&quot;, IM
+  printf &quot;Eigenvalues:\n%12.5f\n&quot;, l
+  matrix e = (l .&lt; 1.0e-07)
+  printf &quot;Troublesome eigenvectors:\n%12.5f\n&quot;, selifc(evec, e')
+  printf &quot;S:\n%4.0f\n&quot;, S
+  matrix iIM = zeros(rows(IM), cols(IM))
+endif
+
+return qform(S,iIM)
+</code>
+</gretl-function>
+<gretl-function name="SVAR_est_printout" type="void" private="1">
+ <params count="1">
+  <param name="mod" type="bundleref"/>
+ </params>
+<code># scalar type = mod.type
+
+printf &quot;Optimization method = &quot;
+strings os = defarray(&quot;BFGS (numerical)&quot;, &quot;BFGS (analytical)&quot;, &quot;Newton-Raphson (numerical)&quot;, &quot;Newton-Raphson (analytical score)&quot;, &quot;Scoring algorithm&quot;)
+printf &quot;%s\n&quot;, os[mod.optmeth + 1]	# Because optmeth starts at 0 here
+
+printf &quot;Unconstrained Sigma:\n%12.5f\n&quot;, mod.Sigma
+
+if mod.type &lt; 3 || mod.type == 4 # plain or C-model, or (Jan 2018) SVEC
+  # Standard C matrix
+  printStrMat(mod.C, mod.vcv, &quot;C&quot;)	# was mod.S1
+
+  # Long-run matrix
+  if rows(mod.Rd1l) || mod.calc_lr || mod.type == 4
+    # either long-run restr., or user wish, or SVEC
+    # (this could be much embellished, probably)
+    printf &quot;Estimated long-run matrix&quot;
+    if rows(mod.Rd1l)
+      printf &quot; (restricted)&quot;
+    endif
+    printf &quot;\n&quot;
+
+    matrix longrun = mod.lrmat
+    # round to zero for printout (also do it in general?)
+    longrun = (abs(longrun) .&lt; 1e-15) ? 0.0 : longrun
+    print longrun
+  endif
+
+elif mod.type == 3	# AB, new &lt;Sven&gt;
+  n2 = (mod.n)^2
+  if mod.ka &gt; 0
+    printStrMat(mod.S1, mod.vcv[1:n2, 1:n2], &quot;A&quot;)
+  endif
+
+  if mod.kb &gt; 0
+    printStrMat(mod.S2, mod.vcv[n2+1 : 2*n2, n2+1 : 2*n2], &quot;B&quot;)
+  endif
+endif
+
+printf &quot;  Log-likelihood = %g\n&quot;, mod.LL1
+if inbundle(mod, &quot;LRoid&quot;)	# over-id test was done
+  printf &quot;  Overidentification LR test = %g (%d df, pval = %g)\n\n&quot;, mod.LRoid[1], mod.LRoid[2], mod.LRoid[3]
+endif
+</code>
+</gretl-function>
+<gretl-function name="putIrf_to_accdraw" type="void" private="1">
+ <params count="2">
+  <param name="SVARobj" type="bundleref"/>
+  <param name="whichdraw" type="int" min="0" default="0"/>
+ </params>
+<code># Only for SR (type 10)
+# to transfer the IRFs to the old format
+
+errorif( SVARobj.type != 10, &quot;this function only for SR type&quot;)
+errorif( !inbundle(SVARobj, &quot;acc_draws&quot;), &quot;need accepted draws (acc_draws)&quot;)
+
+n = SVARobj.n
+h = SVARobj.horizon + 1
+bundle pickdraw = SVARobj.acc_draws[whichdraw]
+
+matrix IRFs = zeros(h, n*n)
+loop ix = 1..h
+  IRFs[ix, ] = vec(pickdraw.irfs[ix])'
+endloop
+
+# copy to origin
+matrix SVARobj.acc_draws[whichdraw].IRFs = IRFs
+</code>
+</gretl-function>
+<gretl-function name="muVARparU_mayberedr" type="matrices" private="1">
+ <params count="2">
+  <param name="Smod" type="bundle" const="true"/>
+  <param name="Bofonedraw" type="matrix" optional="true"/>
+ </params>
+<code># Retrieves all the quantities that perhaps are redrawn
+# in the Bayesian set id case:
+# - mu: exog. coeffs, B[1:k , ]
+# - VARpar: autoregr. coeffs, B[k+1: ,]
+# - U: residuals
+
+# (Function was called muVARparE_mayberedr with &quot;E&quot; before the notation switch.)
+
+redrawn = 0
+
+if Smod.type == 10
+  if Smod.DO_BAYES &amp;&amp; !exists(Bofonedraw)
+    funcerr &quot;Need redrawn matrix input for Bayesian set id case&quot;
+  elif Smod.DO_BAYES
+    redrawn = 1
+  endif
+endif
+
+if !redrawn
+  # old standard cases
+  matrix mu = Smod.mu
+  matrix VARpar = Smod.VARpar
+  matrix resids = Smod.U    # original residuals
+
+else
+  # need to use the resids associated with re-drawn coefficients
+  matrix mu = Bofonedraw[1 : Smod.k ,]
+  matrix VARpar = Bofonedraw[Smod.k + 1 : ,]
+  matrix resids = Smod.Y[Smod.p + 1 : ,] - Smod.mreg * Bofonedraw
+endif
+
+return defarray(mu, VARpar, resids)
+</code>
+</gretl-function>
+<gretl-function name="errchkSRhisto" type="void" private="1">
+ <params count="2">
+  <param name="Smod" type="bundleref"/>
+  <param name="drawix" type="int"/>
+ </params>
+<code>if !inbundle(Smod, &quot;bestdraw&quot;)
+  funcerr &quot;Model not properly initialized for SR type&quot;
+
+elif !Smod.bestdraw &amp;&amp; !drawix
+  funcerr &quot;Need to pick one particular draw (run SVAR_SRgetbest?)&quot;
+
+elif !Smod.storeSRirfs
+  funcerr &quot;Need accepted draws content (acc_draws) in set-id case&quot;
+
+elif drawix &gt; nelem(Smod.acc_draws)
+  printf &quot;Only %d accepted draws exist\n&quot;, nelem(Smod.acc_draws)
+  funcerr &quot;Draw index out of range&quot;
+endif
+</code>
+</gretl-function>
+<gretl-function name="safetycheck1" type="void" private="1">
+ <params count="3">
+  <param name="Sigma" type="matrix" const="true"/>
+  <param name="chol_iXX" type="matrix" const="true"/>
+  <param name="B" type="matrix" const="true"/>
+ </params>
+<code>hhh = 10
+matrix V = Sigma ** (chol_iXX * chol_iXX')
+chk = B[1:hhh,1] ~ sqrt(diag(V[1:hhh, 1:hhh]))
+strings pnames = array(hhh)
+loop i = 1..hhh
+  pnames[i] = sprintf(&quot;chk%d&quot;, i)
+endloop
+modprint chk pnames
+</code>
+</gretl-function>
+<gretl-function name="get_n_exotic" type="scalar" private="1">
+ <params count="1">
+  <param name="mod" type="bundle" const="true"/>
+ </params>
+<code>n_exotic = 0
+if inbundle(mod, &quot;exoticSR&quot;)
+  n_exotic = nelem(mod.exoticSR.checks)
+endif
+return n_exotic
+</code>
+</gretl-function>
+<gretl-function name="gen_haar" type="matrix" private="1">
+ <params count="1">
+  <param name="dim" type="scalar"/>
+ </params>
+<code># this function generates a matrix that is uniformly distributed
+# over the space of orthogonal matrices under the Haar measure
+# (this is what the sign-normalisation is essential for)
+
+matrix R
+matrix ret = qrdecomp(mnormal(dim, dim), &amp;R)
+return ret .* sgn(diag(R))'
+</code>
+</gretl-function>
+<gretl-function name="rand_rotation" type="matrix" private="1">
+ <params count="2">
+  <param name="n" type="scalar"/>
+  <param name="sel" type="matrix" const="true"/>
+ </params>
+<code># we assume here that sel is a row vector containing
+# unique numbers in the range from 1 to n
+
+scalar nk = cols(sel)
+if nk == 0
+  matrix ret = gen_haar(n)
+else
+  matrix ret = I(n)
+  matrix Q = gen_haar(nk)
+  ret[sel, sel] = Q
+endif
+
+return ret
+</code>
+</gretl-function>
+<gretl-function name="rot_redraw" type="void" private="1">
+ <params count="6">
+  <param name="b" type="bundleref"/>
+  <param name="mod" type="bundle" const="true"/>
+  <param name="DO_BAYES" type="bool"/>
+  <param name="B" type="matrix" const="true"/>
+  <param name="chol_iXX" type="matrix" const="true"/>
+  <param name="rotate_only" type="matrix" const="true"/>
+ </params>
+<code>if DO_BAYES
+  # with the previous version of drawnormwis, was:
+  # matrices Mats = drawnormwis(iXX, B, mod.Sigma, b.df)
+  matrices Mats = drawnormwis(chol_iXX, B, mod.Sigma, b.df)
+  matrix b.B = Mats[1]
+  matrix b.Sigma = Mats[2]
+endif
+
+# If the pseudo-Bayes option (for parameter uncertainty) is active,
+# then b.Sigma was redrawn (not mod.Sigma), and so the Cholesky
+# factor needs to be recalculated:
+matrix C = DO_BAYES ? cholesky(b.Sigma) : mod.C
+
+if nelem(b.zc) == 0
+  # no zero restrictions
+  matrix b.rot = rand_rotation(mod.n, rotate_only)
+else
+  # honoring the restrictions defined in zc
+  matrix b.rot = const_orth(b.zc, C)
+endif
+
+# don't normalize by default, can be overriden by the user
+# by setting mod.AUTONORM==TRUE
+# (seems to have no effect since it's undone later on)
+
+if inbundle(mod, &quot;AUTONORM&quot;) &amp;&amp; mod.AUTONORM == TRUE
+  # identification: set main diagonal of instantaneous IRF
+  # to positive numbers
+  C = C * b.rot
+  b.rot = b.rot .* sgn(diag(C))'
+endif
+</code>
+</gretl-function>
+<gretl-function name="prepAis" type="matrices" private="1">
+ <params count="2">
+  <param name="mod" type="bundle" const="true"/>
+  <param name="shocks" type="matrix" const="true"/>
+ </params>
+<code># The return array contains as many elements as set-identified shocks;
+# (only non-exotic setID'd shocks so far, because mod.SRest only holds those)
+# Basically, it's a per-shock split of the SRest bundle element,
+#  where a member matrix can have several rows if a shock is restricted
+#  to fulfill several setID restrictions.
+# (It has to be 'shocks', not 'allshocks', to match the content of mod.SRest.)
+# The name 'Ais' is purely internal/path-dependent/arbitrary.
+
+matrices Ais = array(0)
+# was: stays empty if only exotic shocks exist
+# (but this should now be impossible by requirement)
+
+if rows(mod.SRest) == 1	# work around an msplitby problem with 1-element vector in 2024b
+  Ais = defarray(mod.SRest)
+
+elif rows(mod.SRest) &gt; 1
+  Ais = msplitby(mod.SRest, mod.SRest[,6])[shocks]
+endif
+return Ais
+</code>
+</gretl-function>
+<gretl-function name="get_all_eshocks" type="matrix" private="1">
+ <params count="1">
+  <param name="mod" type="bundle" const="true"/>
+ </params>
+<code># Returns a vector with all numbers of those shocks
+# that are also subject to exotic restrictions.
+# Can be empty.
+# (Notice the difference with get_n_exotic: There only the number
+# of exotic restrictions is counted, irrespective of which or how
+# many shocks are involved.)
+
+matrix all_eshocks = {}
+if inbundle(mod, &quot;exoticSR&quot;) &amp;&amp; nelem(mod.exoticSR.checks)
+  matrix all_eshocks = values(flatten(mod.exoticSR.eshocks, TRUE))
+endif
+return all_eshocks
+</code>
+</gretl-function>
+<gretl-function name="semi_exotic_check" type="matrix" private="1">
+ <params count="3">
+  <param name="s" type="int" min="1"/>
+  <param name="mod" type="bundle" const="true"/>
+  <param name="irfs" type="matrices" const="true"/>
+ </params>
+<code># Checks whether for shock number s the possible semi-exotic restrictions
+# can be fulfilled.
+# We do not attempt sign-flipping of the IRF here, this wouldn't
+# really be helpful for such exotic restrictions.
+# So we return a row vector (with n columns) that can only have zeros or ones.
+# (1 for a successful check, of course.)
+
+n = cols(irfs[1])
+matrix results = zeros(0,n)
+
+# check all exotic restrictions whether they're semi-exotic and whether
+# they actually involve shock s
+loop i = 1..nelem(mod.exoticSR.eshocks)
+
+  # just one shock involved, semi-exotic; and not super-exotic
+  if nelem(mod.exoticSR.eshocks[i]) == 1 &amp;&amp; mod.exoticSR.super[i] == FALSE
+    # debug
+    # print &quot;here only with a single shock, and not super&quot;
+
+    # and it affects the current shock
+    if contains(s, mod.exoticSR.eshocks[i])
+      # debug
+      #                 print &quot;second contains, only if current shock relevant&quot;
+      #                 print i
+      #                 eval mod.snames[i]
+
+      # As per the spec, we have hardcoding like &quot;M[2,3]&quot; in the restriction.
+      # But we want to check different potential columns for swapping,
+      # not just the nominal one (in this example: 3).
+
+      string restr = mod.exoticSR.checks[i]
+      restr = strsub(restr, &quot; &quot;, &quot;&quot;) # (remove all blanks)
+
+      matrix mtemp = zeros(1,n)
+      loop j = 1..n
+        # use a regexp to do like: &quot;M[2,3]&quot; -&gt; &quot;M[2,&lt;j&gt;]&quot;
+        string temprestr = regsub(restr, &quot;M\[(\d+),\d+\]&quot;, sprintf(&quot;M[\1,%d]&quot;, j))
+
+        # debug
+        # print temprestr
+
+        chk = 1 # will be switched off if the check fails
+        # the inner function applies this to all specified horizons
+        exotic_inner_check(&amp;chk, i, mod, irfs, temprestr)
+        mtemp[j] = chk
+      endloop
+      # debug
+      # print mtemp
+
+      results |= mtemp
+
+    endif
+  endif
+endloop
+
+return nelem(results) ? minc(results) .= 1 : results
+</code>
+</gretl-function>
+<gretl-function name="get_id_mat" type="matrix" private="1">
+ <params count="4">
+  <param name="mod" type="bundle" const="true"/>
+  <param name="shocks" type="matrix" const="true"/>
+  <param name="irfs" type="matrices" const="true"/>
+  <param name="DO_NORM" type="bool" default="1"/>
+ </params>
+<code># this function constructs a matrix that lists the potential compatibility
+# of each column of the rotated C matrix with the restrictions
+# on each shock (one per row)
+# The default DO_NORM switch invokes a &quot;normalization&quot; of that list that
+# excludes (for example) the cases where there arises an ambiguity about
+# the mapping from shocks (defined by given restrictions) to the C columns.
+# Further thought is needed about whether it might make sense to use
+# the ambiguous cases somehow, instead of simply removing them.
+
+VERB = 0
+
+nshocks = rows(shocks)
+matrix id_matrix = zeros(nshocks, mod.n)
+
+# -- Ais, moved here from the calling function SVAR_SRdraw,
+#   because it isn't used anywhere else --
+matrices Ais = prepAis(mod, shocks)
+
+# Which shocks also have exotic (semi- or more) restrictions
+# (only needed for the special semi-exotic way)
+matrix all_eshocks = get_all_eshocks(mod)
+
+loop i = 1..nshocks
+  if VERB
+    printf &quot;=========================================\n&quot;
+    printf &quot;IRF check for shock %d \n&quot;, i
+    printf &quot;=========================================\n&quot;
+  endif
+  id_matrix[i,] = check_irfs(irfs, Ais[i], VERB)
+
+  # The special SEMI_EXOT algorithm isn't used by default yet...
+  if inbundle(mod, &quot;SEMI_EXOT&quot;) &amp;&amp; mod.SEMI_EXOT == TRUE
+    if contains(i, all_eshocks)	# shock i has one or more exotic restrictions
+      # debug
+      # print &quot;after first contains check&quot;
+
+      matrix semi_exotic_result = semi_exotic_check(i, mod, irfs)
+
+      # combine with id_matrix row; we cannot preserve the
+      # -1s (sign flips) there for this shock
+      if nelem(semi_exotic_result)	# otherwise not really semi-exotic
+        id_matrix[i,] = id_matrix[i,] .= 1 &amp;&amp; semi_exotic_result .= 1
+      endif
+    endif
+  endif
+endloop
+
+if VERB
+  printf &quot;=========================================\n&quot;
+  printf &quot;id_matrix = \n%4d\n&quot;, id_matrix
+  printf &quot;=========================================\n&quot;
+endif
+
+if DO_NORM &amp;&amp; nshocks	 # added check for positive shock number (sven)
+  id_matrix = normlizA(id_matrix)
+endif
+
+return id_matrix
+</code>
+</gretl-function>
+<gretl-function name="sr_correspondence" type="matrix" private="1">
+ <params count="1">
+  <param name="A" type="matrix" const="true"/>
+ </params>
+<code># Tag: sign restriction apparatus
+
+# This recursive function checks for a possible way to couple
+# shocks with observables (or rather VAR equations?),
+# given the &quot;candidate&quot; matrix A.
+
+nr = rows(A)
+nc = cols(A)
+if nr == 0
+  return {}
+endif
+
+r = 1
+c = 0
+x = 0
+loop while r &lt;= nr
+  matrix candidate = A[r,]
+  matrix z = !(candidate .= 0)
+  if sumr(z) == 1
+    # candidate is ok
+    x = selifc(candidate, z) # could be either 1 or -1 for a sign switch
+    c = selifc(seq(1,nc), z)
+    break
+  endif
+  r++
+endloop
+
+if c&gt;0
+  matrix rest = sr_correspondence(A[-r, -c])
+  if rows(rest) &gt; 0
+    rest[,1] += rest[,1] .&gt;= r
+    rest[,2] += rest[,2] .&gt;= c
+  endif
+else
+  matrix rest = {}
+endif
+
+return {r, c, x} | rest
+</code>
+</gretl-function>
+<gretl-function name="normlizA" type="matrix" private="1">
+ <params count="1">
+  <param name="A" type="matrix" const="true"/>
+ </params>
+<code># Tag: sign restriction apparatus
+# this function is for normalizing the &quot;candidate&quot; matrix A
+# (the &quot;A&quot; doesn't correspond to any notation, just internal)
+# (was &quot;normalize&quot;, but could be confused with the user option)
+# (normalizing [apparently] means to keep only those candidates
+#  where there is a unique correspondence, e.g. no ambiguity)
+
+matrix Uc = sr_correspondence(A) # U-&gt;Uc to avoid name of residuals
+matrix tmp = zeros(rows(A), cols(A))
+loop i = 1..rows(Uc)
+  r = Uc[i,1]
+  c = Uc[i,2]
+  if c != 0	# this check possibly redundant? but better be safe
+    x = Uc[i,3]
+    tmp[r,c] = x
+  endif
+endloop
+return selifr(tmp, maxr(abs(tmp)) .&gt; 0)
+</code>
+</gretl-function>
+<gretl-function name="check_one_irf" type="matrix" private="1">
+ <params count="3">
+  <param name="M" type="matrices"/>
+  <param name="spec" type="matrix"/>
+  <param name="verbose" type="int" default="0"/>
+ </params>
+<code># Tag: sign restriction apparatus
+# This function will return a row vector with elements
+# that are either:
+#  1 if the corresponding column satifies the bounds
+# -1 if column satifies the bounds after a sign change
+#  0 if the bounds condition isn't met
+
+scalar n = cols(M[1])	# is n supposed to count the shocks or the targets??
+scalar h = nelem(M)
+scalar vndx = spec[1] # always matrix?
+
+# reshape IRFs so as to have columns as candidates
+matrix tmp = mshape(flatten(M)[vndx,], n, h)'
+
+# consider only selected rows
+matrix sel = seq(spec[4], spec[5])
+tmp = tmp[sel,]
+Max = maxc(tmp)
+Min = minc(tmp)
+
+scalar lo = spec[2]
+scalar hi = spec[3]
+
+noflip = (Min .&gt; lo) &amp;&amp; (Max .&lt; hi) # shocks that respect the bounds
+flip = (Max .&lt; -lo) &amp;&amp; (Min .&gt; -hi) # shocks that need to be flipped
+ret = noflip - flip
+
+if verbose
+  printf &quot;irf for variable %d at lags (%d-%d)\n%8.3f\n&quot;, vndx, spec[4]-1, spec[5]-1, tmp
+  if verbose &gt; 1
+    print lo hi
+    print Min Max
+  endif
+  print noflip flip ret
+endif
+
+return ret
+</code>
+</gretl-function>
+<gretl-function name="check_irfs" type="matrix" private="1">
+ <params count="3">
+  <param name="M" type="matrices"/>
+  <param name="A" type="matrix"/>
+  <param name="verbose" type="int" default="0"/>
+ </params>
+<code># Tag: sign restriction apparatus
+
+# Here we examine the constraints on the IRFs.
+# We return a (row) vector indicating for each column if all
+# the constraints contained in the matrix A are satisfied;
+# Each row of A contains:
+#
+# 1    : ordinal no of variable to check
+# 2, 3 : bounds (NA for +-infty)
+# 4, 5 : IRF interval to check (0-based)
+#
+# It may happen that the IRFs are ok up to a sign swap; we flag this
+# case by setting the corresponding column of the return vector to -1
+
+n = cols(M[1])
+rA = rows(A)	# num of (non-exotic) constraints for the current shock
+
+# check consistency
+matrix chks = zeros(rA, n)
+loop i = 1 .. rA
+  if verbose
+    printf &quot;-----------------------------------------\n&quot;
+    printf &quot;Check for constraint no. %d \n&quot;, i
+    printf &quot;-----------------------------------------\n&quot;
+  endif
+  chks[i,] = check_one_irf(M, A[i,], verbose)
+endloop
+
+if verbose
+  print chks
+endif
+
+# in order for a column to be &quot;compatible&quot;, it must
+# either be all 1s or all -1s
+matrix positives = minc(chks) .= 1
+matrix negatives = maxc(chks) .= -1
+
+return positives - negatives
+</code>
+</gretl-function>
+<gretl-function name="check_id" type="scalar" private="1">
+ <params count="2">
+  <param name="id" type="matrix"/>
+  <param name="noswap" type="matrix"/>
+ </params>
+<code># Tag: sign restriction apparatus
+
+# Here we check if the sign restrictions allow us to
+# form a coherent set of IRFs for the problem at hand
+#
+# the input matrix has r rows and c columns, where r is the
+# number of shocks we want to identify and c is the number
+# of variables in the system; note that r can be smaller
+# than c for partially identified models; for example, in Uhlig
+# (2005) KME, c = 6 but r = 1 (the monetary policy shock)
+#
+# id can only contain 0s, 1s and -1s; therefore, for completely
+# identified models, we just check if &quot;id&quot; is a proper orthogonal
+# matrix; for partially identified models, we need to make sure
+# that we have only one non-zero entry for each row, and that
+# the rank of id is r.
+#
+# Edit 24-05-2023: in the case of zero constraints, the columns
+# corresponding to zero-constrained shocks should not be swapped
+
+if !nelem(id)
+  # (Sven) add a shortcut for the 0-element case, stemming (hopefully)
+  # from the situation without non-exotic set restrictions;
+  # no such restrictions mean no problems for &quot;coherency&quot; of IRFs
+  return 1
+endif
+
+r = rows(id)
+c = cols(id)
+
+if r &lt; c
+  # partial identification
+  ret = minc(sumr(abs(id)) .= 1) == 1 &amp;&amp; (rank(id) == r)
+else
+  ret = maxc(abs((id'id) - I(r))) &lt; 1.0e-15
+endif
+
+# possibly, the following check can be executed first (it's
+# fast) to save time on the previous one
+
+us = nelem(noswap)
+if us
+  # print noswap
+  # printf &quot;abs(id):\n%7.3f\n&quot;, abs(id[noswap,noswap])
+  ret = ret &amp;&amp; abs(id[noswap,noswap]) == I(us)
+endif
+return ret
+</code>
+</gretl-function>
+<gretl-function name="drawnormwis_old" type="matrices" private="1">
+ <params count="4">
+  <param name="iXX" type="matrix" const="true"/>
+  <param name="B" type="matrix" const="true"/>
+  <param name="Sigma" type="matrix" const="true"/>
+  <param name="T" type="int" min="1"/>
+ </params>
+<code># Draw from a standard Normal-(inverse)-Wishart prior
+# for a multi-equation regression model.
+#
+# iXX:  K x K matrix (X'X)^{-1} (same for all equations!)
+#       (in a VAR context gretl provides this as $xtxinv)
+# B:    matrix of purely data-based estimates (max-lik)
+# Sigma: cross-equation covariance matrix of innovations
+# T:    number of observations
+
+K = rows(B)
+N = cols(B) # how many equations
+
+# some checks
+errorif( K != rows(iXX),  &quot;Coeff and data matrix dims don't match&quot;)
+errorif( N != rows(Sigma), &quot;Coeff and Cov matrix dims don't match&quot;)
+
+matrix Sigma_draw = iwishart(Sigma*T, T)
+matrix V = Sigma_draw ** iXX
+matrix C = cholesky(V)
+matrix B_draw = vec(B)
+
+B_draw += C * mnormal(K * N, 1)
+B_draw = mshape(B_draw, K, N)
+
+return defarray(B_draw, Sigma_draw)
+</code>
+</gretl-function>
+<gretl-function name="drawnormwis" type="matrices" private="1">
+ <params count="4">
+  <param name="chol_iXX" type="matrix" const="true"/>
+  <param name="B" type="matrix" const="true"/>
+  <param name="S" type="matrix" const="true"/>
+  <param name="df" type="scalar"/>
+ </params>
+<code># Draw from a standard Normal-(inverse)-Wishart prior
+# for a multi-equation regression model.
+#
+# iXX:  K x K matrix, wholding the Cholesky decomposition of
+#       (X'X)^{-1} (same for all equations!)
+#       (in a VAR context gretl provides this as $xtxinv)
+# B:    mean of the normal variates
+# S:    cross-equation covariance matrix of innovations
+# df:   degrees of freedom for the Wishart distribution
+
+scalar n = rows(S)
+scalar npar = rows(chol_iXX)
+matrix Sdraw = iwishart(S * df, df)
+matrix C = cholesky(Sdraw)
+matrix alpha_draw = chol_iXX * (mnormal(npar, n) * C') + B
+
+return defarray(alpha_draw, Sdraw)
+</code>
+</gretl-function>
+<gretl-function name="add_zero_constr" type="matrix" private="1">
+ <params count="3">
+  <param name="mod" type="bundle" const="true"/>
+  <param name="shocks" type="matrix" const="true"/>
+  <param name="rotinfo" type="bundleref"/>
+ </params>
+<code># Create the matrix array for zero restrictions and stick it into the
+# special rotation-model-info bundle as 'zc'. The return matrix
+# holds the indices of shocks with at least one zero restriction
+# --within the group specified by the input 'shocks'--
+# so that they don't get rotated afterwards in check_id().
+#
+# If there are no specified zero restrictions (in mod),
+# then an empty array is added to rotinfo, and the return
+# matrix is also empty.
+
+matrix zc_shocks = {}
+
+if rows(mod.Rd1)	# constraints on C
+  err = 0
+  matrices zc = xtr_blockdg_const(mod.Rd1, &amp;err)
+  errorif(err &gt; 0, &quot;zero constraints malformed!&quot;)
+
+  loop i = 1 .. nelem(zc)
+    if nelem(zc[i]) &amp;&amp; contains(i, shocks)
+      zc_shocks ~= i
+    endif
+  endloop
+else
+  matrices zc = array(0)
+endif
+
+rotinfo.zc = zc
+return zc_shocks
+</code>
+</gretl-function>
+<gretl-function name="xtr_blockdg_const" type="matrices" private="1">
+ <params count="2">
+  <param name="Rd" type="matrix" const="true"/>
+  <param name="err" type="scalarref"/>
+ </params>
+<code># This function translates a constraints matrix in the &quot;traditional&quot; format
+# into an array of per-shock restrictions (needed for the mixed
+# identification routine).
+# The calling function is responsible for actually throwing the relevant error
+# if err != 0 on exit.
+
+scalar n = sqrt(cols(Rd)-1)
+matrices ret = array(n)
+
+if maxc(abs(Rd[,end]))
+  printf &quot;non-homogeneous constraints not allowed!\n&quot;
+  err = 1
+else
+  p = rows(Rd)
+  n2 = n*n
+  loop i = 1 .. p
+    Ri = mshape(Rd[i, 1:n2], n, n)
+
+    # no cross-shock constraints allowed
+    chk = sumc(abs(Ri))
+    candidate = imaxr(chk)
+
+    if maxr(chk[-candidate])&gt;0
+      printf &quot;cross-shock constraints not allowed!\n&quot;
+      err = 2
+      break
+    else
+      ret[candidate] = ret[candidate] | Ri[, candidate]'
+    endif
+  endloop
+endif
+
+return ret
+</code>
+</gretl-function>
+<gretl-function name="rank_restr" type="matrix" private="1">
+ <params count="1">
+  <param name="R" type="matrices" const="true"/>
+ </params>
+<code># this produces a vector (used in const_orth()) which lists
+# which columns of Q are constrained; elements are ranked so
+# that the &quot;most constrained&quot; columns come first
+
+matrix m = {}
+loop i = 1 .. nelem(R)
+  p = rows(R[i])
+  if p
+    m |= {i, -p}
+  endif
+endloop
+
+m = msortby(m, 2)
+return m[,1]
+</code>
+</gretl-function>
+<gretl-function name="const_orth" type="matrix" private="1">
+ <params count="2">
+  <param name="constraints" type="matrices" const="true"/>
+  <param name="C" type="matrix" const="true"/>
+ </params>
+<code># this function produces an orthonormal matrix Q such that
+# K = QC satisfies the constraints embodied in the matrix array &quot;constraints&quot;
+# (in the outside world this matrices array is also called [bundle].zc)
+#
+# ('const' comes from 'constraint', not constant...)
+
+DBG = 0	# debug
+n = rows(C)
+matrix Q = I(n)
+matrix done = {}
+
+# we sort the constraints array to process the &quot;most stringent&quot;
+# ones first
+matrix to_do = rank_restr(constraints)
+scalar k = rows(to_do)
+
+loop j = 1 .. k
+  i = to_do[j]
+  matrix R = constraints[i]
+  if DBG
+    print i R
+  endif
+  if nelem(done) == 0
+    matrix S = nullspace(R*C)
+  else
+    # was:
+    # S = intersect(nullspace(R*C), nullspace(Q[,done]'))
+    matrix S = nullspace((R*C) | Q[,done]')
+  endif
+  if DBG
+    printf &quot;RC =\n%12.4f&quot;, (R*C)'
+    print done S
+  endif
+
+  if nelem(S) == 0
+    print done
+    printf &quot;No intersection at step %d!!!\n&quot;, i
+    printf &quot;Q[,done] =\n%12.4f&quot;, Q[,done]
+    return {}
+  endif
+
+  if cols(S) == 1
+    S = S ./ sqrt(S'S)
+  endif
+  matrix qi = S * mnormal(cols(S), 1)
+  Q[,i] = qi ./ sqrt(qi'qi)
+  done ~= i
+endloop
+
+if DBG
+  print Q
+endif
+
+matrix H = nullspace(Q[,done]')
+if cols(H) == 1
+  H = H ./ sqrt(H'H)
+endif
+matrix Qq = gen_haar(n-k)
+
+Q[,-done] = H*Qq
+return Q
+</code>
+</gretl-function>
+<gretl-function name="gen_SRirfs" type="matrices" private="1">
+ <params count="3">
+  <param name="b" type="bundle"/>
+  <param name="numh" type="int"/>
+  <param name="to_cum" type="matrix"/>
+ </params>
+<code># This calculates results (in the set-ID'ed case) for 0..mod.horizons,
+# which is actually like in the earlier SVAR code.
+# TODO: Maybe merge this function with earlier (non set-ID'ed)
+# ones from SVAR?
+#
+# So numh == mod.horizon + 1.
+# (Memo: the doc has been (up to 2020) slightly wrong in this
+#  regard; it claimed h=mod.horizons rows in the IRFs matrix,
+#  one less than true)
+
+matrix B = b.B
+k = b.exoterms    # just a number?
+
+# On the outside, this cumulation spec is taken from the mod.
+# (Empty matrix to_cum if doesn't apply.)
+any_cumul = nelem(to_cum) &gt; 0
+
+n = cols(B)
+p = (rows(B) - k) / n # VAR lags
+matrix comp = B[k+1:,]'
+
+if p &gt; 1
+  comp = comp | I(n*(p-1), n*p)
+endif
+
+matrix K = cholesky(b.Sigma) * b.rot
+matrices ret = array(numh)
+ret[1] = K	# impact effect
+
+matrix tmp = I(rows(comp))
+loop i = 2..numh
+  tmp = tmp * comp
+  matrix irf_i = tmp[1:n,1:n] * K
+  if any_cumul
+    irf_i[to_cum,] = irf_i[to_cum,] + ret[i-1][to_cum,]
+  endif
+  ret[i] = irf_i
+endloop
+
+return ret
+</code>
+</gretl-function>
+<gretl-function name="exotic_inner_check" type="scalar" private="1">
+ <params count="5">
+  <param name="chk" type="scalarref"/>
+  <param name="i" type="int">
+<description>exotic restriction number</description>
+  </param>
+  <param name="mod" type="bundle" const="true"/>
+  <param name="irfs" type="matrices" const="true"/>
+  <param name="restr_override" type="string" optional="true"/>
+ </params>
+<code># (chk is a boolean, but gretl doesn't allow pointerized int or bool)
+# TODO: Check whether this setup is really compatible with a situation
+# where we have only partial identification.
+#
+# - restr_override: if not null, serves to &quot;inject&quot; an adjusted
+#   restriction string (used for the semi-exotic check)
+
+string exo_restrict = exists(restr_override) ? restr_override : mod.exoticSR.checks[i]
+exo_restrict = strsub(exo_restrict, &quot; &quot;, &quot;&quot;) # remove all blanks
+
+scalar inip1 = mod.exoticSR.spans[i,1]
+scalar finp1 = mod.exoticSR.spans[i,2]
+scalar needs_model = mod.exoticSR.super[i]
+
+out = 0
+loop t = inip1..finp1
+  matrix M = irfs[t] # hardcoded &quot;M&quot; for the API!
+
+  if needs_model
+    # The super-exotic case, not really documented yet.
+    /* So the implicit expectation here is:
+    'exo_restrict' is the string name of a user-defined function
+    which is specifically written to evaluate the super-exotic
+    restriction; for example &quot;my_super_func1&quot;.
+    This function _must_ take the (current-horizon)
+    IRF matrix M as first argument, and the overall model bundle
+    mod as the second argument. Through the model bundle the
+    function has access for example to the estimated coefficients.
+      Then the function must return the scalar/boolean result 0 or 1, indicating whether or not the restriction held for this
+      concrete rotation.
+      (This setup still has the limitation that cross-horizon
+      restrictions cannot be formulated. In principle we could add
+      the whole 'irfs' collection of the current rotation as a
+      member to (a copy of) mod, and then the function could do
+      whatever it wants with it.)
+      */
+      catch scalar exocheck = feval(exo_restrict, M, mod)
+      if $error
+        print &quot;Problem with super-exotic restriction --&quot;
+        print &quot; review and revise your restriction function call string&quot;
+        print &quot; and associated function definition.&quot;
+        funcerr &quot;Checking super-exotic restriction failed&quot;
+      endif
+
+    else
+      catch scalar exocheck = @exo_restrict
+      if $error || !ok(exocheck)
+        printf &quot;Problem with exotic restriction: %s\n&quot;, exo_restrict
+        print &quot; Make sure it uses 'M' to denote the IRF matrix,&quot;
+        print &quot; and that it evaluates to a single true/false result.&quot;
+        funcerr &quot;Checking exotic restriction failed&quot;
+      endif
+    endif
+
+    if !exocheck
+      chk = 0
+      out = 1 # signal to the caller that it can stop checking the rest
+      # (a little redundant given the chk result, since on
+      # entry chk==1 will hold)
+      break
+    endif
+  endloop
+  return out
+</code>
+</gretl-function>
+<gretl-function name="IRF_plotdata" type="bundle" private="1">
+ <params count="2">
+  <param name="bs" type="bundles"/>
+  <param name="coveralpha" type="scalar" default="0.9"/>
+ </params>
+<code># here we store the data for plotting the irfs in a matrix, conceptually
+# similar to the &quot;bands&quot; matrix we use in SVAR_boot, that is with H rows
+# (=accepted draws, so that descriptive statistics are easy to compute)
+# and ns * nv * horizon columns
+# (But the outputs will be reshaped after the H is aggregated out;
+#  with the horizon in rows and numvariables * numshocks columns.)
+
+# get dimensions
+H = nelem(bs)    # number of available (accepted) draws
+nvXns = rows(bs[1].Sigma) * cols(bs[1].irfs[1])
+h = nelem(bs[1].irfs)
+
+matrix A = zeros(H, nvXns * h)
+
+loop i = 1..H
+  matrices irfs = bs[i].irfs
+  matrix sel = seq(1, nvXns * h, h)
+
+  loop t = 1..h
+    # compute the relevant IRFs
+    # and store them in the appropriate column
+    A[i, sel] = vec(irfs[t])'     # was: b.irfs
+    sel += 1
+  endloop
+endloop
+
+matrix m = meanc(A)	# point-wise means
+matrix s = sdc(A)
+
+# output bundle (H: num of [accepted] replications)
+# (leave out ret.raw = A)
+bundle ret = _(rep=H, coveralpha=coveralpha, biascorr=0)
+matrix ret.irfSRmeans  = mshape(m, h, nvXns)
+matrix ret.irfSRserrs  = mshape(s, h, nvXns)
+
+# point-wise pseudo confidence bands (ripped from SVAR_boot)
+q_alpha = 0.5 * (1 - coveralpha)
+matrix locb = quantile(A, q_alpha)
+matrix hicb = quantile(A, 1 - q_alpha)
+matrix mdn  = quantile(A, 0.5)
+
+matrix ret.lo_cb     = mshape(locb, h, nvXns)
+matrix ret.hi_cb     = mshape(hicb, h, nvXns)
+matrix ret.irfSRmeds = mshape(mdn, h, nvXns)
+
+return ret
+</code>
+</gretl-function>
+<sample-script filename="examples/Traditional/simple_C.inp">
+set verbose off
+include SVAR.gfn
+open sw_ch14.gdt
+
+series infl = 400*ldiff(PUNEW)
+rename LHUR unemp
+
+list X = unemp infl
+list Z = const
+
+Mod = SVAR_setup(&quot;C&quot;, X, Z, 3)
+Mod.horizon = 36
+SVAR_restrict(&amp;Mod, &quot;C&quot;, 1, 2)
+
+set stopwatch
+SVAR_estimate(&amp;Mod)
+printf &quot;Time (Cmodel) = %g\n&quot;, $stopwatch
+
+fevdmat = FEVD(&amp;Mod)
+print fevdmat
+IRFplot(&amp;Mod, 1, 1)
+IRFsave(&quot;simple_C_11_noboot.pdf&quot;, &amp;Mod, 1, 1)
+
+set stopwatch
+bfail = SVAR_boot(&amp;Mod, 1024, 0.90)
+printf &quot;Number of failed bootstrap iterations = %d, Time (bootstrap) = %g\n&quot;, \
+  bfail, $stopwatch
+
+gpbuild Plots
+    IRFplot(&amp;Mod, 0, 0)
+end gpbuild
+
+gridplot Plots --output=display --width=1200
+IRFsave(&quot;simpleC.pdf&quot;, &amp;Mod, 0, 0)	# 0 means &quot;all&quot;
+</sample-script>
+</gretl-function-package>
+</gretl-functions>

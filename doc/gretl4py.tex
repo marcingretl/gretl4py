@@ -11,6 +11,8 @@
 \newcounter{fomularenderR}
 \newcounter{fomularenderG}
 
+\CatchFileDef{\gretlpyversion}{../VERSION}{}
+
 \newcommand{\error}[1]{\textcolor{red}{\textbf{#1}}\xspace}
 \newcommand{\hitem}{\item[] \hspace{-5mm}}
 
@@ -93,7 +95,7 @@
 	\end{quote}
 
 \begin{center}
-	\vspace*{100pt}{\Large Version 0.30}
+	\vspace*{100pt}{\Large Version \gretlpyversion}
 	
 	\vfil{\Large\textbf{Acknowledgments}}
 	

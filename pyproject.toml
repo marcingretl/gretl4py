@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "gretl4py"
-version = "0.30"
+dynamic = ["version"]
 authors = [
     { name = "Marcin Błażejowski", email = "marcin@gretlconference.org" }
 ]
@@ -43,4 +43,5 @@ exclude = ["**/__pycache__"]
     "data/*",
     "tmp/*",
     "examples/*",
+    "functions/*",
 ]

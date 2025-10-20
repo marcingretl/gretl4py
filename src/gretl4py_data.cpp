@@ -2002,6 +2002,9 @@ GretlPackage::GretlPackage (const std::string &pkg_name,
     } else {
         err = get_full_filename((pkg_name + suffix).c_str(), path, OPT_I);
     }
+    if (err) {
+        handle_gretl_error(err);
+    }
     pkg = get_function_package_by_filename(path, &err);
     if (err) {
         handle_gretl_error(err);
