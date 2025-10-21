@@ -6,11 +6,11 @@ from setuptools import setup, find_packages, Extension
 import glob
 
 # Version from single source
-version_file = Path(__file__).parent / "VERSION"
+version_file = Path(__file__).parent / "version.cfg"
 if version_file.exists():
     version = version_file.read_text().strip()
 else:
-    print("Warning: VERSION not found, defaulting to 0.0.0", file=sys.stderr)
+    print("Warning: version.cfg not found, defaulting to 0.0.0", file=sys.stderr)
     version = "0.0.0"
 
 EXT = sysconfig.get_config_var("EXT_SUFFIX")
