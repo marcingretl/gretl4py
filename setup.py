@@ -7,11 +7,11 @@ import glob
 
 # Version from single source
 version_file = Path(__file__).parent / "version.cfg"
-if version_file.exists():
-    version = version_file.read_text().strip()
-else:
-    print("Warning: version.cfg not found, defaulting to 0.0.0", file=sys.stderr)
-    version = "0.0.0"
+try:
+    with open(version_file, "r", encoding="utf-8") as f:
+        version = f.read().strip()
+except FileNotFoundError:
+    exit("Warning: version.cfg not found")
 
 EXT = sysconfig.get_config_var("EXT_SUFFIX")
 binary_path = os.path.join(os.getcwd(), 'gretl', '_gretl' + EXT)
