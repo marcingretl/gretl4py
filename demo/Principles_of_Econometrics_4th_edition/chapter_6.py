@@ -14,24 +14,24 @@ edu_inc = gretl.get_data('data/edu_inc.gdt')
 cars = gretl.get_data('data/cars.gdt')
 
 ############################################
-# 6.1: Testing Joint Hypotheses
+# 6.1. Testing Joint Hypotheses
 ############################################
-print("\n6.1: Testing Joint Hypotheses")
-print("\n6.1.1: Testing the Effect of Advertising: the F-Test")
+print("\n6.1. Testing Joint Hypotheses")
+print("\n6.1.1. Testing the Effect of Advertising: the F-Test")
 andy.new_series(name='advertsq', value='advert^2')
 andy_u = gretl.ols('sales const price advert advertsq').fit()
 andy_u.test(type='omit', vars='advert advertsq', silent=True)
 print(andy_u.tests[-1]['summary'])
 print(f'keys available for a user: {andy_u.tests[-1].keys()}')
 
-print("\n6.1.2: Testing the Significance of the Model")
+print("\n6.1.2. Testing the Significance of the Model")
 F_val = andy_u.Fstat
 crit_val = gretl.critical('F', value=0.05, params=[andy_u.ncoeff-1, andy_u.df])
 p_val = gretl.pvalue('F', value=F_val, params=[andy_u.ncoeff-1, andy_u.df])
 print(f'Fc = {crit_val:.4}')
 print(f'F = {F_val:.5}, p-value = {p_val:.5}')
 
-print("\n6.1.4: More General F-Tests")
+print("\n6.1.4. More General F-Tests")
 andy.new_series(name='sales_advert', value='sales - advert')
 andy.new_series(name='advertsq_advert', value='advertsq - 3.8*advert')
 andy_r = gretl.ols('sales_advert const price advertsq_advert').fit()
@@ -40,18 +40,18 @@ p_val = gretl.pvalue('F', value=F_val, params=[1, andy_u.df])
 print(f'F = {F_val:.5}, p-value = {p_val:.4}')
 
 ############################################
-# 6.2: The Use of Nonsample Information
+# 6.2. The Use of Nonsample Information
 ############################################
-print("\n6.2: The Use of Nonsample Information")
+print("\n6.2. The Use of Nonsample Information")
 beer.set_as_default()
 BQ = gretl.ols('ln(q) const ln(pb) ln(pl) ln(pr) ln(i)').fit()
 BQ.restrict(impose=['b[2] + b[3] + b[4] + b[5] = 0'])           # (6.19)
 
 ############################################
-# 6.3: Model Speficication
+# 6.3. Model Speficication
 ############################################
-print("\n6.3: Model Speficication")
-print("\n6.3.1: Omitted Variables")
+print("\n6.3. Model Speficication")
+print("\n6.3.1. Omitted Variables")
 edu_inc.set_as_default()
 FAM_hewe = gretl.ols(formula='faminc const he we', simple=True).fit()          # (9.20)
 print(FAM_hewe)
@@ -61,11 +61,11 @@ edu_inc.corr()
 FAM_kl = gretl.ols(formula='faminc const he we kl6', simple=True).fit()     # (9.24)
 print(FAM_kl)
 
-print("\n6.3.2: Irrelevant Variables")
+print("\n6.3.2. Irrelevant Variables")
 FAM_irr = gretl.ols(formula='faminc const he we kl6 xtra*', simple=True).fit()
 print(FAM_irr)
 
-print("\n6.3.4: Model Selection Criteria")
+print("\n6.3.4. Model Selection Criteria")
 print("\nTable 6.2")
 mdls = [FAM_he, FAM_hewe, FAM_kl, FAM_irr]
 for m in [FAM_he, FAM_hewe, FAM_kl, FAM_irr]:
@@ -75,14 +75,14 @@ for m in [FAM_he, FAM_hewe, FAM_kl, FAM_irr]:
 print("\n")
 gretl.modeltab(mdls)
 
-print("\n6.3.5: RESET")
+print("\n6.3.5. RESET")
 FAM_kl.test(type='reset', squares_only=True, quiet=True)
 FAM_kl.test(type='reset', quiet=True)
 
 ############################################
-# 6.4: Poor Data, Collinearity, and Insignificance
+# 6.4. Poor Data, Collinearity, and Insignificance
 ############################################
-print("\n6.4: Poor Data, Collinearity, and Insignificance")
+print("\n6.4. Poor Data, Collinearity, and Insignificance")
 cars.set_as_default()
 CARS_1 = gretl.ols('mpg const cyl', simple=True).fit()
 CARS_2 = gretl.ols('mpg const cyl eng wgt', simple=True).fit()

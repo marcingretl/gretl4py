@@ -12,9 +12,9 @@ usa = gretl.get_data('data/usa.gdt')
 spurious = gretl.get_data('data/spurious.gdt')
 
 ############################################
-# 12.1: Stationary and Nonstationary Variables
+# 12.1. Stationary and Nonstationary Variables
 ############################################
-print("\n12.1: Stationary and Nonstationary Variables")
+print("\n12.1. Stationary and Nonstationary Variables")
 print("Table 12.1")
 usa.sample(t1='1984:2', t2='1996:4')
 gretl.summary(simple=True)
@@ -23,31 +23,30 @@ gretl.summary(simple=True)
 usa.sample(full=True)
 
 ############################################
-# 12.2: Spurious Regression
+# 12.2. Spurious Regression
 ############################################
-print("\n12.2: Spurious Regression")
+print("\n12.2. Spurious Regression")
 spurious.set_as_default()
 SP = gretl.ols('rw1 const rw2', simple=True).fit()
 print(SP)
 
 ############################################
-# 12.3: Unit Root Tests for Stationary
+# 12.3. Unit Root Tests for Stationary
 ############################################
-print("\n12.3: Unit Root Tests for Stationary")
-print("\n12.3.6: The Dickey-Fuller Test: An Example")
+print("\n12.3. Unit Root Tests for Stationary")
+print("\n12.3.6. The Dickey-Fuller Test: An Example")
 usa.set_as_default()
 usa.diff('f')
 usa.test(type='adf', order=1, vars='f b', c=True, verbose=True)
 
-print("\n12.3.7: Order of Integration")
+print("\n12.3.7. Order of Integration")
 usa.test(type='adf', vars='f b', nc=True, difference=True, verbose=True)
 
 ############################################
-# 12.4: Cointegration
+# 12.4. Cointegration
 ############################################
-print("\n12.4: Cointegration")
+print("\n12.4. Cointegration")
 usa.test(type='coint', order=1, y='b', vars='f', verbose=True)      # (12.9)
 
-print("\n12.4.2: The Error Correction Model")
+print("\n12.4.2. The Error Correction Model")
 print("*** gretl4py does not provide an interface to nls ***")
-

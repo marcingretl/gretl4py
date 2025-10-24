@@ -16,10 +16,10 @@ pizza = gretl.get_data('data/pizza4.gdt')
 cps4s = gretl.get_data('data/cps4_small.gdt')
 
 ############################################
-# 5.2: Estimating the Parameters of the Multiple Regression Model
+# 5.2. Estimating the Parameters of the Multiple Regression Model
 ############################################
-print("\n5.2: Estimating the Parameters of the Multiple Regression Model")
-print("\n5.2.2: Least Squares Estimates Using Hamburger Chain Data")
+print("\n5.2. Estimating the Parameters of the Multiple Regression Model")
+print("\n5.2.2. Least Squares Estimates Using Hamburger Chain Data")
 andy.print(byobs=True)
 m1 = gretl.ols(formula='sales ~ const + price + advert').fit()  # (5.6)
 print(m1)
@@ -64,26 +64,26 @@ print(f'({m1.coeff[1] - critval * m1.stderr[1]:.5}, \
 {m1.coeff[1] + critval * m1.stderr[1]:.5})')                # (5.16)
 
 ############################################
-# 5.5: Hypothesis Testing
+# 5.5. Hypothesis Testing
 ############################################
-print("\n5.5: Hypothesis Testing")
-print("\n5.5.3: Hypothesis Testing for Linear Combination of Coefficients")
+print("\n5.5. Hypothesis Testing")
+print("\n5.5.3. Hypothesis Testing for Linear Combination of Coefficients")
 m1.restrict(impose=['-0.2*b[2] -0.5*b[3] = 0'])
 print(f'-0.2*b[2] -0.5*b[3] > 0, pvalue: {m1.restrictions[-1]['pvalue']/2 : .3f}')
 
 ############################################
-# 5.6: Polynomial Equations
+# 5.6. Polynomial Equations
 ############################################
-print("\n5.6: Polynomial Equations")
-print("\n5.6.2: Extending the Model for Hamburger Barn Sales")
+print("\n5.6. Polynomial Equations")
+print("\n5.6.2. Extending the Model for Hamburger Barn Sales")
 andy.new_series(name='advertsq', value='advert^2')
 msq = gretl.ols(formula='sales ~ const + price + advert + advertsq').fit()  # (5.24)
 print(msq)
 
 ############################################
-# 5.7: Interaction Variables
+# 5.7. Interaction Variables
 ############################################
-print("\n5.7: Interaction Variables")
+print("\n5.7. Interaction Variables")
 pizza.set_as_default()
 pizza.print(summary=True)
 pizza.new_series('ageincome = age * income')
@@ -92,7 +92,7 @@ PZ_2 = gretl.ols('pizza const age income ageincome', simple=True).fit()     # (5
 print(PZ_1)
 print(PZ_2)
 
-print("\n5.7.1: Log-Linear Model")
+print("\n5.7.1. Log-Linear Model")
 cps4s.set_as_default()
 cps4s.print(summary=True)
 cps4s.new_series('educexper = educ * exper')
