@@ -109,6 +109,10 @@ void GretlModel::save_model (T *model)
 
     // we print model
     if constexpr (std::is_same_v<T, MODEL>) {
+        // we forse Pooled OLS heading if needed
+        if (gretl_model_get_int(model, "pooled")) {
+            opt = static_cast<gretlopt>(opt & ~OPT_P);
+        }
         err = printmodel(model, GD->dset, opt, GP.prn_ptr());
     } else if constexpr (std::is_same_v<T, GRETL_VAR>) {
         err = gretl_VAR_print(model, GD->dset, opt, GP.prn_ptr());
@@ -799,7 +803,13 @@ void GretlModel_NSE_Driver<F, CI>::fit (void)
 
     // we call F as an estimator
     if constexpr (use_ldco_sig(CI)) {
-        *model = F(var_list.get(), GD->dset, CI, opt);
+        // fallback to Pooled OLS if needed
+        if (CI == OLS && dataset_is_panel(GD->dset)) {
+            opt = static_cast<gretlopt>(opt | (OPT_P | OPT_L));
+            *model = panel_model(var_list.get(), GD->dset, opt, GP.prn_ptr());
+        } else {
+            *model = F(var_list.get(), GD->dset, CI, opt);
+        }
     } else if constexpr (use_ldcop_sig(CI)) {
         *model = F(var_list.get(), GD->dset, static_cast<int>(CI), opt, GP.prn_ptr());
     } else if constexpr (use_ldo_sig(CI)) {
