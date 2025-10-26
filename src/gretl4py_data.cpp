@@ -834,6 +834,8 @@ GretlDataset::GretlDataset (const std::string &fname,
         destroy_dataset(dset);
         handle_gretl_error(err);
     }
+
+    is_panel_ = static_cast<bool>(dataset_is_panel(dset));
 }
 
 GretlDataset::GretlDataset (const py::dict &pydict) : id(next_obj_id++)
@@ -882,6 +884,8 @@ GretlDataset::GretlDataset (const py::dict &pydict) : id(next_obj_id++)
     dset->structure = get_int_from_python_dict(pydict, "structure", 0);
     opt = setobs_opt_from_structure(dset->structure);
     set_obs(std::to_string(pd).c_str(), dset->S[0], dset, opt);
+
+    is_panel_ = static_cast<bool>(dataset_is_panel(dset));
 }
 
 GretlDataset::~GretlDataset (void)
@@ -970,6 +974,11 @@ int GretlDataset::get_series_id (const std::string &series, const bool verbose) 
     }
 
     return var_num;
+}
+
+bool GretlDataset::is_panel (void) const
+{
+    return is_panel_;
 }
 
 py::dict GretlDataset::to_dict (void) const
@@ -1189,7 +1198,7 @@ void GretlDataset::print (const py::kwargs &kwargs)
             ntolabel(s2, dset->n-1, dset);
             pprintf(GP.prn_ptr(), "Time series, frequency %d, T = %d, %s to %s\n\n",
                     dset->pd, dset->n, s1, s2);
-        } else if (dataset_is_panel(dset)) {
+        } else if (is_panel()) {
             pprintf(GP.prn_ptr(), "Panel data, N = %d, T = %d\n\n",
                     dset->n / dset->pd, dset->pd);
         } else {
@@ -1215,7 +1224,6 @@ void GretlDataset::sample (const py::kwargs &kwargs)
     std::string t1str, t2str, restr;
     bool opt_replace = false;
     bool full = false;
-    bool panel = false;
     bool unit = false;
     bool time = false;
 
@@ -1237,15 +1245,13 @@ void GretlDataset::sample (const py::kwargs &kwargs)
             opt_replace = item.second.cast<bool>();
         } else if (key == "full") {
             full = item.second.cast<bool>();
-        } else if (key == "unit" || key == "time") {
+        } else if ((key == "unit" || key == "time") && is_panel()) {
             if (key == "unit") {
                 unit = item.second.cast<bool>();
             } else {
                 time = item.second.cast<bool>();
             }
-            panel = true;
-        }
-        else {
+        } else {
             throw std::invalid_argument("invalid key '" + key + "' in 'sample' args");
         }
     }
@@ -1257,10 +1263,10 @@ void GretlDataset::sample (const py::kwargs &kwargs)
         throw std::invalid_argument("sample: invalid use of 'restriction'");
     } else if (opt_replace && restr.empty()) {
         throw std::invalid_argument("sample: invalid use of 'replace'");
-    } else if (panel && (unit && time)) {
+    } else if (is_panel() && (unit && time)) {
         throw std::invalid_argument("sample: 'unit' and 'time' options are mutually exclusive");
     }
-    bool have_args = (!t1str.empty() || !t2str.empty() || !restr.empty() || opt_replace || full || panel);
+    bool have_args = (!t1str.empty() || !t2str.empty() || !restr.empty() || opt_replace || full || unit || time);
 
     if (!have_args) {
         // just report current sample
@@ -1277,7 +1283,7 @@ void GretlDataset::sample (const py::kwargs &kwargs)
         std::string ts1 = t1str.empty() ? ";" : t1str;
         std::string ts2 = t2str.empty() ? ";" : t2str;
 
-        if (panel) {
+        if (is_panel()) {
             // panel data: --unit or --time option
             if (unit) {
                 SET_OPT(opt, OPT_U);

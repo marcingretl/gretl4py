@@ -124,8 +124,8 @@ private:
     std::unordered_set<int> linked_models;  // models (id-s) which use this dataset
     GretlPrint GP = GretlPrint();           // printer (instance wide)
     mutable GretlTypesPtr RES_other;        // other results (accessor, tests, ets)
-
     gretlopt opt = OPT_NONE;
+    bool is_panel_;
 
     void allocate_dset (void);
 
@@ -146,6 +146,8 @@ public:
                   const py::dict &kwargs);      // we load dataset from file (with optional flags as kwargs)
     GretlDataset (const py::dict &pydict);      // we load dataset from Python's dictionary
     virtual ~GretlDataset (void);               // virtual, because GretlModel use it as std::shared_ptr
+
+    bool is_panel (void) const;
 
     py::dict to_dict (void) const;
 

@@ -804,7 +804,7 @@ void GretlModel_NSE_Driver<F, CI>::fit (void)
     // we call F as an estimator
     if constexpr (use_ldco_sig(CI)) {
         // fallback to Pooled OLS if needed
-        if (CI == OLS && dataset_is_panel(GD->dset)) {
+        if (CI == OLS && GD->is_panel()) {
             opt = static_cast<gretlopt>(opt | (OPT_P | OPT_L));
             *model = panel_model(var_list.get(), GD->dset, opt, GP.prn_ptr());
         } else {
