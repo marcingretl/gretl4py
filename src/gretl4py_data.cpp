@@ -33,6 +33,7 @@ extern "C" {
     #include <gretl/gretl_xml.h>
     #include <gretl/gretl_typemap.h>
     #include <gretl/uservar.h>
+    #include <gretl/transforms.h>
 }
 #include <algorithm>
 #include <string>
@@ -1092,6 +1093,44 @@ void GretlDataset::new_list (const std::string &name, const std::string &value)
     gretl_generate<GRETL_TYPE_LIST>(value, shared_from_this(), name);
 }
 
+void GretlDataset::dummify (const std::string &varlist,
+                            const py::kwargs &kwargs)
+{
+    //
+    // interface to libgretl's list_dumgenr
+    //
+    opt = OPT_NONE;
+
+    // we set opts
+    for (auto &item : kwargs) {
+        if (!is_pystr(item.first)) {
+            throw std::invalid_argument("option key must be a string");
+        }
+        const std::string &key = item.first.cast<std::string>();
+        gretl_valid_long_opt(opt, DUMMIFY, key, item.second);
+    }
+
+    // we construct list of variables
+    auto plist = list_from_formula(varlist, dset, err);
+    if (err) {
+        handle_gretl_error(err);
+    }
+
+    // we do the job
+    int *plist_raw_ptr = plist.release();
+    err = list_dumgenr(&plist_raw_ptr, dset, opt);
+    plist.reset(plist_raw_ptr);
+    if (err) {
+        handle_gretl_error(err);
+    }
+
+    // based on interact.c
+    maybe_list_series(dset, GP.prn_ptr());
+    set_dataset_is_changed(dset, 1);
+
+    GP.print();
+}
+
 std::string GretlDataset::repr (void) const
 {
     std::string ret = "GretlDataset, source " + source;
@@ -1176,6 +1215,9 @@ void GretlDataset::sample (const py::kwargs &kwargs)
     std::string t1str, t2str, restr;
     bool opt_replace = false;
     bool full = false;
+    bool panel = false;
+    bool unit = false;
+    bool time = false;
 
     opt = OPT_NONE;
     for (auto &item : kwargs) {
@@ -1195,7 +1237,15 @@ void GretlDataset::sample (const py::kwargs &kwargs)
             opt_replace = item.second.cast<bool>();
         } else if (key == "full") {
             full = item.second.cast<bool>();
-        } else {
+        } else if (key == "unit" || key == "time") {
+            if (key == "unit") {
+                unit = item.second.cast<bool>();
+            } else {
+                time = item.second.cast<bool>();
+            }
+            panel = true;
+        }
+        else {
             throw std::invalid_argument("invalid key '" + key + "' in 'sample' args");
         }
     }
@@ -1207,8 +1257,10 @@ void GretlDataset::sample (const py::kwargs &kwargs)
         throw std::invalid_argument("sample: invalid use of 'restriction'");
     } else if (opt_replace && restr.empty()) {
         throw std::invalid_argument("sample: invalid use of 'replace'");
+    } else if (panel && (unit && time)) {
+        throw std::invalid_argument("sample: 'unit' and 'time' options are mutually exclusive");
     }
-    bool have_args = (!t1str.empty() || !t2str.empty() || !restr.empty() || opt_replace || full);
+    bool have_args = (!t1str.empty() || !t2str.empty() || !restr.empty() || opt_replace || full || panel);
 
     if (!have_args) {
         // just report current sample
@@ -1225,7 +1277,19 @@ void GretlDataset::sample (const py::kwargs &kwargs)
         std::string ts1 = t1str.empty() ? ";" : t1str;
         std::string ts2 = t2str.empty() ? ";" : t2str;
 
-        err = set_sample(ts1.c_str(), ts2.c_str(), dset, OPT_NONE);
+        if (panel) {
+            // panel data: --unit or --time option
+            if (unit) {
+                SET_OPT(opt, OPT_U);
+            }
+            if (time) {
+                SET_OPT(opt, OPT_X);
+            }
+            err = set_panel_sample(ts1.c_str(), ts2.c_str(), opt,
+                                   dset, NULL, GP.prn_ptr());
+        } else {
+            err = set_sample(ts1.c_str(), ts2.c_str(), dset, OPT_NONE);
+        }
     }
     if (err) {
         handle_gretl_error(err);

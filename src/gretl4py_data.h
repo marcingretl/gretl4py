@@ -179,6 +179,8 @@ public:
 
     void new_list (const std::string &name, const std::string &value);
 
+     void dummify (const std::string &varlist, const py::kwargs &kwargs);
+
     void gretl_series_set_label (const int number, char *label);
 
     template<GretlCmdIndex CI>

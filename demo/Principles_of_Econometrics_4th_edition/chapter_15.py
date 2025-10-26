@@ -30,3 +30,17 @@ print("\nTable 15.2 Pooled Least Squares Estimates of Wage Equation")
 mdls = [POLS, POLS_robust]
 gretl.modeltab(mdls)
 
+############################################
+# 15.3. The Fixed Effects Model
+############################################
+print("\n15.3. The Fixed Effects Model")
+print("\n15.3.1. The Least Squares Dummy Variable Estimator for Small N")
+nls_panel.sample(t1=1, t2=10, unit=True)
+nls_panel.dummify("id")
+LSQD = gretl.ols(formula="lwage exper exper2 tenure tenure2 union Did_*").fit()   # (15.9)
+print(LSQD)
+
+
+nls_panel.sample(full=True)
+
+
