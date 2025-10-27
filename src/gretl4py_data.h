@@ -125,7 +125,6 @@ private:
     GretlPrint GP = GretlPrint();           // printer (instance wide)
     mutable GretlTypesPtr RES_other;        // other results (accessor, tests, ets)
     gretlopt opt = OPT_NONE;
-    bool is_panel_;
 
     void allocate_dset (void);
 

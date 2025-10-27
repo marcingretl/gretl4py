@@ -834,8 +834,6 @@ GretlDataset::GretlDataset (const std::string &fname,
         destroy_dataset(dset);
         handle_gretl_error(err);
     }
-
-    is_panel_ = static_cast<bool>(dataset_is_panel(dset));
 }
 
 GretlDataset::GretlDataset (const py::dict &pydict) : id(next_obj_id++)
@@ -884,8 +882,6 @@ GretlDataset::GretlDataset (const py::dict &pydict) : id(next_obj_id++)
     dset->structure = get_int_from_python_dict(pydict, "structure", 0);
     opt = setobs_opt_from_structure(dset->structure);
     set_obs(std::to_string(pd).c_str(), dset->S[0], dset, opt);
-
-    is_panel_ = static_cast<bool>(dataset_is_panel(dset));
 }
 
 GretlDataset::~GretlDataset (void)
@@ -978,7 +974,7 @@ int GretlDataset::get_series_id (const std::string &series, const bool verbose) 
 
 bool GretlDataset::is_panel (void) const
 {
-    return is_panel_;
+    return static_cast<bool>(dataset_is_panel(dset));
 }
 
 py::dict GretlDataset::to_dict (void) const
