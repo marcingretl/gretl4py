@@ -221,9 +221,9 @@ public:
 class GretlBundle
 {
 private:
-    bool free_b = true;
-    gretl_bundle *b = NULL;
-    py::dict as_dict;
+    bool free_b_ = true;                            // if *b should be freed
+    gretl_bundle *b_ = NULL;                        // libgretl bundle pointer
+    py::dict as_dict_;                              // Python's dict() reprezentation
 
     template<typename T>
     void extract (const T &t);
