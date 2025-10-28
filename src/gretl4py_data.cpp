@@ -1107,12 +1107,14 @@ void GretlDataset::dummify (const std::string &varlist,
     opt = OPT_NONE;
 
     // we set opts
-    for (auto &item : kwargs) {
-        if (!is_pystr(item.first)) {
-            throw std::invalid_argument("option key must be a string");
+    if (py::len(kwargs) > 0) {
+        for (auto &item : kwargs) {
+            if (!is_pystr(item.first)) {
+                throw std::invalid_argument("option key must be a string");
+            }
+            const std::string &key = item.first.cast<std::string>();
+            gretl_valid_long_opt(opt, DUMMIFY, key, item.second);
         }
-        const std::string &key = item.first.cast<std::string>();
-        gretl_valid_long_opt(opt, DUMMIFY, key, item.second);
     }
 
     // we construct list of variables
