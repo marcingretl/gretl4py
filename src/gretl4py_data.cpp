@@ -2054,7 +2054,7 @@ const char *GretlPrint::get_buffer (void)
 //
 GretlPackage::GretlPackage (const std::string &pkg_name,
                             const std::string &suffix)
-                            : pkg_name(pkg_name), suffix(suffix)
+                            : pkg_name_(pkg_name), suffix_(suffix)
 {
     const std::unordered_set<UfunRole> excluded_roles = { UFUN_BUNDLE_PLOT,
             UFUN_GUI_MAIN, UFUN_GUI_PRECHECK, UFUN_PLOT_PRECHECK, UFUN_UI_MAKER };
@@ -2073,28 +2073,28 @@ GretlPackage::GretlPackage (const std::string &pkg_name,
     if (err) {
         handle_gretl_error(err);
     }
-    pkg = get_function_package_by_filename(path, &err);
+    pkg_ = get_function_package_by_filename(path, &err);
     if (err) {
         handle_gretl_error(err);
     }
     std::string full_path = path;
     auto pos = full_path.find_last_of("/\\");
     if (pos != std::string::npos) {
-        base_dir = full_path.substr(0, pos);
+        base_dir_ = full_path.substr(0, pos);
     } else {
-        base_dir = "";
+        base_dir_ = "";
     }
 
     // setup some basic info about package
-    if (pkg_name != function_package_get_name(pkg)) {
+    if (pkg_name != function_package_get_name(pkg_)) {
         throw std::runtime_error("package name mismatch: internal: '"
-                                 + std::string(function_package_get_name(pkg))
-                                 + "', provided: '" + pkg_name + "'");
+                                 + std::string(function_package_get_name(pkg_))
+                                 + "', provided: '" + pkg_name_ + "'");
     }
     function_names_init();
 
     // we look up for JEL codes
-    jel = get_properties<std::vector<std::string>>("tags");
+    jel_ = get_properties<std::vector<std::string>>("tags");
 
     // we grab only public functions (names and indexes)
     // Note: we exclude functions with specific roles (mostly related with plotting and GUI)
@@ -2106,40 +2106,40 @@ GretlPackage::GretlPackage (const std::string &pkg_name,
     }
 
     // we register functions metadata
-    while (const char* func_name = next_available_function_name(pkg, &idxp)) {
+    while (const char* func_name = next_available_function_name(pkg_, &idxp)) {
         if (gretl_is_public_user_function(func_name) && !excluded_functions.count(func_name)) {
             // pointers
-            auto func_ptr = get_function_from_package(func_name, pkg);
+            auto func_ptr = get_function_from_package(func_name, pkg_);
             if (!func_ptr) {
                 throw std::runtime_error("unable to get pointer to function: "
                                          + std::string(func_name));
             }
-            func_ptrs.emplace(func_name, std::move(func_ptr));
+            func_ptrs_.emplace(func_name, std::move(func_ptr));
             // arguments
             std::map<std::string, int> arg_names_tmp;
             for (int i=0; i<fn_n_params(func_ptr); ++i) {
                 arg_names_tmp.emplace(fn_param_name(func_ptr, i), i);
             }
-            func_args.emplace(func_name, std::move(arg_names_tmp));
+            func_args_.emplace(func_name, std::move(arg_names_tmp));
         }
     }
-    if (func_ptrs.empty()) {
+    if (func_ptrs_.empty()) {
         throw std::runtime_error("no public functions found in '"
                                  + pkg_name + "' package");
     }
 
     // we try to register package 'main' function (i.e. the one to call via ::fit())
-    if (func_ptrs.size() == 1) {
-        set_main(func_ptrs.begin()->first);
+    if (func_ptrs_.size() == 1) {
+        set_main(func_ptrs_.begin()->first);
     } else {
         // some heuristics here
         // at first: name of the package
-        auto it = func_ptrs.find(pkg_name);
-        if (it != func_ptrs.end()) {
+        auto it = func_ptrs_.find(pkg_name);
+        if (it != func_ptrs_.end()) {
             set_main(it->first);
         } else {
             // second: we look for 'estimate' in function name
-            for (auto it : func_ptrs) {
+            for (auto it : func_ptrs_) {
                 if (it.first.find("estimate") != std::string::npos) {
                     set_main(it.first);
                 }
@@ -2149,13 +2149,13 @@ GretlPackage::GretlPackage (const std::string &pkg_name,
     check_if_defines_estimator();
 
     // package summary
-    oss << std::fixed << std::setprecision(2) << function_package_get_version(pkg);
-    py::print("We use '" + pkg_name + "' package, version: " + oss.str()
+    oss << std::fixed << std::setprecision(2) << function_package_get_version(pkg_);
+    py::print("We use '" + pkg_name_ + "' package, version: " + oss.str()
               + ", JEL codes: " + get_properties<std::string>("tags")
               + " (" + get_properties<std::string>("author") + ")"
-              + "\n  main function: " + (main_func.empty() ? "none" : main_func)
-              + ", provides estimator: " + (defines_estimator ? "yes" : "no"));
-    if (main_func.empty()) {
+              + "\n  main function: " + (main_func_.empty() ? "none" : main_func_)
+              + ", provides estimator: " + (defines_estimator_ ? "yes" : "no"));
+    if (main_func_.empty()) {
         py::print("warning: package main function didn't found: please use ::set_main()");
     }
     py::print();
@@ -2163,7 +2163,7 @@ GretlPackage::GretlPackage (const std::string &pkg_name,
 
 GretlPackage::~GretlPackage (void)
 {
-    err = function_package_unload_full(pkg_name.c_str());
+    err = function_package_unload_full(pkg_name_.c_str());
     if (err) {
         std::cerr << errmsg_get_with_default(err) << std::endl;
     }
@@ -2176,9 +2176,9 @@ void GretlPackage::check_if_defines_estimator (void)
         "C25", "C26", "C30", "C31", "C32", "C33", "C34", "C35",
         "C36", "C40", "C41", "C51", "C52", "C53", "C54", "C58"};
 
-    for (const auto &it : jel) {
+    for (const auto &it : jel_) {
         if (estimation_codes.count(it)) {
-            defines_estimator = true;
+            defines_estimator_ = true;
             return;
         }
     }
@@ -2194,9 +2194,9 @@ T GretlPackage::get_properties (const char *property)
     gchar *val = nullptr;
 
     if constexpr (std::is_same_v<T, DataReq>) {
-        err = function_package_get_properties(pkg, property, &res, NULL);
+        err = function_package_get_properties(pkg_, property, &res, NULL);
     } else {
-        err = function_package_get_properties(pkg, property, &val, NULL);
+        err = function_package_get_properties(pkg_, property, &val, NULL);
     }
     if (err) {
         handle_gretl_error(err);
@@ -2355,33 +2355,33 @@ void GretlPackage::unpack_kwargs_package (const std::string &func_name,
 void GretlPackage::set_main (const std::string &name)
 {
     // we register main_func
-    auto it = func_ptrs.find(name);
-    if (it != func_ptrs.end()) {
-        main_func = name;
+    auto it = func_ptrs_.find(name);
+    if (it != func_ptrs_.end()) {
+        main_func_ = name;
     } else {
         throw std::invalid_argument("there is no such function: " + name);
     }
 
     // we register all non-optional arguments with types
-    if (!main_func_nd.empty()) {
-        main_func_nd.clear();
+    if (!main_func_nd_.empty()) {
+        main_func_nd_.clear();
     }
-    auto main_func_args = func_args.at(name);
+    auto main_func_args = func_args_.at(name);
     for (const auto &[key, val] : main_func_args) {
         if (!fn_param_optional(it->second, val) && !fn_param_has_default(it->second, val)) {
-            main_func_nd.emplace(key, static_cast<GretlType>(fn_param_type(it->second, val)));
+            main_func_nd_.emplace(key, static_cast<GretlType>(fn_param_type(it->second, val)));
         }
     }
 }
 
 std::string GretlPackage::get_name (void) const
 {
-    return pkg_name;
+    return pkg_name_;
 }
 
 void GretlPackage::show_functions (void) const
 {
-    if (func_args.empty()) {
+    if (func_args_.empty()) {
         throw std::runtime_error("no available functions");
     }
 
@@ -2389,11 +2389,11 @@ void GretlPackage::show_functions (void) const
     std::string type_str;
     ufunc *func_ptr;
 
-    py::print("Functions available in " + pkg_name + " package:");
-    for (const auto &[key, val] : func_args) {
-        func_ptr = func_ptrs.at(key);
+    py::print("Functions available in " + pkg_name_ + " package:");
+    for (const auto &[key, val] : func_args_) {
+        func_ptr = func_ptrs_.at(key);
         type = static_cast<GretlType>(user_func_get_return_type(func_ptr));
-        py::print(key, "->", gretl_type_get_name(type), (key == main_func ? "[main] " : ""));
+        py::print(key, "->", gretl_type_get_name(type), (key == main_func_ ? "[main] " : ""));
         for (const auto &it : val) {
             type = static_cast<GretlType>(fn_param_type(func_ptr, it.second));
             auto default_value = fn_param_default(func_ptr, it.second);
@@ -2420,13 +2420,13 @@ void GretlPackage::show_functions (void) const
 
 py::list GretlPackage::get_functions (void) const
 {
-    if (func_args.empty()) {
+    if (func_args_.empty()) {
         throw std::runtime_error("no available functions");
     }
 
     py::list res;
 
-    for (auto &it : func_args) {
+    for (auto &it : func_args_) {
         res.append(it.first);
     }
 
@@ -2435,14 +2435,14 @@ py::list GretlPackage::get_functions (void) const
 
 bool GretlPackage::is_estimator (void) const
 {
-    return defines_estimator;
+    return defines_estimator_;
 }
 
 std::map<std::string, int> GretlPackage::get_func_args (const std::string &fun_name) const
 {
-    auto it = func_args.find(fun_name);
+    auto it = func_args_.find(fun_name);
 
-    if (it != func_args.end()) {
+    if (it != func_args_.end()) {
         return it->second;
     } else {
         throw std::invalid_argument("there is no such function: " + fun_name);
@@ -2451,14 +2451,14 @@ std::map<std::string, int> GretlPackage::get_func_args (const std::string &fun_n
 
 std::string GretlPackage::main_func_get_name (void) const
 {
-    return main_func;
+    return main_func_;
 }
 
 ufunc *GretlPackage::func_get_ptr (const std::string &name) const
 {
-    auto it = func_ptrs.find(name);
+    auto it = func_ptrs_.find(name);
 
-    if (it != func_ptrs.end()) {
+    if (it != func_ptrs_.end()) {
         return it->second;
     } else {
         throw std::invalid_argument("unknown function: " + name);
@@ -2467,9 +2467,9 @@ ufunc *GretlPackage::func_get_ptr (const std::string &name) const
 
 GretlType GretlPackage::func_get_res_type (const std::string &name) const
 {
-    auto it = func_ptrs.find(name);
+    auto it = func_ptrs_.find(name);
 
-    if (it != func_ptrs.end()) {
+    if (it != func_ptrs_.end()) {
         return static_cast<GretlType>(user_func_get_return_type(it->second));
     } else {
         throw std::invalid_argument("unknown function: " + name);
@@ -2517,7 +2517,7 @@ GretlPackageRes GretlPackage::function_exec (const std::string &func_name,
 
 std::string GretlPackage::get_examples_path (const std::string &fname)
 {
-    std::string examples_path = base_dir;
+    std::string examples_path = base_dir_;
 
 #if defined(_WIN32)
     examples_path.append("\\examples");

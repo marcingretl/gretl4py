@@ -112,7 +112,6 @@ public:
     const char *get_buffer (void);
 };
 
-
 //
 // Class to handle gretl 'DATASET' type
 //
@@ -286,17 +285,16 @@ private:
         std::map<std::string, std::map<std::string, int>>;  // map of arguments and their id-s for public functions
     using MainFuncNoOptDef = std::map<std::string, GretlType>;// map of non-optional main_func arguments without default values
 
-    const std::string pkg_name;     // package name (base of filename)
-    const std::string suffix;       // filename suffix
-    fnpkg *pkg = NULL;              // pointer to package
-    std::string main_func = "";     // name of main package function
-    std::vector<std::string> jel;   // vector of JEL codes
-    bool defines_estimator = false; // true if package implements estimation
-    FunctionMap func_ptrs;
-    FunctionArgs func_args;
-    MainFuncNoOptDef main_func_nd;
-    std::string base_dir;           // path to the package
-    int err = 0;
+    const std::string pkg_name_;        // package name (base of filename)
+    const std::string suffix_;          // filename suffix
+    fnpkg *pkg_ = NULL;                 // pointer to package
+    std::string main_func_ = "";        // name of main package function
+    std::vector<std::string> jel_;      // vector of JEL codes
+    bool defines_estimator_ = false;    // true if package implements estimation
+    FunctionMap func_ptrs_;
+    FunctionArgs func_args_;
+    MainFuncNoOptDef main_func_nd_;
+    std::string base_dir_;              // path to the package
 
     void check_if_defines_estimator (void);
 
@@ -308,6 +306,8 @@ private:
                                 GretlDatasetPtr &GD,
                                 const py::kwargs &kwargs);
 public:
+    int err = 0;
+
     // Note: constructor does everything: load pkg, scan functions, register self
     GretlPackage (const std::string &pkg_name, const std::string &suffix);
     ~GretlPackage (void);
