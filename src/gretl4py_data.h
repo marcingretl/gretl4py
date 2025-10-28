@@ -118,12 +118,12 @@ public:
 class GretlDataset : public std::enable_shared_from_this<GretlDataset>
 {
 private:
-    static inline int next_obj_id = 1;
-    const int id;                           // dataset's id
-    std::unordered_set<int> linked_models;  // models (id-s) which use this dataset
-    GretlPrint GP = GretlPrint();           // printer (instance wide)
-    mutable GretlTypesPtr RES_other;        // other results (accessor, tests, ets)
-    gretlopt opt = OPT_NONE;
+    static inline int next_obj_id_ = 1;
+    const int id_;                          // dataset's id
+    std::unordered_set<int> linked_models_; // models (id-s) which use this dataset
+    GretlPrint GP_ = GretlPrint();          // printer (instance wide)
+    mutable GretlTypesPtr RES_other_;       // other results (accessor, tests, ets)
+    gretlopt opt_ = OPT_NONE;               // instance-wide options
 
     void allocate_dset (void);
 
