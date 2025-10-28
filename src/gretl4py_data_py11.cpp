@@ -18,6 +18,9 @@
  */
 
 #include "gretl4py_data.h"
+#include <random>
+#include <iostream>
+#include <filesystem>
 
 namespace py = pybind11;
 
@@ -40,12 +43,21 @@ void init_gretl4py_dataset_py11(py::module_ &m)
         .def("__copy__",
              [](const GretlDataset &src)
              {
+                 // for serializing filename
+                 std::random_device rd;
+                 std::mt19937_64 gen(rd());
+                 std::uniform_int_distribution<unsigned long long> dist(0, 1'000'000'000'000ULL);
                  const std::string dotdir = gretl_dotdir();
-                 const std::string fname = dotdir + "gretl4py_tmp.gdt";
+                 const std::string fname = dotdir + std::to_string(dist(gen)) + ".gdtb";
 
                  src.to_file(fname);
                  auto dst = std::make_shared<GretlDataset>(fname, py::dict());
                  dst->source = src.source + " (copy of " + std::to_string(src.get_id()) + ")";
+
+                 //we delete the file
+                 if (std::filesystem::exists(fname)) {
+                     std::filesystem::remove(fname);
+                 }
 
                  return dst;
              },
