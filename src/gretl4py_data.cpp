@@ -2006,9 +2006,9 @@ void MapPyToCpp::convert (const T *pyobj)
 //
 // GretlPrint class methods
 //
-GretlPrint::GretlPrint (PrnType prn_type) : prn_type(prn_type)
+GretlPrint::GretlPrint (PrnType prn_type) : prn_type_(prn_type)
 {
-    prn = gretl_print_new(this->prn_type, &err);
+    prn_ = gretl_print_new(this->prn_type_, &err);
     if (err) {
         handle_gretl_error(err);
     }
@@ -2016,27 +2016,27 @@ GretlPrint::GretlPrint (PrnType prn_type) : prn_type(prn_type)
 
 GretlPrint::~GretlPrint (void)
 {
-    if (prn != NULL) {
-        gretl_print_destroy(prn);
+    if (prn_ != NULL) {
+        gretl_print_destroy(prn_);
     }
 }
 
 PRN *GretlPrint::prn_ptr (void)
 {
     // at first we always reset a buffer
-    if (prn_type == GRETL_PRINT_BUFFER) {
-        err = gretl_print_reset_buffer(prn);
+    if (prn_type_ == GRETL_PRINT_BUFFER) {
+        err = gretl_print_reset_buffer(prn_);
         if (err) {
             handle_gretl_error(err);
         }
     }
 
-    return prn;
+    return prn_;
 }
 
 void GretlPrint::print (void)
 {
-    const char *buf = gretl_print_get_buffer(prn);
+    const char *buf = gretl_print_get_buffer(prn_);
 
     if (buf != NULL && *buf != '\0') { //as of 2025-08-22 we don't print empty line
         py::print(buf);
@@ -2045,7 +2045,7 @@ void GretlPrint::print (void)
 
 const char *GretlPrint::get_buffer (void)
 {
-    return gretl_print_get_buffer(prn);
+    return gretl_print_get_buffer(prn_);
 }
 
 

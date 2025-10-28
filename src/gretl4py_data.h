@@ -97,8 +97,8 @@ PythonArgInfo inspect_pyobject (py::handle obj);
 class GretlPrint
 {
 private:
-    PRN *prn = NULL;
-    PrnType prn_type;
+    PRN *prn_ = NULL;           // libgretl PRN struct
+    PrnType prn_type_;          // libgretl printer type
 public:
     int err = 0;
 
