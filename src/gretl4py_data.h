@@ -261,7 +261,7 @@ public:
 class MapPyToCpp
 {
 private:
-    std::string as_str;
+    std::string as_str_;
 
     template<typename T>
     void convert (const T *pyobj);
@@ -271,9 +271,9 @@ public:
     MapPyToCpp (const std::optional<py::object> &pyobject);
     MapPyToCpp (const py::handle &pyhandle);
 
-    inline std::string to_string (void) const { return as_str; }
+    inline std::string to_string (void) const { return as_str_; }
 
-    inline std::string_view to_string_view (void) const { return static_cast<std::string_view>(as_str); }
+    inline std::string_view to_string_view (void) const { return static_cast<std::string_view>(as_str_); }
 };
 
 //

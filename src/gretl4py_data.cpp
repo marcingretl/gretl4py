@@ -1984,14 +1984,14 @@ void MapPyToCpp::convert (const T *pyobj)
                 py::cast<std::string>(pyobj->get_type()).c_str());
 # endif
     if (is_pystr(*pyobj)) {
-        as_str = py::cast<std::string>(*pyobj);
+        as_str_ = py::cast<std::string>(*pyobj);
     } else if (is_pyint(*pyobj) || is_pybool(*pyobj)) {
-        as_str = std::to_string(py::cast<int>(*pyobj));
+        as_str_ = std::to_string(py::cast<int>(*pyobj));
     } else if (is_pyfloat(*pyobj)) {
-        as_str = std::to_string(py::cast<double>(*pyobj));
+        as_str_ = std::to_string(py::cast<double>(*pyobj));
     } else {
         err = E_TYPES;
-        as_str.clear();
+        as_str_.clear();
         std::cerr << "I don't know how to convert '";
 #if PYBIND11_VERSION_MAJOR < 3
         std::cerr << py::cast<std::string>(pyobj->get_type());
