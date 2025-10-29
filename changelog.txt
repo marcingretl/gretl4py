@@ -5,6 +5,8 @@ version 0.32:
     - native copy constructor for GretlDataset
     - add 'slicer' to GretlDataset binding
     - add 'n' property do GretlDataset
+    - add 'range' option for GretlDataset::print
+    - add two new methods for GretlDataset: ::head() and ::tail()
 
 version 0.31:
     - allow 'quiet' option for VAR/VECM

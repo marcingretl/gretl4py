@@ -1398,8 +1398,11 @@ void GretlDataset::sample (const py::kwargs &kwargs)
     GP_.print();
 }
 
-GretlDatasetPtr GretlDataset::slice (const py::object &rule)
+GretlDatasetPtr GretlDataset::getitem (const py::object &rule)
 {
+    //
+    // this method is an underlying engine for '[]' operator
+    //
     py::dict opts;
     bool known_rule = false;
 

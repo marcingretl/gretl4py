@@ -158,7 +158,7 @@ public:
 
     void sample (const py::kwargs &kwargs);
 
-    GretlDatasetPtr slice (const py::object &rule);
+    GretlDatasetPtr getitem (const py::object &rule);
 
     py::object corr (const std::string &vars, const py::kwargs &kwargs);
 
