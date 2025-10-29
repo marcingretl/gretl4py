@@ -1236,6 +1236,8 @@ void GretlDataset::print (const py::kwargs &kwargs)
     gretl_list_ptr var_list{nullptr};
     bool summary = false;
     bool byobs = false;
+    bool range = false;
+    std::string val_str = "";
     opt_ = OPT_NONE;
 
     for (auto &item : kwargs) {
@@ -1246,7 +1248,7 @@ void GretlDataset::print (const py::kwargs &kwargs)
         const std::string &key = item.first.cast<std::string>();
 
         // we use ::to_string() to get an owned buffer
-        std::string val_str = MapPyToCpp(item.second).to_string();
+        val_str = MapPyToCpp(item.second).to_string();
 
         if (key == "summary") {
             summary = (val_str == "1");
@@ -1262,8 +1264,16 @@ void GretlDataset::print (const py::kwargs &kwargs)
             if (err) {
                 handle_gretl_error(err);
             }
+        } else if (key == "range") {
+            auto pos = val_str.find(':');
+
+            if (pos != std::string::npos && val_str.find(':', pos + 1) == std::string::npos) {
+                gretl_valid_long_opt(opt_, PRINT, "range", py::handle(), val_str.c_str());
+                range = true;
+            } else {
+                throw std::invalid_argument("range: only one ':' is allowed");
+            }
         } else {
-            summary = byobs = false;
             throw std::invalid_argument("print: invalid key '" + key + "'");
         }
     }
@@ -1285,6 +1295,9 @@ void GretlDataset::print (const py::kwargs &kwargs)
         list_series(dset, OPT_NONE, GP_.prn_ptr());
     } else {
         opt_ = byobs ? OPT_O : OPT_NONE;
+        if (range) {
+            SET_OPT(opt_, OPT_R);
+        }
         err = printdata(var_list.get(), NULL, dset, opt_, GP_.prn_ptr());
         if (err) {
             handle_gretl_error(err);
