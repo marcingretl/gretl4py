@@ -34,11 +34,14 @@ extern "C" {
     #include <gretl/gretl_typemap.h>
     #include <gretl/uservar.h>
     #include <gretl/transforms.h>
+    #include <gretl/dataset.h>
 }
 #include <algorithm>
 #include <string>
 #include <cassert>
 #include <iomanip>
+#include <random>
+#include <filesystem>
 
 #define F_CONTIGUOUS py::detail::npy_api::constants::NPY_ARRAY_F_CONTIGUOUS_
 #define is_NumPyArrayFC(m) ((m.flags() & F_CONTIGUOUS))
@@ -882,6 +885,80 @@ GretlDataset::GretlDataset (const py::dict &pydict) : id_(next_obj_id_++)
     dset->structure = get_int_from_python_dict(pydict, "structure", 0);
     opt = setobs_opt_from_structure(dset->structure);
     set_obs(std::to_string(pd).c_str(), dset->S[0], dset, opt);
+}
+
+GretlDataset::GretlDataset (const GretlDataset &src) : id_(next_obj_id_++)
+{
+    if (!src.dset) {
+        handle_gretl_error(E_DATA);
+    }
+
+    allocate_dset();
+    if (!dset) {
+        handle_gretl_error(E_ALLOC);
+    }
+
+    // simple types
+    dset->v = src.dset->v;
+    dset->n = src.dset->n;
+    dset->pd = src.dset->pd;
+    dset->structure = src.dset->structure;
+    dset->sd0 = src.dset->sd0;
+    dset->t1 = src.dset->t1;
+    dset->t2 = src.dset->t2;
+    dset->markers = src.dset->markers;
+    //dset->modflag = src.dset->modflag;    //FIXME: shall we copy this as well?
+    dset->rseed = src.dset->rseed;
+    dset->auxiliary = src.dset->auxiliary;
+    dset->n_varinfo = src.dset->n_varinfo;
+    dset->panel_pd = src.dset->panel_pd;
+    dset->panel_sd0 = src.dset->panel_sd0;
+    std::strncpy(dset->stobs, src.dset->stobs, OBSLEN);
+    std::strncpy(dset->endobs, src.dset->endobs, OBSLEN);
+
+    // we allocate memory
+    err = allocate_Z(dset, OPT_NONE);
+    if (err) {
+        handle_gretl_error(err);
+    }
+    err = dataset_allocate_varnames(dset);
+    if (err) {
+        handle_gretl_error(err);
+    }
+    err = dataset_allocate_obs_markers(dset);
+    if (err) {
+        handle_gretl_error(err);
+    }
+
+    // dset->Z
+    for (int i=1; i<dset->v; ++i) {
+        std::memcpy(dset->Z[i], src.dset->Z[i], src.dset->n * sizeof(double));
+    }
+
+    // dset->varname and dset->VARINFO
+    for (int i=0; i<src.dset->v-1; ++i) {
+        std::memset(dset->varname[i+1], '\0', VNAMELEN);
+        gretl_normalize_varname(dset->varname[i+1], src.dset->varname[i+1], 1, 0);
+        copy_varinfo(dset->varinfo[i], src.dset->varinfo[i]);
+    }
+
+    // dset->S
+    copy_dataset_obs_info(dset, src.dset);
+
+    // simple strings
+    if (src.dset->descrip)     dset->descrip     = strdup(src.dset->descrip);
+    if (src.dset->submask)     dset->submask     = strdup(src.dset->submask);
+    if (src.dset->restriction) dset->restriction = strdup(src.dset->restriction);
+    if (src.dset->padmask)     dset->padmask     = strdup(src.dset->padmask);
+    if (src.dset->mapfile)     dset->mapfile     = strdup(src.dset->mapfile);
+    if (src.dset->pangrps)     dset->pangrps     = strdup(src.dset->pangrps);
+
+    // we mark it as copy of ...
+    if (!src.source.empty()) {
+        source = src.source + " (copy of " + std::to_string(src.get_id()) + ")";
+    } else {
+        source = "copy of dataset " + std::to_string(src.get_id());
+    }
 }
 
 GretlDataset::~GretlDataset (void)

@@ -18,9 +18,11 @@
  */
 
 #include "gretl4py_data.h"
+/*
 #include <random>
 #include <iostream>
 #include <filesystem>
+*/
 
 namespace py = pybind11;
 
@@ -40,7 +42,7 @@ void init_gretl4py_dataset_py11(py::module_ &m)
                       py::arg("fname").none(false), py::arg("kwargs") = py::dict(),
                       py::kw_only())
         .def(py::init([](const py::dict &pydict) { return std::make_shared<GretlDataset>(pydict); }))
-        .def("__copy__",
+        /*.def("__copy__",
              [](const GretlDataset &src)
              {
                  // for serializing filename
@@ -60,6 +62,19 @@ void init_gretl4py_dataset_py11(py::module_ &m)
                  }
 
                  return dst;
+             },
+             py::return_value_policy::take_ownership)*/
+        .def("__copy__",
+             [](const GretlDataset &src)
+             {
+                 py::print("Note, that we perform deepcopy here.");
+                 return std::make_shared<GretlDataset>(src);
+             },
+             py::return_value_policy::take_ownership)
+        .def("__deepcopy__",
+             [](const GretlDataset &src)
+             {
+                 return std::make_shared<GretlDataset>(src);
              },
              py::return_value_policy::take_ownership)
         .def_readonly("is_default", &GretlDataset::is_default)

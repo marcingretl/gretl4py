@@ -143,6 +143,7 @@ public:
     GretlDataset (const std::string &fname,
                   const py::dict &kwargs);      // we load dataset from file (with optional flags as kwargs)
     GretlDataset (const py::dict &pydict);      // we load dataset from Python's dictionary
+    GretlDataset (const GretlDataset &src);     // copy constructor
     virtual ~GretlDataset (void);               // virtual, because GretlModel use it as std::shared_ptr
 
     bool is_panel (void) const;
