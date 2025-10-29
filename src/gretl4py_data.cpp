@@ -889,6 +889,9 @@ GretlDataset::GretlDataset (const py::dict &pydict) : id_(next_obj_id_++)
 
 GretlDataset::GretlDataset (const GretlDataset &src) : id_(next_obj_id_++)
 {
+    //
+    // copy constructor
+    //
     if (!src.dset) {
         handle_gretl_error(E_DATA);
     }
@@ -1380,6 +1383,56 @@ void GretlDataset::sample (const py::kwargs &kwargs)
         print_smpl(dset, get_full_length_n(), OPT_NONE, GP_.prn_ptr());
     }
     GP_.print();
+}
+
+GretlDatasetPtr GretlDataset::slice (const py::object &rule)
+{
+    py::dict opts;
+    bool known_rule = false;
+
+    if (py::isinstance<py::slice>(rule)) {
+        py::slice slice = rule.cast<py::slice>();
+
+        py::object start = slice.attr("start");
+        py::object stop = slice.attr("stop");
+        int t1 = py::isinstance<py::none>(start) ? 0 : start.cast<int>();
+        int t2 = py::isinstance<py::none>(stop)  ? 0 : stop.cast<int>();
+        opts["t1"] = t1;
+        opts["t2"] = t2;
+        known_rule = true;
+    } else if (is_pystr(rule)) {
+        std::string slice = rule.cast<std::string>();
+        auto pos = slice.find(':');
+
+        // at first we check if we deal with range slicer
+        if (pos != std::string::npos && slice.find(':', pos + 1) == std::string::npos) { // exactly one ':'
+            std::string t1 = slice.substr(0, pos);
+            std::string t2 = slice.substr(pos + 1);
+            opts["t1"] = t1;
+            opts["t2"] = t2;
+        } else {
+            opts["restriction"] = slice;
+        }
+        known_rule = true;
+    }
+
+    if (!known_rule) {
+        throw std::invalid_argument("unknown slicing rule: " + py::str(rule).cast<std::string>());
+    }
+
+    // me make copy of current instance
+    auto RES = std::make_shared<GretlDataset>(*this);
+
+    // we do the job
+    RES->sample(opts);
+    err = perma_sample(RES->dset, OPT_T, GP_.prn_ptr(), NULL);
+    if (err) {
+        GP_.print();
+        handle_gretl_error(err);
+    }
+    RES->source += " slice: " + py::str(rule).cast<std::string>();
+
+    return RES;
 }
 
 py::object GretlDataset::corr (const std::string &vars, const py::kwargs &kwargs)

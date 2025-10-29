@@ -18,11 +18,6 @@
  */
 
 #include "gretl4py_data.h"
-/*
-#include <random>
-#include <iostream>
-#include <filesystem>
-*/
 
 namespace py = pybind11;
 
@@ -42,28 +37,6 @@ void init_gretl4py_dataset_py11(py::module_ &m)
                       py::arg("fname").none(false), py::arg("kwargs") = py::dict(),
                       py::kw_only())
         .def(py::init([](const py::dict &pydict) { return std::make_shared<GretlDataset>(pydict); }))
-        /*.def("__copy__",
-             [](const GretlDataset &src)
-             {
-                 // for serializing filename
-                 std::random_device rd;
-                 std::mt19937_64 gen(rd());
-                 std::uniform_int_distribution<unsigned long long> dist(0, 1'000'000'000'000ULL);
-                 const std::string dotdir = gretl_dotdir();
-                 const std::string fname = dotdir + std::to_string(dist(gen)) + ".gdtb";
-
-                 src.to_file(fname);
-                 auto dst = std::make_shared<GretlDataset>(fname, py::dict());
-                 dst->source = src.source + " (copy of " + std::to_string(src.get_id()) + ")";
-
-                 //we delete the file
-                 if (std::filesystem::exists(fname)) {
-                     std::filesystem::remove(fname);
-                 }
-
-                 return dst;
-             },
-             py::return_value_policy::take_ownership)*/
         .def("__copy__",
              [](const GretlDataset &src)
              {
@@ -80,6 +53,7 @@ void init_gretl4py_dataset_py11(py::module_ &m)
         .def_readonly("is_default", &GretlDataset::is_default)
         .def_readwrite("source", &GretlDataset::source)
         .def("__repr__", &GretlDataset::repr)
+        .def("__getitem__", &GretlDataset::slice, py::return_value_policy::take_ownership)
         .def("get_id", &GretlDataset::get_id)
         .def("set_as_default", &GretlDataset::set_as_default)
         .def("sample", &GretlDataset::sample)
