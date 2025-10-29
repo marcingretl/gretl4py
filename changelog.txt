@@ -2,6 +2,9 @@ version 0.32:
     - add GretlaDataset::dummyfi() method
     - add '--unit' and '--time' options to GretlaDataset::sample()
     - Pooled OLS tweaks
+    - native copy constructor for GretlDataset
+    - add 'slicer' to GretlDataset binding
+    - add 'n' property do GretlDataset
 
 version 0.31:
     - allow 'quiet' option for VAR/VECM

@@ -52,6 +52,11 @@ void init_gretl4py_dataset_py11(py::module_ &m)
              py::return_value_policy::take_ownership)
         .def_readonly("is_default", &GretlDataset::is_default)
         .def_readwrite("source", &GretlDataset::source)
+        .def_property_readonly("n",
+                               [](const GretlDataset &src)
+                               {
+                                   return src.dset->n;
+                               })
         .def("__repr__", &GretlDataset::repr)
         .def("__getitem__", &GretlDataset::slice, py::return_value_policy::take_ownership)
         .def("get_id", &GretlDataset::get_id)
