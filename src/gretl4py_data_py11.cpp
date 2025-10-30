@@ -26,7 +26,7 @@ extern GretlDatasetPtr DSET;
 // signature from libgretl
 const char *gretl_workdir (void);
 
-enum HeadTail { HEAD, TAIL };
+enum HeadTail { HEAD, HEAD_T, TAIL, TAIL_T };
 
 template <HeadTail mode>
 static void head_tail_print (GretlDataset &src, int nobs)
@@ -34,16 +34,19 @@ static void head_tail_print (GretlDataset &src, int nobs)
     py::kwargs opts;
     nobs = nobs > src.dset->n ? src.dset->n : nobs;
 
-    if constexpr (mode == HEAD) {
+    if constexpr (mode == HEAD || mode == HEAD_T) {
         opts["range"] = std::to_string(src.dset->t1 + 1) +
                     ":" + std::to_string(src.dset->t1 + nobs);
-    } else if constexpr (mode == TAIL) {
+    } else if constexpr (mode == TAIL || mode == TAIL_T) {
         opts["range"] = std::to_string(src.dset->t2 - nobs + 2) +
                     ":" + std::to_string(src.dset->t2 + 1);
     } else {
         throw std::runtime_error("head_tail_print(): unknown mode");
     }
-    opts["byobs"] = true;
+
+    if constexpr (mode == HEAD || mode == TAIL) {
+        opts["byobs"] = true;
+    }
 
     src.print(opts);
 }
@@ -86,7 +89,9 @@ void init_gretl4py_dataset_py11(py::module_ &m)
         .def("__repr__", &GretlDataset::repr)
         .def("__getitem__", &GretlDataset::getitem, py::return_value_policy::take_ownership)
         .def("head", &head_tail_print<HEAD>, py::arg("nobs") = 5, py::kw_only())
+        .def("headT", &head_tail_print<HEAD_T>, py::arg("nobs") = 5, py::kw_only())
         .def("tail", &head_tail_print<TAIL>, py::arg("nobs") = 5, py::kw_only())
+        .def("tailT", &head_tail_print<TAIL_T>, py::arg("nobs") = 5, py::kw_only())
         .def("get_id", &GretlDataset::get_id)
         .def("set_as_default", &GretlDataset::set_as_default)
         .def("sample", &GretlDataset::sample)
