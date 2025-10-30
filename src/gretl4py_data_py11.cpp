@@ -63,28 +63,28 @@ void init_gretl4py_dataset_py11(py::module_ &m)
 
         .def("__repr__", &GretlDataset::repr)
         .def("__getitem__", &GretlDataset::getitem, py::return_value_policy::take_ownership)
-        .def("head", [](GretlDataset &src, int number)
+        .def("head", [](GretlDataset &src, int nobs)
              {
                  py::kwargs opts;
 
                  opts["range"] = std::to_string(src.dset->t1 + 1) +
-                    ":" + std::to_string(src.dset->t1 + number);
+                    ":" + std::to_string(src.dset->t1 + nobs);
                  opts["byobs"] = true;
 
                  src.print(opts);
              },
-             py::arg("number") = 5, py::kw_only())
-        .def("tail", [](GretlDataset &src, int number)
+             py::arg("nobs") = 5, py::kw_only())
+        .def("tail", [](GretlDataset &src, int nobs)
              {
                  py::kwargs opts;
 
-                 opts["range"] = std::to_string(src.dset->t2 - number + 2) +
+                 opts["range"] = std::to_string(src.dset->t2 - nobs + 2) +
                     ":" + std::to_string(src.dset->t2 + 1);
                  opts["byobs"] = true;
 
                  src.print(opts);
              },
-             py::arg("number") = 5, py::kw_only())
+             py::arg("nobs") = 5, py::kw_only())
         .def("get_id", &GretlDataset::get_id)
         .def("set_as_default", &GretlDataset::set_as_default)
         .def("sample", &GretlDataset::sample)

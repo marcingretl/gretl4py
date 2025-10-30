@@ -1404,7 +1404,9 @@ GretlDatasetPtr GretlDataset::getitem (const py::object &rule)
     // this method is an underlying engine for '[]' operator
     //
     py::dict opts;
+    gretl_list_ptr drop_list{nullptr};
     bool known_rule = false;
+    bool sample_rule = true;            // if we create by subsampling
 
     if (py::isinstance<py::slice>(rule)) {
         py::slice slice = rule.cast<py::slice>();
@@ -1412,10 +1414,34 @@ GretlDatasetPtr GretlDataset::getitem (const py::object &rule)
         py::object start = slice.attr("start");
         py::object stop = slice.attr("stop");
         int t1 = py::isinstance<py::none>(start) ? 0 : start.cast<int>();
-        int t2 = py::isinstance<py::none>(stop)  ? 0 : stop.cast<int>();
+        int t2 = py::isinstance<py::none>(stop) ? 0 : stop.cast<int>();
         opts["t1"] = t1;
         opts["t2"] = t2;
         known_rule = true;
+    } else if (is_pylist(rule)) {
+        py::list slice = rule.cast<py::list>();
+        int slice_size = slice.size();
+        std::string slice_str = "";
+        gretl_list_ptr slice_list{nullptr};
+        gretl_list_ptr full_list{nullptr};
+
+        for (int i=0; i<slice_size; ++i) {
+            slice_str += py::str(slice[i]).cast<std::string>();
+            if (i + 1 < slice_size) {
+                slice_str += " ";
+            }
+        }
+
+        // we construct list of variables in question
+        slice_list = list_from_formula(slice_str, dset, err);
+        if (err) {
+            handle_gretl_error(err);
+        }
+        full_list = gretl_list_ptr(full_var_list(dset, NULL));
+        drop_list = gretl_list_ptr(gretl_list_drop(full_list.get(), slice_list.get(), &err));
+
+        known_rule = true;
+        sample_rule = false;
     } else if (is_pystr(rule)) {
         std::string slice = rule.cast<std::string>();
         auto pos = slice.find(':');
@@ -1440,8 +1466,13 @@ GretlDatasetPtr GretlDataset::getitem (const py::object &rule)
     auto RES = std::make_shared<GretlDataset>(*this);
 
     // we do the job
-    RES->sample(opts);
-    err = perma_sample(RES->dset, OPT_T, GP_.prn_ptr(), NULL);
+    if (sample_rule) {
+        RES->sample(opts);
+        err = perma_sample(RES->dset, OPT_T, GP_.prn_ptr(), NULL);
+    } else {
+        err = gretl_delete_variables(drop_list.get(), NULL, OPT_F,
+                                     RES->dset, NULL, GP_.prn_ptr());
+    }
     if (err) {
         GP_.print();
         handle_gretl_error(err);
