@@ -2119,15 +2119,16 @@ void GretlBundle::set_element (const std::string &key, const T &t)
         err = gretl_bundle_set_string(b_, key.c_str(), t.c_str());
     } else if constexpr (std::is_same_v<T, py::array>) {
         NumPyArrayView arr_view;
+        gretl_matrix_ptr mat{nullptr};
 
         NumPyArray_extract(t, arr_view);
         if (!arr_view.data) {
             throw std::runtime_error("NumPy array: null pointer.");
         }
-        gretl_matrix *mat = gretl_matrix_alloc(arr_view.rows, arr_view.cols);
+        mat.reset(gretl_matrix_alloc(arr_view.rows, arr_view.cols));
 
-        NumPyArray_to_gretl_matrix<gretl_matrix>(arr_view, mat);
-        err = gretl_bundle_donate_data(b_, key.c_str(), mat, GRETL_TYPE_MATRIX, 0);
+        NumPyArray_to_gretl_matrix<gretl_matrix>(arr_view, mat.get());
+        err = gretl_bundle_donate_data(b_, key.c_str(), mat.release(), GRETL_TYPE_MATRIX, 0);
     } else if constexpr (std::is_same_v<T, GretlBundlePtr>) {
         err = gretl_bundle_set_data(b_, key.c_str(), t->get_ptr(), GRETL_TYPE_BUNDLE, 0);
     } else {
