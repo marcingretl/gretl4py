@@ -4,9 +4,10 @@ version 0.32:
     - Pooled OLS tweaks
     - native copy constructor for GretlDataset
     - add 'slicer' to GretlDataset binding
-    - add 'n' property do GretlDataset
-    - add 'range' option for GretlDataset::print
+    - add 'n' and 'k' properties do GretlDataset
+    - add 'range' option for GretlDataset::print()
     - add two new methods for GretlDataset: ::head() and ::tail()
+    - apparatus for slicing datasets
 
 version 0.31:
     - allow 'quiet' option for VAR/VECM

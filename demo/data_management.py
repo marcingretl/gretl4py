@@ -44,3 +44,16 @@ print(data97_gdt.print(series="QNC PRIME"))
 data97_df.setobs(periodicity=12, startobs="1899:1")
 data97_df.print()
 
+
+##############################################
+# head() and tail()
+##############################################
+# to print the first 5 observations
+data97_gdt.head() # default 5
+
+# to print the first 5 observations by variable
+data97_gdt.headT(6)
+
+# to print the last 4
+data97_gdt.tail(4)
+

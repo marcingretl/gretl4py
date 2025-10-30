@@ -1398,7 +1398,7 @@ void GretlDataset::sample (const py::kwargs &kwargs)
     if (have_args) {
         print_smpl(dset, get_full_length_n(), OPT_NONE, GP_.prn_ptr());
     }
-    if (!quiet) {   //FIXME: brute force, we must do it via OPT_Q!!!
+    if (!quiet) {
         GP_.print();
     }
 }
@@ -1418,7 +1418,7 @@ GretlDatasetPtr GretlDataset::getitem_impl (const T &slice)
         py::object start = slice.attr("start");
         py::object stop  = slice.attr("stop");
         int t1 = py::isinstance<py::none>(start) ? 0 : start.cast<int>();
-        int t2 = py::isinstance<py::none>(stop)  ? 0 : stop.cast<int>();
+        int t2 = py::isinstance<py::none>(stop) ? 0 : stop.cast<int>();
         opts["t1"] = t1;
         opts["t2"] = t2;
         slice_str = std::to_string(t1) + ":" + std::to_string(t2);
