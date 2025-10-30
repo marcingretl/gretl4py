@@ -1413,10 +1413,8 @@ GretlDatasetPtr GretlDataset::getitem (const py::object &rule)
 
         py::object start = slice.attr("start");
         py::object stop = slice.attr("stop");
-        int t1 = py::isinstance<py::none>(start) ? 0 : start.cast<int>();
-        int t2 = py::isinstance<py::none>(stop) ? 0 : stop.cast<int>();
-        opts["t1"] = t1;
-        opts["t2"] = t2;
+        opts["t1"] = py::isinstance<py::none>(start) ? 0 : start.cast<int>();
+        opts["t2"] = py::isinstance<py::none>(stop) ? 0 : stop.cast<int>();
         known_rule = true;
     } else if (is_pylist(rule)) {
         py::list slice = rule.cast<py::list>();
@@ -1425,18 +1423,19 @@ GretlDatasetPtr GretlDataset::getitem (const py::object &rule)
         gretl_list_ptr slice_list{nullptr};
         gretl_list_ptr full_list{nullptr};
 
+        // we construct list of variables to retain
         for (int i=0; i<slice_size; ++i) {
             slice_str += py::str(slice[i]).cast<std::string>();
             if (i + 1 < slice_size) {
                 slice_str += " ";
             }
         }
-
-        // we construct list of variables in question
         slice_list = list_from_formula(slice_str, dset, err);
         if (err) {
             handle_gretl_error(err);
         }
+
+        // we construct list of variables to drop
         full_list = gretl_list_ptr(full_var_list(dset, NULL));
         drop_list = gretl_list_ptr(gretl_list_drop(full_list.get(), slice_list.get(), &err));
 
@@ -1448,10 +1447,8 @@ GretlDatasetPtr GretlDataset::getitem (const py::object &rule)
 
         // at first we check if we deal with range slicer
         if (pos != std::string::npos && slice.find(':', pos + 1) == std::string::npos) { // exactly one ':'
-            std::string t1 = slice.substr(0, pos);
-            std::string t2 = slice.substr(pos + 1);
-            opts["t1"] = t1;
-            opts["t2"] = t2;
+            opts["t1"] = slice.substr(0, pos);
+            opts["t2"] = slice.substr(pos + 1);
         } else {
             opts["restriction"] = slice;
         }
@@ -1462,7 +1459,7 @@ GretlDatasetPtr GretlDataset::getitem (const py::object &rule)
         throw std::invalid_argument("unknown slicing rule: " + py::str(rule).cast<std::string>());
     }
 
-    // me make copy of current instance
+    // me make deep copy of current instance
     auto RES = std::make_shared<GretlDataset>(*this);
 
     // we do the job
