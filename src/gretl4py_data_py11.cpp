@@ -40,8 +40,6 @@ static void head_tail_print (GretlDataset &src, int nobs)
     } else if constexpr (mode == TAIL || mode == TAIL_T) {
         opts["range"] = std::to_string(src.dset->t2 - nobs + 2) +
                     ":" + std::to_string(src.dset->t2 + 1);
-    } else {
-        throw std::runtime_error("head_tail_print(): unknown mode");
     }
 
     if constexpr (mode == HEAD || mode == TAIL) {
