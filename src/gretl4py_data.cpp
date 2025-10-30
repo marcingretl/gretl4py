@@ -1416,7 +1416,7 @@ GretlDatasetPtr GretlDataset::getitem_impl (const T &slice)
     // we parse slice / list / string
     if constexpr (std::is_same_v<T, py::slice>) {
         py::object start = slice.attr("start");
-        py::object stop  = slice.attr("stop");
+        py::object stop = slice.attr("stop");
         int t1 = py::isinstance<py::none>(start) ? 0 : start.cast<int>();
         int t2 = py::isinstance<py::none>(stop) ? 0 : stop.cast<int>();
         opts["t1"] = t1;
@@ -1426,9 +1426,11 @@ GretlDatasetPtr GretlDataset::getitem_impl (const T &slice)
         std::ostringstream oss;
 
         // we construct list of variables to retain
-        for (int i = 0; i < slice.size(); ++i) {
+        for (size_t i=0; i<slice.size(); ++i) {
             oss << py::str(slice[i]).cast<std::string>();
-            if (i + 1 < slice.size()) oss << " ";
+            if (i + 1 < slice.size()) {
+                oss << " ";
+            }
         }
         slice_str = oss.str();
         gretl_list_ptr slice_list = list_from_formula(slice_str, dset, err);
