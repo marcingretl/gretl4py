@@ -26,6 +26,28 @@ extern GretlDatasetPtr DSET;
 // signature from libgretl
 const char *gretl_workdir (void);
 
+enum HeadTail { HEAD, TAIL };
+
+template <HeadTail mode>
+static void head_tail_print (GretlDataset &src, int nobs)
+{
+    py::kwargs opts;
+    nobs = nobs > src.dset->n ? src.dset->n : nobs;
+
+    if constexpr (mode == HEAD) {
+        opts["range"] = std::to_string(src.dset->t1 + 1) +
+                    ":" + std::to_string(src.dset->t1 + nobs);
+    } else if constexpr (mode == TAIL) {
+        opts["range"] = std::to_string(src.dset->t2 - nobs + 2) +
+                    ":" + std::to_string(src.dset->t2 + 1);
+    } else {
+        throw std::runtime_error("head_tail_print(): unknown mode");
+    }
+    opts["byobs"] = true;
+
+    src.print(opts);
+}
+
 // GretlDataset mappings
 void init_gretl4py_dataset_py11(py::module_ &m)
 {
@@ -63,28 +85,8 @@ void init_gretl4py_dataset_py11(py::module_ &m)
 
         .def("__repr__", &GretlDataset::repr)
         .def("__getitem__", &GretlDataset::getitem, py::return_value_policy::take_ownership)
-        .def("head", [](GretlDataset &src, int nobs)
-             {
-                 py::kwargs opts;
-
-                 opts["range"] = std::to_string(src.dset->t1 + 1) +
-                    ":" + std::to_string(src.dset->t1 + nobs);
-                 opts["byobs"] = true;
-
-                 src.print(opts);
-             },
-             py::arg("nobs") = 5, py::kw_only())
-        .def("tail", [](GretlDataset &src, int nobs)
-             {
-                 py::kwargs opts;
-
-                 opts["range"] = std::to_string(src.dset->t2 - nobs + 2) +
-                    ":" + std::to_string(src.dset->t2 + 1);
-                 opts["byobs"] = true;
-
-                 src.print(opts);
-             },
-             py::arg("nobs") = 5, py::kw_only())
+        .def("head", &head_tail_print<HEAD>, py::arg("nobs") = 5, py::kw_only())
+        .def("tail", &head_tail_print<TAIL>, py::arg("nobs") = 5, py::kw_only())
         .def("get_id", &GretlDataset::get_id)
         .def("set_as_default", &GretlDataset::set_as_default)
         .def("sample", &GretlDataset::sample)
