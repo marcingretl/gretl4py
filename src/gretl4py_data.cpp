@@ -1343,7 +1343,7 @@ void GretlDataset::sample (const py::kwargs &kwargs)
                 time = item.second.cast<bool>();
             }
         } else if (key == "quiet") {
-            quiet = true;
+            quiet = item.second.cast<bool>();
         } else {
             throw std::invalid_argument("invalid key '" + key + "' in 'sample' args");
         }

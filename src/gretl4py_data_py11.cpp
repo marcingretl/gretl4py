@@ -26,27 +26,30 @@ extern GretlDatasetPtr DSET;
 // signature from libgretl
 const char *gretl_workdir (void);
 
-enum HeadTail { HEAD, HEAD_T, TAIL, TAIL_T };
+enum HeadTail { HEAD, HEAD_T, TAIL, TAIL_T };       // for head/tail printing
 
 template<HeadTail mode>
-static void head_tail_print (GretlDataset &src, int nobs)
+static void head_tail_print (GretlDataset &gd, int nobs)
 {
+    //
+    // here we perform ::head() and ::tail()
+    //
     py::kwargs opts;
-    nobs = nobs > src.dset->n ? src.dset->n : nobs;
+    nobs = nobs > gd.dset->n ? gd.dset->n : nobs;
 
     if constexpr (mode == HEAD || mode == HEAD_T) {
-        opts["range"] = std::to_string(src.dset->t1 + 1) +
-                    ":" + std::to_string(src.dset->t1 + nobs);
+        opts["range"] = std::to_string(gd.dset->t1 + 1) +
+                    ":" + std::to_string(gd.dset->t1 + nobs);
     } else if constexpr (mode == TAIL || mode == TAIL_T) {
-        opts["range"] = std::to_string(src.dset->t2 - nobs + 2) +
-                    ":" + std::to_string(src.dset->t2 + 1);
+        opts["range"] = std::to_string(gd.dset->t2 - nobs + 2) +
+                    ":" + std::to_string(gd.dset->t2 + 1);
     }
 
     if constexpr (mode == HEAD || mode == TAIL) {
         opts["byobs"] = true;
     }
 
-    src.print(opts);
+    gd.print(opts);
 }
 
 // GretlDataset mappings
@@ -66,26 +69,26 @@ void init_gretl4py_dataset_py11(py::module_ &m)
         .def_readonly("is_default", &GretlDataset::is_default)
         .def_readwrite("source", &GretlDataset::source)
         .def_property_readonly("n",
-                               [](const GretlDataset &src)
+                               [](const GretlDataset &self)
                                {
-                                   return src.dset->n;
+                                   return self.dset->n;
                                })
         .def_property_readonly("k",
-                               [](const GretlDataset &src)
+                               [](const GretlDataset &self)
                                {
-                                   return src.dset->v;
+                                   return self.dset->v;
                                })
         .def("__copy__",
-             [](const GretlDataset &src)
+             [](const GretlDataset &self)
              {
                  py::print("Note, that we perform deepcopy here.");
-                 return std::make_shared<GretlDataset>(src);
+                 return std::make_shared<GretlDataset>(self);
              },
              py::return_value_policy::take_ownership)
         .def("__deepcopy__",
-             [](const GretlDataset &src)
+             [](const GretlDataset &self)
              {
-                 return std::make_shared<GretlDataset>(src);
+                 return std::make_shared<GretlDataset>(self);
              },
              py::return_value_policy::take_ownership)
 
