@@ -1316,6 +1316,7 @@ void GretlDataset::sample (const py::kwargs &kwargs)
     bool full = false;
     bool unit = false;
     bool time = false;
+    bool quiet = false;
 
     opt_ = OPT_NONE;
     for (auto &item : kwargs) {
@@ -1341,6 +1342,8 @@ void GretlDataset::sample (const py::kwargs &kwargs)
             } else {
                 time = item.second.cast<bool>();
             }
+        } else if (key == "quiet") {
+            quiet = true;
         } else {
             throw std::invalid_argument("invalid key '" + key + "' in 'sample' args");
         }
@@ -1395,7 +1398,9 @@ void GretlDataset::sample (const py::kwargs &kwargs)
     if (have_args) {
         print_smpl(dset, get_full_length_n(), OPT_NONE, GP_.prn_ptr());
     }
-    GP_.print();
+    if (!quiet) {   //FIXME: brute force, we must do it via OPT_Q!!!
+        GP_.print();
+    }
 }
 
 template<typename T>
@@ -1464,6 +1469,7 @@ GretlDatasetPtr GretlDataset::getitem_impl (const T &slice)
                                      RES->dset, NULL, GP_.prn_ptr());
     } else {
         // for sampling
+        opts["quiet"] = true;
         RES->sample(opts);
         err = perma_sample(RES->dset, OPT_T, GP_.prn_ptr(), NULL);
     }
