@@ -1398,86 +1398,86 @@ void GretlDataset::sample (const py::kwargs &kwargs)
     GP_.print();
 }
 
-GretlDatasetPtr GretlDataset::getitem (const py::object &rule)
+template<typename T>
+GretlDatasetPtr GretlDataset::getitem_impl (const T &slice)
 {
     //
     // this method is an underlying engine for '[]' operator
     //
     py::dict opts;
+    std::string slice_str;
     gretl_list_ptr drop_list{nullptr};
-    bool known_rule = false;
-    bool sample_rule = true;            // if we create by subsampling
 
-    if (py::isinstance<py::slice>(rule)) {
-        py::slice slice = rule.cast<py::slice>();
-
+    // we parse slice / list / string
+    if constexpr (std::is_same_v<T, py::slice>) {
         py::object start = slice.attr("start");
-        py::object stop = slice.attr("stop");
-        opts["t1"] = py::isinstance<py::none>(start) ? 0 : start.cast<int>();
-        opts["t2"] = py::isinstance<py::none>(stop) ? 0 : stop.cast<int>();
-        known_rule = true;
-    } else if (is_pylist(rule)) {
-        py::list slice = rule.cast<py::list>();
-        int slice_size = slice.size();
-        std::string slice_str = "";
-        gretl_list_ptr slice_list{nullptr};
-        gretl_list_ptr full_list{nullptr};
+        py::object stop  = slice.attr("stop");
+        int t1 = py::isinstance<py::none>(start) ? 0 : start.cast<int>();
+        int t2 = py::isinstance<py::none>(stop)  ? 0 : stop.cast<int>();
+        opts["t1"] = t1;
+        opts["t2"] = t2;
+        slice_str = std::to_string(t1) + ":" + std::to_string(t2);
+    } else if constexpr (std::is_same_v<T, py::list>) {
+        std::ostringstream oss;
 
         // we construct list of variables to retain
-        for (int i=0; i<slice_size; ++i) {
-            slice_str += py::str(slice[i]).cast<std::string>();
-            if (i + 1 < slice_size) {
-                slice_str += " ";
-            }
+        for (int i = 0; i < slice.size(); ++i) {
+            oss << py::str(slice[i]).cast<std::string>();
+            if (i + 1 < slice.size()) oss << " ";
         }
-        slice_list = list_from_formula(slice_str, dset, err);
+        slice_str = oss.str();
+        gretl_list_ptr slice_list = list_from_formula(slice_str, dset, err);
         if (err) {
             handle_gretl_error(err);
         }
 
         // we construct list of variables to drop
-        full_list = gretl_list_ptr(full_var_list(dset, NULL));
-        drop_list = gretl_list_ptr(gretl_list_drop(full_list.get(), slice_list.get(), &err));
-
-        known_rule = true;
-        sample_rule = false;
-    } else if (is_pystr(rule)) {
-        std::string slice = rule.cast<std::string>();
+        gretl_list_ptr full_list(full_var_list(dset, NULL));
+        drop_list = gretl_list_ptr(gretl_list_drop(full_list.get(),
+                                                   slice_list.get(),
+                                                   &err));
+        if (err) {
+            handle_gretl_error(err);
+        }
+    } else if constexpr (std::is_same_v<T, std::string>) {
         auto pos = slice.find(':');
 
         // at first we check if we deal with range slicer
-        if (pos != std::string::npos && slice.find(':', pos + 1) == std::string::npos) { // exactly one ':'
+        if (pos != std::string::npos && slice.find(':', pos + 1) == std::string::npos) {
             opts["t1"] = slice.substr(0, pos);
             opts["t2"] = slice.substr(pos + 1);
         } else {
             opts["restriction"] = slice;
         }
-        known_rule = true;
-    }
-
-    if (!known_rule) {
-        throw std::invalid_argument("unknown slicing rule: " + py::str(rule).cast<std::string>());
+        slice_str = slice;
+    } else {
+        throw std::invalid_argument("unsupported slicing rule type");
     }
 
     // me make deep copy of current instance
     auto RES = std::make_shared<GretlDataset>(*this);
 
     // we do the job
-    if (sample_rule) {
-        RES->sample(opts);
-        err = perma_sample(RES->dset, OPT_T, GP_.prn_ptr(), NULL);
-    } else {
+    if constexpr (std::is_same_v<T, py::list>) {
+        // dropping variables
         err = gretl_delete_variables(drop_list.get(), NULL, OPT_F,
                                      RES->dset, NULL, GP_.prn_ptr());
+    } else {
+        // for sampling
+        RES->sample(opts);
+        err = perma_sample(RES->dset, OPT_T, GP_.prn_ptr(), NULL);
     }
     if (err) {
         GP_.print();
         handle_gretl_error(err);
     }
-    RES->source += " slice: " + py::str(rule).cast<std::string>();
+    RES->source += " slice: " + slice_str;
 
     return RES;
 }
+template GretlDatasetPtr GretlDataset::getitem_impl<py::slice>(const py::slice&);
+template GretlDatasetPtr GretlDataset::getitem_impl<py::list>(const py::list&);
+template GretlDatasetPtr GretlDataset::getitem_impl<std::string>(const std::string&);
 
 py::object GretlDataset::corr (const std::string &vars, const py::kwargs &kwargs)
 {

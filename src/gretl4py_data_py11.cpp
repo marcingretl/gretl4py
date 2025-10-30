@@ -28,7 +28,7 @@ const char *gretl_workdir (void);
 
 enum HeadTail { HEAD, HEAD_T, TAIL, TAIL_T };
 
-template <HeadTail mode>
+template<HeadTail mode>
 static void head_tail_print (GretlDataset &src, int nobs)
 {
     py::kwargs opts;
@@ -85,7 +85,9 @@ void init_gretl4py_dataset_py11(py::module_ &m)
              py::return_value_policy::take_ownership)
 
         .def("__repr__", &GretlDataset::repr)
-        .def("__getitem__", &GretlDataset::getitem, py::return_value_policy::take_ownership)
+        .def("__getitem__", &GretlDataset::getitem_impl<py::slice>, py::return_value_policy::take_ownership)
+        .def("__getitem__", &GretlDataset::getitem_impl<py::list>, py::return_value_policy::take_ownership)
+        .def("__getitem__", &GretlDataset::getitem_impl<std::string>, py::return_value_policy::take_ownership)
         .def("head", &head_tail_print<HEAD>, py::arg("nobs") = 5, py::kw_only())
         .def("headT", &head_tail_print<HEAD_T>, py::arg("nobs") = 5, py::kw_only())
         .def("tail", &head_tail_print<TAIL>, py::arg("nobs") = 5, py::kw_only())
