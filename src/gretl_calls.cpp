@@ -314,13 +314,15 @@ void do_summary (const std::string &varlist, const py::kwargs &kwargs)
         handle_gretl_error(err);
     }
     if (opt & OPT_B) {
-        err = summary_statistics_by(varlist_ptr.get(), GD->dset, opt, GP.prn_ptr());
+        err = summary_statistics_by(varlist_ptr.get(), GD->dset,
+                                    opt, GP.prn_ptr());
     } else if (opt & OPT_X) {
         err = matrix_command_driver(SUMMARY, varlist_ptr.get(),
                                     kwargs["matrix"].cast<std::string>().c_str(),
                                     GD->dset, opt, GP.prn_ptr());
     } else {
-        err = list_summary_driver(varlist_ptr.get(), GD->dset, opt, GP.prn_ptr());
+        err = list_summary_driver(varlist_ptr.get(), GD->dset,
+                                  opt, GP.prn_ptr());
     }
     if (err) {
         handle_gretl_error(err);

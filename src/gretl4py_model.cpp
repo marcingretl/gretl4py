@@ -24,8 +24,6 @@ extern "C" {
     #include <gretl/var.h>
     #include <gretl/gretl_restrict.h>
     #include <gretl/varprint.h>
-    #include <gretl/gretl_typemap.h> //FIXME: to be deleted!!!
-    #include <gretl/uservar.h> //FIXME: to be deleted!!!
 }
 #include <gretl/forecast.h>
 #include <string>
@@ -136,7 +134,6 @@ void GretlModel::save_model (T *model)
     GB_model->python_register(self);
 
     py::dict _ids;
-    //_ids[py::cast("_id")] = model->ID; //FIXME: VARs!!! gretl_VECM_id(var);
     _ids[py::cast("_model_id")] = id;
     py::setattr(self, "_ids", _ids);
 
@@ -407,11 +404,7 @@ void GretlModel::fr_to_dict (FITRESID *fr, py::dict &fcdict)
     py::list labels;
     double *tmp = NULL;
     double tval = 0;
-    int offset;
-    int n_ok;
-    int rows;
-    int cols;
-    int t;
+    int offset, n_ok, rows, cols, t;
 
     rows = fr->t2 - fr->t1 + 1;
     offset = fr->nobs - rows;
@@ -440,7 +433,7 @@ void GretlModel::fr_to_dict (FITRESID *fr, py::dict &fcdict)
         labels.append("stderr");
         labels.append("low");
         labels.append("high");
-        tval = (fr->asymp) ? normal_critval(a2) : student_critval(fr->df, a2);
+        tval = fr->asymp ? normal_critval(a2) : student_critval(fr->df, a2);
     }
 
     // build array holding up to five columns
@@ -453,12 +446,11 @@ void GretlModel::fr_to_dict (FITRESID *fr, py::dict &fcdict)
     std::memcpy(tmp, fr->fitted + offset, rows * sizeof *tmp);
     if (fr->sderr != NULL) {
         double maxerr;
-        int i;
 
         tmp += rows;
         std::memcpy(tmp, fr->sderr + offset, rows * sizeof *tmp);
         tmp += rows;
-        for (i=0; i<rows; i++) {
+        for (int i=0; i<rows; i++) {
             maxerr = tval * fr->sderr[offset + i];
             tmp[i] = fr->fitted[offset + i] - maxerr;
             tmp[i+rows] = fr->fitted[offset + i] + maxerr;
@@ -472,23 +464,21 @@ void GretlModel::fr_to_dict (FITRESID *fr, py::dict &fcdict)
     n_ok = 0;
     stats.reset(forecast_stats(fr->actual, fr->fitted, fr->t1,
                                fr->t2, &n_ok, OPT_O, &err));
-    if (stats) {
-        if (n_ok > 0) {
-            const char **rnames = gretl_matrix_get_rownames(stats.get());
-            const char *label;
-            // it seems we need a nominally 2-d array here for tabulate()
-            DNumPyArrayFC S({stats->rows, 1});
-            py::list stats_labels;
+    if (stats && n_ok > 0) {
+        const char **rnames = gretl_matrix_get_rownames(stats.get());
+        const char *label;
+        // it seems we need a nominally 2-d array here for tabulate()
+        DNumPyArrayFC S({stats->rows, 1});
+        py::list stats_labels;
 
-            tmp = S.mutable_data();
-            std::memcpy(tmp, stats->val, stats->rows * sizeof *tmp);
-            fcdict[py::cast("stats")] = S;
-            for (t=0; t<stats->rows; t++) {
-                label = rnames[t];
-                stats_labels.append(label);
-            }
-            fcdict[py::cast("stats_labels")] = stats_labels;
+        tmp = S.mutable_data();
+        std::memcpy(tmp, stats->val, stats->rows * sizeof *tmp);
+        fcdict[py::cast("stats")] = S;
+        for (t=0; t<stats->rows; t++) {
+            label = rnames[t];
+            stats_labels.append(label);
         }
+        fcdict[py::cast("stats_labels")] = stats_labels;
     }
 }
 
@@ -738,7 +728,7 @@ void GretlModel_NSE_Driver<F, CI>::fit (void)
         auto trim = [](std::string &s)
         {
             s.erase(s.begin(), std::find_if(s.begin(), s.end(),
-                                            [](unsigned char ch) {  return !std::isspace(ch); }));
+                                            [](unsigned char ch) { return !std::isspace(ch); }));
             s.erase(std::find_if(s.rbegin(), s.rend(),
                                  [](unsigned char ch) { return !std::isspace(ch); }).base(), s.end());
 
@@ -805,19 +795,22 @@ void GretlModel_NSE_Driver<F, CI>::fit (void)
     if constexpr (use_ldco_sig(CI)) {
         // fallback to Pooled OLS if needed
         if (CI == OLS && GD->is_panel()) {
-            opt = static_cast<gretlopt>(opt | (OPT_P | OPT_L));
-            *model = panel_model(var_list.get(), GD->dset, opt, GP.prn_ptr());
+            SET_OPT(opt, (OPT_P | OPT_L));
+            *model = panel_model(var_list.get(), GD->dset,
+                                 opt, GP.prn_ptr());
         } else {
             *model = F(var_list.get(), GD->dset, CI, opt);
         }
     } else if constexpr (use_ldcop_sig(CI)) {
-        *model = F(var_list.get(), GD->dset, static_cast<int>(CI), opt, GP.prn_ptr());
+        *model = F(var_list.get(), GD->dset,
+                   static_cast<int>(CI), opt, GP.prn_ptr());
     } else if constexpr (use_ldo_sig(CI)) {
         *model = F(var_list.get(), GD->dset, opt);
     } else if constexpr (use_ldop_sig(CI)) {
         *model = F(var_list.get(), GD->dset, opt, GP.prn_ptr());
     } else if constexpr (use_lcdop_sig(CI)) {
-        *model = F(var_list.get(), static_cast<int>(CI), GD->dset, opt, GP.prn_ptr());
+        *model = F(var_list.get(), static_cast<int>(CI),
+                   GD->dset, opt, GP.prn_ptr());
     } else if constexpr (CI == DPANEL) {
         gretl_list_ptr laglist{nullptr};
 
@@ -847,10 +840,11 @@ void GretlModel_NSE_Driver<F, CI>::fit (void)
             }
             tau.append("}");
         }
-        *model = F(tau.c_str(), var_list.get(), GD->dset, opt, GP.prn_ptr());
-    } else if constexpr (CI == TOBIT) {
-        *model = F(var_list.get(), optional_par.at(0), optional_par.at(1),
+        *model = F(tau.c_str(), var_list.get(),
                    GD->dset, opt, GP.prn_ptr());
+    } else if constexpr (CI == TOBIT) {
+        *model = F(var_list.get(), optional_par.at(0),
+                   optional_par.at(1), GD->dset, opt, GP.prn_ptr());
     }
     save_model<MODEL>(model);
 }
@@ -882,7 +876,8 @@ template class GretlModel_NSE_Driver<midas_model, MIDASREG>;
 // NSE via arima plugin
 //
 GretlModel_NSE_arima::GretlModel_NSE_arima (GretlDatasetPtr GD,
-                                            const std::string &y, const py::tuple &tup,
+                                            const std::string &y,
+                                            const py::tuple &tup,
                                             const py::kwargs &kwargs)
                                             : GretlModel_NSE(GD, kwargs), y(y), tup(tup)
 {}
@@ -960,9 +955,9 @@ void GretlModel_NSE_arima::fit (void)
     }
 
     model = gretl_model_new();
-    var_list.reset(gretl_list_new(seasonal ? 9+exogenous : 5+exogenous)); // it's std::unique_ptr!!!
+    var_list.reset(gretl_list_new(seasonal ? 9+exogenous : 5+exogenous));
     if (model == NULL || var_list == nullptr || GP.prn_ptr() == NULL) {
-        throw std::runtime_error("Failed to allocate memory");
+        handle_gretl_error(E_ALLOC);
     }
 
     i = 1;
@@ -1105,13 +1100,12 @@ void GretlModel_VAR::do_var_vecm_fit (const int coint_rank)
 
     // we estimate a model
     if constexpr (CI == VAR) {
-        model = gretl_VAR(order, NULL, var_list.get(), GD->dset,
-                          opt, GP.prn_ptr(), &err);
+        model = gretl_VAR(order, NULL, var_list.get(),
+                          GD->dset, opt, GP.prn_ptr(), &err);
     } else if constexpr (CI == VECM) {
-        model = gretl_VECM(order, coint_rank, var_list.get(), GD->dset,
-                           opt, GP.prn_ptr(), &err);
+        model = gretl_VECM(order, coint_rank, var_list.get(),
+                           GD->dset, opt, GP.prn_ptr(), &err);
     }
-
     if (err) {
         handle_gretl_error(err);
     }

@@ -33,10 +33,13 @@ static void head_tail_print (GretlDataset &gd, int nobs)
 {
     //
     // here we perform ::head() and ::tail()
+    // Note: this function is actually a wrapper to ::print()
+    // thus should be used only for head()/tail() mapping
     //
     py::kwargs opts;
     nobs = nobs > gd.dset->n ? gd.dset->n : nobs;
 
+    // we setup printing parameters
     if constexpr (mode == HEAD || mode == HEAD_T) {
         opts["range"] = std::to_string(gd.dset->t1 + 1) +
                     ":" + std::to_string(gd.dset->t1 + nobs);
@@ -44,7 +47,6 @@ static void head_tail_print (GretlDataset &gd, int nobs)
         opts["range"] = std::to_string(gd.dset->t2 - nobs + 2) +
                     ":" + std::to_string(gd.dset->t2 + 1);
     }
-
     if constexpr (mode == HEAD || mode == TAIL) {
         opts["byobs"] = true;
     }
@@ -91,7 +93,6 @@ void init_gretl4py_dataset_py11(py::module_ &m)
                  return std::make_shared<GretlDataset>(self);
              },
              py::return_value_policy::take_ownership)
-
         .def("__repr__", &GretlDataset::repr)
         .def("__getitem__", &GretlDataset::getitem_impl<py::slice>,
              py::return_value_policy::take_ownership)

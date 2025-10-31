@@ -248,7 +248,8 @@ void NumPyArray_extract (const py::array &arr, NumPyArrayView &view)
 }
 
 template<typename T>
-void NumPyArray_to_gretl_matrix (NumPyArrayView &view, T *dst, int offset, bool onecol)
+void NumPyArray_to_gretl_matrix (NumPyArrayView &view, T *dst,
+                                 int offset, bool onecol)
 {
     //
     // here we copy contents of some NumPy array described by &view
@@ -275,7 +276,8 @@ void NumPyArray_to_gretl_matrix (NumPyArrayView &view, T *dst, int offset, bool 
         throw std::runtime_error("Unsupported NumPy dtype for conversion.");
     }
 }
-template void NumPyArray_to_gretl_matrix<gretl_matrix>(NumPyArrayView&, gretl_matrix*, int, bool);
+template void NumPyArray_to_gretl_matrix<gretl_matrix>(NumPyArrayView&, gretl_matrix*,
+                                                       int, bool);
 
 
 GretlTypesPtr convert_GretlType_to_GretlTypes (GretlType t, void *gr_obj_ptr,
