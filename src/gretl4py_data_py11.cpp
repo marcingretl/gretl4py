@@ -245,7 +245,7 @@ void init_gretl4py_bundle_py11(py::module_ &m)
 {
     py::class_<GretlBundle, GretlBundlePtr>(m, "Bundle", py::dynamic_attr())
     .def(py::init<>())
-    .def("__repr__", &GretlBundle::repr)
+    .def("__repr__", &GretlBundle::repr_impl)
     .def("__getitem__", &GretlBundle::get_element<py::object>)
     .def("__setitem__", &GretlBundle::set_element<bool>)
     .def("__setitem__", &GretlBundle::set_element<int>)

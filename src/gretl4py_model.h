@@ -77,7 +77,7 @@ public:
 
     int get_id (void) const;
 
-    std::string repr (void) const;
+    std::string repr_impl (void) const;         // for __repr__ binding
 
     GretlBundlePtr get_bundle (void) const;     // return pointer to GB_model
 

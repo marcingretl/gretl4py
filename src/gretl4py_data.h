@@ -245,7 +245,7 @@ public:
 
     void print (void);
 
-    std::string repr (void);
+    std::string repr_impl (void);                   // bundle printing via __repr__
 
     gretl_bundle *get_ptr (void) const;             // raw gretl_bundle pointer
 

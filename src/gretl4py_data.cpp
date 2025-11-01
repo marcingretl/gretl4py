@@ -2032,7 +2032,7 @@ void GretlBundle::print (void)
     }
 }
 
-std::string GretlBundle::repr (void)
+std::string GretlBundle::repr_impl (void)
 {
     GretlPrint GP = GretlPrint();
     std::string summary = "";
