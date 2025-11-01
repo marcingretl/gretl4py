@@ -25,6 +25,7 @@ import os
 import sys
 import site as _site
 import sysconfig
+import atexit
 from pathlib import Path
 
 # --- Basic paths and platform info ---
@@ -67,6 +68,9 @@ if user_site not in sys.path:
 from . import _gretl
 from . import gretl4py_addons
 from . import gretl4py_classes
+
+# 100% safe module cleanup
+atexit.register(_gretl._gretl4py_cleanup)
 
 # we import some symbols explicitly
 from ._gretl import (about, set, version, include, summary, pvalue,

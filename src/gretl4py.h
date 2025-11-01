@@ -39,9 +39,9 @@ namespace py = pybind11;
 // module related tools
 //////////////////////////////////////////////////
 
-void module_init (void);
+void gretl4py_init (void);
 
-void module_cleanup (void);
+void gretl4py_cleanup (void);
 
 GretlBundlePtr about (bool do_print = false);
 

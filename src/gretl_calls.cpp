@@ -69,7 +69,7 @@ static std::string gretl4py_logo (void)
     return logo;
 }
 
-void module_init (void)
+void gretl4py_init (void)
 {
     // check libgretl version
     if (libgretl_version() < LIBGRETL_MIN_VER) {
@@ -79,6 +79,7 @@ void module_init (void)
 
     // initialize libgretl
     libgretl_init();
+
     // flag the fact that we're coming from python
     gretl_set_python_mode();
 
@@ -120,10 +121,12 @@ void module_init (void)
     }
 }
 
-void module_cleanup (void)
+void gretl4py_cleanup (void)
 {
+    py::gil_scoped_acquire gil;
     int err = 0;
 
+    // make sure all C++ objects are destroyed while libgretl still alives
     for (const auto &name : UserVars) {
         err = user_var_delete_by_name(name.c_str(), NULL);
         if (err) {
@@ -136,6 +139,8 @@ void module_cleanup (void)
         }
 #endif // GRETL_PYBIND11_DEBUG
     }
+
+    GPKGs.clear();
 
     libgretl_cleanup();
 

@@ -31,13 +31,6 @@ extern GretlDatasetPtr DSET;
           }, \
           py::arg("formula").none(false), py::kw_only());
 
-class Module
-{
-public:
-    Module() { module_init(); }
-    ~Module() { module_cleanup(); }
-};
-
 const std::string info = "The gretl4py package provides "
     "an interface to the gretl library for python3 "
     "(3.11, 3.12, and 3.13 were tested).";
@@ -53,7 +46,9 @@ void init_gretl4py_model_py11(py::module_ &);
 
 PYBIND11_MODULE(_gretl, m)
 {
-    static Module module;
+    // gretl4py init/cleanup;
+    gretl4py_init();
+    m.def("_gretl4py_cleanup", []() { gretl4py_cleanup(); });
 
     init_gretl4py_dataset_py11(m);
     init_gretl4py_bundle_py11(m);

@@ -293,6 +293,7 @@ private:
     const std::string suffix_;          // filename suffix
     fnpkg *pkg_ = NULL;                 // pointer to package
     GretlPrint GP_ = GretlPrint();      // printer (instance wide)
+    GretlBundle GB_;                    // info bundle [NOT USED YET]
     std::string main_func_ = "";        // name of main package function
     std::vector<std::string> jel_;      // vector of JEL codes
     bool defines_estimator_ = false;    // true if package implements estimation

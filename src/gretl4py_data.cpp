@@ -1959,7 +1959,7 @@ GretlBundle::GretlBundle (gretl_bundle *src) : free_b_(false)
 {
     //
     // Here we make a copy of src
-    // Note: 'src. must be deallocated by libgretl, otherwise threre
+    // Note: 'src. must be deallocated by libgretl, otherwise there
     // will be a memory leak
     //
     b_ = gretl_bundle_copy(src, &err);
@@ -2268,6 +2268,12 @@ GretlPackage::GretlPackage (const std::string &pkg_name,
         base_dir_ = full_path_.substr(0, pos);
     } else {
         base_dir_ = "";
+    }
+
+    // we take info bundle
+    err = bundle_function_package_info(full_path_.c_str(), GB_.get_ptr());
+    if (err) {
+        handle_gretl_error(err);
     }
 
     // setup some basic info about package
