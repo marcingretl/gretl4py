@@ -199,6 +199,7 @@ void init_gretl4py_dataset_py11(py::module_ &m)
 void init_gretl4py_package_py11(py::module_ &m)
 {
     py::class_<GretlPackage, GretlPackagePtr>(m, "Package", py::dynamic_attr())
+    .def("__repr__", &GretlPackage::repr_impl)
     .def("get_name", &GretlPackage::get_name)
     .def("show_functions", &GretlPackage::show_functions)
     .def("set_main", &GretlPackage::set_main,

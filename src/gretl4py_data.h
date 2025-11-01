@@ -292,12 +292,14 @@ private:
     const std::string pkg_name_;        // package name (base of filename)
     const std::string suffix_;          // filename suffix
     fnpkg *pkg_ = NULL;                 // pointer to package
+    GretlPrint GP_ = GretlPrint();      // printer (instance wide)
     std::string main_func_ = "";        // name of main package function
     std::vector<std::string> jel_;      // vector of JEL codes
     bool defines_estimator_ = false;    // true if package implements estimation
     FunctionMap func_ptrs_;
     FunctionArgs func_args_;
     MainFuncNoOptDef main_func_nd_;
+    std::string full_path_;             // path to package file (full)
     std::string base_dir_;              // path to the package
 
     void check_if_defines_estimator (void);
@@ -315,6 +317,8 @@ public:
     // Note: constructor does everything: load pkg, scan functions, register self
     GretlPackage (const std::string &pkg_name, const std::string &suffix);
     ~GretlPackage (void);
+
+    std::string repr_impl (void);
 
     void set_main (const std::string &name);
 

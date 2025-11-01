@@ -2262,10 +2262,10 @@ GretlPackage::GretlPackage (const std::string &pkg_name,
     if (err) {
         handle_gretl_error(err);
     }
-    std::string full_path = path;
-    auto pos = full_path.find_last_of("/\\");
+    full_path_ = path;
+    auto pos = full_path_.find_last_of("/\\");
     if (pos != std::string::npos) {
-        base_dir_ = full_path.substr(0, pos);
+        base_dir_ = full_path_.substr(0, pos);
     } else {
         base_dir_ = "";
     }
@@ -2535,6 +2535,16 @@ void GretlPackage::unpack_kwargs_package (const std::string &func_name,
             }
         }
     }
+}
+
+std::string GretlPackage::repr_impl (void)
+{
+    err = print_function_package_info(full_path_.c_str(), 0, GP_.prn_ptr());
+    if (err) {
+        handle_gretl_error(err);
+    }
+
+    return GP_.get_buffer();
 }
 
 void GretlPackage::set_main (const std::string &name)
