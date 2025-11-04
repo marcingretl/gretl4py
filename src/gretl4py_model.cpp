@@ -1077,10 +1077,11 @@ GretlModel_NSE_nl<CI>::GretlModel_NSE_nl (GretlDatasetPtr GD,
 
     // we set up initial values
     if (kwargs.contains("initvals")) {
-        py::dict initvals = kwargs["initvals"].cast<py::dict>();
-        if (!is_pydict(initvals)) {
+        if (!is_pydict(kwargs["initvals"])) {
             throw std::invalid_argument("'initvals' must be a dictionary");
         }
+        py::dict initvals = kwargs["initvals"].cast<py::dict>();
+
         for (const auto &[key, val] : initvals) {
             py::print(key, val);
             gretl_generate<GRETL_TYPE_ANY>(py::str(val), GD,
@@ -1105,7 +1106,7 @@ void GretlModel_NSE_nl<CI>::fit (void)
         throw std::runtime_error("No dataset is available");
     }
 
-    // we set up model (nls...)
+    // we set up model (nls, mle, gmm)
     line = command_ + " " + formula;
     err = nl_parse_line(CI, line.data(), GD->dset, GP.prn_ptr());
     if (err) {
