@@ -186,6 +186,9 @@ void GretlModel::unpack_kwargs (GretlCmdIndex ci)
             if (!is_pystr(item.second)) {
                 throw std::invalid_argument("'instruments' must be a string");
             }
+        } else if ((key == "deriv" || key == "params") && ci == NLS) {
+            // NLS special case: we deal with these in class constructor
+            continue;
         } else {
             gretl_valid_long_opt(opt, ci, key, item.second);
         }
@@ -871,7 +874,6 @@ template class GretlModel_NSE_Driver<hsk_model, HSK>;
 template class GretlModel_NSE_Driver<interval_model, INTREG>;
 template class GretlModel_NSE_Driver<midas_model, MIDASREG>;
 
-
 //
 // NSE via arima plugin
 //
@@ -982,7 +984,6 @@ void GretlModel_NSE_arima::fit (void)
     save_model<MODEL>(model);
 }
 
-
 //
 // NSE_Driver_quantreg via quantreg_driver
 // extends: GretlModel_NSE_Driver
@@ -1012,7 +1013,6 @@ GretlModel_NSE_Driver_quantreg<F, CI>::GretlModel_NSE_Driver_quantreg
 // explicit instantiations for all required (F, CI) pairs
 template class GretlModel_NSE_Driver_quantreg<quantreg_driver, QUANTREG>;
 
-
 //
 // NSE_Driver_dpanel via dpd_model
 // extends: GretlModel_NSE_Driver
@@ -1041,6 +1041,132 @@ GretlModel_NSE_Driver_dpanel<F, CI>::GretlModel_NSE_Driver_dpanel
 }
 // explicit instantiations for all required (F, CI) pairs
 template class GretlModel_NSE_Driver_dpanel<dpd_model, DPANEL>;
+
+//
+// NLS,MLE,GMM via plugin
+// extends: GretlModel_NSE
+//
+template<GretlCmdIndex CI>
+GretlModel_NSE_nl<CI>::GretlModel_NSE_nl (GretlDatasetPtr GD,
+                                          const std::string function,
+                                          const py::kwargs &kwargs)
+                                          : GretlModel_NSE(GD, kwargs),
+                                          ci_(CI), formula(function)
+{
+    // we get derivatives
+    if (kwargs.contains("deriv")) {
+        auto val = kwargs["deriv"];
+
+        if (!is_pylist(val)) {
+            throw std::invalid_argument("'deriv' must be a list");
+        }
+        this->deriv_ = py::cast<std::vector<std::string>>(val);
+    }
+
+    // we get params
+    if (kwargs.contains("params")) {
+        auto val = kwargs["params"];
+
+        if (!is_pylist(val)) {
+            throw std::invalid_argument("'params' must be a list");
+        }
+        this->params_ = py::cast<std::vector<std::string>>(val);
+
+    }
+}
+
+template<GretlCmdIndex CI>
+GretlModel_NSE_nl<CI>::~GretlModel_NSE_nl (void) = default;
+
+template<GretlCmdIndex CI>
+void GretlModel_NSE_nl<CI>::fit (void)
+{
+    std::string line = "";
+
+    if (py::len(kwargs) > 0) {
+        unpack_kwargs(CI);
+    }
+
+    if (!GD) {
+        throw std::runtime_error("No dataset is available");
+    }
+
+    // we set up model (nls...)
+    line = "nls " + formula;
+    err = nl_parse_line(CI, line.data(), GD->dset, GP.prn_ptr());
+    if (err) {
+        handle_gretl_error(err);
+    }
+
+    // we set up derivatives and generate internal libgretl variables
+    if (deriv_.size()) {
+        for (const auto &el : deriv_) {
+            line = "deriv " + el;
+
+            gretl_generate<GRETL_TYPE_ANY>("0", GD, el.substr(0,1));
+            err = nl_parse_line(CI, line.data(), GD->dset, GP.prn_ptr());
+            if (err) {
+                handle_gretl_error(err);
+            }
+        }
+    }
+
+    // we set up params
+    if (params_.size()) {
+        line = "params";
+        for (const auto &el : params_) {
+            if (el.size() == 1) {
+                line += " " + el;
+                gretl_generate<GRETL_TYPE_ANY>("0", GD, el);
+            } else {
+                line += " " + el.substr(0,1);
+                gretl_generate<GRETL_TYPE_ANY>(el, GD);
+            }
+        }
+        err = nl_parse_line(CI, line.data(), GD->dset, GP.prn_ptr());
+        if (err) {
+            handle_gretl_error(err);
+        }
+    }
+
+    // we allocate memory
+    model = gretl_model_new();
+    if (!model) {
+        handle_gretl_error(E_ALLOC);
+    }
+
+    // we do the job
+    *model = nl_model(GD->dset, opt, GP.prn_ptr());
+    if (err) {
+        handle_gretl_error(err);
+    }
+    save_model<MODEL>(model);
+}
+
+template<GretlCmdIndex CI>
+std::string GretlModel_NSE_nl<CI>::get_formula (void) const
+{
+    std::string RES = std::string(gretl_command_word(CI)) + " " + formula + "\n";
+
+    if (deriv_.size()) {
+        for (const auto &el : deriv_) {
+            RES += "deriv " + el + "\n";
+        }
+    }
+
+    if (params_.size()) {
+            RES += "params";
+        for (const auto &el : params_) {
+            RES += " " + el.substr(0,1);
+        }
+        RES += "\n";
+    }
+
+    return RES;
+}
+// explicit instantiations for all CI
+template class GretlModel_NSE_nl<NLS>;
+
 
 
 //
@@ -1352,7 +1478,6 @@ void GretlModel_VAR_VECM::forecast (const py::kwargs &kwargs)
 {
     do_var_vecm_forecast<VECM>(kwargs);
 }
-
 
 //
 // libgretl contributed packages

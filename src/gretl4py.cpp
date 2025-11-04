@@ -144,6 +144,14 @@ PYBIND11_MODULE(_gretl, m)
               return GretlModelPtr(std::move(model));
           },
           py::arg("p").none(false), py::arg("formula").none(false), py::kw_only());
+    m.def("nls",
+          [](const std::string &function, const py::kwargs &kwargs) -> GretlModelPtr
+          {
+              auto model = std::make_unique<GretlModel_NSE_nl<NLS>>(DSET, function, kwargs);
+
+              return GretlModelPtr(std::move(model));
+          },
+          py::arg("function").none(false), py::kw_only());
 
     // estimation via wrappers
     BIND_DRIVER_MODEL(ols, lsq, OLS)
