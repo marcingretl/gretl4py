@@ -205,7 +205,7 @@ private:
     const std::string command_;         // original gretl command (nls, mle, gmm)
     const std::string formula;          // formula defining model
     std::vector<std::string> deriv_;
-    std::vector<std::string> params_;
+    std::string params_;
 public:
     GretlModel_NSE_nl (GretlDatasetPtr GD, const std::string formula,
                        const py::kwargs &kwargs);

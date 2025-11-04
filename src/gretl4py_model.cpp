@@ -186,7 +186,7 @@ void GretlModel::unpack_kwargs (GretlCmdIndex ci)
             if (!is_pystr(item.second)) {
                 throw std::invalid_argument("'instruments' must be a string");
             }
-        } else if ((key == "deriv" || key == "params") && (ci == NLS || ci == MLE)) {
+        } else if ((key == "deriv" || key == "params" || key == "initvals") && (ci == NLS || ci == MLE)) {
             // NLS special case: we deal with these in class constructor
             continue;
         } else {
@@ -1068,11 +1068,24 @@ GretlModel_NSE_nl<CI>::GretlModel_NSE_nl (GretlDatasetPtr GD,
     if (kwargs.contains("params")) {
         auto val = kwargs["params"];
 
-        if (!is_pylist(val)) {
-            throw std::invalid_argument("'params' must be a list");
+        if (!is_pystr(val)) {
+            throw std::invalid_argument("'params' must be a string");
         }
-        this->params_ = py::cast<std::vector<std::string>>(val);
+        this->params_ = py::cast<std::string>(val);
 
+    }
+
+    // we set up initial values
+    if (kwargs.contains("initvals")) {
+        py::dict initvals = kwargs["initvals"].cast<py::dict>();
+        if (!is_pydict(initvals)) {
+            throw std::invalid_argument("'initvals' must be a dictionary");
+        }
+        for (const auto &[key, val] : initvals) {
+            py::print(key, val);
+            gretl_generate<GRETL_TYPE_ANY>(py::str(val), GD,
+                                           key.cast<std::string>());
+        }
     }
 }
 
@@ -1103,8 +1116,6 @@ void GretlModel_NSE_nl<CI>::fit (void)
     if (deriv_.size()) {
         for (const auto &el : deriv_) {
             line = "deriv " + el;
-
-            gretl_generate<GRETL_TYPE_ANY>("0", GD, el.substr(0,1));
             err = nl_parse_line(CI, line.data(), GD->dset, GP.prn_ptr());
             if (err) {
                 handle_gretl_error(err);
@@ -1113,17 +1124,8 @@ void GretlModel_NSE_nl<CI>::fit (void)
     }
 
     // we set up params
-    if (params_.size()) {
-        line = "params";
-        for (const auto &el : params_) {
-            if (el.size() == 1) {
-                line += " " + el;
-                gretl_generate<GRETL_TYPE_ANY>("0", GD, el);
-            } else {
-                line += " " + el.substr(0,1);
-                gretl_generate<GRETL_TYPE_ANY>(el, GD);
-            }
-        }
+    if (!params_.empty()) {
+        line = "params " + params_;
         err = nl_parse_line(CI, line.data(), GD->dset, GP.prn_ptr());
         if (err) {
             handle_gretl_error(err);
@@ -1155,12 +1157,8 @@ std::string GretlModel_NSE_nl<CI>::get_formula (void) const
         }
     }
 
-    if (params_.size()) {
-            RES += "params";
-        for (const auto &el : params_) {
-            RES += " " + el.substr(0,1);
-        }
-        RES += "\n";
+    if (!params_.empty()) {
+        RES += "params " + params_ + "\n";
     }
 
     return RES;
