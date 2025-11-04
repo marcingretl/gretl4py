@@ -1048,10 +1048,11 @@ template class GretlModel_NSE_Driver_dpanel<dpd_model, DPANEL>;
 //
 template<GretlCmdIndex CI>
 GretlModel_NSE_nl<CI>::GretlModel_NSE_nl (GretlDatasetPtr GD,
-                                          const std::string function,
+                                          const std::string formula,
                                           const py::kwargs &kwargs)
                                           : GretlModel_NSE(GD, kwargs),
-                                          ci_(CI), formula(function)
+                                          command_(gretl_command_word(CI)),
+                                          formula(formula)
 {
     // we get derivatives
     if (kwargs.contains("deriv")) {
@@ -1092,7 +1093,7 @@ void GretlModel_NSE_nl<CI>::fit (void)
     }
 
     // we set up model (nls...)
-    line = "nls " + formula;
+    line = command_ + " " + formula;
     err = nl_parse_line(CI, line.data(), GD->dset, GP.prn_ptr());
     if (err) {
         handle_gretl_error(err);
@@ -1146,7 +1147,7 @@ void GretlModel_NSE_nl<CI>::fit (void)
 template<GretlCmdIndex CI>
 std::string GretlModel_NSE_nl<CI>::get_formula (void) const
 {
-    std::string RES = std::string(gretl_command_word(CI)) + " " + formula + "\n";
+    std::string RES = command_ + " " + formula + "\n";
 
     if (deriv_.size()) {
         for (const auto &el : deriv_) {
