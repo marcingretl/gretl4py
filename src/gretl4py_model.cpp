@@ -186,7 +186,7 @@ void GretlModel::unpack_kwargs (GretlCmdIndex ci)
             if (!is_pystr(item.second)) {
                 throw std::invalid_argument("'instruments' must be a string");
             }
-        } else if ((key == "deriv" || key == "params") && ci == NLS) {
+        } else if ((key == "deriv" || key == "params") && (ci == NLS || ci == MLE)) {
             // NLS special case: we deal with these in class constructor
             continue;
         } else {
@@ -1167,8 +1167,7 @@ std::string GretlModel_NSE_nl<CI>::get_formula (void) const
 }
 // explicit instantiations for all CI
 template class GretlModel_NSE_nl<NLS>;
-
-
+template class GretlModel_NSE_nl<MLE>;
 
 //
 // VAR libgretl MODEL
