@@ -206,6 +206,7 @@ private:
     const std::string formula;          // formula defining model
     std::vector<std::string> deriv_;
     std::string params_;
+    std::string param_names_;
 public:
     GretlModel_NSE_nl (GretlDatasetPtr GD, const std::string formula,
                        const py::kwargs &kwargs);

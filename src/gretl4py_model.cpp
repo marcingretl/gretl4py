@@ -186,8 +186,9 @@ void GretlModel::unpack_kwargs (GretlCmdIndex ci)
             if (!is_pystr(item.second)) {
                 throw std::invalid_argument("'instruments' must be a string");
             }
-        } else if ((key == "deriv" || key == "params" || key == "initvals") && (ci == NLS || ci == MLE)) {
-            // NLS special case: we deal with these in class constructor
+        } else if ((key == "deriv" || key == "params" || key == "initvals"
+                    || key == "param_names") && (ci == NLS || ci == MLE)) {
+            // NLS/MLE special case: we deal with these in class constructor
             continue;
         } else {
             gretl_valid_long_opt(opt, ci, key, item.second);
@@ -1075,6 +1076,16 @@ GretlModel_NSE_nl<CI>::GretlModel_NSE_nl (GretlDatasetPtr GD,
 
     }
 
+    // we get params names
+    if (kwargs.contains("param_names")) {
+        auto val = kwargs["param_names"];
+
+        if (!is_pystr(val)) {
+            throw std::invalid_argument("'param_names' must be a string");
+        }
+        this->param_names_ = py::cast<std::string>(val);
+    }
+
     // we set up initial values
     if (kwargs.contains("initvals")) {
         if (!is_pydict(kwargs["initvals"])) {
@@ -1083,7 +1094,6 @@ GretlModel_NSE_nl<CI>::GretlModel_NSE_nl (GretlDatasetPtr GD,
         py::dict initvals = kwargs["initvals"].cast<py::dict>();
 
         for (const auto &[key, val] : initvals) {
-            py::print(key, val);
             gretl_generate<GRETL_TYPE_ANY>(py::str(val), GD,
                                            key.cast<std::string>());
         }
@@ -1133,6 +1143,15 @@ void GretlModel_NSE_nl<CI>::fit (void)
         }
     }
 
+    // we set up params names
+    if (!param_names_.empty()) {
+        line = "param_names \"" + param_names_ + "\"";
+        err = nl_parse_line(CI, line.data(), GD->dset, GP.prn_ptr());
+        if (err) {
+            handle_gretl_error(err);
+        }
+    }
+
     // we allocate memory
     model = gretl_model_new();
     if (!model) {
@@ -1160,6 +1179,10 @@ std::string GretlModel_NSE_nl<CI>::get_formula (void) const
 
     if (!params_.empty()) {
         RES += "params " + params_ + "\n";
+    }
+
+    if (!param_names_.empty()) {
+        RES += "param_names \"" + param_names_ + "\"\n";
     }
 
     return RES;
