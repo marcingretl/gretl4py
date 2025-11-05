@@ -88,6 +88,7 @@ void init_gretl4py_model_py11(py::module_ &m)
     bind_driver_model<GretlModel_NSE_arima>(m, "Model_arima");
     bind_driver_model<GretlModel_NSE_nl<NLS>>(m, "Model_nls");
     bind_driver_model<GretlModel_NSE_nl<MLE>>(m, "Model_mle");
+    bind_driver_model<GretlModel_NSE_nl<GMM>>(m, "Model_gmm");
     bind_driver_model<GretlModel_NSE_Driver_dpanel<dpd_model, DPANEL>>(m, "Model_dpanel");
     bind_driver_model<GretlModel_NSE_Driver_quantreg<quantreg_driver, QUANTREG>>(m, "Model_quantreg");
     bind_driver_model<GretlModel_NSE_Driver<lsq, OLS>>(m, "Model_ols");

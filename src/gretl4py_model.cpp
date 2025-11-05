@@ -186,9 +186,14 @@ void GretlModel::unpack_kwargs (GretlCmdIndex ci)
             if (!is_pystr(item.second)) {
                 throw std::invalid_argument("'instruments' must be a string");
             }
-        } else if ((key == "deriv" || key == "params" || key == "initvals"
-                    || key == "param_names") && (ci == NLS || ci == MLE)) {
-            // NLS/MLE special case: we deal with these in class constructor
+        } else if ((key == "params" || key == "param_names" || key == "initvals") && (ci == NLS || ci == MLE || ci == GMM)) {
+            // NLS/MLE/GMM special case: we deal with these in class constructor
+            continue;
+        } else if (key == "deriv" && (ci == NLS || ci == MLE)) {
+            // NLS/MLE/GMM special case: we deal with these in class constructor
+            continue;
+        } else if ((key == "orthog" || key == "weights") && ci == GMM) {
+            // GMM special case
             continue;
         } else {
             gretl_valid_long_opt(opt, ci, key, item.second);
@@ -1055,16 +1060,7 @@ GretlModel_NSE_nl<CI>::GretlModel_NSE_nl (GretlDatasetPtr GD,
                                           command_(gretl_command_word(CI)),
                                           formula(formula)
 {
-    // we get derivatives
-    if (kwargs.contains("deriv")) {
-        auto val = kwargs["deriv"];
-
-        if (!is_pylist(val)) {
-            throw std::invalid_argument("'deriv' must be a list");
-        }
-        this->deriv_ = py::cast<std::vector<std::string>>(val);
-    }
-
+    // common elements
     // we get params
     if (kwargs.contains("params")) {
         auto val = kwargs["params"];
@@ -1098,6 +1094,39 @@ GretlModel_NSE_nl<CI>::GretlModel_NSE_nl (GretlDatasetPtr GD,
                                            key.cast<std::string>());
         }
     }
+
+    if constexpr (CI == NLS || CI == MLE) {
+        // NLS and MLE special case: we get derivatives
+        if (kwargs.contains("deriv")) {
+            auto val = kwargs["deriv"];
+
+            if (!is_pylist(val)) {
+                throw std::invalid_argument("'deriv' must be a list");
+            }
+            this->deriv_ = py::cast<std::vector<std::string>>(val);
+        }
+    } else if constexpr (CI == GMM) {
+        // GMM special cases
+        // we get orthog entries
+        if (kwargs.contains("orthog")) {
+            auto val = kwargs["orthog"];
+
+            if (!is_pylist(val)) {
+                throw std::invalid_argument("'orthog' must be a list");
+            }
+            this->orthog_ = py::cast<std::vector<std::string>>(val);
+        }
+
+        // we get weights
+        if (kwargs.contains("weights")) {
+            auto val = kwargs["weights"];
+
+            if (!is_pystr(val)) {
+                throw std::invalid_argument("'weights' must be a string");
+            }
+            this->weights_ = py::cast<std::string>(val);
+        }
+    }
 }
 
 template<GretlCmdIndex CI>
@@ -1123,17 +1152,6 @@ void GretlModel_NSE_nl<CI>::fit (void)
         handle_gretl_error(err);
     }
 
-    // we set up derivatives and generate internal libgretl variables
-    if (deriv_.size()) {
-        for (const auto &el : deriv_) {
-            line = "deriv " + el;
-            err = nl_parse_line(CI, line.data(), GD->dset, GP.prn_ptr());
-            if (err) {
-                handle_gretl_error(err);
-            }
-        }
-    }
-
     // we set up params
     if (!params_.empty()) {
         line = "params " + params_;
@@ -1149,6 +1167,37 @@ void GretlModel_NSE_nl<CI>::fit (void)
         err = nl_parse_line(CI, line.data(), GD->dset, GP.prn_ptr());
         if (err) {
             handle_gretl_error(err);
+        }
+    }
+
+    // we set up derivatives and generate internal libgretl variables
+    if constexpr (CI == NLS || CI == MLE) {
+        if (deriv_.size()) {
+            for (const auto &el : deriv_) {
+                line = "deriv " + el;
+                err = nl_parse_line(CI, line.data(), GD->dset, GP.prn_ptr());
+                if (err) {
+                    handle_gretl_error(err);
+                }
+            }
+        }
+    } else if constexpr (CI == GMM) {
+        if (orthog_.size()) {
+            for (const auto &el : orthog_) {
+                line = "orthog " + el;
+                err = nl_parse_line(CI, line.data(), GD->dset, GP.prn_ptr());
+                if (err) {
+                    handle_gretl_error(err);
+                }
+            }
+        }
+
+        if (!weights_.empty()) {
+            line = "weights " + weights_;
+            err = nl_parse_line(CI, line.data(), GD->dset, GP.prn_ptr());
+            if (err) {
+                handle_gretl_error(err);
+            }
         }
     }
 
@@ -1171,9 +1220,21 @@ std::string GretlModel_NSE_nl<CI>::get_formula (void) const
 {
     std::string RES = command_ + " " + formula + "\n";
 
-    if (deriv_.size()) {
-        for (const auto &el : deriv_) {
-            RES += "deriv " + el + "\n";
+    if constexpr (CI == NLS || CI == MLE) {
+        if (deriv_.size()) {
+            for (const auto &el : deriv_) {
+                RES += "deriv " + el + "\n";
+            }
+        }
+    } else if constexpr (CI == GMM) {
+        if (orthog_.size()) {
+            for (const auto &el : orthog_) {
+                RES += "orthog " + el + "\n";
+            }
+        }
+
+        if (!weights_.empty()) {
+            RES += "weights " + weights_ + "\n";
         }
     }
 
@@ -1190,6 +1251,7 @@ std::string GretlModel_NSE_nl<CI>::get_formula (void) const
 // explicit instantiations for all CI
 template class GretlModel_NSE_nl<NLS>;
 template class GretlModel_NSE_nl<MLE>;
+template class GretlModel_NSE_nl<GMM>;
 
 //
 // VAR libgretl MODEL

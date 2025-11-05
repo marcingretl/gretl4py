@@ -144,7 +144,7 @@ def __dir__():
     dynamic_functions = ["arima", "ols", "wls", "logit", "probit", "poisson", "negbin",
         "biprobit", "duration", "heckit", "logistic", "ar", "ar1", "lad", "garch",
         "mpols", "panel", "tsls", "tobit", "quantreg", "var", "vecm", "hsk", "dpanel",
-        "intreg", "midasreg", "nls", "mle"]
+        "intreg", "midasreg", "nls", "mle", "gmm"]
 
     return sorted(static_members + dynamic_functions)
 

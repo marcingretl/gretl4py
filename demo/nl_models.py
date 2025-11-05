@@ -2,7 +2,8 @@ import gretl
 
 gretl.set('verbose', 'off')
 
-d = gretl.get_data("greene11_3.gdt")
+d1 = gretl.get_data("greene11_3.gdt")
+d2 = gretl.get_data("hall.gdt")
 
 # NLS
 DERIV=['a = 1', 'b = Y^g', 'g = b * Y^g * log(Y)']
@@ -23,7 +24,7 @@ print(m2.get_formula())
 
 # MLE
 gretl.genr("p = 0.5")           # we pass initial value as libgretl's uv
-d.new_series("X = uniform() >= 0.5 ? 1 : 0")
+d1.new_series("X = uniform() >= 0.5 ? 1 : 0")
 DERIV = ['p = X/p - (1-X)/(1-p)']
 PARAM_NAMES = 'probability'
 m3 = gretl.mle("ll = X*log(p) + (1-X)*log(1-p)", deriv=DERIV).fit()
@@ -33,3 +34,18 @@ print(m4)
 
 print(m3.get_formula())
 print(m4.get_formula())
+
+# GMM
+d2.set_as_default()
+d2.new_series("e = 0")
+d2.new_list(name="inst", value="const consrat(-1) consrat(-2) ewr(-1) ewr(-2)")
+gretl.genr(formula="matrix V0 = 100000*I(nelem(inst))")
+INIT_VALS["alpha"] = 0.5
+INIT_VALS["delta"] = 0.5
+ORTHOG = ['e ; inst']
+WEIGHTS = 'V0'
+PARAMS = 'alpha delta'
+m5 = gretl.gmm("e = delta*ewr*consrat^(alpha-1) - 1", orthog=ORTHOG, params=PARAMS, weights=WEIGHTS, initvals=INIT_VALS).fit()
+print(m5)
+
+print(m5.get_formula())
