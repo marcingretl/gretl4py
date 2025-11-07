@@ -75,7 +75,7 @@ atexit.register(_gretl._gretl4py_cleanup)
 # we import some symbols explicitly
 from ._gretl import (about, set, version, include, summary, pvalue,
                     critical, Bundle, pdf, cdf, invcdf)
-from .gretl4py_classes import attrs, oddsratio
+from .gretl4py_classes import attrs, oddsratio, mle, NLSpec
 from .gretl4py_classes import get_data, show_data_status
 from .gretl4py_addons import print_module_source, fc_print, modeltab
 
@@ -144,7 +144,7 @@ def __dir__():
     dynamic_functions = ["arima", "ols", "wls", "logit", "probit", "poisson", "negbin",
         "biprobit", "duration", "heckit", "logistic", "ar", "ar1", "lad", "garch",
         "mpols", "panel", "tsls", "tobit", "quantreg", "var", "vecm", "hsk", "dpanel",
-        "intreg", "midasreg", "nls", "mle", "gmm"]
+        "intreg", "midasreg", "nls", "gmm"]
 
     return sorted(static_members + dynamic_functions)
 

@@ -4,6 +4,7 @@ gretl.set('verbose', 'off')
 
 d1 = gretl.get_data("greene11_3.gdt")
 d2 = gretl.get_data("hall.gdt")
+d3 = gretl.get_data("kennan.gdt")
 
 # NLS
 DERIV=['a = 1', 'b = Y^g', 'g = b * Y^g * log(Y)']
@@ -27,11 +28,44 @@ gretl.genr("p = 0.5")           # we pass initial value as libgretl's uv
 d1.new_series("X = uniform() >= 0.5 ? 1 : 0")
 DERIV = ['p = X/p - (1-X)/(1-p)']
 PARAM_NAMES = 'probability'
-m3 = gretl.mle("ll = X*log(p) + (1-X)*log(1-p)", deriv=DERIV).fit()
-m4 = gretl.mle(loglik="ll = X*log(p) + (1-X)*log(1-p)", params='p', param_names=PARAM_NAMES, robust=True).fit()
+
+spec3: gretl.NLSpec = {
+    "formula": "ll = X*log(p) + (1-X)*log(1-p)",
+    #"params": 'p',
+    "param_names": "probability",    
+    "deriv": {
+        "p": "X/p - (1-X)/(1-p)"
+    },
+    "initvals": {
+        "p" : 0.5,
+    },
+}
+m3 = gretl.mle(spec3, robust=True).fit()
+
+d3.set_as_default()
+d3.new_series("l_Ti = log(Ti)")
+spec4: gretl.NLSpec = {
+    "formula": "loglik = Z - log(s) - exp(Z)",
+    "definitions": [
+        'series Xb = b0 + b1*Prod',
+        'series Z = (l_Ti - Xb) / s',
+        'series W = -(1 - exp(Z)) / s'
+    ],
+    "deriv": {
+        "b0": "W",
+        "b1": "Prod * W",
+        "s":  "-Z/s - 1/s + exp(Z) * Z/s"
+    },
+    "initvals": {
+        "b0" : 2,
+        "b1" : -5,
+        "s":  1
+    },
+}
+m4 = gretl.mle(spec4, hessian=True).fit()
+
 print(m3)
 print(m4)
-
 print(m3.get_formula())
 print(m4.get_formula())
 
@@ -45,7 +79,8 @@ INIT_VALS["delta"] = 0.5
 ORTHOG = ['e ; inst']
 WEIGHTS = 'V0'
 PARAMS = 'alpha delta'
-m5 = gretl.gmm("e = delta*ewr*consrat^(alpha-1) - 1", orthog=ORTHOG, params=PARAMS, weights=WEIGHTS, initvals=INIT_VALS).fit()
-print(m5)
 
+m5 = gretl.gmm("e = delta*ewr*consrat^(alpha-1) - 1", orthog=ORTHOG, params=PARAMS, weights=WEIGHTS, initvals=INIT_VALS).fit()
+
+print(m5)
 print(m5.get_formula())

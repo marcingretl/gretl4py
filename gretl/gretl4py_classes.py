@@ -19,6 +19,7 @@
  """
 import inspect
 import sys
+from typing import TypedDict
 from . import _gretl
 
 # #######################################################
@@ -53,6 +54,32 @@ def oddsratio(self):
     except Exception as e:
         print('*** warning: oddsratios not available for current model ***\n')
         print(f'Debug info: {e}')
+
+# #######################################################
+#   GretlModel_nl class
+# #######################################################
+class NLSpec(TypedDict, total=False):
+    formula: str
+    params: str
+    param_names: str
+    initvals: dict[str, str]
+    definitions: list[str]
+    deriv: dict[str, str]
+    orthog: list[str]
+    weights: str
+
+def mle(spec: NLSpec, /, **options):
+    loglik = spec["formula"]
+    params = spec.get("params", "")
+    param_names = spec.get("param_names", "")
+    defs = spec.get("definitions", [])
+    deriv = spec.get("deriv", {})
+    initvals = spec.get("initvals", {})
+
+    return _gretl._mle(loglik, params=params,
+        param_names=param_names,
+        defs=defs, deriv=deriv,
+        initvals=initvals, **options)
 
 # #######################################################
 #   GretlDataset class
