@@ -75,7 +75,7 @@ atexit.register(_gretl._gretl4py_cleanup)
 # we import some symbols explicitly
 from ._gretl import (about, set, version, include, summary, pvalue,
                     critical, Bundle, pdf, cdf, invcdf)
-from .gretl4py_classes import attrs, oddsratio, mle, NLSpec
+from .gretl4py_classes import _attrs, _oddsratio, _to_dataframe, mle, NLSpec
 from .gretl4py_classes import get_data, show_data_status
 from .gretl4py_addons import print_module_source, fc_print, modeltab
 
@@ -100,8 +100,9 @@ def printdata(data, namesonly):
 # deprecations: END
 
 # we attach additional symbols to certain classes
-setattr(_gretl.Model, "attrs", attrs)               # method for listing all object's attributes
-setattr(_gretl.Model_logit, "oddsratio", oddsratio) # method for pretty-printing oddsratios
+setattr(_gretl.Model, "attrs", _attrs)                  # for listing all object's attributes
+setattr(_gretl.Model_logit, "oddsratio", _oddsratio)    # for pretty-printing oddsratios
+setattr(_gretl.Dataset, "to_dataframe", _to_dataframe)  # gretl data to Pandas DataFrame converter
 
 # directly use GretlModel for the model instantiation
 def __model_initializer(model_name: str, *args, **kwargs):

@@ -25,7 +25,7 @@ from . import _gretl
 # #######################################################
 #   GretlModel class
 # #######################################################
-def attrs(self):
+def _attrs(self):
     for attname in dir(self):
         if not attname.startswith("_"):
             attr = getattr(self, attname)
@@ -38,7 +38,7 @@ def attrs(self):
             else:
                 print(f'{attname}: {type(attr)}')
 
-def oddsratio(self):
+def _oddsratio(self):
     try:
         from tabulate import tabulate
     except ModuleNotFoundError:
@@ -155,6 +155,93 @@ def show_data_status():
             else:
                 defaut = ""
             print(f'{d}: {dset.get_id():d}, {dset.source:s} {defaut:s} - referenced by models: {list(dset.linked_models_list())}')
+
+def _to_dataframe(self):
+    """Method for exporting _gretl.Dataset instance as Pandas DataFrame"""
+
+    try:
+        import pandas as pd
+        import numpy as np
+    except ModuleNotFoundError:
+        print("*** warning: 'pandas' package required ***\n")
+        return None
+
+    # we grab data as dict + some characteristics
+    as_d = self.to_dict()
+    datatype = self.get_accessor("$datatype")
+    pdcode = self.get_accessor("$pd")
+
+    # base frame
+    df = pd.DataFrame(
+        data    = as_d["data_array"],
+        columns = as_d["varname"],
+        index   = as_d["obs_labels"])
+
+    # we deal with dataset types
+    if datatype == 1:
+        # cross-sectional
+        return df
+    elif datatype == 2:
+        # time-series
+        freq = None
+        if pdcode == 1:
+            freq = "A"
+        elif pdcode == 4:
+            freq = "Q"
+        elif pdcode == 12:
+            freq = "M"
+        elif pdcode == 5:
+            freq = "B"
+        elif pdcode in (6, 7):
+            freq = "D"
+
+        if freq is not None:
+            try:
+                df.index = pd.PeriodIndex(df.index, freq=freq)
+            except Exception:
+                pass
+        return df
+    elif datatype == 3:
+        # panel
+        panel_unit = np.array(self.get_accessor("$unit"))
+        panel_freq = self.get_accessor("$panelpd")
+
+        # generate sequential time values per unit
+        panel_time = np.zeros_like(panel_unit)
+        for u in np.unique(panel_unit):
+            mask = panel_unit == u
+            panel_time[mask] = np.arange(mask.sum())
+
+        # base multi-index
+        df.index = pd.MultiIndex.from_arrays(
+            [panel_unit, panel_time],
+            names=["unit", "time"])
+
+        # if we have real periodicity - convert time level _only_
+        freq = None
+        if panel_freq == 1:
+            freq = "A"
+        elif panel_freq == 4:
+            freq = "Q"
+        elif panel_freq == 12:
+            freq = "M"
+        elif panel_freq == 5:
+            freq = "B"
+        elif panel_freq in (6, 7):
+            freq = "D"
+
+        if freq is not None:
+            try:
+                df = df.set_index(
+                    df.index.set_levels(
+                        pd.PeriodIndex(df.index.levels[1], freq=freq),
+                        level="time"))
+            except Exception:
+                pass
+        return df
+
+    # unknown datatype -> return raw df
+    return df
 
 if __name__ == "__main__":
     pass
