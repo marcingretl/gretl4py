@@ -6,7 +6,7 @@ version 0.32:
     - add 'slicer' to GretlDataset binding
     - add 'n' and 'k' properties do GretlDataset
     - add 'range' option for GretlDataset::print()
-    - add two new methods for GretlDataset: ::head() and ::tail()
+    - add three new methods for GretlDataset: ::head(), ::tail(), and ::to_dataframe()
     - apparatus for slicing datasets
 
 version 0.31:

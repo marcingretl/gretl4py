@@ -49,7 +49,7 @@ def _pdtostrformat (pd):
     return res
 
 def df2dict (dframe, pd=1, with_obs=False):
-    '''turns a pandas dataframe into a dictionary gretl understands'''
+    '''Turns a Pandas DataFrame into a dictionary gretl understands'''
     if 'pandas' not in sys.modules:
         import pandas
     d = {}
