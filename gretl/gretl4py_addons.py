@@ -33,7 +33,7 @@ def _correctvarnames (names):
         if names[i] == 'const':
             names[i] = 'const_'
 
-def _pdtostrformat (pd):
+def _pd_to_str_format (pd):
     """produces date string formatter for given periodicity"""
     res = None
     if pd == 1:
@@ -46,10 +46,27 @@ def _pdtostrformat (pd):
         res = '%Y-%m-%d'
     else:
         raise TypeError(f'date formatter for pd={pd:d} not supported')
+
+    return res
+
+def _pd_to_pandas_str_format (pd):
+    """produces pandas-style date string formatter for given periodicity"""
+    res = None
+    if pd == 1:
+        res = "Y"
+    elif pd == 4:
+        res = "Q"
+    elif pd == 12:
+        res = "M"
+    elif pd == 5:
+        res = "B"
+    elif pd in (6, 7):
+        res = "D"
+
     return res
 
 def df2dict (dframe, pd=1, with_obs=False):
-    '''Turns a Pandas DataFrame into a dictionary gretl understands'''
+    '''turns a Pandas DataFrame into a dictionary gretl understands'''
     if 'pandas' not in sys.modules:
         import pandas
     d = {}
@@ -61,12 +78,12 @@ def df2dict (dframe, pd=1, with_obs=False):
         obs_dates = [row[0] for row in mydata]
     else:
         obs_dates = dframe.axes[0].tolist()
-    #d['obs_labels'] = [obs.strftime(_pdtostrformat(pd)) for obs in obs_dates]
     _correctvarnames(varname)
     d['data_array'] = numpy.array([row[0+with_obs:] for row in mydata], numpy.double)
     d['varname'] = varname
     d['obs_labels'] = obs_dates
     d['periodicity'] = pd
+
     return d
 
 def nparray2dict (X, pd=1, Y=None, with_const=False,
@@ -107,6 +124,7 @@ def nparray2dict (X, pd=1, Y=None, with_const=False,
     d['varname'] = varname
     d['obs_labels'] = obs_labels
     d['periodicity'] = pd
+
     return d
 
 def series2dict (series, pd=1, varname="y"):
@@ -121,12 +139,13 @@ def series2dict (series, pd=1, varname="y"):
     d['varname'] = [varname]
     try:
         obs_dates = series.index.to_period()
-        d['obs_labels'] = [obs.strftime(_pdtostrformat(pd)) for obs in obs_dates]
+        d['obs_labels'] = [obs.strftime(_pd_to_str_format(pd)) for obs in obs_dates]
     except (AttributeError, TypeError) as err:
         if err:
             print(f'Warning: {err}, fall back to original labels.')
         d['obs_labels'] = series.index.to_list()
     d['periodicity'] = pd
+
     return d
 
 def fc_print (fc):
@@ -256,4 +275,5 @@ def modeltab (models, output="print", tablefmt="github", stars=True, coeff_fmt="
     if output == "print":
         print(table)
         return None
+
     return table
