@@ -19,6 +19,7 @@
  """
 import inspect
 import sys
+from .gretl4py_addons import _pd_to_pandas_str_format
 from . import _gretl
 
 # #######################################################
@@ -146,9 +147,9 @@ def _to_dataframe(self):
 
     # base frame
     df = pd.DataFrame(
-        data    = as_d["data_array"],
+        data = as_d["data_array"],
         columns = as_d["varname"],
-        index   = as_d["obs_labels"])
+        index = as_d["obs_labels"])
 
     # we deal with dataset types
     if datatype == 1:
@@ -156,17 +157,7 @@ def _to_dataframe(self):
         return df
     elif datatype == 2:
         # time-series
-        freq = None
-        if pdcode == 1:
-            freq = "A"
-        elif pdcode == 4:
-            freq = "Q"
-        elif pdcode == 12:
-            freq = "M"
-        elif pdcode == 5:
-            freq = "B"
-        elif pdcode in (6, 7):
-            freq = "D"
+        freq = _pd_to_pandas_str_format(panel_freq)
 
         if freq is not None:
             try:
@@ -186,29 +177,18 @@ def _to_dataframe(self):
             panel_time[mask] = np.arange(mask.sum())
 
         # base multi-index
-        df.index = pd.MultiIndex.from_arrays(
-            [panel_unit, panel_time],
-            names=["unit", "time"])
+        df.index = pd.MultiIndex.from_arrays([panel_unit, panel_time],
+                                                names=["unit", "time"])
 
         # if we have real periodicity - convert time level _only_
-        freq = None
-        if panel_freq == 1:
-            freq = "A"
-        elif panel_freq == 4:
-            freq = "Q"
-        elif panel_freq == 12:
-            freq = "M"
-        elif panel_freq == 5:
-            freq = "B"
-        elif panel_freq in (6, 7):
-            freq = "D"
+        freq = _pd_to_pandas_str_format(panel_freq)
 
         if freq is not None:
             try:
-                df = df.set_index(
-                    df.index.set_levels(
-                        pd.PeriodIndex(df.index.levels[1], freq=freq),
-                        level="time"))
+                df = df.set_index(df.index.set_levels(
+                                    pd.PeriodIndex(df.index.levels[1],
+                                                    freq=freq),
+                                                    level="time"))
             except Exception:
                 pass
         return df
