@@ -155,7 +155,7 @@ static void numpy_array_to_gretl_storage (const py::dict &pydict, DATASET *dset)
     dset->t2 = dset->n-1;
 }
 
-template<typename T>
+template <typename T>
 static void real_NumPyArray_to_gretl_matrix (const NumPyArrayView &view,
                                              double *dst, int offset, bool onecol)
 {
@@ -247,7 +247,7 @@ void NumPyArray_extract (const py::array &arr, NumPyArrayView &view)
     view.col_stride = (arr.ndim() == 1) ? 0 : strides[1] / itemsize;
 }
 
-template<typename T>
+template <typename T>
 void NumPyArray_to_gretl_matrix (NumPyArrayView &view, T *dst,
                                  int offset, bool onecol)
 {
@@ -649,7 +649,7 @@ void set_default_dset (GretlDatasetPtr GD)
 
 // General interface to libgretl's generate()
 // Note: some specializations must be created manually
-template<GretlType GR_TYPE>
+template <GretlType GR_TYPE>
 void gretl_generate (const std::string &formula, GretlDatasetPtr GD,
                      const std::string &name)
 {
@@ -1405,7 +1405,7 @@ void GretlDataset::sample (const py::kwargs &kwargs)
     }
 }
 
-template<typename T>
+template <typename T>
 GretlDatasetPtr GretlDataset::getitem_impl (const T &slice)
 {
     //
@@ -1673,7 +1673,7 @@ void GretlDataset::gretl_series_set_label (const int number,
     series_set_label(dset, number, label);
 }
 
-template<GretlCmdIndex CI>
+template <GretlCmdIndex CI>
 void GretlDataset::gretl_list_diffgenr (const std::string &vars)
 {
     //
@@ -1976,7 +1976,7 @@ GretlBundle::~GretlBundle (void)
     }
 }
 
-template<typename T>
+template <typename T>
 void GretlBundle::extract (const T &t)
 {
     //
@@ -2074,7 +2074,7 @@ py::list GretlBundle::keys()
     return res;
 }
 
-template<typename T>
+template <typename T>
 T GretlBundle::get_element (const std::string &key)
 {
     //
@@ -2107,7 +2107,7 @@ T GretlBundle::get_element (const std::string &key)
     }
 }
 
-template<typename T>
+template <typename T>
 void GretlBundle::set_element (const std::string &key, const T &t)
 {
     //
@@ -2161,7 +2161,7 @@ MapPyToCpp::MapPyToCpp (const py::handle &pyhandle)
     convert<py::handle>(&pyhandle);
 }
 
-template<typename T>
+template <typename T>
 void MapPyToCpp::convert (const T *pyobj)
 {
 #if GRETL_PYBIND11_DEBUG
@@ -2375,7 +2375,7 @@ void GretlPackage::check_if_defines_estimator (void)
     }
 }
 
-template<typename T>
+template <typename T>
 T GretlPackage::get_properties (const char *property)
 {
     //

@@ -62,7 +62,7 @@ void handle_gretl_error (int err);
 
 void NumPyArray_extract (const py::array &arr, NumPyArrayView &view);
 
-template<typename T>
+template <typename T>
 void NumPyArray_to_gretl_matrix (NumPyArrayView &view, T *dst,
                                  int offset = 0, bool onecol = false);
 
@@ -83,7 +83,7 @@ gretl_list_ptr list_from_formula (const std::string &formula,
 GretlTypesPtr convert_GretlType_to_GretlTypes (GretlType t, void *gr_obj_ptr,
                                                const int n, int &err);
 
-template<typename PyWrapped, typename Item, typename ContainerType>
+template <typename PyWrapped, typename Item, typename ContainerType>
 void move_to_python_container (PyWrapped &wrapped_obj, Item &&item,
                                const char *container, const std::string &key = "");
 
@@ -158,7 +158,7 @@ public:
 
     void sample (const py::kwargs &kwargs);
 
-    template<typename T>
+    template <typename T>
     GretlDatasetPtr getitem_impl (const T &slice);
 
     py::object corr (const std::string &vars, const py::kwargs &kwargs);
@@ -183,11 +183,11 @@ public:
 
     void new_list (const std::string &name, const std::string &value);
 
-     void dummify (const std::string &varlist, const py::kwargs &kwargs);
+    void dummify (const std::string &varlist, const py::kwargs &kwargs);
 
     void gretl_series_set_label (const int number, char *label);
 
-    template<GretlCmdIndex CI>
+    template <GretlCmdIndex CI>
     void gretl_list_diffgenr (const std::string &vars);
 
     py::list varnames (void) const;
@@ -228,7 +228,7 @@ private:
     gretl_bundle *b_ = NULL;                        // libgretl bundle pointer
     py::dict as_dict_;                              // Python's dict() reprezentation
 
-    template<typename T>
+    template <typename T>
     void extract (const T &t);
 public:
     int err = 0;
@@ -251,10 +251,10 @@ public:
 
     py::list keys (void);
 
-    template<typename T>
+    template <typename T>
     T get_element (const std::string &key);         // get bundle element by name
 
-    template<typename T>
+    template <typename T>
     void set_element (const std::string &key, const T &t);
 };
 
@@ -266,7 +266,7 @@ class MapPyToCpp
 private:
     std::string as_str_;
 
-    template<typename T>
+    template <typename T>
     void convert (const T *pyobj);
 public:
     int err = 0;
@@ -305,7 +305,7 @@ private:
 
     void check_if_defines_estimator (void);
 
-    template<typename T>
+    template <typename T>
     T get_properties (const char *property);
 
     void unpack_kwargs_package (const std::string &func_name,
@@ -356,7 +356,7 @@ void set_default_dset(GretlDatasetPtr GD);
 GretlPackagePtr load_package (const std::string &pkgname,
                               const std::string &suffix = "");
 
-template<GretlType GR_TYPE>
+template <GretlType GR_TYPE>
 void gretl_generate (const std::string &formula, GretlDatasetPtr GD = DSET,
                      const std::string &name = {});
 
