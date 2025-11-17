@@ -13,6 +13,7 @@ gretl.set('force_decpoint', 'on')
 
 # datasets
 nls_panel = gretl.get_data('data/nls_panel.gdt')
+grunfeld11 = gretl.get_data('data/grunfeld11.gdt')
 
 ############################################
 # 15.1. A Microeconomic Panel
@@ -80,3 +81,16 @@ print("\n15.3.3. Fixed Effects Estimates of Wage Equation from Complete Panel")
 FE_nd = gretl.panel(formula="lwage const exper exper2 tenure tenure2 south union").fit()
 FE_nd_r = gretl.panel(formula="lwage const exper exper2 tenure tenure2 south union", robust=True).fit()
 gretl.modeltab([FE_nd, FE_nd_r])
+
+############################################
+# 15.3. The Random Effects Model
+############################################
+print("\n15.4. The Random Effects Model")
+print("\n15.4. Random Effects Estimation of the Wage Equation")
+RE = gretl.panel(formula=spec, random_effects=True, matrix_diff=True).fit()
+RE_r = gretl.panel(formula=spec, random_effects=True, robust=True).fit()
+gretl.modeltab([RE, RE_r])
+print(f'\nalpha_hat = {RE.theta:.4f}')
+
+print("\n15.5.3. A Hausmann Test")
+print(RE.hausman_test)
