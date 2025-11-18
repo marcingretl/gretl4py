@@ -689,7 +689,7 @@ GretlModel_NSE_Driver<F, CI>::GretlModel_NSE_Driver (GretlDatasetPtr GD,
 {
     if constexpr (CI == TOBIT) {
         optional_par.resize(2);
-        optional_par.at(0) = NADBL;
+        optional_par.at(0) = 0;
         optional_par.at(1) = NADBL;
     }
 }
