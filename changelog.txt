@@ -9,6 +9,7 @@ version 0.32:
     - add methods for GretlDataset: ::head(), ::tail(), and ::to_dataframe()
     - apparatus for slicing datasets
     - tobit llimit default value fix
+    - fix bug in GretlDataset::print() when summary=True
 
 version 0.31:
     - allow 'quiet' option for VAR/VECM

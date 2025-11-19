@@ -1281,20 +1281,22 @@ void GretlDataset::print (const py::kwargs &kwargs)
     }
 
     if (summary) {
+        auto *prn = GP_.prn_ptr();
+
         if (dataset_is_time_series(dset)) {
             char s1[OBSLEN], s2[OBSLEN];
 
             ntolabel(s1, 0, dset);
             ntolabel(s2, dset->n-1, dset);
-            pprintf(GP_.prn_ptr(), "Time series, frequency %d, T = %d, %s to %s\n\n",
+            pprintf(prn, "Time series, frequency %d, T = %d, %s to %s\n\n",
                     dset->pd, dset->n, s1, s2);
         } else if (is_panel()) {
-            pprintf(GP_.prn_ptr(), "Panel data, N = %d, T = %d\n\n",
+            pprintf(prn, "Panel data, N = %d, T = %d\n\n",
                     dset->n / dset->pd, dset->pd);
         } else {
-            pprintf(GP_.prn_ptr(), "Cross-sectional data, N = %d\n\n", dset->n);
+            pprintf(prn, "Cross-sectional data, N = %d\n\n", dset->n);
         }
-        list_series(dset, OPT_NONE, GP_.prn_ptr());
+        list_series(dset, OPT_NONE, prn);
     } else {
         opt_ = byobs ? OPT_O : OPT_NONE;
         if (range) {
