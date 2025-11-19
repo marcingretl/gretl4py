@@ -6,7 +6,7 @@ import numpy as np
 import gretl
 
 # check gretl4py version
-assert float(gretl.about(0)['mod_ver']) > 0.31, f'version 0.32+ required!!!'
+assert float(gretl.version) > 0.31, f'version 0.32+ required!!!'
 
 # switch of verbosity
 gretl.set('verbose', 'off')

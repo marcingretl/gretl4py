@@ -1,8 +1,9 @@
-import gretl
+import math
 import numpy
+import gretl
 
-if float(gretl.version) < 0.31:
-  exit("required gretl4py 0.31 or higher")
+# check gretl4py version
+assert float(gretl.version) >= 0.31, "required gretl4py 0.31 or higher"
 
 # switch of verbosity
 gretl.set('verbose', 'off')
@@ -85,8 +86,13 @@ print(f'({m1.coeff[1] - critval * m1.stderr[1]:.5}, \
 ############################################
 print("\n5.5. Hypothesis Testing")
 print("\n5.5.3. Hypothesis Testing for Linear Combination of Coefficients")
-m1.restrict(impose=['-0.2*b[2] -0.5*b[3] = 0'])
-print(f'-0.2*b[2] -0.5*b[3] > 0, pvalue: {m1.restrictions[-1]['pvalue']/2 : .3f}')
+m1.restrict(impose=['-0.2*b[2] - 0.5*b[3] = 0'])
+print(f'-0.2*b[2] - 0.5*b[3] > 0, pvalue: {m1.restrictions[-1]['pvalue']/2 : .3f}')
+b = m1.coeff
+vcv = m1.vcv
+t = (-0.2 * b[1] - 0.5 * b[2]) / math.sqrt((-0.2)**2 * vcv[1][1] + (-0.5)**2 * vcv[2][2] + 2 * -0.2 * -0.5 * vcv[1][2])
+pval = gretl.pvalue(dist='t', value=t, params=72)
+print(f't = {t:.3f}, pvalue = {pval:.3f}')
 
 ############################################
 # 5.6. Polynomial Equations
@@ -102,7 +108,8 @@ print(msq)
 ############################################
 print("\n5.7. Interaction Variables")
 pizza.set_as_default()
-pizza.print(summary=True)
+print("Table 5.4 Pizza Expenditure Data")
+pizza.print(series="pizza income age", range="1:5", byobs=True)
 pizza.new_series('ageincome = age * income')
 PZ_1 = gretl.ols('pizza const age income', simple=True).fit()                   # (5.27)
 PZ_2 = gretl.ols('pizza const age income ageincome', simple=True).fit()         # (5.28)
@@ -111,7 +118,6 @@ print(PZ_2)
 
 print("\n5.7.1. Log-Linear Model")
 cps4s.set_as_default()
-cps4s.print(summary=True)
 cps4s.new_series('educexper = educ * exper')
 CPS = gretl.ols('ln(wage) const educ exper educexper', simple=0).fit()          # (5.30)
 print(CPS)
