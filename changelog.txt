@@ -8,6 +8,7 @@ version 0.32:
     - add 'range' option for GretlDataset::print()
     - add methods for GretlDataset: ::head(), ::tail(), and ::to_dataframe()
     - apparatus for slicing datasets
+    - tobit llimit default value fix
 
 version 0.31:
     - allow 'quiet' option for VAR/VECM

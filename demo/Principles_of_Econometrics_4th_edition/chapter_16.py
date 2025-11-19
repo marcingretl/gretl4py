@@ -1,11 +1,14 @@
-import gretl
-
-# switch of verbosity
 try:
   from tabulate import tabulate
 except ModuleNotFoundError:
   exit('*** \'tabulate\' package required ***\n')
 import numpy as np
+import gretl
+
+# check gretl4py version
+assert float(gretl.about(0)['mod_ver']) > 0.31, f'version 0.32+ required!!!'
+
+# switch of verbosity
 gretl.set('verbose', 'off')
 
 # force libgretl to use the decimal point character
@@ -17,6 +20,7 @@ coke = gretl.get_data('data/coke.gdt')
 nels_small = gretl.get_data('data/nels_small.gdt')
 olympics = gretl.get_data('data/olympics.gdt')
 tobit = gretl.get_data('data/tobit.gdt')
+mroz = gretl.get_data('data/mroz.gdt')
 
 ############################################
 # 16.1 Models with Binary Dependent Variable
@@ -75,8 +79,31 @@ olympics.sample(full=True)
 ############################################
 # 16.7 Limited Dependent Variables
 ############################################
-print("\n16.7. Dependent Variables")
+print("\n16.7. Limited Dependent Variables")
 tobit.set_as_default()
 TOB = gretl.tobit(formula="y const x").fit()    # (16.34)
 print(TOB)
+print("\n16.7.5. An Example")
+mroz.set_as_default()
+spec = "hours const educ exper age kidsl6"
+mroz_ols = gretl.ols(formula=spec).fit()
+mroz.sample(restriction="hours>0")
+mroz_ols_r = gretl.ols(formula=spec).fit()
+mroz.sample(full=True)
+mroz_tobit = gretl.tobit(formula=spec).fit()
+print("Table 16.8 Estimates of Labor Supply Function")
+gretl.modeltab([mroz_ols, mroz_ols_r, mroz_tobit])
+
+print("\n16.7.6. Sample Selection")
+
+mroz_wage_ols = gretl.ols(formula="log(wage) const educ exper", simple=True).fit()  # (16.43)
+print(mroz_wage_ols)
+
+mroz.new_series("kids = kidsl6 + kids618>0")
+mroz_wage_he = gretl.heckit("log(wage) const educ exper ; lfp const age educ kids mtr", two_step=True).fit()  # (16.44)
+print(mroz_wage_he)
+
+mroz_wage_he_ml = gretl.heckit("log(wage) const educ exper ; lfp const age educ kids mtr").fit()
+print(mroz_wage_he_ml)
+
 
