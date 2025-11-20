@@ -11,7 +11,7 @@
 \newcounter{fomularenderR}
 \newcounter{fomularenderG}
 
-\CatchFileDef{\gretlpyversion}{../VERSION}{}
+\CatchFileDef{\gretlpyversion}{../version.cfg}{}
 
 \newcommand{\error}[1]{\textcolor{red}{\textbf{#1}}\xspace}
 \newcommand{\hitem}{\item[] \hspace{-5mm}}
@@ -48,7 +48,7 @@
 		Instead, \pythcode{formula} takes \gretl's default syntax
 		as outlined in
 		Equation~(\hyperlink{theGstyleFomula}{\thefomularenderG}).\end{minipage}}
-\newcommand{\gretlfpycmd}[1]{\vspace{10pt}\noindent\textcolor{red}{\pythcode{#1}}\index{#1}}
+\newcommand{\gretlfpycmd}[1]{\vspace*{10pt}\noindent\protect\textcolor{red}{\pythcode{#1}}\index{#1}}
 \newcommand{\generaldesc}[1]{\hspace*{17pt}\begin{minipage}[t]{0.89\columnwidth}%
 		\small#1\end{minipage}}
 \newcommand{\gretldataset}{\_gretl.Dataset\xspace}

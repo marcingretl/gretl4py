@@ -6,8 +6,10 @@ version 0.32:
     - add 'slicer' to GretlDataset binding
     - add 'n' and 'k' properties do GretlDataset
     - add 'range' option for GretlDataset::print()
-    - add three new methods for GretlDataset: ::head(), ::tail(), and ::to_dataframe()
+    - add methods for GretlDataset: ::head(), ::tail(), and ::to_dataframe()
     - apparatus for slicing datasets
+    - tobit llimit default value fix
+    - fix bug in GretlDataset::print() when summary=True
 
 version 0.31:
     - allow 'quiet' option for VAR/VECM

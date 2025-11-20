@@ -1,5 +1,8 @@
 import gretl
 
+# check gretl4py version
+assert float(gretl.version) >= 0.31, "required gretl4py 0.31 or higher"
+
 # switch of verbosity
 gretl.set('verbose', 'off')
 
@@ -19,7 +22,7 @@ njmin3 = gretl.get_data('data/njmin3.gdt')
 print("\n7.1. Indicator Variables")
 print("\n7.1.3. An Example: The University Effect on House Prices")
 utown.new_series(name='sqftutown', value='sqft * utown')
-UNIV = gretl.ols(formula='price const utown sqft sqftutown age pool fplace').fit()
+UNIV = gretl.ols(formula='price const utown sqft sqftutown age pool fplace').fit()  # (7.7)
 print(UNIV)
 
 ############################################
@@ -84,15 +87,22 @@ print(CO)
 print("\n7.5. Treatment Effects")
 star.set_as_default()
 star.new_list(name='v', value='totalscore small tchexper boy freelunch white_asian tchwhite tchmasters schurban schrural')
-gretl.summary(varlist='v', by='small', simple=True)
+print("Table 7.6a Summary Statistics for Regular-Sized Classes")
+star.sample(restriction="regular == 1")
+gretl.summary(varlist='v', simple=True)
+print("Table 7.6b Summary Statistics for Small Classes")
+star.sample(restriction="small == 1", replace=True)
+gretl.summary(varlist='v', simple=True)
+# gretl built-in way
 gretl.summary(varlist='v', by='regular', simple=True)
+gretl.summary(varlist='v', by='small', simple=True)
 
 print("\n7.5.3. Application of Difference Estimation: Project STAR")
 star.sample(restriction='aide == 0')
-ST_1 = gretl.ols('totalscore const small', simple=True).fit()   # (7.15)
+ST_1 = gretl.ols('totalscore const small', simple=True).fit()                         # (7.15)
 
 print("\n7.5.4. The Difference Estimator with Additional Controls")
-ST_2 = gretl.ols('totalscore const small tchexper', simple=True).fit()  # (7.16)
+ST_2 = gretl.ols('totalscore const small tchexper', simple=True).fit()                # (7.16)
 
 print("\n7.5.4a. School Fixed Effects")
 ST_3 = gretl.ols('totalscore const small dummify(schid)', simple=True).fit()

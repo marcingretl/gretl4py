@@ -26,7 +26,7 @@ from . import _gretl
 # #######################################################
 #   GretlModel class
 # #######################################################
-def _attrs(self):
+def _attrs (self):
     for attname in dir(self):
         if not attname.startswith("_"):
             attr = getattr(self, attname)
@@ -39,7 +39,7 @@ def _attrs(self):
             else:
                 print(f'{attname}: {type(attr)}')
 
-def _oddsratio(self):
+def _oddsratio (self):
     try:
         from tabulate import tabulate
     except ModuleNotFoundError:
@@ -85,7 +85,7 @@ def mle(spec: NLSpec, /, **options):
 # #######################################################
 #   GretlDataset class
 # #######################################################
-def get_data(src, **kwargs):
+def get_data (src, **kwargs):
     """Load dataset from file path or dictionary.
 
     Parameters:
@@ -133,7 +133,7 @@ def get_data(src, **kwargs):
 
     return dset
 
-def show_data_status():
+def show_data_status ():
     """List of available datasets."""
 
     # get the caller's global and local variables
@@ -157,7 +157,7 @@ def show_data_status():
                 defaut = ""
             print(f'{d}: {dset.get_id():d}, {dset.source:s} {defaut:s} - referenced by models: {list(dset.linked_models_list())}')
 
-def _to_dataframe(self):
+def _to_dataframe (self):
     """Method for exporting _gretl.Dataset instance as Pandas DataFrame"""
 
     try:

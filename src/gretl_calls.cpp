@@ -430,9 +430,9 @@ py::object do_include (const std::string &name)
 // MODE == 3 : pdf
 // MODE == 4 : cdf
 // MODE == 5 : cdf_inverse
-template<int MODE>
-double gretl_get_pvalue_critval_pdf_cdf (const std::string &dist, double value,
-                                         const py::object &param)
+template <int MODE>
+double gretl_get_pvalue_critval_pdf_cdf (const std::string &dist,
+                                         double value, const py::object &param)
 {
     //
     // general interface to selected libgretl functions from pvalues.c

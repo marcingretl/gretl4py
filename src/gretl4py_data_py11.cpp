@@ -28,7 +28,7 @@ const char *gretl_workdir (void);
 
 enum HeadTail { HEAD, HEAD_T, TAIL, TAIL_T };       // for head/tail printing
 
-template<HeadTail mode>
+template <HeadTail mode>
 static void head_tail_print (GretlDataset &gd, int nobs)
 {
     //
@@ -70,6 +70,11 @@ void init_gretl4py_dataset_py11(py::module_ &m)
                       }))
         .def_readonly("is_default", &GretlDataset::is_default)
         .def_readwrite("source", &GretlDataset::source)
+        .def_property_readonly("_is_panel",
+                               [](const GretlDataset &self)
+                               {
+                                   return self.is_panel();
+                               })
         .def_property_readonly("n",
                                [](const GretlDataset &self)
                                {

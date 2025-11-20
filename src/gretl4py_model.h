@@ -54,13 +54,13 @@ protected:
     GretlBundlePtr GB_model = nullptr;  // bundle with results
     mutable int err = 0;
 
-    template<typename T>
+    template <typename T>
     void save_model (T *model);
 
-    template<typename T>
+    template <typename T>
     void do_restrict (T *model, const py::list &impose, const py::kwargs &kwargs);
 
-    template<typename T, GretlCmdIndex CI>
+    template <typename T, GretlCmdIndex CI>
     void do_forecast (T *model, const py::kwargs &kwargs, int variable_nr = 0);
 
     void unpack_kwargs (GretlCmdIndex ci);      // model kwargs unpacking
@@ -108,7 +108,7 @@ public:
 
     void restrict (const py::list &impose, const py::kwargs &kwargs);
 
-    template<ModelDataIndex IDX>
+    template <ModelDataIndex IDX>
     char *gretl_get_fit_or_resid (const std::string &name = "") const;
 
     void forecast (const py::kwargs &kwargs) override;
@@ -128,7 +128,7 @@ public:
 // NSE via dedicated Driver
 // extends: GretlModel_NSE
 //
-template<auto F, GretlCmdIndex CI>
+template <auto F, GretlCmdIndex CI>
 class GretlModel_NSE_Driver : public GretlModel_NSE
 {
 protected:
@@ -147,7 +147,7 @@ public:
 // NSE_Driver_quantreg via quantreg_driver
 // extends: GretlModel_NSE_Driver
 //
-template<auto F, GretlCmdIndex CI>
+template <auto F, GretlCmdIndex CI>
 class GretlModel_NSE_Driver_quantreg : public GretlModel_NSE_Driver<F, CI>
 {
 public:
@@ -161,7 +161,7 @@ public:
 // NSE_Driver_dpanel via dpd_model
 // extends: GretlModel_NSE_Driver
 //
-template<auto F, GretlCmdIndex CI>
+template <auto F, GretlCmdIndex CI>
 class GretlModel_NSE_Driver_dpanel : public GretlModel_NSE_Driver<F, CI>
 {
 public:
@@ -233,10 +233,10 @@ protected:
 
     void *model_ptr (void) const override;
 
-    template<GretlCmdIndex CI>
+    template <GretlCmdIndex CI>
     void do_var_vecm_fit (const int coint_rank = 0);
 
-    template<GretlCmdIndex CI>
+    template <GretlCmdIndex CI>
     void do_var_vecm_forecast (const py::kwargs &kwargs);
 
     int find_variable_nr (const std::string &variable_name);
