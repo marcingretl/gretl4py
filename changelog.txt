@@ -3,13 +3,13 @@ version 0.32:
     - add '--unit' and '--time' options to GretlaDataset::sample()
     - Pooled OLS tweaks
     - native copy constructor for GretlDataset
-    - add 'slicer' to GretlDataset binding
     - add 'n' and 'k' properties do GretlDataset
     - add 'range' option for GretlDataset::print()
     - add methods for GretlDataset: ::head(), ::tail(), and ::to_dataframe()
     - apparatus for slicing datasets
     - tobit llimit default value fix
     - fix bug in GretlDataset::print() when summary=True
+    - add nls, mle, and gmm estimators
 
 version 0.31:
     - allow 'quiet' option for VAR/VECM

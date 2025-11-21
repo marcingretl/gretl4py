@@ -49,4 +49,21 @@ print("\n12.4. Cointegration")
 usa.test(type='coint', order=1, y='b', vars='f', verbose=True)      # (12.9)
 
 print("\n12.4.2. The Error Correction Model")
-print("*** gretl4py does not provide an interface to nls ***")
+usa.diff('b')
+usa.new_series(formula="f_1 = f(-1)")
+usa.new_series(formula="f_2 = f(-2)")
+usa.new_series(formula="b_1 = b(-1)")
+usa.new_series(formula="b_2 = b(-2)")
+spec: gretl.NLSpec = {
+    "formula": "d_b = -a * (b_1 - b1 - b2 * f_1) + d0 * d_f + d1 * d_f(-1)",
+    "params": 'a b1 b2 d0 d1',
+    "initvals": {
+        "a" : 0,
+        "b1" : 0,
+        "b2": 0,
+        "d0": 0,
+        "d1": 0,
+    },
+}
+usa_nls = gretl.nls(spec).fit()         # (12.10)
+print(usa_nls)
