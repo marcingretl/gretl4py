@@ -16,7 +16,7 @@ INIT_VALS["b"] = -1
 INIT_VALS["g"] = 1
 
 m1 = gretl.nls("C = a + b * Y^g", deriv=DERIV, initvals=INIT_VALS).fit()
-m2 = gretl.nls(function="C = a + b * Y^g", params=PARAMS, initvals=INIT_VALS, param_names=PARAM_NAMES, vcv=True).fit()
+m2 = gretl.nls(formula="C = a + b * Y^g", params=PARAMS, initvals=INIT_VALS, param_names=PARAM_NAMES, vcv=True).fit()
 print(m1)
 print(m2)
 
@@ -40,14 +40,14 @@ spec3: gretl.NLSpec = {
         "p" : 0.5,
     },
 }
-formula="ll = X*log(p) + (1-X)*log(1-p)"
-param_names="probability"
-deriv={"p": "X/p - (1-X)/(1-p)"}
-initvals={"p" : 0.5}
 m3a = gretl.mle(spec3, robust=True).fit()
 
-m3b = gretl.mle(formula=formula, param_names=param_names,
-                deriv=deriv, initvals=initvals, robust=True).fit()
+FORMULA = "ll = X*log(p) + (1-X)*log(1-p)"
+PARAM_NAMES = "probability"
+DERIV = {"p": "X/p - (1-X)/(1-p)"}
+INITVALS = {"p" : 0.5}
+m3b = gretl.mle(formula=FORMULA, param_names=PARAM_NAMES,
+                deriv=DERIV, initvals=INITVALS, robust=True).fit()
 
 d3.set_as_default()
 d3.new_series("l_Ti = log(Ti)")
@@ -88,8 +88,24 @@ INIT_VALS["delta"] = 0.5
 ORTHOG = ['e ; inst']
 WEIGHTS = 'V0'
 PARAMS = 'alpha delta'
+m5 = gretl.gmm("e = delta*ewr*consrat^(alpha-1) - 1", orthog=ORTHOG, params=PARAMS,
+               weights=WEIGHTS, initvals=INIT_VALS).fit()
 
-m5 = gretl.gmm("e = delta*ewr*consrat^(alpha-1) - 1", orthog=ORTHOG, params=PARAMS, weights=WEIGHTS, initvals=INIT_VALS).fit()
+spec6: gretl.NLSpec = {
+    "formula": "e = delta*ewr*consrat^(alpha-1) - 1",
+    "params": "alpha delta",
+    "weights": "V0",
+    "orthog": [
+        'e ; inst'
+    ],
+    "initvals": {
+        "alpha" : 0.5,
+        "delta" : 0.5
+    },
+}
+m6 = gretl.gmm(spec6).fit()
 
 print(m5)
+print(m6)
 print(m5.get_formula())
+print(m6.get_formula())

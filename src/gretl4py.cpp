@@ -144,7 +144,7 @@ PYBIND11_MODULE(_gretl, m)
               return GretlModelPtr(std::move(model));
           },
           py::arg("p").none(false), py::arg("formula").none(false), py::kw_only());
-    m.def("nls",
+    m.def("_nls",
           [](const std::string &function, const py::kwargs &kwargs) -> GretlModelPtr
           {
               auto model = std::make_unique<GretlModel_NSE_nl<NLS>>(DSET, function, kwargs);
@@ -160,7 +160,7 @@ PYBIND11_MODULE(_gretl, m)
               return GretlModelPtr(std::move(model));
           },
           py::arg("loglik").none(false), py::kw_only());
-    m.def("gmm",
+    m.def("_gmm",
           [](const std::string &resid, const py::kwargs &kwargs) -> GretlModelPtr
           {
               auto model = std::make_unique<GretlModel_NSE_nl<GMM>>(DSET, resid, kwargs);

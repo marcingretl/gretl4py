@@ -84,15 +84,15 @@ def mle (formula: str | NLSpec, **options: Any):
         loglik = formula.get("formula", "")
         params = formula.get("params", "")
         param_names = formula.get("param_names", "")
-        statements = formula.get("statements", [])
-        deriv = formula.get("deriv", {})
         initvals = formula.get("initvals", {})
+        deriv = formula.get("deriv", {})
+        statements = formula.get("statements", [])
 
         return _gretl._mle(loglik, params=params,
                             param_names=param_names,
+                            initvals=initvals,
                             statements=statements,
-                            deriv=deriv, initvals=initvals,
-                            **options)
+                            deriv=deriv, **options)
 
     # passed as string + kwargs
     if isinstance(formula, str):
@@ -100,6 +100,72 @@ def mle (formula: str | NLSpec, **options: Any):
 
     # if error
     raise TypeError(f"Unsupported MLE specification of type {type(formula).__name__}; "
+        "expected a string formula or an NLSpec dictionary.")
+
+def nls (formula: str | NLSpec, **options: Any):
+    """
+    NLS factory for gretl. Accepts either:
+
+    - a string formula
+    - an NLSpec dictionary
+
+    Extra keyword arguments in **options are forwarded to _gretl._mle().
+    """
+
+    # via NLSpec
+    if isinstance(formula, dict):
+        function = formula.get("formula", "")
+        params = formula.get("params", "")
+        param_names = formula.get("param_names", "")
+        initvals = formula.get("initvals", {})
+        deriv = formula.get("deriv", {})
+
+        return _gretl._nls(function, params=params,
+                            param_names=param_names,
+                            initvals=initvals,
+                            deriv=deriv, **options)
+
+    # passed as string + kwargs
+    if isinstance(formula, str):
+        return _gretl._nls(function=formula, **options)
+
+    # if error
+    raise TypeError(f"Unsupported NLS specification of type {type(formula).__name__}; "
+        "expected a string formula or an NLSpec dictionary.")
+
+def gmm (formula: str | NLSpec, **options: Any):
+    """
+    GMM factory for gretl. Accepts either:
+
+    - a string formula
+    - an NLSpec dictionary
+
+    Extra keyword arguments in **options are forwarded to _gretl._mle().
+    """
+
+    # via NLSpec
+    if isinstance(formula, dict):
+        resid = formula.get("formula", "")
+        params = formula.get("params", "")
+        param_names = formula.get("param_names", "")
+        initvals = formula.get("initvals", {})
+        statements = formula.get("statements", [])
+        orthog = formula.get("orthog", [])
+        weights = formula.get("weights", "")
+
+        return _gretl._gmm(resid, params=params,
+                            param_names=param_names,
+                            initvals=initvals,
+                            statements=statements,
+                            orthog=orthog, weights=weights,
+                            **options)
+
+    # passed as string + kwargs
+    if isinstance(formula, str):
+        return _gretl._gmm(resid=formula, **options)
+
+    # if error
+    raise TypeError(f"Unsupported NLS specification of type {type(formula).__name__}; "
         "expected a string formula or an NLSpec dictionary.")
 
 # #######################################################
