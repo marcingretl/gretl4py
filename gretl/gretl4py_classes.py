@@ -19,8 +19,8 @@
  """
 import inspect
 import sys
+from typing import TypedDict, NotRequired, Dict, List, Any
 from .gretl4py_addons import _pd_to_pandas_str_format
-from typing import TypedDict
 from . import _gretl
 
 # #######################################################
@@ -59,28 +59,48 @@ def _oddsratio (self):
 # #######################################################
 #   GretlModel_nl class
 # #######################################################
-class NLSpec(TypedDict, total=False):
+class NLSpec (TypedDict, total=False):
     formula: str
     params: str
     param_names: str
-    initvals: dict[str, str]
-    definitions: list[str]
-    deriv: dict[str, str]
-    orthog: list[str]
+    initvals: Dict[str, str]
+    statements: List[str]
+    deriv: Dict[str, str]
+    orthog: List[str]
     weights: str
 
-def mle(spec: NLSpec, /, **options):
-    loglik = spec["formula"]
-    params = spec.get("params", "")
-    param_names = spec.get("param_names", "")
-    defs = spec.get("definitions", [])
-    deriv = spec.get("deriv", {})
-    initvals = spec.get("initvals", {})
+def mle (formula: str | NLSpec, **options: Any):
+    """
+    MLE factory for gretl. Accepts either:
 
-    return _gretl._mle(loglik, params=params,
-        param_names=param_names,
-        defs=defs, deriv=deriv,
-        initvals=initvals, **options)
+    - a string formula
+    - an NLSpec dictionary
+
+    Extra keyword arguments in **options are forwarded to _gretl._mle().
+    """
+
+    # via NLSpec
+    if isinstance(formula, dict):
+        loglik = formula.get("formula", "")
+        params = formula.get("params", "")
+        param_names = formula.get("param_names", "")
+        statements = formula.get("statements", [])
+        deriv = formula.get("deriv", {})
+        initvals = formula.get("initvals", {})
+
+        return _gretl._mle(loglik, params=params,
+                            param_names=param_names,
+                            statements=statements,
+                            deriv=deriv, initvals=initvals,
+                            **options)
+
+    # passed as string + kwargs
+    if isinstance(formula, str):
+        return _gretl._mle(loglik=formula, **options)
+
+    # if error
+    raise TypeError(f"Unsupported MLE specification of type {type(formula).__name__}; "
+        "expected a string formula or an NLSpec dictionary.")
 
 # #######################################################
 #   GretlDataset class

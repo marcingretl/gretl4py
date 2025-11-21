@@ -40,13 +40,20 @@ spec3: gretl.NLSpec = {
         "p" : 0.5,
     },
 }
-m3 = gretl.mle(spec3, robust=True).fit()
+formula="ll = X*log(p) + (1-X)*log(1-p)"
+param_names="probability"
+deriv={"p": "X/p - (1-X)/(1-p)"}
+initvals={"p" : 0.5}
+m3a = gretl.mle(spec3, robust=True).fit()
+
+m3b = gretl.mle(formula=formula, param_names=param_names,
+                deriv=deriv, initvals=initvals, robust=True).fit()
 
 d3.set_as_default()
 d3.new_series("l_Ti = log(Ti)")
 spec4: gretl.NLSpec = {
     "formula": "loglik = Z - log(s) - exp(Z)",
-    "definitions": [
+    "statements": [
         'series Xb = b0 + b1*Prod',
         'series Z = (l_Ti - Xb) / s',
         'series W = -(1 - exp(Z)) / s'
@@ -64,9 +71,11 @@ spec4: gretl.NLSpec = {
 }
 m4 = gretl.mle(spec4, hessian=True).fit()
 
-print(m3)
+print(m3a)
+print(m3b)
 print(m4)
-print(m3.get_formula())
+print(m3a.get_formula())
+print(m3b.get_formula())
 print(m4.get_formula())
 
 # GMM

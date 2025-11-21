@@ -209,7 +209,7 @@ private:
     std::string param_names_;
     std::vector<std::string> deriv_;
     std::vector<std::string> orthog_;
-    std::vector<std::string> defs_;
+    std::vector<std::string> statements_;
 public:
     GretlModel_NSE_nl (GretlDatasetPtr GD, const std::string formula,
                        const py::kwargs &kwargs);

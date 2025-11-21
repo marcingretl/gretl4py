@@ -195,7 +195,7 @@ void GretlModel::unpack_kwargs (GretlCmdIndex ci)
         } else if ((key == "orthog" || key == "weights") && ci == GMM) {
             // GMM special case: we deal with these in class constructor
             continue;
-        } else if (key == "defs" && (ci == MLE || ci == GMM)) {
+        } else if (key == "statements" && (ci == MLE || ci == GMM)) {
             // MLE/GMM special case: we deal with these in class constructor
             continue;
         } else {
@@ -697,7 +697,8 @@ template <auto F, GretlCmdIndex CI>
 GretlModel_NSE_Driver<F, CI>::GretlModel_NSE_Driver (GretlDatasetPtr GD,
                                                      const std::string &formula,
                                                      const py::kwargs &kwargs)
-                                                     : GretlModel_NSE(GD, kwargs), formula(formula)
+                                                     : GretlModel_NSE(GD, kwargs),
+                                                     formula(formula)
 {
     if constexpr (CI == TOBIT) {
         optional_par.resize(2);
@@ -1071,7 +1072,7 @@ GretlModel_NSE_nl<CI>::GretlModel_NSE_nl (GretlDatasetPtr GD,
         if (!is_pystr(val)) {
             throw std::invalid_argument("'params' must be a string");
         }
-        this->params_ = py::cast<std::string>(val);
+        params_ = py::cast<std::string>(val);
 
     }
 
@@ -1082,7 +1083,7 @@ GretlModel_NSE_nl<CI>::GretlModel_NSE_nl (GretlDatasetPtr GD,
         if (!is_pystr(val)) {
             throw std::invalid_argument("'param_names' must be a string");
         }
-        this->param_names_ = py::cast<std::string>(val);
+        param_names_ = py::cast<std::string>(val);
     }
 
     // we set up initial values
@@ -1105,11 +1106,11 @@ GretlModel_NSE_nl<CI>::GretlModel_NSE_nl (GretlDatasetPtr GD,
 
             if (is_pydict(deriv)) {
                 for (const auto &[key, val] : deriv.cast<py::dict>()) {
-                    this->deriv_.push_back(key.cast<std::string>() + " = "
+                    deriv_.push_back(key.cast<std::string>() + " = "
                                            + py::str(val).cast<std::string>());
                 }
             } else if (is_pylist(deriv)) {
-                this->deriv_ = py::cast<std::vector<std::string>>(deriv);
+                deriv_ = py::cast<std::vector<std::string>>(deriv);
             } else {
                 throw std::invalid_argument("'deriv' must be either a list or dict");
             }
@@ -1123,7 +1124,7 @@ GretlModel_NSE_nl<CI>::GretlModel_NSE_nl (GretlDatasetPtr GD,
             if (!is_pylist(val)) {
                 throw std::invalid_argument("'orthog' must be a list");
             }
-            this->orthog_ = py::cast<std::vector<std::string>>(val);
+            orthog_ = py::cast<std::vector<std::string>>(val);
         }
 
         // we get weights
@@ -1133,19 +1134,19 @@ GretlModel_NSE_nl<CI>::GretlModel_NSE_nl (GretlDatasetPtr GD,
             if (!is_pystr(val)) {
                 throw std::invalid_argument("'weights' must be a string");
             }
-            this->weights_ = py::cast<std::string>(val);
+            weights_ = py::cast<std::string>(val);
         }
     }
 
-    // we get defs entries
+    // we get statements entries
     if constexpr (CI == MLE || CI == GMM) {
-        if (kwargs.contains("defs")) {
-            auto val = kwargs["defs"];
+        if (kwargs.contains("statements")) {
+            auto val = kwargs["statements"];
 
             if (!is_pylist(val)) {
-                throw std::invalid_argument("'defs' must be a list");
+                throw std::invalid_argument("'statements' must be a list");
             }
-            this->defs_ = py::cast<std::vector<std::string>>(val);
+            statements_ = py::cast<std::vector<std::string>>(val);
         }
     }
 }
@@ -1222,10 +1223,10 @@ void GretlModel_NSE_nl<CI>::fit (void)
         }
     }
 
-    // we get defs entries
+    // we get statements entries
     if constexpr (CI == MLE || CI == GMM) {
-        if (defs_.size()) {
-            for (const auto &el : defs_) {
+        if (statements_.size()) {
+            for (const auto &el : statements_) {
                 err = nl_parse_line(CI, el.c_str(), GD->dset, GP.prn_ptr());
                 if (err) {
                     handle_gretl_error(err);
@@ -1272,8 +1273,8 @@ std::string GretlModel_NSE_nl<CI>::get_formula (void) const
     }
 
     if constexpr (CI == MLE || CI == GMM) {
-        if (defs_.size()) {
-            for (const auto &el : defs_) {
+        if (statements_.size()) {
+            for (const auto &el : statements_) {
                 RES += el + "\n";
             }
         }
