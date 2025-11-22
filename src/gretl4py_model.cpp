@@ -1742,7 +1742,7 @@ void GretlModel_NME::fit (void)
     }
 
     // start estimation
-    err = equation_system_estimate(model, GD->dset, opt, GP.prn_ptr());
+    err = equation_system_finalize(model, GD->dset, opt, GP.prn_ptr());
     if (err) {
         handle_gretl_error(err);
     }
