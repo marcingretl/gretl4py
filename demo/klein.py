@@ -31,5 +31,9 @@ system_fiml = gretl.system(method="fiml", equations=EQNS, endogs="C I Wp P W X K
 print(system_fiml)
 
 # liml
-system_liml = gretl.system(method="liml", equations=EQNS, endogs="C I Wp P W X K", identities=IDNS, verbose=True).fit()
+system_liml = gretl.system(method="liml", equations=EQNS, endogs="C I Wp P W X K", identities=IDNS).fit()
 print(system_liml)
+
+# sur
+system_sur = gretl.system(method="sur", equations=EQNS, endogs="C I Wp P W X K", identities=IDNS).fit()
+print(system_sur)
