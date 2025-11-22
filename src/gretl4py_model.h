@@ -281,8 +281,6 @@ public:
     void forecast (const py::kwargs &kwargs) override;
 };
 
-
-
 //
 // SYSTEM libgretl MODEL
 // extends: GretlModel
@@ -295,8 +293,7 @@ protected:
     std::vector<std::string> instruments_;  // vector holding instruments
     std::vector<std::string> identities_;   // vector holding identities
     std::string endogs_;                    // vector holding endogs
-    //const int order;            // VAR order
-    equation_system *model = NULL;    // libgretl equation_system struct
+    equation_system *model = NULL;          // libgretl equation_system struct
 
     void *model_ptr (void) const override;
 
@@ -319,8 +316,6 @@ public:
 
     std::string get_formula (void) const override;
 };
-
-
 
 //
 // libgretl contributed packages
