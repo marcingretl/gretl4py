@@ -214,6 +214,18 @@ PYBIND11_MODULE(_gretl, m)
           py::arg("ylist").none(false), py::kw_only());
 
     //////////////////////////////////////////////////
+    // SYSTEMs
+    //////////////////////////////////////////////////
+    m.def("system",
+          [](const std::string &method, const py::kwargs &kwargs) -> GretlModelPtr
+          {
+              auto model = std::make_unique<GretlModel_NME>(DSET, method, kwargs);
+
+              return GretlModelPtr(std::move(model));
+          },
+          py::arg("method").none(false), py::kw_only());
+
+    //////////////////////////////////////////////////
     // packages
     //////////////////////////////////////////////////
     m.def("package",

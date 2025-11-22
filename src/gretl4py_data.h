@@ -239,6 +239,7 @@ public:
     GretlBundle (gretl_bundle *src);                // incoming already existing bundle Note: src must be deallocated by libgretl
     GretlBundle (MODEL *model, DATASET *dset);      // we produce bundle from MODEL
     GretlBundle (GRETL_VAR *model, DATASET *dset);  // we produce bundle from VAR/VECM
+    GretlBundle (equation_system *model);           // we produce bundle from SYSTEM
     ~GretlBundle (void);
 
     py::dict to_dict (void);                        // bundle-to-dict mapper

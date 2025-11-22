@@ -35,6 +35,7 @@ extern "C" {
     #include <gretl/uservar.h>
     #include <gretl/transforms.h>
     #include <gretl/dataset.h>
+    #include <gretl/system.h>
 }
 #include <algorithm>
 #include <string>
@@ -1980,6 +1981,19 @@ GretlBundle::GretlBundle (GRETL_VAR *model, DATASET *dset) : b_(gretl_bundle_new
     }
 
     err = gretl_VAR_bundlize(model, dset, b_);
+
+    if (err) {
+        handle_gretl_error(err);
+    }
+}
+
+GretlBundle::GretlBundle (equation_system *model) : b_(gretl_bundle_new())
+{
+    if (!b_) {
+        handle_gretl_error(E_ALLOC);
+    }
+
+    err = equation_system_bundlize(model, b_);
 
     if (err) {
         handle_gretl_error(err);

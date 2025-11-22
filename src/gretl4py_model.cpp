@@ -24,6 +24,7 @@ extern "C" {
     #include <gretl/var.h>
     #include <gretl/gretl_restrict.h>
     #include <gretl/varprint.h>
+    #include <gretl/system.h>
 }
 #include <gretl/forecast.h>
 #include <string>
@@ -114,6 +115,9 @@ void GretlModel::save_model (T *model)
         err = printmodel(model, GD->dset, opt, GP.prn_ptr());
     } else if constexpr (std::is_same_v<T, GRETL_VAR>) {
         err = gretl_VAR_print(model, GD->dset, opt, GP.prn_ptr());
+    } else if constexpr (std::is_same_v<T, equation_system>) {
+        // FIXME: needed?
+        err = gretl_system_print(model, GD->dset, opt, GP.prn_ptr());
     } else {
         throw std::runtime_error("unsupported model type");
     }
@@ -123,7 +127,11 @@ void GretlModel::save_model (T *model)
     summary = GP.get_buffer();
 
     // we produce $model bundle based on estimated @model
-    GB_model = std::make_shared<GretlBundle>(model, GD->dset);
+    if constexpr (std::is_same_v<T, equation_system>) {
+        GB_model = std::make_shared<GretlBundle>(model);
+    } else {
+        GB_model = std::make_shared<GretlBundle>(model, GD->dset);
+    }
     err = GB_model->err;
     if (err) {
         handle_gretl_error(err);
@@ -198,7 +206,11 @@ void GretlModel::unpack_kwargs (GretlCmdIndex ci)
         } else if (key == "statements" && (ci == MLE || ci == GMM)) {
             // MLE/GMM special case: we deal with these in class constructor
             continue;
-        } else {
+        }  else if ((key == "equations" || key == "instruments" || key == "endogs" || key == "identities") && ci == SYSTEM) {
+            // SYSTEM special case: we deal with these in class constructor
+            continue;
+        }
+        else {
             gretl_valid_long_opt(opt, ci, key, item.second);
         }
     }
@@ -1603,6 +1615,151 @@ char *GretlModel_VAR_VECM::save_ec_term (const int nr,
 void GretlModel_VAR_VECM::forecast (const py::kwargs &kwargs)
 {
     do_var_vecm_forecast<VECM>(kwargs);
+}
+
+//
+// SYSTEM libgretl MODEL
+// extends: GretlModel
+//
+GretlModel_NME::GretlModel_NME (GretlDatasetPtr GD,
+                                const std::string &method,
+                                const py::kwargs &kwargs)
+                                : GretlModel(GRETL_OBJ_SYS, GD, kwargs),
+                                method_(method)
+{
+    /*
+    int system_method_from_string (const char *s);
+    const char *system_method_full_string (int method);
+    const char *system_method_short_string (int method);
+    */
+
+    auto load_list = [&](const char *key, std::vector<std::string> &target)
+    {
+        if (!kwargs.contains(key)) return;
+
+        auto obj = kwargs[key];
+
+        if (!is_pylist(obj)) {
+            throw std::invalid_argument(std::string("'") + key + "' must be a list");
+        }
+        target = py::cast<std::vector<std::string>>(obj);
+    };
+
+    // we get system definition
+    load_list("equations", equations_);
+    load_list("instruments", instruments_);
+    load_list("identities", identities_);
+
+    // we get endogs
+    if (kwargs.contains("endogs")) {
+        auto endogs = kwargs["endogs"];
+
+        if (is_pystr(endogs)) {
+            endogs_ = py::cast<std::string>(endogs);
+        } else {
+            throw std::invalid_argument("'endogs' must be a string");
+        }
+    }
+
+    if (equations_.empty()) {
+        throw std::runtime_error("no equations definitions passed");
+    }
+}
+
+GretlModel_NME::~GretlModel_NME (void)
+{
+    if (this->model != NULL) {
+        equation_system_destroy(this->model);
+    }
+}
+
+void *GretlModel_NME::model_ptr (void) const
+{
+    return static_cast<void*>(model);
+}
+
+void GretlModel_NME::fit (void)
+{
+    //
+    // here we perform a real SYSTEM estimation
+    //
+    if (py::len(kwargs) > 0) {
+        unpack_kwargs(SYSTEM);
+    }
+
+    if (!GD) {
+        throw std::runtime_error("No dataset is available");
+    }
+
+    // FIXME: all below MUST go to constructor after refactoring!!!
+    gretl_list_ptr varlist{nullptr};
+
+    // we define system
+    std::string method_def = "method=" + method_;
+    model = equation_system_start(method_def.data(), NULL, opt, &err);
+    if (err) {
+        handle_gretl_error(err);
+    }
+
+    // we define equations
+    for (const auto &el : equations_) {
+        varlist = list_from_formula(el, GD->dset, err);
+        if (err) {
+            handle_gretl_error(err);
+        }
+        err = equation_system_append(model, varlist.get());
+        if (err) {
+            handle_gretl_error(err);
+        }
+    }
+
+    // we define the rest of the system
+    //instruments_, identities_ and endogs
+    auto do_system_parse_line = [&](const char *type, std::vector<std::string> &src)
+    {
+        if (src.empty()) return;
+
+        std::string line;
+
+        for (const auto &el : src) {
+            line = std::string(type) + " " + el;
+            err = system_parse_line(model, line.c_str(), GD->dset);
+            if (err) {
+                handle_gretl_error(err);
+            }
+        }
+    };
+
+    do_system_parse_line("instr", instruments_);
+    do_system_parse_line("identity", identities_);
+
+    if (endogs_.size()) {
+        std::string line = "endog " + endogs_;
+        err = system_parse_line(model, line.c_str(), GD->dset);
+        if (err) {
+            handle_gretl_error(err);
+        }
+    }
+
+    // start estimation
+    err = equation_system_estimate(model, GD->dset, opt, GP.prn_ptr());
+    if (err) {
+        handle_gretl_error(err);
+    }
+
+    // we save model
+    save_model<equation_system>(model);
+}
+
+std::string GretlModel_NME::get_formula (void) const
+{
+    py::print("GretlModel_NME::get_formula");
+    return "";
+}
+
+void GretlModel_NME::forecast (const py::kwargs &kwargs)
+{
+    py::print("GretlModel_NME::forecast");
 }
 
 //

@@ -282,6 +282,46 @@ public:
 };
 
 
+
+//
+// SYSTEM libgretl MODEL
+// extends: GretlModel
+//
+class GretlModel_NME : public GretlModel
+{
+protected:
+    std::string method_;                    // estimation method
+    std::vector<std::string> equations_;    // vector holding equations
+    std::vector<std::string> instruments_;  // vector holding instruments
+    std::vector<std::string> identities_;   // vector holding identities
+    std::string endogs_;                    // vector holding endogs
+    //const int order;            // VAR order
+    equation_system *model = NULL;    // libgretl equation_system struct
+
+    void *model_ptr (void) const override;
+
+    //template <GretlCmdIndex CI> void do_var_vecm_fit (const int coint_rank = 0);
+
+    //template <GretlCmdIndex CI> void do_var_vecm_forecast (const py::kwargs &kwargs);
+
+    //int find_variable_nr (const std::string &variable_name);
+public:
+    GretlModel_NME (GretlDatasetPtr GD, const std::string &method, const py::kwargs &kwargs);
+    virtual ~GretlModel_NME (void);
+
+    //char *save_uhat (int eqn, const std::string &name = "") const;
+
+    void fit (void) override;
+
+    void forecast (const py::kwargs &kwargs) override;
+
+    //void test (const std::string &type, const py::kwargs &kwargs);
+
+    std::string get_formula (void) const override;
+};
+
+
+
 //
 // libgretl contributed packages
 // extends: GretlModel

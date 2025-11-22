@@ -169,6 +169,15 @@ def gmm (formula: str | NLSpec, **options: Any):
         "expected a string formula or an NLSpec dictionary.")
 
 # #######################################################
+#   GretlModel_NME class
+# #######################################################
+class MESpec (TypedDict, total=False):
+    equations: List[str]
+    instruments: List[str]
+    identities: List[str]
+    endogs: str
+
+# #######################################################
 #   GretlDataset class
 # #######################################################
 def get_data (src, **kwargs):
