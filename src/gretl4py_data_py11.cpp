@@ -133,6 +133,8 @@ void init_gretl4py_dataset_py11(py::module_ &m)
              py::arg("vars").none(false))
         .def("sdiff", &GretlDataset::gretl_list_diffgenr<SDIFF>,
              py::arg("vars").none(false))
+        .def("lags", &GretlDataset::lags,
+             py::arg("vars").none(false), py::arg("order").none(true) = 0)
         .def("print", &GretlDataset::print)
         .def("varnames", &GretlDataset::varnames)
         .def("get_series", &GretlDataset::get_series,

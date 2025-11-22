@@ -1689,6 +1689,7 @@ void GretlDataset::gretl_list_diffgenr (const std::string &vars)
         handle_gretl_error(err);
     }
 
+    // we do the job
     err = list_diffgenr(varlist.get(), CI, dset);
     if (err) {
         handle_gretl_error(err);
@@ -1697,6 +1698,34 @@ void GretlDataset::gretl_list_diffgenr (const std::string &vars)
 template void GretlDataset::gretl_list_diffgenr<DIFF>(const std::string&);
 template void GretlDataset::gretl_list_diffgenr<LDIFF>(const std::string&);
 template void GretlDataset::gretl_list_diffgenr<SDIFF>(const std::string&);
+
+void GretlDataset::lags (const std::string &vars, int order)
+{
+    //
+    // interface to libgretl's list_laggenr
+    //
+    gretl_list_ptr varlist{nullptr};
+
+    // we construct list of external variables
+    varlist = list_from_formula(vars, dset, err);
+    if (err) {
+        handle_gretl_error(err);
+    }
+
+    // we do the job
+    int *varlist_raw_ptr = varlist.release();
+    err = list_laggenr(&varlist_raw_ptr, 1, order, NULL, dset, 0, OPT_NONE);
+    varlist.reset(varlist_raw_ptr);
+    if (err) {
+        handle_gretl_error(err);
+    }
+
+    // based on interact.c
+    maybe_list_series(dset, GP_.prn_ptr());
+    set_dataset_is_changed(dset, 1);
+
+    GP_.print();
+}
 
 py::list GretlDataset::varnames (void) const
 {

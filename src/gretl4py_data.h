@@ -190,6 +190,8 @@ public:
     template <GretlCmdIndex CI>
     void gretl_list_diffgenr (const std::string &vars);
 
+    void lags (const std::string &vars, int order);
+
     py::list varnames (void) const;
 
     int get_id (void) const;
