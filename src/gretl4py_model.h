@@ -44,8 +44,8 @@ private:
 protected:
     const int id;                       // model ID
     const GretlObjType model_obj_type;  // libgretl's object type (in model context)
+    const GretlCmdIndex ci_;            // command index used
     const py::kwargs kwargs;            // kwargs passed to the model
-    py::dict RES;                       // estimation results as dictionary
     GretlDatasetPtr GD;                 // dataset used
     GretlPrint GP = GretlPrint();       // printer (instance wide)
     gretl_list_ptr var_list{nullptr};   // libgretl list of variables
@@ -72,7 +72,7 @@ protected:
     virtual void *model_ptr (void) const = 0;   // non-typed pointer to model
 public:
     explicit GretlModel (GretlObjType model_obj_type, GretlDatasetPtr GD,
-                         const py::kwargs &kwargs);
+                         GretlCmdIndex ci, const py::kwargs &kwargs);
     virtual ~GretlModel (void);
 
     int get_id (void) const;
@@ -103,7 +103,8 @@ protected:
 
     void *model_ptr (void) const override;
 public:
-    GretlModel_NSE (GretlDatasetPtr GD, const py::kwargs &kwargs);
+    GretlModel_NSE (GretlDatasetPtr GD, GretlCmdIndex ci,
+                    const py::kwargs &kwargs);
     virtual ~GretlModel_NSE (void);
 
     void restrict (const py::list &impose, const py::kwargs &kwargs);
@@ -242,7 +243,8 @@ protected:
     int find_variable_nr (const std::string &variable_name);
 public:
     GretlModel_VAR (GretlDatasetPtr GD, const std::string &ylist,
-                    const int order, const py::kwargs &kwargs);
+                    const int order, GretlCmdIndex ci,
+                    const py::kwargs &kwargs);
     virtual ~GretlModel_VAR (void);
 
     char *save_uhat (int eqn, const std::string &name = "") const;

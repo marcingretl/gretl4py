@@ -198,7 +198,7 @@ PYBIND11_MODULE(_gretl, m)
     m.def("var",
           [](const int &order, const std::string &ylist, const py::kwargs &kwargs) -> GretlModelPtr
           {
-              auto model = std::make_unique<GretlModel_VAR>(DSET, ylist, order, kwargs);
+              auto model = std::make_unique<GretlModel_VAR>(DSET, ylist, order, VAR, kwargs);
 
               return GretlModelPtr(std::move(model));
           },

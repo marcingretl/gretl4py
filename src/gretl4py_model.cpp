@@ -48,9 +48,9 @@ extern std::unordered_set<std::string> UserVars;
 // GretlModel class methods
 //
 GretlModel::GretlModel (GretlObjType model_obj_type, GretlDatasetPtr GD,
-                        const py::kwargs &kwargs)
+                        GretlCmdIndex ci, const py::kwargs &kwargs)
                         : id(next_model_id++), model_obj_type(model_obj_type),
-                        kwargs(kwargs)
+                        ci_(ci), kwargs(kwargs)
 {
     if (GD) {
         this->GD = GD;
@@ -523,8 +523,9 @@ GretlBundlePtr GretlModel::get_bundle (void) const
 // Native Single Equation libgretl MODEL (NSE)
 // extends: GretlModel
 //
-GretlModel_NSE::GretlModel_NSE (GretlDatasetPtr GD, const py::kwargs &kwargs)
-                                : GretlModel(GRETL_OBJ_EQN, GD, kwargs)
+GretlModel_NSE::GretlModel_NSE (GretlDatasetPtr GD, GretlCmdIndex ci,
+                                const py::kwargs &kwargs)
+                                : GretlModel(GRETL_OBJ_EQN, GD, ci, kwargs)
 {}
 
 GretlModel_NSE::~GretlModel_NSE (void)
@@ -709,7 +710,7 @@ template <auto F, GretlCmdIndex CI>
 GretlModel_NSE_Driver<F, CI>::GretlModel_NSE_Driver (GretlDatasetPtr GD,
                                                      const std::string &formula,
                                                      const py::kwargs &kwargs)
-                                                     : GretlModel_NSE(GD, kwargs),
+                                                     : GretlModel_NSE(GD, CI, kwargs),
                                                      formula(formula)
 {
     if constexpr (CI == TOBIT) {
@@ -903,7 +904,8 @@ GretlModel_NSE_arima::GretlModel_NSE_arima (GretlDatasetPtr GD,
                                             const std::string &y,
                                             const py::tuple &tup,
                                             const py::kwargs &kwargs)
-                                            : GretlModel_NSE(GD, kwargs), y(y), tup(tup)
+                                            : GretlModel_NSE(GD, ARMA, kwargs),
+                                            y(y), tup(tup)
 {}
 
 GretlModel_NSE_arima::~GretlModel_NSE_arima (void) = default;
@@ -1072,7 +1074,7 @@ template<GretlCmdIndex CI>
 GretlModel_NSE_nl<CI>::GretlModel_NSE_nl (GretlDatasetPtr GD,
                                           const std::string formula,
                                           const py::kwargs &kwargs)
-                                          : GretlModel_NSE(GD, kwargs),
+                                          : GretlModel_NSE(GD, CI, kwargs),
                                           command_(gretl_command_word(CI)),
                                           formula(formula)
 {
@@ -1312,8 +1314,9 @@ template class GretlModel_NSE_nl<GMM>;
 // extends: GretlModel
 //
 GretlModel_VAR::GretlModel_VAR (GretlDatasetPtr GD, const std::string &ylist,
-                                const int order, const py::kwargs &kwargs)
-                                : GretlModel(GRETL_OBJ_VAR, GD, kwargs),
+                                const int order, GretlCmdIndex ci,
+                                const py::kwargs &kwargs)
+                                : GretlModel(GRETL_OBJ_VAR, GD, ci, kwargs),
                                 vars(ylist), order(order)
 {}
 
@@ -1571,7 +1574,8 @@ void GretlModel_VAR::irf (const std::string &targ, const std::string &shock, dou
 //
 GretlModel_VAR_VECM::GretlModel_VAR_VECM (GretlDatasetPtr GD, const std::string &ylist,
                                           const int order, const int rank, const py::kwargs &kwargs)
-                                          : GretlModel_VAR(GD, ylist, order, kwargs), coint_rank(rank)
+                                          : GretlModel_VAR(GD, ylist, order, VECM, kwargs),
+                                          coint_rank(rank)
 {}
 
 void GretlModel_VAR_VECM::fit (void)
@@ -1624,7 +1628,7 @@ void GretlModel_VAR_VECM::forecast (const py::kwargs &kwargs)
 GretlModel_NME::GretlModel_NME (GretlDatasetPtr GD,
                                 const std::string &method,
                                 const py::kwargs &kwargs)
-                                : GretlModel(GRETL_OBJ_SYS, GD, kwargs),
+                                : GretlModel(GRETL_OBJ_SYS, GD, SYSTEM, kwargs),
                                 method_(method)
 {
     /*
@@ -1768,7 +1772,7 @@ void GretlModel_NME::forecast (const py::kwargs &kwargs)
 //
 GretlModel_package::GretlModel_package (GretlDatasetPtr GD, const std::string &name,
                                         const py::kwargs &kwargs)
-                                        : GretlModel(GRETL_OBJ_ANY, GD, kwargs)
+                                        : GretlModel(GRETL_OBJ_ANY, GD, NC, kwargs)
 {
     std::string basename;
     std::string suffix = "";
