@@ -1289,7 +1289,11 @@ GretlModel_VAR::GretlModel_VAR (GretlDatasetPtr GD, const std::string &ylist,
                                 const py::kwargs &kwargs)
                                 : GretlModel(GRETL_OBJ_VAR, GD, ci, kwargs),
                                 vars(ylist), order(order)
-{}
+{
+    if (kwargs.contains("xlist") && !kwargs["xlist"].is_none()) {
+        vars.append(" ; " + kwargs["xlist"].cast<std::string>());
+    }
+}
 
 GretlModel_VAR::~GretlModel_VAR (void)
 {
@@ -1311,17 +1315,6 @@ void GretlModel_VAR::do_var_vecm_fit (const int coint_rank)
     // here we perform a real VAR/VECM estimation
     // Note: for VAR case we do not use rank, of course
     //
-    // we add exogenous variables (if present)
-    if (kwargs.contains("xlist") && !kwargs["xlist"].is_none()) {
-        vars.append(" ; " + kwargs["xlist"].cast<std::string>());
-    }
-    // we add exogenous variables restricted to the cointegration space (if present)
-    if constexpr (CI == VECM) {
-        if (kwargs.contains("rxlist") && !kwargs["rxlist"].is_none()) {
-            vars.append(" ; " + kwargs["rxlist"].cast<std::string>());
-        }
-    }
-
     // be build variables list
     var_list = list_from_formula(vars, GD->dset, err);
     if (!var_list) {
@@ -1339,6 +1332,8 @@ void GretlModel_VAR::do_var_vecm_fit (const int coint_rank)
     if (err) {
         handle_gretl_error(err);
     }
+
+    // save results
     save_model<GRETL_VAR>(model);
 }
 
@@ -1539,7 +1534,11 @@ GretlModel_VAR_VECM::GretlModel_VAR_VECM (GretlDatasetPtr GD, const std::string 
                                           const int order, const int rank, const py::kwargs &kwargs)
                                           : GretlModel_VAR(GD, ylist, order, VECM, kwargs),
                                           coint_rank(rank)
-{}
+{
+    if (kwargs.contains("rxlist") && !kwargs["rxlist"].is_none()) {
+        vars.append(" ; " + kwargs["rxlist"].cast<std::string>());
+    }
+}
 
 void GretlModel_VAR_VECM::fit (void)
 {
