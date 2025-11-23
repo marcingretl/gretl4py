@@ -43,10 +43,11 @@ OPT['Nrep'] = 10^5
 OPT['model_prior'] = "binomial"
 OPT['Nrank'] = 5
 d2.new_list(name='Xes', value='2..13')
-#p2 = gretl.package(name="BMA", Y="GDP_growth", X_list="Xes", Options=OPT).fit()
-#print(p2)
-p2 = gretl.BMA(Y="GDP_growth", X_list="Xes", data=d2, quiet=True)
-gretl.BMA_Print(MODEL=p2)
+p2 = gretl.package(name="BMA", Y="GDP_growth", X_list="Xes", Options=OPT).fit()
+print(p2)
+#p2 = gretl.BMA(Y="GDP_growth", X_list="Xes", data=d2, quiet=True)
+#gretl.BMA_Print(MODEL=p2)
+exit()
 
 # let's try out StrucTiSM
 print('##################################################')

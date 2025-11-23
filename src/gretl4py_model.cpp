@@ -50,15 +50,10 @@ extern std::unordered_set<std::string> UserVars;
 GretlModel::GretlModel (GretlObjType model_obj_type, GretlDatasetPtr GD,
                         GretlCmdIndex ci, const py::kwargs &kwargs)
                         : id(next_model_id++), model_obj_type(model_obj_type),
-                        ci_(ci), kwargs(kwargs)
+                        ci_(ci), kwargs(kwargs), GD(GD)
 {
-    // if dataset was passed on call directly (mostly global DSET)
-    if (GD) {
-        this->GD = GD;
-    }
-
     // we unpack kwargs
-    if (py::len(kwargs)) {
+    if (py::len(kwargs) && ci_ != NC) {
         for (auto &item : kwargs) {
             if (!is_pystr(item.first)) {
                 throw std::invalid_argument("option key must be a string");
