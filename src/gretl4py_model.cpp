@@ -148,7 +148,7 @@ void GretlModel::save_model (T *model)
     GD->linked_models_add(id);
 }
 
-void GretlModel::unpack_kwargs (GretlCmdIndex ci)
+void GretlModel::unpack_kwargs (void)
 {
     opt = OPT_NONE;
     for (auto &item : kwargs) {
@@ -161,57 +161,57 @@ void GretlModel::unpack_kwargs (GretlCmdIndex ci)
             // special case: we use already allocated object of GretlDataset class
             GD = item.second.cast<GretlDatasetPtr>();
             continue;
-        } else if (key == "quiet" && !(ci == VAR || ci == VECM)) {
+        } else if (key == "quiet" && !(ci_ == VAR || ci_ == VECM)) {
             throw std::invalid_argument("invalid option flag: " + key);
-        } else if (key == "seasonal" && ci == ARMA) {
+        } else if (key == "seasonal" && ci_ == ARMA) {
             // arima special: we check seasonal
             if (!is_pytuple(kwargs["seasonal"])) {
                 throw std::invalid_argument("'seasonal' must be a tuple");
             }
             continue;
-        } else if (key == "lagselect" && (ci == ARMA || ci == VAR)) {
+        } else if (key == "lagselect" && (ci_ == ARMA || ci_ == VAR)) {
             throw std::invalid_argument("'lagselect' option for (S)ARIMA and VAR is temporarily unavailable");
-        } else if ((key == "llimit" || key == "rlimit") && ci == TOBIT) {
+        } else if ((key == "llimit" || key == "rlimit") && ci_ == TOBIT) {
             // TOBIT special: we check (l/r)limit
             if (!is_pynumeric(item.second)) {
                 throw std::invalid_argument("both 'llimit' and 'rlimit' must be numeric");
             }
             continue;
-        } else if (key == "xlist" && (ci == ARMA || ci == VAR || ci == VECM)) {
+        } else if (key == "xlist" && (ci_ == ARMA || ci_ == VAR || ci_ == VECM)) {
             // var special: here we only check if xlist is a string, but we must do something with it elsewhere
             if (!is_pystr(item.second)) {
                 throw std::invalid_argument("'xlist' must be a string");
             }
             continue;
-        } else if (key == "rxlist" && ci == VECM) {
+        } else if (key == "rxlist" && ci_ == VECM) {
             // var special: here we only check if rxlist is a string, but we must do something with it elsewhere
             if (!is_pystr(item.second)) {
                 throw std::invalid_argument("'rxlist' must be a string");
             }
             continue;
-        } else if (key == "instruments" && ci == DPANEL) {
+        } else if (key == "instruments" && ci_ == DPANEL) {
             // var special: here we only check if instruments is a string, but we must do something with it elsewhere
             if (!is_pystr(item.second)) {
                 throw std::invalid_argument("'instruments' must be a string");
             }
-        } else if ((key == "params" || key == "param_names" || key == "initvals") && (ci == NLS || ci == MLE || ci == GMM)) {
+        } else if ((key == "params" || key == "param_names" || key == "initvals") && (ci_ == NLS || ci_ == MLE || ci_ == GMM)) {
             // NLS/MLE/GMM special case: we deal with these in class constructor
             continue;
-        } else if (key == "deriv" && (ci == NLS || ci == MLE)) {
+        } else if (key == "deriv" && (ci_ == NLS || ci_ == MLE)) {
             // NLS/MLE/GMM special case: we deal with these in class constructor
             continue;
-        } else if ((key == "orthog" || key == "weights") && ci == GMM) {
+        } else if ((key == "orthog" || key == "weights") && ci_ == GMM) {
             // GMM special case: we deal with these in class constructor
             continue;
-        } else if (key == "statements" && (ci == MLE || ci == GMM)) {
+        } else if (key == "statements" && (ci_ == MLE || ci_ == GMM)) {
             // MLE/GMM special case: we deal with these in class constructor
             continue;
-        }  else if ((key == "equations" || key == "instruments" || key == "endogs" || key == "identities") && ci == SYSTEM) {
+        }  else if ((key == "equations" || key == "instruments" || key == "endogs" || key == "identities") && ci_ == SYSTEM) {
             // SYSTEM special case: we deal with these in class constructor
             continue;
         }
         else {
-            gretl_valid_long_opt(opt, ci, key, item.second);
+            gretl_valid_long_opt(opt, ci_, key, item.second);
         }
     }
 }
@@ -739,7 +739,7 @@ void GretlModel_NSE_Driver<F, CI>::fit (void)
     std::string formula_right = "";
 
     if (py::len(kwargs) > 0) {
-        unpack_kwargs(CI);
+        unpack_kwargs();
     }
 
     if (!GD) {
@@ -941,7 +941,7 @@ void GretlModel_NSE_arima::fit (void)
     int i;
 
     if (py::len(kwargs) > 0) {
-        unpack_kwargs(ARMA);
+        unpack_kwargs();
     }
 
     if (!GD) {
@@ -1174,7 +1174,7 @@ void GretlModel_NSE_nl<CI>::fit (void)
     std::string line = "";
 
     if (py::len(kwargs) > 0) {
-        unpack_kwargs(CI);
+        unpack_kwargs();
     }
 
     if (!GD) {
@@ -1341,7 +1341,7 @@ void GretlModel_VAR::do_var_vecm_fit (const int coint_rank)
     // Note: for VAR case we do not use rank, of course
     //
     if (py::len(kwargs) > 0) {
-        unpack_kwargs(CI);
+        unpack_kwargs();
     }
 
     if (!GD) {
@@ -1688,7 +1688,7 @@ void GretlModel_NME::fit (void)
     // here we perform a real SYSTEM estimation
     //
     if (py::len(kwargs) > 0) {
-        unpack_kwargs(SYSTEM);
+        unpack_kwargs();
     }
 
     if (!GD) {

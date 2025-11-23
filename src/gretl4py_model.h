@@ -63,7 +63,7 @@ protected:
     template <typename T, GretlCmdIndex CI>
     void do_forecast (T *model, const py::kwargs &kwargs, int variable_nr = 0);
 
-    void unpack_kwargs (GretlCmdIndex ci);      // model kwargs unpacking
+    void unpack_kwargs (void);                  // model kwargs unpacking
 
     void unpack_forecast_kwargs (const py::kwargs &kwargs, int &pconf);
 
