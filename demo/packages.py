@@ -14,6 +14,7 @@ d2 = gretl.get_data("FLS_41t72.gdt", frompkg="BMA")
 # we load packages
 CRIT = gretl.include("criteria")
 StrucTiSM = gretl.include("StrucTiSM")
+BMA = StrucTiSM = gretl.include("BMA")
 
 # let's try out criteria
 print('##################################################')
@@ -37,16 +38,15 @@ print(f'\t\tBMA')
 print('##################################################')
 d2.set_as_default()
 #gretl.genr('bundle OPT = _(Nrep=10^5, model_prior="binomial", Nrank=5)')
-#res2 = gretl.BMA(output="bmares", data=d2, Y="GDP_growth", X_list="Xes", quiet=True)
-#gretl.BMA_Print(MODEL="&bmares")
-#print(type(res2))
 OPT = gretl.Bundle()
 OPT['Nrep'] = 10^5
 OPT['model_prior'] = "binomial"
 OPT['Nrank'] = 5
 d2.new_list(name='Xes', value='2..13')
-p2 = gretl.package(name="BMA", Y="GDP_growth", X_list="Xes", Options=OPT).fit()
-print(p2)
+#p2 = gretl.package(name="BMA", Y="GDP_growth", X_list="Xes", Options=OPT).fit()
+#print(p2)
+p2 = gretl.BMA(Y="GDP_growth", X_list="Xes", data=d2, quiet=True)
+gretl.BMA_Print(MODEL=p2)
 
 # let's try out StrucTiSM
 print('##################################################')
