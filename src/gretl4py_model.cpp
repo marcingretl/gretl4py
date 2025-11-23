@@ -1595,7 +1595,7 @@ void GretlModel_VAR_VECM::forecast (const py::kwargs &kwargs)
 }
 
 //
-// SYSTEM libgretl MODEL
+// Native Multiple Equation libgretl SYSTEM (NME)
 // extends: GretlModel
 //
 GretlModel_NME::GretlModel_NME (GretlDatasetPtr GD,
@@ -1604,12 +1604,9 @@ GretlModel_NME::GretlModel_NME (GretlDatasetPtr GD,
                                 : GretlModel(GRETL_OBJ_SYS, GD, SYSTEM, kwargs),
                                 method_(method)
 {
-    /*
-    int system_method_from_string (const char *s);
-    const char *system_method_full_string (int method);
-    const char *system_method_short_string (int method);
-    */
+    gretl_list_ptr varlist{nullptr};
 
+    // lambda for getting contents of the lists passed as std::vectors
     auto load_list = [&](const char *key, std::vector<std::string> &target)
     {
         if (!kwargs.contains(key)) return;
@@ -1622,12 +1619,31 @@ GretlModel_NME::GretlModel_NME (GretlDatasetPtr GD,
         target = py::cast<std::vector<std::string>>(obj);
     };
 
-    // we get system definition
+    //lambda for setting instruments_, identities_ and endogs
+    auto do_system_parse_line = [&](const char *type, std::vector<std::string> &src)
+    {
+        if (src.empty()) return;
+
+        std::string line;
+
+        for (const auto &el : src) {
+            line = std::string(type) + " " + el;
+            err = system_parse_line(model, line.c_str(), GD->dset);
+            if (err) {
+                handle_gretl_error(err);
+            }
+        }
+    };
+
+    // we load system definition
     load_list("equations", equations_);
+    if (equations_.empty()) {
+        throw std::runtime_error("no equations definitions passed");
+    }
     load_list("instruments", instruments_);
     load_list("identities", identities_);
 
-    // we get endogs
+    // we load endogs
     if (kwargs.contains("endogs")) {
         auto endogs = kwargs["endogs"];
 
@@ -1638,34 +1654,9 @@ GretlModel_NME::GretlModel_NME (GretlDatasetPtr GD,
         }
     }
 
-    if (equations_.empty()) {
-        throw std::runtime_error("no equations definitions passed");
-    }
-}
-
-GretlModel_NME::~GretlModel_NME (void)
-{
-    if (this->model != NULL) {
-        equation_system_destroy(this->model);
-    }
-}
-
-void *GretlModel_NME::model_ptr (void) const
-{
-    return static_cast<void*>(model);
-}
-
-void GretlModel_NME::fit (void)
-{
-    //
-    // here we perform a real SYSTEM estimation
-    //
-    // FIXME: all below MUST go to constructor after refactoring!!!
-    gretl_list_ptr varlist{nullptr};
-
-    // we define system
-    std::string method_def = "method=" + method_;
-    model = equation_system_start(method_def.data(), NULL, opt, &err);
+    // system definition
+    model = equation_system_start(std::string("method=").append(method_).data(),
+                                  NULL, opt, &err);
     if (err) {
         handle_gretl_error(err);
     }
@@ -1683,25 +1674,8 @@ void GretlModel_NME::fit (void)
     }
 
     // we define the rest of the system
-    //instruments_, identities_ and endogs
-    auto do_system_parse_line = [&](const char *type, std::vector<std::string> &src)
-    {
-        if (src.empty()) return;
-
-        std::string line;
-
-        for (const auto &el : src) {
-            line = std::string(type) + " " + el;
-            err = system_parse_line(model, line.c_str(), GD->dset);
-            if (err) {
-                handle_gretl_error(err);
-            }
-        }
-    };
-
     do_system_parse_line("instr", instruments_);
     do_system_parse_line("identity", identities_);
-
     if (endogs_.size()) {
         std::string line = "endog " + endogs_;
         err = system_parse_line(model, line.c_str(), GD->dset);
@@ -1709,8 +1683,23 @@ void GretlModel_NME::fit (void)
             handle_gretl_error(err);
         }
     }
+}
 
-    // start estimation
+GretlModel_NME::~GretlModel_NME (void)
+{
+    if (this->model != NULL) {
+        equation_system_destroy(this->model);
+    }
+}
+
+void *GretlModel_NME::model_ptr (void) const
+{
+    return static_cast<void*>(model);
+}
+
+void GretlModel_NME::fit (void)
+{
+    // do the job
     err = equation_system_finalize(model, GD->dset, opt, GP.prn_ptr());
     if (err) {
         handle_gretl_error(err);

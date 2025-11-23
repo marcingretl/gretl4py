@@ -282,7 +282,7 @@ public:
 };
 
 //
-// SYSTEM libgretl MODEL
+// Native Multiple Equation libgretl SYSTEM (NME)
 // extends: GretlModel
 //
 class GretlModel_NME : public GretlModel
