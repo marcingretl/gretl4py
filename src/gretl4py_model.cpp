@@ -52,8 +52,18 @@ GretlModel::GretlModel (GretlObjType model_obj_type, GretlDatasetPtr GD,
                         : id(next_model_id++), model_obj_type(model_obj_type),
                         ci_(ci), kwargs(kwargs)
 {
+    // if dataset was passed on call directly (mostly global DSET)
     if (GD) {
         this->GD = GD;
+    }
+
+    if (py::len(kwargs) > 0) {
+        unpack_kwargs();
+    }
+
+    // we check if we have dataset
+    if (!GD) {
+        throw std::runtime_error("No dataset is available");
     }
 }
 
@@ -738,14 +748,6 @@ void GretlModel_NSE_Driver<F, CI>::fit (void)
     std::string formula_left;
     std::string formula_right = "";
 
-    if (py::len(kwargs) > 0) {
-        unpack_kwargs();
-    }
-
-    if (!GD) {
-        throw std::runtime_error("No dataset is available");
-    }
-
     // we construct the model
     if constexpr (CI == DPANEL || CI == MIDASREG) {
         std::regex formula_regex;
@@ -939,14 +941,6 @@ void GretlModel_NSE_arima::fit (void)
     gretl_list_ptr xlist;
     int y_number;
     int i;
-
-    if (py::len(kwargs) > 0) {
-        unpack_kwargs();
-    }
-
-    if (!GD) {
-        throw std::runtime_error("No dataset is available");
-    }
 
     // we set up "y"
     y_number = current_series_index(GD->dset, y.c_str());
@@ -1173,14 +1167,6 @@ void GretlModel_NSE_nl<CI>::fit (void)
 {
     std::string line = "";
 
-    if (py::len(kwargs) > 0) {
-        unpack_kwargs();
-    }
-
-    if (!GD) {
-        throw std::runtime_error("No dataset is available");
-    }
-
     // we set up model (nls, mle, gmm)
     line = command_ + " " + formula;
     err = nl_parse_line(CI, line.data(), GD->dset, GP.prn_ptr());
@@ -1340,14 +1326,6 @@ void GretlModel_VAR::do_var_vecm_fit (const int coint_rank)
     // here we perform a real VAR/VECM estimation
     // Note: for VAR case we do not use rank, of course
     //
-    if (py::len(kwargs) > 0) {
-        unpack_kwargs();
-    }
-
-    if (!GD) {
-        throw std::runtime_error("No dataset is available");
-    }
-
     // we add exogenous variables (if present)
     if (kwargs.contains("xlist") && !kwargs["xlist"].is_none()) {
         vars.append(" ; " + kwargs["xlist"].cast<std::string>());
@@ -1687,14 +1665,6 @@ void GretlModel_NME::fit (void)
     //
     // here we perform a real SYSTEM estimation
     //
-    if (py::len(kwargs) > 0) {
-        unpack_kwargs();
-    }
-
-    if (!GD) {
-        throw std::runtime_error("No dataset is available");
-    }
-
     // FIXME: all below MUST go to constructor after refactoring!!!
     gretl_list_ptr varlist{nullptr};
 
