@@ -181,8 +181,6 @@ private:
     const py::tuple tup;
     int p, d, q;
     int P, D, Q;
-
-    void get_arima_order (const py::tuple &tup, int &p, int &d, int &q);
 public:
     GretlModel_NSE_arima (GretlDatasetPtr GD, const std::string &y,
                           const py::tuple &tup, const py::kwargs &kwargs);

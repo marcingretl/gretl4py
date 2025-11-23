@@ -903,33 +903,6 @@ GretlModel_NSE_arima::GretlModel_NSE_arima (GretlDatasetPtr GD,
                                             const py::kwargs &kwargs)
                                             : GretlModel_NSE(GD, ARMA, kwargs),
                                             y(y), tup(tup)
-{}
-
-GretlModel_NSE_arima::~GretlModel_NSE_arima (void) = default;
-
-std::string GretlModel_NSE_arima::get_formula (void) const
-{
-    return y;
-}
-
-void GretlModel_NSE_arima::get_arima_order (const py::tuple &tup,
-                                            int &p, int &d, int &q)
-{
-    int n = py::len(tup);
-
-    if (n == 2) {
-        p = tup[0].cast<int>();
-        q = tup[1].cast<int>();
-    } else if (n == 3) {
-        p = tup[0].cast<int>();
-        d = tup[1].cast<int>();
-        q = tup[2].cast<int>();
-    } else {
-        throw std::invalid_argument("order must be of length 2 or 3");
-    }
-}
-
-void GretlModel_NSE_arima::fit (void)
 {
     int seasonal = 0;
     int exogenous = 0;
@@ -937,8 +910,25 @@ void GretlModel_NSE_arima::fit (void)
     int y_number;
     int i;
 
+    // lambda for ARIMA order
+    auto get_arima_order = [](const py::tuple &tup, int &p, int &d, int &q)
+    {
+        int n = py::len(tup);
+
+        if (n == 2) {
+            p = tup[0].cast<int>();
+            q = tup[1].cast<int>();
+        } else if (n == 3) {
+            p = tup[0].cast<int>();
+            d = tup[1].cast<int>();
+            q = tup[2].cast<int>();
+        } else {
+            throw std::invalid_argument("order must be of length 2 or 3");
+        }
+    };
+
     // we set up "y"
-    y_number = current_series_index(GD->dset, y.c_str());
+    y_number = GD->get_series_id(y, false);
     if (y_number == -1) {
         throw std::invalid_argument("There is no variable: " + y);
     }
@@ -992,8 +982,22 @@ void GretlModel_NSE_arima::fit (void)
             var_list.get()[i++] = xlist.get()[j];
         }
     }
+}
 
-    *model = arma(var_list.get(), NULL, GD->dset, opt, GP.prn_ptr());
+GretlModel_NSE_arima::~GretlModel_NSE_arima (void) = default;
+
+std::string GretlModel_NSE_arima::get_formula (void) const
+{
+    return y;
+}
+
+void GretlModel_NSE_arima::fit (void)
+{
+    // do the job
+    *model = arma(var_list.get(), NULL, GD->dset,
+                  opt, GP.prn_ptr());
+
+    // save model
     save_model<MODEL>(model);
 }
 
