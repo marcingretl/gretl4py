@@ -376,6 +376,22 @@ void GretlModel::do_forecast (T *model, const py::kwargs &kwargs,
     move_to_python_container<GretlModel, py::dict, py::list>(*this, std::move(res), "forecasts");
 }
 
+void GretlModel::load_objects_from_kwargs (const char *key,
+                                           std::vector<std::string> &target)
+{
+    //
+    // method for loading complex objects (lists, dicts from kwargs
+    //
+    if (!kwargs.contains(key)) return;
+
+    auto obj = kwargs[key];
+
+    if (!is_pylist(obj)) {
+        throw std::invalid_argument(std::string("'") + key + "' must be a list");
+    }
+    target = py::cast<std::vector<std::string>>(obj);
+}
+
 void GretlModel::unpack_forecast_kwargs (const py::kwargs &kwargs, int &pconf)
 {
     int conf = 95;
@@ -1072,7 +1088,8 @@ GretlModel_NSE_nl<CI>::GretlModel_NSE_nl (GretlDatasetPtr GD,
                                           command_(gretl_command_word(CI)),
                                           formula(formula)
 {
-    // common elements
+    std::string line = "";
+
     // we get params
     if (kwargs.contains("params")) {
         auto val = kwargs["params"];
@@ -1157,15 +1174,6 @@ GretlModel_NSE_nl<CI>::GretlModel_NSE_nl (GretlDatasetPtr GD,
             statements_ = py::cast<std::vector<std::string>>(val);
         }
     }
-}
-
-template<GretlCmdIndex CI>
-GretlModel_NSE_nl<CI>::~GretlModel_NSE_nl (void) = default;
-
-template<GretlCmdIndex CI>
-void GretlModel_NSE_nl<CI>::fit (void)
-{
-    std::string line = "";
 
     // we set up model (nls, mle, gmm)
     line = command_ + " " + formula;
@@ -1240,12 +1248,21 @@ void GretlModel_NSE_nl<CI>::fit (void)
     if (!model) {
         handle_gretl_error(E_ALLOC);
     }
+}
 
+template<GretlCmdIndex CI>
+GretlModel_NSE_nl<CI>::~GretlModel_NSE_nl (void) = default;
+
+template<GretlCmdIndex CI>
+void GretlModel_NSE_nl<CI>::fit (void)
+{
     // we do the job
     *model = nl_model(GD->dset, opt, GP.prn_ptr());
     if (err) {
         handle_gretl_error(err);
     }
+
+    // we save results
     save_model<MODEL>(model);
 }
 
@@ -1611,19 +1628,6 @@ GretlModel_NME::GretlModel_NME (GretlDatasetPtr GD,
 {
     gretl_list_ptr varlist{nullptr};
 
-    // lambda for getting contents of the lists passed as std::vectors
-    auto load_list = [&](const char *key, std::vector<std::string> &target)
-    {
-        if (!kwargs.contains(key)) return;
-
-        auto obj = kwargs[key];
-
-        if (!is_pylist(obj)) {
-            throw std::invalid_argument(std::string("'") + key + "' must be a list");
-        }
-        target = py::cast<std::vector<std::string>>(obj);
-    };
-
     //lambda for setting instruments_, identities_ and endogs
     auto do_system_parse_line = [&](const char *type, std::vector<std::string> &src)
     {
@@ -1641,12 +1645,12 @@ GretlModel_NME::GretlModel_NME (GretlDatasetPtr GD,
     };
 
     // we load system definition
-    load_list("equations", equations_);
+    load_objects_from_kwargs("equations", equations_);
     if (equations_.empty()) {
         throw std::runtime_error("no equations definitions passed");
     }
-    load_list("instruments", instruments_);
-    load_list("identities", identities_);
+    load_objects_from_kwargs("instruments", instruments_);
+    load_objects_from_kwargs("identities", identities_);
 
     // we load endogs
     if (kwargs.contains("endogs")) {

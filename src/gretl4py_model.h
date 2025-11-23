@@ -63,6 +63,8 @@ protected:
     template <typename T, GretlCmdIndex CI>
     void do_forecast (T *model, const py::kwargs &kwargs, int variable_nr = 0);
 
+    void load_objects_from_kwargs (const char *key, std::vector<std::string> &target);
+
     void unpack_forecast_kwargs (const py::kwargs &kwargs, int &pconf);
 
     void fr_to_dict (FITRESID *fr, py::dict &fcdict);
