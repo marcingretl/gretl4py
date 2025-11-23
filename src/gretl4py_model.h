@@ -63,7 +63,8 @@ protected:
     template <typename T, GretlCmdIndex CI>
     void do_forecast (T *model, const py::kwargs &kwargs, int variable_nr = 0);
 
-    void load_objects_from_kwargs (const char *key, std::vector<std::string> &target);
+    template <typename T>
+    void load_objects_from_kwargs (const char *key, T &target);
 
     void unpack_forecast_kwargs (const py::kwargs &kwargs, int &pconf);
 
@@ -287,7 +288,7 @@ public:
 //
 class GretlModel_NME : public GretlModel
 {
-protected:
+private:
     std::string method_;                    // estimation method
     std::vector<std::string> equations_;    // vector holding equations
     std::vector<std::string> instruments_;  // vector holding instruments

@@ -376,8 +376,8 @@ void GretlModel::do_forecast (T *model, const py::kwargs &kwargs,
     move_to_python_container<GretlModel, py::dict, py::list>(*this, std::move(res), "forecasts");
 }
 
-void GretlModel::load_objects_from_kwargs (const char *key,
-                                           std::vector<std::string> &target)
+template <typename T>
+void GretlModel::load_objects_from_kwargs (const char *key, T &target)
 {
     //
     // method for loading complex objects (lists, dicts from kwargs
@@ -386,10 +386,19 @@ void GretlModel::load_objects_from_kwargs (const char *key,
 
     auto obj = kwargs[key];
 
-    if (!is_pylist(obj)) {
-        throw std::invalid_argument(std::string("'") + key + "' must be a list");
+    if constexpr (std::is_same_v<T, std::vector<std::string>>) {
+        if (!is_pylist(obj)) {
+            throw std::invalid_argument(std::string("'") + key + "' must be a list");
+        }
+    } else if constexpr (std::is_same_v<T, std::string>) {
+        if (!is_pystr(obj)) {
+            throw std::invalid_argument(std::string("'") + key + "' must be a string");
+        }
+    } else {
+        throw std::runtime_error("load_objects_from_kwargs: unsupported type");
     }
-    target = py::cast<std::vector<std::string>>(obj);
+
+    target = py::cast<T>(obj);
 }
 
 void GretlModel::unpack_forecast_kwargs (const py::kwargs &kwargs, int &pconf)
@@ -1645,23 +1654,13 @@ GretlModel_NME::GretlModel_NME (GretlDatasetPtr GD,
     };
 
     // we load system definition
-    load_objects_from_kwargs("equations", equations_);
+    load_objects_from_kwargs<std::vector<std::string>>("equations", equations_);
     if (equations_.empty()) {
         throw std::runtime_error("no equations definitions passed");
     }
-    load_objects_from_kwargs("instruments", instruments_);
-    load_objects_from_kwargs("identities", identities_);
-
-    // we load endogs
-    if (kwargs.contains("endogs")) {
-        auto endogs = kwargs["endogs"];
-
-        if (is_pystr(endogs)) {
-            endogs_ = py::cast<std::string>(endogs);
-        } else {
-            throw std::invalid_argument("'endogs' must be a string");
-        }
-    }
+    load_objects_from_kwargs<std::vector<std::string>>("instruments", instruments_);
+    load_objects_from_kwargs<std::vector<std::string>>("identities", identities_);
+    load_objects_from_kwargs<std::string>("endogs", endogs_);
 
     // system definition
     model = equation_system_start(std::string("method=").append(method_).data(),
