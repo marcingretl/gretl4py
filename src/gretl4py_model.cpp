@@ -1099,26 +1099,9 @@ GretlModel_NSE_nl<CI>::GretlModel_NSE_nl (GretlDatasetPtr GD,
 {
     std::string line = "";
 
-    // we get params
-    if (kwargs.contains("params")) {
-        auto val = kwargs["params"];
-
-        if (!is_pystr(val)) {
-            throw std::invalid_argument("'params' must be a string");
-        }
-        params_ = py::cast<std::string>(val);
-
-    }
-
-    // we get params names
-    if (kwargs.contains("param_names")) {
-        auto val = kwargs["param_names"];
-
-        if (!is_pystr(val)) {
-            throw std::invalid_argument("'param_names' must be a string");
-        }
-        param_names_ = py::cast<std::string>(val);
-    }
+    // we get model definition
+    load_objects_from_kwargs<std::string>("params", params_);
+    load_objects_from_kwargs<std::string>("param_names", param_names_);
 
     // we set up initial values
     if (kwargs.contains("initvals")) {
@@ -1133,6 +1116,7 @@ GretlModel_NSE_nl<CI>::GretlModel_NSE_nl (GretlDatasetPtr GD,
         }
     }
 
+    // special cases
     if constexpr (CI == NLS || CI == MLE) {
         // NLS and MLE special case: we get derivatives
         if (kwargs.contains("deriv")) {
@@ -1150,38 +1134,13 @@ GretlModel_NSE_nl<CI>::GretlModel_NSE_nl (GretlDatasetPtr GD,
             }
         }
     } else if constexpr (CI == GMM) {
-        // GMM special cases
-        // we get orthog entries
-        if (kwargs.contains("orthog")) {
-            auto val = kwargs["orthog"];
-
-            if (!is_pylist(val)) {
-                throw std::invalid_argument("'orthog' must be a list");
-            }
-            orthog_ = py::cast<std::vector<std::string>>(val);
-        }
-
-        // we get weights
-        if (kwargs.contains("weights")) {
-            auto val = kwargs["weights"];
-
-            if (!is_pystr(val)) {
-                throw std::invalid_argument("'weights' must be a string");
-            }
-            weights_ = py::cast<std::string>(val);
-        }
+        load_objects_from_kwargs<std::vector<std::string>>("orthog", orthog_);
+        load_objects_from_kwargs<std::string>("weights", weights_);
     }
 
     // we get statements entries
     if constexpr (CI == MLE || CI == GMM) {
-        if (kwargs.contains("statements")) {
-            auto val = kwargs["statements"];
-
-            if (!is_pylist(val)) {
-                throw std::invalid_argument("'statements' must be a list");
-            }
-            statements_ = py::cast<std::vector<std::string>>(val);
-        }
+        load_objects_from_kwargs<std::vector<std::string>>("statements", statements_);
     }
 
     // we set up model (nls, mle, gmm)
