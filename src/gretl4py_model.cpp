@@ -784,12 +784,8 @@ void GretlModel_NSE_Driver<F, CI>::fit (void)
     } else {
         var_list = list_from_formula(formula, GD->dset, err);
     }
-    model = gretl_model_new();
-
     if (!var_list) {
         throw std::runtime_error("Formula rendering failed");
-    } else if (model == NULL || GP.prn_ptr() == NULL) {
-        throw std::runtime_error("Failed to allocate memory");
     }
 
     // special cases
@@ -812,6 +808,11 @@ void GretlModel_NSE_Driver<F, CI>::fit (void)
         if (kwargs.contains("rlimit") && !kwargs["rlimit"].is_none()) {
             optional_par.at(1) = py::cast<double>(kwargs["rlimit"]);
         }
+    }
+
+    model = gretl_model_new();
+    if (model == NULL || GP.prn_ptr() == NULL) {
+        throw std::runtime_error("Failed to allocate memory");
     }
 
     // we call F as an estimator
