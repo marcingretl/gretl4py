@@ -48,7 +48,7 @@ extern std::unordered_set<std::string> UserVars;
 GretlModel::GretlModel (GretlObjType model_obj_type, GretlDatasetPtr GD,
                         GretlCmdIndex ci, const py::kwargs &kwargs)
                         : id(next_model_id++), model_obj_type(model_obj_type),
-                        ci_(ci), GD(GD), kwargs(kwargs)
+                        ci_(ci), GD(GD)
 {
     // we unpack kwargs
     if (py::len(kwargs) && ci_ != NC) {
@@ -370,7 +370,8 @@ void GretlModel::do_forecast (T *model, const py::kwargs &kwargs,
 }
 
 template <typename T>
-void GretlModel::load_objects_from_kwargs (const char *key, T &target)
+void GretlModel::load_objects_from_kwargs (const py::kwargs &kwargs,
+                                           const char *key, T &target)
 {
     //
     // method for loading complex objects (lists, dicts from kwargs
@@ -1119,8 +1120,8 @@ GretlModel_NSE_nl<CI>::GretlModel_NSE_nl (GretlDatasetPtr GD,
     std::string line = "";
 
     // we get model definition
-    load_objects_from_kwargs<std::string>("params", params_);
-    load_objects_from_kwargs<std::string>("param_names", param_names_);
+    load_objects_from_kwargs<std::string>(kwargs, "params", params_);
+    load_objects_from_kwargs<std::string>(kwargs, "param_names", param_names_);
 
     // we set up initial values
     if (kwargs.contains("initvals")) {
@@ -1153,13 +1154,13 @@ GretlModel_NSE_nl<CI>::GretlModel_NSE_nl (GretlDatasetPtr GD,
             }
         }
     } else if constexpr (CI == GMM) {
-        load_objects_from_kwargs<std::vector<std::string>>("orthog", orthog_);
-        load_objects_from_kwargs<std::string>("weights", weights_);
+        load_objects_from_kwargs<std::vector<std::string>>(kwargs, "orthog", orthog_);
+        load_objects_from_kwargs<std::string>(kwargs, "weights", weights_);
     }
 
     // we get statements entries
     if constexpr (CI == MLE || CI == GMM) {
-        load_objects_from_kwargs<std::vector<std::string>>("statements", statements_);
+        load_objects_from_kwargs<std::vector<std::string>>(kwargs, "statements", statements_);
     }
 
     // we set up model (nls, mle, gmm)
@@ -1613,13 +1614,13 @@ GretlModel_NME::GretlModel_NME (GretlDatasetPtr GD,
                                 method_(method)
 {
     // we load system definition
-    load_objects_from_kwargs<std::vector<std::string>>("equations", equations_);
+    load_objects_from_kwargs<std::vector<std::string>>(kwargs, "equations", equations_);
     if (equations_.empty()) {
         throw std::runtime_error("no equations definitions passed");
     }
-    load_objects_from_kwargs<std::vector<std::string>>("instruments", instruments_);
-    load_objects_from_kwargs<std::vector<std::string>>("identities", identities_);
-    load_objects_from_kwargs<std::string>("endogs", endogs_);
+    load_objects_from_kwargs<std::vector<std::string>>(kwargs, "instruments", instruments_);
+    load_objects_from_kwargs<std::vector<std::string>>(kwargs, "identities", identities_);
+    load_objects_from_kwargs<std::string>(kwargs, "endogs", endogs_);
 }
 
 GretlModel_NME::~GretlModel_NME (void)
@@ -1711,7 +1712,8 @@ void GretlModel_NME::forecast (const py::kwargs &kwargs)
 //
 GretlModel_package::GretlModel_package (GretlDatasetPtr GD, const std::string &name,
                                         const py::kwargs &kwargs)
-                                        : GretlModel(GRETL_OBJ_ANY, GD, NC, kwargs)
+                                        : GretlModel(GRETL_OBJ_ANY, GD, NC, kwargs),
+                                        kwargs_(kwargs)
 {
     std::string basename;
     std::string suffix = "";
@@ -1752,7 +1754,7 @@ void *GretlModel_package::model_ptr (void) const
 
 void GretlModel_package::fit (void)
 {
-    res = GPKG->function_exec(main_func_name, GD, GP, kwargs);
+    res = GPKG->function_exec(main_func_name, GD, GP, kwargs_);
 
     // saving results
     py::object self = py::cast(this);

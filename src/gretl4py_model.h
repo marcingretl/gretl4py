@@ -46,7 +46,6 @@ protected:
     const GretlObjType model_obj_type;  // libgretl's object type (in model context)
     const GretlCmdIndex ci_;            // command index used
     GretlDatasetPtr GD;                 // dataset used
-    const py::kwargs kwargs;            // kwargs passed to the model FIXME: do we need it?
     GretlPrint GP = GretlPrint();       // printer (instance wide)
     gretl_list_ptr var_list{nullptr};   // libgretl list of variables
     gretlopt opt = OPT_NONE;            // instance wide options (including tests and forecasts)
@@ -64,7 +63,8 @@ protected:
     void do_forecast (T *model, const py::kwargs &kwargs, int variable_nr = 0);
 
     template <typename T>
-    void load_objects_from_kwargs (const char *key, T &target);
+    void load_objects_from_kwargs (const py::kwargs &kwargs,
+                                   const char *key, T &target);
 
     void unpack_forecast_kwargs (const py::kwargs &kwargs, int &pconf);
 
@@ -354,6 +354,7 @@ public:
 class GretlModel_package : public GretlModel
 {
 private:
+    const py::kwargs kwargs_;
     GretlPackagePtr GPKG;           // pointer to package to use
     std::string main_func_name;     // main function to call
     std::string print_func_name;    // function with role: UFUN_BUNDLE_PRINT
