@@ -1091,8 +1091,6 @@ GretlModel_NSE_nl<CI>::GretlModel_NSE_nl (GretlDatasetPtr GD,
                                           command_(gretl_command_word(CI)),
                                           formula(formula)
 {
-    std::string line = "";
-
     // we get model definition
     load_objects_from_dict<std::string>(kwargs, "params", params_);
     load_objects_from_dict<std::string>(kwargs, "param_names", param_names_);
@@ -1106,7 +1104,7 @@ GretlModel_NSE_nl<CI>::GretlModel_NSE_nl (GretlDatasetPtr GD,
 
         for (const auto &[key, val] : initvals) {
             gretl_generate<GRETL_TYPE_ANY>(py::str(val), GD,
-                                           key.cast<std::string>());
+                                           py::cast<std::string>(key));
         }
     }
 
@@ -1118,8 +1116,8 @@ GretlModel_NSE_nl<CI>::GretlModel_NSE_nl (GretlDatasetPtr GD,
 
             if (is_pydict(deriv)) {
                 for (const auto &[key, val] : deriv.cast<py::dict>()) {
-                    deriv_.push_back(key.cast<std::string>() + " = "
-                                           + py::str(val).cast<std::string>());
+                    deriv_.push_back(py::cast<std::string>(key) + " = "
+                                     + py::str(val).cast<std::string>());
                 }
             } else if (is_pylist(deriv)) {
                 deriv_ = py::cast<std::vector<std::string>>(deriv);
@@ -1136,6 +1134,15 @@ GretlModel_NSE_nl<CI>::GretlModel_NSE_nl (GretlDatasetPtr GD,
     if constexpr (CI == MLE || CI == GMM) {
         load_objects_from_dict<std::vector<std::string>>(kwargs, "statements", statements_);
     }
+}
+
+template<GretlCmdIndex CI>
+GretlModel_NSE_nl<CI>::~GretlModel_NSE_nl (void) = default;
+
+template<GretlCmdIndex CI>
+void GretlModel_NSE_nl<CI>::fit (void)
+{
+    std::string line = "";
 
     // we set up model (nls, mle, gmm)
     line = command_ + " " + formula;
@@ -1205,19 +1212,6 @@ GretlModel_NSE_nl<CI>::GretlModel_NSE_nl (GretlDatasetPtr GD,
         }
     }
 
-    // we allocate memory
-    model = gretl_model_new();
-    if (!model) {
-        handle_gretl_error(E_ALLOC);
-    }
-}
-
-template<GretlCmdIndex CI>
-GretlModel_NSE_nl<CI>::~GretlModel_NSE_nl (void) = default;
-
-template<GretlCmdIndex CI>
-void GretlModel_NSE_nl<CI>::fit (void)
-{
     // we do the job
     *model = nl_model(GD->dset, opt, GP.prn_ptr());
     if (err) {
