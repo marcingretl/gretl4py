@@ -90,7 +90,6 @@ void init_gretl4py_model_py11(py::module_ &m)
     bind_driver_model<GretlModel_NSE_nl<MLE>>(m, "Model_mle");
     bind_driver_model<GretlModel_NSE_nl<GMM>>(m, "Model_gmm");
     bind_driver_model<GretlModel_NSE_Driver_dpanel<dpd_model, DPANEL>>(m, "Model_dpanel");
-    bind_driver_model<GretlModel_NSE_Driver_quantreg<quantreg_driver, QUANTREG>>(m, "Model_quantreg");
     bind_driver_model<GretlModel_NSE_Driver<lsq, OLS>>(m, "Model_ols");
     bind_driver_model<GretlModel_NSE_Driver<lsq, WLS>>(m, "Model_wls");
     bind_driver_model<GretlModel_NSE_Driver<logit_probit, LOGIT>>(m, "Model_logit");
@@ -108,10 +107,11 @@ void init_gretl4py_model_py11(py::module_ &m)
     bind_driver_model<GretlModel_NSE_Driver<mp_ols, MPOLS>>(m, "Model_mpols");
     bind_driver_model<GretlModel_NSE_Driver<panel_model, PANEL>>(m, "Model_panel");
     bind_driver_model<GretlModel_NSE_Driver<ivreg, IVREG>>(m, "Model_ivreg");
-    bind_driver_model<GretlModel_NSE_Driver<tobit_model, TOBIT>>(m, "Model_tobit");
     bind_driver_model<GretlModel_NSE_Driver<hsk_model, HSK>>(m, "Model_hsk");
     bind_driver_model<GretlModel_NSE_Driver<interval_model, INTREG>>(m, "Model_intreg");
     bind_driver_model<GretlModel_NSE_Driver<midas_model, MIDASREG>>(m, "Model_midasreg");
+    bind_driver_model<GretlModel_NSE_Driver_quantreg>(m, "Model_quantreg");
+    bind_driver_model<GretlModel_NSE_Driver_tobit>(m, "Model_tobit");
 
     // VAR
     py::class_<GretlModel_VAR, GretlModel, std::unique_ptr<GretlModel_VAR>>(m, "Model_var", py::dynamic_attr())

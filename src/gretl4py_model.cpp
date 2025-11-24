@@ -842,23 +842,6 @@ void GretlModel_NSE_Driver<F, CI>::fit (void)
     } else if constexpr (CI == MIDASREG) {
         *model = F(var_list.get(), formula_right.c_str(),
                    GD->dset, opt, GP.prn_ptr());
-    } else if constexpr (CI == QUANTREG) {
-        std::string tau;
-
-        if (optional_par.size() == 1) {
-            tau = std::to_string(optional_par.at(0));
-        } else {
-            tau = "{";
-            for (size_t i=0; i<optional_par.size(); i++) {
-                tau.append(std::to_string(optional_par.at(i)));
-                if (i < optional_par.size()-1) {
-                    tau.append(";");
-                }
-            }
-            tau.append("}");
-        }
-        *model = F(tau.c_str(), var_list.get(),
-                   GD->dset, opt, GP.prn_ptr());
     }
 
     // save results
@@ -882,7 +865,7 @@ template class GretlModel_NSE_Driver<garch, GARCH>;
 template class GretlModel_NSE_Driver<mp_ols, MPOLS>;
 template class GretlModel_NSE_Driver<panel_model, PANEL>;
 template class GretlModel_NSE_Driver<ivreg, IVREG>;
-template class GretlModel_NSE_Driver<tobit_model, TOBIT>;
+//template class GretlModel_NSE_Driver<tobit_model, TOBIT>;
 template class GretlModel_NSE_Driver<hsk_model, HSK>;
 template class GretlModel_NSE_Driver<interval_model, INTREG>;
 template class GretlModel_NSE_Driver<midas_model, MIDASREG>;
@@ -959,7 +942,7 @@ void GretlModel_NSE_arima::fit (void)
     int i = 1;
 
     var_list.reset(gretl_list_new(seasonal ? 9+exogenous : 5+exogenous));
-    if (var_list == nullptr || GP.prn_ptr() == NULL) {
+    if (!var_list) {
         handle_gretl_error(E_ALLOC);
     }
 
@@ -992,30 +975,47 @@ void GretlModel_NSE_arima::fit (void)
 // NSE_Driver_quantreg via quantreg_driver
 // extends: GretlModel_NSE_Driver
 //
-template <auto F, GretlCmdIndex CI>
-GretlModel_NSE_Driver_quantreg<F, CI>::GretlModel_NSE_Driver_quantreg
-                                        (GretlDatasetPtr GD, const std::string &formula,
-                                         const double &tau, const py::kwargs &kwargs)
-                                        : GretlModel_NSE_Driver<F, CI>(GD, formula, kwargs)
-{
-    this->optional_par.push_back(tau);
-}
+GretlModel_NSE_Driver_quantreg::GretlModel_NSE_Driver_quantreg
+                                    (GretlDatasetPtr GD, const std::string &formula,
+                                     const double &tau, const py::kwargs &kwargs)
+                                     : GretlModel_NSE_Driver<quantreg_driver, QUANTREG>(GD, formula, kwargs),
+                                     tau_(std::to_string(tau))
+{}
 
-template <auto F, GretlCmdIndex CI>
-GretlModel_NSE_Driver_quantreg<F, CI>::GretlModel_NSE_Driver_quantreg
-                                        (GretlDatasetPtr GD, const std::string &formula,
-                                         const py::array_t<double> &tau, const py::kwargs &kwargs)
-                                        : GretlModel_NSE_Driver<F, CI>(GD, formula, kwargs)
+GretlModel_NSE_Driver_quantreg::GretlModel_NSE_Driver_quantreg
+                                    (GretlDatasetPtr GD, const std::string &formula,
+                                     const py::array_t<double> &tau, const py::kwargs &kwargs)
+                                     : GretlModel_NSE_Driver<quantreg_driver, QUANTREG>(GD, formula, kwargs)
 {
     if (tau.ndim() != 1) {
         throw std::invalid_argument("'tau' is expected to be a vector");
     }
-    for (int i=0; i<tau.shape(0); i++) {
-        this->optional_par.push_back(tau.at(i));
+
+    tau_ = "{";
+    for (int i=0; i<tau.shape(0); ++i) {
+        tau_.append(std::to_string(tau.at(i)));
+        if (i < tau.shape(0)-1) {
+            tau_.append(";");
+        }
     }
+    tau_.append("}");
 }
-// explicit instantiations for all required (F, CI) pairs
-template class GretlModel_NSE_Driver_quantreg<quantreg_driver, QUANTREG>;
+
+void GretlModel_NSE_Driver_quantreg::fit()
+{
+    // we define list of variables
+    var_list = list_from_formula(formula, GD->dset, err);
+    if (!var_list) {
+        throw std::runtime_error("Formula rendering failed");
+    }
+
+    // we do the job
+    *model = quantreg_driver(tau_.c_str(), var_list.get(),
+                             GD->dset, opt, GP.prn_ptr());
+
+    // we save results
+    save_model<MODEL>(model);
+}
 
 //
 // NSE_Driver_dpanel via dpd_model
@@ -1039,6 +1039,7 @@ GretlModel_NSE_Driver_dpanel<F, CI>::GretlModel_NSE_Driver_dpanel
     if (p.ndim() != 1) {
         throw std::invalid_argument("'p' is expected to be a vector");
     }
+
     for (int i=0; i<p.shape(0); i++) {
         this->optional_par.push_back(static_cast<double>(p.at(i)));
     }
@@ -1057,11 +1058,11 @@ GretlModel_NSE_Driver_tobit::GretlModel_NSE_Driver_tobit
 {
     // we set (l/r)limit
     if (kwargs.contains("llimit") && !kwargs["llimit"].is_none()) {
-        llimit = py::cast<double>(kwargs["llimit"]);
+        llimit_ = py::cast<double>(kwargs["llimit"]);
     }
 
     if (kwargs.contains("rlimit") && !kwargs["rlimit"].is_none()) {
-        rlimit = py::cast<double>(kwargs["rlimit"]);
+        rlimit_ = py::cast<double>(kwargs["rlimit"]);
     }
 }
 
@@ -1074,7 +1075,7 @@ void GretlModel_NSE_Driver_tobit::fit()
     }
 
     // we do the job
-    *model = tobit_model(var_list.get(), llimit, rlimit,
+    *model = tobit_model(var_list.get(), llimit_, rlimit_,
                          GD->dset, opt, GP.prn_ptr());
 
     // we save results

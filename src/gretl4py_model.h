@@ -149,14 +149,17 @@ public:
 // NSE_Driver_quantreg via quantreg_driver
 // extends: GretlModel_NSE_Driver
 //
-template <auto F, GretlCmdIndex CI>
-class GretlModel_NSE_Driver_quantreg : public GretlModel_NSE_Driver<F, CI>
+class GretlModel_NSE_Driver_quantreg : public GretlModel_NSE_Driver<quantreg_driver, QUANTREG>
 {
+private:
+    std::string tau_;
 public:
     GretlModel_NSE_Driver_quantreg (GretlDatasetPtr GD, const std::string &formula,
                                     const double &tau, const py::kwargs &kwargs);
     GretlModel_NSE_Driver_quantreg (GretlDatasetPtr GD, const std::string &formula,
                                     const py::array_t<double> &tau, const py::kwargs &kwargs);
+
+    void fit (void) override;
 };
 
 //
@@ -180,8 +183,8 @@ public:
 class GretlModel_NSE_Driver_tobit : public GretlModel_NSE_Driver<tobit_model, TOBIT>
 {
 private:
-    double llimit = 0;
-    double rlimit = NADBL;
+    double llimit_ = 0;
+    double rlimit_ = NADBL;
 public:
     GretlModel_NSE_Driver_tobit (GretlDatasetPtr GD, const std::string &formula,
                                  const py::kwargs &kwargs);
@@ -371,6 +374,6 @@ public:
 // aliases
 //////////////////////////////////////////////////
 using GretlModel_NSE_dpanel = GretlModel_NSE_Driver_dpanel<dpd_model, DPANEL>;
-using GretlModel_NSE_quantreg = GretlModel_NSE_Driver_quantreg<quantreg_driver, QUANTREG>;
+//using GretlModel_NSE_quantreg = GretlModel_NSE_Driver_quantreg<quantreg_driver, QUANTREG>;
 
 #endif // GRETL4PY_MODEL_H
