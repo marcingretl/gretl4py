@@ -748,6 +748,39 @@ std::string GretlModel_NSE_Driver<F, CI>::get_formula (void) const
     return formula;
 }
 
+template <auto F, GretlCmdIndex CI>
+void GretlModel_NSE_Driver<F, CI>::regexp_extract (std::string &formula_left, std::string &formula_right)
+{
+    //
+    // method for extraction model formula from regular expression
+    //
+    std::regex formula_regex;
+
+    // We extract GMM(...) or mds(l) blocks into formula_right, and remove them from formula_left
+    if constexpr (CI == DPANEL) {
+        formula_regex = std::regex(R"(GMM\s*\([^()]*\))");
+    } else if constexpr (CI == MIDASREG) {
+        formula_regex = std::regex(R"((mds|mdsl)\s*\([^()]*\))");
+    } else {
+        throw std::runtime_error("'regexp_extract': unsupported type");
+    }
+
+    std::sregex_iterator begin(formula.begin(), formula.end(), formula_regex);
+    std::sregex_iterator end;
+    formula_left = formula;
+    formula_right.clear();
+
+    for (auto it = begin; it != end; ++it) {
+        formula_right += it->str() + " ";
+        formula_left.erase(formula_left.find(it->str()), it->str().length());
+    }
+    gretl4py_trim(formula_left);
+    gretl4py_trim(formula_right);
+    if (formula_left.back() == ';') {
+        formula_left.pop_back();
+    }
+}
+
 // Method template to support several estimation methods that
 // have the same "basic" signature, plus a few special cases
 // F: function to call
@@ -762,30 +795,7 @@ void GretlModel_NSE_Driver<F, CI>::fit (void)
 
     // we construct the model
     if constexpr (CI == DPANEL || CI == MIDASREG) {
-        std::regex formula_regex;
-
-        // We extract GMM(...) or mds(l) blocks into formula_right, and remove them from formula_left
-        if constexpr (CI == DPANEL) {
-            formula_regex = std::regex(R"(GMM\s*\([^()]*\))");
-        } else if constexpr (CI == MIDASREG) {
-            formula_regex = std::regex(R"((mds|mdsl)\s*\([^()]*\))");
-        }
-
-        std::sregex_iterator begin(formula.begin(), formula.end(), formula_regex);
-        std::sregex_iterator end;
-        formula_left = formula;
-        formula_right.clear();
-
-        for (auto it = begin; it != end; ++it) {
-            formula_right += it->str() + " ";
-            formula_left.erase(formula_left.find(it->str()), it->str().length());
-        }
-        gretl4py_trim(formula_left);
-        gretl4py_trim(formula_right);
-        if (formula_left.back() == ';') {
-            formula_left.pop_back();
-        }
-
+        regexp_extract(formula_left, formula_right);
         var_list = list_from_formula(formula_left, GD->dset, err);
     } else {
         var_list = list_from_formula(formula, GD->dset, err);
