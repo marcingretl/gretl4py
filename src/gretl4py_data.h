@@ -93,6 +93,9 @@ PythonArgInfo inspect_pyobject (py::handle obj);
 
 std::string gretl4py_trim (std::string &s);
 
+template <typename T>
+void load_objects_from_dict (const py::dict &dict, const char *key, T &target);
+
 //
 // Class to handle printing
 //

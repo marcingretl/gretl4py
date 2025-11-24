@@ -369,32 +369,6 @@ void GretlModel::do_forecast (T *model, const py::kwargs &kwargs,
     move_to_python_container<GretlModel, py::dict, py::list>(*this, std::move(res), "forecasts");
 }
 
-template <typename T>
-void GretlModel::load_objects_from_kwargs (const py::kwargs &kwargs,
-                                           const char *key, T &target)
-{
-    //
-    // method for loading complex objects (lists, dicts from kwargs
-    //
-    if (!kwargs.contains(key)) return;
-
-    auto obj = kwargs[key];
-
-    if constexpr (std::is_same_v<T, std::vector<std::string>>) {
-        if (!is_pylist(obj)) {
-            throw std::invalid_argument(std::string("'") + key + "' must be a list");
-        }
-    } else if constexpr (std::is_same_v<T, std::string>) {
-        if (!is_pystr(obj)) {
-            throw std::invalid_argument(std::string("'") + key + "' must be a string");
-        }
-    } else {
-        throw std::runtime_error("load_objects_from_kwargs: unsupported type");
-    }
-
-    target = py::cast<T>(obj);
-}
-
 void GretlModel::unpack_forecast_kwargs (const py::kwargs &kwargs, int &pconf)
 {
     int conf = 95;
@@ -1120,8 +1094,8 @@ GretlModel_NSE_nl<CI>::GretlModel_NSE_nl (GretlDatasetPtr GD,
     std::string line = "";
 
     // we get model definition
-    load_objects_from_kwargs<std::string>(kwargs, "params", params_);
-    load_objects_from_kwargs<std::string>(kwargs, "param_names", param_names_);
+    load_objects_from_dict<std::string>(kwargs, "params", params_);
+    load_objects_from_dict<std::string>(kwargs, "param_names", param_names_);
 
     // we set up initial values
     if (kwargs.contains("initvals")) {
@@ -1154,13 +1128,13 @@ GretlModel_NSE_nl<CI>::GretlModel_NSE_nl (GretlDatasetPtr GD,
             }
         }
     } else if constexpr (CI == GMM) {
-        load_objects_from_kwargs<std::vector<std::string>>(kwargs, "orthog", orthog_);
-        load_objects_from_kwargs<std::string>(kwargs, "weights", weights_);
+        load_objects_from_dict<std::vector<std::string>>(kwargs, "orthog", orthog_);
+        load_objects_from_dict<std::string>(kwargs, "weights", weights_);
     }
 
     // we get statements entries
     if constexpr (CI == MLE || CI == GMM) {
-        load_objects_from_kwargs<std::vector<std::string>>(kwargs, "statements", statements_);
+        load_objects_from_dict<std::vector<std::string>>(kwargs, "statements", statements_);
     }
 
     // we set up model (nls, mle, gmm)
@@ -1614,13 +1588,13 @@ GretlModel_NME::GretlModel_NME (GretlDatasetPtr GD,
                                 method_(method)
 {
     // we load system definition
-    load_objects_from_kwargs<std::vector<std::string>>(kwargs, "equations", equations_);
+    load_objects_from_dict<std::vector<std::string>>(kwargs, "equations", equations_);
     if (equations_.empty()) {
         throw std::runtime_error("no equations definitions passed");
     }
-    load_objects_from_kwargs<std::vector<std::string>>(kwargs, "instruments", instruments_);
-    load_objects_from_kwargs<std::vector<std::string>>(kwargs, "identities", identities_);
-    load_objects_from_kwargs<std::string>(kwargs, "endogs", endogs_);
+    load_objects_from_dict<std::vector<std::string>>(kwargs, "instruments", instruments_);
+    load_objects_from_dict<std::vector<std::string>>(kwargs, "identities", identities_);
+    load_objects_from_dict<std::string>(kwargs, "endogs", endogs_);
 }
 
 GretlModel_NME::~GretlModel_NME (void)

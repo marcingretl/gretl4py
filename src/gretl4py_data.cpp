@@ -792,6 +792,33 @@ PythonArgInfo inspect_pyobject (py::handle obj)
     return info;
 }
 
+template <typename T>
+void load_objects_from_dict (const py::dict &dict, const char *key, T &target)
+{
+    //
+    // method for loading complex objects (lists, dicts from kwargs
+    //
+    if (!dict.contains(key)) return;
+
+    auto obj = dict[key];
+
+    if constexpr (std::is_same_v<T, std::vector<std::string>>) {
+        if (!is_pylist(obj)) {
+            throw std::invalid_argument(std::string("'") + key + "' must be a list");
+        }
+    } else if constexpr (std::is_same_v<T, std::string>) {
+        if (!is_pystr(obj)) {
+            throw std::invalid_argument(std::string("'") + key + "' must be a string");
+        }
+    } else {
+        throw std::runtime_error("load_objects_from_kwargs: unsupported type");
+    }
+
+    target = py::cast<T>(obj);
+}
+template void load_objects_from_dict<std::vector<std::string>>(const py::dict&, const char*,
+                                                               std::vector<std::string>&);
+template void load_objects_from_dict<std::string>(const py::dict&, const char*, std::string&);
 
 //////////////////////////////////////////////////
 // classes

@@ -10,6 +10,8 @@ version 0.32:
     - tobit llimit default value fix
     - fix bug in GretlDataset::print() when summary=True
     - add nls, mle, and gmm estimators
+    - add system estimation (all methods available in gretl)
+    - massive code refactoring
 
 version 0.31:
     - allow 'quiet' option for VAR/VECM
