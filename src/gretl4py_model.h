@@ -197,7 +197,7 @@ public:
 class GretlModel_NSE_Driver_dpanel : public GretlModel_NSE_Driver<dpd_model, DPANEL>
 {
 private:
-    std::vector<double> optional_par;
+    std::vector<double> lags_;
 public:
     GretlModel_NSE_Driver_dpanel (GretlDatasetPtr GD, const std::string &formula,
                                   const int &p, const py::kwargs &kwargs);

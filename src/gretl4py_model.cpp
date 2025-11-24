@@ -1012,7 +1012,7 @@ GretlModel_NSE_Driver_dpanel::GretlModel_NSE_Driver_dpanel
                                          const int &p, const py::kwargs &kwargs)
                                         : GretlModel_NSE_Driver<dpd_model, DPANEL>(GD, formula, kwargs)
 {
-    this->optional_par.push_back(p);
+    lags_.push_back(p);
 }
 
 GretlModel_NSE_Driver_dpanel::GretlModel_NSE_Driver_dpanel
@@ -1024,8 +1024,8 @@ GretlModel_NSE_Driver_dpanel::GretlModel_NSE_Driver_dpanel
         throw std::invalid_argument("'p' is expected to be a vector");
     }
 
-    for (int i=0; i<p.shape(0); i++) {
-        this->optional_par.push_back(static_cast<double>(p.at(i)));
+    for (int i=0; i<p.shape(0); ++i) {
+        lags_.push_back(static_cast<double>(p.at(i)));
     }
 }
 
@@ -1045,23 +1045,26 @@ void GretlModel_NSE_Driver_dpanel::fit()
 
     // we setup dpanel_list: lags + var_list
     dpanel_list.reset(gretl_list_new(var_list.get()[0] + 2));
-    if (optional_par.size() == 1) {
-        dpanel_list.get()[1] = static_cast<int>(optional_par.at(0));
+    if (lags_.size() == 1) {
+        dpanel_list.get()[1] = static_cast<int>(lags_.at(0));
     } else {
-        dpanel_list.get()[1] = static_cast<int>(*std::max_element(optional_par.begin(),
-                                                                  optional_par.end()));
+        dpanel_list.get()[1] = static_cast<int>(*std::max_element(lags_.begin(),
+                                                                  lags_.end()));
     }
     dpanel_list.get()[2] = LISTSEP;
-    std::memcpy(dpanel_list.get() + 3, var_list.get() + 1, var_list.get()[0] * sizeof(int));
+    std::memcpy(dpanel_list.get() + 3, var_list.get() + 1,
+                var_list.get()[0] * sizeof(int));
 
     // we do the job
-    if (optional_par.size() > 1) {
-        laglist.reset(gretl_list_new(optional_par.size()));
-        for (size_t i=0; i<optional_par.size(); i++) {
-            laglist.get()[i+1] = static_cast<int>(optional_par[i]);
+    if (lags_.size() > 1) {
+        laglist.reset(gretl_list_new(lags_.size()));
+        for (size_t i=0; i<lags_.size(); i++) {
+            laglist.get()[i+1] = static_cast<int>(lags_[i]);
         }
     }
-    *model = dpd_model(dpanel_list.get(), laglist.get(), formula_right.c_str(), GD->dset, opt, GP.prn_ptr());
+    *model = dpd_model(dpanel_list.get(), laglist.get(),
+                       formula_right.c_str(), GD->dset,
+                       opt, GP.prn_ptr());
 
     // we save results
     save_model<MODEL>(model);

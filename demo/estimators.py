@@ -169,7 +169,6 @@ print(res)
 print('DPANEL: selected lags')
 res = gretl.dpanel(p=[2,3], formula='n  w  k ; GMM(k,2,3) k GMM(w,2,3)', two_step=True).fit()
 print(res)
-exit()
 
 #####################################
 # hsk                               #
