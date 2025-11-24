@@ -1214,9 +1214,6 @@ void GretlModel_NSE_nl<CI>::fit (void)
 
     // we do the job
     *model = nl_model(GD->dset, opt, GP.prn_ptr());
-    if (err) {
-        handle_gretl_error(err);
-    }
 
     // we save results
     save_model<MODEL>(model);
