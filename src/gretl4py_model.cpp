@@ -891,13 +891,12 @@ std::string GretlModel_NSE_Driver<F, CI>::get_formula (void) const
 template <auto F, GretlCmdIndex CI>
 void GretlModel_NSE_Driver<F, CI>::fit (void)
 {
-    // local variables for DPANEL
-    gretl_list_ptr dpanel_list;
-    std::string formula_left;
     std::string formula_right = "";
 
     // we construct the model
-    if constexpr (CI == DPANEL || CI == MIDASREG) {
+    if constexpr (CI == MIDASREG) {
+        std::string formula_left;
+
         regexp_extract<CI>(formula, formula_left, formula_right);
         var_list = list_from_formula(formula_left, GD->dset, err);
     } else {
@@ -905,20 +904,6 @@ void GretlModel_NSE_Driver<F, CI>::fit (void)
     }
     if (!var_list) {
         throw std::runtime_error("Formula rendering failed");
-    }
-
-    // special cases
-    if constexpr (CI == DPANEL) {
-        // we setup dpanel_list: lags + var_list
-        dpanel_list.reset(gretl_list_new(var_list.get()[0] + 2));
-        if (this->optional_par.size() == 1) {
-            dpanel_list.get()[1] = static_cast<int>(optional_par.at(0));
-        } else {
-            dpanel_list.get()[1] = static_cast<int>(*std::max_element(optional_par.begin(),
-                                                                      optional_par.end()));
-        }
-        dpanel_list.get()[2] = LISTSEP;
-        std::memcpy(dpanel_list.get() + 3, var_list.get() + 1, var_list.get()[0] * sizeof(int));
     }
 
     // we call F as an estimator
@@ -940,17 +925,6 @@ void GretlModel_NSE_Driver<F, CI>::fit (void)
         *model = F(var_list.get(), GD->dset, opt, GP.prn_ptr());
     } else if constexpr (use_lcdop_sig(CI)) {
         *model = F(var_list.get(), static_cast<int>(CI),
-                   GD->dset, opt, GP.prn_ptr());
-    } else if constexpr (CI == DPANEL) {
-        gretl_list_ptr laglist{nullptr};
-
-        if (optional_par.size() > 1) {
-            laglist.reset(gretl_list_new(optional_par.size()));
-            for (size_t i=0; i<optional_par.size(); i++) {
-                laglist.get()[i+1] = static_cast<int>(optional_par[i]);
-            }
-        }
-        *model = F(dpanel_list.get(), laglist.get(), formula_right.c_str(),
                    GD->dset, opt, GP.prn_ptr());
     } else if constexpr (CI == MIDASREG) {
         *model = F(var_list.get(), formula_right.c_str(),
@@ -1033,20 +1007,18 @@ void GretlModel_NSE_Driver_quantreg::fit()
 // NSE_Driver_dpanel via dpd_model
 // extends: GretlModel_NSE_Driver
 //
-template <auto F, GretlCmdIndex CI>
-GretlModel_NSE_Driver_dpanel<F, CI>::GretlModel_NSE_Driver_dpanel
+GretlModel_NSE_Driver_dpanel::GretlModel_NSE_Driver_dpanel
                                         (GretlDatasetPtr GD, const std::string &formula,
                                          const int &p, const py::kwargs &kwargs)
-                                        : GretlModel_NSE_Driver<F, CI>(GD, formula, kwargs)
+                                        : GretlModel_NSE_Driver<dpd_model, DPANEL>(GD, formula, kwargs)
 {
     this->optional_par.push_back(p);
 }
 
-template <auto F, GretlCmdIndex CI>
-GretlModel_NSE_Driver_dpanel<F, CI>::GretlModel_NSE_Driver_dpanel
+GretlModel_NSE_Driver_dpanel::GretlModel_NSE_Driver_dpanel
                                         (GretlDatasetPtr GD, const std::string &formula,
                                          const py::array_t<int> &p, const py::kwargs &kwargs)
-                                        : GretlModel_NSE_Driver<F, CI>(GD, formula, kwargs)
+                                        : GretlModel_NSE_Driver<dpd_model, DPANEL>(GD, formula, kwargs)
 {
     if (p.ndim() != 1) {
         throw std::invalid_argument("'p' is expected to be a vector");
@@ -1056,8 +1028,46 @@ GretlModel_NSE_Driver_dpanel<F, CI>::GretlModel_NSE_Driver_dpanel
         this->optional_par.push_back(static_cast<double>(p.at(i)));
     }
 }
+
+void GretlModel_NSE_Driver_dpanel::fit()
+{
+    gretl_list_ptr dpanel_list{nullptr};
+    gretl_list_ptr laglist{nullptr};
+    std::string formula_left;
+    std::string formula_right = "";
+
+    // we define list of variables
+    regexp_extract<DPANEL>(formula, formula_left, formula_right);
+    var_list = list_from_formula(formula_left, GD->dset, err);
+    if (!var_list) {
+        throw std::runtime_error("Formula rendering failed");
+    }
+
+    // we setup dpanel_list: lags + var_list
+    dpanel_list.reset(gretl_list_new(var_list.get()[0] + 2));
+    if (optional_par.size() == 1) {
+        dpanel_list.get()[1] = static_cast<int>(optional_par.at(0));
+    } else {
+        dpanel_list.get()[1] = static_cast<int>(*std::max_element(optional_par.begin(),
+                                                                  optional_par.end()));
+    }
+    dpanel_list.get()[2] = LISTSEP;
+    std::memcpy(dpanel_list.get() + 3, var_list.get() + 1, var_list.get()[0] * sizeof(int));
+
+    // we do the job
+    if (optional_par.size() > 1) {
+        laglist.reset(gretl_list_new(optional_par.size()));
+        for (size_t i=0; i<optional_par.size(); i++) {
+            laglist.get()[i+1] = static_cast<int>(optional_par[i]);
+        }
+    }
+    *model = dpd_model(dpanel_list.get(), laglist.get(), formula_right.c_str(), GD->dset, opt, GP.prn_ptr());
+
+    // we save results
+    save_model<MODEL>(model);
+}
 // explicit instantiations for all required (F, CI) pairs
-template class GretlModel_NSE_Driver_dpanel<dpd_model, DPANEL>;
+//template class GretlModel_NSE_Driver_dpanel<dpd_model, DPANEL>;
 
 //
 // NSE_Driver_tobit via tobit_model

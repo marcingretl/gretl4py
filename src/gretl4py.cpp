@@ -131,7 +131,7 @@ PYBIND11_MODULE(_gretl, m)
     m.def("dpanel",
           [](const int &p, const std::string &formula, const py::kwargs &kwargs) -> GretlModelPtr
           {
-              auto model = std::make_unique<GretlModel_NSE_dpanel>(DSET, formula, p, kwargs);
+              auto model = std::make_unique<GretlModel_NSE_Driver_dpanel>(DSET, formula, p, kwargs);
 
               return GretlModelPtr(std::move(model));
           },
@@ -139,7 +139,7 @@ PYBIND11_MODULE(_gretl, m)
     m.def("dpanel",
           [](const py::array_t<int> &p, const std::string &formula, const py::kwargs &kwargs) -> GretlModelPtr
           {
-              auto model = std::make_unique<GretlModel_NSE_dpanel>(DSET, formula, p, kwargs);
+              auto model = std::make_unique<GretlModel_NSE_Driver_dpanel>(DSET, formula, p, kwargs);
 
               return GretlModelPtr(std::move(model));
           },
