@@ -731,25 +731,10 @@ double GretlModel_NSE::adj_rsq (void) const
     return model->adjrsq;
 }
 
-//
-// NSE via dedicated Driver
-//
-template <auto F, GretlCmdIndex CI>
-GretlModel_NSE_Driver<F, CI>::GretlModel_NSE_Driver (GretlDatasetPtr GD,
-                                                     const std::string &formula,
-                                                     const py::kwargs &kwargs)
-                                                     : GretlModel_NSE(GD, CI, kwargs),
-                                                     formula(formula)
-{}
-
-template <auto F, GretlCmdIndex CI>
-std::string GretlModel_NSE_Driver<F, CI>::get_formula (void) const
-{
-    return formula;
-}
-
-template <auto F, GretlCmdIndex CI>
-void GretlModel_NSE_Driver<F, CI>::regexp_extract (std::string &formula_left, std::string &formula_right)
+template <GretlCmdIndex CI>
+void GretlModel_NSE::regexp_extract (const std::string &formula,
+                                     std::string &formula_left,
+                                     std::string &formula_right)
 {
     //
     // method for extraction model formula from regular expression
@@ -781,6 +766,23 @@ void GretlModel_NSE_Driver<F, CI>::regexp_extract (std::string &formula_left, st
     }
 }
 
+//
+// NSE via dedicated Driver
+//
+template <auto F, GretlCmdIndex CI>
+GretlModel_NSE_Driver<F, CI>::GretlModel_NSE_Driver (GretlDatasetPtr GD,
+                                                     const std::string &formula,
+                                                     const py::kwargs &kwargs)
+                                                     : GretlModel_NSE(GD, CI, kwargs),
+                                                     formula(formula)
+{}
+
+template <auto F, GretlCmdIndex CI>
+std::string GretlModel_NSE_Driver<F, CI>::get_formula (void) const
+{
+    return formula;
+}
+
 // Method template to support several estimation methods that
 // have the same "basic" signature, plus a few special cases
 // F: function to call
@@ -795,7 +797,7 @@ void GretlModel_NSE_Driver<F, CI>::fit (void)
 
     // we construct the model
     if constexpr (CI == DPANEL || CI == MIDASREG) {
-        regexp_extract(formula_left, formula_right);
+        regexp_extract<CI>(formula, formula_left, formula_right);
         var_list = list_from_formula(formula_left, GD->dset, err);
     } else {
         var_list = list_from_formula(formula, GD->dset, err);

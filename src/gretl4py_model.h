@@ -103,6 +103,10 @@ protected:
     MODEL *model = NULL;    // libgretl MODEL struct
 
     void *model_ptr (void) const override;
+
+    template <GretlCmdIndex CI>
+    void regexp_extract (const std::string &formula, std::string &formula_left,
+                         std::string &formula_right);    // for extracting formula from regular expression
 public:
     GretlModel_NSE (GretlDatasetPtr GD, GretlCmdIndex ci,
                     const py::kwargs &kwargs);
@@ -136,8 +140,6 @@ class GretlModel_NSE_Driver : public GretlModel_NSE
 protected:
     const std::string formula;          // formula defining model
     std::vector<double> optional_par;   // optional general purpose parameter (tau for QUANTREG, (l/r)limits for TOBIT, tests...)
-
-    void regexp_extract (std::string &formula_left, std::string &formula_right);    // for extracting formula from regular expression
 public:
     GretlModel_NSE_Driver (GretlDatasetPtr GD, const std::string &formula,
                            const py::kwargs &kwargs);
