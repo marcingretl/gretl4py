@@ -144,6 +144,14 @@ PYBIND11_MODULE(_gretl, m)
               return GretlModelPtr(std::move(model));
           },
           py::arg("p").none(false), py::arg("formula").none(false), py::kw_only());
+     m.def("tobit",
+          [](const std::string &formula, const py::kwargs &kwargs) -> GretlModelPtr
+          {
+              auto model = std::make_unique<GretlModel_NSE_Driver_tobit>(DSET, formula, kwargs);
+
+              return GretlModelPtr(std::move(model));
+          },
+          py::arg("formula").none(false), py::kw_only());
     m.def("_nls",
           [](const std::string &function, const py::kwargs &kwargs) -> GretlModelPtr
           {
@@ -187,7 +195,6 @@ PYBIND11_MODULE(_gretl, m)
     BIND_DRIVER_MODEL(mpols, mp_ols, MPOLS)
     BIND_DRIVER_MODEL(panel, panel_model, PANEL)
     BIND_DRIVER_MODEL(tsls, ivreg, IVREG)
-    BIND_DRIVER_MODEL(tobit, tobit_model, TOBIT)
     BIND_DRIVER_MODEL(hsk, hsk_model, HSK)
     BIND_DRIVER_MODEL(intreg, interval_model, INTREG)
     BIND_DRIVER_MODEL(midasreg, midas_model, MIDASREG)

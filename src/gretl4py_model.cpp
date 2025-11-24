@@ -740,13 +740,7 @@ GretlModel_NSE_Driver<F, CI>::GretlModel_NSE_Driver (GretlDatasetPtr GD,
                                                      const py::kwargs &kwargs)
                                                      : GretlModel_NSE(GD, CI, kwargs),
                                                      formula(formula)
-{
-    if constexpr (CI == TOBIT) {
-        optional_par.resize(2);
-        optional_par.at(0) = 0;
-        optional_par.at(1) = NADBL;
-    }
-}
+{}
 
 template <auto F, GretlCmdIndex CI>
 std::string GretlModel_NSE_Driver<F, CI>::get_formula (void) const
@@ -812,14 +806,6 @@ void GretlModel_NSE_Driver<F, CI>::fit (void)
         }
         dpanel_list.get()[2] = LISTSEP;
         std::memcpy(dpanel_list.get() + 3, var_list.get() + 1, var_list.get()[0] * sizeof(int));
-    } else if constexpr (CI == TOBIT) {
-        // we set (l/r)limit
-        if (kwargs.contains("llimit") && !kwargs["llimit"].is_none()) {
-            optional_par.at(0) = py::cast<double>(kwargs["llimit"]);
-        }
-        if (kwargs.contains("rlimit") && !kwargs["rlimit"].is_none()) {
-            optional_par.at(1) = py::cast<double>(kwargs["rlimit"]);
-        }
     }
 
     // we call F as an estimator
@@ -873,10 +859,9 @@ void GretlModel_NSE_Driver<F, CI>::fit (void)
         }
         *model = F(tau.c_str(), var_list.get(),
                    GD->dset, opt, GP.prn_ptr());
-    } else if constexpr (CI == TOBIT) {
-        *model = F(var_list.get(), optional_par.at(0),
-                   optional_par.at(1), GD->dset, opt, GP.prn_ptr());
     }
+
+    // save results
     save_model<MODEL>(model);
 }
 // explicit instantiations for all required (F, CI) pairs
@@ -1060,8 +1045,6 @@ GretlModel_NSE_Driver_dpanel<F, CI>::GretlModel_NSE_Driver_dpanel
 }
 // explicit instantiations for all required (F, CI) pairs
 template class GretlModel_NSE_Driver_dpanel<dpd_model, DPANEL>;
-
-
 
 //
 // NSE_Driver_tobit via tobit_model
