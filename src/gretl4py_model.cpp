@@ -767,6 +767,107 @@ void GretlModel_NSE::regexp_extract (const std::string &formula,
 }
 
 //
+// NSE via arima plugin
+//
+GretlModel_NSE_arima::GretlModel_NSE_arima (GretlDatasetPtr GD,
+                                            const std::string &y,
+                                            const py::tuple &tup,
+                                            const py::kwargs &kwargs)
+                                            : GretlModel_NSE(GD, ARMA, kwargs),
+                                            y(y), tup(tup)
+{
+    // lambda for ARIMA order
+    auto get_arima_order = [](const py::tuple &tup, int &p, int &d, int &q)
+    {
+        int n = py::len(tup);
+
+        if (n == 2) {
+            p = tup[0].cast<int>();
+            q = tup[1].cast<int>();
+        } else if (n == 3) {
+            p = tup[0].cast<int>();
+            d = tup[1].cast<int>();
+            q = tup[2].cast<int>();
+        } else {
+            throw std::invalid_argument("order must be of length 2 or 3");
+        }
+    };
+
+    // we set up "y"
+    y_number = GD->get_series_id(y, false);
+    if (y_number == -1) {
+        throw std::invalid_argument("There is no variable: " + y);
+    }
+
+    // we set up non-seasonal parameters
+    p = d = q = 0;
+    get_arima_order(tup, p, d, q);
+
+    // we set up seasonal parameters
+    if (kwargs.contains("seasonal") && !kwargs["seasonal"].is_none()) {
+        const py::tuple seas = kwargs["seasonal"].cast<py::tuple>();
+        P = D = Q = 0;
+
+        get_arima_order(seas, P, D, Q);
+        if (P > 0 || D > 0 || Q > 0) {
+            seasonal = 1;
+        }
+    }
+
+    // we add exogenous variables if present
+    if (kwargs.contains("xlist") && !kwargs["xlist"].is_none()) {
+        xlist = list_from_formula(kwargs["xlist"].cast<std::string>(), GD->dset, err);
+        if (!xlist) {
+            throw std::invalid_argument("wrong list of exogenous variables");
+        } else if (err) {
+            handle_gretl_error(err);
+        }
+        exogenous = xlist.get()[0];
+    }
+}
+
+GretlModel_NSE_arima::~GretlModel_NSE_arima (void) = default;
+
+std::string GretlModel_NSE_arima::get_formula (void) const
+{
+    return y;
+}
+
+void GretlModel_NSE_arima::fit (void)
+{
+    int i = 1;
+
+    var_list.reset(gretl_list_new(seasonal ? 9+exogenous : 5+exogenous));
+    if (!var_list) {
+        handle_gretl_error(E_ALLOC);
+    }
+
+    var_list.get()[i++] = p;
+    var_list.get()[i++] = d;
+    var_list.get()[i++] = q;
+    if (seasonal) {
+        var_list.get()[i++] = LISTSEP;
+        var_list.get()[i++] = P;
+        var_list.get()[i++] = D;
+        var_list.get()[i++] = Q;
+    }
+    var_list.get()[i++] = LISTSEP;
+    var_list.get()[i++] = y_number;
+    if (exogenous) {
+        for (int j=1; j<=exogenous; j++) {
+            var_list.get()[i++] = xlist.get()[j];
+        }
+    }
+
+    // do the job
+    *model = arma(var_list.get(), NULL, GD->dset,
+                  opt, GP.prn_ptr());
+
+    // save model
+    save_model<MODEL>(model);
+}
+
+//
 // NSE via dedicated Driver
 //
 template <auto F, GretlCmdIndex CI>
@@ -881,107 +982,6 @@ template class GretlModel_NSE_Driver<ivreg, IVREG>;
 template class GretlModel_NSE_Driver<hsk_model, HSK>;
 template class GretlModel_NSE_Driver<interval_model, INTREG>;
 template class GretlModel_NSE_Driver<midas_model, MIDASREG>;
-
-//
-// NSE via arima plugin
-//
-GretlModel_NSE_arima::GretlModel_NSE_arima (GretlDatasetPtr GD,
-                                            const std::string &y,
-                                            const py::tuple &tup,
-                                            const py::kwargs &kwargs)
-                                            : GretlModel_NSE(GD, ARMA, kwargs),
-                                            y(y), tup(tup)
-{
-    // lambda for ARIMA order
-    auto get_arima_order = [](const py::tuple &tup, int &p, int &d, int &q)
-    {
-        int n = py::len(tup);
-
-        if (n == 2) {
-            p = tup[0].cast<int>();
-            q = tup[1].cast<int>();
-        } else if (n == 3) {
-            p = tup[0].cast<int>();
-            d = tup[1].cast<int>();
-            q = tup[2].cast<int>();
-        } else {
-            throw std::invalid_argument("order must be of length 2 or 3");
-        }
-    };
-
-    // we set up "y"
-    y_number = GD->get_series_id(y, false);
-    if (y_number == -1) {
-        throw std::invalid_argument("There is no variable: " + y);
-    }
-
-    // we set up non-seasonal parameters
-    p = d = q = 0;
-    get_arima_order(tup, p, d, q);
-
-    // we set up seasonal parameters
-    if (kwargs.contains("seasonal") && !kwargs["seasonal"].is_none()) {
-        const py::tuple seas = kwargs["seasonal"].cast<py::tuple>();
-        P = D = Q = 0;
-
-        get_arima_order(seas, P, D, Q);
-        if (P > 0 || D > 0 || Q > 0) {
-            seasonal = 1;
-        }
-    }
-
-    // we add exogenous variables if present
-    if (kwargs.contains("xlist") && !kwargs["xlist"].is_none()) {
-        xlist = list_from_formula(kwargs["xlist"].cast<std::string>(), GD->dset, err);
-        if (!xlist) {
-            throw std::invalid_argument("wrong list of exogenous variables");
-        } else if (err) {
-            handle_gretl_error(err);
-        }
-        exogenous = xlist.get()[0];
-    }
-}
-
-GretlModel_NSE_arima::~GretlModel_NSE_arima (void) = default;
-
-std::string GretlModel_NSE_arima::get_formula (void) const
-{
-    return y;
-}
-
-void GretlModel_NSE_arima::fit (void)
-{
-    int i = 1;
-
-    var_list.reset(gretl_list_new(seasonal ? 9+exogenous : 5+exogenous));
-    if (!var_list) {
-        handle_gretl_error(E_ALLOC);
-    }
-
-    var_list.get()[i++] = p;
-    var_list.get()[i++] = d;
-    var_list.get()[i++] = q;
-    if (seasonal) {
-        var_list.get()[i++] = LISTSEP;
-        var_list.get()[i++] = P;
-        var_list.get()[i++] = D;
-        var_list.get()[i++] = Q;
-    }
-    var_list.get()[i++] = LISTSEP;
-    var_list.get()[i++] = y_number;
-    if (exogenous) {
-        for (int j=1; j<=exogenous; j++) {
-            var_list.get()[i++] = xlist.get()[j];
-        }
-    }
-
-    // do the job
-    *model = arma(var_list.get(), NULL, GD->dset,
-                  opt, GP.prn_ptr());
-
-    // save model
-    save_model<MODEL>(model);
-}
 
 //
 // NSE_Driver_quantreg via quantreg_driver

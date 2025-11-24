@@ -131,6 +131,31 @@ public:
 };
 
 //
+// NSE via arima plugin
+// extends: GretlModel_NSE
+//
+class GretlModel_NSE_arima : public GretlModel_NSE
+{
+private:
+    const std::string y;    // name of y process
+    const py::tuple tup;    // basic (P,D,Q) definition
+    int y_number;           // number of y process in the context of GD
+    int seasonal = 0;       // number of seasonal elements
+    int exogenous = 0;      // number of exogenous variables
+    gretl_list_ptr xlist;   // list of exogenous variables
+    int p, d, q;
+    int P, D, Q;
+public:
+    GretlModel_NSE_arima (GretlDatasetPtr GD, const std::string &y,
+                          const py::tuple &tup, const py::kwargs &kwargs);
+    ~GretlModel_NSE_arima (void);
+
+    void fit (void) override;
+
+    std::string get_formula (void) const override;
+};
+
+//
 // NSE via dedicated Driver
 // extends: GretlModel_NSE
 //
@@ -173,6 +198,8 @@ public:
 template <auto F, GretlCmdIndex CI>
 class GretlModel_NSE_Driver_dpanel : public GretlModel_NSE_Driver<F, CI>
 {
+private:
+    //const int p_;
 public:
     GretlModel_NSE_Driver_dpanel (GretlDatasetPtr GD, const std::string &formula,
                                   const int &p, const py::kwargs &kwargs);
@@ -194,31 +221,6 @@ public:
                                  const py::kwargs &kwargs);
 
     void fit (void) override;
-};
-
-//
-// NSE via arima plugin
-// extends: GretlModel_NSE
-//
-class GretlModel_NSE_arima : public GretlModel_NSE
-{
-private:
-    const std::string y;    // name of y process
-    const py::tuple tup;    // basic (P,D,Q) definition
-    int y_number;           // number of y process in the context of GD
-    int seasonal = 0;       // number of seasonal elements
-    int exogenous = 0;      // number of exogenous variables
-    gretl_list_ptr xlist;   // list of exogenous variables
-    int p, d, q;
-    int P, D, Q;
-public:
-    GretlModel_NSE_arima (GretlDatasetPtr GD, const std::string &y,
-                          const py::tuple &tup, const py::kwargs &kwargs);
-    ~GretlModel_NSE_arima (void);
-
-    void fit (void) override;
-
-    std::string get_formula (void) const override;
 };
 
 //
