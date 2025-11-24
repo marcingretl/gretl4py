@@ -45,8 +45,8 @@ protected:
     const int id;                       // model ID
     const GretlObjType model_obj_type;  // libgretl's object type (in model context)
     const GretlCmdIndex ci_;            // command index used
-    const py::kwargs kwargs;            // kwargs passed to the model
     GretlDatasetPtr GD;                 // dataset used
+    const py::kwargs kwargs;            // kwargs passed to the model FIXME: do we need it?
     GretlPrint GP = GretlPrint();       // printer (instance wide)
     gretl_list_ptr var_list{nullptr};   // libgretl list of variables
     gretlopt opt = OPT_NONE;            // instance wide options (including tests and forecasts)
@@ -174,14 +174,34 @@ public:
 };
 
 //
+// NSE_Driver_tobit via tobit_model
+// extends: GretlModel_NSE_Driver
+//
+class GretlModel_NSE_Driver_tobit : public GretlModel_NSE_Driver<tobit_model, TOBIT>
+{
+private:
+    double llimit = 0;
+    double rlimit = NADBL;
+public:
+    GretlModel_NSE_Driver_tobit (GretlDatasetPtr GD, const std::string &formula,
+                                 const py::kwargs &kwargs);
+
+    void fit (void) override;
+};
+
+//
 // NSE via arima plugin
 // extends: GretlModel_NSE
 //
 class GretlModel_NSE_arima : public GretlModel_NSE
 {
 private:
-    const std::string y;
-    const py::tuple tup;
+    const std::string y;    // name of y process
+    const py::tuple tup;    // basic (P,D,Q) definition
+    int y_number;           // number of y process in the context of GD
+    int seasonal = 0;       // number of seasonal elements
+    int exogenous = 0;      // number of exogenous variables
+    gretl_list_ptr xlist;   // list of exogenous variables
     int p, d, q;
     int P, D, Q;
 public:
