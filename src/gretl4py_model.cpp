@@ -17,8 +17,6 @@
  *
  */
 
-#include <pybind11/pybind11.h>
-#include "gretl4py_data.h"
 #include "gretl4py_model.h"
 extern "C" {
     #include <gretl/var.h>
@@ -767,17 +765,6 @@ void GretlModel_NSE_Driver<F, CI>::fit (void)
     if constexpr (CI == DPANEL || CI == MIDASREG) {
         std::regex formula_regex;
 
-        // trimmer
-        auto trim = [](std::string &s)
-        {
-            s.erase(s.begin(), std::find_if(s.begin(), s.end(),
-                                            [](unsigned char ch) { return !std::isspace(ch); }));
-            s.erase(std::find_if(s.rbegin(), s.rend(),
-                                 [](unsigned char ch) { return !std::isspace(ch); }).base(), s.end());
-
-            return s;
-        };
-
         // We extract GMM(...) or mds(l) blocks into formula_right, and remove them from formula_left
         if constexpr (CI == DPANEL) {
             formula_regex = std::regex(R"(GMM\s*\([^()]*\))");
@@ -794,8 +781,8 @@ void GretlModel_NSE_Driver<F, CI>::fit (void)
             formula_right += it->str() + " ";
             formula_left.erase(formula_left.find(it->str()), it->str().length());
         }
-        trim(formula_left);
-        trim(formula_right);
+        gretl4py_trim(formula_left);
+        gretl4py_trim(formula_right);
         if (formula_left.back() == ';') {
             formula_left.pop_back();
         }

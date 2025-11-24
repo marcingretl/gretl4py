@@ -91,6 +91,8 @@ py::object variant_to_pyobject (GretlTypes &&val);
 
 PythonArgInfo inspect_pyobject (py::handle obj);
 
+std::string gretl4py_trim (std::string &s);
+
 //
 // Class to handle printing
 //

@@ -54,19 +54,6 @@ extern std::unordered_set<std::string> UserVars;
 //////////////////////////////////////////////////
 // static functions
 //////////////////////////////////////////////////
-
-// general purpose trimmer
-static std::string trim (std::string &s)
-{
-    s.erase(s.begin(),
-            std::find_if(s.begin(), s.end(),
-                         [](unsigned char ch) { return !std::isspace(ch); }));
-    s.erase(std::find_if(s.rbegin(), s.rend(),
-                         [](unsigned char ch) { return !std::isspace(ch); }).base(), s.end());
-
-    return s;
-}
-
 static int get_int_from_python_dict (const py::dict &pydict,
                                      const char *key,
                                      int deflt = 1)
@@ -199,7 +186,7 @@ static std::string extract_varname (std::string formula)
         "arrays", "bundle", "list", "matrix", "scalar", "series", "string"
     };
 
-    trim(formula);
+    gretl4py_trim(formula);
 
     // step 1: remove leading keyword (if present)
     std::istringstream iss(formula);
@@ -208,7 +195,7 @@ static std::string extract_varname (std::string formula)
 
     if (std::find(keywords.begin(), keywords.end(), first) != keywords.end() && !second.empty()) {
         formula = formula.substr(formula.find(second));
-        trim(formula);
+        gretl4py_trim(formula);
     }
 
     // step 2: if '=' is present, extract varname before it
@@ -221,12 +208,24 @@ static std::string extract_varname (std::string formula)
         varname = formula;
     }
 
-    return trim(varname);
+    return gretl4py_trim(varname);
 }
 
 //////////////////////////////////////////////////
 // functions
 //////////////////////////////////////////////////
+// general purpose trim
+std::string gretl4py_trim (std::string &s)
+{
+    s.erase(s.begin(),
+            std::find_if(s.begin(), s.end(),
+                         [](unsigned char ch) { return !std::isspace(ch); }));
+    s.erase(std::find_if(s.rbegin(), s.rend(),
+                         [](unsigned char ch) { return !std::isspace(ch); }).base(), s.end());
+
+    return s;
+}
+
 void NumPyArray_extract (const py::array &arr, NumPyArrayView &view)
 {
     if (arr.ndim() > 2) {
