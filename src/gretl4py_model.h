@@ -376,10 +376,4 @@ public:
     void functions (void) const;
 };
 
-//////////////////////////////////////////////////
-// aliases
-//////////////////////////////////////////////////
-//using GretlModel_NSE_dpanel = GretlModel_NSE_Driver_dpanel<dpd_model, DPANEL>;
-//using GretlModel_NSE_quantreg = GretlModel_NSE_Driver_quantreg<quantreg_driver, QUANTREG>;
-
 #endif // GRETL4PY_MODEL_H

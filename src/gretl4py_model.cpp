@@ -952,7 +952,6 @@ template class GretlModel_NSE_Driver<garch, GARCH>;
 template class GretlModel_NSE_Driver<mp_ols, MPOLS>;
 template class GretlModel_NSE_Driver<panel_model, PANEL>;
 template class GretlModel_NSE_Driver<ivreg, IVREG>;
-//template class GretlModel_NSE_Driver<tobit_model, TOBIT>;
 template class GretlModel_NSE_Driver<hsk_model, HSK>;
 template class GretlModel_NSE_Driver<interval_model, INTREG>;
 template class GretlModel_NSE_Driver<midas_model, MIDASREG>;
@@ -1069,8 +1068,6 @@ void GretlModel_NSE_Driver_dpanel::fit()
     // we save results
     save_model<MODEL>(model);
 }
-// explicit instantiations for all required (F, CI) pairs
-//template class GretlModel_NSE_Driver_dpanel<dpd_model, DPANEL>;
 
 //
 // NSE_Driver_tobit via tobit_model
