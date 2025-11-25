@@ -1289,7 +1289,8 @@ GretlModel_VAR::GretlModel_VAR (GretlDatasetPtr GD, const std::string &ylist,
                                 vars(ylist), order(order)
 {
     if (kwargs.contains("xlist") && !kwargs["xlist"].is_none()) {
-        vars.append(" ; " + kwargs["xlist"].cast<std::string>());
+        vars.append(" ; ");
+        vars.append(kwargs["xlist"].cast<std::string>());
     }
 }
 
@@ -1534,7 +1535,8 @@ GretlModel_VAR_VECM::GretlModel_VAR_VECM (GretlDatasetPtr GD, const std::string 
                                           coint_rank(rank)
 {
     if (kwargs.contains("rxlist") && !kwargs["rxlist"].is_none()) {
-        vars.append(" ; " + kwargs["rxlist"].cast<std::string>());
+        vars.append(" ; ");
+        vars.append(kwargs["rxlist"].cast<std::string>());
     }
 }
 
