@@ -1083,7 +1083,7 @@ void GretlModel_NSE_Driver_tobit::fit()
 // NLS,MLE,GMM via plugin
 // extends: GretlModel_NSE
 //
-template<GretlCmdIndex CI>
+template <GretlCmdIndex CI>
 GretlModel_NSE_nl<CI>::GretlModel_NSE_nl (GretlDatasetPtr GD,
                                           const std::string formula,
                                           const py::kwargs &kwargs)
@@ -1094,6 +1094,9 @@ GretlModel_NSE_nl<CI>::GretlModel_NSE_nl (GretlDatasetPtr GD,
     // we get model definition
     load_objects_from_dict<std::string>(kwargs, "params", params_);
     load_objects_from_dict<std::string>(kwargs, "param_names", param_names_);
+    if (!param_names_.empty()) {
+        param_names_ = "\"" + param_names_ + "\"";
+    }
 
     // we set up initial values
     if (kwargs.contains("initvals")) {
@@ -1136,80 +1139,92 @@ GretlModel_NSE_nl<CI>::GretlModel_NSE_nl (GretlDatasetPtr GD,
     }
 }
 
-template<GretlCmdIndex CI>
+template <GretlCmdIndex CI>
 GretlModel_NSE_nl<CI>::~GretlModel_NSE_nl (void) = default;
 
-template<GretlCmdIndex CI>
-void GretlModel_NSE_nl<CI>::fit (void)
+template <GretlCmdIndex CI>
+template <typename T>
+void GretlModel_NSE_nl<CI>::do_nl_parse_line_ (const std::string &keyword,
+                                               T *src)
 {
-    std::string line = "";
+    //
+    // here we perform line parsing and adding to libgretl
+    // Note: to add formula, use "command" as keyword and nullptr as src
+    //
 
-    // we set up model (nls, mle, gmm)
-    line = command_ + " " + formula;
-    err = nl_parse_line(CI, line.data(), GD->dset, GP.prn_ptr());
-    if (err) {
-        handle_gretl_error(err);
+    // argument validation:
+    // 1. keyword must not be empty
+    // 2. if keyword != "command", src must not be null
+    if (keyword.empty() || (keyword != "command" && !src)) {
+        throw std::invalid_argument("do_nl_parse_line_(): wrong arguments passed");
     }
 
-    // we set up params
-    if (!params_.empty()) {
-        line = "params " + params_;
-        err = nl_parse_line(CI, line.data(), GD->dset, GP.prn_ptr());
+    // T = std::string
+    if constexpr (std::is_same_v<T, std::string>) {
+        std::string line;
+
+        if (keyword == "command") {
+            line = command_ + " " + formula;
+        } else {
+            if (src->empty()) return;
+            line = keyword;
+            line.append(" ");
+            line.append(*src);
+        }
+        err = nl_parse_line(CI, line.c_str(), GD->dset, GP.prn_ptr());
         if (err) {
             handle_gretl_error(err);
         }
+
+        return;
     }
 
-    // we set up params names
-    if (!param_names_.empty()) {
-        line = "param_names \"" + param_names_ + "\"";
-        err = nl_parse_line(CI, line.data(), GD->dset, GP.prn_ptr());
-        if (err) {
-            handle_gretl_error(err);
-        }
-    }
+    // T = std::vector<std::string>
+    if constexpr (std::is_same_v<T, std::vector<std::string>>) {
+        if (!src->size()) return;
 
-    // we set up derivatives and generate internal libgretl variables
-    if constexpr (CI == NLS || CI == MLE) {
-        if (deriv_.size()) {
-            for (const auto &el : deriv_) {
-                line = "deriv " + el;
-                err = nl_parse_line(CI, line.data(), GD->dset, GP.prn_ptr());
-                if (err) {
-                    handle_gretl_error(err);
-                }
-            }
-        }
-    } else if constexpr (CI == GMM) {
-        if (orthog_.size()) {
-            for (const auto &el : orthog_) {
-                line = "orthog " + el;
-                err = nl_parse_line(CI, line.data(), GD->dset, GP.prn_ptr());
-                if (err) {
-                    handle_gretl_error(err);
-                }
-            }
-        }
+        std::string line;
 
-        if (!weights_.empty()) {
-            line = "weights " + weights_;
-            err = nl_parse_line(CI, line.data(), GD->dset, GP.prn_ptr());
+        for (const auto &el : *src) {
+            if (keyword == "statements") {
+                line = el;
+            } else {
+                line = keyword;
+                line.append(" ");
+                line.append(el);
+            }
+            err = nl_parse_line(CI, line.c_str(),
+                                GD->dset, GP.prn_ptr());
             if (err) {
                 handle_gretl_error(err);
             }
         }
+
+        return;
     }
 
-    // we get statements entries
+    // unsupported type
+    throw std::runtime_error("do_nl_parse_line_(): unsupported type");
+}
+
+template <GretlCmdIndex CI>
+void GretlModel_NSE_nl<CI>::fit (void)
+{
+    // we set up model (nls, mle, gmm)
+    do_nl_parse_line_<std::string>("command");
+
+    // we set up all model definition lines
+    do_nl_parse_line_<std::string>("params", &params_);
+    do_nl_parse_line_<std::string>("param_names", &param_names_);
+    if constexpr (CI == NLS || CI == MLE) {
+        do_nl_parse_line_<std::vector<std::string>>("deriv", &deriv_);
+    }
+    if constexpr (CI == GMM) {
+        do_nl_parse_line_<std::vector<std::string>>("orthog", &orthog_);
+        do_nl_parse_line_<std::string>("weights", &weights_);
+    }
     if constexpr (CI == MLE || CI == GMM) {
-        if (statements_.size()) {
-            for (const auto &el : statements_) {
-                err = nl_parse_line(CI, el.c_str(), GD->dset, GP.prn_ptr());
-                if (err) {
-                    handle_gretl_error(err);
-                }
-            }
-        }
+        do_nl_parse_line_<std::vector<std::string>>("statements", &statements_);
     }
 
     // we do the job
@@ -1219,7 +1234,7 @@ void GretlModel_NSE_nl<CI>::fit (void)
     save_model<MODEL>(model);
 }
 
-template<GretlCmdIndex CI>
+template <GretlCmdIndex CI>
 std::string GretlModel_NSE_nl<CI>::get_formula (void) const
 {
     std::string RES = formula + "\n";
@@ -1230,7 +1245,8 @@ std::string GretlModel_NSE_nl<CI>::get_formula (void) const
                 RES += "deriv " + el + "\n";
             }
         }
-    } else if constexpr (CI == GMM) {
+    }
+    if constexpr (CI == GMM) {
         if (orthog_.size()) {
             for (const auto &el : orthog_) {
                 RES += "orthog " + el + "\n";
@@ -1241,7 +1257,6 @@ std::string GretlModel_NSE_nl<CI>::get_formula (void) const
             RES += "weights " + weights_ + "\n";
         }
     }
-
     if constexpr (CI == MLE || CI == GMM) {
         if (statements_.size()) {
             for (const auto &el : statements_) {
@@ -1249,13 +1264,11 @@ std::string GretlModel_NSE_nl<CI>::get_formula (void) const
             }
         }
     }
-
     if (!params_.empty()) {
         RES += "params " + params_ + "\n";
     }
-
     if (!param_names_.empty()) {
-        RES += "param_names \"" + param_names_ + "\"\n";
+        RES += "param_names " + param_names_ + "\n";
     }
 
     return RES;
@@ -1605,15 +1618,19 @@ void GretlModel_NME::fit (void)
     gretl_list_ptr varlist{nullptr};
 
     //lambda for setting instruments_, identities_ and endogs
-    auto do_system_parse_line = [&](const char *type, std::vector<std::string> &src)
+    auto do_system_parse_line = [&](const char *type,
+                                    std::vector<std::string> &src)
     {
         if (src.empty()) return;
 
         std::string line;
 
         for (const auto &el : src) {
-            line = std::string(type) + " " + el;
-            err = system_parse_line(model, line.c_str(), GD->dset);
+            line = std::string(type);
+            line.append(" ");
+            line.append(el);
+            err = system_parse_line(model, line.c_str(),
+                                    GD->dset);
             if (err) {
                 handle_gretl_error(err);
             }

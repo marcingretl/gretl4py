@@ -223,7 +223,7 @@ public:
 // NLS,MLE,GMM via plugin
 // extends: GretlModel_NSE
 //
-template<GretlCmdIndex CI>
+template <GretlCmdIndex CI>
 class GretlModel_NSE_nl : public GretlModel_NSE
 {
 private:
@@ -235,6 +235,9 @@ private:
     std::vector<std::string> deriv_;
     std::vector<std::string> orthog_;
     std::vector<std::string> statements_;
+
+    template <typename T>
+    void do_nl_parse_line_ (const std::string &key, T *keyword = nullptr);
 public:
     GretlModel_NSE_nl (GretlDatasetPtr GD, const std::string formula,
                        const py::kwargs &kwargs);
