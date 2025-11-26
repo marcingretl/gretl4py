@@ -1148,7 +1148,7 @@ void GretlModel_NSE_nl<CI>::do_nl_parse_line_ (const std::string &keyword,
                                                T *src)
 {
     //
-    // here we perform line parsing and adding to libgretl
+    // here we perform line parsing and adding (to libgretl)
     // Note: to add formula, use "command" as keyword and nullptr as src
     //
 
@@ -1273,10 +1273,62 @@ std::string GretlModel_NSE_nl<CI>::get_formula (void) const
 
     return RES;
 }
-// explicit instantiations for all CI
+
+template <GretlCmdIndex CI>
+template <bool ForString>
+void GretlModel_NSE_nl<CI>::add_line_to_parse (const std::string &keyword,
+                                               const std::string &val)
+{
+    //
+    // method set/insert a val containing a line to parse
+    //
+
+    if constexpr (ForString) {
+        if (keyword == "params") {
+            params_ = val;
+        } else if (keyword == "param_names") {
+            param_names_ = "\"";
+            param_names_.append(val);
+            param_names_.append("\"");
+        } else if (keyword == "weights") {
+            weights_ = val;
+        } else {
+            throw std::invalid_argument("unknown keyword: " + keyword);
+        }
+    } else {
+        if (keyword == "deriv") {
+            deriv_.push_back(val);
+        } else if (keyword == "orthog") {
+            orthog_.push_back(val);
+        } else if (keyword == "statements") {
+            statements_.push_back(val);
+        } else {
+            throw std::invalid_argument("unknown keyword: " + keyword);
+        }
+    }
+}
+
+template <GretlCmdIndex CI>
+void GretlModel_NSE_nl<CI>::add_init_value (const std::string &varname,
+                                            double value)
+{
+    //
+    // adds/sets value of varname in the contexts of GD
+    //
+
+    gretl_generate<GRETL_TYPE_ANY>(std::to_string(value), GD, varname);
+}
+
+// explicit instantiations for all CI (including methods)
 template class GretlModel_NSE_nl<NLS>;
+template void GretlModel_NSE_nl<NLS>::add_line_to_parse<true>(const std::string&, const std::string&);
+template void GretlModel_NSE_nl<NLS>::add_line_to_parse<false>(const std::string&, const std::string&);
 template class GretlModel_NSE_nl<MLE>;
+template void GretlModel_NSE_nl<MLE>::add_line_to_parse<true>(const std::string&, const std::string&);
+template void GretlModel_NSE_nl<MLE>::add_line_to_parse<false>(const std::string&, const std::string&);
 template class GretlModel_NSE_nl<GMM>;
+template void GretlModel_NSE_nl<GMM>::add_line_to_parse<true>(const std::string&, const std::string&);
+template void GretlModel_NSE_nl<GMM>::add_line_to_parse<false>(const std::string&, const std::string&);
 
 //
 // VAR libgretl MODEL

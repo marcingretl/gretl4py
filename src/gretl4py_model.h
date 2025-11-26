@@ -246,6 +246,13 @@ public:
     void fit (void) override;
 
     std::string get_formula (void) const override;
+
+    template <bool ForString>
+    void add_line_to_parse (const std::string &keyword,
+                            const std::string &val);
+
+    void add_init_value (const std::string &varname,
+                         double value);
 };
 
 //

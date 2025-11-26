@@ -19,9 +19,17 @@ m1 = gretl.nls("C = a + b * Y^g", deriv=DERIV, initvals=INIT_VALS).fit()
 m2 = gretl.nls(formula="C = a + b * Y^g", params=PARAMS, initvals=INIT_VALS, param_names=PARAM_NAMES, vcv=True).fit()
 print(m1)
 print(m2)
-
 print(m1.get_formula())
 print(m2.get_formula())
+
+m3 = gretl.nls(formula="C = a + b * Y^g")
+m3.add_params("a b g")
+m3.add_initval('a', 0)
+m3.add_initval('b', 0)
+m3.add_initval('g', 0)
+m3.fit()
+print(m3)
+print(m3.get_formula())
 
 # MLE
 gretl.genr("p = 0.5")           # we pass initial value as libgretl's uv
