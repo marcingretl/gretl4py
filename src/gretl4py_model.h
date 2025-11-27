@@ -49,8 +49,9 @@ protected:
     GretlPrint GP = GretlPrint();       // printer (instance wide)
     gretl_list_ptr var_list{nullptr};   // libgretl list of variables
     gretlopt opt = OPT_NONE;            // instance wide options (including tests and forecasts)
-    std::string summary = "no results"; // model summary to print on python side
+    std::string summary;                // model summary to print on python side
     GretlBundlePtr GB_model = nullptr;  // bundle with results
+    bool estimated_ = false;            // if model already estimated
     mutable int err = 0;
 
     template <typename T>
@@ -67,6 +68,8 @@ protected:
     void fr_to_dict (FITRESID *fr, py::dict &fcdict);
 
     virtual void *model_ptr (void) const = 0;   // non-typed pointer to model
+
+    void check_if_estimated_ (void) const;
 public:
     explicit GretlModel (GretlObjType model_obj_type, GretlDatasetPtr GD,
                          GretlCmdIndex ci, const py::kwargs &kwargs);

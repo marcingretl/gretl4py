@@ -211,7 +211,9 @@ void GretlModel::save_model (T *model)
     _ids[py::cast("_model_id")] = id;
     py::setattr(self, "_ids", _ids);
 
+    // we set some internal stuff
     GD->linked_models_add(id);
+    estimated_ = true;
 }
 
 template <typename T>
@@ -506,12 +508,23 @@ void GretlModel::fr_to_dict (FITRESID *fr, py::dict &fcdict)
 
 std::string GretlModel::repr_impl (void) const
 {
+    if (!estimated_) {
+        return summary.substr(0, summary.size() - 1);
+    }
+
     return summary;
 }
 
 GretlBundlePtr GretlModel::get_bundle (void) const
 {
     return GB_model;
+}
+
+void GretlModel::check_if_estimated_ (void) const
+{
+    if (estimated_) {
+        throw std::runtime_error("model already estimated");
+    }
 }
 
 //////////////////////////////////////////////////
@@ -812,6 +825,9 @@ void GretlModel_NSE_arima::fit (void)
 {
     int i = 1;
 
+    // we check if we deal with clean model
+    check_if_estimated_();
+
     var_list.reset(gretl_list_new(seasonal ? 9+exogenous : 5+exogenous));
     if (!var_list) {
         handle_gretl_error(E_ALLOC);
@@ -867,6 +883,9 @@ template <auto F, GretlCmdIndex CI>
 void GretlModel_NSE_Driver<F, CI>::fit (void)
 {
     std::string formula_right = "";
+
+    // we check if we deal with clean model
+    check_if_estimated_();
 
     // we construct the model
     if constexpr (CI == MIDASREG) {
@@ -963,6 +982,9 @@ GretlModel_NSE_Driver_quantreg::GretlModel_NSE_Driver_quantreg
 
 void GretlModel_NSE_Driver_quantreg::fit()
 {
+    // we check if we deal with clean model
+    check_if_estimated_();
+
     // we define list of variables
     var_list = list_from_formula(formula, GD->dset, err);
     if (!var_list) {
@@ -1009,6 +1031,9 @@ void GretlModel_NSE_Driver_dpanel::fit()
     gretl_list_ptr laglist{nullptr};
     std::string formula_left;
     std::string formula_right = "";
+
+    // we check if we deal with clean model
+    check_if_estimated_();
 
     // we define list of variables
     regexp_extract<DPANEL>(formula, formula_left, formula_right);
@@ -1065,6 +1090,9 @@ GretlModel_NSE_Driver_tobit::GretlModel_NSE_Driver_tobit
 
 void GretlModel_NSE_Driver_tobit::fit()
 {
+    // we check if we deal with clean model
+    check_if_estimated_();
+
     // we define list of variables
     var_list = list_from_formula(formula, GD->dset, err);
     if (!var_list) {
@@ -1210,6 +1238,9 @@ void GretlModel_NSE_nl<CI>::do_nl_parse_line_ (const std::string &keyword,
 template <GretlCmdIndex CI>
 void GretlModel_NSE_nl<CI>::fit (void)
 {
+    // we check if we deal with clean model
+    check_if_estimated_();
+
     // we set up model (nls, mle, gmm)
     do_nl_parse_line_<std::string>("command");
 
@@ -1366,6 +1397,9 @@ void GretlModel_VAR::do_var_vecm_fit (const int coint_rank)
     // here we perform a real VAR/VECM estimation
     // Note: for VAR case we do not use rank, of course
     //
+    // we check if we deal with clean model
+    check_if_estimated_();
+
     // be build variables list
     var_list = list_from_formula(vars, GD->dset, err);
     if (!var_list) {
@@ -1690,6 +1724,9 @@ void GretlModel_NME::fit (void)
             }
         }
     };
+
+    // we check if we deal with clean model
+    check_if_estimated_();
 
     // system definition
     model = equation_system_start(std::string("method=").append(method_).data(),

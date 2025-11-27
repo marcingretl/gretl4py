@@ -33,9 +33,9 @@ static void bind_driver_model(py::module_ &m, const std::string &name)
 // wrapper for GretlModel_NSE_nl class to adding lines for parsing
 enum NLLineType { PARAMS, PARAM_NAMES, WEIGHTS, DERIV, ORTHOG, STATEMENTS };
 
-template <NLLineType type>
-static void nl_add_line_to_parse (GretlModel_NSE_nl<NLS> &model,
-                                  const std::string &line)
+template <GretlCmdIndex CI, NLLineType type>
+static GretlModel_NSE_nl<CI> &nl_add_line_to_parse(GretlModel_NSE_nl<CI> &model,
+                                                   const std::string &line)
 {
     constexpr bool is_str =
         (type == PARAMS || type == PARAM_NAMES || type == WEIGHTS);
@@ -48,7 +48,9 @@ static void nl_add_line_to_parse (GretlModel_NSE_nl<NLS> &model,
         type == ORTHOG      ? "orthog" :
                               "statements";
 
-    model.add_line_to_parse<is_str>(keyword, line);
+    model.template add_line_to_parse<is_str>(keyword, line);
+
+    return model;
 }
 
 // GretlModel mappings
@@ -135,26 +137,26 @@ void init_gretl4py_model_py11(py::module_ &m)
     // NL models (NLS/MLE/GMM)
     py::class_<GretlModel_NSE_nl<NLS>, GretlModel_NSE,
                 std::unique_ptr<GretlModel_NSE_nl<NLS>>>(m, "Model_nls", py::dynamic_attr())
-        .def("add_params", &nl_add_line_to_parse<PARAMS>)
-        .def("add_param_names", &nl_add_line_to_parse<PARAM_NAMES>)
-        .def("add_deriv", &nl_add_line_to_parse<DERIV>)
+        .def("add_params", &nl_add_line_to_parse<NLS, PARAMS>)
+        .def("add_param_names", &nl_add_line_to_parse<NLS, PARAM_NAMES>)
+        .def("add_deriv", &nl_add_line_to_parse<NLS, DERIV>)
         .def("add_initval", &GretlModel_NSE_nl<NLS>::add_init_value,
              py::arg("varname").none(false), py::arg("value").none(false));
     py::class_<GretlModel_NSE_nl<MLE>, GretlModel_NSE,
                 std::unique_ptr<GretlModel_NSE_nl<MLE>>>(m, "Model_mle", py::dynamic_attr())
-        .def("add_params", &nl_add_line_to_parse<PARAMS>)
-        .def("add_param_names", &nl_add_line_to_parse<PARAM_NAMES>)
-        .def("add_deriv", &nl_add_line_to_parse<DERIV>)
-        .def("add_statements", &nl_add_line_to_parse<STATEMENTS>)
+        .def("add_params", &nl_add_line_to_parse<MLE, PARAMS>)
+        .def("add_param_names", &nl_add_line_to_parse<MLE, PARAM_NAMES>)
+        .def("add_deriv", &nl_add_line_to_parse<MLE, DERIV>)
+        .def("add_statements", &nl_add_line_to_parse<MLE, STATEMENTS>)
         .def("add_initval", &GretlModel_NSE_nl<MLE>::add_init_value,
              py::arg("varname").none(false), py::arg("value").none(false));
     py::class_<GretlModel_NSE_nl<GMM>, GretlModel_NSE,
                 std::unique_ptr<GretlModel_NSE_nl<GMM>>>(m, "Model_gmm", py::dynamic_attr())
-        .def("add_params", &nl_add_line_to_parse<PARAMS>)
-        .def("add_param_names", &nl_add_line_to_parse<PARAM_NAMES>)
-        .def("add_weights", &nl_add_line_to_parse<WEIGHTS>)
-        .def("add_orthog", &nl_add_line_to_parse<ORTHOG>)
-        .def("add_statements", &nl_add_line_to_parse<STATEMENTS>)
+        .def("add_params", &nl_add_line_to_parse<GMM, PARAMS>)
+        .def("add_param_names", &nl_add_line_to_parse<GMM, PARAM_NAMES>)
+        .def("add_weights", &nl_add_line_to_parse<GMM, WEIGHTS>)
+        .def("add_orthog", &nl_add_line_to_parse<GMM, ORTHOG>)
+        .def("add_statements", &nl_add_line_to_parse<GMM, STATEMENTS>)
         .def("add_initval", &GretlModel_NSE_nl<GMM>::add_init_value,
              py::arg("varname").none(false), py::arg("value").none(false));
 

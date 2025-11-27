@@ -302,7 +302,7 @@ void do_summary (const std::string &varlist, const py::kwargs &kwargs)
     // Note: GD is set here
     gretlopt opt = unpack_kwargs_command(SUMMARY, GD, kwargs);
     if (!GD) {
-        throw std::runtime_error("no dataset available");
+        handle_gretl_error(E_NODATA);
     }
 
     // be build gretl_list
