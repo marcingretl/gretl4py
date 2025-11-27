@@ -22,12 +22,7 @@ print(m2)
 print(m1.get_formula())
 print(m2.get_formula())
 
-m3 = gretl.nls(formula="C = a + b * Y^g")
-m3.add_params("a b g")
-m3.add_initval('a', 0)
-m3.add_initval('b', 0)
-m3.add_initval('g', 0)
-m3.fit()
+m3 = gretl.nls(formula="C = a + b * Y^g").add_params("a b g").add_initval('a', 0).add_initval('b', 0).add_initval('g', 0).fit()
 print(m3)
 print(m3.get_formula())
 
