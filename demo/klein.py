@@ -37,3 +37,9 @@ print(system_liml)
 # sur
 system_sur = gretl.system(method="sur", equations=EQNS, endogs="C I Wp P W X K", identities=IDNS).fit()
 print(system_sur)
+
+# RESTRICT
+print("\n****************************")
+print("restrict")
+system_sur.restrict(impose=['b[1,1] = 0', 'b[1,2] - b[2,2] = 0', 'b[3,4] = -5'], verbose=True)
+print(system_sur.restrictions[-1]['pvalue'])

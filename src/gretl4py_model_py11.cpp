@@ -189,7 +189,9 @@ void init_gretl4py_model_py11(py::module_ &m)
             py::arg("nr").none(false), py::arg("name").none(true) = "");
 
     // Native Multiple Equation libgretl SYSTEM (NME) GretlModel_NME
-    py::class_<GretlModel_NME, GretlModel, std::unique_ptr<GretlModel_NME>>(m, "System", py::dynamic_attr());
+    py::class_<GretlModel_NME, GretlModel, std::unique_ptr<GretlModel_NME>>(m, "System", py::dynamic_attr())
+        .def("restrict", &GretlModel_NME::restrict,
+             py::arg("impose").none(false), py::kw_only());
 
     // GretlModel_package
     py::class_<GretlModel_package, GretlModel, std::unique_ptr<GretlModel_package>>(m, "Model_package", py::dynamic_attr())

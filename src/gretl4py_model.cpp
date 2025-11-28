@@ -246,6 +246,9 @@ void GretlModel::do_restrict_ (T *model, const py::list &impose,
             } else if constexpr (std::is_same_v<T, GRETL_VAR>) {
                 my_rset = var_restriction_set_start(MapPyToCpp(item).to_string().c_str(),
                                                     model);
+            } else if constexpr (std::is_same_v<T, equation_system>) {
+                my_rset = cross_restriction_set_start(MapPyToCpp(item).to_string().c_str(),
+                                                      model);
             }
             if (my_rset == NULL) {
                 err = 1;
@@ -262,12 +265,7 @@ void GretlModel::do_restrict_ (T *model, const py::list &impose,
     }
 
     // actual work
-    if constexpr (std::is_same_v<T, MODEL>) {
-        GD->dset->t1 = model->t1;
-        GD->dset->t2 = model->t2;
-        err = gretl_restriction_finalize(my_rset, GD->dset,
-                                         OPT_NONE, GP.prn_ptr());
-    } else if constexpr (std::is_same_v<T, GRETL_VAR>) {
+    if constexpr (std::is_same_v<T, GRETL_VAR>) {
         GRETL_VAR *vnew = NULL;
 
         vnew = gretl_restricted_vecm(my_rset, GD->dset, opt,
@@ -275,6 +273,15 @@ void GretlModel::do_restrict_ (T *model, const py::list &impose,
         if (vnew != NULL) {
             gretl_VAR_free(vnew);
         }
+    } else {
+        GD->dset->t1 = model->t1;
+        GD->dset->t2 = model->t2;
+        err = gretl_restriction_finalize(my_rset, GD->dset,
+                                         OPT_NONE, GP.prn_ptr());
+    }
+    if constexpr (std::is_same_v<T, equation_system>) {
+        err = equation_system_estimate(model, GD->dset,
+                                       OPT_NONE, GP.prn_ptr());
     }
     GD->dset->t1 = save_t1;
     GD->dset->t2 = save_t2;
@@ -1778,6 +1785,12 @@ std::string GretlModel_NME::get_formula (void) const
 void GretlModel_NME::forecast (const py::kwargs &kwargs)
 {
     py::print("GretlModel_NME::forecast");
+}
+
+void GretlModel_NME::restrict (const py::list &impose,
+                               const py::kwargs &kwargs)
+{
+    do_restrict_<equation_system>(model, impose, kwargs);
 }
 
 //

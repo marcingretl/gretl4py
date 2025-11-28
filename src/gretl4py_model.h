@@ -335,12 +335,6 @@ private:
     equation_system *model = NULL;          // libgretl equation_system struct
 
     void *model_ptr (void) const override;
-
-    //template <GretlCmdIndex CI> void do_var_vecm_fit (const int coint_rank = 0);
-
-    //template <GretlCmdIndex CI> void do_var_vecm_forecast (const py::kwargs &kwargs);
-
-    //int find_variable_nr (const std::string &variable_name);
 public:
     GretlModel_NME (GretlDatasetPtr GD, const std::string &method, const py::kwargs &kwargs);
     virtual ~GretlModel_NME (void);
@@ -354,6 +348,8 @@ public:
     //void test (const std::string &type, const py::kwargs &kwargs);
 
     std::string get_formula (void) const override;
+
+    void restrict (const py::list &impose, const py::kwargs &kwargs);
 };
 
 //
