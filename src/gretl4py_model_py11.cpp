@@ -63,7 +63,6 @@ static GretlModel_NSE_nl<CI> &nl_add_init_value (GretlModel_NSE_nl<CI> &model,
     return model;
 }
 
-
 // GretlModel mappings
 void init_gretl4py_model_py11(py::module_ &m)
 {

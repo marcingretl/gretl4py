@@ -5,12 +5,11 @@ import gretl
 data_dir = resources.files('gretl').joinpath('data')
 
 d1 = gretl.get_data(str(data_dir.joinpath('denmark.gdt')))
-d2 = gretl.get_data(str(data_dir.joinpath('bjg.gdt')))
+d2 = gretl.get_data(str(data_dir.joinpath('bjg.csv')))
 d3 = gretl.get_data(str(data_dir.joinpath('grunfeld.gdt')))
 d4 = gretl.get_data(str(data_dir.joinpath('data4-10.gdt')))
 d5 = gretl.get_data(str(data_dir.joinpath('ooballot.gdt')))
-
-#gretl.show_data_status()
+gretl.show_data_status()
 
 print("\n****************************")
 print("adf")

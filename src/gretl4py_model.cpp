@@ -217,8 +217,8 @@ void GretlModel::save_model (T *model)
 }
 
 template <typename T>
-void GretlModel::do_restrict (T *model, const py::list &impose,
-                              const py::kwargs &kwargs)
+void GretlModel::do_restrict_ (T *model, const py::list &impose,
+                               const py::kwargs &kwargs)
 {
     //
     // we test a restriction given as impose
@@ -683,7 +683,7 @@ void GretlModel_NSE::test (const std::string &type, const std::string &vars,
 void GretlModel_NSE::restrict (const py::list &impose,
                                const py::kwargs &kwargs)
 {
-    do_restrict<MODEL>(model, impose, kwargs);
+    do_restrict_<MODEL>(model, impose, kwargs);
 }
 
 template <ModelDataIndex IDX>
@@ -782,7 +782,7 @@ GretlModel_NSE_arima::GretlModel_NSE_arima (GretlDatasetPtr GD,
     };
 
     // we set up "y"
-    y_number = GD->get_series_id(y, false);
+    y_number = this->GD->get_series_id(y, false);
     if (y_number == -1) {
         throw std::invalid_argument("There is no variable: " + y);
     }
@@ -804,7 +804,8 @@ GretlModel_NSE_arima::GretlModel_NSE_arima (GretlDatasetPtr GD,
 
     // we add exogenous variables if present
     if (kwargs.contains("xlist") && !kwargs["xlist"].is_none()) {
-        xlist = list_from_formula(kwargs["xlist"].cast<std::string>(), GD->dset, err);
+        xlist = list_from_formula(kwargs["xlist"].cast<std::string>(),
+                                  this->GD->dset, err);
         if (!xlist) {
             throw std::invalid_argument("wrong list of exogenous variables");
         } else if (err) {
@@ -1634,7 +1635,7 @@ void GretlModel_VAR_VECM::fit (void)
 void GretlModel_VAR_VECM::restrict (const py::list &impose,
                                     const py::kwargs &kwargs)
 {
-    do_restrict<GRETL_VAR>(model, impose, kwargs);
+    do_restrict_<GRETL_VAR>(model, impose, kwargs);
 }
 
 char *GretlModel_VAR_VECM::save_ec_term (const int nr,

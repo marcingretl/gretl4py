@@ -58,7 +58,7 @@ protected:
     void save_model (T *model);
 
     template <typename T>
-    void do_restrict (T *model, const py::list &impose, const py::kwargs &kwargs);
+    void do_restrict_ (T *model, const py::list &impose, const py::kwargs &kwargs);
 
     template <typename T, GretlCmdIndex CI>
     void do_forecast (T *model, const py::kwargs &kwargs, int variable_nr = 0);
