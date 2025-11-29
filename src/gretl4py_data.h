@@ -155,7 +155,7 @@ public:
 
     py::dict to_dict (void) const;
 
-    void to_file (const std::string &fname) const;
+    void to_file (const std::string &fname, const py::kwargs &kwargs);
 
     std::string repr (void) const;
 

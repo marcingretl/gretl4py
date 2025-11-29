@@ -12,6 +12,7 @@ version 0.32:
     - add nls, mle, and gmm estimators
     - add system estimation (all methods available in gretl)
     - massive code refactoring
+    - revert to gcc-based libgretl for windows amd64 builds due to some OpenBLAS issues
 
 version 0.31:
     - allow 'quiet' option for VAR/VECM

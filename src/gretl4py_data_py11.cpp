@@ -114,7 +114,8 @@ void init_gretl4py_dataset_py11(py::module_ &m)
         .def("sample", &GretlDataset::sample)
         .def("setobs", &GretlDataset::setobs)
         .def("to_dict", &GretlDataset::to_dict)
-        .def("to_file", &GretlDataset::to_file)
+        .def("to_file", &GretlDataset::to_file,
+             py::arg("fname").none(false), py::kw_only())
         .def("add_series", py::overload_cast<const py::array&, const std::string&>(&GretlDataset::add_series),
              py::arg("data").none(false), py::arg("name").none(false))
         .def("new_series", py::overload_cast<const std::string&>(&GretlDataset::new_series),

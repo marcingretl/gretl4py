@@ -223,7 +223,7 @@ void GretlModel::do_restrict_ (T *model, const py::list &impose,
     //
     // we test a restriction given as impose
     // Note: this method is used in GretlModel_NSE
-    // and GretlModel_VAR_VECM
+    // GretlModel_VAR_VECM, and GretlModel_NME
     //
     py::dict res;
     gretl_restriction *my_rset = NULL;

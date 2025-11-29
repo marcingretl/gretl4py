@@ -1134,16 +1134,49 @@ py::dict GretlDataset::to_dict (void) const
     return as_dict;
 }
 
-void GretlDataset::to_file (const std::string &fname) const
+void GretlDataset::to_file (const std::string &fname,
+                            const py::kwargs &kwargs)
 {
     //
     // we write gretl data to file named by @fname
-    // FIXME should have a second (list) argument
     //
-    err = write_data(fname.c_str(), NULL, dset, OPT_NONE, NULL);
+    gretl_list_ptr varlist{nullptr};
+    opt_ = OPT_NONE;
+
+    // we handle options
+    if (len(kwargs) > 0) {
+        for (const auto &item : kwargs) {
+            const std::string &key = item.first.cast<std::string>();
+
+            if (key == "vars") {
+                if (!is_pystr(item.second)) {
+                    throw std::invalid_argument("'vars' must be a string");
+                }
+                auto val_str = py::cast<std::string>(item.second);
+
+                varlist = list_from_formula(val_str, dset, err);
+                if (err) {
+                    handle_gretl_error(err);
+                }
+                continue;
+            } else {
+                gretl_valid_long_opt(opt_, STORE, key, item.second);
+            }
+        }
+    }
+
+    // we do the job
+    if (opt_ & OPT_A) {
+        err = write_matrix_as_dataset(fname.c_str(), opt_,
+                                      GP_.prn_ptr());
+    } else {
+        err = write_data(fname.c_str(), varlist.get(),
+                         dset, opt_, GP_.prn_ptr());
+    }
     if (err) {
         handle_gretl_error(err);
     }
+    GP_.print();
 }
 
 char *GretlDataset::add_series (gretl_double_ptr data,
