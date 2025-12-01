@@ -360,8 +360,6 @@ public:
 // implemented in gretl_calls.cpp
 extern GretlDatasetPtr DSET;
 
-void set_default_dset(GretlDatasetPtr GD);
-
 GretlPackagePtr load_package (const std::string &pkgname,
                               const std::string &suffix = "");
 

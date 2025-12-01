@@ -638,15 +638,6 @@ void move_to_python_container (PyWrapped &wrapped_obj, Item &&item,
 template void move_to_python_container<GretlModel, py::dict, py::list>
     (GretlModel&, py::dict&&, const char*, const std::string&);
 
-// we set default dataset
-void set_default_dset (GretlDatasetPtr GD)
-{
-    if (DSET) {
-        DSET->is_default = false;
-    }
-    DSET = GD;
-}
-
 // General interface to libgretl's generate()
 // Note: some specializations must be created manually
 template <GretlType GR_TYPE>
@@ -996,8 +987,7 @@ GretlDataset::GretlDataset (const GretlDataset &src) : id_(next_obj_id_++)
 GretlDataset::~GretlDataset (void)
 {
     if (is_default) {
-        set_default_dset(nullptr);
-        py::print("default dataset was deleted");
+        DSET = nullptr;
     }
     free_dset();
 }
@@ -1780,7 +1770,10 @@ void GretlDataset::setobs (const py::kwargs &kwargs)
 
 void GretlDataset::set_as_default (void)
 {
-    set_default_dset(shared_from_this());
+    if (DSET) {
+        DSET->is_default = false;
+    }
+    DSET = shared_from_this();
     is_default = true;
 }
 
