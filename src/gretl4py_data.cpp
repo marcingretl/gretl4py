@@ -997,7 +997,7 @@ GretlDataset::~GretlDataset (void)
 {
     if (is_default) {
         set_default_dset(nullptr);
-        // std::printf("default dataset was deleted\n");
+        py::print("default dataset was deleted");
     }
     free_dset();
 }

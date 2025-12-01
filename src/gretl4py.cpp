@@ -26,7 +26,7 @@ extern GretlDatasetPtr DSET;
     m.def(#NAME, \
           [](const std::string &formula, const py::kwargs &kwargs) -> GretlModelPtr \
           { \
-              auto model = std::make_unique<GretlModel_NSE_Driver<FUNC, CI>>(DSET, formula, kwargs); \
+              auto model = std::make_unique<GretlModel_NSE_Driver<FUNC, CI>>(formula, kwargs); \
               return GretlModelPtr(std::move(model)); \
           }, \
           py::arg("formula").none(false), py::kw_only());
@@ -107,7 +107,7 @@ PYBIND11_MODULE(_gretl, m)
     m.def("arima",
           [](const std::string &y, const py::tuple &order, const py::kwargs &kwargs) -> GretlModelPtr
           {
-              auto model = std::make_unique<GretlModel_NSE_arima>(DSET, y, order, kwargs);
+              auto model = std::make_unique<GretlModel_NSE_arima>(y, order, kwargs);
 
               return GretlModelPtr(std::move(model));
           },
@@ -115,7 +115,7 @@ PYBIND11_MODULE(_gretl, m)
     m.def("quantreg",
           [](const double &tau, const std::string &formula, const py::kwargs &kwargs) -> GretlModelPtr
           {
-              auto model = std::make_unique<GretlModel_NSE_Driver_quantreg>(DSET, formula, tau, kwargs);
+              auto model = std::make_unique<GretlModel_NSE_Driver_quantreg>(formula, tau, kwargs);
 
               return GretlModelPtr(std::move(model));
           },
@@ -123,7 +123,7 @@ PYBIND11_MODULE(_gretl, m)
     m.def("quantreg",
           [](const py::array_t<double> &tau, const std::string &formula, const py::kwargs &kwargs) -> GretlModelPtr
           {
-              auto model = std::make_unique<GretlModel_NSE_Driver_quantreg>(DSET, formula, tau, kwargs);
+              auto model = std::make_unique<GretlModel_NSE_Driver_quantreg>(formula, tau, kwargs);
 
               return GretlModelPtr(std::move(model));
           },
@@ -131,7 +131,7 @@ PYBIND11_MODULE(_gretl, m)
     m.def("dpanel",
           [](const int &p, const std::string &formula, const py::kwargs &kwargs) -> GretlModelPtr
           {
-              auto model = std::make_unique<GretlModel_NSE_Driver_dpanel>(DSET, formula, p, kwargs);
+              auto model = std::make_unique<GretlModel_NSE_Driver_dpanel>(formula, p, kwargs);
 
               return GretlModelPtr(std::move(model));
           },
@@ -139,7 +139,7 @@ PYBIND11_MODULE(_gretl, m)
     m.def("dpanel",
           [](const py::array_t<int> &p, const std::string &formula, const py::kwargs &kwargs) -> GretlModelPtr
           {
-              auto model = std::make_unique<GretlModel_NSE_Driver_dpanel>(DSET, formula, p, kwargs);
+              auto model = std::make_unique<GretlModel_NSE_Driver_dpanel>(formula, p, kwargs);
 
               return GretlModelPtr(std::move(model));
           },
@@ -147,7 +147,7 @@ PYBIND11_MODULE(_gretl, m)
      m.def("tobit",
           [](const std::string &formula, const py::kwargs &kwargs) -> GretlModelPtr
           {
-              auto model = std::make_unique<GretlModel_NSE_Driver_tobit>(DSET, formula, kwargs);
+              auto model = std::make_unique<GretlModel_NSE_Driver_tobit>(formula, kwargs);
 
               return GretlModelPtr(std::move(model));
           },
@@ -155,7 +155,7 @@ PYBIND11_MODULE(_gretl, m)
     m.def("_nls",
           [](const std::string &function, const py::kwargs &kwargs) -> GretlModelPtr
           {
-              auto model = std::make_unique<GretlModel_NSE_nl<NLS>>(DSET, function, kwargs);
+              auto model = std::make_unique<GretlModel_NSE_nl<NLS>>(function, kwargs);
 
               return GretlModelPtr(std::move(model));
           },
@@ -163,7 +163,7 @@ PYBIND11_MODULE(_gretl, m)
     m.def("_mle",
           [](const std::string &loglik, const py::kwargs &kwargs) -> GretlModelPtr
           {
-              auto model = std::make_unique<GretlModel_NSE_nl<MLE>>(DSET, loglik, kwargs);
+              auto model = std::make_unique<GretlModel_NSE_nl<MLE>>(loglik, kwargs);
 
               return GretlModelPtr(std::move(model));
           },
@@ -171,7 +171,7 @@ PYBIND11_MODULE(_gretl, m)
     m.def("_gmm",
           [](const std::string &resid, const py::kwargs &kwargs) -> GretlModelPtr
           {
-              auto model = std::make_unique<GretlModel_NSE_nl<GMM>>(DSET, resid, kwargs);
+              auto model = std::make_unique<GretlModel_NSE_nl<GMM>>(resid, kwargs);
 
               return GretlModelPtr(std::move(model));
           },
@@ -205,7 +205,7 @@ PYBIND11_MODULE(_gretl, m)
     m.def("var",
           [](const int &order, const std::string &ylist, const py::kwargs &kwargs) -> GretlModelPtr
           {
-              auto model = std::make_unique<GretlModel_VAR>(DSET, ylist, order, VAR, kwargs);
+              auto model = std::make_unique<GretlModel_VAR>(ylist, order, VAR, kwargs);
 
               return GretlModelPtr(std::move(model));
           },
@@ -213,7 +213,7 @@ PYBIND11_MODULE(_gretl, m)
     m.def("vecm",
           [](const int &order, const int &rank, const std::string &ylist, const py::kwargs &kwargs) -> GretlModelPtr
           {
-              auto model = std::make_unique<GretlModel_VAR_VECM>(DSET, ylist, order, rank, kwargs);
+              auto model = std::make_unique<GretlModel_VAR_VECM>(ylist, order, rank, kwargs);
 
               return GretlModelPtr(std::move(model));
           },
@@ -226,7 +226,7 @@ PYBIND11_MODULE(_gretl, m)
     m.def("system",
           [](const std::string &method, const py::kwargs &kwargs) -> GretlModelPtr
           {
-              auto model = std::make_unique<GretlModel_NME>(DSET, method, kwargs);
+              auto model = std::make_unique<GretlModel_NME>(method, kwargs);
 
               return GretlModelPtr(std::move(model));
           },
@@ -238,7 +238,7 @@ PYBIND11_MODULE(_gretl, m)
     m.def("package",
           [](const std::string &name, const py::kwargs &kwargs) -> GretlModelPtr
           {
-              auto model = std::make_unique<GretlModel_package>(DSET, name, kwargs);
+              auto model = std::make_unique<GretlModel_package>(name, kwargs);
 
               return GretlModelPtr(std::move(model));
           },

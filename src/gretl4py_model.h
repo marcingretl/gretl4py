@@ -71,8 +71,8 @@ protected:
 
     void check_if_estimated_ (void) const;
 public:
-    explicit GretlModel (GretlObjType model_obj_type, GretlDatasetPtr GD,
-                         GretlCmdIndex ci, const py::kwargs &kwargs);
+    explicit GretlModel (GretlObjType model_obj_type, GretlCmdIndex ci,
+                         const py::kwargs &kwargs);
     virtual ~GretlModel (void);
 
     int get_id (void) const;
@@ -107,8 +107,7 @@ protected:
     void regexp_extract (const std::string &formula, std::string &formula_left,
                          std::string &formula_right);    // for extracting formula from regular expression
 public:
-    GretlModel_NSE (GretlDatasetPtr GD, GretlCmdIndex ci,
-                    const py::kwargs &kwargs);
+    GretlModel_NSE (GretlCmdIndex ci, const py::kwargs &kwargs);
     virtual ~GretlModel_NSE (void);
 
     void restrict (const py::list &impose, const py::kwargs &kwargs);
@@ -145,8 +144,8 @@ private:
     int p, d, q;
     int P, D, Q;
 public:
-    GretlModel_NSE_arima (GretlDatasetPtr GD, const std::string &y,
-                          const py::tuple &tup, const py::kwargs &kwargs);
+    GretlModel_NSE_arima (const std::string &y, const py::tuple &tup,
+                          const py::kwargs &kwargs);
     ~GretlModel_NSE_arima (void);
 
     void fit (void) override;
@@ -164,7 +163,7 @@ class GretlModel_NSE_Driver : public GretlModel_NSE
 protected:
     const std::string formula;          // formula defining model
 public:
-    GretlModel_NSE_Driver (GretlDatasetPtr GD, const std::string &formula,
+    GretlModel_NSE_Driver (const std::string &formula,
                            const py::kwargs &kwargs);
 
     void fit (void) override;
@@ -181,10 +180,12 @@ class GretlModel_NSE_Driver_quantreg : public GretlModel_NSE_Driver<quantreg_dri
 private:
     std::string tau_;
 public:
-    GretlModel_NSE_Driver_quantreg (GretlDatasetPtr GD, const std::string &formula,
-                                    const double &tau, const py::kwargs &kwargs);
-    GretlModel_NSE_Driver_quantreg (GretlDatasetPtr GD, const std::string &formula,
-                                    const py::array_t<double> &tau, const py::kwargs &kwargs);
+    GretlModel_NSE_Driver_quantreg (const std::string &formula,
+                                    const double &tau,
+                                    const py::kwargs &kwargs);
+    GretlModel_NSE_Driver_quantreg (const std::string &formula,
+                                    const py::array_t<double> &tau,
+                                    const py::kwargs &kwargs);
 
     void fit (void) override;
 };
@@ -198,10 +199,12 @@ class GretlModel_NSE_Driver_dpanel : public GretlModel_NSE_Driver<dpd_model, DPA
 private:
     std::vector<double> lags_;
 public:
-    GretlModel_NSE_Driver_dpanel (GretlDatasetPtr GD, const std::string &formula,
-                                  const int &p, const py::kwargs &kwargs);
-    GretlModel_NSE_Driver_dpanel (GretlDatasetPtr GD, const std::string &formula,
-                                  const py::array_t<int> &p, const py::kwargs &kwargs);
+    GretlModel_NSE_Driver_dpanel (const std::string &formula,
+                                  const int &p,
+                                  const py::kwargs &kwargs);
+    GretlModel_NSE_Driver_dpanel (const std::string &formula,
+                                  const py::array_t<int> &p,
+                                  const py::kwargs &kwargs);
 
     void fit (void) override;
 };
@@ -216,7 +219,7 @@ private:
     double llimit_ = 0;
     double rlimit_ = NADBL;
 public:
-    GretlModel_NSE_Driver_tobit (GretlDatasetPtr GD, const std::string &formula,
+    GretlModel_NSE_Driver_tobit (const std::string &formula,
                                  const py::kwargs &kwargs);
 
     void fit (void) override;
@@ -242,8 +245,7 @@ private:
     template <typename T>
     void do_nl_parse_line_ (const std::string &key, T *keyword = nullptr);
 public:
-    GretlModel_NSE_nl (GretlDatasetPtr GD, const std::string formula,
-                       const py::kwargs &kwargs);
+    GretlModel_NSE_nl (const std::string formula, const py::kwargs &kwargs);
     ~GretlModel_NSE_nl (void);
 
     void fit (void) override;
@@ -279,7 +281,7 @@ protected:
 
     int find_variable_nr (const std::string &variable_name);
 public:
-    GretlModel_VAR (GretlDatasetPtr GD, const std::string &ylist,
+    GretlModel_VAR (const std::string &ylist,
                     const int order, GretlCmdIndex ci,
                     const py::kwargs &kwargs);
     virtual ~GretlModel_VAR (void);
@@ -308,8 +310,8 @@ class GretlModel_VAR_VECM : public GretlModel_VAR
 private:
     const int coint_rank;               // co-integration rank
 public:
-    GretlModel_VAR_VECM (GretlDatasetPtr GD, const std::string &ylist,
-                         const int order, const int rank, const py::kwargs &kwargs);
+    GretlModel_VAR_VECM (const std::string &ylist, const int order,
+                         const int rank, const py::kwargs &kwargs);
 
     void restrict (const py::list &impose, const py::kwargs &kwargs);
 
@@ -336,7 +338,7 @@ private:
 
     void *model_ptr (void) const override;
 public:
-    GretlModel_NME (GretlDatasetPtr GD, const std::string &method, const py::kwargs &kwargs);
+    GretlModel_NME (const std::string &method, const py::kwargs &kwargs);
     virtual ~GretlModel_NME (void);
 
     //char *save_uhat (int eqn, const std::string &name = "") const;
@@ -370,8 +372,7 @@ private:
 
     void *model_ptr (void) const override;
 public:
-    GretlModel_package (GretlDatasetPtr GD, const std::string &name,
-                        const py::kwargs &kwargs);
+    GretlModel_package (const std::string &name, const py::kwargs &kwargs);
 
     void fit (void) override;
 
