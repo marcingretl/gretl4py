@@ -188,12 +188,13 @@ public:
 
     void new_list (const std::string &name, const std::string &value);
 
-    void dummify (const std::string &varlist, const py::kwargs &kwargs);
-
-    void gretl_series_set_label (const int number, char *label);
+    template <GretlCmdIndex CI>
+    void transforms (const std::string &varlist, const py::kwargs &kwargs);
 
     template <GretlCmdIndex CI>
-    void gretl_list_diffgenr (const std::string &vars);
+    void transforms_no_opts (const std::string &vars);
+
+    void gretl_series_set_label (const int number, char *label);
 
     void lags (const std::string &vars, int order);
 

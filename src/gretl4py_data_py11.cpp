@@ -126,13 +126,17 @@ void init_gretl4py_dataset_py11(py::module_ &m)
              py::arg("formula").none(false))
         .def("new_list", py::overload_cast<const std::string&, const std::string&>(&GretlDataset::new_list),
              py::arg("name").none(false), py::arg("value").none(false))
-        .def("dummify", &GretlDataset::dummify,
+        .def("dummify", &GretlDataset::transforms<DUMMIFY>,
              py::arg("varlist").none(false), py::kw_only())
-        .def("diff", &GretlDataset::gretl_list_diffgenr<DIFF>,
+        .def("square", &GretlDataset::transforms<SQUARE>,
+             py::arg("varlist").none(false), py::kw_only())
+        .def("discrete", &GretlDataset::transforms<DISCRETE>,
+             py::arg("varlist").none(false), py::kw_only())
+        .def("diff", &GretlDataset::transforms_no_opts<DIFF>,
              py::arg("vars").none(false))
-        .def("ldiff", &GretlDataset::gretl_list_diffgenr<LDIFF>,
+        .def("ldiff", &GretlDataset::transforms_no_opts<LDIFF>,
              py::arg("vars").none(false))
-        .def("sdiff", &GretlDataset::gretl_list_diffgenr<SDIFF>,
+        .def("sdiff", &GretlDataset::transforms_no_opts<SDIFF>,
              py::arg("vars").none(false))
         .def("lags", &GretlDataset::lags,
              py::arg("vars").none(false), py::arg("order").none(true) = 0)

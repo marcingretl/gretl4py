@@ -13,7 +13,7 @@ fultonfish = gretl.get_data('data/fultonfish.gdt')
 ############################################
 # 11.6 An Example of Two-Stage Least Squares
 ############################################
-print("\n11.6. Aa Example of Two-Stage Least Squares")
+print("\n11.6. An Example of Two-Stage Least Squares")
 print("\n11.6.2. The Reduced-form Equations")
 print("Table 11.1 Representative Truffle Data")
 truffles.head()
@@ -42,8 +42,8 @@ fultonfish.set_as_default()
 print("\n11.7.2. The Reduced-Form Equations")
 fultonfish.new_list(name="DAYS", value="mon tue wed thu")
 fultonfish.new_list(name="Z", value="const stormy DAYS")
-fultonfish_quan_reduced = gretl.ols("lquan Z", simple=True).fit()     # (11.15)
-fultonfish_price_reduced = gretl.ols("lprice Z", simple=True).fit()   # (11.16)
+fultonfish_quan_reduced = gretl.ols("lquan Z").fit()                # (11.15)
+fultonfish_price_reduced = gretl.ols("lprice Z").fit()              # (11.16)
 print("Table 11.4a/b Reduced Form for ln(Quantity)/ln(Price) Fish")
 gretl.modeltab([fultonfish_quan_reduced, fultonfish_price_reduced])
 

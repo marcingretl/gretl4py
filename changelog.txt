@@ -5,7 +5,7 @@ version 0.32:
     - native copy constructor for GretlDataset
     - add 'n' and 'k' properties do GretlDataset
     - add 'range' option for GretlDataset::print()
-    - add methods for GretlDataset: ::head(), ::tail(), ::to_dataframe(), and ::lags()
+    - add methods for GretlDataset: ::head(), ::tail(), ::to_dataframe(), ::lags(), ::dummify(), ::square(), ::discrete()
     - apparatus for slicing datasets
     - tobit llimit default value fix
     - fix bug in GretlDataset::print() when summary=True

@@ -837,7 +837,7 @@ GretlDataset::GretlDataset (const std::string &fname,
     std::string full_path = "";
 
     // we look for 'frompkg' option
-    if (len(kwargs) > 0) {
+    if (py::len(kwargs) > 0) {
         for (const auto &[key, val] : kwargs) {
             auto key_str = key.cast<std::string>();
 
@@ -1144,7 +1144,7 @@ void GretlDataset::to_file (const std::string &fname,
     opt_ = OPT_NONE;
 
     // we handle options
-    if (len(kwargs) > 0) {
+    if (py::len(kwargs) > 0) {
         for (const auto &item : kwargs) {
             const std::string &key = item.first.cast<std::string>();
 
@@ -1240,11 +1240,13 @@ void GretlDataset::new_list (const std::string &name, const std::string &value)
     gretl_generate<GRETL_TYPE_LIST>(value, shared_from_this(), name);
 }
 
-void GretlDataset::dummify (const std::string &varlist,
-                            const py::kwargs &kwargs)
+template <GretlCmdIndex CI>
+void GretlDataset::transforms (const std::string &varlist,
+                               const py::kwargs &kwargs)
 {
     //
-    // interface to libgretl's list_dumgenr
+    // interface to several gretl's commands (CI)
+    // which underlying engines live in tranforms.c
     //
     opt_ = OPT_NONE;
 
@@ -1255,7 +1257,7 @@ void GretlDataset::dummify (const std::string &varlist,
                 throw std::invalid_argument("option key must be a string");
             }
             const std::string &key = item.first.cast<std::string>();
-            gretl_valid_long_opt(opt_, DUMMIFY, key, item.second);
+            gretl_valid_long_opt(opt_, CI, key, item.second);
         }
     }
 
@@ -1267,7 +1269,13 @@ void GretlDataset::dummify (const std::string &varlist,
 
     // we do the job
     int *plist_raw_ptr = plist.release();
-    err = list_dumgenr(&plist_raw_ptr, dset, opt_);
+    if constexpr (CI == SQUARE) {
+        err = list_xpxgenr(&plist_raw_ptr, dset, opt_);
+    } else if constexpr (CI == DUMMIFY) {
+        err = list_dumgenr(&plist_raw_ptr, dset, opt_);
+    } else if constexpr (CI == DISCRETE) {
+        err = list_makediscrete(plist_raw_ptr, dset, opt_);
+    }
     plist.reset(plist_raw_ptr);
     if (err) {
         handle_gretl_error(err);
@@ -1279,6 +1287,39 @@ void GretlDataset::dummify (const std::string &varlist,
 
     GP_.print();
 }
+template void GretlDataset::transforms<SQUARE>(const std::string&, const py::kwargs&);
+template void GretlDataset::transforms<DUMMIFY>(const std::string&, const py::kwargs&);
+template void GretlDataset::transforms<DISCRETE>(const std::string&, const py::kwargs&);
+
+template <GretlCmdIndex CI>
+void GretlDataset::transforms_no_opts (const std::string &vars)
+{
+    //
+    // interface to several gretl's commands (CI)
+    // which underlying engines live in tranforms.c
+    // Note: here we deal with commands which do not take arguments
+    //
+    gretl_list_ptr varlist{nullptr};
+
+    // we construct list of external variables
+    varlist = list_from_formula(vars, dset, err);
+    if (err) {
+        handle_gretl_error(err);
+    }
+
+    // we do the job
+    if constexpr (CI == DIFF || CI == LDIFF || CI == SDIFF) {
+        err = list_diffgenr(varlist.get(), CI, dset);
+    } else {
+        throw std::runtime_error("transforms_no_opt: unknown command");
+    }
+    if (err) {
+        handle_gretl_error(err);
+    }
+}
+template void GretlDataset::transforms_no_opts<DIFF>(const std::string&);
+template void GretlDataset::transforms_no_opts<LDIFF>(const std::string&);
+template void GretlDataset::transforms_no_opts<SDIFF>(const std::string&);
 
 std::string GretlDataset::repr (void) const
 {
@@ -1734,30 +1775,6 @@ void GretlDataset::gretl_series_set_label (const int number,
 {
     series_set_label(dset, number, label);
 }
-
-template <GretlCmdIndex CI>
-void GretlDataset::gretl_list_diffgenr (const std::string &vars)
-{
-    //
-    // interface to libgretl's list_diffgenr
-    //
-    gretl_list_ptr varlist{nullptr};
-
-    // we construct list of external variables
-    varlist = list_from_formula(vars, dset, err);
-    if (err) {
-        handle_gretl_error(err);
-    }
-
-    // we do the job
-    err = list_diffgenr(varlist.get(), CI, dset);
-    if (err) {
-        handle_gretl_error(err);
-    }
-}
-template void GretlDataset::gretl_list_diffgenr<DIFF>(const std::string&);
-template void GretlDataset::gretl_list_diffgenr<LDIFF>(const std::string&);
-template void GretlDataset::gretl_list_diffgenr<SDIFF>(const std::string&);
 
 void GretlDataset::lags (const std::string &vars, int order)
 {
