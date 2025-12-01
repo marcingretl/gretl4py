@@ -132,6 +132,8 @@ void init_gretl4py_dataset_py11(py::module_ &m)
              py::arg("varlist").none(false), py::kw_only())
         .def("discrete", &GretlDataset::transforms<DISCRETE>,
              py::arg("varlist").none(false), py::kw_only())
+        .def("stdize", &GretlDataset::transforms<STDIZE>,
+             py::arg("vars").none(false), py::kw_only())
         .def("diff", &GretlDataset::transforms_no_opts<DIFF>,
              py::arg("vars").none(false))
         .def("ldiff", &GretlDataset::transforms_no_opts<LDIFF>,
@@ -140,9 +142,9 @@ void init_gretl4py_dataset_py11(py::module_ &m)
              py::arg("vars").none(false))
         .def("logs", &GretlDataset::transforms_no_opts<LOGS>,
              py::arg("vars").none(false))
-        .def("logs", &GretlDataset::transforms_no_opts<ORTHDEV>,
+        .def("orthdev", &GretlDataset::transforms_no_opts<ORTHDEV>,
              py::arg("vars").none(false))
-        .def("orthdev", &GretlDataset::lags,
+        .def("lags", &GretlDataset::lags,
              py::arg("vars").none(false), py::arg("order").none(true) = 0)
         .def("print", &GretlDataset::print)
         .def("varnames", &GretlDataset::varnames)

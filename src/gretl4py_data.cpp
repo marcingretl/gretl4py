@@ -1275,6 +1275,8 @@ void GretlDataset::transforms (const std::string &vars,
         err = list_dumgenr(&varlist_raw_ptr, dset, opt_);
     } else if constexpr (CI == DISCRETE) {
         err = list_makediscrete(varlist_raw_ptr, dset, opt_);
+    } else if constexpr (CI == STDIZE) {
+        err = list_stdgenr(varlist_raw_ptr, dset, opt_);
     } else {
         throw std::runtime_error("transforms_no_opt: unknown command");
     }
@@ -1292,6 +1294,7 @@ void GretlDataset::transforms (const std::string &vars,
 template void GretlDataset::transforms<SQUARE>(const std::string&, const py::kwargs&);
 template void GretlDataset::transforms<DUMMIFY>(const std::string&, const py::kwargs&);
 template void GretlDataset::transforms<DISCRETE>(const std::string&, const py::kwargs&);
+template void GretlDataset::transforms<STDIZE>(const std::string&, const py::kwargs&);
 
 template <GretlCmdIndex CI>
 void GretlDataset::transforms_no_opts (const std::string &vars)
