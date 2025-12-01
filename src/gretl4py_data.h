@@ -23,6 +23,7 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
 #include "gretl4py_types.h"
+#include "gretl_calls.h"
 extern "C" {
     #include <gretl/gretl_func.h>
 }
@@ -47,33 +48,14 @@ namespace py = pybind11;
 
 #define SET_OPT(opt, flag) opt = static_cast<gretlopt>((opt) | (flag))
 
-extern GretlDatasetPtr DSET;
-
 //////////////////////////////////////////////////
 // functions
-// Note: some signature(s) may be at the bottom of this header
 //////////////////////////////////////////////////
-void handle_gretl_error (int err);
-
 void NumPyArray_extract (const py::array &arr, NumPyArrayView &view);
 
 template <typename T>
 void NumPyArray_to_gretl_matrix (NumPyArrayView &view, T *dst,
                                  int offset = 0, bool onecol = false);
-
-GretlTypesPtr gretl_generate_gretl_object (const char *s, int &err,
-                                           GretlObjType obj_type = GRETL_OBJ_INFO,
-                                           DATASET *dset = NULL, void *model = NULL);
-
-void gretl_valid_long_opt (gretlopt &opt, GretlCmdIndex ci,
-                           const std::string &key, const py::handle &val,
-                           const char *ext_val = nullptr);
-
-void unpack_kwargs_test (gretlopt &opt, const std::string &type,
-                         const py::kwargs &kwargs, int &order);
-
-gretl_list_ptr list_from_formula (const std::string &formula,
-                                  DATASET *dset, int &err);
 
 GretlTypesPtr convert_GretlType_to_GretlTypes (GretlType t, void *gr_obj_ptr,
                                                const int n, int &err);
@@ -90,27 +72,6 @@ std::string gretl4py_trim (std::string &s);
 
 template <typename T>
 void load_objects_from_dict (const py::dict &dict, const char *key, T &target);
-
-//
-// Class to handle printing
-//
-class GretlPrint
-{
-private:
-    PRN *prn_ = NULL;           // libgretl PRN struct
-    PrnType prn_type_;          // libgretl printer type
-public:
-    int err = 0;
-
-    GretlPrint (PrnType prn_type = GRETL_PRINT_BUFFER);  // by default we use buffered printer
-    ~GretlPrint (void);
-
-    PRN *prn_ptr (void);
-
-    void print (void);
-
-    const char *get_buffer (void);
-};
 
 //
 // Class to handle gretl 'DATASET' type
@@ -319,7 +280,6 @@ private:
 public:
     int err = 0;
 
-    // Note: constructor does everything: load pkg, scan functions, register self
     GretlPackage (const std::string &pkg_name, const std::string &suffix);
     ~GretlPackage (void);
 
@@ -351,9 +311,5 @@ public:
 
     std::string get_function_with_role (UfunRole role);
 };
-
-template <GretlType GR_TYPE>
-void gretl_generate (const std::string &formula, GretlDatasetPtr GD = DSET,
-                     const std::string &name = {});
 
 #endif // GRETL4PY_DATA_H

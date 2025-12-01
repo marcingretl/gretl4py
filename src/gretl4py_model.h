@@ -22,6 +22,7 @@
 
 #include <pybind11/pybind11.h>
 #include "gretl4py_data.h"
+#include "gretl_calls.h"
 #include <gretl/libgretl.h>
 #include <gretl/gretl_drivers.h>
 extern "C" {

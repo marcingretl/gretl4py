@@ -24,6 +24,29 @@
 
 namespace py = pybind11;
 
+extern GretlDatasetPtr DSET;
+
+//
+// Class to handle printing
+//
+class GretlPrint
+{
+private:
+    PRN *prn_ = NULL;           // libgretl PRN struct
+    PrnType prn_type_;          // libgretl printer type
+public:
+    int err = 0;
+
+    GretlPrint (PrnType prn_type = GRETL_PRINT_BUFFER);  // by default we use buffered printer
+    ~GretlPrint (void);
+
+    PRN *prn_ptr (void);
+
+    void print (void);
+
+    const char *get_buffer (void);
+};
+
 void do_set (const std::string &key,
              const std::optional<py::object> &pyval = std::nullopt);
 
@@ -53,5 +76,25 @@ void genr (const std::string &formula, GretlDatasetPtr data);
 
 template <typename T>
 void genr (const std::string &name, const T &value);
+
+void handle_gretl_error (int err);
+
+void gretl_valid_long_opt (gretlopt &opt, GretlCmdIndex ci,
+                           const std::string &key, const py::handle &val,
+                           const char *ext_val = nullptr);
+
+void unpack_kwargs_test (gretlopt &opt, const std::string &type,
+                         const py::kwargs &kwargs, int &order);
+
+gretl_list_ptr list_from_formula (const std::string &formula,
+                                  DATASET *dset, int &err);
+
+GretlTypesPtr gretl_generate_gretl_object (const char *s, int &err,
+                                           GretlObjType obj_type = GRETL_OBJ_INFO,
+                                           DATASET *dset = NULL, void *model = NULL);
+
+template <GretlType GR_TYPE>
+void gretl_generate (const std::string &formula, GretlDatasetPtr GD = DSET,
+                     const std::string &name = {});
 
 #endif // GRETL_CALLS_H
