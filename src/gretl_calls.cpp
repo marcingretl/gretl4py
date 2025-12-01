@@ -18,15 +18,12 @@
  */
 
 #include "gretl4py.h" /* MUST be at the first position!!! */
-#include <gretl/gretl_errors.h>
+#include "gretl_calls.h"
 #include <gretl/libset.h>
 extern "C" {
     #include <gretl/gretl_string_table.h>
     #include <gretl/gretl_typemap.h>
 }
-#include <iostream>
-#include <cstdlib>
-#include <unordered_set>
 
 #if defined(_WIN32)
 # include <gretl/gretl_win32.h>
@@ -37,10 +34,6 @@ extern "C" {
 #else
 # define COMPILER_IDENT __VERSION__
 #endif
-
-#define LIBGRETL_MIN_VER 52
-
-#define GRETL_PYBIND11_DEBUG 0
 
 // global variables (some used outside this file)
 GretlDatasetPtr DSET = nullptr;                         // default dataset

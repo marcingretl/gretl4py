@@ -24,8 +24,6 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 #include <gretl/libgretl.h>
-#include <gretl/gretl_drivers.h>
-#include <memory>
 #include <iostream>
 
 // Workaround for gettext redefinition

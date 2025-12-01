@@ -19,6 +19,7 @@
 
 #include "gretl4py.h"
 #include "gretl4py_model_instantiations.h"
+#include "gretl_calls.h"
 
 extern GretlDatasetPtr DSET;
 
@@ -31,9 +32,9 @@ extern GretlDatasetPtr DSET;
           }, \
           py::arg("formula").none(false), py::kw_only());
 
-const std::string info = "The gretl4py package provides "
+static const std::string info = "The gretl4py package provides "
     "an interface to the gretl library for python3 "
-    "(3.11, 3.12, and 3.13 were tested).";
+    "(3.11..3.14 were tested).";
 
 //////////////////////////////////////////////////
 // module extensions
@@ -42,7 +43,6 @@ void init_gretl4py_dataset_py11(py::module_ &);
 void init_gretl4py_bundle_py11(py::module_ &);
 void init_gretl4py_package_py11(py::module_ &);
 void init_gretl4py_model_py11(py::module_ &);
-
 
 PYBIND11_MODULE(_gretl, m)
 {

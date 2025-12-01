@@ -22,6 +22,7 @@
 #include "gretl4py_data.h"
 #include "gretl4py_types.h"
 #include "gretl4py_model.h"
+#include "gretl_calls.h"
 #include <gretl/matrix_extra.h>
 #include <gretl/gretl_model.h>
 #include <gretl/genmain.h>
@@ -43,11 +44,11 @@ extern "C" {
 #include <iomanip>
 #include <random>
 #include <filesystem>
+#include <iostream>
+#include <unordered_set>
 
 #define F_CONTIGUOUS py::detail::npy_api::constants::NPY_ARRAY_F_CONTIGUOUS_
 #define is_NumPyArrayFC(m) ((m.flags() & F_CONTIGUOUS))
-
-#define GRETL_PYBIND11_DEBUG 0
 
 extern std::unordered_set<std::string> UserVars;
 

@@ -23,16 +23,9 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
 #include "gretl4py_types.h"
-#include <gretl/libgretl.h>
-#include <gretl/matrix_extra.h>
-#include <gretl/genmain.h>
-#include <gretl/objstack.h>
 extern "C" {
     #include <gretl/gretl_func.h>
 }
-#include <iostream>
-#include <unordered_set>
-#include <filesystem>
 
 namespace py = pybind11;
 
@@ -53,6 +46,8 @@ namespace py = pybind11;
 #define is_pyGretlBundle(o) (py::isinstance<GretlBundle>(o))
 
 #define SET_OPT(opt, flag) opt = static_cast<gretlopt>((opt) | (flag))
+
+extern GretlDatasetPtr DSET;
 
 //////////////////////////////////////////////////
 // functions
@@ -356,12 +351,6 @@ public:
 
     std::string get_function_with_role (UfunRole role);
 };
-
-// implemented in gretl_calls.cpp
-extern GretlDatasetPtr DSET;
-
-GretlPackagePtr load_package (const std::string &pkgname,
-                              const std::string &suffix = "");
 
 template <GretlType GR_TYPE>
 void gretl_generate (const std::string &formula, GretlDatasetPtr GD = DSET,

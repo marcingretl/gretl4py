@@ -18,6 +18,7 @@
  */
 
 #include "gretl4py_model.h"
+#include "gretl_calls.h"
 extern "C" {
     #include <gretl/var.h>
     #include <gretl/gretl_restrict.h>
@@ -38,10 +39,10 @@ extern "C" {
                          || c == GARCH || c == PANEL || c == INTREG) //const int *list, DATASET *dset, gretlopt opt, PRN *prn
 #define use_lcdop_sig(c) (c == POISSON || c == NEGBIN) //const int *list, int ci, DATASET *dset, gretlopt opt, PRN *prn
 
+#define GRETL4PY_MODEL_DEBUG 0
+
 extern GretlDatasetPtr DSET;
 extern std::unordered_set<std::string> UserVars;
-
-#define GRETL4PY_MODEL_DEBUG 0
 
 //
 // GretlModel class methods
