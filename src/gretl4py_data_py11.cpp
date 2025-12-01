@@ -138,7 +138,11 @@ void init_gretl4py_dataset_py11(py::module_ &m)
              py::arg("vars").none(false))
         .def("sdiff", &GretlDataset::transforms_no_opts<SDIFF>,
              py::arg("vars").none(false))
-        .def("lags", &GretlDataset::lags,
+        .def("logs", &GretlDataset::transforms_no_opts<LOGS>,
+             py::arg("vars").none(false))
+        .def("logs", &GretlDataset::transforms_no_opts<ORTHDEV>,
+             py::arg("vars").none(false))
+        .def("orthdev", &GretlDataset::lags,
              py::arg("vars").none(false), py::arg("order").none(true) = 0)
         .def("print", &GretlDataset::print)
         .def("varnames", &GretlDataset::varnames)

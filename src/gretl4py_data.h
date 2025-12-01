@@ -189,7 +189,7 @@ public:
     void new_list (const std::string &name, const std::string &value);
 
     template <GretlCmdIndex CI>
-    void transforms (const std::string &varlist, const py::kwargs &kwargs);
+    void transforms (const std::string &vars, const py::kwargs &kwargs);
 
     template <GretlCmdIndex CI>
     void transforms_no_opts (const std::string &vars);

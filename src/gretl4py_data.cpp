@@ -1241,7 +1241,7 @@ void GretlDataset::new_list (const std::string &name, const std::string &value)
 }
 
 template <GretlCmdIndex CI>
-void GretlDataset::transforms (const std::string &varlist,
+void GretlDataset::transforms (const std::string &vars,
                                const py::kwargs &kwargs)
 {
     //
@@ -1262,21 +1262,23 @@ void GretlDataset::transforms (const std::string &varlist,
     }
 
     // we construct list of variables
-    auto plist = list_from_formula(varlist, dset, err);
+    auto varlist = list_from_formula(vars, dset, err);
     if (err) {
         handle_gretl_error(err);
     }
 
     // we do the job
-    int *plist_raw_ptr = plist.release();
+    int *varlist_raw_ptr = varlist.release();
     if constexpr (CI == SQUARE) {
-        err = list_xpxgenr(&plist_raw_ptr, dset, opt_);
+        err = list_xpxgenr(&varlist_raw_ptr, dset, opt_);
     } else if constexpr (CI == DUMMIFY) {
-        err = list_dumgenr(&plist_raw_ptr, dset, opt_);
+        err = list_dumgenr(&varlist_raw_ptr, dset, opt_);
     } else if constexpr (CI == DISCRETE) {
-        err = list_makediscrete(plist_raw_ptr, dset, opt_);
+        err = list_makediscrete(varlist_raw_ptr, dset, opt_);
+    } else {
+        throw std::runtime_error("transforms_no_opt: unknown command");
     }
-    plist.reset(plist_raw_ptr);
+    varlist.reset(varlist_raw_ptr);
     if (err) {
         handle_gretl_error(err);
     }
@@ -1308,18 +1310,32 @@ void GretlDataset::transforms_no_opts (const std::string &vars)
     }
 
     // we do the job
+    int *varlist_raw_ptr = varlist.release();
     if constexpr (CI == DIFF || CI == LDIFF || CI == SDIFF) {
-        err = list_diffgenr(varlist.get(), CI, dset);
+        err = list_diffgenr(varlist_raw_ptr, CI, dset);
+    } else if constexpr (CI == LOGS) {
+        err = list_loggenr(varlist_raw_ptr, dset);
+    } else if constexpr (CI == ORTHDEV) {
+        err = list_orthdev(varlist_raw_ptr, dset);
     } else {
         throw std::runtime_error("transforms_no_opt: unknown command");
     }
+    varlist.reset(varlist_raw_ptr);
     if (err) {
         handle_gretl_error(err);
     }
+
+    // based on interact.c
+    maybe_list_series(dset, GP_.prn_ptr());
+    set_dataset_is_changed(dset, 1);
+
+    GP_.print();
 }
 template void GretlDataset::transforms_no_opts<DIFF>(const std::string&);
 template void GretlDataset::transforms_no_opts<LDIFF>(const std::string&);
 template void GretlDataset::transforms_no_opts<SDIFF>(const std::string&);
+template void GretlDataset::transforms_no_opts<LOGS>(const std::string&);
+template void GretlDataset::transforms_no_opts<ORTHDEV>(const std::string&);
 
 std::string GretlDataset::repr (void) const
 {
