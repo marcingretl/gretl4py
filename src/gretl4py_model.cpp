@@ -1816,22 +1816,22 @@ GretlModel_package::GretlModel_package (const std::string &name,
     }
 
     // we load the package
-    GPKG = load_package(basename, suffix);
+    GPKG_ = load_package(basename, suffix);
 
     // we setup some internal parameters
-    main_func_name = GPKG->main_func_get_name();
+    main_func_name_ = GPKG_->main_func_get_name();
 
-    if (!GPKG->is_estimator()) {
-        throw std::runtime_error(GPKG->get_name() + " package doesn't provide an estimation method");
+    if (!GPKG_->is_estimator()) {
+        throw std::runtime_error(GPKG_->get_name() + " package doesn't provide an estimation method");
     }
 
-    if (main_func_name.empty()) {
-        throw std::runtime_error("no main function in package: " + GPKG->get_name());
+    if (main_func_name_.empty()) {
+        throw std::runtime_error("no main function in package: " + GPKG_->get_name());
     }
 
     // we register special functions (if exists)
-    print_func_name = GPKG->get_function_with_role(UFUN_BUNDLE_PRINT);
-    fcast_func_name = GPKG->get_function_with_role(UFUN_BUNDLE_FCAST);
+    print_func_name_ = GPKG_->get_function_with_role(UFUN_BUNDLE_PRINT);
+    fcast_func_name_ = GPKG_->get_function_with_role(UFUN_BUNDLE_FCAST);
 }
 
 void *GretlModel_package::model_ptr (void) const
@@ -1841,16 +1841,16 @@ void *GretlModel_package::model_ptr (void) const
 
 void GretlModel_package::fit (void)
 {
-    res = GPKG->function_exec(main_func_name, GD, GP, kwargs_);
+    res_ = GPKG_->function_exec(main_func_name_, GD, GP, kwargs_);
 
     // saving results
     py::object self = py::cast(this);
 
-    if (res.type == GRETL_TYPE_BUNDLE) {
-        GB_model = std::make_shared<GretlBundle>(GretlBundle(static_cast<gretl_bundle*>(res.get())));
+    if (res_.type == GRETL_TYPE_BUNDLE) {
+        GB_model = std::make_shared<GretlBundle>(GretlBundle(static_cast<gretl_bundle*>(res_.get())));
         GB_model->python_register(self);
     } else {
-        auto val = convert_GretlType_to_GretlTypes(res.type, res.get(), 0, err);
+        auto val = convert_GretlType_to_GretlTypes(res_.type, res_.get(), 0, err);
         if (err) {
             handle_gretl_error(err);
         }
@@ -1872,5 +1872,5 @@ std::string GretlModel_package::get_formula (void) const
 
 void GretlModel_package::functions (void) const
 {
-    GPKG->show_functions();
+    GPKG_->show_functions();
 }
