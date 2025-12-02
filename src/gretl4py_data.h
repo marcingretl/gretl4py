@@ -86,15 +86,15 @@ private:
     mutable GretlTypesPtr RES_other_;       // other results (accessor, tests, ets)
     gretlopt opt_ = OPT_NONE;               // instance-wide options
 
-    void allocate_dset (void);
+    void allocate_dset_ (void);
 
-    void free_dset (void);
+    void free_dset_ (void);
 
-    void add_or_replace_allocated_series (gretl_double_ptr data,
-                                          const std::string &name, int n,
-                                          gretl_gchar_ptr label = nullptr);
+    void add_or_replace_allocated_series_ (gretl_double_ptr data,
+                                           const std::string &name, int n,
+                                           gretl_gchar_ptr label = nullptr);
 
-    gretlopt setobs_opt_from_structure (int structure);
+    gretlopt setobs_opt_from_structure_ (int structure);
 public:
     mutable int err = 0;
     bool is_default = false;
@@ -193,7 +193,7 @@ private:
     py::dict as_dict_;                              // Python's dict() reprezentation
 
     template <typename T>
-    void extract (const T &t);
+    void extract_ (const T &t);
 public:
     int err = 0;
 
@@ -232,7 +232,7 @@ private:
     std::string as_str_;
 
     template <typename T>
-    void convert (const T *pyobj);
+    void convert_ (const T *pyobj);
 public:
     int err = 0;
 
@@ -268,15 +268,14 @@ private:
     std::string full_path_;             // path to package file (full)
     std::string base_dir_;              // path to the package
 
-    void check_if_defines_estimator (void);
+    void check_if_defines_estimator_ (void);
 
     template <typename T>
-    T get_properties (const char *property);
+    T get_properties_ (const char *property);
 
-    void unpack_kwargs_package (const std::string &func_name,
-                                fncall *func_call,
-                                GretlDatasetPtr &GD,
-                                const py::kwargs &kwargs);
+    void unpack_kwargs_package_ (const std::string &func_name,
+                                 fncall *func_call, GretlDatasetPtr &GD,
+                                 const py::kwargs &kwargs);
 public:
     int err = 0;
 

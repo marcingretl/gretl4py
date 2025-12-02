@@ -520,7 +520,7 @@ GretlDataset::GretlDataset (const std::string &fname,
         }
     }
 
-    allocate_dset();
+    allocate_dset_();
     if (dset) {
         if (full_path.empty()) {
             err = gretl_get_data(fname.c_str(), dset, OPT_NONE, NULL);
@@ -546,7 +546,7 @@ GretlDataset::GretlDataset (const py::dict &pydict) : id_(next_obj_id_++)
     std::string *strBUF;
     int pd;
 
-    allocate_dset();
+    allocate_dset_();
 
     // we fill up dset->Z
     numpy_array_to_gretl_storage(pydict, dset);
@@ -580,7 +580,7 @@ GretlDataset::GretlDataset (const py::dict &pydict) : id_(next_obj_id_++)
     // dataset in libgretl's memory-space).
     pd = get_int_from_python_dict(pydict, "periodicity");
     dset->structure = get_int_from_python_dict(pydict, "structure", 0);
-    opt = setobs_opt_from_structure(dset->structure);
+    opt = setobs_opt_from_structure_(dset->structure);
     set_obs(std::to_string(pd).c_str(), dset->S[0], dset, opt);
 }
 
@@ -593,7 +593,7 @@ GretlDataset::GretlDataset (const GretlDataset &src) : id_(next_obj_id_++)
         handle_gretl_error(E_DATA);
     }
 
-    allocate_dset();
+    allocate_dset_();
     if (!dset) {
         handle_gretl_error(E_ALLOC);
     }
@@ -666,16 +666,16 @@ GretlDataset::~GretlDataset (void)
     if (is_default) {
         DSET = nullptr;
     }
-    free_dset();
+    free_dset_();
 }
 
-void GretlDataset::allocate_dset (void)
+void GretlDataset::allocate_dset_ (void)
 {
-    free_dset();
+    free_dset_();
     dset = datainfo_new();
 }
 
-void GretlDataset::free_dset (void)
+void GretlDataset::free_dset_ (void)
 {
     if (dset) {
         destroy_dataset(dset);
@@ -683,9 +683,9 @@ void GretlDataset::free_dset (void)
     }
 }
 
-void GretlDataset::add_or_replace_allocated_series (gretl_double_ptr data,
-                                                    const std::string &name,
-                                                    int n, gretl_gchar_ptr label)
+void GretlDataset::add_or_replace_allocated_series_ (gretl_double_ptr data,
+                                                     const std::string &name,
+                                                     int n, gretl_gchar_ptr label)
 {
     //
     // Here we add or replace allocated series to dataset
@@ -854,8 +854,8 @@ char *GretlDataset::add_series (gretl_double_ptr data,
     // Here we add existing series to dataset
     // Note: gretl_double_ptr and gretl_gchar_ptr are grabbed by dset
     //
-    add_or_replace_allocated_series(std::move(data), name,
-                                    n, std::move(label));
+    add_or_replace_allocated_series_(std::move(data), name,
+                                     n, std::move(label));
 
     return dset->varname[get_series_id(name, false)];
 }
@@ -880,7 +880,7 @@ void GretlDataset::add_series (const py::array &data,
 
     // actual work
     NumPyArray_to_gretl_matrix<double>(view, data_copy.get(), 0, true);
-    add_or_replace_allocated_series(std::move(data_copy), name, n);
+    add_or_replace_allocated_series_(std::move(data_copy), name, n);
 }
 
 void GretlDataset::new_series (const std::string &formula)
@@ -1519,7 +1519,7 @@ std::unordered_set<int> GretlDataset::linked_models_list (void) const
     return linked_models_;
 }
 
-gretlopt GretlDataset::setobs_opt_from_structure (int structure)
+gretlopt GretlDataset::setobs_opt_from_structure_ (int structure)
 {
     if (structure == CROSS_SECTION) {
         return OPT_X;
@@ -1787,7 +1787,7 @@ GretlBundle::~GretlBundle (void)
 }
 
 template <typename T>
-void GretlBundle::extract (const T &t)
+void GretlBundle::extract_ (const T &t)
 {
     //
     // extract the bundle and either register on python side
@@ -1818,7 +1818,7 @@ void GretlBundle::extract (const T &t)
 py::dict GretlBundle::to_dict (void)
 {
     if (as_dict_.empty()) {
-        extract<py::dict>(py::dict());
+        extract_<py::dict>(py::dict());
     }
 
     return as_dict_;
@@ -1826,7 +1826,7 @@ py::dict GretlBundle::to_dict (void)
 
 void GretlBundle::python_register (py::object &obj)
 {
-    extract<py::object>(obj);
+    extract_<py::object>(obj);
 }
 
 void GretlBundle::print (void)
@@ -1963,16 +1963,16 @@ template void GretlBundle::set_element<GretlBundlePtr>(const std::string&, const
 //
 MapPyToCpp::MapPyToCpp (const std::optional<py::object> &pyobject)
 {
-    convert<py::object>(&*pyobject);
+    convert_<py::object>(&*pyobject);
 }
 
 MapPyToCpp::MapPyToCpp (const py::handle &pyhandle)
 {
-    convert<py::handle>(&pyhandle);
+    convert_<py::handle>(&pyhandle);
 }
 
 template <typename T>
-void MapPyToCpp::convert (const T *pyobj)
+void MapPyToCpp::convert_ (const T *pyobj)
 {
 #if GRETL_PYBIND11_DEBUG
     std::printf("converting %s to string\n",
@@ -2048,12 +2048,12 @@ GretlPackage::GretlPackage (const std::string &pkg_name,
     function_names_init();
 
     // we look up for JEL codes
-    jel_ = get_properties<std::vector<std::string>>("tags");
+    jel_ = get_properties_<std::vector<std::string>>("tags");
 
     // we grab only public functions (names and indexes)
     // Note: we exclude functions with specific roles (mostly related with plotting and GUI)
     for (auto role : excluded_roles) {
-        auto func_name = get_properties<std::string>(package_role_get_key(role));
+        auto func_name = get_properties_<std::string>(package_role_get_key(role));
         if (!func_name.empty()) {
             excluded_functions.insert(std::move(func_name));
         }
@@ -2100,13 +2100,13 @@ GretlPackage::GretlPackage (const std::string &pkg_name,
             }
         }
     }
-    check_if_defines_estimator();
+    check_if_defines_estimator_();
 
     // package summary
     oss << std::fixed << std::setprecision(2) << function_package_get_version(pkg_);
     py::print("We use '" + pkg_name_ + "' package, version: " + oss.str()
-              + ", JEL codes: " + get_properties<std::string>("tags")
-              + " (" + get_properties<std::string>("author") + ")"
+              + ", JEL codes: " + get_properties_<std::string>("tags")
+              + " (" + get_properties_<std::string>("author") + ")"
               + "\n  main function: " + (main_func_.empty() ? "none" : main_func_)
               + ", provides estimator: " + (defines_estimator_ ? "yes" : "no"));
     if (main_func_.empty()) {
@@ -2123,7 +2123,7 @@ GretlPackage::~GretlPackage (void)
     }
 }
 
-void GretlPackage::check_if_defines_estimator (void)
+void GretlPackage::check_if_defines_estimator_ (void)
 {
     const std::unordered_set<std::string> estimation_codes = {
         "C13", "C14", "C15", "C20", "C21", "C22", "C23", "C24",
@@ -2139,7 +2139,7 @@ void GretlPackage::check_if_defines_estimator (void)
 }
 
 template <typename T>
-T GretlPackage::get_properties (const char *property)
+T GretlPackage::get_properties_ (const char *property)
 {
     //
     // we get package properties
@@ -2180,10 +2180,9 @@ T GretlPackage::get_properties (const char *property)
     return res;
 }
 
-void GretlPackage::unpack_kwargs_package (const std::string &func_name,
-                                          fncall *func_call,
-                                          GretlDatasetPtr &GD,
-                                          const py::kwargs &kwargs)
+void GretlPackage::unpack_kwargs_package_ (const std::string &func_name,
+                                           fncall *func_call, GretlDatasetPtr &GD,
+                                           const py::kwargs &kwargs)
 {
     //
     // here we extract kwargs for any package function
@@ -2451,10 +2450,10 @@ GretlPackageRes GretlPackage::function_exec (const std::string &func_name,
     }
 
     // we unpack parameters
-    unpack_kwargs_package(func_name, func_call, GD, kwargs);
+    unpack_kwargs_package_(func_name, func_call, GD, kwargs);
 
     // we check dataset in the context of package's "data-requirement"
-    if (!GD && !(get_properties<DataReq>("data-requirement") == FN_NODATA_OK)) {
+    if (!GD && !(get_properties_<DataReq>("data-requirement") == FN_NODATA_OK)) {
         throw std::runtime_error("No dataset is available");
     }
 
@@ -2502,5 +2501,5 @@ std::string GretlPackage::get_examples_path (const std::string &fname)
 
 std::string GretlPackage::get_function_with_role (UfunRole role)
 {
-    return get_properties<std::string>(package_role_get_key(role));
+    return get_properties_<std::string>(package_role_get_key(role));
 }
