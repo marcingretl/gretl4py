@@ -335,7 +335,7 @@ private:
     std::vector<std::string> instruments_;  // vector holding instruments
     std::vector<std::string> identities_;   // vector holding identities
     std::string endogs_;                    // vector holding endogs
-    equation_system *model = NULL;          // libgretl equation_system struct
+    equation_system *model_ = NULL;         // libgretl equation_system struct
 
     void *model_ptr (void) const override;
 public:

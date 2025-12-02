@@ -1699,14 +1699,14 @@ GretlModel_NME::GretlModel_NME (const std::string &method,
 
 GretlModel_NME::~GretlModel_NME (void)
 {
-    if (this->model != NULL) {
-        equation_system_destroy(this->model);
+    if (this->model_ != NULL) {
+        equation_system_destroy(this->model_);
     }
 }
 
 void *GretlModel_NME::model_ptr (void) const
 {
-    return static_cast<void*>(model);
+    return static_cast<void*>(model_);
 }
 
 void GretlModel_NME::fit (void)
@@ -1725,8 +1725,7 @@ void GretlModel_NME::fit (void)
             line = std::string(type);
             line.append(" ");
             line.append(el);
-            err = system_parse_line(model, line.c_str(),
-                                    GD->dset);
+            err = system_parse_line(model_, line.c_str(), GD->dset);
             if (err) {
                 handle_gretl_error(err);
             }
@@ -1737,8 +1736,8 @@ void GretlModel_NME::fit (void)
     check_if_estimated_();
 
     // system definition
-    model = equation_system_start(std::string("method=").append(method_).data(),
-                                  NULL, opt, &err);
+    model_ = equation_system_start(std::string("method=").append(method_).data(),
+                                   NULL, opt, &err);
     if (err) {
         handle_gretl_error(err);
     }
@@ -1749,7 +1748,7 @@ void GretlModel_NME::fit (void)
         if (err) {
             handle_gretl_error(err);
         }
-        err = equation_system_append(model, varlist.get());
+        err = equation_system_append(model_, varlist.get());
         if (err) {
             handle_gretl_error(err);
         }
@@ -1760,20 +1759,20 @@ void GretlModel_NME::fit (void)
     do_system_parse_line("identity", identities_);
     if (endogs_.size()) {
         std::string line = "endog " + endogs_;
-        err = system_parse_line(model, line.c_str(), GD->dset);
+        err = system_parse_line(model_, line.c_str(), GD->dset);
         if (err) {
             handle_gretl_error(err);
         }
     }
 
     // do the job
-    err = equation_system_finalize(model, GD->dset, opt, GP.prn_ptr());
+    err = equation_system_finalize(model_, GD->dset, opt, GP.prn_ptr());
     if (err) {
         handle_gretl_error(err);
     }
 
     // we save model
-    save_model<equation_system>(model);
+    save_model<equation_system>(model_);
 }
 
 std::string GretlModel_NME::get_formula (void) const
@@ -1790,7 +1789,7 @@ void GretlModel_NME::forecast (const py::kwargs &kwargs)
 void GretlModel_NME::restrict (const py::list &impose,
                                const py::kwargs &kwargs)
 {
-    do_restrict_<equation_system>(model, impose, kwargs);
+    do_restrict_<equation_system>(model_, impose, kwargs);
 }
 
 //
