@@ -162,7 +162,7 @@ template <auto F, GretlCmdIndex CI>
 class GretlModel_NSE_Driver : public GretlModel_NSE
 {
 protected:
-    const std::string formula;          // formula defining model
+    const std::string formula_;         // formula defining model
 public:
     GretlModel_NSE_Driver (const std::string &formula,
                            const py::kwargs &kwargs);
@@ -235,7 +235,7 @@ class GretlModel_NSE_nl : public GretlModel_NSE
 {
 private:
     const std::string command_;         // original gretl command (nls, mle, gmm)
-    const std::string formula;          // formula defining model
+    const std::string formula_;         // formula defining model
     std::string weights_;
     std::string params_;
     std::string param_names_;

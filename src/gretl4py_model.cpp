@@ -874,13 +874,13 @@ template <auto F, GretlCmdIndex CI>
 GretlModel_NSE_Driver<F, CI>::GretlModel_NSE_Driver (const std::string &formula,
                                                      const py::kwargs &kwargs)
                                                      : GretlModel_NSE(CI, kwargs),
-                                                     formula(formula)
+                                                     formula_(formula)
 {}
 
 template <auto F, GretlCmdIndex CI>
 std::string GretlModel_NSE_Driver<F, CI>::get_formula (void) const
 {
-    return formula;
+    return formula_;
 }
 
 // Method template to support several estimation methods that
@@ -899,10 +899,10 @@ void GretlModel_NSE_Driver<F, CI>::fit (void)
     if constexpr (CI == MIDASREG) {
         std::string formula_left;
 
-        regexp_extract<CI>(formula, formula_left, formula_right);
+        regexp_extract<CI>(formula_, formula_left, formula_right);
         var_list = list_from_formula(formula_left, GD->dset, err);
     } else {
-        var_list = list_from_formula(formula, GD->dset, err);
+        var_list = list_from_formula(formula_, GD->dset, err);
     }
     if (!var_list) {
         throw std::runtime_error("Formula rendering failed");
@@ -996,7 +996,7 @@ void GretlModel_NSE_Driver_quantreg::fit()
     check_if_estimated_();
 
     // we define list of variables
-    var_list = list_from_formula(formula, GD->dset, err);
+    var_list = list_from_formula(formula_, GD->dset, err);
     if (!var_list) {
         throw std::runtime_error("Formula rendering failed");
     }
@@ -1047,7 +1047,7 @@ void GretlModel_NSE_Driver_dpanel::fit()
     check_if_estimated_();
 
     // we define list of variables
-    regexp_extract<DPANEL>(formula, formula_left, formula_right);
+    regexp_extract<DPANEL>(formula_, formula_left, formula_right);
     var_list = list_from_formula(formula_left, GD->dset, err);
     if (!var_list) {
         throw std::runtime_error("Formula rendering failed");
@@ -1104,7 +1104,7 @@ void GretlModel_NSE_Driver_tobit::fit()
     check_if_estimated_();
 
     // we define list of variables
-    var_list = list_from_formula(formula, GD->dset, err);
+    var_list = list_from_formula(formula_, GD->dset, err);
     if (!var_list) {
         throw std::runtime_error("Formula rendering failed");
     }
@@ -1126,7 +1126,7 @@ GretlModel_NSE_nl<CI>::GretlModel_NSE_nl (const std::string formula,
                                           const py::kwargs &kwargs)
                                           : GretlModel_NSE(CI, kwargs),
                                           command_(gretl_command_word(CI)),
-                                          formula(formula)
+                                          formula_(formula)
 {
     // we get model definition
     load_objects_from_dict<std::string>(kwargs, "params", params_);
@@ -1201,7 +1201,7 @@ void GretlModel_NSE_nl<CI>::do_nl_parse_line_ (const std::string &keyword,
         std::string line;
 
         if (keyword == "command") {
-            line = command_ + " " + formula;
+            line = command_ + " " + formula_;
         } else {
             if (src->empty()) return;
             line = keyword;
@@ -1277,7 +1277,7 @@ void GretlModel_NSE_nl<CI>::fit (void)
 template <GretlCmdIndex CI>
 std::string GretlModel_NSE_nl<CI>::get_formula (void) const
 {
-    std::string RES = formula + "\n";
+    std::string RES = formula_ + "\n";
 
     if constexpr (CI == NLS || CI == MLE) {
         if (deriv_.size()) {
