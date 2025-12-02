@@ -268,19 +268,19 @@ public:
 class GretlModel_VAR : public GretlModel
 {
 protected:
-    std::string vars;           // list of endogenous (+ exogenous) variables
-    const int order;            // VAR order
-    GRETL_VAR *model = NULL;    // libgretl GRETL_VAR struct
+    std::string vars_;          // list of endogenous (+ exogenous) variables
+    const int order_;           // VAR order
+    GRETL_VAR *model_ = NULL;   // libgretl GRETL_VAR struct
 
     void *model_ptr (void) const override;
 
     template <GretlCmdIndex CI>
-    void do_var_vecm_fit (const int coint_rank = 0);
+    void do_var_vecm_fit_ (const int coint_rank = 0);
 
     template <GretlCmdIndex CI>
-    void do_var_vecm_forecast (const py::kwargs &kwargs);
+    void do_var_vecm_forecast_ (const py::kwargs &kwargs);
 
-    int find_variable_nr (const std::string &variable_name);
+    int find_variable_nr_ (const std::string &variable_name);
 public:
     GretlModel_VAR (const std::string &ylist,
                     const int order, GretlCmdIndex ci,
@@ -309,7 +309,7 @@ public:
 class GretlModel_VAR_VECM : public GretlModel_VAR
 {
 private:
-    const int coint_rank;               // co-integration rank
+    const int coint_rank_;          // co-integration rank
 public:
     GretlModel_VAR_VECM (const std::string &ylist, const int order,
                          const int rank, const py::kwargs &kwargs);

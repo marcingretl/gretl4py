@@ -1378,29 +1378,29 @@ GretlModel_VAR::GretlModel_VAR (const std::string &ylist,
                                 const int order, GretlCmdIndex ci,
                                 const py::kwargs &kwargs)
                                 : GretlModel(GRETL_OBJ_VAR, ci, kwargs),
-                                vars(ylist), order(order)
+                                vars_(ylist), order_(order)
 {
     if (kwargs.contains("xlist") && !kwargs["xlist"].is_none()) {
-        vars.append(" ; ");
-        vars.append(kwargs["xlist"].cast<std::string>());
+        vars_.append(" ; ");
+        vars_.append(kwargs["xlist"].cast<std::string>());
     }
 }
 
 GretlModel_VAR::~GretlModel_VAR (void)
 {
-    if (this->model != NULL) {
-        gretl_VAR_free(this->model);
+    if (this->model_ != NULL) {
+        gretl_VAR_free(this->model_);
     }
 }
 
 void *GretlModel_VAR::model_ptr (void) const
 {
-    return static_cast<void*>(model);
+    return static_cast<void*>(model_);
 }
 
 // true VAR/VECM estimate
 template <GretlCmdIndex CI>
-void GretlModel_VAR::do_var_vecm_fit (const int coint_rank)
+void GretlModel_VAR::do_var_vecm_fit_ (const int coint_rank)
 {
     //
     // here we perform a real VAR/VECM estimation
@@ -1410,58 +1410,58 @@ void GretlModel_VAR::do_var_vecm_fit (const int coint_rank)
     check_if_estimated_();
 
     // be build variables list
-    var_list = list_from_formula(vars, GD->dset, err);
+    var_list = list_from_formula(vars_, GD->dset, err);
     if (!var_list) {
         throw std::invalid_argument("wrong list of variables");
     }
 
     // we estimate a model
     if constexpr (CI == VAR) {
-        model = gretl_VAR(order, NULL, var_list.get(),
-                          GD->dset, opt, GP.prn_ptr(), &err);
-    } else if constexpr (CI == VECM) {
-        model = gretl_VECM(order, coint_rank, var_list.get(),
+        model_ = gretl_VAR(order_, NULL, var_list.get(),
                            GD->dset, opt, GP.prn_ptr(), &err);
+    } else if constexpr (CI == VECM) {
+        model_ = gretl_VECM(order_, coint_rank, var_list.get(),
+                            GD->dset, opt, GP.prn_ptr(), &err);
     }
     if (err) {
         handle_gretl_error(err);
     }
 
     // save results
-    save_model<GRETL_VAR>(model);
+    save_model<GRETL_VAR>(model_);
 }
 
 // true VAR/VECM forecasting
 template <GretlCmdIndex CI>
-void GretlModel_VAR::do_var_vecm_forecast (const py::kwargs &kwargs)
+void GretlModel_VAR::do_var_vecm_forecast_ (const py::kwargs &kwargs)
 {
     int variable_nr = -2;   // print for all equations
 
     // we check if we forecast for all variables or just one
     if (kwargs.contains("vname") && !kwargs["vname"].is_none()) {
-        variable_nr = find_variable_nr(py::cast<std::string>(kwargs["vname"]));
+        variable_nr = find_variable_nr_(py::cast<std::string>(kwargs["vname"]));
         if (variable_nr == -1) {
             throw std::invalid_argument("unknown variable '" + py::cast<std::string>(kwargs["vname"]) + "'");
         }
     }
 
     // actual work
-    for (int i=0; i<model->neqns; i++) {
+    for (int i=0; i<model_->neqns; i++) {
         if (variable_nr == -2 || variable_nr == i) {
             py::print("Equation ", i+1);
-            do_forecast<GRETL_VAR, CI>(model, kwargs, i);
+            do_forecast<GRETL_VAR, CI>(model_, kwargs, i);
         }
     }
 }
 
 void GretlModel_VAR::fit (void)
 {
-    do_var_vecm_fit<VAR>();
+    do_var_vecm_fit_<VAR>();
 }
 
 void GretlModel_VAR::forecast (const py::kwargs &kwargs)
 {
-    do_var_vecm_forecast<VAR>(kwargs);
+    do_var_vecm_forecast_<VAR>(kwargs);
 }
 
 void GretlModel_VAR::test (const std::string &type, const py::kwargs &kwargs)
@@ -1479,11 +1479,11 @@ void GretlModel_VAR::test (const std::string &type, const py::kwargs &kwargs)
 
     // we perform test
     if (type == "autocorr") {
-        err = gretl_VAR_autocorrelation_test(model, order, GD->dset, opt, GP.prn_ptr());
+        err = gretl_VAR_autocorrelation_test(model_, order, GD->dset, opt, GP.prn_ptr());
     } else if (type == "arch") {
-        err = gretl_VAR_arch_test(model, order, GD->dset, opt, GP.prn_ptr());
+        err = gretl_VAR_arch_test(model_, order, GD->dset, opt, GP.prn_ptr());
     } else if (type == "normality") {
-        err = gretl_VAR_normality_test(model, opt, GP.prn_ptr());
+        err = gretl_VAR_normality_test(model_, opt, GP.prn_ptr());
     } else {
         throw std::invalid_argument(type + ": unsupported test");
     }
@@ -1508,7 +1508,7 @@ void GretlModel_VAR::test (const std::string &type, const py::kwargs &kwargs)
 
 std::string GretlModel_VAR::get_formula() const
 {
-    return vars;
+    return vars_;
 }
 
 char *GretlModel_VAR::save_uhat (int eqn, const std::string &name) const
@@ -1520,7 +1520,7 @@ char *GretlModel_VAR::save_uhat (int eqn, const std::string &name) const
     std::string uhat_name;
 
     // we retrive uhat
-    gretl_double_ptr uhat(gretl_VAR_get_resid_series(model, eqn-1, &err));
+    gretl_double_ptr uhat(gretl_VAR_get_resid_series(model_, eqn-1, &err));
     if (err) {
         handle_gretl_error(err);
     }
@@ -1537,12 +1537,12 @@ char *GretlModel_VAR::save_uhat (int eqn, const std::string &name) const
                           GD->dset->n);
 }
 
-int GretlModel_VAR::find_variable_nr (const std::string &variable_name)
+int GretlModel_VAR::find_variable_nr_ (const std::string &variable_name)
 {
     //
     // here we find the number of given variable in the context of VAR/VECM
     //
-    std::istringstream iss(vars);
+    std::istringstream iss(vars_);
     std::string token;
     int pos = 0;
 
@@ -1567,7 +1567,7 @@ void GretlModel_VAR::irf (int targ, int shock, double alpha)
     py::dict res;
 
     // we compute IRFs
-    gretl_matrix_ptr irf(gretl_VAR_get_impulse_response(model, targ, shock,
+    gretl_matrix_ptr irf(gretl_VAR_get_impulse_response(model_, targ, shock,
                                                         default_VAR_horizon(GD->dset),
                                                         alpha, GD->dset, &err));
     if (err) {
@@ -1576,9 +1576,9 @@ void GretlModel_VAR::irf (int targ, int shock, double alpha)
 
     // we manufacture resulting object
     res[py::cast("targ")] = targ;
-    res[py::cast("targ_name")] = GD->dset->varname[gretl_VAR_get_variable_number(model, targ)];
+    res[py::cast("targ_name")] = GD->dset->varname[gretl_VAR_get_variable_number(model_, targ)];
     res[py::cast("shock")] = shock;
-    res[py::cast("shock_name")] = GD->dset->varname[gretl_VAR_get_variable_number(model, shock)];
+    res[py::cast("shock_name")] = GD->dset->varname[gretl_VAR_get_variable_number(model_, shock)];
     if (alpha > 0.0) {
         res[py::cast("alpha")] = alpha;
     }
@@ -1602,12 +1602,12 @@ void GretlModel_VAR::irf (const std::string &targ, const std::string &shock, dou
     try {
         targ_int = std::stoi(targ);
     } catch (std::invalid_argument &e) {
-        targ_int = find_variable_nr(targ);
+        targ_int = find_variable_nr_(targ);
     }
     try {
         shock_int = std::stoi(shock);
     } catch (std::invalid_argument &e) {
-        shock_int = find_variable_nr(shock);
+        shock_int = find_variable_nr_(shock);
     }
 
     if (targ_int == -1) {
@@ -1627,23 +1627,23 @@ void GretlModel_VAR::irf (const std::string &targ, const std::string &shock, dou
 GretlModel_VAR_VECM::GretlModel_VAR_VECM (const std::string &ylist, const int order,
                                           const int rank, const py::kwargs &kwargs)
                                           : GretlModel_VAR(ylist, order, VECM, kwargs),
-                                          coint_rank(rank)
+                                          coint_rank_(rank)
 {
     if (kwargs.contains("rxlist") && !kwargs["rxlist"].is_none()) {
-        vars.append(" ; ");
-        vars.append(kwargs["rxlist"].cast<std::string>());
+        vars_.append(" ; ");
+        vars_.append(kwargs["rxlist"].cast<std::string>());
     }
 }
 
 void GretlModel_VAR_VECM::fit (void)
 {
-    do_var_vecm_fit<VECM>(coint_rank);
+    do_var_vecm_fit_<VECM>(coint_rank_);
 }
 
 void GretlModel_VAR_VECM::restrict (const py::list &impose,
                                     const py::kwargs &kwargs)
 {
-    do_restrict_<GRETL_VAR>(model, impose, kwargs);
+    do_restrict_<GRETL_VAR>(model_, impose, kwargs);
 }
 
 char *GretlModel_VAR_VECM::save_ec_term (const int nr,
@@ -1656,7 +1656,7 @@ char *GretlModel_VAR_VECM::save_ec_term (const int nr,
     std::string ec_term_name;
 
     // we retrive ec_term
-    gretl_double_ptr ec_term(gretl_VECM_get_EC(model, nr-1, GD->dset, &err));
+    gretl_double_ptr ec_term(gretl_VECM_get_EC(model_, nr-1, GD->dset, &err));
     if (err) {
         handle_gretl_error(err);
     }
@@ -1675,7 +1675,7 @@ char *GretlModel_VAR_VECM::save_ec_term (const int nr,
 
 void GretlModel_VAR_VECM::forecast (const py::kwargs &kwargs)
 {
-    do_var_vecm_forecast<VECM>(kwargs);
+    do_var_vecm_forecast_<VECM>(kwargs);
 }
 
 //
