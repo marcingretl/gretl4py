@@ -770,7 +770,7 @@ GretlModel_NSE_arima::GretlModel_NSE_arima (const std::string &y,
                                             const py::tuple &tup,
                                             const py::kwargs &kwargs)
                                             : GretlModel_NSE(ARMA, kwargs),
-                                            y(y), tup(tup)
+                                            y_(y), tup_(tup)
 {
     // lambda for ARIMA order
     auto get_arima_order = [](const py::tuple &tup, int &p, int &d, int &q)
@@ -790,36 +790,36 @@ GretlModel_NSE_arima::GretlModel_NSE_arima (const std::string &y,
     };
 
     // we set up "y"
-    y_number = this->GD->get_series_id(y, false);
-    if (y_number == -1) {
+    y_number_ = this->GD->get_series_id(y, false);
+    if (y_number_ == -1) {
         throw std::invalid_argument("There is no variable: " + y);
     }
 
     // we set up non-seasonal parameters
-    p = d = q = 0;
-    get_arima_order(tup, p, d, q);
+    p_ = d_ = q_ = 0;
+    get_arima_order(tup, p_, d_, q_);
 
     // we set up seasonal parameters
     if (kwargs.contains("seasonal") && !kwargs["seasonal"].is_none()) {
         const py::tuple seas = kwargs["seasonal"].cast<py::tuple>();
-        P = D = Q = 0;
+        P_ = D_ = Q_ = 0;
 
-        get_arima_order(seas, P, D, Q);
-        if (P > 0 || D > 0 || Q > 0) {
-            seasonal = 1;
+        get_arima_order(seas, P_, D_, Q_);
+        if (P_ > 0 || D_ > 0 || Q_ > 0) {
+            seasonal_ = 1;
         }
     }
 
     // we add exogenous variables if present
     if (kwargs.contains("xlist") && !kwargs["xlist"].is_none()) {
-        xlist = list_from_formula(kwargs["xlist"].cast<std::string>(),
-                                  this->GD->dset, err);
-        if (!xlist) {
+        xlist_ = list_from_formula(kwargs["xlist"].cast<std::string>(),
+                                   this->GD->dset, err);
+        if (!xlist_) {
             throw std::invalid_argument("wrong list of exogenous variables");
         } else if (err) {
             handle_gretl_error(err);
         }
-        exogenous = xlist.get()[0];
+        exogenous_ = xlist_.get()[0];
     }
 }
 
@@ -827,7 +827,7 @@ GretlModel_NSE_arima::~GretlModel_NSE_arima (void) = default;
 
 std::string GretlModel_NSE_arima::get_formula (void) const
 {
-    return y;
+    return y_;
 }
 
 void GretlModel_NSE_arima::fit (void)
@@ -837,25 +837,25 @@ void GretlModel_NSE_arima::fit (void)
     // we check if we deal with clean model
     check_if_estimated_();
 
-    var_list.reset(gretl_list_new(seasonal ? 9+exogenous : 5+exogenous));
+    var_list.reset(gretl_list_new(seasonal_ ? 9+exogenous_ : 5+exogenous_));
     if (!var_list) {
         handle_gretl_error(E_ALLOC);
     }
 
-    var_list.get()[i++] = p;
-    var_list.get()[i++] = d;
-    var_list.get()[i++] = q;
-    if (seasonal) {
+    var_list.get()[i++] = p_;
+    var_list.get()[i++] = d_;
+    var_list.get()[i++] = q_;
+    if (seasonal_) {
         var_list.get()[i++] = LISTSEP;
-        var_list.get()[i++] = P;
-        var_list.get()[i++] = D;
-        var_list.get()[i++] = Q;
+        var_list.get()[i++] = P_;
+        var_list.get()[i++] = D_;
+        var_list.get()[i++] = Q_;
     }
     var_list.get()[i++] = LISTSEP;
-    var_list.get()[i++] = y_number;
-    if (exogenous) {
-        for (int j=1; j<=exogenous; j++) {
-            var_list.get()[i++] = xlist.get()[j];
+    var_list.get()[i++] = y_number_;
+    if (exogenous_) {
+        for (int j=1; j<=exogenous_; j++) {
+            var_list.get()[i++] = xlist_.get()[j];
         }
     }
 

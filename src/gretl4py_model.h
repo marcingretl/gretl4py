@@ -136,14 +136,14 @@ public:
 class GretlModel_NSE_arima : public GretlModel_NSE
 {
 private:
-    const std::string y;    // name of y process
-    const py::tuple tup;    // basic (P,D,Q) definition
-    int y_number;           // number of y process in the context of GD
-    int seasonal = 0;       // number of seasonal elements
-    int exogenous = 0;      // number of exogenous variables
-    gretl_list_ptr xlist;   // list of exogenous variables
-    int p, d, q;
-    int P, D, Q;
+    const std::string y_;   // name of y process
+    const py::tuple tup_;   // basic (P,D,Q) definition
+    int y_number_;          // number of y process in the context of GD
+    int seasonal_ = 0;      // number of seasonal elements
+    int exogenous_ = 0;     // number of exogenous variables
+    gretl_list_ptr xlist_;  // list of exogenous variables
+    int p_, d_, q_;
+    int P_, D_, Q_;
 public:
     GretlModel_NSE_arima (const std::string &y, const py::tuple &tup,
                           const py::kwargs &kwargs);
