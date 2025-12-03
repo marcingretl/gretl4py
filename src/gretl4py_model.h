@@ -55,26 +55,34 @@ protected:
     bool estimated_ = false;            // if model already estimated
     mutable int err = 0;
 
+    virtual void *model_ptr_ (void) const = 0;   // non-typed pointer to model
+
     template <typename T>
-    void save_model (T *model);
+    void save_model_ (T *model);
 
     template <typename T>
     void do_restrict_ (T *model, const py::list &impose, const py::kwargs &kwargs);
 
     template <typename T, GretlCmdIndex CI>
-    void do_forecast (T *model, const py::kwargs &kwargs, int variable_nr = 0);
+    void do_forecast_ (T *model, const py::kwargs &kwargs, int variable_nr = 0);
 
-    void unpack_forecast_kwargs (const py::kwargs &kwargs, int &pconf);
+    void unpack_forecast_kwargs_ (const py::kwargs &kwargs, int &pconf);
 
-    void fr_to_dict (FITRESID *fr, py::dict &fcdict);
-
-    virtual void *model_ptr (void) const = 0;   // non-typed pointer to model
+    void fr_to_dict_ (FITRESID *fr, py::dict &fcdict);
 
     void check_if_estimated_ (void) const;
 public:
     explicit GretlModel (GretlObjType model_obj_type, GretlCmdIndex ci,
                          const py::kwargs &kwargs);
     virtual ~GretlModel (void);
+
+    virtual void fit (void) = 0;
+
+    virtual void forecast (const py::kwargs &kwargs) = 0;
+
+    virtual std::string get_formula (void) const = 0;
+
+    virtual py::object get_accessor (const std::string &accessor) const;
 
     int get_id (void) const;
 
@@ -83,14 +91,6 @@ public:
     GretlBundlePtr get_bundle (void) const;     // return pointer to GB_model
 
     void unlink_from_dataset (void) const;
-
-    virtual py::object get_accessor (const std::string &accessor) const;
-
-    virtual void fit (void) = 0;
-
-    virtual void forecast (const py::kwargs &kwargs) = 0;
-
-    virtual std::string get_formula (void) const = 0;
 };
 
 //
@@ -102,31 +102,32 @@ class GretlModel_NSE : public GretlModel
 protected:
     MODEL *model = NULL;    // libgretl MODEL struct
 
-    void *model_ptr (void) const override;
+    void *model_ptr_ (void) const override;
 
     template <GretlCmdIndex CI>
-    void regexp_extract (const std::string &formula, std::string &formula_left,
+    void regexp_extract (const std::string &formula,
+                         std::string &formula_left,
                          std::string &formula_right);    // for extracting formula from regular expression
 public:
     GretlModel_NSE (GretlCmdIndex ci, const py::kwargs &kwargs);
     virtual ~GretlModel_NSE (void);
+
+    void fit (void) override = 0;
+
+    std::string get_formula (void) const override = 0;
+
+    void forecast (const py::kwargs &kwargs) override;
 
     void restrict (const py::list &impose, const py::kwargs &kwargs);
 
     template <ModelDataIndex IDX>
     char *gretl_get_fit_or_resid (const std::string &name = "") const;
 
-    void forecast (const py::kwargs &kwargs) override;
-
     void test (const std::string &type, const py::kwargs &kwargs);
 
     void test (const std::string &type, const std::string &vars, const py::kwargs &kwargs);
 
     double adj_rsq (void) const;
-
-    void fit (void) override = 0;
-
-    std::string get_formula (void) const override = 0;
 };
 
 //
@@ -272,7 +273,7 @@ protected:
     const int order_;           // VAR order
     GRETL_VAR *model_ = NULL;   // libgretl GRETL_VAR struct
 
-    void *model_ptr (void) const override;
+    void *model_ptr_ (void) const override;
 
     template <GretlCmdIndex CI>
     void do_var_vecm_fit_ (const int coint_rank = 0);
@@ -287,19 +288,19 @@ public:
                     const py::kwargs &kwargs);
     virtual ~GretlModel_VAR (void);
 
-    char *save_uhat (int eqn, const std::string &name = "") const;
-
     void fit (void) override;
 
     void forecast (const py::kwargs &kwargs) override;
+
+    std::string get_formula (void) const override;
+
+    char *save_uhat (int eqn, const std::string &name = "") const;
 
     void test (const std::string &type, const py::kwargs &kwargs);
 
     void irf (int targ, int shock, double alpha = 0);
 
     void irf (const std::string &targ, const std::string &shock, double alpha = 0);
-
-    std::string get_formula (void) const override;
 };
 
 //
@@ -314,13 +315,13 @@ public:
     GretlModel_VAR_VECM (const std::string &ylist, const int order,
                          const int rank, const py::kwargs &kwargs);
 
-    void restrict (const py::list &impose, const py::kwargs &kwargs);
-
-    char *save_ec_term (const int nr, const std::string &name = "") const;
-
     void fit (void) override;
 
     void forecast (const py::kwargs &kwargs) override;
+
+    void restrict (const py::list &impose, const py::kwargs &kwargs);
+
+    char *save_ec_term (const int nr, const std::string &name = "") const;
 };
 
 //
@@ -337,22 +338,22 @@ private:
     std::string endogs_;                    // vector holding endogs
     equation_system *model_ = NULL;         // libgretl equation_system struct
 
-    void *model_ptr (void) const override;
+    void *model_ptr_ (void) const override;
 public:
     GretlModel_NME (const std::string &method, const py::kwargs &kwargs);
     virtual ~GretlModel_NME (void);
-
-    //char *save_uhat (int eqn, const std::string &name = "") const;
 
     void fit (void) override;
 
     void forecast (const py::kwargs &kwargs) override;
 
-    //void test (const std::string &type, const py::kwargs &kwargs);
-
     std::string get_formula (void) const override;
 
     void restrict (const py::list &impose, const py::kwargs &kwargs);
+
+    //void test (const std::string &type, const py::kwargs &kwargs);
+
+    //char *save_uhat (int eqn, const std::string &name = "") const;
 };
 
 //
@@ -369,7 +370,7 @@ private:
     std::string fcast_func_name_;   // function with role: UFUN_BUNDLE_FCAST
     GretlPackageRes res_;           // function results
 
-    void *model_ptr (void) const override;
+    void *model_ptr_ (void) const override;
 public:
     GretlModel_package (const std::string &name, const py::kwargs &kwargs);
 

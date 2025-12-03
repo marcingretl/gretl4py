@@ -148,7 +148,7 @@ py::object GretlModel::get_accessor (const std::string &accessor) const
 {
     auto res = gretl_generate_gretl_object(accessor.c_str(), err,
                                            model_obj_type,
-                                           GD->dset, model_ptr());
+                                           GD->dset, model_ptr_());
     if (err) {
         handle_gretl_error(err);
     }
@@ -157,7 +157,7 @@ py::object GretlModel::get_accessor (const std::string &accessor) const
 }
 
 template <typename T>
-void GretlModel::save_model (T *model)
+void GretlModel::save_model_ (T *model)
 {
     //
     // Here we construct a python dictionary to represent a gretl
@@ -306,7 +306,7 @@ void GretlModel::do_restrict_ (T *model, const py::list &impose,
 }
 
 template <typename T, GretlCmdIndex CI>
-void GretlModel::do_forecast (T *model, const py::kwargs &kwargs,
+void GretlModel::do_forecast_ (T *model, const py::kwargs &kwargs,
                               int variable_nr)
 {
     //
@@ -351,7 +351,7 @@ void GretlModel::do_forecast (T *model, const py::kwargs &kwargs,
     }
 
     // assemble options
-    unpack_forecast_kwargs(kwargs, conf);
+    unpack_forecast_kwargs_(kwargs, conf);
 
     // actual work
     if constexpr (std::is_same_v<T, MODEL>) {
@@ -365,7 +365,7 @@ void GretlModel::do_forecast (T *model, const py::kwargs &kwargs,
         handle_gretl_error(err);
     } else {
         fr->alpha = (100.0 - conf) / 100.0;
-        fr_to_dict(fr, res);
+        fr_to_dict_(fr, res);
         text_print_forecast(fr, GD->dset, opt, GP.prn_ptr());
     }
 
@@ -381,7 +381,7 @@ void GretlModel::do_forecast (T *model, const py::kwargs &kwargs,
     move_to_python_container<GretlModel, py::dict, py::list>(*this, std::move(res), "forecasts");
 }
 
-void GretlModel::unpack_forecast_kwargs (const py::kwargs &kwargs, int &pconf)
+void GretlModel::unpack_forecast_kwargs_ (const py::kwargs &kwargs, int &pconf)
 {
     int conf = 95;
 
@@ -432,7 +432,7 @@ void GretlModel::unpack_forecast_kwargs (const py::kwargs &kwargs, int &pconf)
     }
 }
 
-void GretlModel::fr_to_dict (FITRESID *fr, py::dict &fcdict)
+void GretlModel::fr_to_dict_ (FITRESID *fr, py::dict &fcdict)
 {
     gretl_matrix_ptr stats{nullptr};
     py::list labels;
@@ -560,14 +560,14 @@ GretlModel_NSE::~GretlModel_NSE (void)
     }
 }
 
-void *GretlModel_NSE::model_ptr (void) const
+void *GretlModel_NSE::model_ptr_ (void) const
 {
     return static_cast<void*>(model);
 }
 
 void GretlModel_NSE::forecast (const py::kwargs &kwargs)
 {
-    do_forecast<MODEL, static_cast<GretlCmdIndex>(0)>(model, kwargs);
+    do_forecast_<MODEL, static_cast<GretlCmdIndex>(0)>(model, kwargs);
 }
 
 void GretlModel_NSE::test (const std::string &type,
@@ -864,7 +864,7 @@ void GretlModel_NSE_arima::fit (void)
                   opt, GP.prn_ptr());
 
     // save model
-    save_model<MODEL>(model);
+    save_model_<MODEL>(model);
 }
 
 //
@@ -934,7 +934,7 @@ void GretlModel_NSE_Driver<F, CI>::fit (void)
     }
 
     // save results
-    save_model<MODEL>(model);
+    save_model_<MODEL>(model);
 }
 // explicit instantiations for all required (F, CI) pairs
 template class GretlModel_NSE_Driver<lsq, OLS>;
@@ -990,7 +990,7 @@ GretlModel_NSE_Driver_quantreg::GretlModel_NSE_Driver_quantreg
     tau_.append("}");
 }
 
-void GretlModel_NSE_Driver_quantreg::fit()
+void GretlModel_NSE_Driver_quantreg::fit (void)
 {
     // we check if we deal with clean model
     check_if_estimated_();
@@ -1006,7 +1006,7 @@ void GretlModel_NSE_Driver_quantreg::fit()
                              GD->dset, opt, GP.prn_ptr());
 
     // we save results
-    save_model<MODEL>(model);
+    save_model_<MODEL>(model);
 }
 
 //
@@ -1036,7 +1036,7 @@ GretlModel_NSE_Driver_dpanel::GretlModel_NSE_Driver_dpanel
     }
 }
 
-void GretlModel_NSE_Driver_dpanel::fit()
+void GretlModel_NSE_Driver_dpanel::fit (void)
 {
     gretl_list_ptr dpanel_list{nullptr};
     gretl_list_ptr laglist{nullptr};
@@ -1077,7 +1077,7 @@ void GretlModel_NSE_Driver_dpanel::fit()
                        opt, GP.prn_ptr());
 
     // we save results
-    save_model<MODEL>(model);
+    save_model_<MODEL>(model);
 }
 
 //
@@ -1098,7 +1098,7 @@ GretlModel_NSE_Driver_tobit::GretlModel_NSE_Driver_tobit
     }
 }
 
-void GretlModel_NSE_Driver_tobit::fit()
+void GretlModel_NSE_Driver_tobit::fit (void)
 {
     // we check if we deal with clean model
     check_if_estimated_();
@@ -1114,7 +1114,7 @@ void GretlModel_NSE_Driver_tobit::fit()
                          GD->dset, opt, GP.prn_ptr());
 
     // we save results
-    save_model<MODEL>(model);
+    save_model_<MODEL>(model);
 }
 
 //
@@ -1271,7 +1271,7 @@ void GretlModel_NSE_nl<CI>::fit (void)
     *model = nl_model(GD->dset, opt, GP.prn_ptr());
 
     // we save results
-    save_model<MODEL>(model);
+    save_model_<MODEL>(model);
 }
 
 template <GretlCmdIndex CI>
@@ -1393,7 +1393,7 @@ GretlModel_VAR::~GretlModel_VAR (void)
     }
 }
 
-void *GretlModel_VAR::model_ptr (void) const
+void *GretlModel_VAR::model_ptr_ (void) const
 {
     return static_cast<void*>(model_);
 }
@@ -1428,7 +1428,7 @@ void GretlModel_VAR::do_var_vecm_fit_ (const int coint_rank)
     }
 
     // save results
-    save_model<GRETL_VAR>(model_);
+    save_model_<GRETL_VAR>(model_);
 }
 
 // true VAR/VECM forecasting
@@ -1449,7 +1449,7 @@ void GretlModel_VAR::do_var_vecm_forecast_ (const py::kwargs &kwargs)
     for (int i=0; i<model_->neqns; i++) {
         if (variable_nr == -2 || variable_nr == i) {
             py::print("Equation ", i+1);
-            do_forecast<GRETL_VAR, CI>(model_, kwargs, i);
+            do_forecast_<GRETL_VAR, CI>(model_, kwargs, i);
         }
     }
 }
@@ -1506,7 +1506,7 @@ void GretlModel_VAR::test (const std::string &type, const py::kwargs &kwargs)
     }
 }
 
-std::string GretlModel_VAR::get_formula() const
+std::string GretlModel_VAR::get_formula (void) const
 {
     return vars_;
 }
@@ -1704,7 +1704,7 @@ GretlModel_NME::~GretlModel_NME (void)
     }
 }
 
-void *GretlModel_NME::model_ptr (void) const
+void *GretlModel_NME::model_ptr_ (void) const
 {
     return static_cast<void*>(model_);
 }
@@ -1772,7 +1772,7 @@ void GretlModel_NME::fit (void)
     }
 
     // we save model
-    save_model<equation_system>(model_);
+    save_model_<equation_system>(model_);
 }
 
 std::string GretlModel_NME::get_formula (void) const
@@ -1783,7 +1783,7 @@ std::string GretlModel_NME::get_formula (void) const
 
 void GretlModel_NME::forecast (const py::kwargs &kwargs)
 {
-    py::print("GretlModel_NME::forecast");
+    py::print("GretlModel_NME::forecast_");
 }
 
 void GretlModel_NME::restrict (const py::list &impose,
@@ -1833,7 +1833,7 @@ GretlModel_package::GretlModel_package (const std::string &name,
     fcast_func_name_ = GPKG_->get_function_with_role(UFUN_BUNDLE_FCAST);
 }
 
-void *GretlModel_package::model_ptr (void) const
+void *GretlModel_package::model_ptr_ (void) const
 {
     return static_cast<void*>(nullptr);
 }
