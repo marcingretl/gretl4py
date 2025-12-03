@@ -100,14 +100,14 @@ public:
 class GretlModel_NSE : public GretlModel
 {
 protected:
-    MODEL *model = NULL;    // libgretl MODEL struct
+    MODEL *model_ = NULL;    // libgretl MODEL struct
 
     void *model_ptr_ (void) const override;
 
     template <GretlCmdIndex CI>
-    void regexp_extract (const std::string &formula,
-                         std::string &formula_left,
-                         std::string &formula_right);    // for extracting formula from regular expression
+    void regexp_extract_ (const std::string &formula,
+                          std::string &formula_left,
+                          std::string &formula_right);    // for extracting formula from regular expression
 public:
     GretlModel_NSE (GretlCmdIndex ci, const py::kwargs &kwargs);
     virtual ~GretlModel_NSE (void);
