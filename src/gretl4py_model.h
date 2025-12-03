@@ -41,10 +41,10 @@ using GretlPackageRegistry = std::map<std::string, GretlPackagePtr>;
 class GretlModel
 {
 private:
-    static inline int next_model_id = 1;
+    static inline int next_model_id_ = 1;
 protected:
-    const int id;                       // model ID
-    const GretlObjType model_obj_type;  // libgretl's object type (in model context)
+    const int id_;                      // model ID
+    const GretlObjType model_obj_type_; // libgretl's object type (in model context)
     const GretlCmdIndex ci_;            // command index used
     GretlDatasetPtr GD;                 // dataset used
     GretlPrint GP = GretlPrint();       // printer (instance wide)

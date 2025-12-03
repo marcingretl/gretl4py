@@ -49,7 +49,7 @@ extern std::unordered_set<std::string> UserVars;
 //
 GretlModel::GretlModel (GretlObjType model_obj_type, GretlCmdIndex ci,
                         const py::kwargs &kwargs)
-                        : id(next_model_id++), model_obj_type(model_obj_type),
+                        : id_(next_model_id_++), model_obj_type_(model_obj_type),
                         ci_(ci), GD(DSET)
 {
     // we unpack kwargs
@@ -128,26 +128,26 @@ GretlModel::GretlModel (GretlObjType model_obj_type, GretlCmdIndex ci,
 GretlModel::~GretlModel (void)
 {
     if (this->GD) {
-        this->GD->linked_models_del(this->id);
+        this->GD->linked_models_del(this->id_);
     }
 }
 
 int GretlModel::get_id (void) const
 {
-    return id;
+    return id_;
 }
 
 void GretlModel::unlink_from_dataset (void) const
 {
     if (GD) {
-        GD->linked_models_del(id);
+        GD->linked_models_del(id_);
     }
 }
 
 py::object GretlModel::get_accessor (const std::string &accessor) const
 {
     auto res = gretl_generate_gretl_object(accessor.c_str(), err,
-                                           model_obj_type,
+                                           model_obj_type_,
                                            GD->dset, model_ptr_());
     if (err) {
         handle_gretl_error(err);
@@ -211,11 +211,11 @@ void GretlModel::save_model_ (T *model)
     GB_model->python_register(self);
 
     py::dict _ids;
-    _ids[py::cast("_model_id")] = id;
+    _ids[py::cast("_model_id")] = id_;
     py::setattr(self, "_ids", _ids);
 
     // we set some internal stuff
-    GD->linked_models_add(id);
+    GD->linked_models_add(id_);
     estimated_ = true;
 }
 
@@ -612,7 +612,7 @@ void GretlModel_NSE::test (const std::string &type,
             if (err) {
                 handle_gretl_error(err);
             }
-            set_as_last_model(model_, model_obj_type);
+            set_as_last_model(model_, model_obj_type_);
         }
         err = model_test_driver(order, GD->dset, opt, GP.prn_ptr());
     } else {
@@ -1527,7 +1527,7 @@ char *GretlModel_VAR::save_uhat (int eqn, const std::string &name) const
 
     // we set name
     if (name.empty()) {
-        uhat_name = std::string("m") + std::to_string(id)
+        uhat_name = std::string("m") + std::to_string(id_)
             + std::string("_uhat") + std::to_string(eqn);
     }
 
@@ -1663,7 +1663,7 @@ char *GretlModel_VAR_VECM::save_ec_term (const int nr,
 
     // we set name
     if (name.empty()) {
-        ec_term_name = std::string("m") + std::to_string(id)
+        ec_term_name = std::string("m") + std::to_string(id_)
             + std::string("_EC") + std::to_string(nr);
     }
 
