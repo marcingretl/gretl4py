@@ -46,14 +46,14 @@ protected:
     const int id_;                      // model ID
     const GretlObjType model_obj_type_; // libgretl's object type (in model context)
     const GretlCmdIndex ci_;            // command index used
-    GretlDatasetPtr GD;                 // dataset used
-    GretlPrint GP = GretlPrint();       // printer (instance wide)
-    gretl_list_ptr var_list{nullptr};   // libgretl list of variables
-    gretlopt opt = OPT_NONE;            // instance wide options (including tests and forecasts)
-    std::string summary;                // model summary to print on python side
-    GretlBundlePtr GB_model = nullptr;  // bundle with results
     bool estimated_ = false;            // if model already estimated
-    mutable int err = 0;
+    gretlopt opt = OPT_NONE;            // instance-wide options (including tests and forecasts)
+    mutable int err = 0;                // holds libgretl errors (instance-wide)
+    GretlDatasetPtr GD;                 // dataset used
+    gretl_list_ptr var_list{nullptr};   // libgretl list of variables
+    GretlBundlePtr GB_model = nullptr;  // bundle with results
+    GretlPrint GP = GretlPrint();       // printer (instance wide)
+    std::string summary;                // model summary to print on python side
 
     virtual void *model_ptr_ (void) const = 0;   // non-typed pointer to model
 
