@@ -114,7 +114,7 @@ GretlModel::GretlModel (GretlObjType model_obj_type, GretlCmdIndex ci,
                 continue;
             }
             else {
-                gretl_valid_long_opt(opt, ci_, key, item.second);
+                gretl_valid_long_opt(opt_, ci_, key, item.second);
             }
         }
     }
@@ -179,14 +179,14 @@ void GretlModel::save_model_ (T *model)
     if constexpr (std::is_same_v<T, MODEL>) {
         // we forse Pooled OLS heading if needed
         if (gretl_model_get_int(model, "pooled")) {
-            opt = static_cast<gretlopt>(opt & ~OPT_P);
+            opt_ = static_cast<gretlopt>(opt_ & ~OPT_P);
         }
-        err = printmodel(model, GD_->dset, opt, GP_.prn_ptr());
+        err = printmodel(model, GD_->dset, opt_, GP_.prn_ptr());
     } else if constexpr (std::is_same_v<T, GRETL_VAR>) {
-        err = gretl_VAR_print(model, GD_->dset, opt, GP_.prn_ptr());
+        err = gretl_VAR_print(model, GD_->dset, opt_, GP_.prn_ptr());
     } else if constexpr (std::is_same_v<T, equation_system>) {
         // FIXME: needed?
-        err = gretl_system_print(model, GD_->dset, opt, GP_.prn_ptr());
+        err = gretl_system_print(model, GD_->dset, opt_, GP_.prn_ptr());
     } else {
         throw std::runtime_error("unsupported model type");
     }
@@ -235,7 +235,7 @@ void GretlModel::do_restrict_ (T *model, const py::list &impose,
     int order = -1;
 
     // we set up options
-    unpack_kwargs_test(opt, "restrict", kwargs, order);
+    unpack_kwargs_test(opt_, "restrict", kwargs, order);
 
     // this code was rendered from library.c
     for (auto &item : impose) {
@@ -245,7 +245,7 @@ void GretlModel::do_restrict_ (T *model, const py::list &impose,
         if (my_rset == NULL) {
             if constexpr (std::is_same_v<T, MODEL>) {
                 my_rset = eqn_restriction_set_start(MapPyToCpp(item).to_string().c_str(),
-                                                    model, GD_->dset, opt);
+                                                    model, GD_->dset, opt_);
             } else if constexpr (std::is_same_v<T, GRETL_VAR>) {
                 my_rset = var_restriction_set_start(MapPyToCpp(item).to_string().c_str(),
                                                     model);
@@ -271,7 +271,7 @@ void GretlModel::do_restrict_ (T *model, const py::list &impose,
     if constexpr (std::is_same_v<T, GRETL_VAR>) {
         GRETL_VAR *vnew = NULL;
 
-        vnew = gretl_restricted_vecm(my_rset, GD_->dset, opt,
+        vnew = gretl_restricted_vecm(my_rset, GD_->dset, opt_,
                                      GP_.prn_ptr(), &err);
         if (vnew != NULL) {
             gretl_VAR_free(vnew);
@@ -365,12 +365,12 @@ void GretlModel::do_forecast_ (T *model, const py::kwargs &kwargs,
     } else {
         fr->alpha = (100.0 - conf) / 100.0;
         fr_to_dict_(fr, res);
-        text_print_forecast(fr, GD_->dset, opt, GP_.prn_ptr());
+        text_print_forecast(fr, GD_->dset, opt_, GP_.prn_ptr());
     }
     if (fr != NULL) {
         free_fit_resid(fr);
     }
-    if (!(opt & OPT_Q)) {
+    if (!(opt_ & OPT_Q)) {
         GP_.print();
     }
 
@@ -382,7 +382,7 @@ void GretlModel::unpack_forecast_kwargs_ (const py::kwargs &kwargs, int &pconf)
 {
     int conf = 95;
 
-    opt = OPT_NONE;
+    opt_ = OPT_NONE;
     for (auto &item : kwargs) {
         if (!is_pystr(item.first)) {
             throw std::invalid_argument("option key must be a string");
@@ -393,14 +393,14 @@ void GretlModel::unpack_forecast_kwargs_ (const py::kwargs &kwargs, int &pconf)
             if (!is_pybool(item.second)) {
                 throw std::invalid_argument("'quiet' value must be a boolean");
             } else if (item.second.cast<int>() != 0) {
-                SET_OPT(opt, OPT_Q);
+                SET_OPT(opt_, OPT_Q);
             }
         } else if (key == "plot") {
             if (!is_pybool(item.second)) {
                 // FIXME: in principle this could be a filename
                 throw std::invalid_argument("'plot' value must be a boolean");
             } else if (item.second.cast<int>() != 0) {
-                SET_OPT(opt, OPT_P);
+                SET_OPT(opt_, OPT_P);
             }
         } else if (key == "interval") {
             // we want a percentage value for forecast confidence intervals
@@ -577,27 +577,29 @@ void GretlModel_NSE::test (const std::string &type,
     int order = type == "corrgm" ? auto_acf_order(sample_size(GD_->dset)) : GD_->dset->pd;
 
     // we set up options
-    unpack_kwargs_test(opt, type, kwargs, order);
+    unpack_kwargs_test(opt_, type, kwargs, order);
 
     // we perform the test
     if (type == "bkw") {
-        err = bkw_test(model_, GD_->dset, opt, GP_.prn_ptr());
+        err = bkw_test(model_, GD_->dset, opt_, GP_.prn_ptr());
     } else if (type == "cusum") {
-        err = cusum_test(model_, GD_->dset, opt, GP_.prn_ptr());
+        err = cusum_test(model_, GD_->dset, opt_, GP_.prn_ptr());
     } else if (type == "leverage") {
-        err = leverage_test(model_, GD_->dset, opt, GP_.prn_ptr());
+        err = leverage_test(model_, GD_->dset,
+                            opt_, GP_.prn_ptr());
     } else if (type == "panspec") {
-        err = panel_specification_test(model_, GD_->dset, opt, GP_.prn_ptr());
+        err = panel_specification_test(model_, GD_->dset,
+                                       opt_, GP_.prn_ptr());
     } else if (type == "reset") {
-        err = reset_test(model_, GD_->dset, opt, GP_.prn_ptr());
+        err = reset_test(model_, GD_->dset, opt_, GP_.prn_ptr());
     } else if (type == "qlrtest") {
-        err = QLR_test(model_, GD_->dset, opt, GP_.prn_ptr());
+        err = QLR_test(model_, GD_->dset, opt_, GP_.prn_ptr());
     } else if (type == "vif") {
-        err = vif_test(model_, GD_->dset, opt, GP_.prn_ptr());
+        err = vif_test(model_, GD_->dset, opt_, GP_.prn_ptr());
     } else if (type == "corrgm") {
         err = corrgram(GD_->dset->v - 1, order,
                        model_->ci == ARMA ? arma_model_get_n_arma_coeffs(model_) : 0,
-                       GD_->dset, SET_OPT(opt, OPT_R), GP_.prn_ptr());
+                       GD_->dset, SET_OPT(opt_, OPT_R), GP_.prn_ptr());
     } else if (type == "arch" || type == "autocorr" ||
                type == "breusch-pagan" || type == "comfac" ||
                type == "logs" || type == "normality" ||
@@ -611,7 +613,8 @@ void GretlModel_NSE::test (const std::string &type,
             }
             set_as_last_model(model_, model_obj_type_);
         }
-        err = model_test_driver(order, GD_->dset, opt, GP_.prn_ptr());
+        err = model_test_driver(order, GD_->dset,
+                                opt_, GP_.prn_ptr());
     } else {
         throw std::invalid_argument(type + " is a dataset-based test");
     }
@@ -653,17 +656,21 @@ void GretlModel_NSE::test (const std::string &type, const std::string &vars,
     }
 
     // we set up options
-    unpack_kwargs_test(opt, type, kwargs, order);
+    unpack_kwargs_test(opt_, type, kwargs, order);
 
     // we perform the test
     if (type == "add") {
-        err = add_test(model_, ex_var.get(), GD_->dset, opt, GP_.prn_ptr());
+        err = add_test(model_, ex_var.get(), GD_->dset,
+                       opt_, GP_.prn_ptr());
     } else if (type == "chow") {
-        err = chow_test_driver(vars.c_str(), model_, GD_->dset, opt, GP_.prn_ptr());
+        err = chow_test_driver(vars.c_str(), model_, GD_->dset,
+                               opt_, GP_.prn_ptr());
     } else if (type == "coeffsum") {
-        err = gretl_sum_test(ex_var.get(), model_, GD_->dset, opt, GP_.prn_ptr());
+        err = gretl_sum_test(ex_var.get(), model_, GD_->dset,
+                             opt_, GP_.prn_ptr());
     } else if (type == "omit") {
-        err = omit_test(model_, ex_var.get(), GD_->dset, opt, GP_.prn_ptr());
+        err = omit_test(model_, ex_var.get(), GD_->dset,
+                        opt_, GP_.prn_ptr());
     } else {
         throw std::invalid_argument(type + " is a dataset-based test");
     }
@@ -859,7 +866,7 @@ void GretlModel_NSE_arima::fit (void)
 
     // do the job
     *model_ = arma(var_list_.get(), NULL, GD_->dset,
-                   opt, GP_.prn_ptr());
+                   opt_, GP_.prn_ptr());
 
     // save model
     save_model_<MODEL>(model_);
@@ -910,25 +917,26 @@ void GretlModel_NSE_Driver<F, CI>::fit (void)
     if constexpr (use_ldco_sig(CI)) {
         // fallback to Pooled OLS if needed
         if (CI == OLS && GD_->is_panel()) {
-            SET_OPT(opt, (OPT_P | OPT_L));
+            SET_OPT(opt_, (OPT_P | OPT_L));
             *model_ = panel_model(var_list_.get(), GD_->dset,
-                                  opt, GP_.prn_ptr());
+                                  opt_, GP_.prn_ptr());
         } else {
-            *model_ = F(var_list_.get(), GD_->dset, CI, opt);
+            *model_ = F(var_list_.get(), GD_->dset, CI, opt_);
         }
     } else if constexpr (use_ldcop_sig(CI)) {
         *model_ = F(var_list_.get(), GD_->dset,
-                    static_cast<int>(CI), opt, GP_.prn_ptr());
+                    static_cast<int>(CI), opt_, GP_.prn_ptr());
     } else if constexpr (use_ldo_sig(CI)) {
-        *model_ = F(var_list_.get(), GD_->dset, opt);
+        *model_ = F(var_list_.get(), GD_->dset, opt_);
     } else if constexpr (use_ldop_sig(CI)) {
-        *model_ = F(var_list_.get(), GD_->dset, opt, GP_.prn_ptr());
+        *model_ = F(var_list_.get(), GD_->dset,
+                    opt_, GP_.prn_ptr());
     } else if constexpr (use_lcdop_sig(CI)) {
         *model_ = F(var_list_.get(), static_cast<int>(CI),
-                    GD_->dset, opt, GP_.prn_ptr());
+                    GD_->dset, opt_, GP_.prn_ptr());
     } else if constexpr (CI == MIDASREG) {
         *model_ = F(var_list_.get(), formula_right.c_str(),
-                    GD_->dset, opt, GP_.prn_ptr());
+                    GD_->dset, opt_, GP_.prn_ptr());
     }
 
     // save results
@@ -1001,7 +1009,7 @@ void GretlModel_NSE_Driver_quantreg::fit (void)
 
     // we do the job
     *model_ = quantreg_driver(tau_.c_str(), var_list_.get(),
-                              GD_->dset, opt, GP_.prn_ptr());
+                              GD_->dset, opt_, GP_.prn_ptr());
 
     // we save results
     save_model_<MODEL>(model_);
@@ -1072,7 +1080,7 @@ void GretlModel_NSE_Driver_dpanel::fit (void)
     }
     *model_ = dpd_model(dpanel_list.get(), laglist.get(),
                         formula_right.c_str(), GD_->dset,
-                        opt, GP_.prn_ptr());
+                        opt_, GP_.prn_ptr());
 
     // we save results
     save_model_<MODEL>(model_);
@@ -1109,7 +1117,7 @@ void GretlModel_NSE_Driver_tobit::fit (void)
 
     // we do the job
     *model_ = tobit_model(var_list_.get(), llimit_, rlimit_,
-                          GD_->dset, opt, GP_.prn_ptr());
+                          GD_->dset, opt_, GP_.prn_ptr());
 
     // we save results
     save_model_<MODEL>(model_);
@@ -1266,7 +1274,7 @@ void GretlModel_NSE_nl<CI>::fit (void)
     }
 
     // we do the job
-    *model_ = nl_model(GD_->dset, opt, GP_.prn_ptr());
+    *model_ = nl_model(GD_->dset, opt_, GP_.prn_ptr());
 
     // we save results
     save_model_<MODEL>(model_);
@@ -1416,10 +1424,10 @@ void GretlModel_VAR::do_var_vecm_fit_ (const int coint_rank)
     // we estimate a model
     if constexpr (CI == VAR) {
         model_ = gretl_VAR(order_, NULL, var_list_.get(),
-                           GD_->dset, opt, GP_.prn_ptr(), &err);
+                           GD_->dset, opt_, GP_.prn_ptr(), &err);
     } else if constexpr (CI == VECM) {
         model_ = gretl_VECM(order_, coint_rank, var_list_.get(),
-                            GD_->dset, opt, GP_.prn_ptr(), &err);
+                            GD_->dset, opt_, GP_.prn_ptr(), &err);
     }
     if (err) {
         handle_gretl_error(err);
@@ -1473,17 +1481,17 @@ void GretlModel_VAR::test (const std::string &type, const py::kwargs &kwargs)
     }
 
     // we set up options
-    unpack_kwargs_test(opt, type, kwargs, order);
+    unpack_kwargs_test(opt_, type, kwargs, order);
 
     // we perform test
     if (type == "autocorr") {
         err = gretl_VAR_autocorrelation_test(model_, order, GD_->dset,
-                                             opt, GP_.prn_ptr());
+                                             opt_, GP_.prn_ptr());
     } else if (type == "arch") {
         err = gretl_VAR_arch_test(model_, order, GD_->dset,
-                                  opt, GP_.prn_ptr());
+                                  opt_, GP_.prn_ptr());
     } else if (type == "normality") {
-        err = gretl_VAR_normality_test(model_, opt, GP_.prn_ptr());
+        err = gretl_VAR_normality_test(model_, opt_, GP_.prn_ptr());
     } else {
         throw std::invalid_argument(type + ": unsupported test");
     }
@@ -1736,7 +1744,7 @@ void GretlModel_NME::fit (void)
 
     // system definition
     model_ = equation_system_start(std::string("method=").append(method_).data(),
-                                   NULL, opt, &err);
+                                   NULL, opt_, &err);
     if (err) {
         handle_gretl_error(err);
     }
@@ -1766,7 +1774,7 @@ void GretlModel_NME::fit (void)
 
     // do the job
     err = equation_system_finalize(model_, GD_->dset,
-                                   opt, GP_.prn_ptr());
+                                   opt_, GP_.prn_ptr());
     if (err) {
         handle_gretl_error(err);
     }

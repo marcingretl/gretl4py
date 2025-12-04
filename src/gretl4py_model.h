@@ -47,7 +47,7 @@ protected:
     const GretlObjType model_obj_type_; // libgretl's object type (in model context)
     const GretlCmdIndex ci_;            // command index used
     bool estimated_ = false;            // if model already estimated
-    gretlopt opt = OPT_NONE;            // instance-wide options (including tests and forecasts)
+    gretlopt opt_ = OPT_NONE;           // instance-wide options (including tests and forecasts)
     mutable int err = 0;                // holds libgretl errors (instance-wide)
     GretlDatasetPtr GD_;                // dataset used
     gretl_list_ptr var_list_{nullptr};  // libgretl list of variables
