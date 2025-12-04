@@ -138,7 +138,6 @@ class GretlModel_NSE_arima : public GretlModel_NSE
 {
 private:
     const std::string y_;   // name of y process
-    const py::tuple tup_;   // basic (P,D,Q) definition
     int y_number_;          // number of y process in the context of GD
     int seasonal_ = 0;      // number of seasonal elements
     int exogenous_ = 0;     // number of exogenous variables

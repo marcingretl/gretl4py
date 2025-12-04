@@ -768,7 +768,7 @@ GretlModel_NSE_arima::GretlModel_NSE_arima (const std::string &y,
                                             const py::tuple &tup,
                                             const py::kwargs &kwargs)
                                             : GretlModel_NSE(ARMA, kwargs),
-                                            y_(y), tup_(tup)
+                                            y_(y)
 {
     // lambda for ARIMA order
     auto get_arima_order = [](const py::tuple &tup, int &p, int &d, int &q)
