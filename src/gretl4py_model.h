@@ -49,9 +49,9 @@ protected:
     bool estimated_ = false;            // if model already estimated
     gretlopt opt = OPT_NONE;            // instance-wide options (including tests and forecasts)
     mutable int err = 0;                // holds libgretl errors (instance-wide)
-    GretlDatasetPtr GD;                 // dataset used
-    gretl_list_ptr var_list{nullptr};   // libgretl list of variables
-    GretlBundlePtr GB_model = nullptr;  // bundle with results
+    GretlDatasetPtr GD_;                // dataset used
+    gretl_list_ptr var_list_{nullptr};  // libgretl list of variables
+    GretlBundlePtr GB_model_ = nullptr; // bundle with results
     GretlPrint GP_ = GretlPrint();      // printer (instance wide)
     std::string summary_;               // model summary to print on python side
 
