@@ -48,7 +48,7 @@ protected:
     const GretlCmdIndex ci_;            // command index used
     bool estimated_ = false;            // if model already estimated
     gretlopt opt_ = OPT_NONE;           // instance-wide options (including tests and forecasts)
-    mutable int err = 0;                // holds libgretl errors (instance-wide)
+    mutable int err_ = 0;               // holds libgretl errors (instance-wide)
     GretlDatasetPtr GD_;                // dataset used
     gretl_list_ptr var_list_{nullptr};  // libgretl list of variables
     GretlBundlePtr GB_model_ = nullptr; // bundle with results
