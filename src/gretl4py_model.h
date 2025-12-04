@@ -52,8 +52,8 @@ protected:
     GretlDatasetPtr GD;                 // dataset used
     gretl_list_ptr var_list{nullptr};   // libgretl list of variables
     GretlBundlePtr GB_model = nullptr;  // bundle with results
-    GretlPrint GP = GretlPrint();       // printer (instance wide)
-    std::string summary;                // model summary to print on python side
+    GretlPrint GP_ = GretlPrint();      // printer (instance wide)
+    std::string summary_;               // model summary to print on python side
 
     virtual void *model_ptr_ (void) const = 0;   // non-typed pointer to model
 
