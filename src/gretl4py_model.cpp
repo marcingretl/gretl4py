@@ -521,6 +521,40 @@ void GretlModel::check_if_estimated_ (void) const
     }
 }
 
+template <typename T>
+char *GretlModel::do_save_uhat_ (T *model, int eqn,
+                                 const std::string &name) const
+{
+    //
+    // here take residuals from multivariate model
+    // and add it to dataset
+    // Note: eqn must be 1-based (not 0-based)
+    //
+    std::string uhat_name;
+    gretl_double_ptr uhat{nullptr};
+
+    // we retrive uhat
+    if constexpr (std::is_same_v<T, GRETL_VAR>) {
+        uhat.reset(gretl_VAR_get_resid_series(model, eqn-1, &err_));
+    } else if constexpr (std::is_same_v<T, equation_system>) {
+        uhat.reset(system_get_resid_series(model, eqn-1, GD_->dset, &err_));
+    } else {
+        throw std::runtime_error("do_save_uhat_: unknown model type");
+    }
+    if (err_) handle_gretl_error(err_);
+
+    // we set name
+    if (name.empty()) {
+        uhat_name = std::string("m") + std::to_string(id_)
+            + std::string("_uhat") + std::to_string(eqn);
+    }
+
+    // actual work
+    return GD_->add_series(std::move(uhat),
+                           name.empty() ? uhat_name : name,
+                           GD_->dset->n);
+}
+
 //////////////////////////////////////////////////
 // single equation models
 //////////////////////////////////////////////////
@@ -1492,26 +1526,7 @@ std::string GretlModel_VAR::get_formula (void) const
 
 char *GretlModel_VAR::save_uhat (int eqn, const std::string &name) const
 {
-    //
-    // here we add residuals to dataset
-    // Note: eqn must be 1-based (not 0-based)
-    //
-    std::string uhat_name;
-
-    // we retrive uhat
-    gretl_double_ptr uhat(gretl_VAR_get_resid_series(model_, eqn-1, &err_));
-    if (err_) handle_gretl_error(err_);
-
-    // we set name
-    if (name.empty()) {
-        uhat_name = std::string("m") + std::to_string(id_)
-            + std::string("_uhat") + std::to_string(eqn);
-    }
-
-    // actual work
-    return GD_->add_series(std::move(uhat),
-                           name.empty() ? uhat_name : name,
-                           GD_->dset->n);
+    return do_save_uhat_<GRETL_VAR>(model_, eqn, name);
 }
 
 int GretlModel_VAR::find_variable_nr_ (const std::string &variable_name)
@@ -1755,6 +1770,11 @@ void GretlModel_NME::restrict (const py::list &impose,
                                const py::kwargs &kwargs)
 {
     do_restrict_<equation_system>(model_, impose, kwargs);
+}
+
+char *GretlModel_NME::save_uhat (int eqn, const std::string &name) const
+{
+    return do_save_uhat_<equation_system>(model_, eqn, name);
 }
 
 //

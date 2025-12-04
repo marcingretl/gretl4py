@@ -16,6 +16,9 @@ EQNS = ['C 0 P P(-1) W', 'I 0 P P(-1) K1', 'Wp 0 X X(-1) A']
 # OLS
 system_ols = gretl.system(method="ols", equations=EQNS, endogs="C I Wp P W X K", identities=IDNS).fit()
 print(system_ols)
+# add uhat to dataset
+uhat_name = system_ols.save_uhat(eqn=1)
+print(f'residuals added as: {uhat_name}')
 
 # TSLS
 system_tsls = gretl.system(method="tsls", equations=EQNS, endogs="C I Wp P W X K", identities=IDNS).fit()

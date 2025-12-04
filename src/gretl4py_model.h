@@ -61,16 +61,22 @@ protected:
     void save_model_ (T *model);
 
     template <typename T>
-    void do_restrict_ (T *model, const py::list &impose, const py::kwargs &kwargs);
+    void do_restrict_ (T *model, const py::list &impose,
+                       const py::kwargs &kwargs);
 
     template <typename T, GretlCmdIndex CI>
-    void do_forecast_ (T *model, const py::kwargs &kwargs, int variable_nr = 0);
+    void do_forecast_ (T *model, const py::kwargs &kwargs,
+                       int variable_nr = 0);
 
-    void unpack_forecast_kwargs_ (const py::kwargs &kwargs, int &pconf);
+    void unpack_forecast_kwargs_ (const py::kwargs &kwargs,
+                                  int &pconf);
 
     void fr_to_dict_ (FITRESID *fr, py::dict &fcdict);
 
     void check_if_estimated_ (void) const;
+
+    template <typename T>
+    char *do_save_uhat_ (T *model, int eqn, const std::string &name) const;
 public:
     explicit GretlModel (GretlObjType model_obj_type, GretlCmdIndex ci,
                          const py::kwargs &kwargs);
@@ -350,9 +356,7 @@ public:
 
     void restrict (const py::list &impose, const py::kwargs &kwargs);
 
-    //void test (const std::string &type, const py::kwargs &kwargs);
-
-    //char *save_uhat (int eqn, const std::string &name = "") const;
+    char *save_uhat (int eqn, const std::string &name = "") const;
 };
 
 //
