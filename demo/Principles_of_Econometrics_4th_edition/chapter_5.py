@@ -26,6 +26,7 @@ print("\n5.1. Introduction")
 print("Table 5.1 Observations on Monthly Sales, Price, and Advertising in Big Andy's Burger Barn")
 andy.head()
 andy.tail(3)
+gretl.summary(simple=True)
 
 ############################################
 # 5.2. Estimating the Parameters of the Multiple Regression Model
@@ -99,8 +100,8 @@ print(f't = {t:.3f}, pvalue = {pval:.3f}')
 ############################################
 print("\n5.6. Polynomial Equations")
 print("\n5.6.2. Extending the Model for Hamburger Barn Sales")
-andy.new_series(name='advertsq', value='advert^2')
-msq = gretl.ols(formula='sales ~ const + price + advert + advertsq').fit()      # (5.24)
+andy.square('advert')
+msq = gretl.ols(formula='sales ~ const + price + advert + sq_advert').fit()      # (5.24)
 print(msq)
 
 ############################################
@@ -118,6 +119,6 @@ print(PZ_2)
 
 print("\n5.7.1. Log-Linear Model")
 cps4s.set_as_default()
-cps4s.new_series('educexper = educ * exper')
-CPS = gretl.ols('ln(wage) const educ exper educexper', simple=0).fit()          # (5.30)
+cps4s.square('educ exper', cross=True)
+CPS = gretl.ols('ln(wage) const educ exper educ_exper', simple=0).fit()          # (5.30)
 print(CPS)
