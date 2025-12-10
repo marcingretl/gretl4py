@@ -7,4 +7,4 @@ TODOS:
 
 2. update doc
 
-3. consolidate all trimmer-s into one internal function
+3. refactor printing and smpl apparatus
