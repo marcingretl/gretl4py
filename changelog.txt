@@ -1,4 +1,4 @@
-version 0.32:
+version 0.4:
     - add GretlaDataset::dummyfi() method
     - add '--unit' and '--time' options to GretlaDataset::sample()
     - Pooled OLS tweaks
