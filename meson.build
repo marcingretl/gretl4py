@@ -217,4 +217,9 @@ if version_cmd.returncode() != 0
 endif
 
 version_str = version_cmd.stdout().strip()
+configure_file(
+    input: 'gretl4py_version.h.in',
+    output: 'gretl4py_version.h',
+    configuration: { 'VERSION': '"' + version_str + '"' }
+)
 message('Building gretl4py version: ' + version_str)
