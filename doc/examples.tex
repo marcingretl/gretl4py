@@ -106,7 +106,7 @@ d = gretl.series2dict(s)
 \generaldesc{See \texttt{`examples/data\_management/series2dict.py'} for details.}
 
 
-\gretlfpycmd{get\_data()}\index{gretl\_data\_path()}
+\gretlfpycmd{get\_data()}
 \estdesc{To load the contents of an existing \texttt{gdt},
 	\texttt{gdtb}, \texttt{csv}, \texttt{dta}, \texttt{wf1},
 	or spreadsheet (\texttt{xls}, \texttt{xlsx}, and \texttt{ods})
@@ -114,33 +114,34 @@ d = gretl.series2dict(s)
 \begin{lstlisting}[style=pythonstyle]
 import gretl
 
-d = gretl.get_data(gretl.gretl_data_path('misc/longley.gdt'))
+data_dir = gretl.about()['built_in_strings']['gretldir'] + '/data/'
+d = gretl.get_data(data_dir + 'longley.csv')
 \end{lstlisting}
 
-\subsection{Helper functions}\label{sec:helper_functions_data_python_examples}
 
-\gretlfpycmd{gretl\_data\_path()}
-\estdesc{To obtain the full path to a bundled \texttt{gdt}
-  or \texttt{gdtb} file, the following minimal code snippet
-  can be used \citep[see][for details]{gretl_manual}:}
-\begin{lstlisting}[style=pythonstyle]
-import gretl
+%\subsection{Helper functions}\label{sec:helper_functions_data_python_examples}
+%\gretlfpycmd{gretl\_data\_path()}
+%\estdesc{To obtain the full path to a bundled \texttt{gdt}
+%  or \texttt{gdtb} file, the following minimal code snippet
+%  can be used \citep[see][for details]{gretl_manual}:}
+%\begin{lstlisting}[style=pythonstyle]
+%import gretl
+%
+%p = gretl.gretl_data_path('misc/longley.gdt')
+%\end{lstlisting}
 
-p = gretl.gretl_data_path('misc/longley.gdt')
-\end{lstlisting}
-
-\gretlfpycmd{printdata()}
-\estdesc{To print the contents of the currently registered
-  global dataset in \gretlpy, the following minimal code
-  snippet can be used:}
-\begin{lstlisting}[style=pythonstyle]
-import gretl
-
-gretl.attach_gretl_data(
-	gretl.gretl_data_path('misc/longley.gdt'))
-gretl.print_data()
-\end{lstlisting}
-\generaldesc{See \texttt{`examples/helper\_functions/print\_data.py'} for details.}
+%\gretlfpycmd{printdata()}
+%\estdesc{To print the contents of the currently registered
+%  global dataset in \gretlpy, the following minimal code
+%  snippet can be used:}
+%\begin{lstlisting}[style=pythonstyle]
+%import gretl
+%
+%gretl.attach_gretl_data(
+%	gretl.gretl_data_path('misc/longley.gdt'))
+%gretl.print_data()
+%\end{lstlisting}
+%\generaldesc{See \texttt{`examples/helper\_functions/print\_data.py'} for details.}
 
 %\gretlfpycmd{sample()}
 %\estdesc{To modify the sample range of the currently
@@ -160,23 +161,24 @@ gretl.print_data()
 \subsection{Estimators}\label{sec:estimators_python_examples}
 
 \gretlfpycmd{ar()}%
-\index{attach\_gretl\_data()}\index{gretl\_data\_path()}
+\index{get\_data()}
 \estdesc{To perform the generalized Cochrane-Orcutt iterative
-  procedure, the following minimal code snippet can be used.
-  The corresponding results are presented in Figure~\ref{fig:ar_results}.}
+	procedure, the following minimal code snippet can be used.
+	The corresponding results are presented in Figure~\ref{fig:ar_results}.}
 \begin{lstlisting}[style=pythonstyle]
 import gretl
 
-gretl.attach_gretl_data(
-	gretl.gretl_data_path('misc/longley.gdt'))
+data_dir = gretl.about()['built_in_strings']['gretldir'] + '/data/'
+d = gretl.get_data(data_dir + 'longley.csv')
 m = gretl.ar('1 2 ; employ const prdefl gnp armfrc').fit()
+print(m)
 \end{lstlisting}
 \generaldesc{See \texttt{`examples/estimators/ar.py'} for details.}
 
 \examplefig{ar}{\label{fig:ar_results}}
 
 \gretlfpycmd{ar1()}%
-\index{attach\_gretl\_data()}\index{gretl\_data\_path()}
+\index{get\_data()}
 \estdesc{To perform feasible GLS estimates for a model in
   which the error term is assumed to follow a first-order
   autoregressive process, the following minimal code snippet
@@ -185,97 +187,101 @@ m = gretl.ar('1 2 ; employ const prdefl gnp armfrc').fit()
 \begin{lstlisting}[style=pythonstyle]
 import gretl
 
-gretl.attach_gretl_data(
-	gretl.gretl_data_path('misc/longley.gdt'))
+data_dir = gretl.about()['built_in_strings']['gretldir'] + '/data/'
+d = gretl.get_data(data_dir + 'longley.csv')
 m = gretl.ar1('employ ~ const + prdefl + gnp').fit()
+print(m)
 \end{lstlisting}
 \generaldesc{See \texttt{`examples/estimators/ar1.py'} for details.}
 
 \examplefig{ar1}{\label{fig:ar1_results}}
 
 \gretlfpycmd{arima()}%
-\index{attach\_gretl\_data()}\index{gretl\_data\_path()}
-\estdesc{To perform $ARIMA(1,1,1)$ estimation, the
-  following minimal code snippet can be used:}
+\index{get\_data()}
+\estdesc{To perform $ARIMA(1,1,1)$ estimation, the following
+	minimal code snippet can be used:}
 \begin{lstlisting}[style=pythonstyle]
 import gretl
 
-gretl.attach_gretl_data(
-	gretl.gretl_data_path('misc/bjg.gdt'))
+data_dir = gretl.about()['built_in_strings']['gretldir'] + '/data/'
+d = gretl.get_data(data_dir + 'bjg.gdt')
 m = gretl.arima(y='lg', order=(1,1,1)).fit()
+print(m)
 \end{lstlisting}
 \generaldesc{See \texttt{`examples/estimators/arima.py'} for details.}
 
 \examplefig{arima}{\label{fig:arima_results}}
 
 \gretlfpycmd{biprobit()}%
-\index{attach\_gretl\_data()}\index{gretl\_data\_path()}
+\index{get\_data()}
 \estdesc{To perform bivariate probit model estimation,
   the following minimal code snippet can be used. The
   corresponding results are presented in Figure~\ref{fig:biprobit_results}.}
 \begin{lstlisting}[style=pythonstyle]
 import gretl
 
-gretl.attach_gretl_data(
-	gretl.gretl_data_path('greene/greene25_1.gdt'))
-m = gretl.biprobit('anydrg cardhldr const age avgexp ;
-	const age income ownrent selfempl').fit()
+data_dir = gretl.about()['built_in_strings']['gretldir'] + '/data/'
+d = gretl.get_data(data_dir + 'greene25_1.gdt')
+m = gretl.biprobit('anydrg cardhldr const age avgexp ; const age income ownrent selfempl').fit()
+print(m)
 \end{lstlisting}
 \generaldesc{See \texttt{`examples/estimators/biprobit.py'} for details.}
 
 \examplefig{biprobit}{\label{fig:biprobit_results}}
 
 \gretlfpycmd{duration()}%
-\index{attach\_gretl\_data()}\index{gretl\_data\_path()}
+\index{get\_data()}
 \estdesc{To perform duration model estimation, the following
   minimal code snippet can be used. The corresponding
   results are presented in Figure~\ref{fig:duration_results}.}
 \begin{lstlisting}[style=pythonstyle]
 import gretl
 
-gretl.attach_gretl_data(
-	gretl.gretl_data_path('misc/kennan.gdt'))
+data_dir = gretl.about()['built_in_strings']['gretldir'] + '/data/'
+d = gretl.get_data(data_dir + 'kennan.gdt')
 m = gretl.duration('Ti ~ const + Prod').fit()
+print(m)
 \end{lstlisting}
 \generaldesc{See \texttt{`examples/estimators/duration.py'} for details.}
 
 \examplefig{duration}{\label{fig:duration_results}}
 
 \gretlfpycmd{garch()}%
-\index{attach\_gretl\_data()}\index{gretl\_data\_path()}
+\index{get\_data()}
 \estdesc{To perform $GARCH(1,1)$ model estimation, the
   following minimal code snippet can be used. The corresponding
   results are presented in Figure~\ref{fig:garch_results}.}
 \begin{lstlisting}[style=pythonstyle]
 import gretl
 
-gretl.attach_gretl_data(
-	gretl.gretl_data_path('misc/b-g.gdt'))
+data_dir = gretl.about()['built_in_strings']['gretldir'] + '/data/'
+d = gretl.get_data(data_dir + 'b-g.gdt')
 m = gretl.garch('1 1 ; Y').fit()
+print(m)
 \end{lstlisting}
 \generaldesc{See \texttt{`examples/estimators/garch.py'} for details.}
 
 \examplefig{garch}{\label{fig:garch_results}}
 
 \gretlfpycmd{heckit()}%
-\index{attach\_gretl\_data()}\index{gretl\_data\_path()}
+\index{get\_data()}
 \estdesc{To perform Heckman-type selection model estimation,
   the following minimal code snippet can be used. The corresponding
   results are presented in Figure~\ref{fig:heckit_results}.}
 \begin{lstlisting}[style=pythonstyle]
 import gretl
 
-gretl.attach_gretl_data(
-	gretl.gretl_data_path('misc/mroz87.gdt'))
-m = gretl.heckit('WW const AX WE CIT ;
-	LFP const WA FAMINC WE').fit()
+data_dir = gretl.about()['built_in_strings']['gretldir'] + '/data/'
+d = gretl.get_data(data_dir + 'mroz87.gdt')
+m = gretl.heckit('WW const AX WE CIT ; LFP const WA FAMINC WE').fit()
+print(m)
 \end{lstlisting}
 \generaldesc{See \texttt{`examples/estimators/heckit.py'} for details.}
 
 \examplefig{heckit}{\label{fig:heckit_results}}
 
 \gretlfpycmd{lad()}%
-\index{attach\_gretl\_data()}\index{gretl\_data\_path()}
+\index{get\_data()}
 \estdesc{To calculate a regression that minimizes the sum
   of the absolute deviations of the observed from the fitted
   values of the dependent variable, the following minimal code
@@ -284,48 +290,51 @@ m = gretl.heckit('WW const AX WE CIT ;
 \begin{lstlisting}[style=pythonstyle]
 import gretl
 
-gretl.attach_gretl_data(
-	gretl.gretl_data_path('misc/longley.gdt'))
+data_dir = gretl.about()['built_in_strings']['gretldir'] + '/data/'
+d = gretl.get_data(data_dir + 'longley.csv')
 m = gretl.lad('employ ~ const + prdefl + gnp').fit()
+print(m)
 \end{lstlisting}
 \generaldesc{See \texttt{`examples/estimators/lad.py'} for details.}
 
 \examplefig{lad}{\label{fig:lad_results}}
 
 \gretlfpycmd{logistic()}%
-\index{attach\_gretl\_data()}\index{gretl\_data\_path()}
+\index{get\_data()}
 \estdesc{To perform Logistic regression estimation, the
   following minimal code snippet can be used. The corresponding
   results are presented in Figure~\ref{fig:logistic_results}.}
 \begin{lstlisting}[style=pythonstyle]
 import gretl
 
-gretl.attach_gretl_data(
-	gretl.gretl_data_path('misc/longley.gdt'))
+data_dir = gretl.about()['built_in_strings']['gretldir'] + '/data/'
+d = gretl.get_data(data_dir + 'longley.csv')
 m = gretl.logistic('employ ~ const + prdefl + gnp').fit()
+print(m)
 \end{lstlisting}
 \generaldesc{See \texttt{`examples/estimators/logistic.py'} for details.}
 
 \examplefig{logistic}{\label{fig:logistic_results}}
 
 \gretlfpycmd{logit()}%
-\index{attach\_gretl\_data()}\index{gretl\_data\_path()}
+\index{get\_data()}
 \estdesc{To perform logit regression estimation, the following
   minimal code snippet can be used. The corresponding
   results are presented in Figure~\ref{fig:logit_results}.}
 \begin{lstlisting}[style=pythonstyle]
 import gretl
 
-gretl.attach_gretl_data(
-	gretl.gretl_data_path('greene/greene22_2.gdt'))
+data_dir = gretl.about()['built_in_strings']['gretldir'] + '/data/'
+d = gretl.get_data(data_dir + 'greene22_2.gdt')
 m = gretl.logit('Y ~ const + Z1 + Z2').fit()
+print(m)
 \end{lstlisting}
 \generaldesc{See \texttt{`examples/estimators/logit.py'} for details.}
 
 \examplefig{logit}{\label{fig:logit_results}}
 
 \gretlfpycmd{mpols()}%
-\index{attach\_gretl\_data()}\index{gretl\_data\_path()}
+\index{get\_data()}
 \estdesc{To perform multiple precision floating-point
   arithmetic OLS estimation, the following minimal code
   snippet can be used. The corresponding results are presented
@@ -333,96 +342,102 @@ m = gretl.logit('Y ~ const + Z1 + Z2').fit()
 \begin{lstlisting}[style=pythonstyle]
 import gretl
 
-gretl.attach_gretl_data(
-	gretl.gretl_data_path('misc/longley.gdt'))
+data_dir = gretl.about()['built_in_strings']['gretldir'] + '/data/'
+d = gretl.get_data(data_dir + 'longley.csv')
 m = gretl.mpols('employ ~ const + prdefl + gnp').fit()
+print(m)
 \end{lstlisting}
 \generaldesc{See \texttt{`examples/estimators/mpols.py'} for details.}
 
 \examplefig{mpols}{\label{fig:mpols_results}}
 
 \gretlfpycmd{negbin()}%
-\index{attach\_gretl\_data()}\index{gretl\_data\_path()}
+\index{get\_data()}
 \estdesc{To perform Negative Binomial model estimation,
   the following minimal code snippet can be used. The
   corresponding results are presented in Figure~\ref{fig:negbin_results}.}
 \begin{lstlisting}[style=pythonstyle]
 import gretl
 
-gretl.attach_gretl_data(
-	gretl.gretl_data_path('misc/rac3d.gdt'))
+data_dir = gretl.about()['built_in_strings']['gretldir'] + '/data/'
+d = gretl.get_data(data_dir + 'rac3d.gdt')
 m = gretl.negbin('DVISITS ~ const + SEX + AGE').fit()
+print(m)
 \end{lstlisting}
 \generaldesc{See \texttt{`examples/estimators/negbin.py'} for details.}
 
 \examplefig{negbin}{\label{fig:negbin_results}}
 
 \gretlfpycmd{ols()}%
-\index{attach\_gretl\_data()}\index{gretl\_data\_path()}
+\index{get\_data()}
 \estdesc{To perform OLS estimation, the following minimal
   code snippet can be used. The corresponding results are
   presented in Figure~\ref{fig:ols_results}.}
 \begin{lstlisting}[style=pythonstyle]
 import gretl
 
-gretl.attach_gretl_data(
-	gretl.gretl_data_path('misc/longley.gdt'))
+data_dir = gretl.about()['built_in_strings']['gretldir'] + '/data/'
+d = gretl.get_data(data_dir + 'longley.csv')
 m = gretl.ols('employ ~ const + prdefl + gnp').fit()
+print(m)
 \end{lstlisting}
 \generaldesc{See \texttt{`examples/estimators/ols.py'} for details.}
 
 \examplefig{ols}{\label{fig:ols_results}}
 
 \gretlfpycmd{panel()}%
-\index{attach\_gretl\_data()}\index{gretl\_data\_path()}
+\index{get\_data()}
 \estdesc{To perform panel model estimation, the following
   minimal code snippet can be used. The corresponding
   results are presented in Figure~\ref{fig:panel_results}.}
 \begin{lstlisting}[style=pythonstyle]
 import gretl
 
-gretl.attach_gretl_data(
-	gretl.gretl_data_path('misc/penngrow.gdt'))
+data_dir = gretl.about()['built_in_strings']['gretldir'] + '/data/'
+d = gretl.get_data(data_dir + 'penngrow.gdt')
 m = gretl.panel('Y ~ const + Y(-1) + X').fit()
+print(m)
 \end{lstlisting}
 \generaldesc{See \texttt{`examples/estimators/panel.py'} for details.}
 
 \examplefig{panel}{\label{fig:panel_results}}
 
 \gretlfpycmd{poisson()}%
-\index{attach\_gretl\_data()}\index{gretl\_data\_path()}
+\index{get\_data()}
 \estdesc{To perform Poisson regression estimation, the
   following minimal code snippet can be used. The corresponding
   results are presented in Figure~\ref{fig:poisson_results}.}
 \begin{lstlisting}[style=pythonstyle]
 import gretl
 
-gretl.attach_gretl_data(
-	gretl.gretl_data_path('misc/rac3d.gdt'))
+data_dir = gretl.about()['built_in_strings']['gretldir'] + '/data/'
+d = gretl.get_data(data_dir + 'rac3d.gdt')
 m = gretl.poisson('DVISITS ~ const + SEX + AGE').fit()
+print(m)
 \end{lstlisting}
 \generaldesc{See \texttt{`examples/estimators/poisson.py'} for details.}
 
 \examplefig{poisson}{\label{fig:poisson_results}}
 
 \gretlfpycmd{probit()}%
-\index{attach\_gretl\_data()}\index{gretl\_data\_path()}\newline
-To perform probit regression estimation, the following
+\index{get\_data()}
+\estdesc{To perform probit regression estimation, the following
 minimal code snippet can be used. The corresponding
-results are presented in Figure~\ref{fig:probit_results}.
+results are presented in Figure~\ref{fig:probit_results}.}
 \begin{lstlisting}[style=pythonstyle]
 import gretl
 
-gretl.attach_gretl_data(
-	gretl.gretl_data_path('greene/greene22_2.gdt'))
+data_dir = gretl.about()['built_in_strings']['gretldir'] + '/data/'
+d = gretl.get_data(data_dir + 'greene22_2.gdt')
 m = gretl.probit('Y ~ const + Z1 + Z2').fit()
+print(m)
 \end{lstlisting}
 \generaldesc{See \texttt{`examples/estimators/probit.py'} for details.}
 
 \examplefig{probit}{\label{fig:probit_results}}
 
 \gretlfpycmd{tsls()}%
-\index{attach\_gretl\_data()}\index{gretl\_data\_path()}
+\index{get\_data()}
 \estdesc{To perform Instrumental Variables (IV) estimation
   using two-stage least squares (TSLS), the following
   minimal code snippet can be used. The corresponding
@@ -430,25 +445,27 @@ m = gretl.probit('Y ~ const + Z1 + Z2').fit()
 \begin{lstlisting}[style=pythonstyle]
 import gretl
 
-gretl.attach_gretl_data(
-	gretl.gretl_data_path('misc/penngrow.gdt'))
+data_dir = gretl.about()['built_in_strings']['gretldir'] + '/data/'
+d = gretl.get_data(data_dir + 'penngrow.gdt')
 m = gretl.tsls('Y Y(-1) X ; 0 X Y(-2)').fit()
+print(m)
 \end{lstlisting}
 \generaldesc{See \texttt{`examples/estimators/tsls.py'} for details.}
 
 \examplefig{tsls}{\label{fig:tsls_results}}
 
 \gretlfpycmd{wls()}%
-\index{attach\_gretl\_data()}\index{gretl\_data\_path()}
+\index{get\_data()}
 \estdesc{To perform weighted least squares (WLS) estimation,
   the following minimal code snippet can be used. The corresponding
   results are presented in Figure~\ref{fig:wls_results}.}
 \begin{lstlisting}[style=pythonstyle]
 import gretl
 
-gretl.attach_gretl_data(
-	gretl.gretl_data_path('misc/longley.gdt'))
+data_dir = gretl.about()['built_in_strings']['gretldir'] + '/data/'
+d = gretl.get_data(data_dir + 'longley.csv')
 m = gretl.wls('year employ const prdefl gnp').fit()
+print(m)
 \end{lstlisting}
 \generaldesc{See \texttt{`examples/estimators/wls.py'} for details.}
 

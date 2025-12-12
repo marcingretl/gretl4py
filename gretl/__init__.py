@@ -80,23 +80,6 @@ from .gretl4py_classes import get_data, show_data_status, _to_dataframe
 from .gretl4py_addons import print_module_source, fc_print, modeltab
 
 # deprecations
-def csv2dict(fname, pd=1):
-    raise RuntimeError('*** This function is deprecated and was removed. Please use \'gretl.get_data()\' instead. ***\n')
-
-def attach_data(pydict):
-    raise RuntimeError('*** This function is deprecated and was removed. Please use \'gretl.get_data()\' instead. ***\n')
-
-def attach_gretl_data(fname):
-    raise RuntimeError('*** This function is deprecated and was removed. Please use \'gretl.get_data()\' instead. ***\n')
-
-def get_gretl_data(fname):
-    raise RuntimeError('*** This function is deprecated and was removed. Please use \'gretl.get_data()\' instead. ***\n')
-
-def gretl_data_path(fname):
-    raise RuntimeError('*** This function is deprecated and was removed. Please use /path/to/file directly. ***\n')
-
-def printdata(data, namesonly):
-    raise RuntimeError('*** This function is deprecated and was removed. Please use GretlDataset class \'print()\' method instead. ***\n')
 # deprecations: END
 
 # we attach additional symbols to certain classes

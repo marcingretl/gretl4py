@@ -241,14 +241,6 @@ gretl.get_data(pydict=dict) -> gretl._gretl.Dataset
 %	Note that \pythcode{fname} must be the absolute path to the file (see
 %	\pythcode{gretl.gretl\_data\_path()}).}
 
-\gretlfpycmd{gretl\_data\_path()}
-\begin{lstlisting}[style=pythonstyle]
-gretl.gretl_data_path(fname=str) -> str
-\end{lstlisting}
-\generaldesc{This function returns the full path the
-	specified \texttt{gdt} or \texttt{gdtb} file
-	\citep[see][for details]{gretl_manual}.}
-
 \gretlfpycmd{nparray2dict()}
 \begin{lstlisting}[style=pythonstyle]
 gretl.nparray2dict(X=numpy.array,
@@ -547,6 +539,17 @@ gretl.negbin(formula=str, [OPTS, [data=gretl._gretl.Dataset]]) -> gretl._gretl.M
 	\item[]\maptoopt{verbose=True}{--verbose}{print details of iterations}
 \end{itemize}
 
+\est{nls}
+\estdesc{Performs Nonlinear Least Squares (NLS) estimation using
+	a modified version of the Levenberg-Marquardt algorithm.}
+\begin{lstlisting}[style=pythonstyle]
+gretl.nls(formula=str, [OPTS, [data=gretl._gretl.Dataset]]) -> gretl._gretl.Model_nls
+\end{lstlisting}
+\mapto{nls function [ derivatives ]}
+\begin{itemize}
+	\item[]\maptoopt{}{}{}
+\end{itemize}
+
 \est{ols}
 \estdesc{Computes ordinary least squares (OLS) estimates
 	with \texttt{depvar} as the dependent variable and
@@ -617,6 +620,16 @@ gretl.probit(formula=str, [OPTS, [data=gretl._gretl.Dataset]]) -> gretl._gretl.M
 	\item[]\maptoopt{estrella=True}{--estrella}{select pseudo-R-squared variant}
 	\item[]\maptoopt{random\_effects=True}{--random-effects}{estimates a
 		random effects panel probit model}
+\end{itemize}
+
+\est{system}
+\estdesc{System of equations.}
+\begin{lstlisting}[style=pythonstyle]
+gretl.system(method=str, [OPTS, [data=gretl._gretl.Dataset]]) -> gretl._gretl.Model_NME
+\end{lstlisting}
+\mapto{system method=estimator}
+\begin{itemize}
+	\item[]\maptoopt{}{}{}
 \end{itemize}
 
 \est{quantreg}

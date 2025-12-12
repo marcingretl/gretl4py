@@ -6,51 +6,73 @@ shown at Figure~\ref{fig:model_class_hierarchy}.
 
 \begin{landscape}
 	\begin{figure}
-		\begin{tikzpicture}[
-			every node/.style={draw, rounded corners, font=\ttfamily\scriptsize, align=center},
-			->,
-			level distance=3cm,
-			sibling distance=2.5cm
-			]
-
-			% Root
-			\node (model) {Model};
-
-			% Top-level children
-			\node[below left=3cm and 6cm of model] (nse) {Model\_NSE};
-			\node[below right=3cm and 6cm of model] (var) {Model\_VAR};
-
-			% Draw arrows from root
-			\draw (model) -- (nse);
-			\draw (model) -- (var);
-
-			% NSE Drivers grouped in columns
-			\matrix[column sep=1cm, row sep=1cm] at (nse.south) {
-				\node (arima) {Model\_arima}; & \node (ols) {Model\_ols}; & \node (wls) {Model\_wls}; & \node (logit) {Model\_logit}; & \node (probit) {Model\_probit}; \\
-				\node (poisson) {Model\_poisson}; & \node (negbin) {Model\_negbin}; & \node (biprobit) {Model\_biprobit}; & \node (duration) {Model\_duration}; & \node (heckit) {Model\_heckit}; \\
-				\node (logistic) {Model\_logistic}; & \node (ar) {Model\_ar}; & \node (ar1) {Model\_ar1}; & \node (lad) {Model\_lad}; & \node (garch) {Model\_garch}; \\
-				\node (mpols) {Model\_mpols}; & \node (panel) {Model\_panel}; & \node (ivreg) {Model\_ivreg}; & \node (tobit) {Model\_tobit}; & \node (hsk) {Model\_hsk}; \\
-				\node (intreg) {Model\_intreg}; & \node (midasreg) {Model\_midasreg}; & \node (dpanel) {Model\_dpanel}; & \node (quantreg) {Model\_quantreg}; & \node {}; \\};
-
-			% Connect NSE driver nodes to NSE root
-			\foreach \i in {arima, ols, wls, logit, probit,
-				poisson, negbin, biprobit, duration, heckit,
-				logistic, ar, ar1, lad, garch,
-				mpols, panel, ivreg, tobit, hsk,
-				intreg, midasreg, dpanel, quantreg}
-			{\draw (nse.south) -- (\i.north);}
-
-			% VAR and VECM
-			\node[below=1.5cm of var] (vecm) {Model\_vecm};
-			\draw (var.south) -- (vecm.north);
-		\end{tikzpicture}
+	\begin{tikzpicture}[
+		box/.style={rectangle, draw, rounded corners, minimum width=4cm, minimum height=1cm, align=center},
+		level distance=2.5cm, sibling distance=5cm,
+		edge/.style={-{Latex}}
+		]
+		
+		% Base class
+		\node[box] (GretlModel) {GretlModel};
+		
+		% NSE branch
+		\node[box, below=of GretlModel, xshift=-8cm] (GretlModel_NSE) {GretlModel\_NSE};
+		\node[box, below=of GretlModel_NSE, xshift=-2cm] (GretlModel_NSE_Driver) {GretlModel\_NSE\_Driver};
+		\node[box, below=of GretlModel_NSE_Driver, xshift=-3cm] (GretlModel_NSE_Driver_quantreg) {GretlModel\_NSE\_Driver\_quantreg};
+		\node[box, below=of GretlModel_NSE_Driver, xshift=3cm] (GretlModel_NSE_Driver_dpanel) {GretlModel\_NSE\_Driver\_dpanel};
+		\node[box, below=of GretlModel_NSE_Driver_dpanel] (GretlModel_NSE_Driver_tobit) {GretlModel\_NSE\_Driver\_tobit};
+		
+		% NSE plugin
+		\node[box, below=of GretlModel_NSE, xshift=6cm] (GretlModel_NSE_nl) {GretlModel\_NSE\_nl};
+		
+		% VAR branch
+		\node[box, below=of GretlModel, xshift=6cm] (GretlModel_VAR) {GretlModel\_VAR};
+		\node[box, below=of GretlModel_VAR] (GretlModel_VAR_VECM) {GretlModel\_VAR\_VECM};
+		
+		% NME branch
+		\node[box, below=of GretlModel, yshift=-10cm] (GretlModel_NME) {GretlModel\_NME};
+		
+		% Package branch
+		\node[box, below=of GretlModel, xshift=0cm, yshift=-6cm] (GretlModel_package) {GretlModel\_package};
+		
+		% Connections
+		\draw[edge] (GretlModel) -- (GretlModel_NSE);
+		\draw[edge] (GretlModel_NSE) -- (GretlModel_NSE_Driver);
+		\draw[edge] (GretlModel_NSE_Driver) -- (GretlModel_NSE_Driver_quantreg);
+		\draw[edge] (GretlModel_NSE_Driver) -- (GretlModel_NSE_Driver_dpanel);
+		\draw[edge] (GretlModel_NSE_Driver) -- (GretlModel_NSE_Driver_tobit);
+		\draw[edge] (GretlModel_NSE) -- (GretlModel_NSE_nl);
+		
+		\draw[edge] (GretlModel) -- (GretlModel_VAR);
+		\draw[edge] (GretlModel_VAR) -- (GretlModel_VAR_VECM);
+		
+		\draw[edge] (GretlModel) -- (GretlModel_NME);
+		
+		\draw[edge] (GretlModel) -- (GretlModel_package);
+		
+	\end{tikzpicture}
 	\caption{\classpymodel hierarchy}
 	\label{fig:model_class_hierarchy}
 	\end{figure}
 \end{landscape}
 
+
 \vspace*{20pt}\noindent The \classpymodel class provides the
 following public methods:
+
+\gretlfpycmd{\_\_repr\_\_()}
+\estdesc{Returns a string with estimation results.}
+\begin{lstlisting}[style=pythonstyle]
+repr(gretl._gretl.Model)
+print(gretl._gretl.Model)
+\end{lstlisting}
+\generaldesc{XXX}
+
+\gretlfpycmd{adj\_rsq()}
+\estdesc{XXX}
+\begin{lstlisting}[style=pythonstyle]
+gretl._gretl.Model.adj_rsq(self) -> float
+\end{lstlisting}
 
 \gretlfpycmd{attrs()}
 \estdesc{Prints a listing of the attributes of a model.}
@@ -60,6 +82,12 @@ gretl._gretl.Model.attrs(self)
 \generaldesc{For scalars and short strings the values of the attributes
 	are printed, otherwise the Python type is shown.}
 
+\gretlfpycmd{fcast()}
+\estdesc{XXX}
+\begin{lstlisting}[style=pythonstyle]
+gretl._gretl.Model.fcast([OPT])
+\end{lstlisting}
+
 \gretlfpycmd{fit()}
 \estdesc{Executes the underlying implementation of
 	the specified estimator in \gretlpy.}
@@ -67,35 +95,10 @@ gretl._gretl.Model.attrs(self)
 Model.fit(self) -> self
 \end{lstlisting}
 
-\gretlfpycmd{id()}
-\estdesc{Model's ID (assigned by \lgretl).}
-\begin{lstlisting}[style=pythonstyle]
-gretl._gretl.Model.id(self) -> int
-\end{lstlisting}
-
-\gretlfpycmd{oddsratio()}
-\estdesc{Pretty-prints odds ratios for a logit model (if available).}
-\begin{lstlisting}[style=pythonstyle]
-gretl._gretl.Model.oddsratio(self)
-\end{lstlisting}
-
-
 \gretlfpycmd{get\_accessor()}
 \estdesc{XXX}
 \begin{lstlisting}[style=pythonstyle]
 gretl._gretl.Model.get_accessor(accessor=str) -> object
-\end{lstlisting}
-
-\gretlfpycmd{fcast()}
-\estdesc{XXX}
-\begin{lstlisting}[style=pythonstyle]
-gretl._gretl.Model.fcast([OPT])
-\end{lstlisting}
-
-\gretlfpycmd{get\_formula()}
-\estdesc{XXX}
-\begin{lstlisting}[style=pythonstyle]
-gretl._gretl.Model.get_formula(self) -> str
 \end{lstlisting}
 
 \gretlfpycmd{get\_bundle()}
@@ -104,22 +107,31 @@ gretl._gretl.Model.get_formula(self) -> str
 gretl._gretl.Model.get_bundle(self) -> gretl._gretl.Bundle
 \end{lstlisting}
 
+\gretlfpycmd{get\_formula()}
+\estdesc{XXX}
+\begin{lstlisting}[style=pythonstyle]
+gretl._gretl.Model.get_formula(self) -> str
+\end{lstlisting}
+
+\vspace*{20pt}\noindent The \pythcode{gretl.\_gretl.Model\_NSE}
+class provides the following public methods:
+
+\gretlfpycmd{oddsratio()}
+\estdesc{Pretty-prints odds ratios for a logit model (if available).}
+\begin{lstlisting}[style=pythonstyle]
+gretl._gretl.Model.oddsratio(self)
+\end{lstlisting}
+
 \gretlfpycmd{restrict()}
 \estdesc{XXX}
 \begin{lstlisting}[style=pythonstyle]
 gretl._gretl.Model.restrict(impose=list, [OPTS])
 \end{lstlisting}
 
-\gretlfpycmd{save\_yhat()}
+\gretlfpycmd{save\_h()}
 \estdesc{XXX}
 \begin{lstlisting}[style=pythonstyle]
-gretl._gretl.Model.save_yhat(name=str) -> str
-\end{lstlisting}
-
-\gretlfpycmd{save\_yhat()}
-\estdesc{XXX}
-\begin{lstlisting}[style=pythonstyle]
-	gretl._gretl.Model.save_yhat(name=str) -> str
+gretl._gretl.Model.save_h(name=str) -> str
 \end{lstlisting}
 
 \gretlfpycmd{save\_uhat()}
@@ -134,16 +146,16 @@ gretl._gretl.Model.save_uhat(name=str) -> str
 gretl._gretl.Model.save_uhat_sq(name=str) -> str
 \end{lstlisting}
 
-\gretlfpycmd{save\_h()}
+\gretlfpycmd{save\_yhat()}
 \estdesc{XXX}
 \begin{lstlisting}[style=pythonstyle]
-gretl._gretl.Model.save_h(name=str) -> str
+gretl._gretl.Model.save_yhat(name=str) -> str
 \end{lstlisting}
 
-\gretlfpycmd{adj\_rsq()}
+\gretlfpycmd{save\_yhat()}
 \estdesc{XXX}
 \begin{lstlisting}[style=pythonstyle]
-gretl._gretl.Model.adj_rsq(self) -> float
+	gretl._gretl.Model.save_yhat(name=str) -> str
 \end{lstlisting}
 
 \gretlfpycmd{test()}
@@ -154,6 +166,54 @@ gretl._gretl.Model.test(type=str, [OPTS])
 \generaldesc{\gretlcmd{bkw, cusum, leverage, panspec, reset, qlrtest, vif,
 		corrgm, arch, autocorr, breusch-pagan, comfac, logs, normality,
 		panel, squares, white, white-nocross, xdepend}}
+
+
+\vspace*{20pt}\noindent The \pythcode{gretl.\_gretl.Model\_NSE\_nl}
+class provides the following public methods:
+
+\gretlfpycmd{add\_deriv()}
+\estdesc{XXX}
+\begin{lstlisting}[style=pythonstyle]
+gretl._gretl.Model.add_deriv(line=str) -> self
+\end{lstlisting}
+
+\gretlfpycmd{add\_initval()}
+\estdesc{XXX}
+\begin{lstlisting}[style=pythonstyle]
+gretl._gretl.Model.add_initval(varname=str, values=float) -> self
+\end{lstlisting}
+
+\gretlfpycmd{add\_orthog()}
+\estdesc{XXX}
+\begin{lstlisting}[style=pythonstyle]
+gretl._gretl.Model.add_orthog(line=str) -> self
+\end{lstlisting}
+
+\gretlfpycmd{add\_params()}
+\estdesc{XXX}
+\begin{lstlisting}[style=pythonstyle]
+gretl._gretl.Model.add_params(line=str) -> self
+\end{lstlisting}
+
+\gretlfpycmd{add\_param\_names()}
+\estdesc{XXX}
+\begin{lstlisting}[style=pythonstyle]
+gretl._gretl.Model.add_param_names(line=str) -> self
+\end{lstlisting}
+
+\gretlfpycmd{add\_statements()}
+\estdesc{XXX}
+\begin{lstlisting}[style=pythonstyle]
+gretl._gretl.Model.add_statements(line=str) -> self
+\end{lstlisting}
+
+\gretlfpycmd{add\_weights()}
+\estdesc{XXX}
+\begin{lstlisting}[style=pythonstyle]
+gretl._gretl.Model.add_weights(line=str) -> self
+\end{lstlisting}
+
+
 
 \vspace*{20pt}\noindent The \pythcode{gretl.\_gretl.Model\_var}
 class provides the following public methods:
@@ -183,6 +243,22 @@ class provides the following public methods:
 \estdesc{XXX}
 \begin{lstlisting}[style=pythonstyle]
 gretl._gretl.Model_vecm.(nr=int, name=str) -> str
+\end{lstlisting}
+
+
+\vspace*{20pt}\noindent The \pythcode{gretl.\_gretl.Model\_NME}
+class provides the following public methods
+
+\gretlfpycmd{restrict()}
+\estdesc{XXX}
+\begin{lstlisting}[style=pythonstyle]
+gretl._gretl.Model.restrict(impose=list, [OPTS])
+\end{lstlisting}
+
+\gretlfpycmd{save\_uhat()}
+\estdesc{XXX}
+\begin{lstlisting}[style=pythonstyle]
+gretl._gretl.Model_var.save_uhat(eqn=int, name=str) -> str
 \end{lstlisting}
 
 
@@ -260,12 +336,6 @@ Model.sigma -> float
 \estdesc{Holds standard errors of coefficient estimates.}
 \begin{lstlisting}[style=pythonstyle]
 gretl._gretl.Model.stderr -> numpy.ndarray
-\end{lstlisting}
-
-\gretlfpycmd{summary}
-\estdesc{Model's output.}
-\begin{lstlisting}[style=pythonstyle]
-gretl._gretl.Model.summary -> str
 \end{lstlisting}
 
 \gretlfpycmd{uhat}
