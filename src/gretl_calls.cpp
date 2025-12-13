@@ -362,7 +362,7 @@ void do_set (const std::string &key,
     GP.print();
 }
 
-void do_summary (const std::string &varlist, const py::kwargs &kwargs)
+void do_gretl_summary (const std::string &varlist, const py::kwargs &kwargs)
 {
     //
     // this function mimics libgretl's 'summary' command
@@ -374,23 +374,17 @@ void do_summary (const std::string &varlist, const py::kwargs &kwargs)
     // we unpack kwargs at first
     // Note: GD is set here
     gretlopt opt = unpack_kwargs_command(SUMMARY, GD, kwargs);
-    if (!GD) {
-        handle_gretl_error(E_NODATA);
-    }
+    if (!GD) handle_gretl_error(E_NODATA);
 
     // be build gretl_list
     if (!varlist.empty()) {
         varlist_ptr = list_from_formula(varlist, GD->dset, err);
     }
-    if (err) {
-        handle_gretl_error(err);
-    }
+    if (err) handle_gretl_error(err);
 
     // this code was taken from 'interact.c'
     err = incompatible_options(opt, static_cast<gretlopt>(OPT_B | OPT_W));
-    if (err) {
-        handle_gretl_error(err);
-    }
+    if (err) handle_gretl_error(err);
     if (opt & OPT_B) {
         err = summary_statistics_by(varlist_ptr.get(), GD->dset,
                                     opt, GP.prn_ptr());
@@ -402,9 +396,48 @@ void do_summary (const std::string &varlist, const py::kwargs &kwargs)
         err = list_summary_driver(varlist_ptr.get(), GD->dset,
                                   opt, GP.prn_ptr());
     }
-    if (err) {
-        handle_gretl_error(err);
+    if (err) handle_gretl_error(err);
+
+    GP.print();
+}
+
+void do_gretl_print (const std::string &varlist,
+                     const py::kwargs &kwargs)
+{
+    //
+    // this function mimics libgretl's 'print' command
+    //
+    GretlDatasetPtr GD = nullptr;
+    gretl_list_ptr varlist_ptr{nullptr};
+    gretlopt opt = OPT_NONE;
+    int err = 0;
+
+    if (py::len(kwargs) > 0) {
+        opt = unpack_kwargs_command(PRINT, GD, kwargs);
+    } else {
+        GD = DSET;
     }
+
+    // we first check if varlist contains variables names
+    if (GD) {
+        if (varlist.empty()) {
+            // "print " i.e. without options given
+            varlist_ptr.reset(full_var_list(GD->dset, NULL));
+        } else {
+            varlist_ptr = list_from_formula(varlist, GD->dset, err);
+        }
+    }
+
+    // based on 'interact.c' (but we don't allow for string literals)
+    if (opt & OPT_L) {
+        err = printdata(NULL, varlist.c_str(), GD ? GD->dset : NULL,
+                        OPT_NONE, GP.prn_ptr());
+    } else {
+        err = printdata(varlist_ptr.get(),
+                        varlist_ptr ? NULL : varlist.c_str(),
+                        GD ? GD->dset : NULL, opt, GP.prn_ptr());
+    }
+    if (err) handle_gretl_error(err);
 
     GP.print();
 }

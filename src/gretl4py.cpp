@@ -60,10 +60,12 @@ PYBIND11_MODULE(_gretl, m)
     m.attr("version") = GRETL4PY_VERSION;
     m.def("about", &about,
           py::arg("do_print") = false);
+    m.def("print", &do_gretl_print,
+          py::arg("varlist").none(true) = "", py::kw_only());
     m.def("set", &do_set,
           py::arg("key").none(true) = "",
           py::arg("val").none(true) = std::nullopt);
-    m.def("summary", &do_summary,
+    m.def("summary", &do_gretl_summary,
           py::arg("varlist").none(true) = "", py::kw_only());
     m.def("include", &do_include,
           py::arg("name").none(false));
