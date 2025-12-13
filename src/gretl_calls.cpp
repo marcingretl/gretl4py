@@ -188,10 +188,10 @@ GretlBundlePtr about (bool do_print)
         std::cout << "\t+ libgretl-1.0 v" << lg_ver << std::endl;
         if (!GB_sysinfo->err) {
             std::cout << std::endl << "libgretl $sysinfo:" << std::endl;
-            GB_sysinfo->print();
+            GB_sysinfo->print<void>();
         }
         std::cout << "libgretl built-in strings:" << std::endl;
-        GB_strings->print();
+        GB_strings->print<void>();
         py::print("gretl_plugin_path = \"" + std::string(gretl_plugin_path()) + "\"\n");
     }
 

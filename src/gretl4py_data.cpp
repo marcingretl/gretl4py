@@ -1829,33 +1829,42 @@ void GretlBundle::python_register (py::object &obj)
     extract_<py::object>(obj);
 }
 
-void GretlBundle::print (void)
+template <typename T>
+T GretlBundle::print (bool tree)
 {
+    //
+    // dedicated printer:
+    // note: if 'tree', we print bundle tree representation
+    //
+    if (err) handle_gretl_error(err);
+
     GretlPrint GP = GretlPrint();
 
-    if (!err) {
+    // we do the job
+    if (tree) {
+        err = gretl_bundle_print_tree(b_, GP.prn_ptr());
+    } else {
         err = gretl_bundle_print(b_, GP.prn_ptr());
-        if (err) {
-            handle_gretl_error(err);
-        }
+    }
+    if (err) handle_gretl_error(err);
+
+    // we either just print or return buffer
+    if constexpr (std::is_same_v<T, void>) {
         GP.print();
+    } else if constexpr (std::is_same_v<T, std::string>) {
+        std::string summary = GP.get_buffer();
+        return summary;
+    } else {
+        static_assert(always_false<T>, "GretlBundle::print(): unknown type");
     }
 }
+template void GretlBundle::print<void>(bool);
 
 std::string GretlBundle::repr_impl (void)
 {
-    GretlPrint GP = GretlPrint();
-    std::string summary = "";
+    if (err) return "";
 
-    if (!err) {
-        err = gretl_bundle_print(b_, GP.prn_ptr());
-        if (err) {
-            handle_gretl_error(err);
-        }
-        summary = GP.get_buffer();
-    }
-
-    return summary;
+    return print<std::string>();
 }
 
 gretl_bundle *GretlBundle::get_ptr (void) const

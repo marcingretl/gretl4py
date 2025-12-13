@@ -140,7 +140,6 @@ using GretlModelPtr = std::unique_ptr<GretlModel>;
 class GretlPackage;
 using GretlPackagePtr = std::shared_ptr<GretlPackage>;
 
-
 //////////////////////////////////////////////////
 // types
 //////////////////////////////////////////////////
@@ -176,5 +175,11 @@ struct PythonArgInfo {
     std::vector<ssize_t> shape; // for arrays/lists/tuples
     bool valid = true;          // if we deal with valid object (in terms of gretl4py)
 };
+
+//////////////////////////////////////////////////
+// tools
+//////////////////////////////////////////////////
+template <typename>
+inline constexpr bool always_false = false;
 
 #endif // GRETL4PY_TYPES_H

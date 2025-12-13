@@ -9,13 +9,15 @@ print(b)
 a['hhh'] = 464645
 a['ddd'] = "fhfg"
 print(a)
+a.print()
 
 l = [[1.5, 4.78], [5, -0.6]]
 b['mat'] = numpy.asarray(l)
 print(b)
+b.print()
 
 a['b'] = b
-print(a)
+a.print(True) # tree
 
 d = a.to_dict()
 print(d)

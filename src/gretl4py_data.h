@@ -208,13 +208,14 @@ public:
 
     void python_register (py::object &obj);         // register bundle contents in python object
 
-    void print (void);
-
     std::string repr_impl (void);                   // bundle printing via __repr__
 
     gretl_bundle *get_ptr (void) const;             // raw gretl_bundle pointer
 
     py::list keys (void);
+
+    template <typename T>
+    T print (bool tree = false);                    // bundle printer
 
     template <typename T>
     T get_element (const std::string &key);         // get bundle element by name
