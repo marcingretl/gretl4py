@@ -350,6 +350,8 @@ void move_to_python_container (PyWrapped &wrapped_obj, Item &&item,
             obj.attr(container) = py::list();
         } else if constexpr (std::is_same_v<ContainerType, py::dict>) {
             obj.attr(container) = py::dict();
+        } else {
+            static_assert(always_false<ContainerType>, "move_to_python_container(): unknown Container type");
         }
     }
     py::object dst = obj.attr(container);
@@ -366,7 +368,7 @@ void move_to_python_container (PyWrapped &wrapped_obj, Item &&item,
         }
         dst.cast<py::dict>()[py::cast(key)] = std::forward<Item>(item);
     } else {
-        throw std::runtime_error("Unsupported container type for attribute '" + std::string(container) + "'");
+        static_assert(always_false<ContainerType>, "move_to_python_container(): unknown Container type");
     }
 }
 template void move_to_python_container<GretlModel, py::dict, py::list>
@@ -464,7 +466,7 @@ template <typename T>
 void load_objects_from_dict (const py::dict &dict, const char *key, T &target)
 {
     //
-    // method for loading complex objects (lists, dicts from kwargs
+    // function for loading complex objects (lists, dicts from kwargs)
     //
     if (!dict.contains(key)) return;
 
@@ -479,7 +481,7 @@ void load_objects_from_dict (const py::dict &dict, const char *key, T &target)
             throw std::invalid_argument(std::string("'") + key + "' must be a string");
         }
     } else {
-        throw std::runtime_error("load_objects_from_kwargs: unsupported type");
+        static_assert(always_false<T>, "load_objects_from_dict(): unknown type");
     }
 
     target = py::cast<T>(obj);
@@ -930,12 +932,11 @@ void GretlDataset::transforms (const std::string &vars,
 
     // we construct list of variables
     auto varlist = list_from_formula(vars, dset, err);
-    if (err) {
-        handle_gretl_error(err);
-    }
+    if (err) handle_gretl_error(err);
 
     // we do the job
     int *varlist_raw_ptr = varlist.release();
+
     if constexpr (CI == SQUARE) {
         err = list_xpxgenr(&varlist_raw_ptr, dset, opt_);
     } else if constexpr (CI == DUMMIFY) {
@@ -944,13 +945,9 @@ void GretlDataset::transforms (const std::string &vars,
         err = list_makediscrete(varlist_raw_ptr, dset, opt_);
     } else if constexpr (CI == STDIZE) {
         err = list_stdgenr(varlist_raw_ptr, dset, opt_);
-    } else {
-        throw std::runtime_error("transforms_no_opt: unknown command");
     }
     varlist.reset(varlist_raw_ptr);
-    if (err) {
-        handle_gretl_error(err);
-    }
+    if (err) handle_gretl_error(err);
 
     // based on interact.c
     maybe_list_series(dset, GP_.prn_ptr());
@@ -975,25 +972,20 @@ void GretlDataset::transforms_no_opts (const std::string &vars)
 
     // we construct list of external variables
     varlist = list_from_formula(vars, dset, err);
-    if (err) {
-        handle_gretl_error(err);
-    }
+    if (err) handle_gretl_error(err);
 
     // we do the job
     int *varlist_raw_ptr = varlist.release();
+
     if constexpr (CI == DIFF || CI == LDIFF || CI == SDIFF) {
         err = list_diffgenr(varlist_raw_ptr, CI, dset);
     } else if constexpr (CI == LOGS) {
         err = list_loggenr(varlist_raw_ptr, dset);
     } else if constexpr (CI == ORTHDEV) {
         err = list_orthdev(varlist_raw_ptr, dset);
-    } else {
-        throw std::runtime_error("transforms_no_opt: unknown command");
     }
     varlist.reset(varlist_raw_ptr);
-    if (err) {
-        handle_gretl_error(err);
-    }
+    if (err) handle_gretl_error(err);
 
     // based on interact.c
     maybe_list_series(dset, GP_.prn_ptr());
@@ -1225,18 +1217,14 @@ GretlDatasetPtr GretlDataset::getitem_impl (const T &slice)
         }
         slice_str = oss.str();
         gretl_list_ptr slice_list = list_from_formula(slice_str, dset, err);
-        if (err) {
-            handle_gretl_error(err);
-        }
+        if (err) handle_gretl_error(err);
 
         // we construct list of variables to drop
         gretl_list_ptr full_list(full_var_list(dset, NULL));
         drop_list = gretl_list_ptr(gretl_list_drop(full_list.get(),
                                                    slice_list.get(),
                                                    &err));
-        if (err) {
-            handle_gretl_error(err);
-        }
+        if (err) handle_gretl_error(err);
     } else if constexpr (std::is_same_v<T, std::string>) {
         auto pos = slice.find(':');
 
@@ -1249,7 +1237,7 @@ GretlDatasetPtr GretlDataset::getitem_impl (const T &slice)
         }
         slice_str = slice;
     } else {
-        throw std::invalid_argument("unsupported slicing rule type");
+        static_assert(always_false<T>, "GretlDataset::getitem_impl: unknown slicing rule type");
     }
 
     // me make deep copy of current instance
@@ -1809,7 +1797,7 @@ void GretlBundle::extract_ (const T &t)
         } else if constexpr (std::is_same_v<T, py::dict>) {
             as_dict_[py::cast(key)] = get_element<py::object>(key);
         } else {
-            throw std::runtime_error("unsupported type for conversion");
+            static_assert(always_false<T>, "GretlBundle::extract_(): unknown type");
         }
     }
     std::free(keys);
@@ -1922,7 +1910,7 @@ T GretlBundle::get_element (const std::string &key)
     } else if constexpr (std::is_same_v<GretlTypesPtr, T>) {
         return val;
     } else {
-        throw std::runtime_error("get_element: unsupported type");
+        static_assert(always_false<T>, "GretlBundle::get_element: unknown type");
     }
 }
 
@@ -1953,7 +1941,7 @@ void GretlBundle::set_element (const std::string &key, const T &t)
     } else if constexpr (std::is_same_v<T, GretlBundlePtr>) {
         err = gretl_bundle_set_data(b_, key.c_str(), t->get_ptr(), GRETL_TYPE_BUNDLE, 0);
     } else {
-        throw std::invalid_argument("unsupported type");
+        static_assert(always_false<T>, "GretlBundle::set_element(): unknown type");
     }
     if (err) {
         handle_gretl_error(err);
@@ -1965,7 +1953,6 @@ template void GretlBundle::set_element<double>(const std::string&, const double&
 template void GretlBundle::set_element<std::string>(const std::string&, const std::string&);
 template void GretlBundle::set_element<py::array>(const std::string&, const py::array&);
 template void GretlBundle::set_element<GretlBundlePtr>(const std::string&, const GretlBundlePtr&);
-
 
 //
 // MapPyToCpp class methods
@@ -2161,9 +2148,7 @@ T GretlPackage::get_properties_ (const char *property)
     } else {
         err = function_package_get_properties(pkg_, property, &val, NULL);
     }
-    if (err) {
-        handle_gretl_error(err);
-    }
+    if (err) handle_gretl_error(err);
 
     // we produce output
     if constexpr (std::is_same_v<T, DataReq>) {
@@ -2179,8 +2164,7 @@ T GretlPackage::get_properties_ (const char *property)
     } else if constexpr (std::is_same_v<T, std::string>) {
         res = val;
     } else {
-        g_free(val);
-        throw std::runtime_error("get_properties: unsupported type");
+        static_assert(always_false<T>, "GretlPackage::get_properties_(): unknown type");
     }
 
     // we free results (id needed)

@@ -188,7 +188,7 @@ void GretlModel::save_model_ (T *model)
         err_ = gretl_system_print(model, GD_->dset,
                                   opt_, GP_.prn_ptr());
     } else {
-        throw std::runtime_error("unsupported model type");
+        static_assert(always_false<T>, "GretlModel::save_model_(): unknown type");
     }
     if (err_) handle_gretl_error(err_);
     summary_ = GP_.get_buffer();
@@ -349,6 +349,8 @@ void GretlModel::do_forecast_ (T *model, const py::kwargs &kwargs,
     } else if constexpr (std::is_same_v<T, GRETL_VAR>) {
         fr = get_system_forecast(model, CI, variable_nr, t1, t2,
                                  0, GD_->dset, OPT_NONE, &err_);
+    } else {
+        static_assert(always_false<T>, "GretlModel::do_forecast_(): unknown type");
     }
     if (err_) handle_gretl_error(err_);
     fr->alpha = (100.0 - conf) / 100.0;
@@ -539,7 +541,7 @@ char *GretlModel::do_save_uhat_ (T *model, int eqn,
     } else if constexpr (std::is_same_v<T, equation_system>) {
         uhat.reset(system_get_resid_series(model, eqn-1, GD_->dset, &err_));
     } else {
-        throw std::runtime_error("do_save_uhat_: unknown model type");
+        static_assert(always_false<T>, "GretlModel::do_save_uhat_(): unknown type");
     }
     if (err_) handle_gretl_error(err_);
 
@@ -761,8 +763,6 @@ void GretlModel_NSE::regexp_extract_ (const std::string &formula,
         formula_regex = std::regex(R"(GMM\s*\([^()]*\))");
     } else if constexpr (CI == MIDASREG) {
         formula_regex = std::regex(R"((mds|mdsl)\s*\([^()]*\))");
-    } else {
-        throw std::runtime_error("'regexp_extract': unsupported type");
     }
 
     std::sregex_iterator begin(formula.begin(), formula.end(), formula_regex);
@@ -1215,7 +1215,7 @@ void GretlModel_NSE_nl<CI>::do_nl_parse_line_ (const std::string &keyword,
         throw std::invalid_argument("do_nl_parse_line_(): wrong arguments passed");
     }
 
-    // T = std::string
+    // we do the job
     if constexpr (std::is_same_v<T, std::string>) {
         std::string line;
 
@@ -1229,12 +1229,7 @@ void GretlModel_NSE_nl<CI>::do_nl_parse_line_ (const std::string &keyword,
         }
         err_ = nl_parse_line(CI, line.c_str(), GD_->dset, GP_.prn_ptr());
         if (err_) handle_gretl_error(err_);
-
-        return;
-    }
-
-    // T = std::vector<std::string>
-    if constexpr (std::is_same_v<T, std::vector<std::string>>) {
+    } else if constexpr (std::is_same_v<T, std::vector<std::string>>) {
         if (!src->size()) return;
 
         std::string line;
@@ -1251,12 +1246,9 @@ void GretlModel_NSE_nl<CI>::do_nl_parse_line_ (const std::string &keyword,
                                  GD_->dset, GP_.prn_ptr());
             if (err_) handle_gretl_error(err_);
         }
-
-        return;
+    } else {
+        static_assert(always_false<T>, "GretlModel_NSE_nl::do_nl_parse_line_(): unknown type");
     }
-
-    // unsupported type
-    throw std::runtime_error("do_nl_parse_line_(): unsupported type");
 }
 
 template <GretlCmdIndex CI>

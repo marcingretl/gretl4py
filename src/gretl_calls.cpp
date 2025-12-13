@@ -574,8 +574,6 @@ double gretl_get_pvalue_critval_pdf_cdf (const std::string &dist,
         return gretl_get_cdf(dist_code, params_ptr, value);
     } else if constexpr (MODE == 5) {
         return gretl_get_cdf_inverse(dist_code, params_ptr, value);
-    } else {
-        throw std::runtime_error("gretl_get_pvalue_critval: unknown MODE = " + std::to_string(MODE));
     }
 }
 template double gretl_get_pvalue_critval_pdf_cdf<1>(const std::string&, double, const py::object&);
@@ -673,14 +671,12 @@ void genr (const std::string &name, const T &value)
         }
         std::strcpy(static_cast<char*>(uv_ptr), value.c_str());
     } else {
-        throw std::runtime_error("unsupported type");
+        static_assert(always_false<T>, "genr(): unknown type");
     }
 
     // we finally register variable
     err = user_var_add(name.c_str(), uv_type, uv_ptr);
-    if (err) {
-        handle_gretl_error(err);
-    }
+    if (err) handle_gretl_error(err);
     UserVars.insert(name);
 }
 template void genr<py::array>(const std::string&, const py::array&);
