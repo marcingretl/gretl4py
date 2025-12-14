@@ -525,16 +525,16 @@ GretlDataset::GretlDataset (const std::string &fname,
     allocate_dset_();
     if (dset) {
         if (full_path.empty()) {
-            err = gretl_get_data(fname.c_str(), dset, OPT_NONE, NULL);
+            err_ = gretl_get_data(fname.c_str(), dset, OPT_NONE, NULL);
         } else {
-            err = gretl_get_data(full_path.c_str(), dset, OPT_NONE, NULL);
+            err_ = gretl_get_data(full_path.c_str(), dset, OPT_NONE, NULL);
         }
     } else {
-        err = E_ALLOC;
+        err_ = E_ALLOC;
     }
-    if (err) {
+    if (err_) {
         destroy_dataset(dset);
-        handle_gretl_error(err);
+        handle_gretl_error(err_);
     }
 }
 
@@ -619,18 +619,12 @@ GretlDataset::GretlDataset (const GretlDataset &src) : id_(next_obj_id_++)
     std::strncpy(dset->endobs, src.dset->endobs, OBSLEN);
 
     // we allocate memory
-    err = allocate_Z(dset, OPT_NONE);
-    if (err) {
-        handle_gretl_error(err);
-    }
-    err = dataset_allocate_varnames(dset);
-    if (err) {
-        handle_gretl_error(err);
-    }
-    err = dataset_allocate_obs_markers(dset);
-    if (err) {
-        handle_gretl_error(err);
-    }
+    err_ = allocate_Z(dset, OPT_NONE);
+    if (err_) handle_gretl_error(err_);
+    err_ = dataset_allocate_varnames(dset);
+    if (err_) handle_gretl_error(err_);
+    err_ = dataset_allocate_obs_markers(dset);
+    if (err_) handle_gretl_error(err_);
 
     // dset->Z
     for (int i=1; i<dset->v; ++i) {
@@ -700,9 +694,7 @@ void GretlDataset::add_or_replace_allocated_series_ (gretl_double_ptr data,
                                     + std::to_string(n) + ", should be n="
                                     + std::to_string(dset->n));
     }
-    if (name.empty()) {
-        throw std::invalid_argument("empty variable name");
-    }
+    if (name.empty()) throw std::invalid_argument("empty variable name");
 
     // we check if we add new or replace series
     int v = get_series_id(name, false);
@@ -711,14 +703,14 @@ void GretlDataset::add_or_replace_allocated_series_ (gretl_double_ptr data,
     double *data_ptr = data.release();
 
     if (v > 0) {
-        err = dataset_replace_series(dset, v, data_ptr,
-                                     label.get(), DS_GRAB_VALUES);
+        err_ = dataset_replace_series(dset, v, data_ptr,
+                                      label.get(), DS_GRAB_VALUES);
     } else {
-        err = dataset_add_allocated_series(dset, data_ptr);
+        err_ = dataset_add_allocated_series(dset, data_ptr);
     }
-    if (err) {
+    if (err_) {
         std::free(data_ptr);
-        handle_gretl_error(err);
+        handle_gretl_error(err_);
     }
 
     if (v > 0) {
@@ -727,10 +719,8 @@ void GretlDataset::add_or_replace_allocated_series_ (gretl_double_ptr data,
     } else {
         // we setup name and description for new series
         v = dset->v - 1;
-        err = rename_series(dset, v, name.c_str(), OPT_NONE);
-        if (err) {
-            handle_gretl_error(err);
-        }
+        err_ = rename_series(dset, v, name.c_str(), OPT_NONE);
+        if (err_) handle_gretl_error(err_);
         gretl_series_set_label(v, label.get());
     }
 }
@@ -823,10 +813,8 @@ void GretlDataset::to_file (const std::string &fname,
                 }
                 auto val_str = py::cast<std::string>(item.second);
 
-                varlist = list_from_formula(val_str, dset, err);
-                if (err) {
-                    handle_gretl_error(err);
-                }
+                varlist = list_from_formula(val_str, dset, err_);
+                if (err_) handle_gretl_error(err_);
                 continue;
             } else {
                 gretl_valid_long_opt(opt_, STORE, key, item.second);
@@ -836,15 +824,14 @@ void GretlDataset::to_file (const std::string &fname,
 
     // we do the job
     if (opt_ & OPT_A) {
-        err = write_matrix_as_dataset(fname.c_str(), opt_,
-                                      GP_.prn_ptr());
+        err_ = write_matrix_as_dataset(fname.c_str(), opt_,
+                                       GP_.prn_ptr());
     } else {
-        err = write_data(fname.c_str(), varlist.get(),
-                         dset, opt_, GP_.prn_ptr());
+        err_ = write_data(fname.c_str(), varlist.get(),
+                          dset, opt_, GP_.prn_ptr());
     }
-    if (err) {
-        handle_gretl_error(err);
-    }
+    if (err_) handle_gretl_error(err_);
+
     GP_.print();
 }
 
@@ -931,23 +918,23 @@ void GretlDataset::transforms (const std::string &vars,
     }
 
     // we construct list of variables
-    auto varlist = list_from_formula(vars, dset, err);
-    if (err) handle_gretl_error(err);
+    auto varlist = list_from_formula(vars, dset, err_);
+    if (err_) handle_gretl_error(err_);
 
     // we do the job
     int *varlist_raw_ptr = varlist.release();
 
     if constexpr (CI == SQUARE) {
-        err = list_xpxgenr(&varlist_raw_ptr, dset, opt_);
+        err_ = list_xpxgenr(&varlist_raw_ptr, dset, opt_);
     } else if constexpr (CI == DUMMIFY) {
-        err = list_dumgenr(&varlist_raw_ptr, dset, opt_);
+        err_ = list_dumgenr(&varlist_raw_ptr, dset, opt_);
     } else if constexpr (CI == DISCRETE) {
-        err = list_makediscrete(varlist_raw_ptr, dset, opt_);
+        err_ = list_makediscrete(varlist_raw_ptr, dset, opt_);
     } else if constexpr (CI == STDIZE) {
-        err = list_stdgenr(varlist_raw_ptr, dset, opt_);
+        err_ = list_stdgenr(varlist_raw_ptr, dset, opt_);
     }
     varlist.reset(varlist_raw_ptr);
-    if (err) handle_gretl_error(err);
+    if (err_) handle_gretl_error(err_);
 
     // based on interact.c
     maybe_list_series(dset, GP_.prn_ptr());
@@ -971,21 +958,21 @@ void GretlDataset::transforms_no_opts (const std::string &vars)
     gretl_list_ptr varlist{nullptr};
 
     // we construct list of external variables
-    varlist = list_from_formula(vars, dset, err);
-    if (err) handle_gretl_error(err);
+    varlist = list_from_formula(vars, dset, err_);
+    if (err_) handle_gretl_error(err_);
 
     // we do the job
     int *varlist_raw_ptr = varlist.release();
 
     if constexpr (CI == DIFF || CI == LDIFF || CI == SDIFF) {
-        err = list_diffgenr(varlist_raw_ptr, CI, dset);
+        err_ = list_diffgenr(varlist_raw_ptr, CI, dset);
     } else if constexpr (CI == LOGS) {
-        err = list_loggenr(varlist_raw_ptr, dset);
+        err_ = list_loggenr(varlist_raw_ptr, dset);
     } else if constexpr (CI == ORTHDEV) {
-        err = list_orthdev(varlist_raw_ptr, dset);
+        err_ = list_orthdev(varlist_raw_ptr, dset);
     }
     varlist.reset(varlist_raw_ptr);
-    if (err) handle_gretl_error(err);
+    if (err_) handle_gretl_error(err_);
 
     // based on interact.c
     maybe_list_series(dset, GP_.prn_ptr());
@@ -1003,8 +990,8 @@ std::string GretlDataset::repr (void) const
 {
     std::string ret = "GretlDataset, source " + source;
 
-    auto desc = gretl_get_gdt_description(source.c_str(), &err);
-    if (!err) {
+    auto desc = gretl_get_gdt_description(source.c_str(), &err_);
+    if (!err_) {
         ret.append("\n").append(desc);
         std::free(desc);
     }
@@ -1041,10 +1028,8 @@ void GretlDataset::print (const py::kwargs &kwargs)
             }
         } else if (key == "series") {
             // note: we print only specified variables
-            var_list = list_from_formula(val_str, dset, err);
-            if (err) {
-                handle_gretl_error(err);
-            }
+            var_list = list_from_formula(val_str, dset, err_);
+            if (err_) handle_gretl_error(err_);
         } else if (key == "range") {
             auto pos = val_str.find(':');
 
@@ -1081,10 +1066,8 @@ void GretlDataset::print (const py::kwargs &kwargs)
         if (range) {
             SET_OPT(opt_, OPT_R);
         }
-        err = printdata(var_list.get(), NULL, dset, opt_, GP_.prn_ptr());
-        if (err) {
-            handle_gretl_error(err);
-        }
+        err_ = printdata(var_list.get(), NULL, dset, opt_, GP_.prn_ptr());
+        if (err_) handle_gretl_error(err_);
     }
     GP_.print();
 }
@@ -1149,12 +1132,12 @@ void GretlDataset::sample (const py::kwargs &kwargs)
         print_smpl(dset, get_full_length_n(), OPT_NONE, GP_.prn_ptr());
     } else if (full) {
         // "smpl full"
-        err = restore_full_sample(dset, NULL);
+        err_ = restore_full_sample(dset, NULL);
     } else if (!restr.empty()) {
         // smpl <restr> --restrict [--replace]
         opt_ = opt_replace ? static_cast<gretlopt>(OPT_R | OPT_P) : OPT_R;
-        err = restrict_sample(restr.data(), NULL, dset, NULL,
-                              opt_, GP_.prn_ptr(), NULL);
+        err_ = restrict_sample(restr.data(), NULL, dset, NULL,
+                               opt_, GP_.prn_ptr(), NULL);
     } else {
         // use empty string as fallback when only one of t1/t2 is set (smpl <t1str> <t2str>)
         std::string ts1 = t1str.empty() ? ";" : t1str;
@@ -1168,15 +1151,13 @@ void GretlDataset::sample (const py::kwargs &kwargs)
             if (time) {
                 SET_OPT(opt_, OPT_X);
             }
-            err = set_panel_sample(ts1.c_str(), ts2.c_str(), opt_,
-                                   dset, NULL, GP_.prn_ptr());
+            err_ = set_panel_sample(ts1.c_str(), ts2.c_str(), opt_,
+                                    dset, NULL, GP_.prn_ptr());
         } else {
-            err = set_sample(ts1.c_str(), ts2.c_str(), dset, OPT_NONE);
+            err_ = set_sample(ts1.c_str(), ts2.c_str(), dset, OPT_NONE);
         }
     }
-    if (err) {
-        handle_gretl_error(err);
-    }
+    if (err_) handle_gretl_error(err_);
 
     if (have_args) {
         print_smpl(dset, get_full_length_n(), OPT_NONE, GP_.prn_ptr());
@@ -1216,15 +1197,15 @@ GretlDatasetPtr GretlDataset::getitem_impl (const T &slice)
             }
         }
         slice_str = oss.str();
-        gretl_list_ptr slice_list = list_from_formula(slice_str, dset, err);
-        if (err) handle_gretl_error(err);
+        gretl_list_ptr slice_list = list_from_formula(slice_str, dset, err_);
+        if (err_) handle_gretl_error(err_);
 
         // we construct list of variables to drop
         gretl_list_ptr full_list(full_var_list(dset, NULL));
         drop_list = gretl_list_ptr(gretl_list_drop(full_list.get(),
                                                    slice_list.get(),
-                                                   &err));
-        if (err) handle_gretl_error(err);
+                                                   &err_));
+        if (err_) handle_gretl_error(err_);
     } else if constexpr (std::is_same_v<T, std::string>) {
         auto pos = slice.find(':');
 
@@ -1246,17 +1227,17 @@ GretlDatasetPtr GretlDataset::getitem_impl (const T &slice)
     // we do the job
     if constexpr (std::is_same_v<T, py::list>) {
         // dropping variables
-        err = gretl_delete_variables(drop_list.get(), NULL, OPT_F,
-                                     RES->dset, NULL, GP_.prn_ptr());
+        err_ = gretl_delete_variables(drop_list.get(), NULL, OPT_F,
+                                      RES->dset, NULL, GP_.prn_ptr());
     } else {
         // for sampling
         opts["quiet"] = true;
         RES->sample(opts);
-        err = perma_sample(RES->dset, OPT_T, GP_.prn_ptr(), NULL);
+        err_ = perma_sample(RES->dset, OPT_T, GP_.prn_ptr(), NULL);
     }
-    if (err) {
+    if (err_) {
         GP_.print();
-        handle_gretl_error(err);
+        handle_gretl_error(err_);
     }
     RES->source += " slice: " + slice_str;
 
@@ -1275,10 +1256,8 @@ py::object GretlDataset::corr (const std::string &vars, const py::kwargs &kwargs
 
     // we construct list of variables (if needed)
     if (!vars.empty()) {
-        var_list = list_from_formula(vars, dset, err);
-        if (err) {
-            handle_gretl_error(err);
-        }
+        var_list = list_from_formula(vars, dset, err_);
+        if (err_) handle_gretl_error(err_);
     }
 
     opt_ = OPT_NONE;
@@ -1304,15 +1283,13 @@ py::object GretlDataset::corr (const std::string &vars, const py::kwargs &kwargs
 
     // actual work
     if (opt_ & OPT_K) {
-        err = kendall_tau(var_list.get(), dset, opt_, GP_.prn_ptr());
+        err_ = kendall_tau(var_list.get(), dset, opt_, GP_.prn_ptr());
     } else if (opt_ & OPT_S) {
-        err = spearman_rho(var_list.get(), dset, opt_, GP_.prn_ptr());
+        err_ = spearman_rho(var_list.get(), dset, opt_, GP_.prn_ptr());
     } else {
-        err = gretl_corrmx(var_list.get(), dset, opt_, GP_.prn_ptr());
+        err_ = gretl_corrmx(var_list.get(), dset, opt_, GP_.prn_ptr());
     }
-    if (err) {
-        handle_gretl_error(err);
-    }
+    if (err_) handle_gretl_error(err_);
 
     GP_.print();
 
@@ -1331,21 +1308,17 @@ py::object GretlDataset::cov (const std::string &vars)
     if (vars.empty()) {
         var_list.reset(full_var_list(dset, NULL));
     } else {
-        var_list = list_from_formula(vars, dset, err);
-        if (err) {
-            handle_gretl_error(err);
-        }
+        var_list = list_from_formula(vars, dset, err_);
+        if (err_) handle_gretl_error(err_);
     }
 
     // actual work
     mat.reset(gretl_covariance_matrix_from_varlist(var_list.get(),
-                                                   dset, NULL, &err));
-    if (err) {
-        handle_gretl_error(err);
-    }
+                                                   dset, NULL, &err_));
+    if (err_) handle_gretl_error(err_);
 
     auto res = convert_GretlType_to_GretlTypes(GRETL_TYPE_MATRIX,
-                                               mat.get(), 0, err);
+                                               mat.get(), 0, err_);
 
     return variant_to_pyobject(std::move(*res));
 }
@@ -1427,10 +1400,8 @@ void GretlDataset::setobs (const py::kwargs &kwargs)
         opt_ = OPT_P;
     }
 
-    err = set_obs(arg1.data(), arg2.data(), dset, opt_);
-    if (err) {
-        handle_gretl_error(err);
-    }
+    err_ = set_obs(arg1.data(), arg2.data(), dset, opt_);
+    if (err_) handle_gretl_error(err_);
 }
 
 void GretlDataset::set_as_default (void)
@@ -1461,18 +1432,14 @@ void GretlDataset::lags (const std::string &vars, int order)
     gretl_list_ptr varlist{nullptr};
 
     // we construct list of external variables
-    varlist = list_from_formula(vars, dset, err);
-    if (err) {
-        handle_gretl_error(err);
-    }
+    varlist = list_from_formula(vars, dset, err_);
+    if (err_) handle_gretl_error(err_);
 
     // we do the job
     int *varlist_raw_ptr = varlist.release();
-    err = list_laggenr(&varlist_raw_ptr, 1, order, NULL, dset, 0, OPT_NONE);
+    err_ = list_laggenr(&varlist_raw_ptr, 1, order, NULL, dset, 0, OPT_NONE);
     varlist.reset(varlist_raw_ptr);
-    if (err) {
-        handle_gretl_error(err);
-    }
+    if (err_) handle_gretl_error(err_);
 
     // based on interact.c
     maybe_list_series(dset, GP_.prn_ptr());
@@ -1524,11 +1491,9 @@ gretlopt GretlDataset::setobs_opt_from_structure_ (int structure)
 
 py::object GretlDataset::get_accessor (const std::string &accessor) const
 {
-    auto res = gretl_generate_gretl_object(accessor.c_str(), err,
+    auto res = gretl_generate_gretl_object(accessor.c_str(), err_,
                                            GRETL_OBJ_DSET, dset);
-    if (err) {
-        handle_gretl_error(err);
-    }
+    if (err_) handle_gretl_error(err_);
 
     return variant_to_pyobject(std::move(*res));
 }
@@ -1544,29 +1509,27 @@ void GretlDataset::test (const std::string &type, const std::string &vars,
     gretl_list_ptr ex_var{nullptr};
 
     // we construct list of external variables
-    ex_var = list_from_formula(vars, dset, err);
-    if (err) {
-        handle_gretl_error(err);
-    }
+    ex_var = list_from_formula(vars, dset, err_);
+    if (err_) handle_gretl_error(err_);
 
     // we set up options
     unpack_kwargs_test(opt_, type, kwargs, order);
 
     // we perform the test
     if (type == "adf") {
-        err = adf_test(order, ex_var.get(), dset, opt_, GP_.prn_ptr());
+        err_ = adf_test(order, ex_var.get(), dset, opt_, GP_.prn_ptr());
     } else if (type == "bds") {
-        err = bds_test_driver(order, ex_var.get(), dset, opt_, GP_.prn_ptr());
+        err_ = bds_test_driver(order, ex_var.get(), dset, opt_, GP_.prn_ptr());
     } else if (type == "coint") {
-        err = engle_granger_test(order, ex_var.get(), dset, opt_, GP_.prn_ptr());
+        err_ = engle_granger_test(order, ex_var.get(), dset, opt_, GP_.prn_ptr());
     } else if (type == "corrgm") {
-        err = corrgram(ex_var.get()[1], order, 0, dset, opt_, GP_.prn_ptr());
+        err_ = corrgram(ex_var.get()[1], order, 0, dset, opt_, GP_.prn_ptr());
     } else if (type == "difftest") {
-        err = diff_test(ex_var.get(), dset, opt_, GP_.prn_ptr());
+        err_ = diff_test(ex_var.get(), dset, opt_, GP_.prn_ptr());
     } else if (type == "johansen") {
-        err = johansen_test_simple(order, ex_var.get(), dset, opt_, GP_.prn_ptr());
+        err_ = johansen_test_simple(order, ex_var.get(), dset, opt_, GP_.prn_ptr());
     } else if (type == "kpss") {
-        err = kpss_test(order, ex_var.get(), dset, opt_, GP_.prn_ptr());
+        err_ = kpss_test(order, ex_var.get(), dset, opt_, GP_.prn_ptr());
     } else if (type == "levinlin") {
         // if we have 'order_m' it means that values were passed as matrix
         if (kwargs.contains("order_m")) {
@@ -1587,36 +1550,33 @@ void GretlDataset::test (const std::string &type, const std::string &vars,
                     i++;
                 }
             }
-            err = llc_test_driver(mat.str().c_str(), ex_var.get(),
-                                  dset, opt_, GP_.prn_ptr());
+            err_ = llc_test_driver(mat.str().c_str(), ex_var.get(),
+                                   dset, opt_, GP_.prn_ptr());
         } else {
-            err = llc_test_driver(std::to_string(order).c_str(), ex_var.get(),
-                                  dset, opt_, GP_.prn_ptr());
+            err_ = llc_test_driver(std::to_string(order).c_str(), ex_var.get(),
+                                   dset, opt_, GP_.prn_ptr());
         }
     } else if (type == "meantest") {
-        err = means_test(ex_var.get(), dset, opt_, GP_.prn_ptr());
+        err_ = means_test(ex_var.get(), dset, opt_, GP_.prn_ptr());
     } else if (type == "normtest") {
         if (ex_var.get()[0] > 1) {
             throw std::invalid_argument("normtest takes just one series");
         }
-        err = gretl_normality_test(ex_var.get()[1], dset, opt_, GP_.prn_ptr());
+        err_ = gretl_normality_test(ex_var.get()[1], dset, opt_, GP_.prn_ptr());
     } else if (type == "runs") {
         if (ex_var.get()[0] > 1) {
             throw std::invalid_argument("runs takes just one series");
         }
-        err = runs_test(ex_var.get()[1], dset, opt_, GP_.prn_ptr());
+        err_ = runs_test(ex_var.get()[1], dset, opt_, GP_.prn_ptr());
     } else if (type == "vartest") {
         if (ex_var.get()[0] != 2) {
             throw std::invalid_argument("vartest takes exactly two series");
         }
-        err = vars_test(ex_var.get(), dset, opt_, GP_.prn_ptr());
+        err_ = vars_test(ex_var.get(), dset, opt_, GP_.prn_ptr());
     } else {
         throw std::invalid_argument(type + " is a model-based test");
     }
-
-    if (err) {
-        handle_gretl_error(err);
-    }
+    if (err_) handle_gretl_error(err_);
 
     res[py::cast("test")] = get_accessor("$test");
     res[py::cast("pvalue")] = get_accessor("$pvalue");
@@ -1637,10 +1597,8 @@ py::object GretlDataset::get_series (const std::string &series) const
     double *x = dset->Z[get_series_id(series)];
 
     auto res = convert_GretlType_to_GretlTypes(GRETL_TYPE_SERIES,
-                                               x, dset->n, err);
-    if (err) {
-        handle_gretl_error(err);
-    }
+                                               x, dset->n, err_);
+    if (err_) handle_gretl_error(err_);
 
     return variant_to_pyobject(std::move(*res));
 }
@@ -1658,15 +1616,13 @@ DNumPyArrayFC GretlDataset::hpfilt (const std::string &series,
 
     // we do the job
     if (one_sided) {
-        err = oshp_filter(dset->Z[get_series_id(series)],
-                          res.mutable_data(), dset, hp_lambda, opt);
+        err_ = oshp_filter(dset->Z[get_series_id(series)],
+                           res.mutable_data(), dset, hp_lambda, opt);
     } else {
-        err = hp_filter(dset->Z[get_series_id(series)],
-                        res.mutable_data(), dset, hp_lambda, opt);
+        err_ = hp_filter(dset->Z[get_series_id(series)],
+                         res.mutable_data(), dset, hp_lambda, opt);
     }
-    if (err) {
-        handle_gretl_error(err);
-    }
+    if (err_) handle_gretl_error(err_);
 
     return res;
 }
@@ -1680,11 +1636,9 @@ DNumPyArrayFC GretlDataset::bwfilt (const std::string &series,
     DNumPyArrayFC res(dset->n);
 
     // we do the job
-    err = butterworth_filter(dset->Z[get_series_id(series)],
-                             res.mutable_data(), dset, order, omega);
-    if (err) {
-        handle_gretl_error(err);
-    }
+    err_ = butterworth_filter(dset->Z[get_series_id(series)],
+                              res.mutable_data(), dset, order, omega);
+    if (err_) handle_gretl_error(err_);
 
     return res;
 }
@@ -1698,11 +1652,9 @@ DNumPyArrayFC GretlDataset::bkfilt (const std::string &series,
     DNumPyArrayFC res(dset->n);
 
     // we do the job
-    err = bkbp_filter(dset->Z[get_series_id(series)],
-                      res.mutable_data(), dset, f1, f2, k);
-    if (err) {
-        handle_gretl_error(err);
-    }
+    err_ = bkbp_filter(dset->Z[get_series_id(series)],
+                       res.mutable_data(), dset, f1, f2, k);
+    if (err_) handle_gretl_error(err_);
 
     return res;
 }

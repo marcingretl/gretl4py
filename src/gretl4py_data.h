@@ -85,6 +85,7 @@ private:
     GretlPrint GP_ = GretlPrint();          // printer (instance wide)
     mutable GretlTypesPtr RES_other_;       // other results (accessor, tests, ets)
     gretlopt opt_ = OPT_NONE;               // instance-wide options
+    mutable int err_ = 0;
 
     void allocate_dset_ (void);
 
@@ -96,7 +97,6 @@ private:
 
     gretlopt setobs_opt_from_structure_ (int structure);
 public:
-    mutable int err = 0;
     bool is_default = false;
     DATASET *dset = NULL;
     std::string source;
