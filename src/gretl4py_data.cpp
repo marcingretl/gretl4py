@@ -1991,17 +1991,13 @@ GretlPackage::GretlPackage (const std::string &pkg_name,
     // we try to find a path and load the package
     *path = '\0';
     if (suffix.empty()) {
-        err = get_full_filename((pkg_name + ".gfn").c_str(), path, OPT_I);
+        err_ = get_full_filename((pkg_name + ".gfn").c_str(), path, OPT_I);
     } else {
-        err = get_full_filename((pkg_name + suffix).c_str(), path, OPT_I);
+        err_ = get_full_filename((pkg_name + suffix).c_str(), path, OPT_I);
     }
-    if (err) {
-        handle_gretl_error(err);
-    }
-    pkg_ = get_function_package_by_filename(path, &err);
-    if (err) {
-        handle_gretl_error(err);
-    }
+    if (err_) handle_gretl_error(err_);
+    pkg_ = get_function_package_by_filename(path, &err_);
+    if (err_) handle_gretl_error(err_);
     full_path_ = path;
     auto pos = full_path_.find_last_of("/\\");
     if (pos != std::string::npos) {
@@ -2011,10 +2007,8 @@ GretlPackage::GretlPackage (const std::string &pkg_name,
     }
 
     // we take info bundle
-    err = bundle_function_package_info(full_path_.c_str(), GB_.get_ptr());
-    if (err) {
-        handle_gretl_error(err);
-    }
+    err_ = bundle_function_package_info(full_path_.c_str(), GB_.get_ptr());
+    if (err_) handle_gretl_error(err_);
 
     // setup some basic info about package
     if (pkg_name != function_package_get_name(pkg_)) {
@@ -2094,10 +2088,8 @@ GretlPackage::GretlPackage (const std::string &pkg_name,
 
 GretlPackage::~GretlPackage (void)
 {
-    err = function_package_unload_full(pkg_name_.c_str());
-    if (err) {
-        std::cerr << errmsg_get_with_default(err) << std::endl;
-    }
+    err_ = function_package_unload_full(pkg_name_.c_str());
+    if (err_) std::cerr << errmsg_get_with_default(err_) << std::endl;
 }
 
 void GretlPackage::check_if_defines_estimator_ (void)
@@ -2125,11 +2117,11 @@ T GretlPackage::get_properties_ (const char *property)
     gchar *val = nullptr;
 
     if constexpr (std::is_same_v<T, DataReq>) {
-        err = function_package_get_properties(pkg_, property, &res, NULL);
+        err_ = function_package_get_properties(pkg_, property, &res, NULL);
     } else {
-        err = function_package_get_properties(pkg_, property, &val, NULL);
+        err_ = function_package_get_properties(pkg_, property, &val, NULL);
     }
-    if (err) handle_gretl_error(err);
+    if (err_) handle_gretl_error(err_);
 
     // we produce output
     if constexpr (std::is_same_v<T, DataReq>) {
@@ -2165,126 +2157,123 @@ void GretlPackage::unpack_kwargs_package_ (const std::string &func_name,
     // original function order, so thanks to that function arguments
     // may be passed in kwargs in arbitrary order
     //
-    if (py::len(kwargs) > 0) {
-        // map function to call with its arguments
-        std::map<std::string, int> func_name_args = get_func_args(func_name);
+    if (py::len(kwargs) == 0) return;
 
-        // vector of func_name_args items ordered by value (int)
-        std::vector<std::pair<std::string, int>> func_name_args_sorted(func_name_args.begin(),
-                                                                       func_name_args.end());
-        std::sort(func_name_args_sorted.begin(), func_name_args_sorted.end(),
-          [](const auto &a, const auto &b)
-          {
-              return a.second < b.second; // sort by value
-          });
+    // map function to call with its arguments
+    std::map<std::string, int> func_name_args = get_func_args(func_name);
 
-        // general options (non function-based)
-        for (const auto &[key, val] : kwargs) {
-            auto key_str = py::cast<std::string>(key);
+    // vector of func_name_args items ordered by value (int)
+    std::vector<std::pair<std::string, int>> func_name_args_sorted(func_name_args.begin(),
+                                                                   func_name_args.end());
+    std::sort(func_name_args_sorted.begin(), func_name_args_sorted.end(),
+      [](const auto &a, const auto &b)
+      {
+          return a.second < b.second; // sort by value
+      });
 
-            if (key_str == "data") {
-                // we use GretlDataset object passed on function call
-                GD = val.cast<GretlDatasetPtr>();
-                continue;
-            } else if (key_str == "quiet" || key_str == "silent") {
-                // do something elsewhere
-                continue;
-            } else {
-                if (!func_name_args.count(key_str)) {
-                    throw std::invalid_argument(key_str +
-                                                ": there is no such argument in function: "
-                                                + func_name);
-                }
-            }
-        }
+    // general options (non function-based)
+    for (const auto &[key, val] : kwargs) {
+        auto key_str = py::cast<std::string>(key);
 
-        // function-related options (arguments pushed on stack)
-        std::string arg_name;   // variable to be pushed on stack (name)
-        void *arg_value;        // pointer to variable's value to be pushed on stack
-        GretlType arg_type;     // variable's type
-        double darg_value;      // value to be pushed on stack (if double)
-
-        for (const auto &[key, arg_no] : func_name_args_sorted) {
-            if (!kwargs.contains(key)) {
-                continue;
-            }
-            auto val = kwargs[py::cast(key)];
-            PythonArgInfo arginfo = inspect_pyobject(val);
-            arg_type = GRETL_TYPE_NONE;
-            arg_value = NULL;
-            auto key_type = static_cast<GretlType>(fn_param_type(func_get_ptr(func_name), arg_no));
-
-            if (key_type == GRETL_TYPE_SERIES && GD) {
-                // special case: for series we swap situation and
-                // evaluate arg via type declared in a function
-                arg_name = py::cast<std::string>(val);
-                int vnum = GD->get_series_id(arg_name);
-                err = push_function_arg(func_call, arg_name.c_str(),
-                                        NULL, GRETL_TYPE_USERIES, &vnum);
-                if (err) {
-                    handle_gretl_error(err);
-                }
-                continue;
-            } else if (arginfo.gtype == GRETL_TYPE_BUNDLE) {
-                // note: here we deal with both: GRETL_TYPE_BUNDLE and GRETL_TYPE_BUNDLE_REF
-                // final distinction is made by key_type
-                auto GB = val.cast<GretlBundlePtr>();
-                err = push_function_arg(func_call, NULL, NULL,
-                                        key_type, GB->get_ptr());
-                continue;
-            } else if (arginfo.gtype == GRETL_TYPE_STRING) {
-                // special case: we need to know if we deal with
-                // user defined variable uv or string per se
-                arg_name = py::cast<std::string>(val);
-                bool is_ref_user_var = false;
-                // here we check if we deal with reference
-                if (arg_name.substr(0, 1) == "&") {
-                    is_ref_user_var = true;
-                    arg_name = arg_name.substr(1);
-                }
-                if (UserVars.find(arg_name) != UserVars.end()) {
-                    user_var *uv = get_user_var_by_name(arg_name.c_str());
-                    // for reference, we change uv type!!!
-                    arg_type = is_ref_user_var ?
-                        gretl_type_get_ref_type(user_var_get_type(uv))
-                        : user_var_get_type(uv);
-                    err = push_function_arg(func_call, arg_name.c_str(), uv,
-                                            arg_type, user_var_get_value(uv));
-                    if (err) {
-                        handle_gretl_error(err);
-                    }
-                    continue;
-                } else {
-                    char *arg_name_copy = strdup(arg_name.c_str());
-                    arg_value = static_cast<void*>(arg_name_copy);
-                    arg_type = arginfo.gtype;
-                }
-            } else if (arginfo.gtype == GRETL_TYPE_BOOL ||
-                       arginfo.gtype == GRETL_TYPE_DOUBLE ||
-                       arginfo.gtype == GRETL_TYPE_INT) {
-                darg_value = py::cast<double>(val);
-                arg_value = &darg_value;
-                arg_type = GRETL_TYPE_DOUBLE;
-            } else {
-                throw std::runtime_error("variable " + key +
-                                         ": unsupported type: "
-                                         + arginfo.pytype);
-            }
-            err = push_function_arg(func_call, key.c_str(),
-                                    NULL, arg_type, arg_value);
-            if (err) {
-                handle_gretl_error(err);
+        if (key_str == "data") {
+            // we use GretlDataset object passed on function call
+            GD = val.cast<GretlDatasetPtr>();
+            continue;
+        } else if (key_str == "quiet" || key_str == "silent") {
+            // do something elsewhere
+            continue;
+        } else {
+            if (!func_name_args.count(key_str)) {
+                throw std::invalid_argument(key_str +
+                                            ": there is no such argument in function: "
+                                            + func_name);
             }
         }
     }
+
+    // function-related options (arguments pushed on stack)
+    std::string arg_name;   // variable to be pushed on stack (name)
+    void *arg_value;        // pointer to variable's value to be pushed on stack
+    GretlType arg_type;     // variable's type
+    double darg_value;      // value to be pushed on stack (if double)
+
+    for (const auto &[key, arg_no] : func_name_args_sorted) {
+        if (!kwargs.contains(key)) {
+            continue;
+        }
+        auto val = kwargs[py::cast(key)];
+        PythonArgInfo arginfo = inspect_pyobject(val);
+        arg_type = GRETL_TYPE_NONE;
+        arg_value = NULL;
+        auto key_type = static_cast<GretlType>(fn_param_type(func_get_ptr(func_name), arg_no));
+
+        if (key_type == GRETL_TYPE_SERIES && GD) {
+            // special case: for series we swap situation and
+            // evaluate arg via type declared in a function
+            arg_name = py::cast<std::string>(val);
+            int vnum = GD->get_series_id(arg_name);
+            err_ = push_function_arg(func_call, arg_name.c_str(),
+                                     NULL, GRETL_TYPE_USERIES, &vnum);
+            if (err_) handle_gretl_error(err_);
+            continue;
+        } else if (arginfo.gtype == GRETL_TYPE_BUNDLE) {
+            // note: here we deal with both: GRETL_TYPE_BUNDLE and GRETL_TYPE_BUNDLE_REF
+            // final distinction is made by key_type
+            auto GB = val.cast<GretlBundlePtr>();
+            err_ = push_function_arg(func_call, NULL, NULL,
+                                     key_type, GB->get_ptr());
+            continue;
+        } else if (arginfo.gtype == GRETL_TYPE_STRING) {
+            // special case: we need to know if we deal with
+            // user defined variable uv or string per se
+            arg_name = py::cast<std::string>(val);
+            bool is_ref_user_var = false;
+            // here we check if we deal with reference
+            if (arg_name.substr(0, 1) == "&") {
+                is_ref_user_var = true;
+                arg_name = arg_name.substr(1);
+            }
+            if (UserVars.find(arg_name) != UserVars.end()) {
+                user_var *uv = get_user_var_by_name(arg_name.c_str());
+                // for reference, we change uv type!!!
+                arg_type = is_ref_user_var ?
+                    gretl_type_get_ref_type(user_var_get_type(uv))
+                    : user_var_get_type(uv);
+                err_ = push_function_arg(func_call, arg_name.c_str(), uv,
+                                         arg_type, user_var_get_value(uv));
+                if (err_) handle_gretl_error(err_);
+                continue;
+            } else {
+                char *arg_name_copy = strdup(arg_name.c_str());
+                arg_value = static_cast<void*>(arg_name_copy);
+                arg_type = arginfo.gtype;
+            }
+        } else if (arginfo.gtype == GRETL_TYPE_BOOL ||
+                   arginfo.gtype == GRETL_TYPE_DOUBLE ||
+                   arginfo.gtype == GRETL_TYPE_INT) {
+            darg_value = py::cast<double>(val);
+            arg_value = &darg_value;
+            arg_type = GRETL_TYPE_DOUBLE;
+        } else {
+            throw std::runtime_error("variable " + key +
+                                     ": unsupported type: "
+                                     + arginfo.pytype);
+        }
+        err_ = push_function_arg(func_call, key.c_str(),
+                                 NULL, arg_type, arg_value);
+        if (err_) handle_gretl_error(err_);
+    }
+}
+
+int GretlPackage::get_err (void) const
+{
+    return err_;
 }
 
 std::string GretlPackage::repr_impl (void)
 {
-    err = print_function_package_info(full_path_.c_str(), 0, GP_.prn_ptr());
-    if (err) {
-        handle_gretl_error(err);
-    }
+    err_ = print_function_package_info(full_path_.c_str(), 0, GP_.prn_ptr());
+    if (err_) handle_gretl_error(err_);
 
     return GP_.get_buffer();
 }
@@ -2357,9 +2346,7 @@ void GretlPackage::show_functions (void) const
 
 py::list GretlPackage::get_functions (void) const
 {
-    if (func_args_.empty()) {
-        throw std::runtime_error("no available functions");
-    }
+    if (func_args_.empty()) throw std::runtime_error("no available functions");
 
     py::list res;
 
@@ -2419,9 +2406,7 @@ GretlPackageRes GretlPackage::function_exec (const std::string &func_name,
 {
     // we prepare function to call
     fncall *func_call = user_func_get_fncall(func_get_ptr(func_name));
-    if (!func_call) {
-        throw std::runtime_error("unable to load '" + func_name + "' function");
-    }
+    if (!func_call) throw std::runtime_error("unable to load '" + func_name + "' function");
 
     // we unpack parameters
     unpack_kwargs_package_(func_name, func_call, GD, kwargs);
@@ -2438,11 +2423,9 @@ GretlPackageRes GretlPackage::function_exec (const std::string &func_name,
     res.set_type(func_get_res_type(func_name));
 
     // function execution
-    err = gretl_function_exec(func_call, res.type, GD ? GD->dset : NULL,
-                              res.out_ptr(), GP.prn_ptr());
-    if (err) {
-        handle_gretl_error(err);
-    }
+    err_ = gretl_function_exec(func_call, res.type, GD ? GD->dset : NULL,
+                               res.out_ptr(), GP.prn_ptr());
+    if (err_) handle_gretl_error(err_);
 
     // for GRETL_TYPE_SERIES we must record length
     if (res.type == GRETL_TYPE_SERIES) {

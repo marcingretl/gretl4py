@@ -1,3 +1,7 @@
+version 0.41:
+    - start working on general printer (available as 'gretl.print()')
+    - some code refactoring (simplified and cleaned up)
+
 version 0.4:
     - add GretlaDataset::dummyfi() method
     - add '--unit' and '--time' options to GretlaDataset::sample()

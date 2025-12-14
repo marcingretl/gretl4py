@@ -269,6 +269,7 @@ private:
     MainFuncNoOptDef main_func_nd_;
     std::string full_path_;             // path to package file (full)
     std::string base_dir_;              // path to the package
+    int err_ = 0;
 
     void check_if_defines_estimator_ (void);
 
@@ -279,10 +280,10 @@ private:
                                  fncall *func_call, GretlDatasetPtr &GD,
                                  const py::kwargs &kwargs);
 public:
-    int err = 0;
-
     GretlPackage (const std::string &pkg_name, const std::string &suffix);
     ~GretlPackage (void);
+
+    int get_err (void) const;
 
     std::string repr_impl (void);
 
