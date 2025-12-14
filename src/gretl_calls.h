@@ -56,12 +56,12 @@ void do_gretl_print (const std::string &varlist, const py::kwargs &kwargs);
 double do_gretl_get_pvalue (const std::string &dist, double value,
                             const py::array_t<double> &params = py::array());
 
-py::object do_include (const std::string &name);
+py::object do_gretl_include (const std::string &name);
 
 GretlPackagePtr load_package (const std::string &pkgname,
                               const std::string &suffix = "");
 
-                              template<int MODE>
+template<int MODE>
 double gretl_get_pvalue_critval_pdf_cdf (const std::string &dist, double value,
                                          const py::object &param = py::none());
 

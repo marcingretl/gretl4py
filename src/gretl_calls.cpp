@@ -478,7 +478,7 @@ GretlPackagePtr load_package (const std::string &pkgname,
     return res;
 }
 
-py::object do_include (const std::string &name)
+py::object do_gretl_include (const std::string &name)
 {
     //
     // this function mimics libgretl's 'include' command
