@@ -773,7 +773,7 @@ GretlModel_NSE_arima::GretlModel_NSE_arima (const std::string &y,
 
     // we set up "y"
     y_number_ = this->GD_->get_series_id(y, false);
-    if (y_number_ == -1) throw std::invalid_argument("There is no variable: " + y);
+    if (y_number_ == -1) handle_gretl_error(E_UNKVAR);
 
     // we set up non-seasonal parameters
     p_ = d_ = q_ = 0;
@@ -882,7 +882,7 @@ void GretlModel_NSE_Driver<F, CI>::fit (void)
     } else {
         var_list_ = list_from_formula(formula_, GD_->dset, err_);
     }
-    if (!var_list_) throw std::runtime_error("Formula rendering failed");
+    if (!var_list_) handle_gretl_error(E_ALLOC);
 
     // we call F as an estimator
     if constexpr (use_ldco_sig(CI)) {
@@ -972,7 +972,7 @@ void GretlModel_NSE_Driver_quantreg::fit (void)
 
     // we define list of variables
     var_list_ = list_from_formula(formula_, GD_->dset, err_);
-    if (!var_list_) throw std::runtime_error("Formula rendering failed");
+    if (!var_list_) handle_gretl_error(E_ALLOC);
 
     // we do the job
     *model_ = quantreg_driver(tau_.c_str(), var_list_.get(),
@@ -1020,7 +1020,7 @@ void GretlModel_NSE_Driver_dpanel::fit (void)
     // we define list of variables
     regexp_extract_<DPANEL>(formula_, formula_left, formula_right);
     var_list_ = list_from_formula(formula_left, GD_->dset, err_);
-    if (!var_list_) throw std::runtime_error("Formula rendering failed");
+    if (!var_list_) handle_gretl_error(E_ALLOC);
 
     // we setup dpanel_list: lags + var_list
     dpanel_list.reset(gretl_list_new(var_list_.get()[0] + 2));
@@ -1074,7 +1074,7 @@ void GretlModel_NSE_Driver_tobit::fit (void)
 
     // we define list of variables
     var_list_ = list_from_formula(formula_, GD_->dset, err_);
-    if (!var_list_) throw std::runtime_error("Formula rendering failed");
+    if (!var_list_) handle_gretl_error(E_ALLOC);
 
     // we do the job
     *model_ = tobit_model(var_list_.get(), llimit_, rlimit_,
@@ -1658,7 +1658,7 @@ void GretlModel_NME::fit (void)
     // we define equations
     for (const auto &el : equations_) {
         var_list_ = list_from_formula(el, GD_->dset, err_);
-        if (!var_list_) throw std::runtime_error("Formula rendering failed");
+        if (!var_list_) handle_gretl_error(E_ALLOC);
         err_ = equation_system_append(model_, var_list_.get());
         if (err_) handle_gretl_error(err_);
     }

@@ -720,7 +720,11 @@ template void genr<std::string>(const std::string&, const std::string&);
 
 void handle_gretl_error (int err)
 {
-    const std::unordered_set<GretlError> ArgErr{ E_ARGS, E_INVARG };
+    //
+    // here we handle libgretl errors
+    // note: ArgErr in not complete!!!
+    //
+    const std::unordered_set<GretlError> ArgErr{ E_ARGS, E_INVARG, E_UNKVAR };
     const char *msg = errmsg_get_with_default(err);
 
     if (ArgErr.count(static_cast<GretlError>(err))) {
