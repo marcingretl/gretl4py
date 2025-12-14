@@ -293,27 +293,21 @@ static std::string extract_varname (std::string formula)
 //
 GretlPrint::GretlPrint (PrnType prn_type) : prn_type_(prn_type)
 {
-    prn_ = gretl_print_new(this->prn_type_, &err);
-    if (err) {
-        handle_gretl_error(err);
-    }
+    prn_ = gretl_print_new(this->prn_type_, &err_);
+    if (err_) handle_gretl_error(err_);
 }
 
 GretlPrint::~GretlPrint (void)
 {
-    if (prn_ != NULL) {
-        gretl_print_destroy(prn_);
-    }
+    if (prn_ != NULL) gretl_print_destroy(prn_);
 }
 
 PRN *GretlPrint::prn_ptr (void)
 {
     // at first we always reset a buffer
     if (prn_type_ == GRETL_PRINT_BUFFER) {
-        err = gretl_print_reset_buffer(prn_);
-        if (err) {
-            handle_gretl_error(err);
-        }
+        err_ = gretl_print_reset_buffer(prn_);
+        if (err_) handle_gretl_error(err_);
     }
 
     return prn_;

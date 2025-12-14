@@ -34,9 +34,8 @@ class GretlPrint
 private:
     PRN *prn_ = NULL;           // libgretl PRN struct
     PrnType prn_type_;          // libgretl printer type
+    int err_ = 0;
 public:
-    int err = 0;
-
     GretlPrint (PrnType prn_type = GRETL_PRINT_BUFFER);  // by default we use buffered printer
     ~GretlPrint (void);
 
