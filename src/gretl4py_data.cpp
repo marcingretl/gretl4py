@@ -64,9 +64,7 @@ static int get_int_from_python_dict (const py::dict &pydict,
     if (pydict.contains(key)) {
         auto element = pydict[py::cast(key)];
 
-        if (is_pyint(element)) {
-            ret = py::cast<int>(element);
-        }
+        if (is_pyint(element)) ret = py::cast<int>(element);
     }
 
     return ret;
@@ -126,9 +124,7 @@ static void numpy_array_to_gretl_storage (const py::dict &pydict, DATASET *dset)
     int err = 0;
 
     NumPyArray_extract(py::cast<py::array>(pydict[py::cast("data_array")]), arr_view);
-    if (!arr_view.data) {
-        throw std::runtime_error("NumPy array: null pointer.");
-    }
+    if (!arr_view.data) throw std::runtime_error("NumPy array: null pointer.");
 
     dset->n = arr_view.rows;
     dset->v = arr_view.cols + 1;
@@ -195,9 +191,7 @@ std::string gretl4py_trim (std::string &s)
 
 void NumPyArray_extract (const py::array &arr, NumPyArrayView &view)
 {
-    if (arr.ndim() > 2) {
-        throw std::runtime_error("Given array has more than two dimensions.");
-    }
+    if (arr.ndim() > 2) throw std::runtime_error("Given array has more than two dimensions.");
 
     view.is_double = arr.dtype().is(py::dtype::of<double>());
     view.dtype = arr.dtype();
@@ -284,9 +278,7 @@ GretlTypesPtr convert_GretlType_to_GretlTypes (GretlType t, void *gr_obj_ptr,
 
         std::memcpy(mat.mutable_data(), gretl_mat->val,
                     gretl_mat->rows * gretl_mat->cols * sizeof(double));
-        if ((std::min)(gretl_mat->rows, gretl_mat->cols) == 1) { // this is to prevent 'min' macro expansion on MS SDK
-            mat = mat.reshape({mat.size()});
-        }
+        if ((std::min)(gretl_mat->rows, gretl_mat->cols) == 1) mat = mat.reshape({mat.size()});
         *res = mat;
         break;
     }
@@ -358,14 +350,10 @@ void move_to_python_container (PyWrapped &wrapped_obj, Item &&item,
 
     // we move an item to the container
     if constexpr (std::is_same_v<ContainerType, py::list>) {
-        if (!is_pylist(dst)) {
-            throw std::runtime_error("attribute '" + std::string(container) + "' is not a list");
-        }
+        if (!is_pylist(dst)) throw std::runtime_error("attribute '" + std::string(container) + "' is not a list");
         dst.cast<py::list>().append(std::forward<Item>(item));
     } else if constexpr (std::is_same_v<ContainerType, py::dict>) {
-        if (!is_pydict(dst)) {
-            throw std::runtime_error("attribute '" + std::string(container) + "' is not a dictionary");
-        }
+        if (!is_pydict(dst)) throw std::runtime_error("attribute '" + std::string(container) + "' is not a dictionary");
         dst.cast<py::dict>()[py::cast(key)] = std::forward<Item>(item);
     } else {
         static_assert(always_false<ContainerType>, "move_to_python_container(): unknown Container type");
@@ -591,14 +579,10 @@ GretlDataset::GretlDataset (const GretlDataset &src) : id_(next_obj_id_++)
     //
     // copy constructor
     //
-    if (!src.dset) {
-        handle_gretl_error(E_DATA);
-    }
+    if (!src.dset) handle_gretl_error(E_DATA);
 
     allocate_dset_();
-    if (!dset) {
-        handle_gretl_error(E_ALLOC);
-    }
+    if (!dset) handle_gretl_error(E_ALLOC);
 
     // simple types
     dset->v = src.dset->v;
@@ -659,9 +643,7 @@ GretlDataset::GretlDataset (const GretlDataset &src) : id_(next_obj_id_++)
 
 GretlDataset::~GretlDataset (void)
 {
-    if (is_default) {
-        DSET = nullptr;
-    }
+    if (is_default) DSET = nullptr;
     free_dset_();
 }
 
@@ -733,9 +715,7 @@ int GretlDataset::get_series_id (const std::string &series, const bool verbose) 
     int var_num = -1;
 
     var_num = current_series_index(dset, series.c_str());
-    if (var_num < 0 && verbose) {
-        throw std::invalid_argument("'" + series + "': series does not exist");
-    }
+    if (var_num < 0 && verbose) throw std::invalid_argument("'" + series + "': series does not exist");
 
     return var_num;
 }
@@ -808,9 +788,7 @@ void GretlDataset::to_file (const std::string &fname,
             const std::string &key = item.first.cast<std::string>();
 
             if (key == "vars") {
-                if (!is_pystr(item.second)) {
-                    throw std::invalid_argument("'vars' must be a string");
-                }
+                if (!is_pystr(item.second)) throw std::invalid_argument("'vars' must be a string");
                 auto val_str = py::cast<std::string>(item.second);
 
                 varlist = list_from_formula(val_str, dset, err_);
@@ -859,9 +837,7 @@ void GretlDataset::add_series (const py::array &data,
     NumPyArrayView view;
 
     NumPyArray_extract(data, view);
-    if ((std::min)(view.cols, view.rows) > 1) {
-        throw std::invalid_argument("given variable is not a vector");
-    }
+    if ((std::min)(view.cols, view.rows) > 1) throw std::invalid_argument("given variable is not a vector");
     int n = (std::max)(view.cols, view.rows);
 
     // we use std::malloc since memory will be deallocated by libgretl
@@ -909,9 +885,7 @@ void GretlDataset::transforms (const std::string &vars,
     // we set opts
     if (py::len(kwargs) > 0) {
         for (auto &item : kwargs) {
-            if (!is_pystr(item.first)) {
-                throw std::invalid_argument("option key must be a string");
-            }
+            if (!is_pystr(item.first)) throw std::invalid_argument("option key must be a string");
             const std::string &key = item.first.cast<std::string>();
             gretl_valid_long_opt(opt_, CI, key, item.second);
         }
@@ -1010,9 +984,7 @@ void GretlDataset::print (const py::kwargs &kwargs)
 
     for (auto &item : kwargs) {
         // ensure the key is a string
-        if (!is_pystr(item.first)) {
-            throw std::invalid_argument("option key must be a string");
-        }
+        if (!is_pystr(item.first)) throw std::invalid_argument("option key must be a string");
         const std::string &key = item.first.cast<std::string>();
 
         // we use ::to_string() to get an owned buffer
@@ -1388,14 +1360,9 @@ void GretlDataset::setobs (const py::kwargs &kwargs)
         return;
     }
 
-    if (argc < 2) {
-        throw std::invalid_argument("too few arguments for 'setobs'");
-    }
-
+    if (argc < 2) throw std::invalid_argument("too few arguments for 'setobs'");
     if (pcount > 0) {
-        if (rcount > 0 || opt_ != OPT_NONE) {
-            throw std::invalid_argument("invalid mixed modes in 'setobs'");
-        }
+        if (rcount > 0 || opt_ != OPT_NONE) throw std::invalid_argument("invalid mixed modes in 'setobs'");
         // equiv. to --panel-vars
         opt_ = OPT_P;
     }
@@ -1406,9 +1373,7 @@ void GretlDataset::setobs (const py::kwargs &kwargs)
 
 void GretlDataset::set_as_default (void)
 {
-    if (DSET) {
-        DSET->is_default = false;
-    }
+    if (DSET) DSET->is_default = false;
     DSET = shared_from_this();
     is_default = true;
 }
@@ -1437,7 +1402,8 @@ void GretlDataset::lags (const std::string &vars, int order)
 
     // we do the job
     int *varlist_raw_ptr = varlist.release();
-    err_ = list_laggenr(&varlist_raw_ptr, 1, order, NULL, dset, 0, OPT_NONE);
+    err_ = list_laggenr(&varlist_raw_ptr, 1, order,
+                        NULL, dset, 0, OPT_NONE);
     varlist.reset(varlist_raw_ptr);
     if (err_) handle_gretl_error(err_);
 
@@ -1559,19 +1525,13 @@ void GretlDataset::test (const std::string &type, const std::string &vars,
     } else if (type == "meantest") {
         err_ = means_test(ex_var.get(), dset, opt_, GP_.prn_ptr());
     } else if (type == "normtest") {
-        if (ex_var.get()[0] > 1) {
-            throw std::invalid_argument("normtest takes just one series");
-        }
+        if (ex_var.get()[0] > 1) throw std::invalid_argument("normtest takes just one series");
         err_ = gretl_normality_test(ex_var.get()[1], dset, opt_, GP_.prn_ptr());
     } else if (type == "runs") {
-        if (ex_var.get()[0] > 1) {
-            throw std::invalid_argument("runs takes just one series");
-        }
+        if (ex_var.get()[0] > 1) throw std::invalid_argument("runs takes just one series");
         err_ = runs_test(ex_var.get()[1], dset, opt_, GP_.prn_ptr());
     } else if (type == "vartest") {
-        if (ex_var.get()[0] != 2) {
-            throw std::invalid_argument("vartest takes exactly two series");
-        }
+        if (ex_var.get()[0] != 2) throw std::invalid_argument("vartest takes exactly two series");
         err_ = vars_test(ex_var.get(), dset, opt_, GP_.prn_ptr());
     } else {
         throw std::invalid_argument(type + " is a model-based test");
@@ -1581,9 +1541,7 @@ void GretlDataset::test (const std::string &type, const std::string &vars,
     res[py::cast("test")] = get_accessor("$test");
     res[py::cast("pvalue")] = get_accessor("$pvalue");
     res[py::cast("summary")] = GP_.get_buffer();
-    if (!kwargs.contains("silent")) {
-        GP_.print();
-    }
+    if (!kwargs.contains("silent")) GP_.print();
 
     // we register result
     move_to_python_container<GretlDataset, py::dict, py::list>(*this, std::move(res), "tests");
@@ -1665,9 +1623,7 @@ DNumPyArrayFC GretlDataset::bkfilt (const std::string &series,
 //
 GretlBundle::GretlBundle (void) : b_(gretl_bundle_new())
 {
-    if (!b_) {
-        handle_gretl_error(E_ALLOC);
-    }
+    if (!b_) handle_gretl_error(E_ALLOC);
 }
 
 GretlBundle::GretlBundle (MODEL *model, DATASET *dset)
@@ -1705,9 +1661,7 @@ GretlBundle::GretlBundle (gretl_bundle *src) : free_b_(false)
 
 GretlBundle::~GretlBundle (void)
 {
-    if (free_b_ && b_) {
-        gretl_bundle_destroy(b_);
-    }
+    if (free_b_ && b_) gretl_bundle_destroy(b_);
 }
 
 template <typename T>
@@ -1720,10 +1674,7 @@ void GretlBundle::extract_ (const T &t)
     int n_keys = 0;
 
     char **keys = gretl_bundle_get_keys_raw(b_, &n_keys);
-    if (!keys || n_keys <= 0) {
-        throw std::runtime_error("didn't get any keys from bundle");
-    }
-
+    if (!keys || n_keys <= 0) throw std::runtime_error("didn't get any keys from bundle");
     for (int i=0; i<n_keys; ++i) {
         const char *key = keys[i];
 
@@ -1746,9 +1697,7 @@ int GretlBundle::get_err (void) const
 
 py::dict GretlBundle::to_dict (void)
 {
-    if (as_dict_.empty()) {
-        extract_<py::dict>(py::dict());
-    }
+    if (as_dict_.empty()) extract_<py::dict>(py::dict());
 
     return as_dict_;
 }
@@ -1810,10 +1759,7 @@ py::list GretlBundle::keys()
     int n_keys = 0;
 
     char **keys = gretl_bundle_get_keys_raw(b_, &n_keys);
-    if (!keys || n_keys <= 0) {
-        throw std::runtime_error("didn't get any keys from bundle");
-    }
-
+    if (!keys || n_keys <= 0) throw std::runtime_error("didn't get any keys from bundle");
     for (int i=0; i<n_keys; ++i) {
         res.append(keys[i]);
     }
@@ -2150,9 +2096,7 @@ void GretlPackage::unpack_kwargs_package_ (const std::string &func_name,
     double darg_value;      // value to be pushed on stack (if double)
 
     for (const auto &[key, arg_no] : func_name_args_sorted) {
-        if (!kwargs.contains(key)) {
-            continue;
-        }
+        if (!kwargs.contains(key)) continue;
         auto val = kwargs[py::cast(key)];
         PythonArgInfo arginfo = inspect_pyobject(val);
         arg_type = GRETL_TYPE_NONE;
@@ -2241,9 +2185,7 @@ void GretlPackage::set_main (const std::string &name)
     }
 
     // we register all non-optional arguments with types
-    if (!main_func_nd_.empty()) {
-        main_func_nd_.clear();
-    }
+    if (!main_func_nd_.empty()) main_func_nd_.clear();
     auto main_func_args = func_args_.at(name);
     for (const auto &[key, val] : main_func_args) {
         if (!fn_param_optional(it->second, val) && !fn_param_has_default(it->second, val)) {
@@ -2259,9 +2201,7 @@ std::string GretlPackage::get_name (void) const
 
 void GretlPackage::show_functions (void) const
 {
-    if (func_args_.empty()) {
-        throw std::runtime_error("no available functions");
-    }
+    if (func_args_.empty()) throw std::runtime_error("no available functions");
 
     GretlType type;
     std::string type_str;
@@ -2380,9 +2320,7 @@ GretlPackageRes GretlPackage::function_exec (const std::string &func_name,
     if (err_) handle_gretl_error(err_);
 
     // for GRETL_TYPE_SERIES we must record length
-    if (res.type == GRETL_TYPE_SERIES) {
-        res.n = GD->dset->n;
-    }
+    if (res.type == GRETL_TYPE_SERIES) res.n = GD->dset->n;
 
     return res;
 }

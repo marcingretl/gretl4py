@@ -146,9 +146,7 @@ GretlBundlePtr about (bool do_print)
 {
     int err = 0;
     gretl_bundle *b = get_sysinfo_bundle(&err);
-    if (err) {
-        handle_gretl_error(err);
-    }
+    if (err) handle_gretl_error(err);
     GretlBundlePtr GB_sysinfo = std::make_shared<GretlBundle>(b);
     GretlBundlePtr GB_strings = std::make_shared<GretlBundle>();
     GretlBundlePtr res = std::make_shared<GretlBundle>();
@@ -217,11 +215,9 @@ static gretlopt unpack_kwargs_command (GretlCmdIndex ci,
     //
     gretlopt opt = OPT_NONE;
 
-    if (len(kwargs) > 0) {
+    if (py::len(kwargs) > 0) {
         for (auto &item : kwargs) {
-            if (!is_pystr(item.first)) {
-                throw std::invalid_argument("option key must be a string");
-            }
+            if (!is_pystr(item.first)) throw std::invalid_argument("option key must be a string");
             const std::string &key = item.first.cast<std::string>();
 
             if (key == "data") {
@@ -246,9 +242,7 @@ static gretlopt unpack_kwargs_command (GretlCmdIndex ci,
     }
 
     // if we didn't get dataset, let use global
-    if (!GD) {
-        GD = DSET;
-    }
+    if (!GD) GD = DSET;
 
     return opt;
 }
@@ -317,9 +311,7 @@ void GretlPrint::print (void)
 {
     const char *buf = gretl_print_get_buffer(prn_);
 
-    if (buf != NULL && *buf != '\0') { //as of 2025-08-22 we don't print empty line
-        py::print(buf);
-    }
+    if (buf != NULL && *buf != '\0') py::print(buf); //as of 2025-08-22 we don't print empty line
 }
 
 const char *GretlPrint::get_buffer (void)
@@ -656,23 +648,17 @@ void genr (const std::string &name, const T &value)
 
         NumPyArray_extract(value, view);
         uv_ptr = gretl_matrix_alloc(view.rows, view.cols);
-        if (uv_ptr == NULL) {
-            handle_gretl_error(E_ALLOC);
-        }
+        if (uv_ptr == NULL) handle_gretl_error(E_ALLOC);
         NumPyArray_to_gretl_matrix<gretl_matrix>(view, static_cast<gretl_matrix*>(uv_ptr));
     } else if constexpr (std::is_same_v<T, double> || std::is_same_v<T, int>) {
         uv_type = GRETL_TYPE_DOUBLE;
         uv_ptr = std::malloc(sizeof(double));
-        if (uv_ptr == NULL) {
-            handle_gretl_error(E_ALLOC);
-        }
+        if (uv_ptr == NULL) handle_gretl_error(E_ALLOC);
         *static_cast<double*>(uv_ptr) = static_cast<double>(value);
     } else if constexpr (std::is_same_v<T, std::string>) {
         uv_type = GRETL_TYPE_STRING;
         uv_ptr = std::malloc(value.size() + 1);
-        if (uv_ptr == NULL) {
-            handle_gretl_error(E_ALLOC);
-        }
+        if (uv_ptr == NULL) handle_gretl_error(E_ALLOC);
         std::strcpy(static_cast<char*>(uv_ptr), value.c_str());
     } else {
         static_assert(always_false<T>, "genr(): unknown type");
@@ -722,9 +708,7 @@ void gretl_valid_long_opt (gretlopt &opt, GretlCmdIndex ci,
     } else {
         opt_local = valid_long_opt(ci, key.c_str(), &status);
     }
-    if (opt_local == 0) {
-        throw std::invalid_argument("invalid option flag: " + key);
-    }
+    if (opt_local == 0) throw std::invalid_argument("invalid option flag: " + key);
 
     if (status == OPT_NO_PARM) {
         // no parameter wanted, but we'll accept a boolean
@@ -839,9 +823,7 @@ void unpack_kwargs_test (gretlopt &opt, const std::string &type,
 
     // now we loop over kwargs;
     for (auto &item : kwargs) {
-        if (!is_pystr(item.first)) {
-            throw std::invalid_argument("option key must be a string");
-        }
+        if (!is_pystr(item.first)) throw std::invalid_argument("option key must be a string");
         const std::string &key = item.first.cast<std::string>();
 
         if (key == "order") {
@@ -933,9 +915,7 @@ void gretl_generate (const std::string &formula, GretlDatasetPtr GD,
     int err = 0;
 
     if constexpr (GR_TYPE == GRETL_TYPE_LIST || GR_TYPE == GRETL_TYPE_SERIES) {
-        if (!GD) {
-            throw std::runtime_error("dataset is required for list and series generation");
-        }
+        if (!GD) handle_gretl_error(E_NODATA);
     }
 
     // determine whether to use an explicit name or parse from formula
@@ -959,9 +939,7 @@ void gretl_generate (const std::string &formula, GretlDatasetPtr GD,
 
     // register user-defined variable name (if applicable)
     if constexpr (GR_TYPE != GRETL_TYPE_SERIES) {
-        if (!varname.empty()) {
-            UserVars.insert(varname);
-        }
+        if (!varname.empty()) UserVars.insert(varname);
     }
 
     GP.print();

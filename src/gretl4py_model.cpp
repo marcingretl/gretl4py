@@ -55,9 +55,7 @@ GretlModel::GretlModel (GretlObjType model_obj_type, GretlCmdIndex ci,
     // we unpack kwargs
     if (py::len(kwargs) && ci_ != NC) {
         for (auto &item : kwargs) {
-            if (!is_pystr(item.first)) {
-                throw std::invalid_argument("option key must be a string");
-            }
+            if (!is_pystr(item.first)) throw std::invalid_argument("option key must be a string");
             const std::string &key = item.first.cast<std::string>();
 
             if (key == "data") {
@@ -249,9 +247,7 @@ void GretlModel::do_restrict_ (T *model, const py::list &impose,
 
         vnew = gretl_restricted_vecm(my_rset, GD_->dset, opt_,
                                      GP_.prn_ptr(), &err_);
-        if (vnew != NULL) {
-            gretl_VAR_free(vnew);
-        }
+        if (vnew != NULL) gretl_VAR_free(vnew);
     } else {
         GD_->dset->t1 = model->t1;
         GD_->dset->t2 = model->t2;
@@ -274,9 +270,7 @@ void GretlModel::do_restrict_ (T *model, const py::list &impose,
     // we register result
     move_to_python_container<GretlModel, py::dict, py::list>(*this, std::move(res), "restrictions");
 
-    if (!kwargs.contains("silent")) {
-        GP_.print();
-    }
+    if (!kwargs.contains("silent")) GP_.print();
 }
 
 template <typename T, GretlCmdIndex CI>
@@ -338,12 +332,8 @@ void GretlModel::do_forecast_ (T *model, const py::kwargs &kwargs,
     fr->alpha = (100.0 - conf) / 100.0;
     fr_to_dict_(fr, res);
     text_print_forecast(fr, GD_->dset, opt_, GP_.prn_ptr());
-    if (fr != NULL) {
-        free_fit_resid(fr);
-    }
-    if (!(opt_ & OPT_Q)) {
-        GP_.print();
-    }
+    if (fr != NULL) free_fit_resid(fr);
+    if (!(opt_ & OPT_Q)) GP_.print();
 
     // we register result
     move_to_python_container<GretlModel, py::dict, py::list>(*this, std::move(res), "forecasts");
