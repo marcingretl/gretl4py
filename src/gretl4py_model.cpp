@@ -68,35 +68,25 @@ GretlModel::GretlModel (GretlObjType model_obj_type, GretlCmdIndex ci,
                 throw std::invalid_argument("invalid option flag: " + key);
             } else if (key == "seasonal" && ci_ == ARMA) {
                 // arima special: we check seasonal
-                if (!is_pytuple(kwargs["seasonal"])) {
-                    throw std::invalid_argument("'seasonal' must be a tuple");
-                }
+                if (!is_pytuple(kwargs["seasonal"])) throw std::invalid_argument("'seasonal' must be a tuple");
                 continue;
             } else if (key == "lagselect" && (ci_ == ARMA || ci_ == VAR)) {
                 throw std::invalid_argument("'lagselect' option for (S)ARIMA and VAR is temporarily unavailable");
             } else if ((key == "llimit" || key == "rlimit") && ci_ == TOBIT) {
                 // TOBIT special: we check (l/r)limit
-                if (!is_pynumeric(item.second)) {
-                    throw std::invalid_argument("both 'llimit' and 'rlimit' must be numeric");
-                }
+                if (!is_pynumeric(item.second)) throw std::invalid_argument("both 'llimit' and 'rlimit' must be numeric");
                 continue;
             } else if (key == "xlist" && (ci_ == ARMA || ci_ == VAR || ci_ == VECM)) {
                 // var special: here we only check if xlist is a string, but we must do something with it elsewhere
-                if (!is_pystr(item.second)) {
-                    throw std::invalid_argument("'xlist' must be a string");
-                }
+                if (!is_pystr(item.second)) throw std::invalid_argument("'xlist' must be a string");
                 continue;
             } else if (key == "rxlist" && ci_ == VECM) {
                 // var special: here we only check if rxlist is a string, but we must do something with it elsewhere
-                if (!is_pystr(item.second)) {
-                    throw std::invalid_argument("'rxlist' must be a string");
-                }
+                if (!is_pystr(item.second)) throw std::invalid_argument("'rxlist' must be a string");
                 continue;
             } else if (key == "instruments" && ci_ == DPANEL) {
                 // var special: here we only check if instruments is a string, but we must do something with it elsewhere
-                if (!is_pystr(item.second)) {
-                    throw std::invalid_argument("'instruments' must be a string");
-                }
+                if (!is_pystr(item.second)) throw std::invalid_argument("'instruments' must be a string");
             } else if ((key == "params" || key == "param_names" || key == "initvals") && (ci_ == NLS || ci_ == MLE || ci_ == GMM)) {
                 // NLS/MLE/GMM special case: we deal with these in class constructor
                 continue;
@@ -109,27 +99,22 @@ GretlModel::GretlModel (GretlObjType model_obj_type, GretlCmdIndex ci,
             } else if (key == "statements" && (ci_ == MLE || ci_ == GMM)) {
                 // MLE/GMM special case: we deal with these in class constructor
                 continue;
-            }  else if ((key == "equations" || key == "instruments" || key == "endogs" || key == "identities") && ci_ == SYSTEM) {
+            } else if ((key == "equations" || key == "instruments" || key == "endogs" || key == "identities") && ci_ == SYSTEM) {
                 // SYSTEM special case: we deal with these in class constructor
                 continue;
-            }
-            else {
+            } else {
                 gretl_valid_long_opt(opt_, ci_, key, item.second);
             }
         }
     }
 
     // we check if we have dataset
-    if (!GD_) {
-        throw std::runtime_error("No dataset is available");
-    }
+    if (!GD_) handle_gretl_error(E_NODATA);
 }
 
 GretlModel::~GretlModel (void)
 {
-    if (this->GD_) {
-        this->GD_->linked_models_del(this->id_);
-    }
+    if (this->GD_) this->GD_->linked_models_del(this->id_);
 }
 
 int GretlModel::get_id (void) const
@@ -139,9 +124,7 @@ int GretlModel::get_id (void) const
 
 void GretlModel::unlink_from_dataset (void) const
 {
-    if (GD_) {
-        GD_->linked_models_del(id_);
-    }
+    if (GD_) GD_->linked_models_del(id_);
 }
 
 py::object GretlModel::get_accessor (const std::string &accessor) const
@@ -149,7 +132,6 @@ py::object GretlModel::get_accessor (const std::string &accessor) const
     auto res = gretl_generate_gretl_object(accessor.c_str(), err_,
                                            model_obj_type_,
                                            GD_->dset, model_ptr_());
-
     if (err_) handle_gretl_error(err_);
 
     return variant_to_pyobject(std::move(*res));
@@ -373,9 +355,7 @@ void GretlModel::unpack_forecast_kwargs_ (const py::kwargs &kwargs, int &pconf)
 
     opt_ = OPT_NONE;
     for (auto &item : kwargs) {
-        if (!is_pystr(item.first)) {
-            throw std::invalid_argument("option key must be a string");
-        }
+        if (!is_pystr(item.first)) throw std::invalid_argument("option key must be a string");
         const std::string &key = item.first.cast<std::string>();
 
         if (key == "quiet") {
@@ -403,14 +383,10 @@ void GretlModel::unpack_forecast_kwargs_ (const py::kwargs &kwargs, int &pconf)
                     pconf = conf;
                 }
             }
-            if (err_) {
-                throw std::invalid_argument("'interval' value must an integer >= 50 and <= 99");
-            }
+            if (err_) throw std::invalid_argument("'interval' value must an integer >= 50 and <= 99");
         } else if (key == "vname") {
             // special case: here we only check if vname is a std::string
-            if (!is_pystr(item.second)) {
-                throw std::invalid_argument("variable name must be a string");
-            }
+            if (!is_pystr(item.second)) throw std::invalid_argument("variable name must be a string");
             continue;
         } else {
             throw std::invalid_argument("unknown option '" + key + "'");
@@ -518,9 +494,7 @@ GretlBundlePtr GretlModel::get_bundle (void) const
 
 void GretlModel::check_if_estimated_ (void) const
 {
-    if (estimated_) {
-        throw std::runtime_error("model already estimated");
-    }
+    if (estimated_) throw std::runtime_error("model already estimated");
 }
 
 template <typename T>
@@ -568,16 +542,12 @@ GretlModel_NSE::GretlModel_NSE (GretlCmdIndex ci, const py::kwargs &kwargs)
                                 : GretlModel(GRETL_OBJ_EQN, ci, kwargs)
 {
     model_ = gretl_model_new();
-    if (!model_) {
-        handle_gretl_error(E_ALLOC);
-    }
+    if (!model_) handle_gretl_error(E_ALLOC);
 }
 
 GretlModel_NSE::~GretlModel_NSE (void)
 {
-    if (model_ != NULL) {
-        gretl_model_free(model_);
-    }
+    if (model_ != NULL) gretl_model_free(model_);
 }
 
 void *GretlModel_NSE::model_ptr_ (void) const
@@ -651,9 +621,7 @@ void GretlModel_NSE::test (const std::string &type,
     // we register result
     move_to_python_container<GretlModel, py::dict, py::list>(*this, std::move(res), "tests");
 
-    if (!kwargs.contains("silent")) {
-        GP_.print();
-    }
+    if (!kwargs.contains("silent")) GP_.print();
 }
 
 void GretlModel_NSE::test (const std::string &type, const std::string &vars,
@@ -669,9 +637,7 @@ void GretlModel_NSE::test (const std::string &type, const std::string &vars,
     // we construct list of external variables
     if (type != "chow") {
         ex_var = list_from_formula(vars, GD_->dset, err_);
-        if (!ex_var) {
-            throw std::invalid_argument("wrong list of variables");
-        }
+        if (!ex_var) throw std::invalid_argument("wrong list of variables");
     }
 
     // we set up options
@@ -705,9 +671,7 @@ void GretlModel_NSE::test (const std::string &type, const std::string &vars,
     // we register result
     move_to_python_container<GretlModel, py::dict, py::list>(*this, std::move(res), "tests");
 
-    if (!kwargs.contains("silent")) {
-        GP_.print();
-    }
+    if (!kwargs.contains("silent")) GP_.print();
 }
 
 void GretlModel_NSE::restrict (const py::list &impose,
@@ -809,9 +773,7 @@ GretlModel_NSE_arima::GretlModel_NSE_arima (const std::string &y,
 
     // we set up "y"
     y_number_ = this->GD_->get_series_id(y, false);
-    if (y_number_ == -1) {
-        throw std::invalid_argument("There is no variable: " + y);
-    }
+    if (y_number_ == -1) throw std::invalid_argument("There is no variable: " + y);
 
     // we set up non-seasonal parameters
     p_ = d_ = q_ = 0;
@@ -856,9 +818,7 @@ void GretlModel_NSE_arima::fit (void)
     check_if_estimated_();
 
     var_list_.reset(gretl_list_new(seasonal_ ? 9+exogenous_ : 5+exogenous_));
-    if (!var_list_) {
-        handle_gretl_error(E_ALLOC);
-    }
+    if (!var_list_) handle_gretl_error(E_ALLOC);
 
     var_list_.get()[i++] = p_;
     var_list_.get()[i++] = d_;
@@ -922,9 +882,7 @@ void GretlModel_NSE_Driver<F, CI>::fit (void)
     } else {
         var_list_ = list_from_formula(formula_, GD_->dset, err_);
     }
-    if (!var_list_) {
-        throw std::runtime_error("Formula rendering failed");
-    }
+    if (!var_list_) throw std::runtime_error("Formula rendering failed");
 
     // we call F as an estimator
     if constexpr (use_ldco_sig(CI)) {
@@ -995,9 +953,7 @@ GretlModel_NSE_Driver_quantreg::GretlModel_NSE_Driver_quantreg
                                      const py::kwargs &kwargs)
                                      : GretlModel_NSE_Driver<quantreg_driver, QUANTREG>(formula, kwargs)
 {
-    if (tau.ndim() != 1) {
-        throw std::invalid_argument("'tau' is expected to be a vector");
-    }
+    if (tau.ndim() != 1) throw std::invalid_argument("'tau' is expected to be a vector");
 
     tau_ = "{";
     for (int i=0; i<tau.shape(0); ++i) {
@@ -1016,9 +972,7 @@ void GretlModel_NSE_Driver_quantreg::fit (void)
 
     // we define list of variables
     var_list_ = list_from_formula(formula_, GD_->dset, err_);
-    if (!var_list_) {
-        throw std::runtime_error("Formula rendering failed");
-    }
+    if (!var_list_) throw std::runtime_error("Formula rendering failed");
 
     // we do the job
     *model_ = quantreg_driver(tau_.c_str(), var_list_.get(),
@@ -1046,9 +1000,7 @@ GretlModel_NSE_Driver_dpanel::GretlModel_NSE_Driver_dpanel
                                          const py::kwargs &kwargs)
                                         : GretlModel_NSE_Driver<dpd_model, DPANEL>(formula, kwargs)
 {
-    if (p.ndim() != 1) {
-        throw std::invalid_argument("'p' is expected to be a vector");
-    }
+    if (p.ndim() != 1) throw std::invalid_argument("'p' is expected to be a vector");
 
     for (int i=0; i<p.shape(0); ++i) {
         lags_.push_back(static_cast<double>(p.at(i)));
@@ -1068,9 +1020,7 @@ void GretlModel_NSE_Driver_dpanel::fit (void)
     // we define list of variables
     regexp_extract_<DPANEL>(formula_, formula_left, formula_right);
     var_list_ = list_from_formula(formula_left, GD_->dset, err_);
-    if (!var_list_) {
-        throw std::runtime_error("Formula rendering failed");
-    }
+    if (!var_list_) throw std::runtime_error("Formula rendering failed");
 
     // we setup dpanel_list: lags + var_list
     dpanel_list.reset(gretl_list_new(var_list_.get()[0] + 2));
@@ -1124,9 +1074,7 @@ void GretlModel_NSE_Driver_tobit::fit (void)
 
     // we define list of variables
     var_list_ = list_from_formula(formula_, GD_->dset, err_);
-    if (!var_list_) {
-        throw std::runtime_error("Formula rendering failed");
-    }
+    if (!var_list_) throw std::runtime_error("Formula rendering failed");
 
     // we do the job
     *model_ = tobit_model(var_list_.get(), llimit_, rlimit_,
@@ -1156,9 +1104,7 @@ GretlModel_NSE_nl<CI>::GretlModel_NSE_nl (const std::string formula,
 
     // we set up initial values
     if (kwargs.contains("initvals")) {
-        if (!is_pydict(kwargs["initvals"])) {
-            throw std::invalid_argument("'initvals' must be a dictionary");
-        }
+        if (!is_pydict(kwargs["initvals"])) throw std::invalid_argument("'initvals' must be a dictionary");
         py::dict initvals = kwargs["initvals"].cast<py::dict>();
 
         for (const auto &[key, val] : initvals) {
@@ -1395,9 +1341,7 @@ GretlModel_VAR::GretlModel_VAR (const std::string &ylist,
 
 GretlModel_VAR::~GretlModel_VAR (void)
 {
-    if (this->model_ != NULL) {
-        gretl_VAR_free(this->model_);
-    }
+    if (this->model_ != NULL) gretl_VAR_free(this->model_);
 }
 
 void *GretlModel_VAR::model_ptr_ (void) const
@@ -1418,9 +1362,7 @@ void GretlModel_VAR::do_var_vecm_fit_ (const int coint_rank)
 
     // be build variables list
     var_list_ = list_from_formula(vars_, GD_->dset, err_);
-    if (!var_list_) {
-        throw std::invalid_argument("wrong list of variables");
-    }
+    if (!var_list_) throw std::invalid_argument("wrong list of variables");
 
     // we estimate a model
     if constexpr (CI == VAR) {
@@ -1445,9 +1387,9 @@ void GretlModel_VAR::do_var_vecm_forecast_ (const py::kwargs &kwargs)
     // we check if we forecast for all variables or just one
     if (kwargs.contains("vname") && !kwargs["vname"].is_none()) {
         variable_nr = find_variable_nr_(py::cast<std::string>(kwargs["vname"]));
-        if (variable_nr == -1) {
-            throw std::invalid_argument("unknown variable '" + py::cast<std::string>(kwargs["vname"]) + "'");
-        }
+        if (variable_nr == -1) throw std::invalid_argument("unknown variable '"
+                                                           + py::cast<std::string>(kwargs["vname"])
+                                                           + "'");
     }
 
     // actual work
@@ -1475,9 +1417,7 @@ void GretlModel_VAR::test (const std::string &type, const py::kwargs &kwargs)
     int order = GD_->dset->pd;
 
     // basic check
-    if (type == "normality" && kwargs.contains("order")) {
-        throw std::invalid_argument("normality test doesn't take 'order' option");
-    }
+    if (type == "normality" && kwargs.contains("order")) throw std::invalid_argument("normality test doesn't take 'order' option");
 
     // we set up options
     unpack_kwargs_test(opt_, type, kwargs, order);
@@ -1506,9 +1446,7 @@ void GretlModel_VAR::test (const std::string &type, const py::kwargs &kwargs)
     // we register result
     move_to_python_container<GretlModel, py::dict, py::list>(*this, std::move(res), "tests");
 
-    if (!kwargs.contains("silent")) {
-        GP_.print();
-    }
+    if (!kwargs.contains("silent")) GP_.print();
 }
 
 std::string GretlModel_VAR::get_formula (void) const
@@ -1682,9 +1620,7 @@ GretlModel_NME::GretlModel_NME (const std::string &method,
 
 GretlModel_NME::~GretlModel_NME (void)
 {
-    if (this->model_ != NULL) {
-        equation_system_destroy(this->model_);
-    }
+    if (this->model_ != NULL) equation_system_destroy(this->model_);
 }
 
 void *GretlModel_NME::model_ptr_ (void) const
@@ -1722,9 +1658,7 @@ void GretlModel_NME::fit (void)
     // we define equations
     for (const auto &el : equations_) {
         var_list_ = list_from_formula(el, GD_->dset, err_);
-        if (!var_list_) {
-            throw std::runtime_error("Formula rendering failed");
-        }
+        if (!var_list_) throw std::runtime_error("Formula rendering failed");
         err_ = equation_system_append(model_, var_list_.get());
         if (err_) handle_gretl_error(err_);
     }
@@ -1749,13 +1683,14 @@ void GretlModel_NME::fit (void)
 
 std::string GretlModel_NME::get_formula (void) const
 {
-    py::print("GretlModel_NME::get_formula");
+    py::print("GretlModel_NME::get_formula(): to be written");
+
     return "";
 }
 
 void GretlModel_NME::forecast (const py::kwargs &kwargs)
 {
-    py::print("GretlModel_NME::forecast_");
+    py::print("GretlModel_NME::forecast(): to be written");
 }
 
 void GretlModel_NME::restrict (const py::list &impose,
@@ -1797,13 +1732,8 @@ GretlModel_package::GretlModel_package (const std::string &name,
     // we setup some internal parameters
     main_func_name_ = GPKG_->main_func_get_name();
 
-    if (!GPKG_->is_estimator()) {
-        throw std::runtime_error(GPKG_->get_name() + " package doesn't provide an estimation method");
-    }
-
-    if (main_func_name_.empty()) {
-        throw std::runtime_error("no main function in package: " + GPKG_->get_name());
-    }
+    if (!GPKG_->is_estimator()) throw std::runtime_error(GPKG_->get_name() + " package doesn't provide an estimation method");
+    if (main_func_name_.empty()) throw std::runtime_error("no main function in package: " + GPKG_->get_name());
 
     // we register special functions (if exists)
     print_func_name_ = GPKG_->get_function_with_role(UFUN_BUNDLE_PRINT);

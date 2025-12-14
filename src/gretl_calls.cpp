@@ -720,9 +720,14 @@ template void genr<std::string>(const std::string&, const std::string&);
 
 void handle_gretl_error (int err)
 {
+    const std::unordered_set<GretlError> ArgErr{ E_ARGS, E_INVARG };
     const char *msg = errmsg_get_with_default(err);
 
-    throw std::runtime_error(msg);
+    if (ArgErr.count(static_cast<GretlError>(err))) {
+        throw std::invalid_argument(msg);
+    } else {
+        throw std::runtime_error(msg);
+    }
 }
 
 void gretl_valid_long_opt (gretlopt &opt, GretlCmdIndex ci,
