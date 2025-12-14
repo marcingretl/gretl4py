@@ -621,33 +621,29 @@ void gretl_user_var_delete_by_name (const std::string &name)
 {
     if (UserVars.find(name) != UserVars.end()) {
         int err = user_var_delete_by_name(name.c_str(), GP.prn_ptr());
-        if (err) {
-            handle_gretl_error(err);
-        }
+        if (err) handle_gretl_error(err);
         UserVars.erase(name);
     } else {
-        throw std::invalid_argument("no such variable: '" + name + "'");
+        handle_gretl_error(E_UNKVAR);
     }
 }
 
-void gretl_print_user_var_by_name (const std::string &name, GretlDatasetPtr data)
+void gretl_print_user_var_by_name (const std::string &name,
+                                   GretlDatasetPtr GD)
 {
-    if (UserVars.find(name) == UserVars.end()) {
-        throw std::invalid_argument("unknown variable: '" + name + "'");
-    }
+    if (UserVars.find(name) == UserVars.end()) handle_gretl_error(E_UNKVAR);
 
     DATASET *dset = NULL;
 
-    if (data) {
-        dset = data->dset;
+    if (GD) {
+        dset = GD->dset;
     } else if (DSET) {
         dset = DSET->dset;
     }
 
-    int err = print_user_var_by_name(name.c_str(), dset, OPT_NONE, GP.prn_ptr());
-    if (err) {
-        handle_gretl_error(err);
-    }
+    int err = print_user_var_by_name(name.c_str(), dset,
+                                     OPT_NONE, GP.prn_ptr());
+    if (err) handle_gretl_error(err);
 
     GP.print();
 }
@@ -761,12 +757,8 @@ void gretl_valid_long_opt (gretlopt &opt, GretlCmdIndex ci,
         if (is_pyint(val) && !ext_val) {
             int ival = val.cast<int>();
 
-            if (ival != 0 && ival != 1) {
-                throw std::invalid_argument("invalid option parameter");
-            }
-            if (ival == 0) {
-                return; // do not activate the option
-            }
+            if (ival != 0 && ival != 1) handle_gretl_error(E_INVARG);
+            if (ival == 0) return; // do not activate the option
         }
     } else {
         // an option parameter is accepted, perhaps required
@@ -879,9 +871,7 @@ void unpack_kwargs_test (gretlopt &opt, const std::string &type,
         const std::string &key = item.first.cast<std::string>();
 
         if (key == "order") {
-            if (!is_pyint(item.second)) {
-                throw std::invalid_argument("'order' takes integers only");
-            }
+            if (!is_pyint(item.second)) throw std::invalid_argument("'order' takes integers only");
             order = item.second.cast<int>();
             continue;
         } else if (key == "order_m" && type == "levinlin") {
@@ -914,11 +904,9 @@ gretl_list_ptr list_from_formula (const std::string &formula,
     std::replace(tmp.begin(), tmp.end(), '~', ' ');
     std::replace(tmp.begin(), tmp.end(), '+', ' ');
 
-    // generate_list() returns a raw pointer; assign that to our unique_ptr.
+    // note: we assign a raw pointer returned by 'generate_list()' to our unique_ptr.
     int *raw_list = generate_list(tmp.c_str(), dset, 0, &err);
-    if (err) {
-        handle_gretl_error(err);
-    }
+    if (err) handle_gretl_error(err);
 
     return gretl_list_ptr(raw_list);
 }
@@ -942,21 +930,15 @@ GretlTypesPtr gretl_generate_gretl_object (const char *s, int &err,
     }
 
     // we grab object from stack (note: if model was passed we use it)
-    if (model != NULL) {
-        set_genr_model(model, obj_type);
-    }
+    if (model != NULL) set_genr_model(model, obj_type);
     resp = generate_gretl_object(s, dset, &t, &err);
-    if (model != NULL) {
-        unset_genr_model();
-    }
+    if (model != NULL) unset_genr_model();
 
     if (!err) {
         res = convert_GretlType_to_GretlTypes(t, resp, dset->n, err);
     }
 
-    if (free_dset) {
-        destroy_dataset(dset);
-    }
+    if (free_dset) destroy_dataset(dset);
 
     return res;
 }
@@ -999,10 +981,7 @@ void gretl_generate (const std::string &formula, GretlDatasetPtr GD,
             varname = name;
         }
     }
-
-    if (err) {
-        handle_gretl_error(err);
-    }
+    if (err) handle_gretl_error(err);
 
     // register user-defined variable name (if applicable)
     if constexpr (GR_TYPE != GRETL_TYPE_SERIES) {
