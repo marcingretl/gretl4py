@@ -91,8 +91,6 @@ PYBIND11_MODULE(_gretl, m)
           py::arg("dist").none(false),
           py::arg("value").none(false),
           py::arg("params").none(true) = py::none());
-    m.def("uservar_print", &gretl_print_user_var_by_name,
-          py::arg("name").none(false), py::arg("data").none(true) = std::nullopt);
     m.def("uservars_list", &uservars_list);
     m.def("genr",
           static_cast<void(*)(const std::string&, GretlDatasetPtr)>(&genr),

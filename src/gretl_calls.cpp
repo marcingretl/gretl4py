@@ -404,6 +404,7 @@ void do_gretl_print (const std::string &varlist,
     GretlDatasetPtr GD = nullptr;
     gretl_list_ptr varlist_ptr{nullptr};
     gretlopt opt = OPT_NONE;
+    auto uv = get_user_var_by_name(varlist.c_str());
     int err = 0;
 
     if (py::len(kwargs) > 0) {
@@ -413,8 +414,8 @@ void do_gretl_print (const std::string &varlist,
         GD = DSET;
     }
 
-    // we first check if varlist contains variables names
-    if (GD) {
+    // we check if varlist contains variables names _only_ no uservar!!!
+    if (GD && uv == NULL) {
         if (varlist.empty()) {
             // "print " i.e. without options given
             varlist_ptr.reset(full_var_list(GD->dset, NULL));
@@ -620,26 +621,6 @@ void gretl_user_var_delete_by_name (const std::string &name)
     } else {
         handle_gretl_error(E_UNKVAR);
     }
-}
-
-void gretl_print_user_var_by_name (const std::string &name,
-                                   GretlDatasetPtr GD)
-{
-    if (UserVars.find(name) == UserVars.end()) handle_gretl_error(E_UNKVAR);
-
-    DATASET *dset = NULL;
-
-    if (GD) {
-        dset = GD->dset;
-    } else if (DSET) {
-        dset = DSET->dset;
-    }
-
-    int err = print_user_var_by_name(name.c_str(), dset,
-                                     OPT_NONE, GP.prn_ptr());
-    if (err) handle_gretl_error(err);
-
-    GP.print();
 }
 
 void uservars_list (void)

@@ -65,14 +65,6 @@ template<int MODE>
 double gretl_get_pvalue_critval_pdf_cdf (const std::string &dist, double value,
                                          const py::object &param = py::none());
 
-// these two functions are temporal and will be moved to class
-void gretl_user_var_delete_by_name (const std::string &name);
-
-void gretl_print_user_var_by_name (const std::string &name,
-                                   GretlDatasetPtr data = nullptr);
-
-void uservars_list (void);
-
 void genr (const std::string &formula, GretlDatasetPtr data);
 
 template <typename T>
@@ -97,5 +89,10 @@ GretlTypesPtr gretl_generate_gretl_object (const char *s, int &err,
 template <GretlType GR_TYPE>
 void gretl_generate (const std::string &formula, GretlDatasetPtr GD = DSET,
                      const std::string &name = {});
+
+// these two functions are temporal and will be moved to class
+void gretl_user_var_delete_by_name (const std::string &name);
+
+void uservars_list (void);
 
 #endif // GRETL_CALLS_H
