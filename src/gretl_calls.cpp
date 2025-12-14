@@ -173,8 +173,8 @@ GretlBundlePtr about (bool do_print)
     res->set_element<std::string>(std::string("mod_ver"), mod_ver);
     res->set_element<std::string>(std::string("py11_ver"), py11_ver);
     res->set_element<std::string>(std::string("lg_ver"), lg_ver);
-    if (GB_sysinfo->err) {
-        std::cerr << errmsg_get_with_default(GB_sysinfo->err) << std::endl;
+    if (GB_sysinfo->get_err()) {
+        std::cerr << errmsg_get_with_default(GB_sysinfo->get_err()) << std::endl;
     } else {
         res->set_element<GretlBundlePtr>(std::string("sysinfo"), GB_sysinfo);
     }
@@ -186,7 +186,7 @@ GretlBundlePtr about (bool do_print)
         std::cout << " [" << COMPILER_IDENT << "]" << std::endl;
         std::cout << "\t+ pybind11     v" << py11_ver << std::endl;
         std::cout << "\t+ libgretl-1.0 v" << lg_ver << std::endl;
-        if (!GB_sysinfo->err) {
+        if (!GB_sysinfo->get_err()) {
             std::cout << std::endl << "libgretl $sysinfo:" << std::endl;
             GB_sysinfo->print<void>();
         }
@@ -197,8 +197,8 @@ GretlBundlePtr about (bool do_print)
 
     gretl_pop_c_numeric_locale();
 
-    if (res->err) {
-        std::cerr << errmsg_get_with_default(res->err) << std::endl;
+    if (res->get_err()) {
+        std::cerr << errmsg_get_with_default(res->get_err()) << std::endl;
     }
 
     return res;
@@ -415,6 +415,7 @@ void do_gretl_print (const std::string &varlist,
     if (py::len(kwargs) > 0) {
         opt = unpack_kwargs_command(PRINT, GD, kwargs);
     } else {
+        // if we don't have kwargs, we must assign GD manually
         GD = DSET;
     }
 

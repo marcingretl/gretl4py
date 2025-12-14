@@ -191,18 +191,19 @@ private:
     bool free_b_ = true;                            // if *b should be freed
     gretl_bundle *b_ = NULL;                        // libgretl bundle pointer
     py::dict as_dict_;                              // Python's dict() reprezentation
+    int err_ = 0;
 
     template <typename T>
     void extract_ (const T &t);
 public:
-    int err = 0;
-
     GretlBundle (void);                             // default constructor with empty bundle
     GretlBundle (gretl_bundle *src);                // incoming already existing bundle Note: src must be deallocated by libgretl
     GretlBundle (MODEL *model, DATASET *dset);      // we produce bundle from MODEL
     GretlBundle (GRETL_VAR *model, DATASET *dset);  // we produce bundle from VAR/VECM
     GretlBundle (equation_system *model);           // we produce bundle from SYSTEM
     ~GretlBundle (void);
+
+    int get_err (void) const;
 
     py::dict to_dict (void);                        // bundle-to-dict mapper
 

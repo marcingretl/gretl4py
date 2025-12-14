@@ -199,7 +199,7 @@ void GretlModel::save_model_ (T *model)
     } else {
         GB_model_ = std::make_shared<GretlBundle>(model, GD_->dset);
     }
-    err_ = GB_model_->err;
+    err_ = GB_model_->get_err();
     if (err_) handle_gretl_error(err_);
 
     // we register result on python side
