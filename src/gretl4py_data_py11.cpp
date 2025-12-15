@@ -113,6 +113,10 @@ void init_gretl4py_dataset_py11(py::module_ &m)
         .def("get_id", &GretlDataset::get_id)
         .def("set_as_default", &GretlDataset::set_as_default)
         .def("sample", &GretlDataset::sample)
+        .def("smpl", &GretlDataset::smpl,
+             py::arg("startobs").none(true) = "",
+             py::arg("endobs").none(true) = "",
+             py::kw_only())
         .def("setobs", &GretlDataset::setobs)
         .def("to_dict", &GretlDataset::to_dict)
         .def("to_file", &GretlDataset::to_file,

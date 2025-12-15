@@ -118,6 +118,9 @@ public:
 
     void sample (const py::kwargs &kwargs);
 
+    void smpl (const std::string &startobs, const std::string &endobs,
+               const py::kwargs &kwargs);
+
     template <typename T>
     GretlDatasetPtr getitem_impl (const T &slice);
 

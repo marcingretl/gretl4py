@@ -1103,6 +1103,99 @@ void GretlDataset::sample (const py::kwargs &kwargs)
     }
 }
 
+void GretlDataset::smpl (const std::string &startobs,
+                         const std::string &endobs,
+                         const py::kwargs &kwargs)
+{
+    //
+    // startobs and endobs are CMD->param/param2 equivalents
+    //
+    // lambdas
+    auto check_smpl_full = [this](void) -> int
+    {
+        //
+        // mimics 'static int check_smpl_full (gretlopt opt)' from interact.c
+        //
+        opt_ = static_cast<gretlopt>(opt_ ^ OPT_F);
+        if (opt_ & OPT_Q) {
+            opt_ = static_cast<gretlopt>(opt_ ^ OPT_Q);
+        }
+
+        return opt_ == OPT_NONE ? 0 : E_BADOPT;
+    };
+
+    auto panel_smpl_special = [this](void) -> int
+    {
+        /* the option --unit or --time is given */
+        return opt_ & (OPT_U | OPT_X);
+    };
+
+    auto smpl_restrict = [this](void) -> int
+    {
+        opt_ = static_cast<gretlopt>(opt_ & (~OPT_Q));
+        opt_ = static_cast<gretlopt>(opt_ & (~OPT_T));
+        opt_ = static_cast<gretlopt>(opt_ & (~OPT_D));
+
+        return opt_ != OPT_NONE;
+    };
+
+    gretl_list_ptr var_list{nullptr};           // FIXME: must be set via kwargs!!!
+    bool quiet = false;
+    opt_ = OPT_NONE;
+
+    if (py::len(kwargs) > 0) {
+        for (auto &item : kwargs) {
+            if (!is_pystr(item.first)) throw std::invalid_argument("option key must be a string");
+            const std::string &key = item.first.cast<std::string>();
+
+            if (key == "varlist") {
+                py::print("got 'varlist': we must do something about it"); //FIXME!!!
+                continue;
+            } else if (key == "quiet") {
+                quiet = item.second.cast<bool>();
+                continue;
+            } else if (key == "plot") {
+                throw std::invalid_argument("invalid option flag: " + key);
+            } else {
+                gretl_valid_long_opt(opt_, SMPL, key, item.second);
+            }
+        }
+    }
+
+    // we do the job
+    if (!dset || dset->n <= 0) {
+        err_ = E_NODATA;
+    } else if (opt_ & OPT_F) {
+        err_ = check_smpl_full();
+        if (!err_) {
+            err_ = restore_full_sample(dset, NULL);
+        }
+    } else if (opt_ == OPT_T && startobs.empty()) {
+        /* --permanent, by itself */
+        err_ = perma_sample(dset, opt_, GP_.prn_ptr(), NULL);
+    } else if (panel_smpl_special()) {
+        /* panel data: --unit or --time option */
+        err_ = set_panel_sample(startobs.c_str(), endobs.c_str(), opt_, dset, NULL, GP_.prn_ptr());
+    } else if (smpl_restrict()) {
+        /* --restrict, --dummy, etc. */
+        err_ = restrict_sample(startobs.c_str(), var_list.get(), dset, NULL, opt_, GP_.prn_ptr(), NULL);
+    } else if (startobs.empty() && endobs.empty()) {
+        /* no args given: give a report */
+        print_smpl(dset, get_full_length_n(), OPT_F, GP_.prn_ptr());
+        //print_smpl(dset, get_full_length_n(), OPT_NONE, GP_.prn_ptr());
+    } else {
+        /* simple setting of t1, t2 business */
+        err_ = set_sample(startobs.c_str(), endobs.c_str(), dset, opt_);
+    }
+    if (err_) handle_gretl_error(err_);
+
+    if (opt_ & OPT_Q) {
+        print_smpl(dset, get_full_length_n(), OPT_NONE, GP_.prn_ptr());
+    }
+
+    if (!quiet) GP_.print();
+}
+
 template <typename T>
 GretlDatasetPtr GretlDataset::getitem_impl (const T &slice)
 {
