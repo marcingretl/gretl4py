@@ -55,20 +55,6 @@ extern std::unordered_set<std::string> UserVars;
 //////////////////////////////////////////////////
 // static functions
 //////////////////////////////////////////////////
-static int get_int_from_python_dict (const py::dict &pydict,
-                                     const char *key,
-                                     int deflt = 1)
-{
-    int ret = deflt;
-
-    if (pydict.contains(key)) {
-        auto element = pydict[py::cast(key)];
-
-        if (is_pyint(element)) ret = py::cast<int>(element);
-    }
-
-    return ret;
-}
 
 // two overloads for copy_strings_from_python_list()
 static void copy_strings_from_python_list (const py::list &pylist, char **dest,
@@ -536,6 +522,20 @@ GretlDataset::GretlDataset (const py::dict &pydict) : id_(next_obj_id_++)
     std::string *strBUF;
     int pd;
 
+    // lambda for getting int from pydict
+    auto get_int_from_python_dict = [&pydict](const char *key, int deflt = 1)
+    {
+        int ret = deflt;
+
+        if (pydict.contains(key)) {
+            auto element = pydict[py::cast(key)];
+
+            if (is_pyint(element)) ret = py::cast<int>(element);
+        }
+
+        return ret;
+    };
+
     allocate_dset_();
 
     // we fill up dset->Z
@@ -568,8 +568,8 @@ GretlDataset::GretlDataset (const py::dict &pydict) : id_(next_obj_id_++)
     // The following actions work fine if the python dict we're working with
     // was created by GretlDataset::to_dict (that is, starting from a gretl
     // dataset in libgretl's memory-space).
-    pd = get_int_from_python_dict(pydict, "periodicity");
-    dset->structure = get_int_from_python_dict(pydict, "structure", 0);
+    pd = get_int_from_python_dict("periodicity");
+    dset->structure = get_int_from_python_dict("structure", 0);
     opt = setobs_opt_from_structure_(dset->structure);
     set_obs(std::to_string(pd).c_str(), dset->S[0], dset, opt);
 }
