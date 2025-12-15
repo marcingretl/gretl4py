@@ -1103,12 +1103,12 @@ void GretlDataset::sample (const py::kwargs &kwargs)
     }
 }
 
-void GretlDataset::smpl (const std::string &startobs,
-                         const std::string &endobs,
+void GretlDataset::smpl (const std::string &startobs, const std::string &endobs,
                          const py::kwargs &kwargs)
 {
     //
-    // startobs and endobs are CMD->param/param2 equivalents
+    // method mimics 'smpl' as close as possible (1:1?)
+    // note: startobs and endobs are CMD->param/param2 equivalents
     //
     // lambdas
     auto check_smpl_full = [this](void) -> int
@@ -1124,11 +1124,11 @@ void GretlDataset::smpl (const std::string &startobs,
         return opt_ == OPT_NONE ? 0 : E_BADOPT;
     };
 
-    auto panel_smpl_special = [this](void) -> int
+    /*auto panel_smpl_special = [this](void) -> int
     {
-        /* the option --unit or --time is given */
+        // the option --unit or --time is given
         return opt_ & (OPT_U | OPT_X);
-    };
+    };*/
 
     auto smpl_restrict = [this](void) -> int
     {
@@ -1149,13 +1149,13 @@ void GretlDataset::smpl (const std::string &startobs,
             const std::string &key = item.first.cast<std::string>();
 
             if (key == "varlist") {
-                py::print("got 'varlist': we must do something about it"); //FIXME!!!
+                if (!is_pystr(item.second)) throw std::invalid_argument("'varlist' must be a string");
+                var_list = list_from_formula(item.second.cast<std::string>(), dset, err_);
                 continue;
             } else if (key == "quiet") {
+                // FIXME: somehow doesn't work throught gretl_valid_long_opt
                 quiet = item.second.cast<bool>();
                 continue;
-            } else if (key == "plot") {
-                throw std::invalid_argument("invalid option flag: " + key);
             } else {
                 gretl_valid_long_opt(opt_, SMPL, key, item.second);
             }
@@ -1167,13 +1167,11 @@ void GretlDataset::smpl (const std::string &startobs,
         err_ = E_NODATA;
     } else if (opt_ & OPT_F) {
         err_ = check_smpl_full();
-        if (!err_) {
-            err_ = restore_full_sample(dset, NULL);
-        }
+        if (!err_) err_ = restore_full_sample(dset, NULL);
     } else if (opt_ == OPT_T && startobs.empty()) {
         /* --permanent, by itself */
         err_ = perma_sample(dset, opt_, GP_.prn_ptr(), NULL);
-    } else if (panel_smpl_special()) {
+    } else if (opt_ & (OPT_U | OPT_X)) {
         /* panel data: --unit or --time option */
         err_ = set_panel_sample(startobs.c_str(), endobs.c_str(), opt_, dset, NULL, GP_.prn_ptr());
     } else if (smpl_restrict()) {
@@ -1192,7 +1190,6 @@ void GretlDataset::smpl (const std::string &startobs,
     if (opt_ & OPT_Q) {
         print_smpl(dset, get_full_length_n(), OPT_NONE, GP_.prn_ptr());
     }
-
     if (!quiet) GP_.print();
 }
 
