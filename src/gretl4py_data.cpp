@@ -55,36 +55,6 @@ extern std::unordered_set<std::string> UserVars;
 //////////////////////////////////////////////////
 // static functions
 //////////////////////////////////////////////////
-static void numpy_array_to_gretl_storage (const py::dict &pydict, DATASET *dset)
-{
-    //
-    // we copy "data_array" which lives in pydict to dset->Z
-    //
-    // we check if pydict["data_array"] is of <py::array_t> type
-    if (!is_pynumarrayd(pydict[py::cast("data_array")])) {
-        throw std::invalid_argument("Element 'data_array' of given dictionary is not of NumPy array type.");
-    }
-
-    NumPyArrayView arr_view;
-    int err = 0;
-
-    NumPyArray_extract(py::cast<py::array>(pydict[py::cast("data_array")]), arr_view);
-    if (!arr_view.data) throw std::runtime_error("NumPy array: null pointer.");
-
-    dset->n = arr_view.rows;
-    dset->v = arr_view.cols + 1;
-    err = allocate_Z(dset, OPT_NONE);
-    if (err) {
-        handle_gretl_error(err);
-    }
-
-    for (int i=1; i<dset->v; i++) {
-        NumPyArray_to_gretl_matrix<double>(arr_view, dset->Z[i], i-1, true);
-    }
-    dset->t1 = 0;
-    dset->t2 = dset->n-1;
-}
-
 template <typename T>
 static void real_NumPyArray_to_gretl_matrix (const NumPyArrayView &view,
                                              double *dst, int offset, bool onecol)
@@ -479,6 +449,7 @@ GretlDataset::GretlDataset (const py::dict &pydict) : id_(next_obj_id_++)
     gretlopt opt = OPT_NONE;
     py::list pylist;
     int pd;
+    NumPyArrayView arr_view;
 
     // lambda for getting int from pydict
     auto get_int_from_pydict = [&pydict](const char *key, int deflt)
@@ -494,14 +465,27 @@ GretlDataset::GretlDataset (const py::dict &pydict) : id_(next_obj_id_++)
         return ret;
     };
 
+    // we allocate memory
     allocate_dset_();
 
     // we fill up dset->Z
-    numpy_array_to_gretl_storage(pydict, dset);
-
-    if (dataset_allocate_varnames(dset) || dataset_allocate_obs_markers(dset)) {
-        throw std::runtime_error("Dataset strings allocation failed.");
+    if (!is_pynumarrayd(pydict[py::cast("data_array")])) {
+        throw std::invalid_argument("Element 'data_array' of given dictionary is not of NumPy array type.");
     }
+    NumPyArray_extract(py::cast<py::array>(pydict[py::cast("data_array")]), arr_view);
+    if (!arr_view.data) throw std::runtime_error("NumPy array: null pointer.");
+    dset->n = arr_view.rows;
+    dset->v = arr_view.cols + 1;
+    err_ = allocate_Z(dset, OPT_NONE);
+    if (err_) handle_gretl_error(err_);
+    for (int i=1; i<dset->v; i++) {
+        NumPyArray_to_gretl_matrix<double>(arr_view, dset->Z[i], i-1, true);
+    }
+    dset->t1 = 0;
+    dset->t2 = dset->n-1;
+
+    // we allocate memory for varnames and obs markers
+    if (dataset_allocate_varnames(dset) || dataset_allocate_obs_markers(dset)) handle_gretl_error(E_ALLOC);
 
     // we fill up dset->S
     pylist = pydict[py::cast("obs_labels")];
