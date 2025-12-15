@@ -102,6 +102,9 @@ std::string gretl4py_trim (std::string &s)
 
 void NumPyArray_extract (const py::array &arr, NumPyArrayView &view)
 {
+    //
+    // here we extract meta information about NumPy arrays
+    //
     if (arr.ndim() > 2) throw std::runtime_error("Given array has more than two dimensions.");
 
     view.is_double = arr.dtype().is(py::dtype::of<double>());
@@ -363,25 +366,33 @@ template <typename T>
 void load_objects_from_dict (const py::dict &dict, const char *key, T &target)
 {
     //
-    // function for loading complex objects (lists, dicts from kwargs)
+    // function for loading complex objects (lists, dicts) from kwargs
     //
     if (!dict.contains(key)) return;
+
+    // lambda for handling exceptions
+    auto key_not_a = [key](const char *obj_type)
+    {
+        throw std::invalid_argument(std::string("'") + key + "' must be a " + obj_type);
+    };
 
     auto obj = dict[key];
 
     if constexpr (std::is_same_v<T, std::vector<std::string>>) {
-        if (!is_pylist(obj)) {
-            throw std::invalid_argument(std::string("'") + key + "' must be a list");
-        }
+        if (!is_pylist(obj)) key_not_a("list");
     } else if constexpr (std::is_same_v<T, std::string>) {
-        if (!is_pystr(obj)) {
-            throw std::invalid_argument(std::string("'") + key + "' must be a string");
-        }
+        if (!is_pystr(obj)) key_not_a("string");
+    } else if constexpr (std::is_same_v<T, py::array_t<double>>) {
+        if (!is_pynumarrayd(obj)) key_not_a("ndarray");
     } else {
         static_assert(always_false<T>, "load_objects_from_dict(): unknown type");
     }
 
-    target = py::cast<T>(obj);
+    if constexpr (std::is_same_v<T, py::array_t<double>>) {
+        target = py::reinterpret_borrow<py::array_t<double>>(obj);
+    } else {
+        target = py::cast<T>(obj);
+    }
 }
 template void load_objects_from_dict<std::vector<std::string>>(const py::dict&, const char*,
                                                                std::vector<std::string>&);
@@ -438,12 +449,12 @@ GretlDataset::GretlDataset (const std::string &fname,
 GretlDataset::GretlDataset (const py::dict &pydict) : id_(next_obj_id_++)
 {
     //
-    // alternative initializer: we fill a gretl DATASET with the content of @pydict
+    // here we fill a gretl DATASET with the content of @pydict
     //
-    gretlopt opt = OPT_NONE;
     py::list pylist;
-    int pd;
+    py::array_t<double> pyarray;
     NumPyArrayView arr_view;
+    gretlopt opt = OPT_NONE;
 
     // lambda for getting int from pydict
     auto get_int_from_pydict = [&pydict](const char *key, int deflt)
@@ -463,10 +474,8 @@ GretlDataset::GretlDataset (const py::dict &pydict) : id_(next_obj_id_++)
     allocate_dset_();
 
     // we fill up dset->Z
-    if (!is_pynumarrayd(pydict[py::cast("data_array")])) {
-        throw std::invalid_argument("Element 'data_array' of given dictionary is not of NumPy array type.");
-    }
-    NumPyArray_extract(py::cast<py::array>(pydict[py::cast("data_array")]), arr_view);
+    load_objects_from_dict<py::array_t<double>>(pydict, "data_array", pyarray);
+    NumPyArray_extract(pyarray, arr_view);
     if (!arr_view.data) throw std::runtime_error("NumPy array: null pointer.");
     dset->n = arr_view.rows;
     dset->v = arr_view.cols + 1;
@@ -488,6 +497,7 @@ GretlDataset::GretlDataset (const py::dict &pydict) : id_(next_obj_id_++)
     }
     for (int i=0; i<dset->n; ++i) {
         std::string el = py::str(pylist[i]);
+
         std::memset(dset->S[i], '\0', OBSLEN);
         el.copy(dset->S[i], OBSLEN, 0);
     }
@@ -500,6 +510,7 @@ GretlDataset::GretlDataset (const py::dict &pydict) : id_(next_obj_id_++)
     for (int i=0; i<dset->v-1; i++) {
         if (!is_pystr(pylist[i])) throw std::runtime_error("name of variable " + std::to_string(i) + " not a string");
         auto el = py::cast<std::string>(pylist[i]);
+
         std::memset(dset->varname[i+1], '\0', VNAMELEN);
         gretl_normalize_varname(dset->varname[i+1], el.c_str(), 1, 0);
     }
@@ -507,10 +518,10 @@ GretlDataset::GretlDataset (const py::dict &pydict) : id_(next_obj_id_++)
     // The following actions work fine if the python dict we're working with
     // was created by GretlDataset::to_dict (that is, starting from a gretl
     // dataset in libgretl's memory-space).
-    pd = get_int_from_pydict("periodicity", 1);
     dset->structure = get_int_from_pydict("structure", 0);
     opt = setobs_opt_from_structure_(dset->structure);
-    set_obs(std::to_string(pd).c_str(), dset->S[0], dset, opt);
+    set_obs(std::to_string(get_int_from_pydict("periodicity", 1)).c_str(),
+            dset->S[0], dset, opt);
 }
 
 GretlDataset::GretlDataset (const GretlDataset &src) : id_(next_obj_id_++)
