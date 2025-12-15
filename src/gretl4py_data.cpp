@@ -55,28 +55,6 @@ extern std::unordered_set<std::string> UserVars;
 //////////////////////////////////////////////////
 // static functions
 //////////////////////////////////////////////////
-
-// two overloads for copy_strings_from_python_list()
-static void copy_strings_from_python_list (const py::list &pylist, char **dest,
-                                           int n_bytes, int src_offset = 0,
-                                           int dst_offset = 0, bool trim = false)
-{
-    //
-    // we copy the whole list to dest (length must be verified at the caller level)
-    // with optional clearing
-    //
-    std::string str;
-    int i = dst_offset;
-
-    for (auto item : pylist) {
-        str = std::string(py::str(item));
-        if (trim) {
-            str.erase(std::remove_if(str.begin(), str.end(), ::isspace), str.end());
-        }
-        str.copy(dest[i++], n_bytes, src_offset);
-    }
-}
-
 static void numpy_array_to_gretl_storage (const py::dict &pydict, DATASET *dset)
 {
     //
@@ -530,7 +508,11 @@ GretlDataset::GretlDataset (const py::dict &pydict) : id_(next_obj_id_++)
     if (pylist.size() != static_cast<long unsigned int>(dset->n)) {
         throw std::invalid_argument("Number of obs_labels is different than number of observations.");
     }
-    copy_strings_from_python_list(pylist, dset->S, OBSLEN-1, 0, 0, true);
+    for (int i=0; i<dset->n; ++i) {
+        std::string el = py::str(pylist[i]);
+        std::memset(dset->S[i], '\0', OBSLEN);
+        el.copy(dset->S[i], OBSLEN, 0);
+    }
 
     // we fill up dset->varname
     pylist = pydict[py::cast("varname")];
