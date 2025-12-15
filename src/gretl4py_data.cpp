@@ -77,25 +77,6 @@ static void copy_strings_from_python_list (const py::list &pylist, char **dest,
     }
 }
 
-static void copy_strings_from_python_list (const py::list &pylist,
-                                           std::string *dest, bool trim = false)
-{
-    //
-    // we copy the whole list to dest (length must be verified at the caller level)
-    // with optional clearing
-    //
-    int i = 0;
-    std::string str;
-
-    for (auto item : pylist) {
-        str = std::string(py::str(item));
-        if (trim) {
-            str.erase(std::remove_if(str.begin(), str.end(), ::isspace), str.end());
-        }
-        dest[i++] = str;
-    }
-}
-
 static void numpy_array_to_gretl_storage (const py::dict &pydict, DATASET *dset)
 {
     //
@@ -519,11 +500,10 @@ GretlDataset::GretlDataset (const py::dict &pydict) : id_(next_obj_id_++)
     //
     gretlopt opt = OPT_NONE;
     py::list pylist;
-    std::string *strBUF;
     int pd;
 
     // lambda for getting int from pydict
-    auto get_int_from_python_dict = [&pydict](const char *key, int deflt = 1)
+    auto get_int_from_pydict = [&pydict](const char *key, int deflt)
     {
         int ret = deflt;
 
@@ -557,19 +537,18 @@ GretlDataset::GretlDataset (const py::dict &pydict) : id_(next_obj_id_++)
     if (pylist.size() != static_cast<long unsigned int>(dset->v-1)) {
         throw std::invalid_argument("Number of varnames is different than number of variables.");
     }
-    strBUF = new std::string[dset->v];
-    copy_strings_from_python_list(pylist, strBUF);
     for (int i=0; i<dset->v-1; i++) {
+        if (!is_pystr(pylist[i])) throw std::runtime_error("name of variable " + std::to_string(i) + " not a string");
+        auto el = py::cast<std::string>(pylist[i]);
         std::memset(dset->varname[i+1], '\0', VNAMELEN);
-        gretl_normalize_varname(dset->varname[i+1], strBUF[i].c_str(), 1, 0);
+        gretl_normalize_varname(dset->varname[i+1], el.c_str(), 1, 0);
     }
-    delete []strBUF;
 
     // The following actions work fine if the python dict we're working with
     // was created by GretlDataset::to_dict (that is, starting from a gretl
     // dataset in libgretl's memory-space).
-    pd = get_int_from_python_dict("periodicity");
-    dset->structure = get_int_from_python_dict("structure", 0);
+    pd = get_int_from_pydict("periodicity", 1);
+    dset->structure = get_int_from_pydict("structure", 0);
     opt = setobs_opt_from_structure_(dset->structure);
     set_obs(std::to_string(pd).c_str(), dset->S[0], dset, opt);
 }
