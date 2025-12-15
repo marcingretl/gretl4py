@@ -454,7 +454,6 @@ GretlDataset::GretlDataset (const py::dict &pydict) : id_(next_obj_id_++)
     py::list pylist;
     py::array_t<double> pyarray;
     NumPyArrayView arr_view;
-    gretlopt opt = OPT_NONE;
 
     // lambda for getting int from pydict
     auto get_int_from_pydict = [&pydict](const char *key, int deflt)
@@ -468,6 +467,22 @@ GretlDataset::GretlDataset (const py::dict &pydict) : id_(next_obj_id_++)
         }
 
         return ret;
+    };
+
+    // lambda for getting opt from data structure
+    auto setobs_opt_from_structure = [](int structure) -> gretlopt
+    {
+        if (structure == CROSS_SECTION) {
+            return OPT_X;
+        } else if (structure == TIME_SERIES) {
+            return OPT_T;
+        } else if (structure == STACKED_TIME_SERIES) {
+            return OPT_S;
+        } else if (structure == SPECIAL_TIME_SERIES) {
+            return OPT_N;
+        } else {
+            return OPT_NONE;
+        }
     };
 
     // we allocate memory
@@ -519,9 +534,8 @@ GretlDataset::GretlDataset (const py::dict &pydict) : id_(next_obj_id_++)
     // was created by GretlDataset::to_dict (that is, starting from a gretl
     // dataset in libgretl's memory-space).
     dset->structure = get_int_from_pydict("structure", 0);
-    opt = setobs_opt_from_structure_(dset->structure);
     set_obs(std::to_string(get_int_from_pydict("periodicity", 1)).c_str(),
-            dset->S[0], dset, opt);
+            dset->S[0], dset, setobs_opt_from_structure(dset->structure));
 }
 
 GretlDataset::GretlDataset (const GretlDataset &src) : id_(next_obj_id_++)
@@ -1388,21 +1402,6 @@ void GretlDataset::linked_models_del (const int model_id)
 std::unordered_set<int> GretlDataset::linked_models_list (void) const
 {
     return linked_models_;
-}
-
-gretlopt GretlDataset::setobs_opt_from_structure_ (int structure)
-{
-    if (structure == CROSS_SECTION) {
-        return OPT_X;
-    } else if (structure == TIME_SERIES) {
-        return OPT_T;
-    } else if (structure == STACKED_TIME_SERIES) {
-        return OPT_S;
-    } else if (structure == SPECIAL_TIME_SERIES) {
-        return OPT_N;
-    } else {
-        return OPT_NONE;
-    }
 }
 
 py::object GretlDataset::get_accessor (const std::string &accessor) const

@@ -95,8 +95,6 @@ private:
     void add_or_replace_allocated_series_ (gretl_double_ptr data,
                                            const std::string &name, int n,
                                            gretl_gchar_ptr label = nullptr);
-
-    gretlopt setobs_opt_from_structure_ (int structure);
 public:
     bool is_default = false;
     DATASET *dset = NULL;

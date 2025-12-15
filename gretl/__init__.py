@@ -73,8 +73,10 @@ from . import gretl4py_classes
 atexit.register(_gretl._gretl4py_cleanup)
 
 # we import some symbols explicitly
-from ._gretl import (about, set, version, include, summary, pvalue,
-                    critical, Bundle, pdf, cdf, invcdf)
+from ._gretl import (about, version)                        # module-related
+from ._gretl import (Bundle)                                # constructors
+from ._gretl import (genr, include, print, set, summary)    # libgretl's commands interfaces
+from ._gretl import (pvalue, critical, pdf, cdf, invcdf)    # libgretl's functions interfaces
 from .gretl4py_classes import _attrs, _oddsratio, mle, nls, gmm, NLSpec
 from .gretl4py_classes import get_data, show_data_status, _to_dataframe
 from .gretl4py_addons import print_module_source, fc_print, modeltab
