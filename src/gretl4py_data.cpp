@@ -47,9 +47,6 @@ extern "C" {
 #include <iostream>
 #include <unordered_set>
 
-#define F_CONTIGUOUS py::detail::npy_api::constants::NPY_ARRAY_F_CONTIGUOUS_
-#define is_NumPyArrayFC(m) ((m.flags() & F_CONTIGUOUS))
-
 extern std::unordered_set<std::string> UserVars;
 
 //////////////////////////////////////////////////
@@ -87,7 +84,6 @@ static void real_NumPyArray_to_gretl_matrix (const NumPyArrayView &view,
         }
     }
 }
-
 
 //////////////////////////////////////////////////
 // functions
@@ -152,9 +148,7 @@ void NumPyArray_to_gretl_matrix (NumPyArrayView &view, T *dst,
         throw std::runtime_error("Unsupported NumPy dtype for conversion.");
     }
 }
-template void NumPyArray_to_gretl_matrix<gretl_matrix>(NumPyArrayView&, gretl_matrix*,
-                                                       int, bool);
-
+template void NumPyArray_to_gretl_matrix<gretl_matrix>(NumPyArrayView&, gretl_matrix*, int, bool);
 
 GretlTypesPtr convert_GretlType_to_GretlTypes (GretlType t, void *gr_obj_ptr,
                                                const int n, int &err)

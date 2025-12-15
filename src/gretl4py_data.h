@@ -45,6 +45,7 @@ namespace py = pybind11;
 #define is_pynumeric(o) (is_pyint(o) || is_pyfloat(o))
 #define is_pysequence(o) (py::isinstance<py::sequence>(o))
 #define is_pyGretlBundle(o) (py::isinstance<GretlBundle>(o))
+#define is_NumPyArrayFC(m) ((m.flags() & py::detail::npy_api::constants::NPY_ARRAY_F_CONTIGUOUS_))
 
 #define SET_OPT(opt, flag) opt = static_cast<gretlopt>((opt) | (flag))
 
