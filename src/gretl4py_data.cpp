@@ -1114,24 +1114,19 @@ void GretlDataset::smpl (const std::string &startobs, const std::string &endobs,
     auto check_smpl_full = [this](void) -> int
     {
         //
-        // mimics 'static int check_smpl_full (gretlopt opt)' from interact.c
+        // mimics 'static int check_smpl_full (gretlopt)' from interact.c
         //
         opt_ = static_cast<gretlopt>(opt_ ^ OPT_F);
-        if (opt_ & OPT_Q) {
-            opt_ = static_cast<gretlopt>(opt_ ^ OPT_Q);
-        }
+        if (opt_ & OPT_Q) opt_ = static_cast<gretlopt>(opt_ ^ OPT_Q);
 
         return opt_ == OPT_NONE ? 0 : E_BADOPT;
     };
 
-    /*auto panel_smpl_special = [this](void) -> int
-    {
-        // the option --unit or --time is given
-        return opt_ & (OPT_U | OPT_X);
-    };*/
-
     auto smpl_restrict = [this](void) -> int
     {
+        //
+        // mimics 'static int 'smpl_restrict (gretlopt)' from interact.c
+        //
         opt_ = static_cast<gretlopt>(opt_ & (~OPT_Q));
         opt_ = static_cast<gretlopt>(opt_ & (~OPT_T));
         opt_ = static_cast<gretlopt>(opt_ & (~OPT_D));
@@ -1139,8 +1134,9 @@ void GretlDataset::smpl (const std::string &startobs, const std::string &endobs,
         return opt_ != OPT_NONE;
     };
 
-    gretl_list_ptr var_list{nullptr};           // FIXME: must be set via kwargs!!!
+    gretl_list_ptr var_list{nullptr};
     bool quiet = false;
+    bool report = false;
     opt_ = OPT_NONE;
 
     if (py::len(kwargs) > 0) {
@@ -1181,15 +1177,15 @@ void GretlDataset::smpl (const std::string &startobs, const std::string &endobs,
         /* no args given: give a report */
         print_smpl(dset, get_full_length_n(), OPT_F, GP_.prn_ptr());
         //print_smpl(dset, get_full_length_n(), OPT_NONE, GP_.prn_ptr());
+        report = true;
     } else {
         /* simple setting of t1, t2 business */
         err_ = set_sample(startobs.c_str(), endobs.c_str(), dset, opt_);
     }
     if (err_) handle_gretl_error(err_);
 
-    if (opt_ & OPT_Q) {
-        print_smpl(dset, get_full_length_n(), OPT_NONE, GP_.prn_ptr());
-    }
+    if (!report && (opt_ & OPT_Q)) print_smpl(dset, get_full_length_n(), OPT_NONE, GP_.prn_ptr());
+
     if (!quiet) GP_.print();
 }
 
