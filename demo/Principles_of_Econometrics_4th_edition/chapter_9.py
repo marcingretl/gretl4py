@@ -1,6 +1,9 @@
 import math
 import gretl
 
+# check gretl4py version
+assert float(gretl.version) >= 0.41, "required gretl4py 0.41 or higher"
+
 # switch of verbosity
 gretl.set('verbose', 'off')
 
@@ -15,13 +18,11 @@ phillips_aus = gretl.get_data('data/phillips_aus.gdt')
 # 9.2.2. Okun's Law
 ############################################
 print("\n9.2.2. Okun\'s Law")
-okun.sample(t1='1985:2', t2='2009:3')
-okun.diff('u')                                              # (9.9)
-okun.new_series(formula='u_1 = u(-1)')
-okun.new_series(formula='g_1 = g(-1)')
-okun.new_series(formula='g_2 = g(-2)')
-okun.new_series(formula='g_3 = g(-3)')
-okun.new_series(formula='g_rate = (g - g_1) / g_1 * 100')   # (9.11)
+okun.sample('1985:2', '2009:3')
+okun.diff('u')                                                              # (9.9)
+okun.lags('u', 1)
+okun.lags('g', 3)
+okun.new_series(formula='g_rate = (g - g_1) / g_1 * 100')                   # (9.11)
 print("Table 9.1 Spreadsheet of Observations for Distributed Lag Model")
 okun.print(series="u u_1 d_u g g_1 g_2 g_3", range="1:5", byobs=True)
 okun.print(series="u u_1 d_u g g_1 g_2 g_3", range="96:98", byobs=True)
@@ -60,14 +61,11 @@ PC_aux_1 = gretl.ols('PC_e const d_u PC_e(-1)').fit()
 PC_aux_2 = gretl.ols('PC_e_2 const d_u PC_e_2(-1)').fit()
 t_i  = PC_aux_1.coeff[2]/PC_aux_1.stderr[2]
 t_ii = PC_aux_2.coeff[2]/PC_aux_2.stderr[2]
-print(f"(i)\tt = {t_i:.3f}, p-value: \
-{gretl.pvalue(dist='t', value=t_i, params=PC_aux_1.df):.3f}")
-print(f"(ii)\tt = {t_ii:.3f}, p-value: \
-{gretl.pvalue(dist='t', value=t_ii, params=PC_aux_2.df):.3f}")
+print(f"(i)\tt = {t_i:.3f}, p-value: {gretl.pvalue(dist='t', value=t_i, params=PC_aux_1.df):.3f}")
+print(f"(ii)\tt = {t_ii:.3f}, p-value: {gretl.pvalue(dist='t', value=t_ii, params=PC_aux_2.df):.3f}")
 print(f"(iii)\tLM = {PC_aux_1.trsq:.2f}")
 print(f"(iv)\tLM = {PC_aux_2.trsq:.2f}")
-print(f"chi^2(1) critical value: \
-{gretl.critical(dist='X', value=0.05, params=1):.2f}")
+print(f"chi^2(1) critical value: {gretl.critical(dist='X', value=0.05, params=1):.2f}")
 
 ############################################
 # 9.5. Estimation With Serially Correlated Errors
@@ -97,13 +95,14 @@ PC_ARDL_1_0 = gretl.ols(formula='inf const inf(-1) d_u').fit()
 gretl.modeltab([PC_ARDL_1_1, PC_ARDL_1_0])
 
 print("\n9.6.1. Phillips Curve")
-PC_ARDL_1_0 = gretl.ols(formula='inf const inf(-1) d_u').fit() # (9.56)
+PC_ARDL_1_0 = gretl.ols(formula='inf const inf(-1) d_u', simple=True).fit()         # (9.56)
+print(PC_ARDL_1_0)
 PC_ARDL_1_0.save_uhat(name='PC_ARDL_1_0_e')
 phillips_aus.test(type='corrgm', y='PC_ARDL_1_0_e', order=12, acf_only=True)
 PC_ARDL_4_1 = gretl.ols(formula='inf const inf(-1 to -4) d_u').fit()                # (9.57)
 print(PC_ARDL_4_1)
 print("\nTable 9.4 AIC and SC Values for Philips Curve ARDL Models")
-phillips_aus.sample(t1='1988:3', t2='2009:3')
+phillips_aus.sample('1988:3', '2009:3')
 for q in range(0,2):
     for p in range(1,7):
         spec = f'inf const inf(-1 to -{p}) d_u(0 to -{q})'
@@ -118,9 +117,8 @@ OL_ARDL_0_2 = gretl.ols(formula='d_u const g(0 to -2)', simple=True).fit()      
 print(OL_ARDL_0_2)
 OL_ARDL_1_1 = gretl.ols(formula='d_u const d_u(-1) g(0 to -1)', simple=True).fit()  # (9.59)
 print(OL_ARDL_1_1)
-
 print("\nTable 9.5 AIC and SC Values for Okun's Law ARDL Models")
-okun.sample(t1='1986:1', t2='2009:3')
+okun.sample('1986:1', '2009:3')
 for p in range(0,3):
     for q in range(1,4):
         if p == 0:
@@ -133,6 +131,6 @@ for p in range(0,3):
         print(p, q, f'{aic:.4}', f'{sc:.4}')
 
 print("\n9.6.3. Autoregressive Models")
-okun.sample(t1='1985:2', t2='2009:3')
+okun.sample('1985:2', '2009:3')
 OL_AR_2 = gretl.ols(formula='g const g(-1 to -2)', simple=True).fit()               # (9.61)
 print(OL_AR_2)

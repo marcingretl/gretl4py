@@ -1,6 +1,9 @@
 import gretl
 import numpy as np
 
+# check gretl4py version
+assert float(gretl.version) >= 0.41, "required gretl4py 0.41 or higher"
+
 # switch of verbosity
 gretl.set('verbose', 'off')
 
@@ -16,7 +19,7 @@ coke = gretl.get_data('data/coke.gdt')
 # 8.1. The Nature of Heteroscedasticity
 ############################################
 print("\n8.1. The Nature of Heteroscedasticity")
-FOOD_f = gretl.ols(formula='food_exp const income').fit() # (8.3)
+FOOD_f = gretl.ols(formula='food_exp const income', simple=True).fit()            # (8.3)
 print(FOOD_f)
 
 ############################################
@@ -25,7 +28,7 @@ print(FOOD_f)
 print("\n8.2. Detecting Heteroscedasticity")
 print("\n8.2.2b. Testing the Food Expenditure Example")
 FOOD_f.save_uhat_sq(name='FOOD_f_e_sq')
-FOOD_fe = gretl.ols(formula='FOOD_f_e_sq const income', simple=True).fit()              # (8.17)
+FOOD_fe = gretl.ols(formula='FOOD_f_e_sq const income', simple=True).fit()        # (8.17)
 crit_val = gretl.critical(dist='x', value=0.05, params=FOOD_fe.ncoeff-1)
 print(f'chi^2 = {FOOD_fe.trsq:.3}, critical value = {crit_val:.3}')
 FOOD_f.test(type='white', quiet=True)
@@ -34,10 +37,10 @@ print("\n8.2.3. The Goldfeld-Quandt Test")
 cps2.set_as_default()
 spec = 'wage const educ exper metro'
 CPS_f = gretl.ols(formula=spec, simple=True).fit()          # (8.19)
-cps2.sample(restriction='metro == 1')
+print(CPS_f)
+cps2.sample('metro == 1', restrict=True)
 CPS_m = gretl.ols(formula=spec, simple=True).fit()          # (8.20a)
-cps2.sample(full=True)
-cps2.sample(restriction='metro == 0')
+cps2.sample('metro == 0', restrict=True, replace=True)
 CPS_r = gretl.ols(formula=spec, simple=True).fit()          # (8.20b)
 cps2.sample(full=True)
 Flc = gretl.critical(dist='F', value=0.975, params=[CPS_m.df, CPS_r.df])
@@ -48,9 +51,9 @@ print(f'F = {F_val:.3}')
 
 print("\n8.2.3a. The Food Expenditure Example")
 food.set_as_default()
-food.sample(t1=1, t2=20)
+food.sample(1, 20)
 FOOD_1 = gretl.ols(formula=FOOD_f.get_formula()).fit()
-food.sample(t1=21, t2=40)
+food.sample(21, 40)
 FOOD_2 = gretl.ols(formula=FOOD_f.get_formula()).fit()
 food.sample(full=True)
 F_val = FOOD_2.sigma**2 / FOOD_1.sigma**2
@@ -81,7 +84,7 @@ cps2.new_series(name='rural', value=f'1 - metro')
 cps2.new_series(name='wm', value=f'{CPS_m.sigma} * metro')
 cps2.new_series(name='wr', value=f'{CPS_r.sigma} * rural')
 cps2.new_series(name='w', value='1 / (wm + wr)^2')
-CPS_gr = gretl.wls(formula='w ' + CPS_f.get_formula()).fit()    # (8.36)
+CPS_gr = gretl.wls(formula='w ' + CPS_f.get_formula()).fit()    # (8.35)
 print(CPS_gr)
 
 ############################################
@@ -91,7 +94,7 @@ print("\n8.5. Generalized Least Squares: Unknown Form of Variance")
 food.set_as_default()
 food.new_list(name='x', value='const income')
 food.new_list(name='z', value='const log(income)')
-food.new_series(name='l_FOOD_f_e_sq', value='log(FOOD_f_e_sq)')
+food.logs('FOOD_f_e_sq')
 FOOD_l = gretl.ols('l_FOOD_f_e_sq z').fit()
 alpha = FOOD_l.coeff
 const = food.get_series('const')
@@ -122,7 +125,7 @@ coke.new_series(f'p = {yhat_name}')
 coke.new_series('varp = p*(1-p)')
 coke.new_series('pos = (varp>0)')
 coke.new_series('w = pos * 1/varp')
-coke.sample(restriction='pos')
+coke.sample('pos', dummy=True)
 GLS_omit = gretl.wls('w coke x').fit()
 coke.sample(full=True)
 # GLS-trunc

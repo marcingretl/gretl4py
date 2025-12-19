@@ -1,7 +1,7 @@
 import gretl
 
 # check gretl4py version
-assert float(gretl.version) >= 0.31, "required gretl4py 0.31 or higher"
+assert float(gretl.version) >= 0.41, "required gretl4py 0.41 or higher"
 
 # switch of verbosity
 gretl.set('verbose', 'off')
@@ -55,10 +55,10 @@ cps4_small.new_series(name='blackfemalesouth', value='blackfemale * south')
 spec = 'wage const educ black female blackfemale south educsouth blacksouth femalesouth blackfemalesouth'
 WAGE_full = gretl.ols(spec, simple=True).fit()                         # (7.10)
 print(WAGE_full)
-cps4_small.sample(restriction='south == 0')
+cps4_small.sample('south == 0', restrict=True)
 WAGE_nonsouth = gretl.ols('wage const educ black female blackfemale', simple=True).fit()
 cps4_small.sample(full=True)
-cps4_small.sample(restriction='south == 1')
+cps4_small.sample('south == 1', restrict=True)
 WAGE_south = gretl.ols('wage const educ black female blackfemale', simple=True).fit()
 cps4_small.sample(full=True)
 print()
@@ -88,17 +88,17 @@ print("\n7.5. Treatment Effects")
 star.set_as_default()
 star.new_list(name='v', value='totalscore small tchexper boy freelunch white_asian tchwhite tchmasters schurban schrural')
 print("Table 7.6a Summary Statistics for Regular-Sized Classes")
-star.sample(restriction="regular == 1")
+star.sample("regular == 1", restrict=True)
 gretl.summary(varlist='v', simple=True)
 print("Table 7.6b Summary Statistics for Small Classes")
-star.sample(restriction="small == 1", replace=True)
+star.sample("small == 1", restrict=True, replace=True)
 gretl.summary(varlist='v', simple=True)
 # gretl built-in way
 gretl.summary(varlist='v', by='regular', simple=True)
 gretl.summary(varlist='v', by='small', simple=True)
 
 print("\n7.5.3. Application of Difference Estimation: Project STAR")
-star.sample(restriction='aide == 0')
+star.sample('aide == 0', restrict=True, replace=True)
 ST_1 = gretl.ols('totalscore const small', simple=True).fit()                         # (7.15)
 
 print("\n7.5.4. The Difference Estimator with Additional Controls")

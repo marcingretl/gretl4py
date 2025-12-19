@@ -1,6 +1,9 @@
 import math
 import gretl
 
+# check gretl4py version
+assert float(gretl.version) >= 0.41, "required gretl4py 0.41 or higher"
+
 # switch of verbosity
 gretl.set('verbose', 'off')
 
@@ -16,9 +19,9 @@ spurious = gretl.get_data('data/spurious.gdt')
 ############################################
 print("\n12.1. Stationary and Nonstationary Variables")
 print("Table 12.1")
-usa.sample(t1='1984:2', t2='1996:4')
+usa.sample('1984:2', '1996:4')
 gretl.summary(simple=True)
-usa.sample(t1='1997:1', t2='2009:4')
+usa.sample('1997:1', '2009:4')
 gretl.summary(simple=True)
 usa.sample(full=True)
 

@@ -116,7 +116,7 @@ public:
 
     void print (const py::kwargs &kwargs);
 
-    void sample (const py::kwargs &kwargs);
+    //void sample (const py::kwargs &kwargs);
 
     void smpl (const std::string &startobs, const std::string &endobs,
                const py::kwargs &kwargs);

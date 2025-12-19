@@ -19,7 +19,7 @@ data97_df.set_as_default()
 # on previously loaded global dataset
 # for the first 4 quarters
 print("\nExample using default dataset:")
-data97_df.sample(t1=1, t2=4)
+data97_df.sample(1, 4)
 
 print('All about data9-7.csv (1975Q1:1975Q4)')
 data97_df.print()

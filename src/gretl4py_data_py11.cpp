@@ -112,19 +112,18 @@ void init_gretl4py_dataset_py11(py::module_ &m)
         .def("tailT", &head_tail_print<TAIL_T>, py::arg("nobs") = 5, py::kw_only())
         .def("get_id", &GretlDataset::get_id)
         .def("set_as_default", &GretlDataset::set_as_default)
-        .def("sample", &GretlDataset::sample)
-        .def("smpl",
+        .def("sample",
              [](GretlDataset &self, const std::string &startobs, const std::string &endobs, const py::kwargs &kwargs)
              {
                  // direct call for GretlDataset::smpl()
                  self.smpl(startobs, endobs, kwargs);
              }, py::arg("startobs").none(true) = "", py::arg("endobs").none(true) = "", py::kw_only())
-        .def("smpl",
+        .def("sample",
              [](GretlDataset &self, const std::string &startobs, const py::kwargs &kwargs)
              {
                  self.smpl(startobs, "", kwargs);
              }, py::arg("startobs").none(false), py::kw_only())
-        .def("smpl",
+        .def("sample",
              [](GretlDataset &self, int startobs, int endobs, const py::kwargs &kwargs)
              {
                  std::string startobs_str = startobs == NADBL ? "" : std::to_string(startobs);
@@ -132,7 +131,7 @@ void init_gretl4py_dataset_py11(py::module_ &m)
 
                  self.smpl(startobs_str, endobs_str, kwargs);
              }, py::arg("startobs").none(true) = NADBL, py::arg("endobs").none(true) = NADBL, py::kw_only())
-        .def("smpl",
+        .def("sample",
              [](GretlDataset &self, int startobs, const py::kwargs &kwargs)
              {
                  self.smpl(std::to_string(startobs), "", kwargs);

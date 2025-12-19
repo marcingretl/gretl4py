@@ -5,6 +5,9 @@ except ModuleNotFoundError:
 import numpy as np
 import gretl
 
+# check gretl4py version
+assert float(gretl.version) >= 0.41, "required gretl4py 0.41 or higher"
+
 # switch of verbosity
 gretl.set('verbose', 'off')
 
@@ -41,7 +44,7 @@ gretl.modeltab(mdls)
 ############################################
 print("\n15.3. The Fixed Effects Model")
 print("\n15.3.1. The Least Squares Dummy Variable Estimator for Small N")
-nls_panel.sample(t1=1, t2=10, unit=True)
+nls_panel.sample(1, 10, unit=True)
 nls_panel.dummify("id")
 LSQD_10 = gretl.ols(formula="lwage exper exper2 tenure tenure2 union Did_*", simple=True).fit()            # (15.9)
 print(LSQD_10)
@@ -63,16 +66,14 @@ nls_panel.print(series='lwage lwage_hat lwage_bar exper exper_hat exper_bar',
                 byobs=True, range="1:15")
 
 print("\n15.3.2a. Fixed Effects Estimates of Wage Equation for N=10")
-nls_panel.sample(t1=1, t2=10, unit=True)
+nls_panel.sample(1, 10, unit=True)
 LSQ_10_dev = gretl.ols(formula="lwage_bar exper_bar exper2_bar tenure_bar tenure2_bar union_bar",
                        simple=True).fit()
 FE_10 = gretl.panel(formula="lwage const exper exper2 tenure tenure2 union").fit()
-
 LSQ_10_dev_coeffs = LSQ_10_dev.coeff
 LSQ_10_dev_stderrs = LSQ_10_dev.stderr
 LSQ_10_dev_coeffs_aligned = np.insert(LSQ_10_dev_coeffs, 0, None)
 LSQ_10_dev_stderrs_aligned = np.insert(LSQ_10_dev_stderrs, 0, None)
-
 data = list(zip(FE_10.parnames, LSQ_10_dev_coeffs_aligned,
                 LSQ_10_dev_stderrs_aligned, FE_10.coeff, FE_10.stderr))
 print(tabulate(data, headers=["Variable", "Coefficient", "Std. Error", "Coefficient", "Std. Error"],
@@ -91,6 +92,7 @@ print("\n15.4. The Random Effects Model")
 print("\n15.4. Random Effects Estimation of the Wage Equation")
 RE = gretl.panel(formula=spec, random_effects=True, matrix_diff=True).fit()
 RE_r = gretl.panel(formula=spec, random_effects=True, robust=True).fit()
+print("\nTable 15.4 Random Effects Estimates of Wage Equation")
 gretl.modeltab([RE, RE_r])
 print(f'\nalpha_hat = {RE.theta:.4f}')
 
@@ -118,9 +120,9 @@ print(grunfeld2_dummy)
 grunfeld2_dummy.test(type='omit', vars='D Dv Dk')                                 # (15.45)
 
 print("\n15.7.4 Estimation: Different Coefficients, Different Error Variances")
-grunfeld2.sample(restriction="firm == 1")
+grunfeld2.sample("firm == 1", restrict=True)
 grunfeld2_GE = gretl.ols("inv const v k").fit()
-grunfeld2.sample(restriction="firm == 2", replace=True)
+grunfeld2.sample("firm == 2", restrict=True, replace=True)
 grunfeld2_WE = gretl.ols("inv const v k").fit()
 print("\nTable 15.13 Least Squares Estimates of Separate Investment Equations")
 gretl.modeltab([grunfeld2_GE, grunfeld2_WE])

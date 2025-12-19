@@ -230,7 +230,7 @@ if Do_StatsModels is True:
 # gretl calls
 hf.linenr(24)
 t0 = time.time()
-d4.sample(t1=1, t2=14)
+d4.sample(1, 14)
 ols_results2 = gretl.ols('TOTEMP ~ const + GNPDEFL + GNP + UNEMP + ARMED + POP + YEAR').fit()
 t1 = time.time()
 print(

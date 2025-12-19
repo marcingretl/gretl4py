@@ -1008,6 +1008,7 @@ void GretlDataset::print (const py::kwargs &kwargs)
     GP_.print();
 }
 
+/*
 void GretlDataset::sample (const py::kwargs &kwargs)
 {
     //
@@ -1102,6 +1103,7 @@ void GretlDataset::sample (const py::kwargs &kwargs)
         GP_.print();
     }
 }
+*/
 
 void GretlDataset::smpl (const std::string &startobs, const std::string &endobs,
                          const py::kwargs &kwargs)
@@ -1194,20 +1196,20 @@ GretlDatasetPtr GretlDataset::getitem_impl (const T &slice)
 {
     //
     // this method is an underlying engine for '[]' operator
+    // note: we make deep copy of current instance
     //
     py::dict opts;
-    std::string slice_str;
+    std::string startobs, endobs, slice_str;
     gretl_list_ptr drop_list{nullptr};
+    auto RES = std::make_shared<GretlDataset>(*this);
 
     // we parse slice / list / string
     if constexpr (std::is_same_v<T, py::slice>) {
         py::object start = slice.attr("start");
         py::object stop = slice.attr("stop");
-        int t1 = py::isinstance<py::none>(start) ? 0 : start.cast<int>();
-        int t2 = py::isinstance<py::none>(stop) ? 0 : stop.cast<int>();
-        opts["t1"] = t1;
-        opts["t2"] = t2;
-        slice_str = std::to_string(t1) + ":" + std::to_string(t2);
+        startobs = py::isinstance<py::none>(start) ? "" : std::to_string(start.cast<int>());
+        endobs = py::isinstance<py::none>(stop) ? "" : std::to_string(stop.cast<int>());
+        slice_str = startobs + ":" + endobs;
     } else if constexpr (std::is_same_v<T, py::list>) {
         std::ostringstream oss;
 
@@ -1233,18 +1235,17 @@ GretlDatasetPtr GretlDataset::getitem_impl (const T &slice)
 
         // at first we check if we deal with range slicer
         if (pos != std::string::npos && slice.find(':', pos + 1) == std::string::npos) {
-            opts["t1"] = slice.substr(0, pos);
-            opts["t2"] = slice.substr(pos + 1);
+            startobs = slice.substr(0, pos);
+            endobs = slice.substr(pos + 1);
         } else {
-            opts["restriction"] = slice;
+            startobs = slice;
+            endobs = "";
+            opts["restrict"] = true;
         }
         slice_str = slice;
     } else {
         static_assert(always_false<T>, "GretlDataset::getitem_impl: unknown slicing rule type");
     }
-
-    // me make deep copy of current instance
-    auto RES = std::make_shared<GretlDataset>(*this);
 
     // we do the job
     if constexpr (std::is_same_v<T, py::list>) {
@@ -1254,7 +1255,7 @@ GretlDatasetPtr GretlDataset::getitem_impl (const T &slice)
     } else {
         // for sampling
         opts["quiet"] = true;
-        RES->sample(opts);
+        RES->smpl(startobs, endobs, opts);
         err_ = perma_sample(RES->dset, OPT_T, GP_.prn_ptr(), NULL);
     }
     if (err_) {

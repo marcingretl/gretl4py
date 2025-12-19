@@ -6,7 +6,7 @@ data_dir = resources.files('gretl').joinpath('data')
 
 # load datasets
 d1 = gretl.get_data(str(data_dir.joinpath('data4-1.gdt')))
-d1.sample(t1=1, t2=10)
+d1.sample(1, 10)
 
 m1 = gretl.ols(formula='1 0 2 3').fit()
 print(m1)
