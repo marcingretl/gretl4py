@@ -117,12 +117,14 @@ void init_gretl4py_dataset_py11(py::module_ &m)
              {
                  // direct call for GretlDataset::smpl()
                  self.smpl(startobs, endobs, kwargs);
-             }, py::arg("startobs").none(true) = "", py::arg("endobs").none(true) = "", py::kw_only())
+             },
+             py::arg("startobs").none(true) = "", py::arg("endobs").none(true) = "", py::kw_only())
         .def("sample",
              [](GretlDataset &self, const std::string &startobs, const py::kwargs &kwargs)
              {
                  self.smpl(startobs, "", kwargs);
-             }, py::arg("startobs").none(false), py::kw_only())
+             },
+             py::arg("startobs").none(false), py::kw_only())
         .def("sample",
              [](GretlDataset &self, int startobs, int endobs, const py::kwargs &kwargs)
              {
@@ -130,13 +132,32 @@ void init_gretl4py_dataset_py11(py::module_ &m)
                  std::string endobs_str = endobs == NADBL ? "" : std::to_string(endobs);
 
                  self.smpl(startobs_str, endobs_str, kwargs);
-             }, py::arg("startobs").none(true) = NADBL, py::arg("endobs").none(true) = NADBL, py::kw_only())
+             },
+             py::arg("startobs").none(true) = NADBL, py::arg("endobs").none(true) = NADBL, py::kw_only())
         .def("sample",
              [](GretlDataset &self, int startobs, const py::kwargs &kwargs)
              {
                  self.smpl(std::to_string(startobs), "", kwargs);
-             }, py::arg("startobs").none(false), py::kw_only())
-        .def("setobs", &GretlDataset::setobs)
+             },
+             py::arg("startobs").none(false), py::kw_only())
+        .def("setobs",
+             [](GretlDataset &self, std::string &periodicity, const std::string &startobs, const py::kwargs &kwargs)
+             {
+                 self.setobs(periodicity, startobs, kwargs);
+             },
+             py::arg("periodicity").none(false), py::arg("startobs").none(false), py::kw_only())
+        .def("setobs",
+             [](GretlDataset &self, int periodicity, const std::string &startobs, const py::kwargs &kwargs)
+             {
+                 self.setobs(std::to_string(periodicity), startobs, kwargs);
+             },
+             py::arg("periodicity").none(false), py::arg("startobs").none(false), py::kw_only())
+        .def("setobs",
+             [](GretlDataset &self, int periodicity, int startobs, const py::kwargs &kwargs)
+             {
+                 self.setobs(std::to_string(periodicity), std::to_string(startobs), kwargs);
+             },
+             py::arg("periodicity").none(false), py::arg("startobs").none(false), py::kw_only())
         .def("to_dict", &GretlDataset::to_dict)
         .def("to_file", &GretlDataset::to_file,
              py::arg("fname").none(false), py::kw_only())

@@ -130,7 +130,8 @@ public:
 
     void set_as_default (void);
 
-    void setobs (const py::kwargs &kwargs);
+    void setobs (const std::string &periodicity, const std::string &startobs,
+                 const py::kwargs &kwargs);
 
     char *add_series (gretl_double_ptr data,
                       const std::string &name, int n,

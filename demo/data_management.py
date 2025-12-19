@@ -36,14 +36,13 @@ print('Variables in data97_csv')
 print(data97_csv.varnames())
 
 # we print only specified variables
-print(data97_gdt.print(series="QNC PRIME"))
+data97_gdt.print(series="QNC PRIME")
 
 ##############################################
 # setobs
 ##############################################
-data97_df.setobs(periodicity=12, startobs="1899:1")
+data97_df.setobs(12, "1899:1")
 data97_df.print()
-
 
 ##############################################
 # head() and tail()

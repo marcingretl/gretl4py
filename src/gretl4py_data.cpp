@@ -1336,7 +1336,7 @@ py::object GretlDataset::cov (const std::string &vars)
 
     return variant_to_pyobject(std::move(*res));
 }
-
+/*
 void GretlDataset::setobs (const py::kwargs &kwargs)
 {
     //
@@ -1411,6 +1411,35 @@ void GretlDataset::setobs (const py::kwargs &kwargs)
 
     err_ = set_obs(arg1.data(), arg2.data(), dset, opt_);
     if (err_) handle_gretl_error(err_);
+}*/
+
+void GretlDataset::setobs (const std::string &periodicity,
+                           const std::string &startobs, const py::kwargs &kwargs)
+{
+    //
+    // A method to mimic gretl's 'setobs' command
+    //
+    opt_ = OPT_NONE;
+
+    if (py::len(kwargs) > 0) {
+        for (auto &item : kwargs) {
+            if (!is_pystr(item.first)) throw std::invalid_argument("option key must be a string");
+            const std::string &key = item.first.cast<std::string>();
+
+            gretl_valid_long_opt(opt_, SETOBS, key, item.second);
+        }
+    }
+
+    // we do the job (based on interacs.c)
+    err_ = set_obs(periodicity.c_str(), startobs.c_str(), dset, opt_);
+    if (err_) handle_gretl_error(err_);
+    if (dset->n > 0) {
+        if (!(opt_ & (OPT_I | OPT_G))) print_smpl(dset, 0, OPT_NONE, GP_.prn_ptr());
+    } else {
+        pprintf(GP_.prn_ptr(), _("data frequency = %d\n"), dset->pd);
+    }
+
+    GP_.print();
 }
 
 void GretlDataset::set_as_default (void)
