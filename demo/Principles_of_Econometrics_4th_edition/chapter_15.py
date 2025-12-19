@@ -11,6 +11,9 @@ assert float(gretl.version) >= 0.41, "required gretl4py 0.41 or higher"
 # switch of verbosity
 gretl.set('verbose', 'off')
 
+# we load gig addon
+HT = gretl.include("hausman_taylor.gfn")
+
 # force libgretl to use the decimal point character
 gretl.set('force_decpoint', 'on')
 
@@ -98,6 +101,19 @@ print(f'\nalpha_hat = {RE.theta:.4f}')
 
 print("\n15.5.3. A Hausmann Test")
 print(RE.hausman_test)
+
+############################################
+# 15.6 The Hausman-Taylor Estimator
+############################################
+print("\n15.6. The Hausman-Taylor Estimator")
+#HT.show_functions()
+nls_panel.new_list(name="EXO", value="exper exper2 tenure tenure2 union black")
+nls_panel.new_list(name="NDO", value="south educ")
+#gretl.print("NDO", list=True)
+HT_e = gretl.hausman_taylor(y='lwage', L1='EXO', L2='NDO', verbosity=0)               # (15.38)
+print("\nTable 15.10 Hausman-Taylor Estimates of Wage Equation")
+gretl.ht_print(b=HT_e)
+
 
 ############################################
 # 15.7 Sets of Regression Equations
