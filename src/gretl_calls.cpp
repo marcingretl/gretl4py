@@ -854,7 +854,7 @@ gretl_list_ptr list_from_formula (const std::string &formula,
 {
     //
     // we build libgretl's list based on provided formula
-    // note: if throw_exception == false, we do not handle error
+    // note: if handle_error == false, we do not handle error
     //
     std::string tmp = formula;
 
