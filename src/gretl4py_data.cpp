@@ -756,7 +756,6 @@ void GretlDataset::to_file (const std::string &fname,
                 auto val_str = py::cast<std::string>(item.second);
 
                 varlist = list_from_formula(val_str, dset, err_);
-                if (err_) handle_gretl_error(err_);
                 continue;
             } else {
                 gretl_valid_long_opt(opt_, STORE, key, item.second);
@@ -857,7 +856,6 @@ void GretlDataset::transforms (const std::string &vars,
 
     // we construct list of variables
     auto varlist = list_from_formula(vars, dset, err_);
-    if (err_) handle_gretl_error(err_);
 
     // we do the job
     int *varlist_raw_ptr = varlist.release();
@@ -897,7 +895,6 @@ void GretlDataset::transforms_no_opts (const std::string &vars)
 
     // we construct list of external variables
     varlist = list_from_formula(vars, dset, err_);
-    if (err_) handle_gretl_error(err_);
 
     // we do the job
     int *varlist_raw_ptr = varlist.release();
@@ -965,7 +962,6 @@ void GretlDataset::print (const py::kwargs &kwargs)
         } else if (key == "series") {
             // note: we print only specified variables
             var_list = list_from_formula(val_str, dset, err_);
-            if (err_) handle_gretl_error(err_);
         } else if (key == "range") {
             auto pos = val_str.find(':');
 
@@ -1222,7 +1218,6 @@ GretlDatasetPtr GretlDataset::getitem_impl (const T &slice)
         }
         slice_str = oss.str();
         gretl_list_ptr slice_list = list_from_formula(slice_str, dset, err_);
-        if (err_) handle_gretl_error(err_);
 
         // we construct list of variables to drop
         gretl_list_ptr full_list(full_var_list(dset, NULL));
@@ -1278,10 +1273,7 @@ py::object GretlDataset::corr (const std::string &vars, const py::kwargs &kwargs
     gretl_list_ptr var_list{nullptr};
 
     // we construct list of variables (if needed)
-    if (!vars.empty()) {
-        var_list = list_from_formula(vars, dset, err_);
-        if (err_) handle_gretl_error(err_);
-    }
+    if (!vars.empty()) var_list = list_from_formula(vars, dset, err_);
 
     opt_ = OPT_NONE;
     // now we loop over kwargs;
@@ -1332,7 +1324,6 @@ py::object GretlDataset::cov (const std::string &vars)
         var_list.reset(full_var_list(dset, NULL));
     } else {
         var_list = list_from_formula(vars, dset, err_);
-        if (err_) handle_gretl_error(err_);
     }
 
     // actual work
@@ -1449,7 +1440,6 @@ void GretlDataset::lags (const std::string &vars, int order)
 
     // we construct list of external variables
     varlist = list_from_formula(vars, dset, err_);
-    if (err_) handle_gretl_error(err_);
 
     // we do the job
     int *varlist_raw_ptr = varlist.release();
@@ -1512,7 +1502,6 @@ void GretlDataset::test (const std::string &type, const std::string &vars,
 
     // we construct list of external variables
     ex_var = list_from_formula(vars, dset, err_);
-    if (err_) handle_gretl_error(err_);
 
     // we set up options
     unpack_kwargs_test(opt_, type, kwargs, order);

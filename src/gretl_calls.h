@@ -80,7 +80,8 @@ void unpack_kwargs_test (gretlopt &opt, const std::string &type,
                          const py::kwargs &kwargs, int &order);
 
 gretl_list_ptr list_from_formula (const std::string &formula,
-                                  DATASET *dset, int &err);
+                                  DATASET *dset, int &err,
+                                  bool handle_error = true);
 
 GretlTypesPtr gretl_generate_gretl_object (const char *s, int &err,
                                            GretlObjType obj_type = GRETL_OBJ_INFO,

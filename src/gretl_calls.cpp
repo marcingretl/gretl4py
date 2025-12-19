@@ -363,10 +363,7 @@ void do_gretl_summary (const std::string &varlist, const py::kwargs &kwargs)
     if (!GD) handle_gretl_error(E_NODATA);
 
     // be build gretl_list
-    if (!varlist.empty()) {
-        varlist_ptr = list_from_formula(varlist, GD->dset, err);
-    }
-    if (err) handle_gretl_error(err);
+    if (!varlist.empty()) varlist_ptr = list_from_formula(varlist, GD->dset, err);
 
     // this code was taken from 'interact.c'
     err = incompatible_options(opt, static_cast<gretlopt>(OPT_B | OPT_W));
@@ -852,8 +849,13 @@ void unpack_kwargs_test (gretlopt &opt, const std::string &type,
 }
 
 gretl_list_ptr list_from_formula (const std::string &formula,
-                                  DATASET *dset, int &err)
+                                  DATASET *dset, int &err,
+                                  bool handle_error)
 {
+    //
+    // we build libgretl's list based on provided formula
+    // note: if throw_exception == false, we do not handle error
+    //
     std::string tmp = formula;
 
     // convert from a simple R-style formula to a gretl list
@@ -862,7 +864,7 @@ gretl_list_ptr list_from_formula (const std::string &formula,
 
     // note: we assign a raw pointer returned by 'generate_list()' to our unique_ptr.
     int *raw_list = generate_list(tmp.c_str(), dset, 0, &err);
-    if (err) handle_gretl_error(err);
+    if (handle_error && err) handle_gretl_error(err);
 
     return gretl_list_ptr(raw_list);
 }
