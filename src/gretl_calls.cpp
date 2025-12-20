@@ -327,15 +327,17 @@ void do_set (const std::string &key, const std::string &value,
 {
     //
     // interface to libgretl's set
-    // note: we do not deal with 'dset', must be added in if needed
     //
-    int err;
-    gretlopt opt = unpack_kwargs_command(SET, DSET, kwargs);
+    GretlDatasetPtr GD = nullptr;
+    int err = 0;
+
+    // we unpack kwargs at first
+    gretlopt opt = unpack_kwargs_command(SET, GD, kwargs);
 
     // we do the job
     err = execute_set(key.empty() ? NULL : key.c_str(),
                       value.empty() ? NULL : value.c_str(),
-                      NULL, opt, GP.prn_ptr());
+                      GD ? GD->dset : NULL, opt, GP.prn_ptr());
     if (err) handle_gretl_error(err);
 
     GP.print();
