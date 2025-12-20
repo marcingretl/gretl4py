@@ -341,9 +341,7 @@ void do_set (const std::string &key,
     } else {
         throw std::invalid_argument("invalid parameters");
     }
-    if (err) {
-        handle_gretl_error(err);
-    }
+    if (err) handle_gretl_error(err);
 
     GP.print();
 }

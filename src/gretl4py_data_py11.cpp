@@ -141,9 +141,9 @@ void init_gretl4py_dataset_py11(py::module_ &m)
              },
              py::arg("startobs").none(false), py::kw_only())
         .def("setobs",
-             [](GretlDataset &self, std::string &periodicity, const std::string &startobs, const py::kwargs &kwargs)
+             [](GretlDataset &self, std::string &unitvar, const std::string &timevar, const py::kwargs &kwargs)
              {
-                 self.setobs(periodicity, startobs, kwargs);
+                 self.setobs(unitvar, timevar, kwargs);
              },
              py::arg("periodicity").none(false), py::arg("startobs").none(false), py::kw_only())
         .def("setobs",
