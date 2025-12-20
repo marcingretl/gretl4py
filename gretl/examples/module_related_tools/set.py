@@ -22,3 +22,6 @@ gretl.set('horizon')
 gretl.set('svd')
 gretl.set('svd', True)
 gretl.set('svd')
+
+# to print all current values
+gretl.set()

@@ -62,9 +62,20 @@ PYBIND11_MODULE(_gretl, m)
           py::arg("do_print") = false);
     m.def("print", &do_gretl_print,
           py::arg("varlist").none(true) = "", py::kw_only());
-    m.def("set", &do_set,
-          py::arg("key").none(true) = "",
-          py::arg("val").none(true) = std::nullopt);
+    m.def("set",
+          [](const std::string &variable, const std::string &value, const py::kwargs &kwargs)
+          {
+              do_set(variable, value, kwargs);
+          },
+          py::arg("variable").none(true) = "",
+          py::arg("value").none(true) = "", py::kw_only());
+    m.def("set",
+          [](const std::string &variable, int value, const py::kwargs &kwargs)
+          {
+              do_set(variable, std::to_string(value), kwargs);
+          },
+          py::arg("variable").none(false),
+          py::arg("value").none(false), py::kw_only());
     m.def("summary", &do_gretl_summary,
           py::arg("varlist").none(true) = "", py::kw_only());
     m.def("include", &do_gretl_include,

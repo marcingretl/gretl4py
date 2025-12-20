@@ -46,8 +46,8 @@ public:
     const char *get_buffer (void);
 };
 
-void do_set (const std::string &key,
-             const std::optional<py::object> &pyval = std::nullopt);
+void do_set (const std::string &key, const std::string &value,
+             const py::kwargs &kwargs);
 
 void do_gretl_summary (const std::string &varlist, const py::kwargs &kwargs);
 

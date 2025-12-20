@@ -322,25 +322,20 @@ const char *GretlPrint::get_buffer (void)
 //////////////////////////////////////////////////
 // functions
 //////////////////////////////////////////////////
-
-void do_set (const std::string &key,
-             const std::optional<py::object> &pyval)
+void do_set (const std::string &key, const std::string &value,
+             const py::kwargs &kwargs)
 {
     //
     // interface to libgretl's set
+    // note: we do not deal with 'dset', must be added in if needed
     //
-    int err = 0;
+    int err;
+    gretlopt opt = unpack_kwargs_command(SET, DSET, kwargs);
 
-    if (key.empty() && pyval == std::nullopt) {
-        err = execute_set(NULL, NULL, NULL, OPT_NONE, GP.prn_ptr());
-    } else if (!key.empty() && pyval == std::nullopt) {
-        err = execute_set(key.c_str(), NULL, NULL, OPT_NONE, GP.prn_ptr());
-    } else if (!key.empty() && pyval != std::nullopt) {
-        err = execute_set(key.c_str(), MapPyToCpp(pyval).to_string().c_str(),
-                          NULL, OPT_NONE, GP.prn_ptr());
-    } else {
-        throw std::invalid_argument("invalid parameters");
-    }
+    // we do the job
+    err = execute_set(key.empty() ? NULL : key.c_str(),
+                      value.empty() ? NULL : value.c_str(),
+                      NULL, opt, GP.prn_ptr());
     if (err) handle_gretl_error(err);
 
     GP.print();
