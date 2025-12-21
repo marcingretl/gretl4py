@@ -23,16 +23,10 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
 #include "gretl4py_types.h"
-#include <gretl/libgretl.h>
-#include <gretl/matrix_extra.h>
-#include <gretl/genmain.h>
-#include <gretl/objstack.h>
+#include "gretl_calls.h"
 extern "C" {
     #include <gretl/gretl_func.h>
 }
-#include <iostream>
-#include <unordered_set>
-#include <filesystem>
 
 namespace py = pybind11;
 
@@ -49,40 +43,25 @@ namespace py = pybind11;
 #define is_pynumarray(o) (py::isinstance<py::array>(o))
 #define is_pynumarrayd(o) (py::isinstance<py::array_t<double>>(o))
 #define is_pynumeric(o) (is_pyint(o) || is_pyfloat(o))
+#define is_pysequence(o) (py::isinstance<py::sequence>(o))
 #define is_pyGretlBundle(o) (py::isinstance<GretlBundle>(o))
+#define is_NumPyArrayFC(m) ((m.flags() & py::detail::npy_api::constants::NPY_ARRAY_F_CONTIGUOUS_))
 
 #define SET_OPT(opt, flag) opt = static_cast<gretlopt>((opt) | (flag))
 
 //////////////////////////////////////////////////
 // functions
-// Note: some signature(s) may be at the bottom of this header
 //////////////////////////////////////////////////
-void handle_gretl_error (int err);
-
 void NumPyArray_extract (const py::array &arr, NumPyArrayView &view);
 
-template<typename T>
+template <typename T>
 void NumPyArray_to_gretl_matrix (NumPyArrayView &view, T *dst,
                                  int offset = 0, bool onecol = false);
 
-GretlTypesPtr gretl_generate_gretl_object (const char *s, int &err,
-                                           GretlObjType obj_type = GRETL_OBJ_INFO,
-                                           DATASET *dset = NULL, void *model = NULL);
-
-void gretl_valid_long_opt (gretlopt &opt, GretlCmdIndex ci,
-                           const std::string &key, const py::handle &val,
-                           const char *ext_val = nullptr);
-
-void unpack_kwargs_test (gretlopt &opt, const std::string &type,
-                         const py::kwargs &kwargs, int &order);
-
-gretl_list_ptr list_from_formula (const std::string &formula,
-                                  DATASET *dset, int &err);
-
-GretlTypesPtr convert_GretlType_to_GretlTypes (GretlType &t, void *gr_obj_ptr,
+GretlTypesPtr convert_GretlType_to_GretlTypes (GretlType t, void *gr_obj_ptr,
                                                const int n, int &err);
 
-template<typename PyWrapped, typename Item, typename ContainerType>
+template <typename PyWrapped, typename Item, typename ContainerType>
 void move_to_python_container (PyWrapped &wrapped_obj, Item &&item,
                                const char *container, const std::string &key = "");
 
@@ -90,27 +69,10 @@ py::object variant_to_pyobject (GretlTypes &&val);
 
 PythonArgInfo inspect_pyobject (py::handle obj);
 
-//
-// Class to handle printing
-//
-class GretlPrint
-{
-private:
-    PRN *prn = NULL;
-    PrnType prn_type;
-public:
-    int err = 0;
+std::string gretl4py_trim (std::string &s);
 
-    GretlPrint (PrnType prn_type = GRETL_PRINT_BUFFER);  // by default we use buffered printer
-    ~GretlPrint (void);
-
-    PRN *prn_ptr (void);
-
-    void print (void);
-
-    const char *get_buffer (void);
-};
-
+template <typename T>
+void load_objects_from_dict (const py::dict &dict, const char *key, T &target);
 
 //
 // Class to handle gretl 'DATASET' type
@@ -118,21 +80,22 @@ public:
 class GretlDataset : public std::enable_shared_from_this<GretlDataset>
 {
 private:
-    static inline int next_obj_id = 1;
-    const int id;                           // dataset's id
-    std::unordered_set<int> linked_models;  // models (id-s) which use this dataset
-    GretlPrint GP = GretlPrint();           // printer (instance wide)
-    mutable GretlTypesPtr RES_other;        // other results (accessor, tests, ets)
+    static inline int next_obj_id_ = 1;
+    const int id_;                          // dataset's id
+    std::unordered_set<int> linked_models_; // models (id-s) which use this dataset
+    GretlPrint GP_ = GretlPrint();          // printer (instance wide)
+    mutable GretlTypesPtr RES_other_;       // other results (accessor, tests, ets)
+    gretlopt opt_ = OPT_NONE;               // instance-wide options
+    mutable int err_ = 0;
 
-    gretlopt opt = OPT_NONE;
+    void allocate_dset_ (void);
 
-    void allocate_dset (void);
+    void free_dset_ (void);
 
-    void free_dset (void);
-
-    gretlopt setobs_opt_from_structure (int structure);
+    void add_or_replace_allocated_series_ (gretl_double_ptr data,
+                                           const std::string &name, int n,
+                                           gretl_gchar_ptr label = nullptr);
 public:
-    mutable int err = 0;
     bool is_default = false;
     DATASET *dset = NULL;
     std::string source;
@@ -140,21 +103,41 @@ public:
     GretlDataset (const std::string &fname,
                   const py::dict &kwargs);      // we load dataset from file (with optional flags as kwargs)
     GretlDataset (const py::dict &pydict);      // we load dataset from Python's dictionary
+    GretlDataset (const GretlDataset &src);     // copy constructor (always deep copy)
     virtual ~GretlDataset (void);               // virtual, because GretlModel use it as std::shared_ptr
+
+    bool is_panel (void) const;
 
     py::dict to_dict (void) const;
 
-    void to_file (const std::string &fname) const;
+    void to_file (const std::string &fname, const py::kwargs &kwargs);
 
     std::string repr (void) const;
 
     void print (const py::kwargs &kwargs);
 
-    void sample (const py::kwargs &kwargs);
+    //void sample (const py::kwargs &kwargs);
+
+    void smpl (const std::string &startobs, const std::string &endobs,
+               const py::kwargs &kwargs);
+
+    template <typename T>
+    GretlDatasetPtr getitem_impl (const T &slice);
+
+    py::object corr (const std::string &vars, const py::kwargs &kwargs);
+
+    py::object cov (const std::string &vars);
 
     void set_as_default (void);
 
-    void setobs (const py::kwargs &kwargs);
+    void setobs (const std::string &periodicity, const std::string &startobs,
+                 const py::kwargs &kwargs);
+
+    char *add_series (gretl_double_ptr data,
+                      const std::string &name, int n,
+                      gretl_gchar_ptr label = nullptr);
+
+    void add_series (const py::array &data, const std::string &name);
 
     void new_series (const std::string &formula);
 
@@ -164,11 +147,21 @@ public:
 
     void new_list (const std::string &name, const std::string &value);
 
+    template <GretlCmdIndex CI>
+    void transforms (const std::string &vars, const py::kwargs &kwargs);
+
+    template <GretlCmdIndex CI>
+    void transforms_no_opts (const std::string &vars);
+
+    void gretl_series_set_label (const int number, char *label);
+
+    void lags (const std::string &vars, int order);
+
     py::list varnames (void) const;
 
     int get_id (void) const;
 
-    int get_series_id (const std::string &series) const;
+    int get_series_id (const std::string &series, const bool verbose = true) const;
 
     void linked_models_add (const int model_id);
 
@@ -176,12 +169,12 @@ public:
 
     std::unordered_set<int> linked_models_list (void) const;
 
-    GretlTypes *get_accessor (const std::string &accessor) const;
+    py::object get_accessor (const std::string &accessor) const;
 
     void test (const std::string &type, const std::string &vars,
                const py::kwargs &kwargs);
 
-    GretlTypes *get_series (const std::string &series) const;
+    py::object get_series (const std::string &series) const;
 
     DNumPyArrayFC hpfilt (const std::string &series, double hp_lambda = NADBL,
                           bool trend = false, bool one_sided = false);
@@ -198,37 +191,40 @@ public:
 class GretlBundle
 {
 private:
-    bool free_b = true;
-    gretl_bundle *b = NULL;
-    py::dict as_dict;
+    bool free_b_ = true;                            // if *b should be freed
+    gretl_bundle *b_ = NULL;                        // libgretl bundle pointer
+    py::dict as_dict_;                              // Python's dict() reprezentation
+    int err_ = 0;
 
-    template<typename T>
-    void extract (const T &t);
+    template <typename T>
+    void extract_ (const T &t);
 public:
-    int err = 0;
-
-    GretlBundle (bool sysinfo = false);             // we get contents of $sysinfo bundle, or empty
-    GretlBundle (gretl_bundle *b);                  // incoming already allocated bundle
+    GretlBundle (void);                             // default constructor with empty bundle
+    GretlBundle (gretl_bundle *src);                // incoming already existing bundle Note: src must be deallocated by libgretl
     GretlBundle (MODEL *model, DATASET *dset);      // we produce bundle from MODEL
     GretlBundle (GRETL_VAR *model, DATASET *dset);  // we produce bundle from VAR/VECM
+    GretlBundle (equation_system *model);           // we produce bundle from SYSTEM
     ~GretlBundle (void);
+
+    int get_err (void) const;
 
     py::dict to_dict (void);                        // bundle-to-dict mapper
 
     void python_register (py::object &obj);         // register bundle contents in python object
 
-    void print (void);
-
-    std::string repr (void);
+    std::string repr_impl (void);                   // bundle printing via __repr__
 
     gretl_bundle *get_ptr (void) const;             // raw gretl_bundle pointer
 
     py::list keys (void);
 
-    template<typename T>
+    template <typename T>
+    T print (bool tree = false);                    // bundle printer
+
+    template <typename T>
     T get_element (const std::string &key);         // get bundle element by name
 
-    template<typename T>
+    template <typename T>
     void set_element (const std::string &key, const T &t);
 };
 
@@ -238,19 +234,19 @@ public:
 class MapPyToCpp
 {
 private:
-    std::string as_str;
+    std::string as_str_;
 
-    template<typename T>
-    void convert (const T *pyobj);
+    template <typename T>
+    void convert_ (const T *pyobj);
 public:
     int err = 0;
 
     MapPyToCpp (const std::optional<py::object> &pyobject);
     MapPyToCpp (const py::handle &pyhandle);
 
-    inline std::string to_string (void) const { return as_str; }
+    inline std::string to_string (void) const { return as_str_; }
 
-    inline std::string_view to_string_view (void) const { return static_cast<std::string_view>(as_str); }
+    inline std::string_view to_string_view (void) const { return static_cast<std::string_view>(as_str_); }
 };
 
 //
@@ -263,31 +259,36 @@ private:
         std::map<std::string, std::map<std::string, int>>;  // map of arguments and their id-s for public functions
     using MainFuncNoOptDef = std::map<std::string, GretlType>;// map of non-optional main_func arguments without default values
 
-    const std::string pkg_name;     // package name (base of filename)
-    const std::string suffix;       // filename suffix
-    fnpkg *pkg = NULL;              // pointer to package
-    std::string main_func = "";     // name of main package function
-    std::vector<std::string> jel;   // vector of JEL codes
-    bool defines_estimator = false; // true if package implements estimation
-    FunctionMap func_ptrs;
-    FunctionArgs func_args;
-    MainFuncNoOptDef main_func_nd;
-    std::string base_dir;           // path to the package
-    int err = 0;
+    const std::string pkg_name_;        // package name (base of filename)
+    const std::string suffix_;          // filename suffix
+    fnpkg *pkg_ = NULL;                 // pointer to package
+    GretlPrint GP_ = GretlPrint();      // printer (instance wide)
+    GretlBundle GB_;                    // info bundle [NOT USED YET]
+    std::string main_func_ = "";        // name of main package function
+    std::vector<std::string> jel_;      // vector of JEL codes
+    bool defines_estimator_ = false;    // true if package implements estimation
+    FunctionMap func_ptrs_;
+    FunctionArgs func_args_;
+    MainFuncNoOptDef main_func_nd_;
+    std::string full_path_;             // path to package file (full)
+    std::string base_dir_;              // path to the package
+    int err_ = 0;
 
-    void check_if_defines_estimator (void);
+    void check_if_defines_estimator_ (void);
 
-    template<typename T>
-    T get_properties (const char *prop);
+    template <typename T>
+    T get_properties_ (const char *property);
 
-    void unpack_kwargs_package (const std::string &func_name,
-                                fncall *func_call,
-                                GretlDatasetPtr &GD,
-                                const py::kwargs &kwargs);
+    void unpack_kwargs_package_ (const std::string &func_name,
+                                 fncall *func_call, GretlDatasetPtr &GD,
+                                 const py::kwargs &kwargs);
 public:
-    // Note: constructor does everything: load pkg, scan functions, register self
     GretlPackage (const std::string &pkg_name, const std::string &suffix);
     ~GretlPackage (void);
+
+    int get_err (void) const;
+
+    std::string repr_impl (void);
 
     void set_main (const std::string &name);
 
@@ -309,19 +310,11 @@ public:
 
     GretlPackageRes function_exec (const std::string &func_name,
                                    GretlDatasetPtr &GD, GretlPrint &GP,
-                                   const py::kwargs &kwargs,
-                                   const std::string &output = "");
+                                   const py::kwargs &kwargs);
 
     std::string get_examples_path (const std::string &fname);
+
+    std::string get_function_with_role (UfunRole role);
 };
-
-// implemented in gretl_calls.cpp
-extern GretlDatasetPtr DSET;
-
-void set_default_dset(GretlDatasetPtr GD);
-
-template<GretlType GR_TYPE>
-void gretl_generate (const std::string &formula, GretlDatasetPtr GD = DSET,
-                     const std::string &name = {});
 
 #endif // GRETL4PY_DATA_H

@@ -20,8 +20,7 @@
 #ifndef GRETL4PY_H
 #define GRETL4PY_H
 
-#define GRETL4PY_VERSION 0.22
-
+#include "gretl4py_version.h"
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
 #include <pybind11/stl.h>
@@ -29,10 +28,13 @@
 extern "C" {
     #include <gretl/uservar.h>
 }
-#undef gettext
 #include "gretl4py_types.h"
 #include "gretl4py_data.h"
 #include "gretl4py_model.h"
+
+#define LIBGRETL_MIN_VER 52
+
+#define GRETL_PYBIND11_DEBUG 0
 
 namespace py = pybind11;
 
@@ -40,30 +42,10 @@ namespace py = pybind11;
 // module related tools
 //////////////////////////////////////////////////
 
-void module_init (void);
+void gretl4py_init (void);
 
-void module_cleanup (void);
+void gretl4py_cleanup (void);
 
-py::dict about (bool do_print = false);
-
-void do_set (const std::string key,
-             const std::optional<py::object> &pyval = std::nullopt);
-
-void do_summary (const std::string &varlist, const py::kwargs &kwargs);
-
-py::object load_package (const std::string &name);
-
-// these two functions are temporal and will be moved to class
-void gretl_user_var_delete_by_name (const std::string &name);
-
-void gretl_print_user_var_by_name (const std::string &name,
-                                   GretlDatasetPtr data = nullptr);
-
-void uservars_list (void);
-
-void genr (const std::string &formula, GretlDatasetPtr data);
-
-template <typename T>
-void genr (const std::string &name, const T &value);
+GretlBundlePtr about (bool do_print = false);
 
 #endif // GRETL4PY_H

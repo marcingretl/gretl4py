@@ -1,0 +1,1326 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gretl-functions>
+<gretl-function-package name="dbnomics" no-data-ok="true" minver="2025c" lives-in-subdir="true">
+<author email="r.lucchetti@univpm.it">Riccardo &quot;Jack&quot; Lucchetti and Allin Cottrell</author>
+<version>2025c-git</version>
+<date>2025-09-06</date>
+<description>obtain data via dbnomics</description>
+<tags>C81</tags>
+<label>dbnomics</label>
+<help>
+pdfdoc:dbnomics.pdf
+</help>
+<data-files count="1">
+examples </data-files>
+<gretl-function name="dbnomics_bundle_print" type="void">
+ <params count="2">
+  <param name="b" type="bundle" const="true"/>
+  <param name="print_data" type="bool" default="0"/>
+ </params>
+<code>if b.error
+  printf &quot;dbnomics_bundle_print: bundle has error flag set\n&quot;
+  if inbundle(b, &quot;errmsg&quot;)
+    printf &quot;%s\n&quot;, b.errmsg
+  endif
+  return
+endif
+
+scalar nf = 0
+string sn
+string dashline
+
+if inbundle(b, &quot;series_code&quot;)
+  sn = sprintf(&quot;Series: %s&quot;, b.series_code)
+  nf++
+elif inbundle(b, &quot;dataset_name&quot;)
+  sn = b.dataset_name
+endif
+
+if sn != &quot;&quot;
+  # make a line of dashes the same length as @sn
+  dashline = regsub(sn, &quot;.&quot;, &quot;-&quot;)
+  print dashline
+  printf &quot;%s\n&quot;, sn
+endif
+if inbundle(b, &quot;provider_code&quot;)
+  printf &quot;Provider: %s\n&quot;, b.provider_code
+  nf++
+endif
+if inbundle(b, &quot;dataset_code&quot;)
+  nf++
+  if inbundle(b, &quot;dataset_name&quot;)
+    printf &quot;Dataset: %s (%s)\n&quot;, b.dataset_code, b.dataset_name
+  else
+    printf &quot;Dataset: %s\n&quot;, b.dataset_code
+  endif
+endif
+if nf == 3
+  printf &quot;Identifier: %s/%s/%s\n&quot;, b.provider_code, b.dataset_code, b.series_code
+endif
+if inbundle(b, &quot;series_name&quot;)
+  printf &quot;Name: %s\n&quot;, b.series_name
+endif
+if inbundle(b, &quot;dimensions&quot;)
+  print_series_dimensions(b.dimensions)
+endif
+if dashline != &quot;&quot;
+  print dashline
+endif
+
+if b.has_data
+  n = b.T
+  n_ok = sumc(ok(b.value))
+  printf &quot;pd = %d; %d observations, %s - %s (%d valid)\n&quot;, b.frequency, n, b.period[1], b.period[n], n_ok
+  if print_data
+    loop i=1..n -q
+      printf &quot;%s %6.1f\n&quot;, b.period[i], b.value[i]
+    endloop
+  endif
+else
+  printf &quot;bundle appears to contain no data\n&quot;
+endif
+printf &quot;\n&quot;
+</code>
+</gretl-function>
+<gretl-function name="dbnomics_bundles_print" type="void">
+ <params count="1">
+  <param name="bs" type="bundles"/>
+ </params>
+<code>aname = argname(bs)
+n = nelem(bs)
+if n &gt; 0
+  printf(&quot;\n\nContents of %s:\n\n&quot;, aname)
+  widths = dbn_get_widths(bs)
+  fmtstring = sprintf(&quot;%%-%ds %%-%ds %%-%ds&quot;, widths[1], widths[2], widths[3])
+  printf(&quot;%5s&quot; ~ fmtstring ~ &quot;\n&quot;, &quot;&quot;, &quot;Provider&quot;, &quot;Code&quot;, &quot;Description&quot;)
+  loop i = 1..nelem(bs) --quiet
+    printf &quot;%3d: %s\n&quot;, i, one_line_bprint(bs[i], widths)
+  endloop
+else
+  printf(&quot;\n\n%s is an empty array\n&quot;, aname)
+endif
+</code>
+</gretl-function>
+<gretl-function name="dbnomics_bundle_get_data" type="scalar">
+ <params count="3">
+  <param name="b" type="bundle" const="true"/>
+  <param name="x" type="seriesref"/>
+  <param name="verbose" type="bool" default="0"/>
+ </params>
+<code>if !inbundle(b, &quot;frequency&quot;)
+  printf &quot;dbnomics_bundle_get_data: bundle does not contain a data frequency\n&quot;
+  return 1
+endif
+pd = b.frequency
+daily = pd == 7
+use_join = daily
+
+if daily # daily data need special treatment
+  match = maxc($pd .= {5;6;7})
+else
+  match = (pd == $pd)
+endif
+
+if !match
+  # FIXME: maybe allow join to handle this?
+  funcerr &quot;frequency does not match!&quot;
+endif
+
+if $version &gt;= 20221 # 2022b or higher
+  string tmpfile = &quot;tmpXXXXXX.csv&quot;
+  outfile --tempfile=tmpfile
+    printf &quot;obs\tdbseries\n&quot;
+    set warnings off
+    loop i=1 .. b.T -q
+      printf &quot;%s\t%.15g\n&quot;, b.period[i], b.value[i]
+    endloop
+  end outfile
+else
+  string tmpfile = sprintf(&quot;%s/tmp%06d.csv&quot;, $dotdir, randgen1(i, 0, 999999))
+  outfile @tmpfile --quiet
+    printf &quot;obs\tdbseries\n&quot;
+    set warnings off
+    loop i=1 .. b.T -q
+      printf &quot;%s\t%.15g\n&quot;, b.period[i], b.value[i]
+    endloop
+  end outfile
+endif
+
+if daily
+  setopt join --tkey=&quot;obs,%Y-%m-%d&quot;
+elif instring(b.period[1], &quot;-Q&quot;)
+  # quarterly
+  setopt join --tkey=&quot;obs,%Y-Q%q&quot;
+endif
+
+string tracestr
+outfile --buffer=tracestr
+  if !use_join
+    # try &quot;append&quot; first
+    print &quot;trying append...&quot;
+    catch append @tmpfile --quiet --fixed-sample
+    err = $error
+    if !err
+      tool = &quot;append&quot;
+      x = dbseries
+    else
+      # &quot;append&quot; may fail because data are not ordered properly
+      # if that's the case, &quot;join&quot; may still work
+      print &quot;append failed, trying join...&quot;
+      use_join = 1
+    endif
+  endif
+  if use_join
+    catch join @tmpfile x --data=&quot;dbseries&quot;
+    err = $error
+    if !err
+      tool = &quot;join&quot;
+    else
+      series dbseries = NA
+    endif
+  endif
+end outfile
+
+remove(tmpfile)
+
+if inbundle(b, &quot;series_name&quot;)
+  d = b.series_name
+  setinfo x --description=&quot;@d&quot;
+endif
+
+if verbose
+  printf &quot;dbnomics_bundle_get_data:\n%s\n&quot;, b.series_name
+  printf &quot;tool = %s\n&quot;, tool
+  printf &quot;error = %d\n&quot;, err
+  printf &quot;trace:\n%s\n\n&quot;, tracestr
+endif
+
+return 0
+</code>
+</gretl-function>
+<gretl-function name="dbnomics_get_series" type="bundle">
+ <params count="2">
+  <param name="datacode" type="string" const="true"/>
+  <param name="verbose" type="bool" default="0"/>
+ </params>
+<code>bundle ret
+string json
+ret.error = 0
+ret.has_data = 0
+string parms = &quot;series?series_ids=&quot; ~ datacode ~ &quot;&amp;format=json&amp;observations=1&amp;metadata=0&quot;
+ret.error = dbn_get_json(parms, verbose, &amp;json)
+if ret.error
+  return ret
+endif
+
+catch bundle b = jsongetb(json, &quot;series&quot;)
+if $error
+  ret.error = 1
+elif inbundle(b, &quot;series&quot;) == 0
+  ret.error = 1
+elif nelem(b.series.docs) == 0
+  ret.error = 1
+endif
+if !ret.error
+  bundles bb = b.series.docs
+  ret = bb[1]
+  process_series_bundle(json, &amp;ret)
+endif
+return ret
+</code>
+</gretl-function>
+<gretl-function name="dbnomics_get_multiple" type="bundles">
+ <params count="5">
+  <param name="provider" type="string" const="true"/>
+  <param name="dset" type="string" const="true"/>
+  <param name="limit" type="int" min="0" default="50"/>
+  <param name="offset" type="int" default="0"/>
+  <param name="spec" type="bundle" optional="true"/>
+ </params>
+<code>if !exists(spec)
+  bundle spec = null
+endif
+bundles ret = array(0)
+string parms = build_parms(provider, dset, limit, offset, spec)
+string json
+err = dbn_get_json(parms, 0, &amp;json)
+if err
+  printf &quot;dbnomics_get_multiple: got error from dbn_get_json\n&quot;
+else
+  ret = multiple_from_json(json, 0)
+endif
+return ret
+</code>
+</gretl-function>
+<gretl-function name="dbnomics_fetch" type="series">
+ <params count="2">
+  <param name="id" type="string" const="true"/>
+  <param name="verbose" type="bool" default="0"/>
+ </params>
+<code>series ret = NA
+bundle b = dbnomics_get_series(id, verbose)
+if b.error
+  msg = sprintf(&quot;%s: couldn't fetch&quot;, id)
+  funcerr msg
+endif
+dbnomics_bundle_get_data(b, &amp;ret, verbose)
+return ret
+</code>
+</gretl-function>
+<gretl-function name="dbnomics_get_cart" type="bundles">
+ <params count="1">
+  <param name="URL" type="string" const="true"/>
+ </params>
+<code>string json
+bundles ret = null
+string msg = &quot;&quot;
+err = dbn_get_json_from_URL(URL, &amp;json, &amp;msg)
+if err
+  printf &quot;%s\n&quot;, msg
+else
+  ret = multiple_from_json(json, 0)
+endif
+return ret
+</code>
+</gretl-function>
+<gretl-function name="dbnomics_bundles_to_list" type="list">
+ <params count="2">
+  <param name="bs" type="bundles"/>
+  <param name="key" type="string" optional="true"/>
+ </params>
+<code>n = nelem(bs)
+list RET = null
+given_names = 0
+if exists(key)
+  given_names = strlen(key) &gt; 0
+endif
+
+digits = floor(log10(n)) + 1
+fmt = &quot;series_&quot; ~ sprintf(&quot;%%0%dd&quot;, digits)
+
+loop i = 1 .. n --quiet
+  b = bs[i]
+  if b.has_data &amp;&amp; b.frequency == $pd
+    valid_name = 0
+    if given_names
+      if inbundle(b, key)
+        val = b[key]
+        if typeof(val) == 4
+          valid_name = 1
+        endif
+      endif
+    endif
+    sname = valid_name ? fixname(val) : sprintf(fmt, i)
+    series tmp = NA
+    err = dbnomics_bundle_get_data(b, &amp;tmp)
+    if (!err)
+      RET += genseries(sname, tmp)
+      desc = b.series_name
+      setinfo @sname --description=&quot;@desc&quot;
+    endif
+  endif
+endloop
+return RET
+</code>
+</gretl-function>
+<gretl-function name="dbnomics_providers" type="bundles">
+ <params count="1">
+  <param name="verbose" type="bool" default="0"/>
+ </params>
+<code>magic = &quot;providers.docs&quot;
+nprov = 0
+string json
+err = dbn_get_json(&quot;providers&quot;, verbose, &amp;json)
+
+if !err
+  str = jsonget(json, sprintf(&quot;$.%s[*].code&quot;, magic), &amp;nprov)
+  if nprov == 0
+    err = 1
+  endif
+endif
+if err
+  funcerr &quot;no providers were found&quot;
+endif
+
+bundles ret = array(nprov)
+strings fields = defarray(&quot;name&quot;, &quot;terms_of_use&quot;, &quot;code&quot;, &quot;region&quot;, &quot;description&quot;, &quot;website&quot;)
+
+loop i = 1..nprov --quiet
+  ret[i] = json2bndl(fields, json, magic, i-1)
+endloop
+
+if verbose
+  printf &quot;Available providers: \n&quot;
+  loop i = 1..nprov --quiet
+    printf &quot;%3d: %15s&quot;, i, ret[i].code
+    if inbundle(ret[i], &quot;name&quot;)
+      printf &quot; (%s)&quot;, ret[i].name
+    endif
+    printf &quot;\n&quot;
+  endloop
+endif
+
+return ret
+</code>
+</gretl-function>
+<gretl-function name="dbnomics_search" type="bundles">
+ <params count="5">
+  <param name="key" type="string" const="true"/>
+  <param name="dset" type="string" optional="true" const="true"/>
+  <param name="limit" type="int" min="0" default="100"/>
+  <param name="offset" type="int" default="0"/>
+  <param name="verbose" type="bool" default="0"/>
+ </params>
+<code>bundles ret = null
+
+if exists(dset) &amp;&amp; dset != &quot;&quot;
+  # make search specific to a dataset
+  strings codes = strsplit(dset, &quot;/&quot;)
+  if nelem(codes) &lt; 2
+    funcerr &quot;Invalid dataset code (should be provider/dataset)&quot;
+  else
+    ret = dset_search(key, codes[1], codes[2], limit, offset, verbose)
+  endif
+else
+  # search all providers
+  ret = general_search(key, limit, offset, verbose)
+endif
+
+return ret
+</code>
+</gretl-function>
+<gretl-function name="dbnomics_category_tree" type="bundle">
+ <params count="2">
+  <param name="provider" type="string" const="true"/>
+  <param name="verbose" type="bool" default="0"/>
+ </params>
+<code>bundle ret
+string json
+ret.error = dbn_get_json(&quot;providers/&quot; ~ provider, verbose, &amp;json)
+if !ret.error
+  ret = jsongetb(json, &quot;category_tree&quot;, defarray(&quot;code&quot;, &quot;name&quot;))
+endif
+return ret
+</code>
+</gretl-function>
+<gretl-function name="dbnomics_dsets_for_provider" type="bundle">
+ <params count="2">
+  <param name="provider" type="string" const="true"/>
+  <param name="verbose" type="bool" default="0"/>
+ </params>
+<code>bundle ret
+string json
+ret.error = dbn_get_json(&quot;providers/&quot; ~ provider, verbose, &amp;json)
+if ret.error
+  return ret
+endif
+
+ret.provider = provider
+bundle b = jsongetb(json, &quot;category_tree&quot;, defarray(&quot;code&quot;, &quot;name&quot;))
+bundles B = _jbterms(b)
+n = nelem(B)
+if n == 0
+  msg = sprintf(&quot;Found no datasets for provider %s&quot;, provider)
+  funcerr msg
+endif
+strings dscodes = array(n)
+strings dsnames = array(n)
+n_ok = 0
+j = 1
+loop i=1..n -q
+  if inbundle(B[i], &quot;code&quot;) &amp;&amp; B[i].code != &quot;&quot;
+    dscodes[j] = B[i].code
+    dsnames[j] = dbn_get_name_element(B, i)
+    j++
+    n_ok++
+  endif
+endloop
+if n_ok == 0
+  msg = sprintf(&quot;Found no datasets for provider %s&quot;, provider)
+  funcerr msg
+else
+  ret.error = 0
+  if n_ok &lt; n
+    dscodes = dscodes[1:n_ok]
+    dsnames = dsnames[1:n_ok]
+  else
+    ret.codes = dscodes
+    ret.names = dsnames
+  endif
+endif
+
+return ret
+</code>
+</gretl-function>
+<gretl-function name="dbnomics_get_dataset_content" type="bundles">
+ <params count="4">
+  <param name="provider" type="string" const="true"/>
+  <param name="dset" type="string" const="true"/>
+  <param name="limit" type="int" min="0" default="100"/>
+  <param name="offset" type="int" default="0"/>
+ </params>
+<code>bundles ret = null
+string json
+parms = sprintf(&quot;series/%s/%s?limit=%d&amp;offset=%d&quot;, provider, dset, limit, offset)
+err = dbn_get_json(parms, 0, &amp;json)
+if err
+  return ret
+endif
+
+n = 0
+ns = 0
+# note: the following will give the total for the dataset
+string found = jsonget(json, &quot;$.series.num_found&quot;, &amp;n)
+if n == 0
+  msg = get_dbnomics_message(json, &quot;No content was found&quot;)
+  funcerr msg
+endif
+if n &gt; 0
+  nfound = atof(found)
+  ns = nfound - offset
+  ns = ns &gt; limit ? limit : ns
+endif
+if ns &gt; 0
+  bundles ret = array(ns)
+  strings fields = defarray(&quot;series_name&quot;, &quot;series_code&quot;)
+  loop i = 1..ns --quiet
+    ret[i] = json2bndl(fields, json, &quot;series.docs&quot;, i-1)
+    brename(ret[i], &quot;series_code&quot;, &quot;code&quot;)
+    if inbundle(ret[i], &quot;series_name&quot;)
+      brename(ret[i], &quot;series_name&quot;, &quot;name&quot;)
+    else
+      ret[i].name = ret[i].code
+    endif
+    ret[i].num_found = nfound
+  endloop
+endif
+
+return ret
+</code>
+</gretl-function>
+<gretl-function name="dbnomics_get_dataset_dimensions" type="bundles">
+ <params count="3">
+  <param name="provider" type="string" const="true"/>
+  <param name="dset" type="string" const="true"/>
+  <param name="verbose" type="bool" default="0"/>
+ </params>
+<code>parms = sprintf(&quot;series/%s/%s?limit=0&amp;offset=0&amp;facets=1&quot;, provider, dset)
+string json
+err = dbn_get_json(parms, verbose, &amp;json)
+
+if !err
+  bundle b = jsongetb(json, &quot;dataset&quot;)
+  bundle bf = jsongetb(json, &quot;series_dimensions_facets&quot;)
+  b = b.dataset
+  bf = bf.series_dimensions_facets
+  strings dcodes = b.dimensions_codes_order
+  ndims = nelem(dcodes)
+  if inbundle(b, &quot;dimensions_labels&quot;)
+    bundle dlabels = b.dimensions_labels
+  else
+    strings dlabels = b.dimensions_codes_order
+  endif
+  bundle vlabels = b.dimensions_values_labels
+else
+  ndims = 0
+endif
+
+bundles ret = array(ndims)
+# loop over the dimensions
+loop i=1..ndims --quiet
+  string dci = dcodes[i]
+  ret[i].code = dci
+  if typeof(dlabels) == 5
+    ret[i].label = dlabels[dci]
+  else
+    ret[i].label = dlabels[i]
+  endif
+  bundles bfi = bf[dci]
+  ret[i].values = bfi
+  nv = nelem(bfi)
+  ret[i].nvalues = nv
+  # loop over the values in each dimension
+  if inbundle(vlabels, dci) == 5 # bundle
+    bundle btmp = vlabels[dci]
+    loop j=1..nv --quiet
+      bundle bvj = ret[i].values[j]
+      ret[i].values[j].label = btmp[bvj.code]
+    endloop
+  elif inbundle(vlabels, dci) == 6 # array
+    stmp = vlabels[dci]
+    loop j=1..nv --quiet
+      ret[i].values[j].label = stmp[j][2]
+    endloop
+  endif
+endloop
+if verbose &amp;&amp; !err
+  loop i=1..ndims --quiet
+    r = ret[i]
+    nv = r.nvalues
+    printf &quot;%s (%s); %d elements\n&quot;, r.code, r.label, nv
+    loop j=1..nv --quiet
+      bundle vj = r.values[j]
+      printf &quot;\t%s (%s, count %d)\n&quot;, vj.code, vj.label, vj.count
+    endloop
+    printf(&quot;\n&quot;)
+  endloop
+endif
+
+return ret
+</code>
+</gretl-function>
+<gretl-function name="dbnomics_printer" type="void" pkg-role="bundle-print">
+ <params count="2">
+  <param name="b" type="bundleref" const="true"/>
+  <param name="print_data" type="int" min="0" default="0"/>
+ </params>
+<code># wrapper to satisfy the requirements for bundle-print role
+dbnomics_bundle_print(b, print_data)
+</code>
+</gretl-function>
+<gretl-function name="dbnomics_tree_for_provider" type="bundle">
+ <params count="2">
+  <param name="provider" type="string" const="true"/>
+  <param name="verbose" type="bool" default="0"/>
+ </params>
+<code>bundle ret
+string json
+ret.error = dbn_get_json(&quot;providers/&quot; ~ provider, verbose, &amp;json)
+if ret.error
+  return ret
+endif
+
+ret.provider = provider
+scalar catlist = 0
+bundle b = jsongetb(json, &quot;category_tree&quot;, defarray(&quot;name&quot;, &quot;code&quot;))
+bundles ctree = b.category_tree
+bundle ct1 = ctree[1]
+if inbundle(ct1, &quot;children&quot;) &amp;&amp; nelem(ct1.children) &gt; 0
+  bundles B = ctree
+  catlist = 1
+else
+  bundles B = _jbterms(b)
+endif
+n = nelem(B)
+if n == 0
+  msg = sprintf(&quot;Found no datasets for provider %s&quot;, provider)
+  funcerr msg
+endif
+loop for (i=1; i&lt;=n; i++)
+  if catlist &amp;&amp; (!inbundle(B[i], &quot;code&quot;) || B[i].code == &quot;&quot;)
+    # write something in place of missing category codes
+    B[i].code = sprintf(&quot;category%d&quot;, i)
+  endif
+  if inbundle(B[i], &quot;name&quot;) &amp;&amp; B[i].name != &quot;&quot;
+    B[i].name = strstrip(B[i].name)
+  endif
+endloop
+ret.type = catlist ? &quot;cat_list&quot; : &quot;dset_list&quot;
+strings ret.codes = array(n)
+strings ret.names = array(n)
+loop i=1..n
+  ret.codes[i] = B[i].code
+  ret.names[i] = B[i].name
+endloop
+if catlist
+  ret.B = B
+endif
+
+return ret
+</code>
+</gretl-function>
+<gretl-function name="dbnomics_tree_get_child" type="bundle">
+ <params count="2">
+  <param name="b" type="bundle" const="true"/>
+  <param name="s" type="string" const="true"/>
+ </params>
+<code>bundle ret
+ret.provider = b.provider
+i = 0
+loop j=1..nelem(b.codes)
+  if b.codes[j] == s
+    i = j
+    break
+  endif
+endloop
+if i == 0
+  string msg = sprintf(&quot;%s: code not found&quot;, s)
+  funcerr msg
+endif
+ret.code = b.codes[i]
+ret.name = b.names[i]
+if b.type == &quot;dset_list&quot; || !inbundle(b.B[i], &quot;children&quot;)
+  ret.type = &quot;dset&quot;
+elif b.type == &quot;cat_list&quot;
+  bundles B = b.B[i].children
+  bundle chk = B[1]
+  if inbundle(chk, &quot;children&quot;) &amp;&amp; nelem(chk.children) &gt; 0
+    ret.type = &quot;cat_list&quot;
+  else
+    ret.type = &quot;dset_list&quot;
+  endif
+  n = nelem(B)
+  strings ret.codes = array(n)
+  strings ret.names = array(n)
+  loop i=1..n
+    B[i].name = strstrip(B[i].name)
+    ret.codes[i] = B[i].code
+    ret.names[i] = B[i].name
+  endloop
+  if ret.type == &quot;cat_list&quot;
+    ret.B = B
+  endif
+endif
+return ret
+</code>
+</gretl-function>
+<gretl-function name="json2bndl" type="bundle" private="1">
+ <params count="4">
+  <param name="fields" type="strings" const="true"/>
+  <param name="jsonobj" type="string" const="true"/>
+  <param name="root" type="string" const="true"/>
+  <param name="ndx" type="int"/>
+ </params>
+<code>bundle b = null
+k = 0
+loop j = 1..nelem(fields) --quiet
+  f = fields[j]
+  src = sprintf(&quot;$.%s[%d].%s&quot;, root, ndx, f)
+  str = jsonget(jsonobj, src, &amp;k)
+  if k
+    if f == &quot;name&quot;
+      # hopefully this can be trashed later
+      b[f] = strsub(str, &quot;&amp;#44;&quot;, &quot;,&quot;)
+    else
+      b[f] = str
+    endif
+  endif
+endloop
+return b
+</code>
+</gretl-function>
+<gretl-function name="print_series_dimensions" type="void" private="1">
+ <params count="1">
+  <param name="dims" type="bundle" const="true"/>
+ </params>
+<code>strings keys = getkeys(dims)
+if nelem(keys) == 0
+  return
+endif
+di = dims[keys[1]]
+if typeof(di) == 5 # bundle
+  printf &quot;Dimensions, showing JSON mask form:\n&quot;
+  loop i=1..nelem(keys) -q
+    di = dims[keys[i]]
+    printf &quot;  %s: %s, {\&quot;%s\&quot;:[\&quot;%s\&quot;]}\n&quot;, di.dimension_label, di.value_label, keys[i], di.value
+  endloop
+elif typeof(di) == 4 # string
+  printf &quot;Dimensions in JSON mask form:\n&quot;
+  loop i=1..nelem(keys) -q
+    di = dims[keys[i]]
+    printf &quot;  {\&quot;%s\&quot;:[\&quot;%s\&quot;]}\n&quot;, keys[i], di
+  endloop
+endif
+</code>
+</gretl-function>
+<gretl-function name="fix_dimensions_bundle" type="void" private="1">
+ <params count="2">
+  <param name="J" type="string" const="true"/>
+  <param name="sd" type="bundleref"/>
+ </params>
+<code>bundle dinfo = jsongetb(J, &quot;datasets&quot;)
+scalar dsmulti = 0
+if nelem(dinfo) &gt; 0
+  dsmulti = 1
+else
+  # try for the singular?
+  dinfo = jsongetb(J, &quot;dataset&quot;)
+endif
+if nelem(dinfo) == 0
+  return
+endif
+dinfo = dsmulti ? dinfo.datasets : dinfo.dataset
+dsid = sprintf(&quot;%s/%s&quot;, sd.provider_code, sd.dataset_code)
+# get the 'raw' dimensions bundle
+bundle d0 = sd.dimensions
+strings keys = getkeys(d0)
+ndims = nelem(keys)
+bundle dlb = null
+strings dla = null
+if dsmulti
+  catch dld = dinfo[dsid].dimensions_labels
+  if $error
+    catch dla = dinfo[dsid].dimensions_codes_order
+  endif
+  dvl = dinfo[dsid].dimensions_values_labels
+else
+  catch dld = dinfo.dimensions_labels
+  if $error
+    catch dla = dinfo.dimensions_codes_order
+  endif
+  dvl = dinfo.dimensions_values_labels
+endif
+
+# represent the dimensions as a bundle of bundles
+bundle dims
+loop i=1..ndims -q
+  string key = keys[i]
+  string value = d0[key]
+  bundle b = null
+  if nelem(dlb) &gt; 0
+    b.dimension_label = dlb[key]
+  elif nelem(dla) &gt; 0
+    b.dimension_label = dla[i]
+  else
+    b.dimension_label = key
+  endif
+  b.value = value
+  if typeof(dvl[key]) == 6 # array
+    got_vlabel = 0
+    loop j=1..nelem(dvl[key]) -q
+      if typeof(dvl[key][j]) == 5 # bundle
+        bundle bsub = dvl[key][j]
+        if inbundle(bsub, value)
+          b.value_label = bsub[value]
+          got_vlabel = 1
+          break
+        endif
+      elif typeof(dvl[key][j]) == 6 # array
+        strings asub = dvl[key][j]
+        if asub[1] == value
+          b.value_label = asub[2]
+          got_vlabel = 1
+          break
+        endif
+      endif
+    endloop
+    if !got_vlabel
+      b.value_label = &quot;&lt;unknown value label&gt;&quot;
+    endif
+  else
+    # otherwise dvl[key] must be a bundle
+    b.value_label = dvl[key][value]
+  endif
+  dims[key] = b
+  if key == &quot;REF_AREA&quot;
+    # add this key at top level
+    sd[&quot;Reference Area&quot;] = b.value_label
+  endif
+endloop
+
+# replace the original dimensions bundle
+sd.dimensions = dims
+</code>
+</gretl-function>
+<gretl-function name="process_series_bundle" type="void" private="1">
+ <params count="2">
+  <param name="json" type="string"/>
+  <param name="b" type="bundleref"/>
+ </params>
+<code>set warnings off
+b.error = 0
+b.frequency = bundle_get_frequency(b)
+t1 = 1
+t2 = nelem(b.period)
+if typeof(b.value) == 6 # array
+  # trim leading NAs
+  loop j=1..t2 -q
+    if b.value[j] == &quot;&quot; || b.value[j] == &quot;NA&quot;
+      t1++
+    else
+      break
+    endif
+  endloop
+  # trim trailing NAs
+  loop for (j=t2; j&gt;=t1; j--) -q
+    if b.value[j] == &quot;&quot; || b.value[j] == &quot;NA&quot;
+      t2--
+    else
+      break
+    endif
+  endloop
+endif
+T = t2 - t1 + 1
+b.T = T
+b.has_data = T &gt; 0
+if T &gt; 0
+  if t1 &gt; 1
+    b.period = b.period[t1:t2]
+  endif
+  havemat = typeof(b.value) == 3
+  matrix vals = zeros(T, 1)
+  j = 1
+  loop t=t1..t2 -q
+    vals[j] = havemat ? b.value[t] : atof(b.value[t])
+    j++
+  endloop
+  b.value = vals
+endif
+# if inbundle(b, &quot;dimensions&quot;)
+#    fix_dimensions_bundle(json, &amp;b)
+# endif
+</code>
+</gretl-function>
+<gretl-function name="sanitize_url" type="string" private="1">
+ <params count="1">
+  <param name="s" type="string" const="true"/>
+ </params>
+<code>string dqu = sprintf(&quot;\&quot;&quot;)
+ret = strsub(s, &quot; &quot;, &quot;%20&quot;)
+ret = strsub(ret, dqu, &quot;%22&quot;)
+ret = strsub(ret, &quot;,&quot;, &quot;%2C&quot;)
+ret = strsub(ret, &quot;:&quot;, &quot;%3A&quot;)
+ret = strsub(ret, &quot;{&quot;, &quot;%7B&quot;)
+ret = strsub(ret, &quot;}&quot;, &quot;%7D&quot;)
+ret = strsub(ret, &quot;[&quot;, &quot;%5B&quot;)
+ret = strsub(ret, &quot;]&quot;, &quot;%5D&quot;)
+return ret
+</code>
+</gretl-function>
+<gretl-function name="desanitize_url" type="string" private="1">
+ <params count="1">
+  <param name="s" type="string" const="true"/>
+ </params>
+<code>string dqu = sprintf(&quot;\&quot;&quot;)
+ret = strsub(s, &quot;%20&quot;, &quot; &quot;)
+ret = strsub(ret, &quot;%22&quot;, dqu)
+ret = strsub(ret, &quot;%2C&quot;, &quot;,&quot;)
+ret = strsub(ret, &quot;%3A&quot;, &quot;:&quot;)
+ret = strsub(ret, &quot;%7B&quot;, &quot;{&quot;)
+ret = strsub(ret, &quot;%7D&quot;, &quot;}&quot;)
+ret = strsub(ret, &quot;%5B&quot;, &quot;[&quot;)
+ret = strsub(ret, &quot;%5D&quot;, &quot;]&quot;)
+return ret
+</code>
+</gretl-function>
+<gretl-function name="bundle_get_frequency" type="scalar" private="1">
+ <params count="1">
+  <param name="b" type="bundle" const="true"/>
+ </params>
+<code>set warnings off
+strings alts = defarray(&quot;Frequency&quot;, &quot;FREQ&quot;, &quot;@frequency&quot;)
+string frq = &quot;&quot;
+loop i=1..nelem(alts) -q
+  if inbundle(b, alts[i])
+    frq = tolower(b[alts[i]][1])
+    break
+  endif
+endloop
+
+scalar ret
+if frq == &quot;&quot;
+  ret = NA
+elif frq == &quot;a&quot;
+  ret = 1
+elif frq == &quot;q&quot;
+  ret = 4
+elif frq == &quot;m&quot;
+  ret = 12
+elif frq == &quot;d&quot;
+  ret = 7
+else
+  printf &quot;frq = \&quot;%s\&quot; unrecognized\n&quot;, frq
+  ret = -1
+endif
+
+return ret
+</code>
+</gretl-function>
+<gretl-function name="make_dimensions" type="string" private="1">
+ <params count="2">
+  <param name="spec" type="bundle" const="true"/>
+  <param name="what" type="string" const="true"/>
+ </params>
+<code>ret = &quot;&quot;
+if inbundle(spec, what)
+  strings ss = spec[what]
+  ret ~= sprintf(&quot;\&quot;%s\&quot;:[&quot;, what)
+  loop i = 1 .. nelem(ss) --quiet
+    ret ~= sprintf(&quot;\&quot;%s\&quot;&quot;, ss[i])
+    if i &lt; nelem(ss)
+      ret ~= &quot;,&quot;
+    else
+      ret ~= &quot;]&quot;
+    endif
+  endloop
+endif
+return ret
+</code>
+</gretl-function>
+<gretl-function name="build_URL_mid" type="string" private="1">
+ <params count="1">
+  <param name="spec" type="bundle" const="true"/>
+ </params>
+<code>string ret = &quot;&quot;
+if nelem(spec) == 0
+  return ret
+endif
+ret = &quot;dimensions={&quot;
+strings filters = array()
+strings dims = getkeys(spec) # eg, &quot;freq&quot;, &quot;indicator&quot;, &quot;geo&quot;
+
+n = 0
+loop i = 1..nelem(dims) --quiet
+  s = make_dimensions(spec, dims[i])
+  if strlen(s) &gt; 0
+    n++
+    filters = filters + defarray(s)
+  endif
+endloop
+
+loop i = 1..n --quiet
+  ret ~= filters[i]
+  if i &lt; n
+    ret ~= &quot;, &quot;
+  endif
+endloop
+
+ret = ret ~ &quot;}&amp;&quot;
+
+return ret
+</code>
+</gretl-function>
+<gretl-function name="build_parms" type="string" private="1">
+ <params count="5">
+  <param name="pcode" type="string" const="true"/>
+  <param name="dcode" type="string" const="true"/>
+  <param name="limit" type="int" min="0" default="20"/>
+  <param name="offset" type="int" default="0"/>
+  <param name="spec" type="bundle"/>
+ </params>
+<code>string head
+if inbundle(spec, &quot;mask&quot;)
+  string mask = sanitize_url(spec.mask)
+  head = sprintf(&quot;series/%s/%s/%s?&quot;, pcode, dcode, mask)
+else
+  head = sprintf(&quot;series/%s/%s?&quot;, pcode, dcode)
+  string mid = build_URL_mid(spec)
+  head ~= sanitize_url(mid)
+endif
+string tail = sprintf(&quot;limit=%d&amp;offset=%d&amp;format=json&amp;observations=1&amp;metadata=0&quot;, limit, offset)
+return head ~ tail
+</code>
+</gretl-function>
+<gretl-function name="check_json" type="scalar" private="1">
+ <params count="2">
+  <param name="s" type="string" const="true"/>
+  <param name="msg" type="stringref"/>
+ </params>
+<code>ret = 0
+if instring(s, &quot;404 Error&quot;) || instring(s, &quot;404 Not Found&quot;)
+  ret = 404
+elif instring(s, &quot;400 Bad Request&quot;)
+  ret = 400
+elif instring(s,&quot;Internal server error&quot;)
+  msg = &quot;Internal server error&quot;
+  ret = 1
+else
+  bundle eb = jsongetb(s, &quot;errors&quot;)
+  if inbundle(eb, &quot;errors&quot;)
+    # do we have a (non-empty) @errors array?
+    if typeof(eb.errors) == 6 &amp;&amp; nelem(eb.errors) &gt; 0
+      if inbundle(eb.errors[1], &quot;cause&quot;)
+        msg = eb.errors[1].cause
+      elif inbundle(eb.errors[1], &quot;message&quot;)
+        msg = eb.errors[1].message
+      endif
+      ret = 1
+    endif
+    if ret &amp;&amp; instring(msg, &quot;Could not&quot;)
+      # back off to warning, as with v21 API?
+      ret = 0
+    endif
+  endif
+endif
+# warnings with v22 ??
+return ret
+</code>
+</gretl-function>
+<gretl-function name="get_dbnomics_message" type="string" private="1">
+ <params count="2">
+  <param name="json" type="string" const="true"/>
+  <param name="deflt" type="string" const="true"/>
+ </params>
+<code>scalar m = 0
+string msg = jsonget(json, &quot;$.message&quot;, &amp;m)
+if m &gt; 0
+  return &quot;dbnomics says: &quot; ~ msg
+else
+  return deflt
+endif
+</code>
+</gretl-function>
+<gretl-function name="dbn_get_json_from_URL" type="scalar" private="1">
+ <params count="3">
+  <param name="URL" type="string" const="true"/>
+  <param name="json" type="stringref"/>
+  <param name="msg" type="stringref"/>
+ </params>
+<code>bundle req = defbundle(&quot;URL&quot;, URL, &quot;header&quot;, &quot;accept: application/json&quot;)
+# check for curl error
+scalar error = curl(&amp;req)
+if error
+  msg = req.errmsg
+else
+  # also check for dbnomics error condition
+  json = req.output
+  dbg = ngetenv(&quot;DBNOMICS_DEBUG&quot;)
+  if ok(dbg) &amp;&amp; dbg &gt; 0
+    printf &quot;%s\n&quot;, desanitize_url(URL)
+    outfile dbn_debug.json --quiet
+      json
+    end outfile
+  endif
+  string dbnmsg
+  error = check_json(json, &amp;dbnmsg)
+  if dbnmsg != &quot;&quot;
+    msg = sprintf(&quot;dbnomics says:\n\&quot;%s\&quot;\n&quot;, dbnmsg)
+  endif
+endif
+
+return error
+</code>
+</gretl-function>
+<gretl-function name="dbn_get_json" type="scalar" private="1">
+ <params count="3">
+  <param name="parms" type="string" const="true"/>
+  <param name="verbose" type="bool" default="0"/>
+  <param name="json" type="stringref"/>
+ </params>
+<code>string URL = &quot;https://api.db.nomics.world/v22/&quot; ~ parms
+if verbose
+  printf &quot;URL: %s\n\n&quot;, URL
+endif
+string msg
+error = dbn_get_json_from_URL(URL, &amp;json, &amp;msg)
+if error
+  if msg == &quot;&quot;
+    msg = &quot;Failed to get the requested information from dbnomics&quot;
+  endif
+  funcerr msg
+elif msg != &quot;&quot;
+  # got a warning but not an actual error
+  print msg
+endif
+
+return error
+</code>
+</gretl-function>
+<gretl-function name="multiple_from_json" type="bundles" private="1">
+ <params count="2">
+  <param name="json" type="string" const="true"/>
+  <param name="verbose" type="bool" default="0"/>
+ </params>
+<code>bundles ret = array(0)
+bundle b = jsongetb(json, &quot;series&quot;)
+b = b.series
+if inbundle(b, &quot;docs&quot;)
+  ret = b.docs
+endif
+loop i=1..nelem(ret) -q
+  process_series_bundle(json, &amp;ret[i])
+endloop
+return ret
+</code>
+</gretl-function>
+<gretl-function name="general_search" type="bundles" private="1">
+ <params count="4">
+  <param name="key" type="string" const="true"/>
+  <param name="limit" type="int" min="0" default="100"/>
+  <param name="offset" type="int" default="0"/>
+  <param name="verbose" type="bool" default="0"/>
+ </params>
+<code>magic = &quot;results.docs&quot;
+bundles ret = array(0)
+
+string json
+parms = sprintf(&quot;search?q=%s&amp;limit=%d&amp;offset=%d&quot;, sanitize_url(key), limit, offset)
+err = dbn_get_json(parms, verbose, &amp;json)
+if err
+  return ret
+endif
+
+n = 0
+str = jsonget(json, sprintf(&quot;$.%s[*].code&quot;, magic), &amp;n)
+ntot = atof(jsonget(json, &quot;$.results.num_found&quot;))
+# fix possibly nonsensical result
+if ntot &lt; n
+  ntot = n
+endif
+
+#printf &quot;n = %d, ntot = %d\n&quot;, n, ntot
+
+if n == 0
+  if verbose
+    printf &quot;No matches found&quot;
+  endif
+  return ret
+endif
+
+bundles ret = array(n)
+strings fields = defarray(&quot;code&quot;, &quot;nb_matching_series&quot;, &quot;name&quot;, &quot;provider_code&quot;)
+loop i = 1..n --quiet
+  ret[i] = json2bndl(fields, json, magic, i-1)
+  ret[i].ntot = ntot
+endloop
+
+if verbose
+  printf &quot;Datasets containing \&quot;%s\&quot; (%d-%d out of %d): \n\n&quot;, key, offset+1, offset+n, ntot
+  loop i = 1..n --quiet
+    printf &quot;%3d: %s.%s&quot;, i, ret[i].provider_code, ret[i].code
+    printf &quot; (%d series)\n&quot;, atof(ret[i].nb_matching_series)
+  endloop
+endif
+
+return ret
+</code>
+</gretl-function>
+<gretl-function name="dset_search" type="bundles" private="1">
+ <params count="6">
+  <param name="key" type="string" const="true"/>
+  <param name="pcode" type="string" const="true"/>
+  <param name="dcode" type="string" const="true"/>
+  <param name="limit" type="int" min="0" default="100"/>
+  <param name="offset" type="int" default="0"/>
+  <param name="verbose" type="bool" default="0"/>
+ </params>
+<code>bundles ret = array(0)
+scalar got = 0
+string json
+parms = sprintf(&quot;series/%s/%s?q=%s&amp;limit=%d&amp;offset=%d&quot;, pcode, dcode, sanitize_url(key),limit, offset)
+
+err = dbn_get_json(parms, verbose, &amp;json)
+
+if !err
+  bundle bj = jsongetb(json, &quot;series&quot;)
+  scalar ntot = bj[&quot;series&quot;].num_found
+  if ntot &gt; 0
+    ret = bj[&quot;series&quot;].docs
+    got = nelem(ret)
+    if ntot &lt; got
+      # just in case of breakage
+      ntot = got
+    endif
+  endif
+  if got &gt; 0
+    loop i = 1..got --quiet
+      ret[i].ntot = ntot
+      brename(ret[i], &quot;series_code&quot;, &quot;code&quot;)
+      brename(ret[i], &quot;series_name&quot;, &quot;name&quot;)
+    endloop
+  endif
+  if verbose
+    if got &gt; 0
+      printf &quot;Dataset %s/%s, matching series %d-%d of %d:\n\n&quot;, pcode, dcode, offset+1, offset+got, ntot
+      loop i = 1..got --quiet
+        printf &quot;%s: %s\n&quot;, ret[i].code, ret[i].name
+      endloop
+    else
+      printf &quot;no matching series found\n&quot;
+    endif
+  endif
+endif
+
+return ret
+</code>
+</gretl-function>
+<gretl-function name="dbn_get_widths" type="matrix" private="1">
+ <params count="1">
+  <param name="bs" type="bundles"/>
+ </params>
+<code>w1 = 6
+w2 = 12
+w3 = 24
+loop i = 1..nelem(bs) --quiet
+  l = strlen(bs[i].provider_code) + strlen(bs[i].dataset_code) + 1
+  w1 = xmax(w1, l)
+  l = strlen(bs[i].series_code)
+  w2 = xmax(w2, l)
+  l = strlen(bs[i].series_name)
+  w3 = xmin(xmax(w3, l), 40)
+endloop
+return {w1, w2, w3} + 2
+</code>
+</gretl-function>
+<gretl-function name="dbn_get_name_element" type="string" private="1">
+ <params count="2">
+  <param name="bs" type="bundles" const="true"/>
+  <param name="i" type="int"/>
+ </params>
+<code>if inbundle(bs[i], &quot;name&quot;) &amp;&amp; bs[i].name != &quot;&quot;
+  return bs[i].name
+else
+  return &quot;no description&quot;
+endif
+</code>
+</gretl-function>
+<gretl-function name="dbn_get_code_element" type="string" private="1">
+ <params count="2">
+  <param name="bs" type="bundles" const="true"/>
+  <param name="i" type="int"/>
+ </params>
+<code>if inbundle(bs[i], &quot;code&quot;) &amp;&amp; bs[i].code != &quot;&quot;
+  return bs[i].code
+else
+  return &quot;no code&quot;
+endif
+</code>
+</gretl-function>
+<gretl-function name="one_line_bprint" type="string" private="1">
+ <params count="2">
+  <param name="b" type="bundle"/>
+  <param name="widths" type="matrix"/>
+ </params>
+<code>provider = b.provider_code ~ &quot;/&quot; ~ b.dataset_code
+scode = fixname(b.series_code, 1)
+sname = b.series_name
+if strlen(sname) &gt; 40
+  sname = sname[1:37] ~ &quot;...&quot;
+endif
+fmtstring = sprintf(&quot;%%-%ds %%-%ds %%-%ds&quot;, widths[1], widths[2], widths[3])
+ret = sprintf(fmtstring, provider, scode, sname)
+
+if b.has_data
+  scalar T = b.T
+  print T
+  string span = sprintf(&quot;%s:%s&quot;, b.period[1], b.period[T])
+  print span
+  ret ~= sprintf(&quot; %d observations (pd = %d) [%s]&quot;, T, b.frequency, span)
+else
+  ret ~= &quot; has no data&quot;
+endif
+
+return ret
+</code>
+</gretl-function>
+<sample-script>
+set verbose off
+include dbnomics.gfn
+
+nulldata 360
+setobs 12 1989:1
+
+strings ToDnld = defarray(&quot;AMECO/ZUTN/EA19.1.0.0.0.ZUTN&quot;, 
+  &quot;ECB/IRS/M.IT.L.L40.CI.0000.EUR.N.Z&quot;, 
+  &quot;FED/G17_CAPUTL/CAPUTL.B50001.S&quot;,
+  &quot;WB/WDI/A-SL.UEM.TOTL.ZS-ARG&quot;)
+
+scalar N = nelem(ToDnld)
+
+bundles bs = array(N)
+loop k = 1 .. N --quiet
+    bs[k] = dbnomics_get_series(ToDnld[k])
+    dbnomics_bundle_print(bs[k])
+endloop
+
+series ita_rate = NA
+dbnomics_bundle_get_data(bs[2], &amp;ita_rate)
+series caput = NA
+dbnomics_bundle_get_data(bs[3], &amp;caput)
+
+list L = ita_rate caput
+labels L
+summary L
+</sample-script>
+</gretl-function-package>
+</gretl-functions>

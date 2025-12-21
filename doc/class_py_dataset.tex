@@ -1,0 +1,285 @@
+\subsection{\classpydataset}
+The \classpydataset class provides the following public attributes:
+
+\gretlfpycmd{is\_panel}
+\estdesc{XXX}
+\begin{lstlisting}[style=pythonstyle]
+gretl._gretl.Dataset.is_panel -> bool
+\end{lstlisting}
+\generaldesc{XXX}
+
+\vspace*{10pt}\noindent The \classpydataset class provides the following public methods:
+
+\gretlfpycmd{\_\_copy\_\_()}
+\estdesc{Creates a deep copy of the \classpydataset object.}
+\begin{lstlisting}[style=pythonstyle]
+import copy
+dataset_copy = copy.copy(gretl._gretl.Dataset)
+\end{lstlisting}
+\generaldesc{This method returns a new, fully independent
+	\pythcode{gretl.\_gretl.Dataset} object that duplicates
+	all elements of the original dataset. Changes made to
+	the copy do not affect the original object. Although
+	it is invoked by the standard \pythcode{copy.copy()}
+	function, it performs a deep copy of all dataset
+	contents.}
+
+\gretlfpycmd{\_\_repr\_\_()}
+\estdesc{Returns a string representation of the \classpydataset object.}
+\begin{lstlisting}[style=pythonstyle]
+repr(gretl._gretl.Dataset)
+print(gretl._gretl.Dataset)
+\end{lstlisting}
+\generaldesc{This method returns a concise textual summary of the
+	\pythcode{gretl.\_gretl.Dataset} object, suitable for inspection
+	or debugging. It is automatically invoked by the built-in
+	\pythcode{repr()} function and when the object is printed
+	in an interactive session.}
+
+\gretlfpycmd{add\_series()}
+\estdesc{XXX}
+\begin{lstlisting}[style=pythonstyle]
+gretl._gretl.Dataset.add_series(data=numpy.ndarray, name=str)
+\end{lstlisting}
+\generaldesc{XXX}
+
+\gretlfpycmd{bkfilt()}
+\estdesc{XXX}
+\begin{lstlisting}[style=pythonstyle]
+gretl._gretl.Dataset.bkfilt(series=str, f1=int, f2=int, k=int) -> numpy.ndarray
+\end{lstlisting}
+\generaldesc{XXX}
+
+\gretlfpycmd{bwfilt()}
+\estdesc{XXX}
+\begin{lstlisting}[style=pythonstyle]
+gretl._gretl.Dataset.bwfilt(series=str, order=int, omega=float) -> numpy.ndarray
+\end{lstlisting}
+\generaldesc{XXX}
+
+\gretlfpycmd{corr()}
+\estdesc{XXX}
+\begin{lstlisting}[style=pythonstyle]
+gretl._gretl.Dataset.corr(vars=str, [OPTS]) -> numpy.ndarray
+\end{lstlisting}
+\generaldesc{XXX}
+
+\gretlfpycmd{cov()}
+\estdesc{XXX}
+\begin{lstlisting}[style=pythonstyle]
+gretl._gretl.Dataset.cov(vars=str) -> numpy.ndarray
+\end{lstlisting}
+\generaldesc{XXX}
+
+\gretlfpycmd{diff()}
+\estdesc{XXX}
+\begin{lstlisting}[style=pythonstyle]
+gretl._gretl.Dataset.diff(vars=str)
+\end{lstlisting}
+\generaldesc{XXX}
+
+\gretlfpycmd{discrete()}
+\estdesc{XXX}
+\begin{lstlisting}[style=pythonstyle]
+gretl._gretl.Dataset.discrete(vars=str, [OPTS])
+\end{lstlisting}
+\generaldesc{XXX}
+
+\gretlfpycmd{dummify()}
+\estdesc{XXX}
+\begin{lstlisting}[style=pythonstyle]
+gretl._gretl.Dataset.dummify(vars=str, [OPTS])
+\end{lstlisting}
+\generaldesc{XXX}
+
+\gretlfpycmd{get\_accessor()}
+\estdesc{XXX}
+\begin{lstlisting}[style=pythonstyle]
+gretl._gretl.Dataset.get_accessor(accessor=str) -> object
+\end{lstlisting}
+\generaldesc{XXX}
+
+\gretlfpycmd{get\_id()}
+\estdesc{XXX}
+\begin{lstlisting}[style=pythonstyle]
+gretl._gretl.Dataset.get_id(self) -> int
+\end{lstlisting}
+\generaldesc{XXX}
+
+\gretlfpycmd{get\_series()}
+\estdesc{XXX}
+\begin{lstlisting}[style=pythonstyle]
+gretl._gretl.Dataset.get_series(series=str) -> numpy.ndarray
+\end{lstlisting}
+\generaldesc{XXX}
+
+\gretlfpycmd{head()}
+\estdesc{XXX}
+\begin{lstlisting}[style=pythonstyle]
+gretl._gretl.Dataset.head(nobs=int)
+\end{lstlisting}
+\generaldesc{XXX}
+
+\gretlfpycmd{headT()}
+\estdesc{XXX}
+\begin{lstlisting}[style=pythonstyle]
+gretl._gretl.Dataset.headT(nobs=int)
+\end{lstlisting}
+\generaldesc{XXX}
+
+\gretlfpycmd{hpfilt()}
+\estdesc{XXX}
+\begin{lstlisting}[style=pythonstyle]
+gretl._gretl.Dataset.hpfilt(series=str, hp_lambda=float, trend=bool, one_sided=bool) -> numpy.ndarray
+\end{lstlisting}
+\generaldesc{XXX}
+
+\gretlfpycmd{lags()}
+\estdesc{XXX}
+\begin{lstlisting}[style=pythonstyle]
+gretl._gretl.Dataset.sdiff(vars=str, order=int)
+\end{lstlisting}
+\generaldesc{XXX}
+
+\gretlfpycmd{ldiff()}
+\estdesc{XXX}
+\begin{lstlisting}[style=pythonstyle]
+gretl._gretl.Dataset.ldiff(vars=str)
+\end{lstlisting}
+\generaldesc{XXX}
+
+\gretlfpycmd{linked\_models\_list()}
+\estdesc{XXX}
+\begin{lstlisting}[style=pythonstyle]
+gretl._gretl.Dataset.linked_models_list() -> set
+\end{lstlisting}
+\generaldesc{XXX}
+
+\gretlfpycmd{logs()}
+\estdesc{XXX}
+\begin{lstlisting}[style=pythonstyle]
+gretl._gretl.Dataset.discrete(vars=str)
+\end{lstlisting}
+\generaldesc{XXX}
+
+\gretlfpycmd{new\_list()}
+\estdesc{XXX}
+\begin{lstlisting}[style=pythonstyle]
+gretl._gretl.Dataset.new_list(name=str, value=str)
+gretl._gretl.Dataset.new_list(formula=str)
+\end{lstlisting}
+\generaldesc{XXX}
+
+\gretlfpycmd{new\_series()}
+\estdesc{XXX}
+\begin{lstlisting}[style=pythonstyle]
+gretl._gretl.Dataset.new_series(name=str, value=str)
+gretl._gretl.Dataset.new_series(formula=str)
+\end{lstlisting}
+\generaldesc{XXX}
+
+\gretlfpycmd{orthdev()}
+\estdesc{XXX}
+\begin{lstlisting}[style=pythonstyle]
+gretl._gretl.Dataset.orthdev(vars=str)
+\end{lstlisting}
+\generaldesc{XXX}
+
+\gretlfpycmd{print()}
+\estdesc{XXX}
+\begin{lstlisting}[style=pythonstyle]
+gretl._gretl.Dataset.print([OPTS])
+\end{lstlisting}
+\generaldesc{XXX}
+
+\gretlfpycmd{sample()}
+\estdesc{XXX}
+\begin{lstlisting}[style=pythonstyle]
+gretl._gretl.Dataset.sample([OPTS])
+\end{lstlisting}
+\generaldesc{XXX}
+
+\gretlfpycmd{sdiff()}
+\estdesc{XXX}
+\begin{lstlisting}[style=pythonstyle]
+gretl._gretl.Dataset.sdiff(vars=str)
+\end{lstlisting}
+\generaldesc{XXX}
+
+\gretlfpycmd{set\_as\_default()}
+\estdesc{XXX}
+\begin{lstlisting}[style=pythonstyle]
+gretl._gretl.Dataset.set_as_default(self)
+\end{lstlisting}
+\generaldesc{XXX}
+
+\gretlfpycmd{setobs()}
+\estdesc{XXX}
+\begin{lstlisting}[style=pythonstyle]
+gretl._gretl.Dataset.setobs([OPTS])
+\end{lstlisting}
+\generaldesc{XXX}
+
+\gretlfpycmd{square()}
+\estdesc{XXX}
+\begin{lstlisting}[style=pythonstyle]
+gretl._gretl.Dataset.square(vars=str, [OPTS])
+\end{lstlisting}
+\generaldesc{XXX}
+
+\gretlfpycmd{stdize()}
+\estdesc{XXX}
+\begin{lstlisting}[style=pythonstyle]
+gretl._gretl.Dataset.stdize(vars=str)
+\end{lstlisting}
+\generaldesc{XXX}
+
+\gretlfpycmd{tail()}
+\estdesc{XXX}
+\begin{lstlisting}[style=pythonstyle]
+gretl._gretl.Dataset.tail(nobs=int)
+\end{lstlisting}
+\generaldesc{XXX}
+
+\gretlfpycmd{tailT()}
+\estdesc{XXX}
+\begin{lstlisting}[style=pythonstyle]
+gretl._gretl.Dataset.tailT(nobs=int)
+\end{lstlisting}
+\generaldesc{XXX}
+
+\gretlfpycmd{test()}
+\estdesc{XXX}
+\begin{lstlisting}[style=pythonstyle]
+gretl._gretl.Dataset.test(type=str, vars=str, [OPTS])
+\end{lstlisting}
+\generaldesc{\gretlcmd{adf, bds, coint, corrgm, difftest, johansen, kpss, levinlin,
+		meantest, normtest, runs, vartest}}
+
+\gretlfpycmd{to\_dataframe()}
+\estdesc{XXX}
+\begin{lstlisting}[style=pythonstyle]
+gretl._gretl.Dataset.to_dataframe(self) -> pandas.core.frame.DataFrame
+\end{lstlisting}
+\generaldesc{XXX}
+
+\gretlfpycmd{to\_dict()}
+\estdesc{XXX}
+\begin{lstlisting}[style=pythonstyle]
+gretl._gretl.Dataset.to_dict(self) -> dict
+\end{lstlisting}
+\generaldesc{XXX}
+
+\gretlfpycmd{to\_file()}
+\estdesc{XXX}
+\begin{lstlisting}[style=pythonstyle]
+gretl._gretl.Dataset.to_file(fname=str)
+\end{lstlisting}
+\generaldesc{XXX}
+
+\gretlfpycmd{varnames()}
+\estdesc{XXX}
+\begin{lstlisting}[style=pythonstyle]
+	gretl._gretl.Dataset.varnames(self) -> list
+\end{lstlisting}
+\generaldesc{XXX}

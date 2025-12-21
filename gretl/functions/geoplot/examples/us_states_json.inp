@@ -1,0 +1,22 @@
+open us-states.geojson --quiet --frompkg=geoplot
+
+join statepop.gdt population --ikey=postal --okey=Code
+print -o name postal population
+
+# cut out Hawaii and Alaska
+smpl postal != "HI" && postal != "AK" --restrict
+
+bundle options = null
+options.plotfile = "us_states_json.plt"
+options.height = 500
+
+outlines_only = 1
+
+if outlines_only
+   geoplot(null, options)
+else
+   # show population levels in shades of blue
+   options.palette = "blues"
+   options.title = "US states, population (lower 48)"
+   geoplot(population, options)
+endif

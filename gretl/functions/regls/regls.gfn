@@ -1,0 +1,1376 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gretl-functions>
+<gretl-function-package name="regls" no-data-ok="true" minver="2025c" lives-in-subdir="true">
+<author email="cottrell@wfu.edu">Allin Cottrell</author>
+<version>2025c-git</version>
+<date>2025-05-15</date>
+<description>Regularized least squares</description>
+<tags>C20 C52</tags>
+<help>
+pdfdoc:regls.pdf
+</help>
+<data-files count="1">
+examples </data-files>
+<gretl-function name="regls" type="bundle">
+ <params count="3">
+  <param name="depvar" type="series"/>
+  <param name="indeps" type="list"/>
+  <param name="parms" type="bundle" optional="true" const="true"/>
+ </params>
+<code>scalar nlam = 1
+scalar make_seq = 0
+scalar timer = 0
+matrix lfrac = {}
+scalar rank = $mpirank
+matrix bsel = {}
+matrix mx = {}
+matrix sx = {}
+scalar my sy
+scalar elnet = 0
+scalar gui = 0
+string yname
+
+if inlist(indeps, 0)
+  indeps -= const
+endif
+if nelem(indeps) == 0
+  funcerr &quot;no regressors were supplied&quot;
+endif
+
+if !exists(parms)
+  # an empty bundle will do
+  bundle parms = null
+endif
+
+# initialize the return bundle
+bundle ret = regls_ret_init(0)
+
+err = check_params(parms, &amp;lfrac, &amp;nlam, &amp;make_seq, &amp;ret)
+if err
+  funcerr &quot;invalid or missing parameter(s)&quot;
+endif
+
+# read optional parameters
+read_optional_params(parms, &amp;ret, &amp;gui, &amp;elnet)
+
+# list of regressors with constant included, if wanted
+list X0 = ret.stdize ? 0 indeps : indeps
+
+# record upper limit of incoming sample range
+my_tmax = $t2
+
+# handle possible missing values
+list All = depvar indeps
+series okcheck = ok(All)
+if sum(okcheck) &lt; $nobs
+  set matrix_mask okcheck
+endif
+
+if ret.stdize
+  matrix Y = s_standardize({depvar}, &amp;my, &amp;sy)
+  matrix X = m_standardize({indeps}, &amp;mx, &amp;sx)
+else
+  matrix Y = {depvar}
+  matrix X = {indeps}
+endif
+
+# check for bad Y
+if nelem(Y) == 0
+  funcerr &quot;Invalid (constant) dependent variable&quot;
+endif
+
+scalar ret.nobs = rows(X)
+if make_seq
+  scalar nvars = cols(X)
+  scalar s_min = ret.nobs &gt; nvars ? 0.0001 : 0.01
+  matrix ret.lfrac = lambda_sequence(1, nlam, s_min)
+elif nelem(lfrac) &gt; 0
+  # ensure we have a column vector
+  matrix ret.lfrac = vec(lfrac)
+endif
+
+string ret.estimator = elnet ? &quot;Elastic net&quot; : ret.ridge ? &quot;Ridge&quot; : &quot;LASSO&quot;
+
+if ret.verbosity &gt; 0 &amp;&amp; rank &lt;= 0
+  yname = argname(depvar, &quot;unnamed&quot;)
+  print_regls_header(ret, nlam, elnet, yname)
+endif
+
+# call plugin C code
+if rank &lt;= 0 &amp;&amp; timer
+  set stopwatch
+endif
+err = _regls(X, Y, ret)
+if err
+  funcerr &quot;_regls failed&quot;
+endif
+if rank &lt;= 0 &amp;&amp; timer
+  string mode = ret.ccd ? &quot;CCD&quot; : ret.ridge ? &quot;SVD&quot; : &quot;ADMM&quot;
+  printf &quot;_regls (%s): %.3f seconds\n&quot;, mode, $stopwatch
+endif
+
+if !ret.xvalidate &amp;&amp; ret.verbosity &gt; 0 &amp;&amp; inbundle(ret, &quot;BIC&quot;)
+  BIC_print(ret, nlam)
+endif
+
+if rank &gt; 0
+  # case where the user has invoked MPI
+  return ret
+endif
+
+strings xnames = varnames(X0)
+finalize_coeff_matrices(&amp;ret, xnames, mx, sx, my, sy, &amp;bsel)
+
+if !ret.ridge &amp;&amp; nelem(bsel) &gt; 0
+  matrix tmp = X0 # list as matrix
+  tmp = selifr(tmp', bsel)
+  list ret.nzX = tmp
+  rnameset(ret.nzb, varnames(ret.nzX))
+endif
+
+if ret.verbosity &gt; 1
+  if inbundle(ret, &quot;vcv&quot;)
+    regls_modprint(ret, xnames)
+  elif nlam == 1
+    nz_print(ret, 1)
+  elif nlam &gt; 1 &amp;&amp; ret.verbosity &gt; 2
+    nz_print(ret, nlam)
+  endif
+  if ret.xvalidate &amp;&amp; ret.verbosity &gt; 2
+    training_R2(&amp;ret, depvar, indeps)
+  endif
+endif
+
+if inbundle(ret, &quot;verbosity&quot;)
+  delete ret.verbosity
+endif
+
+string ret.depvar = argname(depvar, &quot;y&quot;)
+list ret.xlist = indeps
+string xname = argname(indeps, &quot;X&quot;)
+regls_set_notes(&amp;ret)
+if gui
+  gui_add_commands(&amp;ret, parms, yname, xname)
+endif
+
+return ret
+</code>
+</gretl-function>
+<gretl-function name="lambda_sequence" type="matrix">
+ <params count="3">
+  <param name="lmax" type="scalar"/>
+  <param name="K" type="int"/>
+  <param name="eps" type="scalar" default="0.0001"/>
+ </params>
+<code>scalar decr = log(eps) / (K-1)
+matrix Lam = log(lmax) + decr * seq(0, K-1)'
+return exp(Lam)
+</code>
+</gretl-function>
+<gretl-function name="regls_get_stats" type="matrix">
+ <params count="2">
+  <param name="y" type="numeric" const="true"/>
+  <param name="yhat" type="numeric" const="true"/>
+ </params>
+<code>if typeof(y) == 2 # series
+  scalar SSR = sum((y - yhat)^2)
+  scalar n = $nobs
+else # must be matrix
+  scalar SSR = sumc((y - yhat).^2)
+  scalar n = nelem(y)
+endif
+matrix ret = {SSR/n, 1 - SSR/sst(y)}
+cnameset(ret, &quot;MSE R^2&quot;)
+return ret
+</code>
+</gretl-function>
+<gretl-function name="regls_pc_correct" type="scalar">
+ <params count="2">
+  <param name="y" type="numeric" const="true"/>
+  <param name="yhat" type="numeric" const="true"/>
+ </params>
+<code>if typeof(y) == 2 # series
+  series yr = round(yhat)
+  return 100 * sum(yr == y) / $nobs
+else # must be matrix
+  matrix yr = round(yhat)
+  return 100 * sum(yr .= y) / rows(y)
+endif
+</code>
+</gretl-function>
+<gretl-function name="regls_foldvec" type="matrix">
+ <params count="2">
+  <param name="nobs" type="int"/>
+  <param name="nf" type="int"/>
+ </params>
+<code>matrix foldvec = zeros(nobs, 1)
+scalar fsize = nobs / nf
+scalar r = 1
+loop i=1..nf -q
+  foldvec[r:r+fsize-1] = i
+  r += fsize
+endloop
+return foldvec
+</code>
+</gretl-function>
+<gretl-function name="regls_multiprint" type="void">
+ <params count="3">
+  <param name="rb" type="bundle" const="true"/>
+  <param name="y" type="numeric" const="true"/>
+  <param name="X" type="numeric" const="true"/>
+ </params>
+<code>scalar matdata = 0
+if typeof(y) == 3 &amp;&amp; typeof(X) == 3
+  matdata = 1
+elif typeof(y) != 2 || typeof(X) != 7
+  funcerr &quot;Invalid y or X argument&quot;
+endif
+scalar havecrit = inbundle(rb, &quot;crit&quot;)
+scalar ridge = rb.estimator == &quot;Ridge&quot;
+string pstr = ridge ? &quot;sum(b^2)&quot; : &quot;sum(|b|)&quot;
+printf &quot;\n        lfrac      R^2    %s     df&quot;, pstr
+if havecrit &amp;&amp; cols(rb.crit) &gt; 1
+  printf &quot;         MSE\n&quot;
+elif havecrit
+  printf &quot;   criterion\n&quot;
+else
+  printf &quot;\n&quot;
+endif
+scalar haveconst = 0
+scalar nx = matdata ? cols(X) : nelem(X)
+if rows(rb.B) == nx + 1
+  haveconst = 1
+elif rows(rb.B) != nx
+  funcerr &quot;B and X are not conformable&quot;
+endif
+matrix lambda = rb.lfrac
+scalar have_edf = inbundle(rb, &quot;edf&quot;)
+loop i=1..cols(rb.B) -q
+  if haveconst
+    matrix bi = rb.B[2:,i]
+    if matdata
+      matrix yhat = X * bi + rb.B[1,i]
+    else
+      series yhat = lincomb(X, bi) + rb.B[1,i]
+    endif
+  else
+    matrix bi = rb.B[,i]
+    if matdata
+      matrix yhat = X * bi
+    else
+      series yhat = lincomb(X, bi)
+    endif
+  endif
+  scalar penalty = ridge ? sumc(bi.^2) : sumc(abs(bi))
+  m = regls_get_stats(y, yhat)
+  R2 = m[2]
+  if R2 &lt; 0 &amp;&amp; R2 &gt; -1.0e16
+    # avoid printing -0.0000
+    R2 = 0
+  endif
+  printf &quot;%#13g   %.4f&quot;, lambda[i], R2
+  if penalty &gt; 0 &amp;&amp; penalty &lt; 1.0e-6
+    printf &quot;  %#10.4g&quot;, penalty
+  else
+    printf &quot;  %#10g&quot;, penalty
+  endif
+  if have_edf
+    printf &quot;  %5.2f&quot;, rb.edf[i]
+  else
+    printf &quot;    %3d&quot;, sumc(bi .!= 0)
+  endif
+  if havecrit &amp;&amp; cols(rb.crit) &gt; 1
+    printf &quot;  %#10g\n&quot;, rb.crit[i,1]
+  elif havecrit
+    printf &quot;  %#10g\n&quot;, rb.crit[i]
+  else
+    printf &quot;\n&quot;
+  endif
+endloop
+printf &quot;\n&quot;
+</code>
+</gretl-function>
+<gretl-function name="regls_fcast" type="bundle" pkg-role="bundle-fcast">
+ <params count="3">
+  <param name="b" type="bundleref"/>
+  <param name="t1" type="int"/>
+  <param name="t2" type="int"/>
+ </params>
+<code>strings S = defarray(&quot;R-squared&quot;, &quot;Mean Error&quot;, &quot;Root Mean Squared Error&quot;, &quot;Mean Absolute Error&quot;, &quot;Mean Percentage Error&quot;, &quot;Mean Absolute Percentage Error&quot;, &quot;Theil's U&quot;, &quot;Bias proportion&quot;, &quot;Regression proportion&quot;, &quot;Disturbance proportion&quot;)
+# public but undocumented: this function serves in the
+# bundle-fcast role for a bundle returned by regls()
+bundle ret
+smpl t1 t2
+smpl # to get the info printed
+list ylist = access(b.depvar)
+if nelem(ylist) == 0
+  funcerr &quot;Can't find the dependent variable&quot;
+else
+  series y = ylist[1]
+endif
+series yhat = regls_pred(b, b.xlist)
+if t1 &gt; b.sample_t2
+  string os = &quot;Out-of-sample &quot;
+elif t1 == b.sample_t1 &amp;&amp; t2 == b.sample_t2
+  string os = &quot;Within-sample &quot;
+else
+  # mixed?
+  string os = &quot;&quot;
+endif
+scalar ret.R2 = 1 - sum((y-yhat)^2) / sst(y)
+matrix stats = fcstats(y, yhat)
+printf &quot;%sforecast evaluation statistics for %s\n\n&quot;, os, b.depvar
+if !ok(stats[4])
+  sel = {1,2,3,4,7,8,9,10}
+  len = maxc(strlen(S[sel]))
+else
+  len = maxc(strlen(S))
+endif
+n = rows(stats) + 1
+loop i=1..n
+  scalar x = i==1 ? ret.R2 : stats[i-1]
+  if ok(x)
+    fill = x &lt; 0 ? &quot; &quot; : &quot;  &quot;
+    printf &quot;%-*s %s%g\n&quot;, len, S[i], fill, x
+  endif
+endloop
+printf &quot;\n&quot;
+# plot: should be conditional?
+regls_fcast_plot(y, yhat, b)
+series ret.yhat = yhat
+matrix ret.stats = stats
+return ret
+</code>
+</gretl-function>
+<gretl-function name="regls_criterion_plot" type="void">
+ <params count="2">
+  <param name="b" type="bundle" const="true"/>
+  <param name="fname" type="string" optional="true" const="true"/>
+ </params>
+<code>if cols(b.B) == 1
+  funcerr &quot;Must have more than one lambda value&quot;
+endif
+string output = exists(fname) ? fname : &quot;display&quot;
+if inbundle(b, &quot;xvalidate&quot;) &amp;&amp; b.xvalidate
+  regls_mse_plot(b, output)
+else
+  regls_bic_plot(b, output)
+endif
+</code>
+</gretl-function>
+<gretl-function name="regls_coeff_plot" type="void">
+ <params count="3">
+  <param name="b" type="bundle" const="true"/>
+  <param name="L" type="list" optional="true" const="true"/>
+  <param name="fname" type="string" optional="true" const="true"/>
+ </params>
+<code>string output = exists(fname) ? fname : &quot;display&quot;
+if exists(L) &amp;&amp; nelem(L) &gt; 0
+  matrix sel = regls_list2sel(b.xlist, L)
+  real_regls_coeff_plot(b, sel, output)
+else
+  real_regls_coeff_plot(b, null, output)
+endif
+</code>
+</gretl-function>
+<gretl-function name="mregls_coeff_plot" type="void">
+ <params count="3">
+  <param name="b" type="bundle" const="true"/>
+  <param name="sel" type="matrix" optional="true" const="true"/>
+  <param name="fname" type="string" optional="true" const="true"/>
+ </params>
+<code>string output = exists(fname) ? fname : &quot;display&quot;
+real_regls_coeff_plot(b, sel, output)
+</code>
+</gretl-function>
+<gretl-function name="regls_bundle_plot" type="void" pkg-role="bundle-plot">
+ <params count="3">
+  <param name="b" type="bundleref" const="true"/>
+  <param name="ptype" type="int" min="0" max="1" default="0">
+<labels count="2">
+"Criterion plot" "Coefficient paths" </labels>
+  </param>
+  <param name="sub" type="list" optional="true"/>
+ </params>
+<code># for GUI use only, so for regls, not mregls
+if ptype == 0
+  regls_criterion_plot(b)
+else
+  if (exists(sub) &amp;&amp; nelem(sub) &gt; 0 &amp;&amp; nelem(sub) &lt; 26)
+    regls_coeff_plot(b, sub)
+  else
+    # try not to show more than 25 paths
+    sel = regls_list2sel(b.xlist, b.nzX)
+    real_regls_coeff_plot(b, sel)
+  endif
+endif
+</code>
+</gretl-function>
+<gretl-function name="mregls" type="bundle">
+ <params count="3">
+  <param name="y" type="matrix" const="true"/>
+  <param name="X" type="matrix" const="true"/>
+  <param name="parms" type="bundle" optional="true" const="true"/>
+ </params>
+<code>scalar nlam = 1
+scalar timer = 0
+matrix lfrac = {}
+scalar rank = $mpirank
+matrix bsel = {}
+matrix mx = {}
+matrix sx = {}
+scalar my sy
+scalar elnet = 0
+scalar gui = 0
+string yname
+
+if (cols(y) != 1 || rows(y) == 0 || rows(X) != rows(y))
+  funcerr &quot;Invalid y and/or X input&quot;
+endif
+
+errorif(broken_matrix(y), &quot;matrix y contains non-finite values&quot;)
+errorif(broken_matrix(X), &quot;matrix X contains non-finite values&quot;)
+
+if !exists(parms)
+  # an empty bundle will do
+  bundle parms = null
+endif
+
+# initialize the return bundle
+bundle ret = regls_ret_init(1)
+
+err = check_params(parms, &amp;lfrac, &amp;nlam, &amp;ret)
+if err
+  funcerr &quot;invalid or missing parameter(s)&quot;
+endif
+
+# read optional parameters
+read_optional_params(parms, &amp;ret, &amp;gui, &amp;elnet)
+
+if ret.stdize
+  matrix ys = s_standardize(y, &amp;my, &amp;sy)
+  matrix Xs = m_standardize(X, &amp;mx, &amp;sx)
+endif
+
+scalar ret.nobs = rows(X)
+if nelem(lfrac) &gt; 0
+  matrix ret.lfrac = vec(lfrac)
+endif
+
+string ret.estimator = elnet ? &quot;Elastic net&quot; : ret.ridge ? &quot;Ridge&quot; : &quot;LASSO&quot;
+
+if ret.verbosity &gt; 0 &amp;&amp; rank &lt;= 0
+  yname = argname(y, &quot;y&quot;)
+  print_regls_header(ret, nlam, elnet, yname)
+endif
+
+# call plugin C code
+if rank &lt;= 0 &amp;&amp; timer
+  set stopwatch
+endif
+if ret.stdize
+  err = _regls(Xs, ys, ret)
+else
+  err = _regls(X, y, ret)
+endif
+if err
+  funcerr &quot;_regls failed&quot;
+endif
+if rank &lt;= 0 &amp;&amp; timer
+  string mode = ret.ccd ? &quot;CCD&quot; : ret.ridge ? &quot;SVD&quot; : &quot;ADMM&quot;
+  printf &quot;_regls (%s): %.3f seconds\n&quot;, mode, $stopwatch
+endif
+
+if !ret.xvalidate &amp;&amp; ret.verbosity &gt; 0 &amp;&amp; inbundle(ret, &quot;BIC&quot;)
+  BIC_print(ret, nlam)
+endif
+
+if rank &gt; 0
+  # MPI, and not root
+  return ret
+endif
+
+strings xnames = cnameget(X)
+if nelem(xnames) == 0
+  xnames = make_xnames(cols(X))
+endif
+if ret.stdize
+  xnames = defarray(&quot;const&quot;) + xnames
+endif
+finalize_coeff_matrices(&amp;ret, xnames, mx, sx, my, sy, &amp;bsel)
+
+if !ret.ridge &amp;&amp; nelem(bsel) &gt; 0
+  nx = cols(X) + ret.stdize
+  matrix ret.nzX = selifc(seq(1, nx), bsel')
+  if nelem(ret.nzb) &gt; 0
+    rnameset(ret.nzb, xnames[ret.nzX])
+  endif
+  if ret.stdize
+    # make nzX into a selection vector for cols of X
+    if cols(ret.nzX) &gt; 1
+      ret.nzX = ret.nzX[2:] - 1
+    else
+      ret.nzX = {}
+    endif
+  endif
+endif
+
+if ret.verbosity &gt; 1
+  if inbundle(ret, &quot;vcv&quot;)
+    regls_modprint(ret, xnames)
+  elif nlam == 1
+    nz_print(ret, 1)
+  elif nlam &gt; 1 &amp;&amp; ret.verbosity &gt; 2
+    nz_print(ret, nlam)
+  endif
+  if ret.xvalidate &amp;&amp; ret.verbosity &gt; 2
+    mregls_training_R2(&amp;ret, y, X)
+  endif
+endif
+
+if inbundle(ret, &quot;verbosity&quot;)
+  delete ret.verbosity
+endif
+regls_set_notes(&amp;ret)
+
+return ret
+</code>
+</gretl-function>
+<gretl-function name="regls_pred" type="numeric">
+ <params count="2">
+  <param name="rb" type="bundle" const="true"/>
+  <param name="X" type="list" const="true"/>
+ </params>
+<code># basic checks on validity of input
+if typeof(rb.matrix_input) != 1 || rb.matrix_input
+  funcerr &quot;rb is not a valid regls bundle&quot;
+elif typeof(X) != 7
+  funcerr &quot;regls bundle: X must be a list&quot;
+endif
+
+scalar have_nzX = inbundle(rb, &quot;nzX&quot;)
+scalar ifc = inlist(X, 0)
+scalar idx = 0
+matrix selvec = {}
+if inbundle(rb, &quot;pred&quot;)
+  idx = get_pred_preference(rb, &amp;selvec)
+elif !have_nzX
+  idx = rb.idxmin
+endif
+
+# handle various non-default cases
+if idx == -1 || nelem(selvec) &gt; 0
+  # multiple predictions
+  set skip_missing off
+  matrix P
+  matrix MX = (rb.stdize &amp;&amp; !ifc) ? 1 ~ {X} : {X}
+  if idx == -1 # &quot;all&quot;
+    P = MX * rb.B
+  else
+    P = MX * rb.B[,selvec]
+  endif
+  return P
+elif idx &gt; 0
+  # single non-standard prediction
+  if rb.stdize &amp;&amp; !ifc
+    list All = const X
+    yhat = lincomb(All, rb.B[,idx])
+  else
+    yhat = lincomb(X, rb.B[,idx])
+  endif
+  return yhat
+endif
+
+# use nzb and nzX
+if nelem(rb.nzb) == 0
+  # unlikely but possible
+  series yhat = 0
+elif nelem(rb.nzb) == 1
+  # only a single coefficient available
+  series yhat = rb.nzb[1]
+else
+  series yhat = lincomb(rb.nzX, rb.nzb)
+endif
+
+return yhat
+</code>
+</gretl-function>
+<gretl-function name="mregls_pred" type="matrix">
+ <params count="2">
+  <param name="rb" type="bundle" const="true"/>
+  <param name="X" type="matrix" const="true"/>
+ </params>
+<code># basic checks on validity of input
+if typeof(rb.matrix_input) != 1 || !rb.matrix_input
+  funcerr &quot;rb is not a valid mregls bundle&quot;
+elif typeof(X) != 3
+  funcerr &quot;mregls bundle: X must be a matrix&quot;
+endif
+
+scalar have_nzX = inbundle(rb, &quot;nzX&quot;)
+scalar idx = 0
+matrix selvec = {}
+if inbundle(rb, &quot;pred&quot;)
+  idx = get_pred_preference(rb, &amp;selvec)
+elif !have_nzX
+  idx = rb.idxmin
+endif
+
+matrix yhat
+
+# handle various non-default cases
+if idx != 0 || nelem(selvec) &gt; 0
+  matrix MX = rb.stdize ? 1 ~ X : X
+  if idx == -1 # &quot;all&quot;
+    yhat = MX * rb.B
+  elif nelem(selvec) &gt; 0
+    yhat = MX * rb.B[,selvec]
+  else
+    yhat = MX * rb.B[,idx]
+  endif
+  return yhat
+endif
+
+if nelem(rb.nzb) == 0
+  # unlikely but possible
+  yhat = zeros(rows(X), 1)
+elif nelem(rb.nzb) == 1
+  # only a single coefficient available
+  yhat = zeros(rows(X), 1) + rb.nzb[1]
+elif rb.stdize
+  yhat = X[,rb.nzX] * rb.nzb[2:] + rb.nzb[1]
+else
+  yhat = X[,rb.nzX] * rb.nzb
+endif
+
+return yhat
+</code>
+</gretl-function>
+<gretl-function name="glmnet_pred" type="series">
+ <params count="2">
+  <param name="Rb" type="matrixref"/>
+  <param name="X" type="list"/>
+ </params>
+<code>matrix sel = Rb .!= 0
+Rb = selifr(Rb, sel)
+matrix mRX = X
+list RX = selifr(mRX', sel)
+rnameset(Rb, varnames(RX))
+return lincomb(RX, Rb)
+</code>
+</gretl-function>
+<gretl-function name="glmnet_multiprint" type="void">
+ <params count="5">
+  <param name="RB" type="matrix" const="true"/>
+  <param name="Rlam" type="matrix" const="true"/>
+  <param name="b" type="bundle" const="true"/>
+  <param name="y" type="series" const="true"/>
+  <param name="X" type="list"/>
+ </params>
+<code>matrix ym = {y}
+scalar n = rows(ym)
+scalar den = sdc(ym) * b.lmax
+bundle tmp = _(B=RB, lambda=Rlam * n / den)
+tmp.estimator = b.estimator
+regls_multiprint(tmp, y, X)
+</code>
+</gretl-function>
+<gretl-function name="unstdize" type="matrix" private="1">
+ <params count="5">
+  <param name="z" type="matrix" const="true"/>
+  <param name="my" type="scalar"/>
+  <param name="sy" type="scalar"/>
+  <param name="mx" type="matrix" const="true"/>
+  <param name="sx" type="matrix" const="true"/>
+ </params>
+<code>matrix b = zeros(1 + nelem(z), 1)
+# initialize intercept
+b[1] = my
+loop i=1..nelem(z)
+  if z[i] != 0
+    b[i+1] = (sy/sx[i]) * z[i]
+    b[1] -= b[i+1] * mx[i]
+  endif
+endloop
+return b
+</code>
+</gretl-function>
+<gretl-function name="unstdize_vcv" type="matrix" private="1">
+ <params count="3">
+  <param name="vcv" type="matrix" const="true"/>
+  <param name="sy" type="scalar"/>
+  <param name="sx" type="matrix" const="true"/>
+ </params>
+<code>return vcv * sy^2 ./ sx'sx
+</code>
+</gretl-function>
+<gretl-function name="m_standardize" type="matrix" private="1">
+ <params count="3">
+  <param name="X" type="matrix" const="true"/>
+  <param name="mx" type="matrixref"/>
+  <param name="sx" type="matrixref"/>
+ </params>
+<code>mx = meanc(X)
+sx = sdc(X)
+matrix S = (X .- mx) ./ sx
+if sumr(sx .&gt; 0) &lt; cols(X)
+  S = missing(S) ? 0 : S
+endif
+return S
+</code>
+</gretl-function>
+<gretl-function name="s_standardize" type="matrix" private="1">
+ <params count="3">
+  <param name="y" type="matrix" const="true"/>
+  <param name="my" type="scalarref"/>
+  <param name="sy" type="scalarref"/>
+ </params>
+<code>my = meanc(y)
+sy = sdc(y)
+if missing(sy)
+  funcerr &quot;Insufficient valid observations&quot;
+endif
+if sy == 0
+  S = {}
+else
+  S = (y - my) / sy
+endif
+return S
+</code>
+</gretl-function>
+<gretl-function name="finalize_coeff_matrices" type="void" private="1">
+ <params count="7">
+  <param name="ret" type="bundleref"/>
+  <param name="xnames" type="strings" const="true"/>
+  <param name="mx" type="matrix" optional="true" const="true"/>
+  <param name="sx" type="matrix" optional="true" const="true"/>
+  <param name="my" type="scalar"/>
+  <param name="sy" type="scalar"/>
+  <param name="bsel" type="matrixref"/>
+ </params>
+<code>rnameset(ret.B, xnames)
+if cols(ret.B) &gt; 1
+  if ret.stdize
+    loop j=1..cols(ret.B)
+      ret.B[,j] = unstdize(ret.B[2:,j], my, sy, mx, sx)
+    endloop
+  endif
+  if inbundle(ret, &quot;idxmin&quot;)
+    optcol = (ret.xvalidate &amp;&amp; ret.use_1se)? ret.idx1se : ret.idxmin
+    matrix b = ret.B[,optcol]
+    if ret.ridge
+      ret.b = b
+      rnameset(ret.b, xnames)
+    else
+      bsel = b .!= 0
+      matrix ret.nzb = selifr(b, bsel)
+    endif
+  endif
+else
+  if ret.stdize
+    ret.B = unstdize(ret.B[2:], my, sy, mx, sx)
+    if inbundle(ret, &quot;vcv&quot;)
+      ret.vcv = unstdize_vcv(ret.vcv, sy, sx)
+    endif
+  endif
+  if !ret.ridge
+    bsel = ret.B .!= 0
+    matrix ret.nzb = selifr(ret.B, bsel)
+  endif
+endif
+</code>
+</gretl-function>
+<gretl-function name="unscaled_lambda" type="scalar" private="1">
+ <params count="1">
+  <param name="b" type="bundle" const="true"/>
+ </params>
+<code>return inbundle(b, &quot;lambda_scale&quot;) == 1 &amp;&amp; b.lambda_scale == 0
+</code>
+</gretl-function>
+<gretl-function name="check_params" type="scalar" private="1">
+ <params count="5">
+  <param name="b" type="bundle" const="true"/>
+  <param name="lfrac" type="matrixref"/>
+  <param name="nlam" type="scalarref"/>
+  <param name="make_seq" type="scalarref"/>
+  <param name="ret" type="bundleref"/>
+ </params>
+<code>matrix m = {}
+scalar scl = -1
+
+if inbundle(b, &quot;lambda_scale&quot;) == 1
+  scl = b.lambda_scale
+  if scl &lt; 0 || scl &gt; 2 || floor(scl) != scl
+    print &quot;invalid lambda scale specification&quot;
+    return 1
+  else
+    ret.lambda_scale = scl
+  endif
+endif
+if inbundle(b, &quot;lfrac&quot;) == 1 || inbundle(b, &quot;lfrac&quot;) == 3
+  m = b.lfrac
+  nlam = nelem(m)
+elif inbundle(b, &quot;lambda&quot;) == 1 || inbundle(b, &quot;lambda&quot;) == 3
+  m = b.lambda
+  nlam = nelem(m)
+  if scl &lt; 0
+    # not already specified above
+    ret.lambda_scale = 0
+  endif
+endif
+if nelem(m) == 0 &amp;&amp; inbundle(b, &quot;nlambda&quot;) == 1
+  # got a number of lambda values
+  if b.nlambda &lt; 4
+    print &quot;missing or invalid lambda specification&quot;
+    return 1
+  else
+    nlam = b.nlambda
+    make_seq = 1
+    return 0
+  endif
+elif nelem(m) == 0
+  # default to 25 automatic lambdas
+  nlam = 25
+  make_seq = 1
+  return 0
+endif
+lfrac = m
+if unscaled_lambda(b)
+  # treat the lambdas as is, not as fractions
+  if min(m) &lt; 0
+    print &quot;missing or invalid lambda specification&quot;
+    return 2
+  else
+    return 0
+  endif
+endif
+loop i=1..nlam
+  if m[i] &lt; 0 || m[i] &gt; 1 || (i &gt; 1 &amp;&amp; m[i] &gt;= m[i-1])
+    print &quot;invalid lambda specification&quot;
+    return 2
+  endif
+endloop
+return 0
+</code>
+</gretl-function>
+<gretl-function name="get_xvalidation_parms" type="void" private="1">
+ <params count="2">
+  <param name="targ" type="bundleref"/>
+  <param name="src" type="bundle" const="true"/>
+ </params>
+<code># options specific to cross validation
+targ.xvalidate = src.xvalidate
+if targ.xvalidate
+  matrix deflts = {10, 0, 0, 0, 0, 0, 0}
+  ndef = nelem(deflts)
+  loop foreach i nfolds randfolds no_mpi mpi_np mpi_local use_1se seed
+    if inbundle(src, &quot;$i&quot;)
+      scalar targ.$i = src.$i
+    elif i &lt;= ndef
+      scalar targ.$i = deflts[i]
+    endif
+  endloop
+endif
+</code>
+</gretl-function>
+<gretl-function name="print_regls_header" type="void" private="1">
+ <params count="4">
+  <param name="b" type="bundle" const="true"/>
+  <param name="nlam" type="int"/>
+  <param name="elnet" type="int"/>
+  <param name="yname" type="string"/>
+ </params>
+<code>string algo = b.ccd ? &quot;CCD&quot; : b.ridge ? &quot;SVD&quot; : &quot;ADMM&quot;
+string t1str = obslabel($t1)
+string t2str = obslabel($t2)
+
+if elnet
+  printf &quot;\n%s, alpha = %g, &quot;, b.estimator, b.alpha
+else
+  printf &quot;\n%s (%s) &quot;, b.estimator, algo
+endif
+printf &quot;using observations %s to %s (n = %d)\n&quot;, t1str, t2str, b.nobs
+printf &quot;Dependent variable: %s\n&quot;, yname
+if nlam == 1
+  if unscaled_lambda(b)
+    printf &quot;single lambda value %g\n&quot;, b.lfrac[1]
+  else
+    printf &quot;single lambda-fraction %g\n&quot;, b.lfrac[1]
+  endif
+else
+  printf &quot;%d values of lambda\n&quot;, nlam
+endif
+</code>
+</gretl-function>
+<gretl-function name="gui_add_commands" type="void" private="1">
+ <params count="4">
+  <param name="b" type="bundleref"/>
+  <param name="parms" type="bundle" const="true"/>
+  <param name="yname" type="string" const="true"/>
+  <param name="xname" type="string" const="true"/>
+ </params>
+<code>string cmdstr
+set force_decpoint on
+outfile --buffer=cmdstr --quiet
+  printf &quot;include regls.gfn\n&quot;
+  printf &quot;bundle rb = regls(%s, %s, _(&quot;, yname, xname
+  if inbundle(parms, &quot;nlambda&quot;)
+    printf &quot;nlambda=%d&quot;, parms.nlambda
+  else
+    printf &quot;lfrac=%g&quot;, parms.lfrac
+  endif
+  if inbundle(b, &quot;ridge&quot;) &amp;&amp; b.ridge
+    printf &quot;, ridge=1&quot;
+  endif
+  if inbundle(b, &quot;alpha&quot;)
+    printf &quot;, alpha=%g&quot;, b.alpha
+  endif
+  printf &quot;, verbosity=3&quot;
+  if inbundle(b, &quot;xvalidate&quot;) &amp;&amp; b.xvalidate
+    printf &quot;,\n xvalidate=1&quot;
+    printf &quot;, randfolds=%d&quot;, b.randfolds
+    printf &quot;, nfolds=%d&quot;, b.nfolds
+  endif
+  printf &quot;))\n&quot;
+end outfile
+set force_decpoint off
+printf &quot;Command line equivalent:\n&quot;
+printf &quot;%s\n&quot;, cmdstr
+b.commands = cmdstr
+</code>
+</gretl-function>
+<gretl-function name="regls_set_notes" type="void" private="1">
+ <params count="1">
+  <param name="b" type="bundleref"/>
+ </params>
+<code>if inbundle(b, &quot;nzb&quot;)
+  setnote(b, &quot;nzb&quot;, &quot;non-zero coefficients&quot;)
+endif
+if inbundle(b, &quot;nzX&quot;)
+  setnote(b, &quot;nzX&quot;, &quot;included regressors&quot;)
+endif
+if inbundle(b, &quot;B&quot;)
+  setnote(b, &quot;B&quot;, &quot;all coefficients&quot;)
+endif
+if inbundle(b, &quot;crit&quot;)
+  setnote(b, &quot;crit&quot;, &quot;criterion info&quot;)
+endif
+</code>
+</gretl-function>
+<gretl-function name="nz_print" type="void" private="1">
+ <params count="2">
+  <param name="b" type="bundle" const="true"/>
+  <param name="nlam" type="int"/>
+ </params>
+<code>if b.xvalidate
+  scalar lf = b.use_1se ? b.lf1se : b.lfmin
+  printf &quot;\n%s coefficients (s = %g)\n\n&quot;, b.estimator, lf
+elif nlam &gt; 1
+  printf &quot;\n%s minimum-BIC coefficients\n\n&quot;, b.estimator
+else
+  printf &quot;\n%s coefficients\n\n&quot;, b.estimator
+endif
+if !inbundle(b, &quot;nzX&quot;)
+  if inbundle(b, &quot;b&quot;)
+    eval b.b
+  else
+    eval b.B
+  endif
+  return
+endif
+strings S = rnameget(b.nzb)
+if nelem(S) &gt; 0
+  len = max(strlen(S))
+  loop i=1..nelem(S)
+    printf &quot;%*s %#12.6g\n&quot;, len, S[i], b.nzb[i]
+  endloop
+  printf &quot;\n&quot;
+endif
+</code>
+</gretl-function>
+<gretl-function name="BIC_print" type="void" private="1">
+ <params count="2">
+  <param name="ret" type="bundle" const="true"/>
+  <param name="nlam" type="int"/>
+ </params>
+<code>string ss = ret.ridge &amp;&amp; unscaled_lambda(ret) ? &quot;lambda&quot; : &quot;s&quot;
+if nlam &gt; 1
+  if inbundle(ret, &quot;BIC&quot;) == 3
+    scalar cmin = ret.BIC[ret.idxmin]
+  else
+    scalar cmin = ret.BIC
+  endif
+  printf &quot;\nBIC minimized at %#g with %s = %f\n&quot;, cmin, ss, ret.lfmin
+else
+  printf &quot;\nBIC = %#g for %s = %f\n&quot;, ret.BIC, ss, ret.lfrac
+endif
+</code>
+</gretl-function>
+<gretl-function name="regls_modprint" type="void" private="1">
+ <params count="2">
+  <param name="ret" type="bundle" const="true"/>
+  <param name="xnames" type="strings" const="true"/>
+ </params>
+<code>if ret.stdize
+  matrix bse = ret.B ~ (NA | sqrt(diag(ret.vcv)))
+else
+  matrix bse = ret.B ~ sqrt(diag(ret.vcv))
+endif
+matrix addstats = {ret.edf, ret.BIC, ret.R2}
+strings pnames = xnames + defarray(&quot;edf&quot;, &quot;BIC&quot;, &quot;R^2&quot;)
+modprint bse pnames addstats
+</code>
+</gretl-function>
+<gretl-function name="read_optional_params" type="void" private="1">
+ <params count="4">
+  <param name="parms" type="bundle" const="true"/>
+  <param name="ret" type="bundleref"/>
+  <param name="gui" type="scalarref"/>
+  <param name="elnet" type="scalarref"/>
+ </params>
+<code>scalar alpha_set = 0
+
+if inbundle(parms, &quot;stdize&quot;) == 1
+  ret.stdize = parms.stdize
+endif
+if inbundle(parms, &quot;verbosity&quot;) == 1
+  ret.verbosity = parms.verbosity
+endif
+if inbundle(parms, &quot;timer&quot;) == 1
+  timer = parms.timer
+endif
+if inbundle(parms, &quot;gui&quot;) == 1
+  gui = parms.gui
+  if gui
+    ret.verbosity = 3
+  endif
+endif
+if inbundle(parms, &quot;alpha&quot;) == 1
+  if parms.alpha &lt; 0 || parms.alpha &gt; 1 || isnan(parms.alpha)
+    funcerr &quot;invalid alpha specification&quot;
+  else
+    ret.alpha = parms.alpha
+    if ret.alpha == 0
+      ret.ridge = 1
+    elif ret.alpha &lt; 1
+      ret.ccd = 1
+      elnet = 1
+    endif
+    alpha_set = 1
+  endif
+endif
+
+if !alpha_set &amp;&amp; inbundle(parms, &quot;ridge&quot;) == 1
+  ret.ridge = parms.ridge
+endif
+if !ret.ccd &amp;&amp; inbundle(parms, &quot;ccd&quot;) == 1
+  ret.ccd = parms.ccd
+endif
+if ret.ccd &amp;&amp; inbundle(parms, &quot;ccd_toler&quot;)
+  ret.ccd_toler = parms.ccd_toler
+endif
+if inbundle(parms, &quot;admmctrl&quot;) == 3
+  matrix ret.admmctrl = parms.admmctrl
+endif
+if inbundle(parms, &quot;xvalidate&quot;)
+  get_xvalidation_parms(&amp;ret, parms)
+endif
+</code>
+</gretl-function>
+<gretl-function name="regls_ret_init" type="bundle" private="1">
+ <params count="1">
+  <param name="matrix_input" type="bool"/>
+ </params>
+<code>bundle ret
+ret.stdize = 1
+ret.verbosity = 1
+ret.ridge = 0
+ret.ccd = 0
+ret.xvalidate = 0
+ret.matrix_input = matrix_input
+if !matrix_input
+  ret.sample_t1 = $t1
+  ret.sample_t2 = $t2
+endif
+return ret
+</code>
+</gretl-function>
+<gretl-function name="get_pred_preference" type="scalar" private="1">
+ <params count="2">
+  <param name="b" type="bundle" const="true"/>
+  <param name="pvec" type="matrixref"/>
+ </params>
+<code>scalar maxidx = cols(b.B)
+scalar idx
+
+if typeof(b.pred) == 1
+  idx = b.pred
+  if idx == b.idxmin &amp;&amp; b.use_1se == 0
+    return 0 # the default prediction works
+  elif idx == b.idx1se &amp;&amp; b.use_1se
+    return 0 # ditto
+  elif idx &lt; 1 || idx &gt; maxidx
+    funcerr &quot;out-of-bounds prediction preference&quot;
+  else
+    return idx
+  endif
+elif typeof(b.pred) == 3
+  matrix v = b.pred
+  if rows(v) &gt; 1
+    funcerr &quot;prediction selection must be row vector&quot;
+  elif maxr(v) &gt; maxidx || minr(v) &lt; 1
+    funcerr &quot;out-of-bounds prediction preference&quot;
+  elif nelem(v) == 1
+    idx = v[1]
+    return idx
+  else
+    pvec = v
+  endif
+elif typeof(b.pred) == 4
+  if b.pred == &quot;all&quot;
+    return -1
+  else
+    funcerr &quot;invalid prediction preference&quot;
+  endif
+else
+  funcerr &quot;invalid type for prediction preference&quot;
+endif
+
+return 0
+</code>
+</gretl-function>
+<gretl-function name="training_R2" type="void" private="1">
+ <params count="3">
+  <param name="b" type="bundleref"/>
+  <param name="y" type="series"/>
+  <param name="X" type="list"/>
+ </params>
+<code>series yhat = regls_pred(b, X)
+matrix m = regls_get_stats(y, yhat)
+printf &quot;training data R-squared = %.4f\n\n&quot;, m[2]
+b.training_R2 = m[2]
+</code>
+</gretl-function>
+<gretl-function name="mregls_training_R2" type="void" private="1">
+ <params count="3">
+  <param name="b" type="bundleref"/>
+  <param name="y" type="matrix" const="true"/>
+  <param name="X" type="matrix" const="true"/>
+ </params>
+<code>matrix yhat = regls_pred(b, X)
+matrix m = regls_get_stats(y, yhat)
+printf &quot;training data R-squared = %.4f\n\n&quot;, m[2]
+b.training_R2 = m[2]
+</code>
+</gretl-function>
+<gretl-function name="regls_fcast_plot" type="void" private="1">
+ <params count="3">
+  <param name="y" type="series" const="true"/>
+  <param name="yhat" type="series" const="true"/>
+  <param name="b" type="bundle" const="true"/>
+ </params>
+<code>string tmpname
+scalar x0 = min(yhat)
+scalar x1 = max(yhat)
+scalar xd = 0.025 * (x1 - x0)
+x0 = (x0 &gt;= 0 &amp;&amp; x0 - xd &lt; 0)? 0 : x0 - xd
+x1 += xd
+set force_decpoint on
+outfile --tempfile=tmpname --quiet
+  printf &quot;set title 'actual vs predicted %s (%s)'\n&quot;, b.depvar, b.estimator
+  printf &quot;set xlabel 'predicted'\n&quot;
+  printf &quot;set ylabel 'actual'\n&quot;
+  printf &quot;set key left top\n&quot;
+  printf &quot;set xrange [%g:%g]\n&quot;, x0, x1
+  printf &quot;plot '-' using 1:2 title '' w p, \\\n&quot;
+  printf &quot; x title 'actual = predicted' w l\n&quot;
+  print yhat y --data-only
+  printf &quot;e\n&quot;
+end outfile
+set force_decpoint off
+gnuplot --input=&quot;@tmpname&quot; --output=display
+remove(tmpname)
+</code>
+</gretl-function>
+<gretl-function name="regls_mse_plot" type="void" private="1">
+ <params count="2">
+  <param name="b" type="bundle" const="true"/>
+  <param name="output" type="string" const="true"/>
+ </params>
+<code>matrix M = b.crit[,1] ~ b.lfrac
+matrix B = b.crit
+scalar ymin = 0.95 * minc(b.crit[,1] - b.crit[,2])
+scalar ymin = ymin &lt; 0 ? 0 : ymin
+scalar x0 = b.lfrac[b.idxmin]
+scalar y0 = M[b.idxmin,1]
+string lspec0 = &quot;front center point pt 8 ps 2&quot;
+scalar x1 = b.lfrac[b.idx1se]
+scalar y1 = M[b.idx1se,1]
+string lspec1 = &quot;front center point pt 6 ps 2&quot;
+plot M
+  options with-lp band=B band-style=dash fit=none
+  literal set termoption enhanced
+  printf &quot;set yrange [%g:1]&quot;, ymin
+  literal set xlabel 's = λ/λ_{max}'
+  literal set ylabel 'MSE'
+  printf &quot;set xrange [1:%g]&quot;, minc(b.lfrac)
+  literal set logscale x
+  printf &quot;set label \&quot;\&quot; at %g,%g %s&quot;, x0, y0, lspec0
+  printf &quot;set label \&quot;\&quot; at %g,%g %s&quot;, x1, y1, lspec1
+  literal set title 'Mean cross-validation MSE with one-s.e. band'
+end plot --output=&quot;@output&quot;
+</code>
+</gretl-function>
+<gretl-function name="regls_bic_plot" type="void" private="1">
+ <params count="2">
+  <param name="b" type="bundle" const="true"/>
+  <param name="output" type="string" const="true"/>
+ </params>
+<code>matrix M = b.BIC ~ b.lfrac
+scalar ymin = minc(b.BIC)
+scalar ymax = maxc(b.BIC)
+scalar ymargin = 0.05 * (ymax - ymin)
+ymin -= ymargin
+ymax += ymargin
+scalar x0 = b.lfrac[b.idxmin]
+scalar y0 = b.BIC[b.idxmin]
+string lspec = &quot;front center point pt 8 ps 2&quot;
+plot M
+  options with-lp fit=none
+  literal set termoption enhanced
+  printf &quot;set xrange [1:%g]&quot;, minc(b.lfrac)
+  printf &quot;set yrange [%g:%g]&quot;, ymin, ymax
+  literal set xlabel 's = λ/λ_{max}'
+  literal set ylabel 'BIC'
+  literal set logscale x
+  printf &quot;set label \&quot;\&quot; at %g,%g %s&quot;, x0, y0, lspec
+  literal set title 'BIC as a function of s'
+end plot --output=&quot;@output&quot;
+</code>
+</gretl-function>
+<gretl-function name="regls_list2sel" type="matrix" private="1">
+ <params count="2">
+  <param name="X" type="list" const="true"/>
+  <param name="L" type="list" const="true"/>
+ </params>
+<code>matrix m1 = X # will not include const
+matrix m2 = L # may include const
+if m2[1] == 0
+  m2 = m2[2:]
+endif
+n1 = nelem(m1)
+return selifc(seq(1,n1), contains(m1,m2))
+</code>
+</gretl-function>
+<gretl-function name="real_regls_coeff_plot" type="void" private="1">
+ <params count="3">
+  <param name="b" type="bundle" const="true"/>
+  <param name="sel" type="matrix" optional="true" const="true"/>
+  <param name="output" type="string" const="true"/>
+ </params>
+<code>if cols(b.B) == 1
+  funcerr &quot;Must have more than one lambda value&quot;
+endif
+strings colheads = rnameget(b.B)
+matrix B
+if b.stdize
+  colheads = colheads[2:]
+  B = b.B[2:,]
+else
+  matrix B = b.B
+endif
+if exists(sel)
+  colheads = colheads[sel]
+  matrix B = B[sel,]
+endif
+colheads += &quot;lfrac&quot;
+matrix Bs = B' ~ b.lfrac
+cnameset(Bs, colheads)
+scalar x0 = b.lfrac[b.idxmin]
+string est = b.ridge ? &quot;Ridge&quot; : &quot;LASSO&quot;
+plot Bs
+  options with-lp single-yaxis fit=none
+  literal set termoption enhanced
+  literal set xlabel 's = λ/λ_{max}'
+  literal set key outside right noenhanced
+  printf &quot;set xrange [1:%g]&quot;, minc(b.lfrac)
+  literal set logscale x
+  literal set style arrow 1 nohead dt 2
+  printf &quot;set arrow 1 from %g, graph 0 to %g, graph 1&quot;, x0, x0
+  literal set arrow 1 as 1
+  printf &quot;set title '%s coefficients as a function of s'&quot;, est
+end plot --output=&quot;@output&quot;
+</code>
+</gretl-function>
+<gretl-function name="regls_plot_check" type="matrix" private="1" pkg-role="plot-precheck">
+ <params count="1">
+  <param name="b" type="bundleref" const="true"/>
+ </params>
+<code>if !inbundle(b, &quot;B&quot;)
+  return {0}
+endif
+# both plots require more than one regularization parameter
+return cols(b.B) &gt; 1 ? {1,1} : {0,0}
+</code>
+</gretl-function>
+<gretl-function name="make_xnames" type="strings" private="1">
+ <params count="1">
+  <param name="n" type="int"/>
+ </params>
+<code>strings S = array(n)
+loop i=1..n
+  S[i] = sprintf(&quot;x%d&quot;, i)
+endloop
+return S
+</code>
+</gretl-function>
+<gretl-function name="broken_matrix" type="scalar" private="1">
+ <params count="1">
+  <param name="m" type="matrix" const="true"/>
+ </params>
+<code>scalar ret = 0
+loop j=1..cols(m)
+  loop i=1..rows(m)
+    if !ok(m[i,j])
+      ret = 1
+      break
+    endif
+  endloop
+  if ret
+    break
+  endif
+endloop
+return ret
+</code>
+</gretl-function>
+<sample-script>
+set verbose off
+include regls.gfn
+
+# cross validation with 10 randomized folds and 20 values
+# of lambda
+
+open murder.gdt --quiet --frompkg=regls
+
+# use all available predictors without missing values
+list X = population..LemasPctOfficDrugUn
+
+# set training sample
+smpl 1 1000
+printf &quot;Training on observations %d to %d\n&quot;, $t1, $t2
+
+bundle parms = _(nlambda=20, stdize=1)
+parms.verbosity = 1
+parms.xvalidate = 1
+parms.nfolds = 10
+parms.randfolds = 1
+bundle lret = regls(murdPerPop, X, parms)
+
+# predict for the next 200 observations
+smpl 1001 1200
+series pred = regls_pred(lret, X)
+m = regls_get_stats(murdPerPop, pred)
+printf &quot;Out of sample R-squared %.4f\n\n&quot;, m[2]
+</sample-script>
+</gretl-function-package>
+</gretl-functions>

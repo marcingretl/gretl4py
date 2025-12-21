@@ -1,0 +1,1659 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gretl-functions>
+<gretl-function-package name="extra" no-data-ok="true" minver="2025c" lives-in-subdir="true">
+<author email="&lt;use the mailing list or trackers&gt;">The gretl team</author>
+<version>2025c-git</version>
+<date>2024-03-07</date>
+<description>extra functions for hansl scripting</description>
+<tags>C88</tags>
+<help>
+pdfdoc:extra.pdf
+</help>
+<gretl-function name="gap_filler" type="series">
+ <params count="2">
+  <param name="x" type="series">
+<description>Series to fill</description>
+  </param>
+  <param name="method" type="int" min="0" max="2" default="2">
+<description>Fill method</description>
+<labels count="3">
+"Don't" "Repetition" "Linear interpolation" </labels>
+  </param>
+ </params>
+<code>errorif($datatype &lt; 2, &quot;This function can only be used with time series or panel datasets&quot;)
+string lbl = argname(x)
+
+if method == 0 # do nothing
+  series ret = x
+elif method == 1 # get previous value
+  series tt = time
+  series OK = ok(x)
+
+  if $datatype == 2
+    outside = tt &gt; max(OK ? tt : -1)
+  elif $datatype == 3
+    outside = tt &gt; pmax(OK ? tt : -1)
+  endif
+
+  series ret = x
+  series ret = OK ? x : outside ? NA : ret(-1)
+  string lbl = sprintf(&quot;gap-filled version of %s (with repetition)&quot;, argname(x))
+  setinfo ret --description=&quot;@lbl&quot;
+
+elif method == 2 # interpolate linearly
+  series ret = interpol(x)
+  string lbl = sprintf(&quot;gap-filled version of %s (with interpolation)&quot;, argname(x))
+  setinfo ret --description=&quot;@lbl&quot;
+endif
+
+return ret
+</code>
+</gretl-function>
+<gretl-function name="winsor" type="series">
+ <params count="3">
+  <param name="x" type="series"/>
+  <param name="p" type="scalar" min="0" max="1" default="0.05"/>
+  <param name="phi" type="scalar" min="0" max="1" default="0"/>
+ </params>
+<code># phi (as in p-high) is optional and defines an upper tail mass
+#  different from lower (the default phi == 0 means ignore)
+#
+# This is a rewrite of the function in the winsor.gfn package
+# (originally by JoshuaHe2015@163.com)
+
+smpl --no-missing x
+
+# standard symmetric or asymmetric case?
+phi = !phi ? 1 - p : phi
+# determine bounds
+matrix lowhi = quantile({x}, {p, phi})
+# lower end (and address non-existing extreme quantiles)
+scalar low = ok(lowhi[1]) ? lowhi[1] : min(x)
+x = (x &lt; low) ? low : x
+# upper end
+scalar hi = ok(lowhi[2]) ? lowhi[2] : max(x)
+x = (x &gt; hi) ? hi : x
+
+# prepare output
+string label = sprintf(&quot;winsorized %s (%g,%g)&quot;, argname(x), p, phi)
+setinfo x --description=&quot;@label&quot;
+
+return x
+</code>
+</gretl-function>
+<gretl-function name="nearPSD" type="scalar">
+ <params count="2">
+  <param name="m" type="matrixref"/>
+  <param name="epsilon" type="scalar" min="0" default="0"/>
+ </params>
+<code># TODO: cover the case with some variances == 0
+# (use misszero() after scaling, or something)
+#
+# Forces the matrix m into the positive semi-definite region.
+#
+# Ported from &quot;DomPazz&quot; in Stackoverflow, apparently
+# mimicking the nearPD() function in R.
+# Because of re-scaling ( to correlation matrix ), the
+# epsilon should implicitly apply to the correlation-based
+# eigenvalues.
+#
+# The return value 0 or 1 indicates whether m was altered or not.
+
+matrix s = sqrt(diag(m)) # std dev
+matrix scaling = s * s'
+matrix ms = m ./ scaling	# rescaled
+matrix eigvec
+matrix eigval = eigensym(ms, &amp;eigvec)
+matrix val = (eigval .&gt; epsilon) ? eigval : epsilon	# like xmax
+
+if sum(val .&gt; eigval)	# actually something was changed
+  matrix T = 1 / ( (eigvec .^2) * val )
+
+  # transform vector T to a diagonal matrix
+  matrix temp = I(rows(T))
+  temp[diag] = sqrt(T)
+
+  # and also val
+  matrix temp2 = I(rows(T))
+  temp2[diag] = sqrt(val)
+  matrix B = temp * eigvec * temp2
+  ms = B * B'
+
+  # undo the re-scaling
+  m = ms .* scaling
+
+  return 1
+else
+  return 0
+endif
+</code>
+</gretl-function>
+<gretl-function name="zeroifclose" type="scalar">
+ <params count="2">
+  <param name="m" type="matrixref"/>
+  <param name="thresh" type="scalar" min="0" default="1e-12"/>
+ </params>
+<code># Sets elements to zero if they are really close.
+# The return value 0 or 1 indicates whether m was altered or not.
+# (an older version copied and returned the matrix)
+matrix indicator = (abs(m) .&lt; thresh)
+ret = sum(indicator) &gt; 0
+
+if ret
+  m = indicator ? 0 : m
+endif
+
+return ret
+</code>
+</gretl-function>
+<gretl-function name="eliminate" type="matrix">
+ <params count="1">
+  <param name="vecA" type="matrix" const="true"/>
+ </params>
+<code># Each column of the input vecA is assumed to
+# come from the operation vec(A) on a square
+# matrix, thus rows(vecA) must be a square number.
+# Returns vech(A), which is the result of pre-
+# multiplying vec(A) with the &quot;elimination&quot;
+# matrix L_m.
+# If vecA has several columns, each column is
+# treated separately as described above
+# (and the results stacked side-by-side).
+
+r = sqrt(rows(vecA))
+
+if r != round(r)
+  funcerr &quot;Input must have a square number of rows&quot;
+endif
+
+e = vech(mshape(seq(1, r^2), r, r)')
+
+return vecA[e,]
+</code>
+</gretl-function>
+<gretl-function name="duplicate" type="matrix">
+ <params count="1">
+  <param name="vechA" type="matrix" const="true"/>
+ </params>
+<code># The input is a vector assumed to come from
+# an operation like vech(A).
+# Returns vec(A), which is the result of pre-
+# multiplying vech(A) with the &quot;duplication&quot;
+# matrix D_m.
+# If vechA has several columns, each column is
+# treated separately as described above
+# (and the results stacked side-by-side).
+
+e = vec(unvech(seq(1,rows(vechA))'))
+return vechA[e,]
+</code>
+</gretl-function>
+<gretl-function name="truncnorm" type="matrix">
+ <params count="5">
+  <param name="n" type="int" min="1">
+<description>Number of random variables</description>
+  </param>
+  <param name="m" type="scalar" default="0">
+<description>Mean value</description>
+  </param>
+  <param name="sigma" type="scalar" min="0" default="1">
+<description>Std. deviation</description>
+  </param>
+  <param name="below" type="scalar">
+<description>left truncation value</description>
+  </param>
+  <param name="above" type="scalar">
+<description>right truncation value</description>
+  </param>
+ </params>
+<code>/* Generates truncated normal random values. Set 'below' and/or 'above'
+to NA to skip. Returns a column vector. */
+
+if !ok(m)
+  funcerr &quot;You must pass a valid (non-nan) value for the mean.&quot;
+endif
+
+scalar l = ok(below) ? cnorm((below - m)/sigma) : 0
+scalar r = ok(above) ? cnorm((above - m)/sigma) : 1
+matrix u = l + (r - l) .* muniform(n, 1)
+
+return invcdf(z, u) .* sigma + m
+</code>
+</gretl-function>
+<gretl-function name="scores2x2" type="matrix">
+ <params count="2">
+  <param name="in" type="matrix"/>
+  <param name="verbose" type="bool" default="0"/>
+ </params>
+<code>/*
+Computes some standard score measures for a 2x2
+contingency table of the form:
+Observed
+1      0
+--------------
+Predicted  1 | h(its)  f(alse)
+0 | m(iss)  z(eros)
+and n = h + f + m + z (total observations)
+1) POD / prob of detection = h / (h + m)
+2) POFD / prob of false detection = f / (f + z)
+3) HR / hit rate = (h + z) / n
+4) FAR / false alarm rate = f / (h + f)
+5) CSI / critical success index = h / (h + f + m)
+6) OR / odds ratio = h*z / (f*m)
+7) BIAS / bias score = (h + f) / (h + m)
+8) TSS / true skill stat = POD - POFD
+9) HSS / Heidke skill score = 2 * (h*z - f*m) /
+( (h+m)*(m+z) + (h+f)*(f+z) )
+10) ETS / equitable threat score = (h*z - f*m) /
+( (f+m)*n + (h*z - f*m) )
+11) PRC / precision = h / (h + f)
+12) FSC / F-Score = 2 * (PRC*POD) / (PRC + POD)
+The TSS is also known as the Hanssen-Kuipers score,and is = h / (h+m) - f / (f+z).
+The F-Score can also be expressed as 2 * h / (1 + h + m).
+The input is always sanitized by taking the upper 2x2 part, using absolute values, and integer-ization.
+Warnings are issued if verbose == 1.
+*/
+# (Skip the checks for efficiency if not verbose)
+if verbose
+  if rows(in) != 2 || cols(in) != 2
+    print &quot;Warning: Discarding input beyond 2x2&quot;
+  endif
+  if minr(minc(in)) &lt; 0
+    print &quot;Warning: Converting negative entries&quot;
+  endif
+  if sum(abs( in - int(in) )) &gt; 1e-6
+    print &quot;Warning: Rounding non-integers&quot;
+  endif
+endif
+in = int(abs( in[1:2, 1:2] ))
+scalar h = in[1,1]
+scalar m = in[2,1]
+scalar f = in[1,2]
+scalar z = in[2,2]
+scalar n = sum(in)
+h_m = h + m
+f_z = f + z
+h_z = h + z
+h_f = h + f
+m_z = m + z
+f_m = f + m
+hz = h * z
+fm = f * m
+hzMfm = hz - fm
+POD = h / h_m
+POFD = f / f_z
+HR = h_z / n
+FAR = f / h_f
+CSI = h / (h_f + m)
+OR = hz / fm
+BIAS = h_f / h_m
+TSS = POD - POFD
+HSS = 2 * hzMfm / ( h_m * m_z + h_f * f_z )
+ETS = hzMfm / ( f_m * n + hzMfm )
+PRC = h / h_f
+FSC = 2 * h / (1 + h_m)
+matrix out = {POD; POFD; HR; FAR; CSI; OR; BIAS; TSS; HSS; ETS; PRC; FSC}
+rnameset(out, &quot;POD POFD HR FAR CSI OR BIAS TSS HSS ETS PRC FSC&quot;)
+return out
+</code>
+</gretl-function>
+<gretl-function name="WSRcritical" type="matrix">
+ <params count="3">
+  <param name="n" type="int" min="4">
+<description>number of trials</description>
+  </param>
+  <param name="prob" type="scalar" min="0" max="1" default="0.05">
+<description>two-sided prob mass</description>
+  </param>
+  <param name="forcenorm" type="bool" default="0">
+<description>always use normal approx</description>
+  </param>
+ </params>
+<code>/* Tries to find the critical values (low/hi) where the
+two-sided area to the outside is as close as possible
+to the given prob.
+(Note that &quot;outside&quot; means including the critical values
+themselves in the exact/discrete case.)
+If we end up in the interior region not covered by the
+exact table (for prob far away from 0 and also from 1), we fall back to the normal approx.
+Returned is col vector {low; hi; epv}, where epv is the actual probability mass
+(close to prob but not equal in general for small samples).
+'low' and 'hi' can be non-integers in the normal
+approximation case.
+The normal approximation instead of the exact table values can be
+enforced with the 'forcenorm' argument.
+*/
+approxtol = 0.05
+if n &lt;= 12 &amp;&amp; !forcenorm
+  matrix lohiP = WPtable(n)
+  lohiP[3, ] *= 2	# from one-sided to two-sided pv
+  # find the min deviation from the p-value
+  scalar ix = iminr(abs( lohiP[3, ] - prob ))
+  # now check if we are too far in the interior region
+  # where the exact table doesn't apply and the result
+  # would be misleading;
+  if abs(lohiP[3, ix] - prob ) &lt;= approxtol
+    return lohiP[, ix]
+  else
+    forcenorm = 1 # fall back to normal approx.
+  endif
+endif
+if n &gt; 12 || forcenorm # normal approx.
+  Wmean = n * (n + 1) / 4
+  Wsigma = sqrt(Wmean * (2 * n + 1) / 6)
+  cv = critical(N, prob/2) # upper critical value
+  hi = cv * Wsigma + Wmean
+  lo = Wmean - (hi - Wmean) # symmetric lower
+  return {lo; hi; prob}
+endif
+</code>
+</gretl-function>
+<gretl-function name="WSRpvalue" type="scalar">
+ <params count="3">
+  <param name="n" type="int" min="4">
+<description>number of trials</description>
+  </param>
+  <param name="W" type="scalar" min="0">
+<description>W test stat</description>
+  </param>
+  <param name="forcenorm" type="bool" default="0">
+<description>always use normal approx</description>
+  </param>
+ </params>
+<code>/* We return P(X &gt;= W), _not_ strict inequality!
+(in contrast to an earlier version!)
+In the interior region not covered by the exact table, the true value is
+&gt;= 12.5% according to WPtable, so typically based on such a p-value
+H0 would not be rejected.
+We fall back to the normal approximation in this region.
+In the extreme outer regions not explicitly covered by the table, the deviation
+from 0 or 1 will be smaller than 0.5% = 0.005. We return
+values 1e-3 or 1 - 1e-3 as an approximation here.
+The normal approximation instead of the exact table values can be
+enforced with the 'forcenorm' argument.
+
+Source of the table: Wilfrid J Dixon and Frank J. Massey, Jr., Introduction to Statistical Analysis, 2nd ed. (New York: McGraw-Hill, 1957), pp. 443-444.
+*/
+# input check
+if W &gt; n * (n+1) / 2
+  printf &quot;Warning: stat %d out of range for %d trials!\n&quot;, W, n
+  return NA
+endif
+if W != int(W)
+  # for a non-integer input (only possible for bindings?)
+  # we always fall back to the normal approx
+  forcenorm = 1
+else
+  W = int(W)	# should be redundant, but who knows (numerically)
+endif
+approxdiff = 1e-3
+if n &lt;= 12 &amp;&amp; !forcenorm
+  if W == 0	# trivial but possible case
+    return 1
+  endif
+  matrix lohiP = WPtable(n)
+  if W &gt; lohiP[1, cols(lohiP)]  &amp;&amp;  W &lt; lohiP[2, cols(lohiP)]
+    # (&gt; max left, or &lt; min right) no exact values possible,
+    # fall back to normal approx
+    forcenorm = 1
+  elif W &lt;= lohiP[1, 1]	# extreme lower tail
+    return 1 - approxdiff
+  elif W &gt; lohiP[2, 1]	# extreme upper tail
+    return approxdiff
+  elif W &lt;= lohiP[1, cols(lohiP)] # covered in lower tail
+    # get the &lt;= W-1 prob
+    scalar P = selifc( lohiP[3,], lohiP[1,] .= (W - 1) )
+    # convert to &gt; (W-1) ==: &gt;= W prob
+    return 1 - P
+  elif W &gt;= lohiP[2, cols(lohiP)]	# covered in upper tail
+    scalar P = selifc( lohiP[3,], lohiP[2,] .= W )
+    return P
+  endif
+endif # exact values
+if n &gt; 12 || forcenorm # normal approx.
+  Wmean = n * (n + 1) / 4
+  Wsigma = sqrt(Wmean * (2 * n + 1) / 6)
+  Wstar = (W - Wmean) / Wsigma
+  return pvalue(N, Wstar)
+endif
+</code>
+</gretl-function>
+<gretl-function name="powerset" type="strings">
+ <params count="1">
+  <param name="S" type="strings"/>
+ </params>
+<code>/* Computes the powerset of the input S, i.e. all possible combinations
+of the string elements in S. (Including the empty set / empty
+string &quot;&quot;.) Each combination yields one string in the output array.
+Being a set, the ordering is not defined. */
+
+scalar l = nelem(S)
+scalar N = 2^l
+matrix P = zeros(N, l)
+matrix s = seq(0, N-1)'
+strings PS = array(N)
+
+loop i = 1..l
+  matrix a = s % 2
+  P[,i] = a
+  s = (s - a) / 2
+endloop
+
+loop i = 1..N
+  string c = &quot;&quot;
+  loop j = 1..l
+    if P[i, j]
+      c = c ~ &quot; &quot; ~ S[j]
+    endif
+  endloop
+  PS[i] = c
+endloop
+
+return PS
+</code>
+</gretl-function>
+<gretl-function name="onemode" type="matrix">
+ <params count="1">
+  <param name="v" type="matrix">
+<description>Vector of values</description>
+  </param>
+ </params>
+<code>/* Returns one mode (modal value) of the input data v. If that is multi-modal,
+details of internal computer arithmetic can influence which of the modes
+is actually found. Returns a 2-element column vector with the modal value
+and its absolute frequency. Returns a 2-element column vector with the
+modal value and its absolute frequency. If v is an empty matrix (comprises
+only nan values) a 1x1 matrix with nan is returned. */
+
+matrix ret = mshape(NA, 1, 1)
+matrix v = vec(v)
+
+if sum(ok(v)) == 0
+  printf &quot;\nError: No valid input data.\n&quot;
+else
+  matrix E = ecdf(v)
+  matrix howmuch = diff(0 | E[,2])[2:]    # make sure 1st is also diffed
+  /* if multi-modal selection is not clear (finite precision digital
+  arithmetic) */
+  matrix where = imaxc(howmuch)
+
+  matrix ret = E[where, 1] | howmuch[where]
+  rnameset(ret, &quot;Mode frequency&quot;)
+endif
+
+return ret
+</code>
+</gretl-function>
+<gretl-function name="drill" type="matrix">
+ <params count="3">
+  <param name="x" type="matrices" const="true"/>
+  <param name="rowspec" type="matrix" optional="true"/>
+  <param name="colspec" type="matrix" optional="true"/>
+ </params>
+<code># This function &quot;drills through&quot; a matrix array and returns a matrix;
+# for example, drill(x, 2, 3) returns a vector with the [2,3] elements
+# of all matrices in the x array. &quot;0&quot; means &quot;all&quot;. Returns an empty
+# 1x1 matrix in case of any error.
+
+# NOTA BENE: all matrices must be the same size
+# (might perhaps be relaxed in the future?)
+
+matrix ret = {}
+scalar n = nelem(x)
+scalar same_dim = 1
+
+if n == 0
+  return ret
+endif
+
+### check sizes
+nr = rows(x[1])
+nc = cols(x[1])
+
+loop i = 2..n
+  same_dim = same_dim &amp;&amp; (rows(x[i]) == nr) &amp;&amp; (cols(x[i]) == nc)
+  if !same_dim
+    printf &quot;Matrix number %d with different dimensions\n&quot;, i
+    funcerr &quot;Not all matrices are the same size.&quot;
+  endif
+endloop
+
+### process specs
+matrix rs = seq(1, nr)'	# default
+if exists(rowspec)
+  rs = (rowspec[1] == 0) ? rs : vec(rowspec) # force to column
+endif
+
+matrix cs = seq(1, nc)' # default
+if exists(colspec)
+  cs = (colspec[1] == 0) ? cs : vec(colspec) # force to column
+endif
+
+### check for multiple or illegal specs
+scalar nrspec = rows(rs)
+scalar ncspec = rows(cs)
+
+if xmin(nrspec, ncspec) &gt; 1
+  funcerr &quot;Cannot have multiple row and column specifications&quot;
+
+elif minc(rs|cs) &lt; 0
+  funcerr &quot;Negative specification not allowed&quot;
+
+elif maxc(rs) &gt; nr
+  printf &quot;(matrices have %d rows, but %d wanted)\n&quot;, nr, maxc(rs)
+  funcerr &quot;Incorrect row specification&quot;
+
+elif maxc(cs) &gt; nc
+  printf &quot;(matrices have %d columns, but %d wanted)\n&quot;, nc, maxc(cs)
+  funcerr &quot;Incorrect column specification&quot;
+endif
+
+### do the actual drilling
+if nrspec == 1
+  ret = flatten(x)[rs,]
+  ret = transp(mshape(ret, nc, n))
+  ret = ret[,cs]
+
+elif ncspec == 1
+  ret = flatten(x,1)[,cs]
+  ret = mshape(ret, nr, n)
+  ret = ret[rs,]
+endif
+
+return ret
+</code>
+</gretl-function>
+<gretl-function name="combinations" type="matrix">
+ <params count="2">
+  <param name="from" type="matrix">
+<description>Set of all choices</description>
+  </param>
+  <param name="h" type="int" min="1">
+<description>Number of selected choices</description>
+  </param>
+ </params>
+<code>/* If &quot;from&quot; is a vector with n elements, this function returns a
+matrix whose rows are all the possible subsets with h elements; for h&gt;2, a recursive algorithm is used.
+
+For example: combinations({1,2,3}, 2) returns
+
+1   2
+1   3
+2   3
+
+return: matrix with n! / (h! * (n-h)!) rows if successful, otherwise a 1x1 matrix with an NA value. */
+
+if rows(from) &gt; 1 &amp;&amp; cols(from) &gt; 1
+  string s = argname(from)
+  printf &quot;\nError: %s is not a vector\n&quot;, strlen(s) ? s : &quot;argument 1&quot;
+
+  return {NA}
+endif
+
+scalar n = nelem(from)
+if h &gt; n
+  string s = argname(from)
+  printf &quot;\nError: number of elements of %s less than argument 2\n&quot;, strlen(s) ? s : &quot;argument 1&quot;
+
+  return {NA}
+endif
+
+# special cases
+if h == 1
+  return vec(from)
+elif h == 2
+  matrix a = mshape(from, n, n)
+  return (a')[lower] ~ a[lower]
+elif h == n
+  return vec(from)'
+elif h == n-1
+  return mshape(mshape(from, n, n-1)', n, n-1)
+endif
+
+matrix ret = {}
+scalar hh = h-1
+loop i = 1 .. (n-hh)
+  ret |= from[i] ~ combinations(from[i+1:], hh)
+endloop
+
+return ret
+</code>
+</gretl-function>
+<gretl-function name="qformvech" type="matrix">
+ <params count="1">
+  <param name="Xt" type="matrix" const="true"/>
+ </params>
+<code># vech(X'AX) = P (X ** X)' Q vech(A) = G vech(A)
+# this function returns G
+
+n = rows(Xt)
+m = round(n * (n+1) / 2)
+matrix s = seq(1,m)
+matrix P = vec(upper(unvech(s'))) .= s
+
+n = cols(Xt)
+m = round(n * (n+1) / 2)
+s = seq(1,m)
+matrix Q = vec(upper(unvech(s'))) .= s
+Q =   Q || vec(lower(unvech(s'))) .= s
+
+matrix ret = P'(Xt ** Xt) * Q
+return ret
+</code>
+</gretl-function>
+<gretl-function name="splitfname" type="strings">
+ <params count="1">
+  <param name="fn" type="string" const="true"/>
+ </params>
+<code>/* The idea is to take a file name or full path and extract
+up to 3 components:
+1. The path prefix (may be empty; without the trailing / or \ )
+2. The &quot;base&quot; component of the file name, without the
+extension and without the path prefix
+3. The file extension (without the dot; may be empty)
+
+Example:
+Input string: &quot;/what/on/earth/isthisfile.gdt&quot;
+Output:
+defarray(&quot;/what/on/earth&quot;, &quot;isthisfile&quot;, &quot;gdt&quot;)
+
+(To separate the path prefix we just look for the last / _OR_
+\ (forward or backward slash) and also think of the possibility of //.)
+
+We use the \t character as internal separator because \n doesn't
+work properly with strsplit (bug fixed in gretl Dec 17th, 2019, for 2019d).
+*/
+
+hasslash = instring(fn, &quot;/&quot;) || instring(fn, sprintf(&quot;\\&quot;))
+
+# Test for a dot in a position where it signals an extension
+# (not the Unixy other meanings)
+hasext = 0
+if regsub(fn, &quot;.*[\w\s]+\.[\w\s]+&quot;, &quot;!&quot;) == &quot;!&quot; &amp;&amp; (fn != &quot;!&quot;)
+  hasext = 1
+endif
+
+if hasext &amp;&amp; hasslash    # the full monty
+  string sepa = regsub(fn, &quot;(.*)[/\\]+([^/\\]*)\.([^\./\\]*)&quot;, &quot;\1\t\2\t\3&quot;)
+  strings out = strsplit(sepa, &quot;\t&quot;)
+  splitfname_check(out, 3)
+
+elif hasext           # only base file name and ext, no prefix
+  string sepa = regsub(fn, &quot;(.*)\.([^\.]*)&quot;, &quot;\1\t\2&quot;)
+  strings parts = strsplit(sepa, &quot;\t&quot;)
+  splitfname_check(parts, 2)
+
+  strings out = defarray(&quot;&quot;) + parts # empty prefix first
+
+elif hasslash        # no extension
+  string sepa = regsub(fn, &quot;(.*)[/\\]+([^/\\]*)&quot;, &quot;\1\t\2&quot;)
+  strings parts = strsplit(sepa, &quot;\t&quot;)
+  splitfname_check(parts, 2)
+
+  strings out = parts + defarray(&quot;&quot;) # empty ext last
+
+else                 # no slash, no ext, just simple filename
+  strings out = defarray(&quot;&quot;, fn, &quot;&quot;)
+endif
+
+return out
+</code>
+</gretl-function>
+<gretl-function name="multi_instrings" type="matrix">
+ <params count="2">
+  <param name="lookinhere" type="strings"/>
+  <param name="tofind" type="strings"/>
+ </params>
+<code># Returns the positions (indices) in 'lookinhere' where any of the
+# strings from 'tofind' occur.
+# If there are duplicates in 'tofind' then the output may also
+# contain duplicate indices. Use uniq() or values() afterwards
+# if needed.
+# This function requires version 2020a.
+
+matrix which = {}
+
+# The case !nelem(tofind) used to be (in SVAR) some sort of default
+# and returned all indices instead of none
+# (don't remember why)
+# which = seq(1, nelem(lookinhere))
+
+if nelem(tofind)
+  loop n = 1..nelem(tofind)
+    which |= instrings(lookinhere, tofind[n])
+  endloop
+endif
+
+return which # may still be empty
+</code>
+</gretl-function>
+<gretl-function name="mat2latex" type="string">
+ <params count="2">
+  <param name="mprint" type="matrix"/>
+  <param name="useropts" type="bundle" optional="true"/>
+ </params>
+<code>scalar nc = cols(mprint)
+scalar nr = rows(mprint)
+opts = m2ltx_default_opts(nr, nc)
+
+strings labs = rnameget(mprint)
+if nelem(labs)
+  opts.rnames = labs
+endif
+
+strings labs = cnameget(mprint)
+if nelem(labs)
+  opts.cnames = labs
+endif
+
+if exists(useropts)
+  # override defaults
+  opts = useropts + opts
+endif
+
+fmtstr = sprintf(&quot;%%.%df&quot;, opts.decimals)
+string ret = &quot;&quot;
+outfile --buffer=ret --quiet
+
+  printf &quot;\begin{tabular}{%s}\n&quot;, opts.format
+  printf &quot;\\hline\n &amp;\t&quot;
+
+  # Print column names
+  n = nelem(opts.cnames)
+  loop i = 1 .. n
+    printf &quot;%s &quot;, opts.cnames[i]
+    if i&lt;n
+      printf &quot; &amp;\t &quot;
+    else
+      printf &quot;\\\ \hline\n&quot;
+    endif
+  endloop
+
+  # Printf Rows
+  loop i = 1 .. nr
+    printf &quot;%s&quot;, opts.rnames[i]
+    loop j = 1 .. nc
+      scalar x = mprint[i,j]
+      if isnan(x)
+        printf &quot; &amp; %s\t&quot;, opts.nacode
+      else
+        printf &quot; &amp; @fmtstr&quot;, x
+      endif
+      if j &lt; nc
+        printf &quot;\t&quot;
+      else
+        printf &quot; \\\ \n&quot;
+      endif
+    endloop
+  endloop
+
+  printf &quot;\\hline\n&quot;
+  printf &quot;\end{tabular}\n&quot;
+
+end outfile
+
+return ret
+</code>
+</gretl-function>
+<gretl-function name="correspondence" type="scalar">
+ <params count="2">
+  <param name="x" type="series"/>
+  <param name="y" type="series"/>
+ </params>
+<code># This function takes two series and establishes if there's a
+# 1-to-1 relationship between them, in which case it returns 2.
+# If there's a 1-to-n relationship, it returns 1. If there's
+# no relationship, it returns 0.
+
+# recode values so as to ensure we only get integer values
+matrix v = values(y)
+y = replace(y, v, seq(1,rows(v)))
+matrix v = values(x)
+x = replace(x, v, seq(1,rows(v)))
+
+matrix H = mxtab(x, y) .&gt; 0
+is_a_function = maxr(sumc(H)) == 1
+is_1_to_1 = maxc(sumr(H)) == 1
+
+if is_a_function
+  ret = is_1_to_1 ? 2 : 1
+else
+  ret = 0
+endif
+
+return ret
+</code>
+</gretl-function>
+<gretl-function name="fracorder" type="matrix">
+ <params count="3">
+  <param name="x" type="series" const="true"/>
+  <param name="order" type="int" min="0" default="0"/>
+  <param name="verbosity" type="bool" default="0"/>
+ </params>
+<code># order == 0 means to leave gretl's default;
+# Applies all available estimators in gretl:
+# - Local Whittle
+# - Geweke Porter-Hudak
+# - Hurst (exponent minus 0.5)
+# (also note the generalized Hurst contributed function package)
+# This function requires gretl 2020c.
+
+# translate the wanted order and whether to have printouts
+string sorder = !order    ? &quot;&quot; : sprintf(&quot;%d&quot;, order)
+string sverb  = verbosity ? &quot;&quot; : &quot;--quiet&quot;
+
+# Local Whittle and Geweke Porter-Hudak
+fractint x @sorder @sverb
+# point, se, teststat, pv
+matrix LocWhit    = vec($result)' ~ $test ~ $pvalue
+fractint x @sorder --gph @sverb
+matrix GewPorthud = vec($result)' ~ $test ~ $pvalue
+
+# Hurst
+matrix Hurst = mshape(NA, 1, 4)
+if $nobs &lt; 128 &amp;&amp; verbosity
+  print &quot;Warning: not enough obs for Hurst, leaving result row as NA.&quot;
+elif $nobs &gt;= 128
+  if verbosity
+    hurst x --plot=none
+  else
+    outfile null    # workaround for the missing quiet option of hurst
+      hurst x --plot=none
+    end outfile     # This is in &gt;=2018b, so OK here.
+  endif
+  # shifted to be comparable to d
+  Hurst[1:2] = ($result[1] - 0.5) ~ $result[2]
+endif
+
+matrix ret = LocWhit | GewPorthud | Hurst
+cnameset(ret, &quot;estim SE teststat pval&quot;) # is in &gt;= 2018a
+rnameset(ret, &quot;LocalWh GPH Hurst&quot;)
+
+return ret
+</code>
+</gretl-function>
+<gretl-function name="put_outofsmpl" type="bundle">
+ <params count="1">
+  <param name="modorsys" type="bundle" const="true"/>
+ </params>
+<code># Input must be a $model or $system -like bundle (pointerized).
+# Adds the following three matrix elements to the input bundle
+#   and returns the resulting enlarged bundle:
+# initY: initial values of the endogenous variables
+#   (empty 0x0 if no endogenous lags in model or system)
+# futureY: future (post-sample) values of the endogeneous if they
+#   exist, else empty 0x0
+# futureX: future (post-sample) values of the exogenous if they exist,
+#   else empty 0x0
+#
+# Note that capital Y and X terminology is used for sake of
+# generality, even if Y and X just hold a single series.
+
+if  modorsys.t2 &lt; $tmax
+  funcerr &quot;not implemented: case of sample_t2 &lt; t2&quot;
+  # (but sample_t2 does not exist after 'system' (gretl 2022c))
+elif modorsys.t2 &gt; $tmax
+  funcerr &quot;shouldn't happen&quot;
+endif
+
+if !inbundle(modorsys, &quot;neqns&quot;)
+  # this means we must be coming from $model
+  matrices M = get_past_future_from_model(modorsys)
+else
+  matrices M = get_past_future_from_system(modorsys)
+endif
+return modorsys + _(initY = M[1], futureY = M[2], futureX = M[3])
+</code>
+</gretl-function>
+<gretl-function name="drawbootres" type="matrix">
+ <params count="3">
+  <param name="U" type="matrix" const="true"/>
+  <param name="bparams" type="bundle" optional="true">
+<description>options</description>
+  </param>
+  <param name="bootcode" type="int" min="1" max="5" default="1">
+<description>bootstrap type code</description>
+<labels count="5">
+"resampling" "wildN" "wildR" "wildM" "moving blocks" </labels>
+  </param>
+ </params>
+<code>/*
+Construct a new draw of residuals for bootstrapping, where U
+is a Txn matrix.
+U can be original residuals or can be some pre-processed input.
+(See for example the prepres() function in SVAR - the pre-processing is
+not done here to avoid doing it repeatedly.)
+
+The bootstrap type can be chosen with the &quot;btypestr&quot; string member of
+the bparams bundle, or by the integer function argument &quot;bootcode&quot;; the
+bundle-based spec takes precedence.
+Currently supported options:
+code | bparams.btypestr string spec| explanation
+
+1    | any word starting with &quot;re&quot; | traditional residual resampling
+|                             |  (using gretl's resample())
+2    | &quot;wildN&quot; or &quot;wild&quot;           | wild bootstrap, normal distrib.
+3    | &quot;wildR&quot;                     | wild bootstrap, Rademacher distrib.
+4    | &quot;wildM&quot;                     | wild bootstrap, Mammen distrib.
+5    | any word starting with &quot;mov&quot;| RBMBB Brüggemann, Jentsch, Trenkler
+|  or &quot;MBB&quot;                   |  (2016)
+
+For the moving-blocks bootstrap (5) the block length can be set with the
+bundle scalar member bparams.movblocklen. Default is T/10 (truncated).
+
+Other bootstrap types may be added in the future.
+(The U input could also be empty then, e.g. for a purely parametric-
+distribution bootstrap.)
+*/
+
+## process the boottype specification
+# (this could perhaps be done more professionally with bcheck()...)
+
+if exists(bparams.btypestr)
+  # The boottype spec is optional, because otherwise the int arg bootcode
+  # is used automatically.
+
+  errorif(typeof(bparams.btypestr) != 4, &quot;btypestr element must be string&quot;)
+
+  string bt = tolower(bparams.btypestr)
+  if bt[1:2] == &quot;re&quot;
+    bootcode = 1
+  elif bt == &quot;wild&quot; || bt == &quot;wildn&quot;
+    bootcode = 2
+  elif bt == &quot;wildr&quot;
+    bootcode = 3
+  elif bt == &quot;wildm&quot;
+    bootcode = 4
+  elif bt[1:3] == &quot;mov&quot; || bt[1:3] == &quot;mbb&quot;
+    bootcode = 5
+  else
+    printf &quot;Unknown btypestr option, using bootcode %d.\n&quot;, bootcode
+  endif
+endif
+
+# process extra input
+bl = 0 	# signals default data-based choice
+if exists(bparams.moveblocklen) &amp;&amp; bootcode == 5
+  bl = round(bparams.moveblocklen)
+  errorif(bl &lt; 1, &quot;moving block length must be 1 or larger&quot;)
+endif
+
+## standard
+if bootcode == 1
+  return resample(U)
+endif
+
+T = rows(U)
+
+## wild
+if bootcode &lt;= 4
+
+  if bootcode == 2
+    # Normal
+    matrix w = mnormal(T)
+  elif bootcode == 3
+    # Rademacher
+    matrix w = muniform(T) .&lt; 0.5 ? 1 : -1
+  elif bootcode == 4
+    # Mammen
+    scalar s5 = sqrt(5)
+    scalar p = (0.5/s5) * (s5 + 1)
+    matrix w = 0.5 + (muniform(T) .&lt; p ? -s5/2 : s5/2)
+  endif
+
+  return U .* w
+
+  ## residual-based moving blocks
+elif bootcode == 5
+  errorif(T &lt; 3, &quot;drawbootres: moving blocks needs at least 3 obs&quot;)
+  if bl &gt;= T
+    print &quot;Warning: block length too large, falling back to auto&quot;
+    bl = 0
+  endif
+  if bl == 0	# use default
+    bl = xmax(2, floor(T/10))
+  endif
+
+  # necessary number of blocks
+  s = ceil(T/bl)
+  # blocks starting points
+  matrix c = mrandgen(i, 1, T-bl+1, 1, s)
+  # convert to indices of all needed obs
+  matrix ndx = vec(c .+ seq(0, bl-1)')
+
+  ## recentring
+  matrix m = mshape(NA, bl, cols(U))
+  # calculate respective averages (bl different ones)
+  loop i = 1..bl
+    m[i,] = meanc(U[i: T-bl+i,])
+  endloop
+
+  ndx = ndx[1:T]	# cut off &quot;overhanging tail&quot;
+  return U[ndx,] - (ones(s) ** m)[1:T, ]
+
+else
+  funcerr &quot;Shouldn't happen&quot;
+endif
+</code>
+</gretl-function>
+<gretl-function name="combine" type="series">
+ <params count="2">
+  <param name="a" type="series" const="true"/>
+  <param name="b" type="series" const="true"/>
+ </params>
+<code>USE_AGG = 0 # experimentation seems to indicate 0 is faster
+ainfo = getinfo(a)
+binfo = getinfo(b)
+
+namea = argname(a)
+if !ainfo.discrete
+  msg = sprintf(&quot;Series %s is not discrete&quot;, namea)
+  funcerr msg
+endif
+
+nameb = argname(b)
+if !binfo.discrete
+  msg = sprintf(&quot;Series %s is not discrete&quot;, nameb)
+  funcerr msg
+endif
+
+have_labels = ainfo.has_string_table &amp;&amp; binfo.has_string_table
+
+if USE_AGG
+  list X = a b
+  matrix C = aggregate(const, X)
+
+  C = selifr(C, C[,3])
+  tot = rows(C)
+  C[,3] = seq(1, tot)'
+  matrix va = values(C[,1])
+  matrix vb = values(C[,2])
+  scalar na = rows(va)
+  scalar nb = rows(vb)
+else
+  M = mxtab(a, b)
+  matrix va = values(a)
+  matrix vb = values(b)
+  scalar na = rows(va)
+  scalar nb = rows(vb)
+  present = vec(M.&gt;0)
+  C = vec(mshape(va, na, nb)) ~ vec(mshape(vb, nb, na)')
+
+  C = selifr(C, present)
+  tot = rows(C)
+  C = C ~ seq(1, tot)'
+endif
+
+series ret = NA
+if na &lt; nb
+  loop i = 1 .. na
+    vi = va[i]
+    r = selifr(C, C[,1] .= vi)
+    if rows(r)
+      smpl a == vi --restrict --replace
+      # printf &quot;vi = %d, n = %d\n&quot;, vi, $nobs
+      ret = replace(b, r[,2], r[,3])
+    endif
+  endloop
+else
+  loop i = 1 .. nb
+    vi = vb[i]
+    r = selifr(C, C[,2] .= vi)
+    if rows(r)
+      smpl b == vi --restrict --replace
+      ret = replace(a, r[,1], r[,3])
+    endif
+  endloop
+endif
+
+if have_labels
+  strings lab = array(tot)
+  strings vla = strvals(a)
+  strings vlb = strvals(b)
+  loop l = 1 .. tot
+    i = C[l,1]
+    j = C[l,2]
+    s = vla[i] ~ &quot;/&quot; ~ vlb[j]
+    len = strlen(s) &gt; 33 ? 33 : strlen(s)
+    lab[l] = s[1:len]
+  endloop
+
+  catch stringify(ret, lab)
+  if $error
+    printf &quot;Warning: non-unique auto value labels. None generated.\n&quot;
+  endif
+
+endif
+
+smpl full
+string des = sprintf(&quot;Combination of %s and %s&quot;, namea, nameb)
+setinfo ret --description=&quot;@des&quot;
+
+return ret
+</code>
+</gretl-function>
+<gretl-function name="get_settings" type="bundle">
+ <params count="1">
+  <param name="key" type="string" optional="true" const="true"/>
+ </params>
+<code>/* Function to get a bundle containing libset settings
+(either all of them or one specific one). Added 2024-03-07.
+Correct handling of floating point values depends on git
+master as of 2024-03-06.
+*/
+scalar lookup = exists(key)
+bundle ret
+string buf
+outfile --buffer=buf --quiet
+  set
+end outfile
+string line setvar setval
+scalar gotkey = 0
+scalar v
+loop while getline(buf, &amp;line) &amp;&amp; !gotkey
+  if sscanf(line, &quot;%s = %s&quot;, setvar, setval) == 2
+    if setvar == &quot;workdir&quot;
+      setval = sprintf(&quot;%s&quot;, $workdir)
+    endif
+    if lookup &amp;&amp; setvar == key
+      v = atof(setval)
+      ret[setvar] = ok(v) ? v : setval
+      gotkey = 1
+    elif !lookup
+      v = atof(setval)
+      ret[setvar] = ok(v) ? v : setval
+    endif
+  endif
+endloop
+if lookup
+  # clean-up call
+  getline(buf, null)
+  # and error check
+  if !gotkey
+    printf &quot;'%s': key was not found\n&quot;, key
+  endif
+endif
+return ret
+</code>
+</gretl-function>
+<gretl-function name="splitfname_check" type="void" private="1">
+ <params count="2">
+  <param name="out" type="strings"/>
+  <param name="num" type="int"/>
+ </params>
+<code># Just a stupid debug checker and error catcher
+# for splitfname.
+if nelem(out) != num
+  print out
+  funcerr &quot;Shouldn't happen (weird input?)&quot;
+endif
+</code>
+</gretl-function>
+<gretl-function name="auto_names" type="strings" private="1">
+ <params count="2">
+  <param name="n" type="int"/>
+  <param name="prefix" type="string"/>
+ </params>
+<code>strings ret = array(n)
+loop i = 1 .. n
+  ret[i] = sprintf(&quot;%s %d&quot;, prefix, i)
+endloop
+return ret
+</code>
+</gretl-function>
+<gretl-function name="m2ltx_default_opts" type="bundle" private="1">
+ <params count="2">
+  <param name="r" type="scalar"/>
+  <param name="c" type="scalar"/>
+ </params>
+<code>bundle ret = null
+scalar ret.decimals = 3
+string ret.nacode = &quot;&quot;
+strings ret.rnames = auto_names(r, &quot;Row&quot;)
+strings ret.cnames = auto_names(c, &quot;Col&quot;)
+
+string s = &quot;l&quot;
+loop i = 1 .. c
+  s = s ~ &quot;c&quot;
+endloop
+ret.format = s
+return ret
+</code>
+</gretl-function>
+<gretl-function name="lowlevelcopy" type="matrix" private="1">
+ <params count="3">
+  <param name="L" type="list" const="true"/>
+  <param name="start" type="int" min="1"/>
+  <param name="stop" type="int" min="1"/>
+ </params>
+<code># This function is necessary because the out-of-sample data
+# access with the index-in-square-brackets syntax apparently only
+# works obs-by-obs, not over a range.
+#
+# We assume that 'start' and 'stop' apply to all members of
+# L equally, else errors may occur or not all available data
+# will be fetched.
+
+matrix m = mshape(NA, stop - start + 1, nelem(L))
+loop i = start..stop
+  matrix row = {}
+  loop foreach s L
+    row ~= L.$s[i]
+  endloop
+  m[i -start+1, ] = row
+endloop
+cnameset(m, varnames(L))
+rnameset(m, obslabel(seq(start,stop)))
+return m
+</code>
+</gretl-function>
+<gretl-function name="trygrabvalue" type="scalar" private="1">
+ <params count="2">
+  <param name="y" type="series" const="true"/>
+  <param name="i" type="int"/>
+ </params>
+<code># This function is only necessary as a workaround
+# for a bug with 'catch' in gretl 2022c, which prevents
+# to use catch directly in a loop, at least when grabbing
+# from a series datapoints that may not exist.
+
+catch scalar value = y[i]
+return $error ? NA : value
+</code>
+</gretl-function>
+<gretl-function name="beyond_tmax" type="scalar" private="1">
+ <params count="1">
+  <param name="y" type="series" const="true"/>
+ </params>
+<code># Tries to determine how much future data
+# is available in the background dataset in outer scope
+# beyond the active sample that was passed to the function(s).
+# (Because $tmax only refers to the &quot;official&quot; inner scope.)
+# A trial-and-error method is used.
+
+tau = 1
+loop while TRUE
+
+  value = trygrabvalue(y, $tmax + tau)
+  # (workaround; see comment of the trygrabvalue function)
+
+  if missing(value)
+    break
+    #         else
+    #             print obslabel($tmax + tau)
+    #             print value
+  endif
+  tau++
+endloop
+return tau-1 # last working offset index (can be zero)
+</code>
+</gretl-function>
+<gretl-function name="getendo" type="list" private="1">
+ <params count="1">
+  <param name="sys" type="bundle" const="true"/>
+ </params>
+<code>errorif(!instring(&quot;var vecm system&quot;, sys.command), &quot;input doesn't seem to be a $system bundle&quot;)
+string cmd = sys.command
+
+if cmd == &quot;system&quot;
+  list endo = sys.endog_vars
+
+elif cmd == &quot;var&quot; || cmd == &quot;vecm&quot;
+  list endo = sys.ylist
+
+endif
+return endo
+</code>
+</gretl-function>
+<gretl-function name="getorder" type="scalar" private="1">
+ <params count="1">
+  <param name="sys" type="bundle" const="true"/>
+ </params>
+<code>errorif(!instring(&quot;var vecm system&quot;, sys.command), &quot;input doesn't seem to be a $system bundle&quot;)
+
+# We always infer the endogenous lag order from the A
+# matrix shape and do not directly use the &quot;order&quot; element.
+# The reason is that for a vecm the meaning of order was
+# different until 2022. (Referring to the differences.)
+# (But with more recent gretl versions we could in principle
+#  also use &quot;order&quot;.)
+
+return cols(sys.A) / sys.neqns
+</code>
+</gretl-function>
+<gretl-function name="get_past_future_from_model" type="matrices" private="1">
+ <params count="1">
+  <param name="mod" type="bundle" const="true"/>
+ </params>
+<code>errorif(nelem(mod.ylist) != 1, &quot;single equation results expected&quot;)
+matrix init_y, future_y, future_X
+
+## initial endo values
+maxlag = inbundle(mod, &quot;maxlag&quot;) ? mod.maxlag : 0
+if maxlag
+  init_y = lowlevelcopy(mod.ylist, mod.t1 - maxlag, mod.t1 - 1)
+endif
+
+## future values of endo / exo variables
+
+future_offset = beyond_tmax(mod.ylist[1])
+# (here we must _not_ create a copy of the series,
+#  else it is restricted to the current sample!)
+
+if future_offset	# some future is available
+  # FIXME: so far this only works for the
+  # case that mod.t2 == mod.sample_t2,
+  # which is not guaranteed, strictly speaking
+
+  start = mod.t2 + 1
+  stop  = mod.t2 + future_offset
+
+  # endogenous
+  future_y = lowlevelcopy(mod.ylist, start, stop)
+
+  # exogenous
+  future_X = lowlevelcopy(mod.xlist, start, stop)
+endif
+return defarray(init_y, future_y, future_X)
+</code>
+</gretl-function>
+<gretl-function name="get_past_future_from_system" type="matrices" private="1">
+ <params count="1">
+  <param name="sys" type="bundle" const="true"/>
+ </params>
+<code>/* Return the initial values of the endogenous and the future
+(out-of-sample) values of both the endogenous and exogenous. */
+
+errorif(!inbundle(sys, &quot;neqns&quot;), &quot;var/vecm or system bundle expected&quot;)
+matrix init_Y, future_Y, future_X
+
+list endo = getendo(sys)
+order     = getorder(sys)
+
+## initial endo values
+if order
+  init_Y = lowlevelcopy(endo, sys.t1 - order, sys.t1 - 1)
+endif
+
+## future values of endo / exo variables
+future_offset = beyond_tmax(endo[1])
+if future_offset	# some future is available
+  # FIXME: so far this only works for the
+  # case that sys.t2 == sys.sample_t2,
+  # which is not guaranteed, strictly speaking
+  start = sys.t2 + 1
+  stop  = sys.t2 + future_offset
+
+  # endogenous
+  future_Y = lowlevelcopy(endo, start, stop)
+
+  # exogenous
+  list exo = sys.xlist
+
+  if sys.command == &quot;system&quot;
+    # Here we give the values of any appearing exogenous
+    # variable, we don't separate the different equations.
+    # (Unfortunately, it's not so easy to identify and
+    #  remove the deterministics in the &quot;system&quot;,
+    #  except the constant.)
+    exo -= sys.predet_vars # const
+  endif
+
+  if nelem(exo)
+    future_X = lowlevelcopy(exo, start, stop)
+  endif
+endif
+
+return defarray(init_Y, future_Y, future_X)
+</code>
+</gretl-function>
+<gretl-function name="WPtable" type="matrix" private="1">
+ <params count="1">
+  <param name="n" type="int" min="4" default="12">
+<description>number of trials</description>
+  </param>
+ </params>
+<code>/*
+Upper and Lower Percentiles of the Wilcoxon Signed
+Rank Statistic W
+Returns a 3 x M matrix of critical values:
+(M differs for each n.)
+1st row: lower crit. vals, always ascending
+2nd row: upper crit. vals, always descending
+3rd row: corresponding P(X &lt;= lower crit.val)
+( equal to P(X &gt;= upper crit.val) )
+*/
+if n == 4
+  return {0, 1} | {10, 9} | {0.062, 0.125}
+elif n == 5
+  return seq(0, 3) | seq(15, 12) | {0.031,0.062,0.094,0.156}
+elif n == 6
+  return seq(0, 5) | seq(21, 16) | {0.016,0.031,0.047,0.078,0.109,0.156}
+elif n == 7
+  return seq(0, 7) | seq(28, 21) | {0.008,0.016,0.023,0.039,0.055,0.078,0.109,0.148}
+elif n == 8
+  return seq(0, 9) | seq(36, 27) | {0.004,0.008,0.012,0.020,0.027,0.039,0.055,0.074,0.098,0.125}
+elif n == 9
+  return seq(1, 12) | seq(44, 33) | {0.004,0.006,0.010,0.014,0.020,0.027,0.037,0.049,0.064,0.082,0.102,0.125}
+elif n == 10
+  return seq(3, 16) | seq(52, 39) | {0.005,0.007,0.010,0.014,0.019,0.024,0.032,0.042, 0.053,0.065,0.080,0.097,0.116,0.138}
+elif n == 11
+  return seq(5, 20) | seq(61, 46) | {0.005,0.007,0.009,0.012,0.016,0.021,0.027,0.034, 0.042,0.051,0.062,0.074,0.087,0.103,0.120,0.139}
+elif n == 12
+  return seq(7, 24) | seq(71, 54) | {0.005,0.006,0.008,0.010,0.013,0.017,0.021,0.026, 0.032,0.039,0.046,0.055,0.065,0.076,0.088,0.102,0.117,0.133}
+endif
+</code>
+</gretl-function>
+<sample-script>
+# extra_sample.inp
+# Sample script for the extra.gfn package
+
+include extra.gfn --force
+set verbose off
+
+######## Examples for functions not needing a dataset ##########
+
+print &quot;---- eliminate -----&quot;
+eval eliminate(vec(I(3)))
+
+print &quot;---- duplicate -----&quot;
+eval duplicate(vech(I(3)))
+
+print &quot;---- nearPSD -----&quot;
+matrix mc = {1, -1.2; -1.2, 1}	# eigenvalues -0.2 and 2.2
+eval nearPSD(&amp;mc)
+print mc
+
+print &quot;---- zeroifclose -----&quot;
+mc = {1, 1e-12}
+eval zeroifclose(&amp;mc, 1e-10)
+print mc
+
+print &quot;---- drill -----&quot;
+matrix A = mshape(seq(1,9),3,3)
+matrix B = A
+matrices x = defarray(A, B)
+eval drill(x, 2)			# one row
+eval drill(x, , 1)			# one column
+eval drill(x, 2, 1)			# one row &amp; one column
+eval drill(x, {1,3}, 2)		# multiple rows
+eval drill(x, 2, {1,3})		# multiple columns
+
+
+print &quot;---- combinations -----&quot;  ##
+matrix bucket = {1, 3, 5, 6, 7}
+eval combinations(bucket, 3)
+
+print &quot;---- qformvech -----&quot;
+matrix mtemp = mnormal(4,3)
+matrix A = mtemp'mtemp
+matrix X = mnormal(3,5)
+print  &quot; compare the columns:&quot;
+eval vech(qform(X',A)) ~ qformvech(X') * vech(A)
+
+## end of matrix-related functions ##
+
+print &quot;---- scores2x2 -----&quot;##
+eval scores2x2({24, 4; 12, 9})
+
+print &quot;---- truncnorm -----&quot;
+m = 0.5
+s = 1
+matrix left  = truncnorm(20, m, s, NA, 1)
+matrix right = truncnorm(20, m, s, -1, NA)
+matrix both  = truncnorm(20, m, s, -1, 1)
+print left right both
+
+
+print &quot;---- WSRcritical -----&quot;
+print &quot;----------------------------------------&quot;
+print &quot;Some examples for WSRcritical()&quot;
+loop N = 11..13 -q            # loop over n
+  Wmax = N * (N + 1) / 2
+  loop i = 3..4 -q        # loop over W
+    printf &quot;n = $N, Pr = %g\n&quot;, i/100
+    printf &quot;try exact:&quot;
+    eval WSRcritical(N, i/100)'
+    printf &quot;approx:&quot;
+    eval WSRcritical(N, i/100, 1)'
+  endloop
+endloop
+
+print &quot;---- WSRpvalue -----&quot;
+print &quot;=============================&quot;
+print &quot;Some examples for WSRpvalue()&quot;
+loop N = 11..14 -q            # loop over n
+  loop i = 6..7 -q        # loop over W
+    printf &quot;n=$N, W=$i\n&quot;
+    printf &quot;try exact: %g, approx: %g\n&quot;, WSRpvalue(N, i), WSRpvalue(N, i, 1)
+  endloop
+
+  Wmax = N * (N + 1) / 2
+  loop i = (Wmax - 7)..(Wmax - 6) -q
+    printf &quot;n=$N, W=$i\n&quot;
+    printf &quot;try exact: %g, approx: %g\n&quot;, WSRpvalue(N, i), WSRpvalue(N, i, 1)
+  endloop
+
+endloop
+
+print &quot;---- powerset -----&quot;
+strings pp =  powerset(defarray(&quot;a&quot;, &quot;b&quot;, &quot;c&quot;, &quot;x&quot;, &quot;y&quot;, &quot;z&quot;))
+loop i = 1..nelem(pp) -q
+  eval pp[i]
+endloop
+print &quot;&quot;
+
+print &quot;---- onemode -----&quot;
+eval onemode({1,2,3,1,1,2})
+
+
+print &quot;---- splitfname -----&quot;  ##
+eval splitfname(sprintf(&quot;\\do\\.you\\believe.input&quot;))
+
+print &quot;---- multi_instrings -----&quot;  ##
+strings AA = defarray(&quot;an&quot;,&quot;apple&quot;,&quot;and&quot;,&quot;an&quot;,&quot;egg&quot;)
+strings BB = defarray(&quot;an&quot;,&quot;dog&quot;,&quot;egg&quot;)
+eval multi_instrings(AA, BB)
+
+print &quot;---- mat2latex -----&quot;  ##
+
+open mroz87.gdt
+summary 2 3 4 5 --simple
+X = $result
+eval mat2latex(X)
+X[2,4] = NA
+eval mat2latex(X, _(nacode=&quot;NA&quot;, decimals=1))
+
+print &quot;---- drawbootres ------&quot; ##
+eval drawbootres(mnormal(10,3), _(moveblocklen=3), 5)
+
+print &quot;---- get_settings ------&quot; ##
+bundle gsb = get_settings()
+print gsb
+
+######## Examples that require a dataset ############
+
+open denmark	# get some data
+
+print &quot;---- correspondence -----&quot;  ##
+x = $obsminor == 4
+C = seasonals(1,1)
+printf &quot;correspondence(x, S4) = %d\n\n&quot;, correspondence(x, S4)
+
+print &quot;---- gap_filler -----&quot;  #
+
+nulldata 24
+setobs 4 2010:1
+smpl +2 -2
+series x = normal()
+x[10] = NA	# insert missing
+series x1 = gap_filler(x, 1)
+series x2 = gap_filler(x, 2)
+smpl full
+print x x1 x2 --byobs
+
+print &quot;---- winsor -----&quot;  #
+open denmark.gdt --quiet
+series winDM = winsor(ldiff(LRM))
+series winDM_asy = winsor(ldiff(LRM), 0.01, 0.8)
+print  winDM_asy
+
+
+print &quot;---- fracorder -----&quot;
+open djclose.gdt --quiet	# need longer data here
+matrix M = fracorder(ldiff(djclose), 20)
+print  M
+
+print &quot;---- put_outofsmpl -----&quot;
+open denmark --quiet
+
+smpl +3 -5
+
+
+## plain ols single-equation
+ols LRM const LRY(-2) LRM(-3) 
+b = put_outofsmpl($model)
+eval b.initY
+eval b.futureY
+eval b.futureX
+
+## a VAR
+var 2 LRM LRY IBO; IDE -q 
+
+bundle b = put_outofsmpl($system)
+eval b.initY
+eval b.futureY
+eval b.futureX
+
+## a VECM 
+vecm 2 1 LRM LRY IBO; IDE --rc -q
+
+b = put_outofsmpl($system)
+eval b.initY
+eval b.futureY
+eval b.futureX
+
+
+## an explicit system 
+
+system method=sur --quiet
+    equation LRM const LRY(-2) LRM(-3)
+    equation LRY const LRY(-1)
+end system
+
+b = put_outofsmpl($system)
+eval b.initY
+eval b.futureY
+eval b.futureX
+
+### end put_outofsmpl example ###
+
+print &quot;---- combine -----&quot;
+open wtp.gdt --quiet
+
+series ia = combine(income, age)
+smpl 1 20
+print income age ia --byobs
+</sample-script>
+</gretl-function-package>
+</gretl-functions>

@@ -8,4 +8,6 @@ Coding Style for the Source Code:
 
 4. We consistently include the std:: prefix when referring to types or methods (e.g., std::string or std::free()).
 
+5. Private class members names are postfixed with '_'.
+
 Marcin

@@ -33,7 +33,7 @@ def _correctvarnames (names):
         if names[i] == 'const':
             names[i] = 'const_'
 
-def _pdtostrformat (pd):
+def _pd_to_str_format (pd):
     """produces date string formatter for given periodicity"""
     res = None
     if pd == 1:
@@ -46,10 +46,27 @@ def _pdtostrformat (pd):
         res = '%Y-%m-%d'
     else:
         raise TypeError(f'date formatter for pd={pd:d} not supported')
+
+    return res
+
+def _pd_to_pandas_str_format (pd):
+    """produces pandas-style date string formatter for given periodicity"""
+    res = None
+    if pd == 1:
+        res = "Y"
+    elif pd == 4:
+        res = "Q"
+    elif pd == 12:
+        res = "M"
+    elif pd == 5:
+        res = "B"
+    elif pd in (6, 7):
+        res = "D"
+
     return res
 
 def df2dict (dframe, pd=1, with_obs=False):
-    '''turns a pandas dataframe into a dictionary gretl understands'''
+    '''turns a Pandas DataFrame into a dictionary gretl understands'''
     if 'pandas' not in sys.modules:
         import pandas
     d = {}
@@ -61,12 +78,12 @@ def df2dict (dframe, pd=1, with_obs=False):
         obs_dates = [row[0] for row in mydata]
     else:
         obs_dates = dframe.axes[0].tolist()
-    #d['obs_labels'] = [obs.strftime(_pdtostrformat(pd)) for obs in obs_dates]
     _correctvarnames(varname)
     d['data_array'] = numpy.array([row[0+with_obs:] for row in mydata], numpy.double)
     d['varname'] = varname
     d['obs_labels'] = obs_dates
     d['periodicity'] = pd
+
     return d
 
 def nparray2dict (X, pd=1, Y=None, with_const=False,
@@ -107,6 +124,7 @@ def nparray2dict (X, pd=1, Y=None, with_const=False,
     d['varname'] = varname
     d['obs_labels'] = obs_labels
     d['periodicity'] = pd
+
     return d
 
 def series2dict (series, pd=1, varname="y"):
@@ -121,12 +139,13 @@ def series2dict (series, pd=1, varname="y"):
     d['varname'] = [varname]
     try:
         obs_dates = series.index.to_period()
-        d['obs_labels'] = [obs.strftime(_pdtostrformat(pd)) for obs in obs_dates]
+        d['obs_labels'] = [obs.strftime(_pd_to_str_format(pd)) for obs in obs_dates]
     except (AttributeError, TypeError) as err:
         if err:
             print(f'Warning: {err}, fall back to original labels.')
         d['obs_labels'] = series.index.to_list()
     d['periodicity'] = pd
+
     return d
 
 def fc_print (fc):
@@ -159,3 +178,102 @@ def print_module_source (mod):
         print(code)
     except Exception as e:
         print(f"Error while trying to read source: {e}")
+
+def modeltab (models, output="print", tablefmt="github", stars=True, coeff_fmt=".3f", stderr_fmt=".4f"):
+    """
+    Create a comparison table for multiple GretlModel objects.
+
+    Parameters
+    ----------
+    models : list
+        List of GretlModel objects.
+    output : str, optional
+        "print" -> print the table, "return" -> return as string (default: "print")
+    tablefmt : str, optional
+        Table format for tabulate (default: "github")
+    stars : bool, optional
+        Whether to add significance stars (default: True)
+    coeff_fmt : str, optional
+        Format string for coefficients (default: ".3f")
+    stderr_fmt : str, optional
+        Format string for standard errors (default: ".4f")
+
+    Returns
+    -------
+    str or None
+        If output="return", returns the formatted table as a string.
+        If output="print", prints the table and returns None.
+    """
+
+    try:
+        from tabulate import tabulate
+    except ModuleNotFoundError:
+        print("*** warning: modeltab requires 'tabulate' package ***\n")
+        return
+
+    # Headers: use _model_id if present
+    headers = ["Variable"] + [
+        f"Model {m._ids.get('_model_id', i+1) if hasattr(m, '_ids') else i+1}"
+        for i, m in enumerate(models)
+    ]
+
+    # Variables: start with first model, then append new ones
+    variables = list(models[0].parnames)
+    for m in models[1:]:
+        for v in m.parnames:
+            if v not in variables:
+                variables.append(v)
+
+    rows = []
+
+    for var in variables:
+        row = [var]
+        for m in models:
+            if var in m.parnames:
+                idx = m.parnames.index(var)
+                coeff = m.coeff[idx]
+                stderr = m.stderr[idx]
+
+                # Determine stars only if pvalues exist
+                star = ""
+                if m.asymptotic:
+                    pval = 2 * gretl.pvalue(dist="z", value=abs(coeff/stderr))
+                else:
+                    pval = 2 * gretl.pvalue(dist="t", value=abs(coeff/stderr), params=m.df)
+                if pval is not None:
+                    if pval < 0.01:
+                        star = "***"
+                    elif pval < 0.05:
+                        star = "**"
+                    elif pval < 0.10:
+                        star = "*"
+
+                cell = f"{format(coeff, coeff_fmt)}{star} ({format(stderr, stderr_fmt)})"
+            else:
+                cell = ""
+            row.append(cell)
+        rows.append(row)
+
+    # Summary statistics
+    stats = ["n", "Adj. R²", "lnL"]
+    for stat in stats:
+        row = [stat]
+        for m in models:
+            if stat == "n":
+                val = f"{m.T:.1f}"
+            elif stat == "Adj. R²":
+                val = f"{m.adj_rsq():.4f}"
+            elif stat == "lnL":
+                val = f"{m.lnl:.2f}"
+            else:
+                val = ""
+            row.append(val)
+        rows.append(row)
+
+    table = tabulate(rows, headers=headers, tablefmt=tablefmt)
+
+    if output == "print":
+        print(table)
+        return None
+
+    return table

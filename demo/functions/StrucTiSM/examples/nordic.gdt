@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE gretldata SYSTEM "gretldata.dtd">
+
+<gretldata version="1.4" name="nordic" frequency="1" startobs="1970" endobs="2003" type="time-series">
+<description>Road traffic fatalities in Norway and Finland
+
+Example dataset used in Commandeur and Koopman (2007) &quot;An Introduction to State
+Space Time Series Analysis&quot;, Oxford University Press
+
+</description>
+<variables count="2">
+<variable name="Norway"
+/>
+<variable name="Finland"
+/>
+</variables>
+<observations count="34" labels="false">
+<obs>560 1055 </obs>
+<obs>533 1143 </obs>
+<obs>490 1156 </obs>
+<obs>511 1086 </obs>
+<obs>509 865 </obs>
+<obs>539 910 </obs>
+<obs>471 804 </obs>
+<obs>442 709 </obs>
+<obs>434 610 </obs>
+<obs>437 650 </obs>
+<obs>362 551 </obs>
+<obs>338 555 </obs>
+<obs>401 569 </obs>
+<obs>409 604 </obs>
+<obs>407 541 </obs>
+<obs>402 541 </obs>
+<obs>452 612 </obs>
+<obs>398 581 </obs>
+<obs>378 653 </obs>
+<obs>381 734 </obs>
+<obs>332 649 </obs>
+<obs>323 632 </obs>
+<obs>325 601 </obs>
+<obs>281 484 </obs>
+<obs>283 480 </obs>
+<obs>305 441 </obs>
+<obs>255 404 </obs>
+<obs>303 438 </obs>
+<obs>352 400 </obs>
+<obs>304 431 </obs>
+<obs>341 396 </obs>
+<obs>275 433 </obs>
+<obs>312 415 </obs>
+<obs>280 379 </obs>
+</observations>
+</gretldata>

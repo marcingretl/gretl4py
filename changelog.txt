@@ -1,4 +1,31 @@
-version 0.22:
+version 0.41:
+    - general libgretl printer (available as 'gretl.print()')
+    - some code refactoring (simplified and cleaned up)
+    - officialy add interface to libgretl's genr (available as 'gretl.genr()')
+
+version 0.4:
+    - add GretlaDataset::dummyfi() method
+    - add '--unit' and '--time' options to GretlaDataset::sample()
+    - Pooled OLS tweaks
+    - native copy constructor for GretlDataset
+    - add 'n' and 'k' properties do GretlDataset
+    - add 'range' option for GretlDataset::print()
+    - add methods for GretlDataset: ::head(), ::tail(), ::to_dataframe(), ::lags(),
+        ::dummify(), ::square(), ::discrete(), ::logs(), ::orthdev(), ::stdize()
+    - apparatus for slicing datasets
+    - tobit llimit default value fix
+    - fix bug in GretlDataset::print() when summary=True
+    - add nls, mle, and gmm estimators
+    - add system estimation (all methods available in gretl)
+    - massive code refactoring
+    - revert to gcc-based libgretl for windows amd64 builds due to some OpenBLAS issues
+
+version 0.31:
+    - allow 'quiet' option for VAR/VECM
+    - some tweaks with package versioning
+    - add addons
+
+version 0.30:
     - add interface to 'summary'
     - make gretl.get_data() more functional
     - add time-series filters: Hodrick-Prescott, Baxter-King, and Butterworth
@@ -6,9 +33,21 @@ version 0.22:
     - add 'frompkg' option for loading datasets
     - initial access to user-defined variables (gretl specific)
     - support for Windows on ARM64
-    - use LLVM/Clang 20.x as default compiler
+    - use LLVM/Clang 20.x as default compiler for non-linux builds
     - basic tweaks for pybind11 3.x
     - GretlBundle class: an interface to libgretl's bundle
+    - about(): switch to GretlBundle based version
+    - new GretlModel methods: ::get_bundle(), ::add_yhat(), ::add_uhat(), ::add_uhat_sq(), ::add_ahat(), and ::add_h()
+    - fix printing empty buffer
+    - add GretlDataset::add_series(), and GretlModel_VAR_VECM::save_ec_term() methods
+    - add pvalue(), critical() functions (one-tailed), pdf(), cdf(), and invcdf()
+    - add modeltab() helper for models comparison
+    - add GretlDataset methods: ::diff(), ::ldiff(), ::sdiff(), ::corr(), and ::cov()
+    - add GretlModel_NSE::adj_rsq() method
+    - fix bug related with missing ''lib/data' dir
+    - fix runtime numpy depndency
+    - add initial support for python 3.14
+    - some doc updated/upgrades
 
 version 0.21:
     - 'lagselect' switched off for VAR due to SIGSEGV

@@ -1,0 +1,22 @@
+open states.dbf --quiet --frompk=geoplot
+join statepop.gdt population --ikey=STATE_FIPS --okey=FIPS
+
+# cut out Hawaii and Alaska?
+smpl STATE_ABBR != "AK" && STATE_ABBR != "HI" --restrict
+print -o STATE_NAME population
+
+bundle options = null
+options.plotfile = "us_states_shp.plt"
+options.height = 500
+
+outlines_only = 1
+
+if outlines_only
+   geoplot(null, options)
+else
+   # show population levels in shades of blue
+   options.palette = "blues"
+   options.title = "US states, population (lower 48)"
+   geoplot(population, options)
+endif
+

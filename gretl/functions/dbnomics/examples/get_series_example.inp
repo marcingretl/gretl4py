@@ -1,0 +1,23 @@
+set verbose off
+include dbnomics.gfn
+
+nulldata 360
+setobs 12 1989:1
+
+strings ToDnld = defarray("ECB/IRS/M.IT.L.L40.CI.0000.EUR.N.Z",
+  "FED/G17_CAPUTL/CAPUTL.B50001.S")
+
+scalar N = nelem(ToDnld)
+
+bundles bs = array(N)
+loop k = 1 .. N --quiet
+    bs[k] = dbnomics_get_series(ToDnld[k])
+    dbnomics_bundle_print(bs[k])
+endloop
+
+series ita_rate = NA
+dbnomics_bundle_get_data(bs[1], &ita_rate)
+series caput = NA
+dbnomics_bundle_get_data(bs[2], &caput)
+
+summary ita_rate caput

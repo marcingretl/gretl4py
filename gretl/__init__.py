@@ -25,6 +25,7 @@ import os
 import sys
 import site as _site
 import sysconfig
+import atexit
 from pathlib import Path
 
 # --- Basic paths and platform info ---
@@ -68,35 +69,25 @@ from . import _gretl
 from . import gretl4py_addons
 from . import gretl4py_classes
 
+# 100% safe module cleanup
+atexit.register(_gretl._gretl4py_cleanup)
+
 # we import some symbols explicitly
-from ._gretl import (about, set, version, include, summary)
-from .gretl4py_classes import attrs, oddsratio
-from .gretl4py_classes import get_data, show_data_status
-from .gretl4py_addons import print_module_source, fc_print
+from ._gretl import (about, version)                        # module-related
+from ._gretl import (Bundle)                                # constructors
+from ._gretl import (genr, include, print, set, summary)    # libgretl's commands interfaces
+from ._gretl import (pvalue, critical, pdf, cdf, invcdf)    # libgretl's functions interfaces
+from .gretl4py_classes import _attrs, _oddsratio, mle, nls, gmm, NLSpec
+from .gretl4py_classes import get_data, show_data_status, _to_dataframe
+from .gretl4py_addons import print_module_source, fc_print, modeltab
 
 # deprecations
-def csv2dict(fname, pd=1):
-    raise RuntimeError('*** This function is deprecated and was removed. Please use \'gretl.get_data()\' instead. ***\n')
-
-def attach_data(pydict):
-    raise RuntimeError('*** This function is deprecated and was removed. Please use \'gretl.get_data()\' instead. ***\n')
-
-def attach_gretl_data(fname):
-    raise RuntimeError('*** This function is deprecated and was removed. Please use \'gretl.get_data()\' instead. ***\n')
-
-def get_gretl_data(fname):
-    raise RuntimeError('*** This function is deprecated and was removed. Please use \'gretl.get_data()\' instead. ***\n')
-
-def gretl_data_path(fname):
-    raise RuntimeError('*** This function is deprecated and was removed. Please use /path/to/file directly. ***\n')
-
-def printdata(data, namesonly):
-    raise RuntimeError('*** This function is deprecated and was removed. Please use GretlDataset class \'print()\' method instead. ***\n')
 # deprecations: END
 
 # we attach additional symbols to certain classes
-setattr(_gretl.Model, "attrs", attrs)               # method for listing all object's attributes
-setattr(_gretl.Model_logit, "oddsratio", oddsratio) # method for pretty-printing oddsratios
+setattr(_gretl.Model, "attrs", _attrs)                  # for listing all object's attributes
+setattr(_gretl.Model_logit, "oddsratio", _oddsratio)    # for pretty-printing oddsratios
+setattr(_gretl.Dataset, "to_dataframe", _to_dataframe)  # gretl data to Pandas DataFrame converter
 
 # directly use GretlModel for the model instantiation
 def __model_initializer(model_name: str, *args, **kwargs):
@@ -114,7 +105,7 @@ def __getattr__(fun):
     """
     Called when a gretl.fun is called.
     """
-    cfunc = ("about", "set", "include", "summary")
+    cfunc = ("about", "set", "include", "summary", "Bundle")
 
     if fun in dir(gretl4py_addons):
         return getattr(gretl4py_addons, fun)

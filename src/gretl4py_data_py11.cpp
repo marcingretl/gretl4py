@@ -18,6 +18,7 @@
  */
 
 #include "gretl4py_data.h"
+#include "gretl_calls.h"
 
 namespace py = pybind11;
 
@@ -25,6 +26,34 @@ extern GretlDatasetPtr DSET;
 
 // signature from libgretl
 const char *gretl_workdir (void);
+
+enum HeadTail { HEAD, HEAD_T, TAIL, TAIL_T };       // for head/tail printing
+
+template <HeadTail mode>
+static void head_tail_print (GretlDataset &gd, int nobs)
+{
+    //
+    // here we perform ::head() and ::tail()
+    // Note: this function is actually a wrapper to ::print()
+    // thus should be used only for head()/tail() mapping
+    //
+    py::kwargs opts;
+    nobs = nobs > gd.dset->n ? gd.dset->n : nobs;
+
+    // we setup printing parameters
+    if constexpr (mode == HEAD || mode == HEAD_T) {
+        opts["range"] = std::to_string(gd.dset->t1 + 1) +
+                    ":" + std::to_string(gd.dset->t1 + nobs);
+    } else if constexpr (mode == TAIL || mode == TAIL_T) {
+        opts["range"] = std::to_string(gd.dset->t2 - nobs + 2) +
+                    ":" + std::to_string(gd.dset->t2 + 1);
+    }
+    if constexpr (mode == HEAD || mode == TAIL) {
+        opts["byobs"] = true;
+    }
+
+    gd.print(opts);
+}
 
 // GretlDataset mappings
 void init_gretl4py_dataset_py11(py::module_ &m)
@@ -36,29 +65,104 @@ void init_gretl4py_dataset_py11(py::module_ &m)
                       }),
                       py::arg("fname").none(false), py::arg("kwargs") = py::dict(),
                       py::kw_only())
-        .def(py::init([](const py::dict &pydict) { return std::make_shared<GretlDataset>(pydict); }))
-        .def("__copy__",
-             [](const GretlDataset &src)
-             {
-                 const std::string dotdir = gretl_dotdir();
-                 const std::string fname = dotdir + "gretl4py_tmp.gdt";
-
-                 src.to_file(fname);
-                 auto dst = std::make_shared<GretlDataset>(fname, py::dict());
-                 dst->source = src.source + " (copy of " + std::to_string(src.get_id()) + ")";
-
-                 return dst;
-             },
-             py::return_value_policy::take_ownership)
+        .def(py::init([](const py::dict &pydict)
+                      {
+                          return std::make_shared<GretlDataset>(pydict);
+                      }))
         .def_readonly("is_default", &GretlDataset::is_default)
         .def_readwrite("source", &GretlDataset::source)
+        .def_property_readonly("_is_panel",
+                               [](const GretlDataset &self)
+                               {
+                                   return self.is_panel();
+                               })
+        .def_property_readonly("n",
+                               [](const GretlDataset &self)
+                               {
+                                   return self.dset->n;
+                               })
+        .def_property_readonly("k",
+                               [](const GretlDataset &self)
+                               {
+                                   return self.dset->v;
+                               })
+        .def("__copy__",
+             [](const GretlDataset &self)
+             {
+                 py::print("Note, that we perform deepcopy here.");
+                 return std::make_shared<GretlDataset>(self);
+             },
+             py::return_value_policy::take_ownership)
+        .def("__deepcopy__",
+             [](const GretlDataset &self)
+             {
+                 return std::make_shared<GretlDataset>(self);
+             },
+             py::return_value_policy::take_ownership)
         .def("__repr__", &GretlDataset::repr)
+        .def("__getitem__", &GretlDataset::getitem_impl<py::slice>,
+             py::return_value_policy::take_ownership)
+        .def("__getitem__", &GretlDataset::getitem_impl<py::list>,
+             py::return_value_policy::take_ownership)
+        .def("__getitem__", &GretlDataset::getitem_impl<std::string>,
+             py::return_value_policy::take_ownership)
+        .def("head", &head_tail_print<HEAD>, py::arg("nobs") = 5, py::kw_only())
+        .def("headT", &head_tail_print<HEAD_T>, py::arg("nobs") = 5, py::kw_only())
+        .def("tail", &head_tail_print<TAIL>, py::arg("nobs") = 5, py::kw_only())
+        .def("tailT", &head_tail_print<TAIL_T>, py::arg("nobs") = 5, py::kw_only())
         .def("get_id", &GretlDataset::get_id)
         .def("set_as_default", &GretlDataset::set_as_default)
-        .def("sample", &GretlDataset::sample)
-        .def("setobs", &GretlDataset::setobs)
+        .def("sample",
+             [](GretlDataset &self, const std::string &startobs, const std::string &endobs, const py::kwargs &kwargs)
+             {
+                 // direct call for GretlDataset::smpl()
+                 self.smpl(startobs, endobs, kwargs);
+             },
+             py::arg("startobs").none(true) = "", py::arg("endobs").none(true) = "", py::kw_only())
+        .def("sample",
+             [](GretlDataset &self, const std::string &startobs, const py::kwargs &kwargs)
+             {
+                 self.smpl(startobs, "", kwargs);
+             },
+             py::arg("startobs").none(false), py::kw_only())
+        .def("sample",
+             [](GretlDataset &self, int startobs, int endobs, const py::kwargs &kwargs)
+             {
+                 std::string startobs_str = startobs == NADBL ? "" : std::to_string(startobs);
+                 std::string endobs_str = endobs == NADBL ? "" : std::to_string(endobs);
+
+                 self.smpl(startobs_str, endobs_str, kwargs);
+             },
+             py::arg("startobs").none(true) = NADBL, py::arg("endobs").none(true) = NADBL, py::kw_only())
+        .def("sample",
+             [](GretlDataset &self, int startobs, const py::kwargs &kwargs)
+             {
+                 self.smpl(std::to_string(startobs), "", kwargs);
+             },
+             py::arg("startobs").none(false), py::kw_only())
+        .def("setobs",
+             [](GretlDataset &self, std::string &unitvar, const std::string &timevar, const py::kwargs &kwargs)
+             {
+                 self.setobs(unitvar, timevar, kwargs);
+             },
+             py::arg("periodicity").none(false), py::arg("startobs").none(false), py::kw_only())
+        .def("setobs",
+             [](GretlDataset &self, int periodicity, const std::string &startobs, const py::kwargs &kwargs)
+             {
+                 self.setobs(std::to_string(periodicity), startobs, kwargs);
+             },
+             py::arg("periodicity").none(false), py::arg("startobs").none(false), py::kw_only())
+        .def("setobs",
+             [](GretlDataset &self, int periodicity, int startobs, const py::kwargs &kwargs)
+             {
+                 self.setobs(std::to_string(periodicity), std::to_string(startobs), kwargs);
+             },
+             py::arg("periodicity").none(false), py::arg("startobs").none(false), py::kw_only())
         .def("to_dict", &GretlDataset::to_dict)
-        .def("to_file", &GretlDataset::to_file)
+        .def("to_file", &GretlDataset::to_file,
+             py::arg("fname").none(false), py::kw_only())
+        .def("add_series", py::overload_cast<const py::array&, const std::string&>(&GretlDataset::add_series),
+             py::arg("data").none(false), py::arg("name").none(false))
         .def("new_series", py::overload_cast<const std::string&>(&GretlDataset::new_series),
              py::arg("formula").none(false))
         .def("new_series", py::overload_cast<const std::string&, const std::string&>(&GretlDataset::new_series),
@@ -67,6 +171,26 @@ void init_gretl4py_dataset_py11(py::module_ &m)
              py::arg("formula").none(false))
         .def("new_list", py::overload_cast<const std::string&, const std::string&>(&GretlDataset::new_list),
              py::arg("name").none(false), py::arg("value").none(false))
+        .def("dummify", &GretlDataset::transforms<DUMMIFY>,
+             py::arg("varlist").none(false), py::kw_only())
+        .def("square", &GretlDataset::transforms<SQUARE>,
+             py::arg("varlist").none(false), py::kw_only())
+        .def("discrete", &GretlDataset::transforms<DISCRETE>,
+             py::arg("varlist").none(false), py::kw_only())
+        .def("stdize", &GretlDataset::transforms<STDIZE>,
+             py::arg("vars").none(false), py::kw_only())
+        .def("diff", &GretlDataset::transforms_no_opts<DIFF>,
+             py::arg("vars").none(false))
+        .def("ldiff", &GretlDataset::transforms_no_opts<LDIFF>,
+             py::arg("vars").none(false))
+        .def("sdiff", &GretlDataset::transforms_no_opts<SDIFF>,
+             py::arg("vars").none(false))
+        .def("logs", &GretlDataset::transforms_no_opts<LOGS>,
+             py::arg("vars").none(false))
+        .def("orthdev", &GretlDataset::transforms_no_opts<ORTHDEV>,
+             py::arg("vars").none(false))
+        .def("lags", &GretlDataset::lags,
+             py::arg("vars").none(false), py::arg("order").none(true) = 0)
         .def("print", &GretlDataset::print)
         .def("varnames", &GretlDataset::varnames)
         .def("get_series", &GretlDataset::get_series,
@@ -82,8 +206,10 @@ void init_gretl4py_dataset_py11(py::module_ &m)
              py::arg("series").none(false), py::arg("f1").none(true) = 0,
              py::arg("f2").none(true) = 0, py::arg("k").none(true) = 0)
         .def("get_accessor", &GretlDataset::get_accessor,
-             py::arg("accessor").none(false),
-             py::return_value_policy::take_ownership)
+             py::arg("accessor").none(false))
+        .def("corr", &GretlDataset::corr,
+             py::arg("vars").none(true) = "", py::kw_only())
+        .def("cov", &GretlDataset::cov, py::arg("vars").none(true) = "")
         .def("test",
              [](GretlDataset &self, const std::string &type, const py::kwargs &kwargs)
              {
@@ -136,6 +262,7 @@ void init_gretl4py_dataset_py11(py::module_ &m)
 void init_gretl4py_package_py11(py::module_ &m)
 {
     py::class_<GretlPackage, GretlPackagePtr>(m, "Package", py::dynamic_attr())
+    .def("__repr__", &GretlPackage::repr_impl)
     .def("get_name", &GretlPackage::get_name)
     .def("show_functions", &GretlPackage::show_functions)
     .def("set_main", &GretlPackage::set_main,
@@ -143,24 +270,17 @@ void init_gretl4py_package_py11(py::module_ &m)
     .def("_get_functions", &GretlPackage::get_functions)
     .def("_function_exec",
          [](GretlPackage &self, const std::string &name,
-            const std::string &output, const py::kwargs &kwargs) -> py::object
+            const py::kwargs &kwargs) -> py::object
          {
              GretlPrint GP = GretlPrint();
              GretlTypesPtr val;
              int err = 0;
 
-             auto res = self.function_exec(name, DSET, GP, kwargs, output);
+             auto res = self.function_exec(name, DSET, GP, kwargs);
 
              // we construct object to return
-             GretlType t = res.type;
-             if (t == GRETL_TYPE_BUNDLE) {
-                 // bundle special case: we return a GretlBundlePtr
-                 // instead of dict() representation
-                 GretlBundle GB(static_cast<gretl_bundle*>(res.get()));
-                 val = std::make_unique<GretlTypes>(std::make_shared<GretlBundle>(GB));
-             } else {
-                 val = convert_GretlType_to_GretlTypes(t, res.get(), 0, err);
-             }
+             val = convert_GretlType_to_GretlTypes(res.type, res.get(),
+                                                   res.n, err);
              if (err) {
                  handle_gretl_error(err);
              }
@@ -180,8 +300,7 @@ void init_gretl4py_package_py11(py::module_ &m)
 
              return variant_to_pyobject(std::move(*val));
          },
-         py::arg("name").none(false),
-         py::arg("output").none(true) = "", py::kw_only());
+         py::arg("name").none(false), py::kw_only());
 }
 
 
@@ -190,7 +309,7 @@ void init_gretl4py_bundle_py11(py::module_ &m)
 {
     py::class_<GretlBundle, GretlBundlePtr>(m, "Bundle", py::dynamic_attr())
     .def(py::init<>())
-    .def("__repr__", &GretlBundle::repr)
+    .def("__repr__", &GretlBundle::repr_impl)
     .def("__getitem__", &GretlBundle::get_element<py::object>)
     .def("__setitem__", &GretlBundle::set_element<bool>)
     .def("__setitem__", &GretlBundle::set_element<int>)
@@ -198,8 +317,10 @@ void init_gretl4py_bundle_py11(py::module_ &m)
     .def("__setitem__", &GretlBundle::set_element<std::string>)
     .def("__setitem__", &GretlBundle::set_element<py::array>)
     .def("__setitem__", &GretlBundle::set_element<GretlBundlePtr>)
-    .def("to_dict", &GretlBundle::to_dict)
-    .def("keys", &GretlBundle::keys);
+    .def("keys", &GretlBundle::keys)
+    .def("print", &GretlBundle::print<void>,
+         py::arg("tree").none(true) = false)
+    .def("to_dict", &GretlBundle::to_dict);
 }
 
 /*.def("get_ptr", &GretlPackage::get_ptr, py::return_value_policy::reference)*/

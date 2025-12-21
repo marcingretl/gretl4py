@@ -7,13 +7,15 @@
 \RequirePackage[utf8]{inputenc}
 \RequirePackage[pdftex]{xcolor}
 \RequirePackage[]{graphicx}
-\RequirePackage{dirtree,xargs,xspace,url,listings,pifont,makeidx,ifthen,caption,subcaption,fancyvrb}
+
+\RequirePackage{dirtree,xargs,xspace,url,listings,pifont,makeidx,ifthen,caption,subcaption,fancyvrb,tikz,pdflscape,catchfile}
 \RequirePackage[toc,title]{appendix}
 \usepackage{gretlwp}
 
 \usepackage[colorlinks,pdfusetitle]{hyperref}
 \hypersetup{citecolor=magenta}
 \usepackage[authoryear]{natbib}
+\usetikzlibrary{positioning, arrows.meta, matrix}
 
 \newcommand{\proglang}[1]{\texttt{#1}}
 \newcommand{\pkg}[1]{{\fontseries{b}\selectfont #1}}
@@ -78,7 +80,7 @@
 
 %% Hansl syntax highlight
 \lstdefinelanguage{Hansl}{
-	morekeywords={add, adf, anova, append, ar, ar1, arbond, arch, arima, biprobit, boxplot, break,
+	morekeywords={add, adf, anova, append, ar, ar1, arbond, arch, arima, bds, biprobit, boxplot, break,
 		catch, chow, clear, coeffsum, coint, coint2, corr, corrgm, cusum, data, dataset, debug,
 		delete, diff, difftest, discrete, dpanel, dummify, duration,  elif, else, end, endif, endloop,
 		eqnprint, equation, estimate, fcast, foreign, fractint, freq, function, garch, genr, gmm, gnuplot,
@@ -89,7 +91,7 @@
 		qlrtest, qqplot, quantreg, quit, rename, reset, restrict, rmplot, run, runs, scatters,
 		sdiff, set, setinfo, setobs, setmiss, shell, smpl, spearman, sprintf, square, sscanf, store,
 		summary, system, tabprint, textplot, tobit, tsls, var, varlist, vartest, vecm, vif,
-		wls, xcorrgm, xtab, mpi, gibbs, return, params, pkg, midasreg},
+		wls, xcorrgm, xtab, mpi, gibbs, return, params, pkg, midasreg, johansen, bkw},
 	morekeywords=[2]{abs, acos, acosh, aggregate, argname, asin, asinh, atan, atanh, bessel,
 		BFGSmax, bkfilt, boxcox, bwfilt, cdemean, cdf, cdiv, ceil, cholesky, chowlin,
 		cmult, cnorm, colname, colnames, cols, cos, cosh, cov,

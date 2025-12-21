@@ -1,0 +1,8 @@
+# This script reproduces the example provided
+# at https://www.frbatlanta.org/cqer/research/bpf
+
+include cffilt.gfn
+open gdp.gdt --frompkg=cffilt
+series cycle = cffilt(GDP, 2, 3)
+series e = GDP - cycle
+print GDP cycle e --byobs

@@ -1,0 +1,30 @@
+#######################################################
+#   https://sourceforge.net/projects/bma-for-gretl/   #
+#######################################################
+
+# Usage:
+set verbose off
+open greene9_1.gdt
+include BMA.gfn
+
+/*
+   This example replicates the results of 'BMA_sample.inp'
+   but with the use of a "custom" model prior, i.e., setting
+   individual Prior Inclusion Probabilities.
+*/
+
+# We set the seed in order to exact reproduction of results
+set seed 1000000
+
+list greene = capital labor nfirm
+
+matrix prIP = { 0.5 ; 0.5 ; 0.5 }
+rnameset(prIP, greene)
+
+results_b = BMA(valadd, greene, _(model_prior=3, theta=prIP, do_plot=1, do_joint=7))
+
+# An equivalent call where we set tha sampe 0.5 value for all variables.
+#results_b = BMA(valadd, greene, _(model_prior=3, theta=0.5, do_plot=1, do_joint=7))
+
+# ...or using default 0.5 value assigned by the package internally.
+#results_b = BMA(valadd, greene, _(model_prior=3, do_plot=1, do_joint=7))

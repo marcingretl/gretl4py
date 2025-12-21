@@ -1,5 +1,5 @@
 project('gretl4py', 'cpp',
-  version : '0.22',
+  meson_version : '>=1.4.0',
   default_options : ['cpp_std=c++17', 'optimization=2', 'buildtype=release']
 )
 
@@ -189,3 +189,37 @@ install_data(
   install_dir: python_gretl_dir,
 )
 meson.add_install_script(python, join_paths(meson.project_source_root(), 'install.py'))
+
+###########################################################################
+# Generating 'gretl4py_version.h' header
+###########################################################################
+version_cmd = run_command(
+  python,
+  '-c',
+  '''
+import sys
+
+version_str = open("version.cfg").read().strip()
+major_str, minor_str = version_str.split('.')
+major = int(major_str)
+minor = int(minor_str)
+
+if len(major_str) != 1 or len(minor_str) != 2 or major < 0 or minor < 0:
+    sys.exit(1)
+
+print(version_str)
+  ''',
+  check: false
+)
+
+if version_cmd.returncode() != 0
+    error('Expected version format: X.yz, where X >= 0 and minor has 2 digits, e.g., 0.10, 1.05')
+endif
+
+version_str = version_cmd.stdout().strip()
+configure_file(
+    input: 'gretl4py_version.h.in',
+    output: 'gretl4py_version.h',
+    configuration: { 'VERSION': '"' + version_str + '"' }
+)
+message('Building gretl4py version: ' + version_str)

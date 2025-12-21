@@ -41,16 +41,18 @@ shutil.copy(SRC, MODULE_PATH)
 
 # We copy libs
 LIB_DIR = os.path.join(MODULE_PATH, 'lib')
-try:
-    os.makedirs(LIB_DIR)
-except FileExistsError:
-    pass
-libs = glob.glob(os.path.join(SOURCE_DIR, 'gretl', 'lib', '*'))
-for file in libs:
-    try:
-        shutil.copy(file, LIB_DIR)
-    except shutil.SameFileError:
-        pass
+os.makedirs(LIB_DIR, exist_ok=True)
+
+data_files = glob.glob(os.path.join(SOURCE_DIR, 'gretl', 'lib', '*'))
+
+for path in data_files:
+    if os.path.isfile(path):
+        shutil.copy(path, LIB_DIR)
+    elif os.path.isdir(path):
+        dest = os.path.join(LIB_DIR, os.path.basename(path))
+        if os.path.exists(dest):
+            shutil.rmtree(dest)
+        shutil.copytree(path, dest)
 
 # We copy datasets
 DATA_DIR = os.path.join(MODULE_PATH, 'data')
@@ -67,6 +69,12 @@ EXAMPLES_DIR = os.path.join(MODULE_PATH, 'examples')
 if os.path.exists(EXAMPLES_DIR):
     shutil.rmtree(EXAMPLES_DIR)
 shutil.copytree(os.path.join(SOURCE_DIR, 'gretl', 'examples'), EXAMPLES_DIR)
+
+# We copy addons
+ADDONS_DIR = os.path.join(MODULE_PATH, 'functions')
+if os.path.exists(ADDONS_DIR):
+    shutil.rmtree(ADDONS_DIR)
+shutil.copytree(os.path.join(SOURCE_DIR, 'gretl', 'functions'), ADDONS_DIR)
 
 # We add tmp for workdir
 try:

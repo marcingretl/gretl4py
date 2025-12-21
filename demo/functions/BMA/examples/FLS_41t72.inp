@@ -1,0 +1,12 @@
+set verbose off
+include BMA.gfn
+open FLS_41t72.gdt --frompkg=BMA
+
+# We set the seed in order to exact reproduction of results
+set seed 1000000
+set stopwatch
+
+list Factors = 2..42
+flsres = BMA(GDP_growth, Factors, _(Nrep=3000000, burn=33, Nrank=20, do_joint="myq"))
+
+printf "Total execution time: %.2f sec.\n", $stopwatch

@@ -1,0 +1,12 @@
+include geoplot.gfn
+
+open us-states.geojson --frompkg=geoplot --quiet
+map = bread($mapfile)
+
+# no matches
+geoplot_seek_feature(map, "nowhere")
+# two matches
+geoplot_seek_feature(map, "CAROLINA")
+# one match
+geoplot_seek_feature(map, "Florida")
+

@@ -13,6 +13,7 @@ from zipfile import BadZipFile
 TMP_WHLS_DIR = Path("/tmp/whls")
 DEFAULT_BASE_URL = "https://sourceforge.net/projects/gretl/files/gretl4py/"
 FALLBACK_URL = "https://master.dl.sourceforge.net/project/gretl/gretl4py/snapshots/"
+VER="0.31"
 
 def download_wheel(url: str, dest_folder: Path) -> Path:
     """
@@ -96,7 +97,7 @@ def main():
 
     # Parse command-line arguments
     parser = argparse.ArgumentParser(description="Install gretl4py wheel into user site-packages without pip.")
-    parser.add_argument("--version", default="0.21", help="gretl4py version to install (default: 0.21)")
+    parser.add_argument("--version", default=VER, help="gretl4py version to install (default: {VER})")
     parser.add_argument("--base-url", default=DEFAULT_BASE_URL, help="Base URL for downloading wheels")
     args = parser.parse_args()
 

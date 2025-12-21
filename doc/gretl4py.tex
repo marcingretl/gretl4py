@@ -11,6 +11,8 @@
 \newcounter{fomularenderR}
 \newcounter{fomularenderG}
 
+\CatchFileDef{\gretlpyversion}{../version.cfg}{}
+
 \newcommand{\error}[1]{\textcolor{red}{\textbf{#1}}\xspace}
 \newcommand{\hitem}{\item[] \hspace{-5mm}}
 
@@ -46,10 +48,14 @@
 		Instead, \pythcode{formula} takes \gretl's default syntax
 		as outlined in
 		Equation~(\hyperlink{theGstyleFomula}{\thefomularenderG}).\end{minipage}}
-\newcommand{\gretlfpycmd}[1]{\vspace{10pt}\noindent\textcolor{red}{\pythcode{#1}}\index{#1}}
+\newcommand{\gretlfpycmd}[1]{\vspace*{10pt}\noindent\protect\textcolor{red}{\pythcode{#1}}\index{#1}}
 \newcommand{\generaldesc}[1]{\hspace*{17pt}\begin{minipage}[t]{0.89\columnwidth}%
 		\small#1\end{minipage}}
-\newcommand{\classpymodel}{\pythcode{class Model}\xspace}
+\newcommand{\gretldataset}{\_gretl.Dataset\xspace}
+\newcommand{\classpybundle}{\pythcode{class gretl._gretl.Bundle}\xspace}
+\newcommand{\classpydataset}{\pythcode{class gretl._gretl.Dataset}\xspace}
+\newcommand{\classpymodel}{\pythcode{class gretl._gretl.Model}\xspace}
+\newcommand{\classpypackage}{\pythcode{class gretl._gretl.Package}\xspace}
 \newcommand{\examplefig}[2]{%
 	\begin{figure}[h!tb]
 		\centering
@@ -89,7 +95,7 @@
 	\end{quote}
 
 \begin{center}
-	\vspace*{100pt}{\Large Version 0.11}
+	\vspace*{100pt}{\Large Version \gretlpyversion}
 	
 	\vfil{\Large\textbf{Acknowledgments}}
 	
@@ -121,7 +127,10 @@
 	\input{installation}
 	\newpage\section{Implementation}\label{sec:implementation}
 		\input{implementation_python_side}
+		\input{class_py_bundle}
+		\input{class_py_dataset}
 		\input{class_py_model}
+		\input{class_py_package}
 	\input{usage}
 	\newpage\input{examples}
 
@@ -136,7 +145,7 @@
 	
 	%\appendix
 	\newpage\begin{appendices}
-		\input{sourcetree.tex}
+		%\input{sourcetree.tex}
 	\end{appendices}
 \end{document}
 

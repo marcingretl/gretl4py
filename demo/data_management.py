@@ -19,7 +19,7 @@ data97_df.set_as_default()
 # on previously loaded global dataset
 # for the first 4 quarters
 print("\nExample using default dataset:")
-data97_df.sample(t1=1, t2=4)
+data97_df.sample(1, 4)
 
 print('All about data9-7.csv (1975Q1:1975Q4)')
 data97_df.print()
@@ -34,3 +34,25 @@ print(data97_gdt.varnames())
 
 print('Variables in data97_csv')
 print(data97_csv.varnames())
+
+# we print only specified variables
+data97_gdt.print(series="QNC PRIME")
+
+##############################################
+# setobs
+##############################################
+data97_df.setobs(12, "1899:1")
+data97_df.print()
+
+##############################################
+# head() and tail()
+##############################################
+# to print the first 5 observations
+data97_gdt.head() # default 5
+
+# to print the first 5 observations by variable
+data97_gdt.headT(6)
+
+# to print the last 4
+data97_gdt.tail(4)
+

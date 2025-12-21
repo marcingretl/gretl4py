@@ -24,17 +24,51 @@ namespace py = pybind11;
 
 // template for NSE via dedicated Driver
 // on Python side class will be registered under 'name'
-template<typename T, typename Base = GretlModel_NSE>
+template <typename T, typename Base = GretlModel_NSE>
 static void bind_driver_model(py::module_ &m, const std::string &name)
 {
     py::class_<T, Base, std::unique_ptr<T>>(m, name.c_str(), py::dynamic_attr());
 }
 
+// wrappers for GretlModel_NSE_nl class to adding lines for parsing
+enum NLLineType { PARAMS, PARAM_NAMES, WEIGHTS, DERIV, ORTHOG, STATEMENTS };
+
+template <GretlCmdIndex CI, NLLineType type>
+static GretlModel_NSE_nl<CI> &nl_add_line_to_parse (GretlModel_NSE_nl<CI> &model,
+                                                    const std::string &line)
+{
+    constexpr bool is_str =
+        (type == PARAMS || type == PARAM_NAMES || type == WEIGHTS);
+
+    constexpr const char *keyword =
+        type == PARAMS      ? "params" :
+        type == PARAM_NAMES ? "param_names" :
+        type == WEIGHTS     ? "weights" :
+        type == DERIV       ? "deriv" :
+        type == ORTHOG      ? "orthog" :
+                              "statements";
+
+    model.template add_line_to_parse<is_str>(keyword, line);
+
+    return model;
+}
+
+template <GretlCmdIndex CI>
+static GretlModel_NSE_nl<CI> &nl_add_init_value (GretlModel_NSE_nl<CI> &model,
+                                                 const std::string &varname,
+                                                 double value)
+{
+    model.add_init_value(varname, value);
+
+    return model;
+}
+
+// GretlModel mappings
 void init_gretl4py_model_py11(py::module_ &m)
 {
     // base GretlModel class
     py::class_<GretlModel, GretlModelPtr>(m, "Model", py::dynamic_attr())
-        .def("__repr__", &GretlModel::repr)
+        .def("__repr__", &GretlModel::repr_impl)
         .def("fit",
              [](GretlModel &self) -> GretlModel&
              {
@@ -43,15 +77,21 @@ void init_gretl4py_model_py11(py::module_ &m)
                  return self;
              })
         .def("get_accessor", &GretlModel::get_accessor,
-             py::arg("accessor").none(false),
-             py::return_value_policy::take_ownership)
+             py::arg("accessor").none(false))
         .def("fcast", &GretlModel::forecast)
-        .def("get_formula", &GretlModel::get_formula);
+        .def("get_formula", &GretlModel::get_formula)
+        .def("get_bundle", &GretlModel::get_bundle);
 
     // Native Single Equation libgretl MODEL (NSE)
     py::class_<GretlModel_NSE, GretlModel, std::unique_ptr<GretlModel_NSE>>(m, "Model_NSE", py::dynamic_attr())
         .def("restrict", &GretlModel_NSE::restrict,
              py::arg("impose").none(false), py::kw_only())
+        .def("save_yhat", &GretlModel_NSE::gretl_get_fit_or_resid<M_YHAT>, py::arg("name").none(true) = "")
+        .def("save_uhat", &GretlModel_NSE::gretl_get_fit_or_resid<M_UHAT>, py::arg("name").none(true) = "")
+        .def("save_uhat_sq", &GretlModel_NSE::gretl_get_fit_or_resid<M_UHAT2>, py::arg("name").none(true) = "")
+        .def("save_ahat", &GretlModel_NSE::gretl_get_fit_or_resid<M_AHAT>, py::arg("name").none(true) = "")
+        .def("save_h", &GretlModel_NSE::gretl_get_fit_or_resid<M_H>, py::arg("name").none(true) = "")
+        .def("adj_rsq", &GretlModel_NSE::adj_rsq)
         .def("test",
              [](GretlModel_NSE &self, const std::string &type, const py::kwargs &kwargs)
              {
@@ -80,8 +120,6 @@ void init_gretl4py_model_py11(py::module_ &m)
 
     // NSE via dedicated Driver
     bind_driver_model<GretlModel_NSE_arima>(m, "Model_arima");
-    bind_driver_model<GretlModel_NSE_Driver_dpanel<dpd_model, DPANEL>>(m, "Model_dpanel");
-    bind_driver_model<GretlModel_NSE_Driver_quantreg<quantreg_driver, QUANTREG>>(m, "Model_quantreg");
     bind_driver_model<GretlModel_NSE_Driver<lsq, OLS>>(m, "Model_ols");
     bind_driver_model<GretlModel_NSE_Driver<lsq, WLS>>(m, "Model_wls");
     bind_driver_model<GretlModel_NSE_Driver<logit_probit, LOGIT>>(m, "Model_logit");
@@ -99,10 +137,38 @@ void init_gretl4py_model_py11(py::module_ &m)
     bind_driver_model<GretlModel_NSE_Driver<mp_ols, MPOLS>>(m, "Model_mpols");
     bind_driver_model<GretlModel_NSE_Driver<panel_model, PANEL>>(m, "Model_panel");
     bind_driver_model<GretlModel_NSE_Driver<ivreg, IVREG>>(m, "Model_ivreg");
-    bind_driver_model<GretlModel_NSE_Driver<tobit_model, TOBIT>>(m, "Model_tobit");
     bind_driver_model<GretlModel_NSE_Driver<hsk_model, HSK>>(m, "Model_hsk");
     bind_driver_model<GretlModel_NSE_Driver<interval_model, INTREG>>(m, "Model_intreg");
     bind_driver_model<GretlModel_NSE_Driver<midas_model, MIDASREG>>(m, "Model_midasreg");
+    bind_driver_model<GretlModel_NSE_Driver_quantreg>(m, "Model_quantreg");
+    bind_driver_model<GretlModel_NSE_Driver_tobit>(m, "Model_tobit");
+    bind_driver_model<GretlModel_NSE_Driver_dpanel>(m, "Model_dpanel");
+
+    // NL models (NLS/MLE/GMM)
+    py::class_<GretlModel_NSE_nl<NLS>, GretlModel_NSE,
+                std::unique_ptr<GretlModel_NSE_nl<NLS>>>(m, "Model_nls", py::dynamic_attr())
+        .def("add_params", &nl_add_line_to_parse<NLS, PARAMS>)
+        .def("add_param_names", &nl_add_line_to_parse<NLS, PARAM_NAMES>)
+        .def("add_deriv", &nl_add_line_to_parse<NLS, DERIV>)
+        .def("add_initval", &nl_add_init_value<NLS>,
+             py::arg("varname").none(false), py::arg("value").none(false));
+    py::class_<GretlModel_NSE_nl<MLE>, GretlModel_NSE,
+                std::unique_ptr<GretlModel_NSE_nl<MLE>>>(m, "Model_mle", py::dynamic_attr())
+        .def("add_params", &nl_add_line_to_parse<MLE, PARAMS>)
+        .def("add_param_names", &nl_add_line_to_parse<MLE, PARAM_NAMES>)
+        .def("add_deriv", &nl_add_line_to_parse<MLE, DERIV>)
+        .def("add_statements", &nl_add_line_to_parse<MLE, STATEMENTS>)
+        .def("add_initval", &nl_add_init_value<MLE>,
+             py::arg("varname").none(false), py::arg("value").none(false));
+    py::class_<GretlModel_NSE_nl<GMM>, GretlModel_NSE,
+                std::unique_ptr<GretlModel_NSE_nl<GMM>>>(m, "Model_gmm", py::dynamic_attr())
+        .def("add_params", &nl_add_line_to_parse<GMM, PARAMS>)
+        .def("add_param_names", &nl_add_line_to_parse<GMM, PARAM_NAMES>)
+        .def("add_weights", &nl_add_line_to_parse<GMM, WEIGHTS>)
+        .def("add_orthog", &nl_add_line_to_parse<GMM, ORTHOG>)
+        .def("add_statements", &nl_add_line_to_parse<GMM, STATEMENTS>)
+        .def("add_initval", &nl_add_init_value<GMM>,
+             py::arg("varname").none(false), py::arg("value").none(false));
 
     // VAR
     py::class_<GretlModel_VAR, GretlModel, std::unique_ptr<GretlModel_VAR>>(m, "Model_var", py::dynamic_attr())
@@ -111,12 +177,23 @@ void init_gretl4py_model_py11(py::module_ &m)
         .def("irf", py::overload_cast<int, int, double>(&GretlModel_VAR::irf),
              py::arg("targ").none(false), py::arg("shock").none(false), py::arg("alpha").none(true) = 0)
         .def("irf", py::overload_cast<const std::string&, const std::string&, double>(&GretlModel_VAR::irf),
-             py::arg("targ").none(false), py::arg("shock").none(false), py::arg("alpha").none(true) = 0);
+             py::arg("targ").none(false), py::arg("shock").none(false), py::arg("alpha").none(true) = 0)
+        .def("save_uhat", &GretlModel_VAR::save_uhat,
+             py::arg("eqn").none(false), py::arg("name").none(true) = "");
 
     // VECM
     py::class_<GretlModel_VAR_VECM, GretlModel_VAR, std::unique_ptr<GretlModel_VAR_VECM>>(m, "Model_vecm", py::dynamic_attr())
         .def("restrict", &GretlModel_VAR_VECM::restrict,
-             py::arg("impose").none(false), py::kw_only());
+             py::arg("impose").none(false), py::kw_only())
+        .def("save_ec_term", &GretlModel_VAR_VECM::save_ec_term,
+            py::arg("nr").none(false), py::arg("name").none(true) = "");
+
+    // Native Multiple Equation libgretl SYSTEM (NME) GretlModel_NME
+    py::class_<GretlModel_NME, GretlModel, std::unique_ptr<GretlModel_NME>>(m, "System", py::dynamic_attr())
+        .def("restrict", &GretlModel_NME::restrict,
+             py::arg("impose").none(false), py::kw_only())
+        .def("save_uhat", &GretlModel_NME::save_uhat,
+             py::arg("eqn").none(false), py::arg("name").none(true) = "");
 
     // GretlModel_package
     py::class_<GretlModel_package, GretlModel, std::unique_ptr<GretlModel_package>>(m, "Model_package", py::dynamic_attr())

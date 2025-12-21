@@ -1,0 +1,156 @@
+gretl version 2024a-git
+Current session: 2024-02-21 11:01
+
+#######################################################
+#   https://sourceforge.net/projects/bma-for-gretl/   #
+#######################################################
+# Usage:
+
+Read datafile /usr/local/share/gretl/data/greene/greene9_1.gdt
+periodicity: 1, maxobs: 25
+observations range: 1 to 25
+
+Listing 5 variables:
+  0) const      1) valadd     2) capital    3) labor      4) nfirm    
+
+BMA 3.2-svn, 2024-02-20 (Marcin Błażejowski, Jacek Kwiatkowski)
+
+BMA setup:            done!
+MC3 setup:            done!
+MC3 overall progress: [#########################] 100.0%
+Collecting results:
+           averaging: [#########################] 100.0%
+                      done!
+Summarizing:          done!
+----------------------------------
+Model prior: custom
+Prior average model size: NA
+Significance level for the initial model: 0.600000
+g-prior: Benchmark prior
+Total number of iterations: 10000
+Number of burn-in draws: 1000
+Total number of possible models: 8
+Number of models visited: 8
+Number of models accepted: 5
+----------------------------------
+
+The initial model:
+
+OLS, using observations 1-25
+Dependent variable: valadd
+
+             coefficient   std. error   t-ratio   p-value
+  -------------------------------------------------------
+  const      −24.3770      32.0162      −0.7614   0.4549 
+  capital      4.14768      0.876598     4.732    0.0001  ***
+  labor        4.14645      0.933105     4.444    0.0002  ***
+  nfirm        0.330802     0.217392     1.522    0.1430 
+
+SSR = 268686, R-squared = 0.988005
+
+----------------------------------
+
+Prior:
+	average model size: NA
+	standard deviation: NA
+Posterior:
+	average model size: 1.984778
+	standard deviation: 0.543130
+
+----------------------------------
+
+Posterior moments (unconditional and conditional on inclusion):
+                    PIP           Mean       Std.Dev.      Cond.Mean  Cond.Std.Dev.
+  labor        0.929556       5.124192       2.040294       5.512518       1.528925
+capital        0.788222       2.872220       2.173667       3.643921       1.783890
+  nfirm        0.267000       0.102667       0.366913       0.384520       0.629156
+
+Inclusion Probabilities
+                  Prior            PIP
+  labor        0.500000       0.929556
+capital        0.500000       0.788222
+  nfirm        0.500000       0.267000
+
+----------------------------------
+
+Posterior probability of models:
+Best 1	 models account for 0.5778 of mass
+Best 3	 models account for 0.8730 of mass
+Best 4	 models account for 0.9434 of mass
+Best 5	 models account for 1.0000 of mass
+
+Best models ranking:
+Model 1:	0.577778
+Model 2:	0.155222
+Model 3:	0.140000
+Model 4:	0.070444
+Total probability of the models in ranking (numerical): 0.943444
+
+Correlation coefficient between the analytical
+and numerical probabilities of the above models: 0.999486
+----------------------------------
+
+Posterior joint probability of variables:
+                capital          labor          nfirm
+capital             nan       0.717778       0.210444
+  labor        0.717778            nan       0.196556
+  nfirm        0.210444       0.196556            nan
+
+Jointness statistics (Modified Yule's Q Measure (MYQ)):
+                capital          labor          nfirm
+capital             nan       0.393964      -0.237633
+  labor        0.393964            nan      -0.643686
+  nfirm       -0.237633      -0.643686            nan
+
+Significant substitutes:
+labor,nfirm     -0.64369 
+
+
+Significant complements:
+capital,labor      0.39396 
+
+
+
+Best models estimates:
+----------------------------------
+
+Model: 1, posterior probability: 0.577778
+             coefficient   std. error     z      p-value 
+  -------------------------------------------------------
+  const       684.192      43.8221      15.61    5.94e-55 ***
+  capital       3.09267     1.21568      2.544   0.0110   **
+  labor         5.17195     0.897734     5.761   8.36e-09 ***
+
+
+----------------------------------
+
+Model: 2, posterior probability: 0.155222
+             coefficient   std. error     z     p-value 
+  ------------------------------------------------------
+  const       684.192      49.6058      13.79   2.82e-43 ***
+  labor         7.26954     0.401935    18.09   4.08e-73 ***
+
+
+----------------------------------
+
+Model: 3, posterior probability: 0.140000
+             coefficient   std. error      z      p-value 
+  --------------------------------------------------------
+  const      684.192       43.2752      15.81     2.64e-56 ***
+  capital      3.98815      1.67686      2.378    0.0174   **
+  labor        3.98697      1.78495      2.234    0.0255   **
+  nfirm        0.318078     0.415853     0.7649   0.4443  
+
+
+----------------------------------
+
+Model: 4, posterior probability: 0.070444
+             coefficient   std. error     z      p-value 
+  -------------------------------------------------------
+  const       684.192      47.7387      14.33    1.38e-46 ***
+  capital       7.48107     0.667823    11.20    3.98e-29 ***
+  nfirm         1.12428     0.227844     4.934   8.04e-07 ***
+
+----------------------------------
+
+

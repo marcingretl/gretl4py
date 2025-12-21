@@ -19,12 +19,14 @@
  """
 import inspect
 import sys
+from typing import TypedDict, NotRequired, Dict, List, Any
+from .gretl4py_addons import _pd_to_pandas_str_format
 from . import _gretl
 
 # #######################################################
 #   GretlModel class
 # #######################################################
-def attrs(self):
+def _attrs (self):
     for attname in dir(self):
         if not attname.startswith("_"):
             attr = getattr(self, attname)
@@ -37,7 +39,7 @@ def attrs(self):
             else:
                 print(f'{attname}: {type(attr)}')
 
-def oddsratio(self):
+def _oddsratio (self):
     try:
         from tabulate import tabulate
     except ModuleNotFoundError:
@@ -54,11 +56,131 @@ def oddsratio(self):
         print('*** warning: oddsratios not available for current model ***\n')
         print(f'Debug info: {e}')
 
+# #######################################################
+#   GretlModel_nl class
+# #######################################################
+class NLSpec (TypedDict, total=False):
+    formula: str
+    params: str
+    param_names: str
+    initvals: Dict[str, str]
+    statements: List[str]
+    deriv: Dict[str, str]
+    orthog: List[str]
+    weights: str
+
+def mle (formula: str | NLSpec, **options: Any):
+    """
+    MLE factory for gretl. Accepts either:
+
+    - a string formula
+    - an NLSpec dictionary
+
+    Extra keyword arguments in **options are forwarded to _gretl._mle().
+    """
+
+    # via NLSpec
+    if isinstance(formula, dict):
+        loglik = formula.get("formula", "")
+        params = formula.get("params", "")
+        param_names = formula.get("param_names", "")
+        initvals = formula.get("initvals", {})
+        deriv = formula.get("deriv", {})
+        statements = formula.get("statements", [])
+
+        return _gretl._mle(loglik, params=params,
+                            param_names=param_names,
+                            initvals=initvals,
+                            statements=statements,
+                            deriv=deriv, **options)
+
+    # passed as string + kwargs
+    if isinstance(formula, str):
+        return _gretl._mle(loglik=formula, **options)
+
+    # if error
+    raise TypeError(f"Unsupported MLE specification of type {type(formula).__name__}; "
+        "expected a string formula or an NLSpec dictionary.")
+
+def nls (formula: str | NLSpec, **options: Any):
+    """
+    NLS factory for gretl. Accepts either:
+
+    - a string formula
+    - an NLSpec dictionary
+
+    Extra keyword arguments in **options are forwarded to _gretl._mle().
+    """
+
+    # via NLSpec
+    if isinstance(formula, dict):
+        function = formula.get("formula", "")
+        params = formula.get("params", "")
+        param_names = formula.get("param_names", "")
+        initvals = formula.get("initvals", {})
+        deriv = formula.get("deriv", {})
+
+        return _gretl._nls(function, params=params,
+                            param_names=param_names,
+                            initvals=initvals,
+                            deriv=deriv, **options)
+
+    # passed as string + kwargs
+    if isinstance(formula, str):
+        return _gretl._nls(function=formula, **options)
+
+    # if error
+    raise TypeError(f"Unsupported NLS specification of type {type(formula).__name__}; "
+        "expected a string formula or an NLSpec dictionary.")
+
+def gmm (formula: str | NLSpec, **options: Any):
+    """
+    GMM factory for gretl. Accepts either:
+
+    - a string formula
+    - an NLSpec dictionary
+
+    Extra keyword arguments in **options are forwarded to _gretl._mle().
+    """
+
+    # via NLSpec
+    if isinstance(formula, dict):
+        resid = formula.get("formula", "")
+        params = formula.get("params", "")
+        param_names = formula.get("param_names", "")
+        initvals = formula.get("initvals", {})
+        statements = formula.get("statements", [])
+        orthog = formula.get("orthog", [])
+        weights = formula.get("weights", "")
+
+        return _gretl._gmm(resid, params=params,
+                            param_names=param_names,
+                            initvals=initvals,
+                            statements=statements,
+                            orthog=orthog, weights=weights,
+                            **options)
+
+    # passed as string + kwargs
+    if isinstance(formula, str):
+        return _gretl._gmm(resid=formula, **options)
+
+    # if error
+    raise TypeError(f"Unsupported NLS specification of type {type(formula).__name__}; "
+        "expected a string formula or an NLSpec dictionary.")
+
+# #######################################################
+#   GretlModel_NME class
+# #######################################################
+class MESpec (TypedDict, total=False):
+    equations: List[str]
+    instruments: List[str]
+    identities: List[str]
+    endogs: str
 
 # #######################################################
 #   GretlDataset class
 # #######################################################
-def get_data(src, **kwargs):
+def get_data (src, **kwargs):
     """Load dataset from file path or dictionary.
 
     Parameters:
@@ -106,7 +228,7 @@ def get_data(src, **kwargs):
 
     return dset
 
-def show_data_status():
+def show_data_status ():
     """List of available datasets."""
 
     # get the caller's global and local variables
@@ -129,6 +251,72 @@ def show_data_status():
             else:
                 defaut = ""
             print(f'{d}: {dset.get_id():d}, {dset.source:s} {defaut:s} - referenced by models: {list(dset.linked_models_list())}')
+
+def _to_dataframe (self):
+    """Method for exporting _gretl.Dataset instance as Pandas DataFrame"""
+
+    try:
+        import pandas as pd
+        import numpy as np
+    except ModuleNotFoundError:
+        print("*** warning: 'pandas' package required ***\n")
+        return None
+
+    # we grab data as dict + some characteristics
+    as_d = self.to_dict()
+    datatype = self.get_accessor("$datatype")
+    pdcode = self.get_accessor("$pd")
+
+    # base frame
+    df = pd.DataFrame(
+        data = as_d["data_array"],
+        columns = as_d["varname"],
+        index = as_d["obs_labels"])
+
+    # we deal with dataset types
+    if datatype == 1:
+        # cross-sectional
+        return df
+    elif datatype == 2:
+        # time-series
+        freq = _pd_to_pandas_str_format(panel_freq)
+
+        if freq is not None:
+            try:
+                df.index = pd.PeriodIndex(df.index, freq=freq)
+            except Exception:
+                pass
+        return df
+    elif datatype == 3:
+        # panel
+        panel_unit = np.array(self.get_accessor("$unit"))
+        panel_freq = self.get_accessor("$panelpd")
+
+        # generate sequential time values per unit
+        panel_time = np.zeros_like(panel_unit)
+        for u in np.unique(panel_unit):
+            mask = panel_unit == u
+            panel_time[mask] = np.arange(mask.sum())
+
+        # base multi-index
+        df.index = pd.MultiIndex.from_arrays([panel_unit, panel_time],
+                                                names=["unit", "time"])
+
+        # if we have real periodicity - convert time level _only_
+        freq = _pd_to_pandas_str_format(panel_freq)
+
+        if freq is not None:
+            try:
+                df = df.set_index(df.index.set_levels(
+                                    pd.PeriodIndex(df.index.levels[1],
+                                                    freq=freq),
+                                                    level="time"))
+            except Exception:
+                pass
+        return df
+
+    # unknown datatype -> return raw df
+    return df
 
 if __name__ == "__main__":
     pass

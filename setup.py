@@ -1,9 +1,17 @@
 import sys
 import os
 import sysconfig
+from pathlib import Path
 from setuptools import setup, find_packages, Extension
 import glob
 
+# Version from single source
+version_file = Path(__file__).parent / "version.cfg"
+try:
+    with open(version_file, "r", encoding="utf-8") as f:
+        version = f.read().strip()
+except FileNotFoundError:
+    exit("Warning: version.cfg not found")
 
 EXT = sysconfig.get_config_var("EXT_SUFFIX")
 binary_path = os.path.join(os.getcwd(), 'gretl', '_gretl' + EXT)
@@ -53,7 +61,7 @@ ext_modules = [
 
 setup(
     name='gretl4py',
-    version='0.21',
+    version=version,
     license='GPL-3.0-or-later',
     description='Python bindings for gretl',
     python_requires='>=3.11',
@@ -66,13 +74,15 @@ setup(
     include_package_data=True,
     zip_safe=False,
     classifiers=[
-        'Programming Language :: Python :: 3',
-        'Programming Language :: C++',
-        'Operating System :: OS Independent',
-        'License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)',
-        'Development Status :: 4 - Beta',
-        'Intended Audience :: Developers',
-        'Topic :: Scientific/Engineering',
+    'Programming Language :: Python :: 3',
+    'Programming Language :: C++',
+    'Operating System :: OS Independent',
+    'License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)',
+    'Development Status :: 4 - Beta',
+    'Intended Audience :: Developers',
+    'Intended Audience :: Science/Research',
+    'Intended Audience :: End Users/Desktop',
+    'Topic :: Scientific/Engineering',
     ],
     ext_modules=ext_modules,
 )

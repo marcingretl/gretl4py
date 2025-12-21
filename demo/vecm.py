@@ -5,7 +5,7 @@ import gretl
 data_dir = resources.files('gretl').joinpath('data')
 
 d1 = gretl.get_data(str(data_dir.joinpath('denmark.gdt')))
-d1.sample(t1=1, t2=51)
+d1.sample(1, 51)
 
 #print(d1.varnames())
 m1 = gretl.vecm(order=2, rank=1, ylist='LRM LRY', xlist='IBO IDE', rc=True, seasonals=True).fit()
@@ -25,6 +25,14 @@ print(m1.tests[-1]['pvalue'])
 
 m1.test(type="normality", silent=True)
 print(m1.tests[-1]['summary'])
+
+# add uhat to dataset
+uhat_name = m1.save_uhat(eqn=2)
+print(f'residuals added as: {uhat_name}')
+
+# add EC term to dataset
+ec_name = m1.save_ec_term(nr=1)
+print(f'EC term added as: {ec_name}')
 
 #FORECASTS
 print("\n****************************")

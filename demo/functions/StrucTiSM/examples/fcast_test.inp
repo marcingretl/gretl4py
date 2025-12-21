@@ -1,0 +1,40 @@
+clear
+set verbose off
+set seed 789781
+include StrucTiSM.gfn
+
+nulldata 176
+setobs 1 1 --special-time-series
+
+s_eta = 0.2
+s_eps = 0.1
+beta = 2
+series m = cum(normal() * s_eta)
+series exo = floor(time/20) % 2 ? 1 : -1
+series eps = normal() * s_eps
+
+## Local level w/exo
+
+y = beta * exo + m + eps
+
+Ttot = $nobs
+smpl 1 128
+Trest = $nobs
+Tfor = Ttot - Trest
+fp_mod = STSM_setup(y, 1, 1, 0, 0, exo)
+err = STSM_estimate(&fp_mod)
+
+smpl full
+
+STSM_fcast(&fp_mod, Tfor)
+
+N = Ttot - Tfor + 1
+smpl N ;
+series yhat = fp_mod.fcast
+series fse = sqrt(fp_mod.fcastvar)
+
+smpl full
+
+gnuplot y yhat -to --output=display \
+  --band=yhat,fse --band-style=fill,grey \ 
+  --single-yaxis

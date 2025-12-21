@@ -1,0 +1,16 @@
+#######################################################
+#   https://sourceforge.net/projects/bma-for-gretl/   #
+#######################################################
+
+# Usage:
+set verbose off
+open greene9_1.gdt
+include BMA.gfn
+
+# We set the seed in order to exact reproduction of results
+set seed 1000000
+
+list greene = capital labor nfirm
+results_b = BMA(valadd, greene)
+
+# More complex examples are described at section 4.2.2 of the PDF.
