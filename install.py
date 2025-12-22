@@ -43,11 +43,13 @@ shutil.copy(SRC, MODULE_PATH)
 LIB_DIR = os.path.join(MODULE_PATH, 'lib')
 os.makedirs(LIB_DIR, exist_ok=True)
 
-data_files = glob.glob(os.path.join(SOURCE_DIR, 'gretl', 'lib', '*'))
-
-for path in data_files:
+plugin_files = glob.glob(os.path.join(SOURCE_DIR, 'gretl', 'lib', '*'))
+for path in plugin_files:
     if os.path.isfile(path):
-        shutil.copy(path, LIB_DIR)
+        try:
+            shutil.copy(path, LIB_DIR)
+        except shutil.SameFileError:
+            pass
     elif os.path.isdir(path):
         dest = os.path.join(LIB_DIR, os.path.basename(path))
         if os.path.exists(dest):
