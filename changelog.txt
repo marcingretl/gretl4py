@@ -2,6 +2,8 @@ version 0.41:
     - general libgretl printer (available as 'gretl.print()')
     - some code refactoring (simplified and cleaned up)
     - officialy add interface to libgretl's genr (available as 'gretl.genr()')
+    - robustify install.py (thanks, Allin)
+    - 'fractint' test added
 
 version 0.4:
     - add GretlaDataset::dummyfi() method

@@ -765,6 +765,8 @@ void unpack_kwargs_test (gretlopt &opt, const std::string &type,
         ci = CORRGM;
     } else if (type == "cusum") {
         ci = CUSUM;
+    } else if (type == "fractint") {
+        ci = FRACTINT;
     } else if (type == "difftest") {
         ci = DIFFTEST;
     } else if (type == "johansen") {

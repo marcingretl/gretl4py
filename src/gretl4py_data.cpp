@@ -1546,6 +1546,8 @@ void GretlDataset::test (const std::string &type, const std::string &vars,
         err_ = corrgram(ex_var.get()[1], order, 0, dset, opt_, GP_.prn_ptr());
     } else if (type == "difftest") {
         err_ = diff_test(ex_var.get(), dset, opt_, GP_.prn_ptr());
+    } else if (type == "fractint") {
+        err_ = fractint(ex_var.get()[1], order, dset, opt_, GP_.prn_ptr());
     } else if (type == "johansen") {
         err_ = johansen_test_simple(order, ex_var.get(), dset, opt_, GP_.prn_ptr());
     } else if (type == "kpss") {
