@@ -2035,7 +2035,7 @@ GretlPackage::GretlPackage (const std::string &pkg_name,
               + "\n  main function: " + (main_func_.empty() ? "none" : main_func_)
               + ", provides estimator: " + (defines_estimator_ ? "yes" : "no"));
     if (main_func_.empty()) {
-        py::print("warning: package main function didn't found: please use ::set_main()");
+        py::print("warning: package main function was not found: please use ::set_main()");
     }
     py::print();
 }
