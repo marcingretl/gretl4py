@@ -106,16 +106,38 @@ public:
     GretlDataset (const GretlDataset &src);     // copy constructor (always deep copy)
     virtual ~GretlDataset (void);               // virtual, because GretlModel use it as std::shared_ptr
 
+    // instance management
     bool is_panel (void) const;
 
+    void linked_models_add (const int model_id);
+
+    void linked_models_del (const int model_id);
+
+    std::unordered_set<int> linked_models_list (void) const;
+
+    void print (const py::kwargs &kwargs);
+
+    std::string repr (void) const;
+
+    void set_as_default (void);
+
+    int get_id (void) const;
+
+    // exporters
     py::dict to_dict (void) const;
 
     void to_file (const std::string &fname, const py::kwargs &kwargs);
 
-    std::string repr (void) const;
+    py::object get_accessor (const std::string &accessor) const;
 
-    void print (const py::kwargs &kwargs);
+    // dataset information
+    py::list varnames (void) const;
 
+    int get_series_id (const std::string &series, const bool verbose = true) const;
+
+    // dataset management
+    void setobs (const std::string &periodicity, const std::string &startobs,
+                 const py::kwargs &kwargs);
     //void sample (const py::kwargs &kwargs);
 
     void smpl (const std::string &startobs, const std::string &endobs,
@@ -124,14 +146,7 @@ public:
     template <typename T>
     GretlDatasetPtr getitem_impl (const T &slice);
 
-    py::object corr (const std::string &vars, const py::kwargs &kwargs);
-
-    py::object cov (const std::string &vars);
-
-    void set_as_default (void);
-
-    void setobs (const std::string &periodicity, const std::string &startobs,
-                 const py::kwargs &kwargs);
+    void gretl_series_set_label (const int number, char *label);
 
     char *add_series (gretl_double_ptr data,
                       const std::string &name, int n,
@@ -147,35 +162,22 @@ public:
 
     void new_list (const std::string &name, const std::string &value);
 
+    py::object get_series (const std::string &series) const;
+
+    // tests
+    void test (const std::string &type, const std::string &vars,
+               const py::kwargs &kwargs);
+
+    // transformations
     template <GretlCmdIndex CI>
     void transforms (const std::string &vars, const py::kwargs &kwargs);
 
     template <GretlCmdIndex CI>
     void transforms_no_opts (const std::string &vars);
 
-    void gretl_series_set_label (const int number, char *label);
-
     void lags (const std::string &vars, int order);
 
-    py::list varnames (void) const;
-
-    int get_id (void) const;
-
-    int get_series_id (const std::string &series, const bool verbose = true) const;
-
-    void linked_models_add (const int model_id);
-
-    void linked_models_del (const int model_id);
-
-    std::unordered_set<int> linked_models_list (void) const;
-
-    py::object get_accessor (const std::string &accessor) const;
-
-    void test (const std::string &type, const std::string &vars,
-               const py::kwargs &kwargs);
-
-    py::object get_series (const std::string &series) const;
-
+    // filters, correlations, etc
     DNumPyArrayFC hpfilt (const std::string &series, double hp_lambda = NADBL,
                           bool trend = false, bool one_sided = false);
 
@@ -183,6 +185,10 @@ public:
 
     DNumPyArrayFC bkfilt (const std::string &series, int f1 = 0,
                           int f2 = 0, int k = 0);
+
+    py::object corr (const std::string &vars, const py::kwargs &kwargs);
+
+    py::object cov (const std::string &vars);
 };
 
 //
