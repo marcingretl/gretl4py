@@ -210,6 +210,7 @@ void init_gretl4py_dataset_py11(py::module_ &m)
         .def("corr", &GretlDataset::corr,
              py::arg("vars").none(true) = "", py::kw_only())
         .def("cov", &GretlDataset::cov, py::arg("vars").none(true) = "")
+        .def("hurst", &GretlDataset::hurst, py::arg("series").none(false))
         .def("test",
              [](GretlDataset &self, const std::string &type, const py::kwargs &kwargs)
              {

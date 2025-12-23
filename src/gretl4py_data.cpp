@@ -1336,6 +1336,25 @@ py::object GretlDataset::cov (const std::string &vars)
 
     return variant_to_pyobject(std::move(*res));
 }
+
+py::object GretlDataset::hurst (const std::string &series)
+{
+    //
+    // we compute the Hurst exponent for given series
+    //
+    gretl_list_ptr var_list{nullptr};
+    opt_ = OPT_NONE;
+
+    // we switch off gnuplot
+    gretl_valid_long_opt(opt_, HURST, "plot", py::handle(), "none");
+
+    // we do the job
+    var_list = list_from_formula(series, dset, err_);
+    err_ = hurstplot(var_list.get(), dset, opt_, GP_.prn_ptr());
+    if (err_) handle_gretl_error(err_);
+
+    return get_accessor("$result");
+}
 /*
 void GretlDataset::setobs (const py::kwargs &kwargs)
 {

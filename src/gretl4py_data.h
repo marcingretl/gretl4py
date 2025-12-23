@@ -107,30 +107,30 @@ public:
     virtual ~GretlDataset (void);               // virtual, because GretlModel use it as std::shared_ptr
 
     // instance management
-    bool is_panel (void) const;
+    int get_id (void) const;
+
+    std::string repr (void) const;
+
+    std::unordered_set<int> linked_models_list (void) const;
 
     void linked_models_add (const int model_id);
 
     void linked_models_del (const int model_id);
 
-    std::unordered_set<int> linked_models_list (void) const;
-
     void print (const py::kwargs &kwargs);
-
-    std::string repr (void) const;
 
     void set_as_default (void);
 
-    int get_id (void) const;
-
     // exporters
+    py::object get_accessor (const std::string &accessor) const;
+
     py::dict to_dict (void) const;
 
     void to_file (const std::string &fname, const py::kwargs &kwargs);
 
-    py::object get_accessor (const std::string &accessor) const;
-
     // dataset information
+    bool is_panel (void) const;
+
     py::list varnames (void) const;
 
     int get_series_id (const std::string &series, const bool verbose = true) const;
@@ -189,6 +189,8 @@ public:
     py::object corr (const std::string &vars, const py::kwargs &kwargs);
 
     py::object cov (const std::string &vars);
+
+    py::object hurst (const std::string &series);
 };
 
 //

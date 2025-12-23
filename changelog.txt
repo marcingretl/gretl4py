@@ -4,6 +4,7 @@ version 0.41:
     - officialy add interface to libgretl's genr (available as 'gretl.genr()')
     - robustify install.py (thanks, Allin)
     - 'fractint' test added
+    - GretlDataset::hurst() method added
 
 version 0.4:
     - add GretlaDataset::dummyfi() method
