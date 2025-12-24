@@ -191,6 +191,8 @@ public:
     py::object cov (const std::string &vars);
 
     py::object hurst (const std::string &series);
+
+    py::object xcorrgm (const std::string &vars, int order);
 };
 
 //

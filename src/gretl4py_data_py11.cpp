@@ -211,6 +211,20 @@ void init_gretl4py_dataset_py11(py::module_ &m)
              py::arg("vars").none(true) = "", py::kw_only())
         .def("cov", &GretlDataset::cov, py::arg("vars").none(true) = "")
         .def("hurst", &GretlDataset::hurst, py::arg("series").none(false))
+        .def("xcorrgm",
+             [](GretlDataset &self, const std::string &vars, int order)
+             {
+                 return self.xcorrgm(vars, order);
+             },
+             py::arg("vars").none(false), py::arg("order").none(true) = 0)
+        .def("xcorrgm",
+             [](GretlDataset &self, const std::string &series1,
+                const std::string &series2, int order)
+             {
+                 return self.xcorrgm(series1 + " " + series2, order);
+             },
+             py::arg("series1").none(false), py::arg("series2").none(false),
+             py::arg("order").none(true) = 0)
         .def("test",
              [](GretlDataset &self, const std::string &type, const py::kwargs &kwargs)
              {

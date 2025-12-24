@@ -1358,6 +1358,27 @@ py::object GretlDataset::hurst (const std::string &series)
 
     return get_accessor("$result");
 }
+
+py::object GretlDataset::xcorrgm (const std::string &vars, int order)
+{
+    //
+    // we perform cross-correlogram for vars
+    //
+    gretl_list_ptr var_list{nullptr};
+    opt_ = OPT_NONE;
+
+    // we switch off gnuplot
+    gretl_valid_long_opt(opt_, XCORRGM, "plot", py::handle(), "none");
+
+    // we do the job
+    var_list = list_from_formula(vars, dset, err_);
+    err_ = xcorrgram(var_list.get(), order, dset, opt_, GP_.prn_ptr());
+    if (err_) handle_gretl_error(err_);
+    GP_.print();
+
+    return get_accessor("$result");
+}
+
 /*
 void GretlDataset::setobs (const py::kwargs &kwargs)
 {
