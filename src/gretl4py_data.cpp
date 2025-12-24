@@ -1354,6 +1354,7 @@ py::object GretlDataset::hurst (const std::string &series)
     var_list = list_from_formula(series, dset, err_);
     err_ = hurstplot(var_list.get(), dset, opt_, GP_.prn_ptr());
     if (err_) handle_gretl_error(err_);
+    GP_.print();
 
     return get_accessor("$result");
 }
