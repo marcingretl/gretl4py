@@ -431,15 +431,15 @@ GretlDataset::GretlDataset (const std::string &fname,
     }
 
     allocate_dset_();
-    if (dset) {
-        if (full_path.empty()) {
-            err_ = gretl_get_data(fname.c_str(), dset, OPT_NONE, NULL);
-        } else {
-            err_ = gretl_get_data(full_path.c_str(), dset, OPT_NONE, NULL);
-        }
+    if (!dset) handle_gretl_error(E_ALLOC);
+
+    if (full_path.empty()) {
+        err_ = gretl_get_data(fname.c_str(), dset, OPT_NONE, GP_.prn_ptr());
     } else {
-        err_ = E_ALLOC;
+        err_ = gretl_get_data(full_path.c_str(), dset, OPT_NONE, GP_.prn_ptr());
     }
+    GP_.print();
+
     if (err_) {
         destroy_dataset(dset);
         handle_gretl_error(err_);
@@ -925,10 +925,12 @@ std::string GretlDataset::repr (void) const
 {
     std::string ret = "GretlDataset, source " + source;
 
-    auto desc = gretl_get_gdt_description(source.c_str(), &err_);
-    if (!err_) {
-        ret.append("\n").append(desc);
-        std::free(desc);
+    if (std::filesystem::exists(source)) {
+        auto desc = gretl_get_gdt_description(source.c_str(), &err_);
+        if (!err_) {
+            ret.append("\n").append(desc);
+            std::free(desc);
+        }
     }
 
     return ret;
