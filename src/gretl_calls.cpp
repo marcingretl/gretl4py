@@ -205,14 +205,18 @@ GretlBundlePtr about (bool do_print)
 //////////////////////////////////////////////////
 // static functions
 //////////////////////////////////////////////////
-
-static gretlopt unpack_kwargs_command (GretlCmdIndex ci,
-                                       GretlDatasetPtr &GD,
-                                       const py::kwargs &kwargs)
+template <typename T>
+gretlopt unpack_kwargs_command (GretlCmdIndex ci, T &GD,
+                                const py::kwargs &kwargs)
 {
     //
     // unpack kwargs for libgretl's command interfaces
+    // note: for tests, there is dedicated unpack_kwargs_test()
     //
+    static_assert(std::is_same_v<T, GretlDatasetPtr>
+                  || std::is_same_v<T, std::nullptr_t>,
+                  "GD must be GretlDatasetPtr or std::nullptr_t");
+
     gretlopt opt = OPT_NONE;
 
     if (py::len(kwargs) > 0) {
@@ -220,15 +224,15 @@ static gretlopt unpack_kwargs_command (GretlCmdIndex ci,
             if (!is_pystr(item.first)) throw std::invalid_argument("option key must be a string");
             const std::string &key = item.first.cast<std::string>();
 
-            if (key == "data") {
-                // special case: we use already allocated object of GretlDataset class
-                GD = item.second.cast<GretlDatasetPtr>();
-                continue;
-            } else if (key == "silent") {
-                // special case: silent is processed manually later on
-                continue;
-            } else if (key == "plot") {
-                throw std::invalid_argument("invalid option flag: " + key);
+            // special case: we use GretlDataset class object passed by kwargs
+            if constexpr (std::is_same_v<T, GretlDatasetPtr>) {
+                if (key == "data") {
+                    GD = item.second.cast<GretlDatasetPtr>();
+                    continue;
+                }
+            }
+            if (key == "plot") {
+                throw std::invalid_argument("'plot' option not available");
             } else {
                 gretl_valid_long_opt(opt, ci, key, item.second);
             }
@@ -242,7 +246,9 @@ static gretlopt unpack_kwargs_command (GretlCmdIndex ci,
     }
 
     // if we didn't get dataset, let use global
-    if (!GD) GD = DSET;
+    if constexpr (std::is_same_v<T, GretlDatasetPtr>) {
+        if (!GD) GD = DSET;
+    }
 
     return opt;
 }
@@ -339,7 +345,6 @@ void do_set (const std::string &key, const std::string &value,
                       value.empty() ? NULL : value.c_str(),
                       GD ? GD->dset : NULL, opt, GP.prn_ptr());
     if (err) handle_gretl_error(err);
-
     GP.print();
 }
 
@@ -375,7 +380,6 @@ void do_gretl_summary (const std::string &varlist, const py::kwargs &kwargs)
                                   opt, GP.prn_ptr());
     }
     if (err) handle_gretl_error(err);
-
     GP.print();
 }
 
@@ -417,7 +421,6 @@ void do_gretl_print (const std::string &varlist,
                         GD ? GD->dset : NULL, opt, GP.prn_ptr());
     }
     if (err) handle_gretl_error(err);
-
     GP.print();
 }
 
@@ -673,7 +676,11 @@ void handle_gretl_error (int err)
     // note: ArgErr in not complete!!!
     //
     const std::unordered_set<GretlError> ArgErr{ E_ARGS, E_INVARG, E_UNKVAR };
+
+    gretl_error_clear();
+
     const char *msg = errmsg_get_with_default(err);
+    if (!msg) msg = "unknown error";
 
     if (ArgErr.count(static_cast<GretlError>(err))) {
         throw std::invalid_argument(msg);
