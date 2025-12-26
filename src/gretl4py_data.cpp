@@ -1119,28 +1119,22 @@ void GretlDataset::smpl (const std::string &startobs, const std::string &endobs,
     };
 
     gretl_list_ptr var_list{nullptr};
-    bool quiet = false;
+    std::nullptr_t fakeGD = nullptr;
+    std::string vars;
     bool report = false;
-    opt_ = OPT_NONE;
 
-    if (py::len(kwargs) > 0) {
-        for (auto &item : kwargs) {
-            if (!is_pystr(item.first)) throw std::invalid_argument("option key must be a string");
-            const std::string &key = item.first.cast<std::string>();
+    // we make a 'soft' copy of kwargs here (only pointer is copied!!!)
+    py::dict kwargs_copy = kwargs;
 
-            if (key == "varlist") {
-                if (!is_pystr(item.second)) throw std::invalid_argument("'varlist' must be a string");
-                var_list = list_from_formula(item.second.cast<std::string>(), dset, err_);
-                continue;
-            } else if (key == "quiet") {
-                // FIXME: somehow doesn't work throught gretl_valid_long_opt
-                quiet = item.second.cast<bool>();
-                continue;
-            } else {
-                gretl_valid_long_opt(opt_, SMPL, key, item.second);
-            }
-        }
+    // note: we modify kwargs here!!!!
+    if (kwargs_copy.contains("varlist")) {
+        load_objects_from_dict<std::string>(kwargs_copy, "varlist", vars);
+        kwargs_copy.attr("pop")("varlist");
+        var_list = list_from_formula(vars, dset, err_);
     }
+
+    // we unpack kwargs;
+    opt_ = unpack_kwargs_command(SMPL, fakeGD, kwargs_copy);
 
     // we do the job
     if (!dset || dset->n <= 0) {
@@ -1170,7 +1164,7 @@ void GretlDataset::smpl (const std::string &startobs, const std::string &endobs,
 
     if (!report && (opt_ & OPT_Q)) print_smpl(dset, get_full_length_n(), OPT_NONE, GP_.prn_ptr());
 
-    if (!quiet) GP_.print();
+    GP_.print();
 }
 
 template <typename T>
