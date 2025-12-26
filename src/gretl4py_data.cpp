@@ -738,31 +738,20 @@ py::dict GretlDataset::to_dict (void) const
     return as_dict;
 }
 
-void GretlDataset::to_file (const std::string &fname,
+void GretlDataset::to_file (const std::string &fname, const std::string &vars,
                             const py::kwargs &kwargs)
 {
     //
-    // we write gretl data to file named by @fname
+    // methods which mimics libgretl's STORE command
     //
     gretl_list_ptr varlist{nullptr};
-    opt_ = OPT_NONE;
+    std::nullptr_t fakeGD = nullptr;
 
-    // we handle options
-    if (py::len(kwargs) > 0) {
-        for (const auto &item : kwargs) {
-            const std::string &key = item.first.cast<std::string>();
+    // we handle varlist
+    if (!vars.empty()) varlist = list_from_formula(vars, dset, err_);
 
-            if (key == "vars") {
-                if (!is_pystr(item.second)) throw std::invalid_argument("'vars' must be a string");
-                auto val_str = py::cast<std::string>(item.second);
-
-                varlist = list_from_formula(val_str, dset, err_);
-                continue;
-            } else {
-                gretl_valid_long_opt(opt_, STORE, key, item.second);
-            }
-        }
-    }
+    // we unpack kwargs;
+    opt_ = unpack_kwargs_command(STORE, fakeGD, kwargs);
 
     // we do the job
     if (opt_ & OPT_A) {

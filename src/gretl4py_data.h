@@ -126,7 +126,8 @@ public:
 
     py::dict to_dict (void) const;
 
-    void to_file (const std::string &fname, const py::kwargs &kwargs);
+    void to_file (const std::string &fname, const std::string &vars,
+                  const py::kwargs &kwargs);
 
     // dataset information
     bool is_panel (void) const;
