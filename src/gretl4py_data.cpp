@@ -1465,16 +1465,10 @@ void GretlDataset::setobs (const std::string &periodicity,
     //
     // A method to mimic gretl's 'setobs' command
     //
-    opt_ = OPT_NONE;
+    std::nullptr_t fakeGD = nullptr;
 
-    if (py::len(kwargs) > 0) {
-        for (auto &item : kwargs) {
-            if (!is_pystr(item.first)) throw std::invalid_argument("option key must be a string");
-            const std::string &key = item.first.cast<std::string>();
-
-            gretl_valid_long_opt(opt_, SETOBS, key, item.second);
-        }
-    }
+    // we unpack kwargs;
+    opt_ = unpack_kwargs_command(SETOBS, fakeGD, kwargs);
 
     // we do the job (based on interacs.c)
     err_ = set_obs(periodicity.c_str(), startobs.c_str(), dset, opt_);
@@ -1484,7 +1478,6 @@ void GretlDataset::setobs (const std::string &periodicity,
     } else {
         pprintf(GP_.prn_ptr(), _("data frequency = %d\n"), dset->pd);
     }
-
     GP_.print();
 }
 
