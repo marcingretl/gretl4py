@@ -1095,27 +1095,27 @@ void GretlDataset::smpl (const std::string &startobs, const std::string &endobs,
     // note: startobs and endobs are CMD->param/param2 equivalents
     //
     // lambdas
-    auto check_smpl_full = [this](void) -> int
+    auto check_smpl_full = [](gretlopt opt) -> int
     {
         //
         // mimics 'static int check_smpl_full (gretlopt)' from interact.c
         //
-        opt_ = static_cast<gretlopt>(opt_ ^ OPT_F);
-        if (opt_ & OPT_Q) opt_ = static_cast<gretlopt>(opt_ ^ OPT_Q);
+        opt = static_cast<gretlopt>(opt ^ OPT_F);
+        if (opt & OPT_Q) opt = static_cast<gretlopt>(opt ^ OPT_Q);
 
-        return opt_ == OPT_NONE ? 0 : E_BADOPT;
+        return opt == OPT_NONE ? 0 : E_BADOPT;
     };
 
-    auto smpl_restrict = [this](void) -> int
+    auto smpl_restrict = [](gretlopt opt) -> int
     {
         //
         // mimics 'static int 'smpl_restrict (gretlopt)' from interact.c
         //
-        opt_ = static_cast<gretlopt>(opt_ & (~OPT_Q));
-        opt_ = static_cast<gretlopt>(opt_ & (~OPT_T));
-        opt_ = static_cast<gretlopt>(opt_ & (~OPT_D));
+        opt = static_cast<gretlopt>(opt & (~OPT_Q));
+        opt = static_cast<gretlopt>(opt & (~OPT_T));
+        opt = static_cast<gretlopt>(opt & (~OPT_D));
 
-        return opt_ != OPT_NONE;
+        return opt != OPT_NONE;
     };
 
     gretl_list_ptr var_list{nullptr};
@@ -1140,17 +1140,19 @@ void GretlDataset::smpl (const std::string &startobs, const std::string &endobs,
     if (!dset || dset->n <= 0) {
         err_ = E_NODATA;
     } else if (opt_ & OPT_F) {
-        err_ = check_smpl_full();
+        err_ = check_smpl_full(opt_);
         if (!err_) err_ = restore_full_sample(dset, NULL);
     } else if (opt_ == OPT_T && startobs.empty()) {
         /* --permanent, by itself */
         err_ = perma_sample(dset, opt_, GP_.prn_ptr(), NULL);
     } else if (opt_ & (OPT_U | OPT_X)) {
         /* panel data: --unit or --time option */
-        err_ = set_panel_sample(startobs.c_str(), endobs.c_str(), opt_, dset, NULL, GP_.prn_ptr());
-    } else if (smpl_restrict()) {
+        err_ = set_panel_sample(startobs.c_str(), endobs.c_str(),
+                                opt_, dset, NULL, GP_.prn_ptr());
+    } else if (smpl_restrict(opt_)) {
         /* --restrict, --dummy, etc. */
-        err_ = restrict_sample(startobs.c_str(), var_list.get(), dset, NULL, opt_, GP_.prn_ptr(), NULL);
+        err_ = restrict_sample(startobs.c_str(), var_list.get(),
+                               dset, NULL, opt_, GP_.prn_ptr(), NULL);
     } else if (startobs.empty() && endobs.empty()) {
         /* no args given: give a report */
         print_smpl(dset, get_full_length_n(), OPT_F, GP_.prn_ptr());
@@ -1163,7 +1165,6 @@ void GretlDataset::smpl (const std::string &startobs, const std::string &endobs,
     if (err_) handle_gretl_error(err_);
 
     if (!report && (opt_ & OPT_Q)) print_smpl(dset, get_full_length_n(), OPT_NONE, GP_.prn_ptr());
-
     GP_.print();
 }
 
