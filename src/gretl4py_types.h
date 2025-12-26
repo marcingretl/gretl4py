@@ -48,26 +48,22 @@ struct GretlListDeleter {
 using gretl_list_ptr = std::unique_ptr<int, GretlListDeleter>;
 
 struct GretlDoubleDeleter {
-    void operator() (double *ptr) const
-    {
-        std::free(ptr);
-    }
+    void operator() (double *ptr) const { std::free(ptr); }
 };
 using gretl_double_ptr = std::unique_ptr<double, GretlDoubleDeleter>;
 
 struct GretlMatrixDeleter {
-    void operator() (gretl_matrix *ptr) const
-    {
-        gretl_matrix_free(ptr);
-    }
+    void operator() (gretl_matrix *ptr) const { gretl_matrix_free(ptr); }
 };
 using gretl_matrix_ptr = std::unique_ptr<gretl_matrix, GretlMatrixDeleter>;
 
+struct GretlVMatrixDeleter {
+    void operator() (VMatrix *ptr) const { free_vmatrix(ptr); }
+};
+using VMatrix_ptr = std::unique_ptr<VMatrix, GretlVMatrixDeleter>;
+
 struct GretlGcharDeleter {
-    void operator() (gchar *ptr) const
-    {
-        g_free(ptr);
-    }
+    void operator() (gchar *ptr) const { g_free(ptr); }
 };
 using gretl_gchar_ptr = std::unique_ptr<gchar, GretlGcharDeleter>;
 

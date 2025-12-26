@@ -23,6 +23,7 @@
 #include "gretl4py_types.h"
 #include "gretl4py_model.h"
 #include "gretl_calls.h"
+#include <gretl/libset.h>
 #include <gretl/matrix_extra.h>
 #include <gretl/gretl_model.h>
 #include <gretl/genmain.h>
@@ -1305,7 +1306,6 @@ py::object GretlDataset::corr (const std::string &vars, const py::kwargs &kwargs
         err_ = gretl_corrmx(var_list.get(), dset, opt_, GP_.prn_ptr());
     }
     if (err_) handle_gretl_error(err_);
-
     GP_.print();
 
     return get_accessor("$result");
@@ -1324,6 +1324,7 @@ py::object GretlDataset::cov (const std::string &vars)
         var_list.reset(full_var_list(dset, NULL));
     } else {
         var_list = list_from_formula(vars, dset, err_);
+        if (err_) handle_gretl_error(err_);
     }
 
     // actual work
@@ -1390,6 +1391,52 @@ py::object GretlDataset::xcorrgm (const std::string &vars, int order,
     err_ = xcorrgram(var_list.get(), order, dset, opt_, GP_.prn_ptr());
     if (err_) handle_gretl_error(err_);
     if (!silent) GP_.print();
+
+    return get_accessor("$result");
+}
+
+py::object GretlDataset::pca (const std::string &vars, const py::kwargs &kwargs)
+{
+    //
+    // we perform Principal Components Analysis following
+    // the libgretl's 'pca' command (i.e., not princomp() function)
+    //
+    gretl_list_ptr var_list{nullptr};
+    opt_ = OPT_NONE;
+
+    // if no vars given, we use the full list
+    if (vars.empty()) {
+        var_list.reset(full_var_list(dset, NULL));
+    } else {
+        var_list = list_from_formula(vars, dset, err_);
+        if (err_) handle_gretl_error(err_);
+    }
+    if (!var_list) return py::none();
+
+    // now we loop over kwargs;
+    if (py::len(kwargs) > 0) {
+        for (auto &item : kwargs) {
+            if (!is_pystr(item.first)) throw std::invalid_argument("option key must be a string");
+            const std::string &key = item.first.cast<std::string>();
+            gretl_valid_long_opt(opt_, PCA, key, item.second);
+        }
+    }
+
+    // we do the job (based on interact.c)
+    VMatrix_ptr cmat{nullptr};
+    PRN *prn = GP_.prn_ptr();
+
+    // adding OPT_N ensures a uniform sample
+    // for the correlation or covariance matrix
+    cmat.reset(corrlist(PCA, var_list.get(), dset, static_cast<gretlopt>(opt_ | OPT_N), &err_));
+    if (err_) handle_gretl_error(err_);
+    err_ = call_pca_plugin(cmat.get(), dset, opt_, prn);
+    if (err_) handle_gretl_error(err_);
+    if (static_cast<gretlopt>(opt_ & (OPT_O | OPT_A)) && gretl_messages_on()) {
+        /* results saved as series */
+        pputs(prn, _("Generated principal component series\n"));
+    }
+    GP_.print();
 
     return get_accessor("$result");
 }

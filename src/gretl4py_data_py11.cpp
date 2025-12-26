@@ -226,6 +226,8 @@ void init_gretl4py_dataset_py11(py::module_ &m)
              },
              py::arg("series1").none(false), py::arg("series2").none(false),
              py::arg("order").none(true) = 0)
+        .def("pca", &GretlDataset::pca,
+             py::arg("vars").none(true) = "", py::kw_only())
         .def("test",
              [](GretlDataset &self, const std::string &type, const py::kwargs &kwargs)
              {

@@ -194,6 +194,8 @@ public:
 
     py::object xcorrgm (const std::string &vars, int order,
                         const py::kwargs &kwargs);
+
+    py::object pca (const std::string &vars, const py::kwargs &kwargs);
 };
 
 //
