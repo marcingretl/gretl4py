@@ -1324,7 +1324,6 @@ py::object GretlDataset::cov (const std::string &vars)
         var_list.reset(full_var_list(dset, NULL));
     } else {
         var_list = list_from_formula(vars, dset, err_);
-        if (err_) handle_gretl_error(err_);
     }
 
     // actual work
@@ -1409,9 +1408,7 @@ py::object GretlDataset::pca (const std::string &vars, const py::kwargs &kwargs)
         var_list.reset(full_var_list(dset, NULL));
     } else {
         var_list = list_from_formula(vars, dset, err_);
-        if (err_) handle_gretl_error(err_);
     }
-    if (!var_list) return py::none();
 
     // now we loop over kwargs;
     if (py::len(kwargs) > 0) {
