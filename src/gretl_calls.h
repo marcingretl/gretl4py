@@ -76,6 +76,10 @@ void gretl_valid_long_opt (gretlopt &opt, GretlCmdIndex ci,
                            const std::string &key, const py::handle &val,
                            const char *ext_val = nullptr);
 
+template <typename T>
+gretlopt unpack_kwargs_command (GretlCmdIndex ci, T &GD,
+                                const py::kwargs &kwargs);
+
 void unpack_kwargs_test (gretlopt &opt, const std::string &type,
                          const py::kwargs &kwargs, int &order);
 

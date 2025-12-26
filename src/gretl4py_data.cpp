@@ -1364,26 +1364,12 @@ py::object GretlDataset::xcorrgm (const std::string &vars, int order,
     // we perform cross-correlogram for vars
     //
     gretl_list_ptr var_list{nullptr};
+    std::nullptr_t GD = nullptr;
     opt_ = OPT_NONE;
     bool silent = false;
 
-    // now we loop over kwargs;
-    for (auto &item : kwargs) {
-        if (!is_pystr(item.first)) throw std::invalid_argument("option key must be a string");
-        const std::string &key = item.first.cast<std::string>();
-
-        if (key == "plot") {
-            throw std::invalid_argument("'plot' is not available");
-        } else if (key == "silent") {
-            if (!is_pybool(item.second)) throw std::invalid_argument("'silent' must be a boolean");
-            silent = py::cast<bool>(item.second);
-        } else {
-            gretl_valid_long_opt(opt_, XCORRGM, key, item.second);
-        }
-    }
-
-    // we switch off gnuplot
-    gretl_valid_long_opt(opt_, XCORRGM, "plot", py::handle(), "none");
+    // we unpack kwargs kwargs;
+    opt_ = unpack_kwargs_command(XCORRGM, GD, kwargs);
 
     // we do the job
     var_list = list_from_formula(vars, dset, err_);
@@ -1401,6 +1387,7 @@ py::object GretlDataset::pca (const std::string &vars, const py::kwargs &kwargs)
     // the libgretl's 'pca' command (i.e., not princomp() function)
     //
     gretl_list_ptr var_list{nullptr};
+    std::nullptr_t GD = nullptr;
     opt_ = OPT_NONE;
 
     // if no vars given, we use the full list
@@ -1410,14 +1397,8 @@ py::object GretlDataset::pca (const std::string &vars, const py::kwargs &kwargs)
         var_list = list_from_formula(vars, dset, err_);
     }
 
-    // now we loop over kwargs;
-    if (py::len(kwargs) > 0) {
-        for (auto &item : kwargs) {
-            if (!is_pystr(item.first)) throw std::invalid_argument("option key must be a string");
-            const std::string &key = item.first.cast<std::string>();
-            gretl_valid_long_opt(opt_, PCA, key, item.second);
-        }
-    }
+    // we unpack kwargs;
+    opt_ = unpack_kwargs_command(PCA, GD, kwargs);
 
     // we do the job (based on interact.c)
     VMatrix_ptr cmat{nullptr};
