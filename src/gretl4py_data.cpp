@@ -1273,20 +1273,18 @@ py::object GretlDataset::corr (const std::string &vars, const py::kwargs &kwargs
     // general interface for computing correlations
     //
     gretl_list_ptr var_list{nullptr};
+    opt_ = OPT_NONE;
 
     // we construct list of variables (if needed)
     if (!vars.empty()) var_list = list_from_formula(vars, dset, err_);
 
-    opt_ = OPT_NONE;
     // now we loop over kwargs;
     for (auto &item : kwargs) {
-        if (!is_pystr(item.first)) {
-            throw std::invalid_argument("option key must be a string");
-        }
+        if (!is_pystr(item.first)) throw std::invalid_argument("option key must be a string");
         const std::string &key = item.first.cast<std::string>();
 
         if (key == "plot") {
-            throw std::invalid_argument("invalid option flag: " + key);
+            throw std::invalid_argument("'plot' is not available");
         } else if (key == "matrix") {
             throw std::invalid_argument("matrix: not supported yet");
         } else {
@@ -1359,13 +1357,30 @@ py::object GretlDataset::hurst (const std::string &series)
     return get_accessor("$result");
 }
 
-py::object GretlDataset::xcorrgm (const std::string &vars, int order)
+py::object GretlDataset::xcorrgm (const std::string &vars, int order,
+                                  const py::kwargs &kwargs)
 {
     //
     // we perform cross-correlogram for vars
     //
     gretl_list_ptr var_list{nullptr};
     opt_ = OPT_NONE;
+    bool silent = false;
+
+    // now we loop over kwargs;
+    for (auto &item : kwargs) {
+        if (!is_pystr(item.first)) throw std::invalid_argument("option key must be a string");
+        const std::string &key = item.first.cast<std::string>();
+
+        if (key == "plot") {
+            throw std::invalid_argument("'plot' is not available");
+        } else if (key == "silent") {
+            if (!is_pybool(item.second)) throw std::invalid_argument("'silent' must be a boolean");
+            silent = py::cast<bool>(item.second);
+        } else {
+            gretl_valid_long_opt(opt_, XCORRGM, key, item.second);
+        }
+    }
 
     // we switch off gnuplot
     gretl_valid_long_opt(opt_, XCORRGM, "plot", py::handle(), "none");
@@ -1374,7 +1389,7 @@ py::object GretlDataset::xcorrgm (const std::string &vars, int order)
     var_list = list_from_formula(vars, dset, err_);
     err_ = xcorrgram(var_list.get(), order, dset, opt_, GP_.prn_ptr());
     if (err_) handle_gretl_error(err_);
-    GP_.print();
+    if (!silent) GP_.print();
 
     return get_accessor("$result");
 }
