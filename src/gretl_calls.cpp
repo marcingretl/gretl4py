@@ -316,7 +316,7 @@ gretlopt unpack_kwargs_command (GretlCmdIndex ci, T &GD,
     }
 
     // we force --plot=none for certain commands
-    if (ci == XCORRGM) {
+    if (ci == XCORRGM || ci == CORR) {
         gretl_valid_long_opt(opt, ci, "plot", py::handle(), "none");
     }
 

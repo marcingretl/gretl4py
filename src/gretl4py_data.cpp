@@ -1274,28 +1274,13 @@ py::object GretlDataset::corr (const std::string &vars, const py::kwargs &kwargs
     // general interface for computing correlations
     //
     gretl_list_ptr var_list{nullptr};
-    opt_ = OPT_NONE;
+    std::nullptr_t fakeGD = nullptr;
 
     // we construct list of variables (if needed)
     if (!vars.empty()) var_list = list_from_formula(vars, dset, err_);
 
-    // now we loop over kwargs;
-    for (auto &item : kwargs) {
-        if (!is_pystr(item.first)) throw std::invalid_argument("option key must be a string");
-        const std::string &key = item.first.cast<std::string>();
-
-        if (key == "plot") {
-            throw std::invalid_argument("'plot' is not available");
-        } else if (key == "matrix") {
-            throw std::invalid_argument("matrix: not supported yet");
-        } else {
-            gretl_valid_long_opt(opt_, CORR, key, item.second);
-        }
-    }
-
-    // we switch off gnuplot
-    SET_OPT(opt_, OPT_U);
-    gretl_valid_long_opt(opt_, CORR, "plot", py::handle(), "none");
+    // we unpack kwargs kwargs;
+    opt_ = unpack_kwargs_command(CORR, fakeGD, kwargs);
 
     // actual work
     if (opt_ & OPT_K) {
@@ -1307,6 +1292,8 @@ py::object GretlDataset::corr (const std::string &vars, const py::kwargs &kwargs
     }
     if (err_) handle_gretl_error(err_);
     GP_.print();
+
+    if (opt_ & (OPT_K | OPT_S)) return py::none();
 
     return get_accessor("$result");
 }
@@ -1364,12 +1351,11 @@ py::object GretlDataset::xcorrgm (const std::string &vars, int order,
     // we perform cross-correlogram for vars
     //
     gretl_list_ptr var_list{nullptr};
-    std::nullptr_t GD = nullptr;
-    opt_ = OPT_NONE;
+    std::nullptr_t fakeGD = nullptr;
     bool silent = false;
 
     // we unpack kwargs kwargs;
-    opt_ = unpack_kwargs_command(XCORRGM, GD, kwargs);
+    opt_ = unpack_kwargs_command(XCORRGM, fakeGD, kwargs);
 
     // we do the job
     var_list = list_from_formula(vars, dset, err_);
@@ -1387,8 +1373,7 @@ py::object GretlDataset::pca (const std::string &vars, const py::kwargs &kwargs)
     // the libgretl's 'pca' command (i.e., not princomp() function)
     //
     gretl_list_ptr var_list{nullptr};
-    std::nullptr_t GD = nullptr;
-    opt_ = OPT_NONE;
+    std::nullptr_t fakeGD = nullptr;
 
     // if no vars given, we use the full list
     if (vars.empty()) {
@@ -1398,7 +1383,7 @@ py::object GretlDataset::pca (const std::string &vars, const py::kwargs &kwargs)
     }
 
     // we unpack kwargs;
-    opt_ = unpack_kwargs_command(PCA, GD, kwargs);
+    opt_ = unpack_kwargs_command(PCA, fakeGD, kwargs);
 
     // we do the job (based on interact.c)
     VMatrix_ptr cmat{nullptr};
