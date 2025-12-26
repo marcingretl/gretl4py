@@ -844,16 +844,10 @@ void GretlDataset::transforms (const std::string &vars,
     // interface to several gretl's commands (CI)
     // which underlying engines live in tranforms.c
     //
-    opt_ = OPT_NONE;
+    std::nullptr_t fakeGD = nullptr;
 
-    // we set opts
-    if (py::len(kwargs) > 0) {
-        for (auto &item : kwargs) {
-            if (!is_pystr(item.first)) throw std::invalid_argument("option key must be a string");
-            const std::string &key = item.first.cast<std::string>();
-            gretl_valid_long_opt(opt_, CI, key, item.second);
-        }
-    }
+    // we unpack kwargs;
+    opt_ = unpack_kwargs_command(CI, fakeGD, kwargs);
 
     // we construct list of variables
     auto varlist = list_from_formula(vars, dset, err_);
