@@ -1470,7 +1470,7 @@ void GretlDataset::setobs (const std::string &periodicity,
     // we unpack kwargs;
     opt_ = unpack_kwargs_command(SETOBS, fakeGD, kwargs);
 
-    // we do the job (based on interacs.c)
+    // we do the job (based on interact.c)
     err_ = set_obs(periodicity.c_str(), startobs.c_str(), dset, opt_);
     if (err_) handle_gretl_error(err_);
     if (dset->n > 0) {

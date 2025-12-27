@@ -78,6 +78,22 @@
 		{xk}{$x_k$}1}
 }
 
+\lstdefinestyle{pythonstylefoot}{
+	language=Python,
+	basicstyle=\ttfamily\footnotesize,
+	morekeywords={self,True,False},
+	keywordstyle=\color{blue},
+	%emph={MyClass,__init__},      % Custom highlighting
+	emphstyle=\color{red},     % Custom highlighting style
+	stringstyle=\color{pythgreen},
+	frame=tb,                      % Any extra options here
+	showstringspaces=false,
+	literate={{~}{$\sim$}2
+		{x1}{$x_1$}3
+		{x2}{$x_2$}2
+		{xk}{$x_k$}1}
+}
+
 %% Hansl syntax highlight
 \lstdefinelanguage{Hansl}{
 	morekeywords={add, adf, anova, append, ar, ar1, arbond, arch, arima, bds, biprobit, boxplot, break,

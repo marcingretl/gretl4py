@@ -26,9 +26,12 @@
 	\ifthenelse{\equal{#1}{}}%
 		{\hspace*{17pt}{\small where \pythcode{OPTS} are the following options %
 				(\gretlpy to \gretl mappings):}}%
-		{\hspace*{17pt}}%
+		{\hspace{17pt}}%
 }
-\newcommand{\maptoopt}[3]{\pythcode{#1} $\rightarrow$ \gretlcmd{#2}\newline\hspace*{10pt}\footnotesize{#3}}
+\newcommand{\maptoopt}[3]{%
+	\pythcode{#1} $\rightarrow$ \gretlcmd{#2}\par
+	\hspace*{10pt}\footnotesize{#3}%
+}
 
 \newcommand{\lgretl}[1][]{\pkg{libgretl#1}\xspace}
 \newcommand{\gretl}{\pkg{gretl}\xspace}
@@ -39,7 +42,7 @@
 \newcommand{\installbat}{\texttt{install.bat}\xspace}
 \newcommand{\installpy}{\texttt{install.py}\xspace}
 \newcommand{\est}[1]{\bigskip\noindent\gretlcmd{#1}\index{#1()}}
-\newcommand{\estdesc}[1]{\smallskip\begin{minipage}[t]{\columnwidth}%
+\newcommand{\estdesc}[1]{\smallskip\begin{minipage}[t]{0.89\columnwidth}%
 	\small#1\end{minipage}\vspace{3pt}}
 \newcommand{\noRformula}{\hspace*{17pt}\begin{minipage}[t]{0.89\columnwidth}\small%
 		Note: In this case one cannot use the \proglang{R}-style
@@ -63,6 +66,7 @@
 		\caption{Results of the \gretlfpycmd{#1()} model estimation.}
 		#2 %label
 	\end{figure}}
+\newcommand{\seegretlmanual}{see~\citet{gretl_manual}}
 
 \renewcommand{\thefigure}{\thesection.\arabic{figure}}
 %\numberwithin{figure}{section}

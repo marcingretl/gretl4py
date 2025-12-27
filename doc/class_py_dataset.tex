@@ -221,11 +221,47 @@ gretl._gretl.Dataset.set_as_default(self)
 \generaldesc{XXX}
 
 \gretlfpycmd{setobs()}
-\estdesc{XXX}
-\begin{lstlisting}[style=pythonstyle]
-gretl._gretl.Dataset.setobs([OPTS])
+\estdesc{This command forces the program to interpret
+	the current data set as having a specified structure.}
+\begin{lstlisting}[style=pythonstylefoot]
+gretl._gretl.Dataset.setobs(periodicity=int, startobs=str, [OPTS])
+gretl._gretl.Dataset.setobs(periodicity=int, startobs=int, [OPTS])
+gretl._gretl.Dataset.setobs(unitvar=str, timevar=str, [OPTS])
 \end{lstlisting}
-\generaldesc{XXX}
+\mapto[clean]{setobs periodicity startobs}
+\mapto{setobs unitvar timevar --panel-vars}
+\begin{itemize}
+	\item[]\maptoopt{cross\_section=True}{--cross-section}{interpret as cross section}
+	\item[]\maptoopt{time\_series=True}{--time-series}{interpret as time series}
+	\item[]\maptoopt{special\_time\_series=True}{--special-time-series}{\seegretlmanual}
+	\item[]\maptoopt{stacked\_cross\_section=True}{--stacked-cross-section}{interpret as panel data}
+	\item[]\maptoopt{stacked\_time\_series=True}{--stacked-time-series}{interpret as panel data}
+	\item[]\maptoopt{panel\_vars=True}{--panel-vars}{\seegretlmanual}
+	\item[]\maptoopt{panel\_time=True}{--panel-time}{\seegretlmanual}
+	\item[]\maptoopt{panel\_groups=True}{--panel-groups}{\seegretlmanual}
+\end{itemize}
+Examples:\newline
+\pythcode{.setobs(4, '1990:1', time\_series=True}\\
+\pythcode{.setobs(12, '1978:03')}\\
+\pythcode{.setobs(1, 1, cross\_section=True)}\\
+\pythcode{.setobs(20, '1:1', stacked\_time\_series=True)}\\
+\pythcode{.setobs(unit, year, panel\_vars=True)}
+
+\generaldesc{In the first and in the second form of the method
+	the periodicity, which must be an integer, represents frequency
+	in the case of time-series data (1 = annual; 4 = quarterly;
+	12 = monthly; 52 = weekly; 5, 6, or 7 = daily; 24 = hourly).
+	In the case of panel data the periodicity means the number of
+	lines per data block: this corresponds to the number of
+	cross-sectional units in the case of stacked cross-sections,
+	or the number of time periods in the case of stacked time series.
+	In the case of simple cross-sectional data the periodicity should
+	be set to 1.\newline
+	The third form of the method (which requires the \texttt{panel\_vars}
+	flag) may be used to impose a panel interpretation when the data
+	set contains variables that uniquely identify the cross-sectional
+	units and the time periods. The data set will be sorted as stacked
+	time series, by ascending values of the units variable, \texttt{unitvar}.}
 
 \gretlfpycmd{square()}
 \estdesc{XXX}
