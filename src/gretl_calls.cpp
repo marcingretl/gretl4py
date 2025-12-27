@@ -466,7 +466,7 @@ GretlPackagePtr load_package (const std::string &pkgname,
     return res;
 }
 
-py::object do_gretl_include (const std::string &name)
+py::object do_gretl_include (const std::string &filename)
 {
     //
     // this function mimics libgretl's 'include' command
@@ -476,13 +476,13 @@ py::object do_gretl_include (const std::string &name)
     std::string suffix = "";
 
     // we check if we deal with suffix-ed string or just basename
-    if (has_suffix(name.c_str(), ".gfn") || has_suffix(name.c_str(), ".zip")) {
-        size_t dot_pos = name.find('.');
+    if (has_suffix(filename.c_str(), ".gfn") || has_suffix(filename.c_str(), ".zip")) {
+        size_t dot_pos = filename.find('.');
 
-        basename = name.substr(0, dot_pos);
-        suffix = name.substr(dot_pos);
+        basename = filename.substr(0, dot_pos);
+        suffix = filename.substr(dot_pos);
     } else {
-        basename = name;
+        basename = filename;
     }
 
     // we load the package

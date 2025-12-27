@@ -76,7 +76,6 @@ gretl._gretl.Dataset.bwfilt(series=str, n=int, omega=float) -> numpy.ndarray
 gretl._gretl.Dataset.corr(varlist=str, [OPTS]) -> numpy.ndarray
 \end{lstlisting}
 \mapto[clean]{corr [ varlist ]}
-\mapto{corr --matrix=matname}
 \begin{itemize}
 	\item[]\maptoopt{uniform=True}{--uniform}{ensure uniform sample}
 	\item[]\maptoopt{spearman=True}{--spearman}{Spearman's rho}
@@ -88,8 +87,7 @@ gretl._gretl.Dataset.corr(varlist=str, [OPTS]) -> numpy.ndarray
 Examples:\newline
 \pythcode{.corr('y x z t')}\\
 \pythcode{.corr('ylist', uniform=True)}\\
-\pythcode{.corr('x y', spearman=True)}\\
-\pythcode{.corr(matrix=X)}
+\pythcode{.corr('x y', spearman=True)}
 
 \generaldesc{By default, prints the pairwise correlation
 	coefficients (Pearson's product-moment correlation) for
@@ -262,7 +260,7 @@ gretl._gretl.Dataset.orthdev(vars=str)
 \end{lstlisting}
 \generaldesc{XXX}
 
-\gretlfpycmd{print()}
+\gretlfpycmd{print()}\label{met:gretldataset::print}
 \estdesc{XXX}
 \begin{lstlisting}[style=pythonstyle]
 gretl._gretl.Dataset.print([OPTS])
