@@ -209,8 +209,15 @@ void init_gretl4py_dataset_py11(py::module_ &m)
         .def("hpfilt", &GretlDataset::hpfilt,
              py::arg("series").none(false), py::arg("hp_lambda").none(true) = NADBL,
              py::arg("trend").none(true) = false, py::arg("one_sided").none(true) = false)
+        .def("hpfilt",
+             [](GretlDataset &self, const std::string &series, double hp_lambda, bool one_sided)
+             {
+                 return self.hpfilt(series, hp_lambda, false, one_sided);
+             },
+             py::arg("series").none(false), py::arg("hp_lambda").none(true) = NADBL,
+             py::arg("one_sided").none(true) = false)
         .def("bwfilt", &GretlDataset::bwfilt,
-             py::arg("series").none(false), py::arg("order").none(false),
+             py::arg("series").none(false), py::arg("n").none(false),
              py::arg("omega").none(false))
         .def("bkfilt", &GretlDataset::bkfilt,
              py::arg("series").none(false), py::arg("f1").none(true) = 0,
@@ -218,7 +225,7 @@ void init_gretl4py_dataset_py11(py::module_ &m)
         .def("get_accessor", &GretlDataset::get_accessor,
              py::arg("accessor").none(false))
         .def("corr", &GretlDataset::corr,
-             py::arg("vars").none(true) = "", py::kw_only())
+             py::arg("varlist").none(true) = "", py::kw_only())
         .def("cov", &GretlDataset::cov, py::arg("vars").none(true) = "")
         .def("hurst", &GretlDataset::hurst, py::arg("series").none(false))
         .def("xcorrgm",

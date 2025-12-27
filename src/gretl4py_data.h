@@ -182,12 +182,12 @@ public:
     DNumPyArrayFC hpfilt (const std::string &series, double hp_lambda = NADBL,
                           bool trend = false, bool one_sided = false);
 
-    DNumPyArrayFC bwfilt (const std::string &series, int order, double omega);
+    DNumPyArrayFC bwfilt (const std::string &series, int n, double omega);
 
     DNumPyArrayFC bkfilt (const std::string &series, int f1 = 0,
                           int f2 = 0, int k = 0);
 
-    py::object corr (const std::string &vars, const py::kwargs &kwargs);
+    py::object corr (const std::string &varlist, const py::kwargs &kwargs);
 
     py::object cov (const std::string &vars);
 

@@ -22,7 +22,7 @@ print(t)
 
 # Butterworth filter
 # we call ::bwfilt()
-bw = d1.bwfilt(series='LRM', order=4, omega=90)
+bw = d1.bwfilt(series='LRM', n=4, omega=90)
 print("\nResults from the Butterworth filter:")
 print(bw)
 

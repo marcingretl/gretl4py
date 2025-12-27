@@ -1246,7 +1246,7 @@ template GretlDatasetPtr GretlDataset::getitem_impl<py::slice>(const py::slice&)
 template GretlDatasetPtr GretlDataset::getitem_impl<py::list>(const py::list&);
 template GretlDatasetPtr GretlDataset::getitem_impl<std::string>(const std::string&);
 
-py::object GretlDataset::corr (const std::string &vars, const py::kwargs &kwargs)
+py::object GretlDataset::corr (const std::string &varlist, const py::kwargs &kwargs)
 {
     //
     // general interface for computing correlations
@@ -1255,7 +1255,7 @@ py::object GretlDataset::corr (const std::string &vars, const py::kwargs &kwargs
     std::nullptr_t fakeGD = nullptr;
 
     // we construct list of variables (if needed)
-    if (!vars.empty()) var_list = list_from_formula(vars, dset, err_);
+    if (!varlist.empty()) var_list = list_from_formula(varlist, dset, err_);
 
     // we unpack kwargs kwargs;
     opt_ = unpack_kwargs_command(CORR, fakeGD, kwargs);
@@ -1681,7 +1681,7 @@ DNumPyArrayFC GretlDataset::hpfilt (const std::string &series,
 }
 
 DNumPyArrayFC GretlDataset::bwfilt (const std::string &series,
-                                    int order, double omega)
+                                    int n, double omega)
 {
     //
     // here we perform Butterworth filtering
@@ -1690,7 +1690,7 @@ DNumPyArrayFC GretlDataset::bwfilt (const std::string &series,
 
     // we do the job
     err_ = butterworth_filter(dset->Z[get_series_id(series)],
-                              res.mutable_data(), dset, order, omega);
+                              res.mutable_data(), dset, n, omega);
     if (err_) handle_gretl_error(err_);
 
     return res;

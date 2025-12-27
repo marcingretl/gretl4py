@@ -44,25 +44,64 @@ gretl._gretl.Dataset.add_series(data=numpy.ndarray, name=str)
 \generaldesc{XXX}
 
 \gretlfpycmd{bkfilt()}
-\estdesc{XXX}
-\begin{lstlisting}[style=pythonstyle]
+\estdesc{Returns the result from application of the Baxter--King
+	bandpass filter to the series \textit{y}.}
+\begin{lstlisting}[style=pythonstylefoot]
 gretl._gretl.Dataset.bkfilt(series=str, f1=int, f2=int, k=int) -> numpy.ndarray
 \end{lstlisting}
-\generaldesc{XXX}
+\maptof{bkfilt(y, f1, f2, k)}{series}
+\generaldesc{The optional parameters \textit{f1} and
+	\textit{f2} represent, respectively, the lower and
+	upper bounds of the range of frequencies to extract,
+	while \textit{k} is the approximation order to be used.}
 
 \gretlfpycmd{bwfilt()}
-\estdesc{XXX}
-\begin{lstlisting}[style=pythonstyle]
-gretl._gretl.Dataset.bwfilt(series=str, order=int, omega=float) -> numpy.ndarray
+\estdesc{Returns the result from application of a low-pass
+	Butterworth filter with order \textit{n} and frequency
+	cutoff \textit{omega} to the series \textit{y}.}
+\begin{lstlisting}[style=pythonstylefoot]
+gretl._gretl.Dataset.bwfilt(series=str, n=int, omega=float) -> numpy.ndarray
 \end{lstlisting}
-\generaldesc{XXX}
+\maptof{bwfilt(y, n, omega)}{series}
+\generaldesc{The cutoff is expressed in degrees and must be
+	greater than 0 and less than 180. Smaller cutoff values
+	restrict the pass-band to lower frequencies and hence
+	produce a smoother trend. Higher values of \textit{n}
+	produce a sharper cutoff, at the cost of possible
+	numerical instability.}
 
 \gretlfpycmd{corr()}
 \estdesc{XXX}
 \begin{lstlisting}[style=pythonstyle]
-gretl._gretl.Dataset.corr(vars=str, [OPTS]) -> numpy.ndarray
+gretl._gretl.Dataset.corr(varlist=str, [OPTS]) -> numpy.ndarray
 \end{lstlisting}
-\generaldesc{XXX}
+\mapto[clean]{corr [ varlist ]}
+\mapto{corr --matrix=matname}
+\begin{itemize}
+	\item[]\maptoopt{uniform=True}{--uniform}{ensure uniform sample}
+	\item[]\maptoopt{spearman=True}{--spearman}{Spearman's rho}
+	\item[]\maptoopt{kendall=True}{--kendall}{Kendall's tau}
+	\item[]\maptoopt{verbose=True}{--verbose}{print rankings}
+	\item[]\maptoopt{triangle=True}{--triangle}{only plot lower half, (\seegretlmanual)}
+	\item[]\maptoopt{quiet=True}{--quiet}{do not print anything}
+\end{itemize}
+Examples:\newline
+\pythcode{.corr('y x z t')}\\
+\pythcode{.corr('ylist', uniform=True)}\\
+\pythcode{.corr('x y', spearman=True)}\\
+\pythcode{.corr(matrix=X)}
+
+\generaldesc{By default, prints the pairwise correlation
+	coefficients (Pearson's product-moment correlation) for
+	the variables in \textit{varlist}, or for all variables
+	in the data set if \textit{varlist} is not given. The
+	standard behavior is to use all available observations
+	for computing each pairwise coefficient, but if the
+	\gretlcmd{--uniform} option is given the sample is limited
+	(if necessary) so that the same set of observations is
+	used for all the coefficients. This option has an effect
+	only if there are differing numbers of missing values
+	for the variables used.}
 
 \gretlfpycmd{cov()}
 \estdesc{XXX}
@@ -128,18 +167,49 @@ gretl._gretl.Dataset.headT(nobs=int)
 \generaldesc{XXX}
 
 \gretlfpycmd{hpfilt()}
-\estdesc{XXX}
-\begin{lstlisting}[style=pythonstyle]
+\estdesc{Returns the cycle component from application of
+	the Hodrick--Prescott filter to series \textit{y}.}
+\begin{lstlisting}[style=pythonstylefoot]
+gretl._gretl.Dataset.hpfilt(series=str, hp_lambda=float, one_sided=bool) -> numpy.ndarray
 gretl._gretl.Dataset.hpfilt(series=str, hp_lambda=float, trend=bool, one_sided=bool) -> numpy.ndarray
 \end{lstlisting}
-\generaldesc{XXX}
+\maptof{hpfilt(y, lambda, one-sided)}{series}
+\generaldesc{If the smoothing parameter, \textit{lambda}%
+	\footnote{Note the change of the \textit{lambda} parameter
+		to \textit{hp\_lambda} in \gretlpy. This is because
+		\pythcode{lambda} is a reserved keyword in \python.},
+	is not supplied then a data-based default is used, namely
+	100 times the square of the periodicity (100 for annual
+	data, 1600 for quarterly data, and so on).\\
+	By default the filter is the usual two-sided version,
+	but if the optional third argument is given with a non-zero
+	value a one-sided variant (with no look-ahead).\\
+	The most common use of the HP filter is detrending, but if
+	it's the trend you are interested in that is easily
+	obtained by subtraction, as in:\newline
+	\pythcode{hptrend = .hpfilt(y, trend=True)}.}
 
 \gretlfpycmd{hurst()}
-\estdesc{XXX}
+\estdesc{Calculates the Hurst exponent (a measure of persistence
+	or long memory) for a time-series variable having at least 128 observations.}
 \begin{lstlisting}[style=pythonstyle]
 gretl._gretl.Dataset.hurst(series=str) -> numpy.ndarray
 \end{lstlisting}
-\generaldesc{XXX}
+\mapto[clean]{hurst series}
+\generaldesc{The Hurst exponent is discussed by Mandelbrot (1983).
+	In theoretical terms it is the exponent, \textit{H}, in the relationship
+	\[
+		RS(x) = an^H,
+	\]
+	where \textit{RS} is the ``rescaled range'' of the variable
+	\textit{x} in samples of size \textit{n} and \textit{a} is
+	a constant. In gretl, the exponent is estimated using binary
+	sub-sampling: we start with the entire data range, then the
+	two halves of the range, then the four quarters, and so on.
+	For sample sizes smaller than the data range, the \textit{RS}
+	value is the mean across the available samples. The exponent
+	is then estimated as the slope coefficient in a regression of
+	the log of \textit{RS} on the log of sample size.}
 
 \gretlfpycmd{lags()}
 \estdesc{XXX}
@@ -200,11 +270,62 @@ gretl._gretl.Dataset.print([OPTS])
 \generaldesc{XXX}
 
 \gretlfpycmd{sample()}
-\estdesc{XXX}
-\begin{lstlisting}[style=pythonstyle]
-gretl._gretl.Dataset.sample([OPTS])
+\estdesc{This command can be used only when a dataset is in place.}
+\begin{lstlisting}[style=pythonstylefoot]
+gretl._gretl.Dataset.sample(startobs=str, endobs=str, [OPTS])
+gretl._gretl.Dataset.sample(startobs=str, [OPTS])
+gretl._gretl.Dataset.sample(startobs=int, endobs=int, [OPTS])
+gretl._gretl.Dataset.sample(startobs=int, [OPTS])
 \end{lstlisting}
-\generaldesc{XXX}
+\mapto[clean]{smpl startobs endobss}
+\mapto[clean]{smpl +i -j}
+\mapto[clean]{smpl dumvar --dummy}
+\mapto[clean]{smpl condition --restrict}
+\mapto[clean]{smpl --no-missing [ varlist ]}
+\mapto[clean]{smpl --no-all-missing [ varlist ]}
+\mapto[clean]{smpl --contiguous [ varlist ]}
+\mapto[clean]{smpl n --random}
+\mapto[clean]{smpl full}
+\mapto{smpl}
+\begin{itemize}
+	\item[]\maptoopt{dummy=True}{--dummy}{argument is a dummy variable}
+	\item[]\maptoopt{restrict=True}{--restrict}{apply boolean restriction}
+	\item[]\maptoopt{replace=True}{--replace}{replace any existing boolean restriction}
+	\item[]\maptoopt{no\_missing=True}{--no-missing}{restrict to valid observations}
+	\item[]\maptoopt{no\_all\_missing=True}{--no-all-missing}{omit empty observations (\seegretlmanual)}
+	\item[]\maptoopt{contiguous=True}{--contiguous}{\seegretlmanual}
+	\item[]\maptoopt{random=True}{--random}{form random sub-sample}
+	\item[]\maptoopt{permanent=True}{--permanent}{\seegretlmanual}
+	\item[]\maptoopt{preserve\_panel=True}{--preserve-panel}{\seegretlmanual}
+	\item[]\maptoopt{unit=True}{--unit}{panel data: sample in cross-sectional dimension}
+	\item[]\maptoopt{time=True}{--time}{panel data: sample in time-series dimension}
+	\item[]\maptoopt{dates=True}{--dates}{interpret observation numbers as dates}
+	\item[]\maptoopt{quiet=True}{--quiet}{don't report sample range}
+\end{itemize}
+Examples:\newline
+\pythcode{.sample(3, 10)}\\
+\pythcode{.sample('1960:2', '1982:4')}\\
+\pythcode{.sample(1, -1)}\\
+\pythcode{.sample('x > 3000', restrict=True)}\\
+\pythcode{.sample('y > 3000', restrict=True, replace=True))}\\
+\pythcode{.sample(100, random=True)}
+
+\generaldesc{When no arguments are given, it displays the
+	current sample range, otherwise it sets the sample range.
+	The range can be defined in several ways. In the first
+	alternate form (and the first two examples) above,
+	\textit{startobs} and \textit{endobs} must be consistent
+	with the periodicity of the data. Either one may be replaced
+	by a semicolon to leave the value unchanged. (For more on
+	\textit{startobs} and \textit{endobs} see the section titled
+	``Dates versus sequential indices'' below.) In the second form,
+	the integers \textit{i} and \textit{j} (which may be positive
+	or negative, and must be signed) are taken as offsets relative
+	to the existing sample range. In the third form \textit{dummyvar}
+	must be an indicator variable with values 0 or 1 at each
+	observation; the sample will be restricted to observations
+	where the value is 1. The fourth form, using \gretlcmd{--restrict}
+	restricts the sample to observations that satisfy the given Boolean condition.}
 
 \gretlfpycmd{sdiff()}
 \estdesc{XXX}
@@ -257,11 +378,11 @@ Examples:\newline
 	or the number of time periods in the case of stacked time series.
 	In the case of simple cross-sectional data the periodicity should
 	be set to 1.\newline
-	The third form of the method (which requires the \texttt{panel\_vars}
+	The third form of the method (which requires the \gretlcmd{--panel-vars}
 	flag) may be used to impose a panel interpretation when the data
 	set contains variables that uniquely identify the cross-sectional
 	units and the time periods. The data set will be sorted as stacked
-	time series, by ascending values of the units variable, \texttt{unitvar}.}
+	time series, by ascending values of the units variable, \textit{unitvar}.}
 
 \gretlfpycmd{square()}
 \estdesc{XXX}
