@@ -364,10 +364,10 @@ PythonArgInfo inspect_pyobject (py::handle obj)
 }
 
 template <typename T>
-void load_objects_from_dict (const py::dict &dict, const char *key, T &target)
+void get_object_from_dict (const py::dict &dict, const char *key, T &target)
 {
     //
-    // function for loading complex objects (lists, dicts) from kwargs
+    // function for getting complex objects (lists, dicts, tuples) from kwargs
     //
     if (!dict.contains(key)) return;
 
@@ -386,7 +386,7 @@ void load_objects_from_dict (const py::dict &dict, const char *key, T &target)
     } else if constexpr (std::is_same_v<T, py::array_t<double>>) {
         if (!is_pynumarrayd(obj)) key_not_a("ndarray");
     } else {
-        static_assert(always_false<T>, "load_objects_from_dict(): unknown type");
+        static_assert(always_false<T>, "get_object_from_dict(): unknown type");
     }
 
     if constexpr (std::is_same_v<T, py::array_t<double>>) {
@@ -395,9 +395,9 @@ void load_objects_from_dict (const py::dict &dict, const char *key, T &target)
         target = py::cast<T>(obj);
     }
 }
-template void load_objects_from_dict<std::vector<std::string>>(const py::dict&, const char*,
+template void get_object_from_dict<std::vector<std::string>>(const py::dict&, const char*,
                                                                std::vector<std::string>&);
-template void load_objects_from_dict<std::string>(const py::dict&, const char*, std::string&);
+template void get_object_from_dict<std::string>(const py::dict&, const char*, std::string&);
 
 //////////////////////////////////////////////////
 // classes
@@ -490,7 +490,7 @@ GretlDataset::GretlDataset (const py::dict &pydict) : id_(next_obj_id_++)
     allocate_dset_();
 
     // we fill up dset->Z
-    load_objects_from_dict<py::array_t<double>>(pydict, "data_array", pyarray);
+    get_object_from_dict<py::array_t<double>>(pydict, "data_array", pyarray);
     NumPyArray_extract(pyarray, arr_view);
     if (!arr_view.data) throw std::runtime_error("NumPy array: null pointer.");
     dset->n = arr_view.rows;
@@ -1128,7 +1128,7 @@ void GretlDataset::smpl (const std::string &startobs, const std::string &endobs,
 
     // note: we modify kwargs here!!!!
     if (kwargs_copy.contains("varlist")) {
-        load_objects_from_dict<std::string>(kwargs_copy, "varlist", vars);
+        get_object_from_dict<std::string>(kwargs_copy, "varlist", vars);
         kwargs_copy.attr("pop")("varlist");
         var_list = list_from_formula(vars, dset, err_);
     }

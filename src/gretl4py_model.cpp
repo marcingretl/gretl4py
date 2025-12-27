@@ -1074,8 +1074,8 @@ GretlModel_NSE_nl<CI>::GretlModel_NSE_nl (const std::string formula,
                                           formula_(formula)
 {
     // we get model definition
-    load_objects_from_dict<std::string>(kwargs, "params", params_);
-    load_objects_from_dict<std::string>(kwargs, "param_names", param_names_);
+    get_object_from_dict<std::string>(kwargs, "params", params_);
+    get_object_from_dict<std::string>(kwargs, "param_names", param_names_);
     if (!param_names_.empty()) {
         param_names_ = "\"" + param_names_ + "\"";
     }
@@ -1109,13 +1109,13 @@ GretlModel_NSE_nl<CI>::GretlModel_NSE_nl (const std::string formula,
             }
         }
     } else if constexpr (CI == GMM) {
-        load_objects_from_dict<std::vector<std::string>>(kwargs, "orthog", orthog_);
-        load_objects_from_dict<std::string>(kwargs, "weights", weights_);
+        get_object_from_dict<std::vector<std::string>>(kwargs, "orthog", orthog_);
+        get_object_from_dict<std::string>(kwargs, "weights", weights_);
     }
 
     // we get statements entries
     if constexpr (CI == MLE || CI == GMM) {
-        load_objects_from_dict<std::vector<std::string>>(kwargs, "statements", statements_);
+        get_object_from_dict<std::vector<std::string>>(kwargs, "statements", statements_);
     }
 }
 
@@ -1586,13 +1586,13 @@ GretlModel_NME::GretlModel_NME (const std::string &method,
                                 method_(method)
 {
     // we load system definition
-    load_objects_from_dict<std::vector<std::string>>(kwargs, "equations", equations_);
+    get_object_from_dict<std::vector<std::string>>(kwargs, "equations", equations_);
     if (equations_.empty()) {
         throw std::runtime_error("no equations definitions passed");
     }
-    load_objects_from_dict<std::vector<std::string>>(kwargs, "instruments", instruments_);
-    load_objects_from_dict<std::vector<std::string>>(kwargs, "identities", identities_);
-    load_objects_from_dict<std::string>(kwargs, "endogs", endogs_);
+    get_object_from_dict<std::vector<std::string>>(kwargs, "instruments", instruments_);
+    get_object_from_dict<std::vector<std::string>>(kwargs, "identities", identities_);
+    get_object_from_dict<std::string>(kwargs, "endogs", endogs_);
 }
 
 GretlModel_NME::~GretlModel_NME (void)
