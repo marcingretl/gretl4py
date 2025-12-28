@@ -55,8 +55,6 @@ protected:
     GretlPrint GP_ = GretlPrint();      // printer (instance wide)
     std::string summary_;               // model summary to print on python side
 
-    virtual void *model_ptr_ (void) const = 0;   // non-typed pointer to model
-
     template <typename T>
     void save_model_ (T *model);
 
@@ -88,7 +86,7 @@ public:
 
     virtual std::string get_formula (void) const = 0;
 
-    py::object get_accessor (const std::string &name);
+    virtual py::object get_accessor (const std::string &name) const = 0;
 
     int get_id (void) const;
 
@@ -108,8 +106,6 @@ class GretlModel_NSE : public GretlModel
 protected:
     MODEL *model_ = NULL;    // libgretl MODEL struct
 
-    void *model_ptr_ (void) const override;
-
     template <GretlCmdIndex CI>
     void regexp_extract_ (const std::string &formula,
                           std::string &formula_left,
@@ -123,6 +119,8 @@ public:
     std::string get_formula (void) const override = 0;
 
     void forecast (const py::kwargs &kwargs) override;
+
+    py::object get_accessor (const std::string &name) const override;
 
     void restrict (const py::list &impose, const py::kwargs &kwargs);
 
@@ -278,8 +276,6 @@ protected:
     const int order_;           // VAR order
     GRETL_VAR *model_ = NULL;   // libgretl GRETL_VAR struct
 
-    void *model_ptr_ (void) const override;
-
     template <GretlCmdIndex CI>
     void do_var_vecm_fit_ (const int coint_rank = 0);
 
@@ -298,6 +294,8 @@ public:
     void forecast (const py::kwargs &kwargs) override;
 
     std::string get_formula (void) const override;
+
+    py::object get_accessor (const std::string &name) const override;
 
     char *save_uhat (int eqn, const std::string &name = "") const;
 
@@ -342,8 +340,6 @@ private:
     std::vector<std::string> identities_;   // vector holding identities
     std::string endogs_;                    // vector holding endogs
     equation_system *model_ = NULL;         // libgretl equation_system struct
-
-    void *model_ptr_ (void) const override;
 public:
     GretlModel_NME (const std::string &method, const py::kwargs &kwargs);
     virtual ~GretlModel_NME (void);
@@ -353,6 +349,8 @@ public:
     void forecast (const py::kwargs &kwargs) override;
 
     std::string get_formula (void) const override;
+
+    py::object get_accessor (const std::string &name) const override;
 
     void restrict (const py::list &impose, const py::kwargs &kwargs);
 
@@ -372,8 +370,6 @@ private:
     std::string print_func_name_;   // function with role: UFUN_BUNDLE_PRINT
     std::string fcast_func_name_;   // function with role: UFUN_BUNDLE_FCAST
     GretlPackageRes res_;           // function results
-
-    void *model_ptr_ (void) const override;
 public:
     GretlModel_package (const std::string &name, const py::kwargs &kwargs);
 
@@ -382,6 +378,8 @@ public:
     void forecast (const py::kwargs &kwargs) override;
 
     std::string get_formula (void) const override;
+
+    py::object get_accessor (const std::string &name) const override;
 
     void functions (void) const;
 };

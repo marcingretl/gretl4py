@@ -125,16 +125,6 @@ void GretlModel::unlink_from_dataset (void) const
     if (GD_) GD_->linked_models_del(id_);
 }
 
-py::object GretlModel::get_accessor (const std::string &name)
-{
-    auto res = gretl_generate_gretl_object(name.c_str(), err_,
-                                           model_obj_type_,
-                                           GD_->dset, model_ptr_());
-    if (err_) handle_gretl_error(err_);
-
-    return variant_to_pyobject(std::move(*res));
-}
-
 template <typename T>
 void GretlModel::save_model_ (T *model)
 {
@@ -540,14 +530,14 @@ GretlModel_NSE::~GretlModel_NSE (void)
     if (model_ != NULL) gretl_model_free(model_);
 }
 
-void *GretlModel_NSE::model_ptr_ (void) const
-{
-    return static_cast<void*>(model_);
-}
-
 void GretlModel_NSE::forecast (const py::kwargs &kwargs)
 {
     do_forecast_<MODEL, static_cast<GretlCmdIndex>(0)>(model_, kwargs);
+}
+
+py::object GretlModel_NSE::get_accessor (const std::string &name) const
+{
+    return do_get_accessor<GRETL_OBJ_EQN>(name, GD_, static_cast<void*>(model_));
 }
 
 void GretlModel_NSE::test (const std::string &type,
@@ -1322,11 +1312,6 @@ GretlModel_VAR::~GretlModel_VAR (void)
     if (this->model_ != NULL) gretl_VAR_free(this->model_);
 }
 
-void *GretlModel_VAR::model_ptr_ (void) const
-{
-    return static_cast<void*>(model_);
-}
-
 // true VAR/VECM estimate
 template <GretlCmdIndex CI>
 void GretlModel_VAR::do_var_vecm_fit_ (const int coint_rank)
@@ -1429,6 +1414,11 @@ void GretlModel_VAR::test (const std::string &type, const py::kwargs &kwargs)
 std::string GretlModel_VAR::get_formula (void) const
 {
     return vars_;
+}
+
+py::object GretlModel_VAR::get_accessor (const std::string &name) const
+{
+    return do_get_accessor<GRETL_OBJ_VAR>(name, GD_, static_cast<void*>(model_));
 }
 
 char *GretlModel_VAR::save_uhat (int eqn, const std::string &name) const
@@ -1600,11 +1590,6 @@ GretlModel_NME::~GretlModel_NME (void)
     if (this->model_ != NULL) equation_system_destroy(this->model_);
 }
 
-void *GretlModel_NME::model_ptr_ (void) const
-{
-    return static_cast<void*>(model_);
-}
-
 void GretlModel_NME::fit (void)
 {
     //lambda for setting instruments_, identities_ and endogs
@@ -1664,6 +1649,11 @@ std::string GretlModel_NME::get_formula (void) const
     return "";
 }
 
+py::object GretlModel_NME::get_accessor (const std::string &name) const
+{
+    return do_get_accessor<GRETL_OBJ_SYS>(name, GD_, static_cast<void*>(model_));
+}
+
 void GretlModel_NME::forecast (const py::kwargs &kwargs)
 {
     py::print("GretlModel_NME::forecast(): to be written");
@@ -1716,11 +1706,6 @@ GretlModel_package::GretlModel_package (const std::string &name,
     fcast_func_name_ = GPKG_->get_function_with_role(UFUN_BUNDLE_FCAST);
 }
 
-void *GretlModel_package::model_ptr_ (void) const
-{
-    return static_cast<void*>(nullptr);
-}
-
 void GretlModel_package::fit (void)
 {
     res_ = GPKG_->function_exec(main_func_name_, GD_, GP_, kwargs_);
@@ -1748,6 +1733,11 @@ void GretlModel_package::forecast (const py::kwargs &kwargs)
 std::string GretlModel_package::get_formula (void) const
 {
     return "empty";
+}
+
+py::object GretlModel_package::get_accessor (const std::string &name) const
+{
+    return py::none();
 }
 
 void GretlModel_package::functions (void) const
