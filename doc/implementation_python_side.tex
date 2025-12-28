@@ -103,7 +103,6 @@ gretl._gretl.genr(name=str, value=str)
 \end{lstlisting}
 \mapto[clean]{genr newvar = formula}
 
-
 \gretlfpycmd{get\_accessor()}
 \estdesc{Function to read \lgretl['s] accessors}
 \begin{lstlisting}[style=pythonstylefoot]`
@@ -194,39 +193,52 @@ Examples:\newline
 \end{lstlisting}
 
 \gretlfpycmd{set()}
-\begin{lstlisting}[style=pythonstyle]
-gretl.set(key=str, [val=str/int])
+\estdesc{The most common use of this function is the first
+	map variant shown below, where it is used to set the value
+	of a selected \lgretl parameter.}
+\begin{lstlisting}[style=pythonstylefoot]
+gretl.set(variable=str, [value=str])
+gretl.set(variable=str, [value=int])
 \end{lstlisting}
 \mapto[0]{set variable value}
-\generaldesc{This function retrieves and optionally sets
-	the value of a specified \lgretl parameter (provided
-	as the \pythcode{key} argument). For further details,
-	refer to the documentation for \lgretl's \gretlcmd{set}
-	command \citep[see][]{gretl_command}. The function accepts
-	one optional parameter:
-	\begin{itemize}
-		\item \pythcode{val=str} or \pythcode{val=int}: The value
-			to assign to the \pythcode{key} parameter.
-	\end{itemize}}
+\mapto[0]{set --to-file=filename}
+\mapto[0]{set --from-file=filename}
+\mapto[0]{set stopwatch}
+\mapto[0]{set}
+\generaldesc{The other uses are: with \gretlcmd{--to-file} to write
+	a script file containing all the current parameter settings;
+	with \gretlcmd{--from-file} to read a script file containing
+	parameter settings and apply them to the current session; with
+	stopwatch to zero the gretl ``stopwatch'' which can be used to
+	measure CPU time (\seegretlmanual the entry for the
+	\gretlcmd{\$stopwatch} accessor); or, if the word set is given alone,
+	to print the current settings.}
 
 \gretlfpycmd{summary()}
-\estdesc{XXX}
-\begin{lstlisting}[style=pythonstyle]
-	gretl._gretl.summary(varlist=str, [OPTS])
+\estdesc{In its first form, this command prints summary statistics
+	for the variables in \textit{varlist}, or for all the variables
+	in the data set if \textit{varlist} is omitted.}
+\begin{lstlisting}[style=pythonstylefoot]
+gretl._gretl.summary(varlist=str, [OPTS])
 \end{lstlisting}
-\generaldesc{XXX}
+\mapto[0]{summary [ varlist ]}
+\mapto{summary --matrix=matname}
+\begin{itemize}
+	\item[]\maptoopt{simple=True}{--simple}{basic statistics only}
+	\item[]\maptoopt{weight='wtvar'}{--weight=wtvar}{weighting variable}
+	\item[]\maptoopt{by='byvar'}{--by=byvar}{\seegretlmanual}
+	\item[]\pythcode{data=gretl.Dataset}\par%
+	\hspace*{10pt}{\footnotesize\pythcode{gretl.delete} works with the specified dataset}
+\end{itemize}
+\generaldesc{The table of statistics produced by \gretlcmd{summary}
+	can be retrieved in matrix form via the \gretlcmd{\$result}
+	accessor. When the \gretlcmd{--by} option is given, this accessor
+	is produced only if \textit{varlist} contains a single series.}
 
 \gretlfpycmd{uservars\_list()}
 \estdesc{XXX}
 \begin{lstlisting}[style=pythonstyle]
 	gretl._gretl.uservars_list(void)
-\end{lstlisting}
-\generaldesc{XXX}
-
-\gretlfpycmd{uservar\_print()}
-\estdesc{XXX}
-\begin{lstlisting}[style=pythonstyle]
-gretl._gretl.uservar_print(name=str, data=gretl._gretl.Dataset)
 \end{lstlisting}
 \generaldesc{XXX}
 

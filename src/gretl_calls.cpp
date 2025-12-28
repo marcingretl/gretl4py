@@ -345,8 +345,8 @@ void do_set (const std::string &key, const std::string &value,
     err = execute_set(key.empty() ? NULL : key.c_str(),
                       value.empty() ? NULL : value.c_str(),
                       GD ? GD->dset : NULL, opt, GP.prn_ptr());
-    if (err) handle_gretl_error(err);
     GP.print();
+    if (err) handle_gretl_error(err);
 }
 
 void do_gretl_summary (const std::string &varlist, const py::kwargs &kwargs)
@@ -380,8 +380,8 @@ void do_gretl_summary (const std::string &varlist, const py::kwargs &kwargs)
         err = list_summary_driver(varlist_ptr.get(), GD->dset,
                                   opt, GP.prn_ptr());
     }
-    if (err) handle_gretl_error(err);
     GP.print();
+    if (err) handle_gretl_error(err);
 }
 
 void do_gretl_print (const std::string &varlist,
@@ -421,8 +421,8 @@ void do_gretl_print (const std::string &varlist,
                         varlist_ptr ? NULL : varlist.c_str(),
                         GD ? GD->dset : NULL, opt, GP.prn_ptr());
     }
-    if (err) handle_gretl_error(err);
     GP.print();
+    if (err) handle_gretl_error(err);
 }
 
 double do_gretl_get_pvalue (const std::string &dist, double value,
