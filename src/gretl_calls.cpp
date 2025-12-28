@@ -659,18 +659,24 @@ void do_gretl_delete_variables (const std::string &varname,
     }
 }
 
-py::object get_accessor (const std::string &name)
+template <GretlObjType OBJ_TYPE>
+py::object do_get_accessor (const std::string &name,
+                            GretlDatasetPtr GD, void *model)
 {
+    //
+    // here we get accessor in the context of OBJ_TYPE, GD, and model
+    //
     int err = 0;
 
-    auto res = gretl_generate_gretl_object(name.c_str(), err, GRETL_OBJ_ANY,
-                                           DSET ? DSET->dset : NULL);
+    auto res = gretl_generate_gretl_object(name.c_str(), err, OBJ_TYPE,
+                                           GD ? GD->dset : NULL, model);
     if (err) handle_gretl_error(err);
 
     return variant_to_pyobject(std::move(*res));
 }
+template py::object do_get_accessor<GRETL_OBJ_ANY>(const std::string&, GretlDatasetPtr, void*);
 
-// general inteface to gretl's 'genr' command
+// general interface to gretl's 'genr' command
 void genr (const std::string &formula, GretlDatasetPtr data)
 {
     // GretlType genr_get_last_output_type (void);

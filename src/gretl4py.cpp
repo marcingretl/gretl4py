@@ -60,8 +60,11 @@ PYBIND11_MODULE(_gretl, m)
     m.attr("version") = GRETL4PY_VERSION;
     m.def("about", &about,
           py::arg("do_print") = false);
-    m.def("get_accessor", &get_accessor,
-          py::arg("name").none(false));
+    m.def("get_accessor",
+          [](const std::string &name)
+          {
+              return do_get_accessor<GRETL_OBJ_ANY>(name, DSET, nullptr);
+          }, py::arg("name").none(false));
     m.def("print", &do_gretl_print,
           py::arg("varlist").none(true) = "", py::kw_only());
     m.def("set",
