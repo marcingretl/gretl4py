@@ -659,6 +659,17 @@ void do_gretl_delete_variables (const std::string &varname,
     }
 }
 
+py::object get_accessor (const std::string &name)
+{
+    int err = 0;
+
+    auto res = gretl_generate_gretl_object(name.c_str(), err, GRETL_OBJ_ANY,
+                                           DSET ? DSET->dset : NULL);
+    if (err) handle_gretl_error(err);
+
+    return variant_to_pyobject(std::move(*res));
+}
+
 // general inteface to gretl's 'genr' command
 void genr (const std::string &formula, GretlDatasetPtr data)
 {

@@ -103,6 +103,20 @@ gretl._gretl.genr(name=str, value=str)
 \end{lstlisting}
 \mapto[clean]{genr newvar = formula}
 
+
+\gretlfpycmd{get\_accessor()}
+\estdesc{Function to read \lgretl['s] accessors}
+\begin{lstlisting}[style=pythonstylefoot]`
+gretl._gretl.get_accessor(name=str) -> object
+\end{lstlisting}
+Examples:\newline
+\pythcode{.get\_accessor('\$version')}\\
+\pythcode{.get\_accessor('\$stopwatch')}\\
+\generaldesc{Note: \pythcode{gretl.get\_accessor()} works by default only
+	with the default dataset. To access accessors related to different datasets
+	or models, please refer to \ref{met:gretl.Dataset::get_accessor}
+	or \ref{met:gretl.Model::get_accessor}.}
+
 \gretlfpycmd{include()}
 \estdesc{Intended for including gretl function packages.}
 \begin{lstlisting}[style=pythonstyle]
@@ -132,7 +146,6 @@ gretl._gretl.include(filename=str) -> gretl._gretl.Package
 	gretl._gretl.pdf(dist=str, value=float, param=object) -> float
 \end{lstlisting}
 \generaldesc{XXX}
-
 
 \gretlfpycmd{print()}
 \estdesc{Please note that print is a rather ``basic'' function
@@ -166,8 +179,6 @@ Examples:\newline
 	then the action is similar to the first case except that
 	all series in the current dataset are printed. The supported
 	options are as described above. }
-
-
 
 \gretlfpycmd{pvalue()}
 \estdesc{XXX}

@@ -98,6 +98,8 @@ void gretl_generate (const std::string &formula, GretlDatasetPtr GD = DSET,
 void do_gretl_delete_variables (const std::string &varname,
                                 const py::kwargs &kwargs);
 
+py::object get_accessor (const std::string &name);
+
 // these two functions are temporal and will be moved to class
 
 void uservars_list (void);
