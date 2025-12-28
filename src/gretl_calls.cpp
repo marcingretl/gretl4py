@@ -571,7 +571,7 @@ double gretl_get_pvalue_critval_pdf_cdf (const std::string &dist,
             params_ptr = params_vec.data();
         }
     } else {
-        throw std::invalid_argument("params must be None, int, float, list/tuple, or numpy array");
+        throw std::invalid_argument("params must be None, int, float, list/tuple, or NumPy array");
     }
 
     // if the distribution requires parameters, enforce presence
@@ -598,29 +598,65 @@ template double gretl_get_pvalue_critval_pdf_cdf<3>(const std::string&, double, 
 template double gretl_get_pvalue_critval_pdf_cdf<4>(const std::string&, double, const py::object&);
 template double gretl_get_pvalue_critval_pdf_cdf<5>(const std::string&, double, const py::object&);
 
-// stuff below is volatile
-void gretl_user_var_delete_by_name (const std::string &name)
+void do_gretl_delete_variables (const std::string &varname,
+                                const py::kwargs &kwargs)
 {
-    if (UserVars.find(name) != UserVars.end()) {
-        int err = user_var_delete_by_name(name.c_str(), GP.prn_ptr());
-        if (err) handle_gretl_error(err);
-        UserVars.erase(name);
+    //
+    // function mimics libgretl's 'delete' commad
+    // note: not all options are available!!!
+    //
+    GretlDatasetPtr GD = nullptr;
+    gretl_list_ptr var_list{nullptr};
+    std::string type_to_delete = "";    // type for bulk deletion
+    std::vector<std::string> to_erase;  // variables to be erased after bulk deletion
+    gretlopt opt = OPT_NONE;
+    int renumber = 0;
+    int err = 0;
+
+    // we check if we don't deal with a package
+    if (!varname.empty()) {
+        auto it = GPKGs.find(varname);
+        if (it != GPKGs.end()) throw std::invalid_argument("in gretl4py, the 'delete' function does not work with packages");
+    }
+
+    if (py::len(kwargs) > 0) {
+        opt = unpack_kwargs_command(DELEET, GD, kwargs);
+        if (kwargs.contains("type")) type_to_delete = kwargs["type"].cast<std::string>();
     } else {
-        handle_gretl_error(E_UNKVAR);
+        // if we don't have kwargs, we must assign GD manually
+        GD = DSET;
     }
-}
 
-void uservars_list (void)
-{
-    std::string var_type_name;
+    // we correctly deal with no arguments passed
+    if (varname.empty() && !(opt & OPT_T)) handle_gretl_error(E_ARGS);
 
-    py::print("Registered variables:");
-    for (const auto &name : UserVars) {
-        var_type_name = gretl_type_get_name(user_var_get_type_by_name(name.c_str()));
-
-        py::print(name, "(" + var_type_name + ")");
+    // we look for variables in GD _only_ if there is no uservar
+    if (!varname.empty() && get_user_var_by_name(varname.c_str()) == NULL && GD) {
+        var_list = list_from_formula(varname, GD->dset, err);
     }
-    py::print("\n");
+
+    // we do the job
+    if (opt & OPT_T) {
+        for (const auto &name : UserVars) {
+            if (!err && (gretl_type_get_name(user_var_get_type_by_name(name.c_str()))
+                         == type_to_delete)) to_erase.push_back(name);
+        }
+        err = gretl_delete_variables(NULL, NULL, opt, GD->dset, NULL, GP.prn_ptr());
+    } else {
+        err = gretl_delete_variables(var_list.get(), var_list ? NULL : varname.c_str(),
+                                     opt, GD->dset, var_list ? &renumber : NULL, GP.prn_ptr());
+    }
+    GP.print();
+    if (err) handle_gretl_error(err);
+
+    // finally we erase uservar from registry
+    if (opt & OPT_T) {
+        for (const auto &name : to_erase) {
+            UserVars.erase(name);
+        }
+    } else {
+        if (UserVars.find(varname) != UserVars.end()) UserVars.erase(varname);
+    }
 }
 
 // general inteface to gretl's 'genr' command
@@ -954,3 +990,17 @@ void gretl_generate (const std::string &formula, GretlDatasetPtr GD,
 template void gretl_generate<GRETL_TYPE_ANY>(const std::string&, GretlDatasetPtr, const std::string&);
 template void gretl_generate<GRETL_TYPE_LIST>(const std::string&, GretlDatasetPtr, const std::string&);
 template void gretl_generate<GRETL_TYPE_SERIES>(const std::string&, GretlDatasetPtr, const std::string&);
+
+// stuff below is volatile
+void uservars_list (void)
+{
+    std::string var_type_name;
+
+    py::print("Registered variables:");
+    for (const auto &name : UserVars) {
+        var_type_name = gretl_type_get_name(user_var_get_type_by_name(name.c_str()));
+
+        py::print(name, "(" + var_type_name + ")");
+    }
+    py::print("\n");
+}

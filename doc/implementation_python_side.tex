@@ -13,8 +13,11 @@ and \texttt{gretl4py\_classes.py}. Additionally,
 
 \gretlfpycmd{version}
 \begin{lstlisting}[style=pythonstyle]
-	gretl.version -> str
+gretl.version -> str
 \end{lstlisting}
+\generaldesc{The \gretlpy module version.}
+
+\vspace*{10pt}\noindent The \gretlpy module provides the following functions:
 
 \gretlfpycmd{about()}
 \begin{lstlisting}[style=pythonstyle]
@@ -54,11 +57,33 @@ gretl.about(do_print=bool) -> gretl._gretl.Bundle
 \generaldesc{XXX}
 
 \gretlfpycmd{delete()}
-\estdesc{XXX}
-\begin{lstlisting}[style=pythonstyle]
-	gretl._gretl.delete(name=str)
+\estdesc{This is an all-purpose destructor. It should be used with caution; no confirmation is asked.}
+\begin{lstlisting}[style=pythonstylefoot]
+gretl._gretl.delete(varname=str)
 \end{lstlisting}
-\generaldesc{XXX}
+\mapto[clean]{delete varlist}
+\mapto[clean]{delete varname}
+\mapto[]{delete --type=type-name}
+\begin{itemize}
+	\item[]\maptoopt{type=str}{--type=type-name}{see below}
+	\item[]\maptoopt{db=True}{db}{delete series from database}
+	\item[]\pythcode{data=gretl.Dataset}\par%
+		\hspace*{10pt}{\footnotesize\pythcode{gretl.delete} works with the specified dataset}
+\end{itemize}
+Examples:\newline
+\pythcode{.delete(varlist)}\\
+\pythcode{.delete(varname)}\\
+\pythcode{.delete(type='type-name')}
+
+\generaldesc{In the first form above, varlist is a list of series,
+	given by name or ID number. Note that when you delete series
+	any series with higher ID numbers than those on the deletion
+	list will be re-numbered.\newline
+	In the second form, the name of a \texttt{scalar}, \texttt{matrix},
+	\texttt{string} or \texttt{bundle} may be given for deletion.\newline
+	In the third form, the \gretlcmd{--type} option must be accompanied
+	 by one of the following type-names: \texttt{matrix}, \texttt{bundle},
+	 \texttt{string}, \texttt{list}, \texttt{scalar} or \texttt{array}.}
 
 \gretlfpycmd{fc\_print()}
 \estdesc{XXX}

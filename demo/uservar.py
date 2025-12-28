@@ -71,3 +71,9 @@ gretl.print("B")
 #gretl.genr(name='theta3', value=a3D)
 
 gretl.uservars_list()
+
+# let's delete variable
+gretl.delete("a")
+gretl.delete("dX")
+gretl.delete(type="matrix")
+gretl.uservars_list()

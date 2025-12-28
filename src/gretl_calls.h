@@ -95,8 +95,10 @@ template <GretlType GR_TYPE>
 void gretl_generate (const std::string &formula, GretlDatasetPtr GD = DSET,
                      const std::string &name = {});
 
+void do_gretl_delete_variables (const std::string &varname,
+                                const py::kwargs &kwargs);
+
 // these two functions are temporal and will be moved to class
-void gretl_user_var_delete_by_name (const std::string &name);
 
 void uservars_list (void);
 

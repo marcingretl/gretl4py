@@ -80,8 +80,8 @@ PYBIND11_MODULE(_gretl, m)
           py::arg("varlist").none(true) = "", py::kw_only());
     m.def("include", &do_gretl_include,
           py::arg("filename").none(false));
-    m.def("delete", &gretl_user_var_delete_by_name,
-          py::arg("name").none(false));
+    m.def("delete", &do_gretl_delete_variables,
+          py::arg("varname").none(true) = "", py::kw_only());
     m.def("pvalue", &gretl_get_pvalue_critval_pdf_cdf<1>,
           py::arg("dist").none(false),
           py::arg("value").none(false),
