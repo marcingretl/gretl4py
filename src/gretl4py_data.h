@@ -122,7 +122,7 @@ public:
     void set_as_default (void);
 
     // exporters
-    py::object get_accessor (const std::string &accessor) const;
+    py::object get_accessor (const std::string &name);
 
     py::dict to_dict (void) const;
 

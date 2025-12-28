@@ -1549,13 +1549,9 @@ std::unordered_set<int> GretlDataset::linked_models_list (void) const
     return linked_models_;
 }
 
-py::object GretlDataset::get_accessor (const std::string &accessor) const
+py::object GretlDataset::get_accessor (const std::string &name)
 {
-    auto res = gretl_generate_gretl_object(accessor.c_str(), err_,
-                                           GRETL_OBJ_DSET, dset);
-    if (err_) handle_gretl_error(err_);
-
-    return variant_to_pyobject(std::move(*res));
+    return do_get_accessor<GRETL_OBJ_DSET>(name, shared_from_this(), nullptr);
 }
 
 void GretlDataset::test (const std::string &type, const std::string &vars,

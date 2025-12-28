@@ -223,7 +223,7 @@ void init_gretl4py_dataset_py11(py::module_ &m)
              py::arg("series").none(false), py::arg("f1").none(true) = 0,
              py::arg("f2").none(true) = 0, py::arg("k").none(true) = 0)
         .def("get_accessor", &GretlDataset::get_accessor,
-             py::arg("accessor").none(false))
+             py::arg("name").none(false))
         .def("corr", &GretlDataset::corr,
              py::arg("varlist").none(true) = "", py::kw_only())
         .def("cov", &GretlDataset::cov, py::arg("vars").none(true) = "")

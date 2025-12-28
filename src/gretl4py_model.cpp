@@ -125,9 +125,9 @@ void GretlModel::unlink_from_dataset (void) const
     if (GD_) GD_->linked_models_del(id_);
 }
 
-py::object GretlModel::get_accessor (const std::string &accessor) const
+py::object GretlModel::get_accessor (const std::string &name)
 {
-    auto res = gretl_generate_gretl_object(accessor.c_str(), err_,
+    auto res = gretl_generate_gretl_object(name.c_str(), err_,
                                            model_obj_type_,
                                            GD_->dset, model_ptr_());
     if (err_) handle_gretl_error(err_);

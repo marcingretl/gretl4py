@@ -675,6 +675,7 @@ py::object do_get_accessor (const std::string &name,
     return variant_to_pyobject(std::move(*res));
 }
 template py::object do_get_accessor<GRETL_OBJ_ANY>(const std::string&, GretlDatasetPtr, void*);
+template py::object do_get_accessor<GRETL_OBJ_DSET>(const std::string&, GretlDatasetPtr, void*);
 
 // general interface to gretl's 'genr' command
 void genr (const std::string &formula, GretlDatasetPtr data)

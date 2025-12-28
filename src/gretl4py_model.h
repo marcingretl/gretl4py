@@ -88,7 +88,7 @@ public:
 
     virtual std::string get_formula (void) const = 0;
 
-    virtual py::object get_accessor (const std::string &accessor) const;
+    py::object get_accessor (const std::string &name);
 
     int get_id (void) const;
 
