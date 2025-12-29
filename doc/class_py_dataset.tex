@@ -1,5 +1,5 @@
 \subsection{\classpydataset}
-The \classpydataset class provides the following public attributes:
+The \classpydataset provides the following public attributes:
 
 \gretlfpycmd{is\_panel}
 \estdesc{Checks if we deal with panel-dataset.}
@@ -7,7 +7,7 @@ The \classpydataset class provides the following public attributes:
 gretl._gretl.Dataset.is_panel -> bool
 \end{lstlisting}
 
-\vspace*{10pt}\noindent The \classpydataset class provides the following public methods:
+\vspace*{10pt}\noindent The \classpydataset provides the following public methods:
 
 \gretlfpycmd{\_\_copy\_\_()}
 \estdesc{Creates a deep copy of the \classpydataset object.}
@@ -78,11 +78,11 @@ gretl._gretl.Dataset.bwfilt(y: str, n: int, omega: float) -> numpy.ndarray
 gretl._gretl.Dataset.corr() -> numpy.ndarray
 gretl._gretl.Dataset.corr(varlist: str[, OPTS]) -> numpy.ndarray
 \end{lstlisting}
-\mapto[0]{corr [ varlist ]}
+\mapto{corr [ varlist ]}
 \begin{itemize}
 	\item[]\maptoopt{uniform=True}{--uniform}{ensure uniform sample}
-	\item[]\maptoopt{spearman=True}{--spearman}{Spearman's rho}
-	\item[]\maptoopt{kendall=True}{--kendall}{Kendall's tau}
+	\item[]\maptoopt{spearman=True}{--spearman}{Spearman's $\rho$}
+	\item[]\maptoopt{kendall=True}{--kendall}{Kendall's $\tau$}
 	\item[]\maptoopt{verbose=True}{--verbose}{print rankings}
 	\item[]\maptoopt{triangle=True}{--triangle}{only plot lower half, (\seegretlmanual)}
 	\item[]\maptoopt{quiet=True}{--quiet}{do not print anything}
@@ -220,8 +220,8 @@ gretl._gretl.Dataset.hpfilt(y:str[, hp_lambda: float = 'nan', trend: bool = Fals
 \gretlfpycmd{hurst()}
 \estdesc{Calculates the Hurst exponent (a measure of persistence
 	or long memory) for a time-series variable having at least 128 observations.}
-\begin{lstlisting}[style=pythonstyle]
-gretl._gretl.Dataset.hurst(series=str) -> numpy.ndarray
+\begin{lstlisting}[style=pythonstylefoot]
+gretl._gretl.Dataset.hurst(series: str) -> numpy.ndarray
 \end{lstlisting}
 \mapto[clean]{hurst series}
 \generaldesc{The Hurst exponent is discussed by Mandelbrot (1983).
@@ -422,9 +422,10 @@ gretl._gretl.Dataset.sdiff(varlist: str)
 \generaldesc{This command is available only for seasonal time series. }
 
 \gretlfpycmd{set\_as\_default()}
-\estdesc{Sets \pythcode{gretl.\_gretl.Dataset} as default detaset.}
+\estdesc{Sets given \pythcode{gretl.\_gretl.Dataset} instance
+	as default detaset.}
 \begin{lstlisting}[style=pythonstylefoot]
-gretl._gretl.Dataset.set_as_default(self)
+gretl._gretl.Dataset.set_as_default()
 \end{lstlisting}
 
 \gretlfpycmd{setobs()}

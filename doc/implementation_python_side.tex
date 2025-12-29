@@ -65,10 +65,10 @@ gretl._gretl.delete(varname: str)
 \mapto[clean]{delete varname}
 \mapto[]{delete --type=type-name}
 \begin{itemize}
-	\item[]\maptoopt{type=str}{--type=type-name}{see below}
+	\item[]\maptoopt{type=str}{--type=type-name}{\seegretlmanual}
 	\item[]\maptoopt{db=True}{db}{delete series from database}
 	\item[]\pythcode{data=gretl.Dataset}\par%
-		\hspace*{10pt}{\footnotesize\pythcode{gretl.delete} works with the specified dataset}
+		\hspace*{10pt}{\footnotesize\pythcode{gretl.delete()} works with the specified dataset}
 \end{itemize}
 Examples:\newline
 \pythcodef{.delete(varlist)}\\
@@ -163,6 +163,8 @@ gretl._gretl.print(varlist: str[, OPTS])
 	\item[]\maptoopt{head=lines}{--head[=lines]}{\seegretlmanual}
 	\item[]\maptoopt{tail=True}{--tail[=lines]}{\seegretlmanual}
 	\item[]\maptoopt{midas=True}{--midas}{\seegretlmanual}
+	\item[]\pythcode{data=gretl.Dataset}\par%
+		\hspace*{10pt}{\footnotesize\pythcode{gretl.print()} works with the specified dataset}
 \end{itemize}
 Examples:\newline
 \pythcodef{.print('y x', byobs=True)}\\
@@ -198,14 +200,18 @@ Examples:\newline
 	of a selected \lgretl parameter.}
 \begin{lstlisting}[style=pythonstylefoot]
 gretl.set()
-gretl.set(variable: str = ''[, value: str = ''])
-gretl.set(variable: str, value: int)
+gretl.set(variable: str = ''[, value: str = '', OPTS])
+gretl.set(variable: str, value: int[, OPTS])
 \end{lstlisting}
 \mapto[0]{set variable value}
 \mapto[0]{set --to-file=filename}
 \mapto[0]{set --from-file=filename}
 \mapto[0]{set stopwatch}
-\mapto[0]{set}
+\mapto[]{set}
+\begin{itemize}
+	\item[]\pythcode{data=gretl.Dataset}\par%
+		\hspace*{10pt}{\footnotesize\pythcode{gretl.set()} works with the specified dataset}
+\end{itemize}
 \generaldesc{The other uses are: with \gretlcmd{--to-file} to write
 	a script file containing all the current parameter settings;
 	with \gretlcmd{--from-file} to read a script file containing
@@ -229,7 +235,7 @@ gretl._gretl.summary(varlist: str[, OPTS])
 	\item[]\maptoopt{weight='wtvar'}{--weight=wtvar}{weighting variable}
 	\item[]\maptoopt{by='byvar'}{--by=byvar}{\seegretlmanual}
 	\item[]\pythcode{data=gretl.Dataset}\par%
-	\hspace*{10pt}{\footnotesize\pythcode{gretl.delete} works with the specified dataset}
+	\hspace*{10pt}{\footnotesize\pythcode{gretl.summary()} works with the specified dataset}
 \end{itemize}
 \generaldesc{The table of statistics produced by \gretlcmd{summary}
 	can be retrieved in matrix form via the \gretlcmd{\$result}
@@ -380,33 +386,28 @@ gretl._gretl.show_data_status(self)
 
 
 \subsection{Estimators}\label{sec:estimators_python}
-In order to illustrate the \gretlpy estimating facilities, we take the
-following points as implicit:
+In order to illustrate the \gretlpy estimating facilities,
+we take the as implicit that \pythcode{formula: str} can
+take one of the following forms:
 \begin{itemize}
-	\item\pythcode{data=dict} is a dictionary containing
-		the data as described in Section~\ref{sec:data_management_python};
-	\item\pythcode{formula=str} can take one of the
-		following forms:
-		\begin{itemize}
-			\item a simple \proglang{R}-style like formula that
-				maps the model equation using the following rule:
-				\begin{center}
-					\addtocounter{equation}{1}
-					\hspace*{15pt}$\displaystyle y = \beta_0 + \sum_{j=1}^{k}\beta_jx_j + \varepsilon\;\rightarrow\;$%
-					\pythcode{'y ~ const + x1 + x2 + ... + xk'}%
-					\setcounter{fomularenderR}{\theequation}%
-					\hfill\hypertarget{theRstyleFomula}{(\textcolor{red}{\theequation})}
-				\end{center}
-			\item \gretl's default syntax, as described in \cite{gretl_manual}
-				and referred to here as the ``maps to'' syntax:
-				\begin{center}
-					\addtocounter{equation}{1}
-					\hspace*{15pt}$\displaystyle y = \beta_0 + \sum_{j=1}^{k}\beta_jx_j + \varepsilon\;\rightarrow\;$%
-					\pythcode{'y const x1 x2 ... xk'}%
-					\setcounter{fomularenderG}{\theequation}%
-					\hfill\hypertarget{theGstyleFomula}{(\textcolor{red}{\theequation})}
-				\end{center}
-		\end{itemize}
+	\item a simple \proglang{R}-style like formula that
+		maps the model equation using the following rule:
+		\begin{center}
+			\addtocounter{equation}{1}
+			\hspace*{15pt}$\displaystyle y = \beta_0 + \sum_{j=1}^{k}\beta_jx_j + \varepsilon\;\rightarrow\;$%
+			\pythcode{'y ~ const + x1 + x2 + ... + xk'}%
+			\setcounter{fomularenderR}{\theequation}%
+			\hfill\hypertarget{theRstyleFomula}{(\textcolor{red}{\theequation})}
+		\end{center}
+	\item \gretl's default syntax, as described in \cite{gretl_manual}
+		and referred to here as the ``maps to'' syntax:
+		\begin{center}
+			\addtocounter{equation}{1}
+			\hspace*{15pt}$\displaystyle y = \beta_0 + \sum_{j=1}^{k}\beta_jx_j + \varepsilon\;\rightarrow\;$%
+			\pythcode{'y const x1 x2 ... xk'}%
+			\setcounter{fomularenderG}{\theequation}%
+			\hfill\hypertarget{theGstyleFomula}{(\textcolor{red}{\theequation})}
+		\end{center}
 \end{itemize}
 The complete list of available estimators is as follows
 (arguments in square brackets are optional):
@@ -793,7 +794,7 @@ gretl.var(order: int, ylist: str[, data=gretl._gretl.Dataset, OPTS]) -> gretl._g
 \noRformula
 
 \est{vecm}
-\estdesc{A VECM is a form of vector autoregression or VAR }
+\estdesc{A VECM model}
 \begin{lstlisting}[style=pythonstylefoot]
 gretl.vecm(order: int, rank: int, ylist: str[, data=gretl._gretl.Dataset, OPTS]) -> gretl._gretl.Model_vecm
 \end{lstlisting}

@@ -1,5 +1,5 @@
 \subsection{\classpymodel}\label{sec:class_py_model}
-The \gretlpy module implements the \classpymodel class,
+The \gretlpy module implements the \classpymodel,
 which is used to manage the definition, estimation,
 and output of models. Hierarchy of this class is
 shown at Figure~\ref{fig:model_class_hierarchy}.
@@ -57,7 +57,7 @@ shown at Figure~\ref{fig:model_class_hierarchy}.
 \end{landscape}
 
 
-\vspace*{20pt}\noindent The \classpymodel class provides the
+\vspace*{20pt}\noindent The \classpymodel provides the
 following public methods:
 
 \gretlfpycmd{\_\_repr\_\_()}
@@ -77,7 +77,7 @@ gretl._gretl.Model.adj_rsq(self) -> float
 \gretlfpycmd{attrs()}
 \estdesc{Prints a listing of the attributes of a model.}
 \begin{lstlisting}[style=pythonstyle]
-gretl._gretl.Model.attrs(self)
+gretl._gretl.Model.attrs()
 \end{lstlisting}
 \generaldesc{For scalars and short strings the values of the attributes
 	are printed, otherwise the Python type is shown.}
@@ -91,8 +91,8 @@ gretl._gretl.Model.fcast([OPT])
 \gretlfpycmd{fit()}
 \estdesc{Executes the underlying implementation of
 	the specified estimator in \gretlpy.}
-\begin{lstlisting}[style=pythonstyle]
-Model.fit(self) -> self
+\begin{lstlisting}[style=pythonstylefoot]
+Model.fit() -> self
 \end{lstlisting}
 
 \gretlfpycmd{get\_accessor()}\label{met:gretl.Model::get_accessor}
@@ -118,8 +118,8 @@ class provides the following public methods:
 
 \gretlfpycmd{oddsratio()}
 \estdesc{Pretty-prints odds ratios for a logit model (if available).}
-\begin{lstlisting}[style=pythonstyle]
-gretl._gretl.Model.oddsratio(self)
+\begin{lstlisting}[style=pythonstylefoot]
+gretl._gretl.Model.oddsratio()
 \end{lstlisting}
 
 \gretlfpycmd{restrict()}
