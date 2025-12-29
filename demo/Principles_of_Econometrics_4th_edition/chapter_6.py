@@ -26,8 +26,8 @@ print(f'keys available for a user: {andy_u.tests[-1].keys()}')
 
 print("\n6.1.2. Testing the Significance of the Model")
 F_val = andy_u.Fstat
-crit_val = gretl.critical('F', value=0.05, params=[andy_u.ncoeff-1, andy_u.df])
-p_val = gretl.pvalue('F', value=F_val, params=[andy_u.ncoeff-1, andy_u.df])
+crit_val = gretl.critical('F', p=0.05, params=[andy_u.ncoeff-1, andy_u.df])
+p_val = gretl.pvalue('F', x=F_val, params=[andy_u.ncoeff-1, andy_u.df])
 print(f'Fc = {crit_val:.4}')
 print(f'F = {F_val:.5}, p-value = {p_val:.5}')
 
@@ -36,7 +36,7 @@ andy.new_series(name='sales_advert', value='sales - advert')
 andy.new_series(name='advertsq_advert', value='advertsq - 3.8*advert')
 andy_r = gretl.ols('sales_advert const price advertsq_advert').fit()
 F_val = (andy_r.ess - andy_u.ess) / (andy_u.ess / andy_u.df)
-p_val = gretl.pvalue('F', value=F_val, params=[1, andy_u.df])
+p_val = gretl.pvalue('F', x=F_val, params=[1, andy_u.df])
 print(f'F = {F_val:.5}, p-value = {p_val:.4}')
 
 ############################################

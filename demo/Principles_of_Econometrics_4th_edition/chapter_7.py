@@ -37,7 +37,7 @@ print(WAGE_u)
 WAGE_r = gretl.ols('wage const educ', simple=True).fit()
 j_val = WAGE_u.ncoeff - WAGE_r.ncoeff
 F_val = ((WAGE_r.ess - WAGE_u.ess)/j_val) / (WAGE_u.ess / WAGE_u.df)
-crit_val = gretl.critical('F', value=0.01, params=[j_val, WAGE_u.df])
+crit_val = gretl.critical('F', p=0.01, params=[j_val, WAGE_u.df])
 print(f'F = {F_val:.4}, critical value = {crit_val:.3}')
 
 print("\n7.2.2. Qualitative Factors with Several Categories")
@@ -45,7 +45,7 @@ spec = 'wage const educ black female blackfemale south midwest west'
 WAGE_reg = gretl.ols(spec, simple=True).fit()   # (7.8)
 print(WAGE_reg)
 WAGE_reg.test(type='omit', vars='south midwest west')
-print(f'critival value: {gretl.critical('F', value=0.01, params=[3, WAGE_reg.df]):.5}')
+print(f'critival value: {gretl.critical('F', p=0.01, params=[3, WAGE_reg.df]):.5}')
 
 print("\n7.2.3. Testing the Equivalence of Two Regressions")
 cps4_small.new_series(name='educsouth', value='educ * south')

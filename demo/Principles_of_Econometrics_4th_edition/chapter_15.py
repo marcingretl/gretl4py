@@ -55,7 +55,7 @@ print("Table 15.4 Pooled Least Squares Estimates pf Wage Equation for N=10")
 LSQD_10_nd = gretl.ols(formula="lwage const exper exper2 tenure tenure2 union", simple=True).fit()
 print(LSQD_10_nd)
 F = ((LSQD_10.ess - LSQD_10_nd.ess) / (LSQD_10_nd.ncoeff - LSQD_10.ncoeff)) / (LSQD_10.ess / (LSQD_10.T - LSQD_10.ncoeff))   # (15.10)
-pval = gretl.pvalue(d='F', value=F, params=[9,35])
+pval = gretl.pvalue(c='F', x=F, params=[9,35])
 print(f'F = {F:.3f}, pvalue = {pval:.4f}')
 nls_panel.sample(full=True)
 

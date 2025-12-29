@@ -29,7 +29,7 @@ print("\n8.2. Detecting Heteroscedasticity")
 print("\n8.2.2b. Testing the Food Expenditure Example")
 FOOD_f.save_uhat_sq(name='FOOD_f_e_sq')
 FOOD_fe = gretl.ols(formula='FOOD_f_e_sq const income', simple=True).fit()        # (8.17)
-crit_val = gretl.critical(d='x', value=0.05, params=FOOD_fe.ncoeff-1)
+crit_val = gretl.critical(c='x', p=0.05, params=FOOD_fe.ncoeff-1)
 print(f'chi^2 = {FOOD_fe.trsq:.3}, critical value = {crit_val:.3}')
 FOOD_f.test(type='white', quiet=True)
 
@@ -43,8 +43,8 @@ CPS_m = gretl.ols(formula=spec, simple=True).fit()          # (8.20a)
 cps2.sample('metro == 0', restrict=True, replace=True)
 CPS_r = gretl.ols(formula=spec, simple=True).fit()          # (8.20b)
 cps2.sample(full=True)
-Flc = gretl.critical(d='F', value=0.975, params=[CPS_m.df, CPS_r.df])
-Fuc = gretl.critical(d='F', value=0.025, params=[CPS_m.df, CPS_r.df])
+Flc = gretl.critical(c='F', p=0.975, params=[CPS_m.df, CPS_r.df])
+Fuc = gretl.critical(c='F', p=0.025, params=[CPS_m.df, CPS_r.df])
 F_val = CPS_m.sigma**2 / CPS_r.sigma**2
 print(f'Flc = {Flc:.2}, Fuc = {Fuc:.3}')
 print(f'F = {F_val:.3}')
@@ -57,7 +57,7 @@ food.sample(21, 40)
 FOOD_2 = gretl.ols(formula=FOOD_f.get_formula()).fit()
 food.sample(full=True)
 F_val = FOOD_2.sigma**2 / FOOD_1.sigma**2
-crit_val = gretl.critical(d='F', value=0.05, params=[FOOD_2.df, FOOD_1.df])
+crit_val = gretl.critical(c='F', p=0.05, params=[FOOD_2.df, FOOD_1.df])
 print(f'F = {F_val:.3}, critical value = {crit_val:.3}')
 
 ############################################

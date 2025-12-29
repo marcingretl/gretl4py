@@ -240,9 +240,9 @@ def modeltab (models, output="print", tablefmt="github", stars=True, coeff_fmt="
                 # Determine stars only if pvalues exist
                 star = ""
                 if m.asymptotic:
-                    pval = 2 * gretl.pvalue(d="z", value=abs(coeff/stderr))
+                    pval = 2 * gretl.pvalue(c="z", x=abs(coeff/stderr))
                 else:
-                    pval = 2 * gretl.pvalue(d="t", value=abs(coeff/stderr), params=m.df)
+                    pval = 2 * gretl.pvalue(c="t", x=abs(coeff/stderr), params=m.df)
                 if pval is not None:
                     if pval < 0.01:
                         star = "***"
