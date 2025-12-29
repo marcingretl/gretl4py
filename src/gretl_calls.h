@@ -61,7 +61,7 @@ py::object do_gretl_include (const std::string &filename);
 GretlPackagePtr load_package (const std::string &pkgname,
                               const std::string &suffix = "");
 
-template<int MODE>
+template<GretlFunIndex FI>
 double gretl_get_pvalue_critval_pdf_cdf (const std::string &d, double value,
                                          const py::object &param = py::none());
 

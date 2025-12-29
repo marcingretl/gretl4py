@@ -515,14 +515,9 @@ py::object do_gretl_include (const std::string &filename)
     return obj;
 }
 
-// MODE == 1 : pvalue
-// MODE == 2 : critval
-// MODE == 3 : pdf
-// MODE == 4 : cdf
-// MODE == 5 : cdf_inverse
-template <int MODE>
-double gretl_get_pvalue_critval_pdf_cdf (const std::string &d,
-                                         double value, const py::object &param)
+template <GretlFunIndex FI>
+double gretl_get_pvalue_critval_pdf_cdf (const std::string &d, double value,
+                                         const py::object &param)
 {
     //
     // general interface to selected libgretl functions from pvalues.c
@@ -581,28 +576,28 @@ double gretl_get_pvalue_critval_pdf_cdf (const std::string &d,
     }
 
     // actual work
-    if constexpr (MODE == 1) {
+    if constexpr (FI == GretlFunIndex::F_PVAL) {
         return gretl_get_pvalue(dist_code, params_ptr, value);
-    } else if constexpr (MODE == 2) {
+    } else if constexpr (FI == GretlFunIndex::F_CRIT) {
         return gretl_get_critval(dist_code, params_ptr, value);
-    } else if constexpr (MODE == 3) {
+    } else if constexpr (FI == GretlFunIndex::F_PDF) {
         return gretl_get_pdf(dist_code, params_ptr, value);
-    } else if constexpr (MODE == 4) {
+    } else if constexpr (FI == GretlFunIndex::F_CDF) {
         if (dist_code == D_BINORM) {
-            if (params_vec.size() != 2) throw std::invalid_argument("Bivariate normal requires 2 parameters.");
+            if (params_vec.size() != 2) handle_gretl_error(E_ARGS);
             return bvnorm_cdf(value, params_vec.at(0), params_vec.at(1));
         } else {
             return gretl_get_cdf(dist_code, params_ptr, value);
         }
-    } else if constexpr (MODE == 5) {
+    } else if constexpr (FI == GretlFunIndex::F_INVCDF) {
         return gretl_get_cdf_inverse(dist_code, params_ptr, value);
     }
 }
-template double gretl_get_pvalue_critval_pdf_cdf<1>(const std::string&, double, const py::object&);
-template double gretl_get_pvalue_critval_pdf_cdf<2>(const std::string&, double, const py::object&);
-template double gretl_get_pvalue_critval_pdf_cdf<3>(const std::string&, double, const py::object&);
-template double gretl_get_pvalue_critval_pdf_cdf<4>(const std::string&, double, const py::object&);
-template double gretl_get_pvalue_critval_pdf_cdf<5>(const std::string&, double, const py::object&);
+template double gretl_get_pvalue_critval_pdf_cdf<GretlFunIndex::F_PVAL>(const std::string&, double, const py::object&);
+template double gretl_get_pvalue_critval_pdf_cdf<GretlFunIndex::F_CRIT>(const std::string&, double, const py::object&);
+template double gretl_get_pvalue_critval_pdf_cdf<GretlFunIndex::F_PDF>(const std::string&, double, const py::object&);
+template double gretl_get_pvalue_critval_pdf_cdf<GretlFunIndex::F_CDF>(const std::string&, double, const py::object&);
+template double gretl_get_pvalue_critval_pdf_cdf<GretlFunIndex::F_INVCDF>(const std::string&, double, const py::object&);
 
 void do_gretl_delete_variables (const std::string &varname,
                                 const py::kwargs &kwargs)

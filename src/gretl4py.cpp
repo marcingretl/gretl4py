@@ -87,23 +87,23 @@ PYBIND11_MODULE(_gretl, m)
           py::arg("filename").none(false));
     m.def("delete", &do_gretl_delete_variables,
           py::arg("varname").none(true) = "", py::kw_only());
-    m.def("pvalue", &gretl_get_pvalue_critval_pdf_cdf<1>,
+    m.def("pvalue", &gretl_get_pvalue_critval_pdf_cdf<GretlFunIndex::F_PVAL>,
           py::arg("d").none(false),
           py::arg("value").none(false),
           py::arg("params").none(true) = py::none());
-    m.def("critical", &gretl_get_pvalue_critval_pdf_cdf<2>,
+    m.def("critical", &gretl_get_pvalue_critval_pdf_cdf<GretlFunIndex::F_CRIT>,
           py::arg("d").none(false),
           py::arg("value").none(false),
           py::arg("params").none(true) = py::none());
-    m.def("pdf", &gretl_get_pvalue_critval_pdf_cdf<3>,
+    m.def("pdf", &gretl_get_pvalue_critval_pdf_cdf<GretlFunIndex::F_PDF>,
           py::arg("d").none(false),
           py::arg("value").none(false),
           py::arg("params").none(true) = py::none());
-    m.def("cdf", &gretl_get_pvalue_critval_pdf_cdf<4>,
+    m.def("cdf", &gretl_get_pvalue_critval_pdf_cdf<GretlFunIndex::F_CDF>,
           py::arg("d").none(false),
           py::arg("value").none(false),
           py::arg("params").none(true) = py::none());
-    m.def("invcdf", &gretl_get_pvalue_critval_pdf_cdf<5>,
+    m.def("invcdf", &gretl_get_pvalue_critval_pdf_cdf<GretlFunIndex::F_INVCDF>,
           py::arg("d").none(false),
           py::arg("value").none(false),
           py::arg("params").none(true) = py::none());

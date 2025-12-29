@@ -172,6 +172,15 @@ struct PythonArgInfo {
     bool valid = true;          // if we deal with valid object (in terms of gretl4py)
 };
 
+// this enum is to mimic enum(s) from genparse.h
+enum class GretlFunIndex {
+    F_PDF,
+    F_PVAL,
+    F_CDF,
+    F_INVCDF,
+    F_CRIT
+};
+
 //////////////////////////////////////////////////
 // tools
 //////////////////////////////////////////////////
