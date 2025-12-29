@@ -12,22 +12,22 @@ LRM = d1.get_series(series='LRM')
 
 # HP filter
 # we call ::hpfilt() with default options
-c = d1.hpfilt(series='LRM')
+c = d1.hpfilt(y='LRM')
 print("\nCycle component from the Hodrick-Prescott filter:")
 print(c)
 
-t = d1.hpfilt(series='LRM', one_sided=True, trend=True, hp_lambda=99.78)
+t = d1.hpfilt(y='LRM', one_sided=True, trend=True, hp_lambda=99.78)
 print("\nOne-sided trend component from the Hodrick-Prescott filter:")
 print(t)
 
 # Butterworth filter
 # we call ::bwfilt()
-bw = d1.bwfilt(series='LRM', n=4, omega=90)
+bw = d1.bwfilt(y='LRM', n=4, omega=90)
 print("\nResults from the Butterworth filter:")
 print(bw)
 
 # Baxter-King bandpass filter with default values
-bk = d1.bkfilt(series='LRM')
+bk = d1.bkfilt(y='LRM')
 print("\nResults from the Baxter-King filter:")
 print(bk)
 

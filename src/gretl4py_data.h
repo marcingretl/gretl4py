@@ -171,20 +171,20 @@ public:
 
     // transformations
     template <GretlCmdIndex CI>
-    void transforms (const std::string &vars, const py::kwargs &kwargs);
+    void transforms (const std::string &varlist, const py::kwargs &kwargs);
 
     template <GretlCmdIndex CI>
-    void transforms_no_opts (const std::string &vars);
+    void transforms_no_opts (const std::string &varlist);
 
-    void lags (const std::string &vars, int order);
+    void lags (const std::string &varlist, int order);
 
     // filters, correlations, etc
-    DNumPyArrayFC hpfilt (const std::string &series, double hp_lambda = NADBL,
+    DNumPyArrayFC hpfilt (const std::string &y, double hp_lambda = NADBL,
                           bool trend = false, bool one_sided = false);
 
-    DNumPyArrayFC bwfilt (const std::string &series, int n, double omega);
+    DNumPyArrayFC bwfilt (const std::string &y, int n, double omega);
 
-    DNumPyArrayFC bkfilt (const std::string &series, int f1 = 0,
+    DNumPyArrayFC bkfilt (const std::string &y, int f1 = 0,
                           int f2 = 0, int k = 0);
 
     py::object corr (const std::string &varlist, const py::kwargs &kwargs);
@@ -196,7 +196,7 @@ public:
     py::object xcorrgm (const std::string &vars, int order,
                         const py::kwargs &kwargs);
 
-    py::object pca (const std::string &vars, const py::kwargs &kwargs);
+    py::object pca (const std::string &varlist, const py::kwargs &kwargs);
 };
 
 //

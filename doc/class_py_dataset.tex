@@ -2,17 +2,16 @@
 The \classpydataset class provides the following public attributes:
 
 \gretlfpycmd{is\_panel}
-\estdesc{XXX}
-\begin{lstlisting}[style=pythonstyle]
+\estdesc{Checks if we deal with panel-dataset.}
+\begin{lstlisting}[style=pythonstylefoot]
 gretl._gretl.Dataset.is_panel -> bool
 \end{lstlisting}
-\generaldesc{XXX}
 
 \vspace*{10pt}\noindent The \classpydataset class provides the following public methods:
 
 \gretlfpycmd{\_\_copy\_\_()}
 \estdesc{Creates a deep copy of the \classpydataset object.}
-\begin{lstlisting}[style=pythonstyle]
+\begin{lstlisting}[style=pythonstylefoot]
 import copy
 dataset_copy = copy.copy(gretl._gretl.Dataset)
 \end{lstlisting}
@@ -24,17 +23,17 @@ dataset_copy = copy.copy(gretl._gretl.Dataset)
 	function, it performs a deep copy of all dataset
 	contents.}
 
-\gretlfpycmd{\_\_repr\_\_()}
-\estdesc{Returns a string representation of the \classpydataset object.}
-\begin{lstlisting}[style=pythonstyle]
-repr(gretl._gretl.Dataset)
-print(gretl._gretl.Dataset)
-\end{lstlisting}
-\generaldesc{This method returns a concise textual summary of the
-	\pythcode{gretl.\_gretl.Dataset} object, suitable for inspection
-	or debugging. It is automatically invoked by the built-in
-	\pythcode{repr()} function and when the object is printed
-	in an interactive session.}
+%\gretlfpycmd{\_\_repr\_\_()}
+%\estdesc{Returns a string representation of the \classpydataset object.}
+%\begin{lstlisting}[style=pythonstyle]
+%repr(gretl._gretl.Dataset)
+%print(gretl._gretl.Dataset)
+%\end{lstlisting}
+%\generaldesc{This method returns a concise textual summary of the
+%	\pythcode{gretl.\_gretl.Dataset} object, suitable for inspection
+%	or debugging. It is automatically invoked by the built-in
+%	\pythcode{repr()} function and when the object is printed
+%	in an interactive session.}
 
 \gretlfpycmd{add\_series()}
 \estdesc{XXX}
@@ -47,7 +46,7 @@ gretl._gretl.Dataset.add_series(data=numpy.ndarray, name=str)
 \estdesc{Returns the result from application of the Baxter--King
 	bandpass filter to the series \textit{y}.}
 \begin{lstlisting}[style=pythonstylefoot]
-gretl._gretl.Dataset.bkfilt(series=str, f1=int, f2=int, k=int) -> numpy.ndarray
+gretl._gretl.Dataset.bkfilt(y: str[, f1: int = 0, f2: int = 0, k: int = 0) -> numpy.ndarray
 \end{lstlisting}
 \maptof{bkfilt(y, f1, f2, k)}{series}
 \generaldesc{The optional parameters \textit{f1} and
@@ -60,7 +59,7 @@ gretl._gretl.Dataset.bkfilt(series=str, f1=int, f2=int, k=int) -> numpy.ndarray
 	Butterworth filter with order \textit{n} and frequency
 	cutoff \textit{omega} to the series \textit{y}.}
 \begin{lstlisting}[style=pythonstylefoot]
-gretl._gretl.Dataset.bwfilt(series=str, n=int, omega=float) -> numpy.ndarray
+gretl._gretl.Dataset.bwfilt(y: str, n: int, omega: float) -> numpy.ndarray
 \end{lstlisting}
 \maptof{bwfilt(y, n, omega)}{series}
 \generaldesc{The cutoff is expressed in degrees and must be
@@ -71,11 +70,15 @@ gretl._gretl.Dataset.bwfilt(series=str, n=int, omega=float) -> numpy.ndarray
 	numerical instability.}
 
 \gretlfpycmd{corr()}
-\estdesc{XXX}
-\begin{lstlisting}[style=pythonstyle]
-gretl._gretl.Dataset.corr(varlist=str, [OPTS]) -> numpy.ndarray
+\estdesc{By default, prints the pairwise correlation coefficients
+	(Pearson's product-moment correlation) for the variables in
+	\textit{varlist}, or for all variables in the data set if
+	\textit{varlist }is not given.}
+\begin{lstlisting}[style=pythonstylefoot]
+gretl._gretl.Dataset.corr() -> numpy.ndarray
+gretl._gretl.Dataset.corr(varlist: str[, OPTS]) -> numpy.ndarray
 \end{lstlisting}
-\mapto[clean]{corr [ varlist ]}
+\mapto[0]{corr [ varlist ]}
 \begin{itemize}
 	\item[]\maptoopt{uniform=True}{--uniform}{ensure uniform sample}
 	\item[]\maptoopt{spearman=True}{--spearman}{Spearman's rho}
@@ -85,21 +88,21 @@ gretl._gretl.Dataset.corr(varlist=str, [OPTS]) -> numpy.ndarray
 	\item[]\maptoopt{quiet=True}{--quiet}{do not print anything}
 \end{itemize}
 Examples:\newline
-\pythcode{.corr('y x z t')}\\
-\pythcode{.corr('ylist', uniform=True)}\\
-\pythcode{.corr('x y', spearman=True)}
-
-\generaldesc{By default, prints the pairwise correlation
-	coefficients (Pearson's product-moment correlation) for
-	the variables in \textit{varlist}, or for all variables
-	in the data set if \textit{varlist} is not given. The
-	standard behavior is to use all available observations
-	for computing each pairwise coefficient, but if the
-	\gretlcmd{--uniform} option is given the sample is limited
-	(if necessary) so that the same set of observations is
-	used for all the coefficients. This option has an effect
+\pythcodef{.corr('y x z t')}\\
+\pythcodef{.corr('ylist', uniform=True)}\\
+\pythcodef{.corr('x y', spearman=True)}\\
+\generaldesc{The standard behavior is to use all available
+	observations for computing each pairwise coefficient, but
+	if the \gretlcmd{--uniform} option is given the sample is
+	limited (if necessary) so that the same set of observations
+	is used for all the coefficients. This option has an effect
 	only if there are differing numbers of missing values
-	for the variables used.}
+	for the variables used.\newline
+	The (mutually exclusive) options \gretlcmd{--spearman} and
+	\gretlcmd{--kendall} produce, respectively, Spearman's rank
+	correlation $\rho$ and Kendall's rank correlation $\tau$ in
+	place of the default Pearson coefficient. When either of these
+	options is given, \textit{varlist} should contain just two variables.}
 
 \gretlfpycmd{cov()}
 \estdesc{XXX}
@@ -109,25 +112,53 @@ gretl._gretl.Dataset.cov(vars=str) -> numpy.ndarray
 \generaldesc{XXX}
 
 \gretlfpycmd{diff()}
-\estdesc{XXX}
-\begin{lstlisting}[style=pythonstyle]
-gretl._gretl.Dataset.diff(vars=str)
+\estdesc{The first difference of each variable in \textit{varlist}
+	is obtained and the result stored in a new variable with the prefix d\_. }
+\begin{lstlisting}[style=pythonstylefoot]
+gretl._gretl.Dataset.diff(varlist: str)
 \end{lstlisting}
-\generaldesc{XXX}
+\mapto[0]{diff varlist}
+\generaldesc{Note, \gretlcmd{diff x y} creates the new variables:
+	\begin{align*}
+		d\_x &= x_t - x_{t-1},\\
+		d\_y &= y_t - y_{t-1}.
+	\end{align*}}
 
 \gretlfpycmd{discrete()}
-\estdesc{XXX}
-\begin{lstlisting}[style=pythonstyle]
-gretl._gretl.Dataset.discrete(vars=str, [OPTS])
+\estdesc{Marks each variable in \textit{varlist} as being discrete.}
+\begin{lstlisting}[style=pythonstylefoot]
+gretl._gretl.Dataset.discrete(varlist=str[, OPTS])
 \end{lstlisting}
-\generaldesc{XXX}
+\mapto{discrete varlist}
+\begin{itemize}
+	\item[]\maptoopt{reverse=True}{--reverse}{mark variables as continuous}
+\end{itemize}
+\generaldesc{By default all variables are treated as continuous;
+	marking a variable as discrete allows you to select the variable
+	for the command \gretlcmd{dummify}.\newline
+	If the \gretlcmd{--reverse} flag is given, the operation is
+	reversed; that is, the variables in \textit{varlist} are
+	marked as being continuous.}
 
 \gretlfpycmd{dummify()}
-\estdesc{XXX}
-\begin{lstlisting}[style=pythonstyle]
-gretl._gretl.Dataset.dummify(vars=str, [OPTS])
+\estdesc{For any suitable variables in \textit{varlist},
+	creates a set of dummy variables coding for the distinct
+	values of that variable.}
+\begin{lstlisting}[style=pythonstylefoot]
+gretl._gretl.Dataset.dummify(varlist=str[, OPTS])
 \end{lstlisting}
-\generaldesc{XXX}
+\mapto{dummify varlist}
+\begin{itemize}
+	\item[]\maptoopt{drop\_first=True}{--drop-first}{omit lowest value from encoding}
+	\item[]\maptoopt{drop\_last=True}{--drop-last}{omit highest value from encoding}
+\end{itemize}
+\generaldesc{Suitable variables are those that have been explicitly
+	marked as discrete, or those that take on a fairly small number
+	of values all of which are ``fairly round'' (multiples of 0.25).\newline
+	By default a dummy variable is added for each distinct value of
+	the variable in question. For example if a discrete variable
+	\textit{x} has 5 distinct values, 5 dummy variables will be added
+	to the data set, with names \textit{Dx\_1}, \textit{Dx\_2} and so on.}
 
 \gretlfpycmd{get\_accessor()}\label{met:gretl.Dataset::get_accessor}
 \estdesc{XXX}
@@ -168,8 +199,7 @@ gretl._gretl.Dataset.headT(nobs=int)
 \estdesc{Returns the cycle component from application of
 	the Hodrick--Prescott filter to series \textit{y}.}
 \begin{lstlisting}[style=pythonstylefoot]
-gretl._gretl.Dataset.hpfilt(series=str, hp_lambda=float, one_sided=bool) -> numpy.ndarray
-gretl._gretl.Dataset.hpfilt(series=str, hp_lambda=float, trend=bool, one_sided=bool) -> numpy.ndarray
+gretl._gretl.Dataset.hpfilt(y:str[, hp_lambda: float = 'nan', trend: bool = False, one_sided=bool]) -> numpy.ndarray
 \end{lstlisting}
 \maptof{hpfilt(y, lambda, one-sided)}{series}
 \generaldesc{If the smoothing parameter, \textit{lambda}%
@@ -210,18 +240,42 @@ gretl._gretl.Dataset.hurst(series=str) -> numpy.ndarray
 	the log of \textit{RS} on the log of sample size.}
 
 \gretlfpycmd{lags()}
-\estdesc{XXX}
-\begin{lstlisting}[style=pythonstyle]
-gretl._gretl.Dataset.sdiff(vars=str, order=int)
+\estdesc{Creates new series which are lagged values of
+	each of the series in \textit{varlist}.}
+\begin{lstlisting}[style=pythonstylefoot]
+gretl._gretl.Dataset.lags(varlist: str[, order: int])
 \end{lstlisting}
-\generaldesc{XXX}
+\mapto{lags [ order ; ] laglist}
+\begin{itemize}
+	\item[]\maptoopt{bylag=True}{--bylag}{order terms by lag}
+\end{itemize}
+Examples:\newline
+\pythcodef{.lags('x y')}\\
+\pythcodef{.lags('x y', 12)}\\
+\pythcodef{.lags('x y z', 4, bylag=True)}\\
+\generaldesc{By default the number of lags created equals the
+	periodicity of the data. For example, if the periodicity
+	is 4 (quarterly), the command lags \textit{x} creates:
+	\begin{align*}
+		x\_1 &= x_{t-1},\\
+		x\_2 &= x_{t-2},\\
+		x\_3 &= x_{t-3},\\
+		x\_4 &= x_{t-4}.
+	\end{align*}}
 
 \gretlfpycmd{ldiff()}
-\estdesc{XXX}
-\begin{lstlisting}[style=pythonstyle]
-gretl._gretl.Dataset.ldiff(vars=str)
+\estdesc{The first difference of the natural log of each series
+	in \textit{varlist} is obtained and the result stored in
+	a new series with the prefix ld\_. }
+\begin{lstlisting}[style=pythonstylefoot]
+gretl._gretl.Dataset.ldiff(varlist: str)
 \end{lstlisting}
-\generaldesc{XXX}
+\mapto[0]{ldiff varlist}
+\generaldesc{Thus \gretlcmd{ldiff x y} creates the new variables
+	\begin{align*}
+		ld\_x &= log(x) - log(x(-1)),\\
+		ld\_y &= log(y) - log(y(-1))
+	\end{align*}}
 
 \gretlfpycmd{linked\_models\_list()}
 \estdesc{XXX}
@@ -231,11 +285,17 @@ gretl._gretl.Dataset.linked_models_list() -> set
 \generaldesc{XXX}
 
 \gretlfpycmd{logs()}
-\estdesc{XXX}
-\begin{lstlisting}[style=pythonstyle]
-gretl._gretl.Dataset.discrete(vars=str)
+\estdesc{The natural log of each of the series in \textit{varlist}
+	is obtained and the result stored in a new series with the prefix l\_.}
+\begin{lstlisting}[style=pythonstylefoot]
+gretl._gretl.Dataset.discrete(varlist: str)
 \end{lstlisting}
-\generaldesc{XXX}
+\mapto[0]{logs varlist}
+\generaldesc{Thus \gretlcmd{logs x y} creates the new variables
+	\begin{align*}
+		l\_x &= log(x),\\
+		l\_y &= log(y).
+	\end{align*}}
 
 \gretlfpycmd{new\_list()}
 \estdesc{XXX}
@@ -254,11 +314,36 @@ gretl._gretl.Dataset.new_series(formula=str)
 \generaldesc{XXX}
 
 \gretlfpycmd{orthdev()}
-\estdesc{XXX}
-\begin{lstlisting}[style=pythonstyle]
-gretl._gretl.Dataset.orthdev(vars=str)
+\estdesc{Applicable with panel data only.}
+\begin{lstlisting}[style=pythonstylefoot]
+gretl._gretl.Dataset.orthdev(varlist: str)
 \end{lstlisting}
-\generaldesc{XXX}
+\mapto[0]{orthdev varlist}
+\generaldesc{A series of forward orthogonal deviations is
+	obtained for each variable in \textit{varlist} and stored
+	in a new variable with the prefix \textit{o\_}.
+	Thus \gretlcmd{orthdev x y} creates the new variables
+	\textit{o\_x} and \textit{o\_y}.}
+
+\gretlfpycmd{pca()}
+\estdesc{Principal Components Analysis.}
+\begin{lstlisting}[style=pythonstylefoot]
+gretl._gretl.Dataset.pca(varlist: str = ''[, OPTS])
+\end{lstlisting}
+\mapto{pca varlist}
+\begin{itemize}
+	\item[]\maptoopt{covariance=True}{--covariance}{use the covariance matrix}
+	\item[]\maptoopt{save=n}{--save[=n]}{save major components}
+	\item[]\maptoopt{save\_all=True}{--save-all}{save all components}
+	\item[]\maptoopt{quiet=True}{--quiet}{don't print results}
+\end{itemize}
+\generaldesc{Unless the \gretlcmd{--quiet} option is given,
+	prints the eigenvalues of the correlation matrix (or
+	the covariance matrix if the \gretlcmd{--covariance} option
+	is given) for the variables in \textit{varlist}, along with
+	the proportion of the joint variance accounted for by each
+	component. Also prints the corresponding eigenvectors or
+	``component loadings''.}
 
 \gretlfpycmd{print()}\label{met:gretldataset::print}
 \estdesc{XXX}
@@ -270,10 +355,11 @@ gretl._gretl.Dataset.print([OPTS])
 \gretlfpycmd{sample()}
 \estdesc{This command can be used only when a dataset is in place.}
 \begin{lstlisting}[style=pythonstylefoot]
-gretl._gretl.Dataset.sample(startobs=str, endobs=str, [OPTS])
-gretl._gretl.Dataset.sample(startobs=str, [OPTS])
-gretl._gretl.Dataset.sample(startobs=int, endobs=int, [OPTS])
-gretl._gretl.Dataset.sample(startobs=int, [OPTS])
+gretl._gretl.Dataset.sample()
+gretl._gretl.Dataset.sample(startobs: int[, OPTS])
+gretl._gretl.Dataset.sample(startobs: str[, OPTS])
+gretl._gretl.Dataset.sample(startobs: int = 'nan'[, endobs: int = 'nan', OPTS])
+gretl._gretl.Dataset.sample(startobs: str = ''[, endobs: str = '', OPTS])
 \end{lstlisting}
 \mapto[clean]{smpl startobs endobss}
 \mapto[clean]{smpl +i -j}
@@ -301,12 +387,12 @@ gretl._gretl.Dataset.sample(startobs=int, [OPTS])
 	\item[]\maptoopt{quiet=True}{--quiet}{don't report sample range}
 \end{itemize}
 Examples:\newline
-\pythcode{.sample(3, 10)}\\
-\pythcode{.sample('1960:2', '1982:4')}\\
-\pythcode{.sample(1, -1)}\\
-\pythcode{.sample('x > 3000', restrict=True)}\\
-\pythcode{.sample('y > 3000', restrict=True, replace=True))}\\
-\pythcode{.sample(100, random=True)}
+\pythcodef{.sample(3, 10)}\\
+\pythcodef{.sample('1960:2', '1982:4')}\\
+\pythcodef{.sample(1, -1)}\\
+\pythcodef{.sample('x > 3000', restrict=True)}\\
+\pythcodef{.sample('y > 3000', restrict=True, replace=True))}\\
+\pythcodef{.sample(100, random=True)}
 
 \generaldesc{When no arguments are given, it displays the
 	current sample range, otherwise it sets the sample range.
@@ -326,26 +412,27 @@ Examples:\newline
 	restricts the sample to observations that satisfy the given Boolean condition.}
 
 \gretlfpycmd{sdiff()}
-\estdesc{XXX}
-\begin{lstlisting}[style=pythonstyle]
-gretl._gretl.Dataset.sdiff(vars=str)
+\estdesc{The seasonal difference of each variable in
+	\textit{varlist} is obtained and the result stored
+	in a new variable with the prefix sd\_.}
+\begin{lstlisting}[style=pythonstylefoot]
+gretl._gretl.Dataset.sdiff(varlist: str)
 \end{lstlisting}
-\generaldesc{XXX}
+\mapto[0]{sdiff varlist}
+\generaldesc{This command is available only for seasonal time series. }
 
 \gretlfpycmd{set\_as\_default()}
-\estdesc{XXX}
-\begin{lstlisting}[style=pythonstyle]
+\estdesc{Sets \pythcode{gretl.\_gretl.Dataset} as default detaset.}
+\begin{lstlisting}[style=pythonstylefoot]
 gretl._gretl.Dataset.set_as_default(self)
 \end{lstlisting}
-\generaldesc{XXX}
 
 \gretlfpycmd{setobs()}
 \estdesc{This command forces the program to interpret
 	the current data set as having a specified structure.}
 \begin{lstlisting}[style=pythonstylefoot]
-gretl._gretl.Dataset.setobs(periodicity=int, startobs=str, [OPTS])
-gretl._gretl.Dataset.setobs(periodicity=int, startobs=int, [OPTS])
-gretl._gretl.Dataset.setobs(unitvar=str, timevar=str, [OPTS])
+gretl._gretl.Dataset.setobs(periodicity: int, startobs: str | int[, OPTS])
+gretl._gretl.Dataset.setobs(unitvar: str, timevar: str[, OPTS])
 \end{lstlisting}
 \mapto[clean]{setobs periodicity startobs}
 \mapto{setobs unitvar timevar --panel-vars}
@@ -360,12 +447,11 @@ gretl._gretl.Dataset.setobs(unitvar=str, timevar=str, [OPTS])
 	\item[]\maptoopt{panel\_groups=True}{--panel-groups}{\seegretlmanual}
 \end{itemize}
 Examples:\newline
-\pythcode{.setobs(4, '1990:1', time\_series=True}\\
-\pythcode{.setobs(12, '1978:03')}\\
-\pythcode{.setobs(1, 1, cross\_section=True)}\\
-\pythcode{.setobs(20, '1:1', stacked\_time\_series=True)}\\
-\pythcode{.setobs(unit, year, panel\_vars=True)}
-
+\pythcodef{.setobs(4, '1990:1', time\_series=True}\\
+\pythcodef{.setobs(12, '1978:03')}\\
+\pythcodef{.setobs(1, 1, cross\_section=True)}\\
+\pythcodef{.setobs(20, '1:1', stacked\_time\_series=True)}\\
+\pythcodef{.setobs(unit, year, panel\_vars=True)}\\
 \generaldesc{In the first and in the second form of the method
 	the periodicity, which must be an integer, represents frequency
 	in the case of time-series data (1 = annual; 4 = quarterly;
@@ -383,18 +469,34 @@ Examples:\newline
 	time series, by ascending values of the units variable, \textit{unitvar}.}
 
 \gretlfpycmd{square()}
-\estdesc{XXX}
-\begin{lstlisting}[style=pythonstyle]
-gretl._gretl.Dataset.square(vars=str, [OPTS])
+\estdesc{Generates new series which are squares of the series
+	in \textit{varlist} (plus cross-products if the
+	\gretlcmd{--cross} is given).}
+\begin{lstlisting}[style=pythonstylefoot]
+gretl._gretl.Dataset.square(varlist: str[, OPTS])
 \end{lstlisting}
-\generaldesc{XXX}
+\mapto[0]{square varlist}
+\generaldesc{For example, \gretlcmd{square x y} will generate 
+	$q\_x = x$ squared, $sq\_y = y$ squared and (optionally)
+	$x\_y = x \times y$. If a particular variable is a dummy
+	variable it is not squared because we will get the same variable.}
 
 \gretlfpycmd{stdize()}
-\estdesc{XXX}
-\begin{lstlisting}[style=pythonstyle]
-gretl._gretl.Dataset.stdize(vars=str)
+\estdesc{By default a standardized version of each of the series
+	in \textit{varlist} is obtained and the result stored in a
+	new series with the prefix s\_.}
+\begin{lstlisting}[style=pythonstylefoot]
+gretl._gretl.Dataset.stdize(varlist: str[, OPTS])
 \end{lstlisting}
-\generaldesc{XXX}
+\mapto[]{stdize varlist}
+\begin{itemize}
+	\item[]\maptoopt{no\_df\_corr=True}{--no-df-corr}{no degrees of freedom correction}
+	\item[]\maptoopt{center\_only=True}{--center-only}{don't divide by s.d.}
+\end{itemize}
+\generaldesc{For example, \gretlcmd{stdize x y} creates
+	the new series \textit{s\_x} and \textit{s\_y}, each
+	of which is centered and divided by its sample standard
+	deviation (with a degrees of freedom correction of 1).}
 
 \gretlfpycmd{tail()}
 \estdesc{XXX}
@@ -411,12 +513,14 @@ gretl._gretl.Dataset.tailT(nobs=int)
 \generaldesc{XXX}
 
 \gretlfpycmd{test()}
-\estdesc{XXX}
-\begin{lstlisting}[style=pythonstyle]
-gretl._gretl.Dataset.test(type=str, vars=str, [OPTS])
+\estdesc{General interface to dataset-based tests.}
+\begin{lstlisting}[style=pythonstylefoot]
+gretl._gretl.Dataset.test(type: str[, vars: str, OPTS])
 \end{lstlisting}
-\generaldesc{\gretlcmd{adf, bds, coint, corrgm, difftest, johansen, kpss, levinlin,
-		meantest, normtest, runs, vartest}}
+\generaldesc{\pythcode{type} refers to one of the following:
+	\gretlcmd{adf, bds, coint, corrgm, difftest, fractint,
+		johansen, kpss, levinlin, meantest, normtest, runs,
+		vartest}.}
 
 \gretlfpycmd{to\_dataframe()}
 \estdesc{XXX}
@@ -447,9 +551,22 @@ gretl._gretl.Dataset.varnames(self) -> list
 \generaldesc{XXX}
 
 \gretlfpycmd{xcorrgm()}
-%\estdesc{XXX}
-\begin{lstlisting}[style=pythonstyle]
-gretl._gretl.Dataset.xcorrgm(vars=str, order=int) -> numpy.ndarray
-gretl._gretl.Dataset.xcorrgm(series1=str, series2=str, order=int) -> numpy.ndarray
+\estdesc{Prints and/or graphs the cross-correlogram for series1 and series2.}
+\begin{lstlisting}[style=pythonstylefoot]
+gretl._gretl.Dataset.xcorrgm(varlist: str[, order: int]) -> numpy.ndarray
+gretl._gretl.Dataset.xcorrgm(series1: str, series2: str[, order: int]) -> numpy.ndarray
 \end{lstlisting}
-\generaldesc{XXX}
+\mapto{xcorrgm series1 series2 [ order ]}
+\begin{itemize}
+	\item[]\maptoopt{plot='mode-or-filename'}{--plot=mode-or-filename}{\seegretlmanual}
+	\item[]\maptoopt{silent=True}{--silent}{suppress printed output}
+\end{itemize}
+Examples:\newline
+\pythcodef{.xcorrgm('x y', order=12)}\\
+\generaldesc{The values are the sample correlation coefficients
+	between the current value of series1 and successive leads
+	and lags of series2.\newline
+	If an \textit{order} value is specified the length of the
+	cross-correlogram is limited to at most that number of leads
+	and lags, otherwise the length is determined automatically,
+	as a function of the frequency of the data and the number of observations.}

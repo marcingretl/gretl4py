@@ -53,7 +53,7 @@ usa.test(type='coint', order=1, y='b', vars='f', verbose=True)      # (12.9)
 
 print("\n12.4.2. The Error Correction Model")
 usa.diff('b')
-usa.lags(vars="f b")
+usa.lags(varlist="f b")
 spec: gretl.NLSpec = {
     "formula": "d_b = -a * (b_1 - b1 - b2 * f_1) + d0 * d_f + d1 * d_f(-1)",
     "params": 'a b1 b2 d0 d1',

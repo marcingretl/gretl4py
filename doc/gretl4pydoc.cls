@@ -8,7 +8,7 @@
 \RequirePackage[pdftex]{xcolor}
 \RequirePackage[]{graphicx}
 
-\RequirePackage{dirtree,xargs,xspace,url,listings,pifont,makeidx,ifthen,caption,subcaption,fancyvrb,tikz,pdflscape,catchfile}
+\RequirePackage{dirtree,xargs,xspace,url,listings,pifont,makeidx,ifthen,caption,subcaption,fancyvrb,tikz,pdflscape,catchfile,amsmath}
 \RequirePackage[toc,title]{appendix}
 \usepackage{gretlwp}
 
@@ -151,6 +151,21 @@
 	language=Hansl,
 	showstringspaces=false,
 	basicstyle={\ttfamily\small},
+	keywordstyle={\bfseries\color{hanslred}},
+	keywordstyle=[2]{\color{hanslteal}},
+	keywordstyle=[3]{\bfseries\color{hanslgreen}},
+	keywordstyle=[4]{\bfseries\color{hanslgreen}},
+	commentstyle={\color{hanslblue}},
+	stringstyle={\color{hanslmagenta}}
+}
+\lstdefinestyle{hanslfoot}{
+	belowcaptionskip=1\baselineskip,
+	breaklines=true,
+	frame=L,
+	xleftmargin=\parindent,
+	language=Hansl,
+	showstringspaces=false,
+	basicstyle={\ttfamily\footnotesize},
 	keywordstyle={\bfseries\color{hanslred}},
 	keywordstyle=[2]{\color{hanslteal}},
 	keywordstyle=[3]{\bfseries\color{hanslgreen}},

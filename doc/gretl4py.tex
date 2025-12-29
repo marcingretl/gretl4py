@@ -18,19 +18,21 @@
 
 % lstlistings
 \newcommand{\gretlcmd}[1]{\lstinline!#1!\xspace}
+\newcommand{\gretlcmdf}[1]{\lstinline[style=hanslfoot]!#1!\xspace}
 \newcommand{\cppcode}[1]{\lstinline[style=cppstyle]!#1!\xspace}
 \newcommand{\pythcode}[1]{\lstinline[style=pythonstyle]!#1!\xspace}
+\newcommand{\pythcodef}[1]{\lstinline[style=pythonstylefoot]!#1!\xspace}
 \newcommand{\reqpython}{[3.11], [3.12], [3.13], [3.14]\xspace}
-\newcommand{\mapto}[2][]{\hspace*{17pt}{\small maps to:} \gretlcmd{#2}\newline%
+\newcommand{\mapto}[2][]{\hspace*{17pt}{\footnotesize maps to:} \gretlcmdf{#2}\newline%
 	\ifthenelse{\equal{#1}{}}%
-		{\hspace*{17pt}{\small where \pythcode{OPTS} are the following options %
+		{\hspace*{17pt}{\footnotesize where \pythcodef{OPTS} are the following options %
 				(\gretlpy to \gretl mappings):}}%
 		{\hspace{17pt}}%
 }
 \newcommand{\maptof}[2]{\hspace*{17pt}{\small maps to: }%
 	\gretlcmd{#1} $\rightarrow$ \gretlcmd{#2}\newline}
 \newcommand{\maptoopt}[3]{%
-	\pythcode{#1} $\rightarrow$ \gretlcmd{#2}\par
+	\pythcodef{#1} {\footnotesize $\rightarrow$} \gretlcmdf{#2}\par
 	{\hspace*{10pt}\footnotesize #3}%
 }
 \newcommand{\lgretl}[1][]{\pkg{libgretl#1}\xspace}

@@ -188,39 +188,39 @@ void init_gretl4py_dataset_py11(py::module_ &m)
         .def("discrete", &GretlDataset::transforms<DISCRETE>,
              py::arg("varlist").none(false), py::kw_only())
         .def("stdize", &GretlDataset::transforms<STDIZE>,
-             py::arg("vars").none(false), py::kw_only())
+             py::arg("varlist").none(false), py::kw_only())
         .def("diff", &GretlDataset::transforms_no_opts<DIFF>,
-             py::arg("vars").none(false))
+             py::arg("varlist").none(false))
         .def("ldiff", &GretlDataset::transforms_no_opts<LDIFF>,
-             py::arg("vars").none(false))
+             py::arg("varlist").none(false))
         .def("sdiff", &GretlDataset::transforms_no_opts<SDIFF>,
-             py::arg("vars").none(false))
+             py::arg("varlist").none(false))
         .def("logs", &GretlDataset::transforms_no_opts<LOGS>,
-             py::arg("vars").none(false))
+             py::arg("varlist").none(false))
         .def("orthdev", &GretlDataset::transforms_no_opts<ORTHDEV>,
-             py::arg("vars").none(false))
+             py::arg("varlist").none(false))
         .def("lags", &GretlDataset::lags,
-             py::arg("vars").none(false), py::arg("order").none(true) = 0)
+             py::arg("varlist").none(false), py::arg("order").none(true) = 0)
         .def("print", &GretlDataset::print)
         .def("varnames", &GretlDataset::varnames)
         .def("get_series", &GretlDataset::get_series,
              py::arg("series").none(false))
         .def("linked_models_list", &GretlDataset::linked_models_list)
         .def("hpfilt", &GretlDataset::hpfilt,
-             py::arg("series").none(false), py::arg("hp_lambda").none(true) = NADBL,
+             py::arg("y").none(false), py::arg("hp_lambda").none(true) = NADBL,
              py::arg("trend").none(true) = false, py::arg("one_sided").none(true) = false)
         .def("hpfilt",
-             [](GretlDataset &self, const std::string &series, double hp_lambda, bool one_sided)
+             [](GretlDataset &self, const std::string &y, double hp_lambda, bool one_sided)
              {
-                 return self.hpfilt(series, hp_lambda, false, one_sided);
+                 return self.hpfilt(y, hp_lambda, false, one_sided);
              },
-             py::arg("series").none(false), py::arg("hp_lambda").none(true) = NADBL,
+             py::arg("y").none(false), py::arg("hp_lambda").none(true) = NADBL,
              py::arg("one_sided").none(true) = false)
         .def("bwfilt", &GretlDataset::bwfilt,
-             py::arg("series").none(false), py::arg("n").none(false),
+             py::arg("y").none(false), py::arg("n").none(false),
              py::arg("omega").none(false))
         .def("bkfilt", &GretlDataset::bkfilt,
-             py::arg("series").none(false), py::arg("f1").none(true) = 0,
+             py::arg("y").none(false), py::arg("f1").none(true) = 0,
              py::arg("f2").none(true) = 0, py::arg("k").none(true) = 0)
         .def("get_accessor", &GretlDataset::get_accessor,
              py::arg("name").none(false))
@@ -229,12 +229,12 @@ void init_gretl4py_dataset_py11(py::module_ &m)
         .def("cov", &GretlDataset::cov, py::arg("vars").none(true) = "")
         .def("hurst", &GretlDataset::hurst, py::arg("series").none(false))
         .def("xcorrgm",
-             [](GretlDataset &self, const std::string &vars, int order,
+             [](GretlDataset &self, const std::string &varlist, int order,
                 const py::kwargs &kwargs)
              {
-                 return self.xcorrgm(vars, order, kwargs);
+                 return self.xcorrgm(varlist, order, kwargs);
              },
-             py::arg("vars").none(false), py::arg("order").none(true) = 0)
+             py::arg("varlist").none(false), py::arg("order").none(true) = 0)
         .def("xcorrgm",
              [](GretlDataset &self, const std::string &series1,
                 const std::string &series2, int order, const py::kwargs &kwargs)
@@ -244,7 +244,7 @@ void init_gretl4py_dataset_py11(py::module_ &m)
              py::arg("series1").none(false), py::arg("series2").none(false),
              py::arg("order").none(true) = 0)
         .def("pca", &GretlDataset::pca,
-             py::arg("vars").none(true) = "", py::kw_only())
+             py::arg("varlist").none(true) = "", py::kw_only())
         .def("test",
              [](GretlDataset &self, const std::string &type, const py::kwargs &kwargs)
              {

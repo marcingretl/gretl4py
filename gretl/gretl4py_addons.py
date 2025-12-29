@@ -95,10 +95,10 @@ def nparray2dict (X, pd=1, Y=None, with_const=False,
     const_pos - column number which holds constant term values
     '''
     if not isinstance(X, numpy.ndarray):
-        raise Exception("X is not a numpay array!!!")
+        raise Exception("X is not a NumPy array!!!")
     if Y is not None:
         if not isinstance(Y, numpy.ndarray):
-            raise Exception("Y is not a numpay array!!!")
+            raise Exception("Y is not a NumPy array!!!")
         if numpy.shape(Y)[0] != numpy.shape(X)[0]:
             raise Exception("X and Y are not comformable!!!")
     d = {}
@@ -127,23 +127,26 @@ def nparray2dict (X, pd=1, Y=None, with_const=False,
 
     return d
 
-def series2dict (series, pd=1, varname="y"):
+def series2dict (Y, pd=1, varname="y"):
     '''turns a pandas series into a dictionary gretl understands'''
     if 'pandas' not in sys.modules:
         import pandas
+
+    if not isinstance(Y, pandas.core.series.Series):
+        raise Exception("Y is not a pandas.core.series.Series!!!")
     d = {}
     if varname == 'const':
         varname = 'const_'
-    mydata = series.to_numpy(copy=True, dtype=numpy.double)
+    mydata = Y.to_numpy(copy=True, dtype=numpy.double)
     d['data_array'] = mydata
     d['varname'] = [varname]
     try:
-        obs_dates = series.index.to_period()
+        obs_dates = Y.index.to_period()
         d['obs_labels'] = [obs.strftime(_pd_to_str_format(pd)) for obs in obs_dates]
     except (AttributeError, TypeError) as err:
         if err:
             print(f'Warning: {err}, fall back to original labels.')
-        d['obs_labels'] = series.index.to_list()
+        d['obs_labels'] = Y.index.to_list()
     d['periodicity'] = pd
 
     return d
