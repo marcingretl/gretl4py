@@ -88,23 +88,23 @@ PYBIND11_MODULE(_gretl, m)
     m.def("delete", &do_gretl_delete_variables,
           py::arg("varname").none(true) = "", py::kw_only());
     m.def("pvalue", &gretl_get_pvalue_critval_pdf_cdf<1>,
-          py::arg("dist").none(false),
+          py::arg("d").none(false),
           py::arg("value").none(false),
           py::arg("params").none(true) = py::none());
     m.def("critical", &gretl_get_pvalue_critval_pdf_cdf<2>,
-          py::arg("dist").none(false),
+          py::arg("d").none(false),
           py::arg("value").none(false),
           py::arg("params").none(true) = py::none());
     m.def("pdf", &gretl_get_pvalue_critval_pdf_cdf<3>,
-          py::arg("dist").none(false),
+          py::arg("d").none(false),
           py::arg("value").none(false),
           py::arg("params").none(true) = py::none());
     m.def("cdf", &gretl_get_pvalue_critval_pdf_cdf<4>,
-          py::arg("dist").none(false),
+          py::arg("d").none(false),
           py::arg("value").none(false),
           py::arg("params").none(true) = py::none());
     m.def("invcdf", &gretl_get_pvalue_critval_pdf_cdf<5>,
-          py::arg("dist").none(false),
+          py::arg("d").none(false),
           py::arg("value").none(false),
           py::arg("params").none(true) = py::none());
     m.def("uservars_list", &uservars_list);

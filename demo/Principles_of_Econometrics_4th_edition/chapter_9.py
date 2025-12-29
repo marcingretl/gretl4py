@@ -61,11 +61,11 @@ PC_aux_1 = gretl.ols('PC_e const d_u PC_e(-1)').fit()
 PC_aux_2 = gretl.ols('PC_e_2 const d_u PC_e_2(-1)').fit()
 t_i  = PC_aux_1.coeff[2]/PC_aux_1.stderr[2]
 t_ii = PC_aux_2.coeff[2]/PC_aux_2.stderr[2]
-print(f"(i)\tt = {t_i:.3f}, p-value: {gretl.pvalue(dist='t', value=t_i, params=PC_aux_1.df):.3f}")
-print(f"(ii)\tt = {t_ii:.3f}, p-value: {gretl.pvalue(dist='t', value=t_ii, params=PC_aux_2.df):.3f}")
+print(f"(i)\tt = {t_i:.3f}, p-value: {gretl.pvalue(d='t', value=t_i, params=PC_aux_1.df):.3f}")
+print(f"(ii)\tt = {t_ii:.3f}, p-value: {gretl.pvalue(d='t', value=t_ii, params=PC_aux_2.df):.3f}")
 print(f"(iii)\tLM = {PC_aux_1.trsq:.2f}")
 print(f"(iv)\tLM = {PC_aux_2.trsq:.2f}")
-print(f"chi^2(1) critical value: {gretl.critical(dist='X', value=0.05, params=1):.2f}")
+print(f"chi^2(1) critical value: {gretl.critical(d='X', value=0.05, params=1):.2f}")
 
 ############################################
 # 9.5. Estimation With Serially Correlated Errors

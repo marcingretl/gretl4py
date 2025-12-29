@@ -23,6 +23,7 @@
 extern "C" {
     #include <gretl/gretl_string_table.h>
     #include <gretl/gretl_typemap.h>
+    double bvnorm_cdf (double rho, double a, double b); // from gretl_normal.c
 }
 
 #if defined(_WIN32)
@@ -520,21 +521,21 @@ py::object do_gretl_include (const std::string &filename)
 // MODE == 4 : cdf
 // MODE == 5 : cdf_inverse
 template <int MODE>
-double gretl_get_pvalue_critval_pdf_cdf (const std::string &dist,
+double gretl_get_pvalue_critval_pdf_cdf (const std::string &d,
                                          double value, const py::object &param)
 {
     //
     // general interface to selected libgretl functions from pvalues.c
     //
     // we check if we got one char
-    if (dist.size() != 1) {
-        throw std::invalid_argument("'dist' takes just one character");
+    if (d.size() != 1) {
+        throw std::invalid_argument("'d' takes just one character");
     }
 
     // we look for distribution code (for "t", "z", etc.)
-    const int dist_code = dist_code_from_string(dist.c_str());
+    const int dist_code = dist_code_from_string(d.c_str());
     if (dist_code == static_cast<int>(D_NONE)) {
-        throw std::invalid_argument("unknown distribution code: '" + dist + "'");
+        throw std::invalid_argument("unknown distribution code: '" + d + "'");
     }
 
     // we normalize params into either a view over a NumPy double array
@@ -587,7 +588,12 @@ double gretl_get_pvalue_critval_pdf_cdf (const std::string &dist,
     } else if constexpr (MODE == 3) {
         return gretl_get_pdf(dist_code, params_ptr, value);
     } else if constexpr (MODE == 4) {
-        return gretl_get_cdf(dist_code, params_ptr, value);
+        if (dist_code == D_BINORM) {
+            if (params_vec.size() != 2) throw std::invalid_argument("Bivariate normal requires 2 parameters.");
+            return bvnorm_cdf(value, params_vec.at(0), params_vec.at(1));
+        } else {
+            return gretl_get_cdf(dist_code, params_ptr, value);
+        }
     } else if constexpr (MODE == 5) {
         return gretl_get_cdf_inverse(dist_code, params_ptr, value);
     }

@@ -92,7 +92,7 @@ print(f'-0.2*b[2] - 0.5*b[3] > 0, pvalue: {m1.restrictions[-1]['pvalue']/2 : .3f
 b = m1.coeff
 vcv = m1.vcv
 t = (-0.2 * b[1] - 0.5 * b[2]) / math.sqrt((-0.2)**2 * vcv[1][1] + (-0.5)**2 * vcv[2][2] + 2 * -0.2 * -0.5 * vcv[1][2])
-pval = gretl.pvalue(dist='t', value=t, params=72)
+pval = gretl.pvalue(d='t', value=t, params=72)
 print(f't = {t:.3f}, pvalue = {pval:.3f}')
 
 ############################################
