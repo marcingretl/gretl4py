@@ -64,6 +64,9 @@ GretlPackagePtr load_package (const std::string &pkgname,
 template<GretlFunIndex FI>
 double gretl_get_pvalue_critval_pdf_cdf (const std::string &d, double value,
                                          const py::object &param = py::none());
+template<GretlFunIndex FI, typename T>
+py::array_t<double> gretl_get_pvalue_critval_pdf_cdf (const std::string &d, T &A,
+                                                      const py::object &param = py::none());
 
 void genr (const std::string &formula, GretlDatasetPtr data);
 

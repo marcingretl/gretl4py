@@ -596,8 +596,58 @@ double gretl_get_pvalue_critval_pdf_cdf (const std::string &d, double value,
 template double gretl_get_pvalue_critval_pdf_cdf<GretlFunIndex::F_PVAL>(const std::string&, double, const py::object&);
 template double gretl_get_pvalue_critval_pdf_cdf<GretlFunIndex::F_CRIT>(const std::string&, double, const py::object&);
 template double gretl_get_pvalue_critval_pdf_cdf<GretlFunIndex::F_PDF>(const std::string&, double, const py::object&);
-template double gretl_get_pvalue_critval_pdf_cdf<GretlFunIndex::F_CDF>(const std::string&, double, const py::object&);
+//template double gretl_get_pvalue_critval_pdf_cdf<GretlFunIndex::F_CDF>(const std::string&, double, const py::object&);
 template double gretl_get_pvalue_critval_pdf_cdf<GretlFunIndex::F_INVCDF>(const std::string&, double, const py::object&);
+
+template<GretlFunIndex FI, typename T>
+py::array_t<double> gretl_get_pvalue_critval_pdf_cdf(const std::string &d, T &A,
+                                                     const py::object &param)
+{
+    //
+    // this is a wrapper for matrix operations
+    //
+    py::array_t<double> src_mat;
+
+    // handle type T
+    if constexpr (std::is_same_v<T, py::array_t<double>>) {
+        if (A.ndim() > 2) throw std::invalid_argument("given matrix has too many dimensions");
+        src_mat = A;
+    } else if constexpr (std::is_same_v<T, std::string>) {
+        // A is a series name, fetch the series from dataset
+        //src_mat = series_to_array(A);
+    } else {
+        static_assert(always_false<T>, "gretl_get_pvalue_critval_pdf_cdf(): unsupported type T");
+    }
+
+    // determine shape
+    ssize_t n = src_mat.shape(0);
+    ssize_t k = (src_mat.ndim() == 2) ? src_mat.shape(1) : 0;
+
+    // allocate result array
+    py::array_t<double> res = (k == 0) ? py::array_t<double>({n}) : py::array_t<double>({n, k});
+
+    // fill res
+    if (k == 0) {
+        auto r = res.mutable_unchecked<1>();
+        auto src = src_mat.unchecked<1>();
+
+        for (ssize_t i = 0; i < n; ++i) {
+            r(i) = gretl_get_pvalue_critval_pdf_cdf<FI>(d, src(i), param);
+        }
+    } else {
+        auto r = res.mutable_unchecked<2>();
+        auto src = src_mat.unchecked<2>();
+
+        for (ssize_t i = 0; i < n; ++i) {
+            for (ssize_t j = 0; j < k; ++j) {
+                r(i, j) = gretl_get_pvalue_critval_pdf_cdf<FI>(d, src(i, j), param);
+            }
+        }
+    }
+
+    return res;
+}
+template py::array_t<double> gretl_get_pvalue_critval_pdf_cdf<GretlFunIndex::F_CDF, py::array_t<double>>(const std::string&, py::array_t<double>&, const py::object&);
 
 void do_gretl_delete_variables (const std::string &varname,
                                 const py::kwargs &kwargs)
