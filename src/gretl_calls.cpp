@@ -516,21 +516,21 @@ py::object do_gretl_include (const std::string &filename)
 }
 
 template <GretlFunIndex FI>
-double gretl_get_pvalue_critval_pdf_cdf (const std::string &d, double value,
+double gretl_get_pvalue_critval_pdf_cdf (const std::string &dist, double value,
                                          const py::object &param)
 {
     //
     // general interface to selected libgretl functions from pvalues.c
     //
     // we check if we got one char
-    if (d.size() != 1) {
-        throw std::invalid_argument("'d' takes just one character");
+    if (dist.size() != 1) {
+        throw std::invalid_argument("'dist' takes just one character");
     }
 
     // we look for distribution code (for "t", "z", etc.)
-    const int dist_code = dist_code_from_string(d.c_str());
+    const int dist_code = dist_code_from_string(dist.c_str());
     if (dist_code == static_cast<int>(D_NONE)) {
-        throw std::invalid_argument("unknown distribution code: '" + d + "'");
+        throw std::invalid_argument("unknown distribution code: '" + dist + "'");
     }
 
     // we normalize params into either a view over a NumPy double array
@@ -593,30 +593,43 @@ double gretl_get_pvalue_critval_pdf_cdf (const std::string &d, double value,
         return gretl_get_cdf_inverse(dist_code, params_ptr, value);
     }
 }
-template double gretl_get_pvalue_critval_pdf_cdf<GretlFunIndex::F_PVAL>(const std::string&, double, const py::object&);
-template double gretl_get_pvalue_critval_pdf_cdf<GretlFunIndex::F_CRIT>(const std::string&, double, const py::object&);
-template double gretl_get_pvalue_critval_pdf_cdf<GretlFunIndex::F_PDF>(const std::string&, double, const py::object&);
-//template double gretl_get_pvalue_critval_pdf_cdf<GretlFunIndex::F_CDF>(const std::string&, double, const py::object&);
-template double gretl_get_pvalue_critval_pdf_cdf<GretlFunIndex::F_INVCDF>(const std::string&, double, const py::object&);
 
 template<GretlFunIndex FI, typename T>
-py::array_t<double> gretl_get_pvalue_critval_pdf_cdf(const std::string &d, T &A,
-                                                     const py::object &param)
+py::array_t<double> matrix_functions_wrapper (const std::string &dist, T &src,
+                                              const py::object &param)
 {
     //
-    // this is a wrapper for matrix operations
+    // this is a wrapper for matrix operations for certain libgretl functions
+    // note: function to call must be added to lambda
     //
+    //lambda for selection underlying libgretl function
+    auto F = [&](double x)
+    {
+        if constexpr (FI == GretlFunIndex::F_PDF)
+            return gretl_get_pvalue_critval_pdf_cdf<GretlFunIndex::F_PDF>(dist, x, param);
+        else if constexpr (FI == GretlFunIndex::F_CDF)
+            return gretl_get_pvalue_critval_pdf_cdf<GretlFunIndex::F_CDF>(dist, x, param);
+        else if constexpr (FI == GretlFunIndex::F_PVAL)
+            return gretl_get_pvalue_critval_pdf_cdf<GretlFunIndex::F_PVAL>(dist, x, param);
+        else if constexpr (FI == GretlFunIndex::F_CRIT)
+            return gretl_get_pvalue_critval_pdf_cdf<GretlFunIndex::F_CRIT>(dist, x, param);
+        else if constexpr (FI == GretlFunIndex::F_INVCDF)
+            return gretl_get_pvalue_critval_pdf_cdf<GretlFunIndex::F_INVCDF>(dist, x, param);
+        else
+            static_assert(always_false<T>, "Unhandled GretlFunIndex");
+    };
+
     py::array_t<double> src_mat;
 
     // handle type T
     if constexpr (std::is_same_v<T, py::array_t<double>>) {
-        if (A.ndim() > 2) throw std::invalid_argument("given matrix has too many dimensions");
-        src_mat = A;
+        if (src.ndim() > 2) throw std::invalid_argument("given matrix has too many dimensions");
+        src_mat = src;
     } else if constexpr (std::is_same_v<T, std::string>) {
         // A is a series name, fetch the series from dataset
-        //src_mat = series_to_array(A);
+        //src_mat = series_to_array(src);
     } else {
-        static_assert(always_false<T>, "gretl_get_pvalue_critval_pdf_cdf(): unsupported type T");
+        static_assert(always_false<T>, "matrix_functions_wrapper(): unsupported type T");
     }
 
     // determine shape
@@ -631,23 +644,24 @@ py::array_t<double> gretl_get_pvalue_critval_pdf_cdf(const std::string &d, T &A,
         auto r = res.mutable_unchecked<1>();
         auto src = src_mat.unchecked<1>();
 
-        for (ssize_t i = 0; i < n; ++i) {
-            r(i) = gretl_get_pvalue_critval_pdf_cdf<FI>(d, src(i), param);
-        }
+        for (ssize_t i = 0; i < n; ++i)
+            r(i) = F(src(i));
     } else {
         auto r = res.mutable_unchecked<2>();
         auto src = src_mat.unchecked<2>();
 
-        for (ssize_t i = 0; i < n; ++i) {
-            for (ssize_t j = 0; j < k; ++j) {
-                r(i, j) = gretl_get_pvalue_critval_pdf_cdf<FI>(d, src(i, j), param);
-            }
-        }
+        for (ssize_t i = 0; i < n; ++i)
+            for (ssize_t j = 0; j < k; ++j)
+                r(i, j) = F(src(i, j));
     }
 
     return res;
 }
-template py::array_t<double> gretl_get_pvalue_critval_pdf_cdf<GretlFunIndex::F_CDF, py::array_t<double>>(const std::string&, py::array_t<double>&, const py::object&);
+template py::array_t<double> matrix_functions_wrapper<GretlFunIndex::F_PDF, py::array_t<double>>(const std::string&, py::array_t<double>&, const py::object&);
+template py::array_t<double> matrix_functions_wrapper<GretlFunIndex::F_CDF, py::array_t<double>>(const std::string&, py::array_t<double>&, const py::object&);
+template py::array_t<double> matrix_functions_wrapper<GretlFunIndex::F_PVAL, py::array_t<double>>(const std::string&, py::array_t<double>&, const py::object&);
+template py::array_t<double> matrix_functions_wrapper<GretlFunIndex::F_CRIT, py::array_t<double>>(const std::string&, py::array_t<double>&, const py::object&);
+template py::array_t<double> matrix_functions_wrapper<GretlFunIndex::F_INVCDF, py::array_t<double>>(const std::string&, py::array_t<double>&, const py::object&);
 
 void do_gretl_delete_variables (const std::string &varname,
                                 const py::kwargs &kwargs)

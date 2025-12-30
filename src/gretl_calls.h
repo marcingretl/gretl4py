@@ -62,11 +62,12 @@ GretlPackagePtr load_package (const std::string &pkgname,
                               const std::string &suffix = "");
 
 template<GretlFunIndex FI>
-double gretl_get_pvalue_critval_pdf_cdf (const std::string &d, double value,
+double gretl_get_pvalue_critval_pdf_cdf (const std::string &dist, double value,
                                          const py::object &param = py::none());
+
 template<GretlFunIndex FI, typename T>
-py::array_t<double> gretl_get_pvalue_critval_pdf_cdf (const std::string &d, T &A,
-                                                      const py::object &param = py::none());
+py::array_t<double> matrix_functions_wrapper (const std::string &dist, T &src,
+                                              const py::object &param = py::none());
 
 void genr (const std::string &formula, GretlDatasetPtr data);
 

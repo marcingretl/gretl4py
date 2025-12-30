@@ -48,7 +48,8 @@ gretl.about(do_print: bool = False) -> gretl._gretl.Bundle
 \gretlfpycmd{cdf()}
 \estdesc{Cumulative distribution function calculator.}
 \begin{lstlisting}[style=pythonstylefoot]
-gretl._gretl.cdf(d: str, value: float[, param: object = None]) -> float
+gretl._gretl.cdf(d: str, x: float[, param: object = None]) -> float
+gretl._gretl.cdf(d: str, x: array_like[, param: object = None]) -> numpy.ndarray
 \end{lstlisting}
 \mapto[0]{cdf(d, param, value)}
 Examples:\newline
@@ -56,7 +57,11 @@ Examples:\newline
 \pythcodef{p2 = gretl.cdf('X', 5.67, 3)}\\
 \pythcodef{p3 = gretl.cdf('D', 0.25, [-1, 1])}\\
 \generaldesc{Returns $P(X \leq x)$, where the distribution
-	of \textit{X} is determined by the string \textit{d}.}
+	of \textit{X} is determined by the string \textit{d}.%
+	\footnote{Parameter \texttt{x} can be a Python \pythcode{list},
+		\pythcode{tuple}, or \pythcode{NumPy array}; it will
+		be converted internally to \texttt{numpy.ndarray}
+		of type \texttt{float64}.}}
 
 \gretlfpycmd{critical()}
 \estdesc{XXX}
