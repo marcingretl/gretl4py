@@ -14,7 +14,7 @@ following constructor:
 \gretlfpycmd{Bundle()}
 \estdesc{Default constructor}
 \begin{lstlisting}[style=pythonstyle]
-gretl._gretl.Bundle() -> gretl._gretl.Bundle
+Bundle() -> gretl._gretl.Bundle
 \end{lstlisting}
 
 \noindent The \classpybundle class provides the following operators:
@@ -40,17 +40,17 @@ the following public methods:
 \gretlfpycmd{to\_dict()}
 \estdesc{Converts \gretl's \gretlcmd{bundle} to \python['s] \pythcode{dict}.}
 \begin{lstlisting}[style=pythonstyle]
-gretl._gretl.Bundle() -> dict
+.to_dict() -> dict
 \end{lstlisting}
 
 \gretlfpycmd{keys()}
 \estdesc{Gets all \gretlcmd{bundle} keys.}
 \begin{lstlisting}[style=pythonstyle]
-gretl._gretl.Bundle() -> list
+.keys() -> list
 \end{lstlisting}
 
 \gretlfpycmd{print()}\label{met:gretlbundle::print}
 \estdesc{XXX}
 \begin{lstlisting}[style=pythonstyle]
-gretl._gretl.Bundle([OPTS])
+.print([OPTS])
 \end{lstlisting}

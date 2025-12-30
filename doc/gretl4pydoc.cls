@@ -131,7 +131,8 @@
 		sum, sumall, sumc, sumr, svd, tan, tanh, toepsolv, tolower, tr,
 		transp, trimr, typestr, uniform, uniq, unvech, upper, urcpval, values,
 		varname, varnum, varsimul, vec, vech, weekday, wmean, wsd, wvar, xmax,
-		xmin, xpx, zeromiss, zeros, bwrite, bread, mpibcast, mpireduce, array, defbundle,
+		xmin, xpx, zeromiss, zeros,
+		bwrite, bread, mpibcast, mpireduce, array, defbundle,
 		mat2list, strftime, fzero, _},
 	morekeywords=[3]{bool, int, list, matrix, scalar, series, string, bundle,
 		void, bundles, null, const},
@@ -173,7 +174,9 @@
 	commentstyle={\color{hanslblue}},
 	stringstyle={\color{hanslmagenta}}
 }
-\lstset{escapechar=@,style=hansl}
+\lstset{escapechar=@,
+	style=hansl,
+	literate={pvalue(}{{\textcolor{hanslteal}{pvalue}(}}1}
 \def\inline{\lstinline[basicstyle={\normalsize\ttfamily}]}
 % Colors
 % \definecolor{hanslgreen}{cmyk}{.67,0,.37,.45}

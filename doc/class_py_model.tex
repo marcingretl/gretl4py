@@ -71,13 +71,13 @@ print(gretl._gretl.Model)
 \gretlfpycmd{adj\_rsq()}
 \estdesc{XXX}
 \begin{lstlisting}[style=pythonstyle]
-gretl._gretl.Model.adj_rsq(self) -> float
+.adj_rsq(self) -> float
 \end{lstlisting}
 
 \gretlfpycmd{attrs()}
 \estdesc{Prints a listing of the attributes of a model.}
 \begin{lstlisting}[style=pythonstyle]
-gretl._gretl.Model.attrs()
+.attrs()
 \end{lstlisting}
 \generaldesc{For scalars and short strings the values of the attributes
 	are printed, otherwise the Python type is shown.}
@@ -85,7 +85,7 @@ gretl._gretl.Model.attrs()
 \gretlfpycmd{fcast()}
 \estdesc{XXX}
 \begin{lstlisting}[style=pythonstyle]
-gretl._gretl.Model.fcast([OPT])
+.fcast([OPT])
 \end{lstlisting}
 
 \gretlfpycmd{fit()}
@@ -95,22 +95,22 @@ gretl._gretl.Model.fcast([OPT])
 Model.fit() -> self
 \end{lstlisting}
 
-\gretlfpycmd{get\_accessor()}\label{met:gretl.Model::get_accessor}
+\gretlfpycmd{get\_accessor()}\label{met:gretlmodel::get_accessor}
 \estdesc{XXX}
 \begin{lstlisting}[style=pythonstyle]
-gretl._gretl.Model.get_accessor(accessor=str) -> object
+.get_accessor(accessor=str) -> object
 \end{lstlisting}
 
 \gretlfpycmd{get\_bundle()}
 \estdesc{XXX}
 \begin{lstlisting}[style=pythonstyle]
-gretl._gretl.Model.get_bundle(self) -> gretl._gretl.Bundle
+.get_bundle(self) -> gretl._gretl.Bundle
 \end{lstlisting}
 
 \gretlfpycmd{get\_formula()}
 \estdesc{XXX}
 \begin{lstlisting}[style=pythonstyle]
-gretl._gretl.Model.get_formula(self) -> str
+.get_formula(self) -> str
 \end{lstlisting}
 
 \vspace*{20pt}\noindent The \pythcode{gretl.\_gretl.Model\_NSE}
@@ -119,49 +119,49 @@ class provides the following public methods:
 \gretlfpycmd{oddsratio()}
 \estdesc{Pretty-prints odds ratios for a logit model (if available).}
 \begin{lstlisting}[style=pythonstylefoot]
-gretl._gretl.Model.oddsratio()
+.oddsratio()
 \end{lstlisting}
 
 \gretlfpycmd{restrict()}
 \estdesc{XXX}
 \begin{lstlisting}[style=pythonstyle]
-gretl._gretl.Model.restrict(impose=list, [OPTS])
+.restrict(impose=list, [OPTS])
 \end{lstlisting}
 
 \gretlfpycmd{save\_h()}
 \estdesc{XXX}
 \begin{lstlisting}[style=pythonstyle]
-gretl._gretl.Model.save_h(name=str) -> str
+.save_h(name=str) -> str
 \end{lstlisting}
 
 \gretlfpycmd{save\_uhat()}
 \estdesc{XXX}
 \begin{lstlisting}[style=pythonstyle]
-gretl._gretl.Model.save_uhat(name=str) -> str
+.save_uhat(name=str) -> str
 \end{lstlisting}
 
 \gretlfpycmd{save\_uhat\_sq()}
 \estdesc{XXX}
 \begin{lstlisting}[style=pythonstyle]
-gretl._gretl.Model.save_uhat_sq(name=str) -> str
+.save_uhat_sq(name=str) -> str
 \end{lstlisting}
 
 \gretlfpycmd{save\_yhat()}
 \estdesc{XXX}
 \begin{lstlisting}[style=pythonstyle]
-gretl._gretl.Model.save_yhat(name=str) -> str
+.save_yhat(name=str) -> str
 \end{lstlisting}
 
 \gretlfpycmd{save\_yhat()}
 \estdesc{XXX}
 \begin{lstlisting}[style=pythonstyle]
-	gretl._gretl.Model.save_yhat(name=str) -> str
+	.save_yhat(name=str) -> str
 \end{lstlisting}
 
 \gretlfpycmd{test()}
 \estdesc{XXX}
 \begin{lstlisting}[style=pythonstyle]
-gretl._gretl.Model.test(type=str, [OPTS])
+.test(type=str, [OPTS])
 \end{lstlisting}
 \generaldesc{\gretlcmd{bkw, cusum, leverage, panspec, reset, qlrtest, vif,
 		corrgm, arch, autocorr, breusch-pagan, comfac, logs, normality,
@@ -174,43 +174,43 @@ class provides the following public methods:
 \gretlfpycmd{add\_deriv()}
 \estdesc{XXX}
 \begin{lstlisting}[style=pythonstyle]
-gretl._gretl.Model.add_deriv(line=str) -> self
+.add_deriv(line=str) -> self
 \end{lstlisting}
 
 \gretlfpycmd{add\_initval()}
 \estdesc{XXX}
 \begin{lstlisting}[style=pythonstyle]
-gretl._gretl.Model.add_initval(varname=str, values=float) -> self
+.add_initval(varname=str, values=float) -> self
 \end{lstlisting}
 
 \gretlfpycmd{add\_orthog()}
 \estdesc{XXX}
 \begin{lstlisting}[style=pythonstyle]
-gretl._gretl.Model.add_orthog(line=str) -> self
+.add_orthog(line=str) -> self
 \end{lstlisting}
 
 \gretlfpycmd{add\_params()}
 \estdesc{XXX}
 \begin{lstlisting}[style=pythonstyle]
-gretl._gretl.Model.add_params(line=str) -> self
+.add_params(line=str) -> self
 \end{lstlisting}
 
 \gretlfpycmd{add\_param\_names()}
 \estdesc{XXX}
 \begin{lstlisting}[style=pythonstyle]
-gretl._gretl.Model.add_param_names(line=str) -> self
+.add_param_names(line=str) -> self
 \end{lstlisting}
 
 \gretlfpycmd{add\_statements()}
 \estdesc{XXX}
 \begin{lstlisting}[style=pythonstyle]
-gretl._gretl.Model.add_statements(line=str) -> self
+.add_statements(line=str) -> self
 \end{lstlisting}
 
 \gretlfpycmd{add\_weights()}
 \estdesc{XXX}
 \begin{lstlisting}[style=pythonstyle]
-gretl._gretl.Model.add_weights(line=str) -> self
+.add_weights(line=str) -> self
 \end{lstlisting}
 
 
@@ -252,7 +252,7 @@ class provides the following public methods
 \gretlfpycmd{restrict()}
 \estdesc{XXX}
 \begin{lstlisting}[style=pythonstyle]
-gretl._gretl.Model.restrict(impose=list, [OPTS])
+.restrict(impose=list, [OPTS])
 \end{lstlisting}
 
 \gretlfpycmd{save\_uhat()}
@@ -269,61 +269,61 @@ may be available for certain estimators only:
 \gretlfpycmd{aic}
 \estdesc{Holds value of Akaike criterion.}
 \begin{lstlisting}[style=pythonstyle]
-gretl._gretl.Model.aic -> float
+.aic -> float
 \end{lstlisting}
 
 \gretlfpycmd{args}
 \estdesc{Options passed as \pythcode{*args}.}
 \begin{lstlisting}[style=pythonstyle]
-gretl._gretl.Model.args -> tuple
+.args -> tuple
 \end{lstlisting}
 
 \gretlfpycmd{bic}
 \estdesc{Holds value of Schwartz criterion.}
 \begin{lstlisting}[style=pythonstyle]
-gretl._gretl.Model.bic -> float
+.bic -> float
 \end{lstlisting}
 
 \gretlfpycmd{computed}
 \estdesc{Indicates if the model was estimated.}
 \begin{lstlisting}[style=pythonstyle]
-gretl._gretl.Model.computed -> bool
+.computed -> bool
 \end{lstlisting}
 
 \gretlfpycmd{coeff}
 \estdesc{Holds coefficient estimates.}
 \begin{lstlisting}[style=pythonstyle]
-gretl._gretl.Model.coeff -> numpy.ndarray
+.coeff -> numpy.ndarray
 \end{lstlisting}
 
 \gretlfpycmd{hqc}
 \estdesc{Holds value of Hannan-Quinn criterion.}
 \begin{lstlisting}[style=pythonstyle]
-gretl._gretl.Model.hqc -> float
+.hqc -> float
 \end{lstlisting}
 
 \gretlfpycmd{lnl}
 \estdesc{Holds the log-likelihood for the last estimated model.}
 \begin{lstlisting}[style=pythonstyle]
-gretl._gretl.Model.lnl -> float
+.lnl -> float
 \end{lstlisting}
 
 \gretlfpycmd{oddsratios}
 \estdesc{Holds oddsratios for logit model (if available).}
 \begin{lstlisting}[style=pythonstyle]
-gretl._gretl.Model.oddsratios -> list
+.oddsratios -> list
 \end{lstlisting}
 
 \gretlfpycmd{parnames}
 \estdesc{Holds names of coefficients.}
 \begin{lstlisting}[style=pythonstyle]
-gretl._gretl.Model.parnames -> list
+.parnames -> list
 \end{lstlisting}
 
 \gretlfpycmd{rsq}
 \estdesc{Holds R-squared.}
 \begin{lstlisting}[style=pythonstyle]
-gretl._gretl.Model.rsq -> float
+.rsq -> float
 \end{lstlisting}
 
 \gretlfpycmd{sigma}
@@ -335,13 +335,13 @@ Model.sigma -> float
 \gretlfpycmd{stderr}
 \estdesc{Holds standard errors of coefficient estimates.}
 \begin{lstlisting}[style=pythonstyle]
-gretl._gretl.Model.stderr -> numpy.ndarray
+.stderr -> numpy.ndarray
 \end{lstlisting}
 
 \gretlfpycmd{uhat}
 \estdesc{Holds model residuals.}
 \begin{lstlisting}[style=pythonstyle]
-gretl._gretl.Model.uhat -> numpy.ndarray
+.uhat -> numpy.ndarray
 \end{lstlisting}
 \generaldesc{Note: in case of \gretlcmd{biprobit}\index{biprobit()},
   \texttt{bp\_uhat} entry of \gretlcmd{\$model} bundle is returned.}
@@ -349,7 +349,7 @@ gretl._gretl.Model.uhat -> numpy.ndarray
 \gretlfpycmd{yhat}
 \estdesc{Holds fitted values.}
 \begin{lstlisting}[style=pythonstyle]
-gretl._gretl.Model.yhat -> numpy.ndarray
+.yhat -> numpy.ndarray
 \end{lstlisting}
 \generaldesc{Note: in case of \gretlcmd{biprobit}\index{biprobit()},
   \texttt{bp\_yhat} entry of \gretlcmd{\$model} bundle is returned.}

@@ -66,7 +66,8 @@ PYBIND11_MODULE(_gretl, m)
           [](const std::string &name)
           {
               return do_get_accessor<GRETL_OBJ_ANY>(name, DSET, nullptr);
-          }, py::arg("name").none(false));
+          },
+          py::arg("name").none(false));
     m.def("print", &do_gretl_print,
           py::arg("varlist").none(true) = "", py::kw_only());
     m.def("set",
@@ -89,12 +90,15 @@ PYBIND11_MODULE(_gretl, m)
           py::arg("filename").none(false));
     m.def("delete", &do_gretl_delete_variables,
           py::arg("varname").none(true) = "", py::kw_only());
-
     m.def("pvalue", &gretl_get_pvalue_critval_pdf_cdf<GretlFunIndex::F_PVAL>,
           py::arg("c").none(false),
           py::arg("x").none(false),
           py::arg("params").none(true) = py::none());
     m.def("pvalue", &matrix_functions_wrapper<GretlFunIndex::F_PVAL, py::array_t<double>>,
+          py::arg("c").none(false),
+          py::arg("x").none(false),
+          py::arg("params").none(true) = py::none());
+    m.def("pvalue", &matrix_functions_wrapper<GretlFunIndex::F_PVAL, std::string>,
           py::arg("c").none(false),
           py::arg("x").none(false),
           py::arg("params").none(true) = py::none());
@@ -106,11 +110,19 @@ PYBIND11_MODULE(_gretl, m)
           py::arg("c").none(false),
           py::arg("p").none(false),
           py::arg("params").none(true) = py::none());
+    m.def("critical", &matrix_functions_wrapper<GretlFunIndex::F_CRIT, std::string>,
+          py::arg("c").none(false),
+          py::arg("p").none(false),
+          py::arg("params").none(true) = py::none());
     m.def("pdf", &gretl_get_pvalue_critval_pdf_cdf<GretlFunIndex::F_PDF>,
           py::arg("d").none(false),
           py::arg("x").none(false),
           py::arg("params").none(true) = py::none());
     m.def("pdf", &matrix_functions_wrapper<GretlFunIndex::F_PDF, py::array_t<double>>,
+          py::arg("d").none(false),
+          py::arg("x").none(false),
+          py::arg("params").none(true) = py::none());
+    m.def("pdf", &matrix_functions_wrapper<GretlFunIndex::F_PDF, std::string>,
           py::arg("d").none(false),
           py::arg("x").none(false),
           py::arg("params").none(true) = py::none());
@@ -122,11 +134,19 @@ PYBIND11_MODULE(_gretl, m)
           py::arg("d").none(false),
           py::arg("x").none(false),
           py::arg("params").none(true) = py::none());
+    m.def("cdf", &matrix_functions_wrapper<GretlFunIndex::F_CDF, std::string>,
+          py::arg("d").none(false),
+          py::arg("x").none(false),
+          py::arg("params").none(true) = py::none());
     m.def("invcdf", &gretl_get_pvalue_critval_pdf_cdf<GretlFunIndex::F_INVCDF>,
           py::arg("d").none(false),
           py::arg("u").none(false),
           py::arg("params").none(true) = py::none());
     m.def("invcdf", &matrix_functions_wrapper<GretlFunIndex::F_INVCDF, py::array_t<double>>,
+          py::arg("d").none(false),
+          py::arg("u").none(false),
+          py::arg("params").none(true) = py::none());
+    m.def("invcdf", &matrix_functions_wrapper<GretlFunIndex::F_INVCDF, std::string>,
           py::arg("d").none(false),
           py::arg("u").none(false),
           py::arg("params").none(true) = py::none());

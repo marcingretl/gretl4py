@@ -80,15 +80,18 @@ from ._gretl import (pvalue, critical, pdf, cdf, invcdf)            # libgretl's
 from ._gretl import (get_accessor)                                  # gretl4py specific functions
 from .gretl4py_classes import _attrs, _oddsratio, mle, nls, gmm, NLSpec
 from .gretl4py_classes import get_data, show_data_status, _to_dataframe
+from .gretl4py_classes import _matrix_functions_wrapper
 from .gretl4py_addons import print_module_source, fc_print, modeltab
 
 # deprecations
 # deprecations: END
 
 # we attach additional symbols to certain classes
-setattr(_gretl.Model, "attrs", _attrs)                  # for listing all object's attributes
-setattr(_gretl.Model_logit, "oddsratio", _oddsratio)    # for pretty-printing oddsratios
-setattr(_gretl.Dataset, "to_dataframe", _to_dataframe)  # gretl data to Pandas DataFrame converter
+setattr(_gretl.Model, "attrs", _attrs)                      # for listing all object's attributes
+setattr(_gretl.Model_logit, "oddsratio", _oddsratio)        # for pretty-printing oddsratios
+setattr(_gretl.Dataset, "to_dataframe", _to_dataframe)      # gretl data to Pandas DataFrame converter
+for fun in ['cdf', 'pdf', 'invcdf', 'pvalue', 'critical']:  # wrapper for matrix-based functions
+    setattr(_gretl.Dataset, fun, _matrix_functions_wrapper(func_name=fun))
 
 # directly use GretlModel for the model instantiation
 def __model_initializer(model_name: str, *args, **kwargs):

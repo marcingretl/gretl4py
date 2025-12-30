@@ -595,7 +595,7 @@ double gretl_get_pvalue_critval_pdf_cdf (const std::string &dist, double value,
 }
 
 template<GretlFunIndex FI, typename T>
-py::array_t<double> matrix_functions_wrapper (const std::string &dist, T &src,
+py::array_t<double> matrix_functions_wrapper (const std::string &dist, const T &src,
                                               const py::object &param)
 {
     //
@@ -626,8 +626,8 @@ py::array_t<double> matrix_functions_wrapper (const std::string &dist, T &src,
         if (src.ndim() > 2) throw std::invalid_argument("given matrix has too many dimensions");
         src_mat = src;
     } else if constexpr (std::is_same_v<T, std::string>) {
-        // A is a series name, fetch the series from dataset
-        //src_mat = series_to_array(src);
+        if (!DSET) handle_gretl_error(E_DATA);
+        src_mat = DSET->get_series(src);
     } else {
         static_assert(always_false<T>, "matrix_functions_wrapper(): unsupported type T");
     }
@@ -657,11 +657,16 @@ py::array_t<double> matrix_functions_wrapper (const std::string &dist, T &src,
 
     return res;
 }
-template py::array_t<double> matrix_functions_wrapper<GretlFunIndex::F_PDF, py::array_t<double>>(const std::string&, py::array_t<double>&, const py::object&);
-template py::array_t<double> matrix_functions_wrapper<GretlFunIndex::F_CDF, py::array_t<double>>(const std::string&, py::array_t<double>&, const py::object&);
-template py::array_t<double> matrix_functions_wrapper<GretlFunIndex::F_PVAL, py::array_t<double>>(const std::string&, py::array_t<double>&, const py::object&);
-template py::array_t<double> matrix_functions_wrapper<GretlFunIndex::F_CRIT, py::array_t<double>>(const std::string&, py::array_t<double>&, const py::object&);
-template py::array_t<double> matrix_functions_wrapper<GretlFunIndex::F_INVCDF, py::array_t<double>>(const std::string&, py::array_t<double>&, const py::object&);
+template py::array_t<double> matrix_functions_wrapper<GretlFunIndex::F_PDF, py::array_t<double>>(const std::string&, const py::array_t<double>&, const py::object&);
+template py::array_t<double> matrix_functions_wrapper<GretlFunIndex::F_CDF, py::array_t<double>>(const std::string&, const py::array_t<double>&, const py::object&);
+template py::array_t<double> matrix_functions_wrapper<GretlFunIndex::F_PVAL, py::array_t<double>>(const std::string&, const py::array_t<double>&, const py::object&);
+template py::array_t<double> matrix_functions_wrapper<GretlFunIndex::F_CRIT, py::array_t<double>>(const std::string&, const py::array_t<double>&, const py::object&);
+template py::array_t<double> matrix_functions_wrapper<GretlFunIndex::F_INVCDF, py::array_t<double>>(const std::string&, const py::array_t<double>&, const py::object&);
+template py::array_t<double> matrix_functions_wrapper<GretlFunIndex::F_PDF, std::string>(const std::string&, const std::string&, const py::object&);
+template py::array_t<double> matrix_functions_wrapper<GretlFunIndex::F_CDF, std::string>(const std::string&, const std::string&, const py::object&);
+template py::array_t<double> matrix_functions_wrapper<GretlFunIndex::F_PVAL, std::string>(const std::string&, const std::string&, const py::object&);
+template py::array_t<double> matrix_functions_wrapper<GretlFunIndex::F_CRIT, std::string>(const std::string&, const std::string&, const py::object&);
+template py::array_t<double> matrix_functions_wrapper<GretlFunIndex::F_INVCDF, std::string>(const std::string&, const std::string&, const py::object&);
 
 void do_gretl_delete_variables (const std::string &varname,
                                 const py::kwargs &kwargs)

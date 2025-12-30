@@ -318,5 +318,12 @@ def _to_dataframe (self):
     # unknown datatype -> return raw df
     return df
 
+def _matrix_functions_wrapper(func_name: str):
+    """Matrix-based operations requiring a variable name."""
+    def method(self, d : str, series : str, param=None):
+        func_call = getattr(_gretl, func_name, None)
+        return func_call(d, self.get_series(series), param)
+    return method
+
 if __name__ == "__main__":
     pass

@@ -45,30 +45,73 @@ gretl.about(do_print: bool = False) -> gretl._gretl.Bundle
 \subsection{The \gretlpy functions}\label{sec:gretl4py_functions}
 \vspace*{10pt}\noindent The \gretlpy module provides the following functions:
 
-\gretlfpycmd{cdf()}
+\gretlfpycmd{cdf()}\label{func:gretl.cdf}
 \estdesc{Cumulative distribution function calculator.}
 \begin{lstlisting}[style=pythonstylefoot]
-gretl._gretl.cdf(d: str, x: float[, param: object = None]) -> float
-gretl._gretl.cdf(d: str, x: array_like[, param: object = None]) -> numpy.ndarray
+gretl.cdf(d: str, x: float[, param: object = None]) -> float
+gretl.cdf(d: str, x: array_like[, param: object = None]) -> numpy.ndarray
+gretl.cdf(d: str, x: str[, param: object = None]) -> numpy.ndarray
 \end{lstlisting}
-\mapto[0]{cdf(d, param, value)}
+\maptof{cdf(d, x)}{float | numpy.ndarray}
+\maptof{cdf(d, param, x)}{float | numpy.ndarray}
 Examples:\newline
 \pythcodef{p1 = gretl.cdf('N', -2.5)}\\
 \pythcodef{p2 = gretl.cdf('X', 5.67, 3)}\\
 \pythcodef{p3 = gretl.cdf('D', 0.25, [-1, 1])}\\
 \generaldesc{Returns $P(X \leq x)$, where the distribution
-	of \textit{X} is determined by the string \textit{d}.%
-	\footnote{Parameter \texttt{x} can be a Python \pythcode{list},
-		\pythcode{tuple}, or \pythcode{NumPy array}; it will
-		be converted internally to \texttt{numpy.ndarray}
-		of type \texttt{float64}.}}
+	of \textit{X} is determined by the string \textit{d}.}\\
+If \textit{x} is of type:
+\begin{itemize}
+	\item \pythcode{list}, \pythcode{tuple}, or \pythcode{NumPy array},
+	it will be converted internally to \texttt{numpy.ndarray}
+	of type \texttt{float64};
+	\item \pythcode{str}, it is interpreted as a \gretlcmd{series} name.
+	Note that \pythcode{gretl.cdf()} works by default only with the
+	default dataset. To obtain CDFs for variables from different
+	datasets, please refer to \ref{met:gretldataset::cdf}.
+\end{itemize}
+The \textit{param} argument consists of zero or more additional scalar
+arguments required to specify the parameters of the distribution, as
+follows:
+\begin{footnotesize}\begin{itemize}
+	\item \textbf{Standard normal} (\texttt{d = z, n, N}): no additional arguments
+	\item \textbf{Bivariate normal} (\texttt{D}): correlation coefficient
+	\item \textbf{Logistic} (\texttt{lgt} or \texttt{s}): no additional arguments
+	\item \textbf{Student's $t$} (\texttt{t}): degrees of freedom
+	\item \textbf{Chi-square} (\texttt{c}, \texttt{x}, or \texttt{X}): degrees of freedom
+	\item \textbf{Snedecor's $F$} (\texttt{f} or \texttt{F}): degrees of freedom (numerator); degrees of freedom (denominator)
+	\item \textbf{Gamma} (\texttt{g} or \texttt{G}): shape; scale
+	\item \textbf{Beta} (\texttt{beta}): two shape parameters
+	\item \textbf{Binomial} (\texttt{b} or \texttt{B}): probability; number of trials
+	\item \textbf{Poisson} (\texttt{p} or \texttt{P}): mean
+	\item \textbf{Exponential} (\texttt{exp}): scale
+	\item \textbf{Weibull} (\texttt{w} or \texttt{W}): shape; scale
+	\item \textbf{Laplace} (\texttt{l} or \texttt{L}): mean; scale
+	\item \textbf{Generalized Error} (\texttt{E}): shape
+	\item \textbf{Non-central chi-square} (\texttt{ncX}): degrees of freedom; non-centrality parameter
+	\item \textbf{Non-central $F$} (\texttt{ncF}): degrees of freedom (numerator); degrees of freedom (denominator); non-centrality parameter
+	\item \textbf{Non-central $t$} (\texttt{nct}): degrees of freedom; non-centrality parameter
+\end{itemize}\end{footnotesize}
 
-\gretlfpycmd{critical()}
-\estdesc{XXX}
-\begin{lstlisting}[style=pythonstyle]
-	gretl._gretl.critical(dist=str, value=float, param=object) -> float
+\gretlfpycmd{critical()}\label{func:gretl.critical}
+\estdesc{Critical value calculator.}
+\begin{lstlisting}[style=pythonstylefoot]
+gretl.critical(c: str, p: float[, param: object = None]) -> float
+gretl.critical(c: str, p: array_like[, param: object = None]) -> numpy.ndarray
+gretl.critical(c: str, p: str[, param: object = None]) -> numpy.ndarray
 \end{lstlisting}
-\generaldesc{XXX}
+\maptof{critical(c, p)}{float | numpy.ndarray}
+\maptof{critical(c, param, p)}{float | numpy.ndarray}
+Examples:\newline
+\pythcodef{c1 = gretl.critical('t', 0.025, 20)}\\
+\pythcodef{c2 = gretl.critical('F', 0.05, [4, 48])}\\
+\generaldesc{Returns \textit{x} such that $P(X > x) = p$, where
+	the distribution \textit{X} is determined by the character \textit{c}.}
+For details about the meaning of the arguments, please
+refer to \ref{func:gretl.cdf}. Note that \pythcode{gretl.critical()}
+works by default only with the default dataset. To obtain critical
+values for variables from different datasets, please refer to
+\ref{met:gretldataset::critical}.
 
 \gretlfpycmd{delete()}
 \estdesc{This is an all-purpose destructor. It should be used with caution; no confirmation is asked.}
@@ -108,43 +151,55 @@ gretl.fc_print(fc=dict)
 \estdesc{NOTE: for comprehensive and updated info on this
 	function you'll want to refer to \cite[chapter 10]{gretl_manual}.}
 \begin{lstlisting}[style=pythonstylefoot]
-gretl._gretl.genr(formula=str, data=gretl._gretl.Dataset)
-gretl._gretl.genr(name=str, value=numpy.ndarray)
-gretl._gretl.genr(name=str, value=int)
-gretl._gretl.genr(name=str, value=float)
-gretl._gretl.genr(name=str, value=str)
+gretl.genr(formula=str, data=gretl._gretl.Dataset)
+gretl.genr(name=str, value=numpy.ndarray)
+gretl.genr(name=str, value=int)
+gretl.genr(name=str, value=float)
+gretl.genr(name=str, value=str)
 \end{lstlisting}
 \mapto[clean]{genr newvar = formula}
 
 \gretlfpycmd{get\_accessor()}
 \estdesc{Function to read \lgretl['s] accessors}
 \begin{lstlisting}[style=pythonstylefoot]`
-gretl._gretl.get_accessor(name: str) -> object
+gretl.get_accessor(name: str) -> object
 \end{lstlisting}
 Examples:\newline
 \pythcodef{.get\_accessor('\$version')}\\
 \pythcodef{.get\_accessor('\$stopwatch')}\\
 \generaldesc{Note: \pythcode{gretl.get\_accessor()} works by default only
 	with the default dataset. To access accessors related to different datasets
-	or models, please refer to \ref{met:gretl.Dataset::get_accessor}
-	or \ref{met:gretl.Model::get_accessor}.}
+	or models, please refer to \ref{met:gretldataset::get_accessor}
+	or \ref{met:gretlmodel::get_accessor}.}
 
 \gretlfpycmd{include()}
 \estdesc{Intended for including gretl function packages.}
 \begin{lstlisting}[style=pythonstylefoot]
-gretl._gretl.include(filename: str) -> gretl._gretl.Package
+gretl.include(filename: str) -> gretl._gretl.Package
 \end{lstlisting}
 \mapto[clean]{include filename}
 \generaldesc{\textit{filename} should have the extension \textit{gfn}
 	(a gretl function package) or no extension. Functions provided by
 	\textit{filename} are bound in user space.}
 
-\gretlfpycmd{invcdf()}
-\estdesc{XXX}
-\begin{lstlisting}[style=pythonstyle]
-	gretl._gretl.invcdf(dist=str, value=float, param=object) -> float
+\gretlfpycmd{invcdf()}\label{func:gretl.invcdf}
+\estdesc{Inverse cumulative distribution function calculator.}
+\begin{lstlisting}[style=pythonstylefoot]
+gretl.invcdf(d: str, u: float[, param: object = None]) -> float
+gretl.invcdf(d: str, u: array_like[, param: object = None]) -> numpy.ndarray
+gretl.invcdf(d: str, u: str[, param: object = None]) -> numpy.ndarray
 \end{lstlisting}
-\generaldesc{XXX}
+\maptof{invcdf(d, u)}{float | numpy.ndarray}
+\maptof{invcdf(d, param, u)}{float | numpy.ndarray}
+\generaldesc{For a continuous distribution, returns \textit{x}
+	such that $P(X \leq x) = u$, for $u \in [0, 1]$. For a discrete
+	distribution (Binomial or Poisson), returns the smallest
+	\textit{x} such that $P(X \leq x) \geq u$.}\\
+For details about the meaning of the arguments, please
+refer to \ref{func:gretl.cdf}. Note that \pythcode{gretl.invcdf()}
+works by default only with the default dataset. To obtain
+inverted CDFs for variables from different datasets, please
+refer to \ref{met:gretldataset::invcdf}.
 
 \gretlfpycmd{modeltab()}
 \estdesc{XXX}
@@ -152,12 +207,25 @@ gretl._gretl.include(filename: str) -> gretl._gretl.Package
 	gretl.modeltab(models=list, output=str, tablefmt=str, stars=bool, coeff_fmt=str, stderr_fmt=str)
 \end{lstlisting}
 
-\gretlfpycmd{pdf()}
-\estdesc{XXX}
-\begin{lstlisting}[style=pythonstyle]
-	gretl._gretl.pdf(dist=str, value=float, param=object) -> float
+\gretlfpycmd{pdf()}\label{func:gretl.pdf}
+\estdesc{Probability density function calculator.}
+\begin{lstlisting}[style=pythonstylefoot]
+gretl.pdf(d: str, x: float[, param: object = None]) -> float
+gretl.pdf(d: str, x: array_like[, param: object = None]) -> numpy.ndarray
+gretl.pdf(d: str, x: str[, param: object = None]) -> numpy.ndarray
 \end{lstlisting}
-\generaldesc{XXX}
+\maptof{pdf(d, x)}{float | numpy.ndarray}
+\maptof{pdf(d, param, x)}{float | numpy.ndarray}
+Examples:\newline
+\pythcodef{f1 = gretl.pdf('N', -2.5)}\\
+\pythcodef{f2 = gretl.pdf('X', x, 3)}\\
+\pythcodef{f3 = gretl.pdf('W', x, [shape, scale])}\\
+\generaldesc{Returns the density at \textit{x} of the
+	distribution identified by the code \textit{d}.}\\
+For details about the meaning of the arguments, please
+refer to \ref{func:gretl.cdf}. Note that \pythcode{gretl.pdf()}
+works by default only with the default dataset. To obtain PDFs
+for variables from different datasets, please refer to \ref{met:gretldataset::pdf}.
 
 \gretlfpycmd{print()}
 \estdesc{Please note that print is a rather ``basic'' function
@@ -165,7 +233,7 @@ gretl._gretl.include(filename: str) -> gretl._gretl.Package
 	more flexible printers please refer to \ref{met:gretlbundle::print},
 	\ref{met:gretldataset::print}.}
 \begin{lstlisting}[style=pythonstylefoot]
-gretl._gretl.print(varlist: str[, OPTS])
+gretl.print(varlist: str[, OPTS])
 \end{lstlisting}
 \mapto[clean]{print varlist}
 \mapto[]{print}
@@ -194,12 +262,25 @@ Examples:\newline
 	all series in the current dataset are printed. The supported
 	options are as described above. }
 
-\gretlfpycmd{pvalue()}
-\estdesc{XXX}
-\begin{lstlisting}[style=pythonstyle]
-	gretl._gretl.pvalue(dist=str, value=float, param=object) -> float
+\gretlfpycmd{pvalue()}\label{func:gretl.pvalue}
+\estdesc{\textit{P}-value calculator.}
+\begin{lstlisting}[style=pythonstylefoot]
+gretl.pvalue(c: str, x: float[, param: object = None]) -> float
+gretl.pvalue(c: str, x: array_like[, param: object = None]) -> numpy.ndarray
+gretl.pvalue(c: str, x: str[, param: object = None]) -> numpy.ndarray
 \end{lstlisting}
-\generaldesc{XXX}
+\maptof{pvalue(c, x)}{float | numpy.ndarray}
+\maptof{pvalue(c, param, x)}{float | numpy.ndarray}
+Examples:\newline
+\pythcodef{p1 = gretl.pvalue('z', 2.2)}\\
+\pythcodef{p2 = gretl.pvalue('X', 5.67, 3)}\\
+\pythcodef{p3 = gretl.pvalue('F', 5.67, [3, 30])}\\
+\generaldesc{Returns $P(X > x)$, where the distribution of
+	\textit{X} is determined by the character \textit{c}.}\\
+For details about the meaning of the arguments, please
+refer to \ref{func:gretl.cdf}. Note that \pythcode{gretl.pvalue()}
+works by default only with the default dataset. To obtain \textit{P}-values
+for variables from different datasets, please refer to \ref{met:gretldataset::pvalue}.
 
 \gretlfpycmd{print\_module\_source()}
 \estdesc{XXX}
@@ -239,7 +320,7 @@ gretl.set(variable: str, value: int[, OPTS])
 	for the variables in \textit{varlist}, or for all the variables
 	in the data set if \textit{varlist} is omitted.}
 \begin{lstlisting}[style=pythonstylefoot]
-gretl._gretl.summary(varlist: str[, OPTS])
+gretl.summary(varlist: str[, OPTS])
 \end{lstlisting}
 \mapto[0]{summary [ varlist ]}
 \mapto{summary --matrix=matname}
@@ -394,7 +475,7 @@ gretl.series2dict(Y : pandas.core.series.Series[, pd: int = 1, varname: str = 'y
 \gretlfpycmd{show\_data\_status()}
 \estdesc{XXX}
 \begin{lstlisting}[style=pythonstyle]
-gretl._gretl.show_data_status(self)
+gretl.show_data_status(self)
 \end{lstlisting}
 
 
