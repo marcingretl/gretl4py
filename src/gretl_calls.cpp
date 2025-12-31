@@ -619,7 +619,7 @@ py::array_t<double> matrix_functions_wrapper (const std::string &dist, const T &
             static_assert(always_false<T>, "Unhandled GretlFunIndex");
     };
 
-    py::array_t<double> src_mat;
+    py::array_t<double> src_mat, res;
 
     // handle type T
     if constexpr (std::is_same_v<T, py::array_t<double>>) {
@@ -637,9 +637,11 @@ py::array_t<double> matrix_functions_wrapper (const std::string &dist, const T &
     ssize_t k = (src_mat.ndim() == 2) ? src_mat.shape(1) : 0;
 
     // allocate result array
-    py::array_t<double> res = (k == 0)
-        ? py::array_t<double>(std::vector<ssize_t>{n})
-        : py::array_t<double>(std::vector<ssize_t>{n, k});
+    if (k == 0) {
+        res = py::array_t<double>(n);
+    } else {
+        res = py::array_t<double>({n, k});
+    }
 
     // fill res
     if (k == 0) {
