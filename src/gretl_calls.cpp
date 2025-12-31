@@ -643,14 +643,16 @@ py::array_t<double> matrix_functions_wrapper (const std::string &dist, const T &
         res = py::array_t<double>({n, k});
     }
 
-    // fill res
+    // allocate result array and fill it with numbers
     if (k == 0) {
+        res = py::array_t<double>(n);
         auto r = res.mutable_unchecked<1>();
         auto src = src_mat.unchecked<1>();
 
         for (ssize_t i = 0; i < n; ++i)
             r(i) = F(src(i));
     } else {
+        res = py::array_t<double>({n, k});
         auto r = res.mutable_unchecked<2>();
         auto src = src_mat.unchecked<2>();
 
