@@ -637,7 +637,9 @@ py::array_t<double> matrix_functions_wrapper (const std::string &dist, const T &
     ssize_t k = (src_mat.ndim() == 2) ? src_mat.shape(1) : 0;
 
     // allocate result array
-    py::array_t<double> res = (k == 0) ? py::array_t<double>({n}) : py::array_t<double>({n, k});
+    py::array_t<double> res = (k == 0)
+        ? py::array_t<double>(std::vector<ssize_t>{n})
+        : py::array_t<double>(std::vector<ssize_t>{n, k});
 
     // fill res
     if (k == 0) {
