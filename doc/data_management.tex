@@ -1,11 +1,11 @@
 \subsection{Data management}\label{sec:data_management_python}
-\subsubsection{Sources of data}
+\subsubsection{Data format handled}
 \gretlpy expects a dataset provided in one of the following formats:
 \begin{enumerate}
 	\item \texttt{gdt} or \texttt{gdtb} (\lgretl['s] native formats),
 		\texttt{csv}, \texttt{dta} (\pkg{Stata}), \texttt{wf1} (\pkg{Eviews}),
 		or spreadsheets (\texttt{xls}, \texttt{xlsx}, and \texttt{ods}).
-	\item as a \python['s] dictionary with the following entries:
+	\item as a \python['s] dictionary with the following entries:\label{gretl4py:data:dict}
 		\begin{itemize}
 			\item \pythcode{varname}: A list containing the variable names.
 			\item \pythcode{obs\_labels}: A list containing the observation labels.
@@ -43,7 +43,7 @@ described in Section~\ref{sec:data_management_python}.
 Note: If the provided dataset contains a variable named
 `const', it will automatically be renamed to `const\_'.
 
-\subsubsection{Individual and global dataset}
+\subsubsection{Individual and global dataset}\label{sec:globalandindivodual}
 It is important to note that such a dictionary can be
 provided in two general and non-overlapping ways:
 \begin{itemize}

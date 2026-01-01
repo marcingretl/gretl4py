@@ -7,14 +7,43 @@ The \classpydataset provides the following public attributes:
 .is_panel -> bool
 \end{lstlisting}
 
+\gretlfpycmd{is\_default}
+\estdesc{Checks if we dataset is marked as ``default''.}
+\begin{lstlisting}[style=pythonstylefoot]
+.is_panel -> bool
+\end{lstlisting}
+\generaldesc{To set given dataset as default, please
+	refer to \ref{met:gretldataset:set_as_default}.}
+
+\gretlfpycmd{k}
+\estdesc{Returns the number of series in the dataset (including the constant).}
+\begin{lstlisting}[style=pythonstylefoot]
+.k -> int
+\end{lstlisting}
+\generaldesc{This is equivalent to calling \pythcode{.get_accessor("$nvars")}.}
+
+\gretlfpycmd{n}
+\estdesc{Returns the number of observations in the currently selected sample.}
+\begin{lstlisting}[style=pythonstylefoot]
+.n -> int
+\end{lstlisting}
+\generaldesc{This is equivalent to calling \pythcode{.get_accessor("$nobs")}.}
+
+\gretlfpycmd{source}
+\estdesc{Print the source of given dataset.}
+\begin{lstlisting}[style=pythonstylefoot]
+.source -> str
+\end{lstlisting}
+
 \vspace*{10pt}\noindent The \classpydataset provides the following public methods:
 
 \gretlfpycmd{\_\_copy\_\_()}
 \estdesc{Creates a deep copy of the \classpydataset object.}
 \begin{lstlisting}[style=pythonstylefoot]
-import copy
-dataset_copy = copy.copy(gretl._gretl.Dataset)
+.__copy__() -> gretl._gretl.Dataset
 \end{lstlisting}
+Examples:\newline
+\pythcodef{import copy; dataset_copy = copy.copy(gretl._gretl.Dataset)}\\
 \generaldesc{This method returns a new, fully independent
 	\pythcode{gretl.\_gretl.Dataset} object that duplicates
 	all elements of the original dataset. Changes made to
@@ -36,11 +65,13 @@ dataset_copy = copy.copy(gretl._gretl.Dataset)
 %	in an interactive session.}
 
 \gretlfpycmd{add\_series()}
-\estdesc{XXX}
-\begin{lstlisting}[style=pythonstyle]
-.add_series(data=numpy.ndarray, name=str)
+\estdesc{Adds new series to dataset.}
+\begin{lstlisting}[style=pythonstylefoot]
+.add_series(data: numpy.ndarray, name: str)
 \end{lstlisting}
-\generaldesc{XXX}
+\generaldesc{This function adds a \textit{data} of a NumPy type
+	to the dataset. Note: length (number of rows) of the \textit{data}
+	must equal the dataset's \textit{n} value.}
 
 \gretlfpycmd{bkfilt()}
 \estdesc{Returns the result from application of the Baxter--King
@@ -78,7 +109,6 @@ dataset_copy = copy.copy(gretl._gretl.Dataset)
 \maptof{cdf(d, param, series)}{numpy.ndarray}
 where \textit{d} and \textit{param} are defined as in \ref{func:gretl.cdf}.
 
-\newpage
 \gretlfpycmd{corr()}
 \estdesc{By default, prints the pairwise correlation coefficients
 	(Pearson's product-moment correlation) for the variables in
@@ -468,7 +498,7 @@ Examples:\newline
 \mapto[0]{sdiff varlist}
 \generaldesc{This command is available only for seasonal time series. }
 
-\gretlfpycmd{set\_as\_default()}
+\gretlfpycmd{set\_as\_default()}\label{met:gretldataset:set_as_default}
 \estdesc{Sets given \pythcode{gretl.\_gretl.Dataset} instance
 	as default detaset.}
 \begin{lstlisting}[style=pythonstylefoot]

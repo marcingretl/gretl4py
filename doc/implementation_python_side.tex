@@ -189,19 +189,25 @@ Examples:\newline
 	or \ref{met:gretlmodel::get_accessor}.}
 
 \gretlfpycmd{get\_data()}
+\estdesc{Loads provided data as \pythcode{gretl._gretl.Dataset}}
 \begin{lstlisting}[style=pythonstylefoot]
-	gretl.get_data(src: str | dict) -> gretl._gretl.Dataset
+gretl.get_data(src: str | dict) -> gretl._gretl.Dataset
 \end{lstlisting}
-\generaldesc{This function registers the specified
-	\texttt{gdt}, \texttt{gdtb}, \texttt{csv}, \texttt{dta},
-	\texttt{wf1}, or spreadsheet (\texttt{xls}, \texttt{xlsx},
-	and \texttt{ods}) file \citep[see][for details]{gretl_manual}
-	as the global dataset.}
-%	Note that \pythcode{fname} must be the absolute path to the file (see
-%	\pythcode{gretl.gretl\_data\_path()}).}
+\generaldesc{This function recognizes the following data
+	formats:
+	\begin{itemize}
+		\item \gretl native formats: \texttt{gdt}, and \texttt{gdtb},
+		\item text files: \texttt{csv},
+		\item formats known from other econometric programs: \texttt{dta}, and \texttt{wf1},
+		\item spreadsheets: \texttt{xls}, \texttt{xlsx}, and \texttt{ods}
+		\item \python['s] \pythcode{dict} as defined in \ref{gretl4py:data:dict}.
+	\end{itemize}
+	For a complete list of supported please refer to \cite{gretl_manual}.\newline
+	Note: the first loaded dataset is automatically registered
+	as the global dataset (see \ref{sec:globalandindivodual}).}
 
 \gretlfpycmd{include()}
-\estdesc{Intended for including gretl function packages.}
+\estdesc{Intended for including gretl function packages (see \ref{sec:classpypackage}).}
 \begin{lstlisting}[style=pythonstylefoot]
 gretl.include(filename: str) -> gretl._gretl.Package
 \end{lstlisting}
@@ -230,15 +236,25 @@ inverted CDFs for variables from different datasets, please
 refer to \ref{met:gretldataset::invcdf}.
 
 \gretlfpycmd{modeltab()}
-\estdesc{XXX}
-\begin{lstlisting}[style=pythonstyle]
-	gretl.modeltab(models=list, output=str, tablefmt=str, stars=bool, coeff_fmt=str, stderr_fmt=str)
+\estdesc{Prints a \gretl-like ``model table''.}
+\begin{lstlisting}[style=pythonstylefoot]
+gretl.modeltab(models: list[, output: str="print", tablefmt: str="github", stars: bool=True, coeff_fmt: str=".3f", stderr_fmt: str=".4f"])
 \end{lstlisting}
+\begin{footnotesize}
+where options are:
+\begin{itemize}
+	\item[] \textit{models}: list of GretlModel objects,
+	\item[] \textit{output}: \texttt{``print''}---print the table,
+		\texttt{``return''}---return as string,
+	\item[] \textit{tablefmt}: table format for \texttt{tabulate} package,
+	\item[] \textit{stars}: whether to add significance stars,
+	\item[] \textit{coeff\_fmt}: format string for coefficients,
+	\item[] \textit{stderr\_fmt}: rormat string for standard errors.
+\end{itemize}\end{footnotesize}
 
 \gretlfpycmd{nparray2dict()}
 \begin{lstlisting}[style=pythonstylefoot]
-	gretl.nparray2dict(X: numpy.ndarray[, pd: int = 1,
-	Y: numpy.ndarray, with_const: bool = False, const_pos: int = 1]) -> dict
+gretl.nparray2dict(X: numpy.ndarray[, pd: int = 1, Y: numpy.ndarray, with_const: bool = False, const_pos: int = 1]) -> dict
 \end{lstlisting}
 \generaldesc{This function converts a \pkg{numpy}
 	array file into a dictionary compatible with
@@ -339,7 +355,7 @@ for variables from different datasets, please refer to \ref{met:gretldataset::pv
 
 \gretlfpycmd{series2dict()}
 \begin{lstlisting}[style=pythonstylefoot]
-	gretl.series2dict(Y : pandas.core.series.Series[, pd: int = 1, varname: str = 'y']) -> dict
+gretl.series2dict(Y : pandas.core.series.Series[, pd: int = 1, varname: str = 'y']) -> dict
 \end{lstlisting}
 \generaldesc{This function converts a \pkg{pandas}
 	series into a dictionary compatible with
@@ -380,9 +396,9 @@ gretl.set(variable: str, value: int[, OPTS])
 	to print the current settings.}
 
 \gretlfpycmd{show\_data\_status()}
-\estdesc{XXX}
-\begin{lstlisting}[style=pythonstyle]
-	gretl.show_data_status(self)
+\estdesc{List of available datasets.}
+\begin{lstlisting}[style=pythonstylefoot]
+gretl.show_data_status()
 \end{lstlisting}
 
 \gretlfpycmd{summary()}
