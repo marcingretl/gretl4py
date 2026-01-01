@@ -1,0 +1,426 @@
+\subsection{Estimators}\label{sec:estimators_python}
+In order to illustrate the \gretlpy estimating facilities,
+we take the as implicit that \pythcode{formula: str} can
+take one of the following forms:
+\begin{itemize}
+	\item a simple \proglang{R}-style like formula that
+		maps the model equation using the following rule:
+		\begin{center}
+			\addtocounter{equation}{1}
+			\hspace*{15pt}$\displaystyle y = \beta_0 + \sum_{j=1}^{k}\beta_jx_j + \varepsilon\;\rightarrow\;$%
+			\pythcode{'y ~ const + x1 + x2 + ... + xk'}%
+			\setcounter{fomularenderR}{\theequation}%
+			\hfill\hypertarget{theRstyleFomula}{(\textcolor{red}{\theequation})}
+		\end{center}
+	\item \gretl's default syntax, as described in \cite{gretl_manual}
+		and referred to here as the ``maps to'' syntax:
+		\begin{center}
+			\addtocounter{equation}{1}
+			\hspace*{15pt}$\displaystyle y = \beta_0 + \sum_{j=1}^{k}\beta_jx_j + \varepsilon\;\rightarrow\;$%
+			\pythcode{'y const x1 x2 ... xk'}%
+			\setcounter{fomularenderG}{\theequation}%
+			\hfill\hypertarget{theGstyleFomula}{(\textcolor{red}{\theequation})}
+		\end{center}
+\end{itemize}
+The complete list of available estimators is as follows
+(arguments in square brackets are optional):
+
+\est{ar}
+\estdesc{Computes parameter estimates using the
+	generalized Cochrane-Orcutt iterative procedure.}
+\begin{lstlisting}[style=pythonstylefoot]
+gretl.ar(formula: str[, data=gretl._gretl.Dataset, OPTS]) -> gretl._gretl.Model_ar
+\end{lstlisting}
+\mapto[0]{ar lags ; depvar indepvars}
+\noRformula
+\begin{itemize}
+	\item[]\maptoopt{vcv=True}{--vcv}{print covariance matrix}
+\end{itemize}
+
+\est{ar1}
+\estdesc{Computes feasible GLS estimates for a model in which the error
+	term is assumed to follow a first-order autoregressive process.}
+\begin{lstlisting}[style=pythonstylefoot]
+gretl.ar1(formula: str[, data=gretl._gretl.Dataset, OPTS]) -> gretl._gretl.Model_ar1
+\end{lstlisting}
+\mapto{ar1 depvar indepvars}
+\begin{itemize}
+	\item[]\maptoopt{hilu=True}{--hilu}{use Hildreth–Lu procedure}
+	\item[]\maptoopt{pwe=True}{--pwe}{use Prais–Winsten estimator}
+	\item[]\maptoopt{vcv=True}{--vcv}{print covariance matrix}
+\end{itemize}
+
+\est{arima}
+\estdesc{Estimates a univariate SARIMA (Seasonal Autoregressive, Integrated, Moving Average) model.}
+\begin{lstlisting}[style=pythonstylefoot]
+gretl.arima(y: str, order: tuple[int, int, int][, data=gretl._gretl.Dataset, seasonal: tuple[int, int, int], OPTS]) -> gretl._gretl.Model_arima
+\end{lstlisting}
+\mapto{arima p d q [; P D Q ] ; depvar}
+\begin{itemize}
+	\item[]\maptoopt{verbose=True}{--verbose}{print details of iterations}
+	\item[]\maptoopt{vcv=True}{--vcv}{print covariance matrix}
+	\item[]\maptoopt{hessian=True}{--hessian}{disables the fallback to outer
+		product of the gradient (OPG)}
+	\item[]\maptoopt{opg=True}{--opg}{forces use of the OPG method}
+	\item[]\maptoopt{nc=True}{--nc}{do not include a constant}
+	\item[]\maptoopt{conditional=True}{--conditional}{use conditional maximum likelihood}
+	\item[]\maptoopt{x\_12\_arima=True}{--x-12-arima}{use X-12-ARIMA, or X13, for estimation}
+	\item[]\maptoopt{lbfgs=True}{--lbfgs}{use L-BFGS-B maximizer}
+%	\item[]\maptoopt{lagselect=True}{--lagselect}{information criteria
+%		and log-likelihood for a number of AR(I)MA specifications
+%		are printed}
+\end{itemize}
+
+\est{biprobit}
+\estdesc{Estimates a bivariate probit model, using
+	the Newton-Raphson method to maximize the likelihood.}
+\begin{lstlisting}[style=pythonstylefoot]
+gretl.biprobit(formula: str[, data=gretl._gretl.Dataset, OPTS]) -> gretl._gretl.Model_biprobit
+\end{lstlisting}
+\mapto{biprobit depvar1 depvar2 indepvars1 [; indepvars2]}
+\begin{itemize}
+	\item[]\maptoopt{vcv=True}{--vcv}{print covariance matrix}
+	\item[]\maptoopt{robust=True}{--robust}{robust standard errors}
+	\item[]\maptoopt{opg=True}{--opg}{forces use of the OPG method}
+	\item[]\maptoopt{save\_xbeta=True}{--save-xbeta}{save values of the index
+		functions for the respective equations}
+	\item[]\maptoopt{verbose=True}{--verbose}{print extra information}
+\end{itemize}
+\noRformula
+
+\est{dpanel}
+
+\est{duration}
+\estdesc{By default the Weibull distribution is used
+	but the exponential, log-logistic and log-normal
+	distributions are also available.}
+\begin{lstlisting}[style=pythonstylefoot]
+gretl.duration(formula: str[, data=gretl._gretl.Dataset, OPTS]) -> gretl._gretl.Model_duration
+\end{lstlisting}
+\mapto{duration depvar indepvars [; censvar ]}
+\begin{itemize}
+	\item[]\maptoopt{exponential=True}{--exponential}{use exponential distribution}
+	\item[]\maptoopt{loglogistic=True}{--loglogistic}{use log-logistic distribution}
+	\item[]\maptoopt{lognormal=True}{--lognormal}{use log-normal distribution}
+	\item[]\maptoopt{medians=True}{--medians}{fitted values are medians}
+	\item[]\maptoopt{robust=True}{--robust}{robust standard errors}
+	\item[]\maptoopt{vcv=True}{--vcv}{print covariance matrix}
+	\item[]\maptoopt{verbose=True}{--verbose}{print details of iterations}
+\end{itemize}
+
+\est{garch}
+\estdesc{Estimates a GARCH model, either a univariate model or,
+	if indepvars are specified, including the given exogenous variables.}
+\begin{lstlisting}[style=pythonstylefoot]
+gretl.garch(formula: str[, data=gretl._gretl.Dataset, OPTS]) -> gretl._gretl.Model_garch
+\end{lstlisting}
+\mapto{garch p q ; depvar [indepvars]}
+\begin{itemize}
+	\item[]\maptoopt{robust=True}{--robust}{robust standard errors}
+	\item[]\maptoopt{verbose=True}{--verbose}{print details of iterations}
+	\item[]\maptoopt{vcv=True}{--vcv}{print covariance matrix}
+	\item[]\maptoopt{nc=True}{--nc}{do not include a constant}
+	\item[]\maptoopt{stdresid=True}{--stdresid}{standardize the residuals}
+	\item[]\maptoopt{fcp=True}{--fcp}{use Fiorentini, Calzolari, Panattoni algorithm}
+	\item[]\maptoopt{arma\_init=True}{--arma-init}{initial variance parameters from ARMA}
+\end{itemize}
+\noRformula
+
+\est{heckit}
+\estdesc{Heckman-type selection model. In the specification,
+	the list before the semicolon represents the outcome equation,
+	and the second list represents the selection equation. The
+	dependent variable in the selection equation (ys in the
+	example above) must be a binary variable.}
+\begin{lstlisting}[style=pythonstylefoot]
+gretl.heckit(formula: str[, data=gretl._gretl.Dataset, OPTS]) -> gretl._gretl.Model_heckit
+\end{lstlisting}
+\mapto{heckit depvar indepvars ; selection equation}
+\begin{itemize}
+	\item[]\maptoopt{two\_step=True}{--two-step}{perform two-step estimation}
+	\item[]\maptoopt{vcv=True}{--vcv}{print covariance matrix}
+	\item[]\maptoopt{opg=True}{--opg}{OPG standard errors}
+	\item[]\maptoopt{robust=True}{--robust}{robust standard errors}
+	\item[]\maptoopt{verbose=True}{--verbose}{print extra output}
+\end{itemize}
+\noRformula
+
+\est{lad}
+\estdesc{Calculates a regression that minimizes the sum of
+	the absolute deviations of the observed from the
+	fitted values of the dependent variable.}
+\begin{lstlisting}[style=pythonstylefoot]
+gretl.lad(formula: str[, data=gretl._gretl.Dataset, OPTS]) -> gretl._gretl.Model_lad
+\end{lstlisting}
+\mapto{lad depvar indepvars}
+\begin{itemize}
+	\item[]\maptoopt{vcv=True}{--vcv}{print covariance matrix}
+	\item[]\maptoopt{no\_vcv=True}{--no-vcv}{don't compute covariance matrix}
+\end{itemize}
+
+\est{logistic}
+\estdesc{Logistic regression: carries out an OLS
+	regression using the logistic transformation
+	of the dependent variable.}
+\begin{lstlisting}[style=pythonstylefoot]
+gretl.logistic(formula: str[, data=gretl._gretl.Dataset, OPTS]) -> gretl._gretl.Model_logistic
+\end{lstlisting}
+\mapto{logistic depvar indepvars}
+\begin{itemize}
+	\item[]\maptoopt{robust=True}{--robust}{robust standard errors}
+	\item[]\maptoopt{vcv=True}{--vcv}{print covariance matrix}
+	\item[]\maptoopt{fixed\_effects=True}{--fixed-effects}{estimate with group fixed effects}
+\end{itemize}
+
+\est{logit}
+\estdesc{By default the slopes with respect to each of
+	the independent variables are calculated (at the means
+	of those variables) and these slopes replace the usual
+	p-values in the regression output.}
+\begin{lstlisting}[style=pythonstylefoot]
+gretl.logit(formula: str[, data=gretl._gretl.Dataset, OPTS]) -> gretl._gretl.Model_logit
+\end{lstlisting}
+\mapto{logit depvar indepvars}
+\begin{itemize}
+	\item[]\maptoopt{robust=True}{--robust}{robust standard errors}
+	\item[]\maptoopt{multinomial=True}{--multinomial}{estimate multinomial logit}
+	\item[]\maptoopt{vcv=True}{--vcv}{print covariance matrix}
+	\item[]\maptoopt{verbose=True}{--verbose}{print details of iterations}
+	\item[]\maptoopt{p\_values=True}{--p-values}{show p-values instead of slopes}
+	\item[]\maptoopt{estrella=True}{--estrella}{select pseudo-R-squared variant}
+\end{itemize}
+
+\est{midasreg}
+\estdesc{Carries out least-squares estimation (either NLS or OLS,
+	depending on the specification) of a MIDAS (Mixed Data Sampling) model.}
+\begin{lstlisting}[style=pythonstylefoot]
+gretl.midasreg(formula: str[, data=gretl._gretl.Dataset, OPTS]) -> gretl._gretl.Model_midasreg
+\end{lstlisting}
+\mapto{midasreg depvar indepvars ; MIDAS-terms}
+\begin{itemize}
+	\item[]\maptoopt{vcv=True}{--vcv}{print covariance matrix}
+	\item[]\maptoopt{robust=True}{--robust}{robust standard errors}
+	\item[]\maptoopt{quiet=True}{--quiet}{suppress printing of results}
+	\item[]\maptoopt{levenberg=True}{--levenberg}{force use of the Levenberg–Marquardt algorithm}
+\end{itemize}
+
+\est{mpols}
+\estdesc{Computes OLS estimates for the specified model using multiple
+	precision floating-point arithmetic.}
+\begin{lstlisting}[style=pythonstylefoot]
+gretl.mpols(formula: str[, data=gretl._gretl.Dataset, OPTS]) -> gretl._gretl.Model_mpols
+\end{lstlisting}
+\mapto{mpols depvar indepvars}
+\begin{itemize}
+	\item[]\maptoopt{vcv=True}{--vcv}{print covariance matrix}
+	\item[]\maptoopt{simple\_print=True}{--simple-print}{do not print auxiliary statistics}
+\end{itemize}
+
+\est{negbin}
+\estdesc{Estimates a Negative Binomial model. The dependent
+	variable is taken to represent a count of the occurrence
+	of events of some sort, and must have only non-negative
+	integer values.}
+\begin{lstlisting}[style=pythonstylefoot]
+gretl.negbin(formula: str[, data=gretl._gretl.Dataset, OPTS]) -> gretl._gretl.Model_negbin
+\end{lstlisting}
+\mapto{negbin depvar indepvars}
+\begin{itemize}
+	\item[]\maptoopt{model1=True}{--model1}{use NegBin 1 model}
+	\item[]\maptoopt{robust=True}{--robust}{QML covariance matrix}
+	\item[]\maptoopt{opg=True}{--opg}{forces use of the OPG method}
+	\item[]\maptoopt{vcv=True}{--vcv}{print covariance matrix}
+	\item[]\maptoopt{verbose=True}{--verbose}{print details of iterations}
+\end{itemize}
+
+\est{nls}
+\estdesc{Performs Nonlinear Least Squares (NLS) estimation using
+	a modified version of the Levenberg-Marquardt algorithm.}
+\begin{lstlisting}[style=pythonstylefoot]
+gretl.nls(formula: str[, data=gretl._gretl.Dataset, OPTS]) -> gretl._gretl.Model_nls
+\end{lstlisting}
+\mapto{nls function [ derivatives ]}
+\begin{itemize}
+	\item[]\maptoopt{}{}{}
+\end{itemize}
+
+\est{ols}
+\estdesc{Computes ordinary least squares (OLS) estimates
+	with \texttt{depvar} as the dependent variable and
+	\texttt{indepvars} as the list of independent variables.}
+\begin{lstlisting}[style=pythonstylefoot]
+gretl.ols(formula: str[, data=gretl._gretl.Dataset, OPTS]) -> gretl._gretl.Model_ols
+\end{lstlisting}
+\mapto{ols depvar indepvars}
+\begin{itemize}
+	\item[]\maptoopt{vcv=True}{--vcv}{print covariance matrix}
+	\item[]\maptoopt{robust=True}{--robust}{robust standard errors}
+	\item[]\maptoopt{jackknife=True}{--jackknife}{selecting an
+		\texttt{hc\_version} of 3a, \cite[see][]{gretl_command} for details}
+	\item[]\maptoopt{simple\_print=True}{--simple-print}{do not print auxiliary statistics}
+	\item[]\maptoopt{avova=True}{--avova}{print an ANOVA table}
+	\item[]\maptoopt{no\_df\_corr=True}{--no-df-corr}{suppress degrees of freedom correction}
+\end{itemize}
+
+\est{panel}
+\estdesc{By default the fixed effects estimator is used; this is implemented
+	by subtracting the group or unit means from the original data.}
+\begin{lstlisting}[style=pythonstylefoot]
+gretl.panel(formula: str[, data=gretl._gretl.Dataset, OPTS]) -> gretl._gretl.Model_panel
+\end{lstlisting}
+\mapto{panel depvar indepvars}
+\begin{itemize}
+	\item[]\maptoopt{vcv=True}{--vcv}{print covariance matrix}
+	\item[]\maptoopt{fixed\_effects=True}{--fixed-effects}{estimate with group fixed effects}
+	\item[]\maptoopt{random\_effects=True}{--random-effects}{random effects or GLS model}
+	\item[]\maptoopt{nerlove=True}{--nerlove}{use the Nerlove transformation}
+	\item[]\maptoopt{pooled=True}{--pooled}{estimate via pooled OLS}
+	\item[]\maptoopt{between=True}{--between}{estimate the between-groups model}
+	\item[]\maptoopt{robust=True}{--robust}{robust standard errors \cite[see][]{gretl_command}}
+	\item[]\maptoopt{unit\_weights=True}{--unit-weights}{weighted least squares}
+	\item[]\maptoopt{iterate=True}{--iterate}{iterative estimation}
+	\item[]\maptoopt{matrix\_diff=True}{--matrix-diff}{compute Hausman test via matrix difference}
+	\item[]\maptoopt{verbose=True}{--verbose}{more verbose output}
+\end{itemize}
+
+\est{poisson}
+\estdesc{The dependent variable is taken to represent the occurrence
+	of events of some sort, and must take on only non-negative integer values.}
+\begin{lstlisting}[style=pythonstylefoot]
+gretl.poisson(formula: str[, data=gretl._gretl.Dataset, OPTS]) -> gretl._gretl.Model_poisson
+\end{lstlisting}
+\mapto{poisson depvar indepvars [; offset]}
+\begin{itemize}
+	\item[]\maptoopt{robust=True}{--robust}{robust standard errors}
+	\item[]\maptoopt{vcv=True}{--vcv}{print covariance matrix}
+	\item[]\maptoopt{verbose=True}{--verbose}{print details of iterations}
+\end{itemize}
+\noRformula
+
+\est{probit}
+\estdesc{By default the slopes with respect to each of
+	the independent variables are calculated (at the means
+	of those variables) and these slopes replace the usual
+	p-values in the regression output.}
+\begin{lstlisting}[style=pythonstylefoot]
+gretl.probit(formula: str[, data=gretl._gretl.Dataset, OPTS]) -> gretl._gretl.Model_probit
+\end{lstlisting}
+\mapto{probit depvar indepvars}
+\begin{itemize}
+	\item[]\maptoopt{robust=True}{--robust}{robust standard errors}
+	\item[]\maptoopt{vcv=True}{--vcv}{print covariance matrix}
+	\item[]\maptoopt{verbose=True}{--verbose}{print details of iterations}
+	\item[]\maptoopt{p\_values=True}{--p-values}{show p-values instead of slopes}
+	\item[]\maptoopt{estrella=True}{--estrella}{select pseudo-R-squared variant}
+	\item[]\maptoopt{random\_effects=True}{--random-effects}{estimates a
+		random effects panel probit model}
+\end{itemize}
+
+\est{system}
+\estdesc{System of equations.}
+\begin{lstlisting}[style=pythonstylefoot]
+gretl.system(method: str[,data=gretl._gretl.Dataset, OPTS]) -> gretl._gretl.Model_NME
+\end{lstlisting}
+\mapto{system method=estimator}
+\begin{itemize}
+	\item[]\maptoopt{}{}{}
+\end{itemize}
+
+\est{quantreg}
+\estdesc{Quantile regression}
+\begin{lstlisting}[style=pythonstylefoot]
+gretl.quantreg(tau: float | list[float], formula: str[, data=gretl._gretl.Dataset, OPTS]) -> gretl._gretl.Model_quantreg
+\end{lstlisting}
+\mapto{quantreg tau depvar indepvars}
+\begin{itemize}
+	\item[]\maptoopt{robust=True}{--robust}{robust standard errors}
+	\item[]\maptoopt{intervals=True}{--intervals=[level]}{compute confidence intervals}
+	\item[]\maptoopt{vcv=True}{--vcv}{print covariance matrix}
+	\item[]\maptoopt{quiet=True}{--quiet}{suppress printing of results}
+\end{itemize}
+
+\est{tobit}
+\estdesc{Estimates a Tobit model}
+\begin{lstlisting}[style=pythonstylefoot]
+gretl.tobit(formula: str[, data=gretl._gretl.Dataset, OPTS]) -> gretl._gretl.Model_tobit
+\end{lstlisting}
+\mapto{tobit tau depvar indepvars}
+\begin{itemize}
+	\item[]\maptoopt{llimit=lval}{--llimit=lval}{specify left bound}
+	\item[]\maptoopt{rlimit=lval}{--rlimit=lval}{specify right bound}
+	\item[]\maptoopt{vcv=True}{--vcv}{print covariance matrix}
+	\item[]\maptoopt{robust=True}{--robust}{robust standard errors}
+	\item[]\maptoopt{opg=True}{--opg}{standard errors are based on the outer product of the gradient alone}
+	\item[]\maptoopt{quiet=verbose}{--verbose}{print details of iterations}
+	\item[]\maptoopt{quiet=True}{--quiet}{suppress printing of results}
+\end{itemize}
+
+\est{tsls}
+\estdesc{Computes Instrumental Variables (IV) estimates,
+	by default using two-stage least squares (TSLS).}
+\begin{lstlisting}[style=pythonstylefoot]
+gretl.tsls(formula: str[, data=gretl._gretl.Dataset, OPTS]) -> gretl._gretl.Model_tsls
+\end{lstlisting}
+\mapto{tsls depvar indepvars ; instruments}
+\begin{itemize}
+	\item[]\maptoopt{no\_tests=True}{--no-tests }{don't do diagnostic tests}
+	\item[]\maptoopt{vcv=True}{--vcv}{print covariance matrix}
+	\item[]\maptoopt{no\_df\_corr=True}{--no-df-corr }{no degrees-of-freedom correction}
+	\item[]\maptoopt{robust=True}{--robust}{robust standard errors}
+	\item[]\maptoopt{liml=True}{--liml}{use Limited Information Maximum Likelihood}
+	\item[]\maptoopt{gmm=True}{--gmm}{use the Generalized Method of Moments}
+\end{itemize}
+
+\est{wls}
+\estdesc{Computes weighted least squares (WLS) estimates
+	using \texttt{wtvar} as the weight, \texttt{depvar}
+	as the dependent variable, and \texttt{indepvars}
+	as the list of independent variables.}
+\begin{lstlisting}[style=pythonstylefoot]
+gretl.wls(formula: str[, data=gretl._gretl.Dataset, OPTS]) -> gretl._gretl.Model_wls
+\end{lstlisting}
+\mapto{wls wtvar depvar indepvars}
+\begin{itemize}
+	\item[]\maptoopt{vcv=True}{--vcv}{print covariance matrix}
+	\item[]\maptoopt{robust=True}{--robust}{robust standard errors}
+	\item[]\maptoopt{allow\_zeros=True}{--allow-zeros}{to mix zero weights with positive ones}
+\end{itemize}
+\noRformula
+
+\est{var}
+\estdesc{Sets up and estimates (using OLS) a vector autoregression (VAR)}
+\begin{lstlisting}[style=pythonstylefoot]
+gretl.var(order: int, ylist: str[, data=gretl._gretl.Dataset, OPTS]) -> gretl._gretl.Model_var
+\end{lstlisting}
+\mapto{var order ylist [;xlist]}
+\begin{itemize}
+	\item[]\maptoopt{nc=True}{--nc}{do not include a constant}
+	\item[]\maptoopt{trend=True}{--trend}{include a linear trend}
+	\item[]\maptoopt{seasonals=True}{--seasonals}{include seasonal dummy variables}
+	\item[]\maptoopt{robust=True}{--robust}{robust standard errors}
+	\item[]\maptoopt{robust\_hac=True}{--robust-hac}{HAC standard errors}
+	\item[]\maptoopt{quiet=True}{--quiet}{skip output of individual equations}
+	\item[]\maptoopt{silent=True}{--silent}{don't print anything}
+	\item[]\maptoopt{impulse\_responses=True}{--impulse-responses}{print impulse responses}
+	\item[]\maptoopt{variance\_decomp=True}{--variance-decomp}{print variance decompositions}
+\end{itemize}
+\noRformula
+
+\est{vecm}
+\estdesc{A VECM model}
+\begin{lstlisting}[style=pythonstylefoot]
+gretl.vecm(order: int, rank: int, ylist: str[, data=gretl._gretl.Dataset, OPTS]) -> gretl._gretl.Model_vecm
+\end{lstlisting}
+\mapto{var order ylist [;xlist]}
+\begin{itemize}
+	\item[]\maptoopt{nc=True}{--nc}{no constant}
+	\item[]\maptoopt{trend=True}{--trend}{include a linear trend}
+	\item[]\maptoopt{seasonals=True}{--seasonals}{include seasonal dummy variables}
+	\item[]\maptoopt{robust=True}{--robust}{robust standard errors}
+	\item[]\maptoopt{robust\_hac=True}{--robust-hac}{HAC standard errors}
+	\item[]\maptoopt{quiet=True}{--quiet}{skip output of individual equations}
+	\item[]\maptoopt{silent=True}{--silent}{don't print anything}
+	\item[]\maptoopt{impulse\_responses=True}{--impulse-responses}{print impulse responses}
+	\item[]\maptoopt{variance\_decomp=True}{--variance-decomp}{print variance decompositions}
+\end{itemize}
+\noRformula
