@@ -422,10 +422,20 @@ gretl.summary(varlist: str[, OPTS])
 	accessor. When the \gretlcmd{--by} option is given, this accessor
 	is produced only if \textit{varlist} contains a single series.}
 
-\gretlfpycmd{uservars\_list()}
-\estdesc{XXX}
-\begin{lstlisting}[style=pythonstyle]
-	gretl._gretl.uservars_list(void)
+\gretlfpycmd{varlist()}
+\estdesc{Prints a listing of the series in the current dataset (if any).}
+\begin{lstlisting}[style=pythonstylefoot]
+gretl.varlist([type: str])
 \end{lstlisting}
-\generaldesc{XXX}
+\mapto{varlist}
+\begin{itemize}
+	\item[] \maptoopt{type=typename}{--type=typename}{scope of listing}
+\end{itemize}
 
+\begin{footnotesize}
+and \textit{typename} is: \textit{series}, \textit{scalar},
+\textit{matrix}, \textit{list}, \textit{string}, \textit{bundle},
+\textit{array} or \textit{accessor}.
+\end{footnotesize}\\
+\generaldesc{Note that \pythcode{varlist.cdf()} works only with the
+	default dataset.}

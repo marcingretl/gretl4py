@@ -56,6 +56,8 @@ void do_gretl_print (const std::string &varlist, const py::kwargs &kwargs);
 double do_gretl_get_pvalue (const std::string &dist, double value,
                             const py::array_t<double> &params = py::array());
 
+void do_gretl_varlist (const py::kwargs &kwargs);
+
 py::object do_gretl_include (const std::string &filename);
 
 GretlPackagePtr load_package (const std::string &pkgname,
@@ -105,8 +107,5 @@ void do_gretl_delete_variables (const std::string &varname,
 template <GretlObjType OBJ_TYPE>
 py::object do_get_accessor (const std::string &name, GretlDatasetPtr GD = nullptr,
                             void *model = NULL);
-
-// these two functions are temporal and will be moved to class
-void uservars_list (void);
 
 #endif // GRETL_CALLS_H

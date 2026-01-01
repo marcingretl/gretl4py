@@ -70,10 +70,11 @@ gretl.print("B")
 #a3D = np.array([[[1, 2], [3, 4]], [[5, 6], [7, 8]]])
 #gretl.genr(name='theta3', value=a3D)
 
-gretl.uservars_list()
+uservars_types = ['scalar', 'matrix', 'list', 'string', 'bundle', 'array']
+[gretl.varlist(type=t) for t in uservars_types]
 
 # let's delete variable
 gretl.delete("a")
 gretl.delete("dX")
 gretl.delete(type="matrix")
-gretl.uservars_list()
+[gretl.varlist(type=t) for t in uservars_types]

@@ -447,6 +447,34 @@ double do_gretl_get_pvalue (const std::string &dist, double value,
     return gretl_get_pvalue(dist_code, params.data(), value);
 }
 
+void do_gretl_varlist (const py::kwargs &kwargs)
+{
+    //
+    // function mimics gretls 'varlist' command
+    //
+    GretlDatasetPtr GD = nullptr;
+    gretlopt opt = OPT_NONE;
+
+    if (py::len(kwargs) > 0) {
+        opt = unpack_kwargs_command(VARLIST, GD, kwargs);
+    } else {
+        // if we don't have kwargs, we must assign GD manually
+        GD = DSET;
+    }
+
+    // we o the job (based on interact.c)
+    if (opt & OPT_T) {
+        list_user_vars_of_type(GD ? GD->dset : NULL, GP.prn_ptr());
+    } else if (opt & OPT_S) {
+        print_scalars(GP.prn_ptr());
+    } else if (opt & OPT_A) {
+        list_ok_dollar_vars(GD ? GD->dset : NULL, GP.prn_ptr());
+    } else {
+        list_series(GD ? GD->dset : NULL, opt, GP.prn_ptr());
+    }
+    GP.print();
+}
+
 GretlPackagePtr load_package (const std::string &pkgname,
                               const std::string &suffix)
 {
@@ -1080,17 +1108,3 @@ void gretl_generate (const std::string &formula, GretlDatasetPtr GD,
 template void gretl_generate<GRETL_TYPE_ANY>(const std::string&, GretlDatasetPtr, const std::string&);
 template void gretl_generate<GRETL_TYPE_LIST>(const std::string&, GretlDatasetPtr, const std::string&);
 template void gretl_generate<GRETL_TYPE_SERIES>(const std::string&, GretlDatasetPtr, const std::string&);
-
-// stuff below is volatile
-void uservars_list (void)
-{
-    std::string var_type_name;
-
-    py::print("Registered variables:");
-    for (const auto &name : UserVars) {
-        var_type_name = gretl_type_get_name(user_var_get_type_by_name(name.c_str()));
-
-        py::print(name, "(" + var_type_name + ")");
-    }
-    py::print("\n");
-}
