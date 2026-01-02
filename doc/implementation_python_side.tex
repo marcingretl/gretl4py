@@ -190,17 +190,17 @@ gretl.genr(name=str, value=str)
 \mapto[clean]{genr newvar = formula}
 
 \gretlfpycmd{get\_accessor()}
-\estdesc{Function to read \lgretl['s] accessors}
+\estdesc{Function retrieves \lgretl['s] ``dollar accessors''}
 \begin{lstlisting}[style=pythonstylefoot]`
 gretl.get_accessor(name: str) -> object
 \end{lstlisting}
 Examples:\newline
 \pythcodef{.get\_accessor('\$version')}\\
 \pythcodef{.get\_accessor('\$stopwatch')}\\
-\generaldesc{Note: \pythcode{gretl.get\_accessor()} works by default only
-	with the default dataset. To access accessors related to different datasets
-	or models, please refer to \ref{met:gretldataset::get_accessor}
-	or \ref{met:gretlmodel::get_accessor}.}
+\generaldesc{Note: \pythcode{gretl.get\_accessor()} works by default
+	only with the default dataset. To access accessors related to
+	different datasets or models, please refer to
+	\ref{met:gretldataset::get_accessor} or \ref{met:gretlmodel::get_accessor}.}
 
 \gretlfpycmd{get\_data()}
 \estdesc{Factory that loads the provided data as a \pythcode{gretl._gretl.Dataset}}

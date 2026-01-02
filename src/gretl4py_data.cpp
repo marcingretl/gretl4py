@@ -738,27 +738,27 @@ py::dict GretlDataset::to_dict (void) const
     return as_dict;
 }
 
-void GretlDataset::to_file (const std::string &fname, const std::string &vars,
+void GretlDataset::to_file (const std::string &filename, const std::string &varlist,
                             const py::kwargs &kwargs)
 {
     //
     // methods which mimics libgretl's STORE command
     //
-    gretl_list_ptr varlist{nullptr};
+    gretl_list_ptr var_list{nullptr};
     std::nullptr_t fakeGD = nullptr;
 
     // we handle varlist
-    if (!vars.empty()) varlist = list_from_formula(vars, dset, err_);
+    if (!varlist.empty()) var_list = list_from_formula(varlist, dset, err_);
 
     // we unpack kwargs;
     opt_ = unpack_kwargs_command(STORE, fakeGD, kwargs);
 
     // we do the job
     if (opt_ & OPT_A) {
-        err_ = write_matrix_as_dataset(fname.c_str(), opt_,
+        err_ = write_matrix_as_dataset(filename.c_str(), opt_,
                                        GP_.prn_ptr());
     } else {
-        err_ = write_data(fname.c_str(), varlist.get(),
+        err_ = write_data(filename.c_str(), var_list.get(),
                           dset, opt_, GP_.prn_ptr());
     }
     if (err_) handle_gretl_error(err_);

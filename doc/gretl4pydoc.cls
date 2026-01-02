@@ -48,7 +48,7 @@
 % C++ style
 \lstdefinestyle{cppstyle}{
 	language=[11]C++,
-	basicstyle=\ttfamily\small,  % Use a monospaced font 
+	basicstyle=\ttfamily\small,	  % Use a monospaced font 
 	keywordstyle=\color{blue},    % Keywords in blue 
 	commentstyle=\color{grey},    % Comments in green 
 	stringstyle=\color{red},      % Strings in red 
@@ -136,7 +136,7 @@
 		mat2list, strftime, fzero, _},
 	morekeywords=[3]{bool, int, list, matrix, scalar, series, string, bundle,
 		void, bundles, null, const},
-	morekeywords=[4]{\$nobs, \$stopwatch, \$sysinfo, \$now, \$model, \$result, \$uhat},
+	morekeywords=[4]{\$nobs, \$stopwatch, \$sysinfo, \$now, \$model, \$result, \$uhat, \$version, \$workdir},
 	%   alsoletter={-},
 	sensitive=false,
 	morecomment=[l]{\#},

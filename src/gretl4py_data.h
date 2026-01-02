@@ -126,7 +126,7 @@ public:
 
     py::dict to_dict (void) const;
 
-    void to_file (const std::string &fname, const std::string &vars,
+    void to_file (const std::string &filename, const std::string &varlist,
                   const py::kwargs &kwargs);
 
     // dataset information

@@ -1,5 +1,10 @@
 \subsubsection{\classpydataset}\label{sec:classpydataset}
-The \classpydataset provides the following public attributes:
+This class is designed for loading, storing, and managing
+\lgretl['s] \texttt{dataset} type. Thus, it offers attributes
+that provide some \texttt{dataset} parameters, and methods
+for manipulating data, such as sub-sampling, exporting, filtering, etc.
+
+\noindent\vspace*{10pt}The \classpydataset provides the following public attributes:
 
 \gretlfpycmd{is\_panel}
 \estdesc{Checks if we deal with panel-dataset.}
@@ -8,7 +13,7 @@ The \classpydataset provides the following public attributes:
 \end{lstlisting}
 
 \gretlfpycmd{is\_default}
-\estdesc{Checks if we dataset is marked as ``default''.}
+\estdesc{Checks if dataset is marked as ``default''.}
 \begin{lstlisting}[style=pythonstylefoot]
 .is_panel -> bool
 \end{lstlisting}
@@ -30,27 +35,27 @@ The \classpydataset provides the following public attributes:
 \generaldesc{This is equivalent to calling \pythcode{.get_accessor("$nobs")}.}
 
 \gretlfpycmd{source}
-\estdesc{Print the source of given dataset.}
+\estdesc{Prints the source of given dataset.}
 \begin{lstlisting}[style=pythonstylefoot]
 .source -> str
 \end{lstlisting}
 
 \vspace*{10pt}\noindent The \classpydataset provides the following public methods:
 
-\gretlfpycmd{\_\_copy\_\_()}
-\estdesc{Creates a deep copy of the \classpydataset object.}
-\begin{lstlisting}[style=pythonstylefoot]
-.__copy__() -> gretl._gretl.Dataset
-\end{lstlisting}
-Examples:\newline
-\pythcodef{import copy; dataset_copy = copy.copy(gretl._gretl.Dataset)}\\
-\generaldesc{This method returns a new, fully independent
-	\pythcode{gretl.\_gretl.Dataset} object that duplicates
-	all elements of the original dataset. Changes made to
-	the copy do not affect the original object. Although
-	it is invoked by the standard \pythcode{copy.copy()}
-	function, it performs a deep copy of all dataset
-	contents.}
+%\gretlfpycmd{\_\_copy\_\_()}
+%\estdesc{Creates a deep copy of the \classpydataset object.}
+%\begin{lstlisting}[style=pythonstylefoot]
+%.__copy__() -> gretl._gretl.Dataset
+%\end{lstlisting}
+%Examples:\newline
+%\pythcodef{import copy; dataset_copy = copy.copy(gretl._gretl.Dataset)}\\
+%\generaldesc{This method returns a new, fully independent
+%	\pythcode{gretl.\_gretl.Dataset} object that duplicates
+%	all elements of the original dataset. Changes made to
+%	the copy do not affect the original object. Although
+%	it is invoked by the standard \pythcode{copy.copy()}
+%	function, it performs a deep copy of all dataset
+%	contents.}
 
 %\gretlfpycmd{\_\_repr\_\_()}
 %\estdesc{Returns a string representation of the \classpydataset object.}
@@ -210,25 +215,25 @@ where \textit{d} and \textit{param} are defined as in \ref{func:gretl.cdf}.
 	to the data set, with names \textit{Dx\_1}, \textit{Dx\_2} and so on.}
 
 \gretlfpycmd{get\_accessor()}\label{met:gretldataset::get_accessor}
-\estdesc{XXX}
-\begin{lstlisting}[style=pythonstyle]
-.get_accessor(accessor=str) -> object
+\estdesc{This method retrieves \lgretl['s] ``dollar accessors''}
+\begin{lstlisting}[style=pythonstylefoot]
+.get_accessor(name: str) -> object
 \end{lstlisting}
-\generaldesc{XXX}
+\generaldesc{Note: this method retrieves accessors related either
+	to the instance dataset or to general \lgretl accessors
+	(such as \gretlcmd{$version}).}
 
 \gretlfpycmd{get\_id()}
-\estdesc{XXX}
-\begin{lstlisting}[style=pythonstyle]
-.get_id(self) -> int
+\estdesc{This method retrieves instance dataset id.}
+\begin{lstlisting}[style=pythonstylefoot]
+.get_id() -> int
 \end{lstlisting}
-\generaldesc{XXX}
 
 \gretlfpycmd{get\_series()}
-\estdesc{XXX}
-\begin{lstlisting}[style=pythonstyle]
-.get_series(series=str) -> numpy.ndarray
+\estdesc{This method retrieves given \gretlcmd{series} as NumPy array.}
+\begin{lstlisting}[style=pythonstylefoot]
+.get_series(series: str) -> numpy.ndarray
 \end{lstlisting}
-\generaldesc{XXX}
 
 \gretlfpycmd{head()}
 \estdesc{XXX}
@@ -336,11 +341,10 @@ Examples:\newline
 	\end{align*}}
 
 \gretlfpycmd{linked\_models\_list()}
-\estdesc{XXX}
-\begin{lstlisting}[style=pythonstyle]
+\estdesc{This method retrieves models that use this dataset.}
+\begin{lstlisting}[style=pythonstylefoot]
 .linked_models_list() -> set
 \end{lstlisting}
-\generaldesc{XXX}
 
 \gretlfpycmd{logs()}
 \estdesc{The natural log of each of the series in \textit{varlist}
@@ -356,20 +360,34 @@ Examples:\newline
 	\end{align*}}
 
 \gretlfpycmd{new\_list()}
-\estdesc{XXX}
-\begin{lstlisting}[style=pythonstyle]
-.new_list(name=str, value=str)
-.new_list(formula=str)
+\estdesc{Method for defining a new \lgretl['s] \gretlcmd{list}.}
+\begin{lstlisting}[style=pythonstylefoot]
+.new_list(name: str, value: str)
+.new_list(formula: str)
 \end{lstlisting}
-\generaldesc{XXX}
+\mapto[0]{list name = value}
+\generaldesc{This method generates a named \gretlcmd{list}
+	consisting of variables defined in \textit{values} (either by
+	name or by variable ID). On the other hand, \textit{formula}
+	should contain a string in valid \gretl['s] syntax.\newline
+	Note that these two calls are equivalent:
+	\pythcode{name='A', value='var1 var2'} and
+	\pythcode{formula='list A = var1 var2'}.}
 
 \gretlfpycmd{new\_series()}
-\estdesc{XXX}
-\begin{lstlisting}[style=pythonstyle]
-.new_series(name=str, value=str)
-.new_series(formula=str)
+\estdesc{Method for defining a new \lgretl['s] \gretlcmd{series}.}
+\begin{lstlisting}[style=pythonstylefoot]
+.new_series(name: str, value: str)
+.new_series(formula: str)
 \end{lstlisting}
-\generaldesc{XXX}
+\mapto[0]{genr name = value}
+\generaldesc{This method generates a named \gretlcmd{series}
+	as a result of any \lgretl transformation of already
+	existing variable(s). On the other hand, \textit{formula}
+	should contain a string in valid \gretl['s] syntax.\newline
+	Note that these two calls are equivalent:
+	\pythcode{name='A', value='log(var1) + var2/100'} and
+	\pythcode{formula='genr A = log(var1) + var2/100'}.}
 
 \gretlfpycmd{orthdev()}
 \estdesc{Applicable with panel data only.}
@@ -391,7 +409,7 @@ Examples:\newline
 \mapto{pca varlist}
 \begin{itemize}
 	\item[]\maptoopt{covariance=True}{--covariance}{use the covariance matrix}
-	\item[]\maptoopt{save=n}{--save[=n]}{save major components}
+	\item[]\maptoopt{save=n}{--save=n}{save major components}
 	\item[]\maptoopt{save\_all=True}{--save-all}{save all components}
 	\item[]\maptoopt{quiet=True}{--quiet}{don't print results}
 \end{itemize}
@@ -419,7 +437,6 @@ where \textit{d} and \textit{param} are defined as in \ref{func:gretl.pdf}.
 \end{lstlisting}
 \generaldesc{XXX}
 
-\newpage
 \gretlfpycmd{pvalue()}\label{met:gretldataset::pvalue}
 \estdesc{\textit{P}-value calculator for given \gretlcmd{series}.}
 \begin{lstlisting}[style=pythonstylefoot]
@@ -496,7 +513,7 @@ Examples:\newline
 .sdiff(varlist: str)
 \end{lstlisting}
 \mapto[0]{sdiff varlist}
-\generaldesc{This command is available only for seasonal time series. }
+\generaldesc{This command is available only for seasonal time series.}
 
 \gretlfpycmd{set\_as\_default()}\label{met:gretldataset:set_as_default}
 \estdesc{Sets given \pythcode{gretl.\_gretl.Dataset} instance
@@ -601,32 +618,52 @@ Examples:\newline
 		vartest}.}
 
 \gretlfpycmd{to\_dataframe()}
-\estdesc{XXX}
-\begin{lstlisting}[style=pythonstyle]
-.to_dataframe(self) -> pandas.core.frame.DataFrame
+\estdesc{This method exports given dataset to \pythcode{pandas.core.frame.DataFrame}.}
+\begin{lstlisting}[style=pythonstylefoot]
+.to_dataframe() -> pandas.core.frame.DataFrame
 \end{lstlisting}
-\generaldesc{XXX}
 
 \gretlfpycmd{to\_dict()}
-\estdesc{XXX}
-\begin{lstlisting}[style=pythonstyle]
-.to_dict(self) -> dict
+\estdesc{This method exports given dataset to \pythcode{dict}.}
+\begin{lstlisting}[style=pythonstylefoot]
+.to_dict() -> dict
 \end{lstlisting}
-\generaldesc{XXX}
+\generaldesc{Note: resulting \pythcode{dict} has a structure
+	defined in \ref{sec:data_format_handled}.}
 
 \gretlfpycmd{to\_file()}
-\estdesc{XXX}
-\begin{lstlisting}[style=pythonstyle]
-.to_file(fname=str)
+\estdesc{This method saves data to filename.}
+\begin{lstlisting}[style=pythonstylefoot]
+.to_file(filename: str[, varlist: str = '', OPTS])
 \end{lstlisting}
-\generaldesc{XXX}
+\mapto{store filename [ varlist ]}
+\begin{itemize}
+	\item[]\maptoopt{omit\_obs=True}{--omit-obs}{on CSV format, \seegretlmanual}
+	\item[]\maptoopt{no\_header=True}{--no-header}{on CSV format, \seegretlmanual}
+	\item[]\maptoopt{gnu\_octave=True}{--gnu-octave}{use GNU Octave format}
+	\item[]\maptoopt{gnu\_R=True}{--gnu-R}{format friendly for read.table}
+	\item[]\maptoopt{gzipped=level}{--gzipped[=level]}{apply gzip compression}
+	\item[]\maptoopt{jmulti=True}{--jmulti}{use JMulti ASCII format}
+	\item[]\maptoopt{dat=True}{--dat}{use PcGive ASCII format}
+	\item[]\maptoopt{decimal\_comma=True}{--decimal-comma}{use comma as decimal character}
+	\item[]\maptoopt{database=True}{--database}{use \gretl database format}
+	\item[]\maptoopt{overwrite=True}{--overwrite}{on database format, \seegretlmanual}
+	\item[]\maptoopt{comment=string}{--comment=string}{\seegretlmanual}
+	\item[]\maptoopt{matrix=matrix-name}{--matrix=matrix-name}{\seegretlmanual}
+\end{itemize}
+\generaldesc{By default all currently defined series are saved
+	but the optional \textit{varlist} argument can be used to
+	select a subset of series. If the dataset is sub-sampled,
+	only the observations in the current sample range are saved.\newline
+	The output file will be written in the currently set \gretlcmd{\$workdir}
+	(see \pythcode{gretl.about()['built_in_strings']['workdir']}),
+	unless the filename string contains a full path specification.}
 
 \gretlfpycmd{varnames()}
-\estdesc{XXX}
-\begin{lstlisting}[style=pythonstyle]
-.varnames(self) -> list
+\estdesc{This method retrieves variables names.}
+\begin{lstlisting}[style=pythonstylefoot]
+.varnames() -> list
 \end{lstlisting}
-\generaldesc{XXX}
 
 \gretlfpycmd{xcorrgm()}
 \estdesc{Prints and/or graphs the cross-correlogram for series1 and series2.}
