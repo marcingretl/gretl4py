@@ -430,7 +430,7 @@ double do_gretl_get_pvalue (const std::string &dist, double value,
                             const py::array_t<double> &params)
 {
     //
-    // An interface to gretl's gretl_get_pvalue
+    // An interface to libgretl's gretl_get_pvalue
     //
     NumPyArrayView arr_view;
     auto dist_code = dist_code_from_string(dist.substr(0, 1).c_str());
@@ -450,17 +450,11 @@ double do_gretl_get_pvalue (const std::string &dist, double value,
 void do_gretl_varlist (const py::kwargs &kwargs)
 {
     //
-    // function mimics gretls 'varlist' command
+    // function mimics libgretl's 'varlist' command
     //
     GretlDatasetPtr GD = nullptr;
-    gretlopt opt = OPT_NONE;
 
-    if (py::len(kwargs) > 0) {
-        opt = unpack_kwargs_command(VARLIST, GD, kwargs);
-    } else {
-        // if we don't have kwargs, we must assign GD manually
-        GD = DSET;
-    }
+    auto opt = unpack_kwargs_command(VARLIST, GD, kwargs);
 
     // we o the job (based on interact.c)
     if (opt & OPT_T) {

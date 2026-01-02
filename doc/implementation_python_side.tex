@@ -423,19 +423,22 @@ gretl.summary(varlist: str[, OPTS])
 	is produced only if \textit{varlist} contains a single series.}
 
 \gretlfpycmd{varlist()}
-\estdesc{Prints a listing of the series in the current dataset (if any).}
+\estdesc{Prints a listing of the series in the default dataset (if any).}
 \begin{lstlisting}[style=pythonstylefoot]
 gretl.varlist([type: str])
 \end{lstlisting}
 \mapto{varlist}
 \begin{itemize}
 	\item[] \maptoopt{type=typename}{--type=typename}{scope of listing}
+	\item[]\pythcode{data=gretl.Dataset}\par%
+	\hspace*{10pt}{\footnotesize\pythcode{gretl.summary()} works with the specified dataset}
 \end{itemize}
-
-\begin{footnotesize}
-and \textit{typename} is: \textit{series}, \textit{scalar},
-\textit{matrix}, \textit{list}, \textit{string}, \textit{bundle},
-\textit{array} or \textit{accessor}.
-\end{footnotesize}\\
-\generaldesc{Note that \pythcode{varlist.cdf()} works only with the
-	default dataset.}
+\generaldesc{If the \gretlcmd{--type} option is given, it should be
+	followed (after an equals sign) by one of the following typenames:
+	is: \textit{series}, \textit{scalar}, \textit{matrix}, \textit{list},
+	\textit{string}, \textit{bundle}, \textit{array} or \textit{accessor}.
+	The effect is to print the names of all currently defined objects of
+	the named type.\newline
+	As a special case, if the typename is accessor, the names printed are
+	those of the internal variables currently available as ``accessors'',
+	such as \gretlcmd{$nobs} and \gretlcmd{$uhat}, regardless of their specific type.}
