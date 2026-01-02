@@ -180,7 +180,7 @@ class MESpec (TypedDict, total=False):
 # #######################################################
 #   GretlDataset class
 # #######################################################
-def get_data (src, **kwargs):
+def get_data (src: str | dict, **kwargs):
     """Load dataset from file path or dictionary.
 
     Parameters:
@@ -218,15 +218,7 @@ def get_data (src, **kwargs):
         raise RuntimeError(f'Unsupported data src type: {type(src).__name__}\n')
 
     # create dataset
-    if len(kwargs):
-        dset = _gretl.Dataset(src, kwargs)
-    else:
-        dset = _gretl.Dataset(src)
-    if dset.get_id() == 1:
-        dset.set_as_default()
-    dset.source = source
-
-    return dset
+    return _gretl._get_data(src, source=source, **kwargs)
 
 def show_data_status ():
     """List of available datasets."""

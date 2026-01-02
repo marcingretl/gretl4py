@@ -59,18 +59,8 @@ static void head_tail_print (GretlDataset &gd, int nobs)
 void init_gretl4py_dataset_py11(py::module_ &m)
 {
     py::class_<GretlDataset, GretlDatasetPtr>(m, "Dataset", py::dynamic_attr())
-        .def(py::init([](const std::string &fname, const py::dict &kwargs)
-                      {
-                          return std::make_shared<GretlDataset>(fname, kwargs);
-                      }),
-                      py::arg("fname").none(false), py::arg("kwargs") = py::dict(),
-                      py::kw_only())
-        .def(py::init([](const py::dict &pydict)
-                      {
-                          return std::make_shared<GretlDataset>(pydict);
-                      }))
         .def_readonly("is_default", &GretlDataset::is_default)
-        .def_readwrite("source", &GretlDataset::source)
+        .def_readonly("source", &GretlDataset::source)
         .def_property_readonly("_is_panel",
                                [](const GretlDataset &self)
                                {

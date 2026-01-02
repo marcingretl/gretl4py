@@ -61,7 +61,36 @@ PYBIND11_MODULE(_gretl, m)
     m.def("about", &about,
           py::arg("do_print") = false);
 
-    // gretlpy functions
+    // gretl4py hidden functions
+    m.def("_get_data",
+          [](const py::object &src, const std::string &source,
+             const py::kwargs &kwargs) -> GretlDatasetPtr
+          {
+              //
+              // factory function to load datasets and avoid
+              // binding the class constructor on the Python side
+              //
+              GretlDatasetPtr GD;
+
+              if (is_pydict(src)) {
+                  GD = std::make_shared<GretlDataset>(src.cast<py::dict>());
+              } else if (is_pystr(src)) {
+                  GD = std::make_shared<GretlDataset>(src.cast<std::string>(), kwargs);
+              } else {
+                  throw std::invalid_argument("get_data(): unsupported src type");
+              }
+              if (!GD) handle_gretl_error(E_DATA);
+
+              // we set some info
+              if (GD->get_id() == 1) GD->set_as_default();
+              if (!source.empty()) GD->source = source;
+
+              return GD;
+          },
+          py::arg("src").none(false),
+          py::arg("source").none(true) = "", py::kw_only());
+
+    // gretlpy public functions
     m.def("get_accessor",
           [](const std::string &name)
           {
