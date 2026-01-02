@@ -37,12 +37,16 @@ gretl.about(do_print: bool = False) -> gretl._gretl.Bundle
 			module (\pythcode{str}).
 		\item \pythcode{py11\_ver}: The version of the \pkg{pybind11}
 			module, formatted as \texttt{MAJOR.MINOR.PATCH} (\pythcode{str}).
-		\item \pythcode{sysinfo}: The contents of \lgretl's
+		\item \pythcode{sysinfo}: The contents of \lgretl['s]
 			\gretlcmd{\$sysinfo} bundle (\pythcode{\_gretl.Bundle}).
 		\end{itemize}}
 
 
 \subsection{The \gretlpy functions}\label{sec:gretl4py_functions}
+The functions enumerated below are of different types: factories
+for estimators, interfaces to \lgretl['s] commands and functions,
+as well as some utilities. They are listed in alphabetical order.
+
 \vspace*{10pt}\noindent The \gretlpy module provides the following functions:
 
 \gretlfpycmd{cdf()}\label{func:gretl.cdf}
@@ -106,9 +110,18 @@ Examples:\newline
 \pythcodef{c1 = gretl.critical('t', 0.025, 20)}\\
 \pythcodef{c2 = gretl.critical('F', 0.05, [4, 48])}\\
 \generaldesc{Returns \textit{x} such that $P(X > x) = p$, where
-	the distribution \textit{X} is determined by the character \textit{c}.}
-For details about the meaning of the arguments, please
-refer to \ref{func:gretl.cdf}. Note that \pythcode{gretl.critical()}
+	the distribution \textit{X} is determined by the character \textit{c}:}
+\begin{footnotesize}\begin{itemize}
+		\item \textbf{Standard normal} (\texttt{c = z, n, N}): no additional arguments
+		\item \textbf{Student's $t$} (\texttt{t}): degrees of freedom
+		\item \textbf{Chi-square} (\texttt{c}, \texttt{x}, or \texttt{X}): degrees of freedom
+		\item \textbf{Snedecor's $F$} (\texttt{f} or \texttt{F}): degrees of freedom (numerator); degrees of freedom (denominator)
+		\item \textbf{Binomial} (\texttt{b} or \texttt{B}): probability; number of trials
+		\item \textbf{Poisson} (\texttt{p} or \texttt{P}): mean
+		\item \textbf{Laplace} (\texttt{l} or \texttt{L}): mean; scale
+		\item \textbf{Standardized GED} (\texttt{E}): shape
+\end{itemize}\end{footnotesize}
+Note that \pythcode{gretl.critical()}
 works by default only with the default dataset. To obtain critical
 values for variables from different datasets, please refer to
 \ref{met:gretldataset::critical}.
@@ -159,9 +172,10 @@ gretl.df2dict(dframe: pandas.core.frame.DataFrame[, pd: int, with_obs: bool = Fa
 
 \gretlfpycmd{fc\_print()}
 \estdesc{XXX}
-\begin{lstlisting}[style=pythonstyle]
-gretl.fc_print(fc=dict)
+\begin{lstlisting}[style=pythonstylefoot]
+gretl.fc_print(fc: dict)
 \end{lstlisting}
+\generaldesc{XXX}
 
 \gretlfpycmd{genr()}
 \estdesc{NOTE: for comprehensive and updated info on this
@@ -189,7 +203,7 @@ Examples:\newline
 	or \ref{met:gretlmodel::get_accessor}.}
 
 \gretlfpycmd{get\_data()}
-\estdesc{Loads provided data as \pythcode{gretl._gretl.Dataset}}
+\estdesc{Factory that loads the provided data as a \pythcode{gretl._gretl.Dataset}}
 \begin{lstlisting}[style=pythonstylefoot]
 gretl.get_data(src: str | dict) -> gretl._gretl.Dataset
 \end{lstlisting}
@@ -228,7 +242,19 @@ gretl.invcdf(d: str, u: str[, param: object = None]) -> numpy.ndarray
 \generaldesc{For a continuous distribution, returns \textit{x}
 	such that $P(X \leq x) = u$, for $u \in [0, 1]$. For a discrete
 	distribution (Binomial or Poisson), returns the smallest
-	\textit{x} such that $P(X \leq x) \geq u$.}\\
+	\textit{x} such that $P(X \leq x) \geq u$. The distribution
+	of \textit{X} is determined by the string d:}\\
+\begin{footnotesize}\begin{itemize}
+		\item \textbf{Standard normal} (\texttt{d = z, n, N}): no additional arguments
+		\item \textbf{Gamma} (\texttt{g} or \texttt{G}): shape; scaletional arguments
+		\item \textbf{Student's $t$} (\texttt{t}): degrees of freedom
+		\item \textbf{Chi-square} (\texttt{c}, \texttt{x}, or \texttt{X}): degrees of freedom
+		\item \textbf{Snedecor's $F$} (\texttt{f} or \texttt{F}): degrees of freedom (numerator); degrees of freedom (denominator)
+		\item \textbf{Binomial} (\texttt{b} or \texttt{B}): probability; number of trials
+		\item \textbf{Poisson} (\texttt{p} or \texttt{P}): mean
+		\item \textbf{Laplace} (\texttt{l} or \texttt{L}): mean; scale
+		\item \textbf{Standardized GED} (\texttt{E}): shape
+\end{itemize}\end{footnotesize}
 For details about the meaning of the arguments, please
 refer to \ref{func:gretl.cdf}. Note that \pythcode{gretl.invcdf()}
 works by default only with the default dataset. To obtain
@@ -286,7 +312,21 @@ Examples:\newline
 \pythcodef{f2 = gretl.pdf('X', x, 3)}\\
 \pythcodef{f3 = gretl.pdf('W', x, [shape, scale])}\\
 \generaldesc{Returns the density at \textit{x} of the
-	distribution identified by the code \textit{d}.}\\
+	distribution identified by the code \textit{d}:}\\
+\begin{footnotesize}\begin{itemize}
+		\item \textbf{Standard normal} (\texttt{d = z, n, N}): no additional arguments
+		\item \textbf{Student's $t$} (\texttt{t}): degrees of freedom
+		\item \textbf{Chi-square} (\texttt{c}, \texttt{x}, or \texttt{X}): degrees of freedom
+		\item \textbf{Snedecor's $F$} (\texttt{f} or \texttt{F}): degrees of freedom (numerator); degrees of freedom (denominator)
+		\item \textbf{Gamma} (\texttt{g} or \texttt{G}): shape; scale
+		\item \textbf{Beta} (\texttt{beta}): two shape parameters
+		\item \textbf{Exponential} (\texttt{exp}): scale
+		\item \textbf{Weibull} (\texttt{w} or \texttt{W}): shape; scale
+		\item \textbf{Laplace} (\texttt{l} or \texttt{L}): mean; scale
+		\item \textbf{Generalized Error} (\texttt{E}): shape
+		\item \textbf{Binomial} (\texttt{b} or \texttt{B}): probability; number of trials
+		\item \textbf{Poisson} (\texttt{p} or \texttt{P}): mean
+\end{itemize}\end{footnotesize}
 For details about the meaning of the arguments, please
 refer to \ref{func:gretl.cdf}. Note that \pythcode{gretl.pdf()}
 works by default only with the default dataset. To obtain PDFs
@@ -341,7 +381,20 @@ Examples:\newline
 \pythcodef{p2 = gretl.pvalue('X', 5.67, 3)}\\
 \pythcodef{p3 = gretl.pvalue('F', 5.67, [3, 30])}\\
 \generaldesc{Returns $P(X > x)$, where the distribution of
-	\textit{X} is determined by the character \textit{c}.}\\
+	\textit{X} is determined by the character \textit{c}:}
+\begin{footnotesize}\begin{itemize}
+		\item \textbf{Standard normal} (\texttt{d = z, n, N}): no additional arguments
+		\item \textbf{Student's $t$} (\texttt{t}): degrees of freedom
+		\item \textbf{Chi-square} (\texttt{c}, \texttt{x}, or \texttt{X}): degrees of freedom
+		\item \textbf{Snedecor's $F$} (\texttt{f} or \texttt{F}): degrees of freedom (numerator); degrees of freedom (denominator)
+		\item \textbf{Gamma} (\texttt{g} or \texttt{G}): shape; scale
+		\item \textbf{Binomial} (\texttt{b} or \texttt{B}): probability; number of trials
+		\item \textbf{Poisson} (\texttt{p} or \texttt{P}): mean
+		\item \textbf{Exponential} (\texttt{exp}): scale
+		\item \textbf{Weibull} (\texttt{w} or \texttt{W}): shape; scale
+		\item \textbf{Laplace} (\texttt{l} or \texttt{L}): mean; scale
+		\item \textbf{Generalized Error} (\texttt{E}): shape
+\end{itemize}\end{footnotesize}
 For details about the meaning of the arguments, please
 refer to \ref{func:gretl.cdf}. Note that \pythcode{gretl.pvalue()}
 works by default only with the default dataset. To obtain \textit{P}-values
@@ -349,9 +402,10 @@ for variables from different datasets, please refer to \ref{met:gretldataset::pv
 
 \gretlfpycmd{print\_module\_source()}
 \estdesc{XXX}
-\begin{lstlisting}[style=pythonstyle]
-	gretl.print_module_source(object)
+\begin{lstlisting}[style=pythonstylefoot]
+gretl.print_module_source(object)
 \end{lstlisting}
+\generaldesc{}
 
 \gretlfpycmd{series2dict()}
 \begin{lstlisting}[style=pythonstylefoot]

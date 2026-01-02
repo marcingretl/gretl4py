@@ -7,4 +7,3 @@ TODOS:
 
 2. update doc
 
-3. refactor printing and smpl apparatus
