@@ -20,7 +20,7 @@ print("\n6.1. Testing Joint Hypotheses")
 print("\n6.1.1. Testing the Effect of Advertising: the F-Test")
 andy.new_series(name='advertsq', value='advert^2')
 andy_u = gretl.ols('sales const price advert advertsq').fit()
-andy_u.test(type='omit', vars='advert advertsq', silent=True)
+andy_u.test(type='omit', varlist='advert advertsq', silent=True)
 print(andy_u.tests[-1]['summary'])
 print(f'keys available for a user: {andy_u.tests[-1].keys()}')
 

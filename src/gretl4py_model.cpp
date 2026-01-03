@@ -604,7 +604,7 @@ void GretlModel_NSE::test (const std::string &type,
     if (!kwargs.contains("silent")) GP_.print();
 }
 
-void GretlModel_NSE::test (const std::string &type, const std::string &vars,
+void GretlModel_NSE::test (const std::string &type, const std::string &varlist,
                            const py::kwargs &kwargs)
 {
     //
@@ -615,7 +615,7 @@ void GretlModel_NSE::test (const std::string &type, const std::string &vars,
     gretl_list_ptr ex_var{nullptr};
 
     // we construct list of external variables
-    if (type != "chow") ex_var = list_from_formula(vars, GD_->dset, err_);
+    if (type != "chow") ex_var = list_from_formula(varlist, GD_->dset, err_);
 
     // we set up options
     unpack_kwargs_test(opt_, type, kwargs, order);
@@ -625,7 +625,7 @@ void GretlModel_NSE::test (const std::string &type, const std::string &vars,
         err_ = add_test(model_, ex_var.get(), GD_->dset,
                         opt_, GP_.prn_ptr());
     } else if (type == "chow") {
-        err_ = chow_test_driver(vars.c_str(), model_, GD_->dset,
+        err_ = chow_test_driver(varlist.c_str(), model_, GD_->dset,
                                 opt_, GP_.prn_ptr());
     } else if (type == "coeffsum") {
         err_ = gretl_sum_test(ex_var.get(), model_, GD_->dset,

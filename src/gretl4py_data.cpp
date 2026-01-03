@@ -1555,7 +1555,7 @@ py::object GretlDataset::get_accessor (const std::string &name)
     return do_get_accessor<GRETL_OBJ_DSET>(name, shared_from_this(), nullptr);
 }
 
-void GretlDataset::test (const std::string &type, const std::string &vars,
+void GretlDataset::test (const std::string &type, const std::string &varlist,
                          const py::kwargs &kwargs)
 {
     //
@@ -1566,7 +1566,7 @@ void GretlDataset::test (const std::string &type, const std::string &vars,
     gretl_list_ptr ex_var{nullptr};
 
     // we construct list of external variables
-    ex_var = list_from_formula(vars, dset, err_);
+    ex_var = list_from_formula(varlist, dset, err_);
 
     // we set up options
     unpack_kwargs_test(opt_, type, kwargs, order);

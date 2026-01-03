@@ -166,7 +166,7 @@ public:
     py::object get_series (const std::string &series) const;
 
     // tests
-    void test (const std::string &type, const std::string &vars,
+    void test (const std::string &type, const std::string &varlist,
                const py::kwargs &kwargs);
 
     // transformations

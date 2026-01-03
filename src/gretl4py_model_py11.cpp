@@ -98,23 +98,23 @@ void init_gretl4py_model_py11(py::module_ &m)
                  //
                  // lambda rationale:
                  // 1. handles overload resolution cleanly (keyword vs positional)
-                 // 2. special-cases "chow" which uses 'obs' instead of 'vars'
+                 // 2. special-cases "chow" which uses 'obs' instead of 'varlist'
                  //
                  py::kwargs clean_kwargs = kwargs;
                  bool with_vars = false;
-                 std::string vars;
+                 std::string varlist;
 
                  // we check for "vars" or "obs" for chow test
-                 if (kwargs.contains("vars")) {
-                     vars = py::str(clean_kwargs.attr("pop")("vars"));
+                 if (kwargs.contains("varlist")) {
+                     varlist = py::str(clean_kwargs.attr("pop")("varlist"));
                      with_vars = true;
                  } else if (type == "chow" && kwargs.contains("obs")) {
-                     vars = py::str(clean_kwargs.attr("pop")("obs"));
+                     varlist = py::str(clean_kwargs.attr("pop")("obs"));
                      with_vars = true;
                  }
 
                  // we perform test
-                 with_vars ? self.test(type, vars, clean_kwargs) : self.test(type, clean_kwargs);
+                 with_vars ? self.test(type, varlist, clean_kwargs) : self.test(type, clean_kwargs);
              },
              py::arg("type").none(false), py::kw_only());
 

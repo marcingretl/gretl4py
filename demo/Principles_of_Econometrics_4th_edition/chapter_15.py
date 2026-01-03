@@ -133,7 +133,7 @@ grunfeld2.new_series("Dk = D*k")
 grunfeld2_dummy = gretl.ols("inv const D v Dv k Dk", simple=True).fit()           # (15.44)
 print("\nTable 15.12 Least Squares Estimates from the Dummy Variable Model")
 print(grunfeld2_dummy)
-grunfeld2_dummy.test(type='omit', vars='D Dv Dk')                                 # (15.45)
+grunfeld2_dummy.test(type='omit', varlist='D Dv Dk')                                 # (15.45)
 
 print("\n15.7.4 Estimation: Different Coefficients, Different Error Variances")
 grunfeld2.sample("firm == 1", restrict=True)

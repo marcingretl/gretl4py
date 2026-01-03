@@ -610,12 +610,168 @@ Examples:\newline
 \gretlfpycmd{test()}
 \estdesc{General interface to dataset-based tests.}
 \begin{lstlisting}[style=pythonstylefoot]
-.test(type: str[, vars: str, OPTS])
+.test(type: str[, varlist: str, OPTS])
 \end{lstlisting}
-\generaldesc{\pythcode{type} refers to one of the following:
-	\gretlcmd{adf, bds, coint, corrgm, difftest, fractint,
-		johansen, kpss, levinlin, meantest, normtest, runs,
-		vartest}.}
+{\footnotesize where \pythcode{type: str} refers to one of
+	the following: \test{adf}, \test{bds}, \test{coint}, \test{corrgm},
+	\test{difftest}, \test{fractint}, \test{johansen}, \test{kpss},
+	\test{levinlin}, \test{meantest}, \test{normtest}, \test{runs}, \test{vartest}.}\\
+\mapto{adf order varlist}\index{adf}
+\begin{itemize}
+	\item[]\maptoopt{nc=True}{--nc}{test without a constant}
+	\item[]\maptoopt{c=True}{--c}{with constant only}
+	\item[]\maptoopt{ct=True}{--ct}{with constant and trend}
+	\item[]\maptoopt{ctt=True}{--ctt}{with constant, trend, and trend squared}
+	\item[]\maptoopt{seasonals=True}{--seasonals}{include seasonal dummy variables}
+	\item[]\maptoopt{gls=True}{--gls}{de-mean or de-trend using GLS}
+	\item[]\maptoopt{verbose=True}{--verbose}{print regression results}
+	\item[]\maptoopt{quiet=True}{--quiet}{suppress printing of results}
+	\item[]\maptoopt{difference=True}{--difference}{use first difference of variable}
+	\item[]\maptoopt{test\_down=criterion}{--test-down[=criterion]}{automatic lag order selection}
+	\item[]\maptoopt{perron\_qu=True}{--perron-qu}{\seegretlmanual}
+\end{itemize}
+Examples:\newline
+\pythcodef{.test(type='adf', varlist='y', order=0)}\\
+\pythcodef{.test(type='adf', varlist='y', order=2, nc=True, c=True, ct=True)}\\
+\pythcodef{.test(type='adf', varlist='y', order=12, c=True, test-down=True)}\\
+\mapto{bds order x}\index{bds}
+\begin{itemize}
+	\item[]\maptoopt{corr1=rho}{--corr1=rho}{\seegretlmanual}
+	\item[]\maptoopt{sdcrit=multiple}{--sdcrit=multiple}{\seegretlmanual}
+	\item[]\maptoopt{boot=N}{--boot=N}{\seegretlmanual}
+	\item[]\maptoopt{matrix=m}{--matrix=m}{use matrix input}
+	\item[]\maptoopt{quiet=True}{--quiet}{suppress printing of results}
+\end{itemize}
+Examples:\newline
+\pythcodef{.test(type='bds', varlist='x', order=5)}\\
+\pythcodef{.test(type='bds', order=3, matrix='m')}\\
+\pythcodef{.test(type='bds', varlist='x', order=4, sdcrit=2.0)}\\
+\mapto{coint order depvar indepvars}\index{coint}
+\begin{itemize}
+	\item[]\maptoopt{nc=True}{--nc}{do not include a constant}
+	\item[]\maptoopt{ct=True}{--ct}{include constant and trend}
+	\item[]\maptoopt{ctt=True}{--ctt}{include constant and quadratic trend}
+	\item[]\maptoopt{seasonals=True}{--seasonals}{include seasonal dummy variables}
+	\item[]\maptoopt{skip\_df=True}{--skip-df}{no DF tests on individual variables}
+	\item[]\maptoopt{test\_down=criterion}{--test-down[=criterion]}{automatic lag order}
+	\item[]\maptoopt{verbose=True}{--verbose}{print extra details of regressions}
+	\item[]\maptoopt{silent=True}{--silent}{don't print anything}
+\end{itemize}
+Examples:\newline
+\pythcodef{.test(type='coint', varlist='y', indepvars='x z', order=4)}\\
+\pythcodef{.test(type='coint', varlist='y', indepvars='x z', order=0, ct=True, skip-df=True)}\\
+\mapto{corrgm y [order]}\index{corrgm}
+\begin{itemize}
+	\item[]\maptoopt{plot=mode_or_filename}{--plot=mode-or-filename}{\seegretlmanual}
+	\item[]\maptoopt{silent=True}{--silent}{don't print anything}
+	\item[]\maptoopt{acf_only=True}{--acf-only}{omit partial autocorrelations}
+	\item[]\maptoopt{bartlett=True}{--bartlett}{use Bartlett standard errors}
+\end{itemize}
+Examples:\newline
+\pythcodef{.test(type='corrgm', varlist='x', order=12)}\\
+\pythcodef{.test(type='corrgm', varlist='GDP', order=12, acf-only=True)}\\
+\mapto{difftest x y}\index{difftest}
+\begin{itemize}
+	\item[]\maptoopt{sign=True}{--sign}{Sign test (default)}
+	\item[]\maptoopt{rank-sum=True}{--rank-sum}{Wilcoxon rank-sum test}
+	\item[]\maptoopt{signed_rank=True}{--signed-rank}{Wilcoxon signed-rank test}
+	\item[]\maptoopt{verbose=True}{--verbose}{print extra output}
+	\item[]\maptoopt{quiet=True}{--quiet}{suppress printed output}
+	\item[]\maptoopt{split_by='dummy'}{--split-by=dummy}{split observations by grouping variable}
+\end{itemize}
+Examples:\newline
+\pythcodef{.test(type='difftest', varlist=['x y'])}\\
+\pythcodef{.test(type='difftest', varlist=['x'], split_by='dummy')}\\
+\mapto{fractint series [ order ]}\index{fractint}
+\begin{itemize}
+	\item[]\maptoopt{gph=True}{--gph}{do Geweke and Porter-Hudak test}
+	\item[]\maptoopt{all=True}{--all}{do both tests}
+	\item[]\maptoopt{quiet=True}{--quiet}{don't print results}
+\end{itemize}
+\mapto{johansen order ylist [ ; xlist ] [ ; rxlist ]}\index{johansen}
+\begin{itemize}
+	\item[]\maptoopt{nc=True}{--nc}{no constant}
+	\item[]\maptoopt{rc=True}{--rc}{restricted constant}
+	\item[]\maptoopt{uc=True}{--uc}{unrestricted constant}
+	\item[]\maptoopt{crt=True}{--crt}{constant and restricted trend}
+	\item[]\maptoopt{ct=True}{--ct}{constant and unrestricted trend}
+	\item[]\maptoopt{seasonals=True}{--seasonals}{include centered seasonal dummies}
+	\item[]\maptoopt{asy=True}{--asy}{record asymptotic p-values}
+	\item[]\maptoopt{quiet=True}{--quiet}{print just the tests}
+	\item[]\maptoopt{silent=True}{--silent}{don't print anything}
+	\item[]\maptoopt{verbose=True}{--verbose}{print details of auxiliary regressions}
+\end{itemize}
+Examples:\newline
+\pythcodef{.test(type='johansen', ylist=['y'], xlist=['x'], order=2)}\\
+\pythcodef{.test(type='johansen', ylist=['y'], xlist=['x z'], order=4, verbose=True)}\\
+\pythcodef{.test(type='johansen', ylist=['y'], xlist=['x z'], order=3, rc=True)}\\
+\mapto{kpss order varlist}\index{kpss}
+\begin{itemize}
+	\item[]\maptoopt{trend=True}{--trend}{include a trend}
+	\item[]\maptoopt{seasonals=True}{--seasonals}{include seasonal dummies}
+	\item[]\maptoopt{verbose=True}{--verbose}{print regression results}
+	\item[]\maptoopt{quiet=True}{--quiet}{suppress printing of results}
+	\item[]\maptoopt{difference=True}{--difference}{use first difference of variable}
+\end{itemize}
+Examples:\newline
+\pythcodef{.test(type='kpss', varlist='y', order=8)}\\
+\pythcodef{.test(type='kpss', varlist='x1', order=4, trend=True)}\\
+\mapto{levinlin order series}\index{levinlin}
+\begin{itemize}
+	\item[]\maptoopt{nc=True}{--nc}{test without a constant}
+	\item[]\maptoopt{ct=True}{--ct}{with constant and trend}
+	\item[]\maptoopt{quiet=True}{--quiet}{suppress printing of results}
+	\item[]\maptoopt{verbose=True}{--verbose}{print per-unit results}
+\end{itemize}
+Examples:\newline
+\pythcodef{.test(type='levinlin', varlist='y', order=0)}\\
+\pythcodef{.test(type='levinlin', varlist='y', order=2, ct=True)}\\
+\pythcodef{.test(type='levinlin', varlist='y', order=[2,2,3,3,4,4])}\\
+\mapto[0]{meantest x y}
+\mapto{meantest x --split-by=dummy}\index{meantest}
+\begin{itemize}
+	\item[]\maptoopt{unequal_vars=True}{--unequal-vars}{assume variances are unequal}
+	\item[]\maptoopt{paired=True}{--paired}{conduct a paired test}
+	\item[]\maptoopt{quiet=True}{--quiet}{suppress printed output}
+	\item[]\maptoopt{robust=True}{--robust}{time series only}
+	\item[]\maptoopt{split_by='dummy'}{--split-by=dummy}{split observations by grouping variable}
+\end{itemize}
+Examples:\newline
+\pythcodef{.test(type='meantest', varlist=['x y'])}\\
+\pythcodef{.test(type='meantest', varlist=['x y'], unequal_vars=True)}\\
+\pythcodef{.test(type='meantest', varlist=['x y'], paired=True)}\\
+\pythcodef{.test(type='meantest', varlist=['x'], split_by='d')}\\
+\mapto{normtest series}\index{normtest}
+\begin{itemize}
+	\item[]\maptoopt{dhansen=True}{--dhansen}{Doornik–Hansen test (default)}
+	\item[]\maptoopt{swilk=True}{--swilk}{Shapiro-Wilk test}
+	\item[]\maptoopt{lillie=True}{--lillie}{Lilliefors test}
+	\item[]\maptoopt{jbera=True}{--jbera}{Jarque–Bera test}
+	\item[]\maptoopt{all=True}{--all}{do all tests}
+	\item[]\maptoopt{quiet=True}{--quiet}{suppress printed output}
+\end{itemize}
+Examples:\newline
+\pythcodef{.test(type='normtest', varlist='series')}\\
+\pythcodef{.test(type='normtest', varlist='series', swilk=True)}\\
+\pythcodef{.test(type='normtest', varlist='series', all=True)}\\
+\mapto{runs series}\index{runs}
+\begin{itemize}
+	\item[]\maptoopt{difference=True}{--difference}{use first difference of variable}
+	\item[]\maptoopt{equal=True}{--equal}{positive and negative values are equiprobable}
+\end{itemize}
+\mapto[]{vartest x y}\index{vartest}
+\mapto{vartest x --split-by=dummy}\index{vartest}
+\begin{itemize}
+	\item[]\maptoopt{quiet=True}{--quiet}{suppress printed output}
+	\item[]\maptoopt{robust='method'}{--robust=method}{\seegretlmanual}
+	\item[]\maptoopt{split_by='dummy'}{--split-by=dummy}{split observations by grouping variable}
+\end{itemize}
+Examples:\newline
+\pythcodef{.test(type='vartest', varlist=['x','y'])}\\
+\pythcodef{.test(type='vartest', varlist=['x'], split_by='d')}\\
+\pythcodef{.test(type='vartest', varlist=['x y'], robust='median')}\\
+\pythcodef{.test(type='vartest', varlist=['x y'], robust='trimmed,5')}\\
+\generaldesc{XXX}
 
 \gretlfpycmd{to\_dataframe()}
 \estdesc{This method exports given dataset to \pythcode{pandas.core.frame.DataFrame}.}

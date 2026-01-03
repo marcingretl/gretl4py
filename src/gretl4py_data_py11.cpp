@@ -236,14 +236,14 @@ void init_gretl4py_dataset_py11(py::module_ &m)
                  //
                  // here we do some things for certain tests
                  //
-                 std::string y_val, vars_val, vars;
+                 std::string y_val, vars_val, varlist;
                  py::kwargs clean_kwargs;
 
                  for (const auto &item : kwargs) {
                      std::string key = std::string(py::str(item.first));
                      if (key == "y") {
                          y_val = std::string(py::str(item.second));
-                     } else if (key == "vars") {
+                     } else if (key == "varlist") {
                          vars_val = std::string(py::str(item.second));
                      } else if (key == "order" && type == "levinlin" && is_pynumarray(item.second)) {
                          // order was passed as matrix: we cannot pass it to method as order (which is <int>)
@@ -257,22 +257,22 @@ void init_gretl4py_dataset_py11(py::module_ &m)
                  }
                  if (type == "coint") {
                      if (y_val.empty() || vars_val.empty()) {
-                         throw std::invalid_argument("Both 'y' and 'vars' are required for 'coint'");
+                         throw std::invalid_argument("Both 'y' and 'varlist' are required for 'coint'");
                      }
-                     vars = y_val + " " + vars_val;
+                     varlist = y_val + " " + vars_val;
                  } else if (type == "corrgm") {
                      if (y_val.empty()) {
                         throw std::invalid_argument("'y' is required");
                      }
-                     vars = y_val;
+                     varlist = y_val;
                  } else {
                      if (vars_val.empty()) {
-                         throw std::invalid_argument("'vars' is required");
+                         throw std::invalid_argument("'varlist' is required");
                      }
-                     vars = vars_val;
+                     varlist = vars_val;
                  }
 
-                 self.test(type, vars, clean_kwargs);
+                 self.test(type, varlist, clean_kwargs);
              },
              py::arg("type"), py::kw_only(),
              py::return_value_policy::take_ownership);

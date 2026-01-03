@@ -129,7 +129,8 @@ public:
 
     void test (const std::string &type, const py::kwargs &kwargs);
 
-    void test (const std::string &type, const std::string &vars, const py::kwargs &kwargs);
+    void test (const std::string &type, const std::string &varlist,
+               const py::kwargs &kwargs);
 
     double adj_rsq (void) const;
 };

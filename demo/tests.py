@@ -16,17 +16,17 @@ gretl.show_data_status()
 ###############################################################
 print("\n****************************")
 print("adf")
-d1.test(type="adf", vars="LRM", order=1, silent=True)
+d1.test(type="adf", varlist="LRM", order=1, silent=True)
 print(d1.tests[-1]['summary'])
 
 print("\n****************************")
 print("bds")
-d1.test(type="bds", vars="LRY", order=4, quiet=False)
+d1.test(type="bds", varlist="LRY", order=4, quiet=False)
 print(d1.tests[-1]['summary'])
 
 print("\n****************************")
 print("coint")
-d1.test(type="coint", y="LRM", vars="LRY IBO", order=4)
+d1.test(type="coint", y="LRM", varlist="LRY IBO", order=4)
 
 print("\n****************************")
 print("corrgm")
@@ -37,40 +37,40 @@ print("\n****************************")
 print("difftest")
 d5.new_series("capp = (Vote > 1) ? CPI : NA")
 d5.new_series("cdis = (Vote == 0) ? CPI : NA")
-d5.test(type="difftest", vars="capp cdis", rank_sum=True)
+d5.test(type="difftest", varlist="capp cdis", rank_sum=True)
 
 print("\n****************************")
 print("fractint")
-d1.test(type="fractint", vars="LRM")
+d1.test(type="fractint", varlist="LRM")
 
 print("\n****************************")
 print("johansen")
-d1.test(type="johansen", vars="LRM LRY IBO IDE", order=4, rc=True)
+d1.test(type="johansen", varlist="LRM LRY IBO IDE", order=4, rc=True)
 
 print("\n****************************")
 print("kpss")
-d1.test(type="kpss", vars="LRM", order=1, seasonals=True, trend=True)
+d1.test(type="kpss", varlist="LRM", order=1, seasonals=True, trend=True)
 
 print("\n****************************")
 print("levinlin")
-d3.test(type="levinlin", vars="invest", order=[2,2,3,3,4,4,2,3,2,1])
+d3.test(type="levinlin", varlist="invest", order=[2,2,3,3,4,4,2,3,2,1])
 
 print("\n****************************")
 print("meantest")
-d3.test(type="meantest", vars="invest firm")
+d3.test(type="meantest", varlist="invest firm")
 print(d3.tests[-1]['pvalue'])
 
 print("\n****************************")
 print("normtest")
-d1.test(type="normtest", vars="LRY", swilk=True)
+d1.test(type="normtest", varlist="LRY", swilk=True)
 
 print("\n****************************")
 print("runs")
-d1.test(type="runs", vars="LRY", difference=True)
+d1.test(type="runs", varlist="LRY", difference=True)
 
 print("\n****************************")
 print("vartest")
-d1.test(type="vartest", vars="LRM IBO")
+d1.test(type="vartest", varlist="LRM IBO")
 
 ###############################################################
 # model based tests
@@ -81,7 +81,7 @@ m1 = gretl.ols(formula='1 0 2 3').fit()
 print(m1)
 
 print("\n****************************")
-m1.test(type="add", vars="IDE", silent=True)
+m1.test(type="add", varlist="IDE", silent=True)
 print(m1.tests[-1]['type'])
 print(m1.tests[-1]['options'])
 print(m1.tests[-1]['test'])
@@ -106,7 +106,7 @@ m1.test(type="leverage")
 
 print("\n****************************")
 print("omit")
-m1.test(type="omit", vars="3")
+m1.test(type="omit", varlist="3")
 
 print("\n****************************")
 print("qlrtest")
@@ -164,7 +164,7 @@ m4 = gretl.ols(formula='1 0 2 3 4 5', data=d4).fit()
 print(m4)
 print("\n****************************")
 print("coeffsum")
-m4.test(type="coeffsum", vars="WHITE ADMEXP")
+m4.test(type="coeffsum", varlist="WHITE ADMEXP")
 
 print("\n****************************")
 print("restrict")
