@@ -37,7 +37,7 @@ static const std::string info = "The gretl4py package provides "
     "an interface to the gretl library for python3 "
     "(3.11..3.14 were tested).";
 
-static std::set<int> _get_datasets_ids (void)
+static std::set<int> get_datasets_ids (void)
 {
     //
     // here we return a set of alive dataset's ids
@@ -95,10 +95,18 @@ PYBIND11_MODULE(_gretl, m)
               //
               GretlDatasetPtr GD;
 
-              if (is_pydict(src)) {
-                  GD = std::make_shared<GretlDataset>(src.cast<py::dict>());
-              } else if (is_pystr(src)) {
+              if (is_pystr(src)) {
                   GD = std::make_shared<GretlDataset>(src.cast<std::string>(), kwargs);
+              } else if (is_pydict(src)) {
+                  GD = std::make_shared<GretlDataset>(src.cast<py::dict>());
+              } else if (is_pyint(src)) {
+                  auto dset_id = src.cast<int>();
+                  auto dset_reg = get_datasets_ids();
+
+                  if (!dset_reg.count(dset_id)) throw std::invalid_argument("there is no dataset with id = " + std::to_string(dset_id));
+
+                  auto it = GDs.find(dset_id);
+                  GD = it->second.lock();
               } else {
                   throw std::invalid_argument("get_data(): unsupported src type");
               }
@@ -115,7 +123,7 @@ PYBIND11_MODULE(_gretl, m)
           },
           py::arg("src").none(false),
           py::arg("source").none(true) = "", py::kw_only());
-    m.def("_get_datasets_ids", &_get_datasets_ids);
+    m.def("_get_datasets_ids", &get_datasets_ids);
 
     // gretlpy public functions
     m.def("get_accessor",

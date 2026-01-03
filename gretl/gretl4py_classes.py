@@ -180,17 +180,19 @@ class MESpec (TypedDict, total=False):
 # #######################################################
 #   GretlDataset class
 # #######################################################
-def get_data (src: str | dict, **kwargs):
+def get_data (src: str | dict | int, **kwargs):
     """Load dataset from file path or dictionary.
 
     Parameters:
-    src (str | dict): Either a file path or a dictionary.
+    src (str | dict | int): Either a file path or a dictionary or dataset's id.
 
     Returns:
     GretlDataset: A dataset object.
     """
     if isinstance(src, str):
         source = src  # file path case
+    elif isinstance(src, int):
+        source = str(src)
     elif isinstance(src, dict):
         source = None
         frame = inspect.currentframe()
