@@ -223,6 +223,11 @@ def get_data (src: str | dict, **kwargs):
 def show_data_status ():
     """List of available datasets."""
 
+    # get ids of all registered datasets
+    reg_datasets = _gretl._get_datasets_ids()
+    if len(reg_datasets) > 0:
+        print('All currently registered datasets (id): ', reg_datasets, '\n')
+
     # get the caller's global and local variables
     caller_globals = sys._getframe(1).f_globals
     caller_locals = sys._getframe(1).f_locals
@@ -235,14 +240,14 @@ def show_data_status ():
     if len(datasets_found) == 0:
         print('No datasets were loaded.')
     else:
-        print('Available datasets (id, source):')
+        print('Datasets available to user(id, source):')
         for d in datasets_found:
             dset = all_globals[d]
             if dset.is_default is True:
-                defaut = "(default)"
+                default = "(default)"
             else:
-                defaut = ""
-            print(f'{d}: {dset.get_id():d}, {dset.source:s} {defaut:s} - referenced by models: {list(dset.linked_models_list())}')
+                default = ""
+            print(f'{d}: {dset.get_id():d}, {dset.source:s} {default:s} - referenced by models: {list(dset.linked_models_list())}')
 
 def _to_dataframe (self):
     """Method for exporting _gretl.Dataset instance as Pandas DataFrame"""

@@ -207,8 +207,7 @@ Examples:\newline
 \begin{lstlisting}[style=pythonstylefoot]
 gretl.get_data(src: str | dict) -> gretl._gretl.Dataset
 \end{lstlisting}
-\generaldesc{This function recognizes the following data
-	formats:
+\generaldesc{This function recognizes the following data formats:
 	\begin{itemize}
 		\item \gretl native formats: \texttt{gdt}, and \texttt{gdtb},
 		\item text files: \texttt{csv},
@@ -218,7 +217,12 @@ gretl.get_data(src: str | dict) -> gretl._gretl.Dataset
 	\end{itemize}
 	For a complete list of supported please refer to \cite{gretl_manual}.\newline
 	Note: the first loaded dataset is automatically registered
-	as the global dataset (see \ref{sec:globalandindivodual}).}
+	as the global dataset (see \ref{sec:globalandindivodual}).\newline
+	Important: \pythcode{gretl._gretl.Dataset} is just
+	a reference to the underlying \cppcode{GretlDataset} \cpp object.
+	Thus, deleting the Python object removes your reference, but the
+	dataset may remain alive as long as it is the default dataset
+	or is used by another object (for example, an already estimated model).}
 
 \gretlfpycmd{include()}
 \estdesc{Intended for including gretl function packages (see \ref{sec:classpypackage}).}

@@ -22,6 +22,7 @@
 #include "gretl_calls.h"
 
 extern GretlDatasetPtr DSET;
+extern std::map<int, std::weak_ptr<GretlDataset>> GDs;
 
 #define BIND_DRIVER_MODEL(NAME, FUNC, CI) \
     m.def(#NAME, \
@@ -35,6 +36,28 @@ extern GretlDatasetPtr DSET;
 static const std::string info = "The gretl4py package provides "
     "an interface to the gretl library for python3 "
     "(3.11..3.14 were tested).";
+
+static std::set<int> _get_datasets_ids (void)
+{
+    //
+    // here we return a set of alive dataset's ids
+    // (i.e. we erase already deleted)
+    // FIXME: move to utils !!!
+    //
+    std::set<int> res;
+
+    for (auto it = GDs.begin(); it != GDs.end();) {
+        // at first we always erase already deleted datasets
+        if (it->second.expired()) {
+            it = GDs.erase(it);
+        } else {
+            res.insert(it->first);
+            ++it;
+        }
+    }
+
+    return res;
+}
 
 //////////////////////////////////////////////////
 // module extensions
@@ -85,10 +108,14 @@ PYBIND11_MODULE(_gretl, m)
               if (GD->get_id() == 1) GD->set_as_default();
               if (!source.empty()) GD->source = source;
 
+              // we register GD
+              GDs.insert({GD->get_id(), GD});
+
               return GD;
           },
           py::arg("src").none(false),
           py::arg("source").none(true) = "", py::kw_only());
+    m.def("_get_datasets_ids", &_get_datasets_ids);
 
     // gretlpy public functions
     m.def("get_accessor",

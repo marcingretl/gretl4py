@@ -48,6 +48,7 @@ extern "C" {
 #include <iostream>
 #include <unordered_set>
 
+extern std::map<int, std::weak_ptr<GretlDataset>> GDs;
 extern std::unordered_set<std::string> UserVars;
 
 //////////////////////////////////////////////////
