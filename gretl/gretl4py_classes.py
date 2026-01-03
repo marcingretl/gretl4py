@@ -192,8 +192,12 @@ def get_data (src: str | dict | int, **kwargs):
     if isinstance(src, str):
         source = src  # file path case
     elif isinstance(src, int):
+        if kwargs:
+            raise ValueError("You cannot use kwargs when attaching already registered dataset")
         source = str(src)
     elif isinstance(src, dict):
+        if kwargs:
+            raise ValueError("You cannot use kwargs when loading data from dict")
         source = None
         frame = inspect.currentframe()
         try:

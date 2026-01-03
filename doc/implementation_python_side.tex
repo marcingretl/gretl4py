@@ -205,15 +205,28 @@ Examples:\newline
 \gretlfpycmd{get\_data()}
 \estdesc{Factory that loads the provided data as a \pythcode{gretl._gretl.Dataset}}
 \begin{lstlisting}[style=pythonstylefoot]
-gretl.get_data(src: str | dict | int) -> gretl._gretl.Dataset
+gretl.get_data(src: str[, OPTS]) -> gretl._gretl.Dataset
+gretl.get_data(src: dict | int) -> gretl._gretl.Dataset
 \end{lstlisting}
+\mapto{open src}
+\begin{itemize}
+	\item[] \maptoopt{frompkg=pkgname}{--frompkg=pkgname}{\seegretlmanual}
+\end{itemize}
 \generaldesc{This function recognizes the following data formats:
 	\begin{itemize}
-		\item \gretl native formats: \texttt{gdt}, and \texttt{gdtb},
-		\item text files: \texttt{csv},
-		\item formats known from other econometric programs: \texttt{dta}, and \texttt{wf1},
-		\item spreadsheets: \texttt{xls}, \texttt{xlsx}, and \texttt{ods}
-		\item \python['s] \pythcode{dict} as defined in \ref{gretl4py:data:dict}.
+		\item\pythcode{src: str}: in this case, \textit{src} is treated
+			as a file name in one of the following formats:
+		\begin{itemize}
+			\item \gretl native formats: \texttt{gdt} and \texttt{gdtb},
+			\item text files: \texttt{csv},
+			\item formats known from other econometric programs: \texttt{dta},
+			\texttt{sav}, \texttt{xpt}, and \texttt{wf1},
+			\item spreadsheets: \texttt{xls}, \texttt{xlsx}, and \texttt{ods}.
+		\end{itemize}
+		\item \pythcode{src: dict}: in this case, \textit{src} is treated as
+			a \python['s] \pythcode{dict}, as defined in \ref{gretl4py:data:dict}.
+		\item \pythcode{src: int}: in this case, \textit{src} is treated as
+			the ID of an already registered dataset (see \ref{show_data_status}).
 	\end{itemize}
 	For a complete list of supported please refer to \cite{gretl_manual}.\newline
 	Note: the first loaded dataset is automatically registered
@@ -453,11 +466,18 @@ gretl.set(variable: str, value: int[, OPTS])
 	\gretlcmd{\$stopwatch} accessor); or, if the word set is given alone,
 	to print the current settings.}
 
-\gretlfpycmd{show\_data\_status()}
+\gretlfpycmd{show\_data\_status()}\label{show_data_status}
 \estdesc{List of available datasets.}
 \begin{lstlisting}[style=pythonstylefoot]
 gretl.show_data_status()
 \end{lstlisting}
+\generaldesc{This function prints two sets:
+	\begin{itemize}
+		\item IDs of all datasets already registered in
+			the \gretlpy module,
+		\item references to \pythcode{gretl.Dataset} objects
+			currently bound in user space.
+\end{itemize}}
 
 \gretlfpycmd{summary()}
 \estdesc{In its first form, this command prints summary statistics
