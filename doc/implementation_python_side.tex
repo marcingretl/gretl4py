@@ -134,7 +134,7 @@ gretl._gretl.delete(varname: str)
 \mapto[clean]{delete varlist}
 \mapto[clean]{delete varname}
 \mapto[]{delete --type=type-name}
-\begin{itemize}
+\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
 	\item[]\maptoopt{type=str}{--type=type-name}{\seegretlmanual}
 	\item[]\maptoopt{db=True}{db}{delete series from database}
 	\item[]\pythcode{data=gretl.Dataset}\par%
@@ -209,7 +209,7 @@ gretl.get_data(src: str[, OPTS]) -> gretl._gretl.Dataset
 gretl.get_data(src: dict | int) -> gretl._gretl.Dataset
 \end{lstlisting}
 \mapto{open src}
-\begin{itemize}
+\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
 	\item[] \maptoopt{frompkg=pkgname}{--frompkg=pkgname}{\seegretlmanual}
 \end{itemize}
 \generaldesc{This function recognizes the following data formats:
@@ -359,7 +359,7 @@ gretl.print(varlist: str[, OPTS])
 \end{lstlisting}
 \mapto[clean]{print varlist}
 \mapto[]{print}
-\begin{itemize}
+\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
 	\item[]\maptoopt{byobs=True}{--byobs}{by observations}
 	\item[]\maptoopt{no\_dates=True}{--no-dates}{use simple observation numbers}
 	\item[]\maptoopt{range='start:stop'}{--range=start:stop}{\seegretlmanual}
@@ -488,7 +488,7 @@ gretl.summary(varlist: str[, OPTS])
 \end{lstlisting}
 \mapto[0]{summary [ varlist ]}
 \mapto{summary --matrix=matname}
-\begin{itemize}
+\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
 	\item[]\maptoopt{simple=True}{--simple}{basic statistics only}
 	\item[]\maptoopt{weight='wtvar'}{--weight=wtvar}{weighting variable}
 	\item[]\maptoopt{by='byvar'}{--by=byvar}{\seegretlmanual}
@@ -506,7 +506,7 @@ gretl.summary(varlist: str[, OPTS])
 gretl.varlist([type: str])
 \end{lstlisting}
 \mapto{varlist}
-\begin{itemize}
+\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
 	\item[] \maptoopt{type=typename}{--type=typename}{scope of listing}
 	\item[]\pythcode{data=gretl.Dataset}\par%
 	\hspace*{10pt}{\footnotesize\pythcode{gretl.varlist()} works with the specified dataset}

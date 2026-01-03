@@ -23,18 +23,35 @@
 \newcommand{\pythcode}[1]{\lstinline[style=pythonstyle]!#1!\xspace}
 \newcommand{\pythcodef}[1]{\lstinline[style=pythonstylefoot]!#1!\xspace}
 \newcommand{\reqpython}{[3.11], [3.12], [3.13], [3.14]\xspace}
+% command for command (including estimators) mappings
 \newcommand{\mapto}[2][]{\hspace*{17pt}{\footnotesize maps to:} \gretlcmdf{#2}\newline%
 	\ifthenelse{\equal{#1}{}}%
 		{\hspace*{17pt}{\footnotesize where \pythcodef{OPTS} are the following options %
 				(\gretlpy to \gretl mappings):}}%
 		{\hspace{17pt}}%
 }
+% command for function mappings
 \newcommand{\maptof}[2]{\hspace*{17pt}{\footnotesize maps to: }%
 	\gretlcmd{#1} $\rightarrow$ \gretlcmd{#2}\newline}
+% command for test mappings
+\newcommand{\maptot}[3][]{\ifthenelse{\equal{#3}{}}{}{\gretlcmd{#3}\par}\index{#3} {\footnotesize maps to:} \gretlcmdf{#2}\newline%
+	\ifthenelse{\equal{#1}{}}%
+	{\hspace*{17pt}{\footnotesize where \pythcodef{OPTS} are the following options %
+			(\gretlpy to \gretl mappings):}}%
+	{\hspace*{14pt}}%
+}
 \newcommand{\maptoopt}[3]{%
 	\pythcodef{#1} {\footnotesize $\rightarrow$} \gretlcmdf{#2}\par
 	{\hspace*{10pt}\footnotesize #3}%
 }
+%\newcommand{\maptoopt}[3]{%
+%	\noindent
+%	\begin{minipage}[t]{\dimexpr\linewidth-2em} % leave 2em space for indent
+%		\pythcodef{#1} {\footnotesize $\rightarrow$} \gretlcmdf{#2}\hspace{0.5em}%
+%		{\footnotesize #3}%
+%	\end{minipage}%
+%	\par
+%}
 \newcommand{\lgretl}[1][]{\pkg{libgretl#1}\xspace}
 \newcommand{\gretl}{\pkg{gretl}\xspace}
 \newcommand{\gretlpy}{\pkg{gretl4py}\xspace}
@@ -44,7 +61,7 @@
 \newcommand{\installbat}{\texttt{install.bat}\xspace}
 \newcommand{\installpy}{\texttt{install.py}\xspace}
 \newcommand{\est}[1]{\bigskip\noindent\gretlcmd{#1}\index{#1()}}
-\newcommand{\test}[1]{\gretlcmd{#1}\index{#1}}
+\newcommand{\test}[1]{\gretlcmdf{#1}\index{#1}}
 \newcommand{\estdesc}[1]{\smallskip\begin{minipage}[t]{0.89\columnwidth}%
 	\small#1\end{minipage}\vspace{3pt}}
 \newcommand{\noRformula}{\hspace*{17pt}\begin{minipage}[t]{0.89\columnwidth}\small%
@@ -73,6 +90,16 @@
 
 \renewcommand{\thefigure}{\thesection.\arabic{figure}}
 %\numberwithin{figure}{section}
+
+\newenvironment{generaldescenv}
+{%
+	\par\hspace*{17pt}%
+	\begin{minipage}[t]{0.89\columnwidth}%
+		\small
+	}
+	{%
+	\end{minipage}%
+}
 
 \makeatletter
 \@mparswitchfalse%

@@ -34,6 +34,30 @@ for manipulating data, such as sub-sampling, exporting, filtering, etc.
 \end{lstlisting}
 \generaldesc{This is equivalent to calling \pythcode{.get_accessor("$nobs")}.}
 
+\gretlfpycmd{tests}\label{attr:gretldataset::tests}
+\estdesc{List storing summaries of tests performed on datasets.}
+\begin{lstlisting}[style=pythonstylefoot]
+.tests -> list
+\end{lstlisting}
+\begin{generaldescenv}
+	This is a \pythcode{list} of \pythcode{dict} objects that is
+	created immediately after the first test (see
+	\ref{met:gretldataset::test}) is performed. That is, this attribute is
+	\emph{not} created when the \pythcode{gretl.Dataset} instance itself is
+	initialized. Each \pythcode{dict} containing test results has the
+	following structure:
+	\begin{lstlisting}[style=pythonstylefoot]
+{
+ "test":    <test statistic>,
+ "pvalue":  <p-value>,
+ "summary": <textual output>
+}
+	\end{lstlisting}
+	Results from consecutive tests are appended to the \pythcode{tests}
+	attribute. Therefore, to access the results of the most recently
+	performed test, one can use \pythcode{tests[-1]}.
+\end{generaldescenv}
+
 \gretlfpycmd{source}
 \estdesc{Prints the source of given dataset.}
 \begin{lstlisting}[style=pythonstylefoot]
@@ -124,7 +148,7 @@ where \textit{d} and \textit{param} are defined as in \ref{func:gretl.cdf}.
 .corr(varlist: str[, OPTS]) -> numpy.ndarray
 \end{lstlisting}
 \mapto{corr [ varlist ]}
-\begin{itemize}
+\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
 	\item[]\maptoopt{uniform=True}{--uniform}{ensure uniform sample}
 	\item[]\maptoopt{spearman=True}{--spearman}{Spearman's $\rho$}
 	\item[]\maptoopt{kendall=True}{--kendall}{Kendall's $\tau$}
@@ -184,7 +208,7 @@ where \textit{d} and \textit{param} are defined as in \ref{func:gretl.cdf}.
 .discrete(varlist=str[, OPTS])
 \end{lstlisting}
 \mapto{discrete varlist}
-\begin{itemize}
+\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
 	\item[]\maptoopt{reverse=True}{--reverse}{mark variables as continuous}
 \end{itemize}
 \generaldesc{By default all variables are treated as continuous;
@@ -202,7 +226,7 @@ where \textit{d} and \textit{param} are defined as in \ref{func:gretl.cdf}.
 .dummify(varlist=str[, OPTS])
 \end{lstlisting}
 \mapto{dummify varlist}
-\begin{itemize}
+\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
 	\item[]\maptoopt{drop\_first=True}{--drop-first}{omit lowest value from encoding}
 	\item[]\maptoopt{drop\_last=True}{--drop-last}{omit highest value from encoding}
 \end{itemize}
@@ -309,7 +333,7 @@ where \textit{d} and \textit{param} are defined as in \ref{func:gretl.invcdf}.
 .lags(varlist: str[, order: int])
 \end{lstlisting}
 \mapto{lags [ order ; ] laglist}
-\begin{itemize}
+\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
 	\item[]\maptoopt{bylag=True}{--bylag}{order terms by lag}
 \end{itemize}
 Examples:\newline
@@ -407,7 +431,7 @@ Examples:\newline
 .pca(varlist: str = ''[, OPTS])
 \end{lstlisting}
 \mapto{pca varlist}
-\begin{itemize}
+\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
 	\item[]\maptoopt{covariance=True}{--covariance}{use the covariance matrix}
 	\item[]\maptoopt{save=n}{--save=n}{save major components}
 	\item[]\maptoopt{save\_all=True}{--save-all}{save all components}
@@ -465,7 +489,7 @@ where \textit{c} and \textit{param} are defined as in \ref{func:gretl.pvalue}.
 \mapto[clean]{smpl n --random}
 \mapto[clean]{smpl full}
 \mapto{smpl}
-\begin{itemize}
+\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
 	\item[]\maptoopt{dummy=True}{--dummy}{argument is a dummy variable}
 	\item[]\maptoopt{restrict=True}{--restrict}{apply boolean restriction}
 	\item[]\maptoopt{replace=True}{--replace}{replace any existing boolean restriction}
@@ -531,7 +555,7 @@ Examples:\newline
 \end{lstlisting}
 \mapto[clean]{setobs periodicity startobs}
 \mapto{setobs unitvar timevar --panel-vars}
-\begin{itemize}
+\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
 	\item[]\maptoopt{cross\_section=True}{--cross-section}{interpret as cross section}
 	\item[]\maptoopt{time\_series=True}{--time-series}{interpret as time series}
 	\item[]\maptoopt{special\_time\_series=True}{--special-time-series}{\seegretlmanual}
@@ -584,7 +608,7 @@ Examples:\newline
 .stdize(varlist: str[, OPTS])
 \end{lstlisting}
 \mapto[]{stdize varlist}
-\begin{itemize}
+\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
 	\item[]\maptoopt{no\_df\_corr=True}{--no-df-corr}{no degrees of freedom correction}
 	\item[]\maptoopt{center\_only=True}{--center-only}{don't divide by s.d.}
 \end{itemize}
@@ -607,7 +631,7 @@ Examples:\newline
 \end{lstlisting}
 \generaldesc{XXX}
 
-\gretlfpycmd{test()}
+\gretlfpycmd{test()}\label{met:gretldataset::test}
 \estdesc{General interface to dataset-based tests.}
 \begin{lstlisting}[style=pythonstylefoot]
 .test(type: str[, varlist: str, OPTS])
@@ -616,8 +640,11 @@ Examples:\newline
 	the following: \test{adf}, \test{bds}, \test{coint}, \test{corrgm},
 	\test{difftest}, \test{fractint}, \test{johansen}, \test{kpss},
 	\test{levinlin}, \test{meantest}, \test{normtest}, \test{runs}, \test{vartest}.}\\
-\mapto{adf order varlist}\index{adf}
-\begin{itemize}
+\generaldesc{Results of performed tests are appended to the
+	\pythcode{.tests} attribute (see \ref{attr:gretldataset::tests}).
+	The following sections describe the API associated with each test:}\\
+\maptot{adf order varlist}{adf}
+\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
 	\item[]\maptoopt{nc=True}{--nc}{test without a constant}
 	\item[]\maptoopt{c=True}{--c}{with constant only}
 	\item[]\maptoopt{ct=True}{--ct}{with constant and trend}
@@ -634,8 +661,8 @@ Examples:\newline
 \pythcodef{.test(type='adf', varlist='y', order=0)}\\
 \pythcodef{.test(type='adf', varlist='y', order=2, nc=True, c=True, ct=True)}\\
 \pythcodef{.test(type='adf', varlist='y', order=12, c=True, test-down=True)}\\
-\mapto{bds order x}\index{bds}
-\begin{itemize}
+\maptot{bds order x}{bds}
+\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
 	\item[]\maptoopt{corr1=rho}{--corr1=rho}{\seegretlmanual}
 	\item[]\maptoopt{sdcrit=multiple}{--sdcrit=multiple}{\seegretlmanual}
 	\item[]\maptoopt{boot=N}{--boot=N}{\seegretlmanual}
@@ -646,8 +673,8 @@ Examples:\newline
 \pythcodef{.test(type='bds', varlist='x', order=5)}\\
 \pythcodef{.test(type='bds', order=3, matrix='m')}\\
 \pythcodef{.test(type='bds', varlist='x', order=4, sdcrit=2.0)}\\
-\mapto{coint order depvar indepvars}\index{coint}
-\begin{itemize}
+\maptot{coint order depvar indepvars}{coint}
+\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
 	\item[]\maptoopt{nc=True}{--nc}{do not include a constant}
 	\item[]\maptoopt{ct=True}{--ct}{include constant and trend}
 	\item[]\maptoopt{ctt=True}{--ctt}{include constant and quadratic trend}
@@ -660,8 +687,8 @@ Examples:\newline
 Examples:\newline
 \pythcodef{.test(type='coint', varlist='y', indepvars='x z', order=4)}\\
 \pythcodef{.test(type='coint', varlist='y', indepvars='x z', order=0, ct=True, skip-df=True)}\\
-\mapto{corrgm y [order]}\index{corrgm}
-\begin{itemize}
+\maptot{corrgm y [order]}{corrgm}
+\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
 	\item[]\maptoopt{plot=mode_or_filename}{--plot=mode-or-filename}{\seegretlmanual}
 	\item[]\maptoopt{silent=True}{--silent}{don't print anything}
 	\item[]\maptoopt{acf_only=True}{--acf-only}{omit partial autocorrelations}
@@ -670,8 +697,8 @@ Examples:\newline
 Examples:\newline
 \pythcodef{.test(type='corrgm', varlist='x', order=12)}\\
 \pythcodef{.test(type='corrgm', varlist='GDP', order=12, acf-only=True)}\\
-\mapto{difftest x y}\index{difftest}
-\begin{itemize}
+\maptot{difftest x y}{difftest}
+\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
 	\item[]\maptoopt{sign=True}{--sign}{Sign test (default)}
 	\item[]\maptoopt{rank-sum=True}{--rank-sum}{Wilcoxon rank-sum test}
 	\item[]\maptoopt{signed_rank=True}{--signed-rank}{Wilcoxon signed-rank test}
@@ -682,14 +709,14 @@ Examples:\newline
 Examples:\newline
 \pythcodef{.test(type='difftest', varlist=['x y'])}\\
 \pythcodef{.test(type='difftest', varlist=['x'], split_by='dummy')}\\
-\mapto{fractint series [ order ]}\index{fractint}
-\begin{itemize}
+\maptot{fractint series [ order ]}{fractint}
+\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
 	\item[]\maptoopt{gph=True}{--gph}{do Geweke and Porter-Hudak test}
 	\item[]\maptoopt{all=True}{--all}{do both tests}
 	\item[]\maptoopt{quiet=True}{--quiet}{don't print results}
 \end{itemize}
-\mapto{johansen order ylist [ ; xlist ] [ ; rxlist ]}\index{johansen}
-\begin{itemize}
+\maptot{johansen order ylist [ ; xlist ] [ ; rxlist ]}{johansen}
+\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
 	\item[]\maptoopt{nc=True}{--nc}{no constant}
 	\item[]\maptoopt{rc=True}{--rc}{restricted constant}
 	\item[]\maptoopt{uc=True}{--uc}{unrestricted constant}
@@ -705,8 +732,8 @@ Examples:\newline
 \pythcodef{.test(type='johansen', ylist=['y'], xlist=['x'], order=2)}\\
 \pythcodef{.test(type='johansen', ylist=['y'], xlist=['x z'], order=4, verbose=True)}\\
 \pythcodef{.test(type='johansen', ylist=['y'], xlist=['x z'], order=3, rc=True)}\\
-\mapto{kpss order varlist}\index{kpss}
-\begin{itemize}
+\maptot{kpss order varlist}{kpss}
+\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
 	\item[]\maptoopt{trend=True}{--trend}{include a trend}
 	\item[]\maptoopt{seasonals=True}{--seasonals}{include seasonal dummies}
 	\item[]\maptoopt{verbose=True}{--verbose}{print regression results}
@@ -716,8 +743,8 @@ Examples:\newline
 Examples:\newline
 \pythcodef{.test(type='kpss', varlist='y', order=8)}\\
 \pythcodef{.test(type='kpss', varlist='x1', order=4, trend=True)}\\
-\mapto{levinlin order series}\index{levinlin}
-\begin{itemize}
+\maptot{levinlin order series}{levinlin}
+\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
 	\item[]\maptoopt{nc=True}{--nc}{test without a constant}
 	\item[]\maptoopt{ct=True}{--ct}{with constant and trend}
 	\item[]\maptoopt{quiet=True}{--quiet}{suppress printing of results}
@@ -727,9 +754,9 @@ Examples:\newline
 \pythcodef{.test(type='levinlin', varlist='y', order=0)}\\
 \pythcodef{.test(type='levinlin', varlist='y', order=2, ct=True)}\\
 \pythcodef{.test(type='levinlin', varlist='y', order=[2,2,3,3,4,4])}\\
-\mapto[0]{meantest x y}
-\mapto{meantest x --split-by=dummy}\index{meantest}
-\begin{itemize}
+\maptot[0]{meantest x y}{meantest}
+\maptot{meantest x --split-by=dummy}{}
+\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
 	\item[]\maptoopt{unequal_vars=True}{--unequal-vars}{assume variances are unequal}
 	\item[]\maptoopt{paired=True}{--paired}{conduct a paired test}
 	\item[]\maptoopt{quiet=True}{--quiet}{suppress printed output}
@@ -741,8 +768,8 @@ Examples:\newline
 \pythcodef{.test(type='meantest', varlist=['x y'], unequal_vars=True)}\\
 \pythcodef{.test(type='meantest', varlist=['x y'], paired=True)}\\
 \pythcodef{.test(type='meantest', varlist=['x'], split_by='d')}\\
-\mapto{normtest series}\index{normtest}
-\begin{itemize}
+\maptot{normtest series}{normtest}
+\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
 	\item[]\maptoopt{dhansen=True}{--dhansen}{Doornik–Hansen test (default)}
 	\item[]\maptoopt{swilk=True}{--swilk}{Shapiro-Wilk test}
 	\item[]\maptoopt{lillie=True}{--lillie}{Lilliefors test}
@@ -754,14 +781,14 @@ Examples:\newline
 \pythcodef{.test(type='normtest', varlist='series')}\\
 \pythcodef{.test(type='normtest', varlist='series', swilk=True)}\\
 \pythcodef{.test(type='normtest', varlist='series', all=True)}\\
-\mapto{runs series}\index{runs}
-\begin{itemize}
+\maptot{runs series}{runs}
+\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
 	\item[]\maptoopt{difference=True}{--difference}{use first difference of variable}
 	\item[]\maptoopt{equal=True}{--equal}{positive and negative values are equiprobable}
 \end{itemize}
-\mapto[]{vartest x y}\index{vartest}
-\mapto{vartest x --split-by=dummy}\index{vartest}
-\begin{itemize}
+\maptot[0]{vartest x y}{vartest}
+\maptot{vartest x --split-by=dummy}{}
+\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
 	\item[]\maptoopt{quiet=True}{--quiet}{suppress printed output}
 	\item[]\maptoopt{robust='method'}{--robust=method}{\seegretlmanual}
 	\item[]\maptoopt{split_by='dummy'}{--split-by=dummy}{split observations by grouping variable}
@@ -771,7 +798,6 @@ Examples:\newline
 \pythcodef{.test(type='vartest', varlist=['x'], split_by='d')}\\
 \pythcodef{.test(type='vartest', varlist=['x y'], robust='median')}\\
 \pythcodef{.test(type='vartest', varlist=['x y'], robust='trimmed,5')}\\
-\generaldesc{XXX}
 
 \gretlfpycmd{to\_dataframe()}
 \estdesc{This method exports given dataset to \pythcode{pandas.core.frame.DataFrame}.}
@@ -793,7 +819,7 @@ Examples:\newline
 .to_file(filename: str[, varlist: str = '', OPTS])
 \end{lstlisting}
 \mapto{store filename [ varlist ]}
-\begin{itemize}
+\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
 	\item[]\maptoopt{omit\_obs=True}{--omit-obs}{on CSV format, \seegretlmanual}
 	\item[]\maptoopt{no\_header=True}{--no-header}{on CSV format, \seegretlmanual}
 	\item[]\maptoopt{gnu\_octave=True}{--gnu-octave}{use GNU Octave format}
@@ -828,7 +854,7 @@ Examples:\newline
 .xcorrgm(series1: str, series2: str[, order: int]) -> numpy.ndarray
 \end{lstlisting}
 \mapto{xcorrgm series1 series2 [ order ]}
-\begin{itemize}
+\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
 	\item[]\maptoopt{plot='mode-or-filename'}{--plot=mode-or-filename}{\seegretlmanual}
 	\item[]\maptoopt{silent=True}{--silent}{suppress printed output}
 \end{itemize}
