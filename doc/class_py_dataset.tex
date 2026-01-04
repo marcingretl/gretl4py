@@ -128,10 +128,10 @@ gretl._gretl.Bundle[key] = object
 \where{\textit{d} and \textit{param} are defined
 	as in \ref{func:gretl.cdf}.}
 
-\gretlfpycmd{copy()}
-\estdesc{Creates a deep copy of the \classpydataset object.}
+\gretlfpycmd{clone()}
+\estdesc{Clones the \classpydataset object (deep a copy of).}
 \begin{lstlisting}[style=pythonstylefoot]
-.copy() -> gretl._gretl.Dataset
+.clone() -> gretl._gretl.Dataset
 \end{lstlisting}
 %Examples:\newline
 %\pythcodef{import copy; dataset_copy = copy.copy(gretl._gretl.Dataset)}\\

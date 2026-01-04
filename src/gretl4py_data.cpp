@@ -627,12 +627,12 @@ void GretlDataset::free_dset_ (void)
     }
 }
 
-GretlDatasetPtr GretlDataset::copy_gretl_dataset (const GretlDataset &src)
+GretlDatasetPtr GretlDataset::clone (const GretlDataset &src)
 {
     //
     // factory method for copy constructor
     //
-    auto RES = std::make_shared<GretlDataset>(src);
+    auto RES = GretlDatasetPtr(new GretlDataset(src));
 
     // we register GD
     GDs.insert({RES->id_, RES});
@@ -1192,7 +1192,7 @@ GretlDatasetPtr GretlDataset::getitem_impl (const T &slice)
     py::dict opts;
     std::string startobs, endobs, slice_str;
     gretl_list_ptr drop_list{nullptr};
-    auto RES = std::make_shared<GretlDataset>(*this);
+    auto RES = GretlDatasetPtr(new GretlDataset(*this));
 
     // we parse slice / list / string
     if constexpr (std::is_same_v<T, py::slice>) {
