@@ -136,7 +136,8 @@ for manipulating data, such as sub-sampling, exporting, filtering, etc.
 \end{lstlisting}
 \maptof{cdf(d, series)}{numpy.ndarray}
 \maptof{cdf(d, param, series)}{numpy.ndarray}
-where \textit{d} and \textit{param} are defined as in \ref{func:gretl.cdf}.
+\where{\textit{d} and \textit{param} are defined
+	as in \ref{func:gretl.cdf}.}
 
 \gretlfpycmd{corr()}
 \estdesc{By default, prints the pairwise correlation coefficients
@@ -187,7 +188,8 @@ Examples:\newline
 \end{lstlisting}
 \maptof{critical(d, series)}{numpy.ndarray}
 \maptof{critical(d, param, series)}{numpy.ndarray}
-where \textit{d} and \textit{param} are defined as in \ref{func:gretl.cdf}.
+\where{\textit{d} and \textit{param} are defined
+	as in \ref{func:gretl.cdf}.}
 
 \gretlfpycmd{diff()}
 \estdesc{The first difference of each variable in \textit{varlist}
@@ -324,7 +326,8 @@ where \textit{d} and \textit{param} are defined as in \ref{func:gretl.cdf}.
 \end{lstlisting}
 \maptof{invcdf(d, series)}{numpy.ndarray}
 \maptof{invcdf(d, param, series)}{numpy.ndarray}
-where \textit{d} and \textit{param} are defined as in \ref{func:gretl.invcdf}.
+\where{\textit{d} and \textit{param} are defined
+	as in \ref{func:gretl.invcdf}.}
 
 \gretlfpycmd{lags()}
 \estdesc{Creates new series which are lagged values of
@@ -452,7 +455,8 @@ Examples:\newline
 \end{lstlisting}
 \maptof{pdf(d, series)}{numpy.ndarray}
 \maptof{pdf(d, param, series)}{numpy.ndarray}
-where \textit{d} and \textit{param} are defined as in \ref{func:gretl.pdf}.
+\where{\textit{d} and \textit{param} are
+	defined as in \ref{func:gretl.pdf}.}
 
 \gretlfpycmd{print()}\label{met:gretldataset::print}
 \estdesc{XXX}
@@ -468,7 +472,8 @@ where \textit{d} and \textit{param} are defined as in \ref{func:gretl.pdf}.
 \end{lstlisting}
 \maptof{pvalue(c, series)}{numpy.ndarray}
 \maptof{pvalue(c, param, series)}{numpy.ndarray}
-where \textit{c} and \textit{param} are defined as in \ref{func:gretl.pvalue}.
+\where{\textit{c} and \textit{param} are defined
+	as in \ref{func:gretl.pvalue}}.
 
 \gretlfpycmd{sample()}
 \estdesc{The current sample setter/getter.}
@@ -636,10 +641,10 @@ Examples:\newline
 \begin{lstlisting}[style=pythonstylefoot]
 .test(type: str[, varlist: str, OPTS])
 \end{lstlisting}
-{\footnotesize where \pythcode{type: str} refers to one of
+\where{\pythcode{type: str} refers to one of
 	the following: \test{adf}, \test{bds}, \test{coint}, \test{corrgm},
 	\test{difftest}, \test{fractint}, \test{johansen}, \test{kpss},
-	\test{levinlin}, \test{meantest}, \test{normtest}, \test{runs}, \test{vartest}.}\\
+	\test{levinlin}, \test{meantest}, \test{normtest}, \test{runs}, \test{vartest}.}\\\\
 \generaldesc{Results of performed tests are appended to the
 	\pythcode{.tests} attribute (see \ref{attr:gretldataset::tests}).
 	The following sections describe the API associated with each test:}\\

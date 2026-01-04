@@ -159,6 +159,21 @@
 	commentstyle={\color{hanslblue}},
 	stringstyle={\color{hanslmagenta}}
 }
+\lstdefinestyle{hansllarge}{
+	belowcaptionskip=1\baselineskip,
+	breaklines=true,
+	frame=L,
+	xleftmargin=\parindent,
+	language=Hansl,
+	showstringspaces=false,
+	basicstyle={\ttfamily\large},
+	keywordstyle={\bfseries\color{hanslred}},
+	keywordstyle=[2]{\color{hanslteal}},
+	keywordstyle=[3]{\bfseries\color{hanslgreen}},
+	keywordstyle=[4]{\bfseries\color{hanslgreen}},
+	commentstyle={\color{hanslblue}},
+	stringstyle={\color{hanslmagenta}}
+}
 \lstdefinestyle{hanslfoot}{
 	belowcaptionskip=1\baselineskip,
 	breaklines=true,

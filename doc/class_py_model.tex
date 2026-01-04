@@ -1,8 +1,18 @@
 \subsubsection{\classpymodel}\label{sec:class_py_model}
-The \gretlpy module implements the \classpymodel,
-which is used to manage the definition, estimation,
-and output of models. Hierarchy of this class is
-shown at Figure~\ref{fig:model_class_hierarchy}.
+The \gretlpy module implements the \classpymodel class, which is used
+to manage the definition, estimation, and output of econometric models.
+Through this class, \gretlpy provides interfaces to native \lgretl
+estimators, as well as support for model-based testing and forecasting,
+including impulse response analysis for VAR and VECM models.
+
+An important distinction is that, although methods in \gretlpy are
+defined statically, most class attributes are created dynamically and
+originate from the so-called \gretlcmd{\$model} accessor. That is, all
+post-estimation results that are available in \gretl under
+\gretlcmd{\$model} are automatically attached to the corresponding
+\classpymodel instance in \gretlpy.
+
+Hierarchy of this class is shown at Figure~\ref{fig:model_class_hierarchy}.
 
 \begin{landscape}
 	\begin{figure}

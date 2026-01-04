@@ -37,12 +37,6 @@ gretl._gretl.Bundle[key] = object
 \vspace*{10pt}\noindent The \classpybundle class provides
 the following public methods:
 
-\gretlfpycmd{to\_dict()}
-\estdesc{Converts \gretl's \gretlcmd{bundle} to \python['s] \pythcode{dict}.}
-\begin{lstlisting}[style=pythonstyle]
-.to_dict() -> dict
-\end{lstlisting}
-
 \gretlfpycmd{keys()}
 \estdesc{Gets all \gretlcmd{bundle} keys.}
 \begin{lstlisting}[style=pythonstyle]
@@ -50,7 +44,17 @@ the following public methods:
 \end{lstlisting}
 
 \gretlfpycmd{print()}\label{met:gretlbundle::print}
-\estdesc{XXX}
+\estdesc{Prints the contents of the \gretlcmd{bundle} in \gretl-style.}
 \begin{lstlisting}[style=pythonstyle]
-.print([OPTS])
+.print(tree: bool = False)
+\end{lstlisting}
+\generaldesc{If \pythcode{tree=True} the effect is that if the
+	specified \gretlcmd{bundle} contains further bundles, or
+	arrays of bundles, their contents are listed. Otherwise
+	only the top-level members of the bundle are listed.}
+
+\gretlfpycmd{to\_dict()}
+\estdesc{Converts \gretl's \gretlcmd{bundle} to \python['s] \pythcode{dict}.}
+\begin{lstlisting}[style=pythonstyle]
+.to_dict() -> dict
 \end{lstlisting}

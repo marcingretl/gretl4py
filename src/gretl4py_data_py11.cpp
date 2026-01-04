@@ -81,14 +81,12 @@ void init_gretl4py_dataset_py11(py::module_ &m)
              {
                  py::print("Note, that we perform deepcopy here.");
                  return std::make_shared<GretlDataset>(self);
-             },
-             py::return_value_policy::take_ownership)
+             })
         .def("__deepcopy__",
-             [](const GretlDataset &self)
+             [](const GretlDataset &self, py::dict)
              {
                  return std::make_shared<GretlDataset>(self);
-             },
-             py::return_value_policy::take_ownership)
+             })
         .def("__repr__", &GretlDataset::repr)
         .def("__getitem__", &GretlDataset::getitem_impl<py::slice>,
              py::return_value_policy::take_ownership)

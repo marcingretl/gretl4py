@@ -19,6 +19,7 @@
 % lstlistings
 \newcommand{\gretlcmd}[1]{\lstinline!#1!\xspace}
 \newcommand{\gretlcmdf}[1]{\lstinline[style=hanslfoot]!#1!\xspace}
+\newcommand{\gretlcmdl}[1]{\lstinline[style=hansllarge]!#1!\xspace}
 \newcommand{\cppcode}[1]{\lstinline[style=cppstyle]!#1!\xspace}
 \newcommand{\pythcode}[1]{\lstinline[style=pythonstyle]!#1!\xspace}
 \newcommand{\pythcodef}[1]{\lstinline[style=pythonstylefoot]!#1!\xspace}
@@ -34,7 +35,7 @@
 \newcommand{\maptof}[2]{\hspace*{17pt}{\footnotesize maps to: }%
 	\gretlcmd{#1} $\rightarrow$ \gretlcmd{#2}\newline}
 % command for test mappings
-\newcommand{\maptot}[3][]{\ifthenelse{\equal{#3}{}}{}{\gretlcmd{#3}\par}\index{#3} {\footnotesize maps to:} \gretlcmdf{#2}\newline%
+\newcommand{\maptot}[3][]{\ifthenelse{\equal{#3}{}}{}{\par\noindent\gretlcmdl{#3}\par}\index{#3} {\footnotesize maps to:} \gretlcmdf{#2}\newline%
 	\ifthenelse{\equal{#1}{}}%
 	{\hspace*{17pt}{\footnotesize where \pythcodef{OPTS} are the following options %
 			(\gretlpy to \gretl mappings):}}%
@@ -72,7 +73,7 @@
 		as outlined in
 		Equation~(\hyperlink{theGstyleFomula}{\thefomularenderG}).\end{minipage}}
 \newcommand{\gretlfpycmd}[1]{\vspace*{10pt}\noindent\protect\textcolor{red}{\pythcode{#1}}\index{#1}}
-\newcommand{\generaldesc}[1]{\hspace*{17pt}\begin{minipage}[t]{0.89\columnwidth}%
+\newcommand{\generaldesc}[1]{\hspace*{17pt}\begin{minipage}[t]{0.95\columnwidth}%
 		\small#1\end{minipage}}
 \newcommand{\gretldataset}{\_gretl.Dataset\xspace}
 \newcommand{\classpybundle}{\pythcode{gretl._gretl.Bundle class}\xspace}
@@ -87,14 +88,15 @@
 		#2 %label
 	\end{figure}}
 \newcommand{\seegretlmanual}{see~\citet{gretl_manual}}
-
+\newcommand{\where}[1]{\hspace*{17pt}\begin{minipage}[t]{0.95\columnwidth}%
+		\footnotesize where #1\end{minipage}}
 \renewcommand{\thefigure}{\thesection.\arabic{figure}}
 %\numberwithin{figure}{section}
 
 \newenvironment{generaldescenv}
 {%
-	\par\hspace*{17pt}%
-	\begin{minipage}[t]{0.89\columnwidth}%
+	\par%
+	\begin{minipage}[t]{0.95\columnwidth}%
 		\small
 	}
 	{%
@@ -173,6 +175,7 @@
 			\input{class_py_dataset}
 			\input{class_py_bundle}
 			\subsubsection{User-defined variables}\label{sec:userdefinedvariables}
+				To be workout.
 		\subsection{Econometric methods}
 			\input{class_py_model}
 			\input{class_py_package}
