@@ -23,6 +23,7 @@
 #include "gretl4py_types.h"
 #include "gretl4py_model.h"
 #include "gretl_calls.h"
+#include "gretl4py_utils.h"
 #include <gretl/libset.h>
 #include <gretl/matrix_extra.h>
 #include <gretl/gretl_model.h>
@@ -48,7 +49,6 @@ extern "C" {
 #include <iostream>
 #include <unordered_set>
 
-extern std::map<int, std::weak_ptr<GretlDataset>> GDs;
 extern std::unordered_set<std::string> UserVars;
 
 //////////////////////////////////////////////////
@@ -635,7 +635,7 @@ GretlDatasetPtr GretlDataset::clone (const GretlDataset &src)
     auto RES = GretlDatasetPtr(new GretlDataset(src));
 
     // we register GD
-    GDs.insert({RES->id_, RES});
+    register_dataset(RES);
 
     return RES;
 }
@@ -1255,7 +1255,7 @@ GretlDatasetPtr GretlDataset::getitem_impl (const T &slice)
     RES->source += " slice: " + slice_str;
 
     // we register GD
-    GDs.insert({RES->id_, RES});
+    register_dataset(RES);
 
     return RES;
 }

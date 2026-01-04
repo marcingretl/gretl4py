@@ -143,6 +143,7 @@ gretl4py_inc = include_directories('src')
 srcs = files(
   'src/gretl4py.cpp',
   'src/gretl4py_data.cpp',
+  'src/gretl4py_utils.cpp',
   'src/gretl4py_data_py11.cpp',
   'src/gretl_calls.cpp',
   'src/gretl4py_model.cpp',

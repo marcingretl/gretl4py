@@ -20,9 +20,9 @@
 #include "gretl4py.h"
 #include "gretl4py_model_instantiations.h"
 #include "gretl_calls.h"
+#include "gretl4py_utils.h"
 
 extern GretlDatasetPtr DSET;
-extern std::map<int, std::weak_ptr<GretlDataset>> GDs;
 
 #define BIND_DRIVER_MODEL(NAME, FUNC, CI) \
     m.def(#NAME, \
@@ -36,28 +36,6 @@ extern std::map<int, std::weak_ptr<GretlDataset>> GDs;
 static const std::string info = "The gretl4py package provides "
     "an interface to the gretl library for python3 "
     "(3.11..3.14 were tested).";
-
-static std::set<int> get_datasets_ids (void)
-{
-    //
-    // here we return a set of alive dataset's ids
-    // (i.e. we erase already deleted)
-    // FIXME: move to utils !!!
-    //
-    std::set<int> res;
-
-    for (auto it = GDs.begin(); it != GDs.end();) {
-        // at first we always erase already deleted datasets
-        if (it->second.expired()) {
-            it = GDs.erase(it);
-        } else {
-            res.insert(it->first);
-            ++it;
-        }
-    }
-
-    return res;
-}
 
 //////////////////////////////////////////////////
 // module extensions
@@ -94,19 +72,15 @@ PYBIND11_MODULE(_gretl, m)
               // binding the class constructor on the Python side
               //
               GretlDatasetPtr GD;
+              bool do_register_dataset = true;
 
               if (is_pystr(src)) {
                   GD = std::make_shared<GretlDataset>(src.cast<std::string>(), kwargs);
               } else if (is_pydict(src)) {
                   GD = std::make_shared<GretlDataset>(src.cast<py::dict>());
               } else if (is_pyint(src)) {
-                  auto dset_id = src.cast<int>();
-                  auto dset_reg = get_datasets_ids();
-
-                  if (!dset_reg.count(dset_id)) throw std::invalid_argument("there is no dataset with id = " + std::to_string(dset_id));
-
-                  auto it = GDs.find(dset_id);
-                  GD = it->second.lock();
+                  GD = get_dataset_by_id(src.cast<int>());
+                  do_register_dataset = false;
               } else {
                   throw std::invalid_argument("get_data(): unsupported src type");
               }
@@ -117,7 +91,7 @@ PYBIND11_MODULE(_gretl, m)
               if (!source.empty()) GD->source = source;
 
               // we register GD
-              GDs.insert({GD->get_id(), GD});
+              if (do_register_dataset) register_dataset(GD);
 
               return GD;
           },
