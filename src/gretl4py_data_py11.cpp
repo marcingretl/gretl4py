@@ -79,21 +79,18 @@ void init_gretl4py_dataset_py11(py::module_ &m)
         .def("__copy__",
              [](const GretlDataset &self)
              {
-                 py::print("Note, that we perform deepcopy here.");
                  return std::make_shared<GretlDataset>(self);
-             })
+             },
+             R"doc(Return a deep copy of the dataset.)doc")
         .def("__deepcopy__",
              [](const GretlDataset &self, py::dict)
              {
                  return std::make_shared<GretlDataset>(self);
              })
         .def("__repr__", &GretlDataset::repr)
-        .def("__getitem__", &GretlDataset::getitem_impl<py::slice>,
-             py::return_value_policy::take_ownership)
-        .def("__getitem__", &GretlDataset::getitem_impl<py::list>,
-             py::return_value_policy::take_ownership)
-        .def("__getitem__", &GretlDataset::getitem_impl<std::string>,
-             py::return_value_policy::take_ownership)
+        .def("__getitem__", &GretlDataset::getitem_impl<py::slice>)
+        .def("__getitem__", &GretlDataset::getitem_impl<py::list>)
+        .def("__getitem__", &GretlDataset::getitem_impl<std::string>)
         .def("head", &head_tail_print<HEAD>, py::arg("nobs") = 5, py::kw_only())
         .def("headT", &head_tail_print<HEAD_T>, py::arg("nobs") = 5, py::kw_only())
         .def("tail", &head_tail_print<TAIL>, py::arg("nobs") = 5, py::kw_only())
@@ -131,9 +128,9 @@ void init_gretl4py_dataset_py11(py::module_ &m)
              },
              py::arg("startobs").none(false), py::kw_only())
         .def("setobs",
-             [](GretlDataset &self, std::string &unitvar, const std::string &timevar, const py::kwargs &kwargs)
+             [](GretlDataset &self, std::string &periodicity, const std::string &startobs, const py::kwargs &kwargs)
              {
-                 self.setobs(unitvar, timevar, kwargs);
+                 self.setobs(periodicity, startobs, kwargs);
              },
              py::arg("periodicity").none(false),
              py::arg("startobs").none(false), py::kw_only())
@@ -272,8 +269,7 @@ void init_gretl4py_dataset_py11(py::module_ &m)
 
                  self.test(type, varlist, clean_kwargs);
              },
-             py::arg("type"), py::kw_only(),
-             py::return_value_policy::take_ownership);
+             py::arg("type"), py::kw_only());
 }
 
 // GretlPackage mappings
