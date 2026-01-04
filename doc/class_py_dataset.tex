@@ -4,6 +4,22 @@ This class is designed for loading, storing, and managing
 that provide some \texttt{dataset} parameters, and methods
 for manipulating data, such as sub-sampling, exporting, filtering, etc.
 
+\noindent The \classpydataset class provides the following operators:
+
+\gretlfpycmd{[]}
+%\estdesc{Operator for accessing or assigning a \gretlcmd{bundle} element stored under a given \texttt{key}.}
+\begin{lstlisting}[style=pythonstyle]
+gretl._gretl.Bundle[key] -> object
+gretl._gretl.Bundle[key] = object
+\end{lstlisting}
+%\generaldesc{This operator retrieves or inserts (updates) the
+%	\pythcode{object} associated with \texttt{key} in
+%	\pythcode{gretl.\_gretl.Bundle}.
+%	The \pythcode{object} may be one of the following types:
+%	\pythcode{bool}, \pythcode{int}, \pythcode{float},
+%	\pythcode{str}, \pythcode{numpy.ndarray},
+%	or another \pythcode{gretl.\_gretl.Bundle}.}
+
 \noindent\vspace*{10pt}The \classpydataset provides the following public attributes:
 
 \gretlfpycmd{is\_panel}
@@ -66,33 +82,6 @@ for manipulating data, such as sub-sampling, exporting, filtering, etc.
 
 \vspace*{10pt}\noindent The \classpydataset provides the following public methods:
 
-%\gretlfpycmd{\_\_copy\_\_()}
-%\estdesc{Creates a deep copy of the \classpydataset object.}
-%\begin{lstlisting}[style=pythonstylefoot]
-%.__copy__() -> gretl._gretl.Dataset
-%\end{lstlisting}
-%Examples:\newline
-%\pythcodef{import copy; dataset_copy = copy.copy(gretl._gretl.Dataset)}\\
-%\generaldesc{This method returns a new, fully independent
-%	\pythcode{gretl.\_gretl.Dataset} object that duplicates
-%	all elements of the original dataset. Changes made to
-%	the copy do not affect the original object. Although
-%	it is invoked by the standard \pythcode{copy.copy()}
-%	function, it performs a deep copy of all dataset
-%	contents.}
-
-%\gretlfpycmd{\_\_repr\_\_()}
-%\estdesc{Returns a string representation of the \classpydataset object.}
-%\begin{lstlisting}[style=pythonstyle]
-%repr(gretl._gretl.Dataset)
-%print(gretl._gretl.Dataset)
-%\end{lstlisting}
-%\generaldesc{This method returns a concise textual summary of the
-%	\pythcode{gretl.\_gretl.Dataset} object, suitable for inspection
-%	or debugging. It is automatically invoked by the built-in
-%	\pythcode{repr()} function and when the object is printed
-%	in an interactive session.}
-
 \gretlfpycmd{add\_series()}
 \estdesc{Adds new series to dataset.}
 \begin{lstlisting}[style=pythonstylefoot]
@@ -138,6 +127,18 @@ for manipulating data, such as sub-sampling, exporting, filtering, etc.
 \maptof{cdf(d, param, series)}{numpy.ndarray}
 \where{\textit{d} and \textit{param} are defined
 	as in \ref{func:gretl.cdf}.}
+
+\gretlfpycmd{copy()}
+\estdesc{Creates a deep copy of the \classpydataset object.}
+\begin{lstlisting}[style=pythonstylefoot]
+.copy() -> gretl._gretl.Dataset
+\end{lstlisting}
+%Examples:\newline
+%\pythcodef{import copy; dataset_copy = copy.copy(gretl._gretl.Dataset)}\\
+\generaldesc{This method returns a new, fully independent
+	\pythcode{gretl.\_gretl.Dataset} object that duplicates
+	all elements of the original dataset. Changes made to
+	the copy do not affect the original object.}
 
 \gretlfpycmd{corr()}
 \estdesc{By default, prints the pairwise correlation coefficients

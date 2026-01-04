@@ -79,18 +79,15 @@ void init_gretl4py_dataset_py11(py::module_ &m)
         .def("__copy__",
              [](const GretlDataset &self)
              {
-                 return std::make_shared<GretlDataset>(self);
+                 return GretlDataset::copy_gretl_dataset(self);
              },
              R"doc(Return a deep copy of the dataset.)doc")
-        .def("__deepcopy__",
-             [](const GretlDataset &self, py::dict)
-             {
-                 return std::make_shared<GretlDataset>(self);
-             })
+        .def("__deepcopy__", [](const GretlDataset &self, py::dict) { return GretlDataset::copy_gretl_dataset(self); })
         .def("__repr__", &GretlDataset::repr)
         .def("__getitem__", &GretlDataset::getitem_impl<py::slice>)
         .def("__getitem__", &GretlDataset::getitem_impl<py::list>)
         .def("__getitem__", &GretlDataset::getitem_impl<std::string>)
+        .def("copy", [](const GretlDataset &self) { return GretlDataset::copy_gretl_dataset(self); })
         .def("head", &head_tail_print<HEAD>, py::arg("nobs") = 5, py::kw_only())
         .def("headT", &head_tail_print<HEAD_T>, py::arg("nobs") = 5, py::kw_only())
         .def("tail", &head_tail_print<TAIL>, py::arg("nobs") = 5, py::kw_only())

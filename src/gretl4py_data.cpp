@@ -627,6 +627,19 @@ void GretlDataset::free_dset_ (void)
     }
 }
 
+GretlDatasetPtr GretlDataset::copy_gretl_dataset (const GretlDataset &src)
+{
+    //
+    // factory method for copy constructor
+    //
+    auto RES = std::make_shared<GretlDataset>(src);
+
+    // we register GD
+    GDs.insert({RES->id_, RES});
+
+    return RES;
+}
+
 void GretlDataset::add_or_replace_allocated_series_ (gretl_double_ptr data,
                                                      const std::string &name,
                                                      int n, gretl_gchar_ptr label)
@@ -1240,6 +1253,9 @@ GretlDatasetPtr GretlDataset::getitem_impl (const T &slice)
         handle_gretl_error(err_);
     }
     RES->source += " slice: " + slice_str;
+
+    // we register GD
+    GDs.insert({RES->id_, RES});
 
     return RES;
 }

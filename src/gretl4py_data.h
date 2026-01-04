@@ -88,6 +88,8 @@ private:
     gretlopt opt_ = OPT_NONE;               // instance-wide options
     mutable int err_ = 0;
 
+    //GretlDataset (const GretlDataset &src); // copy constructor (always deep copy)
+
     void allocate_dset_ (void);
 
     void free_dset_ (void);
@@ -105,6 +107,9 @@ public:
     GretlDataset (const py::dict &pydict);      // we load dataset from Python's dictionary
     GretlDataset (const GretlDataset &src);     // copy constructor (always deep copy)
     virtual ~GretlDataset (void);               // virtual, because GretlModel use it as std::shared_ptr
+
+    // static methods
+    static GretlDatasetPtr copy_gretl_dataset (const GretlDataset &src);
 
     // instance management
     int get_id (void) const;
