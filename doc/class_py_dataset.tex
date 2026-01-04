@@ -7,20 +7,38 @@ for manipulating data, such as sub-sampling, exporting, filtering, etc.
 \noindent The \classpydataset class provides the following operators:
 
 \gretlfpycmd{[]}
-%\estdesc{Operator for accessing or assigning a \gretlcmd{bundle} element stored under a given \texttt{key}.}
+\estdesc{Slicing operator for a \classpydataset instance, used to reduce
+	its dimension(s).}
 \begin{lstlisting}[style=pythonstyle]
-gretl._gretl.Bundle[key] -> object
-gretl._gretl.Bundle[key] = object
+gretl._gretl.Dataset[rule: slice | list | str] -> gretl._gretl.Dataset
 \end{lstlisting}
-%\generaldesc{This operator retrieves or inserts (updates) the
-%	\pythcode{object} associated with \texttt{key} in
-%	\pythcode{gretl.\_gretl.Bundle}.
-%	The \pythcode{object} may be one of the following types:
-%	\pythcode{bool}, \pythcode{int}, \pythcode{float},
-%	\pythcode{str}, \pythcode{numpy.ndarray},
-%	or another \pythcode{gretl.\_gretl.Bundle}.}
+\where{\pythcodef{rule} is either a sample range, a list of variables,
+	or a logical expression that can be applied to the dataset.}\\\\
+\generaldesc{Using this operator, a dataset may be sub-sampled along one
+	or both dimensions, that is, observations and/or variables. It is
+	important to remember that slicing always returns a copy of the
+	original dataset.\newline
+	Note that nested slicing is supported, which makes the following
+	calls equivalent:
+	\pythcode{dataset[rule1][rule2]} $\equiv$
+	\pythcode{d1 = dataset[rule1]; d2 = d1[rule2]}.
+	However, there are two points to keep in mind:
+	\begin{itemize}
+		\item Since slicing produces a deep copy of the original dataset,
+			the one-line expression \pythcode{dataset[rule1][rule2]}
+			is more memory-efficient. This is because the intermediate
+			temporary object is deallocated automatically, whereas
+			\pythcode{d1 = dataset[rule1]; d2 = d1[rule2]} keeps
+			\pythcode{d1} alive until it is explicitly deleted.
+		\item When slicing along both dimensions, the order of slicing
+			matters for efficiency. Because each slicing operation
+			creates a copy, the first rule should be the one that
+			produces the largest reduction in data, so that less data
+			needs to be copied in subsequent operations.
+	\end{itemize}}
 
-\noindent\vspace*{10pt}The \classpydataset provides the following public attributes:
+
+\noindent\vspace{20pt}The \classpydataset provides the following public attributes:
 
 \gretlfpycmd{is\_panel}
 \estdesc{Checks if we deal with panel-dataset.}
@@ -129,16 +147,16 @@ gretl._gretl.Bundle[key] = object
 	as in \ref{func:gretl.cdf}.}
 
 \gretlfpycmd{clone()}
-\estdesc{Clones the \classpydataset object (deep a copy of).}
+\estdesc{Clones the \classpydataset object (performs a deep copy).}
 \begin{lstlisting}[style=pythonstylefoot]
 .clone() -> gretl._gretl.Dataset
 \end{lstlisting}
-%Examples:\newline
-%\pythcodef{import copy; dataset_copy = copy.copy(gretl._gretl.Dataset)}\\
 \generaldesc{This method returns a new, fully independent
 	\pythcode{gretl.\_gretl.Dataset} object that duplicates
 	all elements of the original dataset. Changes made to
-	the copy do not affect the original object.}
+	the copy do not affect the original object.\newline
+	Note that this is equivalent to:
+	\pythcodef{import copy; dataset\_copy = copy.copy(dataset)}.}
 
 \gretlfpycmd{corr()}
 \estdesc{By default, prints the pairwise correlation coefficients
