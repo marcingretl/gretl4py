@@ -18,6 +18,7 @@
  */
 
 #include "gretl4py.h" /* MUST be at the first position!!! */
+#include "gretl4py_utils.h"
 #include "gretl_calls.h"
 #include <gretl/libset.h>
 extern "C" {
