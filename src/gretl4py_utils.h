@@ -28,10 +28,5 @@ namespace py = pybind11;
 // dataset registry
 //////////////////////////////////////////////////
 
-GretlDatasetPtr get_dataset_by_id (int id);
-
-std::set<int> get_datasets_ids (void);
-
-void register_dataset (const GretlDatasetPtr GD);
 
 #endif // GRETL4PY_UTILS_H

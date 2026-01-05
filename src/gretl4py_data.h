@@ -81,6 +81,7 @@ class GretlDataset : public std::enable_shared_from_this<GretlDataset>
 {
 private:
     static inline int next_obj_id_ = 1;
+    static inline std::map<int, std::weak_ptr<GretlDataset>> GDs_;
     const int id_;                          // dataset's id
     std::unordered_set<int> linked_models_; // models (id-s) which use this dataset
     GretlPrint GP_ = GretlPrint();          // printer (instance wide)
@@ -109,6 +110,12 @@ public:
 
     // static methods
     static GretlDatasetPtr clone (const GretlDataset &src);
+
+    static std::set<int> get_dset_ids (void);
+
+    static GretlDatasetPtr get_dset_by_id (int id);
+
+    static void register_dset (const GretlDatasetPtr GD);
 
     // instance management
     int get_id (void) const;

@@ -635,9 +635,55 @@ GretlDatasetPtr GretlDataset::clone (const GretlDataset &src)
     auto RES = GretlDatasetPtr(new GretlDataset(src));
 
     // we register GD
-    register_dataset(RES);
+    register_dset(RES);
 
     return RES;
+}
+
+std::set<int> GretlDataset::get_dset_ids (void)
+{
+    //
+    // here we return a set of alive dataset's ids
+    // (i.e. we erase already deleted)
+    //
+    std::set<int> res;
+
+    for (auto it = GDs_.begin(); it != GDs_.end();) {
+        // at first we always erase already deleted datasets
+        if (it->second.expired()) {
+            it = GDs_.erase(it);
+        } else {
+            res.insert(it->first);
+            ++it;
+        }
+    }
+
+    return res;
+}
+
+GretlDatasetPtr GretlDataset::get_dset_by_id (int id)
+{
+    //
+    // we return pointer to already registered dataset
+    //
+    auto dset_reg = get_dset_ids();
+
+    if (!dset_reg.count(id)) throw std::invalid_argument("there is no dataset with id = " + std::to_string(id));
+    auto it = GDs_.find(id);
+
+    return it->second.lock();
+}
+
+void GretlDataset::register_dset (const GretlDatasetPtr GD)
+{
+    //
+    // here we register newly created GretlDataset instance
+    //
+    if (!GD) throw std::runtime_error("Attempt to register null dataset");
+
+    auto [it, ok] = GDs_.insert({GD->get_id(), GD});
+
+    if (!ok) throw std::logic_error("Duplicate dataset id: " + std::to_string(GD->get_id()));
 }
 
 void GretlDataset::add_or_replace_allocated_series_ (gretl_double_ptr data,
@@ -1255,7 +1301,7 @@ GretlDatasetPtr GretlDataset::getitem_impl (const T &slice)
     RES->source += " slice: " + slice_str;
 
     // we register GD
-    register_dataset(RES);
+    register_dset(RES);
 
     return RES;
 }
