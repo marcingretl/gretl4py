@@ -71,7 +71,7 @@ mdls = [FAM_he, FAM_hewe, FAM_kl, FAM_irr]
 for m in [FAM_he, FAM_hewe, FAM_kl, FAM_irr]:
     aic = m.aic/m.T - (1 + math.log(2*math.pi))
     sc = m.bic/m.T - (1 + math.log(2*math.pi))
-    print(f"{m.parnames[1:]}, {m.rsq:.4}, {m.adj_rsq():.4}, {aic:.5}, {sc:.5}")
+    print(f"{m.parnames[1:]}, {m.rsq:.4}, {m.adj_rsq:.4}, {aic:.5}, {sc:.5}")
 print("\n")
 gretl.modeltab(mdls)
 

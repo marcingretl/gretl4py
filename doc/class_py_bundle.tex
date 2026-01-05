@@ -13,7 +13,7 @@ with a key which can used to retrieve it subsequently.
 
 \gretlfpycmd{Bundle()}
 \estdesc{Default constructor}
-\begin{lstlisting}[style=pythonstyle]
+\begin{lstlisting}[style=pythonstylefoot]
 Bundle() -> gretl._gretl.Bundle
 \end{lstlisting}
 
@@ -22,7 +22,7 @@ Bundle() -> gretl._gretl.Bundle
 \gretlfpycmd{[]}
 \estdesc{Operator for accessing or assigning a \gretlcmd{bundle}
 	element stored under a given \texttt{key}.}
-\begin{lstlisting}[style=pythonstyle]
+\begin{lstlisting}[style=pythonstylefoot]
 gretl._gretl.Bundle[key] -> object
 gretl._gretl.Bundle[key] = object
 \end{lstlisting}
@@ -38,13 +38,13 @@ gretl._gretl.Bundle[key] = object
 
 \gretlfpycmd{keys()}
 \estdesc{Gets all \gretlcmd{bundle} keys.}
-\begin{lstlisting}[style=pythonstyle]
+\begin{lstlisting}[style=pythonstylefoot]
 .keys() -> list
 \end{lstlisting}
 
 \gretlfpycmd{print()}\label{met:gretlbundle::print}
 \estdesc{Prints the contents of the \gretlcmd{bundle} in \gretl-style.}
-\begin{lstlisting}[style=pythonstyle]
+\begin{lstlisting}[style=pythonstylefoot]
 .print(tree: bool = False)
 \end{lstlisting}
 \generaldesc{If \pythcode{tree=True} the effect is that if the
@@ -54,6 +54,6 @@ gretl._gretl.Bundle[key] = object
 
 \gretlfpycmd{to\_dict()}
 \estdesc{Converts \gretl's \gretlcmd{bundle} to \python['s] \pythcode{dict}.}
-\begin{lstlisting}[style=pythonstyle]
+\begin{lstlisting}[style=pythonstylefoot]
 .to_dict() -> dict
 \end{lstlisting}

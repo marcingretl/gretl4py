@@ -84,6 +84,7 @@ void init_gretl4py_model_py11(py::module_ &m)
 
     // Native Single Equation libgretl MODEL (NSE)
     py::class_<GretlModel_NSE, GretlModel, std::unique_ptr<GretlModel_NSE>>(m, "Model_NSE", py::dynamic_attr())
+        .def_property_readonly("adj_rsq", &GretlModel_NSE::adj_rsq)
         .def("restrict", &GretlModel_NSE::restrict,
              py::arg("impose").none(false), py::kw_only())
         .def("save_yhat", &GretlModel_NSE::gretl_get_fit_or_resid<M_YHAT>, py::arg("name").none(true) = "")
@@ -91,7 +92,6 @@ void init_gretl4py_model_py11(py::module_ &m)
         .def("save_uhat_sq", &GretlModel_NSE::gretl_get_fit_or_resid<M_UHAT2>, py::arg("name").none(true) = "")
         .def("save_ahat", &GretlModel_NSE::gretl_get_fit_or_resid<M_AHAT>, py::arg("name").none(true) = "")
         .def("save_h", &GretlModel_NSE::gretl_get_fit_or_resid<M_H>, py::arg("name").none(true) = "")
-        .def("adj_rsq", &GretlModel_NSE::adj_rsq)
         .def("test",
              [](GretlModel_NSE &self, const std::string &type, const py::kwargs &kwargs)
              {

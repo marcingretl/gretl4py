@@ -267,8 +267,8 @@ Examples:\newline
 .get_accessor(name: str) -> object
 \end{lstlisting}
 \generaldesc{Note: this method retrieves accessors related either
-	to the instance dataset or to general \lgretl accessors
-	(such as \gretlcmd{$version}).}
+	to the \classpydataset instance or to general \lgretl accessors
+	(such as \gretlcmd{\$version}).}
 
 \gretlfpycmd{get\_id()}
 \estdesc{This method retrieves instance dataset id.}
@@ -283,18 +283,16 @@ Examples:\newline
 \end{lstlisting}
 
 \gretlfpycmd{head()}
-\estdesc{XXX}
-\begin{lstlisting}[style=pythonstyle]
-.head(nobs=int)
+\estdesc{Offers a quick way to show just the top of a dataset.}
+\begin{lstlisting}[style=pythonstylefoot]
+.head(nobs: int = 5)
 \end{lstlisting}
-\generaldesc{XXX}
 
 \gretlfpycmd{headT()}
-\estdesc{XXX}
-\begin{lstlisting}[style=pythonstyle]
-.headT(nobs=int)
+\estdesc{Offers a quick way to show just the top of a transposed dataset.}
+\begin{lstlisting}[style=pythonstylefoot]
+.headT(nobs: int = 5)
 \end{lstlisting}
-\generaldesc{XXX}
 
 \gretlfpycmd{hpfilt()}
 \estdesc{Returns the cycle component from application of
@@ -644,18 +642,16 @@ Examples:\newline
 	deviation (with a degrees of freedom correction of 1).}
 
 \gretlfpycmd{tail()}
-\estdesc{XXX}
-\begin{lstlisting}[style=pythonstyle]
-.tail(nobs=int)
+\estdesc{Offers a quick way to show just the bottom of a dataset.}
+\begin{lstlisting}[style=pythonstylefoot]
+.tail(nobs: int = 5)
 \end{lstlisting}
-\generaldesc{XXX}
 
 \gretlfpycmd{tailT()}
-\estdesc{XXX}
-\begin{lstlisting}[style=pythonstyle]
-.tailT(nobs=int)
+\estdesc{Offers a quick way to show just the bottom of a transposed dataset.}
+\begin{lstlisting}[style=pythonstylefoot]
+.tailT(nobs: int = 5)
 \end{lstlisting}
-\generaldesc{XXX}
 
 \gretlfpycmd{test()}\label{met:gretldataset::test}
 \estdesc{General interface to dataset-based tests.}
