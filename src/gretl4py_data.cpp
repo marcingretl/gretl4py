@@ -643,12 +643,12 @@ GretlDatasetPtr GretlDataset::clone (const GretlDataset &src)
     //
     // factory method for copy constructor
     //
-    auto RES = GretlDatasetPtr(new GretlDataset(src));
+    auto GD = GretlDatasetPtr(new GretlDataset(src));
 
     // we register GD
-    register_dset_(RES);
+    register_dset_(GD);
 
-    return RES;
+    return GD;
 }
 
 GretlDatasetPtr GretlDataset::get_data (const py::object &src,
@@ -663,14 +663,14 @@ GretlDatasetPtr GretlDataset::get_data (const py::object &src,
     bool register_dataset = true;
 
     if (is_pystr(src)) {
-      GD = std::make_shared<GretlDataset>(src.cast<std::string>(), kwargs);
+      GD = GretlDatasetPtr(new GretlDataset(src.cast<std::string>(), kwargs));
     } else if (is_pydict(src)) {
-      GD = std::make_shared<GretlDataset>(src.cast<py::dict>());
+      GD = GretlDatasetPtr(new GretlDataset(src.cast<py::dict>()));
     } else if (is_pyint(src)) {
       GD = get_dset_by_id_(src.cast<int>());
       register_dataset = false;
     } else {
-      throw std::invalid_argument("get_data(): unsupported src type");
+      throw std::invalid_argument("GretlDataset::get_data(): unsupported src type");
     }
     if (!GD) handle_gretl_error(E_DATA);
 
@@ -1584,7 +1584,7 @@ void GretlDataset::set_as_default (void)
     is_default = true;
 }
 
-int GretlDataset::get_id (void) const
+int GretlDataset::get_id (void) const noexcept
 {
     return id_;
 }
