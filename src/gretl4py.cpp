@@ -63,38 +63,7 @@ PYBIND11_MODULE(_gretl, m)
           py::arg("do_print") = false);
 
     // gretl4py hidden functions
-    m.def("_get_data",
-          [](const py::object &src, const std::string &source,
-             const py::kwargs &kwargs) -> GretlDatasetPtr
-          {
-              //
-              // factory function to load datasets and avoid
-              // binding the class constructor on the Python side
-              //
-              GretlDatasetPtr GD;
-              bool register_dataset = true;
-
-              if (is_pystr(src)) {
-                  GD = std::make_shared<GretlDataset>(src.cast<std::string>(), kwargs);
-              } else if (is_pydict(src)) {
-                  GD = std::make_shared<GretlDataset>(src.cast<py::dict>());
-              } else if (is_pyint(src)) {
-                  GD = GretlDataset::get_dset_by_id(src.cast<int>());
-                  register_dataset = false;
-              } else {
-                  throw std::invalid_argument("get_data(): unsupported src type");
-              }
-              if (!GD) handle_gretl_error(E_DATA);
-
-              // we set some info
-              if (GD->get_id() == 1) GD->set_as_default();
-              if (!source.empty()) GD->source = source;
-
-              // we register GD
-              if (register_dataset) GretlDataset::register_dset(GD);
-
-              return GD;
-          },
+    m.def("_get_data", &GretlDataset::get_data,
           py::arg("src").none(false),
           py::arg("source").none(true) = "", py::kw_only());
     m.def("_get_datasets_ids", &GretlDataset::get_dset_ids);

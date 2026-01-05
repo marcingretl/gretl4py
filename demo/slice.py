@@ -32,3 +32,7 @@ print(d5)
 print(d5.varnames())
 d5.head(6)
 d5.tailT()
+
+# data status
+gretl.show_data_status()
+

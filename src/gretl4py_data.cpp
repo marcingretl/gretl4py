@@ -613,18 +613,29 @@ GretlDataset::~GretlDataset (void)
     free_dset_();
 }
 
-void GretlDataset::allocate_dset_ (void)
+GretlDatasetPtr GretlDataset::get_dset_by_id_ (int id)
 {
-    free_dset_();
-    dset = datainfo_new();
+    //
+    // we return pointer to already registered dataset
+    //
+    auto dset_reg = get_dset_ids();
+
+    if (!dset_reg.count(id)) throw std::invalid_argument("there is no dataset with id = " + std::to_string(id));
+    auto it = GDs_.find(id);
+
+    return it->second.lock();
 }
 
-void GretlDataset::free_dset_ (void)
+void GretlDataset::register_dset_ (const GretlDatasetPtr GD)
 {
-    if (dset) {
-        destroy_dataset(dset);
-        dset = NULL;
-    }
+    //
+    // here we register newly created GretlDataset instance
+    //
+    if (!GD) throw std::runtime_error("Attempt to register null dataset");
+
+    auto [it, ok] = GDs_.insert({GD->get_id(), GD});
+
+    if (!ok) throw std::logic_error("Duplicate dataset id: " + std::to_string(GD->get_id()));
 }
 
 GretlDatasetPtr GretlDataset::clone (const GretlDataset &src)
@@ -635,9 +646,42 @@ GretlDatasetPtr GretlDataset::clone (const GretlDataset &src)
     auto RES = GretlDatasetPtr(new GretlDataset(src));
 
     // we register GD
-    register_dset(RES);
+    register_dset_(RES);
 
     return RES;
+}
+
+GretlDatasetPtr GretlDataset::get_data (const py::object &src,
+                                        const std::string &source,
+                                        const py::kwargs &kwargs)
+{
+    //
+    // main factory method for getting data (loading from src or registry)
+    // defined to avoid binding the class constructor on the Python side
+    //
+    GretlDatasetPtr GD;
+    bool register_dataset = true;
+
+    if (is_pystr(src)) {
+      GD = std::make_shared<GretlDataset>(src.cast<std::string>(), kwargs);
+    } else if (is_pydict(src)) {
+      GD = std::make_shared<GretlDataset>(src.cast<py::dict>());
+    } else if (is_pyint(src)) {
+      GD = get_dset_by_id_(src.cast<int>());
+      register_dataset = false;
+    } else {
+      throw std::invalid_argument("get_data(): unsupported src type");
+    }
+    if (!GD) handle_gretl_error(E_DATA);
+
+    // we set some info
+    if (GD->get_id() == 1) GD->set_as_default();
+    if (!source.empty()) GD->source = source;
+
+    // we register GD
+    if (register_dataset) register_dset_(GD);
+
+    return GD;
 }
 
 std::set<int> GretlDataset::get_dset_ids (void)
@@ -661,29 +705,18 @@ std::set<int> GretlDataset::get_dset_ids (void)
     return res;
 }
 
-GretlDatasetPtr GretlDataset::get_dset_by_id (int id)
+void GretlDataset::allocate_dset_ (void)
 {
-    //
-    // we return pointer to already registered dataset
-    //
-    auto dset_reg = get_dset_ids();
-
-    if (!dset_reg.count(id)) throw std::invalid_argument("there is no dataset with id = " + std::to_string(id));
-    auto it = GDs_.find(id);
-
-    return it->second.lock();
+    free_dset_();
+    dset = datainfo_new();
 }
 
-void GretlDataset::register_dset (const GretlDatasetPtr GD)
+void GretlDataset::free_dset_ (void)
 {
-    //
-    // here we register newly created GretlDataset instance
-    //
-    if (!GD) throw std::runtime_error("Attempt to register null dataset");
-
-    auto [it, ok] = GDs_.insert({GD->get_id(), GD});
-
-    if (!ok) throw std::logic_error("Duplicate dataset id: " + std::to_string(GD->get_id()));
+    if (dset) {
+        destroy_dataset(dset);
+        dset = NULL;
+    }
 }
 
 void GretlDataset::add_or_replace_allocated_series_ (gretl_double_ptr data,
@@ -1301,7 +1334,7 @@ GretlDatasetPtr GretlDataset::getitem_impl (const T &slice)
     RES->source += " slice: " + slice_str;
 
     // we register GD
-    register_dset(RES);
+    register_dset_(RES);
 
     return RES;
 }

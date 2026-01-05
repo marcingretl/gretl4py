@@ -91,6 +91,10 @@ private:
 
     GretlDataset (const GretlDataset &src); // copy constructor (always deep copy)
 
+    static GretlDatasetPtr get_dset_by_id_ (int id);
+
+    static void register_dset_ (const GretlDatasetPtr GD);
+
     void allocate_dset_ (void);
 
     void free_dset_ (void);
@@ -111,11 +115,11 @@ public:
     // static methods
     static GretlDatasetPtr clone (const GretlDataset &src);
 
+    static GretlDatasetPtr get_data (const py::object &src,
+                                     const std::string &source,
+                                     const py::kwargs &kwargs);
+
     static std::set<int> get_dset_ids (void);
-
-    static GretlDatasetPtr get_dset_by_id (int id);
-
-    static void register_dset (const GretlDatasetPtr GD);
 
     // instance management
     int get_id (void) const;
