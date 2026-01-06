@@ -1,4 +1,4 @@
-\section{Estimators}\label{sec:estimators_python}
+\section{Native estimators}\label{sec:estimators_python}
 In order to illustrate the \gretlpy estimating facilities,
 we take the as implicit that \pythcode{formula: str} can
 take one of the following forms:
@@ -22,8 +22,12 @@ take one of the following forms:
 			\hfill\hypertarget{theGstyleFomula}{(\textcolor{red}{\theequation})}
 		\end{center}
 \end{itemize}
-The complete list of available estimators is as follows.\newline 
-Note that all of these are factory functions, i.e., they
+The complete list of available native estimators is as follows.%
+\footnote{By ``native'' we mean an estimator implemented directly
+	in \lgretl, as opposed to econometric methods (estimators,
+	tests, etc.) available as contributed packages
+	(see Section~\ref{sec:classpypackage}).}\newline
+Note that all of these are factory functions, \emph{i.e.}, they
 return an allocated \classpymodel instance.
 
 \est{ar}
