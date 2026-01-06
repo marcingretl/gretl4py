@@ -149,6 +149,30 @@ Hierarchy of this class is shown at Figure~\ref{fig:model_class_hierarchy}.
 .stderr -> numpy.ndarray
 \end{lstlisting}
 
+\gretlfpycmd{tests}\label{attr:gretlmodel::tests}
+\estdesc{List storing summaries of tests performed on model.}
+\begin{lstlisting}[style=pythonstylefoot]
+.tests -> list
+\end{lstlisting}
+\begin{generaldescenv}
+	This is a \pythcode{list} of \pythcode{dict} objects that is
+	created immediately after the first test (see
+	\ref{met:gretlmodel::test}) is performed. That is, this attribute is
+	\emph{not} created when the \pythcode{gretl.Model} instance itself is
+	initialized. Each \pythcode{dict} containing test results has the
+	following structure:
+	\begin{lstlisting}[style=pythonstylefoot]
+{
+"test":    <test statistic>,
+"pvalue":  <p-value>,
+"summary": <textual output>
+}
+	\end{lstlisting}
+	Results from consecutive tests are appended to the \pythcode{tests}
+	attribute. Therefore, to access the results of the most recently
+	performed test, one can use \pythcode{tests[-1]}.
+\end{generaldescenv}
+
 \gretlfpycmd{uhat}
 \estdesc{Holds model residuals.}
 \begin{lstlisting}[style=pythonstylefoot]
@@ -231,49 +255,184 @@ Hierarchy of this class is shown at Figure~\ref{fig:model_class_hierarchy}.
 	\item[]\maptoopt{full=True}{--full}{\seegretlmanual}
 \end{itemize}
 
+\gretlfpycmd{save\_ahat()}
+\estdesc{Adds the estimates of the individual effects (fixed-effects or random-effects panel data model only).}
+\begin{lstlisting}[style=pythonstylefoot]
+.save_ahat(name: str = '') -> str
+\end{lstlisting}
+\mapto[0]{name = \$ahat}
+\generaldesc{Note: if \textit{name} is not provided, the generated series 
+	will be named according to the \lgretl['s] pattern.}
 
 \gretlfpycmd{save\_h()}
-\estdesc{XXX}
-\begin{lstlisting}[style=pythonstyle]
-.save_h(name=str) -> str
+\estdesc{Adds the estimated conditional variance to the dataset under the given name (GARCH model only).}
+\begin{lstlisting}[style=pythonstylefoot]
+.save_h(name: str = '') -> str
 \end{lstlisting}
+\mapto[0]{name = \$h}
+\generaldesc{Note: if \textit{name} is not provided, the generated series 
+	will be named according to the \lgretl['s] pattern.}
 
 \gretlfpycmd{save\_uhat()}
 \estdesc{Adds residuals to the dataset under the given name.}
-\begin{lstlisting}[style=pythonstyle]
+\begin{lstlisting}[style=pythonstylefoot]
 .save_uhat(name: str = '') -> str
 \end{lstlisting}
 \mapto[0]{name = \$uhat}
 \generaldesc{Note: if \textit{name} is not provided, the generated series 
-	will be named according to the following pattern: \texttt{m\_ID\_uhat}, 
-	where \texttt{ID} is the model's ID.}
+	will be named according to the \lgretl['s] pattern.}
 
 \gretlfpycmd{save\_uhat\_sq()}
-\estdesc{XXX}
-\begin{lstlisting}[style=pythonstyle]
-.save_uhat_sq(name=str) -> str
+\estdesc{Adds squares of residuals to the dataset under the given name.}
+\begin{lstlisting}[style=pythonstylefoot]
+.save_uhat_sq(name: str = '') -> str
 \end{lstlisting}
+\mapto[0]{name = \$uhat\^2}
+\generaldesc{Note: if \textit{name} is not provided, the generated series 
+	will be named according to the \lgretl['s] pattern.}
 
 \gretlfpycmd{save\_yhat()}
-\estdesc{XXX}
-\begin{lstlisting}[style=pythonstyle]
-.save_yhat(name=str) -> str
+\estdesc{Adds fitted values to the dataset under the given name.}
+\begin{lstlisting}[style=pythonstylefoot]
+.save_yhat(name: str = '') -> str
 \end{lstlisting}
+\mapto[0]{name = \$yhat}
+\generaldesc{Note: if \textit{name} is not provided, the generated series 
+	will be named according to the \lgretl['s] pattern.}
 
-\gretlfpycmd{save\_yhat()}
-\estdesc{XXX}
-\begin{lstlisting}[style=pythonstyle]
-	.save_yhat(name=str) -> str
+\gretlfpycmd{test()}\label{met:gretlmodel::test}
+\estdesc{General interface to model-based tests.}
+\begin{lstlisting}[style=pythonstylefoot]
+.test(type: str[, varlist: str, OPTS])
 \end{lstlisting}
+\where{\pythcode{type: str} refers to one of
+	the following: \test{arch}, \test{autocorr}, \test{bkw},
+	\test{breusch-pagan}, \test{comfac} \test{corrgm}, \test{cusum},	
+	\test{leverage}, \test{logs}, \test{normality}, \test{panel},	
+	\test{panspec}, \test{qlrtest}, \test{reset}, \test{squares},	
+	\test{vif}, \test{white}, \test{white-nocross}, \test{xdepend}.}\\\\	
+\generaldesc{Results of performed tests are appended to the
+	\pythcode{.tests} attribute (see \ref{attr:gretlmodel::tests}).
+	The following sections describe the API associated with each test:}\\
+\maptot{modtest [ order ]}{arch}
+\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
+	\item[]\maptoopt{arch=True}{--arch}{ARCH}
+	\item[]\maptoopt{quiet=True}{--quiet}{don't print details}
+	\item[]\maptoopt{silent=True}{--silent}{don't print anything}
+\end{itemize}
+\maptot{modtest [ order ]}{autocorr}
+\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
+	\item[]\maptoopt{autocorr=True}{--autocorr}{serial correlation}
+	\item[]\maptoopt{quiet=True}{--quiet}{don't print details}
+	\item[]\maptoopt{silent=True}{--silent}{don't print anything}
+\end{itemize}
+\maptot{bkw}{bkw}
+\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
+	\item[]\maptoopt{quiet=True}{--quiet}{don't print anything}
+\end{itemize}
+\maptot{modtest [ order ]}{breusch-pagan}
+\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
+	\item[]\maptoopt{breusch\_pagan=True}{--breusch-pagan}{heteroskedasticity, Breusch-Pagan}
+	\item[]\maptoopt{robust=True}{--robust}{robust variance estimate}
+	\item[]\maptoopt{quiet=True}{--quiet}{don't print details}
+	\item[]\maptoopt{silent=True}{--silent}{don't print anything}
+\end{itemize}
+\maptot{modtest [ order ]}{comfac}
+\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
+	\item[]\maptoopt{comfac=True}{--comfac}{common factor restriction, AR1 models only}
+	\item[]\maptoopt{quiet=True}{--quiet}{don't print details}
+	\item[]\maptoopt{silent=True}{--silent}{don't print anything}
+\end{itemize}
+\maptot{corrgm y [ order ]}{corrgm}
+\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
+	\item[]\maptoopt{plot=mode}{--plot=mode-or-filename}{\seegretlmanual}
+	\item[]\maptoopt{silent=True}{--silent}{don't print anything}
+	\item[]\maptoopt{acf\_only=True}{--acf-only}{omit partial autocorrelations}
+	\item[]\maptoopt{bartlett=True}{--bartlett}{use Bartlett standard errors}
+\end{itemize}
+Examples:\newline
+\pythcodef{.test(type='corrgm', y='x', order=12)}\\
+\pythcodef{.test(type='corrgm', y='GDP', order=12, acf\_only=True)}\\
+\maptot{cusum}{cusum}
+\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
+	\item[]\maptoopt{squares=True}{--squares}{perform the CUSUMSQ test}
+	\item[]\maptoopt{quiet=True}{--quiet}{just print the Harvey--Collier test}
+	\item[]\maptoopt{plot=mode}{--plot=mode-or-filename}{\seegretlmanual}
+\end{itemize}
+\maptot{leverage}{leverage}
+\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
+	\item[]\maptoopt{save=True}{--save}{save the resulting series}
+	\item[]\maptoopt{overwrite=True}{--overwrite}{OK to overwrite existing series}
+	\item[]\maptoopt{quiet=True}{--quiet}{don't print results}
+	\item[]\maptoopt{plot=mode}{--plot=mode-or-filename}{\seegretlmanual}
+\end{itemize}
+\maptot{modtest [ order ]}{logs}
+\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
+	\item[]\maptoopt{logs=True}{--logs}{nonlinearity, logs}
+	\item[]\maptoopt{quiet=True}{--quiet}{don't print details}
+	\item[]\maptoopt{silent=True}{--silent}{don't print anything}
+\end{itemize}
+\maptot{modtest [ order ]}{normality}
+\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
+	\item[]\maptoopt{normality=True}{--normality}{normality of residual}
+	\item[]\maptoopt{quiet=True}{--quiet}{don't print details}
+	\item[]\maptoopt{silent=True}{--silent}{don't print anything}
+\end{itemize}
+\maptot{modtest [ order ]}{panel}
+\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
+	\item[]\maptoopt{panel=True}{--panel}{heteroskedasticity, groupwise}
+	\item[]\maptoopt{quiet=True}{--quiet}{don't print details}
+	\item[]\maptoopt{silent=True}{--silent}{don't print anything}
+\end{itemize}
+\maptot{panspec}{panspec}
+\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
+	\item[]\maptoopt{nerlove=True}{--nerlove}{use Nerlove method for random effects}
+	\item[]\maptoopt{matrix\_diff=True}{--matrix_diff}{use matrix-difference method for Hausman test}
+	\item[]\maptoopt{quiet=True}{--quiet}{Suppress printed output}
+\end{itemize}
+\maptot{qlrtest}{qlrtest}
+\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
+	\item[]\maptoopt{limit\_to=list}{--limit-to=list}{limit test to subset of regressors}
+	\item[]\maptoopt{plot=mode}{--plot=mode-or-filename}{\seegretlmanual}
+	\item[]\maptoopt{quiet=True}{--quiet}{suppress printed output}
+\end{itemize}
+\maptot{reset}{reset}
+\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
+	\item[]\maptoopt{quiet=True}{--quiet}{don't print the auxiliary regression}
+	\item[]\maptoopt{silent=True}{--silent}{don't print anything}
+	\item[]\maptoopt{squares\_only=True}{--squares-only}{compute the test using only the squares}
+	\item[]\maptoopt{cubes\_only=True}{--cubes-only}{compute the test using only the cubes}
+	\item[]\maptoopt{robust=True}{--robust}{use robust standard errors in auxiliary regression}
+\end{itemize}
+\maptot{modtest [ order ]}{squares}
+\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
+	\item[]\maptoopt{squares=True}{--squares}{nonlinearity, squares}
+	\item[]\maptoopt{quiet=True}{--quiet}{don't print details}
+	\item[]\maptoopt{silent=True}{--silent}{don't print anything}
+\end{itemize}
+\maptot{vif}{vif}
+\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
+	\item[]\maptoopt{quiet=True}{--quiet}{don't print anything}
+\end{itemize}
+\maptot{modtest [ order ]}{white}
+\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
+	\item[]\maptoopt{white=True}{--white}{heteroskedasticity, White's test}
+	\item[]\maptoopt{quiet=True}{--quiet}{don't print details}
+	\item[]\maptoopt{silent=True}{--silent}{don't print anything}
+\end{itemize}
+\maptot{modtest [ order ]}{white-nocross}
+\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
+	\item[]\maptoopt{white\_nocross=True}{--white-nocross}{White's test, squares only}
+	\item[]\maptoopt{quiet=True}{--quiet}{don't print details}
+	\item[]\maptoopt{silent=True}{--silent}{don't print anything}
+\end{itemize}
+\maptot{modtest [ order ]}{xdepend}
+\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
+	\item[]\maptoopt{xdepend=True}{--xdepend}{cross-sectional dependence, panel data only}
+	\item[]\maptoopt{quiet=True}{--quiet}{don't print details}
+	\item[]\maptoopt{silent=True}{--silent}{don't print anything}
+\end{itemize}
 
-\gretlfpycmd{test()}
-\estdesc{XXX}
-\begin{lstlisting}[style=pythonstyle]
-.test(type=str, [OPTS])
-\end{lstlisting}
-\generaldesc{\gretlcmd{bkw, cusum, leverage, panspec, reset, qlrtest, vif,
-		corrgm, arch, autocorr, breusch-pagan, comfac, logs, normality,
-		panel, squares, white, white-nocross, xdepend}}
 
 \paragraph{The \pythcodeb{gretl.\_gretl.Model\_NSE\_nl} class provides the following public methods}\mbox{}
 
@@ -340,6 +499,9 @@ gretl._gretl.Model_var.irf(targ=str, shock=str, alpha=float)
 \begin{lstlisting}[style=pythonstyle]
 gretl._gretl.Model_var.save_uhat(eqn=int, name=str) -> str
 \end{lstlisting}
+\generaldesc{Note: if \textit{name} is not provided, the generated series 
+	will be named according to the following pattern: \texttt{m\_ID\_uhat}, 
+	where \texttt{ID} is the equation's ID.}
 
 \paragraph{The \pythcodeb{gretl.\_gretl.Model\_vecm} class provides the following public methods}\mbox{}
 

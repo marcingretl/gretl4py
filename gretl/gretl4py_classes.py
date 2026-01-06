@@ -230,7 +230,7 @@ def show_data_status ():
     """List of available datasets."""
 
     # get ids of all registered datasets
-    reg_datasets = _gretl._get_datasets_ids()
+    reg_datasets = sorted(_gretl._get_datasets_ids())
     if len(reg_datasets) > 0:
         print('All currently registered datasets (id): ', reg_datasets, '\n')
 

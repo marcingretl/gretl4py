@@ -1,0 +1,32 @@
+\section{}\label{sec:gretl4py:data:dict}
+\python{'s'} dictionary, to be understood by \gretlpy,
+must have the following entries:
+\begin{itemize}
+	\item \pythcode{varname}: A list containing the variable names.
+	\item \pythcode{obs\_labels}: A list containing the observation labels.
+	\item \pythcode{data\_array}: A \pkg{numpy} array (either column-major
+	or row-major format) containing the observations for the variables.
+	\item \pythcode{periodicity}: An integer indicating the data's periodicity,
+	as defined in \cite{gretl_command}. A brief explanation is as follows:
+	\begin{itemize}
+		\item For time-series data:
+		\begin{itemize}
+			\item 1 = annual,
+			\item 4 = quarterly,
+			\item 12 = monthly,
+			\item 52 = weekly,
+			\item 5, 6, or 7 = daily,
+			\item 24 = hourly.
+		\end{itemize}
+		\item For panel data: The periodicity represents the number
+		of rows per data block. This corresponds to:
+		\begin{itemize}
+			\item The number of cross-sectional units in the case
+			of stacked cross-sections, or
+			\item The number of time periods in the case of
+			stacked time-series data.
+		\end{itemize}
+		\item For simple cross-sectional data: The periodicity should
+		be set to~1.
+	\end{itemize}
+\end{itemize}
