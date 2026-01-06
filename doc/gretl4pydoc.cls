@@ -1,9 +1,9 @@
 \NeedsTeXFormat{LaTeX2e}
 \ProvidesClass{gretl4pydoc}
 \DeclareOption*{
-	\PassOptionsToClass{\CurrentOption}{article}}
+	\PassOptionsToClass{\CurrentOption}{report}}
 \ProcessOptions
-\LoadClass[a4paper,11pt,twoside]{article}
+\LoadClass[a4paper,11pt,twoside]{report}
 \RequirePackage[utf8]{inputenc}
 \RequirePackage[pdftex]{xcolor}
 \RequirePackage[]{graphicx}

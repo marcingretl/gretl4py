@@ -1,4 +1,4 @@
-\subsubsection{\classpymodel}\label{sec:class_py_model}
+\subsection{\classpymodel}\label{sec:class_py_model}
 The \gretlpy module implements the \classpymodel class, which is used
 to manage the definition, estimation, and output of econometric models.
 Through this class, \gretlpy provides interfaces to native \lgretl
@@ -67,7 +67,8 @@ Hierarchy of this class is shown at Figure~\ref{fig:model_class_hierarchy}.
 \end{landscape}
 
 
-\paragraph{The \classpymodelb class provides the following public attributes.}\mbox{}
+\subsubsection{\classpymodelb attributes}
+The \classpymodel class provides the following public attributes:
 
 \noindent Note, that some of them may be available for certain estimators only.
 
@@ -190,7 +191,8 @@ Hierarchy of this class is shown at Figure~\ref{fig:model_class_hierarchy}.
 	\texttt{bp\_yhat} entry of \gretlcmd{\$model} bundle is returned.}
 
 
-\paragraph{The \classpymodelb provides the following public methods}\mbox{}
+\subsubsection{\classpymodelb methods}
+The \classpymodel provides the following public methods:
 
 \gretlfpycmd{attrs()}
 \estdesc{Prints a listing of the attributes of a model.}
@@ -234,7 +236,9 @@ Hierarchy of this class is shown at Figure~\ref{fig:model_class_hierarchy}.
 .get_formula() -> str
 \end{lstlisting}
 
-\paragraph{The \pythcodeb{gretl.\_gretl.Model\_NSE} class provides the following public methods}\mbox{}
+
+\subsubsection{\pythcodeb{gretl.\_gretl.Model\_NSE} methods}
+The \pythcode{gretl.\_gretl.Model\_NSE} class provides the following public methods:
 
 \gretlfpycmd{oddsratio()}
 \estdesc{Pretty-prints odds ratios for a logit model (if available).}
@@ -434,7 +438,8 @@ Examples:\newline
 \end{itemize}
 
 
-\paragraph{The \pythcodeb{gretl.\_gretl.Model\_NSE\_nl} class provides the following public methods}\mbox{}
+\subsubsection{\pythcodeb{gretl.\_gretl.Model\_NSE\_nl} methods}
+The \pythcode{gretl.\_gretl.Model\_NSE\_nl} class provides the following public methods:
 
 \gretlfpycmd{add\_deriv()}
 \estdesc{XXX}
@@ -479,8 +484,8 @@ Examples:\newline
 \end{lstlisting}
 
 
-
-\paragraph{The \pythcodeb{gretl.\_gretl.Model\_var} class provides the following public methods}\mbox{}
+\subsubsection{\pythcodeb{gretl.\_gretl.Model\_var} methods}
+The \pythcode{gretl.\_gretl.Model\_var} class provides the following public methods:
 
 \gretlfpycmd{irf()}
 \estdesc{XXX}
@@ -503,7 +508,8 @@ gretl._gretl.Model_var.save_uhat(eqn=int, name=str) -> str
 	will be named according to the following pattern: \texttt{m\_ID\_uhat}, 
 	where \texttt{ID} is the equation's ID.}
 
-\paragraph{The \pythcodeb{gretl.\_gretl.Model\_vecm} class provides the following public methods}\mbox{}
+\subsubsection{\pythcodeb{gretl.\_gretl.Model\_vecm} methods}
+The \pythcode{gretl.\_gretl.Model\_vecm} class provides the following public methods:
 
 \gretlfpycmd{save\_ec\_term()}
 \estdesc{XXX}
@@ -512,7 +518,8 @@ gretl._gretl.Model_vecm.(nr=int, name=str) -> str
 \end{lstlisting}
 
 
-\paragraph{The \pythcodeb{gretl.\_gretl.Model\_NME} class provides the following public methods}\mbox{}
+\subsubsection{\pythcodeb{gretl.\_gretl.Model\_NME} methods}
+The \pythcode{gretl.\_gretl.Model\_NME} class provides the following public methods:
 
 \gretlfpycmd{restrict()}
 \estdesc{XXX}

@@ -1,4 +1,4 @@
-\subsubsection{\classpybundle}\label{sec:classpybundle}
+\subsection{\classpybundle}\label{sec:classpybundle}
 A \gretlcmd{bundle} is a container or wrapper for various
 sorts of objects---primarily scalars, matrices, strings, arrays
 and bundles. (Yes, a \gretlcmd{bundle} can contain other bundles).\newline
@@ -9,7 +9,8 @@ array: each item placed in the \gretlcmd{bundle} is associated
 with a key which can used to retrieve it subsequently.
 
 
-\paragraph{The \classpybundleb provides the following constructor}\mbox{}
+\subsubsection{\classpybundleb constructors}
+The \classpybundle provides the following constructor:
 
 \gretlfpycmd{Bundle()}
 \estdesc{Default constructor}
@@ -17,7 +18,9 @@ with a key which can used to retrieve it subsequently.
 Bundle() -> gretl._gretl.Bundle
 \end{lstlisting}
 
-\paragraph{The \classpybundleb class provides the following operators}\mbox{}
+
+\subsubsection{\classpybundleb operators}
+The \classpybundle class provides the following operators:
 
 \gretlfpycmd{[]}
 \estdesc{Operator for accessing or assigning a \gretlcmd{bundle}
@@ -34,7 +37,9 @@ gretl._gretl.Bundle[key] = object
 	\pythcode{str}, \pythcode{numpy.ndarray},
 	or another \pythcode{gretl.\_gretl.Bundle}.}
 
-\paragraph{The \classpybundleb class provides the following public methods}\mbox{}
+
+\subsubsection{\classpybundleb public methods}
+The \classpybundle class provides the following public methods:
 
 \gretlfpycmd{keys()}
 \estdesc{Gets all \gretlcmd{bundle} keys.}

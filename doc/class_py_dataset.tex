@@ -1,11 +1,12 @@
-\subsubsection{\classpydataset}\label{sec:classpydataset}
+\subsection{\classpydataset}\label{sec:classpydataset}
 This class is designed for loading, storing, and managing
 \lgretl['s] \texttt{dataset} type. Thus, it offers attributes
 that provide some \texttt{dataset} parameters, and methods
 for manipulating data, such as sub-sampling, exporting, filtering, etc.
 
 
-\paragraph{The \classpydatasetb class provides the following operators}\mbox{}
+\subsubsection{\classpydatasetb operators}
+The \classpydataset class provides the following operators:
 
 \gretlfpycmd{[]}
 \estdesc{Slicing operator for a \classpydataset instance, used to reduce
@@ -39,7 +40,8 @@ gretl._gretl.Dataset[rule: slice | list | str] -> gretl._gretl.Dataset
 	\end{itemize}}
 
 
-\paragraph{The \classpydatasetb provides the following public attributes}\mbox{}
+\subsubsection{\classpydatasetb attributes}
+The \classpydataset provides the following public attributes:
 
 \gretlfpycmd{is\_panel}
 \estdesc{Checks if we deal with panel-dataset.}
@@ -100,7 +102,8 @@ gretl._gretl.Dataset[rule: slice | list | str] -> gretl._gretl.Dataset
 \end{lstlisting}
 
 
-\paragraph{The \classpydatasetb provides the following public methods}\mbox{}
+\subsubsection{\classpydatasetb methods}
+The \classpydataset provides the following public methods:
 
 \gretlfpycmd{add\_series()}
 \estdesc{Adds new series to dataset.}

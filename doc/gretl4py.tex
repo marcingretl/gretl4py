@@ -115,8 +115,12 @@
 
 \begin{document}
 	\pagestyle{headings}
-	\maketitle
-\begin{center}
+\begin{titlepage}
+\centering
+{\LARGE \pkg{gretl4py}: a package for calling \pkg{libgretl} from \proglang{Python} \par}
+
+\vspace{1.5cm}
+
 \begin{BVerbatim}
                 _   _   ___
                | | | | /   |
@@ -127,31 +131,38 @@
   __/ |                    | |     __/ |
  |___/                     |_|    |___/
 \end{BVerbatim}
-\end{center}
 
-	\vspace*{20pt}\textbf{Project's main page:}
-	\begin{quote}
-		\centering
-		\url{https://sourceforge.net/p/gretl/gretl4py}
-	\end{quote}
+\vspace{1cm}
+{\Large%
+	Marcin Błażejowski\\
+	{\small \url{marcin@gretlconference.org}}\\
+	Allin Cottrell\\
+	{\small \url{cottrell@wfu.edu}}\\
+	{\centering and}\\
+	\pkg{gretl} developers (dream) Team}
 
-\begin{center}
-	\vspace*{100pt}{\Large Version \gretlpyversion}
-	
-	\vfil{\Large\textbf{Acknowledgments}}
-	
-	I would like to thank \textbf{Federico Fiorani} for
-	his contribution to the first version of the \gretlpy package.
-\end{center}
+\vspace{4cm}\textbf{Project's main page:}
+
+\url{https://sourceforge.net/p/gretl/gretl4py}
+
+\vspace{1.5cm}{\Large Version \gretlpyversion}
+
+{\large \today}
+
+\vfil{\Large\textbf{Acknowledgments}}
+
+I would like to thank \textbf{Federico Fiorani} for
+his contribution to the first version of the \gretlpy package.
+\end{titlepage}
 	
 %	\begin{abstract}
 %		to be written...
 %	\end{abstract}
 
-	%\listoftodos
-	\newpage\tableofcontents
+%	\listoftodos
+	\tableofcontents
 
-	\newpage\section*{Warning}
+	\section*{Warning}
 	\begin{quote}
 		This documentation is continuously updated but does
 		not yet cover all \gretlpy~\gretlpyversion features.
@@ -162,11 +173,11 @@
 		\input{../todo.txt}
 	\end{quote}
 
-	\newpage\input{introduction}
+	\input{introduction}
 	\input{installation}
-	\newpage\section{Implementation}\label{sec:implementation}
+	\chapter{Implementation}\label{sec:implementation}
 		\input{implementation_python_side}		
-		\subsection{Data structures}
+		\section{Data structures}
 			The \lgretl defines and operates on several native (and thus internal) data types and structures:
 			\begin{itemize}
 				\item \texttt{dataset}: the basic \lgretl type for
@@ -179,27 +190,27 @@
 			\end{itemize}
 			\input{class_py_dataset}
 			\input{class_py_bundle}
-			\subsubsection{User-defined variables}\label{sec:userdefinedvariables}
+			\subsection{User-defined variables}\label{sec:userdefinedvariables}
 				To be workout.
-		\subsection{Econometric methods}
+		\section{Econometric methods}
 			\input{class_py_model}			
 			\input{class_py_package}
 		\input{estimators}
 	\input{usage}
 	\input{data_management}	
-	\newpage\input{examples}
+	\input{examples}
 
-	\newpage\addcontentsline{toc}{section}{\listfigurename}
+	\addcontentsline{toc}{chapter}{\listfigurename}
 	\listoffigures
 
-	\addcontentsline{toc}{section}{Index}
+	\addcontentsline{toc}{chapter}{Index}
 	\printindex
 	
 	\bibliographystyle{abbrvnat}
 	\bibliography{gretl4py.bib}
 	
 	%\appendix
-	\newpage\begin{appendices}
+	\begin{appendices}
 		\input{gretldataset_pydict.tex}
 	\end{appendices}
 \end{document}
