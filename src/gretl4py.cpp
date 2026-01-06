@@ -179,7 +179,7 @@ PYBIND11_MODULE(_gretl, m)
           },
           py::arg("y").none(false), py::arg("order").none(false), py::kw_only());
     m.def("quantreg",
-          [](const double &tau, const std::string &formula, const py::kwargs &kwargs) -> GretlModelPtr
+          [](double tau, const std::string &formula, const py::kwargs &kwargs) -> GretlModelPtr
           {
               auto model = std::make_unique<GretlModel_NSE_Driver_quantreg>(formula, tau, kwargs);
 
@@ -195,7 +195,7 @@ PYBIND11_MODULE(_gretl, m)
           },
           py::arg("tau").none(false), py::arg("formula").none(false), py::kw_only());
     m.def("dpanel",
-          [](const int &p, const std::string &formula, const py::kwargs &kwargs) -> GretlModelPtr
+          [](int p, const std::string &formula, const py::kwargs &kwargs) -> GretlModelPtr
           {
               auto model = std::make_unique<GretlModel_NSE_Driver_dpanel>(formula, p, kwargs);
 
@@ -269,7 +269,7 @@ PYBIND11_MODULE(_gretl, m)
     // VAR and VECM
     //////////////////////////////////////////////////
     m.def("var",
-          [](const int &order, const std::string &ylist, const py::kwargs &kwargs) -> GretlModelPtr
+          [](int order, const std::string &ylist, const py::kwargs &kwargs) -> GretlModelPtr
           {
               auto model = std::make_unique<GretlModel_VAR>(ylist, order, VAR, kwargs);
 
@@ -277,7 +277,7 @@ PYBIND11_MODULE(_gretl, m)
           },
           py::arg("order").none(false), py::arg("ylist").none(false), py::kw_only());
     m.def("vecm",
-          [](const int &order, const int &rank, const std::string &ylist, const py::kwargs &kwargs) -> GretlModelPtr
+          [](int order, int rank, const std::string &ylist, const py::kwargs &kwargs) -> GretlModelPtr
           {
               auto model = std::make_unique<GretlModel_VAR_VECM>(ylist, order, rank, kwargs);
 

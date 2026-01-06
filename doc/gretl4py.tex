@@ -200,11 +200,14 @@ his contribution to the first version of the \gretlpy package.
 	\input{data_management}	
 	\input{examples}
 
-	\addcontentsline{toc}{chapter}{\listfigurename}
+	\clearpage
+	\phantomsection
 	\listoffigures
-
-	\addcontentsline{toc}{chapter}{Index}
+	\addcontentsline{toc}{chapter}{\listfigurename}
+	
+	\phantomsection
 	\printindex
+	\addcontentsline{toc}{chapter}{Index}	
 	
 	\bibliographystyle{abbrvnat}
 	\bibliography{gretl4py.bib}

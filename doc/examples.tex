@@ -12,7 +12,7 @@ tree.
 %gretl.examples.estimators.ar.run_example()
 
 
-\subsection{Module related tools}\label{sec:module_related_python_examples}
+\section{Module related tools}\label{sec:module_related_python_examples}
 \gretlfpycmd{about()}
 \estdesc{To print basic information about the \gretlpy
   module, including the libraries it uses and the contents
@@ -37,13 +37,14 @@ gretl.set('workdir')
 \generaldesc{See \texttt{`examples/module\_related\_tools/set.py'} for details.}
 
 
-\subsection{Data management}\label{sec:data_management_python_examples}
+\section{Data management}\label{sec:data_management_python_examples}
 This section outlines functions for reading, converting,
 and loading datasets into \gretlpy. Note that the
 \texttt{longley.csv} file used in the examples below
 can be found in the \texttt{examples} directory.
 
-\subsection{Loading data from external files}
+
+\section{Loading data from external files}
 The following functions are designed to load external
 data files into a dictionary compatible with \gretlpy.
 For further details, refer to Section~\ref{sec:data_management_python}.
@@ -158,7 +159,7 @@ d = gretl.get_data(data_dir + 'longley.csv')
 
 
 
-\subsection{Estimators}\label{sec:estimators_python_examples}
+\section{Estimators}\label{sec:estimators_python_examples}
 
 \gretlfpycmd{ar()}%
 \index{get\_data()}
@@ -474,7 +475,7 @@ print(m)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Examples from \pkg{statsmodels}}
+\section{Examples from \pkg{statsmodels}}
 In the \texttt{`examples/statsmodels'} directory, examples
 for the \pkg{statsmodels} package, available at
 \url{https://www.statsmodels.org/stable/examples},
@@ -532,7 +533,3 @@ Currently, we provide examples for:
         file: \texttt{examples/statsmodels/Time Series Analysis/arima\_artificial.py}.
     \end{itemize}
 \end{itemize}
-%%% Local Variables:
-%%% mode: latex
-%%% TeX-master: "gretl4py"
-%%% End:

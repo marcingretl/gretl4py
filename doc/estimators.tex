@@ -90,6 +90,22 @@ gretl.biprobit(formula: str[, data=gretl._gretl.Dataset, OPTS]) -> gretl._gretl.
 \noRformula
 
 \est{dpanel}
+\estdesc{Carries out estimation of dynamic panel data models.}
+\begin{lstlisting}[style=pythonstylefoot]
+gretl.dpanel(p: int | numpy.array, formula: str[, data=gretl._gretl.Dataset, OPTS]) -> gretl._gretl.Model_dpanel
+\end{lstlisting}
+\mapto{dpanel p ; depvar indepvars [ ; instruments ]}
+\begin{itemize}
+	\item[]\maptoopt{vcv=True}{--vcv}{print covariance matrix}
+	\item[]\maptoopt{two\_step=True}{--two-step}{perform 2-step GMM estimation}
+	\item[]\maptoopt{system=True}{--system}{add equations in levels}
+	\item[]\maptoopt{collapse=True}{--collapse}{\seegretlmanual}
+	\item[]\maptoopt{time\_dummies=True}{--time-dummies}{add time dummy variables}
+	\item[]\maptoopt{dpdstyle=True}{--dpdstyle}{emulate DPD package for Ox}
+	\item[]\maptoopt{asymptotic=True}{--asymptotic}{uncorrected asymptotic standard errors}
+	\item[]\maptoopt{keep\_extra=True}{--keep-extra}{\seegretlmanual}
+\end{itemize}
+\noRformula
 
 \est{duration}
 \estdesc{By default the Weibull distribution is used
@@ -143,6 +159,33 @@ gretl.heckit(formula: str[, data=gretl._gretl.Dataset, OPTS]) -> gretl._gretl.Mo
 	\item[]\maptoopt{opg=True}{--opg}{OPG standard errors}
 	\item[]\maptoopt{robust=True}{--robust}{robust standard errors}
 	\item[]\maptoopt{verbose=True}{--verbose}{print extra output}
+\end{itemize}
+\noRformula
+
+\est{hsk()}
+\estdesc{Applicable where heteroskedasticity is present in the form
+	of an unknown function of the regressors which can be approximated
+	by a quadratic relationship.}
+\begin{lstlisting}[style=pythonstylefoot]
+gretl.hsk(formula: str[, data=gretl._gretl.Dataset, OPTS]) -> gretl._gretl.Model_hsk
+\end{lstlisting}
+\mapto{hsk depvar indepvars}
+\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
+	\item[]\maptoopt{no\_squares=True}{--no-squares}{\seegretlmanual}
+	\item[]\maptoopt{vcv=True}{--vcv}{print covariance matrix}
+\end{itemize}
+
+\est{intreg()}
+\estdesc{Estimates an interval regression model.}
+\begin{lstlisting}[style=pythonstylefoot]
+gretl.intreg(formula: str[, data=gretl._gretl.Dataset, OPTS]) -> gretl._gretl.Model_intreg
+\end{lstlisting}
+\mapto{intreg minvar maxvar indepvars}
+\begin{itemize}
+	\item[]\maptoopt{verbose=True}{--verbose}{print details of iterations}
+	\item[]\maptoopt{robust=True}{--robust}{robust standard errors}
+	\item[]\maptoopt{opg=True}{--opg}{\seegretlmanual}
+	\item[]\maptoopt{cluster=clustvar}{--cluster=clustvar}{\seegretlmanual}
 \end{itemize}
 \noRformula
 
