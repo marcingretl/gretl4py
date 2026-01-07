@@ -36,7 +36,7 @@
 \newcommand{\maptof}[2]{\hspace*{17pt}{\footnotesize maps to: }%
 	\gretlcmd{#1} $\rightarrow$ \gretlcmd{#2}\newline}
 % command for test mappings
-\newcommand{\maptot}[3][]{\ifthenelse{\equal{#3}{}}{}{\par\noindent\gretlcmdl{#3}\par}\index{#3} {\footnotesize maps to:} \gretlcmdf{#2}\newline%
+\newcommand{\maptot}[4][]{\ifthenelse{\equal{#3}{}}{}{\par\noindent\gretlcmdl{#3}\hspace{10pt}{#4}\par}\index{#3} {\footnotesize maps to:} \gretlcmdf{#2}\newline%
 	\ifthenelse{\equal{#1}{}}%
 	{\hspace*{17pt}{\footnotesize where \pythcodef{OPTS} are the following options %
 			(\gretlpy to \gretl mappings):}}%

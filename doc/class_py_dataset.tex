@@ -667,8 +667,9 @@ Examples:\newline
 	\test{levinlin}, \test{meantest}, \test{normtest}, \test{runs}, \test{vartest}.}\\\\
 \generaldesc{Results of performed tests are appended to the
 	\pythcode{.tests} attribute (see \ref{attr:gretldataset::tests}).
-	The following sections describe the API associated with each test:}\\
-\maptot{adf order varlist}{adf}
+	The following sections describe the API associated with each test:}
+
+\maptot{adf order varlist}{adf}{Augmented Dickey-Fuller test.}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
 	\item[]\maptoopt{nc=True}{--nc}{test without a constant}
 	\item[]\maptoopt{c=True}{--c}{with constant only}
@@ -685,8 +686,9 @@ Examples:\newline
 Examples:\newline
 \pythcodef{.test(type='adf', varlist='y', order=0)}\\
 \pythcodef{.test(type='adf', varlist='y', order=2, nc=True, c=True, ct=True)}\\
-\pythcodef{.test(type='adf', varlist='y', order=12, c=True, test-down=True)}\\
-\maptot{bds order x}{bds}
+\pythcodef{.test(type='adf', varlist='y', order=12, c=True, test-down=True)}
+
+\maptot{bds order x}{bds}{Brock, Dechert, Scheinkman and LeBaron test for nonlinearity.}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
 	\item[]\maptoopt{corr1=rho}{--corr1=rho}{\seegretlmanual}
 	\item[]\maptoopt{sdcrit=multiple}{--sdcrit=multiple}{\seegretlmanual}
@@ -697,8 +699,9 @@ Examples:\newline
 Examples:\newline
 \pythcodef{.test(type='bds', varlist='x', order=5)}\\
 \pythcodef{.test(type='bds', order=3, matrix='m')}\\
-\pythcodef{.test(type='bds', varlist='x', order=4, sdcrit=2.0)}\\
-\maptot{coint order depvar indepvars}{coint}
+\pythcodef{.test(type='bds', varlist='x', order=4, sdcrit=2.0)}
+
+\maptot{coint order depvar indepvars}{coint}{The Engle–Granger (1987) cointegration test.}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
 	\item[]\maptoopt{nc=True}{--nc}{do not include a constant}
 	\item[]\maptoopt{ct=True}{--ct}{include constant and trend}
@@ -711,8 +714,9 @@ Examples:\newline
 \end{itemize}
 Examples:\newline
 \pythcodef{.test(type='coint', varlist='y', indepvars='x z', order=4)}\\
-\pythcodef{.test(type='coint', varlist='y', indepvars='x z', order=0, ct=True, skip-df=True)}\\
-\maptot{corrgm y [order]}{corrgm}
+\pythcodef{.test(type='coint', varlist='y', indepvars='x z', order=0, ct=True, skip-df=True)}
+
+\maptot{corrgm y [order]}{corrgm}{Correlogram of given order.}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
 	\item[]\maptoopt{plot=mode_or_filename}{--plot=mode-or-filename}{\seegretlmanual}
 	\item[]\maptoopt{silent=True}{--silent}{don't print anything}
@@ -721,8 +725,9 @@ Examples:\newline
 \end{itemize}
 Examples:\newline
 \pythcodef{.test(type='corrgm', varlist='x', order=12)}\\
-\pythcodef{.test(type='corrgm', varlist='GDP', order=12, acf-only=True)}\\
-\maptot{difftest x y}{difftest}
+\pythcodef{.test(type='corrgm', varlist='GDP', order=12, acf-only=True)}
+
+\maptot{difftest x y}{difftest}{Test for a difference between two sample (nonparametric)}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
 	\item[]\maptoopt{sign=True}{--sign}{Sign test (default)}
 	\item[]\maptoopt{rank-sum=True}{--rank-sum}{Wilcoxon rank-sum test}
@@ -733,14 +738,16 @@ Examples:\newline
 \end{itemize}
 Examples:\newline
 \pythcodef{.test(type='difftest', varlist=['x y'])}\\
-\pythcodef{.test(type='difftest', varlist=['x'], split_by='dummy')}\\
-\maptot{fractint series [ order ]}{fractint}
+\pythcodef{.test(type='difftest', varlist=['x'], split_by='dummy')}
+
+\maptot{fractint series [ order ]}{fractint}{Tests for fractional integration.}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
 	\item[]\maptoopt{gph=True}{--gph}{do Geweke and Porter-Hudak test}
 	\item[]\maptoopt{all=True}{--all}{do both tests}
 	\item[]\maptoopt{quiet=True}{--quiet}{don't print results}
 \end{itemize}
-\maptot{johansen order ylist [ ; xlist ] [ ; rxlist ]}{johansen}
+
+\maptot{johansen order ylist [ ; xlist ] [ ; rxlist ]}{johansen}{Johansen test for cointegration.}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
 	\item[]\maptoopt{nc=True}{--nc}{no constant}
 	\item[]\maptoopt{rc=True}{--rc}{restricted constant}
@@ -756,8 +763,9 @@ Examples:\newline
 Examples:\newline
 \pythcodef{.test(type='johansen', ylist=['y'], xlist=['x'], order=2)}\\
 \pythcodef{.test(type='johansen', ylist=['y'], xlist=['x z'], order=4, verbose=True)}\\
-\pythcodef{.test(type='johansen', ylist=['y'], xlist=['x z'], order=3, rc=True)}\\
-\maptot{kpss order varlist}{kpss}
+\pythcodef{.test(type='johansen', ylist=['y'], xlist=['x z'], order=3, rc=True)}
+
+\maptot{kpss order varlist}{kpss}{Kwiatkowski, Phillips, Schmidt and Shin for stationarity.}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
 	\item[]\maptoopt{trend=True}{--trend}{include a trend}
 	\item[]\maptoopt{seasonals=True}{--seasonals}{include seasonal dummies}
@@ -767,8 +775,9 @@ Examples:\newline
 \end{itemize}
 Examples:\newline
 \pythcodef{.test(type='kpss', varlist='y', order=8)}\\
-\pythcodef{.test(type='kpss', varlist='x1', order=4, trend=True)}\\
-\maptot{levinlin order series}{levinlin}
+\pythcodef{.test(type='kpss', varlist='x1', order=4, trend=True)}
+
+\maptot{levinlin order series}{levinlin}{Levin, Lin and Chu panel unit-root test.}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
 	\item[]\maptoopt{nc=True}{--nc}{test without a constant}
 	\item[]\maptoopt{ct=True}{--ct}{with constant and trend}
@@ -778,9 +787,10 @@ Examples:\newline
 Examples:\newline
 \pythcodef{.test(type='levinlin', varlist='y', order=0)}\\
 \pythcodef{.test(type='levinlin', varlist='y', order=2, ct=True)}\\
-\pythcodef{.test(type='levinlin', varlist='y', order=[2,2,3,3,4,4])}\\
-\maptot[0]{meantest x y}{meantest}
-\maptot{meantest x --split-by=dummy}{}
+\pythcodef{.test(type='levinlin', varlist='y', order=[2,2,3,3,4,4])}
+
+\maptot[0]{meantest x y}{meantest}{\textit{t}-test means equality.}
+\maptot{meantest x --split-by=dummy}{}{}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
 	\item[]\maptoopt{unequal_vars=True}{--unequal-vars}{assume variances are unequal}
 	\item[]\maptoopt{paired=True}{--paired}{conduct a paired test}
@@ -792,8 +802,9 @@ Examples:\newline
 \pythcodef{.test(type='meantest', varlist=['x y'])}\\
 \pythcodef{.test(type='meantest', varlist=['x y'], unequal_vars=True)}\\
 \pythcodef{.test(type='meantest', varlist=['x y'], paired=True)}\\
-\pythcodef{.test(type='meantest', varlist=['x'], split_by='d')}\\
-\maptot{normtest series}{normtest}
+\pythcodef{.test(type='meantest', varlist=['x'], split_by='d')}
+
+\maptot{normtest series}{normtest}{Normality tests.}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
 	\item[]\maptoopt{dhansen=True}{--dhansen}{Doornik–Hansen test (default)}
 	\item[]\maptoopt{swilk=True}{--swilk}{Shapiro-Wilk test}
@@ -805,14 +816,16 @@ Examples:\newline
 Examples:\newline
 \pythcodef{.test(type='normtest', varlist='series')}\\
 \pythcodef{.test(type='normtest', varlist='series', swilk=True)}\\
-\pythcodef{.test(type='normtest', varlist='series', all=True)}\\
-\maptot{runs series}{runs}
+\pythcodef{.test(type='normtest', varlist='series', all=True)}
+
+\maptot{runs series}{runs}{Nonparametric test for randomness.}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
 	\item[]\maptoopt{difference=True}{--difference}{use first difference of variable}
 	\item[]\maptoopt{equal=True}{--equal}{positive and negative values are equiprobable}
 \end{itemize}
-\maptot[0]{vartest x y}{vartest}
-\maptot{vartest x --split-by=dummy}{}
+
+\maptot[0]{vartest x y}{vartest}{\textit{F}-test for variances equality.}
+\maptot{vartest x --split-by=dummy}{}{}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
 	\item[]\maptoopt{quiet=True}{--quiet}{suppress printed output}
 	\item[]\maptoopt{robust='method'}{--robust=method}{\seegretlmanual}
@@ -822,7 +835,7 @@ Examples:\newline
 \pythcodef{.test(type='vartest', varlist=['x','y'])}\\
 \pythcodef{.test(type='vartest', varlist=['x'], split_by='d')}\\
 \pythcodef{.test(type='vartest', varlist=['x y'], robust='median')}\\
-\pythcodef{.test(type='vartest', varlist=['x y'], robust='trimmed,5')}\\
+\pythcodef{.test(type='vartest', varlist=['x y'], robust='trimmed,5')}
 
 \gretlfpycmd{to\_dataframe()}
 \estdesc{This method exports given dataset to \pythcode{pandas.core.frame.DataFrame}.}

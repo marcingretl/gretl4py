@@ -266,36 +266,42 @@ The \pythcode{gretl.\_gretl.Model\_NSE} class provides the following public meth
 \generaldesc{Results of performed tests are appended to the
 	\pythcode{.tests} attribute (see \ref{attr:gretlmodel::tests}).
 	The following sections describe the API associated with each test:}\\
-\maptot{modtest [ order ]}{arch}
+
+\maptot{modtest [ order ]}{arch}{Test for ARCH effect of specified order.}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
 	\item[]\maptoopt{arch=True}{--arch}{ARCH}
 	\item[]\maptoopt{quiet=True}{--quiet}{don't print details}
 	\item[]\maptoopt{silent=True}{--silent}{don't print anything}
 \end{itemize}
-\maptot{modtest [ order ]}{autocorr}
+
+\maptot{modtest [ order ]}{autocorr}{Test for serial correlation.}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
 	\item[]\maptoopt{autocorr=True}{--autocorr}{serial correlation}
 	\item[]\maptoopt{quiet=True}{--quiet}{don't print details}
 	\item[]\maptoopt{silent=True}{--silent}{don't print anything}
 \end{itemize}
-\maptot{bkw}{bkw}
+
+\maptot{bkw}{bkw}{Belsley, Kuh and Welsch test for collinearity.}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
 	\item[]\maptoopt{quiet=True}{--quiet}{don't print anything}
 \end{itemize}
-\maptot{modtest [ order ]}{breusch-pagan}
+
+\maptot{modtest [ order ]}{breusch-pagan}{Breusch-Pagan test for heteroskedasticity.}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
 	\item[]\maptoopt{breusch\_pagan=True}{--breusch-pagan}{heteroskedasticity, Breusch-Pagan}
 	\item[]\maptoopt{robust=True}{--robust}{robust variance estimate}
 	\item[]\maptoopt{quiet=True}{--quiet}{don't print details}
 	\item[]\maptoopt{silent=True}{--silent}{don't print anything}
 \end{itemize}
-\maptot{modtest [ order ]}{comfac}
+
+\maptot{modtest [ order ]}{comfac}{Common factor restriction (AR1 models only).}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
 	\item[]\maptoopt{comfac=True}{--comfac}{common factor restriction, AR1 models only}
 	\item[]\maptoopt{quiet=True}{--quiet}{don't print details}
 	\item[]\maptoopt{silent=True}{--silent}{don't print anything}
 \end{itemize}
-\maptot{corrgm y [ order ]}{corrgm}
+
+\maptot{corrgm y [ order ]}{corrgm}{Correlogram of given order.}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
 	\item[]\maptoopt{plot=mode}{--plot=mode-or-filename}{\seegretlmanual}
 	\item[]\maptoopt{silent=True}{--silent}{don't print anything}
@@ -305,50 +311,58 @@ The \pythcode{gretl.\_gretl.Model\_NSE} class provides the following public meth
 Examples:\newline
 \pythcodef{.test(type='corrgm', y='x', order=12)}\\
 \pythcodef{.test(type='corrgm', y='GDP', order=12, acf\_only=True)}\\
-\maptot{cusum}{cusum}
+
+\maptot{cusum}{cusum}{Cumulative Sum (CUSUM) test of recursive residuals.}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
 	\item[]\maptoopt{squares=True}{--squares}{perform the CUSUMSQ test}
 	\item[]\maptoopt{quiet=True}{--quiet}{just print the Harvey--Collier test}
 	\item[]\maptoopt{plot=mode}{--plot=mode-or-filename}{\seegretlmanual}
 \end{itemize}
-\maptot{leverage}{leverage}
+
+\maptot{leverage}{leverage}{Calculates the leverage for each data point.}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
 	\item[]\maptoopt{save=True}{--save}{save the resulting series}
 	\item[]\maptoopt{overwrite=True}{--overwrite}{OK to overwrite existing series}
 	\item[]\maptoopt{quiet=True}{--quiet}{don't print results}
 	\item[]\maptoopt{plot=mode}{--plot=mode-or-filename}{\seegretlmanual}
 \end{itemize}
-\maptot{modtest [ order ]}{logs}
+
+\maptot{modtest [ order ]}{logs}{Test for nonlinearity (logarithms).}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
 	\item[]\maptoopt{logs=True}{--logs}{nonlinearity, logs}
 	\item[]\maptoopt{quiet=True}{--quiet}{don't print details}
 	\item[]\maptoopt{silent=True}{--silent}{don't print anything}
 \end{itemize}
-\maptot{modtest [ order ]}{normality}
+
+\maptot{modtest [ order ]}{normality}{Test for normality of residual.}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
 	\item[]\maptoopt{normality=True}{--normality}{normality of residual}
 	\item[]\maptoopt{quiet=True}{--quiet}{don't print details}
 	\item[]\maptoopt{silent=True}{--silent}{don't print anything}
 \end{itemize}
-\maptot{modtest [ order ]}{panel}
+
+\maptot{modtest [ order ]}{panel}{Test for heteroskedasticity, groupwise.}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
 	\item[]\maptoopt{panel=True}{--panel}{heteroskedasticity, groupwise}
 	\item[]\maptoopt{quiet=True}{--quiet}{don't print details}
 	\item[]\maptoopt{silent=True}{--silent}{don't print anything}
 \end{itemize}
-\maptot{panspec}{panspec}
+
+\maptot{panspec}{panspec}{Tests the simple pooled specification (OLS) against the most common alternatives.}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
 	\item[]\maptoopt{nerlove=True}{--nerlove}{use Nerlove method for random effects}
 	\item[]\maptoopt{matrix\_diff=True}{--matrix_diff}{use matrix-difference method for Hausman test}
 	\item[]\maptoopt{quiet=True}{--quiet}{Suppress printed output}
 \end{itemize}
-\maptot{qlrtest}{qlrtest}
+
+\maptot{qlrtest}{qlrtest}{Quandt likelihood ratio test for a structural break.}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
 	\item[]\maptoopt{limit\_to=list}{--limit-to=list}{limit test to subset of regressors}
 	\item[]\maptoopt{plot=mode}{--plot=mode-or-filename}{\seegretlmanual}
 	\item[]\maptoopt{quiet=True}{--quiet}{suppress printed output}
 \end{itemize}
-\maptot{reset}{reset}
+
+\maptot{reset}{reset}{Ramsey's regression equation specification error test.}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
 	\item[]\maptoopt{quiet=True}{--quiet}{don't print the auxiliary regression}
 	\item[]\maptoopt{silent=True}{--silent}{don't print anything}
@@ -356,29 +370,34 @@ Examples:\newline
 	\item[]\maptoopt{cubes\_only=True}{--cubes-only}{compute the test using only the cubes}
 	\item[]\maptoopt{robust=True}{--robust}{use robust standard errors in auxiliary regression}
 \end{itemize}
-\maptot{modtest [ order ]}{squares}
+
+\maptot{modtest [ order ]}{squares}{Test for nonlinearity (squares).}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
 	\item[]\maptoopt{squares=True}{--squares}{nonlinearity, squares}
 	\item[]\maptoopt{quiet=True}{--quiet}{don't print details}
 	\item[]\maptoopt{silent=True}{--silent}{don't print anything}
 \end{itemize}
-\maptot{vif}{vif}
+
+\maptot{vif}{vif}{Variance Inflation Factor.}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
 	\item[]\maptoopt{quiet=True}{--quiet}{don't print anything}
 \end{itemize}
-\maptot{modtest [ order ]}{white}
+
+\maptot{modtest [ order ]}{white}{White's test for heteroskedasticity.}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
 	\item[]\maptoopt{white=True}{--white}{heteroskedasticity, White's test}
 	\item[]\maptoopt{quiet=True}{--quiet}{don't print details}
 	\item[]\maptoopt{silent=True}{--silent}{don't print anything}
 \end{itemize}
-\maptot{modtest [ order ]}{white-nocross}
+
+\maptot{modtest [ order ]}{white-nocross}{White's test for heteroskedasticity (squares only).}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
 	\item[]\maptoopt{white\_nocross=True}{--white-nocross}{White's test, squares only}
 	\item[]\maptoopt{quiet=True}{--quiet}{don't print details}
 	\item[]\maptoopt{silent=True}{--silent}{don't print anything}
 \end{itemize}
-\maptot{modtest [ order ]}{xdepend}
+
+\maptot{modtest [ order ]}{xdepend}{Test for cross-sectional dependence (panel data only).}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
 	\item[]\maptoopt{xdepend=True}{--xdepend}{cross-sectional dependence, panel data only}
 	\item[]\maptoopt{quiet=True}{--quiet}{don't print details}
