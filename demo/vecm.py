@@ -42,9 +42,9 @@ m1.fcast()
 #IRFS
 print("\n****************************")
 print("IRFs")
-m1.irf(targ=0, shock=0)
-m1.irf(targ='LRM', shock='LRY', alpha=0.1)
-m1.irf(targ=1, shock=0, alpha=0.1)
+m1.irf(target=0, shock=0)
+m1.irf(target='LRM', shock='LRY', alpha=0.1)
+m1.irf(target=1, shock=0, alpha=0.1)
 
 print("\nirf1:")
 print(m1.irfs[0])
@@ -63,10 +63,10 @@ try:
     u = irf_res['results'][:, 2]
     x = list(range(1, len(y) + 1))
     shock_name = irf_res['shock_name']
-    targ_name = irf_res['targ_name']
+    target_name = irf_res['target_name']
 
     fig, ax = plt.subplots()
-    plt.title(targ_name + ": responses to a one-standard error shock in " + shock_name)
+    plt.title(target_name + ": responses to a one-standard error shock in " + shock_name)
     ax.plot(x, y, '-')
     ax.fill_between(x, y - l, y + u, alpha=0.2)
     ax.plot(x, y, 'o', color='tab:brown')

@@ -1468,9 +1468,7 @@ void GretlModel_VAR::irf (int target, int shock, double alpha)
     res[py::cast("target_name")] = GD_->dset->varname[gretl_VAR_get_variable_number(model_, target)];
     res[py::cast("shock")] = shock;
     res[py::cast("shock_name")] = GD_->dset->varname[gretl_VAR_get_variable_number(model_, shock)];
-    if (alpha > 0.0) {
-        res[py::cast("alpha")] = alpha;
-    }
+    if (alpha > 0.0) res[py::cast("alpha")] = alpha;
 
     auto val = convert_GretlType_to_GretlTypes(GRETL_TYPE_MATRIX, irf.get(), 0, err_);
     if (err_) handle_gretl_error(err_);
@@ -1486,8 +1484,7 @@ void GretlModel_VAR::irf (const std::string &target, const std::string &shock, d
     // this method mimics gretl's irf() function
     // Note: overload which takes names instead of equation number
     //
-    int target_int;
-    int shock_int;
+    int target_int, shock_int;
 
     // let's try to find our target/shock IDs
     try {
@@ -1495,15 +1492,15 @@ void GretlModel_VAR::irf (const std::string &target, const std::string &shock, d
     } catch (std::invalid_argument &e) {
         target_int = find_variable_nr_(target);
     }
+    if (target_int == -1) throw std::invalid_argument("target value is invalid");
     try {
         shock_int = std::stoi(shock);
     } catch (std::invalid_argument &e) {
         shock_int = find_variable_nr_(shock);
     }
+    if (shock_int == -1) throw std::invalid_argument("shock value is invalid");
 
-    if (target_int == -1) throw std::invalid_argument("target value is invalid");
-    if (target_int == -1) throw std::invalid_argument("shock value is invalid");
-
+    // we do the job
     irf(target_int, shock_int, alpha);
 }
 
