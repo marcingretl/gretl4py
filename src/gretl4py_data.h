@@ -44,7 +44,7 @@ class GretlDataset : public std::enable_shared_from_this<GretlDataset>
 {
 private:
     static inline int next_obj_id_ = 1;
-    static inline std::map<int, std::weak_ptr<GretlDataset>> GDs_;
+    static inline std::map<int, std::weak_ptr<GretlDataset>> GDs_; // datasets registry
     const int id_;                          // dataset's id
     std::unordered_set<int> linked_models_; // models (id-s) which use this dataset
     GretlPrint GP_ = GretlPrint();          // printer (instance wide)

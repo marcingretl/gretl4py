@@ -130,7 +130,7 @@ GretlDataset::GretlDataset (const std::string &fname,
             if (key_str == "frompkg" && is_pystr(val)) {
                 auto val_str = val.cast<std::string>();
 
-                auto pkg = load_package(val_str);
+                auto pkg = GretlPackage::load_package(val_str);
                 full_path = pkg->get_examples_path(fname);
             } else {
                 throw std::invalid_argument("unsupported option: '" + key_str + "'");

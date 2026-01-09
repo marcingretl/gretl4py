@@ -28,31 +28,6 @@ extern "C" {
     #include <gretl/gretl_typemap.h>
 }
 #include <iomanip>
-/*
-#include "gretl4py_data.h"
-#include "gretl4py_model.h"
-#include "gretl_calls.h"
-#include "gretl4py_utils.h"
-#include <gretl/libset.h>
-#include <gretl/matrix_extra.h>
-#include <gretl/gretl_model.h>
-#include <gretl/gretl_drivers.h>
-extern "C" {
-    #include <gretl/var.h>
-    #include <gretl/gretl_xml.h>
-    #include <gretl/transforms.h>
-    #include <gretl/dataset.h>
-    #include <gretl/system.h>
-}
-#include <algorithm>
-#include <string>
-#include <cassert>
-#include <iomanip>
-#include <random>
-#include <filesystem>
-#include <iostream>
-#include <unordered_set>
-*/
 
 extern std::unordered_set<std::string> UserVars;
 
@@ -172,6 +147,42 @@ GretlPackage::~GretlPackage (void)
 {
     err_ = function_package_unload_full(pkg_name_.c_str());
     if (err_) std::cerr << errmsg_get_with_default(err_) << std::endl;
+}
+
+void GretlPackage::clear_registry (void)
+{
+    //
+    // we clear the whole packages registry
+    //
+    GPKGs_.clear();
+}
+
+GretlPackagePtr GretlPackage::load_package (const std::string &pkgname,
+                                            const std::string &suffix)
+{
+    //
+    // here we register contributed package
+    // at first, we look up for package in registry
+    //
+    GretlPackagePtr res = nullptr;
+
+    auto it = GPKGs_.find(pkgname);
+    if (it != GPKGs_.end()) {
+        res = it->second;
+    } else {
+        res = std::make_shared<GretlPackage>(pkgname, suffix);
+        GPKGs_.emplace(pkgname, res);
+    }
+
+    return res;
+}
+
+bool GretlPackage::package_loaded (const std::string &pkgname)
+{
+    //
+    // here we check if give package exists in registry
+    //
+    return GPKGs_.count(pkgname) == 0 ? false : true;
 }
 
 void GretlPackage::check_if_defines_estimator_ (void)

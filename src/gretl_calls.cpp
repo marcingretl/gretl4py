@@ -41,7 +41,6 @@ extern "C" {
 // global variables (some used outside this file)
 GretlDatasetPtr DSET = nullptr;                         // default dataset
 std::unordered_set<std::string> UserVars;               // registry of user variables
-static std::map<std::string, GretlPackagePtr> GPKGs;    // registry of loaded contributed packages
 static GretlPrint GP = GretlPrint();                    // printer
 static int gretl4py_verbose = 0;
 
@@ -136,7 +135,7 @@ void gretl4py_cleanup (void)
 #endif // GRETL_PYBIND11_DEBUG
     }
 
-    GPKGs.clear();
+    GretlPackage::clear_registry();
 
     libgretl_cleanup();
 
@@ -471,26 +470,6 @@ void do_gretl_varlist (const py::kwargs &kwargs)
     GP.print();
 }
 
-GretlPackagePtr load_package (const std::string &pkgname,
-                              const std::string &suffix)
-{
-    //
-    // here we register contributed package
-    // at first, we look up for package in registry
-    //
-    GretlPackagePtr res = nullptr;
-
-    auto it = GPKGs.find(pkgname);
-    if (it != GPKGs.end()) {
-        res = it->second;
-    } else {
-        res = std::make_shared<GretlPackage>(pkgname, suffix);
-        GPKGs.emplace(pkgname, res);
-    }
-
-    return res;
-}
-
 py::object do_gretl_include (const std::string &filename)
 {
     //
@@ -511,7 +490,7 @@ py::object do_gretl_include (const std::string &filename)
     }
 
     // we load the package
-    auto pkg = load_package(basename, suffix);
+    auto pkg = GretlPackage::load_package(basename, suffix);
 
     // get list of exported function names
     py::object obj = py::cast(pkg);
@@ -695,7 +674,7 @@ void do_gretl_delete_variables (const std::string &varname,
                                 const py::kwargs &kwargs)
 {
     //
-    // function mimics libgretl's 'delete' commad
+    // function mimics libgretl's 'delete' command
     // note: not all options are available!!!
     //
     GretlDatasetPtr GD = nullptr;
@@ -708,8 +687,7 @@ void do_gretl_delete_variables (const std::string &varname,
 
     // we check if we don't deal with a package
     if (!varname.empty()) {
-        auto it = GPKGs.find(varname);
-        if (it != GPKGs.end()) throw std::invalid_argument("in gretl4py, the 'delete' function does not work with packages");
+        if (GretlPackage::package_loaded(varname)) throw std::invalid_argument("in gretl4py, the 'delete' function does not work with packages");
     }
 
     if (py::len(kwargs) > 0) {

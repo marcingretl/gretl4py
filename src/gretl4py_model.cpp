@@ -1695,7 +1695,7 @@ GretlModel_package::GretlModel_package (const std::string &name,
     }
 
     // we load the package
-    GPKG_ = load_package(basename, suffix);
+    GPKG_ = GretlPackage::load_package(basename, suffix);
 
     // we setup some internal parameters
     main_func_name_ = GPKG_->main_func_get_name();

@@ -35,10 +35,12 @@ namespace py = pybind11;
 //
 class GretlPackage {
 private:
-    using FunctionMap = std::map<std::string, ufunc*>;      // map of pointers to functions in package
+    using FunctionMap = std::map<std::string, ufunc*>;          // map of pointers to functions in package
     using FunctionArgs =
-        std::map<std::string, std::map<std::string, int>>;  // map of arguments and their id-s for public functions
-    using MainFuncNoOptDef = std::map<std::string, GretlType>;// map of non-optional main_func arguments without default values
+        std::map<std::string, std::map<std::string, int>>;      // map of arguments and their id-s for public functions
+    using MainFuncNoOptDef = std::map<std::string, GretlType>;  // map of non-optional main_func arguments without default values
+
+    static inline std::map<std::string, GretlPackagePtr> GPKGs_;// registry of loaded contributed packages
 
     const std::string pkg_name_;        // package name (base of filename)
     const std::string suffix_;          // filename suffix
@@ -66,6 +68,14 @@ private:
 public:
     GretlPackage (const std::string &pkg_name, const std::string &suffix);
     ~GretlPackage (void);
+
+    // static methods
+    static void clear_registry (void);
+
+    static GretlPackagePtr load_package (const std::string &pkgname,
+                                         const std::string &suffix = "");
+
+    static bool package_loaded (const std::string &pkgname);
 
     int get_err (void) const;
 

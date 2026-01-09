@@ -60,9 +60,6 @@ void do_gretl_varlist (const py::kwargs &kwargs);
 
 py::object do_gretl_include (const std::string &filename);
 
-GretlPackagePtr load_package (const std::string &pkgname,
-                              const std::string &suffix = "");
-
 template<GretlFunIndex FI>
 double gretl_get_pvalue_critval_pdf_cdf (const std::string &dist, double value,
                                          const py::object &param = py::none());
