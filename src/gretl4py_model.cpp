@@ -19,6 +19,7 @@
 
 #include "gretl4py_model.h"
 #include "gretl4py_utils.h"
+#include "gretl4py_packages.h"
 #include "gretl_calls.h"
 extern "C" {
     #include <gretl/var.h>

@@ -20,6 +20,7 @@
 #include "gretl4py_data.h"
 #include "gretl_calls.h"
 #include "gretl4py_utils.h"
+#include "gretl4py_packages.h"
 
 namespace py = pybind11;
 
