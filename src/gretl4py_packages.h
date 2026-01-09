@@ -57,6 +57,8 @@ private:
     std::string base_dir_;              // path to the package
     int err_ = 0;
 
+    GretlPackage (const std::string &pkg_name, const std::string &suffix);
+
     void check_if_defines_estimator_ (void);
 
     template <typename T>
@@ -66,7 +68,6 @@ private:
                                  fncall *func_call, GretlDatasetPtr &GD,
                                  const py::kwargs &kwargs);
 public:
-    GretlPackage (const std::string &pkg_name, const std::string &suffix);
     ~GretlPackage (void);
 
     // static methods
@@ -77,6 +78,7 @@ public:
 
     static bool package_loaded (const std::string &pkgname);
 
+    // instance methods
     int get_err (void) const;
 
     std::string repr_impl (void);
