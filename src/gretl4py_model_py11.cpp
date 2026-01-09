@@ -175,9 +175,9 @@ void init_gretl4py_model_py11(py::module_ &m)
         .def("test", &GretlModel_VAR::test,
              py::arg("type").none(false), py::kw_only())
         .def("irf", py::overload_cast<int, int, double>(&GretlModel_VAR::irf),
-             py::arg("targ").none(false), py::arg("shock").none(false), py::arg("alpha").none(true) = 0)
+             py::arg("target").none(false), py::arg("shock").none(false), py::arg("alpha").none(true) = 0)
         .def("irf", py::overload_cast<const std::string&, const std::string&, double>(&GretlModel_VAR::irf),
-             py::arg("targ").none(false), py::arg("shock").none(false), py::arg("alpha").none(true) = 0)
+             py::arg("target").none(false), py::arg("shock").none(false), py::arg("alpha").none(true) = 0)
         .def("save_uhat", &GretlModel_VAR::save_uhat,
              py::arg("eqn").none(false), py::arg("name").none(true) = "");
 

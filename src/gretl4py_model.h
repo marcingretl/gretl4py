@@ -302,9 +302,9 @@ public:
 
     void test (const std::string &type, const py::kwargs &kwargs);
 
-    void irf (int targ, int shock, double alpha = 0);
+    void irf (int target, int shock, double alpha = 0);
 
-    void irf (const std::string &targ, const std::string &shock, double alpha = 0);
+    void irf (const std::string &target, const std::string &shock, double alpha = 0);
 };
 
 //

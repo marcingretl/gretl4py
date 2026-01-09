@@ -1450,7 +1450,7 @@ int GretlModel_VAR::find_variable_nr_ (const std::string &variable_name)
     return -1; // not found
 }
 
-void GretlModel_VAR::irf (int targ, int shock, double alpha)
+void GretlModel_VAR::irf (int target, int shock, double alpha)
 {
     //
     // this method mimics gretl's irf() function
@@ -1458,14 +1458,14 @@ void GretlModel_VAR::irf (int targ, int shock, double alpha)
     py::dict res;
 
     // we compute IRFs
-    gretl_matrix_ptr irf(gretl_VAR_get_impulse_response(model_, targ, shock,
+    gretl_matrix_ptr irf(gretl_VAR_get_impulse_response(model_, target, shock,
                                                         default_VAR_horizon(GD_->dset),
                                                         alpha, GD_->dset, &err_));
     if (err_) handle_gretl_error(err_);
 
     // we manufacture resulting object
-    res[py::cast("targ")] = targ;
-    res[py::cast("targ_name")] = GD_->dset->varname[gretl_VAR_get_variable_number(model_, targ)];
+    res[py::cast("target")] = target;
+    res[py::cast("target_name")] = GD_->dset->varname[gretl_VAR_get_variable_number(model_, target)];
     res[py::cast("shock")] = shock;
     res[py::cast("shock_name")] = GD_->dset->varname[gretl_VAR_get_variable_number(model_, shock)];
     if (alpha > 0.0) {
@@ -1480,20 +1480,20 @@ void GretlModel_VAR::irf (int targ, int shock, double alpha)
     move_to_python_container<GretlModel, py::dict, py::list>(*this, std::move(res), "irfs");
 }
 
-void GretlModel_VAR::irf (const std::string &targ, const std::string &shock, double alpha)
+void GretlModel_VAR::irf (const std::string &target, const std::string &shock, double alpha)
 {
     //
     // this method mimics gretl's irf() function
     // Note: overload which takes names instead of equation number
     //
-    int targ_int;
+    int target_int;
     int shock_int;
 
-    // let's try to find our targ/shock IDs
+    // let's try to find our target/shock IDs
     try {
-        targ_int = std::stoi(targ);
+        target_int = std::stoi(target);
     } catch (std::invalid_argument &e) {
-        targ_int = find_variable_nr_(targ);
+        target_int = find_variable_nr_(target);
     }
     try {
         shock_int = std::stoi(shock);
@@ -1501,14 +1501,10 @@ void GretlModel_VAR::irf (const std::string &targ, const std::string &shock, dou
         shock_int = find_variable_nr_(shock);
     }
 
-    if (targ_int == -1) {
-        throw std::invalid_argument("targ value is invalid");
-    }
-    if (shock_int == -1) {
-        throw std::invalid_argument("shock value is invalid");
-    }
+    if (target_int == -1) throw std::invalid_argument("target value is invalid");
+    if (target_int == -1) throw std::invalid_argument("shock value is invalid");
 
-    irf(targ_int, shock_int, alpha);
+    irf(target_int, shock_int, alpha);
 }
 
 //

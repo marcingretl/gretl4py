@@ -455,21 +455,26 @@ The \pythcode{gretl.\_gretl.Model\_NSE\_nl} class provides the following public 
 The \pythcode{gretl.\_gretl.Model\_var} class provides the following public methods:
 
 \gretlfpycmd{irf()}
-\estdesc{XXX}
-\begin{lstlisting}[style=pythonstyle]
-gretl._gretl.Model_var.irf(targ=int, shock=int, alpha=float)
+\estdesc{Provides estimated impulse response functions pertaining
+	to a VAR or VECM, traced out over a certain forecast horizon.}
+\begin{lstlisting}[style=pythonstylefoot]
+gretl._gretl.Model_var.irf(target: int, shock: int, alpha: float = 0) -> numpy.ndarray
+gretl._gretl.Model_var.irf(target: str, shock: str, alpha: float = 0) -> numpy.ndarray
 \end{lstlisting}
-
-\gretlfpycmd{irf()}
-\estdesc{XXX}
-\begin{lstlisting}[style=pythonstyle]
-gretl._gretl.Model_var.irf(targ=str, shock=str, alpha=float)
-\end{lstlisting}
+\maptof{irf(target, shock, alpha)}{numpy.ndarray}
+\generaldesc{The target and shock arguments take the form of
+	1-based indices of the endogenous variables in the system,
+	with 0 taken to mean ``all''. The responses (expressed in
+	the units of the target variable) are to an innovation of
+	one standard deviation in the shock variable. If alpha is
+	given a suitable positive value the estimates include a
+	$1 - \alpha$ confidence interval (so, for example, give
+	0.1 for a 90\% interval).}
 
 \gretlfpycmd{save\_uhat()}
-\estdesc{XXX}
-\begin{lstlisting}[style=pythonstyle]
-gretl._gretl.Model_var.save_uhat(eqn=int, name=str) -> str
+\estdesc{Adds residuals from specified equation to the dataset under the given name.}
+\begin{lstlisting}[style=pythonstylefoot]
+gretl._gretl.Model_var.save_uhat(eqn: int, name: str) -> str
 \end{lstlisting}
 \generaldesc{Note: if \textit{name} is not provided, the generated series 
 	will be named according to the following pattern: \texttt{m\_ID\_uhat}, 
