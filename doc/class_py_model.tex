@@ -208,7 +208,8 @@ The \pythcode{gretl.\_gretl.Model\_NSE} class provides the following public meth
 \end{itemize}
 
 \gretlfpycmd{save\_ahat()}
-\estdesc{Adds the estimates of the individual effects (fixed-effects or random-effects panel data model only).}
+\estdesc{Adds the estimates of the individual effects to the dataset
+	(fixed-effects or random-effects panel data model only).}
 \begin{lstlisting}[style=pythonstylefoot]
 .save_ahat(name: str = '') -> str
 \end{lstlisting}
@@ -217,7 +218,8 @@ The \pythcode{gretl.\_gretl.Model\_NSE} class provides the following public meth
 	will be named according to the \lgretl['s] pattern.}
 
 \gretlfpycmd{save\_h()}
-\estdesc{Adds the estimated conditional variance to the dataset under the given name (GARCH model only).}
+\estdesc{Adds the estimated conditional variance to the dataset
+	under the given name (GARCH model only).}
 \begin{lstlisting}[style=pythonstylefoot]
 .save_h(name: str = '') -> str
 \end{lstlisting}
@@ -454,29 +456,39 @@ The \pythcode{gretl.\_gretl.Model\_NSE\_nl} class provides the following public 
 \subsubsection{\pythcodeb{gretl.\_gretl.Model\_var} attributes}
 The \pythcode{gretl.\_gretl.Model\_var} class provides the following public attributes:
 
-\gretlfpycmd{irfs}
-\estdesc{XXX}
-\begin{lstlisting}[style=pythonstylefoot]
+\gretlfpycmd{irfs}\label{met:gretlmodel::irfs}
+\estdesc{List storing summaries of computed IRFs.}
+\begin{generaldescenv}
+	This is a \pythcode{list} of \pythcode{dict} objects that is
+	created immediately after the first IRF is computed (see
+	\ref{met:gretlmodel::irf}). That is, this attribute is
+	\emph{not} created when the \pythcode{gretl.Model_var}
+	instance itself is initialized. Each \pythcode{dict}
+	containing IRF results has the following structure:
+	\begin{lstlisting}[style=pythonstylefoot]
 {
- "target":	<target series: ID>,
- "target_name":	<target series: name>,
- "shock":	<shock series: ID>,
- "shock_name":	<shock series: name>,
- "alpha":	<alpha>
+ "target":       <target series ID>,
+ "target_name":  <target series name>,
+ "shock":        <shock series ID>,
+ "shock_name":   <shock series name>,
+ "alpha":        <significance level, if supplied>
 }
-\end{lstlisting}
-\generaldesc{XXX}
+	\end{lstlisting}
+	Results from consecutive IRF computations are appended to this
+	attribute. Therefore, to access the results of the most recently
+	computed IRF, one can use \pythcode{irfs[-1]}.
+\end{generaldescenv}
 
 
 \subsubsection{\pythcodeb{gretl.\_gretl.Model\_var} methods}
 The \pythcode{gretl.\_gretl.Model\_var} class provides the following public methods:
 
-\gretlfpycmd{irf()}
+\gretlfpycmd{irf()}\label{met:gretlmodel::irf}
 \estdesc{Provides estimated impulse response functions pertaining
 	to a VAR or VECM, traced out over a certain forecast horizon.}
 \begin{lstlisting}[style=pythonstylefoot]
-gretl._gretl.Model_var.irf(target: int, shock: int, alpha: float = 0) -> numpy.ndarray
-gretl._gretl.Model_var.irf(target: str, shock: str, alpha: float = 0) -> numpy.ndarray
+.irf(target: int, shock: int, alpha: float = 0) -> numpy.ndarray
+.irf(target: str, shock: str, alpha: float = 0) -> numpy.ndarray
 \end{lstlisting}
 \maptof{irf(target, shock, alpha)}{numpy.ndarray}
 \generaldesc{The target and shock arguments take the form of
@@ -491,20 +503,34 @@ gretl._gretl.Model_var.irf(target: str, shock: str, alpha: float = 0) -> numpy.n
 \gretlfpycmd{save\_uhat()}
 \estdesc{Adds residuals from specified equation to the dataset under the given name.}
 \begin{lstlisting}[style=pythonstylefoot]
-gretl._gretl.Model_var.save_uhat(eqn: int, name: str) -> str
+._gretl.Model_var.save_uhat(eqn: int, name: str = '') -> str
 \end{lstlisting}
+\mapto[0]{series name = \$uhat[, eqn]}
 \generaldesc{Note: if \textit{name} is not provided, the generated series 
 	will be named according to the following pattern: \texttt{m\_ID\_uhat}, 
 	where \texttt{ID} is the equation's ID.}
 
+
 \subsubsection{\pythcodeb{gretl.\_gretl.Model\_vecm} methods}
 The \pythcode{gretl.\_gretl.Model\_vecm} class provides the following public methods:
 
-\gretlfpycmd{save\_ec\_term()}
+\gretlfpycmd{restrict()}
 \estdesc{XXX}
 \begin{lstlisting}[style=pythonstyle]
-gretl._gretl.Model_vecm.(nr=int, name=str) -> str
+.restrict(impose=list, [OPTS])
 \end{lstlisting}
+
+\gretlfpycmd{save\_ec\_term()}
+\estdesc{Adds the error-correction term from the specified equation
+	to the dataset under the given name.}
+\begin{lstlisting}[style=pythonstylefoot]
+.save_ec_term(nr: int, name: str = '') -> str
+\end{lstlisting}
+\mapto[0]{series name = \$ec[, nr]}
+\generaldesc{Note: if \textit{name} is not provided, the generated series
+	will be named according to the following pattern:
+	\texttt{m\_EC\_\textit{nr}}, where \textit{nr} is the
+	error-correction term number.}
 
 
 \subsubsection{\pythcodeb{gretl.\_gretl.Model\_NME} methods}
@@ -519,5 +545,5 @@ The \pythcode{gretl.\_gretl.Model\_NME} class provides the following public meth
 \gretlfpycmd{save\_uhat()}
 \estdesc{XXX}
 \begin{lstlisting}[style=pythonstyle]
-gretl._gretl.Model_var.save_uhat(eqn=int, name=str) -> str
+.save_uhat(eqn=int, name=str) -> str
 \end{lstlisting}
