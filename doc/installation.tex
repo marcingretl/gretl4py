@@ -1,14 +1,13 @@
 \chapter{Installation or Compilation}
 \section{Installation}\label{sec:install}
 
-The \gretlpy{} package is available
+The \gretlpy package is available
 via the PyPI infrastructure, so installation requires calling:
 \begin{verbatim}
 python3(.exe) -m pip install gretl4py
 \end{verbatim}
 
-In addition, \texttt{wheel}
-snapshots are also available at
+In addition, \texttt{wheel} snapshots are also available at
 \url{https://sourceforge.net/projects/gretl/files/gretl4py/snapshots/}.
 To install the package, please download the appropriate \texttt{.whl}
 file and run the following command:
@@ -17,6 +16,13 @@ file and run the following command:
 python.exe -m pip install gretl4py-0.2-cp313-cp313-win_amd64.whl
 \end{verbatim}
 
+\paragraph{MS Windows:}
+\texttt{gretl4py} requires the Microsoft Visual C++ 2022 Redistributable
+(v14.x). Please make sure that this runtime is installed on your system.
+The latest supported version is available at
+\url{https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist}.
+
+\paragraph{Linux:}
 Since installing packages via \texttt{pip} can be problematic on some
 Linux distributions, we provide a script named \texttt{webinstall.py}
 (available at: \url{https://sourceforge.net/p/gretl/gretl4py/ci/master/tree/}),
@@ -36,10 +42,10 @@ Doing so should produce output similar to Figure~\ref{fig:mswindows_about}.
 
 \begin{figure}[h!tb]
 	\centering
-	\includegraphics[scale=0.7]{about}
+	\includegraphics[width=\columnwidth,keepaspectratio]{about}
 	\caption{Example output from \texttt{gretl.about(True)}}
 	\label{fig:mswindows_about}
-\end{figure}
+\end{figure}\clearpage
 
 
 \section{Compilation on GNU/Linux}\label{sec:linux-compile}
@@ -48,8 +54,7 @@ components are installed:
 
 \begin{enumerate}
 	\item \pkg{meson}, \pkg{ninja}, \pkg{pkg-config}, and \gretl
-		version 2025b-git or later (see \url{https://gretl.sourceforge.net}
-		for details);
+		(see \url{https://gretl.sourceforge.net} for details);
 	\item A \cpp compiler with \texttt{-std=c++17} support (\texttt{g++},
 		\texttt{clang++}, and \texttt{icpx} have been tested).
 \end{enumerate}
@@ -66,4 +71,3 @@ of \python being used.
 
 To verify the installation, run \texttt{python3 -c "import gretl; gretl.about(True)"};
 this should produce output similar to Figure~\ref{fig:mswindows_about}.
-

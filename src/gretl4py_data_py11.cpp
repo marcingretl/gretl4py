@@ -280,7 +280,7 @@ void init_gretl4py_package_py11(py::module_ &m)
     .def("show_functions", &GretlPackage::show_functions)
     .def("set_main", &GretlPackage::set_main,
          py::arg("name").none(false))
-    .def("_get_functions", &GretlPackage::get_functions)
+    .def("get_functions", &GretlPackage::get_functions)
     .def("_function_exec",
          [](GretlPackage &self, const std::string &name,
             const py::kwargs &kwargs) -> py::object

@@ -6,6 +6,7 @@ version 0.41:
     - robustify install.py (thanks, Allin)
     - 'fractint' test added
     - new GretlDataset methods added: ::hurst(), ::xcorrgm(), ::pca()
+    - massive doc updates
 
 version 0.4:
     - add GretlaDataset::dummyfi() method

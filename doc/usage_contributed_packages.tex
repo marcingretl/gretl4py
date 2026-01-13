@@ -1,0 +1,128 @@
+\section{\gretl contributed packages}\label{sec:gretl_contributed_packages}
+This section is based on \cite{gretl_function_package_guide}.
+
+There are two types of function packages in \gretl: those
+contributed and maintained by users, and those developed by
+the \gretl team. The latter are more tightly integrated with
+the \gretl program than standard user-contributed packages.
+This second type is referred to as \textit{add-ons} and is
+automatically bundled with each \gretl distribution
+(as is also the case for \gretlpy). Users can browse
+automatically updated listings of \gretl \textit{add-ons}
+at \url{https://gretl.sourceforge.net/addons-data/addons.xml}
+and of contributed function packages at
+\url{https://gretl.sourceforge.net/cgi-bin/gretldata.cgi}.
+In both cases, documentation for the packages is available.
+
+The core component of a \gretl function package---in simpler
+cases, the sole component---is a \texttt{gfn} file. This is an
+XML file conforming to the Document Type Definition
+\texttt{gretlfunc.dtd}, which is supplied with the \gretl
+distribution; the latest version is always available online.
+Such files contain
+\begin{itemize}
+	\item \texttt{hansl} code for at least one function;
+	\item metadata such as author, version, and release date;
+	\item help text for the function(s), or a reference to
+		documentation in PDF format;
+	\item a sample script illustrating calls to the packaged function(s).
+\end{itemize}
+
+An alternative to a simple package is what we refer to as a
+``zip package''. Such packages take the form of a \texttt{PKZIP}
+archive containing a \texttt{gfn} file along with additional
+materials. These may include PDF documentation (in place of
+plain-text help), data required by the package for internal
+use (for example, tables of critical values for a test statistic),
+and/or supplementary data files or scripts intended to complement
+the mandatory sample script. The list of \textit{add-ons} is as follows:
+\begin{itemize}
+	\item \textbf{dbnomics}: Obtain data via DBnomics, written by
+		Riccardo ``Jack'' Lucchetti and Allin Cottrell, JEL codes: C81.\newline
+		Documentation: \url{https://sourceforge.net/projects/gretl/files/addons/doc/dbnomics.pdf}.	
+	\item \textbf{extra}: Extra functions for \texttt{hansl} scripting,
+		written by the \gretl team, JEL codes: C88.\newline
+		Documentation: \url{https://sourceforge.net/projects/gretl/files/addons/doc/extra.pdf}.	
+	\item \textbf{geoplot}: Geospatial plotting utilities,
+		written by Allin Cottrell and Riccardo ``Jack'' Lucchetti,
+		JEL codes: C81, C88.\newline
+		Documentation: \url{https://sourceforge.net/projects/gretl/files/addons/doc/geoplot.pdf}.	
+	\item \textbf{gig}: An assortment of univariate GARCH models,
+		written by Riccardo ``Jack'' Lucchetti and Stefano Balietti,
+		JEL codes: C22.\newline
+		Documentation: \url{https://sourceforge.net/projects/gretl/files/addons/doc/gig.pdf}.	
+	\item \textbf{HIP}: Heteroskedastic IV Probit models,
+		written by Riccardo ``Jack'' Lucchetti and Claudia Pigini,
+		JEL codes: C25, C26\newline
+		Documentation: \url{https://sourceforge.net/projects/gretl/files/addons/doc/HIP.pdf}.	
+	\item \textbf{ivpanel}: Within- and between-panel TSLS models,
+		plus G2SLS, written by Allin Cottrell, JEL codes: C23, C26.\newline
+		Documentation: \url{https://sourceforge.net/projects/gretl/files/addons/doc/ivpanel.pdf}.	
+	\item \textbf{KFgui}: Graphical user interface for Kalman filter
+		models, written by Riccardo ``Jack'' Lucchetti, JEL codes: C32.\newline
+		Documentation: \url{https://sourceforge.net/projects/gretl/files/addons/doc/KFgui.txt}.	
+	\item \textbf{logging}: Structured logging for script execution,
+		written by Artur Tarassow, JEL codes: C81.\newline
+		Documentation: \url{https://sourceforge.net/projects/gretl/files/addons/doc/logging.pdf}.	
+	\item \textbf{regls}: Regularized least-squares estimation
+		methods, written by Allin Cottrell, JEL codes: C20, C52.\newline
+		Documentation: \url{https://sourceforge.net/projects/gretl/files/addons/doc/regls.pdf}.	
+	\item \textbf{SVAR}: Structural vector autoregression models,
+		written by Riccardo ``Jack'' Lucchetti and Sven Schreiber,
+		JEL codes: C32.\newline
+		Documentation: \url{https://sourceforge.net/projects/gretl/files/addons/doc/SVAR.pdf}.
+\end{itemize}
+
+
+\subsection{Package installation}
+{\Huge XXX}
+
+We've talked about installing packages, but what exactly does it mean
+for a package to be installed? Basically, it means that the package
+file(s) are placed in one or other of two standard locations where
+\gretl should always be able to find them automatically---for example,
+in response to the call \pythcode{include('mypkg.gfn')} without any
+path specification: and this is the standard \gretl[']s ``per-user'' 
+function directory. In each case we're talking about a subdirectory
+named \texttt{functions}, the actual path to which differs by platform
+(and on MS Windows, by national language).
+
+On an English-language Windows installation typical values is:
+\begin{verbatim}
+C:\Users\login\AppData\Roaming\gretl\functions
+\end{verbatim}
+where ``login'' is a placeholder for your username. On Linux it's
+likely to be:
+\begin{verbatim}
+$HOME/.gretl/functions
+\end{verbatim}
+and on macOS
+\begin{verbatim}
+$HOME/Library/Application Support/gretl/functions
+\end{verbatim}%
+where
+\verb|$HOME| is your ``home'' directory, which is always defined on
+Linux and macOS.
+
+However, you don't need to guess at these locations: in the \python
+console you can call \pythcode{gretl.get_accessor('\$gretldir')}
+to get the respective base directory on your system: append
+``\texttt{functions}'' and you'll have the canonical package paths.
+
+Having installed a package, \gretlpy (and thus \lgretl) will automatically
+find it in these places. Well, there's one possible catch to look out for.
+The \texttt{gfn} file for a package may be placed in the \texttt{functions}
+directory itself, or in a subdirectory with the same name as the package;
+that is, on one or other of the following patterns:
+\begin{verbatim}
+functions/mypkg.gfn
+functions/mypkg/mypkg.gfn
+\end{verbatim}
+Why the difference? If a package includes PDF documentation, or any
+other files besides the \texttt{gfn}, \textit{it must be in its own
+	subdirectory} (the second pattern). But if the package consists of
+a \texttt{gfn} file only, then it should go directly into the \texttt{functions}
+directory (the first pattern).  Gretl should get this right when
+installing a package for you but if you install a package by hand,
+copying it to the \texttt{functions} directory yourself, you should
+pay attention to this point.

@@ -494,7 +494,7 @@ py::object do_gretl_include (const std::string &filename)
 
     // get list of exported function names
     py::object obj = py::cast(pkg);
-    py::object func_list = obj.attr("_get_functions")();
+    py::object func_list = obj.attr("get_functions")();
 
     // import the 'gretl' module dynamically
     py::module_ gretl_mod = py::module_::import("gretl");

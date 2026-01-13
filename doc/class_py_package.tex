@@ -1,23 +1,48 @@
-\subsection{\classpypackage}\label{sec:classpypackage}
+\subsection{\classpypackageb}\label{sec:classpypackage}
+The primary purpose of \gretl function packages is to extend
+\gretl's repertoire of built-in procedures by adding new
+estimators, hypothesis tests, or other analytical tools.
+Although function packages may also serve other purposes
+(e.g. pedagogy or replication exercises), those made available
+via the \gretl server are expected to enhance \gretl's
+functionality in non-trivial ways. More comprehensive information
+is available at
+\url{https://gretl.sourceforge.net/function_packages.html}.
+For information on how to use function packages with \gretlpy,
+please refer to Section~\ref{sec:gretl_contributed_packages}.
+
+
+\subsubsection{\classpypackageb methods}
 The \classpypackage class provides the following public methods:
 
 \gretlfpycmd{get\_name()}
-\estdesc{XXX}
-\begin{lstlisting}[style=pythonstyle]
-.get_name(self) -> str
+\estdesc{Returns package name.}
+\begin{lstlisting}[style=pythonstylefoot]
+.get_name() -> str
 \end{lstlisting}
-\generaldesc{XXX}
 
-\gretlfpycmd{set\_main()}
-\estdesc{XXX}
-\begin{lstlisting}[style=pythonstyle]
-.set_main(name=str)
+\gretlfpycmd{get\_functions()}
+\estdesc{Returns the names of all public functions provided by the package.}
+\begin{lstlisting}[style=pythonstylefoot]
+.get_functions() -> list
 \end{lstlisting}
-\generaldesc{XXX}
+\generaldesc{Note: all these functions are automatically bound
+	to the user space once the \classpypackage\ instance is created.}
+
+%\gretlfpycmd{set\_main()}
+%\estdesc{XXX}
+%\begin{lstlisting}[style=pythonstyle]
+%.set_main(name=str)
+%\end{lstlisting}
+%\generaldesc{XXX}
 
 \gretlfpycmd{show\_functions()}
-\estdesc{XXX}
-\begin{lstlisting}[style=pythonstyle]
-.show_functions(self)
+\estdesc{Prints the signatures of all public functions provided by the package.}
+\begin{lstlisting}[style=pythonstylefoot]
+.show_functions()
 \end{lstlisting}
-\generaldesc{XXX}
+\generaldesc{Using this method, the user may inspect
+		a \gretl package, that is, retrieve detailed
+		information about the functions it provides,
+		including their names, arguments (with default
+		values), and return types.}

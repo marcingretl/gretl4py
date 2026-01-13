@@ -390,6 +390,9 @@ std::string GretlPackage::get_name (void) const
 
 void GretlPackage::show_functions (void) const
 {
+    //
+    // prints the signatures of all public functions provided by the package.
+    //
     if (func_args_.empty()) throw std::runtime_error("no available functions");
 
     GretlType type;
