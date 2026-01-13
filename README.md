@@ -1,16 +1,9 @@
 # gretl4py: Python Bindings for gretl
-                _   _   ___
-               | | | | /   |
-  __ _ _ __ ___| |_| |/ /| |_ __  _   _
- / _` | '__/ _ \ __| / /_| | '_ \| | | |
-| (_| | | |  __/ |_| \___  | |_) | |_| |
- \__, |_|  \___|\__|_|   |_/ .__/ \__, |
-  __/ |                    | |     __/ |
- |___/                     |_|    |___/
-
 
 **gretl4py** provides Python bindings to **gretl**, a free, open-source, cross-platform software package for econometric analysis.
 Gretl is known for its numerical accuracy and computational efficiency — capabilities that gretl4py inherits directly through the underlying `libgretl` engine.
+
+**Windows users**: This package requires the **Visual C++ 2022 Redistributable x64**. Please install it from: https://aka.ms/vs/17/release/vc_redist.x64.exe
 
 gretl4py is not a standalone econometrics library. Instead, it serves as a **bridge** between Python and `libgretl`, exposing a high-performance backend that supports:
 

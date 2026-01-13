@@ -65,7 +65,27 @@ if user_site not in sys.path:
 # ###################################
 # gretl4py stuff
 # ###################################
-from . import _gretl
+def vc_redist_message():
+    arch = platform.machine().lower()
+
+    if arch == "arm64":
+        url = "https://aka.ms/vs/17/release/vc_redist.arm64.exe"
+        arch_name = "ARM64"
+    else:
+        url = "https://aka.ms/vs/17/release/vc_redist.x64.exe"
+        arch_name = "x64"
+
+    return (
+        f"gretl4py on Windows requires the Microsoft Visual C++ 2022 "
+        f"Redistributable ({arch_name}).\n\n"
+        f"Download:\n{url}"
+    )
+try:
+    from . import _gretl
+except ImportError as e:
+    if sys.platform == "win32":
+        raise RuntimeError(vc_redist_message()) from e
+    raise
 from . import gretl4py_addons
 from . import gretl4py_classes
 
