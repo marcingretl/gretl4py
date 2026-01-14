@@ -67,6 +67,11 @@ struct GretlGcharDeleter {
 };
 using gretl_gchar_ptr = std::unique_ptr<gchar, GretlGcharDeleter>;
 
+struct GretlDATASETDeleter {
+    void operator() (DATASET *ptr) const { destroy_dataset(ptr); }
+};
+using gretl_dataset_ptr = std::unique_ptr<DATASET, GretlDATASETDeleter>;
+
 // function results deleter
 struct GretlResourceDeleter {
     GretlType type = GRETL_TYPE_NONE;

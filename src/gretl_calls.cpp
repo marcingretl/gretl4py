@@ -25,8 +25,10 @@
 extern "C" {
     #include <gretl/gretl_string_table.h>
     #include <gretl/gretl_typemap.h>
+    #include <gretl/gretl_www.h>
     double bvnorm_cdf (double rho, double a, double b); // from gretl_normal.c
 }
+#include <filesystem>
 
 #if defined(_WIN32)
 # include <gretl/gretl_win32.h>
@@ -516,6 +518,30 @@ py::object do_gretl_include (const std::string &filename)
     }
 
     return obj;
+}
+
+void do_gretl_pkg (const std::string &action, const std::string &pkgname)
+{
+    //
+    // function which mimics libgretl's 'pkg' command
+    // Note: as for now we support only basic operations
+    //
+    int err = 0;
+
+    if (action == "install") {
+        std::string gretldir = py::cast<std::string>(do_get_accessor<GRETL_OBJ_ANY>("$gretldir", DSET, nullptr));
+
+        auto pkgname_remote = retrieve_remote_pkg_filename(pkgname.c_str(), &err);
+        if (err) handle_gretl_error(err);
+
+        std::filesystem::path localfile = std::filesystem::path(gretldir) / "functions" / pkgname_remote;
+
+        py::print("installing package:", pkgname, "->", localfile.string());
+        err = retrieve_remote_function_package(pkgname.c_str(), localfile.string().c_str(), 0);
+    } else {
+        throw std::invalid_argument("unsupported option: " + action);
+    }
+    if (err) handle_gretl_error(err);
 }
 
 template <GretlFunIndex FI>
@@ -1051,25 +1077,21 @@ GretlTypesPtr gretl_generate_gretl_object (const char *s, int &err,
     //
     GretlTypesPtr res;              // gretl4py type
     GretlType t = GRETL_TYPE_NONE;  // libgretl type
-    bool free_dset = false;         // we free dset _only_ if was allocated here
+    gretl_dataset_ptr dset_ptr{nullptr};
     void *resp;
 
     // we allocate dset if we didn't get one
     if (dset == NULL) {
-        dset = datainfo_new();
-        free_dset = true;
+        dset_ptr.reset(datainfo_new());
+        dset = dset_ptr.get();
     }
 
     // we grab object from stack (note: if model was passed we use it)
     if (model != NULL) set_genr_model(model, obj_type);
     resp = generate_gretl_object(s, dset, &t, &err);
     if (model != NULL) unset_genr_model();
-
-    if (!err) {
-        res = convert_GretlType_to_GretlTypes(t, resp, dset->n, err);
-    }
-
-    if (free_dset) destroy_dataset(dset);
+    if (!err) res = convert_GretlType_to_GretlTypes(t, resp, dset->n, err);
+    if (err) handle_gretl_error(err);
 
     return res;
 }
