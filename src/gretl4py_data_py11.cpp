@@ -50,9 +50,7 @@ static void head_tail_print (GretlDataset &gd, int nobs)
         opts["range"] = std::to_string(gd.dset->t2 - nobs + 2) +
                     ":" + std::to_string(gd.dset->t2 + 1);
     }
-    if constexpr (mode == HEAD || mode == TAIL) {
-        opts["byobs"] = true;
-    }
+    if constexpr (mode == HEAD || mode == TAIL) opts["byobs"] = true;
 
     gd.print(opts);
 }
@@ -100,7 +98,7 @@ void init_gretl4py_dataset_py11(py::module_ &m)
              [](GretlDataset &self, const std::string &startobs,
                 const std::string &endobs, const py::kwargs &kwargs)
              {
-                 // direct call for GretlDataset::smpl()
+                 // direct call to GretlDataset::smpl()
                  self.smpl(startobs, endobs, kwargs);
              },
              py::arg("startobs").none(true) = "", py::arg("endobs").none(true) = "", py::kw_only())

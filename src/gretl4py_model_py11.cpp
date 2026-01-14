@@ -96,9 +96,8 @@ void init_gretl4py_model_py11(py::module_ &m)
              [](GretlModel_NSE &self, const std::string &type, const py::kwargs &kwargs)
              {
                  //
-                 // lambda rationale:
                  // 1. handles overload resolution cleanly (keyword vs positional)
-                 // 2. special-cases "chow" which uses 'obs' instead of 'varlist'
+                 // 2. special-cases: "chow" which uses 'obs' instead of 'varlist'
                  //
                  py::kwargs clean_kwargs = kwargs;
                  bool with_vars = false;
@@ -113,7 +112,7 @@ void init_gretl4py_model_py11(py::module_ &m)
                      with_vars = true;
                  }
 
-                 // we perform test
+                 // we do the job
                  with_vars ? self.test(type, varlist, clean_kwargs) : self.test(type, clean_kwargs);
              },
              py::arg("type").none(false), py::kw_only());
