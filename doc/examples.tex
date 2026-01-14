@@ -49,44 +49,20 @@ The following functions are designed to load external
 data files into a dictionary compatible with \gretlpy.
 For further details, refer to Section~\ref{sec:data_management_python}.
 
-\gretlfpycmd{csv2dict()}
-\estdesc{To load the contents of an existing \texttt{csv}
-	file into a dictionary compatible with \gretlpy, the
-	following minimal code snippet can be used:}
-\begin{lstlisting}[style=pythonstyle]
-import gretl
-
-d = gretl.csv2dict('longley.csv')
-\end{lstlisting}
-\generaldesc{See \texttt{`examples/data\_management/csv2dict.py'} for details.}
-
 \noindent Note that the preferred method for loading \texttt{csv}
 files is through either \texttt{attach\_gretl\_data()}
 or \texttt{get\_gretl\_data()}.
-
-\gretlfpycmd{df2dict()}
-\estdesc{To load the contents of an existing \pkg{pandas}
-  \texttt{DataFrame} into a dictionary compatible with
-  \gretlpy, the following minimal code snippet can be used
-  (assuming the first column contains observation labels):}
-\begin{lstlisting}[style=pythonstyle]
-import gretl
-import pandas
-
-df = pandas.read_csv('longley.csv')
-d = gretl.df2dict(df, with_obs=True)
-\end{lstlisting}
-\generaldesc{See \texttt{`examples/data\_management/df2dict.py'} for details.}
 
 \gretlfpycmd{nparray2dict()}
 \estdesc{To load the contents of an existing \pkg{numpy}
   \texttt{array} into a dictionary compatible with \gretlpy,
   the following minimal code snippet can be used:}
-\begin{lstlisting}[style=pythonstyle]
+\begin{lstlisting}[style=pythonstylefoot]
 import gretl
 from numpy import genfromtxt
 
-np = genfromtxt('longley.csv', delimiter=',')[1:,1:]
+data_dir = gretl.about()['built_in_strings']['gretldir'] + '/examples/data_management/'
+np = genfromtxt(data_dir + 'longley.csv', delimiter=',')[1:, 1:]
 d = gretl.nparray2dict(np)
 \end{lstlisting}
 \generaldesc{See \texttt{`examples/data\_management/numpyarray2dict.py'} for details.}
@@ -95,11 +71,12 @@ d = gretl.nparray2dict(np)
 \estdesc{To load the contents of an existing \pkg{pandas}
   \texttt{Series} into a dictionary compatible with \gretlpy,
   the following minimal code snippet can be used:}
-\begin{lstlisting}[style=pythonstyle]
+\begin{lstlisting}[style=pythonstylefoot]
 import gretl
 import pandas
 
-df = pandas.read_csv('longley.csv')
+data_dir = gretl.about()['built_in_strings']['gretldir'] + '/examples/data_management/'
+df = pandas.read_csv(data_dir +'longley.csv')
 s = pandas.Series(df['employ'].to_list(),
 	index=df['obs'].to_list())
 d = gretl.series2dict(s)
@@ -112,51 +89,11 @@ d = gretl.series2dict(s)
 	\texttt{gdtb}, \texttt{csv}, \texttt{dta}, \texttt{wf1},
 	or spreadsheet (\texttt{xls}, \texttt{xlsx}, and \texttt{ods})
 	the following minimal code snippet can be used:}
-\begin{lstlisting}[style=pythonstyle]
+\begin{lstlisting}[style=pythonstylefoot]
 import gretl
 
-data_dir = gretl.about()['built_in_strings']['gretldir'] + '/data/'
-d = gretl.get_data(data_dir + 'longley.csv')
+d = gretl.get_data('longley.csv')
 \end{lstlisting}
-
-
-%\subsection{Helper functions}\label{sec:helper_functions_data_python_examples}
-%\gretlfpycmd{gretl\_data\_path()}
-%\estdesc{To obtain the full path to a bundled \texttt{gdt}
-%  or \texttt{gdtb} file, the following minimal code snippet
-%  can be used \citep[see][for details]{gretl_manual}:}
-%\begin{lstlisting}[style=pythonstyle]
-%import gretl
-%
-%p = gretl.gretl_data_path('misc/longley.gdt')
-%\end{lstlisting}
-
-%\gretlfpycmd{printdata()}
-%\estdesc{To print the contents of the currently registered
-%  global dataset in \gretlpy, the following minimal code
-%  snippet can be used:}
-%\begin{lstlisting}[style=pythonstyle]
-%import gretl
-%
-%gretl.attach_gretl_data(
-%	gretl.gretl_data_path('misc/longley.gdt'))
-%gretl.print_data()
-%\end{lstlisting}
-%\generaldesc{See \texttt{`examples/helper\_functions/print\_data.py'} for details.}
-
-%\gretlfpycmd{sample()}
-%\estdesc{To modify the sample range of the currently
-%  registered global dataset in \gretlpy, the following
-%  minimal code snippet can be used:}
-%\begin{lstlisting}[style=pythonstyle]
-%import gretl
-%
-%gretl.attach_gretl_data(
-%	gretl.gretl_data_path('misc/longley.gdt'))
-%gretl.sample(t1=5, t2=10)
-%\end{lstlisting}
-%\generaldesc{See \texttt{`examples/data\_management/sample.py'} for details.}
-
 
 
 \section{Estimators}\label{sec:estimators_python_examples}
@@ -169,8 +106,7 @@ d = gretl.get_data(data_dir + 'longley.csv')
 \begin{lstlisting}[style=pythonstyle]
 import gretl
 
-data_dir = gretl.about()['built_in_strings']['gretldir'] + '/data/'
-d = gretl.get_data(data_dir + 'longley.csv')
+d = gretl.get_data('longley.csv')
 m = gretl.ar('1 2 ; employ const prdefl gnp armfrc').fit()
 print(m)
 \end{lstlisting}

@@ -129,10 +129,12 @@ def nparray2dict (X, pd=1, Y=None, with_const=False,
 
 def series2dict (Y, pd=1, varname="y"):
     '''turns a pandas series into a dictionary gretl understands'''
-    if 'pandas' not in sys.modules:
+    try:
         import pandas
+    except ImportError as e:
+        raise ImportError("pandas is required for series2dict()") from e
 
-    if not isinstance(Y, pandas.core.series.Series):
+    if not isinstance(Y, pandas.Series):
         raise Exception("Y is not a pandas.core.series.Series!!!")
     d = {}
     if varname == 'const':
