@@ -199,11 +199,14 @@ Examples:\newline
 	options is given, \textit{varlist} should contain just two variables.}
 
 \gretlfpycmd{cov()}
-\estdesc{XXX}
-\begin{lstlisting}[style=pythonstyle]
-.cov(vars=str) -> numpy.ndarray
+\estdesc{Returns the covariance matrix for the variables in the list.}
+\begin{lstlisting}[style=pythonstylefoot]
+.cov(vars: str) -> numpy.ndarray
 \end{lstlisting}
-\generaldesc{XXX}
+\maptof{cov(y1, y2)}{numpy.ndarray}
+\generaldesc{Note: this function is slightly more general than
+	\gretlcmd{cov()} in \gretl, since it allows passing a list
+	with an arbitrary number of variables.}
 
 \gretlfpycmd{critical()}\label{met:gretldataset::critical}
 \estdesc{Critical value calculator for given \gretlcmd{series}.}

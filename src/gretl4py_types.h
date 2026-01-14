@@ -178,7 +178,9 @@ enum class GretlFunIndex {
     F_PVAL,
     F_CDF,
     F_INVCDF,
-    F_CRIT
+    F_CRIT,
+    F_MCOV,
+    F_MCORR
 };
 
 //////////////////////////////////////////////////

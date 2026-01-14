@@ -1093,13 +1093,14 @@ py::object GretlDataset::cov (const std::string &vars)
         var_list = list_from_formula(vars, dset, err_);
     }
 
-    // actual work
+    // we do the job
     mat.reset(gretl_covariance_matrix_from_varlist(var_list.get(),
                                                    dset, NULL, &err_));
     if (err_) handle_gretl_error(err_);
 
     auto res = convert_GretlType_to_GretlTypes(GRETL_TYPE_MATRIX,
                                                mat.get(), 0, err_);
+    if (err_) handle_gretl_error(err_);
 
     return variant_to_pyobject(std::move(*res));
 }
@@ -1704,9 +1705,7 @@ void GretlBundle::set_element (const std::string &key, const T &t)
         gretl_matrix_ptr mat{nullptr};
 
         NumPyArray_extract(t, arr_view);
-        if (!arr_view.data) {
-            throw std::runtime_error("NumPy array: null pointer.");
-        }
+        if (!arr_view.data) throw std::runtime_error("NumPy array: null pointer.");
         mat.reset(gretl_matrix_alloc(arr_view.rows, arr_view.cols));
 
         NumPyArray_to_gretl_matrix<gretl_matrix>(arr_view, mat.get());

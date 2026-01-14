@@ -95,6 +95,26 @@ follows:
 	\item \textbf{Non-central $t$} (\texttt{nct}): degrees of freedom; non-centrality parameter
 \end{itemize}\end{footnotesize}
 
+\gretlfpycmd{corr()}\label{func:gretl.corr}
+\estdesc{Computes a (Pearson) correlation matrix treating each
+	column of \textit{X} as a variable.}
+\begin{lstlisting}[style=pythonstylefoot]
+gretl.corr(X: numpy.ndarray) -> numpy.ndarray
+\end{lstlisting}
+\maptof{mcorr(X)}{numpy.ndarray}
+
+\gretlfpycmd{cov()}\label{func:gretl.cov}
+\estdesc{Computes a covariance matrix treating each
+	column of \textit{X} as a variable.}
+\begin{lstlisting}[style=pythonstylefoot]
+gretl.cov(X: numpy.ndarray[, dfcorr: int]) -> numpy.ndarray
+\end{lstlisting}
+\maptof{mcov(X)}{numpy.ndarray}
+\maptof{mcov(X, dfcorr)}{numpy.ndarray}
+\generaldesc{The divisor is $n-1$, where \textit{n} is the
+	number of rows of \textit{X}, unless the optional second
+	argument is supplied, in which case $n-dfcorr$ is used.}
+
 \gretlfpycmd{critical()}\label{func:gretl.critical}
 \estdesc{Critical value calculator.}
 \begin{lstlisting}[style=pythonstylefoot]

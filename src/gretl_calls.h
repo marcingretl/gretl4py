@@ -60,13 +60,16 @@ void do_gretl_varlist (const py::kwargs &kwargs);
 
 py::object do_gretl_include (const std::string &filename);
 
-template<GretlFunIndex FI>
+template <GretlFunIndex FI>
 double gretl_get_pvalue_critval_pdf_cdf (const std::string &dist, double value,
                                          const py::object &param = py::none());
 
-template<GretlFunIndex FI, typename T>
+template <GretlFunIndex FI, typename T>
 py::array_t<double> matrix_functions_wrapper (const std::string &dist, const T &src,
                                               const py::object &param = py::none());
+
+template <GretlFunIndex FI>
+py::object matrix_cov_corr (const py::array &X, int dfcorr = 1);
 
 void genr (const std::string &formula, GretlDatasetPtr data);
 

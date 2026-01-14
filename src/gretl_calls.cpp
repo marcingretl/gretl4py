@@ -597,7 +597,7 @@ double gretl_get_pvalue_critval_pdf_cdf (const std::string &dist, double value,
     }
 }
 
-template<GretlFunIndex FI, typename T>
+template <GretlFunIndex FI, typename T>
 py::array_t<double> matrix_functions_wrapper (const std::string &dist, const T &src,
                                               const py::object &param)
 {
@@ -669,6 +669,46 @@ template py::array_t<double> matrix_functions_wrapper<GretlFunIndex::F_CDF, std:
 template py::array_t<double> matrix_functions_wrapper<GretlFunIndex::F_PVAL, std::string>(const std::string&, const std::string&, const py::object&);
 template py::array_t<double> matrix_functions_wrapper<GretlFunIndex::F_CRIT, std::string>(const std::string&, const std::string&, const py::object&);
 template py::array_t<double> matrix_functions_wrapper<GretlFunIndex::F_INVCDF, std::string>(const std::string&, const std::string&, const py::object&);
+
+template <GretlFunIndex FI>
+py::object matrix_cov_corr (const py::array &X, int dfcorr)
+{
+    //
+    // here we perform matrix-based covariance/correlation analysis
+    // this is an interface to gretl_covariance_matrix()
+    //
+    gretl_matrix_ptr mat{nullptr};      // gretl matrix we pass to libgretl
+    gretl_matrix_ptr res_mat{nullptr};  // gretl matrix we get from libgretl
+    NumPyArrayView arr_view;
+    int err = 0;
+
+    // we extract X matrix
+    NumPyArray_extract(X, arr_view);
+    if (arr_view.cols < 2) handle_gretl_error(E_TOOFEW);
+
+    // we fill-up 'mat'
+    mat.reset(gretl_matrix_alloc(arr_view.rows, arr_view.cols));
+    NumPyArray_to_gretl_matrix<gretl_matrix>(arr_view, mat.get());
+
+    // we do the job
+    if constexpr (FI == GretlFunIndex::F_MCOV) {
+        res_mat.reset(gretl_covariance_matrix(mat.get(), 0, dfcorr, &err));
+    } else if constexpr (FI == GretlFunIndex::F_MCORR) {
+        res_mat.reset(gretl_covariance_matrix(mat.get(), 1, 1, &err));
+    } else {
+        static_assert(always_false<GretlFunIndex>,
+                      "matrix_cov_corr: unknown GretlFunIndex value");
+    }
+    if (err) handle_gretl_error(err);
+
+    auto res = convert_GretlType_to_GretlTypes(GRETL_TYPE_MATRIX,
+                                               res_mat.get(), 0, err);
+    if (err) handle_gretl_error(err);
+
+    return variant_to_pyobject(std::move(*res));
+}
+template py::object matrix_cov_corr<GretlFunIndex::F_MCOV>(const py::array&, int);
+template py::object matrix_cov_corr<GretlFunIndex::F_MCORR>(const py::array&, int);
 
 void do_gretl_delete_variables (const std::string &varname,
                                 const py::kwargs &kwargs)
@@ -804,7 +844,7 @@ void handle_gretl_error (int err)
     // here we handle libgretl errors
     // note: ArgErr in not complete!!!
     //
-    const std::unordered_set<GretlError> ArgErr{ E_ARGS, E_INVARG, E_UNKVAR };
+    const std::unordered_set<GretlError> ArgErr{ E_ARGS, E_INVARG, E_UNKVAR, E_TOOFEW };
 
     gretl_error_clear();
 
