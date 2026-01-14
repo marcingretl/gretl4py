@@ -228,7 +228,7 @@ void init_gretl4py_dataset_py11(py::module_ &m)
              [](GretlDataset &self, const std::string &type, const py::kwargs &kwargs)
              {
                  //
-                 // here we do some things for certain tests
+                 // here we do some pre-computations for certain tests
                  //
                  std::string y_val, vars_val, varlist;
                  py::kwargs clean_kwargs;
@@ -249,23 +249,20 @@ void init_gretl4py_dataset_py11(py::module_ &m)
                          clean_kwargs[item.first] = item.second;
                      }
                  }
+
+                 // some special cases
                  if (type == "coint") {
-                     if (y_val.empty() || vars_val.empty()) {
-                         throw std::invalid_argument("Both 'y' and 'varlist' are required for 'coint'");
-                     }
+                     if (y_val.empty() || vars_val.empty()) throw std::invalid_argument("Both 'y' and 'varlist' are required for 'coint'");
                      varlist = y_val + " " + vars_val;
                  } else if (type == "corrgm") {
-                     if (y_val.empty()) {
-                        throw std::invalid_argument("'y' is required");
-                     }
+                     if (y_val.empty()) throw std::invalid_argument("'y' is required");
                      varlist = y_val;
                  } else {
-                     if (vars_val.empty()) {
-                         throw std::invalid_argument("'varlist' is required");
-                     }
+                     if (vars_val.empty()) throw std::invalid_argument("'varlist' is required");
                      varlist = vars_val;
                  }
 
+                 // we do the job
                  self.test(type, varlist, clean_kwargs);
              },
              py::arg("type"), py::kw_only());
@@ -294,9 +291,7 @@ void init_gretl4py_package_py11(py::module_ &m)
              // we construct object to return
              val = convert_GretlType_to_GretlTypes(res.type, res.get(),
                                                    res.n, err);
-             if (err) {
-                 handle_gretl_error(err);
-             }
+             if (err) handle_gretl_error(err);
 
              // we printout if needed
              const char *no_printing[] = { "quiet", "silent" };
@@ -307,15 +302,12 @@ void init_gretl4py_package_py11(py::module_ &m)
                      break;
                 }
              }
-             if (printout) {
-                 GP.print();
-             }
+             if (printout) GP.print();
 
              return variant_to_pyobject(std::move(*val));
          },
          py::arg("name").none(false), py::kw_only());
 }
-
 
 //GretlBundle mappings
 void init_gretl4py_bundle_py11(py::module_ &m)
