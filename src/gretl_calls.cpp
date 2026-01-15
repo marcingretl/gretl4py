@@ -519,8 +519,7 @@ void do_gretl_pkg (const std::string &action, const std::string &pkgname)
     int err = 0;
 
     if (action == "install") {
-        gretl_gchar_ptr pkgname_remote_c{nullptr}; // to avoid memory-leak when get 'char *'
-        bool is_zip;
+        gretl_gchar_ptr pkgname_remote_c{nullptr}; // to avoid memory-leak when got 'char *'
 
         // we set the full path to install into
         std::string gretldir = py::cast<std::string>(do_get_accessor<GRETL_OBJ_ANY>("$gretldir", nullptr, nullptr));
@@ -536,8 +535,8 @@ void do_gretl_pkg (const std::string &action, const std::string &pkgname)
         err = retrieve_remote_function_package(pkgname_remote.c_str(),
                                                localfile.string().c_str(), 0);
         if (err) handle_gretl_error(err);
-        is_zip = localfile.extension() == ".zip" ? true : false; // determine file type: .gfn or .zip
-        if (is_zip) {
+        if (localfile.extension() == ".zip") {
+            // special handling of .zip-s
             err = gretl_unzip_into(localfile.string().c_str(),
                                    functions_dir.string().c_str());
             if (err) handle_gretl_error(err);
