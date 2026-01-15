@@ -38,6 +38,7 @@ package_files = [
     'gretl4py_addons.py',
     'gretl4py_classes.py',
     '__init__.py',
+    'curl-ca-bundle.crt',
     f'_gretl{EXT}',
     'lib/*',
     'data/*',
