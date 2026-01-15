@@ -93,12 +93,8 @@ void gretl4py_init (void)
         if (int err = gretl_set_path_by_name("gretldir", env)) {
             handle_gretl_error(err);
         }
-#if defined(_WIN32)
-        std::string dotdir_path = std::string(env).append("\\tmp");
-#else
-        std::string dotdir_path = std::string(env).append("/tmp");
-#endif // defined
-        if (int err = gretl_set_path_by_name("dotdir", dotdir_path.c_str())) {
+        std::filesystem::path dotdir_path = std::filesystem::path(std::string(env)) / "tmp";
+        if (int err = gretl_set_path_by_name("dotdir", dotdir_path.string().c_str())) {
             handle_gretl_error(err);
         }
     }
