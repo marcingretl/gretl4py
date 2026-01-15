@@ -26,6 +26,7 @@ extern "C" {
     #include <gretl/gretl_string_table.h>
     #include <gretl/gretl_typemap.h>
     #include <gretl/gretl_www.h>
+    #include <gretl/gretl_zip.h>
     double bvnorm_cdf (double rho, double a, double b); // from gretl_normal.c
 }
 #include <filesystem>
@@ -529,19 +530,35 @@ void do_gretl_pkg (const std::string &action, const std::string &pkgname)
     int err = 0;
 
     if (action == "install") {
-        std::string gretldir = py::cast<std::string>(do_get_accessor<GRETL_OBJ_ANY>("$gretldir", DSET, nullptr));
+        gretl_gchar_ptr pkgname_remote_c{nullptr}; // to avoid memory-leak when get 'char *'
+        bool is_zip;
 
-        auto pkgname_remote = retrieve_remote_pkg_filename(pkgname.c_str(), &err);
+        // we set the full path to install into
+        std::string gretldir = py::cast<std::string>(do_get_accessor<GRETL_OBJ_ANY>("$gretldir", nullptr, nullptr));
+        std::filesystem::path functions_dir = std::filesystem::path(gretldir) / "functions";
+        pkgname_remote_c.reset(retrieve_remote_pkg_filename(pkgname.c_str(), &err));
         if (err) handle_gretl_error(err);
+        std::string pkgname_remote(pkgname_remote_c.get());
+        std::filesystem::path localfile = functions_dir / pkgname_remote;
 
-        std::filesystem::path localfile = std::filesystem::path(gretldir) / "functions" / pkgname_remote;
-
-        py::print("installing package:", pkgname, "->", localfile.string());
-        err = retrieve_remote_function_package(pkgname.c_str(), localfile.string().c_str(), 0);
+        // installation
+        py::print("installing package:", pkgname_remote,
+                  "->", localfile.string());
+        err = retrieve_remote_function_package(pkgname_remote.c_str(),
+                                               localfile.string().c_str(), 0);
+        if (err) handle_gretl_error(err);
+        is_zip = localfile.extension() == ".zip" ? true : false; // determine file type: .gfn or .zip
+        if (is_zip) {
+            err = gretl_unzip_into(localfile.string().c_str(),
+                                   functions_dir.string().c_str());
+            if (err) handle_gretl_error(err);
+            err = gretl_remove(localfile.string().c_str());
+            if (err) handle_gretl_error(err);
+        }
+        py::print("package installed successfully:", pkgname);
     } else {
-        throw std::invalid_argument("unsupported option: " + action);
+        throw std::invalid_argument("unsupported action: " + action);
     }
-    if (err) handle_gretl_error(err);
 }
 
 template <GretlFunIndex FI>
@@ -1075,9 +1092,9 @@ GretlTypesPtr gretl_generate_gretl_object (const char *s, int &err,
     //
     // we grab object from libgretl stack
     //
-    GretlTypesPtr res;              // gretl4py type
-    GretlType t = GRETL_TYPE_NONE;  // libgretl type
-    gretl_dataset_ptr dset_ptr{nullptr};
+    GretlTypesPtr res;                  // gretl4py type
+    GretlType t = GRETL_TYPE_NONE;      // libgretl type
+    gretl_dataset_ptr dset_ptr{nullptr};// used when dset == NULL
     void *resp;
 
     // we allocate dset if we didn't get one
