@@ -522,7 +522,8 @@ void do_gretl_pkg (const std::string &action, const std::string &pkgname)
         gretl_gchar_ptr pkgname_remote_c{nullptr}; // to avoid memory-leak when got 'char *'
 
         // we set the full path to install into
-        std::string gretldir = py::cast<std::string>(do_get_accessor<GRETL_OBJ_ANY>("$gretldir", nullptr, nullptr));
+        std::string gretldir = get_built_in_string_by_name("gretldir");
+
         std::filesystem::path functions_dir = std::filesystem::path(gretldir) / "functions";
         pkgname_remote_c.reset(retrieve_remote_pkg_filename(pkgname.c_str(), &err));
         if (err) handle_gretl_error(err);
