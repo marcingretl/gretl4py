@@ -164,11 +164,15 @@ GretlPackagePtr GretlPackage::load_package (const std::string &pkgname,
     // here we register contributed package
     // at first, we look up for package in registry
     //
-    auto [it, inserted] = GPKGs_.try_emplace(pkgname, nullptr);
+    // at first we check if package already exists
+    auto it = GPKGs_.find(pkgname);
+    if (it != GPKGs_.end()) return it->second;
 
-    if (inserted) it->second = GretlPackagePtr(new GretlPackage(pkgname, suffix));
+    // now we load the package
+    GretlPackagePtr pkg(new GretlPackage(pkgname, suffix));
+    GPKGs_.emplace(pkgname, pkg);
 
-    return it->second;
+    return pkg;
 }
 
 bool GretlPackage::package_loaded (const std::string &pkgname)
