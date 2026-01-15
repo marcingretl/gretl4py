@@ -518,6 +518,21 @@ void do_gretl_pkg (const std::string &action, const std::string &pkgname)
     //
     int err = 0;
 
+    /*
+    err = incompatible_options(opt, OPT_L | OPT_S);
+    if (err) {
+        handle_gretl_error(err);
+    } else if (opt & OPT_L) {
+        local = 1;
+    } else if (opt & OPT_S) {
+        staging = 1;
+    }*/
+
+    // we allow only .zip or .gfn (lowercase!!!)
+    std::string suffix = std::filesystem::path(pkgname).extension().string();
+    if (!suffix.empty() && suffix != ".zip" && suffix != ".gfn")
+        throw std::invalid_argument("unsupported file type: " + suffix);
+
     if (action == "install") {
         gretl_gchar_ptr pkgname_remote_c{nullptr}; // to avoid memory-leak when got 'char *'
 
