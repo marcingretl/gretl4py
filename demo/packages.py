@@ -14,7 +14,7 @@ d2 = gretl.get_data("FLS_41t72.gdt", frompkg="BMA")
 # we load packages
 CRIT = gretl.include("criteria")
 StrucTiSM = gretl.include("StrucTiSM")
-BMA = StrucTiSM = gretl.include("BMA")
+BMA = gretl.include("BMA")
 
 # let's try out criteria
 print('##################################################')

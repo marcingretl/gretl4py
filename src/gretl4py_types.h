@@ -34,7 +34,7 @@ namespace py = pybind11;
 //////////////////////////////////////////////////
 // smart pointers
 //////////////////////////////////////////////////
-
+// libgretl 'list' (i.e., *int)
 struct GretlListDeleter {
     void operator() (int *ptr) const
     {
@@ -47,26 +47,41 @@ struct GretlListDeleter {
 };
 using gretl_list_ptr = std::unique_ptr<int, GretlListDeleter>;
 
+// standard double
 struct GretlDoubleDeleter {
     void operator() (double *ptr) const { std::free(ptr); }
 };
 using gretl_double_ptr = std::unique_ptr<double, GretlDoubleDeleter>;
 
+// gretl_matrix
 struct GretlMatrixDeleter {
     void operator() (gretl_matrix *ptr) const { gretl_matrix_free(ptr); }
 };
 using gretl_matrix_ptr = std::unique_ptr<gretl_matrix, GretlMatrixDeleter>;
 
+// libgretl Vmatrix
 struct GretlVMatrixDeleter {
     void operator() (VMatrix *ptr) const { free_vmatrix(ptr); }
 };
 using VMatrix_ptr = std::unique_ptr<VMatrix, GretlVMatrixDeleter>;
 
+// GLib char
 struct GretlGcharDeleter {
     void operator() (gchar *ptr) const { g_free(ptr); }
 };
 using gretl_gchar_ptr = std::unique_ptr<gchar, GretlGcharDeleter>;
 
+// standard char** with known number of elements
+struct StringsArrayDeleter {
+    int nstrs = 0;
+
+    void operator() (char **strs) const noexcept {
+        if (nstrs > 0) strings_array_free(strs, nstrs);
+    }
+};
+using strings_array_ptr = std::unique_ptr<char*, StringsArrayDeleter>;
+
+// DATASET
 struct GretlDATASETDeleter {
     void operator() (DATASET *ptr) const { destroy_dataset(ptr); }
 };
