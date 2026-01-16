@@ -27,7 +27,6 @@ extern "C" {
     #include <gretl/gretl_typemap.h>
     #include <gretl/gretl_www.h>
     #include <gretl/gretl_zip.h>
-    double bvnorm_cdf (double rho, double a, double b); // from gretl_normal.c
 }
 #include <filesystem>
 
@@ -41,6 +40,11 @@ extern "C" {
 # define COMPILER_IDENT __VERSION__
 #endif
 
+// external symbols
+extern "C" {
+    double bvnorm_cdf (double rho, double a, double b); // from gretl_normal.c
+}
+
 // global variables (some used outside this file)
 GretlDatasetPtr DSET = nullptr;                         // default dataset
 std::unordered_set<std::string> UserVars;               // registry of user variables
@@ -50,23 +54,6 @@ static int gretl4py_verbose = 0;
 //////////////////////////////////////////////////
 // module related tools
 //////////////////////////////////////////////////
-
-static std::string gretl4py_logo (void)
-{
-    std::string logo = "";
-
-    logo +="                _   _   ___\n";
-    logo +="               | | | | /   |\n";
-    logo +="  __ _ _ __ ___| |_| |/ /| |_ __  _   _\n";
-    logo +=" / _` | '__/ _ \\ __| / /_| | '_ \\| | | |\n";
-    logo +="| (_| | | |  __/ |_| \\___  | |_) | |_| |\n";
-    logo +=" \\__, |_|  \\___|\\__|_|   |_/ .__/ \\__, |\n";
-    logo +="  __/ |                    | |     __/ |\n";
-    logo +=" |___/                     |_|    |___/\n";
-
-    return logo;
-}
-
 void gretl4py_init (void)
 {
     // check libgretl version
