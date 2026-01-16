@@ -35,7 +35,8 @@ extern std::unordered_set<std::string> UserVars;
 // GretlPackage class methods
 //
 GretlPackage::GretlPackage (const std::string &pkg_name,
-                            const std::string &suffix)
+                            const std::string &suffix,
+                            bool print_summary)
                             : pkg_name_(pkg_name), suffix_(suffix)
 {
     const std::unordered_set<UfunRole> excluded_roles = { UFUN_BUNDLE_PLOT,
@@ -92,10 +93,7 @@ GretlPackage::GretlPackage (const std::string &pkg_name,
         if (gretl_is_public_user_function(func_name) && !excluded_functions.count(func_name)) {
             // pointers
             auto func_ptr = get_function_from_package(func_name, pkg_);
-            if (!func_ptr) {
-                throw std::runtime_error("unable to get pointer to function: "
-                                         + std::string(func_name));
-            }
+            if (!func_ptr) throw std::runtime_error("unable to get pointer to function: " + std::string(func_name));
             func_ptrs_.emplace(func_name, std::move(func_ptr));
             // arguments
             std::map<std::string, int> arg_names_tmp;
@@ -105,10 +103,7 @@ GretlPackage::GretlPackage (const std::string &pkg_name,
             func_args_.emplace(func_name, std::move(arg_names_tmp));
         }
     }
-    if (func_ptrs_.empty()) {
-        throw std::runtime_error("no public functions found in '"
-                                 + pkg_name + "' package");
-    }
+    if (func_ptrs_.empty()) throw std::runtime_error("no public functions found in '" + pkg_name + "' package");
 
     // we try to register package 'main' function (i.e. the one to call via ::fit())
     if (func_ptrs_.size() == 1) {
@@ -131,16 +126,18 @@ GretlPackage::GretlPackage (const std::string &pkg_name,
     check_if_defines_estimator_();
 
     // package summary
-    oss << std::fixed << std::setprecision(2) << function_package_get_version(pkg_);
-    py::print("We use '" + pkg_name_ + "' package, version: " + oss.str()
-              + ", JEL codes: " + get_properties_<std::string>("tags")
-              + " (" + get_properties_<std::string>("author") + ")"
-              + "\n  main function: " + (main_func_.empty() ? "none" : main_func_)
-              + ", provides estimator: " + (defines_estimator_ ? "yes" : "no"));
-    if (main_func_.empty()) {
-        py::print("warning: package main function was not found: please use ::set_main()");
+    if (print_summary) {
+        oss << std::fixed << std::setprecision(2) << function_package_get_version(pkg_);
+        py::print("We use '" + pkg_name_ + "' package, version: " + oss.str()
+                  + ", JEL codes: " + get_properties_<std::string>("tags")
+                  + " (" + get_properties_<std::string>("author") + ")"
+                  + "\n  main function: " + (main_func_.empty() ? "none" : main_func_)
+                  + ", provides estimator: " + (defines_estimator_ ? "yes" : "no"));
+        if (main_func_.empty()) {
+            py::print("warning: package main function was not found: please use ::set_main()");
+        }
+        py::print();
     }
-    py::print();
 }
 
 GretlPackage::~GretlPackage (void)
@@ -158,7 +155,8 @@ void GretlPackage::clear_registry (void)
 }
 
 GretlPackagePtr GretlPackage::load_package (const std::string &pkgname,
-                                            const std::string &suffix)
+                                            const std::string &suffix,
+                                            bool print_summary)
 {
     //
     // here we register contributed package
@@ -169,7 +167,7 @@ GretlPackagePtr GretlPackage::load_package (const std::string &pkgname,
     if (it != GPKGs_.end()) return it->second;
 
     // now we load the package
-    GretlPackagePtr pkg(new GretlPackage(pkgname, suffix));
+    GretlPackagePtr pkg(new GretlPackage(pkgname, suffix, print_summary));
     GPKGs_.emplace(pkgname, pkg);
 
     return pkg;

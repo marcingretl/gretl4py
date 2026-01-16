@@ -57,7 +57,8 @@ private:
     std::string base_dir_;              // path to the package
     int err_ = 0;
 
-    GretlPackage (const std::string &pkg_name, const std::string &suffix);
+    GretlPackage (const std::string &pkg_name, const std::string &suffix,
+                  bool print_summary = true);
 
     void check_if_defines_estimator_ (void);
 
@@ -74,7 +75,8 @@ public:
     static void clear_registry (void);
 
     static GretlPackagePtr load_package (const std::string &pkgname,
-                                         const std::string &suffix = "");
+                                         const std::string &suffix = "",
+                                         bool print_summary = true);
 
     static bool package_loaded (const std::string &pkgname);
 

@@ -597,6 +597,9 @@ void do_gretl_pkg (const std::string &action, const std::string &pkgname,
 
         py::print("package installed successfully:",
                   local ? pkgname_as_path.filename().string() : pkgname);
+    } else if (action == "query") {
+        auto pkg = GretlPackage::load_package(pkgname, "", false);
+        py::print(pkg->repr_impl());
     } else {
         throw std::invalid_argument("unsupported action: " + action);
     }
