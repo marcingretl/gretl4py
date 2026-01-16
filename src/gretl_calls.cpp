@@ -228,41 +228,6 @@ static std::string extract_varname (std::string formula)
     return gretl4py_trim(varname);
 }
 
-static int gretl_package_check_dependencies (const std::filesystem::path &localfile)
-{
-    //
-    // based on code in 'interact.c'
-    // note: localfile is a full path to already installed package (gfn or zip)
-    //
-    strings_array_ptr depends(nullptr, StringsArrayDeleter{});
-    std::filesystem::path gfnname;      // full path to .gfn
-    int ndeps, err = 0;
-
-    // map zip -> gfn
-    if (localfile.extension() == ".zip") {
-        gfnname = localfile.parent_path() / localfile.stem() / (localfile.stem().string() + ".gfn");
-    } else {
-        gfnname = localfile;
-    }
-    char **raw = package_peek_dependencies(gfnname.string().c_str(), &ndeps);
-    if (raw) {
-        depends.get_deleter().nstrs = ndeps;
-        depends.reset(raw);
-    }
-
-    // we do the job (install dependencies)
-    if (depends) {
-        for (int i=0; i<ndeps && !err; ++i) {
-            gretl_gchar_ptr dependency_path(gretl_function_package_get_path(depends.get()[i], PKG_ALL));
-            if (!dependency_path) {
-                do_gretl_pkg("install", std::string(depends.get()[i]), py::dict());
-            }
-        }
-    }
-
-    return err;
-}
-
 //////////////////////////////////////////////////
 // classes
 //////////////////////////////////////////////////
@@ -542,6 +507,41 @@ void do_gretl_pkg (const std::string &action, const std::string &pkgname,
     // function which mimics libgretl's 'pkg' command
     // Note: as for now we support only basic operations
     //
+    auto gretl_package_check_dependencies = [](const std::filesystem::path &localfile) -> int
+    {
+        //
+        // based on code in 'interact.c'
+        // note: localfile is a full path to already installed package (gfn or zip)
+        //
+        strings_array_ptr depends(nullptr, StringsArrayDeleter{});
+        std::filesystem::path gfnname;      // full path to .gfn
+        int ndeps, err = 0;
+
+        // map zip -> gfn
+        if (localfile.extension() == ".zip") {
+            gfnname = localfile.parent_path() / localfile.stem() / (localfile.stem().string() + ".gfn");
+        } else {
+            gfnname = localfile;
+        }
+        char **raw = package_peek_dependencies(gfnname.string().c_str(), &ndeps);
+        if (raw) {
+            depends.get_deleter().nstrs = ndeps;
+            depends.reset(raw);
+        }
+
+        // we do the job (install dependencies)
+        if (depends) {
+            for (int i=0; i<ndeps && !err; ++i) {
+                gretl_gchar_ptr dependency_path(gretl_function_package_get_path(depends.get()[i], PKG_ALL));
+                if (!dependency_path) {
+                    do_gretl_pkg("install", std::string(depends.get()[i]), py::dict());
+                }
+            }
+        }
+
+        return err;
+    };
+
     std::nullptr_t fakeGD = nullptr;
     std::filesystem::path pkgname_as_path(pkgname);
     int err = 0;
@@ -594,7 +594,8 @@ void do_gretl_pkg (const std::string &action, const std::string &pkgname,
         }
 
         // we install dependencies
-        gretl_package_check_dependencies(localfile);
+        err = gretl_package_check_dependencies(localfile);
+        if (err) handle_gretl_error(err);
 
         py::print("package installed successfully:",
                   local ? pkgname_as_path.filename().string() : pkgname);
