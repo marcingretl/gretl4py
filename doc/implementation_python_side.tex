@@ -367,6 +367,22 @@ refer to \ref{func:gretl.cdf}. Note that \pythcode{gretl.pdf()}
 works by default only with the default dataset. To obtain PDFs
 for variables from different datasets, please refer to \ref{met:gretldataset::pdf}.
 
+\gretlfpycmd{pkg()}
+\estdesc{This command provides a means of installing or
+	querying \gretl function packages.}
+\begin{lstlisting}[style=pythonstylefoot]
+gretl.pkg(action: str, pkgname: str[, OPTS])
+\end{lstlisting}
+\mapto[]{pkg action pkgname}
+\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
+	\item[]\maptoopt{local=True}{--local}{install from local file}
+	\item[]\maptoopt{staging=True}{--staging}{\seegretlmanual}
+\end{itemize}
+Examples:\newline
+\pythcodef{.pkg('install', 'armax')}\\
+\pythcodef{.pkg('install', '/path/to/myfile.gfn', local=True)}\\
+\pythcodef{.pkg('query', 'ghosts')}
+
 \gretlfpycmd{print()}
 \estdesc{Please note that print is a rather ``basic'' function
 	(primarily intended for printing the values of series). For
@@ -375,7 +391,7 @@ for variables from different datasets, please refer to \ref{met:gretldataset::pd
 \begin{lstlisting}[style=pythonstylefoot]
 gretl.print(varlist: str[, OPTS])
 \end{lstlisting}
-\mapto[clean]{print varlist}
+\mapto[0]{print varlist}
 \mapto[]{print}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
 	\item[]\maptoopt{byobs=True}{--byobs}{by observations}

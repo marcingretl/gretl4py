@@ -576,7 +576,7 @@ void do_gretl_pkg (const std::string &action, const std::string &pkgname,
             std::string pkgname_remote(pkgname_remote_c.get());
 
             localfile = functions_dir / pkgname_remote;
-            py::print("installing package:", pkgname_remote, "->", localfile.string());
+            py::print("installing:", pkgname_remote, "->", localfile.string());
             err = retrieve_remote_function_package(pkgname_remote.c_str(),
                                                    localfile.string().c_str(), staging);
         }
