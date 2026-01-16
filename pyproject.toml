@@ -38,6 +38,7 @@ exclude = ["**/__pycache__"]
 [tool.setuptools.package-data]
 "gretl" = [
     "_gretl*",
+    "_bundled_addons.txt",
     "gretl4py_addons.py",
     "gretl4py_classes.py",
     "__init__.py",

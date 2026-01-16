@@ -533,9 +533,7 @@ void do_gretl_pkg (const std::string &action, const std::string &pkgname,
         if (depends) {
             for (int i=0; i<ndeps && !err; ++i) {
                 gretl_gchar_ptr dependency_path(gretl_function_package_get_path(depends.get()[i], PKG_ALL));
-                if (!dependency_path) {
-                    do_gretl_pkg("install", std::string(depends.get()[i]), py::dict());
-                }
+                if (!dependency_path) do_gretl_pkg("install", std::string(depends.get()[i]), py::dict());
             }
         }
 

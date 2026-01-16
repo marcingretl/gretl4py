@@ -74,9 +74,24 @@ shutil.copytree(os.path.join(SOURCE_DIR, 'gretl', 'examples'), EXAMPLES_DIR)
 
 # We copy addons
 ADDONS_DIR = os.path.join(MODULE_PATH, 'functions')
-if os.path.exists(ADDONS_DIR):
-    shutil.rmtree(ADDONS_DIR)
-shutil.copytree(os.path.join(SOURCE_DIR, 'gretl', 'functions'), ADDONS_DIR)
+os.makedirs(ADDONS_DIR, exist_ok=True)
+# read addon list
+bundled_file = os.path.join(SOURCE_DIR, 'gretl', '_bundled_addons.txt')
+with open(bundled_file, 'r', encoding='utf-8') as f:
+    bundled = [line.strip() for line in f if line.strip()]
+SRC_ADDONS = os.path.join(SOURCE_DIR, 'gretl', 'functions')
+for name in bundled:
+    src = os.path.join(SRC_ADDONS, name)
+    dst = os.path.join(ADDONS_DIR, name)
+    if os.path.exists(dst):
+        if os.path.isdir(dst):
+            shutil.rmtree(dst)
+        else:
+            os.unlink(dst)
+    if os.path.isdir(src):
+        shutil.copytree(src, dst)
+    else:
+        shutil.copy2(src, dst)
 
 # We add tmp for workdir
 try:
