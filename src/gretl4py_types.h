@@ -73,10 +73,10 @@ using gretl_gchar_ptr = std::unique_ptr<gchar, GretlGcharDeleter>;
 
 // standard char** with known number of elements
 struct StringsArrayDeleter {
-    int nstrs = 0;
+    int nstrs = 0;  // number of strings in array
 
-    void operator() (char **strs) const noexcept {
-        if (nstrs > 0) strings_array_free(strs, nstrs);
+    void operator() (char **ptr) const noexcept {
+        if (nstrs > 0) strings_array_free(ptr, nstrs);
     }
 };
 using strings_array_ptr = std::unique_ptr<char*, StringsArrayDeleter>;
