@@ -1,7 +1,6 @@
 \section{\gretl contributed packages}\label{sec:gretl_contributed_packages}
-This section is based on \cite{gretl_function_package_guide}.
-
-There are two types of function packages in \gretl: those
+There\footnote{This section is based on \cite{gretl_function_package_guide}.}
+are two types of function packages in \gretl: those
 contributed and maintained by users, and those developed by
 the \gretl team. The latter are more tightly integrated with
 the \gretl program than standard user-contributed packages.
@@ -75,40 +74,42 @@ the mandatory sample script. The list of \textit{add-ons} is as follows:
 
 
 \subsection{Package installation}
-{\Huge packages are removed when \gretlpy is reinstalled/upgraded.}
-{\Huge XXX}
+To install a package, the user should call the \pythcode{pkg()} function
+(see \ref{func:gretl.pkg}). Basically, there are two sources (and thus two
+ways) of installing user-contributed packages:
+\begin{itemize}
+	\item the SourceForge server: a full list of packages is available
+	at \url{https://gretl.sourceforge.net/cgi-bin/gretldata.cgi}
+	;
+	\item a local file.
+\end{itemize}
+To install a package, the user should call either
+\pythcode{pkg('install', 'package_name')}
+or, in the case of a local installation,
+\pythcode{pkg('install', '/path/to/package_name', local=True)}.
 
 We've talked about installing packages, but what exactly does it mean
 for a package to be installed? Basically, it means that the package
-file(s) are placed in one or other of two standard locations where
-\gretl should always be able to find them automatically---for example,
-in response to the call \pythcode{include('mypkg.gfn')} without any
-path specification: and this is the standard \gretl[']s ``per-user'' 
-function directory. In each case we're talking about a subdirectory
-named \texttt{functions}, the actual path to which differs by platform
-(and on MS Windows, by national language).
-
-On an English-language Windows installation typical values is:
-\begin{verbatim}
-C:\Users\login\AppData\Roaming\gretl\functions
-\end{verbatim}
-where ``login'' is a placeholder for your username. On Linux it's
-likely to be:
-\begin{verbatim}
-$HOME/.gretl/functions
-\end{verbatim}
-and on macOS
-\begin{verbatim}
-$HOME/Library/Application Support/gretl/functions
-\end{verbatim}%
-where
-\verb|$HOME| is your ``home'' directory, which is always defined on
-Linux and macOS.
-
-However, you don't need to guess at these locations: in the \python
-console you can call \pythcode{gretl.get_accessor('\$gretldir')}
-to get the respective base directory on your system: append
-``\texttt{functions}'' and you'll have the canonical package paths.
+file(s) are placed in a standard location—the \texttt{functions}
+subdirectory—where \lgretl should always be able to find them
+automatically. In each case, we're talking about a subdirectory
+named \texttt{functions}, the actual path to which
+differs by platform (and, on MS Windows, by national language):
+\begin{itemize}
+	\item On an English-language Windows installation, a typical value is:\newline
+		\verb|C:\Users\login\AppData\Roaming\gretl\functions|\newline
+		where ``login'' is a placeholder for your username.
+	\item On Linux, it is likely to be:\newline
+		\verb|$HOME/.gretl/functions|.
+	\item On macOS:\newline
+		\verb|$HOME/Library/Application Support/gretl/functions|.
+\end{itemize}
+Here \verb|$HOME| denotes your ``home'' directory, which is
+always defined on Linux and macOS. However, you don't need to guess
+at these locations: in the \python console you can call
+\pythcode{gretl.get_accessor('\$gretldir')} to get the respective
+base directory on your system: append ``\texttt{functions}''
+and you'll have the canonical package paths.
 
 Having installed a package, \gretlpy (and thus \lgretl) will automatically
 find it in these places. Well, there's one possible catch to look out for.
