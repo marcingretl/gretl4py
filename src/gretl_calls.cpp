@@ -523,10 +523,10 @@ void do_gretl_pkg (const std::string &action, const std::string &pkgname,
         } else {
             gfnname = localfile;
         }
-        char **raw = package_peek_dependencies(gfnname.string().c_str(), &ndeps);
-        if (raw) {
+        char **raw_ptr = package_peek_dependencies(gfnname.string().c_str(), &ndeps);
+        if (raw_ptr) {
             depends.get_deleter().nstrs = ndeps;
-            depends.reset(raw);
+            depends.reset(raw_ptr);
         }
 
         // we do the job (install dependencies)

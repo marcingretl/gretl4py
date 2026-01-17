@@ -19,9 +19,18 @@
  """
 import inspect
 import sys
+import os
+import webbrowser
 from typing import TypedDict, NotRequired, Dict, List, Any
 from .gretl4py_addons import _pd_to_pandas_str_format
 from . import _gretl
+
+def _matrix_functions_wrapper(func_name: str):
+    """Matrix-based operations requiring a variable name."""
+    def method (self, d : str, series : str, param=None):
+        func_call = getattr(_gretl, func_name, None)
+        return func_call(d, self.get_series(series), param)
+    return method
 
 # #######################################################
 #   GretlModel class
@@ -321,12 +330,32 @@ def _to_dataframe (self):
     # unknown datatype -> return raw df
     return df
 
-def _matrix_functions_wrapper(func_name: str):
-    """Matrix-based operations requiring a variable name."""
-    def method (self, d : str, series : str, param=None):
-        func_call = getattr(_gretl, func_name, None)
-        return func_call(d, self.get_series(series), param)
-    return method
+def _package_get_help(self):
+    """
+    Display package help.
+
+    - Opens PDF documentation if available
+    - Otherwise prints text help
+    """
+    info = self._get_help()
+
+    if not info or len(info) != 2:
+        raise RuntimeError("Invalid help information returned from backend")
+
+    kind, payload = info
+
+    if kind == "pdf":
+        pdf_path = os.path.abspath(payload)
+
+        if not os.path.exists(pdf_path):
+            raise FileNotFoundError(pdf_path)
+
+        # OS-independent: uses default PDF viewer
+        webbrowser.open(f"file://{pdf_path}")
+    elif kind == "txt":
+        print(payload)
+    else:
+        raise RuntimeError(f"Unknown help type: {kind}")
 
 if __name__ == "__main__":
     pass

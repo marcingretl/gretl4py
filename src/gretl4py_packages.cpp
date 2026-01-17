@@ -28,6 +28,7 @@ extern "C" {
     #include <gretl/gretl_typemap.h>
 }
 #include <iomanip>
+#include <filesystem>
 
 extern std::unordered_set<std::string> UserVars;
 
@@ -44,6 +45,7 @@ GretlPackage::GretlPackage (const std::string &pkg_name,
     std::unordered_set<std::string> excluded_functions;
     std::ostringstream oss;
     char path[MAXLEN];
+    char *raw_ptr = nullptr;    // placeholder for PDF filename
     int idxp = 0;
 
     // we try to find a path and load the package
@@ -124,6 +126,9 @@ GretlPackage::GretlPackage (const std::string &pkg_name,
         }
     }
     check_if_defines_estimator_();
+
+    // we grab name of PDF info
+    if (function_package_has_PDF_doc(pkg_, &raw_ptr)) pdfname_.reset(raw_ptr);
 
     // package summary
     if (print_summary) {
@@ -363,6 +368,29 @@ std::string GretlPackage::repr_impl (void)
     if (err_) handle_gretl_error(err_);
 
     return GP_.get_buffer();
+}
+
+py::list GretlPackage::get_help (void)
+{
+    //
+    // return either text help or path to pdf
+    //
+    py::list RES;
+
+    if (pdfname_) {
+        std::filesystem::path pdf_path = std::filesystem::path(base_dir_) / pdfname_.get();
+
+        RES.append("pdf");
+        RES.append(pdf_path.string());
+    } else {
+        RES.append("txt");
+        err_ = print_function_package_help(full_path_.c_str(),
+                                           NULL, GP_.prn_ptr());
+        if (err_) handle_gretl_error(err_);
+        RES.append(GP_.get_buffer());
+    }
+
+    return RES;
 }
 
 void GretlPackage::set_main (const std::string &name)

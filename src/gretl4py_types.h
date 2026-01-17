@@ -71,6 +71,12 @@ struct GretlGcharDeleter {
 };
 using gretl_gchar_ptr = std::unique_ptr<gchar, GretlGcharDeleter>;
 
+// standard char*
+struct GretlcharDeleter {
+    void operator() (char *ptr) const { std::free(ptr); }
+};
+using gretl_char_ptr = std::unique_ptr<char, GretlcharDeleter>;
+
 // standard char** with known number of elements
 struct StringsArrayDeleter {
     int nstrs = 0;  // number of strings in array

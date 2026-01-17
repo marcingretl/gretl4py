@@ -55,6 +55,7 @@ private:
     MainFuncNoOptDef main_func_nd_;
     std::string full_path_;             // path to package file (full)
     std::string base_dir_;              // path to the package
+    gretl_char_ptr pdfname_ = nullptr;  // name of pdf doc (if exists)
     int err_ = 0;
 
     GretlPackage (const std::string &pkg_name, const std::string &suffix,
@@ -84,6 +85,8 @@ public:
     int get_err (void) const;
 
     std::string repr_impl (void);
+
+    py::list get_help (void);
 
     void set_main (const std::string &name);
 
