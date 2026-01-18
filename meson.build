@@ -58,8 +58,10 @@ add_project_arguments(cpp_args, language: 'cpp')
 ###########################################################################
 # Linker flags for GCC < 9 (std::filesystem)
 ###########################################################################
+cpp_version = cpp.version()
+cpp_major = cpp_version.split('.')[0].to_int()
 link_args = []
-if cpp.get_id() == 'gcc' and version_compare(cpp.version(), '<', '9.0')
+if cpp.get_id() == 'gcc' and cpp_major < 9
   message('GCC < 9 detected, linking std::filesystem with -lstdc++fs')
   link_args += ['-lstdc++fs']
 endif
