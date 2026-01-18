@@ -56,6 +56,16 @@ endif
 add_project_arguments(cpp_args, language: 'cpp')
 
 ###########################################################################
+# Linker flags for GCC < 9 (std::filesystem)
+###########################################################################
+link_args = []
+if cpp.get_id() == 'gcc' and version_compare(cpp.version(), '<', '9.0')
+  message('GCC < 9 detected, linking std::filesystem with -lstdc++fs')
+  link_args += ['-lstdc++fs']
+endif
+add_project_link_arguments(link_args, language: 'cpp')
+
+###########################################################################
 # Python
 ###########################################################################
 python_mod = import('python')

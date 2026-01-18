@@ -20,7 +20,7 @@ XML file conforming to the Document Type Definition
 distribution; the latest version is always available online.
 Such files contain
 \begin{itemize}
-	\item \texttt{hansl} code for at least one function;
+	\item \texttt{hansl} \cite[see][]{gretl_hansl} code for at least one function;
 	\item metadata such as author, version, and release date;
 	\item help text for the function(s), or a reference to
 		documentation in PDF format;
@@ -74,13 +74,12 @@ the mandatory sample script. The list of \textit{add-ons} is as follows:
 
 
 \subsection{Package installation}
-To install a package, the user should call the \pythcode{pkg()} function
-(see \ref{func:gretl.pkg}). Basically, there are two sources (and thus two
-ways) of installing user-contributed packages:
+To install a user-contributed package, the user should call the
+\pythcode{pkg()} function (see \ref{func:gretl.pkg}). Basically,
+there are two sources (and thus two ways) of installing such packages:
 \begin{itemize}
 	\item the SourceForge server: a full list of packages is available
-	at \url{https://gretl.sourceforge.net/cgi-bin/gretldata.cgi}
-	;
+		at \url{https://gretl.sourceforge.net/cgi-bin/gretldata.cgi};
 	\item a local file.
 \end{itemize}
 To install a package, the user should call either
@@ -97,19 +96,37 @@ named \texttt{functions}, the actual path to which
 differs by platform (and, on MS Windows, by national language):
 \begin{itemize}
 	\item On an English-language Windows installation, a typical value is:\newline
-		\verb|C:\Users\login\AppData\Roaming\gretl\functions|\newline
-		where ``login'' is a placeholder for your username.
+		\begin{itemize}
+			\item x86-64 machines:\newline
+				\verb|C:\Users\<username>\AppData\Roaming\Python\PythonXY\site-packages\|
+			\item arm64 machines:\newline
+				\verb|C:\Users\<username>\AppData\Roaming\Python\PythonXY-arm64\site-packages\|
+		\end{itemize}
+		%\verb|C:\Users\login\AppData\Roaming\gretl\functions|\newline
 	\item On Linux, it is likely to be:\newline
-		\verb|$HOME/.gretl/functions|.
+		\verb|$HOME/.local/lib/pythonX.Y/site-packages/gretl/functions/|
+		%\verb|$HOME/.gretl/functions|.
 	\item On macOS:\newline
-		\verb|$HOME/Library/Application Support/gretl/functions|.
+		%\verb|$HOME/Library/Application Support/gretl/functions|.
+		\begin{itemize}
+			\item for the official Python from \url{python.org} or MacPorts,
+				user installs (\verb|pip install --user|) typically go to:\newline
+				\verb|$HOME/Library/Python/X.Y/lib/python/site-packages/gretl/functions/|			
+			\item if installed using the \verb|--local| option (Linux-style), the path is:\newline
+				\verb|$HOME/.local/lib/pythonX.Y/site-packages/gretl/functions/|			
+			\item for conda environments, packages are installed inside the environment directory, e.g.:\newline
+				\verb|~/miniconda3/envs/<env-name>/lib/pythonX.Y/site-packages/gretl/functions/|\newline
+				or in the base environment:\newline
+				\verb|~/miniconda3/lib/pythonX.Y/site-packages/gretl/functions/|
+		\end{itemize}		
 \end{itemize}
 Here \verb|$HOME| denotes your ``home'' directory, which is
-always defined on Linux and macOS. However, you don't need to guess
-at these locations: in the \python console you can call
-\pythcode{gretl.get_accessor('\$gretldir')} to get the respective
-base directory on your system: append ``\texttt{functions}''
-and you'll have the canonical package paths.
+always defined on Linux and macOS.
+
+However, you don't need to guess at these locations: in the \python
+console you can call \pythcode{gretl.get_accessor('\$gretldir')}
+to get the respective base directory on your system: append
+``\texttt{functions}'' and you'll have the canonical package paths.
 
 Having installed a package, \gretlpy (and thus \lgretl) will automatically
 find it in these places. Well, there's one possible catch to look out for.
@@ -124,7 +141,21 @@ Why the difference? If a package includes PDF documentation, or any
 other files besides the \texttt{gfn}, \textit{it must be in its own
 	subdirectory} (the second pattern). But if the package consists of
 a \texttt{gfn} file only, then it should go directly into the \texttt{functions}
-directory (the first pattern).  Gretl should get this right when
+directory (the first pattern). Gretl should get this right when
 installing a package for you but if you install a package by hand,
 copying it to the \texttt{functions} directory yourself, you should
 pay attention to this point.
+
+
+\subsection{Calling functions from packages}
+Each \gretl package must provide at least one public function and may define
+an arbitrary number of so-called private functions. By definition, end users
+may call only the public functions, while private functions are intended
+for internal package use only. 
+
+In the case of \gretlpy, some public functions may not be available to the
+user, and this behavior is intentional. Functions related to the GUI interface
+or plotting capabilities, for example, are excluded from the \gretlpy
+user space. All other public functions provided by a package are bound to
+the user space under the same signature as they exist within the package.
+
