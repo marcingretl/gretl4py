@@ -44,6 +44,7 @@ package_files = [
     'data/*',
     'tmp/*',
     'examples/*',
+    'functions/*',
     ]
 
 # Include DLL files if on Windows 64-bit and dll_dir exists
