@@ -38,7 +38,7 @@ user_site = os.path.join(_site.getusersitepackages(), 'gretl')
 os.environ.setdefault('GRETL_HOME', package_dir)
 os.environ.setdefault('GRETL_DATA_PATH', data_dir)
 os.environ.setdefault('GRETL_PLUGIN_PATH', lib_dir)
-#os.environ.setdefault('CURL_CA_BUNDLE', str(Path(user_site) / "curl-ca-bundle.crt"))
+os.environ.setdefault('CURL_CA_BUNDLE', str(Path(user_site) / "curl-ca-bundle.crt"))
 
 # --- Add lib_dir to PATH if not already present ---
 current_path = os.environ.get('PATH', '').split(os.pathsep)
