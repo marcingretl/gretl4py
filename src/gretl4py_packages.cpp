@@ -48,7 +48,7 @@ GretlPackage::GretlPackage (const std::string &pkg_name,
     char *raw_ptr = nullptr;    // placeholder for PDF filename
     int idxp = 0;
 
-    // we try to find a path and load the package
+    // we try to find a path to the package
     *path = '\0';
     if (suffix.empty()) {
         err_ = get_full_filename((pkg_name + ".gfn").c_str(), path, OPT_I);
@@ -56,9 +56,14 @@ GretlPackage::GretlPackage (const std::string &pkg_name,
         err_ = get_full_filename((pkg_name + suffix).c_str(), path, OPT_I);
     }
     if (err_) handle_gretl_error(err_);
+
+    // we load the package
     pkg_ = get_function_package_by_filename(path, &err_);
     if (err_) handle_gretl_error(err_);
     full_path_ = path;
+
+    // we setup parent dir
+    // Note: we cannot use .parent_path() here due to some differences
     auto pos = full_path_.find_last_of("/\\");
     if (pos != std::string::npos) {
         base_dir_ = full_path_.substr(0, pos);
@@ -76,6 +81,8 @@ GretlPackage::GretlPackage (const std::string &pkg_name,
                                  + std::string(function_package_get_name(pkg_))
                                  + "', provided: '" + pkg_name_ + "'");
     }
+
+    // we initialize package functions
     function_names_init();
 
     // we look up for JEL codes
