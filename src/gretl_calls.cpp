@@ -32,6 +32,8 @@ extern "C" {
 
 #if defined(_WIN32)
 # include <gretl/gretl_win32.h>
+#else
+#include <curl/curl.h>
 #endif
 
 #if (defined __GNUC__) && !(defined __clang__)
@@ -95,6 +97,25 @@ void gretl4py_init (void)
     if (const char *env = std::getenv("GRETL4PY_VERBOSE"); env) {
         gretl4py_verbose = std::atoi(env);
     }
+
+    // we initialize libcurl with provided CA on non-windows OS-es
+#ifndef _WIN32
+    std::string gretldir(get_built_in_string_by_name("gretldir"));
+    std::string ca_bundle_path = gretldir + "/curl-ca-bundle.crt";
+    CURLcode err = curl_global_init(CURL_GLOBAL_DEFAULT);
+    if (err != CURLE_OK) throw std::runtime_error("curl_global_init failed: " + std::to_string(err));
+    CURL *curl = curl_easy_init();
+    if (!curl) {
+        curl_global_cleanup();
+        throw std::runtime_error("curl_easy_init failed");
+    }
+    CURLcode res = curl_easy_setopt(curl, CURLOPT_CAINFO, ca_bundle_path.c_str());
+    if (res != CURLE_OK) {
+        curl_easy_cleanup(curl);
+        throw std::runtime_error("curl_easy_setopt CURLOPT_CAINFO failed: " + std::to_string(res));
+    }
+    curl_easy_cleanup(curl);
+#endif
 
     // verbose output
     if (gretl4py_verbose) {
