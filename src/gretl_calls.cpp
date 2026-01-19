@@ -59,10 +59,8 @@ static int gretl4py_verbose = 0;
 void gretl4py_init (void)
 {
     // check libgretl version
-    if (libgretl_version() < LIBGRETL_MIN_VER) {
-        throw std::runtime_error("gretl4py requires libgretl-1.0 version "
-                                 + std::to_string(LIBGRETL_MIN_VER) + " or higher");
-    }
+    if (libgretl_version() < LIBGRETL_MIN_VER) throw std::runtime_error("gretl4py requires libgretl-1.0 version "
+                                                                        + std::to_string(LIBGRETL_MIN_VER) + " or higher");
 
     // initialize libgretl
     libgretl_init();
@@ -75,56 +73,21 @@ void gretl4py_init (void)
     py::object start = pathlib.attr("Path").attr("cwd")();
     std::string start_dir = py::str(start);
 
-    if (int err = gretl_set_path_by_name("workdir", start_dir.c_str())) {
-        handle_gretl_error(err);
-    }
+    if (int err = gretl_set_path_by_name("workdir", start_dir.c_str())) handle_gretl_error(err);
     if (const char* env = std::getenv("GRETL_HOME"); env) {
-        if (int err = gretl_set_path_by_name("gretldir", env)) {
-            handle_gretl_error(err);
-        }
+        if (int err = gretl_set_path_by_name("gretldir", env)) handle_gretl_error(err);
         std::filesystem::path dotdir_path = std::filesystem::path(std::string(env)) / "tmp";
-        if (int err = gretl_set_path_by_name("dotdir", dotdir_path.string().c_str())) {
-            handle_gretl_error(err);
-        }
+        if (int err = gretl_set_path_by_name("dotdir", dotdir_path.string().c_str())) handle_gretl_error(err);
     }
 
     // read and set GRETL_PLUGIN_PATH if available
-    if (const char *env = std::getenv("GRETL_PLUGIN_PATH"); env) {
-        set_gretl_plugin_path(env);
-    }
+    if (const char *env = std::getenv("GRETL_PLUGIN_PATH"); env) set_gretl_plugin_path(env);
 
     // read and set GRETL4PY_VERBOSE if available
-    if (const char *env = std::getenv("GRETL4PY_VERBOSE"); env) {
-        gretl4py_verbose = std::atoi(env);
-    }
-
-/*
-    // we initialize libcurl with provided CA on non-windows OS-es
-#ifndef _WIN32
-    py::print("wchodzę w cURL");
-    std::string gretldir(get_built_in_string_by_name("gretldir"));
-    std::string ca_bundle_path = gretldir + "/curl-ca-bundle.crt";
-    py::print("ustawiam:", ca_bundle_path);
-    CURLcode err = curl_global_init(CURL_GLOBAL_DEFAULT);
-    if (err != CURLE_OK) throw std::runtime_error("curl_global_init failed: " + std::to_string(err));
-    CURL *curl = curl_easy_init();
-    if (!curl) {
-        curl_global_cleanup();
-        throw std::runtime_error("curl_easy_init failed");
-    }
-    CURLcode res = curl_easy_setopt(curl, CURLOPT_CAINFO, ca_bundle_path.c_str());
-    if (res != CURLE_OK) {
-        curl_easy_cleanup(curl);
-        throw std::runtime_error("curl_easy_setopt CURLOPT_CAINFO failed: " + std::to_string(res));
-    }
-    curl_easy_cleanup(curl);
-    py::print("wychodzę z cURL");
-#endif*/
+    if (const char *env = std::getenv("GRETL4PY_VERBOSE"); env) gretl4py_verbose = std::atoi(env);
 
     // verbose output
-    if (gretl4py_verbose) {
-        std::printf("libgretl initialized\n");
-    }
+    if (gretl4py_verbose) std::printf("libgretl initialized\n");
 }
 
 void gretl4py_cleanup (void)
@@ -150,9 +113,7 @@ void gretl4py_cleanup (void)
 
     libgretl_cleanup();
 
-    if (gretl4py_verbose) {
-        std::printf("libgretl cleaned up\n");
-    }
+    if (gretl4py_verbose) std::printf("libgretl cleaned up\n");
 }
 
 GretlBundlePtr about (bool do_print)
@@ -208,9 +169,7 @@ GretlBundlePtr about (bool do_print)
 
     gretl_pop_c_numeric_locale();
 
-    if (res->get_err()) {
-        std::cerr << errmsg_get_with_default(res->get_err()) << std::endl;
-    }
+    if (res->get_err()) std::cerr << errmsg_get_with_default(res->get_err()) << std::endl;
 
     return res;
 }
