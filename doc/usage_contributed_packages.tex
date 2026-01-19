@@ -154,8 +154,106 @@ may call only the public functions, while private functions are intended
 for internal package use only. 
 
 In the case of \gretlpy, some public functions may not be available to the
-user, and this behavior is intentional. Functions related to the GUI interface
-or plotting capabilities, for example, are excluded from the \gretlpy
-user space. All other public functions provided by a package are bound to
-the user space under the same signature as they exist within the package.
+user, and this behavior is intentional. Functions related to the graphical
+user interface or plotting capabilities, for example, are excluded from the
+\gretlpy user space. All other public functions provided by a package are
+bound to the user space under the same signature as they exist within the
+package.
 
+To list all package functions available to the user, one may call the
+\pythcode{get_functions()} method, as described in
+\ref{met:gretlpackage::get_functions}. To obtain full information on function
+signatures—including arguments (together with default values) and return
+types—the \pythcode{show_functions()} method should be used (see again
+\ref{met:gretlpackage::get_functions}).
+Figures~\ref{fig:gig_get_functions}–\ref{fig:gig_show_functions} present the
+results of calling these methods for the \texttt{gig} add-on. To open the
+\texttt{gig} manual, the user should call the \pythcode{get_help()} method
+(see \ref{met:gretlpackage::get_help}).
+
+\begin{figure}
+	\centering
+	\includegraphics[width=1.0\columnwidth,keepaspectratio]{gig_get_functions}
+	\caption{The \texttt{gig}: all available functions}
+	\label{fig:gig_get_functions}
+\end{figure}
+
+\begin{figure}
+	\centering
+	\includegraphics[width=1.0\columnwidth,keepaspectratio]{gig_show_functions}
+	\caption{The \texttt{gig}: signatures of all available functions}
+	\label{fig:gig_show_functions}
+\end{figure}
+
+In the case of \texttt{gig}, and according to its manual, the user should
+start with the following two functions:
+\begin{itemize}
+	\item \gretlcmd{bundle gig_setup (scalar ARlags, list X, list Y, int type[1], series y)}
+	\item \gretlcmd{scalar gig_estimate (bundle* model, int verbose[1])}.
+\end{itemize}
+
+In short, \gretlcmd{gig_setup()} constructs a \gretlcmd{bundle}
+that specifies the type of GARCH analysis to be performed later by
+\gretlcmd{gig_estimate()}.
+
+These two functions are bound to the user space with the following Python
+signatures:
+\begin{itemize}
+	\item \pythcode{gig_setup(y: str, ARlags: int, type: int = 1[, X: gretllist, Y: gretllist]) -> _gretl.Bundle}
+	\item \pythcode{gig_estimate(model: _gretl.Bundle, verbose: int = 1) -> int}.
+\end{itemize}
+
+Note that in \gretlpy the order of parameters does not matter.
+
+To run the example script provided with the \texttt{gig} package,
+one would use the following \texttt{hansl} code:
+\begin{lstlisting}[style=hanslfoot]
+# GARCH(1,1) with Normal conditional distribution,
+# no mean regressors.
+
+set verbose off
+
+# Import the gig library.
+include gig.gfn
+open djclose
+rr = 100*ldiff(djclose)
+
+model = gig_setup(rr)
+gig_estimate(&model)
+
+# Compare with native implementation
+garch 1 1 ; rr --nc --robust
+\end{lstlisting}
+
+The equivalent \python code is:
+\begin{lstlisting}[style=pythonstylefoot]
+import gretl
+
+# GARCH(1,1) with Normal conditional distribution,
+# no mean regressors.
+
+gretl.set('verbose', 'off')
+
+# Import the gig library.
+gretl.include('gig')
+
+data_dir = gretl.about()['built_in_strings']['gretldir'] + '/data/'
+djclose = gretl.get_data(data_dir + 'djclose.gdt')
+djclose.new_series('rr = 100*ldiff(djclose)')
+
+gig_model = gretl.gig_setup(y='rr')
+gretl.gig_estimate(model=gig_model)
+
+# Compare with native implementation
+native_model = gretl.garch('1 1 ; rr', nc=True, robust=True).fit()
+print(native_model)
+\end{lstlisting}
+
+\begin{figure}
+	\centering
+	\includegraphics[width=1.0\columnwidth,keepaspectratio]{gig_example_script_res}
+	\caption{The \texttt{gig}: signatures of all available functions}
+	\label{fig:gig_example_script_res}
+\end{figure}
+
+Figure~\ref{fig:gig_example_script_res} presents the estimation results.
