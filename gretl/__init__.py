@@ -108,6 +108,10 @@ from .gretl4py_addons import print_module_source, fc_print, modeltab
 # deprecations
 # deprecations: END
 
+# we setup gretl attributes
+_this_module = sys.modules[__name__]
+setattr(_this_module, "gretldir", _gretl.get_accessor("$gretldir"))
+
 # we attach additional symbols to certain classes
 setattr(_gretl.Model, "attrs", _attrs)                      # for listing all object's attributes
 setattr(_gretl.Model_logit, "oddsratio", _oddsratio)        # for pretty-printing oddsratios

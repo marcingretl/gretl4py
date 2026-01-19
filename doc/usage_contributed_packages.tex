@@ -237,8 +237,7 @@ gretl.set('verbose', 'off')
 # Import the gig library.
 gretl.include('gig')
 
-data_dir = gretl.about()['built_in_strings']['gretldir'] + '/data/'
-djclose = gretl.get_data(data_dir + 'djclose.gdt')
+djclose = gretl.get_data(gretl.gretldir + '/data/' + 'djclose.gdt')
 djclose.new_series('rr = 100*ldiff(djclose)')
 
 gig_model = gretl.gig_setup(y='rr')

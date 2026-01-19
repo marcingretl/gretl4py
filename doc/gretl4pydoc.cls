@@ -153,7 +153,7 @@
 	morekeywords=[3]{bool, int, list, matrix, scalar, series, string, bundle,
 		void, bundles, null, const},
 	morekeywords=[4]{\$nobs, \$stopwatch, \$sysinfo, \$now, \$model, \$result,
-		\$uhat, \$yhat, \$version, \$workdir, \$h, \$ahat, \$ec},
+		\$uhat, \$yhat, \$version, \$workdir, \$h, \$ahat, \$ec, \$gretldir},
 	%   alsoletter={-},
 	sensitive=false,
 	morecomment=[l]{\#},
