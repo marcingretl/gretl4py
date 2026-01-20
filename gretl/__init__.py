@@ -94,7 +94,7 @@ from . import gretl4py_classes
 atexit.register(_gretl._gretl4py_cleanup)
 
 # we import some symbols explicitly
-from ._gretl import (about, version)                                # module-related
+from ._gretl import (about, version, gretldir)                      # module-related
 from ._gretl import (Bundle)                                        # constructors
 from ._gretl import (delete, genr, include, pkg, print, set, summary)# libgretl's commands interfaces
 from ._gretl import (varlist)
@@ -107,10 +107,6 @@ from .gretl4py_addons import print_module_source, fc_print, modeltab
 
 # deprecations
 # deprecations: END
-
-# we setup gretl attributes
-_this_module = sys.modules[__name__]
-setattr(_this_module, "gretldir", _gretl.get_accessor("$gretldir"))
 
 # we attach additional symbols to certain classes
 setattr(_gretl.Model, "attrs", _attrs)                      # for listing all object's attributes

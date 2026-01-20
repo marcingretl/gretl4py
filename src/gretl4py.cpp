@@ -59,6 +59,7 @@ PYBIND11_MODULE(_gretl, m)
     // module related tools
     m.doc() = info;
     m.attr("version") = GRETL4PY_VERSION;
+    m.attr("gretldir") = do_get_accessor<GRETL_OBJ_ANY>("$gretldir", DSET, nullptr);
     m.def("about", &about,
           py::arg("do_print") = false);
 
