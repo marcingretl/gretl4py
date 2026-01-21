@@ -47,7 +47,7 @@ endif
 ###########################################################################
 cpp = meson.get_compiler('cpp')
 cpp_args = ['-pipe', '-fstack-protector-strong', '-Wp,-D_FORTIFY_SOURCE=2', '-fwrapv']
-if cpp.get_id() == 'gcc'
+if cpp.get_id() == 'gcc' or cpp.get_id() == 'clang'
   cpp_args += ['-fvisibility=hidden']
 endif
 if is_unix
