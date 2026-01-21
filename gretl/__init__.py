@@ -62,7 +62,6 @@ if sys.platform == "linux":
 if user_site not in sys.path:
     sys.path.insert(0, user_site)
 
-
 # ###################################
 # gretl4py stuff
 # ###################################

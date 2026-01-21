@@ -380,8 +380,10 @@ GretlDatasetPtr GretlDataset::get_data (const py::object &src,
     }
     if (!GD) handle_gretl_error(E_DATA);
 
-    // we set some info
-    if (GD->get_id() == 1) GD->set_as_default();
+    // we set default (id needed)
+    if (!DSET) GD->set_as_default();
+
+    // we set info
     if (!source.empty()) GD->source = source;
 
     // we register GD
