@@ -1556,7 +1556,10 @@ GretlBundle::GretlBundle (gretl_bundle *src) : free_b_(false)
 
 GretlBundle::~GretlBundle (void)
 {
-    if (free_b_ && b_) gretl_bundle_destroy(b_);
+    if (free_b_ && b_ != NULL) {
+        gretl_bundle_destroy(b_);
+        b_ = NULL;
+    }
 }
 
 template <typename T>
