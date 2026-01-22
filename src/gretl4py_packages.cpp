@@ -284,11 +284,7 @@ void GretlPackage::unpack_kwargs_package_ (const std::string &func_name,
             // do something elsewhere
             continue;
         } else {
-            if (!func_name_args.count(key_str)) {
-                throw std::invalid_argument(key_str +
-                                            ": there is no such argument in function: "
-                                            + func_name);
-            }
+            if (!func_name_args.count(key_str)) throw std::invalid_argument(key_str + ": there is no such argument in function: " + func_name);
         }
     }
 

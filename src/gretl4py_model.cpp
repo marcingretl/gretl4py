@@ -1582,7 +1582,10 @@ GretlModel_NME::GretlModel_NME (const std::string &method,
 
 GretlModel_NME::~GretlModel_NME (void)
 {
-    if (this->model_ != NULL) equation_system_destroy(this->model_);
+    if (model_ != NULL) {
+        equation_system_destroy(model_);
+        model_ = NULL;  // prevents double free
+    }
 }
 
 void GretlModel_NME::fit (void)
