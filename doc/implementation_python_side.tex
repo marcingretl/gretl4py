@@ -228,7 +228,7 @@ Examples:\newline
 	different datasets or models, please refer to
 	\ref{met:gretldataset::get_accessor} or \ref{met:gretlmodel::get_accessor}.}
 
-\gretlfpycmd{get\_data()}
+\gretlfpycmd{get\_data()}\label{get_data()}
 \estdesc{Factory function that loads the provided data as a \pythcode{gretl._gretl.Dataset}}
 \begin{lstlisting}[style=pythonstylefoot]
 gretl.get_data(src: str[, OPTS]) -> gretl._gretl.Dataset
@@ -256,7 +256,7 @@ gretl.get_data(src: dict | int) -> gretl._gretl.Dataset
 	\end{itemize}
 	For a complete list of supported please refer to \cite{gretl_manual}.\newline
 	Note: the first loaded dataset is automatically registered
-	as the global dataset (see \ref{sec:globalandindivodual}).\newline
+	as the global dataset (see \ref{sec:globalandindivodual()}).\newline
 	Important: \pythcode{gretl._gretl.Dataset} is just
 	a reference to the underlying \cppcode{GretlDataset} \cpp object.
 	Thus, deleting the Python object removes your reference, but the

@@ -23,7 +23,36 @@ Note: If the provided dataset contains a variable named
 `const', it will automatically be renamed to `const\_'.
 
 
-\subsection{Default dataset}\label{sec:globalandindivodual}
+\subsection{Loading a dataset}
+To load datasets, \gretlpy provides the \pythcodeidx{get\_data()}
+function (see \ref{get_data()}). Using this function, data in all
+supported formats may be loaded, and it is the only supported
+interface for dataset loading (that is, direct calls to the
+\classpydataset constructors are not allowed). In the simplest
+case, i.e.\ when a user wants to load a dataset bundled%
+\footnote{All datasets bundled with each \gretlpy distribution
+	are listed~\error{XXX}.}
+with a \gretlpy build, it is sufficient to run the following snippet%
+\footnote{Note that the call \pythcode{gretl.get_data('bjg.gdt')}
+	is equivalent to
+	\pythcode{gretl.get_data(gretl.gretldir + '/data/bjg.gdt')}.
+	This is because \texttt{gretl.gretldir + '/data/'} is included
+	in the \lgretl search path.}:
+\begin{lstlisting}[style=pythonstylefoot]
+import gretl
+
+d = gretl.get_data('bjg.gdt')
+\end{lstlisting}
+
+Here, \texttt{bjg.gdt} denotes the monthly dataset on international
+airline passengers used by Box and Jenkins in \textit{Time Series
+	Analysis: Forecasting and Control}
+to illustrate multiplicative seasonal MA models (see
+\url{http://www.itl.nist.gov/div898/handbook/pmc/section4/pmc44a.htm}
+for details).
+
+
+\subsection{Default dataset}\label{sec:globalandindivodual()}
 The \gretlpy package may handle an arbitrary number of datasets,
 one of which may be set as the default. The effect is that whenever
 a user calls a function or method that allows passing a dataset
