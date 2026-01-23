@@ -22,16 +22,31 @@
 Note: If the provided dataset contains a variable named
 `const', it will automatically be renamed to `const\_'.
 
-\subsection{Individual and global dataset}\label{sec:globalandindivodual}
-It is important to note that such a dictionary can be
-provided in two general and non-overlapping ways:
+
+\subsection{Default dataset}\label{sec:globalandindivodual}
+The \gretlpy package may handle an arbitrary number of datasets,
+one of which may be set as the default. The effect is that whenever
+a user calls a function or method that allows passing a dataset
+via the \pythcode{data} argument, and no dataset is provided in
+that way, the procedure in question automatically uses the
+currently defined default dataset.
+
+The default dataset is defined according to the following rules:
 \begin{itemize}
-	\item \textbf{As an individual dataset}: In this case,
-	the dataset is passed directly when calling a \gretlpy
-	function, such as an estimator or data-handling function.
-	\item \textbf{As a global dataset}: This is used whenever
-	an individual dataset is not explicitly provided.
+	\item If a dataset is successfully loaded and no default
+		dataset has been defined yet, the current dataset is set
+		as the default. As a consequence, the dataset loaded first
+		is always set as the default.
+	\item The user explicitly calls the \pythcodeidx{set\_as\_default()}
+		method (see \ref{met:gretldataset:set_as_default}).
 \end{itemize}
 
+The simplest way to verify whether a given dataset is set as the
+default is to check the value of the \pythcodeidx{is\_default}
+attribute (see \ref{attr:gretldataset:is_default}). Alternatively,
+the user may call the \pythcodeidx{show\_data\_status()} function,
+which prints all available \classpydataset instances (see
+\ref{show_data_status}).
+
 For details on the functions and methods for data management
-provided by \gretlpy, please refer to \ref{sec:classpydataset}.
+provided by \gretlpy, please refer to Section~\ref{sec:classpydataset}.
