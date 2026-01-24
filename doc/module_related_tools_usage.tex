@@ -1,0 +1,23 @@
+\section{Module related tools}\label{sec:module_related_python_examples}
+\gretlfpycmd{about()}
+\estdesc{To print basic information about the \gretlpy
+	module, including the libraries it uses and the contents
+	of \lgretl's \gretlcmd{\$sysinfo} bundle, the following
+	minimal code snippet can be used:}
+\begin{lstlisting}[style=pythonstylefoot]
+import gretl
+
+d = gretl.about()
+\end{lstlisting}
+\generaldesc{The corresponding results are presented in
+	Figure~\ref{fig:mswindows_about}.}
+
+\gretlfpycmd{set()}
+\estdesc{To printdefault directory for writing and reading
+	files, the following minimal code snippet can be used:}
+\begin{lstlisting}[style=pythonstylefoot]
+import gretl
+
+gretl.set('workdir')
+\end{lstlisting}
+\generaldesc{See \texttt{`examples/module\_related\_tools/set.py'} for details.}

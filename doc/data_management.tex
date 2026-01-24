@@ -1,4 +1,25 @@
 \section{Data management}\label{sec:data_management_python}
+This section outlines the functions for reading, converting,
+and loading datasets into \gretlpy.
+In the examples below, we use the following datasets bundled
+with the standard \gretlpy distribution and located in the
+\texttt{data} subdirectory of the \gretl home directory
+(indicated by \pythcode{gretl.gretldir}):
+\begin{itemize}
+	\item[\texttt{longley.csv}] The classic dataset of labor
+		statistics that was among the first used to test the
+		accuracy of least squares computations by J.~W.~Longley
+		in \textit{An Appraisal of Least Squares Programs for the
+		Electronic Computer from the Viewpoint of the User}.
+	\item[\texttt{bjg.gdt}] A well-known monthly dataset on
+		international airline passengers used by Box and Jenkins
+		in \textit{Time Series Analysis: Forecasting and Control}
+		to illustrate multiplicative seasonal MA models
+		(see \url{http://www.itl.nist.gov/div898/handbook/pmc/section4/pmc44a.htm}
+		for details).
+\end{itemize}
+
+
 \subsection{Data format handled}\label{sec:data_format_handled}
 \gretlpy expects a dataset provided in one of the following formats:
 \begin{enumerate}
@@ -44,12 +65,45 @@ import gretl
 d = gretl.get_data('bjg.gdt')
 \end{lstlisting}
 
-Here, \texttt{bjg.gdt} denotes the monthly dataset on international
-airline passengers used by Box and Jenkins in \textit{Time Series
-	Analysis: Forecasting and Control}
-to illustrate multiplicative seasonal MA models (see
-\url{http://www.itl.nist.gov/div898/handbook/pmc/section4/pmc44a.htm}
-for details).
+
+\subsection{Loading a dataset -- helper functions}
+The following functions are designed to load external
+data files into a dictionary compatible with \gretlpy.
+For further details, refer to Section~\ref{sec:data_management_python}.
+
+\noindent Note that the preferred method for loading \texttt{csv}
+files is through either \texttt{attach\_gretl\_data()}
+or \texttt{get\_gretl\_data()}.
+
+\gretlfpycmd{nparray2dict()}
+\estdesc{To load the contents of an existing \pkg{numpy}
+	\texttt{array} into a dictionary compatible with \gretlpy,
+	the following minimal code snippet can be used:}
+\begin{lstlisting}[style=pythonstylefoot]
+import gretl
+from numpy import genfromtxt
+
+data_dir = gretl.gretldir + '/examples/data_management/'
+np = genfromtxt(data_dir + 'longley.csv', delimiter=',')[1:, 1:]
+d = gretl.nparray2dict(np)
+\end{lstlisting}
+\generaldesc{See \texttt{`examples/data\_management/numpyarray2dict.py'} for details.}
+
+\gretlfpycmd{series2dict()}
+\estdesc{To load the contents of an existing \pkg{pandas}
+	\texttt{Series} into a dictionary compatible with \gretlpy,
+	the following minimal code snippet can be used:}
+\begin{lstlisting}[style=pythonstylefoot]
+import gretl
+import pandas
+
+data_dir = gretl.gretldir + '/examples/data_management/'
+df = pandas.read_csv(data_dir +'longley.csv')
+s = pandas.Series(df['employ'].to_list(),
+index=df['obs'].to_list())
+d = gretl.series2dict(s)
+\end{lstlisting}
+\generaldesc{See \texttt{`examples/data\_management/series2dict.py'} for details.}
 
 
 \subsection{Default dataset}\label{sec:globalandindivodual()}
