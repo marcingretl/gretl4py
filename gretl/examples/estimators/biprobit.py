@@ -1,10 +1,7 @@
-import importlib.resources as resources
 import gretl
 
 def run_example():
-    data_dir = resources.files('gretl').joinpath('data')
-    d1 = gretl.get_data(str(data_dir.joinpath('greene25_1.gdt')))
-    d1.set_as_default()
+    d1 = gretl.get_data('greene25_1.gdt')
 
     m = gretl.biprobit(
         'anydrg cardhldr const age avgexp ; const age income ownrent selfempl').fit()

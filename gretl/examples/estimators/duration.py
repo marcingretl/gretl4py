@@ -1,10 +1,7 @@
-import importlib.resources as resources
 import gretl
 
 def run_example():
-    data_dir = resources.files('gretl').joinpath('data')
-    d1 = gretl.get_data(str(data_dir.joinpath('kennan.gdt')))
-    d1.set_as_default()
+    d1 = gretl.get_data('kennan.gdt')
 
     m1 = gretl.duration('Ti ~ const + Prod').fit()
     m2 = gretl.duration('Ti const Prod').fit()

@@ -1,11 +1,8 @@
-import importlib.resources as resources
 import gretl
 
 def run_example():
-    data_dir = resources.files('gretl').joinpath('data')
-
-    d1 = gretl.get_data(str(data_dir.joinpath('greene22_2.gdt')))
-    d1.set_as_default()
+    # get path object for the data directory inside the gretl package
+    d1 = gretl.get_data('greene22_2.gdt')
 
     m1 = gretl.logit('Y ~ const + Z1 + Z2').fit()
     m2 = gretl.logit('Y const Z1 Z2').fit()
@@ -39,7 +36,7 @@ def run_example():
     print(m)
 
     # oddsratios analysis
-    d2 = gretl.get_data(str(data_dir.joinpath('rac3d.gdt')))
+    d2 = gretl.get_data('rac3d.gdt')
     m = gretl.logit('SEX 0 AGE AGESQ INCOME LEVYPLUS', data=d2).fit()
     print(m)
     m.oddsratio()

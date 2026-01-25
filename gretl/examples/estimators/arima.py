@@ -1,11 +1,8 @@
-import importlib.resources as resources
 import gretl
 import shutil
 
 def run_example():
-    data_dir = resources.files('gretl').joinpath('data')
-    d1 = gretl.get_data(str(data_dir.joinpath('bjg.gdt')))
-    d1.set_as_default()
+    d1 = gretl.get_data('bjg.gdt')
 
     m = gretl.arima(y='lg', order=(1,1,1)).fit()
     print(m)

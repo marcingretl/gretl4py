@@ -1,10 +1,8 @@
-import importlib.resources as resources
 import gretl
 
 def run_example():
-    data_dir = resources.files('gretl').joinpath('data')
-    d1 = gretl.get_data(str(data_dir.joinpath('b-g.gdt')))
-    d1.set_as_default()
+    # get path object for the data directory inside the gretl package
+    d1 = gretl.get_data('b-g.gdt')
 
     spec = '1 1 ; Y'
 

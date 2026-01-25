@@ -1,13 +1,8 @@
-import importlib.resources as resources
 import gretl
 
 def run_example():
     # Get path object for the data directory inside the gretl package
-    data_dir = resources.files('gretl').joinpath('data')
-
-    # Load dataset and set it as default
-    d1 = gretl.get_data(str(data_dir.joinpath('rac3d.gdt')))
-    d1.set_as_default()
+    d1 = gretl.get_data('rac3d.gdt')
 
     # Basic model forms
     m1 = gretl.poisson('DVISITS ~ const + SEX + AGE').fit()

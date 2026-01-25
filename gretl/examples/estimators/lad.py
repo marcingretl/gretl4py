@@ -1,11 +1,8 @@
-import importlib.resources as resources
 import gretl
 
 def run_example():
-    data_dir = resources.files('gretl').joinpath('data')
-
-    d1 = gretl.get_data(str(data_dir.joinpath('longley.csv')))
-    d1.set_as_default()
+    # get path object for the data directory inside the gretl package
+    d1 = gretl.get_data('longley.csv')
 
     m1 = gretl.lad('employ ~ const + prdefl + gnp').fit()
     m2 = gretl.lad('employ const prdefl gnp').fit()

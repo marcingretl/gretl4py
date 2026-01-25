@@ -1,13 +1,8 @@
-import importlib.resources as resources
 import gretl
 
 def run_example():
     # Get path object for the data directory inside the gretl package
-    data_dir = resources.files('gretl').joinpath('data')
-
-    # Load dataset and set as default
-    d1 = gretl.get_data(str(data_dir.joinpath('penngrow.gdt')))
-    d1.set_as_default()
+    d1 = gretl.get_data('penngrow.gdt')
 
     # Basic models
     m1 = gretl.panel('Y ~ const + Y(-1) + X').fit()

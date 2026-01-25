@@ -1,11 +1,9 @@
-import importlib.resources as resources
 import gretl
 
 def run_example():
-    # get path object for the data directory inside the gretl package
-    data_dir = resources.files('gretl').joinpath('data')
+    # get path object for the data directory inside the gretl package    
 
-    d1 = gretl.get_data(str(data_dir.joinpath('longley.csv')))
+    d1 = gretl.get_data('longley.csv')
     m = gretl.ar('1 2 ; employ const prdefl gnp armfrc').fit()
     print(m)
 

@@ -1,10 +1,8 @@
-import importlib.resources as resources
 import gretl
 
 def run_example():
-    data_dir = resources.files('gretl').joinpath('data')
-    d1 = gretl.get_data(str(data_dir.joinpath('mroz87.gdt')))
-    d1.set_as_default()
+    # get path object for the data directory inside the gretl package
+    d1 = gretl.get_data('mroz87.gdt')
 
     formula = 'WW const AX WE CIT ; LFP const WA FAMINC WE'
 
