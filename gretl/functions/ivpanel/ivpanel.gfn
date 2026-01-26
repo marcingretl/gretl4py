@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <gretl-functions>
-<gretl-function-package name="ivpanel" needs-panel-data="true" minver="2025c" lives-in-subdir="true">
+<gretl-function-package name="ivpanel" needs-panel-data="true" minver="2026a" lives-in-subdir="true">
 <author email="cottrell@wfu.edu">Allin Cottrell</author>
-<version>2025c-git</version>
+<version>2026a-git</version>
 <date>2021-02-15</date>
 <description>Within and Between TSLS models plus G2SLS</description>
 <tags>C23 C26</tags>
@@ -177,27 +177,27 @@ tmp = Z - X
 string Istr = strsub(varname(tmp), &quot;,&quot;, &quot; &quot;)
 
 # assemble bundle for return
-b[&quot;nobs&quot;] = NT
-b[&quot;coeff&quot;] = beta
-b[&quot;stderr&quot;] = se
-b[&quot;vcv&quot;] = V
-b[&quot;SSR&quot;] = SSR
-b[&quot;sigma&quot;] = sqrt(s2)
-b[&quot;df&quot;] = df
-b[&quot;rsq&quot;] = rsq
-b[&quot;wald&quot;] = wald
-b[&quot;modstr&quot;] = Xstr
-b[&quot;ystr&quot;] = ystr
-b[&quot;Estr&quot;] = Estr
-b[&quot;Istr&quot;] = Istr
-b[&quot;uhat&quot;] = U
-b[&quot;yhat&quot;] = yhat
-b[&quot;case&quot;] = case
+b.nobs = NT
+b.coeff = beta
+b.stderr = se
+b.vcv = V
+b.SSR = SSR
+b.sigma = sqrt(s2)
+b.df = df
+b.rsq = rsq
+b.wald = wald
+b.modstr = Xstr
+b.ystr = ystr
+b.Estr = Estr
+b.Istr = Istr
+b.uhat = U
+b.yhat = yhat
+b.case = case
 if (case == 1 || case == 3)
-  b[&quot;dims&quot;] = dims
+  b.dims = dims
 endif
 if ok(Fpnum)
-  b[&quot;Fpool&quot;] = (Fpnum/SSR) * df/(N-1)
+  b.Fpool = (Fpnum/SSR) * df/(N-1)
 endif
 
 if quiet
@@ -213,42 +213,42 @@ return b
  <params count="1">
   <param name="b" type="bundleref"/>
  </params>
-<code>matrix result = b[&quot;coeff&quot;] ~ b[&quot;stderr&quot;]
-scalar case = b[&quot;case&quot;]
+<code>matrix result = b.coeff ~ b.stderr
+scalar case = b.case
 scalar N = 0
 if case == 1
-  printf &quot;\nFixed-effects TSLS, using %d observations\n&quot;, b[&quot;nobs&quot;]
+  printf &quot;\nFixed-effects TSLS, using %d observations\n&quot;, b.nobs
 elif case == 2
-  printf &quot;\nBetween TSLS, N = %d\n&quot;, b[&quot;nobs&quot;]
+  printf &quot;\nBetween TSLS, N = %d\n&quot;, b.nobs
 else
-  printf &quot;\nG2SLS random effects, using %d observations\n&quot;, b[&quot;nobs&quot;]
+  printf &quot;\nG2SLS random effects, using %d observations\n&quot;, b.nobs
 endif
-printf &quot;Dependent variable: %s\n&quot;, b[&quot;ystr&quot;]
-printf &quot;Endogenous: %s\n&quot;, b[&quot;Estr&quot;]
-printf &quot;Instruments: %s\n&quot;, b[&quot;Istr&quot;]
+printf &quot;Dependent variable: %s\n&quot;, b.ystr
+printf &quot;Endogenous: %s\n&quot;, b.Estr
+printf &quot;Instruments: %s\n&quot;, b.Istr
 
-string S = b[&quot;modstr&quot;]
+string S = b.modstr
 modprint result S
 
-printf &quot;  SSR = %g\n&quot;, b[&quot;SSR&quot;]
-printf &quot;  sigma-hat = %g (df = %d)\n&quot;, b[&quot;sigma&quot;], b[&quot;df&quot;]
-printf &quot;  R-squared = corr(y, yhat)^2 = %f\n&quot;, b[&quot;rsq&quot;]
+printf &quot;  SSR = %g\n&quot;, b.SSR
+printf &quot;  sigma-hat = %g (df = %d)\n&quot;, b.sigma, b.df
+printf &quot;  R-squared = corr(y, yhat)^2 = %f\n&quot;, b.rsq
 if (case == 1 || case == 3)
-  matrix dims = b[&quot;dims&quot;]
+  matrix dims = b.dims
   N = dims[1]
   printf &quot;  Included units = %d\n&quot;, N
   printf &quot;  Time-series length: min = %d, max = %d\n&quot;, dims[2], dims[3]
 endif
-scalar X2 = b[&quot;wald&quot;]
-scalar df = rows(b[&quot;coeff&quot;]) - 1
+scalar X2 = b.wald
+scalar df = rows(b.coeff) - 1
 scalar pv = pvalue(X, df, X2)
 printf &quot;  Wald chi-square(%d) = %g [%.4f]\n&quot;, df, X2, pv
 
 if inbundle(b, &quot;Fpool&quot;)
   # poolability F-test for fixed effects
-  scalar Fp = b[&quot;Fpool&quot;]
+  scalar Fp = b.Fpool
   scalar dfn = N-1
-  scalar dfd = b[&quot;df&quot;]
+  scalar dfd = b.df
   pv = pvalue(F, dfn, dfd, Fp)
   printf &quot;  Null hypothesis: The groups have a common intercept\n&quot;
   printf &quot;  Test statistic: F(%d, %d) = %g [%.4f]\n&quot;, dfn, dfd, Fp, pv
@@ -344,8 +344,8 @@ scalar maxT = 0
 loop i=1..N -q
   matrix sel = selifr(e, u .= vU[i])
   scalar Ti = rows(sel)
-  minT = (Ti &lt; minT) ? Ti : minT
-  maxT = (Ti &gt; maxT) ? Ti : maxT
+  minT = Ti &lt; minT ? Ti : minT
+  maxT = Ti &gt; maxT ? Ti : maxT
   matrix tmp = X[sel,]
   X[sel,] = tmp .+ (grand - meanc(tmp))
 endloop

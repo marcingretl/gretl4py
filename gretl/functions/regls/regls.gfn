@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <gretl-functions>
-<gretl-function-package name="regls" no-data-ok="true" minver="2025c" lives-in-subdir="true">
+<gretl-function-package name="regls" no-data-ok="true" minver="2026a" lives-in-subdir="true">
 <author email="cottrell@wfu.edu">Allin Cottrell</author>
-<version>2025c-git</version>
-<date>2025-05-15</date>
+<version>2026a-git</version>
+<date>2026-01-21</date>
 <description>Regularized least squares</description>
 <tags>C20 C52</tags>
 <help>
@@ -39,7 +39,7 @@ endif
 
 if !exists(parms)
   # an empty bundle will do
-  bundle parms = null
+  bundle parms = empty
 endif
 
 # initialize the return bundle
@@ -53,9 +53,6 @@ endif
 # read optional parameters
 read_optional_params(parms, &amp;ret, &amp;gui, &amp;elnet)
 
-# list of regressors with constant included, if wanted
-list X0 = ret.stdize ? 0 indeps : indeps
-
 # record upper limit of incoming sample range
 my_tmax = $t2
 
@@ -67,16 +64,29 @@ if sum(okcheck) &lt; $nobs
 endif
 
 if ret.stdize
-  matrix Y = s_standardize({depvar}, &amp;my, &amp;sy)
+  if ret.y_discrete
+    matrix Y = {depvar}
+    my = mean(depvar)
+    sy = 1
+  else
+    matrix Y = s_standardize({depvar}, &amp;my, &amp;sy)
+  endif
   matrix X = m_standardize({indeps}, &amp;mx, &amp;sx)
+  list XL = 0 indeps
 else
   matrix Y = {depvar}
   matrix X = {indeps}
+  list XL = indeps
 endif
 
 # check for bad Y
-if nelem(Y) == 0
+if nelem(Y) == 0 || isconst(Y)
   funcerr &quot;Invalid (constant) dependent variable&quot;
+endif
+
+if ret.y_discrete
+  # include intercept in estimation
+  matrix X = {1} ~ X
 endif
 
 scalar ret.nobs = rows(X)
@@ -118,11 +128,11 @@ if rank &gt; 0
   return ret
 endif
 
-strings xnames = varnames(X0)
+strings xnames = varnames(XL)
 finalize_coeff_matrices(&amp;ret, xnames, mx, sx, my, sy, &amp;bsel)
 
 if !ret.ridge &amp;&amp; nelem(bsel) &gt; 0
-  matrix tmp = X0 # list as matrix
+  matrix tmp = XL # list as matrix
   tmp = selifr(tmp', bsel)
   list ret.nzX = tmp
   rnameset(ret.nzb, varnames(ret.nzX))
@@ -672,6 +682,7 @@ scalar n = rows(ym)
 scalar den = sdc(ym) * b.lmax
 bundle tmp = _(B=RB, lambda=Rlam * n / den)
 tmp.estimator = b.estimator
+tmp.lfrac = b.lfrac
 regls_multiprint(tmp, y, X)
 </code>
 </gretl-function>
@@ -748,13 +759,13 @@ return S
   <param name="sy" type="scalar"/>
   <param name="bsel" type="matrixref"/>
  </params>
-<code>rnameset(ret.B, xnames)
-if cols(ret.B) &gt; 1
+<code>if cols(ret.B) &gt; 1
   if ret.stdize
     loop j=1..cols(ret.B)
       ret.B[,j] = unstdize(ret.B[2:,j], my, sy, mx, sx)
     endloop
   endif
+  rnameset(ret.B, xnames)
   if inbundle(ret, &quot;idxmin&quot;)
     optcol = (ret.xvalidate &amp;&amp; ret.use_1se)? ret.idx1se : ret.idxmin
     matrix b = ret.B[,optcol]
@@ -766,13 +777,14 @@ if cols(ret.B) &gt; 1
       matrix ret.nzb = selifr(b, bsel)
     endif
   endif
-else
+else # single B column
   if ret.stdize
     ret.B = unstdize(ret.B[2:], my, sy, mx, sx)
     if inbundle(ret, &quot;vcv&quot;)
       ret.vcv = unstdize_vcv(ret.vcv, sy, sx)
     endif
   endif
+  rnameset(ret.B, xnames)
   if !ret.ridge
     bsel = ret.B .!= 0
     matrix ret.nzb = selifr(ret.B, bsel)
@@ -1075,6 +1087,9 @@ endif
 if inbundle(parms, &quot;xvalidate&quot;)
   get_xvalidation_parms(&amp;ret, parms)
 endif
+if inbundle(parms, &quot;y_discrete&quot;) == 1
+  scalar ret.y_discrete = parms.y_discrete
+endif
 </code>
 </gretl-function>
 <gretl-function name="regls_ret_init" type="bundle" private="1">
@@ -1087,6 +1102,7 @@ ret.verbosity = 1
 ret.ridge = 0
 ret.ccd = 0
 ret.xvalidate = 0
+ret.y_discrete = 0
 ret.matrix_input = matrix_input
 if !matrix_input
   ret.sample_t1 = $t1
