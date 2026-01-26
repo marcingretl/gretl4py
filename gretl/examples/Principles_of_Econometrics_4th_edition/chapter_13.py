@@ -7,8 +7,9 @@ gretl.set('verbose', 'off')
 gretl.set('force_decpoint', 'on')
 
 # datasets
-gdp = gretl.get_data('data/gdp.gdt')
-fred = gretl.get_data('data/fred.gdt')
+DATA_PATH = gretl.gretldir + '/examples/Principles_of_Econometrics_4th_edition/data/'
+gdp   = gretl.get_data(DATA_PATH + 'gdp.gdt')
+fred  = gretl.get_data(DATA_PATH + 'fred.gdt')
 
 ############################################
 # 13.2. Estimating a Vector Error Correction Model

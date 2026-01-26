@@ -13,7 +13,8 @@ gretl.set('force_decpoint', 'on')
 GIG = gretl.include("gig")
 
 # datasets
-byd = gretl.get_data('data/byd.gdt')
+DATA_PATH = gretl.gretldir + '/examples/Principles_of_Econometrics_4th_edition/data/'
+byd = gretl.get_data(DATA_PATH + 'byd.gdt')
 
 ############################################
 # 14.3. Testing, Estimating, and Forecasting

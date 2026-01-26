@@ -8,10 +8,11 @@ gretl.set('verbose', 'off')
 gretl.set('force_decpoint', 'on')
 
 # datasets
-andy = gretl.get_data('data/andy.gdt')
-beer = gretl.get_data('data/beer.gdt')
-edu_inc = gretl.get_data('data/edu_inc.gdt')
-cars = gretl.get_data('data/cars.gdt')
+DATA_PATH = gretl.gretldir + '/examples/Principles_of_Econometrics_4th_edition/data/'
+andy    = gretl.get_data(DATA_PATH + 'andy.gdt')
+beer    = gretl.get_data(DATA_PATH + 'beer.gdt')
+edu_inc = gretl.get_data(DATA_PATH + 'edu_inc.gdt')
+cars    = gretl.get_data(DATA_PATH + 'cars.gdt')
 
 ############################################
 # 6.1. Testing Joint Hypotheses

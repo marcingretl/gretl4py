@@ -18,10 +18,11 @@ HT = gretl.include("hausman_taylor.gfn")
 gretl.set('force_decpoint', 'on')
 
 # datasets
-nls_panel = gretl.get_data('data/nls_panel.gdt')
-grunfeld11 = gretl.get_data('data/grunfeld11.gdt')
-grunfeld2 = gretl.get_data('data/grunfeld2.gdt')
-grunfeld2_sur = gretl.get_data('data/grunfeld2_sur.gdt')
+DATA_PATH = gretl.gretldir + '/examples/Principles_of_Econometrics_4th_edition/data/'
+nls_panel     = gretl.get_data(DATA_PATH + 'nls_panel.gdt')
+grunfeld11    = gretl.get_data(DATA_PATH + 'grunfeld11.gdt')
+grunfeld2     = gretl.get_data(DATA_PATH + 'grunfeld2.gdt')
+grunfeld2_sur = gretl.get_data(DATA_PATH + 'grunfeld2_sur.gdt')
 
 ############################################
 # 15.1 A Microeconomic Panel

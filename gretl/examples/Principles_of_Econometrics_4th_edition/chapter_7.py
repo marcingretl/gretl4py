@@ -10,11 +10,12 @@ gretl.set('verbose', 'off')
 gretl.set('force_decpoint', 'on')
 
 # datasets
-utown = gretl.get_data('data/utown.gdt')
-cps4_small = gretl.get_data('data/cps4_small.gdt')
-coke = gretl.get_data('data/coke.gdt')
-star = gretl.get_data('data/star.gdt')
-njmin3 = gretl.get_data('data/njmin3.gdt')
+DATA_PATH = gretl.gretldir + '/examples/Principles_of_Econometrics_4th_edition/data/'
+utown       = gretl.get_data(DATA_PATH + 'utown.gdt')
+cps4_small  = gretl.get_data(DATA_PATH + 'cps4_small.gdt')
+coke        = gretl.get_data(DATA_PATH + 'coke.gdt')
+star        = gretl.get_data(DATA_PATH + 'star.gdt')
+njmin3      = gretl.get_data(DATA_PATH + 'njmin3.gdt')
 
 ############################################
 # 7.1. Indicator Variables

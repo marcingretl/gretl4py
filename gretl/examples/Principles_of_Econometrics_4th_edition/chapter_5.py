@@ -15,9 +15,10 @@ gretl.set('force_decpoint', 'on')
 numpy.set_printoptions(precision = 4)
 
 # datasets
-andy = gretl.get_data('data/andy.gdt')
-pizza = gretl.get_data('data/pizza4.gdt')
-cps4s = gretl.get_data('data/cps4_small.gdt')
+DATA_PATH = gretl.gretldir + '/examples/Principles_of_Econometrics_4th_edition/data/'
+andy    = gretl.get_data(DATA_PATH + 'andy.gdt')
+pizza   = gretl.get_data(DATA_PATH + 'pizza4.gdt')
+cps4s   = gretl.get_data(DATA_PATH + 'cps4_small.gdt')
 
 ############################################
 # 5.1. Introduction

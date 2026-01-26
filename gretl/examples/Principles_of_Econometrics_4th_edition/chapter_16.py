@@ -15,12 +15,13 @@ gretl.set('verbose', 'off')
 gretl.set('force_decpoint', 'on')
 
 # datasets
-transport = gretl.get_data('data/transport.gdt')
-coke = gretl.get_data('data/coke.gdt')
-nels_small = gretl.get_data('data/nels_small.gdt')
-olympics = gretl.get_data('data/olympics.gdt')
-tobit = gretl.get_data('data/tobit.gdt')
-mroz = gretl.get_data('data/mroz.gdt')
+DATA_PATH = gretl.gretldir + '/examples/Principles_of_Econometrics_4th_edition/data/'
+transport   = gretl.get_data(DATA_PATH + 'transport.gdt')
+coke        = gretl.get_data(DATA_PATH + 'coke.gdt')
+nels_small  = gretl.get_data(DATA_PATH + 'nels_small.gdt')
+olympics    = gretl.get_data(DATA_PATH + 'olympics.gdt')
+tobit       = gretl.get_data(DATA_PATH + 'tobit.gdt')
+mroz        = gretl.get_data(DATA_PATH + 'mroz.gdt')
 
 ############################################
 # 16.1 Models with Binary Dependent Variable

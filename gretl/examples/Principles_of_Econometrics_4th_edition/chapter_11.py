@@ -7,8 +7,9 @@ gretl.set('verbose', 'off')
 gretl.set('force_decpoint', 'on')
 
 # datasets
-truffles = gretl.get_data('data/truffles.gdt')
-fultonfish = gretl.get_data('data/fultonfish.gdt')
+DATA_PATH = gretl.gretldir + '/examples/Principles_of_Econometrics_4th_edition/data/'
+truffles    = gretl.get_data(DATA_PATH + 'truffles.gdt')
+fultonfish  = gretl.get_data(DATA_PATH + 'fultonfish.gdt')
 
 ############################################
 # 11.6 An Example of Two-Stage Least Squares

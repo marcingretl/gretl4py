@@ -7,7 +7,8 @@ gretl.set('verbose', 'off')
 gretl.set('force_decpoint', 'on')
 
 # datasets
-mroz = gretl.get_data('data/mroz.gdt')
+DATA_PATH = gretl.gretldir + '/examples/Principles_of_Econometrics_4th_edition/data/'
+mroz = gretl.get_data(DATA_PATH + 'mroz.gdt')
 
 ############################################
 # 10.2 Cases in Which x and e Are Correlated

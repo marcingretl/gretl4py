@@ -11,9 +11,10 @@ gretl.set('verbose', 'off')
 gretl.set('force_decpoint', 'on')
 
 # datasets
-food = gretl.get_data('data/food.gdt')
-cps2 = gretl.get_data('data/cps2.gdt')
-coke = gretl.get_data('data/coke.gdt')
+DATA_PATH = gretl.gretldir + '/examples/Principles_of_Econometrics_4th_edition/data/'
+food = gretl.get_data(DATA_PATH + 'food.gdt')
+cps2 = gretl.get_data(DATA_PATH + 'cps2.gdt')
+coke = gretl.get_data(DATA_PATH + 'coke.gdt')
 
 ############################################
 # 8.1. The Nature of Heteroscedasticity

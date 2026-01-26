@@ -11,8 +11,9 @@ gretl.set('verbose', 'off')
 gretl.set('force_decpoint', 'on')
 
 # datasets
-usa = gretl.get_data('data/usa.gdt')
-spurious = gretl.get_data('data/spurious.gdt')
+DATA_PATH = gretl.gretldir + '/examples/Principles_of_Econometrics_4th_edition/data/'
+usa         = gretl.get_data(DATA_PATH + 'usa.gdt')
+spurious    = gretl.get_data(DATA_PATH + 'spurious.gdt')
 
 ############################################
 # 12.1. Stationary and Nonstationary Variables

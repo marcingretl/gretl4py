@@ -11,8 +11,9 @@ gretl.set('verbose', 'off')
 gretl.set('force_decpoint', 'on')
 
 # datasets
-okun = gretl.get_data('data/okun.gdt')
-phillips_aus = gretl.get_data('data/phillips_aus.gdt')
+DATA_PATH = gretl.gretldir + '/examples/Principles_of_Econometrics_4th_edition/data/'
+okun            = gretl.get_data(DATA_PATH + 'okun.gdt')
+phillips_aus    = gretl.get_data(DATA_PATH + 'phillips_aus.gdt')
 
 ############################################
 # 9.2.2. Okun's Law
