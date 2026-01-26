@@ -1,16 +1,17 @@
 import gretl
 
 def run_example():
-    # get path object for the data directory inside the gretl package
+    # load a dataset
     d1 = gretl.get_data('denmark.gdt')
     d1.sample(1, 51)
 
-    m1 = gretl.vecm(order=2, rank=1, ylist='LRM LRY', xlist='IBO IDE', rc=True, seasonals=True).fit()
+    #print(d1.varnames())
+    m1 = gretl.var(order=2, ylist='LRM LRY', xlist='IBO IDE', trend=True, seasonals=True, impulse_responses=True).fit()
     print(m1)
 
     # we retrieve sigma matrix
-    print("jalpha:")
-    print(m1.get_accessor("$jalpha"))
+    print("sigma matrix:")
+    print(m1.get_accessor("$sigma"))
 
     # we perform some model-based tests
     m1.test(type="autocorr", order=3)
@@ -25,23 +26,13 @@ def run_example():
     print(m1.tests[-1]['summary'])
 
     # add uhat to dataset
-    uhat_name = m1.save_uhat(eqn=2)
+    uhat_name = m1.save_uhat(eqn=1)
     print(f'residuals added as: {uhat_name}')
-
-    # add EC term to dataset
-    ec_name = m1.save_ec_term(nr=1)
-    print(f'EC term added as: {ec_name}')
-    
-    # RESTRICT
-    print("\n****************************")
-    print("restrict")
-    m1.restrict(impose=['b[2] = 0'], verbose=True)
-    print(m1.restrictions[-1]['pvalue'])
 
     #FORECASTS
     print("\n****************************")
     print("forecasts")
-    m1.fcast()
+    m1.fcast(vname="LRY")
 
     #IRFS
     print("\n****************************")
@@ -58,18 +49,17 @@ def run_example():
 
     print("\nirf3:")
     print(m1.irfs[-1])
-    
+
     # IRFs plots (requires matplotlib)
     try:
         import matplotlib.pyplot as plt
 
-        irf_res = m1.irfs[-1]
-        y = irf_res['results'][:, 0]
-        l = irf_res['results'][:, 1]
-        u = irf_res['results'][:, 2]
+        y = m1.irfs[-1]['results'][:, 0]
+        l = m1.irfs[-1]['results'][:, 1]
+        u = m1.irfs[-1]['results'][:, 2]
         x = list(range(1, len(y) + 1))
-        shock_name = irf_res['shock_name']
-        target_name = irf_res['target_name']
+        shock_name = m1.irfs[-1]['shock_name']
+        target_name = m1.irfs[-1]['target_name']
 
         fig, ax = plt.subplots()
         plt.title(target_name + ": responses to a one-standard error shock in " + shock_name)

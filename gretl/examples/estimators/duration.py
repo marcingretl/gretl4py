@@ -1,6 +1,7 @@
 import gretl
 
 def run_example():
+    # load a dataset
     d1 = gretl.get_data('kennan.gdt')
 
     m1 = gretl.duration('Ti ~ const + Prod').fit()

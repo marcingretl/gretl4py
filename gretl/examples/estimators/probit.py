@@ -2,7 +2,7 @@ import importlib.resources as resources
 import gretl
 
 def run_example():
-    # Get path object for the data directory inside the gretl package
+    # load a dataset
     d1 = gretl.get_data('greene22_2.gdt')    
     d1.new_series('rat = Z8 - 1')
     d1.discrete('rat')

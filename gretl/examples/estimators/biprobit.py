@@ -1,6 +1,7 @@
 import gretl
 
 def run_example():
+    # load a dataset
     d1 = gretl.get_data('greene25_1.gdt')
 
     m = gretl.biprobit(

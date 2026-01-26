@@ -1,7 +1,7 @@
 import gretl
 
 def run_example():
-    # Get path object for the data directory inside the gretl package
+    # load a dataset
     d1 = gretl.get_data('tobit.gdt')
 
     # Estimate Tobit model with both left and right censoring

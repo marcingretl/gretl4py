@@ -1,7 +1,7 @@
 import gretl
 
 def run_example():
-    # get path object for the data directory inside the gretl package
+    # load a dataset
     d1 = gretl.get_data('mroz87.gdt')
 
     formula = 'WW const AX WE CIT ; LFP const WA FAMINC WE'

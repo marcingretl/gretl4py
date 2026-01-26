@@ -4,6 +4,7 @@ def run_example():
     # Force libgretl to use the decimal point character
     gretl.set('force_decpoint', 'on')
 
+    # load a dataset
     d1 = gretl.get_data('mrw.gdt')
     d1.new_series('ly60 = log(gdp60)')
     d1.new_series('dlny = log(gdp85) - ly60')
@@ -13,11 +14,12 @@ def run_example():
     d1.new_series('lschool = log(school/100)')
     d1.sample('nonoil', dummy=True)
     
+    # model specification
     spec = 'dlny const ly60 linv lngd lschool'
     
     # Top quartile
     m1_top = gretl.quantreg(tau=0.75, formula=spec).fit()
-    # Bottom quartile (robust)
+    # Bottom quartile with robust standard errors
     m1_bot = gretl.quantreg(tau=0.25, formula=spec, robust=True).fit()
     print(m1_top)
     print(m1_bot)

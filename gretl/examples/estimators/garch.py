@@ -1,7 +1,7 @@
 import gretl
 
 def run_example():
-    # get path object for the data directory inside the gretl package
+    # load a dataset
     d1 = gretl.get_data('b-g.gdt')
 
     spec = '1 1 ; Y'

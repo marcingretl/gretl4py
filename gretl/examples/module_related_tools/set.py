@@ -1,27 +1,31 @@
 import gretl
 
-# to printdefault directory for writing and reading	files
-gretl.set('workdir')
+def run_example():
+  # to printdefault directory for writing and reading	files
+  gretl.set('workdir')
 
-# to force libgretl to use the decimal point character
-gretl.set('force_decpoint')
-gretl.set('force_decpoint', 'on')
-gretl.set('force_decpoint')
+  # to force libgretl to use the decimal point character
+  gretl.set('force_decpoint')
+  gretl.set('force_decpoint', 'on')
+  gretl.set('force_decpoint')
 
-# to set the column delimiter used when saving data to file in CSV format as tab
-gretl.set('csv_delim')
-gretl.set('csv_delim', 'tab')
-gretl.set('csv_delim')
+  # to set the column delimiter used when saving data to file in CSV format as tab
+  gretl.set('csv_delim')
+  gretl.set('csv_delim', 'tab')
+  gretl.set('csv_delim')
 
-# to set the horizon for impulse responses and forecast variance decompositions
-gretl.set('horizon')
-gretl.set('horizon', 16)
-gretl.set('horizon')
+  # to set the horizon for impulse responses and forecast variance decompositions
+  gretl.set('horizon')
+  gretl.set('horizon', 16)
+  gretl.set('horizon')
 
-# to use SVD rather than Cholesky or QR decomposition in least squares calculations
-gretl.set('svd')
-gretl.set('svd', True)
-gretl.set('svd')
+  # to use SVD rather than Cholesky or QR decomposition in least squares calculations
+  gretl.set('svd')
+  gretl.set('svd', True)
+  gretl.set('svd')
 
-# to print all current values
-gretl.set()
+  # to print all current values
+  gretl.set()
+
+if __name__ == "__main__":
+    run_example()

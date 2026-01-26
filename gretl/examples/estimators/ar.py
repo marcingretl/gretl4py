@@ -1,8 +1,7 @@
 import gretl
 
 def run_example():
-    # get path object for the data directory inside the gretl package    
-
+    # load a dataset
     d1 = gretl.get_data('longley.csv')
     m = gretl.ar('1 2 ; employ const prdefl gnp armfrc').fit()
     print(m)

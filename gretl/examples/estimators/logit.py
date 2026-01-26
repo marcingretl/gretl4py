@@ -1,7 +1,7 @@
 import gretl
 
 def run_example():
-    # get path object for the data directory inside the gretl package
+    # load a dataset
     d1 = gretl.get_data('greene22_2.gdt')
 
     m1 = gretl.logit('Y ~ const + Z1 + Z2').fit()

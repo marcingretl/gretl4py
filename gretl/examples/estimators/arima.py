@@ -2,6 +2,7 @@ import gretl
 import shutil
 
 def run_example():
+    # load a dataset
     d1 = gretl.get_data('bjg.gdt')
 
     m = gretl.arima(y='lg', order=(1,1,1)).fit()

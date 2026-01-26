@@ -1,7 +1,7 @@
 import gretl
 
 def run_example():
-    # Get path object for the data directory inside the gretl package
+    # load a dataset
     d1 = gretl.get_data('penngrow.gdt')
 
     m = gretl.tsls('Y Y(-1) X ; 0 X Y(-2)').fit()
