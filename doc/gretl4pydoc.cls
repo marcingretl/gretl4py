@@ -8,8 +8,9 @@
 \RequirePackage[pdftex]{xcolor}
 \RequirePackage[]{graphicx}
 
-\RequirePackage{dirtree,xargs,xspace,url,listings,pifont,makeidx,ifthen,caption,subcaption,fancyvrb,tikz,pdflscape,catchfile,amsmath,tocloft}
+\RequirePackage{dirtree,xargs,xspace,url,pifont,makeidx,ifthen,caption,subcaption,fancyvrb,tikz,pdflscape,catchfile,amsmath}
 \RequirePackage[toc,title]{appendix}
+\RequirePackage[final]{listings}
 \usepackage{gretlwp}
 
 \usepackage[colorlinks,pdfusetitle]{hyperref}
