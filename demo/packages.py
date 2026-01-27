@@ -1,14 +1,10 @@
-import importlib.resources as resources
 import gretl
 
 # force libgretl to use the decimal point character
 gretl.set('force_decpoint', 'on')
 
-# get path object for the data directory inside the gretl package
-data_dir = resources.files('gretl').joinpath('data')
-
 # load datasets
-d1 = gretl.get_data(str(data_dir.joinpath('longley.csv')))
+d1 = gretl.get_data('longley.csv')
 d2 = gretl.get_data("FLS_41t72.gdt", frompkg="BMA")
 
 # we load packages
@@ -30,7 +26,6 @@ gretl.genr(name='n', value=m1.T)
 res1 = gretl.criteria(n=m1.T, k="k", ess="ess") # arbitrary parameters order!!!!
 print(res1)
 #gretl.uservars_list()
-
 
 # let's try out BMA
 print('##################################################')

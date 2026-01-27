@@ -11,7 +11,7 @@ def run_example():
   # load the dataset bundled with the BMA package and
   # define a list of potential GDP growth factors
   d = gretl.get_data('FLS_41t72', frompkg='BMA')
-  d.new_list('Factors = 2..42')
+  d.new_list(name='Factors', value='2..42')
 
   # set MC3 options
   OPTS = gretl.Bundle()

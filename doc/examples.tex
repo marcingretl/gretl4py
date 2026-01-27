@@ -27,7 +27,7 @@ except FileNotFoundError:
   gretl.include('BMA')
 
 d = gretl.get_data('FLS_41t72', frompkg='BMA')
-d.new_list('Factors = 2..42')
+d.new_list(name='Factors', value='2..42')
 
 OPTS = gretl.Bundle()
 OPTS['Nrep'] = 3000000
