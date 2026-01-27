@@ -237,7 +237,7 @@ gretl.set('verbose', 'off')
 # Import the gig library.
 gretl.include('gig')
 
-djclose = gretl.get_data(gretl.gretldir + '/data/' + 'djclose.gdt')
+djclose = gretl.get_data('djclose.gdt')
 djclose.new_series('rr = 100*ldiff(djclose)')
 
 gig_model = gretl.gig_setup(y='rr')
@@ -246,7 +246,7 @@ gretl.gig_estimate(model=gig_model)
 # Compare with native implementation
 native_model = gretl.garch('1 1 ; rr', nc=True, robust=True).fit()
 print(native_model)
-\end{lstlisting}
+\end{lstlisting}\index{garch()}\index{gig\_estimate()}
 
 \begin{figure}
 	\centering
