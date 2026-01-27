@@ -8,7 +8,12 @@ print(b)
 
 a['hhh'] = 464645
 a['ddd'] = "fhfg"
+a['xxx'] = "xxx"
 print(a)
+a.print()
+
+# delete element
+a.delete_element('xxx')
 a.print()
 
 l = [[1.5, 4.78], [5, -0.6]]

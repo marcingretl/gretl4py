@@ -218,6 +218,8 @@ public:
 
     template <typename T>
     void set_element (const std::string &key, const T &t);
+
+    void delete_element (const std::string &key);
 };
 
 #endif // GRETL4PY_DATA_H

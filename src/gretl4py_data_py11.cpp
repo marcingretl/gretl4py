@@ -321,9 +321,9 @@ void init_gretl4py_bundle_py11(py::module_ &m)
     .def("__setitem__", &GretlBundle::set_element<std::string>)
     .def("__setitem__", &GretlBundle::set_element<py::array>)
     .def("__setitem__", &GretlBundle::set_element<GretlBundlePtr>)
+    .def("delete_element", &GretlBundle::delete_element, py::arg("key").none(false))
     .def("keys", &GretlBundle::keys)
-    .def("print", &GretlBundle::print<void>,
-         py::arg("tree").none(true) = false)
+    .def("print", &GretlBundle::print<void>, py::arg("tree").none(true) = false)
     .def("to_dict", &GretlBundle::to_dict);
 }
 

@@ -1728,3 +1728,12 @@ template void GretlBundle::set_element<double>(const std::string&, const double&
 template void GretlBundle::set_element<std::string>(const std::string&, const std::string&);
 template void GretlBundle::set_element<py::array>(const std::string&, const py::array&);
 template void GretlBundle::set_element<GretlBundlePtr>(const std::string&, const GretlBundlePtr&);
+
+void GretlBundle::delete_element (const std::string &key)
+{
+    //
+    // deletes the data item under @key if such an item is present
+    //
+    err_ = gretl_bundle_delete_data(b_, key.c_str());
+    if (err_) handle_gretl_error(err_);
+}
