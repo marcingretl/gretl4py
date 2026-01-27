@@ -150,7 +150,7 @@ GretlDataset::GretlDataset (const std::string &fname,
 
     if (err_) {
         destroy_dataset(dset);
-        handle_gretl_error(err_);
+        handle_gretl_error(err_, fname);
     }
 }
 
