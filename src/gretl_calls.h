@@ -79,7 +79,7 @@ void genr (const std::string &formula, GretlDatasetPtr data);
 template <typename T>
 void genr (const std::string &name, const T &value);
 
-void handle_gretl_error (int err);
+void handle_gretl_error (int err, const std::string &ext_msg = "");
 
 void gretl_valid_long_opt (gretlopt &opt, GretlCmdIndex ci,
                            const std::string &key, const py::handle &val,

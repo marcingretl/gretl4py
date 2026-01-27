@@ -22,7 +22,7 @@ import gretl
 
 try:
   gretl.include('BMA')
-except RuntimeError:
+except FileNotFoundError:
   gretl.pkg('install', 'BMA')
   gretl.include('BMA')
 

@@ -47,6 +47,17 @@ void init_gretl4py_model_py11(py::module_ &);
 
 PYBIND11_MODULE(_gretl, m)
 {
+    // exceptions
+    py::register_exception_translator
+    ([](std::exception_ptr p)
+    {
+        try {
+             if (p) std::rethrow_exception(p);
+        } catch (const file_not_found &e) {
+            PyErr_SetString(PyExc_FileNotFoundError, e.what());
+        }
+    });
+
     // gretl4py init/cleanup;
     gretl4py_init();
     m.def("_gretl4py_cleanup", []() { gretl4py_cleanup(); });

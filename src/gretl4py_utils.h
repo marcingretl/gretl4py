@@ -44,6 +44,19 @@ namespace py = pybind11;
 #define SET_OPT(opt, flag) opt = static_cast<gretlopt>((opt) | (flag))
 
 //////////////////////////////////////////////////
+// structs
+//////////////////////////////////////////////////
+struct file_not_found : std::exception {
+    //
+    // FileNotFoundError exception
+    //
+    std::string msg;
+
+    explicit file_not_found (const std::string &f) : msg(f) {}
+    const char *what() const noexcept override { return msg.c_str(); }
+};
+
+//////////////////////////////////////////////////
 // functions
 //////////////////////////////////////////////////
 std::string gretl4py_trim (std::string &s);
@@ -64,6 +77,9 @@ template <typename PyWrapped, typename Item, typename ContainerType>
 void move_to_python_container (PyWrapped &wrapped_obj, Item &&item,
                                const char *container, const std::string &key = "");
 
+//////////////////////////////////////////////////
+// classes
+//////////////////////////////////////////////////
 //
 // This is general purpose py::object/py::handle to C++ types mapper
 //

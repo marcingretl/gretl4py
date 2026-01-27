@@ -55,7 +55,7 @@ GretlPackage::GretlPackage (const std::string &pkg_name,
     } else {
         err_ = get_full_filename((pkg_name + suffix).c_str(), path, OPT_I);
     }
-    if (err_) handle_gretl_error(err_);
+    if (err_) handle_gretl_error(err_, pkg_name);
 
     // we load the package
     pkg_ = get_function_package_by_filename(path, &err_);

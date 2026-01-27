@@ -4,7 +4,7 @@ def run_example():
   # the BMA package; if not found, install it from SourceForge
   try:
     gretl.include('BMA')
-  except RuntimeError:
+  except FileNotFoundError:
     gretl.pkg('install', 'BMA')
     gretl.include('BMA')
   

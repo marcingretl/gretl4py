@@ -909,10 +909,11 @@ template void genr<int>(const std::string&, const int&);
 template void genr<double>(const std::string&, const double&);
 template void genr<std::string>(const std::string&, const std::string&);
 
-void handle_gretl_error (int err)
+void handle_gretl_error (int err, const std::string &ext_msg)
 {
     //
     // here we handle libgretl errors
+    // ext_msg: additional info which should be added to the message (f.e. file name)
     // note: ArgErr in not complete!!!
     //
     const std::unordered_set<GretlError> ArgErr{ E_ARGS, E_INVARG, E_UNKVAR, E_TOOFEW };
@@ -922,7 +923,9 @@ void handle_gretl_error (int err)
     const char *msg = errmsg_get_with_default(err);
     if (!msg) msg = "unknown error";
 
-    if (ArgErr.count(static_cast<GretlError>(err))) {
+    if (err == E_FOPEN) {
+        throw file_not_found(ext_msg);
+    } else if (ArgErr.count(static_cast<GretlError>(err))) {
         throw std::invalid_argument(msg);
     } else {
         throw std::runtime_error(msg);
