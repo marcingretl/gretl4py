@@ -44,11 +44,11 @@ namespace py = pybind11;
 #define SET_OPT(opt, flag) opt = static_cast<gretlopt>((opt) | (flag))
 
 //////////////////////////////////////////////////
-// structs
+// exceptions
 //////////////////////////////////////////////////
 struct file_not_found : std::exception {
     //
-    // FileNotFoundError exception
+    // FileNotFoundError
     //
     std::string msg;
 
