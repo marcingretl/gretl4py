@@ -115,7 +115,7 @@ template void NumPyArray_to_gretl_matrix<gretl_matrix>(NumPyArrayView&, gretl_ma
 //
 GretlDataset::GretlDataset (const std::string &fname,
                             const py::dict &kwargs)
-                            : id_(next_obj_id_++)
+                            : id_(next_obj_id_++), from_file_(true)
 {
     //
     // load gretl data from file
@@ -715,13 +715,16 @@ template void GretlDataset::transforms_no_opts<ORTHDEV>(const std::string&);
 
 std::string GretlDataset::repr (void) const
 {
-    std::string ret = "Read datafile: " + source + "\n";
+    // we set source of the dataset
+    std::string ret = (from_file_ ? "Read datafile: " : "Loaded: ") + source + "\n";
 
-    if (std::filesystem::exists(source)) {
-        auto desc = gretl_get_gdt_description(source.c_str(), &err_);
-        if (!err_) {
-            ret.append("\n").append(desc);
-            std::free(desc);
+    // if dataset read from file, we try to append dataset info
+    if (from_file_ && std::filesystem::exists(source)) {
+        gretl_char_ptr desc(gretl_get_gdt_description(source.c_str(), &err_));
+
+        if (!err_ && desc) {
+            ret.push_back('\n');
+            ret += desc.get();
         }
     }
 
