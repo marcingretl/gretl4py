@@ -1580,7 +1580,14 @@ void GretlBundle::extract_ (const T &t)
         if constexpr (std::is_same_v<T, py::object>) {
             py::setattr(t, key, get_element<py::object>(key));
         } else if constexpr (std::is_same_v<T, py::dict>) {
-            as_dict_[py::cast(key)] = get_element<py::object>(key);
+            py::object val = get_element<py::object>(key);
+
+            if (py::isinstance<GretlBundle>(val)) {
+                // recursively convert nested bundle
+                as_dict_[py::cast(key)] = val.cast<GretlBundle>().to_dict();
+            } else {
+                as_dict_[py::cast(key)] = val;
+            }
         } else {
             static_assert(always_false<T>, "GretlBundle::extract_(): unknown type");
         }

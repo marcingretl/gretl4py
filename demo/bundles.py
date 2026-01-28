@@ -27,7 +27,7 @@ def run_example():
 
   # export to dict
   d = a.to_dict()
-  print("Exported dict:", d)
+  print("Exported dict:\n", d)
 
 if __name__ == "__main__":
     run_example()
