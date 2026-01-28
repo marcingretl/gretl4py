@@ -141,16 +141,23 @@ GretlDataset::GretlDataset (const std::string &fname,
     allocate_dset_();
     if (!dset) handle_gretl_error(E_ALLOC);
 
-    if (full_path.empty()) {
-        err_ = gretl_get_data(fname.c_str(), dset, OPT_NONE, GP_.prn_ptr());
-    } else {
-        err_ = gretl_get_data(full_path.c_str(), dset, OPT_NONE, GP_.prn_ptr());
-    }
+    // we try to read the file
+    err_ = gretl_get_data(full_path.empty() ? fname.c_str() : full_path.c_str(),
+                          dset, OPT_NONE, GP_.prn_ptr());
     GP_.print();
-
     if (err_) {
         destroy_dataset(dset);
-        handle_gretl_error(err_, fname);
+        handle_gretl_error(err_, full_path.empty() ? fname : full_path);
+    }
+
+    // we try to read dataset description
+    if (full_path.empty()) {
+        char buf[MAXLEN] = {0};
+
+        strncpy(buf, fname.c_str(), MAXLEN-1);
+        if (auto ptr = gretl_addpath(buf, 0)) source = std::string(ptr);
+    } else {
+        source = full_path;
     }
 }
 
@@ -384,7 +391,7 @@ GretlDatasetPtr GretlDataset::get_data (const py::object &src,
     if (!DSET) GD->set_as_default();
 
     // we set info
-    if (!source.empty()) GD->source = source;
+    if (!source.empty() && GD->source.empty()) GD->source = source;
 
     // we register GD
     if (register_dataset) register_dset_(GD);
@@ -708,7 +715,7 @@ template void GretlDataset::transforms_no_opts<ORTHDEV>(const std::string&);
 
 std::string GretlDataset::repr (void) const
 {
-    std::string ret = "GretlDataset, source " + source;
+    std::string ret = "Read datafile: " + source + "\n";
 
     if (std::filesystem::exists(source)) {
         auto desc = gretl_get_gdt_description(source.c_str(), &err_);
