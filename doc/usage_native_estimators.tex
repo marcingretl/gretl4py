@@ -1,8 +1,38 @@
 \section{Native estimators}\label{sec:estimators_python_examples}
 Below some basic examples on how to use certain estimators
-are presented. For more comprehensive ones please visit...
+are presented. For more comprehensive ones please visit
+the \texttt{examples} subdirectory of each \gretlpy distribution.
 
-
+In order to illustrate the \gretlpy estimating facilities,
+we take the as implicit that \pythcode{formula: str} can
+take one of the following forms:
+\begin{itemize}
+	\item a simple \proglang{R}-style like formula that
+	maps the model equation using the following rule:
+	\begin{center}
+		\addtocounter{equation}{1}
+		\hspace*{15pt}$\displaystyle y = \beta_0 + \sum_{j=1}^{k}\beta_jx_j + \varepsilon\;\rightarrow\;$%
+		\pythcode{'y ~ const + x1 + x2 + ... + xk'}%
+		\setcounter{fomularenderR}{\value{equation}}%
+		\hfill\hypertarget{theRstyleFomula}{(\textcolor{red}{\theequation})}
+	\end{center}
+	\item \gretl's default syntax, as described in \cite{gretl_manual}
+	and referred to here as the ``maps to'' syntax:
+	\begin{center}
+		\addtocounter{equation}{1}
+		\hspace*{15pt}$\displaystyle y = \beta_0 + \sum_{j=1}^{k}\beta_jx_j + \varepsilon\;\rightarrow\;$%
+		\pythcode{'y const x1 x2 ... xk'}%
+		\setcounter{fomularenderG}{\value{equation}}%
+		\hfill\hypertarget{theGstyleFomula}{(\textcolor{red}{\theequation})}
+	\end{center}
+\end{itemize}
+The complete list of available native estimators is as follows.%
+\footnote{By ``native'' we mean an estimator implemented directly
+	in \lgretl, as opposed to econometric methods (estimators,
+	tests, etc.) available as contributed packages
+	(see Section~\ref{sec:classpypackage}).}\newline
+Note that all of these are factory functions, \textit{i.e.}, they
+return an allocated \classpymodel instance.
 
 \gretlfpycmd{ar()}%
 \index{get\_data()}
