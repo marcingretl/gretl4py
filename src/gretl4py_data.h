@@ -220,6 +220,8 @@ public:
     void set_element (const std::string &key, const T &t);
 
     void delete_element (const std::string &key);
+
+    py::object pop (const std::string &key);
 };
 
 #endif // GRETL4PY_DATA_H

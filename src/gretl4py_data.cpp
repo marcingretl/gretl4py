@@ -1737,3 +1737,16 @@ void GretlBundle::delete_element (const std::string &key)
     err_ = gretl_bundle_delete_data(b_, key.c_str());
     if (err_) handle_gretl_error(err_);
 }
+
+py::object GretlBundle::pop (const std::string &key)
+{
+    //
+    // method which mimics python's pop(), i.e.
+    // retrieves and deletes element under @key
+    //
+    py::object RES = get_element<py::object>(key);
+
+    delete_element(key);
+
+    return RES;
+}

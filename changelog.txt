@@ -8,7 +8,7 @@ version 0.41:
     - new GretlDataset methods added: ::hurst(), ::xcorrgm(), ::pca()
     - new free functions: corr(), cov(), pkg()
     - new GretlPackage methods: ::get_functions(), and ::get_help()
-    - GretlBundle::delete_element() method
+    - GretlBundle::pop() method + enhanced '[]' operator
     - massive doc updates
 
 version 0.4:

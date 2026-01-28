@@ -23,15 +23,16 @@ Bundle() -> gretl._gretl.Bundle
 The \classpybundle class provides the following operators:
 
 \gretlfpycmd{[]}
-\estdesc{Operator for accessing or assigning a \gretlcmd{bundle}
-	element stored under a given \texttt{key}.}
+\estdesc{Operator for accessing, assigning, or deleting a
+	\gretlcmd{bundle} element stored under a given \texttt{key}.}
 \begin{lstlisting}[style=pythonstylefoot]
 gretl._gretl.Bundle[key] -> object
 gretl._gretl.Bundle[key] = object
+del gretl._gretl.Bundle[key]
 \end{lstlisting}
-\generaldesc{This operator retrieves or inserts (updates) the
-	\pythcode{object} associated with \texttt{key} in
-	\pythcode{gretl.\_gretl.Bundle}.
+\generaldesc{This operator retrieves, inserts (updates)
+	or deletes the \pythcode{object} associated with
+	\texttt{key} in \pythcode{gretl.\_gretl.Bundle}.
 	The \pythcode{object} may be one of the following types:
 	\pythcode{bool}, \pythcode{int}, \pythcode{float},
 	\pythcode{str}, \pythcode{numpy.ndarray},
@@ -42,9 +43,16 @@ gretl._gretl.Bundle[key] = object
 The \classpybundle class provides the following public methods:
 
 \gretlfpycmd{keys()}
-\estdesc{Gets all \gretlcmd{bundle} keys.}
+\estdesc{Returns all keys stored in the \gretlcmd{bundle}.}
 \begin{lstlisting}[style=pythonstylefoot]
 .keys() -> list
+\end{lstlisting}
+
+\gretlfpycmd{pop()}
+\estdesc{Deletes and returns the data item stored under \textit{key},
+	if such an item is present.}
+\begin{lstlisting}[style=pythonstylefoot]
+.pop(key: str) -> object
 \end{lstlisting}
 
 \gretlfpycmd{print()}\label{met:gretlbundle::print}

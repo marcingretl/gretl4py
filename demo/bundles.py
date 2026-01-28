@@ -1,29 +1,33 @@
 import gretl
-import numpy
+import numpy as np
 
-a = gretl.Bundle()
-b = gretl.Bundle()
-print(a)
-print(b)
+def run_example():
+  # define empty bundle (call class constructor)
+  a = gretl.Bundle()
+  b = gretl.Bundle()
+  print(a)            # flat print
+  b.print()           # equivalent to print(b)
 
-a['hhh'] = 464645
-a['ddd'] = "fhfg"
-a['xxx'] = "xxx"
-print(a)
-a.print()
+  # add items to bundle
+  b['xxx'] = "example string"
+  l = [[1.5, 4.78], [5, -0.6]]
+  b['mat'] = np.asarray(l)      # assign an array-like object; can be a list, tuple, or numpy array
+  a['hhh'] = 464645
+  a['ddd'] = "fhfg"
+  a['inner_bundle'] = b
+  print(b)
+  a.print(tree=True)            # expanded tree view
 
-# delete element
-a.delete_element('xxx')
-a.print()
+  # delete element
+  el = b.pop('xxx')               # pop returns removed value
+  print(f"Pop-ed element: {el}")
+  del a['ddd']                    # delete via __delitem__
+  print(b)
+  a.print(tree=True)
 
-l = [[1.5, 4.78], [5, -0.6]]
-b['mat'] = numpy.asarray(l)
-print(b)
-b.print()
+  # export to dict
+  d = a.to_dict()
+  print("Exported dict:", d)
 
-a['b'] = b
-a.print(True) # tree
-
-d = a.to_dict()
-print(d)
-
+if __name__ == "__main__":
+    run_example()
