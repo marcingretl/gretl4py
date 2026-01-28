@@ -9,6 +9,9 @@ version 0.41:
     - new free functions: corr(), cov(), pkg()
     - new GretlPackage methods: ::get_functions(), and ::get_help()
     - GretlBundle::pop() method + enhanced '[]' operator
+    - GretlBundle: new constructor for on-the-fly bundle definition (like gretl's "_()"')
+    - fix bug with exporting nested bundles to dict
+    - get_data(): add 'quiet' option
     - massive doc updates
 
 version 0.4:

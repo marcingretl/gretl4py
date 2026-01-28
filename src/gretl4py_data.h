@@ -197,6 +197,7 @@ public:
     GretlBundle (MODEL *model, DATASET *dset);      // we produce bundle from MODEL
     GretlBundle (GRETL_VAR *model, DATASET *dset);  // we produce bundle from VAR/VECM
     GretlBundle (equation_system *model);           // we produce bundle from SYSTEM
+    GretlBundle (const py::kwargs &kwargs);         // for on-the-fly initialization
     ~GretlBundle (void);
 
     int get_err (void) const;

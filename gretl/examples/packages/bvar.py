@@ -23,10 +23,8 @@ def run_example():
   gretl.BVAR_alpha_prior(mod=model, prior_type='Minn', prior_opt=OPT)
   
   # Step 3 - posterior simulation
-  del OPT['p_mean']
-  OPT['iter'] = 10000
   gretl.set('seed', 1234)
-  res = gretl.BVAR_posterior(mod=model, wat='all', opt=OPT)
+  res = gretl.BVAR_posterior(mod=model, wat='all', opt=gretl.Bundle(iter=10000))
   res.print(tree=True)
 
 if __name__ == "__main__":

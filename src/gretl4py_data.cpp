@@ -121,17 +121,22 @@ GretlDataset::GretlDataset (const std::string &fname,
     // load gretl data from file
     //
     std::string full_path = "";
+    bool quiet = false;
 
     // we look for 'frompkg' option
     if (py::len(kwargs) > 0) {
         for (const auto &[key, val] : kwargs) {
             auto key_str = key.cast<std::string>();
 
-            if (key_str == "frompkg" && is_pystr(val)) {
-                auto val_str = val.cast<std::string>();
+            if (key_str == "frompkg") {
+                if (!is_pystr(val)) throw std::invalid_argument("'frompkg' value must be a string");
 
-                auto pkg = GretlPackage::load_package(val_str);
+                auto pkg = GretlPackage::load_package(val.cast<std::string>());
+
                 full_path = pkg->get_examples_path(fname);
+            } else if (key_str == "quiet") {
+                if (!is_pybool(val)) throw std::invalid_argument("'quiet' value must be a boolean");
+                if (val.cast<bool>()) quiet = true;
             } else {
                 throw std::invalid_argument("unsupported option: '" + key_str + "'");
             }
@@ -144,7 +149,7 @@ GretlDataset::GretlDataset (const std::string &fname,
     // we try to read the file
     err_ = gretl_get_data(full_path.empty() ? fname.c_str() : full_path.c_str(),
                           dset, OPT_NONE, GP_.prn_ptr());
-    GP_.print();
+    if (!quiet || err_) GP_.print();
     if (err_) {
         destroy_dataset(dset);
         handle_gretl_error(err_, full_path.empty() ? fname : full_path);
@@ -1562,6 +1567,35 @@ GretlBundle::GretlBundle (gretl_bundle *src) : free_b_(false)
     //
     b_ = gretl_bundle_copy(src, &err_);
     if (err_) handle_gretl_error(err_);
+}
+
+GretlBundle::GretlBundle (const py::kwargs &kwargs) : b_(gretl_bundle_new())
+{
+    //
+    // this is for mimics libgretl's _() bundle initializer
+    //
+    if (!b_) handle_gretl_error(E_ALLOC);
+
+    // we iterate over kwargs
+    for (const auto &[key, val] : kwargs) {
+        auto key_str = key.cast<std::string>();
+
+        if (is_pybool(val)) {
+            set_element<bool>(key_str, val.cast<bool>());
+        } else if (is_pyint(val)) {
+            set_element<int>(key_str, val.cast<int>());
+        } else if (is_pyfloat(val)) {
+            set_element<double>(key_str, val.cast<double>());
+        } else if (is_pystr(val)) {
+            set_element<std::string>(key_str, val.cast<std::string>());
+        } else if (is_pynumarray(val)) {
+            set_element<py::array>(key_str, val.cast<py::array>());
+        } else if (py::isinstance<GretlBundle>(val)) {
+            set_element<GretlBundlePtr>(key_str, val.cast<GretlBundlePtr>());
+        } else {
+            throw std::invalid_argument("'" + key_str + "': unsupported type");
+        }
+    }
 }
 
 GretlBundle::~GretlBundle (void)

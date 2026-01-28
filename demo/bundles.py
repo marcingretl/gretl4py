@@ -2,14 +2,13 @@ import gretl
 import numpy as np
 
 def run_example():
-  # define empty bundle (call class constructor)
+  # define  bundle (call class constructor)
   a = gretl.Bundle()
-  b = gretl.Bundle()
+  b = gretl.Bundle(xxx="example string")
   print(a)            # flat print
   b.print()           # equivalent to print(b)
 
   # add items to bundle
-  b['xxx'] = "example string"
   l = [[1.5, 4.78], [5, -0.6]]
   b['mat'] = np.asarray(l)      # assign an array-like object; can be a list, tuple, or numpy array
   a['hhh'] = 464645
