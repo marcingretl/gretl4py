@@ -918,13 +918,13 @@ void handle_gretl_error (int err, const std::string &ext_msg)
     //
     const std::unordered_set<GretlError> ArgErr{ E_ARGS, E_INVARG, E_UNKVAR, E_TOOFEW };
 
-    gretl_error_clear();
+    //gretl_error_clear();
 
     const char *msg = errmsg_get_with_default(err);
     if (!msg) msg = "unknown error";
 
     if (err == E_FOPEN) {
-        throw file_not_found(ext_msg);
+        throw file_not_found(std::string(msg) + ": " + ext_msg);
     } else if (ArgErr.count(static_cast<GretlError>(err))) {
         throw std::invalid_argument(msg);
     } else {
