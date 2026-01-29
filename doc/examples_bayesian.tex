@@ -1,0 +1,140 @@
+\section{Bayesian Econometrics}
+This section provides an overview of Bayesian
+econometric methods available in \gretl and,
+consequently, in \gretlpy. Note that all methods
+outlined below are implemented as \gretl packages;
+that is, they are not part of the core \lgretl library.
+
+
+\subsection{Single Equation Models}
+The \textbf{BayTool} package \cite[see][]{BayTool_CS}
+for \gretl provides a collection of functions for Bayesian
+estimation of single-equation models. The available
+specifications range from traditional settings, such
+as the linear model, to more advanced alternatives,
+including the Bayesian LASSO and latent variable models.
+Posterior distributions are obtained either analytically,
+when closed-form solutions are available, or via Markov
+chain Monte Carlo methods. In the latter case, diagnostic
+tools for assessing simulation performance are also provided.
+Below we present an example for the linear model; for more
+advanced applications, the reader is referred to the package
+documentation and \texttt{`packages/baytool.py'} script.
+\begin{lstlisting}[style=pythonstylefoot]
+import gretl
+import numpy as np
+
+gretl.set('verbose', 'off')
+
+try:
+  bt = gretl.include('BayTool')
+except FileNotFoundError:
+  gretl.pkg('install', 'BayTool')
+  bt = gretl.include('BayTool')
+bt.show_functions()
+
+gretl.set('seed', 1234567)
+
+# Koop's textbook ("Bayesian Econemtrics") example on house prices
+
+d = gretl.get_data('AnglinGencay.gdt', frompkg='BayTool', quiet=True)
+y = 'price'     # dep. variable
+d.new_list(name='X', value='const lot_size n_bedroom n_bathroom n_storeys') # covariates
+
+prior = gretl.Bundle()  # prior set-up
+prior['type'] = 'indep' # independent Normal - IG
+prior['beta_mean'] = np.array([0, 10, 5000, 10000, 10000])
+prior['beta_vcv'] = np.diag([10000**2, 25, 2500**2, 5000**2, 5000**2])
+prior['precision_mean'] = 4e-08
+prior['precision_df'] = 5
+
+opt = gretl.Bundle() # options
+opt['forecast'] = np.array([1, 5000, 2, 2, 1]) # matrix of regressors for prediction
+gretl.set('stopwatch')
+out = gretl.BT_lm(y=y, X='X', prior=prior, opt=opt)
+print(f"Elapsed time in sec:: {gretl.get_accessor('$stopwatch'):.2f} sec.")
+\end{lstlisting}\index{BT\_lm}
+
+
+\subsection{Bayesian Model Averaging}\label{sec.bma}
+Bayesian Model Averaging (BMA) is a sophisticated
+model-building strategy that takes into account model
+uncertainty when drawing conclusions about estimated parameters.
+It is an efficient tool for discovering the most probable
+models and obtaining estimates of their posterior
+characteristics. In \gretl, there is a \textbf{BMA} package
+\cite[see][]{BlazejowskiKwiatkowski_BMA_JSS}
+which implements this procedure in an extremely numerically
+efficient manner. Below is a snippet for replicating
+a famous GDP growth factors modeling
+\cite[see][for details]{FernandezLeySteel2001_JoE,
+	FernandezLeySteel2001_JoAE,Steel2020}.
+Note that the whole procedure takes $\approx 25$ seconds
+on machine powered by AMD Ryzen AI Pro 9 HX with 32~GB~RAM
+(Debian GNU/Linux testing/unstable). For more
+advanced applications, the reader is referred to the package
+documentation and \texttt{`packages/bma.py'} script.
+\begin{lstlisting}[style=pythonstylefoot]
+import gretl
+
+try:
+  gretl.include('BMA')
+except FileNotFoundError:
+  gretl.pkg('install', 'BMA')
+  gretl.include('BMA')
+
+d = gretl.get_data('FLS_41t72', frompkg='BMA')
+d.new_list(name='Factors', value='2..42')
+
+OPTS = gretl.Bundle()
+OPTS['Nrep'] = 3000000
+OPTS['burn'] = 33
+OPTS['Nrank'] = 20
+OPTS['do_joint'] = 'myq'
+
+gretl.set('seed', 1000000)
+gretl.set('stopwatch')
+RES = gretl.BMA(Y='GDP_growth', X_list='Factors', Options=OPTS)
+print(f"Total execution time: {gretl.get_accessor('$stopwatch'):.2f} sec.")
+\end{lstlisting}\index{bma()}
+
+
+\subsection{Bayesian Vector Autoregression}\label{sec.bvar}
+Bayesian Vector Autoregression (BVAR) has become a standard
+paradigm in modern macroeconometric modeling. The \gretl package
+\textbf{BVAR} provides a comprehensive set of tools for
+conducting Bayesian VAR analyses. Below we present a sample
+script taken from the \textbf{BVAR} package \cite[see][]{BVAR_in_gretl_CS};
+for more advanced and detailed examples, the reader is
+referred to the package documentation and \texttt{`packages/bvar.py'} script.
+\begin{lstlisting}[style=pythonstylefoot]
+import gretl
+
+gretl.set('verbose', 'off')
+
+try:
+  bv = gretl.include('BVAR')
+except FileNotFoundError:
+  gretl.pkg('install', 'BVAR')
+  bv = gretl.include('BVAR')
+bv.show_functions()
+
+d = gretl.get_data('koopkoro.gdt', frompkg='BVAR')
+d.new_list(name='dep', value='1 2 3')
+
+# Step 1 - BVAR_setup
+model = gretl.BVAR_setup(y='dep', lag=4, type='conj')
+
+# Step 2 - prior customization
+OPT = gretl.Bundle()
+OPT['p_mean'] = 0
+gretl.BVAR_sigma_prior(mod=model, prior_type='AR')
+gretl.BVAR_alpha_prior(mod=model, prior_type='Minn', prior_opt=OPT)
+
+# Step 3 - posterior simulation
+OPT = gretl.Bundle()
+OPT['iter'] = 10000
+gretl.set('seed', 1234)
+res = gretl.BVAR_posterior(mod=model, wat='all', opt=OPT)
+res.print(tree=True)
+\end{lstlisting}\index{BVAR\_posterior()}
