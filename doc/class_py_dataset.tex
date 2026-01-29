@@ -15,7 +15,7 @@ The \classpydataset class provides the following operators:
 gretl._gretl.Dataset[rule: slice | list | str] -> gretl._gretl.Dataset
 \end{lstlisting}
 \where{\pythcodef{rule} is either a sample range, a list of variables,
-	or a logical expression that can be applied to the dataset.}\\\\
+	or a logical expression that can be applied to the dataset.}\\
 \generaldesc{Using this operator, a dataset may be sub-sampled along one
 	or both dimensions, that is, observations and/or variables. It is
 	important to remember that slicing always returns a copy of the
@@ -96,10 +96,12 @@ The \classpydataset provides the following public attributes:
 \end{generaldescenv}
 
 \gretlfpycmd{source}
-\estdesc{Prints the source of given dataset.}
+\estdesc{Prints the source of the given dataset.}
 \begin{lstlisting}[style=pythonstylefoot]
 .source -> str
 \end{lstlisting}
+\generaldesc{If the dataset was loaded from a file,
+	the full path to that file is displayed here.}
 
 
 \subsubsection{\classpydatasetb methods}
@@ -484,11 +486,10 @@ Examples:\newline
 	defined as in \ref{func:gretl.pdf}.}
 
 \gretlfpycmd{print()}\label{met:gretldataset::print}
-\estdesc{XXX}
+\estdesc{\tbw}
 \begin{lstlisting}[style=pythonstyle]
 .print([OPTS])
 \end{lstlisting}
-\generaldesc{XXX}
 
 \gretlfpycmd{pvalue()}\label{met:gretldataset::pvalue}
 \estdesc{\textit{P}-value calculator for given \gretlcmd{series}.}

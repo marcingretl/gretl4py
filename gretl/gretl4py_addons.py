@@ -24,7 +24,11 @@ import subprocess
 import csv
 import numpy
 import inspect
+import importlib
+from types import ModuleType
+from typing import Optional
 import gretl
+import gretl.examples
 
 def _correctvarnames (names):
     """replace const with const_"""
@@ -64,6 +68,36 @@ def _pd_to_pandas_str_format (pd):
         res = "D"
 
     return res
+
+def _import_example_module(name: str) -> Optional[ModuleType]:
+    """
+    Dynamically imports a gretl example module by short name.
+
+    Searches only plausible paths based on the gretl.examples
+    directory structure:
+      - gretl.examples.estimators.<name>
+      - gretl.examples.packages.<name>
+      - gretl.examples.<name> (top-level examples)
+
+    Parameters:
+        name (str): short module name, e.g., "arr"
+
+    Returns:
+        module object if found, None if not found
+    """
+    plausible_paths = [
+        f"gretl.examples.estimators.{name}",
+        f"gretl.examples.packages.{name}",
+        f"gretl.examples.{name}",  # fallback top-level
+    ]
+
+    for path in plausible_paths:
+        try:
+            return importlib.import_module(path)
+        except (ModuleNotFoundError, ImportError):
+            continue
+
+    return None
 
 def df2dict (dframe, pd=1, with_obs=False):
     '''turns a Pandas DataFrame into a dictionary gretl understands'''
@@ -166,23 +200,28 @@ def fc_print (fc):
     print(tabulate(fc['stats'], headers=[], showindex=fc['stats_labels'], tablefmt="plain"))
     print("")
 
-def print_module_source (mod):
+def print_module_source (module: str):
     """
     Prints the full source code of the given imported module.
 
     Parameters:
         mod: imported module (not a string)
     """
-    try:
-        source_file = inspect.getsourcefile(mod)
-        if source_file is None:
-            print("Source file not found for the module.")
-            return
-        with open(source_file, "r") as f:
-            code = f.read()
-        print(code)
-    except Exception as e:
-        print(f"Error while trying to read source: {e}")
+
+    # we try to load 'mod'
+    mod = _import_example_module(module)
+    if mod is None:
+        raise ModuleNotFoundError(f"gretl example module '{module}' not found in any plausible path")
+
+    print(f"Successfully imported:\n{mod}\n")
+    source_file = inspect.getsourcefile(mod)
+
+    if source_file is None:
+        print("Source file not found for the module.")
+        return
+    with open(source_file, "r") as f:
+        code = f.read()
+    print(code)
 
 def modeltab (models, output="print", tablefmt="github", stars=True, coeff_fmt=".3f", stderr_fmt=".4f"):
     """

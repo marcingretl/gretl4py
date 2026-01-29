@@ -62,7 +62,8 @@ model-building strategy that accounts for model
 uncertainty when drawing conclusions about estimated parameters.
 It is an effective tool for identifying the most probable
 models and obtaining estimates of their posterior
-characteristics. In \gretl, several packages
+characteristics. For more information, please refer to
+\cite{Steel2020}. In \gretl, several packages
 support this type of analysis (in historical order):
 \begin{description}
 	\item[\textbf{BMA}] The package by \cite{BMA_JSS}
@@ -84,7 +85,7 @@ Below are snippets for all three packages mentioned above.
 \paragraph{BMA}
 This snippet replicates a well-known GDP growth factors modeling
 study \cite[see][for details]{FernandezLeySteel2001_JoAE,
-	FernandezLeySteel2001_JoE,Steel2020}.
+	FernandezLeySteel2001_JoE}.
 Note that the whole procedure takes approximately 25 seconds
 on machine powered by AMD Ryzen AI Pro 9 HX with 32~GB~RAM
 (Debian GNU/Linux testing/unstable). For more advanced
@@ -214,9 +215,7 @@ gretl.BVAR_sigma_prior(mod=model, prior_type='AR')
 gretl.BVAR_alpha_prior(mod=model, prior_type='Minn', prior_opt=OPT)
 
 # Step 3 - posterior simulation
-OPT = gretl.Bundle()
-OPT['iter'] = 10000
 gretl.set('seed', 1234)
-res = gretl.BVAR_posterior(mod=model, wat='all', opt=OPT)
+res = gretl.BVAR_posterior(mod=model, wat='all', opt=gretl.Bundle(iter=10000))
 res.print(tree=True)
 \end{lstlisting}\index{BVAR\_posterior()}

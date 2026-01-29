@@ -197,11 +197,10 @@ gretl.df2dict(dframe: pandas.core.frame.DataFrame[, pd: int, with_obs: bool = Fa
 \end{itemize}}
 
 \gretlfpycmd{fc\_print()}
-\estdesc{XXX}
+\estdesc{\tbw}
 \begin{lstlisting}[style=pythonstylefoot]
 gretl.fc_print(fc: dict)
 \end{lstlisting}
-\generaldesc{XXX}
 
 \gretlfpycmd{genr()}
 \estdesc{NOTE: for comprehensive and updated info on this
@@ -420,8 +419,7 @@ Examples:\newline
 \pythcodef{.print('y x', byobs=True)}\\
 \pythcodef{.print('my\_matrix')}\\
 \pythcodef{.print('my\_array', range='3:6')}\\
-\pythcodef{.print('hflist', midas=True)}
-
+\pythcodef{.print('hflist', midas=True)}\\
 \generaldesc{In the first variant shown above (also see the
 	first example), \textit{varlist} should be a list of series
 	(either a named list or a list specified via the names
@@ -464,12 +462,14 @@ refer to \ref{func:gretl.cdf}. Note that \pythcode{gretl.pvalue()}
 works by default only with the default dataset. To obtain \textit{P}-values
 for variables from different datasets, please refer to \ref{met:gretldataset::pvalue}.
 
-\gretlfpycmd{print\_module\_source()}
-\estdesc{XXX}
+\gretlfpycmd{print\_module\_source()}\label{func:print_module_source}
+\estdesc{Prints the contents of a specified module.}
 \begin{lstlisting}[style=pythonstylefoot]
-gretl.print_module_source(object)
+gretl.print_module_source(module: str)
 \end{lstlisting}
-\generaldesc{}
+\generaldesc{This function is primarily used to display
+	the contents of scripts located in the \texttt{gretl/examples}
+	directory. An example is shown in Section~\ref{sec:usage_of_the_package}.}
 
 \gretlfpycmd{series2dict()}
 \begin{lstlisting}[style=pythonstylefoot]

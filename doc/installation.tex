@@ -59,15 +59,31 @@ components are installed:
 		\texttt{clang++}, and \texttt{icpx} have been tested).
 \end{enumerate}
 
-Next, copy (or at least link to) all required plugins from the \gretl
-installation directory (default location: \texttt{/usr/local/lib/gretl-gtk3/})
-to \texttt{gretl/lib}.
+By design, to simplify the setup process, some \lgretl-related
+libraries (e.g., plugins) must be placed in a specific directory:
+\texttt{gretl/lib} (assuming you are in the root directory of the
+\gretlpy source tree).
 
-Finally, to compile and install the module, run \texttt{meson setup builddir}
-followed by \texttt{ninja -C builddir install} in the \gretlpy root directory.
-This will generate the file \texttt{\_gretl.cpython-3xx-x86\_64-linux-gnu.so}
-in the \texttt{builddir} directory, where \texttt{3.xx} refers to the version
-of \python being used.
+Therefore, before compiling a module, ensure that the required
+libraries are present in \texttt{gretl/lib}:
+\begin{itemize}
+	\item For Windows: all DLLs (libgretl, plugins, and their dependencies).
+	\item For Linux/macOS: plugins only.
+\end{itemize}
 
-To verify the installation, run \texttt{python3 -c "import gretl; gretl.about(True)"};
+In the case of Linux or macOS, it is sufficient to create
+symbolic links to these files, like this:
+\texttt{cd gretl/lib \&\& ln -s /path/to/plugins/*.so},
+where ``\texttt{/path/to/plugins}'' must be replaced by
+the correct path on your system.
+
+Finally, to compile and install the module, run
+\texttt{meson setup builddir} followed by \texttt{ninja -C builddir install}
+in the \gretlpy root directory. This will generate
+the file \texttt{\_gretl.cpython-3xx-x86\_64-linux-gnu.so}
+in the \texttt{builddir} directory, where \texttt{3.xx}
+refers to the version of \python being used.
+
+To verify the installation, run
+\texttt{python3 -c "import gretl; gretl.about(True)"};
 this should produce output similar to Figure~\ref{fig:mswindows_about}.

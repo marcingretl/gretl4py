@@ -1,4 +1,4 @@
-\documentclass[a4paper,final]{gretl4pydoc}
+\documentclass[a4paper,draft]{gretl4pydoc}
 \usepackage[colorinlistoftodos,prependcaption,textsize=tiny,textwidth=2.8cm]{todonotes}
 
 \makeindex
@@ -14,6 +14,7 @@
 \CatchFileDef{\gretlpyversion}{../version.cfg}{}
 
 \newcommand{\error}[1]{\textcolor{red}{\textbf{#1}}\xspace}
+\newcommand{\tbw}{\error{to be written\ldots}}
 \newcommand{\hitem}{\item[] \hspace{-5mm}}
 
 % lstlistings
@@ -109,14 +110,15 @@
 	\end{minipage}%
 }
 
-%fonts
+% fonts definitions
 \newcommand{\bftt}[1]{{\fontfamily{lmtt}\selectfont\textbf{#1}}}
-
-
 
 \makeatletter
 \@mparswitchfalse%
 \hypersetup{pdfauthor={Marcin Błażejowski}}%
+\renewcommand*\l@figure{\@dottedtocline{1}{1.5em}{3em}}%
+\makeatother
+
 \makeatother
 
 \begin{document}
@@ -162,17 +164,6 @@ his contribution to the first version of the \gretlpy package.
 \end{titlepage}
 %	\listoftodos
 	\tableofcontents
-
-	\section*{Warning}
-	\begin{quote}
-		This documentation is continuously updated but does
-		not yet cover all \gretlpy~\gretlpyversion features.
-	\end{quote}
-
-	\section*{To do}
-	\begin{quote}
-		\input{../todo.txt}
-	\end{quote}
 
 	\input{introduction}
 	\input{installation}
