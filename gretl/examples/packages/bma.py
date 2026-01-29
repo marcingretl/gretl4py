@@ -23,7 +23,7 @@ def run_example():
   # run BMA
   gretl.set('seed', 1000000)
   gretl.set('stopwatch')
-  RES = gretl.BMA(Y='GDP_growth', X_list='Factors', Options=OPTS)
+  res = gretl.BMA(Y='GDP_growth', X_list='Factors', Options=OPTS)
   print(f"Total execution time: {gretl.get_accessor('$stopwatch'):.2f} sec.")
 
 if __name__ == "__main__":

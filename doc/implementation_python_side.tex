@@ -311,6 +311,7 @@ refer to \ref{met:gretldataset::invcdf}.
 gretl.modeltab(models: list[, output: str="print", tablefmt: str="github", stars: bool=True, coeff_fmt: str=".3f", stderr_fmt: str=".4f"])
 \end{lstlisting}
 \begin{footnotesize}
+\mapto[clean]{modeltab show}
 \where{options are:}
 \begin{itemize}
 	\item[] \textit{models}: list of GretlModel objects,
@@ -321,6 +322,9 @@ gretl.modeltab(models: list[, output: str="print", tablefmt: str="github", stars
 	\item[] \textit{coeff\_fmt}: format string for coefficients,
 	\item[] \textit{stderr\_fmt}: rormat string for standard errors.
 \end{itemize}\end{footnotesize}
+\generaldesc{Note that this function only mimics \gretl's
+	\gretlcmd{modeltab} command, i.e. it is not an interface
+	to the underlying \lgretl function.}
 
 \gretlfpycmd{nparray2dict()}
 \begin{lstlisting}[style=pythonstylefoot]

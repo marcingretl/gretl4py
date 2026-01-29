@@ -58,21 +58,37 @@ print(f"Elapsed time in sec:: {gretl.get_accessor('$stopwatch'):.2f} sec.")
 
 \subsection{Bayesian Model Averaging}\label{sec.bma}
 Bayesian Model Averaging (BMA) is a sophisticated
-model-building strategy that takes into account model
+model-building strategy that accounts for model
 uncertainty when drawing conclusions about estimated parameters.
-It is an efficient tool for discovering the most probable
+It is an effective tool for identifying the most probable
 models and obtaining estimates of their posterior
-characteristics. In \gretl, there is a \textbf{BMA} package
-\cite[see][]{BlazejowskiKwiatkowski_BMA_JSS}
-which implements this procedure in an extremely numerically
-efficient manner. Below is a snippet for replicating
-a famous GDP growth factors modeling
-\cite[see][for details]{FernandezLeySteel2001_JoE,
-	FernandezLeySteel2001_JoAE,Steel2020}.
-Note that the whole procedure takes $\approx 25$ seconds
+characteristics. In \gretl, several packages
+support this type of analysis (in historical order):
+\begin{description}
+	\item[\textbf{BMA}] The package by \cite{BMA_JSS}
+		implements the BMA procedure for linear models
+		in an extremely numerically efficient manner.
+	\item[\textbf{ParMA}] The package by \cite{ParMA_JSS}
+		implements BMA for generalized linear models,
+		parallelized via Message Passing Interface (MPI).
+	\item[\textbf{BACE}] The package by \cite{BACE_JSS}
+		implements Bayesian Averaging of Classical Estimates
+		(BACE) for a wide class of single-equation models%
+		\footnote{These are: logit and probit models, ordered
+			logit and probit models, multinomial logistic
+			regression, Poisson regression, the Tobit model,
+			interval regression, and linear regression.}.
+\end{description}
+Below are snippets for all three packages mentioned above.
+
+\paragraph{BMA}
+This snippet replicates a well-known GDP growth factors modeling
+study \cite[see][for details]{FernandezLeySteel2001_JoAE,
+	FernandezLeySteel2001_JoE,Steel2020}.
+Note that the whole procedure takes approximately 25 seconds
 on machine powered by AMD Ryzen AI Pro 9 HX with 32~GB~RAM
-(Debian GNU/Linux testing/unstable). For more
-advanced applications, the reader is referred to the package
+(Debian GNU/Linux testing/unstable). For more advanced
+applications, the reader is referred to the package
 documentation and \texttt{`packages/bma.py'} script.
 \begin{lstlisting}[style=pythonstylefoot]
 import gretl
@@ -96,17 +112,83 @@ gretl.set('seed', 1000000)
 gretl.set('stopwatch')
 RES = gretl.BMA(Y='GDP_growth', X_list='Factors', Options=OPTS)
 print(f"Total execution time: {gretl.get_accessor('$stopwatch'):.2f} sec.")
-\end{lstlisting}\index{bma()}
+\end{lstlisting}\index{BMA()}
+
+\paragraph{ParMA} The sample script contains a binary
+model example of married women's labor participation.
+The dataset comes from \cite{mroz87}. We set up a probit
+model using as covariates the woman's socioeconomic
+characteristics (\textit{WA, WE, AX, MTR}), her husband's
+(\textit{HA, HE, HW}), as well as some household indicators
+(\textit{KL6, CIT}) and county-level unemployment (\textit{UN}).
+For more advanced applications, the reader is referred
+to the package documentation. Note that the entire procedure
+takes approximately 10 seconds on a machine powered by an AMD Ryzen
+AI Pro 9 HX with 32~GB RAM (Debian GNU/Linux testing/unstable).
+This is because, at present, \gretlpy does not
+utilize \textbf{ParMA}'s capability for parallelization
+via MPI.
+\begin{lstlisting}[style=pythonstylefoot]
+import gretl
+
+gretl.set('verbose', 'off')
+
+try:
+  bv = gretl.include('ParMA')
+except FileNotFoundError:
+  gretl.pkg('install', 'ParMA')
+  bv = gretl.include('ParMA')
+bv.show_functions()
+
+d = gretl.get_data('mroz87.gdt', quiet=True)
+d.new_list(name='X', value='KL6 WA WE HA HE HW MTR UN CIT AX')
+
+modeltype = "probit"
+n_iter = 32 * 1024    # drawings after burn-in
+burn_in = 2048        # burn-in
+
+gretl.set('stopwatch')
+b = gretl.bma_glm(y='LFP', X='X', glm_type=modeltype, ndraw=n_iter, burn=burn_in, parms=gretl.Bundle(seed=1234567))
+print(f"Total execution time: {gretl.get_accessor('$stopwatch'):.2f} sec.")
+\end{lstlisting}\index{bma\_glm()}
+
+\paragraph{BACE} The sample script contains a ordered
+probit model example applied to the so-called \textit{NELS}
+dataset used in \cite{HillGriffithsLim_principles_2017},
+which concerns a longitudinal study on eight-grade students
+in USA\footnote{This dataset is available at
+	\url{http://www.principlesofeconometrics.com/poe5/poe5data.html}.
+	It is also available for \gretl, thanks to the work of Lee Adkins:
+	\url{http://www.learneconometrics.com/gretl/index.html}.}.
+\begin{lstlisting}[style=pythonstylefoot]
+import gretl
+
+try:
+  bc = gretl.include('BACE')
+except FileNotFoundError:
+  gretl.pkg('install', 'BACE')
+  bc = gretl.include('BACE')
+bc.show_functions()
+
+d = gretl.get_data('nels.gdt', frompkg='BACE', quiet=True)
+d.new_list(name='X', value='2..14')
+d.new_list(name='dep', value='psechoice')
+
+gretl.set('seed', 1000000)
+gretl.set('stopwatch')
+res = gretl.BACE(Y='dep', X_list='X', Options=gretl.Bundle(model_type="probit"))
+print(f"Total execution time: {gretl.get_accessor('$stopwatch'):.2f} sec.")
+\end{lstlisting}\index{BACE()}
 
 
 \subsection{Bayesian Vector Autoregression}\label{sec.bvar}
 Bayesian Vector Autoregression (BVAR) has become a standard
-paradigm in modern macroeconometric modeling. The \gretl package
-\textbf{BVAR} provides a comprehensive set of tools for
-conducting Bayesian VAR analyses. Below we present a sample
-script taken from the \textbf{BVAR} package \cite[see][]{BVAR_in_gretl_CS};
-for more advanced and detailed examples, the reader is
-referred to the package documentation and \texttt{`packages/bvar.py'} script.
+paradigm in modern macroeconometric modeling. The \gretl
+\textbf{BVAR} package \cite[see][]{BVAR_in_gretl_CS}
+provides a comprehensive set of tools for conducting Bayesian
+VAR analyses. Below is a sample script for the package; for
+more advanced and detailed examples, the reader is referred
+to the package documentation and the \texttt{packages/bvar.py} script.
 \begin{lstlisting}[style=pythonstylefoot]
 import gretl
 
