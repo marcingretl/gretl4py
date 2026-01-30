@@ -27,20 +27,6 @@ namespace py = pybind11;
 //////////////////////////////////////////////////
 // macros
 //////////////////////////////////////////////////
-#define is_pybool(o) (py::isinstance<py::bool_>(o))
-#define is_pyint(o) (py::isinstance<py::int_>(o))
-#define is_pyfloat(o) (py::isinstance<py::float_>(o))
-#define is_pystr(o) (py::isinstance<py::str>(o))
-#define is_pydict(o) (py::isinstance<py::dict>(o))
-#define is_pytuple(o) (py::isinstance<py::tuple>(o))
-#define is_pylist(o) (py::isinstance<py::list>(o))
-#define is_pynumarray(o) (py::isinstance<py::array>(o))
-#define is_pynumarrayd(o) (py::isinstance<py::array_t<double>>(o))
-#define is_pynumeric(o) (is_pyint(o) || is_pyfloat(o))
-#define is_pysequence(o) (py::isinstance<py::sequence>(o))
-#define is_pyGretlBundle(o) (py::isinstance<GretlBundle>(o))
-#define is_NumPyArrayFC(m) ((m.flags() & py::detail::npy_api::constants::NPY_ARRAY_F_CONTIGUOUS_))
-
 #define SET_OPT(opt, flag) opt = static_cast<gretlopt>((opt) | (flag))
 
 //////////////////////////////////////////////////
@@ -55,6 +41,28 @@ struct file_not_found : std::exception {
     explicit file_not_found (const std::string &f) : msg(f) {}
     const char *what() const noexcept override { return msg.c_str(); }
 };
+
+//////////////////////////////////////////////////
+// inline functions
+//////////////////////////////////////////////////
+// Python type checks
+inline bool is_pybool (const py::handle &o)    { return py::isinstance<py::bool_>(o); }
+inline bool is_pyint (const py::handle &o)     { return py::isinstance<py::int_>(o); }
+inline bool is_pyfloat (const py::handle &o)   { return py::isinstance<py::float_>(o); }
+inline bool is_pystr (const py::handle &o)     { return py::isinstance<py::str>(o); }
+inline bool is_pydict (const py::handle &o)    { return py::isinstance<py::dict>(o); }
+inline bool is_pytuple (const py::handle &o)   { return py::isinstance<py::tuple>(o); }
+inline bool is_pylist (const py::handle &o)    { return py::isinstance<py::list>(o); }
+inline bool is_pynumarray (const py::handle &o){ return py::isinstance<py::array>(o); }
+inline bool is_pynumarrayd (const py::handle &o){ return py::isinstance<py::array_t<double>>(o); }
+inline bool is_pynumeric (const py::handle &o) { return is_pyint(o) || is_pyfloat(o); }
+inline bool is_pysequence (const py::handle &o) { return py::isinstance<py::sequence>(o); }
+inline bool is_pyGretlBundle (const py::handle &o) {
+    return py::hasattr(o, "_is_gretl_bundle");
+}
+inline bool is_numpy_array_fc (const py::array &m) {
+    return (m.flags() & py::detail::npy_api::constants::NPY_ARRAY_F_CONTIGUOUS_) != 0;
+}
 
 //////////////////////////////////////////////////
 // functions

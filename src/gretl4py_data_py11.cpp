@@ -326,7 +326,6 @@ void init_gretl4py_bundle_py11(py::module_ &m)
     .def("pop", &GretlBundle::pop, py::arg("key").none(false))
     .def("keys", &GretlBundle::keys)
     .def("print", &GretlBundle::print<void>, py::arg("tree").none(true) = false)
-    .def("to_dict", &GretlBundle::to_dict);
+    .def("to_dict", &GretlBundle::to_dict)
+    .attr("_is_gretl_bundle") = true;       // mainly for is_pyGretlBundle()
 }
-
-/*.def("get_ptr", &GretlPackage::get_ptr, py::return_value_policy::reference)*/
