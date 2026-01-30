@@ -1,0 +1,35 @@
+\section{Nontrivial econometric analysis}
+\subsection{Structural VARs}
+In \gretl, the \textbf{SVAR} package by \cite{JackSven_SVAR_wp}
+provides a collection of functions for estimating Structural
+Vector Autoregressions (SVARs). Below we present an example
+script taken from this package.
+\begin{lstlisting}[style=pythonstylefoot]
+import gretl
+
+gretl.set('verbose', 'off')
+sv = gretl.include('SVAR')
+sv.show_functions()
+
+d = gretl.get_data('sw_ch14.gdt')
+d.new_series(name='infl', value='400*ldiff(PUNEW)')
+d.rename('LHUR', 'unemp')
+d.new_list(name='X', value='unemp infl')
+d.new_list(name='Z', value='const')
+
+Mod = gretl.SVAR_setup(type_string='C', lY='X', lX='Z', varorder=3)
+Mod['horizon'] = 36
+gretl.SVAR_restrict(b=Mod, code='C', rR=1, c=2)
+
+gretl.set('stopwatch')
+gretl.SVAR_estimate(obj=Mod)
+print(f"Time (Cmodel) = {gretl.get_accessor('$stopwatch'):.2g}")
+
+fevdmat = gretl.FEVD(SVARobj=Mod)
+print(fevdmat)
+
+gretl.set('stopwatch')
+bfail = gretl.SVAR_boot(obj=Mod, rep=1024, alpha=0.90)
+print(f"Number of failed bootstrap iterations = {int(bfail):d}, "
+f"Time (bootstrap) = {gretl.get_accessor('$stopwatch'):.2g}")
+\end{lstlisting}\index{SVAR\_setup()}\index{SVAR\_restrict()}\index{SVAR\_estimate()}\index{FEVD()}\index{SVAR\_boot()}

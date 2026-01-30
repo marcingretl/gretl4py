@@ -35,7 +35,7 @@ def run_example():
     #opt['mpi'] = 4
     gretl.set('stopwatch')
     out = gretl.BT_lm(y=y, X='X', prior=prior, opt=opt)
-    print(f"Elapsed time in sec:: {gretl.get_accessor('$stopwatch'):.2f} sec.")
+    print(f"Elapsed time in sec: {gretl.get_accessor('$stopwatch'):.2f} sec.")
 
   elif CASE == 'lasso': # Bayesian LASSO
     # Park and Casella (2008), "The Bayesian LASSO" -JASA-, diabetes example
@@ -52,7 +52,7 @@ def run_example():
 
     gretl.set('stopwatch')
     out = gretl.BT_lasso(y=dep, X='regr', prior=prior, opt=gretl.Bundle(stdize=0))
-    print(f"Elapsed time in sec:: {gretl.get_accessor('$stopwatch'):.2f} sec.")
+    print(f"Elapsed time in sec: {gretl.get_accessor('$stopwatch'):.2f} sec.")
 
   elif CASE == 'probit': # Probit
     # Koop, Poirier, Tobias' textbook ("Bayesian Econometric Methods") example (from Fair, 1978)
@@ -70,7 +70,7 @@ def run_example():
 
     gretl.set('stopwatch')
     out = gretl.BT_probit(y='affair', X='X', prior=prior, opt=opt)
-    print(f"Elapsed time in sec:: {gretl.get_accessor('$stopwatch'):.2f} sec.")
+    print(f"Elapsed time in sec: {gretl.get_accessor('$stopwatch'):.2f} sec.")
 
   elif CASE == 'tobit': # Tobit
     # Koop, Poirier, Tobis "Bayesian Econometric Methods" - Replica of Ch. 14, Ex.14.9
@@ -91,7 +91,7 @@ def run_example():
 
     gretl.set('stopwatch')
     out = gretl.BT_tobit(y='weeks', X='X', prior=prior, opt=opt)
-    print(f"Elapsed time in sec:: {gretl.get_accessor('$stopwatch'):.2f} sec.")
+    print(f"Elapsed time in sec: {gretl.get_accessor('$stopwatch'):.2f} sec.")
 
   else:
     print("This example is not provided yet!\n")

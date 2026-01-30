@@ -154,6 +154,20 @@ void init_gretl4py_dataset_py11(py::module_ &m)
              py::arg("formula").none(false))
         .def("new_series", py::overload_cast<const std::string&, const std::string&>(&GretlDataset::new_series),
              py::arg("name").none(false), py::arg("value").none(false))
+        .def("rename", &GretlDataset::rename,
+             py::arg("series").none(false), py::arg("newname").none(false), py::kw_only())
+        .def("rename",
+             [](GretlDataset &self, const std::string &series,
+                const std::string &newname, const py::kwargs &kwargs)
+             {
+                 self.rename(self.get_series_id(series, false), newname, kwargs);
+             },
+             py::arg("series").none(false), py::arg("newname").none(false), py::kw_only())
+        .def("rename",
+             [](GretlDataset &self, const py::kwargs &kwargs)
+             {
+                 self.rename(-1, "", kwargs);
+             })
         .def("new_list", py::overload_cast<const std::string&>(&GretlDataset::new_list),
              py::arg("formula").none(false))
         .def("new_list", py::overload_cast<const std::string&, const std::string&>(&GretlDataset::new_list),

@@ -501,6 +501,29 @@ Examples:\newline
 \where{\textit{c} and \textit{param} are defined
 	as in \ref{func:gretl.pvalue}}.
 
+\gretlfpycmd{rename()}
+\estdesc{Changes the name of \textit{series} (identified
+	by name or ID number) to \textit{newname}.}
+\begin{lstlisting}[style=pythonstylefoot]
+.rename(series: str | int, newname: str[, OPTS])
+\end{lstlisting}
+\mapto[0]{rename series newname}
+\mapto{rename case=style}
+\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
+	\item[]\maptoopt{quiet=True}{--quiet}{suppress printed output}
+	\item[]\maptoopt{case=style}{--case}{\seegretlmanual}
+\end{itemize}
+Examples:\newline
+\pythcodef{.rename(x2 income)}\\
+\pythcodef{.rename(--case=lower)}\\
+\generaldesc{Without the \gretlcmd{case} option this method
+	changes the name of \textit{series} (identified by name
+	or ID number) to \textit{newname}. The new name must be
+	of 31 characters maximum, must start with a letter, and
+	must be composed of only letters, digits, and the underscore
+	character. In addition, it must not be the name of an existing
+	object of any kind.}
+
 \gretlfpycmd{sample()}
 \estdesc{The current sample setter/getter.}
 \begin{lstlisting}[style=pythonstylefoot]
@@ -541,8 +564,7 @@ Examples:\newline
 \pythcodef{.sample(1, -1)}\\
 \pythcodef{.sample('x > 3000', restrict=True)}\\
 \pythcodef{.sample('y > 3000', restrict=True, replace=True))}\\
-\pythcodef{.sample(100, random=True)}
-
+\pythcodef{.sample(100, random=True)}\\
 \generaldesc{When no arguments are given, it displays the
 	current sample range, otherwise it sets the sample range.
 	The range can be defined in several ways. In the first

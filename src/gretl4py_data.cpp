@@ -638,6 +638,21 @@ void GretlDataset::new_list (const std::string &name, const std::string &value)
     gretl_generate<GRETL_TYPE_LIST>(value, shared_from_this(), name);
 }
 
+void GretlDataset::rename (int series_id, const std::string &newname,
+                           const py::kwargs &kwargs)
+{
+    //
+    // this method mimics libgretl's 'rename' command
+    //
+    std::nullptr_t fakeGD = nullptr;
+
+    opt_ = unpack_kwargs_command(RENAME, fakeGD, kwargs);
+
+    // we do the job
+    err_ = rename_series(dset, series_id, newname.c_str(), opt_);
+    if (err_) handle_gretl_error(err_);
+}
+
 template <GretlCmdIndex CI>
 void GretlDataset::transforms (const std::string &varlist,
                                const py::kwargs &kwargs)
