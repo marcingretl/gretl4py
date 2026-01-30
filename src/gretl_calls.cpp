@@ -912,24 +912,22 @@ template void genr<std::string>(const std::string&, const std::string&);
 void handle_gretl_error (int err, const std::string &ext_msg)
 {
     //
-    // here we handle libgretl errors
-    // ext_msg: additional info which should be added to the message (f.e. file name)
-    // note: ArgErr in not complete!!!
+    // handle libgretl errors
+    // ext_msg: additional information to be appended (e.g. file name)
+    // note: arg_errors is not complete!!!
     //
-    const std::unordered_set<GretlError> ArgErr{ E_ARGS, E_INVARG, E_UNKVAR, E_TOOFEW };
+    static const std::unordered_set<int> arg_errors{
+        E_ARGS, E_INVARG, E_UNKVAR, E_TOOFEW
+    };
 
-    //gretl_error_clear();
+    const char *msg_src = errmsg_get_with_default(err);
+    std::string msg = msg_src ? msg_src : "unknown error";
 
-    const char *msg = errmsg_get_with_default(err);
-    if (!msg) msg = "unknown error";
+    gretl_error_clear();
 
-    if (err == E_FOPEN) {
-        throw file_not_found(std::string(msg) + ": " + ext_msg);
-    } else if (ArgErr.count(static_cast<GretlError>(err))) {
-        throw std::invalid_argument(msg);
-    } else {
-        throw std::runtime_error(msg);
-    }
+    if (err == E_FOPEN) throw file_not_found(msg + ": " + ext_msg);
+    if (arg_errors.count(err)) throw std::invalid_argument(msg);
+    throw std::runtime_error(msg);
 }
 
 void gretl_valid_long_opt (gretlopt &opt, GretlCmdIndex ci,
