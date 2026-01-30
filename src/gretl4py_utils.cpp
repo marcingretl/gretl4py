@@ -249,7 +249,7 @@ PythonArgInfo inspect_pyobject (py::handle obj)
         return info;
     }
 
-    if (is_pyGretlBundle(obj)) {
+    if (IS_PYGRETLBUNDLE(obj)) {
         info.gtype = GRETL_TYPE_BUNDLE;
         info.pytype = "GretlBundle";
         return info;

@@ -27,6 +27,7 @@ namespace py = pybind11;
 //////////////////////////////////////////////////
 // macros
 //////////////////////////////////////////////////
+#define IS_PYGRETLBUNDLE(o) (py::isinstance<GretlBundle>(o))
 #define SET_OPT(opt, flag) opt = static_cast<gretlopt>((opt) | (flag))
 
 //////////////////////////////////////////////////
@@ -57,9 +58,6 @@ inline bool is_pynumarray (const py::handle &o){ return py::isinstance<py::array
 inline bool is_pynumarrayd (const py::handle &o){ return py::isinstance<py::array_t<double>>(o); }
 inline bool is_pynumeric (const py::handle &o) { return is_pyint(o) || is_pyfloat(o); }
 inline bool is_pysequence (const py::handle &o) { return py::isinstance<py::sequence>(o); }
-inline bool is_pyGretlBundle (const py::handle &o) {
-    return py::hasattr(o, "_is_gretl_bundle");
-}
 inline bool is_numpy_array_fc (const py::array &m) {
     return (m.flags() & py::detail::npy_api::constants::NPY_ARRAY_F_CONTIGUOUS_) != 0;
 }
