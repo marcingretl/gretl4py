@@ -30,7 +30,7 @@ extern "C" {
 #include <iomanip>
 #include <filesystem>
 
-extern std::unordered_set<std::string> UserVars;
+extern std::unordered_set<std::string> user_vars;
 
 //
 // GretlPackage class methods
@@ -328,7 +328,7 @@ void GretlPackage::unpack_kwargs_package_ (const std::string &func_name,
                 is_ref_user_var = true;
                 arg_name = arg_name.substr(1);
             }
-            if (UserVars.find(arg_name) != UserVars.end()) {
+            if (user_vars.find(arg_name) != user_vars.end()) {
                 user_var *uv = get_user_var_by_name(arg_name.c_str());
                 // for reference, we change uv type!!!
                 arg_type = is_ref_user_var ?

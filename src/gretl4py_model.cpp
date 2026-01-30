@@ -44,7 +44,6 @@ extern "C" {
 #define GRETL4PY_MODEL_DEBUG 0
 
 extern GretlDatasetPtr DSET;
-extern std::unordered_set<std::string> UserVars;
 
 //
 // GretlModel class methods

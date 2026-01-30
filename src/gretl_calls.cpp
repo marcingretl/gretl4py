@@ -48,9 +48,9 @@ extern "C" {
 }
 
 // global variables (some used outside this file)
-GretlDatasetPtr DSET = nullptr;                         // default dataset
-std::unordered_set<std::string> UserVars;               // registry of user variables
-static GretlPrint GP = GretlPrint();                    // printer
+GretlDatasetPtr DSET = nullptr;             // default dataset
+std::unordered_set<std::string> user_vars;  // registry of user variables
+static GretlPrint GP = GretlPrint();        // global printer
 static int gretl4py_verbose = 0;
 
 //////////////////////////////////////////////////
@@ -96,7 +96,7 @@ void gretl4py_cleanup (void)
     int err = 0;
 
     // make sure all C++ objects are destroyed while libgretl still alives
-    for (const auto &name : UserVars) {
+    for (const auto &name : user_vars) {
         err = user_var_delete_by_name(name.c_str(), NULL);
         if (err) {
             std::cerr << "Failed to delete '" + name + "': ";
@@ -819,7 +819,7 @@ void do_gretl_delete_variables (const std::string &varname,
 
     // we do the job
     if (opt & OPT_T) {
-        for (const auto &name : UserVars) {
+        for (const auto &name : user_vars) {
             if (!err && (gretl_type_get_name(user_var_get_type_by_name(name.c_str()))
                          == type_to_delete)) to_erase.push_back(name);
         }
@@ -834,10 +834,10 @@ void do_gretl_delete_variables (const std::string &varname,
     // finally we erase uservar from registry
     if (opt & OPT_T) {
         for (const auto &name : to_erase) {
-            UserVars.erase(name);
+            user_vars.erase(name);
         }
     } else {
-        if (UserVars.find(varname) != UserVars.end()) UserVars.erase(varname);
+        if (user_vars.find(varname) != user_vars.end()) user_vars.erase(varname);
     }
 }
 
@@ -902,7 +902,7 @@ void genr (const std::string &name, const T &value)
     // we finally register variable
     err = user_var_add(name.c_str(), uv_type, uv_ptr);
     if (err) handle_gretl_error(err);
-    UserVars.insert(name);
+    user_vars.insert(name);
 }
 template void genr<py::array>(const std::string&, const py::array&);
 template void genr<int>(const std::string&, const int&);
@@ -1182,7 +1182,7 @@ void gretl_generate (const std::string &formula, GretlDatasetPtr GD,
 
     // register user-defined variable name (if applicable)
     if constexpr (GR_TYPE != GRETL_TYPE_SERIES) {
-        if (!varname.empty()) UserVars.insert(varname);
+        if (!varname.empty()) user_vars.insert(varname);
     }
 
     GP.print();
