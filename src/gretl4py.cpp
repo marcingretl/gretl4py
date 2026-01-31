@@ -22,8 +22,6 @@
 #include "gretl_calls.h"
 #include "gretl4py_utils.h"
 
-extern GretlDatasetPtr DSET;
-
 #define BIND_DRIVER_MODEL(NAME, FUNC, CI) \
     m.def(#NAME, \
           [](const std::string &formula, const py::kwargs &kwargs) -> GretlModelPtr \

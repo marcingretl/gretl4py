@@ -43,8 +43,6 @@ extern "C" {
 
 #define GRETL4PY_MODEL_DEBUG 0
 
-extern GretlDatasetPtr DSET;
-
 //
 // GretlModel class methods
 //

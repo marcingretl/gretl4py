@@ -24,8 +24,6 @@
 
 namespace py = pybind11;
 
-extern GretlDatasetPtr DSET;
-
 // signature from libgretl
 const char *gretl_workdir (void);
 
