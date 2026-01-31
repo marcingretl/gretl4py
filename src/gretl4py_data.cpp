@@ -1674,11 +1674,6 @@ py::dict GretlBundle::to_dict (void)
 
 void GretlBundle::python_register (py::object &obj)
 {
-    //
-    // note: weak reference is needed to break GretlDataset live cycle
-    //
-    py_weak_obj_ = py::module::import("weakref").attr("proxy")(obj);
-
     extract_<py::object>(obj);
 }
 

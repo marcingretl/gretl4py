@@ -155,7 +155,7 @@ void GretlModel::save_model_ (T *model)
         static_assert(always_false<T>, "GretlModel::save_model_(): unknown type");
     }
     if (err_) handle_gretl_error(err_);
-    summary_ = std::string(GP_.get_buffer());   // to prevent holding reference to dataset
+    summary_ = std::string(GP_.get_buffer());   // for safety
 
     // we produce $model bundle based on estimated @model
     if constexpr (std::is_same_v<T, equation_system>) {
