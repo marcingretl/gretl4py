@@ -24,8 +24,6 @@
 
 namespace py = pybind11;
 
-extern GretlDatasetPtr DSET;
-
 //
 // Class to handle printing
 //
@@ -101,7 +99,7 @@ GretlTypesPtr gretl_generate_gretl_object (const char *s, int &err,
                                            DATASET *dset = NULL, void *model = NULL);
 
 template <GretlType GR_TYPE>
-void gretl_generate (const std::string &formula, GretlDatasetPtr GD = DSET,
+void gretl_generate (const std::string &formula, GretlDatasetPtr GD = nullptr,
                      const std::string &name = {});
 
 void do_gretl_delete_variables (const std::string &varname,

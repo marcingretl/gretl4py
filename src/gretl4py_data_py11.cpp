@@ -297,7 +297,8 @@ void init_gretl4py_package_py11(py::module_ &m)
              GretlTypesPtr val;
              int err = 0;
 
-             auto res = self.function_exec(name, DSET, GP, kwargs);
+             auto res = self.function_exec(name, GretlDataset::default_dataset,
+                                           GP, kwargs);
 
              // we construct object to return
              val = convert_GretlType_to_GretlTypes(res.type, res.get(),

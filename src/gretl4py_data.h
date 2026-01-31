@@ -44,7 +44,7 @@ class GretlDataset : public std::enable_shared_from_this<GretlDataset>
 {
 private:
     static inline int next_obj_id_ = 1;
-    static inline std::map<int, std::weak_ptr<GretlDataset>> GDs_; // datasets registry
+    static inline std::map<int, std::weak_ptr<GretlDataset>> GDs_;  // datasets registry
     const int id_;                          // dataset's id
     const bool from_file_ = false;          // if dataset was loaded from file
     std::unordered_set<int> linked_models_; // models (id-s) which use this dataset
@@ -70,6 +70,7 @@ private:
                                            const std::string &name, int n,
                                            gretl_gchar_ptr label = nullptr);
 public:
+    static inline GretlDatasetPtr default_dataset = nullptr;    // default dataset
     bool is_default = false;
     DATASET *dset = NULL;
     std::string source;

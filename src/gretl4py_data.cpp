@@ -327,7 +327,7 @@ GretlDataset::GretlDataset (const GretlDataset &src) : id_(next_obj_id_++)
 
 GretlDataset::~GretlDataset (void)
 {
-    if (is_default) DSET = nullptr;
+    if (is_default) default_dataset = nullptr;
     free_dset_();
 }
 
@@ -393,7 +393,7 @@ GretlDatasetPtr GretlDataset::get_data (const py::object &src,
     if (!GD) handle_gretl_error(E_DATA);
 
     // we set default (id needed)
-    if (!DSET) GD->set_as_default();
+    if (!default_dataset) GD->set_as_default();
 
     // we set info
     if (!source.empty() && GD->source.empty()) GD->source = source;
@@ -1318,8 +1318,8 @@ void GretlDataset::setobs (const std::string &periodicity,
 
 void GretlDataset::set_as_default (void)
 {
-    if (DSET) DSET->is_default = false;
-    DSET = shared_from_this();
+    if (default_dataset) default_dataset->is_default = false;
+    default_dataset = shared_from_this();
     is_default = true;
 }
 

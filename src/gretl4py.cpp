@@ -68,7 +68,7 @@ PYBIND11_MODULE(_gretl, m)
     // module related tools
     m.doc() = info;
     m.attr("version") = GRETL4PY_VERSION;
-    m.attr("gretldir") = do_get_accessor<GRETL_OBJ_ANY>("$gretldir", DSET, nullptr);
+    m.attr("gretldir") = do_get_accessor<GRETL_OBJ_ANY>("$gretldir", GretlDataset::default_dataset, nullptr);
     m.def("about", &about, py::arg("do_print") = false);
 
     // gretl4py hidden functions
@@ -81,7 +81,7 @@ PYBIND11_MODULE(_gretl, m)
     m.def("get_accessor",
           [](const std::string &name)
           {
-              return do_get_accessor<GRETL_OBJ_ANY>(name, DSET, nullptr);
+              return do_get_accessor<GRETL_OBJ_ANY>(name, GretlDataset::default_dataset, nullptr);
           },
           py::arg("name").none(false));
     m.def("print", &do_gretl_print,

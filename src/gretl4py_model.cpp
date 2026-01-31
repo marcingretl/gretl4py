@@ -49,7 +49,7 @@ extern "C" {
 GretlModel::GretlModel (GretlObjType model_obj_type, GretlCmdIndex ci,
                         const py::kwargs &kwargs)
                         : id_(next_model_id_++), model_obj_type_(model_obj_type),
-                        ci_(ci), GD_(DSET)
+                        ci_(ci), GD_(GretlDataset::default_dataset)
 {
     // we unpack kwargs
     if (py::len(kwargs) && ci_ != NC) {
