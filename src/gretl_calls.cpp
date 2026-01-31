@@ -50,7 +50,7 @@ extern "C" {
 // global variables (some used outside this file)
 GretlDatasetPtr DSET = nullptr;             // default dataset
 std::unordered_set<std::string> user_vars;  // registry of user variables
-static GretlPrint GP = GretlPrint();        // global printer
+static GretlPrint global_printer = GretlPrint();
 static int gretl4py_verbose = 0;
 
 //////////////////////////////////////////////////
@@ -319,8 +319,9 @@ void do_set (const std::string &key, const std::string &value,
     // we do the job
     err = execute_set(key.empty() ? NULL : key.c_str(),
                       value.empty() ? NULL : value.c_str(),
-                      GD ? GD->dset : NULL, opt, GP.prn_ptr());
-    GP.print();
+                      GD ? GD->dset : NULL, opt,
+                      global_printer.prn_ptr());
+    global_printer.print();
     if (err) handle_gretl_error(err);
 }
 
@@ -346,16 +347,16 @@ void do_gretl_summary (const std::string &varlist, const py::kwargs &kwargs)
     if (err) handle_gretl_error(err);
     if (opt & OPT_B) {
         err = summary_statistics_by(varlist_ptr.get(), GD->dset,
-                                    opt, GP.prn_ptr());
+                                    opt, global_printer.prn_ptr());
     } else if (opt & OPT_X) {
         err = matrix_command_driver(SUMMARY, varlist_ptr.get(),
                                     kwargs["matrix"].cast<std::string>().c_str(),
-                                    GD->dset, opt, GP.prn_ptr());
+                                    GD->dset, opt, global_printer.prn_ptr());
     } else {
         err = list_summary_driver(varlist_ptr.get(), GD->dset,
-                                  opt, GP.prn_ptr());
+                                  opt, global_printer.prn_ptr());
     }
-    GP.print();
+    global_printer.print();
     if (err) handle_gretl_error(err);
 }
 
@@ -390,13 +391,14 @@ void do_gretl_print (const std::string &varlist,
     // based on 'interact.c' (but we don't allow for string literals)
     if (opt & OPT_L) {
         err = printdata(NULL, varlist.c_str(), GD ? GD->dset : NULL,
-                        OPT_NONE, GP.prn_ptr());
+                        OPT_NONE, global_printer.prn_ptr());
     } else {
         err = printdata(varlist_ptr.get(),
                         varlist_ptr ? NULL : varlist.c_str(),
-                        GD ? GD->dset : NULL, opt, GP.prn_ptr());
+                        GD ? GD->dset : NULL, opt,
+                        global_printer.prn_ptr());
     }
-    GP.print();
+    global_printer.print();
     if (err) handle_gretl_error(err);
 }
 
@@ -432,15 +434,15 @@ void do_gretl_varlist (const py::kwargs &kwargs)
 
     // we o the job (based on interact.c)
     if (opt & OPT_T) {
-        list_user_vars_of_type(GD ? GD->dset : NULL, GP.prn_ptr());
+        list_user_vars_of_type(GD ? GD->dset : NULL, global_printer.prn_ptr());
     } else if (opt & OPT_S) {
-        print_scalars(GP.prn_ptr());
+        print_scalars(global_printer.prn_ptr());
     } else if (opt & OPT_A) {
-        list_ok_dollar_vars(GD ? GD->dset : NULL, GP.prn_ptr());
+        list_ok_dollar_vars(GD ? GD->dset : NULL, global_printer.prn_ptr());
     } else {
-        list_series(GD ? GD->dset : NULL, opt, GP.prn_ptr());
+        list_series(GD ? GD->dset : NULL, opt, global_printer.prn_ptr());
     }
-    GP.print();
+    global_printer.print();
 }
 
 py::object do_gretl_include (const std::string &filename)
@@ -823,12 +825,14 @@ void do_gretl_delete_variables (const std::string &varname,
             if (!err && (gretl_type_get_name(user_var_get_type_by_name(name.c_str()))
                          == type_to_delete)) to_erase.push_back(name);
         }
-        err = gretl_delete_variables(NULL, NULL, opt, GD->dset, NULL, GP.prn_ptr());
+        err = gretl_delete_variables(NULL, NULL, opt, GD->dset,
+                                     NULL, global_printer.prn_ptr());
     } else {
         err = gretl_delete_variables(var_list.get(), var_list ? NULL : varname.c_str(),
-                                     opt, GD->dset, var_list ? &renumber : NULL, GP.prn_ptr());
+                                     opt, GD->dset, var_list ? &renumber : NULL,
+                                     global_printer.prn_ptr());
     }
-    GP.print();
+    global_printer.print();
     if (err) handle_gretl_error(err);
 
     // finally we erase uservar from registry
