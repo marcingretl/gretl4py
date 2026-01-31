@@ -296,7 +296,7 @@ gretlopt unpack_kwargs_command (GretlCmdIndex ci, T &GD,
 
     // if we didn't get dataset, let use global
     if constexpr (std::is_same_v<T, GretlDatasetPtr>) {
-        if (!GD) GD = GretlDataset::default_dataset;
+        if (!GD) GD = GretlDataset::default_dataset();
     }
 
     return opt;
@@ -374,7 +374,7 @@ void do_gretl_print (const std::string &varlist,
         opt = unpack_kwargs_command(PRINT, GD, kwargs);
     } else {
         // if we don't have kwargs, we must assign GD manually
-        GD = GretlDataset::default_dataset;
+        GD = GretlDataset::default_dataset();
     }
 
     // we look for variables in GD _only_ if there is no uservar
@@ -701,8 +701,10 @@ py::array_t<double> matrix_functions_wrapper (const std::string &dist, const T &
         if (src.ndim() > 2) throw std::invalid_argument("given matrix has too many dimensions");
         src_mat = src;
     } else if constexpr (std::is_same_v<T, std::string>) {
-        if (!GretlDataset::default_dataset) handle_gretl_error(E_DATA);
-        src_mat = GretlDataset::default_dataset->get_series(src);
+        auto dataset = GretlDataset::default_dataset();
+
+        if (!dataset) handle_gretl_error(E_DATA);
+        src_mat = dataset->get_series(src);
     } else {
         static_assert(always_false<T>, "matrix_functions_wrapper(): unsupported type T");
     }
@@ -807,7 +809,7 @@ void do_gretl_delete_variables (const std::string &varname,
         if (kwargs.contains("type")) type_to_delete = kwargs["type"].cast<std::string>();
     } else {
         // if we don't have kwargs, we must assign GD manually
-        GD = GretlDataset::default_dataset;
+        GD = GretlDataset::default_dataset();
     }
 
     // we correctly deal with no arguments passed
@@ -869,7 +871,7 @@ template py::object do_get_accessor<GRETL_OBJ_SYS>(const std::string&, GretlData
 void genr (const std::string &formula, GretlDatasetPtr data)
 {
     // GretlType genr_get_last_output_type (void);
-    gretl_generate<GRETL_TYPE_ANY>(formula, data ? data : GretlDataset::default_dataset);
+    gretl_generate<GRETL_TYPE_ANY>(formula, data ? data : GretlDataset::default_dataset());
 }
 
 template <typename T>
@@ -1160,7 +1162,7 @@ void gretl_generate (const std::string &formula, GretlDatasetPtr GD,
     std::string varname;
     int err = 0;
 
-    if (!GD) GD = GretlDataset::default_dataset;
+    if (!GD) GD = GretlDataset::default_dataset();
 
     if constexpr (GR_TYPE == GRETL_TYPE_LIST || GR_TYPE == GRETL_TYPE_SERIES) {
         if (!GD) handle_gretl_error(E_NODATA);

@@ -45,6 +45,7 @@ class GretlDataset : public std::enable_shared_from_this<GretlDataset>
 private:
     static inline int next_obj_id_ = 1;
     static inline std::map<int, std::weak_ptr<GretlDataset>> GDs_;  // datasets registry
+    static inline std::weak_ptr<GretlDataset> default_dataset_;     // default dataset
     const int id_;                          // dataset's id
     const bool from_file_ = false;          // if dataset was loaded from file
     std::unordered_set<int> linked_models_; // models (id-s) which use this dataset
@@ -70,7 +71,6 @@ private:
                                            const std::string &name, int n,
                                            gretl_gchar_ptr label = nullptr);
 public:
-    static inline GretlDatasetPtr default_dataset = nullptr;    // default dataset
     bool is_default = false;
     DATASET *dset = NULL;
     std::string source;
@@ -85,6 +85,8 @@ public:
                                      const py::kwargs &kwargs);
 
     static std::set<int> get_dset_ids (void);
+
+    static GretlDatasetPtr default_dataset (void);
 
     // instance management
     int get_id (void) const noexcept;
@@ -191,6 +193,7 @@ private:
     bool free_b_ = true;                            // if *b should be freed
     gretl_bundle *b_ = NULL;                        // libgretl bundle pointer
     py::dict as_dict_;                              // Python's dict() reprezentation
+    py::object py_weak_obj_;                        // weak reference to Python object
     int err_ = 0;
 
     template <typename T>

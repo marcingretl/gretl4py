@@ -327,7 +327,8 @@ GretlDataset::GretlDataset (const GretlDataset &src) : id_(next_obj_id_++)
 
 GretlDataset::~GretlDataset (void)
 {
-    if (is_default) default_dataset = nullptr;
+    if (is_default) default_dataset_.reset();
+    GDs_.erase(id_);
     free_dset_();
 }
 
@@ -393,7 +394,7 @@ GretlDatasetPtr GretlDataset::get_data (const py::object &src,
     if (!GD) handle_gretl_error(E_DATA);
 
     // we set default (id needed)
-    if (!default_dataset) GD->set_as_default();
+    if (!default_dataset_.lock()) GD->set_as_default();
 
     // we set info
     if (!source.empty() && GD->source.empty()) GD->source = source;
@@ -423,6 +424,11 @@ std::set<int> GretlDataset::get_dset_ids (void)
     }
 
     return res;
+}
+
+GretlDatasetPtr GretlDataset::default_dataset (void)
+{
+    return default_dataset_.lock();
 }
 
 void GretlDataset::allocate_dset_ (void)
@@ -1318,8 +1324,8 @@ void GretlDataset::setobs (const std::string &periodicity,
 
 void GretlDataset::set_as_default (void)
 {
-    if (default_dataset) default_dataset->is_default = false;
-    default_dataset = shared_from_this();
+    if (auto current_default = default_dataset_.lock()) current_default->is_default = false;
+    default_dataset_ = weak_from_this();
     is_default = true;
 }
 
@@ -1668,6 +1674,11 @@ py::dict GretlBundle::to_dict (void)
 
 void GretlBundle::python_register (py::object &obj)
 {
+    //
+    // note: weak reference is needed to break GretlDataset live cycle
+    //
+    py_weak_obj_ = py::module::import("weakref").attr("proxy")(obj);
+
     extract_<py::object>(obj);
 }
 

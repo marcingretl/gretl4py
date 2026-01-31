@@ -49,7 +49,7 @@ extern "C" {
 GretlModel::GretlModel (GretlObjType model_obj_type, GretlCmdIndex ci,
                         const py::kwargs &kwargs)
                         : id_(next_model_id_++), model_obj_type_(model_obj_type),
-                        ci_(ci), GD_(GretlDataset::default_dataset)
+                        ci_(ci), GD_(GretlDataset::default_dataset())
 {
     // we unpack kwargs
     if (py::len(kwargs) && ci_ != NC) {
@@ -119,11 +119,6 @@ int GretlModel::get_id (void) const
     return id_;
 }
 
-void GretlModel::unlink_from_dataset (void) const
-{
-    if (GD_) GD_->linked_models_del(id_);
-}
-
 template <typename T>
 void GretlModel::save_model_ (T *model)
 {
@@ -160,7 +155,7 @@ void GretlModel::save_model_ (T *model)
         static_assert(always_false<T>, "GretlModel::save_model_(): unknown type");
     }
     if (err_) handle_gretl_error(err_);
-    summary_ = GP_.get_buffer();
+    summary_ = std::string(GP_.get_buffer());   // to prevent holding reference to dataset
 
     // we produce $model bundle based on estimated @model
     if constexpr (std::is_same_v<T, equation_system>) {
@@ -174,10 +169,6 @@ void GretlModel::save_model_ (T *model)
     // we register result on python side
     py::object self = py::cast(this);
     GB_model_->python_register(self);
-
-    py::dict _ids;
-    _ids[py::cast("_model_id")] = id_;
-    py::setattr(self, "_ids", _ids);
 
     // we set some internal stuff
     GD_->linked_models_add(id_);
@@ -459,9 +450,7 @@ void GretlModel::fr_to_dict_ (FITRESID *fr, py::dict &fcdict)
 
 std::string GretlModel::repr_impl (void) const
 {
-    if (!estimated_) {
-        return summary_.substr(0, summary_.size() - 1);
-    }
+    if (!estimated_) return summary_.substr(0, summary_.size() - 1);
 
     return summary_;
 }

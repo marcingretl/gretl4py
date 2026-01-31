@@ -93,8 +93,6 @@ public:
     std::string repr_impl (void) const;         // for __repr__ binding
 
     GretlBundlePtr get_bundle (void) const;     // return pointer to GB_model
-
-    void unlink_from_dataset (void) const;
 };
 
 //
