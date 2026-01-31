@@ -1,5 +1,5 @@
 version 0.41:
-    - several bugs fixed
+    - several bugs fixed (including the one related with exporting nested bundles to dict)
     - general libgretl printer (available as 'gretl.print()')
     - some code refactoring (simplified and cleaned up)
     - officialy add interface to libgretl's genr (available as 'gretl.genr()')
@@ -7,10 +7,9 @@ version 0.41:
     - 'fractint' test added
     - new GretlDataset methods added: ::hurst(), ::xcorrgm(), ::pca(), ::rename()
     - new free functions: corr(), cov(), pkg()
-    - new GretlPackage methods: ::get_functions(), and ::get_help()
+    - new GretlPackage methods: ::get_functions(), ::get_help()
     - GretlBundle::pop() method + enhanced '[]' operator
     - GretlBundle: new constructor for on-the-fly bundle definition (like gretl's "_()"')
-    - fix bug with exporting nested bundles to dict
     - get_data(): add 'quiet' option
     - massive doc updates
 

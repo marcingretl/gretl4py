@@ -40,8 +40,10 @@ GretlPackage::GretlPackage (const std::string &pkg_name,
                             bool print_summary)
                             : pkg_name_(pkg_name), suffix_(suffix)
 {
-    const std::unordered_set<UfunRole> excluded_roles = { UFUN_BUNDLE_PLOT,
-            UFUN_GUI_MAIN, UFUN_GUI_PRECHECK, UFUN_PLOT_PRECHECK, UFUN_UI_MAKER };
+    static const std::unordered_set<UfunRole> excluded_roles = {
+        UFUN_BUNDLE_PLOT, UFUN_GUI_MAIN, UFUN_GUI_PRECHECK,
+        UFUN_PLOT_PRECHECK, UFUN_UI_MAKER
+    };
     std::unordered_set<std::string> excluded_functions;
     std::ostringstream oss;
     char path[MAXLEN];
