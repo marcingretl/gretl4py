@@ -40,6 +40,21 @@ GretlPackage::GretlPackage (const std::string &pkg_name,
                             bool print_summary)
                             : pkg_name_(pkg_name), suffix_(suffix)
 {
+    // lambda for sorting function arguments by id-s
+    auto sort_func_args_by_id = [](const std::map<std::string, int> &func_args) -> FunctionArgsVec
+    {
+        // vector of func_name_args items ordered by value (int)
+        FunctionArgsVec func_args_sorted(func_args.begin(), func_args.end());
+
+        std::sort(func_args_sorted.begin(), func_args_sorted.end(),
+                  [](const auto &a, const auto &b)
+                  {
+                      return a.second < b.second; // sort by value
+                  });
+
+        return func_args_sorted;
+    };
+
     static const std::unordered_set<UfunRole> excluded_roles = {
         UFUN_BUNDLE_PLOT, UFUN_GUI_MAIN, UFUN_GUI_PRECHECK,
         UFUN_PLOT_PRECHECK, UFUN_UI_MAKER
@@ -117,7 +132,7 @@ GretlPackage::GretlPackage (const std::string &pkg_name,
     if (func_ptrs_.empty()) throw std::runtime_error("no public functions found in '" + pkg_name + "' package");
 
     // we construct function map with sorted arguments
-    for (const auto &[key, el] : func_args_) func_args_sorted_.emplace(key, sort_func_args_by_id_(el));
+    for (const auto &[key, el] : func_args_) func_args_sorted_.emplace(key, sort_func_args_by_id(el));
 
     // we try to register package 'main' function (i.e. the one to call via ::fit())
     if (func_ptrs_.size() == 1) {
@@ -357,24 +372,6 @@ void GretlPackage::unpack_kwargs_package_ (const std::string &func_name,
                                  NULL, arg_type, arg_value);
         if (err_) handle_gretl_error(err_);
     }
-}
-
-GretlPackage::FunctionArgsVec GretlPackage::sort_func_args_by_id_ (const std::map<std::string, int> &func_args)
-{
-    //
-    // we sort argument of given function bye id-s
-    //
-
-    // vector of func_name_args items ordered by value (int)
-    FunctionArgsVec func_args_sorted(func_args.begin(), func_args.end());
-
-    std::sort(func_args_sorted.begin(), func_args_sorted.end(),
-      [](const auto &a, const auto &b)
-      {
-          return a.second < b.second; // sort by value
-      });
-
-      return func_args_sorted;
 }
 
 int GretlPackage::get_err (void) const

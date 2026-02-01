@@ -74,8 +74,6 @@ private:
     void unpack_kwargs_package_ (const std::string &func_name,
                                  fncall *func_call, GretlDatasetPtr &GD,
                                  const py::kwargs &kwargs);
-
-    FunctionArgsVec sort_func_args_by_id_ (const std::map<std::string, int> &func_args);
 public:
     ~GretlPackage (void);
 
