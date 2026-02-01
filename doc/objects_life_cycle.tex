@@ -1,0 +1,75 @@
+\section{Object life cycle}
+In \gretlpy, datasets and models (for example, \texttt{d} as a
+\classpydatasetnosp instance and \texttt{m} as a
+\classpymodelnosp instance) are jointly reference-managed by
+\python and \lgretl. As in CPython itself, object lifetime is
+governed by reference counting, with additional internal
+references created during evaluation and display. Understanding
+the distinction between \emph{logical deletion} and
+\emph{physical destruction} is therefore essential.
+
+\paragraph{Dataset ownership}
+A \classpydataset object is logically owned by \python, but it may be
+referenced indirectly by:
+\begin{itemize}
+	\item estimated models,
+	\item cached or printed model summaries,
+	\item temporary \python objects created during evaluation
+		or display (e.g.\ \pythcode{print(model)} or interactive output).
+\end{itemize}
+
+Consequently:
+\begin{itemize}
+	\item \pythcode{del d} removes the name \texttt{d} from
+		the current \python namespace,
+	\item but does not necessarily destroy the underlying dataset.
+\end{itemize}
+The dataset is physically destroyed only when its reference count
+drops to zero, i.e.\ when \emph{all} direct and indirect references
+have been released.
+
+\paragraph{Printing, evaluation, and object lifetime}
+Accessing elements of \texttt{m} (such as \pythcode{\_\_repr\_\_} or
+implicit interactive display) creates temporary \python objects that
+may \textbf{retain references to the model summary} or other
+model-related state. These objects can, in turn, hold indirect
+references to the underlying dataset.
+
+As a result, \pythcode{del d} may \textbf{not immediately trigger
+	dataset destruction} if such temporary objects are still alive.
+From the user's perspective, this may appear as delayed cleanup,
+but it is a direct consequence of CPython's evaluation and
+memory-management model.
+
+This behavior is \textbf{intentional, well-defined, and unavoidable}
+in \python, and \gretlpy follows these semantics strictly.\newline
+
+\noindent\textbf{Example~1 (explicit printing):}
+\begin{lstlisting}[style=pythonstylefoot]
+import gretl
+
+d = gretl.get_data("bjg")
+m = gretl.ols("1 0 2").fit()
+
+print(m)
+del m
+del d
+
+gretl.show_data_status()
+\end{lstlisting}\index{show\_data\_status()}
+No dataset available.\newline
+
+\noindent\textbf{Example~2 (implicit interactive display):}
+\begin{lstlisting}[style=pythonstylefoot]
+import gretl
+
+d = gretl.get_data("bjg")
+m = gretl.ols("1 0 2").fit()
+
+m              # creates temporary references
+del m
+del d
+
+gretl.show_data_status()
+\end{lstlisting}\index{show\_data\_status()}
+The dataset may still appear as registered for some time.

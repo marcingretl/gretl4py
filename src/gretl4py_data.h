@@ -193,7 +193,6 @@ private:
     bool free_b_ = true;                            // if *b should be freed
     gretl_bundle *b_ = NULL;                        // libgretl bundle pointer
     py::dict as_dict_;                              // Python's dict() reprezentation
-    py::object py_weak_obj_;                        // weak reference to Python object
     int err_ = 0;
 
     template <typename T>
