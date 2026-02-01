@@ -250,11 +250,7 @@ T GretlPackage::get_properties_ (const char *property)
     } else if (!val) {
         return {}; // gracefully return empty value
     } else if constexpr (std::is_same_v<T, std::vector<std::string>>) {
-        std::istringstream iss(val);
-        std::string token;
-        while (iss >> token) {
-            res.push_back(std::move(token));
-        }
+        res = load_string_to_container<std::vector<std::string>>(val);
     } else if constexpr (std::is_same_v<T, std::string>) {
         res = val;
     } else {
@@ -446,16 +442,20 @@ void GretlPackage::show_functions (const std::string &name)
     GretlType type;
     std::string type_str;
     ufunc *func_ptr;
+    std::unordered_multiset<std::string> func_to_show;
 
     if (name.empty()) {
         py::print("Functions available in " + pkg_name_ + " package:");
-    } else if (func_args_sorted_.count(name) == 0) {
-        throw std::invalid_argument(name + ": no such function in " + pkg_name_ + " package");
+    } else {
+        func_to_show = load_string_to_container<std::unordered_multiset<std::string>>(name);
+        for (const auto &el : func_to_show) {
+            if (!func_args_sorted_.count(el)) throw std::invalid_argument(el + ": no such function in " + pkg_name_ + " package");
+        }
     }
 
     // we iterate over functions in package
     for (const auto &[key, val] : func_args_sorted_) {
-        if (!name.empty() && name != key) continue;
+        if (!name.empty() && func_to_show.count(key) == 0) continue;
         func_ptr = func_ptrs_.at(key);
         type = static_cast<GretlType>(user_func_get_return_type(func_ptr));
         py::print(key, "->", gretl_type_get_name(type), (key == main_func_ ? "[main] " : ""));
