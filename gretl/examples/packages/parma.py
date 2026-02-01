@@ -18,7 +18,7 @@ def run_example():
   burn_in = 2048        # burn-in
   
   gretl.set('stopwatch')
-  b = gretl.bma_glm(y='LFP', X='X', glm_type=modeltype, ndraw=n_iter, burn=burn_in, parms=gretl.Bundle(seed=1234567))
+  b = gretl.bma_glm('LFP', 'X', modeltype, n_iter, burn_in, gretl.Bundle(seed=1234567)) # equivalent to b = gretl.bma_glm(y='LFP', X='X', glm_type=modeltype, ndraw=n_iter, burn=burn_in, parms=gretl.Bundle(seed=1234567))
   print(f"Total execution time: {gretl.get_accessor('$stopwatch'):.2f} sec.")
 
 if __name__ == "__main__":

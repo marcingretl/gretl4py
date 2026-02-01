@@ -15,7 +15,7 @@ def run_example():
 
   gretl.set('seed', 1000000)
   gretl.set('stopwatch')
-  res = gretl.BACE(Y='dep', X_list='X', Options=gretl.Bundle(model_type="probit"))
+  res = gretl.BACE('dep', 'X', gretl.Bundle(model_type="probit")) # equivalent to res = gretl.BACE(Y='dep', X_list='X', Options=gretl.Bundle(model_type="probit"))
   print(f"Total execution time: {gretl.get_accessor('$stopwatch'):.2f} sec.")
 
 if __name__ == "__main__":

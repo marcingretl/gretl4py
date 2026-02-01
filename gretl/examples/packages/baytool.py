@@ -34,7 +34,7 @@ def run_example():
     #opt['thin'] = 1
     #opt['mpi'] = 4
     gretl.set('stopwatch')
-    out = gretl.BT_lm(y=y, X='X', prior=prior, opt=opt)
+    out = gretl.BT_lm(y, 'X', prior, opt)                                     # equivalent to out = gretl.BT_lm(y=y, X='X', prior=prior, opt=opt)
     print(f"Elapsed time in sec: {gretl.get_accessor('$stopwatch'):.2f} sec.")
 
   elif CASE == 'lasso': # Bayesian LASSO
@@ -51,7 +51,7 @@ def run_example():
     prior['lambda_rate'] = 1.78
 
     gretl.set('stopwatch')
-    out = gretl.BT_lasso(y=dep, X='regr', prior=prior, opt=gretl.Bundle(stdize=0))
+    out = gretl.BT_lasso(dep, 'regr', prior, gretl.Bundle(stdize=0))          # equivalent to out = gretl.BT_lasso(y=dep, X='regr', prior=prior, opt=gretl.Bundle(stdize=0))
     print(f"Elapsed time in sec: {gretl.get_accessor('$stopwatch'):.2f} sec.")
 
   elif CASE == 'probit': # Probit
@@ -69,7 +69,7 @@ def run_example():
     opt['burn'] = 500
 
     gretl.set('stopwatch')
-    out = gretl.BT_probit(y='affair', X='X', prior=prior, opt=opt)
+    out = gretl.BT_probit('affair', 'X', prior, opt)                          # equivalent to out = gretl.BT_probit(y='affair', X='X', prior=prior, opt=opt)
     print(f"Elapsed time in sec: {gretl.get_accessor('$stopwatch'):.2f} sec.")
 
   elif CASE == 'tobit': # Tobit
@@ -90,7 +90,7 @@ def run_example():
     opt['rlimit'] = 52
 
     gretl.set('stopwatch')
-    out = gretl.BT_tobit(y='weeks', X='X', prior=prior, opt=opt)
+    out = gretl.BT_tobit('weeks', 'X', prior, opt)                            # equivalent to out = gretl.BT_tobit(y='weeks', X='X', prior=prior, opt=opt)
     print(f"Elapsed time in sec: {gretl.get_accessor('$stopwatch'):.2f} sec.")
 
   else:

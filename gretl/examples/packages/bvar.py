@@ -14,17 +14,15 @@ def run_example():
   d.new_list(name='dep', value='1 2 3')
   
   # Step 1 - BVAR_setup
-  model = gretl.BVAR_setup(y='dep', lag=4, type='conj')
+  mod = gretl.BVAR_setup('dep', 4, 'conj')                                    # equivalent to mod = gretl.BVAR_setup(y='dep', lag=4, type='conj')
   
   # Step 2 - prior customization
-  OPT = gretl.Bundle()
-  OPT['p_mean'] = 0
-  gretl.BVAR_sigma_prior(mod=model, prior_type='AR')
-  gretl.BVAR_alpha_prior(mod=model, prior_type='Minn', prior_opt=OPT)
+  gretl.BVAR_sigma_prior(mod, 'AR')                                           # equivalent to gretl.BVAR_sigma_prior(mod=mod, prior_type='AR')
+  gretl.BVAR_alpha_prior(mod, 'Minn', gretl.Bundle(p_mean=0))                 # equivalent to gretl.BVAR_alpha_prior(mod=mod, prior_type='Minn', prior_opt=gretl.Bundle(p_mean=0))
   
   # Step 3 - posterior simulation
   gretl.set('seed', 1234)
-  res = gretl.BVAR_posterior(mod=model, wat='all', opt=gretl.Bundle(iter=10000))
+  res = gretl.BVAR_posterior(mod, 'all', gretl.Bundle(iter=10000))            # equivalent to res = gretl.BVAR_posterior(mod=mod, wat='all', opt=gretl.Bundle(iter=10000))
   res.print(tree=True)
 
 if __name__ == "__main__":
