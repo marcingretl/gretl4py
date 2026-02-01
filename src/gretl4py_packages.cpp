@@ -539,14 +539,35 @@ GretlType GretlPackage::func_get_res_type (const std::string &name) const
 
 GretlPackageRes GretlPackage::function_exec (const std::string &func_name,
                                              GretlDatasetPtr &GD, GretlPrint &GP,
+                                             const py::args &args,
                                              const py::kwargs &kwargs)
 {
     // we prepare function to call
     fncall *func_call = user_func_get_fncall(func_get_ptr(func_name));
     if (!func_call) throw std::runtime_error("unable to load '" + func_name + "' function");
 
+    // we copy kwargs to handle posssible args
+    py::kwargs merged_kwargs = kwargs;
+
+    // we handle args (positional parameters, if exist)
+    auto n_args = args.size();
+
+    if (n_args > 0) {
+        auto func_args = func_args_sorted_.at(func_name);
+
+        if (n_args > func_args.size())
+            throw py::type_error("number of positional arguments bigger than total number of '" + func_name
+                                 + "' function arguments (" + std::to_string(func_args.size()) + ")");
+        for (size_t i = 0; i < n_args; ++i) {
+            const std::string &arg_name = func_args.at(i).first;
+
+            if (merged_kwargs.contains(arg_name)) throw py::type_error("multiple values for argument '" + arg_name + "'");
+            merged_kwargs[arg_name.c_str()] = args[i];
+        }
+    }
+
     // we unpack parameters
-    unpack_kwargs_package_(func_name, func_call, GD, kwargs);
+    unpack_kwargs_package_(func_name, func_call, GD, merged_kwargs);
 
     // we check dataset in the context of package's "data-requirement"
     if (!GD && !(get_properties_<DataReq>("data-requirement") == FN_NODATA_OK)) {

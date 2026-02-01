@@ -1692,7 +1692,7 @@ GretlModel_package::GretlModel_package (const std::string &name,
 
 void GretlModel_package::fit (void)
 {
-    res_ = GPKG_->function_exec(main_func_name_, GD_, GP_, kwargs_);
+    res_ = GPKG_->function_exec(main_func_name_, GD_, GP_, args_, kwargs_);
 
     // saving results
     py::object self = py::cast(this);

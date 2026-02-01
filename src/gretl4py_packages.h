@@ -113,6 +113,7 @@ public:
 
     GretlPackageRes function_exec (const std::string &func_name,
                                    GretlDatasetPtr &GD, GretlPrint &GP,
+                                   const py::args &args,
                                    const py::kwargs &kwargs);
 
     std::string get_examples_path (const std::string &fname);

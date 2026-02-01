@@ -473,9 +473,9 @@ py::object do_gretl_include (const std::string &filename)
 
         // create a wrapper bound to this function name and obj
         py::object wrapper = py::cpp_function (
-            [obj, fname](const py::kwargs &kwargs) -> py::object
+            [obj, fname](const py::args &args, const py::kwargs &kwargs) -> py::object
             {
-                return obj.attr("_function_exec")(fname, **kwargs);
+                return obj.attr("_function_exec")(fname, *args, **kwargs);
             });
 
         // set it as an attribute on the object
