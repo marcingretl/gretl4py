@@ -41,6 +41,8 @@ private:
     using MainFuncNoOptDef = std::map<std::string, GretlType>;  // map of non-optional main_func arguments without default values
     using FunctionArgsVec =
         std::vector<std::pair<std::string, int>>;               // vector of arguments and their id-s for public functions
+    using FunctionArgsSort =
+        std::map<std::string, FunctionArgsVec>;                 // map of sorted arguments and their id-s for public functions
 
     static inline std::map<std::string, GretlPackagePtr> GPKGs_;// registry of loaded contributed packages
 
@@ -52,8 +54,9 @@ private:
     std::string main_func_ = "";        // name of main package function
     std::vector<std::string> jel_;      // vector of JEL codes
     bool defines_estimator_ = false;    // true if package implements estimation
-    FunctionMap func_ptrs_;
-    FunctionArgs func_args_;
+    FunctionMap func_ptrs_;             // pointers to package functions
+    FunctionArgs func_args_;            // arguments of package functions (non sorted)
+    FunctionArgsSort func_args_sorted_; // arguments of package functions (sorted)
     MainFuncNoOptDef main_func_nd_;
     std::string full_path_;             // path to package file (full)
     std::string base_dir_;              // path to the package

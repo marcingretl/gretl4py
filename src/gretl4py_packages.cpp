@@ -116,6 +116,9 @@ GretlPackage::GretlPackage (const std::string &pkg_name,
     }
     if (func_ptrs_.empty()) throw std::runtime_error("no public functions found in '" + pkg_name + "' package");
 
+    // we construct function map with sorted arguments
+    for (const auto &[key, el] : func_args_) func_args_sorted_.emplace(key, sort_func_args_by_id_(el));
+
     // we try to register package 'main' function (i.e. the one to call via ::fit())
     if (func_ptrs_.size() == 1) {
         set_main(func_ptrs_.begin()->first);
@@ -441,7 +444,7 @@ void GretlPackage::show_functions (const std::string &name)
     // prints the signatures of all public functions provided by the package
     // in @name is empty, we print all functions, otherwise only @name
     //
-    if (func_args_.empty()) throw std::runtime_error("no available functions");
+    if (func_args_sorted_.empty()) throw std::runtime_error("no available functions");
 
     GretlType type;
     std::string type_str;
@@ -449,21 +452,17 @@ void GretlPackage::show_functions (const std::string &name)
 
     if (name.empty()) {
         py::print("Functions available in " + pkg_name_ + " package:");
-    } else if (func_args_.count(name) == 0) {
+    } else if (func_args_sorted_.count(name) == 0) {
         throw std::invalid_argument(name + ": no such function in " + pkg_name_ + " package");
     }
 
     // we iterate over functions in package
-    for (const auto &[key, val] : func_args_) {
+    for (const auto &[key, val] : func_args_sorted_) {
         if (!name.empty() && name != key) continue;
         func_ptr = func_ptrs_.at(key);
         type = static_cast<GretlType>(user_func_get_return_type(func_ptr));
         py::print(key, "->", gretl_type_get_name(type), (key == main_func_ ? "[main] " : ""));
-
-        // we must have function arguments sorted by their id-s
-        auto func_args_sorted = sort_func_args_by_id_(val);
-
-        for (const auto &it : func_args_sorted) {
+        for (const auto &it : val) {
             type = static_cast<GretlType>(fn_param_type(func_ptr, it.second));
             auto default_value = fn_param_default(func_ptr, it.second);
             std::string default_value_str;
