@@ -105,7 +105,7 @@ public:
 
     bool is_estimator (void) const;
 
-    std::map<std::string, int> get_func_args (const std::string &fun_name) const;
+    FunctionArgsVec get_func_args (const std::string &fun_name) const;
 
     std::string main_func_get_name (void) const;
 

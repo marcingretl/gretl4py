@@ -266,10 +266,7 @@ void GretlPackage::unpack_kwargs_package_ (const std::string &func_name,
     if (py::len(kwargs) == 0) return;
 
     // map function to call with its arguments
-    std::map<std::string, int> func_name_args = get_func_args(func_name);
-
-    // vector of func_name_args items ordered by value (int)
-    auto func_name_args_sorted = sort_func_args_by_id_(func_name_args);
+    FunctionArgsVec func_name_args = get_func_args(func_name);
 
     // general options (non function-based)
     for (const auto &[key, val] : kwargs) {
@@ -283,7 +280,10 @@ void GretlPackage::unpack_kwargs_package_ (const std::string &func_name,
             // do something elsewhere
             continue;
         } else {
-            if (!func_name_args.count(key_str)) throw std::invalid_argument(key_str + ": there is no such argument in function: " + func_name);
+            if (!std::any_of(func_name_args.begin(),
+                             func_name_args.end(),
+                             [&](const auto &p){ return p.first == key_str; }))
+                             throw std::invalid_argument(key_str + ": there is no such argument in function: " + func_name);
         }
     }
 
@@ -293,7 +293,7 @@ void GretlPackage::unpack_kwargs_package_ (const std::string &func_name,
     GretlType arg_type;     // variable's type
     double darg_value;      // value to be pushed on stack (if double)
 
-    for (const auto &[key, arg_no] : func_name_args_sorted) {
+    for (const auto &[key, arg_no] : func_name_args) {
         if (!kwargs.contains(key)) continue;
         auto val = kwargs[py::cast(key)];
         PythonArgInfo arginfo = inspect_pyobject(val);
@@ -492,9 +492,7 @@ py::list GretlPackage::get_functions (void) const
 
     py::list res;
 
-    for (auto &it : func_args_) {
-        res.append(it.first);
-    }
+    for (auto &it : func_args_) res.append(it.first);
 
     return res;
 }
@@ -504,11 +502,11 @@ bool GretlPackage::is_estimator (void) const
     return defines_estimator_;
 }
 
-std::map<std::string, int> GretlPackage::get_func_args (const std::string &fun_name) const
+GretlPackage::FunctionArgsVec GretlPackage::get_func_args (const std::string &fun_name) const
 {
-    auto it = func_args_.find(fun_name);
+    auto it = func_args_sorted_.find(fun_name);
 
-    if (it != func_args_.end()) {
+    if (it != func_args_sorted_.end()) {
         return it->second;
     } else {
         throw std::invalid_argument("there is no such function: " + fun_name);
