@@ -203,7 +203,14 @@ signatures:
 	\item \pythcode{gig_estimate(model: _gretl.Bundle, verbose: int = 1) -> int}.
 \end{itemize}
 
-Note that in \gretlpy the order of parameters does not matter.
+Note that in \gretlpy, users may call functions from packages
+in two ways:
+\begin{itemize}
+	\item \bftt{positional}: in this case, the order of parameters
+		must match the function signature,
+	\item \bftt{keyword}: in this case, the order of parameters
+		does not matter.
+\end{itemize}
 
 To run the example script provided with the \texttt{gig} package,
 one would use the following \texttt{hansl} code:
@@ -240,8 +247,10 @@ gretl.include('gig')
 djclose = gretl.get_data('djclose.gdt')
 djclose.new_series('rr = 100*ldiff(djclose)')
 
-gig_model = gretl.gig_setup(y='rr')
-gretl.gig_estimate(model=gig_model)
+gig_model = gretl.gig_setup('rr')             # equivalent to gig_model = gretl.gig_setup(y='rr')
+
+gretl.gig_estimate(gig_model)                 # equivalent to gretl.gig_estimate(model=gig_model)
+
 
 # Compare with native implementation
 native_model = gretl.garch('1 1 ; rr', nc=True, robust=True).fit()
