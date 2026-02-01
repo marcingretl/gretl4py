@@ -266,13 +266,7 @@ void GretlPackage::unpack_kwargs_package_ (const std::string &func_name,
     std::map<std::string, int> func_name_args = get_func_args(func_name);
 
     // vector of func_name_args items ordered by value (int)
-    std::vector<std::pair<std::string, int>> func_name_args_sorted(func_name_args.begin(),
-                                                                   func_name_args.end());
-    std::sort(func_name_args_sorted.begin(), func_name_args_sorted.end(),
-      [](const auto &a, const auto &b)
-      {
-          return a.second < b.second; // sort by value
-      });
+    auto func_name_args_sorted = sort_func_args_by_id_(func_name_args);
 
     // general options (non function-based)
     for (const auto &[key, val] : kwargs) {
@@ -362,6 +356,24 @@ void GretlPackage::unpack_kwargs_package_ (const std::string &func_name,
     }
 }
 
+GretlPackage::FunctionArgsVec GretlPackage::sort_func_args_by_id_ (const std::map<std::string, int> &func_args)
+{
+    //
+    // we sort argument of given function bye id-s
+    //
+
+    // vector of func_name_args items ordered by value (int)
+    FunctionArgsVec func_args_sorted(func_args.begin(), func_args.end());
+
+    std::sort(func_args_sorted.begin(), func_args_sorted.end(),
+      [](const auto &a, const auto &b)
+      {
+          return a.second < b.second; // sort by value
+      });
+
+      return func_args_sorted;
+}
+
 int GretlPackage::get_err (void) const
 {
     return err_;
@@ -423,10 +435,11 @@ std::string GretlPackage::get_name (void) const
     return pkg_name_;
 }
 
-void GretlPackage::show_functions (void) const
+void GretlPackage::show_functions (const std::string &name)
 {
     //
-    // prints the signatures of all public functions provided by the package.
+    // prints the signatures of all public functions provided by the package
+    // in @name is empty, we print all functions, otherwise only @name
     //
     if (func_args_.empty()) throw std::runtime_error("no available functions");
 
@@ -434,12 +447,23 @@ void GretlPackage::show_functions (void) const
     std::string type_str;
     ufunc *func_ptr;
 
-    py::print("Functions available in " + pkg_name_ + " package:");
+    if (name.empty()) {
+        py::print("Functions available in " + pkg_name_ + " package:");
+    } else if (func_args_.count(name) == 0) {
+        throw std::invalid_argument(name + ": no such function in " + pkg_name_ + " package");
+    }
+
+    // we iterate over functions in package
     for (const auto &[key, val] : func_args_) {
+        if (!name.empty() && name != key) continue;
         func_ptr = func_ptrs_.at(key);
         type = static_cast<GretlType>(user_func_get_return_type(func_ptr));
         py::print(key, "->", gretl_type_get_name(type), (key == main_func_ ? "[main] " : ""));
-        for (const auto &it : val) {
+
+        // we must have function arguments sorted by their id-s
+        auto func_args_sorted = sort_func_args_by_id_(val);
+
+        for (const auto &it : func_args_sorted) {
             type = static_cast<GretlType>(fn_param_type(func_ptr, it.second));
             auto default_value = fn_param_default(func_ptr, it.second);
             std::string default_value_str;

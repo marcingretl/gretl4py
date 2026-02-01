@@ -43,12 +43,14 @@ The \classpypackage class provides the following public methods:
 \end{lstlisting}
 
 \gretlfpycmd{show\_functions()}\label{met:gretlpackage::show_functions}
-\estdesc{Prints the signatures of all public functions provided by the package.}
+\estdesc{Prints the signatures of the public functions provided by the package.}
 \begin{lstlisting}[style=pythonstylefoot]
-.show_functions()
+.show_functions(name: str = "")
 \end{lstlisting}
-\generaldesc{Using this method, the user may inspect
-		a \gretl package, that is, retrieve detailed
-		information about the functions it provides,
-		including their names, arguments (with default
-		values), and return types.}
+\generaldesc{This method allows the user to inspect a \gretl
+	package and retrieve detailed information about the
+	functions it provides, including their names, arguments
+	(with default values), and return types.\newline
+	If \textit{name} is empty, the signatures of all functions
+	are displayed; otherwise, only the signature of the
+	specified \textit{name} is shown.}

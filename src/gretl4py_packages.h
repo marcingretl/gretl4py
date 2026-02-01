@@ -39,6 +39,8 @@ private:
     using FunctionArgs =
         std::map<std::string, std::map<std::string, int>>;      // map of arguments and their id-s for public functions
     using MainFuncNoOptDef = std::map<std::string, GretlType>;  // map of non-optional main_func arguments without default values
+    using FunctionArgsVec =
+        std::vector<std::pair<std::string, int>>;               // vector of arguments and their id-s for public functions
 
     static inline std::map<std::string, GretlPackagePtr> GPKGs_;// registry of loaded contributed packages
 
@@ -69,6 +71,8 @@ private:
     void unpack_kwargs_package_ (const std::string &func_name,
                                  fncall *func_call, GretlDatasetPtr &GD,
                                  const py::kwargs &kwargs);
+
+    FunctionArgsVec sort_func_args_by_id_ (const std::map<std::string, int> &func_args);
 public:
     ~GretlPackage (void);
 
@@ -92,7 +96,7 @@ public:
 
     std::string get_name (void) const;
 
-    void show_functions (void) const;
+    void show_functions (const std::string &name = "");
 
     py::list get_functions (void) const;
 

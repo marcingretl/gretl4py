@@ -284,7 +284,8 @@ void init_gretl4py_package_py11(py::module_ &m)
     py::class_<GretlPackage, GretlPackagePtr>(m, "Package", py::dynamic_attr())
     .def("__repr__", &GretlPackage::repr_impl)
     .def("get_name", &GretlPackage::get_name)
-    .def("show_functions", &GretlPackage::show_functions)
+    .def("show_functions", &GretlPackage::show_functions,
+         py::arg("name").none(true) = "")
     .def("set_main", &GretlPackage::set_main,
          py::arg("name").none(false))
     .def("get_functions", &GretlPackage::get_functions)

@@ -277,7 +277,6 @@ GretlDataset::GretlDataset (const GretlDataset &src) : id_(next_obj_id_++)
     dset->t1 = src.dset->t1;
     dset->t2 = src.dset->t2;
     dset->markers = src.dset->markers;
-    //dset->modflag = src.dset->modflag;    //FIXME: shall we copy this as well?
     dset->rseed = src.dset->rseed;
     dset->auxiliary = src.dset->auxiliary;
     dset->n_varinfo = src.dset->n_varinfo;
@@ -340,6 +339,7 @@ GretlDatasetPtr GretlDataset::get_dset_by_id_ (int id)
     auto dset_reg = get_dset_ids();
 
     if (!dset_reg.count(id)) throw std::invalid_argument("there is no dataset with id = " + std::to_string(id));
+
     auto it = GDs_.find(id);
 
     return it->second.lock();
