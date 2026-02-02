@@ -359,7 +359,7 @@ void do_gretl_summary (const std::string &varlist, const py::kwargs &kwargs)
     if (err) handle_gretl_error(err);
 }
 
-void do_gretl_print (const std::string &varlist,
+void do_gretl_print (const std::string &varlist, gretlopt force_opt,
                      const py::kwargs &kwargs)
 {
     //
@@ -386,6 +386,9 @@ void do_gretl_print (const std::string &varlist,
             varlist_ptr = list_from_formula(varlist, GD->dset, err);
         }
     }
+
+    // we force OPT
+    if (force_opt != OPT_NONE) SET_OPT(opt, force_opt);
 
     // based on 'interact.c' (but we don't allow for string literals)
     if (opt & OPT_L) {

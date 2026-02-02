@@ -99,7 +99,7 @@ public:
 
     void linked_models_del (const int model_id);
 
-    void print (const py::kwargs &kwargs);
+    void print (const std::string &varlist, const py::kwargs &kwargs);
 
     void set_as_default (void);
 

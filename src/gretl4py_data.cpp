@@ -757,6 +757,50 @@ std::string GretlDataset::repr (void) const
     return ret;
 }
 
+void GretlDataset::print (const std::string &varlist, const py::kwargs &kwargs)
+{
+    static constexpr std::array<const char*, 3> exclusive_keys = {
+        "byobs", "byvar", "summary"
+    };
+
+    py::dict final_kwargs = kwargs;
+    gretlopt force_opt = OPT_NONE;
+    std::vector<std::string> present_keys;
+    py::object obj;
+
+    // check for mutually exclusive keys
+    for (const auto &el : exclusive_keys) {
+        if (kwargs.contains(el)) present_keys.push_back(el);
+    }
+    if (present_keys.size() > 1) {
+        std::string wrong_kes = present_keys.at(0);
+        for (size_t i=1; i<present_keys.size(); ++i) {
+            wrong_kes.append(" ").append(present_keys.at(i));
+        }
+        throw std::invalid_argument("these keys may not be passed together: " + wrong_kes);
+    }
+
+    // we must add itself (dataset) for global printer
+    final_kwargs["data"] = shared_from_this();
+
+    // at first we look for special cases
+    // note: byvar is a special case for headT/tailT
+    // "byobs" key
+    obj = final_kwargs.attr("pop")("byobs", py::bool_(false));
+    if (!is_pybool(obj)) throw std::invalid_argument("'byobs' must be a bool");
+    bool byobs = obj.cast<bool>();
+    // "byvar" key
+    obj = final_kwargs.attr("pop")("byvar", py::bool_(false));
+    if (!is_pybool(obj)) throw std::invalid_argument("'byvar' must be a bool");
+    bool byvar = obj.cast<bool>();
+    // special logic: if byvar is true, byobs is automatically false
+    if (byvar) byobs = false;
+    if (byobs) force_opt = OPT_O;
+
+    do_gretl_print(varlist, force_opt, final_kwargs);
+}
+
+/*
 void GretlDataset::print (const py::kwargs &kwargs)
 {
     gretl_list_ptr var_list{nullptr};
@@ -770,9 +814,7 @@ void GretlDataset::print (const py::kwargs &kwargs)
         // ensure the key is a string
         if (!is_pystr(item.first)) throw std::invalid_argument("option key must be a string");
         const std::string &key = item.first.cast<std::string>();
-
-        // we use ::to_string() to get an owned buffer
-        val_str = MapPyToCpp(item.second).to_string();
+        val_str = py::str(item.second);
 
         if (key == "summary") {
             summary = (val_str == "1");
@@ -818,14 +860,13 @@ void GretlDataset::print (const py::kwargs &kwargs)
         list_series(dset, OPT_NONE, prn);
     } else {
         opt_ = byobs ? OPT_O : OPT_NONE;
-        if (range) {
-            SET_OPT(opt_, OPT_R);
-        }
+        if (range) SET_OPT(opt_, OPT_R);
         err_ = printdata(var_list.get(), NULL, dset, opt_, GP_.prn_ptr());
         if (err_) handle_gretl_error(err_);
     }
     GP_.print();
 }
+*/
 
 /*
 void GretlDataset::sample (const py::kwargs &kwargs)

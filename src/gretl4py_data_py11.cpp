@@ -29,6 +29,34 @@ const char *gretl_workdir (void);
 
 enum HeadTail { HEAD, HEAD_T, TAIL, TAIL_T };       // for head/tail printing
 
+/*
+template <HeadTail mode>
+static void head_tail_print (GretlDataset &gd, int nobs)
+{
+    //
+    // here we perform ::head() and ::tail()
+    // Note: this function is actually a wrapper to ::print()
+    // thus should be used only for head()/tail() mapping
+    //
+    py::kwargs opts;
+
+    // we setup printing parameters
+    if constexpr (mode == HEAD || mode == HEAD_T) {
+        opts["head"] = nobs;
+    } else if constexpr (mode == TAIL || mode == TAIL_T) {
+        opts["tail"] = nobs;
+    }
+
+    if constexpr (mode == HEAD || mode == TAIL) {
+        opts["byobs"] = true;
+    } else {
+        opts["byobs"] = false;
+    }
+
+    gd.print("", opts);
+}*/
+
+
 template <HeadTail mode>
 static void head_tail_print (GretlDataset &gd, int nobs)
 {
@@ -50,7 +78,7 @@ static void head_tail_print (GretlDataset &gd, int nobs)
     }
     if constexpr (mode == HEAD || mode == TAIL) opts["byobs"] = true;
 
-    gd.print(opts);
+    gd.print("", opts);
 }
 
 // GretlDataset mappings
@@ -190,7 +218,8 @@ void init_gretl4py_dataset_py11(py::module_ &m)
              py::arg("varlist").none(false))
         .def("lags", &GretlDataset::lags,
              py::arg("varlist").none(false), py::arg("order").none(true) = 0)
-        .def("print", &GretlDataset::print)
+        .def("print", &GretlDataset::print,
+             py::arg("varlist").none(true) = "", py::kw_only())
         .def("varnames", &GretlDataset::varnames)
         .def("get_series", &GretlDataset::get_series,
              py::arg("series").none(false))
