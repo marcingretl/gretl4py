@@ -26,6 +26,7 @@ import sys
 import site as _site
 import sysconfig
 import atexit
+import platform
 from pathlib import Path
 
 # --- Basic paths and platform info ---
@@ -35,7 +36,7 @@ lib_dir = os.path.join(package_dir, 'lib')
 user_site = os.path.join(_site.getusersitepackages(), 'gretl')
 
 # --- Set essential environment variables ---
-os.environ.setdefault('GRETL_HOME', package_dir)
+os.environ.setdefault('GRETL_HOME', str(Path(package_dir).resolve()))
 os.environ.setdefault('GRETL_DATA_PATH', data_dir)
 os.environ.setdefault('GRETL_PLUGIN_PATH', lib_dir)
 os.environ.setdefault('CURL_CA_BUNDLE', str(Path(user_site) / "curl-ca-bundle.crt"))
@@ -131,14 +132,10 @@ def __getattr__(fun):
     """
     Called when a gretl.fun is called.
     """
-    cfunc = ("about", "set", "include", "summary", "Bundle")
-
     if fun in dir(gretl4py_addons):
         return getattr(gretl4py_addons, fun)
     if fun in dir(gretl4py_classes):
         return getattr(gretl4py_classes, fun)
-    if fun in dir(_gretl) and fun in cfunc:
-        return getattr(_gretl, fun)
 
     def wrapper(*args, **kwargs):
         return __model_initializer(fun, *args, **kwargs)
