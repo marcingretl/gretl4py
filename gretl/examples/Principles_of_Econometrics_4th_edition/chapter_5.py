@@ -112,7 +112,7 @@ def run_example():
     print("\n5.7. Interaction Variables")
     pizza.set_as_default()
     print("Table 5.4 Pizza Expenditure Data")
-    pizza.print(series="pizza income age", range="1:5", byobs=True)
+    pizza.print(varlist="pizza income age", range="1:5")
     pizza.new_series('ageincome = age * income')
     PZ_1 = gretl.ols('pizza const age income', simple=True).fit()                   # (5.27)
     PZ_2 = gretl.ols('pizza const age income ageincome', simple=True).fit()         # (5.28)

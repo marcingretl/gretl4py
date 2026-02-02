@@ -760,12 +760,12 @@ std::string GretlDataset::repr (void) const
 void GretlDataset::print (const std::string &varlist, const py::kwargs &kwargs)
 {
     static constexpr std::array<const char*, 3> exclusive_keys = {
-        "byobs", "byvar", "summary"
+        "byobs", "summary"
     };
 
     py::dict final_kwargs = kwargs;
-    gretlopt force_opt = OPT_NONE;
     std::vector<std::string> present_keys;
+    bool summary = false;
     py::object obj;
 
     // check for mutually exclusive keys
@@ -780,24 +780,43 @@ void GretlDataset::print (const std::string &varlist, const py::kwargs &kwargs)
         throw std::invalid_argument("these keys may not be passed together: " + wrong_kes);
     }
 
+    // check if given varlist contains valid names
+    std::unordered_multiset<std::string> varlist_as_set;
+    load_string_to_container<std::unordered_multiset<std::string>>(varlist_as_set, varlist);
+    for (const auto &el : varlist_as_set) {
+        get_series(el);
+    }
+
     // we must add itself (dataset) for global printer
     final_kwargs["data"] = shared_from_this();
 
     // at first we look for special cases
-    // note: byvar is a special case for headT/tailT
-    // "byobs" key
-    obj = final_kwargs.attr("pop")("byobs", py::bool_(false));
-    if (!is_pybool(obj)) throw std::invalid_argument("'byobs' must be a bool");
-    bool byobs = obj.cast<bool>();
-    // "byvar" key
-    obj = final_kwargs.attr("pop")("byvar", py::bool_(false));
-    if (!is_pybool(obj)) throw std::invalid_argument("'byvar' must be a bool");
-    bool byvar = obj.cast<bool>();
-    // special logic: if byvar is true, byobs is automatically false
-    if (byvar) byobs = false;
-    if (byobs) force_opt = OPT_O;
+    // "summary" key
+    obj = final_kwargs.attr("pop")("summary", py::bool_(false));
+    if (!(is_pybool(obj) || is_pyint(obj))) throw std::invalid_argument("'summary' must be a bool");
+    summary = obj.cast<bool>();
 
-    do_gretl_print(varlist, force_opt, final_kwargs);
+    if (summary) {
+        auto *prn = GP_.prn_ptr();
+
+        if (dataset_is_time_series(dset)) {
+            char s1[OBSLEN], s2[OBSLEN];
+
+            ntolabel(s1, 0, dset);
+            ntolabel(s2, dset->n-1, dset);
+            pprintf(prn, "Time series, frequency %d, T = %d, %s to %s\n\n",
+                    dset->pd, dset->n, s1, s2);
+        } else if (is_panel()) {
+            pprintf(prn, "Panel data, N = %d, T = %d\n\n",
+                    dset->n / dset->pd, dset->pd);
+        } else {
+            pprintf(prn, "Cross-sectional data, N = %d\n\n", dset->n);
+        }
+        list_series(dset, OPT_NONE, prn);
+        GP_.print();
+    } else {
+        do_gretl_print(varlist, final_kwargs);
+    }
 }
 
 /*
@@ -865,103 +884,6 @@ void GretlDataset::print (const py::kwargs &kwargs)
         if (err_) handle_gretl_error(err_);
     }
     GP_.print();
-}
-*/
-
-/*
-void GretlDataset::sample (const py::kwargs &kwargs)
-{
-    //
-    // A method to mimic gretl's 'smpl' command
-    //
-    std::string t1str, t2str, restr;
-    bool opt_replace = false;
-    bool full = false;
-    bool unit = false;
-    bool time = false;
-    bool quiet = false;
-
-    opt_ = OPT_NONE;
-    for (auto &item : kwargs) {
-        if (!is_pystr(item.first)) {
-            throw std::invalid_argument("option key must be a string");
-        }
-        const std::string key = item.first.cast<std::string>();
-        const auto val_str = MapPyToCpp(item.second).to_string();
-
-        if (key == "t1") {
-            t1str = MapPyToCpp(item.second).to_string();
-        } else if (key == "t2") {
-            t2str = MapPyToCpp(item.second).to_string();
-        } else if (key == "restriction") {
-            restr = MapPyToCpp(item.second).to_string();
-        } else if (key == "replace") {
-            opt_replace = item.second.cast<bool>();
-        } else if (key == "full") {
-            full = item.second.cast<bool>();
-        } else if ((key == "unit" || key == "time") && is_panel()) {
-            if (key == "unit") {
-                unit = item.second.cast<bool>();
-            } else {
-                time = item.second.cast<bool>();
-            }
-        } else if (key == "quiet") {
-            quiet = item.second.cast<bool>();
-        } else {
-            throw std::invalid_argument("invalid key '" + key + "' in 'sample' args");
-        }
-    }
-
-    // reject invalid cases (mutually exclusive)
-    if (full && (!t1str.empty() || !t2str.empty() || opt_replace)) {
-        throw std::invalid_argument("sample: invalid use of 'full'");
-    } else if (!restr.empty() && (!t1str.empty() || !t2str.empty())) {
-        throw std::invalid_argument("sample: invalid use of 'restriction'");
-    } else if (opt_replace && restr.empty()) {
-        throw std::invalid_argument("sample: invalid use of 'replace'");
-    } else if (is_panel() && (unit && time)) {
-        throw std::invalid_argument("sample: 'unit' and 'time' options are mutually exclusive");
-    }
-    bool have_args = (!t1str.empty() || !t2str.empty() || !restr.empty() || opt_replace || full || unit || time);
-
-    if (!have_args) {
-        // just report current sample
-        print_smpl(dset, get_full_length_n(), OPT_NONE, GP_.prn_ptr());
-    } else if (full) {
-        // "smpl full"
-        err_ = restore_full_sample(dset, NULL);
-    } else if (!restr.empty()) {
-        // smpl <restr> --restrict [--replace]
-        opt_ = opt_replace ? static_cast<gretlopt>(OPT_R | OPT_P) : OPT_R;
-        err_ = restrict_sample(restr.data(), NULL, dset, NULL,
-                               opt_, GP_.prn_ptr(), NULL);
-    } else {
-        // use empty string as fallback when only one of t1/t2 is set (smpl <t1str> <t2str>)
-        std::string ts1 = t1str.empty() ? ";" : t1str;
-        std::string ts2 = t2str.empty() ? ";" : t2str;
-
-        if (is_panel()) {
-            // panel data: --unit or --time option
-            if (unit) {
-                SET_OPT(opt_, OPT_U);
-            }
-            if (time) {
-                SET_OPT(opt_, OPT_X);
-            }
-            err_ = set_panel_sample(ts1.c_str(), ts2.c_str(), opt_,
-                                    dset, NULL, GP_.prn_ptr());
-        } else {
-            err_ = set_sample(ts1.c_str(), ts2.c_str(), dset, OPT_NONE);
-        }
-    }
-    if (err_) handle_gretl_error(err_);
-
-    if (have_args) {
-        print_smpl(dset, get_full_length_n(), OPT_NONE, GP_.prn_ptr());
-    }
-    if (!quiet) {
-        GP_.print();
-    }
 }
 */
 

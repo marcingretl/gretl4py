@@ -36,7 +36,7 @@ print('Variables in data97_csv')
 print(data97_csv.varnames())
 
 # we print only specified variables
-data97_gdt.print(series="QNC PRIME")
+data97_gdt.print(varlist="QNC PRIME")
 
 ##############################################
 # setobs
@@ -49,9 +49,6 @@ data97_df.print()
 ##############################################
 # to print the first 5 observations
 data97_gdt.head() # default 5
-
-# to print the first 5 observations by variable
-data97_gdt.headT(6)
 
 # to print the last 4
 data97_gdt.tail(4)

@@ -30,7 +30,7 @@ def run_example():
   ############################################
   print("\n15.1. A Microeconomic Panel")
   print("Table 15.1 Representative Observations from NSL Panel Data")
-  nls_panel.print(series='year lwage educ south black union exper tenure', byobs=True, range="1:15")
+  nls_panel.print(varlist='year lwage educ south black union exper tenure', range="1:15")
 
   ############################################
   # 15.2 Pooled Model
@@ -67,8 +67,7 @@ def run_example():
     nls_panel.new_series(formula=f'{v}_hat = pmean({v})')
     nls_panel.new_series(formula=f'{v}_bar = {v} - {v}_hat')
   print("\nTable 15.5 Data in Deviation from Individual Mean Form")
-  nls_panel.print(series='lwage lwage_hat lwage_bar exper exper_hat exper_bar',
-                  byobs=True, range="1:15")
+  nls_panel.print(varlist='lwage lwage_hat lwage_bar exper exper_hat exper_bar', range="1:15")
 
   print("\n15.3.2a. Fixed Effects Estimates of Wage Equation for N=10")
   nls_panel.sample(1, 10, unit=True)

@@ -49,8 +49,7 @@ void do_set (const std::string &key, const std::string &value,
 
 void do_gretl_summary (const std::string &varlist, const py::kwargs &kwargs);
 
-void do_gretl_print (const std::string &varlist, gretlopt force_opt,
-                     const py::kwargs &kwargs);
+void do_gretl_print (const std::string &varlist, const py::kwargs &kwargs);
 
 double do_gretl_get_pvalue (const std::string &dist, double value,
                             const py::array_t<double> &params = py::array());
