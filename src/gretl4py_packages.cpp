@@ -88,16 +88,15 @@ GretlPackage::GretlPackage (const std::string &pkg_name,
         base_dir_ = "";
     }
 
-    // we take info bundle
-    err_ = bundle_function_package_info(full_path_.c_str(), GB_.get_ptr());
-    if (err_) handle_gretl_error(err_);
-
     // setup some basic info about package
-    if (pkg_name != function_package_get_name(pkg_)) {
+    if (pkg_name != function_package_get_name(pkg_))
         throw std::runtime_error("package name mismatch: internal: '"
                                  + std::string(function_package_get_name(pkg_))
                                  + "', provided: '" + pkg_name_ + "'");
-    }
+    err_ = bundle_function_package_info(full_path_.c_str(), GB_.get_ptr());
+    if (err_) handle_gretl_error(err_);
+    version_ = function_package_get_version(pkg_);
+    long_version_ = get_properties_<std::string>("version");
 
     // we initialize package functions
     function_names_init();
@@ -159,7 +158,7 @@ GretlPackage::GretlPackage (const std::string &pkg_name,
 
     // package summary
     if (print_summary) {
-        oss << std::fixed << std::setprecision(2) << function_package_get_version(pkg_);
+        oss << std::fixed << std::setprecision(2) << version_;
         py::print("We use '" + pkg_name_ + "' package, version: " + oss.str()
                   + ", JEL codes: " + get_properties_<std::string>("tags")
                   + " (" + get_properties_<std::string>("author") + ")"
@@ -497,6 +496,16 @@ py::list GretlPackage::get_functions (void) const
 bool GretlPackage::is_estimator (void) const
 {
     return defines_estimator_;
+}
+
+double GretlPackage::get_version (void) const
+{
+    return version_;
+}
+
+std::string GretlPackage::get_long_version (void) const
+{
+    return long_version_;
 }
 
 GretlPackage::FunctionArgsVec GretlPackage::get_func_args (const std::string &fun_name) const

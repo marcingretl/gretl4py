@@ -61,6 +61,8 @@ private:
     std::string full_path_;             // path to package file (full)
     std::string base_dir_;              // path to the package
     gretl_char_ptr pdfname_ = nullptr;  // name of pdf doc (if exists)
+    double version_;                    // package version (numeric)
+    std::string long_version_;          // package "long" version (string)
     int err_ = 0;
 
     GretlPackage (const std::string &pkg_name, const std::string &suffix,
@@ -102,6 +104,10 @@ public:
     py::list get_functions (void) const;
 
     bool is_estimator (void) const;
+
+    double get_version (void) const;
+
+    std::string get_long_version (void) const;
 
     FunctionArgsVec get_func_args (const std::string &fun_name) const;
 

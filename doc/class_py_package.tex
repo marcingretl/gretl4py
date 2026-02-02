@@ -11,6 +11,24 @@ is available at
 For information on how to use function packages with \gretlpy,
 please refer to Section~\ref{sec:gretl_contributed_packages}.
 
+\subsubsection{\classpypackageb attributes}
+The \classpypackage provides the following public attributes:
+
+\gretlfpycmd{version}
+\estdesc{Returns the package version (numeric).}
+\begin{lstlisting}[style=pythonstylefoot]
+.version -> float
+\end{lstlisting}
+
+\gretlfpycmd{version\_long}
+\estdesc{Returns the package ``long'' version (string).}
+\begin{lstlisting}[style=pythonstylefoot]
+.version_long -> str
+\end{lstlisting}
+\generaldesc{Used mainly in packages under development, where the
+	version string may contain additional elements (such as
+	\texttt{x.yz-svn} or \texttt{x.yz-git}).}
+
 
 \subsubsection{\classpypackageb methods}
 The \classpypackage class provides the following public methods:
@@ -52,5 +70,5 @@ The \classpypackage class provides the following public methods:
 	functions it provides, including their names, arguments
 	(with default values), and return types.\newline
 	If \textit{name} is empty, the signatures of all functions
-	are displayed; otherwise, only the signature of the
-	specified \textit{name} is shown.}
+	are displayed; otherwise, only the signatures of the
+	specified \textit{name} is shown (space separated).}
