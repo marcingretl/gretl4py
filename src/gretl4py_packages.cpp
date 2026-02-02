@@ -214,13 +214,14 @@ bool GretlPackage::package_loaded (const std::string &pkgname)
 
 void GretlPackage::check_if_defines_estimator_ (void)
 {
-    const std::unordered_set<std::string> estimation_codes = {
+    static constexpr std::array<const char*, 24> estimation_codes = {
         "C13", "C14", "C15", "C20", "C21", "C22", "C23", "C24",
         "C25", "C26", "C30", "C31", "C32", "C33", "C34", "C35",
-        "C36", "C40", "C41", "C51", "C52", "C53", "C54", "C58"};
+        "C36", "C40", "C41", "C51", "C52", "C53", "C54", "C58"
+    };
 
     for (const auto &it : jel_) {
-        if (estimation_codes.count(it)) {
+        if (std::find(estimation_codes.begin(), estimation_codes.end(), it) != estimation_codes.end()) {
             defines_estimator_ = true;
             return;
         }
