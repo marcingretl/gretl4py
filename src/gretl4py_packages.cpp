@@ -250,7 +250,7 @@ T GretlPackage::get_properties_ (const char *property)
     } else if (!val) {
         return {}; // gracefully return empty value
     } else if constexpr (std::is_same_v<T, std::vector<std::string>>) {
-        res = load_string_to_container<std::vector<std::string>>(val);
+        load_string_to_container<std::vector<std::string>>(res, val);
     } else if constexpr (std::is_same_v<T, std::string>) {
         res = val;
     } else {
@@ -447,7 +447,7 @@ void GretlPackage::show_functions (const std::string &name)
     if (name.empty()) {
         py::print("Functions available in " + pkg_name_ + " package:");
     } else {
-        func_to_show = load_string_to_container<std::unordered_multiset<std::string>>(name);
+        load_string_to_container<std::unordered_multiset<std::string>>(func_to_show, name);
         for (const auto &el : func_to_show) {
             if (!func_args_sorted_.count(el)) throw std::invalid_argument(el + ": no such function in " + pkg_name_ + " package");
         }

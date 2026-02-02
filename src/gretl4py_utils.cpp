@@ -319,31 +319,28 @@ template void move_to_python_container<GretlDataset, py::dict, py::list>
     (GretlDataset&, py::dict&&, const char*, const std::string&);
 
 template <typename T>
-T load_string_to_container (const std::string &s)
+void load_string_to_container (T &t, const std::string &src)
 {
     //
     // we extract space-separated string and load to container
     //
-    T res;
-    std::istringstream iss(s);
+    std::istringstream iss(src);
     std::string token;
 
     while (iss >> token) {
         if constexpr (std::is_same_v<T, std::unordered_multiset<std::string>>) {
-            res.insert(token);
+            t.insert(token);
         } else if constexpr (std::is_same_v<T, std::vector<std::string>>) {
-            res.push_back(token);
+            t.push_back(token);
         } else {
             static_assert(always_false<T>, "load_string_to_container(): unknown Container type");
         }
     }
-
-    return res;
 }
-template std::unordered_multiset<std::string>
-load_string_to_container<std::unordered_multiset<std::string>>(const std::string&);
-template std::vector<std::string>
-load_string_to_container<std::vector<std::string>>(const std::string&);
+template void load_string_to_container<std::unordered_multiset<std::string>>
+ (std::unordered_multiset<std::string>&, const std::string&);
+template void load_string_to_container<std::vector<std::string>>
+ (std::vector<std::string>&, const std::string&);
 //////////////////////////////////////////////////
 // classes
 //////////////////////////////////////////////////

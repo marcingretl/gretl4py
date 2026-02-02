@@ -84,7 +84,7 @@ void move_to_python_container (PyWrapped &wrapped_obj, Item &&item,
                                const char *container, const std::string &key = "");
 
 template <typename T>
-T load_string_to_container (const std::string &s);
+void load_string_to_container (T &t, const std::string &src);
 //////////////////////////////////////////////////
 // classes
 //////////////////////////////////////////////////
