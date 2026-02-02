@@ -773,11 +773,11 @@ void GretlDataset::print (const std::string &varlist, const py::kwargs &kwargs)
         if (kwargs.contains(el)) present_keys.push_back(el);
     }
     if (present_keys.size() > 1) {
-        std::string wrong_kes = present_keys.at(0);
+        std::string wrong_keys = present_keys.at(0);
         for (size_t i=1; i<present_keys.size(); ++i) {
-            wrong_kes.append(" ").append(present_keys.at(i));
+            wrong_keys.append(" ").append(present_keys.at(i));
         }
-        throw std::invalid_argument("these keys may not be passed together: " + wrong_kes);
+        throw std::invalid_argument("these keys may not be passed together: " + wrong_keys);
     }
 
     // check if given varlist contains valid names
@@ -790,7 +790,6 @@ void GretlDataset::print (const std::string &varlist, const py::kwargs &kwargs)
     // we must add itself (dataset) for global printer
     final_kwargs["data"] = shared_from_this();
 
-    // at first we look for special cases
     // "summary" key
     obj = final_kwargs.attr("pop")("summary", py::bool_(false));
     if (!(is_pybool(obj) || is_pyint(obj))) throw std::invalid_argument("'summary' must be a bool");
