@@ -93,7 +93,7 @@ from . import gretl4py_classes
 # 100% safe module cleanup
 atexit.register(_gretl._gretl4py_cleanup)
 
-# we import some symbols explicitly
+# Explicit symbols import
 from ._gretl import (about, version, gretldir)                      # module-related
 from ._gretl import (Bundle)                                        # constructors
 from ._gretl import (delete, genr, include, pkg, print, set, summary)# libgretl's commands interfaces
@@ -108,7 +108,7 @@ from .gretl4py_addons import print_module_source, fc_print, modeltab
 # deprecations
 # deprecations: END
 
-# we attach additional symbols to certain classes
+# Explicit symbols attach to certain classes
 setattr(_gretl.Model, "attrs", _attrs)                      # for listing all object's attributes
 setattr(_gretl.Model_logit, "oddsratio", _oddsratio)        # for pretty-printing oddsratios
 setattr(_gretl.Dataset, "to_dataframe", _to_dataframe)      # gretl data to Pandas DataFrame converter
@@ -116,7 +116,14 @@ setattr(_gretl.Package, "get_help", _package_get_help)      # display help (eith
 for fun in ['cdf', 'pdf', 'invcdf', 'pvalue', 'critical']:  # wrapper for matrix-based functions
     setattr(_gretl.Dataset, fun, _matrix_functions_wrapper(func_name=fun))
 
-# directly use GretlModel for the model instantiation
+# Dynamically resolvable estimators
+_stable_estimators = ["arima", "ols", "wls", "logit",
+    "probit", "poisson", "negbin", "biprobit", "duration",
+    "heckit", "logistic", "ar", "ar1", "lad", "garch", "mpols",
+    "panel", "tsls", "tobit", "quantreg", "var", "vecm",
+    "hsk", "dpanel", "intreg", "midasreg"]
+
+# Direct use of GretlModel for the model instantiation
 def __model_initializer(model_name: str, *args, **kwargs):
     """
     Return GretlModel class when an unknown function is called to gretl module.
@@ -127,7 +134,6 @@ def __model_initializer(model_name: str, *args, **kwargs):
     else:
         raise AttributeError(f"Model {model_name} not found in _gretl module.")
 
-# simplified __getattr__ to handle dynamic method calls
 def __getattr__(fun):
     """
     Called when a gretl.fun is called.
@@ -147,15 +153,7 @@ def __dir__():
     Extend the module's __dir__() so that dynamic model
     functions appear in auto-completion.
     """
-    static_members = list(globals().keys())
-
-    # dynamically resolvable functions
-    dynamic_functions = ["arima", "ols", "wls", "logit", "probit", "poisson", "negbin",
-        "biprobit", "duration", "heckit", "logistic", "ar", "ar1", "lad", "garch",
-        "mpols", "panel", "tsls", "tobit", "quantreg", "var", "vecm", "hsk", "dpanel",
-        "intreg", "midasreg"]
-
-    return sorted(static_members + dynamic_functions)
+    return sorted(list(globals().keys()) + _stable_estimators)
 
 if __name__ == "__main__":
     pass
