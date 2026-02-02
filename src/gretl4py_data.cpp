@@ -768,6 +768,9 @@ void GretlDataset::print (const std::string &varlist, const py::kwargs &kwargs)
     bool summary = false;
     py::object obj;
 
+    // check for banned options
+    if (kwargs.contains("data")) throw std::invalid_argument("'data': option not available");
+
     // check for mutually exclusive keys
     for (const auto &el : exclusive_keys) {
         if (kwargs.contains(el)) present_keys.push_back(el);

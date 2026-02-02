@@ -486,10 +486,30 @@ Examples:\newline
 	defined as in \ref{func:gretl.pdf}.}
 
 \gretlfpycmd{print()}\label{met:gretldataset::print}
-\estdesc{\tbw}
+\estdesc{Dataset-related printer.}
 \begin{lstlisting}[style=pythonstyle]
-.print([OPTS])
+.print(varlist: str[, OPTS])
 \end{lstlisting}
+\mapto[0]{print varlist}
+\mapto[]{print}
+\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
+	\item[]\maptoopt{byobs=True}{--byobs}{by observations}
+	\item[]\maptoopt{no\_dates=True}{--no-dates}{use simple observation numbers}
+	\item[]\maptoopt{range='start:stop'}{--range=start:stop}{\seegretlmanual}
+	\item[]\maptoopt{head=lines}{--head[=lines]}{\seegretlmanual}
+	\item[]\maptoopt{tail=lines}{--tail[=lines]}{\seegretlmanual}
+	\item[]\maptoopt{midas=True}{--midas}{\seegretlmanual}
+	\item[]\pythcode{summary=True}\par%
+	\hspace*{10pt}{\footnotesize the dataset summary is printed}
+\end{itemize}
+\generaldesc{This printer is similar to the general printer
+	(see \ref{func:gretl.print}), and most of its options are
+	valid here. The only exception is \textit{data}, which is not
+	available in this context.\newline
+	The main difference between the general printer and this
+	class-dedicated one is that, by default, the general printer
+	operates on the default dataset, whereas this printer works
+	with the dataset provided by the instance.}
 
 \gretlfpycmd{pvalue()}\label{met:gretldataset::pvalue}
 \estdesc{\textit{P}-value calculator for given \gretlcmd{series}.}

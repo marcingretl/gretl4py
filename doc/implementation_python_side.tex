@@ -395,11 +395,8 @@ Examples:\newline
 \pythcodef{.pkg('install', '/path/to/myfile.gfn', local=True)}\\
 \pythcodef{.pkg('query', 'ghosts')}
 
-\gretlfpycmd{print()}
-\estdesc{Please note that print is a rather ``basic'' function
-	(primarily intended for printing the values of series). For
-	more flexible printers please refer to \ref{met:gretlbundle::print},
-	\ref{met:gretldataset::print}.}
+\gretlfpycmd{print()}\label{func:gretl.print}
+\estdesc{General \gretlpy printer.}
 \begin{lstlisting}[style=pythonstylefoot]
 gretl.print(varlist: str[, OPTS])
 \end{lstlisting}
@@ -410,7 +407,7 @@ gretl.print(varlist: str[, OPTS])
 	\item[]\maptoopt{no\_dates=True}{--no-dates}{use simple observation numbers}
 	\item[]\maptoopt{range='start:stop'}{--range=start:stop}{\seegretlmanual}
 	\item[]\maptoopt{head=lines}{--head[=lines]}{\seegretlmanual}
-	\item[]\maptoopt{tail=True}{--tail[=lines]}{\seegretlmanual}
+	\item[]\maptoopt{tail=lines}{--tail[=lines]}{\seegretlmanual}
 	\item[]\maptoopt{midas=True}{--midas}{\seegretlmanual}
 	\item[]\pythcode{data=gretl.Dataset}\par%
 		\hspace*{10pt}{\footnotesize\pythcode{gretl.print()} works with the specified dataset}
@@ -427,7 +424,11 @@ Examples:\newline
 	If no argument is given (the second variant shown above)
 	then the action is similar to the first case except that
 	all series in the current dataset are printed. The supported
-	options are as described above. }
+	options are as described above.\newline
+	Note that some specific options (such as \pythcode{tree=True}
+	for \classpybundle) are available in class-dedicated printers
+	(please refer to \ref{met:gretlbundle::print} and
+	\ref{met:gretldataset::print}).}
 
 \gretlfpycmd{pvalue()}\label{func:gretl.pvalue}
 \estdesc{\textit{P}-value calculator.}
