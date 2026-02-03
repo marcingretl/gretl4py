@@ -973,10 +973,8 @@ void gretl_valid_long_opt (gretlopt &opt, GretlCmdIndex ci,
         if (is_pystr(val)) {
             std::string s = py::str(val);
 
-            if (s == "1" || s == "1.0") return true;
-            if (s == "0" || s == "0.0") return false;
-            if (s == "true" || s == "True") return true;
-            if (s == "false" || s == "False") return false;
+            if (s == "1" || s == "1.0" || s == "true" || s == "True") return true;
+            if (s == "0" || s == "0.0" || s == "false" || s == "False") return false;
             handle_gretl_error(E_INVARG);
         }
         handle_gretl_error(E_INVARG);
