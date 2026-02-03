@@ -962,6 +962,9 @@ void gretl_valid_long_opt (gretlopt &opt, GretlCmdIndex ci,
     gretlopt opt_local = OPT_NONE;
     OptStatus status;
 
+    if (!is_pystr(val) && !is_pyint(val) && !is_pyfloat(val) && !is_pybool(val) && !ext_val)
+        throw std::invalid_argument("unsupported option parameter type for " + key);
+
     if (std::strchr(key.c_str(), '_')) {
         std::string tmp(key);
 
@@ -970,27 +973,22 @@ void gretl_valid_long_opt (gretlopt &opt, GretlCmdIndex ci,
     } else {
         opt_local = valid_long_opt(ci, key.c_str(), &status);
     }
-    if (opt_local == 0) throw std::invalid_argument("invalid option flag: " + key);
+    if (opt_local == OPT_NONE) throw std::invalid_argument("invalid option flag: " + key);
 
     if (status == OPT_NO_PARM) {
         // no parameter wanted, but we'll accept a boolean
-        if (is_pyint(val) && !ext_val) {
-            int ival = val.cast<int>();
+        if (!ext_val) {
+            auto ival = val.cast<double>();
 
-            if (ival != 0 && ival != 1) handle_gretl_error(E_INVARG);
-            if (ival == 0) return; // do not activate the option
+            if (ival != 0.0 && ival != 1.0) handle_gretl_error(E_INVARG);
+            if (!ival) return; // do not activate the option
         }
     } else {
         // an option parameter is accepted, perhaps required
-        if (!is_pystr(val) && !is_pyint(val) && !is_pyfloat(val) && !ext_val) {
-            throw std::invalid_argument("unsupported option parameter type");
-        }
-
         if (ext_val) {
             push_option_param(ci, opt_local, gretl_strdup(ext_val));
         } else {
-            push_option_param(ci, opt_local,
-                              gretl_strdup(MapPyToCpp(val).to_string().c_str()));
+            push_option_param(ci, opt_local, gretl_strdup(std::string(py::str(val)).c_str()));
         }
     }
 
