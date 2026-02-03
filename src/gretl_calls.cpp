@@ -359,46 +359,63 @@ void do_gretl_summary (const std::string &varlist, const py::kwargs &kwargs)
     if (err) handle_gretl_error(err);
 }
 
+template <typename T>
 void do_gretl_print (const std::string &varlist, const py::kwargs &kwargs)
 {
     //
     // this function mimics libgretl's 'print' command
     //
-    GretlDatasetPtr GD = nullptr;
+    GretlDatasetPtr dataset = nullptr;
     gretl_list_ptr varlist_ptr{nullptr};
     gretlopt opt = OPT_NONE;
     int err = 0;
 
-    if (py::len(kwargs) > 0) {
-        opt = unpack_kwargs_command(PRINT, GD, kwargs);
-    } else {
-        // if we don't have kwargs, we must assign GD manually
-        GD = GretlDataset::default_dataset();
-    }
+    // lambda for generating list of variables to print
+    auto make_varlist = [&varlist, &dataset, &err]() -> gretl_list_ptr
+    {
+        gretl_list_ptr varlist_ptr{nullptr};
 
-    // we look for variables in GD _only_ if there is no uservar
-    if (get_user_var_by_name(varlist.c_str()) == NULL && GD) {
         if (varlist.empty()) {
             // "print " i.e. without options given
-            varlist_ptr.reset(full_var_list(GD->dset, NULL));
+            varlist_ptr.reset(full_var_list(dataset->dset, NULL));
         } else {
-            varlist_ptr = list_from_formula(varlist, GD->dset, err);
+            varlist_ptr = list_from_formula(varlist, dataset->dset, err);
         }
+
+        return varlist_ptr;
+    };
+
+    if (py::len(kwargs) > 0) {
+        opt = unpack_kwargs_command(PRINT, dataset, kwargs);
+    } else {
+        // if we don't have kwargs, we must assign dataset manually
+        dataset = GretlDataset::default_dataset();
     }
+
+    // define object to print
+    if constexpr (std::is_same_v<T, GretlDataset>) {
+        // for GretlDataset, _do not_ print user-define variables
+        varlist_ptr = make_varlist();
+    } else {
+        // we look for variables in dataset _only_ if there is no uservar
+        if (get_user_var_by_name(varlist.c_str()) == NULL && dataset) varlist_ptr = make_varlist();
+    }
+    if (err) handle_gretl_error(err);
 
     // based on 'interact.c' (but we don't allow for string literals)
     if (opt & OPT_L) {
-        err = printdata(NULL, varlist.c_str(), GD ? GD->dset : NULL,
+        err = printdata(NULL, varlist.c_str(), dataset ? dataset->dset : NULL,
                         OPT_NONE, global_printer.prn_ptr());
     } else {
-        err = printdata(varlist_ptr.get(),
-                        varlist_ptr ? NULL : varlist.c_str(),
-                        GD ? GD->dset : NULL, opt,
+        err = printdata(varlist_ptr.get(), varlist_ptr ? NULL : varlist.c_str(),
+                        dataset ? dataset->dset : NULL, opt,
                         global_printer.prn_ptr());
     }
     global_printer.print();
     if (err) handle_gretl_error(err);
 }
+template void do_gretl_print<void>(const std::string&, const py::kwargs&);
+template void do_gretl_print<GretlDataset>(const std::string&, const py::kwargs&);
 
 double do_gretl_get_pvalue (const std::string &dist, double value,
                             const py::array_t<double> &params)

@@ -84,7 +84,7 @@ PYBIND11_MODULE(_gretl, m)
               return do_get_accessor<GRETL_OBJ_ANY>(name, GretlDataset::default_dataset(), nullptr);
           },
           py::arg("name").none(false));
-    m.def("print", &do_gretl_print,
+    m.def("print", &do_gretl_print<void>,
           py::arg("varlist").none(true) = "", py::kw_only());
     m.def("set",
           [](const std::string &variable, const std::string &value, const py::kwargs &kwargs)

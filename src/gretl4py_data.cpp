@@ -783,16 +783,6 @@ void GretlDataset::print (const std::string &varlist, const py::kwargs &kwargs)
         throw std::invalid_argument("these keys may not be passed together: " + wrong_keys);
     }
 
-    // check if given varlist contains valid names
-    std::unordered_multiset<std::string> varlist_as_set;
-    load_string_to_container<std::unordered_multiset<std::string>>(varlist_as_set, varlist);
-    for (const auto &el : varlist_as_set) {
-        get_series(el);
-    }
-
-    // we must add itself (dataset) for global printer
-    final_kwargs["data"] = shared_from_this();
-
     // "summary" key
     obj = final_kwargs.attr("pop")("summary", py::bool_(false));
     if (!(is_pybool(obj) || is_pyint(obj))) throw std::invalid_argument("'summary' must be a bool");
@@ -817,77 +807,10 @@ void GretlDataset::print (const std::string &varlist, const py::kwargs &kwargs)
         list_series(dset, OPT_NONE, prn);
         GP_.print();
     } else {
-        do_gretl_print(varlist, final_kwargs);
+        final_kwargs["data"] = shared_from_this(); // we must add itself (dataset) for global printer
+        do_gretl_print<GretlDataset>(varlist, final_kwargs);
     }
 }
-
-/*
-void GretlDataset::print (const py::kwargs &kwargs)
-{
-    gretl_list_ptr var_list{nullptr};
-    bool summary = false;
-    bool byobs = false;
-    bool range = false;
-    std::string val_str = "";
-    opt_ = OPT_NONE;
-
-    for (auto &item : kwargs) {
-        // ensure the key is a string
-        if (!is_pystr(item.first)) throw std::invalid_argument("option key must be a string");
-        const std::string &key = item.first.cast<std::string>();
-        val_str = py::str(item.second);
-
-        if (key == "summary") {
-            summary = (val_str == "1");
-        } else if (key == "byobs") {
-            byobs = (val_str == "1");
-        } else if (key == "byvar") {
-            if (val_str == "1") {
-                summary = byobs = false;
-            }
-        } else if (key == "series") {
-            // note: we print only specified variables
-            var_list = list_from_formula(val_str, dset, err_);
-        } else if (key == "range") {
-            auto pos = val_str.find(':');
-
-            if (pos != std::string::npos && val_str.find(':', pos + 1) == std::string::npos) {
-                gretl_valid_long_opt(opt_, PRINT, "range", py::handle(), val_str.c_str());
-                range = true;
-            } else {
-                throw std::invalid_argument("range: only one ':' is allowed");
-            }
-        } else {
-            throw std::invalid_argument("print: invalid key '" + key + "'");
-        }
-    }
-
-    if (summary) {
-        auto *prn = GP_.prn_ptr();
-
-        if (dataset_is_time_series(dset)) {
-            char s1[OBSLEN], s2[OBSLEN];
-
-            ntolabel(s1, 0, dset);
-            ntolabel(s2, dset->n-1, dset);
-            pprintf(prn, "Time series, frequency %d, T = %d, %s to %s\n\n",
-                    dset->pd, dset->n, s1, s2);
-        } else if (is_panel()) {
-            pprintf(prn, "Panel data, N = %d, T = %d\n\n",
-                    dset->n / dset->pd, dset->pd);
-        } else {
-            pprintf(prn, "Cross-sectional data, N = %d\n\n", dset->n);
-        }
-        list_series(dset, OPT_NONE, prn);
-    } else {
-        opt_ = byobs ? OPT_O : OPT_NONE;
-        if (range) SET_OPT(opt_, OPT_R);
-        err_ = printdata(var_list.get(), NULL, dset, opt_, GP_.prn_ptr());
-        if (err_) handle_gretl_error(err_);
-    }
-    GP_.print();
-}
-*/
 
 void GretlDataset::smpl (const std::string &startobs, const std::string &endobs,
                          const py::kwargs &kwargs)
