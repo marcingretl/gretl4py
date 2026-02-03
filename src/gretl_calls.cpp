@@ -372,7 +372,7 @@ void do_gretl_print (const std::string &varlist, const py::kwargs &kwargs)
     int err = 0;
 
     // lambda for generating list of variables to print
-    auto make_varlist = [&varlist, &dataset, &err]() -> gretl_list_ptr
+    auto make_varlist = [&varlist, &dataset, &err](void) -> gretl_list_ptr
     {
         gretl_list_ptr varlist_ptr{nullptr};
 
@@ -959,6 +959,31 @@ void gretl_valid_long_opt (gretlopt &opt, GretlCmdIndex ci,
     // should be a regular gretl option: check its validity in
     // the context of @ci
     // note: ext_val is to bypass kwargs and to force setting a given option
+    // lambda for robust 0/1/True/False/"0"/"1"/etc handling
+    auto py_to_bool01 = [&val](void) -> bool
+    {
+        if (is_pybool(val)) return val.cast<bool>();
+        if (is_pyint(val) || is_pyfloat(val)) {
+            const double x = val.cast<double>();
+
+            if (x == 0.0) return false;
+            if (x == 1.0) return true;
+            handle_gretl_error(E_INVARG);
+        }
+        if (is_pystr(val)) {
+            std::string s = py::str(val);
+
+            if (s == "1" || s == "1.0") return true;
+            if (s == "0" || s == "0.0") return false;
+            if (s == "true" || s == "True") return true;
+            if (s == "false" || s == "False") return false;
+            handle_gretl_error(E_INVARG);
+        }
+        handle_gretl_error(E_INVARG);
+
+        return false;
+    };
+
     gretlopt opt_local = OPT_NONE;
     OptStatus status;
 
@@ -977,12 +1002,7 @@ void gretl_valid_long_opt (gretlopt &opt, GretlCmdIndex ci,
 
     if (status == OPT_NO_PARM) {
         // no parameter wanted, but we'll accept a boolean
-        if (!ext_val) {
-            auto ival = val.cast<double>();
-
-            if (ival != 0.0 && ival != 1.0) handle_gretl_error(E_INVARG);
-            if (!ival) return; // do not activate the option
-        }
+        if (!ext_val && !py_to_bool01()) return;
     } else {
         // an option parameter is accepted, perhaps required
         if (ext_val) {
