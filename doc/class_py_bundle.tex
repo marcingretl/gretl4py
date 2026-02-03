@@ -19,17 +19,18 @@ Bundle() -> gretl._gretl.Bundle
 \end{lstlisting}
 
 \gretlfpycmd{Bundle(**kwargs)}
-\estdesc{Construct a \gretlcmd{bundle} optionally initialized
-	with keyword arguments. Each keyword becomes a key in the
-	\gretlcmd{bundle}, with its value stored according to type
-	(\pythcode{bool}, \pythcode{int}, \pythcode{float}, \pythcode{str},
-	\pythcode{numpy.ndarray}, or another \pythcode{_gretl.Bundle}).}
+\estdesc{On-the-fly constructor.}
 \begin{lstlisting}[style=pythonstylefoot]
 Bundle(**kwargs) -> gretl._gretl.Bundle
 \end{lstlisting}
 \mapto[clean]{\_(**kwargs)}
 Example:\newline
-\pythcodef{b = gretl.Bundle(x=10, name="foo", mat=np.array([[1,2],[3,4]]))}
+\pythcodef{b = gretl.Bundle(x=10, name="foo", mat=np.array([[1,2],[3,4]]))}\\
+\generaldesc{Construct a \gretlcmd{bundle} optionally initialized
+	with keyword arguments. Each keyword becomes a key in the
+	\gretlcmd{bundle}, with its value stored according to type
+	(\pythcode{bool}, \pythcode{int}, \pythcode{float}, \pythcode{str},
+	\pythcode{numpy.ndarray}, or another \pythcode{_gretl.Bundle}).}
 
 
 \subsubsection{\classpybundleb operators}

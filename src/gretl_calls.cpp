@@ -364,6 +364,7 @@ void do_gretl_print (const std::string &varlist, const py::kwargs &kwargs)
 {
     //
     // this function mimics libgretl's 'print' command
+    // note: this is a general printer, so some classes may have own implementations
     //
     GretlDatasetPtr dataset = nullptr;
     gretl_list_ptr varlist_ptr{nullptr};
@@ -394,7 +395,7 @@ void do_gretl_print (const std::string &varlist, const py::kwargs &kwargs)
 
     // define object to print
     if constexpr (std::is_same_v<T, GretlDataset>) {
-        // for GretlDataset, _do not_ print user-define variables
+        // for GretlDataset, we _do not_ print user-define variables
         varlist_ptr = make_varlist();
     } else {
         // we look for variables in dataset _only_ if there is no uservar

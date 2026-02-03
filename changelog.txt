@@ -11,6 +11,7 @@ version 0.41:
     - GretlBundle::pop() method + enhanced '[]' operator
     - GretlBundle: new constructor for on-the-fly bundle definition (like gretl's "_()"')
     - get_data(): add 'quiet' option
+    - mark nls, mle, gmm and system estimators as experimental
     - massive doc updates
 
 version 0.4:

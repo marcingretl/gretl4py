@@ -98,27 +98,28 @@ differs by platform (and, on MS Windows, by national language):
 	\item On an English-language Windows installation, a typical value is:\newline
 		\begin{itemize}
 			\item x86-64 machines:\newline
-				\verb|C:\Users\<username>\AppData\Roaming\Python\PythonXY\site-packages\|
+				{\footnotesize\verb|C:\Users\<username>\AppData\Roaming\Python\PythonXY\site-packages\|}
 			\item arm64 machines:\newline
-				\verb|C:\Users\<username>\AppData\Roaming\Python\PythonXY-arm64\site-packages\|
+				{\footnotesize\verb|C:\Users\<username>\AppData\Roaming\Python\PythonXY-arm64\site-packages\|}
 		\end{itemize}
 		%\verb|C:\Users\login\AppData\Roaming\gretl\functions|\newline
 	\item On Linux, it is likely to be:\newline
-		\verb|$HOME/.local/lib/pythonX.Y/site-packages/gretl/functions/|
+		{\footnotesize\verb|$HOME/.local/lib/pythonX.Y/site-packages/gretl/functions/|}
 		%\verb|$HOME/.gretl/functions|.
 	\item On macOS:\newline
 		%\verb|$HOME/Library/Application Support/gretl/functions|.
 		\begin{itemize}
 			\item for the official Python from \url{python.org} or MacPorts,
-				user installs (\verb|pip install --user|) typically go to:\newline
-				\verb|$HOME/Library/Python/X.Y/lib/python/site-packages/gretl/functions/|			
+				user installs\linebreak
+				(\verb|pip install --user|) typically go to:\newline
+				{\footnotesize\verb|$HOME/Library/Python/X.Y/lib/python/site-packages/gretl/functions/|}
 			\item if installed using the \verb|--local| option (Linux-style), the path is:\newline
-				\verb|$HOME/.local/lib/pythonX.Y/site-packages/gretl/functions/|			
+				{\footnotesize\verb|$HOME/.local/lib/pythonX.Y/site-packages/gretl/functions/|}
 			\item for conda environments, packages are installed inside the environment directory, e.g.:\newline
-				\verb|~/miniconda3/envs/<env-name>/lib/pythonX.Y/site-packages/gretl/functions/|\newline
+				{\footnotesize\verb|~/miniconda3/envs/<env-name>/lib/pythonX.Y/site-packages/gretl/functions/|}\newline
 				or in the base environment:\newline
 				\verb|~/miniconda3/lib/pythonX.Y/site-packages/gretl/functions/|
-		\end{itemize}		
+		\end{itemize}
 \end{itemize}
 Here \verb|$HOME| denotes your ``home'' directory, which is
 always defined on Linux and macOS.
@@ -207,9 +208,12 @@ Note that in \gretlpy, users may call functions from packages
 in two ways:
 \begin{itemize}
 	\item \bftt{positional}: in this case, the order of parameters
-		must match the function signature,
+		must match the function signature;
 	\item \bftt{keyword}: in this case, the order of parameters
-		does not matter.
+		does not matter;
+	\item \bftt{mixed}: in this case, parameters passed as
+		\textit{positional} must match the function signature,
+		while the order of the remaining parameters does not matter.
 \end{itemize}
 
 To run the example script provided with the \texttt{gig} package,

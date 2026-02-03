@@ -1,5 +1,5 @@
-\subsection[gretl.\_gretl.Model class]{\classpymodel}\label{sec:class_py_model}
-The \gretlpy module implements the \classpymodel class, which is used
+\subsection[gretl.\_gretl.Model class]{\classpymodelnosp}\label{sec:class_py_model}
+The \gretlpy module implements the \classpymodelnosp, which is used
 to manage the definition, estimation, and output of econometric models.
 Through this class, \gretlpy provides interfaces to native \lgretl
 estimators, as well as support for model-based testing and forecasting,
@@ -151,7 +151,7 @@ The \classpymodel provides the following public methods:
 	are printed, otherwise the Python type is shown.}
 
 \gretlfpycmd{fcast()}
-\estdesc{XXX}
+\estdesc{\tbw}
 \begin{lstlisting}[style=pythonstylefoot]
 .fcast([OPT])
 \end{lstlisting}
@@ -408,46 +408,47 @@ Examples:\newline
 
 
 \subsubsection{\pythcodeb{gretl.\_gretl.Model\_NSE\_nl} methods}
+\begin{quote}\Large\centering Note: this class is \experimental\end{quote}
 The \pythcode{gretl.\_gretl.Model\_NSE\_nl} class provides the following public methods:
 
 \gretlfpycmd{add\_deriv()}
-\estdesc{XXX}
+\estdesc{\tbw -- \experimental}
 \begin{lstlisting}[style=pythonstyle]
 .add_deriv(line=str) -> self
 \end{lstlisting}
 
 \gretlfpycmd{add\_initval()}
-\estdesc{XXX}
+\estdesc{\tbw -- \experimental}
 \begin{lstlisting}[style=pythonstyle]
 .add_initval(varname=str, values=float) -> self
 \end{lstlisting}
 
 \gretlfpycmd{add\_orthog()}
-\estdesc{XXX}
+\estdesc{\tbw -- \experimental}
 \begin{lstlisting}[style=pythonstyle]
 .add_orthog(line=str) -> self
 \end{lstlisting}
 
 \gretlfpycmd{add\_params()}
-\estdesc{XXX}
+\estdesc{\tbw -- \experimental}
 \begin{lstlisting}[style=pythonstyle]
 .add_params(line=str) -> self
 \end{lstlisting}
 
 \gretlfpycmd{add\_param\_names()}
-\estdesc{XXX}
+\estdesc{\tbw -- \experimental}
 \begin{lstlisting}[style=pythonstyle]
 .add_param_names(line=str) -> self
 \end{lstlisting}
 
 \gretlfpycmd{add\_statements()}
-\estdesc{XXX}
+\estdesc{\tbw -- \experimental}
 \begin{lstlisting}[style=pythonstyle]
 .add_statements(line=str) -> self
 \end{lstlisting}
 
 \gretlfpycmd{add\_weights()}
-\estdesc{XXX}
+\estdesc{\tbw -- \experimental}
 \begin{lstlisting}[style=pythonstyle]
 .add_weights(line=str) -> self
 \end{lstlisting}

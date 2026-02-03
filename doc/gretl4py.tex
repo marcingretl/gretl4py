@@ -13,8 +13,10 @@
 
 \CatchFileDef{\gretlpyversion}{../version.cfg}{}
 
+% editing/typing commands
 \newcommand{\error}[1]{\textcolor{red}{\textbf{#1}}\xspace}
 \newcommand{\tbw}{\error{to be written\ldots}}
+\newcommand{\experimental}{\error{experimental!!!}}
 \newcommand{\hitem}{\item[] \hspace{-5mm}}
 
 % lstlistings
@@ -80,6 +82,7 @@
 		\small#1\end{minipage}}
 \newcommand{\gretldataset}{\_gretl.Dataset\xspace}
 \newcommand{\classpybundle}{\pythcode{gretl._gretl.Bundle class}\xspace}
+\newcommand{\classpybundlenosp}{\pythcode{gretl._gretl.Bundle class}}
 \newcommand{\classpybundleb}{\pythcodeb{gretl._gretl.Bundle class}\xspace}
 \newcommand{\classpydataset}{\pythcode{gretl._gretl.Dataset class}\xspace}
 \newcommand{\classpydatasetnosp}{\pythcode{gretl._gretl.Dataset class}}
@@ -185,7 +188,7 @@ his contribution to the first version of the \gretlpy package.
 			\input{class_py_dataset}
 			\input{class_py_bundle}
 			\subsection{User-defined variables}\label{sec:userdefinedvariables}
-				To be workout.
+				\tbw
 		\section{Econometric methods}
 			\input{estimators}
 			\input{class_py_model}
@@ -197,7 +200,7 @@ his contribution to the first version of the \gretlpy package.
 		\input{usage_contributed_packages}
 		\input{objects_life_cycle}
 	\chapter{Examples}\label{sec:examples}
-		\section{PoE}
+		\input{examples_poe4th}
 		\input{examples_nontrivial_econometrics}
 		\input{examples_bayesian}
 		\input{examples_statsmodels}

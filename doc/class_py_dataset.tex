@@ -486,7 +486,7 @@ Examples:\newline
 	defined as in \ref{func:gretl.pdf}.}
 
 \gretlfpycmd{print()}\label{met:gretldataset::print}
-\estdesc{Dataset-related printer.}
+\estdesc{Dataset-dedicated printer.}
 \begin{lstlisting}[style=pythonstyle]
 .print(varlist: str[, OPTS])
 \end{lstlisting}
@@ -505,7 +505,9 @@ Examples:\newline
 \generaldesc{This printer is similar to the general printer
 	(see \ref{func:gretl.print}), and most of its options are
 	valid here. The only exception is \textit{data}, which is not
-	available in this context.\newline
+	available in this context. Moreover, since this printer is
+	dedicated to datasets, it does not print user-defined
+	variables (see \ref{sec:userdefinedvariables}).\newline
 	The main difference between the general printer and this
 	class-dedicated one is that, by default, the general printer
 	operates on the default dataset, whereas this printer works

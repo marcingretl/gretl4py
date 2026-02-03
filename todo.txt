@@ -1,9 +1,10 @@
 BUGS:
 
+1. correct parsing boolean options in commands
 
 TODOS:
 
-1. add copying plugins as meson option
+1. implement fcast command
 
-2. update doc
+2. add copying plugins as meson option
 

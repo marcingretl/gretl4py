@@ -88,6 +88,7 @@ def _import_example_module(name: str) -> Optional[ModuleType]:
     plausible_paths = [
         f"gretl.examples.estimators.{name}",
         f"gretl.examples.packages.{name}",
+        f"gretl.examples.Principles_of_Econometrics_4th_edition.{name}",
         f"gretl.examples.{name}",  # fallback top-level
     ]
 
@@ -207,8 +208,7 @@ def print_module_source (module: str):
     Parameters:
         mod: imported module (not a string)
     """
-
-    # we try to load 'mod'
+    # we try to load module as 'mod'
     mod = _import_example_module(module)
     if mod is None:
         raise ModuleNotFoundError(f"gretl example module '{module}' not found in any plausible path")

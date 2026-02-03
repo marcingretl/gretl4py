@@ -1,0 +1,40 @@
+\section{``Principles of Econometrics'' Handbook}
+Each \gretlpy distribution includes a set of scripts
+that demonstrate how to solve examples used in the renowned
+econometrics handbook \cite{HillGriffithsLim_principles_2012}.
+All files are placed in \texttt{Principles\_of\_Econometrics\_4th\_edition},
+a subdirectory of \texttt{examples}. Its contents are as follows:
+\begin{description}
+	\item[\bftt{data}] a subdirectory containing all
+		datasets used in the examples (with special thanks
+		to Lee Adkins).
+	\item[\bftt{functions}] a subdirectory containing the
+		\texttt{hausman\_taylor.gfn} package for performing
+		Hausman-Taylor estimation.\newline
+		\textbf{Note:} this file may be removed in future \gretlpy
+		releases, since the package is officially available
+		through SourceForge.
+	\item[\bftt{scripts}] scripts demonstrating examples from
+		the handbook chapters: \bftt{chapter\_5.py}, \bftt{chapter\_6.py},
+		\bftt{chapter\_7.py}, \bftt{chapter\_8.py}, \bftt{chapter\_9.py},
+		\bftt{chapter\_10.py}, \bftt{chapter\_11.py}, \bftt{chapter\_12.py},
+		\bftt{chapter\_13.py}, \bftt{chapter\_14.py}, \bftt{chapter\_15.py},
+		and \bftt{chapter\_16.py}.
+\end{description}
+To print out the contents of \bftt{chapter\_13.py}, the user
+should call the following snippet:
+\begin{lstlisting}[style=pythonstylefoot]
+import gretl
+
+gretl.print_module_source("chapter_13")
+\end{lstlisting}\index{print\_module\_source()}
+
+Figure~\ref{fig:poe4_chapter_13} shows the output
+of the above snippet.
+
+\begin{figure}
+	\centering
+	\includegraphics[width=.9\columnwidth,keepaspectratio]{poe4_example_chapter_13}
+	\caption{Output of \texttt{chapter\_13.py} as displayed by \pythcode{gretl.print\_module\_source()}.}
+	\label{fig:poe4_chapter_13}
+\end{figure}

@@ -260,14 +260,12 @@ gretl.negbin(formula: str[, data=gretl._gretl.Dataset, OPTS]) -> gretl._gretl.Mo
 
 \est{nls}
 \estdesc{Performs Nonlinear Least Squares (NLS) estimation using
-	a modified version of the Levenberg-Marquardt algorithm.}
+	a modified version of the Levenberg-Marquardt algorithm -- \experimental.}
 \begin{lstlisting}[style=pythonstylefoot]
 gretl.nls(formula: str[, data=gretl._gretl.Dataset, OPTS]) -> gretl._gretl.Model_nls
 \end{lstlisting}
-\mapto{nls function [ derivatives ]}
-\begin{itemize}
-	\item[]\maptoopt{}{}{}
-\end{itemize}
+\mapto[none]{nls function [ derivatives ]}
+\generaldesc{\tbw}
 
 \est{ols}
 \estdesc{Computes ordinary least squares (OLS) estimates
@@ -342,14 +340,12 @@ gretl.probit(formula: str[, data=gretl._gretl.Dataset, OPTS]) -> gretl._gretl.Mo
 \end{itemize}
 
 \est{system}
-\estdesc{System of equations.}
+\estdesc{System of equations -- \experimental.}
 \begin{lstlisting}[style=pythonstylefoot]
 gretl.system(method: str[,data=gretl._gretl.Dataset, OPTS]) -> gretl._gretl.Model_NME
 \end{lstlisting}
-\mapto{system method=estimator}
-\begin{itemize}
-	\item[]\maptoopt{}{}{}
-\end{itemize}
+\mapto[none]{system method=estimator}
+\generaldesc{\tbw}
 
 \est{quantreg}
 \estdesc{Quantile regression}

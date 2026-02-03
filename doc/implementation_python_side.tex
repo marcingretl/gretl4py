@@ -250,7 +250,7 @@ gretl.get_data(src: dict | int) -> gretl._gretl.Dataset
 			\item spreadsheets: \texttt{xls}, \texttt{xlsx}, and \texttt{ods}.
 		\end{itemize}
 		\item \pythcode{src: dict}: in this case, \textit{src} is treated as
-			a \python['s] \pythcode{dict}, as defined in \ref{gretl4py:data:dict}.
+			a \python['s] \pythcode{dict}, as defined in \ref{sec:gretl4py:data:dict}.
 		\item \pythcode{src: int}: in this case, \textit{src} is treated as
 			the ID of an already registered dataset (see \ref{show_data_status}).
 	\end{itemize}
@@ -426,9 +426,9 @@ Examples:\newline
 	all series in the current dataset are printed. The supported
 	options are as described above.\newline
 	Note that some specific options (such as \pythcode{tree=True}
-	for \classpybundle) are available in class-dedicated printers
-	(please refer to \ref{met:gretlbundle::print} and
-	\ref{met:gretldataset::print}).}
+	for \classpybundlenosp) are available in class-dedicated printers
+	(please refer to \ref{met:gretldataset::print} and
+	\ref{met:gretlbundle::print}).}
 
 \gretlfpycmd{pvalue()}\label{func:gretl.pvalue}
 \estdesc{\textit{P}-value calculator.}
