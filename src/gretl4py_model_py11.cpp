@@ -179,7 +179,8 @@ void init_gretl4py_model_py11(py::module_ &m)
         .def("irf", py::overload_cast<const std::string&, const std::string&, double>(&GretlModel_VAR::irf),
              py::arg("target").none(false), py::arg("shock").none(false), py::arg("alpha").none(true) = 0)
         .def("save_uhat", &GretlModel_VAR::save_uhat,
-             py::arg("eqn").none(false), py::arg("name").none(true) = "");
+             py::arg("eqn").none(false), py::arg("name").none(true) = "")
+        .def("fcast2", &GretlModel_VAR::forecast2);
 
     // VECM
     py::class_<GretlModel_VAR_VECM, GretlModel_VAR, std::unique_ptr<GretlModel_VAR_VECM>>(m, "Model_vecm", py::dynamic_attr())

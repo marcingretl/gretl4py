@@ -306,6 +306,8 @@ public:
 
     void test (const std::string &type, const py::kwargs &kwargs);
 
+    void forecast2 (const py::args &args, const py::kwargs &kwargs);
+
     void irf (int target, int shock, double alpha = 0);
 
     void irf (const std::string &target, const std::string &shock, double alpha = 0);

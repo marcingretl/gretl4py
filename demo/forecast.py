@@ -1,11 +1,10 @@
-import importlib.resources as resources
 import gretl
-
-# get path object for the data directory inside the gretl package
-data_dir = resources.files('gretl').joinpath('data')
 
 # load datasets
 d1 = gretl.get_data('data4-1.gdt')
+d2 = gretl.get_data('bjg.gdt')
+
+# set sample
 d1.sample(1, 10)
 
 m1 = gretl.ols(formula='1 0 2 3').fit()
@@ -22,3 +21,10 @@ m2.fcast2(5, 10, out_of_sample=True)
 print(m2.get_accessor("$fcast"))
 m2.fcast()
 gretl.fc_print(m2.forecasts[-1])
+
+# VAR
+print("VAR")
+m3 = gretl.var(1, "g lg", data=d2, quiet=True).fit()
+#print(m3)
+m3.fcast2(stats_only=True)
+

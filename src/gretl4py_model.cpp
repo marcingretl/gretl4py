@@ -325,8 +325,8 @@ void GretlModel::gretl_do_forecast_ (void *model, const py::args &args,
     // we set model as last
     if constexpr (std::is_same_v<T, MODEL>) {
         gretl_model_protect(static_cast<MODEL*>(model));
+        set_as_last_model(model, model_obj_type_);
     }
-    set_as_last_model(model, model_obj_type_);
 
     // we do the job
     err_ = do_forecast(param.c_str(), GD_->dset, opt_, GP_.prn_ptr());
@@ -1448,6 +1448,11 @@ void GretlModel_VAR::fit (void)
 void GretlModel_VAR::forecast (const py::kwargs &kwargs)
 {
     do_var_vecm_forecast_<VAR>(kwargs);
+}
+
+void GretlModel_VAR::forecast2 (const py::args &args, const py::kwargs &kwargs)
+{
+    gretl_do_forecast_<GRETL_VAR>(model_, args, kwargs);
 }
 
 void GretlModel_VAR::test (const std::string &type, const py::kwargs &kwargs)
