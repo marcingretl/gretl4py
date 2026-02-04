@@ -759,7 +759,7 @@ std::string GretlDataset::repr (void) const
 
 void GretlDataset::print (const std::string &varlist, const py::kwargs &kwargs)
 {
-    static constexpr std::array<const char*, 3> exclusive_keys = {
+    static constexpr std::array<const char*, 2> exclusive_keys = {
         "byobs", "summary"
     };
 

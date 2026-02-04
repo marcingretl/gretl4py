@@ -62,6 +62,10 @@ protected:
     void do_restrict_ (T *model, const py::list &impose,
                        const py::kwargs &kwargs);
 
+    template <typename T>
+    void gretl_do_forecast_ (void *model, const py::args &args,
+                             const py::kwargs &kwargs);
+
     template <typename T, GretlCmdIndex CI>
     void do_forecast_ (T *model, const py::kwargs &kwargs,
                        int variable_nr = 0);
@@ -131,6 +135,8 @@ public:
                const py::kwargs &kwargs);
 
     double adj_rsq (void) const;
+
+    void forecast2 (const py::args &args, const py::kwargs &kwargs);
 };
 
 //

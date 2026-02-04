@@ -253,6 +253,90 @@ void GretlModel::do_restrict_ (T *model, const py::list &impose,
     if (!kwargs.contains("silent")) GP_.print();
 }
 
+template <typename T>
+void GretlModel::gretl_do_forecast_ (void *model, const py::args &args,
+                                     const py::kwargs &kwargs)
+{
+    //
+    // method calls libgretl's do_forecast() function
+    //
+    static constexpr int max_positional_args = 4;
+    static constexpr std::array<const char*, max_positional_args> positional_args = {
+        "startobs", "endobs", "steps_ahead", "vname"
+    };
+    std::string param = "";
+    py::kwargs clean_kwargs = kwargs;
+    int n_args = py::len(args);
+
+    // lambda for param construction
+    auto add_to_param = [&param](py::object &arg, const char *key = nullptr)
+    {
+        std::string s;
+
+        if (is_pystr(arg)) {
+            s = arg.cast<std::string>();
+        } else if (is_pyint(arg)) {
+            s = std::to_string(arg.cast<int>());
+        } else if (is_pyfloat(arg)) {
+            double x = arg.cast<double>();
+
+            if (std::floor(x) != x) {
+                std::string prefix = key && *key ? std::string(key) + "=" : "";
+
+                handle_gretl_error(E_INVARG,
+                                   "Invalid positional argument in forecast(): "
+                                   + prefix + py::str(arg).cast<std::string>());
+            }
+            s = std::to_string(static_cast<long>(x));
+        } else {
+            handle_gretl_error(E_INVARG, "Invalid positional argument in forecast(): "
+                               + py::str(arg).cast<std::string>());
+        }
+
+        if (!param.empty()) param.append(" ");
+        param += s;
+    };
+
+    // we unpack args
+    if (n_args > max_positional_args) throw std::invalid_argument("too many positional arguments: "
+                                                    + std::to_string(py::len(args))
+                                                    + " (max = 4)");
+    if (n_args > 0 && n_args <= max_positional_args) {
+        int left = max_positional_args - n_args;
+
+        for (int i=0; i<n_args; ++i) {
+            if (clean_kwargs.contains(positional_args[i])) throw py::type_error("multiple values for argument '"
+                                                                                + std::string(positional_args[i]) + "'");
+            py::object obj = args[i];
+            add_to_param(obj);
+        }
+        if (!left) return;
+        for (int i=max_positional_args-left; i<max_positional_args; ++i) {
+            const char *key = positional_args[i];
+
+            py::object obj = clean_kwargs.attr("pop")(key, py::none());
+            if (!obj.is_none()) add_to_param(obj, key);
+        }
+    }
+
+    // we work with kwargs
+    opt_ = unpack_kwargs_command(FCAST, GD_, clean_kwargs);
+
+    // we set model as last
+    if constexpr (std::is_same_v<T, MODEL>) {
+        gretl_model_protect(static_cast<MODEL*>(model));
+    }
+    set_as_last_model(model, model_obj_type_);
+
+    // we do the job
+    err_ = do_forecast(param.c_str(), GD_->dset, opt_, GP_.prn_ptr());
+    if constexpr (std::is_same_v<T, MODEL>) {
+        gretl_model_unprotect(static_cast<MODEL*>(model));
+    }
+    if (err_) handle_gretl_error(err_);
+    GP_.print();
+}
+
 template <typename T, GretlCmdIndex CI>
 void GretlModel::do_forecast_ (T *model, const py::kwargs &kwargs,
                                int variable_nr)
@@ -675,6 +759,11 @@ template char *GretlModel_NSE::gretl_get_fit_or_resid<M_H>(const std::string&) c
 double GretlModel_NSE::adj_rsq (void) const
 {
     return model_->adjrsq;
+}
+
+void GretlModel_NSE::forecast2 (const py::args &args, const py::kwargs &kwargs)
+{
+    gretl_do_forecast_<MODEL>(model_, args, kwargs);
 }
 
 template <GretlCmdIndex CI>

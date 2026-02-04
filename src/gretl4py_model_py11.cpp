@@ -92,6 +92,7 @@ void init_gretl4py_model_py11(py::module_ &m)
         .def("save_uhat_sq", &GretlModel_NSE::gretl_get_fit_or_resid<M_UHAT2>, py::arg("name").none(true) = "")
         .def("save_ahat", &GretlModel_NSE::gretl_get_fit_or_resid<M_AHAT>, py::arg("name").none(true) = "")
         .def("save_h", &GretlModel_NSE::gretl_get_fit_or_resid<M_H>, py::arg("name").none(true) = "")
+        .def("fcast2", &GretlModel_NSE::forecast2)
         .def("test",
              [](GretlModel_NSE &self, const std::string &type, const py::kwargs &kwargs)
              {
