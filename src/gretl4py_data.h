@@ -118,6 +118,8 @@ public:
 
     int get_series_id (const std::string &series, const bool verbose = true) const;
 
+    py::list get_obs_labels (void);
+
     // dataset management
     void setobs (const std::string &periodicity, const std::string &startobs,
                  const py::kwargs &kwargs);

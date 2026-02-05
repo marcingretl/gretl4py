@@ -504,6 +504,23 @@ int GretlDataset::get_series_id (const std::string &series, const bool verbose) 
     return var_num;
 }
 
+py::list GretlDataset::get_obs_labels (void)
+{
+    //
+    // here we produce observation labels for entire dataset
+    //
+    py::list res;
+
+    for (int i=0; i<=dset->n-1; ++i) {
+        char s[OBSLEN];
+
+        ntolabel(s, i, dset);
+        res.append(std::string(s));
+    }
+
+    return res;
+}
+
 bool GretlDataset::is_panel (void) const
 {
     return static_cast<bool>(dataset_is_panel(dset));

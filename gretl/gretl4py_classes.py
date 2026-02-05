@@ -69,20 +69,30 @@ def _plotfitted_nse (self, kind: str = "fitted"):
     y_name = self.depvar
     actual = self._dataset.get_series(y_name)
     fitted = self.yhat
+    xtics = self._dataset.get_obs_labels()
+    max_xticks = int(self._dataset.get_accessor("$pd"))
+    if max_xticks < 4:
+        max_xticks = 4
     n = int(self.T)
     if (len(actual) == len(fitted)) and n < len(fitted):
         n = len(fitted)
     _time_series_plot(y=fitted, x=actual, n=n,
         ylabel=y_name, ytitle="fitted", xtitle="actual",
+        xtics=xtics, max_xticks=max_xticks,
         title=f"Actual and fitted {y_name}")
 
 def _plotresiduals_nse (self, kind: str = "residuals"):
     y_name = self.depvar
     resid = self.uhat
+    xtics = self._dataset.get_obs_labels()
+    max_xticks = int(self._dataset.get_accessor("$pd"))
+    if max_xticks < 4:
+        max_xticks = 4
     n = int(self.T)
     if n < len(resid):
         n = len(resid)
-    _time_series_plot(y=resid, n=n, ytitle="",
+    _time_series_plot(y=resid, n=n, ytitle="", xtics=xtics,
+        max_xticks=max_xticks,
         title=f"Regression residuals = (observed - fitted {y_name}")
 
 # #######################################################

@@ -329,11 +329,19 @@ def modeltab (models: "List[GretlModel]", output: str = "print",
 # ###################################################
 #               PLOTS
 # ###################################################
-def _time_series_plot (y: np.ndarray, x: np.ndarray = None,
-                        n: int = None, xtics: np.ndarray | list = None,
-                        ytics: str = None, xlabel: str = None,
-                        ylabel: str = None, xtitle : str = None,
-                        ytitle : str = None, title: str = None):
+def _time_series_plot(
+    y: np.ndarray,
+    x: np.ndarray = None,
+    n: int = None,
+    xtics: np.ndarray | list = None,
+    ytics: str = None,
+    xlabel: str = None,
+    ylabel: str = None,
+    xtitle: str = None,
+    ytitle: str = None,
+    title: str = None,
+    max_xticks: int = 10
+):
     """
     Time-series plot of fitted values, optionally with actual values.
 
@@ -346,7 +354,7 @@ def _time_series_plot (y: np.ndarray, x: np.ndarray = None,
     n : int, optional
         Length of time series (if xtics not provided)
     xtics : np.ndarray or list, optional
-        Time points to use as x-axis
+        Labels for x-axis (time)
     ytics : str, optional
         Y-axis label (fallback if ylabel not provided)
     xlabel : str, optional
@@ -354,18 +362,22 @@ def _time_series_plot (y: np.ndarray, x: np.ndarray = None,
     ylabel : str, optional
         Y-axis label
     xtitle : str, optional
-        X series title
+        Actual series title
     ytitle : str, optional
-        Y series title
+        Fitted series title
     title : str, optional
         Plot title
+    max_xticks : int, optional
+        Maximum number of ticks to display on x-axis
     """
     # Determine x-axis (time)
     if xtics is not None:
-        time = np.array(xtics)
+        time = np.arange(len(xtics))
+        labels = xtics
     else:
         length = n if n is not None else len(y)
         time = np.arange(1, length + 1)
+        labels = None
 
     plt.figure(figsize=(10, 5))
 
@@ -381,8 +393,23 @@ def _time_series_plot (y: np.ndarray, x: np.ndarray = None,
     plt.ylabel(ylabel or ytics or "Value")
     if title:
         plt.title(title)
-    if ytitle or xtitle:
+
+    # Legend
+    handles, _ = plt.gca().get_legend_handles_labels()
+    if handles:
         plt.legend()
+
+    # Grid
     plt.grid(True)
+
+    # Adjust x-ticks for dense data
+    if labels is not None:
+        step = max(1, len(labels) // max_xticks)
+        tick_positions = time[::step]
+        tick_labels = [labels[i] for i in range(0, len(labels), step)]
+        plt.xticks(tick_positions, tick_labels, rotation=45)
+    else:
+        plt.xticks(time)
+
     plt.tight_layout()
     plt.show()
