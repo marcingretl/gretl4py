@@ -66,7 +66,7 @@ def _oddsratio (self):
         print('*** warning: oddsratios not available for current model ***\n')
         print(f'Debug info: {e}')
 
-def _plotfitted_nse (self, kind: str = "fitted"):
+def _plotfitted_nse (self, eqn: int = 0, kind: str = "fitted"):
     y_name = self.depvar
     actual = self._dataset.get_series(y_name)
     fitted = self.yhat

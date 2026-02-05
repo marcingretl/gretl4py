@@ -145,6 +145,7 @@ void GretlModel::save_model_ (T *model)
         err_ = printmodel(model, GD_->dset, opt_,
                           GP_.prn_ptr());
     } else if constexpr (std::is_same_v<T, GRETL_VAR>) {
+        gretl_object_ref(model, model_obj_type_);
         err_ = gretl_VAR_print(model, GD_->dset,
                                opt_, GP_.prn_ptr());
     } else if constexpr (std::is_same_v<T, equation_system>) {
@@ -322,19 +323,11 @@ void GretlModel::gretl_do_forecast_ (void *model, const py::args &args,
     // we work with kwargs
     opt_ = unpack_kwargs_command(FCAST, GD_, clean_kwargs);
 
-    // we set model as last
+    // we do the job
     if constexpr (std::is_same_v<T, MODEL>) gretl_model_protect(static_cast<MODEL*>(model));
     set_as_last_model(model, model_obj_type_);
-
-    // we do the job
     err_ = do_forecast(param.c_str(), GD_->dset, opt_, GP_.prn_ptr());
-    if constexpr (std::is_same_v<T, MODEL>) {
-        gretl_model_unprotect(static_cast<MODEL*>(model));
-    } else if constexpr (std::is_same_v<T, GRETL_VAR>) {
-        gretl_object_ref(model, model_obj_type_);   //FIXME: Allin, is that correct???
-    } else {
-        static_assert(always_false<T>, "GretlModel::gretl_do_forecast_(): unknown model type");
-    }
+    if constexpr (std::is_same_v<T, MODEL>) gretl_model_unprotect(static_cast<MODEL*>(model));
     if (err_) handle_gretl_error(err_);
     GP_.print();
 }
@@ -1393,7 +1386,8 @@ GretlModel_VAR::GretlModel_VAR (const std::string &ylist,
 
 GretlModel_VAR::~GretlModel_VAR (void)
 {
-    if (this->model_ != NULL) gretl_VAR_free(this->model_);
+    //if (this->model_ != NULL) gretl_VAR_free(this->model_);
+    gretl_object_unref(this->model_, this->model_obj_type_);
 }
 
 // true VAR/VECM estimate
