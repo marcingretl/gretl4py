@@ -97,6 +97,8 @@ public:
     std::string repr_impl (void) const;         // for __repr__ binding
 
     GretlBundlePtr get_bundle (void) const;     // return pointer to GB_model
+
+    const GretlDatasetPtr get_dataset (void) const;// return pointer to dataset
 };
 
 //

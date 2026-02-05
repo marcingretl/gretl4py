@@ -22,7 +22,7 @@ import sys
 import os
 import webbrowser
 from typing import TypedDict, NotRequired, Dict, List, Any
-from .gretl4py_addons import _pd_to_pandas_str_format
+from .gretl4py_addons import _pd_to_pandas_str_format, _time_series_plot
 from . import _gretl
 
 def _matrix_functions_wrapper(func_name: str):
@@ -64,6 +64,26 @@ def _oddsratio (self):
     except Exception as e:
         print('*** warning: oddsratios not available for current model ***\n')
         print(f'Debug info: {e}')
+
+def _plotfitted_nse (self, kind: str = "fitted"):
+    y_name = self.depvar
+    actual = self._dataset.get_series(y_name)
+    fitted = self.yhat
+    n = int(self.T)
+    if (len(actual) == len(fitted)) and n < len(fitted):
+        n = len(fitted)
+    _time_series_plot(y=fitted, x=actual, n=n,
+        ylabel=y_name, ytitle="fitted", xtitle="actual",
+        title=f"Actual and fitted {y_name}")
+
+def _plotresiduals_nse (self, kind: str = "residuals"):
+    y_name = self.depvar
+    resid = self.uhat
+    n = int(self.T)
+    if n < len(resid):
+        n = len(resid)
+    _time_series_plot(y=resid, n=n, ytitle="",
+        title=f"Regression residuals = (observed - fitted {y_name}")
 
 # #######################################################
 #   GretlModel_nl class

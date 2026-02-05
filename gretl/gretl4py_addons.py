@@ -22,11 +22,13 @@ import os
 import sys
 import subprocess
 import csv
-import numpy
+import numpy as np
 import inspect
 import importlib
 from types import ModuleType
 from typing import Optional
+from typing import List
+import matplotlib.pyplot as plt
 import gretl
 import gretl.examples
 
@@ -69,7 +71,7 @@ def _pd_to_pandas_str_format (pd):
 
     return res
 
-def _import_example_module(name: str) -> Optional[ModuleType]:
+def _import_example_module (name: str) -> Optional[ModuleType]:
     """
     Dynamically imports a gretl example module by short name.
 
@@ -100,10 +102,12 @@ def _import_example_module(name: str) -> Optional[ModuleType]:
 
     return None
 
-def df2dict (dframe, pd=1, with_obs=False):
+def df2dict (dframe, pd: int = 1, with_obs: bool = False):
     '''turns a Pandas DataFrame into a dictionary gretl understands'''
-    if 'pandas' not in sys.modules:
+    try:
         import pandas
+    except ImportError as e:
+        raise ImportError("pandas is required for df2dict()") from e
     d = {}
     obs_dates = []
     varname = []
@@ -114,46 +118,41 @@ def df2dict (dframe, pd=1, with_obs=False):
     else:
         obs_dates = dframe.axes[0].tolist()
     _correctvarnames(varname)
-    d['data_array'] = numpy.array([row[0+with_obs:] for row in mydata], numpy.double)
+    d['data_array'] = np.array([row[0+with_obs:] for row in mydata], np.double)
     d['varname'] = varname
     d['obs_labels'] = obs_dates
     d['periodicity'] = pd
 
     return d
 
-def nparray2dict (X, pd=1, Y=None, with_const=False,
-                     const_pos=1):
-    '''turns a 'raw' numpy array into a dictionary gretl understands
+def nparray2dict (X: np.ndarray, pd: int = 1, Y: Optional[np.ndarray] = None,
+                    with_const: bool = False, const_pos: int = 1):
+    '''turns a 'raw' NumPy array into a dictionary gretl understands
     X - matrix with observations on explanatory variables
     Y - vector with observations on endogeneus variable
     with_const - boolean indicating if X contains constant term
     const_pos - column number which holds constant term values
     '''
-    if not isinstance(X, numpy.ndarray):
-        raise Exception("X is not a NumPy array!!!")
-    if Y is not None:
-        if not isinstance(Y, numpy.ndarray):
-            raise Exception("Y is not a NumPy array!!!")
-        if numpy.shape(Y)[0] != numpy.shape(X)[0]:
-            raise Exception("X and Y are not comformable!!!")
+    if Y is not None and Y.shape[0] != X.shape[0]:
+        raise ValueError("X and Y are not conformable!")
     d = {}
     obs_labels = []
     varname = []
     if Y is not None:
         # force Tx1 vector
-        Y = numpy.vstack(Y)
+        Y = np.vstack(Y)
         varname.append("y")
     # we create artificial variables names
-    for i in range(with_const, numpy.shape(X)[1]):
+    for i in range(with_const, np.shape(X)[1]):
         varname.append("x" + str(i+1-with_const))
     if with_const:
         varname.insert(const_pos, "const_")
     # we create artificial obs labels
-    for i in range(numpy.shape(X)[0]):
+    for i in range(np.shape(X)[0]):
         obs_labels.append(i+1)
     _correctvarnames(varname)
     if Y is not None:
-        d['data_array'] = numpy.hstack((Y, X))
+        d['data_array'] = np.hstack((Y, X))
     else:
         d['data_array'] = X
     d['varname'] = varname
@@ -162,7 +161,7 @@ def nparray2dict (X, pd=1, Y=None, with_const=False,
 
     return d
 
-def series2dict (Y, pd=1, varname="y"):
+def series2dict (Y, pd: int = 1, varname: str = "y"):
     '''turns a pandas series into a dictionary gretl understands'''
     try:
         import pandas
@@ -174,7 +173,7 @@ def series2dict (Y, pd=1, varname="y"):
     d = {}
     if varname == 'const':
         varname = 'const_'
-    mydata = Y.to_numpy(copy=True, dtype=numpy.double)
+    mydata = Y.to_numpy(copy=True, dtype=np.double)
     d['data_array'] = mydata
     d['varname'] = [varname]
     try:
@@ -226,7 +225,9 @@ def print_module_source (module: str):
         code = f.read()
     print(code)
 
-def modeltab (models, output="print", tablefmt="github", stars=True, coeff_fmt=".3f", stderr_fmt=".4f"):
+def modeltab (models: "List[GretlModel]", output: str = "print",
+                tablefmt: str = "github", stars: bool = True,
+                coeff_fmt: str = ".3f", stderr_fmt: str = ".4f"):
     """
     Create a comparison table for multiple GretlModel objects.
 
@@ -324,3 +325,64 @@ def modeltab (models, output="print", tablefmt="github", stars=True, coeff_fmt="
         return None
 
     return table
+
+# ###################################################
+#               PLOTS
+# ###################################################
+def _time_series_plot (y: np.ndarray, x: np.ndarray = None,
+                        n: int = None, xtics: np.ndarray | list = None,
+                        ytics: str = None, xlabel: str = None,
+                        ylabel: str = None, xtitle : str = None,
+                        ytitle : str = None, title: str = None):
+    """
+    Time-series plot of fitted values, optionally with actual values.
+
+    Parameters
+    ----------
+    y : np.ndarray
+        Fitted values to plot
+    x : np.ndarray, optional
+        Actual values to plot alongside fitted values
+    n : int, optional
+        Length of time series (if xtics not provided)
+    xtics : np.ndarray or list, optional
+        Time points to use as x-axis
+    ytics : str, optional
+        Y-axis label (fallback if ylabel not provided)
+    xlabel : str, optional
+        X-axis label
+    ylabel : str, optional
+        Y-axis label
+    xtitle : str, optional
+        X series title
+    ytitle : str, optional
+        Y series title
+    title : str, optional
+        Plot title
+    """
+    # Determine x-axis (time)
+    if xtics is not None:
+        time = np.array(xtics)
+    else:
+        length = n if n is not None else len(y)
+        time = np.arange(1, length + 1)
+
+    plt.figure(figsize=(10, 5))
+
+    # Plot fitted values
+    plt.plot(time, y, label=ytitle or None, color="blue")
+
+    # Plot actual values if provided
+    if x is not None:
+        plt.plot(time, x, label=xtitle or None, color="orange")
+
+    # Set labels with fallback
+    plt.xlabel(xlabel or "Time")
+    plt.ylabel(ylabel or ytics or "Value")
+    if title:
+        plt.title(title)
+    if ytitle or xtitle:
+        plt.legend()
+    plt.grid(True)
+    plt.tight_layout()
+    plt.show()

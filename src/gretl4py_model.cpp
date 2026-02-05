@@ -546,6 +546,11 @@ GretlBundlePtr GretlModel::get_bundle (void) const
     return GB_model_;
 }
 
+const GretlDatasetPtr GretlModel::get_dataset (void) const
+{
+    return GD_;
+}
+
 void GretlModel::check_if_estimated_ (void) const
 {
     if (estimated_) throw std::runtime_error("model already estimated");
