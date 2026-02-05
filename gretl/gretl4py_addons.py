@@ -208,6 +208,9 @@ def print_module_source (module: str):
     Parameters:
         mod: imported module (not a string)
     """
+    if module.endswith(".py"):
+        module = module[:-3]
+
     # we try to load module as 'mod'
     mod = _import_example_module(module)
     if mod is None:
