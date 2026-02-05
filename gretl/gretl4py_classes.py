@@ -22,7 +22,8 @@ import sys
 import os
 import webbrowser
 from typing import TypedDict, NotRequired, Dict, List, Any
-from .gretl4py_addons import _pd_to_pandas_str_format, _time_series_plot
+from .gretl4py_addons import _pd_to_pandas_str_format
+from .gretl4py_addons import _set_params_for_plot, _time_series_plot
 from . import _gretl
 
 def _matrix_functions_wrapper(func_name: str):
@@ -69,31 +70,20 @@ def _plotfitted_nse (self, kind: str = "fitted"):
     y_name = self.depvar
     actual = self._dataset.get_series(y_name)
     fitted = self.yhat
-    xtics = self._dataset.get_obs_labels()
-    max_xticks = int(self._dataset.get_accessor("$pd"))
-    if max_xticks < 4:
-        max_xticks = 4
-    n = int(self.T)
-    if (len(actual) == len(fitted)) and n < len(fitted):
-        n = len(fitted)
-    _time_series_plot(y=fitted, x=actual, n=n,
+    min_len = min(len(actual), len(fitted))
+    actual, fitted = actual[:min_len], fitted[:min_len]
+    params = _set_params_for_plot(self, fitted)
+    _time_series_plot(y=fitted, x=actual, n=params["n"],
         ylabel=y_name, ytitle="fitted", xtitle="actual",
-        xtics=xtics, max_xticks=max_xticks,
+        xtics=params["xtics"], max_xtics=params["max_xtics"],
         title=f"Actual and fitted {y_name}")
 
 def _plotresiduals_nse (self, kind: str = "residuals"):
-    y_name = self.depvar
     resid = self.uhat
-    xtics = self._dataset.get_obs_labels()
-    max_xticks = int(self._dataset.get_accessor("$pd"))
-    if max_xticks < 4:
-        max_xticks = 4
-    n = int(self.T)
-    if n < len(resid):
-        n = len(resid)
-    _time_series_plot(y=resid, n=n, ytitle="", xtics=xtics,
-        max_xticks=max_xticks,
-        title=f"Regression residuals = (observed - fitted {y_name}")
+    params = _set_params_for_plot(self, resid)
+    _time_series_plot(y=resid, n=params["n"], ytitle="",
+        xtics=params["xtics"], max_xtics=params["max_xtics"],
+        title=f"Regression residuals = (observed - fitted {self.depvar})")
 
 # #######################################################
 #   GretlModel_nl class

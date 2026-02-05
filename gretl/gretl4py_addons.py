@@ -329,19 +329,24 @@ def modeltab (models: "List[GretlModel]", output: str = "print",
 # ###################################################
 #               PLOTS
 # ###################################################
-def _time_series_plot(
-    y: np.ndarray,
-    x: np.ndarray = None,
-    n: int = None,
-    xtics: np.ndarray | list = None,
-    ytics: str = None,
-    xlabel: str = None,
-    ylabel: str = None,
-    xtitle: str = None,
-    ytitle: str = None,
-    title: str = None,
-    max_xticks: int = 10
-):
+def _set_params_for_plot (model: "GretlModel", y: np.ndarray) -> dict:
+    xtics = getattr(model._dataset, "obs_labels", None)
+    pd = int(model._dataset.get_accessor("$pd"))
+    n = max(int(model.T), len(y))
+
+    if not xtics:
+        max_xtics = min(model._dataset.n, 10)
+    else:
+        max_xtics = max(pd, 4)
+
+    return {"xtics": xtics, "max_xtics": max_xtics, "n": n}
+
+def _time_series_plot (y: np.ndarray, x: np.ndarray = None,
+                        n: int = None, xtics: np.ndarray | list = None,
+                        ytics: str = None, xlabel: str = None,
+                        ylabel: str = None, xtitle: str = None,
+                        ytitle: str = None, title: str = None,
+                        max_xtics: int = 10):
     """
     Time-series plot of fitted values, optionally with actual values.
 
@@ -367,7 +372,7 @@ def _time_series_plot(
         Fitted series title
     title : str, optional
         Plot title
-    max_xticks : int, optional
+    max_xtics : int, optional
         Maximum number of ticks to display on x-axis
     """
     # Determine x-axis (time)
@@ -404,7 +409,7 @@ def _time_series_plot(
 
     # Adjust x-ticks for dense data
     if labels is not None:
-        step = max(1, len(labels) // max_xticks)
+        step = max(1, len(labels) // max_xtics)
         tick_positions = time[::step]
         tick_labels = [labels[i] for i in range(0, len(labels), step)]
         plt.xticks(tick_positions, tick_labels, rotation=45)

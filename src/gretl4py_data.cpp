@@ -164,6 +164,9 @@ GretlDataset::GretlDataset (const std::string &fname,
     } else {
         source = full_path;
     }
+
+    // we set obs labels
+    set_obs_labels_();
 }
 
 GretlDataset::GretlDataset (const py::dict &pydict) : id_(next_obj_id_++)
@@ -256,6 +259,9 @@ GretlDataset::GretlDataset (const py::dict &pydict) : id_(next_obj_id_++)
     dset->structure = get_int_from_pydict("structure", 0);
     set_obs(std::to_string(get_int_from_pydict("periodicity", 1)).c_str(),
             dset->S[0], dset, setobs_opt_from_structure(dset->structure));
+
+    // we set obs labels
+    set_obs_labels_();
 }
 
 GretlDataset::GretlDataset (const GretlDataset &src) : id_(next_obj_id_++)
@@ -315,6 +321,9 @@ GretlDataset::GretlDataset (const GretlDataset &src) : id_(next_obj_id_++)
     if (src.dset->padmask)     dset->padmask     = strdup(src.dset->padmask);
     if (src.dset->mapfile)     dset->mapfile     = strdup(src.dset->mapfile);
     if (src.dset->pangrps)     dset->pangrps     = strdup(src.dset->pangrps);
+
+    // we set obs labels
+    set_obs_labels_();
 
     // we mark it as copy of ...
     if (!src.source.empty()) {
@@ -491,6 +500,20 @@ void GretlDataset::add_or_replace_allocated_series_ (gretl_double_ptr data,
     }
 }
 
+void GretlDataset::set_obs_labels_ (void)
+{
+    //
+    // we set obs labels
+    //
+    char s[OBSLEN];
+
+    obs_labels_.resize(dset->n);
+    for (int i=0; i<=dset->n-1; ++i) {
+        ntolabel(s, i, dset);
+        obs_labels_[i] = s;
+    }
+}
+
 int GretlDataset::get_series_id (const std::string &series, const bool verbose) const
 {
     //
@@ -504,21 +527,9 @@ int GretlDataset::get_series_id (const std::string &series, const bool verbose) 
     return var_num;
 }
 
-py::list GretlDataset::get_obs_labels (void)
+py::list GretlDataset::get_obs_labels (void) const
 {
-    //
-    // here we produce observation labels for entire dataset
-    //
-    py::list res;
-
-    for (int i=0; i<=dset->n-1; ++i) {
-        char s[OBSLEN];
-
-        ntolabel(s, i, dset);
-        res.append(std::string(s));
-    }
-
-    return res;
+    return py::cast(obs_labels_);
 }
 
 bool GretlDataset::is_panel (void) const

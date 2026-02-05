@@ -52,6 +52,7 @@ private:
     GretlPrint GP_ = GretlPrint();          // printer (instance wide)
     mutable GretlTypesPtr RES_other_;       // other results (accessor, tests, ets)
     gretlopt opt_ = OPT_NONE;               // instance-wide options
+    std::vector<std::string> obs_labels_;   // observation labels
     mutable int err_ = 0;
 
     GretlDataset (const std::string &fname,
@@ -70,6 +71,7 @@ private:
     void add_or_replace_allocated_series_ (gretl_double_ptr data,
                                            const std::string &name, int n,
                                            gretl_gchar_ptr label = nullptr);
+    void set_obs_labels_ (void);
 public:
     bool is_default = false;
     DATASET *dset = NULL;
@@ -118,7 +120,7 @@ public:
 
     int get_series_id (const std::string &series, const bool verbose = true) const;
 
-    py::list get_obs_labels (void);
+    py::list get_obs_labels (void) const;
 
     // dataset management
     void setobs (const std::string &periodicity, const std::string &startobs,
