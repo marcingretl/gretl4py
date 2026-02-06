@@ -79,7 +79,7 @@ def _oddsratio(self: "Model_logit"):
         print('*** warning: oddsratios not available for current model ***\n')
         print(f'Debug info: {e}')
 
-def _plotfitted(self, eqn: int = 0, kind: str = "fitted"):
+def _plotfitted_(self, eqn: int = 0, kind: str = "fitted"):
     """Note: we draw as many plots as the len(y_name) is."""
     plot_data = _set_matrices_for_plot(self, "$yhat", eqn)
     y_name = plot_data["y_name"]
@@ -101,7 +101,74 @@ def _plotfitted(self, eqn: int = 0, kind: str = "fitted"):
                             title=f"Actual and fitted {var}")
         eqn_no += 1
 
-def _plotresiduals(self, eqn: int = 0, kind: str = "residuals"):
+def _plotfitted(self, eqn: int = 0, kind: str = "fitted"):
+    """
+    Plot fitted values vs actual series.
+
+    Parameters
+    ----------
+    eqn : int
+        Equation number (0 for all).
+    kind : str
+        "fitted" for separate figures per variable,
+        "multiple" for subplots in a single figure.
+    """
+    from ._plotting import _setup_matplotlib
+    plt = _setup_matplotlib()
+
+    # Get data
+    plot_data = _set_matrices_for_plot(self, "$yhat", eqn)
+    y_name = plot_data["y_name"]
+    yhat = plot_data["data"]
+    eqn_no = 0 if eqn == 0 else eqn - 1
+
+    if kind == "multiple":
+        # Single figure, stacked subplots
+        n_vars = len(y_name)
+        fig, axes = plt.subplots(n_vars, 1, figsize=(10, 4 * n_vars), sharex=True)
+        if n_vars == 1:
+            axes = [axes]  # make iterable
+
+        for i, var in enumerate(y_name):
+            actual = self._dataset.get_series(var)
+            if isinstance(self, _gretl.Model_NSE):
+                fitted = yhat
+            else:
+                fitted = yhat[:, eqn_no]
+            min_len = min(len(actual), len(fitted))
+            actual, fitted = actual[:min_len], fitted[:min_len]
+            params = _set_params_for_plot(self, fitted)
+            _time_series_plot(y=fitted, x=actual, n=params["n"],
+                                ylabel=var, ytitle="fitted",
+                                xtitle="actual", xtics=params["xtics"],
+                                max_xtics=params["max_xtics"], ax=axes[i],
+                                title=f"Actual and fitted {var}")
+            eqn_no += 1
+        plt.tight_layout()
+        plt.show(block=True)  # ensure figure appears immediately
+    elif kind == "fitted":
+        # Separate figures per variable
+        for var in y_name:
+            actual = self._dataset.get_series(var)
+            if isinstance(self, _gretl.Model_NSE):
+                fitted = yhat
+            else:
+                fitted = yhat[:, eqn_no]
+            min_len = min(len(actual), len(fitted))
+            actual, fitted = actual[:min_len], fitted[:min_len]
+            params = _set_params_for_plot(self, fitted)
+            _time_series_plot(y=fitted, x=actual, n=params["n"],
+                                ylabel=var, ytitle="fitted",
+                                xtitle="actual", xtics=params["xtics"],
+                                max_xtics=params["max_xtics"],
+                                title=f"Actual and fitted {var}")
+            eqn_no += 1
+        # In case backend requires explicit show
+        plt.show(block=True)
+    else:
+        raise ValueError(f"Unknown kind: {kind}. Use 'fitted' or 'multiple'.")
+
+def _plotresiduals_(self, eqn: int = 0, kind: str = "residuals"):
     """Note: we draw as many plots as the len(y_name) is."""
     plot_data = _set_matrices_for_plot(self, "$uhat", eqn)
     y_name = plot_data["y_name"]
@@ -118,6 +185,84 @@ def _plotresiduals(self, eqn: int = 0, kind: str = "residuals"):
                             xtics=params["xtics"], max_xtics=params["max_xtics"],
                             title=f"Regression residuals = (observed - fitted {var})")
         eqn_no += 1
+
+def _plotresiduals(self, eqn: int = 0, kind: str = "residuals"):
+    """
+    Plot regression residuals (observed - fitted).
+
+    Parameters
+    ----------
+    eqn : int
+        Equation number (0 for all equations/variables).
+    kind : str
+        "residuals" for separate figures per variable,
+        "multiple" for subplots in a single figure.
+    """
+    from ._plotting import _setup_matplotlib
+    plt = _setup_matplotlib()
+
+    # Get residual data
+    plot_data = _set_matrices_for_plot(self, "$uhat", eqn)
+    y_name = plot_data["y_name"]
+    uhat = plot_data["data"]
+
+    eqn_no = 0
+
+    if kind == "multiple":
+        # Single figure, stacked subplots
+        n_vars = len(y_name)
+        fig, axes = plt.subplots(n_vars, 1, figsize=(10, 4 * n_vars), sharex=True)
+        if n_vars == 1:
+            axes = [axes]
+
+        for i, var in enumerate(y_name):
+            if isinstance(self, _gretl.Model_NSE):
+                resid = uhat
+            else:
+                resid = uhat[:, eqn_no]
+            params = _set_params_for_plot(self, resid)
+
+            _time_series_plot(
+                y=resid,
+                n=params["n"],
+                ylabel=var,
+                ytitle="Residuals",
+                xtitle="",
+                xtics=params["xtics"],
+                max_xtics=params["max_xtics"],
+                title=f"Regression residuals = (observed - fitted {var})",
+                ax=axes[i]
+            )
+            eqn_no += 1
+
+        plt.tight_layout()
+        plt.show(block=True)
+
+    elif kind == "residuals":
+        # Separate figures per variable
+        for var in y_name:
+            if isinstance(self, _gretl.Model_NSE):
+                resid = uhat
+            else:
+                resid = uhat[:, eqn_no]
+            params = _set_params_for_plot(self, resid)
+
+            _time_series_plot(
+                y=resid,
+                n=params["n"],
+                ylabel=var,
+                ytitle="Residuals",
+                xtitle="",
+                xtics=params["xtics"],
+                max_xtics=params["max_xtics"],
+                title=f"Regression residuals = (observed - fitted {var})"
+            )
+            eqn_no += 1
+
+        plt.show(block=True)
+
+    else:
+        raise ValueError(f"Unknown kind: {kind}. Use 'residuals' or 'multiple'.")
 
 # #######################################################
 #   GretlModel_nl class
