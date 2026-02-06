@@ -28,6 +28,13 @@ import importlib
 from types import ModuleType
 from typing import Optional
 from typing import List
+import matplotlib
+if sys.platform == "darwin":
+    matplotlib.use("MacOSX")
+elif sys.platform.startswith("win"):
+    matplotlib.use("TkAgg")
+else:
+    matplotlib.use("TkAgg")
 import matplotlib.pyplot as plt
 import gretl
 import gretl.examples
