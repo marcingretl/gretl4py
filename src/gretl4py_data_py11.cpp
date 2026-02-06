@@ -77,7 +77,7 @@ void init_gretl4py_dataset_py11(py::module_ &m)
                                {
                                    return self.get_obs_labels();
                                })
-        .def_property_readonly("get_id",
+        .def_property_readonly("id",
                                [](const GretlDataset &self)
                                {
                                    return self.get_id();

@@ -403,7 +403,7 @@ def show_data_status():
                 default = "(default)"
             else:
                 default = ""
-            print(f'{d}: {dset.get_id:d}, {dset.source:s} {default:s} - referenced by models: {list(dset.linked_models_list)}')
+            print(f'{d}: {dset.id:d}, {dset.source:s} {default:s} - referenced by models: {list(dset.linked_models_list)}')
 
 def _to_dataframe(self: "Dataset"):
     """Method for exporting _gretl.Dataset instance as Pandas DataFrame"""
