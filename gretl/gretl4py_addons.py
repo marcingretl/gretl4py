@@ -330,7 +330,7 @@ def modeltab(models: "List[GretlModel]", output: str = "print",
 #               PLOTS
 # ###################################################
 def _set_params_for_plot(model: "GretlModel", y: np.ndarray) -> dict:
-    """set numerical parameters for plots"""
+    """Set numerical parameters for plots."""
     pd = int(model._dataset.get_accessor("$pd"))
     n = max(int(model.T), len(y))
     obs_labels = model._dataset.obs_labels
@@ -344,13 +344,14 @@ def _set_params_for_plot(model: "GretlModel", y: np.ndarray) -> dict:
     return {"xtics": xtics, "max_xtics": max_xtics, "n": n}
 
 def _set_matrices_for_plot(model: "GretlModel", accessor: str, eqn: int) -> dict:
-    """set input data (yhat, uhat, etc) for plots"""
+    """Set input data (yhat, uhat, etc) for plots."""
     if eqn < 0:
         raise ValueError("Equation number must not be negative.")
 
     y_name = []
     data = None
 
+    # we set variables to plot (names, we loop over it)
     if isinstance(model, _gretl.Model_var):
         if eqn > model.neqns:
             raise ValueError(f"Equation number bigger than system size ({model.neqns})")
@@ -370,14 +371,13 @@ def _set_matrices_for_plot(model: "GretlModel", accessor: str, eqn: int) -> dict
         elif accessor == "$uhat":
             data = model.uhat
         else:
-            raise ValueError(f"unknown accessor: {accessor}")
+            raise ValueError(f"Unknown accessor: {accessor}")
     else:
         data = model.get_accessor(accessor)
     if not isinstance(data, np.ndarray):
         raise ValueError("Error in getting data for plot")
 
     return {"y_name": y_name, "data": data}
-
 
 def _time_series_plot(y: np.ndarray, x: np.ndarray = None,
                         n: int = None, xtics: np.ndarray | list = None,
@@ -460,7 +460,6 @@ def _time_series_plot(y: np.ndarray, x: np.ndarray = None,
 
     plt.tight_layout()
     plt.show()
-
 
 if __name__ == "__main__":
     pass
