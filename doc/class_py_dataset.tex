@@ -43,6 +43,12 @@ gretl._gretl.Dataset[rule: slice | list | str] -> gretl._gretl.Dataset
 \subsubsection{\classpydatasetb attributes}
 The \classpydataset provides the following public attributes:
 
+\gretlfpycmd{get\_id}
+\estdesc{Returns instance dataset id.}
+\begin{lstlisting}[style=pythonstylefoot]
+.get_id -> int
+\end{lstlisting}
+
 \gretlfpycmd{is\_panel}
 \estdesc{Checks if we deal with panel-dataset.}
 \begin{lstlisting}[style=pythonstylefoot]
@@ -63,6 +69,12 @@ The \classpydataset provides the following public attributes:
 .k -> int
 \end{lstlisting}
 \generaldesc{This is equivalent to calling \pythcode{.get_accessor("$nvars")}.}
+
+\gretlfpycmd{linked\_models\_list}
+\estdesc{Returns models that use this dataset.}
+\begin{lstlisting}[style=pythonstylefoot]
+.linked_models_list -> set
+\end{lstlisting}
 
 \gretlfpycmd{n}
 \estdesc{Returns the number of observations in the currently selected sample.}
@@ -278,12 +290,6 @@ Examples:\newline
 	to the \classpydataset instance or to general \lgretl accessors
 	(such as \gretlcmd{\$version}).}
 
-\gretlfpycmd{get\_id()}
-\estdesc{This method retrieves instance dataset id.}
-\begin{lstlisting}[style=pythonstylefoot]
-.get_id() -> int
-\end{lstlisting}
-
 \gretlfpycmd{get\_series()}
 \estdesc{This method retrieves given \gretlcmd{series} as NumPy array.}
 \begin{lstlisting}[style=pythonstylefoot]
@@ -393,12 +399,6 @@ Examples:\newline
 		ld\_x &= log(x) - log(x(-1)),\\
 		ld\_y &= log(y) - log(y(-1))
 	\end{align*}}
-
-\gretlfpycmd{linked\_models\_list()}
-\estdesc{This method retrieves models that use this dataset.}
-\begin{lstlisting}[style=pythonstylefoot]
-.linked_models_list() -> set
-\end{lstlisting}
 
 \gretlfpycmd{logs()}
 \estdesc{The natural log of each of the series in \textit{varlist}

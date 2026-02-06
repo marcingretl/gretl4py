@@ -77,6 +77,16 @@ void init_gretl4py_dataset_py11(py::module_ &m)
                                {
                                    return self.get_obs_labels();
                                })
+        .def_property_readonly("get_id",
+                               [](const GretlDataset &self)
+                               {
+                                   return self.get_id();
+                               })
+        .def_property_readonly("linked_models_list",
+                               [](const GretlDataset &self)
+                               {
+                                   return self.linked_models_list();
+                               })
         .def("__copy__",
              [](const GretlDataset &self)
              {
@@ -91,7 +101,6 @@ void init_gretl4py_dataset_py11(py::module_ &m)
         .def("clone", [](const GretlDataset &self) { return GretlDataset::clone(self); })
         .def("head", &head_tail_print<HEAD>, py::arg("nobs") = 5, py::kw_only())
         .def("tail", &head_tail_print<TAIL>, py::arg("nobs") = 5, py::kw_only())
-        .def("get_id", &GretlDataset::get_id)
         .def("set_as_default", &GretlDataset::set_as_default)
         .def("sample",
              [](GretlDataset &self, const std::string &startobs,
@@ -196,7 +205,6 @@ void init_gretl4py_dataset_py11(py::module_ &m)
         .def("varnames", &GretlDataset::varnames)
         .def("get_series", &GretlDataset::get_series,
              py::arg("series").none(false))
-        .def("linked_models_list", &GretlDataset::linked_models_list)
         .def("hpfilt", &GretlDataset::hpfilt,
              py::arg("y").none(false), py::arg("hp_lambda").none(true) = NADBL,
              py::arg("trend").none(true) = false, py::arg("one_sided").none(true) = false)
