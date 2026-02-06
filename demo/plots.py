@@ -1,9 +1,10 @@
 import gretl
-d=gretl.get_data("bjg")
+d1 = gretl.get_data("bjg")
+d2 = gretl.get_data("denmark")
 
 m1 = gretl.arima(y="lg", order=(1,1,1,)).fit()
 m2 = gretl.ols("1 0 2").fit()
-m3 = gretl.var(4, "lg g").fit()
+m3 = gretl.var(4, "IDE IBO LRY LRM", data=d2).fit()
 
 m1.plotfitted()
 m1.plotresiduals()
