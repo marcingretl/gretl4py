@@ -71,8 +71,8 @@ def _plotfitted (self, eqn: int = 0, kind: str = "fitted"):
     plot_data = _set_matrices_for_plot(self, "$yhat", eqn)
     y_name = plot_data["y_name"]
     yhat = plot_data["data"]
+    eqn_no = 0 if eqn == 0 else eqn-1
 
-    eqn_no = 0
     for var in y_name:
         actual = self._dataset.get_series(var)
         if isinstance(self, _gretl.Model_NSE):
@@ -81,7 +81,8 @@ def _plotfitted (self, eqn: int = 0, kind: str = "fitted"):
             fitted = yhat[:, eqn_no]
         min_len = min(len(actual), len(fitted))
         actual, fitted = actual[:min_len], fitted[:min_len]
-        assert len(actual) == len(fitted), (f"'actual' and 'fitted' lengths not equal: {len(actual)} vs {len(fitted)}")
+        if len(actual) != len(fitted):
+            raise ValueError(f"'actual' and 'fitted' lengths not equal: {len(actual)} vs {len(fitted)}")
         params = _set_params_for_plot(self, fitted)
         _time_series_plot(y=fitted, x=actual, n=params["n"],
                             ylabel=var, ytitle="fitted", xtitle="actual",

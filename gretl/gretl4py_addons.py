@@ -345,6 +345,11 @@ def _set_params_for_plot (model: "GretlModel", y: np.ndarray) -> dict:
 
 def _set_matrices_for_plot (model: "GretlModel", accessor: str, eqn: int) -> dict:
     """set input data (yhat, uhat, etc) for plots"""
+    if eqn < 0:
+        raise ValueError("Equation number must not be negative.")
+    if eqn > model.neqns:
+        raise ValueError(f"Equation number bigger than system size ({model.neqns})")
+
     y_name = []
     data = None
 
@@ -352,10 +357,11 @@ def _set_matrices_for_plot (model: "GretlModel", accessor: str, eqn: int) -> dic
         if eqn == 0:
             y_name = [model._dataset.varnames()[var] for var in model.ylist]
         else:
-            y_name.append(model.ylist[eqn])
+            y_name.append(model._dataset.varnames()[model.ylist[eqn-1]])
     else:
         y_name.append(model.depvar)
-    assert len(y_name) > 0, "No fitted series found"
+    if len(y_name) == 0:
+        raise ValueError("No fitted series found")
 
     # we get yhat. uhat values
     if isinstance(model, _gretl.Model_NSE):
@@ -367,7 +373,8 @@ def _set_matrices_for_plot (model: "GretlModel", accessor: str, eqn: int) -> dic
             raise ValueError(f"unknown accessor: {accessor}")
     else:
         data = model.get_accessor(accessor)
-    assert isinstance(data, np.ndarray) , "Error in getting data for plot"
+    if not isinstance(data, np.ndarray):
+        raise ValueError("Error in getting data for plot")
 
     return {"y_name": y_name, "data": data}
 
