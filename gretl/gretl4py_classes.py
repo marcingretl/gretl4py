@@ -23,7 +23,7 @@ import os
 import webbrowser
 from typing import TypedDict, NotRequired, Dict, List, Any
 from .gretl4py_addons import _pd_to_pandas_str_format
-from .gretl4py_addons import _set_params_for_plot, _time_series_plot
+from .gretl4py_addons import _set_params_for_plot, _set_matrices_for_plot, _time_series_plot
 from . import _gretl
 
 def _matrix_functions_wrapper(func_name: str):
@@ -68,22 +68,9 @@ def _oddsratio (self):
 
 def _plotfitted (self, eqn: int = 0, kind: str = "fitted"):
     """Note: we draw as many plots as the len(y_name) is."""
-    y_name = []
-
-    if isinstance(self, _gretl.Model_var):
-        if eqn == 0:
-            y_name = [self._dataset.varnames()[var] for var in self.ylist]
-        else:
-            y_name.append(m.ylist[eqn])
-    else:
-        y_name.append(self.depvar)
-    assert len(y_name) > 0, "No fitted series found"
-
-    # we get yhat values
-    if isinstance(self, _gretl.Model_NSE):
-        yhat = self.yhat
-    else:
-        yhat = self.get_accessor("$yhat")
+    plot_data = _set_matrices_for_plot(self, "$yhat", eqn)
+    y_name = plot_data["y_name"]
+    yhat = plot_data["data"]
 
     eqn_no = 0
     for var in y_name:
@@ -102,12 +89,23 @@ def _plotfitted (self, eqn: int = 0, kind: str = "fitted"):
                             title=f"Actual and fitted {var}")
         eqn_no += 1
 
-def _plotresiduals (self, kind: str = "residuals"):
-    resid = self.uhat
-    params = _set_params_for_plot(self, resid)
-    _time_series_plot(y=resid, n=params["n"], ytitle="",
-        xtics=params["xtics"], max_xtics=params["max_xtics"],
-        title=f"Regression residuals = (observed - fitted {self.depvar})")
+def _plotresiduals (self, eqn: int = 0, kind: str = "residuals"):
+    """Note: we draw as many plots as the len(y_name) is."""
+    plot_data = _set_matrices_for_plot(self, "$uhat", eqn)
+    y_name = plot_data["y_name"]
+    uhat = plot_data["data"]
+
+    eqn_no = 0
+    for var in y_name:
+        if isinstance(self, _gretl.Model_NSE):
+            resid = uhat
+        else:
+            resid = uhat[:, eqn_no]
+        params = _set_params_for_plot(self, resid)
+        _time_series_plot(y=resid, n=params["n"], ytitle="",
+                            xtics=params["xtics"], max_xtics=params["max_xtics"],
+                            title=f"Regression residuals = (observed - fitted {var})")
+        eqn_no += 1
 
 # #######################################################
 #   GretlModel_nl class

@@ -31,6 +31,7 @@ from typing import List
 import matplotlib.pyplot as plt
 import gretl
 import gretl.examples
+from . import _gretl
 
 def _correctvarnames (names):
     """replace const with const_"""
@@ -330,6 +331,7 @@ def modeltab (models: "List[GretlModel]", output: str = "print",
 #               PLOTS
 # ###################################################
 def _set_params_for_plot (model: "GretlModel", y: np.ndarray) -> dict:
+    """set numerical parameters for plots"""
     pd = int(model._dataset.get_accessor("$pd"))
     n = max(int(model.T), len(y))
     xtics = getattr(model._dataset, "obs_labels", None)[-n:]
@@ -340,6 +342,35 @@ def _set_params_for_plot (model: "GretlModel", y: np.ndarray) -> dict:
         max_xtics = max(pd, 4)
 
     return {"xtics": xtics, "max_xtics": max_xtics, "n": n}
+
+def _set_matrices_for_plot (model: "GretlModel", accessor: str, eqn: int) -> dict:
+    """set input data (yhat, uhat, etc) for plots"""
+    y_name = []
+    data = None
+
+    if isinstance(model, _gretl.Model_var):
+        if eqn == 0:
+            y_name = [model._dataset.varnames()[var] for var in model.ylist]
+        else:
+            y_name.append(model.ylist[eqn])
+    else:
+        y_name.append(model.depvar)
+    assert len(y_name) > 0, "No fitted series found"
+
+    # we get yhat. uhat values
+    if isinstance(model, _gretl.Model_NSE):
+        if accessor == "$yhat":
+            data = model.yhat
+        elif accessor == "$uhat":
+            data = model.uhat
+        else:
+            raise ValueError(f"unknown accessor: {accessor}")
+    else:
+        data = model.get_accessor(accessor)
+    assert isinstance(data, np.ndarray) , "Error in getting data for plot"
+
+    return {"y_name": y_name, "data": data}
+
 
 def _time_series_plot (y: np.ndarray, x: np.ndarray = None,
                         n: int = None, xtics: np.ndarray | list = None,
