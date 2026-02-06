@@ -25,7 +25,7 @@ import numpy as np
 from typing import TypedDict, NotRequired, Dict, List, Any
 from typing import Optional
 from .gretl4py_addons import _pd_to_pandas_str_format
-from .gretl4py_addons import _set_params_for_plot, _set_matrices_for_plot, _time_series_plot
+from ._plotting import _set_params_for_plot, _set_matrices_for_plot, _time_series_plot
 from . import _gretl
 
 # #######################################################
