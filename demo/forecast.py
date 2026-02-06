@@ -31,4 +31,3 @@ print("VAR")
 m4 = gretl.var(1, "g lg", data=d2, quiet=True).fit()
 #print(m4)
 m4.fcast2(d2.n-3, d2.n, out_of_sample=True)
-

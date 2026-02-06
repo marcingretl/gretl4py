@@ -66,19 +66,43 @@ def _oddsratio (self):
         print('*** warning: oddsratios not available for current model ***\n')
         print(f'Debug info: {e}')
 
-def _plotfitted_nse (self, eqn: int = 0, kind: str = "fitted"):
-    y_name = self.depvar
-    actual = self._dataset.get_series(y_name)
-    fitted = self.yhat
-    min_len = min(len(actual), len(fitted))
-    actual, fitted = actual[:min_len], fitted[:min_len]
-    params = _set_params_for_plot(self, fitted)
-    _time_series_plot(y=fitted, x=actual, n=params["n"],
-        ylabel=y_name, ytitle="fitted", xtitle="actual",
-        xtics=params["xtics"], max_xtics=params["max_xtics"],
-        title=f"Actual and fitted {y_name}")
+def _plotfitted (self, eqn: int = 0, kind: str = "fitted"):
+    """Note: we draw as many plots as the len(y_name) is."""
+    y_name = []
 
-def _plotresiduals_nse (self, kind: str = "residuals"):
+    if isinstance(self, _gretl.Model_var):
+        if eqn == 0:
+            y_name = [self._dataset.varnames()[var] for var in self.ylist]
+        else:
+            y_name.append(m.ylist[eqn])
+    else:
+        y_name.append(self.depvar)
+    assert len(y_name) > 0, "No fitted series found"
+
+    # we get yhat values
+    if isinstance(self, _gretl.Model_NSE):
+        yhat = self.yhat
+    else:
+        yhat = self.get_accessor("$yhat")
+
+    eqn_no = 0
+    for var in y_name:
+        actual = self._dataset.get_series(var)
+        if isinstance(self, _gretl.Model_NSE):
+            fitted = yhat
+        else:
+            fitted = yhat[:, eqn_no]
+        min_len = min(len(actual), len(fitted))
+        actual, fitted = actual[:min_len], fitted[:min_len]
+        assert len(actual) == len(fitted), (f"'actual' and 'fitted' lengths not equal: {len(actual)} vs {len(fitted)}")
+        params = _set_params_for_plot(self, fitted)
+        _time_series_plot(y=fitted, x=actual, n=params["n"],
+                            ylabel=var, ytitle="fitted", xtitle="actual",
+                            xtics=params["xtics"], max_xtics=params["max_xtics"],
+                            title=f"Actual and fitted {var}")
+        eqn_no += 1
+
+def _plotresiduals (self, kind: str = "residuals"):
     resid = self.uhat
     params = _set_params_for_plot(self, resid)
     _time_series_plot(y=resid, n=params["n"], ytitle="",

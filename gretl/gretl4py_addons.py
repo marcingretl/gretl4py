@@ -330,9 +330,9 @@ def modeltab (models: "List[GretlModel]", output: str = "print",
 #               PLOTS
 # ###################################################
 def _set_params_for_plot (model: "GretlModel", y: np.ndarray) -> dict:
-    xtics = getattr(model._dataset, "obs_labels", None)
     pd = int(model._dataset.get_accessor("$pd"))
     n = max(int(model.T), len(y))
+    xtics = getattr(model._dataset, "obs_labels", None)[-n:]
 
     if not xtics:
         max_xtics = min(model._dataset.n, 10)
