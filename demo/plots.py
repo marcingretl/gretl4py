@@ -12,6 +12,7 @@ m2.plotfitted()
 m2.plotresiduals()
 
 m3.plotfitted(eqn=2)
-m3.plotresiduals(eqn=1)
-m3.plotfitted(kind="multiple")
+m3.plotresiduals(1)
+
+m3.plotfitted(kind="multiple") # m3.plotfitted(kind="multiple", backend="Qt6Agg")
 m3.plotresiduals(kind="multiple")
