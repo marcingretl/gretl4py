@@ -28,26 +28,18 @@ import importlib
 from types import ModuleType
 from typing import Optional
 from typing import List
-import matplotlib
-if sys.platform == "darwin":
-    matplotlib.use("MacOSX")
-elif sys.platform.startswith("win"):
-    matplotlib.use("TkAgg")
-else:
-    matplotlib.use("TkAgg")
-import matplotlib.pyplot as plt
 import gretl
 import gretl.examples
 from . import _gretl
 
-def _correctvarnames (names):
+def _correctvarnames(names: List[str]) -> List[str]:
     """replace const with const_"""
     # in principle we can have a dict with restricted names and their substitutions
     for i in range(len(names)):
         if names[i] == 'const':
             names[i] = 'const_'
 
-def _pd_to_str_format (pd):
+def _pd_to_str_format(pd: int) -> str:
     """produces date string formatter for given periodicity"""
     res = None
     if pd == 1:
@@ -63,7 +55,7 @@ def _pd_to_str_format (pd):
 
     return res
 
-def _pd_to_pandas_str_format (pd):
+def _pd_to_pandas_str_format(pd: int) -> str:
     """produces pandas-style date string formatter for given periodicity"""
     res = None
     if pd == 1:
@@ -79,7 +71,7 @@ def _pd_to_pandas_str_format (pd):
 
     return res
 
-def _import_example_module (name: str) -> Optional[ModuleType]:
+def _import_example_module(name: str) -> Optional[ModuleType]:
     """
     Dynamically imports a gretl example module by short name.
 
@@ -110,7 +102,7 @@ def _import_example_module (name: str) -> Optional[ModuleType]:
 
     return None
 
-def df2dict (dframe, pd: int = 1, with_obs: bool = False):
+def df2dict(dframe, pd: int = 1, with_obs: bool = False):
     '''turns a Pandas DataFrame into a dictionary gretl understands'''
     try:
         import pandas
@@ -133,7 +125,7 @@ def df2dict (dframe, pd: int = 1, with_obs: bool = False):
 
     return d
 
-def nparray2dict (X: np.ndarray, pd: int = 1, Y: Optional[np.ndarray] = None,
+def nparray2dict(X: np.ndarray, pd: int = 1, Y: Optional[np.ndarray] = None,
                     with_const: bool = False, const_pos: int = 1):
     '''turns a 'raw' NumPy array into a dictionary gretl understands
     X - matrix with observations on explanatory variables
@@ -169,7 +161,7 @@ def nparray2dict (X: np.ndarray, pd: int = 1, Y: Optional[np.ndarray] = None,
 
     return d
 
-def series2dict (Y, pd: int = 1, varname: str = "y"):
+def series2dict(Y, pd: int = 1, varname: str = "y") -> dict:
     '''turns a pandas series into a dictionary gretl understands'''
     try:
         import pandas
@@ -195,7 +187,7 @@ def series2dict (Y, pd: int = 1, varname: str = "y"):
 
     return d
 
-def fc_print (fc):
+def fc_print(fc: dict):
     try:
         from tabulate import tabulate
     except ModuleNotFoundError:
@@ -208,7 +200,7 @@ def fc_print (fc):
     print(tabulate(fc['stats'], headers=[], showindex=fc['stats_labels'], tablefmt="plain"))
     print("")
 
-def print_module_source (module: str):
+def print_module_source(module: str):
     """
     Prints the full source code of the given imported module.
 
@@ -233,7 +225,7 @@ def print_module_source (module: str):
         code = f.read()
     print(code)
 
-def modeltab (models: "List[GretlModel]", output: str = "print",
+def modeltab(models: "List[GretlModel]", output: str = "print",
                 tablefmt: str = "github", stars: bool = True,
                 coeff_fmt: str = ".3f", stderr_fmt: str = ".4f"):
     """
@@ -337,7 +329,7 @@ def modeltab (models: "List[GretlModel]", output: str = "print",
 # ###################################################
 #               PLOTS
 # ###################################################
-def _set_params_for_plot (model: "GretlModel", y: np.ndarray) -> dict:
+def _set_params_for_plot(model: "GretlModel", y: np.ndarray) -> dict:
     """set numerical parameters for plots"""
     pd = int(model._dataset.get_accessor("$pd"))
     n = max(int(model.T), len(y))
@@ -351,7 +343,7 @@ def _set_params_for_plot (model: "GretlModel", y: np.ndarray) -> dict:
 
     return {"xtics": xtics, "max_xtics": max_xtics, "n": n}
 
-def _set_matrices_for_plot (model: "GretlModel", accessor: str, eqn: int) -> dict:
+def _set_matrices_for_plot(model: "GretlModel", accessor: str, eqn: int) -> dict:
     """set input data (yhat, uhat, etc) for plots"""
     if eqn < 0:
         raise ValueError("Equation number must not be negative.")
@@ -387,7 +379,7 @@ def _set_matrices_for_plot (model: "GretlModel", accessor: str, eqn: int) -> dic
     return {"y_name": y_name, "data": data}
 
 
-def _time_series_plot (y: np.ndarray, x: np.ndarray = None,
+def _time_series_plot(y: np.ndarray, x: np.ndarray = None,
                         n: int = None, xtics: np.ndarray | list = None,
                         ytics: str = None, xlabel: str = None,
                         ylabel: str = None, xtitle: str = None,
@@ -421,6 +413,10 @@ def _time_series_plot (y: np.ndarray, x: np.ndarray = None,
     max_xtics : int, optional
         Maximum number of ticks to display on x-axis
     """
+    from ._plotting import _setup_matplotlib
+
+    plt = _setup_matplotlib()
+
     # Determine x-axis (time)
     if xtics is not None:
         time = np.arange(len(xtics))
@@ -464,3 +460,7 @@ def _time_series_plot (y: np.ndarray, x: np.ndarray = None,
 
     plt.tight_layout()
     plt.show()
+
+
+if __name__ == "__main__":
+    pass

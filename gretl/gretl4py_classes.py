@@ -21,22 +21,35 @@ import inspect
 import sys
 import os
 import webbrowser
+import numpy as np
 from typing import TypedDict, NotRequired, Dict, List, Any
+from typing import Optional
 from .gretl4py_addons import _pd_to_pandas_str_format
 from .gretl4py_addons import _set_params_for_plot, _set_matrices_for_plot, _time_series_plot
 from . import _gretl
 
+# #######################################################
+#   module related
+# #######################################################
+
 def _matrix_functions_wrapper(func_name: str):
-    """Matrix-based operations requiring a variable name."""
-    def method (self, d : str, series : str, param=None):
-        func_call = getattr(_gretl, func_name, None)
+    """
+    Returns a method that wraps a _gretl matrix-based function.
+
+    The method has signature:
+        method(self, d: str, series: str, param: Optional[Any] = None) -> np.ndarray
+    """
+    def method(self, d: str, series: str, param: Optional[any] = None) -> np.ndarray:
+        func_call = getattr(_gretl, func_name)
+        # call the _gretl function with dataset, series, optional param
         return func_call(d, self.get_series(series), param)
+
     return method
 
 # #######################################################
 #   GretlModel class
 # #######################################################
-def _attrs (self):
+def _attrs(self: "GretlModel"):
     for attname in dir(self):
         if not attname.startswith("_"):
             attr = getattr(self, attname)
@@ -49,7 +62,7 @@ def _attrs (self):
             else:
                 print(f'{attname}: {type(attr)}')
 
-def _oddsratio (self):
+def _oddsratio(self: "Model_logit"):
     try:
         from tabulate import tabulate
     except ModuleNotFoundError:
@@ -66,7 +79,7 @@ def _oddsratio (self):
         print('*** warning: oddsratios not available for current model ***\n')
         print(f'Debug info: {e}')
 
-def _plotfitted (self, eqn: int = 0, kind: str = "fitted"):
+def _plotfitted(self, eqn: int = 0, kind: str = "fitted"):
     """Note: we draw as many plots as the len(y_name) is."""
     plot_data = _set_matrices_for_plot(self, "$yhat", eqn)
     y_name = plot_data["y_name"]
@@ -88,7 +101,7 @@ def _plotfitted (self, eqn: int = 0, kind: str = "fitted"):
                             title=f"Actual and fitted {var}")
         eqn_no += 1
 
-def _plotresiduals (self, eqn: int = 0, kind: str = "residuals"):
+def _plotresiduals(self, eqn: int = 0, kind: str = "residuals"):
     """Note: we draw as many plots as the len(y_name) is."""
     plot_data = _set_matrices_for_plot(self, "$uhat", eqn)
     y_name = plot_data["y_name"]
@@ -109,7 +122,7 @@ def _plotresiduals (self, eqn: int = 0, kind: str = "residuals"):
 # #######################################################
 #   GretlModel_nl class
 # #######################################################
-class NLSpec (TypedDict, total=False):
+class NLSpec(TypedDict, total=False):
     formula: str
     params: str
     param_names: str
@@ -119,7 +132,7 @@ class NLSpec (TypedDict, total=False):
     orthog: List[str]
     weights: str
 
-def mle (formula: str | NLSpec, **options: Any):
+def mle(formula: str | NLSpec, **options: Any) -> "Model_mle":
     """
     MLE factory for gretl. Accepts either:
 
@@ -152,7 +165,7 @@ def mle (formula: str | NLSpec, **options: Any):
     raise TypeError(f"Unsupported MLE specification of type {type(formula).__name__}; "
         "expected a string formula or an NLSpec dictionary.")
 
-def nls (formula: str | NLSpec, **options: Any):
+def nls(formula: str | NLSpec, **options: Any) -> "Model_nls":
     """
     NLS factory for gretl. Accepts either:
 
@@ -183,7 +196,7 @@ def nls (formula: str | NLSpec, **options: Any):
     raise TypeError(f"Unsupported NLS specification of type {type(formula).__name__}; "
         "expected a string formula or an NLSpec dictionary.")
 
-def gmm (formula: str | NLSpec, **options: Any):
+def gmm(formula: str | NLSpec, **options: Any) -> "Model_gmm":
     """
     GMM factory for gretl. Accepts either:
 
@@ -221,7 +234,7 @@ def gmm (formula: str | NLSpec, **options: Any):
 # #######################################################
 #   GretlModel_NME class
 # #######################################################
-class MESpec (TypedDict, total=False):
+class MESpec(TypedDict, total=False):
     equations: List[str]
     instruments: List[str]
     identities: List[str]
@@ -230,7 +243,7 @@ class MESpec (TypedDict, total=False):
 # #######################################################
 #   GretlDataset class
 # #######################################################
-def get_data (src: str | dict | int, **kwargs):
+def get_data(src: str | dict | int, **kwargs) -> "Dataset":
     """Load dataset from file path or dictionary.
 
     Parameters:
@@ -276,7 +289,7 @@ def get_data (src: str | dict | int, **kwargs):
     # create dataset
     return _gretl._get_data(src, source=source, **kwargs)
 
-def show_data_status ():
+def show_data_status():
     """List of available datasets."""
 
     # get ids of all registered datasets
@@ -305,7 +318,7 @@ def show_data_status ():
                 default = ""
             print(f'{d}: {dset.get_id():d}, {dset.source:s} {default:s} - referenced by models: {list(dset.linked_models_list())}')
 
-def _to_dataframe (self):
+def _to_dataframe(self: "Dataset"):
     """Method for exporting _gretl.Dataset instance as Pandas DataFrame"""
 
     try:
@@ -332,7 +345,7 @@ def _to_dataframe (self):
         return df
     elif datatype == 2:
         # time-series
-        freq = _pd_to_pandas_str_format(panel_freq)
+        freq = _pd_to_pandas_str_format(pdcode)
 
         if freq is not None:
             try:
@@ -371,7 +384,7 @@ def _to_dataframe (self):
     # unknown datatype -> return raw df
     return df
 
-def _package_get_help(self):
+def _package_get_help(self: "Package"):
     """
     Display package help.
 

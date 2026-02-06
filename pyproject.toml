@@ -42,6 +42,7 @@ exclude = ["**/__pycache__"]
     "_bundled_addons.txt",
     "gretl4py_addons.py",
     "gretl4py_classes.py",
+    "_plotting.py",
     "__init__.py",
 	"curl-ca-bundle.crt",
     "lib/*",
