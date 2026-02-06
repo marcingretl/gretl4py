@@ -68,7 +68,7 @@ void init_gretl4py_model_py11(py::module_ &m)
 {
     // base GretlModel class
     py::class_<GretlModel, GretlModelPtr>(m, "Model", py::dynamic_attr())
-        .def_property_readonly("_dataset",
+        .def_property_readonly("dataset",
                                [](const GretlModel &self)
                                {
                                    return self.get_dataset();

@@ -108,7 +108,7 @@ def _plotfitted(self, eqn: int = 0, kind: str = "fitted", backend: str | None = 
             axes = [axes]  # make iterable
 
         for i, var in enumerate(y_name):
-            actual = self._dataset.get_series(var)
+            actual = self.dataset.get_series(var)
             if isinstance(self, _gretl.Model_NSE):
                 fitted = yhat
             else:
@@ -127,7 +127,7 @@ def _plotfitted(self, eqn: int = 0, kind: str = "fitted", backend: str | None = 
     elif kind == "fitted":
         # Separate figures per variable
         for var in y_name:
-            actual = self._dataset.get_series(var)
+            actual = self.dataset.get_series(var)
             if isinstance(self, _gretl.Model_NSE):
                 fitted = yhat
             else:

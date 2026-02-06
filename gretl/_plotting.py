@@ -68,9 +68,9 @@ def _setup_matplotlib(backend: str | None = None):
 
 def _set_params_for_plot(model: "GretlModel", y: np.ndarray) -> dict:
     """Set numerical parameters for plots."""
-    pd = int(model._dataset.get_accessor("$pd"))
+    pd = int(model.dataset.get_accessor("$pd"))
     n = max(int(model.T), len(y))
-    obs_labels = model._dataset.obs_labels
+    obs_labels = model.dataset.obs_labels
     xtics = obs_labels[-n:] if obs_labels is not None else None
 
     if not xtics:
@@ -93,9 +93,9 @@ def _set_matrices_for_plot(model: "GretlModel", accessor: str, eqn: int) -> dict
         if eqn > model.neqns:
             raise ValueError(f"Equation number bigger than system size ({model.neqns})")
         elif eqn == 0:
-            y_name = [model._dataset.varnames()[var] for var in model.ylist]
+            y_name = [model.dataset.varnames()[var] for var in model.ylist]
         else:
-            y_name.append(model._dataset.varnames()[model.ylist[eqn-1]])
+            y_name.append(model.dataset.varnames()[model.ylist[eqn-1]])
     else:
         y_name.append(model.depvar)
     if len(y_name) == 0:
