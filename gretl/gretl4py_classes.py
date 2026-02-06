@@ -81,8 +81,6 @@ def _plotfitted (self, eqn: int = 0, kind: str = "fitted"):
             fitted = yhat[:, eqn_no]
         min_len = min(len(actual), len(fitted))
         actual, fitted = actual[:min_len], fitted[:min_len]
-        if len(actual) != len(fitted):
-            raise ValueError(f"'actual' and 'fitted' lengths not equal: {len(actual)} vs {len(fitted)}")
         params = _set_params_for_plot(self, fitted)
         _time_series_plot(y=fitted, x=actual, n=params["n"],
                             ylabel=var, ytitle="fitted", xtitle="actual",

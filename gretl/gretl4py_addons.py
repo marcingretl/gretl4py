@@ -334,7 +334,8 @@ def _set_params_for_plot (model: "GretlModel", y: np.ndarray) -> dict:
     """set numerical parameters for plots"""
     pd = int(model._dataset.get_accessor("$pd"))
     n = max(int(model.T), len(y))
-    xtics = getattr(model._dataset, "obs_labels", None)[-n:]
+    obs_labels = model._dataset.obs_labels
+    xtics = obs_labels[-n:] if obs_labels is not None else None
 
     if not xtics:
         max_xtics = min(model._dataset.n, 10)
@@ -347,14 +348,14 @@ def _set_matrices_for_plot (model: "GretlModel", accessor: str, eqn: int) -> dic
     """set input data (yhat, uhat, etc) for plots"""
     if eqn < 0:
         raise ValueError("Equation number must not be negative.")
-    if eqn > model.neqns:
-        raise ValueError(f"Equation number bigger than system size ({model.neqns})")
 
     y_name = []
     data = None
 
     if isinstance(model, _gretl.Model_var):
-        if eqn == 0:
+        if eqn > model.neqns:
+            raise ValueError(f"Equation number bigger than system size ({model.neqns})")
+        elif eqn == 0:
             y_name = [model._dataset.varnames()[var] for var in model.ylist]
         else:
             y_name.append(model._dataset.varnames()[model.ylist[eqn-1]])
