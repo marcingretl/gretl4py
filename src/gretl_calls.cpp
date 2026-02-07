@@ -45,6 +45,7 @@ extern "C" {
 // external symbols
 extern "C" {
     double bvnorm_cdf (double rho, double a, double b); // from gretl_normal.c
+    int update_addons_index (PRN *prn);
 }
 
 // global variables (some used outside this file)
@@ -84,6 +85,12 @@ void gretl4py_init (void)
 
     // read and set GRETL4PY_VERBOSE if available
     if (const char *env = std::getenv("GRETL4PY_VERBOSE"); env) gretl4py_verbose = std::atoi(env);
+
+    // force updating addons index
+    if (int err = update_addons_index(global_printer.prn_ptr())) {
+        global_printer.print();
+        handle_gretl_error(err);
+    }
 
     // verbose output
     if (gretl4py_verbose) std::printf("libgretl initialized\n");
