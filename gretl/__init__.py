@@ -102,17 +102,18 @@ from ._gretl import (pvalue, critical, pdf, cdf, invcdf, corr, cov) # libgretl's
 from ._gretl import (get_accessor)                                  # gretl4py specific functions
 from .gretl4py_classes import _attrs, _oddsratio, mle, nls, gmm, NLSpec
 from .gretl4py_classes import get_data, show_data_status, _to_dataframe
-from .gretl4py_classes import _matrix_functions_wrapper, _package_get_help
+from .gretl4py_classes import _package_get_help
 from .gretl4py_classes import _plotfitted, _plotresiduals
 from .gretl4py_addons import print_module_source, fc_print, modeltab
+from .gretl4py_addons import _matrix_functions_wrapper
 
 # deprecations
 # deprecations: END
 
 # Explicit symbols attach to certain classes
 setattr(_gretl.Model, "attrs", _attrs)                      # for listing all object's attributes
-setattr(_gretl.Model, "plotfitted", _plotfitted)      # fitted and actual against time
-setattr(_gretl.Model, "plotresiduals", _plotresiduals)# residuals against time
+setattr(_gretl.Model, "plotfitted", _plotfitted)            # fitted and actual against time
+setattr(_gretl.Model, "plotresiduals", _plotresiduals)      # residuals against time
 setattr(_gretl.Model_logit, "oddsratio", _oddsratio)        # for pretty-printing oddsratios
 setattr(_gretl.Dataset, "to_dataframe", _to_dataframe)      # gretl data to Pandas DataFrame converter
 setattr(_gretl.Package, "get_help", _package_get_help)      # display help (either PDF or txt)

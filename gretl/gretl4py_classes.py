@@ -29,24 +29,6 @@ from ._plotting import _set_params_for_plot, _set_matrices_for_plot, _time_serie
 from . import _gretl
 
 # #######################################################
-#   module related
-# #######################################################
-
-def _matrix_functions_wrapper(func_name: str):
-    """
-    Returns a method that wraps a _gretl matrix-based function.
-
-    The method has signature:
-        method(self, d: str, series: str, param: Optional[Any] = None) -> np.ndarray
-    """
-    def method(self, d: str, series: str, param: Optional[any] = None) -> np.ndarray:
-        func_call = getattr(_gretl, func_name)
-        # call the _gretl function with dataset, series, optional param
-        return func_call(d, self.get_series(series), param)
-
-    return method
-
-# #######################################################
 #   GretlModel class
 # #######################################################
 def _attrs(self: "GretlModel"):
