@@ -221,6 +221,7 @@ def _time_series_plot(
             raise ValueError("`against` must have the same length as `y`")
         if ax is not None:
             raise ValueError("`against` and `ax` are mutually exclusive")
+        against = np.round(against, 2)
 
     # --- X axis ------------------------------------------------------
 
@@ -254,7 +255,8 @@ def _time_series_plot(
 
     # --- Labels and title ----------------------------------------------
 
-    ax.set_xlabel(xlabel or "Obs")
+    if xlabel:
+        ax.set_xlabel(xlabel)
     ax.set_ylabel(ylabel or "Value")
     if title:
         ax.set_title(title)
