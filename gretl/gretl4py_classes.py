@@ -61,7 +61,7 @@ def _oddsratio(self: "Model_logit"):
         print('*** warning: oddsratios not available for current model ***\n')
         print(f'Debug info: {e}')
 
-def _plotfitted(self, eqn: int = 0, multiple: bool = False, backend: str | None = None):
+def _plotfitted(self, eqn: int = 0, multiple: bool = False, against: str = None, backend: str | None = None):
     """
     Plot fitted values vs actual series.
 
@@ -108,6 +108,11 @@ def _plotfitted(self, eqn: int = 0, multiple: bool = False, backend: str | None 
         plt.show(block=True)  # ensure figure appears immediately
     else:
         # Separate figures per variable
+        if against:
+            against_var = self.dataset.get_series(against)
+        else:
+            against_var = None
+
         for var in y_name:
             actual = self.dataset.get_series(var)
             if isinstance(self, _gretl.Model_NSE):
@@ -119,8 +124,9 @@ def _plotfitted(self, eqn: int = 0, multiple: bool = False, backend: str | None 
             params = _set_params_for_plot(self, fitted)
             _time_series_plot(y=fitted, xs=[actual], n=params["n"],
                                 ylabel=var, ytitle="fitted",
-                                xlabels=["actual"], xtics=[params["xtics"]],
-                                max_xtics=params["max_xtics"],
+                                xlabels=["actual"],
+                                xtics=[params["xtics"]] if against is None else None,
+                                max_xtics=params["max_xtics"], against=against_var,
                                 title=f"Actual and fitted {var}")
             eqn_no += 1
         # In case backend requires explicit show

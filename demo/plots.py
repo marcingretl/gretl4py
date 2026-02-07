@@ -10,6 +10,7 @@ m1.plotfitted()
 m1.plotresiduals()
 
 m2.plotfitted()
+m2.plotfitted(against='g')
 m2.plotresiduals()
 
 m3.plotfitted(eqn=2)

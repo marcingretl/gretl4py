@@ -126,6 +126,7 @@ def _time_series_plot(
     ylabel: str | None = None,
     ytitle: str | None = None,
     title: str | None = None,
+    against: np.ndarray | None = None,
     max_xtics: int = 10,
     ax=None,
 ):
@@ -133,12 +134,15 @@ def _time_series_plot(
     Plot a time series with a primary series and optional auxiliary series.
 
     This function draws a line plot of a mandatory primary series ``y`` against
-    a common time axis. Optionally, one or more auxiliary series can be overlaid.
-    All series share the same x-axis (time).
+    a common x-axis. By default, the x-axis is time (1..n), but the user can
+    provide an arbitrary array ``against`` to plot against another variable.
 
-    The function supports automatic or user-specified x-axis labels (``xtics``),
-    controls tick density for dense time series, and works both as a standalone
-    plot or within an existing matplotlib Axes object.
+    If ``against`` is provided, the data is sorted in ascending order of
+    ``against`` before plotting.
+
+    The function supports optional auxiliary series, automatic or user-specified
+    x-axis tick labels (``xtics``), and works either as a standalone plot or
+    on a provided Axes object.
 
     Parameters
     ----------
@@ -152,35 +156,34 @@ def _time_series_plot(
         ``y``. If None, defaults to ``len(y)``.
     xtics : list of array-like, optional
         Custom x-axis tick labels. Must be a list with the same length as ``xs``.
-        Since all series share a common time axis, only the first entry is used
-        to label the x-axis.
+        Only the first entry is used to label the x-axis.
     xlabels : list of str, optional
-        Labels for auxiliary series, used in the legend. Must have the same
-        length as ``xs``.
+        Labels for auxiliary series, used in the legend. Must match ``xs`` length.
     xlabel : str, optional
-        Label for the x-axis. Defaults to ``"Time"``.
+        Label for the x-axis. Defaults to ``"Obs"``.
     ylabel : str, optional
         Label for the y-axis. Defaults to ``"Value"``.
     ytitle : str, optional
         Label for the primary series ``y`` in the legend.
     title : str, optional
         Title of the plot.
+    against : np.ndarray, optional
+        Plot against this array instead of the default time axis.
+        Must be one-dimensional and same length as ``y``. All data are
+        sorted by ``against`` ascending.
     max_xtics : int, optional
-        Maximum number of x-axis ticks to display. Tick positions are
-        automatically thinned for dense time series. Default is 10.
+        Maximum number of x-axis ticks to display. Default is 10.
     ax : matplotlib.axes.Axes, optional
-        Axes object on which to draw the plot. If None, a new figure and axes
-        are created and displayed immediately.
+        Axes object on which to draw the plot. If None, a new figure is created
+        and shown immediately.
 
     Notes
     -----
-    - The primary series ``y`` is always required and must be one-dimensional.
-    - Auxiliary series are passed explicitly as a list to avoid ambiguity
-      associated with multidimensional arrays.
-    - All series share a common time axis; multiple x-axes are not supported.
-    - If ``ax`` is None, the plot is shown immediately via ``plt.show()``.
-      When plotting into subplots, call ``plt.show()`` explicitly after all
-      plots are created.
+    - Primary series ``y`` is required and one-dimensional.
+    - Auxiliary series are passed explicitly as a list to avoid ambiguity.
+    - If ``against`` is provided, all series and xtics are sorted accordingly.
+    - For multiple auxiliary series, ``xlabels`` must match ``xs`` length.
+    - Use `plt.show()` manually if plotting on an existing Axes.
 
     Examples
     --------
@@ -189,6 +192,7 @@ def _time_series_plot(
     >>> fig, ax = plt.subplots()
     >>> _time_series_plot(y=fitted, xs=[actual, benchmark],
     ...                   xlabels=["actual", "benchmark"], ax=ax)
+    >>> _time_series_plot(y=fitted, against=dates, xlabel="Date", ylabel="GDP")
     """
 
     from ._plotting import _setup_matplotlib
@@ -202,21 +206,34 @@ def _time_series_plot(
     if xs is not None:
         if not isinstance(xs, (list, tuple)):
             raise TypeError("xs must be a list of one-dimensional numpy arrays")
-
         for i, x in enumerate(xs):
             if not isinstance(x, np.ndarray) or x.ndim != 1:
                 raise ValueError(f"xs[{i}] must be a one-dimensional numpy array")
-
+        if xlabels is not None and len(xlabels) != len(xs):
+            raise ValueError("xlabels must have the same length as xs")
         if xtics is not None and len(xtics) != len(xs):
             raise ValueError("xtics must have the same length as xs")
 
-        if xlabels is not None and len(xlabels) != len(xs):
-            raise ValueError("xlabels must have the same length as xs")
+    if against is not None:
+        if against.ndim != 1:
+            raise ValueError("`against` must be a one-dimensional array")
+        if len(against) != len(y):
+            raise ValueError("`against` must have the same length as `y`")
+        if ax is not None:
+            raise ValueError("`against` and `ax` are mutually exclusive")
 
-    # --- Time axis ------------------------------------------------------
+    # --- X axis ------------------------------------------------------
 
-    length = n if n is not None else len(y)
-    time = np.arange(1, length + 1)
+    if against is not None:
+        # sort everything by against
+        sort_idx = np.argsort(against)
+        x_axis = against[sort_idx]
+        y = y[sort_idx]
+        if xs is not None:
+            xs = [x[sort_idx] for x in xs]
+    else:
+        length = n if n is not None else len(y)
+        x_axis = np.arange(1, length + 1)
 
     # --- Axes setup -----------------------------------------------------
 
@@ -226,41 +243,50 @@ def _time_series_plot(
 
     # --- Plot primary series -------------------------------------------
 
-    ax.plot(time, y, label=ytitle or "", linewidth=2)
+    ax.plot(x_axis, y, label=ytitle or "", linewidth=2)
 
     # --- Plot auxiliary series -----------------------------------------
 
     if xs is not None:
         for i, x in enumerate(xs):
             label = xlabels[i] if xlabels is not None else f"x[{i}]"
-            ax.plot(time[: len(x)], x, linestyle="--", alpha=0.8, label=label)
+            ax.plot(x_axis[: len(x)], x, linestyle="--", alpha=0.8, label=label)
 
     # --- Labels and title ----------------------------------------------
 
-    if xlabel:
-        ax.set_xlabel(xlabel or "Obs")
-    if ylabel:
-        ax.set_ylabel(ylabel or "Value")
+    ax.set_xlabel(xlabel or "Obs")
+    ax.set_ylabel(ylabel or "Value")
     if title:
         ax.set_title(title)
 
-    # --- Legend and grid -----------------------------------------------
+    # --- X-ticks and grid ----------------------------------------------
+
+    # decide labels
+    if xtics is not None and against is None:
+        labels = xtics[0]
+    else:
+        labels = x_axis
+
+    # thin ticks, always include last point
+    step = max(1, len(labels) // max_xtics)
+    indices = list(range(0, len(labels), step))
+    if indices[-1] != len(labels) - 1:
+        indices.append(len(labels) - 1)
+
+    tick_positions = x_axis[indices]
+    tick_labels = [labels[i] for i in indices]
+
+    ax.set_xticks(tick_positions)
+    ax.set_xticklabels(tick_labels, rotation=45)
+
+    # grid: vertical only at major ticks, horizontal full
+    ax.grid(axis='x', which='major', linestyle='--', alpha=0.3)
+    ax.grid(axis='y', linestyle='--', alpha=0.3)
+
+    # --- Legend --------------------------------------------------------
 
     if ax.get_legend_handles_labels()[0]:
         ax.legend()
-    ax.grid(True)
-
-    # --- X-ticks handling ----------------------------------------------
-
-    if xtics is not None:
-        labels = xtics[0]
-        step = max(1, len(labels) // max_xtics)
-        tick_positions = time[::step]
-        tick_labels = [labels[i] for i in range(0, len(labels), step)]
-        ax.set_xticks(tick_positions)
-        ax.set_xticklabels(tick_labels, rotation=45)
-    else:
-        ax.set_xticks(time)
 
     # --- Finalize -------------------------------------------------------
 
