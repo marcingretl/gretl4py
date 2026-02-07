@@ -98,9 +98,9 @@ def _plotfitted(self, eqn: int = 0, kind: str = "fitted", backend: str | None = 
             min_len = min(len(actual), len(fitted))
             actual, fitted = actual[:min_len], fitted[:min_len]
             params = _set_params_for_plot(self, fitted)
-            _time_series_plot(y=fitted, x=actual, n=params["n"],
+            _time_series_plot(y=fitted, xs=[actual], n=params["n"],
                                 ylabel=var, ytitle="fitted",
-                                xtitle="actual", xtics=params["xtics"],
+                                xlabel="actual", xtics=[params["xtics"]],
                                 max_xtics=params["max_xtics"], ax=axes[i],
                                 title=f"Actual and fitted {var}")
             eqn_no += 1
@@ -117,9 +117,9 @@ def _plotfitted(self, eqn: int = 0, kind: str = "fitted", backend: str | None = 
             min_len = min(len(actual), len(fitted))
             actual, fitted = actual[:min_len], fitted[:min_len]
             params = _set_params_for_plot(self, fitted)
-            _time_series_plot(y=fitted, x=actual, n=params["n"],
+            _time_series_plot(y=fitted, xs=[actual], n=params["n"],
                                 ylabel=var, ytitle="fitted",
-                                xtitle="actual", xtics=params["xtics"],
+                                xlabel="actual", xtics=[params["xtics"]],
                                 max_xtics=params["max_xtics"],
                                 title=f"Actual and fitted {var}")
             eqn_no += 1
@@ -164,8 +164,8 @@ def _plotresiduals(self, eqn: int = 0, kind: str = "residuals", backend: str | N
                 resid = uhat[:, eqn_no]
             params = _set_params_for_plot(self, resid)
             _time_series_plot(y=resid, n=params["n"], ylabel=var,
-                                ytitle="Residuals", xtitle="",
-                                xtics=params["xtics"], max_xtics=params["max_xtics"],
+                                ytitle="Residuals", xtics=[params["xtics"]],
+                                max_xtics=params["max_xtics"],
                                 title=f"Regression residuals = (observed - fitted {var})",
                                 ax=axes[i])
             eqn_no += 1
@@ -180,8 +180,8 @@ def _plotresiduals(self, eqn: int = 0, kind: str = "residuals", backend: str | N
                 resid = uhat[:, eqn_no]
             params = _set_params_for_plot(self, resid)
             _time_series_plot(y=resid, n=params["n"], ylabel=var,
-                                ytitle="Residuals", xtitle="",
-                                xtics=params["xtics"], max_xtics=params["max_xtics"],
+                                ytitle="Residuals", xtics=[params["xtics"]],
+                                max_xtics=params["max_xtics"],
                                 title=f"Regression residuals = (observed - fitted {var})")
             eqn_no += 1
         plt.show(block=True)
@@ -310,7 +310,7 @@ class MESpec(TypedDict, total=False):
     endogs: str
 
 # #######################################################
-#   GretlDataset class
+#   Dataset class
 # #######################################################
 def _matrix_functions_wrapper(func_name: str):
     """

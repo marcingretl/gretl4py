@@ -118,113 +118,142 @@ def _set_matrices_for_plot(model: "GretlModel", accessor: str, eqn: int) -> dict
 
 def _time_series_plot(
     y: np.ndarray,
-    x: np.ndarray | None = None,
+    xs: list[np.ndarray] | None = None,
     n: int | None = None,
-    xtics: np.ndarray | list | None = None,
-    ytics: str | None = None,
+    xtics: list[np.ndarray | list] | None = None,
+    xlabels: list[str] | None = None,
     xlabel: str | None = None,
     ylabel: str | None = None,
-    xtitle: str | None = None,
     ytitle: str | None = None,
     title: str | None = None,
     max_xtics: int = 10,
     ax=None,
 ):
     """
-    Time-series plot of fitted values, optionally overlayed with actual values.
+    Plot a time series with a primary series and optional auxiliary series.
 
-    This function creates a line plot of fitted values `y` versus time and,
-    optionally, the actual observed values `x`. It handles automatic x-axis
-    labels (`xtics`), adjusts tick density for dense time series, and supports
-    both single plots and subplots if an Axes object is provided via `ax`.
+    This function draws a line plot of a mandatory primary series ``y`` against
+    a common time axis. Optionally, one or more auxiliary series can be overlaid.
+    All series share the same x-axis (time).
+
+    The function supports automatic or user-specified x-axis labels (``xtics``),
+    controls tick density for dense time series, and works both as a standalone
+    plot or within an existing matplotlib Axes object.
 
     Parameters
     ----------
     y : np.ndarray
-        Fitted values to plot (mandatory).
-    x : np.ndarray, optional
-        Actual observed values to plot alongside fitted values. Default is None.
+        Mandatory primary series to plot. Must be a one-dimensional array.
+    xs : list of np.ndarray, optional
+        List of auxiliary one-dimensional series to overlay on the plot.
+        Each array must be one-dimensional. Default is None.
     n : int, optional
-        Length of the time series, used if `xtics` is not provided.
-        If None, defaults to `len(y)`.
-    xtics : np.ndarray or list, optional
-        Custom labels for the x-axis (e.g., dates or observation numbers).
-        If None, integers 1..n are used.
-    ytics : str, optional
-        Fallback label for the y-axis if `ylabel` is not provided.
+        Length of the time series. Used only if it cannot be inferred from
+        ``y``. If None, defaults to ``len(y)``.
+    xtics : list of array-like, optional
+        Custom x-axis tick labels. Must be a list with the same length as ``xs``.
+        Since all series share a common time axis, only the first entry is used
+        to label the x-axis.
+    xlabels : list of str, optional
+        Labels for auxiliary series, used in the legend. Must have the same
+        length as ``xs``.
     xlabel : str, optional
-        Label for the x-axis. Defaults to `"Time"`.
+        Label for the x-axis. Defaults to ``"Time"``.
     ylabel : str, optional
-        Label for the y-axis. Overrides `ytics` if provided.
-    xtitle : str, optional
-        Label for the actual series (used in the legend if `x` is provided).
+        Label for the y-axis. Defaults to ``"Value"``.
     ytitle : str, optional
-        Label for the fitted series (used in the legend).
+        Label for the primary series ``y`` in the legend.
     title : str, optional
-        Main title for the plot.
+        Title of the plot.
     max_xtics : int, optional
-        Maximum number of x-axis ticks to display. Automatically adjusts
-        tick positions for dense time series. Default is 10.
+        Maximum number of x-axis ticks to display. Tick positions are
+        automatically thinned for dense time series. Default is 10.
     ax : matplotlib.axes.Axes, optional
-        Axes object on which to plot. If None, a new figure and axes are created.
-        This allows integration with subplots.
+        Axes object on which to draw the plot. If None, a new figure and axes
+        are created and displayed immediately.
 
     Notes
     -----
-    - If `ax` is None, a new figure is created and `plt.show()` is called
-      immediately, blocking script execution until the window is closed.
-    - If `ax` is provided (subplot scenario), no figure is shown immediately;
-      call `plt.show()` manually after plotting all subplots.
-    - Handles automatic rotation of x-axis tick labels for readability.
-    - Works for both interactive sessions (Jupyter, IPython) and scripts.
+    - The primary series ``y`` is always required and must be one-dimensional.
+    - Auxiliary series are passed explicitly as a list to avoid ambiguity
+      associated with multidimensional arrays.
+    - All series share a common time axis; multiple x-axes are not supported.
+    - If ``ax`` is None, the plot is shown immediately via ``plt.show()``.
+      When plotting into subplots, call ``plt.show()`` explicitly after all
+      plots are created.
 
-    Example
-    -------
-    >>> _time_series_plot(y=fitted, x=actual, n=50, ylabel="GDP", title="Fitted vs Actual GDP")
+    Examples
+    --------
+    >>> _time_series_plot(y=fitted)
+    >>> _time_series_plot(y=fitted, xs=[actual], xlabels=["actual"])
     >>> fig, ax = plt.subplots()
-    >>> _time_series_plot(y=fitted, x=actual, ax=ax, title="Single subplot example")
+    >>> _time_series_plot(y=fitted, xs=[actual, benchmark],
+    ...                   xlabels=["actual", "benchmark"], ax=ax)
     """
 
     from ._plotting import _setup_matplotlib
     plt = _setup_matplotlib()
 
-    # Determine x-axis (time)
-    if xtics is not None:
-        time = np.arange(len(xtics))
-        labels = xtics
-    else:
-        length = n if n is not None else len(y)
-        time = np.arange(1, length + 1)
-        labels = None
+    # --- Validation -----------------------------------------------------
 
-    if ax is None:
+    if y.ndim != 1:
+        raise ValueError("y must be a one-dimensional numpy array")
+
+    if xs is not None:
+        if not isinstance(xs, (list, tuple)):
+            raise TypeError("xs must be a list of one-dimensional numpy arrays")
+
+        for i, x in enumerate(xs):
+            if not isinstance(x, np.ndarray) or x.ndim != 1:
+                raise ValueError(f"xs[{i}] must be a one-dimensional numpy array")
+
+        if xtics is not None and len(xtics) != len(xs):
+            raise ValueError("xtics must have the same length as xs")
+
+        if xlabels is not None and len(xlabels) != len(xs):
+            raise ValueError("xlabels must have the same length as xs")
+
+    # --- Time axis ------------------------------------------------------
+
+    length = n if n is not None else len(y)
+    time = np.arange(1, length + 1)
+
+    # --- Axes setup -----------------------------------------------------
+
+    standalone = ax is None
+    if standalone:
         fig, ax = plt.subplots(figsize=(10, 5))
 
-    # Plot fitted values
-    ax.plot(time, y, label=ytitle or "fitted", color="blue")
+    # --- Plot primary series -------------------------------------------
 
-    # Plot actual values if provided
-    if x is not None:
-        ax.plot(time, x, label=xtitle or "actual", color="orange")
+    ax.plot(time, y, label=ytitle or "fitted", linewidth=2)
 
-    # Set axis labels
+    # --- Plot auxiliary series -----------------------------------------
+
+    if xs is not None:
+        for i, x in enumerate(xs):
+            label = xlabels[i] if xlabels is not None else f"x[{i}]"
+            ax.plot(time[: len(x)], x, linestyle="--", alpha=0.8, label=label)
+
+    # --- Labels and title ----------------------------------------------
+
     ax.set_xlabel(xlabel or "Time")
-    ax.set_ylabel(ylabel or ytics or "Value")
+    ax.set_ylabel(ylabel or "Value")
 
-    # Set plot title
     if title:
         ax.set_title(title)
 
-    # Legend if any labels exist
-    handles, _ = ax.get_legend_handles_labels()
-    if handles:
+    # --- Legend and grid -----------------------------------------------
+
+    if ax.get_legend_handles_labels()[0]:
         ax.legend()
 
-    # Grid
     ax.grid(True)
 
-    # Adjust x-ticks for dense data
-    if labels is not None:
+    # --- X-ticks handling ----------------------------------------------
+
+    if xtics is not None:
+        labels = xtics[0]
         step = max(1, len(labels) // max_xtics)
         tick_positions = time[::step]
         tick_labels = [labels[i] for i in range(0, len(labels), step)]
@@ -233,8 +262,9 @@ def _time_series_plot(
     else:
         ax.set_xticks(time)
 
-    # Show figure if standalone
-    if ax is None:
+    # --- Finalize -------------------------------------------------------
+
+    if standalone:
         plt.tight_layout()
         plt.show(block=True)
 
