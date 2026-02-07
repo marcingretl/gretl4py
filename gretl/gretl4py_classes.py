@@ -166,8 +166,7 @@ def _plotresiduals(self, eqn: int = 0, multiple: bool = False, backend: str | No
             _time_series_plot(y=resid, n=params["n"], ylabel=var,
                                 ytitle="Residuals", xtics=[params["xtics"]],
                                 max_xtics=params["max_xtics"],
-                                title=f"Regression residuals = (observed - fitted {var})",
-                                ax=axes[i])
+                                title=var, ax=axes[i])
             eqn_no += 1
         plt.tight_layout()
         plt.show(block=True)

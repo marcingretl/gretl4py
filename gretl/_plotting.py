@@ -237,9 +237,10 @@ def _time_series_plot(
 
     # --- Labels and title ----------------------------------------------
 
-    ax.set_xlabel(xlabel or "Time")
-    ax.set_ylabel(ylabel or "Value")
-
+    if xlabel:
+        ax.set_xlabel(xlabel or "Obs")
+    if ylabel:
+        ax.set_ylabel(ylabel or "Value")
     if title:
         ax.set_title(title)
 
@@ -247,7 +248,6 @@ def _time_series_plot(
 
     if ax.get_legend_handles_labels()[0]:
         ax.legend()
-
     ax.grid(True)
 
     # --- X-ticks handling ----------------------------------------------
