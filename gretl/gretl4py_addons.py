@@ -102,20 +102,6 @@ def _import_example_module(name: str) -> Optional[ModuleType]:
 
     return None
 
-def _matrix_functions_wrapper(func_name: str):
-    """
-    Returns a method that wraps a _gretl matrix-based function.
-
-    The method has signature:
-        method(self, d: str, series: str, param: Optional[Any] = None) -> np.ndarray
-    """
-    def method(self, d: str, series: str, param: Optional[any] = None) -> np.ndarray:
-        func_call = getattr(_gretl, func_name)
-        # call the _gretl function with dataset, series, optional param
-        return func_call(d, self.get_series(series), param)
-
-    return method
-
 def df2dict(dframe, pd: int = 1, with_obs: bool = False):
     '''turns a Pandas DataFrame into a dictionary gretl understands'''
     try:

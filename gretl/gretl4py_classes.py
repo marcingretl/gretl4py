@@ -312,6 +312,20 @@ class MESpec(TypedDict, total=False):
 # #######################################################
 #   GretlDataset class
 # #######################################################
+def _matrix_functions_wrapper(func_name: str):
+    """
+    Returns a method that wraps a _gretl matrix-based function.
+
+    The method has signature:
+        method(self, d: str, series: str, param: Optional[Any] = None) -> np.ndarray
+    """
+    def method(self, d: str, series: str, param: Optional[any] = None) -> np.ndarray:
+        func_call = getattr(_gretl, func_name)
+        # call the _gretl function with dataset, series, optional param
+        return func_call(d, self.get_series(series), param)
+
+    return method
+
 def get_data(src: str | dict | int, **kwargs) -> "Dataset":
     """Load dataset from file path or dictionary.
 

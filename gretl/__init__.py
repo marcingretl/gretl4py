@@ -102,10 +102,9 @@ from ._gretl import (pvalue, critical, pdf, cdf, invcdf, corr, cov) # libgretl's
 from ._gretl import (get_accessor)                                  # gretl4py specific functions
 from .gretl4py_classes import _attrs, _oddsratio, mle, nls, gmm, NLSpec
 from .gretl4py_classes import get_data, show_data_status, _to_dataframe
-from .gretl4py_classes import _package_get_help
+from .gretl4py_classes import _matrix_functions_wrapper, _package_get_help
 from .gretl4py_classes import _plotfitted, _plotresiduals
 from .gretl4py_addons import print_module_source, fc_print, modeltab
-from .gretl4py_addons import _matrix_functions_wrapper
 
 # deprecations
 # deprecations: END
