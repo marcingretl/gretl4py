@@ -226,7 +226,7 @@ def _time_series_plot(
 
     # --- Plot primary series -------------------------------------------
 
-    ax.plot(time, y, label=ytitle or "fitted", linewidth=2)
+    ax.plot(time, y, label=ytitle or "", linewidth=2)
 
     # --- Plot auxiliary series -----------------------------------------
 

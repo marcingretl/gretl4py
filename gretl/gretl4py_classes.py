@@ -61,7 +61,7 @@ def _oddsratio(self: "Model_logit"):
         print('*** warning: oddsratios not available for current model ***\n')
         print(f'Debug info: {e}')
 
-def _plotfitted(self, eqn: int = 0, kind: str = "fitted", backend: str | None = None):
+def _plotfitted(self, eqn: int = 0, multiple: bool = False, backend: str | None = None):
     """
     Plot fitted values vs actual series.
 
@@ -69,9 +69,9 @@ def _plotfitted(self, eqn: int = 0, kind: str = "fitted", backend: str | None = 
     ----------
     eqn : int
         Equation number (0 for all).
-    kind : str
-        "fitted" for separate figures per variable,
-        "multiple" for subplots in a single figure.
+    multiple : bool
+        False for separate figures per variable,
+        True for subplots in a single figure.
     """
     from ._plotting import _setup_matplotlib
     plt = _setup_matplotlib(backend)
@@ -82,7 +82,7 @@ def _plotfitted(self, eqn: int = 0, kind: str = "fitted", backend: str | None = 
     yhat = plot_data["data"]
     eqn_no = 0 if eqn == 0 else eqn - 1
 
-    if kind == "multiple":
+    if multiple:
         # Single figure, stacked subplots
         n_vars = len(y_name)
         fig, axes = plt.subplots(n_vars, 1, figsize=(10, 4 * n_vars), sharex=True)
@@ -106,7 +106,7 @@ def _plotfitted(self, eqn: int = 0, kind: str = "fitted", backend: str | None = 
             eqn_no += 1
         plt.tight_layout()
         plt.show(block=True)  # ensure figure appears immediately
-    elif kind == "fitted":
+    else:
         # Separate figures per variable
         for var in y_name:
             actual = self.dataset.get_series(var)
@@ -125,10 +125,10 @@ def _plotfitted(self, eqn: int = 0, kind: str = "fitted", backend: str | None = 
             eqn_no += 1
         # In case backend requires explicit show
         plt.show(block=True)
-    else:
-        raise ValueError(f"Unknown kind: {kind}. Use 'fitted' or 'multiple'.")
 
-def _plotresiduals(self, eqn: int = 0, kind: str = "residuals", backend: str | None = None):
+    #raise ValueError(f"Unknown kind: {kind}. Use 'fitted' or 'multiple'.")
+
+def _plotresiduals(self, eqn: int = 0, multiple: bool = False, backend: str | None = None):
     """
     Plot regression residuals (observed - fitted).
 
@@ -136,9 +136,9 @@ def _plotresiduals(self, eqn: int = 0, kind: str = "residuals", backend: str | N
     ----------
     eqn : int
         Equation number (0 for all equations/variables).
-    kind : str
-        "residuals" for separate figures per variable,
-        "multiple" for subplots in a single figure.
+    multiple : bool
+        False for separate figures per variable,
+        True for subplots in a single figure.
     """
     from ._plotting import _setup_matplotlib
     plt = _setup_matplotlib(backend)
@@ -150,7 +150,7 @@ def _plotresiduals(self, eqn: int = 0, kind: str = "residuals", backend: str | N
 
     eqn_no = 0
 
-    if kind == "multiple":
+    if multiple:
         # Single figure, stacked subplots
         n_vars = len(y_name)
         fig, axes = plt.subplots(n_vars, 1, figsize=(10, 4 * n_vars), sharex=True)
@@ -171,7 +171,7 @@ def _plotresiduals(self, eqn: int = 0, kind: str = "residuals", backend: str | N
             eqn_no += 1
         plt.tight_layout()
         plt.show(block=True)
-    elif kind == "residuals":
+    else:
         # Separate figures per variable
         for var in y_name:
             if isinstance(self, _gretl.Model_NSE):
@@ -185,8 +185,8 @@ def _plotresiduals(self, eqn: int = 0, kind: str = "residuals", backend: str | N
                                 title=f"Regression residuals = (observed - fitted {var})")
             eqn_no += 1
         plt.show(block=True)
-    else:
-        raise ValueError(f"Unknown kind: {kind}. Use 'residuals' or 'multiple'.")
+
+    #raise ValueError(f"Unknown kind: {kind}. Use 'residuals' or 'multiple'.")
 
 # #######################################################
 #   GretlModel_nl class
