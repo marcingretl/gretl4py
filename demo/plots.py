@@ -8,7 +8,7 @@ m3 = gretl.var(4, "IDE IBO LRY LRM", data=d2).fit()
 
 m1.plotfitted()
 m1.plotresiduals()
- 
+
 m2.plotfitted()
 m2.plotresiduals()
 

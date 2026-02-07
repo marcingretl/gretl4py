@@ -100,7 +100,7 @@ def _plotfitted(self, eqn: int = 0, kind: str = "fitted", backend: str | None = 
             params = _set_params_for_plot(self, fitted)
             _time_series_plot(y=fitted, xs=[actual], n=params["n"],
                                 ylabel=var, ytitle="fitted",
-                                xlabel="actual", xtics=[params["xtics"]],
+                                xlabels=["actual"], xtics=[params["xtics"]],
                                 max_xtics=params["max_xtics"], ax=axes[i],
                                 title=f"Actual and fitted {var}")
             eqn_no += 1
@@ -119,7 +119,7 @@ def _plotfitted(self, eqn: int = 0, kind: str = "fitted", backend: str | None = 
             params = _set_params_for_plot(self, fitted)
             _time_series_plot(y=fitted, xs=[actual], n=params["n"],
                                 ylabel=var, ytitle="fitted",
-                                xlabel="actual", xtics=[params["xtics"]],
+                                xlabels=["actual"], xtics=[params["xtics"]],
                                 max_xtics=params["max_xtics"],
                                 title=f"Actual and fitted {var}")
             eqn_no += 1
