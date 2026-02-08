@@ -5,27 +5,29 @@ version 0.41:
     - officialy add interface to libgretl's genr (available as 'gretl.genr()')
     - robustify install.py (thanks, Allin)
     - 'fractint' test added
-    - new GretlDataset methods added: ::hurst(), ::xcorrgm(), ::pca(), ::rename()
+    - new _gretl.Dataset methods added: ::hurst(), ::xcorrgm(), ::pca(), ::rename()
     - new free functions: corr(), cov(), pkg()
     - new GretlPackage methods: ::get_functions(), ::get_help()
     - GretlBundle::pop() method + enhanced '[]' operator
     - GretlBundle: new constructor for on-the-fly bundle definition (like gretl's "_()"')
     - get_data(): add 'quiet' option
     - mark nls, mle, gmm and system estimators as experimental
+    - GretlModel::fcast() refactoring (now it mimics libgretl's 'fcast' command)
+    - new GretlModel::dataset attribute which points directly to dataset used for model estimation
     - massive doc updates
 
 version 0.4:
     - add GretlaDataset::dummyfi() method
     - add '--unit' and '--time' options to GretlaDataset::sample()
     - Pooled OLS tweaks
-    - native copy constructor for GretlDataset
-    - add 'n' and 'k' properties do GretlDataset
-    - add 'range' option for GretlDataset::print()
-    - add methods for GretlDataset: ::head(), ::tail(), ::to_dataframe(), ::lags(),
+    - native copy constructor for _gretl.Dataset
+    - add 'n' and 'k' properties do _gretl.Dataset
+    - add 'range' option for _gretl.Dataset::print()
+    - add methods for _gretl.Dataset: ::head(), ::tail(), ::to_dataframe(), ::lags(),
         ::dummify(), ::square(), ::discrete(), ::logs(), ::orthdev(), ::stdize()
     - apparatus for slicing datasets
     - tobit llimit default value fix
-    - fix bug in GretlDataset::print() when summary=True
+    - fix bug in _gretl.Dataset::print() when summary=True
     - add nls, mle, and gmm estimators
     - add system estimation (all methods available in gretl)
     - massive code refactoring
@@ -50,10 +52,10 @@ version 0.30:
     - about(): switch to GretlBundle based version
     - new GretlModel methods: ::get_bundle(), ::add_yhat(), ::add_uhat(), ::add_uhat_sq(), ::add_ahat(), and ::add_h()
     - fix printing empty buffer
-    - add GretlDataset::add_series(), and GretlModel_VAR_VECM::save_ec_term() methods
+    - add _gretl.Dataset::add_series(), and GretlModel_VAR_VECM::save_ec_term() methods
     - add pvalue(), critical() functions (one-tailed), pdf(), cdf(), and invcdf()
     - add modeltab() helper for models comparison
-    - add GretlDataset methods: ::diff(), ::ldiff(), ::sdiff(), ::corr(), and ::cov()
+    - add _gretl.Dataset methods: ::diff(), ::ldiff(), ::sdiff(), ::corr(), and ::cov()
     - add GretlModel_NSE::adj_rsq() method
     - fix bug related with missing ''lib/data' dir
     - fix runtime numpy depndency
