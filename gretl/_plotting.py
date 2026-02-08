@@ -93,9 +93,9 @@ def _set_matrices_for_plot(model: "GretlModel", accessor: str, eqn: int) -> dict
         if eqn > model.neqns:
             raise ValueError(f"Equation number bigger than system size ({model.neqns})")
         elif eqn == 0:
-            y_name = [model.dataset.varnames()[var] for var in model.ylist]
+            y_name = [model.dataset.varnames[var] for var in model.ylist]
         else:
-            y_name.append(model.dataset.varnames()[model.ylist[eqn-1]])
+            y_name.append(model.dataset.varnames[model.ylist[eqn-1]])
     else:
         y_name.append(model.depvar)
     if len(y_name) == 0:

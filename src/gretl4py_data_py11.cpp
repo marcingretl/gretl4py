@@ -87,6 +87,11 @@ void init_gretl4py_dataset_py11(py::module_ &m)
                                {
                                    return self.linked_models_list();
                                })
+        .def_property_readonly("varnames",
+                               [](const GretlDataset &self)
+                               {
+                                   return self.varnames();
+                               })
         .def("__copy__",
              [](const GretlDataset &self)
              {
@@ -202,7 +207,6 @@ void init_gretl4py_dataset_py11(py::module_ &m)
              py::arg("varlist").none(false), py::arg("order").none(true) = 0)
         .def("print", &GretlDataset::print,
              py::arg("varlist").none(true) = "", py::kw_only())
-        .def("varnames", &GretlDataset::varnames)
         .def("get_series", &GretlDataset::get_series,
              py::arg("series").none(false))
         .def("hpfilt", &GretlDataset::hpfilt,

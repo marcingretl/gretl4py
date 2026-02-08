@@ -23,13 +23,13 @@ def run_example():
   # to take only specified variables
   d5 = d1[['GPA', 'PSI']]
   print(d5)
-  print(d5.varnames())
+  print(d5.varnames)
   print("----------")
 
   # slicers intersection
   d5 = d1[['GPA', 'PSI']][12:23]
   print(d5)
-  print(d5.varnames())
+  print(d5.varnames)
   d5.head(6)
 
   # data status

@@ -1,5 +1,6 @@
 version 0.41:
     - several bugs fixed (including the one related with exporting nested bundles to dict)
+    - massive doc updates
     - general libgretl printer (available as 'gretl.print()')
     - some code refactoring (simplified and cleaned up)
     - officialy add interface to libgretl's genr (available as 'gretl.genr()')
@@ -14,7 +15,7 @@ version 0.41:
     - mark nls, mle, gmm and system estimators as experimental
     - GretlModel::fcast() refactoring (now it mimics libgretl's 'fcast' command)
     - new GretlModel::dataset attribute which points directly to dataset used for model estimation
-    - massive doc updates
+    - _gretl.Dataset::varnames() method as ::varnames attribute
 
 version 0.4:
     - add GretlaDataset::dummyfi() method

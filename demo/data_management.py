@@ -27,13 +27,13 @@ data97_df.sample(full=True)
 
 # we print only varnames in bjg.csv
 print('Variables in data97_df')
-print(data97_df.varnames())
+print(data97_df.varnames)
 
 print('Variables in data97_gdt')
-print(data97_gdt.varnames())
+print(data97_gdt.varnames)
 
 print('Variables in data97_csv')
-print(data97_csv.varnames())
+print(data97_csv.varnames)
 
 # we print only specified variables
 data97_gdt.print(varlist="QNC PRIME")

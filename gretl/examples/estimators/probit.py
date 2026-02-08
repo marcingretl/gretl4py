@@ -9,7 +9,7 @@ def run_example():
 
     m1 = gretl.probit('rat ~ const + Z1 + Z2').fit()
     m2 = gretl.probit('rat const Z1 Z2').fit()
-    m3 = gretl.probit(str(d1.varnames().index('rat')) + ' 0 2 3').fit()
+    m3 = gretl.probit(str(d1.varnames.index('rat')) + ' 0 2 3').fit()
     print(m1)
     print(m2)
     print(m3)

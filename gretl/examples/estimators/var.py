@@ -5,7 +5,7 @@ def run_example():
     d1 = gretl.get_data('denmark.gdt')
     d1.sample(1, 51)
 
-    #print(d1.varnames())
+    #print(d1.varnames)
     m1 = gretl.var(order=2, ylist='LRM LRY', xlist='IBO IDE', trend=True, seasonals=True, impulse_responses=True).fit()
     print(m1)
 

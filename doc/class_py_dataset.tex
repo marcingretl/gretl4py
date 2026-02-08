@@ -83,6 +83,14 @@ The \classpydataset provides the following public attributes:
 \end{lstlisting}
 \generaldesc{This is equivalent to calling \pythcode{.get_accessor("$nobs")}.}
 
+\gretlfpycmd{source}
+\estdesc{Prints the source of the given dataset.}
+\begin{lstlisting}[style=pythonstylefoot]
+.source -> str
+\end{lstlisting}
+\generaldesc{If the dataset was loaded from a file,
+	the full path to that file is displayed here.}
+
 \gretlfpycmd{tests}\label{attr:gretldataset::tests}
 \estdesc{List storing summaries of tests performed on datasets.}
 \begin{lstlisting}[style=pythonstylefoot]
@@ -107,13 +115,11 @@ The \classpydataset provides the following public attributes:
 	performed test, one can use \pythcode{tests[-1]}.
 \end{generaldescenv}
 
-\gretlfpycmd{source}
-\estdesc{Prints the source of the given dataset.}
+\gretlfpycmd{varnames}
+\estdesc{Retrieves variables names.}
 \begin{lstlisting}[style=pythonstylefoot]
-.source -> str
+.varnames -> list
 \end{lstlisting}
-\generaldesc{If the dataset was loaded from a file,
-	the full path to that file is displayed here.}
 
 
 \subsubsection{\classpydatasetb methods}
@@ -926,12 +932,6 @@ Examples:\newline
 	The output file will be written in the currently set \gretlcmd{\$workdir}
 	(see \pythcode{gretl.about()['built_in_strings']['workdir']}),
 	unless the filename string contains a full path specification.}
-
-\gretlfpycmd{varnames()}
-\estdesc{This method retrieves variables names.}
-\begin{lstlisting}[style=pythonstylefoot]
-.varnames() -> list
-\end{lstlisting}
 
 \gretlfpycmd{xcorrgm()}
 \estdesc{Prints and/or graphs the cross-correlogram for series1 and series2.}
