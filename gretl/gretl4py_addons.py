@@ -30,7 +30,6 @@ from typing import Optional
 from typing import List
 import gretl
 import gretl.examples
-from . import _gretl
 
 def _correctvarnames(names: List[str]) -> List[str]:
     """replace const with const_"""

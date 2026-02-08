@@ -45,7 +45,7 @@ extern "C" {
 // external symbols
 extern "C" {
     double bvnorm_cdf (double rho, double a, double b); // from gretl_normal.c
-    int update_addons_index (PRN *prn);
+    int update_addons_index (PRN *prn);                 // from addons_utils.c
 }
 
 // global variables (some used outside this file)

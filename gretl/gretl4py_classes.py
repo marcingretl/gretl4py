@@ -25,7 +25,7 @@ import numpy as np
 from typing import TypedDict, NotRequired, Dict, List, Any
 from typing import Optional
 from .gretl4py_addons import _pd_to_pandas_str_format
-from ._plotting import _set_params_for_plot, _set_matrices_for_plot, _time_series_plot
+from ._plotting import _plotfitted, _plotresiduals
 from . import _gretl
 
 # #######################################################
@@ -61,197 +61,71 @@ def _oddsratio(self: "Model_logit"):
         print('*** warning: oddsratios not available for current model ***\n')
         print(f'Debug info: {e}')
 
-def _plotfitted(
-    self,
+def _model_plots(
+    self: "GretlModel",
+    kind: str,
     eqn: int = 0,
     multiple: bool = False,
     against: str | None = None,
     backend: str | None = None
 ):
     """
-    Plot fitted values against the actual series.
+    General dispatcher for model-based plots.
 
-    This function plots the fitted values from the model. By default, each variable
-    is plotted in a separate figure. If `multiple=True`, all variables are stacked
-    as subplots in a single figure.
-
-    Parameters
-    ----------
-    eqn : int
-        Equation number (0 for all equations/variables).
-    multiple : bool
-        False for separate figures per variable,
-        True for subplots in a single figure.
-    against : str, optional
-        Name of variable in dataset to plot against instead of time. For ARIMA models,
-        only the dependent variable is allowed.
-    backend : str or None, optional
-        Matplotlib backend to use. If None, uses default setup.
-
-    Notes
-    -----
-    - Primary series is always the fitted values (`yhat`).
-    - Actual values are automatically retrieved from the dataset.
-    - If `multiple=True`, all subplots share the x-axis.
-    """
-
-    from ._plotting import _setup_matplotlib
-    plt = _setup_matplotlib(backend)
-
-    # --- Get data -------------------------------------------------------
-    plot_data = _set_matrices_for_plot(self, "$yhat", eqn)
-    y_name = plot_data["y_name"]
-    yhat = plot_data["data"]
-    eqn_no = 0 if eqn == 0 else eqn - 1
-
-    if multiple:
-        # Single figure with stacked subplots
-        n_vars = len(y_name)
-        fig, axes = plt.subplots(n_vars, 1, figsize=(10, 4 * n_vars), sharex=True)
-        if n_vars == 1:
-            axes = [axes]  # ensure iterable
-
-        for i, var in enumerate(y_name):
-            actual = self.dataset.get_series(var)
-            fitted = yhat if isinstance(self, _gretl.Model_NSE) else yhat[:, eqn_no]
-            min_len = min(len(actual), len(fitted))
-            actual, fitted = actual[:min_len], fitted[:min_len]
-
-            params = _set_params_for_plot(self, fitted)
-            _time_series_plot(
-                y=fitted,
-                xs=[actual],
-                n=params["n"],
-                ylabel=var,
-                ytitle="fitted",
-                xlabels=["actual"],
-                xtics=[params["xtics"]],
-                max_xtics=params["max_xtics"],
-                ax=axes[i],
-                title=f"Actual and fitted {var}"
-            )
-            eqn_no += 1
-
-        plt.tight_layout()
-        plt.show(block=True)
-    else:
-        # Separate figures per variable
-        if against:
-            if isinstance(self, _gretl.Model_arima) and against != self.depvar:
-                raise ValueError("For ARIMA, only plotting against dependent variable is allowed.")
-            against_var = self.dataset.get_series(against)
-        else:
-            against_var = None
-
-        for var in y_name:
-            actual = self.dataset.get_series(var)
-            fitted = yhat if isinstance(self, _gretl.Model_NSE) else yhat[:, eqn_no]
-            min_len = min(len(actual), len(fitted))
-            actual, fitted = actual[:min_len], fitted[:min_len]
-
-            params = _set_params_for_plot(self, fitted)
-            _time_series_plot(
-                y=fitted,
-                xs=[actual],
-                n=params["n"],
-                ylabel=var,
-                ytitle="fitted",
-                xlabels=["actual"],
-                xtics=[params["xtics"]] if against is None else None,
-                max_xtics=params["max_xtics"],
-                against=against_var,
-                title=f"Actual and fitted {var}"
-            )
-            eqn_no += 1
-
-        plt.show(block=True)
-
-
-def _plotresiduals(
-    self,
-    eqn: int = 0,
-    multiple: bool = False,
-    against: str | None = None,
-    backend: str | None = None
-):
-    """
-    Plot regression residuals (observed - fitted) for model equations.
+    This method provides a unified entry point for generating plots associated
+    with a fitted model, such as fitted-versus-actual plots or residual plots.
+    The specific plot to generate is selected via the ``kind`` argument and
+    delegated to the corresponding internal plotting routine.
 
     Parameters
     ----------
-    eqn : int
-        Equation number (0 for all equations/variables).
-    multiple : bool
-        False for separate figures per variable,
-        True for subplots in a single figure.
+    kind : str
+        Type of plot to generate. Supported values are:
+
+        - ``"fitted"`` : Plot fitted values against observed data.
+        - ``"residuals"`` : Plot regression residuals.
+
+    eqn : int, optional
+        Equation number to plot. Use ``0`` to plot all equations or dependent
+        variables (default).
+
+    multiple : bool, optional
+        If ``False`` (default), a separate figure is produced for each variable.
+        If ``True``, all plots are arranged as subplots in a single figure.
+
     against : str, optional
-        Name of variable in dataset to plot against instead of time. For ARIMA models,
-        only the dependent variable is allowed.
-    backend : str or None, optional
-        Matplotlib backend to use. If None, uses default setup.
+        Name of a variable in the dataset to plot against instead of the default
+        time or observation index. If provided, data are sorted by this variable
+        before plotting.
+
+    backend : str, optional
+        Name of the matplotlib backend to use (e.g. ``"TkAgg"``, ``"QtAgg"``,
+        ``"Agg"``). If None, the default backend selection logic is used.
+
+    Raises
+    ------
+    ValueError
+        If ``kind`` does not correspond to a supported plot type.
 
     Notes
     -----
-    - Residuals are automatically computed as `uhat`.
-    - Supports multiple auxiliary series via subplots when `multiple=True`.
+    - This method is intended as an internal wrapper for all model-related plots.
+    - Backend selection applies to all plots generated during this call.
+    - Public plotting methods may delegate to this dispatcher to ensure
+      consistent behavior.
+
+    Examples
+    --------
+    >>> model.plot("fitted")
+    >>> model.plot("residuals", multiple=True)
+    >>> model.plot("fitted", against="lg", backend="QtAgg")
     """
-
-    from ._plotting import _setup_matplotlib
-    plt = _setup_matplotlib(backend)
-
-    # --- Get residual data ---------------------------------------------
-    plot_data = _set_matrices_for_plot(self, "$uhat", eqn)
-    y_name = plot_data["y_name"]
-    uhat = plot_data["data"]
-    eqn_no = 0
-
-    if multiple:
-        n_vars = len(y_name)
-        fig, axes = plt.subplots(n_vars, 1, figsize=(10, 4 * n_vars), sharex=True)
-        if n_vars == 1:
-            axes = [axes]
-
-        for i, var in enumerate(y_name):
-            resid = uhat if isinstance(self, _gretl.Model_NSE) else uhat[:, eqn_no]
-            params = _set_params_for_plot(self, resid)
-            _time_series_plot(
-                y=resid,
-                n=params["n"],
-                ylabel=var,
-                ytitle="Residuals",
-                xtics=[params["xtics"]],
-                max_xtics=params["max_xtics"],
-                ax=axes[i],
-                title=var
-            )
-            eqn_no += 1
-
-        plt.tight_layout()
-        plt.show(block=True)
+    if kind == "fitted":
+        _plotfitted(self, eqn, multiple, against, backend)
+    elif kind == "residuals":
+        _plotresiduals(self, eqn, multiple, against, backend)
     else:
-        if against:
-            if isinstance(self, _gretl.Model_arima) and against != self.depvar:
-                raise ValueError("For ARIMA, only plotting against dependent variable is allowed.")
-            against_var = self.dataset.get_series(against)
-        else:
-            against_var = None
-
-        for var in y_name:
-            resid = uhat if isinstance(self, _gretl.Model_NSE) else uhat[:, eqn_no]
-            params = _set_params_for_plot(self, resid)
-            _time_series_plot(
-                y=resid,
-                n=params["n"],
-                ylabel=var,
-                ytitle="Residuals",
-                xtics=[params["xtics"]] if against is None else None,
-                max_xtics=params["max_xtics"],
-                against=against_var,
-                title=f"Regression residuals = (observed - fitted {var})"
-            )
-            eqn_no += 1
-
-        plt.show(block=True)
+        raise ValueError(f"unknown plotting type: {kind}")
 
 # #######################################################
 #   GretlModel_nl class
