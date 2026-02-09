@@ -1588,24 +1588,21 @@ T GretlBundle::print (bool tree)
     // dedicated printer:
     // note: if 'tree', we print bundle tree representation
     //
-    if (err_) handle_gretl_error(err_);
-
-    GretlPrint GP = GretlPrint();
+    GretlPrint printer = GretlPrint();
 
     // we do the job
     if (tree) {
-        err_ = gretl_bundle_print_tree(b_, GP.prn_ptr());
+        err_ = gretl_bundle_print_tree(b_, printer.prn_ptr());
     } else {
-        err_ = gretl_bundle_print(b_, GP.prn_ptr());
+        err_ = gretl_bundle_print(b_, printer.prn_ptr());
     }
     if (err_) handle_gretl_error(err_);
 
     // we either just print or return buffer
     if constexpr (std::is_same_v<T, void>) {
-        GP.print();
+        printer.print();
     } else if constexpr (std::is_same_v<T, std::string>) {
-        std::string summary = GP.get_buffer();
-        return summary;
+        return printer.get_buffer();
     } else {
         static_assert(always_false<T>, "GretlBundle::print(): unknown type");
     }
@@ -1629,15 +1626,17 @@ py::list GretlBundle::keys()
     //
     // we return bundle keys as py::list
     //
+    strings_array_ptr keys(nullptr, StringsArrayDeleter{});
     py::list res;
     int n_keys = 0;
+    char **raw_ptr = gretl_bundle_get_keys_raw(b_, &n_keys);
 
-    char **keys = gretl_bundle_get_keys_raw(b_, &n_keys);
-    if (!keys || n_keys <= 0) throw std::runtime_error("didn't get any keys from bundle");
+    if (!raw_ptr || n_keys <= 0) throw std::runtime_error("didn't get any keys from bundle");
+    keys.get_deleter().nstrs = n_keys;
+    keys.reset(raw_ptr);
     for (int i=0; i<n_keys; ++i) {
-        res.append(keys[i]);
+        res.append(keys.get()[i]);
     }
-    std::free(keys);
 
     return res;
 }
