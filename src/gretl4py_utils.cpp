@@ -341,6 +341,31 @@ template void load_string_to_container<std::unordered_multiset<std::string>>
  (std::unordered_multiset<std::string>&, const std::string&);
 template void load_string_to_container<std::vector<std::string>>
  (std::vector<std::string>&, const std::string&);
+
+bool is_bool_kwarg (const py::handle &h)
+{
+    //
+    // we handle 0/1/True/False/"0"/"1"/etc in a robust way
+    //
+    if (is_pybool(h)) return h.cast<bool>();
+    if (is_pyint(h) || is_pyfloat(h)) {
+        const double x = h.cast<double>();
+
+        if (x == 0.0) return false;
+        if (x == 1.0) return true;
+        handle_gretl_error(E_INVARG);
+    }
+    if (is_pystr(h)) {
+        std::string s = py::str(h);
+
+        if (s == "1" || s == "1.0" || s == "true" || s == "True") return true;
+        if (s == "0" || s == "0.0" || s == "false" || s == "False") return false;
+        handle_gretl_error(E_INVARG);
+    }
+    handle_gretl_error(E_INVARG);
+
+    return false;
+}
 //////////////////////////////////////////////////
 // classes
 //////////////////////////////////////////////////
