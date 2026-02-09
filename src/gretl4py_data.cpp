@@ -1538,8 +1538,8 @@ void GretlBundle::extract_ (const T &t)
     //
     strings_array_ptr keys(nullptr, StringsArrayDeleter{});
     int n_keys = 0;
-
     char **raw_ptr = gretl_bundle_get_keys_raw(b_, &n_keys);
+
     if (!raw_ptr || n_keys <= 0) throw std::runtime_error("didn't get any keys from bundle");
     keys.get_deleter().nstrs = n_keys;
     keys.reset(raw_ptr);
