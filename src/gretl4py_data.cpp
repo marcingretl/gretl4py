@@ -1569,7 +1569,7 @@ int GretlBundle::get_err (void) const
 
 py::dict GretlBundle::to_dict (void)
 {
-    if (as_dict_.empty()) extract_<py::dict>(py::dict());
+    extract_<py::dict>(py::dict());
 
     return as_dict_;
 }
