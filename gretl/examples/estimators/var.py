@@ -33,6 +33,7 @@ def run_example():
     print("\n****************************")
     print("forecasts")
     m1.fcast(vname="LRY")
+    exit()
 
     #IRFS
     print("\n****************************")

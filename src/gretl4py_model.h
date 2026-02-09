@@ -66,15 +66,6 @@ protected:
     void gretl_do_forecast_ (void *model, const py::args &args,
                              const py::kwargs &kwargs);
 
-    template <typename T, GretlCmdIndex CI>
-    void do_forecast_ (T *model, const py::kwargs &kwargs,
-                       int variable_nr = 0);
-
-    void unpack_forecast_kwargs_ (const py::kwargs &kwargs,
-                                  int &pconf);
-
-    void fr_to_dict_ (FITRESID *fr, py::dict &fcdict);
-
     void check_if_estimated_ (void) const;
 
     template <typename T>
@@ -86,7 +77,7 @@ public:
 
     virtual void fit (void) = 0;
 
-    virtual void forecast (const py::kwargs &kwargs) = 0;
+    virtual void forecast (const py::args &args, const py::kwargs &kwargs) = 0;
 
     virtual std::string get_formula (void) const = 0;
 
@@ -122,7 +113,7 @@ public:
 
     std::string get_formula (void) const override = 0;
 
-    void forecast (const py::kwargs &kwargs) override;
+    void forecast (const py::args &args, const py::kwargs &kwargs) override;
 
     py::object get_accessor (const std::string &name) const override;
 
@@ -137,8 +128,6 @@ public:
                const py::kwargs &kwargs);
 
     double adj_rsq (void) const;
-
-    void forecast2 (const py::args &args, const py::kwargs &kwargs);
 };
 
 //
@@ -286,9 +275,6 @@ protected:
     template <GretlCmdIndex CI>
     void do_var_vecm_fit_ (const int coint_rank = 0);
 
-    template <GretlCmdIndex CI>
-    void do_var_vecm_forecast_ (const py::kwargs &kwargs);
-
     int find_variable_nr_ (const std::string &variable_name);
 public:
     GretlModel_VAR (const std::string &ylist,
@@ -298,7 +284,7 @@ public:
 
     void fit (void) override;
 
-    void forecast (const py::kwargs &kwargs) override;
+    void forecast (const py::args &args, const py::kwargs &kwargs) override;
 
     std::string get_formula (void) const override;
 
@@ -307,8 +293,6 @@ public:
     char *save_uhat (int eqn, const std::string &name = "") const;
 
     void test (const std::string &type, const py::kwargs &kwargs);
-
-    void forecast2 (const py::args &args, const py::kwargs &kwargs);
 
     void irf (int target, int shock, double alpha = 0);
 
@@ -328,8 +312,6 @@ public:
                          const int rank, const py::kwargs &kwargs);
 
     void fit (void) override;
-
-    void forecast (const py::kwargs &kwargs) override;
 
     void restrict (const py::list &impose, const py::kwargs &kwargs);
 
@@ -355,7 +337,7 @@ public:
 
     void fit (void) override;
 
-    void forecast (const py::kwargs &kwargs) override;
+    void forecast (const py::args &args, const py::kwargs &kwargs) override;
 
     std::string get_formula (void) const override;
 
@@ -385,7 +367,7 @@ public:
 
     void fit (void) override;
 
-    void forecast (const py::kwargs &kwargs) override;
+    void forecast (const py::args &args, const py::kwargs &kwargs) override;
 
     std::string get_formula (void) const override;
 

@@ -335,6 +335,7 @@ void GretlModel::gretl_do_forecast_ (void *model, const py::args &args,
     GP_.print();
 }
 
+/*
 template <typename T, GretlCmdIndex CI>
 void GretlModel::do_forecast_ (T *model, const py::kwargs &kwargs,
                                int variable_nr)
@@ -528,7 +529,7 @@ void GretlModel::fr_to_dict_ (FITRESID *fr, py::dict &fcdict)
         }
         fcdict[py::cast("stats_labels")] = stats_labels;
     }
-}
+}*/
 
 std::string GretlModel::repr_impl (void) const
 {
@@ -605,9 +606,9 @@ GretlModel_NSE::~GretlModel_NSE (void)
     if (model_ != NULL) gretl_model_free(model_);
 }
 
-void GretlModel_NSE::forecast (const py::kwargs &kwargs)
+void GretlModel_NSE::forecast (const py::args &args, const py::kwargs &kwargs)
 {
-    do_forecast_<MODEL, static_cast<GretlCmdIndex>(0)>(model_, kwargs);
+    gretl_do_forecast_<MODEL>(model_, args, kwargs);
 }
 
 py::object GretlModel_NSE::get_accessor (const std::string &name) const
@@ -768,11 +769,6 @@ template char *GretlModel_NSE::gretl_get_fit_or_resid<M_H>(const std::string&) c
 double GretlModel_NSE::adj_rsq (void) const
 {
     return model_->adjrsq;
-}
-
-void GretlModel_NSE::forecast2 (const py::args &args, const py::kwargs &kwargs)
-{
-    gretl_do_forecast_<MODEL>(model_, args, kwargs);
 }
 
 template <GretlCmdIndex CI>
@@ -1427,42 +1423,14 @@ void GretlModel_VAR::do_var_vecm_fit_ (const int coint_rank)
     save_model_<GRETL_VAR>(model_);
 }
 
-// true VAR/VECM forecasting
-template <GretlCmdIndex CI>
-void GretlModel_VAR::do_var_vecm_forecast_ (const py::kwargs &kwargs)
-{
-    int variable_nr = -2;   // print for all equations
-
-    // we check if we forecast for all variables or just one
-    if (kwargs.contains("vname") && !kwargs["vname"].is_none()) {
-        variable_nr = find_variable_nr_(py::cast<std::string>(kwargs["vname"]));
-        if (variable_nr == -1) throw std::invalid_argument("unknown variable '"
-                                                           + py::cast<std::string>(kwargs["vname"])
-                                                           + "'");
-    }
-
-    // actual work
-    for (int i=0; i<model_->neqns; i++) {
-        if (variable_nr == -2 || variable_nr == i) {
-            py::print("Equation ", i+1);
-            do_forecast_<GRETL_VAR, CI>(model_, kwargs, i);
-        }
-    }
-}
-
 void GretlModel_VAR::fit (void)
 {
     do_var_vecm_fit_<VAR>();
 }
 
-void GretlModel_VAR::forecast (const py::kwargs &kwargs)
+void GretlModel_VAR::forecast (const py::args &args, const py::kwargs &kwargs)
 {
-    do_var_vecm_forecast_<VAR>(kwargs);
-}
-
-void GretlModel_VAR::forecast2 (const py::args &args, const py::kwargs &kwargs)
-{
-    gretl_do_forecast_<GRETL_VAR>(model_, args, kwargs);
+    gretl_do_forecast_<void>(model_, args, kwargs);
 }
 
 void GretlModel_VAR::test (const std::string &type, const py::kwargs &kwargs)
@@ -1649,11 +1617,6 @@ char *GretlModel_VAR_VECM::save_ec_term (const int nr,
                            GD_->dset->n);
 }
 
-void GretlModel_VAR_VECM::forecast (const py::kwargs &kwargs)
-{
-    do_var_vecm_forecast_<VECM>(kwargs);
-}
-
 //
 // Native Multiple Equation libgretl SYSTEM (NME)
 // extends: GretlModel
@@ -1745,7 +1708,7 @@ py::object GretlModel_NME::get_accessor (const std::string &name) const
     return do_get_accessor<GRETL_OBJ_SYS>(name, GD_, static_cast<void*>(model_));
 }
 
-void GretlModel_NME::forecast (const py::kwargs &kwargs)
+void GretlModel_NME::forecast (const py::args &args, const py::kwargs &kwargs)
 {
     py::print("GretlModel_NME::forecast(): to be written");
 }
@@ -1816,7 +1779,7 @@ void GretlModel_package::fit (void)
     summary_ = GP_.get_buffer();
 }
 
-void GretlModel_package::forecast (const py::kwargs &kwargs)
+void GretlModel_package::forecast (const py::args &args, const py::kwargs &kwargs)
 {
     py::print("GretlModel_package::forecast");
 }

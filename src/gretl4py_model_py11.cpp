@@ -97,7 +97,6 @@ void init_gretl4py_model_py11(py::module_ &m)
         .def("save_uhat_sq", &GretlModel_NSE::gretl_get_fit_or_resid<M_UHAT2>, py::arg("name").none(true) = "")
         .def("save_ahat", &GretlModel_NSE::gretl_get_fit_or_resid<M_AHAT>, py::arg("name").none(true) = "")
         .def("save_h", &GretlModel_NSE::gretl_get_fit_or_resid<M_H>, py::arg("name").none(true) = "")
-        .def("fcast2", &GretlModel_NSE::forecast2)
         .def("test",
              [](GretlModel_NSE &self, const std::string &type, const py::kwargs &kwargs)
              {
@@ -184,8 +183,7 @@ void init_gretl4py_model_py11(py::module_ &m)
         .def("irf", py::overload_cast<const std::string&, const std::string&, double>(&GretlModel_VAR::irf),
              py::arg("target").none(false), py::arg("shock").none(false), py::arg("alpha").none(true) = 0)
         .def("save_uhat", &GretlModel_VAR::save_uhat,
-             py::arg("eqn").none(false), py::arg("name").none(true) = "")
-        .def("fcast2", &GretlModel_VAR::forecast2);
+             py::arg("eqn").none(false), py::arg("name").none(true) = "");
 
     // VECM
     py::class_<GretlModel_VAR_VECM, GretlModel_VAR, std::unique_ptr<GretlModel_VAR_VECM>>(m, "Model_vecm", py::dynamic_attr())
