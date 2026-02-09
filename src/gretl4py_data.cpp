@@ -135,8 +135,7 @@ GretlDataset::GretlDataset (const std::string &fname,
 
                 full_path = pkg->get_examples_path(fname);
             } else if (key_str == "quiet") {
-                if (!is_pybool(val)) throw std::invalid_argument("'quiet' value must be a boolean");
-                if (val.cast<bool>()) quiet = true;
+                quiet = is_bool_kwarg(val);
             } else {
                 throw std::invalid_argument("unsupported option: '" + key_str + "'");
             }
@@ -1389,7 +1388,11 @@ void GretlDataset::test (const std::string &type, const std::string &varlist,
     res[py::cast("test")] = get_accessor("$test");
     res[py::cast("pvalue")] = get_accessor("$pvalue");
     res[py::cast("summary")] = GP_.get_buffer();
-    if (!kwargs.contains("silent")) GP_.print();
+
+    if (kwargs.contains("silent")) {
+        auto val = kwargs["silent"];
+        if (!is_bool_kwarg(val, "silent")) GP_.print();
+    }
 
     // we register result
     move_to_python_container<GretlDataset, py::dict, py::list>(*this, std::move(res), "tests");

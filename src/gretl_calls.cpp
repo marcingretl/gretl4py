@@ -955,7 +955,10 @@ void handle_gretl_error (int err, const std::string &ext_msg)
     gretl_error_clear();
 
     if (err == E_FOPEN) throw file_not_found(msg + ": " + ext_msg);
-    if (arg_errors.count(err)) throw std::invalid_argument(msg);
+    if (arg_errors.count(err)) {
+        if (!ext_msg.empty()) msg.append(" for '").append(ext_msg).append("'");
+        throw std::invalid_argument(msg);
+    }
     throw std::runtime_error(msg);
 }
 

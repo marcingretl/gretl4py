@@ -86,7 +86,7 @@ void move_to_python_container (PyWrapped &wrapped_obj, Item &&item,
 template <typename T>
 void load_string_to_container (T &t, const std::string &src);
 
-bool is_bool_kwarg (const py::handle &h);
+bool is_bool_kwarg (const py::handle &h, const std::string &key = "");
 //////////////////////////////////////////////////
 // classes
 //////////////////////////////////////////////////

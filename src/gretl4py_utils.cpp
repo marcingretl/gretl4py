@@ -342,7 +342,7 @@ template void load_string_to_container<std::unordered_multiset<std::string>>
 template void load_string_to_container<std::vector<std::string>>
  (std::vector<std::string>&, const std::string&);
 
-bool is_bool_kwarg (const py::handle &h)
+bool is_bool_kwarg (const py::handle &h, const std::string &key)
 {
     //
     // we handle 0/1/True/False/"0"/"1"/etc in a robust way
@@ -353,16 +353,16 @@ bool is_bool_kwarg (const py::handle &h)
 
         if (x == 0.0) return false;
         if (x == 1.0) return true;
-        handle_gretl_error(E_INVARG);
+        handle_gretl_error(E_INVARG, key);
     }
     if (is_pystr(h)) {
         std::string s = py::str(h);
 
         if (s == "1" || s == "1.0" || s == "true" || s == "True") return true;
         if (s == "0" || s == "0.0" || s == "false" || s == "False") return false;
-        handle_gretl_error(E_INVARG);
+        handle_gretl_error(E_INVARG, key);
     }
-    handle_gretl_error(E_INVARG);
+    handle_gretl_error(E_INVARG, key);
 
     return false;
 }

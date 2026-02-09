@@ -251,7 +251,10 @@ void GretlModel::do_restrict_ (T *model, const py::list &impose,
     // we register result
     move_to_python_container<GretlModel, py::dict, py::list>(*this, std::move(res), "restrictions");
 
-    if (!kwargs.contains("silent")) GP_.print();
+    if (kwargs.contains("silent")) {
+        auto val = kwargs["silent"];
+        if (!is_bool_kwarg(val, "silent")) GP_.print();
+    }
 }
 
 template <typename T>
@@ -673,7 +676,10 @@ void GretlModel_NSE::test (const std::string &type,
     // we register result
     move_to_python_container<GretlModel, py::dict, py::list>(*this, std::move(res), "tests");
 
-    if (!kwargs.contains("silent")) GP_.print();
+    if (kwargs.contains("silent")) {
+        auto val = kwargs["silent"];
+        if (!is_bool_kwarg(val, "silent")) GP_.print();
+    }
 }
 
 void GretlModel_NSE::test (const std::string &type, const std::string &varlist,
@@ -720,7 +726,10 @@ void GretlModel_NSE::test (const std::string &type, const std::string &varlist,
     // we register result
     move_to_python_container<GretlModel, py::dict, py::list>(*this, std::move(res), "tests");
 
-    if (!kwargs.contains("silent")) GP_.print();
+    if (kwargs.contains("silent")) {
+        auto val = kwargs["silent"];
+        if (!is_bool_kwarg(val, "silent")) GP_.print();
+    }
 }
 
 void GretlModel_NSE::restrict (const py::list &impose,
@@ -1491,7 +1500,10 @@ void GretlModel_VAR::test (const std::string &type, const py::kwargs &kwargs)
     // we register result
     move_to_python_container<GretlModel, py::dict, py::list>(*this, std::move(res), "tests");
 
-    if (!kwargs.contains("silent")) GP_.print();
+    if (kwargs.contains("silent")) {
+        auto val = kwargs["silent"];
+        if (!is_bool_kwarg(val, "silent")) GP_.print();
+    }
 }
 
 std::string GretlModel_VAR::get_formula (void) const
