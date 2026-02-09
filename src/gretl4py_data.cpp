@@ -1536,12 +1536,15 @@ void GretlBundle::extract_ (const T &t)
     // extract the bundle and either register on python side
     // or store in as_dict
     //
+    strings_array_ptr keys(nullptr, StringsArrayDeleter{});
     int n_keys = 0;
 
-    char **keys = gretl_bundle_get_keys_raw(b_, &n_keys);
-    if (!keys || n_keys <= 0) throw std::runtime_error("didn't get any keys from bundle");
+    char **raw_ptr = gretl_bundle_get_keys_raw(b_, &n_keys);
+    if (!raw_ptr || n_keys <= 0) throw std::runtime_error("didn't get any keys from bundle");
+    keys.get_deleter().nstrs = n_keys;
+    keys.reset(raw_ptr);
     for (int i=0; i<n_keys; ++i) {
-        const char *key = keys[i];
+        const char *key = keys.get()[i];
 
         // py::object will be registered as an attribute on python side
         if constexpr (std::is_same_v<T, py::object>) {
@@ -1559,7 +1562,6 @@ void GretlBundle::extract_ (const T &t)
             static_assert(always_false<T>, "GretlBundle::extract_(): unknown type");
         }
     }
-    std::free(keys);
 }
 
 int GretlBundle::get_err (void) const
