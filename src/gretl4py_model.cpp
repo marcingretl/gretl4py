@@ -305,7 +305,7 @@ void GretlModel::gretl_do_forecast_ (void *model, const py::args &args,
     if (n_args > max_positional_args) throw std::invalid_argument("too many positional arguments: "
                                                     + std::to_string(py::len(args))
                                                     + " (max = 4)");
-    if (n_args > 0 && n_args <= max_positional_args) {
+    if (n_args <= max_positional_args) {
         int left = max_positional_args - n_args;
 
         for (int i=0; i<n_args; ++i) {

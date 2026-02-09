@@ -32,8 +32,7 @@ def run_example():
     #FORECASTS
     print("\n****************************")
     print("forecasts")
-    m1.fcast(vname="LRY")
-    exit()
+    m1.fcast(vname="LRY", out_of_sample=True)
 
     #IRFS
     print("\n****************************")
