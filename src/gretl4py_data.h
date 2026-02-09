@@ -49,8 +49,8 @@ private:
     const int id_;                          // dataset's id
     const bool from_file_ = false;          // if dataset was loaded from file
     std::unordered_set<int> linked_models_; // models (id-s) which use this dataset
-    GretlPrint GP_ = GretlPrint();          // printer (instance wide)
-    mutable GretlTypesPtr RES_other_;       // other results (accessor, tests, ets)
+    mutable GretlPrint GP_ = GretlPrint();  // printer (instance wide)
+    mutable GretlTypesPtr RES_other_;       // other results (accessor, tests, etc)
     gretlopt opt_ = OPT_NONE;               // instance-wide options
     std::vector<std::string> obs_labels_;   // observation labels
     mutable int err_ = 0;
@@ -121,6 +121,8 @@ public:
     int get_series_id (const std::string &series, const bool verbose = true) const;
 
     py::list get_obs_labels (void) const;
+
+    std::string summary (bool print = true) const;
 
     // dataset management
     void setobs (const std::string &periodicity, const std::string &startobs,

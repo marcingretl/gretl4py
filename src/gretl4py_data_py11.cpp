@@ -107,6 +107,11 @@ void init_gretl4py_dataset_py11(py::module_ &m)
         .def("head", &head_tail_print<HEAD>, py::arg("nobs") = 5, py::kw_only())
         .def("tail", &head_tail_print<TAIL>, py::arg("nobs") = 5, py::kw_only())
         .def("set_as_default", &GretlDataset::set_as_default)
+        .def("summary",
+             [](const GretlDataset &self)
+             {
+                 self.summary();
+             })
         .def("sample",
              [](GretlDataset &self, const std::string &startobs,
                 const std::string &endobs, const py::kwargs &kwargs)

@@ -505,8 +505,6 @@ Examples:\newline
 	\item[]\maptoopt{head=lines}{--head[=lines]}{\seegretlmanual}
 	\item[]\maptoopt{tail=lines}{--tail[=lines]}{\seegretlmanual}
 	\item[]\maptoopt{midas=True}{--midas}{\seegretlmanual}
-	\item[]\pythcode{summary=True}\par%
-	\hspace*{10pt}{\footnotesize the dataset summary is printed}
 \end{itemize}
 \generaldesc{This printer is similar to the general printer
 	(see \ref{func:gretl.print}), and most of its options are
@@ -697,6 +695,12 @@ Examples:\newline
 	the new series \textit{s\_x} and \textit{s\_y}, each
 	of which is centered and divided by its sample standard
 	deviation (with a degrees of freedom correction of 1).}
+
+\gretlfpycmd{summary()}
+\estdesc{Prints the dataset summary.}
+\begin{lstlisting}[style=pythonstylefoot]
+.summary()
+\end{lstlisting}
 
 \gretlfpycmd{tail()}
 \estdesc{Offers a quick way to show just the bottom of a dataset.}

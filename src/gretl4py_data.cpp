@@ -536,6 +536,29 @@ bool GretlDataset::is_panel (void) const
     return static_cast<bool>(dataset_is_panel(dset));
 }
 
+std::string GretlDataset::summary (bool print) const
+{
+    //
+    // method prints basic info about dataset
+    //
+    auto *prn = GP_.prn_ptr();
+
+    if (dataset_is_time_series(dset)) {
+        pprintf(prn, "Time series, frequency %d, T = %d, %s to %s\n\n",
+                dset->pd, dset->n, obs_labels_.at(0).c_str(),
+                obs_labels_.back().c_str());
+    } else if (is_panel()) {
+        pprintf(prn, "Panel data, N = %d, T = %d\n\n",
+                dset->n / dset->pd, dset->pd);
+    } else {
+        pprintf(prn, "Cross-sectional data, N = %d\n\n", dset->n);
+    }
+    list_series(dset, OPT_NONE, prn);
+    if (print) GP_.print();
+
+    return GP_.get_buffer();
+}
+
 py::dict GretlDataset::to_dict (void) const
 {
     //
@@ -771,6 +794,9 @@ std::string GretlDataset::repr (void) const
     // we set source of the dataset
     std::string ret = (from_file_ ? "Read datafile: " : "Loaded: ") + source + "\n";
 
+    // we add summary
+    ret += summary(false);
+
     // if dataset read from file, we try to append dataset info
     if (from_file_ && std::filesystem::exists(source)) {
         gretl_char_ptr desc(gretl_get_gdt_description(source.c_str(), &err_));
@@ -786,57 +812,14 @@ std::string GretlDataset::repr (void) const
 
 void GretlDataset::print (const std::string &varlist, const py::kwargs &kwargs)
 {
-    static constexpr std::array<const char*, 2> exclusive_keys = {
-        "byobs", "summary"
-    };
-
     py::dict final_kwargs = kwargs;
-    std::vector<std::string> present_keys;
-    bool summary = false;
-    py::object obj;
 
     // check for banned options
     if (kwargs.contains("data")) throw std::invalid_argument("'data': option not available");
 
-    // check for mutually exclusive keys
-    for (const auto &el : exclusive_keys) {
-        if (kwargs.contains(el)) present_keys.push_back(el);
-    }
-    if (present_keys.size() > 1) {
-        std::string wrong_keys = present_keys.at(0);
-        for (size_t i=1; i<present_keys.size(); ++i) {
-            wrong_keys.append(" ").append(present_keys.at(i));
-        }
-        throw std::invalid_argument("these keys may not be passed together: " + wrong_keys);
-    }
-
-    // "summary" key
-    obj = final_kwargs.attr("pop")("summary", py::bool_(false));
-    if (!(is_pybool(obj) || is_pyint(obj))) throw std::invalid_argument("'summary' must be a bool");
-    summary = obj.cast<bool>();
-
-    if (summary) {
-        auto *prn = GP_.prn_ptr();
-
-        if (dataset_is_time_series(dset)) {
-            char s1[OBSLEN], s2[OBSLEN];
-
-            ntolabel(s1, 0, dset);
-            ntolabel(s2, dset->n-1, dset);
-            pprintf(prn, "Time series, frequency %d, T = %d, %s to %s\n\n",
-                    dset->pd, dset->n, s1, s2);
-        } else if (is_panel()) {
-            pprintf(prn, "Panel data, N = %d, T = %d\n\n",
-                    dset->n / dset->pd, dset->pd);
-        } else {
-            pprintf(prn, "Cross-sectional data, N = %d\n\n", dset->n);
-        }
-        list_series(dset, OPT_NONE, prn);
-        GP_.print();
-    } else {
-        final_kwargs["data"] = shared_from_this(); // we must add itself (dataset) for global printer
-        do_gretl_print<GretlDataset>(varlist, final_kwargs);
-    }
+    // we do the job
+    final_kwargs["data"] = shared_from_this(); // we must add itself (dataset) for global printer
+    do_gretl_print<GretlDataset>(varlist, final_kwargs);
 }
 
 void GretlDataset::smpl (const std::string &startobs, const std::string &endobs,

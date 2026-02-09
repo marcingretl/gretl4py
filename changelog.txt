@@ -16,6 +16,7 @@ version 0.41:
     - GretlModel::fcast() refactoring (now it mimics libgretl's 'fcast' command)
     - new GretlModel::dataset attribute which points directly to dataset used for model estimation
     - _gretl.Dataset::varnames() method as ::varnames attribute
+    - new _gretl.Dataset::summary() method
 
 version 0.4:
     - add GretlaDataset::dummyfi() method
