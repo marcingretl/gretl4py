@@ -157,10 +157,48 @@ The \classpymodel provides the following public methods:
 	are printed, otherwise the Python type is shown.}
 
 \gretlfpycmd{fcast()}
-\estdesc{\tbw}
+\estdesc{Generates forecasts.}
 \begin{lstlisting}[style=pythonstylefoot]
-.fcast([OPT])
+.fcast(**args[, OPTS])
 \end{lstlisting}
+\mapto[0]{fcast [startobs endobs] [vname]}
+\mapto{fcast [startobs endobs] steps-ahead [vname] --recursive}
+\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
+	\item[]\maptoopt{dynamic=True}{--dynamic}{create dynamic forecast}
+	\item[]\maptoopt{static=True}{--static}{create static forecast}
+	\item[]\maptoopt{out\_of\_sample=True}{--out-of-sample}{generate post-sample forecast}
+	\item[]\maptoopt{no\_stats=True}{--no-stats}{do not print forecast statistics}
+	\item[]\maptoopt{stats\_only=True}{--stats-only}{only print forecast statistics}
+	\item[]\maptoopt{quiet=True}{--quiet}{do not print anything}
+	\item[]\maptoopt{recursive=True}{--recursive}{recursive forecasting (\seegretlmanual)}
+	\item[]\maptoopt{all\_probs=True}{--all-probs}{print all forecast probabilities (\seegretlmanual)}
+%	\item[]\maptoopt{plot=filename}{--plot=filename}{save forecast plot to file}
+\end{itemize}
+Examples:\newline
+\pythcodef{.fcast('1997:1', '2001:4', 'f1')}\\
+\pythcodef{.fcast('fit2')}\\
+\pythcodef{.fcast('2004:1', '2008:3', 4, 'rfcast', recursive=True)}\\
+\generaldesc{Forecasts are generated for a certain
+	range of observations: if \textit{startobs} and
+	\textit{endobs} are given, for that range (if possible);
+	otherwise if the \gretlcmd{--out-of-sample} option is given,
+	for observations following the range over which the model
+	was estimated; otherwise over the currently defined sample
+	range. If an out-of-sample forecast is requested but no
+	relevant observations are available, an error is flagged.
+	Depending on the nature of the model, standard errors may
+	also be generated.\newline
+	For a single equation model, then the optional \textit{vname}
+	argument has the following effect: the forecast values are
+	not printed, but are saved to the dataset under the given name.
+	If the last model is a system of equations, \textit{vname} has
+	a different effect, namely selecting a particular endogenous
+	variable for forecasting (the default being to produce forecasts
+	for all the endogenous variables). In the system case, or if
+	\textit{vname} is not given, the forecast values can be retrieved
+	using the accessor \gretlcmd{\$fcast}, and the standard errors,
+	if available, via \gretlcmd{\$fcse}.}
+
 
 \gretlfpycmd{fit()}
 \estdesc{Executes the underlying implementation of
