@@ -1529,34 +1529,38 @@ GretlBundle::~GretlBundle (void)
     }
 }
 
+// py::object will be registered as an attribute on python side
+// py::dict will hold a content under the key
 template <typename T>
 void GretlBundle::extract_ (const T &t)
 {
     //
     // extract the bundle and either register on python side
     // or store in as_dict
-    //
-    strings_array_ptr keys(nullptr, StringsArrayDeleter{});
+    // early exit if bundle is empty
+    if (!gretl_bundle_has_content(b_)) return;
+
     int n_keys = 0;
     char **raw_ptr = gretl_bundle_get_keys_raw(b_, &n_keys);
 
-    if (!raw_ptr || n_keys <= 0) throw std::runtime_error("didn't get any keys from bundle");
+    if (!raw_ptr) throw std::runtime_error("failed to obtain bundle keys");
+    if (n_keys == 0) return;
+
+    strings_array_ptr keys(raw_ptr, StringsArrayDeleter{});
     keys.get_deleter().nstrs = n_keys;
-    keys.reset(raw_ptr);
+
     for (int i=0; i<n_keys; ++i) {
-        const char *key = keys.get()[i];
+        const char *key_cstr = keys.get()[i];
+        py::str key = py::cast(key_cstr);
+        py::object val = get_element<py::object>(key_cstr);
 
-        // py::object will be registered as an attribute on python side
         if constexpr (std::is_same_v<T, py::object>) {
-            py::setattr(t, key, get_element<py::object>(key));
+            py::setattr(t, key_cstr, val);
         } else if constexpr (std::is_same_v<T, py::dict>) {
-            py::object val = get_element<py::object>(key);
-
             if (py::isinstance<GretlBundle>(val)) {
-                // recursively convert nested bundle
-                as_dict_[py::cast(key)] = val.cast<GretlBundle>().to_dict();
+                as_dict_[key] = val.cast<GretlBundle>().to_dict();
             } else {
-                as_dict_[py::cast(key)] = val;
+                as_dict_[key] = val;
             }
         } else {
             static_assert(always_false<T>, "GretlBundle::extract_(): unknown type");
@@ -1621,24 +1625,31 @@ gretl_bundle *GretlBundle::get_ptr (void) const
     return b_;
 }
 
-py::list GretlBundle::keys()
+py::list GretlBundle::keys (void)
 {
     //
-    // we return bundle keys as py::list
+    // we return bundle keys as a Python list
     //
-    strings_array_ptr keys(nullptr, StringsArrayDeleter{});
-    py::list res;
+    // early exit if bundle is empty
+    if (!gretl_bundle_has_content(b_)) return py::list{};
+
     int n_keys = 0;
     char **raw_ptr = gretl_bundle_get_keys_raw(b_, &n_keys);
 
-    if (!raw_ptr || n_keys <= 0) throw std::runtime_error("didn't get any keys from bundle");
+    if (!raw_ptr) throw std::runtime_error("failed to obtain bundle keys");
+    strings_array_ptr keys(raw_ptr, StringsArrayDeleter{});
     keys.get_deleter().nstrs = n_keys;
-    keys.reset(raw_ptr);
-    for (int i=0; i<n_keys; ++i) {
-        res.append(keys.get()[i]);
+    if (n_keys == 0) return py::list{};
+
+    // we copy keys into std::vector while smart pointer owns memory
+    std::vector<std::string> vec_keys;
+
+    vec_keys.reserve(n_keys);
+    for (int i = 0; i < n_keys; ++i) {
+        vec_keys.emplace_back(keys.get()[i]);
     }
 
-    return res;
+    return py::cast(vec_keys);
 }
 
 template <typename T>
