@@ -21,7 +21,7 @@ def run_example():
   # 14.3. Testing, Estimating, and Forecasting
   ############################################
   print("\n14.3.2. Estimating ARCH Models")
-  byd.print(summary=True)
+  byd.summary()
   ARCH_1 = gretl.garch('0 1 ; r').fit()                               # (14.4a-14.4b)
   print(ARCH_1)
 

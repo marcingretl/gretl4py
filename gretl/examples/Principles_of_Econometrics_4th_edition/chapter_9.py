@@ -45,7 +45,7 @@ def run_example():
     print("\n9.3.2a. A Phillips Curve")
     phillips_aus.set_as_default()
     phillips_aus.diff('u')
-    phillips_aus.print(summary=True)
+    phillips_aus.summary()
     PC = gretl.ols(formula='inf const d_u', simple=True).fit()  # (9.22)
     print(PC)
     PC.save_uhat(name='PC_e')

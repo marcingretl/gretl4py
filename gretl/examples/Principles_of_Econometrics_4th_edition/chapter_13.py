@@ -16,7 +16,7 @@ def run_example():
   # 13.2. Estimating a Vector Error Correction Model
   ############################################
   print("\n13.2. Estimating a Vector Error Correction Model")
-  gdp.print(summary=1)
+  gdp.summary()
   gdp.test(type='coint', y='aus', varlist='usa', nc=True, verbose=True)      # (13.7-13.8)
   print(f'tau = {fred.get_accessor("$test"):.3f}')
 
