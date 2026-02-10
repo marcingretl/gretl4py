@@ -55,6 +55,21 @@ GretlPackage::GretlPackage (const std::string &pkg_name,
         return func_args_sorted;
     };
 
+    // lambda for function metadata registration
+    auto register_function_metadata = [this](const char *func_name) -> void
+    {
+        // pointers
+        auto func_ptr = get_function_from_package(func_name, pkg_);
+        if (!func_ptr) throw std::runtime_error("unable to get pointer to function: " + std::string(func_name));
+        func_ptrs_.emplace(func_name, std::move(func_ptr));
+        // arguments
+        std::map<std::string, int> arg_names_tmp;
+        for (int i=0; i<fn_n_params(func_ptr); ++i) {
+            arg_names_tmp.emplace(fn_param_name(func_ptr, i), i);
+        }
+        func_args_.emplace(func_name, std::move(arg_names_tmp));
+    };
+
     static const std::unordered_set<UfunRole> excluded_roles = {
         UFUN_BUNDLE_PLOT, UFUN_GUI_MAIN, UFUN_GUI_PRECHECK,
         UFUN_PLOT_PRECHECK, UFUN_UI_MAKER
@@ -108,30 +123,27 @@ GretlPackage::GretlPackage (const std::string &pkg_name,
     // Note: we exclude functions with specific roles (mostly related with plotting and GUI)
     for (auto role : excluded_roles) {
         auto func_name = get_properties_<std::string>(package_role_get_key(role));
-        if (!func_name.empty()) {
-            excluded_functions.insert(std::move(func_name));
-        }
+        if (!func_name.empty()) excluded_functions.insert(std::move(func_name));
     }
 
     // we register functions metadata
-    while (const char* func_name = next_available_function_name(pkg_, &idxp)) {
+    while (const char *func_name = next_available_function_name(pkg_, &idxp)) {
         if (gretl_is_public_user_function(func_name) && !excluded_functions.count(func_name)) {
-            // pointers
-            auto func_ptr = get_function_from_package(func_name, pkg_);
-            if (!func_ptr) throw std::runtime_error("unable to get pointer to function: " + std::string(func_name));
-            func_ptrs_.emplace(func_name, std::move(func_ptr));
-            // arguments
-            std::map<std::string, int> arg_names_tmp;
-            for (int i=0; i<fn_n_params(func_ptr); ++i) {
-                arg_names_tmp.emplace(fn_param_name(func_ptr, i), i);
-            }
-            func_args_.emplace(func_name, std::move(arg_names_tmp));
+            register_function_metadata(func_name);
         }
+    }
+    // workaround for packages in which the _only_ one public
+    // function is marked as 'UFUN_GUI_MAIN' (TVC, for example)
+    if (func_ptrs_.empty()) {
+        auto func_name = get_properties_<std::string>(package_role_get_key(UFUN_GUI_MAIN));
+        if (gretl_is_public_user_function(func_name.c_str())) register_function_metadata(func_name.c_str());
     }
     if (func_ptrs_.empty()) throw std::runtime_error("no public functions found in '" + pkg_name + "' package");
 
     // we construct function map with sorted arguments
-    for (const auto &[key, el] : func_args_) func_args_sorted_.emplace(key, sort_func_args_by_id(el));
+    for (const auto &[key, el] : func_args_) {
+        func_args_sorted_.emplace(key, sort_func_args_by_id(el));
+    }
 
     // we try to register package 'main' function (i.e. the one to call via ::fit())
     if (func_ptrs_.size() == 1) {
@@ -145,9 +157,7 @@ GretlPackage::GretlPackage (const std::string &pkg_name,
         } else {
             // second: we look for 'estimate' in function name
             for (auto it : func_ptrs_) {
-                if (it.first.find("estimate") != std::string::npos) {
-                    set_main(it.first);
-                }
+                if (it.first.find("estimate") != std::string::npos) set_main(it.first);
             }
         }
     }
@@ -164,9 +174,7 @@ GretlPackage::GretlPackage (const std::string &pkg_name,
                   + " (" + get_properties_<std::string>("author") + ")"
                   + "\n  main function: " + (main_func_.empty() ? "none" : main_func_)
                   + ", provides estimator: " + (defines_estimator_ ? "yes" : "no"));
-        if (main_func_.empty()) {
-            py::print("warning: package main function was not found: please use ::set_main()");
-        }
+        if (main_func_.empty()) py::print("warning: package main function was not found: please use ::set_main()");
         py::print();
     }
 }
