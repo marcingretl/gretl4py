@@ -1,4 +1,17 @@
+```text
+                _   _   ___
+               | | | | /   |
+  __ _ _ __ ___| |_| |/ /| |_ __  _   _
+ / _` | '__/ _ \ __| / /_| | '_ \| | | |
+| (_| | | |  __/ |_| \___  | |_) | |_| |
+ \__, |_|  \___|\__|_|   |_/ .__/ \__, |
+  __/ |                    | |     __/ |
+ |___/                     |_|    |___/
+```
+
 # gretl4py: Python Bindings for gretl
+
+**Python bindings for the gretl econometrics library**
 
 **gretl4py** provides Python bindings to **gretl**, a free, open-source, cross-platform software package for econometric analysis.
 Gretl is known for its numerical accuracy and computational efficiency — capabilities that gretl4py inherits directly through the underlying `libgretl` engine.
