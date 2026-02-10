@@ -1,0 +1,107 @@
+\subsection{Forecasting}\label{sec:forecasting}
+\gretlpy\footnote{This section is based on \cite{gretl_manual}.}
+offers predictive capabilities in the same way as
+\gretl. In the simplest case, the ``predictions''
+of interest are simply the (within-sample) fitted
+values from an econometric model. If the model in
+question takes the form of a system of equations,
+\gretlcmd{\$yhat} returns a matrix, each column of
+which contains the fitted values for a particular
+dependent variable. To generate forecasts, the user
+should use the \pythcode{fcast()} method of a
+\classpymodel instance (see \ref{met:gretlmodel::fcast}).
+
+By default, the forecast range coincides with the
+currently defined sample range. If this range remains
+unchanged following estimation of the model in
+question, the forecast will be ``within sample'' and
+will essentially duplicate the information available
+via retrieval of the fitted values.
+
+A common situation is that a model is estimated over
+a given sample and forecasts are then required for a
+subsequent out-of-sample range. The simplest way to
+accomplish this is by using the \pythcode{out\_of\_sample}
+option of the \pythcode{.fcast()} method. For example,
+suppose we have a quarterly time-series dataset
+containing observations from 1980:1 to 2008:4, of
+which the last four are to be reserved for forecasting:
+\begin{lstlisting}[style=pythonstylefoot]
+import gretl
+
+d = gretl.get_data('denmark.gdt', quiet=True)
+d.new_list('Xes', 'LRY IBO IDE')
+
+# reserve the last 4 observations
+d.sample('1974:1', '1986:3', quiet=True)
+
+m = gretl.ols('LRM const Xes').fit()
+m.fcast(out_of_sample=True)
+\end{lstlisting}\index{get\_data()}\index{new\_list()}\index{sample()}\index{ols()}\index{fcast()}
+This code generates a forecast from 1986:4 to 1987:3.
+Figure~\ref{fig:OLS_based_forecasts} shows results of above script.
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=0.6\columnwidth,keepaspectratio]{forecasting_ols}
+	\caption{OLS-based forecasts}
+	\label{fig:OLS_based_forecasts}
+\end{figure}
+
+Alternatively, the forecast range can be controlled
+in the following ways:
+\begin{itemize}
+	\item Use the \pythcode{.smpl()} method to adjust the
+	sample range prior to invoking \pythcode{.fcast()}.
+	\item Use the optional \textit{startobs} and
+	\textit{endobs} arguments of \pythcode{fcast()}.
+	These values set the forecast range independently
+	of the sample range.
+\end{itemize}
+
+The interface for forecasting from a VAR is similar to
+that for a single equation. Here's an example code:
+\begin{lstlisting}[style=pythonstylefoot]
+import gretl
+
+# open sample data file
+d = gretl.get_data('sw_ch14.gdt', quiet=True)
+
+# generate the "inflation" series
+d.new_series('INFL = 100 * sdiff(log(PUNEW))')
+
+# put last year aside for out-of-sample forecast
+d.sample(1, -4, quiet=True)
+
+# estimate a 5-lag VAR
+m = gretl.var(5, 'LHUR INFL', silent=True).fit()
+
+# retrieve fitted values (note: result is a 2-column matrix)
+YH = m.get_accessor('$yhat')
+
+# perform out-of-sample forecast (both versions)
+m.fcast('LHUR', static=True, out_of_sample=True)
+
+# note that omission of the variable specification means "all"
+m.fcast(dynamic=True, out_of_sample=True)
+\end{lstlisting}\index{get\_data()}\index{new\_series()}\index{sample()}\index{var()}\index{get\_accessor()}\index{fcast()}
+Figure~\ref{fig:VAR_based_forecasts} shows results of above script.
+
+\begin{figure}
+	\centering
+	\includegraphics[height=\textheight,keepaspectratio]{forecasting_var}
+	\caption{VAR-based forecasts}
+	\label{fig:VAR_based_forecasts}
+\end{figure}
+
+Using a cointegrated VAR model with \gretl's \gretlcmd{vecm}
+does not change the way a forecast is obtained afterwards.
+The VECM can be internally represented as a VAR (in levels)
+that automatically contains the reduced-rank restrictions of
+cointegration, and this VAR form is then used to calculate
+the forecasts. Providing forecast standard errors and the
+associated confidence bands is also straightforward since only
+the innovation uncertainty is captured in those. This ease
+of use also carries over to the situation when a VECM with
+additional exogenous terms is used for forecasting---provided
+that future values of the exogenous variables are specified, of course.
