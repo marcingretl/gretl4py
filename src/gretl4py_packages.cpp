@@ -136,14 +136,12 @@ GretlPackage::GretlPackage (const std::string &pkg_name,
     // function is marked as 'UFUN_GUI_MAIN' (TVC, for example)
     if (func_ptrs_.empty()) {
         auto func_name = get_properties_<std::string>(package_role_get_key(UFUN_GUI_MAIN));
-        if (gretl_is_public_user_function(func_name.c_str())) register_function_metadata(func_name.c_str());
+        register_function_metadata(func_name.c_str());
     }
     if (func_ptrs_.empty()) throw std::runtime_error("no public functions found in '" + pkg_name + "' package");
 
     // we construct function map with sorted arguments
-    for (const auto &[key, el] : func_args_) {
-        func_args_sorted_.emplace(key, sort_func_args_by_id(el));
-    }
+    for (const auto &[key, el] : func_args_) func_args_sorted_.emplace(key, sort_func_args_by_id(el));
 
     // we try to register package 'main' function (i.e. the one to call via ::fit())
     if (func_ptrs_.size() == 1) {
