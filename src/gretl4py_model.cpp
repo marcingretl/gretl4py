@@ -606,8 +606,11 @@ GretlModel_NSE::GretlModel_NSE (GretlCmdIndex ci, const py::kwargs &kwargs)
 
 GretlModel_NSE::~GretlModel_NSE (void)
 {
-    //if (model_ != NULL) gretl_model_free(model_);
-    gretl_object_unref(this->model_, this->model_obj_type_);
+    if (!estimated_ && model_ != NULL) {
+        gretl_model_free(model_);
+    } else {
+        gretl_object_unref(this->model_, this->model_obj_type_);
+    }
 }
 
 void GretlModel_NSE::forecast (const py::args &args, const py::kwargs &kwargs)
