@@ -606,8 +606,8 @@ GretlModel_NSE::GretlModel_NSE (GretlCmdIndex ci, const py::kwargs &kwargs)
 
 GretlModel_NSE::~GretlModel_NSE (void)
 {
-    if (!estimated_ && model_ != NULL) {
-        gretl_model_free(model_);
+    if (!this->estimated_ && this->model_ != NULL) {
+        gretl_model_free(this->model_);
     } else {
         gretl_object_unref(this->model_, this->model_obj_type_);
     }
