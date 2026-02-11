@@ -134,10 +134,7 @@ GretlPackage::GretlPackage (const std::string &pkg_name,
     }
     // workaround for packages in which the _only_ one public
     // function is marked as 'UFUN_GUI_MAIN' (TVC, for example)
-    if (func_ptrs_.empty()) {
-        auto func_name = get_properties_<std::string>(package_role_get_key(UFUN_GUI_MAIN));
-        register_function_metadata(func_name.c_str());
-    }
+    if (func_ptrs_.empty()) register_function_metadata(get_function_with_role(UFUN_GUI_MAIN).c_str());
     if (func_ptrs_.empty()) throw std::runtime_error("no public functions found in '" + pkg_name + "' package");
 
     // we construct function map with sorted arguments
