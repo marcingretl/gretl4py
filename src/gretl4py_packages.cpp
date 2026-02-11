@@ -330,9 +330,23 @@ void GretlPackage::unpack_kwargs_package_ (const std::string &func_name,
         } else if (arginfo.gtype == GRETL_TYPE_BUNDLE) {
             // note: here we deal with both: GRETL_TYPE_BUNDLE and GRETL_TYPE_BUNDLE_REF
             // final distinction is made by key_type
-            auto GB = val.cast<GretlBundlePtr>();
+            auto gb = val.cast<GretlBundlePtr>();
             err_ = push_function_arg(func_call, NULL, NULL,
-                                     key_type, GB->get_ptr());
+                                     key_type, gb->get_ptr());
+            if (err_) handle_gretl_error(err_);
+            continue;
+        } else if (arginfo.gtype == GRETL_TYPE_MATRIX) {
+            NumPyArrayView arr_view;
+            gretl_matrix_ptr mat{nullptr};
+            auto arr = val.cast<py::array>();
+
+            NumPyArray_extract(arr, arr_view);
+            if (!arr_view.data) throw std::runtime_error("NumPy array: null pointer.");
+            mat.reset(gretl_matrix_alloc(arr_view.rows, arr_view.cols));
+            NumPyArray_to_gretl_matrix<gretl_matrix>(arr_view, mat.get());
+            err_ = push_function_arg(func_call, key.c_str(), NULL,
+                                     GRETL_TYPE_MATRIX, mat.release());
+            if (err_) handle_gretl_error(err_);
             continue;
         } else if (arginfo.gtype == GRETL_TYPE_STRING) {
             // special case: we need to know if we deal with
