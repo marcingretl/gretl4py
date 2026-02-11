@@ -308,7 +308,15 @@ void GretlPackage::unpack_kwargs_package_ (const std::string &func_name,
     double darg_value;      // value to be pushed on stack (if double)
 
     for (const auto &[key, arg_no] : func_name_args) {
-        if (!kwargs.contains(key)) continue;
+        if (!kwargs.contains(key)) {
+            // if parameter is [optional] (i.e. does not have default value), we must set it to GRETL_TYPE_NONE
+            if (fn_param_optional(func_get_ptr(func_name), arg_no)) {
+                err_ = push_function_arg(func_call, key.c_str(),
+                                         NULL, GRETL_TYPE_NONE, NULL);
+                if (err_) handle_gretl_error(err_);
+            }
+            continue;
+        }
         auto val = kwargs[py::cast(key)];
         PythonArgInfo arginfo = inspect_pyobject(val);
         arg_type = GRETL_TYPE_NONE;
@@ -597,9 +605,7 @@ GretlPackageRes GretlPackage::function_exec (const std::string &func_name,
     unpack_kwargs_package_(func_name, func_call, GD, merged_kwargs);
 
     // we check dataset in the context of package's "data-requirement"
-    if (!GD && !(get_properties_<DataReq>("data-requirement") == FN_NODATA_OK)) {
-        throw std::runtime_error("No dataset is available");
-    }
+    if (!GD && !(get_properties_<DataReq>("data-requirement") == FN_NODATA_OK)) throw std::runtime_error("No dataset is available");
 
     // we must set returning type (must be released at the end)
     GretlPackageRes res;
