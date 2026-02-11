@@ -129,6 +129,10 @@ void GretlModel::save_model_ (T *model)
     // produced by libgretl's printmodel().
     // FIXME: extend description for VAR, VECM, etc...
     //
+    // whatever happens later, we "transfer" the model to libgretl,
+    // so from that very moment libgretl owns this memory
+    gretl_object_ref(model, model_obj_type_);
+
     if constexpr (std::is_same_v<T, MODEL>) {
         err_ = model->errcode;
     } else if constexpr (std::is_same_v<T, GRETL_VAR>) {
@@ -145,7 +149,6 @@ void GretlModel::save_model_ (T *model)
         err_ = printmodel(model, GD_->dset, opt_,
                           GP_.prn_ptr());
     } else if constexpr (std::is_same_v<T, GRETL_VAR>) {
-        gretl_object_ref(model, model_obj_type_);
         err_ = gretl_VAR_print(model, GD_->dset,
                                opt_, GP_.prn_ptr());
     } else if constexpr (std::is_same_v<T, equation_system>) {
@@ -603,7 +606,8 @@ GretlModel_NSE::GretlModel_NSE (GretlCmdIndex ci, const py::kwargs &kwargs)
 
 GretlModel_NSE::~GretlModel_NSE (void)
 {
-    if (model_ != NULL) gretl_model_free(model_);
+    //if (model_ != NULL) gretl_model_free(model_);
+    gretl_object_unref(this->model_, this->model_obj_type_);
 }
 
 void GretlModel_NSE::forecast (const py::args &args, const py::kwargs &kwargs)
@@ -1638,10 +1642,11 @@ GretlModel_NME::GretlModel_NME (const std::string &method,
 
 GretlModel_NME::~GretlModel_NME (void)
 {
-    if (model_ != NULL) {
+    /*if (model_ != NULL) {
         equation_system_destroy(model_);
         model_ = NULL;  // prevents double free
-    }
+    }*/
+    gretl_object_unref(this->model_, this->model_obj_type_);
 }
 
 void GretlModel_NME::fit (void)
