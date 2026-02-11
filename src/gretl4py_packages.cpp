@@ -122,7 +122,7 @@ GretlPackage::GretlPackage (const std::string &pkg_name,
     // we grab only public functions (names and indexes)
     // Note: we exclude functions with specific roles (mostly related with plotting and GUI)
     for (auto role : excluded_roles) {
-        auto func_name = get_properties_<std::string>(package_role_get_key(role));
+        auto func_name = get_function_with_role(role);
         if (!func_name.empty()) excluded_functions.insert(std::move(func_name));
     }
 
