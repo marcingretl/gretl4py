@@ -1,8 +1,8 @@
 BUGS:
 
+1. '[auto]' option for package function parameters
+
 TODOS:
 
-1. implement fcast command
-
-2. add copying plugins as meson option
+1. add copying plugins as meson option
 
