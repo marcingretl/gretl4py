@@ -36,22 +36,25 @@ f"Time (bootstrap) = {gretl.get_accessor('$stopwatch'):.2g}")
 \index{SVAR\_setup()}\index{SVAR\_restrict()}\index{SVAR\_estimate()}\index{FEVD()}\index{SVAR\_boot()}
 
 
-%\subsection{Time-Varying Coefficients Estimation}
-%\begin{lstlisting}[style=pythonstylefoot]
-%import gretl
-%
-%def run_example():
-%try:
-%  tvc = gretl.include('TVC')
-%except FileNotFoundError:
-%  gretl.pkg('install', 'TVC')
-%  tvc = gretl.include('TVC')
-%tvc.show_functions()
-%
-%d = gretl.get_data('OkunGer.gdt', frompkg='TVC', quiet=True)
-%d.new_list(name='L', value='gGDP intercept')
-%
-%P = gretl.TVCestimate('dU', 'L')
-%gretl.set('echo', 'on')
-%\end{lstlisting}\index{pkg()}\index{include()}\index{get\_data()}\index{new\_list()}\index{set()}\index{show\_functions()}%
-%\index{TVCestimate()}
+\subsection{Time-Varying Coefficients Estimation}
+In \gretl, the \textbf{TVC} package by \cite{Schlicht_TVC_pkg}
+provides a collection of functions for estimating the
+time-varying coefficients of the linear regression.
+Below we present an example script taken from this package.
+\begin{lstlisting}[style=pythonstylefoot]
+import gretl
+
+try:
+  tvc = gretl.include('TVC')
+except FileNotFoundError:
+  gretl.pkg('install', 'TVC')
+  tvc = gretl.include('TVC')
+tvc.show_functions()
+
+d = gretl.get_data('OkunGer.gdt', frompkg='TVC', quiet=True)
+d.new_list(name='L', value='gGDP intercept')
+
+P = gretl.TVCestimate('dU', 'L')
+gretl.set('echo', 'on')
+\end{lstlisting}\index{pkg()}\index{include()}\index{get\_data()}\index{new\_list()}\index{set()}\index{show\_functions()}%
+\index{TVCestimate()}

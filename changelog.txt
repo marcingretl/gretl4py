@@ -1,4 +1,4 @@
-version 0.41:
+version 0.50:
     - several bugs fixed (including the one related with exporting nested bundles to dict)
     - massive doc updates
     - general libgretl printer (available as 'gretl.print()')
@@ -17,6 +17,8 @@ version 0.41:
     - new GretlModel::dataset attribute which points directly to dataset used for model estimation
     - _gretl.Dataset::varnames() method as ::varnames attribute
     - new _gretl.Dataset::summary() method
+    - GretlPackage: examples for BACE, BayTool, BMA, BVAR, criteria, gig, ParMA, SVAR, and TVC
+    - GretlPackage: parameters may be passed as both: *agrs and *kwargs (positional or keyword)
 
 version 0.4:
     - add GretlaDataset::dummyfi() method
