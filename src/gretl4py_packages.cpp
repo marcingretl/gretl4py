@@ -35,10 +35,8 @@ extern std::unordered_set<std::string> user_vars;
 //
 // GretlPackage class methods
 //
-GretlPackage::GretlPackage (const std::string &pkg_name,
-                            const std::string &suffix,
-                            bool print_summary)
-                            : pkg_name_(pkg_name), suffix_(suffix)
+GretlPackage::GretlPackage (const std::string &pkg_name, const std::string &suffix,
+                            bool print_summary) : pkg_name_(pkg_name), suffix_(suffix)
 {
     // lambda for sorting function arguments by id-s
     auto sort_func_args_by_id = [](const std::map<std::string, int> &func_args) -> FunctionArgsVec
@@ -104,10 +102,7 @@ GretlPackage::GretlPackage (const std::string &pkg_name,
     }
 
     // setup some basic info about package
-    if (pkg_name != function_package_get_name(pkg_))
-        throw std::runtime_error("package name mismatch: internal: '"
-                                 + std::string(function_package_get_name(pkg_))
-                                 + "', provided: '" + pkg_name_ + "'");
+    if (pkg_name != function_package_get_name(pkg_)) throw std::runtime_error("package name mismatch: internal: '" + std::string(function_package_get_name(pkg_)) + "', provided: '" + pkg_name_ + "'");
     err_ = bundle_function_package_info(full_path_.c_str(), GB_.get_ptr());
     if (err_) handle_gretl_error(err_);
     version_ = function_package_get_version(pkg_);
@@ -123,14 +118,13 @@ GretlPackage::GretlPackage (const std::string &pkg_name,
     // Note: we exclude functions with specific roles (mostly related with plotting and GUI)
     for (auto role : excluded_roles) {
         auto func_name = get_function_with_role(role);
+        
         if (!func_name.empty()) excluded_functions.insert(std::move(func_name));
     }
 
     // we register functions metadata
     while (const char *func_name = next_available_function_name(pkg_, &idxp)) {
-        if (gretl_is_public_user_function(func_name) && !excluded_functions.count(func_name)) {
-            register_function_metadata(func_name);
-        }
+        if (gretl_is_public_user_function(func_name) && !excluded_functions.count(func_name)) register_function_metadata(func_name);
     }
     // workaround for packages in which the _only_ one public
     // function is marked as 'UFUN_GUI_MAIN' (TVC, for example)
@@ -147,6 +141,7 @@ GretlPackage::GretlPackage (const std::string &pkg_name,
         // some heuristics here
         // at first: name of the package
         auto it = func_ptrs_.find(pkg_name);
+        
         if (it != func_ptrs_.end()) {
             set_main(it->first);
         } else {
@@ -198,6 +193,7 @@ GretlPackagePtr GretlPackage::load_package (const std::string &pkgname,
     //
     // at first we check if package already exists
     auto it = GPKGs_.find(pkgname);
+    
     if (it != GPKGs_.end()) return it->second;
 
     // now we load the package
@@ -231,6 +227,7 @@ void GretlPackage::check_if_defines_estimator_ (void)
     }
 }
 
+// T = { DataReq ; std::vector<std::string> ; std::string }
 template <typename T>
 T GretlPackage::get_properties_ (const char *property)
 {
@@ -238,12 +235,14 @@ T GretlPackage::get_properties_ (const char *property)
     // we get package properties
     //
     T res;
-    gchar *val = nullptr;
+    gchar *val_raw = nullptr;
+    gretl_gchar_ptr val{nullptr};
 
     if constexpr (std::is_same_v<T, DataReq>) {
         err_ = function_package_get_properties(pkg_, property, &res, NULL);
     } else {
-        err_ = function_package_get_properties(pkg_, property, &val, NULL);
+        err_ = function_package_get_properties(pkg_, property, &val_raw, NULL);
+        val.reset(val_raw);
     }
     if (err_) handle_gretl_error(err_);
 
@@ -253,15 +252,12 @@ T GretlPackage::get_properties_ (const char *property)
     } else if (!val) {
         return {}; // gracefully return empty value
     } else if constexpr (std::is_same_v<T, std::vector<std::string>>) {
-        load_string_to_container<std::vector<std::string>>(res, val);
+        load_string_to_container<std::vector<std::string>>(res, val.get());
     } else if constexpr (std::is_same_v<T, std::string>) {
-        res = val;
+        res = val.get();
     } else {
         static_assert(always_false<T>, "GretlPackage::get_properties_(): unknown type");
     }
-
-    // we free results (id needed)
-    g_free(val);
 
     return res;
 }
