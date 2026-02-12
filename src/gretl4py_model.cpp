@@ -151,9 +151,7 @@ void GretlModel::save_model_ (T *model)
     // we print model
     if constexpr (std::is_same_v<T, MODEL>) {
         // we forse Pooled OLS heading if needed
-        if (gretl_model_get_int(model, "pooled")) {
-            opt_ = static_cast<gretlopt>(opt_ & ~OPT_P);
-        }
+        if (gretl_model_get_int(model, "pooled")) opt_ = static_cast<gretlopt>(opt_ & ~OPT_P);
         err_ = printmodel(model, GD_->dset, opt_, GP_.prn_ptr());
     } else if constexpr (std::is_same_v<T, GRETL_VAR>) {
         err_ = gretl_VAR_print(model, GD_->dset, opt_, GP_.prn_ptr());
@@ -180,6 +178,7 @@ void GretlModel::save_model_ (T *model)
     GB_model_->python_register(self);
 }
 
+//T = { MODEL, GRETL_VAR, equation_system }
 template <typename T>
 void GretlModel::do_restrict_ (T *model, const py::list &impose,
                                const py::kwargs &kwargs)
@@ -200,9 +199,7 @@ void GretlModel::do_restrict_ (T *model, const py::list &impose,
 
     // this code was rendered from library.c
     for (auto &item : impose) {
-        if (!is_pystr(item)) {
-            throw std::invalid_argument("given restriction is not string literal");
-        }
+        if (!is_pystr(item)) throw std::invalid_argument("given restriction is not string literal");
         if (my_rset == NULL) {
             if constexpr (std::is_same_v<T, MODEL>) {
                 my_rset = eqn_restriction_set_start(MapPyToCpp(item).to_string().c_str(),
@@ -257,10 +254,12 @@ void GretlModel::do_restrict_ (T *model, const py::list &impose,
 
     if (kwargs.contains("silent")) {
         auto val = kwargs["silent"];
+        
         if (!is_bool_kwarg(val, "silent")) GP_.print();
     }
 }
 
+//T = { MODEL, void }
 template <typename T>
 void GretlModel::gretl_do_forecast_ (void *model, const py::args &args,
                                      const py::kwargs &kwargs)
@@ -557,9 +556,9 @@ void GretlModel::check_if_estimated_ (void) const
     if (estimated_) throw std::runtime_error("model already estimated");
 }
 
+//T = { GRETL_VAR, equation_system }
 template <typename T>
-char *GretlModel::do_save_uhat_ (T *model, int eqn,
-                                 const std::string &name) const
+char *GretlModel::do_save_uhat_ (T *model, int eqn, const std::string &name) const
 {
     //
     // here take residuals from multivariate model
@@ -569,7 +568,7 @@ char *GretlModel::do_save_uhat_ (T *model, int eqn,
     std::string uhat_name;
     gretl_double_ptr uhat{nullptr};
 
-    // we retrive uhat
+    // we retrieve uhat
     if constexpr (std::is_same_v<T, GRETL_VAR>) {
         uhat.reset(gretl_VAR_get_resid_series(model, eqn-1, &err_));
     } else if constexpr (std::is_same_v<T, equation_system>) {
@@ -580,15 +579,10 @@ char *GretlModel::do_save_uhat_ (T *model, int eqn,
     if (err_) handle_gretl_error(err_);
 
     // we set name
-    if (name.empty()) {
-        uhat_name = std::string("m") + std::to_string(id_)
-            + std::string("_uhat") + std::to_string(eqn);
-    }
+    if (name.empty()) uhat_name = std::string("m") + std::to_string(id_) + std::string("_uhat") + std::to_string(eqn);
 
     // actual work
-    return GD_->add_series(std::move(uhat),
-                           name.empty() ? uhat_name : name,
-                           GD_->dset->n);
+    return GD_->add_series(std::move(uhat), name.empty() ? uhat_name : name, GD_->dset->n);
 }
 
 //////////////////////////////////////////////////
@@ -624,8 +618,7 @@ py::object GretlModel_NSE::get_accessor (const std::string &name) const
     return do_get_accessor<GRETL_OBJ_EQN>(name, GD_, static_cast<void*>(model_));
 }
 
-void GretlModel_NSE::test (const std::string &type,
-                           const py::kwargs &kwargs)
+void GretlModel_NSE::test (const std::string &type, const py::kwargs &kwargs)
 {
     //
     // this method performs test which do not take a variables list
@@ -642,11 +635,9 @@ void GretlModel_NSE::test (const std::string &type,
     } else if (type == "cusum") {
         err_ = cusum_test(model_, GD_->dset, opt_, GP_.prn_ptr());
     } else if (type == "leverage") {
-        err_ = leverage_test(model_, GD_->dset,
-                             opt_, GP_.prn_ptr());
+        err_ = leverage_test(model_, GD_->dset, opt_, GP_.prn_ptr());
     } else if (type == "panspec") {
-        err_ = panel_specification_test(model_, GD_->dset,
-                                        opt_, GP_.prn_ptr());
+        err_ = panel_specification_test(model_, GD_->dset, opt_, GP_.prn_ptr());
     } else if (type == "reset") {
         err_ = reset_test(model_, GD_->dset, opt_, GP_.prn_ptr());
     } else if (type == "qlrtest") {
@@ -654,7 +645,7 @@ void GretlModel_NSE::test (const std::string &type,
     } else if (type == "vif") {
         err_ = vif_test(model_, GD_->dset, opt_, GP_.prn_ptr());
     } else if (type == "corrgm") {
-        err_ = corrgram(GD_->dset->v - 1, order,
+        err_ = corrgram(GD_->dset->v-1, order,
                         model_->ci == ARMA ? arma_model_get_n_arma_coeffs(model_) : 0,
                         GD_->dset, SET_OPT(opt_, OPT_R), GP_.prn_ptr());
     } else if (type == "arch" || type == "autocorr" ||
@@ -668,8 +659,9 @@ void GretlModel_NSE::test (const std::string &type,
             if (err_) handle_gretl_error(err_);
             set_as_last_model(model_, model_obj_type_);
         }
-        err_ = model_test_driver(order, GD_->dset,
-                                 opt_, GP_.prn_ptr());
+        err_ = model_test_driver(order, GD_->dset, opt_, GP_.prn_ptr());
+        err_ = gretl_model_unprotect(model_);
+        if (err_) handle_gretl_error(err_);
     } else {
         throw std::invalid_argument(type + " is a dataset-based test");
     }
@@ -687,6 +679,7 @@ void GretlModel_NSE::test (const std::string &type,
 
     if (kwargs.contains("silent")) {
         auto val = kwargs["silent"];
+        
         if (!is_bool_kwarg(val, "silent")) GP_.print();
     }
 }
@@ -709,17 +702,13 @@ void GretlModel_NSE::test (const std::string &type, const std::string &varlist,
 
     // we perform the test
     if (type == "add") {
-        err_ = add_test(model_, ex_var.get(), GD_->dset,
-                        opt_, GP_.prn_ptr());
+        err_ = add_test(model_, ex_var.get(), GD_->dset, opt_, GP_.prn_ptr());
     } else if (type == "chow") {
-        err_ = chow_test_driver(varlist.c_str(), model_, GD_->dset,
-                                opt_, GP_.prn_ptr());
+        err_ = chow_test_driver(varlist.c_str(), model_, GD_->dset, opt_, GP_.prn_ptr());
     } else if (type == "coeffsum") {
-        err_ = gretl_sum_test(ex_var.get(), model_, GD_->dset,
-                              opt_, GP_.prn_ptr());
+        err_ = gretl_sum_test(ex_var.get(), model_, GD_->dset, opt_, GP_.prn_ptr());
     } else if (type == "omit") {
-        err_ = omit_test(model_, ex_var.get(), GD_->dset,
-                         opt_, GP_.prn_ptr());
+        err_ = omit_test(model_, ex_var.get(), GD_->dset, opt_, GP_.prn_ptr());
     } else {
         throw std::invalid_argument(type + " is a dataset-based test");
     }
@@ -737,6 +726,7 @@ void GretlModel_NSE::test (const std::string &type, const std::string &varlist,
 
     if (kwargs.contains("silent")) {
         auto val = kwargs["silent"];
+        
         if (!is_bool_kwarg(val, "silent")) GP_.print();
     }
 }
@@ -765,8 +755,7 @@ char *GretlModel_NSE::gretl_get_fit_or_resid (const std::string &name) const
     std::string vname = name.empty() ? std::string(tmp_name) : name;
     gretl_gchar_ptr pdesc(pdesc_raw);
 
-    return GD_->add_series(std::move(data), vname,
-                           GD_->dset->n, std::move(pdesc));
+    return GD_->add_series(std::move(data), vname, GD_->dset->n, std::move(pdesc));
 }
 template char *GretlModel_NSE::gretl_get_fit_or_resid<M_YHAT>(const std::string&) const;
 template char *GretlModel_NSE::gretl_get_fit_or_resid<M_UHAT>(const std::string&) const;
@@ -1478,6 +1467,7 @@ void GretlModel_VAR::test (const std::string &type, const py::kwargs &kwargs)
 
     if (kwargs.contains("silent")) {
         auto val = kwargs["silent"];
+        
         if (!is_bool_kwarg(val, "silent")) GP_.print();
     }
 }
