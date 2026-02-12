@@ -307,8 +307,7 @@ void GretlPackage::unpack_kwargs_package_ (const std::string &func_name,
         if (!kwargs.contains(key)) {
             // if parameter is [optional] (i.e. does not have default value), we must set it to GRETL_TYPE_NONE
             if (fn_param_optional(func_get_ptr(func_name), arg_no)) {
-                err_ = push_function_arg(func_call, key.c_str(),
-                                         NULL, GRETL_TYPE_NONE, NULL);
+                err_ = push_function_arg(func_call, key.c_str(), NULL, GRETL_TYPE_NONE, NULL);
                 if (err_) handle_gretl_error(err_);
             }
             continue;
@@ -345,8 +344,7 @@ void GretlPackage::unpack_kwargs_package_ (const std::string &func_name,
             if (!arr_view.data) throw std::runtime_error("NumPy array: null pointer.");
             mat.reset(gretl_matrix_alloc(arr_view.rows, arr_view.cols));
             NumPyArray_to_gretl_matrix<gretl_matrix>(arr_view, mat.get());
-            err_ = push_function_arg(func_call, key.c_str(), NULL,
-                                     GRETL_TYPE_MATRIX, mat.release());
+            err_ = push_function_arg(func_call, key.c_str(), NULL, GRETL_TYPE_MATRIX, mat.release());
             if (err_) handle_gretl_error(err_);
             continue;
         } else if (arginfo.gtype == GRETL_TYPE_STRING) {
@@ -362,11 +360,8 @@ void GretlPackage::unpack_kwargs_package_ (const std::string &func_name,
             if (user_vars.find(arg_name) != user_vars.end()) {
                 user_var *uv = get_user_var_by_name(arg_name.c_str());
                 // for reference, we change uv type!!!
-                arg_type = is_ref_user_var ?
-                    gretl_type_get_ref_type(user_var_get_type(uv))
-                    : user_var_get_type(uv);
-                err_ = push_function_arg(func_call, arg_name.c_str(), uv,
-                                         arg_type, user_var_get_value(uv));
+                arg_type = is_ref_user_var ? gretl_type_get_ref_type(user_var_get_type(uv)) : user_var_get_type(uv);
+                err_ = push_function_arg(func_call, arg_name.c_str(), uv, arg_type, user_var_get_value(uv));
                 if (err_) handle_gretl_error(err_);
                 continue;
             } else {
@@ -374,19 +369,14 @@ void GretlPackage::unpack_kwargs_package_ (const std::string &func_name,
                 arg_value = static_cast<void*>(arg_name_copy);
                 arg_type = arginfo.gtype;
             }
-        } else if (arginfo.gtype == GRETL_TYPE_BOOL ||
-                   arginfo.gtype == GRETL_TYPE_DOUBLE ||
-                   arginfo.gtype == GRETL_TYPE_INT) {
+        } else if (arginfo.gtype == GRETL_TYPE_BOOL || arginfo.gtype == GRETL_TYPE_DOUBLE || arginfo.gtype == GRETL_TYPE_INT) {
             darg_value = py::cast<double>(val);
             arg_value = &darg_value;
             arg_type = GRETL_TYPE_DOUBLE;
         } else {
-            throw std::runtime_error("variable " + key +
-                                     ": unsupported type: "
-                                     + arginfo.pytype);
+            throw std::runtime_error("variable " + key + ": unsupported type: " + arginfo.pytype);
         }
-        err_ = push_function_arg(func_call, key.c_str(),
-                                 NULL, arg_type, arg_value);
+        err_ = push_function_arg(func_call, key.c_str(), NULL, arg_type, arg_value);
         if (err_) handle_gretl_error(err_);
     }
 }
@@ -418,8 +408,7 @@ py::list GretlPackage::get_help (void)
         RES.append(pdf_path.string());
     } else {
         RES.append("txt");
-        err_ = print_function_package_help(full_path_.c_str(),
-                                           NULL, GP_.prn_ptr());
+        err_ = print_function_package_help(full_path_.c_str(), NULL, GP_.prn_ptr());
         if (err_) handle_gretl_error(err_);
         RES.append(GP_.get_buffer());
     }
@@ -431,6 +420,7 @@ void GretlPackage::set_main (const std::string &name)
 {
     // we register main_func
     auto it = func_ptrs_.find(name);
+    
     if (it != func_ptrs_.end()) {
         main_func_ = name;
     } else {
@@ -440,10 +430,9 @@ void GretlPackage::set_main (const std::string &name)
     // we register all non-optional arguments with types
     if (!main_func_nd_.empty()) main_func_nd_.clear();
     auto main_func_args = func_args_.at(name);
+    
     for (const auto &[key, val] : main_func_args) {
-        if (!fn_param_optional(it->second, val) && !fn_param_has_default(it->second, val)) {
-            main_func_nd_.emplace(key, static_cast<GretlType>(fn_param_type(it->second, val)));
-        }
+        if (!fn_param_optional(it->second, val) && !fn_param_has_default(it->second, val)) main_func_nd_.emplace(key, static_cast<GretlType>(fn_param_type(it->second, val)));
     }
 }
 
@@ -495,8 +484,7 @@ void GretlPackage::show_functions (const std::string &name)
                 }
             }
             type_str = "(";
-            py::print("  ", it.first,
-                      type_str.append(gretl_type_get_name(type)).append(")"),
+            py::print("  ", it.first, type_str.append(gretl_type_get_name(type)).append(")"),
                       (!default_value_str.empty() ? "default: " + default_value_str : "")
                       + std::string((fn_param_optional(func_ptr, it.second) ? "[optional]" : "")));
         }
@@ -610,8 +598,7 @@ GretlPackageRes GretlPackage::function_exec (const std::string &func_name,
     res.set_type(func_get_res_type(func_name));
 
     // function execution
-    err_ = gretl_function_exec(func_call, res.type, GD ? GD->dset : NULL,
-                               res.out_ptr(), GP.prn_ptr());
+    err_ = gretl_function_exec(func_call, res.type, GD ? GD->dset : NULL, res.out_ptr(), GP.prn_ptr());
     if (err_) handle_gretl_error(err_);
 
     // for GRETL_TYPE_SERIES we must record length
