@@ -32,14 +32,14 @@ extern "C" {
 #include <regex>
 #include <algorithm>
 
-#define use_ldco_sig(c) (c == OLS || c == WLS) //const int *list, DATASET *dset, GretlCmdIndex ci, gretlopt opt
-#define use_ldcop_sig(c) (c == LOGIT || c == PROBIT) //int *list, DATASET *dset, int ci, gretlopt opt, PRN *prn
-#define use_ldo_sig(c) (c == LOGISTIC || c == LAD \
+#define USE_LDCO_SIG(c) (c == OLS || c == WLS) //const int *list, DATASET *dset, GretlCmdIndex ci, gretlopt opt
+#define USE_LDCOP_SIG(c) (c == LOGIT || c == PROBIT) //int *list, DATASET *dset, int ci, gretlopt opt, PRN *prn
+#define USE_LDO_SIG(c) (c == LOGISTIC || c == LAD \
                         || c == MPOLS || c == IVREG || c == HSK) //const int *list, DATASET *dset, gretlopt opt
-#define use_ldop_sig(c) (c == BIPROBIT || c == DURATION \
+#define USE_LDOP_SIG(c) (c == BIPROBIT || c == DURATION \
                          || c == HECKIT || c == AR || c == AR1 \
                          || c == GARCH || c == PANEL || c == INTREG) //const int *list, DATASET *dset, gretlopt opt, PRN *prn
-#define use_lcdop_sig(c) (c == POISSON || c == NEGBIN) //const int *list, int ci, DATASET *dset, gretlopt opt, PRN *prn
+#define USE_LCDOP_SIG(c) (c == POISSON || c == NEGBIN) //const int *list, int ci, DATASET *dset, gretlopt opt, PRN *prn
 
 #define GRETL4PY_MODEL_DEBUG 0
 
@@ -929,7 +929,7 @@ void GretlModel_NSE_Driver<F, CI>::fit (void)
     }
 
     // we call F as an estimator
-    if constexpr (use_ldco_sig(CI)) {
+    if constexpr (USE_LDCO_SIG(CI)) {
         // fallback to Pooled OLS if needed
         if (CI == OLS && GD_->is_panel()) {
             SET_OPT(opt_, (OPT_P | OPT_L));
@@ -937,13 +937,13 @@ void GretlModel_NSE_Driver<F, CI>::fit (void)
         } else {
             *model_ = F(var_list_.get(), GD_->dset, CI, opt_);
         }
-    } else if constexpr (use_ldcop_sig(CI)) {
+    } else if constexpr (USE_LDCOP_SIG(CI)) {
         *model_ = F(var_list_.get(), GD_->dset, static_cast<int>(CI), opt_, GP_.prn_ptr());
-    } else if constexpr (use_ldo_sig(CI)) {
+    } else if constexpr (USE_LDO_SIG(CI)) {
         *model_ = F(var_list_.get(), GD_->dset, opt_);
-    } else if constexpr (use_ldop_sig(CI)) {
+    } else if constexpr (USE_LDOP_SIG(CI)) {
         *model_ = F(var_list_.get(), GD_->dset, opt_, GP_.prn_ptr());
-    } else if constexpr (use_lcdop_sig(CI)) {
+    } else if constexpr (USE_LCDOP_SIG(CI)) {
         *model_ = F(var_list_.get(), static_cast<int>(CI), GD_->dset, opt_, GP_.prn_ptr());
     } else if constexpr (CI == MIDASREG) {
         *model_ = F(var_list_.get(), formula_right.c_str(), GD_->dset, opt_, GP_.prn_ptr());
