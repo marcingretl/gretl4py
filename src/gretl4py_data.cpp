@@ -624,11 +624,9 @@ void GretlDataset::to_file (const std::string &filename, const std::string &varl
 
     // we do the job
     if (opt_ & OPT_A) {
-        err_ = write_matrix_as_dataset(filename.c_str(), opt_,
-                                       GP_.prn_ptr());
+        err_ = write_matrix_as_dataset(filename.c_str(), opt_, GP_.prn_ptr());
     } else {
-        err_ = write_data(filename.c_str(), var_list.get(),
-                          dset, opt_, GP_.prn_ptr());
+        err_ = write_data(filename.c_str(), var_list.get(), dset, opt_, GP_.prn_ptr());
     }
     if (err_) handle_gretl_error(err_);
 
@@ -643,14 +641,12 @@ char *GretlDataset::add_series (gretl_double_ptr data,
     // Here we add existing series to dataset
     // Note: gretl_double_ptr and gretl_gchar_ptr are grabbed by dset
     //
-    add_or_replace_allocated_series_(std::move(data), name,
-                                     n, std::move(label));
+    add_or_replace_allocated_series_(std::move(data), name, n, std::move(label));
 
     return dset->varname[get_series_id(name, false)];
 }
 
-void GretlDataset::add_series (const py::array &data,
-                               const std::string &name)
+void GretlDataset::add_series (const py::array &data, const std::string &name)
 {
     //
     // Here we add existing py::array to dataset
@@ -1030,12 +1026,10 @@ py::object GretlDataset::cov (const std::string &vars)
     }
 
     // we do the job
-    mat.reset(gretl_covariance_matrix_from_varlist(var_list.get(),
-                                                   dset, NULL, &err_));
+    mat.reset(gretl_covariance_matrix_from_varlist(var_list.get(), dset, NULL, &err_));
     if (err_) handle_gretl_error(err_);
-
-    auto res = convert_GretlType_to_GretlTypes(GRETL_TYPE_MATRIX,
-                                               mat.get(), 0, err_);
+    auto res = convert_GretlType_to_GretlTypes(GRETL_TYPE_MATRIX, mat.get(), 0, err_);
+    
     if (err_) handle_gretl_error(err_);
 
     return variant_to_pyobject(std::move(*res));
@@ -1112,10 +1106,7 @@ py::object GretlDataset::pca (const std::string &varlist, const py::kwargs &kwar
     if (err_) handle_gretl_error(err_);
     err_ = call_pca_plugin(cmat.get(), dset, opt_, prn);
     if (err_) handle_gretl_error(err_);
-    if (static_cast<gretlopt>(opt_ & (OPT_O | OPT_A)) && gretl_messages_on()) {
-        /* results saved as series */
-        pputs(prn, _("Generated principal component series\n"));
-    }
+    if (static_cast<gretlopt>(opt_ & (OPT_O | OPT_A)) && gretl_messages_on()) pputs(prn, _("Generated principal component series\n")); /* results saved as series */
     GP_.print();
 
     return get_accessor("$result");
@@ -1232,8 +1223,7 @@ int GretlDataset::get_id (void) const noexcept
     return id_;
 }
 
-void GretlDataset::gretl_series_set_label (const int number,
-                                           char *label)
+void GretlDataset::gretl_series_set_label (const int number, char *label)
 {
     series_set_label(dset, number, label);
 }
@@ -1250,8 +1240,7 @@ void GretlDataset::lags (const std::string &varlist, int order)
 
     // we do the job
     int *var_list_raw_ptr = var_list.release();
-    err_ = list_laggenr(&var_list_raw_ptr, 1, order,
-                        NULL, dset, 0, OPT_NONE);
+    err_ = list_laggenr(&var_list_raw_ptr, 1, order, NULL, dset, 0, OPT_NONE);
     var_list.reset(var_list_raw_ptr);
     if (err_) handle_gretl_error(err_);
 
@@ -1264,13 +1253,14 @@ void GretlDataset::lags (const std::string &varlist, int order)
 
 py::list GretlDataset::varnames (void) const
 {
-    py::list names;
+    std::vector<std::string> names;
 
-    for (int i=0; i<dset->v; i++) {
-        names.append(dset->varname[i]);
+    names.reserve(dset->v);
+    for (int i=0; i<dset->v; ++i) {
+        names.emplace_back(dset->varname[i]);
     }
 
-    return names;
+    return py::cast(names);
 }
 
 void GretlDataset::linked_models_add (const int model_id)
