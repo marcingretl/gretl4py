@@ -125,8 +125,8 @@ void GretlModel::save_model_ (T *model)
 {
     //
     // Here we save estimation results, i.e. we set attributes on
-    // a Python side using as intermediate step the $bundle produced
-    // by libgretl.
+    // a Python side using as intermediate step the $model or $system
+    // bundle produced by libgretl.
     // We also add the @summary text produced by libgretl's printmodel().
     // FIXME: extend description for VAR, VECM, etc...
     //
@@ -166,7 +166,7 @@ void GretlModel::save_model_ (T *model)
     if (err_) handle_gretl_error(err_);
     summary_ = std::string(GP_.get_buffer());   // for safety
 
-    // we produce $model bundle based on estimated @model
+    // we produce $model or $system bundle based on estimated @model
     if constexpr (std::is_same_v<T, equation_system>) {
         GB_model_ = std::make_shared<GretlBundle>(model);
     } else {
