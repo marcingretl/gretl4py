@@ -933,9 +933,7 @@ GretlDatasetPtr GretlDataset::getitem_impl (const T &slice)
 
         // we construct list of variables to drop
         gretl_list_ptr full_list(full_var_list(dset, NULL));
-        drop_list = gretl_list_ptr(gretl_list_drop(full_list.get(),
-                                                   slice_list.get(),
-                                                   &err_));
+        drop_list = gretl_list_ptr(gretl_list_drop(full_list.get(), slice_list.get(), &err_));
         if (err_) handle_gretl_error(err_);
     } else if constexpr (std::is_same_v<T, std::string>) {
         auto pos = slice.find(':');
@@ -957,8 +955,7 @@ GretlDatasetPtr GretlDataset::getitem_impl (const T &slice)
     // we do the job
     if constexpr (std::is_same_v<T, py::list>) {
         // dropping variables
-        err_ = gretl_delete_variables(drop_list.get(), NULL, OPT_F,
-                                      RES->dset, NULL, GP_.prn_ptr());
+        err_ = gretl_delete_variables(drop_list.get(), NULL, OPT_F, RES->dset, NULL, GP_.prn_ptr());
     } else {
         // for sampling
         opts["quiet"] = true;
@@ -1377,9 +1374,8 @@ py::object GretlDataset::get_series (const std::string &series) const
     // we return series as NumPy array
     //
     double *x = dset->Z[get_series_id(series)];
-
-    auto res = convert_GretlType_to_GretlTypes(GRETL_TYPE_SERIES,
-                                               x, dset->n, err_);
+    auto res = convert_GretlType_to_GretlTypes(GRETL_TYPE_SERIES, x, dset->n, err_);
+    
     if (err_) handle_gretl_error(err_);
 
     return variant_to_pyobject(std::move(*res));
@@ -1398,19 +1394,16 @@ DNumPyArrayFC GretlDataset::hpfilt (const std::string &y,
 
     // we do the job
     if (one_sided) {
-        err_ = oshp_filter(dset->Z[get_series_id(y)],
-                           res.mutable_data(), dset, hp_lambda, opt);
+        err_ = oshp_filter(dset->Z[get_series_id(y)], res.mutable_data(), dset, hp_lambda, opt);
     } else {
-        err_ = hp_filter(dset->Z[get_series_id(y)],
-                         res.mutable_data(), dset, hp_lambda, opt);
+        err_ = hp_filter(dset->Z[get_series_id(y)], res.mutable_data(), dset, hp_lambda, opt);
     }
     if (err_) handle_gretl_error(err_);
 
     return res;
 }
 
-DNumPyArrayFC GretlDataset::bwfilt (const std::string &y,
-                                    int n, double omega)
+DNumPyArrayFC GretlDataset::bwfilt (const std::string &y, int n, double omega)
 {
     //
     // here we perform Butterworth filtering
@@ -1418,15 +1411,13 @@ DNumPyArrayFC GretlDataset::bwfilt (const std::string &y,
     DNumPyArrayFC res(dset->n);
 
     // we do the job
-    err_ = butterworth_filter(dset->Z[get_series_id(y)],
-                              res.mutable_data(), dset, n, omega);
+    err_ = butterworth_filter(dset->Z[get_series_id(y)], res.mutable_data(), dset, n, omega);
     if (err_) handle_gretl_error(err_);
 
     return res;
 }
 
-DNumPyArrayFC GretlDataset::bkfilt (const std::string &y,
-                                    int f1, int f2, int k)
+DNumPyArrayFC GretlDataset::bkfilt (const std::string &y, int f1, int f2, int k)
 {
     //
     // here we perform Baxter-King filtering
@@ -1434,8 +1425,7 @@ DNumPyArrayFC GretlDataset::bkfilt (const std::string &y,
     DNumPyArrayFC res(dset->n);
 
     // we do the job
-    err_ = bkbp_filter(dset->Z[get_series_id(y)],
-                       res.mutable_data(), dset, f1, f2, k);
+    err_ = bkbp_filter(dset->Z[get_series_id(y)], res.mutable_data(), dset, f1, f2, k);
     if (err_) handle_gretl_error(err_);
 
     return res;
@@ -1458,7 +1448,6 @@ GretlBundle::GretlBundle (MODEL *model, DATASET *dset)
 GretlBundle::GretlBundle (GRETL_VAR *model, DATASET *dset) : b_(gretl_bundle_new())
 {
     if (!b_) handle_gretl_error(E_ALLOC);
-
     err_ = gretl_VAR_bundlize(model, dset, b_);
     if (err_) handle_gretl_error(err_);
 }
@@ -1466,7 +1455,6 @@ GretlBundle::GretlBundle (GRETL_VAR *model, DATASET *dset) : b_(gretl_bundle_new
 GretlBundle::GretlBundle (equation_system *model) : b_(gretl_bundle_new())
 {
     if (!b_) handle_gretl_error(E_ALLOC);
-
     err_ = equation_system_bundlize(model, b_);
     if (err_) handle_gretl_error(err_);
 }
