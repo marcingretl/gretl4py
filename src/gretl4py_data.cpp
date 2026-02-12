@@ -146,8 +146,7 @@ GretlDataset::GretlDataset (const std::string &fname,
     if (!dset) handle_gretl_error(E_ALLOC);
 
     // we try to read the file
-    err_ = gretl_get_data(full_path.empty() ? fname.c_str() : full_path.c_str(),
-                          dset, OPT_NONE, GP_.prn_ptr());
+    err_ = gretl_get_data(full_path.empty() ? fname.c_str() : full_path.c_str(), dset, OPT_NONE, GP_.prn_ptr());
     if (!quiet || err_) GP_.print();
     if (err_) {
         destroy_dataset(dset);
@@ -241,9 +240,7 @@ GretlDataset::GretlDataset (const py::dict &pydict) : id_(next_obj_id_++)
 
     // we fill up dset->varname
     pylist = pydict[py::cast("varname")];
-    if (pylist.size() != static_cast<long unsigned int>(dset->v-1)) {
-        throw std::invalid_argument("Number of varnames is different than number of variables.");
-    }
+    if (pylist.size() != static_cast<long unsigned int>(dset->v-1)) throw std::invalid_argument("Number of varnames is different than number of variables.");
     for (int i=0; i<dset->v-1; i++) {
         if (!is_pystr(pylist[i])) throw std::runtime_error("name of variable " + std::to_string(i) + " not a string");
         auto el = py::cast<std::string>(pylist[i]);
@@ -256,8 +253,7 @@ GretlDataset::GretlDataset (const py::dict &pydict) : id_(next_obj_id_++)
     // was created by GretlDataset::to_dict (that is, starting from a gretl
     // dataset in libgretl's memory-space).
     dset->structure = get_int_from_pydict("structure", 0);
-    set_obs(std::to_string(get_int_from_pydict("periodicity", 1)).c_str(),
-            dset->S[0], dset, setobs_opt_from_structure(dset->structure));
+    set_obs(std::to_string(get_int_from_pydict("periodicity", 1)).c_str(), dset->S[0], dset, setobs_opt_from_structure(dset->structure));
 
     // we set obs labels
     set_obs_labels_();
@@ -378,9 +374,7 @@ GretlDatasetPtr GretlDataset::clone (const GretlDataset &src)
     return GD;
 }
 
-GretlDatasetPtr GretlDataset::get_data (const py::object &src,
-                                        const std::string &source,
-                                        const py::kwargs &kwargs)
+GretlDatasetPtr GretlDataset::get_data (const py::object &src, const std::string &source, const py::kwargs &kwargs)
 {
     //
     // main factory method for getting data (loading from src or registry)
@@ -463,11 +457,7 @@ void GretlDataset::add_or_replace_allocated_series_ (gretl_double_ptr data,
     // only if there is no error
     //
     // we do basic checks
-    if (n != dset->n) {
-        throw std::invalid_argument("'" + name + "' is of wrong length: is n="
-                                    + std::to_string(n) + ", should be n="
-                                    + std::to_string(dset->n));
-    }
+    if (n != dset->n) throw std::invalid_argument("'" + name + "' is of wrong length: is n=" + std::to_string(n) + ", should be n=" + std::to_string(dset->n));
     if (name.empty()) throw std::invalid_argument("empty variable name");
 
     // we check if we add new or replace series
@@ -477,8 +467,7 @@ void GretlDataset::add_or_replace_allocated_series_ (gretl_double_ptr data,
     double *data_ptr = data.release();
 
     if (v > 0) {
-        err_ = dataset_replace_series(dset, v, data_ptr,
-                                      label.get(), DS_GRAB_VALUES);
+        err_ = dataset_replace_series(dset, v, data_ptr, label.get(), DS_GRAB_VALUES);
     } else {
         err_ = dataset_add_allocated_series(dset, data_ptr);
     }
@@ -488,11 +477,10 @@ void GretlDataset::add_or_replace_allocated_series_ (gretl_double_ptr data,
     }
 
     if (v > 0) {
-        py::print("Replaced series " + name + " (ID "
-                  + std::to_string(v) + ")");
+        py::print("Replaced series " + name + " (ID " + std::to_string(v) + ")");
     } else {
         // we setup name and description for new series
-        v = dset->v - 1;
+        v = dset->v-1;
         err_ = rename_series(dset, v, name.c_str(), OPT_NONE);
         if (err_) handle_gretl_error(err_);
         gretl_series_set_label(v, label.get());
@@ -544,12 +532,9 @@ std::string GretlDataset::summary (bool print) const
     auto *prn = GP_.prn_ptr();
 
     if (dataset_is_time_series(dset)) {
-        pprintf(prn, "Time series, frequency %d, T = %d, %s to %s\n\n",
-                dset->pd, dset->n, obs_labels_.at(0).c_str(),
-                obs_labels_.back().c_str());
+        pprintf(prn, "Time series, frequency %d, T = %d, %s to %s\n\n", dset->pd, dset->n, obs_labels_.at(0).c_str(), obs_labels_.back().c_str());
     } else if (is_panel()) {
-        pprintf(prn, "Panel data, N = %d, T = %d\n\n",
-                dset->n / dset->pd, dset->pd);
+        pprintf(prn, "Panel data, N = %d, T = %d\n\n", dset->n / dset->pd, dset->pd);
     } else {
         pprintf(prn, "Cross-sectional data, N = %d\n\n", dset->n);
     }
@@ -831,6 +816,7 @@ void GretlDataset::smpl (const std::string &startobs, const std::string &endobs,
         // mimics 'static int check_smpl_full (gretlopt)' from interact.c
         //
         opt = static_cast<gretlopt>(opt ^ OPT_F);
+        
         if (opt & OPT_Q) opt = static_cast<gretlopt>(opt ^ OPT_Q);
 
         return opt == OPT_NONE ? 0 : E_BADOPT;
@@ -919,9 +905,7 @@ GretlDatasetPtr GretlDataset::getitem_impl (const T &slice)
         // we construct list of variables to retain
         for (size_t i=0; i<slice.size(); ++i) {
             oss << py::str(slice[i]).cast<std::string>();
-            if (i + 1 < slice.size()) {
-                oss << " ";
-            }
+            if (i + 1 < slice.size()) oss << " ";
         }
         slice_str = oss.str();
         gretl_list_ptr slice_list = list_from_formula(slice_str, dset, err_);
