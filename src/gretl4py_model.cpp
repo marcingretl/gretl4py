@@ -1013,8 +1013,7 @@ void GretlModel_NSE_Driver_quantreg::fit (void)
     var_list_ = list_from_formula(formula_, GD_->dset, err_);
 
     // we do the job
-    *model_ = quantreg_driver(tau_.c_str(), var_list_.get(),
-                              GD_->dset, opt_, GP_.prn_ptr());
+    *model_ = quantreg_driver(tau_.c_str(), var_list_.get(), GD_->dset, opt_, GP_.prn_ptr());
 
     // we save results
     save_model_<MODEL>(model_);
@@ -1078,9 +1077,8 @@ void GretlModel_NSE_Driver_dpanel::fit (void)
             laglist.get()[i+1] = static_cast<int>(lags_[i]);
         }
     }
-    *model_ = dpd_model(dpanel_list.get(), laglist.get(),
-                        formula_right.c_str(), GD_->dset,
-                        opt_, GP_.prn_ptr());
+    *model_ = dpd_model(dpanel_list.get(), laglist.get(), formula_right.c_str(),
+                        GD_->dset, opt_, GP_.prn_ptr());
 
     // we save results
     save_model_<MODEL>(model_);
@@ -1134,9 +1132,7 @@ GretlModel_NSE_nl<CI>::GretlModel_NSE_nl (const std::string formula,
     // we get model definition
     get_object_from_dict<std::string>(kwargs, "params", params_);
     get_object_from_dict<std::string>(kwargs, "param_names", param_names_);
-    if (!param_names_.empty()) {
-        param_names_ = "\"" + param_names_ + "\"";
-    }
+    if (!param_names_.empty()) param_names_ = "\"" + param_names_ + "\"";
 
     // we set up initial values
     if (kwargs.contains("initvals")) {
@@ -1172,9 +1168,7 @@ GretlModel_NSE_nl<CI>::GretlModel_NSE_nl (const std::string formula,
     }
 
     // we get statements entries
-    if constexpr (CI == MLE || CI == GMM) {
-        get_object_from_dict<std::vector<std::string>>(kwargs, "statements", statements_);
-    }
+    if constexpr (CI == MLE || CI == GMM) get_object_from_dict<std::vector<std::string>>(kwargs, "statements", statements_);
 }
 
 template <GretlCmdIndex CI>
@@ -1193,9 +1187,7 @@ void GretlModel_NSE_nl<CI>::do_nl_parse_line_ (const std::string &keyword,
     // argument validation:
     // 1. keyword must not be empty
     // 2. if keyword != "command", src must not be null
-    if (keyword.empty() || (keyword != "command" && !src)) {
-        throw std::invalid_argument("do_nl_parse_line_(): wrong arguments passed");
-    }
+    if (keyword.empty() || (keyword != "command" && !src)) throw std::invalid_argument("do_nl_parse_line_(): wrong arguments passed");
 
     // we do the job
     if constexpr (std::is_same_v<T, std::string>) {
@@ -1224,8 +1216,7 @@ void GretlModel_NSE_nl<CI>::do_nl_parse_line_ (const std::string &keyword,
                 line.append(" ");
                 line.append(el);
             }
-            err_ = nl_parse_line(CI, line.c_str(),
-                                 GD_->dset, GP_.prn_ptr());
+            err_ = nl_parse_line(CI, line.c_str(), GD_->dset, GP_.prn_ptr());
             if (err_) handle_gretl_error(err_);
         }
     } else {
@@ -1245,16 +1236,12 @@ void GretlModel_NSE_nl<CI>::fit (void)
     // we set up all model definition lines
     do_nl_parse_line_<std::string>("params", &params_);
     do_nl_parse_line_<std::string>("param_names", &param_names_);
-    if constexpr (CI == NLS || CI == MLE) {
-        do_nl_parse_line_<std::vector<std::string>>("deriv", &deriv_);
-    }
+    if constexpr (CI == NLS || CI == MLE) do_nl_parse_line_<std::vector<std::string>>("deriv", &deriv_);
     if constexpr (CI == GMM) {
         do_nl_parse_line_<std::vector<std::string>>("orthog", &orthog_);
         do_nl_parse_line_<std::string>("weights", &weights_);
     }
-    if constexpr (CI == MLE || CI == GMM) {
-        do_nl_parse_line_<std::vector<std::string>>("statements", &statements_);
-    }
+    if constexpr (CI == MLE || CI == GMM) do_nl_parse_line_<std::vector<std::string>>("statements", &statements_);
 
     // we do the job
     *model_ = nl_model(GD_->dset, opt_, GP_.prn_ptr());
@@ -1293,12 +1280,8 @@ std::string GretlModel_NSE_nl<CI>::get_formula (void) const
             }
         }
     }
-    if (!params_.empty()) {
-        RES += "params " + params_ + "\n";
-    }
-    if (!param_names_.empty()) {
-        RES += "param_names " + param_names_ + "\n";
-    }
+    if (!params_.empty()) RES += "params " + params_ + "\n";
+    if (!param_names_.empty()) RES += "param_names " + param_names_ + "\n";
 
     return RES;
 }
@@ -1344,7 +1327,6 @@ void GretlModel_NSE_nl<CI>::add_init_value (const std::string &varname,
     //
     // adds/sets value of varname in the contexts of GD
     //
-
     gretl_generate<GRETL_TYPE_ANY>(std::to_string(value), GD_, varname);
 }
 
