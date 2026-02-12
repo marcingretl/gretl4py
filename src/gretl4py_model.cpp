@@ -796,9 +796,7 @@ void GretlModel_NSE::regexp_extract_ (const std::string &formula,
     }
     gretl4py_trim(formula_left);
     gretl4py_trim(formula_right);
-    if (formula_left.back() == ';') {
-        formula_left.pop_back();
-    }
+    if (formula_left.back() == ';') formula_left.pop_back();
 }
 
 //
@@ -838,18 +836,15 @@ GretlModel_NSE_arima::GretlModel_NSE_arima (const std::string &y,
     // we set up seasonal parameters
     if (kwargs.contains("seasonal") && !kwargs["seasonal"].is_none()) {
         const py::tuple seas = kwargs["seasonal"].cast<py::tuple>();
+        
         P_ = D_ = Q_ = 0;
-
         get_arima_order(seas, P_, D_, Q_);
-        if (P_ > 0 || D_ > 0 || Q_ > 0) {
-            seasonal_ = 1;
-        }
+        if (P_ > 0 || D_ > 0 || Q_ > 0) seasonal_ = 1;
     }
 
     // we add exogenous variables if present
     if (kwargs.contains("xlist") && !kwargs["xlist"].is_none()) {
-        xlist_ = list_from_formula(kwargs["xlist"].cast<std::string>(),
-                                   this->GD_->dset, err_);
+        xlist_ = list_from_formula(kwargs["xlist"].cast<std::string>(), this->GD_->dset, err_);
         exogenous_ = xlist_.get()[0];
     }
 }
@@ -889,8 +884,7 @@ void GretlModel_NSE_arima::fit (void)
     }
 
     // do the job
-    *model_ = arma(var_list_.get(), NULL, GD_->dset,
-                   opt_, GP_.prn_ptr());
+    *model_ = arma(var_list_.get(), NULL, GD_->dset, opt_, GP_.prn_ptr());
 
     // save model
     save_model_<MODEL>(model_);
@@ -939,25 +933,20 @@ void GretlModel_NSE_Driver<F, CI>::fit (void)
         // fallback to Pooled OLS if needed
         if (CI == OLS && GD_->is_panel()) {
             SET_OPT(opt_, (OPT_P | OPT_L));
-            *model_ = panel_model(var_list_.get(), GD_->dset,
-                                  opt_, GP_.prn_ptr());
+            *model_ = panel_model(var_list_.get(), GD_->dset, opt_, GP_.prn_ptr());
         } else {
             *model_ = F(var_list_.get(), GD_->dset, CI, opt_);
         }
     } else if constexpr (use_ldcop_sig(CI)) {
-        *model_ = F(var_list_.get(), GD_->dset,
-                    static_cast<int>(CI), opt_, GP_.prn_ptr());
+        *model_ = F(var_list_.get(), GD_->dset, static_cast<int>(CI), opt_, GP_.prn_ptr());
     } else if constexpr (use_ldo_sig(CI)) {
         *model_ = F(var_list_.get(), GD_->dset, opt_);
     } else if constexpr (use_ldop_sig(CI)) {
-        *model_ = F(var_list_.get(), GD_->dset,
-                    opt_, GP_.prn_ptr());
+        *model_ = F(var_list_.get(), GD_->dset, opt_, GP_.prn_ptr());
     } else if constexpr (use_lcdop_sig(CI)) {
-        *model_ = F(var_list_.get(), static_cast<int>(CI),
-                    GD_->dset, opt_, GP_.prn_ptr());
+        *model_ = F(var_list_.get(), static_cast<int>(CI), GD_->dset, opt_, GP_.prn_ptr());
     } else if constexpr (CI == MIDASREG) {
-        *model_ = F(var_list_.get(), formula_right.c_str(),
-                    GD_->dset, opt_, GP_.prn_ptr());
+        *model_ = F(var_list_.get(), formula_right.c_str(), GD_->dset, opt_, GP_.prn_ptr());
     }
 
     // save results
