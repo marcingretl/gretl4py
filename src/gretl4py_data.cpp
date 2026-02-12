@@ -629,7 +629,6 @@ void GretlDataset::to_file (const std::string &filename, const std::string &varl
         err_ = write_data(filename.c_str(), var_list.get(), dset, opt_, GP_.prn_ptr());
     }
     if (err_) handle_gretl_error(err_);
-
     GP_.print();
 }
 
@@ -853,9 +852,7 @@ void GretlDataset::smpl (const std::string &startobs, const std::string &endobs,
     std::nullptr_t fakeGD = nullptr;
     std::string vars;
     bool report = false;
-
-    // we make a 'soft' copy of kwargs here (only pointer is copied!!!)
-    py::dict kwargs_copy = kwargs;
+    py::dict kwargs_copy = kwargs;  // we make a 'soft' copy of kwargs here (only pointer is copied!!!)
 
     // note: we modify kwargs here!!!!
     if (kwargs_copy.contains("varlist")) {
@@ -878,12 +875,10 @@ void GretlDataset::smpl (const std::string &startobs, const std::string &endobs,
         err_ = perma_sample(dset, opt_, GP_.prn_ptr(), NULL);
     } else if (opt_ & (OPT_U | OPT_X)) {
         /* panel data: --unit or --time option */
-        err_ = set_panel_sample(startobs.c_str(), endobs.c_str(),
-                                opt_, dset, NULL, GP_.prn_ptr());
+        err_ = set_panel_sample(startobs.c_str(), endobs.c_str(), opt_, dset, NULL, GP_.prn_ptr());
     } else if (smpl_restrict(opt_)) {
         /* --restrict, --dummy, etc. */
-        err_ = restrict_sample(startobs.c_str(), var_list.get(),
-                               dset, NULL, opt_, GP_.prn_ptr(), NULL);
+        err_ = restrict_sample(startobs.c_str(), var_list.get(), dset, NULL, opt_, GP_.prn_ptr(), NULL);
     } else if (startobs.empty() && endobs.empty()) {
         /* no args given: give a report */
         print_smpl(dset, get_full_length_n(), OPT_F, GP_.prn_ptr());
