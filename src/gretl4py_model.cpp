@@ -119,26 +119,34 @@ int GretlModel::get_id (void) const
     return id_;
 }
 
+//T = { MODEL, GRETL_VAR, equation_system }
 template <typename T>
 void GretlModel::save_model_ (T *model)
 {
     //
-    // Here we construct a python dictionary to represent a gretl
-    // MODEL, using as intermediate step the gretl_bundle produced by
-    // libgretl's bundle_from_model(). We also add the @summary text
-    // produced by libgretl's printmodel().
+    // Here we save estimation results, i.e. we set attributes on
+    // a Python side using as intermediate step the $bundle produced
+    // by libgretl.
+    // We also add the @summary text produced by libgretl's printmodel().
     // FIXME: extend description for VAR, VECM, etc...
     //
+    // we record successful estimation
+    estimated_ = true;
+    
     // whatever happens later, we "transfer" the model to libgretl,
-    // so from that very moment libgretl owns this memory
+    // so from that very moment libgretl owns the memory
     gretl_object_ref(model, model_obj_type_);
 
+    // if any errors recorded, we throw an exception here
     if constexpr (std::is_same_v<T, MODEL>) {
         err_ = model->errcode;
     } else if constexpr (std::is_same_v<T, GRETL_VAR>) {
         err_ = model->err;
     }
     if (err_) handle_gretl_error(err_);
+    
+    // we link model to the dataset used for estimation
+    GD_->linked_models_add(id_);
 
     // we print model
     if constexpr (std::is_same_v<T, MODEL>) {
@@ -146,15 +154,12 @@ void GretlModel::save_model_ (T *model)
         if (gretl_model_get_int(model, "pooled")) {
             opt_ = static_cast<gretlopt>(opt_ & ~OPT_P);
         }
-        err_ = printmodel(model, GD_->dset, opt_,
-                          GP_.prn_ptr());
+        err_ = printmodel(model, GD_->dset, opt_, GP_.prn_ptr());
     } else if constexpr (std::is_same_v<T, GRETL_VAR>) {
-        err_ = gretl_VAR_print(model, GD_->dset,
-                               opt_, GP_.prn_ptr());
+        err_ = gretl_VAR_print(model, GD_->dset, opt_, GP_.prn_ptr());
     } else if constexpr (std::is_same_v<T, equation_system>) {
         // FIXME: needed?
-        err_ = gretl_system_print(model, GD_->dset,
-                                  opt_, GP_.prn_ptr());
+        err_ = gretl_system_print(model, GD_->dset, opt_, GP_.prn_ptr());
     } else {
         static_assert(always_false<T>, "GretlModel::save_model_(): unknown type");
     }
@@ -170,13 +175,9 @@ void GretlModel::save_model_ (T *model)
     err_ = GB_model_->get_err();
     if (err_) handle_gretl_error(err_);
 
-    // we register result on python side
+    // we finally register results on a python side
     py::object self = py::cast(this);
     GB_model_->python_register(self);
-
-    // we set some internal stuff
-    GD_->linked_models_add(id_);
-    estimated_ = true;
 }
 
 template <typename T>
