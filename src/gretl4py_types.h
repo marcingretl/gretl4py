@@ -167,9 +167,7 @@ using GretlPackagePtr = std::shared_ptr<GretlPackage>;
 //////////////////////////////////////////////////
 using DNumPyArrayFC = py::array_t<double, py::array::f_style>;  // double contiguous column-major (fortran) NumPy array (F_CONTIGUOUS)
 
-using GretlTypes = std::variant<int, double, std::string, DNumPyArrayFC,
-                                py::dict, py::list, GretlBundlePtr,
-                                py::none>;
+using GretlTypes = std::variant<int, double, std::string, DNumPyArrayFC, py::dict, py::list, GretlBundlePtr, py::none>;
 
 using GretlTypesPtr = std::unique_ptr<GretlTypes>;
 
@@ -199,15 +197,7 @@ struct PythonArgInfo {
 };
 
 // this enum is to mimic enum(s) from genparse.h
-enum class GretlFunIndex {
-    F_PDF,
-    F_PVAL,
-    F_CDF,
-    F_INVCDF,
-    F_CRIT,
-    F_MCOV,
-    F_MCORR
-};
+enum class GretlFunIndex { F_PDF, F_PVAL, F_CDF, F_INVCDF, F_CRIT, F_MCOV, F_MCORR };
 
 //////////////////////////////////////////////////
 // tools
