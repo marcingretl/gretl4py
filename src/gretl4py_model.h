@@ -36,7 +36,7 @@ namespace py = pybind11;
 using GretlPackageRegistry = std::map<std::string, GretlPackagePtr>;
 
 //
-// Class to handle gretl 'MODEL' type
+// Class to handle different gretl model types
 //
 class GretlModel
 {
@@ -49,30 +49,27 @@ protected:
     bool estimated_ = false;            // if model already estimated
     gretlopt opt_ = OPT_NONE;           // instance-wide options (including tests and forecasts)
     mutable int err_ = 0;               // holds libgretl errors (instance-wide)
-    GretlDatasetPtr GD_;                // dataset used
+    GretlDatasetPtr dataset_;           // dataset used
     gretl_list_ptr var_list_{nullptr};  // libgretl list of variables
-    GretlBundlePtr GB_model_ = nullptr; // bundle with results
-    GretlPrint GP_ = GretlPrint();      // printer (instance wide)
+    GretlBundlePtr gb_model_ = nullptr; // bundle with results
+    GretlPrint printer_ = GretlPrint(); // printer (instance wide)
     std::string summary_;               // model summary to print on python side
 
     template <typename T>
     void save_model_ (T *model);
 
     template <typename T>
-    void do_restrict_ (T *model, const py::list &impose,
-                       const py::kwargs &kwargs);
+    void do_restrict_ (T *model, const py::list &impose, const py::kwargs &kwargs);
 
     template <typename T>
-    void gretl_do_forecast_ (void *model, const py::args &args,
-                             const py::kwargs &kwargs);
+    void gretl_do_forecast_ (void *model, const py::args &args, const py::kwargs &kwargs);
 
     void check_if_estimated_ (void) const;
 
     template <typename T>
     char *do_save_uhat_ (T *model, int eqn, const std::string &name) const;
 public:
-    explicit GretlModel (GretlObjType model_obj_type, GretlCmdIndex ci,
-                         const py::kwargs &kwargs);
+    explicit GretlModel (GretlObjType model_obj_type, GretlCmdIndex ci, const py::kwargs &kwargs);
     virtual ~GretlModel (void);
 
     virtual void fit (void) = 0;
@@ -85,11 +82,11 @@ public:
 
     int get_id (void) const;
 
-    std::string repr_impl (void) const;         // for __repr__ binding
+    std::string repr_impl (void) const;                 // for __repr__ binding
 
-    GretlBundlePtr get_bundle (void) const;     // return pointer to GB_model
+    GretlBundlePtr get_bundle (void) const;             // return pointer to gb_model
 
-    const GretlDatasetPtr get_dataset (void) const;// return pointer to dataset
+    const GretlDatasetPtr get_dataset (void) const;     // return pointer to dataset
 };
 
 //
@@ -102,9 +99,7 @@ protected:
     MODEL *model_ = NULL;    // libgretl MODEL struct
 
     template <GretlCmdIndex CI>
-    void regexp_extract_ (const std::string &formula,
-                          std::string &formula_left,
-                          std::string &formula_right);    // for extracting formula from regular expression
+    void regexp_extract_ (const std::string &formula, std::string &formula_left, std::string &formula_right);    // for extracting formula from regular expression
 public:
     GretlModel_NSE (GretlCmdIndex ci, const py::kwargs &kwargs);
     virtual ~GretlModel_NSE (void);
@@ -124,8 +119,7 @@ public:
 
     void test (const std::string &type, const py::kwargs &kwargs);
 
-    void test (const std::string &type, const std::string &varlist,
-               const py::kwargs &kwargs);
+    void test (const std::string &type, const std::string &varlist, const py::kwargs &kwargs);
 
     double adj_rsq (void) const;
 };
@@ -145,8 +139,7 @@ private:
     int p_, d_, q_;
     int P_, D_, Q_;
 public:
-    GretlModel_NSE_arima (const std::string &y, const py::tuple &tup,
-                          const py::kwargs &kwargs);
+    GretlModel_NSE_arima (const std::string &y, const py::tuple &tup, const py::kwargs &kwargs);
     ~GretlModel_NSE_arima (void);
 
     void fit (void) override;
@@ -164,8 +157,7 @@ class GretlModel_NSE_Driver : public GretlModel_NSE
 protected:
     const std::string formula_;         // formula defining model
 public:
-    GretlModel_NSE_Driver (const std::string &formula,
-                           const py::kwargs &kwargs);
+    GretlModel_NSE_Driver (const std::string &formula, const py::kwargs &kwargs);
 
     void fit (void) override;
 
@@ -181,12 +173,8 @@ class GretlModel_NSE_Driver_quantreg : public GretlModel_NSE_Driver<quantreg_dri
 private:
     std::string tau_;
 public:
-    GretlModel_NSE_Driver_quantreg (const std::string &formula,
-                                    const double &tau,
-                                    const py::kwargs &kwargs);
-    GretlModel_NSE_Driver_quantreg (const std::string &formula,
-                                    const py::array_t<double> &tau,
-                                    const py::kwargs &kwargs);
+    GretlModel_NSE_Driver_quantreg (const std::string &formula, const double &tau, const py::kwargs &kwargs);
+    GretlModel_NSE_Driver_quantreg (const std::string &formula, const py::array_t<double> &tau, const py::kwargs &kwargs);
 
     void fit (void) override;
 };
@@ -200,12 +188,8 @@ class GretlModel_NSE_Driver_dpanel : public GretlModel_NSE_Driver<dpd_model, DPA
 private:
     std::vector<double> lags_;
 public:
-    GretlModel_NSE_Driver_dpanel (const std::string &formula,
-                                  const int &p,
-                                  const py::kwargs &kwargs);
-    GretlModel_NSE_Driver_dpanel (const std::string &formula,
-                                  const py::array_t<int> &p,
-                                  const py::kwargs &kwargs);
+    GretlModel_NSE_Driver_dpanel (const std::string &formula, const int &p, const py::kwargs &kwargs);
+    GretlModel_NSE_Driver_dpanel (const std::string &formula, const py::array_t<int> &p, const py::kwargs &kwargs);
 
     void fit (void) override;
 };
@@ -220,8 +204,7 @@ private:
     double llimit_ = 0;
     double rlimit_ = NADBL;
 public:
-    GretlModel_NSE_Driver_tobit (const std::string &formula,
-                                 const py::kwargs &kwargs);
+    GretlModel_NSE_Driver_tobit (const std::string &formula, const py::kwargs &kwargs);
 
     void fit (void) override;
 };
@@ -254,11 +237,9 @@ public:
     std::string get_formula (void) const override;
 
     template <bool ForString>
-    void add_line_to_parse (const std::string &keyword,
-                            const std::string &val);
+    void add_line_to_parse (const std::string &keyword, const std::string &val);
 
-    void add_init_value (const std::string &varname,
-                         double value);
+    void add_init_value (const std::string &varname, double value);
 };
 
 //
@@ -277,9 +258,7 @@ protected:
 
     int find_variable_nr_ (const std::string &variable_name);
 public:
-    GretlModel_VAR (const std::string &ylist,
-                    const int order, GretlCmdIndex ci,
-                    const py::kwargs &kwargs);
+    GretlModel_VAR (const std::string &ylist, const int order, GretlCmdIndex ci, const py::kwargs &kwargs);
     virtual ~GretlModel_VAR (void);
 
     void fit (void) override;
@@ -308,8 +287,7 @@ class GretlModel_VAR_VECM : public GretlModel_VAR
 private:
     const int coint_rank_;          // co-integration rank
 public:
-    GretlModel_VAR_VECM (const std::string &ylist, const int order,
-                         const int rank, const py::kwargs &kwargs);
+    GretlModel_VAR_VECM (const std::string &ylist, const int order, const int rank, const py::kwargs &kwargs);
 
     void fit (void) override;
 
