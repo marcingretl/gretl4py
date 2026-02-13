@@ -87,28 +87,5 @@ template <typename T>
 void load_string_to_container (T &t, const std::string &src);
 
 bool is_bool_kwarg (const py::handle &h, const std::string &key = "");
-//////////////////////////////////////////////////
-// classes
-//////////////////////////////////////////////////
-//
-// This is general purpose py::object/py::handle to C++ types mapper
-//
-class MapPyToCpp
-{
-private:
-    std::string as_str_;
-
-    template <typename T>
-    void convert_ (const T *pyobj);
-public:
-    int err = 0;
-
-    MapPyToCpp (const std::optional<py::object> &pyobject);
-    MapPyToCpp (const py::handle &pyhandle);
-
-    inline std::string to_string (void) const { return as_str_; }
-
-    inline std::string_view to_string_view (void) const { return static_cast<std::string_view>(as_str_); }
-};
 
 #endif // GRETL4PY_UTILS_H

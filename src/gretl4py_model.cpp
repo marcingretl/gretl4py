@@ -200,25 +200,23 @@ void GretlModel::do_restrict_ (T *model, const py::list &impose,
     // this code was rendered from library.c
     for (auto &item : impose) {
         if (!is_pystr(item)) throw std::invalid_argument("given restriction is not string literal");
+        auto item_str = item.cast<std::string>();
+        
+        gretl4py_trim(item_str);
         if (my_rset == NULL) {
             if constexpr (std::is_same_v<T, MODEL>) {
-                my_rset = eqn_restriction_set_start(MapPyToCpp(item).to_string().c_str(),
-                                                    model, GD_->dset, opt_);
+                my_rset = eqn_restriction_set_start(item_str.c_str(), model, GD_->dset, opt_);
             } else if constexpr (std::is_same_v<T, GRETL_VAR>) {
-                my_rset = var_restriction_set_start(MapPyToCpp(item).to_string().c_str(),
-                                                    model);
+                my_rset = var_restriction_set_start(item_str.c_str(), model);
             } else if constexpr (std::is_same_v<T, equation_system>) {
-                my_rset = cross_restriction_set_start(MapPyToCpp(item).to_string().c_str(),
-                                                      model);
+                my_rset = cross_restriction_set_start(item_str.c_str(), model);
             }
             if (my_rset == NULL) {
                 err_ = 1;
                 handle_gretl_error(err_);
             }
         } else {
-            err_ = restriction_set_parse_line(my_rset,
-                                              MapPyToCpp(item).to_string().c_str(),
-                                              GD_->dset);
+            err_ = restriction_set_parse_line(my_rset, item_str.c_str(), GD_->dset);
             if (err_) handle_gretl_error(err_);
         }
     }
@@ -227,18 +225,15 @@ void GretlModel::do_restrict_ (T *model, const py::list &impose,
     if constexpr (std::is_same_v<T, GRETL_VAR>) {
         GRETL_VAR *vnew = NULL;
 
-        vnew = gretl_restricted_vecm(my_rset, GD_->dset, opt_,
-                                     GP_.prn_ptr(), &err_);
+        vnew = gretl_restricted_vecm(my_rset, GD_->dset, opt_, GP_.prn_ptr(), &err_);
         if (vnew != NULL) gretl_VAR_free(vnew);
     } else {
         GD_->dset->t1 = model->t1;
         GD_->dset->t2 = model->t2;
-        err_ = gretl_restriction_finalize(my_rset, GD_->dset,
-                                          OPT_NONE, GP_.prn_ptr());
+        err_ = gretl_restriction_finalize(my_rset, GD_->dset, OPT_NONE, GP_.prn_ptr());
     }
     if constexpr (std::is_same_v<T, equation_system>) {
-        err_ = equation_system_estimate(model, GD_->dset,
-                                        OPT_NONE, GP_.prn_ptr());
+        err_ = equation_system_estimate(model, GD_->dset, OPT_NONE, GP_.prn_ptr());
     }
     GD_->dset->t1 = save_t1;
     GD_->dset->t2 = save_t2;

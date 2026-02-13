@@ -118,8 +118,7 @@ void get_object_from_dict (const py::dict &dict, const char *key, T &target)
         target = py::cast<T>(obj);
     }
 }
-template void get_object_from_dict<std::vector<std::string>>(const py::dict&, const char*,
-                                                               std::vector<std::string>&);
+template void get_object_from_dict<std::vector<std::string>>(const py::dict&, const char*, std::vector<std::string>&);
 template void get_object_from_dict<std::string>(const py::dict&, const char*, std::string&);
 template void get_object_from_dict<py::array_t<double>>(const py::dict&, const char*, py::array_t<double>&);
 
@@ -313,10 +312,8 @@ void move_to_python_container (PyWrapped &wrapped_obj, Item &&item,
         static_assert(always_false<ContainerType>, "move_to_python_container(): unknown Container type");
     }
 }
-template void move_to_python_container<GretlModel, py::dict, py::list>
-    (GretlModel&, py::dict&&, const char*, const std::string&);
-template void move_to_python_container<GretlDataset, py::dict, py::list>
-    (GretlDataset&, py::dict&&, const char*, const std::string&);
+template void move_to_python_container<GretlModel, py::dict, py::list>(GretlModel&, py::dict&&, const char*, const std::string&);
+template void move_to_python_container<GretlDataset, py::dict, py::list>(GretlDataset&, py::dict&&, const char*, const std::string&);
 
 template <typename T>
 void load_string_to_container (T &t, const std::string &src)
@@ -337,10 +334,8 @@ void load_string_to_container (T &t, const std::string &src)
         }
     }
 }
-template void load_string_to_container<std::unordered_multiset<std::string>>
- (std::unordered_multiset<std::string>&, const std::string&);
-template void load_string_to_container<std::vector<std::string>>
- (std::vector<std::string>&, const std::string&);
+template void load_string_to_container<std::unordered_multiset<std::string>>(std::unordered_multiset<std::string>&, const std::string&);
+template void load_string_to_container<std::vector<std::string>>(std::vector<std::string>&, const std::string&);
 
 bool is_bool_kwarg (const py::handle &h, const std::string &key)
 {
@@ -365,45 +360,4 @@ bool is_bool_kwarg (const py::handle &h, const std::string &key)
     handle_gretl_error(E_INVARG, key);
 
     return false;
-}
-//////////////////////////////////////////////////
-// classes
-//////////////////////////////////////////////////
-//
-// MapPyToCpp class methods
-//
-MapPyToCpp::MapPyToCpp (const std::optional<py::object> &pyobject)
-{
-    convert_<py::object>(&*pyobject);
-}
-
-MapPyToCpp::MapPyToCpp (const py::handle &pyhandle)
-{
-    convert_<py::handle>(&pyhandle);
-}
-
-template <typename T>
-void MapPyToCpp::convert_ (const T *pyobj)
-{
-#if GRETL_PYBIND11_DEBUG
-    std::printf("converting %s to string\n",
-                py::cast<std::string>(pyobj->get_type()).c_str());
-# endif
-    if (is_pystr(*pyobj)) {
-        as_str_ = py::cast<std::string>(*pyobj);
-    } else if (is_pyint(*pyobj) || is_pybool(*pyobj)) {
-        as_str_ = std::to_string(py::cast<int>(*pyobj));
-    } else if (is_pyfloat(*pyobj)) {
-        as_str_ = std::to_string(py::cast<double>(*pyobj));
-    } else {
-        err = E_TYPES;
-        as_str_.clear();
-        std::cerr << "I don't know how to convert '";
-#if PYBIND11_VERSION_MAJOR < 3
-        std::cerr << py::cast<std::string>(pyobj->get_type());
-#else
-        std::cerr << py::cast<std::string>(py::type::of(*pyobj));
-#endif // PYBIND11_VERSION_MAJOR
-        std::cerr << "' to std::string" << std::endl;
-    }
 }
