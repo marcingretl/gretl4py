@@ -1138,24 +1138,22 @@ void gretl_generate (const std::string &formula, GretlDatasetPtr dataset, const 
     // in the context of @GD
     // Note: if 'name' is empty, 'formula' must contain the full definition
     //
-    GretlPrint printer;
     std::string varname;
     int err = 0;
 
     if (!dataset) dataset = GretlDataset::default_dataset();
-
     if constexpr (GR_TYPE == GRETL_TYPE_LIST || GR_TYPE == GRETL_TYPE_SERIES) {
         if (!dataset) handle_gretl_error(E_NODATA);
     }
 
     // determine whether to use an explicit name or parse from formula
     if (name.empty()) {
-        err = generate(formula.c_str(), dataset ? dataset->dset : NULL, GR_TYPE, OPT_NONE, printer.prn_ptr());
+        err = generate(formula.c_str(), dataset ? dataset->dset : NULL, GR_TYPE, OPT_NONE, global_printer.prn_ptr());
 
         if constexpr (GR_TYPE != GRETL_TYPE_SERIES) varname = extract_varname(formula);
     } else {
         const std::string expr = name + "=" + formula;
-        err = generate(expr.c_str(), dataset ? dataset->dset : NULL, GR_TYPE, OPT_NONE, printer.prn_ptr());
+        err = generate(expr.c_str(), dataset ? dataset->dset : NULL, GR_TYPE, OPT_NONE, global_printer.prn_ptr());
 
         if constexpr (GR_TYPE != GRETL_TYPE_SERIES) varname = name;
     }
@@ -1166,7 +1164,7 @@ void gretl_generate (const std::string &formula, GretlDatasetPtr dataset, const 
         if (!varname.empty()) user_vars.insert(varname);
     }
 
-    printer.print();
+    global_printer.print();
 }
 template void gretl_generate<GRETL_TYPE_ANY>(const std::string&, GretlDatasetPtr, const std::string&);
 template void gretl_generate<GRETL_TYPE_LIST>(const std::string&, GretlDatasetPtr, const std::string&);
