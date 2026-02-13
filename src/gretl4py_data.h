@@ -34,9 +34,11 @@ namespace py = pybind11;
 // functions
 //////////////////////////////////////////////////
 template <typename T>
-void NumPyArray_to_gretl_matrix (NumPyArrayView &view, T *dst,
-                                 int offset = 0, bool onecol = false);
+void NumPyArray_to_gretl_matrix (NumPyArrayView &view, T *dst, int offset = 0, bool onecol = false);
 
+//////////////////////////////////////////////////
+// classes
+//////////////////////////////////////////////////
 //
 // Class to handle gretl 'DATASET' type
 //
@@ -44,33 +46,32 @@ class GretlDataset : public std::enable_shared_from_this<GretlDataset>
 {
 private:
     static inline int next_obj_id_ = 1;
-    static inline std::map<int, std::weak_ptr<GretlDataset>> GDs_;  // datasets registry
-    static inline std::weak_ptr<GretlDataset> default_dataset_;     // default dataset
-    const int id_;                          // dataset's id
-    const bool from_file_ = false;          // if dataset was loaded from file
-    std::unordered_set<int> linked_models_; // models (id-s) which use this dataset
-    mutable GretlPrint GP_ = GretlPrint();  // printer (instance wide)
-    mutable GretlTypesPtr RES_other_;       // other results (accessor, tests, etc)
-    gretlopt opt_ = OPT_NONE;               // instance-wide options
-    std::vector<std::string> obs_labels_;   // observation labels
+    static inline std::map<int, std::weak_ptr<GretlDataset>> dataset_;  // datasets registry
+    static inline std::weak_ptr<GretlDataset> default_dataset_;         // default dataset
+    const int id_;                                                      // dataset's id
+    const bool from_file_ = false;                                      // if dataset was loaded from file
+    std::unordered_set<int> linked_models_;                             // models (id-s) which use this dataset
+    mutable GretlPrint printer_ = GretlPrint();                         // printer (instance wide)
+    mutable GretlTypesPtr res_other_;                                   // other results (accessor, tests, etc)
+    gretlopt opt_ = OPT_NONE;                                           // instance-wide options
+    std::vector<std::string> obs_labels_;                               // observation labels
     mutable int err_ = 0;
 
-    GretlDataset (const std::string &fname,
-                  const py::dict &kwargs);      // we load dataset from file (with optional flags as kwargs)
-    GretlDataset (const py::dict &pydict);      // we load dataset from Python's dictionary
-    GretlDataset (const GretlDataset &src);     // copy constructor (always deep copy)
+    GretlDataset (const std::string &fname, const py::dict &kwargs);    // load dataset from file (with optional flags as kwargs)
+    GretlDataset (const py::dict &pydict);                              // load dataset from Python's dictionary
+    GretlDataset (const GretlDataset &src);                             // copy constructor (always deep copy)
 
     static GretlDatasetPtr get_dset_by_id_ (int id);
 
-    static void register_dset_ (const GretlDatasetPtr GD);
+    static void register_dset_ (const GretlDatasetPtr dataset);
 
     void allocate_dset_ (void);
 
     void free_dset_ (void);
 
-    void add_or_replace_allocated_series_ (gretl_double_ptr data,
-                                           const std::string &name, int n,
+    void add_or_replace_allocated_series_ (gretl_double_ptr data, const std::string &name, int n,
                                            gretl_gchar_ptr label = nullptr);
+    
     void set_obs_labels_ (void);
 public:
     bool is_default = false;
@@ -82,9 +83,7 @@ public:
     // static methods
     static GretlDatasetPtr clone (const GretlDataset &src);
 
-    static GretlDatasetPtr get_data (const py::object &src,
-                                     const std::string &source,
-                                     const py::kwargs &kwargs);
+    static GretlDatasetPtr get_data (const py::object &src, const std::string &source, const py::kwargs &kwargs);
 
     static std::set<int> get_dset_ids (void);
 
@@ -110,8 +109,7 @@ public:
 
     py::dict to_dict (void) const;
 
-    void to_file (const std::string &filename, const std::string &varlist,
-                  const py::kwargs &kwargs);
+    void to_file (const std::string &filename, const std::string &varlist, const py::kwargs &kwargs);
 
     // dataset information
     bool is_panel (void) const;
@@ -125,21 +123,16 @@ public:
     std::string summary (bool print = true) const;
 
     // dataset management
-    void setobs (const std::string &periodicity, const std::string &startobs,
-                 const py::kwargs &kwargs);
-    //void sample (const py::kwargs &kwargs);
+    void setobs (const std::string &periodicity, const std::string &startobs, const py::kwargs &kwargs);
 
-    void smpl (const std::string &startobs, const std::string &endobs,
-               const py::kwargs &kwargs);
+    void smpl (const std::string &startobs, const std::string &endobs, const py::kwargs &kwargs);
 
     template <typename T>
     GretlDatasetPtr getitem_impl (const T &slice);
 
     void gretl_series_set_label (const int number, char *label);
 
-    char *add_series (gretl_double_ptr data,
-                      const std::string &name, int n,
-                      gretl_gchar_ptr label = nullptr);
+    char *add_series (gretl_double_ptr data, const std::string &name, int n, gretl_gchar_ptr label = nullptr);
 
     void add_series (const py::array &data, const std::string &name);
 
@@ -151,14 +144,12 @@ public:
 
     void new_list (const std::string &name, const std::string &value);
 
-    void rename (int series_id, const std::string &newname,
-                 const py::kwargs &kwargs);
+    void rename (int series_id, const std::string &newname, const py::kwargs &kwargs);
 
     py::object get_series (const std::string &series) const;
 
     // tests
-    void test (const std::string &type, const std::string &varlist,
-               const py::kwargs &kwargs);
+    void test (const std::string &type, const std::string &varlist, const py::kwargs &kwargs);
 
     // transformations
     template <GretlCmdIndex CI>
@@ -170,13 +161,11 @@ public:
     void lags (const std::string &varlist, int order);
 
     // filters, correlations, etc
-    DNumPyArrayFC hpfilt (const std::string &y, double hp_lambda = NADBL,
-                          bool trend = false, bool one_sided = false);
+    DNumPyArrayFC hpfilt (const std::string &y, double hp_lambda = NADBL, bool trend = false, bool one_sided = false);
 
     DNumPyArrayFC bwfilt (const std::string &y, int n, double omega);
 
-    DNumPyArrayFC bkfilt (const std::string &y, int f1 = 0,
-                          int f2 = 0, int k = 0);
+    DNumPyArrayFC bkfilt (const std::string &y, int f1 = 0, int f2 = 0, int k = 0);
 
     py::object corr (const std::string &varlist, const py::kwargs &kwargs);
 
@@ -184,8 +173,7 @@ public:
 
     py::object hurst (const std::string &series);
 
-    py::object xcorrgm (const std::string &vars, int order,
-                        const py::kwargs &kwargs);
+    py::object xcorrgm (const std::string &vars, int order, const py::kwargs &kwargs);
 
     py::object pca (const std::string &varlist, const py::kwargs &kwargs);
 };
