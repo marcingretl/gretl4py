@@ -51,7 +51,7 @@ extern "C" {
 // global variables (some used outside this file)
 static GretlPrint global_printer = GretlPrint();
 static int gretl4py_verbose = 0;
-std::unordered_set<std::string> user_vars;  // registry of user variables
+std::unordered_set<std::string> user_vars;              // registry of user variables
 
 //////////////////////////////////////////////////
 // module related tools
@@ -122,7 +122,7 @@ void gretl4py_cleanup (void)
 GretlBundlePtr about (bool do_print)
 {    
     static const std::unordered_set<std::string> lgretl_strings = { "dotdir", "gnuplot", "gretldir", "seats", "tramo", "tramodir", "workdir", "x12a", "x12adir" };
-    GretlBundlePtr GB_strings = std::make_shared<GretlBundle>();
+    GretlBundlePtr gb_strings = std::make_shared<GretlBundle>();
     GretlBundlePtr res = std::make_shared<GretlBundle>();        
     std::string mod_ver, lg_ver, py11_ver;
     gretl_bundle *b = NULL;
@@ -130,7 +130,7 @@ GretlBundlePtr about (bool do_print)
     
     b = get_sysinfo_bundle(&err);
     if (err) handle_gretl_error(err);
-    GretlBundlePtr GB_sysinfo = std::make_shared<GretlBundle>(b);
+    GretlBundlePtr gb_sysinfo = std::make_shared<GretlBundle>(b);
 
     gretl_push_c_numeric_locale();
 
@@ -144,18 +144,18 @@ GretlBundlePtr about (bool do_print)
     for (const auto &it : lgretl_strings) {
         auto val = std::string(get_built_in_string_by_name(it.c_str()));
         
-        GB_strings->set_element<std::string>(it, val);
+        gb_strings->set_element<std::string>(it, val);
     }
 
     res->set_element<std::string>(std::string("mod_ver"), mod_ver);
     res->set_element<std::string>(std::string("py11_ver"), py11_ver);
     res->set_element<std::string>(std::string("lg_ver"), lg_ver);
-    if (GB_sysinfo->get_err()) {
-        std::cerr << errmsg_get_with_default(GB_sysinfo->get_err()) << std::endl;
+    if (gb_sysinfo->get_err()) {
+        std::cerr << errmsg_get_with_default(gb_sysinfo->get_err()) << std::endl;
     } else {
-        res->set_element<GretlBundlePtr>(std::string("sysinfo"), GB_sysinfo);
+        res->set_element<GretlBundlePtr>(std::string("sysinfo"), gb_sysinfo );
     }
-    res->set_element<GretlBundlePtr>(std::string("built_in_strings"), GB_strings);
+    res->set_element<GretlBundlePtr>(std::string("built_in_strings"), gb_strings );
 
     if (do_print || gretl4py_verbose) {
         std::cout << gretl4py_logo() << std::endl;
@@ -163,12 +163,12 @@ GretlBundlePtr about (bool do_print)
         std::cout << " [" << COMPILER_IDENT << "]" << std::endl;
         std::cout << "\t+ pybind11     v" << py11_ver << std::endl;
         std::cout << "\t+ libgretl-1.0 v" << lg_ver << std::endl;
-        if (!GB_sysinfo->get_err()) {
+        if (!gb_sysinfo->get_err()) {
             std::cout << std::endl << "libgretl $sysinfo:" << std::endl;
-            GB_sysinfo->print<void>();
+            gb_sysinfo->print<void>();
         }
         std::cout << "libgretl built-in strings:" << std::endl;
-        GB_strings->print<void>();
+        gb_strings->print<void>();
         py::print("gretl_plugin_path = \"" + std::string(gretl_plugin_path()) + "\"\n");
     }
 
@@ -354,6 +354,7 @@ void do_gretl_summary (const std::string &varlist, const py::kwargs &kwargs)
     if (err) handle_gretl_error(err);
 }
 
+// T = { GretlDataset ; void }
 template <typename T>
 void do_gretl_print (const std::string &varlist, const py::kwargs &kwargs)
 {
@@ -673,6 +674,7 @@ double gretl_get_pvalue_critval_pdf_cdf (const std::string &dist, double value,
     }
 }
 
+// T = { py::array_t<double> ; std::string }
 template <GretlFunIndex FI, typename T>
 py::array_t<double> matrix_functions_wrapper (const std::string &dist, const T &src,
                                               const py::object &param)
@@ -872,6 +874,7 @@ void genr (const std::string &formula, GretlDatasetPtr data)
     gretl_generate<GRETL_TYPE_ANY>(formula, data ? data : GretlDataset::default_dataset());
 }
 
+// T = { py::array ; int ; double ; std::string }
 template <typename T>
 void genr (const std::string &name, const T &value)
 {
@@ -1082,7 +1085,6 @@ void unpack_kwargs_test (gretlopt &opt, const std::string &type,
     }
 
     // we force --plot=none for tests
-    // FIXME: either to preprocessor level or to dispatcher
     if (type == "cusum" || type == "leverage" || type == "qlrtest" || type == "corrgm") {
         SET_OPT(opt, OPT_U);
         gretl_valid_long_opt(opt, ci, "plot", py::handle(), "none");
@@ -1139,13 +1141,12 @@ GretlTypesPtr gretl_generate_gretl_object (const char *s, int &err,
     return res;
 }
 
-// General interface to libgretl's generate()
-// Note: some specializations must be created manually
 template <GretlType GR_TYPE>
 void gretl_generate (const std::string &formula, GretlDatasetPtr GD,
                      const std::string &name)
 {
     //
+    // General interface to libgretl's generate()
     // create a gretl object of GR_TYPE according to @name and @formula
     // in the context of @GD
     // Note: if 'name' is empty, 'formula' must contain the full definition
