@@ -37,8 +37,7 @@ template <GretlCmdIndex CI, NLLineType type>
 static GretlModel_NSE_nl<CI> &nl_add_line_to_parse (GretlModel_NSE_nl<CI> &model,
                                                     const std::string &line)
 {
-    constexpr bool is_str =
-        (type == PARAMS || type == PARAM_NAMES || type == WEIGHTS);
+    constexpr bool is_str = (type == PARAMS || type == PARAM_NAMES || type == WEIGHTS);
 
     constexpr const char *keyword =
         type == PARAMS      ? "params" :
@@ -149,23 +148,20 @@ void init_gretl4py_model_py11(py::module_ &m)
     bind_driver_model<GretlModel_NSE_Driver_dpanel>(m, "Model_dpanel");
 
     // NL models (NLS/MLE/GMM)
-    py::class_<GretlModel_NSE_nl<NLS>, GretlModel_NSE,
-                std::unique_ptr<GretlModel_NSE_nl<NLS>>>(m, "Model_nls", py::dynamic_attr())
+    py::class_<GretlModel_NSE_nl<NLS>, GretlModel_NSE, std::unique_ptr<GretlModel_NSE_nl<NLS>>>(m, "Model_nls", py::dynamic_attr())
         .def("add_params", &nl_add_line_to_parse<NLS, PARAMS>)
         .def("add_param_names", &nl_add_line_to_parse<NLS, PARAM_NAMES>)
         .def("add_deriv", &nl_add_line_to_parse<NLS, DERIV>)
         .def("add_initval", &nl_add_init_value<NLS>,
              py::arg("varname").none(false), py::arg("value").none(false));
-    py::class_<GretlModel_NSE_nl<MLE>, GretlModel_NSE,
-                std::unique_ptr<GretlModel_NSE_nl<MLE>>>(m, "Model_mle", py::dynamic_attr())
+    py::class_<GretlModel_NSE_nl<MLE>, GretlModel_NSE, std::unique_ptr<GretlModel_NSE_nl<MLE>>>(m, "Model_mle", py::dynamic_attr())
         .def("add_params", &nl_add_line_to_parse<MLE, PARAMS>)
         .def("add_param_names", &nl_add_line_to_parse<MLE, PARAM_NAMES>)
         .def("add_deriv", &nl_add_line_to_parse<MLE, DERIV>)
         .def("add_statements", &nl_add_line_to_parse<MLE, STATEMENTS>)
         .def("add_initval", &nl_add_init_value<MLE>,
              py::arg("varname").none(false), py::arg("value").none(false));
-    py::class_<GretlModel_NSE_nl<GMM>, GretlModel_NSE,
-                std::unique_ptr<GretlModel_NSE_nl<GMM>>>(m, "Model_gmm", py::dynamic_attr())
+    py::class_<GretlModel_NSE_nl<GMM>, GretlModel_NSE, std::unique_ptr<GretlModel_NSE_nl<GMM>>>(m, "Model_gmm", py::dynamic_attr())
         .def("add_params", &nl_add_line_to_parse<GMM, PARAMS>)
         .def("add_param_names", &nl_add_line_to_parse<GMM, PARAM_NAMES>)
         .def("add_weights", &nl_add_line_to_parse<GMM, WEIGHTS>)
