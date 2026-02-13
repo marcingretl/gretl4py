@@ -258,15 +258,14 @@ const char *GretlPrint::get_buffer (void)
 // functions
 //////////////////////////////////////////////////
 template <typename T>
-gretlopt unpack_kwargs_command (GretlCmdIndex ci, T &GD,
-                                const py::kwargs &kwargs)
+gretlopt unpack_kwargs_command (GretlCmdIndex ci, T &dataset, const py::kwargs &kwargs)
 {
     //
     // unpack kwargs for libgretl's command interfaces
     // note: for tests, there is dedicated unpack_kwargs_test()
-    // important: if GD is not required, please call with 'std::nullptr_t GD = nullptr;'!!!
+    // important: if dataset is not required, please call with 'std::nullptr_t dataset = nullptr;'!!!
     //
-    static_assert(std::is_same_v<T, GretlDatasetPtr> || std::is_same_v<T, std::nullptr_t>, "GD must be GretlDatasetPtr or std::nullptr_t");
+    static_assert(std::is_same_v<T, GretlDatasetPtr> || std::is_same_v<T, std::nullptr_t>, "dataset must be GretlDatasetPtr or std::nullptr_t");
     gretlopt opt = OPT_NONE;
 
     if (py::len(kwargs) > 0) {
@@ -277,7 +276,7 @@ gretlopt unpack_kwargs_command (GretlCmdIndex ci, T &GD,
             // special case: we use GretlDataset class object passed by kwargs
             if constexpr (std::is_same_v<T, GretlDatasetPtr>) {
                 if (key == "data") {
-                    GD = item.second.cast<GretlDatasetPtr>();
+                    dataset = item.second.cast<GretlDatasetPtr>();
                     continue;
                 }
             }
@@ -294,7 +293,7 @@ gretlopt unpack_kwargs_command (GretlCmdIndex ci, T &GD,
 
     // if we didn't get dataset, let use global
     if constexpr (std::is_same_v<T, GretlDatasetPtr>) {
-        if (!GD) GD = GretlDataset::default_dataset();
+        if (!dataset) dataset = GretlDataset::default_dataset();
     }
 
     return opt;
@@ -306,15 +305,15 @@ void do_set (const std::string &key, const std::string &value, const py::kwargs 
     //
     // interface to libgretl's set
     //
-    GretlDatasetPtr GD = nullptr;
+    GretlDatasetPtr dataset = nullptr;
     int err = 0;
 
     // we unpack kwargs at first
-    gretlopt opt = unpack_kwargs_command(SET, GD, kwargs);
+    gretlopt opt = unpack_kwargs_command(SET, dataset, kwargs);
 
     // we do the job
     err = execute_set(key.empty() ? NULL : key.c_str(), value.empty() ? NULL : value.c_str(),
-                      GD ? GD->dset : NULL, opt, global_printer.prn_ptr());
+                        dataset ? dataset->dset : NULL, opt, global_printer.prn_ptr());
     global_printer.print();
     if (err) handle_gretl_error(err);
 }
@@ -324,31 +323,28 @@ void do_gretl_summary (const std::string &varlist, const py::kwargs &kwargs)
     //
     // this function mimics libgretl's 'summary' command
     //
-    GretlDatasetPtr GD = nullptr;
+    GretlDatasetPtr dataset = nullptr;
     gretl_list_ptr varlist_ptr{nullptr};
     int err = 0;
 
     // we unpack kwargs at first
-    // Note: GD is set here
-    gretlopt opt = unpack_kwargs_command(SUMMARY, GD, kwargs);
-    if (!GD) handle_gretl_error(E_NODATA);
+    // Note: dataset is set here
+    gretlopt opt = unpack_kwargs_command(SUMMARY, dataset, kwargs);
+    if (!dataset) handle_gretl_error(E_NODATA);
 
     // be build gretl_list
-    if (!varlist.empty()) varlist_ptr = list_from_formula(varlist, GD->dset, err);
+    if (!varlist.empty()) varlist_ptr = list_from_formula(varlist, dataset->dset, err);
 
     // this code was taken from 'interact.c'
     err = incompatible_options(opt, static_cast<gretlopt>(OPT_B | OPT_W));
     if (err) handle_gretl_error(err);
     if (opt & OPT_B) {
-        err = summary_statistics_by(varlist_ptr.get(), GD->dset,
-                                    opt, global_printer.prn_ptr());
+        err = summary_statistics_by(varlist_ptr.get(), dataset->dset, opt, global_printer.prn_ptr());
     } else if (opt & OPT_X) {
-        err = matrix_command_driver(SUMMARY, varlist_ptr.get(),
-                                    kwargs["matrix"].cast<std::string>().c_str(),
-                                    GD->dset, opt, global_printer.prn_ptr());
+        err = matrix_command_driver(SUMMARY, varlist_ptr.get(), kwargs["matrix"].cast<std::string>().c_str(),
+                                      dataset->dset, opt, global_printer.prn_ptr());
     } else {
-        err = list_summary_driver(varlist_ptr.get(), GD->dset,
-                                  opt, global_printer.prn_ptr());
+        err = list_summary_driver(varlist_ptr.get(), dataset->dset, opt, global_printer.prn_ptr());
     }
     global_printer.print();
     if (err) handle_gretl_error(err);
@@ -440,19 +436,19 @@ void do_gretl_varlist (const py::kwargs &kwargs)
     //
     // function mimics libgretl's 'varlist' command
     //
-    GretlDatasetPtr GD = nullptr;
+    GretlDatasetPtr dataset = nullptr;
 
-    auto opt = unpack_kwargs_command(VARLIST, GD, kwargs);
+    auto opt = unpack_kwargs_command(VARLIST, dataset, kwargs);
 
     // we o the job (based on interact.c)
     if (opt & OPT_T) {
-        list_user_vars_of_type(GD ? GD->dset : NULL, global_printer.prn_ptr());
+        list_user_vars_of_type( dataset ? dataset->dset : NULL, global_printer.prn_ptr());
     } else if (opt & OPT_S) {
         print_scalars(global_printer.prn_ptr());
     } else if (opt & OPT_A) {
-        list_ok_dollar_vars(GD ? GD->dset : NULL, global_printer.prn_ptr());
+        list_ok_dollar_vars( dataset ? dataset->dset : NULL, global_printer.prn_ptr());
     } else {
-        list_series(GD ? GD->dset : NULL, opt, global_printer.prn_ptr());
+        list_series( dataset ? dataset->dset : NULL, opt, global_printer.prn_ptr());
     }
     global_printer.print();
 }
@@ -512,7 +508,7 @@ void do_gretl_pkg (const std::string &action, const std::string &pkgname,
         // note: localfile is a full path to already installed package (gfn or zip)
         //
         strings_array_ptr depends(nullptr, StringsArrayDeleter{});
-        std::filesystem::path gfnname;      // full path to .gfn
+        std::filesystem::path gfnname;                              // full path to .gfn
         int ndeps, err = 0;
 
         // map zip -> gfn
@@ -538,19 +534,20 @@ void do_gretl_pkg (const std::string &action, const std::string &pkgname,
         return err;
     };
 
-    std::nullptr_t fakeGD = nullptr;
+    std::nullptr_t fake_dataset = nullptr;
     std::filesystem::path pkgname_as_path(pkgname);
     int err = 0;
 
     // we check options
-    auto opt = unpack_kwargs_command(PKG, fakeGD, kwargs);
+    auto opt = unpack_kwargs_command(PKG, fake_dataset, kwargs);
+    
     err = incompatible_options(opt, static_cast<gretlopt>(OPT_L | OPT_S));
     if (err) handle_gretl_error(err);
 
     // we allow only .zip or .gfn (lowercase!!!)
     std::string suffix = pkgname_as_path.extension().string();
-    if (!suffix.empty() && suffix != ".zip" && suffix != ".gfn")
-        throw std::invalid_argument("unsupported file type: " + suffix);
+    
+    if (!suffix.empty() && suffix != ".zip" && suffix != ".gfn") throw std::invalid_argument("unsupported file type: " + suffix);
 
     if (action == "install") {
         gretl_gchar_ptr pkgname_remote_c{nullptr}; // to avoid memory-leak when got 'char *'
@@ -582,8 +579,7 @@ void do_gretl_pkg (const std::string &action, const std::string &pkgname,
 
         // special handling of .zip-s
         if (localfile.extension() == ".zip") {
-            err = gretl_unzip_into(localfile.string().c_str(),
-                                   functions_dir.string().c_str());
+            err = gretl_unzip_into(localfile.string().c_str(), functions_dir.string().c_str());
             if (err) handle_gretl_error(err);
             err = gretl_remove(localfile.string().c_str());
             if (err) handle_gretl_error(err);
@@ -593,8 +589,7 @@ void do_gretl_pkg (const std::string &action, const std::string &pkgname,
         err = gretl_package_check_dependencies(localfile);
         if (err) handle_gretl_error(err);
 
-        py::print("package installed successfully:",
-                  local ? pkgname_as_path.filename().string() : pkgname);
+        py::print("package installed successfully:", local ? pkgname_as_path.filename().string() : pkgname);
     } else if (action == "query") {
         auto pkg = GretlPackage::load_package(pkgname, "", false);
         py::print(pkg->repr_impl());
@@ -611,15 +606,12 @@ double gretl_get_pvalue_critval_pdf_cdf (const std::string &dist, double value,
     // general interface to selected libgretl functions from pvalues.c
     //
     // we check if we got one char
-    if (dist.size() != 1) {
-        throw std::invalid_argument("'dist' takes just one character");
-    }
+    if (dist.size() != 1) throw std::invalid_argument("'dist' takes just one character");
 
     // we look for distribution code (for "t", "z", etc.)
     const int dist_code = dist_code_from_string(dist.c_str());
-    if (dist_code == static_cast<int>(D_NONE)) {
-        throw std::invalid_argument("unknown distribution code: '" + dist + "'");
-    }
+    
+    if (dist_code == static_cast<int>(D_NONE)) throw std::invalid_argument("unknown distribution code: '" + dist + "'");
 
     // we normalize params into either a view over a NumPy double array
     // or a std::vector<double> we fill from scalars/sequences.
@@ -627,10 +619,10 @@ double gretl_get_pvalue_critval_pdf_cdf (const std::string &dist, double value,
     std::vector<double> params_vec;
 
     // normalize Python input -> double*
-    if (param.is_none()) {
-        // we fake libgretl a little
+    if (param.is_none()) {        
         const double val = 0.0;
-        params_ptr = &val;
+        
+        params_ptr = &val;  // we fake libgretl a little
     } else if (is_pynumarray(param)) {
         NumPyArrayView arr_view;
         DNumPyArrayFC arr = py::cast<py::array>(param);
@@ -643,6 +635,7 @@ double gretl_get_pvalue_critval_pdf_cdf (const std::string &dist, double value,
         params_ptr = params_vec.data();
     } else if (is_pysequence(param)) {
         py::sequence seq = py::cast<py::sequence>(param);
+        
         params_vec.reserve(seq.size());
         for (py::handle item : seq) {
             params_vec.push_back(py::cast<double>(item));
@@ -686,18 +679,19 @@ py::array_t<double> matrix_functions_wrapper (const std::string &dist, const T &
     //lambda for selection underlying libgretl function
     auto F = [&](double x)
     {
-        if constexpr (FI == GretlFunIndex::F_PDF)
+        if constexpr (FI == GretlFunIndex::F_PDF) {
             return gretl_get_pvalue_critval_pdf_cdf<GretlFunIndex::F_PDF>(dist, x, param);
-        else if constexpr (FI == GretlFunIndex::F_CDF)
+        } else if constexpr (FI == GretlFunIndex::F_CDF) {
             return gretl_get_pvalue_critval_pdf_cdf<GretlFunIndex::F_CDF>(dist, x, param);
-        else if constexpr (FI == GretlFunIndex::F_PVAL)
+        } else if constexpr (FI == GretlFunIndex::F_PVAL) {            
             return gretl_get_pvalue_critval_pdf_cdf<GretlFunIndex::F_PVAL>(dist, x, param);
-        else if constexpr (FI == GretlFunIndex::F_CRIT)
+        } else if constexpr (FI == GretlFunIndex::F_CRIT) {
             return gretl_get_pvalue_critval_pdf_cdf<GretlFunIndex::F_CRIT>(dist, x, param);
-        else if constexpr (FI == GretlFunIndex::F_INVCDF)
+        } else if constexpr (FI == GretlFunIndex::F_INVCDF) {
             return gretl_get_pvalue_critval_pdf_cdf<GretlFunIndex::F_INVCDF>(dist, x, param);
-        else
+        } else {
             static_assert(always_false<T>, "Unhandled GretlFunIndex");
+        }
     };
 
     py::array_t<double> src_mat, res;
@@ -725,16 +719,19 @@ py::array_t<double> matrix_functions_wrapper (const std::string &dist, const T &
         auto r = res.mutable_unchecked<1>();
         auto src = src_mat.unchecked<1>();
 
-        for (ssize_t i = 0; i < n; ++i)
+        for (ssize_t i = 0; i < n; ++i) {
             r(i) = F(src(i));
+        }
     } else {
         res = py::array_t<double>({n, k});
         auto r = res.mutable_unchecked<2>();
         auto src = src_mat.unchecked<2>();
 
-        for (ssize_t i = 0; i < n; ++i)
-            for (ssize_t j = 0; j < k; ++j)
+        for (ssize_t i = 0; i < n; ++i) {            
+            for (ssize_t j = 0; j < k; ++j) {
                 r(i, j) = F(src(i, j));
+            }
+        }
     }
 
     return res;
@@ -776,8 +773,7 @@ py::object matrix_cov_corr (const py::array &X, int dfcorr)
     } else if constexpr (FI == GretlFunIndex::F_MCORR) {
         res_mat.reset(gretl_covariance_matrix(mat.get(), 1, 1, &err));
     } else {
-        static_assert(always_false<GretlFunIndex>,
-                      "matrix_cov_corr: unknown GretlFunIndex value");
+        static_assert(always_false<GretlFunIndex>, "matrix_cov_corr: unknown GretlFunIndex value");
     }
     if (err) handle_gretl_error(err);
 
@@ -790,14 +786,13 @@ py::object matrix_cov_corr (const py::array &X, int dfcorr)
 template py::object matrix_cov_corr<GretlFunIndex::F_MCOV>(const py::array&, int);
 template py::object matrix_cov_corr<GretlFunIndex::F_MCORR>(const py::array&, int);
 
-void do_gretl_delete_variables (const std::string &varname,
-                                const py::kwargs &kwargs)
+void do_gretl_delete_variables (const std::string &varname, const py::kwargs &kwargs)
 {
     //
     // function mimics libgretl's 'delete' command
     // note: not all options are available!!!
     //
-    GretlDatasetPtr GD = nullptr;
+    GretlDatasetPtr dataset = nullptr;
     gretl_list_ptr var_list{nullptr};
     std::string type_to_delete = "";    // type for bulk deletion
     std::vector<std::string> to_erase;  // variables to be erased after bulk deletion
@@ -809,28 +804,28 @@ void do_gretl_delete_variables (const std::string &varname,
     if (!varname.empty() && GretlPackage::package_loaded(varname)) throw std::invalid_argument("in gretl4py, the 'delete' function does not work with packages");
 
     if (py::len(kwargs) > 0) {
-        opt = unpack_kwargs_command(DELEET, GD, kwargs);
+        opt = unpack_kwargs_command(DELEET, dataset, kwargs);
         if (kwargs.contains("type")) type_to_delete = kwargs["type"].cast<std::string>();
     } else {
         // if we don't have kwargs, we must assign GD manually
-        GD = GretlDataset::default_dataset();
+        dataset = GretlDataset::default_dataset();
     }
 
     // we correctly deal with no arguments passed
     if (varname.empty() && !(opt & OPT_T)) handle_gretl_error(E_ARGS);
 
     // we look for variables in GD _only_ if there is no uservar
-    if (!varname.empty() && get_user_var_by_name(varname.c_str()) == NULL && GD) var_list = list_from_formula(varname, GD->dset, err);
+    if (!varname.empty() && get_user_var_by_name(varname.c_str()) == NULL && dataset) var_list = list_from_formula(varname, dataset->dset, err);
 
     // we do the job
     if (opt & OPT_T) {
         for (const auto &name : user_vars) {
             if (!err && (gretl_type_get_name(user_var_get_type_by_name(name.c_str())) == type_to_delete)) to_erase.push_back(name);
         }
-        err = gretl_delete_variables(NULL, NULL, opt, GD->dset, NULL, global_printer.prn_ptr());
+        err = gretl_delete_variables(NULL, NULL, opt, dataset->dset, NULL, global_printer.prn_ptr());
     } else {
-        if (!var_list && !GD) throw std::invalid_argument("'" + varname + "': series does not exist");
-        err = gretl_delete_variables(var_list.get(), var_list ? NULL : varname.c_str(), opt, GD->dset,
+        if (!var_list && !dataset) throw std::invalid_argument("'" + varname + "': series does not exist");
+        err = gretl_delete_variables(var_list.get(), var_list ? NULL : varname.c_str(), opt, dataset->dset,
                                      var_list ? &renumber : NULL, global_printer.prn_ptr());        
     }
     global_printer.print();
@@ -847,16 +842,14 @@ void do_gretl_delete_variables (const std::string &varname,
 }
 
 template <GretlObjType OBJ_TYPE>
-py::object do_get_accessor (const std::string &name,
-                            GretlDatasetPtr GD, void *model)
+py::object do_get_accessor (const std::string &name, GretlDatasetPtr dataset, void *model)
 {
     //
-    // here we get accessor in the context of OBJ_TYPE, GD, and model
+    // here we get accessor in the context of OBJ_TYPE, dataset, and model
     //
     int err = 0;
-
-    auto res = gretl_generate_gretl_object(name.c_str(), err, OBJ_TYPE,
-                                           GD ? GD->dset : NULL, model);
+    auto res = gretl_generate_gretl_object(name.c_str(), err, OBJ_TYPE, dataset ? dataset->dset : NULL, model);
+    
     if (err) handle_gretl_error(err);
 
     return variant_to_pyobject(std::move(*res));
@@ -937,9 +930,8 @@ void handle_gretl_error (int err, const std::string &ext_msg)
     throw std::runtime_error(msg);
 }
 
-void gretl_valid_long_opt (gretlopt &opt, GretlCmdIndex ci,
-                           const std::string &key, const py::handle &val,
-                           const char *ext_val)
+void gretl_valid_long_opt (gretlopt &opt, GretlCmdIndex ci, const std::string &key,
+                           const py::handle &val, const char *ext_val)
 {
     // should be a regular gretl option: check its validity in
     // the context of @ci
@@ -1091,9 +1083,7 @@ void unpack_kwargs_test (gretlopt &opt, const std::string &type,
     }
 }
 
-gretl_list_ptr list_from_formula (const std::string &formula,
-                                  DATASET *dset, int &err,
-                                  bool handle_error)
+gretl_list_ptr list_from_formula (const std::string &formula, DATASET *dset, int &err, bool handle_error)
 {
     //
     // we build libgretl's list based on provided formula
@@ -1113,9 +1103,7 @@ gretl_list_ptr list_from_formula (const std::string &formula,
     return gretl_list_ptr(raw_list);
 }
 
-GretlTypesPtr gretl_generate_gretl_object (const char *s, int &err,
-                                           GretlObjType obj_type,
-                                           DATASET *dset, void *model)
+GretlTypesPtr gretl_generate_gretl_object (const char *s, int &err, GretlObjType obj_type, DATASET *dset, void *model)
 {
     //
     // we grab object from libgretl stack
@@ -1142,8 +1130,7 @@ GretlTypesPtr gretl_generate_gretl_object (const char *s, int &err,
 }
 
 template <GretlType GR_TYPE>
-void gretl_generate (const std::string &formula, GretlDatasetPtr GD,
-                     const std::string &name)
+void gretl_generate (const std::string &formula, GretlDatasetPtr dataset, const std::string &name)
 {
     //
     // General interface to libgretl's generate()
@@ -1151,24 +1138,24 @@ void gretl_generate (const std::string &formula, GretlDatasetPtr GD,
     // in the context of @GD
     // Note: if 'name' is empty, 'formula' must contain the full definition
     //
-    GretlPrint GP;
+    GretlPrint printer;
     std::string varname;
     int err = 0;
 
-    if (!GD) GD = GretlDataset::default_dataset();
+    if (!dataset) dataset = GretlDataset::default_dataset();
 
     if constexpr (GR_TYPE == GRETL_TYPE_LIST || GR_TYPE == GRETL_TYPE_SERIES) {
-        if (!GD) handle_gretl_error(E_NODATA);
+        if (!dataset) handle_gretl_error(E_NODATA);
     }
 
     // determine whether to use an explicit name or parse from formula
     if (name.empty()) {
-        err = generate(formula.c_str(), GD ? GD->dset : NULL, GR_TYPE, OPT_NONE, GP.prn_ptr());
+        err = generate(formula.c_str(), dataset ? dataset->dset : NULL, GR_TYPE, OPT_NONE, printer.prn_ptr());
 
         if constexpr (GR_TYPE != GRETL_TYPE_SERIES) varname = extract_varname(formula);
     } else {
         const std::string expr = name + "=" + formula;
-        err = generate(expr.c_str(), GD ? GD->dset : NULL, GR_TYPE, OPT_NONE, GP.prn_ptr());
+        err = generate(expr.c_str(), dataset ? dataset->dset : NULL, GR_TYPE, OPT_NONE, printer.prn_ptr());
 
         if constexpr (GR_TYPE != GRETL_TYPE_SERIES) varname = name;
     }
@@ -1179,7 +1166,7 @@ void gretl_generate (const std::string &formula, GretlDatasetPtr GD,
         if (!varname.empty()) user_vars.insert(varname);
     }
 
-    GP.print();
+    printer.print();
 }
 template void gretl_generate<GRETL_TYPE_ANY>(const std::string&, GretlDatasetPtr, const std::string&);
 template void gretl_generate<GRETL_TYPE_LIST>(const std::string&, GretlDatasetPtr, const std::string&);

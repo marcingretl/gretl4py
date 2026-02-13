@@ -24,6 +24,9 @@
 
 namespace py = pybind11;
 
+//////////////////////////////////////////////////
+// classes
+//////////////////////////////////////////////////
 //
 // Class to handle printing
 //
@@ -44,8 +47,10 @@ public:
     const char *get_buffer (void);
 };
 
-void do_set (const std::string &key, const std::string &value,
-             const py::kwargs &kwargs);
+//////////////////////////////////////////////////
+// functions
+//////////////////////////////////////////////////
+void do_set (const std::string &key, const std::string &value, const py::kwargs &kwargs);
 
 void do_gretl_summary (const std::string &varlist, const py::kwargs &kwargs);
 
@@ -85,29 +90,22 @@ void gretl_valid_long_opt (gretlopt &opt, GretlCmdIndex ci,
                            const char *ext_val = nullptr);
 
 template <typename T>
-gretlopt unpack_kwargs_command (GretlCmdIndex ci, T &GD,
-                                const py::kwargs &kwargs);
+gretlopt unpack_kwargs_command (GretlCmdIndex ci, T &dataset, const py::kwargs &kwargs);
 
-void unpack_kwargs_test (gretlopt &opt, const std::string &type,
-                         const py::kwargs &kwargs, int &order);
+void unpack_kwargs_test (gretlopt &opt, const std::string &type, const py::kwargs &kwargs, int &order);
 
-gretl_list_ptr list_from_formula (const std::string &formula,
-                                  DATASET *dset, int &err,
-                                  bool handle_error = true);
+gretl_list_ptr list_from_formula (const std::string &formula, DATASET *dset, int &err, bool handle_error = true);
 
-GretlTypesPtr gretl_generate_gretl_object (const char *s, int &err,
-                                           GretlObjType obj_type = GRETL_OBJ_INFO,
+GretlTypesPtr gretl_generate_gretl_object (const char *s, int &err, GretlObjType obj_type = GRETL_OBJ_INFO,
                                            DATASET *dset = NULL, void *model = NULL);
 
 template <GretlType GR_TYPE>
-void gretl_generate (const std::string &formula, GretlDatasetPtr GD = nullptr,
+void gretl_generate (const std::string &formula, GretlDatasetPtr dataset = nullptr,
                      const std::string &name = {});
 
-void do_gretl_delete_variables (const std::string &varname,
-                                const py::kwargs &kwargs);
+void do_gretl_delete_variables (const std::string &varname, const py::kwargs &kwargs);
 
 template <GretlObjType OBJ_TYPE>
-py::object do_get_accessor (const std::string &name, GretlDatasetPtr GD = nullptr,
-                            void *model = NULL);
+py::object do_get_accessor (const std::string &name, GretlDatasetPtr dataset = nullptr, void *model = NULL);
 
 #endif // GRETL_CALLS_H
