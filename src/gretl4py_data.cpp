@@ -1442,7 +1442,7 @@ GretlBundle::GretlBundle (gretl_bundle *src) : free_b_(false)
 {
     //
     // Here we make a copy of src
-    // Note: 'src. must be deallocated by libgretl, otherwise there
+    // Note: 'src' _must_ be deallocated by libgretl, otherwise there
     // will be a memory leak
     //
     b_ = gretl_bundle_copy(src, &err_);

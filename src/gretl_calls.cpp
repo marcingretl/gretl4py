@@ -120,16 +120,17 @@ void gretl4py_cleanup (void)
 }
 
 GretlBundlePtr about (bool do_print)
-{
-    int err = 0;
-    gretl_bundle *b = get_sysinfo_bundle(&err);
+{    
+    static const std::unordered_set<std::string> lgretl_strings = { "dotdir", "gnuplot", "gretldir", "seats", "tramo", "tramodir", "workdir", "x12a", "x12adir" };
+    GretlBundlePtr GB_strings = std::make_shared<GretlBundle>();
+    GretlBundlePtr res = std::make_shared<GretlBundle>();        
+    std::string mod_ver, lg_ver, py11_ver;
+    gretl_bundle *b = NULL;
+    int err = 0;    
+    
+    b = get_sysinfo_bundle(&err);
     if (err) handle_gretl_error(err);
     GretlBundlePtr GB_sysinfo = std::make_shared<GretlBundle>(b);
-    GretlBundlePtr GB_strings = std::make_shared<GretlBundle>();
-    GretlBundlePtr res = std::make_shared<GretlBundle>();
-    const std::unordered_set<std::string> lgretl_strings =
-    {"dotdir", "gnuplot", "gretldir", "seats", "tramo", "tramodir", "workdir", "x12a", "x12adir"};
-    std::string mod_ver, lg_ver, py11_ver;
 
     gretl_push_c_numeric_locale();
 
@@ -142,6 +143,7 @@ GretlBundlePtr about (bool do_print)
     // built-in strings
     for (const auto &it : lgretl_strings) {
         auto val = std::string(get_built_in_string_by_name(it.c_str()));
+        
         GB_strings->set_element<std::string>(it, val);
     }
 
@@ -185,9 +187,7 @@ static std::string extract_varname (std::string formula)
     // extract user var name from formula
     // note: if used only in one place (gretl_generate) must be rewritten as lambda!!!
     //
-    static const std::vector<std::string> keywords = {
-        "arrays", "bundle", "list", "matrix", "scalar", "series", "string"
-    };
+    static const std::array<std::string_view, 7> keywords{ "arrays", "bundle", "list", "matrix", "scalar", "series", "string" };
 
     gretl4py_trim(formula);
 
@@ -266,10 +266,7 @@ gretlopt unpack_kwargs_command (GretlCmdIndex ci, T &GD,
     // note: for tests, there is dedicated unpack_kwargs_test()
     // important: if GD is not required, please call with 'std::nullptr_t GD = nullptr;'!!!
     //
-    static_assert(std::is_same_v<T, GretlDatasetPtr>
-                  || std::is_same_v<T, std::nullptr_t>,
-                  "GD must be GretlDatasetPtr or std::nullptr_t");
-
+    static_assert(std::is_same_v<T, GretlDatasetPtr> || std::is_same_v<T, std::nullptr_t>, "GD must be GretlDatasetPtr or std::nullptr_t");
     gretlopt opt = OPT_NONE;
 
     if (py::len(kwargs) > 0) {
