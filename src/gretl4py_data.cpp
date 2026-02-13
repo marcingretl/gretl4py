@@ -398,7 +398,7 @@ GretlDatasetPtr GretlDataset::get_data (const py::object &src, const std::string
     if (!source.empty() && dataset->source.empty()) dataset->source = source;
 
     // we register dataset
-    if (register_dataset) register_dset_( dataset );
+    if (register_dataset) register_dset_(dataset);
 
     return dataset;
 }
@@ -926,7 +926,7 @@ GretlDatasetPtr GretlDataset::getitem_impl (const T &slice)
         // for sampling
         opts["quiet"] = true;
         res->smpl(startobs, endobs, opts);
-        err_ = perma_sample( res->dset, OPT_T, printer_.prn_ptr(), NULL);
+        err_ = perma_sample(res->dset, OPT_T, printer_.prn_ptr(), NULL);
     }
     if (err_) {
         printer_.print();
@@ -1169,7 +1169,7 @@ void GretlDataset::setobs (const std::string &periodicity,
     if (dset->n > 0) {
         if (!(opt_ & (OPT_I | OPT_G))) print_smpl(dset, 0, OPT_NONE, printer_.prn_ptr());
     } else {
-        pprintf( printer_.prn_ptr(), _("data frequency = %d\n"), dset->pd);
+        pprintf(printer_.prn_ptr(), _("data frequency = %d\n"), dset->pd);
     }
     printer_.print();
 }
