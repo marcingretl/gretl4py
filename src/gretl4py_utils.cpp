@@ -27,8 +27,6 @@ extern "C" {
     #include <gretl/gretl_typemap.h>
 }
 
-static std::map<int, std::weak_ptr<GretlDataset>> GDs;
-
 namespace py = pybind11;
 
 //////////////////////////////////////////////////
@@ -39,11 +37,8 @@ std::string gretl4py_trim (std::string &s)
     //
     // general purpose trimer
     //
-    s.erase(s.begin(),
-            std::find_if(s.begin(), s.end(),
-                         [](unsigned char ch) { return !std::isspace(ch); }));
-    s.erase(std::find_if(s.rbegin(), s.rend(),
-                         [](unsigned char ch) { return !std::isspace(ch); }).base(), s.end());
+    s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](unsigned char ch) { return !std::isspace(ch); }));
+    s.erase(std::find_if(s.rbegin(), s.rend(), [](unsigned char ch) { return !std::isspace(ch); }).base(), s.end());
 
     return s;
 }
@@ -223,37 +218,31 @@ PythonArgInfo inspect_pyobject (py::handle obj)
         info.pytype = "NoneType";
         return info;
     }
-
     if (is_pybool(obj)) {
         info.gtype = GRETL_TYPE_BOOL;
         info.pytype = "bool";
         return info;
     }
-
     if (is_pyint(obj)) {
         info.gtype = GRETL_TYPE_INT;
         info.pytype = "int";
         return info;
     }
-
     if (is_pyfloat(obj)) {
         info.gtype = GRETL_TYPE_DOUBLE;
         info.pytype = "float";
         return info;
     }
-
     if (is_pystr(obj)) {
         info.gtype = GRETL_TYPE_STRING;
         info.pytype = "str";
         return info;
     }
-
     if (IS_PYGRETLBUNDLE(obj)) {
         info.gtype = GRETL_TYPE_BUNDLE;
         info.pytype = "GretlBundle";
         return info;
     }
-
     if (is_pynumarray(obj)) {
         info.gtype = GRETL_TYPE_MATRIX;
         info.pytype = "ndarray";
@@ -261,7 +250,6 @@ PythonArgInfo inspect_pyobject (py::handle obj)
         info.shape.assign(arr.shape(), arr.shape() + arr.ndim());
         return info;
     }
-
     if (is_pytuple(obj) || is_pylist(obj)) {
         info.gtype = GRETL_TYPE_LIST;
         info.pytype = py::isinstance<py::tuple>(obj) ? "tuple" : "list";
@@ -269,7 +257,6 @@ PythonArgInfo inspect_pyobject (py::handle obj)
         info.shape.push_back(seq.size());
         return info;
     }
-
     info.gtype = GRETL_TYPE_ANY;
 #if PYBIND11_VERSION_MAJOR < 3
     info.pytype = py::str(obj.get_type());
