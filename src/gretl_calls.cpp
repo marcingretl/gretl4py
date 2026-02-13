@@ -922,9 +922,7 @@ void handle_gretl_error (int err, const std::string &ext_msg)
     // ext_msg: additional information to be appended (e.g. file name)
     // note: arg_errors is not complete!!!
     //
-    static const std::unordered_set<int> arg_errors{
-        E_ARGS, E_INVARG, E_UNKVAR, E_TOOFEW
-    };
+    static const std::unordered_set<int> arg_errors{ E_ARGS, E_INVARG, E_UNKVAR, E_TOOFEW };
 
     const char *msg_src = errmsg_get_with_default(err);
     std::string msg = msg_src ? msg_src : "unknown error";
@@ -949,8 +947,7 @@ void gretl_valid_long_opt (gretlopt &opt, GretlCmdIndex ci,
     gretlopt opt_local = OPT_NONE;
     OptStatus status;
 
-    if (!is_pystr(val) && !is_pyint(val) && !is_pyfloat(val) && !is_pybool(val) && !ext_val)
-        throw std::invalid_argument("unsupported option parameter type for " + key);
+    if (!is_pystr(val) && !is_pyint(val) && !is_pyfloat(val) && !is_pybool(val) && !ext_val) throw std::invalid_argument("unsupported option parameter type for " + key);
 
     if (std::strchr(key.c_str(), '_')) {
         std::string tmp(key);
@@ -1109,8 +1106,9 @@ gretl_list_ptr list_from_formula (const std::string &formula,
     std::replace(tmp.begin(), tmp.end(), '~', ' ');
     std::replace(tmp.begin(), tmp.end(), '+', ' ');
 
-    // note: we assign a raw pointer returned by 'generate_list()' to our unique_ptr.
+    // we do the job
     int *raw_list = generate_list(tmp.c_str(), dset, 0, &err);
+    
     if (handle_error && err) handle_gretl_error(err);
 
     return gretl_list_ptr(raw_list);
@@ -1123,9 +1121,9 @@ GretlTypesPtr gretl_generate_gretl_object (const char *s, int &err,
     //
     // we grab object from libgretl stack
     //
-    GretlTypesPtr res;                  // gretl4py type
-    GretlType t = GRETL_TYPE_NONE;      // libgretl type
-    gretl_dataset_ptr dset_ptr{nullptr};// used when dset == NULL
+    GretlTypesPtr res;                      // gretl4py type
+    GretlType t = GRETL_TYPE_NONE;          // libgretl type
+    gretl_dataset_ptr dset_ptr{nullptr};    // used when dset == NULL
     void *resp;
 
     // we allocate dset if we didn't get one
@@ -1167,20 +1165,14 @@ void gretl_generate (const std::string &formula, GretlDatasetPtr GD,
 
     // determine whether to use an explicit name or parse from formula
     if (name.empty()) {
-        err = generate(formula.c_str(), GD ? GD->dset : NULL,
-                       GR_TYPE, OPT_NONE, GP.prn_ptr());
+        err = generate(formula.c_str(), GD ? GD->dset : NULL, GR_TYPE, OPT_NONE, GP.prn_ptr());
 
-        if constexpr (GR_TYPE != GRETL_TYPE_SERIES) {
-            varname = extract_varname(formula);
-        }
+        if constexpr (GR_TYPE != GRETL_TYPE_SERIES) varname = extract_varname(formula);
     } else {
         const std::string expr = name + "=" + formula;
-        err = generate(expr.c_str(), GD ? GD->dset : NULL,
-                       GR_TYPE, OPT_NONE, GP.prn_ptr());
+        err = generate(expr.c_str(), GD ? GD->dset : NULL, GR_TYPE, OPT_NONE, GP.prn_ptr());
 
-        if constexpr (GR_TYPE != GRETL_TYPE_SERIES) {
-            varname = name;
-        }
+        if constexpr (GR_TYPE != GRETL_TYPE_SERIES) varname = name;
     }
     if (err) handle_gretl_error(err);
 
