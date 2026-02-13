@@ -59,8 +59,7 @@ std::unordered_set<std::string> user_vars;  // registry of user variables
 void gretl4py_init (void)
 {
     // check libgretl version
-    if (libgretl_version() < LIBGRETL_MIN_VER) throw std::runtime_error("gretl4py requires libgretl-1.0 version "
-                                                                        + std::to_string(LIBGRETL_MIN_VER) + " or higher");
+    if (libgretl_version() < LIBGRETL_MIN_VER) throw std::runtime_error("gretl4py requires libgretl-1.0 version " + std::to_string(LIBGRETL_MIN_VER) + " or higher");
 
     // initialize libgretl
     libgretl_init();
@@ -101,7 +100,7 @@ void gretl4py_cleanup (void)
     py::gil_scoped_acquire gil;
     int err = 0;
 
-    // make sure all C++ objects are destroyed while libgretl still alives
+    // make sure all C++ objects are destroyed while libgretl still a lives
     for (const auto &name : user_vars) {
         err = user_var_delete_by_name(name.c_str(), NULL);
         if (err) {
@@ -116,9 +115,7 @@ void gretl4py_cleanup (void)
     }
 
     GretlPackage::clear_registry();
-
     libgretl_cleanup();
-
     if (gretl4py_verbose) std::printf("libgretl cleaned up\n");
 }
 
@@ -174,7 +171,6 @@ GretlBundlePtr about (bool do_print)
     }
 
     gretl_pop_c_numeric_locale();
-
     if (res->get_err()) std::cerr << errmsg_get_with_default(res->get_err()) << std::endl;
 
     return res;
@@ -297,9 +293,7 @@ gretlopt unpack_kwargs_command (GretlCmdIndex ci, T &GD,
     }
 
     // we force --plot=none for certain commands
-    if (ci == XCORRGM || ci == CORR) {
-        gretl_valid_long_opt(opt, ci, "plot", py::handle(), "none");
-    }
+    if (ci == XCORRGM || ci == CORR) gretl_valid_long_opt(opt, ci, "plot", py::handle(), "none");
 
     // if we didn't get dataset, let use global
     if constexpr (std::is_same_v<T, GretlDatasetPtr>) {
@@ -310,8 +304,7 @@ gretlopt unpack_kwargs_command (GretlCmdIndex ci, T &GD,
 }
 template gretlopt unpack_kwargs_command(GretlCmdIndex, std::nullptr_t&, const py::kwargs&);
 
-void do_set (const std::string &key, const std::string &value,
-             const py::kwargs &kwargs)
+void do_set (const std::string &key, const std::string &value, const py::kwargs &kwargs)
 {
     //
     // interface to libgretl's set
@@ -323,10 +316,8 @@ void do_set (const std::string &key, const std::string &value,
     gretlopt opt = unpack_kwargs_command(SET, GD, kwargs);
 
     // we do the job
-    err = execute_set(key.empty() ? NULL : key.c_str(),
-                      value.empty() ? NULL : value.c_str(),
-                      GD ? GD->dset : NULL, opt,
-                      global_printer.prn_ptr());
+    err = execute_set(key.empty() ? NULL : key.c_str(), value.empty() ? NULL : value.c_str(),
+                      GD ? GD->dset : NULL, opt, global_printer.prn_ptr());
     global_printer.print();
     if (err) handle_gretl_error(err);
 }
@@ -647,12 +638,8 @@ double gretl_get_pvalue_critval_pdf_cdf (const std::string &dist, double value,
         DNumPyArrayFC arr = py::cast<py::array>(param);
 
         NumPyArray_extract(arr, arr_view);
-        if ((std::min)(arr_view.cols, arr_view.rows) > 1) {
-            throw std::invalid_argument("param must be a vector");
-        }
-        if (arr.size() > 0) {
-            params_ptr = arr.data();
-        }
+        if ((std::min)(arr_view.cols, arr_view.rows) > 1) throw std::invalid_argument("param must be a vector");
+        if (arr.size() > 0) params_ptr = arr.data();
     } else if (is_pynumeric(param)) {
         params_vec.push_back(py::cast<double>(param));
         params_ptr = params_vec.data();
@@ -662,17 +649,13 @@ double gretl_get_pvalue_critval_pdf_cdf (const std::string &dist, double value,
         for (py::handle item : seq) {
             params_vec.push_back(py::cast<double>(item));
         }
-        if (!params_vec.empty()) {
-            params_ptr = params_vec.data();
-        }
+        if (!params_vec.empty()) params_ptr = params_vec.data();
     } else {
         throw std::invalid_argument("params must be None, int, float, list/tuple, or NumPy array");
     }
 
     // if the distribution requires parameters, enforce presence
-    if (dist_code != static_cast<int>(D_NORMAL) && !params_ptr) {
-        throw std::invalid_argument("given distribution requires params");
-    }
+    if (dist_code != static_cast<int>(D_NORMAL) && !params_ptr) throw std::invalid_argument("given distribution requires params");
 
     // actual work
     if constexpr (FI == GretlFunIndex::F_PVAL) {
@@ -824,9 +807,7 @@ void do_gretl_delete_variables (const std::string &varname,
     int err = 0;
 
     // we check if we don't deal with a package
-    if (!varname.empty()) {
-        if (GretlPackage::package_loaded(varname)) throw std::invalid_argument("in gretl4py, the 'delete' function does not work with packages");
-    }
+    if (!varname.empty() && GretlPackage::package_loaded(varname)) throw std::invalid_argument("in gretl4py, the 'delete' function does not work with packages");
 
     if (py::len(kwargs) > 0) {
         opt = unpack_kwargs_command(DELEET, GD, kwargs);
@@ -840,22 +821,18 @@ void do_gretl_delete_variables (const std::string &varname,
     if (varname.empty() && !(opt & OPT_T)) handle_gretl_error(E_ARGS);
 
     // we look for variables in GD _only_ if there is no uservar
-    if (!varname.empty() && get_user_var_by_name(varname.c_str()) == NULL && GD) {
-        var_list = list_from_formula(varname, GD->dset, err);
-    }
+    if (!varname.empty() && get_user_var_by_name(varname.c_str()) == NULL && GD) var_list = list_from_formula(varname, GD->dset, err);
 
     // we do the job
     if (opt & OPT_T) {
         for (const auto &name : user_vars) {
-            if (!err && (gretl_type_get_name(user_var_get_type_by_name(name.c_str()))
-                         == type_to_delete)) to_erase.push_back(name);
+            if (!err && (gretl_type_get_name(user_var_get_type_by_name(name.c_str())) == type_to_delete)) to_erase.push_back(name);
         }
-        err = gretl_delete_variables(NULL, NULL, opt, GD->dset,
-                                     NULL, global_printer.prn_ptr());
+        err = gretl_delete_variables(NULL, NULL, opt, GD->dset, NULL, global_printer.prn_ptr());
     } else {
-        err = gretl_delete_variables(var_list.get(), var_list ? NULL : varname.c_str(),
-                                     opt, GD->dset, var_list ? &renumber : NULL,
-                                     global_printer.prn_ptr());
+        if (!var_list && !GD) throw std::invalid_argument("'" + varname + "': series does not exist");
+        err = gretl_delete_variables(var_list.get(), var_list ? NULL : varname.c_str(), opt, GD->dset,
+                                     var_list ? &renumber : NULL, global_printer.prn_ptr());        
     }
     global_printer.print();
     if (err) handle_gretl_error(err);
