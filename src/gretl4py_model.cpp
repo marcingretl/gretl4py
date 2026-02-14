@@ -1482,8 +1482,7 @@ void GretlModel_VAR_VECM::restrict (const py::list &impose,
     do_restrict_<GRETL_VAR>(model_, impose, kwargs);
 }
 
-char *GretlModel_VAR_VECM::save_ec_term (const int nr,
-                                         const std::string &name) const
+char *GretlModel_VAR_VECM::save_ec_term (const int nr, const std::string &name) const
 {
     //
     // here we add EC to dataset of number nr
