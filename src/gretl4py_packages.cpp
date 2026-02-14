@@ -301,8 +301,8 @@ void GretlPackage::unpack_kwargs_package_ (const std::string &func_name, fncall 
 
     for (const auto &[key, arg_no] : func_name_args) {
         if (!kwargs.contains(key)) {
-            // if parameter is [optional] (i.e. does not have default value), we must set it to GRETL_TYPE_NONE
-            if (fn_param_optional(func_get_ptr(func_name), arg_no)) {
+            // if parameter is [optional] and _does not_ have [default] (i.e. does not have default value), we must set it to GRETL_TYPE_NONE
+            if (fn_param_optional(func_get_ptr(func_name), arg_no) && !fn_param_has_default(func_get_ptr(func_name), arg_no)) {                
                 err_ = push_function_arg(func_call, key.c_str(), NULL, GRETL_TYPE_NONE, NULL);
                 if (err_) handle_gretl_error(err_);
             }
@@ -409,7 +409,7 @@ py::list GretlPackage::get_help (void)
         res.append("txt");
         err_ = print_function_package_help(full_path_.c_str(), NULL, printer_.prn_ptr());
         if (err_) handle_gretl_error(err_);
-        res.append( printer_.get_buffer());
+        res.append(printer_.get_buffer());
     }
 
     return res;
