@@ -46,10 +46,8 @@ extern "C" {
 //
 // GretlModel class methods
 //
-GretlModel::GretlModel (GretlObjType model_obj_type, GretlCmdIndex ci,
-                        const py::kwargs &kwargs)
-                        : id_(next_model_id_++), model_obj_type_(model_obj_type),
-                        ci_(ci), dataset_ (GretlDataset::default_dataset())
+GretlModel::GretlModel (GretlObjType model_obj_type, GretlCmdIndex ci, const py::kwargs &kwargs)
+                        : id_(next_model_id_++), model_obj_type_(model_obj_type), ci_(ci), dataset_ (GretlDataset::default_dataset())
 {
     // we unpack kwargs
     if (py::len(kwargs) && ci_ != NC) {
@@ -84,6 +82,7 @@ GretlModel::GretlModel (GretlObjType model_obj_type, GretlCmdIndex ci,
             } else if (key == "instruments" && ci_ == DPANEL) {
                 // var special: here we only check if instruments is a string, but we must do something with it elsewhere
                 if (!is_pystr(item.second)) throw std::invalid_argument("'instruments' must be a string");
+                continue;
             } else if ((key == "params" || key == "param_names" || key == "initvals") && (ci_ == NLS || ci_ == MLE || ci_ == GMM)) {
                 // NLS/MLE/GMM special case: we deal with these in class constructor
                 continue;
@@ -285,14 +284,11 @@ void GretlModel::gretl_do_forecast_ (void *model, const py::args &args,
             if (std::floor(x) != x) {
                 std::string prefix = key && *key ? std::string(key) + "=" : "";
 
-                handle_gretl_error(E_INVARG,
-                                   "Invalid positional argument in forecast(): "
-                                   + prefix + py::str(arg).cast<std::string>());
+                handle_gretl_error(E_INVARG, "Invalid positional argument in forecast(): " + prefix + py::str(arg).cast<std::string>());
             }
             s = std::to_string(static_cast<long>(x));
         } else {
-            handle_gretl_error(E_INVARG, "Invalid positional argument in forecast(): "
-                               + py::str(arg).cast<std::string>());
+            handle_gretl_error(E_INVARG, "Invalid positional argument in forecast(): " + py::str(arg).cast<std::string>());
         }
 
         if (!param.empty()) param.append(" ");
@@ -300,23 +296,21 @@ void GretlModel::gretl_do_forecast_ (void *model, const py::args &args,
     };
 
     // we unpack args
-    if (n_args > max_positional_args) throw std::invalid_argument("too many positional arguments: "
-                                                    + std::to_string(py::len(args))
-                                                    + " (max = 4)");
+    if (n_args > max_positional_args) throw std::invalid_argument("too many positional arguments: " + std::to_string(py::len(args)) + " (max = 4)");
     if (n_args <= max_positional_args) {
         int left = max_positional_args - n_args;
 
         for (int i=0; i<n_args; ++i) {
-            if (clean_kwargs.contains(positional_args[i])) throw py::type_error("multiple values for argument '"
-                                                                                + std::string(positional_args[i]) + "'");
+            if (clean_kwargs.contains(positional_args[i])) throw py::type_error("multiple values for argument '" + std::string(positional_args[i]) + "'");
             py::object obj = args[i];
+            
             add_to_param(obj);
         }
         if (!left) return;
         for (int i=max_positional_args-left; i<max_positional_args; ++i) {
             const char *key = positional_args[i];
-
             py::object obj = clean_kwargs.attr("pop")(key, py::none());
+            
             if (!obj.is_none()) add_to_param(obj, key);
         }
     }
@@ -587,8 +581,7 @@ char *GretlModel::do_save_uhat_ (T *model, int eqn, const std::string &name) con
 // Native Single Equation libgretl MODEL (NSE)
 // extends: GretlModel
 //
-GretlModel_NSE::GretlModel_NSE (GretlCmdIndex ci, const py::kwargs &kwargs)
-                                : GretlModel(GRETL_OBJ_EQN, ci, kwargs)
+GretlModel_NSE::GretlModel_NSE (GretlCmdIndex ci, const py::kwargs &kwargs) : GretlModel(GRETL_OBJ_EQN, ci, kwargs)
 {
     model_ = gretl_model_new();
     if (!model_) handle_gretl_error(E_ALLOC);
@@ -640,23 +633,19 @@ void GretlModel_NSE::test (const std::string &type, const py::kwargs &kwargs)
     } else if (type == "vif") {
         err_ = vif_test(model_, dataset_->dset, opt_, printer_.prn_ptr());
     } else if (type == "corrgm") {
-        err_ = corrgram( dataset_->dset->v-1, order,
-                        model_->ci == ARMA ? arma_model_get_n_arma_coeffs(model_) : 0,
-                          dataset_->dset, SET_OPT(opt_, OPT_R), printer_.prn_ptr());
-    } else if (type == "arch" || type == "autocorr" ||
-               type == "breusch-pagan" || type == "comfac" ||
-               type == "logs" || type == "normality" ||
-               type == "panel" || type == "squares" ||
-               type == "white" || type == "white-nocross" ||
-               type == "xdepend" ) {
+        err_ = corrgram(dataset_->dset->v-1, order,
+                        model_->ci == ARMA ? arma_model_get_n_arma_coeffs(model_) : 0, dataset_->dset, SET_OPT(opt_, OPT_R), printer_.prn_ptr());
+    } else if (type == "arch" || type == "autocorr" || type == "breusch-pagan" || type == "comfac" ||
+               type == "logs" || type == "normality" || type == "panel" || type == "squares" ||
+               type == "white" || type == "white-nocross" || type == "xdepend" ) {
         if (get_last_model(NULL) != model_) {
             err_ = gretl_model_protect(model_);
             if (err_) handle_gretl_error(err_);
             set_as_last_model(model_, model_obj_type_);
         }
         err_ = model_test_driver(order, dataset_->dset, opt_, printer_.prn_ptr());
-        err_ = gretl_model_unprotect(model_);
         if (err_) handle_gretl_error(err_);
+        err_ = gretl_model_unprotect(model_);
     } else {
         throw std::invalid_argument(type + " is a dataset-based test");
     }
@@ -741,9 +730,8 @@ char *GretlModel_NSE::gretl_get_fit_or_resid (const std::string &name) const
     //
     char tmp_name[VNAMELEN] = {0};
     gchar *pdesc_raw = NULL;
-
-    gretl_double_ptr data(get_fit_or_resid(model_, dataset_->dset, IDX,
-                                           tmp_name, &pdesc_raw, &err_));
+    gretl_double_ptr data(get_fit_or_resid(model_, dataset_->dset, IDX, tmp_name, &pdesc_raw, &err_));
+    
     if (err_) handle_gretl_error(err_);
 
     // we save name and description
@@ -764,9 +752,7 @@ double GretlModel_NSE::adj_rsq (void) const
 }
 
 template <GretlCmdIndex CI>
-void GretlModel_NSE::regexp_extract_ (const std::string &formula,
-                                      std::string &formula_left,
-                                      std::string &formula_right)
+void GretlModel_NSE::regexp_extract_ (const std::string &formula, std::string &formula_left, std::string &formula_right)
 {
     //
     // method for extraction model formula from regular expression
@@ -782,6 +768,7 @@ void GretlModel_NSE::regexp_extract_ (const std::string &formula,
 
     std::sregex_iterator begin(formula.begin(), formula.end(), formula_regex);
     std::sregex_iterator end;
+    
     formula_left = formula;
     formula_right.clear();
 
@@ -797,11 +784,8 @@ void GretlModel_NSE::regexp_extract_ (const std::string &formula,
 //
 // NSE via arima plugin
 //
-GretlModel_NSE_arima::GretlModel_NSE_arima (const std::string &y,
-                                            const py::tuple &tup,
-                                            const py::kwargs &kwargs)
-                                            : GretlModel_NSE(ARMA, kwargs),
-                                            y_(y)
+GretlModel_NSE_arima::GretlModel_NSE_arima (const std::string &y, const py::tuple &tup, const py::kwargs &kwargs)
+                                            : GretlModel_NSE(ARMA, kwargs), y_(y)
 {
     // lambda for ARIMA order
     auto get_arima_order = [](const py::tuple &tup, int &p, int &d, int &q)
@@ -889,10 +873,8 @@ void GretlModel_NSE_arima::fit (void)
 // NSE via dedicated Driver
 //
 template <auto F, GretlCmdIndex CI>
-GretlModel_NSE_Driver<F, CI>::GretlModel_NSE_Driver (const std::string &formula,
-                                                     const py::kwargs &kwargs)
-                                                     : GretlModel_NSE(CI, kwargs),
-                                                     formula_(formula)
+GretlModel_NSE_Driver<F, CI>::GretlModel_NSE_Driver (const std::string &formula, const py::kwargs &kwargs)
+                                                     : GretlModel_NSE(CI, kwargs), formula_(formula)                                                     
 {}
 
 template <auto F, GretlCmdIndex CI>
@@ -973,28 +955,18 @@ template class GretlModel_NSE_Driver<midas_model, MIDASREG>;
 // NSE_Driver_quantreg via quantreg_driver
 // extends: GretlModel_NSE_Driver
 //
-GretlModel_NSE_Driver_quantreg::GretlModel_NSE_Driver_quantreg
-                                    (const std::string &formula,
-                                     const double &tau,
-                                     const py::kwargs &kwargs)
-                                     : GretlModel_NSE_Driver<quantreg_driver, QUANTREG>(formula, kwargs),
-                                     tau_(std::to_string(tau))
+GretlModel_NSE_Driver_quantreg::GretlModel_NSE_Driver_quantreg (const std::string &formula, const double &tau, const py::kwargs &kwargs)
+                                                                : GretlModel_NSE_Driver<quantreg_driver, QUANTREG>(formula, kwargs), tau_(std::to_string(tau))
 {}
 
-GretlModel_NSE_Driver_quantreg::GretlModel_NSE_Driver_quantreg
-                                    (const std::string &formula,
-                                     const py::array_t<double> &tau,
-                                     const py::kwargs &kwargs)
-                                     : GretlModel_NSE_Driver<quantreg_driver, QUANTREG>(formula, kwargs)
+GretlModel_NSE_Driver_quantreg::GretlModel_NSE_Driver_quantreg (const std::string &formula, const py::array_t<double> &tau, const py::kwargs &kwargs)
+                                                                : GretlModel_NSE_Driver<quantreg_driver, QUANTREG>(formula, kwargs)
 {
     if (tau.ndim() != 1) throw std::invalid_argument("'tau' is expected to be a vector");
-
     tau_ = "{";
     for (int i=0; i<tau.shape(0); ++i) {
         tau_.append(std::to_string(tau.at(i)));
-        if (i < tau.shape(0)-1) {
-            tau_.append(";");
-        }
+        if (i < tau.shape(0)-1) tau_.append(";");
     }
     tau_.append("}");
 }
@@ -1018,22 +990,16 @@ void GretlModel_NSE_Driver_quantreg::fit (void)
 // NSE_Driver_dpanel via dpd_model
 // extends: GretlModel_NSE_Driver
 //
-GretlModel_NSE_Driver_dpanel::GretlModel_NSE_Driver_dpanel
-                                        (const std::string &formula,
-                                         const int &p, const py::kwargs &kwargs)
-                                        : GretlModel_NSE_Driver<dpd_model, DPANEL>(formula, kwargs)
+GretlModel_NSE_Driver_dpanel::GretlModel_NSE_Driver_dpanel (const std::string &formula, const int &p, const py::kwargs &kwargs)
+                                                            : GretlModel_NSE_Driver<dpd_model, DPANEL>(formula, kwargs)
 {
     lags_.push_back(p);
 }
 
-GretlModel_NSE_Driver_dpanel::GretlModel_NSE_Driver_dpanel
-                                        (const std::string &formula,
-                                         const py::array_t<int> &p,
-                                         const py::kwargs &kwargs)
-                                        : GretlModel_NSE_Driver<dpd_model, DPANEL>(formula, kwargs)
+GretlModel_NSE_Driver_dpanel::GretlModel_NSE_Driver_dpanel (const std::string &formula, const py::array_t<int> &p, const py::kwargs &kwargs)
+                                                            : GretlModel_NSE_Driver<dpd_model, DPANEL>(formula, kwargs)
 {
     if (p.ndim() != 1) throw std::invalid_argument("'p' is expected to be a vector");
-
     for (int i=0; i<p.shape(0); ++i) {
         lags_.push_back(static_cast<double>(p.at(i)));
     }
@@ -1062,8 +1028,7 @@ void GretlModel_NSE_Driver_dpanel::fit (void)
                                                                   lags_.end()));
     }
     dpanel_list.get()[2] = LISTSEP;
-    std::memcpy(dpanel_list.get() + 3, var_list_.get() + 1,
-                var_list_.get()[0] * sizeof(int));
+    std::memcpy(dpanel_list.get() + 3, var_list_.get() + 1, var_list_.get()[0] * sizeof(int));
 
     // we do the job
     if (lags_.size() > 1) {
@@ -1072,8 +1037,7 @@ void GretlModel_NSE_Driver_dpanel::fit (void)
             laglist.get()[i+1] = static_cast<int>(lags_[i]);
         }
     }
-    *model_ = dpd_model(dpanel_list.get(), laglist.get(), formula_right.c_str(),
-                          dataset_->dset, opt_, printer_.prn_ptr());
+    *model_ = dpd_model(dpanel_list.get(), laglist.get(), formula_right.c_str(), dataset_->dset, opt_, printer_.prn_ptr());
 
     // we save results
     save_model_<MODEL>(model_);
@@ -1083,18 +1047,12 @@ void GretlModel_NSE_Driver_dpanel::fit (void)
 // NSE_Driver_tobit via tobit_model
 // extends: GretlModel_NSE_Driver
 //
-GretlModel_NSE_Driver_tobit::GretlModel_NSE_Driver_tobit
-                                        (const std::string &formula, const py::kwargs &kwargs)
-                                         : GretlModel_NSE_Driver<tobit_model, TOBIT>(formula, kwargs)
+GretlModel_NSE_Driver_tobit::GretlModel_NSE_Driver_tobit (const std::string &formula, const py::kwargs &kwargs)
+                                                            : GretlModel_NSE_Driver<tobit_model, TOBIT>(formula, kwargs)
 {
     // we set (l/r)limit
-    if (kwargs.contains("llimit") && !kwargs["llimit"].is_none()) {
-        llimit_ = py::cast<double>(kwargs["llimit"]);
-    }
-
-    if (kwargs.contains("rlimit") && !kwargs["rlimit"].is_none()) {
-        rlimit_ = py::cast<double>(kwargs["rlimit"]);
-    }
+    if (kwargs.contains("llimit") && !kwargs["llimit"].is_none()) llimit_ = py::cast<double>(kwargs["llimit"]);
+    if (kwargs.contains("rlimit") && !kwargs["rlimit"].is_none()) rlimit_ = py::cast<double>(kwargs["rlimit"]);
 }
 
 void GretlModel_NSE_Driver_tobit::fit (void)
@@ -1106,8 +1064,7 @@ void GretlModel_NSE_Driver_tobit::fit (void)
     var_list_ = list_from_formula(formula_, dataset_->dset, err_);
 
     // we do the job
-    *model_ = tobit_model(var_list_.get(), llimit_, rlimit_,
-                            dataset_->dset, opt_, printer_.prn_ptr());
+    *model_ = tobit_model(var_list_.get(), llimit_, rlimit_, dataset_->dset, opt_, printer_.prn_ptr());
 
     // we save results
     save_model_<MODEL>(model_);
@@ -1118,11 +1075,8 @@ void GretlModel_NSE_Driver_tobit::fit (void)
 // extends: GretlModel_NSE
 //
 template <GretlCmdIndex CI>
-GretlModel_NSE_nl<CI>::GretlModel_NSE_nl (const std::string formula,
-                                          const py::kwargs &kwargs)
-                                          : GretlModel_NSE(CI, kwargs),
-                                          command_(gretl_command_word(CI)),
-                                          formula_(formula)
+GretlModel_NSE_nl<CI>::GretlModel_NSE_nl (const std::string formula, const py::kwargs &kwargs)
+                                            : GretlModel_NSE(CI, kwargs), command_(gretl_command_word(CI)), formula_(formula)
 {
     // we get model definition
     get_object_from_dict<std::string>(kwargs, "params", params_);
@@ -1135,8 +1089,7 @@ GretlModel_NSE_nl<CI>::GretlModel_NSE_nl (const std::string formula,
         py::dict initvals = kwargs["initvals"].cast<py::dict>();
 
         for (const auto &[key, val] : initvals) {
-            gretl_generate<GRETL_TYPE_ANY>(py::str(val), dataset_,
-                                           py::cast<std::string>(key));
+            gretl_generate<GRETL_TYPE_ANY>(py::str(val), dataset_, py::cast<std::string>(key));
         }
     }
 
@@ -1148,8 +1101,7 @@ GretlModel_NSE_nl<CI>::GretlModel_NSE_nl (const std::string formula,
 
             if (is_pydict(deriv)) {
                 for (const auto &[key, val] : deriv.cast<py::dict>()) {
-                    deriv_.push_back(py::cast<std::string>(key) + " = "
-                                     + py::str(val).cast<std::string>());
+                    deriv_.push_back(py::cast<std::string>(key) + " = " + py::str(val).cast<std::string>());
                 }
             } else if (is_pylist(deriv)) {
                 deriv_ = py::cast<std::vector<std::string>>(deriv);
@@ -1171,14 +1123,12 @@ GretlModel_NSE_nl<CI>::~GretlModel_NSE_nl (void) = default;
 
 template <GretlCmdIndex CI>
 template <typename T>
-void GretlModel_NSE_nl<CI>::do_nl_parse_line_ (const std::string &keyword,
-                                               T *src)
+void GretlModel_NSE_nl<CI>::do_nl_parse_line_ (const std::string &keyword, T *src)
 {
     //
     // here we perform line parsing and adding (to libgretl)
     // Note: to add formula, use "command" as keyword and nullptr as src
     //
-
     // argument validation:
     // 1. keyword must not be empty
     // 2. if keyword != "command", src must not be null
@@ -1200,7 +1150,6 @@ void GretlModel_NSE_nl<CI>::do_nl_parse_line_ (const std::string &keyword,
         if (err_) handle_gretl_error(err_);
     } else if constexpr (std::is_same_v<T, std::vector<std::string>>) {
         if (!src->size()) return;
-
         std::string line;
 
         for (const auto &el : *src) {
@@ -1248,48 +1197,46 @@ void GretlModel_NSE_nl<CI>::fit (void)
 template <GretlCmdIndex CI>
 std::string GretlModel_NSE_nl<CI>::get_formula (void) const
 {
-    std::string RES = formula_ + "\n";
+    std::string res = formula_ + "\n";
 
     if constexpr (CI == NLS || CI == MLE) {
         if (deriv_.size()) {
             for (const auto &el : deriv_) {
-                RES += "deriv " + el + "\n";
+                res += "deriv " + el + "\n";
             }
         }
     }
     if constexpr (CI == GMM) {
         if (orthog_.size()) {
             for (const auto &el : orthog_) {
-                RES += "orthog " + el + "\n";
+                res += "orthog " + el + "\n";
             }
         }
 
         if (!weights_.empty()) {
-            RES += "weights " + weights_ + "\n";
+            res += "weights " + weights_ + "\n";
         }
     }
     if constexpr (CI == MLE || CI == GMM) {
         if (statements_.size()) {
             for (const auto &el : statements_) {
-                RES += el + "\n";
+                res += el + "\n";
             }
         }
     }
-    if (!params_.empty()) RES += "params " + params_ + "\n";
-    if (!param_names_.empty()) RES += "param_names " + param_names_ + "\n";
+    if (!params_.empty()) res += "params " + params_ + "\n";
+    if (!param_names_.empty()) res += "param_names " + param_names_ + "\n";
 
-    return RES;
+    return res;
 }
 
 template <GretlCmdIndex CI>
 template <bool ForString>
-void GretlModel_NSE_nl<CI>::add_line_to_parse (const std::string &keyword,
-                                               const std::string &val)
+void GretlModel_NSE_nl<CI>::add_line_to_parse (const std::string &keyword, const std::string &val)
 {
     //
     // method set/insert a val containing a line to parse
     //
-
     if constexpr (ForString) {
         if (keyword == "params") {
             params_ = val;
@@ -1316,8 +1263,7 @@ void GretlModel_NSE_nl<CI>::add_line_to_parse (const std::string &keyword,
 }
 
 template <GretlCmdIndex CI>
-void GretlModel_NSE_nl<CI>::add_init_value (const std::string &varname,
-                                            double value)
+void GretlModel_NSE_nl<CI>::add_init_value (const std::string &varname, double value)
 {
     //
     // adds/sets value of varname in the contexts of GD
@@ -1340,16 +1286,10 @@ template void GretlModel_NSE_nl<GMM>::add_line_to_parse<false>(const std::string
 // VAR libgretl MODEL
 // extends: GretlModel
 //
-GretlModel_VAR::GretlModel_VAR (const std::string &ylist,
-                                const int order, GretlCmdIndex ci,
-                                const py::kwargs &kwargs)
-                                : GretlModel(GRETL_OBJ_VAR, ci, kwargs),
-                                vars_(ylist), order_(order)
+GretlModel_VAR::GretlModel_VAR (const std::string &ylist, const int order, GretlCmdIndex ci, const py::kwargs &kwargs)
+                                : GretlModel(GRETL_OBJ_VAR, ci, kwargs), vars_(ylist), order_(order)
 {
-    if (kwargs.contains("xlist") && !kwargs["xlist"].is_none()) {
-        vars_.append(" ; ");
-        vars_.append(kwargs["xlist"].cast<std::string>());
-    }
+    if (kwargs.contains("xlist") && !kwargs["xlist"].is_none()) vars_.append(" ; ").append(kwargs["xlist"].cast<std::string>());
 }
 
 GretlModel_VAR::~GretlModel_VAR (void)
@@ -1374,11 +1314,9 @@ void GretlModel_VAR::do_var_vecm_fit_ (const int coint_rank)
 
     // we estimate a model
     if constexpr (CI == VAR) {
-        model_ = gretl_VAR(order_, NULL, var_list_.get(),
-                             dataset_->dset, opt_, printer_.prn_ptr(), &err_);
+        model_ = gretl_VAR(order_, NULL, var_list_.get(), dataset_->dset, opt_, printer_.prn_ptr(), &err_);
     } else if constexpr (CI == VECM) {
-        model_ = gretl_VECM(order_, coint_rank, var_list_.get(),
-                              dataset_->dset, opt_, printer_.prn_ptr(), &err_);
+        model_ = gretl_VECM(order_, coint_rank, var_list_.get(), dataset_->dset, opt_, printer_.prn_ptr(), &err_);
     }
     if (err_) handle_gretl_error(err_);
 
@@ -1409,11 +1347,9 @@ void GretlModel_VAR::test (const std::string &type, const py::kwargs &kwargs)
 
     // we perform test
     if (type == "autocorr") {
-        err_ = gretl_VAR_autocorrelation_test(model_, order, dataset_->dset,
-                                              opt_, printer_.prn_ptr());
+        err_ = gretl_VAR_autocorrelation_test(model_, order, dataset_->dset, opt_, printer_.prn_ptr());
     } else if (type == "arch") {
-        err_ = gretl_VAR_arch_test(model_, order, dataset_->dset,
-                                   opt_, printer_.prn_ptr());
+        err_ = gretl_VAR_arch_test(model_, order, dataset_->dset, opt_, printer_.prn_ptr());
     } else if (type == "normality") {
         err_ = gretl_VAR_normality_test(model_, opt_, printer_.prn_ptr());
     } else {
@@ -1463,12 +1399,8 @@ int GretlModel_VAR::find_variable_nr_ (const std::string &variable_name)
     int pos = 0;
 
     while (iss >> token) {
-        if (token == ";") {
-            break;
-        }
-        if (token == variable_name) {
-            return pos;
-        }
+        if (token == ";") break;
+        if (token == variable_name) return pos;
         ++pos;
     }
 
@@ -1483,9 +1415,8 @@ void GretlModel_VAR::irf (int target, int shock, double alpha)
     py::dict res;
 
     // we compute IRFs
-    gretl_matrix_ptr irf(gretl_VAR_get_impulse_response(model_, target, shock,
-                                                        default_VAR_horizon( dataset_->dset),
-                                                        alpha, dataset_->dset, &err_));
+    gretl_matrix_ptr irf(gretl_VAR_get_impulse_response(model_, target, shock, default_VAR_horizon(dataset_->dset), alpha, dataset_->dset, &err_));
+    
     if (err_) handle_gretl_error(err_);
 
     // we manufacture resulting object
@@ -1496,6 +1427,7 @@ void GretlModel_VAR::irf (int target, int shock, double alpha)
     if (alpha > 0.0) res[py::cast("alpha")] = alpha;
 
     auto val = convert_GretlType_to_GretlTypes(GRETL_TYPE_MATRIX, irf.get(), 0, err_);
+    
     if (err_) handle_gretl_error(err_);
     res[py::cast("results")] = variant_to_pyobject(std::move(*val));
 
@@ -1533,15 +1465,10 @@ void GretlModel_VAR::irf (const std::string &target, const std::string &shock, d
 // VECM libgretl MODEL
 // extends: GretlModel_VAR
 //
-GretlModel_VAR_VECM::GretlModel_VAR_VECM (const std::string &ylist, const int order,
-                                          const int rank, const py::kwargs &kwargs)
-                                          : GretlModel_VAR(ylist, order, VECM, kwargs),
-                                          coint_rank_(rank)
+GretlModel_VAR_VECM::GretlModel_VAR_VECM (const std::string &ylist, const int order, const int rank, const py::kwargs &kwargs)
+                                          : GretlModel_VAR(ylist, order, VECM, kwargs), coint_rank_(rank)
 {
-    if (kwargs.contains("rxlist") && !kwargs["rxlist"].is_none()) {
-        vars_.append(" ; ");
-        vars_.append(kwargs["rxlist"].cast<std::string>());
-    }
+    if (kwargs.contains("rxlist") && !kwargs["rxlist"].is_none()) vars_.append(" ; ").append(kwargs["rxlist"].cast<std::string>());
 }
 
 void GretlModel_VAR_VECM::fit (void)
@@ -1565,36 +1492,27 @@ char *GretlModel_VAR_VECM::save_ec_term (const int nr,
     std::string ec_term_name;
 
     // we retrive ec_term
-    gretl_double_ptr ec_term(gretl_VECM_get_EC(model_, nr-1,
-                                               dataset_->dset, &err_));
+    gretl_double_ptr ec_term(gretl_VECM_get_EC(model_, nr-1, dataset_->dset, &err_));
+    
     if (err_) handle_gretl_error(err_);
 
     // we set name
-    if (name.empty()) {
-        ec_term_name = std::string("m") + std::to_string(id_)
-            + std::string("_EC") + std::to_string(nr);
-    }
+    if (name.empty()) ec_term_name = std::string("m") + std::to_string(id_) + std::string("_EC") + std::to_string(nr);
 
     // actual work
-    return dataset_->add_series(std::move(ec_term),
-                           name.empty() ? ec_term_name : name,
-                             dataset_->dset->n);
+    return dataset_->add_series(std::move(ec_term), name.empty() ? ec_term_name : name, dataset_->dset->n);
 }
 
 //
 // Native Multiple Equation libgretl SYSTEM (NME)
 // extends: GretlModel
 //
-GretlModel_NME::GretlModel_NME (const std::string &method,
-                                const py::kwargs &kwargs)
-                                : GretlModel(GRETL_OBJ_SYS, SYSTEM, kwargs),
-                                method_(method)
+GretlModel_NME::GretlModel_NME (const std::string &method, const py::kwargs &kwargs)
+                                : GretlModel(GRETL_OBJ_SYS, SYSTEM, kwargs), method_(method)
 {
     // we load system definition
     get_object_from_dict<std::vector<std::string>>(kwargs, "equations", equations_);
-    if (equations_.empty()) {
-        throw std::runtime_error("no equations definitions passed");
-    }
+    if (equations_.empty()) throw std::runtime_error("no equations definitions passed");
     get_object_from_dict<std::vector<std::string>>(kwargs, "instruments", instruments_);
     get_object_from_dict<std::vector<std::string>>(kwargs, "identities", identities_);
     get_object_from_dict<std::string>(kwargs, "endogs", endogs_);
@@ -1612,17 +1530,13 @@ GretlModel_NME::~GretlModel_NME (void)
 void GretlModel_NME::fit (void)
 {
     //lambda for setting instruments_, identities_ and endogs
-    auto do_system_parse_line = [&](const char *type,
-                                    std::vector<std::string> &src)
+    auto do_system_parse_line = [&](const char *type, std::vector<std::string> &src)
     {
         if (src.empty()) return;
-
         std::string line;
 
         for (const auto &el : src) {
-            line = std::string(type);
-            line.append(" ");
-            line.append(el);
+            line = std::string(type).append(" ").append(el);
             err_ = system_parse_line(model_, line.c_str(), dataset_->dset);
             if (err_) handle_gretl_error(err_);
         }
@@ -1632,8 +1546,7 @@ void GretlModel_NME::fit (void)
     check_if_estimated_();
 
     // system definition
-    model_ = equation_system_start(std::string("method=").append(method_).data(),
-                                   NULL, opt_, &err_);
+    model_ = equation_system_start(std::string("method=").append(method_).data(), NULL, opt_, &err_);
     if (err_) handle_gretl_error(err_);
 
     // we define equations
@@ -1648,13 +1561,13 @@ void GretlModel_NME::fit (void)
     do_system_parse_line("identity", identities_);
     if (endogs_.size()) {
         std::string line = "endog " + endogs_;
+        
         err_ = system_parse_line(model_, line.c_str(), dataset_->dset);
         if (err_) handle_gretl_error(err_);
     }
 
     // do the job
-    err_ = equation_system_finalize(model_, dataset_->dset,
-                                   opt_, printer_.prn_ptr());
+    err_ = equation_system_finalize(model_, dataset_->dset, opt_, printer_.prn_ptr());
     if (err_) handle_gretl_error(err_);
 
     // we save model
@@ -1678,8 +1591,7 @@ void GretlModel_NME::forecast (const py::args &args, const py::kwargs &kwargs)
     py::print("GretlModel_NME::forecast(): to be written");
 }
 
-void GretlModel_NME::restrict (const py::list &impose,
-                               const py::kwargs &kwargs)
+void GretlModel_NME::restrict (const py::list &impose, const py::kwargs &kwargs)
 {
     do_restrict_<equation_system>(model_, impose, kwargs);
 }
@@ -1693,10 +1605,8 @@ char *GretlModel_NME::save_uhat (int eqn, const std::string &name) const
 // libgretl contributed packages
 // extends: GretlModel
 //
-GretlModel_package::GretlModel_package (const std::string &name,
-                                        const py::kwargs &kwargs)
-                                        : GretlModel(GRETL_OBJ_ANY, NC, kwargs),
-                                        kwargs_(kwargs)
+GretlModel_package::GretlModel_package (const std::string &name, const py::kwargs &kwargs)
+                                        : GretlModel(GRETL_OBJ_ANY, NC, kwargs), kwargs_(kwargs)
 {
     std::string basename;
     std::string suffix = "";
@@ -1712,22 +1622,22 @@ GretlModel_package::GretlModel_package (const std::string &name,
     }
 
     // we load the package
-    GPKG_ = GretlPackage::load_package(basename, suffix);
+    gpkg_ = GretlPackage::load_package(basename, suffix);
 
     // we setup some internal parameters
-    main_func_name_ = GPKG_->main_func_get_name();
+    main_func_name_ = gpkg_->main_func_get_name();
 
-    if (!GPKG_->is_estimator()) throw std::runtime_error(GPKG_->get_name() + " package doesn't provide an estimation method");
-    if (main_func_name_.empty()) throw std::runtime_error("no main function in package: " + GPKG_->get_name());
+    if (!gpkg_->is_estimator()) throw std::runtime_error( gpkg_->get_name() + " package doesn't provide an estimation method");
+    if (main_func_name_.empty()) throw std::runtime_error("no main function in package: " + gpkg_->get_name());
 
     // we register special functions (if exists)
-    print_func_name_ = GPKG_->get_function_with_role(UFUN_BUNDLE_PRINT);
-    fcast_func_name_ = GPKG_->get_function_with_role(UFUN_BUNDLE_FCAST);
+    print_func_name_ = gpkg_->get_function_with_role(UFUN_BUNDLE_PRINT);
+    fcast_func_name_ = gpkg_->get_function_with_role(UFUN_BUNDLE_FCAST);
 }
 
 void GretlModel_package::fit (void)
 {
-    res_ = GPKG_->function_exec(main_func_name_, dataset_, printer_, args_, kwargs_);
+    res_ = gpkg_->function_exec(main_func_name_, dataset_, printer_, args_, kwargs_);
 
     // saving results
     py::object self = py::cast(this);
@@ -1761,5 +1671,5 @@ py::object GretlModel_package::get_accessor (const std::string &name) const
 
 void GretlModel_package::functions (void) const
 {
-    GPKG_->show_functions();
+    gpkg_->show_functions();
 }

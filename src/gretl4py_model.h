@@ -335,7 +335,7 @@ class GretlModel_package : public GretlModel
 private:
     const py::kwargs kwargs_;
     const py::args args_;
-    GretlPackagePtr GPKG_;          // pointer to package to use
+    GretlPackagePtr gpkg_;          // pointer to package to use
     std::string main_func_name_;    // main function to call
     std::string print_func_name_;   // function with role: UFUN_BUNDLE_PRINT
     std::string fcast_func_name_;   // function with role: UFUN_BUNDLE_FCAST
