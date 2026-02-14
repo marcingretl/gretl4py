@@ -35,22 +35,19 @@ namespace py = pybind11;
 //
 class GretlPackage {
 private:
-    using FunctionMap = std::map<std::string, ufunc*>;          // map of pointers to functions in package
-    using FunctionArgs =
-        std::map<std::string, std::map<std::string, int>>;      // map of arguments and their id-s for public functions
-    using MainFuncNoOptDef = std::map<std::string, GretlType>;  // map of non-optional main_func arguments without default values
-    using FunctionArgsVec =
-        std::vector<std::pair<std::string, int>>;               // vector of arguments and their id-s for public functions
-    using FunctionArgsSort =
-        std::map<std::string, FunctionArgsVec>;                 // map of sorted arguments and their id-s for public functions
+    using FunctionMap = std::map<std::string, ufunc*>;                      // map of pointers to functions in package
+    using FunctionArgs = std::map<std::string, std::map<std::string, int>>; // map of arguments and their id-s for public functions
+    using MainFuncNoOptDef = std::map<std::string, GretlType>;              // map of non-optional main_func arguments without default values
+    using FunctionArgsVec = std::vector<std::pair<std::string, int>>;       // vector of arguments and their id-s for public functions
+    using FunctionArgsSort = std::map<std::string, FunctionArgsVec>;        // map of sorted arguments and their id-s for public functions
 
-    static inline std::map<std::string, GretlPackagePtr> GPKGs_;// registry of loaded contributed packages
+    static inline std::map<std::string, GretlPackagePtr> gpkgs_;// registry of loaded contributed packages
 
     const std::string pkg_name_;        // package name (base of filename)
     const std::string suffix_;          // filename suffix
     fnpkg *pkg_ = NULL;                 // pointer to package
-    GretlPrint GP_ = GretlPrint();      // printer (instance wide)
-    GretlBundle GB_;                    // info bundle [NOT USED YET]
+    GretlPrint printer_ = GretlPrint(); // printer (instance wide)
+    GretlBundle gb_;                    // info bundle [NOT USED YET]
     std::string main_func_ = "";        // name of main package function
     std::vector<std::string> jel_;      // vector of JEL codes
     bool defines_estimator_ = false;    // true if package implements estimation
@@ -65,26 +62,21 @@ private:
     std::string long_version_;          // package "long" version (string)
     int err_ = 0;
 
-    GretlPackage (const std::string &pkg_name, const std::string &suffix,
-                  bool print_summary = true);
+    GretlPackage (const std::string &pkg_name, const std::string &suffix, bool print_summary = true);
 
     void check_if_defines_estimator_ (void);
 
     template <typename T>
     T get_properties_ (const char *property);
 
-    void unpack_kwargs_package_ (const std::string &func_name,
-                                 fncall *func_call, GretlDatasetPtr &GD,
-                                 const py::kwargs &kwargs);
+    void unpack_kwargs_package_ (const std::string &func_name, fncall *func_call, GretlDatasetPtr &dataset, const py::kwargs &kwargs);
 public:
     ~GretlPackage (void);
 
     // static methods
     static void clear_registry (void);
 
-    static GretlPackagePtr load_package (const std::string &pkgname,
-                                         const std::string &suffix = "",
-                                         bool print_summary = true);
+    static GretlPackagePtr load_package (const std::string &pkgname, const std::string &suffix = "", bool print_summary = true);
 
     static bool package_loaded (const std::string &pkgname);
 
@@ -117,10 +109,7 @@ public:
 
     GretlType func_get_res_type (const std::string &name) const;
 
-    GretlPackageRes function_exec (const std::string &func_name,
-                                   GretlDatasetPtr &GD, GretlPrint &GP,
-                                   const py::args &args,
-                                   const py::kwargs &kwargs);
+    GretlPackageRes function_exec (const std::string &func_name, GretlDatasetPtr &dataset, GretlPrint &printer, const py::args &args, const py::kwargs &kwargs);
 
     std::string get_examples_path (const std::string &fname);
 
