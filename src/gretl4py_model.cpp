@@ -47,7 +47,7 @@ extern "C" {
 // GretlModel class methods
 //
 GretlModel::GretlModel (GretlObjType model_obj_type, GretlCmdIndex ci, const py::kwargs &kwargs)
-                        : id_(next_model_id_++), model_obj_type_(model_obj_type), ci_(ci), dataset_ (GretlDataset::default_dataset())
+                        : id_(next_model_id_++), model_obj_type_(model_obj_type), ci_(ci), dataset_(GretlDataset::default_dataset())
 {
     // we unpack kwargs
     if (py::len(kwargs) && ci_ != NC) {
@@ -179,8 +179,7 @@ void GretlModel::save_model_ (T *model)
 
 //T = { MODEL, GRETL_VAR, equation_system }
 template <typename T>
-void GretlModel::do_restrict_ (T *model, const py::list &impose,
-                               const py::kwargs &kwargs)
+void GretlModel::do_restrict_ (T *model, const py::list &impose, const py::kwargs &kwargs)
 {
     //
     // we test a restriction given as impose
