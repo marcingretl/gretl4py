@@ -1151,12 +1151,11 @@ void gretl_generate (const std::string &formula, GretlDatasetPtr dataset, const 
     // determine whether to use an explicit name or parse from formula
     if (name.empty()) {
         err = generate(formula.c_str(), dataset ? dataset->dset : NULL, GR_TYPE, OPT_NONE, global_printer.prn_ptr());
-
         if constexpr (GR_TYPE != GRETL_TYPE_SERIES) varname = extract_varname(formula);
     } else {
         const std::string expr = name + "=" + formula;
-        err = generate(expr.c_str(), dataset ? dataset->dset : NULL, GR_TYPE, OPT_NONE, global_printer.prn_ptr());
 
+        err = generate(expr.c_str(), dataset ? dataset->dset : NULL, GR_TYPE, OPT_NONE, global_printer.prn_ptr());
         if constexpr (GR_TYPE != GRETL_TYPE_SERIES) varname = name;
     }
     if (err) handle_gretl_error(err);
