@@ -1181,7 +1181,6 @@ void gretl_execute_script (const std::string &script)
     DATASET *dset = NULL;
     ExecState state;
     CMD cmd;
-    bool free_dset = false;
     int err = 0;
     
     // dataset and model to use
@@ -1191,8 +1190,9 @@ void gretl_execute_script (const std::string &script)
     if (GretlDataset::default_dataset()) {
         dset = GretlDataset::default_dataset()->dset;
     } else {
-        dset = datainfo_new();
-        free_dset = true;
+        gretl_dataset_ptr dataset(datainfo_new());
+
+        dset = dataset.get();
     }
     if (dset == NULL) handle_gretl_error(E_ALLOC);    
     
@@ -1211,5 +1211,4 @@ void gretl_execute_script (const std::string &script)
     global_printer.print();
     
     gretl_object_unref(model, GRETL_OBJ_EQN);
-    if (free_dset) destroy_dataset(dset);
 }
