@@ -21,12 +21,14 @@
 #include "gretl4py_utils.h"
 #include "gretl4py_packages.h"
 #include "gretl_calls.h"
+#include "gretl4py_internals.h"
 #include <gretl/libset.h>
 extern "C" {
     #include <gretl/gretl_string_table.h>
     #include <gretl/gretl_typemap.h>
     #include <gretl/gretl_www.h>
     #include <gretl/gretl_zip.h>
+    #include <gretl/interact.h>    
 }
 #include <filesystem>
 
@@ -1169,3 +1171,46 @@ void gretl_generate (const std::string &formula, GretlDatasetPtr dataset, const 
 template void gretl_generate<GRETL_TYPE_ANY>(const std::string&, GretlDatasetPtr, const std::string&);
 template void gretl_generate<GRETL_TYPE_LIST>(const std::string&, GretlDatasetPtr, const std::string&);
 template void gretl_generate<GRETL_TYPE_SERIES>(const std::string&, GretlDatasetPtr, const std::string&);
+
+void gretl_execute_script (const std::string &script)
+{
+    //
+    // apparatus to executing regular gretl scripts
+    //
+    char line[MAXLINE] = {'\0'};
+    MODEL *model = NULL;
+    DATASET *dset = NULL;
+    ExecState state;
+    CMD cmd;
+    bool free_dset = false;
+    int err = 0;
+    
+    // dataset and model to use
+    model = allocate_working_model();
+    if (model == NULL) handle_gretl_error(E_ALLOC);
+    
+    if (GretlDataset::default_dataset()) {
+        dset = GretlDataset::default_dataset()->dset;
+    } else {
+        dset = datainfo_new();
+        free_dset = true;
+    }
+    if (dset == NULL) handle_gretl_error(E_ALLOC);    
+    
+    // init apparatus
+    gretl_cmd_init(&cmd);
+    gretl_exec_state_init(&state, CONSOLE_EXEC, line, &cmd, model, global_printer.prn_ptr());
+    
+    // job start
+    *state.line = '\0';
+    std::strncat(state.line, script.c_str(), MAXLINE-2);
+    std::strcat(state.line, "\n");
+    err = parse_command_line(&state, dset, NULL);
+    if (err) handle_gretl_error(err);
+    err = gretl_cmd_exec(&state, dset);
+    if (err) handle_gretl_error(err);
+    global_printer.print();
+    
+    gretl_object_unref(model, GRETL_OBJ_EQN);
+    if (free_dset) destroy_dataset(dset);
+}
