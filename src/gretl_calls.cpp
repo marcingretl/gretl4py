@@ -1195,7 +1195,7 @@ void gretl_execute_script (const std::string &script)
         script_dataset.reset(datainfo_new());
         dset = script_dataset.get();
     }
-    if (dset == NULL) handle_gretl_error(E_ALLOC);    
+    if (dset == NULL) handle_gretl_error(E_ALLOC);
     
     // init apparatus
     gretl_cmd_init(&cmd);
