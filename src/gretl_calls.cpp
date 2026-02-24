@@ -1176,6 +1176,8 @@ void gretl_execute_script (const std::string &script)
     //
     // apparatus to executing regular gretl scripts
     //
+    static gretl_dataset_ptr script_dataset{nullptr};   // dataset for subsequent script calls
+
     char line[MAXLINE] = {'\0'};
     MODEL *model = NULL;
     DATASET *dset = NULL;
@@ -1187,12 +1189,11 @@ void gretl_execute_script (const std::string &script)
     model = allocate_working_model();
     if (model == NULL) handle_gretl_error(E_ALLOC);
     
-    if (GretlDataset::default_dataset()) {
-        dset = GretlDataset::default_dataset()->dset;
-    } else {
-        gretl_dataset_ptr dataset(datainfo_new());
-
-        dset = dataset.get();
+    if (script_dataset) dset = script_dataset.get();
+    if (dset == NULL && GretlDataset::default_dataset()) dset = GretlDataset::default_dataset()->dset;
+    if (dset == NULL) {
+        script_dataset.reset(datainfo_new());
+        dset = script_dataset.get();
     }
     if (dset == NULL) handle_gretl_error(E_ALLOC);    
     
