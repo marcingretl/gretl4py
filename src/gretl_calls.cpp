@@ -1190,7 +1190,6 @@ void gretl_execute_script (const std::string &script)
     if (model == NULL) handle_gretl_error(E_ALLOC);
     
     if (script_dataset) dset = script_dataset.get();
-    if (dset == NULL && GretlDataset::default_dataset()) dset = GretlDataset::default_dataset()->dset;
     if (dset == NULL) {
         script_dataset.reset(datainfo_new());
         dset = script_dataset.get();
@@ -1210,6 +1209,5 @@ void gretl_execute_script (const std::string &script)
     err = gretl_cmd_exec(&state, dset);
     if (err) handle_gretl_error(err);
     global_printer.print();
-    
     gretl_object_unref(model, GRETL_OBJ_EQN);
 }
