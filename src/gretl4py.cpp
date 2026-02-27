@@ -46,11 +46,10 @@ void init_gretl4py_model_py11(py::module_ &);
 PYBIND11_MODULE(_gretl, m)
 {
     // exceptions
-    py::register_exception_translator
-    ([](std::exception_ptr p)
+    py::register_exception_translator ([](std::exception_ptr p)
     {
         try {
-             if (p) std::rethrow_exception(p);
+              if (p) std::rethrow_exception(p);
         } catch (const file_not_found &e) {
             PyErr_SetString(PyExc_FileNotFoundError, e.what());
         }
@@ -88,6 +87,8 @@ PYBIND11_MODULE(_gretl, m)
           py::arg("varlist").none(true) = "", py::kw_only());
     m.def("run_hansl", &gretl_execute_script,
           py::arg("script").none(false));
+    m.def("run", &do_gretl_run,
+          py::arg("filename").none(false));
     m.def("set",
           [](const std::string &variable, const std::string &value, const py::kwargs &kwargs)
           {

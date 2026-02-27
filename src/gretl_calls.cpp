@@ -28,7 +28,7 @@ extern "C" {
     #include <gretl/gretl_typemap.h>
     #include <gretl/gretl_www.h>
     #include <gretl/gretl_zip.h>
-    #include <gretl/interact.h>    
+    #include <gretl/interact.h>
 }
 #include <filesystem>
 
@@ -444,13 +444,14 @@ void do_gretl_varlist (const py::kwargs &kwargs)
 
     // we o the job (based on interact.c)
     if (opt & OPT_T) {
-        list_user_vars_of_type( dataset ? dataset->dset : NULL, global_printer.prn_ptr());
+        list_user_vars_of_type(dataset ? dataset->dset : NULL, global_printer.prn_ptr());
     } else if (opt & OPT_S) {
         print_scalars(global_printer.prn_ptr());
     } else if (opt & OPT_A) {
-        list_ok_dollar_vars( dataset ? dataset->dset : NULL, global_printer.prn_ptr());
+        list_ok_dollar_vars(dataset ? dataset->dset : NULL, global_printer.prn_ptr());
     } else {
-        list_series( dataset ? dataset->dset : NULL, opt, global_printer.prn_ptr());
+        if (!dataset) handle_gretl_error(E_NODATA);
+        list_series(dataset->dset, opt, global_printer.prn_ptr());
     }
     global_printer.print();
 }
@@ -598,6 +599,18 @@ void do_gretl_pkg (const std::string &action, const std::string &pkgname,
     } else {
         throw std::invalid_argument("unsupported action: " + action);
     }
+}
+
+void do_gretl_run (const std::string &filename)
+{
+    //
+    // function mimics libgretl's 'run' command
+    //
+    std::filesystem::path path{filename};
+
+    if (!std::filesystem::exists(path) || !std::filesystem::is_regular_file(path)) handle_gretl_error(E_FOPEN, filename);
+
+    gretl_execute_script("run " + path.string());
 }
 
 template <GretlFunIndex FI>
@@ -910,7 +923,7 @@ template void genr<int>(const std::string&, const int&);
 template void genr<double>(const std::string&, const double&);
 template void genr<std::string>(const std::string&, const std::string&);
 
-void handle_gretl_error (int err, const std::string &ext_msg)
+[[noreturn]] void handle_gretl_error (int err, const std::string &ext_msg)
 {
     //
     // handle libgretl errors

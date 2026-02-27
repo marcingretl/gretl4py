@@ -67,6 +67,8 @@ py::object do_gretl_include (const std::string &filename);
 void do_gretl_pkg (const std::string &action, const std::string &pkgname,
                    const py::kwargs &kwargs);
 
+void do_gretl_run (const std::string &filename);
+
 template <GretlFunIndex FI>
 double gretl_get_pvalue_critval_pdf_cdf (const std::string &dist, double value,
                                          const py::object &param = py::none());
@@ -83,6 +85,7 @@ void genr (const std::string &formula, GretlDatasetPtr data);
 template <typename T>
 void genr (const std::string &name, const T &value);
 
+[[noreturn]]
 void handle_gretl_error (int err, const std::string &ext_msg = "");
 
 void gretl_valid_long_opt (gretlopt &opt, GretlCmdIndex ci,
