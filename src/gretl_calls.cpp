@@ -1232,7 +1232,7 @@ void gretl_execute_script (const T &script)
         add_line(script);
     } else if constexpr (std::is_same_v<T, py::iterable>) {
         for (const auto &el : script) {
-            if (!is_pystr(el)) throw std::invalid_argument(std::string("element ").append(py::str(el)).append(" must be string"));
+            if (!is_pystr(el)) handle_gretl_error(E_INVARG, py::str(el));
             auto line_str = el.template cast<std::string>();
 
             add_line(line_str);
