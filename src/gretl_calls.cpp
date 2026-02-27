@@ -610,7 +610,7 @@ void do_gretl_run (const std::string &filename)
 
     if (!std::filesystem::exists(path) || !std::filesystem::is_regular_file(path)) handle_gretl_error(E_FOPEN, filename);
 
-    gretl_execute_script("run " + path.string());
+    gretl_execute_script<std::string>("run " + path.string());
 }
 
 template <GretlFunIndex FI>
@@ -1184,7 +1184,8 @@ template void gretl_generate<GRETL_TYPE_ANY>(const std::string&, GretlDatasetPtr
 template void gretl_generate<GRETL_TYPE_LIST>(const std::string&, GretlDatasetPtr, const std::string&);
 template void gretl_generate<GRETL_TYPE_SERIES>(const std::string&, GretlDatasetPtr, const std::string&);
 
-void gretl_execute_script (const std::string &script)
+template <typename T>
+void gretl_execute_script (const T &script)
 {
     //
     // apparatus to executing regular gretl scripts
@@ -1196,7 +1197,20 @@ void gretl_execute_script (const std::string &script)
     DATASET *dset = NULL;
     ExecState state;
     CMD cmd;
-    int err = 0;
+
+    // lambda for execution just one script line
+    auto add_line = [&state, &dset](const std::string &line) -> void
+    {
+        int err = 0;
+
+        *state.line = '\0';
+        std::strncat(state.line, line.c_str(), MAXLINE-2);
+        std::strcat(state.line, "\n");
+        err = parse_command_line(&state, dset, NULL);
+        if (err) handle_gretl_error(err);
+        err = gretl_cmd_exec(&state, dset);
+        if (err) handle_gretl_error(err);
+    };
     
     // dataset and model to use
     model = allocate_working_model();
@@ -1213,14 +1227,21 @@ void gretl_execute_script (const std::string &script)
     gretl_cmd_init(&cmd);
     gretl_exec_state_init(&state, CONSOLE_EXEC, line, &cmd, model, global_printer.prn_ptr());
     
-    // job start
-    *state.line = '\0';
-    std::strncat(state.line, script.c_str(), MAXLINE-2);
-    std::strcat(state.line, "\n");
-    err = parse_command_line(&state, dset, NULL);
-    if (err) handle_gretl_error(err);
-    err = gretl_cmd_exec(&state, dset);
-    if (err) handle_gretl_error(err);
+    // do the job
+    if constexpr (std::is_same_v<T, std::string>) {
+        add_line(script);
+    } else if constexpr (std::is_same_v<T, py::iterable>) {
+        for (const auto &el : script) {
+            if (!is_pystr(el)) throw std::invalid_argument(std::string("element ").append(py::str(el)).append(" must be string"));
+            auto line_str = el.template cast<std::string>();
+
+            add_line(line_str);
+        }
+    } else {
+        static_assert(always_false<T>, "gretl_execute_script(): unknown type");
+    }
     global_printer.print();
     gretl_object_unref(model, GRETL_OBJ_EQN);
 }
+template void gretl_execute_script<std::string>(const std::string&);
+template void gretl_execute_script<py::iterable>(const py::iterable&);

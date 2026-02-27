@@ -85,8 +85,7 @@ void genr (const std::string &formula, GretlDatasetPtr data);
 template <typename T>
 void genr (const std::string &name, const T &value);
 
-[[noreturn]]
-void handle_gretl_error (int err, const std::string &ext_msg = "");
+[[noreturn]] void handle_gretl_error (int err, const std::string &ext_msg = "");
 
 void gretl_valid_long_opt (gretlopt &opt, GretlCmdIndex ci,
                            const std::string &key, const py::handle &val,
@@ -111,6 +110,7 @@ void do_gretl_delete_variables (const std::string &varname, const py::kwargs &kw
 template <GretlObjType OBJ_TYPE>
 py::object do_get_accessor (const std::string &name, GretlDatasetPtr dataset = nullptr, void *model = NULL);
 
-void gretl_execute_script (const std::string &script);
+template <typename T>
+void gretl_execute_script (const T &script);
 
 #endif // GRETL_CALLS_H

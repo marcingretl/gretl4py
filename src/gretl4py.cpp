@@ -85,7 +85,9 @@ PYBIND11_MODULE(_gretl, m)
           py::arg("name").none(false));
     m.def("print", &do_gretl_print<void>,
           py::arg("varlist").none(true) = "", py::kw_only());
-    m.def("run_hansl", &gretl_execute_script,
+    m.def("run_hansl", &gretl_execute_script<std::string>,
+          py::arg("script").none(false));
+    m.def("run_hansl", &gretl_execute_script<py::iterable>,
           py::arg("script").none(false));
     m.def("run", &do_gretl_run,
           py::arg("filename").none(false));
