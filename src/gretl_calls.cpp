@@ -1233,9 +1233,7 @@ void gretl_execute_script (const T &script)
     } else if constexpr (std::is_same_v<T, py::iterable>) {
         for (const auto &el : script) {
             if (!is_pystr(el)) handle_gretl_error(E_INVARG, py::str(el));
-            auto line_str = el.template cast<std::string>();
-
-            add_line(line_str);
+            add_line(el.template cast<std::string>());
         }
     } else {
         static_assert(always_false<T>, "gretl_execute_script(): unknown type");
