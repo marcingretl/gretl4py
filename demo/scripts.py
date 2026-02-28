@@ -3,10 +3,15 @@ import gretl
 # print accessor value
 gretl.run_hansl("eval $sysinfo")
 
+# open dataset and run OLS
 gretl.run_hansl("open bjg")
 gretl.run_hansl("ols 1 0 2")
 
-gretl.run_hansl("open denmark")
-gretl.run_hansl("list ylist = LRM LRY")
-gretl.run_hansl("list xlist = IBO IDE")
-gretl.run_hansl("vecm 4 1 ylist ; xlist")
+# define script as list of strings
+src = ['open denmark', 'list ylist = LRM LRY', 'list xlist = IBO IDE', 'vecm 4 1 ylist ; xlist']
+gretl.run_hansl(src)
+
+# run regular gretl script ('mle-advanced.inp')
+file = gretl.gretldir + '/scripts/mle-advanced.inp'
+print(file)
+gretl.run(file)

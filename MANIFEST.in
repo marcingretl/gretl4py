@@ -9,6 +9,7 @@ recursive-include gretl/data *.csv *.gdt
 recursive-include gretl/tmp *
 recursive-include gretl/examples *
 recursive-include gretl/functions *
+recursive-include gretl/scripts *
 
 # Exclude all bytecode, caches, and temp files
 global-exclude __pycache__ *.py[cod] *.pyo .DS_Store

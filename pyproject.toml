@@ -50,4 +50,5 @@ exclude = ["**/__pycache__"]
     "tmp/*",
     "examples/*",
     "functions/*",
+    "scripts/*",
 ]
