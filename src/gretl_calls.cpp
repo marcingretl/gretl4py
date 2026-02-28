@@ -54,6 +54,7 @@ extern "C" {
 static GretlPrint global_printer = GretlPrint();
 static int gretl4py_verbose = 0;
 std::unordered_set<std::string> user_vars;              // registry of user variables
+static gretl_dataset_ptr script_dataset{nullptr};       // dataset for subsequent script calls
 
 //////////////////////////////////////////////////
 // module related tools
@@ -1190,8 +1191,6 @@ void gretl_execute_script (const T &script)
     //
     // apparatus to executing regular gretl scripts
     //
-    static gretl_dataset_ptr script_dataset{nullptr};   // dataset for subsequent script calls
-
     char line[MAXLINE] = {'\0'};
     MODEL *model = NULL;
     DATASET *dset = NULL;
@@ -1210,6 +1209,7 @@ void gretl_execute_script (const T &script)
         if (err) handle_gretl_error(err);
         err = gretl_cmd_exec(&state, dset);
         if (err) handle_gretl_error(err);
+        global_printer.print();
     };
     
     // dataset and model to use
@@ -1238,7 +1238,6 @@ void gretl_execute_script (const T &script)
     } else {
         static_assert(always_false<T>, "gretl_execute_script(): unknown type");
     }
-    global_printer.print();
     gretl_object_unref(model, GRETL_OBJ_EQN);
 }
 template void gretl_execute_script<std::string>(const std::string&);
