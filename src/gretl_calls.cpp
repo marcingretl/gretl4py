@@ -610,7 +610,9 @@ void do_gretl_run (const std::string &filename)
     std::filesystem::path path{filename};
 
     if (!std::filesystem::exists(path) || !std::filesystem::is_regular_file(path)) handle_gretl_error(E_FOPEN, filename);
-
+    
+    gretl_set_batch_mode(1);
+    py::print("*** batch? ", gretl_in_batch_mode());
     gretl_execute_script<std::string>("run " + path.string());
 }
 
@@ -1201,13 +1203,26 @@ void gretl_execute_script (const T &script)
     auto add_line = [&state, &dset](const std::string &line) -> void
     {
         int err = 0;
-
+        
         *state.line = '\0';
         std::strncat(state.line, line.c_str(), MAXLINE-2);
-        std::strcat(state.line, "\n");
+        std::strcat(state.line, "\n");        
         err = parse_command_line(&state, dset, NULL);
-        if (err) handle_gretl_error(err);
-        err = gretl_cmd_exec(&state, dset);
+        if (err) handle_gretl_error(err);        
+        CMD *cmd = state.cmd;
+        
+        if (cmd->ci == NULLDATA) {
+            if (cmd->order < 1) {
+                pputs(global_printer.prn_ptr(), _("Data series length count missing or invalid\n"));
+                global_printer.print();
+                handle_gretl_error(E_INVARG, "nulldata");
+            } else {
+                //cli_clear_data(s, dset);
+                err = open_nulldata(dset, script_dataset ? 1 : 0, cmd->order, cmd->opt, global_printer.prn_ptr());
+            }
+        } else {
+            err = gretl_cmd_exec(&state, dset);
+        }
         if (err) handle_gretl_error(err);
         global_printer.print();
     };
