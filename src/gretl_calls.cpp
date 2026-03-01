@@ -55,7 +55,7 @@ static GretlPrint global_printer = GretlPrint();
 static int gretl4py_verbose = 0;
 std::unordered_set<std::string> user_vars;              // registry of user variables
 static gretl_dataset_ptr script_dataset{nullptr};       // dataset for subsequent script calls
-static bool nulldata_executed = false;                  // flag that dataset created by 'nulldata' command
+static bool nulldata_executed = false;                  // flag that script_dataset was created by 'nulldata' command
 
 //////////////////////////////////////////////////
 // module related tools
@@ -1202,8 +1202,15 @@ void gretl_execute_script (const T &script)
     ExecState state;
     CMD cmd;
 
+    // lambda for clearing a dataset
+    auto clear_dataset = [&dset](void) -> void
+    {
+        script_dataset.reset(datainfo_new());
+        dset = script_dataset.get();
+    };
+
     // lambda for execution just one script line
-    auto add_line = [&state, &dset](const std::string &line) -> void
+    auto add_line = [&state, &dset, clear_dataset](const std::string &line) -> void
     {
         int err = 0;
         CMD *cmd = NULL;
@@ -1215,8 +1222,7 @@ void gretl_execute_script (const T &script)
         if (err) handle_gretl_error(err);
         cmd = state.cmd;
         if (cmd->ci == OPEN && nulldata_executed) {
-            script_dataset.reset(datainfo_new());
-            dset = script_dataset.get();
+            clear_dataset();
             nulldata_executed = false;
         }
         if (cmd->ci == NULLDATA) {
@@ -1224,8 +1230,7 @@ void gretl_execute_script (const T &script)
                 handle_gretl_error(E_INVARG, "nulldata", "data series length count missing or invalid");
             } else {
                 // in gretlcli.c here cli_clear_data() is called => lines below taken from there
-                script_dataset.reset(datainfo_new());
-                dset = script_dataset.get();
+                clear_dataset();
                 clear_model(state.model);
                 gretl_cmd_destroy_context(cmd);
                 err = open_nulldata(dset, 1, cmd->order, cmd->opt, global_printer.prn_ptr());
@@ -1241,7 +1246,6 @@ void gretl_execute_script (const T &script)
     // dataset and model to use
     model = allocate_working_model();
     if (model == NULL) handle_gretl_error(E_ALLOC);
-
     if (!script_dataset && !nulldata_executed) script_dataset.reset(datainfo_new());
     dset = script_dataset.get();
     if (dset == NULL) handle_gretl_error(E_ALLOC);
