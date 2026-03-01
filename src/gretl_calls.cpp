@@ -55,6 +55,7 @@ static GretlPrint global_printer = GretlPrint();
 static int gretl4py_verbose = 0;
 std::unordered_set<std::string> user_vars;              // registry of user variables
 static gretl_dataset_ptr script_dataset{nullptr};       // dataset for subsequent script calls
+static bool nulldata_executed = false;                  // flag that dataset created by 'nulldata' command
 
 //////////////////////////////////////////////////
 // module related tools
@@ -123,14 +124,14 @@ void gretl4py_cleanup (void)
 }
 
 GretlBundlePtr about (bool do_print)
-{    
+{
     static const std::unordered_set<std::string> lgretl_strings = { "dotdir", "gnuplot", "gretldir", "seats", "tramo", "tramodir", "workdir", "x12a", "x12adir" };
     GretlBundlePtr gb_strings = std::make_shared<GretlBundle>();
-    GretlBundlePtr res = std::make_shared<GretlBundle>();        
+    GretlBundlePtr res = std::make_shared<GretlBundle>();
     std::string mod_ver, lg_ver, py11_ver;
     gretl_bundle *b = NULL;
-    int err = 0;    
-    
+    int err = 0;
+
     b = get_sysinfo_bundle(&err);
     if (err) handle_gretl_error(err);
     GretlBundlePtr gb_sysinfo = std::make_shared<GretlBundle>(b);
@@ -146,7 +147,7 @@ GretlBundlePtr about (bool do_print)
     // built-in strings
     for (const auto &it : lgretl_strings) {
         auto val = std::string(get_built_in_string_by_name(it.c_str()));
-        
+
         gb_strings->set_element<std::string>(it, val);
     }
 
@@ -544,13 +545,13 @@ void do_gretl_pkg (const std::string &action, const std::string &pkgname,
 
     // we check options
     auto opt = unpack_kwargs_command(PKG, fake_dataset, kwargs);
-    
+
     err = incompatible_options(opt, static_cast<gretlopt>(OPT_L | OPT_S));
     if (err) handle_gretl_error(err);
 
     // we allow only .zip or .gfn (lowercase!!!)
     std::string suffix = pkgname_as_path.extension().string();
-    
+
     if (!suffix.empty() && suffix != ".zip" && suffix != ".gfn") throw std::invalid_argument("unsupported file type: " + suffix);
 
     if (action == "install") {
@@ -610,7 +611,7 @@ void do_gretl_run (const std::string &filename)
     std::filesystem::path path{filename};
 
     if (!std::filesystem::exists(path) || !std::filesystem::is_regular_file(path)) handle_gretl_error(E_FOPEN, filename);
-    
+
     gretl_set_batch_mode(1);
     py::print("*** batch? ", gretl_in_batch_mode());
     gretl_execute_script<std::string>("run " + path.string());
@@ -628,7 +629,7 @@ double gretl_get_pvalue_critval_pdf_cdf (const std::string &dist, double value,
 
     // we look for distribution code (for "t", "z", etc.)
     const int dist_code = dist_code_from_string(dist.c_str());
-    
+
     if (dist_code == static_cast<int>(D_NONE)) throw std::invalid_argument("unknown distribution code: '" + dist + "'");
 
     // we normalize params into either a view over a NumPy double array
@@ -637,9 +638,9 @@ double gretl_get_pvalue_critval_pdf_cdf (const std::string &dist, double value,
     std::vector<double> params_vec;
 
     // normalize Python input -> double*
-    if (param.is_none()) {        
+    if (param.is_none()) {
         const double val = 0.0;
-        
+
         params_ptr = &val;  // we fake libgretl a little
     } else if (is_pynumarray(param)) {
         NumPyArrayView arr_view;
@@ -653,7 +654,7 @@ double gretl_get_pvalue_critval_pdf_cdf (const std::string &dist, double value,
         params_ptr = params_vec.data();
     } else if (is_pysequence(param)) {
         py::sequence seq = py::cast<py::sequence>(param);
-        
+
         params_vec.reserve(seq.size());
         for (py::handle item : seq) {
             params_vec.push_back(py::cast<double>(item));
@@ -701,7 +702,7 @@ py::array_t<double> matrix_functions_wrapper (const std::string &dist, const T &
             return gretl_get_pvalue_critval_pdf_cdf<GretlFunIndex::F_PDF>(dist, x, param);
         } else if constexpr (FI == GretlFunIndex::F_CDF) {
             return gretl_get_pvalue_critval_pdf_cdf<GretlFunIndex::F_CDF>(dist, x, param);
-        } else if constexpr (FI == GretlFunIndex::F_PVAL) {            
+        } else if constexpr (FI == GretlFunIndex::F_PVAL) {
             return gretl_get_pvalue_critval_pdf_cdf<GretlFunIndex::F_PVAL>(dist, x, param);
         } else if constexpr (FI == GretlFunIndex::F_CRIT) {
             return gretl_get_pvalue_critval_pdf_cdf<GretlFunIndex::F_CRIT>(dist, x, param);
@@ -745,7 +746,7 @@ py::array_t<double> matrix_functions_wrapper (const std::string &dist, const T &
         auto r = res.mutable_unchecked<2>();
         auto src = src_mat.unchecked<2>();
 
-        for (ssize_t i = 0; i < n; ++i) {            
+        for (ssize_t i = 0; i < n; ++i) {
             for (ssize_t j = 0; j < k; ++j) {
                 r(i, j) = F(src(i, j));
             }
@@ -844,7 +845,7 @@ void do_gretl_delete_variables (const std::string &varname, const py::kwargs &kw
     } else {
         if (!var_list && !dataset) throw std::invalid_argument("'" + varname + "': series does not exist");
         err = gretl_delete_variables(var_list.get(), var_list ? NULL : varname.c_str(), opt, dataset->dset,
-                                     var_list ? &renumber : NULL, global_printer.prn_ptr());        
+                                     var_list ? &renumber : NULL, global_printer.prn_ptr());
     }
     global_printer.print();
     if (err) handle_gretl_error(err);
@@ -867,7 +868,7 @@ py::object do_get_accessor (const std::string &name, GretlDatasetPtr dataset, vo
     //
     int err = 0;
     auto res = gretl_generate_gretl_object(name.c_str(), err, OBJ_TYPE, dataset ? dataset->dset : NULL, model);
-    
+
     if (err) handle_gretl_error(err);
 
     return variant_to_pyobject(std::move(*res));
@@ -926,11 +927,12 @@ template void genr<int>(const std::string&, const int&);
 template void genr<double>(const std::string&, const double&);
 template void genr<std::string>(const std::string&, const std::string&);
 
-[[noreturn]] void handle_gretl_error (int err, const std::string &ext_msg)
+[[noreturn]] void handle_gretl_error (int err, const std::string &ext_msg, const std::string &ext_msg_desc)
 {
     //
     // handle libgretl errors
     // ext_msg: additional information to be appended (e.g. file name)
+    // ext_msg2: additional description for ext_msg
     // note: arg_errors is not complete!!!
     //
     static const std::unordered_set<int> arg_errors{ E_ARGS, E_INVARG, E_UNKVAR, E_TOOFEW };
@@ -943,6 +945,7 @@ template void genr<std::string>(const std::string&, const std::string&);
     if (err == E_FOPEN) throw file_not_found(msg + ": " + ext_msg);
     if (arg_errors.count(err)) {
         if (!ext_msg.empty()) msg.append(" for '").append(ext_msg).append("'");
+        if (!ext_msg_desc.empty()) msg.append(": ").append(ext_msg_desc);
         throw std::invalid_argument(msg);
     }
     throw std::runtime_error(msg);
@@ -1115,7 +1118,7 @@ gretl_list_ptr list_from_formula (const std::string &formula, DATASET *dset, int
 
     // we do the job
     int *raw_list = generate_list(tmp.c_str(), dset, 0, &err);
-    
+
     if (handle_error && err) handle_gretl_error(err);
 
     return gretl_list_ptr(raw_list);
@@ -1203,22 +1206,30 @@ void gretl_execute_script (const T &script)
     auto add_line = [&state, &dset](const std::string &line) -> void
     {
         int err = 0;
-        
+        CMD *cmd = NULL;
+
         *state.line = '\0';
         std::strncat(state.line, line.c_str(), MAXLINE-2);
-        std::strcat(state.line, "\n");        
+        std::strcat(state.line, "\n");
         err = parse_command_line(&state, dset, NULL);
-        if (err) handle_gretl_error(err);        
-        CMD *cmd = state.cmd;
-        
+        if (err) handle_gretl_error(err);
+        cmd = state.cmd;
+        if (cmd->ci == OPEN && nulldata_executed) {
+            script_dataset.reset(datainfo_new());
+            dset = script_dataset.get();
+            nulldata_executed = false;
+        }
         if (cmd->ci == NULLDATA) {
             if (cmd->order < 1) {
-                pputs(global_printer.prn_ptr(), _("Data series length count missing or invalid\n"));
-                global_printer.print();
-                handle_gretl_error(E_INVARG, "nulldata");
+                handle_gretl_error(E_INVARG, "nulldata", "data series length count missing or invalid");
             } else {
-                //cli_clear_data(s, dset);
-                err = open_nulldata(dset, script_dataset ? 1 : 0, cmd->order, cmd->opt, global_printer.prn_ptr());
+                // in gretlcli.c here cli_clear_data() is called => lines below taken from there
+                script_dataset.reset(datainfo_new());
+                dset = script_dataset.get();
+                clear_model(state.model);
+                gretl_cmd_destroy_context(cmd);
+                err = open_nulldata(dset, 1, cmd->order, cmd->opt, global_printer.prn_ptr());
+                if (!err && !nulldata_executed) nulldata_executed = true;
             }
         } else {
             err = gretl_cmd_exec(&state, dset);
@@ -1226,22 +1237,19 @@ void gretl_execute_script (const T &script)
         if (err) handle_gretl_error(err);
         global_printer.print();
     };
-    
+
     // dataset and model to use
     model = allocate_working_model();
     if (model == NULL) handle_gretl_error(E_ALLOC);
-    
-    if (script_dataset) dset = script_dataset.get();
-    if (dset == NULL) {
-        script_dataset.reset(datainfo_new());
-        dset = script_dataset.get();
-    }
+
+    if (!script_dataset && !nulldata_executed) script_dataset.reset(datainfo_new());
+    dset = script_dataset.get();
     if (dset == NULL) handle_gretl_error(E_ALLOC);
-    
+
     // init apparatus
     gretl_cmd_init(&cmd);
     gretl_exec_state_init(&state, CONSOLE_EXEC, line, &cmd, model, global_printer.prn_ptr());
-    
+
     // do the job
     if constexpr (std::is_same_v<T, std::string>) {
         add_line(script);
