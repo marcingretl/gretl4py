@@ -1167,7 +1167,7 @@ void gretl_generate (const std::string &formula, GretlDatasetPtr dataset, const 
         if (!dataset) handle_gretl_error(E_NODATA);
     }
 
-    // determine whether to use an explicit name or parse from formula
+    // determine whether to use an explicit name or parse it from formula
     if (name.empty()) {
         err = generate(formula.c_str(), dataset ? dataset->dset : NULL, GR_TYPE, OPT_NONE, global_printer.prn_ptr());
         if constexpr (GR_TYPE != GRETL_TYPE_SERIES) varname = extract_varname(formula);
@@ -1201,6 +1201,7 @@ void gretl_execute_script (const T &script)
     DATASET *dset = NULL;
     ExecState state;
     CMD cmd;
+    int err = 0;
 
     // lambda for clearing a dataset
     auto clear_dataset = [&dset](void) -> void
@@ -1210,7 +1211,7 @@ void gretl_execute_script (const T &script)
     };
 
     // lambda for executing just one line
-    auto add_line = [&state, &dset, clear_dataset](const std::string &line) -> void
+    auto exec_line = [&state, &dset, clear_dataset](const std::string &line) -> void
     {
         int err = 0;
         CMD *cmd = NULL;
@@ -1226,16 +1227,13 @@ void gretl_execute_script (const T &script)
             nulldata_executed = false;
         }
         if (cmd->ci == NULLDATA) {
-            if (cmd->order < 1) {
-                handle_gretl_error(E_INVARG, "nulldata", "data series length count missing or invalid");
-            } else {
-                // in gretlcli.c, cli_clear_data() is called here => lines below taken from there
-                clear_dataset();
-                clear_model(state.model);
-                gretl_cmd_destroy_context(cmd);
-                err = open_nulldata(dset, 1, cmd->order, cmd->opt, global_printer.prn_ptr());
-                if (!err && !nulldata_executed) nulldata_executed = true;
-            }
+            if (cmd->order < 1) handle_gretl_error(E_INVARG, "nulldata", "data series length count missing or invalid");
+            // in gretlcli.c, cli_clear_data() is called here => lines below taken from there
+            clear_dataset();
+            clear_model(state.model);
+            gretl_cmd_destroy_context(cmd);
+            err = open_nulldata(dset, 1, cmd->order, cmd->opt, global_printer.prn_ptr());
+            if (!err && !nulldata_executed) nulldata_executed = true;
         } else {
             err = gretl_cmd_exec(&state, dset);
         }
@@ -1251,16 +1249,17 @@ void gretl_execute_script (const T &script)
     if (dset == NULL) handle_gretl_error(E_ALLOC);
 
     // init apparatus
-    gretl_cmd_init(&cmd);
+    err = gretl_cmd_init(&cmd);
+    if (err) handle_gretl_error(err);
     gretl_exec_state_init(&state, CONSOLE_EXEC, line, &cmd, model, global_printer.prn_ptr());
 
     // do the job
     if constexpr (std::is_same_v<T, std::string>) {
-        add_line(script);
+        exec_line (script);
     } else if constexpr (std::is_same_v<T, py::iterable>) {
         for (const auto &el : script) {
             if (!is_pystr(el)) handle_gretl_error(E_INVARG, py::str(el));
-            add_line(el.template cast<std::string>());
+            exec_line(el.template cast<std::string>());
         }
     } else {
         static_assert(always_false<T>, "gretl_execute_script(): unknown type");
