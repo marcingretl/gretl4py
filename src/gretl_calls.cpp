@@ -51,11 +51,11 @@ extern "C" {
 }
 
 // global variables (some used outside this file)
-static GretlPrint global_printer = GretlPrint();
 static int gretl4py_verbose = 0;
-std::unordered_set<std::string> user_vars;              // registry of user variables
+static GretlPrint global_printer = GretlPrint();
 static gretl_dataset_ptr script_dataset{nullptr};       // dataset for subsequent script calls
-static bool nulldata_executed = false;                  // flag that script_dataset was created by 'nulldata' command
+static bool nulldata_executed = false;                  // flag that script_dataset was created/modified by 'nulldata' command
+std::unordered_set<std::string> user_vars;              // registry of user variables
 
 //////////////////////////////////////////////////
 // module related tools
@@ -1194,7 +1194,7 @@ template <typename T>
 void gretl_execute_script (const T &script)
 {
     //
-    // apparatus to executing regular gretl scripts
+    // apparatus for executing regular hansl code
     //
     char line[MAXLINE] = {'\0'};
     MODEL *model = NULL;
@@ -1209,7 +1209,7 @@ void gretl_execute_script (const T &script)
         dset = script_dataset.get();
     };
 
-    // lambda for execution just one script line
+    // lambda for executing just one line
     auto add_line = [&state, &dset, clear_dataset](const std::string &line) -> void
     {
         int err = 0;
@@ -1229,7 +1229,7 @@ void gretl_execute_script (const T &script)
             if (cmd->order < 1) {
                 handle_gretl_error(E_INVARG, "nulldata", "data series length count missing or invalid");
             } else {
-                // in gretlcli.c here cli_clear_data() is called => lines below taken from there
+                // in gretlcli.c, cli_clear_data() is called here => lines below taken from there
                 clear_dataset();
                 clear_model(state.model);
                 gretl_cmd_destroy_context(cmd);
