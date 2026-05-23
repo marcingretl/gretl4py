@@ -12,7 +12,7 @@ def run_example():
   # switch of verbosity
   gretl.set('verbose', 'off')
 
-  # we load gig addon
+  # we load addon for Hausman-Taylor estimator
   HT = gretl.include("hausman_taylor.gfn")
 
   # force libgretl to use the decimal point character

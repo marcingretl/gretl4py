@@ -1213,6 +1213,10 @@ void gretl_execute_script (const T &script)
     // lambda for executing just one line
     auto exec_line = [&state, &dset, clear_dataset](const std::string &line) -> void
     {
+        //
+        // this function reproduces functionality of cli_exec_line() from gretlcli.c
+        // line: contains line to be executed
+        //
         int err = 0;
         CMD *cmd = NULL;
 
@@ -1255,7 +1259,7 @@ void gretl_execute_script (const T &script)
 
     // do the job
     if constexpr (std::is_same_v<T, std::string>) {
-        exec_line (script);
+        exec_line(script);
     } else if constexpr (std::is_same_v<T, py::iterable>) {
         for (const auto &el : script) {
             if (!is_pystr(el)) handle_gretl_error(E_INVARG, py::str(el));
