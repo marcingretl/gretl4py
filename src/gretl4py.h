@@ -32,7 +32,7 @@ extern "C" {
 #include "gretl4py_data.h"
 #include "gretl4py_model.h"
 
-#define LIBGRETL_MIN_VER 53
+#define LIBGRETL_MIN_VER 55
 
 #define GRETL_PYBIND11_DEBUG 0
 

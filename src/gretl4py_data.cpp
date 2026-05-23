@@ -808,7 +808,7 @@ void GretlDataset::smpl (const std::string &startobs, const std::string &endobs,
         // mimics 'static int check_smpl_full (gretlopt)' from interact.c
         //
         opt = static_cast<gretlopt>(opt ^ OPT_F);
-        
+
         if (opt & OPT_Q) opt = static_cast<gretlopt>(opt ^ OPT_Q);
 
         return opt == OPT_NONE ? 0 : E_BADOPT;
@@ -848,17 +848,17 @@ void GretlDataset::smpl (const std::string &startobs, const std::string &endobs,
     } else if (opt_ & OPT_F) {
         err_ = check_smpl_full(opt_);
         if (!err_) err_ = restore_full_sample(dset, NULL);
-    } else if (opt_ == OPT_T && startobs.empty()) {        
+    } else if (opt_ == OPT_T && startobs.empty()) {
         err_ = perma_sample(dset, opt_, printer_.prn_ptr(), NULL);                                              // --permanent, by itself
-    } else if (opt_ & (OPT_U | OPT_X)) {        
+    } else if (opt_ & (OPT_U | OPT_X)) {
         err_ = set_panel_sample(startobs.c_str(), endobs.c_str(), opt_, dset, NULL, printer_.prn_ptr());        // panel data: --unit or --time option
-    } else if (smpl_restrict(opt_)) {        
+    } else if (smpl_restrict(opt_)) {
         err_ = restrict_sample(startobs.c_str(), var_list.get(), dset, NULL, opt_, printer_.prn_ptr(), NULL);   // --restrict, --dummy, etc.
     } else if (startobs.empty() && endobs.empty()) {
         print_smpl(dset, get_full_length_n(), OPT_F, printer_.prn_ptr());                                       // no args given: give a report
         //print_smpl(dset, get_full_length_n(), OPT_NONE, GP_.prn_ptr());
         report = true;
-    } else {        
+    } else {
         err_ = set_sample(startobs.c_str(), endobs.c_str(), dset, opt_);                                        // simple setting of t1, t2 business /
     }
     if (err_) handle_gretl_error(err_);
@@ -883,7 +883,7 @@ GretlDatasetPtr GretlDataset::getitem_impl (const T &slice)
     if constexpr (std::is_same_v<T, py::slice>) {
         py::object start = slice.attr("start");
         py::object stop = slice.attr("stop");
-        
+
         startobs = py::isinstance<py::none>(start) ? "" : std::to_string(start.cast<int>());
         endobs = py::isinstance<py::none>(stop) ? "" : std::to_string(stop.cast<int>());
         slice_str = startobs + ":" + endobs;
@@ -920,7 +920,7 @@ GretlDatasetPtr GretlDataset::getitem_impl (const T &slice)
     }
 
     // we do the job
-    if constexpr (std::is_same_v<T, py::list>) {        
+    if constexpr (std::is_same_v<T, py::list>) {
         err_ = gretl_delete_variables(drop_list.get(), NULL, OPT_F, res->dset, NULL, printer_.prn_ptr());   // dropping variables
     } else {
         // for sampling
@@ -992,7 +992,7 @@ py::object GretlDataset::cov (const std::string &vars)
     mat.reset(gretl_covariance_matrix_from_varlist(var_list.get(), dset, NULL, &err_));
     if (err_) handle_gretl_error(err_);
     auto res = convert_GretlType_to_GretlTypes(GRETL_TYPE_MATRIX, mat.get(), 0, err_);
-    
+
     if (err_) handle_gretl_error(err_);
 
     return variant_to_pyobject(std::move(*res));
@@ -1324,7 +1324,7 @@ void GretlDataset::test (const std::string &type, const std::string &varlist, co
 
     if (kwargs.contains("silent")) {
         auto val = kwargs["silent"];
-        
+
         if (!is_bool_kwarg(val, "silent")) printer_.print();
     }
 
@@ -1339,7 +1339,7 @@ py::object GretlDataset::get_series (const std::string &series) const
     //
     double *x = dset->Z[get_series_id(series)];
     auto res = convert_GretlType_to_GretlTypes(GRETL_TYPE_SERIES, x, dset->n, err_);
-    
+
     if (err_) handle_gretl_error(err_);
 
     return variant_to_pyobject(std::move(*res));
@@ -1489,7 +1489,7 @@ void GretlBundle::extract_ (const T &t)
     if (n_keys == 0) return;
 
     strings_array_ptr keys(raw_ptr, StringsArrayDeleter{});
-    
+
     keys.get_deleter().nstrs = n_keys;
     for (int i=0; i<n_keys; ++i) {
         const char *key_cstr = keys.get()[i];
@@ -1580,8 +1580,8 @@ py::list GretlBundle::keys (void)
 
     if (!raw_ptr) throw std::runtime_error("failed to obtain bundle keys");
     strings_array_ptr keys(raw_ptr, StringsArrayDeleter{});
-    
-    keys.get_deleter().nstrs = n_keys;    
+
+    keys.get_deleter().nstrs = n_keys;
     if (n_keys == 0) return py::list{};
 
     // we copy keys into std::vector while smart pointer owns memory
@@ -1602,16 +1602,22 @@ T GretlBundle::get_element (const std::string &key)
     // we get bundle element by name (key)
     // and return either py::object or GretlTypesPtr
     //
+    void *data = nullptr;
     int n = 0;
 
     GretlType gtype = gretl_bundle_get_member_type(b_, key.c_str(), &err_);
-    
     if (err_) handle_gretl_error(err_);
-    void *data = gretl_bundle_get_target(b_, key.c_str(), &gtype, &n, &err_);
-    
+
+    if (gtype == GRETL_TYPE_SERIES) {
+        auto *mat = gretl_bundle_get_series(b_, key.c_str(), &err_);
+        n = mat->rows;
+        data = mat->val;
+    } else {
+        data = gretl_bundle_get_target(b_, key.c_str(), &gtype, &err_);
+    }
     if (err_) handle_gretl_error(err_);
+
     auto val = convert_GretlType_to_GretlTypes(gtype, data, n, err_);
-    
     if (err_) handle_gretl_error(err_);
     if constexpr (std::is_same_v<T, py::object>) {
         return variant_to_pyobject(std::move(*val));
@@ -1643,9 +1649,9 @@ void GretlBundle::set_element (const std::string &key, const T &t)
         mat.reset(gretl_matrix_alloc(arr_view.rows, arr_view.cols));
 
         NumPyArray_to_gretl_matrix<gretl_matrix>(arr_view, mat.get());
-        err_ = gretl_bundle_donate_data(b_, key.c_str(), mat.release(), GRETL_TYPE_MATRIX, 0);
+        err_ = gretl_bundle_donate_data(b_, key.c_str(), mat.release(), GRETL_TYPE_MATRIX);
     } else if constexpr (std::is_same_v<T, GretlBundlePtr>) {
-        err_ = gretl_bundle_set_data(b_, key.c_str(), t->get_ptr(), GRETL_TYPE_BUNDLE, 0);
+        err_ = gretl_bundle_set_data(b_, key.c_str(), t->get_ptr(), GRETL_TYPE_BUNDLE);
     } else {
         static_assert(always_false<T>, "GretlBundle::set_element(): unknown type");
     }
