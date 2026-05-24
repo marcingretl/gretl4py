@@ -1602,22 +1602,14 @@ T GretlBundle::get_element (const std::string &key)
     // we get bundle element by name (key)
     // and return either py::object or GretlTypesPtr
     //
-    void *data = nullptr;
-    int n = 0;
-
     GretlType gtype = gretl_bundle_get_member_type(b_, key.c_str(), &err_);
     if (err_) handle_gretl_error(err_);
-
-    if (gtype == GRETL_TYPE_SERIES) {
-        auto *mat = gretl_bundle_get_series(b_, key.c_str(), &err_);
-        n = mat->rows;
-        data = mat->val;
-    } else {
-        data = gretl_bundle_get_target(b_, key.c_str(), &gtype, &err_);
-    }
+    auto *data = gretl_bundle_get_target(b_, key.c_str(), &gtype, &err_);
     if (err_) handle_gretl_error(err_);
-
-    auto val = convert_GretlType_to_GretlTypes(gtype, data, n, err_);
+    auto val = convert_GretlType_to_GretlTypes(gtype,
+                                               gtype == GRETL_TYPE_SERIES ? static_cast<gretl_matrix*>(data)->val : data,
+                                               gtype == GRETL_TYPE_SERIES ? static_cast<gretl_matrix*>(data)->rows : 0,
+                                               err_);
     if (err_) handle_gretl_error(err_);
     if constexpr (std::is_same_v<T, py::object>) {
         return variant_to_pyobject(std::move(*val));
