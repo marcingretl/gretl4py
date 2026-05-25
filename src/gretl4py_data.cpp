@@ -1611,6 +1611,7 @@ T GretlBundle::get_element (const std::string &key)
                                                gtype == GRETL_TYPE_SERIES ? static_cast<gretl_matrix*>(data)->rows : 0,
                                                err_);
     if (err_) handle_gretl_error(err_);
+
     if constexpr (std::is_same_v<T, py::object>) {
         return variant_to_pyobject(std::move(*val));
     } else if constexpr (std::is_same_v<T, GretlTypesPtr>) {
@@ -1672,7 +1673,6 @@ py::object GretlBundle::pop (const std::string &key)
     // retrieves and deletes element under @key
     //
     py::object res = get_element<py::object>(key);
-
     delete_element(key);
 
     return res;
