@@ -1603,6 +1603,7 @@ T GretlBundle::get_element (const std::string &key)
     // and return either py::object or GretlTypesPtr
     //
     GretlType gtype = gretl_bundle_get_member_type(b_, key.c_str(), &err_);
+
     if (err_) handle_gretl_error(err_);
     auto *data = gretl_bundle_get_target(b_, key.c_str(), &gtype, &err_);
     if (err_) handle_gretl_error(err_);
