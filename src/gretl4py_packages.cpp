@@ -441,6 +441,8 @@ std::string GretlPackage::get_name (void) const
     return pkg_name_;
 }
 
+//use_lgretl: if we use gretl4py code (true) or libgretl (false)
+template <bool use_lgretl>
 void GretlPackage::show_functions (const std::string &name)
 {
     //
@@ -467,30 +469,38 @@ void GretlPackage::show_functions (const std::string &name)
     for (const auto &[key, val] : func_args_sorted_) {
         if (!name.empty() && func_to_show.count(key) == 0) continue;
         func_ptr = func_ptrs_.at(key);
-        type = static_cast<GretlType>(user_func_get_return_type(func_ptr));
-        py::print(key, "->", gretl_type_get_name(type), (key == main_func_ ? "[main] " : ""));
-        for (const auto &it : val) {
-            type = static_cast<GretlType>(fn_param_type(func_ptr, it.second));
-            auto default_value = fn_param_default(func_ptr, it.second);
-            std::string default_value_str;
 
-            if (default_value != NADBL && !(std::isnan)(default_value)) {
-                const char *tname = gretl_type_get_name(type);
+        if constexpr (use_lgretl == true) {
+            print_function_signature(func_ptr, printer_.prn_ptr());
+            printer_.print();
+        } else {
+            type = static_cast<GretlType>(user_func_get_return_type(func_ptr));
+            py::print(key, "->", gretl_type_get_name(type), (key == main_func_ ? "[main] " : ""));
+            for (const auto &it : val) {
+                type = static_cast<GretlType>(fn_param_type(func_ptr, it.second));
+                auto default_value = fn_param_default(func_ptr, it.second);
+                std::string default_value_str;
 
-                if (!std::strcmp(tname, "int")) {
-                    default_value_str = std::to_string(int(default_value));
-                } else if (!std::strcmp(tname, "bool")) {
-                    default_value_str = default_value ? "true" : "false";
+                if (default_value != NADBL && !(std::isnan)(default_value)) {
+                    const char *tname = gretl_type_get_name(type);
+
+                    if (!std::strcmp(tname, "int")) {
+                        default_value_str = std::to_string(int(default_value));
+                    } else if (!std::strcmp(tname, "bool")) {
+                        default_value_str = default_value ? "true" : "false";
+                    }
                 }
+                type_str = "(";
+                py::print("  ", it.first, type_str.append(gretl_type_get_name(type)).append(")"),
+                        (!default_value_str.empty() ? "default: " + default_value_str : "")
+                        + std::string((fn_param_optional(func_ptr, it.second) ? "[optional]" : "")));
             }
-            type_str = "(";
-            py::print("  ", it.first, type_str.append(gretl_type_get_name(type)).append(")"),
-                      (!default_value_str.empty() ? "default: " + default_value_str : "")
-                      + std::string((fn_param_optional(func_ptr, it.second) ? "[optional]" : "")));
+            py::print();
         }
     }
-    py::print();
 }
+template void GretlPackage::show_functions<true>(const std::string&);
+template void GretlPackage::show_functions<false>(const std::string&);
 
 py::list GretlPackage::get_functions (void) const
 {

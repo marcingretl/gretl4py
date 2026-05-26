@@ -91,6 +91,7 @@ public:
 
     std::string get_name (void) const;
 
+    template <bool use_lgretl>
     void show_functions (const std::string &name = "");
 
     py::list get_functions (void) const;

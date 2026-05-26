@@ -313,7 +313,9 @@ void init_gretl4py_package_py11(py::module_ &m)
                                })
     .def("__repr__", &GretlPackage::repr_impl)
     .def("get_name", &GretlPackage::get_name)
-    .def("show_functions", &GretlPackage::show_functions,
+    .def("show_functions", &GretlPackage::show_functions<false>,
+         py::arg("name").none(true) = "")
+    .def("show_signatures", &GretlPackage::show_functions<true>,
          py::arg("name").none(true) = "")
     .def("set_main", &GretlPackage::set_main,
          py::arg("name").none(false))
@@ -334,9 +336,9 @@ void init_gretl4py_package_py11(py::module_ &m)
              if (err) handle_gretl_error(err);
 
              // we printout if needed
-             const char *no_printing[] = { "quiet", "silent" };             
+             const char *no_printing[] = { "quiet", "silent" };
              bool printout = true;
-             
+
              for (const char *key : no_printing) {
                 if (kwargs.contains(key) && is_pybool(kwargs[key]) && kwargs[key].cast<bool>()) {
                      printout = false;

@@ -131,7 +131,7 @@ void GretlModel::save_model_ (T *model)
     //
     // we record successful estimation
     estimated_ = true;
-    
+
     // whatever happens later, we "transfer" the model to libgretl,
     // so from that very moment libgretl owns the memory
     gretl_object_ref(model, model_obj_type_);
@@ -143,7 +143,7 @@ void GretlModel::save_model_ (T *model)
         err_ = model->err;
     }
     if (err_) handle_gretl_error(err_);
-    
+
     // we link model to the dataset used for estimation
     dataset_->linked_models_add(id_);
 
@@ -199,7 +199,7 @@ void GretlModel::do_restrict_ (T *model, const py::list &impose, const py::kwarg
     for (auto &item : impose) {
         if (!is_pystr(item)) throw std::invalid_argument("given restriction is not string literal");
         auto item_str = item.cast<std::string>();
-        
+
         gretl4py_trim(item_str);
         if (my_rset == NULL) {
             if constexpr (std::is_same_v<T, MODEL>) {
@@ -247,7 +247,7 @@ void GretlModel::do_restrict_ (T *model, const py::list &impose, const py::kwarg
 
     if (kwargs.contains("silent")) {
         auto val = kwargs["silent"];
-        
+
         if (!is_bool_kwarg(val, "silent")) printer_.print();
     }
 }
@@ -302,14 +302,14 @@ void GretlModel::gretl_do_forecast_ (void *model, const py::args &args,
         for (int i=0; i<n_args; ++i) {
             if (clean_kwargs.contains(positional_args[i])) throw py::type_error("multiple values for argument '" + std::string(positional_args[i]) + "'");
             py::object obj = args[i];
-            
+
             add_to_param(obj);
         }
         if (!left) return;
         for (int i=max_positional_args-left; i<max_positional_args; ++i) {
             const char *key = positional_args[i];
             py::object obj = clean_kwargs.attr("pop")(key, py::none());
-            
+
             if (!obj.is_none()) add_to_param(obj, key);
         }
     }
@@ -662,7 +662,7 @@ void GretlModel_NSE::test (const std::string &type, const py::kwargs &kwargs)
 
     if (kwargs.contains("silent")) {
         auto val = kwargs["silent"];
-        
+
         if (!is_bool_kwarg(val, "silent")) printer_.print();
     }
 }
@@ -709,7 +709,7 @@ void GretlModel_NSE::test (const std::string &type, const std::string &varlist,
 
     if (kwargs.contains("silent")) {
         auto val = kwargs["silent"];
-        
+
         if (!is_bool_kwarg(val, "silent")) printer_.print();
     }
 }
@@ -730,7 +730,7 @@ char *GretlModel_NSE::gretl_get_fit_or_resid (const std::string &name) const
     char tmp_name[VNAMELEN] = {0};
     gchar *pdesc_raw = NULL;
     gretl_double_ptr data(get_fit_or_resid(model_, dataset_->dset, IDX, tmp_name, &pdesc_raw, &err_));
-    
+
     if (err_) handle_gretl_error(err_);
 
     // we save name and description
@@ -767,7 +767,7 @@ void GretlModel_NSE::regexp_extract_ (const std::string &formula, std::string &f
 
     std::sregex_iterator begin(formula.begin(), formula.end(), formula_regex);
     std::sregex_iterator end;
-    
+
     formula_left = formula;
     formula_right.clear();
 
@@ -814,7 +814,7 @@ GretlModel_NSE_arima::GretlModel_NSE_arima (const std::string &y, const py::tupl
     // we set up seasonal parameters
     if (kwargs.contains("seasonal") && !kwargs["seasonal"].is_none()) {
         const py::tuple seas = kwargs["seasonal"].cast<py::tuple>();
-        
+
         P_ = D_ = Q_ = 0;
         get_arima_order(seas, P_, D_, Q_);
         if (P_ > 0 || D_ > 0 || Q_ > 0) seasonal_ = 1;
@@ -873,7 +873,7 @@ void GretlModel_NSE_arima::fit (void)
 //
 template <auto F, GretlCmdIndex CI>
 GretlModel_NSE_Driver<F, CI>::GretlModel_NSE_Driver (const std::string &formula, const py::kwargs &kwargs)
-                                                     : GretlModel_NSE(CI, kwargs), formula_(formula)                                                     
+                                                     : GretlModel_NSE(CI, kwargs), formula_(formula)
 {}
 
 template <auto F, GretlCmdIndex CI>
@@ -1368,7 +1368,7 @@ void GretlModel_VAR::test (const std::string &type, const py::kwargs &kwargs)
 
     if (kwargs.contains("silent")) {
         auto val = kwargs["silent"];
-        
+
         if (!is_bool_kwarg(val, "silent")) printer_.print();
     }
 }
@@ -1415,7 +1415,7 @@ void GretlModel_VAR::irf (int target, int shock, double alpha)
 
     // we compute IRFs
     gretl_matrix_ptr irf(gretl_VAR_get_impulse_response(model_, target, shock, default_VAR_horizon(dataset_->dset), alpha, dataset_->dset, &err_));
-    
+
     if (err_) handle_gretl_error(err_);
 
     // we manufacture resulting object
@@ -1426,7 +1426,7 @@ void GretlModel_VAR::irf (int target, int shock, double alpha)
     if (alpha > 0.0) res[py::cast("alpha")] = alpha;
 
     auto val = convert_GretlType_to_GretlTypes(GRETL_TYPE_MATRIX, irf.get(), 0, err_);
-    
+
     if (err_) handle_gretl_error(err_);
     res[py::cast("results")] = variant_to_pyobject(std::move(*val));
 
@@ -1491,7 +1491,7 @@ char *GretlModel_VAR_VECM::save_ec_term (const int nr, const std::string &name) 
 
     // we retrive ec_term
     gretl_double_ptr ec_term(gretl_VECM_get_EC(model_, nr-1, dataset_->dset, &err_));
-    
+
     if (err_) handle_gretl_error(err_);
 
     // we set name
@@ -1559,7 +1559,7 @@ void GretlModel_NME::fit (void)
     do_system_parse_line("identity", identities_);
     if (endogs_.size()) {
         std::string line = "endog " + endogs_;
-        
+
         err_ = system_parse_line(model_, line.c_str(), dataset_->dset);
         if (err_) handle_gretl_error(err_);
     }
@@ -1669,5 +1669,5 @@ py::object GretlModel_package::get_accessor (const std::string &name) const
 
 void GretlModel_package::functions (void) const
 {
-    gpkg_->show_functions();
+    gpkg_->show_functions<true>();
 }

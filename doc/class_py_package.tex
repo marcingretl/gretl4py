@@ -72,3 +72,12 @@ The \classpypackage class provides the following public methods:
 	If \textit{name} is empty, the signatures of all functions
 	are displayed; otherwise, only the signatures of the
 	specified \textit{name} is shown (space separated).}
+
+\gretlfpycmd{show\_signatures()}\label{met:gretlpackage::show_signatures}
+\estdesc{Prints the signatures of the public functions provided
+	by the package\newline
+	in a \lgretl style.}
+\begin{lstlisting}[style=pythonstylefoot]
+.show_signatures(name: str = "")
+\end{lstlisting}
+\generaldesc{This method prints functions signatures in a \lgretl style.}

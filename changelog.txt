@@ -1,5 +1,6 @@
 version 0.51:
     - function returned type: support for GRETL_TYPE_NUMERIC added
+    - new GretlPackage::show_signatures() which prints functions signature in libgretl way
 
 version 0.50:
     - several bugs fixed (including the one related with exporting nested bundles to dict)
