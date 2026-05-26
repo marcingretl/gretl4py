@@ -597,11 +597,12 @@ GretlPackageRes GretlPackage::function_exec (const std::string &func_name, Gretl
     err_ = gretl_function_exec(func_call, res.type, dataset ? dataset->dset : NULL, res.out_ptr(), printer.prn_ptr());
     if (err_) handle_gretl_error(err_);
 
-    // in case of 'GRETL_TYPE_NUMERIC' as returned type we must determine true type of returned object
-    if (res.type == GRETL_TYPE_NUMERIC) res.type = fncall_get_return_type(func_call);
-
-    // for GRETL_TYPE_SERIES we must record length
-    if (res.type == GRETL_TYPE_SERIES) res.n = dataset->dset->n;
+    // handling special cases
+    if (res.type == GRETL_TYPE_NUMERIC) {
+        res.type = fncall_get_return_type(func_call); // for 'GRETL_TYPE_NUMERIC' as return type we must determine true type of returned object
+    } else if (res.type == GRETL_TYPE_SERIES) {
+        res.n = dataset->dset->n; // for GRETL_TYPE_SERIES we must record length
+    }
 
     return res;
 }
