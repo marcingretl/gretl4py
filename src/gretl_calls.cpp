@@ -45,6 +45,10 @@ extern "C" {
 # define COMPILER_IDENT __VERSION__
 #endif
 
+#define ENDRUN (NC + 1)
+#define RUNLOOP (NC + 2)
+#define XOR_CMDFLAG(x, flag) x = static_cast<CmdFlags>((x) ^ (flag))
+
 // external symbols
 extern "C" {
     double bvnorm_cdf (double rho, double a, double b); // from gretl_normal.c
@@ -55,8 +59,11 @@ extern "C" {
 static int gretl4py_verbose = 0;
 static GretlPrint global_printer = GretlPrint();
 static gretl_dataset_ptr script_dataset{nullptr};       // dataset for subsequent script calls
-static bool nulldata_executed = false;                  // flag that script_dataset was created/modified by 'nulldata' command
 std::unordered_set<std::string> user_vars;              // registry of user variables
+
+// variables used by script exexution
+static bool nulldata_executed = false;                  // flag that script_dataset was created/modified by 'nulldata' command
+int batch;
 
 //////////////////////////////////////////////////
 // module related tools
@@ -1196,6 +1203,8 @@ void gretl_execute_script (const T &script)
 {
     //
     // apparatus for executing regular hansl code
+    // note: this function acts as "main" in gretlcli.c
+    // with cli_exec_line() as exec_line() lambda
     //
     char line[MAXLINE] = {'\0'};
     MODEL *model = NULL;
@@ -1218,14 +1227,14 @@ void gretl_execute_script (const T &script)
         // this function reproduces functionality of cli_exec_line() from gretlcli.c
         // line: contains line to be executed
         //
-        int err = 0;
-        CMD *cmd = NULL;
+        int renumber = 0, err = 0;
+        CMD *cmd = nullptr;
         auto prn = global_printer.prn_ptr();
 
         *state.line = '\0';
         std::strncat(state.line, line.c_str(), MAXLINE-2);
         std::strcat(state.line, "\n");
-        err = parse_command_line(&state, dset, NULL);
+        err = parse_command_line(&state, dset, nullptr);
         if (err) handle_gretl_error(err);
         cmd = state.cmd;
 
@@ -1245,7 +1254,17 @@ void gretl_execute_script (const T &script)
         // as for now, we _do not_ reproduce gretl_exec_state_set_callback(s, cli_exec_callback, OPT_NONE);
         switch (cmd->ci) {
             case DELEET:
-                py::print(gretl_command_word(DELEET), " not implemented yet");
+                err = gretl_delete_variables(cmd->list, cmd->param, cmd->opt, dset, &renumber, prn);
+                if (err) handle_gretl_error(err);
+                if (renumber && !batch) {
+                    pputs(prn, _("Take note: variables have been renumbered"));
+                    pputc(prn, '\n');
+                    maybe_list_series(dset, prn);
+                }
+                if (err && cmd->flags & CMD_CATCH) {
+                    XOR_CMDFLAG(cmd->flags, CMD_CATCH);
+                    err = 0;
+                }
                 break;
 
             case HELP:
@@ -1254,7 +1273,7 @@ void gretl_execute_script (const T &script)
 
             case NULLDATA:
                 if (cmd->order < 1) handle_gretl_error(E_INVARG, "nulldata", "data series length count missing or invalid");
-                // in gretlcli.c, cli_clear_data() is called here => lines below taken from there
+                // in gretlcli.c, cli_clear_data() is called here
                 clear_dataset();
                 clear_model(state.model);
                 gretl_cmd_destroy_context(cmd);
@@ -1262,9 +1281,10 @@ void gretl_execute_script (const T &script)
                 if (!err && !nulldata_executed) nulldata_executed = true;
                 break;
 
-            /*case RUNLOOP:
+            case RUNLOOP:
+                py::print("RUNLOOP");
                 err = gretl_loop_exec(&state, dset);
-                break;*/
+                break;
 
             default:
                 err = gretl_cmd_exec(&state, dset);
@@ -1285,6 +1305,11 @@ void gretl_execute_script (const T &script)
     err = gretl_cmd_init(&cmd);
     if (err) handle_gretl_error(err);
     gretl_exec_state_init(&state, CONSOLE_EXEC, line, &cmd, model, global_printer.prn_ptr());
+
+    // some pre-work
+    if (state.cmd->ci != RUNLOOP) {
+        //here we'll have pre-works;
+    }
 
     // do the job
     if constexpr (std::is_same_v<T, std::string>) {
