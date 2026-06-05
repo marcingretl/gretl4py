@@ -29,6 +29,7 @@ extern "C" {
     #include <gretl/gretl_www.h>
     #include <gretl/gretl_zip.h>
     #include <gretl/interact.h>
+    #include <gretl/monte_carlo.h>
 }
 #include <filesystem>
 
@@ -1229,8 +1230,12 @@ void gretl_execute_script (const T &script)
         cmd = state.cmd;
 
         // non-available commands
-        py::print(cmd->ci == DELEET);
+        if (cmd->ci == QUIT) {
+            py::print(gretl_command_word(cmd->ci), " not available in gretl4py");
+            return;
+        }
 
+        // nulldata special handling
         if (cmd->ci == OPEN && nulldata_executed) {
             clear_dataset();
             nulldata_executed = false;
@@ -1239,6 +1244,14 @@ void gretl_execute_script (const T &script)
         // note: here we do what gretlcli does in 'cmd_proceed'
         // as for now, we _do not_ reproduce gretl_exec_state_set_callback(s, cli_exec_callback, OPT_NONE);
         switch (cmd->ci) {
+            case DELEET:
+                py::print(gretl_command_word(DELEET), " not implemented yet");
+                break;
+
+            case HELP:
+                cli_help(cmd->param, cmd->parm2, cmd->opt, NULL, prn);
+                break;
+
             case NULLDATA:
                 if (cmd->order < 1) handle_gretl_error(E_INVARG, "nulldata", "data series length count missing or invalid");
                 // in gretlcli.c, cli_clear_data() is called here => lines below taken from there
@@ -1248,6 +1261,10 @@ void gretl_execute_script (const T &script)
                 err = open_nulldata(dset, 1, cmd->order, cmd->opt, prn);
                 if (!err && !nulldata_executed) nulldata_executed = true;
                 break;
+
+            /*case RUNLOOP:
+                err = gretl_loop_exec(&state, dset);
+                break;*/
 
             default:
                 err = gretl_cmd_exec(&state, dset);

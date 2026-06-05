@@ -95,6 +95,8 @@ struct ExecState_ {
 };
 
 void gretl_exec_state_init (ExecState *s, ExecFlags flags, char *line, CMD *cmd, MODEL *model, PRN *prn);
+
+int cli_help (const char *hlpword, const char *param, gretlopt opt, char **pbuf, PRN *prn);
 }
 
 #endif // GRETL4PY_INTERNALS_H
