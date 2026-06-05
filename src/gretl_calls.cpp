@@ -61,9 +61,9 @@ static GretlPrint global_printer = GretlPrint();
 static gretl_dataset_ptr script_dataset{nullptr};       // dataset for subsequent script calls
 std::unordered_set<std::string> user_vars;              // registry of user variables
 
-// variables used by script exexution
+// variables used by script execution
 static bool nulldata_executed = false;                  // flag that script_dataset was created/modified by 'nulldata' command
-int batch;
+const bool batch = false;                               // we never run in "batch" mode in gretl4py
 
 //////////////////////////////////////////////////
 // module related tools
@@ -620,8 +620,6 @@ void do_gretl_run (const std::string &filename)
 
     if (!std::filesystem::exists(path) || !std::filesystem::is_regular_file(path)) handle_gretl_error(E_FOPEN, filename);
 
-    gretl_set_batch_mode(1);
-    py::print("*** batch? ", gretl_in_batch_mode());
     gretl_execute_script<std::string>("run " + path.string());
 }
 
@@ -1198,6 +1196,7 @@ template void gretl_generate<GRETL_TYPE_ANY>(const std::string&, GretlDatasetPtr
 template void gretl_generate<GRETL_TYPE_LIST>(const std::string&, GretlDatasetPtr, const std::string&);
 template void gretl_generate<GRETL_TYPE_SERIES>(const std::string&, GretlDatasetPtr, const std::string&);
 
+// T = {py::iterable ; std::string} (the latter for script execution)
 template <typename T>
 void gretl_execute_script (const T &script)
 {
@@ -1205,6 +1204,7 @@ void gretl_execute_script (const T &script)
     // apparatus for executing regular hansl code
     // note: this function acts as "main" in gretlcli.c
     // with cli_exec_line() as exec_line() lambda
+    // (as well as other static functions)
     //
     char line[MAXLINE] = {'\0'};
     MODEL *model = NULL;
@@ -1220,38 +1220,16 @@ void gretl_execute_script (const T &script)
         dset = script_dataset.get();
     };
 
-    // lambda for executing just one line
-    auto exec_line = [&state, &dset, clear_dataset](const std::string &line) -> void
+    // lambda which runs switch as in 'cmd_proceed' of cli_exec_line()
+    auto cmd_proceed = [&state, &dset, clear_dataset](CMD *cmd, PRN *prn) -> int
     {
         //
-        // this function reproduces functionality of cli_exec_line() from gretlcli.c
-        // line: contains line to be executed
-        //
-        int renumber = 0, err = 0;
-        CMD *cmd = nullptr;
-        auto prn = global_printer.prn_ptr();
-
-        *state.line = '\0';
-        std::strncat(state.line, line.c_str(), MAXLINE-2);
-        std::strcat(state.line, "\n");
-        err = parse_command_line(&state, dset, nullptr);
-        if (err) handle_gretl_error(err);
-        cmd = state.cmd;
-
-        // non-available commands
-        if (cmd->ci == QUIT) {
-            py::print(gretl_command_word(cmd->ci), " not available in gretl4py");
-            return;
-        }
-
-        // nulldata special handling
-        if (cmd->ci == OPEN && nulldata_executed) {
-            clear_dataset();
-            nulldata_executed = false;
-        }
-
         // note: here we do what gretlcli does in 'cmd_proceed'
         // as for now, we _do not_ reproduce gretl_exec_state_set_callback(s, cli_exec_callback, OPT_NONE);
+        //
+        int renumber = 0;   // verify if we need it at all
+        int err = 0;
+
         switch (cmd->ci) {
             case DELEET:
                 err = gretl_delete_variables(cmd->list, cmd->param, cmd->opt, dset, &renumber, prn);
@@ -1284,13 +1262,60 @@ void gretl_execute_script (const T &script)
             case RUNLOOP:
                 py::print("RUNLOOP");
                 err = gretl_loop_exec(&state, dset);
+                cmd->ci = 0;
                 break;
 
             default:
                 err = gretl_cmd_exec(&state, dset);
                 break;
         }
+
+        return err;
+    };
+
+    // lambda for executing just one line
+    auto exec_line = [&state, &dset, clear_dataset, cmd_proceed](const std::string &line) -> void
+    {
+        //
+        // this function reproduces functionality of cli_exec_line() from gretlcli.c
+        // line: contains line to be executed
+        //
+        int err = 0;
+        CMD *cmd = nullptr;
+        auto prn = global_printer.prn_ptr();
+
+        *state.line = '\0';
+        std::strncat(state.line, line.c_str(), MAXLINE-2);
+        std::strcat(state.line, "\n");
+        err = parse_command_line(&state, dset, nullptr);
         if (err) handle_gretl_error(err);
+        cmd = state.cmd;
+
+        // non-available commands
+        if (cmd->ci == QUIT) {
+            std::string msg = "'";
+            msg.append(gretl_command_word(cmd->ci));
+            msg.append("' command not available in gretl4py");
+            py::print(msg);
+            return;
+        }
+
+        // nulldata special handling
+        if (cmd->ci == OPEN && nulldata_executed) {
+            clear_dataset();
+            nulldata_executed = false;
+        }
+
+        // loop handling
+        if (gretl_execute_loop()) cmd->ci = RUNLOOP;
+
+        // finally we run cmd_proceed() as in gretlcli.c
+        err = cmd_proceed(cmd, prn);
+
+        if (err) {
+            gretl_exec_state_uncomment(&state);
+            handle_gretl_error(err);
+        }
         global_printer.print();
     };
 
@@ -1305,11 +1330,6 @@ void gretl_execute_script (const T &script)
     err = gretl_cmd_init(&cmd);
     if (err) handle_gretl_error(err);
     gretl_exec_state_init(&state, CONSOLE_EXEC, line, &cmd, model, global_printer.prn_ptr());
-
-    // some pre-work
-    if (state.cmd->ci != RUNLOOP) {
-        //here we'll have pre-works;
-    }
 
     // do the job
     if constexpr (std::is_same_v<T, std::string>) {

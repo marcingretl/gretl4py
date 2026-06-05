@@ -96,6 +96,8 @@ struct ExecState_ {
 
 void gretl_exec_state_init (ExecState *s, ExecFlags flags, char *line, CMD *cmd, MODEL *model, PRN *prn);
 
+void gretl_exec_state_uncomment (ExecState *s);
+
 int cli_help (const char *hlpword, const char *param, gretlopt opt, char **pbuf, PRN *prn);
 }
 

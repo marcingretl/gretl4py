@@ -1,10 +1,11 @@
 import gretl
 
 # non-available commands
-src = ['x = mnormal(2,2)', 'print x', 'delete x', 'print x']
-#src = ['delete x']
+src = ['x = mnormal(2,2)', 'print x', 'delete x']
 #src = ['N=10', 'loop N', 'eval $sysinfo', 'endloop']
 gretl.run_hansl(src)
+file = '/home/marcin/cvs/Gretl/gretl-gretl4py/demo/test.inp'
+gretl.run(file)
 exit()
 
 # print accessor value
