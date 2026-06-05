@@ -1,5 +1,11 @@
 import gretl
 
+# non-available commands
+#src = ['x = mnormal(2,2)', 'print x', 'delete x', 'print x']
+src = ['delete x']
+gretl.run_hansl(src)
+exit()
+
 # print accessor value
 gretl.run_hansl("eval $sysinfo")
 

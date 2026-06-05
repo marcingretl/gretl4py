@@ -1219,6 +1219,7 @@ void gretl_execute_script (const T &script)
         //
         int err = 0;
         CMD *cmd = NULL;
+        auto prn = global_printer.prn_ptr();
 
         *state.line = '\0';
         std::strncat(state.line, line.c_str(), MAXLINE-2);
@@ -1226,20 +1227,31 @@ void gretl_execute_script (const T &script)
         err = parse_command_line(&state, dset, NULL);
         if (err) handle_gretl_error(err);
         cmd = state.cmd;
+
+        // non-available commands
+        py::print(cmd->ci == DELEET);
+
         if (cmd->ci == OPEN && nulldata_executed) {
             clear_dataset();
             nulldata_executed = false;
         }
-        if (cmd->ci == NULLDATA) {
-            if (cmd->order < 1) handle_gretl_error(E_INVARG, "nulldata", "data series length count missing or invalid");
-            // in gretlcli.c, cli_clear_data() is called here => lines below taken from there
-            clear_dataset();
-            clear_model(state.model);
-            gretl_cmd_destroy_context(cmd);
-            err = open_nulldata(dset, 1, cmd->order, cmd->opt, global_printer.prn_ptr());
-            if (!err && !nulldata_executed) nulldata_executed = true;
-        } else {
-            err = gretl_cmd_exec(&state, dset);
+
+        // note: here we do what gretlcli does in 'cmd_proceed'
+        // as for now, we _do not_ reproduce gretl_exec_state_set_callback(s, cli_exec_callback, OPT_NONE);
+        switch (cmd->ci) {
+            case NULLDATA:
+                if (cmd->order < 1) handle_gretl_error(E_INVARG, "nulldata", "data series length count missing or invalid");
+                // in gretlcli.c, cli_clear_data() is called here => lines below taken from there
+                clear_dataset();
+                clear_model(state.model);
+                gretl_cmd_destroy_context(cmd);
+                err = open_nulldata(dset, 1, cmd->order, cmd->opt, prn);
+                if (!err && !nulldata_executed) nulldata_executed = true;
+                break;
+
+            default:
+                err = gretl_cmd_exec(&state, dset);
+                break;
         }
         if (err) handle_gretl_error(err);
         global_printer.print();
