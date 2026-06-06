@@ -326,10 +326,48 @@ def modeltab(models: "List[GretlModel]", output: str = "print",
     return table
 
 def run_hansl (script: str):
+    """
+    Execute a hansl script provided as a Python string.
+
+    The supplied script is written to a temporary file located in
+    gretl's temporary directory and then executed via gretl's
+    ``run`` command. A unique filename is generated for each call
+    to avoid collisions between concurrent executions.
+
+    Parameters
+    ----------
+    script : str
+        Hansl script to execute.
+
+    Returns
+    -------
+    None
+
+    Notes
+    -----
+    This function is intended for executing multi-line hansl code
+    directly from Python without creating a permanent script file.
+    Temporary script files may be removed automatically after
+    execution by the gretl runtime.
+
+    Examples
+    --------
+    >>> script = '''
+    ... open bjg
+    ... ols 1 0 2
+    ... print $vcv
+    ... '''
+    >>> gretl.run_hansl(script)
+    """
+    import secrets
+    import string
     from pathlib import Path
 
-    path = Path(gretl.gretldir) / "tmp" / "gretl4py_on_the_fly_script.inp"
+    rand = ''.join(secrets.choice(string.ascii_lowercase) for _ in range(12))
+    script_name = f'gretl4py_{rand}.inp'
+    path = Path(gretl.gretldir) / "tmp" / script_name
     path.write_text(script, encoding="utf-8")
+
     gretl.run(str(path))
 
 if __name__ == "__main__":
