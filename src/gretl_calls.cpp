@@ -1208,6 +1208,7 @@ void gretl_execute_script (const T &script)
     //
     static bool nulldata_executed = false;  // flag that script_dataset was created/modified by 'nulldata' command
     const bool batch = false;               // we never run in "batch" mode in gretl4py
+    auto prn = global_printer.prn_ptr();
     char line[MAXLINE] = {'\0'};
     MODEL *model = nullptr;
     DATASET *dset = nullptr;
@@ -1223,14 +1224,14 @@ void gretl_execute_script (const T &script)
     };
 
     // lambda which runs switch as in 'cmd_proceed' of cli_exec_line()
-    auto cmd_proceed = [&state, &dset, clear_dataset](CMD *cmd, PRN *prn) -> int
+    auto cmd_proceed = [&state, &dset, &prn, &err, clear_dataset](CMD *cmd) -> void
     {
         //
         // note: here we do what gretlcli does in 'cmd_proceed'
         // as for now, we _do not_ reproduce gretl_exec_state_set_callback(s, cli_exec_callback, OPT_NONE);
         //
         int renumber = 0;   // verify if we need it at all
-        int err = 0;
+        err = 0;
 
         switch (cmd->ci) {
             case DELEET:
@@ -1267,24 +1268,82 @@ void gretl_execute_script (const T &script)
                 cmd->ci = 0;
                 break;
 
+            /*
+            case RUN:
+            case INCLUDE:
+            case PKG:
+                if (cmd->ci == PKG) {
+                    if (!strcmp(cmd->param, "run-sample")) {
+                        err = cli_do_pkg_sample(cmd->parm2, runfile, prn);
+                    } else {
+                        err = gretl_cmd_exec(s, dset);
+                        break;
+                    }
+                } else if (cmd->ci == INCLUDE) {
+                    err = get_full_filename(cmd->param, runfile, OPT_I);
+                } else {
+                    err = get_full_filename(cmd->param, runfile, OPT_S);
+                }
+                if (err) {
+                    err = run_include_error(s, cmd->param, err, prn);
+                    break;
+                }
+                if (gretl_messages_on() && !(s->flags & INIT_EXEC)) {
+                    pprintf(prn, " %s\n", runfile);
+                }
+                if (cmd->ci == INCLUDE && gretl_is_xml_file(runfile)) {
+                    err = load_XML_functions_file(runfile, cmd->opt, prn);
+                    if (err) {
+                        err = run_include_error(s, runfile, err, prn);
+                    } else {
+                        pprintf(cmdprn, "include \"%s\"\n", runfile);
+                    }
+                    break;
+                } else if (cmd->ci == INCLUDE && gfn_is_loaded(runfile)) {
+                    break;
+                }
+                if (!strcmp(runfile, s->runfile)) {
+                    pprintf(prn, _("Infinite loop detected in script\n"));
+                    err = 1;
+                    break;
+                }
+                if (fb != NULL) {
+                    push_input_file(fb);
+                }
+                if ((fb = gretl_fopen(runfile, "r")) == NULL) {
+                    pprintf(prn, _("Error reading %s\n"), runfile);
+                    err = process_command_error(s, E_FOPEN);
+                    fb = pop_input_file();
+                } else {
+                    strcpy(s->runfile, runfile);
+                    gretl_set_script_dir(runfile);
+                    if (cmd->ci == INCLUDE) {
+                        pprintf(cmdprn, "include \"%s\"\n", runfile);
+                    } else if (cmd->ci == PKG) {
+                        pprintf(cmdprn, "pkg run-sample \"%s\"\n", cmd->parm2);
+                    } else {
+                        pprintf(cmdprn, "run \"%s\"\n", runfile);
+                    }
+                    runit++;
+                    indent0 = gretl_if_state_record();
+                }
+                break;*/
+
             default:
                 err = gretl_cmd_exec(&state, dset);
                 break;
         }
-
-        return err;
     };
 
     // lambda for executing just one line
-    auto exec_line = [&state, &dset, clear_dataset, cmd_proceed](const std::string &line) -> void
+    auto exec_line = [&state, &dset, &err, clear_dataset, cmd_proceed](const std::string &line) -> void
     {
         //
         // this function reproduces functionality of cli_exec_line() from gretlcli.c
         // line: contains line to be executed
         //
-        int err = 0;
         CMD *cmd = nullptr;
-        auto prn = global_printer.prn_ptr();
+        err = 0;
 
         *state.line = '\0';
         std::strncat(state.line, line.c_str(), MAXLINE-2);
@@ -1312,7 +1371,7 @@ void gretl_execute_script (const T &script)
         if (gretl_execute_loop()) cmd->ci = RUNLOOP;
 
         // finally we run cmd_proceed() as in gretlcli.c
-        err = cmd_proceed(cmd, prn);
+        cmd_proceed(cmd);
 
         if (err) {
             gretl_exec_state_uncomment(&state);
@@ -1323,10 +1382,10 @@ void gretl_execute_script (const T &script)
 
     // dataset and model to use
     model = allocate_working_model();
-    if (model == NULL) handle_gretl_error(E_ALLOC);
+    if (model == nullptr) handle_gretl_error(E_ALLOC);
     if (!script_dataset && !nulldata_executed) script_dataset.reset(datainfo_new());
     dset = script_dataset.get();
-    if (dset == NULL) handle_gretl_error(E_ALLOC);
+    if (dset == nullptr) handle_gretl_error(E_ALLOC);
 
     // init apparatus
     err = gretl_cmd_init(&cmd);

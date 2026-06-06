@@ -6,6 +6,7 @@ scpt = '''function void foo (void)
 end function
 
 foo()'''
+scpt = '''pkg run-sample BACE'''
 lines = scpt.splitlines()
 
 gretl.run_hansl(lines)
