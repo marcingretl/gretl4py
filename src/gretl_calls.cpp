@@ -1294,7 +1294,7 @@ void gretl_execute_script (const T &script)
         cmd = state.cmd;
 
         // non-available commands
-        if (cmd->ci == QUIT) {
+        if (cmd->ci == QUIT || cmd->ci == CLEAR || cmd->ci == DATAMOD) {
             std::string msg = "'";
             msg.append(gretl_command_word(cmd->ci));
             msg.append("' command not available in gretl4py");
