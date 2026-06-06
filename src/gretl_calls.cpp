@@ -30,6 +30,7 @@ extern "C" {
     #include <gretl/gretl_zip.h>
     #include <gretl/interact.h>
     #include <gretl/monte_carlo.h>
+    #include <gretl/gretl_xml.h>
 }
 #include <filesystem>
 
@@ -1268,64 +1269,6 @@ void gretl_execute_script (const T &script)
                 cmd->ci = 0;
                 break;
 
-            // note: we dropped some lines from gretlcli.c
-            case INCLUDE:
-                // we do nothing
-                py::print("include");
-                break;
-
-            /*case RUN:
-            case PKG:
-                if (cmd->ci == INCLUDE) {
-                    err = get_full_filename(cmd->param, runfile, OPT_I);
-                } else {
-                    err = get_full_filename(cmd->param, runfile, OPT_S);
-                }
-                if (err) {
-                    err = run_include_error(s, cmd->param, err, prn);
-                    break;
-                }
-                if (gretl_messages_on() && !(s->flags & INIT_EXEC)) {
-                    pprintf(prn, " %s\n", runfile);
-                }
-                if (cmd->ci == INCLUDE && gretl_is_xml_file(runfile)) {
-                    err = load_XML_functions_file(runfile, cmd->opt, prn);
-                    if (err) {
-                        err = run_include_error(s, runfile, err, prn);
-                    } else {
-                        pprintf(cmdprn, "include \"%s\"\n", runfile);
-                    }
-                    break;
-                } else if (cmd->ci == INCLUDE && gfn_is_loaded(runfile)) {
-                    break;
-                }
-                if (!strcmp(runfile, s->runfile)) {
-                    pprintf(prn, _("Infinite loop detected in script\n"));
-                    err = 1;
-                    break;
-                }
-                if (fb != NULL) {
-                    push_input_file(fb);
-                }
-                if ((fb = gretl_fopen(runfile, "r")) == NULL) {
-                    pprintf(prn, _("Error reading %s\n"), runfile);
-                    err = process_command_error(s, E_FOPEN);
-                    fb = pop_input_file();
-                } else {
-                    strcpy(s->runfile, runfile);
-                    gretl_set_script_dir(runfile);
-                    if (cmd->ci == INCLUDE) {
-                        pprintf(cmdprn, "include \"%s\"\n", runfile);
-                    } else if (cmd->ci == PKG) {
-                        pprintf(cmdprn, "pkg run-sample \"%s\"\n", cmd->parm2);
-                    } else {
-                        pprintf(cmdprn, "run \"%s\"\n", runfile);
-                    }
-                    runit++;
-                    indent0 = gretl_if_state_record();
-                }
-                break;*/
-
             default:
                 err = gretl_cmd_exec(&state, dset);
                 break;
@@ -1333,7 +1276,7 @@ void gretl_execute_script (const T &script)
     };
 
     // lambda for executing just one line
-    auto exec_line = [&state, &dset, &err, clear_dataset, cmd_proceed](const std::string &line) -> void
+    auto exec_line = [&state, &dset, &prn, &err, clear_dataset, cmd_proceed](const std::string &line) -> void
     {
         //
         // this function reproduces functionality of cli_exec_line() from gretlcli.c
@@ -1370,8 +1313,13 @@ void gretl_execute_script (const T &script)
 
         // finally we run cmd_proceed() as in gretlcli.c
         if (cmd->ci == INCLUDE) {
-            do_gretl_run(cmd->param);
-            do_print = false;
+            // we either read as XML or run(!) the file in question
+            if (gretl_is_xml_file(cmd->param)) {
+                err = load_XML_functions_file(cmd->param, cmd->opt, prn);
+            } else {
+                do_gretl_run(cmd->param);
+                do_print = false;
+            }
         } else {
             cmd_proceed(cmd);
         }
