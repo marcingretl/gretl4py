@@ -6,7 +6,7 @@ scpt = '''function void foo (void)
 end function
 
 foo()'''
-scpt = '''include /home/marcin/cvs/Gretl/gretl-gretl4py/demo/test.inp'''
+#scpt = '''include /home/marcin/cvs/Gretl/gretl-gretl4py/demo/test.inp'''
 lines = scpt.splitlines()
 gretl.run_hansl(lines)
 

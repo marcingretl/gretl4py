@@ -31,6 +31,7 @@ extern "C" {
     #include <gretl/interact.h>
     #include <gretl/monte_carlo.h>
     #include <gretl/gretl_xml.h>
+    #include <gretl/gretl_func.h>
 }
 #include <filesystem>
 
@@ -1282,7 +1283,8 @@ void gretl_execute_script (const T &script)
         // this function reproduces functionality of cli_exec_line() from gretlcli.c
         // line: contains line to be executed
         //
-        bool do_print = true;   // we must control eventual double printing
+        bool do_print = true;       // we must control eventual double printing
+        bool do_cmd_proceed = true; // if we execute cmd_proceed()
         CMD *cmd = nullptr;
         err = 0;
 
@@ -1293,6 +1295,8 @@ void gretl_execute_script (const T &script)
         if (err) handle_gretl_error(err);
         cmd = state.cmd;
 
+        py::print("linia", state.line);
+
         // non-available commands
         if (cmd->ci == QUIT || cmd->ci == CLEAR || cmd->ci == DATAMOD) {
             std::string msg = "'";
@@ -1302,16 +1306,28 @@ void gretl_execute_script (const T &script)
             return;
         }
 
+        // loop handling
+        if (gretl_execute_loop()) cmd->ci = RUNLOOP;
+
+        // function compiling handling
+        if (gretl_compiling_function()) {
+            py::print("kompilacja", state.line);
+            err = gretl_function_append_line(&state);
+            if (err) {
+                do_cmd_proceed = false;
+            } else {
+                pprintf(prn, "%s\n", state.line);
+                return;
+            }
+        }
+
         // nulldata special handling
         if (cmd->ci == OPEN && nulldata_executed) {
             clear_dataset();
             nulldata_executed = false;
         }
 
-        // loop handling
-        if (gretl_execute_loop()) cmd->ci = RUNLOOP;
-
-        // finally we run cmd_proceed() as in gretlcli.c
+        // we handle INCLUDE here (i.e. not by cmd_proceed() as in gretlcli.c)
         if (cmd->ci == INCLUDE) {
             // we either read as XML or run(!) the file in question
             if (gretl_is_xml_file(cmd->param)) {
@@ -1320,9 +1336,11 @@ void gretl_execute_script (const T &script)
                 do_gretl_run(cmd->param);
                 do_print = false;
             }
-        } else {
-            cmd_proceed(cmd);
+            do_cmd_proceed = false;
         }
+
+        // finally we run cmd_proceed() as in gretlcli.c
+        if (do_cmd_proceed) cmd_proceed(cmd);
 
         if (err) {
             gretl_exec_state_uncomment(&state);
