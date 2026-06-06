@@ -619,7 +619,7 @@ void do_gretl_run (const std::string &filename)
 
     if (!std::filesystem::exists(path) || !std::filesystem::is_regular_file(path)) handle_gretl_error(E_FOPEN, filename);
 
-    gretl_execute_script<std::string>("run " + path.string());
+    gretl_execute_script("run " + path.string());
 }
 
 template <GretlFunIndex FI>
@@ -1198,9 +1198,7 @@ template void gretl_generate<GRETL_TYPE_SERIES>(const std::string&, GretlDataset
 //////////////////////////////////////////////////
 // apparatus for running hansl code
 //////////////////////////////////////////////////
-// T = {py::iterable ; std::string} (the latter for script execution)
-template <typename T>
-void gretl_execute_script (const T &script)
+void gretl_execute_script (const std::string &script)
 {
     //
     // apparatus for executing regular hansl code
@@ -1321,6 +1319,8 @@ void gretl_execute_script (const T &script)
             }
         }
 
+        if (string_is_blank(state.line)) return;
+
         // nulldata special handling
         if (cmd->ci == OPEN && nulldata_executed) {
             clear_dataset();
@@ -1362,17 +1362,6 @@ void gretl_execute_script (const T &script)
     gretl_exec_state_init(&state, CONSOLE_EXEC, line, &cmd, model, global_printer.prn_ptr());
 
     // do the job
-    if constexpr (std::is_same_v<T, std::string>) {
-        exec_line(script);
-    } else if constexpr (std::is_same_v<T, py::iterable>) {
-        for (const auto &el : script) {
-            if (!is_pystr(el)) handle_gretl_error(E_INVARG, py::str(el));
-            exec_line(el.template cast<std::string>());
-        }
-    } else {
-        static_assert(always_false<T>, "gretl_execute_script(): unknown type");
-    }
+    exec_line(script);
     gretl_object_unref(model, GRETL_OBJ_EQN);
 }
-template void gretl_execute_script<std::string>(const std::string&);
-template void gretl_execute_script<py::iterable>(const py::iterable&);

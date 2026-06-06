@@ -325,5 +325,12 @@ def modeltab(models: "List[GretlModel]", output: str = "print",
 
     return table
 
+def run_hansl (script: str):
+    from pathlib import Path
+
+    path = Path(gretl.gretldir) / "tmp" / "gretl4py_on_the_fly_script.inp"
+    path.write_text(script, encoding="utf-8")
+    gretl.run(str(path))
+
 if __name__ == "__main__":
     pass

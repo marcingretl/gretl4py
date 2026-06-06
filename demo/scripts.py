@@ -6,18 +6,23 @@ scpt = '''function void foo (void)
 end function
 
 foo()'''
+
+scpt = '''open bjg
+ols 1 0 2
+eval $vcv'''
+
 #scpt = '''include /home/marcin/cvs/Gretl/gretl-gretl4py/demo/test.inp'''
 lines = scpt.splitlines()
-gretl.run_hansl(lines)
-
+gretl.run_hansl(scpt)
 exit()
 
 
 file = '/home/marcin/cvs/Gretl/gretl-gretl4py/demo/test.inp'
+file = '/home/marcin/cvs/Gretl/gretl-gretl4py/demo/func.inp'
 gretl.run(file)
 
 
-
+exit()
 
 # print accessor value
 gretl.run_hansl("eval $sysinfo")
