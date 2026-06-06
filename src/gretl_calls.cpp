@@ -45,6 +45,7 @@ extern "C" {
 # define COMPILER_IDENT __VERSION__
 #endif
 
+// stuff used by script execution
 #define ENDRUN (NC + 1)
 #define RUNLOOP (NC + 2)
 #define XOR_CMDFLAG(x, flag) x = static_cast<CmdFlags>((x) ^ (flag))
@@ -60,10 +61,6 @@ static int gretl4py_verbose = 0;
 static GretlPrint global_printer = GretlPrint();
 static gretl_dataset_ptr script_dataset{nullptr};       // dataset for subsequent script calls
 std::unordered_set<std::string> user_vars;              // registry of user variables
-
-// variables used by script execution
-static bool nulldata_executed = false;                  // flag that script_dataset was created/modified by 'nulldata' command
-const bool batch = false;                               // we never run in "batch" mode in gretl4py
 
 //////////////////////////////////////////////////
 // module related tools
@@ -1196,6 +1193,9 @@ template void gretl_generate<GRETL_TYPE_ANY>(const std::string&, GretlDatasetPtr
 template void gretl_generate<GRETL_TYPE_LIST>(const std::string&, GretlDatasetPtr, const std::string&);
 template void gretl_generate<GRETL_TYPE_SERIES>(const std::string&, GretlDatasetPtr, const std::string&);
 
+//////////////////////////////////////////////////
+// apparatus for running hansl code
+//////////////////////////////////////////////////
 // T = {py::iterable ; std::string} (the latter for script execution)
 template <typename T>
 void gretl_execute_script (const T &script)
@@ -1206,9 +1206,11 @@ void gretl_execute_script (const T &script)
     // with cli_exec_line() as exec_line() lambda
     // (as well as other static functions)
     //
+    static bool nulldata_executed = false;  // flag that script_dataset was created/modified by 'nulldata' command
+    const bool batch = false;               // we never run in "batch" mode in gretl4py
     char line[MAXLINE] = {'\0'};
-    MODEL *model = NULL;
-    DATASET *dset = NULL;
+    MODEL *model = nullptr;
+    DATASET *dset = nullptr;
     ExecState state;
     CMD cmd;
     int err = 0;

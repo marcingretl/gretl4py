@@ -1,11 +1,17 @@
 import gretl
 
 # non-available commands
-src = ['x = mnormal(2,2)', 'print x', 'delete x']
-#src = ['N=10', 'loop N', 'eval $sysinfo', 'endloop']
-gretl.run_hansl(src)
-file = '/home/marcin/cvs/Gretl/gretl-gretl4py/demo/test.inp'
-gretl.run(file)
+scpt = '''function void foo (void)
+    eval $sysinfo
+end function
+
+foo()'''
+lines = scpt.splitlines()
+
+gretl.run_hansl(lines)
+
+#file = '/home/marcin/cvs/Gretl/gretl-gretl4py/demo/test.inp'
+#gretl.run(file)
 exit()
 
 # print accessor value
