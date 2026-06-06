@@ -6,14 +6,18 @@ scpt = '''function void foo (void)
 end function
 
 foo()'''
-scpt = '''pkg run-sample BACE'''
+scpt = '''include /home/marcin/cvs/Gretl/gretl-gretl4py/demo/test.inp'''
 lines = scpt.splitlines()
-
 gretl.run_hansl(lines)
 
-#file = '/home/marcin/cvs/Gretl/gretl-gretl4py/demo/test.inp'
-#gretl.run(file)
 exit()
+
+
+file = '/home/marcin/cvs/Gretl/gretl-gretl4py/demo/test.inp'
+gretl.run(file)
+
+
+
 
 # print accessor value
 gretl.run_hansl("eval $sysinfo")

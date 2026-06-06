@@ -1268,18 +1268,15 @@ void gretl_execute_script (const T &script)
                 cmd->ci = 0;
                 break;
 
-            /*
-            case RUN:
+            // note: we dropped some lines from gretlcli.c
             case INCLUDE:
+                // we do nothing
+                py::print("include");
+                break;
+
+            /*case RUN:
             case PKG:
-                if (cmd->ci == PKG) {
-                    if (!strcmp(cmd->param, "run-sample")) {
-                        err = cli_do_pkg_sample(cmd->parm2, runfile, prn);
-                    } else {
-                        err = gretl_cmd_exec(s, dset);
-                        break;
-                    }
-                } else if (cmd->ci == INCLUDE) {
+                if (cmd->ci == INCLUDE) {
                     err = get_full_filename(cmd->param, runfile, OPT_I);
                 } else {
                     err = get_full_filename(cmd->param, runfile, OPT_S);
@@ -1342,6 +1339,7 @@ void gretl_execute_script (const T &script)
         // this function reproduces functionality of cli_exec_line() from gretlcli.c
         // line: contains line to be executed
         //
+        bool do_print = true;   // we must control eventual double printing
         CMD *cmd = nullptr;
         err = 0;
 
@@ -1371,13 +1369,18 @@ void gretl_execute_script (const T &script)
         if (gretl_execute_loop()) cmd->ci = RUNLOOP;
 
         // finally we run cmd_proceed() as in gretlcli.c
-        cmd_proceed(cmd);
+        if (cmd->ci == INCLUDE) {
+            do_gretl_run(cmd->param);
+            do_print = false;
+        } else {
+            cmd_proceed(cmd);
+        }
 
         if (err) {
             gretl_exec_state_uncomment(&state);
             handle_gretl_error(err);
         }
-        global_printer.print();
+        if (do_print) global_printer.print();
     };
 
     // dataset and model to use
