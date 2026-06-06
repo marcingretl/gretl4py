@@ -1207,7 +1207,7 @@ void gretl_execute_script (const std::string &script)
     // (as well as other static functions)
     //
     static bool nulldata_executed = false;  // flag that script_dataset was created/modified by 'nulldata' command
-    const bool batch = false;               // we never run in "batch" mode in gretl4py
+    const static bool batch = false;        // we never run in "batch" mode in gretl4py
     auto prn = global_printer.prn_ptr();
     char line[MAXLINE] = {'\0'};
     MODEL *model = nullptr;
