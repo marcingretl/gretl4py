@@ -20,6 +20,7 @@
 #ifndef GRETL4PY_EXECUTE_SCRIPT_H
 #define GRETL4PY_EXECUTE_SCRIPT_H
 
-int gretl_execute_script (const std::string &source);
+template <typename T>
+int gretl_execute_script (const T &source);
 
 #endif // GRETL4PY_EXECUTE_SCRIPT_H

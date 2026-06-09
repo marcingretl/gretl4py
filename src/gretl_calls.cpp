@@ -609,7 +609,7 @@ void do_gretl_run (const std::string &filename)
 
     if (!std::filesystem::exists(path) || !std::filesystem::is_regular_file(path)) handle_gretl_error(E_FOPEN, filename);
 
-    gretl_execute_script(path.string());
+    gretl_execute_script<std::filesystem::path>(path);
 }
 
 template <GretlFunIndex FI>

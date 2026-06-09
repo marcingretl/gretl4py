@@ -819,7 +819,8 @@ static int maybe_get_input_line_continuation (char *line)
     return err;
 }
 
-int gretl_execute_script (const std::string &source)
+template <typename T>
+int gretl_execute_script (const T &source)
 {
     //
     // apparatus for executing regular hansl code
@@ -857,9 +858,12 @@ int gretl_execute_script (const std::string &source)
     runfile[0] = filearg[0] = '\0';
 
     // we assume "batch" mode
-    // note: _MUST_ be templated on 'source' type ! ! ! !
-    SET_OPT(opt, OPT_BATCH);
-    std::strcpy(filearg,  source.c_str());
+    if constexpr (std::is_same_v<T, std::filesystem::path>) {
+        SET_OPT(opt, OPT_BATCH);
+        std::strcpy(filearg, source.string().c_str());
+    } else {
+        static_assert(always_false<T>, "gretl_execute_script(): unsupported type T");
+    }
 
     if (opt & (OPT_BATCH | OPT_RUNIT | OPT_MAKEPKG | OPT_INSTPKG)) {
         if (*filearg == '\0') {
@@ -1040,3 +1044,4 @@ int gretl_execute_script (const std::string &source)
 
     return err;
 }
+template int gretl_execute_script<std::filesystem::path>(const std::filesystem::path&);
