@@ -94,6 +94,34 @@ struct ExecState_ {
     EXEC_CALLBACK callback;
 };
 
+struct OpenOp_ {
+    char fname[MAXLEN];
+    int quiet;
+    int http;
+    int dbdata;
+    int ftype;
+};
+
+typedef struct OpenOp_ OpenOp;
+
+int gretl_if_state_true (void);
+
+void gretl_if_state_clear (void);
+
+void gretl_if_state_reset (int indent);
+
+int gretl_if_state_check (int indent0);
+
+int gretl_if_state_record (void);
+
+void gretl_exec_state_transcribe_flags (ExecState *s, CMD *cmd);
+
+int csv_open_needs_matrix (gretlopt opt);
+
+void gretl_exec_state_set_callback (ExecState *s, EXEC_CALLBACK callback, gretlopt opt);
+
+int process_command_error (ExecState *s, int err);
+
 void gretl_exec_state_init (ExecState *s, ExecFlags flags, char *line, CMD *cmd, MODEL *model, PRN *prn);
 
 void gretl_exec_state_uncomment (ExecState *s);

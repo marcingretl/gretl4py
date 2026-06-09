@@ -17,6 +17,10 @@
  *
  */
 
+// NOTE: Ported from gretlcli.c and adapted for gretl4py.
+// The control flow is intentionally kept close to the original
+// implementation to preserve compatibility with gretl CLI behavior.
+
 #include "gretl4py.h" /* MUST be at the first position!!! */
 #include "gretl4py_utils.h"
 #include "gretl4py_types.h"
@@ -27,26 +31,6 @@ extern "C" {
     #include <gretl/monte_carlo.h>
     #include <gretl/gretl_xml.h>
     #include <gretl/system.h>
-
-    struct OpenOp_ {
-        char fname[MAXLEN];
-        int quiet;
-        int http;
-        int dbdata;
-        int ftype;
-    };
-
-    typedef struct OpenOp_ OpenOp;
-
-    int gretl_if_state_true (void);
-    void gretl_if_state_clear (void);
-    void gretl_if_state_reset (int indent);
-    int gretl_if_state_check (int indent0);
-    int gretl_if_state_record (void);
-    void gretl_exec_state_transcribe_flags (ExecState *s, CMD *cmd);
-    int csv_open_needs_matrix (gretlopt opt);
-    void gretl_exec_state_set_callback (ExecState *s, EXEC_CALLBACK callback, gretlopt opt);
-    int process_command_error (ExecState *s, int err);
 }
 #include <filesystem>
 
@@ -880,18 +864,9 @@ static int maybe_get_input_line_continuation (char *line)
         *tmp = '\0';
 
         if (batch || runit) {
-            char *test = fgets(tmp, MAXLINE, fb);
-
-            if (test == NULL) {
-                break;
-            }
+            if (std::fgets(tmp, MAXLINE, fb) == nullptr) break;
         } else {
-#ifdef HAVE_READLINE
-            rl_gets(&line_read, "> ");
-            std::strcpy(tmp, line_read);
-#else
-            std::fgets(tmp, MAXLINE, stdin);
-#endif
+            if (std::fgets(tmp, MAXLINE, stdin) == nullptr) break;
         }
 
         if (*tmp != '\0') {
@@ -919,16 +894,14 @@ int gretl_execute_script (const std::string &source)
     DATASET *dset = nullptr;
     MODEL *model = nullptr;
     ExecState state;
-    //char *line = nullptr;
-    //auto line = std::make_unique<char[]>(MAXLINE);
-    char line[MAXLINE] = {'\0'};
-    int quiet = 0;
+    char line[MAXLINE] = {'\0'}; //was: char *line = nullptr;
+    //int quiet = 0;    unused
     int tool = 0;
     int pkgmode = 0;
     int load_datafile = 1;
     char filearg[MAXLEN];
     char runfile[MAXLEN];
-    double scriptval = NADBL;
+    //double scriptval = NADBL; unused
     CMD cmd;
     PRN *prn = global_printer.prn_ptr();
     PRN *cmdprn = nullptr;
