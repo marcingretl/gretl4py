@@ -60,6 +60,40 @@ static GretlPrint global_printer = GretlPrint();
 static gretl_dataset_ptr script_dataset{nullptr};  // dataset for subsequent script calls
 static bool nulldata_executed = false;             // flag that script_dataset was created/modified by 'nulldata' command
 
+#ifdef _WIN32
+#include <windows.h>
+
+static void line_ensure_utf8(char *line)
+{
+    if (line == nullptr || *line == '\0') return;
+
+    int len = (int)std::strlen(line);
+
+    // 1) convert from current ANSI codepage to UTF-16
+    int wlen = MultiByteToWideChar(CP_ACP, 0, line, len, nullptr, 0);
+
+    if (wlen <= 0) return;
+
+    std::wstring wbuf(wlen, L'\0');
+
+    MultiByteToWideChar(CP_ACP, 0, line, len, wbuf.data(), wlen);
+
+    // 2) convert UTF-16 → UTF-8
+    int u8len = WideCharToMultiByte(CP_UTF8, 0, wbuf.data(), wlen, nullptr, 0, nullptr, nullptr);
+
+    if (u8len <= 0) return;
+
+    std::string utf8(u8len, '\0');
+
+    WideCharToMultiByte(CP_UTF8, 0, wbuf.data(), wlen, utf8.data(), u8len, nullptr, nullptr);
+
+    // 3) copy back into original buffer (truncate safely)
+    std::strncpy(line, utf8.c_str(), MAXLINE - 1);
+    line[MAXLINE - 1] = '\0';
+
+}
+#endif
+
 static void printline (const char *s)
 {
     if (*s != '\0') {
