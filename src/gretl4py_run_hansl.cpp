@@ -382,9 +382,7 @@ static void maybe_save_session_output (const char *cmdfile)
         syscmd = gretl_strdup_printf("gretlcli -b \"%s\" > \"%s%s\"", cmdfile, udir, outfile);
         err = std::system(syscmd);
 #endif
-        if (!err) {
-            std::printf("%s\n", syscmd);
-        }
+        if (!err) std::printf("%s\n", syscmd);
         std::free(syscmd);
     }
 }
@@ -396,20 +394,20 @@ static void cli_quit (ExecState *s, PRN *cmdprn, int err)
         runit--;
         fclose(fb);
         fb = pop_input_file();
-        if (fb == NULL) {
+        if (fb == nullptr) {
             do_quit_message(s, err);
         } else {
             gretl_if_state_reset(indent0);
             s->cmd->ci = ENDRUN;
         }
-    } else if (batch && fb == NULL) {
+    } else if (batch && fb == nullptr) {
         do_quit_message(s, err);
     } else {
         gretl_print_destroy(cmdprn);
         if (s->cmd->opt & OPT_X) {
             gretl_remove(cmdfile);
         } else {
-            printf(_("commands saved as %s\n"), cmdfile);
+            std::printf(("commands saved as %s\n"), cmdfile);
             maybe_save_session_output(cmdfile);
         }
     }
@@ -423,10 +421,8 @@ static int cli_do_pkg_sample (const char *pkgname, char *runfile, PRN *prn)
     err = grab_package_sample(pkgname, &buf);
 
     if (!err) {
-        //gchar *base = g_strdup_printf("%s_sample.inp", pkgname);
-        std::string base = std::string(pkgname) + "_sample.inp";
-        //gchar *fname = gretl_make_dotpath(base);
-        auto fname = gretl_gchar_ptr(gretl_make_dotpath(base.c_str()));
+        std::string base = std::string(pkgname) + "_sample.inp";        //was: gchar *base = g_strdup_printf("%s_sample.inp", pkgname);
+        auto fname = gretl_gchar_ptr(gretl_make_dotpath(base.c_str())); //was: gchar *fname = gretl_make_dotpath(base);
         FILE *fp = gretl_fopen(fname.get(), "w");
 
         if (fp == NULL) {
@@ -436,8 +432,6 @@ static int cli_do_pkg_sample (const char *pkgname, char *runfile, PRN *prn)
             std::fclose(fp);
             std::strcpy(runfile, fname.get());
         }
-        //g_free(base);
-        //g_free(fname);
         std::free(buf);
     }
 
@@ -449,10 +443,8 @@ static int run_include_error (ExecState *s, const char *param, int err, PRN *prn
 {
     const char *msg = gretl_errmsg_get();
 
-    pprintf(prn, _("Error reading '%s'\n"), param);
-    if (*msg != '\0') {
-        pprintf(prn, "%s\n", msg);
-    }
+    pprintf(prn, ("Error reading '%s'\n"), param);
+    if (*msg != '\0') pprintf(prn, "%s\n", msg);
 
     return process_command_error(s, err);
 }
@@ -462,9 +454,7 @@ static int cli_renumber_series (const int *list, const char *parm, DATASET *dset
     int err, fixmax = highest_numbered_var_in_saved_object(dset);
 
     err = renumber_series_with_checks(list, parm, fixmax, dset, prn);
-    if (err) {
-        errmsg(err, prn);
-    }
+    if (err) errmsg(err, prn);
 
     return err;
 }
@@ -480,27 +470,26 @@ static int file_get_line (ExecState *s, const char *fname)
         // no more input from current source */
         gretl_exec_state_uncomment(s);
     } else {
-        len = strlen(line);
+        len = std::strlen(line);
     }
 
     if (*line == '\0') {
         if (fb != stdin && gretl_compiling_loop()) {
-            gretl_errmsg_sprintf(_("Broken syntax in %s: unmatched %s"), fname,
-                                 "loop/endloop");
+            gretl_errmsg_sprintf(("Broken syntax in %s: unmatched %s"), fname, "loop/endloop");
             return E_PARSE;
         }
-        strcpy(line, "quit");
+        std::strcpy(line, "quit");
         s->cmd->ci = QUIT;
     } else if (len == MAXLINE - 1 && line[len-1] != '\n') {
         return E_TOOLONG;
     } else {
         *linebak = '\0';
-        strncat(linebak, line, MAXLINE-1);
+        std::strncat(linebak, line, MAXLINE-1);
         tailstrip(linebak);
     }
 
     if (gretl_echo_on() && s->cmd->ci == RUN && batch && *line == '(') {
-        printf("%s", line);
+        std::printf("%s", line);
         *linebak = '\0';
     }
 
@@ -527,7 +516,7 @@ static int get_interactive_line (void *p)
 #ifdef HAVE_READLINE
     rl_gets(&line_read, prompt);
 
-    if (line_read == NULL) {
+    if (line_read == nullptr) {
         strcpy(s->line, "quit");
     } else if (strlen(line_read) > MAXLINE - 2) {
         err = E_TOOLONG;
@@ -537,8 +526,8 @@ static int get_interactive_line (void *p)
         strcat(s->line, "\n");
     }
 #else
-    printf("%s", prompt);
-    fflush(stdout);
+    std::printf("%s", prompt);
+    std::fflush(stdout);
     file_get_line(s, "stdin"); //FIXME!!!!!
 #endif
 
@@ -554,7 +543,7 @@ static int cli_get_input_line (ExecState *s, const char *fname)
         // reading from script file
         err = file_get_line(s, fname);
     } else {
-        /* interactive use */
+        // interactive use
         err = get_interactive_line(s);
     }
 
@@ -579,13 +568,7 @@ static int cli_exec_line (ExecState *s, DATASET *dset, PRN *cmdprn)
     int renumber = 0;
     int err = 0;
 
-    if (cmd->ci == RUNLOOP) {
-        goto cmd_proceed;
-    }
-
-    #if 0
-    fprintf(stderr, "cli_exec_line: '%s'\n", line);
-    #endif
+    if (cmd->ci == RUNLOOP) goto cmd_proceed;
 
     if (gretl_compiling_function()) {
         err = gretl_function_append_line(s);
@@ -598,29 +581,26 @@ static int cli_exec_line (ExecState *s, DATASET *dset, PRN *cmdprn)
         }
     }
 
-    if (string_is_blank(line)) {
-        return 0;
-    }
+    if (string_is_blank(line)) return 0;
 
-    if (!gretl_compiling_loop() && !s->in_comment &&
-        !cmd->context && gretl_if_state_true()) {
+    if (!gretl_compiling_loop() && !s->in_comment && !cmd->context && gretl_if_state_true()) {
         // catch requests relating to saved objects, which are not really "commands" as such
         int action = cli_saved_object_action(line, dset, prn);
 
         if (action == OBJ_ACTION_INVALID) {
-            /* action was faulty */
+            // action was fault
             err = 1;
             goto cmd_finish;
         } else if (action != OBJ_ACTION_NONE) {
-            return 0; /* action was OK (and handled), or ignored */
+            return 0; // action was OK (and handled), or ignored
         }
     }
 
-    /* tell libgretl if we're in batch mode */
+    // tell libgretl if we're in batch mode
     gretl_set_batch_mode(batch);
 
     if (gretl_compiling_loop()) {
-        /* if we're stacking commands for a loop, parse "lightly" */
+        // if we're stacking commands for a loop, parse "lightly"
         err = get_command_index(s, LOOP, 0);
     } else {
         err = parse_command_line(s, dset, NULL);
@@ -644,15 +624,11 @@ static int cli_exec_line (ExecState *s, DATASET *dset, PRN *cmdprn)
 
     // if in batch mode, echo comments from input
     if (batch && runit < 2 && cmd->ci == CMD_COMMENT && gretl_if_state_true()) {
-        if (gretl_echo_on() || gretl_comments_on()) {
-            printline(linebak);
-        }
+        if (gretl_echo_on() || gretl_comments_on()) printline(linebak);
     }
 
-    if (cmd->ci < 0) {
-        // nothing there, comment, or masked by "if"
-        return 0;
-    }
+    // nothing there, comment, or masked by "if"
+    if (cmd->ci < 0) return 0;
 
     if (s->sys != nullptr && cmd->ci != END && cmd->ci != EQUATION && cmd->ci != SYSTEM) {
         std::printf(_("Command '%s' ignored; not valid within equation system\n"), line);
@@ -704,7 +680,7 @@ cmd_proceed:
             if (err) {
                 errmsg(err, prn);
             } else if (renumber && !batch) {
-                pputs(prn, _("Take note: variables have been renumbered"));
+                pputs(prn, ("Take note: variables have been renumbered"));
                 pputc(prn, '\n');
                 maybe_list_series(dset, prn);
             }
@@ -722,7 +698,7 @@ cmd_proceed:
         case NULLDATA:
             if (cmd->order < 1) {
                 err = 1;
-                pputs(prn, _("Data series length count missing or invalid\n"));
+                pputs(prn, ("Data series length count missing or invalid\n"));
             } else {
                 cli_clear_data(s, dset);
                 err = open_nulldata(dset, data_status, cmd->order, cmd->opt, prn);
@@ -777,15 +753,15 @@ cmd_proceed:
                 break;
             }
             if (!strcmp(runfile, s->runfile)) {
-                pprintf(prn, _("Infinite loop detected in script\n"));
+                pprintf(prn, ("Infinite loop detected in script\n"));
                 err = 1;
                 break;
             }
-            if (fb != NULL) {
+            if (fb != nullptr) {
                 push_input_file(fb);
             }
-            if ((fb = gretl_fopen(runfile, "r")) == NULL) {
-                pprintf(prn, _("Error reading %s\n"), runfile);
+            if ((fb = gretl_fopen(runfile, "r")) == nullptr) {
+                pprintf(prn, ("Error reading %s\n"), runfile);
                 err = process_command_error(s, E_FOPEN);
                 fb = pop_input_file();
             } else {
@@ -832,18 +808,14 @@ cmd_proceed:
                 break;
     }
 
-    if (!err && cmd->ci != QUIT && gretl_echo_on() && !batch && !old_runit) {
-        /* record a successful interactive command */
-        gretl_record_command(cmd, line, cmdprn);
-    }
+    // record a successful interactive command
+    if (!err && cmd->ci != QUIT && gretl_echo_on() && !batch && !old_runit) gretl_record_command(cmd, line, cmdprn);
 
 cmd_finish:
 
     if (err) {
         gretl_exec_state_uncomment(s);
-        if ((runit || batch) && cmd->ci != QUIT) {
-            cli_quit(s, cmdprn, err);
-        }
+        if ((runit || batch) && cmd->ci != QUIT) cli_quit(s, cmdprn, err);
     }
 
     return err;
@@ -854,10 +826,7 @@ static int maybe_get_input_line_continuation (char *line)
     char tmp[MAXLINE];
     int contd, err = 0;
 
-    if (!std::strncmp(line, "quit", 4)) {
-        return 0;
-    }
-
+    if (!std::strncmp(line, "quit", 4)) return 0;
     contd = top_n_tail(line, MAXLINE, &err);
 
     while (contd && !err) {
@@ -939,7 +908,7 @@ int gretl_execute_script (const std::string &source)
             std::runtime_error("batch_stdin");
             } else {
                 // record argument (not a datafile)
-                strcpy(runfile, filearg);
+                std::strcpy(runfile, filearg);
                 load_datafile = 0;
                 if (opt & OPT_BATCH) {
                     batch = 1;
@@ -998,7 +967,7 @@ int gretl_execute_script (const std::string &source)
         fb = stdin; //FIXME:read from buffer for std::string &source!!!
         push_input_file(fb);
         if (!runit && !data_status) {
-            std::fputs(_("Type \"open filename\" to open a data set\n"), stdout);
+            std::fputs(("Type \"open filename\" to open a data set\n"), stdout);
         }
     } else if (batch_stdin) {
         fb = stdin;
@@ -1014,18 +983,10 @@ int gretl_execute_script (const std::string &source)
             } else {
                 std::sprintf(line, "run %s", runfile);
             }
-            if (gui_exec) {
-                //state.flags |= INIT_EXEC;
-                OR_EXECFLAG(state.flags, INIT_EXEC);
-              }
+            if (gui_exec) OR_EXECFLAG(state.flags, INIT_EXEC);
             err = cli_exec_line(&state, dset, cmdprn);
-            if (gui_exec) {
-                //state.flags ^= INIT_EXEC;
-                XOR_EXECFLAG(state.flags, INIT_EXEC);
-            }
-            if (err && fb == NULL) {
-                exit(EXIT_FAILURE);
-            }
+            if (gui_exec) XOR_EXECFLAG(state.flags, INIT_EXEC);
+            if (err && fb == NULL) exit(EXIT_FAILURE);
         }
     }
 
@@ -1033,9 +994,7 @@ int gretl_execute_script (const std::string &source)
 
     // enter main command loop
     while (cmd.ci != QUIT && fb != NULL) {
-        if (err && gretl_error_is_fatal()) {
-            gretl_abort(linecopy);
-          }
+        if (err && gretl_error_is_fatal()) gretl_abort(linecopy);
         if (gretl_execute_loop()) {
             state.cmd->ci = RUNLOOP;
             err = cli_exec_line(&state, dset, cmdprn);
@@ -1050,9 +1009,7 @@ int gretl_execute_script (const std::string &source)
                   cli_exec_line(&state, dset, cmdprn);
                   if (runit == 0) {
                       err = gretl_if_state_check(0);
-                      if (err) {
-                          errmsg(err, prn);
-                      }
+                      if (err) errmsg(err, prn);
                   }
                   continue;
               }
@@ -1109,23 +1066,10 @@ int gretl_execute_script (const std::string &source)
         cli_exec_line(&state, dset, cmdprn);
     }
 
-/* leak check -- try explicitly freeing all memory allocated */
-
-    //destroy_working_model(model);
     gretl_object_unref(model, GRETL_OBJ_EQN);
-    //destroy_dataset(dset);
-
-    if (fb != stdin && fb != NULL) {
-        fclose(fb);
-    }
-
-    //free(line);
-    //gretl_print_destroy(prn);
+    if (fb != stdin && fb != NULL) fclose(fb);
     gretl_cmd_free(&cmd);
-
-    //std::exit(err ? EXIT_FAILURE : EXIT_SUCCESS);
     if (err) handle_gretl_error(err);
-
     global_printer.print();
 
     return err;
