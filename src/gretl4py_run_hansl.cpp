@@ -450,15 +450,15 @@ static int cli_do_pkg_sample (const char *pkgname, char *runfile, PRN *prn)
         //gchar *base = g_strdup_printf("%s_sample.inp", pkgname);
         std::string base = std::string(pkgname) + "_sample.inp";
         //gchar *fname = gretl_make_dotpath(base);
-        auto fname = gretl_gchar_ptr(gretl_make_dotpath(base));
-        FILE *fp = gretl_fopen(fname, "w");
+        auto fname = gretl_gchar_ptr(gretl_make_dotpath(base.c_str()));
+        FILE *fp = gretl_fopen(fname.get(), "w");
 
         if (fp == NULL) {
             err = 1;
         } else {
             std::fputs(buf, fp);
             std::fclose(fp);
-            std::strcpy(runfile, fname);
+            std::strcpy(runfile, fname.get());
         }
         //g_free(base);
         //g_free(fname);
