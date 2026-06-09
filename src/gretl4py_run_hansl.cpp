@@ -39,7 +39,10 @@ extern "C" {
 #define XOR_CMDFLAG(x, flag) x = static_cast<CmdFlags>((x) ^ (flag))
 #define OR_EXECFLAG(x, flag) x = static_cast<ExecFlags>((x) | (flag))
 #define XOR_EXECFLAG(x, flag) x = static_cast<ExecFlags>((x) ^ (flag))
+#define N_STACKED_FILES 8
 
+static int nfiles;
+static FILE *fstack[N_STACKED_FILES];
 char datafile[MAXLEN];
 char cmdfile[MAXLEN];
 FILE *fb;
@@ -193,37 +196,31 @@ static int cli_parse_object_request (const char *line,
     return action;
 }
 
-static int cli_saved_object_action (const char *line,
-                                    DATASET *dset,
-                                    PRN *prn)
+static int cli_saved_object_action (const char *line, DATASET *dset, PRN *prn)
 {
     char objname[MAXSAVENAME] = {0};
-    char *param = NULL;
-    void *ptr = NULL;
+    char *param = nullptr;
+    void *ptr = nullptr;
     GretlObjType type;
     int action;
 
-    if (*line == '!' || *line == '#') {
-        /* shell command or comment (not an object command) */
-        return OBJ_ACTION_NONE;
-    }
+    // shell command or comment (not an object command)
+    if (*line == '!' || *line == '#') return OBJ_ACTION_NONE;
 
-    /* special: display icon view window, ignored in CLI program */
-    if (!strncmp(line, "iconview", 8)) {
-        return OBJ_ACTION_NULL;
-    }
+    // special: display icon view window, ignored in CLI program
+    if (!std::strncmp(line, "iconview", 8)) return OBJ_ACTION_NULL;
 
-    action = cli_parse_object_request(line, objname, &param,
-                                      &ptr, &type, prn);
+    action = cli_parse_object_request(line, objname, &param, &ptr, &type, prn);
 
     if (action == OBJ_ACTION_SHOW) {
-        action = OBJ_ACTION_NULL; /* ignore */
+        // ignore
+        action = OBJ_ACTION_NULL;
     } else if (action == OBJ_ACTION_FREE) {
         gretl_object_remove_from_stack(ptr, type);
-        pprintf(prn, _("Freed %s\n"), objname);
+        pprintf(prn, ("Freed %s\n"), objname);
     }
 
-    free(param);
+    std::free(param);
 
     return action;
 }
@@ -235,7 +232,7 @@ static int maybe_abort_open (ExecState *s)
 
         std::fprintf(stderr, _("Opening a new data file closes the " "present one.  Proceed? (y/n) "));
         if (std::fgets(response, sizeof response, stdin) != nullptr && *response != 'y' && *response != 'Y') {
-            pprintf(s->prn, _("OK, staying with current data set\n"));
+            pprintf(s->prn, ("OK, staying with current data set\n"));
             return 1;
         }
     }
@@ -258,9 +255,9 @@ static int cli_clear_data (ExecState *s, DATASET *dset)
         clearopt = OPT_D;
     }
 
-    if (dset->Z != NULL) {
-        err = restore_full_sample(dset, NULL);
-        free_Z(dset);
+    if (dset->Z != nullptr) {
+        err = restore_full_sample(dset, nullptr);
+        free_Z(dset); //FIXME: this will cause SIGSEGV for sure!!!
     }
 
     clear_datainfo(dset, CLEAR_FULL);
@@ -269,9 +266,7 @@ static int cli_clear_data (ExecState *s, DATASET *dset)
 
     clear_model(s->model);
 
-    if (clearopt & OPT_A) {
-        gretl_functions_cleanup();
-    }
+    if (clearopt & OPT_A) gretl_functions_cleanup();
     if (clearopt & OPT_D) {
         libgretl_session_cleanup(SESSION_CLEAR_DATASET);
     } else {
@@ -301,12 +296,10 @@ static int cli_exec_callback (ExecState *s, void *ptr, GretlObjType type)
                 cli_clear_data(s, (DATASET *) ptr);
             }
         } else if (type == GRETL_OBJ_ANY) {
-            /* handle successful "open" */
-            OpenOp *op = (OpenOp *) ptr;
+            // handle successful "open"
+            OpenOp *op = static_cast<OpenOp*>(ptr);
 
-            if (op->fname[0] != '\0') {
-                strncpy(datafile, op->fname, MAXLEN - 1);
-            }
+            if (op->fname[0] != '\0') std::strncpy(datafile, op->fname, MAXLEN - 1);
             data_status = 1;
         }
     }
@@ -315,11 +308,6 @@ static int cli_exec_callback (ExecState *s, void *ptr, GretlObjType type)
 }
 
 // apparatus for keeping track of input stream: start
-
-#define N_STACKED_FILES 8
-
-static int nfiles;
-static FILE *fstack[N_STACKED_FILES];
 
 static int push_input_file (FILE *fp)
 {
@@ -336,7 +324,7 @@ static int push_input_file (FILE *fp)
 
 static FILE *pop_input_file (void)
 {
-    FILE *ret = NULL;
+    FILE *ret = nullptr;
 
     if (nfiles > 0) {
         ret = fstack[--nfiles];
@@ -344,6 +332,7 @@ static FILE *pop_input_file (void)
 
     return ret;
 }
+
 // apparatus for keeping track of input stream: end
 
 static void do_quit_message (ExecState *s, int err)
