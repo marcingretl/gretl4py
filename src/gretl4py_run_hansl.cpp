@@ -52,13 +52,13 @@ int indent0;
 int batch_stdin;
 int data_status;
 int gui_exec;
-char linebak[MAXLINE];      /* for storing comments */
+char linebak[MAXLINE];      // for storing comments
 char *line_read;
 static int xout;
 
 static GretlPrint global_printer = GretlPrint();
-static gretl_dataset_ptr script_dataset{nullptr};           // dataset for subsequent script calls
-static bool nulldata_executed = false;                      // flag that script_dataset was created/modified by 'nulldata' command
+static gretl_dataset_ptr script_dataset{nullptr};  // dataset for subsequent script calls
+static bool nulldata_executed = false;             // flag that script_dataset was created/modified by 'nulldata' command
 
 static void printline (const char *s)
 {
@@ -122,15 +122,11 @@ static void handle_datafile (char *filearg, char *runfile, DATASET *dset, PRN *p
     if (load_datafile) {
         if (err) {
             errmsg(err, prn);
-            if (err == E_FOPEN) {
-                show_paths();
-              }
-              exit(EXIT_FAILURE);
+            if (err == E_FOPEN) show_paths();
+            exit(EXIT_FAILURE);
         }
         data_status = 1;
-        if (!batch) {
-            pprintf(cmdprn, "open %s\n", given_file);
-        }
+        if (!batch) pprintf(cmdprn, "open %s\n", given_file);
     }
 }
 
@@ -139,22 +135,14 @@ static void gretl_abort (char *line)
     const char *tokline = get_parser_errline();
 
     std::fprintf(stderr, "\ngretlcli: error executing script: halting\n");
-
-    if (tokline != NULL && *tokline != '\0' && strcmp(tokline, line)) {
-        std::fprintf(stderr, "> %s\n", tokline);
-    }
-
-    if (*line != '\0') {
-        std::fprintf(stderr, "> %s\n", line);
-    }
+    if (tokline != NULL && *tokline != '\0' && std::strcmp(tokline, line)) std::fprintf(stderr, "> %s\n", tokline);
+    if (*line != '\0') std::fprintf(stderr, "> %s\n", line);
 
     exit(EXIT_FAILURE);
 }
 
-static int cli_parse_object_request (const char *line,
-                                     char *objname, char **param,
-                                     void **pptr, GretlObjType *type,
-                                     PRN *prn)
+static int cli_parse_object_request (const char *line, char *objname, char **param,
+                                     void **pptr, GretlObjType *type, PRN *prn)
 {
     char word[MAXSAVENAME] = {0};
     int action;
@@ -163,20 +151,16 @@ static int cli_parse_object_request (const char *line,
     parse_object_command(line, word, param);
 
     /* if no dot param, nothing doing */
-    if (*param == NULL) {
-        return OBJ_ACTION_NONE;
-    }
+    if (*param == nullptr) return OBJ_ACTION_NONE;
 
-    if (gretl_is_bundle(word)) {
-        return OBJ_ACTION_NONE;
-    }
+    if (gretl_is_bundle(word)) return OBJ_ACTION_NONE;
 
-    /* see if there's an object associated with the name */
+    // see if there's an object associated with the name
     *pptr = gretl_get_object_and_type(word, type);
 
-    if (*pptr == NULL) {
-        /* no matching object */
-        if (*param != NULL && !strcmp(*param, "show")) {
+    if (*pptr == nullptr) {
+        // no matching object
+        if (*param != nullptr && !strcmp(*param, "show")) {
             /* maybe OK in GUI, skip in CLI? */
             pprintf(prn, _("%s: no such object\n"), word);
             return OBJ_ACTION_NULL;
