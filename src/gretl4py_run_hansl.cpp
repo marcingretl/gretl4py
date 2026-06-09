@@ -25,16 +25,29 @@
 #include "gretl4py_internals.h"
 #include <gretl/libset.h>
 extern "C" {
-//    #include <gretl/gretl_string_table.h>
-//   #include <gretl/gretl_typemap.h>
-//    #include <gretl/gretl_www.h>
-//    #include <gretl/gretl_zip.h>
-//    #include <gretl/interact.h>
     #include <gretl/monte_carlo.h>
     #include <gretl/gretl_xml.h>
     #include <gretl/system.h>
-//    #include <gretl/options.h>
-//    #include <gretl/gretl_func.h>
+
+    struct OpenOp_ {
+        char fname[MAXLEN];
+        int quiet;
+        int http;
+        int dbdata;
+        int ftype;
+    };
+
+    typedef struct OpenOp_ OpenOp;
+
+    int gretl_if_state_true (void);
+    void gretl_if_state_clear (void);
+    void gretl_if_state_reset (int indent);
+    int gretl_if_state_check (int indent0);
+    int gretl_if_state_record (void);
+    void gretl_exec_state_transcribe_flags (ExecState *s, CMD *cmd);
+    int csv_open_needs_matrix (gretlopt opt);
+    void gretl_exec_state_set_callback (ExecState *s, EXEC_CALLBACK callback, gretlopt opt);
+    int process_command_error (ExecState *s, int err);
 }
 #include <filesystem>
 
@@ -43,26 +56,6 @@ extern "C" {
 #define XOR_CMDFLAG(x, flag) x = static_cast<CmdFlags>((x) ^ (flag))
 #define OR_EXECFLAG(x, flag) x = static_cast<ExecFlags>((x) | (flag))
 #define XOR_EXECFLAG(x, flag) x = static_cast<ExecFlags>((x) ^ (flag))
-
-struct OpenOp_ {
-    char fname[MAXLEN];
-    int quiet;
-    int http;
-    int dbdata;
-    int ftype;
-};
-
-typedef struct OpenOp_ OpenOp;
-
-int gretl_if_state_true (void);
-void gretl_if_state_clear (void);
-void gretl_if_state_reset (int indent);
-int gretl_if_state_check (int indent0);
-int gretl_if_state_record (void);
-void gretl_exec_state_transcribe_flags (ExecState *s, CMD *cmd);
-int csv_open_needs_matrix (gretlopt opt);
-void gretl_exec_state_set_callback (ExecState *s, EXEC_CALLBACK callback, gretlopt opt);
-int process_command_error (ExecState *s, int err);
 
 char datafile[MAXLEN];
 char cmdfile[MAXLEN];
@@ -918,7 +911,7 @@ static int maybe_get_input_line_continuation (char *line)
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////
-int gretl_execute_script (std::string &source)
+int gretl_execute_script_new (const std::string &source)
 {
     char linecopy[MAXLINE];
     DATASET *dset = nullptr;

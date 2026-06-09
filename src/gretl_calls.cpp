@@ -610,6 +610,7 @@ void do_gretl_pkg (const std::string &action, const std::string &pkgname,
     }
 }
 
+int gretl_execute_script_new (const std::string &source);
 void do_gretl_run (const std::string &filename)
 {
     //
@@ -619,7 +620,8 @@ void do_gretl_run (const std::string &filename)
 
     if (!std::filesystem::exists(path) || !std::filesystem::is_regular_file(path)) handle_gretl_error(E_FOPEN, filename);
 
-    gretl_execute_script("run " + path.string());
+    //gretl_execute_script("run " + path.string());
+    gretl_execute_script_new(path.string());
 }
 
 template <GretlFunIndex FI>
