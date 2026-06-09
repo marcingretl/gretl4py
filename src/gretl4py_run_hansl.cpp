@@ -371,19 +371,16 @@ static void maybe_save_session_output (const char *cmdfile)
 
     if (*outfile != '\0' && *outfile != '\n' && *outfile != '\r' && strcmp(outfile, "q")) {
         const char *udir = gretl_workdir();
-        char *syscmd;
         int err;
 
-        std::printf(_("writing session output to %s%s\n"), udir, outfile);
+        std::printf(("writing session output to %s%s\n"), udir, outfile);
 #ifdef WIN32
-        syscmd = gretl_strdup_printf("\"%sgretlcli\" -b \"%s\" > \"%s%s\"", gretl_home(), cmdfile, udir, outfile);
-        err = std::system(syscmd);
+        auto syscmd = gretl_char_ptr(gretl_strdup_printf("\"%sgretlcli\" -b \"%s\" > \"%s%s\"", gretl_home(), cmdfile, udir, outfile));
 #else
-        syscmd = gretl_strdup_printf("gretlcli -b \"%s\" > \"%s%s\"", cmdfile, udir, outfile);
-        err = std::system(syscmd);
+        auto syscmd = gretl_char_ptr(gretl_strdup_printf("gretlcli -b \"%s\" > \"%s%s\"", cmdfile, udir, outfile));
 #endif
-        if (!err) std::printf("%s\n", syscmd);
-        std::free(syscmd);
+        err = std::system(syscmd.get());
+        if (!err) std::printf("%s\n", syscmd.get());
     }
 }
 
