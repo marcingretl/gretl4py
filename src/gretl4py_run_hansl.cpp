@@ -1154,5 +1154,8 @@ int gretl_execute_script (std::string &source)
     //gretl_print_destroy(prn);
     gretl_cmd_free(&cmd);
 
-    exit(err ? EXIT_FAILURE : EXIT_SUCCESS);
+    //std::exit(err ? EXIT_FAILURE : EXIT_SUCCESS);
+    if (err) handle_gretl_error(err);
+
+    return err;
 }
