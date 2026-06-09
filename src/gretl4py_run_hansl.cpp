@@ -36,10 +36,10 @@ extern "C" {
 
 #define ENDRUN (NC + 1)
 #define RUNLOOP (NC + 2)
+#define N_STACKED_FILES 8
 #define XOR_CMDFLAG(x, flag) x = static_cast<CmdFlags>((x) ^ (flag))
 #define OR_EXECFLAG(x, flag) x = static_cast<ExecFlags>((x) | (flag))
 #define XOR_EXECFLAG(x, flag) x = static_cast<ExecFlags>((x) ^ (flag))
-#define N_STACKED_FILES 8
 
 static int nfiles;
 static FILE *fstack[N_STACKED_FILES];
@@ -135,7 +135,7 @@ static void gretl_abort (char *line)
     const char *tokline = get_parser_errline();
 
     std::fprintf(stderr, "\ngretlcli: error executing script: halting\n");
-    if (tokline != NULL && *tokline != '\0' && std::strcmp(tokline, line)) std::fprintf(stderr, "> %s\n", tokline);
+    if (tokline != nullptr && *tokline != '\0' && std::strcmp(tokline, line)) std::fprintf(stderr, "> %s\n", tokline);
     if (*line != '\0') std::fprintf(stderr, "> %s\n", line);
 
     exit(EXIT_FAILURE);
@@ -321,7 +321,7 @@ static FILE *pop_input_file (void)
 
 static void do_quit_message (ExecState *s, int err)
 {
-    if (gretl_messages_on() && s != NULL && s->prn != NULL) {
+    if (gretl_messages_on() && s != nullptr && s->prn != nullptr) {
         if (err) {
             pputs(s->prn, _("Terminated on error\n"));
         } else {
@@ -337,11 +337,7 @@ static void maybe_save_session_output (const char *cmdfile)
     std::printf(_("type a filename to store output (enter to quit): "));
 
     *outfile = '\0';
-
-    if (std::fgets(outfile, sizeof outfile, stdin) != NULL) {
-        top_n_tail(outfile, 0, NULL);
-    }
-
+    if (std::fgets(outfile, sizeof outfile, stdin) != nullptr) top_n_tail(outfile, 0, nullptr);
     if (*outfile != '\0' && *outfile != '\n' && *outfile != '\r' && strcmp(outfile, "q")) {
         const char *udir = gretl_workdir();
         int err;
@@ -395,7 +391,7 @@ static int cli_do_pkg_sample (const char *pkgname, char *runfile, PRN *prn)
         auto fname = gretl_gchar_ptr(gretl_make_dotpath(base.c_str())); //was: gchar *fname = gretl_make_dotpath(base);
         FILE *fp = gretl_fopen(fname.get(), "w");
 
-        if (fp == NULL) {
+        if (fp == nullptr) {
             err = 1;
         } else {
             std::fputs(buf, fp);
@@ -573,7 +569,7 @@ static int cli_exec_line (ExecState *s, DATASET *dset, PRN *cmdprn)
         // if we're stacking commands for a loop, parse "lightly"
         err = get_command_index(s, LOOP, 0);
     } else {
-        err = parse_command_line(s, dset, NULL);
+        err = parse_command_line(s, dset, nullptr);
     }
 
     if (err) {
@@ -662,7 +658,7 @@ cmd_proceed:
             break;
 
         case HELP:
-            cli_help(cmd->param, cmd->parm2, cmd->opt, NULL, prn);
+            cli_help(cmd->param, cmd->parm2, cmd->opt, nullptr, prn);
             break;
 
         case NULLDATA:
@@ -956,14 +952,14 @@ int gretl_execute_script (const std::string &source)
             if (gui_exec) OR_EXECFLAG(state.flags, INIT_EXEC);
             err = cli_exec_line(&state, dset, cmdprn);
             if (gui_exec) XOR_EXECFLAG(state.flags, INIT_EXEC);
-            if (err && fb == NULL) exit(EXIT_FAILURE);
+            if (err && fb == nullptr) exit(EXIT_FAILURE);
         }
     }
 
     *linecopy = '\0';
 
     // enter main command loop
-    while (cmd.ci != QUIT && fb != NULL) {
+    while (cmd.ci != QUIT && fb != nullptr) {
         if (err && gretl_error_is_fatal()) gretl_abort(linecopy);
         if (gretl_execute_loop()) {
             state.cmd->ci = RUNLOOP;
@@ -1025,7 +1021,7 @@ int gretl_execute_script (const std::string &source)
             switch_ext(filearg, runfile, "gfn");
             std::sprintf(line, "makepkg %s\n", filearg);
         } else {
-              if (!isalpha(filearg[0]) || filearg[1] == ':') {
+              if (!std::isalpha(filearg[0]) || filearg[1] == ':') {
                   // some sort of path: install local file
                   std::sprintf(line, "pkg install %s --local\n", filearg);
                 } else {
@@ -1037,7 +1033,7 @@ int gretl_execute_script (const std::string &source)
     }
 
     gretl_object_unref(model, GRETL_OBJ_EQN);
-    if (fb != stdin && fb != NULL) fclose(fb);
+    if (fb != stdin && fb != nullptr) fclose(fb);
     gretl_cmd_free(&cmd);
     if (err) handle_gretl_error(err);
     global_printer.print();
