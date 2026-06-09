@@ -22,17 +22,12 @@
 #include "gretl4py_packages.h"
 #include "gretl_calls.h"
 #include "gretl4py_run_hansl.h"
-//#include "gretl4py_internals.h"
 #include <gretl/libset.h>
 extern "C" {
     #include <gretl/gretl_string_table.h>
     #include <gretl/gretl_typemap.h>
     #include <gretl/gretl_www.h>
     #include <gretl/gretl_zip.h>
-    #include <gretl/interact.h>
-    #include <gretl/monte_carlo.h>
-    #include <gretl/gretl_xml.h>
-    #include <gretl/gretl_func.h>
 }
 #include <filesystem>
 
@@ -47,11 +42,6 @@ extern "C" {
 #else
 # define COMPILER_IDENT __VERSION__
 #endif
-
-// stuff used by script execution
-#define ENDRUN (NC + 1)
-#define RUNLOOP (NC + 2)
-#define XOR_CMDFLAG(x, flag) x = static_cast<CmdFlags>((x) ^ (flag))
 
 // external symbols
 extern "C" {
