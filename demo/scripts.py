@@ -15,9 +15,9 @@ eval $vcv'''
 gretl.run_hansl(scpt)
 #exit()
 
-file = '/home/marcin/cvs/Gretl/gretl-gretl4py/demo/test.inp'
+#file = '/home/marcin/cvs/Gretl/gretl-gretl4py/demo/test.inp'
 #file = '/home/marcin/cvs/Gretl/gretl-gretl4py/demo/func.inp'
-gretl.run(file)
+#gretl.run(file)
 
 # print accessor value
 gretl.run_hansl("eval $sysinfo")
