@@ -110,6 +110,4 @@ void do_gretl_delete_variables (const std::string &varname, const py::kwargs &kw
 template <GretlObjType OBJ_TYPE>
 py::object do_get_accessor (const std::string &name, GretlDatasetPtr dataset = nullptr, void *model = NULL);
 
-void gretl_execute_script (const std::string &script);
-
 #endif // GRETL_CALLS_H

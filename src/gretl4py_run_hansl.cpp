@@ -20,9 +20,8 @@
 #include "gretl4py.h" /* MUST be at the first position!!! */
 #include "gretl4py_utils.h"
 #include "gretl4py_types.h"
-//#include "gretl4py_packages.h"
-//#include "gretl_calls.h"
 #include "gretl4py_internals.h"
+#include "gretl4py_run_hansl.h"
 #include <gretl/libset.h>
 extern "C" {
     #include <gretl/monte_carlo.h>
@@ -910,9 +909,12 @@ static int maybe_get_input_line_continuation (char *line)
     return err;
 }
 
-//////////////////////////////////////////////////////////////////////////////////////////////
-int gretl_execute_script_new (const std::string &source)
+int gretl_execute_script (const std::string &source)
 {
+    //
+    // apparatus for executing regular hansl code
+    // note: this function acts as "main" in gretlcli.c
+    //
     char linecopy[MAXLINE];
     DATASET *dset = nullptr;
     MODEL *model = nullptr;
@@ -1136,8 +1138,9 @@ int gretl_execute_script_new (const std::string &source)
 
 /* leak check -- try explicitly freeing all memory allocated */
 
-    destroy_working_model(model);
-    destroy_dataset(dset);
+    //destroy_working_model(model);
+    gretl_object_unref(model, GRETL_OBJ_EQN);
+    //destroy_dataset(dset);
 
     if (fb != stdin && fb != NULL) {
         fclose(fb);

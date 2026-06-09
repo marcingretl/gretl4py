@@ -21,7 +21,8 @@
 #include "gretl4py_utils.h"
 #include "gretl4py_packages.h"
 #include "gretl_calls.h"
-#include "gretl4py_internals.h"
+#include "gretl4py_run_hansl.h"
+//#include "gretl4py_internals.h"
 #include <gretl/libset.h>
 extern "C" {
     #include <gretl/gretl_string_table.h>
@@ -61,7 +62,6 @@ extern "C" {
 // global variables (some used outside this file)
 static int gretl4py_verbose = 0;
 static GretlPrint global_printer = GretlPrint();
-static gretl_dataset_ptr script_dataset{nullptr};       // dataset for subsequent script calls
 std::unordered_set<std::string> user_vars;              // registry of user variables
 
 //////////////////////////////////////////////////
@@ -610,7 +610,6 @@ void do_gretl_pkg (const std::string &action, const std::string &pkgname,
     }
 }
 
-int gretl_execute_script_new (const std::string &source);
 void do_gretl_run (const std::string &filename)
 {
     //
@@ -620,8 +619,7 @@ void do_gretl_run (const std::string &filename)
 
     if (!std::filesystem::exists(path) || !std::filesystem::is_regular_file(path)) handle_gretl_error(E_FOPEN, filename);
 
-    //gretl_execute_script("run " + path.string());
-    gretl_execute_script_new(path.string());
+    gretl_execute_script(path.string());
 }
 
 template <GretlFunIndex FI>
@@ -1196,174 +1194,3 @@ void gretl_generate (const std::string &formula, GretlDatasetPtr dataset, const 
 template void gretl_generate<GRETL_TYPE_ANY>(const std::string&, GretlDatasetPtr, const std::string&);
 template void gretl_generate<GRETL_TYPE_LIST>(const std::string&, GretlDatasetPtr, const std::string&);
 template void gretl_generate<GRETL_TYPE_SERIES>(const std::string&, GretlDatasetPtr, const std::string&);
-
-//////////////////////////////////////////////////
-// apparatus for running hansl code
-//////////////////////////////////////////////////
-void gretl_execute_script (const std::string &script)
-{
-    //
-    // apparatus for executing regular hansl code
-    // note: this function acts as "main" in gretlcli.c
-    // with cli_exec_line() as exec_line() lambda
-    // (as well as other static functions)
-    //
-    static bool nulldata_executed = false;  // flag that script_dataset was created/modified by 'nulldata' command
-    const static bool batch = false;        // we never run in "batch" mode in gretl4py
-    auto prn = global_printer.prn_ptr();
-    char line[MAXLINE] = {'\0'};
-    MODEL *model = nullptr;
-    DATASET *dset = nullptr;
-    ExecState state;
-    CMD cmd;
-    int err = 0;
-
-    // lambda for clearing a dataset
-    auto clear_dataset = [&dset](void) -> void
-    {
-        script_dataset.reset(datainfo_new());
-        dset = script_dataset.get();
-    };
-
-    // lambda which runs switch as in 'cmd_proceed' of cli_exec_line()
-    auto cmd_proceed = [&state, &dset, &prn, &err, clear_dataset](CMD *cmd) -> void
-    {
-        //
-        // note: here we do what gretlcli does in 'cmd_proceed'
-        // as for now, we _do not_ reproduce gretl_exec_state_set_callback(s, cli_exec_callback, OPT_NONE);
-        //
-        int renumber = 0;   // verify if we need it at all
-        err = 0;
-
-        switch (cmd->ci) {
-            case DELEET:
-                err = gretl_delete_variables(cmd->list, cmd->param, cmd->opt, dset, &renumber, prn);
-                if (err) handle_gretl_error(err);
-                if (renumber && !batch) {
-                    pputs(prn, _("Take note: variables have been renumbered"));
-                    pputc(prn, '\n');
-                    maybe_list_series(dset, prn);
-                }
-                if (err && cmd->flags & CMD_CATCH) {
-                    XOR_CMDFLAG(cmd->flags, CMD_CATCH);
-                    err = 0;
-                }
-                break;
-
-            case HELP:
-                cli_help(cmd->param, cmd->parm2, cmd->opt, NULL, prn);
-                break;
-
-            case NULLDATA:
-                if (cmd->order < 1) handle_gretl_error(E_INVARG, "nulldata", "data series length count missing or invalid");
-                // in gretlcli.c, cli_clear_data() is called here
-                clear_dataset();
-                clear_model(state.model);
-                gretl_cmd_destroy_context(cmd);
-                err = open_nulldata(dset, 1, cmd->order, cmd->opt, prn);
-                if (!err && !nulldata_executed) nulldata_executed = true;
-                break;
-
-            case RUNLOOP:
-                py::print("RUNLOOP");
-                err = gretl_loop_exec(&state, dset);
-                cmd->ci = 0;
-                break;
-
-            default:
-                err = gretl_cmd_exec(&state, dset);
-                break;
-        }
-    };
-
-    // lambda for executing just one line
-    auto exec_line = [&state, &dset, &prn, &err, clear_dataset, cmd_proceed](const std::string &line) -> void
-    {
-        //
-        // this function reproduces functionality of cli_exec_line() from gretlcli.c
-        // line: contains line to be executed
-        //
-        bool do_print = true;       // we must control eventual double printing
-        bool do_cmd_proceed = true; // if we execute cmd_proceed()
-        CMD *cmd = nullptr;
-        err = 0;
-
-        *state.line = '\0';
-        std::strncat(state.line, line.c_str(), MAXLINE-2);
-        std::strcat(state.line, "\n");
-        err = parse_command_line(&state, dset, nullptr);
-        if (err) handle_gretl_error(err);
-        cmd = state.cmd;
-
-        py::print("linia", state.line);
-
-        // non-available commands
-        if (cmd->ci == QUIT || cmd->ci == CLEAR || cmd->ci == DATAMOD) {
-            std::string msg = "'";
-            msg.append(gretl_command_word(cmd->ci));
-            msg.append("' command not available in gretl4py");
-            py::print(msg);
-            return;
-        }
-
-        // loop handling
-        if (gretl_execute_loop()) cmd->ci = RUNLOOP;
-
-        // function compiling handling
-        if (gretl_compiling_function()) {
-            py::print("kompilacja", state.line);
-            err = gretl_function_append_line(&state);
-            if (err) {
-                do_cmd_proceed = false;
-            } else {
-                pprintf(prn, "%s\n", state.line);
-                return;
-            }
-        }
-
-        if (string_is_blank(state.line)) return;
-
-        // nulldata special handling
-        if (cmd->ci == OPEN && nulldata_executed) {
-            clear_dataset();
-            nulldata_executed = false;
-        }
-
-        // we handle INCLUDE here (i.e. not by cmd_proceed() as in gretlcli.c)
-        if (cmd->ci == INCLUDE) {
-            // we either read as XML or run(!) the file in question
-            if (gretl_is_xml_file(cmd->param)) {
-                err = load_XML_functions_file(cmd->param, cmd->opt, prn);
-            } else {
-                do_gretl_run(cmd->param);
-                do_print = false;
-            }
-            do_cmd_proceed = false;
-        }
-
-        // finally we run cmd_proceed() as in gretlcli.c
-        if (do_cmd_proceed) cmd_proceed(cmd);
-
-        if (err) {
-            gretl_exec_state_uncomment(&state);
-            handle_gretl_error(err);
-        }
-        if (do_print) global_printer.print();
-    };
-
-    // dataset and model to use
-    model = allocate_working_model();
-    if (model == nullptr) handle_gretl_error(E_ALLOC);
-    if (!script_dataset && !nulldata_executed) script_dataset.reset(datainfo_new());
-    dset = script_dataset.get();
-    if (dset == nullptr) handle_gretl_error(E_ALLOC);
-
-    // init apparatus
-    err = gretl_cmd_init(&cmd);
-    if (err) handle_gretl_error(err);
-    gretl_exec_state_init(&state, CONSOLE_EXEC, line, &cmd, model, global_printer.prn_ptr());
-
-    // do the job
-    exec_line(script);
-    gretl_object_unref(model, GRETL_OBJ_EQN);
-}
