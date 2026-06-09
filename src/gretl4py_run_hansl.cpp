@@ -1150,5 +1150,7 @@ int gretl_execute_script_new (const std::string &source)
     //std::exit(err ? EXIT_FAILURE : EXIT_SUCCESS);
     if (err) handle_gretl_error(err);
 
+    global_printer.print();
+
     return err;
 }
