@@ -912,8 +912,8 @@ int gretl_execute_script (const T &source)
     // end of argc:argv
 
     if (!batch && !tool) {
-        strcpy(cmdfile, gretl_workdir());
-        strcat(cmdfile, "session.inp");
+        std::strcpy(cmdfile, gretl_workdir());
+        std::strcat(cmdfile, "session.inp");
         cmdprn = gretl_print_new_with_filename(cmdfile, &err);
         if (err) {
             errmsg(err, prn);
