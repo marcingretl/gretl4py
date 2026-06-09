@@ -873,6 +873,50 @@ cmd_finish:
     return err;
 }
 
+static int maybe_get_input_line_continuation (char *line)
+{
+    char tmp[MAXLINE];
+    int contd, err = 0;
+
+    if (!std::strncmp(line, "quit", 4)) {
+        return 0;
+    }
+
+    contd = top_n_tail(line, MAXLINE, &err);
+
+    while (contd && !err) {
+        *tmp = '\0';
+
+        if (batch || runit) {
+            char *test = fgets(tmp, MAXLINE, fb);
+
+            if (test == NULL) {
+                break;
+            }
+        } else {
+#ifdef HAVE_READLINE
+            rl_gets(&line_read, "> ");
+            std::strcpy(tmp, line_read);
+#else
+            std::fgets(tmp, MAXLINE, stdin);
+#endif
+        }
+
+        if (*tmp != '\0') {
+            if (std::strlen(line) + std::strlen(tmp) > MAXLINE - 1) {
+                err = E_TOOLONG;
+                break;
+            } else {
+                std::strcat(line, tmp);
+                compress_spaces(line);
+            }
+        }
+        contd = top_n_tail(line, MAXLINE, &err);
+    }
+
+    return err;
+}
+
 //////////////////////////////////////////////////////////////////////////////////////////////
 int gretl_execute_script (std::string &source)
 {
