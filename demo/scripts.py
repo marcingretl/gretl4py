@@ -30,4 +30,4 @@ gretl.run_hansl("eval $sysinfo")
 # run regular gretl script ('mle-advanced.inp')
 file = gretl.gretldir + '/scripts/mle-advanced.inp'
 print(file)
-gretl.run(file)
+gretl.run_script(file)

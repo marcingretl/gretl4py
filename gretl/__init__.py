@@ -97,14 +97,14 @@ atexit.register(_gretl._gretl4py_cleanup)
 from ._gretl import (about, version, gretldir)                      # module-related
 from ._gretl import (Bundle)                                        # constructors
 from ._gretl import (delete, genr, include, pkg, print, set, summary)# libgretl's commands interfaces
-from ._gretl import (varlist, run)
+from ._gretl import (varlist, run_script, run_hansl)
 from ._gretl import (pvalue, critical, pdf, cdf, invcdf, corr, cov) # libgretl's functions interfaces
 from ._gretl import (get_accessor)                                  # gretl4py specific functions
 from .gretl4py_classes import _attrs, _oddsratio, mle, nls, gmm, NLSpec
 from .gretl4py_classes import get_data, show_data_status, _to_dataframe
 from .gretl4py_classes import _matrix_functions_wrapper, _package_get_help
 from .gretl4py_classes import _model_plots
-from .gretl4py_addons import print_module_source, fc_print, modeltab, run_hansl
+from .gretl4py_addons import print_module_source, fc_print, modeltab
 
 # deprecations
 # deprecations: END

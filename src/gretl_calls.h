@@ -67,7 +67,8 @@ py::object do_gretl_include (const std::string &filename);
 void do_gretl_pkg (const std::string &action, const std::string &pkgname,
                    const py::kwargs &kwargs);
 
-void do_gretl_run (const std::string &filename);
+template <bool RUN>
+void gretl_hansl_execute (const std::string &script);
 
 template <GretlFunIndex FI>
 double gretl_get_pvalue_critval_pdf_cdf (const std::string &dist, double value,

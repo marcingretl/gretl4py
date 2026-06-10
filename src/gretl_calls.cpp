@@ -600,17 +600,29 @@ void do_gretl_pkg (const std::string &action, const std::string &pkgname,
     }
 }
 
-void do_gretl_run (const std::string &filename)
+//RUN == true: if script is a path to file (i.e. we do want to 'run' it)
+template <bool RUN>
+void gretl_hansl_execute (const std::string &script)
 {
     //
-    // function mimics libgretl's 'run' command
+    // function which executes hansl code
     //
-    std::filesystem::path path{filename};
+    // we mimics 'run' command
+    int err = 0;
 
-    if (!std::filesystem::exists(path) || !std::filesystem::is_regular_file(path)) handle_gretl_error(E_FOPEN, filename);
+    if constexpr (RUN) {
+        std::filesystem::path path{script};
 
-    gretl_execute_script<std::filesystem::path>(path);
+        if (!std::filesystem::exists(path) || !std::filesystem::is_regular_file(path)) handle_gretl_error(E_FOPEN, script);
+
+        err = gretl_execute_script<std::filesystem::path>(path);
+    } else {
+        err = gretl_execute_script<std::string>(script);
+    }
+    if (err) handle_gretl_error(err);
 }
+template void gretl_hansl_execute<true>(const std::string&);
+template void gretl_hansl_execute<false>(const std::string&);
 
 template <GretlFunIndex FI>
 double gretl_get_pvalue_critval_pdf_cdf (const std::string &dist, double value,
