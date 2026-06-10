@@ -358,9 +358,9 @@ static void do_quit_message (ExecState *s, int err)
 {
     if (gretl_messages_on() && s != nullptr && s->prn != nullptr) {
         if (err) {
-            pputs(s->prn, _("Terminated on error\n"));
+            pputs(s->prn, ("Terminated on error\n"));
         } else {
-            pputs(s->prn, _("Done\n"));
+            pputs(s->prn, ("Done\n"));
         }
     }
 }
@@ -438,7 +438,6 @@ static int cli_do_pkg_sample (const char *pkgname, char *runfile, PRN *prn)
 
     return err;
 }
-
 
 static int run_include_error (ExecState *s, const char *param, int err, PRN *prn)
 {
@@ -535,7 +534,6 @@ static int get_interactive_line (void *p)
     return err;
 }
 
-
 static int cli_get_input_line (ExecState *s, const char *fname)
 {
     int err = 0;
@@ -550,7 +548,6 @@ static int cli_get_input_line (ExecState *s, const char *fname)
 
     return err;
 }
-
 
 // cli_exec_line: this is called to execute both interactive and
 // script commands.  Note that most commands get passed on to the
@@ -624,9 +621,8 @@ static int cli_exec_line (ExecState *s, DATASET *dset, PRN *cmdprn)
     gretl_exec_state_transcribe_flags(s, cmd);
 
     // if in batch mode, echo comments from input
-    if (batch && runit < 2 && cmd->ci == CMD_COMMENT && gretl_if_state_true()) {
+    if (batch && runit < 2 && cmd->ci == CMD_COMMENT && gretl_if_state_true())
         if (gretl_echo_on() || gretl_comments_on()) printline(linebak);
-    }
 
     // nothing there, comment, or masked by "if"
     if (cmd->ci < 0) return 0;
@@ -639,17 +635,12 @@ static int cli_exec_line (ExecState *s, DATASET *dset, PRN *cmdprn)
         goto cmd_finish;
     }
 
-    if (cmd->ci == LOOP && !batch && !runit) {
-        pputs(prn, _("Enter commands for loop.  "
-        "Type 'endloop' to get out\n"));
-    }
+    if (cmd->ci == LOOP && !batch && !runit) pputs(prn, ("Enter commands for loop.  " "Type 'endloop' to get out\n"));
 
+    // accumulating loop commands
     if (cmd->ci == LOOP || gretl_compiling_loop()) {
-        // accumulating loop commands
-        if (gretl_echo_on() && (!gretl_compiling_loop() || batch || runit)) {
-            // straight visual echo
-            gretl_echo_command(cmd, line, prn);
-        }
+        // straight visual echo
+        if (gretl_echo_on() && (!gretl_compiling_loop() || batch || runit)) gretl_echo_command(cmd, line, prn);
         err = gretl_loop_append_line(s, dset);
         if (err) {
             errmsg(err, prn);
@@ -739,9 +730,7 @@ cmd_proceed:
                 err = run_include_error(s, cmd->param, err, prn);
                 break;
             }
-            if (gretl_messages_on() && !(s->flags & INIT_EXEC)) {
-                pprintf(prn, " %s\n", runfile);
-            }
+            if (gretl_messages_on() && !(s->flags & INIT_EXEC)) pprintf(prn, " %s\n", runfile);
             if (cmd->ci == INCLUDE && gretl_is_xml_file(runfile)) {
                 err = load_XML_functions_file(runfile, cmd->opt, prn);
                 if (err) {
@@ -758,9 +747,7 @@ cmd_proceed:
                 err = 1;
                 break;
             }
-            if (fb != nullptr) {
-                push_input_file(fb);
-            }
+            if (fb != nullptr) push_input_file(fb);
             if ((fb = gretl_fopen(runfile, "r")) == nullptr) {
                 pprintf(prn, ("Error reading %s\n"), runfile);
                 err = process_command_error(s, E_FOPEN);
