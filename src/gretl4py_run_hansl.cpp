@@ -393,7 +393,7 @@ static void cli_quit (ExecState *s, PRN *cmdprn, int err)
     if (runit || batch_stdin) {
         *s->runfile = '\0';
         runit--;
-        fclose(fb);
+        std::fclose(fb);
         fb = pop_input_file();
         if (fb == nullptr) {
             do_quit_message(s, err);
@@ -990,7 +990,7 @@ int gretl_execute_script (const T &source)
         //check_help_file();
         fb = stdin;
         push_input_file(fb);
-        if (!runit && !data_status) ::fputs(("Type \"open filename\" to open a data set\n"), stdout);
+        if (!runit && !data_status) std::fputs(("Type \"open filename\" to open a data set\n"), stdout);
     } else if (batch_stdin) {
         fb = stdin;
         push_input_file(fb);
@@ -1067,9 +1067,7 @@ int gretl_execute_script (const T &source)
 
     if (!err) {
         err = gretl_if_state_check(0);
-        if (err) {
-            errmsg(err, prn);
-        }
+        if (err) errmsg(err, prn);
     }
 
     if (!err && pkgmode) {
@@ -1089,7 +1087,7 @@ int gretl_execute_script (const T &source)
     }
 
     gretl_object_unref(model, GRETL_OBJ_EQN);
-    if (fb != stdin && fb != nullptr) fclose(fb);
+    if (fb != stdin && fb != nullptr) std::fclose(fb);
     gretl_cmd_free(&cmd);
     if (err) handle_gretl_error(err);
     global_printer.print();
