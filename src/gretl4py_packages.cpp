@@ -647,10 +647,9 @@ std::string GretlPackage::get_function_with_role (UfunRole role)
 void GretlPackage::run_sample (void)
 {
     //
-    // we run sample script via
+    // we run sample script via gretl_execute_script()
     //
-    std::string sample_script = pkg_name_ + "_sample.inp";
-    std::filesystem::path sample_path = std::filesystem::path(base_dir_) / "examples" / sample_script;
+    std::filesystem::path sample_path = std::filesystem::path(base_dir_) / "examples" / (pkg_name_ + "_sample.inp");
 
     if (!std::filesystem::exists(sample_path) || !std::filesystem::is_regular_file(sample_path)) handle_gretl_error(E_FOPEN, sample_path);
     err_ = gretl_execute_script<std::filesystem::path>(sample_path);
