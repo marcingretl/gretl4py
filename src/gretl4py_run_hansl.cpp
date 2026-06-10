@@ -199,7 +199,7 @@ static int cli_parse_object_request (const char *line, char *objname, char **par
         // no matching object
         if (*param != nullptr && !strcmp(*param, "show")) {
             /* maybe OK in GUI, skip in CLI? */
-            pprintf(prn, _("%s: no such object\n"), word);
+            pprintf(prn, ("%s: no such object\n"), word);
             return OBJ_ACTION_NULL;
         }
         return OBJ_ACTION_NONE;
@@ -208,7 +208,7 @@ static int cli_parse_object_request (const char *line, char *objname, char **par
     action = match_object_command(*param);
 
     if (action == OBJ_ACTION_INVALID) {
-        pprintf(prn, _("command '%s' not recognized"), *param);
+        pprintf(prn, ("command '%s' not recognized"), *param);
         pputc(prn, '\n');
     } else {
         std::strcpy(objname, word);
@@ -251,7 +251,7 @@ static int maybe_abort_open (ExecState *s)
     if (data_status && !batch) {
         char response[3];
 
-        std::fprintf(stderr, _("Opening a new data file closes the " "present one.  Proceed? (y/n) "));
+        std::fprintf(stderr, ("Opening a new data file closes the " "present one.  Proceed? (y/n) "));
         if (std::fgets(response, sizeof response, stdin) != nullptr && *response != 'y' && *response != 'Y') {
             pprintf(s->prn, ("OK, staying with current data set\n"));
             return 1;
@@ -303,7 +303,7 @@ static int cli_clear_data (ExecState *s, DATASET *dset)
 static int cli_exec_callback (ExecState *s, void *ptr, GretlObjType type)
 {
     if (s->cmd->ci == MODELTAB || s->cmd->ci == GRAPHPG) {
-        pprintf(s->prn, _("%s: command not available\n"), gretl_command_word(s->cmd->ci));
+        pprintf(s->prn, ("%s: command not available\n"), gretl_command_word(s->cmd->ci));
     } else if (s->cmd->ci == OPEN) {
         if (type == GRETL_OBJ_DSET) {
             // check that "open" is really OK
@@ -369,7 +369,7 @@ static void maybe_save_session_output (const char *cmdfile)
 {
     char outfile[FILENAME_MAX];
 
-    std::printf(_("type a filename to store output (enter to quit): "));
+    std::printf(("type a filename to store output (enter to quit): "));
 
     *outfile = '\0';
     if (std::fgets(outfile, sizeof outfile, stdin) != nullptr) top_n_tail(outfile, 0, nullptr);
@@ -628,7 +628,7 @@ static int cli_exec_line (ExecState *s, DATASET *dset, PRN *cmdprn)
     if (cmd->ci < 0) return 0;
 
     if (s->sys != nullptr && cmd->ci != END && cmd->ci != EQUATION && cmd->ci != SYSTEM) {
-        std::printf(_("Command '%s' ignored; not valid within equation system\n"), line);
+        std::printf(("Command '%s' ignored; not valid within equation system\n"), line);
         equation_system_destroy(s->sys);
         s->sys = nullptr;
         err = 1;
@@ -781,7 +781,7 @@ cmd_proceed:
             case DATAMOD:
                 if (cmd->auxint == DS_CLEAR) {
                     err = cli_clear_data(s, dset);
-                    pputs(prn, _("Dataset cleared\n"));
+                    pputs(prn, ("Dataset cleared\n"));
                     break;
                 } else if (cmd->auxint == DS_RENUMBER) {
                     err = cli_renumber_series(cmd->list, cmd->parm2, dset, prn);
