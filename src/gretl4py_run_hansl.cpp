@@ -22,6 +22,7 @@
 // implementation to preserve compatibility with gretl CLI behavior.
 
 #include "gretl4py.h" /* MUST be at the first position!!! */
+#include "gretl_calls.h"
 #include "gretl4py_utils.h"
 #include "gretl4py_types.h"
 #include "gretl4py_internals.h"
@@ -33,6 +34,10 @@ extern "C" {
     #include <gretl/system.h>
 }
 #include <filesystem>
+#include <chrono>
+#ifdef _WIN32
+ #include <windows.h>
+#endif
 
 #define ENDRUN (NC + 1)
 #define RUNLOOP (NC + 2)
@@ -61,15 +66,13 @@ static gretl_dataset_ptr script_dataset{nullptr};  // dataset for subsequent scr
 static bool nulldata_executed = false;             // flag that script_dataset was created/modified by 'nulldata' command
 
 #ifdef _WIN32
-#include <windows.h>
-
 static void line_ensure_utf8(char *line)
 {
     if (line == nullptr || *line == '\0') return;
 
     int len = std::strlen(line);
 
-    // 1) convert from current ANSI codepage to UTF-16
+    // convert from current ANSI codepage to UTF-16
     int wlen = MultiByteToWideChar(CP_ACP, 0, line, len, nullptr, 0);
 
     if (wlen <= 0) return;
@@ -78,7 +81,7 @@ static void line_ensure_utf8(char *line)
 
     MultiByteToWideChar(CP_ACP, 0, line, len, wbuf.data(), wlen);
 
-    // 2) convert UTF-16 → UTF-8
+    // convert UTF-16 → UTF-8
     int u8len = WideCharToMultiByte(CP_UTF8, 0, wbuf.data(), wlen, nullptr, 0, nullptr, nullptr);
 
     if (u8len <= 0) return;
@@ -87,7 +90,7 @@ static void line_ensure_utf8(char *line)
 
     WideCharToMultiByte(CP_UTF8, 0, wbuf.data(), wlen, utf8.data(), u8len, nullptr, nullptr);
 
-    // 3) copy back into original buffer (truncate safely)
+    // copy back into original buffer (truncate safely)
     std::strncpy(line, utf8.c_str(), MAXLINE - 1);
     line[MAXLINE - 1] = '\0';
 
@@ -275,7 +278,7 @@ static int cli_clear_data (ExecState *s, DATASET *dset)
 
     if (dset->Z != nullptr) {
         err = restore_full_sample(dset, nullptr);
-        free_Z(dset); //FIXME: this will cause SIGSEGV for sure!!!
+        free_Z(dset);
     }
 
     clear_datainfo(dset, CLEAR_FULL);
@@ -526,7 +529,7 @@ static int get_interactive_line (void *p)
 #else
     std::printf("%s", prompt);
     std::fflush(stdout);
-    file_get_line(s, "stdin"); //FIXME!!!!!
+    file_get_line(s, "***stdin*** (FIXME)"); //FIXME!!!!!
 #endif
 
     return err;
@@ -851,6 +854,8 @@ static int maybe_get_input_line_continuation (char *line)
     return err;
 }
 
+// T == std::filesystem::path: path to file to execute
+// T == std::string: hansl code to be executed
 template <typename T>
 int gretl_execute_script (const T &source)
 {
@@ -887,19 +892,37 @@ int gretl_execute_script (const T &source)
     dset = script_dataset.get();
     if (dset == nullptr) handle_gretl_error(E_ALLOC);
 
+    // we assume "batch" mode every time
+    SET_OPT(opt, OPT_BATCH);
     runfile[0] = filearg[0] = '\0';
 
-    // we assume "batch" mode
+    // either we read already existing file or write tempfile
     if constexpr (std::is_same_v<T, std::filesystem::path>) {
-        SET_OPT(opt, OPT_BATCH);
-        std::strcpy(filearg, source.string().c_str());
+        std::snprintf(filearg, MAXLEN, "%s", source.string().c_str());
+    } else if constexpr (std::is_same_v<T, std::string>) {
+        auto res = gretl_generate_gretl_object("$gretldir", err, GRETL_OBJ_ANY, nullptr, nullptr);
+
+        if (err) handle_gretl_error(err);
+        if (auto *gretldir = std::get_if<std::string>(res.get())) {
+            std::filesystem::path fullpath =
+                std::filesystem::path(*gretldir) / "tmp" / (std::to_string(std::chrono::high_resolution_clock::now().time_since_epoch().count()) + ".inp");
+            std::FILE *tmp_file = std::fopen(fullpath.string().c_str(), "w+");
+            if (!tmp_file) throw std::runtime_error("failed to open temp file");
+
+            std::fwrite(source.data(), 1, source.size(), tmp_file);
+            std::fflush(tmp_file);
+            std::fclose(tmp_file);
+            std::snprintf(filearg, MAXLEN, "%s", fullpath.string().c_str());
+        } else {
+            throw std::runtime_error("didn't get $gretldir");
+        }
     } else {
         static_assert(always_false<T>, "gretl_execute_script(): unsupported type T");
     }
 
     if (opt & (OPT_BATCH | OPT_RUNIT | OPT_MAKEPKG | OPT_INSTPKG)) {
         if (*filearg == '\0') {
-            // we're missing a filename argument FIXME::must be checked earlier,  maybe before call
+            // we're missing a filename argument
             handle_gretl_error(E_INVARG, "No filename given");
             //usage(1);
         } else if ((opt & OPT_BATCH) && !strcmp(filearg, "-")) {
@@ -907,7 +930,6 @@ int gretl_execute_script (const T &source)
             /*quiet = batch_stdin = batch = 1;
             *runfile = '\0';
             load_datafile = 0;*/
-            std::runtime_error("batch_stdin");
             } else {
                 // record argument (not a datafile)
                 std::strcpy(runfile, filearg);
@@ -966,7 +988,7 @@ int gretl_execute_script (const T &source)
     if (!batch) {
         // misc. interactive-mode setup
         //check_help_file();
-        fb = stdin; //FIXME:read from buffer for std::string &source!!!
+        fb = stdin;
         push_input_file(fb);
         if (!runit && !data_status) ::fputs(("Type \"open filename\" to open a data set\n"), stdout);
     } else if (batch_stdin) {
@@ -1075,3 +1097,4 @@ int gretl_execute_script (const T &source)
     return err;
 }
 template int gretl_execute_script<std::filesystem::path>(const std::filesystem::path&);
+template int gretl_execute_script<std::string>(const std::string&);
