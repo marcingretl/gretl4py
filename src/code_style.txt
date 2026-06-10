@@ -2,12 +2,10 @@ Coding Style for the Source Code:
 
 1. We adhere to the libgretl coding style, including indentation.
 
-2. For pointers to memory allocated in libgretl (i.e., using the pure C malloc/free approach), we use the C-style NULL.
+2. For pointers to memory allocated, we use nullptr (in progress).
 
-3. For pointers to memory allocated at the C++ level, we use nullptr.
+3. We consistently include the std:: prefix when referring to types or methods (e.g., std::string or std::free()).
 
-4. We consistently include the std:: prefix when referring to types or methods (e.g., std::string or std::free()).
-
-5. Private class members names are postfixed with '_'.
+4. Private class members names are postfixed with '_'.
 
 Marcin
