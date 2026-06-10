@@ -124,7 +124,7 @@ static void handle_datafile (char *filearg, char *runfile, DATASET *dset, PRN *p
         case GRETL_UNRECOGNIZED:
         case GRETL_NATIVE_DB:
         case GRETL_RATS_DB:
-            exit(EXIT_FAILURE);
+            std::exit(EXIT_FAILURE);
             break;
         case GRETL_XML_DATA:
         case GRETL_BINARY_DATA:
@@ -160,7 +160,7 @@ static void handle_datafile (char *filearg, char *runfile, DATASET *dset, PRN *p
         if (err) {
             errmsg(err, prn);
             if (err == E_FOPEN) show_paths();
-            exit(EXIT_FAILURE);
+            std::exit(EXIT_FAILURE);
         }
         data_status = 1;
         if (!batch) pprintf(cmdprn, "open %s\n", given_file);
@@ -175,7 +175,7 @@ static void gretl_abort (char *line)
     if (tokline != nullptr && *tokline != '\0' && std::strcmp(tokline, line)) std::fprintf(stderr, "> %s\n", tokline);
     if (*line != '\0') std::fprintf(stderr, "> %s\n", line);
 
-    exit(EXIT_FAILURE);
+    std::exit(EXIT_FAILURE);
 }
 
 static int cli_parse_object_request (const char *line, char *objname, char **param,
@@ -211,7 +211,7 @@ static int cli_parse_object_request (const char *line, char *objname, char **par
         pprintf(prn, _("command '%s' not recognized"), *param);
         pputc(prn, '\n');
     } else {
-        strcpy(objname, word);
+        std::strcpy(objname, word);
     }
 
     return action;
@@ -995,7 +995,7 @@ int gretl_execute_script (const T &source)
             if (gui_exec) OR_EXECFLAG(state.flags, INIT_EXEC);
             err = cli_exec_line(&state, dset, cmdprn);
             if (gui_exec) XOR_EXECFLAG(state.flags, INIT_EXEC);
-            if (err && fb == nullptr) exit(EXIT_FAILURE);
+            if (err && fb == nullptr) std::exit(EXIT_FAILURE);
         }
     }
 
@@ -1062,13 +1062,13 @@ int gretl_execute_script (const T &source)
             switch_ext(filearg, runfile, "gfn");
             std::sprintf(line, "makepkg %s\n", filearg);
         } else {
-              if (!std::isalpha(filearg[0]) || filearg[1] == ':') {
-                  // some sort of path: install local file
-                  std::sprintf(line, "pkg install %s --local\n", filearg);
-                } else {
-                    // plain filename or http: install from server
-                    std::sprintf(line, "pkg install %s\n", filearg);
-                }
+            if (!std::isalpha(filearg[0]) || filearg[1] == ':') {
+                // some sort of path: install local file
+                std::sprintf(line, "pkg install %s --local\n", filearg);
+            } else {
+                // plain filename or http: install from server
+                std::sprintf(line, "pkg install %s\n", filearg);
+            }
         }
         cli_exec_line(&state, dset, cmdprn);
     }
