@@ -894,8 +894,8 @@ int gretl_execute_script (const T &source)
             std::filesystem::path fullpath =
                 std::filesystem::path(*gretldir) / "tmp" / (std::to_string(std::chrono::high_resolution_clock::now().time_since_epoch().count()) + ".inp");
             std::FILE *tmp_file = std::fopen(fullpath.string().c_str(), "w+");
-            if (!tmp_file) throw std::runtime_error("failed to open temp file");
 
+            if (!tmp_file) handle_gretl_error(E_FOPEN, "failed to open temp file");
             std::fwrite(source.data(), 1, source.size(), tmp_file);
             std::fflush(tmp_file);
             std::fclose(tmp_file);
