@@ -22,6 +22,7 @@
 #include "gretl4py_types.h"
 #include "gretl4py_packages.h"
 #include "gretl4py_utils.h"
+#include "gretl4py_run_hansl.h"
 extern "C" {
     #include <gretl/uservar.h>
     #include <gretl/gretl_func.h>
@@ -641,4 +642,17 @@ std::string GretlPackage::get_examples_path (const std::string &fname)
 std::string GretlPackage::get_function_with_role (UfunRole role)
 {
     return get_properties_<std::string>(package_role_get_key(role));
+}
+
+void GretlPackage::run_sample (void)
+{
+    //
+    // we run sample script via
+    //
+    std::string sample_script = pkg_name_ + "_sample.inp";
+    std::filesystem::path sample_path = std::filesystem::path(base_dir_) / "examples" / sample_script;
+
+    if (!std::filesystem::exists(sample_path) || !std::filesystem::is_regular_file(sample_path)) handle_gretl_error(E_FOPEN, sample_path);
+    err_ = gretl_execute_script<std::filesystem::path>(sample_path);
+    if (err_) handle_gretl_error(err_);
 }

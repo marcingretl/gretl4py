@@ -45,7 +45,7 @@ private:
 
     const std::string pkg_name_;        // package name (base of filename)
     const std::string suffix_;          // filename suffix
-    fnpkg *pkg_ = NULL;                 // pointer to package
+    fnpkg *pkg_ = nullptr;              // pointer to package
     GretlPrint printer_ = GretlPrint(); // printer (instance wide)
     GretlBundle gb_;                    // info bundle [NOT USED YET]
     std::string main_func_ = "";        // name of main package function
@@ -115,6 +115,8 @@ public:
     std::string get_examples_path (const std::string &fname);
 
     std::string get_function_with_role (UfunRole role);
+
+    void run_sample (void);
 };
 
 #endif // GRETL4PY_PACKAGES_H

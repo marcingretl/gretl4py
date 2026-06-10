@@ -320,7 +320,7 @@ static int cli_exec_callback (ExecState *s, void *ptr, GretlObjType type)
             // handle successful "open"
             OpenOp *op = static_cast<OpenOp*>(ptr);
 
-            if (op->fname[0] != '\0') std::strncpy(datafile, op->fname, MAXLEN - 1);
+            if (op->fname[0] != '\0') std::snprintf(datafile, MAXLEN, "%s", op->fname); //std::strncpy(datafile, op->fname, MAXLEN - 1);
             data_status = 1;
         }
     }
