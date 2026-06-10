@@ -42,10 +42,10 @@ extern "C" {
 #define XOR_EXECFLAG(x, flag) x = static_cast<ExecFlags>((x) ^ (flag))
 
 static int nfiles;
-static FILE *fstack[N_STACKED_FILES];
+static std::FILE *fstack[N_STACKED_FILES];
 char datafile[MAXLEN];
 char cmdfile[MAXLEN];
-FILE *fb;
+std::FILE *fb;
 int batch;
 int runit;
 int indent0;
@@ -67,7 +67,7 @@ static void line_ensure_utf8(char *line)
 {
     if (line == nullptr || *line == '\0') return;
 
-    int len = (int)std::strlen(line);
+    int len = std::strlen(line);
 
     // 1) convert from current ANSI codepage to UTF-16
     int wlen = MultiByteToWideChar(CP_ACP, 0, line, len, nullptr, 0);
@@ -327,7 +327,7 @@ static int cli_exec_callback (ExecState *s, void *ptr, GretlObjType type)
 
 // apparatus for keeping track of input stream: start
 
-static int push_input_file (FILE *fp)
+static int push_input_file (std::FILE *fp)
 {
     int err = 0;
 
@@ -340,13 +340,11 @@ static int push_input_file (FILE *fp)
     return err;
 }
 
-static FILE *pop_input_file (void)
+static std::FILE *pop_input_file (void)
 {
-    FILE *ret = nullptr;
+    std::FILE *ret = nullptr;
 
-    if (nfiles > 0) {
-        ret = fstack[--nfiles];
-    }
+    if (nfiles > 0) ret = fstack[--nfiles];
 
     return ret;
 }
@@ -423,7 +421,7 @@ static int cli_do_pkg_sample (const char *pkgname, char *runfile, PRN *prn)
     if (!err) {
         std::string base = std::string(pkgname) + "_sample.inp";        //was: gchar *base = g_strdup_printf("%s_sample.inp", pkgname);
         auto fname = gretl_gchar_ptr(gretl_make_dotpath(base.c_str())); //was: gchar *fname = gretl_make_dotpath(base);
-        FILE *fp = gretl_fopen(fname.get(), "w");
+        std::FILE *fp = gretl_fopen(fname.get(), "w");
 
         if (fp == nullptr) {
             err = 1;
@@ -865,13 +863,13 @@ int gretl_execute_script (const T &source)
     MODEL *model = nullptr;
     ExecState state;
     char line[MAXLINE] = {'\0'}; //was: char *line = nullptr;
-    //int quiet = 0;    unused
-    int tool = 0;
+    //int quiet = 0;    not used
+    //int tool = 0;     not used
     int pkgmode = 0;
     int load_datafile = 1;
     char filearg[MAXLEN];
     char runfile[MAXLEN];
-    //double scriptval = NADBL; unused
+    //double scriptval = NADBL; not used
     CMD cmd;
     PRN *prn = global_printer.prn_ptr();
     PRN *cmdprn = nullptr;
@@ -945,7 +943,7 @@ int gretl_execute_script (const T &source)
 
     // end of argc:argv
 
-    if (!batch && !tool) {
+    /*if (!batch && !tool) {
         std::strcpy(cmdfile, gretl_workdir());
         std::strcat(cmdfile, "session.inp");
         cmdprn = gretl_print_new_with_filename(cmdfile, &err);
@@ -953,7 +951,7 @@ int gretl_execute_script (const T &source)
             errmsg(err, prn);
             return EXIT_FAILURE;
         }
-    }
+    }*/
 
     if (load_datafile) handle_datafile(filearg, runfile, dset, prn, cmdprn);
 
@@ -970,9 +968,7 @@ int gretl_execute_script (const T &source)
         //check_help_file();
         fb = stdin; //FIXME:read from buffer for std::string &source!!!
         push_input_file(fb);
-        if (!runit && !data_status) {
-            std::fputs(("Type \"open filename\" to open a data set\n"), stdout);
-        }
+        if (!runit && !data_status) ::fputs(("Type \"open filename\" to open a data set\n"), stdout);
     } else if (batch_stdin) {
         fb = stdin;
         push_input_file(fb);
