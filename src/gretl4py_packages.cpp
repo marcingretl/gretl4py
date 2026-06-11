@@ -651,7 +651,7 @@ void GretlPackage::run_sample (void)
     //
     std::filesystem::path sample_path = std::filesystem::path(base_dir_) / "examples" / (pkg_name_ + "_sample.inp");
 
-    if (!std::filesystem::exists(sample_path) || !std::filesystem::is_regular_file(sample_path)) handle_gretl_error(E_FOPEN, sample_path);
+    if (!std::filesystem::exists(sample_path) || !std::filesystem::is_regular_file(sample_path)) handle_gretl_error(E_FOPEN, sample_path.string());
     err_ = gretl_execute_script<std::filesystem::path>(sample_path);
     if (err_) handle_gretl_error(err_);
 }
