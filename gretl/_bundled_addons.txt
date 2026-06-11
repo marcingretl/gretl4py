@@ -9,3 +9,4 @@ KFgui
 logging
 regls
 SVAR
+PairPlot
