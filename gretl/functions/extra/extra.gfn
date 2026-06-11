@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <gretl-functions>
-<gretl-function-package name="extra" no-data-ok="true" minver="2026b" lives-in-subdir="true">
+<gretl-function-package name="extra" no-data-ok="true" minver="2026c" lives-in-subdir="true">
 <author email="&lt;use the mailing list or trackers&gt;">The gretl team</author>
-<version>2026b-git</version>
+<version>2026c-git</version>
 <date>2024-03-07</date>
 <description>extra functions for hansl scripting</description>
 <tags>C88</tags>
@@ -1650,6 +1650,9 @@ eval b.futureX
 
 print &quot;---- combine -----&quot;
 open wtp.gdt --quiet
+
+# mark the argument series as discrete
+discrete income age
 
 series ia = combine(income, age)
 smpl 1 20

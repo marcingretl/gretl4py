@@ -1,0 +1,1011 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gretl-functions>
+<gretl-function-package name="PairPlot" minver="2026c">
+<author email="atecon@posteo.de">Artur Tarassow and Allin Cottrell</author>
+<version>2026c-git</version>
+<date>2026-06-11</date>
+<description>Scatterplot matrix with factor separation</description>
+<tags>C88</tags>
+<label>Pair Plot</label>
+<menu-attachment>MAINWIN/View/GraphVars</menu-attachment>
+<help filename="PairPlot_help.md">
+# PairPlot
+
+Produce grid of subplots depicting pairwise relationships in a dataset. This package maps each variable in a list onto a column and row in a grid of multiple axes.
+
+It can also represent an additional level of conditionalization with the 'factor' argument (a series) which plots different subsets of data in different colors and/or point/circle types. This is used to resolve elements on a third dimension.
+
+Please report bugs or comments on the gretl mailing list, report an issue on github ( https://github.com/atecon/PairPlot/issues ) or write to atecon@posteo.de.
+
+
+# Usage via the GUI
+
+The function `PairPlot()` can be accessed through the GUI. The menu entry is &quot;View-&gt;Graph specified vars-&gt;Pair Plot&quot;. However, via scripting the user can control many more details.
+
+
+# Public function
+
+```
+PairPlot(const list L, const series factor[null], bundle opts[null])
+```
+
+Main function for creating pair-plots.
+
+## Parameters
+
+- `L`: list, Series to plot against each other
+- `factor`: series, Categorical (numeric or string-valued) variable for mapping plot aspects to different colors and/or points/ circles (optional, default: null). The factor series should have at most 16 distinct values. This series must be of type 'discrete'. To set a series to discrete, use the command `setinfo &lt;series name&gt; --discrete`.
+- `opts`: bundle, Optional for passing additional parameters. See below for explanation (default: null)
+
+## Returns
+
+An integer of value '0' (FALSE) if no error occurs, otherwise 1 (TRUE).
+
+
+## Options passed to the PairPlot() function by means of the 'opts' bundle
+
+The user can control the following aspects by adding the respective parameter to the 'opts' bundle.
+
+- `centroid`: string, Draw a symbol highlighting the centroid of the 2-dimensional data. Possible options are `mean`, `median` and `none` (default: &quot;none&quot;). If a `factor` series is passed, the centroid for each distinct factor is shown.
+- `centroid_label`: bool, Show the label of the centroid statistics if TRUE, otherwise do not show if FALSE (default: FALSE).
+- `centroid_linewidth`: scalar, Width of the line (default: 2).
+- `centroid_pointsize`: scalar, Size of the point (default: 2).
+- `filename`: string, Path plus filename plus file type. (optional, default: `display` which draws the resulting plot directly at the screen). Currently figures can only be stored in **png** format.
+- `fontsize`: int, Control the font size of the labels (default: 16) .
+- `grid`: bool, Draw a grid in the background if TRUE (=1) (default: FALSE)
+- `height`: scalar, Height of the canvas plot (default: 600, min. size: 100).
+- `title`: string: set an overall title for the plot(s).
+- `key`: bool, If the `factor` series is provided, a legend shows the color and point pattern for each distinct value of the `factor` variable. Default: 1 (TRUE).
+- `key_fontsize` int, Control the font size for the key. Default: 14
+- `key_position`: string, Controls the position of the legend in each subplot (use standard gnuplot options). default: &quot;top left&quot;.
+- `offset_level`: scalar, Provides a mechanism to put a boundary around the data inside of an auto-scaled graph. For details see: https://gnuplot.sourceforge.net/docs_4.2/node209.html , Default: 0.02.
+- `tmargin`: scalar, Top margin of the plot in lines. Positive values move the
+- `bmargin`: scalar, Bottom margin of the plot in lines.
+- `lmargin`: scalar, Left margin of the plot in lines.
+- `rmargin`: scalar, Right margin of the plot in lines.
+- `pointsize`: int, Control the size of points (default: 2). No support for circles.
+- `pointtype`: matrix, Control the type of points. Can be either an integer entry such that points associated to different levels of `factor` are of the same type. One may also provide a vector of integers for each distinct value of the `factor` series. Default: 7. See also: &lt;https://i.imgur.com/xNZa7Rz.png&gt;
+- `tics`: bool, Print x-tics and y-tics if 1 (TRUE, default), or not if 0 (FALSE).
+- `tics_fontsize` int, Control the font size of the x-y tics. Default: 12
+- `transparency_level`: int, Controls the transparency level of points and circles (between 0 (no transparency) and 255 (full transparency)). Default: 90.
+- `type`: string, Select the type of plot (default: &quot;triangle&quot;). The following types are supported:
+- **(i)** &quot;matrix&quot;: Scatterplot matrix which draws a scatter plot between all combinations of variables included in list `L`.
+
+- **(ii)** &quot;triangle&quot;: Lower triangular version of the scatterplot &quot;matrix&quot; type.
+
+- **(iii)** &quot;row&quot;: Plot the first series element in list `L` in a single row against all remaining list members.
+
+- **(iv)** &quot;column&quot;: Works like type &quot;row&quot; but subplots are arranged in a single column instead.
+
+- `use_circles`: bool, Draw circles instead of points if set to 1 (TRUE), default: 0 (FALSE).
+- `width`: scalar, Width of the canvas plot (default: 900, min. size: 100).
+- `xlabel_offset_horizontal`: scalar, Horizontal offset for the X-axis label (default: 0). Negative value move the label to the left, and vice versa.
+- `xlabel_offset_vertical`: scalar, Vertical offset for the X-axis label (default: 0). Negative values move the label downwards, and vice versa.
+- `ylabel_offset_horizontal`: scalar, Horizontal offset for the Y-axis label (default: 0). Negative value move the label to the left, and vice versa.
+- `ylabel_offset_vertical`: scalar, Vertical offset for the Y-axis label (default: 0). Negative values move the label downwards, and vice versa.
+
+
+
+
+# Changelog
+
+* **v1.1 (July 2025)**
+	* For triangle-type of plot: improved x-/y-label positioning
+	* Make margins of the plot configurable via `tmargin`, `bmargin`, `lmargin` and `rmargin` parameters.
+	* Added `xlabel_offset_horizontal`, `xlabel_offset_vertical`, `ylabel_offset_horizontal` and `ylabel_offset_vertical` parameter to control X-axis and Y-axis label offset.
+
+* **v1.0 (February 2025)**
+	* Bugfix: Catch error in case size of width or height is less than 100.
+	* Bugfix: Sample 2 not working before as reference to dataset `iris.gdt` was missing.
+	* Ensure that the `factor` series is of type 'discrete'. If not, an error message is thrown.
+	* Throw an error if the `factor` series has more than 16 distinct values.
+
+* **v0.99 (July 2024)**
+	* Add new parameter `title` for setting an overall title
+	* Internal refactoring: Switch to gretl's built-in gridplot apparatus which means that all the graphics file formats supported by gretl can be used.
+	* It also means that usage via gretlcli in &quot;display&quot; mode works.
+	* In case the user's specification calls for just a single plot, no &quot;multiplot&quot; is created.
+	* The graphical interface is enhanced, with more options.
+
+* **v0.98 (April 2024)**
+	* Make width, height, font size and point size a function of the number of variables for better readability in case of many variables.
+	* Set parameter `transparency` per default to 90.
+	* Minor update of the sample script
+
+* **v0.97 (February 2024)**
+	* Error in case of CLI-mode if a plot is expected to appear on the screen (filename=&quot;display&quot;)
+
+* **v0.96 (February 2024)**
+	* Set all terminals to 'noenhanced' mode to respect eventual underscores in variable names
+	* Allow the parameters 'centroid_pointsize', 'centroid_linewidth', 'width' and 'height' to be scalar values instead of integers.
+
+* **v0.95 (December 2023)**
+	* Bugfix: Path with blanks failed under Windows sometimes.
+	* Bugfix: An error occurred with negative values in some cases
+	* Bugfix: An error occurred of the name of the last variable in the list starts with 'e' (or 'E')
+	* Fix handling of transparency
+	* Add `grid` option for (optionally) drawing a grid in the background
+	* Add options `key_fontsize` and `tics_fontsize`.
+	* Add support for drawing centroids of 2-dimensional space.
+	* Remove the `font` option for setting the font (controlled by gretl now)
+	* Increase default font size to 12
+	* Switch to markdown-based help file
+	* Increase minimum gretl version to 2022d
+
+* **v0.9 (October 2022)**
+	* Fix bug with `const` inheritance: its illegal for a function which receives an argument A that is declared as const to pass A on in pointer form to another function which does not promise to treat it as `const`.
+* **v0.8 (January 2022)**
+	* Handle eventual missing values in passed series.
+	* Bugfix of gnuplot's `offset` option: More than at maximum 4 were  passed in case of more than 4 features to plot.
+	* Bugfix: Works now with more than 8 features.
+
+* **v0.7 (October 2021)**
+	* Enforce full sample instead of using `--replace` option
+	* Changed ordering of the colors when plotting distinct factors
+	* Change the color palette to &quot;dark2&quot;
+
+* **v0.6 (March 2021)**
+	* New API for `PairPlot()` -- backward-incompatible
+	* update help text
+	* enforce decimal point when print numerical data to gnuplot file
+	* substantial internal refactoring and clean up
+	* gain of speed
+	* new minimum gretl version is 2020e
+
+* **v0.5  (Oct. 2019)**
+	* Initial version
+</help>
+<gretl-function name="PairPlot" type="scalar">
+ <params count="3">
+  <param name="L" type="list" const="true">
+<description>List of variables to plot</description>
+  </param>
+  <param name="factor" type="series" optional="true" const="true">
+<description>Discrete series for factorization</description>
+  </param>
+  <param name="opts" type="bundle" optional="true">
+<description>Set options through bundle</description>
+  </param>
+ </params>
+<code>/* Main public function.
+return: TRUE on error, otherwise FALSE. */
+
+bundle self = exists(opts) ? opts : _()
+self = self + default_options()
+self.n_variables = nelem(L)
+
+errorif(self.width &lt; 100 || self.height &lt; 100, &quot;Invalid width or height. Must be at least 100.&quot;)
+
+if !is_valid_filename(self.filename) || !has_min_two_series(L)
+  return TRUE
+endif
+
+# Adjust fontsize as a function of the number of variables
+if !exists(opts) || inbundle(opts, &quot;fontsize&quot;) == FALSE
+  self.fontsize = calculate_fontsize(self.fontsize, self.n_variables)
+endif
+if !exists(opts) || inbundle(opts, &quot;key_fontsize&quot;) == FALSE
+  self.key_fontsize = calculate_fontsize(self.key_fontsize, self.n_variables)
+endif
+if !exists(opts) || inbundle(opts, &quot;tics_fontsize&quot;) == FALSE
+  self.tics_fontsize = calculate_fontsize(self.tics_fontsize, self.n_variables)
+endif
+if !exists(opts) || inbundle(opts, &quot;pointsize&quot;) == FALSE
+  self.pointsize = calculate_pointsize(self.pointsize, self.n_variables)
+endif
+if !exists(opts) || inbundle(opts, &quot;width&quot;) == FALSE
+  self.width = calculate_plot_width(self.width, self.n_variables)
+endif
+if !exists(opts) || inbundle(opts, &quot;height&quot;) == FALSE
+  self.height = calculate_plot_height(self.height, self.n_variables)
+endif
+
+# Handle eventual missing values
+list  ALL = L
+if exists(factor)
+  ALL += factor
+endif
+smpl ALL --no-missing
+
+# Set some global(s)
+string self.plot_type = get_plot_type(self)
+scalar self.n_plots = get_n_plots(self.type, self.n_variables)
+
+if exists(factor)
+  #errorif(!isdiscrete(factor),
+  # &quot;Factor series must be discrete. Mark series as discrete using the 'setinfo' command.&quot;)
+  errorif(nelem(values(factor)) &gt; 16, &quot;Factor series must have at most 16 distinct values.&quot;)
+  add_information_of_factor(factor, &amp;self)
+else
+  scalar self.n_factors = 1
+  matrix self.factor_values = {1}
+endif
+
+if !isok_length_pointtype_vector(self)
+  return TRUE
+endif
+
+if self.n_plots &gt; 1
+  return call_gridplot(L, self)
+else
+  return call_gnuplot(L, self)
+endif
+</code>
+</gretl-function>
+<gretl-function name="GUI_PairPlot" type="void" no-print="1" pkg-role="gui-main">
+ <params count="5">
+  <param name="L" type="list" const="true">
+<description>List of series to plot</description>
+  </param>
+  <param name="factor" type="series" optional="true" const="true">
+<description>Discrete series for factorization</description>
+  </param>
+  <param name="type" type="int" min="1" max="4" default="1">
+<description>Plot type</description>
+<labels count="4">
+"triangle" "matrix" "row" "column" </labels>
+  </param>
+  <param name="centroids" type="int" min="1" max="3" default="1">
+<description>Centroids</description>
+<labels count="3">
+"none" "mean" "median" </labels>
+  </param>
+  <param name="transparency" type="scalar" min="0" max="1" default="0" step="0.1">
+<description>Transparency [0-1]</description>
+  </param>
+ </params>
+<code>/* Callback for PairPlot menu item. */
+
+bundle opts
+strings typestrs = defarray(&quot;triangle&quot;, &quot;matrix&quot;, &quot;row&quot;, &quot;column&quot;)
+strings cstrs = defarray(&quot;none&quot;, &quot;mean&quot;, &quot;median&quot;)
+
+opts.type = typestrs[type]
+opts.centroid = cstrs[centroids]
+opts.transparency_level = 255 * transparency
+PairPlot(L, factor, opts)
+</code>
+</gretl-function>
+<gretl-function name="has_min_two_series" type="scalar" private="1">
+ <params count="1">
+  <param name="L" type="list" const="true"/>
+ </params>
+<code>if nelem(L) &lt; 2
+  printf &quot;\nError: List of variables must be comprise at least two series.\n&quot;
+  return FALSE
+endif
+
+return TRUE
+</code>
+</gretl-function>
+<gretl-function name="add_information_of_factor" type="void" private="1">
+ <params count="2">
+  <param name="factor" type="series" const="true"/>
+  <param name="self" type="bundleref"/>
+ </params>
+<code>/*  Gather information of factor series. */
+
+series self.factor_series = factor
+matrix self.factor_values = values(factor)
+scalar self.n_factors = nelem(self.factor_values)
+# strings self.factor_strings = strvals(factor)
+
+bundle b = getinfo(factor)
+if b.has_string_table
+  strings self.factor_str_values = strvals(factor)
+endif
+</code>
+</gretl-function>
+<gretl-function name="get_plot_type" type="string" private="1">
+ <params count="1">
+  <param name="self" type="bundle" const="true"/>
+ </params>
+<code>/* Retrieve plot type. */
+
+string type = (self.use_circles == TRUE) ? &quot;circles&quot; : &quot;points&quot;
+
+return type
+</code>
+</gretl-function>
+<gretl-function name="is_valid_filename" type="scalar" private="1">
+ <params count="1">
+  <param name="filename" type="string" const="true"/>
+ </params>
+<code>if filename == &quot;&quot;
+  printf &quot;\nError: Invalid file name.\n&quot;
+  return FALSE
+endif
+return TRUE
+</code>
+</gretl-function>
+<gretl-function name="get_gridplot_opts" type="string" private="1">
+ <params count="1">
+  <param name="self" type="bundle" const="true"/>
+ </params>
+<code>/* construct an options string for the &quot;gridplot&quot; command */
+
+strings S = array(0)
+string opts = &quot;&quot;
+
+if self.type == &quot;triangle&quot;
+  S += &quot;--layout=lmat&quot;
+elif self.type == &quot;row&quot;
+  S += &quot;--rows=1&quot;
+elif self.type == &quot;column&quot;
+  S += &quot;--cols=1&quot;
+endif
+if self.width != 800
+  S += sprintf(&quot;--width=%d&quot;, self.width)
+endif
+if self.height != 600
+  S += sprintf(&quot;--height=%d&quot;, self.height)
+endif
+if inbundle(self, &quot;title&quot;)
+  S += sprintf(&quot;--title=\&quot;%s\&quot;&quot;, self.title)
+endif
+
+if nelem(S) &gt; 0
+  opts = S[1]
+endif
+
+loop i=2..nelem(S)
+  opts += &quot; &quot;
+  opts += S[i]
+endloop
+
+return opts
+</code>
+</gretl-function>
+<gretl-function name="get_gp_opts" type="string" private="1">
+ <params count="1">
+  <param name="self" type="bundle" const="true"/>
+ </params>
+<code>/* construct an options string for gretl's &quot;gnuplot&quot; command */
+
+string opts = &quot;&quot;
+if self.transparency_level &gt; 0
+  set force_decpoint on
+  opts += sprintf(&quot;--alpha=%g&quot;, self.transparency_level / 255)
+  set force_decpoint off
+endif
+# TODO: font size choice?
+return opts
+</code>
+</gretl-function>
+<gretl-function name="call_gridplot" type="scalar" private="1">
+ <params count="2">
+  <param name="L" type="list" const="true"/>
+  <param name="self" type="bundle" const="true"/>
+ </params>
+<code>/* Called if there's more than one component plot. */
+
+string outspec = self.filename
+string gp_opts = get_gp_opts(self)
+string grid_opts = get_gridplot_opts(self)
+matrix lmat
+
+if self.type == &quot;triangle&quot;
+  lmat = get_layout_matrix(nelem(L) - 1)
+endif
+
+gpbuild plotspecs
+  write_pp_plots(L, self, gp_opts)
+end gpbuild
+
+catch gridplot plotspecs @grid_opts --output=&quot;@outspec&quot;
+scalar err = $error
+if err
+  printf &quot;Error in call_gridplot: %s\n&quot;, errmsg(err)
+  printf &quot;grid_opts: %s\n&quot;, grid_opts
+endif
+return err
+</code>
+</gretl-function>
+<gretl-function name="get_n_plots" type="scalar" private="1">
+ <params count="2">
+  <param name="type" type="string" const="true"/>
+  <param name="nvars" type="int"/>
+ </params>
+<code>/* Figure the total number of plots required. */
+
+scalar n1 = nvars - 1
+
+if type == &quot;triangle&quot;
+  return n1 * nvars / 2
+elif type == &quot;matrix&quot;
+  return n1 * nvars
+else # row or column
+  return n1
+endif
+</code>
+</gretl-function>
+<gretl-function name="PP_ui_maker" type="bundle" private="1" pkg-role="ui-maker">
+<code>/* set a specification for the first argument for GUI_PairPlot */
+
+bundle b
+b.L = _(no_singleton=1, n_const=1)
+return b
+</code>
+</gretl-function>
+<gretl-function name="isok_length_pointtype_vector" type="scalar" private="1">
+ <params count="1">
+  <param name="self" type="bundle" const="true"/>
+ </params>
+<code>/* Make sure the 'pointtype' vector has at least as many elements as
+there are distinct factor values. Return TRUE if so, FALSE otherwise
+*/
+if inbundle(self, &quot;n_factors&quot;) &amp;&amp; (nelem(self.pointtype) &lt; self.n_factors)
+  printf &quot;\nError: 'factor' series has %d distinct values but you\n&quot;, self.n_factors
+  printf &quot;have set a vector 'pointtype' with only %d elements. Abort.\n\n&quot;, nelem(self.pointtype)
+  return FALSE
+endif
+
+return TRUE
+</code>
+</gretl-function>
+<gretl-function name="default_options" type="bundle" private="1">
+<code>/* Default parameter values. */
+
+bundle self
+
+scalar self.height = 600
+scalar self.width = 900
+scalar self.fontsize = 16
+scalar self.pointsize = 2
+matrix self.pointtype = {6; 4; 7; 15; 13; 11; 8; 5; 1; 2; 14; 3; 9; 10; 12; 14}
+scalar self.offset_level = 0.02 # x and y axis ranges to match the coordinates of the data
+scalar self.with_key = 1	# print distinct values of factor variable
+string self.key_position = &quot;top left&quot;	# position of legend
+scalar self.key_fontsize = 14
+scalar self.use_circles = FALSE
+scalar self.tics_fontsize = 12
+scalar self.transparency_level = 90
+string self.type = &quot;triangle&quot;
+scalar self.tics = TRUE		 # print no x/y tics
+scalar self.grid = FALSE     # add grid (works only if self.tics=1) - not supported!
+string self.centroid = &quot;none&quot;
+scalar self.centroid_label = FALSE
+scalar self.centroid_pointsize = 2
+scalar self.centroid_linewidth = 2
+string self.filename = &quot;display&quot;
+scalar self.y_logscale = NA
+scalar self.x_logscale = NA
+scalar self.xlabel_offset_horizontal = 0
+scalar self.xlabel_offset_vertical = 0
+scalar self.ylabel_offset_horizontal = 0
+scalar self.ylabel_offset_vertical = 0
+
+return self
+</code>
+</gretl-function>
+<gretl-function name="write_pp_plots" type="string" private="1">
+ <params count="3">
+  <param name="L" type="list" const="true"/>
+  <param name="self" type="bundle" const="true"/>
+  <param name="gp_opts" type="string" const="true"/>
+ </params>
+<code>/* Common code for the single-plot and multiplot cases.
+- In the single case we construct one plot-specification buffer
+and pass it back to call_gnuplot() for execution.
+- In the multiplot case we construct two or more plot specs and
+pass them in turn to gretl's &quot;gnuplot&quot; command, in the context
+of a gpbuild block in call_gridplot(). In this case the return
+value of @buffer is ignored.
+*/
+
+scalar tri = self.type == &quot;triangle&quot;
+string buffer = &quot;&quot;
+scalar n = nelem(L)
+scalar imin = tri ? 2 : 1
+scalar jmax = n
+scalar k = 0
+
+set force_decpoint on
+
+loop i=imin..n
+  if tri
+    jmax = i-1
+  endif
+  loop j=1..jmax
+    if j == i
+      continue
+    endif
+    k++
+    buffer = &quot;&quot;
+    list xy = L[j] L[i]
+    strings vnames = varnames(xy)
+    outfile --buffer=buffer
+      write_options(self, xy, k)
+      if tri == TRUE
+        if j == 1
+          write_ylabel(vnames[2], self.fontsize, self.ylabel_offset_vertical, self.ylabel_offset_horizontal)
+        endif
+        if i == n
+          write_xlabel(vnames[1], self.fontsize, self.xlabel_offset_horizontal, self.xlabel_offset_vertical)
+        endif
+      else
+        write_ylabel(vnames[2], self.fontsize, self.ylabel_offset_vertical, self.ylabel_offset_horizontal)
+        write_xlabel(vnames[1], self.fontsize, self.xlabel_offset_horizontal, self.xlabel_offset_vertical)
+      endif
+
+      if self.centroid != &quot;none&quot;
+        factorized_centroids(xy, self)
+      endif
+      write_margins(self)
+      write_plot_cmd(self)
+      write_plot_data(xy, self)
+    end outfile
+    if self.n_plots &gt; 1 # using gridplot
+      gnuplot --inbuf=buffer @gp_opts
+    endif
+  endloop
+  if k == self.n_plots
+    break
+  endif
+endloop
+
+set force_decpoint off
+
+return buffer
+</code>
+</gretl-function>
+<gretl-function name="factorized_centroids" type="void" private="1">
+ <params count="2">
+  <param name="xy" type="list" const="true"/>
+  <param name="self" type="bundle"/>
+ </params>
+<code>/*
+This function calculates and writes the centroids for each factor of a given list of variables. The function loops over the factors, restricts the sample to the observations where the factor series equals the current factor value, and then calls the 'write_centroids' function to calculate and write the centroids.
+
+Parameters:
+xy: A list of variables for which the centroids are to be calculated.
+self: A bundle containing various options for the function. It should have the following fields:
+- 'n_factors': The number of factors.
+- 'factor_series': The series of factors.
+- 'factor_values': The values of the factors.
+- 'ith_factor': The current factor in the loop.
+
+The function does not return anything. It modifies the 'self' bundle by setting the 'ith_factor' field to the current factor in the loop.
+
+Note: This function assumes that the 'write_centroids' function is defined in the same scope.
+*/
+
+strings colors = get_color_definitions()
+
+loop i=1..self.n_factors
+  smpl full
+  if self.n_factors &gt; 1
+    smpl self.factor_series == self.factor_values[i] --restrict
+  endif
+  smpl --no-missing xy
+
+  scalar self.ith_factor = i
+  write_centroids(xy, self, colors)
+endloop
+</code>
+</gretl-function>
+<gretl-function name="write_centroids" type="void" private="1">
+ <params count="3">
+  <param name="xy" type="list" const="true"/>
+  <param name="self" type="bundle" const="true"/>
+  <param name="colors" type="strings" const="true"/>
+ </params>
+<code>/*
+This function calculates and writes the centroids for a given list of variables. The type of centroid (mean or median) is determined by the 'centroid' field in the 'self' bundle. If the 'centroid' field is set to 'none', the function does nothing.
+
+Parameters:
+xy: A list of variables for which the centroids are to be calculated.
+self: A bundle containing various options for the function. It should have the following fields:
+- 'centroid': A string that determines the type of centroid to calculate. It can be 'mean', 'median', or 'none'.
+- 'centroid_label': A boolean that determines whether to label the centroids. If true, the centroids are labeled with their type ('Mean' or 'Median'). If false, no label is added.
+- 'centroid_pointsize': An integer that determines the point size of the centroids in the plot.
+*/
+
+matrix cxy = zeros(1, 2)
+string label = &quot;&quot;
+
+if self.centroid == &quot;mean&quot;
+  cxy = {mean(xy[1]), mean(xy[2])}
+  if self.centroid_label
+    label = &quot;Mean&quot;
+  endif
+else
+  cxy = {median(xy[1]), median(xy[2])}
+  if self.centroid_label
+    label = &quot;Median&quot;
+  endif
+endif
+
+if self.n_factors == 1 # no factors
+  string color = &quot;FF0000&quot;
+else
+  string color = colors[self.ith_factor]
+endif
+
+# Draw a symbol (optionally with a label) for the i-th centroid
+printf &quot;set label %d \&quot;%s\&quot; at %g,%g point ps %g pt %d lw %g&quot;, self.ith_factor, label, cxy[1], cxy[2], self.centroid_pointsize, self.pointtype[self.ith_factor], self.centroid_linewidth
+
+# Color of centroid equals the color of the i-th factor
+printf &quot; lc rgb '#%s' front\n&quot;, color
+</code>
+</gretl-function>
+<gretl-function name="write_ylabel" type="void" private="1">
+ <params count="4">
+  <param name="vname" type="string" const="true"/>
+  <param name="fontsize" type="int" const="true"/>
+  <param name="ylabel_offset_vertical" type="scalar" const="true"/>
+  <param name="ylabel_offset_horizontal" type="scalar" const="true"/>
+ </params>
+<code>printf &quot;set ylabel '%s' font ',%d' offset %f,%f\n&quot;, vname, fontsize, ylabel_offset_horizontal, ylabel_offset_vertical
+</code>
+</gretl-function>
+<gretl-function name="write_xlabel" type="void" private="1">
+ <params count="4">
+  <param name="vname" type="string" const="true"/>
+  <param name="fontsize" type="int" const="true"/>
+  <param name="xlabel_offset_vertical" type="scalar" const="true"/>
+  <param name="xlabel_offset_horizontal" type="scalar" const="true"/>
+ </params>
+<code>printf &quot;set xlabel '%s' font ',%d' offset %f,%f\n&quot;, vname, fontsize, xlabel_offset_vertical, xlabel_offset_horizontal
+</code>
+</gretl-function>
+<gretl-function name="write_plot_data" type="void" private="1">
+ <params count="2">
+  <param name="xy" type="list" const="true"/>
+  <param name="self" type="bundle" const="true"/>
+ </params>
+<code>/* Write data for a single subplot. */
+
+loop i=1..self.n_factors -q
+  smpl full
+  if self.n_factors &gt; 1
+    smpl self.factor_series == self.factor_values[i] --restrict
+  endif
+  smpl --no-missing xy
+
+  matrix m = {xy}     # TODO: for huge data, this may become a bottleneck
+  cnameset(m, &quot;&quot;)     # avoid printing variable names to the gp-file
+  printf &quot;%14.8g&quot;, m  # width 14 to avoid collisions
+  printf &quot;e\n&quot;
+endloop
+</code>
+</gretl-function>
+<gretl-function name="print_using_cmd" type="void" private="1">
+ <params count="2">
+  <param name="self" type="bundle" const="true"/>
+  <param name="idx" type="int" const="true"/>
+ </params>
+<code>/* Print gnuplot data details. */
+
+printf &quot;'-' using 1:2 w %s&quot;, self.plot_type
+
+if self.plot_type == &quot;points&quot;
+  printf &quot; pt %d&quot;, self.pointtype[idx]
+endif
+</code>
+</gretl-function>
+<gretl-function name="print_factor_title" type="void" private="1">
+ <params count="2">
+  <param name="self" type="bundle" const="true"/>
+  <param name="idx" type="int" const="true"/>
+ </params>
+<code>/* Print title string for a factor. */
+
+if inbundle(self, &quot;factor_str_values&quot;)
+  # If factor series comprises strings, these are used
+  printf &quot; title '%s'&quot;, self.factor_str_values[idx]
+else
+  if self.n_factors == 1
+    print &quot; notitle&quot;
+  else
+    printf &quot; title 'F=%d'&quot;, self.factor_values[idx]
+  endif
+endif
+</code>
+</gretl-function>
+<gretl-function name="write_margins" type="void" private="1">
+ <params count="1">
+  <param name="self" type="bundle" const="true"/>
+ </params>
+<code>if inbundle(self, &quot;tmargin&quot;)
+  printf &quot;set tmargin %g\n&quot;, self.tmargin
+endif
+if inbundle(self, &quot;bmargin&quot;)
+  printf &quot;set bmargin %g\n&quot;, self.bmargin
+endif
+if inbundle(self, &quot;lmargin&quot;)
+  printf &quot;set lmargin %g\n&quot;, self.lmargin
+endif
+if inbundle(self, &quot;rmargin&quot;)
+  printf &quot;set rmargin %g\n&quot;, self.rmargin
+endif
+</code>
+</gretl-function>
+<gretl-function name="write_plot_cmd" type="void" private="1">
+ <params count="1">
+  <param name="self" type="bundle" const="true"/>
+ </params>
+<code>/* Compile gnuplot initial commands. */
+
+printf &quot;plot \\\n&quot;
+
+loop i=1..self.n_factors
+  print_using_cmd(self, $i)
+  print_factor_title(self, $i)
+
+  if i &lt; self.n_factors
+    printf &quot;, \\\n&quot;
+  else
+    printf &quot;\n&quot;
+  endif
+endloop
+</code>
+</gretl-function>
+<gretl-function name="write_offsets" type="void" private="1">
+ <params count="1">
+  <param name="offset_level" type="scalar" const="true"/>
+ </params>
+<code>/* Write settings for offsets */
+
+printf &quot;set offsets &quot;
+loop i=1..4
+  printf &quot;%.2f&quot;, offset_level
+  printf &quot;%s&quot;, i &lt; 4 ? &quot;, &quot; : &quot;&quot;
+endloop
+printf &quot;\n&quot;
+</code>
+</gretl-function>
+<gretl-function name="write_key_spec" type="void" private="1">
+ <params count="3">
+  <param name="self" type="bundle" const="true"/>
+  <param name="xy" type="list" const="true"/>
+  <param name="k" type="scalar" const="true"/>
+ </params>
+<code>/* TBA */
+
+string pos = self.key_position
+scalar do_font = 1
+
+if self.type == &quot;triangle&quot; &amp;&amp; self.n_plots &gt; 2
+  /* We can avoid collision between the key and actual data
+  points by writing the key into a blank region of the grid, for the first plot only. In this case use the regular
+  plot font.
+    */
+    if k == 1
+      pos = &quot;at screen 0.6, screen 0.95&quot;
+      do_font = 0
+    else
+      pos = &quot;&quot;
+    endif
+  elif self.type == &quot;matrix&quot; &amp;&amp; self.n_plots &gt; 4
+    /* Write just one key (?), and try for best position to
+    avoid collision with data
+    */
+    if k == 1
+      if pos == &quot;top left&quot; &amp;&amp; corr(xy[1], xy[2]) &lt; -0.2
+        pos = &quot;top right&quot;
+      endif
+    else
+      pos = &quot;&quot;
+    endif
+  endif
+
+  if pos == &quot;&quot;
+    printf &quot;set nokey\n&quot;
+  elif do_font == 0
+    printf &quot;set key %s\n&quot;, pos
+  else
+    printf &quot;set key %s font ',%d'\n&quot;, pos, self.key_fontsize
+  endif
+</code>
+</gretl-function>
+<gretl-function name="write_options" type="void" private="1">
+ <params count="3">
+  <param name="self" type="bundle" const="true"/>
+  <param name="xy" type="list" const="true"/>
+  <param name="k" type="scalar"/>
+ </params>
+<code>/* Write gnuplot options. */
+
+write_offsets(self.offset_level)
+
+if self.with_key
+  write_key_spec(self, xy, k)
+else
+  printf &quot;set nokey\n&quot;
+endif
+if self.tics
+  printf &quot;set xtics font ',%d'\n&quot;, self.tics_fontsize
+  printf &quot;set ytics font ',%d' \n&quot;, self.tics_fontsize
+else
+  printf &quot;set noxtics\n&quot;
+  printf &quot;set noytics\n&quot;
+endif
+if self.grid
+  printf &quot;set style line 12 lc rgb '#808080' lt 0 lw 1\n&quot;
+  printf &quot;set grid ls 12\n&quot;
+endif
+printf &quot;set pointsize %g\n&quot;, self.pointsize
+
+# Not documented yet, as it errors
+/*
+if ok(self.y_logscale)
+  printf &quot;set logscale y %d\n&quot;, self.y_logscale
+endif
+if ok(self.x_logscale)
+  printf &quot;set logscale x %d\n&quot;, self.x_logscale
+endif
+*/
+</code>
+</gretl-function>
+<gretl-function name="get_color_definitions" type="strings" private="1">
+<code>/* Put your own definitions here. */
+
+/*
+return defarray( &quot;C41E3A&quot;, &quot;4682B4&quot;, &quot;FFBF00&quot;, &quot;ff0000&quot;, &quot;00cc00&quot;, &quot;8faab3&quot;, &quot;0000ff&quot;, &quot;bf25b2&quot;, &quot;ffa500&quot; )
+*/
+
+# &quot;dark2&quot; palette
+return defarray( &quot;1B9E77&quot;, &quot;D95F02&quot;, &quot;7570B3&quot;, &quot;E7298A&quot;, &quot;66A61E&quot;, &quot;E6AB02&quot;, &quot;A6761D&quot;, &quot;666666&quot;, &quot;C41E3A&quot;, &quot;4682B4&quot;, &quot;FFBF00&quot;, &quot;FF0000&quot;, &quot;00CC00&quot;, &quot;8FAAB3&quot;, &quot;0000FF&quot;, &quot;BF25B2&quot;, &quot;FFA500&quot; )
+</code>
+</gretl-function>
+<gretl-function name="calculate_pointsize" type="scalar" private="1">
+ <params count="2">
+  <param name="default_pointsize" type="scalar" const="true"/>
+  <param name="n_variables" type="int" const="true"/>
+ </params>
+<code>/* Compute optimal pointsize as a function of the number
+of variables to plot. */
+
+scalar pointsize = xmin(5, default_pointsize / sqrt(n_variables))
+
+return pointsize
+</code>
+</gretl-function>
+<gretl-function name="calculate_fontsize" type="scalar" private="1">
+ <params count="2">
+  <param name="default_fontsize" type="scalar" const="true"/>
+  <param name="n_variables" type="int" const="true"/>
+ </params>
+<code>/* Compute optimal fontsize as a function of the number
+of variables to plot. */
+
+scalar fontsize = xmin(20, default_fontsize / sqrt(n_variables))
+
+return ceil(fontsize)
+</code>
+</gretl-function>
+<gretl-function name="calculate_plot_width" type="scalar" private="1">
+ <params count="2">
+  <param name="default_width" type="scalar" const="true"/>
+  <param name="n_variables" type="int" const="true"/>
+ </params>
+<code>/* Compute optimal width of plot as a function of the number
+of variables to plot. */
+
+scalar width = xmin(2800, default_width * (1 + sqrt(n_variables)/20))
+
+return width
+</code>
+</gretl-function>
+<gretl-function name="calculate_plot_height" type="scalar" private="1">
+ <params count="2">
+  <param name="default_height" type="scalar" const="true"/>
+  <param name="n_variables" type="int" const="true"/>
+ </params>
+<code>/* Compute optimal height of plot as a function of the number
+of variables to plot. */
+
+scalar height = xmin(2800, default_height * (1 + sqrt(n_variables)/20))
+
+return height
+</code>
+</gretl-function>
+<gretl-function name="get_layout_matrix" type="matrix" private="1">
+ <params count="1">
+  <param name="n" type="int"/>
+ </params>
+<code>/* construct a suitable triangular layout matrix */
+
+matrix ret = zeros(n, n)
+scalar k = 1
+loop i=1..n
+  loop j=1..i
+    ret[i,j] = k++
+  endloop
+endloop
+return ret
+</code>
+</gretl-function>
+<gretl-function name="call_gnuplot" type="scalar" private="1">
+ <params count="2">
+  <param name="L" type="list" const="true"/>
+  <param name="self" type="bundle" const="true"/>
+ </params>
+<code>/* Called if just a single plot is to be produced. */
+
+string outspec = self.filename
+string buffer = write_pp_plots(L, self, &quot;&quot;)
+string gp_opts = get_gp_opts(self)
+
+catch gnuplot --inbuf=buffer @gp_opts --output=&quot;@outspec&quot;
+scalar err = $error
+if err
+  printf &quot;Error in call_gnuplot: %s\n&quot;, errmsg(err)
+endif
+return err
+</code>
+</gretl-function>
+<sample-script>
+clear --all
+set verbose off
+
+include PairPlot.gfn
+
+scalar SAMPLE = 1  # Select an example, 1 to 6
+
+if SAMPLE == 1  # simple plot of the iris data
+    open iris.gdt --quiet
+    list y = 1..4
+    PairPlot(y)
+
+elif SAMPLE == 2  # fancier plot of the iris data
+    open iris.gdt --quiet
+    list y = 1..4
+    bundle opts = _(transparency_level = 120,
+                    title = &quot;Iris characteristics by variety&quot;)
+    PairPlot(y, species, opts)
+
+elif SAMPLE == 3  # factorized scatterplots + centroids
+    open credscore.gdt --quiet
+    list y = 1..3
+    series factor = OwnRent + 1
+    stringify(factor, defarray(&quot;renter&quot;, &quot;owner&quot;))
+    bundle opts = _(transparency_level = 100,
+                    title = &quot;Credit data by home-ownership status&quot;,
+                    centroid = &quot;mean&quot;,
+                    grid = TRUE)
+    PairPlot(y, factor, opts)
+
+elif SAMPLE == 4  # factorized plus some tweaking
+    open abdata --quiet
+    list y = n k
+    series factor = IND
+    setinfo factor --discrete
+
+    bundle opts = _(transparency_level = 175,
+                    centroid = &quot;median&quot;,
+                    tics = FALSE,
+                    pointsize = 1.5,
+                    centroid_pointsize = 3,
+                    centroid_linewidth = 3,
+                    height = 600,
+                    width = 600)
+    PairPlot(y, factor, opts)
+
+elif SAMPLE == 5  # factorized scatter + string-valued factor series
+    open mrw --quiet
+    list y = gdp60 gdp85 i_y
+    series factor =  1 + OECD
+    stringify(factor, defarray(&quot;non-oecd&quot;, &quot;oecd&quot;))
+    # cut out some extreme outliers
+    smpl nonoil --dummy
+    bundle opts = _(centroid = &quot;mean&quot;,
+                    transparency_level = 150,
+                    type = &quot;matrix&quot;,
+                    grid = TRUE,
+                    height = 800,
+                    width = 900,
+                    fontsize = 16,
+                    key_fontsize = 11,
+                    ylabel_offset_horizontal = 1.5)
+    PairPlot(y, factor, opts)
+
+elif SAMPLE == 6  # string-valued factor series, using defaults
+    open data4-10.gdt --quiet
+    list y = ENROLL CATHOL
+    PairPlot(y, REGION)
+endif
+</sample-script>
+</gretl-function-package>
+</gretl-functions>
