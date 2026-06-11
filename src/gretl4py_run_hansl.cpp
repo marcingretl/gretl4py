@@ -59,7 +59,7 @@ int data_status;
 int gui_exec;
 char linebak[MAXLINE];      // for storing comments
 char *line_read;
-static int xout;
+//static int xout;      //not used
 
 static GretlPrint global_printer = GretlPrint();
 static gretl_dataset_ptr script_dataset{nullptr};  // dataset for subsequent script calls
@@ -912,9 +912,9 @@ int gretl_execute_script (const T &source)
             // we're missing a filename argument
             handle_gretl_error(E_INVARG, "No filename given");
             //usage(1);
-        } else if ((opt & OPT_BATCH) && !strcmp(filearg, "-")) {
+        /*} else if ((opt & OPT_BATCH) && !strcmp(filearg, "-")) {
             // batch mode, but read from stdin
-            /*quiet = batch_stdin = batch = 1;
+            quiet = batch_stdin = batch = 1;
             *runfile = '\0';
             load_datafile = 0;*/
             } else {
@@ -972,7 +972,7 @@ int gretl_execute_script (const T &source)
         gretl_scalar_add("scriptopt", scriptval);
     }*/
 
-    if (!batch) {
+    /*if (!batch) {
         // misc. interactive-mode setup
         //check_help_file();
         fb = stdin;
@@ -981,7 +981,7 @@ int gretl_execute_script (const T &source)
     } else if (batch_stdin) {
         fb = stdin;
         push_input_file(fb);
-    }
+    }*/
 
     if (batch || runit) {
         // re-initialize: will be incremented by "run" cmd
@@ -1024,12 +1024,12 @@ int gretl_execute_script (const T &source)
               }
           }
 
-          if (xout) {
+          /*if (xout) {
               // readline Ctrl-X: get out without saving input or output
               gretl_print_destroy(cmdprn);
               gretl_remove(cmdfile);
               break;
-          }
+          }*/
 
           if (!state.in_comment) {
               if (cmd.context == FOREIGN || cmd.context == MPI || gretl_compiling_python(line)) {
