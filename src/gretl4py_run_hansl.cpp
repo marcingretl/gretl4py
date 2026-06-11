@@ -868,9 +868,9 @@ int gretl_execute_script (const T &source)
     gretlopt opt = OPT_NONE;
     int err = 0;
 
-#ifdef HAVE_RL_DONE
-    rl_bind_key(0x18, ctrl_x);
-#endif
+    // we assume "batch" mode every time
+    SET_OPT(opt, OPT_BATCH);
+    runfile[0] = filearg[0] = '\0';
 
     // dataset and model to use
     model = allocate_working_model();
@@ -878,10 +878,6 @@ int gretl_execute_script (const T &source)
     if (!script_dataset && !nulldata_executed) script_dataset.reset(datainfo_new());
     dset = script_dataset.get();
     if (dset == nullptr) handle_gretl_error(E_ALLOC);
-
-    // we assume "batch" mode every time
-    SET_OPT(opt, OPT_BATCH);
-    runfile[0] = filearg[0] = '\0';
 
     // either we read already existing file or write tempfile
     if constexpr (std::is_same_v<T, std::filesystem::path>) {
