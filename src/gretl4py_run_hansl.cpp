@@ -51,8 +51,8 @@ static std::FILE *fstack[N_STACKED_FILES];
 char datafile[MAXLEN];
 char cmdfile[MAXLEN];
 std::FILE *fb;
-int batch;
-int runit;
+int batch = 1;
+int runit = 0;
 int indent0;
 int batch_stdin;
 int data_status;
@@ -105,65 +105,6 @@ static void printline (const char *s)
         } else {
             std::printf("%s\n", s);
         }
-    }
-}
-
-static void handle_datafile (char *filearg, char *runfile, DATASET *dset, PRN *prn, PRN *cmdprn)
-{
-    char given_file[MAXLEN];
-    int load_datafile = 1;
-    GretlFileType ftype;
-    int err = 0;
-
-    std::strcpy(given_file, filearg);
-    std::strcpy(datafile, filearg);
-
-    ftype = detect_filetype(datafile, OPT_P);
-
-    switch (ftype) {
-        case GRETL_UNRECOGNIZED:
-        case GRETL_NATIVE_DB:
-        case GRETL_RATS_DB:
-            std::exit(EXIT_FAILURE);
-            break;
-        case GRETL_XML_DATA:
-        case GRETL_BINARY_DATA:
-            err = gretl_read_gdt(datafile, dset, OPT_NONE, prn);
-            break;
-        case GRETL_CSV:
-            err = import_csv(datafile, dset, OPT_NONE, prn);
-            break;
-        case GRETL_XLS:
-        case GRETL_GNUMERIC:
-        case GRETL_ODS:
-            err = import_spreadsheet(datafile, ftype, nullptr, nullptr, dset, OPT_NONE, prn);
-            break;
-        case GRETL_DTA:
-        case GRETL_SAV:
-        case GRETL_SAS:
-        case GRETL_JMULTI:
-        case GRETL_OCTAVE:
-        case GRETL_WF1:
-            err = import_other(datafile, ftype, dset, OPT_NONE, prn);
-            break;
-        case GRETL_SCRIPT:
-            runit = 1;
-            std::strcpy(runfile, datafile);
-            std::memset(datafile, 0, sizeof datafile);
-            load_datafile = 0;
-            break;
-        default:
-            break;
-    }
-
-    if (load_datafile) {
-        if (err) {
-            errmsg(err, prn);
-            if (err == E_FOPEN) show_paths();
-            std::exit(EXIT_FAILURE);
-        }
-        data_status = 1;
-        if (!batch) pprintf(cmdprn, "open %s\n", given_file);
     }
 }
 
@@ -858,7 +799,6 @@ int gretl_execute_script (const T &source)
     //int quiet = 0;    not used
     //int tool = 0;     not used
     int pkgmode = 0;
-    int load_datafile = 1;
     char filearg[MAXLEN];
     char runfile[MAXLEN];
     //double scriptval = NADBL; not used
@@ -903,81 +843,11 @@ int gretl_execute_script (const T &source)
         static_assert(always_false<T>, "gretl_execute_script(): unsupported type T");
     }
 
-    if (opt & (OPT_BATCH | OPT_RUNIT | OPT_MAKEPKG | OPT_INSTPKG)) {
-        if (*filearg == '\0') {
-            // we're missing a filename argument
-            handle_gretl_error(E_INVARG, "No filename given");
-            //usage(1);
-        /*} else if ((opt & OPT_BATCH) && !strcmp(filearg, "-")) {
-            // batch mode, but read from stdin
-            quiet = batch_stdin = batch = 1;
-            *runfile = '\0';
-            load_datafile = 0;*/
-            } else {
-                // record argument (not a datafile)
-                std::strcpy(runfile, filearg);
-                load_datafile = 0;
-                if (opt & OPT_BATCH) {
-                    batch = 1;
-                /*} else if (opt & OPT_MAKEPKG) {
-                    tool = quiet = batch = 1;
-                    pkgmode = OPT_MAKEPKG;
-                } else if (opt & OPT_INSTPKG) {
-                    tool = quiet = batch = 1;
-                    pkgmode = OPT_INSTPKG;*/
-                } else {
-                    runit = 1;
-                }
-            }
-    } else if (*filearg == '\0') {
-        load_datafile = 0;
-    }
-
-    /*if (opt & OPT_TOOL) {
-        tool = quiet = 1;
-        gretl_set_tool_mode();
-    } else if (opt & OPT_QUIET) {
-        quiet = 1;
-    } */
-
-    /*if (opt & OPT_ENGLISH) {
-        force_language(LANG_C);
-    } else {
-        force_language(LANG_AUTO);
-    } */
-
-    // end of argc:argv
-
-    /*if (!batch && !tool) {
-        std::strcpy(cmdfile, gretl_workdir());
-        std::strcat(cmdfile, "session.inp");
-        cmdprn = gretl_print_new_with_filename(cmdfile, &err);
-        if (err) {
-            errmsg(err, prn);
-            return EXIT_FAILURE;
-        }
-    }*/
-
-    if (load_datafile) handle_datafile(filearg, runfile, dset, prn, cmdprn);
-
+    if (*filearg == '\0') handle_gretl_error(E_INVARG, "No filename given");
+    // record argument (not a datafile)
+    std::strcpy(runfile, filearg);
     gretl_cmd_init(&cmd);
     gretl_exec_state_init(&state, static_cast<ExecFlags>(0), line, &cmd, model, prn);
-
-    /*if (!na(scriptval)) {
-        // define "scriptopt"
-        gretl_scalar_add("scriptopt", scriptval);
-    }*/
-
-    /*if (!batch) {
-        // misc. interactive-mode setup
-        //check_help_file();
-        fb = stdin;
-        push_input_file(fb);
-        if (!runit && !data_status) std::fputs(("Type \"open filename\" to open a data set\n"), stdout);
-    } else if (batch_stdin) {
-        fb = stdin;
-        push_input_file(fb);
-    }*/
 
     if (batch || runit) {
         // re-initialize: will be incremented by "run" cmd
@@ -988,9 +858,7 @@ int gretl_execute_script (const T &source)
             } else {
                 std::sprintf(line, "run %s", runfile);
             }
-            if (gui_exec) OR_EXECFLAG(state.flags, INIT_EXEC);
             err = cli_exec_line(&state, dset, cmdprn);
-            if (gui_exec) XOR_EXECFLAG(state.flags, INIT_EXEC);
             if (err && fb == nullptr) std::exit(EXIT_FAILURE);
         }
     }
@@ -1004,40 +872,32 @@ int gretl_execute_script (const T &source)
             state.cmd->ci = RUNLOOP;
             err = cli_exec_line(&state, dset, cmdprn);
             state.cmd->ci = 0;
-          } else {
-              err = cli_get_input_line(&state, runfile);
-              if (err) {
-                  errmsg(err, prn);
-                  break;
-              } else if (cmd.ci == QUIT) {
-                  // no more input available
-                  cli_exec_line(&state, dset, cmdprn);
-                  if (runit == 0) {
-                      err = gretl_if_state_check(0);
-                      if (err) errmsg(err, prn);
-                  }
-                  continue;
-              }
-          }
-
-          /*if (xout) {
-              // readline Ctrl-X: get out without saving input or output
-              gretl_print_destroy(cmdprn);
-              gretl_remove(cmdfile);
-              break;
-          }*/
-
-          if (!state.in_comment) {
-              if (cmd.context == FOREIGN || cmd.context == MPI || gretl_compiling_python(line)) {
-                  tailstrip(line);
-              } else {
-                  err = maybe_get_input_line_continuation(line);
-                  if (err) {
-                      errmsg(err, prn);
-                      break;
-                  }
-              }
-          }
+        } else {
+            err = cli_get_input_line(&state, runfile);
+            if (err) {
+                errmsg(err, prn);
+                break;
+            } else if (cmd.ci == QUIT) {
+                // no more input available
+                cli_exec_line(&state, dset, cmdprn);
+                if (runit == 0) {
+                    err = gretl_if_state_check(0);
+                    if (err) errmsg(err, prn);
+                }
+                continue;
+            }
+        }
+        if (!state.in_comment) {
+            if (cmd.context == FOREIGN || cmd.context == MPI || gretl_compiling_python(line)) {
+                tailstrip(line);
+            } else {
+                err = maybe_get_input_line_continuation(line);
+                if (err) {
+                    errmsg(err, prn);
+                    break;
+                }
+            }
+        }
 
 #ifdef G_OS_WIN32
         line_ensure_utf8(line);
@@ -1045,8 +905,8 @@ int gretl_execute_script (const T &source)
         std::strcpy(linecopy, line);
         tailstrip(linecopy);
         err = cli_exec_line(&state, dset, cmdprn);
-      }
-      // finished main command loop
+    }
+    // finished main command loop
 
     if (!err) {
         err = gretl_if_state_check(0);
