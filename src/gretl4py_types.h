@@ -199,6 +199,10 @@ struct PythonArgInfo {
 // this enum is to mimic enum(s) from genparse.h
 enum class GretlFunIndex { F_PDF, F_PVAL, F_CDF, F_INVCDF, F_CRIT, F_MCOV, F_MCORR };
 
+enum class GretlMatrixType { Real, Complex };
+
+enum class GretlMatrixFill { Zeros, Ones };
+
 //////////////////////////////////////////////////
 // tools
 //////////////////////////////////////////////////

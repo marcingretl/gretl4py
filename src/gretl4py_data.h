@@ -232,12 +232,14 @@ public:
 class GretlMatrix
 {
 private:
-    gretl_matrix *m_ = nullptr;                        // libgretl bundle pointer
-    //bool free_b_ = true;                            // if *b should be freed
-    //py::dict as_dict_;                              // Python's dict() representation
-    //int err_ = 0;
+    gretl_matrix *m_ = nullptr;                        // libgretl gretl_matrix raw pointer
+    int err_ = 0;
 public:
-    GretlMatrix (void);                             // default constructor with empty matrix
+    GretlMatrix (void);                                             // default constructor
+    GretlMatrix (int rows, int cols,
+                 GretlMatrixType dtype = GretlMatrixType::Real,
+                 GretlMatrixFill filled = GretlMatrixFill::Zeros);  // default constructor
+    GretlMatrix (int rows, int cols, const std::string &dist);            // random matrix
     ~GretlMatrix (void);
 };
 

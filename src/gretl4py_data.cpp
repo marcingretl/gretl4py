@@ -26,6 +26,7 @@
 #include "gretl_calls.h"
 #include "gretl4py_utils.h"
 #include <gretl/libset.h>
+#include <gretl/gretl_matrix.h>
 #include <gretl/matrix_extra.h>
 #include <gretl/gretl_model.h>
 #include <gretl/gretl_drivers.h>
@@ -1684,6 +1685,41 @@ py::object GretlBundle::pop (const std::string &key)
 //
 GretlMatrix::GretlMatrix (void) : m_(gretl_null_matrix_new())
 {
+    //
+    // default constructor
+    //
+    if (!m_) handle_gretl_error(E_ALLOC);
+}
+
+GretlMatrix::GretlMatrix (int rows, int cols, GretlMatrixType dtype, GretlMatrixFill filled)
+{
+    //
+    // we allocate matrix which may be filled with zeros or ones
+    //
+    if (dtype == GretlMatrixType::Real && filled == GretlMatrixFill::Zeros) {
+        m_ = gretl_zero_matrix_new(rows, cols);
+    } else if (dtype == GretlMatrixType::Real && filled == GretlMatrixFill::Ones) {
+        m_ = gretl_unit_matrix_new(rows, cols);
+    } else if (dtype == GretlMatrixType::Complex && filled == GretlMatrixFill::Zeros) {
+        m_ = gretl_cmatrix_new0(rows, cols);
+    } else if (dtype == GretlMatrixType::Complex && filled == GretlMatrixFill::Ones) {
+        m_ = gretl_cmatrix_new1(rows, cols);
+    } else {
+        throw std::invalid_argument("invalid matrix type/fill combination");
+    }
+    if (!m_) handle_gretl_error(E_ALLOC);
+}
+
+GretlMatrix::GretlMatrix (int rows, int cols, const std::string &dist)
+{
+    //
+    // creates a new matrix and fills it with pseudo-random
+    // values from either the uniform or the standard normal distribution
+    //
+    auto dist_code = dist_code_from_string(dist.substr(0, 1).c_str());
+
+    if (dist_code != D_UNIFORM && dist_code != D_NORMAL) throw std::invalid_argument("unknown distribution code: '" + dist + "'");
+    m_ = gretl_random_matrix_new(rows, cols, dist_code);
     if (!m_) handle_gretl_error(E_ALLOC);
 }
 
