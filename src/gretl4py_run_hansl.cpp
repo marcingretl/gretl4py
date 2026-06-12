@@ -817,20 +817,17 @@ int gretl_execute_script (const T &source)
     gretl_cmd_init(&cmd);
     gretl_exec_state_init(&state, static_cast<ExecFlags>(0), line, &cmd, model, prn);
 
-    if (batch || runit) {
-        // re-initialize: will be incremented by "run" cmd
-        runit = 0;
-        if (*runfile != '\0' && pkgmode != OPT_INSTPKG) {
-            if (std::strchr(runfile, ' ')) {
-                std::sprintf(line, "run \"%s\"", runfile);
-            } else {
-                std::sprintf(line, "run %s", runfile);
-            }
-            err = cli_exec_line(&state, dset, cmdprn);
-            if (err && fb == nullptr) std::exit(EXIT_FAILURE);
+    // re-initialize: will be incremented by "run" cmd
+    runit = 0;
+    if (*runfile != '\0' && pkgmode != OPT_INSTPKG) {
+        if (std::strchr(runfile, ' ')) {
+            std::sprintf(line, "run \"%s\"", runfile);
+        } else {
+            std::sprintf(line, "run %s", runfile);
         }
+        err = cli_exec_line(&state, dset, cmdprn);
+        if (err && fb == nullptr) std::exit(EXIT_FAILURE);
     }
-
     *linecopy = '\0';
 
     // enter main command loop
