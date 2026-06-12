@@ -1678,3 +1678,19 @@ py::object GretlBundle::pop (const std::string &key)
 
     return res;
 }
+
+//
+// GretlMatrix class methods
+//
+GretlMatrix::GretlMatrix (void) : m_(gretl_null_matrix_new())
+{
+    if (!m_) handle_gretl_error(E_ALLOC);
+}
+
+GretlMatrix::~GretlMatrix (void)
+{
+    if (m_) {
+        gretl_matrix_free(m_);
+        m_ = nullptr;
+    }
+}

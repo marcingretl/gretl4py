@@ -71,11 +71,11 @@ private:
 
     void add_or_replace_allocated_series_ (gretl_double_ptr data, const std::string &name, int n,
                                            gretl_gchar_ptr label = nullptr);
-    
+
     void set_obs_labels_ (void);
 public:
     bool is_default = false;
-    DATASET *dset = NULL;
+    DATASET *dset = nullptr;
     std::string source;
 
     virtual ~GretlDataset (void);           // virtual, because GretlModel use it as std::shared_ptr
@@ -185,8 +185,8 @@ class GretlBundle
 {
 private:
     bool free_b_ = true;                            // if *b should be freed
-    gretl_bundle *b_ = NULL;                        // libgretl bundle pointer
-    py::dict as_dict_;                              // Python's dict() reprezentation
+    gretl_bundle *b_ = nullptr;                     // libgretl bundle pointer
+    py::dict as_dict_;                              // Python's dict() representation
     int err_ = 0;
 
     template <typename T>
@@ -224,6 +224,21 @@ public:
     void delete_element (const std::string &key);
 
     py::object pop (const std::string &key);
+};
+
+//
+// Class to handle 'gretl_matrix' type
+//
+class GretlMatrix
+{
+private:
+    gretl_matrix *m_ = nullptr;                        // libgretl bundle pointer
+    //bool free_b_ = true;                            // if *b should be freed
+    //py::dict as_dict_;                              // Python's dict() representation
+    //int err_ = 0;
+public:
+    GretlMatrix (void);                             // default constructor with empty matrix
+    ~GretlMatrix (void);
 };
 
 #endif // GRETL4PY_DATA_H
