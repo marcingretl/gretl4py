@@ -464,13 +464,23 @@ static int cli_exec_line (ExecState *s, DATASET *dset, PRN *cmdprn)
     int renumber = 0;
     int err = 0;
 
+    // lambda which acts as 'cmd_finish' in original code
+    auto cmd_finish = [&err, &s, &cmd, &cmdprn](void) -> void
+    {
+        if (err) {
+            gretl_exec_state_uncomment(s);
+            if (cmd->ci != QUIT) cli_quit(s, cmdprn, err);
+        }
+    };
+
     if (cmd->ci == RUNLOOP) goto cmd_proceed;
 
     if (gretl_compiling_function()) {
         err = gretl_function_append_line(s);
         if (err) {
             errmsg(err, prn);
-            goto cmd_finish;
+            cmd_finish();
+            return err;
         } else {
             pprintf(cmdprn, "%s\n", line);
             return 0;
@@ -486,7 +496,8 @@ static int cli_exec_line (ExecState *s, DATASET *dset, PRN *cmdprn)
         if (action == OBJ_ACTION_INVALID) {
             // action was fault
             err = 1;
-            goto cmd_finish;
+            cmd_finish();
+            return err;
         } else if (action != OBJ_ACTION_NONE) {
             return 0; // action was OK (and handled), or ignored
         }
@@ -513,7 +524,8 @@ static int cli_exec_line (ExecState *s, DATASET *dset, PRN *cmdprn)
         gretl_echo_command(cmd, line, prn);
         errmsg(err, prn);
         err = catch_local ? 0 : err;
-        goto cmd_finish;
+        cmd_finish();
+        return err;
     }
 
     gretl_exec_state_transcribe_flags(s, cmd);
@@ -530,7 +542,8 @@ static int cli_exec_line (ExecState *s, DATASET *dset, PRN *cmdprn)
         equation_system_destroy(s->sys);
         s->sys = nullptr;
         err = 1;
-        goto cmd_finish;
+        cmd_finish();
+        return err;
     }
 
     if (cmd->ci == LOOP && !batch && !runit) pputs(prn, ("Enter commands for loop.  " "Type 'endloop' to get out\n"));
@@ -545,7 +558,8 @@ static int cli_exec_line (ExecState *s, DATASET *dset, PRN *cmdprn)
         } else if (!batch && !runit) {
             gretl_record_command(cmd, line, cmdprn);
         }
-        goto cmd_finish;
+        cmd_finish();
+        return err;
     }
 
     if (gretl_echo_on()&& !(s->flags & INIT_EXEC)) {
@@ -696,13 +710,7 @@ cmd_proceed:
 
     // record a successful interactive command
     if (!err && cmd->ci != QUIT && gretl_echo_on() && !batch && !old_runit) gretl_record_command(cmd, line, cmdprn);
-
-cmd_finish:
-
-    if (err) {
-        gretl_exec_state_uncomment(s);
-        if ((runit || batch) && cmd->ci != QUIT) cli_quit(s, cmdprn, err);
-    }
+    cmd_finish();
 
     return err;
 }
