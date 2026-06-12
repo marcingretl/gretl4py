@@ -437,55 +437,12 @@ static int file_get_line (ExecState *s, const char *fname)
     return 0;
 }
 
-static const char *get_prompt (ExecState *s)
-{
-    if (s->flags & DEBUG_EXEC) {
-        return "$ ";
-    } else if (gretl_compiling_function() || gretl_compiling_loop()) {
-        return "> ";
-    } else {
-        return "? ";
-    }
-}
-
-static int get_interactive_line (void *p)
-{
-    ExecState *s = (ExecState *) p;
-    const char *prompt = get_prompt(s);
-    int err = 0;
-
-#ifdef HAVE_READLINE
-    rl_gets(&line_read, prompt);
-
-    if (line_read == nullptr) {
-        strcpy(s->line, "quit");
-    } else if (strlen(line_read) > MAXLINE - 2) {
-        err = E_TOOLONG;
-    } else {
-        *s->line = '\0';
-        strncat(s->line, line_read, MAXLINE - 2);
-        strcat(s->line, "\n");
-    }
-#else
-    std::printf("%s", prompt);
-    std::fflush(stdout);
-    file_get_line(s, "***stdin*** (FIXME)"); //FIXME!!!!!
-#endif
-
-    return err;
-}
-
 static int cli_get_input_line (ExecState *s, const char *fname)
 {
     int err = 0;
 
-    if (runit || batch) {
-        // reading from script file
-        err = file_get_line(s, fname);
-    } else {
-        // interactive use
-        err = get_interactive_line(s);
-    }
+    // reading from script file
+    err = file_get_line(s, fname);
 
     return err;
 }
@@ -760,15 +717,11 @@ static int maybe_get_input_line_continuation (char *line)
 
     while (contd && !err) {
         *tmp = '\0';
-
-        if (batch || runit) {
-            if (std::fgets(tmp, MAXLINE, fb) == nullptr) break;
-        } else {
-            if (std::fgets(tmp, MAXLINE, stdin) == nullptr) break;
+        if (std::fgets(tmp, MAXLINE, fb ) == nullptr) {
+            break;
         }
-
         if (*tmp != '\0') {
-            if (std::strlen(line) + std::strlen(tmp) > MAXLINE - 1) {
+            if (std::strlen(line) + std::strlen(tmp) > MAXLINE - 1 ) {
                 err = E_TOOLONG;
                 break;
             } else {
