@@ -465,7 +465,7 @@ static int cli_exec_line (ExecState *s, DATASET *dset, PRN *cmdprn)
     int err = 0;
 
     // lambda which acts as 'cmd_finish' in original code
-    auto cmd_finish = [&err, &s, &cmd, &cmdprn](void) -> void
+    auto cmd_finish = [&s, &cmd, &cmdprn, &err](void) -> void
     {
         if (err) {
             gretl_exec_state_uncomment(s);
@@ -473,7 +473,151 @@ static int cli_exec_line (ExecState *s, DATASET *dset, PRN *cmdprn)
         }
     };
 
-    if (cmd->ci == RUNLOOP) goto cmd_proceed;
+    // lambda which acts as 'cmd_proceed' in original code
+    auto cmd_proceed = [&s, &cmd, &cmdprn, &prn, &renumber, &dset, &runfile, &old_runit, &line, &err](void) -> void
+    {
+        gretl_exec_state_set_callback(s, cli_exec_callback, OPT_NONE);
+
+        switch (cmd->ci) {
+
+            case DELEET:
+                err = gretl_delete_variables(cmd->list, cmd->param, cmd->opt, dset, &renumber, prn);
+                if (err) {
+                    errmsg(err, prn);
+                } else if (renumber && !batch) {
+                    pputs(prn, ("Take note: variables have been renumbered"));
+                    pputc(prn, '\n');
+                    maybe_list_series(dset, prn);
+                }
+                if (err && cmd->flags & CMD_CATCH) {
+                    //cmd->flags ^= CMD_CATCH;
+                    XOR_CMDFLAG(cmd->flags, CMD_CATCH);
+                    err = 0;
+                }
+                break;
+
+            case HELP:
+                cli_help(cmd->param, cmd->parm2, cmd->opt, nullptr, prn);
+                break;
+
+            case NULLDATA:
+                if (cmd->order < 1) {
+                    err = 1;
+                    pputs(prn, ("Data series length count missing or invalid\n"));
+                } else {
+                    cli_clear_data(s, dset);
+                    err = open_nulldata(dset, data_status, cmd->order, cmd->opt, prn);
+                    if (err) {
+                        errmsg(err, prn);
+                    } else {
+                        data_status = 1;
+                    }
+                }
+                break;
+
+            case RUNLOOP:
+                err = gretl_loop_exec(s, dset);
+                break;
+
+            case QUIT:
+                gretl_if_state_clear();
+                cli_quit(s, cmdprn, err);
+                break;
+
+            case RUN:
+            case INCLUDE:
+            case PKG:
+                if (cmd->ci == PKG) {
+                    if (!strcmp(cmd->param, "run-sample")) {
+                        err = cli_do_pkg_sample(cmd->parm2, runfile, prn);
+                    } else {
+                        err = gretl_cmd_exec(s, dset);
+                        break;
+                    }
+                } else if (cmd->ci == INCLUDE) {
+                    err = get_full_filename(cmd->param, runfile, OPT_I);
+                } else {
+                    err = get_full_filename(cmd->param, runfile, OPT_S);
+                }
+                if (err) {
+                    err = run_include_error(s, cmd->param, err, prn);
+                    break;
+                }
+                if (gretl_messages_on() && !(s->flags & INIT_EXEC)) pprintf(prn, " %s\n", runfile);
+                if (cmd->ci == INCLUDE && gretl_is_xml_file(runfile)) {
+                    err = load_XML_functions_file(runfile, cmd->opt, prn);
+                    if (err) {
+                        err = run_include_error(s, runfile, err, prn);
+                    } else {
+                        pprintf(cmdprn, "include \"%s\"\n", runfile);
+                    }
+                    break;
+                } else if (cmd->ci == INCLUDE && gfn_is_loaded(runfile)) {
+                    break;
+                }
+                if (!strcmp(runfile, s->runfile)) {
+                    pprintf(prn, ("Infinite loop detected in script\n"));
+                    err = 1;
+                    break;
+                }
+                if (fb != nullptr) push_input_file(fb);
+                if ((fb = gretl_fopen(runfile, "r")) == nullptr) {
+                    pprintf(prn, ("Error reading %s\n"), runfile);
+                    err = process_command_error(s, E_FOPEN);
+                    fb = pop_input_file();
+                } else {
+                    strcpy(s->runfile, runfile);
+                    gretl_set_script_dir(runfile);
+                    if (cmd->ci == INCLUDE) {
+                        pprintf(cmdprn, "include \"%s\"\n", runfile);
+                    } else if (cmd->ci == PKG) {
+                        pprintf(cmdprn, "pkg run-sample \"%s\"\n", cmd->parm2);
+                    } else {
+                        pprintf(cmdprn, "run \"%s\"\n", runfile);
+                    }
+                    runit++;
+                    indent0 = gretl_if_state_record();
+                }
+                break;
+
+                case CLEAR:
+                    err = incompatible_options(cmd->opt, static_cast<gretlopt>(OPT_A | OPT_D | OPT_F));
+                    if (!err) {
+                        if (cmd->opt & OPT_F) {
+                            gretl_functions_cleanup();
+                        } else {
+                            err = cli_clear_data(s, dset);
+                        }
+                    }
+                    break;
+
+                case DATAMOD:
+                    if (cmd->auxint == DS_CLEAR) {
+                        err = cli_clear_data(s, dset);
+                        pputs(prn, ("Dataset cleared\n"));
+                        break;
+                    } else if (cmd->auxint == DS_RENUMBER) {
+                        err = cli_renumber_series(cmd->list, cmd->parm2, dset, prn);
+                        break;
+                    } else {
+                        err = gretl_cmd_exec(s, dset);
+                    }
+                    break;
+
+                default:
+                    err = gretl_cmd_exec(s, dset);
+                    break;
+        }
+
+        // record a successful interactive command
+        if (!err && cmd->ci != QUIT && gretl_echo_on() && !batch && !old_runit) gretl_record_command(cmd, line, cmdprn);
+    };
+
+    if (cmd->ci == RUNLOOP) {
+        cmd_proceed();
+        cmd_finish();
+        return err;
+    }
 
     if (gretl_compiling_function()) {
         err = gretl_function_append_line(s);
@@ -572,144 +716,7 @@ static int cli_exec_line (ExecState *s, DATASET *dset, PRN *cmdprn)
     }
 
     check_for_loop_only_options(cmd->ci, cmd->opt, prn);
-
-cmd_proceed:
-
-    gretl_exec_state_set_callback(s, cli_exec_callback, OPT_NONE);
-
-    switch (cmd->ci) {
-
-        case DELEET:
-            err = gretl_delete_variables(cmd->list, cmd->param, cmd->opt, dset, &renumber, prn);
-            if (err) {
-                errmsg(err, prn);
-            } else if (renumber && !batch) {
-                pputs(prn, ("Take note: variables have been renumbered"));
-                pputc(prn, '\n');
-                maybe_list_series(dset, prn);
-            }
-            if (err && cmd->flags & CMD_CATCH) {
-                //cmd->flags ^= CMD_CATCH;
-                XOR_CMDFLAG(cmd->flags, CMD_CATCH);
-                err = 0;
-            }
-            break;
-
-        case HELP:
-            cli_help(cmd->param, cmd->parm2, cmd->opt, nullptr, prn);
-            break;
-
-        case NULLDATA:
-            if (cmd->order < 1) {
-                err = 1;
-                pputs(prn, ("Data series length count missing or invalid\n"));
-            } else {
-                cli_clear_data(s, dset);
-                err = open_nulldata(dset, data_status, cmd->order, cmd->opt, prn);
-                if (err) {
-                    errmsg(err, prn);
-                } else {
-                    data_status = 1;
-                }
-            }
-            break;
-
-        case RUNLOOP:
-            err = gretl_loop_exec(s, dset);
-            break;
-
-        case QUIT:
-            gretl_if_state_clear();
-            cli_quit(s, cmdprn, err);
-            break;
-
-        case RUN:
-        case INCLUDE:
-        case PKG:
-            if (cmd->ci == PKG) {
-                if (!strcmp(cmd->param, "run-sample")) {
-                    err = cli_do_pkg_sample(cmd->parm2, runfile, prn);
-                } else {
-                    err = gretl_cmd_exec(s, dset);
-                    break;
-                }
-            } else if (cmd->ci == INCLUDE) {
-                err = get_full_filename(cmd->param, runfile, OPT_I);
-            } else {
-                err = get_full_filename(cmd->param, runfile, OPT_S);
-            }
-            if (err) {
-                err = run_include_error(s, cmd->param, err, prn);
-                break;
-            }
-            if (gretl_messages_on() && !(s->flags & INIT_EXEC)) pprintf(prn, " %s\n", runfile);
-            if (cmd->ci == INCLUDE && gretl_is_xml_file(runfile)) {
-                err = load_XML_functions_file(runfile, cmd->opt, prn);
-                if (err) {
-                    err = run_include_error(s, runfile, err, prn);
-                } else {
-                    pprintf(cmdprn, "include \"%s\"\n", runfile);
-                }
-                break;
-            } else if (cmd->ci == INCLUDE && gfn_is_loaded(runfile)) {
-                break;
-            }
-            if (!strcmp(runfile, s->runfile)) {
-                pprintf(prn, ("Infinite loop detected in script\n"));
-                err = 1;
-                break;
-            }
-            if (fb != nullptr) push_input_file(fb);
-            if ((fb = gretl_fopen(runfile, "r")) == nullptr) {
-                pprintf(prn, ("Error reading %s\n"), runfile);
-                err = process_command_error(s, E_FOPEN);
-                fb = pop_input_file();
-            } else {
-                strcpy(s->runfile, runfile);
-                gretl_set_script_dir(runfile);
-                if (cmd->ci == INCLUDE) {
-                    pprintf(cmdprn, "include \"%s\"\n", runfile);
-                } else if (cmd->ci == PKG) {
-                    pprintf(cmdprn, "pkg run-sample \"%s\"\n", cmd->parm2);
-                } else {
-                    pprintf(cmdprn, "run \"%s\"\n", runfile);
-                }
-                runit++;
-                indent0 = gretl_if_state_record();
-            }
-            break;
-
-            case CLEAR:
-                err = incompatible_options(cmd->opt, static_cast<gretlopt>(OPT_A | OPT_D | OPT_F));
-                if (!err) {
-                    if (cmd->opt & OPT_F) {
-                        gretl_functions_cleanup();
-                    } else {
-                        err = cli_clear_data(s, dset);
-                    }
-                }
-                break;
-
-            case DATAMOD:
-                if (cmd->auxint == DS_CLEAR) {
-                    err = cli_clear_data(s, dset);
-                    pputs(prn, ("Dataset cleared\n"));
-                    break;
-                } else if (cmd->auxint == DS_RENUMBER) {
-                    err = cli_renumber_series(cmd->list, cmd->parm2, dset, prn);
-                    break;
-                } else {
-                    err = gretl_cmd_exec(s, dset);
-                }
-                break;
-
-            default:
-                err = gretl_cmd_exec(s, dset);
-                break;
-    }
-
-    // record a successful interactive command
-    if (!err && cmd->ci != QUIT && gretl_echo_on() && !batch && !old_runit) gretl_record_command(cmd, line, cmdprn);
+    cmd_proceed();
     cmd_finish();
 
     return err;
