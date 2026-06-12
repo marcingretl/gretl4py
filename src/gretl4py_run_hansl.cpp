@@ -66,7 +66,7 @@ static gretl_dataset_ptr script_dataset{nullptr};  // dataset for subsequent scr
 static bool nulldata_executed = false;             // flag that script_dataset was created/modified by 'nulldata' command
 
 #ifdef _WIN32
-static void line_ensure_utf8(char *line)
+static void line_ensure_utf8 (char *line)
 {
     if (line == nullptr || *line == '\0') return;
 
