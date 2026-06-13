@@ -67,7 +67,7 @@ inline bool is_numpy_array_fc (const py::array &m) {
 //////////////////////////////////////////////////
 std::string gretl4py_trim (std::string &s);
 
-std::string gretl4py_to_lower (std::string &s);
+std::string gretl4py_to_lower (std::string s);
 
 void NumPyArray_extract (const py::array &arr, NumPyArrayView &view);
 

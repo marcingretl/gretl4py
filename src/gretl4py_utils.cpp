@@ -43,7 +43,7 @@ std::string gretl4py_trim (std::string &s)
     return s;
 }
 
-std::string gretl4py_to_lower (std::string &s)
+std::string gretl4py_to_lower (std::string s)
 {
     //
     // convert string to lower case

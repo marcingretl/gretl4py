@@ -1,7 +1,6 @@
 import gretl
 
-A = gretl.Matrix(4, 4, 1.0)
-
+A = gretl.Matrix(4, 4, 5)
 print(type(A))
 A.print()
 
@@ -11,5 +10,8 @@ print(A.numpy_view)
 B = gretl.Matrix(1.0, 5.0)
 B.print()
 
-C = gretl.Matrix(10, 2, "normal")
+C = gretl.Matrix(10, 2, "Uniform")
 C.print()
+
+D = gretl.Matrix(0, 0, 1.6)
+D.print()

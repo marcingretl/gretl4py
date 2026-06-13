@@ -232,16 +232,16 @@ public:
 class GretlMatrix
 {
 private:
-    gretl_matrix *m_ = nullptr;                                     // libgretl gretl_matrix raw pointer
+    gretl_matrix *m_ = nullptr;                                             // libgretl gretl_matrix raw pointer
     int err_ = 0;
 public:
-    GretlMatrix (void);                                             // default constructor
-    GretlMatrix (int rows, int cols, double fill, std::string type);// filled real/complex matrix
-    GretlMatrix (int rows, int cols, const std::string &dist);      // random matrix
-    GretlMatrix (double start, double end, double step = 1.0);      // sequential row vector
+    GretlMatrix (void);                                                     // default constructor
+    GretlMatrix (int rows, int cols, double fill, const std::string &type); // filled real/complex matrix
+    GretlMatrix (int rows, int cols, const std::string &dist);              // random matrix
+    GretlMatrix (double start, double end, double step = 1.0);              // sequential row vector
     ~GretlMatrix (void);
 
-    double *val (void) const;                                   // raw ponter to gretl_matrix storage
+    double *val (void) const;                                               // raw ponter to gretl_matrix storage
 
     int rows (void) const;
 

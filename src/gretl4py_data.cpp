@@ -1691,28 +1691,32 @@ GretlMatrix::GretlMatrix (void) : m_(gretl_null_matrix_new())
     if (!m_) handle_gretl_error(E_ALLOC);
 }
 
-enum GretlMatrixType { Real, Complex };
-
-GretlMatrix::GretlMatrix (int rows, int cols, double fill, std::string type)
+GretlMatrix::GretlMatrix (int rows, int cols, double fill, const std::string &type)
 {
     //
     // we allocate matrix which may be filled with zeros or ones
     //
-    const GretlMatrixType dtype = gretl4py_to_lower(type) == "real" ? Real : Complex;
+    enum GretlMatrixType { Real, Complex };
+    GretlMatrixType dtype;
+    const auto ltype = gretl4py_to_lower(type);
 
-    if (rows <= 0 || cols <= 0) throw std::invalid_argument("rows and cols must be positive integer");
-    if (dtype == Real && fill == 0.0) {
-        m_ = gretl_zero_matrix_new(rows, cols);
-    } else if (dtype == Real && fill == 1.0) {
-        m_ = gretl_unit_matrix_new(rows, cols);
-    } else if (dtype == Complex && fill == 0.0) {
-        m_ = gretl_cmatrix_new0(rows, cols);
-    } else if (dtype == Complex && fill == 1.0) {
-        m_ = gretl_cmatrix_new1(rows, cols);
+    // basic checks
+    if (ltype == "real") {
+        dtype = Real;
+    } else if (ltype == "complex") {
+        dtype = Complex;
     } else {
-        throw std::invalid_argument("invalid matrix type/fill combination");
+        throw std::invalid_argument("matrix type must be 'real' or 'complex'");
+    }
+
+    // matrix allocation
+    if (dtype == Real) {
+        m_ = (fill == 0.0) ? gretl_zero_matrix_new(rows, cols) : gretl_unit_matrix_new(rows, cols);
+    } else { // for Complex
+        m_ = (fill == 0.0) ? gretl_cmatrix_new0(rows, cols) : gretl_cmatrix_new1(rows, cols);
     }
     if (!m_) handle_gretl_error(E_ALLOC);
+    if (fill && fill != 1.0) gretl_matrix_fill(m_, fill);
 }
 
 GretlMatrix::GretlMatrix (int rows, int cols, const std::string &dist)
@@ -1723,6 +1727,7 @@ GretlMatrix::GretlMatrix (int rows, int cols, const std::string &dist)
     //
     auto dist_code = dist_code_from_string(dist.substr(0, 1).c_str());
 
+    if (rows <= 0 || cols <= 0) throw std::invalid_argument("rows and cols must be positive integer");
     if (dist_code != D_UNIFORM && dist_code != D_NORMAL) throw std::invalid_argument("unknown distribution code: '" + dist + "'");
     m_ = gretl_random_matrix_new(rows, cols, dist_code);
     if (!m_) handle_gretl_error(E_ALLOC);
