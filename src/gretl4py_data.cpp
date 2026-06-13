@@ -1696,6 +1696,7 @@ GretlMatrix::GretlMatrix (int rows, int cols, GretlMatrixType dtype, GretlMatrix
     //
     // we allocate matrix which may be filled with zeros or ones
     //
+    if (rows <= 0 || cols <= 0) throw std::invalid_argument("rows and cols must be positive integer");
     if (dtype == GretlMatrixType::Real && filled == GretlMatrixFill::Zeros) {
         m_ = gretl_zero_matrix_new(rows, cols);
     } else if (dtype == GretlMatrixType::Real && filled == GretlMatrixFill::Ones) {
@@ -1721,6 +1722,15 @@ GretlMatrix::GretlMatrix (int rows, int cols, const std::string &dist)
     if (dist_code != D_UNIFORM && dist_code != D_NORMAL) throw std::invalid_argument("unknown distribution code: '" + dist + "'");
     m_ = gretl_random_matrix_new(rows, cols, dist_code);
     if (!m_) handle_gretl_error(E_ALLOC);
+}
+
+GretlMatrix::GretlMatrix (double start, double end, double step)
+{
+    //
+    // row vector, containing values from @start to @end, in decreasing order if @start > @end
+    //
+    m_ = gretl_matrix_seq(start, end, step, &err_);
+    if (err_) handle_gretl_error(err_);
 }
 
 GretlMatrix::~GretlMatrix (void)

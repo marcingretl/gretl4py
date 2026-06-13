@@ -239,7 +239,8 @@ public:
     GretlMatrix (int rows, int cols,
                  GretlMatrixType dtype = GretlMatrixType::Real,
                  GretlMatrixFill filled = GretlMatrixFill::Zeros);  // default constructor
-    GretlMatrix (int rows, int cols, const std::string &dist);            // random matrix
+    GretlMatrix (int rows, int cols, const std::string &dist);      // random matrix
+    GretlMatrix (double start, double end, double step = 0.0);      // sequential row vector
     ~GretlMatrix (void);
 };
 
