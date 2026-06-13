@@ -129,26 +129,6 @@ struct GretlResourceDeleter {
 };
 using GretlResourcePtr = std::unique_ptr<void, GretlResourceDeleter>;
 
-// struct for holding results returned by functions from contributed packages
-struct GretlPackageRes {
-    void *raw_ptr = nullptr;            // pointer to returned value
-    GretlType type = GRETL_TYPE_NONE;   // type of returned object
-    int n = 0;                          // GRETL_TYPE_SERIES special case: length
-
-    void set_type (GretlType t) { type = t; }
-
-    void *get (void) const { return raw_ptr; }
-
-    void **out_ptr (void) { return &raw_ptr; }
-
-    void transfer_ownership (void) {
-        ptr = GretlResourcePtr(raw_ptr, GretlResourceDeleter{type});
-    }
-
-private:
-    GretlResourcePtr ptr = {nullptr, GretlResourceDeleter{GRETL_TYPE_NONE}};
-};
-
 // gretl4py classes
 class GretlDataset;
 using GretlDatasetPtr = std::shared_ptr<GretlDataset>;
@@ -161,6 +141,9 @@ using GretlModelPtr = std::unique_ptr<GretlModel>;
 
 class GretlPackage;
 using GretlPackagePtr = std::shared_ptr<GretlPackage>;
+
+class GretlMatrix;
+using GretlMatrixPtr = std::unique_ptr<GretlMatrix>;
 
 //////////////////////////////////////////////////
 // types
@@ -194,6 +177,26 @@ struct PythonArgInfo {
     std::string pytype;         // human readable name of type
     std::vector<ssize_t> shape; // for arrays/lists/tuples
     bool valid = true;          // if we deal with valid object (in terms of gretl4py)
+};
+
+// struct for holding results returned by functions from contributed packages
+struct GretlPackageRes {
+    void *raw_ptr = nullptr;            // pointer to returned value
+    GretlType type = GRETL_TYPE_NONE;   // type of returned object
+    int n = 0;                          // GRETL_TYPE_SERIES special case: length
+
+    void set_type (GretlType t) { type = t; }
+
+    void *get (void) const { return raw_ptr; }
+
+    void **out_ptr (void) { return &raw_ptr; }
+
+    void transfer_ownership (void) {
+        ptr = GretlResourcePtr(raw_ptr, GretlResourceDeleter{type});
+    }
+
+private:
+    GretlResourcePtr ptr = {nullptr, GretlResourceDeleter{GRETL_TYPE_NONE}};
 };
 
 // this enum is to mimic enum(s) from genparse.h

@@ -242,6 +242,12 @@ public:
     GretlMatrix (int rows, int cols, const std::string &dist);      // random matrix
     GretlMatrix (double start, double end, double step = 0.0);      // sequential row vector
     ~GretlMatrix (void);
+
+    int rows (void) const;
+
+    int cols (void) const;
+
+    void print (void) const;
 };
 
 #endif // GRETL4PY_DATA_H

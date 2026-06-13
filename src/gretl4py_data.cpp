@@ -1740,3 +1740,18 @@ GretlMatrix::~GretlMatrix (void)
         m_ = nullptr;
     }
 }
+
+int GretlMatrix::rows (void) const
+{
+    return m_->rows;
+}
+
+int GretlMatrix::cols (void) const
+{
+    return m_->cols;
+}
+
+void GretlMatrix::print (void) const
+{
+    gretl_matrix_print(m_, nullptr);
+}

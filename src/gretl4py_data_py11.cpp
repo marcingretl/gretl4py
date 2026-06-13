@@ -51,8 +51,10 @@ static void head_tail_print (GretlDataset &dataset, int nobs)
     dataset.print("", opts);
 }
 
+//
 // GretlDataset mappings
-void init_gretl4py_dataset_py11(py::module_ &m)
+//
+void init_gretl4py_dataset_py11 (py::module_ &m)
 {
     py::class_<GretlDataset, GretlDatasetPtr>(m, "Dataset", py::dynamic_attr())
         .def_readonly("is_default", &GretlDataset::is_default)
@@ -297,8 +299,10 @@ void init_gretl4py_dataset_py11(py::module_ &m)
              py::arg("type"), py::kw_only());
 }
 
+//
 // GretlPackage mappings
-void init_gretl4py_package_py11(py::module_ &m)
+//
+void init_gretl4py_package_py11 (py::module_ &m)
 {
     py::class_<GretlPackage, GretlPackagePtr>(m, "Package", py::dynamic_attr())
     .def_property_readonly("version",
@@ -353,8 +357,10 @@ void init_gretl4py_package_py11(py::module_ &m)
          py::arg("name").none(false), py::kw_only());
 }
 
-//GretlBundle mappings
-void init_gretl4py_bundle_py11(py::module_ &m)
+//
+// GretlBundle mappings
+//
+void init_gretl4py_bundle_py11 (py::module_ &m)
 {
     py::class_<GretlBundle, GretlBundlePtr>(m, "Bundle", py::dynamic_attr())
     .def(py::init<>())                      // default constructor
@@ -373,3 +379,49 @@ void init_gretl4py_bundle_py11(py::module_ &m)
     .def("print", &GretlBundle::print<void>, py::arg("tree").none(true) = false)
     .def("to_dict", &GretlBundle::to_dict);
 }
+
+//
+// GretlMatrix mappings
+//
+void init_gretl4py_gretl_matrix_py11 (py::module_ &m)
+{
+    py::enum_<GretlMatrixType>(m, "GretlMatrixType")
+    .value("Real", GretlMatrixType::Real)
+    .value("Complex", GretlMatrixType::Complex);
+
+    py::enum_<GretlMatrixFill>(m, "GretlMatrixFill")
+    .value("Zeros", GretlMatrixFill::Zeros)
+    .value("Ones", GretlMatrixFill::Ones);
+
+    py::class_<GretlMatrix, GretlMatrixPtr>(m, "Matrix", py::dynamic_attr())
+    .def(py::init<>())                                              // default constructor
+    .def(py::init<int, int, GretlMatrixType, GretlMatrixFill>(),
+         py::arg("rows"), py::arg("cols"),
+         py::arg("type") = GretlMatrixType::Real,
+         py::arg("fill") = GretlMatrixFill::Zeros)                  // standard initializer
+    .def_property_readonly("rows",
+                           [](const GretlMatrix &self)
+                           {
+                               return self.rows();
+                           })
+    .def_property_readonly("cols",
+                           [](const GretlMatrix &self)
+                           {
+                               return self.cols();
+                           })
+    .def("print", &GretlMatrix::print)
+    ;
+}
+
+/*
+ * .def_property("numpy",
+    [](gretl_matrix_ptr &self) {
+        return py::array_t<double>(
+            {self->rows, self->cols},
+            {sizeof(double), sizeof(double) * self->rows},
+            self->val,
+            py::cast(self.get())   // CRITICAL: keep owner alive
+        );
+    }
+)
+ */
