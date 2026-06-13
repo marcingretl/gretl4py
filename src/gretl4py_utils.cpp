@@ -43,6 +43,20 @@ std::string gretl4py_trim (std::string &s)
     return s;
 }
 
+std::string gretl4py_to_lower (std::string &s)
+{
+    //
+    // convert string to lower case
+    //
+    std::transform(s.begin(), s.end(), s.begin(),
+                   [](unsigned char c)
+                   {
+                       return static_cast<char>(std::tolower(c));
+                   });
+
+    return s;
+}
+
 void NumPyArray_extract (const py::array &arr, NumPyArrayView &view)
 {
     //

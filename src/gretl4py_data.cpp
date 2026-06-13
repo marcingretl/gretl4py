@@ -1691,19 +1691,23 @@ GretlMatrix::GretlMatrix (void) : m_(gretl_null_matrix_new())
     if (!m_) handle_gretl_error(E_ALLOC);
 }
 
-GretlMatrix::GretlMatrix (int rows, int cols, GretlMatrixType dtype, GretlMatrixFill filled)
+enum GretlMatrixType { Real, Complex };
+
+GretlMatrix::GretlMatrix (int rows, int cols, double fill, std::string type)
 {
     //
     // we allocate matrix which may be filled with zeros or ones
     //
+    const GretlMatrixType dtype = gretl4py_to_lower(type) == "real" ? Real : Complex;
+
     if (rows <= 0 || cols <= 0) throw std::invalid_argument("rows and cols must be positive integer");
-    if (dtype == GretlMatrixType::Real && filled == GretlMatrixFill::Zeros) {
+    if (dtype == Real && fill == 0.0) {
         m_ = gretl_zero_matrix_new(rows, cols);
-    } else if (dtype == GretlMatrixType::Real && filled == GretlMatrixFill::Ones) {
+    } else if (dtype == Real && fill == 1.0) {
         m_ = gretl_unit_matrix_new(rows, cols);
-    } else if (dtype == GretlMatrixType::Complex && filled == GretlMatrixFill::Zeros) {
+    } else if (dtype == Complex && fill == 0.0) {
         m_ = gretl_cmatrix_new0(rows, cols);
-    } else if (dtype == GretlMatrixType::Complex && filled == GretlMatrixFill::Ones) {
+    } else if (dtype == Complex && fill == 1.0) {
         m_ = gretl_cmatrix_new1(rows, cols);
     } else {
         throw std::invalid_argument("invalid matrix type/fill combination");

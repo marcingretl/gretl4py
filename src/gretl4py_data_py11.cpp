@@ -385,23 +385,14 @@ void init_gretl4py_bundle_py11 (py::module_ &m)
 //
 void init_gretl4py_gretl_matrix_py11 (py::module_ &m)
 {
-    py::enum_<GretlMatrixType>(m, "GretlMatrixType")
-    .value("Real", GretlMatrixType::Real)
-    .value("Complex", GretlMatrixType::Complex);
-
-    py::enum_<GretlMatrixFill>(m, "GretlMatrixFill")
-    .value("Zeros", GretlMatrixFill::Zeros)
-    .value("Ones", GretlMatrixFill::Ones);
-
     py::class_<GretlMatrix, GretlMatrixPtr>(m, "Matrix", py::dynamic_attr())
-    .def(py::init<>())                                              // default constructor
-    .def(py::init<int, int, GretlMatrixType, GretlMatrixFill>(),
+    .def(py::init<>())                                                           // default constructor
+    .def(py::init<int, int, double, std::string>(),
          py::arg("rows").none(false), py::arg("cols").none(false),
-         py::arg("type").none(false) = GretlMatrixType::Real,
-         py::arg("fill").none(false) = GretlMatrixFill::Zeros)       // standard initializer
+         py::arg("fill").none(false) = 0.0, py::arg("type").none(false) = "real")// filled real/complex matrix
     .def(py::init<int, int, std::string&>(),
          py::arg("rows").none(false), py::arg("cols").none(false),
-         py::arg("dist").none(false) = "normal")                     // random matrix
+         py::arg("dist").none(false) = "normal")                                 // random matrix
     .def(py::init<double, double, double>(),
          py::arg("start").none(false), py::arg("end").none(false),
          py::arg("step").none(false) = 1.0)
