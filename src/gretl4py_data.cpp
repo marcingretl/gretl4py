@@ -1741,6 +1741,11 @@ GretlMatrix::~GretlMatrix (void)
     }
 }
 
+double *GretlMatrix::get_ptr (void) const
+{
+    return m_->val;
+}
+
 int GretlMatrix::rows (void) const
 {
     return m_->rows;
@@ -1749,6 +1754,11 @@ int GretlMatrix::rows (void) const
 int GretlMatrix::cols (void) const
 {
     return m_->cols;
+}
+
+bool GretlMatrix::is_complex (void) const
+{
+    return gretl_is_complex(m_);
 }
 
 void GretlMatrix::print (void) const

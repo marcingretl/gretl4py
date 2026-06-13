@@ -396,9 +396,9 @@ void init_gretl4py_gretl_matrix_py11 (py::module_ &m)
     py::class_<GretlMatrix, GretlMatrixPtr>(m, "Matrix", py::dynamic_attr())
     .def(py::init<>())                                              // default constructor
     .def(py::init<int, int, GretlMatrixType, GretlMatrixFill>(),
-         py::arg("rows"), py::arg("cols"),
-         py::arg("type") = GretlMatrixType::Real,
-         py::arg("fill") = GretlMatrixFill::Zeros)                  // standard initializer
+         py::arg("rows").none(false), py::arg("cols").none(false),
+         py::arg("type").none(true) = GretlMatrixType::Real,
+         py::arg("fill").none(true) = GretlMatrixFill::Zeros)       // standard initializer
     .def_property_readonly("rows",
                            [](const GretlMatrix &self)
                            {
@@ -409,19 +409,18 @@ void init_gretl4py_gretl_matrix_py11 (py::module_ &m)
                            {
                                return self.cols();
                            })
+    .def_property_readonly("numpy_view",
+                           [](py::object self)
+                           {
+                               auto &m = self.cast<GretlMatrix&>();
+
+                               if (m.is_complex()) throw std::runtime_error("not implemented for complex matrixes yet");
+
+                               return py::array_t<double>({m.rows(), m.cols()},
+                                                          {sizeof(double), sizeof(double) * m.rows()},
+                                                          m.get_ptr(),
+                                                          self);    // CRITICAL: keep owner alive
+                           })
     .def("print", &GretlMatrix::print)
     ;
 }
-
-/*
- * .def_property("numpy",
-    [](gretl_matrix_ptr &self) {
-        return py::array_t<double>(
-            {self->rows, self->cols},
-            {sizeof(double), sizeof(double) * self->rows},
-            self->val,
-            py::cast(self.get())   // CRITICAL: keep owner alive
-        );
-    }
-)
- */

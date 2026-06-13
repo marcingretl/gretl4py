@@ -232,7 +232,7 @@ public:
 class GretlMatrix
 {
 private:
-    gretl_matrix *m_ = nullptr;                        // libgretl gretl_matrix raw pointer
+    gretl_matrix *m_ = nullptr;                                     // libgretl gretl_matrix raw pointer
     int err_ = 0;
 public:
     GretlMatrix (void);                                             // default constructor
@@ -243,9 +243,13 @@ public:
     GretlMatrix (double start, double end, double step = 0.0);      // sequential row vector
     ~GretlMatrix (void);
 
+    double *get_ptr (void) const;                                   // raw ponter to gretl_matrix storage
+
     int rows (void) const;
 
     int cols (void) const;
+
+    bool is_complex (void) const;
 
     void print (void) const;
 };
