@@ -1773,3 +1773,35 @@ void GretlMatrix::print (void) const
 {
     gretl_matrix_print(m_, nullptr);
 }
+
+template <bool ROWS>
+py::list GretlMatrix::rows_cols_names_get (void) const
+{
+    //
+    // method which retrieves rows/cols names
+    //
+    const char **orig_names;
+    std::vector<std::string> names;
+    int n = 0;
+
+    if constexpr (ROWS) {
+        orig_names = gretl_matrix_get_rownames(m_);
+    } else {
+        orig_names = gretl_matrix_get_colnames(m_);
+    }
+    if (!orig_names) return py::list();
+
+    if constexpr (ROWS) {
+        n = m_->rows;
+    } else {
+        n = m_->cols;
+    }
+    names.reserve(n);
+    for (int i=0; i<n; ++i) {
+        names.emplace_back(orig_names[i]);
+    }
+
+    return py::cast(names);
+}
+template py::list GretlMatrix::rows_cols_names_get<true>(void) const;
+template py::list GretlMatrix::rows_cols_names_get<false>(void) const;

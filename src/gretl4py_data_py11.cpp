@@ -418,5 +418,7 @@ void init_gretl4py_gretl_matrix_py11 (py::module_ &m)
                                                           m.val(),
                                                           self);    // CRITICAL: keep owner alive
                            })
-    .def("print", &GretlMatrix::print);
+    .def("print", &GretlMatrix::print)
+    .def("rnameget", &GretlMatrix::rows_cols_names_get<true>)
+    .def("cnameget", &GretlMatrix::rows_cols_names_get<false>);
 }

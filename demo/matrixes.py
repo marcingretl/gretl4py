@@ -3,6 +3,8 @@ import gretl
 A = gretl.Matrix(4, 4, 5)
 print(type(A))
 A.print()
+print(A.rnameget())
+print(A.cnameget())
 
 print(type(A.numpy_view))
 print(A.numpy_view)

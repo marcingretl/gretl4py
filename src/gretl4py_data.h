@@ -250,6 +250,9 @@ public:
     bool is_complex (void) const;
 
     void print (void) const;
+
+    template <bool ROWS>
+    py::list rows_cols_names_get (void) const;
 };
 
 #endif // GRETL4PY_DATA_H
