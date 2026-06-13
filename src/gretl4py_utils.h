@@ -91,6 +91,13 @@ void load_string_to_container (T &t, const std::string &src);
 bool is_bool_kwarg (const py::handle &h, const std::string &key = "");
 
 template <typename T>
+T c_style_char_array_to_container (c_str_array src, int size);
+
+// adapters to c_style_char_array_to_container()
+template <typename T>
 T c_style_char_array_to_container (const char **src, int size);
+
+template <typename T>
+T c_style_char_array_to_container (char **src, int size);
 
 #endif // GRETL4PY_UTILS_H

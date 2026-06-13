@@ -158,6 +158,8 @@ using vgretl_vector = std::vector<std::variant<double, std::string, int>>;
 
 using vgretl_matrix = std::vector<vgretl_vector>;
 
+using c_str_array = const char *const *;
+
 struct NumPyArrayView {
     void *data = nullptr;   // untyped pointer
     py::dtype dtype;        // numpy dtype info

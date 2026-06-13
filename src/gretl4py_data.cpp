@@ -1217,14 +1217,7 @@ void GretlDataset::lags (const std::string &varlist, int order)
 
 py::list GretlDataset::varnames (void) const
 {
-    std::vector<std::string> names;
-
-    names.reserve(dset->v);
-    for (int i=0; i<dset->v; ++i) {
-        names.emplace_back(dset->varname[i]);
-    }
-
-    return py::cast(names);
+    return c_style_char_array_to_container<py::list>(dset->varname, dset->v);
 }
 
 void GretlDataset::linked_models_add (const int model_id)

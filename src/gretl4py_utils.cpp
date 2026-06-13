@@ -364,25 +364,40 @@ bool is_bool_kwarg (const py::handle &h, const std::string &key)
 }
 
 template <typename T>
-T c_style_char_array_to_container (const char **src, int size)
+T c_style_char_array_to_container (c_str_array src, int size)
 {
     //
-    // convenient funcion which extract char** to c++/python container
+    // convenient function which extract char** to c++/python container
     //
-    if (size <= 0) throw std::runtime_error("wrong array size: " + std::to_string(size));
-    std::vector<std::string> strings;
+    if (size <= 0 || src == nullptr) throw std::runtime_error("invalid char array size");
+    std::vector<std::string> dst;
 
-    strings.reserve(size);
-    for (int i=0; i<size; ++i) {
-        src[i] ? strings.emplace_back(src[i]) : strings.emplace_back();
+    dst.reserve(size);
+    for (int i = 0; i < size; ++i) {
+        src[i] ? dst.emplace_back(src[i]) :dst.emplace_back();
     }
 
     if constexpr (std::is_same_v<T, std::vector<std::string>>) {
-        return strings;
+        return dst;
     } else if constexpr (std::is_same_v<T, py::list>) {
-        return py::cast(strings);
+        return py::cast(dst);
     } else {
-        static_assert(always_false<T>, "load_string_to_container(): unknown Container type");
+        static_assert(!sizeof(T), "Unsupported container type in c_style_char_array_to_container");
     }
+}
+template py::list c_style_char_array_to_container<py::list>(c_str_array, int);
+
+// adapters to c_style_char_array_to_container()
+template <typename T>
+T c_style_char_array_to_container (char **src, int size)
+{
+    return c_style_char_array_to_container<T>(const_cast<c_str_array>(src), size);
+}
+template py::list c_style_char_array_to_container<py::list>(char**, int);
+
+template <typename T>
+T c_style_char_array_to_container (const char **src, int size)
+{
+    return c_style_char_array_to_container<T>(reinterpret_cast<c_str_array>(src), size);
 }
 template py::list c_style_char_array_to_container<py::list>(const char**, int);
