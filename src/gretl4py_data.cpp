@@ -1727,7 +1727,6 @@ GretlMatrix::GretlMatrix (int rows, int cols, const std::string &dist)
     //
     auto dist_code = dist_code_from_string(dist.substr(0, 1).c_str());
 
-    if (rows <= 0 || cols <= 0) throw std::invalid_argument("rows and cols must be positive integer");
     if (dist_code != D_UNIFORM && dist_code != D_NORMAL) throw std::invalid_argument("unknown distribution code: '" + dist + "'");
     m_ = gretl_random_matrix_new(rows, cols, dist_code);
     if (!m_) handle_gretl_error(E_ALLOC);
