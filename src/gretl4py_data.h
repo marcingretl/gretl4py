@@ -243,7 +243,7 @@ public:
     GretlMatrix (double start, double end, double step = 0.0);      // sequential row vector
     ~GretlMatrix (void);
 
-    double *get_ptr (void) const;                                   // raw ponter to gretl_matrix storage
+    double *val (void) const;                                   // raw ponter to gretl_matrix storage
 
     int rows (void) const;
 

@@ -1741,7 +1741,7 @@ GretlMatrix::~GretlMatrix (void)
     }
 }
 
-double *GretlMatrix::get_ptr (void) const
+double *GretlMatrix::val (void) const
 {
     return m_->val;
 }

@@ -397,8 +397,11 @@ void init_gretl4py_gretl_matrix_py11 (py::module_ &m)
     .def(py::init<>())                                              // default constructor
     .def(py::init<int, int, GretlMatrixType, GretlMatrixFill>(),
          py::arg("rows").none(false), py::arg("cols").none(false),
-         py::arg("type").none(true) = GretlMatrixType::Real,
-         py::arg("fill").none(true) = GretlMatrixFill::Zeros)       // standard initializer
+         py::arg("type").none(false) = GretlMatrixType::Real,
+         py::arg("fill").none(false) = GretlMatrixFill::Zeros)       // standard initializer
+    .def(py::init<int, int, std::string&>(),
+         py::arg("rows").none(false), py::arg("cols").none(false),
+         py::arg("dist").none(false) = "normal")                     // random matrix
     .def_property_readonly("rows",
                            [](const GretlMatrix &self)
                            {
@@ -418,9 +421,8 @@ void init_gretl4py_gretl_matrix_py11 (py::module_ &m)
 
                                return py::array_t<double>({m.rows(), m.cols()},
                                                           {sizeof(double), sizeof(double) * m.rows()},
-                                                          m.get_ptr(),
+                                                          m.val(),
                                                           self);    // CRITICAL: keep owner alive
                            })
-    .def("print", &GretlMatrix::print)
-    ;
+    .def("print", &GretlMatrix::print);
 }
