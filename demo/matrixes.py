@@ -6,8 +6,12 @@ A.print()
 print(A.rnameget())
 print(A.cnameget())
 
-print(type(A.numpy_view))
-print(A.numpy_view)
+A_np = A.numpy_view
+print(type(A_np))
+print(A_np)
+A_np[1,2] = -1000
+print(A_np)
+A.print()
 
 B = gretl.Matrix(1.0, 5.0)
 B.print()

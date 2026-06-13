@@ -362,3 +362,26 @@ bool is_bool_kwarg (const py::handle &h, const std::string &key)
 
     return false;
 }
+
+template <typename T>
+T c_style_char_array_to_container (const char **src, int size)
+{
+    //
+    // convenient funcion which extract char** to c++/python container
+    //
+    if (size <= 0) throw std::runtime_error("wrong array size: " + std::to_string(size));
+    std::vector<std::string> strings;
+
+    strings.reserve(size);
+    for (int i=0; i<size; ++i) {
+        src[i] ? strings.emplace_back(src[i]) : strings.emplace_back();
+    }
+
+    if constexpr (std::is_same_v<T, std::vector<std::string>>) {
+        return strings;
+    } else if constexpr (std::is_same_v<T, py::list>) {
+        return py::cast(strings);
+    } else {
+        static_assert(always_false<T>, "load_string_to_container(): unknown Container type");
+    }
+}
