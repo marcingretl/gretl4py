@@ -240,7 +240,7 @@ public:
                  GretlMatrixType dtype = GretlMatrixType::Real,
                  GretlMatrixFill filled = GretlMatrixFill::Zeros);  // default constructor
     GretlMatrix (int rows, int cols, const std::string &dist);      // random matrix
-    GretlMatrix (double start, double end, double step = 0.0);      // sequential row vector
+    GretlMatrix (double start, double end, double step = 1.0);      // sequential row vector
     ~GretlMatrix (void);
 
     double *val (void) const;                                   // raw ponter to gretl_matrix storage

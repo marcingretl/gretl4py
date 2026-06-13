@@ -402,6 +402,9 @@ void init_gretl4py_gretl_matrix_py11 (py::module_ &m)
     .def(py::init<int, int, std::string&>(),
          py::arg("rows").none(false), py::arg("cols").none(false),
          py::arg("dist").none(false) = "normal")                     // random matrix
+    .def(py::init<double, double, double>(),
+         py::arg("start").none(false), py::arg("end").none(false),
+         py::arg("step").none(false) = 1.0)
     .def_property_readonly("rows",
                            [](const GretlMatrix &self)
                            {
