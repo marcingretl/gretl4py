@@ -1781,7 +1781,6 @@ py::list GretlMatrix::rows_cols_names_get (void) const
     // method which retrieves rows/cols names
     //
     const char **orig_names;
-    std::vector<std::string> names;
     int n = 0;
 
     if constexpr (ROWS) {
@@ -1796,12 +1795,8 @@ py::list GretlMatrix::rows_cols_names_get (void) const
     } else {
         n = m_->cols;
     }
-    names.reserve(n);
-    for (int i=0; i<n; ++i) {
-        names.emplace_back(orig_names[i]);
-    }
 
-    return py::cast(names);
+    return c_style_char_array_to_container<py::list>(orig_names, n);
 }
 template py::list GretlMatrix::rows_cols_names_get<true>(void) const;
 template py::list GretlMatrix::rows_cols_names_get<false>(void) const;

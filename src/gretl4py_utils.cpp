@@ -385,3 +385,4 @@ T c_style_char_array_to_container (const char **src, int size)
         static_assert(always_false<T>, "load_string_to_container(): unknown Container type");
     }
 }
+template py::list c_style_char_array_to_container<py::list>(const char**, int);
