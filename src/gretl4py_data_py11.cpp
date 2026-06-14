@@ -396,6 +396,7 @@ void init_gretl4py_gretl_matrix_py11 (py::module_ &m)
     .def(py::init<double, double, double>(),
          py::arg("start").none(false), py::arg("end").none(false),
          py::arg("step").none(false) = 1.0)                                         //sequential row vector
+    .def("__repr__", &GretlMatrix::repr)
     .def_property_readonly("rows",
                            [](const GretlMatrix &self)
                            {
@@ -418,7 +419,10 @@ void init_gretl4py_gretl_matrix_py11 (py::module_ &m)
                                                           m.val(),
                                                           self);    // CRITICAL: keep owner alive
                            })
-    .def("print", &GretlMatrix::print)
     .def("rnameget", &GretlMatrix::rows_cols_names_get<true>)
-    .def("cnameget", &GretlMatrix::rows_cols_names_get<false>);
+    .def("cnameget", &GretlMatrix::rows_cols_names_get<false>)
+    .def("rnameset", &GretlMatrix::rows_cols_names_set<true>,
+         py::arg("names").none(false))
+    .def("cnameset", &GretlMatrix::rows_cols_names_set<false>,
+         py::arg("names").none(false));
 }

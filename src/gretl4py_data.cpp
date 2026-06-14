@@ -1754,9 +1754,11 @@ bool GretlMatrix::is_complex (void) const
     return gretl_is_complex(m_);
 }
 
-void GretlMatrix::print (void) const
+std::string GretlMatrix::repr (void)
 {
-    gretl_matrix_print(m_, nullptr);
+    gretl_matrix_print_to_prn(m_, nullptr, printer_.prn_ptr());
+
+    return printer_.get_buffer();
 }
 
 // ROWS == true: we deal we rows of the matrix
@@ -1786,3 +1788,51 @@ py::list GretlMatrix::rows_cols_names_get (void) const
 }
 template py::list GretlMatrix::rows_cols_names_get<true>(void) const;
 template py::list GretlMatrix::rows_cols_names_get<false>(void) const;
+
+template<bool ROWS>
+void GretlMatrix::rows_cols_names_set (const py::list &src) const
+{
+    //
+    // we set rows/cols based on src
+    // note: empty src means we erase rows/cols names
+    //
+    strings_array_ptr names(nullptr, StringsArrayDeleter{});
+    int n;
+
+    if constexpr (ROWS) {
+        if (src.empty()) {
+            gretl_matrix_set_rownames(m_, nullptr);
+            return;
+        } else {
+            n = m_->rows;
+        }
+    } else {
+        if (src.empty()) {
+            gretl_matrix_set_colnames(m_, nullptr);
+            return;
+        } else {
+            n = m_->cols;
+        }
+    }
+
+    if (src.size() != static_cast<size_t>(n)) handle_gretl_error(E_INVARG, "names", "supplied list should be of length: " + std::to_string(n));
+    char **dst = strings_array_new_with_length(n, OBSLEN);
+    if (dst == nullptr) handle_gretl_error(E_ALLOC);
+    names.get_deleter().nstrs = n;
+    names.reset(dst);
+
+    // we do the job
+    for (int i=0; i<n; ++i) {
+        std::string s = py::cast<std::string>(src[i]);
+
+        std::strncpy(names.get()[i], s.c_str(), OBSLEN - 1);
+        names.get()[i][OBSLEN - 1] = '\0';
+    }
+    if constexpr (ROWS) {
+        gretl_matrix_set_rownames(m_, names.release());
+    } else {
+        gretl_matrix_set_colnames(m_, names.release());
+    }
+}
+template void GretlMatrix::rows_cols_names_set<true>(const py::list&) const;
+template void GretlMatrix::rows_cols_names_set<false>(const py::list&) const;

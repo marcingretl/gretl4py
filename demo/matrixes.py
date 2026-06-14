@@ -2,7 +2,7 @@ import gretl
 
 A = gretl.Matrix(4, 4, 5)
 print(type(A))
-A.print()
+print(A)
 print(A.rnameget())
 print(A.cnameget())
 
@@ -11,13 +11,17 @@ print(type(A_np))
 print(A_np)
 A_np[1,2] = -1000
 print(A_np)
-A.print()
+print(A)
 
 B = gretl.Matrix(1.0, 5.0)
-B.print()
+print(B)
 
 C = gretl.Matrix(10, 2, "Uniform")
-C.print()
+print(C)
 
-D = gretl.Matrix(0, 0, 1.6)
-D.print()
+D = gretl.Matrix(2, 3)
+D.rnameset(['first', 'second'])
+D.cnameset(['one', 'two', 'three'])
+print(D)
+D.cnameset(list())
+print(D)
