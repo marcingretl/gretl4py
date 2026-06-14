@@ -1578,15 +1578,7 @@ py::list GretlBundle::keys (void)
     keys.get_deleter().nstrs = n_keys;
     if (n_keys == 0) return py::list{};
 
-    // we copy keys into std::vector while smart pointer owns memory
-    std::vector<std::string> vec_keys;
-
-    vec_keys.reserve(n_keys);
-    for (int i = 0; i < n_keys; ++i) {
-        vec_keys.emplace_back(keys.get()[i]);
-    }
-
-    return py::cast(vec_keys);
+    return c_style_char_array_to_container<py::list>(keys.get(), n_keys);
 }
 
 template <typename T>
@@ -1767,6 +1759,7 @@ void GretlMatrix::print (void) const
     gretl_matrix_print(m_, nullptr);
 }
 
+// ROWS == true: we deal we rows of the matrix
 template <bool ROWS>
 py::list GretlMatrix::rows_cols_names_get (void) const
 {
@@ -1781,7 +1774,7 @@ py::list GretlMatrix::rows_cols_names_get (void) const
     } else {
         orig_names = gretl_matrix_get_colnames(m_);
     }
-    if (!orig_names) return py::list();
+    if (!orig_names) return py::list{};
 
     if constexpr (ROWS) {
         n = m_->rows;
