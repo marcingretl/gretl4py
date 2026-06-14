@@ -22,6 +22,7 @@ import sys
 import os
 import webbrowser
 import numpy as np
+import pandas as pd
 from typing import TypedDict, NotRequired, Dict, List, Any
 from typing import Optional
 from .gretl4py_addons import _pd_to_pandas_str_format
@@ -340,15 +341,8 @@ def show_data_status():
                 default = ""
             print(f'{d}: {dset.id:d}, {dset.source:s} {default:s} - referenced by models: {list(dset.linked_models_list)}')
 
-def _to_dataframe(self: "Dataset"):
+def _to_dataframe(self: "Dataset") -> pd.DataFrame:
     """Method for exporting _gretl.Dataset instance as Pandas DataFrame"""
-
-    try:
-        import pandas as pd
-        import numpy as np
-    except ModuleNotFoundError:
-        print("*** warning: 'pandas' package required ***\n")
-        return None
 
     # we grab data as dict + some characteristics
     as_d = self.to_dict()
@@ -432,6 +426,14 @@ def _package_get_help(self: "Package"):
         print(payload)
     else:
         raise RuntimeError(f"Unknown help type: {kind}")
+
+# #######################################################
+#   GretlMatrix class
+# #######################################################
+def _to_pandas (self: _gretl.Matrix) -> pd.DataFrame:
+    """GretlMatrix to Pandas DataFrame exporter"""
+    return pd.DataFrame(data = self.numpy(), index = self.rnameget(),
+                        columns = self.cnameget())
 
 if __name__ == "__main__":
     pass

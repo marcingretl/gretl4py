@@ -1,5 +1,8 @@
 import gretl
 
+# Pandas DF
+import pandas as pd
+
 A = gretl.Matrix(4, 4, 5)
 print(type(A))
 print(A)
@@ -25,7 +28,10 @@ print(C_np)
 D = gretl.Matrix(2, 3)
 D.rnameset(['first', 'second'])
 D.cnameset(['one', 'two', 'three'])
+pd = D.to_pandas()
 print(D)
 print(D.cnameget()[0])
 D.cnameset(list())
 print(D)
+print("as Pandas DF")
+print(pd)

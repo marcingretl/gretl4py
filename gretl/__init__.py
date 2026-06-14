@@ -103,7 +103,7 @@ from ._gretl import (get_accessor)
 from .gretl4py_classes import _attrs, _oddsratio, mle, nls, gmm, NLSpec
 from .gretl4py_classes import get_data, show_data_status, _to_dataframe
 from .gretl4py_classes import _matrix_functions_wrapper, _package_get_help
-from .gretl4py_classes import _model_plots
+from .gretl4py_classes import _model_plots, _to_pandas
 from .gretl4py_addons import print_module_source, fc_print, modeltab
 
 # deprecations
@@ -115,6 +115,7 @@ setattr(_gretl.Model, "plot", _model_plots)                 # wrapper for genera
 setattr(_gretl.Model_logit, "oddsratio", _oddsratio)        # for pretty-printing oddsratios
 setattr(_gretl.Dataset, "to_dataframe", _to_dataframe)      # gretl data to Pandas DataFrame converter
 setattr(_gretl.Package, "get_help", _package_get_help)      # display help (either PDF or txt)
+setattr(_gretl.Matrix, "to_pandas", _to_pandas)
 for fun in ['cdf', 'pdf', 'invcdf', 'pvalue', 'critical']:  # wrapper for matrix-based functions
     setattr(_gretl.Dataset, fun, _matrix_functions_wrapper(func_name=fun))
 
