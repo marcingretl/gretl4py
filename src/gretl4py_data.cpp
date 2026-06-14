@@ -1836,3 +1836,14 @@ void GretlMatrix::rows_cols_names_set (const py::list &src) const
 }
 template void GretlMatrix::rows_cols_names_set<true>(const py::list&) const;
 template void GretlMatrix::rows_cols_names_set<false>(const py::list&) const;
+
+py::object GretlMatrix::to_numpy() const
+{
+    //
+    // here we construct Numpy as a deep copy of gretl_matrix
+    //
+    auto res = convert_GretlType_to_GretlTypes(GRETL_TYPE_MATRIX, m_, 0, err_);
+    if (err_) handle_gretl_error(err_);
+
+    return variant_to_pyobject(std::move(*res));
+}

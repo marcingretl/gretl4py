@@ -419,6 +419,7 @@ void init_gretl4py_gretl_matrix_py11 (py::module_ &m)
                                                           m.val(),
                                                           self);    // CRITICAL: keep owner alive
                            })
+    .def("numpy", &GretlMatrix::to_numpy)
     .def("rnameget", &GretlMatrix::rows_cols_names_get<true>)
     .def("cnameget", &GretlMatrix::rows_cols_names_get<false>)
     .def("rnameset", &GretlMatrix::rows_cols_names_set<true>,

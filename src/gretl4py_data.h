@@ -234,7 +234,7 @@ class GretlMatrix
 private:
     gretl_matrix *m_ = nullptr;                                             // libgretl gretl_matrix raw pointer
     mutable GretlPrint printer_ = GretlPrint();                             // printer (instance wide)
-    int err_ = 0;
+    mutable int err_ = 0;
 public:
     GretlMatrix (void);                                                     // default constructor
     GretlMatrix (int rows, int cols, double fill, const std::string &type); // filled real/complex matrix
@@ -257,6 +257,8 @@ public:
 
     template <bool ROWS>
     void rows_cols_names_set (const py::list &src) const;
+
+    py::object to_numpy (void) const;
 };
 
 #endif // GRETL4PY_DATA_H
