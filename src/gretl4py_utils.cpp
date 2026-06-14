@@ -378,14 +378,13 @@ T c_style_char_array_to_container (c_str_array src, int size)
     }
 
     if constexpr (std::is_same_v<T, std::vector<std::string>>) {
-        return dst;
+        return dst;                                                 //NRVO
     } else if constexpr (std::is_same_v<T, py::list>) {
         return py::cast(dst);
     } else {
         static_assert(!sizeof(T), "Unsupported container type in c_style_char_array_to_container");
     }
 }
-template py::list c_style_char_array_to_container<py::list>(c_str_array, int);
 
 // adapters to c_style_char_array_to_container()
 template <typename T>
