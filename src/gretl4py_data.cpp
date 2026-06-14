@@ -1726,6 +1726,15 @@ GretlMatrix::GretlMatrix (double start, double end, double step)
     if (err_) handle_gretl_error(err_);
 }
 
+GretlMatrix::GretlMatrix (int n) : m_(gretl_identity_matrix_new(n))
+{
+    //
+    // identity matrix
+    //
+    if (!m_) handle_gretl_error(E_ALLOC);
+}
+
+
 GretlMatrix::~GretlMatrix (void)
 {
     if (m_) {
