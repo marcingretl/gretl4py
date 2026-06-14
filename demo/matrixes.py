@@ -21,7 +21,7 @@ print(B)
 
 C = gretl.Matrix(10, 2, "Uniform")
 print(C)
-C_np = C.numpy()
+C_np = C.to_numpy()
 C_np.resize(2, 10)
 print(C_np)
 

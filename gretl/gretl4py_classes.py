@@ -432,7 +432,7 @@ def _package_get_help(self: "Package"):
 # #######################################################
 def _to_pandas (self: _gretl.Matrix) -> pd.DataFrame:
     """GretlMatrix to Pandas DataFrame exporter"""
-    return pd.DataFrame(data = self.numpy(), index = self.rnameget(),
+    return pd.DataFrame(data = self.numpy_view, index = self.rnameget(),
                         columns = self.cnameget())
 
 if __name__ == "__main__":

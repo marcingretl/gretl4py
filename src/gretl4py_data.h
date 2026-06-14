@@ -251,7 +251,7 @@ public:
 
     bool is_complex (void) const;
 
-    std::string repr (void);                                                // bundle printing via __repr__
+    std::string repr_impl (void);                                                // bundle printing via __repr__
 
     template <bool ROWS>
     py::list rows_cols_names_get (void) const;

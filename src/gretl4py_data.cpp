@@ -1763,7 +1763,7 @@ bool GretlMatrix::is_complex (void) const
     return gretl_is_complex(m_);
 }
 
-std::string GretlMatrix::repr (void)
+std::string GretlMatrix::repr_impl (void)
 {
     gretl_matrix_print_to_prn(m_, nullptr, printer_.prn_ptr());
 
