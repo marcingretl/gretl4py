@@ -1860,10 +1860,9 @@ py::object GretlMatrix::get_element (int i, int j) const
     // method for getting matrix element [i, j]
     //
     if (i < 0 || j < 0 || i >= m_->rows || j >= m_->cols) handle_gretl_error(E_INVARG, "[i,j]", "[" + std::to_string(i) + "," + std::to_string(j) + "]");
-    if (gretl_is_complex(m_)) {
-        std::complex<double> z = gretl_cmatrix_get(m_, i, j);
-
-        return py::cast(z);
+    
+	if (gretl_is_complex(m_)) {
+        return py::cast(c_complex_to_std_complex(gretl_cmatrix_get(m_, i, j)));
     } else {
         return py::cast(gretl_matrix_get(m_, i, j));
     }
