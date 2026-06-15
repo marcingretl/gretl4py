@@ -31,6 +31,7 @@ D.cnameset(['one', 'two', 'three'])
 pd = D.to_pandas()
 pdv = D.pandas_view
 D.numpy_view[0,0] = 55
+D[1,1] = 22
 print(D)
 print(D.cnameget()[0])
 D.cnameset(list())
