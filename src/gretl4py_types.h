@@ -150,7 +150,9 @@ using GretlMatrixPtr = std::unique_ptr<GretlMatrix>;
 //////////////////////////////////////////////////
 using DNumPyArrayFC = py::array_t<double, py::array::f_style>;  // double contiguous column-major (fortran) NumPy array (F_CONTIGUOUS)
 
-using GretlTypes = std::variant<int, double, std::string, DNumPyArrayFC, py::dict, py::list, GretlBundlePtr, py::none>;
+using DNumPyArrayZ = py::array_t<std::complex<double>, py::array::f_style>; // complex column-major (fortran) NumPy array (F_CONTIGUOUS)
+
+using GretlTypes = std::variant<int, double, std::string, DNumPyArrayFC, DNumPyArrayZ, py::dict, py::list, GretlBundlePtr, py::none>;
 
 using GretlTypesPtr = std::unique_ptr<GretlTypes>;
 

@@ -164,12 +164,23 @@ GretlTypesPtr convert_GretlType_to_GretlTypes (GretlType t, void *gr_obj_ptr,
     }
     case GRETL_TYPE_MATRIX: {
         gretl_matrix *gretl_mat = static_cast<gretl_matrix*>(gr_obj_ptr);
-        DNumPyArrayFC mat({gretl_mat->rows, gretl_mat->cols});
 
-        std::memcpy(mat.mutable_data(), gretl_mat->val,
-                    gretl_mat->rows * gretl_mat->cols * sizeof(double));
-        if ((std::min)(gretl_mat->rows, gretl_mat->cols) == 1) mat = mat.reshape({mat.size()});
-        *res = mat;
+        // for complex type
+        if (gretl_mat->is_complex == 1) {
+            DNumPyArrayZ mat({gretl_mat->rows, gretl_mat->cols});
+
+            std::memcpy(reinterpret_cast<std::byte*>(mat.mutable_data()),
+                        reinterpret_cast<const std::byte*>(gretl_mat->z),
+                        n * sizeof(std::complex<double>));
+            if ((std::min)(gretl_mat->rows, gretl_mat->cols) == 1) mat = mat.reshape({mat.size()});
+            *res = mat;
+        } else {
+            DNumPyArrayFC mat({gretl_mat->rows, gretl_mat->cols});
+
+            std::memcpy(mat.mutable_data(), gretl_mat->val, gretl_mat->rows * gretl_mat->cols * sizeof(double));
+            if ((std::min)(gretl_mat->rows, gretl_mat->cols) == 1) mat = mat.reshape({mat.size()});
+            *res = mat;
+        }
         break;
     }
     case GRETL_TYPE_BUNDLE: {
