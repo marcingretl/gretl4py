@@ -1856,3 +1856,10 @@ py::object GretlMatrix::to_numpy() const
 
     return variant_to_pyobject(std::move(*res));
 }
+
+
+/*
+ . *def("__getitem__", [](const gretl_matrix &m, std::pair<int,int> ij) {
+ return m.val[ij.first + ij.second * m.rows];
+ })
+*/

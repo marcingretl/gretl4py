@@ -430,10 +430,36 @@ def _package_get_help(self: "Package"):
 # #######################################################
 #   GretlMatrix class
 # #######################################################
-def _to_pandas (self: _gretl.Matrix) -> pd.DataFrame:
-    """GretlMatrix to Pandas DataFrame exporter"""
-    return pd.DataFrame(data = self.numpy_view, index = self.rnameget(),
-                        columns = self.cnameget())
+def _to_pandas (self: _gretl.Matrix, view: bool = False) -> pd.DataFrame:
+    """
+    Convert GretlMatrix to a pandas DataFrame.
+
+    Parameters
+    ----------
+    view : bool, default False
+        If True, construct the DataFrame using a zero-copy NumPy view of the
+        underlying matrix data (when possible).
+        If False, a deep copy of the matrix data is created.
+
+    Returns
+    -------
+    pandas.DataFrame
+        DataFrame representation of the matrix, with optional row and column
+        labels if available.
+
+    Notes
+    -----
+    When `view=True`, the resulting DataFrame may share memory with the
+    underlying GretlMatrix via a NumPy view. However, pandas does not guarantee
+    full view semantics internally, so modifications may not always propagate
+    back to the original matrix in all cases.
+    """
+
+    rows_labels = self.rnameget() if len(self.rnameget()) else None
+    cols_labels = self.cnameget() if len(self.cnameget()) else None
+
+    return pd.DataFrame(data = self.numpy_view if view else self.to_numpy(),
+                        index = rows_labels, columns = cols_labels)
 
 if __name__ == "__main__":
     pass

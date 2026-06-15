@@ -115,7 +115,9 @@ setattr(_gretl.Model, "plot", _model_plots)                 # wrapper for genera
 setattr(_gretl.Model_logit, "oddsratio", _oddsratio)        # for pretty-printing oddsratios
 setattr(_gretl.Dataset, "to_dataframe", _to_dataframe)      # gretl data to Pandas DataFrame converter
 setattr(_gretl.Package, "get_help", _package_get_help)      # display help (either PDF or txt)
-setattr(_gretl.Matrix, "to_pandas", _to_pandas)
+setattr(_gretl.Matrix, "pandas_view",
+        property(lambda self: _to_pandas(self, True)))      # view matrix as Pandas DataFrame
+setattr(_gretl.Matrix, "to_pandas", _to_pandas)             # export matrix to Pandas DataFrame
 for fun in ['cdf', 'pdf', 'invcdf', 'pvalue', 'critical']:  # wrapper for matrix-based functions
     setattr(_gretl.Dataset, fun, _matrix_functions_wrapper(func_name=fun))
 

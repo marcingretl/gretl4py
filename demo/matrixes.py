@@ -29,9 +29,12 @@ D = gretl.Matrix(2, 3)
 D.rnameset(['first', 'second'])
 D.cnameset(['one', 'two', 'three'])
 pd = D.to_pandas()
+pdv = D.pandas_view
+D.numpy_view[0,0] = 55
 print(D)
 print(D.cnameget()[0])
 D.cnameset(list())
 print(D)
 print("as Pandas DF")
 print(pd)
+print(pdv)
