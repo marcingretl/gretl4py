@@ -243,7 +243,9 @@ public:
     GretlMatrix (int n);                                                    // identity matrix
     ~GretlMatrix (void);
 
-    double *val (void) const;                                               // raw ponter to gretl_matrix storage
+    double *val (void) const;                                               // raw pointer to gretl_matrix storage
+
+    double _Complex *z (void) const;                                        // raw pointer to comlex storage
 
     int rows (void) const;
 
@@ -251,7 +253,7 @@ public:
 
     bool is_complex (void) const;
 
-    std::string repr_impl (void);                                                // bundle printing via __repr__
+    std::string repr_impl (void);                                           // gretl_matrix printing via __repr__
 
     template <bool ROWS>
     py::list rows_cols_names_get (void) const;

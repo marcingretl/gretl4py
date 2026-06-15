@@ -424,16 +424,23 @@ void init_gretl4py_gretl_matrix_py11 (py::module_ &m)
                                return self.cols();
                            })
     .def_property_readonly("numpy_view",
-                           [](py::object self)
+                           [](py::object self) -> py::array
                            {
                                auto &m = self.cast<GretlMatrix&>();
 
-                               if (m.is_complex()) throw std::runtime_error("not implemented for complex matrixes yet");
+                               if (m.is_complex()) {
+                                   return py::array_t<std::complex<double>>({m.rows(), m.cols()},
+                                                                            {sizeof(std::complex<double>),
+                                                                                sizeof(std::complex<double>) * m.rows()},
+                                                                            reinterpret_cast<std::complex<double>*>(m.z()),
+                                                                            self);
+                               } else {
+                                   return py::array_t<double>({m.rows(), m.cols()},
+                                                              {sizeof(double), sizeof(double) * m.rows()},
+                                                              m.val(),
+                                                              self);    // CRITICAL: keep owner alive
 
-                               return py::array_t<double>({m.rows(), m.cols()},
-                                                          {sizeof(double), sizeof(double) * m.rows()},
-                                                          m.val(),
-                                                          self);    // CRITICAL: keep owner alive
+                               }
                            })
     .def("to_numpy", &GretlMatrix::to_numpy)
     .def("rnameget", &GretlMatrix::rows_cols_names_get<true>)

@@ -1748,6 +1748,13 @@ double *GretlMatrix::val (void) const
     return m_->val;
 }
 
+double _Complex *GretlMatrix::z (void) const
+{
+    if (!gretl_is_complex(m_)) throw std::runtime_error("not a complex matrix");
+
+    return m_->z;
+}
+
 int GretlMatrix::rows (void) const
 {
     return m_->rows;

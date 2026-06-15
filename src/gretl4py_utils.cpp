@@ -71,6 +71,7 @@ void NumPyArray_extract (const py::array &arr, NumPyArrayView &view)
     view.rows = arr.shape(0);
     view.cols = arr.ndim() == 1 ? 1 : arr.shape(1);
     view.NumPyArrayFC = is_numpy_array_fc(arr);
+    //bool is_complex = arr.dtype().is(py::dtype::of<std::complex<double>>());
 
     const ssize_t itemsize = view.dtype.itemsize();
     const auto &strides = arr.strides();
