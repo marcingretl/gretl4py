@@ -235,6 +235,14 @@ private:
     gretl_matrix *m_ = nullptr;                                             // libgretl gretl_matrix raw pointer
     mutable GretlPrint printer_ = GretlPrint();                             // printer (instance wide)
     mutable int err_ = 0;
+
+    inline void check_bounds_ (int i, int j) const
+    {
+        if (i < 0 || j < 0 || i >= m_->rows || j >= m_->cols)
+            handle_gretl_error(E_INVARG, "[i,j]",
+                               "[" + std::to_string(i) + ","
+                               + std::to_string(j) + "]");
+    }                                                                       // we check if given [i,j] are valid
 public:
     GretlMatrix (void);                                                     // default constructor
     GretlMatrix (int rows, int cols, double fill, const std::string &type); // filled real/complex matrix

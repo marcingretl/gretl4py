@@ -1866,7 +1866,7 @@ py::object GretlMatrix::get_element (int i, int j) const
     //
     // method for getting matrix element [i, j]
     //
-    if (i < 0 || j < 0 || i >= m_->rows || j >= m_->cols) handle_gretl_error(E_INVARG, "[i,j]", "[" + std::to_string(i) + "," + std::to_string(j) + "]");
+    check_bounds_(i, j);
 
     if (gretl_is_complex(m_)) {
         return py::cast(c_complex_to_std_complex(gretl_cmatrix_get(m_, i, j)));
@@ -1881,7 +1881,7 @@ void GretlMatrix::set_element (int i, int j, T val)
     //
     // method for setting 'val' as matrix element [i, j]
     //
-    if (i < 0 || j < 0 || i >= m_->rows || j >= m_->cols) handle_gretl_error(E_INVARG, "[i,j]", "[" + std::to_string(i) + "," + std::to_string(j) + "]");
+    check_bounds_(i, j);
 
     if constexpr (std::is_same_v<T, double>) {
         if (gretl_is_complex(m_)) throw std::invalid_argument("matrix is complex, assign a complex number (e.g. 1+2j)");
@@ -1903,7 +1903,7 @@ template void GretlMatrix::set_element<std::complex<double>>(int i, int j, std::
 py::object GretlMatrix::to_numpy() const
 {
     //
-    // here we construct Numpy as a deep copy of gretl_matrix
+    // here we construct NumPy as a deep copy of gretl_matrix
     //
     auto res = convert_GretlType_to_GretlTypes(GRETL_TYPE_MATRIX, m_, 0, err_);
     if (err_) handle_gretl_error(err_);
