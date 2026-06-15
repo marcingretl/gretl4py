@@ -1851,6 +1851,7 @@ double GretlMatrix::get_element (int i, int j) const
     //
     // method for getting matrix element [i, j]
     //
+    if (i < 0 || j < 0) handle_gretl_error(E_INVARG, "[i,j]", "[" + std::to_string(i) + "," + std::to_string(j) + "]");
     if (gretl_is_complex(m_)) {
         //return gretl_cmatrix_get(m_, i, j);
         throw std::runtime_error("not implemented for complex matrixes yet");
@@ -1864,6 +1865,7 @@ void GretlMatrix::set_element (int i, int j, double val) const
     //
     // method for setting 'val' as matrix element [i, j]
     //
+    if (i < 0 || j < 0) handle_gretl_error(E_INVARG, "[i,j]", "[" + std::to_string(i) + "," + std::to_string(j) + "]");
     if (gretl_is_complex(m_)) {
         //return gretl_cmatrix_set(m_, i, j, val);
         throw std::runtime_error("not implemented for complex matrixes yet");
