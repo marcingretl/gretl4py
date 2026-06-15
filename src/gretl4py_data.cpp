@@ -1860,6 +1860,7 @@ py::object GretlMatrix::get_element (int i, int j) const
     // method for getting matrix element [i, j]
     //
     if (i < 0 || j < 0 || i >= m_->rows || j >= m_->cols) handle_gretl_error(E_INVARG, "[i,j]", "[" + std::to_string(i) + "," + std::to_string(j) + "]");
+
     if (gretl_is_complex(m_)) {
         std::complex<double> z = gretl_cmatrix_get(m_, i, j);
 
@@ -1888,7 +1889,7 @@ void GretlMatrix::set_element (int i, int j, T val)
         __imag__ z = val.imag();
         gretl_cmatrix_set(m_, i, j, z);
     } else {
-        static_assert(always_false<T>, "GretlBundle::set_element(): unknown type");
+        static_assert(always_false<T>, "GretlMatrix::set_element(): unknown type");
     }
 }
 template void GretlMatrix::set_element<double>(int i, int j, double val);
