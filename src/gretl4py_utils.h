@@ -61,6 +61,7 @@ inline bool is_pysequence (const py::handle &o) { return py::isinstance<py::sequ
 inline bool is_numpy_array_fc (const py::array &m) {
     return (m.flags() & py::detail::npy_api::constants::NPY_ARRAY_F_CONTIGUOUS_) != 0;
 }
+inline std::complex<double> c_complex_to_std_complex (double _Complex z) { return {__real__ z, __imag__ z}; }
 
 //////////////////////////////////////////////////
 // functions
