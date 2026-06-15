@@ -423,6 +423,11 @@ void init_gretl4py_gretl_matrix_py11 (py::module_ &m)
                            {
                                return self.cols();
                            })
+    .def_property_readonly("is_complex",
+                           [](const GretlMatrix &self)
+                           {
+                               return self.is_complex();
+                           })
     .def_property_readonly("numpy_view",
                            [](py::object self) -> py::array
                            {

@@ -455,8 +455,8 @@ def _to_pandas (self: _gretl.Matrix, view: bool = False) -> pd.DataFrame:
     back to the original matrix in all cases.
     """
 
-    rows_labels = self.rnameget() if len(self.rnameget()) else None
-    cols_labels = self.cnameget() if len(self.cnameget()) else None
+    rows_labels = self.rnameget() if not self.is_complex and len(self.rnameget()) else None
+    cols_labels = self.cnameget() if not self.is_complex and len(self.cnameget()) else None
 
     return pd.DataFrame(data = self.numpy_view if view else self.to_numpy(),
                         index = rows_labels, columns = cols_labels)
