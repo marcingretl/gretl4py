@@ -39,3 +39,8 @@ print(D)
 print("as Pandas DF")
 print(pd)
 print(pdv)
+
+# complex
+Z = gretl.Matrix(2, 3, 1.0, "complex")
+print(Z)
+

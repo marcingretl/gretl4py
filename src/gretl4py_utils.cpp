@@ -171,7 +171,7 @@ GretlTypesPtr convert_GretlType_to_GretlTypes (GretlType t, void *gr_obj_ptr,
 
             std::memcpy(reinterpret_cast<std::byte*>(mat.mutable_data()),
                         reinterpret_cast<const std::byte*>(gretl_mat->z),
-                        n * sizeof(std::complex<double>));
+                        gretl_mat->rows * gretl_mat->cols * sizeof(std::complex<double>));
             if ((std::min)(gretl_mat->rows, gretl_mat->cols) == 1) mat = mat.reshape({mat.size()});
             *res = mat;
         } else {

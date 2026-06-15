@@ -1765,9 +1765,13 @@ bool GretlMatrix::is_complex (void) const
 
 std::string GretlMatrix::repr_impl (void)
 {
-    gretl_matrix_print_to_prn(m_, nullptr, printer_.prn_ptr());
-
-    return printer_.get_buffer();
+    if (m_->is_complex) {
+        gretl_matrix_print(m_, nullptr);
+        return "";
+    } else {
+        gretl_matrix_print_to_prn(m_, nullptr, printer_.prn_ptr());
+        return printer_.get_buffer();
+    }
 }
 
 // ROWS == true: we deal we rows of the matrix
