@@ -1743,6 +1743,18 @@ GretlMatrix::~GretlMatrix (void)
     }
 }
 
+//
+// private methods
+//
+void GretlMatrix::check_bounds_ (int i, int j) const
+{
+    if (i < 0 || j < 0 || i >= m_->rows || j >= m_->cols)
+        handle_gretl_error(E_INVARG, "[i,j]", "[" + std::to_string(i) + "," + std::to_string(j) + "]");
+}
+
+//
+// public methods
+//
 double *GretlMatrix::val (void) const
 {
     return m_->val;
