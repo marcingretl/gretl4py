@@ -1846,6 +1846,32 @@ void GretlMatrix::rows_cols_names_set (const py::list &src) const
 template void GretlMatrix::rows_cols_names_set<true>(const py::list&) const;
 template void GretlMatrix::rows_cols_names_set<false>(const py::list&) const;
 
+double GretlMatrix::get_element (int i, int j) const
+{
+    //
+    // method for getting matrix element [i, j]
+    //
+    if (gretl_is_complex(m_)) {
+        //return gretl_cmatrix_get(m_, i, j);
+        throw std::runtime_error("not implemented for complex matrixes yet");
+    } else {
+        return gretl_matrix_get(m_, i, j);
+    }
+}
+
+void GretlMatrix::set_element (int i, int j, double val) const
+{
+    //
+    // method for setting 'val' as matrix element [i, j]
+    //
+    if (gretl_is_complex(m_)) {
+        //return gretl_cmatrix_set(m_, i, j, val);
+        throw std::runtime_error("not implemented for complex matrixes yet");
+    } else {
+        gretl_matrix_set(m_, i, j, val);
+    }
+}
+
 py::object GretlMatrix::to_numpy() const
 {
     //
@@ -1856,10 +1882,3 @@ py::object GretlMatrix::to_numpy() const
 
     return variant_to_pyobject(std::move(*res));
 }
-
-
-/*
- . *def("__getitem__", [](const gretl_matrix &m, std::pair<int,int> ij) {
- return m.val[ij.first + ij.second * m.rows];
- })
-*/
