@@ -1765,7 +1765,7 @@ bool GretlMatrix::is_complex (void) const
 
 std::string GretlMatrix::repr_impl (void)
 {
-    if (m_->is_complex) {
+    if (gretl_is_complex(m_)) {
         gretl_matrix_print(m_, nullptr);
         return "";
     } else {
@@ -1783,6 +1783,8 @@ py::list GretlMatrix::rows_cols_names_get (void) const
     //
     const char **orig_names;
     int n = 0;
+
+    if (gretl_is_complex(m_)) throw std::runtime_error("complex arguments/operands not supported");
 
     if constexpr (ROWS) {
         orig_names = gretl_matrix_get_rownames(m_);
@@ -1811,6 +1813,8 @@ void GretlMatrix::rows_cols_names_set (const py::list &src) const
     //
     strings_array_ptr names(nullptr, StringsArrayDeleter{});
     int n;
+
+    if (gretl_is_complex(m_)) throw std::runtime_error("complex arguments/operands not supported");
 
     if constexpr (ROWS) {
         if (src.empty()) {
@@ -1850,33 +1854,45 @@ void GretlMatrix::rows_cols_names_set (const py::list &src) const
 template void GretlMatrix::rows_cols_names_set<true>(const py::list&) const;
 template void GretlMatrix::rows_cols_names_set<false>(const py::list&) const;
 
-double GretlMatrix::get_element (int i, int j) const
+py::object GretlMatrix::get_element (int i, int j) const
 {
     //
     // method for getting matrix element [i, j]
     //
-    if (i < 0 || j < 0) handle_gretl_error(E_INVARG, "[i,j]", "[" + std::to_string(i) + "," + std::to_string(j) + "]");
+    if (i < 0 || j < 0 || i >= m_->rows || j >= m_->cols) handle_gretl_error(E_INVARG, "[i,j]", "[" + std::to_string(i) + "," + std::to_string(j) + "]");
     if (gretl_is_complex(m_)) {
-        //return gretl_cmatrix_get(m_, i, j);
-        throw std::runtime_error("not implemented for complex matrixes yet");
+        std::complex<double> z = gretl_cmatrix_get(m_, i, j);
+
+        return py::cast(z);
     } else {
-        return gretl_matrix_get(m_, i, j);
+        return py::cast(gretl_matrix_get(m_, i, j));
     }
 }
 
-void GretlMatrix::set_element (int i, int j, double val) const
+template <typename T>
+void GretlMatrix::set_element (int i, int j, T val)
 {
     //
     // method for setting 'val' as matrix element [i, j]
     //
-    if (i < 0 || j < 0) handle_gretl_error(E_INVARG, "[i,j]", "[" + std::to_string(i) + "," + std::to_string(j) + "]");
-    if (gretl_is_complex(m_)) {
-        //return gretl_cmatrix_set(m_, i, j, val);
-        throw std::runtime_error("not implemented for complex matrixes yet");
-    } else {
+    if (i < 0 || j < 0 || i >= m_->rows || j >= m_->cols) handle_gretl_error(E_INVARG, "[i,j]", "[" + std::to_string(i) + "," + std::to_string(j) + "]");
+
+    if constexpr (std::is_same_v<T, double>) {
+        if (gretl_is_complex(m_)) throw std::invalid_argument("matrix is complex, assign a complex number (e.g. 1+2j)");
         gretl_matrix_set(m_, i, j, val);
+    } else if constexpr (std::is_same_v<T, std::complex<double>>) {
+        if (!gretl_is_complex(m_)) throw std::invalid_argument("matrix is real, use double");
+        double _Complex z;
+
+        __real__ z = val.real();
+        __imag__ z = val.imag();
+        gretl_cmatrix_set(m_, i, j, z);
+    } else {
+        static_assert(always_false<T>, "GretlBundle::set_element(): unknown type");
     }
 }
+template void GretlMatrix::set_element<double>(int i, int j, double val);
+template void GretlMatrix::set_element<std::complex<double>>(int i, int j, std::complex<double> val);
 
 py::object GretlMatrix::to_numpy() const
 {

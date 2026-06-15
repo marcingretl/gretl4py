@@ -259,9 +259,10 @@ public:
     template <bool ROWS>
     void rows_cols_names_set (const py::list &src) const;
 
-    double get_element (int i, int j) const;
+    py::object get_element (int i, int j) const;
 
-    void set_element (int i, int j, double val) const;
+    template <typename T>
+    void set_element (int i, int j, T val);
 
     py::object to_numpy (void) const;
 };

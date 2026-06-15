@@ -404,9 +404,14 @@ void init_gretl4py_gretl_matrix_py11 (py::module_ &m)
              return self.get_element(ij.first, ij.second);
          }, py::arg("ij").none(false))
     .def("__setitem__",
-         [](const GretlMatrix &self, std::pair<int, int> ij, double value)
+         [](GretlMatrix &self, std::pair<int, int> ij, double value)
          {
-             self.set_element(ij.first, ij.second, value);
+             self.set_element<double>(ij.first, ij.second, value);
+         }, py::arg("ij").none(false), py::arg("value").none(false))
+    .def("__setitem__",
+         [](GretlMatrix &self, std::pair<int, int> ij, std::complex<double> value)
+         {
+             self.set_element<std::complex<double>>(ij.first, ij.second, value);
          }, py::arg("ij").none(false), py::arg("value").none(false))
     .def_property_readonly("rows",
                            [](const GretlMatrix &self)
