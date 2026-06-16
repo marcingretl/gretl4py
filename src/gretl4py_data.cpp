@@ -74,35 +74,6 @@ static void real_NumPyArray_to_gretl_matrix (const NumPyArrayView &view, double 
     }
 }
 
-/*
-static void complex_NumPyArray_to_gretl_matrix (const NumPyArrayView &view, gretl_matrix *dst)
-{
-    //
-    // Convert a NumPy array (T) to gretl_matrix (double _Complex*)
-    //
-    if (!dst->is_complex) throw std::invalid_argument("matrix must be complex");
-    const bool fast_path = view.NumPyArrayFC;
-
-    if (fast_path) {
-        const auto *src = reinterpret_cast<const std::byte*>(view.data);
-        std::memcpy(reinterpret_cast<std::byte*>(dst->z), src,
-                    view.rows * view.cols * sizeof(std::complex<double>));
-    } else {
-        const std::complex<double> *src = static_cast<const std::complex<double>*>(view.data);
-        for (int j=0; j<view.cols; ++j) {
-            for (int i=0; i<view.rows; ++i) {
-                auto val = src[i * view.row_stride + j * view.col_stride];
-                double _Complex z;
-
-                __real__ z = val.real();
-                __imag__ z = val.imag();
-                gretl_cmatrix_set(dst, i, j, z);
-            }
-        }
-    }
-}
-*/
-
 static void complex_NumPyArray_to_gretl_matrix (const NumPyArrayView &view, gretl_matrix *dst)
 {
     //
@@ -119,6 +90,11 @@ static void complex_NumPyArray_to_gretl_matrix (const NumPyArrayView &view, gret
             gretl_cmatrix_set(dst, i, j, z);
         }
     }
+}
+
+static std::complex<double> c_complex_to_std_complex (const double _Complex z)
+{
+    return {__real__ z, __imag__ z};
 }
 
 //////////////////////////////////////////////////
@@ -149,8 +125,11 @@ void NumPyArray_to_gretl_matrix (NumPyArrayView &view, T *dst, int offset, bool 
     } else if (view.dtype.is(py::dtype::of<int64_t>())) {
         real_NumPyArray_to_gretl_matrix<int64_t>(view, storage, offset, onecol);
     } else if (view.is_complex) {
-        if constexpr (!std::is_same_v<T, gretl_matrix>) throw std::runtime_error("NumPy complex: conversion to gretl__matrix only supported");
-        throw std::runtime_error("complex NumPy in progress");
+        if constexpr (std::is_same_v<T, gretl_matrix>) {
+            complex_NumPyArray_to_gretl_matrix(view, reinterpret_cast<gretl_matrix*>(dst));
+        } else {
+            throw std::runtime_error("Complex NumPy -> non-complex destination not supported");
+        }
     } else {
         throw std::runtime_error("Unsupported NumPy dtype for conversion.");
     }
@@ -491,7 +470,7 @@ void GretlDataset::free_dset_ (void)
 {
     if (dset) {
         destroy_dataset(dset);
-        dset = NULL;
+        dset = nullptr;
     }
 }
 
@@ -899,13 +878,13 @@ void GretlDataset::smpl (const std::string &startobs, const std::string &endobs,
         err_ = E_NODATA;
     } else if (opt_ & OPT_F) {
         err_ = check_smpl_full(opt_);
-        if (!err_) err_ = restore_full_sample(dset, NULL);
+        if (!err_) err_ = restore_full_sample(dset, nullptr);
     } else if (opt_ == OPT_T && startobs.empty()) {
-        err_ = perma_sample(dset, opt_, printer_.prn_ptr(), NULL);                                              // --permanent, by itself
+        err_ = perma_sample(dset, opt_, printer_.prn_ptr(), nullptr);                                              // --permanent, by itself
     } else if (opt_ & (OPT_U | OPT_X)) {
-        err_ = set_panel_sample(startobs.c_str(), endobs.c_str(), opt_, dset, NULL, printer_.prn_ptr());        // panel data: --unit or --time option
+        err_ = set_panel_sample(startobs.c_str(), endobs.c_str(), opt_, dset, nullptr, printer_.prn_ptr());        // panel data: --unit or --time option
     } else if (smpl_restrict(opt_)) {
-        err_ = restrict_sample(startobs.c_str(), var_list.get(), dset, NULL, opt_, printer_.prn_ptr(), NULL);   // --restrict, --dummy, etc.
+        err_ = restrict_sample(startobs.c_str(), var_list.get(), dset, nullptr, opt_, printer_.prn_ptr(), nullptr);// --restrict, --dummy, etc.
     } else if (startobs.empty() && endobs.empty()) {
         print_smpl(dset, get_full_length_n(), OPT_F, printer_.prn_ptr());                                       // no args given: give a report
         //print_smpl(dset, get_full_length_n(), OPT_NONE, GP_.prn_ptr());
@@ -1785,6 +1764,23 @@ GretlMatrix::GretlMatrix (int n) : m_(gretl_identity_matrix_new(n))
     if (!m_) handle_gretl_error(E_ALLOC);
 }
 
+GretlMatrix::GretlMatrix (const py::array &array)
+{
+    //
+    // from NumPy source
+    //
+    NumPyArrayView arr_view;
+
+    NumPyArray_extract(array, arr_view);
+    if (!arr_view.data) throw std::runtime_error("NumPy array: null pointer.");
+    if (arr_view.is_complex) {
+        m_ = gretl_cmatrix_new(arr_view.rows, arr_view.cols);
+    } else {
+        m_ = gretl_matrix_alloc(arr_view.rows, arr_view.cols);
+    }
+    if (!m_) handle_gretl_error(E_ALLOC);
+    NumPyArray_to_gretl_matrix<gretl_matrix>(arr_view, m_);
+}
 
 GretlMatrix::~GretlMatrix (void)
 {

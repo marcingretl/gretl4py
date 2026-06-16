@@ -244,6 +244,7 @@ public:
     GretlMatrix (int rows, int cols, const std::string &dist);              // random matrix
     GretlMatrix (double start, double end, double step = 1.0);              // sequential row vector
     GretlMatrix (int n);                                                    // identity matrix
+    GretlMatrix (const py::array &array);                                     // NumPy to GretlMatrix
     ~GretlMatrix (void);
 
     double *val (void) const;                                               // raw pointer to double storage

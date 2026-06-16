@@ -1,6 +1,5 @@
 import gretl
-
-# Pandas DF
+import numpy as np
 import pandas as pd
 
 A = gretl.Matrix(4, 4, 5)
@@ -43,4 +42,11 @@ print(pdv)
 # complex
 Z = gretl.Matrix(2, 3, 1.0, "complex")
 print(Z)
+
+nc1 = np.full((2, 3), 2.4 + 1j, dtype=np.complex128)
+nc2 = np.full((2, 3), 2.4 + 1j)
+Z21 = gretl.Matrix(nc1)
+Z22 = gretl.Matrix(nc2)
+print(Z21)
+print(Z22)
 
