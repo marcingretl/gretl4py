@@ -41,6 +41,7 @@ extern "C" {
 //////////////////////////////////////////////////
 // static functions
 //////////////////////////////////////////////////
+// T == source type
 template <typename T>
 static void real_NumPyArray_to_gretl_matrix (const NumPyArrayView &view, double *dst, int offset, bool onecol)
 {
@@ -73,6 +74,53 @@ static void real_NumPyArray_to_gretl_matrix (const NumPyArrayView &view, double 
     }
 }
 
+/*
+static void complex_NumPyArray_to_gretl_matrix (const NumPyArrayView &view, gretl_matrix *dst)
+{
+    //
+    // Convert a NumPy array (T) to gretl_matrix (double _Complex*)
+    //
+    if (!dst->is_complex) throw std::invalid_argument("matrix must be complex");
+    const bool fast_path = view.NumPyArrayFC;
+
+    if (fast_path) {
+        const auto *src = reinterpret_cast<const std::byte*>(view.data);
+        std::memcpy(reinterpret_cast<std::byte*>(dst->z), src,
+                    view.rows * view.cols * sizeof(std::complex<double>));
+    } else {
+        const std::complex<double> *src = static_cast<const std::complex<double>*>(view.data);
+        for (int j=0; j<view.cols; ++j) {
+            for (int i=0; i<view.rows; ++i) {
+                auto val = src[i * view.row_stride + j * view.col_stride];
+                double _Complex z;
+
+                __real__ z = val.real();
+                __imag__ z = val.imag();
+                gretl_cmatrix_set(dst, i, j, z);
+            }
+        }
+    }
+}
+*/
+
+static void complex_NumPyArray_to_gretl_matrix (const NumPyArrayView &view, gretl_matrix *dst)
+{
+    //
+    // Convert a NumPy std::complex<double> array to gretl_matrix (double _Complex*)
+    //
+    if (!dst->is_complex) throw std::invalid_argument("matrix must be complex");
+    const auto *src = static_cast<const std::complex<double>*>(view.data);
+
+    for (int j=0; j<view.cols; ++j) {
+        for (int i=0; i<view.rows; ++i) {
+            const auto val = src[i * view.row_stride + j * view.col_stride];
+            double _Complex z = { val.real(), val.imag() };
+
+            gretl_cmatrix_set(dst, i, j, z);
+        }
+    }
+}
+
 //////////////////////////////////////////////////
 // functions
 //////////////////////////////////////////////////
@@ -84,7 +132,7 @@ void NumPyArray_to_gretl_matrix (NumPyArrayView &view, T *dst, int offset, bool 
     // to storage available at *dst
     // offset here is used when we copy to DATASET
     //
-    double *storage = NULL;
+    double *storage = nullptr;
 
     if constexpr (std::is_same_v<T, gretl_matrix>) {
         storage = dst->val;
@@ -100,6 +148,9 @@ void NumPyArray_to_gretl_matrix (NumPyArrayView &view, T *dst, int offset, bool 
         real_NumPyArray_to_gretl_matrix<int>(view, storage, offset, onecol);
     } else if (view.dtype.is(py::dtype::of<int64_t>())) {
         real_NumPyArray_to_gretl_matrix<int64_t>(view, storage, offset, onecol);
+    } else if (view.is_complex) {
+        if constexpr (!std::is_same_v<T, gretl_matrix>) throw std::runtime_error("NumPy complex: conversion to gretl__matrix only supported");
+        throw std::runtime_error("complex NumPy in progress");
     } else {
         throw std::runtime_error("Unsupported NumPy dtype for conversion.");
     }
@@ -1900,10 +1951,8 @@ void GretlMatrix::set_element (int i, int j, T val)
         gretl_matrix_set(m_, i, j, val);
     } else if constexpr (std::is_same_v<T, std::complex<double>>) {
         if (!is_complex()) throw std::invalid_argument("matrix is real, use double");
-        double _Complex z;
+        double _Complex z = { val.real(), val.imag() };
 
-        __real__ z = val.real();
-        __imag__ z = val.imag();
         gretl_cmatrix_set(m_, i, j, z);
     } else {
         static_assert(always_false<T>, "GretlMatrix::set_element(): unknown type");

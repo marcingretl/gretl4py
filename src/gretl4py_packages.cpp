@@ -23,6 +23,7 @@
 #include "gretl4py_packages.h"
 #include "gretl4py_utils.h"
 #include "gretl4py_run_hansl.h"
+#include <gretl/gretl_matrix.h>
 extern "C" {
     #include <gretl/uservar.h>
     #include <gretl/gretl_func.h>

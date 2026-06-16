@@ -167,6 +167,7 @@ struct NumPyArrayView {
     py::dtype dtype;        // numpy dtype info
     py::array base_array;   // holds ownership
     bool is_double = false; // for fast path
+    bool is_complex = false;
     bool NumPyArrayFC = false;
     int rows = 0;
     int cols = 0;
