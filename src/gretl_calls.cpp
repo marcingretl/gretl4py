@@ -77,6 +77,7 @@ void gretl4py_init (void)
     if (const char* env = std::getenv("GRETL_HOME"); env) {
         if (int err = gretl_set_path_by_name("gretldir", env)) handle_gretl_error(err);
         std::filesystem::path dotdir_path = std::filesystem::path(std::string(env)) / "tmp";
+
         if (int err = gretl_set_path_by_name("dotdir", dotdir_path.string().c_str())) handle_gretl_error(err);
     }
 
@@ -103,7 +104,7 @@ void gretl4py_cleanup (void)
 
     // make sure all C++ objects are destroyed while libgretl still a lives
     for (const auto &name : user_vars) {
-        err = user_var_delete_by_name(name.c_str(), NULL);
+        err = user_var_delete_by_name(name.c_str(), nullptr);
         if (err) {
             std::cerr << "Failed to delete '" + name + "': ";
             std::cerr << errmsg_get_with_default(err) << std::endl;
@@ -126,7 +127,7 @@ GretlBundlePtr about (bool do_print)
     GretlBundlePtr gb_strings = std::make_shared<GretlBundle>();
     GretlBundlePtr res = std::make_shared<GretlBundle>();
     std::string mod_ver, lg_ver, py11_ver;
-    gretl_bundle *b = NULL;
+    gretl_bundle *b = nullptr;
     int err = 0;
 
     b = get_sysinfo_bundle(&err);
@@ -229,7 +230,7 @@ GretlPrint::GretlPrint (PrnType prn_type) : prn_type_(prn_type)
 
 GretlPrint::~GretlPrint (void)
 {
-    if (prn_ != NULL) gretl_print_destroy(prn_);
+    if (prn_ != nullptr) gretl_print_destroy(prn_);
 }
 
 PRN *GretlPrint::prn_ptr (void)
@@ -247,7 +248,7 @@ void GretlPrint::print (void)
 {
     const char *buf = gretl_print_get_buffer(prn_);
 
-    if (buf != NULL && *buf != '\0') py::print(buf); //as of 2025-08-22 we don't print empty line
+    if (buf != nullptr && *buf != '\0') py::print(buf); //as of 2025-08-22 we don't print empty line
 }
 
 const char *GretlPrint::get_buffer (void)
@@ -313,8 +314,8 @@ void do_set (const std::string &key, const std::string &value, const py::kwargs 
     gretlopt opt = unpack_kwargs_command(SET, dataset, kwargs);
 
     // we do the job
-    err = execute_set(key.empty() ? NULL : key.c_str(), value.empty() ? NULL : value.c_str(),
-                        dataset ? dataset->dset : NULL, opt, global_printer.prn_ptr());
+    err = execute_set(key.empty() ? nullptr : key.c_str(), value.empty() ? nullptr : value.c_str(),
+                        dataset ? dataset->dset : nullptr, opt, global_printer.prn_ptr());
     global_printer.print();
     if (err) handle_gretl_error(err);
 }
@@ -371,7 +372,7 @@ void do_gretl_print (const std::string &varlist, const py::kwargs &kwargs)
 
         if (varlist.empty()) {
             // "print " i.e. without options given
-            varlist_ptr.reset(full_var_list(dataset->dset, NULL));
+            varlist_ptr.reset(full_var_list(dataset->dset, nullptr));
         } else {
             varlist_ptr = list_from_formula(varlist, dataset->dset, err);
         }
@@ -392,17 +393,17 @@ void do_gretl_print (const std::string &varlist, const py::kwargs &kwargs)
         varlist_ptr = make_varlist();
     } else {
         // we look for variables in dataset _only_ if there is no uservar
-        if (get_user_var_by_name(varlist.c_str()) == NULL && dataset) varlist_ptr = make_varlist();
+        if (get_user_var_by_name(varlist.c_str()) == nullptr && dataset) varlist_ptr = make_varlist();
     }
     if (err) handle_gretl_error(err);
 
     // based on 'interact.c' (but we don't allow for string literals)
     if (opt & OPT_L) {
-        err = printdata(NULL, varlist.c_str(), dataset ? dataset->dset : NULL,
+        err = printdata(nullptr, varlist.c_str(), dataset ? dataset->dset : nullptr,
                         OPT_NONE, global_printer.prn_ptr());
     } else {
-        err = printdata(varlist_ptr.get(), varlist_ptr ? NULL : varlist.c_str(),
-                        dataset ? dataset->dset : NULL, opt,
+        err = printdata(varlist_ptr.get(), varlist_ptr ? nullptr : varlist.c_str(),
+                        dataset ? dataset->dset : nullptr, opt,
                         global_printer.prn_ptr());
     }
     global_printer.print();
@@ -443,11 +444,11 @@ void do_gretl_varlist (const py::kwargs &kwargs)
 
     // we o the job (based on interact.c)
     if (opt & OPT_T) {
-        list_user_vars_of_type(dataset ? dataset->dset : NULL, global_printer.prn_ptr());
+        list_user_vars_of_type(dataset ? dataset->dset : nullptr, global_printer.prn_ptr());
     } else if (opt & OPT_S) {
         print_scalars(global_printer.prn_ptr());
     } else if (opt & OPT_A) {
-        list_ok_dollar_vars(dataset ? dataset->dset : NULL, global_printer.prn_ptr());
+        list_ok_dollar_vars(dataset ? dataset->dset : nullptr, global_printer.prn_ptr());
     } else {
         if (!dataset) handle_gretl_error(E_NODATA);
         list_series(dataset->dset, opt, global_printer.prn_ptr());
@@ -614,7 +615,6 @@ void gretl_hansl_execute (const std::string &script)
         std::filesystem::path path{script};
 
         if (!std::filesystem::exists(path) || !std::filesystem::is_regular_file(path)) handle_gretl_error(E_FOPEN, script);
-
         err = gretl_execute_script<std::filesystem::path>(path);
     } else {
         err = gretl_execute_script<std::string>(script);
@@ -841,18 +841,18 @@ void do_gretl_delete_variables (const std::string &varname, const py::kwargs &kw
     if (varname.empty() && !(opt & OPT_T)) handle_gretl_error(E_ARGS);
 
     // we look for variables in GD _only_ if there is no uservar
-    if (!varname.empty() && get_user_var_by_name(varname.c_str()) == NULL && dataset) var_list = list_from_formula(varname, dataset->dset, err);
+    if (!varname.empty() && get_user_var_by_name(varname.c_str()) == nullptr && dataset) var_list = list_from_formula(varname, dataset->dset, err);
 
     // we do the job
     if (opt & OPT_T) {
         for (const auto &name : user_vars) {
             if (!err && (gretl_type_get_name(user_var_get_type_by_name(name.c_str())) == type_to_delete)) to_erase.push_back(name);
         }
-        err = gretl_delete_variables(NULL, NULL, opt, dataset->dset, NULL, global_printer.prn_ptr());
+        err = gretl_delete_variables(nullptr, nullptr, opt, dataset->dset, nullptr, global_printer.prn_ptr());
     } else {
         if (!var_list && !dataset) throw std::invalid_argument("'" + varname + "': series does not exist");
-        err = gretl_delete_variables(var_list.get(), var_list ? NULL : varname.c_str(), opt, dataset->dset,
-                                     var_list ? &renumber : NULL, global_printer.prn_ptr());
+        err = gretl_delete_variables(var_list.get(), var_list ? nullptr : varname.c_str(), opt, dataset->dset,
+                                     var_list ? &renumber : nullptr, global_printer.prn_ptr());
     }
     global_printer.print();
     if (err) handle_gretl_error(err);
@@ -874,7 +874,7 @@ py::object do_get_accessor (const std::string &name, GretlDatasetPtr dataset, vo
     // here we get accessor in the context of OBJ_TYPE, dataset, and model
     //
     int err = 0;
-    auto res = gretl_generate_gretl_object(name.c_str(), err, OBJ_TYPE, dataset ? dataset->dset : NULL, model);
+    auto res = gretl_generate_gretl_object(name.c_str(), err, OBJ_TYPE, dataset ? dataset->dset : nullptr, model);
 
     if (err) handle_gretl_error(err);
 
@@ -903,22 +903,22 @@ void genr (const std::string &name, const T &value)
 
     if constexpr (std::is_same_v<T, py::array>) {
         uv_type = GRETL_TYPE_MATRIX;
-        uv_ptr = static_cast<gretl_matrix*>(NULL);
+        uv_ptr = static_cast<gretl_matrix*>(nullptr);
         NumPyArrayView view;
 
         NumPyArray_extract(value, view);
         uv_ptr = gretl_matrix_alloc(view.rows, view.cols);
-        if (uv_ptr == NULL) handle_gretl_error(E_ALLOC);
+        if (uv_ptr == nullptr) handle_gretl_error(E_ALLOC);
         NumPyArray_to_gretl_matrix<gretl_matrix>(view, static_cast<gretl_matrix*>(uv_ptr));
     } else if constexpr (std::is_same_v<T, double> || std::is_same_v<T, int>) {
         uv_type = GRETL_TYPE_DOUBLE;
         uv_ptr = std::malloc(sizeof(double));
-        if (uv_ptr == NULL) handle_gretl_error(E_ALLOC);
+        if (uv_ptr == nullptr) handle_gretl_error(E_ALLOC);
         *static_cast<double*>(uv_ptr) = static_cast<double>(value);
     } else if constexpr (std::is_same_v<T, std::string>) {
         uv_type = GRETL_TYPE_STRING;
         uv_ptr = std::malloc(value.size() + 1);
-        if (uv_ptr == NULL) handle_gretl_error(E_ALLOC);
+        if (uv_ptr == nullptr) handle_gretl_error(E_ALLOC);
         std::strcpy(static_cast<char*>(uv_ptr), value.c_str());
     } else {
         static_assert(always_false<T>, "genr(): unknown type");
@@ -1138,19 +1138,19 @@ GretlTypesPtr gretl_generate_gretl_object (const char *s, int &err, GretlObjType
     //
     GretlTypesPtr res;                      // gretl4py type
     GretlType t = GRETL_TYPE_NONE;          // libgretl type
-    gretl_dataset_ptr dset_ptr{nullptr};    // used when dset == NULL
+    gretl_dataset_ptr dset_ptr{nullptr};    // used when dset == nullptr
     void *resp;
 
     // we allocate dset if we didn't get one
-    if (dset == NULL) {
+    if (dset == nullptr) {
         dset_ptr.reset(datainfo_new());
         dset = dset_ptr.get();
     }
 
     // we grab object from stack (note: if model was passed we use it)
-    if (model != NULL) set_genr_model(model, obj_type);
+    if (model != nullptr) set_genr_model(model, obj_type);
     resp = generate_gretl_object(s, dset, &t, &err);
-    if (model != NULL) unset_genr_model();
+    if (model != nullptr) unset_genr_model();
     if (!err) res = convert_GretlType_to_GretlTypes(t, resp, dset->n, err);
     if (err) handle_gretl_error(err);
 
@@ -1176,12 +1176,12 @@ void gretl_generate (const std::string &formula, GretlDatasetPtr dataset, const 
 
     // determine whether to use an explicit name or parse it from formula
     if (name.empty()) {
-        err = generate(formula.c_str(), dataset ? dataset->dset : NULL, GR_TYPE, OPT_NONE, global_printer.prn_ptr());
+        err = generate(formula.c_str(), dataset ? dataset->dset : nullptr, GR_TYPE, OPT_NONE, global_printer.prn_ptr());
         if constexpr (GR_TYPE != GRETL_TYPE_SERIES) varname = extract_varname(formula);
     } else {
         const std::string expr = name + "=" + formula;
 
-        err = generate(expr.c_str(), dataset ? dataset->dset : NULL, GR_TYPE, OPT_NONE, global_printer.prn_ptr());
+        err = generate(expr.c_str(), dataset ? dataset->dset : nullptr, GR_TYPE, OPT_NONE, global_printer.prn_ptr());
         if constexpr (GR_TYPE != GRETL_TYPE_SERIES) varname = name;
     }
     if (err) handle_gretl_error(err);
