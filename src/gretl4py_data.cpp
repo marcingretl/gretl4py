@@ -43,7 +43,7 @@ extern "C" {
 //////////////////////////////////////////////////
 // T == source type
 template <typename T>
-static void real_NumPyArray_to_gretl_matrix (const NumPyArrayView &view, double *dst, int offset, bool onecol)
+static void real_NumPyArray_to_gretl_storage (const NumPyArrayView &view, double *dst, int offset, bool onecol)
 {
     //
     // Convert a NumPy array (T) to gretl_matrix (double*).
@@ -101,7 +101,7 @@ static std::complex<double> c_complex_to_std_complex (const double _Complex z)
 // functions
 //////////////////////////////////////////////////
 template <typename T>
-void NumPyArray_to_gretl_matrix (NumPyArrayView &view, T *dst, int offset, bool onecol)
+void NumPyArray_to_gretl_storage (NumPyArrayView &view, T *dst, int offset, bool onecol)
 {
     //
     // here we copy contents of some NumPy array described by &view
@@ -117,13 +117,13 @@ void NumPyArray_to_gretl_matrix (NumPyArrayView &view, T *dst, int offset, bool 
     }
 
     if (view.is_double) {
-        real_NumPyArray_to_gretl_matrix<double>(view, storage, offset, onecol);
+        real_NumPyArray_to_gretl_storage<double>(view, storage, offset, onecol);
     } else if (view.dtype.is(py::dtype::of<float>())) {
-        real_NumPyArray_to_gretl_matrix<float>(view, storage, offset, onecol);
+        real_NumPyArray_to_gretl_storage<float>(view, storage, offset, onecol);
     } else if (view.dtype.is(py::dtype::of<int>())) {
-        real_NumPyArray_to_gretl_matrix<int>(view, storage, offset, onecol);
+        real_NumPyArray_to_gretl_storage<int>(view, storage, offset, onecol);
     } else if (view.dtype.is(py::dtype::of<int64_t>())) {
-        real_NumPyArray_to_gretl_matrix<int64_t>(view, storage, offset, onecol);
+        real_NumPyArray_to_gretl_storage<int64_t>(view, storage, offset, onecol);
     } else if (view.is_complex) {
         if constexpr (std::is_same_v<T, gretl_matrix>) {
             complex_NumPyArray_to_gretl_matrix(view, reinterpret_cast<gretl_matrix*>(dst));
@@ -134,7 +134,7 @@ void NumPyArray_to_gretl_matrix (NumPyArrayView &view, T *dst, int offset, bool 
         throw std::runtime_error("Unsupported NumPy dtype for conversion.");
     }
 }
-template void NumPyArray_to_gretl_matrix<gretl_matrix>(NumPyArrayView&, gretl_matrix*, int, bool);
+template void NumPyArray_to_gretl_storage<gretl_matrix>(NumPyArrayView&, gretl_matrix*, int, bool);
 
 //////////////////////////////////////////////////
 // classes
@@ -245,7 +245,7 @@ GretlDataset::GretlDataset (const py::dict &pydict) : id_(next_obj_id_++)
     err_ = allocate_Z(dset, OPT_NONE);
     if (err_) handle_gretl_error(err_);
     for (int i=1; i<dset->v; i++) {
-        NumPyArray_to_gretl_matrix<double>(arr_view, dset->Z[i], i-1, true);
+        NumPyArray_to_gretl_storage<double>(arr_view, dset->Z[i], i-1, true);
     }
     dset->t1 = 0;
     dset->t2 = dset->n-1;
@@ -672,7 +672,7 @@ void GretlDataset::add_series (const py::array &data, const std::string &name)
     gretl_double_ptr data_copy(static_cast<double*>(std::malloc(n * sizeof(double))));
 
     // actual work
-    NumPyArray_to_gretl_matrix<double>(view, data_copy.get(), 0, true);
+    NumPyArray_to_gretl_storage<double>(view, data_copy.get(), 0, true);
     add_or_replace_allocated_series_(std::move(data_copy), name, n);
 }
 
@@ -1658,7 +1658,7 @@ void GretlBundle::set_element (const std::string &key, const T &t)
         if (!arr_view.data) throw std::runtime_error("NumPy array: null pointer.");
         mat.reset(gretl_matrix_alloc(arr_view.rows, arr_view.cols));
 
-        NumPyArray_to_gretl_matrix<gretl_matrix>(arr_view, mat.get());
+        NumPyArray_to_gretl_storage<gretl_matrix>(arr_view, mat.get());
         err_ = gretl_bundle_donate_data(b_, key.c_str(), mat.release(), GRETL_TYPE_MATRIX);
     } else if constexpr (std::is_same_v<T, GretlBundlePtr>) {
         err_ = gretl_bundle_set_data(b_, key.c_str(), t->get_ptr(), GRETL_TYPE_BUNDLE);
@@ -1779,7 +1779,7 @@ GretlMatrix::GretlMatrix (const py::array &array)
         m_ = gretl_matrix_alloc(arr_view.rows, arr_view.cols);
     }
     if (!m_) handle_gretl_error(E_ALLOC);
-    NumPyArray_to_gretl_matrix<gretl_matrix>(arr_view, m_);
+    NumPyArray_to_gretl_storage<gretl_matrix>(arr_view, m_);
 }
 
 GretlMatrix::~GretlMatrix (void)

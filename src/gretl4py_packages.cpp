@@ -341,7 +341,7 @@ void GretlPackage::unpack_kwargs_package_ (const std::string &func_name, fncall 
             NumPyArray_extract(arr, arr_view);
             if (!arr_view.data) throw std::runtime_error("NumPy array: null pointer.");
             mat.reset(gretl_matrix_alloc(arr_view.rows, arr_view.cols));
-            NumPyArray_to_gretl_matrix<gretl_matrix>(arr_view, mat.get());
+            NumPyArray_to_gretl_storage<gretl_matrix>(arr_view, mat.get());
             err_ = push_function_arg(func_call, key.c_str(), NULL, GRETL_TYPE_MATRIX, mat.release());
             if (err_) handle_gretl_error(err_);
             continue;

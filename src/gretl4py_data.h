@@ -35,7 +35,7 @@ namespace py = pybind11;
 // functions
 //////////////////////////////////////////////////
 template <typename T>
-void NumPyArray_to_gretl_matrix (NumPyArrayView &view, T *dst, int offset = 0, bool onecol = false);
+void NumPyArray_to_gretl_storage (NumPyArrayView &view, T *dst, int offset = 0, bool onecol = false);
 
 //////////////////////////////////////////////////
 // classes

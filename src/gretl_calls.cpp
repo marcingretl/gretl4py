@@ -791,7 +791,7 @@ py::object matrix_cov_corr (const py::array &X, int dfcorr)
 
     // we fill-up 'mat'
     mat.reset(gretl_matrix_alloc(arr_view.rows, arr_view.cols));
-    NumPyArray_to_gretl_matrix<gretl_matrix>(arr_view, mat.get());
+    NumPyArray_to_gretl_storage<gretl_matrix>(arr_view, mat.get());
 
     // we do the job
     if constexpr (FI == GretlFunIndex::F_MCOV) {
@@ -909,7 +909,7 @@ void genr (const std::string &name, const T &value)
         NumPyArray_extract(value, view);
         uv_ptr = gretl_matrix_alloc(view.rows, view.cols);
         if (uv_ptr == nullptr) handle_gretl_error(E_ALLOC);
-        NumPyArray_to_gretl_matrix<gretl_matrix>(view, static_cast<gretl_matrix*>(uv_ptr));
+        NumPyArray_to_gretl_storage<gretl_matrix>(view, static_cast<gretl_matrix*>(uv_ptr));
     } else if constexpr (std::is_same_v<T, double> || std::is_same_v<T, int>) {
         uv_type = GRETL_TYPE_DOUBLE;
         uv_ptr = std::malloc(sizeof(double));
