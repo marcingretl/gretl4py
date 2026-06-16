@@ -1858,7 +1858,7 @@ void GretlMatrix::rows_cols_names_set (const py::list &src) const
     names.reset(dst);
 
     // we do the job
-    for (int i = 0; i < n; ++i) {
+    for (int i=0; i<n; ++i) {
         std::string s = py::cast<std::string>(src[i]);
 
         std::strncpy(names.get()[i], s.c_str(), OBSLEN - 1);

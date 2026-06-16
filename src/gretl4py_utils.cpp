@@ -385,7 +385,7 @@ T c_style_char_array_to_container (c_str_array src, int size)
     std::vector<std::string> dst;
 
     dst.reserve(size);
-    for (int i = 0; i < size; ++i) {
+    for (int i=0; i<size; ++i) {
         src[i] ? dst.emplace_back(src[i]) :dst.emplace_back();
     }
 
