@@ -1762,7 +1762,7 @@ double *GretlMatrix::val (void) const
 
 double _Complex *GretlMatrix::z (void) const
 {
-    if (!gretl_is_complex(m_)) throw std::runtime_error("not a complex matrix");
+    if (!is_complex()) throw std::runtime_error("not a complex matrix");
 
     return m_->z;
 }
@@ -1777,14 +1777,14 @@ int GretlMatrix::cols (void) const
     return m_->cols;
 }
 
-bool GretlMatrix::is_complex (void) const
+[[nodiscard]] bool GretlMatrix::is_complex (void) const noexcept
 {
-    return gretl_is_complex(m_);
+    return m_->is_complex != 0;
 }
 
 std::string GretlMatrix::repr_impl (void)
 {
-    if (gretl_is_complex(m_)) {
+    if (is_complex()) {
         gretl_matrix_print(m_, nullptr);
         return "";
     } else {
@@ -1803,7 +1803,7 @@ py::list GretlMatrix::rows_cols_names_get (void) const
     const char **orig_names;
     int n = 0;
 
-    if (gretl_is_complex(m_)) throw std::runtime_error("complex arguments/operands not supported");
+    if (is_complex()) throw std::runtime_error("complex arguments/operands not supported");
 
     if constexpr (ROWS) {
         orig_names = gretl_matrix_get_rownames(m_);
@@ -1833,7 +1833,7 @@ void GretlMatrix::rows_cols_names_set (const py::list &src) const
     strings_array_ptr names(nullptr, StringsArrayDeleter{});
     int n;
 
-    if (gretl_is_complex(m_)) throw std::runtime_error("complex arguments/operands not supported");
+    if (is_complex()) throw std::runtime_error("complex arguments/operands not supported");
 
     if constexpr (ROWS) {
         if (src.empty()) {
@@ -1858,7 +1858,7 @@ void GretlMatrix::rows_cols_names_set (const py::list &src) const
     names.reset(dst);
 
     // we do the job
-    for (int i=0; i<n; ++i) {
+    for (int i = 0; i < n; ++i) {
         std::string s = py::cast<std::string>(src[i]);
 
         std::strncpy(names.get()[i], s.c_str(), OBSLEN - 1);
@@ -1880,7 +1880,7 @@ py::object GretlMatrix::get_element (int i, int j) const
     //
     check_bounds_(i, j);
 
-    if (gretl_is_complex(m_)) {
+    if (is_complex()) {
         return py::cast(c_complex_to_std_complex(gretl_cmatrix_get(m_, i, j)));
     } else {
         return py::cast(gretl_matrix_get(m_, i, j));
@@ -1896,10 +1896,10 @@ void GretlMatrix::set_element (int i, int j, T val)
     check_bounds_(i, j);
 
     if constexpr (std::is_same_v<T, double>) {
-        if (gretl_is_complex(m_)) throw std::invalid_argument("matrix is complex, assign a complex number (e.g. 1+2j)");
+        if (is_complex()) throw std::invalid_argument("matrix is complex, assign a complex number (e.g. 1+2j)");
         gretl_matrix_set(m_, i, j, val);
     } else if constexpr (std::is_same_v<T, std::complex<double>>) {
-        if (!gretl_is_complex(m_)) throw std::invalid_argument("matrix is real, use double");
+        if (!is_complex()) throw std::invalid_argument("matrix is real, use double");
         double _Complex z;
 
         __real__ z = val.real();

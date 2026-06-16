@@ -245,15 +245,15 @@ public:
     GretlMatrix (int n);                                                    // identity matrix
     ~GretlMatrix (void);
 
-    double *val (void) const;                                               // raw pointer to gretl_matrix storage
+    double *val (void) const;                                               // raw pointer to double storage
 
-    double _Complex *z (void) const;                                        // raw pointer to comlex storage
+    double _Complex *z (void) const;                                        // raw pointer to complex storage
 
     int rows (void) const;
 
     int cols (void) const;
 
-    bool is_complex (void) const;
+    [[nodiscard]] bool is_complex (void) const noexcept;
 
     std::string repr_impl (void);                                           // gretl_matrix printing via __repr__
 
