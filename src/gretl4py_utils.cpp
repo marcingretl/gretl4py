@@ -182,10 +182,11 @@ GretlTypesPtr convert_GretlType_to_GretlTypes (GretlType t, void *gr_obj_ptr,
             if ((std::min)(gretl_mat->rows, gretl_mat->cols) == 1) mat = mat.reshape({mat.size()});
             *res = mat;
         }
+        // *res = std::make_unique<GretlMatrix>(static_cast<gretl_matrix*>(gr_obj_ptr));
         break;
     }
     case GRETL_TYPE_BUNDLE: {
-        *res = std::make_shared<GretlBundle>(GretlBundle(static_cast<gretl_bundle*>(gr_obj_ptr))); // as of 2025-08-15 we return GretlBundlePtr
+        *res = std::make_shared<GretlBundle>(GretlBundle(static_cast<gretl_bundle*>(gr_obj_ptr)));
         break;
     }
     case GRETL_TYPE_ARRAY:
