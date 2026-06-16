@@ -1782,6 +1782,11 @@ GretlMatrix::GretlMatrix (const py::array &array)
     NumPyArray_to_gretl_storage<gretl_matrix>(arr_view, m_);
 }
 
+GretlMatrix::GretlMatrix (const gretl_matrix* src) : m_(gretl_matrix_copy(src))
+{
+    if (!m_) handle_gretl_error(E_ALLOC);
+}
+
 GretlMatrix::~GretlMatrix (void)
 {
     if (m_) {
