@@ -1915,8 +1915,8 @@ void GretlMatrix::rows_cols_names_set (const py::list &src) const
     for (int i=0; i<n; ++i) {
         std::string s = py::cast<std::string>(src[i]);
 
-        std::strncpy(names.get()[i], s.c_str(), OBSLEN - 1);
-        names.get()[i][OBSLEN - 1] = '\0';
+        std::strncpy(names.get()[i], s.c_str(), OBSLEN-1);
+        names.get()[i][OBSLEN-1] = '\0';
     }
     if constexpr (ROWS) {
         gretl_matrix_set_rownames(m_, names.release());
