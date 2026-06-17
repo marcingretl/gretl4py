@@ -1887,6 +1887,7 @@ void GretlMatrix::rows_cols_names_set (const py::list &src) const
 
     if (is_complex()) throw std::runtime_error("complex arguments/operands not supported");
 
+    // for empty list, we erase rows/cols names, otherwise we record the length
     if constexpr (ROWS) {
         if (src.empty()) {
             gretl_matrix_set_rownames(m_, nullptr);
@@ -1903,6 +1904,7 @@ void GretlMatrix::rows_cols_names_set (const py::list &src) const
         }
     }
 
+    // we allocate char** storage (unique_ptr)
     if (src.size() != static_cast<size_t>(n)) handle_gretl_error(E_INVARG, "names", "supplied list should be of length: " + std::to_string(n));
     char **dst = strings_array_new_with_length(n, OBSLEN);
     if (dst == nullptr) handle_gretl_error(E_ALLOC);

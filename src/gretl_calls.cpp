@@ -442,7 +442,7 @@ void do_gretl_varlist (const py::kwargs &kwargs)
 
     auto opt = unpack_kwargs_command(VARLIST, dataset, kwargs);
 
-    // we o the job (based on interact.c)
+    // we do the job (based on interact.c)
     if (opt & OPT_T) {
         list_user_vars_of_type(dataset ? dataset->dset : nullptr, global_printer.prn_ptr());
     } else if (opt & OPT_S) {

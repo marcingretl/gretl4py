@@ -381,6 +381,7 @@ T c_style_char_array_to_container (c_str_array src, int size)
 {
     //
     // convenient function which extract char** to c++/python container
+    // note: this function should be called via adapters put below
     //
     if (size <= 0 || src == nullptr) throw std::runtime_error("invalid char array size");
     std::vector<std::string> dst;
@@ -400,6 +401,7 @@ T c_style_char_array_to_container (c_str_array src, int size)
 }
 
 // adapters to c_style_char_array_to_container()
+// this is because const char** and char** are treated by C++ compiler in a different way
 template <typename T>
 T c_style_char_array_to_container (char **src, int size)
 {
