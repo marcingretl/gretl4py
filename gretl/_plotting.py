@@ -101,7 +101,7 @@ def _set_matrices_for_plot(model: "GretlModel", accessor: str, eqn: int) -> dict
     if len(y_name) == 0:
         raise ValueError("No fitted series found")
 
-    # we get yhat. uhat values
+    # we get yhat uhat values
     if isinstance(model, _gretl.Model_NSE):
         if accessor == "$yhat":
             data = model.yhat
@@ -111,6 +111,8 @@ def _set_matrices_for_plot(model: "GretlModel", accessor: str, eqn: int) -> dict
             raise ValueError(f"Unknown accessor: {accessor}")
     else:
         data = model.get_accessor(accessor)
+        if isinstance(data, _gretl.Matrix):
+            data = data.to_numpy()
     if not isinstance(data, np.ndarray):
         raise ValueError("Error in getting data for plot")
 

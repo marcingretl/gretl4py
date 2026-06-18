@@ -164,7 +164,7 @@ GretlTypesPtr convert_GretlType_to_GretlTypes (GretlType t, void *gr_obj_ptr,
         break;
     }
     case GRETL_TYPE_MATRIX: {
-        *res = std::make_unique<GretlMatrix>(static_cast<gretl_matrix*>(gr_obj_ptr));
+        *res = std::make_shared<GretlMatrix>(static_cast<gretl_matrix*>(gr_obj_ptr));
         break;
     }
     case GRETL_TYPE_BUNDLE: {
@@ -249,6 +249,11 @@ PythonArgInfo inspect_pyobject (py::handle obj)
     if (IS_PYGRETLBUNDLE(obj)) {
         info.gtype = GRETL_TYPE_BUNDLE;
         info.pytype = "GretlBundle";
+        return info;
+    }
+    if (IS_PYGRETLMATRIX(obj)) {
+        info.gtype = GRETL_TYPE_MATRIX;
+        info.pytype = "GretlMatrix";
         return info;
     }
     if (is_pynumarray(obj)) {

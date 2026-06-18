@@ -55,7 +55,7 @@ def run_example():
 
     # coefficients estimates
     for i in range(0,3):
-        print(f'b{i} = {m1.coeff[i]:.5} ({m1.stderr[i]:.4})')
+        print(f'b{i} = {m1.coeff[i,0]:.5} ({m1.stderr[i,0]:.4})')
 
     # SSE
     print(f'SSE = {m1.ess:.7}')
@@ -73,7 +73,7 @@ def run_example():
     # covariance matrix
     print(f'\ncovariance matrix:\n{m1.vcv}')                                        # (5.10)
     for i in range(0,3):
-        print(f'var(b{i}) = {m1.vcv[i][i]:.5}')
+        print(f'var(b{i}) = {m1.vcv[i,i]:.5}')
 
     ############################################
     # 5.4. Interval Estimation
@@ -81,8 +81,8 @@ def run_example():
     print("\n5.4. Interval Estimation")
     print("\n5.4.1. Interval Estimation for the Single Coefficient")
     critval = gretl.critical('t', p=0.025, params=m1.df)
-    print(f'({m1.coeff[1] - critval * m1.stderr[1]:.5}, \
-    {m1.coeff[1] + critval * m1.stderr[1]:.5})')                                    # (5.16)
+    print(f'({m1.coeff[1,0] - critval * m1.stderr[1,0]:.5}, \
+    {m1.coeff[1,0] + critval * m1.stderr[1,0]:.5})')                                # (5.16)
 
     ############################################
     # 5.5. Hypothesis Testing
@@ -93,7 +93,7 @@ def run_example():
     print(f'-0.2*b[2] - 0.5*b[3] > 0, pvalue: {m1.restrictions[-1]['pvalue']/2 : .3f}')
     b = m1.coeff
     vcv = m1.vcv
-    t = (-0.2 * b[1] - 0.5 * b[2]) / math.sqrt((-0.2)**2 * vcv[1][1] + (-0.5)**2 * vcv[2][2] + 2 * -0.2 * -0.5 * vcv[1][2])
+    t = (-0.2 * b[1,0] - 0.5 * b[2,0]) / math.sqrt((-0.2)**2 * vcv[1,1] + (-0.5)**2 * vcv[2,2] + 2 * -0.2 * -0.5 * vcv[1,2])
     pval = gretl.pvalue(c='t', x=t, params=72)
     print(f't = {t:.3f}, pvalue = {pval:.3f}')
 

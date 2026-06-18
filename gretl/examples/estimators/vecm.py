@@ -31,7 +31,7 @@ def run_example():
     # add EC term to dataset
     ec_name = m1.save_ec_term(nr=1)
     print(f'EC term added as: {ec_name}')
-    
+
     # RESTRICT
     print("\n****************************")
     print("restrict")
@@ -58,15 +58,15 @@ def run_example():
 
     print("\nirf3:")
     print(m1.irfs[-1])
-    
+
     # IRFs plots (requires matplotlib)
     try:
         import matplotlib.pyplot as plt
 
         irf_res = m1.irfs[-1]
-        y = irf_res['results'][:, 0]
-        l = irf_res['results'][:, 1]
-        u = irf_res['results'][:, 2]
+        y = irf_res['results'].numpy_view[:, 0]
+        l = irf_res['results'].numpy_view[:, 1]
+        u = irf_res['results'].numpy_view[:, 2]
         x = list(range(1, len(y) + 1))
         shock_name = irf_res['shock_name']
         target_name = irf_res['target_name']

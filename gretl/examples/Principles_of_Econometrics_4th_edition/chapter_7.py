@@ -96,6 +96,8 @@ def run_example():
   star.sample("small == 1", restrict=True, replace=True)
   gretl.summary(varlist='v', simple=True)
   # gretl built-in way
+  star.discrete('regular')
+  star.discrete('small')
   gretl.summary(varlist='v', by='regular', simple=True)
   gretl.summary(varlist='v', by='small', simple=True)
 

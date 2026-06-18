@@ -12,6 +12,7 @@ def run_example():
     CRIT = gretl.include("criteria")
     StrucTiSM = gretl.include("StrucTiSM")
     BMA = gretl.include("BMA")
+    extra = gretl.include("extra")
 
     # let's try out criteria
     print('##################################################')
@@ -57,6 +58,14 @@ def run_example():
     else:
         comps = gretl.STSM_components(mod=setup)
         print(f'components: {comps}')
+
+    # let's try out extra
+    print('##################################################')
+    print(f'\t\textra')
+    print('##################################################')
+    m = gretl.Matrix(4, 1 , "normal")
+    print(f'\npassed as .numpy_view:\n{gretl.combinations(m.numpy_view, 1)}')
+    print(f'\npassed as GretlMatrix:\n{gretl.combinations(m, 1)}')
 
 if __name__ == "__main__":
     run_example()

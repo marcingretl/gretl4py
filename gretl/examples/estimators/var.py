@@ -54,9 +54,9 @@ def run_example():
     try:
         import matplotlib.pyplot as plt
 
-        y = m1.irfs[-1]['results'][:, 0]
-        l = m1.irfs[-1]['results'][:, 1]
-        u = m1.irfs[-1]['results'][:, 2]
+        y = m1.irfs[-1]['results'].numpy_view[:, 0]
+        l = m1.irfs[-1]['results'].numpy_view[:, 1]
+        u = m1.irfs[-1]['results'].numpy_view[:, 2]
         x = list(range(1, len(y) + 1))
         shock_name = m1.irfs[-1]['shock_name']
         target_name = m1.irfs[-1]['target_name']

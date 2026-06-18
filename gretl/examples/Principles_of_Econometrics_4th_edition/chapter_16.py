@@ -54,7 +54,7 @@ def run_example():
   print("\n16.3. Multinomial Logit")
   nels_small.set_as_default()
   NS_ML = gretl.logit(formula="psechoice const grades", multinomial=True).fit()
-  data = list(zip(['b12', 'b22', 'b13', 'b23'], NS_ML.coeff, NS_ML.stderr, NS_ML.coeff / NS_ML.stderr))
+  data = list(zip(['b12', 'b22', 'b13', 'b23'], NS_ML.coeff.numpy_view, NS_ML.stderr.numpy_view, NS_ML.coeff.numpy_view / NS_ML.stderr.numpy_view))
   print("Table 16.2 Maximum Likelihood Estimates of PSE Choice")
   print(tabulate(data, headers=["Parameters", "Estimates", "Stdandard errors", "t-Statitics"], tablefmt="plain", floatfmt=".4f"))
   print("\n\nTable 16.3 *** TO BE ADDED!!!! ***\n\n")

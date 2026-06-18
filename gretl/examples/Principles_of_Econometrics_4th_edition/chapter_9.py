@@ -61,8 +61,8 @@ def run_example():
     phillips_aus.add_series(name='PC_e_2', data=PC_e_2)
     PC_aux_1 = gretl.ols('PC_e const d_u PC_e(-1)').fit()
     PC_aux_2 = gretl.ols('PC_e_2 const d_u PC_e_2(-1)').fit()
-    t_i  = PC_aux_1.coeff[2]/PC_aux_1.stderr[2]
-    t_ii = PC_aux_2.coeff[2]/PC_aux_2.stderr[2]
+    t_i  = PC_aux_1.coeff[2,0]/PC_aux_1.stderr[2,0]
+    t_ii = PC_aux_2.coeff[2,0]/PC_aux_2.stderr[2,0]
     print(f"(i)\tt = {t_i:.3f}, p-value: {gretl.pvalue(c='t', x=t_i, params=PC_aux_1.df):.3f}")
     print(f"(ii)\tt = {t_ii:.3f}, p-value: {gretl.pvalue(c='t', x=t_ii, params=PC_aux_2.df):.3f}")
     print(f"(iii)\tLM = {PC_aux_1.trsq:.2f}")

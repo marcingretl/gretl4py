@@ -28,6 +28,7 @@ namespace py = pybind11;
 // macros
 //////////////////////////////////////////////////
 #define IS_PYGRETLBUNDLE(o) (py::isinstance<GretlBundle>(o))
+#define IS_PYGRETLMATRIX(o) (py::isinstance<GretlMatrix>(o))
 #define SET_OPT(opt, flag) opt = static_cast<gretlopt>((opt) | (flag))
 
 //////////////////////////////////////////////////

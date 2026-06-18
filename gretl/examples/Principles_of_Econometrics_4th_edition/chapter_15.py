@@ -79,7 +79,7 @@ def run_example():
   LSQ_10_dev_coeffs_aligned = np.insert(LSQ_10_dev_coeffs, 0, None)
   LSQ_10_dev_stderrs_aligned = np.insert(LSQ_10_dev_stderrs, 0, None)
   data = list(zip(FE_10.parnames, LSQ_10_dev_coeffs_aligned,
-                  LSQ_10_dev_stderrs_aligned, FE_10.coeff, FE_10.stderr))
+                  LSQ_10_dev_stderrs_aligned, FE_10.coeff.numpy_view, FE_10.stderr.numpy_view))
   print(tabulate(data, headers=["Variable", "Coefficient", "Std. Error", "Coefficient", "Std. Error"],
                 tablefmt="plain", floatfmt=".4f"))
   nls_panel.sample(full=True)

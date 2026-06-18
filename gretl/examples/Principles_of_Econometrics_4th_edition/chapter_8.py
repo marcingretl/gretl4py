@@ -98,7 +98,7 @@ def run_example():
   food.new_list(name='z', value='const log(income)')
   food.logs('FOOD_f_e_sq')
   FOOD_l = gretl.ols('l_FOOD_f_e_sq z').fit()
-  alpha = FOOD_l.coeff
+  alpha = FOOD_l.coeff.numpy_view
   const = food.get_series('const')
   l_income = food.get_series('l_income')
   z = np.column_stack((const, l_income))

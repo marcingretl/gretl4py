@@ -143,7 +143,7 @@ class GretlPackage;
 using GretlPackagePtr = std::shared_ptr<GretlPackage>;
 
 class GretlMatrix;
-using GretlMatrixPtr = std::unique_ptr<GretlMatrix>;
+using GretlMatrixPtr = std::shared_ptr<GretlMatrix>;
 
 //////////////////////////////////////////////////
 // types

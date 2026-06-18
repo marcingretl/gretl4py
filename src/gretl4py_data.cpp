@@ -1835,6 +1835,11 @@ void GretlMatrix::numpy_to_matrix_ (const py::array& array)
 //
 // public methods
 //
+gretl_matrix *GretlMatrix::get_ptr (void) const
+{
+    return m_;
+}
+
 double *GretlMatrix::val (void) const
 {
     return m_->val;

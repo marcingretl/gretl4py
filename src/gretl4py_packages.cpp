@@ -335,14 +335,24 @@ void GretlPackage::unpack_kwargs_package_ (const std::string &func_name, fncall 
             continue;
         } else if (arginfo.gtype == GRETL_TYPE_MATRIX) {
             NumPyArrayView arr_view;
-            gretl_matrix_ptr mat{nullptr};
-            auto arr = val.cast<py::array>();
+            gretl_matrix *src = nullptr;
 
-            NumPyArray_extract(arr, arr_view);
-            if (!arr_view.data) throw std::runtime_error("NumPy array: null pointer.");
-            mat.reset(gretl_matrix_alloc(arr_view.rows, arr_view.cols));
-            NumPyArray_to_gretl_storage<gretl_matrix>(arr_view, mat.get());
-            err_ = push_function_arg(func_call, key.c_str(), NULL, GRETL_TYPE_MATRIX, mat.release());
+            if (arginfo.pytype == "GretlMatrix") {      // if we got GretlMatrixPtr
+                auto gm = val.cast<GretlMatrixPtr>();
+
+                src = gm->get_ptr();
+            } else {                                    // if we got NumPy array
+                gretl_matrix_ptr mat{nullptr};
+                auto arr = val.cast<py::array>();
+
+                NumPyArray_extract(arr, arr_view);
+                if (!arr_view.data) throw std::runtime_error("NumPy array: null pointer.");
+                mat.reset(gretl_matrix_alloc(arr_view.rows, arr_view.cols));
+                NumPyArray_to_gretl_storage<gretl_matrix>(arr_view, mat.get());
+                src = mat.release();
+            }
+
+            err_ = push_function_arg(func_call, key.c_str(), NULL, GRETL_TYPE_MATRIX, src);
             if (err_) handle_gretl_error(err_);
             continue;
         } else if (arginfo.gtype == GRETL_TYPE_STRING) {

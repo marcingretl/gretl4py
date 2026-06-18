@@ -239,7 +239,7 @@ print(
     % tuple(
         [
             i
-            for i in [100*(a - b)/b for a, b in zip(ols_results2.coeff, ols_results.coeff)]
+            for i in [100*(a - b)/b for a, b in zip(ols_results2.coeff.numpy_view, ols_results.coeff.numpy_view)]
         ]
     )
 )

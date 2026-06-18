@@ -250,6 +250,8 @@ public:
     GretlMatrix (const py::list &list);                                     // Python list to GretlMatrix
     ~GretlMatrix (void);
 
+    gretl_matrix *get_ptr (void) const;                                     // raw pointer to m_
+
     double *val (void) const;                                               // raw pointer to double storage
 
     double _Complex *z (void) const;                                        // raw pointer to complex storage
