@@ -1813,6 +1813,7 @@ gretl_matrix *GretlMatrix::numpy_to_matrix_ (const py::array& array)
 {
     //
     // from NumPy source
+    // note: the allocated memory will be owned by caller
     //
     NumPyArrayView arr_view;
     gretl_matrix *res = nullptr;
@@ -2057,7 +2058,7 @@ GretlMatrixPtr GretlMatrix::matmul (const T &rhs) const
     } else if (!is_complex() && !rhs_raw_ptr->is_complex) {
         res = std::make_shared<GretlMatrix>(m_->rows, rhs_raw_ptr->cols, NADBL, "real");
     } else {
-        throw std::invalid_argument("both matrices must be either real or comples");
+        throw std::invalid_argument("Matrix type mismatch: both matrices must be real or both complex");
     }
 
     // we do the job
