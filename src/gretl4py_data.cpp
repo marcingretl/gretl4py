@@ -1769,7 +1769,7 @@ GretlMatrix::GretlMatrix (const py::array &array)
     //
     // from NumPy source
     //
-    numpy_to_matrix_(array);
+    m_ = numpy_to_matrix_(array);
 }
 
 GretlMatrix::GretlMatrix (const gretl_matrix *src) : m_(gretl_matrix_copy(src))
@@ -1794,7 +1794,7 @@ GretlMatrix::GretlMatrix (const py::list &list)
     py::object array_obj = np.attr("asarray")(list, py::arg("dtype") = py::none());
     py::array array = py::reinterpret_borrow<py::array>(array_obj);
 
-    numpy_to_matrix_(array);
+    m_ = numpy_to_matrix_(array);
 }
 
 GretlMatrix::~GretlMatrix (void)
@@ -1808,28 +1808,33 @@ GretlMatrix::~GretlMatrix (void)
 //
 // private methods
 //
-void GretlMatrix::check_bounds_ (int i, int j) const
-{
-    if (i < 0 || j < 0 || i >= m_->rows || j >= m_->cols)
-        handle_gretl_error(E_INVARG, "[i,j]", "[" + std::to_string(i) + "," + std::to_string(j) + "]");
-}
-
-void GretlMatrix::numpy_to_matrix_ (const py::array& array)
+// static
+gretl_matrix *GretlMatrix::numpy_to_matrix_ (const py::array& array)
 {
     //
     // from NumPy source
     //
     NumPyArrayView arr_view;
+    gretl_matrix *res = nullptr;
 
     NumPyArray_extract(array, arr_view);
     if (!arr_view.data) throw std::runtime_error("NumPy array: null pointer.");
     if (arr_view.is_complex) {
-        m_ = gretl_cmatrix_new(arr_view.rows, arr_view.cols);
+        res = gretl_cmatrix_new(arr_view.rows, arr_view.cols);
     } else {
-        m_ = gretl_matrix_alloc(arr_view.rows, arr_view.cols);
+        res = gretl_matrix_alloc(arr_view.rows, arr_view.cols);
     }
-    if (!m_) handle_gretl_error(E_ALLOC);
-    NumPyArray_to_gretl_storage<gretl_matrix>(arr_view, m_);
+    if (!res) handle_gretl_error(E_ALLOC);
+    NumPyArray_to_gretl_storage<gretl_matrix>(arr_view, res);
+
+    return res;
+}
+
+// instance
+void GretlMatrix::check_bounds_ (int i, int j) const
+{
+    if (i < 0 || j < 0 || i >= m_->rows || j >= m_->cols)
+        handle_gretl_error(E_INVARG, "[i,j]", "[" + std::to_string(i) + "," + std::to_string(j) + "]");
 }
 
 //
@@ -2032,15 +2037,15 @@ GretlMatrixPtr GretlMatrix::matmul (const T &rhs) const
     // use as a backend for __matmul__
     //
     gretl_matrix *rhs_raw_ptr = nullptr;
+    gretl_matrix_ptr rhs_gm = nullptr;
     GretlMatrixPtr res = nullptr;
-    GretlMatrixPtr rhs_gm = nullptr;
 
     if constexpr (std::is_same_v<T, GretlMatrix>) {
         rhs_raw_ptr = rhs.get_ptr();
         if (m_->cols != rhs_raw_ptr->rows) handle_gretl_error(E_NONCONF);
     } else if constexpr (std::is_same_v<T, py::array>) {
-        rhs_gm = std::make_shared<GretlMatrix>(rhs);
-        rhs_raw_ptr = rhs_gm->get_ptr();
+        rhs_gm.reset(numpy_to_matrix_(rhs));
+        rhs_raw_ptr = rhs_gm.get();
     } else {
         static_assert(always_false<T>, "GretlMatrix::matmul(): unknown type");
     }
