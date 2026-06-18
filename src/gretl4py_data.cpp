@@ -1997,8 +1997,24 @@ py::object GretlMatrix::to_numpy() const
     //
     // here we construct NumPy as a deep copy of gretl_matrix
     //
-    auto res = convert_GretlType_to_GretlTypes(GRETL_TYPE_MATRIX, m_, 0, err_);
-    if (err_) handle_gretl_error(err_);
+    auto res = std::make_unique<GretlTypes>();
+
+    // for complex type
+    if (m_->is_complex == 1) {
+        DNumPyArrayZ mat({m_->rows, m_->cols});
+
+        std::memcpy(reinterpret_cast<std::byte*>(mat.mutable_data()),
+                    reinterpret_cast<const std::byte*>(m_->z),
+                    m_->rows * m_->cols * sizeof(std::complex<double>));
+        if ((std::min)(m_->rows, m_->cols) == 1) mat = mat.reshape({mat.size()});
+        *res = mat;
+    } else {
+        DNumPyArrayFC mat({m_->rows, m_->cols});
+
+        std::memcpy(mat.mutable_data(), m_->val, m_->rows * m_->cols * sizeof(double));
+        if ((std::min)(m_->rows, m_->cols) == 1) mat = mat.reshape({mat.size()});
+        *res = mat;
+    }
 
     return variant_to_pyobject(std::move(*res));
 }
