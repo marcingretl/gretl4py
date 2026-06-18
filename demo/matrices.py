@@ -131,3 +131,12 @@ print(pd1)
 # Independent copies (unchanged)
 print(np2)
 print(pd2)
+
+
+# ============================================================
+# matrices multiplication via '@' operator
+# ============================================================
+
+A = gretl.Matrix(4, 4, "normal")
+B = gretl.Matrix(4, 4, "normal")
+print(f'\nproduct of A @ B:\n{A @ B}')

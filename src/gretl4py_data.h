@@ -276,6 +276,9 @@ public:
     void set_element (int i, int j, T val);
 
     py::object to_numpy (void) const;
+
+    // matrix-algebra methods
+    GretlMatrixPtr matmul (const GretlMatrix &rhs) const;
 };
 
 #endif // GRETL4PY_DATA_H

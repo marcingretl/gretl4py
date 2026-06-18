@@ -2005,7 +2005,7 @@ py::object GretlMatrix::to_numpy() const
     auto res = std::make_unique<GretlTypes>();
 
     // for complex type
-    if (m_->is_complex == 1) {
+    if (is_complex()) {
         DNumPyArrayZ mat({m_->rows, m_->cols});
 
         std::memcpy(reinterpret_cast<std::byte*>(mat.mutable_data()),
@@ -2022,4 +2022,21 @@ py::object GretlMatrix::to_numpy() const
     }
 
     return variant_to_pyobject(std::move(*res));
+}
+
+GretlMatrixPtr GretlMatrix::matmul (const GretlMatrix &rhs) const
+{
+    //
+    // matrices multiplication
+    // use as a backend for __matmul__
+    //
+    if (m_->cols != rhs.rows()) handle_gretl_error(E_NONCONF);
+
+    auto res = std::make_shared<GretlMatrix>(m_->rows, rhs.cols(), NADBL, "real");
+
+    // we do the job
+    err_ = gretl_matrix_multiply(m_, rhs.get_ptr(), res->get_ptr());
+    if (err_) handle_gretl_error(err_);
+
+    return res;
 }
