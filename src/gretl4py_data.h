@@ -278,7 +278,8 @@ public:
     py::object to_numpy (void) const;
 
     // matrix-algebra methods
-    GretlMatrixPtr matmul (const GretlMatrix &rhs) const;
+    template <typename T>
+    GretlMatrixPtr matmul (const T &rhs) const;
 };
 
 #endif // GRETL4PY_DATA_H

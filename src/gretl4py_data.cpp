@@ -2024,19 +2024,46 @@ py::object GretlMatrix::to_numpy() const
     return variant_to_pyobject(std::move(*res));
 }
 
-GretlMatrixPtr GretlMatrix::matmul (const GretlMatrix &rhs) const
+template <typename T>
+GretlMatrixPtr GretlMatrix::matmul (const T &rhs) const
 {
     //
     // matrices multiplication
     // use as a backend for __matmul__
     //
-    if (m_->cols != rhs.rows()) handle_gretl_error(E_NONCONF);
+    gretl_matrix *rhs_raw_ptr = nullptr;
+    GretlMatrixPtr res = nullptr;
+    GretlMatrixPtr rhs_gm = nullptr;
 
-    auto res = std::make_shared<GretlMatrix>(m_->rows, rhs.cols(), NADBL, "real");
+    if constexpr (std::is_same_v<T, GretlMatrix>) {
+        rhs_raw_ptr = rhs.get_ptr();
+        if (m_->cols != rhs_raw_ptr->rows) handle_gretl_error(E_NONCONF);
+    } else if constexpr (std::is_same_v<T, py::array>) {
+        rhs_gm = std::make_shared<GretlMatrix>(rhs);
+        rhs_raw_ptr = rhs_gm->get_ptr();
+    } else {
+        static_assert(always_false<T>, "GretlMatrix::matmul(): unknown type");
+    }
+
+    // we define storage
+    if (is_complex() && rhs_raw_ptr->is_complex) {
+        // nothing, matrix will be allocated inside libgretl function
+        ;
+    } else if (!is_complex() && !rhs_raw_ptr->is_complex) {
+        res = std::make_shared<GretlMatrix>(m_->rows, rhs_raw_ptr->cols, NADBL, "real");
+    } else {
+        throw std::invalid_argument("both matrices must be either real or comples");
+    }
 
     // we do the job
-    err_ = gretl_matrix_multiply(m_, rhs.get_ptr(), res->get_ptr());
+    if (is_complex()) {
+        res = std::make_shared<GretlMatrix>(gretl_matrix_complex_multiply(m_, rhs_raw_ptr, 1, &err_));
+    } else {
+        err_ = gretl_matrix_multiply(m_, rhs_raw_ptr, res->get_ptr());
+    }
     if (err_) handle_gretl_error(err_);
 
     return res;
 }
+template GretlMatrixPtr GretlMatrix::matmul<GretlMatrix>(const GretlMatrix &rhs) const;
+template GretlMatrixPtr GretlMatrix::matmul<py::array>(const py::array &rhs) const;
