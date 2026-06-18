@@ -238,6 +238,7 @@ private:
     mutable int err_ = 0;
 
     void check_bounds_ (int i, int j) const;                                // we check if given [i,j] are valid
+    void numpy_to_matrix_ (const py::array &array);                         // helper for NumPy to GretlMatrix
 public:
     GretlMatrix (void);                                                     // default constructor
     GretlMatrix (int rows, int cols, double fill, const std::string &type); // filled real/complex matrix
@@ -246,6 +247,7 @@ public:
     GretlMatrix (int n);                                                    // identity matrix
     GretlMatrix (const py::array &array);                                   // NumPy to GretlMatrix
     GretlMatrix (const gretl_matrix *src);                                  // gretl_matrix to GretlMatrix
+    GretlMatrix (const py::list &list);                                     // Python list to GretlMatrix
     ~GretlMatrix (void);
 
     double *val (void) const;                                               // raw pointer to double storage

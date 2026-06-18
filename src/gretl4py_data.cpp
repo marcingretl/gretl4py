@@ -1769,22 +1769,32 @@ GretlMatrix::GretlMatrix (const py::array &array)
     //
     // from NumPy source
     //
-    NumPyArrayView arr_view;
-
-    NumPyArray_extract(array, arr_view);
-    if (!arr_view.data) throw std::runtime_error("NumPy array: null pointer.");
-    if (arr_view.is_complex) {
-        m_ = gretl_cmatrix_new(arr_view.rows, arr_view.cols);
-    } else {
-        m_ = gretl_matrix_alloc(arr_view.rows, arr_view.cols);
-    }
-    if (!m_) handle_gretl_error(E_ALLOC);
-    NumPyArray_to_gretl_storage<gretl_matrix>(arr_view, m_);
+    numpy_to_matrix_(array);
 }
 
 GretlMatrix::GretlMatrix (const gretl_matrix *src) : m_(gretl_matrix_copy(src))
 {
     if (!m_) handle_gretl_error(E_ALLOC);
+}
+
+GretlMatrix::GretlMatrix (const py::list &list)
+{
+    //
+    // we convert Python list to GretlMatrix
+    //
+    // for empty list, we return empty matrix
+    if (!list.size()) {
+        m_ = gretl_null_matrix_new();
+        if (!m_) handle_gretl_error(E_ALLOC);
+        return;
+    }
+
+    // do the job
+    py::module_ np = py::module_::import("numpy");
+    py::object array_obj = np.attr("asarray")(list, py::arg("dtype") = py::none());
+    py::array array = py::reinterpret_borrow<py::array>(array_obj);
+
+    numpy_to_matrix_(array);
 }
 
 GretlMatrix::~GretlMatrix (void)
@@ -1802,6 +1812,24 @@ void GretlMatrix::check_bounds_ (int i, int j) const
 {
     if (i < 0 || j < 0 || i >= m_->rows || j >= m_->cols)
         handle_gretl_error(E_INVARG, "[i,j]", "[" + std::to_string(i) + "," + std::to_string(j) + "]");
+}
+
+void GretlMatrix::numpy_to_matrix_ (const py::array& array)
+{
+    //
+    // from NumPy source
+    //
+    NumPyArrayView arr_view;
+
+    NumPyArray_extract(array, arr_view);
+    if (!arr_view.data) throw std::runtime_error("NumPy array: null pointer.");
+    if (arr_view.is_complex) {
+        m_ = gretl_cmatrix_new(arr_view.rows, arr_view.cols);
+    } else {
+        m_ = gretl_matrix_alloc(arr_view.rows, arr_view.cols);
+    }
+    if (!m_) handle_gretl_error(E_ALLOC);
+    NumPyArray_to_gretl_storage<gretl_matrix>(arr_view, m_);
 }
 
 //
