@@ -2043,7 +2043,7 @@ GretlMatrixPtr GretlMatrix::matmul (const T &rhs) const
     //
     gretl_matrix *rhs_raw_ptr = nullptr;            // right-hand size, use in any kind of operation
     gretl_matrix_ptr rhs_gm = nullptr;              // if we need a temporal unique_ptr to rhs
-    GretlMatrixPtr res = nullptr;
+    gretl_matrix *res = nullptr;
 
     if constexpr (std::is_same_v<T, GretlMatrix>) {
         rhs_raw_ptr = rhs.get_ptr();
@@ -2054,26 +2054,23 @@ GretlMatrixPtr GretlMatrix::matmul (const T &rhs) const
         static_assert(always_false<T>, "GretlMatrix::matmul(): unknown type");
     }
 
-    // we define storage
-    if (is_complex() && rhs_raw_ptr->is_complex) {
-        // nothing, matrix will be allocated inside libgretl function
-        ;
-    } else if (!is_complex() && !rhs_raw_ptr->is_complex) {
-        if (m_->cols != rhs_raw_ptr->rows) handle_gretl_error(E_NONCONF);
-        res = std::make_shared<GretlMatrix>(m_->rows, rhs_raw_ptr->cols, NADBL, "real");
-    } else {
+    // we check if we deal with the same matrices (both real or both complex)
+    if ((is_complex() && !rhs_raw_ptr->is_complex) || (!is_complex() && rhs_raw_ptr->is_complex))
         throw std::invalid_argument("Matrix type mismatch: both matrices must be real or both complex");
-    }
 
     // we do the job
     if (is_complex()) {
-        res = std::make_shared<GretlMatrix>(gretl_matrix_complex_multiply(m_, rhs_raw_ptr, 0, &err_), false);
+        res = gretl_matrix_complex_multiply(m_, rhs_raw_ptr, 1, &err_);
     } else {
-        err_ = gretl_matrix_multiply(m_, rhs_raw_ptr, res->get_ptr());
+        if (m_->cols != rhs_raw_ptr->rows) handle_gretl_error(E_NONCONF);
+        res = gretl_matrix_multiply_new(m_, rhs_raw_ptr, &err_);
     }
-    if (err_) handle_gretl_error(get_gretl_matrix_err());
+    if (err_) {
+        handle_gretl_error(get_gretl_matrix_err());
+        handle_gretl_error(err_);
+    }
 
-    return res;
+    return std::make_shared<GretlMatrix>(res, false);
 }
 template GretlMatrixPtr GretlMatrix::matmul<GretlMatrix>(const GretlMatrix &rhs) const;
 template GretlMatrixPtr GretlMatrix::matmul<py::array>(const py::array &rhs) const;
