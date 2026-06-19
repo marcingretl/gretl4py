@@ -140,6 +140,10 @@ print(pd2)
 A = gretl.Matrix(4, 4, "normal")
 B = gretl.Matrix(4, 4, "normal")
 C = gretl.Matrix(4, 4, 2.99, "complex")
+C[0,0] = 0 + 7j
+C[1,1] = 10 + 1j
 print(f'\nproduct of A @ B:\n{A @ B}')
 print(f'\nproduct of A @ B.numpy_view:\n{A @ B.numpy_view}')
 print(f'\nproduct of A @ C:\n{A @ C}')
+print(f'\nproduct of A / B:\n{A / B}')
+print(f'\nproduct of A / C:\n{A / C}')

@@ -207,6 +207,9 @@ private:
 // this enum is to mimic enum(s) from genparse.h
 enum class GretlFunIndex { F_PDF, F_PVAL, F_CDF, F_INVCDF, F_CRIT, F_MCOV, F_MCORR };
 
+// this enum is to enumerate matrix operations
+enum class GretlMatrixMatOperations { MATMUL, TRUEDIV };
+
 //////////////////////////////////////////////////
 // tools
 //////////////////////////////////////////////////

@@ -278,7 +278,7 @@ public:
     py::object to_numpy (void) const;
 
     // matrix-algebra methods
-    template <typename T>
+    template <typename T, GretlMatrixMatOperations KIND>
     GretlMatrixPtr mat_alg_oprations (const T &rhs) const;
 };
 

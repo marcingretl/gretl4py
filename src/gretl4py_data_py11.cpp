@@ -415,8 +415,10 @@ void init_gretl4py_gretl_matrix_py11 (py::module_ &m)
          {
              self.set_element<std::complex<double>>(ij.first, ij.second, value);
          }, py::arg("ij").none(false), py::arg("value").none(false))
-    .def("__matmul__", &GretlMatrix::mat_alg_oprations<GretlMatrix>)
-    .def("__matmul__", &GretlMatrix::mat_alg_oprations<py::array>)
+    .def("__matmul__", &GretlMatrix::mat_alg_oprations<GretlMatrix, GretlMatrixMatOperations::MATMUL>)
+    .def("__matmul__", &GretlMatrix::mat_alg_oprations<py::array, GretlMatrixMatOperations::MATMUL>)
+    .def("__truediv__", &GretlMatrix::mat_alg_oprations<GretlMatrix, GretlMatrixMatOperations::TRUEDIV>)
+    .def("__truediv__", &GretlMatrix::mat_alg_oprations<py::array, GretlMatrixMatOperations::TRUEDIV>)
     .def_property_readonly("rows",
                            [](const GretlMatrix &self)
                            {
