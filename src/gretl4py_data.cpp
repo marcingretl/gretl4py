@@ -2036,7 +2036,7 @@ py::object GretlMatrix::to_numpy() const
 }
 
 template <typename T>
-GretlMatrixPtr GretlMatrix::matmul (const T &rhs) const
+GretlMatrixPtr GretlMatrix::mat_alg_oprations (const T &rhs) const
 {
     //
     // matrices multiplication
@@ -2072,8 +2072,8 @@ GretlMatrixPtr GretlMatrix::matmul (const T &rhs) const
 
     return std::make_shared<GretlMatrix>(res, false);
 }
-template GretlMatrixPtr GretlMatrix::matmul<GretlMatrix>(const GretlMatrix &rhs) const;
-template GretlMatrixPtr GretlMatrix::matmul<py::array>(const py::array &rhs) const;
+template GretlMatrixPtr GretlMatrix::mat_alg_oprations<GretlMatrix>(const GretlMatrix &rhs) const;
+template GretlMatrixPtr GretlMatrix::mat_alg_oprations<py::array>(const py::array &rhs) const;
 
 /*
  @	__matmul__
