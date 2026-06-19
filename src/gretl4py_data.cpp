@@ -2041,16 +2041,18 @@ py::object GretlMatrix::to_numpy() const
     return variant_to_pyobject(std::move(*res));
 }
 
+// T: GretlMatrix or py::array
+// KIND: MATMUL or TRUEDIV
 template <typename T, GretlMatrixMatOperations KIND>
 GretlMatrixPtr GretlMatrix::mat_alg_oprations (const T &rhs) const
 {
     //
-    // matrices multiplication
-    // use as a backend for __matmul__
+    // matrices multiplication or right division
+    // use as a backend for __matmul__ and __truediv__
     //
     gretl_matrix *rhs_raw_ptr = nullptr;            // right-hand size, use in any kind of operation
     gretl_matrix_ptr rhs_gm = nullptr;              // if we need a temporal unique_ptr to rhs
-    gretl_matrix *res = nullptr;
+    gretl_matrix_ptr res = nullptr;
 
     // we check template parameters
     if constexpr (std::is_same_v<T, GretlMatrix>) {
@@ -2065,16 +2067,16 @@ GretlMatrixPtr GretlMatrix::mat_alg_oprations (const T &rhs) const
     // we do the job
     if constexpr (KIND == GretlMatrixMatOperations::MATMUL) {
         if (is_complex() || rhs_raw_ptr->is_complex) {
-            res = gretl_cmatrix_multiply(m_, rhs_raw_ptr, &err_);
+            res.reset(gretl_cmatrix_multiply(m_, rhs_raw_ptr, &err_));
         } else {
             if (m_->cols != rhs_raw_ptr->rows) handle_gretl_error(E_NONCONF);
-            res = gretl_matrix_multiply_new(m_, rhs_raw_ptr, &err_);
+            res.reset(gretl_matrix_multiply_new(m_, rhs_raw_ptr, &err_));
         }
     } else if constexpr (KIND == GretlMatrixMatOperations::TRUEDIV) {
         if (is_complex() || rhs_raw_ptr->is_complex) {
-            res = gretl_cmatrix_divide(m_, rhs_raw_ptr, GRETL_MOD_TRANSPOSE, &err_);
+            res.reset(gretl_cmatrix_divide(m_, rhs_raw_ptr, GRETL_MOD_TRANSPOSE, &err_));
         } else {
-            res = gretl_matrix_divide(m_, rhs_raw_ptr, GRETL_MOD_TRANSPOSE, &err_);
+            res.reset(gretl_matrix_divide(m_, rhs_raw_ptr, GRETL_MOD_TRANSPOSE, &err_));
         }
     } else {
         static_assert(always_false<T>, "GretlMatrixMatOperations: unknown type");
@@ -2084,7 +2086,7 @@ GretlMatrixPtr GretlMatrix::mat_alg_oprations (const T &rhs) const
         handle_gretl_error(err_);
     }
 
-    return std::make_shared<GretlMatrix>(res, false);
+    return std::make_shared<GretlMatrix>(res.release(), false);
 }
 template GretlMatrixPtr GretlMatrix::mat_alg_oprations<GretlMatrix, GretlMatrixMatOperations::MATMUL>(const GretlMatrix &rhs) const;
 template GretlMatrixPtr GretlMatrix::mat_alg_oprations<py::array, GretlMatrixMatOperations::MATMUL>(const py::array &rhs) const;
