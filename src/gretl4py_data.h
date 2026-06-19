@@ -246,7 +246,7 @@ public:
     GretlMatrix (double start, double end, double step = 1.0);              // sequential row vector
     GretlMatrix (int n);                                                    // identity matrix
     GretlMatrix (const py::array &array);                                   // NumPy to GretlMatrix
-    GretlMatrix (const gretl_matrix *src);                                  // gretl_matrix to GretlMatrix
+    GretlMatrix (gretl_matrix *src, bool copy = true);                      // gretl_matrix to GretlMatrix
     GretlMatrix (const py::list &list);                                     // Python list to GretlMatrix
     ~GretlMatrix (void);
 

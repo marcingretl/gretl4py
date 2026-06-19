@@ -1772,8 +1772,12 @@ GretlMatrix::GretlMatrix (const py::array &array)
     m_ = numpy_to_matrix_(array);
 }
 
-GretlMatrix::GretlMatrix (const gretl_matrix *src) : m_(gretl_matrix_copy(src))
+GretlMatrix::GretlMatrix (gretl_matrix *src, bool copy)
 {
+    //
+    // copy == true means deep copy, false == we "steal" pointer
+    //
+    copy ? m_ = gretl_matrix_copy(src) : m_ = src;
     if (!m_) handle_gretl_error(E_ALLOC);
 }
 
@@ -2037,13 +2041,12 @@ GretlMatrixPtr GretlMatrix::matmul (const T &rhs) const
     // matrices multiplication
     // use as a backend for __matmul__
     //
-    gretl_matrix *rhs_raw_ptr = nullptr;
-    gretl_matrix_ptr rhs_gm = nullptr;
+    gretl_matrix *rhs_raw_ptr = nullptr;            // right-hand size, use in any kind of operation
+    gretl_matrix_ptr rhs_gm = nullptr;              // if we need a temporal unique_ptr to rhs
     GretlMatrixPtr res = nullptr;
 
     if constexpr (std::is_same_v<T, GretlMatrix>) {
         rhs_raw_ptr = rhs.get_ptr();
-        if (m_->cols != rhs_raw_ptr->rows) handle_gretl_error(E_NONCONF);
     } else if constexpr (std::is_same_v<T, py::array>) {
         rhs_gm.reset(numpy_to_matrix_(rhs));
         rhs_raw_ptr = rhs_gm.get();
@@ -2056,6 +2059,7 @@ GretlMatrixPtr GretlMatrix::matmul (const T &rhs) const
         // nothing, matrix will be allocated inside libgretl function
         ;
     } else if (!is_complex() && !rhs_raw_ptr->is_complex) {
+        if (m_->cols != rhs_raw_ptr->rows) handle_gretl_error(E_NONCONF);
         res = std::make_shared<GretlMatrix>(m_->rows, rhs_raw_ptr->cols, NADBL, "real");
     } else {
         throw std::invalid_argument("Matrix type mismatch: both matrices must be real or both complex");
@@ -2063,13 +2067,40 @@ GretlMatrixPtr GretlMatrix::matmul (const T &rhs) const
 
     // we do the job
     if (is_complex()) {
-        res = std::make_shared<GretlMatrix>(gretl_matrix_complex_multiply(m_, rhs_raw_ptr, 1, &err_));
+        res = std::make_shared<GretlMatrix>(gretl_matrix_complex_multiply(m_, rhs_raw_ptr, 0, &err_), false);
     } else {
         err_ = gretl_matrix_multiply(m_, rhs_raw_ptr, res->get_ptr());
     }
-    if (err_) handle_gretl_error(err_);
+    if (err_) handle_gretl_error(get_gretl_matrix_err());
 
     return res;
 }
 template GretlMatrixPtr GretlMatrix::matmul<GretlMatrix>(const GretlMatrix &rhs) const;
 template GretlMatrixPtr GretlMatrix::matmul<py::array>(const py::array &rhs) const;
+
+/*
+ @	__matmul__
+ +	__add__
+ -	__sub__
+ *	__mul__
+ @=	__imatmul__ (in-place matmul)
+
+ A + B	__add__
+ A - B	__sub__
+ A * B	__mul__          element-wise only
+ A @ B	__matmul__
+ A / B	__truediv__
+ A // B	__floordiv__
+ A % B	__mod__
+ A ** B	__pow__
+
+ prawe operacje:
+ B + A (if first fails)	__radd__
+ B * A	__rmul__
+ B @ A	__rmatmul__
+
+ in place:
+ A += B	__iadd__
+ A *= B	__imul__
+ A @= B	__imatmul__ (rarely implemented)
+*/
