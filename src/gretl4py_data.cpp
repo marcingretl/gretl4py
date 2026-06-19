@@ -35,9 +35,7 @@ extern "C" {
     #include <gretl/gretl_xml.h>
     #include <gretl/dataset.h>
     #include <gretl/system.h>
-    gretl_matrix *gretl_cmatrix_multiply (const gretl_matrix *A,
-                                          const gretl_matrix *B,
-                                          int *err);
+    gretl_matrix *gretl_cmatrix_multiply (const gretl_matrix *A, const gretl_matrix *B, int *err); // this is because we cannot include gretl_cmatrix.h
 }
 #include <filesystem>
 
@@ -2058,11 +2056,10 @@ GretlMatrixPtr GretlMatrix::matmul (const T &rhs) const
     }
 
     // we check if we deal with the same matrices (both real or both complex)
-    if ((is_complex() && !rhs_raw_ptr->is_complex) || (!is_complex() && rhs_raw_ptr->is_complex))
-        throw std::invalid_argument("Matrix type mismatch: both matrices must be real or both complex");
+    //if ((is_complex() && !rhs_raw_ptr->is_complex) || (!is_complex() && rhs_raw_ptr->is_complex)) throw std::invalid_argument("Matrix type mismatch: both matrices must be real or both complex");
 
     // we do the job
-    if (is_complex()) {
+    if (is_complex() || rhs_raw_ptr->is_complex) {
         res = gretl_cmatrix_multiply(m_, rhs_raw_ptr, &err_);
     } else {
         if (m_->cols != rhs_raw_ptr->rows) handle_gretl_error(E_NONCONF);
