@@ -35,6 +35,9 @@ extern "C" {
     #include <gretl/gretl_xml.h>
     #include <gretl/dataset.h>
     #include <gretl/system.h>
+    gretl_matrix *gretl_cmatrix_multiply (const gretl_matrix *A,
+                                          const gretl_matrix *B,
+                                          int *err);
 }
 #include <filesystem>
 
@@ -2060,7 +2063,7 @@ GretlMatrixPtr GretlMatrix::matmul (const T &rhs) const
 
     // we do the job
     if (is_complex()) {
-        res = gretl_matrix_complex_multiply(m_, rhs_raw_ptr, 1, &err_);
+        res = gretl_cmatrix_multiply(m_, rhs_raw_ptr, &err_);
     } else {
         if (m_->cols != rhs_raw_ptr->rows) handle_gretl_error(E_NONCONF);
         res = gretl_matrix_multiply_new(m_, rhs_raw_ptr, &err_);
