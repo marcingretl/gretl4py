@@ -2061,8 +2061,6 @@ GretlMatrixPtr GretlMatrix::mat_alg_oprations (const T &rhs) const
     } else {
         static_assert(always_false<T>, "GretlMatrix::matmul(): unknown type");
     }
-    if constexpr (KIND != GretlMatrixMatOperations::MATMUL && KIND != GretlMatrixMatOperations::TRUEDIV)
-        static_assert(always_false<T>, "GretlMatrixMatOperations: unknown type");
 
     // we do the job
     if constexpr (KIND == GretlMatrixMatOperations::MATMUL) {
@@ -2078,6 +2076,8 @@ GretlMatrixPtr GretlMatrix::mat_alg_oprations (const T &rhs) const
         } else {
             res = gretl_matrix_divide(m_, rhs_raw_ptr, GRETL_MOD_TRANSPOSE, &err_);
         }
+    } else {
+        static_assert(always_false<T>, "GretlMatrixMatOperations: unknown type");
     }
     if (err_) {
         handle_gretl_error(get_gretl_matrix_err());
