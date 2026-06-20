@@ -2049,53 +2049,53 @@ GretlMatrixPtr GretlMatrix::alg_mat_mat_operations (const T &rhs) const
 {
     //
     // matrices multiplication or right division
-    // use as a backend for __matmul__, __truediv__, __add__, __sub__
+    // use as a backend for: __matmul__, __truediv__, __add__, __sub__
     //
-    gretl_matrix *rhs_raw_ptr = nullptr;            // right-hand size, used in any kind of operation
-    gretl_matrix_ptr rhs_gm = nullptr;              // if we need a temporal unique_ptr to rhs (for py::array)
+    gretl_matrix *rhs_matrix = nullptr;            // right-hand side, used in any kind of operation
+    gretl_matrix_ptr rhs_storage = nullptr;        // if we need a temporary unique_ptr to rhs (for py::array)
     gretl_matrix_ptr res = nullptr;
 
     // we check template parameters
     if constexpr (std::is_same_v<T, GretlMatrix>) {
-        rhs_raw_ptr = rhs.get_ptr();
+        rhs_matrix = rhs.get_ptr();
     } else if constexpr (std::is_same_v<T, py::array>) {
-        rhs_gm.reset(numpy_to_matrix_(rhs));
-        rhs_raw_ptr = rhs_gm.get();
+        rhs_storage.reset(numpy_to_matrix_(rhs));
+        rhs_matrix = rhs_storage.get();
     } else {
         static_assert(always_false<T>, "GretlMatrix::matmul(): unknown type");
     }
 
     // we do the job
     if constexpr (KIND == GretlMatrixMatOperations::MATMUL) {
-        if (is_complex() || rhs_raw_ptr->is_complex) {
-            res.reset(gretl_cmatrix_multiply(m_, rhs_raw_ptr, &err_));
+        if (is_complex() || rhs_matrix->is_complex) {
+            res.reset(gretl_cmatrix_multiply(m_, rhs_matrix, &err_));
         } else {
-            if (m_->cols != rhs_raw_ptr->rows) handle_gretl_error(E_NONCONF);
-            res.reset(gretl_matrix_multiply_new(m_, rhs_raw_ptr, &err_));
+            if (m_->cols != rhs_matrix->rows) handle_gretl_error(E_NONCONF);
+            res.reset(gretl_matrix_multiply_new(m_, rhs_matrix, &err_));
         }
     } else if constexpr (KIND == GretlMatrixMatOperations::TRUEDIV) {
-        if (is_complex() || rhs_raw_ptr->is_complex) {
-            res.reset(gretl_cmatrix_divide(m_, rhs_raw_ptr, GRETL_MOD_TRANSPOSE, &err_));
+        if (is_complex() || rhs_matrix->is_complex) {
+            res.reset(gretl_cmatrix_divide(m_, rhs_matrix, GRETL_MOD_TRANSPOSE, &err_));
         } else {
-            res.reset(gretl_matrix_divide(m_, rhs_raw_ptr, GRETL_MOD_TRANSPOSE, &err_));
+            res.reset(gretl_matrix_divide(m_, rhs_matrix, GRETL_MOD_TRANSPOSE, &err_));
         }
     } else if constexpr (KIND == GretlMatrixMatOperations::ADD) {
-        if (is_complex() || rhs_raw_ptr->is_complex) {
-            res.reset(gretl_cmatrix_add_sub(m_, rhs_raw_ptr, 1, &err_));
+        if (is_complex() || rhs_matrix->is_complex) {
+            res.reset(gretl_cmatrix_add_sub(m_, rhs_matrix, 1, &err_));
         } else {
             res.reset(gretl_matrix_alloc(m_->rows, m_->cols));
-            err_ = gretl_matrix_add(m_, rhs_raw_ptr, res.get());
+            err_ = gretl_matrix_add(m_, rhs_matrix, res.get());
         }
     } else if constexpr (KIND == GretlMatrixMatOperations::SUB) {
-        if (is_complex() || rhs_raw_ptr->is_complex) {
-            res.reset(gretl_cmatrix_add_sub(m_, rhs_raw_ptr, -1, &err_));
+        if (is_complex() || rhs_matrix->is_complex) {
+            res.reset(gretl_cmatrix_add_sub(m_, rhs_matrix, -1, &err_));
         } else {
             res.reset(gretl_matrix_alloc(m_->rows, m_->cols));
-            err_ = gretl_matrix_subtract(m_, rhs_raw_ptr, res.get());
+            err_ = gretl_matrix_subtract(m_, rhs_matrix, res.get());
         }
     }
     else {
-        static_assert(always_false<T>, "GretlMatrixMatOperations: unknown type");
+        static_assert(always_false<T>, "Unsupported GretlMatrixMatOperations value");
     }
 
     if (err_) {
