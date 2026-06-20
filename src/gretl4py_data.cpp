@@ -2112,8 +2112,8 @@ template GretlMatrixPtr GretlMatrix::alg_mat_mat_operations<py::array, GretlMatr
 template GretlMatrixPtr GretlMatrix::alg_mat_mat_operations<GretlMatrix, GretlMatrixMatOperations::SUB>(const GretlMatrix &rhs) const;
 template GretlMatrixPtr GretlMatrix::alg_mat_mat_operations<py::array, GretlMatrixMatOperations::SUB>(const py::array &rhs) const;
 
-// T:
-// KIND:
+// T: GretlMatrix or py::array
+// KIND: IADD, ISUB
 template <typename T, GretlMatrixMatOperations KIND>
 GretlMatrix &GretlMatrix::alg_mat_mat_inplace_operations (const T &rhs)
 {
@@ -2174,14 +2174,6 @@ GretlMatrixPtr GretlMatrix::alg_mat_scalar_operations (T rhs) const
 }
 
 /*
- @	__matmul__
- A / B	__truediv__
- A + B	__add__
- A - B	__sub__
- A += B	__iadd__
- A += B	__isub__
- @=	__imatmul__ : no backend for this
-
  to do:
  A * B	__mul__          element-wise only
 
