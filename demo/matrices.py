@@ -163,3 +163,8 @@ A -= B
 A -= B.numpy_view
 print(f'\nin-place diff of A -= B:\n{A}')
 print(f'\nin-place diff of A -= B.numpy_view:\n{A}')
+
+print(f'\nelement-wise operations')
+print(f'\nproduct of A * B:\n{A * B}')
+print(f'\nproduct of A * B.numpy_view:\n{A * B.numpy_view}')
+print(f'\nproduct of A * C:\n{A * C}')
