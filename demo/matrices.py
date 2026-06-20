@@ -7,12 +7,13 @@ import pandas as pd
 # Matrix constructors
 # ============================================================
 
-# Empty matrix
+# Empty matrix (uninitialized / 0x0)
 A = gretl.Matrix()
 print(A)
 
 
 # Zero-initialized matrices (real / complex)
+# NOTE: complex matrices still store zero + 0j
 A = gretl.Matrix(4, 4)
 B = gretl.Matrix(4, 4, type="complex")
 
@@ -29,8 +30,8 @@ print(B)
 
 
 # Random matrices
-# "normal" = Gaussian distribution
-# "u"      = uniform distribution (shortcut)
+# "normal" = Gaussian distribution (mean 0, variance 1)
+# "u"      = uniform distribution
 A = gretl.Matrix(4, 4, "normal")
 B = gretl.Matrix(4, 4, "u")
 
@@ -42,7 +43,8 @@ print(B)
 # Special constructors
 # ============================================================
 
-# Row vector with arithmetic progression: start, end, step
+# Arithmetic progression vector:
+# start, end, step
 A = gretl.Matrix(1.0, 10.0, 1.5)
 
 # Descending sequence example
@@ -52,7 +54,7 @@ print(A)
 print(B)
 
 
-# Identity matrix
+# Identity matrix (NxN)
 A = gretl.Matrix(5)
 print(A)
 
@@ -61,16 +63,17 @@ print(A)
 # Construction from Python list
 # ============================================================
 
-lst1 = [1,1]
-lst2 = [[1,1],
-        [2,2],
-        [3,3]]
+lst1 = [1, 1]
+lst2 = [[1, 1],
+        [2, 2],
+        [3, 3]]
 
 A = gretl.Matrix(lst1)
 B = gretl.Matrix(lst2)
 
 print(A)
 print(B)
+
 
 # ============================================================
 # Construction from NumPy
@@ -109,17 +112,19 @@ print(f"Column names: {A.cnameget()}")
 
 print("\nViews (shared memory demonstration)")
 
+# Shared memory views (modifications affect A)
 np1 = A.numpy_view
 pd1 = A.pandas_view
 
-np2 = A.to_numpy()      # independent copy
-pd2 = A.to_pandas()     # independent copy
+# Independent copies (safe snapshots)
+np2 = A.to_numpy()
+pd2 = A.to_pandas()
 
 print(A)
 print(np1)
 print(pd1)
 
-# Modify shared views
+# Modify shared views → A is affected
 A[0, 0] = 0
 np1[1, 1] = 0
 pd1.iloc[0, 2] = 0
@@ -128,50 +133,72 @@ print(A)
 print(np1)
 print(pd1)
 
-# Independent copies (unchanged)
+# Independent copies remain unchanged
 print(np2)
 print(pd2)
 
 
 # ============================================================
-# matrices multiplication via '@' operator
+# Matrix multiplication (@ = linear algebra product)
 # ============================================================
 
 A = gretl.Matrix(4, 4, "normal")
 B = gretl.Matrix(4, 4, "normal")
+
 C = gretl.Matrix(4, 4, 2.99, "complex")
-C[0,0] = 0 + 7j
-C[1,1] = 10 + 1j
-print(f'\nproduct of A @ B:\n{A @ B}')
-print(f'\nproduct of A @ B.numpy_view:\n{A @ B.numpy_view}')
-print(f'\nproduct of A @ C:\n{A @ C}')
-print(f'\nproduct of A / B:\n{A / B}')
-print(f'\nproduct of A / C:\n{A / C}')
-print(f'\nsum of A + B:\n{A + B}')
-print(f'\nsum of A + B.numpy_view:\n{A + B.numpy_view}')
-print(f'\nsum of A + C:\n{A + C}')
-print(f'\ndiff of A - B:\n{A - B}')
-print(f'\ndiff of A - B.numpy_view:\n{A - B.numpy_view}')
-print(f'\ndiff of A - C:\n{A - C}')
+C[0, 0] = 0 + 7j
+C[1, 1] = 10 + 1j
+
+print(f'\nMatrix multiplication (A @ B):\n{A @ B}')
+print(f'\nMatrix multiplication with NumPy view (A @ B.numpy_view):\n{A @ B.numpy_view}')
+print(f'\nMatrix multiplication with complex matrix (A @ C):\n{A @ C}')
+
+
+# ============================================================
+# Element-wise arithmetic (libgretl dot semantics)
+# ============================================================
+
+print(f'\nElement-wise division (A / B):\n{A / B}')
+print(f'\nElement-wise division with complex (A / C):\n{A / C}')
+
+print(f'\nElement-wise addition (A + B):\n{A + B}')
+print(f'\nElement-wise addition with NumPy view:\n{A + B.numpy_view}')
+print(f'\nElement-wise addition with complex matrix:\n{A + C}')
+
+print(f'\nElement-wise subtraction (A - B):\n{A - B}')
+print(f'\nElement-wise subtraction with NumPy view:\n{A - B.numpy_view}')
+print(f'\nElement-wise subtraction with complex matrix:\n{A - C}')
+
+
+# ============================================================
+# In-place operations
+# ============================================================
 
 A += B
 A += B.numpy_view
-print(f'\nin-place sum of A += B:\n{A}')
-print(f'\nin-place sum of A += B.numpy_view:\n{A}')
+print(f'\nIn-place addition (A += B + view):\n{A}')
 
 A -= B
 A -= B.numpy_view
-print(f'\nin-place diff of A -= B:\n{A}')
-print(f'\nin-place diff of A -= B.numpy_view:\n{A}')
+print(f'\nIn-place subtraction (A -= B + view):\n{A}')
 
-print(f'\nelement-wise operations')
-print(f'\nproduct of A * B:\n{A * B}')
-print(f'\nproduct of A * B.numpy_view:\n{A * B.numpy_view}')
-print(f'\nproduct of A * C:\n{A * C}')
 
+# ============================================================
+# Element-wise multiplication (Hadamard product)
+# ============================================================
 A = gretl.Matrix(4, 4, 3.3)
 B = gretl.Matrix(4, 4, 1.1)
 
-print(f'\npower: A .^ B:\n{A ** B}')
-print(f'\npower: A .^ B B.numpy_view:\n{A ** B.numpy_view}')
-print(f'\npower: A .^ B C:\n{A ** C}')
+print(f'\nElement-wise multiplication (*)')
+print(f'\nA * B:\n{A * B}')
+print(f'\nA * B.numpy_view:\n{A * B.numpy_view}')
+print(f'\nA * C:\n{A * C}')
+
+
+# ============================================================
+# Element-wise power (Hadamard power, NOT matrix power)
+# ============================================================
+
+print(f'\nElement-wise power (A ** B):\n{A ** B}')
+print(f'\nElement-wise power (A ** B.numpy_view):\n{A ** B.numpy_view}')
+print(f'\nElement-wise power (A ** C):\n{A ** C}')
