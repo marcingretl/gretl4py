@@ -280,16 +280,16 @@ public:
 
     // matrix-algebra methods
     template <typename T, GretlMatrixMatOperations KIND>
-    GretlMatrixPtr alg_mat_mat_operations (const T &rhs) const;
+    GretlMatrixPtr alg_operations (const T &rhs) const;
 
     template <typename T, GretlMatrixMatOperations KIND>
-    GretlMatrix &alg_mat_mat_inplace_operations (const T &rhs);
+    GretlMatrix &alg_inplace_operations (const T &rhs);
 
     template <typename T, GretlMatrixMatOperations KIND>
-    GretlMatrixPtr alg_mat_mat_dot_operations (const T &rhs) const;
+    GretlMatrixPtr alg_dot_operations (const T &rhs) const;
 
     template <typename T, GretlMatrixMatOperations KIND>
-    GretlMatrixPtr alg_mat_scalar_operations (T rhs) const;
+    GretlMatrixPtr alg_scalar_operations (T rhs) const;
 };
 
 #endif // GRETL4PY_DATA_H

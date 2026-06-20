@@ -2054,7 +2054,7 @@ py::object GretlMatrix::to_numpy() const
 // T: GretlMatrix or py::array
 // KIND: MATMUL, TRUEDIV, ADD, SUB
 template <typename T, GretlMatrixMatOperations KIND>
-GretlMatrixPtr GretlMatrix::alg_mat_mat_operations (const T &rhs) const
+GretlMatrixPtr GretlMatrix::alg_operations (const T &rhs) const
 {
     //
     // matrices standard operations
@@ -2112,19 +2112,19 @@ GretlMatrixPtr GretlMatrix::alg_mat_mat_operations (const T &rhs) const
 
     return std::make_shared<GretlMatrix>(res.release(), false);
 }
-template GretlMatrixPtr GretlMatrix::alg_mat_mat_operations<GretlMatrix, GretlMatrixMatOperations::MATMUL>(const GretlMatrix &rhs) const;
-template GretlMatrixPtr GretlMatrix::alg_mat_mat_operations<py::array, GretlMatrixMatOperations::MATMUL>(const py::array &rhs) const;
-template GretlMatrixPtr GretlMatrix::alg_mat_mat_operations<GretlMatrix, GretlMatrixMatOperations::TRUEDIV>(const GretlMatrix &rhs) const;
-template GretlMatrixPtr GretlMatrix::alg_mat_mat_operations<py::array, GretlMatrixMatOperations::TRUEDIV>(const py::array &rhs) const;
-template GretlMatrixPtr GretlMatrix::alg_mat_mat_operations<GretlMatrix, GretlMatrixMatOperations::ADD>(const GretlMatrix &rhs) const;
-template GretlMatrixPtr GretlMatrix::alg_mat_mat_operations<py::array, GretlMatrixMatOperations::ADD>(const py::array &rhs) const;
-template GretlMatrixPtr GretlMatrix::alg_mat_mat_operations<GretlMatrix, GretlMatrixMatOperations::SUB>(const GretlMatrix &rhs) const;
-template GretlMatrixPtr GretlMatrix::alg_mat_mat_operations<py::array, GretlMatrixMatOperations::SUB>(const py::array &rhs) const;
+template GretlMatrixPtr GretlMatrix::alg_operations<GretlMatrix, GretlMatrixMatOperations::MATMUL>(const GretlMatrix &rhs) const;
+template GretlMatrixPtr GretlMatrix::alg_operations<py::array, GretlMatrixMatOperations::MATMUL>(const py::array &rhs) const;
+template GretlMatrixPtr GretlMatrix::alg_operations<GretlMatrix, GretlMatrixMatOperations::TRUEDIV>(const GretlMatrix &rhs) const;
+template GretlMatrixPtr GretlMatrix::alg_operations<py::array, GretlMatrixMatOperations::TRUEDIV>(const py::array &rhs) const;
+template GretlMatrixPtr GretlMatrix::alg_operations<GretlMatrix, GretlMatrixMatOperations::ADD>(const GretlMatrix &rhs) const;
+template GretlMatrixPtr GretlMatrix::alg_operations<py::array, GretlMatrixMatOperations::ADD>(const py::array &rhs) const;
+template GretlMatrixPtr GretlMatrix::alg_operations<GretlMatrix, GretlMatrixMatOperations::SUB>(const GretlMatrix &rhs) const;
+template GretlMatrixPtr GretlMatrix::alg_operations<py::array, GretlMatrixMatOperations::SUB>(const py::array &rhs) const;
 
 // T: GretlMatrix or py::array
 // KIND: IADD, ISUB
 template <typename T, GretlMatrixMatOperations KIND>
-GretlMatrix &GretlMatrix::alg_mat_mat_inplace_operations (const T &rhs)
+GretlMatrix &GretlMatrix::alg_inplace_operations (const T &rhs)
 {
     //
     // matrices in-place operations
@@ -2165,15 +2165,15 @@ GretlMatrix &GretlMatrix::alg_mat_mat_inplace_operations (const T &rhs)
 
     return *this;
 }
-template GretlMatrix &GretlMatrix::alg_mat_mat_inplace_operations<GretlMatrix, GretlMatrixMatOperations::IADD>(const GretlMatrix &rhs);
-template GretlMatrix &GretlMatrix::alg_mat_mat_inplace_operations<py::array, GretlMatrixMatOperations::IADD>(const py::array &rhs);
-template GretlMatrix &GretlMatrix::alg_mat_mat_inplace_operations<GretlMatrix, GretlMatrixMatOperations::ISUB>(const GretlMatrix &rhs);
-template GretlMatrix &GretlMatrix::alg_mat_mat_inplace_operations<py::array, GretlMatrixMatOperations::ISUB>(const py::array &rhs);
+template GretlMatrix &GretlMatrix::alg_inplace_operations<GretlMatrix, GretlMatrixMatOperations::IADD>(const GretlMatrix &rhs);
+template GretlMatrix &GretlMatrix::alg_inplace_operations<py::array, GretlMatrixMatOperations::IADD>(const py::array &rhs);
+template GretlMatrix &GretlMatrix::alg_inplace_operations<GretlMatrix, GretlMatrixMatOperations::ISUB>(const GretlMatrix &rhs);
+template GretlMatrix &GretlMatrix::alg_inplace_operations<py::array, GretlMatrixMatOperations::ISUB>(const py::array &rhs);
 
 // T: GretlMatrix or py::array
 // KIND:
 template <typename T, GretlMatrixMatOperations KIND>
-GretlMatrixPtr GretlMatrix::alg_mat_mat_dot_operations (const T &rhs) const
+GretlMatrixPtr GretlMatrix::alg_dot_operations (const T &rhs) const
 {
     //
     // matrices element-wise (libgretl's 'dot') operations
@@ -2216,15 +2216,15 @@ GretlMatrixPtr GretlMatrix::alg_mat_mat_dot_operations (const T &rhs) const
 
     return std::make_shared<GretlMatrix>(res.release(), false);
 }
-template GretlMatrixPtr GretlMatrix::alg_mat_mat_dot_operations<GretlMatrix, GretlMatrixMatOperations::MUL>(const GretlMatrix &rhs) const;
-template GretlMatrixPtr GretlMatrix::alg_mat_mat_dot_operations<py::array, GretlMatrixMatOperations::MUL>(const py::array &rhs) const;
-template GretlMatrixPtr GretlMatrix::alg_mat_mat_dot_operations<GretlMatrix, GretlMatrixMatOperations::POW>(const GretlMatrix &rhs) const;
-template GretlMatrixPtr GretlMatrix::alg_mat_mat_dot_operations<py::array, GretlMatrixMatOperations::POW>(const py::array &rhs) const;
+template GretlMatrixPtr GretlMatrix::alg_dot_operations<GretlMatrix, GretlMatrixMatOperations::MUL>(const GretlMatrix &rhs) const;
+template GretlMatrixPtr GretlMatrix::alg_dot_operations<py::array, GretlMatrixMatOperations::MUL>(const py::array &rhs) const;
+template GretlMatrixPtr GretlMatrix::alg_dot_operations<GretlMatrix, GretlMatrixMatOperations::POW>(const GretlMatrix &rhs) const;
+template GretlMatrixPtr GretlMatrix::alg_dot_operations<py::array, GretlMatrixMatOperations::POW>(const py::array &rhs) const;
 
 // T:
 // KIND:
 template <typename T, GretlMatrixMatOperations KIND>
-GretlMatrixPtr GretlMatrix::alg_mat_scalar_operations (T rhs) const
+GretlMatrixPtr GretlMatrix::alg_scalar_operations (T rhs) const
 {
     //
     // method for matrix-scalar non-inplace operations
