@@ -279,7 +279,10 @@ public:
 
     // matrix-algebra methods
     template <typename T, GretlMatrixMatOperations KIND>
-    GretlMatrixPtr mat_alg_oprations (const T &rhs) const;
+    GretlMatrixPtr alg_mat_mat_operations (const T &rhs) const;
+
+    template <typename T, GretlMatrixMatOperations KIND>
+    GretlMatrixPtr alg_mat_scalar_operations (T rhs) const;
 };
 
 #endif // GRETL4PY_DATA_H

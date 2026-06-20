@@ -208,7 +208,7 @@ private:
 enum class GretlFunIndex { F_PDF, F_PVAL, F_CDF, F_INVCDF, F_CRIT, F_MCOV, F_MCORR };
 
 // this enum is to enumerate matrix operations
-enum class GretlMatrixMatOperations { MATMUL, TRUEDIV };
+enum class GretlMatrixMatOperations { MATMUL, TRUEDIV, ADD, SUB };
 
 //////////////////////////////////////////////////
 // tools
