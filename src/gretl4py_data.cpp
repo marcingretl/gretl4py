@@ -2127,7 +2127,8 @@ template <typename T, GretlMatrixMatOperations KIND>
 GretlMatrix &GretlMatrix::alg_inplace_operations (const T &rhs)
 {
     //
-    // matrices in-place operations
+    // in-place operations
+    // note: here we perform some scalar operations as well
     // use as a backend for: __iadd__, __isub__
     //
     gretl_matrix *rhs_matrix = nullptr;            // right-hand side, used in any kind of operation
@@ -2139,7 +2140,12 @@ GretlMatrix &GretlMatrix::alg_inplace_operations (const T &rhs)
     } else if constexpr (std::is_same_v<T, py::array>) {
         rhs_storage.reset(numpy_to_matrix_(rhs));
         rhs_matrix = rhs_storage.get();
-    } else {
+    } else if constexpr (std::is_same_v<T, double>) {
+        rhs_storage.reset(gretl_matrix_alloc(1, 1));
+        rhs_matrix = rhs_storage.get();
+        gretl_matrix_fill(rhs_matrix, rhs);
+    }
+    else {
         static_assert(always_false<T>, "GretlMatrix::alg_mat_mat_inplace_operations(): unknown type");
     }
 
@@ -2167,8 +2173,10 @@ GretlMatrix &GretlMatrix::alg_inplace_operations (const T &rhs)
 }
 template GretlMatrix &GretlMatrix::alg_inplace_operations<GretlMatrix, GretlMatrixMatOperations::IADD>(const GretlMatrix &rhs);
 template GretlMatrix &GretlMatrix::alg_inplace_operations<py::array, GretlMatrixMatOperations::IADD>(const py::array &rhs);
+template GretlMatrix &GretlMatrix::alg_inplace_operations<double, GretlMatrixMatOperations::IADD>(const double &rhs);
 template GretlMatrix &GretlMatrix::alg_inplace_operations<GretlMatrix, GretlMatrixMatOperations::ISUB>(const GretlMatrix &rhs);
 template GretlMatrix &GretlMatrix::alg_inplace_operations<py::array, GretlMatrixMatOperations::ISUB>(const py::array &rhs);
+template GretlMatrix &GretlMatrix::alg_inplace_operations<double, GretlMatrixMatOperations::ISUB>(const double &rhs);
 
 // T: GretlMatrix or py::array
 // KIND:
