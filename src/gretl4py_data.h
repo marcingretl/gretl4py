@@ -282,6 +282,9 @@ public:
     GretlMatrixPtr alg_mat_mat_operations (const T &rhs) const;
 
     template <typename T, GretlMatrixMatOperations KIND>
+    GretlMatrix &alg_mat_mat_inplace_operations (const T &rhs);
+
+    template <typename T, GretlMatrixMatOperations KIND>
     GretlMatrixPtr alg_mat_scalar_operations (T rhs) const;
 };
 

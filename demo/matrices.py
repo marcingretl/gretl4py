@@ -153,3 +153,13 @@ print(f'\nsum of A + C:\n{A + C}')
 print(f'\ndiff of A - B:\n{A - B}')
 print(f'\ndiff of A - B.numpy_view:\n{A - B.numpy_view}')
 print(f'\ndiff of A - C:\n{A - C}')
+
+A += B
+A += B.numpy_view
+print(f'\nin-place sum of A += B:\n{A}')
+print(f'\nin-place sum of A += B.numpy_view:\n{A}')
+
+A -= B
+A -= B.numpy_view
+print(f'\nin-place diff of A -= B:\n{A}')
+print(f'\nin-place diff of A -= B.numpy_view:\n{A}')
