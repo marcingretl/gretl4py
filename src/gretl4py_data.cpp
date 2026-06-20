@@ -1712,6 +1712,14 @@ GretlMatrix::GretlMatrix (void) : m_(gretl_null_matrix_new())
     if (!m_) handle_gretl_error(E_ALLOC);
 }
 
+GretlMatrix::GretlMatrix (const GretlMatrix &src): m_(gretl_matrix_copy(src.get_ptr()))
+{
+    //
+    // copy constructor
+    //
+    if (!m_) handle_gretl_error(E_ALLOC);
+}
+
 GretlMatrix::GretlMatrix (int rows, int cols, double fill, const std::string &type)
 {
     //
@@ -2120,7 +2128,7 @@ GretlMatrix &GretlMatrix::alg_mat_mat_inplace_operations (const T &rhs)
 {
     //
     // matrices in-place operations
-    // use as a backend for:__iadd__, __isub__
+    // use as a backend for: __iadd__, __isub__
     //
     gretl_matrix *rhs_matrix = nullptr;            // right-hand side, used in any kind of operation
     gretl_matrix_ptr rhs_storage = nullptr;        // if we need a temporary unique_ptr to rhs (for py::array)
@@ -2169,7 +2177,7 @@ GretlMatrixPtr GretlMatrix::alg_mat_mat_dot_operations (const T &rhs) const
 {
     //
     // matrices element-wise (libgretl's 'dot') operations
-    // use as a backend for: __mul__
+    // use as a backend for: __mul__, __pow__
     //
     gretl_matrix *rhs_matrix = nullptr;            // right-hand side, used in any kind of operation
     gretl_matrix_ptr rhs_storage = nullptr;        // if we need a temporary unique_ptr to rhs (for py::array)

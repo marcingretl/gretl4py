@@ -241,6 +241,7 @@ private:
     static gretl_matrix *numpy_to_matrix_ (const py::array &array);         // helper for NumPy to GretlMatrix
 public:
     GretlMatrix (void);                                                     // default constructor
+    GretlMatrix (const GretlMatrix &src);                                   // copy constructor
     GretlMatrix (int rows, int cols, double fill, const std::string &type); // filled real/complex matrix
     GretlMatrix (int rows, int cols, const std::string &dist);              // random matrix
     GretlMatrix (double start, double end, double step = 1.0);              // sequential row vector
