@@ -2133,6 +2133,8 @@ template GretlMatrixPtr GretlMatrix::alg_operations<double, GretlMatrixMatOperat
 template GretlMatrixPtr GretlMatrix::alg_operations<std::complex<double>, GretlMatrixMatOperations::ADD>(const std::complex<double> &rhs) const;
 template GretlMatrixPtr GretlMatrix::alg_operations<GretlMatrix, GretlMatrixMatOperations::SUB>(const GretlMatrix &rhs) const;
 template GretlMatrixPtr GretlMatrix::alg_operations<py::array, GretlMatrixMatOperations::SUB>(const py::array &rhs) const;
+template GretlMatrixPtr GretlMatrix::alg_operations<double, GretlMatrixMatOperations::SUB>(const double &rhs) const;
+template GretlMatrixPtr GretlMatrix::alg_operations<std::complex<double>, GretlMatrixMatOperations::SUB>(const std::complex<double> &rhs) const;
 
 // T: GretlMatrix or py::array, double
 // KIND: IADD, ISUB
