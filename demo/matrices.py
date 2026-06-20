@@ -168,3 +168,10 @@ print(f'\nelement-wise operations')
 print(f'\nproduct of A * B:\n{A * B}')
 print(f'\nproduct of A * B.numpy_view:\n{A * B.numpy_view}')
 print(f'\nproduct of A * C:\n{A * C}')
+
+A = gretl.Matrix(4, 4, 3.3)
+B = gretl.Matrix(4, 4, 1.1)
+
+print(f'\npower: A .^ B:\n{A ** B}')
+print(f'\npower: A .^ B B.numpy_view:\n{A ** B.numpy_view}')
+print(f'\npower: A .^ B C:\n{A ** C}')

@@ -429,6 +429,8 @@ void init_gretl4py_gretl_matrix_py11 (py::module_ &m)
     .def("__isub__", &GretlMatrix::alg_mat_mat_inplace_operations<py::array, GretlMatrixMatOperations::ISUB>)
     .def("__mul__", &GretlMatrix::alg_mat_mat_dot_operations<GretlMatrix, GretlMatrixMatOperations::MUL>)
     .def("__mul__", &GretlMatrix::alg_mat_mat_dot_operations<py::array, GretlMatrixMatOperations::MUL>)
+    .def("__pow__", &GretlMatrix::alg_mat_mat_dot_operations<GretlMatrix, GretlMatrixMatOperations::POW>)
+    .def("__pow__", &GretlMatrix::alg_mat_mat_dot_operations<py::array, GretlMatrixMatOperations::POW>)
     .def_property_readonly("rows",
                            [](const GretlMatrix &self)
                            {

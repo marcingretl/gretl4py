@@ -2192,8 +2192,15 @@ GretlMatrixPtr GretlMatrix::alg_mat_mat_dot_operations (const T &rhs) const
         } else {
             res.reset(gretl_matrix_dot_op(m_, rhs_matrix, 42, &err_));
         }
+    } else if constexpr (KIND == GretlMatrixMatOperations::POW) {
+        if (is_complex() || rhs_matrix->is_complex) {
+            res.reset(gretl_cmatrix_dot_op(m_, rhs_matrix, 94, &err_));
+        } else {
+            res.reset(gretl_matrix_dot_op(m_, rhs_matrix, 94, &err_));
+        }
+    } else {
+        static_assert(always_false<T>, "Unsupported GretlMatrixMatOperations value");
     }
-
     if (err_) {
         handle_gretl_error(get_gretl_matrix_err());
         handle_gretl_error(err_);
@@ -2203,6 +2210,8 @@ GretlMatrixPtr GretlMatrix::alg_mat_mat_dot_operations (const T &rhs) const
 }
 template GretlMatrixPtr GretlMatrix::alg_mat_mat_dot_operations<GretlMatrix, GretlMatrixMatOperations::MUL>(const GretlMatrix &rhs) const;
 template GretlMatrixPtr GretlMatrix::alg_mat_mat_dot_operations<py::array, GretlMatrixMatOperations::MUL>(const py::array &rhs) const;
+template GretlMatrixPtr GretlMatrix::alg_mat_mat_dot_operations<GretlMatrix, GretlMatrixMatOperations::POW>(const GretlMatrix &rhs) const;
+template GretlMatrixPtr GretlMatrix::alg_mat_mat_dot_operations<py::array, GretlMatrixMatOperations::POW>(const py::array &rhs) const;
 
 // T:
 // KIND:
@@ -2215,25 +2224,3 @@ GretlMatrixPtr GretlMatrix::alg_mat_scalar_operations (T rhs) const
 
     return nullptr;
 }
-
-/*
- to do:
- A * B	__mul__
- A *= B	__imul__
-
- element-wise only
- multiply	'*'	42
- divide	'/'	47
- add	'+'	43
- subtract	'-'	45
- power	'^'	94
- equal	'='	61
- less	'<'	60
- greater	'>'	62
- not equal	'!'	33
-
-
- A // B	__floordiv__
- A % B	__mod__
- A ** B	__pow__
-*/
