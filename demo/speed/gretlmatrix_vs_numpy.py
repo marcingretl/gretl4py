@@ -22,4 +22,4 @@ for i in range(0,rep):
     A_np @ B_np
 t2 = time.time() - t0
 
-print(f'GretlMatrix:\t{t1}\nNumPy:\t\t{t2}')
+print(f'GretlMatrix:\t{t1}\nNumPy:\t\t{t2}\nratio:\t\t{t1/t2:.4}')

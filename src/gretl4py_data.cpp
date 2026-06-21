@@ -2052,13 +2052,13 @@ py::object GretlMatrix::to_numpy() const
 }
 
 // T: GretlMatrix, py::array
-// KIND: MATMUL, TRUEDIV, ADD, SUB
+// KIND: ADD, SUB, MATMUL, TRUEDIV
 template <typename T, GretlMatrixAlgOperations KIND>
 GretlMatrixPtr GretlMatrix::alg_operations (const T &rhs) const
 {
     //
     // matrices standard operations
-    // use as a backend for: __matmul__, __truediv__, __add__, __sub__
+    // use as a backend for: __add__, __sub__, __matmul__, __truediv__
     //
     gretl_matrix *rhs_matrix = nullptr;            // right-hand side, used in any kind of operation
     gretl_matrix_ptr rhs_storage = nullptr;        // if we need a temporary unique_ptr to rhs (for py::array)
@@ -2196,6 +2196,7 @@ GretlMatrixPtr GretlMatrix::alg_dot_operations (const T &rhs) const
 {
     //
     // matrices element-wise (libgretl's 'dot') operations
+    // note: here we perform some scalar operations as well
     // use as a backend for: __add__, __sub__, __mul__, __truediv__, __pow__
     //
     gretl_matrix *rhs_matrix = nullptr;            // right-hand side, used in any kind of operation
