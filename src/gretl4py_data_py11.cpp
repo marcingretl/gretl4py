@@ -417,6 +417,7 @@ void init_gretl4py_gretl_matrix_py11 (py::module_ &m)
          {
              self.set_element<std::complex<double>>(ij.first, ij.second, value);
          }, py::arg("ij").none(false), py::arg("value").none(false))
+    .def("__neg__", &GretlMatrix::neg)
     .def("__add__", &GretlMatrix::alg_operations<GretlMatrix, GretlMatrixAlgOperations::ADD>)
     .def("__add__", &GretlMatrix::alg_operations<py::array, GretlMatrixAlgOperations::ADD>)
     .def("__add__", &GretlMatrix::alg_dot_operations<double, GretlMatrixAlgOperations::ADD>)
@@ -429,15 +430,12 @@ void init_gretl4py_gretl_matrix_py11 (py::module_ &m)
     .def("__mul__", &GretlMatrix::alg_dot_operations<py::array, GretlMatrixAlgOperations::MUL>)
     .def("__mul__", &GretlMatrix::alg_dot_operations<double, GretlMatrixAlgOperations::MUL>)
     .def("__mul__", &GretlMatrix::alg_dot_operations<std::complex<double>, GretlMatrixAlgOperations::MUL>)
-    .def("__rmul__", &GretlMatrix::alg_dot_operations<double, GretlMatrixAlgOperations::MUL>)
-    .def("__rmul__", &GretlMatrix::alg_dot_operations<std::complex<double>, GretlMatrixAlgOperations::MUL>)
     .def("__matmul__", &GretlMatrix::alg_operations<GretlMatrix, GretlMatrixAlgOperations::MATMUL>)
     .def("__matmul__", &GretlMatrix::alg_operations<py::array, GretlMatrixAlgOperations::MATMUL>)
     .def("__truediv__", &GretlMatrix::alg_operations<GretlMatrix, GretlMatrixAlgOperations::TRUEDIV>)
     .def("__truediv__", &GretlMatrix::alg_operations<py::array, GretlMatrixAlgOperations::TRUEDIV>)
     .def("__truediv__", &GretlMatrix::alg_dot_operations<double, GretlMatrixAlgOperations::TRUEDIV>)
     .def("__truediv__", &GretlMatrix::alg_dot_operations<std::complex<double>, GretlMatrixAlgOperations::TRUEDIV>)
-    .def("__itruediv__", &GretlMatrix::alg_inplace_operations<double, GretlMatrixAlgOperations::ITRUEDIV>)
     .def("__pow__", &GretlMatrix::alg_dot_operations<GretlMatrix, GretlMatrixAlgOperations::POW>)
     .def("__pow__", &GretlMatrix::alg_dot_operations<py::array, GretlMatrixAlgOperations::POW>)
     .def("__iadd__", &GretlMatrix::alg_inplace_operations<GretlMatrix, GretlMatrixAlgOperations::IADD>)
@@ -447,6 +445,35 @@ void init_gretl4py_gretl_matrix_py11 (py::module_ &m)
     .def("__isub__", &GretlMatrix::alg_inplace_operations<py::array, GretlMatrixAlgOperations::ISUB>)
     .def("__isub__", &GretlMatrix::alg_inplace_operations<double, GretlMatrixAlgOperations::ISUB>)
     .def("__imul__", &GretlMatrix::alg_inplace_operations<double, GretlMatrixAlgOperations::IMUL>)
+    .def("__itruediv__", &GretlMatrix::alg_inplace_operations<double, GretlMatrixAlgOperations::ITRUEDIV>)
+    .def("__radd__", &GretlMatrix::alg_dot_operations<double, GretlMatrixAlgOperations::ADD>)
+    .def("__radd__", &GretlMatrix::alg_dot_operations<std::complex<double>, GretlMatrixAlgOperations::ADD>)
+    .def("__rsub__",
+         [](const GretlMatrix &self, double val)
+         {
+             return self.neg()->alg_dot_operations<double, GretlMatrixAlgOperations::ADD>(val);
+         })
+    .def("__rsub__",
+         [](const GretlMatrix &self, std::complex<double> val)
+         {
+             return self.neg()->alg_dot_operations<std::complex<double>, GretlMatrixAlgOperations::ADD>(val);
+         })
+    .def("__rmul__", &GretlMatrix::alg_dot_operations<double, GretlMatrixAlgOperations::MUL>)
+    .def("__rmul__", &GretlMatrix::alg_dot_operations<std::complex<double>, GretlMatrixAlgOperations::MUL>)
+    .def("__rtruediv__",
+         [](const GretlMatrix &self, double val)
+         {
+             auto res = self.alg_dot_operations<double, GretlMatrixAlgOperations::TRUEDIV>(1.0);
+
+             return res->alg_dot_operations<double, GretlMatrixAlgOperations::MUL>(val);
+         })
+    .def("__rtruediv__",
+         [](const GretlMatrix &self, std::complex<double> val)
+         {
+             auto res = self.alg_dot_operations<std::complex<double>, GretlMatrixAlgOperations::TRUEDIV>(1.0);
+
+             return res->alg_dot_operations<std::complex<double>, GretlMatrixAlgOperations::MUL>(val);
+         })
     .def_property_readonly("rows",
                            [](const GretlMatrix &self)
                            {

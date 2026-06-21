@@ -212,14 +212,29 @@ A = gretl.Matrix(4, 4, 1.0)
 B = gretl.Matrix(4, 4, 1.0, "complex")
 
 print(f'\nA + 1:\n{A + 1}')
-print(f'\nA - 2:\n{A - 2}')
-print(f'\nA * 4:\n{A * 4}')
-print(f'\nA / 5:\n{A / 5}')
+print(f'\n1 + A:\n{1 + A}')
 
+print(f'\nA - 2:\n{A - 2}')
+print(f'\n2 - A:\n{2 - A}')
+
+print(f'\nA * 4:\n{A * 4}')
+print(f'\n4 * A:\n{4 * A}')
+
+print(f'\nA / 5:\n{A / 5}')
+print(f'\n5 / A:\n{5 / A}')
+
+print(B)
 print(f'\nB + (1 + 1j):\n{B + (1 + 1j)}')
+print(f'\n(1 + 1j) + B:\n{(1 + 1j) + B}')
+
 print(f'\nB - (2 + 1j):\n{B - (2 + 1j)}')
+print(f'\n(2 + 1j) - B:\n{(2 + 1j) - B}')
+
 print(f'\nB * (1 + 1j):\n{B * (1 + 1j)}')
+print(f'\n(1 + 1j) * B:\n{(1 + 1j) * B}')
+
 print(f'\nB / (2 + 1j):\n{B / (2 + 1j)}')
+print(f'\n(2 + 1j) / B:\n{(2 + 1j) / B}')
 
 A += 1
 print(f'\nA += 1:\n{A}')

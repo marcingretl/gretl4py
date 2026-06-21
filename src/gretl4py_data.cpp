@@ -2051,6 +2051,16 @@ py::object GretlMatrix::to_numpy() const
     return variant_to_pyobject(std::move(*res));
 }
 
+GretlMatrixPtr GretlMatrix::neg (void) const
+{
+    //
+    // we return neqation, i.e. (-1 * m_)
+    //
+    if (is_complex()) return alg_dot_operations<std::complex<double>, GretlMatrixAlgOperations::MUL>(-1);
+
+    return alg_dot_operations<double, GretlMatrixAlgOperations::MUL>(-1);
+}
+
 // T: GretlMatrix, py::array
 // KIND: ADD, SUB, MATMUL, TRUEDIV
 template <typename T, GretlMatrixAlgOperations KIND>
