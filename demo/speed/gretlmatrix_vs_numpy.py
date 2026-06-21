@@ -2,8 +2,8 @@ import gretl
 import numpy as pd
 import time
 
-rows = 500
-cols = 500
+rows = 750
+cols = 750
 rep = 10 ** 3
 
 A = gretl.Matrix(rows, cols, "normal")
