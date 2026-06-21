@@ -202,3 +202,26 @@ print(f'\nA * C:\n{A * C}')
 print(f'\nElement-wise power (A ** B):\n{A ** B}')
 print(f'\nElement-wise power (A ** B.numpy_view):\n{A ** B.numpy_view}')
 print(f'\nElement-wise power (A ** C):\n{A ** C}')
+
+# ============================================================
+# Scalar operations
+# ============================================================
+
+A = gretl.Matrix(4, 4)
+B = gretl.Matrix(4, 4, 0, "complex")
+
+C = A + 1
+C = A - 2
+C = A * 4
+C = A / 4
+
+D = B + (1 + 1j)
+D = B - (2 + 1j)
+D = B * (1 + 1j)
+D = B / (2 + 1j)
+
+# in-place
+A += 2
+A -= 3
+A *= 4
+A /= 5
