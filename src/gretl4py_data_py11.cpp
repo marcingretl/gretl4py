@@ -51,6 +51,26 @@ static void head_tail_print (GretlDataset &dataset, int nobs)
     dataset.print("", opts);
 }
 
+static py::array make_numpy_view (py::object self)
+{
+    //
+    // this is to bind GretlMatrix as NumPy view
+    //
+    auto &m = self.cast<GretlMatrix&>();
+
+    if (m.is_complex()) {
+        return py::array_t<std::complex<double>>({m.rows(), m.cols()},
+                                                 {sizeof(std::complex<double>), sizeof(std::complex<double>) * m.rows()},
+                                                 reinterpret_cast<std::complex<double>*>(m.z()),
+                                                 self);
+    } else {
+        return py::array_t<double>({m.rows(), m.cols()},
+                                   {sizeof(double), sizeof(double) * m.rows()},
+                                   m.val(),
+                                   self);
+    }
+}
+
 //
 // GretlDataset mappings
 //
@@ -399,6 +419,23 @@ void init_gretl4py_gretl_matrix_py11 (py::module_ &m)
     .def(py::init<int>(), py::arg("n").none(false))                                 // identity matrix
     .def(py::init<const py::array&>(), py::arg("array").none(false))                // from NumPy array
     .def(py::init<const py::list&>(), py::arg("list").none(false))                  // from Python list
+    .def_property_readonly("rows",
+                           [](const GretlMatrix &self)
+                           {
+                               return self.rows();
+                           })
+    .def_property_readonly("cols",
+                           [](const GretlMatrix &self)
+                           {
+                               return self.cols();
+                           })
+    .def_property_readonly("is_complex",
+                           [](const GretlMatrix &self)
+                           {
+                               return self.is_complex();
+                           })
+    .def_property_readonly("numpy_view", &make_numpy_view)
+    .def("__array__", &make_numpy_view)
     .def("__copy__", [](const GretlMatrix &self) { return GretlMatrix(self); })
     .def("__deepcopy__", [](const GretlMatrix &self, py::dict) { return GretlMatrix(self); })
     .def("__repr__", &GretlMatrix::repr_impl)
@@ -451,7 +488,7 @@ void init_gretl4py_gretl_matrix_py11 (py::module_ &m)
     .def("__rsub__",
          [](const GretlMatrix &self, double val)
          {
-             return self.neg()->alg_dot_operations<double, GretlMatrixAlgOperations::ADD>(val);
+             return self.neg()->alg_inplace_operations<double, GretlMatrixAlgOperations::IADD>(val);
          })
     .def("__rsub__",
          [](const GretlMatrix &self, std::complex<double> val)
@@ -465,7 +502,7 @@ void init_gretl4py_gretl_matrix_py11 (py::module_ &m)
          {
              auto res = self.alg_dot_operations<double, GretlMatrixAlgOperations::TRUEDIV>(1.0);
 
-             return res->alg_dot_operations<double, GretlMatrixAlgOperations::MUL>(val);
+             return res->alg_inplace_operations<double, GretlMatrixAlgOperations::IMUL>(val);
          })
     .def("__rtruediv__",
          [](const GretlMatrix &self, std::complex<double> val)
@@ -474,40 +511,7 @@ void init_gretl4py_gretl_matrix_py11 (py::module_ &m)
 
              return res->alg_dot_operations<std::complex<double>, GretlMatrixAlgOperations::MUL>(val);
          })
-    .def_property_readonly("rows",
-                           [](const GretlMatrix &self)
-                           {
-                               return self.rows();
-                           })
-    .def_property_readonly("cols",
-                           [](const GretlMatrix &self)
-                           {
-                               return self.cols();
-                           })
-    .def_property_readonly("is_complex",
-                           [](const GretlMatrix &self)
-                           {
-                               return self.is_complex();
-                           })
-    .def_property_readonly("numpy_view",
-                           [](py::object self) -> py::array
-                           {
-                               auto &m = self.cast<GretlMatrix&>();
 
-                               if (m.is_complex()) {
-                                   return py::array_t<std::complex<double>>({m.rows(), m.cols()},
-                                                                            {sizeof(std::complex<double>),
-                                                                                sizeof(std::complex<double>) * m.rows()},
-                                                                            reinterpret_cast<std::complex<double>*>(m.z()),
-                                                                            self);
-                               } else {
-                                   return py::array_t<double>({m.rows(), m.cols()},
-                                                              {sizeof(double), sizeof(double) * m.rows()},
-                                                              m.val(),
-                                                              self);    // CRITICAL: keep owner alive
-
-                               }
-                           })
     .def("copy", [](const GretlMatrix &self) { return GretlMatrix(self); })
     .def("to_numpy", &GretlMatrix::to_numpy)
     .def("rnameget", &GretlMatrix::rows_cols_names_get<true>)
@@ -517,3 +521,17 @@ void init_gretl4py_gretl_matrix_py11 (py::module_ &m)
     .def("cnameset", &GretlMatrix::rows_cols_names_set<false>,
          py::arg("names").none(false));
 }
+
+/*
+ __rpow__   // scalar* ** matrix (rare but Python supports it)
+ __ipow__   // inplace
+
+ .def("__array__", [](const GretlMatrix &m) { return m.numpy_view(); })
+
+ .def("__eq__", ...)    =
+ .def("__ne__", ...)    !=
+ .def("__lt__", ...)    <
+ .def("__le__", ...)    >
+ .def("__gt__", ...)    <=
+ .def("__ge__", ...)    >=
+*/
