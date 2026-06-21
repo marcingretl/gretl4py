@@ -2286,3 +2286,5 @@ template GretlMatrixPtr GretlMatrix::alg_dot_operations<double, GretlMatrixAlgOp
 template GretlMatrixPtr GretlMatrix::alg_dot_operations<std::complex<double>, GretlMatrixAlgOperations::TRUEDIV>(const std::complex<double> &rhs) const;
 template GretlMatrixPtr GretlMatrix::alg_dot_operations<GretlMatrix, GretlMatrixAlgOperations::POW>(const GretlMatrix &rhs) const;
 template GretlMatrixPtr GretlMatrix::alg_dot_operations<py::array, GretlMatrixAlgOperations::POW>(const py::array &rhs) const;
+template GretlMatrixPtr GretlMatrix::alg_dot_operations<double, GretlMatrixAlgOperations::POW>(const double &rhs) const;
+template GretlMatrixPtr GretlMatrix::alg_dot_operations<std::complex<double>, GretlMatrixAlgOperations::POW>(const std::complex<double> &rhs) const;

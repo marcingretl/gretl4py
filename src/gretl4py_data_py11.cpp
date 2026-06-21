@@ -475,6 +475,8 @@ void init_gretl4py_gretl_matrix_py11 (py::module_ &m)
     .def("__truediv__", &GretlMatrix::alg_dot_operations<std::complex<double>, GretlMatrixAlgOperations::TRUEDIV>)
     .def("__pow__", &GretlMatrix::alg_dot_operations<GretlMatrix, GretlMatrixAlgOperations::POW>)
     .def("__pow__", &GretlMatrix::alg_dot_operations<py::array, GretlMatrixAlgOperations::POW>)
+    .def("__pow__", &GretlMatrix::alg_dot_operations<double, GretlMatrixAlgOperations::POW>)
+    .def("__pow__", &GretlMatrix::alg_dot_operations<std::complex<double>, GretlMatrixAlgOperations::POW>)
     .def("__iadd__", &GretlMatrix::alg_inplace_operations<GretlMatrix, GretlMatrixAlgOperations::IADD>)
     .def("__iadd__", &GretlMatrix::alg_inplace_operations<py::array, GretlMatrixAlgOperations::IADD>)
     .def("__iadd__", &GretlMatrix::alg_inplace_operations<double, GretlMatrixAlgOperations::IADD>)
@@ -526,7 +528,10 @@ void init_gretl4py_gretl_matrix_py11 (py::module_ &m)
  __rpow__   // scalar* ** matrix (rare but Python supports it)
  __ipow__   // inplace
 
- .def("__array__", [](const GretlMatrix &m) { return m.numpy_view(); })
+ __iadd__(std::complex<double>)
+ __isub__(std::complex<double>)
+ __imul__(std::complex<double>)
+ __itruediv__(std::complex<double>)
 
  .def("__eq__", ...)    =
  .def("__ne__", ...)    !=
