@@ -2053,7 +2053,7 @@ py::object GretlMatrix::to_numpy() const
 
 // T: GretlMatrix, py::array
 // KIND: MATMUL, TRUEDIV, ADD, SUB
-template <typename T, GretlMatrixMatOperations KIND>
+template <typename T, GretlMatrixAlgOperations KIND>
 GretlMatrixPtr GretlMatrix::alg_operations (const T &rhs) const
 {
     //
@@ -2075,26 +2075,26 @@ GretlMatrixPtr GretlMatrix::alg_operations (const T &rhs) const
     }
 
     // we do the job
-    if constexpr (KIND == GretlMatrixMatOperations::MATMUL) {
+    if constexpr (KIND == GretlMatrixAlgOperations::MATMUL) {
         if (is_complex() || rhs_matrix->is_complex) {
             res.reset(gretl_cmatrix_multiply(m_, rhs_matrix, &err_));
         } else {
             res.reset(gretl_matrix_multiply_new(m_, rhs_matrix, &err_));
         }
-    } else if constexpr (KIND == GretlMatrixMatOperations::TRUEDIV) {
+    } else if constexpr (KIND == GretlMatrixAlgOperations::TRUEDIV) {
         if (is_complex() || rhs_matrix->is_complex) {
             res.reset(gretl_cmatrix_divide(m_, rhs_matrix, GRETL_MOD_TRANSPOSE, &err_));
         } else {
             res.reset(gretl_matrix_divide(m_, rhs_matrix, GRETL_MOD_TRANSPOSE, &err_));
         }
-    } else if constexpr (KIND == GretlMatrixMatOperations::ADD) {
+    } else if constexpr (KIND == GretlMatrixAlgOperations::ADD) {
         if (is_complex() || rhs_matrix->is_complex) {
             res.reset(gretl_cmatrix_add_sub(m_, rhs_matrix, 1, &err_));
         } else {
             res.reset(gretl_matrix_alloc(m_->rows, m_->cols));
             err_ = gretl_matrix_add(m_, rhs_matrix, res.get());
         }
-    } else if constexpr (KIND == GretlMatrixMatOperations::SUB) {
+    } else if constexpr (KIND == GretlMatrixAlgOperations::SUB) {
         if (is_complex() || rhs_matrix->is_complex) {
             res.reset(gretl_cmatrix_add_sub(m_, rhs_matrix, -1, &err_));
         } else {
@@ -2102,7 +2102,7 @@ GretlMatrixPtr GretlMatrix::alg_operations (const T &rhs) const
             err_ = gretl_matrix_subtract(m_, rhs_matrix, res.get());
         }
     } else {
-        static_assert(always_false<T>, "Unsupported GretlMatrixMatOperations value");
+        static_assert(always_false<T>, "Unsupported GretlMatrixAlgOperations value");
     }
     if (err_) {
         handle_gretl_error(get_gretl_matrix_err());
@@ -2111,18 +2111,18 @@ GretlMatrixPtr GretlMatrix::alg_operations (const T &rhs) const
 
     return std::make_shared<GretlMatrix>(res.release(), false);
 }
-template GretlMatrixPtr GretlMatrix::alg_operations<GretlMatrix, GretlMatrixMatOperations::MATMUL>(const GretlMatrix &rhs) const;
-template GretlMatrixPtr GretlMatrix::alg_operations<py::array, GretlMatrixMatOperations::MATMUL>(const py::array &rhs) const;
-template GretlMatrixPtr GretlMatrix::alg_operations<GretlMatrix, GretlMatrixMatOperations::TRUEDIV>(const GretlMatrix &rhs) const;
-template GretlMatrixPtr GretlMatrix::alg_operations<py::array, GretlMatrixMatOperations::TRUEDIV>(const py::array &rhs) const;
-template GretlMatrixPtr GretlMatrix::alg_operations<GretlMatrix, GretlMatrixMatOperations::ADD>(const GretlMatrix &rhs) const;
-template GretlMatrixPtr GretlMatrix::alg_operations<py::array, GretlMatrixMatOperations::ADD>(const py::array &rhs) const;
-template GretlMatrixPtr GretlMatrix::alg_operations<GretlMatrix, GretlMatrixMatOperations::SUB>(const GretlMatrix &rhs) const;
-template GretlMatrixPtr GretlMatrix::alg_operations<py::array, GretlMatrixMatOperations::SUB>(const py::array &rhs) const;
+template GretlMatrixPtr GretlMatrix::alg_operations<GretlMatrix, GretlMatrixAlgOperations::MATMUL>(const GretlMatrix &rhs) const;
+template GretlMatrixPtr GretlMatrix::alg_operations<py::array, GretlMatrixAlgOperations::MATMUL>(const py::array &rhs) const;
+template GretlMatrixPtr GretlMatrix::alg_operations<GretlMatrix, GretlMatrixAlgOperations::TRUEDIV>(const GretlMatrix &rhs) const;
+template GretlMatrixPtr GretlMatrix::alg_operations<py::array, GretlMatrixAlgOperations::TRUEDIV>(const py::array &rhs) const;
+template GretlMatrixPtr GretlMatrix::alg_operations<GretlMatrix, GretlMatrixAlgOperations::ADD>(const GretlMatrix &rhs) const;
+template GretlMatrixPtr GretlMatrix::alg_operations<py::array, GretlMatrixAlgOperations::ADD>(const py::array &rhs) const;
+template GretlMatrixPtr GretlMatrix::alg_operations<GretlMatrix, GretlMatrixAlgOperations::SUB>(const GretlMatrix &rhs) const;
+template GretlMatrixPtr GretlMatrix::alg_operations<py::array, GretlMatrixAlgOperations::SUB>(const py::array &rhs) const;
 
 // T: GretlMatrix, py::array, double
 // KIND: IADD, ISUB, IMUL, ITRUEDIV
-template <typename T, GretlMatrixMatOperations KIND>
+template <typename T, GretlMatrixAlgOperations KIND>
 GretlMatrix &GretlMatrix::alg_inplace_operations (const T &rhs)
 {
     //
@@ -2134,7 +2134,7 @@ GretlMatrix &GretlMatrix::alg_inplace_operations (const T &rhs)
     gretl_matrix_ptr rhs_storage = nullptr;        // if we need a temporary unique_ptr to rhs (for py::array)
 
     // we define scalar-only operations
-    constexpr bool scalar_only = (KIND == GretlMatrixMatOperations::IMUL || KIND == GretlMatrixMatOperations::ITRUEDIV);
+    constexpr bool scalar_only = (KIND == GretlMatrixAlgOperations::IMUL || KIND == GretlMatrixAlgOperations::ITRUEDIV);
 
     // we check template parameters
     if constexpr (std::is_same_v<T, GretlMatrix>) {
@@ -2162,16 +2162,16 @@ GretlMatrix &GretlMatrix::alg_inplace_operations (const T &rhs)
     }
 
     // we do the job
-    if constexpr (KIND == GretlMatrixMatOperations::IADD) {
+    if constexpr (KIND == GretlMatrixAlgOperations::IADD) {
         err_ = gretl_matrix_add_to(m_, rhs_matrix);
-    } else if constexpr (KIND == GretlMatrixMatOperations::ISUB) {
+    } else if constexpr (KIND == GretlMatrixAlgOperations::ISUB) {
         err_ = gretl_matrix_subtract_from(m_, rhs_matrix);
-    } else if constexpr (KIND == GretlMatrixMatOperations::IMUL && std::is_same_v<T, double>) {
+    } else if constexpr (KIND == GretlMatrixAlgOperations::IMUL && std::is_same_v<T, double>) {
         gretl_matrix_multiply_by_scalar(m_, rhs);
-    } else if constexpr (KIND == GretlMatrixMatOperations::ITRUEDIV && std::is_same_v<T, double>) {
+    } else if constexpr (KIND == GretlMatrixAlgOperations::ITRUEDIV && std::is_same_v<T, double>) {
         gretl_matrix_divide_by_scalar(m_, rhs);
     } else {
-        static_assert(always_false<T>, "Unsupported GretlMatrixMatOperations value");
+        static_assert(always_false<T>, "Unsupported GretlMatrixAlgOperations value");
     }
     if (err_) {
         handle_gretl_error(get_gretl_matrix_err());
@@ -2180,18 +2180,18 @@ GretlMatrix &GretlMatrix::alg_inplace_operations (const T &rhs)
 
     return *this;
 }
-template GretlMatrix &GretlMatrix::alg_inplace_operations<GretlMatrix, GretlMatrixMatOperations::IADD>(const GretlMatrix &rhs);
-template GretlMatrix &GretlMatrix::alg_inplace_operations<py::array, GretlMatrixMatOperations::IADD>(const py::array &rhs);
-template GretlMatrix &GretlMatrix::alg_inplace_operations<double, GretlMatrixMatOperations::IADD>(const double &rhs);
-template GretlMatrix &GretlMatrix::alg_inplace_operations<GretlMatrix, GretlMatrixMatOperations::ISUB>(const GretlMatrix &rhs);
-template GretlMatrix &GretlMatrix::alg_inplace_operations<py::array, GretlMatrixMatOperations::ISUB>(const py::array &rhs);
-template GretlMatrix &GretlMatrix::alg_inplace_operations<double, GretlMatrixMatOperations::ISUB>(const double &rhs);
-template GretlMatrix &GretlMatrix::alg_inplace_operations<double, GretlMatrixMatOperations::IMUL>(const double &rhs);
-template GretlMatrix &GretlMatrix::alg_inplace_operations<double, GretlMatrixMatOperations::ITRUEDIV>(const double &rhs);
+template GretlMatrix &GretlMatrix::alg_inplace_operations<GretlMatrix, GretlMatrixAlgOperations::IADD>(const GretlMatrix &rhs);
+template GretlMatrix &GretlMatrix::alg_inplace_operations<py::array, GretlMatrixAlgOperations::IADD>(const py::array &rhs);
+template GretlMatrix &GretlMatrix::alg_inplace_operations<double, GretlMatrixAlgOperations::IADD>(const double &rhs);
+template GretlMatrix &GretlMatrix::alg_inplace_operations<GretlMatrix, GretlMatrixAlgOperations::ISUB>(const GretlMatrix &rhs);
+template GretlMatrix &GretlMatrix::alg_inplace_operations<py::array, GretlMatrixAlgOperations::ISUB>(const py::array &rhs);
+template GretlMatrix &GretlMatrix::alg_inplace_operations<double, GretlMatrixAlgOperations::ISUB>(const double &rhs);
+template GretlMatrix &GretlMatrix::alg_inplace_operations<double, GretlMatrixAlgOperations::IMUL>(const double &rhs);
+template GretlMatrix &GretlMatrix::alg_inplace_operations<double, GretlMatrixAlgOperations::ITRUEDIV>(const double &rhs);
 
 // T: GretlMatrix or py::array, double, std::complex<double>>
 // KIND: MUL, POW, ADD, SUB
-template <typename T, GretlMatrixMatOperations KIND>
+template <typename T, GretlMatrixAlgOperations KIND>
 GretlMatrixPtr GretlMatrix::alg_dot_operations (const T &rhs) const
 {
     //
@@ -2223,32 +2223,32 @@ GretlMatrixPtr GretlMatrix::alg_dot_operations (const T &rhs) const
     }
 
     // we do the job
-    if constexpr (KIND == GretlMatrixMatOperations::MUL) {
+    if constexpr (KIND == GretlMatrixAlgOperations::MUL) {
         if (is_complex() || rhs_matrix->is_complex) {
             res.reset(gretl_cmatrix_dot_op(m_, rhs_matrix, 42, &err_));
         } else {
             res.reset(gretl_matrix_dot_op(m_, rhs_matrix, 42, &err_));
         }
-    } else if constexpr (KIND == GretlMatrixMatOperations::POW) {
+    } else if constexpr (KIND == GretlMatrixAlgOperations::POW) {
         if (is_complex() || rhs_matrix->is_complex) {
             res.reset(gretl_cmatrix_dot_op(m_, rhs_matrix, 94, &err_));
         } else {
             res.reset(gretl_matrix_dot_op(m_, rhs_matrix, 94, &err_));
         }
-    } else if constexpr (KIND == GretlMatrixMatOperations::ADD) {
+    } else if constexpr (KIND == GretlMatrixAlgOperations::ADD) {
         if (is_complex() || rhs_matrix->is_complex) {
             res.reset(gretl_cmatrix_dot_op(m_, rhs_matrix, 43, &err_));
         } else {
             res.reset(gretl_matrix_dot_op(m_, rhs_matrix, 43, &err_));
         }
-    } else if constexpr (KIND == GretlMatrixMatOperations::SUB) {
+    } else if constexpr (KIND == GretlMatrixAlgOperations::SUB) {
         if (is_complex() || rhs_matrix->is_complex) {
             res.reset(gretl_cmatrix_dot_op(m_, rhs_matrix, 45, &err_));
         } else {
             res.reset(gretl_matrix_dot_op(m_, rhs_matrix, 45, &err_));
         }
     } else {
-        static_assert(always_false<T>, "Unsupported GretlMatrixMatOperations value");
+        static_assert(always_false<T>, "Unsupported GretlMatrixAlgOperations value");
     }
     if (err_) {
         handle_gretl_error(get_gretl_matrix_err());
@@ -2257,11 +2257,11 @@ GretlMatrixPtr GretlMatrix::alg_dot_operations (const T &rhs) const
 
     return std::make_shared<GretlMatrix>(res.release(), false);
 }
-template GretlMatrixPtr GretlMatrix::alg_dot_operations<GretlMatrix, GretlMatrixMatOperations::MUL>(const GretlMatrix &rhs) const;
-template GretlMatrixPtr GretlMatrix::alg_dot_operations<py::array, GretlMatrixMatOperations::MUL>(const py::array &rhs) const;
-template GretlMatrixPtr GretlMatrix::alg_dot_operations<GretlMatrix, GretlMatrixMatOperations::POW>(const GretlMatrix &rhs) const;
-template GretlMatrixPtr GretlMatrix::alg_dot_operations<py::array, GretlMatrixMatOperations::POW>(const py::array &rhs) const;
-template GretlMatrixPtr GretlMatrix::alg_dot_operations<double, GretlMatrixMatOperations::ADD>(const double &rhs) const;
-template GretlMatrixPtr GretlMatrix::alg_dot_operations<std::complex<double>, GretlMatrixMatOperations::ADD>(const std::complex<double> &rhs) const;
-template GretlMatrixPtr GretlMatrix::alg_dot_operations<double, GretlMatrixMatOperations::SUB>(const double &rhs) const;
-template GretlMatrixPtr GretlMatrix::alg_dot_operations<std::complex<double>, GretlMatrixMatOperations::SUB>(const std::complex<double> &rhs) const;
+template GretlMatrixPtr GretlMatrix::alg_dot_operations<GretlMatrix, GretlMatrixAlgOperations::MUL>(const GretlMatrix &rhs) const;
+template GretlMatrixPtr GretlMatrix::alg_dot_operations<py::array, GretlMatrixAlgOperations::MUL>(const py::array &rhs) const;
+template GretlMatrixPtr GretlMatrix::alg_dot_operations<GretlMatrix, GretlMatrixAlgOperations::POW>(const GretlMatrix &rhs) const;
+template GretlMatrixPtr GretlMatrix::alg_dot_operations<py::array, GretlMatrixAlgOperations::POW>(const py::array &rhs) const;
+template GretlMatrixPtr GretlMatrix::alg_dot_operations<double, GretlMatrixAlgOperations::ADD>(const double &rhs) const;
+template GretlMatrixPtr GretlMatrix::alg_dot_operations<std::complex<double>, GretlMatrixAlgOperations::ADD>(const std::complex<double> &rhs) const;
+template GretlMatrixPtr GretlMatrix::alg_dot_operations<double, GretlMatrixAlgOperations::SUB>(const double &rhs) const;
+template GretlMatrixPtr GretlMatrix::alg_dot_operations<std::complex<double>, GretlMatrixAlgOperations::SUB>(const std::complex<double> &rhs) const;

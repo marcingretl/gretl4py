@@ -279,13 +279,13 @@ public:
     py::object to_numpy (void) const;
 
     // matrix-algebra methods
-    template <typename T, GretlMatrixMatOperations KIND>
+    template <typename T, GretlMatrixAlgOperations KIND>
     GretlMatrixPtr alg_operations (const T &rhs) const;
 
-    template <typename T, GretlMatrixMatOperations KIND>
+    template <typename T, GretlMatrixAlgOperations KIND>
     GretlMatrix &alg_inplace_operations (const T &rhs);
 
-    template <typename T, GretlMatrixMatOperations KIND>
+    template <typename T, GretlMatrixAlgOperations KIND>
     GretlMatrixPtr alg_dot_operations (const T &rhs) const;
 };
 
