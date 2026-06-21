@@ -25,7 +25,7 @@ namespace py = pybind11;
 // template for NSE via dedicated Driver
 // on Python side class will be registered under 'name'
 template <typename T, typename Base = GretlModel_NSE>
-static void bind_driver_model(py::module_ &m, const std::string &name)
+static void bind_driver_model (py::module_ &m, const std::string &name)
 {
     py::class_<T, Base, std::unique_ptr<T>>(m, name.c_str(), py::dynamic_attr());
 }

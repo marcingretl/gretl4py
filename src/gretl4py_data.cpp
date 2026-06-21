@@ -2120,18 +2120,21 @@ template GretlMatrixPtr GretlMatrix::alg_operations<py::array, GretlMatrixMatOpe
 template GretlMatrixPtr GretlMatrix::alg_operations<GretlMatrix, GretlMatrixMatOperations::SUB>(const GretlMatrix &rhs) const;
 template GretlMatrixPtr GretlMatrix::alg_operations<py::array, GretlMatrixMatOperations::SUB>(const py::array &rhs) const;
 
-// T: GretlMatrix or py::array, double
-// KIND: IADD, ISUB
+// T: GretlMatrix, py::array, double
+// KIND: IADD, ISUB, IMUL, ITRUEDIV
 template <typename T, GretlMatrixMatOperations KIND>
 GretlMatrix &GretlMatrix::alg_inplace_operations (const T &rhs)
 {
     //
     // in-place operations
     // note: here we perform some scalar operations as well
-    // use as a backend for: __iadd__, __isub__
+    // use as a backend for: __iadd__, __isub__, __imul__, __itruediv__
     //
     gretl_matrix *rhs_matrix = nullptr;            // right-hand side, used in any kind of operation
     gretl_matrix_ptr rhs_storage = nullptr;        // if we need a temporary unique_ptr to rhs (for py::array)
+
+    // we define scalar-only operations
+    constexpr bool scalar_only = (KIND == GretlMatrixMatOperations::IMUL || KIND == GretlMatrixMatOperations::ITRUEDIV);
 
     // we check template parameters
     if constexpr (std::is_same_v<T, GretlMatrix>) {
@@ -2140,18 +2143,22 @@ GretlMatrix &GretlMatrix::alg_inplace_operations (const T &rhs)
         rhs_storage.reset(numpy_to_matrix_(rhs));
         rhs_matrix = rhs_storage.get();
     } else if constexpr (std::is_same_v<T, double>) {
-        rhs_storage.reset(gretl_matrix_alloc(1, 1));
-        rhs_matrix = rhs_storage.get();
-        gretl_matrix_fill(rhs_matrix, rhs);
+        if constexpr (!scalar_only) {
+            rhs_storage.reset(gretl_matrix_alloc(1, 1));
+            rhs_matrix = rhs_storage.get();
+            gretl_matrix_fill(rhs_matrix, rhs);
+        }
     } else {
         static_assert(always_false<T>, "GretlMatrix::alg_mat_mat_inplace_operations(): unknown type");
     }
 
     // we exclude complex operations
-    if (is_complex() && rhs_matrix->is_complex) {
-        handle_gretl_error(E_CMPLX);
-    } else if (is_complex() || rhs_matrix->is_complex) {
-        handle_gretl_error(E_MIXED);
+    if constexpr (!scalar_only) {
+        if (is_complex() && rhs_matrix->is_complex) {
+            handle_gretl_error(E_CMPLX);
+        } else if (is_complex() || rhs_matrix->is_complex) {
+            handle_gretl_error(E_MIXED);
+        }
     }
 
     // we do the job
@@ -2159,6 +2166,10 @@ GretlMatrix &GretlMatrix::alg_inplace_operations (const T &rhs)
         err_ = gretl_matrix_add_to(m_, rhs_matrix);
     } else if constexpr (KIND == GretlMatrixMatOperations::ISUB) {
         err_ = gretl_matrix_subtract_from(m_, rhs_matrix);
+    } else if constexpr (KIND == GretlMatrixMatOperations::IMUL && std::is_same_v<T, double>) {
+        gretl_matrix_multiply_by_scalar(m_, rhs);
+    } else if constexpr (KIND == GretlMatrixMatOperations::ITRUEDIV && std::is_same_v<T, double>) {
+        gretl_matrix_divide_by_scalar(m_, rhs);
     } else {
         static_assert(always_false<T>, "Unsupported GretlMatrixMatOperations value");
     }
@@ -2175,6 +2186,8 @@ template GretlMatrix &GretlMatrix::alg_inplace_operations<double, GretlMatrixMat
 template GretlMatrix &GretlMatrix::alg_inplace_operations<GretlMatrix, GretlMatrixMatOperations::ISUB>(const GretlMatrix &rhs);
 template GretlMatrix &GretlMatrix::alg_inplace_operations<py::array, GretlMatrixMatOperations::ISUB>(const py::array &rhs);
 template GretlMatrix &GretlMatrix::alg_inplace_operations<double, GretlMatrixMatOperations::ISUB>(const double &rhs);
+template GretlMatrix &GretlMatrix::alg_inplace_operations<double, GretlMatrixMatOperations::IMUL>(const double &rhs);
+template GretlMatrix &GretlMatrix::alg_inplace_operations<double, GretlMatrixMatOperations::ITRUEDIV>(const double &rhs);
 
 // T: GretlMatrix or py::array, double, std::complex<double>>
 // KIND: MUL, POW, ADD, SUB
@@ -2252,15 +2265,3 @@ template GretlMatrixPtr GretlMatrix::alg_dot_operations<double, GretlMatrixMatOp
 template GretlMatrixPtr GretlMatrix::alg_dot_operations<std::complex<double>, GretlMatrixMatOperations::ADD>(const std::complex<double> &rhs) const;
 template GretlMatrixPtr GretlMatrix::alg_dot_operations<double, GretlMatrixMatOperations::SUB>(const double &rhs) const;
 template GretlMatrixPtr GretlMatrix::alg_dot_operations<std::complex<double>, GretlMatrixMatOperations::SUB>(const std::complex<double> &rhs) const;
-
-// T:
-// KIND:
-template <typename T, GretlMatrixMatOperations KIND>
-GretlMatrixPtr GretlMatrix::alg_scalar_operations (T rhs) const
-{
-    //
-    // method for matrix-scalar non-inplace operations
-    //
-
-    return nullptr;
-}

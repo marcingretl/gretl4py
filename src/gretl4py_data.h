@@ -287,9 +287,6 @@ public:
 
     template <typename T, GretlMatrixMatOperations KIND>
     GretlMatrixPtr alg_dot_operations (const T &rhs) const;
-
-    template <typename T, GretlMatrixMatOperations KIND>
-    GretlMatrixPtr alg_scalar_operations (T rhs) const;
 };
 
 #endif // GRETL4PY_DATA_H
