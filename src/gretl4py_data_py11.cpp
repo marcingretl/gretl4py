@@ -435,7 +435,16 @@ void init_gretl4py_gretl_matrix_py11 (py::module_ &m)
                                return self.is_complex();
                            })
     .def_property_readonly("numpy_view", &make_numpy_view)
-    .def("__array__", &make_numpy_view)
+    .def("__len__", &GretlMatrix::rows)
+    .def("__array__",
+         [](py::object self, py::object , py::object )
+         {
+             //
+             // to follow the protocol convention in 100% (dtype, copy)
+             //
+             return make_numpy_view(self);
+         },
+         py::arg("dtype") = py::none(), py::arg("copy") = py::none())
     .def("__copy__", [](const GretlMatrix &self) { return GretlMatrix(self); })
     .def("__deepcopy__", [](const GretlMatrix &self, py::dict) { return GretlMatrix(self); })
     .def("__repr__", &GretlMatrix::repr_impl)
