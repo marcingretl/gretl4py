@@ -352,7 +352,7 @@ void GretlPackage::unpack_kwargs_package_ (const std::string &func_name, fncall 
                 src = mat.release();
             }
 
-            err_ = push_function_arg(func_call, key.c_str(), nullptr, GRETL_TYPE_MATRIX, src);
+            err_ = push_function_arg(func_call, nullptr, nullptr, key_type, src); //was: //err_ = push_function_arg(func_call, key.c_str(), nullptr, GRETL_TYPE_MATRIX, src);
             if (err_) handle_gretl_error(err_);
             continue;
         } else if (arginfo.gtype == GRETL_TYPE_STRING) {
