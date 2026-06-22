@@ -99,7 +99,37 @@ static void complex_NumPyArray_to_gretl_matrix (const NumPyArrayView &view, gret
 }
 
 static inline std::complex<double> c_complex_to_std_complex (const double _Complex z) { return {__real__ z, __imag__ z}; }
+
 static inline double _Complex std_complex_to_c_complex (std::complex<double> z) { return {z.real(), z.imag()}; }
+
+static inline bool has_negative_base (const gretl_matrix *m)
+{
+    for (int i=0; i<m->rows * m->cols; ++i) {
+        double x = m->val[i];
+
+        if ((std::isfinite)(x) && x < 0.0) return true;
+    }
+
+    return false;
+}
+
+/*
+static inline bool has_non_integer_exponent (double x)
+{
+    return !(std::isfinite)(x) || std::floor(x) != x;
+}
+*/
+
+static inline bool has_non_integer_exponent (const gretl_matrix *m)
+{
+    for (int i=0; i<m->rows * m->cols; ++i) {
+        double x = m->val[i];
+
+        if (!(std::isfinite)(x) || std::floor(x) != x) return true;
+    }
+
+    return false;
+}
 
 //////////////////////////////////////////////////
 // functions
@@ -2112,10 +2142,7 @@ GretlMatrixPtr GretlMatrix::alg_operations (const T &rhs) const
     } else {
         static_assert(always_false<T>, "Unsupported GretlMatrixAlgOperations value");
     }
-    if (err_) {
-        handle_gretl_error(get_gretl_matrix_err());
-        handle_gretl_error(err_);
-    }
+    if (err_) handle_gretl_error(err_);
 
     return std::make_shared<GretlMatrix>(res.release(), false);
 }
@@ -2190,10 +2217,7 @@ GretlMatrix &GretlMatrix::alg_inplace_operations (const T &rhs)
     } else {
         static_assert(always_false<T>, "Unsupported GretlMatrixAlgOperations value");
     }
-    if (err_) {
-        handle_gretl_error(get_gretl_matrix_err());
-        handle_gretl_error(err_);
-    }
+    if (err_) handle_gretl_error(err_);
 
     return *this;
 }
@@ -2354,7 +2378,7 @@ GretlMatrixPtr GretlMatrix::alg_dot_operations (const T &rhs) const
             res.reset(gretl_matrix_dot_op(m_, rhs_matrix, 47, &err_));
         }
     } else if constexpr (KIND == GretlMatrixAlgOperations::POW) {
-        if (is_complex() || rhs_matrix->is_complex) {
+        if (is_complex() || rhs_matrix->is_complex || (has_negative_base(m_) && has_non_integer_exponent(rhs_matrix)) ) {
             res.reset(gretl_cmatrix_dot_op(m_, rhs_matrix, 94, &err_));
         } else {
             res.reset(gretl_matrix_dot_op(m_, rhs_matrix, 94, &err_));
@@ -2362,10 +2386,7 @@ GretlMatrixPtr GretlMatrix::alg_dot_operations (const T &rhs) const
     } else {
         static_assert(always_false<T>, "Unsupported GretlMatrixAlgOperations value");
     }
-    if (err_) {
-        handle_gretl_error(get_gretl_matrix_err());
-        handle_gretl_error(err_);
-    }
+    if (err_) handle_gretl_error(err_);
 
     return std::make_shared<GretlMatrix>(res.release(), false);
 }

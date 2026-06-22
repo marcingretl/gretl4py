@@ -7,31 +7,21 @@ import pandas as pd
 # Matrix constructors
 # ============================================================
 
-# Empty matrix (uninitialized / 0x0)
 A = gretl.Matrix()
 print(A)
 
-
-# Zero-initialized matrices (real / complex)
-# NOTE: complex matrices still store zero + 0j
 A = gretl.Matrix(4, 4)
 B = gretl.Matrix(4, 4, type="complex")
 
 print(A)
 print(B)
 
-
-# Constant-filled matrices (real / complex)
 A = gretl.Matrix(4, 4, 1.5)
 B = gretl.Matrix(4, 4, 1.5, "complex")
 
 print(A)
 print(B)
 
-
-# Random matrices
-# "normal" = Gaussian distribution (mean 0, variance 1)
-# "u"      = uniform distribution
 A = gretl.Matrix(4, 4, "normal")
 B = gretl.Matrix(4, 4, "u")
 
@@ -43,40 +33,29 @@ print(B)
 # Special constructors
 # ============================================================
 
-# Arithmetic progression vector:
-# start, end, step
 A = gretl.Matrix(1.0, 10.0, 1.5)
-
-# Descending sequence example
 B = gretl.Matrix(10.0, 1.0, 2)
 
 print(A)
 print(B)
 
-
-# Identity matrix (NxN)
 A = gretl.Matrix(5)
 print(A)
 
 
 # ============================================================
-# Construction from Python list
+# From Python list
 # ============================================================
 
-lst1 = [1, 1]
-lst2 = [[1, 1],
-        [2, 2],
-        [3, 3]]
-
-A = gretl.Matrix(lst1)
-B = gretl.Matrix(lst2)
+A = gretl.Matrix([1, 1])
+B = gretl.Matrix([[1, 1], [2, 2], [3, 3]])
 
 print(A)
 print(B)
 
 
 # ============================================================
-# Construction from NumPy
+# From NumPy
 # ============================================================
 
 np1 = np.full((2, 3), 2.4)
@@ -92,148 +71,138 @@ print(B)
 
 
 # ============================================================
-# Row/column names
+# Names
 # ============================================================
-
-print("\nRow/column naming")
 
 A.rnameset(["first", "second"])
 A.cnameset(["one", "two", "three"])
 
 print(A)
-
-print(f"Row names: {A.rnameget()}")
-print(f"Column names: {A.cnameget()}")
+print(A.rnameget())
+print(A.cnameget())
 
 
 # ============================================================
-# NumPy / Pandas views (shared memory)
+# NumPy / Pandas views
 # ============================================================
 
-print("\nViews (shared memory demonstration)")
+print("\nViews (shared memory)")
 
-# Shared memory views (modifications affect A)
-np1 = A.numpy_view
-pd1 = A.pandas_view
+np_view = A.numpy_view
+pd_view = A.pandas_view
 
-# Independent copies (safe snapshots)
-np2 = A.to_numpy()
-pd2 = A.to_pandas()
+np_copy = A.to_numpy()
+pd_copy = A.to_pandas()
 
 print(A)
-print(np1)
-print(pd1)
+print(np_view)
+print(pd_view)
 
-# Modify shared views → A is affected
+# mutate shared views
 A[0, 0] = 0
-np1[1, 1] = 0
-pd1.iloc[0, 2] = 0
+np_view[1, 1] = 0
+pd_view.iloc[0, 2] = 0
 
 print(A)
-print(np1)
-print(pd1)
+print(np_view)
+print(pd_view)
 
-# Independent copies remain unchanged
-print(np2)
-print(pd2)
+print(np_copy)
+print(pd_copy)
+
+# WARNING:
+# pandas view may silently copy depending on dtype/layout
+print("\nWARNING: pandas view may not always be fully writable (implementation-dependent)")
 
 
 # ============================================================
-# Matrix multiplication (@ = linear algebra product)
+# Matrix multiplication
 # ============================================================
 
 A = gretl.Matrix(4, 4, "normal")
 B = gretl.Matrix(4, 4, "normal")
 
 C = gretl.Matrix(4, 4, 2.99, "complex")
-C[0, 0] = 0 + 7j
+C[0, 0] = 7j
 C[1, 1] = 10 + 1j
 
-print(f'\nMatrix multiplication (A @ B):\n{A @ B}')
-print(f'\nMatrix multiplication with NumPy view (A @ B.numpy_view):\n{A @ B.numpy_view}')
-print(f'\nMatrix multiplication with complex matrix (A @ C):\n{A @ C}')
+print(A @ B)
+
+# WARNING: NumPy view uses shared memory assumptions
+print(A @ B.numpy_view)
+
+print(A @ C)
 
 
 # ============================================================
-# Element-wise arithmetic (libgretl dot semantics)
+# Element-wise operations
 # ============================================================
 
-print(f'\nElement-wise division (A / B):\n{A / B}')
-print(f'\nElement-wise division with complex (A / C):\n{A / C}')
+print(A / B)
+print(A / C)
 
-print(f'\nElement-wise addition (A + B):\n{A + B}')
-print(f'\nElement-wise addition with NumPy view:\n{A + B.numpy_view}')
-print(f'\nElement-wise addition with complex matrix:\n{A + C}')
+print(A + B)
+print(A + B.numpy_view)
 
-print(f'\nElement-wise subtraction (A - B):\n{A - B}')
-print(f'\nElement-wise subtraction with NumPy view:\n{A - B.numpy_view}')
-print(f'\nElement-wise subtraction with complex matrix:\n{A - C}')
+# NOTE: consider adding explicit NumPy scalar tests
+print(A + np.float64(2.0))              # TODO: verify scalar dispatch coverage
+print(A + np.complex128(1 + 1j))       # TODO: verify complex scalar dispatch
 
-
-# ============================================================
-# Element-wise multiplication (Hadamard product)
-# ============================================================
-
-A = gretl.Matrix(4, 4, 3.3)
-B = gretl.Matrix(4, 4, 1.1)
-
-print(f'\nElement-wise multiplication (*)')
-print(f'\nA * B:\n{A * B}')
-print(f'\nA * B.numpy_view:\n{A * B.numpy_view}')
-print(f'\nA * C:\n{A * C}')
+print(A - B)
+print(A - C)
 
 
 # ============================================================
-# Element-wise power (Hadamard power, NOT matrix power)
+# Element-wise multiplication
 # ============================================================
 
+A = gretl.Matrix(4, 4, 4.5)
+B = gretl.Matrix(4, 4, 2.3)
 
-print(f'\nElement-wise power (A ** B):\n{A ** B}')
-print(f'\nElement-wise power (A ** B.numpy_view):\n{A ** B.numpy_view}')
-print(f'\nElement-wise power (A ** C):\n{A ** C}')
+print(A * B)
+print(A * B.numpy_view)
+print(A * C)
 
 
 # ============================================================
-# In-place operations
+# Element-wise power
+# ============================================================
+
+print(A ** B)
+print(A ** B.numpy_view)
+print(A ** C)
+
+# NOTE:
+# Python ** corresponds to Gretl ".^"
+# NOT matrix power (^)
+
+# WARNING:
+# Negative powers may produce inf/nan if zeros exist
+A_tmp = gretl.Matrix(4, 4, 1.0)
+print(A_tmp ** -2)   # TODO: ensure intended semantics
+
+
+# ============================================================
+# IN-PLACE OPERATIONS
 # ============================================================
 
 D = gretl.Matrix(4, 4, -2, "complex")
 np3 = np.full((4, 4), 2.4 + 1j, dtype=np.complex128)
 
 A += B
-print(f'\nIn-place addition (A += B):\n{A}')
-
 A += B.numpy_view
-print(f'\nIn-place addition (A += B.numpy_view):\n{A}')
-
 A -= B
-print(f'\nIn-place subtraction (A -= B):\n{A}')
 A -= B.numpy_view
-print(f'\nIn-place subtraction (A -= B.numpy_view):\n{A}')
 
 C += D
-print(f'\nIn-place addition (C += D):\n{C}')
-
 C += np3
-print(f'\nIn-place addition (C += np3):\n{C}')
-
 C -= D
-print(f'\nIn-place subtraction (C -= D):\n{C}')
-
 C -= np3
-print(f'\nIn-place subtraction (C -= np3):\n{C}')
 
 A **= B
-print(f'\nIn-place power (A **= B):\n{A}')
-
 A **= B.numpy_view
-print(f'\nIn-place power (A **= B.numpy_view):\n{A}')
-
 C **= D
-print(f'\nIn-place power (C **= D):\n{C}')
-
 C **= np3
-print(f'\nIn-place power (C **= np3):\n{C}')
 
 
 # ============================================================
@@ -243,57 +212,73 @@ print(f'\nIn-place power (C **= np3):\n{C}')
 A = gretl.Matrix(4, 4, 1.0)
 B = gretl.Matrix(4, 4, 1.0, "complex")
 
-print(f'\nA + 1:\n{A + 1}')
-print(f'\n1 + A:\n{1 + A}')
+print(A + 1)
+print(1 + A)
 
-print(f'\nA - 2:\n{A - 2}')
-print(f'\n2 - A:\n{2 - A}')
+print(A - 2)
+print(2 - A)
 
-print(f'\nA * 4:\n{A * 4}')
-print(f'\n4 * A:\n{4 * A}')
+print(A * 4)
+print(4 * A)
 
-print(f'\nA / 5:\n{A / 5}')
-print(f'\n5 / A:\n{5 / A}')
+print(A / 5)
+print(5 / A)
 
-print(B)
-print(f'\nB + (1 + 1j):\n{B + (1 + 1j)}')
-print(f'\n(1 + 1j) + B:\n{(1 + 1j) + B}')
+print(B + (1 + 1j))
+print((1 + 1j) + B)
 
-print(f'\nB - (2 + 1j):\n{B - (2 + 1j)}')
-print(f'\n(2 + 1j) - B:\n{(2 + 1j) - B}')
+print(B - (2 + 1j))
+print((2 + 1j) - B)
 
-print(f'\nB * (1 + 1j):\n{B * (1 + 1j)}')
-print(f'\n(1 + 1j) * B:\n{(1 + 1j) * B}')
+print(B * (1 + 1j))
+print((1 + 1j) * B)
 
-print(f'\nB / (2 + 1j):\n{B / (2 + 1j)}')
-print(f'\n(2 + 1j) / B:\n{(2 + 1j) / B}')
+print(B / (2 + 1j))
+print((2 + 1j) / B)
 
 A += 1
-print(f'\nA += 1:\n{A}')
-
 A -= 3
-print(f'\nA -= 3:\n{A}')
-
 A *= 4
-print(f'\nA *= 4:\n{A}')
-
 A /= -5
-print(f'\nA /= -5:\n{A}')
 
-A **= -5
-print(f'\nA **= -5:\n{A}')
+# WARNING: not standard in NumPy semantics for matrices
+A **= -2
 
 B += (1 + 0.5j)
-print(f'\nB += (1 + 0.5j):\n{B}')
-
 B -= (1 + 0.5j)
-print(f'\nB -= (1 + 0.5j):\n{B}')
-
 B *= (2 + 0.5j)
-print(f'\nB *= (2 + 0.5j):\n{B}')
-
 B /= (4 + 1.5j)
-print(f'\nB /= (2 + 0.5j):\n{B}')
-
 B **= (2 + 0.5j)
-print(f'\nB **= (2 + 0.5j):\n{B}')
+
+
+# ============================================================
+# MISSING / TODO OPERATORS (IMPORTANT)
+# ============================================================
+
+# TODO: unary plus operator
+# EXPECTED: +A
+# If not implemented, Python will fallback or error
+# print(+A)
+
+# TODO: logical / comparison operators
+# EXPECTED:
+# A == B
+# A != B
+# A < B (optional, probably undefined)
+# WARNING: missing these breaks NumPy compatibility layer
+
+# print(A == B)
+# print(A != B)
+
+
+# ============================================================
+# SUMMARY OF CURRENT API GAPS
+# ============================================================
+
+# MISSING (recommended next step):
+# 1. __pos__        (+A)
+# 2. __eq__         (A == B)
+# 3. __ne__         (A != B)
+# 4. optional: broadcasting rules
+# 5. optional: safe handling for pandas view consistency
+# 6. optional: explicit NumPy scalar dispatch tests in C++ layer
