@@ -145,7 +145,7 @@ print(A + B)
 print(A + B.numpy_view)
 
 # NOTE: consider adding explicit NumPy scalar tests
-print(A + np.float64(2.0))              # TODO: verify scalar dispatch coverage
+print(A + np.float64(2.0))             # TODO: verify scalar dispatch coverage
 print(A + np.complex128(1 + 1j))       # TODO: verify complex scalar dispatch
 
 print(A - B)
@@ -275,7 +275,7 @@ B **= (2 + 0.5j)
 # SUMMARY OF CURRENT API GAPS
 # ============================================================
 
-# MISSING (recommended next step):
+# MISSING (next step):
 # 1. __pos__        (+A)
 # 2. __eq__         (A == B)
 # 3. __ne__         (A != B)

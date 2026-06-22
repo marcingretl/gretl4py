@@ -102,6 +102,7 @@ static inline std::complex<double> c_complex_to_std_complex (const double _Compl
 
 static inline double _Complex std_complex_to_c_complex (std::complex<double> z) { return {z.real(), z.imag()}; }
 
+/*
 static inline bool has_negative_base (const gretl_matrix *m)
 {
     for (int i=0; i<m->rows * m->cols; ++i) {
@@ -113,12 +114,10 @@ static inline bool has_negative_base (const gretl_matrix *m)
     return false;
 }
 
-/*
 static inline bool has_non_integer_exponent (double x)
 {
     return !(std::isfinite)(x) || std::floor(x) != x;
 }
-*/
 
 static inline bool has_non_integer_exponent (const gretl_matrix *m)
 {
@@ -130,6 +129,7 @@ static inline bool has_non_integer_exponent (const gretl_matrix *m)
 
     return false;
 }
+*/
 
 //////////////////////////////////////////////////
 // functions

@@ -462,6 +462,7 @@ void init_gretl4py_gretl_matrix_py11 (py::module_ &m)
          {
              self.set_element<std::complex<double>>(ij.first, ij.second, value);
          }, py::arg("ij").none(false), py::arg("value").none(false))
+    .def("__pos__", [](const GretlMatrix &self) { return GretlMatrix(self); })
     .def("__neg__", &GretlMatrix::neg)
     .def("__add__", &GretlMatrix::alg_operations<GretlMatrix, GretlMatrixAlgOperations::ADD>)
     .def("__add__", &GretlMatrix::alg_operations<py::array, GretlMatrixAlgOperations::ADD>)
