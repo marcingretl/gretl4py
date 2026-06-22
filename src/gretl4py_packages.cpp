@@ -313,7 +313,7 @@ void GretlPackage::unpack_kwargs_package_ (const std::string &func_name, fncall 
         auto val = kwargs[py::cast(key)];
         PythonArgInfo arginfo = inspect_pyobject(val);
         arg_type = GRETL_TYPE_NONE;
-        arg_value = NULL;
+        arg_value = nullptr;
         auto key_type = static_cast<GretlType>(fn_param_type(func_get_ptr(func_name), arg_no));
 
         if (key_type == GRETL_TYPE_SERIES && dataset ) {
@@ -322,7 +322,7 @@ void GretlPackage::unpack_kwargs_package_ (const std::string &func_name, fncall 
             arg_name = py::cast<std::string>(val);
             int vnum = dataset->get_series_id(arg_name);
 
-            err_ = push_function_arg(func_call, arg_name.c_str(), NULL, GRETL_TYPE_USERIES, &vnum);
+            err_ = push_function_arg(func_call, arg_name.c_str(), nullptr, GRETL_TYPE_USERIES, &vnum);
             if (err_) handle_gretl_error(err_);
             continue;
         } else if (arginfo.gtype == GRETL_TYPE_BUNDLE) {
@@ -330,7 +330,7 @@ void GretlPackage::unpack_kwargs_package_ (const std::string &func_name, fncall 
             // final distinction is made by key_type
             auto gb = val.cast<GretlBundlePtr>();
 
-            err_ = push_function_arg(func_call, NULL, NULL, key_type, gb->get_ptr());
+            err_ = push_function_arg(func_call, nullptr, nullptr, key_type, gb->get_ptr());
             if (err_) handle_gretl_error(err_);
             continue;
         } else if (arginfo.gtype == GRETL_TYPE_MATRIX) {
@@ -352,7 +352,7 @@ void GretlPackage::unpack_kwargs_package_ (const std::string &func_name, fncall 
                 src = mat.release();
             }
 
-            err_ = push_function_arg(func_call, key.c_str(), NULL, GRETL_TYPE_MATRIX, src);
+            err_ = push_function_arg(func_call, key.c_str(), nullptr, GRETL_TYPE_MATRIX, src);
             if (err_) handle_gretl_error(err_);
             continue;
         } else if (arginfo.gtype == GRETL_TYPE_STRING) {
@@ -616,7 +616,7 @@ GretlPackageRes GretlPackage::function_exec (const std::string &func_name, Gretl
     res.set_type(func_get_res_type(func_name));
 
     // function execution
-    err_ = gretl_function_exec(func_call, res.type, dataset ? dataset->dset : NULL, res.out_ptr(), printer.prn_ptr());
+    err_ = gretl_function_exec(func_call, res.type, dataset ? dataset->dset : nullptr, res.out_ptr(), printer.prn_ptr());
     if (err_) handle_gretl_error(err_);
 
     // handling special cases

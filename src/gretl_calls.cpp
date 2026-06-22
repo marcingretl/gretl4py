@@ -484,8 +484,7 @@ py::object do_gretl_include (const std::string &filename)
         py::str fname = py::str(py_fname);
 
         // create a wrapper bound to this function name and obj
-        py::object wrapper = py::cpp_function (
-            [obj, fname](const py::args &args, const py::kwargs &kwargs) -> py::object
+        py::object wrapper = py::cpp_function ([obj, fname](const py::args &args, const py::kwargs &kwargs) -> py::object
             {
                 return obj.attr("_function_exec")(fname, *args, **kwargs);
             });
@@ -497,8 +496,7 @@ py::object do_gretl_include (const std::string &filename)
     return obj;
 }
 
-void do_gretl_pkg (const std::string &action, const std::string &pkgname,
-                   const py::kwargs &kwargs)
+void do_gretl_pkg (const std::string &action, const std::string &pkgname, const py::kwargs &kwargs)
 {
     //
     // function which mimics libgretl's 'pkg' command
