@@ -171,34 +171,6 @@ print(f'\nElement-wise subtraction with complex matrix:\n{A - C}')
 
 
 # ============================================================
-# In-place operations
-# ============================================================
-
-D = gretl.Matrix(4, 4, -2, "complex")
-np3 = np.full((4, 4), 2.4 + 1j, dtype=np.complex128)
-
-A += B
-A += B.numpy_view
-print(f'\nIn-place addition (A += B.numpy_view):\n{A}')
-
-A -= B
-A -= B.numpy_view
-print(f'\nIn-place subtraction (A -= B.numpy_view):\n{A}')
-
-C += D
-print(f'\nIn-place addition (C += D):\n{C}')
-
-C += np3
-print(f'\nIn-place addition (C += np3):\n{C}')
-
-C -= D
-print(f'\nIn-place addition (C -= D):\n{C}')
-
-C -= np3
-print(f'\nIn-place addition (C -= np3):\n{C}')
-
-
-# ============================================================
 # Element-wise multiplication (Hadamard product)
 # ============================================================
 
@@ -219,6 +191,49 @@ print(f'\nA * C:\n{A * C}')
 print(f'\nElement-wise power (A ** B):\n{A ** B}')
 print(f'\nElement-wise power (A ** B.numpy_view):\n{A ** B.numpy_view}')
 print(f'\nElement-wise power (A ** C):\n{A ** C}')
+
+
+# ============================================================
+# In-place operations
+# ============================================================
+
+D = gretl.Matrix(4, 4, -2, "complex")
+np3 = np.full((4, 4), 2.4 + 1j, dtype=np.complex128)
+
+A += B
+print(f'\nIn-place addition (A += B):\n{A}')
+
+A += B.numpy_view
+print(f'\nIn-place addition (A += B.numpy_view):\n{A}')
+
+A -= B
+print(f'\nIn-place subtraction (A -= B):\n{A}')
+A -= B.numpy_view
+print(f'\nIn-place subtraction (A -= B.numpy_view):\n{A}')
+
+C += D
+print(f'\nIn-place addition (C += D):\n{C}')
+
+C += np3
+print(f'\nIn-place addition (C += np3):\n{C}')
+
+C -= D
+print(f'\nIn-place subtraction (C -= D):\n{C}')
+
+C -= np3
+print(f'\nIn-place subtraction (C -= np3):\n{C}')
+
+A **= B
+print(f'\nIn-place power (A **= B):\n{A}')
+
+A **= B.numpy_view
+print(f'\nIn-place power (A **= B.numpy_view):\n{A}')
+
+C **= D
+print(f'\nIn-place power (C **= D):\n{C}')
+
+C **= np3
+print(f'\nIn-place power (C **= np3):\n{C}')
 
 
 # ============================================================

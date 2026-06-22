@@ -2143,7 +2143,7 @@ GretlMatrix &GretlMatrix::alg_inplace_operations (const T &rhs)
 
     // we define scalar-only operations
     constexpr bool scalar_only = (KIND == GretlMatrixAlgOperations::IMUL
-    || KIND == GretlMatrixAlgOperations::ITRUEDIV ||  KIND == GretlMatrixAlgOperations::IPOW);
+    || KIND == GretlMatrixAlgOperations::ITRUEDIV || (KIND == GretlMatrixAlgOperations::IPOW && std::is_same_v<T, double>));
 
     // we check template parameters
     if constexpr (std::is_same_v<T, GretlMatrix>) {
@@ -2179,6 +2179,10 @@ GretlMatrix &GretlMatrix::alg_inplace_operations (const T &rhs)
         gretl_matrix_multiply_by_scalar(m_, rhs);
     } else if constexpr (KIND == GretlMatrixAlgOperations::ITRUEDIV && std::is_same_v<T, double>) {
         gretl_matrix_divide_by_scalar(m_, rhs);
+    } else if constexpr (KIND == GretlMatrixAlgOperations::IPOW && !std::is_same_v<T, double>) {
+        for (int i=0; i<m_->rows*m_->cols; ++i) {
+            m_->val[i] = std::pow(m_->val[i], rhs_matrix->val[i]);
+        }
     } else if constexpr (KIND == GretlMatrixAlgOperations::IPOW && std::is_same_v<T, double>) {
         for (int i=0; i<m_->rows*m_->cols; ++i) {
             m_->val[i] = std::pow(m_->val[i], rhs);
@@ -2201,6 +2205,8 @@ template GretlMatrix &GretlMatrix::alg_inplace_operations<py::array, GretlMatrix
 template GretlMatrix &GretlMatrix::alg_inplace_operations<double, GretlMatrixAlgOperations::ISUB>(const double &rhs);
 template GretlMatrix &GretlMatrix::alg_inplace_operations<double, GretlMatrixAlgOperations::IMUL>(const double &rhs);
 template GretlMatrix &GretlMatrix::alg_inplace_operations<double, GretlMatrixAlgOperations::ITRUEDIV>(const double &rhs);
+template GretlMatrix &GretlMatrix::alg_inplace_operations<GretlMatrix, GretlMatrixAlgOperations::IPOW>(const GretlMatrix &rhs);
+template GretlMatrix &GretlMatrix::alg_inplace_operations<py::array, GretlMatrixAlgOperations::IPOW>(const py::array &rhs);
 template GretlMatrix &GretlMatrix::alg_inplace_operations<double, GretlMatrixAlgOperations::IPOW>(const double &rhs);
 
 // T: GretlMatrix, py::array, std::complex<double>
@@ -2264,12 +2270,12 @@ GretlMatrix &GretlMatrix::alg_inplace_operations_complex (const T &rhs)
                 static_assert(always_false<T>, "GretlMatrix::alg_inplace_operations_complex(): unsupported type");
             }
         } else if constexpr (KIND == GretlMatrixAlgOperations::IPOW) {
-            if constexpr (std::is_same_v<T, std::complex<double>>) {
-                auto base = c_complex_to_std_complex(m_->z[i]);
+            auto base = c_complex_to_std_complex(m_->z[i]);
 
+            if constexpr (std::is_same_v<T, std::complex<double>>) {
                 m_->z[i] = std_complex_to_c_complex(std::pow(base, rhs));
             } else {
-                static_assert(always_false<T>, "GretlMatrix::alg_inplace_operations_complex(): unsupported type");
+                m_->z[i] = std_complex_to_c_complex(std::pow(base, c_complex_to_std_complex(rhs_matrix->z[i])));
             }
         }
     }
@@ -2284,6 +2290,8 @@ template GretlMatrix &GretlMatrix::alg_inplace_operations_complex<py::array, Gre
 template GretlMatrix &GretlMatrix::alg_inplace_operations_complex<std::complex<double>, GretlMatrixAlgOperations::ISUB> (const std::complex<double> &rhs);
 template GretlMatrix &GretlMatrix::alg_inplace_operations_complex<std::complex<double>, GretlMatrixAlgOperations::IMUL> (const std::complex<double> &rhs);
 template GretlMatrix &GretlMatrix::alg_inplace_operations_complex<std::complex<double>, GretlMatrixAlgOperations::ITRUEDIV> (const std::complex<double> &rhs);
+template GretlMatrix &GretlMatrix::alg_inplace_operations_complex<GretlMatrix, GretlMatrixAlgOperations::IPOW> (const GretlMatrix &rhs);
+template GretlMatrix &GretlMatrix::alg_inplace_operations_complex<py::array, GretlMatrixAlgOperations::IPOW> (const py::array &rhs);
 template GretlMatrix &GretlMatrix::alg_inplace_operations_complex<std::complex<double>, GretlMatrixAlgOperations::IPOW> (const std::complex<double> &rhs);
 
 // T: GretlMatrix or py::array, double, std::complex<double>>

@@ -530,6 +530,25 @@ void init_gretl4py_gretl_matrix_py11 (py::module_ &m)
     .def("__imul__", &GretlMatrix::alg_inplace_operations_complex<std::complex<double>, GretlMatrixAlgOperations::IMUL>)
     .def("__itruediv__", &GretlMatrix::alg_inplace_operations<double, GretlMatrixAlgOperations::ITRUEDIV>)
     .def("__itruediv__", &GretlMatrix::alg_inplace_operations_complex<std::complex<double>, GretlMatrixAlgOperations::ITRUEDIV>)
+    .def("__ipow__",
+         [](GretlMatrix &self, const GretlMatrix &rhs) -> GretlMatrix&
+         {
+             if (self.is_complex()) {
+                 return self.alg_inplace_operations_complex<GretlMatrix, GretlMatrixAlgOperations::IPOW>(rhs);
+             } else {
+                 return self.alg_inplace_operations<GretlMatrix, GretlMatrixAlgOperations::IPOW>(rhs);
+
+             }
+         }, py::arg("mat").none(false))
+    .def("__ipow__",
+         [](GretlMatrix &self, const py::array &rhs) -> GretlMatrix&
+         {
+             if (self.is_complex()) {
+                 return self.alg_inplace_operations_complex<py::array, GretlMatrixAlgOperations::IPOW>(rhs);
+             } else {
+                 return self.alg_inplace_operations<py::array, GretlMatrixAlgOperations::IPOW>(rhs);
+             }
+         }, py::arg("mat").none(false))
     .def("__ipow__", &GretlMatrix::alg_inplace_operations<double, GretlMatrixAlgOperations::IPOW>)
     .def("__ipow__", &GretlMatrix::alg_inplace_operations_complex<std::complex<double>, GretlMatrixAlgOperations::IPOW>)
     .def("__radd__", &GretlMatrix::alg_dot_operations<double, GretlMatrixAlgOperations::ADD>)
