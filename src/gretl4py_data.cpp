@@ -98,10 +98,8 @@ static void complex_NumPyArray_to_gretl_matrix (const NumPyArrayView &view, gret
     }
 }
 
-static std::complex<double> c_complex_to_std_complex (const double _Complex z)
-{
-    return {__real__ z, __imag__ z};
-}
+static inline std::complex<double> c_complex_to_std_complex (const double _Complex z) { return {__real__ z, __imag__ z}; }
+static inline double _Complex std_complex_to_c_complex (std::complex<double> z) { return {z.real(), z.imag()}; }
 
 //////////////////////////////////////////////////
 // functions
@@ -2131,20 +2129,21 @@ template GretlMatrixPtr GretlMatrix::alg_operations<GretlMatrix, GretlMatrixAlgO
 template GretlMatrixPtr GretlMatrix::alg_operations<py::array, GretlMatrixAlgOperations::TRUEDIV>(const py::array &rhs) const;
 
 // T: GretlMatrix, py::array, double
-// KIND: IADD, ISUB, IMUL, ITRUEDIV
+// KIND: IADD, ISUB, IMUL, ITRUEDIV, IPOW
 template <typename T, GretlMatrixAlgOperations KIND>
 GretlMatrix &GretlMatrix::alg_inplace_operations (const T &rhs)
 {
     //
     // in-place operations
     // note: here we perform some scalar operations as well
-    // used as a backend for: __iadd__, __isub__, __imul__, __itruediv__
+    // used as a backend for: __iadd__, __isub__, __imul__, __itruediv__, __ipow__
     //
     gretl_matrix *rhs_matrix = nullptr;            // right-hand side, used in any kind of operation
     gretl_matrix_ptr rhs_storage = nullptr;        // if we need a temporary unique_ptr to rhs (for py::array)
 
     // we define scalar-only operations
-    constexpr bool scalar_only = (KIND == GretlMatrixAlgOperations::IMUL || KIND == GretlMatrixAlgOperations::ITRUEDIV);
+    constexpr bool scalar_only = (KIND == GretlMatrixAlgOperations::IMUL
+    || KIND == GretlMatrixAlgOperations::ITRUEDIV ||  KIND == GretlMatrixAlgOperations::IPOW);
 
     // we check template parameters
     if constexpr (std::is_same_v<T, GretlMatrix>) {
@@ -2180,6 +2179,10 @@ GretlMatrix &GretlMatrix::alg_inplace_operations (const T &rhs)
         gretl_matrix_multiply_by_scalar(m_, rhs);
     } else if constexpr (KIND == GretlMatrixAlgOperations::ITRUEDIV && std::is_same_v<T, double>) {
         gretl_matrix_divide_by_scalar(m_, rhs);
+    } else if constexpr (KIND == GretlMatrixAlgOperations::IPOW && std::is_same_v<T, double>) {
+        for (int i=0; i<m_->rows*m_->cols; ++i) {
+            m_->val[i] = std::pow(m_->val[i], rhs);
+        }
     } else {
         static_assert(always_false<T>, "Unsupported GretlMatrixAlgOperations value");
     }
@@ -2198,15 +2201,16 @@ template GretlMatrix &GretlMatrix::alg_inplace_operations<py::array, GretlMatrix
 template GretlMatrix &GretlMatrix::alg_inplace_operations<double, GretlMatrixAlgOperations::ISUB>(const double &rhs);
 template GretlMatrix &GretlMatrix::alg_inplace_operations<double, GretlMatrixAlgOperations::IMUL>(const double &rhs);
 template GretlMatrix &GretlMatrix::alg_inplace_operations<double, GretlMatrixAlgOperations::ITRUEDIV>(const double &rhs);
+template GretlMatrix &GretlMatrix::alg_inplace_operations<double, GretlMatrixAlgOperations::IPOW>(const double &rhs);
 
 // T: GretlMatrix, py::array, std::complex<double>
-// KIND: IADD, ISUB
+// KIND: IADD, ISUB, IMUL, ITRUEDIV
 template <typename T, GretlMatrixAlgOperations KIND>
 GretlMatrix &GretlMatrix::alg_inplace_operations_complex (const T &rhs)
 {
     //
     // here we implement non-existing in libgretl inplace operations for complex matrices
-    // used as a backend for: __iadd__, __isub__
+    // used as a backend for: __iadd__, __isub__, __imul__, __itruediv__, __ipow__
     //
     gretl_matrix *rhs_matrix = nullptr;            // right-hand side, used in any kind of operation
     gretl_matrix_ptr rhs_storage = nullptr;        // if we need a temporary unique_ptr to rhs (for py::array)
@@ -2219,7 +2223,9 @@ GretlMatrix &GretlMatrix::alg_inplace_operations_complex (const T &rhs)
         rhs_storage.reset(numpy_to_matrix_(rhs));
         rhs_matrix = rhs_storage.get();
     } else if constexpr (std::is_same_v<T, std::complex<double>>) {
-        z = { rhs.real(), rhs.imag() };
+        if constexpr (KIND != GretlMatrixAlgOperations::IPOW) {
+            z = { rhs.real(), rhs.imag() };
+        }
     } else {
         static_assert(always_false<T>, "GretlMatrix::alg_inplace_operations_complex(): unknown type");
     }
@@ -2257,6 +2263,14 @@ GretlMatrix &GretlMatrix::alg_inplace_operations_complex (const T &rhs)
             } else {
                 static_assert(always_false<T>, "GretlMatrix::alg_inplace_operations_complex(): unsupported type");
             }
+        } else if constexpr (KIND == GretlMatrixAlgOperations::IPOW) {
+            if constexpr (std::is_same_v<T, std::complex<double>>) {
+                auto base = c_complex_to_std_complex(m_->z[i]);
+
+                m_->z[i] = std_complex_to_c_complex(std::pow(base, rhs));
+            } else {
+                static_assert(always_false<T>, "GretlMatrix::alg_inplace_operations_complex(): unsupported type");
+            }
         }
     }
 
@@ -2268,6 +2282,9 @@ template GretlMatrix &GretlMatrix::alg_inplace_operations_complex<std::complex<d
 template GretlMatrix &GretlMatrix::alg_inplace_operations_complex<GretlMatrix, GretlMatrixAlgOperations::ISUB> (const GretlMatrix &rhs);
 template GretlMatrix &GretlMatrix::alg_inplace_operations_complex<py::array, GretlMatrixAlgOperations::ISUB> (const py::array &rhs);
 template GretlMatrix &GretlMatrix::alg_inplace_operations_complex<std::complex<double>, GretlMatrixAlgOperations::ISUB> (const std::complex<double> &rhs);
+template GretlMatrix &GretlMatrix::alg_inplace_operations_complex<std::complex<double>, GretlMatrixAlgOperations::IMUL> (const std::complex<double> &rhs);
+template GretlMatrix &GretlMatrix::alg_inplace_operations_complex<std::complex<double>, GretlMatrixAlgOperations::ITRUEDIV> (const std::complex<double> &rhs);
+template GretlMatrix &GretlMatrix::alg_inplace_operations_complex<std::complex<double>, GretlMatrixAlgOperations::IPOW> (const std::complex<double> &rhs);
 
 // T: GretlMatrix or py::array, double, std::complex<double>>
 // KIND: ADD, SUB, MUL, TRUEDIV, POW

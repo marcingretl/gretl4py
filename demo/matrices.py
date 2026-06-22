@@ -265,8 +265,20 @@ print(f'\nA *= 4:\n{A}')
 A /= -5
 print(f'\nA /= -5:\n{A}')
 
+A **= -5
+print(f'\nA **= -5:\n{A}')
+
 B += (1 + 0.5j)
 print(f'\nB += (1 + 0.5j):\n{B}')
 
 B -= (1 + 0.5j)
 print(f'\nB -= (1 + 0.5j):\n{B}')
+
+B *= (2 + 0.5j)
+print(f'\nB *= (2 + 0.5j):\n{B}')
+
+B /= (4 + 1.5j)
+print(f'\nB /= (2 + 0.5j):\n{B}')
+
+B **= (2 + 0.5j)
+print(f'\nB **= (2 + 0.5j):\n{B}')

@@ -527,7 +527,11 @@ void init_gretl4py_gretl_matrix_py11 (py::module_ &m)
     .def("__isub__", &GretlMatrix::alg_inplace_operations<double, GretlMatrixAlgOperations::ISUB>)
     .def("__isub__", &GretlMatrix::alg_inplace_operations_complex<std::complex<double>, GretlMatrixAlgOperations::ISUB>)
     .def("__imul__", &GretlMatrix::alg_inplace_operations<double, GretlMatrixAlgOperations::IMUL>)
+    .def("__imul__", &GretlMatrix::alg_inplace_operations_complex<std::complex<double>, GretlMatrixAlgOperations::IMUL>)
     .def("__itruediv__", &GretlMatrix::alg_inplace_operations<double, GretlMatrixAlgOperations::ITRUEDIV>)
+    .def("__itruediv__", &GretlMatrix::alg_inplace_operations_complex<std::complex<double>, GretlMatrixAlgOperations::ITRUEDIV>)
+    .def("__ipow__", &GretlMatrix::alg_inplace_operations<double, GretlMatrixAlgOperations::IPOW>)
+    .def("__ipow__", &GretlMatrix::alg_inplace_operations_complex<std::complex<double>, GretlMatrixAlgOperations::IPOW>)
     .def("__radd__", &GretlMatrix::alg_dot_operations<double, GretlMatrixAlgOperations::ADD>)
     .def("__radd__", &GretlMatrix::alg_dot_operations<std::complex<double>, GretlMatrixAlgOperations::ADD>)
     .def("__rsub__",
@@ -574,13 +578,6 @@ void init_gretl4py_gretl_matrix_py11 (py::module_ &m)
 }
 
 /*
- __rpow__   // scalar* ** matrix (rare but Python supports it)
- __ipow__   // inplace
-
- __isub__(std::complex<double>)
- __imul__(std::complex<double>)
- __itruediv__(std::complex<double>)
-
  .def("__eq__", ...)    =
  .def("__ne__", ...)    !=
  .def("__lt__", ...)    <
