@@ -241,9 +241,9 @@ T GretlPackage::get_properties_ (const char *property)
     gretl_gchar_ptr val{nullptr};
 
     if constexpr (std::is_same_v<T, DataReq>) {
-        err_ = function_package_get_properties(pkg_, property, &res, NULL);
+        err_ = function_package_get_properties(pkg_, property, &res, nullptr);
     } else {
-        err_ = function_package_get_properties(pkg_, property, &val_raw, NULL);
+        err_ = function_package_get_properties(pkg_, property, &val_raw, nullptr);
         val.reset(val_raw);
     }
     if (err_) handle_gretl_error(err_);
@@ -305,7 +305,7 @@ void GretlPackage::unpack_kwargs_package_ (const std::string &func_name, fncall 
         if (!kwargs.contains(key)) {
             // if parameter is [optional] and _does not_ have [default] (i.e. does not have default value), we must set it to GRETL_TYPE_NONE
             if (fn_param_optional(func_get_ptr(func_name), arg_no) && !fn_param_has_default(func_get_ptr(func_name), arg_no)) {
-                err_ = push_function_arg(func_call, key.c_str(), NULL, GRETL_TYPE_NONE, NULL);
+                err_ = push_function_arg(func_call, key.c_str(), nullptr, GRETL_TYPE_NONE, nullptr);
                 if (err_) handle_gretl_error(err_);
             }
             continue;
@@ -334,6 +334,8 @@ void GretlPackage::unpack_kwargs_package_ (const std::string &func_name, fncall 
             if (err_) handle_gretl_error(err_);
             continue;
         } else if (arginfo.gtype == GRETL_TYPE_MATRIX) {
+            // note: here we deal with both: GRETL_TYPE_MATRIX and GRETL_TYPE_MATRIX_REF
+            // final distinction is made by key_type
             NumPyArrayView arr_view;
             gretl_matrix *src = nullptr;
 
@@ -387,7 +389,7 @@ void GretlPackage::unpack_kwargs_package_ (const std::string &func_name, fncall 
         } else {
             throw std::runtime_error("variable " + key + ": unsupported type: " + arginfo.pytype);
         }
-        err_ = push_function_arg(func_call, key.c_str(), NULL, arg_type, arg_value);
+        err_ = push_function_arg(func_call, key.c_str(), nullptr, arg_type, arg_value);
         if (err_) handle_gretl_error(err_);
     }
 }
@@ -419,7 +421,7 @@ py::list GretlPackage::get_help (void)
         res.append(pdf_path.string());
     } else {
         res.append("txt");
-        err_ = print_function_package_help(full_path_.c_str(), NULL, printer_.prn_ptr());
+        err_ = print_function_package_help(full_path_.c_str(), nullptr, printer_.prn_ptr());
         if (err_) handle_gretl_error(err_);
         res.append(printer_.get_buffer());
     }
