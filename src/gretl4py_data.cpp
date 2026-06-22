@@ -2378,7 +2378,8 @@ GretlMatrixPtr GretlMatrix::alg_dot_operations (const T &rhs) const
             res.reset(gretl_matrix_dot_op(m_, rhs_matrix, 47, &err_));
         }
     } else if constexpr (KIND == GretlMatrixAlgOperations::POW) {
-        if (is_complex() || rhs_matrix->is_complex || (has_negative_base(m_) && has_non_integer_exponent(rhs_matrix)) ) {
+        //(has_negative_base(m_) && has_non_integer_exponent(rhs_matrix))
+        if (is_complex() || rhs_matrix->is_complex) {
             res.reset(gretl_cmatrix_dot_op(m_, rhs_matrix, 94, &err_));
         } else {
             res.reset(gretl_matrix_dot_op(m_, rhs_matrix, 94, &err_));
