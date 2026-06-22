@@ -288,6 +288,9 @@ public:
     GretlMatrix &alg_inplace_operations (const T &rhs);
 
     template <typename T, GretlMatrixAlgOperations KIND>
+    GretlMatrix &alg_inplace_operations_complex (const T &rhs);
+
+    template <typename T, GretlMatrixAlgOperations KIND>
     GretlMatrixPtr alg_dot_operations (const T &rhs) const;
 };
 

@@ -2068,7 +2068,7 @@ GretlMatrixPtr GretlMatrix::alg_operations (const T &rhs) const
 {
     //
     // matrices standard operations
-    // use as a backend for: __add__, __sub__, __matmul__, __truediv__
+    // used as a backend for: __add__, __sub__, __matmul__, __truediv__
     //
     gretl_matrix *rhs_matrix = nullptr;            // right-hand side, used in any kind of operation
     gretl_matrix_ptr rhs_storage = nullptr;        // if we need a temporary unique_ptr to rhs (for py::array)
@@ -2138,7 +2138,7 @@ GretlMatrix &GretlMatrix::alg_inplace_operations (const T &rhs)
     //
     // in-place operations
     // note: here we perform some scalar operations as well
-    // use as a backend for: __iadd__, __isub__, __imul__, __itruediv__
+    // used as a backend for: __iadd__, __isub__, __imul__, __itruediv__
     //
     gretl_matrix *rhs_matrix = nullptr;            // right-hand side, used in any kind of operation
     gretl_matrix_ptr rhs_storage = nullptr;        // if we need a temporary unique_ptr to rhs (for py::array)
@@ -2199,6 +2199,73 @@ template GretlMatrix &GretlMatrix::alg_inplace_operations<double, GretlMatrixAlg
 template GretlMatrix &GretlMatrix::alg_inplace_operations<double, GretlMatrixAlgOperations::IMUL>(const double &rhs);
 template GretlMatrix &GretlMatrix::alg_inplace_operations<double, GretlMatrixAlgOperations::ITRUEDIV>(const double &rhs);
 
+// T: GretlMatrix, py::array, std::complex<double>
+// KIND: IADD
+template <typename T, GretlMatrixAlgOperations KIND>
+GretlMatrix &GretlMatrix::alg_inplace_operations_complex (const T &rhs)
+{
+    //
+    // here we implement non-existing in libgretl inplace operations for complex matrices
+    // used as a backend for: __iadd__
+    //
+    gretl_matrix *rhs_matrix = nullptr;            // right-hand side, used in any kind of operation
+    gretl_matrix_ptr rhs_storage = nullptr;        // if we need a temporary unique_ptr to rhs (for py::array)
+    double _Complex z;
+
+    // we check template parameters
+    if constexpr (std::is_same_v<T, GretlMatrix>) {
+        rhs_matrix = rhs.get_ptr();
+    } else if constexpr (std::is_same_v<T, py::array>) {
+        rhs_storage.reset(numpy_to_matrix_(rhs));
+        rhs_matrix = rhs_storage.get();
+    } else if constexpr (std::is_same_v<T, std::complex<double>>) {
+        z = { rhs.real(), rhs.imag() };
+    } else {
+        static_assert(always_false<T>, "GretlMatrix::alg_inplace_operations_complex(): unknown type");
+    }
+
+    // we check matrices features
+    if (!is_complex()) throw std::invalid_argument("left matrix is real, should be complex");
+    if constexpr (std::is_same_v<T, GretlMatrix> || std::is_same_v<T, py::array>) {
+        if (!rhs_matrix->is_complex) throw std::invalid_argument("right matrix is real, should be complex");
+        if (m_->rows != rhs_matrix->rows || m_->cols != rhs_matrix->cols) handle_gretl_error(E_NONCONF);
+    }
+
+    // we do the job
+    for (int i=0; i<m_->rows * m_->cols; ++i) {
+        if constexpr (KIND == GretlMatrixAlgOperations::IADD) {
+            if constexpr (std::is_same_v<T, std::complex<double>>) {
+                m_->z[i] += z;
+            } else {
+                m_->z[i] += rhs_matrix->z[i];
+            }
+        } else if constexpr (KIND == GretlMatrixAlgOperations::ISUB) {
+            if constexpr (std::is_same_v<T, std::complex<double>>) {
+                m_->z[i] -= z;
+            } else {
+                m_->z[i] -= rhs_matrix->z[i];
+            }
+        } else if constexpr (KIND == GretlMatrixAlgOperations::IMUL) {
+            if constexpr (std::is_same_v<T, std::complex<double>>) {
+                m_->z[i] *= z;
+            } else {
+                static_assert(always_false<T>, "GretlMatrix::alg_inplace_operations_complex(): unsupported type");
+            }
+        } else if constexpr (KIND == GretlMatrixAlgOperations::ITRUEDIV) {
+            if constexpr (std::is_same_v<T, std::complex<double>>) {
+                m_->z[i] /= z;
+            } else {
+                static_assert(always_false<T>, "GretlMatrix::alg_inplace_operations_complex(): unsupported type");
+            }
+        }
+    }
+
+    return *this;
+}
+template GretlMatrix &GretlMatrix::alg_inplace_operations_complex<GretlMatrix, GretlMatrixAlgOperations::IADD> (const GretlMatrix &rhs);
+template GretlMatrix &GretlMatrix::alg_inplace_operations_complex<py::array, GretlMatrixAlgOperations::IADD> (const py::array &rhs);
+template GretlMatrix &GretlMatrix::alg_inplace_operations_complex<std::complex<double>, GretlMatrixAlgOperations::IADD> (const std::complex<double> &rhs);
+
 // T: GretlMatrix or py::array, double, std::complex<double>>
 // KIND: ADD, SUB, MUL, TRUEDIV, POW
 template <typename T, GretlMatrixAlgOperations KIND>
@@ -2207,7 +2274,7 @@ GretlMatrixPtr GretlMatrix::alg_dot_operations (const T &rhs) const
     //
     // matrices element-wise (libgretl's 'dot') operations
     // note: here we perform some scalar operations as well
-    // use as a backend for: __add__, __sub__, __mul__, __truediv__, __pow__
+    // used as a backend for: __add__, __sub__, __mul__, __truediv__, __pow__
     //
     gretl_matrix *rhs_matrix = nullptr;            // right-hand side, used in any kind of operation
     gretl_matrix_ptr rhs_storage = nullptr;        // if we need a temporary unique_ptr to rhs (for py::array)

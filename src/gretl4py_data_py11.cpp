@@ -437,29 +437,28 @@ void init_gretl4py_gretl_matrix_py11 (py::module_ &m)
     .def_property_readonly("numpy_view", &make_numpy_view)
     .def("__len__", &GretlMatrix::rows)
     .def("__array__",
-         [](py::object self, py::object , py::object )
+         [](py::object self, py::object , py::object ) -> py::array
          {
              //
              // to follow the protocol convention in 100% (dtype, copy)
              //
              return make_numpy_view(self);
-         },
-         py::arg("dtype") = py::none(), py::arg("copy") = py::none())
+         }, py::arg("dtype") = py::none(), py::arg("copy") = py::none())
     .def("__copy__", [](const GretlMatrix &self) { return GretlMatrix(self); })
     .def("__deepcopy__", [](const GretlMatrix &self, py::dict) { return GretlMatrix(self); })
     .def("__repr__", &GretlMatrix::repr_impl)
     .def("__getitem__",
-         [](const GretlMatrix &self, std::pair<int, int> ij)
+         [](const GretlMatrix &self, std::pair<int, int> ij) -> py::object
          {
              return self.get_element(ij.first, ij.second);
          }, py::arg("ij").none(false))
     .def("__setitem__",
-         [](GretlMatrix &self, std::pair<int, int> ij, double value)
+         [](GretlMatrix &self, std::pair<int, int> ij, double value) -> void
          {
              self.set_element<double>(ij.first, ij.second, value);
          }, py::arg("ij").none(false), py::arg("value").none(false))
     .def("__setitem__",
-         [](GretlMatrix &self, std::pair<int, int> ij, std::complex<double> value)
+         [](GretlMatrix &self, std::pair<int, int> ij, std::complex<double> value) -> void
          {
              self.set_element<std::complex<double>>(ij.first, ij.second, value);
          }, py::arg("ij").none(false), py::arg("value").none(false))
@@ -486,9 +485,32 @@ void init_gretl4py_gretl_matrix_py11 (py::module_ &m)
     .def("__pow__", &GretlMatrix::alg_dot_operations<py::array, GretlMatrixAlgOperations::POW>)
     .def("__pow__", &GretlMatrix::alg_dot_operations<double, GretlMatrixAlgOperations::POW>)
     .def("__pow__", &GretlMatrix::alg_dot_operations<std::complex<double>, GretlMatrixAlgOperations::POW>)
-    .def("__iadd__", &GretlMatrix::alg_inplace_operations<GretlMatrix, GretlMatrixAlgOperations::IADD>)
-    .def("__iadd__", &GretlMatrix::alg_inplace_operations<py::array, GretlMatrixAlgOperations::IADD>)
+    .def("__iadd__",
+         [](GretlMatrix &self, const GretlMatrix &rhs) -> GretlMatrix&
+         {
+             if (self.is_complex()) {
+                 return self.alg_inplace_operations_complex<GretlMatrix, GretlMatrixAlgOperations::IADD>(rhs);
+             } else {
+                 return self.alg_inplace_operations<GretlMatrix, GretlMatrixAlgOperations::IADD>(rhs);
+             }
+         }, py::arg("rhs").none(false))
+    .def("__iadd__",
+         [](GretlMatrix &self, const py::array &rhs) -> GretlMatrix&
+         {
+             if (self.is_complex()) {
+                 return self.alg_inplace_operations_complex<py::array, GretlMatrixAlgOperations::IADD>(rhs);
+             } else {
+                 return self.alg_inplace_operations<py::array, GretlMatrixAlgOperations::IADD>(rhs);
+             }
+         }, py::arg("rhs").none(false))
+
+
+
+
+    //.def("__iadd__", &GretlMatrix::alg_inplace_operations<py::array, GretlMatrixAlgOperations::IADD>)
     .def("__iadd__", &GretlMatrix::alg_inplace_operations<double, GretlMatrixAlgOperations::IADD>)
+    .def("__iadd__", &GretlMatrix::alg_inplace_operations_complex<std::complex<double>, GretlMatrixAlgOperations::IADD>)
+
     .def("__isub__", &GretlMatrix::alg_inplace_operations<GretlMatrix, GretlMatrixAlgOperations::ISUB>)
     .def("__isub__", &GretlMatrix::alg_inplace_operations<py::array, GretlMatrixAlgOperations::ISUB>)
     .def("__isub__", &GretlMatrix::alg_inplace_operations<double, GretlMatrixAlgOperations::ISUB>)
@@ -497,26 +519,32 @@ void init_gretl4py_gretl_matrix_py11 (py::module_ &m)
     .def("__radd__", &GretlMatrix::alg_dot_operations<double, GretlMatrixAlgOperations::ADD>)
     .def("__radd__", &GretlMatrix::alg_dot_operations<std::complex<double>, GretlMatrixAlgOperations::ADD>)
     .def("__rsub__",
-         [](const GretlMatrix &self, double val)
+         [](const GretlMatrix &self, double val) -> GretlMatrixPtr
          {
-             return self.neg()->alg_inplace_operations<double, GretlMatrixAlgOperations::IADD>(val);
+             auto res = self.neg();
+
+             res->alg_inplace_operations<double, GretlMatrixAlgOperations::IADD>(val);
+
+             return res;
          })
     .def("__rsub__",
-         [](const GretlMatrix &self, std::complex<double> val)
+         [](const GretlMatrix &self, std::complex<double> val) -> GretlMatrixPtr
          {
              return self.neg()->alg_dot_operations<std::complex<double>, GretlMatrixAlgOperations::ADD>(val);
          })
     .def("__rmul__", &GretlMatrix::alg_dot_operations<double, GretlMatrixAlgOperations::MUL>)
     .def("__rmul__", &GretlMatrix::alg_dot_operations<std::complex<double>, GretlMatrixAlgOperations::MUL>)
     .def("__rtruediv__",
-         [](const GretlMatrix &self, double val)
+         [](const GretlMatrix &self, double val) -> GretlMatrixPtr
          {
              auto res = self.alg_dot_operations<double, GretlMatrixAlgOperations::TRUEDIV>(1.0);
 
-             return res->alg_inplace_operations<double, GretlMatrixAlgOperations::IMUL>(val);
+             res->alg_inplace_operations<double, GretlMatrixAlgOperations::IMUL>(val);
+
+             return res;
          })
     .def("__rtruediv__",
-         [](const GretlMatrix &self, std::complex<double> val)
+         [](const GretlMatrix &self, std::complex<double> val) -> GretlMatrixPtr
          {
              auto res = self.alg_dot_operations<std::complex<double>, GretlMatrixAlgOperations::TRUEDIV>(1.0);
 
@@ -537,7 +565,6 @@ void init_gretl4py_gretl_matrix_py11 (py::module_ &m)
  __rpow__   // scalar* ** matrix (rare but Python supports it)
  __ipow__   // inplace
 
- __iadd__(std::complex<double>)
  __isub__(std::complex<double>)
  __imul__(std::complex<double>)
  __itruediv__(std::complex<double>)

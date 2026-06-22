@@ -174,18 +174,28 @@ print(f'\nElement-wise subtraction with complex matrix:\n{A - C}')
 # In-place operations
 # ============================================================
 
+D = gretl.Matrix(4, 4, -2, "complex")
+np3 = np.full((4, 4), 2.4 + 1j, dtype=np.complex128)
+
 A += B
 A += B.numpy_view
-print(f'\nIn-place addition (A += B + view):\n{A}')
+print(f'\nIn-place addition (A += B.numpy_view):\n{A}')
 
 A -= B
 A -= B.numpy_view
-print(f'\nIn-place subtraction (A -= B + view):\n{A}')
+print(f'\nIn-place subtraction (A -= B.numpy_view):\n{A}')
+
+C += D
+print(f'\nIn-place addition (C += D):\n{C}')
+
+C += np3
+print(f'\nIn-place addition (C += np3):\n{C}')
 
 
 # ============================================================
 # Element-wise multiplication (Hadamard product)
 # ============================================================
+
 A = gretl.Matrix(4, 4, 3.3)
 B = gretl.Matrix(4, 4, 1.1)
 
@@ -198,6 +208,7 @@ print(f'\nA * C:\n{A * C}')
 # ============================================================
 # Element-wise power (Hadamard power, NOT matrix power)
 # ============================================================
+
 
 print(f'\nElement-wise power (A ** B):\n{A ** B}')
 print(f'\nElement-wise power (A ** B.numpy_view):\n{A ** B.numpy_view}')
@@ -247,3 +258,6 @@ print(f'\nA *= 4:\n{A}')
 
 A /= -5
 print(f'\nA /= -5:\n{A}')
+
+B += (1 + 0.5j)
+print(f'\nB += (1 + 0.5j):\n{B}')
