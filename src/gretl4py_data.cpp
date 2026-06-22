@@ -2200,13 +2200,13 @@ template GretlMatrix &GretlMatrix::alg_inplace_operations<double, GretlMatrixAlg
 template GretlMatrix &GretlMatrix::alg_inplace_operations<double, GretlMatrixAlgOperations::ITRUEDIV>(const double &rhs);
 
 // T: GretlMatrix, py::array, std::complex<double>
-// KIND: IADD
+// KIND: IADD, ISUB
 template <typename T, GretlMatrixAlgOperations KIND>
 GretlMatrix &GretlMatrix::alg_inplace_operations_complex (const T &rhs)
 {
     //
     // here we implement non-existing in libgretl inplace operations for complex matrices
-    // used as a backend for: __iadd__
+    // used as a backend for: __iadd__, __isub__
     //
     gretl_matrix *rhs_matrix = nullptr;            // right-hand side, used in any kind of operation
     gretl_matrix_ptr rhs_storage = nullptr;        // if we need a temporary unique_ptr to rhs (for py::array)
@@ -2265,6 +2265,9 @@ GretlMatrix &GretlMatrix::alg_inplace_operations_complex (const T &rhs)
 template GretlMatrix &GretlMatrix::alg_inplace_operations_complex<GretlMatrix, GretlMatrixAlgOperations::IADD> (const GretlMatrix &rhs);
 template GretlMatrix &GretlMatrix::alg_inplace_operations_complex<py::array, GretlMatrixAlgOperations::IADD> (const py::array &rhs);
 template GretlMatrix &GretlMatrix::alg_inplace_operations_complex<std::complex<double>, GretlMatrixAlgOperations::IADD> (const std::complex<double> &rhs);
+template GretlMatrix &GretlMatrix::alg_inplace_operations_complex<GretlMatrix, GretlMatrixAlgOperations::ISUB> (const GretlMatrix &rhs);
+template GretlMatrix &GretlMatrix::alg_inplace_operations_complex<py::array, GretlMatrixAlgOperations::ISUB> (const py::array &rhs);
+template GretlMatrix &GretlMatrix::alg_inplace_operations_complex<std::complex<double>, GretlMatrixAlgOperations::ISUB> (const std::complex<double> &rhs);
 
 // T: GretlMatrix or py::array, double, std::complex<double>>
 // KIND: ADD, SUB, MUL, TRUEDIV, POW

@@ -191,6 +191,12 @@ print(f'\nIn-place addition (C += D):\n{C}')
 C += np3
 print(f'\nIn-place addition (C += np3):\n{C}')
 
+C -= D
+print(f'\nIn-place addition (C -= D):\n{C}')
+
+C -= np3
+print(f'\nIn-place addition (C -= np3):\n{C}')
+
 
 # ============================================================
 # Element-wise multiplication (Hadamard product)
@@ -261,3 +267,6 @@ print(f'\nA /= -5:\n{A}')
 
 B += (1 + 0.5j)
 print(f'\nB += (1 + 0.5j):\n{B}')
+
+B -= (1 + 0.5j)
+print(f'\nB -= (1 + 0.5j):\n{B}')
