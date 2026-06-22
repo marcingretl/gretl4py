@@ -2098,9 +2098,9 @@ GretlMatrixPtr GretlMatrix::alg_operations (const T &rhs) const
     // matrices standard operations
     // used as a backend for: __add__, __sub__, __matmul__, __truediv__
     //
-    gretl_matrix *rhs_matrix = nullptr;            // right-hand side, used in any kind of operation
-    gretl_matrix_ptr rhs_storage = nullptr;        // if we need a temporary unique_ptr to rhs (for py::array)
-    gretl_matrix_ptr res = nullptr;
+    gretl_matrix *rhs_matrix = nullptr;         // right-hand side, used in any kind of operation
+    gretl_matrix_ptr rhs_storage{nullptr};      // if we need a temporary unique_ptr to rhs (for py::array)
+    gretl_matrix_ptr res{nullptr};
 
     // we check template parameters
     if constexpr (std::is_same_v<T, GretlMatrix>) {
@@ -2165,8 +2165,8 @@ GretlMatrix &GretlMatrix::alg_inplace_operations (const T &rhs)
     // note: here we perform some scalar operations as well
     // used as a backend for: __iadd__, __isub__, __imul__, __itruediv__, __ipow__
     //
-    gretl_matrix *rhs_matrix = nullptr;            // right-hand side, used in any kind of operation
-    gretl_matrix_ptr rhs_storage = nullptr;        // if we need a temporary unique_ptr to rhs (for py::array)
+    gretl_matrix *rhs_matrix = nullptr;           // right-hand side, used in any kind of operation
+    gretl_matrix_ptr rhs_storage{nullptr};        // if we need a temporary unique_ptr to rhs (for py::array)
 
     // we define scalar-only operations
     constexpr bool scalar_only = (KIND == GretlMatrixAlgOperations::IMUL
@@ -2242,8 +2242,8 @@ GretlMatrix &GretlMatrix::alg_inplace_operations_complex (const T &rhs)
     // here we implement non-existing in libgretl inplace operations for complex matrices
     // used as a backend for: __iadd__, __isub__, __imul__, __itruediv__, __ipow__
     //
-    gretl_matrix *rhs_matrix = nullptr;            // right-hand side, used in any kind of operation
-    gretl_matrix_ptr rhs_storage = nullptr;        // if we need a temporary unique_ptr to rhs (for py::array)
+    gretl_matrix *rhs_matrix = nullptr;           // right-hand side, used in any kind of operation
+    gretl_matrix_ptr rhs_storage{nullptr};        // if we need a temporary unique_ptr to rhs (for py::array)
     double _Complex z;
 
     // we check template parameters
@@ -2328,9 +2328,9 @@ GretlMatrixPtr GretlMatrix::alg_dot_operations (const T &rhs) const
     // note: here we perform some scalar operations as well
     // used as a backend for: __add__, __sub__, __mul__, __truediv__, __pow__
     //
-    gretl_matrix *rhs_matrix = nullptr;            // right-hand side, used in any kind of operation
-    gretl_matrix_ptr rhs_storage = nullptr;        // if we need a temporary unique_ptr to rhs (for py::array)
-    gretl_matrix_ptr res = nullptr;
+    gretl_matrix *rhs_matrix = nullptr;           // right-hand side, used in any kind of operation
+    gretl_matrix_ptr rhs_storage{nullptr};        // if we need a temporary unique_ptr to rhs (for py::array)
+    gretl_matrix_ptr res{nullptr};
 
     // we check template parameters
     if constexpr (std::is_same_v<T, GretlMatrix>) {
