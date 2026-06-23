@@ -33,7 +33,7 @@ namespace py = pybind11;
 class GretlPrint
 {
 private:
-    PRN *prn_ = NULL;           // libgretl PRN struct
+    PRN *prn_ = nullptr;        // libgretl PRN struct
     PrnType prn_type_;          // libgretl printer type
     int err_ = 0;
 public:
@@ -100,7 +100,7 @@ void unpack_kwargs_test (gretlopt &opt, const std::string &type, const py::kwarg
 gretl_list_ptr list_from_formula (const std::string &formula, DATASET *dset, int &err, bool handle_error = true);
 
 GretlTypesPtr gretl_generate_gretl_object (const char *s, int &err, GretlObjType obj_type = GRETL_OBJ_INFO,
-                                           DATASET *dset = NULL, void *model = NULL);
+                                           DATASET *dset = nullptr, void *model = nullptr);
 
 template <GretlType GR_TYPE>
 void gretl_generate (const std::string &formula, GretlDatasetPtr dataset = nullptr,
@@ -109,6 +109,6 @@ void gretl_generate (const std::string &formula, GretlDatasetPtr dataset = nullp
 void do_gretl_delete_variables (const std::string &varname, const py::kwargs &kwargs);
 
 template <GretlObjType OBJ_TYPE>
-py::object do_get_accessor (const std::string &name, GretlDatasetPtr dataset = nullptr, void *model = NULL);
+py::object do_get_accessor (const std::string &name, GretlDatasetPtr dataset = nullptr, void *model = nullptr);
 
 #endif // GRETL_CALLS_H

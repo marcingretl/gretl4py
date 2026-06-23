@@ -96,7 +96,7 @@ public:
 class GretlModel_NSE : public GretlModel
 {
 protected:
-    MODEL *model_ = NULL;    // libgretl MODEL struct
+    MODEL *model_ = nullptr;    // libgretl MODEL struct
 
     template <GretlCmdIndex CI>
     void regexp_extract_ (const std::string &formula, std::string &formula_left, std::string &formula_right);    // for extracting formula from regular expression
@@ -249,9 +249,9 @@ public:
 class GretlModel_VAR : public GretlModel
 {
 protected:
-    std::string vars_;          // list of endogenous (+ exogenous) variables
-    const int order_;           // VAR order
-    GRETL_VAR *model_ = NULL;   // libgretl GRETL_VAR struct
+    std::string vars_;              // list of endogenous (+ exogenous) variables
+    const int order_;               // VAR order
+    GRETL_VAR *model_ = nullptr;    // libgretl GRETL_VAR struct
 
     template <GretlCmdIndex CI>
     void do_var_vecm_fit_ (const int coint_rank = 0);
@@ -308,7 +308,7 @@ private:
     std::vector<std::string> instruments_;  // vector holding instruments
     std::vector<std::string> identities_;   // vector holding identities
     std::string endogs_;                    // vector holding endogs
-    equation_system *model_ = NULL;         // libgretl equation_system struct
+    equation_system *model_ = nullptr;      // libgretl equation_system struct
 public:
     GretlModel_NME (const std::string &method, const py::kwargs &kwargs);
     virtual ~GretlModel_NME (void);
