@@ -637,7 +637,7 @@ py::dict GretlDataset::to_dict (void) const
     as_dict[py::cast("varname")] = vnames;
 
     // copy or manufacture obs labels
-    if (dset->S != NULL) {
+    if (dset->S != nullptr) {
         for (i=0; i<dset->n; i++) {
             labels.append(dset->S[i]);
         }
@@ -964,7 +964,7 @@ GretlDatasetPtr GretlDataset::getitem_impl (const T &slice)
         gretl_list_ptr slice_list = list_from_formula(slice_str, dset, err_);
 
         // we construct list of variables to drop
-        gretl_list_ptr full_list(full_var_list(dset, NULL));
+        gretl_list_ptr full_list(full_var_list(dset, nullptr));
         drop_list = gretl_list_ptr(gretl_list_drop(full_list.get(), slice_list.get(), &err_));
         if (err_) handle_gretl_error(err_);
     } else if constexpr (std::is_same_v<T, std::string>) {
@@ -986,12 +986,12 @@ GretlDatasetPtr GretlDataset::getitem_impl (const T &slice)
 
     // we do the job
     if constexpr (std::is_same_v<T, py::list>) {
-        err_ = gretl_delete_variables(drop_list.get(), NULL, OPT_F, res->dset, NULL, printer_.prn_ptr());   // dropping variables
+        err_ = gretl_delete_variables(drop_list.get(), nullptr, OPT_F, res->dset, nullptr, printer_.prn_ptr());   // dropping variables
     } else {
         // for sampling
         opts["quiet"] = true;
         res->smpl(startobs, endobs, opts);
-        err_ = perma_sample(res->dset, OPT_T, printer_.prn_ptr(), NULL);
+        err_ = perma_sample(res->dset, OPT_T, printer_.prn_ptr(), nullptr);
     }
     if (err_) {
         printer_.print();
@@ -1048,13 +1048,13 @@ py::object GretlDataset::cov (const std::string &vars)
 
     // we construct list of variables
     if (vars.empty()) {
-        var_list.reset(full_var_list(dset, NULL));
+        var_list.reset(full_var_list(dset, nullptr));
     } else {
         var_list = list_from_formula(vars, dset, err_);
     }
 
     // we do the job
-    mat.reset(gretl_covariance_matrix_from_varlist(var_list.get(), dset, NULL, &err_));
+    mat.reset(gretl_covariance_matrix_from_varlist(var_list.get(), dset, nullptr, &err_));
     if (err_) handle_gretl_error(err_);
     auto res = convert_GretlType_to_GretlTypes(GRETL_TYPE_MATRIX, mat.get(), 0, err_);
 
@@ -1116,7 +1116,7 @@ py::object GretlDataset::pca (const std::string &varlist, const py::kwargs &kwar
 
     // if no vars given, we use the full list
     if (varlist.empty()) {
-        var_list.reset(full_var_list(dset, NULL));
+        var_list.reset(full_var_list(dset, nullptr));
     } else {
         var_list = list_from_formula(varlist, dset, err_);
     }
@@ -1268,7 +1268,7 @@ void GretlDataset::lags (const std::string &varlist, int order)
 
     // we do the job
     int *var_list_raw_ptr = var_list.release();
-    err_ = list_laggenr(&var_list_raw_ptr, 1, order, NULL, dset, 0, OPT_NONE);
+    err_ = list_laggenr(&var_list_raw_ptr, 1, order, nullptr, dset, 0, OPT_NONE);
     var_list.reset(var_list_raw_ptr);
     if (err_) handle_gretl_error(err_);
 
@@ -1523,9 +1523,9 @@ GretlBundle::GretlBundle (const py::kwargs &kwargs) : b_(gretl_bundle_new())
 
 GretlBundle::~GretlBundle (void)
 {
-    if (free_b_ && b_ != NULL) {
+    if (free_b_ && b_ != nullptr) {
         gretl_bundle_destroy(b_);
-        b_ = NULL;
+        b_ = nullptr;
     }
 }
 

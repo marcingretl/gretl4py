@@ -187,7 +187,7 @@ void GretlModel::do_restrict_ (T *model, const py::list &impose, const py::kwarg
     // GretlModel_VAR_VECM, and GretlModel_NME
     //
     py::dict res;
-    gretl_restriction *my_rset = NULL;
+    gretl_restriction *my_rset = nullptr;
     int save_t1 = dataset_->dset->t1;
     int save_t2 = dataset_->dset->t2;
     int order = -1;
@@ -201,7 +201,7 @@ void GretlModel::do_restrict_ (T *model, const py::list &impose, const py::kwarg
         auto item_str = item.cast<std::string>();
 
         gretl4py_trim(item_str);
-        if (my_rset == NULL) {
+        if (my_rset == nullptr) {
             if constexpr (std::is_same_v<T, MODEL>) {
                 my_rset = eqn_restriction_set_start(item_str.c_str(), model, dataset_->dset, opt_);
             } else if constexpr (std::is_same_v<T, GRETL_VAR>) {
@@ -209,7 +209,7 @@ void GretlModel::do_restrict_ (T *model, const py::list &impose, const py::kwarg
             } else if constexpr (std::is_same_v<T, equation_system>) {
                 my_rset = cross_restriction_set_start(item_str.c_str(), model);
             }
-            if (my_rset == NULL) {
+            if (my_rset == nullptr) {
                 err_ = 1;
                 handle_gretl_error(err_);
             }
@@ -221,10 +221,10 @@ void GretlModel::do_restrict_ (T *model, const py::list &impose, const py::kwarg
 
     // actual work
     if constexpr (std::is_same_v<T, GRETL_VAR>) {
-        GRETL_VAR *vnew = NULL;
+        GRETL_VAR *vnew = nullptr;
 
         vnew = gretl_restricted_vecm(my_rset, dataset_->dset, opt_, printer_.prn_ptr(), &err_);
-        if (vnew != NULL) gretl_VAR_free(vnew);
+        if (vnew != nullptr) gretl_VAR_free(vnew);
     } else {
         dataset_->dset->t1 = model->t1;
         dataset_->dset->t2 = model->t2;
@@ -326,202 +326,6 @@ void GretlModel::gretl_do_forecast_ (void *model, const py::args &args,
     printer_.print();
 }
 
-/*
-template <typename T, GretlCmdIndex CI>
-void GretlModel::do_forecast_ (T *model, const py::kwargs &kwargs,
-                               int variable_nr)
-{
-    //
-    // here we perform native libgretl forecasting for NSE, VAR, VECM
-    // Note: variable_nr is used only for systems and indicates variable
-    // for which we generate forecasts
-    //
-    py::dict res;
-    FITRESID *fr = NULL;
-    FcastFlags flags = static_cast<FcastFlags>(0);
-    int t1, t2 = 0;
-#if 0 // not yet
-    int recursive = 0, k = 1, *kptr;
-#endif
-    int dt2 = GD_->dset->n - 1;
-    int st2 = GD_->dset->n - 1;
-    int conf = 95;
-
-    // single equation models only
-    if constexpr (std::is_same_v<T, MODEL>) {
-        // check for possible sample mismatch
-        err_ = model_sample_problem(model, GD_->dset);
-        if (err_) handle_gretl_error(err_);
-
-        // try to figure which fcast options might be applicable
-        forecast_options_for_model(model, GD_->dset, &flags, &dt2, &st2);
-    }
-
-    if (flags & (FC_DYNAMIC_OK | FC_AUTO_OK)) {
-        t2 = dt2;
-    } else {
-        t2 = st2;
-    }
-
-    // for now, we just do a default out-of-sample forecast
-    if (t2 <= model->t2) {
-        throw std::runtime_error("there are no suitable observations for prediction");
-    } else {
-        t1 = model->t2 + 1;
-    }
-
-    // assemble options
-    unpack_forecast_kwargs_(kwargs, conf);
-
-    // actual work
-    if constexpr (std::is_same_v<T, MODEL>) {
-        fr = get_forecast(model, t1, t2, 0, GD_->dset, OPT_NONE, &err_);
-    } else if constexpr (std::is_same_v<T, GRETL_VAR>) {
-        fr = get_system_forecast(model, CI, variable_nr, t1, t2,
-                                 0, GD_->dset, OPT_NONE, &err_);
-    } else {
-        static_assert(always_false<T>, "GretlModel::do_forecast_(): unknown type");
-    }
-    if (err_) handle_gretl_error(err_);
-    fr->alpha = (100.0 - conf) / 100.0;
-    fr_to_dict_(fr, res);
-    text_print_forecast(fr, GD_->dset, opt_, GP_.prn_ptr());
-    if (fr != NULL) free_fit_resid(fr);
-    if (!(opt_ & OPT_Q)) GP_.print();
-
-    // we register result
-    move_to_python_container<GretlModel, py::dict, py::list>(*this, std::move(res), "forecasts");
-}
-
-void GretlModel::unpack_forecast_kwargs_ (const py::kwargs &kwargs, int &pconf)
-{
-    int conf = 95;
-
-    opt_ = OPT_NONE;
-    for (auto &item : kwargs) {
-        if (!is_pystr(item.first)) throw std::invalid_argument("option key must be a string");
-        const std::string &key = item.first.cast<std::string>();
-
-        if (key == "quiet") {
-            if (!is_pybool(item.second)) {
-                throw std::invalid_argument("'quiet' value must be a boolean");
-            } else if (item.second.cast<int>() != 0) {
-                SET_OPT(opt_, OPT_Q);
-            }
-        } else if (key == "plot") {
-            if (!is_pybool(item.second)) {
-                // FIXME: in principle this could be a filename
-                throw std::invalid_argument("'plot' value must be a boolean");
-            } else if (item.second.cast<int>() != 0) {
-                SET_OPT(opt_, OPT_P);
-            }
-        } else if (key == "interval") {
-            // we want a percentage value for forecast confidence intervals
-            if (!is_pyint(item.second)) {
-                err_ = 1;
-            } else {
-                conf = item.second.cast<int>();
-                if (conf < 50 || conf > 99) {
-                    err_ = 1;
-                } else {
-                    pconf = conf;
-                }
-            }
-            if (err_) throw std::invalid_argument("'interval' value must an integer >= 50 and <= 99");
-        } else if (key == "vname") {
-            // special case: here we only check if vname is a std::string
-            if (!is_pystr(item.second)) throw std::invalid_argument("variable name must be a string");
-            continue;
-        } else {
-            throw std::invalid_argument("unknown option '" + key + "'");
-        }
-    }
-}
-
-void GretlModel::fr_to_dict_ (FITRESID *fr, py::dict &fcdict)
-{
-    gretl_matrix_ptr stats{nullptr};
-    py::list labels;
-    double *tmp = NULL;
-    double tval = 0;
-    int offset, n_ok, rows, cols, t;
-
-    rows = fr->t2 - fr->t1 + 1;
-    offset = fr->nobs - rows;
-
-    fcdict[py::cast("t1")] = fr->t1 + 1;
-    fcdict[py::cast("t2")] = fr->t2 + 1;
-
-    cols = 1; // predicted values
-
-    // get count of non-missing actual values
-    n_ok = 0;
-    for (t=fr->t1; t<=fr->t2; t++) {
-        if (!na(fr->actual[t])) {
-            n_ok++;
-        }
-    }
-    if (n_ok > 0) {
-        cols++; // use actual
-        labels.append("actual");
-    }
-    labels.append("predicted");
-    if (fr->sderr != NULL) {
-        double a2 = fr->alpha / 2.0;
-
-        cols += 3; // add sderr + add confidence interval
-        labels.append("stderr");
-        labels.append("low");
-        labels.append("high");
-        tval = fr->asymp ? normal_critval(a2) : student_critval(fr->df, a2);
-    }
-
-    // build array holding up to five columns
-    DNumPyArrayFC F({rows, cols});
-    tmp = F.mutable_data();
-    if (n_ok > 0) {
-        std::memcpy(tmp, fr->actual + offset, rows * sizeof *tmp);
-        tmp += rows;
-    }
-    std::memcpy(tmp, fr->fitted + offset, rows * sizeof *tmp);
-    if (fr->sderr != NULL) {
-        double maxerr;
-
-        tmp += rows;
-        std::memcpy(tmp, fr->sderr + offset, rows * sizeof *tmp);
-        tmp += rows;
-        for (int i=0; i<rows; i++) {
-            maxerr = tval * fr->sderr[offset + i];
-            tmp[i] = fr->fitted[offset + i] - maxerr;
-            tmp[i+rows] = fr->fitted[offset + i] + maxerr;
-        }
-        fcdict[py::cast("confidence")] = 100 * (1 - fr->alpha);
-    }
-
-    fcdict[py::cast("data")] = F;
-    fcdict[py::cast("data_labels")] = labels;
-
-    n_ok = 0;
-    stats.reset(forecast_stats(fr->actual, fr->fitted, fr->t1,
-                               fr->t2, &n_ok, OPT_O, &err_));
-    if (stats && n_ok > 0) {
-        const char **rnames = gretl_matrix_get_rownames(stats.get());
-        const char *label;
-        // it seems we need a nominally 2-d array here for tabulate()
-        DNumPyArrayFC S({stats->rows, 1});
-        py::list stats_labels;
-
-        tmp = S.mutable_data();
-        std::memcpy(tmp, stats->val, stats->rows * sizeof *tmp);
-        fcdict[py::cast("stats")] = S;
-        for (t=0; t<stats->rows; t++) {
-            label = rnames[t];
-            stats_labels.append(label);
-        }
-        fcdict[py::cast("stats_labels")] = stats_labels;
-    }
-}*/
-
 std::string GretlModel::repr_impl (void) const
 {
     if (!estimated_) return summary_.substr(0, summary_.size() - 1);
@@ -588,7 +392,7 @@ GretlModel_NSE::GretlModel_NSE (GretlCmdIndex ci, const py::kwargs &kwargs) : Gr
 
 GretlModel_NSE::~GretlModel_NSE (void)
 {
-    if (!this->estimated_ && this->model_ != NULL) {
+    if (!this->estimated_ && this->model_ != nullptr) {
         gretl_model_free(this->model_);
     } else {
         gretl_object_unref(this->model_, this->model_obj_type_);
@@ -637,7 +441,7 @@ void GretlModel_NSE::test (const std::string &type, const py::kwargs &kwargs)
     } else if (type == "arch" || type == "autocorr" || type == "breusch-pagan" || type == "comfac" ||
                type == "logs" || type == "normality" || type == "panel" || type == "squares" ||
                type == "white" || type == "white-nocross" || type == "xdepend" ) {
-        if (get_last_model(NULL) != model_) {
+        if (get_last_model(nullptr) != model_) {
             err_ = gretl_model_protect(model_);
             if (err_) handle_gretl_error(err_);
             set_as_last_model(model_, model_obj_type_);
@@ -728,7 +532,7 @@ char *GretlModel_NSE::gretl_get_fit_or_resid (const std::string &name) const
     // Note: we return name of newly added series
     //
     char tmp_name[VNAMELEN] = {0};
-    gchar *pdesc_raw = NULL;
+    gchar *pdesc_raw = nullptr;
     gretl_double_ptr data(get_fit_or_resid(model_, dataset_->dset, IDX, tmp_name, &pdesc_raw, &err_));
 
     if (err_) handle_gretl_error(err_);
@@ -862,7 +666,7 @@ void GretlModel_NSE_arima::fit (void)
     }
 
     // do the job
-    *model_ = arma(var_list_.get(), NULL, dataset_->dset, opt_, printer_.prn_ptr());
+    *model_ = arma(var_list_.get(), nullptr, dataset_->dset, opt_, printer_.prn_ptr());
 
     // save model
     save_model_<MODEL>(model_);
@@ -1293,7 +1097,6 @@ GretlModel_VAR::GretlModel_VAR (const std::string &ylist, const int order, Gretl
 
 GretlModel_VAR::~GretlModel_VAR (void)
 {
-    //if (this->model_ != NULL) gretl_VAR_free(this->model_);
     gretl_object_unref(this->model_, this->model_obj_type_);
 }
 
@@ -1313,7 +1116,7 @@ void GretlModel_VAR::do_var_vecm_fit_ (const int coint_rank)
 
     // we estimate a model
     if constexpr (CI == VAR) {
-        model_ = gretl_VAR(order_, NULL, var_list_.get(), dataset_->dset, opt_, printer_.prn_ptr(), &err_);
+        model_ = gretl_VAR(order_, nullptr, var_list_.get(), dataset_->dset, opt_, printer_.prn_ptr(), &err_);
     } else if constexpr (CI == VECM) {
         model_ = gretl_VECM(order_, coint_rank, var_list_.get(), dataset_->dset, opt_, printer_.prn_ptr(), &err_);
     }
@@ -1518,10 +1321,6 @@ GretlModel_NME::GretlModel_NME (const std::string &method, const py::kwargs &kwa
 
 GretlModel_NME::~GretlModel_NME (void)
 {
-    /*if (model_ != NULL) {
-        equation_system_destroy(model_);
-        model_ = NULL;  // prevents double free
-    }*/
     gretl_object_unref(this->model_, this->model_obj_type_);
 }
 
@@ -1544,7 +1343,7 @@ void GretlModel_NME::fit (void)
     check_if_estimated_();
 
     // system definition
-    model_ = equation_system_start(std::string("method=").append(method_).data(), NULL, opt_, &err_);
+    model_ = equation_system_start(std::string("method=").append(method_).data(), nullptr, opt_, &err_);
     if (err_) handle_gretl_error(err_);
 
     // we define equations
