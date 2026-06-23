@@ -274,6 +274,9 @@ public:
     py::object get_element (int i, int j) const;
 
     template <typename T>
+    GretlMatrixPtr get_slice (const T &slice);
+
+    template <typename T>
     void set_element (int i, int j, T val);
 
     py::object to_numpy (void) const;

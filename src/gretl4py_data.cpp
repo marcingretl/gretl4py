@@ -43,6 +43,7 @@ extern "C" {
     gretl_matrix *gretl_cmatrix_dot_op (const gretl_matrix *a, const gretl_matrix *b, int op, int *err);
 }
 #include <filesystem>
+#include <any>
 
 //////////////////////////////////////////////////
 // static functions
@@ -130,6 +131,71 @@ static inline bool has_non_integer_exponent (const gretl_matrix *m)
     return false;
 }
 */
+
+template <typename T>
+std::unordered_map<std::string, std::any> read_slice (const T &slice, DATASET *dset = nullptr)
+{
+    //
+    // this function converts slice passed in different formats
+    // into string representation
+    // returning map has the following entries:
+    // startobs, endobs, slice_str : std::string
+    // opts: py::dict
+    //
+    py::dict opts;
+    std::string startobs, endobs, slice_str;
+    gretl_list_ptr drop_list{nullptr};
+    std::unordered_map<std::string, std::any> res;
+    int err = 0;
+
+    // we parse slice / list / string
+    if constexpr (std::is_same_v<T, py::slice>) {
+        py::object start = slice.attr("start");
+        py::object stop = slice.attr("stop");
+
+        startobs = py::isinstance<py::none>(start) ? "" : std::to_string(start.cast<int>());
+        endobs = py::isinstance<py::none>(stop) ? "" : std::to_string(stop.cast<int>());
+        slice_str = startobs + ":" + endobs;
+    } else if constexpr (std::is_same_v<T, py::list>) {
+        std::ostringstream oss;
+
+        // we construct list of variables to retain
+        for (size_t i=0; i<slice.size(); ++i) {
+            oss << py::str(slice[i]).cast<std::string>();
+            if (i + 1 < slice.size()) oss << " ";
+        }
+        slice_str = oss.str();
+        gretl_list_ptr slice_list = list_from_formula(slice_str, dset, err);
+
+        // we construct list of variables to drop
+        gretl_list_ptr full_list(full_var_list(dset, nullptr));
+        drop_list = gretl_list_ptr(gretl_list_drop(full_list.get(), slice_list.get(), &err));
+        if (err) handle_gretl_error(err);
+    } else if constexpr (std::is_same_v<T, std::string>) {
+        auto pos = slice.find(':');
+
+        // at first we check if we deal with range slicer
+        if (pos != std::string::npos && slice.find(':', pos + 1) == std::string::npos) {
+            startobs = slice.substr(0, pos);
+            endobs = slice.substr(pos + 1);
+        } else {
+            startobs = slice;
+            endobs = "";
+            opts["restrict"] = true;
+        }
+        slice_str = slice;
+    } else {
+        static_assert(always_false<T>, "GretlDataset::getitem_impl: unknown slicing rule type");
+    }
+
+    // we construct res
+    res["startobs"] = startobs;
+    res["endobs"] = endobs;
+    res["slice_str"] = slice_str;
+    res["opts"] = opts;
+
+    return res;
+}
 
 //////////////////////////////////////////////////
 // functions
@@ -2028,6 +2094,38 @@ py::object GretlMatrix::get_element (int i, int j) const
         return py::cast(gretl_matrix_get(m_, i, j));
     }
 }
+
+template <typename T>
+GretlMatrixPtr GretlMatrix::get_slice (const T &slice)
+{
+    //
+    // here we get sliced matrix as a new GretlMatrix instance
+    //
+    std::string slice_str, tmp_str;
+
+    if constexpr (std::is_same_v<T, py::tuple>) {
+        for (auto &item : slice) {
+            if (is_pyslice(item)) {
+                auto slice_params = read_slice<py::slice>(item.template cast<py::slice>());
+
+                tmp_str = std::any_cast<std::string>(slice_params["slice_str"]);
+            } else if (is_pyint(item)) {
+                tmp_str = std::to_string(item.template cast<int>());
+            } else {
+                throw std::invalid_argument("bad slicer passed");
+            }
+            if (!slice_str.empty()) slice_str += ",";
+            slice_str += tmp_str;
+        }
+    } else {
+        static_assert(always_false<T>, "GretlMatrix::get_slice(): unknown type");
+    }
+
+    py::print("slice_str", slice_str);
+
+    return nullptr;
+}
+template GretlMatrixPtr GretlMatrix::get_slice<py::tuple>(const py::tuple&);
 
 template <typename T>
 void GretlMatrix::set_element (int i, int j, T val)
