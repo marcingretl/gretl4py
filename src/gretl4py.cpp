@@ -38,11 +38,11 @@ static const std::string info = "The gretl4py package provides "
 //////////////////////////////////////////////////
 // module extensions
 //////////////////////////////////////////////////
-void init_gretl4py_dataset_py11 (py::module_ &);
-void init_gretl4py_bundle_py11 (py::module_ &);
-void init_gretl4py_package_py11 (py::module_ &);
-void init_gretl4py_model_py11 (py::module_ &);
-void init_gretl4py_gretl_matrix_py11 (py::module_ &);
+void init_gretl4py_dataset_py11 (py::module_ &m);
+void init_gretl4py_bundle_py11 (py::module_ &m);
+void init_gretl4py_package_py11 (py::module_ &m);
+void init_gretl4py_model_py11 (py::module_ &m);
+void init_gretl4py_gretl_matrix_py11 (py::module_ &m);
 
 PYBIND11_MODULE(_gretl, m)
 {
