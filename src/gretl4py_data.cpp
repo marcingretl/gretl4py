@@ -1034,13 +1034,11 @@ GretlDatasetPtr GretlDataset::getitem_impl (const T &slice)
     } else {
         // we extract options
         auto opts = slice_params.opts;
-        auto startobs = slice_params.startobs;
-        auto endobs = slice_params.endobs;
         slice_str = slice_params.slice_str;
 
         // for sampling
         opts["quiet"] = true;
-        res->smpl(startobs, endobs, opts);
+        res->smpl(slice_params.startobs, slice_params.endobs, opts);
         err_ = perma_sample(res->dset, OPT_T, printer_.prn_ptr(), nullptr);
     }
     if (err_) {
