@@ -2078,17 +2078,24 @@ GretlMatrixPtr GretlMatrix::get_slice (const T &slice)
     //
     // here we get sliced matrix as a new GretlMatrix instance
     //
-    std::string slice_str, tmp_str;
+    std::string slice_str;
     const char *tmp = "m_gretlpy__";
     gretl_matrix_ptr res{nullptr};
 
+    // lambda for extracting string from given slice
+    auto extract_slice = [](py::slice slice) -> std::string
+    {
+        auto slice_params = python_slice_to_gretl_slice<py::slice>(slice);
+        auto tmp_str = std::any_cast<std::string>(slice_params["slice_str"]);
+
+        return tmp_str == ":" ? " " : tmp_str;  // we put fake space to make slice_str not empty for a while
+    };
+
     if constexpr (std::is_same_v<T, py::tuple>) {
+        std::string tmp_str;
         for (auto &item : slice) {
             if (is_pyslice(item)) {
-                auto slice_params = python_slice_to_gretl_slice<py::slice>(item.template cast<py::slice>());
-
-                tmp_str = std::any_cast<std::string>(slice_params["slice_str"]);
-                if (tmp_str == ":") tmp_str = " ";  // we put fake space to make slice_str not empty for a while
+                tmp_str = extract_slice(item.template cast<py::slice>());
             } else if (is_pyint(item)) {
                 tmp_str = std::to_string(item.template cast<int>());
             } else {
@@ -2097,21 +2104,29 @@ GretlMatrixPtr GretlMatrix::get_slice (const T &slice)
             if (!slice_str.empty()) slice_str += ",";
             slice_str += tmp_str;
         }
-    } else {
+    } else if constexpr (std::is_same_v<T, py::slice>) {
+        slice_str = extract_slice(slice);
+    }
+    else {
         static_assert(always_false<T>, "GretlMatrix::get_slice(): unknown type");
     }
     gretl4py_trim(slice_str);
+
+    // we manufacture expression to be passed to lingretl
     std::string expr = std::string(tmp) + "[" + slice_str + "]";
-    py::print("slice_str", slice_str);
 
     // we do the job
-    private_matrix_add_as_shell(m_, tmp);
+    err_ = private_matrix_add_as_shell(m_, tmp);
+    if (err_) handle_gretl_error(err_);
     res.reset(generate_matrix(expr.c_str(), nullptr, &err_));
-    user_var_delete_by_name(tmp, nullptr);
+    if (err_) handle_gretl_error(err_);
+    err_ = user_var_delete_by_name(tmp, nullptr);
+    if (err_) handle_gretl_error(err_);
 
-    return std::make_shared<GretlMatrix>(res.release(), false);
+    return std::make_shared<GretlMatrix>(res.release());
 }
 template GretlMatrixPtr GretlMatrix::get_slice<py::tuple>(const py::tuple&);
+template GretlMatrixPtr GretlMatrix::get_slice<py::slice>(const py::slice&);
 
 template <typename T>
 void GretlMatrix::set_element (int i, int j, T val)
