@@ -15,6 +15,7 @@ PYTHON_EXE  = get_option('PYTHON_EXE')
 STACK_PATH  = get_option('STACK_PATH')
 GRETL_PATH  = get_option('GRETL_PATH')
 LOCAL_INST  = get_option('LOCAL_INST')
+LLVM_RT_PATH= get_option('LLVM_RT_PATH')
 
 ###########################################################################
 # Windows-specific libgretl
@@ -121,6 +122,12 @@ if is_windows
     '-lglib-2.0', '-lintl', '-lgobject-2.0',
     '-lversion', '-lshlwapi', '-lpathcch', '-lbcrypt'
   ]
+  if arch == 'aarch64'
+    LLVM_RT_PATH += '/' + 'clang_rt.builtins-aarch64.lib'
+  elif arch == 'x86_64'
+    LLVM_RT_PATH += '/' + 'clang_rt.builtins-x86_64.lib'
+  endif
+  win_link_args += [LLVM_RT_PATH]
   gretl_dep = declare_dependency(
     include_directories: [
       gretl_include,
@@ -129,11 +136,6 @@ if is_windows
     ],
     link_args: win_link_args
   )
-  if arch == 'aarch64'
-    link_args += ['clang_rt.builtins-aarch64.lib']
-  elif arch == 'x86_64'
-    link_args += ['clang_rt.builtins-x86_64.lib']
-  endif
 elif is_darwin
   GRETL_PATH = GRETL_PATH.replace('\\', '/')
   gretl_include_paths = [
