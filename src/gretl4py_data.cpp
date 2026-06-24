@@ -35,6 +35,7 @@ extern "C" {
     #include <gretl/gretl_xml.h>
     #include <gretl/dataset.h>
     #include <gretl/system.h>
+    #include <gretl/uservar.h>
     // this is because we cannot include gretl_cmatrix.h
     int gretl_cmatrix_print (const gretl_matrix *A, const char *name, PRN *prn);
     gretl_matrix *gretl_cmatrix_multiply (const gretl_matrix *A, const gretl_matrix *B, int *err);
@@ -2078,6 +2079,8 @@ GretlMatrixPtr GretlMatrix::get_slice (const T &slice)
     // here we get sliced matrix as a new GretlMatrix instance
     //
     std::string slice_str, tmp_str;
+    const char *tmp = "m_gretlpy__";
+    gretl_matrix_ptr res{nullptr};
 
     if constexpr (std::is_same_v<T, py::tuple>) {
         for (auto &item : slice) {
@@ -2085,7 +2088,7 @@ GretlMatrixPtr GretlMatrix::get_slice (const T &slice)
                 auto slice_params = python_slice_to_gretl_slice<py::slice>(item.template cast<py::slice>());
 
                 tmp_str = std::any_cast<std::string>(slice_params["slice_str"]);
-                if (tmp_str == ":") tmp_str = " ";  // we put fake space to make slice_str not empty for w while
+                if (tmp_str == ":") tmp_str = " ";  // we put fake space to make slice_str not empty for a while
             } else if (is_pyint(item)) {
                 tmp_str = std::to_string(item.template cast<int>());
             } else {
@@ -2097,11 +2100,16 @@ GretlMatrixPtr GretlMatrix::get_slice (const T &slice)
     } else {
         static_assert(always_false<T>, "GretlMatrix::get_slice(): unknown type");
     }
-
     gretl4py_trim(slice_str);
+    std::string expr = std::string(tmp) + "[" + slice_str + "]";
     py::print("slice_str", slice_str);
 
-    return nullptr;
+    // we do the job
+    private_matrix_add_as_shell(m_, tmp);
+    res.reset(generate_matrix(expr.c_str(), nullptr, &err_));
+    user_var_delete_by_name(tmp, nullptr);
+
+    return std::make_shared<GretlMatrix>(res.release(), false);
 }
 template GretlMatrixPtr GretlMatrix::get_slice<py::tuple>(const py::tuple&);
 
