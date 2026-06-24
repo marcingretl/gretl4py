@@ -618,7 +618,7 @@ void GretlDataset::set_obs_labels_ (void)
 GretlDatasetPtr GretlDataset::exec_slice_ (GretlSlice slice_params)
 {
     //
-    //
+    // here we execute slicing via smpl() and perma_sample() (for py::slice or std::string)
     //
     auto res = GretlDatasetPtr(new GretlDataset(*this));
     auto opts = slice_params.opts;
