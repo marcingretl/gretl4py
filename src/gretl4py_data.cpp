@@ -46,13 +46,6 @@ extern "C" {
 #include <filesystem>
 #include <any>
 
-struct GretlSlice {
-    std::string startobs;
-    std::string endobs;
-    std::string slice_str;
-    py::dict opts;
-};
-
 //////////////////////////////////////////////////
 // static functions
 //////////////////////////////////////////////////
@@ -189,56 +182,6 @@ GretlSlice python_slice_to_gretl_slice (const std::string &slice)
     }
 
     return make_gretl_slice(startobs, endobs, slice, opts);
-}
-
-// T: py::slice, std::string
-template <typename T>
-GretlSlice python_slice_to_gretl_slice (const T &slice)
-{
-    //
-    // this function converts slice passed in different formats
-    // into string representation required by libgretl
-    // returning map has the following entries:
-    // startobs, endobs, slice_str : std::string
-    // opts: py::dict
-    //
-    py::dict opts;
-    std::string startobs, endobs, slice_str;
-    gretl_list_ptr drop_list{nullptr};
-    GretlSlice res;
-
-    // we parse given slice or string
-    if constexpr (std::is_same_v<T, py::slice>) {
-        py::object start = slice.attr("start");
-        py::object stop = slice.attr("stop");
-
-        startobs = py::isinstance<py::none>(start) ? "" : std::to_string(start.cast<int>());
-        endobs = py::isinstance<py::none>(stop) ? "" : std::to_string(stop.cast<int>());
-        slice_str = startobs + ":" + endobs;
-    } else if constexpr (std::is_same_v<T, std::string>) {
-        auto pos = slice.find(':');
-
-        // at first we check if we deal with range slicer
-        if (pos != std::string::npos && slice.find(':', pos + 1) == std::string::npos) {
-            startobs = slice.substr(0, pos);
-            endobs = slice.substr(pos + 1);
-        } else {
-            startobs = slice;
-            endobs = "";
-            opts["restrict"] = true;
-        }
-        slice_str = slice;
-    } else {
-        static_assert(always_false<T>, "GretlDataset::getitem_impl: unknown slicing rule type");
-    }
-
-    // we construct res
-    res.startobs = startobs;
-    res.endobs = endobs;
-    res.slice_str = slice_str;
-    res.opts = opts;
-
-    return res;
 }
 
 //////////////////////////////////////////////////
@@ -672,6 +615,25 @@ void GretlDataset::set_obs_labels_ (void)
     }
 }
 
+GretlDatasetPtr GretlDataset::exec_slice_ (GretlSlice slice_params)
+{
+    //
+    //
+    //
+    auto res = GretlDatasetPtr(new GretlDataset(*this));
+    auto opts = slice_params.opts;
+
+    opts["quiet"] = true;
+    res->smpl(slice_params.startobs, slice_params.endobs, opts);
+    err_ = perma_sample(res->dset, OPT_T, printer_.prn_ptr(), nullptr);
+    if (err_) {
+        printer_.print();
+        handle_gretl_error(err_);
+    }
+
+    return res;
+}
+
 int GretlDataset::get_series_id (const std::string &series, const bool verbose) const
 {
     //
@@ -1042,56 +1004,63 @@ void GretlDataset::smpl (const std::string &startobs, const std::string &endobs,
     printer_.print();
 }
 
-// T: py::slice, py::list, std::string
-template <typename T>
-GretlDatasetPtr GretlDataset::getitem_impl (const T &slice)
+GretlDatasetPtr GretlDataset::getitem_impl (const py::slice &slice)
 {
     //
-    // this method is an underlying engine for '[]' operator
-    // note: we make deep copy of current instance
+    // slicing via Python's slice'
+    //
+    auto slice_params = python_slice_to_gretl_slice(slice);
+    auto res = exec_slice_(slice_params);
+
+    // we register dataset with new name
+    res->source += " slice: " + slice_params.slice_str;
+    register_dset_(res);
+
+    return res;
+}
+
+GretlDatasetPtr GretlDataset::getitem_impl (const std::string &slice)
+{
+    //
+    // slicing via string
+    //
+    auto slice_params = python_slice_to_gretl_slice(slice);
+    auto res = exec_slice_(slice_params);
+
+    // we register dataset with new name
+    res->source += " slice: " + slice_params.slice_str;
+    register_dset_(res);
+
+    return res;
+}
+
+GretlDatasetPtr GretlDataset::getitem_impl (const py::list &slice)
+{
+    //
+    // slicing via Python's py::list (for dropping variables)
     //
     std::string slice_str;
     gretl_list_ptr drop_list{nullptr};
-    GretlSlice slice_params;
     auto res = GretlDatasetPtr(new GretlDataset(*this));
 
     // we parse slice / list / string
-    if constexpr (std::is_same_v<T, py::slice>) {
-        slice_params = python_slice_to_gretl_slice<py::slice>(slice);
-    } else if constexpr (std::is_same_v<T, std::string>) {
-        slice_params = python_slice_to_gretl_slice<std::string>(slice);
-    } else if constexpr (std::is_same_v<T, py::list>) {
-        std::ostringstream oss;
+    std::ostringstream oss;
 
-        // we construct list of variables to retain
-        for (size_t i=0; i<slice.size(); ++i) {
-            oss << py::str(slice[i]).cast<std::string>();
-            if (i + 1 < slice.size()) oss << " ";
-        }
-        slice_str = oss.str();
-        gretl_list_ptr slice_list = list_from_formula(slice_str, dset, err_);
-
-        // we construct list of variables to drop
-        gretl_list_ptr full_list(full_var_list(dset, nullptr));
-        drop_list = gretl_list_ptr(gretl_list_drop(full_list.get(), slice_list.get(), &err_));
-        if (err_) handle_gretl_error(err_);
-    } else {
-        static_assert(always_false<T>, "GretlDataset::getitem_impl: unknown slicing rule type");
+    // we construct list of variables to retain
+    for (size_t i=0; i<slice.size(); ++i) {
+        oss << py::str(slice[i]).cast<std::string>();
+        if (i + 1 < slice.size()) oss << " ";
     }
+    slice_str = oss.str();
+    gretl_list_ptr slice_list = list_from_formula(slice_str, dset, err_);
+
+    // we construct list of variables to drop
+    gretl_list_ptr full_list(full_var_list(dset, nullptr));
+    drop_list = gretl_list_ptr(gretl_list_drop(full_list.get(), slice_list.get(), &err_));
+    if (err_) handle_gretl_error(err_);
 
     // we do the job
-    if constexpr (std::is_same_v<T, py::list>) {
-        err_ = gretl_delete_variables(drop_list.get(), nullptr, OPT_F, res->dset, nullptr, printer_.prn_ptr());   // dropping variables
-    } else {
-        // we extract options
-        auto opts = slice_params.opts;
-        slice_str = slice_params.slice_str;
-
-        // for sampling
-        opts["quiet"] = true;
-        res->smpl(slice_params.startobs, slice_params.endobs, opts);
-        err_ = perma_sample(res->dset, OPT_T, printer_.prn_ptr(), nullptr);
-    }
+    err_ = gretl_delete_variables(drop_list.get(), nullptr, OPT_F, res->dset, nullptr, printer_.prn_ptr());   // dropping variables
     if (err_) {
         printer_.print();
         handle_gretl_error(err_);
@@ -1103,9 +1072,6 @@ GretlDatasetPtr GretlDataset::getitem_impl (const T &slice)
 
     return res;
 }
-template GretlDatasetPtr GretlDataset::getitem_impl<py::slice>(const py::slice&);
-template GretlDatasetPtr GretlDataset::getitem_impl<py::list>(const py::list&);
-template GretlDatasetPtr GretlDataset::getitem_impl<std::string>(const std::string&);
 
 py::object GretlDataset::corr (const std::string &varlist, const py::kwargs &kwargs)
 {

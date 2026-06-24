@@ -74,6 +74,8 @@ private:
                                            gretl_gchar_ptr label = nullptr);
 
     void set_obs_labels_ (void);
+
+    GretlDatasetPtr exec_slice_ (GretlSlice slice_params);
 public:
     bool is_default = false;
     DATASET *dset = nullptr;
@@ -128,8 +130,11 @@ public:
 
     void smpl (const std::string &startobs, const std::string &endobs, const py::kwargs &kwargs);
 
-    template <typename T>
-    GretlDatasetPtr getitem_impl (const T &slice);
+    GretlDatasetPtr getitem_impl (const py::slice &slice);
+
+    GretlDatasetPtr getitem_impl (const std::string &slice);
+
+    GretlDatasetPtr getitem_impl (const py::list &slice);
 
     void gretl_series_set_label (const int number, char *label);
 
