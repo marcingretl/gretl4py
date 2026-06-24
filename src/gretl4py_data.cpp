@@ -2080,7 +2080,7 @@ GretlMatrixPtr GretlMatrix::get_slice (const T &slice)
     // here we get sliced matrix as a new GretlMatrix instance
     //
     std::string slice_str;
-    const char *tmp = "m_gretlpy__";
+    std::string tmp = "m_gretlpy__";
     gretl_matrix_ptr res{nullptr};
 
     // lambda for extracting string from given slice
@@ -2114,15 +2114,15 @@ GretlMatrixPtr GretlMatrix::get_slice (const T &slice)
     }
     gretl4py_trim(slice_str);
 
-    // we manufacture expression to be passed to lingretl
-    std::string expr = std::string(tmp) + "[" + slice_str + "]";
+    // we manufacture expression to be passed to libgretl
+    std::string expr = tmp + "[" + slice_str + "]";
 
     // we do the job
-    err_ = private_matrix_add_as_shell(m_, tmp);
+    err_ = private_matrix_add_as_shell(m_, tmp.c_str());
     if (err_) handle_gretl_error(err_);
     res.reset(generate_matrix(expr.c_str(), nullptr, &err_));
     if (err_) handle_gretl_error(err_);
-    err_ = user_var_delete_by_name(tmp, nullptr);
+    err_ = user_var_delete_by_name(tmp.c_str(), nullptr);
     if (err_) handle_gretl_error(err_);
 
     return std::make_shared<GretlMatrix>(res.release());
