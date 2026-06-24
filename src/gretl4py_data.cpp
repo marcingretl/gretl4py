@@ -2072,6 +2072,7 @@ py::object GretlMatrix::get_element (int i, int j) const
     }
 }
 
+//T: py::tuple, py::slice, std::string
 template <typename T>
 GretlMatrixPtr GretlMatrix::get_slice (const T &slice)
 {
@@ -2106,8 +2107,9 @@ GretlMatrixPtr GretlMatrix::get_slice (const T &slice)
         }
     } else if constexpr (std::is_same_v<T, py::slice>) {
         slice_str = extract_slice(slice);
-    }
-    else {
+    } else if constexpr (std::is_same_v<T, std::string>) {
+        slice_str = slice;
+    } else {
         static_assert(always_false<T>, "GretlMatrix::get_slice(): unknown type");
     }
     gretl4py_trim(slice_str);
@@ -2127,7 +2129,9 @@ GretlMatrixPtr GretlMatrix::get_slice (const T &slice)
 }
 template GretlMatrixPtr GretlMatrix::get_slice<py::tuple>(const py::tuple&);
 template GretlMatrixPtr GretlMatrix::get_slice<py::slice>(const py::slice&);
+template GretlMatrixPtr GretlMatrix::get_slice<std::string>(const std::string&);
 
+//T: double, std::complex<double>
 template <typename T>
 void GretlMatrix::set_element (int i, int j, T val)
 {
