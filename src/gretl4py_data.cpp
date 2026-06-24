@@ -140,6 +140,57 @@ static inline bool has_non_integer_exponent (const gretl_matrix *m)
 }
 */
 
+static inline GretlSlice make_gretl_slice (std::string startobs, std::string endobs,
+                                           std::string slice_str, py::dict opts = {})
+{
+    //
+    // small helper for fast GretlSlice generation
+    //
+    GretlSlice gs;
+
+    gs.startobs = std::move(startobs);
+    gs.endobs = std::move(endobs);
+    gs.slice_str = std::move(slice_str);
+    gs.opts = std::move(opts);
+
+    return gs;
+}
+
+GretlSlice python_slice_to_gretl_slice (const py::slice &slice)
+{
+    //
+    // we convert Python's slice string accepted by libgretl
+    //
+    py::object start = slice.attr("start");
+    py::object stop = slice.attr("stop");
+    std::string startobs = is_pynone(start) ? "" : std::to_string(start.cast<int>());
+    std::string endobs = is_pynone(stop) ? "" : std::to_string(stop.cast<int>());
+    std::string slice_str = startobs + ":" + endobs;
+
+    return make_gretl_slice(startobs, endobs, slice_str);
+}
+
+GretlSlice python_slice_to_gretl_slice (const std::string &slice)
+{
+    //
+    // we manufacture string accepted by libgretl
+    //
+    std::string startobs, endobs;
+    py::dict opts;
+    auto pos = slice.find(':');
+
+    if (pos != std::string::npos && slice.find(':', pos + 1) == std::string::npos) {
+        startobs = slice.substr(0, pos);
+        endobs   = slice.substr(pos + 1);
+    } else {
+        startobs = slice;
+        endobs   = "";
+        opts["restrict"] = true;
+    }
+
+    return make_gretl_slice(startobs, endobs, slice, opts);
+}
+
 // T: py::slice, std::string
 template <typename T>
 GretlSlice python_slice_to_gretl_slice (const T &slice)
@@ -2091,7 +2142,7 @@ GretlMatrixPtr GretlMatrix::get_slice (const T &slice)
     // lambda for extracting string from given slice
     auto extract_slice = [](py::slice slice) -> std::string
     {
-        auto tmp_str = python_slice_to_gretl_slice<py::slice>(slice).slice_str;
+        auto tmp_str = python_slice_to_gretl_slice(slice).slice_str;
 
         return tmp_str == ":" ? " " : tmp_str;  // we put fake space to make slice_str not empty for a while
     };
@@ -2110,9 +2161,9 @@ GretlMatrixPtr GretlMatrix::get_slice (const T &slice)
             slice_str += tmp_str;
         }
     } else if constexpr (std::is_same_v<T, py::slice>) {
-        slice_str = extract_slice(slice);
+        slice_str = python_slice_to_gretl_slice(slice).slice_str;
     } else if constexpr (std::is_same_v<T, std::string>) {
-        slice_str = slice;
+        slice_str = python_slice_to_gretl_slice(slice).slice_str;
     } else {
         static_assert(always_false<T>, "GretlMatrix::get_slice(): unknown type");
     }

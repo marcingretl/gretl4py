@@ -60,6 +60,7 @@ inline bool is_pynumarrayd (const py::handle &o){ return py::isinstance<py::arra
 inline bool is_pynumeric (const py::handle &o) { return is_pyint(o) || is_pyfloat(o); }
 inline bool is_pysequence (const py::handle &o) { return py::isinstance<py::sequence>(o); }
 inline bool is_pyslice (const py::handle &o) { return py::isinstance<py::slice>(o); }
+inline bool is_pynone (const py::handle &o) { return py::isinstance<py::none>(o); }
 inline bool is_numpy_array_fc (const py::array &m) {
     return (m.flags() & py::detail::npy_api::constants::NPY_ARRAY_F_CONTIGUOUS_) != 0;
 }
