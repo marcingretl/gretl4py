@@ -129,6 +129,11 @@ if is_windows
     ],
     link_args: win_link_args
   )
+  if arch == 'aarch64'
+    link_args += ['clang_rt.builtins-aarch64.lib']
+  elif arch == 'x86_64'
+    link_args += ['clang_rt.builtins-x86_64.lib']
+  endif
 elif is_darwin
   GRETL_PATH = GRETL_PATH.replace('\\', '/')
   gretl_include_paths = [
