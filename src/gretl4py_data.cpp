@@ -46,6 +46,13 @@ extern "C" {
 #include <filesystem>
 #include <any>
 
+struct GretlSlice {
+    std::string startobs;
+    std::string endobs;
+    std::string slice_str;
+    py::dict opts;
+};
+
 //////////////////////////////////////////////////
 // static functions
 //////////////////////////////////////////////////
@@ -135,7 +142,7 @@ static inline bool has_non_integer_exponent (const gretl_matrix *m)
 
 // T: py::slice, std::string
 template <typename T>
-std::unordered_map<std::string, std::any> python_slice_to_gretl_slice (const T &slice)
+GretlSlice python_slice_to_gretl_slice (const T &slice)
 {
     //
     // this function converts slice passed in different formats
@@ -147,7 +154,7 @@ std::unordered_map<std::string, std::any> python_slice_to_gretl_slice (const T &
     py::dict opts;
     std::string startobs, endobs, slice_str;
     gretl_list_ptr drop_list{nullptr};
-    std::unordered_map<std::string, std::any> res;
+    GretlSlice res;
 
     // we parse given slice or string
     if constexpr (std::is_same_v<T, py::slice>) {
@@ -175,10 +182,10 @@ std::unordered_map<std::string, std::any> python_slice_to_gretl_slice (const T &
     }
 
     // we construct res
-    res["startobs"] = startobs;
-    res["endobs"] = endobs;
-    res["slice_str"] = slice_str;
-    res["opts"] = opts;
+    res.startobs = startobs;
+    res.endobs = endobs;
+    res.slice_str = slice_str;
+    res.opts = opts;
 
     return res;
 }
@@ -994,7 +1001,7 @@ GretlDatasetPtr GretlDataset::getitem_impl (const T &slice)
     //
     std::string slice_str;
     gretl_list_ptr drop_list{nullptr};
-    std::unordered_map<std::string, std::any> slice_params;
+    GretlSlice slice_params;
     auto res = GretlDatasetPtr(new GretlDataset(*this));
 
     // we parse slice / list / string
@@ -1026,10 +1033,10 @@ GretlDatasetPtr GretlDataset::getitem_impl (const T &slice)
         err_ = gretl_delete_variables(drop_list.get(), nullptr, OPT_F, res->dset, nullptr, printer_.prn_ptr());   // dropping variables
     } else {
         // we extract options
-        auto opts = std::any_cast<py::dict>(slice_params["opts"]);
-        auto startobs = std::any_cast<std::string>(slice_params["startobs"]);
-        auto endobs = std::any_cast<std::string>(slice_params["endobs"]);
-        slice_str = std::any_cast<std::string>(slice_params["slice_str"]);
+        auto opts = slice_params.opts;
+        auto startobs = slice_params.startobs;
+        auto endobs = slice_params.endobs;
+        slice_str = slice_params.slice_str;
 
         // for sampling
         opts["quiet"] = true;
@@ -2086,8 +2093,7 @@ GretlMatrixPtr GretlMatrix::get_slice (const T &slice)
     // lambda for extracting string from given slice
     auto extract_slice = [](py::slice slice) -> std::string
     {
-        auto slice_params = python_slice_to_gretl_slice<py::slice>(slice);
-        auto tmp_str = std::any_cast<std::string>(slice_params["slice_str"]);
+        auto tmp_str = python_slice_to_gretl_slice<py::slice>(slice).slice_str;
 
         return tmp_str == ":" ? " " : tmp_str;  // we put fake space to make slice_str not empty for a while
     };
