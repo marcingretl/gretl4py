@@ -132,12 +132,13 @@ static inline bool has_non_integer_exponent (const gretl_matrix *m)
 }
 */
 
+// T: py::slice, std::string
 template <typename T>
-std::unordered_map<std::string, std::any> read_slice (const T &slice, DATASET *dset = nullptr)
+std::unordered_map<std::string, std::any> python_slice_to_gretl_slice (const T &slice)
 {
     //
     // this function converts slice passed in different formats
-    // into string representation
+    // into string representation required by libgretl
     // returning map has the following entries:
     // startobs, endobs, slice_str : std::string
     // opts: py::dict
@@ -146,9 +147,8 @@ std::unordered_map<std::string, std::any> read_slice (const T &slice, DATASET *d
     std::string startobs, endobs, slice_str;
     gretl_list_ptr drop_list{nullptr};
     std::unordered_map<std::string, std::any> res;
-    int err = 0;
 
-    // we parse slice / list / string
+    // we parse given slice or string
     if constexpr (std::is_same_v<T, py::slice>) {
         py::object start = slice.attr("start");
         py::object stop = slice.attr("stop");
@@ -156,21 +156,6 @@ std::unordered_map<std::string, std::any> read_slice (const T &slice, DATASET *d
         startobs = py::isinstance<py::none>(start) ? "" : std::to_string(start.cast<int>());
         endobs = py::isinstance<py::none>(stop) ? "" : std::to_string(stop.cast<int>());
         slice_str = startobs + ":" + endobs;
-    } else if constexpr (std::is_same_v<T, py::list>) {
-        std::ostringstream oss;
-
-        // we construct list of variables to retain
-        for (size_t i=0; i<slice.size(); ++i) {
-            oss << py::str(slice[i]).cast<std::string>();
-            if (i + 1 < slice.size()) oss << " ";
-        }
-        slice_str = oss.str();
-        gretl_list_ptr slice_list = list_from_formula(slice_str, dset, err);
-
-        // we construct list of variables to drop
-        gretl_list_ptr full_list(full_var_list(dset, nullptr));
-        drop_list = gretl_list_ptr(gretl_list_drop(full_list.get(), slice_list.get(), &err));
-        if (err) handle_gretl_error(err);
     } else if constexpr (std::is_same_v<T, std::string>) {
         auto pos = slice.find(':');
 
@@ -998,6 +983,7 @@ void GretlDataset::smpl (const std::string &startobs, const std::string &endobs,
     printer_.print();
 }
 
+// T: py::slice, py::list, std::string
 template <typename T>
 GretlDatasetPtr GretlDataset::getitem_impl (const T &slice)
 {
@@ -1005,19 +991,16 @@ GretlDatasetPtr GretlDataset::getitem_impl (const T &slice)
     // this method is an underlying engine for '[]' operator
     // note: we make deep copy of current instance
     //
-    py::dict opts;
-    std::string startobs, endobs, slice_str;
+    std::string slice_str;
     gretl_list_ptr drop_list{nullptr};
+    std::unordered_map<std::string, std::any> slice_params;
     auto res = GretlDatasetPtr(new GretlDataset(*this));
 
     // we parse slice / list / string
     if constexpr (std::is_same_v<T, py::slice>) {
-        py::object start = slice.attr("start");
-        py::object stop = slice.attr("stop");
-
-        startobs = py::isinstance<py::none>(start) ? "" : std::to_string(start.cast<int>());
-        endobs = py::isinstance<py::none>(stop) ? "" : std::to_string(stop.cast<int>());
-        slice_str = startobs + ":" + endobs;
+        slice_params = python_slice_to_gretl_slice<py::slice>(slice);
+    } else if constexpr (std::is_same_v<T, std::string>) {
+        slice_params = python_slice_to_gretl_slice<std::string>(slice);
     } else if constexpr (std::is_same_v<T, py::list>) {
         std::ostringstream oss;
 
@@ -1033,19 +1016,6 @@ GretlDatasetPtr GretlDataset::getitem_impl (const T &slice)
         gretl_list_ptr full_list(full_var_list(dset, nullptr));
         drop_list = gretl_list_ptr(gretl_list_drop(full_list.get(), slice_list.get(), &err_));
         if (err_) handle_gretl_error(err_);
-    } else if constexpr (std::is_same_v<T, std::string>) {
-        auto pos = slice.find(':');
-
-        // at first we check if we deal with range slicer
-        if (pos != std::string::npos && slice.find(':', pos + 1) == std::string::npos) {
-            startobs = slice.substr(0, pos);
-            endobs = slice.substr(pos + 1);
-        } else {
-            startobs = slice;
-            endobs = "";
-            opts["restrict"] = true;
-        }
-        slice_str = slice;
     } else {
         static_assert(always_false<T>, "GretlDataset::getitem_impl: unknown slicing rule type");
     }
@@ -1054,6 +1024,12 @@ GretlDatasetPtr GretlDataset::getitem_impl (const T &slice)
     if constexpr (std::is_same_v<T, py::list>) {
         err_ = gretl_delete_variables(drop_list.get(), nullptr, OPT_F, res->dset, nullptr, printer_.prn_ptr());   // dropping variables
     } else {
+        // we extract options
+        auto opts = std::any_cast<py::dict>(slice_params["opts"]);
+        auto startobs = std::any_cast<std::string>(slice_params["startobs"]);
+        auto endobs = std::any_cast<std::string>(slice_params["endobs"]);
+        slice_str = std::any_cast<std::string>(slice_params["slice_str"]);
+
         // for sampling
         opts["quiet"] = true;
         res->smpl(startobs, endobs, opts);
@@ -2106,9 +2082,10 @@ GretlMatrixPtr GretlMatrix::get_slice (const T &slice)
     if constexpr (std::is_same_v<T, py::tuple>) {
         for (auto &item : slice) {
             if (is_pyslice(item)) {
-                auto slice_params = read_slice<py::slice>(item.template cast<py::slice>());
+                auto slice_params = python_slice_to_gretl_slice<py::slice>(item.template cast<py::slice>());
 
                 tmp_str = std::any_cast<std::string>(slice_params["slice_str"]);
+                if (tmp_str == ":") tmp_str = " ";  // we put fake space to make slice_str not empty for w while
             } else if (is_pyint(item)) {
                 tmp_str = std::to_string(item.template cast<int>());
             } else {
@@ -2121,6 +2098,7 @@ GretlMatrixPtr GretlMatrix::get_slice (const T &slice)
         static_assert(always_false<T>, "GretlMatrix::get_slice(): unknown type");
     }
 
+    gretl4py_trim(slice_str);
     py::print("slice_str", slice_str);
 
     return nullptr;
