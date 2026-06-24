@@ -239,6 +239,10 @@ private:
 
     void check_bounds_ (int i, int j) const;                                // we check if given [i,j] are valid
     static gretl_matrix *numpy_to_matrix_ (const py::array &array);         // helper for NumPy to GretlMatrix
+    gretl_matrix_ptr exec_slice_ (const std::string& slice_str);            // helper for getting slice
+    std::string render_slice_ (const py::tuple &slice);                     // tuple slice to libgretl string slice
+    std::string render_slice_ (const py::slice &slice);                     // slice slice to libgretl string slice
+    std::string render_slice_ (const std::string &slice);                   // string slice to libgretl string slice
 public:
     GretlMatrix (void);                                                     // default constructor
     GretlMatrix (const GretlMatrix &src);                                   // copy constructor
@@ -273,8 +277,11 @@ public:
 
     py::object get_element (int i, int j) const;
 
-    template <typename T>
-    GretlMatrixPtr get_slice (const T &slice);
+    GretlMatrixPtr get_slice (const py::tuple &slice);
+
+    GretlMatrixPtr get_slice (const py::slice &slice);
+
+    GretlMatrixPtr get_slice (const std::string &slice);
 
     template <typename T>
     void set_element (int i, int j, T val);

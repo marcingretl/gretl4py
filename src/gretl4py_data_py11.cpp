@@ -447,9 +447,9 @@ void init_gretl4py_gretl_matrix_py11 (py::module_ &m)
     .def("__copy__", [](const GretlMatrix &self) { return GretlMatrix(self); })
     .def("__deepcopy__", [](const GretlMatrix &self, py::dict) { return GretlMatrix(self); })
     .def("__repr__", &GretlMatrix::repr_impl)
-    .def("__getitem__", &GretlMatrix::get_slice<py::tuple>)
-    .def("__getitem__", &GretlMatrix::get_slice<py::slice>)
-    .def("__getitem__", &GretlMatrix::get_slice<std::string>)
+    .def("__getitem__", py::overload_cast<const py::tuple&>(&GretlMatrix::get_slice))
+    .def("__getitem__", py::overload_cast<const py::slice&>(&GretlMatrix::get_slice))
+    .def("__getitem__", py::overload_cast<const std::string&>(&GretlMatrix::get_slice))
     .def("__getitem__",
          [](const GretlMatrix &self, std::pair<int, int> ij) -> py::object
          {
