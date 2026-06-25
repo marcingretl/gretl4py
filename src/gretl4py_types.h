@@ -216,7 +216,7 @@ struct GretlSlice {
 enum class GretlFunIndex { F_PDF, F_PVAL, F_CDF, F_INVCDF, F_CRIT, F_MCOV, F_MCORR };
 
 // this enum is to enumerate matrix operations
-enum class GretlMatrixAlgOperations { MATMUL, TRUEDIV, ITRUEDIV, ADD, SUB , IADD, ISUB, MUL, IMUL, POW, IPOW};
+enum class GretlMatrixAlgOperations { MATMUL, TRUEDIV, ITRUEDIV, ADD, SUB , IADD, ISUB, MUL, IMUL, POW, IPOW, EQ, NE, LT, LE, GT, GE };
 
 //////////////////////////////////////////////////
 // tools

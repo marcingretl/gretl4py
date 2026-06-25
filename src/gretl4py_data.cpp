@@ -2511,7 +2511,7 @@ GretlMatrixPtr GretlMatrix::alg_dot_operations (const T &rhs) const
         } else {
             res.reset(gretl_matrix_dot_op(m_, rhs_matrix, 42, &err_));
         }
-    }  else if constexpr (KIND == GretlMatrixAlgOperations::TRUEDIV) {
+    } else if constexpr (KIND == GretlMatrixAlgOperations::TRUEDIV) {
         if (is_complex() || rhs_matrix->is_complex) {
             res.reset(gretl_cmatrix_dot_op(m_, rhs_matrix, 47, &err_));
         } else {
@@ -2523,6 +2523,42 @@ GretlMatrixPtr GretlMatrix::alg_dot_operations (const T &rhs) const
             res.reset(gretl_cmatrix_dot_op(m_, rhs_matrix, 94, &err_));
         } else {
             res.reset(gretl_matrix_dot_op(m_, rhs_matrix, 94, &err_));
+        }
+    } else if constexpr (KIND == GretlMatrixAlgOperations::EQ) {
+        if (is_complex() || rhs_matrix->is_complex) {
+            res.reset(gretl_cmatrix_dot_op(m_, rhs_matrix, 61, &err_));
+        } else {
+            res.reset(gretl_matrix_dot_op(m_, rhs_matrix, 61, &err_));
+        }
+    } else if constexpr (KIND == GretlMatrixAlgOperations::NE) {
+        if (is_complex() || rhs_matrix->is_complex) {
+            res.reset(gretl_cmatrix_dot_op(m_, rhs_matrix, 33, &err_));
+        } else {
+            res.reset(gretl_matrix_dot_op(m_, rhs_matrix, 33, &err_));
+        }
+    } else if constexpr (KIND == GretlMatrixAlgOperations::LT) {
+        if (is_complex() || rhs_matrix->is_complex) {
+            res.reset(gretl_cmatrix_dot_op(m_, rhs_matrix, 60, &err_));
+        } else {
+            res.reset(gretl_matrix_dot_op(m_, rhs_matrix, 60, &err_));
+        }
+    } else if constexpr (KIND == GretlMatrixAlgOperations::LE) {
+        if (is_complex() || rhs_matrix->is_complex) {
+            res.reset(gretl_cmatrix_dot_op(m_, rhs_matrix, 91, &err_));
+        } else {
+            res.reset(gretl_matrix_dot_op(m_, rhs_matrix, 91, &err_));
+        }
+    } else if constexpr (KIND == GretlMatrixAlgOperations::GT) {
+        if (is_complex() || rhs_matrix->is_complex) {
+            res.reset(gretl_cmatrix_dot_op(m_, rhs_matrix, 62, &err_));
+        } else {
+            res.reset(gretl_matrix_dot_op(m_, rhs_matrix, 62, &err_));
+        }
+    } else if constexpr (KIND == GretlMatrixAlgOperations::GE) {
+        if (is_complex() || rhs_matrix->is_complex) {
+            res.reset(gretl_cmatrix_dot_op(m_, rhs_matrix, 93, &err_));
+        } else {
+            res.reset(gretl_matrix_dot_op(m_, rhs_matrix, 93, &err_));
         }
     } else {
         static_assert(always_false<T>, "Unsupported GretlMatrixAlgOperations value");
@@ -2545,3 +2581,34 @@ template GretlMatrixPtr GretlMatrix::alg_dot_operations<GretlMatrix, GretlMatrix
 template GretlMatrixPtr GretlMatrix::alg_dot_operations<py::array, GretlMatrixAlgOperations::POW>(const py::array &rhs) const;
 template GretlMatrixPtr GretlMatrix::alg_dot_operations<double, GretlMatrixAlgOperations::POW>(const double &rhs) const;
 template GretlMatrixPtr GretlMatrix::alg_dot_operations<std::complex<double>, GretlMatrixAlgOperations::POW>(const std::complex<double> &rhs) const;
+template GretlMatrixPtr GretlMatrix::alg_dot_operations<GretlMatrix, GretlMatrixAlgOperations::EQ>(const GretlMatrix &rhs) const;
+template GretlMatrixPtr GretlMatrix::alg_dot_operations<py::array, GretlMatrixAlgOperations::EQ>(const py::array &rhs) const;
+template GretlMatrixPtr GretlMatrix::alg_dot_operations<double, GretlMatrixAlgOperations::EQ>(const double &rhs) const;
+template GretlMatrixPtr GretlMatrix::alg_dot_operations<std::complex<double>, GretlMatrixAlgOperations::EQ>(const std::complex<double> &rhs) const;
+template GretlMatrixPtr GretlMatrix::alg_dot_operations<GretlMatrix, GretlMatrixAlgOperations::NE>(const GretlMatrix &rhs) const;
+template GretlMatrixPtr GretlMatrix::alg_dot_operations<py::array, GretlMatrixAlgOperations::NE>(const py::array &rhs) const;
+template GretlMatrixPtr GretlMatrix::alg_dot_operations<double, GretlMatrixAlgOperations::NE>(const double &rhs) const;
+template GretlMatrixPtr GretlMatrix::alg_dot_operations<std::complex<double>, GretlMatrixAlgOperations::NE>(const std::complex<double> &rhs) const;
+template GretlMatrixPtr GretlMatrix::alg_dot_operations<GretlMatrix, GretlMatrixAlgOperations::LT>(const GretlMatrix &rhs) const;
+template GretlMatrixPtr GretlMatrix::alg_dot_operations<py::array, GretlMatrixAlgOperations::LT>(const py::array &rhs) const;
+template GretlMatrixPtr GretlMatrix::alg_dot_operations<double, GretlMatrixAlgOperations::LT>(const double &rhs) const;
+template GretlMatrixPtr GretlMatrix::alg_dot_operations<std::complex<double>, GretlMatrixAlgOperations::LT>(const std::complex<double> &rhs) const;
+template GretlMatrixPtr GretlMatrix::alg_dot_operations<GretlMatrix, GretlMatrixAlgOperations::LE>(const GretlMatrix &rhs) const;
+template GretlMatrixPtr GretlMatrix::alg_dot_operations<py::array, GretlMatrixAlgOperations::LE>(const py::array &rhs) const;
+template GretlMatrixPtr GretlMatrix::alg_dot_operations<double, GretlMatrixAlgOperations::LE>(const double &rhs) const;
+template GretlMatrixPtr GretlMatrix::alg_dot_operations<std::complex<double>, GretlMatrixAlgOperations::LE>(const std::complex<double> &rhs) const;
+template GretlMatrixPtr GretlMatrix::alg_dot_operations<GretlMatrix, GretlMatrixAlgOperations::GT>(const GretlMatrix &rhs) const;
+template GretlMatrixPtr GretlMatrix::alg_dot_operations<py::array, GretlMatrixAlgOperations::GT>(const py::array &rhs) const;
+template GretlMatrixPtr GretlMatrix::alg_dot_operations<double, GretlMatrixAlgOperations::GT>(const double &rhs) const;
+template GretlMatrixPtr GretlMatrix::alg_dot_operations<std::complex<double>, GretlMatrixAlgOperations::GT>(const std::complex<double> &rhs) const;
+template GretlMatrixPtr GretlMatrix::alg_dot_operations<GretlMatrix, GretlMatrixAlgOperations::GE>(const GretlMatrix &rhs) const;
+template GretlMatrixPtr GretlMatrix::alg_dot_operations<py::array, GretlMatrixAlgOperations::GE>(const py::array &rhs) const;
+template GretlMatrixPtr GretlMatrix::alg_dot_operations<double, GretlMatrixAlgOperations::GE>(const double &rhs) const;
+template GretlMatrixPtr GretlMatrix::alg_dot_operations<std::complex<double>, GretlMatrixAlgOperations::GE>(const std::complex<double> &rhs) const;
+
+/*
+ .def("__lt__", ...)    < 60
+ .def("__le__", ...)    > 91
+ .def("__gt__", ...)    <= 133
+ .def("__ge__", ...)    >= 91
+ */
