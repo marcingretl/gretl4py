@@ -250,35 +250,69 @@ B *= (2 + 0.5j)
 B /= (4 + 1.5j)
 B **= (2 + 0.5j)
 
-
 # ============================================================
-# MISSING / TODO OPERATORS (IMPORTANT)
+# Unary operators
 # ============================================================
 
-# TODO: unary plus operator
-# EXPECTED: +A
-# If not implemented, Python will fallback or error
-# print(+A)
+A = gretl.Matrix(2, 2, 1.5)
+C = gretl.Matrix(2, 2, 1.5, "complex")
+C[0, 0] = 1 + 2j
 
-# TODO: logical / comparison operators
-# EXPECTED:
-# A == B
-# A != B
-# A < B (optional, probably undefined)
-# WARNING: missing these breaks NumPy compatibility layer
+print(+A)
+print(-A)
 
-# print(A == B)
-# print(A != B)
+print(+C)
+print(-C)
 
 
 # ============================================================
-# SUMMARY OF CURRENT API GAPS
+# Comparison operators
 # ============================================================
 
-# MISSING (next step):
-# 1. __pos__        (+A)
-# 2. __eq__         (A == B)
-# 3. __ne__         (A != B)
-# 4. optional: broadcasting rules
-# 5. optional: safe handling for pandas view consistency
-# 6. optional: explicit NumPy scalar dispatch tests in C++ layer
+A = gretl.Matrix([1, 2, 3, 4])
+B = gretl.Matrix([2, 2, 2, 2])
+
+print(A == B)
+print(A != B)
+
+print(A > B)
+print(A >= B)
+
+print(A < B)
+print(A <= B)
+
+# scalar comparisons
+
+print(A == 2)
+print(A != 2)
+
+print(A > 2)
+print(A >= 2)
+
+print(A < 2)
+print(A <= 2)
+
+# reflected scalar comparisons
+
+print(2 == A)
+print(2 != A)
+
+print(2 > A)
+print(2 >= A)
+
+print(2 < A)
+print(2 <= A)
+
+
+# NumPy interoperability
+
+npv = np.array([2, 2, 2, 2], dtype=np.float64)
+
+print(A == npv)
+print(A != npv)
+
+print(A > npv)
+print(A >= npv)
+
+print(A < npv)
+print(A <= npv)

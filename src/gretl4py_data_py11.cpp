@@ -475,30 +475,22 @@ void init_gretl4py_gretl_matrix_py11 (py::module_ &m)
     .def("__ne__", &GretlMatrix::alg_dot_operations<py::array, GretlMatrixAlgOperations::NE>)
     .def("__ne__", &GretlMatrix::alg_dot_operations<double, GretlMatrixAlgOperations::NE>)
     .def("__ne__", &GretlMatrix::alg_dot_operations<std::complex<double>, GretlMatrixAlgOperations::NE>)
-
-
     .def("__lt__", &GretlMatrix::alg_dot_operations<GretlMatrix, GretlMatrixAlgOperations::LT>)
     .def("__lt__", &GretlMatrix::alg_dot_operations<py::array, GretlMatrixAlgOperations::LT>)
     .def("__lt__", &GretlMatrix::alg_dot_operations<double, GretlMatrixAlgOperations::LT>)
     .def("__lt__", &GretlMatrix::alg_dot_operations<std::complex<double>, GretlMatrixAlgOperations::LT>)
-
     .def("__le__", &GretlMatrix::alg_dot_operations<GretlMatrix, GretlMatrixAlgOperations::LE>)
     .def("__le__", &GretlMatrix::alg_dot_operations<py::array, GretlMatrixAlgOperations::LE>)
     .def("__le__", &GretlMatrix::alg_dot_operations<double, GretlMatrixAlgOperations::LE>)
     .def("__le__", &GretlMatrix::alg_dot_operations<std::complex<double>, GretlMatrixAlgOperations::LE>)
-
     .def("__gt__", &GretlMatrix::alg_dot_operations<GretlMatrix, GretlMatrixAlgOperations::GT>)
     .def("__gt__", &GretlMatrix::alg_dot_operations<py::array, GretlMatrixAlgOperations::GT>)
     .def("__gt__", &GretlMatrix::alg_dot_operations<double, GretlMatrixAlgOperations::GT>)
     .def("__gt__", &GretlMatrix::alg_dot_operations<std::complex<double>, GretlMatrixAlgOperations::GT>)
-
     .def("__ge__", &GretlMatrix::alg_dot_operations<GretlMatrix, GretlMatrixAlgOperations::GE>)
     .def("__ge__", &GretlMatrix::alg_dot_operations<py::array, GretlMatrixAlgOperations::GE>)
     .def("__ge__", &GretlMatrix::alg_dot_operations<double, GretlMatrixAlgOperations::GE>)
     .def("__ge__", &GretlMatrix::alg_dot_operations<std::complex<double>, GretlMatrixAlgOperations::GE>)
-
-
-
     .def("__add__", &GretlMatrix::alg_operations<GretlMatrix, GretlMatrixAlgOperations::ADD>)
     .def("__add__", &GretlMatrix::alg_operations<py::array, GretlMatrixAlgOperations::ADD>)
     .def("__add__", &GretlMatrix::alg_dot_operations<double, GretlMatrixAlgOperations::ADD>)

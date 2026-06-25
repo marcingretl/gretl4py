@@ -2605,10 +2605,3 @@ template GretlMatrixPtr GretlMatrix::alg_dot_operations<GretlMatrix, GretlMatrix
 template GretlMatrixPtr GretlMatrix::alg_dot_operations<py::array, GretlMatrixAlgOperations::GE>(const py::array &rhs) const;
 template GretlMatrixPtr GretlMatrix::alg_dot_operations<double, GretlMatrixAlgOperations::GE>(const double &rhs) const;
 template GretlMatrixPtr GretlMatrix::alg_dot_operations<std::complex<double>, GretlMatrixAlgOperations::GE>(const std::complex<double> &rhs) const;
-
-/*
- .def("__lt__", ...)    < 60
- .def("__le__", ...)    > 91
- .def("__gt__", ...)    <= 133
- .def("__ge__", ...)    >= 91
- */
