@@ -2495,70 +2495,70 @@ GretlMatrixPtr GretlMatrix::alg_dot_operations (const T &rhs) const
     // we do the job
     if constexpr (KIND == GretlMatrixAlgOperations::ADD) {
         if (is_complex() || rhs_matrix->is_complex) {
-            res.reset(gretl_cmatrix_dot_op(m_, rhs_matrix, 43, &err_));
+            res.reset(gretl_cmatrix_dot_op(m_, rhs_matrix, '+', &err_));
         } else {
-            res.reset(gretl_matrix_dot_op(m_, rhs_matrix, 43, &err_));
+            res.reset(gretl_matrix_dot_op(m_, rhs_matrix, '+', &err_));
         }
     } else if constexpr (KIND == GretlMatrixAlgOperations::SUB) {
         if (is_complex() || rhs_matrix->is_complex) {
-            res.reset(gretl_cmatrix_dot_op(m_, rhs_matrix, 45, &err_));
+            res.reset(gretl_cmatrix_dot_op(m_, rhs_matrix, '-', &err_));
         } else {
-            res.reset(gretl_matrix_dot_op(m_, rhs_matrix, 45, &err_));
+            res.reset(gretl_matrix_dot_op(m_, rhs_matrix, '-', &err_));
         }
     } else if constexpr (KIND == GretlMatrixAlgOperations::MUL) {
         if (is_complex() || rhs_matrix->is_complex) {
-            res.reset(gretl_cmatrix_dot_op(m_, rhs_matrix, 42, &err_));
+            res.reset(gretl_cmatrix_dot_op(m_, rhs_matrix, '*', &err_));
         } else {
-            res.reset(gretl_matrix_dot_op(m_, rhs_matrix, 42, &err_));
+            res.reset(gretl_matrix_dot_op(m_, rhs_matrix, '*', &err_));
         }
     } else if constexpr (KIND == GretlMatrixAlgOperations::TRUEDIV) {
         if (is_complex() || rhs_matrix->is_complex) {
-            res.reset(gretl_cmatrix_dot_op(m_, rhs_matrix, 47, &err_));
+            res.reset(gretl_cmatrix_dot_op(m_, rhs_matrix, '/', &err_));
         } else {
-            res.reset(gretl_matrix_dot_op(m_, rhs_matrix, 47, &err_));
+            res.reset(gretl_matrix_dot_op(m_, rhs_matrix, '/', &err_));
         }
     } else if constexpr (KIND == GretlMatrixAlgOperations::POW) {
         //(has_negative_base(m_) && has_non_integer_exponent(rhs_matrix))
         if (is_complex() || rhs_matrix->is_complex) {
-            res.reset(gretl_cmatrix_dot_op(m_, rhs_matrix, 94, &err_));
+            res.reset(gretl_cmatrix_dot_op(m_, rhs_matrix, '^', &err_));
         } else {
-            res.reset(gretl_matrix_dot_op(m_, rhs_matrix, 94, &err_));
+            res.reset(gretl_matrix_dot_op(m_, rhs_matrix, '^', &err_));
         }
     } else if constexpr (KIND == GretlMatrixAlgOperations::EQ) {
         if (is_complex() || rhs_matrix->is_complex) {
-            res.reset(gretl_cmatrix_dot_op(m_, rhs_matrix, 61, &err_));
+            res.reset(gretl_cmatrix_dot_op(m_, rhs_matrix, '=', &err_));
         } else {
-            res.reset(gretl_matrix_dot_op(m_, rhs_matrix, 61, &err_));
+            res.reset(gretl_matrix_dot_op(m_, rhs_matrix, '=', &err_));
         }
     } else if constexpr (KIND == GretlMatrixAlgOperations::NE) {
         if (is_complex() || rhs_matrix->is_complex) {
-            res.reset(gretl_cmatrix_dot_op(m_, rhs_matrix, 33, &err_));
+            res.reset(gretl_cmatrix_dot_op(m_, rhs_matrix, '!', &err_));
         } else {
-            res.reset(gretl_matrix_dot_op(m_, rhs_matrix, 33, &err_));
+            res.reset(gretl_matrix_dot_op(m_, rhs_matrix, '!', &err_));
         }
     } else if constexpr (KIND == GretlMatrixAlgOperations::LT) {
         if (is_complex() || rhs_matrix->is_complex) {
-            res.reset(gretl_cmatrix_dot_op(m_, rhs_matrix, 60, &err_));
+            res.reset(gretl_cmatrix_dot_op(m_, rhs_matrix, '<', &err_));
         } else {
-            res.reset(gretl_matrix_dot_op(m_, rhs_matrix, 60, &err_));
+            res.reset(gretl_matrix_dot_op(m_, rhs_matrix, '<', &err_));
         }
     } else if constexpr (KIND == GretlMatrixAlgOperations::LE) {
         if (is_complex() || rhs_matrix->is_complex) {
-            res.reset(gretl_cmatrix_dot_op(m_, rhs_matrix, 91, &err_));
+            res.reset(gretl_cmatrix_dot_op(m_, rhs_matrix, '[', &err_));
         } else {
-            res.reset(gretl_matrix_dot_op(m_, rhs_matrix, 91, &err_));
+            res.reset(gretl_matrix_dot_op(m_, rhs_matrix, '[', &err_));
         }
     } else if constexpr (KIND == GretlMatrixAlgOperations::GT) {
         if (is_complex() || rhs_matrix->is_complex) {
-            res.reset(gretl_cmatrix_dot_op(m_, rhs_matrix, 62, &err_));
+            res.reset(gretl_cmatrix_dot_op(m_, rhs_matrix, '>', &err_));
         } else {
-            res.reset(gretl_matrix_dot_op(m_, rhs_matrix, 62, &err_));
+            res.reset(gretl_matrix_dot_op(m_, rhs_matrix, '>', &err_));
         }
     } else if constexpr (KIND == GretlMatrixAlgOperations::GE) {
         if (is_complex() || rhs_matrix->is_complex) {
-            res.reset(gretl_cmatrix_dot_op(m_, rhs_matrix, 93, &err_));
+            res.reset(gretl_cmatrix_dot_op(m_, rhs_matrix, ']', &err_));
         } else {
-            res.reset(gretl_matrix_dot_op(m_, rhs_matrix, 93, &err_));
+            res.reset(gretl_matrix_dot_op(m_, rhs_matrix, ']', &err_));
         }
     } else {
         static_assert(always_false<T>, "Unsupported GretlMatrixAlgOperations value");
