@@ -1147,10 +1147,10 @@ py::object GretlDataset::corr (const T &varlist, const py::kwargs &kwargs)
         }
     }
 
-    // we unpack kwargs kwargs;
+    // we unpack kwargs;
     opt_ = unpack_kwargs_command(CORR, fake_dataset, kwargs);
 
-    // actual work
+    // we do the job
     if (opt_ & OPT_K) {
         err_ = kendall_tau(var_list.get(), dset, opt_, printer_.prn_ptr());
     } else if (opt_ & OPT_S) {
@@ -1165,10 +1165,11 @@ py::object GretlDataset::corr (const T &varlist, const py::kwargs &kwargs)
 
     return get_accessor("$result");
 }
-template py::object GretlDataset::corr<std::string>(const std::string &varlist, const py::kwargs &kwargs);
-template py::object GretlDataset::corr<std::vector<int>>(const std::vector<int> &varlist, const py::kwargs &kwargs);
+template py::object GretlDataset::corr<std::string>(const std::string&, const py::kwargs&);
+template py::object GretlDataset::corr<std::vector<int>>(const std::vector<int>&, const py::kwargs&);
 
-py::object GretlDataset::cov (const std::string &vars)
+template <typename T>
+py::object GretlDataset::cov (const T &vars)
 {
     //
     // we compute covariance for given variables
@@ -1180,7 +1181,13 @@ py::object GretlDataset::cov (const std::string &vars)
     if (vars.empty()) {
         var_list.reset(full_var_list(dset, nullptr));
     } else {
-        var_list = list_from_formula(vars, dset, err_);
+        if constexpr (std::is_same_v<T, std::string>) {
+            var_list = list_from_formula(vars, dset, err_);
+        } else if constexpr (std::is_same_v<T, std::vector<int>>) {
+            var_list = list_from_vector(vars, dset, err_);
+        } else {
+            static_assert(always_false<T>, "GretlDataset::corr(): unsupported type");
+        }
     }
 
     // we do the job
@@ -1192,6 +1199,8 @@ py::object GretlDataset::cov (const std::string &vars)
 
     return variant_to_pyobject(std::move(*res));
 }
+template py::object GretlDataset::cov<std::string>(const std::string&);
+template py::object GretlDataset::cov<std::vector<int>>(const std::vector<int>&);
 
 py::object GretlDataset::hurst (const std::string &series)
 {

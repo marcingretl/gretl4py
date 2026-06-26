@@ -180,7 +180,8 @@ public:
     template <typename T>
     py::object corr (const T &varlist, const py::kwargs &kwargs);
 
-    py::object cov (const std::string &vars);
+    template <typename T>
+    py::object cov (const T &vars);
 
     py::object hurst (const std::string &series);
 

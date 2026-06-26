@@ -262,8 +262,9 @@ void init_gretl4py_dataset_py11 (py::module_ &m)
         .def("corr", &GretlDataset::corr<std::string>,
              py::arg("varlist").none(true) = "", py::kw_only())
         .def("corr", &GretlDataset::corr<std::vector<int>>,
-             py::arg("varlist").none(true) = "", py::kw_only())
-        .def("cov", &GretlDataset::cov, py::arg("vars").none(true) = "")
+             py::arg("varlist").none(true) = std::vector<int>{}, py::kw_only())
+        .def("cov", &GretlDataset::cov<std::string>, py::arg("vars").none(true) = "")
+        .def("cov", &GretlDataset::cov<std::vector<int>>, py::arg("vars").none(true) = std::vector<int>{})
         .def("hurst", &GretlDataset::hurst, py::arg("series").none(false))
         .def("xcorrgm",
              [](GretlDataset &self, const std::string &varlist, int order,
