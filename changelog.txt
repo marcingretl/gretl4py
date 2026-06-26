@@ -1,3 +1,10 @@
+version 0.52:
+    - apparatus for hansl script execution
+    - GretlPackage:: new _run_sample() method (experimental)
+    - new GretlMatrix class as a default reprezentation of libgretl's gretl_matrix type
+    - GretlDataset:: new to_matrix(), new_list() based on Python's list
+    - kmeans addon added + all addons updates
+
 version 0.51:
     - function returned type: support for GRETL_TYPE_NUMERIC added
     - new GretlPackage::show_signatures() which prints functions signature in libgretl way

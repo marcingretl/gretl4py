@@ -1,0 +1,1138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gretl-functions>
+<gretl-function-package name="kmeans" minver="2026c" lives-in-subdir="true">
+<author email="atecon@posteo.de">Artur Tarassow</author>
+<version>2026c-git</version>
+<date>2026-06-24</date>
+<description>K-means clustering algorithm</description>
+<tags>C13 C52</tags>
+<label>K-Means</label>
+<menu-attachment>MAINWIN/View</menu-attachment>
+<help filename="kmeans_help.md">
+# kmeans Package
+
+This package includes functionalities to identify unknown clusters of multidimensional data using the well known (at least in the machine-learning field) k-means algorithm.
+
+The k-means algorithm divides a set of `N` samples `X` into `k` disjoint clusters `C`, each described by the mean of the samples in the cluster. The means are called the cluster centroids.
+
+The objective is to minimize some loss. For instance, the objective is to minimize &quot;inertia&quot;, or within-cluster sum-of-squares criterion in case of the Euclidean distance function.
+
+For more information see:
+
+https://scikit-learn.org/stable/modules/clustering.html#kmeans
+
+Additionally, the package provides functions to compute silhouette samples and scores, which are measures of how similar an observation is to its own cluster compared to other clusters. The silhouette score is a measure of how well clusters are separated; higher values indicate better-defined clusters. The best value is 1 and the worst value is -1. Values near 0 indicate overlapping clusters. Negative values generally indicate that a sample has been assigned to the wrong cluster, as a different cluster is more similar. The reference for silhouette analysis is:
+
+Rousseeuw, P. J. (1987). Silhouettes: A graphical aid to the interpretation and validation of cluster analysis. *Journal of Computational and Applied Mathematics*, 20, 53-65, URL: https://www.sciencedirect.com/science/article/pii/0377042787901257
+
+Please ask questions and report bugs on the Gretl mailing list if possible. Alternatively, create an issue ticket on the github repo (see below).
+Source code and test script(s) can be found here: https://github.com/atecon/kmeans
+
+
+## GUI access
+
+Currently, only k-means estimation but not silhouette analysis can be performed via the dialog box, which can be opened via `View -&gt; k-Means`.
+
+Two choices are available:
+
+1. If you activate the checkbox &quot;Show scree plot&quot; the scree plot will be shown, and the parameter `n_clusters` is the maximum number of clusters to evaluate and plot. The returned bundle will contain only a matrix with two columns: the first column is the number of clusters, and the second column is the within-cluster sum of squares (*inertia*). Each row corresponds to a different number of clusters.
+
+2. If you activate the checkbox &quot;Show pair-plot&quot; the pair-plot will be shown, and the parameter `n_clusters` is the number of clusters to estimate. The returned bundle will contain detailed information about the estimation.
+
+
+# Public Functions
+
+## kmeans_fit
+
+```
+kmeans_fit (list xlist, int n_clusters[2::2], bundle opts[null])
+```
+
+Execute the kmeans algorithm and estimate the clusters. It is required that `xlist` does not contain missing values. So, please make sure to clean the data before calling this function.
+
+**Arguments:**
+
+- `xlist`: list, Features (regressors) to train the model.
+- `n_clusters`: int, Number of assumed clusters (default: 2)
+- `opts`: bundle, Optional parameters affecting the kmeans algorithm. **You can pass the following parameters:**
+
+    * `algorithm`: string, kmeans algorithm to use. Currently, only `full` is supported (classical EM-style algorithm).
+    * `distance_type`: string, Name of the distance metric applied (default: `euclidean`). For more distance metrics, see gretl's built-in function `distance()`.
+    * `initializer`: string, Method for initialization. Either `random`: Choose `n_clusters` observations (rows) at random from data for the initial centroids. Or `pca`: Try to pick data points that are as far apart as possible by means of PCA.
+    * `max_iter`: int, Maximum number of iterations of the kmeans algorithm to run.
+    * `n_draws`: int, Number of time the kmeans algorithm will be run with different centroid seeds. The final results will be the best output of `n_draws` consecutive runs in terms of inertia.
+    * `tolerance`:  scalar, Minimum improvement of the `within_variation_total` (Sum of the squared distances across all clusters) required before early stopping the algorithm (default: 1e-4)
+    * `verbose`: int, Level of verbosity: `0`: don't print anything, `1`: print some details, `2`: print more details (default: `0`)
+
+
+**Return:** Bundle holding various items.
+
+- `between_variation`: scalar, Between cluster sum of squares = `total_ssq - within_variation_total`
+- `centroids`: matrix, Estimated mean values (centroids) for each feature (columns) and for each cluster (rows).
+- `cluster_id`: matrix, Estimated cluster ID for each observation for the best draw minimizing `inertia`.
+- `distances`: matrix, Estimated distance for the best draw minimizing `inertia`.
+- `error`: int, Error code. In case of no error `FALSE`, otherwise positive integer.
+- `nobs`: int, Number of non-missing observations used for training.
+- `pointsize`: scalar, Size of points being plotted when calling the `kmeans_plot()` function.
+- `total_ssq`: scalar, Sum of the squared distances of the features from its mean values
+- `use_circles`: bool, Plot circles instead of point when calling the `kmeans_plot()` function.
+- `within_variation_total`: scalar, Sum of the squared distances across all clusters (*inertia*).
+- `within_variation_avg`: scalar, Sum of the average squared distances across all clusters.
+
+
+## kmeans_predict
+
+```
+kmeans_predict (list xlist, bundle Model)
+```
+
+Predict cluster belonging based on the estimated model.
+
+**Arguments:**
+
+- `xlist`: list, Features (regressors) used for predicting cluster belonging.
+- `Model`: bundle, Model object returned by the `kmeans_fit()` function.
+
+**Return:** Series holding the predicted cluster ID for each observation.
+
+
+## kmeans_summary
+
+```
+kmeans_summary (bundle Model)
+```
+
+Print summarizing information on estimation step after having applied the `kmeans_fit()` function.
+
+**Arguments:**
+
+- Model: bundle, Bundle returned by the `kmeans_fit()` function.
+
+**Return:** Nothing.
+
+
+## kmeans_plot
+
+```
+kmeans_plot (list xlist, bundle self[null])
+```
+
+Factorized scatter plot estimated clusters for each 2-dimensional combination of features. This function calls the user-defined package &quot;PairPlot&quot; which must be installed.
+
+**Arguments:**
+
+- `xlist`: list, Features (regressors) used for plotting.
+- `self`: bundle, Bundle for manipulating the plot. **Note** Here you can also pass options accepted by the &quot;PairPlot&quot; package which is used in the background.
+
+**Return:** Nothing.
+
+
+## kmeans_screeplot
+
+```
+kmeans_screeplot (list xlist, int max_clusters, string filename[null], bundle self[null])
+```
+
+This function plots the scree plot for the kmeans algorithm. The scree plot shows the within-cluster sum of squares (*inertia*) for different numbers of clusters (from 1 to `max_clusters`). The optimal number of clusters is the one where the within-cluster sum of squares starts to decrease more slowly.
+
+**Arguments:**
+
+- `xlist`: list, Features (regressors) used for plotting.
+- `max_clusters`: int, Maximum number of clusters to plot (default: 3).
+- `filename`: string, Name of the file to save the plot (optional). If not provided, the plot will be shown on the screen.
+- `self`: bundle, Bundle for manipulating the plot (optional). **Note, accepted options are:**
+
+    * The same as for the `kmeans_fit()` function for the `opts` bundle. Relevant for controlling the k-means algorithm.
+    * `verbose`: int, If `2` show summary for each model, else show nothing.
+    * `fontsize`: scalar, Font size for the plot.
+    * `linewidth`: scalar, Line width for the plot.
+
+**Return:** Matrix with two columns: the first column is the number of clusters, and the second column is the within-cluster sum of squares (*inertia*). Each row corresponds to a different number of clusters.
+
+
+## kmeans_sil_samples
+
+```
+kmeans_sil_samples (bundle Model, list xlist)
+```
+
+Compute the silhouette sample value for each observation in the fitted kmeans model. The silhouette value measures how similar an observation is to its own cluster compared to other clusters.
+
+**Reference:** https://en.wikipedia.org/wiki/Silhouette_(clustering)
+
+**Arguments:**
+
+- `Model`: bundle, Model object returned by the `kmeans_fit()` function.
+- `xlist`: list, Features (regressors) used for clustering.
+
+**Return:** Series holding the silhouette value for each observation.
+
+
+## kmeans_sil_score
+
+```
+kmeans_sil_score (bundle Model, list xlist, bool global[TRUE])
+```
+
+Compute the mean silhouette score for all samples in the fitted kmeans model if the optional parameter `global` is set to `TRUE` (default). The silhouette score is a measure of how well clusters are separated; higher values indicate better-defined clusters. The best value is 1 and the worst value is -1. Values near 0 indicate overlapping clusters. Negative values generally indicate that a sample has been assigned to the wrong cluster, as a different cluster is more similar. If `global` is set to `FALSE`, the mean silhouette score is computed for each cluster separately.
+
+**Reference:** https://scikit-learn.org/stable/modules/generated/sklearn.metrics.silhouette_score.html
+
+**Arguments:**
+
+- `Model`: bundle, Model object returned by the `kmeans_fit()` function.
+- `xlist`: list, Features (regressors) used for clustering.
+- `global`: bool, If TRUE (default) compute the mean silhouette score for all samples, otherwise compute it for each cluster separately.
+
+**Return:** Scalar value representing the mean silhouette score if `global` is set to TRUE, otherwise a matrix is returned  (columns refer to the cluster and the score).
+
+
+## kmeans_sil_plot
+
+```
+kmeans_sil_plot (bundle Model, list xlist, bundle opts[null])
+```
+
+Create a silhouette plot for the fitted kmeans model. Each cluster is plotted separately, showing the silhouette value for each observation. Plot options can be passed via the `opts` bundle. The dashed vertical line shows the mean Silhouette score.
+
+**Reference:** https://en.wikipedia.org/wiki/Silhouette_(clustering)
+
+**Arguments:**
+
+- `Model`: bundle, Model object returned by the `kmeans_fit()` function.
+- `xlist`: list, Features (regressors) used for clustering.
+- `opts`: bundle, Optional parameters for controlling the plot. The following options are supported:
+    * `filename`: string, Name of the file to save the plot. If not provided, the plot will be shown on the screen.
+    * `width`: scalar, Width of the plot in pixels (default: 600).
+    * `height`: scalar, Height of the plot in pixels (default: 900).
+    * `columns`: scalar, Number of columns in the grid layout for clusters (default: 1).
+    * `base_margin`: scalar, Base margin for top and bottom plot margins (default: 2.5).
+    * `pointsize`: scalar, Size of points (default: 0.75)
+
+**Return:** Nothing.
+
+
+# Changelog
+
+* **v0.6 (August 2025)**
+    * Add new silhouette functions: `kmeans_sil_samples()`, `kmeans_sil_score()`, and `kmeans_sil_plot()`
+    * Bugifx: Correctly handle the case for the &quot;mahalanobis&quot; distance metric in the `compute_distance()` function. (Kudos to Allin Cottrell for reporting and providing a fix)
+    * GUI dialog: Add option to plot silhouette analysis and general improvements
+    * Raise minimum version of gretl to 2023c
+
+* **v0.5 (February 2025)**
+    * Bugfix: in case of a single cluster, switch to &quot;random&quot; initializer as &quot;pca&quot; would fail; throw error if pca initializer is called for a single cluster
+    * Improvement: Improve robustness if empty clusters are estimated (e.g., due to bad random initialization of centroids)
+
+* **v0.4 (January 2025)**
+    * Add the new function `kmeans_screeplot()` for plotting the scree plot (method to determine the optimal number of clusters).
+    * Change default values for parameters `pointsize` and `fontsize` in the `kmeans_plot()` function. Now set by gretl's default values.
+    * Bugfix: The distance measure is now taken into account when calling the function via the GUI. Before, the default distance measure was always used.
+
+* **v0.3 (February 2024)**
+    * Add GUI dialog
+    * Move to markdown-based help file
+    * Internal improvements
+
+* **v0.2 (July 2022)**
+    * Fix bug that arises if the sample range is restricted, and you're trying to coerce a column vector that's not the full length of the dataset into a series on adding it to a bundle.
+    * Returned objects `cluster_id` and `distances` when calling the `kmeans_fit()` function are of type matrix instead of series, now.
+
+* **v0.1 (February 2022)**
+    * initial release
+</help>
+<data-files count="1">
+examples </data-files>
+<depends count="2">
+logging PairPlot </depends>
+<gretl-function name="kmeans_fit" type="bundle">
+ <params count="3">
+  <param name="xlist" type="list" const="true"/>
+  <param name="clusters" type="numeric"/>
+  <param name="opts" type="bundle" optional="true"/>
+ </params>
+<code>/* Estimate clusters. */
+
+if typeof(clusters) == 3
+  # we got an initial clusters matrix
+  errorif(cols(clusters) != nelem(xlist), sprintf(&quot;Columns of clusters (%d) doesn't match number of features (%d)&quot;, cols(clusters), nelem(xlist)))
+  matrix clusters0 = clusters
+  n_clusters = rows(clusters)
+elif typeof(clusters) == 1
+  # got a scalar
+  if clusters != floor(clusters)
+    funcerr &quot;kmeans_fit: clusters must be an integer or a matrix&quot;
+  else
+    n_clusters = clusters
+  endif
+else
+  funcerr &quot;kmeans_fit: clusters must be an integer or a matrix&quot;
+endif
+
+if !exists(opts)
+  bundle opts = defbundle()
+endif
+
+errorif(sum(missing(xlist)), &quot;Some features have missing values. Please drop these first.&quot;)
+
+bundle self = handle_options_and_defaults(xlist, 0, opts)
+self.init = tolower(self.init)
+
+scalar self.n_clusters = n_clusters
+if exists(clusters0)
+  matrix self.clusters0 = clusters0
+  self.init = &quot;user&quot;
+endif
+matrix features = {xlist}
+scalar self.within_distance = $huge
+scalar draw_id = 1
+matrix self.cluster_id = mshape(NA, $nobs, 1)
+matrix self.distances = mshape(NA, $nobs, 1)
+scalar n_errors = 0
+
+if n_clusters == 1
+  # special handling for the trivial case
+  self.n_draws = 0
+  matrix self.cluster_id = ones($nobs, 1)
+  matrix self.centroids = meanc(features)
+  matrix D = distance(features, self.metric, self.centroids)
+  matrix self.distances = sumr(D)
+  scalar self.total_distance = sumc(self.distances)
+  scalar self.within_distance = self.total_distance
+endif
+
+if self.verbose
+  printf &quot;kmeans_fit: %d observations, %d features, %d clusters\n&quot;, $nobs, nelem(xlist), n_clusters
+  printf &quot;metric %s, initializer %s, %d random draws\n&quot;, full_metric_name(self.metric), self.init, self.n_draws
+endif
+
+if n_clusters == 1
+  if self.verbose
+    printf &quot;Sum of within distances = %g\n&quot;, self.within_distance
+  endif
+  return self
+endif
+
+if metric_is_euclidean(self.metric)
+  call_ASA136(features, &amp;self)
+  return self
+endif
+
+string save_init = self.init
+
+if save_init == &quot;pc&quot; || save_init == &quot;user&quot;
+  bundle b = compute_kmeans(self, features)
+  scalar self.within_distance = b.within_distance
+  matrix self.centroids = b.centroids
+  matrix cluster_id = b.cluster_id
+  matrix distances = b.distances
+  if self.verbose == 2
+    printf &quot;PC init: total within distance = %g\n&quot;, b.within_distance
+  endif
+  # hand off to random for n_draws &gt; 0
+  self.init = &quot;random&quot;
+endif
+
+loop d=1..self.n_draws
+  bundle b = compute_kmeans(self, features)
+  if self.verbose == 2
+    print_draw_info(d, self.n_draws, b)
+  endif
+  if b.error
+    n_errors++
+    continue
+  endif
+  # record minimizing draw
+  if b.within_distance &lt; self.within_distance
+    scalar self.within_distance = b.within_distance
+    matrix self.centroids = b.centroids
+    matrix cluster_id = b.cluster_id
+    matrix distances = b.distances
+  endif
+endloop
+
+self.init = save_init
+
+if self.n_draws &gt; 0 &amp;&amp; n_errors == self.n_draws
+  string msg = &quot;All random initializations failed. Please check your data.&quot;
+  funcerr &quot;@msg&quot;
+endif
+
+cnameset(self.centroids, varnames(xlist))
+if self.verbose
+  printf &quot;minimized objective function: %g\n\n&quot;, self.within_distance
+  print self.centroids
+endif
+
+matrix self.cluster_id = cluster_id
+matrix self.distances = distances
+add_variations(features, &amp;self)
+
+return self
+</code>
+</gretl-function>
+<gretl-function name="kmeans_predict" type="series">
+ <params count="2">
+  <param name="xlist" type="list" const="true">
+<description>Features</description>
+  </param>
+  <param name="Model" type="bundle" const="true"/>
+ </params>
+<code>/* Predict cluster membership for a given model,
+returning the result as a series.
+*/
+errorif(sum(missing(xlist)), &quot;Some features have missing values. Please drop these first.&quot;)
+matrix distances = distance({xlist}, Model.metric, Model.centroids)
+series cluster_id = iminr(distances)
+
+return cluster_id
+</code>
+</gretl-function>
+<gretl-function name="kmeans_plot" type="void">
+ <params count="2">
+  <param name="xlist" type="list" const="true"/>
+  <param name="self" type="bundle"/>
+ </params>
+<code>/* Plot clusters in two dimensions. */
+
+string self.filename = inbundle(self, &quot;filename&quot;) ? self.filename : &quot;display&quot;
+series factor = self.cluster_id
+PairPlot(xlist, factor, self)
+</code>
+</gretl-function>
+<gretl-function name="kmeans_summary" type="void">
+ <params count="1">
+  <param name="b" type="bundle" const="true"/>
+ </params>
+<code>/* Print summary after fitting. */
+
+print &quot;************************************************&quot;
+print &quot;*** K-means clustering ***&quot;
+
+printf &quot;\nParameters\n&quot;
+printf &quot;  Number of clusters: %d\n&quot;, b.n_clusters
+printf &quot;  Metric: %s\n&quot;, full_metric_name(b.metric)
+printf &quot;  Initializer: %s\n&quot;, b.init
+printf &quot;  Number of random draws: %d\n&quot;, b.n_draws
+printf &quot;  Tolerance: %f\n&quot;, b.tolerance
+
+printf &quot;\nResults:\n&quot;
+if metric_is_euclidean(b.metric)
+  printf &quot;  Total sum of squares: %g\n&quot;, b.total_distance
+  printf &quot;  Within-cluster sum of squares: %g\n&quot;, b.within_distance
+  printf &quot;  Between-cluster sum of squares: %g\n&quot;, b.between_distance
+  printf &quot;  (Between / Total): %.3f pct.\n&quot;, (b.between_fraction * 100)
+else
+  printf &quot;  Total distance from global centroid: %g\n&quot;, b.total_distance
+  printf &quot;  Total within-cluster distance: %g\n&quot;, b.within_distance
+  printf &quot;  Between cluster distance: %g\n&quot;, b.between_distance
+  printf &quot;  (Between / Total): %.3f pct.\n&quot;, (b.between_fraction * 100)
+endif
+print &quot;************************************************&quot;
+</code>
+</gretl-function>
+<gretl-function name="kmeansGUI" type="bundle" pkg-role="gui-main">
+ <params count="4">
+  <param name="X" type="list" const="true">
+<description>Input</description>
+  </param>
+  <param name="n_clusters" type="int" min="1" default="3" const="true">
+<description>No. of clusters (k)</description>
+  </param>
+  <param name="distance" type="int" min="1" max="6" default="1" const="true">
+<description>Distance type</description>
+<labels count="6">
+"euclidean" "manhattan" "hamming" "chebyshev" "cosine" "mahalanobis" </labels>
+  </param>
+  <param name="plot_type" type="int" min="0" max="3" default="0" const="true">
+<description>Plot type</description>
+<labels count="4">
+"none" "Scree (1 to k)" "Cluster (pairs)" "Silhouette Plot" </labels>
+  </param>
+ </params>
+<code>/* Function for creating GUI dialog box. */
+
+bundle self = defbundle()
+self.metric = get_metric(distance)
+self.verbose = 2  # in GUI mode, highest verbosity level is activated
+
+if plot_type == 1
+  self.verbose = 0
+  matrix results = kmeans_screeplot(X, n_clusters, null, self)
+  bundle Model = _(results)
+  return Model
+endif
+
+# Only for given k
+bundle Model = kmeans_fit(X, n_clusters, self)
+kmeans_summary(Model)
+print Model.centroids
+
+if plot_type == 2
+  kmeans_plot(X, Model)
+endif
+if plot_type == 3
+  kmeans_sil_plot(Model, X, self)
+  scalar sil_score = kmeans_sil_score(Model, X, TRUE)
+  matrix sil_score_local = kmeans_sil_score(Model, X, FALSE)
+  printf &quot;\nSilhouette Analysis\n&quot;
+  printf &quot;Mean Silhouette Coefficient: %.3f\n\n&quot;, sil_score
+  printf &quot;Per Cluster Silhouette Coefficients:\n%12.3f\n&quot;, sil_score_local
+endif
+
+return Model
+</code>
+</gretl-function>
+<gretl-function name="kmeans_screeplot" type="matrix">
+ <params count="4">
+  <param name="xlist" type="list" const="true">
+<description>Features</description>
+  </param>
+  <param name="kmax" type="int" min="1" default="3" const="true">
+<description>No. of clusters</description>
+  </param>
+  <param name="filename" type="string" optional="true" const="true"/>
+  <param name="opts" type="bundle" optional="true">
+<description>Parameter bundle</description>
+  </param>
+ </params>
+<code>/* Create a scree plot. */
+
+if !exists(opts)
+  bundle opts = _()
+endif
+bundle opts = handle_options_and_defaults(xlist, 1, opts)
+
+string fontopt = &quot;&quot;
+if inbundle(opts, &quot;fontsize&quot;)
+  fontopt = sprintf(&quot;font=\&quot;,%d\&quot;&quot;, opts.fontsize)
+endif
+
+string fname = exists(filename) ? filename : &quot;display&quot;
+matrix k_values = seq(1, kmax)'
+matrix results = k_values ~ zeros(kmax, 1)
+cnameset(results, defarray(&quot;# clusters&quot;, &quot;distance&quot;))
+
+loop i=1..nelem(k_values)
+  bundle model = kmeans_fit(xlist, k_values[i], opts)
+  errorif(model.error, sprintf(&quot;scree: kmeans_fit failed for k = %d\n&quot;, k_values[i]))
+  if opts.verbose == 2
+    kmeans_summary(model)
+  endif
+  results[i,2] = model.within_distance
+endloop
+
+print results
+
+matrix mplot = mreverse(results, TRUE)
+plot mplot
+  options with-lp fit=none @fontopt
+  literal set ylabel &quot;Within distance&quot;
+  literal set xlabel &quot;clusters&quot;
+  printf &quot;set linetype 1 lw %d&quot;, opts.linewidth
+  literal set grid
+  literal set xtics 1
+end plot --output=&quot;@fname&quot;
+
+return results
+</code>
+</gretl-function>
+<gretl-function name="kmeans_sil_samples" type="series">
+ <params count="2">
+  <param name="Model" type="bundle" const="true"/>
+  <param name="xlist" type="list" const="true"/>
+ </params>
+<code>/* Compute the silhouette samples for each observation. */
+
+matrix features = {xlist}
+matrix cluster_id = Model.cluster_id
+series silhouette_samples = zeros(Model.nobs, 1)
+
+loop i=1..Model.nobs
+  scalar own_cluster = cluster_id[i]
+  matrix own_cluster_mask = (cluster_id .= own_cluster)
+
+  # a(i): mean distance to own cluster (excluding self)
+  # can be interpreted as a measure of how well i is assigned to its
+  # cluster (the smaller the value, the better the assignment).
+  matrix own_points = selifr(features, own_cluster_mask)
+  if sum(own_cluster_mask) &gt; 1
+    # 1st entry is the distance to self, so we skip it
+    matrix dists_own = distance(features[i,], Model.metric, own_points)[2:]'
+    # The pairwise distance is the same as the this one:
+    /* matrix dat = features[i,] | own_points
+    matrix dists_own2 = unvech(distance(dat, Model.metric), 0)[2:,1]
+    out = dists_own' ~ dists_own2
+    print out */
+    scalar a_i = meanc(dists_own)  # mean distance to own cluster
+  else
+    scalar a_i = 0
+  endif
+
+  # b(i): minimum mean distance to other clusters
+  scalar b_i = $huge
+  loop k=1..Model.n_clusters
+    if k == own_cluster
+      continue
+    endif
+    matrix mask_k = (cluster_id .= k)
+    if sum(mask_k) &gt; 0
+      matrix other_points = selifr(features, mask_k)
+      matrix dists_other = distance(features[i,], Model.metric, other_points)
+      scalar mean_other_distance = sum(dists_other) / nelem(dists_other)
+      if mean_other_distance &lt; b_i
+        # update the &quot;neigboring cluster&quot;
+        b_i = mean_other_distance
+      endif
+    endif
+  endloop
+
+  silhouette_samples[i] = compute_sil_sample(a_i, b_i)
+endloop
+
+return silhouette_samples
+</code>
+</gretl-function>
+<gretl-function name="kmeans_sil_score" type="numeric">
+ <params count="3">
+  <param name="Model" type="bundle" const="true"/>
+  <param name="xlist" type="list" const="true"/>
+  <param name="global" type="bool" default="1" const="true"/>
+ </params>
+<code>/* Compute the mean Silhouette Coefficient of all samples. */
+
+series silhouette_samples = kmeans_sil_samples(Model, xlist)
+if global == TRUE
+  score = mean(silhouette_samples)
+  return score
+endif
+
+series cluster_id = Model.cluster_id
+matrix score = 0
+matrix mean_per_cluster = aggregate(silhouette_samples, cluster_id, &quot;mean&quot;)[,{1,3}]
+cnameset(mean_per_cluster, defarray(&quot;Cluster&quot;, &quot;mean(Score)&quot;))
+
+return mean_per_cluster
+</code>
+</gretl-function>
+<gretl-function name="kmeans_sil_plot" type="void">
+ <params count="3">
+  <param name="Model" type="bundle" const="true"/>
+  <param name="xlist" type="list" const="true"/>
+  <param name="opts" type="bundle" optional="true" const="true"/>
+ </params>
+<code>/* Create a silhouette plot for the fitted kmeans model.
+Each cluster is plotted separately. */
+
+if !exists(&quot;opts&quot;)
+  bundle opts = _()
+endif
+
+matrix silhouette_samples = {kmeans_sil_samples(Model, xlist)}
+scalar n_clusters = Model.n_clusters
+scalar mean_sil_score = meanc(silhouette_samples)
+matrix plot_data = silhouette_samples ~ Model.cluster_id
+strings plotfiles = array(n_clusters)
+
+# plot options
+string filename = inbundle(opts, &quot;filename&quot;) ? opts.filename : &quot;display&quot;
+scalar width = inbundle(opts, &quot;width&quot;) ? opts.width : 600
+scalar height = inbundle(opts, &quot;height&quot;) ? opts.height : 900
+scalar columns = inbundle(opts, &quot;columns&quot;) ? opts.columns : 1
+scalar rows = ceil(n_clusters / columns)
+scalar base_margin = inbundle(opts, &quot;base_margin&quot;) ? opts.base_margin : 2.5
+scalar pointsize = inbundle(opts, &quot;pointsize&quot;) ? opts.pointsize : 0.75
+scalar fontsize = inbundle(opts, &quot;fontsize&quot;) ? opts.fontsize : 12
+string fsize_cmd = sprintf(&quot;font=\&quot;,%d\&quot;&quot;, fontsize)
+
+# Calculate margins based on plot size and layout
+scalar margin_scale = min(width, height) / (rows * 300)
+scalar tmargin = base_margin * margin_scale
+scalar bmargin = base_margin * margin_scale
+
+# Prepare data for each cluster
+scalar ymin = min(plot_data) * (min(plot_data) &lt; 0 ? 1.1 : 0.9)
+scalar ymax = max(plot_data) * (max(plot_data) &lt; 0 ? 0.9 : 1.1)
+ymax = ymax &gt; 1 ? 1.01 : ymax  # limit to [0, 1] range
+ymin = ymin &lt; -1 ? -1.01 : ymin  # limit to [-1, 1] range
+
+loop k=1..n_clusters
+  matrix cluster_mask = (plot_data[,2] .= k)
+  matrix cluster_sil_values = selifr(plot_data, cluster_mask)[,1]
+  cluster_sil_values = mreverse(msortby(cluster_sil_values, 1))
+  cluster_sil_values ~= mean_sil_score
+  cnameset(cluster_sil_values, defarray(&quot;score for data points&quot;, &quot;mean score, all clusters&quot;))
+  print cluster_sil_values
+
+  plot cluster_sil_values
+    options fit=none time-series single-yaxis with-lines=2 @fsize_cmd
+    printf &quot;set ylabel 'Cluster %d (n=%d)'&quot;, k, rows(cluster_sil_values)
+    literal set grid
+    literal set boxwidth 0.8
+    printf &quot;set yrange[%f:%f]&quot;, ymin, ymax
+    printf &quot;set tmargin %f&quot;, tmargin
+    printf &quot;set bmargin %f&quot;, bmargin
+    printf &quot;set linetype 1 ps %g pt 7&quot;, pointsize
+    printf &quot;set linetype 2 lw 1.5 dt 2&quot;
+    literal set key top right
+    # literal set nokey
+  end plot --outbuf=plotfiles[k]
+endloop
+
+gridplot plotfiles --cols=columns --width=width --height=height --title=&quot;Silhouette plots per cluster&quot; --output=&quot;@filename&quot;
+</code>
+</gretl-function>
+<gretl-function name="handle_options_and_defaults" type="bundle" private="1">
+ <params count="3">
+  <param name="xlist" type="list" const="true"/>
+  <param name="plotting" type="bool"/>
+  <param name="opts" type="bundle" optional="true"/>
+ </params>
+<code># Compose self bundle, merging information from @opts
+
+if !exists(opts)
+  bundle opts = defbundle()
+else
+  if inbundle(opts, &quot;metric&quot;)
+    verify_metric(opts.metric)
+  elif inbundle(opts, &quot;distance_type&quot;)
+    # backward compatibility
+    opts.metric = opts.distance_type
+    verify_metric(opts.metric)
+    delete opts.distance_type
+  endif
+  if inbundle(opts, &quot;init&quot;)
+    if (opts.init == &quot;pca&quot;)
+      opts.init = &quot;pc&quot;
+    endif
+  elif inbundle(opts, &quot;initializer&quot;)
+    # backward compatibility
+    opts.init = opts.initializer
+    if (opts.init == &quot;pca&quot;)
+      opts.init = &quot;pc&quot;
+    endif
+    delete opts.initializer
+  endif
+endif
+
+bundle self = default_values(xlist, plotting)
+self = opts + self          # override defaults
+
+return self
+</code>
+</gretl-function>
+<gretl-function name="all_metrics" type="strings" private="1">
+<code>return defarray(&quot;euclidean&quot;, &quot;manhattan&quot;, &quot;hamming&quot;, &quot;chebyshev&quot;, &quot;cosine&quot;, &quot;mahalanobis&quot;)
+</code>
+</gretl-function>
+<gretl-function name="verify_metric" type="void" private="1">
+ <params count="1">
+  <param name="s" type="string" const="true"/>
+ </params>
+<code>strings dtypes = all_metrics()
+scalar matches = 0
+scalar n = strlen(s)
+loop i=1..nelem(dtypes)
+  if strncmp(s, dtypes[i], n) == 0
+    matches++
+  endif
+endloop
+errorif(matches == 0 || matches &gt; 1, sprintf(&quot;Invalid metric '%s'&quot;, s))
+</code>
+</gretl-function>
+<gretl-function name="full_metric_name" type="string" private="1">
+ <params count="1">
+  <param name="s" type="string" const="true"/>
+ </params>
+<code>strings mtypes = all_metrics()
+scalar n = strlen(s)
+string ret = &quot;&quot;
+loop i=1..nelem(mtypes)
+  if strncmp(s, mtypes[i], n) == 0
+    ret = mtypes[i]
+    break
+  endif
+endloop
+return ret
+</code>
+</gretl-function>
+<gretl-function name="metric_is_euclidean" type="scalar" private="1">
+ <params count="1">
+  <param name="s" type="string" const="true"/>
+ </params>
+<code>return strncmp(s, &quot;euclidean&quot;, strlen(s)) == 0
+</code>
+</gretl-function>
+<gretl-function name="default_values" type="bundle" private="1">
+ <params count="2">
+  <param name="xlist" type="list" const="true"/>
+  <param name="plotting" type="bool"/>
+ </params>
+<code>/* Set default values. */
+
+bundle self = defbundle()
+scalar self.error = FALSE
+scalar self.verbose = plotting ? 0 : 1
+string self.init = &quot;random&quot;
+scalar self.n_draws = 10
+scalar self.max_iter = 128
+scalar self.tolerance = 1e-4
+string self.metric = &quot;euclidean&quot;
+scalar self.nobs = $nobs
+
+if plotting
+  # For kmeans_plot() and kmeans_screeplot()
+  scalar self.use_circles = FALSE
+  scalar self.linewidth = 1.5
+  scalar self.fontsize = 10
+endif
+
+return self
+</code>
+</gretl-function>
+<gretl-function name="initialize_centroids" type="matrix" private="1">
+ <params count="2">
+  <param name="features" type="matrix" const="true"/>
+  <param name="self" type="bundle" const="true"/>
+ </params>
+<code>scalar k = self.n_clusters
+string init = tolower(self.init)
+# &quot;pc&quot; is not supported for k = 1
+init = k == 1 ? &quot;random&quot; : init
+matrix centroids
+
+if init == &quot;random&quot;
+  centroids = features[randperm(rows(features), k),]
+elif init == &quot;pc&quot;
+  centroids = init_centroids_by_pc(features, k)
+elif init == &quot;user&quot;
+  centroids = self.centroids0
+else
+  funcerr &quot;Invalid 'init' value&quot;
+endif
+return centroids
+</code>
+</gretl-function>
+<gretl-function name="init_centroids_by_pc" type="matrix" private="1">
+ <params count="2">
+  <param name="features" type="matrix" const="true"/>
+  <param name="k" type="int"/>
+ </params>
+<code>/* Pick data points that are as far apart as possible by
+means of Principal Components
+*/
+errorif(k &lt; 2, &quot;At least two clusters are required.&quot;)
+
+scalar n_obs = rows(features)
+scalar step = floor((n_obs - 1) / (k - 1))
+matrix mask = 1 + seq(0, (k - 1)) * step
+matrix pc = princomp(features, 1, 1) ~ seq(1, n_obs)'
+pc = msortby(pc, 1)
+mask = pc[mask, 2]
+
+return features[mask,]
+</code>
+</gretl-function>
+<gretl-function name="call_ASA136" type="void" private="1">
+ <params count="2">
+  <param name="X" type="matrix" const="true"/>
+  <param name="self" type="bundleref"/>
+ </params>
+<code>bundle opts = _()
+if inbundle(self, &quot;verbose&quot;)
+  opts.verbosity = self.verbose # FIXME
+endif
+if inbundle(self, &quot;n_draws&quot;)
+  opts.rand_starts = self.n_draws
+endif
+if inbundle(self, &quot;init&quot;)
+  if self.init == &quot;pc&quot;
+    opts.init = &quot;pc&quot;
+  endif
+endif
+if inbundle(self, &quot;clusters0&quot;)
+  bundle b = kmeans(X, self.clusters0, opts)
+else
+  bundle b = kmeans(X, self.n_clusters, opts)
+endif
+m = rows(X)
+n = cols(X)
+self.within_distance = b.cluster_SST
+self.total_distance = b.global_SST
+self.cluster_id = b.clustid
+self.centroids = b.clustinfo[,2:end-1]
+matrix dsq = zeros(m, 1)
+loop i=1..m
+  k = b.clustid[i]
+  loop j=1..n
+    d = X[i,j] - self.centroids[k,j]
+    dsq[i] += d * d
+  endloop
+endloop
+self.distances = dsq
+scalar self.between_distance = self.total_distance - self.within_distance
+scalar self.between_fraction = self.between_distance / self.total_distance
+# other components?
+</code>
+</gretl-function>
+<gretl-function name="print_draw_info" type="void" private="1">
+ <params count="3">
+  <param name="d" type="int"/>
+  <param name="dmax" type="int"/>
+  <param name="b" type="bundle" const="true"/>
+ </params>
+<code>if dmax &gt; 9
+  printf &quot;draw %02d: &quot;, d
+else
+  printf &quot;draw %d: &quot;, d
+endif
+if b.error
+  printf &quot;failed\n&quot;
+else
+  printf &quot;total within distance = %g\n&quot;, d, b.within_distance
+endif
+</code>
+</gretl-function>
+<gretl-function name="add_variations" type="void" private="1">
+ <params count="2">
+  <param name="features" type="matrix" const="true"/>
+  <param name="self" type="bundleref"/>
+ </params>
+<code>/* Add various variation statistics.
+return: void */
+
+matrix distances_from_mean = distance(features, self.metric, meanc(features))
+if metric_is_euclidean(self.metric)
+  self.total_distance = sumc(distances_from_mean.^2)
+else
+  self.total_distance = sumc(distances_from_mean)
+endif
+scalar self.within_distance = within_cluster_distance(self.distances, self.cluster_id, self.metric)
+scalar self.between_distance = self.total_distance - self.within_distance
+scalar self.between_fraction = self.between_distance / self.total_distance
+</code>
+</gretl-function>
+<gretl-function name="compute_kmeans" type="bundle" private="1">
+ <params count="2">
+  <param name="self" type="bundle" const="true"/>
+  <param name="features" type="matrix" const="true"/>
+ </params>
+<code>/* Actual computation of k-means. Identify optimal clusters and
+return a bundle.
+*/
+bundle Model
+matrix centroids = initialize_centroids(features, self)
+scalar k = self.n_clusters
+scalar prev_distance = $huge
+scalar this_distance
+scalar Model.error = FALSE
+
+loop iter = 1..self.max_iter
+  matrix all_dists = distance(features, self.metric, centroids)
+  matrix cluster_id = iminr(all_dists)
+
+  if rows(values(cluster_id)) == k  # check + update
+    matrix centroids = compute_centroids(features, cluster_id)
+    matrix min_dists = minr(all_dists) # select minimum from all
+  else
+    Model.error = TRUE
+    break
+  endif
+
+  this_distance = within_cluster_distance(min_dists, cluster_id, self.metric)
+  delta = this_distance - prev_distance
+  if delta &lt;= 0 &amp;&amp; abs(delta) &lt; self.tolerance
+    if self.verbose &gt; 2
+      printf &quot;Converged after %d iterations (within total distance = %.5f).&quot;, iter, this_distance
+      flush
+    endif
+    break
+  endif
+  prev_distance = this_distance
+endloop
+
+matrix Model.distances = min_dists
+scalar Model.within_distance = this_distance
+matrix Model.cluster_id = cluster_id
+matrix Model.centroids = centroids
+
+return Model
+</code>
+</gretl-function>
+<gretl-function name="within_cluster_distance" type="scalar" private="1">
+ <params count="3">
+  <param name="distances" type="matrix" const="true"/>
+  <param name="cluster_id" type="matrix" const="true"/>
+  <param name="metric" type="string" const="true"/>
+ </params>
+<code>/* Compute the sum of the distances between observations and centroids
+across all clusters.
+
+&quot;distances&quot; already refers to some computed distance from the centroid, for instance $(x_{ij} - xbar_{ij})^2$ in case of the Euclidean distance.
+But it could also be some other distance measure.
+*/
+
+if metric_is_euclidean(metric)
+  # in k-means, the convention seems to be to work with the sum
+  # of squares itself rather than the square root of same
+  matrix agg = aggregate(distances.^2, cluster_id, sum)
+else
+  # other metrics should not be squared
+  matrix agg = aggregate(distances, cluster_id, sum)
+endif
+return sumc(agg[,3])
+</code>
+</gretl-function>
+<gretl-function name="compute_centroids" type="matrix" private="1">
+ <params count="2">
+  <param name="features" type="matrix" const="true"/>
+  <param name="cluster_id" type="matrix" const="true"/>
+ </params>
+<code>/* Computes the centroid for each cluster.
+Returns a matrix with n_clusters rows and cols(features) columns.
+Row i pertains to cluster i; column j holds the mean of feature j
+for the cluster.
+*/
+
+matrix tmp = aggregate(features, cluster_id, mean)
+strings row_labels = &quot;Centroid=&quot; ~ tmp[,1]
+centroids = tmp[,3:]
+rnameset(centroids, row_labels)
+
+return centroids
+</code>
+</gretl-function>
+<gretl-function name="get_metric" type="string" private="1">
+ <params count="1">
+  <param name="distance" type="int" const="true"/>
+ </params>
+<code>/* Only for kmeansGUI(). Maps the integer code to the name of
+the distance measure. */
+strings Distances = all_metrics()
+return Distances[distance]
+</code>
+</gretl-function>
+<gretl-function name="compute_sil_sample" type="scalar" private="1">
+ <params count="2">
+  <param name="a_i" type="scalar" const="true"/>
+  <param name="b_i" type="scalar" const="true"/>
+ </params>
+<code>/* Compute the silhouette sample for a single observation.
+URL: https://en.wikipedia.org/wiki/Silhouette_(clustering) */
+
+if a_i == 0 &amp;&amp; b_i == 0
+  return 0  # avoid division by zero
+elif a_i == b_i
+  return 0  # equal distances to own and other clusters
+elif a_i &lt; b_i
+  return 1 - (a_i / b_i)  # well assigned to own cluster
+else # a_i &gt; b_i
+  return (b_i / a_i) - 1  # poorly assigned to own cluster
+endif
+</code>
+</gretl-function>
+<sample-script>
+clear
+set verbose off
+set seed 34
+include kmeans.gfn
+
+# Select an example to run
+EXAMPLE = 1
+
+if EXAMPLE == 1
+    open credscore.gdt --quiet
+    list x = Age Income Avgexp
+    scalar n_clusters = 3
+
+elif EXAMPLE == 2
+    open mccullagh.gdt --quiet
+
+    Type[1] = NA  # add missing value entry just for testing purpose
+    list x = Months Acc Type
+    n_clusters = 2
+
+elif EXAMPLE == 3
+    # NOTE: You need to install the &quot;PairPlot&quot; package first
+    open iris.gdt --quiet
+    list x = 1..4
+    scalar n_clusters = 3
+elif EXAMPLE == 4
+    open denmark --quiet
+    list x = LRM LRY
+    x = diff(x)
+    n_clusters = 2
+endif
+
+smpl x --no-missing
+
+# Euclidean distance (default)
+# ============================
+bundle Model = kmeans_fit(x, n_clusters)
+print Model
+kmeans_summary(Model)  # Print summary of estimation
+
+
+# Silhouette samples
+# ==================
+# Compute silhouette samples (aka coefficients) and scores
+series sil_samples = kmeans_sil_samples(Model, x)
+printf &quot;Mean silhouette score: %.3f\n&quot;, kmeans_sil_score(Model, x)[1]
+printf &quot;Mean silhouette score per cluster:\n %12.3f\n&quot;,
+    kmeans_sil_score(Model, x, FALSE)
+
+print sil_samples -o --range=1:15
+# Silhouette plot
+kmeans_sil_plot(Model, x, _(height=750))
+
+
+print Model.centroids                   # print centroids
+series cluster_id = Model.cluster_id
+# Look for eventual gaps for observations for which some of the input variables
+# are missing
+smpl full
+print cluster_id -o --range=1:15
+
+
+# Scree plot using standard values and distance metrics
+# Evaluate &quot;inertia&quot; for 1 to 4 clusters
+# ==========
+smpl x --no-missing
+matrix scree = kmeans_screeplot(x, 4)
+# Alternatively, save plot and set font size
+#matrix scree = kmeans_screeplot(x, 4, &quot;screeplot.png&quot;, _(fontsize=14))
+print scree
+
+
+# Predict
+# ==========
+smpl x --no-missing
+series fc_cluster = kmeans_predict(x, Model)  # predict cluster belonging
+series cluster_id = Model.cluster_id          # must equal &quot;fc_cluster&quot;
+series distances = Model.distances
+print distances cluster_id fc_cluster -o --range=1:15
+
+# Plot distinct clusters for each variable combination in 2D
+kmeans_plot(x, Model)
+
+/* You can also manipulate the plot if wanted:
+Model.use_circles = FALSE
+Model.pointsize = 2.25
+Model.filename = &quot;foo2.png&quot;     # pass filename for storing plot
+kmeans_plot(x, Model)
+*/
+
+# Manhattan distance + PCA-based initializer
+# ==================
+# Pass some user-defined parameter values, too
+bundle opt = _(max_iter = 100, n_draws = 10,
+               distance_type = &quot;manhattan&quot;, initializer = &quot;pca&quot;)
+bundle Model = kmeans_fit(x, n_clusters, opt)
+print Model
+
+# Plot distinct clusters and tweak the plot
+scalar Model.transparency_level = 120  # this is an option supported by PairPlot
+kmeans_plot(x, Model)
+</sample-script>
+</gretl-function-package>
+</gretl-functions>

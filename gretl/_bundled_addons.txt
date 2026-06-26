@@ -10,3 +10,4 @@ logging
 regls
 SVAR
 PairPlot
+kmeans

@@ -188,6 +188,9 @@ void init_gretl4py_dataset_py11 (py::module_ &m)
         .def("to_file", &GretlDataset::to_file,
              py::arg("filename").none(false),
              py::arg("varlist").none(true) = "", py::kw_only())
+        .def("to_matrix", &GretlDataset::to_matrix,
+            py::arg("list").none(true) = py::list(), py::arg("startobs").none(true) = 0,
+            py::arg("endobs").none(true) = 0, py::arg("missing").none(true) = "ok")
         .def("add_series", py::overload_cast<const py::array&, const std::string&>(&GretlDataset::add_series),
              py::arg("data").none(false), py::arg("name").none(false))
         .def("new_series", py::overload_cast<const std::string&>(&GretlDataset::new_series),

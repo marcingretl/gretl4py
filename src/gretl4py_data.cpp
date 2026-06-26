@@ -750,6 +750,35 @@ void GretlDataset::to_file (const std::string &filename, const std::string &varl
     printer_.print();
 }
 
+GretlMatrixPtr GretlDataset::to_matrix (const std::vector<int> &list, int startobs, int endobs, const std::string &missing)
+{
+    //
+    // here we construct GretlMatrix from dataset based on given list
+    //
+    GretlMatrixPtr res{nullptr};
+    gretl_list_ptr gretl_list = new_list(list);
+    MMissingCode missop_code;
+
+    if (startobs && startobs < 1) throw std::invalid_argument("startobs cannot be < 1");
+    if (endobs && endobs > dset->n) throw std::invalid_argument("endobs cannot greater than total number of observations");
+    if (missing == "ok") {
+        missop_code = M_MISSING_OK;
+    } else if (missing == "error") {
+        missop_code = M_MISSING_ERROR;
+    } else if (missing == "skip") {
+        missop_code = M_MISSING_SKIP;
+    } else {
+        throw std::invalid_argument("unknown value for missing");
+    }
+    res = std::make_shared<GretlMatrix>(gretl_matrix_data_subset(gretl_list.get(), dset,
+                                                                 startobs ? startobs : dset->t1,
+                                                                 endobs ? endobs : dset->t2, missop_code,
+                                                                 &err_), false);
+    if (err_) handle_gretl_error(err_);
+
+    return res;
+}
+
 char *GretlDataset::add_series (gretl_double_ptr data, const std::string &name,
                                 int n, gretl_gchar_ptr label)
 {
@@ -804,6 +833,33 @@ void GretlDataset::new_list (const std::string &name, const std::string &value)
 {
     // new list according to @name and @value
     gretl_generate<GRETL_TYPE_LIST>(value, shared_from_this(), name);
+}
+
+gretl_list_ptr GretlDataset::new_list (const std::vector<int> &list) const
+{
+    //
+    // here we generate a gretl list from std::vector<int>
+    // note: we list is empty, we generate full list of variables
+    //
+    gretl_list_ptr res{nullptr};
+
+    // we generate full list
+    if (!list.size()) {
+        res.reset(full_var_list(dset, nullptr));
+        return res;
+    };
+
+    auto [list_min, list_max] = std::minmax_element(list.begin(), list.end());
+
+    if (*list_min < 0 || *list_max >= dset->v) throw std::invalid_argument("variable number is out of bounds");
+
+    // we do the job
+    res.reset(gretl_list_new(list.size()));
+    for (std::size_t i=0; i<list.size(); ++i) {
+        res.get()[i+1] = list[i];
+    }
+
+    return res;
 }
 
 void GretlDataset::rename (int series_id, const std::string &newname, const py::kwargs &kwargs)

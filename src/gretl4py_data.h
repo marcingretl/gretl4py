@@ -114,6 +114,8 @@ public:
 
     void to_file (const std::string &filename, const std::string &varlist, const py::kwargs &kwargs);
 
+    GretlMatrixPtr to_matrix (const std::vector<int> &list, int startobs = 0, int endobs = 0, const std::string &missing = "ok");
+
     // dataset information
     bool is_panel (void) const;
 
@@ -149,6 +151,8 @@ public:
     void new_list (const std::string &formula);
 
     void new_list (const std::string &name, const std::string &value);
+
+    gretl_list_ptr new_list (const std::vector<int> &list) const;
 
     void rename (int series_id, const std::string &newname, const py::kwargs &kwargs);
 
