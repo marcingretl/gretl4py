@@ -1479,7 +1479,8 @@ void GretlDataset::gretl_series_set_label (const int number, char *label)
     series_set_label(dset, number, label);
 }
 
-void GretlDataset::lags (const std::string &varlist, int order)
+template <typename T>
+void GretlDataset::lags (const T &varlist, int order)
 {
     //
     // interface to libgretl's list_laggenr
@@ -1487,7 +1488,13 @@ void GretlDataset::lags (const std::string &varlist, int order)
     gretl_list_ptr var_list{nullptr};
 
     // we construct list of external variables
-    var_list = list_from_formula(varlist, dset, err_);
+    if constexpr (std::is_same_v<T, std::string>) {
+        var_list = list_from_formula(varlist, dset, err_);
+    } else if constexpr (std::is_same_v<T, std::vector<int>>) {
+        var_list = list_from_vector(varlist, dset, err_);
+    } else {
+        static_assert(always_false<T>, "GretlDataset::lags(): unsupported type");
+    }
 
     // we do the job
     int *var_list_raw_ptr = var_list.release();
@@ -1501,6 +1508,8 @@ void GretlDataset::lags (const std::string &varlist, int order)
 
     printer_.print();
 }
+template void GretlDataset::lags<std::string>(const std::string&, int);
+template void GretlDataset::lags<std::vector<int>>(const std::vector<int>&, int);
 
 py::list GretlDataset::varnames (void) const
 {

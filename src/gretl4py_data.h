@@ -168,7 +168,8 @@ public:
     template <GretlCmdIndex CI>
     void transforms_no_opts (const std::string &varlist);
 
-    void lags (const std::string &varlist, int order);
+    template <typename T>
+    void lags (const T &varlist, int order);
 
     // filters, correlations, etc
     DNumPyArrayFC hpfilt (const std::string &y, double hp_lambda = NADBL, bool trend = false, bool one_sided = false);

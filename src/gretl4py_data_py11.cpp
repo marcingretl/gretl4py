@@ -235,7 +235,9 @@ void init_gretl4py_dataset_py11 (py::module_ &m)
              py::arg("varlist").none(false))
         .def("orthdev", &GretlDataset::transforms_no_opts<ORTHDEV>,
              py::arg("varlist").none(false))
-        .def("lags", &GretlDataset::lags,
+        .def("lags", &GretlDataset::lags<std::string>,
+             py::arg("varlist").none(false), py::arg("order").none(true) = 0)
+        .def("lags", &GretlDataset::lags<std::vector<int>>,
              py::arg("varlist").none(false), py::arg("order").none(true) = 0)
         .def("print", &GretlDataset::print,
              py::arg("varlist").none(true) = "", py::kw_only())
