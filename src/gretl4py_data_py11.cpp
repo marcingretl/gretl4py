@@ -287,8 +287,10 @@ void init_gretl4py_dataset_py11 (py::module_ &m)
              py::arg("X").none(false), py::arg("centers").none(false), py::arg("opts").none(true) = nullptr)
         .def("kmeans", py::overload_cast<const std::vector<int>&, const GretlMatrix&, const GretlBundlePtr>(&GretlDataset::kmeans),
              py::arg("X").none(false), py::arg("centers").none(false), py::arg("opts").none(true) = nullptr)
-        .def("xtab", &GretlDataset::xtab,
+        .def("xtab", &GretlDataset::xtab<std::string>,
              py::arg("varlist").none(true) = "", py::kw_only())
+        .def("xtab", &GretlDataset::xtab<std::vector<int>>,
+             py::arg("varlist").none(true) = std::vector<int>{}, py::kw_only())
         .def("test",
              [](GretlDataset &self, const std::string &type, const py::kwargs &kwargs)
              {

@@ -194,7 +194,8 @@ public:
 
     GretlBundlePtr kmeans (const std::vector<int> &varlist, const GretlMatrix &centers, const GretlBundlePtr opts = nullptr);
 
-    py::object xtab (const std::string &varlist, const py::kwargs &kwargs);
+    template <typename T>
+    py::object xtab (const T &varlist, const py::kwargs &kwargs);
 };
 
 //

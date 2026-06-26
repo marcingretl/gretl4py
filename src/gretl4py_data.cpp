@@ -1319,10 +1319,11 @@ GretlBundlePtr GretlDataset::kmeans (const std::vector<int> &varlist, const Gret
     return res;
 }
 
-py::object GretlDataset::xtab (const std::string &varlist, const py::kwargs &kwargs)
+template <typename T>
+py::object GretlDataset::xtab (const T &varlist, const py::kwargs &kwargs)
 {
     //
-    // methos minics 'xtab' command
+    // method mimics 'xtab' command
     //
     gretl_list_ptr var_list{nullptr};
     std::nullptr_t fake_dataset = nullptr;
@@ -1330,11 +1331,17 @@ py::object GretlDataset::xtab (const std::string &varlist, const py::kwargs &kwa
     // we unpack kwargs;
     opt_ = unpack_kwargs_command(XTAB, fake_dataset, kwargs);
 
-    // if no vars given, we use the full list
+    // we construct list of variables
     if (varlist.empty()) {
         var_list.reset(full_var_list(dset, nullptr));
     } else {
-        var_list = list_from_formula(varlist, dset, err_);
+        if constexpr (std::is_same_v<T, std::string>) {
+            var_list = list_from_formula(varlist, dset, err_);
+        } else if constexpr (std::is_same_v<T, std::vector<int>>) {
+            var_list = list_from_vector(varlist, dset, err_);
+        } else {
+            static_assert(always_false<T>, "GretlDataset::corr(): unsupported type");
+        }
     }
 
     // we do the job
@@ -1344,6 +1351,8 @@ py::object GretlDataset::xtab (const std::string &varlist, const py::kwargs &kwa
 
     return get_accessor("$result");
 }
+template py::object GretlDataset::xtab<std::string>(const std::string&, const py::kwargs&);
+template py::object GretlDataset::xtab<std::vector<int>>(const std::vector<int>&, const py::kwargs&);
 
 /*
 void GretlDataset::setobs (const py::kwargs &kwargs)
