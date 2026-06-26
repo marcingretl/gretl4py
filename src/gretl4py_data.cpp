@@ -756,8 +756,15 @@ GretlMatrixPtr GretlDataset::to_matrix (const std::vector<int> &list, int starto
     // here we construct GretlMatrix from dataset based on given list
     //
     GretlMatrixPtr res{nullptr};
-    gretl_list_ptr gretl_list = new_list(list);
+    gretl_list_ptr gretl_list{nullptr};
     MMissingCode missop_code;
+
+    // we generate list to deal with
+    if (!list.size()) {
+        gretl_list.reset(full_var_list(dset, nullptr));
+    } else {
+        gretl_list = list_from_vector(list, dset, err_);
+    };
 
     if (startobs && startobs < 1) throw std::invalid_argument("startobs cannot be < 1");
     if (endobs && endobs > dset->n) throw std::invalid_argument("endobs cannot greater than total number of observations");
@@ -851,22 +858,6 @@ void GretlDataset::new_list (const std::string &name, const std::string &value)
 {
     // new list according to @name and @value
     gretl_generate<GRETL_TYPE_LIST>(value, shared_from_this(), name);
-}
-
-gretl_list_ptr GretlDataset::new_list (const std::vector<int> &list) const
-{
-    //
-    // here we generate a gretl list from std::vector<int>
-    // note: we list is empty, we generate full list of variables
-    //
-    // we generate full list
-    if (!list.size()) {
-        gretl_list_ptr res(full_var_list(dset, nullptr));
-
-        return res;
-    };
-
-    return list_from_vector(list, dset, err_);
 }
 
 void GretlDataset::rename (int series_id, const std::string &newname, const py::kwargs &kwargs)

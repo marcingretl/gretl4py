@@ -154,8 +154,6 @@ public:
 
     void new_list (const std::string &name, const std::string &value);
 
-    gretl_list_ptr new_list (const std::vector<int> &list) const;
-
     void rename (int series_id, const std::string &newname, const py::kwargs &kwargs);
 
     py::object get_series (const std::string &series) const;
