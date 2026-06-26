@@ -859,25 +859,14 @@ gretl_list_ptr GretlDataset::new_list (const std::vector<int> &list) const
     // here we generate a gretl list from std::vector<int>
     // note: we list is empty, we generate full list of variables
     //
-    gretl_list_ptr res{nullptr};
-
     // we generate full list
     if (!list.size()) {
-        res.reset(full_var_list(dset, nullptr));
+        gretl_list_ptr res(full_var_list(dset, nullptr));
+
         return res;
     };
 
-    auto [list_min, list_max] = std::minmax_element(list.begin(), list.end());
-
-    if (*list_min < 0 || *list_max >= dset->v) throw std::invalid_argument("variable number is out of bounds");
-
-    // we do the job
-    res.reset(gretl_list_new(list.size()));
-    for (std::size_t i=0; i<list.size(); ++i) {
-        res.get()[i+1] = list[i];
-    }
-
-    return res;
+    return list_from_vector(list, dset, err_);
 }
 
 void GretlDataset::rename (int series_id, const std::string &newname, const py::kwargs &kwargs)
