@@ -177,7 +177,8 @@ public:
 
     DNumPyArrayFC bkfilt (const std::string &y, int f1 = 0, int f2 = 0, int k = 0);
 
-    py::object corr (const std::string &varlist, const py::kwargs &kwargs);
+    template <typename T>
+    py::object corr (const T &varlist, const py::kwargs &kwargs);
 
     py::object cov (const std::string &vars);
 

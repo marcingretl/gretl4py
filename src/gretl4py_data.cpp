@@ -1127,7 +1127,8 @@ GretlDatasetPtr GretlDataset::getitem_impl (const py::list &slice)
     return res;
 }
 
-py::object GretlDataset::corr (const std::string &varlist, const py::kwargs &kwargs)
+template <typename T>
+py::object GretlDataset::corr (const T &varlist, const py::kwargs &kwargs)
 {
     //
     // general interface for computing correlations
@@ -1136,7 +1137,15 @@ py::object GretlDataset::corr (const std::string &varlist, const py::kwargs &kwa
     std::nullptr_t fake_dataset = nullptr;
 
     // we construct list of variables (if needed)
-    if (!varlist.empty()) var_list = list_from_formula(varlist, dset, err_);
+    if (!varlist.empty()) {
+        if constexpr (std::is_same_v<T, std::string>) {
+            var_list = list_from_formula(varlist, dset, err_);
+        } else if constexpr (std::is_same_v<T, std::vector<int>>) {
+            var_list = list_from_vector(varlist, dset, err_);
+        } else {
+            static_assert(always_false<T>, "GretlDataset::corr(): unsupported type");
+        }
+    }
 
     // we unpack kwargs kwargs;
     opt_ = unpack_kwargs_command(CORR, fake_dataset, kwargs);
@@ -1156,6 +1165,8 @@ py::object GretlDataset::corr (const std::string &varlist, const py::kwargs &kwa
 
     return get_accessor("$result");
 }
+template py::object GretlDataset::corr<std::string>(const std::string &varlist, const py::kwargs &kwargs);
+template py::object GretlDataset::corr<std::vector<int>>(const std::vector<int> &varlist, const py::kwargs &kwargs);
 
 py::object GretlDataset::cov (const std::string &vars)
 {
