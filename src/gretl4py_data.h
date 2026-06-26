@@ -188,7 +188,8 @@ public:
     template <typename T>
     py::object xcorrgm (const T &vars, int order, const py::kwargs &kwargs);
 
-    py::object pca (const std::string &varlist, const py::kwargs &kwargs);
+    template <typename T>
+    py::object pca (const T &varlist, const py::kwargs &kwargs);
 
     GretlBundlePtr kmeans (const std::vector<int> &varlist, int centers, const GretlBundlePtr opts = nullptr);
 

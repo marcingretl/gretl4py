@@ -1254,7 +1254,8 @@ py::object GretlDataset::xcorrgm (const T &vars, int order, const py::kwargs &kw
 template py::object GretlDataset::xcorrgm<std::string>(const std::string&, int, const py::kwargs&);
 template py::object GretlDataset::xcorrgm<std::vector<int>>(const std::vector<int>&, int, const py::kwargs&);
 
-py::object GretlDataset::pca (const std::string &varlist, const py::kwargs &kwargs)
+template <typename T>
+py::object GretlDataset::pca (const T &varlist, const py::kwargs &kwargs)
 {
     //
     // we perform Principal Components Analysis following
@@ -1263,11 +1264,17 @@ py::object GretlDataset::pca (const std::string &varlist, const py::kwargs &kwar
     gretl_list_ptr var_list{nullptr};
     std::nullptr_t fake_dataset = nullptr;
 
-    // if no vars given, we use the full list
+    // we construct list of variables
     if (varlist.empty()) {
         var_list.reset(full_var_list(dset, nullptr));
     } else {
-        var_list = list_from_formula(varlist, dset, err_);
+        if constexpr (std::is_same_v<T, std::string>) {
+            var_list = list_from_formula(varlist, dset, err_);
+        } else if constexpr (std::is_same_v<T, std::vector<int>>) {
+            var_list = list_from_vector(varlist, dset, err_);
+        } else {
+            static_assert(always_false<T>, "GretlDataset::pca(): unsupported type");
+        }
     }
 
     // we unpack kwargs;
@@ -1288,6 +1295,8 @@ py::object GretlDataset::pca (const std::string &varlist, const py::kwargs &kwar
 
     return get_accessor("$result");
 }
+template py::object GretlDataset::pca<std::string>(const std::string&, const py::kwargs&);
+template py::object GretlDataset::pca<std::vector<int>>(const std::vector<int>&, const py::kwargs&);
 
 GretlBundlePtr GretlDataset::kmeans (const std::vector<int> &varlist, int centers, const GretlBundlePtr opts)
 {
