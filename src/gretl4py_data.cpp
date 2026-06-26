@@ -1309,7 +1309,7 @@ GretlBundlePtr GretlDataset::kmeans (const std::vector<int> &varlist, const Gret
     return res;
 }
 
-void GretlDataset::xtab (const std::string &varlist, const py::kwargs &kwargs)
+py::object GretlDataset::xtab (const std::string &varlist, const py::kwargs &kwargs)
 {
     //
     // methos minics 'xtab' command
@@ -1331,6 +1331,8 @@ void GretlDataset::xtab (const std::string &varlist, const py::kwargs &kwargs)
     err_ = crosstab(var_list.get(), dset, opt_, printer_.prn_ptr());
     if (err_) handle_gretl_error(err_);
     printer_.print();
+
+    return get_accessor("$result");
 }
 
 /*
