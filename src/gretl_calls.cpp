@@ -1194,3 +1194,31 @@ void gretl_generate (const std::string &formula, GretlDatasetPtr dataset, const 
 template void gretl_generate<GRETL_TYPE_ANY>(const std::string&, GretlDatasetPtr, const std::string&);
 template void gretl_generate<GRETL_TYPE_LIST>(const std::string&, GretlDatasetPtr, const std::string&);
 template void gretl_generate<GRETL_TYPE_SERIES>(const std::string&, GretlDatasetPtr, const std::string&);
+
+GretlBundlePtr kmeans (const GretlMatrix &X, int centers, const GretlBundlePtr opts)
+{
+    //
+    // here we perform kmeans analysis for fixed number of clusters
+    //
+    int err = 0;
+    auto res = std::make_shared<GretlBundle>(gretl_kmeans(X.get_ptr(), centers, nullptr,
+                                                          opts ? opts->get_ptr() : nullptr,
+                                                          global_printer.prn_ptr(), &err), false);
+    if (err) handle_gretl_error(err);
+
+    return res;
+}
+
+GretlBundlePtr kmeans (const GretlMatrix &X, const GretlMatrix &centers, const GretlBundlePtr opts)
+{
+    //
+    // here we perform kmeans analysis for k initial centroids
+    //
+    int err = 0;
+    auto res = std::make_shared<GretlBundle>(gretl_kmeans(X.get_ptr(), 0, centers.get_ptr(),
+                                                          opts ? opts->get_ptr() : nullptr,
+                                                          global_printer.prn_ptr(), &err), false);
+    if (err) handle_gretl_error(err);
+
+    return res;
+}

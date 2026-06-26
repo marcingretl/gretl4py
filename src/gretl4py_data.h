@@ -144,6 +144,8 @@ public:
 
     void add_series (const py::array &data, const std::string &name);
 
+    void add_series (const GretlMatrix &data, const std::string &name);
+
     void new_series (const std::string &formula);
 
     void new_series (const std::string &name, const std::string &value);
@@ -186,6 +188,12 @@ public:
     py::object xcorrgm (const std::string &vars, int order, const py::kwargs &kwargs);
 
     py::object pca (const std::string &varlist, const py::kwargs &kwargs);
+
+    GretlBundlePtr kmeans (const std::vector<int> &varlist, int centers, const GretlBundlePtr opts = nullptr);
+
+    GretlBundlePtr kmeans (const std::vector<int> &varlist, const GretlMatrix &centers, const GretlBundlePtr opts = nullptr);
+
+    void xtab (const std::string &varlist, const py::kwargs &kwargs);
 };
 
 //
@@ -202,12 +210,12 @@ private:
     template <typename T>
     void extract_ (const T &t);
 public:
-    GretlBundle (void);                             // default constructor with empty bundle
-    GretlBundle (gretl_bundle *src);                // incoming already existing bundle Note: src must be deallocated by libgretl
-    GretlBundle (MODEL *model, DATASET *dset);      // we produce bundle from MODEL
-    GretlBundle (GRETL_VAR *model, DATASET *dset);  // we produce bundle from VAR/VECM
-    GretlBundle (equation_system *model);           // we produce bundle from SYSTEM
-    GretlBundle (const py::kwargs &kwargs);         // for on-the-fly initialization
+    GretlBundle (void);                                 // default constructor with empty bundle
+    GretlBundle (gretl_bundle *src, bool copy = true);  // if copy==false, incoming bundle must be deallocated by libgretl
+    GretlBundle (MODEL *model, DATASET *dset);          // we produce bundle from MODEL
+    GretlBundle (GRETL_VAR *model, DATASET *dset);      // we produce bundle from VAR/VECM
+    GretlBundle (equation_system *model);               // we produce bundle from SYSTEM
+    GretlBundle (const py::kwargs &kwargs);             // for on-the-fly initialization
     ~GretlBundle (void);
 
     int get_err (void) const;

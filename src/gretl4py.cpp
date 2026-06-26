@@ -188,6 +188,10 @@ PYBIND11_MODULE(_gretl, m)
     m.def("genr", &genr<std::string>, py::arg("name").none(false), py::arg("value").none(false));
     m.def("pkg", &do_gretl_pkg,
           py::arg("action").none(false), py::arg("pkgname").none(false), py::kw_only());
+    m.def("kmeans", py::overload_cast<const GretlMatrix&, int, const GretlBundlePtr>(&kmeans),
+         py::arg("X").none(false), py::arg("centers").none(false), py::arg("opts").none(true) = nullptr);
+    m.def("kmeans", py::overload_cast<const GretlMatrix&, const GretlMatrix&, const GretlBundlePtr>(&kmeans),
+         py::arg("X").none(false), py::arg("centers").none(false), py::arg("opts").none(true) = nullptr);
 
     //////////////////////////////////////////////////
     // single equation models

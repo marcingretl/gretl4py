@@ -111,4 +111,8 @@ void do_gretl_delete_variables (const std::string &varname, const py::kwargs &kw
 template <GretlObjType OBJ_TYPE>
 py::object do_get_accessor (const std::string &name, GretlDatasetPtr dataset = nullptr, void *model = nullptr);
 
+GretlBundlePtr kmeans (const GretlMatrix &X, int centers, const GretlBundlePtr opts = nullptr);
+
+GretlBundlePtr kmeans (const GretlMatrix &X, const GretlMatrix &centers, const GretlBundlePtr opts = nullptr);
+
 #endif // GRETL_CALLS_H

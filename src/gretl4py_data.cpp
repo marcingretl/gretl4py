@@ -811,6 +811,24 @@ void GretlDataset::add_series (const py::array &data, const std::string &name)
     add_or_replace_allocated_series_(std::move(data_copy), name, n);
 }
 
+void GretlDataset::add_series (const GretlMatrix &data, const std::string &name)
+{
+    //
+    // Here we add existing GretlMatrix to dataset
+    //
+
+    if ((std::min)(data.cols(), data.rows()) > 1) throw std::invalid_argument("given variable is not a vector");
+    if (data.is_complex()) throw std::invalid_argument("given matrix is complex, must be real");
+    int n = (std::max)(data.cols(), data.rows());
+
+    // we use std::malloc since memory will be deallocated by libgretl
+    gretl_double_ptr data_copy(static_cast<double*>(std::malloc(n * sizeof(double))));
+
+    // actual work
+    std::memcpy(data_copy.get(), data.val(), n * sizeof(double));
+    add_or_replace_allocated_series_(std::move(data_copy), name, n);
+}
+
 void GretlDataset::new_series (const std::string &formula)
 {
     // new series according to @formula
@@ -1261,6 +1279,60 @@ py::object GretlDataset::pca (const std::string &varlist, const py::kwargs &kwar
     return get_accessor("$result");
 }
 
+GretlBundlePtr GretlDataset::kmeans (const std::vector<int> &varlist, int centers, const GretlBundlePtr opts)
+{
+    //
+    // here we perform kmeans analysis
+    //
+    auto X = to_matrix(varlist);
+    auto res = std::make_shared<GretlBundle>(gretl_kmeans(X->get_ptr(), centers, nullptr,
+                                                          opts ? opts->get_ptr() : nullptr,
+                                                          printer_.prn_ptr(), &err_), false);
+    if (err_) handle_gretl_error(err_);
+    printer_.print();
+
+    return res;
+}
+
+GretlBundlePtr GretlDataset::kmeans (const std::vector<int> &varlist, const GretlMatrix &centers, const GretlBundlePtr opts)
+{
+    //
+    // here we perform kmeans analysis
+    //
+    auto X = to_matrix(varlist);
+    auto res = std::make_shared<GretlBundle>(gretl_kmeans(X->get_ptr(), 0, centers.get_ptr(),
+                                                          opts ? opts->get_ptr() : nullptr,
+                                                          printer_.prn_ptr(), &err_), false);
+    if (err_) handle_gretl_error(err_);
+    printer_.print();
+
+    return res;
+}
+
+void GretlDataset::xtab (const std::string &varlist, const py::kwargs &kwargs)
+{
+    //
+    // methos minics 'xtab' command
+    //
+    gretl_list_ptr var_list{nullptr};
+    std::nullptr_t fake_dataset = nullptr;
+
+    // we unpack kwargs;
+    opt_ = unpack_kwargs_command(XTAB, fake_dataset, kwargs);
+
+    // if no vars given, we use the full list
+    if (varlist.empty()) {
+        var_list.reset(full_var_list(dset, nullptr));
+    } else {
+        var_list = list_from_formula(varlist, dset, err_);
+    }
+
+    // we do the job
+    err_ = crosstab(var_list.get(), dset, opt_, printer_.prn_ptr());
+    if (err_) handle_gretl_error(err_);
+    printer_.print();
+}
+
 /*
 void GretlDataset::setobs (const py::kwargs &kwargs)
 {
@@ -1602,14 +1674,18 @@ GretlBundle::GretlBundle (equation_system *model) : b_(gretl_bundle_new())
     if (err_) handle_gretl_error(err_);
 }
 
-GretlBundle::GretlBundle (gretl_bundle *src) : free_b_(false)
+GretlBundle::GretlBundle (gretl_bundle *src, bool copy)
 {
     //
-    // Here we make a copy of src
-    // Note: 'src' _must_ be deallocated by libgretl, otherwise there
-    // will be a memory leak
+    // Here we either steal or make a copy of src
+    // Note: if copy, 'src' _must_ be deallocated by libgretl
     //
-    b_ = gretl_bundle_copy(src, &err_);
+    if (copy) {
+        b_ = gretl_bundle_copy(src, &err_);
+        free_b_ = false;
+    } else {
+        b_ = src;
+    }
     if (err_) handle_gretl_error(err_);
 }
 
