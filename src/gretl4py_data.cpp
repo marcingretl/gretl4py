@@ -1222,8 +1222,8 @@ py::object GretlDataset::hurst (const std::string &series)
     return get_accessor("$result");
 }
 
-py::object GretlDataset::xcorrgm (const std::string &vars, int order,
-                                  const py::kwargs &kwargs)
+template <typename T>
+py::object GretlDataset::xcorrgm (const T &vars, int order, const py::kwargs &kwargs)
 {
     //
     // we perform cross-correlogram for vars
@@ -1232,17 +1232,27 @@ py::object GretlDataset::xcorrgm (const std::string &vars, int order,
     std::nullptr_t fake_dataset = nullptr;
     bool silent = false;
 
-    // we unpack kwargs kwargs;
+    // we unpack kwargs
     opt_ = unpack_kwargs_command(XCORRGM, fake_dataset, kwargs);
 
+    // we construct list of variables
+    if constexpr (std::is_same_v<T, std::string>) {
+        var_list = list_from_formula(vars, dset, err_);
+    } else if constexpr (std::is_same_v<T, std::vector<int>>) {
+        var_list = list_from_vector(vars, dset, err_);
+    } else {
+        static_assert(always_false<T>, "GretlDataset::xcorrgm(): unsupported type");
+    }
+
     // we do the job
-    var_list = list_from_formula(vars, dset, err_);
     err_ = xcorrgram(var_list.get(), order, dset, opt_, printer_.prn_ptr());
     if (err_) handle_gretl_error(err_);
     if (!silent) printer_.print();
 
     return get_accessor("$result");
 }
+template py::object GretlDataset::xcorrgm<std::string>(const std::string&, int, const py::kwargs&);
+template py::object GretlDataset::xcorrgm<std::vector<int>>(const std::vector<int>&, int, const py::kwargs&);
 
 py::object GretlDataset::pca (const std::string &varlist, const py::kwargs &kwargs)
 {
