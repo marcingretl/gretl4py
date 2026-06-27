@@ -232,15 +232,25 @@ void init_gretl4py_dataset_py11 (py::module_ &m)
              py::arg("varlist").none(false), py::kw_only())
         .def("stdize", &GretlDataset::transforms<STDIZE>,
              py::arg("varlist").none(false), py::kw_only())
-        .def("diff", &GretlDataset::transforms_no_opts<DIFF>,
+        .def("diff", &GretlDataset::transforms_no_opts<std::string, DIFF>,
              py::arg("varlist").none(false))
-        .def("ldiff", &GretlDataset::transforms_no_opts<LDIFF>,
+        .def("ldiff", &GretlDataset::transforms_no_opts<std::string, LDIFF>,
              py::arg("varlist").none(false))
-        .def("sdiff", &GretlDataset::transforms_no_opts<SDIFF>,
+        .def("sdiff", &GretlDataset::transforms_no_opts<std::string, SDIFF>,
              py::arg("varlist").none(false))
-        .def("logs", &GretlDataset::transforms_no_opts<LOGS>,
+        .def("logs", &GretlDataset::transforms_no_opts<std::string, LOGS>,
              py::arg("varlist").none(false))
-        .def("orthdev", &GretlDataset::transforms_no_opts<ORTHDEV>,
+        .def("orthdev", &GretlDataset::transforms_no_opts<std::string, ORTHDEV>,
+             py::arg("varlist").none(false))
+        .def("diff", &GretlDataset::transforms_no_opts<std::vector<int>, DIFF>,
+             py::arg("varlist").none(false))
+        .def("ldiff", &GretlDataset::transforms_no_opts<std::vector<int>, LDIFF>,
+             py::arg("varlist").none(false))
+        .def("sdiff", &GretlDataset::transforms_no_opts<std::vector<int>, SDIFF>,
+             py::arg("varlist").none(false))
+        .def("logs", &GretlDataset::transforms_no_opts<std::vector<int>, LOGS>,
+             py::arg("varlist").none(false))
+        .def("orthdev", &GretlDataset::transforms_no_opts<std::vector<int>, ORTHDEV>,
              py::arg("varlist").none(false))
         .def("lags", &GretlDataset::lags<std::string>,
              py::arg("varlist").none(false), py::arg("order").none(true) = 0)

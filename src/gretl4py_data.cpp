@@ -922,8 +922,8 @@ template void GretlDataset::transforms<DUMMIFY>(const std::string&, const py::kw
 template void GretlDataset::transforms<DISCRETE>(const std::string&, const py::kwargs&);
 template void GretlDataset::transforms<STDIZE>(const std::string&, const py::kwargs&);
 
-template <GretlCmdIndex CI>
-void GretlDataset::transforms_no_opts (const std::string &varlist)
+template <typename T, GretlCmdIndex CI>
+void GretlDataset::transforms_no_opts (const T &varlist)
 {
     //
     // interface to several gretl's commands (CI)
@@ -933,7 +933,13 @@ void GretlDataset::transforms_no_opts (const std::string &varlist)
     gretl_list_ptr var_list{nullptr};
 
     // we construct list of external variables
-    var_list = list_from_formula(varlist, dset, err_);
+    if constexpr (std::is_same_v<T, std::string>) {
+        var_list = list_from_formula(varlist, dset, err_);
+    } else if constexpr (std::is_same_v<T, std::vector<int>>) {
+        var_list = list_from_vector(varlist, dset, err_);
+    } else {
+        static_assert(always_false<T>, "GretlDataset::transforms_no_opts(): unsupported var_list type");
+    }
 
     // we do the job
     int *varlist_raw_ptr = var_list.release();
@@ -954,11 +960,16 @@ void GretlDataset::transforms_no_opts (const std::string &varlist)
 
     printer_.print();
 }
-template void GretlDataset::transforms_no_opts<DIFF>(const std::string&);
-template void GretlDataset::transforms_no_opts<LDIFF>(const std::string&);
-template void GretlDataset::transforms_no_opts<SDIFF>(const std::string&);
-template void GretlDataset::transforms_no_opts<LOGS>(const std::string&);
-template void GretlDataset::transforms_no_opts<ORTHDEV>(const std::string&);
+template void GretlDataset::transforms_no_opts<std::string, DIFF>(const std::string&);
+template void GretlDataset::transforms_no_opts<std::string, LDIFF>(const std::string&);
+template void GretlDataset::transforms_no_opts<std::string, SDIFF>(const std::string&);
+template void GretlDataset::transforms_no_opts<std::string, LOGS>(const std::string&);
+template void GretlDataset::transforms_no_opts<std::string, ORTHDEV>(const std::string&);
+template void GretlDataset::transforms_no_opts<std::vector<int>, DIFF>(const std::vector<int>&);
+template void GretlDataset::transforms_no_opts<std::vector<int>, LDIFF>(const std::vector<int>&);
+template void GretlDataset::transforms_no_opts<std::vector<int>, SDIFF>(const std::vector<int>&);
+template void GretlDataset::transforms_no_opts<std::vector<int>, LOGS>(const std::vector<int>&);
+template void GretlDataset::transforms_no_opts<std::vector<int>, ORTHDEV>(const std::vector<int>&);
 
 std::string GretlDataset::repr (void) const
 {

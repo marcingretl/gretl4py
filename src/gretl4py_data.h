@@ -166,8 +166,8 @@ public:
     template <GretlCmdIndex CI>
     void transforms (const std::string &varlist, const py::kwargs &kwargs);
 
-    template <GretlCmdIndex CI>
-    void transforms_no_opts (const std::string &varlist);
+    template <typename T, GretlCmdIndex CI>
+    void transforms_no_opts (const T &varlist);
 
     template <typename T>
     void lags (const T &varlist, int order);
