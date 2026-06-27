@@ -188,9 +188,16 @@ void init_gretl4py_dataset_py11 (py::module_ &m)
         .def("to_file", &GretlDataset::to_file,
              py::arg("filename").none(false),
              py::arg("varlist").none(true) = "", py::kw_only())
-        .def("to_matrix", &GretlDataset::to_matrix,
+
+        .def("to_matrix", &GretlDataset::to_matrix<std::string>,
             py::arg("list").none(true) = py::list(), py::arg("startobs").none(true) = 0,
             py::arg("endobs").none(true) = 0, py::arg("missing").none(true) = "ok")
+        .def("to_matrix", &GretlDataset::to_matrix<std::vector<int>>,
+             py::arg("list").none(true) = py::list(), py::arg("startobs").none(true) = 0,
+             py::arg("endobs").none(true) = 0, py::arg("missing").none(true) = "ok")
+
+
+
         .def("add_series", py::overload_cast<const py::array&, const std::string&>(&GretlDataset::add_series),
              py::arg("data").none(false), py::arg("name").none(false))
         .def("add_series", py::overload_cast<const GretlMatrix&, const std::string&>(&GretlDataset::add_series),
@@ -287,10 +294,18 @@ void init_gretl4py_dataset_py11 (py::module_ &m)
              py::arg("varlist").none(true) = "", py::kw_only())
         .def("pca", &GretlDataset::pca<std::vector<int>>,
              py::arg("varlist").none(true) = std::vector<int>{}, py::kw_only())
-        .def("kmeans", py::overload_cast<const std::vector<int>&, int, const GretlBundlePtr>(&GretlDataset::kmeans),
+
+        .def("kmeans", py::overload_cast<const std::string&, int, const GretlBundlePtr>(&GretlDataset::kmeans<std::string>),
              py::arg("X").none(false), py::arg("centers").none(false), py::arg("opts").none(true) = nullptr)
-        .def("kmeans", py::overload_cast<const std::vector<int>&, const GretlMatrix&, const GretlBundlePtr>(&GretlDataset::kmeans),
+        .def("kmeans", py::overload_cast<const std::vector<int>&, int, const GretlBundlePtr>(&GretlDataset::kmeans<std::vector<int>>),
              py::arg("X").none(false), py::arg("centers").none(false), py::arg("opts").none(true) = nullptr)
+        .def("kmeans", py::overload_cast<const std::string&, const GretlMatrix&, const GretlBundlePtr>(&GretlDataset::kmeans<std::string>),
+             py::arg("X").none(false), py::arg("centers").none(false), py::arg("opts").none(true) = nullptr)
+        .def("kmeans", py::overload_cast<const std::vector<int>&, const GretlMatrix&, const GretlBundlePtr>(&GretlDataset::kmeans<std::vector<int>>),
+             py::arg("X").none(false), py::arg("centers").none(false), py::arg("opts").none(true) = nullptr)
+
+
+
         .def("xtab", &GretlDataset::xtab<std::string>,
              py::arg("varlist").none(true) = "", py::kw_only())
         .def("xtab", &GretlDataset::xtab<std::vector<int>>,

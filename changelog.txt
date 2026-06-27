@@ -4,7 +4,7 @@ version 0.52:
     - new GretlMatrix class as a default reprezentation of libgretl's gretl_matrix type
     - GretlDataset:: new to_matrix(), new_list() based on Python's list, new_series() from GretlMatrix
     - kmeans addon added + all addons updates
-    -
+    - Python's list of integers is now interpreted as libgretl list (selected functions in methods)
 
 version 0.51:
     - function returned type: support for GRETL_TYPE_NUMERIC added

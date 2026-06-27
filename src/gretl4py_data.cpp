@@ -750,7 +750,8 @@ void GretlDataset::to_file (const std::string &filename, const std::string &varl
     printer_.print();
 }
 
-GretlMatrixPtr GretlDataset::to_matrix (const std::vector<int> &list, int startobs, int endobs, const std::string &missing)
+template <typename T>
+GretlMatrixPtr GretlDataset::to_matrix (const T &list, int startobs, int endobs, const std::string &missing)
 {
     //
     // here we construct GretlMatrix from dataset based on given list
@@ -759,12 +760,18 @@ GretlMatrixPtr GretlDataset::to_matrix (const std::vector<int> &list, int starto
     gretl_list_ptr gretl_list{nullptr};
     MMissingCode missop_code;
 
-    // we generate list to deal with
-    if (!list.size()) {
+    // we construct list of variables
+    if (list.empty()) {
         gretl_list.reset(full_var_list(dset, nullptr));
     } else {
-        gretl_list = list_from_vector(list, dset, err_);
-    };
+        if constexpr (std::is_same_v<T, std::string>) {
+            gretl_list = list_from_formula(list, dset, err_);
+        } else if constexpr (std::is_same_v<T, std::vector<int>>) {
+            gretl_list = list_from_vector(list, dset, err_);
+        } else {
+            static_assert(always_false<T>, "GretlDataset::to_matrix(): unsupported type");
+        }
+    }
 
     if (startobs && startobs < 1) throw std::invalid_argument("startobs cannot be < 1");
     if (endobs && endobs > dset->n) throw std::invalid_argument("endobs cannot greater than total number of observations");
@@ -1298,12 +1305,13 @@ py::object GretlDataset::pca (const T &varlist, const py::kwargs &kwargs)
 template py::object GretlDataset::pca<std::string>(const std::string&, const py::kwargs&);
 template py::object GretlDataset::pca<std::vector<int>>(const std::vector<int>&, const py::kwargs&);
 
-GretlBundlePtr GretlDataset::kmeans (const std::vector<int> &varlist, int centers, const GretlBundlePtr opts)
+template <typename T>
+GretlBundlePtr GretlDataset::kmeans (const T &varlist, int centers, const GretlBundlePtr opts)
 {
     //
     // here we perform kmeans analysis
     //
-    auto X = to_matrix(varlist);
+    auto X = to_matrix<T>(varlist);
     auto res = std::make_shared<GretlBundle>(gretl_kmeans(X->get_ptr(), centers, nullptr,
                                                           opts ? opts->get_ptr() : nullptr,
                                                           printer_.prn_ptr(), &err_), false);
@@ -1312,13 +1320,16 @@ GretlBundlePtr GretlDataset::kmeans (const std::vector<int> &varlist, int center
 
     return res;
 }
+template GretlBundlePtr GretlDataset::kmeans<std::string>(const std::string&, int, const GretlBundlePtr);
+template GretlBundlePtr GretlDataset::kmeans<std::vector<int>>(const std::vector<int>&, int, const GretlBundlePtr);
 
-GretlBundlePtr GretlDataset::kmeans (const std::vector<int> &varlist, const GretlMatrix &centers, const GretlBundlePtr opts)
+template <typename T>
+GretlBundlePtr GretlDataset::kmeans (const T &varlist, const GretlMatrix &centers, const GretlBundlePtr opts)
 {
     //
     // here we perform kmeans analysis
     //
-    auto X = to_matrix(varlist);
+    auto X = to_matrix<T>(varlist);
     auto res = std::make_shared<GretlBundle>(gretl_kmeans(X->get_ptr(), 0, centers.get_ptr(),
                                                           opts ? opts->get_ptr() : nullptr,
                                                           printer_.prn_ptr(), &err_), false);
@@ -1327,6 +1338,8 @@ GretlBundlePtr GretlDataset::kmeans (const std::vector<int> &varlist, const Gret
 
     return res;
 }
+template GretlBundlePtr GretlDataset::kmeans<std::string>(const std::string&, const GretlMatrix&, const GretlBundlePtr);
+template GretlBundlePtr GretlDataset::kmeans<std::vector<int>>(const std::vector<int>&, const GretlMatrix&, const GretlBundlePtr);
 
 template <typename T>
 py::object GretlDataset::xtab (const T &varlist, const py::kwargs &kwargs)

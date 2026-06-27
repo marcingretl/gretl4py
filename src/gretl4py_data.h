@@ -114,7 +114,8 @@ public:
 
     void to_file (const std::string &filename, const std::string &varlist, const py::kwargs &kwargs);
 
-    GretlMatrixPtr to_matrix (const std::vector<int> &list, int startobs = 0, int endobs = 0, const std::string &missing = "ok");
+    template <typename T>
+    GretlMatrixPtr to_matrix (const T &list, int startobs = 0, int endobs = 0, const std::string &missing = "ok");
 
     // dataset information
     bool is_panel (void) const;
@@ -192,9 +193,11 @@ public:
     template <typename T>
     py::object pca (const T &varlist, const py::kwargs &kwargs);
 
-    GretlBundlePtr kmeans (const std::vector<int> &varlist, int centers, const GretlBundlePtr opts = nullptr);
+    template <typename T>
+    GretlBundlePtr kmeans (const T &varlist, int centers, const GretlBundlePtr opts = nullptr);
 
-    GretlBundlePtr kmeans (const std::vector<int> &varlist, const GretlMatrix &centers, const GretlBundlePtr opts = nullptr);
+    template <typename T>
+    GretlBundlePtr kmeans (const T &varlist, const GretlMatrix &centers, const GretlBundlePtr opts = nullptr);
 
     template <typename T>
     py::object xtab (const T &varlist, const py::kwargs &kwargs);
