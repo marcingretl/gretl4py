@@ -163,8 +163,8 @@ public:
     void test (const std::string &type, const std::string &varlist, const py::kwargs &kwargs);
 
     // transformations
-    template <GretlCmdIndex CI>
-    void transforms (const std::string &varlist, const py::kwargs &kwargs);
+    template <typename T, GretlCmdIndex CI>
+    void transforms (const T &varlist, const py::kwargs &kwargs);
 
     template <typename T, GretlCmdIndex CI>
     void transforms_no_opts (const T &varlist);

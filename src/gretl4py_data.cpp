@@ -881,20 +881,27 @@ void GretlDataset::rename (int series_id, const std::string &newname, const py::
     if (err_) handle_gretl_error(err_);
 }
 
-template <GretlCmdIndex CI>
-void GretlDataset::transforms (const std::string &varlist, const py::kwargs &kwargs)
+template <typename T, GretlCmdIndex CI>
+void GretlDataset::transforms (const T &varlist, const py::kwargs &kwargs)
 {
     //
     // interface to several gretl's commands (CI)
     // which underlying engines live in tranforms.c
     //
     std::nullptr_t fake_dataset = nullptr;
+    gretl_list_ptr var_list{nullptr};
 
     // we unpack kwargs;
     opt_ = unpack_kwargs_command(CI, fake_dataset, kwargs);
 
     // we construct list of variables
-    auto var_list = list_from_formula(varlist, dset, err_);
+    if constexpr (std::is_same_v<T, std::string>) {
+        var_list = list_from_formula(varlist, dset, err_);
+    } else if constexpr (std::is_same_v<T, std::vector<int>>) {
+        var_list = list_from_vector(varlist, dset, err_);
+    } else {
+        static_assert(always_false<T>, "GretlDataset::transforms(): unsupported var_list type");
+    }
 
     // we do the job
     int *var_list_raw_ptr = var_list.release();
@@ -917,10 +924,14 @@ void GretlDataset::transforms (const std::string &varlist, const py::kwargs &kwa
 
     printer_.print();
 }
-template void GretlDataset::transforms<SQUARE>(const std::string&, const py::kwargs&);
-template void GretlDataset::transforms<DUMMIFY>(const std::string&, const py::kwargs&);
-template void GretlDataset::transforms<DISCRETE>(const std::string&, const py::kwargs&);
-template void GretlDataset::transforms<STDIZE>(const std::string&, const py::kwargs&);
+template void GretlDataset::transforms<std::string, SQUARE>(const std::string&, const py::kwargs&);
+template void GretlDataset::transforms<std::string, DUMMIFY>(const std::string&, const py::kwargs&);
+template void GretlDataset::transforms<std::string, DISCRETE>(const std::string&, const py::kwargs&);
+template void GretlDataset::transforms<std::string, STDIZE>(const std::string&, const py::kwargs&);
+template void GretlDataset::transforms<std::vector<int>, SQUARE>(const std::vector<int>&, const py::kwargs&);
+template void GretlDataset::transforms<std::vector<int>, DUMMIFY>(const std::vector<int>&, const py::kwargs&);
+template void GretlDataset::transforms<std::vector<int>, DISCRETE>(const std::vector<int>&, const py::kwargs&);
+template void GretlDataset::transforms<std::vector<int>, STDIZE>(const std::vector<int>&, const py::kwargs&);
 
 template <typename T, GretlCmdIndex CI>
 void GretlDataset::transforms_no_opts (const T &varlist)
