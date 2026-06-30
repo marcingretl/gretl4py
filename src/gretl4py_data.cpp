@@ -896,9 +896,9 @@ void GretlDataset::transforms (const T &varlist, const py::kwargs &kwargs)
 
     // we construct list of variables
     if constexpr (std::is_same_v<T, std::string>) {
-        var_list = list_from_formula(varlist, dset, err_);
-    } else if constexpr (std::is_same_v<T, std::vector<int>>) {
-        var_list = list_from_vector(varlist, dset, err_);
+        var_list = gretllist(varlist);
+    } else if constexpr (std::is_same_v<T, py::list>) {
+        var_list = gretllist(varlist);
     } else {
         static_assert(always_false<T>, "GretlDataset::transforms(): unsupported var_list type");
     }
@@ -928,10 +928,10 @@ template void GretlDataset::transforms<std::string, SQUARE>(const std::string&, 
 template void GretlDataset::transforms<std::string, DUMMIFY>(const std::string&, const py::kwargs&);
 template void GretlDataset::transforms<std::string, DISCRETE>(const std::string&, const py::kwargs&);
 template void GretlDataset::transforms<std::string, STDIZE>(const std::string&, const py::kwargs&);
-template void GretlDataset::transforms<std::vector<int>, SQUARE>(const std::vector<int>&, const py::kwargs&);
-template void GretlDataset::transforms<std::vector<int>, DUMMIFY>(const std::vector<int>&, const py::kwargs&);
-template void GretlDataset::transforms<std::vector<int>, DISCRETE>(const std::vector<int>&, const py::kwargs&);
-template void GretlDataset::transforms<std::vector<int>, STDIZE>(const std::vector<int>&, const py::kwargs&);
+template void GretlDataset::transforms<py::list, SQUARE>(const py::list&, const py::kwargs&);
+template void GretlDataset::transforms<py::list, DUMMIFY>(const py::list&, const py::kwargs&);
+template void GretlDataset::transforms<py::list, DISCRETE>(const py::list&, const py::kwargs&);
+template void GretlDataset::transforms<py::list, STDIZE>(const py::list&, const py::kwargs&);
 
 template <typename T, GretlCmdIndex CI>
 void GretlDataset::transforms_no_opts (const T &varlist)
@@ -945,9 +945,9 @@ void GretlDataset::transforms_no_opts (const T &varlist)
 
     // we construct list of external variables
     if constexpr (std::is_same_v<T, std::string>) {
-        var_list = list_from_formula(varlist, dset, err_);
-    } else if constexpr (std::is_same_v<T, std::vector<int>>) {
-        var_list = list_from_vector(varlist, dset, err_);
+        var_list = gretllist(varlist);
+    } else if constexpr (std::is_same_v<T, py::list>) {
+        var_list = gretllist(varlist);
     } else {
         static_assert(always_false<T>, "GretlDataset::transforms_no_opts(): unsupported var_list type");
     }
@@ -976,11 +976,11 @@ template void GretlDataset::transforms_no_opts<std::string, LDIFF>(const std::st
 template void GretlDataset::transforms_no_opts<std::string, SDIFF>(const std::string&);
 template void GretlDataset::transforms_no_opts<std::string, LOGS>(const std::string&);
 template void GretlDataset::transforms_no_opts<std::string, ORTHDEV>(const std::string&);
-template void GretlDataset::transforms_no_opts<std::vector<int>, DIFF>(const std::vector<int>&);
-template void GretlDataset::transforms_no_opts<std::vector<int>, LDIFF>(const std::vector<int>&);
-template void GretlDataset::transforms_no_opts<std::vector<int>, SDIFF>(const std::vector<int>&);
-template void GretlDataset::transforms_no_opts<std::vector<int>, LOGS>(const std::vector<int>&);
-template void GretlDataset::transforms_no_opts<std::vector<int>, ORTHDEV>(const std::vector<int>&);
+template void GretlDataset::transforms_no_opts<py::list, DIFF>(const py::list&);
+template void GretlDataset::transforms_no_opts<py::list, LDIFF>(const py::list&);
+template void GretlDataset::transforms_no_opts<py::list, SDIFF>(const py::list&);
+template void GretlDataset::transforms_no_opts<py::list, LOGS>(const py::list&);
+template void GretlDataset::transforms_no_opts<py::list, ORTHDEV>(const py::list&);
 
 std::string GretlDataset::repr (void) const
 {
@@ -1168,9 +1168,9 @@ py::object GretlDataset::corr (const T &varlist, const py::kwargs &kwargs)
     // we construct list of variables (if needed)
     if (!varlist.empty()) {
         if constexpr (std::is_same_v<T, std::string>) {
-            var_list = list_from_formula(varlist, dset, err_);
-        } else if constexpr (std::is_same_v<T, std::vector<int>>) {
-            var_list = list_from_vector(varlist, dset, err_);
+            var_list = gretllist(varlist);
+        } else if constexpr (std::is_same_v<T, py::list>) {
+            var_list = gretllist(varlist);
         } else {
             static_assert(always_false<T>, "GretlDataset::corr(): unsupported type");
         }
@@ -1195,7 +1195,7 @@ py::object GretlDataset::corr (const T &varlist, const py::kwargs &kwargs)
     return get_accessor("$result");
 }
 template py::object GretlDataset::corr<std::string>(const std::string&, const py::kwargs&);
-template py::object GretlDataset::corr<std::vector<int>>(const std::vector<int>&, const py::kwargs&);
+template py::object GretlDataset::corr<py::list>(const py::list&, const py::kwargs&);
 
 template <typename T>
 py::object GretlDataset::cov (const T &vars)
@@ -1211,9 +1211,9 @@ py::object GretlDataset::cov (const T &vars)
         var_list.reset(full_var_list(dset, nullptr));
     } else {
         if constexpr (std::is_same_v<T, std::string>) {
-            var_list = list_from_formula(vars, dset, err_);
-        } else if constexpr (std::is_same_v<T, std::vector<int>>) {
-            var_list = list_from_vector(vars, dset, err_);
+            var_list = gretllist(vars);
+        } else if constexpr (std::is_same_v<T, py::list>) {
+            var_list = gretllist(vars);
         } else {
             static_assert(always_false<T>, "GretlDataset::corr(): unsupported type");
         }
@@ -1229,7 +1229,7 @@ py::object GretlDataset::cov (const T &vars)
     return variant_to_pyobject(std::move(*res));
 }
 template py::object GretlDataset::cov<std::string>(const std::string&);
-template py::object GretlDataset::cov<std::vector<int>>(const std::vector<int>&);
+template py::object GretlDataset::cov<py::list>(const py::list&);
 
 py::object GretlDataset::hurst (const std::string &series)
 {
@@ -1266,9 +1266,9 @@ py::object GretlDataset::xcorrgm (const T &vars, int order, const py::kwargs &kw
 
     // we construct list of variables
     if constexpr (std::is_same_v<T, std::string>) {
-        var_list = list_from_formula(vars, dset, err_);
-    } else if constexpr (std::is_same_v<T, std::vector<int>>) {
-        var_list = list_from_vector(vars, dset, err_);
+        var_list = gretllist(vars);
+    } else if constexpr (std::is_same_v<T, py::list>) {
+        var_list = gretllist(vars);
     } else {
         static_assert(always_false<T>, "GretlDataset::xcorrgm(): unsupported type");
     }
@@ -1281,7 +1281,7 @@ py::object GretlDataset::xcorrgm (const T &vars, int order, const py::kwargs &kw
     return get_accessor("$result");
 }
 template py::object GretlDataset::xcorrgm<std::string>(const std::string&, int, const py::kwargs&);
-template py::object GretlDataset::xcorrgm<std::vector<int>>(const std::vector<int>&, int, const py::kwargs&);
+template py::object GretlDataset::xcorrgm<py::list>(const py::list&, int, const py::kwargs&);
 
 template <typename T>
 py::object GretlDataset::pca (const T &varlist, const py::kwargs &kwargs)
@@ -1298,9 +1298,9 @@ py::object GretlDataset::pca (const T &varlist, const py::kwargs &kwargs)
         var_list.reset(full_var_list(dset, nullptr));
     } else {
         if constexpr (std::is_same_v<T, std::string>) {
-            var_list = list_from_formula(varlist, dset, err_);
-        } else if constexpr (std::is_same_v<T, std::vector<int>>) {
-            var_list = list_from_vector(varlist, dset, err_);
+            var_list = gretllist(varlist);
+        } else if constexpr (std::is_same_v<T, py::list>) {
+            var_list = gretllist(varlist);
         } else {
             static_assert(always_false<T>, "GretlDataset::pca(): unsupported type");
         }
@@ -1325,7 +1325,7 @@ py::object GretlDataset::pca (const T &varlist, const py::kwargs &kwargs)
     return get_accessor("$result");
 }
 template py::object GretlDataset::pca<std::string>(const std::string&, const py::kwargs&);
-template py::object GretlDataset::pca<std::vector<int>>(const std::vector<int>&, const py::kwargs&);
+template py::object GretlDataset::pca<py::list>(const py::list&, const py::kwargs&);
 
 template <typename T>
 GretlBundlePtr GretlDataset::kmeans (const T &varlist, int centers, const GretlBundlePtr opts)
@@ -1380,9 +1380,9 @@ py::object GretlDataset::xtab (const T &varlist, const py::kwargs &kwargs)
         var_list.reset(full_var_list(dset, nullptr));
     } else {
         if constexpr (std::is_same_v<T, std::string>) {
-            var_list = list_from_formula(varlist, dset, err_);
-        } else if constexpr (std::is_same_v<T, std::vector<int>>) {
-            var_list = list_from_vector(varlist, dset, err_);
+            var_list = gretllist(varlist);
+        } else if constexpr (std::is_same_v<T, py::list>) {
+            var_list = gretllist(varlist);
         } else {
             static_assert(always_false<T>, "GretlDataset::corr(): unsupported type");
         }
@@ -1396,7 +1396,7 @@ py::object GretlDataset::xtab (const T &varlist, const py::kwargs &kwargs)
     return get_accessor("$result");
 }
 template py::object GretlDataset::xtab<std::string>(const std::string&, const py::kwargs&);
-template py::object GretlDataset::xtab<std::vector<int>>(const std::vector<int>&, const py::kwargs&);
+template py::object GretlDataset::xtab<py::list>(const py::list&, const py::kwargs&);
 
 /*
 void GretlDataset::setobs (const py::kwargs &kwargs)
@@ -1524,9 +1524,9 @@ void GretlDataset::lags (const T &varlist, int order)
 
     // we construct list of external variables
     if constexpr (std::is_same_v<T, std::string>) {
-        var_list = list_from_formula(varlist, dset, err_);
-    } else if constexpr (std::is_same_v<T, std::vector<int>>) {
-        var_list = list_from_vector(varlist, dset, err_);
+        var_list = gretllist(varlist);
+    } else if constexpr (std::is_same_v<T, py::list>) {
+        var_list = gretllist(varlist);
     } else {
         static_assert(always_false<T>, "GretlDataset::lags(): unsupported type");
     }
@@ -1544,7 +1544,7 @@ void GretlDataset::lags (const T &varlist, int order)
     printer_.print();
 }
 template void GretlDataset::lags<std::string>(const std::string&, int);
-template void GretlDataset::lags<std::vector<int>>(const std::vector<int>&, int);
+template void GretlDataset::lags<py::list>(const py::list&, int);
 
 py::list GretlDataset::varnames (void) const
 {

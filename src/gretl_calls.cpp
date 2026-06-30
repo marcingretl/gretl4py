@@ -1129,28 +1129,6 @@ gretl_list_ptr list_from_formula (const std::string &formula, DATASET *dset, int
     return gretl_list_ptr(raw_list);
 }
 
-gretl_list_ptr list_from_vector (const std::vector<int> &list, DATASET *dset, int &err, bool handle_error)
-{
-    //
-    // we build libgretl's list based on provided vector of int-s
-    // note: if handle_error == false, we do not handle error
-    //
-    gretl_list_ptr res{nullptr};
-
-    auto [list_min, list_max] = std::minmax_element(list.begin(), list.end());
-
-    if (*list_min < 0 || *list_max >= dset->v) throw std::invalid_argument("variable number is out of bounds");
-
-    // we do the job
-    res.reset(gretl_list_new(list.size()));
-    for (std::size_t i=0; i<list.size(); ++i) {
-        res.get()[i+1] = list[i];
-    }
-    if (handle_error && err) handle_gretl_error(err);
-
-    return res;
-}
-
 GretlTypesPtr gretl_generate_gretl_object (const char *s, int &err, GretlObjType obj_type, DATASET *dset, void *model)
 {
     //

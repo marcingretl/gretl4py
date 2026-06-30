@@ -217,13 +217,13 @@ void init_gretl4py_dataset_py11 (py::module_ &m)
              py::arg("varlist").none(false), py::kw_only())
         .def("stdize", &GretlDataset::transforms<std::string, STDIZE>,
              py::arg("varlist").none(false), py::kw_only())
-        .def("dummify", &GretlDataset::transforms<std::vector<int>, DUMMIFY>,
+        .def("dummify", &GretlDataset::transforms<py::list, DUMMIFY>,
              py::arg("varlist").none(false), py::kw_only())
-        .def("square", &GretlDataset::transforms<std::vector<int>, SQUARE>,
+        .def("square", &GretlDataset::transforms<py::list, SQUARE>,
              py::arg("varlist").none(false), py::kw_only())
-        .def("discrete", &GretlDataset::transforms<std::vector<int>, DISCRETE>,
+        .def("discrete", &GretlDataset::transforms<py::list, DISCRETE>,
              py::arg("varlist").none(false), py::kw_only())
-        .def("stdize", &GretlDataset::transforms<std::vector<int>, STDIZE>,
+        .def("stdize", &GretlDataset::transforms<py::list, STDIZE>,
              py::arg("varlist").none(false), py::kw_only())
         .def("diff", &GretlDataset::transforms_no_opts<std::string, DIFF>,
              py::arg("varlist").none(false))
@@ -235,19 +235,19 @@ void init_gretl4py_dataset_py11 (py::module_ &m)
              py::arg("varlist").none(false))
         .def("orthdev", &GretlDataset::transforms_no_opts<std::string, ORTHDEV>,
              py::arg("varlist").none(false))
-        .def("diff", &GretlDataset::transforms_no_opts<std::vector<int>, DIFF>,
+        .def("diff", &GretlDataset::transforms_no_opts<py::list, DIFF>,
              py::arg("varlist").none(false))
-        .def("ldiff", &GretlDataset::transforms_no_opts<std::vector<int>, LDIFF>,
+        .def("ldiff", &GretlDataset::transforms_no_opts<py::list, LDIFF>,
              py::arg("varlist").none(false))
-        .def("sdiff", &GretlDataset::transforms_no_opts<std::vector<int>, SDIFF>,
+        .def("sdiff", &GretlDataset::transforms_no_opts<py::list, SDIFF>,
              py::arg("varlist").none(false))
-        .def("logs", &GretlDataset::transforms_no_opts<std::vector<int>, LOGS>,
+        .def("logs", &GretlDataset::transforms_no_opts<py::list, LOGS>,
              py::arg("varlist").none(false))
-        .def("orthdev", &GretlDataset::transforms_no_opts<std::vector<int>, ORTHDEV>,
+        .def("orthdev", &GretlDataset::transforms_no_opts<py::list, ORTHDEV>,
              py::arg("varlist").none(false))
         .def("lags", &GretlDataset::lags<std::string>,
              py::arg("varlist").none(false), py::arg("order").none(true) = 0)
-        .def("lags", &GretlDataset::lags<std::vector<int>>,
+        .def("lags", &GretlDataset::lags<py::list>,
              py::arg("varlist").none(false), py::arg("order").none(true) = 0)
         .def("print", &GretlDataset::print,
              py::arg("varlist").none(true) = "", py::kw_only())
@@ -271,10 +271,10 @@ void init_gretl4py_dataset_py11 (py::module_ &m)
              py::arg("name").none(false))
         .def("corr", &GretlDataset::corr<std::string>,
              py::arg("varlist").none(true) = "", py::kw_only())
-        .def("corr", &GretlDataset::corr<std::vector<int>>,
-             py::arg("varlist").none(true) = std::vector<int>{}, py::kw_only())
+        .def("corr", &GretlDataset::corr<py::list>,
+             py::arg("varlist").none(true) = py::list(), py::kw_only())
         .def("cov", &GretlDataset::cov<std::string>, py::arg("vars").none(true) = "")
-        .def("cov", &GretlDataset::cov<std::vector<int>>, py::arg("vars").none(true) = std::vector<int>{})
+        .def("cov", &GretlDataset::cov<py::list>, py::arg("vars").none(true) = py::list())
         .def("hurst", &GretlDataset::hurst, py::arg("series").none(false))
         .def("xcorrgm",
              [](GretlDataset &self, const std::string &varlist, int order, const py::kwargs &kwargs) -> py::object
@@ -286,12 +286,12 @@ void init_gretl4py_dataset_py11 (py::module_ &m)
              {
                  return self.xcorrgm(series1 + " " + series2, order, kwargs);
              }, py::arg("series1").none(false), py::arg("series2").none(false), py::arg("order").none(true) = 0)
-        .def("xcorrgm", &GretlDataset::xcorrgm<std::vector<int>>,
+        .def("xcorrgm", &GretlDataset::xcorrgm<py::list>,
              py::arg("vars").none(false), py::arg("order").none(true) = 0, py::kw_only())
         .def("pca", &GretlDataset::pca<std::string>,
              py::arg("varlist").none(true) = "", py::kw_only())
-        .def("pca", &GretlDataset::pca<std::vector<int>>,
-             py::arg("varlist").none(true) = std::vector<int>{}, py::kw_only())
+        .def("pca", &GretlDataset::pca<py::list>,
+             py::arg("varlist").none(true) = py::list(), py::kw_only())
         .def("kmeans", py::overload_cast<const std::string&, int, const GretlBundlePtr>(&GretlDataset::kmeans<std::string>),
              py::arg("X").none(false), py::arg("centers").none(false), py::arg("opts").none(true) = nullptr)
         .def("kmeans", py::overload_cast<const py::list&, int, const GretlBundlePtr>(&GretlDataset::kmeans<py::list>),
@@ -302,8 +302,8 @@ void init_gretl4py_dataset_py11 (py::module_ &m)
              py::arg("X").none(false), py::arg("centers").none(false), py::arg("opts").none(true) = nullptr)
         .def("xtab", &GretlDataset::xtab<std::string>,
              py::arg("varlist").none(true) = "", py::kw_only())
-        .def("xtab", &GretlDataset::xtab<std::vector<int>>,
-             py::arg("varlist").none(true) = std::vector<int>{}, py::kw_only())
+        .def("xtab", &GretlDataset::xtab<py::list>,
+             py::arg("varlist").none(true) = py::list(), py::kw_only())
         .def("test",
              [](GretlDataset &self, const std::string &type, const py::kwargs &kwargs)
              {
