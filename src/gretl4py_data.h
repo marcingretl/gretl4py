@@ -159,6 +159,8 @@ public:
 
     py::object get_series (const std::string &series) const;
 
+    gretl_list_ptr gretllist (const std::string &formula, int *err = nullptr);
+
     // tests
     void test (const std::string &type, const std::string &varlist, const py::kwargs &kwargs);
 

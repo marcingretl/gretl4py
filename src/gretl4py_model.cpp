@@ -705,7 +705,7 @@ void GretlModel_NSE_Driver<F, CI>::fit (void)
         regexp_extract_<CI>(formula_, formula_left, formula_right);
         var_list_ = list_from_formula(formula_left, dataset_->dset, err_);
     } else {
-        var_list_ = list_from_formula(formula_, dataset_->dset, err_);
+        var_list_ = dataset_->gretllist(formula_);
     }
 
     // we call F as an estimator

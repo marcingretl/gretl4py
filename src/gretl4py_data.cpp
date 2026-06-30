@@ -1670,9 +1670,35 @@ py::object GretlDataset::get_series (const std::string &series) const
     return variant_to_pyobject(std::move(*res));
 }
 
-DNumPyArrayFC GretlDataset::hpfilt (const std::string &y,
-                                    double hp_lambda, bool trend,
-                                    bool one_sided)
+gretl_list_ptr GretlDataset::gretllist (const std::string &formula, int *err)
+{
+    //
+    // build a libgretl list from a model formula. If 'err' is nullptr,
+    // any libgretl error is handled by handle_gretl_error(); otherwise,
+    // the error code is returned to the caller
+    //
+    gretl_list_ptr res;
+    std::string tmp = formula;
+    if (err) *err = 0;
+
+    // convert a simple R-style formula to a gretl list specification.
+    std::replace(tmp.begin(), tmp.end(), '~', ' ');
+    std::replace(tmp.begin(), tmp.end(), '+', ' ');
+
+    // do the job
+    res.reset(generate_list(tmp.c_str(), dset, 0, &err_));
+    if (err_) {
+        if (err) {
+            *err = err_;
+        } else {
+            handle_gretl_error(err_);
+        }
+    }
+
+    return res;
+}
+
+DNumPyArrayFC GretlDataset::hpfilt (const std::string &y, double hp_lambda, bool trend, bool one_sided)
 {
     //
     // here we perform HP filtering
