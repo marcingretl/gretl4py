@@ -1109,26 +1109,6 @@ void unpack_kwargs_test (gretlopt &opt, const std::string &type,
     }
 }
 
-gretl_list_ptr list_from_formula (const std::string &formula, DATASET *dset, int &err, bool handle_error)
-{
-    //
-    // we build libgretl's list based on provided formula
-    // note: if handle_error == false, we do not handle error
-    //
-    std::string tmp = formula;
-
-    // convert from a simple R-style formula to a gretl list
-    std::replace(tmp.begin(), tmp.end(), '~', ' ');
-    std::replace(tmp.begin(), tmp.end(), '+', ' ');
-
-    // we do the job
-    int *raw_list = generate_list(tmp.c_str(), dset, 0, &err);
-
-    if (handle_error && err) handle_gretl_error(err);
-
-    return gretl_list_ptr(raw_list);
-}
-
 GretlTypesPtr gretl_generate_gretl_object (const char *s, int &err, GretlObjType obj_type, DATASET *dset, void *model)
 {
     //

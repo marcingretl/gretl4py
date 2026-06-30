@@ -471,8 +471,7 @@ void GretlModel_NSE::test (const std::string &type, const py::kwargs &kwargs)
     }
 }
 
-void GretlModel_NSE::test (const std::string &type, const std::string &varlist,
-                           const py::kwargs &kwargs)
+void GretlModel_NSE::test (const std::string &type, const std::string &varlist, const py::kwargs &kwargs)
 {
     //
     // this method performs test which do take a variables list
@@ -482,7 +481,7 @@ void GretlModel_NSE::test (const std::string &type, const std::string &varlist,
     gretl_list_ptr ex_var{nullptr};
 
     // we construct list of external variables
-    if (type != "chow") ex_var = list_from_formula(varlist, dataset_->dset, err_);
+    if (type != "chow") ex_var = dataset_->gretllist(varlist);
 
     // we set up options
     unpack_kwargs_test(opt_, type, kwargs, order);
@@ -626,7 +625,7 @@ GretlModel_NSE_arima::GretlModel_NSE_arima (const std::string &y, const py::tupl
 
     // we add exogenous variables if present
     if (kwargs.contains("xlist") && !kwargs["xlist"].is_none()) {
-        xlist_ = list_from_formula(kwargs["xlist"].cast<std::string>(), this->dataset_->dset, err_);
+        xlist_ = this->dataset_->gretllist(kwargs["xlist"].cast<std::string>());
         exogenous_ = xlist_.get()[0];
     }
 }
@@ -703,7 +702,7 @@ void GretlModel_NSE_Driver<F, CI>::fit (void)
         std::string formula_left;
 
         regexp_extract_<CI>(formula_, formula_left, formula_right);
-        var_list_ = list_from_formula(formula_left, dataset_->dset, err_);
+        var_list_ = dataset_->gretllist(formula_left);
     } else {
         var_list_ = dataset_->gretllist(formula_);
     }
@@ -780,7 +779,7 @@ void GretlModel_NSE_Driver_quantreg::fit (void)
     check_if_estimated_();
 
     // we define list of variables
-    var_list_ = list_from_formula(formula_, dataset_->dset, err_);
+    var_list_ = dataset_->gretllist(formula_);
 
     // we do the job
     *model_ = quantreg_driver(tau_.c_str(), var_list_.get(), dataset_->dset, opt_, printer_.prn_ptr());
@@ -820,7 +819,7 @@ void GretlModel_NSE_Driver_dpanel::fit (void)
 
     // we define list of variables
     regexp_extract_<DPANEL>(formula_, formula_left, formula_right);
-    var_list_ = list_from_formula(formula_left, dataset_->dset, err_);
+    var_list_ = dataset_->gretllist(formula_left);
 
     // we setup dpanel_list: lags + var_list
     dpanel_list.reset(gretl_list_new(var_list_.get()[0] + 2));
@@ -864,7 +863,7 @@ void GretlModel_NSE_Driver_tobit::fit (void)
     check_if_estimated_();
 
     // we define list of variables
-    var_list_ = list_from_formula(formula_, dataset_->dset, err_);
+    var_list_ = dataset_->gretllist(formula_);
 
     // we do the job
     *model_ = tobit_model(var_list_.get(), llimit_, rlimit_, dataset_->dset, opt_, printer_.prn_ptr());
@@ -1112,7 +1111,7 @@ void GretlModel_VAR::do_var_vecm_fit_ (const int coint_rank)
     check_if_estimated_();
 
     // be build variables list
-    var_list_ = list_from_formula(vars_, dataset_->dset, err_);
+    var_list_ = dataset_->gretllist(vars_);
 
     // we estimate a model
     if constexpr (CI == VAR) {
@@ -1348,7 +1347,7 @@ void GretlModel_NME::fit (void)
 
     // we define equations
     for (const auto &el : equations_) {
-        var_list_ = list_from_formula(el, dataset_->dset, err_);
+        var_list_ = dataset_->gretllist(el);
         err_ = equation_system_append(model_, var_list_.get());
         if (err_) handle_gretl_error(err_);
     }
