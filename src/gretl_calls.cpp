@@ -335,7 +335,7 @@ void do_gretl_summary (const std::string &varlist, const py::kwargs &kwargs)
     if (!dataset) handle_gretl_error(E_NODATA);
 
     // be build gretl_list
-    if (!varlist.empty()) varlist_ptr = list_from_formula(varlist, dataset->dset, err);
+    if (!varlist.empty()) varlist_ptr = dataset->gretllist(varlist);
 
     // this code was taken from 'interact.c'
     err = incompatible_options(opt, static_cast<gretlopt>(OPT_B | OPT_W));
@@ -344,7 +344,7 @@ void do_gretl_summary (const std::string &varlist, const py::kwargs &kwargs)
         err = summary_statistics_by(varlist_ptr.get(), dataset->dset, opt, global_printer.prn_ptr());
     } else if (opt & OPT_X) {
         err = matrix_command_driver(SUMMARY, varlist_ptr.get(), kwargs["matrix"].cast<std::string>().c_str(),
-                                      dataset->dset, opt, global_printer.prn_ptr());
+                                    dataset->dset, opt, global_printer.prn_ptr());
     } else {
         err = list_summary_driver(varlist_ptr.get(), dataset->dset, opt, global_printer.prn_ptr());
     }
@@ -374,7 +374,7 @@ void do_gretl_print (const std::string &varlist, const py::kwargs &kwargs)
             // "print " i.e. without options given
             varlist_ptr.reset(full_var_list(dataset->dset, nullptr));
         } else {
-            varlist_ptr = list_from_formula(varlist, dataset->dset, err);
+            varlist_ptr = dataset->gretllist(varlist);
         }
 
         return varlist_ptr;
@@ -839,7 +839,7 @@ void do_gretl_delete_variables (const std::string &varname, const py::kwargs &kw
     if (varname.empty() && !(opt & OPT_T)) handle_gretl_error(E_ARGS);
 
     // we look for variables in GD _only_ if there is no uservar
-    if (!varname.empty() && get_user_var_by_name(varname.c_str()) == nullptr && dataset) var_list = list_from_formula(varname, dataset->dset, err);
+    if (!varname.empty() && get_user_var_by_name(varname.c_str()) == nullptr && dataset) var_list = dataset->gretllist(varname);
 
     // we do the job
     if (opt & OPT_T) {
