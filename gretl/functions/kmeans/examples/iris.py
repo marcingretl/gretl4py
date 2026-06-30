@@ -5,7 +5,7 @@ iris = gretl.get_data("iris")
 #X = iris.to_matrix([1,2,3,4])
 #b = gretl.kmeans(X, 3, gretl.Bundle(init="hw", verbosity=2))
 b = iris.kmeans([1,2,3,4], 3, gretl.Bundle(init="hw", verbosity=2))
-iris.add_series(b['clustid'], "sphat")
+iris.add_series(b['cluster_id'], "sphat")
 iris.xtab("species sphat")
 
 # experiment using species as initial clusters

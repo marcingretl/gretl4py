@@ -766,8 +766,8 @@ GretlMatrixPtr GretlDataset::to_matrix (const T &list, int startobs, int endobs,
     } else {
         if constexpr (std::is_same_v<T, std::string>) {
             gretl_list = list_from_formula(list, dset, err_);
-        } else if constexpr (std::is_same_v<T, std::vector<int>>) {
-            gretl_list = list_from_vector(list, dset, err_);
+        } else if constexpr (std::is_same_v<T, py::list>) {
+            gretl_list = gretllist(list);
         } else {
             static_assert(always_false<T>, "GretlDataset::to_matrix(): unsupported type");
         }
@@ -1343,7 +1343,7 @@ GretlBundlePtr GretlDataset::kmeans (const T &varlist, int centers, const GretlB
     return res;
 }
 template GretlBundlePtr GretlDataset::kmeans<std::string>(const std::string&, int, const GretlBundlePtr);
-template GretlBundlePtr GretlDataset::kmeans<std::vector<int>>(const std::vector<int>&, int, const GretlBundlePtr);
+template GretlBundlePtr GretlDataset::kmeans<py::list>(const py::list&, int, const GretlBundlePtr);
 
 template <typename T>
 GretlBundlePtr GretlDataset::kmeans (const T &varlist, const GretlMatrix &centers, const GretlBundlePtr opts)
@@ -1361,7 +1361,7 @@ GretlBundlePtr GretlDataset::kmeans (const T &varlist, const GretlMatrix &center
     return res;
 }
 template GretlBundlePtr GretlDataset::kmeans<std::string>(const std::string&, const GretlMatrix&, const GretlBundlePtr);
-template GretlBundlePtr GretlDataset::kmeans<std::vector<int>>(const std::vector<int>&, const GretlMatrix&, const GretlBundlePtr);
+template GretlBundlePtr GretlDataset::kmeans<py::list>(const py::list&, const GretlMatrix&, const GretlBundlePtr);
 
 template <typename T>
 py::object GretlDataset::xtab (const T &varlist, const py::kwargs &kwargs)
@@ -1673,7 +1673,7 @@ py::object GretlDataset::get_series (const std::string &series) const
 gretl_list_ptr GretlDataset::gretllist (const std::string &formula, int *err)
 {
     //
-    // build a libgretl list from a model formula. If 'err' is nullptr,
+    // build a libgretl list from a model formula; if 'err' is nullptr,
     // any libgretl error is handled by handle_gretl_error(); otherwise,
     // the error code is returned to the caller
     //
@@ -1687,6 +1687,47 @@ gretl_list_ptr GretlDataset::gretllist (const std::string &formula, int *err)
 
     // do the job
     res.reset(generate_list(tmp.c_str(), dset, 0, &err_));
+    if (err_) {
+        if (err) {
+            *err = err_;
+        } else {
+            handle_gretl_error(err_);
+        }
+    }
+
+    return res;
+}
+
+gretl_list_ptr GretlDataset::gretllist (const py::list &list, int *err)
+{
+    //
+    // build a libgretl list from a Python list; if 'err' is nullptr,
+    // any libgretl error is handled by handle_gretl_error(); otherwise,
+    // the error code is returned to the caller.
+    //
+    gretl_list_ptr res;
+    std::string formula;
+    if (err) *err = 0;
+
+    // for non-empty list, we manufacture a string to be used by generate_list()
+    if (py::len(list) > 0) {
+        auto vars_names = varnames();
+
+        for (const auto &el : list) {
+            if (is_pystr(el)) {
+                formula += el.cast<std::string>();
+            } else if (is_pyint(el)) {
+                formula += vars_names[el].cast<std::string>();
+            } else {
+                throw std::invalid_argument("list elements must be integers or strings");
+            }
+            formula += " ";
+        }
+        gretl4py_trim(formula);
+    }
+
+    // do the job
+    res.reset(generate_list(formula.c_str(), dset, 0, &err_));
     if (err_) {
         if (err) {
             *err = err_;

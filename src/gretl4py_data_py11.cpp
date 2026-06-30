@@ -181,7 +181,7 @@ void init_gretl4py_dataset_py11 (py::module_ &m)
         .def("to_matrix", &GretlDataset::to_matrix<std::string>,
             py::arg("list").none(true) = py::list(), py::arg("startobs").none(true) = 0,
             py::arg("endobs").none(true) = 0, py::arg("missing").none(true) = "ok")
-        .def("to_matrix", &GretlDataset::to_matrix<std::vector<int>>,
+        .def("to_matrix", &GretlDataset::to_matrix<py::list>,
              py::arg("list").none(true) = py::list(), py::arg("startobs").none(true) = 0,
              py::arg("endobs").none(true) = 0, py::arg("missing").none(true) = "ok")
         .def("add_series", py::overload_cast<const py::array&, const std::string&>(&GretlDataset::add_series),
@@ -294,11 +294,11 @@ void init_gretl4py_dataset_py11 (py::module_ &m)
              py::arg("varlist").none(true) = std::vector<int>{}, py::kw_only())
         .def("kmeans", py::overload_cast<const std::string&, int, const GretlBundlePtr>(&GretlDataset::kmeans<std::string>),
              py::arg("X").none(false), py::arg("centers").none(false), py::arg("opts").none(true) = nullptr)
-        .def("kmeans", py::overload_cast<const std::vector<int>&, int, const GretlBundlePtr>(&GretlDataset::kmeans<std::vector<int>>),
+        .def("kmeans", py::overload_cast<const py::list&, int, const GretlBundlePtr>(&GretlDataset::kmeans<py::list>),
              py::arg("X").none(false), py::arg("centers").none(false), py::arg("opts").none(true) = nullptr)
         .def("kmeans", py::overload_cast<const std::string&, const GretlMatrix&, const GretlBundlePtr>(&GretlDataset::kmeans<std::string>),
              py::arg("X").none(false), py::arg("centers").none(false), py::arg("opts").none(true) = nullptr)
-        .def("kmeans", py::overload_cast<const std::vector<int>&, const GretlMatrix&, const GretlBundlePtr>(&GretlDataset::kmeans<std::vector<int>>),
+        .def("kmeans", py::overload_cast<const py::list&, const GretlMatrix&, const GretlBundlePtr>(&GretlDataset::kmeans<py::list>),
              py::arg("X").none(false), py::arg("centers").none(false), py::arg("opts").none(true) = nullptr)
         .def("xtab", &GretlDataset::xtab<std::string>,
              py::arg("varlist").none(true) = "", py::kw_only())
@@ -333,7 +333,7 @@ void init_gretl4py_dataset_py11 (py::module_ &m)
                                      } else if (is_pyint(el)) {
                                          vars_val += varnames[el].cast<std::string>();
                                      } else {
-                                         throw std::invalid_argument("list element must either integer or string");
+                                         throw std::invalid_argument("list elements must be integers or strings");
                                      }
                                      vars_val += " ";
                                  }

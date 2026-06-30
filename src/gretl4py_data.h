@@ -161,6 +161,8 @@ public:
 
     gretl_list_ptr gretllist (const std::string &formula, int *err = nullptr);
 
+    gretl_list_ptr gretllist (const py::list &list, int *err = nullptr);
+
     // tests
     void test (const std::string &type, const std::string &varlist, const py::kwargs &kwargs);
 
