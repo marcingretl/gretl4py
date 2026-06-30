@@ -57,26 +57,22 @@ void do_gretl_summary (const std::string &varlist, const py::kwargs &kwargs);
 template <typename T>
 void do_gretl_print (const std::string &varlist, const py::kwargs &kwargs);
 
-double do_gretl_get_pvalue (const std::string &dist, double value,
-                            const py::array_t<double> &params = py::array());
+double do_gretl_get_pvalue (const std::string &dist, double value, const py::array_t<double> &params = py::array());
 
 void do_gretl_varlist (const py::kwargs &kwargs);
 
 py::object do_gretl_include (const std::string &filename);
 
-void do_gretl_pkg (const std::string &action, const std::string &pkgname,
-                   const py::kwargs &kwargs);
+void do_gretl_pkg (const std::string &action, const std::string &pkgname, const py::kwargs &kwargs);
 
 template <bool RUN>
 void gretl_hansl_execute (const std::string &script);
 
 template <GretlFunIndex FI>
-double gretl_get_pvalue_critval_pdf_cdf (const std::string &dist, double value,
-                                         const py::object &param = py::none());
+double gretl_get_pvalue_critval_pdf_cdf (const std::string &dist, double value, const py::object &param = py::none());
 
 template <GretlFunIndex FI, typename T>
-py::array_t<double> matrix_functions_wrapper (const std::string &dist, const T &src,
-                                              const py::object &param = py::none());
+py::array_t<double> matrix_functions_wrapper (const std::string &dist, const T &src, const py::object &param = py::none());
 
 template <GretlFunIndex FI>
 py::object matrix_cov_corr (const py::array &X, int dfcorr = 1);
@@ -88,9 +84,7 @@ void genr (const std::string &name, const T &value);
 
 [[noreturn]] void handle_gretl_error (int err, const std::string &ext_msg = "", const std::string &ext_msg_desc = "");
 
-void gretl_valid_long_opt (gretlopt &opt, GretlCmdIndex ci,
-                           const std::string &key, const py::handle &val,
-                           const char *ext_val = nullptr);
+void gretl_valid_long_opt (gretlopt &opt, GretlCmdIndex ci, const std::string &key, const py::handle &val, const char *ext_val = nullptr);
 
 template <typename T>
 gretlopt unpack_kwargs_command (GretlCmdIndex ci, T &dataset, const py::kwargs &kwargs);
@@ -99,12 +93,10 @@ void unpack_kwargs_test (gretlopt &opt, const std::string &type, const py::kwarg
 
 gretl_list_ptr list_from_formula (const std::string &formula, DATASET *dset, int &err, bool handle_error = true);
 
-GretlTypesPtr gretl_generate_gretl_object (const char *s, int &err, GretlObjType obj_type = GRETL_OBJ_INFO,
-                                           DATASET *dset = nullptr, void *model = nullptr);
+GretlTypesPtr gretl_generate_gretl_object (const char *s, int &err, GretlObjType obj_type = GRETL_OBJ_INFO, DATASET *dset = nullptr, void *model = nullptr);
 
 template <GretlType GR_TYPE>
-void gretl_generate (const std::string &formula, GretlDatasetPtr dataset = nullptr,
-                     const std::string &name = {});
+void gretl_generate (const std::string &formula, GretlDatasetPtr dataset = nullptr, const std::string &name = {});
 
 void do_gretl_delete_variables (const std::string &varname, const py::kwargs &kwargs);
 
