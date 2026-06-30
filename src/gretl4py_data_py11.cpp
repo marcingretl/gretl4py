@@ -335,7 +335,24 @@ void init_gretl4py_dataset_py11 (py::module_ &m)
                      if (key == "y") {
                          y_val = std::string(py::str(item.second));
                      } else if (key == "varlist") {
-                         vars_val = std::string(py::str(item.second));
+                         if (is_pystr(item.second)) {
+                             vars_val = item.second.cast<std::string>();
+                         } else if (is_pylist(item.second)) {
+                             auto list = item.second.cast<std::vector<int>>();
+                             auto varnames = self.varnames();
+                             int n = list.size();
+
+                             if (n == 0) {
+                                 vars_val = "";
+                             } else {
+                                 for (int i=0; i<n; ++i) {
+                                     vars_val += varnames[list[i]].cast<std::string>() + " ";
+                                 }
+                                 gretl4py_trim(vars_val);
+                             }
+                         } else {
+                            throw std::invalid_argument("varlist: unsupported type");
+                         }
                      } else if (key == "order" && type == "levinlin" && is_pynumarray(item.second)) {
                          // order was passed as matrix: we cannot pass it to method as order (which is <int>)
                          clean_kwargs[py::cast("order_m")] = item.second;
