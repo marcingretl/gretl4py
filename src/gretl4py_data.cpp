@@ -735,7 +735,7 @@ void GretlDataset::to_file (const std::string &filename, const std::string &varl
     std::nullptr_t fake_dataset = nullptr;
 
     // we handle varlist
-    if (!varlist.empty()) var_list = list_from_formula(varlist, dset, err_);
+    if (!varlist.empty()) var_list = gretllist(varlist);
 
     // we unpack kwargs;
     opt_ = unpack_kwargs_command(STORE, fake_dataset, kwargs);
@@ -764,9 +764,7 @@ GretlMatrixPtr GretlDataset::to_matrix (const T &list, int startobs, int endobs,
     if (list.empty()) {
         gretl_list.reset(full_var_list(dset, nullptr));
     } else {
-        if constexpr (std::is_same_v<T, std::string>) {
-            gretl_list = list_from_formula(list, dset, err_);
-        } else if constexpr (std::is_same_v<T, py::list>) {
+        if constexpr (is_gretllist_arg_v<T>) {
             gretl_list = gretllist(list);
         } else {
             static_assert(always_false<T>, "GretlDataset::to_matrix(): unsupported type");
@@ -1052,7 +1050,7 @@ void GretlDataset::smpl (const std::string &startobs, const std::string &endobs,
     if (kwargs_copy.contains("varlist")) {
         get_object_from_dict<std::string>(kwargs_copy, "varlist", vars);
         kwargs_copy.attr("pop")("varlist");
-        var_list = list_from_formula(vars, dset, err_);
+        var_list = gretllist(vars);
     }
 
     // we unpack kwargs;
@@ -1131,7 +1129,7 @@ GretlDatasetPtr GretlDataset::getitem_impl (const py::list &slice)
         if (i + 1 < slice.size()) oss << " ";
     }
     slice_str = oss.str();
-    gretl_list_ptr slice_list = list_from_formula(slice_str, dset, err_);
+    gretl_list_ptr slice_list = gretllist(slice_str);
 
     // we construct list of variables to drop
     gretl_list_ptr full_list(full_var_list(dset, nullptr));
@@ -1235,7 +1233,7 @@ py::object GretlDataset::hurst (const std::string &series)
     gretl_valid_long_opt(opt_, HURST, "plot", py::handle(), "none");
 
     // we do the job
-    var_list = list_from_formula(series, dset, err_);
+    var_list = gretllist(series);
     err_ = hurstplot(var_list.get(), dset, opt_, printer_.prn_ptr());
     if (err_) handle_gretl_error(err_);
     printer_.print();
@@ -1565,7 +1563,7 @@ void GretlDataset::test (const std::string &type, const std::string &varlist, co
     gretl_list_ptr ex_var{nullptr};
 
     // we construct list of external variables
-    ex_var = list_from_formula(varlist, dset, err_);
+    ex_var = gretllist(varlist);
 
     // we set up options
     unpack_kwargs_test(opt_, type, kwargs, order);
