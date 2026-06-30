@@ -31,6 +31,9 @@ extern "C" {
 
 namespace py = pybind11;
 
+template<typename T>
+inline constexpr bool is_gretllist_arg_v = std::is_same_v<T, std::string> || std::is_same_v<T, py::list>;
+
 //////////////////////////////////////////////////
 // functions
 //////////////////////////////////////////////////

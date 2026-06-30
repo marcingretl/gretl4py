@@ -895,9 +895,7 @@ void GretlDataset::transforms (const T &varlist, const py::kwargs &kwargs)
     opt_ = unpack_kwargs_command(CI, fake_dataset, kwargs);
 
     // we construct list of variables
-    if constexpr (std::is_same_v<T, std::string>) {
-        var_list = gretllist(varlist);
-    } else if constexpr (std::is_same_v<T, py::list>) {
+    if constexpr (is_gretllist_arg_v<T>) {
         var_list = gretllist(varlist);
     } else {
         static_assert(always_false<T>, "GretlDataset::transforms(): unsupported var_list type");
@@ -944,9 +942,7 @@ void GretlDataset::transforms_no_opts (const T &varlist)
     gretl_list_ptr var_list{nullptr};
 
     // we construct list of external variables
-    if constexpr (std::is_same_v<T, std::string>) {
-        var_list = gretllist(varlist);
-    } else if constexpr (std::is_same_v<T, py::list>) {
+    if constexpr (is_gretllist_arg_v<T>) {
         var_list = gretllist(varlist);
     } else {
         static_assert(always_false<T>, "GretlDataset::transforms_no_opts(): unsupported var_list type");
@@ -1167,9 +1163,7 @@ py::object GretlDataset::corr (const T &varlist, const py::kwargs &kwargs)
 
     // we construct list of variables (if needed)
     if (!varlist.empty()) {
-        if constexpr (std::is_same_v<T, std::string>) {
-            var_list = gretllist(varlist);
-        } else if constexpr (std::is_same_v<T, py::list>) {
+        if constexpr (is_gretllist_arg_v<T>) {
             var_list = gretllist(varlist);
         } else {
             static_assert(always_false<T>, "GretlDataset::corr(): unsupported type");
@@ -1210,9 +1204,7 @@ py::object GretlDataset::cov (const T &vars)
     if (vars.empty()) {
         var_list.reset(full_var_list(dset, nullptr));
     } else {
-        if constexpr (std::is_same_v<T, std::string>) {
-            var_list = gretllist(vars);
-        } else if constexpr (std::is_same_v<T, py::list>) {
+        if constexpr (is_gretllist_arg_v<T>) {
             var_list = gretllist(vars);
         } else {
             static_assert(always_false<T>, "GretlDataset::corr(): unsupported type");
@@ -1265,9 +1257,7 @@ py::object GretlDataset::xcorrgm (const T &vars, int order, const py::kwargs &kw
     opt_ = unpack_kwargs_command(XCORRGM, fake_dataset, kwargs);
 
     // we construct list of variables
-    if constexpr (std::is_same_v<T, std::string>) {
-        var_list = gretllist(vars);
-    } else if constexpr (std::is_same_v<T, py::list>) {
+    if constexpr (is_gretllist_arg_v<T>) {
         var_list = gretllist(vars);
     } else {
         static_assert(always_false<T>, "GretlDataset::xcorrgm(): unsupported type");
@@ -1297,9 +1287,7 @@ py::object GretlDataset::pca (const T &varlist, const py::kwargs &kwargs)
     if (varlist.empty()) {
         var_list.reset(full_var_list(dset, nullptr));
     } else {
-        if constexpr (std::is_same_v<T, std::string>) {
-            var_list = gretllist(varlist);
-        } else if constexpr (std::is_same_v<T, py::list>) {
+        if constexpr (is_gretllist_arg_v<T>) {
             var_list = gretllist(varlist);
         } else {
             static_assert(always_false<T>, "GretlDataset::pca(): unsupported type");
@@ -1379,9 +1367,7 @@ py::object GretlDataset::xtab (const T &varlist, const py::kwargs &kwargs)
     if (varlist.empty()) {
         var_list.reset(full_var_list(dset, nullptr));
     } else {
-        if constexpr (std::is_same_v<T, std::string>) {
-            var_list = gretllist(varlist);
-        } else if constexpr (std::is_same_v<T, py::list>) {
+        if constexpr (is_gretllist_arg_v<T>) {
             var_list = gretllist(varlist);
         } else {
             static_assert(always_false<T>, "GretlDataset::corr(): unsupported type");
@@ -1523,9 +1509,7 @@ void GretlDataset::lags (const T &varlist, int order)
     gretl_list_ptr var_list{nullptr};
 
     // we construct list of external variables
-    if constexpr (std::is_same_v<T, std::string>) {
-        var_list = gretllist(varlist);
-    } else if constexpr (std::is_same_v<T, py::list>) {
+    if constexpr (is_gretllist_arg_v<T>) {
         var_list = gretllist(varlist);
     } else {
         static_assert(always_false<T>, "GretlDataset::lags(): unsupported type");
