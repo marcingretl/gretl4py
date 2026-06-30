@@ -338,15 +338,21 @@ void init_gretl4py_dataset_py11 (py::module_ &m)
                          if (is_pystr(item.second)) {
                              vars_val = item.second.cast<std::string>();
                          } else if (is_pylist(item.second)) {
-                             auto list = item.second.cast<std::vector<int>>();
+                             auto list = item.second.cast<py::list>();
                              auto varnames = self.varnames();
-                             int n = list.size();
 
-                             if (n == 0) {
+                             if (py::len(list) == 0) {
                                  vars_val = "";
                              } else {
-                                 for (int i=0; i<n; ++i) {
-                                     vars_val += varnames[list[i]].cast<std::string>() + " ";
+                                 for (const auto &el : list) {
+                                     if (is_pystr(el)) {
+                                         vars_val += el.cast<std::string>();
+                                     } else if (is_pyint(el)) {
+                                         vars_val += varnames[el].cast<std::string>();
+                                     } else {
+                                         throw std::invalid_argument("list element must either integer or string");
+                                     }
+                                     vars_val += " ";
                                  }
                                  gretl4py_trim(vars_val);
                              }
