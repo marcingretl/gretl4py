@@ -2214,12 +2214,13 @@ gretl_matrix_ptr GretlMatrix::exec_slice_ (const std::string &slice_str) const
     const std::string tmp = "m_gretlpy__";
     std::string expr = tmp + "[" + slice_str + "]";
     gretl_matrix_ptr res{nullptr};
+    int err = 0;
 
     err_ = private_matrix_add_as_shell(m_, tmp.c_str());
     if (err_) handle_gretl_error(err_);
-    res.reset(generate_matrix(expr.c_str(), nullptr, &err_));
-    if (err_) handle_gretl_error(err_);
+    res.reset(generate_matrix(expr.c_str(), nullptr, &err));
     err_ = user_var_delete_by_name(tmp.c_str(), nullptr);
+    if (err) handle_gretl_error(err);
     if (err_) handle_gretl_error(err_);
 
     return res;
