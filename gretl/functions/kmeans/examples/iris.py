@@ -2,16 +2,15 @@ import gretl
 km = gretl.include("kmeans")
 iris = gretl.get_data("iris")
 
-#X = iris.to_matrix([1,2,3,4])
-#b = gretl.kmeans(X, 3, gretl.Bundle(init="hw", verbosity=2))
 b = iris.kmeans([1,2,3,4], 3, gretl.Bundle(init="hw", verbosity=2))
 iris.add_series(b['cluster_id'], "sphat")
 iris.xtab("species sphat")
 
 # experiment using species as initial clusters
-#printf "\n"
-#matrix C0 = zeros(3, 4)
-#C0[1,] = meanc(X[1:50,])
-#C0[2,] = meanc(X[50:100,])
-#C0[3,] = meanc(X[51:150,])
-#bundle b = kmeans(X, C0, _(verbosity=2))
+print(f"\n")
+X = iris.to_matrix([1,2,3,4])
+C0 = gretl.Matrix(3, 4)
+C0.numpy_view[0, :] = X.numpy_view[0:50, :].mean(axis=0)
+C0.numpy_view[1, :] = X.numpy_view[49:100, :].mean(axis=0)
+C0.numpy_view[2, :] = X.numpy_view[50:150, :].mean(axis=0)
+b = gretl.kmeans(X, C0, gretl.Bundle(verbosity=2))
