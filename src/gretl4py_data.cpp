@@ -790,6 +790,8 @@ GretlMatrixPtr GretlDataset::to_matrix (const T &list, int startobs, int endobs,
 
     return res;
 }
+template GretlMatrixPtr GretlDataset::to_matrix<std::string>(const std::string &list, int startobs, int endobs, const std::string &missing);
+template GretlMatrixPtr GretlDataset::to_matrix<py::list>(const py::list &list, int startobs, int endobs, const std::string &missing);
 
 char *GretlDataset::add_series (gretl_double_ptr data, const std::string &name,
                                 int n, gretl_gchar_ptr label)
@@ -1319,9 +1321,9 @@ GretlBundlePtr GretlDataset::kmeans (const T &varlist, int centers, const GretlB
     //
     // here we perform kmeans analysis
     //
-    auto X = to_matrix<T>(varlist);
-    auto res = std::make_shared<GretlBundle>(gretl_kmeans(X->get_ptr(), centers, nullptr,
-                                                          opts ? opts->get_ptr() : nullptr,
+    gretl_list_ptr list(gretllist(varlist));
+    auto res = std::make_shared<GretlBundle>(gretl_kmeans(nullptr, list.get(), centers, nullptr,
+                                                          opts ? opts->get_ptr() : nullptr, dset,
                                                           printer_.prn_ptr(), &err_), false);
     if (err_) handle_gretl_error(err_);
     printer_.print();
@@ -1337,9 +1339,9 @@ GretlBundlePtr GretlDataset::kmeans (const T &varlist, const GretlMatrix &center
     //
     // here we perform kmeans analysis
     //
-    auto X = to_matrix<T>(varlist);
-    auto res = std::make_shared<GretlBundle>(gretl_kmeans(X->get_ptr(), 0, centers.get_ptr(),
-                                                          opts ? opts->get_ptr() : nullptr,
+    gretl_list_ptr list(gretllist(varlist));
+    auto res = std::make_shared<GretlBundle>(gretl_kmeans(nullptr, list.get(), 0, centers.get_ptr(),
+                                                          opts ? opts->get_ptr() : nullptr, dset,
                                                           printer_.prn_ptr(), &err_), false);
     if (err_) handle_gretl_error(err_);
     printer_.print();
@@ -2204,7 +2206,7 @@ void GretlMatrix::check_bounds_ (int i, int j) const
         handle_gretl_error(E_INVARG, "[i,j]", "[" + std::to_string(i) + "," + std::to_string(j) + "]");
 }
 
-gretl_matrix_ptr GretlMatrix::exec_slice_ (const std::string &slice_str)
+gretl_matrix_ptr GretlMatrix::exec_slice_ (const std::string &slice_str) const
 {
     //
     // here we execute libgretl apparatus to get sliced matrix
@@ -2223,7 +2225,7 @@ gretl_matrix_ptr GretlMatrix::exec_slice_ (const std::string &slice_str)
     return res;
 }
 
-std::string GretlMatrix::render_slice_ (const py::tuple &slice)
+std::string GretlMatrix::render_slice_ (const py::tuple &slice) const
 {
     std::string res;
 
@@ -2244,12 +2246,12 @@ std::string GretlMatrix::render_slice_ (const py::tuple &slice)
     return gretl4py_trim(res);
 }
 
-std::string GretlMatrix::render_slice_ (const py::slice &slice)
+std::string GretlMatrix::render_slice_ (const py::slice &slice) const
 {
     return python_slice_to_gretl_slice(slice).slice_str;
 }
 
-std::string GretlMatrix::render_slice_ (const std::string &slice)
+std::string GretlMatrix::render_slice_ (const std::string &slice) const
 {
     return python_slice_to_gretl_slice(slice).slice_str;
 }
@@ -2399,7 +2401,7 @@ py::object GretlMatrix::get_element (int i, int j) const
     }
 }
 
-GretlMatrixPtr GretlMatrix::get_slice (const py::tuple &slice)
+GretlMatrixPtr GretlMatrix::get_slice (const py::tuple &slice) const
 {
     auto slice_str = render_slice_(slice);
     auto res = exec_slice_(slice_str);
@@ -2407,7 +2409,7 @@ GretlMatrixPtr GretlMatrix::get_slice (const py::tuple &slice)
     return std::make_shared<GretlMatrix>(res.release());
 }
 
-GretlMatrixPtr GretlMatrix::get_slice (const py::slice &slice)
+GretlMatrixPtr GretlMatrix::get_slice (const py::slice &slice) const
 {
     auto slice_str = render_slice_(slice);
     auto res = exec_slice_(slice_str);
@@ -2415,7 +2417,7 @@ GretlMatrixPtr GretlMatrix::get_slice (const py::slice &slice)
     return std::make_shared<GretlMatrix>(res.release());
 }
 
-GretlMatrixPtr GretlMatrix::get_slice (const std::string &slice)
+GretlMatrixPtr GretlMatrix::get_slice (const std::string &slice) const
 {
     auto slice_str = render_slice_(slice);
     auto res = exec_slice_(slice_str);

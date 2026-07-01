@@ -497,6 +497,8 @@ void init_gretl4py_gretl_matrix_py11 (py::module_ &m)
     .def("__copy__", [](const GretlMatrix &self) { return GretlMatrix(self); })
     .def("__deepcopy__", [](const GretlMatrix &self, py::dict) { return GretlMatrix(self); })
     .def("__repr__", &GretlMatrix::repr_impl)
+
+    /*
     .def("__getitem__", py::overload_cast<const py::tuple&>(&GretlMatrix::get_slice))
     .def("__getitem__", py::overload_cast<const py::slice&>(&GretlMatrix::get_slice))
     .def("__getitem__", py::overload_cast<const std::string&>(&GretlMatrix::get_slice))
@@ -504,7 +506,40 @@ void init_gretl4py_gretl_matrix_py11 (py::module_ &m)
          [](const GretlMatrix &self, std::pair<int, int> ij) -> py::object
          {
              return self.get_element(ij.first, ij.second);
-         }, py::arg("ij").none(false))
+         }, py::arg("ij").none(false))*/
+
+
+    .def("__getitem__",
+         [](const GretlMatrix &self, const py::object &idx) -> py::object
+         {
+             //
+             //
+             //
+             auto res = std::make_unique<GretlTypes>();
+
+             if (py::isinstance<py::tuple>(idx)) {
+                 auto t = idx.cast<py::tuple>();
+
+                 if (t.size() == 2 && (py::isinstance<py::slice>(t[0]) || py::isinstance<py::slice>(t[1]))) {
+                     return variant_to_pyobject(self.get_slice(t));
+                 }
+                 if (t.size() == 2) {
+                     return self.get_element(t[0].cast<int>(), t[1].cast<int>());
+                 }
+                 throw std::invalid_argument("Invalid matrix index");
+             }
+             if (py::isinstance<py::slice>(idx)) {
+                 return variant_to_pyobject(self.get_slice(idx.cast<py::slice>()));
+             }
+             if (py::isinstance<py::str>(idx)) {
+                 *res = self.get_slice(idx.cast<std::string>());
+                 return variant_to_pyobject(std::move(*res));
+             }
+             throw std::invalid_argument("Unsupported index type");
+         })
+
+
+
     .def("__setitem__",
          [](GretlMatrix &self, std::pair<int, int> ij, double value) -> void
          {
