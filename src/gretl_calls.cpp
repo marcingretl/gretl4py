@@ -366,7 +366,7 @@ void do_gretl_print (const std::string &varlist, const py::kwargs &kwargs)
     int err = 0;
 
     // lambda for generating list of variables to print
-    auto make_varlist = [&varlist, &dataset, &err](void) -> gretl_list_ptr
+    auto make_varlist = [&varlist, &dataset](void) -> gretl_list_ptr
     {
         gretl_list_ptr varlist_ptr{nullptr};
 
@@ -1175,17 +1175,15 @@ template void gretl_generate<GRETL_TYPE_ANY>(const std::string&, GretlDatasetPtr
 template void gretl_generate<GRETL_TYPE_LIST>(const std::string&, GretlDatasetPtr, const std::string&);
 template void gretl_generate<GRETL_TYPE_SERIES>(const std::string&, GretlDatasetPtr, const std::string&);
 
-// gretl_bundle *gretl_kmeans (gretl_matrix *X, const int *L, int k, const gretl_matrix *c0, const gretl_bundle *opts, const DATASET *dset, PRN *prn, int *err)
-
 GretlBundlePtr kmeans (const GretlMatrix &X, int centers, const GretlBundlePtr opts)
 {
     //
     // here we perform kmeans analysis for fixed number of clusters
     //
     int err = 0;
-    auto res = std::make_shared<GretlBundle>(gretl_kmeans(X.get_ptr(), nullptr, centers, nullptr,
-                                                          opts ? opts->get_ptr() : nullptr, GretlDataset::default_dataset()->dset,
-                                                          global_printer.prn_ptr(), &err), false);
+    auto res = std::make_shared<GretlBundle>(gretl_kmeans(X.get_ptr(), nullptr, centers, nullptr, opts ? opts->get_ptr() : nullptr,
+                                                          GretlDataset::default_dataset()->dset, global_printer.prn_ptr(), &err), false);
+
     if (err) handle_gretl_error(err);
 
     return res;
@@ -1197,9 +1195,9 @@ GretlBundlePtr kmeans (const GretlMatrix &X, const GretlMatrix &centers, const G
     // here we perform kmeans analysis for k initial centroids
     //
     int err = 0;
-    auto res = std::make_shared<GretlBundle>(gretl_kmeans(X.get_ptr(), nullptr, 0, centers.get_ptr(),
-                                                          opts ? opts->get_ptr() : nullptr, GretlDataset::default_dataset()->dset,
-                                                          global_printer.prn_ptr(), &err), false);
+    auto res = std::make_shared<GretlBundle>(gretl_kmeans(X.get_ptr(), nullptr, 0, centers.get_ptr(), opts ? opts->get_ptr() : nullptr,
+                                                          GretlDataset::default_dataset()->dset, global_printer.prn_ptr(), &err), false);
+
     if (err) handle_gretl_error(err);
 
     return res;
