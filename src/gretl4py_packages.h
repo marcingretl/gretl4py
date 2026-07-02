@@ -113,7 +113,7 @@ public:
 
     GretlPackageRes function_exec (const std::string &func_name, GretlDatasetPtr &dataset, GretlPrint &printer, const py::args &args, const py::kwargs &kwargs);
 
-    std::filesystem::path get_examples_path (const std::string &fname);
+    std::filesystem::path get_examples_path (const std::string &fname) const;
 
     std::string get_function_with_role (UfunRole role);
 

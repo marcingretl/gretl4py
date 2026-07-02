@@ -627,7 +627,7 @@ GretlPackageRes GretlPackage::function_exec (const std::string &func_name, Gretl
     return res;
 }
 
-std::filesystem::path GretlPackage::get_examples_path (const std::string &fname)
+std::filesystem::path GretlPackage::get_examples_path (const std::string &fname) const
 {
     return std::filesystem::path(base_dir_) / "examples" / fname;
 }
