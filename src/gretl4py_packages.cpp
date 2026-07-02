@@ -353,9 +353,16 @@ void GretlPackage::unpack_kwargs_package_ (const std::string &func_name, fncall 
             }
             if (err_) handle_gretl_error(err_);
             continue;
+        } else if (arginfo.gtype == GRETL_TYPE_LIST) {
+            if (!dataset) handle_gretl_error(E_NODATA);
+            auto list = dataset->gretllist(val.cast<py::list>());
+
+            err_ = push_function_arg(func_call, key.c_str(), nullptr, GRETL_TYPE_LIST, list.release());
+            if (err_) handle_gretl_error(err_);
+            continue;
         } else if (arginfo.gtype == GRETL_TYPE_STRING) {
             // special case: we need to know if we deal with
-            // user defined variable uv or string per se
+            // user defined variable uv, one-element GRETL_TYPE_LIST or string per se
             arg_name = py::cast<std::string>(val);
             bool is_ref_user_var = false;
 
@@ -370,6 +377,13 @@ void GretlPackage::unpack_kwargs_package_ (const std::string &func_name, fncall 
                 // for reference, we change uv type!!!
                 arg_type = is_ref_user_var ? gretl_type_get_ref_type(user_var_get_type(uv)) : user_var_get_type(uv);
                 err_ = push_function_arg(func_call, arg_name.c_str(), uv, arg_type, user_var_get_value(uv));
+                if (err_) handle_gretl_error(err_);
+                continue;
+            } else if (key_type == GRETL_TYPE_LIST) {
+                if (!dataset) handle_gretl_error(E_NODATA);
+                auto list = dataset->gretllist(val.cast<std::string>());
+
+                err_ = push_function_arg(func_call, key.c_str(), nullptr, GRETL_TYPE_LIST, list.release());
                 if (err_) handle_gretl_error(err_);
                 continue;
             } else {
