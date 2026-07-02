@@ -27,6 +27,7 @@
 extern "C" {
     #include <gretl/gretl_func.h>
 }
+#include <filesystem>
 
 namespace py = pybind11;
 
@@ -112,7 +113,7 @@ public:
 
     GretlPackageRes function_exec (const std::string &func_name, GretlDatasetPtr &dataset, GretlPrint &printer, const py::args &args, const py::kwargs &kwargs);
 
-    std::string get_examples_path (const std::string &fname);
+    std::filesystem::path get_examples_path (const std::string &fname);
 
     std::string get_function_with_role (UfunRole role);
 

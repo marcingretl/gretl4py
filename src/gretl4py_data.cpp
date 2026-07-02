@@ -244,10 +244,9 @@ GretlDataset::GretlDataset (const std::string &fname, const py::dict &kwargs) : 
 
             if (key_str == "frompkg") {
                 if (!is_pystr(val)) throw std::invalid_argument("'frompkg' value must be a string");
-
                 auto pkg = GretlPackage::load_package(val.cast<std::string>());
 
-                full_path = pkg->get_examples_path(fname);
+                full_path = pkg->get_examples_path(fname).string();
             } else if (key_str == "quiet") {
                 quiet = is_bool_kwarg(val);
             } else {

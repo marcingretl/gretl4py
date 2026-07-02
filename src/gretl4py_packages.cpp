@@ -30,7 +30,6 @@ extern "C" {
     #include <gretl/gretl_typemap.h>
 }
 #include <iomanip>
-#include <filesystem>
 
 extern std::unordered_set<std::string> user_vars;
 
@@ -628,25 +627,9 @@ GretlPackageRes GretlPackage::function_exec (const std::string &func_name, Gretl
     return res;
 }
 
-std::string GretlPackage::get_examples_path (const std::string &fname)
+std::filesystem::path GretlPackage::get_examples_path (const std::string &fname)
 {
-    std::string examples_path = base_dir_;
-
-#if defined(_WIN32)
-    examples_path.append("\\examples");
-#else
-    examples_path.append("/examples");
-#endif // defined
-
-    if (!fname.empty()) {
-#if defined(_WIN32)
-    examples_path.append("\\").append(fname);
-#else
-    examples_path.append("/").append(fname);
-#endif // defined
-    }
-
-    return examples_path;
+    return std::filesystem::path(base_dir_) / "examples" / fname;
 }
 
 std::string GretlPackage::get_function_with_role (UfunRole role)
@@ -659,7 +642,7 @@ void GretlPackage::run_sample (void)
     //
     // we run sample script via gretl_execute_script()
     //
-    std::filesystem::path sample_path = std::filesystem::path(base_dir_) / "examples" / (pkg_name_ + "_sample.inp");
+    std::filesystem::path sample_path = get_examples_path(pkg_name_ + "_sample.inp");
 
     if (!std::filesystem::exists(sample_path) || !std::filesystem::is_regular_file(sample_path)) handle_gretl_error(E_FOPEN, sample_path.string());
     err_ = gretl_execute_script<std::filesystem::path>(sample_path);
