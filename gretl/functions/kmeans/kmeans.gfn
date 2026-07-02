@@ -376,13 +376,19 @@ return self
   <param name="xlist" type="list" const="true">
 <description>Features</description>
   </param>
-  <param name="Model" type="bundle" const="true"/>
+  <param name="kmb" type="bundle" const="true"/>
  </params>
-<code>/* Predict cluster membership for a given model,
+<code>/* Predict cluster membership based on a k-means bundle,
 returning the result as a series.
 */
 errorif(sum(missing(xlist)), &quot;Some features have missing values. Please drop these first.&quot;)
-matrix distances = distance({xlist}, Model.metric, Model.centroids)
+
+n = nelem(xlist)
+if cols(kmb.centroids) &gt; n
+  matrix distances = distance({xlist}, kmb.metric, kmb.centroids[,1:n])
+else
+  matrix distances = distance({xlist}, kmb.metric, kmb.centroids)
+endif
 series cluster_id = iminr(distances)
 
 return cluster_id
@@ -404,31 +410,38 @@ PairPlot(xlist, factor, kmb)
 </gretl-function>
 <gretl-function name="kmeans_summary" type="void">
  <params count="1">
-  <param name="b" type="bundle" const="true"/>
+  <param name="kmb" type="bundle" const="true"/>
  </params>
 <code>/* Print summary after fitting. */
 
 print &quot;************************************************&quot;
 print &quot;*** K-means clustering ***&quot;
 
+k = rows(kmb.centroids)
+
 printf &quot;\nParameters\n&quot;
-printf &quot;  Number of clusters: %d\n&quot;, b.n_clusters
-printf &quot;  Metric: %s\n&quot;, full_metric_name(b.metric)
-printf &quot;  Initializer: %s\n&quot;, b.init
-printf &quot;  Number of random draws: %d\n&quot;, b.n_draws
-printf &quot;  Tolerance: %f\n&quot;, b.tolerance
+printf &quot;  Number of clusters: %d\n&quot;, k
+printf &quot;  Metric: %s\n&quot;, full_metric_name(kmb.metric)
+printf &quot;  Initializer: %s\n&quot;, kmb.init
+printf &quot;  Number of random draws: %d\n&quot;, kmb.n_draws
+if inbundle(kmb, &quot;tolerance&quot;) == 1
+  printf &quot;  Tolerance: %f\n&quot;, kmb.tolerance
+endif
+
+between_dist = kmb.total_distance - kmb.within_distance
+between_pc = 100 * between_dist / kmb.total_distance
 
 printf &quot;\nResults:\n&quot;
-if metric_is_euclidean(b.metric)
-  printf &quot;  Total sum of squares: %g\n&quot;, b.total_distance
-  printf &quot;  Within-cluster sum of squares: %g\n&quot;, b.within_distance
-  printf &quot;  Between-cluster sum of squares: %g\n&quot;, b.between_distance
-  printf &quot;  (Between / Total): %.3f pct.\n&quot;, (b.between_fraction * 100)
+if metric_is_euclidean(kmb.metric)
+  printf &quot;  Total sum of squares: %g\n&quot;, kmb.total_distance
+  printf &quot;  Within-cluster sum of squares: %g\n&quot;, kmb.within_distance
+  printf &quot;  Between-cluster sum of squares: %g\n&quot;, between_dist
+  printf &quot;  (Between / Total): %.3f pct.\n&quot;, between_pc
 else
-  printf &quot;  Total distance from global centroid: %g\n&quot;, b.total_distance
-  printf &quot;  Total within-cluster distance: %g\n&quot;, b.within_distance
-  printf &quot;  Between cluster distance: %g\n&quot;, b.between_distance
-  printf &quot;  (Between / Total): %.3f pct.\n&quot;, (b.between_fraction * 100)
+  printf &quot;  Total distance from global centroid: %g\n&quot;, kmb.total_distance
+  printf &quot;  Total within-cluster distance: %g\n&quot;, kmb.within_distance
+  printf &quot;  Between cluster distance: %g\n&quot;, between_dist
+  printf &quot;  (Between / Total): %.3f pct.\n&quot;, between_pc
 endif
 print &quot;************************************************&quot;
 </code>
@@ -527,11 +540,11 @@ return results
  <params count="3">
   <param name="scree" type="matrix" const="true"/>
   <param name="filename" type="string" optional="true" const="true"/>
-  <param name="opts" type="bundle" optional="true">
-<description>options</description>
-  </param>
+  <param name="opts" type="bundle" optional="true"/>
  </params>
-<code>/* Create a scree plot. */
+<code>/* -doc-
+Create a scree plot.
+*/
 
 if !exists(opts)
   bundle opts = _()
@@ -563,6 +576,53 @@ plot mplot
 end plot --output=&quot;@fname&quot;
 </code>
 </gretl-function>
+<gretl-function name="kmeans_crosstab" type="matrix">
+ <params count="2">
+  <param name="estim" type="series" const="true"/>
+  <param name="actual" type="series" const="true"/>
+ </params>
+<code>estvals = values(estim)
+k = nelem(estvals)
+check = seq(1, k)
+errorif(estvals != check || values(actual) != estvals, &quot;estim and actual must have values from 1 to k&quot;)
+k = nelem(estvals)
+string aname = argname(actual)
+matrix P = _permute(estvals)
+np = cols(P)
+series c_hat = estim
+ibest = 1
+max_correct = 0
+loop i=1..np
+  correct = sum(c_hat == actual)
+  if correct &gt; max_correct
+    max_correct = correct
+    ibest = i
+  endif
+  # printf &quot;perm %d: correct=%d\n&quot;, i, correct
+  if i &lt; np
+    c_hat = replace(estim, estvals, P[,i+1])
+  endif
+endloop
+# printf &quot;best order is P[,%d] (%d correct)\n&quot;, ibest, max_correct
+# eval P[,ibest]'
+if ibest == 1
+  c_hat = estim
+elif ibest != np
+  c_hat = replace(estim, estvals, P[,ibest])
+endif
+if aname != &quot;&quot; &amp;&amp; aname != &quot;actual&quot;
+  S = strvals(actual)
+  series @aname = actual
+  if nelem(S) &gt; 0
+    stringify(@aname, S)
+  endif
+  xtab @aname c_hat
+else
+  xtab actual c_hat
+endif
+return $result
+</code>
+</gretl-function>
 <gretl-function name="kmeans_sil_samples" type="series">
  <params count="2">
   <param name="Model" type="bundle" const="true"/>
@@ -590,7 +650,7 @@ loop i=1..Model.nobs
     matrix dists_own2 = unvech(distance(dat, Model.metric), 0)[2:,1]
     out = dists_own' ~ dists_own2
     print out */
-    scalar a_i = meanc(dists_own)  # mean distance to own cluster
+    scalar a_i = meanc(dists_own) # mean distance to own cluster
   else
     scalar a_i = 0
   endif
@@ -654,8 +714,8 @@ if !exists(&quot;opts&quot;)
   bundle opts = _()
 endif
 
+scalar n_clusters = rows(Model.centroids)
 matrix silhouette_samples = {kmeans_sil_samples(Model, xlist)}
-scalar n_clusters = Model.n_clusters
 scalar mean_sil_score = meanc(silhouette_samples)
 matrix plot_data = silhouette_samples ~ Model.cluster_id
 strings plotfiles = array(n_clusters)
@@ -890,15 +950,13 @@ self.cluster_id = b.cluster_id
 self.centroids = b.centroids[,2:end-1]
 matrix dsq = zeros(m, 1)
 loop i=1..m
-  k = b.clustid[i]
+  k = b.cluster_id[i]
   loop j=1..n
     d = X[i,j] - self.centroids[k,j]
     dsq[i] += d * d
   endloop
 endloop
 self.distances = dsq
-scalar self.between_distance = self.total_distance - self.within_distance
-scalar self.between_fraction = self.between_distance / self.total_distance
 # other components?
 </code>
 </gretl-function>
@@ -934,8 +992,6 @@ else
   self.total_distance = sumc(distances_from_mean)
 endif
 scalar self.within_distance = within_cluster_distance(self.distances, self.cluster_id, self.metric)
-scalar self.between_distance = self.total_distance - self.within_distance
-scalar self.between_fraction = self.between_distance / self.total_distance
 </code>
 </gretl-function>
 <gretl-function name="compute_kmeans" type="bundle" private="1">
@@ -967,6 +1023,7 @@ loop iter = 1..self.max_iter
 
   this_distance = within_cluster_distance(min_dists, cluster_id, self.metric)
   delta = this_distance - prev_distance
+  # FIXME shouldn't this be proportional?
   if delta &lt;= 0 &amp;&amp; abs(delta) &lt; self.tolerance
     if self.verbosity &gt; 2
       printf &quot;Converged after %d iterations (within total distance = %.5f).&quot;, iter, this_distance
