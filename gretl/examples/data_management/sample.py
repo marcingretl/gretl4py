@@ -1,16 +1,20 @@
 import gretl
 
+
 def run_example():
-  # get path object for the data directory inside the gretl package
-  d1 = gretl.get_data('longley.csv')
-  d1.sample(5, 10)            # select a subsample from time 5 to time 10
-  d1.print()                  # print the current subsample
+    # Load the example dataset.
+    d1 = gretl.get_data("longley.csv")
 
-  # we restore the full sample
-  d1.sample(full=True)       # reset the sample to full dataset
+    # Select observations 5 through 10 and print the subsample.
+    d1.sample(5, 10)
+    d1.print()
 
-  # let's use only obs for which armfrc >= 2000
-  d1.sample('armfrc>=2000', restrict=True, replace=True)  # restrict sample to obs satisfying armfrc >= 2000, replacing previous sample
+    # Restore the full sample.
+    d1.sample(full=True)
+
+    # Restrict the sample to observations with armfrc >= 2000.
+    d1.sample("armfrc>=2000", restrict=True, replace=True)
+
 
 if __name__ == "__main__":
     run_example()

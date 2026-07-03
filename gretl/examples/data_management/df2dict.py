@@ -1,19 +1,21 @@
 import gretl
-import pandas
+import pandas as pd
+
 
 def run_example():
-  # Read CSV into pandas DataFrame
-  df = pandas.read_csv(gretl.gretldir + '/data/longley.csv')
+    # Read the CSV file into a pandas DataFrame.
+    df = pd.read_csv(gretl.gretldir + "/data/longley.csv")
 
-  # Convert DataFrame to dict of series, preserving observation labels
-  d = gretl.df2dict(df, with_obs=True)
+    # Convert the DataFrame to a dictionary of series, preserving observation labels.
+    d = gretl.df2dict(df, with_obs=True)
 
-  # Print keys of the resulting dictionary
-  print(d.keys())
+    # Show the dictionary keys.
+    print(d.keys())
 
-  # Print dataset basic info
-  dset = gretl.get_data(d)
-  print(dset)
+    # Create a gretl dataset and display its summary.
+    dset = gretl.get_data(d)
+    print(dset)
+
 
 if __name__ == "__main__":
     run_example()

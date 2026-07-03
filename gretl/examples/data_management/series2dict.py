@@ -1,22 +1,29 @@
 import gretl
-import pandas
+import pandas as pd
+
 
 def run_example():
-  # Read CSV into a pandas DataFrame
-  df = pandas.read_csv(gretl.gretldir + '/data/longley.csv', index_col="obs", parse_dates=True, date_format="%Y")
+    # Read the CSV file into a pandas DataFrame.
+    df = pd.read_csv(
+        gretl.gretldir + "/data/longley.csv",
+        index_col="obs",
+        parse_dates=True,
+        date_format="%Y",
+    )
 
-  # Create a pandas Series for the 'employ' column, indexed by 'obs'
-  s = df['employ']
+    # Extract the 'employ' series.
+    s = df["employ"]
 
-  # Convert the pandas Series into a dictionary compatible with gretl
-  d = gretl.series2dict(s)
+    # Convert the Series to a dictionary compatible with gretl.
+    d = gretl.series2dict(s)
 
-  # Print the keys of the resulting dictionary
-  print(d.keys())
+    # Show the dictionary keys.
+    print(d.keys())
 
-  # Print dataset basic info
-  dset = gretl.get_data(d)
-  print(dset)
+    # Create a gretl dataset and display its summary.
+    dset = gretl.get_data(d)
+    print(dset)
+
 
 if __name__ == "__main__":
     run_example()
