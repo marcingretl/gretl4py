@@ -1,31 +1,75 @@
 import gretl
 
-def run_example():
-  gretl.set('verbose', 'off')
-  sv = gretl.include('SVAR')
-  sv.show_functions()
 
-  d = gretl.get_data('sw_ch14.gdt')
-  d.new_series(name='infl', value='400*ldiff(PUNEW)')
-  d.rename('LHUR', 'unemp')
-  d.new_list(name='X', value='unemp infl')
-  d.new_list(name='Z', value='const')
-  
-  Mod = gretl.SVAR_setup('C', 'X', 'Z', 3) # equivalent to Mod = gretl.SVAR_setup(type_string='C', lY='X', lX='Z', varorder=3)
-  Mod['horizon'] = 36
-  gretl.SVAR_restrict(Mod, 'C', 1, 2)      # equivalent to gretl.SVAR_restrict(b=Mod, code='C', rR=1, c=2)
-  
-  gretl.set('stopwatch')
-  gretl.SVAR_estimate(Mod)                 # equivalent to gretl.SVAR_estimate(obj=Mod)
-  print(f"Time (Cmodel) = {gretl.get_accessor('$stopwatch'):.2g}")
-  
-  fevdmat = gretl.FEVD(Mod)                # equivalent to fevdmat = gretl.FEVD(SVARobj=Mod)
-  print(fevdmat)
-  
-  gretl.set('stopwatch')
-  bfail = gretl.SVAR_boot(Mod, 1024, 0.90) # equivalent to bfail = gretl.SVAR_boot(obj=Mod, rep=1024, alpha=0.90)
-  print(f"Number of failed bootstrap iterations = {int(bfail):d}, "
-        f"Time (bootstrap) = {gretl.get_accessor('$stopwatch'):.2g}")
-  
+def run_example():
+    # ------------------------------------------------------------
+    # Global settings
+    # ------------------------------------------------------------
+    gretl.set("verbose", "off")
+
+    # ------------------------------------------------------------
+    # Load SVAR package
+    # ------------------------------------------------------------
+    sv = gretl.include("SVAR")
+    sv.show_functions()
+
+    # ------------------------------------------------------------
+    # Data preparation
+    # ------------------------------------------------------------
+    d = gretl.get_data("sw_ch14.gdt")
+
+    # Inflation transformation: annualized log-difference
+    d.new_series(name="infl", value="400*ldiff(PUNEW)")
+
+    # Rename unemployment series for clarity
+    d.rename("LHUR", "unemp")
+
+    # Endogenous and exogenous variables
+    X = "unemp infl"
+    Z = "const"
+
+    # ------------------------------------------------------------
+    # SVAR model setup
+    # ------------------------------------------------------------
+    # Structural VAR with identification type "C", lag order 3
+    model = gretl.SVAR_setup("C", X, Z, 3)
+
+    # Forecast horizon for impulse responses / FEVD
+    model["horizon"] = 36
+
+    # ------------------------------------------------------------
+    # Identification restrictions
+    # ------------------------------------------------------------
+    gretl.SVAR_restrict(model, "C", 1, 2)
+
+    # ------------------------------------------------------------
+    # Estimation
+    # ------------------------------------------------------------
+    gretl.set("stopwatch")
+    gretl.SVAR_estimate(model)
+
+    print(f"Time (SVAR estimation) = {gretl.get_accessor('$stopwatch'):.2g}")
+
+    # ------------------------------------------------------------
+    # FEVD (Forecast Error Variance Decomposition)
+    # ------------------------------------------------------------
+    fevd = gretl.FEVD(model)
+    print(fevd)
+
+    # ------------------------------------------------------------
+    # Bootstrap inference
+    # ------------------------------------------------------------
+    gretl.set("stopwatch")
+
+    failed = gretl.SVAR_boot(model, 1024, 0.90)
+
+    print(
+        f"Bootstrap failures = {int(failed)}, "
+        f"time = {gretl.get_accessor('$stopwatch'):.2g}"
+    )
+
+    return model, fevd, failed
+
+
 if __name__ == "__main__":
     run_example()

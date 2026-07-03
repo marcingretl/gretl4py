@@ -1,20 +1,47 @@
 import gretl
 
+
 def run_example():
-  # the BACE package; if not found, install it from SourceForge
-  try:
-    bc = gretl.include('BACE')
-  except FileNotFoundError:
-    gretl.pkg('install', 'BACE')
-    bc = gretl.include('BACE')
-  bc.show_functions()
+    # Load the BACE package, installing it if necessary.
+    try:
+        package = gretl.include("BACE")
+    except FileNotFoundError:
+        print("Installing the 'BACE' package...")
+        gretl.pkg("install", "BACE")
+        package = gretl.include("BACE")
 
-  d = gretl.get_data('nels.gdt', frompkg='BACE', quiet=True)
+    # Display the functions exported by the package.
+    package.show_functions()
 
-  gretl.set('seed', 1000000)
-  gretl.set('stopwatch')
-  res = gretl.BACE('psechoice', '2..14', gretl.Bundle(model_type="probit")) # equivalent to res = gretl.BACE(Y='psechoice', X_list='2..14', Options=gretl.Bundle(model_type="probit"))
-  print(f"Total execution time: {gretl.get_accessor('$stopwatch'):.2f} sec.")
+    # Load the example dataset bundled with the package.
+    d = gretl.get_data("nels.gdt", frompkg="BACE", quiet=True)
+
+    # Set the random seed for reproducibility.
+    gretl.set("seed", 1000000)
+
+    # Measure execution time.
+    gretl.set("stopwatch")
+
+    # Run Bayesian Averaging of Classical Estimates (BACE).
+    result = gretl.BACE(
+        "psechoice",
+        "2..14",
+        gretl.Bundle(model_type="probit"),
+    )
+
+    # Equivalent keyword-based call:
+    #
+    # result = gretl.BACE(
+    #     Y="psechoice",
+    #     X_list="2..14",
+    #     Options=gretl.Bundle(model_type="probit"),
+    # )
+
+    elapsed = gretl.get_accessor("$stopwatch")
+    print(f"\nTotal execution time: {elapsed:.2f} seconds")
+
+    return result
+
 
 if __name__ == "__main__":
     run_example()

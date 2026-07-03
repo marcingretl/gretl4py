@@ -24,26 +24,20 @@ def run_example():
     print(m1)
     gretl.genr(name='ess', value=m1.ess)
     gretl.genr(name='k', value=m1.ncoeff)
-    gretl.genr(name='n', value=m1.T)
     res1 = gretl.criteria(n=m1.T, k="k", ess="ess") # arbitrary parameters order!!!!
     print(res1)
-    #gretl.uservars_list()
 
     # let's try out BMA
     print('##################################################')
     print(f'\t\tBMA')
     print('##################################################')
     d2.set_as_default()
-    #gretl.genr('bundle OPT = _(Nrep=10^5, model_prior="binomial", Nrank=5)')
     OPT = gretl.Bundle()
     OPT['Nrep'] = 10^5
     OPT['model_prior'] = "binomial"
     OPT['Nrank'] = 5
-    d2.new_list(name='Xes', value='2..13')
-    p2 = gretl.package(name="BMA", Y="GDP_growth", X_list="Xes", Options=OPT).fit()
-    print(p2)
-    #p2 = gretl.BMA(Y="GDP_growth", X_list="Xes", data=d2, quiet=True)
-    #gretl.BMA_Print(MODEL=p2)
+    res2 = gretl.BMA(Y="GDP_growth", X_list='2..13', quiet=True, Options=OPT)
+    gretl.BMA_Print(res2)
 
     # let's try out StrucTiSM
     print('##################################################')

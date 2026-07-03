@@ -1,20 +1,61 @@
 import gretl
 import numpy as np
 
+
+def include_package(name: str):
+    """
+    Load a gretl package; install it if it is not available locally.
+    """
+    try:
+        pkg = gretl.include(name)
+    except FileNotFoundError:
+        print(f"Package '{name}' not found. Installing...")
+        gretl.pkg("install", name)
+        pkg = gretl.include(name)
+    return pkg
+
+
 def run_example():
-  try:
-    tvc = gretl.include('TVC')
-  except FileNotFoundError:
-    gretl.pkg('install', 'TVC')
-    tvc = gretl.include('TVC')
-  tvc.show_functions()
-  
-  d = gretl.get_data('OkunGer.gdt', frompkg='TVC', quiet=True)
-  d.new_list(name='L', value='gGDP intercept')
-   
-  P = gretl.TVCestimate('dU', 'L', plt=False)
-  #P = gretl.TVCestimate('dU', 'L', ratios=np.array([1, 0.8]), plt=False)
-  gretl.set('echo', 'on')
+    # ------------------------------------------------------------
+    # Load TVC package (time-varying coefficient models)
+    # ------------------------------------------------------------
+    tvc = include_package("TVC")
+    tvc.show_functions()
+
+    # ------------------------------------------------------------
+    # Data
+    # ------------------------------------------------------------
+    d = gretl.get_data("OkunGer.gdt", frompkg="TVC", quiet=True)
+
+    # Regressors: GDP growth and intercept
+    L = "gGDP intercept"
+
+    # ------------------------------------------------------------
+    # Time-varying coefficient estimation
+    # ------------------------------------------------------------
+    # Basic TVC estimation (no additional scaling ratios)
+    P = gretl.TVCestimate(
+        "dU",
+        L,
+        plt=False,
+    )
+
+    # Alternative specification with scaling ratios:
+    #
+    # P = gretl.TVCestimate(
+    #     "dU",
+    #     L,
+    #     ratios=np.array([1, 0.8]),
+    #     plt=False,
+    # )
+
+    # ------------------------------------------------------------
+    # Output control
+    # ------------------------------------------------------------
+    gretl.set("echo", "on")
+
+    return P
+
 
 if __name__ == "__main__":
     run_example()

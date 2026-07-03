@@ -2005,6 +2005,10 @@ void GretlBundle::set_element (const std::string &key, const T &t)
         err_ = gretl_bundle_set_scalar(b_, key.c_str(), t);
     } else if constexpr (std::is_same_v<T, std::string>) {
         err_ = gretl_bundle_set_string(b_, key.c_str(), t.c_str());
+    } else if constexpr (std::is_same_v<T, GretlBundlePtr>) {
+        err_ = gretl_bundle_set_data(b_, key.c_str(), t->get_ptr(), GRETL_TYPE_BUNDLE);
+    } else if constexpr (std::is_same_v<T, GretlMatrixPtr>) {
+        err_ = gretl_bundle_set_data(b_, key.c_str(), t->get_ptr(), GRETL_TYPE_MATRIX);
     } else if constexpr (std::is_same_v<T, py::array>) {
         NumPyArrayView arr_view;
         gretl_matrix_ptr mat{nullptr};
@@ -2015,8 +2019,6 @@ void GretlBundle::set_element (const std::string &key, const T &t)
 
         NumPyArray_to_gretl_storage<gretl_matrix>(arr_view, mat.get());
         err_ = gretl_bundle_donate_data(b_, key.c_str(), mat.release(), GRETL_TYPE_MATRIX);
-    } else if constexpr (std::is_same_v<T, GretlBundlePtr>) {
-        err_ = gretl_bundle_set_data(b_, key.c_str(), t->get_ptr(), GRETL_TYPE_BUNDLE);
     } else {
         static_assert(always_false<T>, "GretlBundle::set_element(): unknown type");
     }
@@ -2028,6 +2030,7 @@ template void GretlBundle::set_element<double>(const std::string&, const double&
 template void GretlBundle::set_element<std::string>(const std::string&, const std::string&);
 template void GretlBundle::set_element<py::array>(const std::string&, const py::array&);
 template void GretlBundle::set_element<GretlBundlePtr>(const std::string&, const GretlBundlePtr&);
+template void GretlBundle::set_element<GretlMatrixPtr>(const std::string&, const GretlMatrixPtr&);
 
 void GretlBundle::delete_element (const std::string &key)
 {

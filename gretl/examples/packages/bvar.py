@@ -1,29 +1,74 @@
 import gretl
 
-def run_example():
-  gretl.set('verbose', 'off')
 
-  try:
-    bv = gretl.include('BVAR')
-  except FileNotFoundError:
-    gretl.pkg('install', 'BVAR')
-    bv = gretl.include('BVAR')
-  bv.show_functions()
-  
-  d = gretl.get_data('koopkoro.gdt', frompkg='BVAR')
-  d.new_list(name='dep', value='1 2 3')
-  
-  # Step 1 - BVAR_setup
-  mod = gretl.BVAR_setup('dep', 4, 'conj')                                    # equivalent to mod = gretl.BVAR_setup(y='dep', lag=4, type='conj')
-  
-  # Step 2 - prior customization
-  gretl.BVAR_sigma_prior(mod, 'AR')                                           # equivalent to gretl.BVAR_sigma_prior(mod=mod, prior_type='AR')
-  gretl.BVAR_alpha_prior(mod, 'Minn', gretl.Bundle(p_mean=0))                 # equivalent to gretl.BVAR_alpha_prior(mod=mod, prior_type='Minn', prior_opt=gretl.Bundle(p_mean=0))
-  
-  # Step 3 - posterior simulation
-  gretl.set('seed', 1234)
-  res = gretl.BVAR_posterior(mod, 'all', gretl.Bundle(iter=10000))            # equivalent to res = gretl.BVAR_posterior(mod=mod, wat='all', opt=gretl.Bundle(iter=10000))
-  res.print(tree=True)
+def include_package(name: str):
+    """
+    Load a gretl package; install it if it is not available locally.
+    """
+    try:
+        pkg = gretl.include(name)
+    except FileNotFoundError:
+        print(f"Package '{name}' not found. Installing...")
+        gretl.pkg("install", name)
+        pkg = gretl.include(name)
+    return pkg
+
+
+def run_example():
+    # ------------------------------------------------------------
+    # Global settings
+    # ------------------------------------------------------------
+    gretl.set("verbose", "off")
+    gretl.set("seed", 1234)
+
+    # ------------------------------------------------------------
+    # Load BVAR package
+    # ------------------------------------------------------------
+    bv = include_package("BVAR")
+    bv.show_functions()
+
+    # ------------------------------------------------------------
+    # Data
+    # ------------------------------------------------------------
+    d = gretl.get_data("koopkoro.gdt", frompkg="BVAR")
+
+    # Three-variable system (as space-separated string)
+    y = "1 2 3"
+
+    # ------------------------------------------------------------
+    # Step 1: Model setup
+    # ------------------------------------------------------------
+    # Conjugate Bayesian VAR with lag order 4
+    model = gretl.BVAR_setup(y, 4, "conj")
+
+    # ------------------------------------------------------------
+    # Step 2: Prior specification
+    # ------------------------------------------------------------
+
+    # Sigma prior: AR structure
+    gretl.BVAR_sigma_prior(model, "AR")
+
+    # Coefficient prior: Minnesota-type prior with zero mean
+    gretl.BVAR_alpha_prior(
+        model,
+        "Minn",
+        gretl.Bundle(p_mean=0),
+    )
+
+    # ------------------------------------------------------------
+    # Step 3: Posterior simulation
+    # ------------------------------------------------------------
+    res = gretl.BVAR_posterior(
+        model,
+        "all",
+        gretl.Bundle(iter=10000),
+    )
+
+    # Display results as tree structure
+    res.print(tree=True)
+
+    return res
+
 
 if __name__ == "__main__":
     run_example()
