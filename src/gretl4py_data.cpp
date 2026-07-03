@@ -1999,17 +1999,19 @@ void GretlBundle::set_element (const std::string &key, const T &t)
     //
     // we set bundle element by name (key)
     //
-    if constexpr (std::is_same_v<T, bool> || std::is_same_v<T, int>) {
+    using U = std::decay_t<T>;
+
+    if constexpr (std::is_same_v<U, bool> || std::is_same_v<U, int>) {
         err_ = gretl_bundle_set_int(b_, key.c_str(), t);
-    } else if constexpr (std::is_same_v<T, double>) {
+    } else if constexpr (std::is_same_v<U, double>) {
         err_ = gretl_bundle_set_scalar(b_, key.c_str(), t);
-    } else if constexpr (std::is_same_v<T, std::string>) {
+    } else if constexpr (std::is_same_v<U, std::string>) {
         err_ = gretl_bundle_set_string(b_, key.c_str(), t.c_str());
-    } else if constexpr (std::is_same_v<T, GretlBundlePtr>) {
+    } else if constexpr (std::is_same_v<U, GretlBundlePtr>) {
         err_ = gretl_bundle_set_data(b_, key.c_str(), t->get_ptr(), GRETL_TYPE_BUNDLE);
-    } else if constexpr (std::is_same_v<T, GretlMatrixPtr>) {
+    } else if constexpr (std::is_same_v<U, GretlMatrixPtr>) {
         err_ = gretl_bundle_set_data(b_, key.c_str(), t->get_ptr(), GRETL_TYPE_MATRIX);
-    } else if constexpr (std::is_same_v<T, py::array>) {
+    } else if constexpr (std::is_same_v<U, py::array>) {
         NumPyArrayView arr_view;
         gretl_matrix_ptr mat{nullptr};
 
