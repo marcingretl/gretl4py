@@ -294,8 +294,6 @@ def modeltab(models: "List[GretlModel]", output: str = "print",
                         star = "**"
                     elif pval < 0.10:
                         star = "*"
-
-                print(coeff)
                 cell = f"{format(coeff, coeff_fmt)}{star} ({format(stderr, stderr_fmt)})"
             else:
                 cell = ""
