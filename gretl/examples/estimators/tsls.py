@@ -1,35 +1,38 @@
 import gretl
 
+
 def run_example():
-    # load a dataset
-    d1 = gretl.get_data('penngrow.gdt')
+    # Load dataset.
+    d1 = gretl.get_data("penngrow.gdt")
 
-    m = gretl.tsls('Y Y(-1) X ; 0 X Y(-2)').fit()
+    # Estimate two-stage least squares model.
+    m = gretl.tsls("Y Y(-1) X ; 0 X Y(-2)").fit()
     print(m)
 
-    # Don’t do diagnostic tests
-    m = gretl.tsls('Y Y(-1) X ; 0 X Y(-2)', no_tests=True).fit()
+    # Suppress diagnostic tests.
+    m = gretl.tsls("Y Y(-1) X ; 0 X Y(-2)", no_tests=True).fit()
     print(m)
 
-    # Print covariance matrix
-    m = gretl.tsls('Y Y(-1) X ; 0 X Y(-2)', vcv=True).fit()
+    # Print covariance matrix.
+    m = gretl.tsls("Y Y(-1) X ; 0 X Y(-2)", vcv=True).fit()
     print(m)
 
-    # No degrees-of-freedom correction
-    m = gretl.tsls('Y Y(-1) X ; 0 X Y(-2)', no_df_corr=True).fit()
+    # No degrees-of-freedom correction.
+    m = gretl.tsls("Y Y(-1) X ; 0 X Y(-2)", no_df_corr=True).fit()
     print(m)
 
-    # Robust standard errors
-    m = gretl.tsls('Y Y(-1) X ; 0 X Y(-2)', robust=True).fit()
+    # Compute robust covariance matrix.
+    m = gretl.tsls("Y Y(-1) X ; 0 X Y(-2)", robust=True).fit()
     print(m)
 
-    # Uncomment to use Limited Information Maximum Likelihood
-    # m = gretl.tsls('Y Y(-1) X ; 0 X Y(-2)', liml=True).fit()
+    # Limited Information Maximum Likelihood (LIML).
+    # m = gretl.tsls("Y Y(-1) X ; 0 X Y(-2)", liml=True).fit()
     # print(m)
 
-    # Uncomment to use Generalized Method of Moments
-    # m = gretl.tsls('Y Y(-1) X ; 0 X Y(-2)', gmm=True).fit()
+    # Generalized Method of Moments (GMM).
+    # m = gretl.tsls("Y Y(-1) X ; 0 X Y(-2)", gmm=True).fit()
     # print(m)
+
 
 if __name__ == "__main__":
     run_example()

@@ -1,45 +1,49 @@
 import gretl
 
-def run_example():
-    # load a dataset
-    d1 = gretl.get_data('greene22_2.gdt')
 
-    m1 = gretl.logit('Y ~ const + Z1 + Z2').fit()
-    m2 = gretl.logit('Y const Z1 Z2').fit()
-    m3 = gretl.logit('1 0 2 3').fit()
+def run_example():
+    # Load dataset.
+    d1 = gretl.get_data("greene22_2.gdt")
+
+    # Different ways to specify logit model.
+    m1 = gretl.logit("Y ~ const + Z1 + Z2").fit()
+    m2 = gretl.logit("Y const Z1 Z2").fit()
+    m3 = gretl.logit("1 0 2 3").fit()
+
     print(m1)
     print(m2)
     print(m3)
 
-    # robust standard errors
-    m = gretl.logit('Y ~ const + Z1 + Z2', robust=True).fit()
+    # Compute robust covariance matrix.
+    m = gretl.logit("Y ~ const + Z1 + Z2", robust=True).fit()
     print(m)
 
-    # estimate multinomial logit
-    m = gretl.logit('Y ~ const + Z1 + Z2', multinomial=True).fit()
+    # Estimate multinomial logit model.
+    m = gretl.logit("Y ~ const + Z1 + Z2", multinomial=True).fit()
     print(m)
 
-    # print covariance matrix
-    m = gretl.logit('Y ~ const + Z1 + Z2', vcv=True).fit()
+    # Print covariance matrix.
+    m = gretl.logit("Y ~ const + Z1 + Z2", vcv=True).fit()
     print(m)
 
-    # print details of iterations
-    m = gretl.logit('Y ~ const + Z1 + Z2', verbose=True).fit()
+    # Display verbose estimation output.
+    m = gretl.logit("Y ~ const + Z1 + Z2", verbose=True).fit()
     print(m)
 
-    # show p-values instead of slopes
-    m = gretl.logit('Y ~ const + Z1 + Z2', p_values=True).fit()
+    # Show p-values instead of coefficient estimates.
+    m = gretl.logit("Y ~ const + Z1 + Z2", p_values=True).fit()
     print(m)
 
-    # select pseudo-R-squared variant
-    m = gretl.logit('Y ~ const + Z1 + Z2', estrella=True).fit()
+    # Use alternative pseudo-R² measure (Estrella).
+    m = gretl.logit("Y ~ const + Z1 + Z2", estrella=True).fit()
     print(m)
 
-    # oddsratios analysis
-    d2 = gretl.get_data('rac3d.gdt')
-    m = gretl.logit('SEX 0 AGE AGESQ INCOME LEVYPLUS', data=d2).fit()
+    # Odds ratios analysis.
+    d2 = gretl.get_data("rac3d.gdt")
+    m = gretl.logit("SEX 0 AGE AGESQ INCOME LEVYPLUS", data=d2).fit()
     print(m)
-    m.oddsratio()
+    print(m.oddsratios)
+
 
 if __name__ == "__main__":
     run_example()

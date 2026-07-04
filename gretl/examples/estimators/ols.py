@@ -1,44 +1,51 @@
 import gretl
 
-def run_example():
-    # load a dataset
-    d1 = gretl.get_data('longley.csv')
 
-    # Alternative ways of calling OLS model
-    m1 = gretl.ols('employ ~ const + prdefl + gnp').fit()
-    m2 = gretl.ols('employ const prdefl gnp').fit()
-    m3 = gretl.ols('1 0 2 3').fit()
+def run_example():
+    # Load dataset.
+    d1 = gretl.get_data("longley.csv")
+
+    # Different ways to specify OLS model.
+    m1 = gretl.ols("employ ~ const + prdefl + gnp").fit()
+    m2 = gretl.ols("employ const prdefl gnp").fit()
+    m3 = gretl.ols("1 0 2 3").fit()
+
     print(m1)
     print(m2)
     print(m3)
 
-    # Print covariance matrix
-    m = gretl.ols('employ const prdefl gnp', vcv=True).fit()
+    # Print covariance matrix.
+    m = gretl.ols("employ const prdefl gnp", vcv=True).fit()
     print(m)
 
-    # Robust standard errors
-    m = gretl.ols('employ const prdefl gnp', robust=True).fit()
+    # Compute robust covariance matrix.
+    m = gretl.ols("employ const prdefl gnp", robust=True).fit()
     print(m)
 
-    # Robust + jackknife standard errors
-    m = gretl.ols('employ const prdefl gnp', robust=True, jackknife=True).fit()
+    # Robust covariance matrix with jackknife correction.
+    m = gretl.ols(
+        "employ const prdefl gnp",
+        robust=True,
+        jackknife=True
+    ).fit()
     print(m)
 
-    # Clustered standard errors
-    m = gretl.ols('employ const prdefl gnp', cluster='gnp').fit()
+    # Clustered standard errors.
+    m = gretl.ols("employ const prdefl gnp", cluster="gnp").fit()
     print(m)
 
-    # Simple print output
-    m = gretl.ols('employ const prdefl gnp', simple_print=True).fit()
+    # Suppress auxiliary output.
+    m = gretl.ols("employ const prdefl gnp", simple_print=True).fit()
     print(m)
 
-    # Print ANOVA table
-    m = gretl.ols('employ const prdefl gnp', anova=True).fit()
+    # Print ANOVA table.
+    m = gretl.ols("employ const prdefl gnp", anova=True).fit()
     print(m)
 
-    # No degrees-of-freedom correction
-    m = gretl.ols('employ const prdefl gnp', no_df_corr=True).fit()
+    # No degrees-of-freedom correction.
+    m = gretl.ols("employ const prdefl gnp", no_df_corr=True).fit()
     print(m)
+
 
 if __name__ == "__main__":
     run_example()

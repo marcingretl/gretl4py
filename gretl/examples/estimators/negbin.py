@@ -1,36 +1,54 @@
 import gretl
 
-def run_example():
-    # load a dataset
-    d1 = gretl.get_data('rac3d.gdt')
 
-    # Fit models with different formula styles
-    m1 = gretl.negbin('DVISITS ~ const + SEX + AGE').fit()
-    m2 = gretl.negbin('DVISITS const SEX AGE').fit()
-    m3 = gretl.negbin('13 0 1 2').fit()
+def run_example():
+    # Load dataset.
+    d1 = gretl.get_data("rac3d.gdt")
+
+    # Different ways to specify negative binomial model.
+    m1 = gretl.negbin("DVISITS ~ const + SEX + AGE").fit()
+    m2 = gretl.negbin("DVISITS const SEX AGE").fit()
+    m3 = gretl.negbin("13 0 1 2").fit()
+
     print(m1)
     print(m2)
     print(m3)
 
-    # Use NegBin 1 model
-    m = gretl.negbin('DVISITS ~ const + SEX + AGE', model1=True).fit()
+    # Use NegBin type 1 specification.
+    m = gretl.negbin(
+        "DVISITS ~ const + SEX + AGE",
+        model1=True
+    ).fit()
     print(m)
 
-    # Robust standard errors
-    m = gretl.negbin('DVISITS ~ const + SEX + AGE', robust=True).fit()
+    # Compute robust covariance matrix.
+    m = gretl.negbin(
+        "DVISITS ~ const + SEX + AGE",
+        robust=True
+    ).fit()
     print(m)
 
-    # Force use of OPG method
-    m = gretl.negbin('DVISITS ~ const + SEX + AGE', opg=True).fit()
+    # Use the outer product of gradients (OPG).
+    m = gretl.negbin(
+        "DVISITS ~ const + SEX + AGE",
+        opg=True
+    ).fit()
     print(m)
 
-    # Print covariance matrix
-    m = gretl.negbin('DVISITS ~ const + SEX + AGE', vcv=True).fit()
+    # Print covariance matrix.
+    m = gretl.negbin(
+        "DVISITS ~ const + SEX + AGE",
+        vcv=True
+    ).fit()
     print(m)
 
-    # Print details of iterations
-    m = gretl.negbin('DVISITS ~ const + SEX + AGE', verbose=True).fit()
+    # Display verbose estimation output.
+    m = gretl.negbin(
+        "DVISITS ~ const + SEX + AGE",
+        verbose=True
+    ).fit()
     print(m)
+
 
 if __name__ == "__main__":
     run_example()

@@ -107,6 +107,7 @@ from .gretl4py_classes import _model_plots, _to_pandas
 from .gretl4py_addons import print_module_source, fc_print, modeltab
 
 # deprecations
+# _oddsratio: to be removed on 0.7
 # deprecations: END
 
 # Explicit symbols attach to certain classes

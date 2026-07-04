@@ -199,6 +199,3 @@ void init_gretl4py_model_py11(py::module_ &m)
     py::class_<GretlModel_package, GretlModel, std::unique_ptr<GretlModel_package>>(m, "Model_package", py::dynamic_attr())
         .def("functions", &GretlModel_package::functions);
 }
-// py::object self = py::cast(model.get());
-// py::gil_scoped_acquire gil;
-// py::setattr(self, "res", res);

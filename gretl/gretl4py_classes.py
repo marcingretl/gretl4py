@@ -46,21 +46,9 @@ def _attrs(self: "GretlModel"):
                 print(f'{attname}: {type(attr)}')
 
 def _oddsratio(self: "Model_logit"):
-    try:
-        from tabulate import tabulate
-    except ModuleNotFoundError:
-        print('*** warning: oddsratios printing requires \'tabulate\' package ***\n')
-        return
+    print("WARNING: oddsratios() is deprecated; use model.oddsratios instead\n")
 
-    try:
-        data = self.oddsratios      # assumed to be a NumPy array
-        names = self.parnames[1:]   # skip constant/intercept
-        print(tabulate(data, showindex=names,
-                       headers=["odds ratio", "std. error", "low95", "high95"],
-                       tablefmt="plain"))
-    except Exception as e:
-        print('*** warning: oddsratios not available for current model ***\n')
-        print(f'Debug info: {e}')
+    return self.oddsratios
 
 def _model_plots(
     self: "GretlModel",

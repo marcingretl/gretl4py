@@ -1,41 +1,44 @@
 import gretl
 
+
 def run_example():
-    # load a dataset
-    d1 = gretl.get_data('b-g.gdt')
+    # Load dataset.
+    d1 = gretl.get_data("b-g.gdt")
 
-    spec = '1 1 ; Y'
+    spec = "1 1 ; Y"
 
+    # Estimate GARCH(1,1) model.
     m = gretl.garch(spec).fit()
     print(m)
 
-    # robust standard errors
+    # Compute robust covariance matrix.
     m = gretl.garch(spec, robust=True).fit()
     print(m)
 
-    # print details of iterations
+    # Display verbose estimation output.
     m = gretl.garch(spec, verbose=True).fit()
     print(m)
 
-    # print covariance matrix
+    # Print covariance matrix.
     m = gretl.garch(spec, vcv=True).fit()
     print(m)
 
-    # model without constant
+    # Estimate model without a constant term.
     m = gretl.garch(spec, nc=True).fit()
     print(m)
 
-    # standardized residuals
+    # Save standardized residuals.
     m = gretl.garch(spec, stdresid=True).fit()
     print(m)
 
-    # use Fiorentini, Calzolari, Panattoni algorithm
+    # Use the Fiorentini–Calzolari–Panattoni (FCP) algorithm.
     m = gretl.garch(spec, fcp=True).fit()
     print(m)
 
-    # initial variance parameters from ARMA
+    # Initialize variance parameters from an ARMA model.
     m = gretl.garch(spec, arma_init=True).fit()
     print(m)
+
 
 if __name__ == "__main__":
     run_example()

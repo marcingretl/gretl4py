@@ -1,41 +1,56 @@
 import gretl
 import shutil
 
+
 def run_example():
-    # load a dataset
-    d1 = gretl.get_data('bjg.gdt')
+    # Load dataset.
+    d1 = gretl.get_data("bjg.gdt")
 
-    m = gretl.arima(y='lg', order=(1,1,1)).fit()
+    # Basic ARIMA(1,1,1).
+    m = gretl.arima(y="lg", order=(1, 1, 1)).fit()
     print(m)
 
-    m = gretl.arima(y='lg', order=(1,1,1), seasonal=(1,1,1)).fit()
+    # Seasonal ARIMA(1,1,1)(1,1,1).
+    m = gretl.arima(y="lg", order=(1, 1, 1), seasonal=(1, 1, 1)).fit()
     print(m)
 
-    m = gretl.arima(y='lg', order=(1,1,1), verbose=True).fit()
+    # Verbose output.
+    m = gretl.arima(y="lg", order=(1, 1, 1), verbose=True).fit()
     print(m)
 
-    m = gretl.arima(y='lg', order=(1,1,1), vcv=True).fit()
+    # Print covariance matrix.
+    m = gretl.arima(y="lg", order=(1, 1, 1), vcv=True).fit()
     print(m)
 
-    m = gretl.arima(y='lg', order=(1,1,1), hessian=True).fit()
+    # Use Hessian-based covariance estimation.
+    m = gretl.arima(y="lg", order=(1, 1, 1), hessian=True).fit()
     print(m)
 
-    m = gretl.arima(y='lg', order=(1,1,1), opg=True).fit()
+    # Use outer product of gradients (OPG).
+    m = gretl.arima(y="lg", order=(1, 1, 1), opg=True).fit()
     print(m)
 
-    m = gretl.arima(y='lg', order=(1,1,1), nc=True).fit()
+    # No constant term.
+    m = gretl.arima(y="lg", order=(1, 1, 1), nc=True).fit()
     print(m)
 
-    m = gretl.arima(y='lg', order=(1,1,1), conditional=True).fit()
+    # Conditional estimation.
+    m = gretl.arima(y="lg", order=(1, 1, 1), conditional=True).fit()
     print(m)
 
+    # X-12-ARIMA (if available).
     d = gretl.about()
-    if shutil.which(d['built_in_strings']['x12a']) is not None:
-        m = gretl.arima(y='lg', order=(1,1,1), x_12_arima=True).fit()
+    x12_path = d["built_in_strings"]["x12a"]
+
+    if x12_path and shutil.which(x12_path) is not None:
+        m = gretl.arima(y="lg", order=(1, 1, 1), x_12_arima=True).fit()
         print(m)
 
-    m = gretl.arima(y='lg', order=(1,1,1), lbfgs=True).fit()
+    # LBFGS optimizer.
+    m = gretl.arima(y="lg", order=(1, 1, 1), lbfgs=True).fit()
     print(m)
+
 
 if __name__ == "__main__":
     run_example()
+
