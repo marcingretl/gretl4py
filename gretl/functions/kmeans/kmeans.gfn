@@ -276,6 +276,7 @@ endif
 errorif(sum(missing(xlist)), &quot;Some features have missing values. Please drop these first.&quot;)
 
 bundle self = handle_options_and_defaults(0, opts)
+self.xlist = xlist
 self.init = tolower(self.init)
 
 scalar self.n_clusters = n_clusters
@@ -301,9 +302,9 @@ if n_clusters == 1
   scalar self.within_distance = self.total_distance
 endif
 
-if self.verbosity
+if self.verbosity &amp;&amp; !metric_is_euclidean(self.metric)
   printf &quot;kmeans_fit: %d observations, %d features, %d clusters\n&quot;, $nobs, nelem(xlist), n_clusters
-  printf &quot;metric %s, initializer %s, %d random draws\n&quot;, full_metric_name(self.metric), self.init, self.n_draws
+  printf &quot;metric %s, initializer %s, %d random draws\n\n&quot;, full_metric_name(self.metric), self.init, self.n_draws
 endif
 
 if n_clusters == 1
@@ -436,65 +437,48 @@ if metric_is_euclidean(kmb.metric)
   printf &quot;  Total sum of squares: %g\n&quot;, kmb.total_distance
   printf &quot;  Within-cluster sum of squares: %g\n&quot;, kmb.within_distance
   printf &quot;  Between-cluster sum of squares: %g\n&quot;, between_dist
-  printf &quot;  (Between / Total): %.3f pct.\n&quot;, between_pc
+  printf &quot;  Between as percent of total: %.3f\n&quot;, between_pc
 else
   printf &quot;  Total distance from global centroid: %g\n&quot;, kmb.total_distance
   printf &quot;  Total within-cluster distance: %g\n&quot;, kmb.within_distance
   printf &quot;  Between cluster distance: %g\n&quot;, between_dist
-  printf &quot;  (Between / Total): %.3f pct.\n&quot;, between_pc
+  printf &quot;  Between as percent of total: %.1f\n&quot;, between_pc
 endif
 print &quot;************************************************&quot;
 </code>
 </gretl-function>
 <gretl-function name="kmeansGUI" type="bundle" pkg-role="gui-main">
- <params count="4">
+ <params count="5">
   <param name="X" type="list" const="true">
 <description>Features</description>
   </param>
   <param name="n_clusters" type="int" min="1" default="3" const="true">
 <description>No. of clusters (k)</description>
   </param>
+  <param name="n_draws" type="int" min="0" default="10" const="true">
+<description>No. of random draws</description>
+  </param>
   <param name="metric" type="int" min="1" max="6" default="1" const="true">
 <description>Metric</description>
 <labels count="6">
 "euclidean" "manhattan" "hamming" "chebyshev" "cosine" "mahalanobis" </labels>
   </param>
-  <param name="plot_type" type="int" min="0" max="3" default="0" const="true">
-<description>Plot type</description>
-<labels count="4">
-"none" "Scree (1 to k)" "Cluster (pairs)" "Silhouette" </labels>
+  <param name="verbose" type="bool" default="1">
+<description>Detailed output?</description>
   </param>
  </params>
 <code>/* Function for creating GUI dialog box. */
 
 bundle self = defbundle()
 self.metric = get_metric(metric)
-self.verbosity = 2  # in GUI mode, highest verbosity level is activated
+self.verbosity = verbose ? 2 : 1
+self.n_draws = n_draws
+# self.init = &quot;pc&quot; ?
 
-if plot_type == 1
-  # scree plot
-  self.verbosity = 0 # ?
-  matrix scree = kmeans_scree(X, n_clusters, self)
-  kmeans_screeplot(scree, null, null)
-  bundle Model = _(scree)
-  return Model
-endif
-
-# Only for given k
 bundle Model = kmeans_fit(X, n_clusters, self)
-kmeans_summary(Model)
-print Model.centroids
-
-if plot_type == 2
-  kmeans_plot(X, Model)
-endif
-if plot_type == 3
-  kmeans_sil_plot(Model, X, self)
-  scalar sil_score = kmeans_sil_score(Model, X, TRUE)
-  matrix sil_score_local = kmeans_sil_score(Model, X, FALSE)
-  printf &quot;\nSilhouette Analysis\n&quot;
-  printf &quot;Mean Silhouette Coefficient: %.3f\n\n&quot;, sil_score
-  printf &quot;Per Cluster Silhouette Coefficients:\n%12.3f\n&quot;, sil_score_local
+if !metric_is_euclidean(self.metric)
+  # kmeans_summary(Model)
+  kmeans_distances_print(Model)
 endif
 
 return Model
@@ -583,7 +567,7 @@ end plot --output=&quot;@fname&quot;
  </params>
 <code>estvals = values(estim)
 k = nelem(estvals)
-check = seq(1, k)
+check = seq(1, k)'
 errorif(estvals != check || values(actual) != estvals, &quot;estim and actual must have values from 1 to k&quot;)
 k = nelem(estvals)
 string aname = argname(actual)
@@ -632,9 +616,10 @@ return $result
 
 matrix features = {xlist}
 matrix cluster_id = Model.cluster_id
-series silhouette_samples = zeros(Model.nobs, 1)
+series silhouette_samples = 0
+scalar n_clusters = rows(Model.centroids)
 
-loop i=1..Model.nobs
+loop i=1..$nobs
   scalar own_cluster = cluster_id[i]
   matrix own_cluster_mask = (cluster_id .= own_cluster)
 
@@ -657,7 +642,7 @@ loop i=1..Model.nobs
 
   # b(i): minimum mean distance to other clusters
   scalar b_i = $huge
-  loop k=1..Model.n_clusters
+  loop k=1..n_clusters
     if k == own_cluster
       continue
     endif
@@ -716,8 +701,9 @@ endif
 
 scalar n_clusters = rows(Model.centroids)
 matrix silhouette_samples = {kmeans_sil_samples(Model, xlist)}
+matrix cluster_id = Model.cluster_id
 scalar mean_sil_score = meanc(silhouette_samples)
-matrix plot_data = silhouette_samples ~ Model.cluster_id
+matrix plot_data = silhouette_samples ~ cluster_id
 strings plotfiles = array(n_clusters)
 
 # plot options
@@ -748,9 +734,8 @@ loop k=1..n_clusters
   cluster_sil_values = mreverse(msortby(cluster_sil_values, 1))
   cluster_sil_values ~= mean_sil_score
   cnameset(cluster_sil_values, defarray(&quot;score for data points&quot;, &quot;mean score, all clusters&quot;))
-  if k == n_clusters
-    keystr = &quot;set key outside below&quot;
-    bmargin *= 1.8
+  if k == 1
+    keystr = &quot;set key top right&quot;
   else
     keystr = &quot;unset key&quot;
   endif
@@ -769,7 +754,7 @@ loop k=1..n_clusters
     printf &quot;%s&quot;, keystr
     # literal set nokey
   end plot --outbuf=plotfiles[k]
-endloop
+endloop # clusters
 
 gridplot plotfiles --cols=columns --width=width --height=height --title=&quot;Silhouette plots per cluster&quot; --output=&quot;@filename&quot;
 </code>
@@ -929,14 +914,15 @@ return features[mask,]
  </params>
 <code>bundle opts = _()
 if inbundle(self, &quot;verbosity&quot;)
-  opts.verbosity = self.verbosity # FIXME
+  opts.verbosity = self.verbosity # FIXME ?
 endif
 if inbundle(self, &quot;n_draws&quot;)
-  opts.rand_starts = self.n_draws
+  opts.n_draws = self.n_draws
 endif
 if inbundle(self, &quot;init&quot;)
   opts.init = self.init
 endif
+
 if inbundle(self, &quot;clusters0&quot;)
   bundle b = kmeans(X, self.clusters0, opts)
 else
@@ -946,8 +932,8 @@ m = rows(X)
 n = cols(X)
 self.within_distance = b.cluster_SST
 self.total_distance = b.global_SST
-self.cluster_id = b.cluster_id
-self.centroids = b.centroids[,2:end-1]
+series self.cluster_id = b.cluster_id
+matrix self.centroids = b.centroids[,1:n]
 matrix dsq = zeros(m, 1)
 loop i=1..m
   k = b.cluster_id[i]
@@ -956,7 +942,7 @@ loop i=1..m
     dsq[i] += d * d
   endloop
 endloop
-self.distances = dsq
+series self.distances = dsq
 # other components?
 </code>
 </gretl-function>
@@ -974,7 +960,7 @@ endif
 if b.error
   printf &quot;failed\n&quot;
 else
-  printf &quot;total within distance = %g\n&quot;, d, b.within_distance
+  printf &quot;total within distance = %g\n&quot;, b.within_distance
 endif
 </code>
 </gretl-function>
@@ -1081,17 +1067,6 @@ rnameset(centroids, row_labels)
 return centroids
 </code>
 </gretl-function>
-<gretl-function name="get_metric" type="string" private="1">
- <params count="1">
-  <param name="distance" type="int" const="true"/>
- </params>
-<code>/* Only for kmeansGUI(). Maps the integer code to the name of
-the distance measure.
-*/
-strings Distances = all_metrics()
-return Distances[distance]
-</code>
-</gretl-function>
 <gretl-function name="compute_sil_sample" type="scalar" private="1">
  <params count="2">
   <param name="a_i" type="scalar" const="true"/>
@@ -1109,6 +1084,75 @@ elif a_i &lt; b_i
   return 1 - (a_i / b_i)  # well assigned to own cluster
 else # a_i &gt; b_i
   return (b_i / a_i) - 1  # poorly assigned to own cluster
+endif
+</code>
+</gretl-function>
+<gretl-function name="get_metric" type="string" private="1">
+ <params count="1">
+  <param name="distance" type="int" const="true"/>
+ </params>
+<code>/* Only for kmeansGUI(). Maps the integer code to the name of
+the distance measure.
+*/
+strings Distances = all_metrics()
+return Distances[distance]
+</code>
+</gretl-function>
+<gretl-function name="kmeans_distances_print" type="void" private="1">
+ <params count="1">
+  <param name="b" type="bundle" const="true"/>
+ </params>
+<code>between_dist = b.total_distance - b.within_distance
+between_pc = 100 * between_dist / b.total_distance
+
+if metric_is_euclidean(b.metric)
+  printf &quot;  Total sum of squares: %g\n&quot;, b.total_distance
+  printf &quot;  Within-cluster sum of squares: %g\n&quot;, b.within_distance
+  printf &quot;  Between-cluster sum of squares: %g\n&quot;, between_dist
+  printf &quot;  Between as percent of total: %.3f\n&quot;, between_pc
+else
+  printf &quot;  Total distance from global centroid: %g\n&quot;, b.total_distance
+  printf &quot;  Total within-cluster distance: %g\n&quot;, b.within_distance
+  printf &quot;  Between-cluster distance: %g\n&quot;, between_dist
+  printf &quot;  Between as percent of total: %.1f\n&quot;, between_pc
+endif
+printf &quot;\n&quot;
+</code>
+</gretl-function>
+<gretl-function name="GUI_kmeans_plot" type="void" private="1" pkg-role="bundle-plot">
+ <params count="2">
+  <param name="kmb" type="bundleref"/>
+  <param name="ptype" type="int" min="1" max="3" default="1">
+<description>Plot type</description>
+<labels count="3">
+"Pair plot" "Scree plot" "Silhouette plot" </labels>
+  </param>
+ </params>
+<code>list X = kmb.xlist
+smpl X --no-missing
+
+if ptype == 1
+  include PairPlot.gfn
+  series factor = kmb.cluster_id
+  PairPlot(X, factor)
+elif ptype == 2
+  nc = kmb.n_clusters
+  matrix scree = kmeans_scree(X, nc+1)
+  kmeans_screeplot(scree)
+elif ptype == 3
+  kmeans_sil_plot(kmb, X)
+endif
+</code>
+</gretl-function>
+<gretl-function name="kmeans_plot_precheck" type="matrix" private="1" pkg-role="plot-precheck">
+ <params count="1">
+  <param name="kmb" type="bundleref"/>
+ </params>
+<code>if rows(kmb.centroids) &gt; 16 || cols(kmb.centroids) &gt; 9
+  # ensure we're calling PairPlot with sensible dimensions
+  return {0,1,1}
+else
+  return {1,1,1}
 endif
 </code>
 </gretl-function>

@@ -154,9 +154,10 @@ GretlSlice python_slice_to_gretl_slice (const py::slice &slice)
     //
     // we convert Python's slice string accepted by libgretl
     //
+    py::print("python_slice_to_gretl_slice()");
     py::object start = slice.attr("start");
     py::object stop = slice.attr("stop");
-    std::string startobs = is_pynone(start) ? "" : std::to_string(start.cast<int>());
+    std::string startobs = is_pynone(start) ? "" : std::to_string(start.cast<int>() + 1); // this is to get 0-based indexing
     std::string endobs = is_pynone(stop) ? "" : std::to_string(stop.cast<int>());
     std::string slice_str = startobs + ":" + endobs;
 
@@ -290,7 +291,7 @@ GretlDataset::GretlDataset (const py::dict &pydict) : id_(next_obj_id_++)
     NumPyArrayView arr_view;
 
     // lambda for getting int from pydict
-    auto get_int_from_pydict = [&pydict](const char *key, int deflt)
+    auto get_int_from_pydict = [&pydict](const char *key, int deflt) -> int
     {
         int ret = deflt;
 
@@ -341,9 +342,7 @@ GretlDataset::GretlDataset (const py::dict &pydict) : id_(next_obj_id_++)
 
     // we fill up dset->S
     pylist = pydict[py::cast("obs_labels")];
-    if (pylist.size() != static_cast<long unsigned int>(dset->n)) {
-        throw std::invalid_argument("Number of obs_labels is different than number of observations.");
-    }
+    if (pylist.size() != static_cast<long unsigned int>(dset->n)) throw std::invalid_argument("Number of obs_labels is different than number of observations.");
     for (int i=0; i<dset->n; ++i) {
         std::string el = py::str(pylist[i]);
 
@@ -2241,7 +2240,16 @@ std::string GretlMatrix::render_slice_ (const py::tuple &slice) const
         if (is_pyslice(item)) {
             tmp = python_slice_to_gretl_slice(item.cast<py::slice>()).slice_str;
         } else if (is_pyint(item)) {
-            tmp = std::to_string(item.cast<int>());
+            py::print("render_slice_()::int");
+            auto val = item.cast<int>();
+
+            if (val == -1) {
+                tmp = "end";
+            } else if (val < -1) {
+                tmp = "end" + std::to_string(val + 1); // this is to get 0-based indexing
+            } else {
+                tmp = std::to_string(val + 1);
+            }
         } else {
             throw std::invalid_argument("bad slicer passed");
         }
@@ -2409,15 +2417,22 @@ py::object GretlMatrix::get_element (int i, int j) const
 
 GretlMatrixPtr GretlMatrix::get_slice (const py::tuple &slice) const
 {
-    auto slice_str = render_slice_(slice);
-    auto res = exec_slice_(slice_str);
+    auto res = exec_slice_(render_slice_(slice));
 
     return std::make_shared<GretlMatrix>(res.release());
 }
 
 GretlMatrixPtr GretlMatrix::get_slice (const py::slice &slice) const
 {
-    auto slice_str = render_slice_(slice);
+    std::string slice_str;
+    py::object start = slice.attr("start");
+    py::object stop = slice.attr("stop");
+
+    if (is_pynone(start) && is_pynone(stop)) {
+        slice_str = " , ";
+    } else {
+        slice_str = render_slice_(slice);
+    }
     auto res = exec_slice_(slice_str);
 
     return std::make_shared<GretlMatrix>(res.release());
@@ -2425,8 +2440,7 @@ GretlMatrixPtr GretlMatrix::get_slice (const py::slice &slice) const
 
 GretlMatrixPtr GretlMatrix::get_slice (const std::string &slice) const
 {
-    auto slice_str = render_slice_(slice);
-    auto res = exec_slice_(slice_str);
+    auto res = exec_slice_(render_slice_(slice));
 
     return std::make_shared<GretlMatrix>(res.release());
 }

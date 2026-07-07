@@ -514,7 +514,7 @@ void init_gretl4py_gretl_matrix_py11 (py::module_ &m)
                  throw std::invalid_argument("Invalid matrix index");
              }
              if (is_pyslice(idx)) return variant_to_pyobject(self.get_slice(idx.cast<py::slice>()));
-             if (is_pystr(idx)) return variant_to_pyobject(self.get_slice(idx.cast<std::string>()));
+             //if (is_pystr(idx)) return variant_to_pyobject(self.get_slice(idx.cast<std::string>())); # slicing by string is not allowed for the time
              throw std::invalid_argument("Unsupported index type");
          })
     .def("__setitem__",
