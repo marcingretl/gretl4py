@@ -2226,7 +2226,7 @@ gretl_matrix *GretlMatrix::numpy_to_matrix_ (const py::array& array)
 // instance
 void GretlMatrix::check_bounds_ (int i, int j) const
 {
-    if (abs(i) >= m_->rows || abs(j) >= m_->cols) handle_gretl_error(E_BOUNDS, "[i,j]", "[" + std::to_string(i) + "," + std::to_string(j) + "]");
+    if (std::abs(i) >= m_->rows || std::abs(j) >= m_->cols) handle_gretl_error(E_BOUNDS, "[i,j]", "[" + std::to_string(i) + "," + std::to_string(j) + "]");
 }
 
 gretl_matrix_ptr GretlMatrix::exec_slice_ (const std::string &slice_str) const
@@ -2451,7 +2451,7 @@ GretlMatrixPtr GretlMatrix::get_slice (const py::slice &slice) const
     }
     if (is_pynone(start) && is_pynone(stop)) {
         slice_str = ",";
-    } else if ((is_pynone(start) || is_pynone(stop)) && (std::min)(m_->rows, m_->cols) > 1) {
+    } else if ((std::min)(m_->rows, m_->cols) > 1) {
         auto cols_slice = py::slice(py::none(), py::none(), py::none());
         py::tuple tuple = py::make_tuple(slice, cols_slice);
 
