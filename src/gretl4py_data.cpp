@@ -2221,7 +2221,7 @@ gretl_matrix *GretlMatrix::numpy_to_matrix_ (const py::array& array)
 // instance
 void GretlMatrix::check_bounds_ (int i, int j) const
 {
-    if (i < 0 || j < 0 || i >= m_->rows || j >= m_->cols)
+    if (abs(i) >= m_->rows || abs(j) >= m_->cols)
         handle_gretl_error(E_BOUNDS, "[i,j]", "[" + std::to_string(i) + "," + std::to_string(j) + "]");
 }
 
@@ -2412,8 +2412,8 @@ py::object GretlMatrix::get_element (int i, int j) const
     //
     // method for getting matrix element [i, j]
     //
+    check_bounds_(i, j);
     if (i < 0 || j < 0) {
-        check_bounds_(abs(i), abs(j));
         auto res = std::make_unique<GretlTypes>();
         auto mat = exec_slice_(gretl_slice_from_int(i) + "," + gretl_slice_from_int(j));
 
@@ -2421,7 +2421,6 @@ py::object GretlMatrix::get_element (int i, int j) const
 
         return variant_to_pyobject(std::move(*res));
     }
-    check_bounds_(i, j);
     if (is_complex()) {
         return py::cast(c_complex_to_std_complex(gretl_cmatrix_get(m_, i, j)));
     } else {
