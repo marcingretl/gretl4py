@@ -940,12 +940,12 @@ template void genr<std::string>(const std::string&, const std::string&);
     // ext_msg2: additional description for ext_msg
     // note: arg_errors is not complete!!!
     //
-    static const std::unordered_set<int> arg_errors{ E_ARGS, E_INVARG, E_UNKVAR, E_TOOFEW  };
+    static const std::unordered_set<int> arg_errors{ E_ARGS, E_INVARG, E_UNKVAR, E_TOOFEW };
 
     const char *msg_src = errmsg_get_with_default(err);
     std::string msg = msg_src ? msg_src : "unknown error";
 
-    auto build_msg = [&msg, &ext_msg, &ext_msg_desc]() -> void
+    auto build_msg = [&msg, &ext_msg, &ext_msg_desc](void) -> void
     {
         if (!ext_msg.empty()) msg.append(" for '").append(ext_msg).append("'");
         if (!ext_msg_desc.empty()) msg.append(": ").append(ext_msg_desc);
