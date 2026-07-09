@@ -174,6 +174,9 @@ static GretlSlice python_slice_to_gretl_slice (const py::slice &slice)
     //
     py::object start = slice.attr("start");
     py::object stop = slice.attr("stop");
+    py::object step  = slice.attr("step");
+
+    if (!step.is_none()) throw std::invalid_argument("slice steps are not supported");
     std::string startobs = is_pynone(start) ? "1" : gretl_slice_from_int(start.cast<int>());
     std::string endobs = is_pynone(stop) ? "end" : gretl_slice_from_int(stop.cast<int>() - 1);
     std::string slice_str = startobs + ":" + endobs;
@@ -2221,8 +2224,7 @@ gretl_matrix *GretlMatrix::numpy_to_matrix_ (const py::array& array)
 // instance
 void GretlMatrix::check_bounds_ (int i, int j) const
 {
-    if (abs(i) >= m_->rows || abs(j) >= m_->cols)
-        handle_gretl_error(E_BOUNDS, "[i,j]", "[" + std::to_string(i) + "," + std::to_string(j) + "]");
+    if (abs(i) >= m_->rows || abs(j) >= m_->cols) handle_gretl_error(E_BOUNDS, "[i,j]", "[" + std::to_string(i) + "," + std::to_string(j) + "]");
 }
 
 gretl_matrix_ptr GretlMatrix::exec_slice_ (const std::string &slice_str) const
@@ -2440,7 +2442,9 @@ GretlMatrixPtr GretlMatrix::get_slice (const py::slice &slice) const
     std::string slice_str;
     py::object start = slice.attr("start");
     py::object stop = slice.attr("stop");
+    py::object step  = slice.attr("step");
 
+    if (!step.is_none()) throw std::invalid_argument("slice steps are not supported");
     if (is_pynone(start) && is_pynone(stop)) {
         slice_str = ",";
     } else if ((is_pynone(start) || is_pynone(stop)) && (std::min)(m_->rows, m_->cols) > 1) {
