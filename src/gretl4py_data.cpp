@@ -133,6 +133,24 @@ static inline bool has_non_integer_exponent (const gretl_matrix *m)
 }
 */
 
+static std::string gretl_slice_from_int (int val)
+{
+    //
+    // here we manufacture gretl slicing string based on given int value (including negative ones)
+    //
+    std::string slice_str;
+
+    if (val == -1) {
+        slice_str = "end";
+    } else if (val < -1) {
+        slice_str = "end" + std::to_string(val + 1); // this is to get 0-based indexing
+    } else {
+        slice_str = std::to_string(val + 1);
+    }
+
+    return slice_str;
+}
+
 static inline GretlSlice make_gretl_slice (std::string startobs, std::string endobs,
                                            std::string slice_str, py::dict opts = {})
 {
@@ -156,8 +174,8 @@ static GretlSlice python_slice_to_gretl_slice (const py::slice &slice)
     //
     py::object start = slice.attr("start");
     py::object stop = slice.attr("stop");
-    std::string startobs = is_pynone(start) ? "1" : std::to_string(start.cast<int>() + 1); // this is to get 0-based indexing
-    std::string endobs = is_pynone(stop) ? "end" : std::to_string(stop.cast<int>());
+    std::string startobs = is_pynone(start) ? "1" : gretl_slice_from_int(start.cast<int>());
+    std::string endobs = is_pynone(stop) ? "end" : gretl_slice_from_int(stop.cast<int>() - 1);
     std::string slice_str = startobs + ":" + endobs;
 
     return make_gretl_slice(startobs, endobs, slice_str);
@@ -182,24 +200,6 @@ static GretlSlice python_slice_to_gretl_slice (const std::string &slice)
     }
 
     return make_gretl_slice(startobs, endobs, slice, opts);
-}
-
-static std::string gretl_slice_from_int (int val)
-{
-    //
-    // here we manufacture gretl slicing string based on given int value (including negative ones)
-    //
-    std::string slice_str;
-
-    if (val == -1) {
-        slice_str = "end";
-    } else if (val < -1) {
-        slice_str = "end" + std::to_string(val + 1); // this is to get 0-based indexing
-    } else {
-        slice_str = std::to_string(val + 1);
-    }
-
-    return slice_str;
 }
 
 //////////////////////////////////////////////////
@@ -2255,7 +2255,6 @@ std::string GretlMatrix::render_slice_ (const py::tuple &slice) const
         if (is_pyslice(item)) {
             tmp = python_slice_to_gretl_slice(item.cast<py::slice>()).slice_str;
         } else if (is_pyint(item)) {
-            py::print("wchodzę do int-ów");
             tmp = gretl_slice_from_int(item.cast<int>());
         } else {
             throw std::invalid_argument("bad slicer passed");
@@ -2445,24 +2444,14 @@ GretlMatrixPtr GretlMatrix::get_slice (const py::slice &slice) const
 
     if (is_pynone(start) && is_pynone(stop)) {
         slice_str = ",";
-    } /*else if (is_pynone(start) && is_pyint(stop)) {
-        slice_str = "," + gretl_slice_from_int(stop.cast<int>());
-    } else if (is_pyint(start) && is_pynone(stop)) {
-        slice_str = gretl_slice_from_int(start.cast<int>()) + ",";
-    } else if (is_pyint(start) && is_pyint(stop)) {
-        slice_str = gretl_slice_from_int(start.cast<int>()) + "," + gretl_slice_from_int(stop.cast<int>());
-    }*/
-    else if ((is_pynone(start) || is_pynone(stop)) && (std::min)(m_->rows, m_->cols) > 1) {
+    } else if ((is_pynone(start) || is_pynone(stop)) && (std::min)(m_->rows, m_->cols) > 1) {
         auto cols_slice = py::slice(py::none(), py::none(), py::none());
         py::tuple tuple = py::make_tuple(slice, cols_slice);
-        py::print("jedno jest none");
 
         slice_str = render_slice_(tuple);
-        py::print("wyprodukowany string:", slice_str);
     } else {
         slice_str = render_slice_(slice);
     }
-    py::print("slice_str (get_slice)", slice_str);
     auto res = exec_slice_(slice_str);
 
     return std::make_shared<GretlMatrix>(res.release());
