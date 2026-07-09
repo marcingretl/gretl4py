@@ -34,13 +34,19 @@ extern "C" {
 #if defined(_WIN32)
 # include <gretl/gretl_win32.h>
 #else
-#include <curl/curl.h>
+# include <curl/curl.h>
 #endif
 
 #if (defined __GNUC__) && !(defined __clang__)
 # define COMPILER_IDENT "GCC " __VERSION__
 #else
 # define COMPILER_IDENT __VERSION__
+#endif
+
+// Windows SDK defines E_BOUNDS as an HRESULT macro (0x8000000B),
+// which conflicts with libgretl's GretlError::E_BOUNDS enumerator.
+#ifdef E_BOUNDS
+# undef E_BOUNDS
 #endif
 
 // external symbols
