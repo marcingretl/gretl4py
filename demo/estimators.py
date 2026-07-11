@@ -115,15 +115,13 @@ print(res)
 # biprobit                          #
 #####################################
 greene25_1.set_as_default()
+# [3, 1, 0, 4, 7, ';', 0, 4, 5, 8, 9] is equivalent to: 'anydrg cardhldr const age avgexp ; const age income ownrent selfempl'
 res = gretl.biprobit(
-    'anydrg cardhldr const age avgexp ; const age income ownrent selfempl'
+    [3, 1, 0, 4, 7, ';', 0, 4, 5, 8, 9]
     ).fit()
-res2 = gretl.biprobit([3, 1, 0, 4, 7, ';', 0, 4, 5, 8, 9]).fit()
 assert_fp_close(res.bic, biprobit_bic, "biprobit BIC")
 print(res)
-print(res2)
-print(res2.get_formula())
-exit()
+
 #####################################
 # dpanel                            #
 #####################################
@@ -156,6 +154,22 @@ print(res)
 res = gretl.duration('Ti 0 Prod', exponential=True).fit()
 assert res.iters == duration_ex_iters
 print(res)
+
+#####################################
+# quantreg                          #
+#####################################
+mrw.new_series("ly60 = log(gdp60)")
+mrw.new_series("dlny = log(gdp85) - ly60")
+mrw.new_series("ngd = 0.05 + (popgrow/100)")
+mrw.new_series("lngd = log(ngd)")
+mrw.new_series("linv = log(i_y/100)")
+mrw.new_series("lschool = log(school/100)")
+mrw.sample("nonoil", dummy=True)
+
+res = gretl.quantreg(tau=0.75, varlist=[11, 0, 10, 14, 13, 15], data=mrw).fit() #"dlny const ly60 linv lngd lschool"
+assert_fp_close(res.bic, quantreg_bic, "quantreg BIC")
+print(res)
+mrw.sample(full=True)
 
 #####################################
 # garch                             #

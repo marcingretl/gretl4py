@@ -566,7 +566,6 @@ void do_gretl_pkg (const std::string &action, const std::string &pkgname, const 
             // local installation
             localfile = functions_dir / pkgname_as_path.filename();
             py::print("installing package:", pkgname, "->", localfile.string());
-            //pprintf(prn, _("Installed %s\n"), pkgname);
             err = gretl_copy_file(pkgname.c_str(), localfile.string().c_str());
         } else {
             // we retrieve package from SF

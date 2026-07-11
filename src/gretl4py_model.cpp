@@ -782,9 +782,7 @@ template class GretlModel_NSE_Driver<midas_model, MIDASREG>;
 //
 GretlModel_NSE_Driver_quantreg::GretlModel_NSE_Driver_quantreg (const std::string &formula, const double &tau, const py::kwargs &kwargs)
                                                                 : GretlModel_NSE_Driver<quantreg_driver, QUANTREG>(formula, kwargs), tau_(std::to_string(tau))
-{
-    py::print("GretlModel_NSE_Driver_quantreg: formula:");
-}
+{}
 
 GretlModel_NSE_Driver_quantreg::GretlModel_NSE_Driver_quantreg (const std::string &formula, const py::array_t<double> &tau, const py::kwargs &kwargs)
                                                                 : GretlModel_NSE_Driver<quantreg_driver, QUANTREG>(formula, kwargs)
@@ -800,10 +798,7 @@ GretlModel_NSE_Driver_quantreg::GretlModel_NSE_Driver_quantreg (const std::strin
 
 GretlModel_NSE_Driver_quantreg::GretlModel_NSE_Driver_quantreg (const py::list &varlist, const double &tau, const py::kwargs &kwargs)
                                                                 : GretlModel_NSE_Driver<quantreg_driver, QUANTREG>(varlist, kwargs), tau_(std::to_string(tau))
-{
-    py::print("GretlModel_NSE_Driver_quantreg: varlist:");
-    //py::print(varlist);
-}
+{}
 
 GretlModel_NSE_Driver_quantreg::GretlModel_NSE_Driver_quantreg (const py::list &varlist, const py::array_t<double> &tau, const py::kwargs &kwargs)
                                                                 : GretlModel_NSE_Driver<quantreg_driver, QUANTREG>(varlist, kwargs)

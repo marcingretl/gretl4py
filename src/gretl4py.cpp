@@ -228,8 +228,6 @@ PYBIND11_MODULE(_gretl, m)
               return GretlModelPtr(std::move(model));
           },
           py::arg("tau").none(false), py::arg("formula").none(false), py::kw_only());
-
-
     m.def("quantreg",
           [](double tau, const py::list &varlist, const py::kwargs &kwargs) -> GretlModelPtr
           {
@@ -246,9 +244,6 @@ PYBIND11_MODULE(_gretl, m)
               return GretlModelPtr(std::move(model));
           },
           py::arg("tau").none(false), py::arg("varlist").none(false), py::kw_only());
-
-
-
     m.def("dpanel",
           [](int p, const std::string &formula, const py::kwargs &kwargs) -> GretlModelPtr
           {
