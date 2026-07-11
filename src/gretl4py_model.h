@@ -177,6 +177,8 @@ private:
 public:
     GretlModel_NSE_Driver_quantreg (const std::string &formula, const double &tau, const py::kwargs &kwargs);
     GretlModel_NSE_Driver_quantreg (const std::string &formula, const py::array_t<double> &tau, const py::kwargs &kwargs);
+    GretlModel_NSE_Driver_quantreg (const py::list &varlist, const double &tau, const py::kwargs &kwargs);
+    GretlModel_NSE_Driver_quantreg (const py::list &varlist, const py::array_t<double> &tau, const py::kwargs &kwargs);
 
     void fit (void) override;
 };

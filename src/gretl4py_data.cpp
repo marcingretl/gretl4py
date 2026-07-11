@@ -1709,6 +1709,7 @@ gretl_list_ptr GretlDataset::gretllist (const py::list &list, int *err)
     //
     gretl_list_ptr res;
     std::string formula;
+
     if (err) *err = 0;
 
     // for non-empty list, we manufacture a string to be used by generate_list()

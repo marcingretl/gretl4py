@@ -117,10 +117,13 @@ print(res)
 greene25_1.set_as_default()
 res = gretl.biprobit(
     'anydrg cardhldr const age avgexp ; const age income ownrent selfempl'
-).fit()
+    ).fit()
+res2 = gretl.biprobit([3, 1, 0, 4, 7, ';', 0, 4, 5, 8, 9]).fit()
 assert_fp_close(res.bic, biprobit_bic, "biprobit BIC")
 print(res)
-
+print(res2)
+print(res2.get_formula())
+exit()
 #####################################
 # dpanel                            #
 #####################################

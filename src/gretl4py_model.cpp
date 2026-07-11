@@ -695,7 +695,12 @@ std::string GretlModel_NSE_Driver<F, CI>::get_formula (void) const
         auto var_list_tmp = var_list_.get();
 
         for (int i=1; i<=var_list_tmp[0]; ++i) {
-            formula_tmp += std::string(dataset_->dset->varname[var_list_tmp[i]]) + " ";
+            if (var_list_tmp[i] == LISTSEP) {
+                formula_tmp += ";";
+            } else {
+                formula_tmp += dataset_->dset->varname[var_list_tmp[i]];
+            }
+            formula_tmp += " ";
         }
         return gretl4py_trim(formula_tmp);
     }
@@ -777,10 +782,31 @@ template class GretlModel_NSE_Driver<midas_model, MIDASREG>;
 //
 GretlModel_NSE_Driver_quantreg::GretlModel_NSE_Driver_quantreg (const std::string &formula, const double &tau, const py::kwargs &kwargs)
                                                                 : GretlModel_NSE_Driver<quantreg_driver, QUANTREG>(formula, kwargs), tau_(std::to_string(tau))
-{}
+{
+    py::print("GretlModel_NSE_Driver_quantreg: formula:");
+}
 
 GretlModel_NSE_Driver_quantreg::GretlModel_NSE_Driver_quantreg (const std::string &formula, const py::array_t<double> &tau, const py::kwargs &kwargs)
                                                                 : GretlModel_NSE_Driver<quantreg_driver, QUANTREG>(formula, kwargs)
+{
+    if (tau.ndim() != 1) throw std::invalid_argument("'tau' is expected to be a vector");
+    tau_ = "{";
+    for (int i=0; i<tau.shape(0); ++i) {
+        tau_.append(std::to_string(tau.at(i)));
+        if (i < tau.shape(0)-1) tau_.append(";");
+    }
+    tau_.append("}");
+}
+
+GretlModel_NSE_Driver_quantreg::GretlModel_NSE_Driver_quantreg (const py::list &varlist, const double &tau, const py::kwargs &kwargs)
+                                                                : GretlModel_NSE_Driver<quantreg_driver, QUANTREG>(varlist, kwargs), tau_(std::to_string(tau))
+{
+    py::print("GretlModel_NSE_Driver_quantreg: varlist:");
+    //py::print(varlist);
+}
+
+GretlModel_NSE_Driver_quantreg::GretlModel_NSE_Driver_quantreg (const py::list &varlist, const py::array_t<double> &tau, const py::kwargs &kwargs)
+                                                                : GretlModel_NSE_Driver<quantreg_driver, QUANTREG>(varlist, kwargs)
 {
     if (tau.ndim() != 1) throw std::invalid_argument("'tau' is expected to be a vector");
     tau_ = "{";
@@ -797,7 +823,7 @@ void GretlModel_NSE_Driver_quantreg::fit (void)
     check_if_estimated_();
 
     // we define list of variables
-    var_list_ = dataset_->gretllist(formula_);
+    if (!var_list_from_list_) var_list_ = dataset_->gretllist(formula_);
 
     // we do the job
     *model_ = quantreg_driver(tau_.c_str(), var_list_.get(), dataset_->dset, opt_, printer_.prn_ptr());
