@@ -159,6 +159,7 @@ void init_gretl4py_dataset_py11 (py::module_ &m)
              {
                  self.smpl(std::to_string(startobs), "", kwargs);
              }, py::arg("startobs").none(false), py::kw_only())
+        .def("sample_status", &GretlDataset::sample_status)
         .def("setobs",
              [](GretlDataset &self, std::string &periodicity, const std::string &startobs, const py::kwargs &kwargs)
              {

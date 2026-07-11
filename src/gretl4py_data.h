@@ -110,6 +110,8 @@ public:
 
     void set_as_default (void);
 
+    void sample_status (void) const noexcept;
+
     // exporters
     py::object get_accessor (const std::string &name);
 

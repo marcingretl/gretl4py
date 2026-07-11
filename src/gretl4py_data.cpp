@@ -1508,6 +1508,12 @@ void GretlDataset::set_as_default (void)
     is_default = true;
 }
 
+void GretlDataset::sample_status (void) const noexcept
+{
+    print_sample_status(dset, printer_.prn_ptr());
+    printer_.print();
+}
+
 int GretlDataset::get_id (void) const noexcept
 {
     return id_;
