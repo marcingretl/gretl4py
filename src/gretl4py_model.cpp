@@ -693,10 +693,9 @@ std::string GretlModel_NSE_Driver<F, CI>::get_formula (void) const
     if (var_list_from_list_) {
         std::string formula_tmp;
         auto var_list_tmp = var_list_.get();
-        auto varnames = dataset_->varnames();
 
         for (int i=1; i<=var_list_tmp[0]; ++i) {
-            formula_tmp += varnames[static_cast<py::ssize_t>(var_list_tmp[i])].cast<std::string>() + " ";
+            formula_tmp += std::string(dataset_->dset->varname[var_list_tmp[i]]) + " ";
         }
         return gretl4py_trim(formula_tmp);
     }
