@@ -676,12 +676,31 @@ void GretlModel_NSE_arima::fit (void)
 //
 template <auto F, GretlCmdIndex CI>
 GretlModel_NSE_Driver<F, CI>::GretlModel_NSE_Driver (const std::string &formula, const py::kwargs &kwargs)
-                                                     : GretlModel_NSE(CI, kwargs), formula_(formula)
+                                                    : GretlModel_NSE(CI, kwargs), formula_(formula)
 {}
+
+template <auto F, GretlCmdIndex CI>
+GretlModel_NSE_Driver<F, CI>::GretlModel_NSE_Driver (const py::list &varlist, const py::kwargs &kwargs)
+                                                    : GretlModel_NSE(CI, kwargs)
+{
+    var_list_ = dataset_->gretllist(varlist);
+    var_list_from_list_ = true;
+}
 
 template <auto F, GretlCmdIndex CI>
 std::string GretlModel_NSE_Driver<F, CI>::get_formula (void) const
 {
+    if (var_list_from_list_) {
+        std::string formula_tmp;
+        auto var_list_tmp = var_list_.get();
+        auto varnames = dataset_->varnames();
+
+        for (int i=1; i<=var_list_tmp[0]; ++i) {
+            formula_tmp += varnames[static_cast<py::ssize_t>(var_list_tmp[i])].cast<std::string>() + " ";
+        }
+        return gretl4py_trim(formula_tmp);
+    }
+
     return formula_;
 }
 
@@ -704,7 +723,7 @@ void GretlModel_NSE_Driver<F, CI>::fit (void)
         regexp_extract_<CI>(formula_, formula_left, formula_right);
         var_list_ = dataset_->gretllist(formula_left);
     } else {
-        var_list_ = dataset_->gretllist(formula_);
+        if (!var_list_from_list_) var_list_ = dataset_->gretllist(formula_);
     }
 
     // we call F as an estimator

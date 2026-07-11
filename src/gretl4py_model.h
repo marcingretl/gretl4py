@@ -51,6 +51,7 @@ protected:
     mutable int err_ = 0;               // holds libgretl errors (instance-wide)
     GretlDatasetPtr dataset_;           // dataset used
     gretl_list_ptr var_list_{nullptr};  // libgretl list of variables
+    bool var_list_from_list_ = false;   // whether varlist was passed directly as Python's list (i.e. not as formula)
     GretlBundlePtr gb_model_ = nullptr; // bundle with results
     GretlPrint printer_ = GretlPrint(); // printer (instance wide)
     std::string summary_;               // model summary to print on python side
@@ -158,6 +159,7 @@ protected:
     const std::string formula_;         // formula defining model
 public:
     GretlModel_NSE_Driver (const std::string &formula, const py::kwargs &kwargs);
+    GretlModel_NSE_Driver (const py::list &varlist, const py::kwargs &kwargs);
 
     void fit (void) override;
 

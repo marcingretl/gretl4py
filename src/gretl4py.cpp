@@ -29,7 +29,14 @@
               auto model = std::make_unique<GretlModel_NSE_Driver<FUNC, CI>>(formula, kwargs); \
               return GretlModelPtr(std::move(model)); \
           }, \
-          py::arg("formula").none(false), py::kw_only());
+          py::arg("formula").none(false), py::kw_only()); \
+    m.def(#NAME, \
+          [](const py::list &varlist, const py::kwargs &kwargs) -> GretlModelPtr \
+          { \
+              auto model = std::make_unique<GretlModel_NSE_Driver<FUNC, CI>>(varlist, kwargs); \
+              return GretlModelPtr(std::move(model)); \
+          }, \
+          py::arg("varlist").none(false), py::kw_only());
 
 static const std::string info = "The gretl4py package provides "
     "an interface to the gretl library for python3 "

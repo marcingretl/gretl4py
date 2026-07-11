@@ -6,6 +6,7 @@ version 0.52:
     - kmeans addon added + all addons updates
     - Python's list of integers is now interpreted as libgretl list (selected functions in methods)
     - GretlPackage functions: Python's list fully supported
+    - initial support for passing variables list as a Python's list
 
 version 0.51:
     - function returned type: support for GRETL_TYPE_NUMERIC added
