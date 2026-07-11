@@ -1,5 +1,6 @@
 import numpy as np
 import gretl
+import time
 
 
 def printhead(title, full=True):
@@ -18,10 +19,18 @@ def runtime(t):
     print(f"\n*** total execution time: {t:.6f} seconds ***\n")
 
 
-def summary_res(res_gretl: gretl.Model, res_sm: np.ndarray, const_pos: str = "first"):
+def summary_res(res_gretl: gretl.Model, res_sm, const_pos="first", drop_last=False):
+
+    sm_params = np.asarray(res_sm.params).ravel()
+    sm_bse = np.asarray(res_sm.bse).ravel()
+
+    if drop_last:
+        sm_params = sm_params[:-1]
+        sm_bse = sm_bse[:-1]
+
     rows = res_gretl.coeff.rows
 
-    if rows != len(res_sm.params):
+    if rows != len(sm_params):
         raise RuntimeError("models are not conformable")
 
     if const_pos not in ("first", "last"):
@@ -30,35 +39,26 @@ def summary_res(res_gretl: gretl.Model, res_sm: np.ndarray, const_pos: str = "fi
     res_coeff = gretl.Matrix(rows, 2)
     res_stderr = gretl.Matrix(rows, 2)
 
-    # --- gretl side (always column vector -> flatten safely)
-    g_coeff = res_gretl.coeff.numpy_view[:, 0].ravel()
-    g_stderr = res_gretl.stderr.numpy_view[:, 0].ravel()
+    # gretl
+    res_coeff.numpy_view[:, 1] = res_gretl.coeff.numpy_view[:, 0]
+    res_stderr.numpy_view[:, 1] = res_gretl.stderr.numpy_view[:, 0]
 
-    # assign gretl (right column)
-    res_coeff.numpy_view[:, 1] = g_coeff
-    res_stderr.numpy_view[:, 1] = g_stderr
-
-    # --- statsmodels side
-    sm_params = np.asarray(res_sm.params).ravel()
-    sm_bse = np.asarray(res_sm.bse).ravel()
-
-    if const_pos == "last":
-        sm_params = np.concatenate(([sm_params[-1]], sm_params[:-1]))
-        sm_bse = np.concatenate(([sm_bse[-1]], sm_bse[:-1]))
-
-    # assign statsmodels (left column)
+    # statsmodels
     res_coeff.numpy_view[:, 0] = sm_params
     res_stderr.numpy_view[:, 0] = sm_bse
 
     res_coeff.rnameset(res_gretl.parnames)
     res_stderr.rnameset(res_gretl.parnames)
+
     res_coeff.cnameset(["statsmodels", "gretl4py"])
     res_stderr.cnameset(["statsmodels", "gretl4py"])
 
     print("coefficients:")
     print(res_coeff)
+
     print("std. errors:")
     print(res_stderr)
+
 
 def runtime_ratio(sm_time: float, gr_time: float):
     if sm_time <= 0.0:
@@ -66,8 +66,6 @@ def runtime_ratio(sm_time: float, gr_time: float):
 
     ratio = gr_time / sm_time
     print(f"gretl4py / statsmodels runtime ratio = {ratio:.6f}\n")
-
-import time
 
 def benchmark_fit(fn, repeat=100):
     # warm-up
