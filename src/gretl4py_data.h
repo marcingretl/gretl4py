@@ -121,7 +121,11 @@ public:
     GretlMatrixPtr to_matrix (const T &list, int startobs = 0, int endobs = 0, const std::string &missing = "ok");
 
     // dataset information
-    bool is_panel (void) const;
+    [[nodiscard]] bool is_panel (void) const noexcept;
+
+    [[nodiscard]] bool is_time_series (void) const noexcept;
+
+    [[nodiscard]] bool is_cross_section (void) const noexcept;
 
     py::list varnames (void) const;
 

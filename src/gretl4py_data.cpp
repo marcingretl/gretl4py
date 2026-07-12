@@ -670,9 +670,19 @@ py::list GretlDataset::get_obs_labels (void) const
     return py::cast(obs_labels_);
 }
 
-bool GretlDataset::is_panel (void) const
+[[nodiscard]] bool GretlDataset::is_panel (void) const noexcept
 {
     return static_cast<bool>(dataset_is_panel(dset));
+}
+
+[[nodiscard]] bool GretlDataset::is_time_series (void) const noexcept
+{
+    return static_cast<bool>(dataset_is_time_series(dset));
+}
+
+[[nodiscard]] bool GretlDataset::is_cross_section (void) const noexcept
+{
+    return static_cast<bool>(dataset_is_cross_section(dset));
 }
 
 std::string GretlDataset::summary (bool print) const noexcept

@@ -79,10 +79,20 @@ void init_gretl4py_dataset_py11 (py::module_ &m)
     py::class_<GretlDataset, GretlDatasetPtr>(m, "Dataset", py::dynamic_attr())
         .def_readonly("is_default", &GretlDataset::is_default)
         .def_readonly("source", &GretlDataset::source)
-        .def_property_readonly("_is_panel",
+        .def_property_readonly("is_panel",
                                [](const GretlDataset &self)
                                {
                                    return self.is_panel();
+                               })
+        .def_property_readonly("is_time_series",
+                               [](const GretlDataset &self)
+                               {
+                                   return self.is_time_series();
+                               })
+        .def_property_readonly("is_cross_section",
+                               [](const GretlDataset &self)
+                               {
+                                   return self.is_cross_section();
                                })
         .def_property_readonly("n",
                                [](const GretlDataset &self)

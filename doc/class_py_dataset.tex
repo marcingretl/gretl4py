@@ -49,19 +49,31 @@ The \classpydataset provides the following public attributes:
 .id -> int
 \end{lstlisting}
 
-\gretlfpycmd{is\_panel}
-\estdesc{Checks if we deal with panel-dataset.}
+\gretlfpycmd{is\_cross\_section }
+\estdesc{Checks if we deal with cross section  dataset.}
 \begin{lstlisting}[style=pythonstylefoot]
-.is_panel -> bool
+.is_cross_section -> bool
 \end{lstlisting}
 
 \gretlfpycmd{is\_default}\label{attr:gretldataset:is_default}
 \estdesc{Checks if dataset is marked as ``default''.}
 \begin{lstlisting}[style=pythonstylefoot]
-.is_panel -> bool
+.is_default -> bool
 \end{lstlisting}
 \generaldesc{To set given dataset as default, please
 	refer to \ref{met:gretldataset:set_as_default}.}
+
+\gretlfpycmd{is\_panel}
+\estdesc{Checks if we deal with panel dataset.}
+\begin{lstlisting}[style=pythonstylefoot]
+.is_panel -> bool
+\end{lstlisting}
+
+\gretlfpycmd{is\_time\_series }
+\estdesc{Checks if we deal with time series.}
+\begin{lstlisting}[style=pythonstylefoot]
+.is_time_series -> bool
+\end{lstlisting}
 
 \gretlfpycmd{k}
 \estdesc{Returns the number of series in the dataset (including the constant).}
