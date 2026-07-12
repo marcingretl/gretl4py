@@ -2,7 +2,7 @@ version 0.52:
     - apparatus for hansl script execution
     - GretlPackage:: new _run_sample() method (experimental)
     - new GretlMatrix class as a default reprezentation of libgretl's gretl_matrix type
-    - GretlDataset:: new to_matrix(), new_list() based on Python's list, new_series() from GretlMatrix, sample_status()
+    - GretlDataset:: new to_matrix(), new_list() based on Python's list, new_series() from GretlMatrix, summary() improved a little
     - kmeans addon added + all addons updates
     - Python's list of integers is now interpreted as libgretl list (selected functions in methods)
     - GretlPackage functions: Python's list fully supported

@@ -675,20 +675,15 @@ bool GretlDataset::is_panel (void) const
     return static_cast<bool>(dataset_is_panel(dset));
 }
 
-std::string GretlDataset::summary (bool print) const
+std::string GretlDataset::summary (bool print) const noexcept
 {
     //
     // method prints basic info about dataset
     //
     auto *prn = printer_.prn_ptr();
 
-    if (dataset_is_time_series(dset)) {
-        pprintf(prn, "Time series, frequency %d, T = %d, %s to %s\n\n", dset->pd, dset->n, obs_labels_.at(0).c_str(), obs_labels_.back().c_str());
-    } else if (is_panel()) {
-        pprintf(prn, "Panel data, N = %d, T = %d\n\n", dset->n / dset->pd, dset->pd);
-    } else {
-        pprintf(prn, "Cross-sectional data, N = %d\n\n", dset->n);
-    }
+    print_sample_status(dset, prn);
+    pprintf(prn, "\n");
     list_series(dset, OPT_NONE, prn);
     if (print) printer_.print();
 
@@ -1506,12 +1501,6 @@ void GretlDataset::set_as_default (void)
     if (auto current_default = default_dataset_.lock()) current_default->is_default = false;
     default_dataset_ = weak_from_this();
     is_default = true;
-}
-
-void GretlDataset::sample_status (void) const noexcept
-{
-    print_sample_status(dset, printer_.prn_ptr());
-    printer_.print();
 }
 
 int GretlDataset::get_id (void) const noexcept

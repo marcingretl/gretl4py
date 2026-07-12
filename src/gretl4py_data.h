@@ -110,8 +110,6 @@ public:
 
     void set_as_default (void);
 
-    void sample_status (void) const noexcept;
-
     // exporters
     py::object get_accessor (const std::string &name);
 
@@ -131,7 +129,7 @@ public:
 
     py::list get_obs_labels (void) const;
 
-    std::string summary (bool print = true) const;
+    std::string summary (bool print = true) const noexcept;
 
     // dataset management
     void setobs (const std::string &periodicity, const std::string &startobs, const py::kwargs &kwargs);
