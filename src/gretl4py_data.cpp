@@ -816,8 +816,7 @@ GretlMatrixPtr GretlDataset::to_matrix (const T &list, int startobs, int endobs,
 template GretlMatrixPtr GretlDataset::to_matrix<std::string>(const std::string &list, int startobs, int endobs, const std::string &missing);
 template GretlMatrixPtr GretlDataset::to_matrix<py::list>(const py::list &list, int startobs, int endobs, const std::string &missing);
 
-char *GretlDataset::add_series (gretl_double_ptr data, const std::string &name,
-                                int n, gretl_gchar_ptr label)
+char *GretlDataset::add_series (gretl_double_ptr data, const std::string &name, int n, gretl_gchar_ptr label)
 {
     //
     // Here we add existing series to dataset

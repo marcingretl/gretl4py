@@ -77,7 +77,7 @@ void gretl4py_init (void)
     std::string start_dir = py::str(start);
 
     if (int err = gretl_set_path_by_name("workdir", start_dir.c_str())) handle_gretl_error(err);
-    if (const char* env = std::getenv("GRETL_HOME"); env) {
+    if (const char *env = std::getenv("GRETL_HOME"); env) {
         if (int err = gretl_set_path_by_name("gretldir", env)) handle_gretl_error(err);
         std::filesystem::path dotdir_path = std::filesystem::path(std::string(env)) / "tmp";
 
