@@ -230,6 +230,13 @@ assert_fp_close(res.bic, logistic_bic, "logistic BIC")
 print(res)
 
 #####################################
+# tobit                             #
+#####################################
+res = gretl.tobit([5, 0, 2, 3, 8, 7], llimit=400, rlimit=600.7, data=tobit).fit() #apt ~ const + read + math + proggeneral + progvocational
+assert_fp_close(res.bic, tobit_bic, "tobit BIC")
+print(res)
+
+#####################################
 # tsls                              #
 #####################################
 res = gretl.tsls('Y Y(-1) X ; 0 X Y(-2)', data=penngrow).fit()

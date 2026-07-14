@@ -73,6 +73,7 @@ GretlModel::GretlModel (GretlObjType model_obj_type, GretlCmdIndex ci, const py:
                 continue;
             } else if (key == "xlist" && (ci_ == ARMA || ci_ == VAR || ci_ == VECM)) {
                 // var special: here we only check if xlist is a string, but we must do something with it elsewhere
+                if (is_pylist(item.second)) throw std::invalid_argument("'xlist' passed as list must be implied!!!");
                 if (!is_pystr(item.second)) throw std::invalid_argument("'xlist' must be a string");
                 continue;
             } else if (key == "rxlist" && ci_ == VECM) {
@@ -896,13 +897,21 @@ GretlModel_NSE_Driver_tobit::GretlModel_NSE_Driver_tobit (const std::string &for
     if (kwargs.contains("rlimit") && !kwargs["rlimit"].is_none()) rlimit_ = py::cast<double>(kwargs["rlimit"]);
 }
 
+GretlModel_NSE_Driver_tobit::GretlModel_NSE_Driver_tobit (const py::list &varlist, const py::kwargs &kwargs)
+                                                            : GretlModel_NSE_Driver<tobit_model, TOBIT>(varlist, kwargs)
+{
+    // we set (l/r)limit
+    if (kwargs.contains("llimit") && !kwargs["llimit"].is_none()) llimit_ = py::cast<double>(kwargs["llimit"]);
+    if (kwargs.contains("rlimit") && !kwargs["rlimit"].is_none()) rlimit_ = py::cast<double>(kwargs["rlimit"]);
+}
+
 void GretlModel_NSE_Driver_tobit::fit (void)
 {
     // we check if we deal with clean model
     check_if_estimated_();
 
     // we define list of variables
-    var_list_ = dataset_->gretllist(formula_);
+    if (!var_list_from_list_) var_list_ = dataset_->gretllist(formula_);
 
     // we do the job
     *model_ = tobit_model(var_list_.get(), llimit_, rlimit_, dataset_->dset, opt_, printer_.prn_ptr());

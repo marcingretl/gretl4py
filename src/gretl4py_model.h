@@ -209,6 +209,7 @@ private:
     double rlimit_ = NADBL;
 public:
     GretlModel_NSE_Driver_tobit (const std::string &formula, const py::kwargs &kwargs);
+    GretlModel_NSE_Driver_tobit (const py::list &varlist, const py::kwargs &kwargs);
 
     void fit (void) override;
 };

@@ -242,8 +242,7 @@ PYBIND11_MODULE(_gretl, m)
               auto model = std::make_unique<GretlModel_NSE_Driver_quantreg>(varlist, tau, kwargs);
 
               return GretlModelPtr(std::move(model));
-          },
-          py::arg("tau").none(false), py::arg("varlist").none(false), py::kw_only());
+          }, py::arg("tau").none(false), py::arg("varlist").none(false), py::kw_only());
     m.def("dpanel",
           [](int p, const std::string &formula, const py::kwargs &kwargs) -> GretlModelPtr
           {
@@ -268,7 +267,15 @@ PYBIND11_MODULE(_gretl, m)
               return GretlModelPtr(std::move(model));
           },
           py::arg("formula").none(false), py::kw_only());
-    m.def("_nls",
+     m.def("tobit",
+           [](const py::list &varlist, const py::kwargs &kwargs) -> GretlModelPtr
+           {
+               auto model = std::make_unique<GretlModel_NSE_Driver_tobit>(varlist, kwargs);
+
+               return GretlModelPtr(std::move(model));
+           },
+           py::arg("varlist").none(false), py::kw_only());
+     m.def("_nls",
           [](const std::string &function, const py::kwargs &kwargs) -> GretlModelPtr
           {
               auto model = std::make_unique<GretlModel_NSE_nl<NLS>>(function, kwargs);
