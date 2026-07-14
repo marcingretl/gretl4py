@@ -678,12 +678,30 @@ void GretlModel_NSE_arima::fit (void)
 template <auto F, GretlCmdIndex CI>
 GretlModel_NSE_Driver<F, CI>::GretlModel_NSE_Driver (const std::string &formula, const py::kwargs &kwargs)
                                                     : GretlModel_NSE(CI, kwargs), formula_(formula)
-{}
+{
+    // for DPANEL we manufacture var_list_ in class constructor
+    if constexpr (CI == DPANEL) return;
+
+    // we construct libgretl list of variables
+    if constexpr (CI == MIDASREG) {
+        std::string formula_left;
+
+        formula_right_ = "";
+        regexp_extract_<MIDASREG>(formula_, formula_left, formula_right_);
+        var_list_ = dataset_->gretllist(formula_left);
+    } else {
+        var_list_ = dataset_->gretllist(formula_);
+    }
+}
 
 template <auto F, GretlCmdIndex CI>
 GretlModel_NSE_Driver<F, CI>::GretlModel_NSE_Driver (const py::list &varlist, const py::kwargs &kwargs)
                                                     : GretlModel_NSE(CI, kwargs)
 {
+    // for DPANEL we manufacture var_list_ in class constructor
+    if constexpr (CI == DPANEL) return;
+
+    // we construct libgretl list of variables
     var_list_ = dataset_->gretllist(varlist);
     var_list_from_list_ = true;
 }
@@ -716,20 +734,8 @@ std::string GretlModel_NSE_Driver<F, CI>::get_formula (void) const
 template <auto F, GretlCmdIndex CI>
 void GretlModel_NSE_Driver<F, CI>::fit (void)
 {
-    std::string formula_right = "";
-
     // we check if we deal with clean model
     check_if_estimated_();
-
-    // we construct the model
-    if constexpr (CI == MIDASREG) {
-        std::string formula_left;
-
-        regexp_extract_<CI>(formula_, formula_left, formula_right);
-        var_list_ = dataset_->gretllist(formula_left);
-    } else {
-        if (!var_list_from_list_) var_list_ = dataset_->gretllist(formula_);
-    }
 
     // we call F as an estimator
     if constexpr (USE_LDCO_SIG(CI)) {
@@ -749,7 +755,7 @@ void GretlModel_NSE_Driver<F, CI>::fit (void)
     } else if constexpr (USE_LCDOP_SIG(CI)) {
         *model_ = F(var_list_.get(), static_cast<int>(CI), dataset_->dset, opt_, printer_.prn_ptr());
     } else if constexpr (CI == MIDASREG) {
-        *model_ = F(var_list_.get(), formula_right.c_str(), dataset_->dset, opt_, printer_.prn_ptr());
+        *model_ = F(var_list_.get(), formula_right_.c_str(), dataset_->dset, opt_, printer_.prn_ptr());
     }
 
     // save results
@@ -818,9 +824,6 @@ void GretlModel_NSE_Driver_quantreg::fit (void)
     // we check if we deal with clean model
     check_if_estimated_();
 
-    // we define list of variables
-    if (!var_list_from_list_) var_list_ = dataset_->gretllist(formula_);
-
     // we do the job
     *model_ = quantreg_driver(tau_.c_str(), var_list_.get(), dataset_->dset, opt_, printer_.prn_ptr());
 
@@ -836,6 +839,13 @@ GretlModel_NSE_Driver_dpanel::GretlModel_NSE_Driver_dpanel (const std::string &f
                                                             : GretlModel_NSE_Driver<dpd_model, DPANEL>(formula, kwargs)
 {
     lags_.push_back(p);
+
+    // we construct libgretl list of variables
+    std::string formula_left;
+
+    formula_right_ = "";
+    regexp_extract_<DPANEL>(formula_, formula_left, formula_right_);
+    var_list_ = dataset_->gretllist(formula_left);
 }
 
 GretlModel_NSE_Driver_dpanel::GretlModel_NSE_Driver_dpanel (const std::string &formula, const py::array_t<int> &p, const py::kwargs &kwargs)
@@ -845,29 +855,29 @@ GretlModel_NSE_Driver_dpanel::GretlModel_NSE_Driver_dpanel (const std::string &f
     for (int i=0; i<p.shape(0); ++i) {
         lags_.push_back(static_cast<double>(p.at(i)));
     }
+
+    // we construct libgretl list of variables
+    std::string formula_left;
+
+    formula_right_ = "";
+    regexp_extract_<DPANEL>(formula_, formula_left, formula_right_);
+    var_list_ = dataset_->gretllist(formula_left);
 }
 
 void GretlModel_NSE_Driver_dpanel::fit (void)
 {
     gretl_list_ptr dpanel_list{nullptr};
     gretl_list_ptr laglist{nullptr};
-    std::string formula_left;
-    std::string formula_right = "";
 
     // we check if we deal with clean model
     check_if_estimated_();
-
-    // we define list of variables
-    regexp_extract_<DPANEL>(formula_, formula_left, formula_right);
-    var_list_ = dataset_->gretllist(formula_left);
 
     // we setup dpanel_list: lags + var_list
     dpanel_list.reset(gretl_list_new(var_list_.get()[0] + 2));
     if (lags_.size() == 1) {
         dpanel_list.get()[1] = static_cast<int>(lags_.at(0));
     } else {
-        dpanel_list.get()[1] = static_cast<int>(*std::max_element(lags_.begin(),
-                                                                  lags_.end()));
+        dpanel_list.get()[1] = static_cast<int>(*std::max_element(lags_.begin(), lags_.end()));
     }
     dpanel_list.get()[2] = LISTSEP;
     std::memcpy(dpanel_list.get() + 3, var_list_.get() + 1, var_list_.get()[0] * sizeof(int));
@@ -879,7 +889,7 @@ void GretlModel_NSE_Driver_dpanel::fit (void)
             laglist.get()[i+1] = static_cast<int>(lags_[i]);
         }
     }
-    *model_ = dpd_model(dpanel_list.get(), laglist.get(), formula_right.c_str(), dataset_->dset, opt_, printer_.prn_ptr());
+    *model_ = dpd_model(dpanel_list.get(), laglist.get(), formula_right_.c_str(), dataset_->dset, opt_, printer_.prn_ptr());
 
     // we save results
     save_model_<MODEL>(model_);
@@ -909,9 +919,6 @@ void GretlModel_NSE_Driver_tobit::fit (void)
 {
     // we check if we deal with clean model
     check_if_estimated_();
-
-    // we define list of variables
-    if (!var_list_from_list_) var_list_ = dataset_->gretllist(formula_);
 
     // we do the job
     *model_ = tobit_model(var_list_.get(), llimit_, rlimit_, dataset_->dset, opt_, printer_.prn_ptr());

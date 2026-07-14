@@ -157,6 +157,7 @@ class GretlModel_NSE_Driver : public GretlModel_NSE
 {
 protected:
     const std::string formula_;         // formula defining model
+    std::string formula_right_;         // right-hand site of formula use in MIDASREG
 public:
     GretlModel_NSE_Driver (const std::string &formula, const py::kwargs &kwargs);
     GretlModel_NSE_Driver (const py::list &varlist, const py::kwargs &kwargs);
