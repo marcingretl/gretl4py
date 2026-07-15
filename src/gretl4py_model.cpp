@@ -1163,6 +1163,10 @@ GretlModel_VAR::GretlModel_VAR (const std::string &ylist, const int order, Gretl
 
         if (!xlist.empty()) vars_.append(" ; ").append(xlist);
     }
+    if (ci == VECM) return;
+
+    // we construct libgretl list of variables
+    var_list_ = dataset_->gretllist(vars_);
 }
 
 GretlModel_VAR::~GretlModel_VAR (void)
@@ -1174,9 +1178,6 @@ void GretlModel_VAR::fit (void)
 {
     // we check if we deal with clean model
     check_if_estimated_();
-
-    // be build variables list
-    var_list_ = dataset_->gretllist(vars_);
 
     // we do the job
     model_ = gretl_VAR(order_, nullptr, var_list_.get(), dataset_->dset, opt_, printer_.prn_ptr(), &err_);
@@ -1330,15 +1331,15 @@ GretlModel_VAR_VECM::GretlModel_VAR_VECM (const std::string &ylist, const int or
 
         if (!rxlist.empty()) vars_.append(" ; ").append(rxlist);
     }
+
+    // we construct libgretl list of variables
+    var_list_ = dataset_->gretllist(vars_);
 }
 
 void GretlModel_VAR_VECM::fit (void)
 {
     // we check if we deal with clean model
     check_if_estimated_();
-
-    // be build variables list
-    var_list_ = dataset_->gretllist(vars_);
 
     // we do the job
     model_ = gretl_VECM(order_, coint_rank_, var_list_.get(), dataset_->dset, opt_, printer_.prn_ptr(), &err_);
