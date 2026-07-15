@@ -72,9 +72,8 @@ GretlModel::GretlModel (GretlObjType model_obj_type, GretlCmdIndex ci, const py:
                 if (!is_pynumeric(item.second)) throw std::invalid_argument("both 'llimit' and 'rlimit' must be numeric");
                 continue;
             } else if (key == "xlist" && (ci_ == ARMA || ci_ == VAR || ci_ == VECM)) {
-                // var special: here we only check if xlist is a string, but we must do something with it elsewhere
-                if (is_pylist(item.second)) throw std::invalid_argument("'xlist' passed as list must be implied!!!");
-                if (!is_pystr(item.second)) throw std::invalid_argument("'xlist' must be a string");
+                // var special: here we only check if xlist is a string or list, but we must do something with it elsewhere
+                if (!is_pystr(item.second) && !is_pylist(item.second)) throw std::invalid_argument("'xlist' must be a string or list");
                 continue;
             } else if (key == "rxlist" && ci_ == VECM) {
                 // var special: here we only check if rxlist is a string, but we must do something with it elsewhere
@@ -1167,6 +1166,43 @@ GretlModel_VAR::GretlModel_VAR (const std::string &ylist, const int order, Gretl
 
     // we construct libgretl list of variables
     var_list_ = dataset_->gretllist(vars_);
+}
+
+GretlModel_VAR::GretlModel_VAR (const py::list &varlist, const int order, GretlCmdIndex ci, const py::kwargs &kwargs)
+                                : GretlModel(GRETL_OBJ_VAR, ci, kwargs), order_(order)
+{
+    std::string xlist_str;
+
+    // for VECM the base constructor only extracts the optional xlist,
+    // so the derived constructor appends rxlist (if any) and builds vars_
+    if (kwargs.contains("xlist")) xlist_str = extract_additional_vars_(kwargs["xlist"]);
+    if (ci == VECM) {
+        vars_ = xlist_str;
+        return;
+    }
+
+    // we build the libgretl list of endogenous variables
+    auto varlist_ptr = dataset_->gretllist(varlist);
+    gretl_list_ptr xlist{nullptr};
+
+    // we build vars_
+    vars_ = gretl_list_to_string(varlist_ptr.get(), dataset_->dset, &err_);
+    if (err_) handle_gretl_error(err_);
+
+    // if xlist is supplied, convert it to a libgretl list and join it to var_list_
+    if (!xlist_str.empty()) {
+        xlist = dataset_->gretllist(xlist_str);
+        if (!xlist) handle_gretl_error(E_UNKVAR);
+        vars_ += " ; " + xlist_str;
+    }
+    if (xlist) {
+        auto joined = gretl_lists_join_with_separator(varlist_ptr.get(), xlist.get());
+
+        if (!joined) handle_gretl_error(E_ALLOC);
+        var_list_.reset(joined);
+    } else {
+        var_list_ = std::move(varlist_ptr);
+    }
 }
 
 GretlModel_VAR::~GretlModel_VAR (void)

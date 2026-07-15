@@ -264,6 +264,7 @@ protected:
     int find_variable_nr_ (const std::string &variable_name);
 public:
     GretlModel_VAR (const std::string &ylist, const int order, GretlCmdIndex ci, const py::kwargs &kwargs);
+    GretlModel_VAR (const py::list &varlist, const int order, GretlCmdIndex ci, const py::kwargs &kwargs);
     virtual ~GretlModel_VAR (void);
 
     void fit (void) override;
