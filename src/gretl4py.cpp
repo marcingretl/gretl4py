@@ -333,6 +333,14 @@ PYBIND11_MODULE(_gretl, m)
               return GretlModelPtr(std::move(model));
           },
           py::arg("order").none(false), py::arg("ylist").none(false), py::kw_only());
+    m.def("var",
+          [](int order, const py::list &varlist, const py::kwargs &kwargs) -> GretlModelPtr
+          {
+              auto model = std::make_unique<GretlModel_VAR>(varlist, order, VAR, kwargs);
+
+              return GretlModelPtr(std::move(model));
+          },
+          py::arg("order").none(false), py::arg("varlist").none(false), py::kw_only());
     m.def("vecm",
           [](int order, int rank, const std::string &ylist, const py::kwargs &kwargs) -> GretlModelPtr
           {
@@ -342,6 +350,15 @@ PYBIND11_MODULE(_gretl, m)
           },
           py::arg("order").none(false), py::arg("rank").none(false),
           py::arg("ylist").none(false), py::kw_only());
+    m.def("vecm",
+          [](int order, int rank, py::list &varlist, const py::kwargs &kwargs) -> GretlModelPtr
+          {
+              auto model = std::make_unique<GretlModel_VAR_VECM>(varlist, order, rank, kwargs);
+
+              return GretlModelPtr(std::move(model));
+          },
+          py::arg("order").none(false), py::arg("rank").none(false),
+          py::arg("varlist").none(false), py::kw_only());
 
     //////////////////////////////////////////////////
     // SYSTEMs

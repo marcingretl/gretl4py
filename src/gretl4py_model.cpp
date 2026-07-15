@@ -1192,6 +1192,7 @@ GretlModel_VAR::GretlModel_VAR (const py::list &varlist, const int order, GretlC
     // we build vars_
     vars_ = gretl_list_to_string(varlist_ptr.get(), dataset_->dset, &err_);
     if (err_) handle_gretl_error(err_);
+    gretl4py_trim(vars_);
 
     // if xlist is supplied, convert it to a libgretl list and join it to var_list_
     if (!xlist_str.empty()) {
@@ -1399,6 +1400,7 @@ GretlModel_VAR_VECM::GretlModel_VAR_VECM (const py::list &varlist, const int ord
     auto varlist_str = std::string(gretl_list_to_string(varlist_ptr.get(), dataset_->dset, &err_));
 
     if (err_) handle_gretl_error(err_);
+    gretl4py_trim(varlist_str);
 
     // we build vars_, which is varlist + (xlist + rxlist), if exist
     if (!vars_.empty()) {
