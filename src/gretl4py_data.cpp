@@ -1711,39 +1711,32 @@ gretl_list_ptr GretlDataset::gretllist (const py::list &list, int *err)
     // any libgretl error is handled by handle_gretl_error(); otherwise,
     // the error code is returned to the caller.
     //
-    gretl_list_ptr res;
+    return gretllist(python_list_to_formula(list), err);
+}
+
+std::string GretlDataset::python_list_to_formula (const py::list &list) const
+{
+    //
+    // here we construct formula based on contents of given Python's list
+    //
     std::string formula;
 
-    if (err) *err = 0;
+    if (py::len(list) == 0) return formula;
+    auto var_names = varnames();
 
-    // for non-empty list, we manufacture a string to be used by generate_list()
-    if (py::len(list) > 0) {
-        auto vars_names = varnames();
-
-        for (const auto &el : list) {
-            if (is_pystr(el)) {
-                formula += el.cast<std::string>();
-            } else if (is_pyint(el)) {
-                formula += vars_names[el].cast<std::string>();
-            } else {
-                throw std::invalid_argument("list elements must be integers or strings");
-            }
-            formula += " ";
-        }
-        gretl4py_trim(formula);
-    }
-
-    // do the job
-    res.reset(generate_list(formula.c_str(), dset, 0, &err_));
-    if (err_) {
-        if (err) {
-            *err = err_;
+    for (const auto &el : list) {
+        if (is_pystr(el)) {
+            formula += el.cast<std::string>();
+        } else if (is_pyint(el)) {
+            formula += var_names[el].cast<std::string>();
         } else {
-            handle_gretl_error(err_);
+            throw std::invalid_argument("list elements must be integers or strings");
         }
+        formula += ' ';
     }
+    gretl4py_trim(formula);
 
-    return res;
+    return formula;
 }
 
 DNumPyArrayFC GretlDataset::hpfilt (const std::string &y, double hp_lambda, bool trend, bool one_sided)

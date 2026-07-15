@@ -378,6 +378,18 @@ char *GretlModel::do_save_uhat_ (T *model, int eqn, const std::string &name) con
     return dataset_->add_series(std::move(uhat), name.empty() ? uhat_name : name, dataset_->dset->n);
 }
 
+std::string GretlModel::extract_additional_vars_ (py::handle src) const
+{
+    //
+    // here we produce gretl list with additional variables (xlist, zlist, etc)
+    // passed withing kwargs as either string or Python's list
+    //
+    if (src.is_none()) return "";
+    if (is_pystr(src)) return src.cast<std::string>();
+    if (is_pylist(src)) return dataset_->python_list_to_formula(py::reinterpret_borrow<py::list>(src));
+    throw std::invalid_argument("additional variables must be a string or a list");
+}
+
 //////////////////////////////////////////////////
 // single equation models
 //////////////////////////////////////////////////
@@ -1146,7 +1158,11 @@ template void GretlModel_NSE_nl<GMM>::add_line_to_parse<false>(const std::string
 GretlModel_VAR::GretlModel_VAR (const std::string &ylist, const int order, GretlCmdIndex ci, const py::kwargs &kwargs)
                                 : GretlModel(GRETL_OBJ_VAR, ci, kwargs), vars_(ylist), order_(order)
 {
-    if (kwargs.contains("xlist") && !kwargs["xlist"].is_none()) vars_.append(" ; ").append(kwargs["xlist"].cast<std::string>());
+    if (kwargs.contains("xlist")) {
+        auto xlist = extract_additional_vars_(kwargs["xlist"]);
+
+        if (!xlist.empty()) vars_.append(" ; ").append(xlist);
+    }
 }
 
 GretlModel_VAR::~GretlModel_VAR (void)
@@ -1324,7 +1340,11 @@ void GretlModel_VAR::irf (const std::string &target, const std::string &shock, d
 GretlModel_VAR_VECM::GretlModel_VAR_VECM (const std::string &ylist, const int order, const int rank, const py::kwargs &kwargs)
                                           : GretlModel_VAR(ylist, order, VECM, kwargs), coint_rank_(rank)
 {
-    if (kwargs.contains("rxlist") && !kwargs["rxlist"].is_none()) vars_.append(" ; ").append(kwargs["rxlist"].cast<std::string>());
+    if (kwargs.contains("rxlist")) {
+        auto rxlist = extract_additional_vars_(kwargs["rxlist"]);
+
+        if (!rxlist.empty()) vars_.append(" ; ").append(rxlist);
+    }
 }
 
 void GretlModel_VAR_VECM::fit (void)

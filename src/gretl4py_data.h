@@ -170,6 +170,8 @@ public:
 
     gretl_list_ptr gretllist (const py::list &list, int *err = nullptr);
 
+    std::string python_list_to_formula (const py::list &list) const;
+
     // tests
     void test (const std::string &type, const std::string &varlist, const py::kwargs &kwargs);
 
