@@ -76,8 +76,8 @@ GretlModel::GretlModel (GretlObjType model_obj_type, GretlCmdIndex ci, const py:
                 if (!is_pystr(item.second) && !is_pylist(item.second)) throw std::invalid_argument("'xlist' must be a string or list");
                 continue;
             } else if (key == "rxlist" && ci_ == VECM) {
-                // var special: here we only check if rxlist is a string, but we must do something with it elsewhere
-                if (!is_pystr(item.second)) throw std::invalid_argument("'rxlist' must be a string");
+                // var special: here we only check if rxlist is a string or list, but we must do something with it elsewhere
+                if (!is_pystr(item.second) && !is_pylist(item.second)) throw std::invalid_argument("'rxlist' must be a string or list");
                 continue;
             } else if (key == "instruments" && ci_ == DPANEL) {
                 // var special: here we only check if instruments is a string, but we must do something with it elsewhere
