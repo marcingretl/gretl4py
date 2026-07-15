@@ -1170,35 +1170,20 @@ GretlModel_VAR::~GretlModel_VAR (void)
     gretl_object_unref(this->model_, this->model_obj_type_);
 }
 
-// true VAR/VECM estimate
-template <GretlCmdIndex CI>
-void GretlModel_VAR::do_var_vecm_fit_ (const int coint_rank)
+void GretlModel_VAR::fit (void)
 {
-    //
-    // here we perform a real VAR/VECM estimation
-    // Note: for VAR case we do not use rank, of course
-    //
     // we check if we deal with clean model
     check_if_estimated_();
 
     // be build variables list
     var_list_ = dataset_->gretllist(vars_);
 
-    // we estimate a model
-    if constexpr (CI == VAR) {
-        model_ = gretl_VAR(order_, nullptr, var_list_.get(), dataset_->dset, opt_, printer_.prn_ptr(), &err_);
-    } else if constexpr (CI == VECM) {
-        model_ = gretl_VECM(order_, coint_rank, var_list_.get(), dataset_->dset, opt_, printer_.prn_ptr(), &err_);
-    }
+    // we do the job
+    model_ = gretl_VAR(order_, nullptr, var_list_.get(), dataset_->dset, opt_, printer_.prn_ptr(), &err_);
     if (err_) handle_gretl_error(err_);
 
     // save results
     save_model_<GRETL_VAR>(model_);
-}
-
-void GretlModel_VAR::fit (void)
-{
-    do_var_vecm_fit_<VAR>();
 }
 
 void GretlModel_VAR::forecast (const py::args &args, const py::kwargs &kwargs)
@@ -1349,11 +1334,21 @@ GretlModel_VAR_VECM::GretlModel_VAR_VECM (const std::string &ylist, const int or
 
 void GretlModel_VAR_VECM::fit (void)
 {
-    do_var_vecm_fit_<VECM>(coint_rank_);
+    // we check if we deal with clean model
+    check_if_estimated_();
+
+    // be build variables list
+    var_list_ = dataset_->gretllist(vars_);
+
+    // we do the job
+    model_ = gretl_VECM(order_, coint_rank_, var_list_.get(), dataset_->dset, opt_, printer_.prn_ptr(), &err_);
+    if (err_) handle_gretl_error(err_);
+
+    // save results
+    save_model_<GRETL_VAR>(model_);
 }
 
-void GretlModel_VAR_VECM::restrict (const py::list &impose,
-                                    const py::kwargs &kwargs)
+void GretlModel_VAR_VECM::restrict (const py::list &impose, const py::kwargs &kwargs)
 {
     do_restrict_<GRETL_VAR>(model_, impose, kwargs);
 }

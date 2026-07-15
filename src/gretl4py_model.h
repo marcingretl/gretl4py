@@ -261,9 +261,6 @@ protected:
     const int order_;               // VAR order
     GRETL_VAR *model_ = nullptr;    // libgretl GRETL_VAR struct
 
-    template <GretlCmdIndex CI>
-    void do_var_vecm_fit_ (const int coint_rank = 0);
-
     int find_variable_nr_ (const std::string &variable_name);
 public:
     GretlModel_VAR (const std::string &ylist, const int order, GretlCmdIndex ci, const py::kwargs &kwargs);
