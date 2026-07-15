@@ -637,8 +637,12 @@ GretlModel_NSE_arima::GretlModel_NSE_arima (const std::string &y, const py::tupl
 
     // we add exogenous variables if present
     if (kwargs.contains("xlist") && !kwargs["xlist"].is_none()) {
-        xlist_ = this->dataset_->gretllist(kwargs["xlist"].cast<std::string>());
-        exogenous_ = xlist_.get()[0];
+        auto xlist = extract_additional_vars_(kwargs["xlist"]);
+
+        if (!xlist.empty()) {
+            xlist_ = this->dataset_->gretllist(xlist);
+            exogenous_ = xlist_.get()[0];
+        }
     }
 }
 
