@@ -1360,7 +1360,7 @@ void GretlModel_VAR::irf (const std::string &target, const std::string &shock, d
 // extends: GretlModel_VAR
 //
 GretlModel_VAR_VECM::GretlModel_VAR_VECM (const std::string &ylist, const int order, const int rank, const py::kwargs &kwargs)
-                                          : GretlModel_VAR(ylist, order, VECM, kwargs), coint_rank_(rank)
+                                            : GretlModel_VAR(ylist, order, VECM, kwargs), coint_rank_(rank)
 {
     if (kwargs.contains("rxlist")) {
         auto rxlist = extract_additional_vars_(kwargs["rxlist"]);
@@ -1370,6 +1370,48 @@ GretlModel_VAR_VECM::GretlModel_VAR_VECM (const std::string &ylist, const int or
 
     // we construct libgretl list of variables
     var_list_ = dataset_->gretllist(vars_);
+}
+
+GretlModel_VAR_VECM::GretlModel_VAR_VECM (const py::list &varlist, const int order, const int rank, const py::kwargs &kwargs)
+                                            : GretlModel_VAR(varlist, order, VECM, kwargs), coint_rank_(rank)
+{
+    // we extract the optional rxlist
+    // note: at this point vars_ is either empty or contains only xlist
+    if (kwargs.contains("rxlist")) {
+        auto rxlist = extract_additional_vars_(kwargs["rxlist"]);
+
+        if (!rxlist.empty()) {
+            if (vars_.empty()) {
+                vars_ = rxlist;
+            } else {
+                vars_.append(" ; ").append(rxlist);
+            }
+        }
+    }
+
+    // we build the libgretl list of endogenous and additional (xlist and/or rxlist) variables
+    auto varlist_ptr = dataset_->gretllist(varlist);
+    gretl_list_ptr additional_vars{nullptr};
+    auto varlist_str = std::string(gretl_list_to_string(varlist_ptr.get(), dataset_->dset, &err_));
+
+    if (err_) handle_gretl_error(err_);
+
+    // we build vars_, which is varlist + (xlist + rxlist), if exist
+    if (!vars_.empty()) {
+        additional_vars = dataset_->gretllist(vars_);
+        if (!additional_vars) handle_gretl_error(E_UNKVAR);
+        vars_ = varlist_str  + " ; " + vars_;
+    } else {
+        vars_ = varlist_str;
+    }
+    if (additional_vars) {
+        auto joined = gretl_lists_join_with_separator(varlist_ptr.get(), additional_vars.get());
+
+        if (!joined) handle_gretl_error(E_ALLOC);
+        var_list_.reset(joined);
+    } else {
+        var_list_ = std::move(varlist_ptr);
+    }
 }
 
 void GretlModel_VAR_VECM::fit (void)

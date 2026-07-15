@@ -294,6 +294,7 @@ private:
     const int coint_rank_;          // co-integration rank
 public:
     GretlModel_VAR_VECM (const std::string &ylist, const int order, const int rank, const py::kwargs &kwargs);
+    GretlModel_VAR_VECM (const py::list &varlist, const int order, const int rank, const py::kwargs &kwargs);
 
     void fit (void) override;
 
