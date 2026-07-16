@@ -636,7 +636,7 @@ GretlModel_NSE_arima::GretlModel_NSE_arima (const std::string &y, const py::tupl
     }
 
     // we add exogenous variables if present
-    if (kwargs.contains("xlist") && !kwargs["xlist"].is_none()) {
+    if (kwargs.contains("xlist")) {
         auto xlist = extract_additional_vars_(kwargs["xlist"]);
 
         if (!xlist.empty()) {
