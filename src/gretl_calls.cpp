@@ -28,6 +28,7 @@ extern "C" {
     #include <gretl/gretl_typemap.h>
     #include <gretl/gretl_www.h>
     #include <gretl/gretl_zip.h>
+    #include <gretl/gretl_foreign.h>
 }
 #include <filesystem>
 
@@ -58,6 +59,42 @@ static GretlPrint global_printer = GretlPrint();
 std::unordered_set<std::string> user_vars;              // registry of user variables
 
 //////////////////////////////////////////////////
+// static functions
+//////////////////////////////////////////////////
+static std::string extract_varname (std::string formula)
+{
+    //
+    // extract user var name from formula
+    // note: if used only in one place (gretl_generate) must be rewritten as lambda!!!
+    //
+    static const std::array<std::string_view, 7> keywords{ "arrays", "bundle", "list", "matrix", "scalar", "series", "string" };
+
+    gretl4py_trim(formula);
+
+    // step 1: remove leading keyword (if present)
+    std::istringstream iss(formula);
+    std::string first, second;
+    iss >> first >> second;
+
+    if (std::find(keywords.begin(), keywords.end(), first) != keywords.end() && !second.empty()) {
+        formula = formula.substr(formula.find(second));
+        gretl4py_trim(formula);
+    }
+
+    // step 2: if '=' is present, extract varname before it
+    const size_t eql_pos = formula.find('=');
+    std::string varname;
+
+    if (eql_pos != std::string::npos) {
+        varname = formula.substr(0, eql_pos);
+    } else {
+        varname = formula;
+    }
+
+    return gretl4py_trim(varname);
+}
+
+//////////////////////////////////////////////////
 // module related tools
 //////////////////////////////////////////////////
 void gretl4py_init (void)
@@ -71,7 +108,11 @@ void gretl4py_init (void)
     // flag the fact that we're coming from python
     gretl_set_python_mode();
 
-    // we set user workdir, gretldir and dotdir
+    // libgretl path initialization
+    /*ConfigPaths libgretl_paths = {};
+    gretl_set_paths(&libgretl_paths);*/
+
+    // we set/update user workdir, gretldir and dotdir to gretl4py specific
     py::module_ pathlib = py::module_::import("pathlib");
     py::object start = pathlib.attr("Path").attr("cwd")();
     std::string start_dir = py::str(start);
@@ -113,7 +154,7 @@ void gretl4py_cleanup (void)
             std::cerr << errmsg_get_with_default(err) << std::endl;
         }
 #if GRETL_PYBIND11_DEBUG
-         else {
+        else {
             std::cout << "Variable '" + name + "' deleted" << std::endl;
         }
 #endif // GRETL_PYBIND11_DEBUG
@@ -181,42 +222,6 @@ GretlBundlePtr about (bool do_print)
     if (res->get_err()) std::cerr << errmsg_get_with_default(res->get_err()) << std::endl;
 
     return res;
-}
-
-//////////////////////////////////////////////////
-// static functions
-//////////////////////////////////////////////////
-static std::string extract_varname (std::string formula)
-{
-    //
-    // extract user var name from formula
-    // note: if used only in one place (gretl_generate) must be rewritten as lambda!!!
-    //
-    static const std::array<std::string_view, 7> keywords{ "arrays", "bundle", "list", "matrix", "scalar", "series", "string" };
-
-    gretl4py_trim(formula);
-
-    // step 1: remove leading keyword (if present)
-    std::istringstream iss(formula);
-    std::string first, second;
-    iss >> first >> second;
-
-    if (std::find(keywords.begin(), keywords.end(), first) != keywords.end() && !second.empty()) {
-        formula = formula.substr(formula.find(second));
-        gretl4py_trim(formula);
-    }
-
-    // step 2: if '=' is present, extract varname before it
-    const size_t eql_pos = formula.find('=');
-    std::string varname;
-
-    if (eql_pos != std::string::npos) {
-        varname = formula.substr(0, eql_pos);
-    } else {
-        varname = formula;
-    }
-
-    return gretl4py_trim(varname);
 }
 
 //////////////////////////////////////////////////

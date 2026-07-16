@@ -20,6 +20,8 @@
 #ifndef GRETL4PY_H
 #define GRETL4PY_H
 
+#define HAVE_MPI
+
 #include "gretl4py_version.h"
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
