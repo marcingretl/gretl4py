@@ -553,6 +553,7 @@ void do_gretl_pkg (const std::string &action, const std::string &pkgname, const 
 
     if (!suffix.empty() && suffix != ".zip" && suffix != ".gfn") throw std::invalid_argument("unsupported file type: " + suffix);
 
+    // we do the job
     if (action == "install") {
         gretl_gchar_ptr pkgname_remote_c{nullptr}; // to avoid memory-leak when got 'char *'
         std::filesystem::path localfile;
@@ -569,14 +570,18 @@ void do_gretl_pkg (const std::string &action, const std::string &pkgname, const 
             err = gretl_copy_file(pkgname.c_str(), localfile.string().c_str());
         } else {
             // we retrieve package from SF
-            pkgname_remote_c.reset(retrieve_remote_pkg_filename(pkgname.c_str(), &err));
-            if (err) handle_gretl_error(err);
-            std::string pkgname_remote(pkgname_remote_c.get());
+            std::string pkgname_remote;
 
+            if (staging) {
+                pkgname_remote = pkgname;
+            } else {
+                pkgname_remote_c.reset(retrieve_remote_pkg_filename(pkgname.c_str(), &err));
+                if (err) handle_gretl_error(err);
+                pkgname_remote = pkgname_remote_c.get();
+            }
             localfile = functions_dir / pkgname_remote;
             py::print("installing:", pkgname_remote, "->", localfile.string());
-            err = retrieve_remote_function_package(pkgname_remote.c_str(),
-                                                   localfile.string().c_str(), staging);
+            err = retrieve_remote_function_package(pkgname_remote.c_str(), localfile.string().c_str(), staging);
         }
         if (err) handle_gretl_error(err);
 
