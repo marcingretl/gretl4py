@@ -108,7 +108,7 @@ void gretl4py_init (void)
     // flag the fact that we're coming from python
     gretl_set_python_mode();
 
-#if 1
+#if 0
     // libgretl path initialization
     ConfigPaths libgretl_paths = {};
     gretl_set_paths(&libgretl_paths);

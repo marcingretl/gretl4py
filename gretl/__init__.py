@@ -65,14 +65,14 @@ if user_site not in sys.path:
     sys.path.insert(0, user_site)
 
 # --- Ensure gretlmpi(.exe) exists
-if sys.platform == "win32":
-    gretlmpi = Path(GRETL_HOME) / "gretlmpi.exe"
-else:
-    gretlmpi = Path(GRETL_HOME) / "gretlmpi"
-if not gretlmpi.exists():
-    raise RuntimeError(f"Missing bundled gretlmpi executable: {gretlmpi}")
-if not gretlmpi.is_file() or not os.access(gretlmpi, os.X_OK):
-    raise RuntimeError(f"Invalid gretlmpi executable: {gretlmpi}")
+# if sys.platform == "win32":
+#     gretlmpi = Path(GRETL_HOME) / "gretlmpi.exe"
+# else:
+#     gretlmpi = Path(GRETL_HOME) / "gretlmpi"
+# if not gretlmpi.exists():
+#     raise RuntimeError(f"Missing bundled gretlmpi executable: {gretlmpi}")
+# if not gretlmpi.is_file() or not os.access(gretlmpi, os.X_OK):
+#     raise RuntimeError(f"Invalid gretlmpi executable: {gretlmpi}")
 
 # ###################################
 # gretl4py stuff
