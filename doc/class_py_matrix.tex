@@ -1,0 +1,79 @@
+\subsection[gretl.\_gretl.Matrix class]{\classpybundle}\label{sec:classpymatrix}
+A \gretlcmd{matrix} is...
+
+
+\subsubsection{\classpymatrixb constructors}
+The \classpymatrix provides the following constructors:
+
+\gretlfpycmd{Matrix()}
+\estdesc{Default constructor.}
+\begin{lstlisting}[style=pythonstylefoot]
+Matrix() -> gretl._gretl.Matrix
+\end{lstlisting}
+
+%\gretlfpycmd{Bundle(**kwargs)}
+%\estdesc{On-the-fly constructor.}
+%\begin{lstlisting}[style=pythonstylefoot]
+%Bundle(**kwargs) -> gretl._gretl.Bundle
+%\end{lstlisting}
+%\mapto[clean]{\_(**kwargs)}
+%Example:\newline
+%\pythcodef{b = gretl.Bundle(x=10, name="foo", mat=np.array([[1,2],[3,4]]))}\\
+%\generaldesc{Construct a \gretlcmd{bundle} optionally initialized
+%	with keyword arguments. Each keyword becomes a key in the
+%	\gretlcmd{bundle}, with its value stored according to type
+%	(\pythcode{bool}, \pythcode{int}, \pythcode{float}, \pythcode{str},
+%	\pythcode{numpy.ndarray}, or another \pythcode{_gretl.Bundle}).}
+
+
+\subsubsection{\classpymatrixb operators}
+The \classpymatrix class provides the following operators:
+
+%\gretlfpycmd{[]}
+%\estdesc{Operator for accessing, assigning, or deleting a
+%	\gretlcmd{bundle} element stored under a given \textit{key}.}
+%\begin{lstlisting}[style=pythonstylefoot]
+%gretl._gretl.Bundle[key] -> object
+%gretl._gretl.Bundle[key] = object
+%del gretl._gretl.Bundle[key]
+%\end{lstlisting}
+%\generaldesc{This operator retrieves, inserts (updates)
+%	or deletes the \pythcode{object} associated with
+%	\texttt{key} in \pythcode{gretl.\_gretl.Bundle}.
+%	The \pythcode{object} may be one of the following types:
+%	\pythcode{bool}, \pythcode{int}, \pythcode{float},
+%	\pythcode{str}, \pythcode{numpy.ndarray},
+%	or another \pythcode{gretl.\_gretl.Bundle}.}
+
+
+\subsubsection{\classpymatrixb public methods}
+The \classpymatrix class provides the following public methods:
+
+%\gretlfpycmd{keys()}
+%\estdesc{Returns all keys stored in the \gretlcmd{bundle}.}
+%\begin{lstlisting}[style=pythonstylefoot]
+%.keys() -> list
+%\end{lstlisting}
+%
+%\gretlfpycmd{pop()}
+%\estdesc{Deletes and returns the data item stored under \textit{key},
+%	if such an item is present.}
+%\begin{lstlisting}[style=pythonstylefoot]
+%.pop(key: str) -> object
+%\end{lstlisting}
+%
+%\gretlfpycmd{print()}\label{met:gretlbundle::print}
+%\estdesc{Prints the contents of the \gretlcmd{bundle} in \gretl-style.}
+%\begin{lstlisting}[style=pythonstylefoot]
+%.print(tree: bool = False)
+%\end{lstlisting}
+%\generaldesc{If \pythcode{tree=True} the effect is that if the
+%	specified \gretlcmd{bundle} contains further bundles, or
+%	arrays of bundles, their contents are listed. Otherwise
+%	only the top-level members of the bundle are listed.}
+%
+%\gretlfpycmd{to\_dict()}
+%\estdesc{Converts \gretl's \gretlcmd{bundle} to \python['s] \pythcode{dict}.}
+%\begin{lstlisting}[style=pythonstylefoot]
+%.to_dict() -> dict
+%\end{lstlisting}
