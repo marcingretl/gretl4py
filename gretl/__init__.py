@@ -36,7 +36,8 @@ lib_dir = os.path.join(package_dir, 'lib')
 user_site = os.path.join(_site.getusersitepackages(), 'gretl')
 
 # --- Set essential environment variables ---
-os.environ.setdefault('GRETL_HOME', str(Path(package_dir).resolve()))
+GRETL_HOME = Path(package_dir).resolve()
+os.environ.setdefault('GRETL_HOME', str(GRETL_HOME))
 os.environ.setdefault('GRETL_DATA_PATH', data_dir)
 os.environ.setdefault('GRETL_PLUGIN_PATH', lib_dir)
 os.environ.setdefault('CURL_CA_BUNDLE', str(Path(user_site) / "curl-ca-bundle.crt"))
@@ -62,6 +63,16 @@ if sys.platform == "linux":
 # --- Ensure user site-packages include gretl ---
 if user_site not in sys.path:
     sys.path.insert(0, user_site)
+
+# --- Ensure gretlmpi(.exe) exists
+if sys.platform == "win32":
+    gretlmpi = Path(GRETL_HOME) / "gretlmpi.exe"
+else:
+    gretlmpi = Path(GRETL_HOME) / "gretlmpi"
+if not gretlmpi.exists():
+    raise RuntimeError(f"Missing bundled gretlmpi executable: {gretlmpi}")
+if not gretlmpi.is_file() or not os.access(gretlmpi, os.X_OK):
+    raise RuntimeError(f"Invalid gretlmpi executable: {gretlmpi}")
 
 # ###################################
 # gretl4py stuff
