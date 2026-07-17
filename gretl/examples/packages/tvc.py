@@ -1,5 +1,4 @@
 import gretl
-import numpy as np
 
 
 def include_package(name: str):
@@ -28,7 +27,7 @@ def run_example():
     d = gretl.get_data("OkunGer.gdt", frompkg="TVC", quiet=True)
 
     # Regressors: GDP growth and intercept
-    L = "gGDP intercept"
+    L = ['gGDP', 'intercept']
 
     # ------------------------------------------------------------
     # Time-varying coefficient estimation
@@ -45,7 +44,7 @@ def run_example():
     # P = gretl.TVCestimate(
     #     "dU",
     #     L,
-    #     ratios=np.array([1, 0.8]),
+    #     ratios=gretl.Matrix([1, 0.8]),
     #     plt=False,
     # )
 
@@ -58,4 +57,5 @@ def run_example():
 
 
 if __name__ == "__main__":
-    run_example()
+    res = run_example()
+    print(res)

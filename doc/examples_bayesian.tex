@@ -35,23 +35,23 @@ bt.show_functions()
 
 gretl.set('seed', 1234567)
 
-# Koop's textbook ("Bayesian Econemtrics") example on house prices
+# Koop's textbook ("Bayesian Econometrics") example on house prices
 
 d = gretl.get_data('AnglinGencay.gdt', frompkg='BayTool', quiet=True)
-y = 'price'     # dep. variable
-d.new_list(name='X', value='const lot_size n_bedroom n_bathroom n_storeys') # covariates
+y = 'price'					    # dep. variable
+X = 'const lot_size n_bedroom n_bathroom n_storeys' # covariates
 
 prior = gretl.Bundle()  # prior set-up
 prior['type'] = 'indep' # independent Normal - IG
-prior['beta_mean'] = np.array([0, 10, 5000, 10000, 10000])
+prior["beta_mean"] = gretl.Matrix([0, 10, 5000, 10000, 10000])
 prior['beta_vcv'] = np.diag([10000**2, 25, 2500**2, 5000**2, 5000**2])
 prior['precision_mean'] = 4e-08
 prior['precision_df'] = 5
 
 opt = gretl.Bundle() # options
-opt['forecast'] = np.array([1, 5000, 2, 2, 1]) # matrix of regressors for prediction
+opt["forecast"] = gretl.Matrix([1, 5000, 2, 2, 1]) # matrix of regressors for prediction
 gretl.set('stopwatch')
-out = gretl.BT_lm(y=y, X='X', prior=prior, opt=opt)
+out = gretl.BT_lm(y=y, X=X, prior=prior, opt=opt)
 print(f"Elapsed time in sec:: {gretl.get_accessor('$stopwatch'):.2f} sec.")
 \end{lstlisting}\index{pkg()}\index{include()}\index{get\_data()}\index{new\_list()}\index{set()}\index{Bundle()}\index{show\_functions()}%
 \index{BT\_lm()}
@@ -102,7 +102,7 @@ except FileNotFoundError:
   gretl.include('BMA')
 
 d = gretl.get_data('FLS_41t72', frompkg='BMA')
-d.new_list(name='Factors', value='2..42')
+Factors = "2..42"
 
 OPTS = gretl.Bundle()
 OPTS['Nrep'] = 3000000
@@ -112,7 +112,7 @@ OPTS['do_joint'] = 'myq'
 
 gretl.set('seed', 1000000)
 gretl.set('stopwatch')
-RES = gretl.BMA(Y='GDP_growth', X_list='Factors', Options=OPTS)
+RES = gretl.BMA(Y='GDP_growth', X_list=Factors, Options=OPTS)
 print(f"Total execution time: {gretl.get_accessor('$stopwatch'):.2f} sec.")
 \end{lstlisting}\index{pkg()}\index{include()}\index{get\_data()}\index{new\_list()}\index{set()}\index{Bundle()}\index{show\_functions()}%
 \index{BMA()}
@@ -144,14 +144,14 @@ except FileNotFoundError:
 bv.show_functions()
 
 d = gretl.get_data('mroz87.gdt', quiet=True)
-d.new_list(name='X', value='KL6 WA WE HA HE HW MTR UN CIT AX')
+X = "KL6 WA WE HA HE HW MTR UN CIT AX"
 
 modeltype = "probit"
 n_iter = 32 * 1024    # drawings after burn-in
 burn_in = 2048        # burn-in
 
 gretl.set('stopwatch')
-b = gretl.bma_glm(y='LFP', X='X', glm_type=modeltype, ndraw=n_iter, burn=burn_in, parms=gretl.Bundle(seed=1234567))
+b = gretl.bma_glm(y='LFP', X=X, glm_type=modeltype, ndraw=n_iter, burn=burn_in, parms=gretl.Bundle(seed=1234567))
 print(f"Total execution time: {gretl.get_accessor('$stopwatch'):.2f} sec.")
 \end{lstlisting}\index{pkg()}\index{include()}\index{get\_data()}\index{new\_list()}\index{set()}\index(Bundle())\index{show\_functions()}%
 \index{bma\_glm()}
@@ -175,12 +175,12 @@ except FileNotFoundError:
 bc.show_functions()
 
 d = gretl.get_data('nels.gdt', frompkg='BACE', quiet=True)
-d.new_list(name='X', value='2..14')
-d.new_list(name='dep', value='psechoice')
+dep = 'psechoice'
+X = '2..14'
 
 gretl.set('seed', 1000000)
 gretl.set('stopwatch')
-res = gretl.BACE(Y='dep', X_list='X', Options=gretl.Bundle(model_type="probit"))
+res = gretl.BACE(Y=dep, X_list=X, Options=gretl.Bundle(model_type="probit"))
 print(f"Total execution time: {gretl.get_accessor('$stopwatch'):.2f} sec.")
 \end{lstlisting}\index{pkg()}\index{include()}\index{get\_data()}\index{new\_list()}\index{set()}\index{Bundle()}\index{show\_functions()}%
 \index{BACE()}
@@ -207,10 +207,10 @@ except FileNotFoundError:
 bv.show_functions()
 
 d = gretl.get_data('koopkoro.gdt', frompkg='BVAR')
-d.new_list(name='dep', value='1 2 3')
+dep = [1, 2, 3]
 
 # Step 1 - BVAR_setup
-model = gretl.BVAR_setup(y='dep', lag=4, type='conj')
+model = gretl.BVAR_setup(y=dep, lag=4, type='conj')
 
 # Step 2 - prior customization
 OPT = gretl.Bundle()

@@ -25,8 +25,8 @@ def run_example():
     d.rename("LHUR", "unemp")
 
     # Endogenous and exogenous variables
-    X = "unemp infl"
-    Z = "const"
+    X = ['unemp', 'infl']
+    Z = ['const']
 
     # ------------------------------------------------------------
     # SVAR model setup
