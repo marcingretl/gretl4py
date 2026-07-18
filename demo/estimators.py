@@ -92,7 +92,9 @@ longley.set_as_default()
 #####################################
 # ar                                #
 #####################################
-res = gretl.ar('1 2 ; employ const prdefl gnp armfrc').fit()
+res = gretl.ar(
+    [[1,2], 'employ const prdefl gnp armfrc'] # is equivalent to: '1 2 ; employ const prdefl gnp armfrc'
+).fit()
 assert res.maxlag == ar_maxlag
 print(res)
 
@@ -107,7 +109,12 @@ print(res)
 # sarima                            #
 #####################################
 bjg.set_as_default()
-res = gretl.arima(y='lg', order=(0,1,2), seasonal=(0,1,1), nc=True).fit()
+res = gretl.arima(
+    y='lg',
+    order=(0,1,2),
+    seasonal=(0,1,1),
+    nc=True
+).fit()
 assert np.isnan(res.uhat[0])
 print(res)
 
@@ -117,8 +124,8 @@ print(res)
 greene25_1.set_as_default()
 # [3, 1, 0, 4, 7, ';', 0, 4, 5, 8, 9] is equivalent to: 'anydrg cardhldr const age avgexp ; const age income ownrent selfempl'
 res = gretl.biprobit(
-    [3, 1, 0, 4, 7, ';', 0, 4, 5, 8, 9]
-    ).fit()
+    [[3, 1, 0, 4, 7], [0, 4, 5, 8, 9]] # is equivalent to: [3, 1, 0, 4, 7, ';', 0, 4, 5, 8, 9]
+).fit()
 assert_fp_close(res.bic, biprobit_bic, "biprobit BIC")
 print(res)
 
