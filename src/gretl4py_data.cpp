@@ -1717,30 +1717,28 @@ gretl_list_ptr GretlDataset::gretllist (const py::list &list, int *err)
 std::string GretlDataset::python_list_to_formula (const py::list &list) const
 {
     //
-    // here we construct formula based on contents of given Python's list
+    // here we construct a gretl formula from a Python list
     //
+    if (py::len(list) == 0) return {};
     std::string formula;
-
-    if (py::len(list) == 0) return formula;
     auto var_names = varnames();
 
     for (py::ssize_t i=0; i<list.size(); ++i) {
         py::handle el = list[i];
-        bool el_last = (i == list.size() - 1);
 
         if (is_pystr(el)) {
-            formula += el.cast<std::string>();
+            formula.append(el.cast<std::string>());
         } else if (is_pyint(el)) {
-            formula += var_names[el].cast<std::string>();
+            formula.append(var_names[el].cast<std::string>());
         } else if (is_pylist(el)) {
-            formula += python_list_to_formula(el.cast<py::list>());
-            if (!el_last) formula += " ; ";
+            formula.append(python_list_to_formula(el.cast<py::list>()));
         } else {
             throw std::invalid_argument("list elements must be integers or strings");
         }
-        formula += ' ';
+
+        // separator between top-level elements
+        if (i != list.size() - 1) formula.append(is_pylist(el) ? " ; " : " ");
     }
-    gretl4py_trim(formula);
 
     return formula;
 }
