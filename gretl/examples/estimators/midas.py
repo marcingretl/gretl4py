@@ -5,12 +5,12 @@ def run_example():
     # Load dataset.
     d = gretl.get_data("gdp_midas.gdt")
 
-    # Define MIDAS weighting parameters.
-    gretl.genr("theta = {1,5}")
-
     # Build MIDAS regressors.
     d.new_list(name="dX", value="ld_payems*")
     d.new_list("dXL = hflags(3, 11, dX)")
+
+    # Define MIDAS weighting parameters.
+    gretl.genr("theta = {1,5}")
 
     # Estimate MIDAS regression model.
     m = gretl.midasreg(

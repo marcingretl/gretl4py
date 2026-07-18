@@ -117,6 +117,24 @@ print(m)
 
 \examplefig{biprobit}{\label{fig:biprobit_results}}
 
+\gretlfpycmd{dpanel()}%
+\index{get\_data()}
+\estdesc{Carries out estimation of dynamic panel data models
+	(that is, panel models including one or more lags of the
+	dependent variable) using either the GMM-DIF or GMM-SYS method.
+	The corresponding results are presented in Figure~\ref{fig:dpanel_results}.}
+\begin{lstlisting}[style=pythonstylefoot]
+import gretl
+
+d = gretl.get_data('abdata.gdt')
+m = gretl.dpanel(p=2,
+	formula='n w k ; GMM(k,2,3) k GMM(w,2,3)').fit()
+print(m)
+\end{lstlisting}
+\generaldesc{See \texttt{`examples/estimators/dpanel.py'} for details.}
+
+\examplefig{dpanel}{\label{fig:dpanel_results}}
+
 \gretlfpycmd{duration()}%
 \index{get\_data()}
 \estdesc{To perform duration model estimation, the following
@@ -164,6 +182,50 @@ print(m)
 \generaldesc{See \texttt{`examples/estimators/heckit.py'} for details.}
 
 \examplefig{heckit}{\label{fig:heckit_results}}
+
+\gretlfpycmd{hsk()}%
+\index{get\_data()}
+\estdesc{This is applicable where heteroskedasticity is present
+	in the form of an unknown function of the regressors which
+	can be approximated by a quadratic relationship. The corresponding
+	results are presented in Figure~\ref{fig:hsk_results}.}
+\begin{lstlisting}[style=pythonstylefoot]
+import gretl
+
+d = gretl.get_data('data4-1')
+m = gretl.hsk('price const sqft bedrms').fit()
+print(m)
+\end{lstlisting}
+\generaldesc{See \texttt{`examples/estimators/hsk.py'} for details.}
+
+\examplefig{hsk}{\label{fig:hsk_results}}
+
+\gretlfpycmd{intreg()}%
+\index{get\_data()}
+\estdesc{Estimates an interval regression model. The corresponding
+	results are presented in Figure~\ref{fig:intreg_results}.}
+\begin{lstlisting}[style=pythonstylefoot]
+import gretl
+
+d = gretl.get_data('wtp')
+d.sample('depvar == 1', restrict=True)
+d.new_series('hi = bidl')
+d.sample('depvar == 2', restrict=True, replace=True)
+d.new_series('lo = bidl')
+d.new_series('hi = bid1')
+d.sample('depvar == 3', restrict=True, replace=True)
+d.new_series('lo = bid1')
+d.new_series('hi = bidh')
+d.sample('depvar == 4', restrict=True, replace=True)
+d.new_series(name='lo', value='bidh')
+d.sample(full=True)
+
+m = gretl.intreg("lo hi const age female income").fit()
+print(m)
+\end{lstlisting}
+\generaldesc{See \texttt{`examples/estimators/intreg.py'} for details.}
+
+\examplefig{intreg}{\label{fig:intreg_results}}
 
 \gretlfpycmd{lad()}%
 \index{get\_data()}
@@ -214,6 +276,26 @@ print(m)
 \generaldesc{See \texttt{`examples/estimators/logit.py'} for details.}
 
 \examplefig{logit}{\label{fig:logit_results}}
+
+\gretlfpycmd{midasreg()}%
+\index{get\_data()}
+\estdesc{Carries out least-squares estimation (either NLS or OLS,
+	depending on the specification) of a MIDAS (Mixed Data Sampling)
+	model. The corresponding results are presented in Figure~\ref{fig:midasreg_results}.}
+\begin{lstlisting}[style=pythonstylefoot]
+import gretl
+
+d = gretl.get_data('gdp_midas.gdt')
+d.new_list(name='dX', value='ld_payems*')
+d.new_list('dXL = hflags(3, 11, dX)')
+gretl.genr('theta = {1,5}')
+
+m = gretl.midasreg(formula='ld_qgdp 0 ld_qgdp(-1) ; mdsl(dXL, 2, theta)').fit()
+print(m)
+\end{lstlisting}
+\generaldesc{See \texttt{`examples/estimators/midasreg.py'} for details.}
+
+\examplefig{midasreg}{\label{fig:midasreg_results}}
 
 \gretlfpycmd{mpols()}%
 \index{get\_data()}
@@ -312,6 +394,24 @@ print(m)
 
 \examplefig{probit}{\label{fig:probit_results}}
 
+\gretlfpycmd{tobit()}%
+\index{get\_data()}
+\estdesc{To perform Instrumental Variables (IV) estimation
+	using two-stage least squares (TSLS), the following
+	minimal code snippet can be used. The corresponding
+	results are presented in Figure~\ref{fig:tobit_results}.}
+\begin{lstlisting}[style=pythonstylefoot]
+import gretl
+
+d = gretl.get_data('tobit.gdt')
+m = gretl.tobit('apt ~ const + read + math + proggeneral + progvocational',
+	llimit=400, rlimit=600.7).fit()
+print(m)
+\end{lstlisting}
+\generaldesc{See \texttt{`examples/estimators/tobit.py'} for details.}
+
+\examplefig{tobit}{\label{fig:tobit_results}}
+
 \gretlfpycmd{tsls()}%
 \index{get\_data()}
 \estdesc{To perform Instrumental Variables (IV) estimation
@@ -328,6 +428,36 @@ print(m)
 \generaldesc{See \texttt{`examples/estimators/tsls.py'} for details.}
 
 \examplefig{tsls}{\label{fig:tsls_results}}
+
+\gretlfpycmd{var()}%
+\index{get\_data()}
+\estdesc{Sets up and estimates (using OLS) a vector autoregression
+	(VAR). The corresponding results are presented in Figure~\ref{fig:var_results}.}
+\begin{lstlisting}[style=pythonstylefoot]
+import gretl
+
+d = gretl.get_data('denmark.gdt')
+m = gretl.var(order=1, ylist='LRM LRY').fit()
+print(m)
+\end{lstlisting}
+\generaldesc{See \texttt{`examples/estimators/var.py'} for details.}
+
+\examplefig{var}{\label{fig:var_results}}
+
+\gretlfpycmd{vecm()}%
+\index{get\_data()}
+\estdesc{Sets up and estimates vector error-correction model (VECM).
+	The corresponding results are presented in Figure~\ref{fig:vecm_results}.}
+\begin{lstlisting}[style=pythonstylefoot]
+import gretl
+
+d = gretl.get_data('denmark.gdt')
+m = gretl.vecm(order=1, rank=1, ylist='LRM LRY').fit()
+print(m)
+\end{lstlisting}
+\generaldesc{See \texttt{`examples/estimators/vecm.py'} for details.}
+
+\examplefig{vecm}{\label{fig:vecm_results}}
 
 \gretlfpycmd{wls()}%
 \index{get\_data()}
