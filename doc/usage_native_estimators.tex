@@ -10,20 +10,21 @@ take one of the following forms:
 	\item a simple \proglang{R}-style like formula that
 	maps the model equation using the following rule:
 	\begin{center}
-		\addtocounter{equation}{1}
+		\refstepcounter{equation}
 		\hspace*{15pt}$\displaystyle y = \beta_0 + \sum_{j=1}^{k}\beta_jx_j + \varepsilon\;\rightarrow\;$%
 		\pythcode{'y ~ const + x1 + x2 + ... + xk'}%
-		\setcounter{fomularenderR}{\value{equation}}%
-		\hfill\hypertarget{theRstyleFomula}{(\textcolor{red}{\theequation})}
+		\hfill\hypertarget{theRstyleFomula}{(\theequation)}%
+		\label{eq:Rstyle}
 	\end{center}
+
 	\item \gretl's default syntax, as described in \cite{gretl_manual}
 	and referred to here as the ``maps to'' syntax:
 	\begin{center}
-		\addtocounter{equation}{1}
+		\refstepcounter{equation}
 		\hspace*{15pt}$\displaystyle y = \beta_0 + \sum_{j=1}^{k}\beta_jx_j + \varepsilon\;\rightarrow\;$%
 		\pythcode{'y const x1 x2 ... xk'}%
-		\setcounter{fomularenderG}{\value{equation}}%
-		\hfill\hypertarget{theGstyleFomula}{(\textcolor{red}{\theequation})}
+		\hfill\hypertarget{theGstyleFomula}{(\theequation)}%
+		\label{eq:Gstyle}
 	\end{center}
 \end{itemize}
 The complete list of available native estimators is as follows.%

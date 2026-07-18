@@ -70,13 +70,15 @@
 \newcommand{\test}[1]{\gretlcmdf{#1}\index{#1}}
 \newcommand{\estdesc}[1]{\smallskip\begin{minipage}[t]{0.89\columnwidth}%
 	\small#1\end{minipage}\vspace{3pt}}
-\newcommand{\noRformula}{\hspace*{17pt}\begin{minipage}[t]{0.89\columnwidth}\small%
+\newcommand{\noRformula}{%
+	\hspace*{17pt}%
+	\begin{minipage}[t]{0.89\columnwidth}\small%
 		Note: In this case one cannot use the \proglang{R}-style
 		like formula as outlined in
-		Equation~(\hyperlink{theRstyleFomula}{\thefomularenderR}).
+		Equation~(\hyperref[eq:Rstyle]{\ref*{eq:Rstyle}}).
 		Instead, \pythcode{formula} takes \gretl's default syntax
 		as outlined in
-		Equation~(\hyperlink{theGstyleFomula}{\thefomularenderG}).\end{minipage}}
+		Equation~(\hyperref[eq:Gstyle]{\ref*{eq:Gstyle}}).\end{minipage}}
 \newcommand{\gretlfpycmd}[1]{\vspace*{10pt}\noindent\protect\textcolor{red}{\pythcode{#1}}\index{#1}}
 \newcommand{\generaldesc}[1]{\hspace*{17pt}\begin{minipage}[t]{0.95\columnwidth}%
 		\small#1\end{minipage}}
