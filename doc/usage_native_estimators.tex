@@ -3,28 +3,44 @@ Below some basic examples on how to use certain estimators
 are presented. For more comprehensive ones please visit
 the \texttt{examples} subdirectory of each \gretlpy distribution.
 
-In order to illustrate the \gretlpy estimating facilities,
-we take the as implicit that \pythcode{formula: str} can
-take one of the following forms:
-\begin{itemize}
-	\item a simple \proglang{R}-style like formula that
-	maps the model equation using the following rule:
-	\begin{center}
-		\refstepcounter{equation}
-		\hspace*{15pt}$\displaystyle y = \beta_0 + \sum_{j=1}^{k}\beta_jx_j + \varepsilon\;\rightarrow\;$%
-		\pythcode{'y ~ const + x1 + x2 + ... + xk'}%
-		\hfill(\theequation)\label{eq:Rstyle}
-	\end{center}
+In order to illustrate the \gretlpy estimating facilities, we:
+\begin{enumerate}
+	\item take it as given that \pythcode{formula: str} can
+	take one of the following forms:
+	\begin{itemize}
+		\item a simple \proglang{R}-style formula that
+		maps the model equation according to the following rule:
+		\begin{center}
+			\refstepcounter{equation}
+			\hspace*{15pt}$\displaystyle y = \beta_0 + \sum_{j=1}^{k}\beta_jx_j + \varepsilon\;\rightarrow\;$%
+			\pythcode{'y ~ const + x1 + x2 + ... + xk'}%
+			\hfill(\theequation)\label{eq:Rstyle}
+		\end{center}
 
-	\item \gretl's default syntax, as described in \cite{gretl_manual}
-	and referred to here as the ``maps to'' syntax:
+		\item \gretl's default syntax, as described in \cite{gretl_manual},
+		referred to here as the ``maps to'' syntax:
+		\begin{center}
+			\refstepcounter{equation}
+			\hspace*{15pt}$\displaystyle y = \beta_0 + \sum_{j=1}^{k}\beta_jx_j + \varepsilon\;\rightarrow\;$%
+			\pythcode{'y const x1 x2 ... xk'}%
+			\hfill(\theequation)\label{eq:Gstyle}
+		\end{center}
+	\end{itemize}
+
+	\item assume that \pythcode{varlist: list} is constructed
+	according to the following pattern:
 	\begin{center}
 		\refstepcounter{equation}
 		\hspace*{15pt}$\displaystyle y = \beta_0 + \sum_{j=1}^{k}\beta_jx_j + \varepsilon\;\rightarrow\;$%
-		\pythcode{'y const x1 x2 ... xk'}%
-		\hfill(\theequation)\label{eq:Gstyle}
+		\pythcode{['y', 'const', 'x1', 'x2', ..., 'xk']}%
+		\hfill(\theequation)\label{eq:GstyleList}
 	\end{center}
-\end{itemize}
+	which is later transformed into \pythcode{'y const x1 x2 ... xk'}.
+	Furthermore, \pythcode{[[var1, var2], [var3, var4]]} is always
+	transformed into \pythcode{'var1 var2 ; var3 var4'}.
+	Note that the \pythcode{list} in question may consist of either
+	variable names or their IDs; see \citep[for details]{gretl_manual}.
+\end{enumerate}
 The complete list of available native estimators is as follows.%
 \footnote{By ``native'' we mean an estimator implemented directly
 	in \lgretl, as opposed to econometric methods (estimators,
@@ -91,7 +107,10 @@ print(m)
 import gretl
 
 d = gretl.get_data('greene25_1.gdt')
-m = gretl.biprobit('anydrg cardhldr const age avgexp ; const age income ownrent selfempl').fit()
+m = gretl.biprobit(
+	[['anydrg', 'cardhldr', 'const', 'age', 'avgexp'],
+	['const', 'age', 'income', 'ownrent', 'selfempl']]
+).fit()
 print(m)
 \end{lstlisting}
 \generaldesc{See \texttt{`examples/estimators/biprobit.py'} for details.}

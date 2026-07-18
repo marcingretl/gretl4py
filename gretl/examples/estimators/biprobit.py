@@ -7,8 +7,7 @@ def run_example():
 
     # Estimate bivariate probit model.
     m = gretl.biprobit(
-        "anydrg cardhldr const age avgexp ; "
-        "const age income ownrent selfempl"
+        [['anydrg', 'cardhldr', 'const', 'age', 'avgexp'], ['const', 'age', 'income', 'ownrent', 'selfempl']]
     ).fit()
     print(m)
 
