@@ -1723,7 +1723,7 @@ std::string GretlDataset::python_list_to_formula (const py::list &list) const
     std::string formula;
     auto var_names = varnames();
 
-    for (py::ssize_t i=0; i<list.size(); ++i) {
+    for (int i=0; i<list.size(); ++i) {
         py::handle el = list[i];
 
         if (is_pystr(el)) {
