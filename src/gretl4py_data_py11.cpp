@@ -197,7 +197,7 @@ void init_gretl4py_dataset_py11 (py::module_ &m)
                  self.do_modify_dataset<std::nullptr_t>(DS_INSOBS, nullptr, std::to_string(n), py::dict());
              }, py::arg("n").none(false))
         .def("compact",
-             [](GretlDataset &self, py::object start, py::object stop)
+             [](GretlDataset &self, py::object start, std::string stop)
              {
                  std::string formula;
 
@@ -208,18 +208,10 @@ void init_gretl4py_dataset_py11 (py::module_ &m)
                  } else {
                      handle_gretl_error(E_INVARG, "'start' must be int or string");
                  }
-                 if (!stop.is_none()) {
-                     formula.append(" ");
-                     if (is_pyint(stop)) {
-                         formula = std::to_string(stop.cast<int>());
-                     } else if (is_pystr(stop)) {
-                         formula = stop.cast<std::string>();
-                     } else {
-                         handle_gretl_error(E_INVARG, "stop", "must be int or string");
-                     }
-                 }
+                 if (!stop.empty()) formula.append(" ").append(stop);
+
                  self.do_modify_dataset<std::nullptr_t>(DS_COMPACT, nullptr, formula, py::dict());
-             }, py::arg("start").none(false), py::arg("stop").none(true) = py::none())
+             }, py::arg("start").none(false), py::arg("stop").none(true) = "")
         .def("to_dict", &GretlDataset::to_dict)
         .def("to_file", &GretlDataset::to_file,
              py::arg("filename").none(false),
