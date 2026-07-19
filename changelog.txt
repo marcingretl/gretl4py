@@ -5,7 +5,7 @@ version 0.52:
     - GretlDataset, new methods: ::to_matrix(), ::new_list() based on Python's list, ::new_series() from GretlMatrix
     - GretlDataset::summary() improved a little
     - GretlDataset, new properties: ::is_panel, ::is_time_series, ::is_cross_section
-    - GretlDataset, new methods: ::addobs()
+    - GretlDataset, new methods: ::addobs(), ::insobs()
     - kmeans addon added + all addons updates
     - Python's list of integers is now interpreted as libgretl list (selected functions in methods)
     - GretlPackage functions: Python's list fully supported
