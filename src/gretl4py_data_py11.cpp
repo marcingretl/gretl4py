@@ -197,7 +197,7 @@ void init_gretl4py_dataset_py11 (py::module_ &m)
                  self.do_modify_dataset<std::nullptr_t>(DS_INSOBS, nullptr, std::to_string(n), py::dict());
              }, py::arg("n").none(false))
         .def("compact",
-             [](GretlDataset &self, py::object start, std::string stop)
+             [](GretlDataset &self, py::object start, const std::string &stop)
              {
                  std::string formula;
 
