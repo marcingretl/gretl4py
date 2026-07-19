@@ -29,8 +29,9 @@ const char *gretl_workdir (void);
 
 enum HeadTail { HEAD, TAIL };       // for head/tail printing
 
+namespace {
 template <HeadTail mode>
-static void head_tail_print (GretlDataset &dataset, int nobs)
+void head_tail_print (GretlDataset &dataset, int nobs)
 {
     //
     // here we perform ::head() and ::tail()
@@ -51,7 +52,7 @@ static void head_tail_print (GretlDataset &dataset, int nobs)
     dataset.print("", opts);
 }
 
-static py::array make_numpy_view (py::object self)
+py::array make_numpy_view (py::object self)
 {
     //
     // this is to bind GretlMatrix as NumPy view
@@ -69,6 +70,7 @@ static py::array make_numpy_view (py::object self)
                                    m.val(),
                                    self);
     }
+}
 }
 
 //

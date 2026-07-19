@@ -22,20 +22,20 @@
 
 namespace py = pybind11;
 
+namespace {
+// wrappers for GretlModel_NSE_nl class to adding lines for parsing
+enum NLLineType { PARAMS, PARAM_NAMES, WEIGHTS, DERIV, ORTHOG, STATEMENTS };
+
 // template for NSE via dedicated Driver
 // on Python side class will be registered under 'name'
 template <typename T, typename Base = GretlModel_NSE>
-static void bind_driver_model (py::module_ &m, const std::string &name)
+void bind_driver_model (py::module_ &m, const std::string &name)
 {
     py::class_<T, Base, std::unique_ptr<T>>(m, name.c_str(), py::dynamic_attr());
 }
 
-// wrappers for GretlModel_NSE_nl class to adding lines for parsing
-enum NLLineType { PARAMS, PARAM_NAMES, WEIGHTS, DERIV, ORTHOG, STATEMENTS };
-
 template <GretlCmdIndex CI, NLLineType type>
-static GretlModel_NSE_nl<CI> &nl_add_line_to_parse (GretlModel_NSE_nl<CI> &model,
-                                                    const std::string &line)
+GretlModel_NSE_nl<CI> &nl_add_line_to_parse (GretlModel_NSE_nl<CI> &model, const std::string &line)
 {
     constexpr bool is_str = (type == PARAMS || type == PARAM_NAMES || type == WEIGHTS);
 
@@ -53,13 +53,12 @@ static GretlModel_NSE_nl<CI> &nl_add_line_to_parse (GretlModel_NSE_nl<CI> &model
 }
 
 template <GretlCmdIndex CI>
-static GretlModel_NSE_nl<CI> &nl_add_init_value (GretlModel_NSE_nl<CI> &model,
-                                                 const std::string &varname,
-                                                 double value)
+GretlModel_NSE_nl<CI> &nl_add_init_value (GretlModel_NSE_nl<CI> &model, const std::string &varname, double value)
 {
     model.add_init_value(varname, value);
 
     return model;
+}
 }
 
 // GretlModel mappings

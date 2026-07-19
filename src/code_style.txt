@@ -1,11 +1,15 @@
-Coding Style for the Source Code:
+**Coding Style for the Source Code**
 
-1. We adhere to the libgretl coding style, including indentation.
+1. We follow the libgretl coding style, including its indentation conventions.
 
-2. For pointers to memory allocated, we use nullptr (in progress).
+2. We use `nullptr` instead of `NULL` for pointers.
 
-3. We consistently include the std:: prefix when referring to types or methods (e.g., std::string or std::free()).
+3. We consistently qualify standard library types and functions with the `std::` namespace (e.g., `std::string` and `std::free()`).
 
-4. Private class members names are postfixed with '_'.
+4. Private class member names are suffixed with `_`.
+
+5. We use smart pointers whenever appropriate.
+
+6. We prefer anonymous namespaces over `static` functions for translation-unit-local helpers.
 
 Marcin

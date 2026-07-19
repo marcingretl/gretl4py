@@ -58,9 +58,7 @@ static int gretl4py_verbose = 0;
 static GretlPrint global_printer = GretlPrint();
 std::unordered_set<std::string> user_vars;              // registry of user variables
 
-//////////////////////////////////////////////////
-// static functions
-//////////////////////////////////////////////////
+namespace {
 static std::string extract_varname (std::string formula)
 {
     //
@@ -92,6 +90,7 @@ static std::string extract_varname (std::string formula)
     }
 
     return gretl4py_trim(varname);
+}
 }
 
 //////////////////////////////////////////////////

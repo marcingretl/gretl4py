@@ -46,12 +46,10 @@ extern "C" {
 #include <filesystem>
 #include <any>
 
-//////////////////////////////////////////////////
-// static functions
-//////////////////////////////////////////////////
+namespace {
 // T == source type
 template <typename T>
-static void real_NumPyArray_to_gretl_storage (const NumPyArrayView &view, double *dst, int offset, bool onecol)
+void real_NumPyArray_to_gretl_storage (const NumPyArrayView &view, double *dst, int offset, bool onecol)
 {
     //
     // Convert a NumPy array (T) to gretl_matrix (double*).
@@ -82,7 +80,7 @@ static void real_NumPyArray_to_gretl_storage (const NumPyArrayView &view, double
     }
 }
 
-static void complex_NumPyArray_to_gretl_matrix (const NumPyArrayView &view, gretl_matrix *dst)
+void complex_NumPyArray_to_gretl_matrix (const NumPyArrayView &view, gretl_matrix *dst)
 {
     //
     // Convert a NumPy std::complex<double> array to gretl_matrix (double _Complex*)
@@ -100,40 +98,11 @@ static void complex_NumPyArray_to_gretl_matrix (const NumPyArrayView &view, gret
     }
 }
 
-static inline std::complex<double> c_complex_to_std_complex (const double _Complex z) { return {__real__ z, __imag__ z}; }
+inline std::complex<double> c_complex_to_std_complex (const double _Complex z) { return {__real__ z, __imag__ z}; }
 
-static inline double _Complex std_complex_to_c_complex (std::complex<double> z) { return {z.real(), z.imag()}; }
+inline double _Complex std_complex_to_c_complex (std::complex<double> z) { return {z.real(), z.imag()}; }
 
-/*
-static inline bool has_negative_base (const gretl_matrix *m)
-{
-    for (int i=0; i<m->rows * m->cols; ++i) {
-        double x = m->val[i];
-
-        if ((std::isfinite)(x) && x < 0.0) return true;
-    }
-
-    return false;
-}
-
-static inline bool has_non_integer_exponent (double x)
-{
-    return !(std::isfinite)(x) || std::floor(x) != x;
-}
-
-static inline bool has_non_integer_exponent (const gretl_matrix *m)
-{
-    for (int i=0; i<m->rows * m->cols; ++i) {
-        double x = m->val[i];
-
-        if (!(std::isfinite)(x) || std::floor(x) != x) return true;
-    }
-
-    return false;
-}
-*/
-
-static std::string gretl_slice_from_int (int val)
+std::string gretl_slice_from_int (int val)
 {
     //
     // here we manufacture gretl slicing string based on given int value (including negative ones)
@@ -151,8 +120,7 @@ static std::string gretl_slice_from_int (int val)
     return slice_str;
 }
 
-static inline GretlSlice make_gretl_slice (std::string startobs, std::string endobs,
-                                           std::string slice_str, py::dict opts = {})
+inline GretlSlice make_gretl_slice (std::string startobs, std::string endobs, std::string slice_str, py::dict opts = {})
 {
     //
     // small helper for fast GretlSlice generation
@@ -167,7 +135,7 @@ static inline GretlSlice make_gretl_slice (std::string startobs, std::string end
     return gs;
 }
 
-static GretlSlice python_slice_to_gretl_slice (const py::slice &slice)
+GretlSlice python_slice_to_gretl_slice (const py::slice &slice)
 {
     //
     // we convert Python's slice string accepted by libgretl
@@ -186,7 +154,7 @@ static GretlSlice python_slice_to_gretl_slice (const py::slice &slice)
     return make_gretl_slice(startobs, endobs, slice_str);
 }
 
-static GretlSlice python_slice_to_gretl_slice (const std::string &slice)
+GretlSlice python_slice_to_gretl_slice (const std::string &slice)
 {
     //
     // we manufacture string accepted by libgretl
@@ -206,9 +174,10 @@ static GretlSlice python_slice_to_gretl_slice (const std::string &slice)
 
     return make_gretl_slice(startobs, endobs, slice, opts);
 }
+}
 
 //////////////////////////////////////////////////
-// functions
+// free functions
 //////////////////////////////////////////////////
 template <typename T>
 void NumPyArray_to_gretl_storage (NumPyArrayView &view, T *dst, int offset, bool onecol)
