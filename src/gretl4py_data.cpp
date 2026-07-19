@@ -1521,6 +1521,38 @@ void GretlDataset::lags (const T &varlist, int order)
 template void GretlDataset::lags<std::string>(const std::string&, int);
 template void GretlDataset::lags<py::list>(const py::list&, int);
 
+template <typename T>
+void GretlDataset::do_modify_dataset (DatasetOp op, const T &list, const std::string &param, const py::kwargs &kwargs)
+{
+    //
+    // interface to libgretl's modify_dataset(),
+    // the underlying engine for the DATAMOD command
+    //
+    std::nullptr_t fake_dataset = nullptr;
+    gretl_list_ptr var_list{nullptr};
+
+    // we construct list of external variables
+    if (op == DS_SORTBY || op == DS_RENUMBER) {
+        if constexpr (is_gretllist_arg_v<T>) {
+            var_list = gretllist(list);
+        } else if constexpr (std::is_same_v<T, std::nullptr_t>) {
+            ;
+        } else {
+            static_assert(always_false<T>, "GretlDataset::do_modify_dataset(): unsupported type");
+        }
+    }
+
+    // we unpack kwargs;
+    opt_ = unpack_kwargs_command(DATAMOD, fake_dataset, kwargs);
+
+    // we do the job
+    err_ = modify_dataset(dset, op, var_list.get(),  param.c_str(), opt_, printer_.prn_ptr());
+    if (err_) handle_gretl_error(err_);
+}
+template void GretlDataset::do_modify_dataset<std::string>(DatasetOp, const std::string&, const std::string&, const py::kwargs&);
+template void GretlDataset::do_modify_dataset<py::list>(DatasetOp, const py::list&, const std::string&, const py::kwargs&);
+template void GretlDataset::do_modify_dataset<std::nullptr_t>(DatasetOp, const std::nullptr_t&, const std::string&, const py::kwargs&);
+
 py::list GretlDataset::varnames (void) const
 {
     return c_style_char_array_to_container<py::list>(dset->varname, dset->v);

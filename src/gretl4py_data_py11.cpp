@@ -186,6 +186,11 @@ void init_gretl4py_dataset_py11 (py::module_ &m)
              {
                  self.setobs(std::to_string(periodicity), std::to_string(startobs), kwargs);
              }, py::arg("periodicity").none(false), py::arg("startobs").none(false), py::kw_only())
+        .def("addobs",
+             [](GretlDataset &self, int n, const py::kwargs &kwargs)
+             {
+                 self.do_modify_dataset<std::nullptr_t>(DS_ADDOBS, nullptr, std::to_string(n), kwargs);
+             }, py::arg("n").none(false), py::kw_only())
         .def("to_dict", &GretlDataset::to_dict)
         .def("to_file", &GretlDataset::to_file,
              py::arg("filename").none(false),
