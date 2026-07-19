@@ -404,7 +404,8 @@ print(m)
 import gretl
 
 d = gretl.get_data('tobit.gdt')
-m = gretl.tobit('apt ~ const + read + math + proggeneral + progvocational',
+m = gretl.tobit('
+	apt ~ const + read + math + proggeneral + progvocational',
 	llimit=400, rlimit=600.7).fit()
 print(m)
 \end{lstlisting}
