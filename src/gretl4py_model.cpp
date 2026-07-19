@@ -32,16 +32,44 @@ extern "C" {
 #include <regex>
 #include <algorithm>
 
-#define USE_LDCO_SIG(c) (c == OLS || c == WLS) //const int *list, DATASET *dset, GretlCmdIndex ci, gretlopt opt
-#define USE_LDCOP_SIG(c) (c == LOGIT || c == PROBIT) //int *list, DATASET *dset, int ci, gretlopt opt, PRN *prn
-#define USE_LDO_SIG(c) (c == LOGISTIC || c == LAD \
-                        || c == MPOLS || c == IVREG || c == HSK) //const int *list, DATASET *dset, gretlopt opt
-#define USE_LDOP_SIG(c) (c == BIPROBIT || c == DURATION \
-                         || c == HECKIT || c == AR || c == AR1 \
-                         || c == GARCH || c == PANEL || c == INTREG) //const int *list, DATASET *dset, gretlopt opt, PRN *prn
-#define USE_LCDOP_SIG(c) (c == POISSON || c == NEGBIN) //const int *list, int ci, DATASET *dset, gretlopt opt, PRN *prn
-
 #define GRETL4PY_MODEL_DEBUG 0
+
+namespace {
+template<GretlCmdIndex CI>
+constexpr bool use_ldco_sig (void)
+{
+    //const int *list, DATASET *dset, GretlCmdIndex ci, gretlopt opt
+    return CI == OLS || CI == WLS;
+}
+
+template<GretlCmdIndex CI>
+constexpr bool use_ldcop_sig (void)
+{
+    //int *list, DATASET *dset, int ci, gretlopt opt, PRN *prn
+    return CI == LOGIT || CI == PROBIT;
+}
+
+template<GretlCmdIndex CI>
+constexpr bool use_ldo_sig (void)
+{
+    //const int *list, DATASET *dset, gretlopt opt
+    return CI == LOGISTIC || CI == LAD || CI == MPOLS || CI == IVREG || CI == HSK;
+}
+
+template<GretlCmdIndex CI>
+constexpr bool use_ldop_sig (void)
+{
+    //const int *list, DATASET *dset, gretlopt opt, PRN *prn
+    return CI == BIPROBIT || CI == DURATION || CI == HECKIT || CI == AR || CI == AR1 || CI == GARCH || CI == PANEL || CI == INTREG;
+}
+
+template<GretlCmdIndex CI>
+constexpr bool use_lcdop_sig (void)
+{
+    //const int *list, int ci, DATASET *dset, gretlopt opt, PRN *prn
+    return CI == POISSON || CI == NEGBIN;
+}
+}
 
 //
 // GretlModel class methods
@@ -753,7 +781,7 @@ void GretlModel_NSE_Driver<F, CI>::fit (void)
     check_if_estimated_();
 
     // we call F as an estimator
-    if constexpr (USE_LDCO_SIG(CI)) {
+    if constexpr (use_ldco_sig<CI>()) {
         // fallback to Pooled OLS if needed
         if (CI == OLS && dataset_->is_panel()) {
             SET_OPT(opt_, (OPT_P | OPT_L));
@@ -761,13 +789,13 @@ void GretlModel_NSE_Driver<F, CI>::fit (void)
         } else {
             *model_ = F(var_list_.get(), dataset_->dset, CI, opt_);
         }
-    } else if constexpr (USE_LDCOP_SIG(CI)) {
+    } else if constexpr (use_ldcop_sig<CI>()) {
         *model_ = F(var_list_.get(), dataset_->dset, static_cast<int>(CI), opt_, printer_.prn_ptr());
-    } else if constexpr (USE_LDO_SIG(CI)) {
+    } else if constexpr (use_ldo_sig<CI>()) {
         *model_ = F(var_list_.get(), dataset_->dset, opt_);
-    } else if constexpr (USE_LDOP_SIG(CI)) {
+    } else if constexpr (use_ldop_sig<CI>()) {
         *model_ = F(var_list_.get(), dataset_->dset, opt_, printer_.prn_ptr());
-    } else if constexpr (USE_LCDOP_SIG(CI)) {
+    } else if constexpr (use_lcdop_sig<CI>()) {
         *model_ = F(var_list_.get(), static_cast<int>(CI), dataset_->dset, opt_, printer_.prn_ptr());
     } else if constexpr (CI == MIDASREG) {
         *model_ = F(var_list_.get(), formula_right_.c_str(), dataset_->dset, opt_, printer_.prn_ptr());
