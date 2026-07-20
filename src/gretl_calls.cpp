@@ -1227,7 +1227,7 @@ GretlBundlePtr kmeans (const GretlMatrix &X, const GretlMatrix &centers, const G
     return res;
 }
 
-GretlMatrixPtr do_get_tdisagg_matrix (py::object Y, const py::kwargs &kwargs, GretlDatasetPtr dataset)
+GretlMatrixPtr do_get_tdisagg_matrix (py::object Y, int s, const py::kwargs &kwargs, GretlDatasetPtr dataset)
 {
     //
     // interface to libgretl's get_tdisagg_matrix apparatus
@@ -1282,15 +1282,6 @@ GretlMatrixPtr do_get_tdisagg_matrix (py::object Y, const py::kwargs &kwargs, Gr
                 msg.append(get_pyobject_type(X));
                 handle_gretl_error(E_INVARG, "X", msg);
             }
-        } else if (key == "s") {
-            auto s = item.second;
-
-            if (!is_pyint(s)) {
-                std::string msg = "should be an int, is: ";
-                msg.append(get_pyobject_type(s));
-                handle_gretl_error(E_INVARG, "s", msg);
-            }
-            tdi.efac = s.cast<int>();
         } else if (key == "opts") {
             auto opts_handle = item.second;
 
@@ -1315,6 +1306,7 @@ GretlMatrixPtr do_get_tdisagg_matrix (py::object Y, const py::kwargs &kwargs, Gr
     }
 
     // we do the job
+    tdi.efac = s;
     tdi.targ = GRETL_TYPE_MATRIX;
     auto m = get_tdisagg_matrix(&tdi, data ? data->dset : nullptr, opts ? opts->get_ptr() : nullptr,
                                 results ? results->get_ptr() : nullptr, global_printer.prn_ptr(), &err);

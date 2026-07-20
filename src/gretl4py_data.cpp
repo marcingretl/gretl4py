@@ -1485,9 +1485,9 @@ template void GretlDataset::do_modify_dataset<std::string>(DatasetOp, const std:
 template void GretlDataset::do_modify_dataset<py::list>(DatasetOp, const py::list&, const std::string&, const py::kwargs&);
 template void GretlDataset::do_modify_dataset<std::nullptr_t>(DatasetOp, const std::nullptr_t&, const std::string&, const py::kwargs&);
 
-GretlMatrixPtr GretlDataset::tdisagg (const std::string &Y, const py::kwargs &kwargs)
+GretlMatrixPtr GretlDataset::tdisagg (const std::string &Y, int s, const py::kwargs &kwargs)
 {
-    return do_get_tdisagg_matrix(py::str(Y), kwargs, shared_from_this());
+    return do_get_tdisagg_matrix(py::str(Y), s, kwargs, shared_from_this());
 }
 
 py::list GretlDataset::varnames (void) const
