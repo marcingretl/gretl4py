@@ -1546,7 +1546,7 @@ void GretlDataset::do_modify_dataset (DatasetOp op, const T &list, const std::st
     opt_ = unpack_kwargs_command(DATAMOD, fake_dataset, kwargs);
 
     // we do the job
-    err_ = modify_dataset(dset, op, var_list.get(),  param.c_str(), opt_, printer_.prn_ptr());
+    err_ = modify_dataset(dset, op, var_list.get(), param.c_str(), opt_, printer_.prn_ptr());
     if (err_) handle_gretl_error(err_);
 }
 template void GretlDataset::do_modify_dataset<std::string>(DatasetOp, const std::string&, const std::string&, const py::kwargs&);
