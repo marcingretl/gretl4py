@@ -259,6 +259,8 @@ void init_gretl4py_dataset_py11 (py::module_ &m)
              {
                  self.do_modify_dataset<std::nullptr_t>(DS_UNPAD_DAILY, nullptr, std::to_string(n), py::dict());
              }, py::arg("n").none(false))
+        .def("tdisagg", &GretlDataset::tdisagg,
+             py::arg("Y").none(false), py::kw_only())
         .def("to_dict", &GretlDataset::to_dict)
         .def("to_file", &GretlDataset::to_file,
              py::arg("filename").none(false),

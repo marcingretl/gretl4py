@@ -1233,10 +1233,10 @@ GretlMatrixPtr do_get_tdisagg_matrix (py::object Y, const py::kwargs &kwargs, Gr
     // interface to libgretl's get_tdisagg_matrix apparatus
     // note: this code is based on geneval.c
     //
-    tdisagg_info tdi = {0};
-    auto data = dataset ? dataset : GretlDataset::default_dataset();
     gretl_list_ptr ylist{nullptr}, xlist{nullptr};
     GretlBundlePtr opts{nullptr}, results{nullptr};
+    tdisagg_info tdi = {0};
+    auto data = dataset ? dataset : GretlDataset::default_dataset();
     int err = 0;
 
     // at first we evaluate Y
@@ -1319,6 +1319,7 @@ GretlMatrixPtr do_get_tdisagg_matrix (py::object Y, const py::kwargs &kwargs, Gr
     auto m = get_tdisagg_matrix(&tdi, data ? data->dset : nullptr, opts ? opts->get_ptr() : nullptr,
                                 results ? results->get_ptr() : nullptr, global_printer.prn_ptr(), &err);
     if (err) handle_gretl_error(err);
+    global_printer.print();
 
     return std::make_shared<GretlMatrix>(m);
 }
