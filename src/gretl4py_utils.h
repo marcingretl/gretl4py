@@ -103,4 +103,5 @@ T c_style_char_array_to_container (const char **src, int size);
 template <typename T>
 T c_style_char_array_to_container (char **src, int size);
 
+std::string get_pyobject_type (const py::handle &obj);
 #endif // GRETL4PY_UTILS_H

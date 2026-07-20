@@ -207,7 +207,7 @@ void init_gretl4py_dataset_py11 (py::module_ &m)
                      formula = start.cast<std::string>();
                  } else {
                      std::string msg = "must be int or string, is: ";
-                     msg.append(py::str(py::type::of(start).attr("__name__")).cast<std::string>());
+                     msg.append(get_pyobject_type(start));
                      handle_gretl_error(E_INVARG, "start", msg);
                  }
                  if (!stop.empty()) formula.append(" ").append(stop);

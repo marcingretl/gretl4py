@@ -22,6 +22,7 @@
 #include "gretl4py_packages.h"
 #include "gretl_calls.h"
 #include "gretl4py_run_hansl.h"
+#include "gretl4py_internals.h"
 #include <gretl/libset.h>
 extern "C" {
     #include <gretl/gretl_string_table.h>
@@ -1224,4 +1225,100 @@ GretlBundlePtr kmeans (const GretlMatrix &X, const GretlMatrix &centers, const G
     if (err) handle_gretl_error(err);
 
     return res;
+}
+
+GretlMatrixPtr do_get_tdisagg_matrix (py::object Y, const py::kwargs &kwargs, GretlDatasetPtr dataset)
+{
+    //
+    // interface to libgretl's get_tdisagg_matrix apparatus
+    // note: this code is based on geneval.c
+    //
+    tdisagg_info tdi = {0};
+    auto data = dataset ? dataset : GretlDataset::default_dataset();
+    gretl_list_ptr ylist{nullptr}, xlist{nullptr};
+    GretlBundlePtr opts{nullptr}, results{nullptr};
+    int err = 0;
+
+    // at first we evaluate Y
+    if (IS_PYGRETLMATRIX(Y)) {
+        tdi.Y = Y.cast<GretlMatrixPtr>()->get_ptr();
+    } else if (is_pystr(Y)) {
+        if (!data) handle_gretl_error(E_NODATA);
+        tdi.ynum = data->get_series_id(Y.cast<std::string>());
+        tdi.yval = data->dset->Z[tdi.ynum];
+    } else if (is_pylist(Y)) {
+        if (!data) handle_gretl_error(E_NODATA);
+        ylist = data->gretllist(Y.cast<py::list>());
+        tdi.ylist = ylist.get();
+    } else {
+        std::string msg = "should be gretl.Matrix or string or list, is: ";
+        msg.append(get_pyobject_type(Y));
+        handle_gretl_error(E_INVARG, "Y", msg);
+    }
+
+    // now we evaluate optional parameters
+    for (auto &item : kwargs) {
+        if (!is_pystr(item.first)) throw std::invalid_argument("option key must be a string");
+        const std::string &key = item.first.cast<std::string>();
+
+        if (key == "X") {
+            auto X = item.second;
+
+            if (IS_PYGRETLMATRIX(X)) {
+                tdi.X = X.cast<GretlMatrixPtr>()->get_ptr();
+            } else if (is_pystr(X)) {
+                if (!data) handle_gretl_error(E_NODATA);
+                tdi.xnum = data->get_series_id(X.cast<std::string>());
+                tdi.xval = data->dset->Z[tdi.xnum];
+            } else if (is_pylist(X)) {
+                if (!data) handle_gretl_error(E_NODATA);
+                xlist = data->gretllist(X.cast<py::list>());
+                tdi.xlist = xlist.get();
+                if (gretl_is_midas_list(xlist.get(), data->dset)) tdi.xmidas = 1;
+            } else if (X.is_none()) {
+                ;
+            } else {
+                std::string msg = "should be gretl.Matrix or string or list, is: ";
+                msg.append(get_pyobject_type(X));
+                handle_gretl_error(E_INVARG, "X", msg);
+            }
+        } else if (key == "s") {
+            auto s = item.second;
+
+            if (!is_pyint(s)) {
+                std::string msg = "should be an int, is: ";
+                msg.append(get_pyobject_type(s));
+                handle_gretl_error(E_INVARG, "s", msg);
+            }
+            tdi.efac = s.cast<int>();
+        } else if (key == "opts") {
+            auto opts_handle = item.second;
+
+            if (!IS_PYGRETLBUNDLE(opts_handle)) {
+                std::string msg = "should be a gretl.Bundle, is: ";
+                msg.append(get_pyobject_type(opts_handle));
+                handle_gretl_error(E_INVARG, "opts", msg);
+            }
+            opts = opts_handle.cast<GretlBundlePtr>();
+        } else if (key == "results") {
+            auto results_handle = item.second;
+
+            if (!IS_PYGRETLBUNDLE(results_handle)) {
+                std::string msg = "should be n gretl.Bundle, is: ";
+                msg.append(get_pyobject_type(results_handle));
+                handle_gretl_error(E_INVARG, "results", msg);
+            }
+            results = results_handle.cast<GretlBundlePtr>();
+        } else {
+            handle_gretl_error(E_UNKVAR, key);
+        }
+    }
+
+    // we do the job
+    tdi.targ = GRETL_TYPE_MATRIX;
+    auto m = get_tdisagg_matrix(&tdi, data ? data->dset : nullptr, opts ? opts->get_ptr() : nullptr,
+                                results ? results->get_ptr() : nullptr, global_printer.prn_ptr(), &err);
+    if (err) handle_gretl_error(err);
+
+    return std::make_shared<GretlMatrix>(m);
 }

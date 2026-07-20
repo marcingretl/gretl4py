@@ -401,3 +401,8 @@ T c_style_char_array_to_container (const char **src, int size)
     return c_style_char_array_to_container<T>(reinterpret_cast<c_str_array>(src), size);
 }
 template py::list c_style_char_array_to_container<py::list>(const char**, int);
+
+std::string get_pyobject_type (const py::handle &obj)
+{
+    return py::str(py::type::of(obj).attr("__name__")).cast<std::string>();
+}

@@ -104,6 +104,17 @@ struct OpenOp_ {
 
 typedef struct OpenOp_ OpenOp;
 
+struct tdisagg_info {
+    int ynum, xnum;            /* series IDs, if applicable */
+    const int *ylist, *xlist;  /* series lists, if applicable */
+    const double *yval, *xval; /* series values */
+    gretl_matrix *Y, *X;       /* matrix values */
+    int xmidas;                /* 0/1: X given as a MIDAS list? */
+    int efac;                  /* expansion factor */
+    int extmax;                /* max # of extrapolated obs */
+    GretlType targ;            /* target return type */
+};
+
 int gretl_if_state_true (void);
 
 void gretl_if_state_clear (void);
@@ -127,6 +138,9 @@ void gretl_exec_state_init (ExecState *s, ExecFlags flags, char *line, CMD *cmd,
 void gretl_exec_state_uncomment (ExecState *s);
 
 int cli_help (const char *hlpword, const char *param, gretlopt opt, char **pbuf, PRN *prn);
+
+gretl_matrix *get_tdisagg_matrix (struct tdisagg_info *tdi, DATASET *dset, gretl_bundle *b,
+                                  gretl_bundle *r, PRN *prn, int *err);
 }
 
 #endif // GRETL4PY_INTERNALS_H
