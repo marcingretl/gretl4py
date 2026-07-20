@@ -1533,7 +1533,7 @@ void GretlDataset::do_modify_dataset (DatasetOp op, const T &list, const std::st
     const char *param_ptr;
 
     // we construct list of external variables
-    if (op == DS_SORTBY || op == DS_RENUMBER) {
+    if (op == DS_SORTBY || op == DS_DSORTBY || op == DS_RENUMBER) {
         if constexpr (is_gretllist_arg_v<T>) {
             var_list = gretllist(list);
         } else if constexpr (std::is_same_v<T, std::nullptr_t>) {
