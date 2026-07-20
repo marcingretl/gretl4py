@@ -234,6 +234,16 @@ void init_gretl4py_dataset_py11 (py::module_ &m)
              {
                  self.do_modify_dataset<py::list>(DS_SORTBY, varlist, "", py::dict());
              }, py::arg("varlist").none(false))
+        .def("dsortby",
+             [](GretlDataset &self, const std::string &varlist)
+             {
+                 self.do_modify_dataset<std::string>(DS_DSORTBY, varlist, "", py::dict());
+             }, py::arg("varlist").none(false))
+        .def("dsortby",
+             [](GretlDataset &self, const py::list &varlist)
+             {
+                 self.do_modify_dataset<py::list>(DS_DSORTBY, varlist, "", py::dict());
+             }, py::arg("varlist").none(false))
         .def("to_dict", &GretlDataset::to_dict)
         .def("to_file", &GretlDataset::to_file,
              py::arg("filename").none(false),
