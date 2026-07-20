@@ -6,7 +6,7 @@ version 0.52:
     - GretlDataset::summary() improved a little
     - GretlDataset, new properties: ::is_panel, ::is_time_series, ::is_cross_section
     - GretlDataset, new methods: ::kmeans(), ::addobs(), ::insobs(), ::compact(), ::expand(), ::transpose(), ::sortby(),
-        ::dsortby() (expand() and dsortby() seem not work properly, thought)
+        ::dsortby() (dsortby() seem not work properly, thought)
     - kmeans addon added + all addons updates
     - Python's list of integers is now interpreted as libgretl list (selected functions in methods)
     - GretlPackage functions: Python's list fully supported

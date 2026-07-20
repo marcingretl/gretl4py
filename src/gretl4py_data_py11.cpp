@@ -215,10 +215,10 @@ void init_gretl4py_dataset_py11 (py::module_ &m)
                  self.do_modify_dataset<std::nullptr_t>(DS_COMPACT, nullptr, formula, py::dict());
              }, py::arg("start").none(false), py::arg("stop").none(true) = "")
         .def("expand",
-             [](GretlDataset &self)
+             [](GretlDataset &self, int n)
              {
-                 self.do_modify_dataset<std::nullptr_t>(DS_EXPAND, nullptr, "", py::dict());
-             })
+                 self.do_modify_dataset<std::nullptr_t>(DS_EXPAND, nullptr, std::to_string(n), py::dict());
+             }, py::arg("n").none(true) = -999)
         .def("transpose",
              [](GretlDataset &self)
              {

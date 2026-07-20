@@ -1530,6 +1530,7 @@ void GretlDataset::do_modify_dataset (DatasetOp op, const T &list, const std::st
     //
     std::nullptr_t fake_dataset = nullptr;
     gretl_list_ptr var_list{nullptr};
+    const char *param_ptr;
 
     // we construct list of external variables
     if (op == DS_SORTBY || op == DS_RENUMBER) {
@@ -1545,8 +1546,15 @@ void GretlDataset::do_modify_dataset (DatasetOp op, const T &list, const std::st
     // we unpack kwargs;
     opt_ = unpack_kwargs_command(DATAMOD, fake_dataset, kwargs);
 
+    // we handle special cases here
+    if (op == DS_EXPAND && param == "-999") {
+        param_ptr = nullptr;
+    } else {
+        param_ptr = param.c_str();
+    }
+
     // we do the job
-    err_ = modify_dataset(dset, op, var_list.get(), param.c_str(), opt_, printer_.prn_ptr());
+    err_ = modify_dataset(dset, op, var_list.get(), param_ptr, opt_, printer_.prn_ptr());
     if (err_) handle_gretl_error(err_);
 }
 template void GretlDataset::do_modify_dataset<std::string>(DatasetOp, const std::string&, const std::string&, const py::kwargs&);
