@@ -1239,6 +1239,13 @@ GretlMatrixPtr do_get_tdisagg_matrix (py::object Y, int s, const py::kwargs &kwa
     auto data = dataset ? dataset : GretlDataset::default_dataset();
     int err = 0;
 
+    // lambda for seting X as list
+    auto add_xlist = [&xlist, &tdi, &data](void) -> void
+    {
+        tdi.xlist = xlist.get();
+        if (gretl_is_midas_list(xlist.get(), data->dset)) tdi.xmidas = 1;
+    };
+
     // at first we evaluate Y
     if (IS_PYGRETLMATRIX(Y)) {
         tdi.Y = Y.cast<GretlMatrixPtr>()->get_ptr();
@@ -1268,13 +1275,22 @@ GretlMatrixPtr do_get_tdisagg_matrix (py::object Y, int s, const py::kwargs &kwa
                 tdi.X = X.cast<GretlMatrixPtr>()->get_ptr();
             } else if (is_pystr(X)) {
                 if (!data) handle_gretl_error(E_NODATA);
-                tdi.xnum = data->get_series_id(X.cast<std::string>());
-                tdi.xval = data->dset->Z[tdi.xnum];
+
+                // at first we try single series, if fails we try X as list
+                auto x_str = X.cast<std::string>();
+                auto var_id = data->get_series_id(x_str, false);
+
+                if (var_id > 0) {
+                    tdi.xnum = var_id;
+                    tdi.xval = data->dset->Z[var_id];
+                } else {
+                    xlist = data->gretllist(x_str);
+                    add_xlist();
+                }
             } else if (is_pylist(X)) {
                 if (!data) handle_gretl_error(E_NODATA);
                 xlist = data->gretllist(X.cast<py::list>());
-                tdi.xlist = xlist.get();
-                if (gretl_is_midas_list(xlist.get(), data->dset)) tdi.xmidas = 1;
+                add_xlist();
             } else if (X.is_none()) {
                 ;
             } else {
@@ -1301,7 +1317,7 @@ GretlMatrixPtr do_get_tdisagg_matrix (py::object Y, int s, const py::kwargs &kwa
             }
             results = results_handle.cast<GretlBundlePtr>();
         } else {
-            handle_gretl_error(E_UNKVAR, key);
+            throw std::invalid_argument("unknown parameter '" + key + "'");
         }
     }
 
