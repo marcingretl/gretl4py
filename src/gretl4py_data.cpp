@@ -1501,9 +1501,19 @@ template void GretlDataset::do_modify_dataset<std::string>(DatasetOp, const std:
 template void GretlDataset::do_modify_dataset<py::list>(DatasetOp, const py::list&, const std::string&, const py::kwargs&);
 template void GretlDataset::do_modify_dataset<std::nullptr_t>(DatasetOp, const std::nullptr_t&, const std::string&, const py::kwargs&);
 
-GretlMatrixPtr GretlDataset::tdisagg (const std::string &Y, int s, const py::kwargs &kwargs)
+GretlMatrixPtr GretlDataset::tdisagg (py::object Y, int s, const py::kwargs &kwargs)
 {
-    return do_get_tdisagg_matrix(py::str(Y), s, kwargs, shared_from_this());
+    // we exclude a twice-matrix case
+    if (IS_PYGRETLMATRIX(Y) && kwargs.contains("X")) {
+        auto X = kwargs["X"];
+
+        if (!X.is_none() && IS_PYGRETLMATRIX(X)) {
+            std::string msg = "both arguments are gretl.Matrix objects, please use gretl.tdisagg() instead";
+            handle_gretl_error(E_INVARG, "Y and X", msg);
+        }
+    }
+
+    return do_get_tdisagg_matrix(Y, s, kwargs, shared_from_this());
 }
 
 py::list GretlDataset::varnames (void) const

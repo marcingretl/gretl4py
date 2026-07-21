@@ -188,7 +188,7 @@ public:
     template <typename T>
     void do_modify_dataset (DatasetOp op, const T &list, const std::string &param, const py::kwargs &kwargs);
 
-    GretlMatrixPtr tdisagg (const std::string &Y, int s, const py::kwargs &kwargs);
+    GretlMatrixPtr tdisagg (py::object Y, int s, const py::kwargs &kwargs);
 
     // filters, correlations, etc
     DNumPyArrayFC hpfilt (const std::string &y, double hp_lambda = NADBL, bool trend = false, bool one_sided = false);
