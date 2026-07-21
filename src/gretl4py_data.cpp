@@ -560,11 +560,12 @@ void GretlDataset::add_or_replace_allocated_series_ (gretl_double_ptr data, cons
     // we do basic checks
     if (n != dset->n) throw std::invalid_argument("'" + name + "' is of wrong length: is n=" + std::to_string(n) + ", should be n=" + std::to_string(dset->n));
     if (name.empty()) throw std::invalid_argument("empty variable name");
+    auto *prn = printer_.prn_ptr();
 
     // we check if we add new or replace series
     int v = get_series_id(name, false);
 
-    // actual work
+    // we do the job
     double *data_ptr = data.release();
 
     if (v > 0) {
@@ -577,15 +578,19 @@ void GretlDataset::add_or_replace_allocated_series_ (gretl_double_ptr data, cons
         handle_gretl_error(err_);
     }
 
+    // finally, we prepare summary
     if (v > 0) {
-        py::print("Replaced series " + name + " (ID " + std::to_string(v) + ")");
+        err_ = pprintf(prn, "Replaced series %s (ID %d)", name.c_str(), v);
     } else {
         // we setup name and description for new series
         v = dset->v-1;
         err_ = rename_series(dset, v, name.c_str(), OPT_NONE);
         if (err_) handle_gretl_error(err_);
         gretl_series_set_label(v, label.get());
+        err_ = pprintf(prn, "Generated series %s (ID %d)", name.c_str(), v);
     }
+    if (err_ == -1) handle_gretl_error(E_ALLOC);
+    printer_.print();
 }
 
 void GretlDataset::set_obs_labels_ (void)
@@ -816,24 +821,6 @@ void GretlDataset::add_series (const py::array &data, const std::string &name)
     add_or_replace_allocated_series_(std::move(data_copy), name, n);
 }
 
-/*void GretlDataset::add_series (const GretlMatrix &data, const std::string &name)
-{
-    //
-    // Here we add existing GretlMatrix to dataset
-    //
-
-    if ((std::min)(data.cols(), data.rows()) > 1) throw std::invalid_argument("given variable is not a vector");
-    if (data.is_complex()) throw std::invalid_argument("given matrix is complex, must be real");
-    int n = (std::max)(data.cols(), data.rows());
-
-    // we use std::malloc since memory will be deallocated by libgretl
-    gretl_double_ptr data_copy(static_cast<double*>(std::malloc(n * sizeof(double))));
-
-    // actual work
-    std::memcpy(data_copy.get(), data.val(), n * sizeof(double));
-    add_or_replace_allocated_series_(std::move(data_copy), name, n);
-}*/
-
 void GretlDataset::add_series (const GretlMatrix &data, const std::string &name)
 {
     //
@@ -842,12 +829,20 @@ void GretlDataset::add_series (const GretlMatrix &data, const std::string &name)
 
     if ((std::min)(data.cols(), data.rows()) > 1) throw std::invalid_argument("given variable is not a vector");
     if (data.is_complex()) throw std::invalid_argument("given matrix is complex, must be real");
-    const char *tmp_matrix_name = "gretl4py_mattodset";
 
-    // we do the job
-    genr<GretlMatrix>(tmp_matrix_name, data);
-    gretl_generate<GRETL_TYPE_SERIES>(tmp_matrix_name, shared_from_this(), name);
-    do_gretl_delete_variables(tmp_matrix_name, py::dict(), false);
+    // // we do the job (if dimensions match, we take fast track)
+    if ((std::max)(data.cols(), data.rows()) == dset->n) {
+        gretl_double_ptr data_copy(static_cast<double*>(std::malloc(dset->n * sizeof(double))));
+
+        std::memcpy(data_copy.get(), data.val(), dset->n * sizeof(double));
+        add_or_replace_allocated_series_(std::move(data_copy), name, dset->n);
+    } else {
+        const char *tmp_matrix_name = "gretl4py_mattodset";
+
+        genr<GretlMatrix>(tmp_matrix_name, data);
+        gretl_generate<GRETL_TYPE_SERIES>(tmp_matrix_name, shared_from_this(), name);
+        do_gretl_delete_variables(tmp_matrix_name, py::dict(), false);
+    }
 }
 
 void GretlDataset::new_series (const std::string &formula)
