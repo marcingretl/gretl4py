@@ -1334,5 +1334,5 @@ GretlMatrixPtr do_get_tdisagg_matrix (py::object Y, int s, const py::kwargs &kwa
     if (err) handle_gretl_error(err);
     global_printer.print();
 
-    return std::make_shared<GretlMatrix>(m);
+    return std::make_shared<GretlMatrix>(m, false);
 }
