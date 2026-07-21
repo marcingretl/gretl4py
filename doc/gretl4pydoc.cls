@@ -208,9 +208,16 @@
 	commentstyle={\color{hanslblue}},
 	stringstyle={\color{hanslmagenta}}
 }
-\lstset{escapechar=@,
+\lstset{
+	escapechar=@,
 	style=hansl,
-	literate={pvalue(}{{\textcolor{hanslteal}{pvalue}(}}1}
+	literate=
+	{pvalue(}{{\textcolor{hanslteal}{pvalue}(}}1
+	{~sortby}{{\textcolor{black}{ sortby }}}1
+	{~varlist}{{\textcolor{black}{ varlist }}}1
+	{~resample}{{\textcolor{black}{ resample }}}1
+	{~freq}{{\textcolor{black}{ freq }}}1
+}
 \def\inline{\lstinline[basicstyle={\normalsize\ttfamily}]}
 % Colors
 % \definecolor{hanslgreen}{cmyk}{.67,0,.37,.45}

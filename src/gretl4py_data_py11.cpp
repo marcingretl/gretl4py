@@ -197,17 +197,17 @@ void init_gretl4py_dataset_py11 (py::module_ &m)
                  self.do_modify_dataset<std::nullptr_t>(DS_INSOBS, nullptr, std::to_string(n), py::dict());
              }, py::arg("n").none(false))
         .def("compact",
-             [](GretlDataset &self, py::object start, const std::string &method)
+             [](GretlDataset &self, py::object freq, const std::string &method)
              {
                  std::string formula;
 
-                 if (is_pyint(start)) {
-                     formula = std::to_string(start.cast<int>());
-                 } else if (is_pystr(start)) {
-                     formula = start.cast<std::string>();
+                 if (is_pyint(freq)) {
+                     formula = std::to_string(freq.cast<int>());
+                 } else if (is_pystr(freq)) {
+                     formula = freq.cast<std::string>();
                  } else {
                      std::string msg = "must be int or string, is: ";
-                     msg.append(get_pyobject_type(start));
+                     msg.append(get_pyobject_type(freq));
                      handle_gretl_error(E_INVARG, "start", msg);
                  }
                  if (!method.empty()) formula.append(" ").append(method);
@@ -215,9 +215,9 @@ void init_gretl4py_dataset_py11 (py::module_ &m)
                  self.do_modify_dataset<std::nullptr_t>(DS_COMPACT, nullptr, formula, py::dict());
              }, py::arg("start").none(false), py::arg("method").none(true) = "")
         .def("expand",
-             [](GretlDataset &self, int n)
+             [](GretlDataset &self, int freq)
              {
-                 self.do_modify_dataset<std::nullptr_t>(DS_EXPAND, nullptr, std::to_string(n), py::dict());
+                 self.do_modify_dataset<std::nullptr_t>(DS_EXPAND, nullptr, std::to_string(freq), py::dict());
              }, py::arg("n").none(true) = -999)
         .def("transpose",
              [](GretlDataset &self)
@@ -249,16 +249,16 @@ void init_gretl4py_dataset_py11 (py::module_ &m)
              {
                  self.do_modify_dataset<std::nullptr_t>(DS_RESAMPLE, nullptr, std::to_string(n), py::dict());
              }, py::arg("n").none(false))
-        .def("pad-daily",
-             [](GretlDataset &self, int n)
+        .def("pad_daily",
+             [](GretlDataset &self, int days)
              {
-                 self.do_modify_dataset<std::nullptr_t>(DS_PAD_DAILY, nullptr, std::to_string(n), py::dict());
-             }, py::arg("n").none(false))
-        .def("unpad-daily",
-             [](GretlDataset &self, int n)
+                 self.do_modify_dataset<std::nullptr_t>(DS_PAD_DAILY, nullptr, std::to_string(days), py::dict());
+             }, py::arg("days").none(false))
+        .def("unpad_daily",
+             [](GretlDataset &self)
              {
-                 self.do_modify_dataset<std::nullptr_t>(DS_UNPAD_DAILY, nullptr, std::to_string(n), py::dict());
-             }, py::arg("n").none(false))
+                 self.do_modify_dataset<std::nullptr_t>(DS_UNPAD_DAILY, nullptr, "", py::dict());
+             })
         .def("tdisagg", &GretlDataset::tdisagg,
              py::arg("Y").none(false), py::arg("s").none(false), py::kw_only())
         .def("to_dict", &GretlDataset::to_dict)

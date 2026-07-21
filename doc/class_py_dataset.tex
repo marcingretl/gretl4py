@@ -222,7 +222,7 @@ Examples:\newline
 .corr() -> numpy.ndarray
 .corr(varlist: str[, OPTS]) -> numpy.ndarray
 \end{lstlisting}
-\mapto{corr [ varlist ]}
+\mapto{corr [ ~varlist ]}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
 	\item[]\maptoopt{uniform=True}{--uniform}{ensure uniform sample}
 	\item[]\maptoopt{spearman=True}{--spearman}{Spearman's $\rho$}
@@ -274,41 +274,34 @@ Examples:\newline
 \begin{lstlisting}[style=pythonstylefoot]
 .diff(varlist: str)
 \end{lstlisting}
-\mapto[0]{diff varlist}
+\mapto[none]{diff ~varlist }
 \generaldesc{Note, \gretlcmd{diff x y} creates the new variables:
 	\begin{align*}
 		d\_x &= x_t - x_{t-1},\\
 		d\_y &= y_t - y_{t-1}.
 	\end{align*}}
 
-
 \gretlfpycmd{compact()}
 \estdesc{Compacts the current dataset to a lower frequency.}
 \begin{lstlisting}[style=pythonstylefoot]
-.compact(start: object[, method: str]) -> None
+.compact(freq: object[, method: str = '']) -> None
 \end{lstlisting}
-\mapto{dataset compact freq}
-\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
-	\item[]\maptoopt{method="sum"}{sum}{use sums when compacting}
-	\item[]\maptoopt{method="first"}{first}{use first observations}
-	\item[]\maptoopt{method="last"}{last}{use last observations}
-	\item[]\maptoopt{method="spread"}{spread}{spread values across sub-periods}
-\end{itemize}
+\mapto[none]{dataset compact ~freq }
 Examples:\newline
 \pythcodef{.compact(4)}\\
-\pythcodef{.compact(4, "last")}\\
+\pythcodef{.compact(4, 'last')}\\
 \generaldesc{Compacts all series in a time-series dataset to
 	the specified frequency. By default, higher-frequency values
 	are averaged. The optional \textit{method} parameter specifies
-	an alternative aggregation method.}
-
+	an alternative aggregation method and takes of of the following
+	values: \textit{sum}, \textit{first}, \textit{last}, or \textit{spread},}
 
 \gretlfpycmd{discrete()}
 \estdesc{Marks each variable in \textit{varlist} as being discrete.}
 \begin{lstlisting}[style=pythonstylefoot]
 .discrete(varlist: str[, OPTS])
 \end{lstlisting}
-\mapto{discrete varlist}
+\mapto{discrete ~varlist}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
 	\item[]\maptoopt{reverse=True}{--reverse}{mark variables as continuous}
 \end{itemize}
@@ -326,7 +319,7 @@ Examples:\newline
 \begin{lstlisting}[style=pythonstylefoot]
 .dummify(varlist: str[, OPTS])
 \end{lstlisting}
-\mapto{dummify varlist}
+\mapto{dummify ~varlist}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
 	\item[]\maptoopt{drop\_first=True}{--drop-first}{omit lowest value from encoding}
 	\item[]\maptoopt{drop\_last=True}{--drop-last}{omit highest value from encoding}
@@ -338,6 +331,20 @@ Examples:\newline
 	the variable in question. For example if a discrete variable
 	\textit{x} has 5 distinct values, 5 dummy variables will be added
 	to the data set, with names \textit{Dx\_1}, \textit{Dx\_2} and so on.}
+
+\gretlfpycmd{expand()}
+\estdesc{Expands the current dataset to a higher frequency.}
+\begin{lstlisting}[style=pythonstylefoot]
+.expand([freq: int]) -> None
+\end{lstlisting}
+\mapto[none]{dataset expand [ ~freq]}
+Examples:\newline
+\pythcodef{.expand()}\\
+\pythcodef{.expand(12)}\\
+\generaldesc{Expands annual or quarterly time-series data to a
+	higher frequency by repeating existing observations. Annual
+	data are expanded to quarterly frequency by default, or to
+	monthly frequency when \textit{freq=12} is specified.}
 
 \gretlfpycmd{get\_accessor()}\label{met:gretldataset::get_accessor}
 \estdesc{This method retrieves \lgretl['s] ``dollar accessors''}
@@ -478,7 +485,7 @@ Examples:\newline
 \begin{lstlisting}[style=pythonstylefoot]
 .discrete(varlist: str)
 \end{lstlisting}
-\mapto[0]{logs varlist}
+\mapto[0]{logs ~varlist}
 \generaldesc{Thus \gretlcmd{logs x y} creates the new variables
 	\begin{align*}
 		l\_x &= log(x),\\
@@ -526,6 +533,23 @@ Examples:\newline
 	in a new variable with the prefix \textit{o\_}.
 	Thus \gretlcmd{orthdev x y} creates the new variables
 	\textit{o\_x} and \textit{o\_y}.}
+
+
+
+\gretlfpycmd{pad\_daily()}
+\estdesc{Pads a dated daily dataset to a complete calendar.}
+\begin{lstlisting}[style=pythonstylefoot]
+.pad_daily(days: int) -> None
+\end{lstlisting}
+\mapto[none]{dataset pad-daily days}
+Examples:\newline
+\pythcodef{.pad_daily(5)}\\
+\generaldesc{Adds missing observations to a dated daily dataset
+	so that the calendar becomes complete. The parameter
+	\textit{days} specifies the number of days per week and must be
+	5, 6 or 7. Inserted observations contain only missing values.}
+
+
 
 \gretlfpycmd{pca()}
 \estdesc{Principal Components Analysis.}
@@ -597,16 +621,17 @@ Examples:\newline
 \estdesc{Changes the name of \textit{series} (identified
 	by name or ID number) to \textit{newname}.}
 \begin{lstlisting}[style=pythonstylefoot]
-.rename(series: str | int, newname: str[, OPTS])
+.rename(series: str, newname: str[, OPTS])
+.rename(series: int, newname: str[, OPTS])
 \end{lstlisting}
-\mapto[0]{rename series newname}
+\mapto[none]{rename series newname}
 \mapto{rename case=style}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
 	\item[]\maptoopt{quiet=True}{--quiet}{suppress printed output}
 	\item[]\maptoopt{case=style}{--case}{\seegretlmanual}
 \end{itemize}
 Examples:\newline
-\pythcodef{.rename(x2 income)}\\
+\pythcodef{.rename('x2', 'income')}\\
 \pythcodef{.rename(--case=lower)}\\
 \generaldesc{Without the \gretlcmd{case} option this method
 	changes the name of \textit{series} (identified by name
@@ -615,6 +640,23 @@ Examples:\newline
 	must be composed of only letters, digits, and the underscore
 	character. In addition, it must not be the name of an existing
 	object of any kind.}
+
+\gretlfpycmd{resample()}
+\estdesc{Constructs a new dataset by random resampling of the
+	current dataset.}
+\begin{lstlisting}[style=pythonstylefoot]
+.resample(n: int) -> None
+\end{lstlisting}
+\mapto[none]{dataset ~resample n}
+Examples:\newline
+\pythcodef{.resample(500)}\\
+\generaldesc{Creates a new dataset by sampling observations
+	with replacement from the current dataset. The parameter
+	\textit{n} specifies the number of observations in the
+	resulting dataset and may be smaller than, equal to, or
+	larger than the number of observations in the original
+	dataset. The original dataset can be restored using
+	\pythcodef{.sample(full=True)}.}
 
 \gretlfpycmd{sample()}
 \estdesc{The current sample setter/getter.}
@@ -731,6 +773,25 @@ Examples:\newline
 	set contains variables that uniquely identify the cross-sectional
 	units and the time periods. The data set will be sorted as stacked
 	time series, by ascending values of the units variable, \textit{unitvar}.}
+
+
+\gretlfpycmd{sortby()}
+\estdesc{Sorts the observations in the current dataset.}
+\begin{lstlisting}[style=pythonstylefoot]
+.sortby(varlist: str) -> None
+.sortby(varlist: list) -> None
+\end{lstlisting}
+\mapto[none]{dataset ~sortby X}
+Examples:\newline
+\pythcodef{.sortby('x1')}\\
+\pythcodef{.sortby(['x1', 'x2'])}\\
+\generaldesc{Reorders observations by increasing values of the
+	specified variable or variables. If a list is supplied, sorting
+	is performed hierarchically using successive variables as
+	breaking keys. This method is available only for undated
+	datasets.}
+
+
 
 \gretlfpycmd{square()}
 \estdesc{Generates new series which are squares of the series
@@ -1002,6 +1063,31 @@ Examples:\newline
 	The output file will be written in the currently set \gretlcmd{\$workdir}
 	(see \pythcode{gretl.about()['built_in_strings']['workdir']}),
 	unless the filename string contains a full path specification.}
+
+\gretlfpycmd{transpose()}
+\estdesc{Transposes the current dataset.}
+\begin{lstlisting}[style=pythonstylefoot]
+.transpose() -> None
+\end{lstlisting}
+\mapto[none]{dataset transpose}
+Examples:\newline
+\pythcodef{.transpose()}\\
+\generaldesc{Interchanges observations and variables in the
+	dataset, so that rows become columns and columns become rows.
+	This method may be useful when importing data where variables
+	are stored by rows rather than by columns.}
+
+\gretlfpycmd{unpad\_daily()}
+\estdesc{Removes padding from a dated daily dataset.}
+\begin{lstlisting}[style=pythonstylefoot]
+.unpad_daily() -> None
+\end{lstlisting}
+\mapto[none]{dataset unpad-daily}
+Examples:\newline
+\pythcodef{.unpad\_daily()}\\
+\generaldesc{Removes observations containing only missing values
+	from a padded daily dataset. The time-series structure and
+	observation dates are preserved.}
 
 \gretlfpycmd{xcorrgm()}
 \estdesc{Prints and/or graphs the cross-correlogram for series1 and series2.}
