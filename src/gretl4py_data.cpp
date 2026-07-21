@@ -811,26 +811,31 @@ void GretlDataset::add_series (const py::array &data, const std::string &name)
 
     NumPyArray_extract(data, view);
     if ((std::min)(view.cols, view.rows) > 1) throw std::invalid_argument("given variable is not a vector");
-    int n = (std::max)(view.cols, view.rows);
 
-    // we use std::malloc since memory will be deallocated by libgretl
-    gretl_double_ptr data_copy(static_cast<double*>(std::malloc(n * sizeof(double))));
+    // we do the job (if dimensions match, we take fast track)
+    if ((std::max)(view.cols, view.rows) == dset->n) {
+        // we use std::malloc since memory will be deallocated by libgretl
+        gretl_double_ptr data_copy(static_cast<double*>(std::malloc(dset->n * sizeof(double))));
 
-    // actual work
-    NumPyArray_to_gretl_storage<double>(view, data_copy.get(), 0, true);
-    add_or_replace_allocated_series_(std::move(data_copy), name, n);
+        // actual work
+        NumPyArray_to_gretl_storage<double>(view, data_copy.get(), 0, true);
+        add_or_replace_allocated_series_(std::move(data_copy), name, dset->n);
+    } else {
+        add_series(GretlMatrix(data), name);
+    }
 }
 
 void GretlDataset::add_series (const GretlMatrix &data, const std::string &name)
 {
     //
     // Here we add existing GretlMatrix to dataset
+    // Note: the underline data is copied (deep copy)
     //
 
     if ((std::min)(data.cols(), data.rows()) > 1) throw std::invalid_argument("given variable is not a vector");
     if (data.is_complex()) throw std::invalid_argument("given matrix is complex, must be real");
 
-    // // we do the job (if dimensions match, we take fast track)
+    // we do the job (if dimensions match, we take fast track)
     if ((std::max)(data.cols(), data.rows()) == dset->n) {
         gretl_double_ptr data_copy(static_cast<double*>(std::malloc(dset->n * sizeof(double))));
 
