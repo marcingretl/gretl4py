@@ -141,10 +141,10 @@ The \classpydataset provides the following public methods:
 \estdesc{Adds new series to dataset.}
 \begin{lstlisting}[style=pythonstylefoot]
 .add_series(data: numpy.ndarray, name: str)
+.add_series(data: _gretl.Matrix, name: str)
 \end{lstlisting}
-\generaldesc{This function adds a \textit{data} of a NumPy type
-	to the dataset. Note: length (number of rows) of the \textit{data}
-	must equal the dataset's \textit{n} value.}
+\generaldesc{This method adds a \textit{data} of
+	either \gretlmatrix a NumPy type to the dataset.}
 
 \gretlfpycmd{bkfilt()}
 \estdesc{Returns the result from application of the Baxter--King
