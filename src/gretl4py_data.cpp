@@ -560,7 +560,6 @@ void GretlDataset::add_or_replace_allocated_series_ (gretl_double_ptr data, cons
     // we do basic checks
     if (n != dset->n) throw std::invalid_argument("'" + name + "' is of wrong length: is n=" + std::to_string(n) + ", should be n=" + std::to_string(dset->n));
     if (name.empty()) throw std::invalid_argument("empty variable name");
-    auto *prn = printer_.prn_ptr();
 
     // we check if we add new or replace series
     int v = get_series_id(name, false);
@@ -580,14 +579,14 @@ void GretlDataset::add_or_replace_allocated_series_ (gretl_double_ptr data, cons
 
     // finally, we prepare summary
     if (v > 0) {
-        err_ = pprintf(prn, "Replaced series %s (ID %d)", name.c_str(), v);
+        err_ = pprintf(printer_.prn_ptr(), "Replaced series %s (ID %d)", name.c_str(), v);
     } else {
         // we setup name and description for new series
         v = dset->v-1;
         err_ = rename_series(dset, v, name.c_str(), OPT_NONE);
         if (err_) handle_gretl_error(err_);
         gretl_series_set_label(v, label.get());
-        err_ = pprintf(prn, "Generated series %s (ID %d)", name.c_str(), v);
+        err_ = pprintf(printer_.prn_ptr(), "Generated series %s (ID %d)", name.c_str(), v);
     }
     if (err_ == -1) handle_gretl_error(E_ALLOC);
     printer_.print();
@@ -837,6 +836,7 @@ void GretlDataset::add_series (const GretlMatrix &data, const std::string &name)
 
     // we do the job (if dimensions match, we take fast track)
     if ((std::max)(data.cols(), data.rows()) == dset->n) {
+        // we use std::malloc since memory will be deallocated by libgretl
         gretl_double_ptr data_copy(static_cast<double*>(std::malloc(dset->n * sizeof(double))));
 
         std::memcpy(data_copy.get(), data.val(), dset->n * sizeof(double));
