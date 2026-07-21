@@ -841,6 +841,25 @@ Examples:\newline
 %.tailT(nobs: int = 5)
 %\end{lstlisting}
 
+\gretlfpycmd{tdisagg()}
+\estdesc{Performs temporal disaggregation of a time-series dataset.}
+\begin{lstlisting}[style=pythonstylefoot]
+.tdisagg(Y: obj, s: int[, X: obj, opts: gretl.Bundle, results: gretl.Bundle]) -> gretl.Matrix
+\end{lstlisting}
+\maptof{tdisagg(Y, X, s, opts, results)}{gretl.Matrix}
+Examples:\newline
+\pythcodef{.tdisagg('y', s=3)}\\
+\pythcodef{.tdisagg(Y='y', X=['x1', 'x2'], s=3)}\\
+\generaldesc{Converts the time series represented by
+	\pythcode{Y : str | list | gretl.Matrix}
+	to a higher frequency using temporal disaggregation. The parameter
+	\textit{s} specifies the expansion factor (for example,
+	\textit{s=3} for conversion from quarterly to monthly data).
+	The optional argument \pythcode{X: str | list | gretl.Matrix} may
+	contain higher-frequency covariates used to aid the disaggregation.
+	Additional options can be supplied via \textit{opts}, while details
+	of the disaggregation procedure can be retrieved through \textit{results}.}
+
 \gretlfpycmd{test()}\label{met:gretldataset::test}
 \estdesc{General interface to dataset-based tests.}
 \begin{lstlisting}[style=pythonstylefoot]

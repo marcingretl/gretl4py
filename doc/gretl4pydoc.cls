@@ -150,7 +150,7 @@
 		varname, varnum, varsimul, vec, vech, weekday, wmean, wsd, wvar, xmax,
 		xmin, xpx, zeromiss, zeros,
 		bwrite, bread, mpibcast, mpireduce, array, defbundle,
-		mat2list, strftime, fzero, _},
+		mat2list, strftime, fzero, tdisagg, _},
 	morekeywords=[3]{bool, int, list, matrix, scalar, series, string, bundle,
 		void, bundles, null, const},
 	morekeywords=[4]{\$nobs, \$stopwatch, \$sysinfo, \$now, \$model, \$result,
@@ -217,6 +217,7 @@
 	{~varlist}{{\textcolor{black}{ varlist }}}1
 	{~resample}{{\textcolor{black}{ resample }}}1
 	{~freq}{{\textcolor{black}{ freq }}}1
+	{.Matrix}{{\textcolor{black}{.Matrix}}}1
 }
 \def\inline{\lstinline[basicstyle={\normalsize\ttfamily}]}
 % Colors
