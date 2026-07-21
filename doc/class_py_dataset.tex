@@ -137,26 +137,44 @@ The \classpydataset provides the following public attributes:
 \subsubsection{\classpydatasetb methods}
 The \classpydataset provides the following public methods:
 
+\gretlfpycmd{addobs()}
+\estdesc{Adds observations to the current dataset.}
+\begin{lstlisting}[style=pythonstylefoot]
+.addobs(n: int[, OPTS]) -> None
+\end{lstlisting}
+\mapto{dataset addobs n}
+\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
+	\item[]\maptoopt{panel-time=True}{--panel-time}{to add \textit{n}
+		observations to the time series for each unit}
+\end{itemize}
+Examples:\newline
+\pythcodef{.addobs(24)}\\
+\generaldesc{Adds \textit{n} observations to the end of the
+	current dataset. For panel datasets, the default action is to
+	add \textit{n} cross-sectional units; setting
+	\textit{panel\_time=True} adds \textit{n} observations to the
+	time dimension of each unit instead.}
+
 \gretlfpycmd{add\_series()}
 \estdesc{Adds new series to dataset.}
 \begin{lstlisting}[style=pythonstylefoot]
 .add_series(data: numpy.ndarray, name: str)
 .add_series(data: _gretl.Matrix, name: str)
 \end{lstlisting}
-\generaldesc{This method adds a \textit{data} of
-	either \gretlmatrix a NumPy type to the dataset.}
+\generaldesc{This method adds data to the dataset
+	from either a \gretlmatrix or a NumPy array.}
 
 \gretlfpycmd{bkfilt()}
-\estdesc{Returns the result from application of the Baxter--King
-	bandpass filter to the series \textit{y}.}
+\estdesc{Returns the result of applying the Baxter--King
+	band-pass filter to the series \textit{y}.}
 \begin{lstlisting}[style=pythonstylefoot]
-.bkfilt(y: str[, f1: int = 0, f2: int = 0, k: int = 0) -> numpy.ndarray
+	.bkfilt(y: str[, f1: int = 0, f2: int = 0, k: int = 0) -> numpy.ndarray
 \end{lstlisting}
 \maptof{bkfilt(y, f1, f2, k)}{series}
 \generaldesc{The optional parameters \textit{f1} and
-	\textit{f2} represent, respectively, the lower and
-	upper bounds of the range of frequencies to extract,
-	while \textit{k} is the approximation order to be used.}
+	\textit{f2} specify the lower and upper bounds,
+	respectively, of the frequency range to extract,
+	while \textit{k} specifies the approximation order.}
 
 \gretlfpycmd{bwfilt()}
 \estdesc{Returns the result from application of a low-pass
@@ -263,10 +281,32 @@ Examples:\newline
 		d\_y &= y_t - y_{t-1}.
 	\end{align*}}
 
+
+\gretlfpycmd{compact()}
+\estdesc{Compacts the current dataset to a lower frequency.}
+\begin{lstlisting}[style=pythonstylefoot]
+.compact(start: object[, method: str]) -> None
+\end{lstlisting}
+\mapto{dataset compact freq}
+\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
+	\item[]\maptoopt{method="sum"}{sum}{use sums when compacting}
+	\item[]\maptoopt{method="first"}{first}{use first observations}
+	\item[]\maptoopt{method="last"}{last}{use last observations}
+	\item[]\maptoopt{method="spread"}{spread}{spread values across sub-periods}
+\end{itemize}
+Examples:\newline
+\pythcodef{.compact(4)}\\
+\pythcodef{.compact(4, "last")}\\
+\generaldesc{Compacts all series in a time-series dataset to
+	the specified frequency. By default, higher-frequency values
+	are averaged. The optional \textit{method} parameter specifies
+	an alternative aggregation method.}
+
+
 \gretlfpycmd{discrete()}
 \estdesc{Marks each variable in \textit{varlist} as being discrete.}
 \begin{lstlisting}[style=pythonstylefoot]
-.discrete(varlist=str[, OPTS])
+.discrete(varlist: str[, OPTS])
 \end{lstlisting}
 \mapto{discrete varlist}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
@@ -284,7 +324,7 @@ Examples:\newline
 	creates a set of dummy variables coding for the distinct
 	values of that variable.}
 \begin{lstlisting}[style=pythonstylefoot]
-.dummify(varlist=str[, OPTS])
+.dummify(varlist: str[, OPTS])
 \end{lstlisting}
 \mapto{dummify varlist}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
@@ -369,6 +409,20 @@ Examples:\newline
 	value is the mean across the available samples. The exponent
 	is then estimated as the slope coefficient in a regression of
 	the log of \textit{RS} on the log of sample size.}
+
+\gretlfpycmd{insobs()}
+\estdesc{Inserts an observation into the current dataset.}
+\begin{lstlisting}[style=pythonstylefoot]
+.insobs(n: int) -> None
+\end{lstlisting}
+\mapto[none]{dataset insobs n}
+Examples:\newline
+\pythcodef{.insobs(10)}\\
+\generaldesc{Inserts a single observation at position
+	\textit{n}. All subsequent observations are shifted by one
+	position and the new observation is initialized with missing
+	values (except for the constant). This method is not available
+	for panel datasets.}
 
 \gretlfpycmd{invcdf()}\label{met:gretldataset::invcdf}
 \estdesc{Inverse cumulative distribution function calculator for given \gretlcmd{series}.}
