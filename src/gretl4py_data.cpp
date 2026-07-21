@@ -816,7 +816,7 @@ void GretlDataset::add_series (const py::array &data, const std::string &name)
     add_or_replace_allocated_series_(std::move(data_copy), name, n);
 }
 
-void GretlDataset::add_series (const GretlMatrix &data, const std::string &name)
+/*void GretlDataset::add_series (const GretlMatrix &data, const std::string &name)
 {
     //
     // Here we add existing GretlMatrix to dataset
@@ -832,6 +832,22 @@ void GretlDataset::add_series (const GretlMatrix &data, const std::string &name)
     // actual work
     std::memcpy(data_copy.get(), data.val(), n * sizeof(double));
     add_or_replace_allocated_series_(std::move(data_copy), name, n);
+}*/
+
+void GretlDataset::add_series (const GretlMatrix &data, const std::string &name)
+{
+    //
+    // Here we add existing GretlMatrix to dataset
+    //
+
+    if ((std::min)(data.cols(), data.rows()) > 1) throw std::invalid_argument("given variable is not a vector");
+    if (data.is_complex()) throw std::invalid_argument("given matrix is complex, must be real");
+    const char *tmp_matrix_name = "gretl4py_mattodset";
+
+    // we do the job
+    genr<GretlMatrix>(tmp_matrix_name, data);
+    gretl_generate<GRETL_TYPE_SERIES>(tmp_matrix_name, shared_from_this(), name);
+    do_gretl_delete_variables(tmp_matrix_name, py::dict(), false);
 }
 
 void GretlDataset::new_series (const std::string &formula)

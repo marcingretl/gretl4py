@@ -116,7 +116,11 @@ PYBIND11_MODULE(_gretl, m)
           py::arg("varlist").none(true) = "", py::kw_only());
     m.def("include", &do_gretl_include,
           py::arg("filename").none(false));
-    m.def("delete", &do_gretl_delete_variables,
+    m.def("delete",
+          [](const std::string &varname, const py::kwargs &kwargs)
+          {
+              do_gretl_delete_variables(varname, kwargs);
+          },
           py::arg("varname").none(true) = "", py::kw_only());
     m.def("pvalue", &gretl_get_pvalue_critval_pdf_cdf<GretlFunIndex::F_PVAL>,
           py::arg("c").none(false),

@@ -96,7 +96,7 @@ GretlTypesPtr gretl_generate_gretl_object (const char *s, int &err, GretlObjType
 template <GretlType GR_TYPE>
 void gretl_generate (const std::string &formula, GretlDatasetPtr dataset = nullptr, const std::string &name = {});
 
-void do_gretl_delete_variables (const std::string &varname, const py::kwargs &kwargs);
+void do_gretl_delete_variables (const std::string &varname, const py::kwargs &kwargs, bool print = true);
 
 template <GretlObjType OBJ_TYPE>
 py::object do_get_accessor (const std::string &name, GretlDatasetPtr dataset = nullptr, void *model = nullptr);

@@ -825,7 +825,7 @@ py::object matrix_cov_corr (const py::array &X, int dfcorr)
 template py::object matrix_cov_corr<GretlFunIndex::F_MCOV>(const py::array&, int);
 template py::object matrix_cov_corr<GretlFunIndex::F_MCORR>(const py::array&, int);
 
-void do_gretl_delete_variables (const std::string &varname, const py::kwargs &kwargs)
+void do_gretl_delete_variables (const std::string &varname, const py::kwargs &kwargs, bool print)
 {
     //
     // function mimics libgretl's 'delete' command
@@ -867,7 +867,7 @@ void do_gretl_delete_variables (const std::string &varname, const py::kwargs &kw
         err = gretl_delete_variables(var_list.get(), var_list ? nullptr : varname.c_str(), opt, dataset->dset,
                                      var_list ? &renumber : nullptr, global_printer.prn_ptr());
     }
-    global_printer.print();
+    if (print) global_printer.print();
     if (err) handle_gretl_error(err);
 
     // finally we erase uservar from registry
@@ -906,7 +906,7 @@ void genr (const std::string &formula, GretlDatasetPtr data)
     gretl_generate<GRETL_TYPE_ANY>(formula, data ? data : GretlDataset::default_dataset());
 }
 
-// T = { py::array ; int ; double ; std::string }
+// T = { py::array ; int ; double ; std::string , GretlMatrix}
 template <typename T>
 void genr (const std::string &name, const T &value)
 {
@@ -923,6 +923,10 @@ void genr (const std::string &name, const T &value)
         uv_ptr = gretl_matrix_alloc(view.rows, view.cols);
         if (uv_ptr == nullptr) handle_gretl_error(E_ALLOC);
         NumPyArray_to_gretl_storage<gretl_matrix>(view, static_cast<gretl_matrix*>(uv_ptr));
+    } else if constexpr (std::is_same_v<T, GretlMatrix>) {
+        uv_type = GRETL_TYPE_MATRIX;
+        uv_ptr = static_cast<gretl_matrix*>(gretl_matrix_copy(value.get_ptr()));
+        if (uv_ptr == nullptr) handle_gretl_error(E_ALLOC);
     } else if constexpr (std::is_same_v<T, double> || std::is_same_v<T, int>) {
         uv_type = GRETL_TYPE_DOUBLE;
         uv_ptr = std::malloc(sizeof(double));
@@ -946,6 +950,7 @@ template void genr<py::array>(const std::string&, const py::array&);
 template void genr<int>(const std::string&, const int&);
 template void genr<double>(const std::string&, const double&);
 template void genr<std::string>(const std::string&, const std::string&);
+template void genr<GretlMatrix>(const std::string&, const GretlMatrix&);
 
 [[noreturn]] void handle_gretl_error (int err, const std::string &ext_msg, const std::string &ext_msg_desc)
 {
