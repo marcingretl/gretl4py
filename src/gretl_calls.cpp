@@ -1240,7 +1240,7 @@ GretlMatrixPtr do_get_tdisagg_matrix (py::object Y, int s, const py::kwargs &kwa
     int err = 0;
 
     // lambda for seting X as list
-    auto add_xlist = [&xlist, &tdi, &data](void) -> void
+    auto set_xlist = [&xlist, &tdi, &data](void) -> void
     {
         tdi.xlist = xlist.get();
         if (gretl_is_midas_list(xlist.get(), data->dset)) tdi.xmidas = 1;
@@ -1285,12 +1285,12 @@ GretlMatrixPtr do_get_tdisagg_matrix (py::object Y, int s, const py::kwargs &kwa
                     tdi.xval = data->dset->Z[var_id];
                 } else {
                     xlist = data->gretllist(x_str);
-                    add_xlist();
+                    set_xlist();
                 }
             } else if (is_pylist(X)) {
                 if (!data) handle_gretl_error(E_NODATA);
                 xlist = data->gretllist(X.cast<py::list>());
-                add_xlist();
+                set_xlist();
             } else if (X.is_none()) {
                 ;
             } else {
