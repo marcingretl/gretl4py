@@ -204,17 +204,17 @@ PYBIND11_MODULE(_gretl, m)
     m.def("kmeans", py::overload_cast<const GretlMatrix&, const GretlMatrix&, const GretlBundlePtr>(&kmeans),
          py::arg("X").none(false), py::arg("centers").none(false), py::arg("opts").none(true) = nullptr);
     m.def("tdisagg",
-          [](const GretlMatrix &Y, int s, const py::kwargs &kwargs)
+          [](const GretlMatrix &Y, int s, const GretlMatrixPtr X, const py::kwargs &kwargs) -> GretlMatrixPtr
           {
-              if (kwargs.contains("X") && !kwargs["X"].is_none() && !is_pygretlmatrix(kwargs["X"])) {
-                  const std::string msg = "is not a gretl.Matrix object; please use gretl.Dataset.tdisagg() instead";
-                  handle_gretl_error(E_INVARG, "X", msg);
-              }
               py::object y_obj = py::cast(Y);
+              py::kwargs kwargs_copy = kwargs;
 
-              return do_get_tdisagg_matrix(y_obj, s, kwargs);
+              if (X) kwargs_copy["X"] = X;
+
+              return do_get_tdisagg_matrix(y_obj, s, kwargs_copy);
           },
-          py::arg("Y").none(false), py::arg("s").none(false), py::kw_only());
+          py::arg("Y").none(false), py::arg("s").none(false),
+          py::arg("X").none(true) = nullptr, py::kw_only());
 
     //////////////////////////////////////////////////
     // single equation models
