@@ -1278,6 +1278,7 @@ GretlMatrixPtr do_get_tdisagg_matrix (py::object Y, int s, const py::kwargs &kwa
 
             if (is_pygretlmatrix(X)) {
                 tdi.X = X.cast<GretlMatrixPtr>()->get_ptr();
+                if (is_pygretlmatrix(Y)) data = nullptr;
             } else if (is_pystr(X)) {
                 if (!data) handle_gretl_error(E_NODATA);
 

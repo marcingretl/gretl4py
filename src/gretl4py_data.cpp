@@ -1503,13 +1503,18 @@ template void GretlDataset::do_modify_dataset<std::nullptr_t>(DatasetOp, const s
 
 GretlMatrixPtr GretlDataset::tdisagg (py::object Y, int s, const py::kwargs &kwargs)
 {
-    // we exclude a twice-matrix case
-    if (is_pygretlmatrix(Y) && kwargs.contains("X")) {
-        auto X = kwargs["X"];
+    // we exclude a pure matrix-based cases
+    if (is_pygretlmatrix(Y)) {
+        if (!kwargs.contains("X")) {
+            const std::string msg = "is gretl.Matrix object, please use gretl.tdisagg() instead";
+            handle_gretl_error(E_INVARG, "Y", msg);
+        } else {
+            auto X = kwargs["X"];
 
-        if (!X.is_none() && is_pygretlmatrix(X)) {
-            std::string msg = "both arguments are gretl.Matrix objects, please use gretl.tdisagg() instead";
-            handle_gretl_error(E_INVARG, "Y and X", msg);
+            if (!X.is_none() && is_pygretlmatrix(X)) {
+                const std::string msg = "both arguments are gretl.Matrix objects, please use gretl.tdisagg() instead";
+                handle_gretl_error(E_INVARG, "Y and X", msg);
+            }
         }
     }
 
@@ -1686,8 +1691,9 @@ std::string GretlDataset::python_list_to_formula (const py::list &list) const
     if (py::len(list) == 0) return {};
     std::string formula;
     auto var_names = varnames();
+    int list_size = list.size();
 
-    for (int i=0; i<list.size(); ++i) {
+    for (int i=0; i<list_size; ++i) {
         py::handle el = list[i];
 
         if (is_pystr(el)) {
@@ -1701,7 +1707,7 @@ std::string GretlDataset::python_list_to_formula (const py::list &list) const
         }
 
         // separator between top-level elements
-        if (i != list.size() - 1) formula.append(is_pylist(el) ? " ; " : " ");
+        if (i != list_size-1) formula.append(is_pylist(el) ? " ; " : " ");
     }
 
     return formula;

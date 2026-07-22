@@ -203,6 +203,18 @@ PYBIND11_MODULE(_gretl, m)
          py::arg("X").none(false), py::arg("centers").none(false), py::arg("opts").none(true) = nullptr);
     m.def("kmeans", py::overload_cast<const GretlMatrix&, const GretlMatrix&, const GretlBundlePtr>(&kmeans),
          py::arg("X").none(false), py::arg("centers").none(false), py::arg("opts").none(true) = nullptr);
+    m.def("tdisagg",
+          [](const GretlMatrix &Y, int s, const py::kwargs &kwargs)
+          {
+              if (kwargs.contains("X") && !kwargs["X"].is_none() && !is_pygretlmatrix(kwargs["X"])) {
+                  const std::string msg = "is not a gretl.Matrix object; please use gretl.Dataset.tdisagg() instead";
+                  handle_gretl_error(E_INVARG, "X", msg);
+              }
+              py::object y_obj = py::cast(Y);
+
+              return do_get_tdisagg_matrix(y_obj, s, kwargs);
+          },
+          py::arg("Y").none(false), py::arg("s").none(false), py::kw_only());
 
     //////////////////////////////////////////////////
     // single equation models

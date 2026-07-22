@@ -110,7 +110,7 @@ from ._gretl import (Bundle, Matrix)                                        # co
 from ._gretl import (delete, genr, include, pkg, print, set, summary)       # libgretl's commands interfaces
 from ._gretl import (varlist, run_script, run_hansl)
 from ._gretl import (pvalue, critical, pdf, cdf, invcdf, corr, cov)         # libgretl's functions interfaces
-from ._gretl import (get_accessor)
+from ._gretl import (get_accessor, tdisagg)
 from .gretl4py_classes import _attrs, _oddsratio, mle, nls, gmm, NLSpec
 from .gretl4py_classes import get_data, show_data_status, _to_dataframe
 from .gretl4py_classes import _matrix_functions_wrapper, _package_get_help
