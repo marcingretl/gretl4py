@@ -59,7 +59,7 @@ Note, that some of them may be available for certain estimators only.
 \gretlfpycmd{dataset}
 \estdesc{Reference to the \classpydataset instance used for model estimation.}
 \begin{lstlisting}[style=pythonstylefoot]
-.dataset -> gretl._gretl.Dataset
+.dataset -> gretl.Dataset
 \end{lstlisting}
 
 \gretlfpycmd{hqc}
@@ -219,7 +219,7 @@ Examples:\newline
 \gretlfpycmd{get\_bundle()}
 \estdesc{Returns \lgretl['s] \gretlcmd{\$model} bundle.}
 \begin{lstlisting}[style=pythonstylefoot]
-.get_bundle() -> gretl._gretl.Bundle
+.get_bundle() -> gretl.Bundle
 \end{lstlisting}
 
 \gretlfpycmd{get\_formula()}
@@ -229,8 +229,8 @@ Examples:\newline
 \end{lstlisting}
 
 
-\subsubsection{\pythcodeb{gretl.\_gretl.Model\_NSE} methods}
-The \pythcode{gretl.\_gretl.Model\_NSE} class provides the following public methods:
+\subsubsection{\pythcodeb{gretl.Model\_NSE} methods}
+The \pythcode{gretl.Model\_NSE} class provides the following public methods:
 
 \gretlfpycmd{oddsratio()}
 \estdesc{Pretty-prints odds ratios for a logit model (if available).}
@@ -453,7 +453,7 @@ Examples:\newline
 
 \subsubsection{\pythcodeb{gretl.\_gretl.Model\_NSE\_nl} methods}
 \begin{quote}\Large\centering Note: this class is \experimental\end{quote}
-The \pythcode{gretl.\_gretl.Model\_NSE\_nl} class provides the following public methods:
+The \pythcode{gretl.Model\_NSE\_nl} class provides the following public methods:
 
 \gretlfpycmd{add\_deriv()}
 \estdesc{\tbw -- \experimental}
@@ -498,8 +498,8 @@ The \pythcode{gretl.\_gretl.Model\_NSE\_nl} class provides the following public 
 \end{lstlisting}
 
 
-\subsubsection{\pythcodeb{gretl.\_gretl.Model\_var} attributes}
-The \pythcode{gretl.\_gretl.Model\_var} class provides the following public attributes:
+\subsubsection{\pythcodeb{gretl.Model\_var} attributes}
+The \pythcode{gretl.Model\_var} class provides the following public attributes:
 
 \gretlfpycmd{irfs}\label{met:gretlmodel::irfs}
 \estdesc{List storing summaries of computed IRFs.}
@@ -527,7 +527,7 @@ The \pythcode{gretl.\_gretl.Model\_var} class provides the following public attr
 
 
 \subsubsection{\pythcodeb{gretl.\_gretl.Model\_var} methods}
-The \pythcode{gretl.\_gretl.Model\_var} class provides the following public methods:
+The \pythcode{gretl.Model\_var} class provides the following public methods:
 
 \gretlfpycmd{irf()}\label{met:gretlmodel::irf}
 \estdesc{Computes impulse response functions (IRFs) for a VAR or VECM,
@@ -560,8 +560,8 @@ The \pythcode{gretl.\_gretl.Model\_var} class provides the following public meth
 	where \texttt{ID} is the equation's ID.}
 
 
-\subsubsection{\pythcodeb{gretl.\_gretl.Model\_vecm} methods}
-The \pythcode{gretl.\_gretl.Model\_vecm} class provides the following public methods:
+\subsubsection{\pythcodeb{gretl.Model\_vecm} methods}
+The \pythcode{gretl.Model\_vecm} class provides the following public methods:
 
 \gretlfpycmd{restrict()}
 \estdesc{Imposes a set of (usually linear) restrictions on the system of equations.}
@@ -592,8 +592,8 @@ The \pythcode{gretl.\_gretl.Model\_vecm} class provides the following public met
 	error-correction term number.}
 
 
-\subsubsection{\pythcodeb{gretl.\_gretl.Model\_NME} methods}
-The \pythcode{gretl.\_gretl.Model\_NME} class provides the following public methods:
+\subsubsection{\pythcodeb{gretl.Model\_NME} methods}
+The \pythcode{gretl.Model\_NME} class provides the following public methods:
 
 \gretlfpycmd{restrict()}
 \estdesc{Imposes a set of (usually linear) restrictions on the system of equations.}

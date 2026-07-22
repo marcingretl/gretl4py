@@ -153,7 +153,7 @@ burn_in = 2048        # burn-in
 gretl.set('stopwatch')
 b = gretl.bma_glm(y='LFP', X=X, glm_type=modeltype, ndraw=n_iter, burn=burn_in, parms=gretl.Bundle(seed=1234567))
 print(f"Total execution time: {gretl.get_accessor('$stopwatch'):.2f} sec.")
-\end{lstlisting}\index{pkg()}\index{include()}\index{get\_data()}\index{new\_list()}\index{set()}\index(Bundle())\index{show\_functions()}%
+\end{lstlisting}\index{pkg()}\index{include()}\index{get\_data()}\index{new\_list()}\index{set()}\index{Bundle()}\index{show\_functions()}%
 \index{bma\_glm()}
 
 \paragraph{BACE} The sample script contains a ordered
@@ -182,8 +182,8 @@ gretl.set('seed', 1000000)
 gretl.set('stopwatch')
 res = gretl.BACE(Y=dep, X_list=X, Options=gretl.Bundle(model_type="probit"))
 print(f"Total execution time: {gretl.get_accessor('$stopwatch'):.2f} sec.")
-\end{lstlisting}\index{pkg()}\index{include()}\index{get\_data()}\index{new\_list()}\index{set()}\index{Bundle()}\index{show\_functions()}%
-\index{BACE()}
+\end{lstlisting}\index{pkg()}\index{include()}\index{get\_data()}\index{new\_list()}\index{set()}%
+\index{Bundle()}\index{show\_functions()}\index{BACE()}
 
 
 \subsection{Bayesian Vector Autoregression}\label{sec.bvar}

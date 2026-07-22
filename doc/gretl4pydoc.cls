@@ -68,6 +68,20 @@
 	basicstyle=\ttfamily\small,
 	morekeywords={self,True,False},
 	keywordstyle=\color{blue},
+	morekeywords=[2]{
+		int,
+		float,
+		complex,
+		bool,
+		str,
+		bytes,
+		list,
+		tuple,
+		set,
+		dict,
+		object
+	},
+	keywordstyle=[2]\color{pythtype},
 	%emph={MyClass,__init__},      % Custom highlighting
 	emphstyle=\color{red},     % Custom highlighting style
 	stringstyle=\color{pythgreen},
@@ -76,7 +90,13 @@
 	literate={{~}{$\sim$}2
 		{x1}{$x_1$}3
 		{x2}{$x_2$}2
-		{xk}{$x_k$}1}
+		{xk}{$x_k$}1
+		{.type}{{\textcolor{black}{type}}}{4}
+		{gretl.Matrix}{{\textcolor{pythtype}{gretl.Matrix}}}{12}
+		{gretl.Bundle}{{\textcolor{pythtype}{gretl.Bundle}}}{12}
+		{gretl.Dataset}{{\textcolor{pythtype}{gretl.Dataset}}}{13}
+		{pandas.core.series.Series}{{\textcolor{pythtype}{pandas.core.series.Series}}}{25}
+		{numpy.ndarray}{{\textcolor{pythtype}{numpy.ndarray}}}{13}}
 }
 
 \lstdefinestyle{pythonstylebold}{
@@ -92,24 +112,54 @@
 	literate={{~}{$\sim$}2
 		{x1}{$x_1$}3
 		{x2}{$x_2$}2
-		{xk}{$x_k$}1}
+		{xk}{$x_k$}1
+		{.type}{{\textcolor{black}{type}}}{4}
+		{gretl.Matrix}{{\textcolor{pythtype}{gretl.Matrix}}}{12}
+		{gretl.Bundle}{{\textcolor{pythtype}{gretl.Bundle}}}{12}
+		{gretl.Dataset}{{\textcolor{pythtype}{gretl.Dataset}}}{13}
+		{pandas.core.series.Series}{{\textcolor{pythtype}{pandas.core.series.Series}}}{25}
+		{numpy.ndarray}{{\textcolor{pythtype}{numpy.ndarray}}}{13}}
 }
 
 \lstdefinestyle{pythonstylefoot}{
 	language=Python,
 	basicstyle=\ttfamily\footnotesize,
-	morekeywords={self,True,False},
+	morekeywords={self,True,False,None},
 	keywordstyle=\color{blue},
+	morekeywords=[2]{
+		int,
+		float,
+		complex,
+		bool,
+		str,
+		bytes,
+		list,
+		tuple,
+		set,
+		dict,
+		object
+	},
+	keywordstyle=[2]\color{pythtype},
 	%emph={MyClass,__init__},      % Custom highlighting
 	emphstyle=\color{red},     % Custom highlighting style
 	stringstyle=\color{pythgreen},
 	frame=tb,                      % Any extra options here
 	showstringspaces=false,
-	literate={{~}{$\sim$}2
+	literate={
+		{~}{$\sim$}2
 		{x1}{$x_1$}3
 		{x2}{$x_2$}2
-		{xk}{$x_k$}1}
-}
+		{xk}{$x_k$}1
+		{.type}{{\textcolor{black}{type}}}{4}
+		{.vars}{{\textcolor{black}{vars}}}{4}
+		{gretl.Matrix}{{\textcolor{pythtype}{gretl.Matrix}}}{12}
+		{gretl.Bundle}{{\textcolor{pythtype}{gretl.Bundle}}}{12}
+		{~gretl.Bundle}{gretl.Bundle}{12}
+		{gretl.Dataset}{{\textcolor{pythtype}{gretl.Dataset}}}{13}
+		{pandas.core.series.Series}{{\textcolor{pythtype}{pandas.core.series.Series}}}{25}
+		{pandas.core.frame.DataFrame}{{\textcolor{pythtype}{pandas.core.frame.DataFrame}}}{27}
+		{numpy.ndarray}{{\textcolor{pythtype}{numpy.ndarray}}}{13}
+		{numpy.array}{{\textcolor{pythtype}{numpy.array}}}{11}}}
 
 %% Hansl syntax highlight
 \lstdefinelanguage{Hansl}{
@@ -209,15 +259,18 @@
 	stringstyle={\color{hanslmagenta}}
 }
 \lstset{
+	columns=fullflexible,
 	escapechar=@,
 	style=hansl,
 	literate=
-	{pvalue(}{{\textcolor{hanslteal}{pvalue}(}}1
-	{~sortby}{{\textcolor{black}{ sortby }}}1
-	{~varlist}{{\textcolor{black}{ varlist }}}1
-	{~resample}{{\textcolor{black}{ resample }}}1
-	{~freq}{{\textcolor{black}{ freq }}}1
-	{.Matrix}{{\textcolor{black}{.Matrix}}}1
+	{pvalue(}{{\textcolor{hanslteal}{pvalue}(}}7
+	{~sortby}{{\textcolor{black}{ sortby }}}7
+	{~varlist}{{\textcolor{black}{ varlist }}}8
+	{~varname}{{\textcolor{black}{ varname }}}8
+	{~resample}{{\textcolor{black}{ resample }}}9
+	{~freq}{{\textcolor{black}{ freq }}}5
+	{~series}{{\textcolor{black}{series}}}7
+	{~series~}{{\textcolor{black}{series }}}8
 }
 \def\inline{\lstinline[basicstyle={\normalsize\ttfamily}]}
 % Colors
@@ -229,3 +282,4 @@
 \definecolor{hanslmagenta}{cmyk}{0,.96,0,0}
 \definecolor{hanslblack}{cmyk}{0,0,0,1}
 \definecolor{pythgreen}{cmyk}{.65,0,.65,.35}
+\definecolor{pythtype}{cmyk}{.25,.45,0,0}

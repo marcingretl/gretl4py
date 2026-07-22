@@ -200,8 +200,8 @@ that specifies the type of GARCH analysis to be performed later by
 These two functions are bound to the user space with the following Python
 signatures:
 \begin{itemize}
-	\item \pythcode{gig_setup(y: str, ARlags: int, type: int = 1[, X: gretllist, Y: gretllist]) -> _gretl.Bundle}
-	\item \pythcode{gig_estimate(model: _gretl.Bundle, verbose: int = 1) -> int}.
+	\item \pythcode{gig_setup(y: str, ARlags: int, type: int = 1[, X: gretllist, Y: gretllist]) -> gretl.Bundle}
+	\item \pythcode{gig_estimate(model: gretl.Bundle, verbose: int = 1) -> int}.
 \end{itemize}
 
 Note that in \gretlpy, users may call functions from packages

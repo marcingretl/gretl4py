@@ -12,7 +12,7 @@ The \classpydataset class provides the following operators:
 \estdesc{Slicing operator for a \classpydataset instance, used to reduce
 	its dimension(s).}
 \begin{lstlisting}[style=pythonstyle]
-gretl._gretl.Dataset[rule: slice | list | str] -> gretl._gretl.Dataset
+gretl.Dataset[rule: slice | list | str] -> gretl.Dataset
 \end{lstlisting}
 \where{\pythcodef{rule} is either a sample range, a list of variables,
 	or a logical expression that can be applied to the dataset.}\\
@@ -158,8 +158,7 @@ Examples:\newline
 \gretlfpycmd{add\_series()}
 \estdesc{Adds new series to dataset.}
 \begin{lstlisting}[style=pythonstylefoot]
-.add_series(data: numpy.ndarray, name: str)
-.add_series(data: _gretl.Matrix, name: str)
+.add_series(data: numpy.ndarray | gretl.Matrix, name: str)
 \end{lstlisting}
 \generaldesc{This method adds data to the dataset
 	from either a \gretlmatrix or a NumPy array.}
@@ -168,7 +167,7 @@ Examples:\newline
 \estdesc{Returns the result of applying the Baxter--King
 	band-pass filter to the series \textit{y}.}
 \begin{lstlisting}[style=pythonstylefoot]
-	.bkfilt(y: str[, f1: int = 0, f2: int = 0, k: int = 0) -> numpy.ndarray
+.bkfilt(y: str[, f1: int = 0, f2: int = 0, k: int = 0) -> numpy.ndarray
 \end{lstlisting}
 \maptof{bkfilt(y, f1, f2, k)}{series}
 \generaldesc{The optional parameters \textit{f1} and
@@ -196,18 +195,18 @@ Examples:\newline
 \begin{lstlisting}[style=pythonstylefoot]
 .cdf(d: str, series: str[, param: object = None]) -> numpy.ndarray
 \end{lstlisting}
-\maptof{cdf(d, series)}{numpy.ndarray}
-\maptof{cdf(d, param, series)}{numpy.ndarray}
+\maptof{cdf(d, ~series)}{matrix}
+\maptof{cdf(d, param, ~series)}{matrix}
 \where{\textit{d} and \textit{param} are defined
 	as in \ref{func:gretl.cdf}.}
 
 \gretlfpycmd{clone()}
 \estdesc{Clones the \classpydataset object (performs a deep copy).}
 \begin{lstlisting}[style=pythonstylefoot]
-.clone() -> gretl._gretl.Dataset
+.clone() -> gretl.Dataset
 \end{lstlisting}
 \generaldesc{This method returns a new, fully independent
-	\pythcode{gretl.\_gretl.Dataset} object that duplicates
+	\pythcode{gretl.Dataset} object that duplicates
 	all elements of the original dataset. Changes made to
 	the copy do not affect the original object.\newline
 	Note that this is equivalent to:
@@ -251,7 +250,7 @@ Examples:\newline
 \gretlfpycmd{cov()}
 \estdesc{Returns the covariance matrix for the variables in the list.}
 \begin{lstlisting}[style=pythonstylefoot]
-.cov(vars: str) -> numpy.ndarray
+.cov(.vars: str) -> numpy.ndarray
 \end{lstlisting}
 \maptof{cov(y1, y2)}{numpy.ndarray}
 \generaldesc{Note: this function is slightly more general than
@@ -263,8 +262,8 @@ Examples:\newline
 \begin{lstlisting}[style=pythonstylefoot]
 .critical(c: str, series: str[, param: object = None]) -> numpy.ndarray
 \end{lstlisting}
-\maptof{critical(d, series)}{numpy.ndarray}
-\maptof{critical(d, param, series)}{numpy.ndarray}
+\maptof{critical(d, ~series)}{matrix}
+\maptof{critical(d, param, ~series)}{matrix}
 \where{\textit{d} and \textit{param} are defined
 	as in \ref{func:gretl.cdf}.}
 
@@ -436,8 +435,8 @@ Examples:\newline
 \begin{lstlisting}[style=pythonstylefoot]
 .invcdf(d: str, series: str[, param: object = None]) -> numpy.ndarray
 \end{lstlisting}
-\maptof{invcdf(d, series)}{numpy.ndarray}
-\maptof{invcdf(d, param, series)}{numpy.ndarray}
+\maptof{invcdf(d, ~series)}{matrix}
+\maptof{invcdf(d, param, ~series)}{matrix}
 \where{\textit{d} and \textit{param} are defined
 	as in \ref{func:gretl.invcdf}.}
 
@@ -472,7 +471,7 @@ Examples:\newline
 \begin{lstlisting}[style=pythonstylefoot]
 .ldiff(varlist: str)
 \end{lstlisting}
-\mapto[0]{ldiff varlist}
+\mapto[0]{ldiff ~varlist}
 \generaldesc{Thus \gretlcmd{ldiff x y} creates the new variables
 	\begin{align*}
 		ld\_x &= log(x) - log(x(-1)),\\
@@ -576,8 +575,8 @@ Examples:\newline
 \begin{lstlisting}[style=pythonstylefoot]
 .pdf(d: str, series: str[, param: object = None]) -> numpy.ndarray
 \end{lstlisting}
-\maptof{pdf(d, series)}{numpy.ndarray}
-\maptof{pdf(d, param, series)}{numpy.ndarray}
+\maptof{pdf(d, ~series)}{matrix}
+\maptof{pdf(d, param, ~series)}{matrix}
 \where{\textit{d} and \textit{param} are
 	defined as in \ref{func:gretl.pdf}.}
 
@@ -612,8 +611,8 @@ Examples:\newline
 \begin{lstlisting}[style=pythonstylefoot]
 .pvalue(c: str, series: str[, param: object = None]) -> numpy.ndarray
 \end{lstlisting}
-\maptof{pvalue(c, series)}{numpy.ndarray}
-\maptof{pvalue(c, param, series)}{numpy.ndarray}
+\maptof{pvalue(c, ~series)}{matrix}
+\maptof{pvalue(c, param, ~series)}{matrix}
 \where{\textit{c} and \textit{param} are defined
 	as in \ref{func:gretl.pvalue}}.
 
@@ -624,7 +623,7 @@ Examples:\newline
 .rename(series: str, newname: str[, OPTS])
 .rename(series: int, newname: str[, OPTS])
 \end{lstlisting}
-\mapto[none]{rename series newname}
+\mapto[none]{rename ~series~ newname}
 \mapto{rename case=style}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
 	\item[]\maptoopt{quiet=True}{--quiet}{suppress printed output}
@@ -727,7 +726,7 @@ Examples:\newline
 \generaldesc{This command is available only for seasonal time series.}
 
 \gretlfpycmd{set\_as\_default()}\label{met:gretldataset:set_as_default}
-\estdesc{Sets given \pythcode{gretl.\_gretl.Dataset} instance
+\estdesc{Sets given \pythcode{gretl.Dataset} instance
 	as default detaset.}
 \begin{lstlisting}[style=pythonstylefoot]
 .set_as_default()
@@ -841,7 +840,7 @@ Examples:\newline
 %.tailT(nobs: int = 5)
 %\end{lstlisting}
 
-\gretlfpycmd{tdisagg()}
+\gretlfpycmd{tdisagg()}\label{met:gretldataset::tdisagg}
 \estdesc{Performs temporal disaggregation of a time-series dataset.}
 \begin{lstlisting}[style=pythonstylefoot]
 .tdisagg(Y: obj, s: int[, X: obj, opts: gretl.Bundle, results: gretl.Bundle]) -> gretl.Matrix

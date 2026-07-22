@@ -1,4 +1,4 @@
-%\subsection[\texttt{python} side]{\python side}\label{sec:python_side}
+\subsection[\texttt{python} side]{\python side}\label{sec:python_side}
 All binary bindings have their counterparts
 on the \python side, with access provided by
 two \python scripts: \texttt{gretl4py\_addons.py}
@@ -31,14 +31,14 @@ gretl.version -> str
 	the libraries it utilizes and the contents of \lgretl's
 	\gretlcmd{\$sysinfo} bundle.}
 \begin{lstlisting}[style=pythonstylefoot]
-gretl.about(do_print: bool = False) -> gretl._gretl.Bundle
+gretl.about(do_print: bool = False) -> gretl.Bundle
 \end{lstlisting}
 \generaldesc{The returned dictionary contains the following
 	entries (alphabetical order):
 	\begin{itemize}
 		\item \pythcode{built\_in\_strings}: The values of
 			\lgretl's built-in strings \citep[see][for details]{gretl_manual}
-			(\pythcode{\_gretl.Bundle}).
+			(\pythcode{gretl.Bundle}).
 		\item \pythcode{lg\_ver}: The version of the \lgretl[-1.0]
 			library (\pythcode{str}).
 		\item \pythcode{mod\_ver}: The version of the \gretlpy
@@ -46,7 +46,7 @@ gretl.about(do_print: bool = False) -> gretl._gretl.Bundle
 		\item \pythcode{py11\_ver}: The version of the \pkg{pybind11}
 			module, formatted as \texttt{MAJOR.MINOR.PATCH} (\pythcode{str}).
 		\item \pythcode{sysinfo}: The contents of \lgretl['s]
-			\gretlcmd{\$sysinfo} bundle (\pythcode{\_gretl.Bundle}).
+			\gretlcmd{\$sysinfo} bundle (\pythcode{gretl.Bundle}).
 		\end{itemize}}
 
 
@@ -157,11 +157,11 @@ values for variables from different datasets, please refer to
 \begin{lstlisting}[style=pythonstylefoot]
 gretl._gretl.delete(varname: str)
 \end{lstlisting}
-\mapto[clean]{delete varlist}
-\mapto[clean]{delete varname}
+\mapto[none]{delete ~varlist}
+\mapto[none]{delete ~varname}
 \mapto[]{delete --type=type-name}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
-	\item[]\maptoopt{type=str}{--type=type-name}{\seegretlmanual}
+	\item[]\maptoopt{.type=str}{--type=type-name}{\seegretlmanual}
 	\item[]\maptoopt{db=True}{db}{delete series from database}
 	\item[]\pythcode{data=gretl.Dataset}\par%
 		\hspace*{10pt}{\footnotesize\pythcode{gretl.delete()} works with the specified dataset}
@@ -169,7 +169,7 @@ gretl._gretl.delete(varname: str)
 Examples:\newline
 \pythcodef{.delete(varlist)}\\
 \pythcodef{.delete(varname)}\\
-\pythcodef{.delete(type='type-name')}\\
+\pythcodef{.delete(.type='type-name')}\\
 \generaldesc{In the first form above, varlist is a list of series,
 	given by name or ID number. Note that when you delete series
 	any series with higher ID numbers than those on the deletion
@@ -200,7 +200,7 @@ gretl.df2dict(dframe: pandas.core.frame.DataFrame[, pd: int, with_obs: bool = Fa
 \estdesc{NOTE: for comprehensive and updated info on this
 	function you'll want to refer to \cite[chapter 10]{gretl_manual}.}
 \begin{lstlisting}[style=pythonstylefoot]
-gretl.genr(formula=str, data=gretl._gretl.Dataset)
+gretl.genr(formula=str, data=gretl.Dataset)
 gretl.genr(name=str, value=numpy.ndarray)
 gretl.genr(name=str, value=int)
 gretl.genr(name=str, value=float)
@@ -222,10 +222,10 @@ Examples:\newline
 	\ref{met:gretldataset::get_accessor} or \ref{met:gretlmodel::get_accessor}.}
 
 \gretlfpycmd{get\_data()}\label{get_data()}
-\estdesc{Factory function that loads the provided data as a \pythcode{gretl._gretl.Dataset}}
+\estdesc{Factory function that loads the provided data as a \pythcode{gretl.Dataset}}
 \begin{lstlisting}[style=pythonstylefoot]
-gretl.get_data(src: str[, OPTS]) -> gretl._gretl.Dataset
-gretl.get_data(src: dict | int) -> gretl._gretl.Dataset
+gretl.get_data(src: str[, OPTS]) -> gretl.Dataset
+gretl.get_data(src: dict | int) -> gretl.Dataset
 \end{lstlisting}
 \mapto{open src}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
@@ -251,7 +251,7 @@ gretl.get_data(src: dict | int) -> gretl._gretl.Dataset
 	For a complete list of supported please refer to \cite{gretl_manual}.\newline
 	Note: the first loaded dataset is automatically registered
 	as the global dataset (see \ref{sec:globalandindivodual()}).\newline
-	Important: \pythcode{gretl._gretl.Dataset} is just
+	Important: \pythcode{gretl.Dataset} is just
 	a reference to the underlying \cppcode{GretlDataset} \cpp object.
 	Thus, deleting the Python object removes your reference, but the
 	dataset may remain alive as long as it is the default dataset
@@ -490,10 +490,10 @@ gretl.set()
 gretl.set(variable: str = ''[, value: str = '', OPTS])
 gretl.set(variable: str, value: int[, OPTS])
 \end{lstlisting}
-\mapto[0]{set variable value}
-\mapto[0]{set --to-file=filename}
-\mapto[0]{set --from-file=filename}
-\mapto[0]{set stopwatch}
+\mapto[none]{set variable value}
+\mapto[none]{set --to-file=filename}
+\mapto[none]{set --from-file=filename}
+\mapto[none]{set stopwatch}
 \mapto[]{set}
 \begin{itemize}
 	\item[]\pythcode{data=gretl.Dataset}\par%
@@ -528,7 +528,7 @@ gretl.show_data_status()
 \begin{lstlisting}[style=pythonstylefoot]
 gretl.summary(varlist: str[, OPTS])
 \end{lstlisting}
-\mapto[0]{summary [ varlist ]}
+\mapto[none]{summary [ ~varlist ]}
 \mapto{summary --matrix=matname}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
 	\item[]\maptoopt{simple=True}{--simple}{basic statistics only}
@@ -542,14 +542,34 @@ gretl.summary(varlist: str[, OPTS])
 	accessor. When the \gretlcmd{--by} option is given, this accessor
 	is produced only if \textit{varlist} contains a single series.}
 
+\gretlfpycmd{tdisagg()}\label{tdisagg}
+\estdesc{Performs temporal disaggregation of a matrix.}
+\begin{lstlisting}[style=pythonstylefoot]
+gretl.tdisagg(Y: gretl.Matrix, s: int[, X: gretl.Matrix, opts: gretl.Bundle, results: gretl.Bundle]) -> gretl.Matrix
+\end{lstlisting}
+\maptof{tdisagg(Y, X, s, opts, results)}{gretl.Matrix}
+Examples:\newline
+\pythcodef{gretl.tdisagg(m1, s=3)}\\
+\pythcodef{gretl.tdisagg(Y=m1, X=m2, s=3)}\\
+\generaldesc{Converts the time series stored in
+	\pythcode{Y : gretl.Matrix} to a higher frequency using temporal disaggregation.
+	The parameter \textit{s} specifies the expansion factor (for example,
+	\textit{s=3} for conversion from quarterly to monthly data).
+	The optional argument \pythcode{X: gretl.Matrix} may
+	contain higher-frequency covariates used to aid the disaggregation.
+	Additional options can be supplied via \textit{opts}, while details
+	of the disaggregation procedure can be retrieved through \textit{results}.\\
+	Note: for dataset-based applications, please use the
+	\classpydataset method~\ref{met:gretldataset::tdisagg}.}
+
 \gretlfpycmd{varlist()}
 \estdesc{Prints a listing of the series in the default dataset (if any).}
 \begin{lstlisting}[style=pythonstylefoot]
-gretl.varlist([type: str])
+gretl.varlist([.type: str ])
 \end{lstlisting}
 \mapto{varlist}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
-	\item[] \maptoopt{type=typename}{--type=typename}{scope of listing}
+	\item[] \maptoopt{.type=typename}{--type=typename}{scope of listing}
 	\item[]\pythcode{data=gretl.Dataset}\par%
 	\hspace*{10pt}{\footnotesize\pythcode{gretl.varlist()} works with the specified dataset}
 \end{itemize}
@@ -559,6 +579,6 @@ gretl.varlist([type: str])
 	\textit{string}, \textit{bundle}, \textit{array} or \textit{accessor}.
 	The effect is to print the names of all currently defined objects of
 	the named type.\newline
-	As a special case, if the typename is accessor, the names printed are
+	As a special case, if the \textit{typename} is accessor, the names printed are
 	those of the internal variables currently available as ``accessors'',
 	such as \gretlcmd{$nobs} and \gretlcmd{$uhat}, regardless of their specific type.}

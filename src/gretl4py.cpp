@@ -213,8 +213,7 @@ PYBIND11_MODULE(_gretl, m)
 
               return do_get_tdisagg_matrix(y_obj, s, kwargs_copy);
           },
-          py::arg("Y").none(false), py::arg("s").none(false),
-          py::arg("X").none(true) = nullptr, py::kw_only());
+          py::arg("Y").none(false), py::arg("s").none(false), py::arg("X").none(true) = nullptr, py::kw_only());
 
     //////////////////////////////////////////////////
     // single equation models
