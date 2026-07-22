@@ -180,7 +180,7 @@ X = '2..14'
 
 gretl.set('seed', 1000000)
 gretl.set('stopwatch')
-res = gretl.BACE(Y=dep, X_list=X, Options=gretl.Bundle(model_type="probit"))
+res = gretl.BACE(Y=dep, X_list=X, Options=~gretl.Bundle(model_type="probit"))
 print(f"Total execution time: {gretl.get_accessor('$stopwatch'):.2f} sec.")
 \end{lstlisting}\index{pkg()}\index{include()}\index{get\_data()}\index{new\_list()}\index{set()}%
 \index{Bundle()}\index{show\_functions()}\index{BACE()}
