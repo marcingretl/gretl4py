@@ -246,12 +246,12 @@ PythonArgInfo inspect_pyobject (py::handle obj)
         info.pytype = "str";
         return info;
     }
-    if (IS_PYGRETLBUNDLE(obj)) {
+    if (is_pygretlbundle(obj)) {
         info.gtype = GRETL_TYPE_BUNDLE;
         info.pytype = "GretlBundle";
         return info;
     }
-    if (IS_PYGRETLMATRIX(obj)) {
+    if (is_pygretlmatrix(obj)) {
         info.gtype = GRETL_TYPE_MATRIX;
         info.pytype = "GretlMatrix";
         return info;

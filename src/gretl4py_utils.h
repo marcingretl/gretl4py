@@ -21,14 +21,13 @@
 #define GRETL4PY_UTILS_H
 
 #include "gretl4py_types.h"
+#include "gretl4py_data.h"
 
 namespace py = pybind11;
 
 //////////////////////////////////////////////////
 // macros
 //////////////////////////////////////////////////
-#define IS_PYGRETLBUNDLE(o) (py::isinstance<GretlBundle>(o))
-#define IS_PYGRETLMATRIX(o) (py::isinstance<GretlMatrix>(o))
 #define SET_OPT(opt, flag) opt = static_cast<gretlopt>((opt) | (flag))
 
 //////////////////////////////////////////////////
@@ -64,6 +63,8 @@ inline bool is_pynone (const py::handle &o) { return py::isinstance<py::none>(o)
 inline bool is_numpy_array_fc (const py::array &m) {
     return (m.flags() & py::detail::npy_api::constants::NPY_ARRAY_F_CONTIGUOUS_) != 0;
 }
+inline bool is_pygretlbundle (const py::handle &o) { return py::isinstance<GretlBundle>(o); }
+inline bool is_pygretlmatrix (const py::handle &o) { return py::isinstance<GretlMatrix>(o); }
 
 //////////////////////////////////////////////////
 // functions

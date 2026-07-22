@@ -1504,10 +1504,10 @@ template void GretlDataset::do_modify_dataset<std::nullptr_t>(DatasetOp, const s
 GretlMatrixPtr GretlDataset::tdisagg (py::object Y, int s, const py::kwargs &kwargs)
 {
     // we exclude a twice-matrix case
-    if (IS_PYGRETLMATRIX(Y) && kwargs.contains("X")) {
+    if (is_pygretlmatrix(Y) && kwargs.contains("X")) {
         auto X = kwargs["X"];
 
-        if (!X.is_none() && IS_PYGRETLMATRIX(X)) {
+        if (!X.is_none() && is_pygretlmatrix(X)) {
             std::string msg = "both arguments are gretl.Matrix objects, please use gretl.tdisagg() instead";
             handle_gretl_error(E_INVARG, "Y and X", msg);
         }

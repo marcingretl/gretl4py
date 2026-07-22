@@ -1252,7 +1252,7 @@ GretlMatrixPtr do_get_tdisagg_matrix (py::object Y, int s, const py::kwargs &kwa
     };
 
     // at first we evaluate Y
-    if (IS_PYGRETLMATRIX(Y)) {
+    if (is_pygretlmatrix(Y)) {
         tdi.Y = Y.cast<GretlMatrixPtr>()->get_ptr();
     } else if (is_pystr(Y)) {
         if (!data) handle_gretl_error(E_NODATA);
@@ -1276,7 +1276,7 @@ GretlMatrixPtr do_get_tdisagg_matrix (py::object Y, int s, const py::kwargs &kwa
         if (key == "X") {
             auto X = item.second;
 
-            if (IS_PYGRETLMATRIX(X)) {
+            if (is_pygretlmatrix(X)) {
                 tdi.X = X.cast<GretlMatrixPtr>()->get_ptr();
             } else if (is_pystr(X)) {
                 if (!data) handle_gretl_error(E_NODATA);
@@ -1306,7 +1306,7 @@ GretlMatrixPtr do_get_tdisagg_matrix (py::object Y, int s, const py::kwargs &kwa
         } else if (key == "opts") {
             auto opts_handle = item.second;
 
-            if (!IS_PYGRETLBUNDLE(opts_handle)) {
+            if (!is_pygretlbundle(opts_handle)) {
                 std::string msg = "should be a gretl.Bundle, is: ";
                 msg.append(get_pyobject_type(opts_handle));
                 handle_gretl_error(E_INVARG, "opts", msg);
@@ -1315,7 +1315,7 @@ GretlMatrixPtr do_get_tdisagg_matrix (py::object Y, int s, const py::kwargs &kwa
         } else if (key == "results") {
             auto results_handle = item.second;
 
-            if (!IS_PYGRETLBUNDLE(results_handle)) {
+            if (!is_pygretlbundle(results_handle)) {
                 std::string msg = "should be n gretl.Bundle, is: ";
                 msg.append(get_pyobject_type(results_handle));
                 handle_gretl_error(E_INVARG, "results", msg);
