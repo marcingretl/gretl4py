@@ -1351,12 +1351,8 @@ void GretlModel_VAR::irf (int target, int shock, double alpha)
     res[py::cast("target_name")] = dataset_->dset->varname[gretl_VAR_get_variable_number(model_, target)];
     res[py::cast("shock")] = shock;
     res[py::cast("shock_name")] = dataset_->dset->varname[gretl_VAR_get_variable_number(model_, shock)];
+    res[py::cast("results")] = std::make_shared<GretlMatrix>(irf.release(), false);
     if (alpha > 0.0) res[py::cast("alpha")] = alpha;
-
-    auto val = convert_GretlType_to_GretlTypes(GRETL_TYPE_MATRIX, irf.get(), 0, err_);
-
-    if (err_) handle_gretl_error(err_);
-    res[py::cast("results")] = variant_to_pyobject(std::move(*val));
 
     // we register result
     move_to_python_container<GretlModel, py::dict, py::list>(*this, std::move(res), "irfs");
