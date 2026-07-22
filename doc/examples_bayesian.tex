@@ -210,17 +210,17 @@ d = gretl.get_data('koopkoro.gdt', frompkg='BVAR')
 dep = [1, 2, 3]
 
 # Step 1 - BVAR_setup
-model = gretl.BVAR_setup(y=dep, lag=4, type='conj')
+model = gretl.BVAR_setup(y=dep, lag=4, .type='conj')
 
 # Step 2 - prior customization
-OPT = gretl.Bundle()
+OPT = ~gretl.Bundle()
 OPT['p_mean'] = 0
 gretl.BVAR_sigma_prior(mod=model, prior_type='AR')
 gretl.BVAR_alpha_prior(mod=model, prior_type='Minn', prior_opt=OPT)
 
 # Step 3 - posterior simulation
-gretl.set('seed', 1234)
-res = gretl.BVAR_posterior(mod=model, wat='all', opt=gretl.Bundle(iter=10000))
-res.print(tree=True)
+gretl..set('seed', 1234)
+res = gretl.BVAR_posterior(mod=model, wat='all', opt=~gretl.Bundle(.iter=10000))
+res..print(tree=True)
 \end{lstlisting}\index{pkg()}\index{include()}\index{get\_data()}\index{new\_list()}\index{set()}\index{Bundle()}\index{show\_functions()}%
 \index{BVAR\_posterior()}\index{BVAR\_setup()}\index{BVAR\_sigma\_prior()}

@@ -392,9 +392,9 @@ Examples:\newline
 \gretlfpycmd{print()}\label{func:gretl.print}
 \estdesc{General \gretlpy printer.}
 \begin{lstlisting}[style=pythonstylefoot]
-gretl.print(varlist: str[, OPTS])
+gretl..print(varlist: str[, OPTS])
 \end{lstlisting}
-\mapto[0]{print varlist}
+\mapto[none]{print ~varlist}
 \mapto[]{print}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
 	\item[]\maptoopt{byobs=True}{--byobs}{by observations}
@@ -409,7 +409,7 @@ gretl.print(varlist: str[, OPTS])
 Examples:\newline
 \pythcodef{.print('y x', byobs=True)}\\
 \pythcodef{.print('my\_matrix')}\\
-\pythcodef{.print('my\_array', range='3:6')}\\
+\pythcodef{.print('my\_array', .range='3:6')}\\
 \pythcodef{.print('hflist', midas=True)}\\
 \generaldesc{In the first variant shown above (also see the
 	first example), \textit{varlist} should be a list of series
@@ -496,7 +496,7 @@ gretl.set(variable: str, value: int[, OPTS])
 \mapto[none]{set stopwatch}
 \mapto[]{set}
 \begin{itemize}
-	\item[]\pythcode{data=gretl.Dataset}\par%
+	\item[]\pythcode{data: gretl.Dataset}\par%
 		\hspace*{10pt}{\footnotesize\pythcode{gretl.set()} works with the specified dataset}
 \end{itemize}
 \generaldesc{The other uses are: with \gretlcmd{--to-file} to write
@@ -534,7 +534,7 @@ gretl.summary(varlist: str[, OPTS])
 	\item[]\maptoopt{simple=True}{--simple}{basic statistics only}
 	\item[]\maptoopt{weight='wtvar'}{--weight=wtvar}{weighting variable}
 	\item[]\maptoopt{by='byvar'}{--by=byvar}{\seegretlmanual}
-	\item[]\pythcode{data=gretl.Dataset}\par%
+	\item[]\pythcode{data: gretl.Dataset}\par%
 	\hspace*{10pt}{\footnotesize\pythcode{gretl.summary()} works with the specified dataset}
 \end{itemize}
 \generaldesc{The table of statistics produced by \gretlcmd{summary}
@@ -570,7 +570,7 @@ gretl.varlist([.type: str ])
 \mapto{varlist}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
 	\item[] \maptoopt{.type=typename}{--type=typename}{scope of listing}
-	\item[]\pythcode{data=gretl.Dataset}\par%
+	\item[]\pythcode{data: gretl.Dataset}\par%
 	\hspace*{10pt}{\footnotesize\pythcode{gretl.varlist()} works with the specified dataset}
 \end{itemize}
 \generaldesc{If the \gretlcmd{--type} option is given, it should be

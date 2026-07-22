@@ -8,7 +8,7 @@
 \RequirePackage[pdftex]{xcolor}
 \RequirePackage[]{graphicx}
 
-\RequirePackage{dirtree,xargs,xspace,url,pifont,makeidx,ifthen,caption,subcaption,fancyvrb,tikz,pdflscape,catchfile,amsmath}
+\RequirePackage{dirtree,xargs,xspace,url,pifont,makeidx,ifthen,caption,subcaption,fancyvrb,tikz,pdflscape,catchfile,amsmath,xstring}
 \RequirePackage[toc,title]{appendix}
 \RequirePackage[final]{listings}
 \usepackage{gretlwp}
@@ -91,7 +91,8 @@
 		{x1}{$x_1$}3
 		{x2}{$x_2$}2
 		{xk}{$x_k$}1
-		{.type}{{\textcolor{black}{type}}}{4}
+		{.set}{.set}{3}
+		{.type}{type}{4}
 		{gretl.Matrix}{{\textcolor{pythtype}{gretl.Matrix}}}{12}
 		{gretl.Bundle}{{\textcolor{pythtype}{gretl.Bundle}}}{12}
 		{gretl.Dataset}{{\textcolor{pythtype}{gretl.Dataset}}}{13}
@@ -150,8 +151,12 @@
 		{x1}{$x_1$}3
 		{x2}{$x_2$}2
 		{xk}{$x_k$}1
-		{.type}{{\textcolor{black}{type}}}{4}
-		{.vars}{{\textcolor{black}{vars}}}{4}
+		{.set}{set}{3}
+		{.type}{type}{4}
+		{.vars}{vars}{4}
+		{.iter}{iter}{4}
+		{.print}{print}{5}
+		{.range}{range}{5}
 		{gretl.Matrix}{{\textcolor{pythtype}{gretl.Matrix}}}{12}
 		{gretl.Bundle}{{\textcolor{pythtype}{gretl.Bundle}}}{12}
 		{~gretl.Bundle}{gretl.Bundle}{12}
@@ -174,7 +179,7 @@
 		qlrtest, qqplot, quantreg, quit, rename, reset, restrict, rmplot, run, runs, scatters,
 		sdiff, set, setinfo, setobs, setmiss, shell, smpl, spearman, sprintf, square, sscanf, store,
 		summary, system, tabprint, textplot, tobit, tsls, var, varlist, vartest, vecm, vif,
-		wls, xcorrgm, xtab, mpi, gibbs, return, params, pkg, midasreg, johansen, bkw, panspec},
+		wls, xcorrgm, xtab, mpi, gibbs, return, params, pkg, midasreg, johansen, bkw, panspec, stdize},
 	morekeywords=[2]{abs, acos, acosh, aggregate, argname, asin, asinh, atan, atanh, bessel,
 		BFGSmax, bkfilt, boxcox, bwfilt, cdemean, cdf, cdiv, ceil, cholesky, chowlin,
 		cmult, cnorm, colname, colnames, cols, cos, cosh, cov,
@@ -264,13 +269,14 @@
 	style=hansl,
 	literate=
 	{pvalue(}{{\textcolor{hanslteal}{pvalue}(}}7
-	{~sortby}{{\textcolor{black}{ sortby }}}7
-	{~varlist}{{\textcolor{black}{ varlist }}}8
-	{~varname}{{\textcolor{black}{ varname }}}8
-	{~resample}{{\textcolor{black}{ resample }}}9
-	{~freq}{{\textcolor{black}{ freq }}}5
-	{~series}{{\textcolor{black}{series}}}7
-	{~series~}{{\textcolor{black}{series }}}8
+	{~sortby}{sortby }7
+	{~varlist}{varlist }8
+	{~varname}{varname }8
+	{~resample}{resample }9
+	{~freq}{freq }5
+	{~series}{series}7
+	{~series~}{series }8
+	{ +i }{+i }{4}
 }
 \def\inline{\lstinline[basicstyle={\normalsize\ttfamily}]}
 % Colors

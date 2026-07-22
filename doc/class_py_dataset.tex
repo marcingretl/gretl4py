@@ -526,14 +526,12 @@ Examples:\newline
 \begin{lstlisting}[style=pythonstylefoot]
 .orthdev(varlist: str)
 \end{lstlisting}
-\mapto[0]{orthdev varlist}
+\mapto[none]{orthdev ~varlist}
 \generaldesc{A series of forward orthogonal deviations is
 	obtained for each variable in \textit{varlist} and stored
 	in a new variable with the prefix \textit{o\_}.
 	Thus \gretlcmd{orthdev x y} creates the new variables
 	\textit{o\_x} and \textit{o\_y}.}
-
-
 
 \gretlfpycmd{pad\_daily()}
 \estdesc{Pads a dated daily dataset to a complete calendar.}
@@ -548,14 +546,12 @@ Examples:\newline
 	\textit{days} specifies the number of days per week and must be
 	5, 6 or 7. Inserted observations contain only missing values.}
 
-
-
 \gretlfpycmd{pca()}
 \estdesc{Principal Components Analysis.}
 \begin{lstlisting}[style=pythonstylefoot]
 .pca(varlist: str = ''[, OPTS])
 \end{lstlisting}
-\mapto{pca varlist}
+\mapto{pca ~varlist}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
 	\item[]\maptoopt{covariance=True}{--covariance}{use the covariance matrix}
 	\item[]\maptoopt{save=n}{--save=n}{save major components}
@@ -585,12 +581,12 @@ Examples:\newline
 \begin{lstlisting}[style=pythonstyle]
 .print(varlist: str[, OPTS])
 \end{lstlisting}
-\mapto[0]{print varlist}
+\mapto[none]{print ~varlist}
 \mapto[]{print}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
 	\item[]\maptoopt{byobs=True}{--byobs}{by observations}
 	\item[]\maptoopt{no\_dates=True}{--no-dates}{use simple observation numbers}
-	\item[]\maptoopt{range='start:stop'}{--range=start:stop}{\seegretlmanual}
+	\item[]\maptoopt{.range='start:stop'}{--range=start:stop}{\seegretlmanual}
 	\item[]\maptoopt{head=lines}{--head[=lines]}{\seegretlmanual}
 	\item[]\maptoopt{tail=lines}{--tail[=lines]}{\seegretlmanual}
 	\item[]\maptoopt{midas=True}{--midas}{\seegretlmanual}
@@ -666,15 +662,15 @@ Examples:\newline
 .sample(startobs: int = 'nan'[, endobs: int = 'nan', OPTS])
 .sample(periodicity: str = ''[, startobs: str = '', OPTS])
 \end{lstlisting}
-\mapto[clean]{smpl startobs endobss}
-\mapto[clean]{smpl +i -j}
-\mapto[clean]{smpl dumvar --dummy}
-\mapto[clean]{smpl condition --restrict}
-\mapto[clean]{smpl --no-missing [ varlist ]}
-\mapto[clean]{smpl --no-all-missing [ varlist ]}
-\mapto[clean]{smpl --contiguous [ varlist ]}
-\mapto[clean]{smpl n --random}
-\mapto[clean]{smpl full}
+\mapto[none]{smpl startobs endobss}
+\mapto[none]{smpl +i -j}
+\mapto[none]{smpl dumvar --dummy}
+\mapto[none]{smpl condition --restrict}
+\mapto[none]{smpl --no-missing [ varlist ]}
+\mapto[none]{smpl --no-all-missing [ varlist ]}
+\mapto[none]{smpl --contiguous [ varlist ]}
+\mapto[none]{smpl n --random}
+\mapto[none]{smpl full}
 \mapto{smpl}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
 	\item[]\maptoopt{dummy=True}{--dummy}{argument is a dummy variable}
@@ -722,7 +718,7 @@ Examples:\newline
 \begin{lstlisting}[style=pythonstylefoot]
 .sdiff(varlist: str)
 \end{lstlisting}
-\mapto[0]{sdiff varlist}
+\mapto[none]{sdiff ~varlist}
 \generaldesc{This command is available only for seasonal time series.}
 
 \gretlfpycmd{set\_as\_default()}\label{met:gretldataset:set_as_default}
@@ -812,7 +808,7 @@ Examples:\newline
 \begin{lstlisting}[style=pythonstylefoot]
 .stdize(varlist: str[, OPTS])
 \end{lstlisting}
-\mapto[]{stdize varlist}
+\mapto[]{stdize ~varlist}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
 	\item[]\maptoopt{no\_df\_corr=True}{--no-df-corr}{no degrees of freedom correction}
 	\item[]\maptoopt{center\_only=True}{--center-only}{don't divide by s.d.}
@@ -862,9 +858,9 @@ Examples:\newline
 \gretlfpycmd{test()}\label{met:gretldataset::test}
 \estdesc{General interface to dataset-based tests.}
 \begin{lstlisting}[style=pythonstylefoot]
-.test(type: str[, varlist: str, OPTS])
+.test(.type: str[, varlist: str, OPTS])
 \end{lstlisting}
-\where{\pythcode{type: str} refers to one of
+\where{\pythcode{.type: str} refers to one of
 	the following: \test{adf}, \test{bds}, \test{coint}, \test{corrgm},
 	\test{difftest}, \test{fractint}, \test{johansen}, \test{kpss},
 	\test{levinlin}, \test{meantest}, \test{normtest}, \test{runs}, \test{vartest}.}\\\\
@@ -887,9 +883,9 @@ Examples:\newline
 	\item[]\maptoopt{perron\_qu=True}{--perron-qu}{\seegretlmanual}
 \end{itemize}
 Examples:\newline
-\pythcodef{.test(type='adf', varlist='y', order=0)}\\
-\pythcodef{.test(type='adf', varlist='y', order=2, nc=True, c=True, ct=True)}\\
-\pythcodef{.test(type='adf', varlist='y', order=12, c=True, test-down=True)}
+\pythcodef{.test(.type='adf', varlist='y', order=0)}\\
+\pythcodef{.test(.type='adf', varlist='y', order=2, nc=True, c=True, ct=True)}\\
+\pythcodef{.test(.type='adf', varlist='y', order=12, c=True, test-down=True)}
 
 \maptot{bds order x}{bds}{Brock, Dechert, Scheinkman and LeBaron test for nonlinearity.}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
@@ -900,9 +896,9 @@ Examples:\newline
 	\item[]\maptoopt{quiet=True}{--quiet}{suppress printing of results}
 \end{itemize}
 Examples:\newline
-\pythcodef{.test(type='bds', varlist='x', order=5)}\\
-\pythcodef{.test(type='bds', order=3, matrix='m')}\\
-\pythcodef{.test(type='bds', varlist='x', order=4, sdcrit=2.0)}
+\pythcodef{.test(.type='bds', varlist='x', order=5)}\\
+\pythcodef{.test(.type='bds', order=3, matrix='m')}\\
+\pythcodef{.test(.type='bds', varlist='x', order=4, sdcrit=2.0)}
 
 \maptot{coint order depvar indepvars}{coint}{The Engle–Granger (1987) cointegration test.}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
@@ -916,8 +912,8 @@ Examples:\newline
 	\item[]\maptoopt{silent=True}{--silent}{don't print anything}
 \end{itemize}
 Examples:\newline
-\pythcodef{.test(type='coint', varlist='y', indepvars='x z', order=4)}\\
-\pythcodef{.test(type='coint', varlist='y', indepvars='x z', order=0, ct=True, skip-df=True)}
+\pythcodef{.test(.type='coint', varlist='y', indepvars='x z', order=4)}\\
+\pythcodef{.test(.type='coint', varlist='y', indepvars='x z', order=0, ct=True, skip-df=True)}
 
 \maptot{corrgm y [order]}{corrgm}{Correlogram of given order.}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
