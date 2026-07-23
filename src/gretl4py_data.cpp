@@ -1841,17 +1841,14 @@ GretlBundle::~GretlBundle (void)
     }
 }
 
-// py::object will be registered as an attribute on python side
-// py::dict will hold a content under the key
-template <typename T>
-void GretlBundle::extract_ (const T &t)
+template <typename F>
+void GretlBundle::for_each_bundle_element_ (F &&f)
 {
     //
-    // extract the bundle and either register on python side
-    // or store in as_dict
-    // early exit if bundle is empty
+    // helper fo extract_() methods
+    // the 'f' is used to perform desired operation
+    //
     if (!gretl_bundle_has_content(b_)) return;
-
     int n_keys = 0;
     char **raw_ptr = gretl_bundle_get_keys_raw(b_, &n_keys);
 
@@ -1864,20 +1861,35 @@ void GretlBundle::extract_ (const T &t)
     for (int i=0; i<n_keys; ++i) {
         const char *key_cstr = keys.get()[i];
         py::str key = py::cast(key_cstr);
+
+        f(key, key_cstr);
+    }
+}
+
+void GretlBundle::extract_ (const py::object &obj)
+{
+    //
+    // we register bundle contents as attributes of given obj
+    //
+    for_each_bundle_element_([&](py::str, const char *key_cstr) {
+        py::setattr(obj, key_cstr, get_element<py::object>(key_cstr));
+    });
+}
+
+void GretlBundle::extract_ (py::dict &dict)
+{
+    //
+    // we extrac bundle to given dict
+    //
+    for_each_bundle_element_([&](py::str key, const char *key_cstr) {
         py::object val = get_element<py::object>(key_cstr);
 
-        if constexpr (std::is_same_v<T, py::object>) {
-            py::setattr(t, key_cstr, val);
-        } else if constexpr (std::is_same_v<T, py::dict>) {
-            if (py::isinstance<GretlBundle>(val)) {
-                as_dict_[key] = val.cast<GretlBundle>().to_dict();
-            } else {
-                as_dict_[key] = val;
-            }
+        if (py::isinstance<GretlBundle>(val)) {
+            dict[key] = val.cast<GretlBundle>().to_dict();
         } else {
-            static_assert(always_false<T>, "GretlBundle::extract_(): unknown type");
+            dict[key] = std::move(val);
         }
-    }
+    });
 }
 
 int GretlBundle::get_err (void) const
@@ -1887,14 +1899,14 @@ int GretlBundle::get_err (void) const
 
 py::dict GretlBundle::to_dict (void)
 {
-    extract_<py::dict>(py::dict());
+    extract_(as_dict_);
 
     return as_dict_;
 }
 
 void GretlBundle::python_register (py::object &obj)
 {
-    extract_<py::object>(obj);
+    extract_(obj);
 }
 
 template <typename T>

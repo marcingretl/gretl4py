@@ -232,8 +232,12 @@ private:
     py::dict as_dict_;                              // Python's dict() representation
     int err_ = 0;
 
-    template <typename T>
-    void extract_ (const T &t);
+    template <typename F>
+    void for_each_bundle_element_ (F &&f);
+
+    void extract_ (const py::object &obj);          // to register as given obj
+
+    void extract_ (py::dict &dict);                 // to convert to dict
 public:
     GretlBundle (void);                                 // default constructor with empty bundle
     GretlBundle (gretl_bundle *src, bool copy = true);  // if copy==false, incoming bundle must be deallocated by libgretl
