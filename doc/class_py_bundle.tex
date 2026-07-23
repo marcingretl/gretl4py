@@ -25,12 +25,12 @@ Bundle(**kwargs) -> gretl.Bundle
 \end{lstlisting}
 \mapto[clean]{\_(**kwargs)}
 Example:\newline
-\pythcodef{b = ~gretl.Bundle(x=10, name="foo", mat=np.array([[1,2],[3,4]]))}\\
+\pythcodef{b = ~gretl.Bundle(x=10, name="foo", mat=numpy.array([[1,2],[3,4]]))}\\
 \generaldesc{Construct a \gretlcmd{bundle} optionally initialized
 	with keyword arguments. Each keyword becomes a key in the
 	\gretlcmd{bundle}, with its value stored according to type
 	(\pythcode{bool}, \pythcode{int}, \pythcode{float}, \pythcode{str},
-	\pythcode{numpy.ndarray}, or another \pythcode{gretl.Bundle}).}
+	\pythcode{numpy.ndarray}, \pythcode{gretl.Matrix} or another \pythcode{gretl.Bundle}).}
 
 
 \subsubsection{\classpybundleb operators}
