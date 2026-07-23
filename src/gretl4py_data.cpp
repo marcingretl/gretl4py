@@ -1982,10 +1982,7 @@ T GretlBundle::get_element (const std::string &key)
     auto *data = gretl_bundle_get_target(b_, key.c_str(), &gtype, &err_);
 
     if (err_) handle_gretl_error(err_);
-    auto val = convert_GretlType_to_GretlTypes(gtype,
-                                               gtype == GRETL_TYPE_SERIES ? static_cast<gretl_matrix*>(data)->val : data,
-                                               gtype == GRETL_TYPE_SERIES ? static_cast<gretl_matrix*>(data)->rows : 0,
-                                               err_);
+    auto val = convert_GretlType_to_GretlTypes(gtype == GRETL_TYPE_SERIES ? GRETL_TYPE_MATRIX : gtype, data, 0, err_);
 
     if (err_) handle_gretl_error(err_);
     if constexpr (std::is_same_v<T, py::object>) {
