@@ -1,4 +1,4 @@
-\subsection[gretl.\_gretl.Model class]{\classpymodelnosp}\label{sec:class_py_model}
+\subsection[gretl.Model class]{\classpymodelnosp}\label{sec:class_py_model}
 The \gretlpy module implements the \classpymodelnosp, which is used
 to manage the definition, estimation, and output of econometric models.
 Through this class, \gretlpy provides interfaces to native \lgretl
@@ -131,7 +131,7 @@ Note, that some of them may be available for certain estimators only.
 \gretlfpycmd{uhat}
 \estdesc{Holds model residuals.}
 \begin{lstlisting}[style=pythonstylefoot]
-.uhat -> numpy.ndarray
+.uhat -> gretl.Matrix
 \end{lstlisting}
 \generaldesc{Note: in case of \gretlcmd{biprobit}\index{biprobit()},
 	\texttt{bp\_uhat} entry of \gretlcmd{\$model} bundle is returned.}
@@ -139,7 +139,7 @@ Note, that some of them may be available for certain estimators only.
 \gretlfpycmd{yhat}
 \estdesc{Holds fitted values.}
 \begin{lstlisting}[style=pythonstylefoot]
-.yhat -> numpy.ndarray
+.yhat -> gretl.Matrix
 \end{lstlisting}
 \generaldesc{Note: in case of \gretlcmd{biprobit}\index{biprobit()},
 	\texttt{bp\_yhat} entry of \gretlcmd{\$model} bundle is returned.}
@@ -301,14 +301,14 @@ The \pythcode{gretl.Model\_NSE} class provides the following public methods:
 \gretlfpycmd{test()}\label{met:gretlmodel::test}
 \estdesc{General interface to model-based tests.}
 \begin{lstlisting}[style=pythonstylefoot]
-.test(type: str[, varlist: str, OPTS])
+.test(.type: str[, varlist: str, OPTS])
 \end{lstlisting}
-\where{\pythcode{type: str} refers to one of
-	the following: \test{arch}, \test{autocorr}, \test{bkw},
-	\test{breusch-pagan}, \test{comfac} \test{corrgm}, \test{cusum},	
-	\test{leverage}, \test{logs}, \test{normality}, \test{panel},	
-	\test{panspec}, \test{qlrtest}, \test{reset}, \test{squares},	
-	\test{vif}, \test{white}, \test{white-nocross}, \test{xdepend}.}\\\\	
+\where{\pythcode{.type: str} refers to one of
+	the following: \textit{arch}, \textit{autocorr}, \textit{bkw},
+	\textit{breusch-pagan}, \textit{comfac} \textit{corrgm}, \textit{cusum},
+	\textit{leverage}, \textit{logs}, \textit{normality}, \textit{panel},
+	\textit{panspec}, \textit{qlrtest}, \textit{reset}, \textit{squares},
+	\textit{vif}, \textit{white}, \textit{white-nocross}, \textit{xdepend}.}\\\\
 \generaldesc{Results of performed tests are appended to the
 	\pythcode{.tests} attribute (see \ref{attr:gretlmodel::tests}).
 	The following sections describe the API associated with each test:}\\
@@ -355,8 +355,8 @@ The \pythcode{gretl.Model\_NSE} class provides the following public methods:
 	\item[]\maptoopt{bartlett=True}{--bartlett}{use Bartlett standard errors}
 \end{itemize}
 Examples:\newline
-\pythcodef{.test(type='corrgm', y='x', order=12)}\\
-\pythcodef{.test(type='corrgm', y='GDP', order=12, acf\_only=True)}\\
+\pythcodef{.test(.type='corrgm', y='x', order=12)}\\
+\pythcodef{.test(.type='corrgm', y='GDP', order=12, acf\_only=True)}\\
 
 \maptot{cusum}{cusum}{Cumulative Sum (CUSUM) test of recursive residuals.}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
@@ -403,7 +403,7 @@ Examples:\newline
 
 \maptot{qlrtest}{qlrtest}{Quandt likelihood ratio test for a structural break.}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
-	\item[]\maptoopt{limit\_to=list}{--limit-to=list}{limit test to subset of regressors}
+	\item[]\maptoopt{limit\_to=.list}{--limit-to=list}{limit test to subset of regressors}
 	\item[]\maptoopt{plot=mode}{--plot=mode-or-filename}{\seegretlmanual}
 	\item[]\maptoopt{quiet=True}{--quiet}{suppress printed output}
 \end{itemize}
@@ -451,7 +451,7 @@ Examples:\newline
 \end{itemize}
 
 
-\subsubsection{\pythcodeb{gretl.\_gretl.Model\_NSE\_nl} methods}
+\subsubsection{\pythcodeb{gretl.Model\_NSE\_nl} methods}
 \begin{quote}\Large\centering Note: this class is \experimental\end{quote}
 The \pythcode{gretl.Model\_NSE\_nl} class provides the following public methods:
 
@@ -516,8 +516,8 @@ The \pythcode{gretl.Model\_var} class provides the following public attributes:
  "target_name":  <target series name>,
  "shock":        <shock series ID>,
  "shock_name":   <shock series name>, 
- "results":      <_gretl.Matrix containing the IRF estimates>,
- "alpha":        <significance level, if supplied>
+ "results":      <gretl.Matrix containing the IRF estimates>,
+ "alpha":        <significance level, .if supplied>
 }
 	\end{lstlisting}
 	Results from consecutive IRF computations are appended to this
@@ -526,7 +526,7 @@ The \pythcode{gretl.Model\_var} class provides the following public attributes:
 \end{generaldescenv}
 
 
-\subsubsection{\pythcodeb{gretl.\_gretl.Model\_var} methods}
+\subsubsection{\pythcodeb{gretl.Model\_var} methods}
 The \pythcode{gretl.Model\_var} class provides the following public methods:
 
 \gretlfpycmd{irf()}\label{met:gretlmodel::irf}

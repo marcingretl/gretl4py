@@ -88,16 +88,24 @@
 	frame=tb,                      % Any extra options here
 	showstringspaces=false,
 	literate={{~}{$\sim$}2
-		{x1}{$x_1$}3
+		{x1}{$x_1$}2
 		{x2}{$x_2$}2
-		{xk}{$x_k$}1
+		{xk}{$x_k$}2
 		{.set}{.set}{3}
 		{.type}{type}{4}
+		{gretl.Model}{{\textcolor{pythtype}{gretl.Model}}}{11}
 		{gretl.Matrix}{{\textcolor{pythtype}{gretl.Matrix}}}{12}
 		{gretl.Bundle}{{\textcolor{pythtype}{gretl.Bundle}}}{12}
 		{gretl.Dataset}{{\textcolor{pythtype}{gretl.Dataset}}}{13}
+		{gretl.Package}{{\textcolor{pythtype}{gretl.Package}}}{13}
+		{numpy.ndarray}{{\textcolor{pythtype}{numpy.ndarray}}}{13}
+		{gretl.Model\_var}{{\textcolor{pythtype}{gretl.Model\_var}}}{16}
+		{gretl.Model\_NSE}{{\textcolor{pythtype}{gretl.Model\_NSE}}}{16}
+		{gretl.Model\_NME}{{\textcolor{pythtype}{gretl.Model\_NME}}}{16}
+		{gretl.Model\_vecm}{{\textcolor{pythtype}{gretl.Model\_vecm}}}{17}
+		{gretl.Model\_NSE\_nl}{{\textcolor{pythtype}{gretl.Model\_NSE\_nl}}}{20}
 		{pandas.core.series.Series}{{\textcolor{pythtype}{pandas.core.series.Series}}}{25}
-		{numpy.ndarray}{{\textcolor{pythtype}{numpy.ndarray}}}{13}}
+		}
 }
 
 \lstdefinestyle{pythonstylebold}{
@@ -147,21 +155,24 @@
 	frame=tb,                      % Any extra options here
 	showstringspaces=false,
 	literate={
-		{~}{$\sim$}2
-		{x1}{$x_1$}3
+		{~}{$\sim$}1
+		{x1}{$x_1$}2
 		{x2}{$x_2$}2
-		{xk}{$x_k$}1
+		{xk}{$x_k$}2
+		{.if}{if }3
 		{.set}{set}{3}
 		{.type}{type}{4}
 		{.vars}{vars}{4}
 		{.iter}{iter}{4}
+		{.list}{list }5
 		{-sum}{-sum}{4}
 		{all=}{all=}{4}
 		{.print}{print}{5}
 		{.range}{range}{5}
 		{gretl.Matrix}{{\textcolor{pythtype}{gretl.Matrix}}}{12}
 		{gretl.Bundle}{{\textcolor{pythtype}{gretl.Bundle}}}{12}
-		{~gretl.Bundle}{gretl.Bundle}{12}
+		{~gretl.Bundle}{gretl.Bundle}{13}
+		{~gretl.Matrix}{gretl.Matrix}{13}
 		{gretl.Dataset}{{\textcolor{pythtype}{gretl.Dataset}}}{13}
 		{pandas.core.series.Series}{{\textcolor{pythtype}{pandas.core.series.Series}}}{25}
 		{pandas.core.frame.DataFrame}{{\textcolor{pythtype}{pandas.core.frame.DataFrame}}}{27}
