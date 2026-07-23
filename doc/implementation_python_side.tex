@@ -1,4 +1,4 @@
-\subsection[\texttt{python} side]{\python side}\label{sec:python_side}
+%\subsection[\texttt{python} side]{\python side}\label{sec:python_side}
 All binary bindings have their counterparts
 on the \python side, with access provided by
 two \python scripts: \texttt{gretl4py\_addons.py}
@@ -36,17 +36,14 @@ gretl.about(do_print: bool = False) -> gretl.Bundle
 \generaldesc{The returned dictionary contains the following
 	entries (alphabetical order):
 	\begin{itemize}
-		\item \pythcode{built\_in\_strings}: The values of
-			\lgretl's built-in strings \citep[see][for details]{gretl_manual}
-			(\pythcode{gretl.Bundle}).
-		\item \pythcode{lg\_ver}: The version of the \lgretl[-1.0]
-			library (\pythcode{str}).
-		\item \pythcode{mod\_ver}: The version of the \gretlpy
-			module (\pythcode{str}).
-		\item \pythcode{py11\_ver}: The version of the \pkg{pybind11}
-			module, formatted as \texttt{MAJOR.MINOR.PATCH} (\pythcode{str}).
-		\item \pythcode{sysinfo}: The contents of \lgretl['s]
-			\gretlcmd{\$sysinfo} bundle (\pythcode{gretl.Bundle}).
+		\item \pythcode{built\_in\_strings -> gretl.Bundle}: The values of
+			\lgretl's built-in strings \citep[see][for details]{gretl_manual}.
+		\item \pythcode{lg\_ver -> str}: The version of the \lgretl[-1.0] library.
+		\item \pythcode{mod\_ver -> str}: The version of the \gretlpy module).
+		\item \pythcode{py11\_ver -> str}: The version of the \pkg{pybind11}
+			module, formatted as \texttt{MAJOR.MINOR.PATCH}).
+		\item \pythcode{sysinfo -> gretl.Bundle}: The contents of \lgretl['s]
+			\gretlcmd{\$sysinfo} bundle.
 		\end{itemize}}
 
 
@@ -62,8 +59,8 @@ gretl.cdf(d: str, x: float[, param: object = None]) -> float
 gretl.cdf(d: str, x: array_like[, param: object = None]) -> numpy.ndarray
 gretl.cdf(d: str, x: str[, param: object = None]) -> numpy.ndarray
 \end{lstlisting}
-\maptof{cdf(d, x)}{float | numpy.ndarray}
-\maptof{cdf(d, param, x)}{float | numpy.ndarray}
+\maptof{cdf(d, x)}{scalar | matrix}
+\maptof{cdf(d, param, x)}{scalar | matrix}
 Examples:\newline
 \pythcodef{p1 = gretl.cdf('N', -2.5)}\\
 \pythcodef{p2 = gretl.cdf('X', 5.67, 3)}\\
@@ -109,7 +106,7 @@ follows:
 \begin{lstlisting}[style=pythonstylefoot]
 gretl.corr(X: numpy.ndarray) -> numpy.ndarray
 \end{lstlisting}
-\maptof{mcorr(X)}{numpy.ndarray}
+\maptof{mcorr(X)}{matrix}
 
 \gretlfpycmd{cov()}\label{func:gretl.cov}
 \estdesc{Computes a covariance matrix treating each
@@ -117,8 +114,8 @@ gretl.corr(X: numpy.ndarray) -> numpy.ndarray
 \begin{lstlisting}[style=pythonstylefoot]
 gretl.cov(X: numpy.ndarray[, dfcorr: int]) -> numpy.ndarray
 \end{lstlisting}
-\maptof{mcov(X)}{numpy.ndarray}
-\maptof{mcov(X, dfcorr)}{numpy.ndarray}
+\maptof{mcov(X)}{matrix}
+\maptof{mcov(X, dfcorr)}{matrix}
 \generaldesc{The divisor is $n-1$, where \textit{n} is the
 	number of rows of \textit{X}, unless the optional second
 	argument is supplied, in which case $n-dfcorr$ is used.}
@@ -130,8 +127,8 @@ gretl.critical(c: str, p: float[, param: object = None]) -> float
 gretl.critical(c: str, p: array_like[, param: object = None]) -> numpy.ndarray
 gretl.critical(c: str, p: str[, param: object = None]) -> numpy.ndarray
 \end{lstlisting}
-\maptof{critical(c, p)}{float | numpy.ndarray}
-\maptof{critical(c, param, p)}{float | numpy.ndarray}
+\maptof{critical(c, p)}{scalar | matrix}
+\maptof{critical(c, param, p)}{scalar | matrix}
 Examples:\newline
 \pythcodef{c1 = gretl.critical('t', 0.025, 20)}\\
 \pythcodef{c2 = gretl.critical('F', 0.05, [4, 48])}\\
@@ -163,7 +160,7 @@ gretl._gretl.delete(varname: str)
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
 	\item[]\maptoopt{.type=str}{--type=type-name}{\seegretlmanual}
 	\item[]\maptoopt{db=True}{db}{delete series from database}
-	\item[]\pythcode{data=gretl.Dataset}\par%
+	\item[]\pythcode{data: gretl.Dataset}\par%
 		\hspace*{10pt}{\footnotesize\pythcode{gretl.delete()} works with the specified dataset}
 \end{itemize}
 Examples:\newline
@@ -177,8 +174,8 @@ Examples:\newline
 	In the second form, the name of a \texttt{scalar}, \texttt{matrix},
 	\texttt{string} or \texttt{bundle} may be given for deletion.\newline
 	In the third form, the \gretlcmd{--type} option must be accompanied
-	 by one of the following type-names: \texttt{matrix}, \texttt{bundle},
-	 \texttt{string}, \texttt{list}, \texttt{scalar} or \texttt{array}.}
+	by one of the following type-names: \texttt{matrix}, \texttt{bundle},
+	\texttt{string}, \texttt{list}, \texttt{scalar} or \texttt{array}.}
 
 \gretlfpycmd{df2dict()}
 \begin{lstlisting}[style=pythonstylefoot]
@@ -200,11 +197,11 @@ gretl.df2dict(dframe: pandas.core.frame.DataFrame[, pd: int, with_obs: bool = Fa
 \estdesc{NOTE: for comprehensive and updated info on this
 	function you'll want to refer to \cite[chapter 10]{gretl_manual}.}
 \begin{lstlisting}[style=pythonstylefoot]
-gretl.genr(formula=str, data=gretl.Dataset)
-gretl.genr(name=str, value=numpy.ndarray)
-gretl.genr(name=str, value=int)
-gretl.genr(name=str, value=float)
-gretl.genr(name=str, value=str)
+gretl.genr(formula: str, data: gretl.Dataset)
+gretl.genr(name: str, value: numpy.ndarray)
+gretl.genr(name: str, value: int)
+gretl.genr(name: str, value: float)
+gretl.genr(name: str, value: str)
 \end{lstlisting}
 \mapto[clean]{genr newvar = formula}
 
@@ -274,8 +271,8 @@ gretl.invcdf(d: str, u: float[, param: object = None]) -> float
 gretl.invcdf(d: str, u: array_like[, param: object = None]) -> numpy.ndarray
 gretl.invcdf(d: str, u: str[, param: object = None]) -> numpy.ndarray
 \end{lstlisting}
-\maptof{invcdf(d, u)}{float | numpy.ndarray}
-\maptof{invcdf(d, param, u)}{float | numpy.ndarray}
+\maptof{invcdf(d, u)}{scalar | matrix}
+\maptof{invcdf(d, param, u)}{scalar | matrix}
 \generaldesc{For a continuous distribution, returns \textit{x}
 	such that $P(X \leq x) = u$, for $u \in [0, 1]$. For a discrete
 	distribution (Binomial or Poisson), returns the smallest
@@ -346,8 +343,8 @@ gretl.pdf(d: str, x: float[, param: object = None]) -> float
 gretl.pdf(d: str, x: array_like[, param: object = None]) -> numpy.ndarray
 gretl.pdf(d: str, x: str[, param: object = None]) -> numpy.ndarray
 \end{lstlisting}
-\maptof{pdf(d, x)}{float | numpy.ndarray}
-\maptof{pdf(d, param, x)}{float | numpy.ndarray}
+\maptof{pdf(d, x)}{scalar | matrix}
+\maptof{pdf(d, param, x)}{scalar | matrix}
 Examples:\newline
 \pythcodef{f1 = gretl.pdf('N', -2.5)}\\
 \pythcodef{f2 = gretl.pdf('X', x, 3)}\\
@@ -399,11 +396,11 @@ gretl..print(varlist: str[, OPTS])
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
 	\item[]\maptoopt{byobs=True}{--byobs}{by observations}
 	\item[]\maptoopt{no\_dates=True}{--no-dates}{use simple observation numbers}
-	\item[]\maptoopt{range='start:stop'}{--range=start:stop}{\seegretlmanual}
+	\item[]\maptoopt{.range='start:stop'}{--range=start:stop}{\seegretlmanual}
 	\item[]\maptoopt{head=lines}{--head[=lines]}{\seegretlmanual}
 	\item[]\maptoopt{tail=lines}{--tail[=lines]}{\seegretlmanual}
 	\item[]\maptoopt{midas=True}{--midas}{\seegretlmanual}
-	\item[]\pythcode{data=gretl.Dataset}\par%
+	\item[]\pythcode{data: gretl.Dataset}\par%
 		\hspace*{10pt}{\footnotesize\pythcode{gretl.print()} works with the specified dataset}
 \end{itemize}
 Examples:\newline
@@ -431,8 +428,8 @@ gretl.pvalue(c: str, x: float[, param: object = None]) -> float
 gretl.pvalue(c: str, x: array_like[, param: object = None]) -> numpy.ndarray
 gretl.pvalue(c: str, x: str[, param: object = None]) -> numpy.ndarray
 \end{lstlisting}
-\maptof{pvalue(c, x)}{float | numpy.ndarray}
-\maptof{pvalue(c, param, x)}{float | numpy.ndarray}
+\maptof{pvalue(c, x)}{scalar | matrix}
+\maptof{pvalue(c, param, x)}{scalar | matrix}
 Examples:\newline
 \pythcodef{p1 = gretl.pvalue('z', 2.2)}\\
 \pythcodef{p2 = gretl.pvalue('X', 5.67, 3)}\\
@@ -547,7 +544,7 @@ gretl.summary(varlist: str[, OPTS])
 \begin{lstlisting}[style=pythonstylefoot]
 gretl.tdisagg(Y: gretl.Matrix, s: int[, X: gretl.Matrix, opts: gretl.Bundle, results: gretl.Bundle]) -> gretl.Matrix
 \end{lstlisting}
-\maptof{tdisagg(Y, X, s, opts, results)}{gretl.Matrix}
+\maptof{tdisagg(Y, X, s, opts, results)}{matrix}
 Examples:\newline
 \pythcodef{gretl.tdisagg(m1, s=3)}\\
 \pythcodef{gretl.tdisagg(Y=m1, X=m2, s=3)}\\

@@ -252,7 +252,7 @@ Examples:\newline
 \begin{lstlisting}[style=pythonstylefoot]
 .cov(.vars: str) -> numpy.ndarray
 \end{lstlisting}
-\maptof{cov(y1, y2)}{numpy.ndarray}
+\maptof{cov(y1, y2)}{matrix}
 \generaldesc{Note: this function is slightly more general than
 	\gretlcmd{cov()} in \gretl, since it allows passing a list
 	with an arbitrary number of variables.}
@@ -306,7 +306,7 @@ Examples:\newline
 \end{itemize}
 \generaldesc{By default all variables are treated as continuous;
 	marking a variable as discrete allows you to select the variable
-	for the command \gretlcmd{dummify}.\newline
+	for the \gretlcmd{dummify} command.\newline
 	If the \gretlcmd{--reverse} flag is given, the operation is
 	reversed; that is, the variables in \textit{varlist} are
 	marked as being continuous.}
@@ -400,7 +400,7 @@ Examples:\newline
 \begin{lstlisting}[style=pythonstylefoot]
 .hurst(series: str) -> numpy.ndarray
 \end{lstlisting}
-\mapto[clean]{hurst series}
+\mapto[clean]{hurst ~series}
 \generaldesc{The Hurst exponent is discussed by Mandelbrot (1983).
 	In theoretical terms it is the exponent, \textit{H}, in the relationship
 	\[
@@ -841,7 +841,7 @@ Examples:\newline
 \begin{lstlisting}[style=pythonstylefoot]
 .tdisagg(Y: obj, s: int[, X: obj, opts: gretl.Bundle, results: gretl.Bundle]) -> gretl.Matrix
 \end{lstlisting}
-\maptof{tdisagg(Y, X, s, opts, results)}{gretl.Matrix}
+\maptof{tdisagg(Y, X, s, opts, results)}{matrix}
 Examples:\newline
 \pythcodef{.tdisagg('y', s=3)}\\
 \pythcodef{.tdisagg(Y='y', X=['x1', 'x2'], s=3)}\\
@@ -861,14 +861,14 @@ Examples:\newline
 .test(.type: str[, varlist: str, OPTS])
 \end{lstlisting}
 \where{\pythcode{.type: str} refers to one of
-	the following: \test{adf}, \test{bds}, \test{coint}, \test{corrgm},
-	\test{difftest}, \test{fractint}, \test{johansen}, \test{kpss},
-	\test{levinlin}, \test{meantest}, \test{normtest}, \test{runs}, \test{vartest}.}\\\\
+	the following: \textit{adf}, \textit{bds}, \textit{coint}, \textit{corrgm},
+	\textit{difftest}, \textit{fractint}, \textit{johansen}, \textit{kpss},
+	\textit{levinlin}, \textit{meantest}, \textit{normtest}, \textit{runs}, \textit{vartest}.}\\\\
 \generaldesc{Results of performed tests are appended to the
 	\pythcode{.tests} attribute (see \ref{attr:gretldataset::tests}).
 	The following sections describe the API associated with each test:}
 
-\maptot{adf order varlist}{adf}{Augmented Dickey-Fuller test.}
+\maptot{adf order ~varlist}{adf}{Augmented Dickey-Fuller test.}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
 	\item[]\maptoopt{nc=True}{--nc}{test without a constant}
 	\item[]\maptoopt{c=True}{--c}{with constant only}

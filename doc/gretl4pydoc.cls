@@ -160,6 +160,7 @@
 		{x2}{$x_2$}2
 		{xk}{$x_k$}2
 		{.if}{if }3
+		{.id}{.id }3
 		{.set}{set}{3}
 		{.type}{type}{4}
 		{.vars}{vars}{4}
@@ -174,6 +175,31 @@
 		{~gretl.Bundle}{gretl.Bundle}{13}
 		{~gretl.Matrix}{gretl.Matrix}{13}
 		{gretl.Dataset}{{\textcolor{pythtype}{gretl.Dataset}}}{13}
+		{gretl.Model\_hsk}{{\textcolor{pythtype}{gretl.Model\_hsk}}}{17}
+		{gretl.Model\_lad}{{\textcolor{pythtype}{gretl.Model\_lad}}}{17}
+		{gretl.Model\_nls}{{\textcolor{pythtype}{gretl.Model\_nls}}}{17}
+		{gretl.Model\_ols}{{\textcolor{pythtype}{gretl.Model\_ols}}}{17}
+		{gretl.Model\_wls}{{\textcolor{pythtype}{gretl.Model\_wls}}}{17}
+		{gretl.Model\_var}{{\textcolor{pythtype}{gretl.Model\_var}}}{17}
+		{gretl.Model\_NME}{{\textcolor{pythtype}{gretl.Model\_NME}}}{17}
+		{gretl.Model\_tsls}{{\textcolor{pythtype}{gretl.Model\_tsls}}}{18}
+		{gretl.Model\_vecm}{{\textcolor{pythtype}{gretl.Model\_vecm}}}{18}
+		{gretl.Model\_garch}{{\textcolor{pythtype}{gretl.Model\_garch}}}{19}
+		{gretl.Model\_mpols}{{\textcolor{pythtype}{gretl.Model\_mpols}}}{19}
+		{gretl.Model\_logit}{{\textcolor{pythtype}{gretl.Model\_logit}}}{19}
+		{gretl.Model\_panel}{{\textcolor{pythtype}{gretl.Model\_panel}}}{19}
+		{gretl.Model\_tobit}{{\textcolor{pythtype}{gretl.Model\_tobit}}}{19}
+		{gretl.Model\_heckit}{{\textcolor{pythtype}{gretl.Model\_heckit}}}{20}
+		{gretl.Model\_dpanel}{{\textcolor{pythtype}{gretl.Model\_dpanel}}}{20}
+		{gretl.Model\_intreg}{{\textcolor{pythtype}{gretl.Model\_intreg}}}{20}
+		{gretl.Model\_negbin}{{\textcolor{pythtype}{gretl.Model\_negbin}}}{20}
+		{gretl.Model\_probit}{{\textcolor{pythtype}{gretl.Model\_probit}}}{20}
+		{gretl.Model\_poisson}{{\textcolor{pythtype}{gretl.Model\_poisson}}}{21}
+		{gretl.Model\_duration}{{\textcolor{pythtype}{gretl.Model\_duration}}}{22}
+		{gretl.Model\_biprobit}{{\textcolor{pythtype}{gretl.Model\_biprobit}}}{22}
+		{gretl.Model\_logistic}{{\textcolor{pythtype}{gretl.Model\_logistic}}}{22}
+		{gretl.Model\_midasreg}{{\textcolor{pythtype}{gretl.Model\_midasreg}}}{22}
+		{gretl.Model\_quantreg}{{\textcolor{pythtype}{gretl.Model\_quantreg}}}{22}
 		{pandas.core.series.Series}{{\textcolor{pythtype}{pandas.core.series.Series}}}{25}
 		{pandas.core.frame.DataFrame}{{\textcolor{pythtype}{pandas.core.frame.DataFrame}}}{27}
 		{numpy.ndarray}{{\textcolor{pythtype}{numpy.ndarray}}}{13}
