@@ -923,8 +923,8 @@ Examples:\newline
 	\item[]\maptoopt{bartlett=True}{--bartlett}{use Bartlett standard errors}
 \end{itemize}
 Examples:\newline
-\pythcodef{.test(type='corrgm', varlist='x', order=12)}\\
-\pythcodef{.test(type='corrgm', varlist='GDP', order=12, acf-only=True)}
+\pythcodef{.test(.type='corrgm', varlist='x', order=12)}\\
+\pythcodef{.test(.type='corrgm', varlist='GDP', order=12, acf-only=True)}
 
 \maptot{difftest x y}{difftest}{Test for a difference between two sample (nonparametric)}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
@@ -936,10 +936,10 @@ Examples:\newline
 	\item[]\maptoopt{split_by='dummy'}{--split-by=dummy}{split observations by grouping variable}
 \end{itemize}
 Examples:\newline
-\pythcodef{.test(type='difftest', varlist=['x y'])}\\
-\pythcodef{.test(type='difftest', varlist=['x'], split_by='dummy')}
+\pythcodef{.test(.type='difftest', varlist=['x y'])}\\
+\pythcodef{.test(.type='difftest', varlist=['x'], split_by='dummy')}
 
-\maptot{fractint series [ order ]}{fractint}{Tests for fractional integration.}
+\maptot{fractint ~series~ [ order ]}{fractint}{Tests for fractional integration.}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
 	\item[]\maptoopt{gph=True}{--gph}{do Geweke and Porter-Hudak test}
 	\item[]\maptoopt{all=True}{--all}{do both tests}
@@ -960,11 +960,11 @@ Examples:\newline
 	\item[]\maptoopt{verbose=True}{--verbose}{print details of auxiliary regressions}
 \end{itemize}
 Examples:\newline
-\pythcodef{.test(type='johansen', ylist=['y'], xlist=['x'], order=2)}\\
-\pythcodef{.test(type='johansen', ylist=['y'], xlist=['x z'], order=4, verbose=True)}\\
-\pythcodef{.test(type='johansen', ylist=['y'], xlist=['x z'], order=3, rc=True)}
+\pythcodef{.test(.type='johansen', ylist=['y'], xlist=['x'], order=2)}\\
+\pythcodef{.test(.type='johansen', ylist=['y'], xlist=['x z'], order=4, verbose=True)}\\
+\pythcodef{.test(.type='johansen', ylist=['y'], xlist=['x z'], order=3, rc=True)}
 
-\maptot{kpss order varlist}{kpss}{Kwiatkowski, Phillips, Schmidt and Shin for stationarity.}
+\maptot{kpss order ~varlist}{kpss}{Kwiatkowski, Phillips, Schmidt and Shin for stationarity.}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
 	\item[]\maptoopt{trend=True}{--trend}{include a trend}
 	\item[]\maptoopt{seasonals=True}{--seasonals}{include seasonal dummies}
@@ -973,10 +973,10 @@ Examples:\newline
 	\item[]\maptoopt{difference=True}{--difference}{use first difference of variable}
 \end{itemize}
 Examples:\newline
-\pythcodef{.test(type='kpss', varlist='y', order=8)}\\
-\pythcodef{.test(type='kpss', varlist='x1', order=4, trend=True)}
+\pythcodef{.test(.type='kpss', varlist='y', order=8)}\\
+\pythcodef{.test(.type='kpss', varlist='x1', order=4, trend=True)}
 
-\maptot{levinlin order series}{levinlin}{Levin, Lin and Chu panel unit-root test.}
+\maptot{levinlin order ~series}{levinlin}{Levin, Lin and Chu panel unit-root test.}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
 	\item[]\maptoopt{nc=True}{--nc}{test without a constant}
 	\item[]\maptoopt{ct=True}{--ct}{with constant and trend}
@@ -984,11 +984,11 @@ Examples:\newline
 	\item[]\maptoopt{verbose=True}{--verbose}{print per-unit results}
 \end{itemize}
 Examples:\newline
-\pythcodef{.test(type='levinlin', varlist='y', order=0)}\\
-\pythcodef{.test(type='levinlin', varlist='y', order=2, ct=True)}\\
-\pythcodef{.test(type='levinlin', varlist='y', order=[2,2,3,3,4,4])}
+\pythcodef{.test(.type='levinlin', varlist='y', order=0)}\\
+\pythcodef{.test(.type='levinlin', varlist='y', order=2, ct=True)}\\
+\pythcodef{.test(.type='levinlin', varlist='y', order=[2,2,3,3,4,4])}
 
-\maptot[0]{meantest x y}{meantest}{\textit{t}-test means equality.}
+\maptot[none]{meantest x y}{meantest}{\textit{t}-test means equality.}
 \maptot{meantest x --split-by=dummy}{}{}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
 	\item[]\maptoopt{unequal_vars=True}{--unequal-vars}{assume variances are unequal}
@@ -998,12 +998,12 @@ Examples:\newline
 	\item[]\maptoopt{split_by='dummy'}{--split-by=dummy}{split observations by grouping variable}
 \end{itemize}
 Examples:\newline
-\pythcodef{.test(type='meantest', varlist=['x y'])}\\
-\pythcodef{.test(type='meantest', varlist=['x y'], unequal_vars=True)}\\
-\pythcodef{.test(type='meantest', varlist=['x y'], paired=True)}\\
-\pythcodef{.test(type='meantest', varlist=['x'], split_by='d')}
+\pythcodef{.test(.type='meantest', varlist=['x y'])}\\
+\pythcodef{.test(.type='meantest', varlist=['x y'], unequal_vars=True)}\\
+\pythcodef{.test(.type='meantest', varlist=['x y'], paired=True)}\\
+\pythcodef{.test(.type='meantest', varlist=['x'], split_by='d')}
 
-\maptot{normtest series}{normtest}{Normality tests.}
+\maptot{normtest ~series}{normtest}{Normality tests.}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
 	\item[]\maptoopt{dhansen=True}{--dhansen}{Doornik–Hansen test (default)}
 	\item[]\maptoopt{swilk=True}{--swilk}{Shapiro-Wilk test}
@@ -1013,17 +1013,17 @@ Examples:\newline
 	\item[]\maptoopt{quiet=True}{--quiet}{suppress printed output}
 \end{itemize}
 Examples:\newline
-\pythcodef{.test(type='normtest', varlist='series')}\\
-\pythcodef{.test(type='normtest', varlist='series', swilk=True)}\\
-\pythcodef{.test(type='normtest', varlist='series', all=True)}
+\pythcodef{.test(.type='normtest', varlist='series')}\\
+\pythcodef{.test(.type='normtest', varlist='series', swilk=True)}\\
+\pythcodef{.test(.type='normtest', varlist='series', all=True)}
 
-\maptot{runs series}{runs}{Nonparametric test for randomness.}
+\maptot{runs ~series}{runs}{Nonparametric test for randomness.}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
 	\item[]\maptoopt{difference=True}{--difference}{use first difference of variable}
 	\item[]\maptoopt{equal=True}{--equal}{positive and negative values are equiprobable}
 \end{itemize}
 
-\maptot[0]{vartest x y}{vartest}{\textit{F}-test for variances equality.}
+\maptot[none]{vartest x y}{vartest}{\textit{F}-test for variances equality.}
 \maptot{vartest x --split-by=dummy}{}{}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
 	\item[]\maptoopt{quiet=True}{--quiet}{suppress printed output}
@@ -1031,10 +1031,10 @@ Examples:\newline
 	\item[]\maptoopt{split_by='dummy'}{--split-by=dummy}{split observations by grouping variable}
 \end{itemize}
 Examples:\newline
-\pythcodef{.test(type='vartest', varlist=['x','y'])}\\
-\pythcodef{.test(type='vartest', varlist=['x'], split_by='d')}\\
-\pythcodef{.test(type='vartest', varlist=['x y'], robust='median')}\\
-\pythcodef{.test(type='vartest', varlist=['x y'], robust='trimmed,5')}
+\pythcodef{.test(.type='vartest', varlist=['x','y'])}\\
+\pythcodef{.test(.type='vartest', varlist=['x'], split_by='d')}\\
+\pythcodef{.test(.type='vartest', varlist=['x y'], robust='median')}\\
+\pythcodef{.test(.type='vartest', varlist=['x y'], robust='trimmed,5')}
 
 \gretlfpycmd{to\_dataframe()}
 \estdesc{This method exports given dataset to \pythcode{pandas.core.frame.DataFrame}.}
@@ -1055,7 +1055,7 @@ Examples:\newline
 \begin{lstlisting}[style=pythonstylefoot]
 .to_file(filename: str[, varlist: str = '', OPTS])
 \end{lstlisting}
-\mapto{store filename [ varlist ]}
+\mapto{store filename [ ~varlist ]}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
 	\item[]\maptoopt{omit\_obs=True}{--omit-obs}{on CSV format, \seegretlmanual}
 	\item[]\maptoopt{no\_header=True}{--no-header}{on CSV format, \seegretlmanual}

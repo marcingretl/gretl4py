@@ -13,7 +13,7 @@ Note:
 \begin{lstlisting}[style=pythonstylefoot]
 gretl.ar(formula: str[, data: gretl.Dataset, OPTS]) -> gretl.Model_ar
 \end{lstlisting}
-\mapto[none]{ar lags ; depvar indepvars}
+\mapto[none]{ar ~lags ; depvar indepvars}
 \noRformula
 \begin{itemize}
 	\item[]\maptoopt{vcv=True}{--vcv}{print covariance matrix}
@@ -133,7 +133,7 @@ gretl.garch(formula: str[, data: gretl.Dataset, OPTS]) -> gretl._gretl.Model_gar
 \begin{lstlisting}[style=pythonstylefoot]
 gretl.heckit(formula: str[, data: gretl.Dataset, OPTS]) -> gretl._gretl.Model_heckit
 \end{lstlisting}
-\mapto{heckit depvar indepvars ; selection equation}
+\mapto{heckit depvar indepvars ; selection ~equation}
 \begin{itemize}
 	\item[]\maptoopt{two\_step=True}{--two-step}{perform two-step estimation}
 	\item[]\maptoopt{vcv=True}{--vcv}{print covariance matrix}

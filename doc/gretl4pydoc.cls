@@ -155,6 +155,8 @@
 		{.type}{type}{4}
 		{.vars}{vars}{4}
 		{.iter}{iter}{4}
+		{-sum}{-sum}{4}
+		{all=}{all=}{4}
 		{.print}{print}{5}
 		{.range}{range}{5}
 		{gretl.Matrix}{{\textcolor{pythtype}{gretl.Matrix}}}{12}
@@ -268,15 +270,17 @@
 	escapechar=@,
 	style=hansl,
 	literate=
+	{ +i }{+i }{4}
+	{~lags}{lags }5
+	{~freq}{freq }5
 	{pvalue(}{{\textcolor{hanslteal}{pvalue}(}}7
 	{~sortby}{sortby }7
 	{~varlist}{varlist }8
 	{~varname}{varname }8
-	{~resample}{resample }9
-	{~freq}{freq }5
 	{~series}{series}7
 	{~series~}{series }8
-	{ +i }{+i }{4}
+	{~resample}{resample }9
+	{~equation}{equation }9
 }
 \def\inline{\lstinline[basicstyle={\normalsize\ttfamily}]}
 % Colors
