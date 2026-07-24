@@ -1,5 +1,14 @@
 \subsection[gretl.Matrix class]{\classpymatrix}\label{sec:classpymatrix}
-A \gretlcmd{matrix} is...
+A \gretlcmd{matrix} in \gretl behaves much like a matrix in other
+mathematical software (e.g. MATLAB or Octave). Matrices have no
+ID numbers and are referenced by name. They can also be used
+independently of any dataset. Unlike the native \gretl clients,
+which use 1-based indexing, \gretlmatrix indexing is 0-based:
+the top-left element of matrix \pythcode{A} is \pythcode{A[0,0]}.
+
+The \classpymatrix has one important advantage over
+\pythcode{numpy.ndarray}: it may have row and/or column names
+attached, which are displayed when the matrix is printed.
 
 
 \subsubsection{\classpymatrixb constructors}
@@ -10,20 +19,25 @@ The \classpymatrix provides the following constructors:
 \begin{lstlisting}[style=pythonstylefoot]
 Matrix() -> gretl.Matrix
 \end{lstlisting}
+\maptof{= \{\}}{matrix}
+Example:\newline
+\pythcodef{m = gretl.Matrix()}\\
+\generaldesc{Constructs an empty \gretlcmd{matrix} object.}
 
-%\gretlfpycmd{Bundle(**kwargs)}
-%\estdesc{On-the-fly constructor.}
-%\begin{lstlisting}[style=pythonstylefoot]
-%Bundle(**kwargs) -> gretl._gretl.Bundle
-%\end{lstlisting}
-%\mapto[clean]{\_(**kwargs)}
-%Example:\newline
-%\pythcodef{b = gretl.Bundle(x=10, name="foo", mat=np.array([[1,2],[3,4]]))}\\
-%\generaldesc{Construct a \gretlcmd{bundle} optionally initialized
-%	with keyword arguments. Each keyword becomes a key in the
-%	\gretlcmd{bundle}, with its value stored according to type
-%	(\pythcode{bool}, \pythcode{int}, \pythcode{float}, \pythcode{str},
-%	\pythcode{numpy.ndarray}, or another \pythcode{_gretl.Bundle}).}
+\gretlfpycmd{Matrix()}
+\estdesc{Creates a $rows\times cols$ real or complex
+	\pythcode{gretl.Matrix}, optionally filled with \textit{fill}.}
+\begin{lstlisting}[style=pythonstylefoot]
+Matrix() -> gretl.Matrix(rows: int, cols: int[, fill: float = 0.0, type: str = 'real'])
+\end{lstlisting}
+\maptof{ones(.rows, .cols) .* fill}{matrix}
+Example:\newline
+\pythcodef{m = ~gretl.Matrix(3, 2, 3.4)}\\
+\pythcodef{m = ~gretl.Matrix(3, 2, 3.4, 'complex')}\\
+\generaldesc{Constructs a $rows\times cols$ \gretlcmd{matrix},
+	optionally filled with \textit{fill}. For
+	\pythcode{type = 'complex'}, the user gets a complex matrix
+	with real parts set to \textit{fill}.}
 
 
 \subsubsection{\classpymatrixb operators}

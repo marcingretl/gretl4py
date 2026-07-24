@@ -308,7 +308,10 @@
 	style=hansl,
 	literate=
 	{ +i }{+i }{4}
+	{.*}{ * }{2}
 	{run-}{run-}{4}
+	{.rows}{rows}{5}
+	{.cols}{cols}{5}
 	{~lags}{lags }5
 	{~freq}{freq }5
 	{pvalue(}{{\textcolor{hanslteal}{pvalue}(}}7
