@@ -97,7 +97,7 @@ PYBIND11_MODULE(_gretl, m)
     m.def("run_script", &gretl_hansl_execute<true>,
           py::arg("filename").none(false));
     m.def("run_hansl", &gretl_hansl_execute<false>,
-          py::arg("filename").none(false));
+          py::arg("code").none(false));
     m.def("set",
           [](const std::string &variable, const std::string &value, const py::kwargs &kwargs)
           {

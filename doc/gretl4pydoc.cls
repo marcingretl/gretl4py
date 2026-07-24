@@ -308,6 +308,7 @@
 	style=hansl,
 	literate=
 	{ +i }{+i }{4}
+	{run-}{run-}{4}
 	{~lags}{lags }5
 	{~freq}{freq }5
 	{pvalue(}{{\textcolor{hanslteal}{pvalue}(}}7

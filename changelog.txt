@@ -1,6 +1,6 @@
 version 0.52:
     - apparatus for hansl script execution
-    - GretlPackage:: new _run_sample() method (experimental)
+    - new GretlPackage::run_sample() method (experimental)
     - new GretlMatrix class as a default reprezentation of libgretl's gretl_matrix type
     - GretlDataset, new methods: ::to_matrix(), ::new_list() based on Python's list, ::new_series() from GretlMatrix
     - GretlDataset::summary() improved a little

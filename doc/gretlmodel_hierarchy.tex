@@ -1,4 +1,4 @@
-\chapter[gretl.\_gretl.Model class hierarchy]{\protect\classpymodel hierarchy}\label{sec:classpymodel_hierarchy}
+\chapter[gretl.Model class hierarchy]{\protect\classpymodel hierarchy}\label{sec:classpymodel_hierarchy}
 \begin{landscape}
 	\begin{figure}
 		\begin{tikzpicture}[
@@ -6,30 +6,27 @@
 			level distance=2.5cm, sibling distance=5cm,
 			edge/.style={-{Latex}}
 			]
-			
+
 			% Base class
 			\node[box] (GretlModel) {GretlModel};
-			
+
 			% NSE branch
 			\node[box, below=of GretlModel, xshift=-8cm] (GretlModel_NSE) {GretlModel\_NSE};
 			\node[box, below=of GretlModel_NSE, xshift=-2cm] (GretlModel_NSE_Driver) {GretlModel\_NSE\_Driver};
 			\node[box, below=of GretlModel_NSE_Driver, xshift=-3cm] (GretlModel_NSE_Driver_quantreg) {GretlModel\_NSE\_Driver\_quantreg};
 			\node[box, below=of GretlModel_NSE_Driver, xshift=3cm] (GretlModel_NSE_Driver_dpanel) {GretlModel\_NSE\_Driver\_dpanel};
 			\node[box, below=of GretlModel_NSE_Driver_dpanel] (GretlModel_NSE_Driver_tobit) {GretlModel\_NSE\_Driver\_tobit};
-			
+
 			% NSE plugin
 			\node[box, below=of GretlModel_NSE, xshift=6cm] (GretlModel_NSE_nl) {GretlModel\_NSE\_nl};
-			
+
 			% VAR branch
 			\node[box, below=of GretlModel, xshift=6cm] (GretlModel_VAR) {GretlModel\_VAR};
 			\node[box, below=of GretlModel_VAR] (GretlModel_VAR_VECM) {GretlModel\_VAR\_VECM};
-			
+
 			% NME branch
 			\node[box, below=of GretlModel, yshift=-10cm] (GretlModel_NME) {GretlModel\_NME};
-			
-			% Package branch
-			\node[box, below=of GretlModel, xshift=0cm, yshift=-6cm] (GretlModel_package) {GretlModel\_package};
-			
+
 			% Connections
 			\draw[edge] (GretlModel) -- (GretlModel_NSE);
 			\draw[edge] (GretlModel_NSE) -- (GretlModel_NSE_Driver);
@@ -40,11 +37,9 @@
 			
 			\draw[edge] (GretlModel) -- (GretlModel_VAR);
 			\draw[edge] (GretlModel_VAR) -- (GretlModel_VAR_VECM);
-			
+
 			\draw[edge] (GretlModel) -- (GretlModel_NME);
-			
-			\draw[edge] (GretlModel) -- (GretlModel_package);
-			
+
 		\end{tikzpicture}
 		\caption{\protect\classpymodel hierarchy}
 		\label{fig:model_class_hierarchy}

@@ -463,6 +463,24 @@ gretl.print_module_source(module: str)
 	the contents of scripts located in the \texttt{gretl/examples}
 	directory. An example is shown in Section~\ref{sec:usage_of_the_package}.}
 
+\gretlfpycmd{run\_hansl()}\label{func:run_hansl}
+\estdesc{Executes \hansl code.}
+\begin{lstlisting}[style=pythonstylefoot]
+gretl.run_hansl(code: str)
+\end{lstlisting}
+\generaldesc{Executes any valid \hansl code passed as a
+	\pythcode{str}. Note: if the code contains more than
+	one line, it must include the appropriate EOF marker.}
+
+\gretlfpycmd{run\_script()}\label{func:run_script}
+\estdesc{Executes a \hansl script from a file.}
+\begin{lstlisting}[style=pythonstylefoot]
+gretl.run_script(filename: str)
+\end{lstlisting}
+\mapto[none]{run filename}
+\generaldesc{Executes any valid \hansl script stored in the
+	file specified by \pythcode{filename}.}
+
 \gretlfpycmd{series2dict()}
 \begin{lstlisting}[style=pythonstylefoot]
 gretl.series2dict(Y : pandas.core.series.Series[, pd: int = 1, varname: str = 'y']) -> dict

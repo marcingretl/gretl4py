@@ -488,7 +488,7 @@ void init_gretl4py_package_py11 (py::module_ &m)
     .def("set_main", &GretlPackage::set_main,
          py::arg("name").none(false))
     .def("get_functions", &GretlPackage::get_functions)
-    .def("_run_sample", &GretlPackage::run_sample)
+    .def("run_sample", &GretlPackage::run_sample)
     .def("_get_help", &GretlPackage::get_help)
     .def("_function_exec",
          [](GretlPackage &self, const std::string &name,
