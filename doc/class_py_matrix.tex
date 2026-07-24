@@ -19,25 +19,61 @@ The \classpymatrix provides the following constructors:
 \begin{lstlisting}[style=pythonstylefoot]
 Matrix() -> gretl.Matrix
 \end{lstlisting}
-\maptof{= \{\}}{matrix}
+\maptof{\{\}}{matrix}
 Example:\newline
-\pythcodef{m = gretl.Matrix()}\\
+\pythcodef{m = ~gretl.Matrix()}\\
 \generaldesc{Constructs an empty \gretlcmd{matrix} object.}
 
 \gretlfpycmd{Matrix()}
 \estdesc{Creates a $rows\times cols$ real or complex
 	\pythcode{gretl.Matrix}, optionally filled with \textit{fill}.}
 \begin{lstlisting}[style=pythonstylefoot]
-Matrix() -> gretl.Matrix(rows: int, cols: int[, fill: float = 0.0, type: str = 'real'])
+Matrix() -> ~gretl.Matrix(rows: int, cols: int[, fill: float = 0.0, type: str = 'real'])
 \end{lstlisting}
 \maptof{ones(.rows, .cols) .* fill}{matrix}
 Example:\newline
 \pythcodef{m = ~gretl.Matrix(3, 2, 3.4)}\\
-\pythcodef{m = ~gretl.Matrix(3, 2, 3.4, 'complex')}\\
+\pythcodef{m = ~gretl.Matrix(3, 2, -1.4, 'complex')}\\
 \generaldesc{Constructs a $rows\times cols$ \gretlcmd{matrix},
 	optionally filled with \textit{fill}. For
 	\pythcode{type = 'complex'}, the user gets a complex matrix
 	with real parts set to \textit{fill}.}
+
+\gretlfpycmd{Matrix()}
+\estdesc{Creates a $rows\times cols$ random \pythcode{gretl.Matrix}.}
+\begin{lstlisting}[style=pythonstylefoot]
+Matrix(rows: int, cols: int[, dist: str = 'normal']) -> gretl.Matrix
+\end{lstlisting}
+\maptof{mnormal(.rows, .cols)}{matrix}
+\maptof{muniform(.rows, .cols)}{matrix}
+Example:\newline
+\pythcodef{m = ~gretl.Matrix(3, 2, 'normal')}\\
+\pythcodef{m = ~gretl.Matrix(3, 4, 'U')}\\
+\generaldesc{Constructs a $rows\times cols$ random \gretlcmd{matrix}.
+	The random values are drawn from one of the following distributions:
+	\begin{itemize}
+		\item Normal distribution:
+		\pythcode{dist = 'normal' | 'n' | 'N' | 'z' | 'Z'},
+		\item Uniform distribution:
+		\pythcode{dist = 'uniform' | 'u' | 'U'}.
+	\end{itemize}}
+
+%\gretlfpycmd{Matrix()}
+%\estdesc{Creates a $rows\times cols$ real or complex
+%	\pythcode{gretl.Matrix}, optionally filled with \textit{fill}.}
+%\begin{lstlisting}[style=pythonstylefoot]
+%Matrix() -> gretl.Matrix(start: float, end: float[, step: float = 1.0])
+%\end{lstlisting}
+%\maptof{ones(.rows, .cols) .* fill}{matrix}
+%Example:\newline
+%\pythcodef{m = ~gretl.Matrix(3, 2, 3.4)}\\
+%\pythcodef{m = ~gretl.Matrix(3, 2, -1.4, 'complex')}\\
+%\generaldesc{Constructs a $rows\times cols$ \gretlcmd{matrix},
+%	optionally filled with \textit{fill}. For
+%	\pythcode{type = 'complex'}, the user gets a complex matrix
+%	with real parts set to \textit{fill}.}
+
+
 
 
 \subsubsection{\classpymatrixb operators}
