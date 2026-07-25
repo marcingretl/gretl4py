@@ -15,15 +15,15 @@ The \classpybundle provides the following constructors:
 \gretlfpycmd{Bundle()}
 \estdesc{Default constructor.}
 \begin{lstlisting}[style=pythonstylefoot]
-Bundle() -> gretl.Bundle
+~gretl.Bundle -> gretl.Bundle
 \end{lstlisting}
 
 \gretlfpycmd{Bundle()}
 \estdesc{On-the-fly constructor.}
 \begin{lstlisting}[style=pythonstylefoot]
-Bundle(**kwargs) -> gretl.Bundle
+~gretl.Bundle(**kwargs) -> gretl.Bundle
 \end{lstlisting}
-\mapto[clean]{\_(**kwargs)}
+\maptof{\_(**kwargs)}{bundle}
 Example:\newline
 \pythcodef{b = ~gretl.Bundle(x=10, name="foo", mat=numpy.array([[1,2],[3,4]]))}\\
 \generaldesc{Construct a \gretlcmd{bundle} optionally initialized

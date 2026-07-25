@@ -17,18 +17,18 @@ The \classpymatrix provides the following constructors:
 \gretlfpycmd{Matrix()}
 \estdesc{Default constructor.}
 \begin{lstlisting}[style=pythonstylefoot]
-Matrix() -> gretl.Matrix
+~gretl.Matrix -> gretl.Matrix
 \end{lstlisting}
 \maptof{\{\}}{matrix}
 Example:\newline
 \pythcodef{m = ~gretl.Matrix()}\\
-\generaldesc{Constructs an empty \gretlcmd{matrix} object.}
+\generaldesc{Constructs an empty \pythcode{gretl.Matrix} object.}
 
 \gretlfpycmd{Matrix()}
 \estdesc{Creates a $rows\times cols$ real or complex
 	\pythcode{gretl.Matrix}, optionally filled with \textit{fill}.}
 \begin{lstlisting}[style=pythonstylefoot]
-Matrix() -> ~gretl.Matrix(rows: int, cols: int[, fill: float = 0.0, type: str = 'real'])
+~gretl.Matrix(rows: int, cols: int[, fill: float = 0.0, type: str = 'real']) -> gretl.Matrix
 \end{lstlisting}
 \maptof{ones(.rows, .cols) .* fill}{matrix}
 Example:\newline
@@ -42,7 +42,7 @@ Example:\newline
 \gretlfpycmd{Matrix()}
 \estdesc{Creates a $rows\times cols$ random \pythcode{gretl.Matrix}.}
 \begin{lstlisting}[style=pythonstylefoot]
-Matrix(rows: int, cols: int[, dist: str = 'normal']) -> gretl.Matrix
+~gretl.Matrix(rows: int, cols: int[, dist: str = 'normal']) -> gretl.Matrix
 \end{lstlisting}
 \maptof{mnormal(.rows, .cols)}{matrix}
 \maptof{muniform(.rows, .cols)}{matrix}
