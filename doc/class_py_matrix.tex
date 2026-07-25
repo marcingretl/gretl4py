@@ -82,7 +82,41 @@ Example:\newline
 	\textit{a} is greater than \textit{b}). The argument
 	\textit{k} must be positive.}
 
+\gretlfpycmd{Matrix()}
+\estdesc{Creates an identity matrix.}
+\begin{lstlisting}[style=pythonstylefoot]
+~gretl.Matrix(n: int) -> gretl.Matrix
+\end{lstlisting}
+\maptof{I(n)}{matrix}
+Example:\newline
+\pythcodef{m = ~gretl.Matrix(3)}\\
+\generaldesc{Constructs an $n\times n$ \pythcode{gretl.Matrix}
+	with ones on the main diagonal and zeros elsewhere.}
 
+\gretlfpycmd{Matrix()}
+\estdesc{Creates a \pythcode{gretl.Matrix} from a \pythcode{numpy.ndarray}.}
+\begin{lstlisting}[style=pythonstylefoot]
+~gretl.Matrix(array: numpy.ndarray) -> gretl.Matrix
+\end{lstlisting}
+Example:\newline
+\pythcodef{m = ~gretl.Matrix(np.array([[1,2],[3,4]]))}\\
+\generaldesc{Constructs a \pythcode{gretl.Matrix} as a deep
+	copy of an existing \pythcode{numpy.ndarray}.}
+
+\gretlfpycmd{Matrix()}
+\estdesc{Creates a \pythcode{gretl.Matrix} from a Python \pythcode{list}.}
+\begin{lstlisting}[style=pythonstylefoot]
+~gretl.Matrix(.list: list) -> gretl.Matrix
+\end{lstlisting}
+Example:\newline
+\pythcodef{v = ~gretl.Matrix([1, 2, 3, 4])}\\
+\pythcodef{m = ~gretl.Matrix([[1, 2], [3, 4]])}\\
+\generaldesc{Constructs a \pythcode{gretl.Matrix} from a
+	Python \pythcode{list}. A one-dimensional list is
+	interpreted as a column vector, while a nested list is
+	interpreted as a matrix whose rows correspond to the
+	inner lists. All rows of a nested list must have the
+	same length, and all elements must be numeric.}
 
 
 \subsubsection{\classpymatrixb operators}

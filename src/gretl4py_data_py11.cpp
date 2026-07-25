@@ -567,7 +567,7 @@ void init_gretl4py_gretl_matrix_py11 (py::module_ &m)
          py::arg("dist").none(false) = "normal")                                    // random matrix
     .def(py::init<double, double, double>(),
          py::arg("a").none(false), py::arg("b").none(false),
-         py::arg("k").none(false) = 1.0)                                         // sequential row vector
+         py::arg("k").none(false) = 1.0)                                            // sequential row vector
     .def(py::init<int>(), py::arg("n").none(false))                                 // identity matrix
     .def(py::init<const py::array&>(), py::arg("array").none(false))                // from NumPy array
     .def(py::init<const py::list&>(), py::arg("list").none(false))                  // from Python list
