@@ -58,20 +58,29 @@ Example:\newline
 		\pythcode{dist = 'uniform' | 'u' | 'U'}.
 	\end{itemize}}
 
-%\gretlfpycmd{Matrix()}
-%\estdesc{Creates a $rows\times cols$ real or complex
-%	\pythcode{gretl.Matrix}, optionally filled with \textit{fill}.}
-%\begin{lstlisting}[style=pythonstylefoot]
-%Matrix() -> gretl.Matrix(start: float, end: float[, step: float = 1.0])
-%\end{lstlisting}
-%\maptof{ones(.rows, .cols) .* fill}{matrix}
-%Example:\newline
-%\pythcodef{m = ~gretl.Matrix(3, 2, 3.4)}\\
-%\pythcodef{m = ~gretl.Matrix(3, 2, -1.4, 'complex')}\\
-%\generaldesc{Constructs a $rows\times cols$ \gretlcmd{matrix},
-%	optionally filled with \textit{fill}. For
-%	\pythcode{type = 'complex'}, the user gets a complex matrix
-%	with real parts set to \textit{fill}.}
+\gretlfpycmd{Matrix()}
+\estdesc{Creates a row vector containing a sequence of values
+	from \textit{a} to \textit{b}.}
+\begin{lstlisting}[style=pythonstylefoot]
+~gretl.Matrix(a: float, b: float[, k: float = 1.0]) -> gretl.Matrix
+\end{lstlisting}
+\maptof{seq(a, b, k)}{matrix}
+Example:\newline
+\pythcodef{m = ~gretl.Matrix(1.0, 5.0)}\\
+\pythcodef{m = ~gretl.Matrix(10.0, 4.0, 2.0)}\\
+\generaldesc{Given two arguments, returns a row vector
+	containing values from \textit{a} to \textit{b} with
+	a step size of~1, or~$-1$ if \textit{a} is greater
+	than \textit{b}. If the third argument is given,
+	returns a row vector containing a sequence of values
+	starting with \textit{a} and incremented (or
+	decremented, if \textit{a} is greater than
+	\textit{b}) by \textit{k} at each step. The final
+	value is the largest member of the sequence that is
+	less than or equal to \textit{b} (or, mutatis
+	mutandis, greater than or equal to \textit{b} if
+	\textit{a} is greater than \textit{b}). The argument
+	\textit{k} must be positive.}
 
 
 
