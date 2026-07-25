@@ -34,7 +34,7 @@ Example:\newline
 Example:\newline
 \pythcodef{m = ~gretl.Matrix(3, 2, 3.4)}\\
 \pythcodef{m = ~gretl.Matrix(3, 2, -1.4, 'complex')}\\
-\generaldesc{Constructs a $rows\times cols$ \gretlcmd{matrix},
+\generaldesc{Constructs a $rows\times cols$ \pythcode{gretl.Matrix},
 	optionally filled with \textit{fill}. For
 	\pythcode{type = 'complex'}, the user gets a complex matrix
 	with real parts set to \textit{fill}.}
@@ -49,10 +49,10 @@ Example:\newline
 Example:\newline
 \pythcodef{m = ~gretl.Matrix(3, 2, 'normal')}\\
 \pythcodef{m = ~gretl.Matrix(3, 4, 'U')}\\
-\generaldesc{Constructs a $rows\times cols$ random \gretlcmd{matrix}.
-	The random values are drawn from one of the following distributions:
+\generaldesc{Constructs a $rows\times cols$ random \pythcode{gretl.Matrix}.
+	The pseudo-random values are drawn from one of the following distributions:
 	\begin{itemize}
-		\item Normal distribution:
+		\item Standard Normal distribution:
 		\pythcode{dist = 'normal' | 'n' | 'N' | 'z' | 'Z'},
 		\item Uniform distribution:
 		\pythcode{dist = 'uniform' | 'u' | 'U'}.

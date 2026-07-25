@@ -2078,7 +2078,7 @@ GretlMatrix::GretlMatrix (const GretlMatrix &src): m_(gretl_matrix_copy(src.get_
 GretlMatrix::GretlMatrix (int rows, int cols, double fill, const std::string &type)
 {
     //
-    // we allocate matrix which may be filled with zeros or ones
+    // we allocate matrix which may be filled with @fill
     //
     enum GretlMatrixType { Real, Complex };
     GretlMatrixType dtype;
@@ -2090,13 +2090,13 @@ GretlMatrix::GretlMatrix (int rows, int cols, double fill, const std::string &ty
     } else if (ltype == "complex") {
         dtype = Complex;
     } else {
-        throw std::invalid_argument("matrix type must be 'real' or 'complex'");
+        handle_gretl_error(E_INVARG, "type", "must be 'real' or 'complex'");
     }
 
-    // matrix allocation
+    // we allocate real/complex matrix
     if (dtype == Real) {
         m_ = (fill == 0.0) ? gretl_zero_matrix_new(rows, cols) : gretl_unit_matrix_new(rows, cols);
-    } else { // for Complex
+    } else {
         m_ = (fill == 0.0) ? gretl_cmatrix_new0(rows, cols) : gretl_cmatrix_new1(rows, cols);
     }
     if (!m_) handle_gretl_error(E_ALLOC);
