@@ -142,7 +142,6 @@ The \classpymatrix class provides the following operators:
 \subsubsection{\classpymatrixb public methods}
 The \classpymatrix class provides the following public methods:
 
-%gretl.Matrix.identity()
 %gretl.Matrix.diag()
 %gretl.Matrix.transpose()
 %gretl.Matrix.inverse()
@@ -151,16 +150,30 @@ The \classpymatrix class provides the following public methods:
 \gretlfpycmd{Matrix.eye()}
 \estdesc{Creates an identity matrix.}
 \begin{lstlisting}[style=pythonstylefoot]
-~gretl.Matrix.eye(n: int) -> gretl.Matrix
+~gretl.Matrix.eye(n: int[, m: int]) -> gretl.Matrix
 \end{lstlisting}
+\maptof{I(n, m)}{matrix}
 Example:\newline
-\pythcodef{m = ~gretl.Matrix.eye(3)}\\
-\generaldesc{Constructs an $n\times n$ \pythcode{gretl.Matrix}
-	with ones on the main diagonal and zeros elsewhere.
-	Note: this is an alias for the
-	\pythcode{gretl.Matrix(n: int)} constructor.}
+\pythcodef{m = ~gretl.Matrix.I(3)}\\
+\pythcodef{m = ~gretl.Matrix.I(3, 4)}\\
+\generaldesc{Constructs an $n\times n$ or $n\times m$
+	\pythcode{gretl.Matrix} with ones on the main diagonal
+	and zeros elsewhere.}
 
-%ones, zeros!!!!
+\gretlfpycmd{Matrix.I()}
+\estdesc{Creates an identity matrix.}
+\begin{lstlisting}[style=pythonstylefoot]
+~gretl.Matrix.I(n: int[, m: int]) -> gretl.Matrix
+\end{lstlisting}
+\maptof{I(n, m)}{matrix}
+Example:\newline
+\pythcodef{m = ~gretl.Matrix.I(3)}\\
+\pythcodef{m = ~gretl.Matrix.I(3, 4)}\\
+\generaldesc{Constructs an $n\times n$ or $n\times m$
+	\pythcode{gretl.Matrix} with ones on the main diagonal
+	and zeros elsewhere. Alias for \pythcode{Matrix.eye()}.}
+
+%ones, zeros, !!!!
 
 %
 %\gretlfpycmd{pop()}

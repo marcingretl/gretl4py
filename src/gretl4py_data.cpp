@@ -2192,14 +2192,14 @@ GretlMatrixPtr GretlMatrix::identity (int n, std::optional<int> m)
     } else if (cols == 0) {
         return std::make_shared<GretlMatrix>();
     } else {
-        gretl_matrix *mat = nullptr;
+        gretl_matrix_ptr mat{nullptr};
         int err = 0;
 
-        mat = gretl_zero_matrix_new(n, cols);
+        mat.reset(gretl_zero_matrix_new(n, cols));
         if (!mat) handle_gretl_error(E_ALLOC);
-        err = gretl_matrix_inscribe_I(mat, 0, 0, n);
+        err = gretl_matrix_inscribe_I(mat.get(), 0, 0, n);
         if (err) handle_gretl_error(err);
-        return std::make_shared<GretlMatrix>(mat, false);
+        return std::make_shared<GretlMatrix>(mat.release(), false);
     }
 }
 

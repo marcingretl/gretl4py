@@ -116,7 +116,7 @@ from ._gretl import (get_accessor, tdisagg)
 from .gretl4py_classes import _attrs, _oddsratio, mle, nls, gmm, NLSpec
 from .gretl4py_classes import get_data, show_data_status, _to_dataframe
 from .gretl4py_classes import _matrix_functions_wrapper, _package_get_help
-from .gretl4py_classes import _model_plots, _to_pandas, _zeros, _ones, _eye
+from .gretl4py_classes import _model_plots, _to_pandas, _zeros, _ones
 from .gretl4py_addons import print_module_source, fc_print, modeltab
 
 # #####################################################
@@ -143,7 +143,7 @@ setattr(_gretl.Package, "get_help", _package_get_help)      # display help (eith
 # gretl.Matrix class
 setattr(_gretl.Matrix, "ones", staticmethod(_ones))
 setattr(_gretl.Matrix, "zeros", staticmethod(_zeros))
-setattr(_gretl.Matrix, "eye", staticmethod(_eye))
+setattr(_gretl.Matrix, "I", staticmethod(_gretl.Matrix.eye))
 setattr(_gretl.Matrix, "pandas_view",
         property(lambda self: _to_pandas(self, True)))      # view matrix as Pandas DataFrame
 setattr(_gretl.Matrix, "to_pandas", _to_pandas)             # export matrix to Pandas DataFrame

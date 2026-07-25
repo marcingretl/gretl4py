@@ -455,8 +455,5 @@ def _zeros(rows: int, cols: int):
 def _ones(rows: int, cols: int):
     return _gretl.Matrix(rows, cols, 1.0)
 
-def _eye(n: int):
-    return _gretl.Matrix(n)
-
 if __name__ == "__main__":
     pass
