@@ -2178,6 +2178,31 @@ GretlMatrix::~GretlMatrix (void)
     }
 }
 
+GretlMatrixPtr GretlMatrix::identity (int n, std::optional<int> m)
+{
+    //
+    // method which mimics I(n,m) gretl function
+    //
+    //
+    if (!m) return std::make_shared<GretlMatrix>(n);
+    int cols = *m;
+
+    if (cols < 0) {
+        handle_gretl_error(E_INVARG);
+    } else if (cols == 0) {
+        return std::make_shared<GretlMatrix>();
+    } else {
+        gretl_matrix *mat = nullptr;
+        int err = 0;
+
+        mat = gretl_zero_matrix_new(n, cols);
+        if (!mat) handle_gretl_error(E_ALLOC);
+        err = gretl_matrix_inscribe_I(mat, 0, 0, n);
+        if (err) handle_gretl_error(err);
+        return std::make_shared<GretlMatrix>(mat, false);
+    }
+}
+
 //
 // private methods
 //

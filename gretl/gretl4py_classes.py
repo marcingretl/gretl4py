@@ -418,7 +418,7 @@ def _package_get_help(self: "Package"):
 # #######################################################
 #   GretlMatrix class
 # #######################################################
-def _to_pandas (self: _gretl.Matrix, view: bool = False) -> pd.DataFrame:
+def _to_pandas(self: _gretl.Matrix, view: bool = False) -> pd.DataFrame:
     """
     Convert GretlMatrix to a pandas DataFrame.
 
@@ -448,6 +448,15 @@ def _to_pandas (self: _gretl.Matrix, view: bool = False) -> pd.DataFrame:
 
     return pd.DataFrame(data = self.numpy_view if view else self.to_numpy(),
                         index = rows_labels, columns = cols_labels)
+
+def _zeros(rows: int, cols: int):
+    return _gretl.Matrix(rows, cols, 0.0)
+
+def _ones(rows: int, cols: int):
+    return _gretl.Matrix(rows, cols, 1.0)
+
+def _eye(n: int):
+    return _gretl.Matrix(n)
 
 if __name__ == "__main__":
     pass

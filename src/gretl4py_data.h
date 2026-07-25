@@ -301,6 +301,8 @@ public:
     GretlMatrix (const py::list &list);                                     // Python list to GretlMatrix
     ~GretlMatrix (void);
 
+    static GretlMatrixPtr identity (int n, std::optional<int>);             // static method for creating an I(n,m) like indentity
+
     gretl_matrix *get_ptr (void) const;                                     // raw pointer to m_
 
     double *val (void) const;                                               // raw pointer to double storage

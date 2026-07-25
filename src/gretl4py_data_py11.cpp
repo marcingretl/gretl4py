@@ -571,6 +571,12 @@ void init_gretl4py_gretl_matrix_py11 (py::module_ &m)
     .def(py::init<int>(), py::arg("n").none(false))                                 // identity matrix
     .def(py::init<const py::array&>(), py::arg("array").none(false))                // from NumPy array
     .def(py::init<const py::list&>(), py::arg("list").none(false))                  // from Python list
+    .def_static("I",
+                [](int n, std::optional<int> m) -> GretlMatrixPtr
+                {
+                    return GretlMatrix::identity(n, m);
+                },
+                py::arg("n").none(false), py::arg("m") = std::nullopt)
     .def_property_readonly("rows",
                            [](const GretlMatrix &self)
                            {

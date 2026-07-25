@@ -74,9 +74,9 @@ if user_site not in sys.path:
 # if not gretlmpi.is_file() or not os.access(gretlmpi, os.X_OK):
 #     raise RuntimeError(f"Invalid gretlmpi executable: {gretlmpi}")
 
-# ###################################
+# ###########################################
 # gretl4py stuff
-# ###################################
+# ###########################################
 def vc_redist_message():
     arch = platform.machine().lower()
 
@@ -104,7 +104,9 @@ from . import gretl4py_classes
 # 100% safe module cleanup
 atexit.register(_gretl._gretl4py_cleanup)
 
+# #####################################################
 # Explicit symbols import
+# #####################################################
 from ._gretl import (about, version, gretldir)                              # module-related
 from ._gretl import (Bundle, Matrix)                                        # constructors
 from ._gretl import (delete, genr, include, pkg, print, set, summary)       # libgretl's commands interfaces
@@ -114,36 +116,53 @@ from ._gretl import (get_accessor, tdisagg)
 from .gretl4py_classes import _attrs, _oddsratio, mle, nls, gmm, NLSpec
 from .gretl4py_classes import get_data, show_data_status, _to_dataframe
 from .gretl4py_classes import _matrix_functions_wrapper, _package_get_help
-from .gretl4py_classes import _model_plots, _to_pandas
+from .gretl4py_classes import _model_plots, _to_pandas, _zeros, _ones, _eye
 from .gretl4py_addons import print_module_source, fc_print, modeltab
 
+# #####################################################
 # deprecations
+# #####################################################
 # _oddsratio: to be removed on 0.7
 # deprecations: END
 
+# #####################################################
 # Explicit symbols attach to certain classes
-setattr(_gretl.Model, "attrs", _attrs)                      # for listing all object's attributes
-setattr(_gretl.Model, "plot", _model_plots)                 # wrapper for generating model-based plots
-setattr(_gretl.Model_logit, "oddsratio", _oddsratio)        # for pretty-printing oddsratios
-setattr(_gretl.Dataset, "to_dataframe", _to_dataframe)      # gretl data to Pandas DataFrame converter
-setattr(_gretl.Package, "get_help", _package_get_help)      # display help (either PDF or txt)
-setattr(_gretl.Matrix, "pandas_view",
-        property(lambda self: _to_pandas(self, True)))      # view matrix as Pandas DataFrame
-setattr(_gretl.Matrix, "to_pandas", _to_pandas)             # export matrix to Pandas DataFrame
+# #####################################################
 for fun in ['cdf', 'pdf', 'invcdf', 'pvalue', 'critical']:  # wrapper for matrix-based functions
     setattr(_gretl.Dataset, fun, _matrix_functions_wrapper(func_name=fun))
 
+# gretl.Model class
+setattr(_gretl.Model, "attrs", _attrs)                      # for listing all object's attributes
+setattr(_gretl.Model, "plot", _model_plots)                 # wrapper for generating model-based plots
+setattr(_gretl.Model_logit, "oddsratio", _oddsratio)        # for pretty-printing oddsratios
+
+# gretl.Dataset class
+setattr(_gretl.Dataset, "to_dataframe", _to_dataframe)      # gretl data to Pandas DataFrame converter
+setattr(_gretl.Package, "get_help", _package_get_help)      # display help (either PDF or txt)
+
+# gretl.Matrix class
+setattr(_gretl.Matrix, "ones", staticmethod(_ones))
+setattr(_gretl.Matrix, "zeros", staticmethod(_zeros))
+setattr(_gretl.Matrix, "eye", staticmethod(_eye))
+setattr(_gretl.Matrix, "pandas_view",
+        property(lambda self: _to_pandas(self, True)))      # view matrix as Pandas DataFrame
+setattr(_gretl.Matrix, "to_pandas", _to_pandas)             # export matrix to Pandas DataFrame
+
+# #####################################################
 # Dynamically resolvable estimators
+# #####################################################
 _stable_estimators = ["arima", "ols", "wls", "logit",
     "probit", "poisson", "negbin", "biprobit", "duration",
     "heckit", "logistic", "ar", "ar1", "lad", "garch", "mpols",
     "panel", "tsls", "tobit", "quantreg", "var", "vecm",
     "hsk", "dpanel", "intreg", "midasreg"]
 
-# Direct use of GretlModel for the model instantiation
+# #####################################################
+# Direct use of gretl.Model for the model instantiation
+# #####################################################
 def __model_initializer(model_name: str, *args, **kwargs):
     """
-    Return GretlModel class when an unknown function is called to gretl module.
+    Return gretl.Model class when an unknown function is called to gretl module.
     """
     model_class = getattr(_gretl, model_name, None)
     if model_class:
