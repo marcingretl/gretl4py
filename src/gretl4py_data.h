@@ -306,8 +306,8 @@ public:
     GretlMatrix (int n);                                                    // identity matrix
     GretlMatrix (const py::array &array);                                   // NumPy to GretlMatrix
     GretlMatrix (gretl_matrix *src, bool copy = true);                      // gretl_matrix to GretlMatrix
-    GretlMatrix (const py::list &list);                                     // Python list to GretlMatrix
-    GretlMatrix (const py::sequence &seq);
+    GretlMatrix (const py::list &list);                                     // Python list to GretlMatrix [FIXME: to be deleted!!!]
+    GretlMatrix (const py::sequence &seq);                                  // Python sequence to GretlMatrix
     ~GretlMatrix (void);
 
     static GretlMatrixPtr identity (int n, std::optional<int>);             // static method for creating an I(n,m) like indentity
