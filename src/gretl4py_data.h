@@ -306,11 +306,12 @@ public:
     GretlMatrix (int n);                                                    // identity matrix
     GretlMatrix (const py::array &array);                                   // NumPy to GretlMatrix
     GretlMatrix (gretl_matrix *src, bool copy = true);                      // gretl_matrix to GretlMatrix
-    GretlMatrix (const py::list &list);                                     // Python list to GretlMatrix [FIXME: to be deleted!!!]
     GretlMatrix (const py::sequence &seq);                                  // Python sequence to GretlMatrix
     ~GretlMatrix (void);
 
     static GretlMatrixPtr identity (int n, std::optional<int>);             // static method for creating an I(n,m) like indentity
+
+    static GretlMatrixPtr diag (const py::sequence &seq);                   // static method for creating an I(n) with main diag filled with @seq
 
     gretl_matrix *get_ptr (void) const;                                     // raw pointer to m_
 
@@ -324,6 +325,8 @@ public:
 
     [[nodiscard]] bool is_complex (void) const noexcept;
 
+    [[nodiscard]] bool is_vector (void) const noexcept;
+
     std::string repr_impl (void);                                           // gretl_matrix printing via __repr__
 
     template <bool ROWS>
@@ -331,6 +334,8 @@ public:
 
     template <bool ROWS>
     void rows_cols_names_set (const py::list &src) const;
+
+    void do_gretl_set_diagonal (const gretl_matrix *src);                   // set diagonal elements from @src
 
     py::object get_element (int i, int j) const;
 

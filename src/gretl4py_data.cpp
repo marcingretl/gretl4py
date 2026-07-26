@@ -2150,26 +2150,6 @@ GretlMatrix::GretlMatrix (gretl_matrix *src, bool copy)
     if (!m_) handle_gretl_error(E_ALLOC);
 }
 
-GretlMatrix::GretlMatrix (const py::list &list)
-{
-    //
-    // we convert Python list to GretlMatrix
-    //
-    // for empty list, we return empty matrix
-    if (!list.size()) {
-        m_ = gretl_null_matrix_new();
-        if (!m_) handle_gretl_error(E_ALLOC);
-        return;
-    }
-
-    // do the job
-    py::module_ np = py::module_::import("numpy");
-    py::object array_obj = np.attr("asarray")(list, py::arg("dtype") = py::none());
-    py::array array = py::reinterpret_borrow<py::array>(array_obj);
-
-    m_ = numpy_to_matrix_(array);
-}
-
 GretlMatrix::GretlMatrix (const py::sequence &seq)
 {
     //
@@ -2177,9 +2157,9 @@ GretlMatrix::GretlMatrix (const py::sequence &seq)
     // Note: memory is allocated inside from_matrix_()
     //
     try {
-        from_matrix_(pysequence_to_matrix_data<double>(seq));
+        from_matrix_(python_sequence_to_matrix_data<double>(seq));
     } catch (const py::cast_error&) {
-        from_matrix_(pysequence_to_matrix_data<std::complex<double>>(seq));
+        from_matrix_(python_sequence_to_matrix_data<std::complex<double>>(seq));
     }
 }
 
@@ -2214,6 +2194,19 @@ GretlMatrixPtr GretlMatrix::identity (int n, std::optional<int> m)
         if (err) handle_gretl_error(err);
         return std::make_shared<GretlMatrix>(mat.release(), false);
     }
+}
+
+GretlMatrixPtr GretlMatrix::diag (const py::sequence &seq)
+{
+    //
+    //
+    //
+    auto diag = GretlMatrix(seq);
+    auto res = std::make_shared<GretlMatrix>((std::max)(diag.rows(), diag.cols()));
+
+    res->do_gretl_set_diagonal(diag.get_ptr());
+
+    return res;
 }
 
 //
@@ -2372,6 +2365,11 @@ int GretlMatrix::cols (void) const
     return m_->is_complex != 0;
 }
 
+[[nodiscard]] bool GretlMatrix::is_vector (void) const noexcept
+{
+    return m_->rows == 1 || m_->cols == 1;
+}
+
 std::string GretlMatrix::repr_impl (void)
 {
     err_ = 0;
@@ -2467,6 +2465,16 @@ void GretlMatrix::rows_cols_names_set (const py::list &src) const
 }
 template void GretlMatrix::rows_cols_names_set<true>(const py::list&) const;
 template void GretlMatrix::rows_cols_names_set<false>(const py::list&) const;
+
+void GretlMatrix::do_gretl_set_diagonal (const gretl_matrix *src)
+{
+    //
+    // interface to libgretl's gretl_matrix_set_diagonal()
+    //
+    if (src == nullptr) throw std::invalid_argument("diagonal must not be empty");
+    err_ = gretl_matrix_set_diagonal(m_, src, 0.0);
+    if (err_) handle_gretl_error(err_);
+}
 
 py::object GretlMatrix::get_element (int i, int j) const
 {

@@ -98,7 +98,7 @@ bool is_bool_kwarg (const py::handle &h, const std::string &key = "");
 std::string get_pyobject_type (const py::handle &obj);
 
 template <typename T>
-MatrixData<T> pysequence_to_matrix_data (const py::sequence &seq);
+MatrixData<T> python_sequence_to_matrix_data (const py::sequence &seq);
 
 template <typename T>
 T c_style_char_array_to_container (c_str_array src, int size);
