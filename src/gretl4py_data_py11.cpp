@@ -570,7 +570,7 @@ void init_gretl4py_gretl_matrix_py11 (py::module_ &m)
          py::arg("k").none(false) = 1.0)                                            // sequential row vector
     .def(py::init<int>(), py::arg("n").none(false))                                 // identity matrix
     .def(py::init<const py::array&>(), py::arg("array").none(false))                // from NumPy array
-    .def(py::init<const py::list&>(), py::arg("list").none(false))                  // from Python list
+    .def(py::init<const py::sequence&>(), py::arg("seq").none(false))               // from Python sequence
     .def_static("eye", &GretlMatrix::identity,
                 py::arg("n").none(false), py::arg("m") = std::nullopt)
     .def_property_readonly("rows",

@@ -2170,6 +2170,19 @@ GretlMatrix::GretlMatrix (const py::list &list)
     m_ = numpy_to_matrix_(array);
 }
 
+GretlMatrix::GretlMatrix (const py::sequence &seq)
+{
+    //
+    // we construct GretlMatrix for given sequence
+    // Note: memory is allocated inside from_matrix_()
+    //
+    try {
+        from_matrix_(pysequence_to_matrix_data<double>(seq));
+    } catch (const py::cast_error&) {
+        from_matrix_(pysequence_to_matrix_data<std::complex<double>>(seq));
+    }
+}
+
 GretlMatrix::~GretlMatrix (void)
 {
     if (m_) {
@@ -2284,6 +2297,44 @@ std::string GretlMatrix::render_slice_ (const py::slice &slice) const
 std::string GretlMatrix::render_slice_ (const std::string &slice) const
 {
     return python_slice_to_gretl_slice(slice).slice_str;
+}
+
+template <typename T>
+void GretlMatrix::from_matrix_ (const MatrixData<T> &data)
+{
+    //
+    // helper for filling up gretl_matri storage from given STL container
+    //
+    const int rows = static_cast<int>(data.size());
+    const int cols = rows ? static_cast<int>(data[0].size()) : 0;
+
+    // we check the shape
+    for (const auto &row : data) {
+        if (static_cast<int>(row.size()) != cols) throw std::invalid_argument("Non-rectangular matrix");
+    }
+
+    // we allocate memory
+    m_ = gretl_matrix_alloc(rows, cols);
+    if (!m_) handle_gretl_error(E_ALLOC);
+
+    // we do the job
+    if constexpr (std::is_same_v<T, double>) {
+        for (int i=0; i<rows; ++i) {
+            for (int j=0; j<cols; ++j) {
+                gretl_matrix_set(m_, i, j, data[i][j]);
+            }
+        }
+    } else if constexpr (std::is_same_v<T, std::complex<double>>) {
+        double _Complex z;
+        for (int i=0; i<rows; ++i) {
+            for (int j=0; j<cols; ++j) {
+                z = { data[i][j].real(), data[i][j].imag() };
+                gretl_cmatrix_set(m_, i, j, z);
+            }
+        }
+    } else {
+        static_assert(always_false<T>, "from_matrix_(): unknown Container type");
+    }
 }
 
 //

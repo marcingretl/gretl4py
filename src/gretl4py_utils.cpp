@@ -395,7 +395,7 @@ std::string get_pyobject_type (const py::handle &obj)
 }
 
 template <typename T>
-MatrixData<T> pylist_to_matrix_data (const py::sequence &seq)
+MatrixData<T> pysequence_to_matrix_data (const py::sequence &seq)
 {
     //
     // here we convert sequence to STL 2D vector
@@ -409,6 +409,8 @@ MatrixData<T> pylist_to_matrix_data (const py::sequence &seq)
     // 2D sequence
     return seq.cast<MatrixData<T>>();
 }
+template MatrixData<std::complex<double>> pysequence_to_matrix_data<std::complex<double>>(const py::sequence&);
+template MatrixData<double> pysequence_to_matrix_data<double>(const py::sequence&);
 
 // adapters to c_style_char_array_to_container()
 // this is because const char** and char** are treated by C++ compiler in a different way

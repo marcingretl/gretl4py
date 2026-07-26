@@ -284,11 +284,19 @@ private:
     mutable int err_ = 0;
 
     void check_bounds_ (int i, int j) const;                                // we check if given [i,j] are valid
+
     static gretl_matrix *numpy_to_matrix_ (const py::array &array);         // helper for NumPy to GretlMatrix
+
     gretl_matrix_ptr exec_slice_ (const std::string& slice_str) const;      // helper for getting slice
+
     std::string render_slice_ (const py::tuple &slice) const;               // tuple slice to libgretl string slice
+
     std::string render_slice_ (const py::slice &slice) const;               // slice slice to libgretl string slice
+
     std::string render_slice_ (const std::string &slice) const;             // string slice to libgretl string slice
+
+    template<typename T>
+    void from_matrix_ (const MatrixData<T> &data);                          // to get source data from STL vector
 public:
     GretlMatrix (void);                                                     // default constructor
     GretlMatrix (const GretlMatrix &src);                                   // copy constructor
@@ -299,6 +307,7 @@ public:
     GretlMatrix (const py::array &array);                                   // NumPy to GretlMatrix
     GretlMatrix (gretl_matrix *src, bool copy = true);                      // gretl_matrix to GretlMatrix
     GretlMatrix (const py::list &list);                                     // Python list to GretlMatrix
+    GretlMatrix (const py::sequence &seq);
     ~GretlMatrix (void);
 
     static GretlMatrixPtr identity (int n, std::optional<int>);             // static method for creating an I(n,m) like indentity
