@@ -156,17 +156,16 @@ using GretlTypes = std::variant<int, double, std::string, DNumPyArrayFC, DNumPyA
 
 using GretlTypesPtr = std::unique_ptr<GretlTypes>;
 
-/*using vgretl_vector = std::vector<std::variant<double, std::string, int>>;
-
-using vgretl_matrix = std::vector<vgretl_vector>;*/
-
 using c_str_array = const char *const *;
 
+template <typename T>
+using MatrixData = std::vector<std::vector<T>>; // for py::list to STL conversion
+
 struct NumPyArrayView {
-    void *data = nullptr;   // untyped pointer
-    py::dtype dtype;        // numpy dtype info
-    py::array base_array;   // holds ownership
-    bool is_double = false; // for fast path
+    void *data = nullptr;       // untyped pointer
+    py::dtype dtype;            // numpy dtype info
+    py::array base_array;       // holds ownership
+    bool is_double = false;     // for fast path
     bool is_complex = false;
     bool NumPyArrayFC = false;
     int rows = 0;

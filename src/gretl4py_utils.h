@@ -60,6 +60,7 @@ inline bool is_pynumeric (const py::handle &o) { return is_pyint(o) || is_pyfloa
 inline bool is_pysequence (const py::handle &o) { return py::isinstance<py::sequence>(o); }
 inline bool is_pyslice (const py::handle &o) { return py::isinstance<py::slice>(o); }
 inline bool is_pynone (const py::handle &o) { return py::isinstance<py::none>(o); }
+inline bool is_pybytes (const py::handle &o) { return py::isinstance<py::bytes>(o); }
 inline bool is_numpy_array_fc (const py::array &m) {
     return (m.flags() & py::detail::npy_api::constants::NPY_ARRAY_F_CONTIGUOUS_) != 0;
 }
@@ -94,6 +95,11 @@ void load_string_to_container (T &t, const std::string &src);
 
 bool is_bool_kwarg (const py::handle &h, const std::string &key = "");
 
+std::string get_pyobject_type (const py::handle &obj);
+
+template <typename T>
+MatrixData<T> pylist_to_matrix_data (const py::sequence &seq);
+
 template <typename T>
 T c_style_char_array_to_container (c_str_array src, int size);
 
@@ -104,5 +110,4 @@ T c_style_char_array_to_container (const char **src, int size);
 template <typename T>
 T c_style_char_array_to_container (char **src, int size);
 
-std::string get_pyobject_type (const py::handle &obj);
 #endif // GRETL4PY_UTILS_H

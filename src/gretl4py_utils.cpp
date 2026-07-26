@@ -386,6 +386,30 @@ T c_style_char_array_to_container (c_str_array src, int size)
     }
 }
 
+std::string get_pyobject_type (const py::handle &obj)
+{
+    //
+    // we return Python's type of @obj
+    //
+    return py::str(py::type::of(obj).attr("__name__")).cast<std::string>();
+}
+
+template <typename T>
+MatrixData<T> pylist_to_matrix_data (const py::sequence &seq)
+{
+    //
+    // here we convert sequence to STL 2D vector
+    //
+    if (seq.empty()) return {};
+    py::handle first = seq[0];
+
+    // 1D sequence note: 1D vector is automatically converted to MatrixData
+    if (!is_pysequence(first) || is_pystr(first) || is_pybytes(first)) return { seq.cast<std::vector<T>>() };
+
+    // 2D sequence
+    return seq.cast<MatrixData<T>>();
+}
+
 // adapters to c_style_char_array_to_container()
 // this is because const char** and char** are treated by C++ compiler in a different way
 template <typename T>
@@ -401,8 +425,3 @@ T c_style_char_array_to_container (const char **src, int size)
     return c_style_char_array_to_container<T>(reinterpret_cast<c_str_array>(src), size);
 }
 template py::list c_style_char_array_to_container<py::list>(const char**, int);
-
-std::string get_pyobject_type (const py::handle &obj)
-{
-    return py::str(py::type::of(obj).attr("__name__")).cast<std::string>();
-}
