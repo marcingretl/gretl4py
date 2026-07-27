@@ -111,8 +111,8 @@ def _set_matrices_for_plot(model: "GretlModel", accessor: str, eqn: int) -> dict
             raise ValueError(f"Unknown accessor: {accessor}")
     else:
         data = model.get_accessor(accessor)
-        if isinstance(data, _gretl.Matrix):
-            data = data.to_numpy()
+    if isinstance(data, _gretl.Matrix):
+        data = data.to_numpy()
     if not isinstance(data, np.ndarray):
         raise ValueError("Error in getting data for plot")
 
