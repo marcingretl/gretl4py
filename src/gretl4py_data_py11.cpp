@@ -71,6 +71,22 @@ py::array make_numpy_view (py::object self)
                                    self);
     }
 }
+
+template <bool ROWS>
+py::object matrix_row_cols_names_get(const GretlMatrix &m, std::optional<int> index)
+{
+    //
+    // helper for retrieving matrix row/column names.
+    //
+    auto names = m.rows_cols_names_get<ROWS>();
+
+    if (!index) return names;
+    int i = *index;
+
+    if (i < 0 || static_cast<size_t>(i) >= names.size()) throw py::index_error("list index out of range");
+
+    return py::str(names[i]);
+}
 }
 
 //
@@ -781,12 +797,10 @@ void init_gretl4py_gretl_matrix_py11 (py::module_ &m)
          })
     .def("copy", [](const GretlMatrix &self) { return GretlMatrix(self); })
     .def("to_numpy", &GretlMatrix::to_numpy)
-    .def("rnameget", &GretlMatrix::rows_cols_names_get<true>)
-    .def("cnameget", &GretlMatrix::rows_cols_names_get<false>)
-    .def("rnameset", &GretlMatrix::rows_cols_names_set<true>,
-         py::arg("names").none(false))
-    .def("cnameset", &GretlMatrix::rows_cols_names_set<false>,
-         py::arg("names").none(false));
+    .def("rnameget", &matrix_row_cols_names_get<true>, py::arg("row").none(true) = std::nullopt)
+    .def("cnameget", &matrix_row_cols_names_get<false>, py::arg("col").none(true) = std::nullopt)
+    .def("rnameset", &GretlMatrix::rows_cols_names_set<true>, py::arg("names").none(false))
+    .def("cnameset", &GretlMatrix::rows_cols_names_set<false>, py::arg("names").none(false));
 
     cls.attr("__module__") = "gretl";
 }

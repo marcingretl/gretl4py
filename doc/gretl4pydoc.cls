@@ -103,6 +103,7 @@
 		{gretl.Model\_var}{{\textcolor{pythtype}{gretl.Model\_var}}}{16}
 		{gretl.Model\_NSE}{{\textcolor{pythtype}{gretl.Model\_NSE}}}{16}
 		{gretl.Model\_NME}{{\textcolor{pythtype}{gretl.Model\_NME}}}{16}
+		{pandas.DataFrame}{{\textcolor{pythtype}{pandas.DataFrame}}}{16}
 		{gretl.Model\_vecm}{{\textcolor{pythtype}{gretl.Model\_vecm}}}{17}
 		{gretl.Model\_NSE\_nl}{{\textcolor{pythtype}{gretl.Model\_NSE\_nl}}}{20}
 		{pandas.core.series.Series}{{\textcolor{pythtype}{pandas.core.series.Series}}}{25}
@@ -190,6 +191,7 @@
 		{gretl.Model\_var}{{\textcolor{pythtype}{gretl.Model\_var}}}{16}
 		{gretl.Model\_NME}{{\textcolor{pythtype}{gretl.Model\_NME}}}{16}
 		{numpy.complex128}{{\textcolor{pythtype}{numpy.complex128}}}{16}
+		{pandas.DataFrame}{{\textcolor{pythtype}{pandas.DataFrame}}}{16}
 		{gretl.Model\_tsls}{{\textcolor{pythtype}{gretl.Model\_tsls}}}{17}
 		{gretl.Model\_vecm}{{\textcolor{pythtype}{gretl.Model\_vecm}}}{17}
 		{gretl.Model\_garch}{{\textcolor{pythtype}{gretl.Model\_garch}}}{18}

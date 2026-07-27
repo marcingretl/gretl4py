@@ -104,8 +104,7 @@ Example:\newline
 \generaldesc{Constructs a \pythcode{gretl.Matrix} as a deep
 	copy of an existing \pythcode{numpy.ndarray}. If the input is
 	a one-dimensional NumPy array, it is interpreted as a column
-	vector. Thus, in the above example, \textit{v} is a column
-	vector.}
+	vector. Thus, in the above example, \textit{v} is a column vector.}
 
 \gretlfpycmd{Matrix()}
 \estdesc{Creates a \pythcode{gretl.Matrix} from a Python \pythcode{Sequence}.}
@@ -147,6 +146,53 @@ Example:\\
 	new \pythcode{gretl.Matrix}. Assignment is supported only for
 	individual matrix elements; slicing is available for retrieving
 	data only.}
+
+
+\subsubsection{\classpymatrixb attributes}
+The \classpymatrix provides the following public attributes:
+
+\gretlfpycmd{cols}
+\estdesc{Returns the number of columns of the matrix.}
+\begin{lstlisting}[style=pythonstylefoot]
+.cols -> int
+\end{lstlisting}
+
+\gretlfpycmd{is\_complex}
+\estdesc{Returns whether the matrix is complex-valued.}
+\begin{lstlisting}[style=pythonstylefoot]
+.is_complex -> bool
+\end{lstlisting}
+
+\gretlfpycmd{numpy\_view}
+\estdesc{Returns a \pythcode{numpy.ndarray} view of the \pythcode{gretl.Matrix}.}
+\begin{lstlisting}[style=pythonstylefoot]
+.numpy_view -> numpy.ndarray
+\end{lstlisting}
+\generaldesc{This property returns a \pythcode{numpy.ndarray}
+	view sharing the underlying storage of the
+	\pythcode{gretl.Matrix}. No data copying is performed,
+	so the operation has negligible overhead. The returned
+	view is writable, but its shape cannot be changed.}
+
+\gretlfpycmd{pandas\_view}
+\estdesc{Returns a \pythcode{pandas.DataFrame} constructed from
+	the \pythcode{gretl.Matrix} using a NumPy view.}
+\begin{lstlisting}[style=pythonstylefoot]
+.pandas_view -> pandas.core.frame.DataFrame
+\end{lstlisting}
+\generaldesc{This property returns a \pythcode{pandas.DataFrame}
+	constructed from a zero-copy NumPy view of the underlying
+	\pythcode{gretl.Matrix} data. No explicit data copying is
+	performed. However, since \pythcode{pandas.DataFrame} does
+	not guarantee full view semantics, modifications to the
+	returned object may not always propagate back to the
+	original matrix.}
+
+\gretlfpycmd{rows}
+\estdesc{Returns the number of rows of the matrix.}
+\begin{lstlisting}[style=pythonstylefoot]
+.rows -> int
+\end{lstlisting}
 
 
 \subsubsection{\classpymatrixb static methods}
@@ -203,26 +249,78 @@ Example:\newline
 
 \subsubsection{\classpymatrixb public methods}
 The \classpymatrix class provides the following public methods:
-%
-%\gretlfpycmd{pop()}
-%\estdesc{Deletes and returns the data item stored under \textit{key},
-%	if such an item is present.}
-%\begin{lstlisting}[style=pythonstylefoot]
-%.pop(key: str) -> object
-%\end{lstlisting}
-%
-%\gretlfpycmd{print()}\label{met:gretlbundle::print}
-%\estdesc{Prints the contents of the \gretlcmd{bundle} in \gretl-style.}
-%\begin{lstlisting}[style=pythonstylefoot]
-%.print(tree: bool = False)
-%\end{lstlisting}
-%\generaldesc{If \pythcode{tree=True} the effect is that if the
-%	specified \gretlcmd{bundle} contains further bundles, or
-%	arrays of bundles, their contents are listed. Otherwise
-%	only the top-level members of the bundle are listed.}
-%
-%\gretlfpycmd{to\_dict()}
-%\estdesc{Converts \gretl's \gretlcmd{bundle} to \python['s] \pythcode{dict}.}
-%\begin{lstlisting}[style=pythonstylefoot]
-%.to_dict() -> dict
-%\end{lstlisting}
+
+\gretlfpycmd{cnameget()}
+\estdesc{Returns the column names of the \classpymatrix as a \pythcode{list}.}
+\begin{lstlisting}[style=pythonstylefoot]
+.cnameget(col: int = None) -> list | str
+\end{lstlisting}
+\generaldesc{This method returns the column names of the
+	\pythcode{gretl.Matrix} object as a \pythcode{list}. If the optional
+	\textit{col} argument is given, the name of the specified
+	column is returned as a \pythcode{str}. If the matrix has no
+	column names attached, an empty \pythcode{list} is returned.}
+
+\gretlfpycmd{cnameset()}
+\estdesc{Sets the column names of the \classpymatrix.}
+\begin{lstlisting}[style=pythonstylefoot]
+.cnameset(names: list)
+\end{lstlisting}
+\generaldesc{This method sets the column names of the
+	\pythcode{gretl.Matrix} object using the provided
+	\pythcode{list}. The number of elements in \textit{names}
+	must equal the number of rows of the matrix.}
+
+\gretlfpycmd{copy()}
+\estdesc{Returns a deep copy of the \classpymatrix object.}
+\begin{lstlisting}[style=pythonstylefoot]
+.copy() -> gretl.Matrix
+\end{lstlisting}
+\mapto[none]{mat\_copy = mat}
+\generaldesc{This method returns a new, fully independent
+	\pythcode{gretl.Matrix} object containing the same
+	elements as the original matrix. Any modifications made
+	to the copy do not affect the original object.
+	This method is equivalent to:
+	\pythcodef{import copy; mat\_copy = copy.copy(mat)}.}
+
+\gretlfpycmd{rnameget()}
+\estdesc{Returns the row names of the \classpymatrix as a \pythcode{list}.}
+\begin{lstlisting}[style=pythonstylefoot]
+.rnameget(row: int = None) -> list | str
+\end{lstlisting}
+\generaldesc{This method returns the row names of the
+	\pythcode{gretl.Matrix} object as a \pythcode{list}. If the optional
+	\textit{row} argument is given, the name of the specified
+	row is returned as a \pythcode{str}. If the matrix has no
+	row names attached, an empty \pythcode{list} is returned.}
+
+\gretlfpycmd{rnameset()}
+\estdesc{Sets the row names of the \classpymatrix.}
+\begin{lstlisting}[style=pythonstylefoot]
+.rnameset(names: list)
+\end{lstlisting}
+\generaldesc{This method sets the row names of the
+	\pythcode{gretl.Matrix} object using the provided
+	\pythcode{list}. The number of elements in \textit{names}
+	must equal the number of rows of the matrix.}
+
+\gretlfpycmd{to\_numpy()}
+\estdesc{Returns a deep copy of the \classpymatrix as a NumPy array.}
+\begin{lstlisting}[style=pythonstylefoot]
+.to_numpy() -> numpy.ndarray
+\end{lstlisting}
+\generaldesc{This method returns a new, independent
+	\pythcode{numpy.ndarray} containing the same data as the
+	original \pythcode{gretl.Matrix}. Changes made to the
+	returned array do not affect the original matrix.}
+
+\gretlfpycmd{to\_pandas()}
+\estdesc{Returns a deep copy of the \classpymatrix as a \pythcode{pandas.DataFrame}.}
+\begin{lstlisting}[style=pythonstylefoot]
+.to_pandas() -> pandas.core.frame.DataFrame
+\end{lstlisting}
+\generaldesc{This method returns a new, independent
+	\pythcode{pandas.DataFrame} containing the same data as the
+	original \pythcode{gretl.Matrix}. Changes made to the
+	returned DataFrame do not affect the original matrix.}
