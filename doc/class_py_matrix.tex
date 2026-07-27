@@ -99,24 +99,32 @@ Example:\newline
 ~gretl.Matrix(array: numpy.ndarray) -> gretl.Matrix
 \end{lstlisting}
 Example:\newline
-\pythcodef{m = ~gretl.Matrix(np.array([[1,2],[3,4]]))}\\
+\pythcodef{v = ~gretl.Matrix(np.array([1, 2, 3, 4]))}\\
+\pythcodef{m = ~gretl.Matrix(np.array([[1, 2], [3, 4]]))}\\
 \generaldesc{Constructs a \pythcode{gretl.Matrix} as a deep
-	copy of an existing \pythcode{numpy.ndarray}.}
+	copy of an existing \pythcode{numpy.ndarray}. If the input is
+	a one-dimensional NumPy array, it is interpreted as a column
+	vector. Thus, in the above example, \textit{v} is a column
+	vector.}
 
 \gretlfpycmd{Matrix()}
-\estdesc{Creates a \pythcode{gretl.Matrix} from a Python \pythcode{list}.}
+\estdesc{Creates a \pythcode{gretl.Matrix} from a Python \pythcode{Sequence}.}
 \begin{lstlisting}[style=pythonstylefoot]
-~gretl.Matrix(.list: list) -> gretl.Matrix
+~gretl.Matrix(seq: Sequence) -> gretl.Matrix
 \end{lstlisting}
 Example:\newline
 \pythcodef{v = ~gretl.Matrix([1, 2, 3, 4])}\\
 \pythcodef{m = ~gretl.Matrix([[1, 2], [3, 4]])}\\
 \generaldesc{Constructs a \pythcode{gretl.Matrix} from a
-	Python \pythcode{list}. A one-dimensional list is
-	interpreted as a column vector, while a nested list is
-	interpreted as a matrix whose rows correspond to the
-	inner lists. All rows of a nested list must have the
-	same length, and all elements must be numeric.}
+	Python \pythcode{Sequence}. The input \pythcode{seq} must be a
+	Python sequence (e.g., a \pythcode{list} or \pythcode{tuple}).
+	A one-dimensional sequence is interpreted as a row vector,
+	while a nested sequence is interpreted as a matrix whose rows
+	correspond to the inner sequences. All rows of a nested sequence
+	must have the same length, and all elements must be numeric.
+	Thus, in the above example, \textit{v} is a row vector,
+	while \textit{m} is a matrix whose rows correspond to the
+	inner lists.}
 
 
 \subsubsection{\classpymatrixb operators}
@@ -139,13 +147,25 @@ The \classpymatrix class provides the following operators:
 %	or another \pythcode{gretl.\_gretl.Bundle}.}
 
 
-\subsubsection{\classpymatrixb public methods}
-The \classpymatrix class provides the following public methods:
+\subsubsection{\classpymatrixb static methods}
+The \classpymatrix class provides the following static methods:
 
-%gretl.Matrix.diag()
 %gretl.Matrix.transpose()
 %gretl.Matrix.inverse()
 %gretl.Matrix.reshape()
+
+\gretlfpycmd{Matrix.diag()}
+\estdesc{Creates a square \pythcode{gretl.Matrix} with
+	the main diagonal set to \textit{seq}.}
+\begin{lstlisting}[style=pythonstylefoot]
+~gretl.Matrix.diag(seq: Sequence) -> gretl.Matrix
+\end{lstlisting}
+Example:\newline
+\pythcodef{m = ~gretl.Matrix.diag([1, 2, 3])}\\
+\generaldesc{Constructs an $n\times n$ \pythcode{gretl.Matrix},
+	where \textit{n} is the length of \textit{seq}, with
+	the main diagonal set to the elements of \textit{seq}.
+	All off-diagonal elements are set to zero.}
 
 \gretlfpycmd{Matrix.eye()}
 \estdesc{Creates an identity matrix.}
@@ -160,21 +180,31 @@ Example:\newline
 	\pythcode{gretl.Matrix} with ones on the main diagonal
 	and zeros elsewhere.}
 
-\gretlfpycmd{Matrix.I()}
-\estdesc{Creates an identity matrix.}
+\gretlfpycmd{Matrix.ones()}
+\estdesc{Creates a matrix filled with $1.0$.}
 \begin{lstlisting}[style=pythonstylefoot]
-~gretl.Matrix.I(n: int[, m: int]) -> gretl.Matrix
+~gretl.Matrix.ones(rows: int, cols: int) -> gretl.Matrix
 \end{lstlisting}
-\maptof{I(n, m)}{matrix}
+\maptof{ones(.rows, .cols)}{matrix}
 Example:\newline
-\pythcodef{m = ~gretl.Matrix.I(3)}\\
-\pythcodef{m = ~gretl.Matrix.I(3, 4)}\\
-\generaldesc{Constructs an $n\times n$ or $n\times m$
-	\pythcode{gretl.Matrix} with ones on the main diagonal
-	and zeros elsewhere. Alias for \pythcode{Matrix.eye()}.}
+\pythcodef{m = ~gretl.Matrix.ones(3, 4)}\\
+\generaldesc{Constructs a \textit{rows}$\times$\textit{cols}
+	\pythcode{gretl.Matrix} with all elements set to one.}
 
-%ones, zeros, !!!!
+\gretlfpycmd{Matrix.zeros()}
+\estdesc{Creates a matrix filled with $0.0$.}
+\begin{lstlisting}[style=pythonstylefoot]
+~gretl.Matrix.zeros(rows: int, cols: int) -> gretl.Matrix
+\end{lstlisting}
+\maptof{zeros(.rows, .cols)}{matrix}
+Example:\newline
+\pythcodef{m = ~gretl.Matrix.zeros(3, 4)}\\
+\generaldesc{Constructs a \textit{rows}$\times$\textit{cols}
+	\pythcode{gretl.Matrix} with all elements set to zero.}
 
+
+\subsubsection{\classpymatrixb public methods}
+The \classpymatrix class provides the following public methods:
 %
 %\gretlfpycmd{pop()}
 %\estdesc{Deletes and returns the data item stored under \textit{key},

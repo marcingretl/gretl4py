@@ -143,7 +143,6 @@ setattr(_gretl.Package, "get_help", _package_get_help)      # display help (eith
 # gretl.Matrix class
 setattr(_gretl.Matrix, "ones", staticmethod(_ones))
 setattr(_gretl.Matrix, "zeros", staticmethod(_zeros))
-setattr(_gretl.Matrix, "I", staticmethod(_gretl.Matrix.eye))
 setattr(_gretl.Matrix, "pandas_view",
         property(lambda self: _to_pandas(self, True)))      # view matrix as Pandas DataFrame
 setattr(_gretl.Matrix, "to_pandas", _to_pandas)             # export matrix to Pandas DataFrame

@@ -79,7 +79,8 @@
 		tuple,
 		set,
 		dict,
-		object
+		object,
+		Sequence
 	},
 	keywordstyle=[2]\color{pythtype},
 	%emph={MyClass,__init__},      % Custom highlighting
@@ -146,7 +147,8 @@
 		tuple,
 		set,
 		dict,
-		object
+		object,
+		Sequence
 	},
 	keywordstyle=[2]\color{pythtype},
 	%emph={MyClass,__init__},      % Custom highlighting

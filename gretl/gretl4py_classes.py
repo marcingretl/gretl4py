@@ -451,9 +451,13 @@ def _to_pandas(self: _gretl.Matrix, view: bool = False) -> pd.DataFrame:
 
 def _zeros(rows: int, cols: int):
     return _gretl.Matrix(rows, cols, 0.0)
+_zeros.__name__ = "zeros"
+_zeros.__qualname__ = "Matrix.zeros"
 
 def _ones(rows: int, cols: int):
     return _gretl.Matrix(rows, cols, 1.0)
+_ones.__name__ = "ones"
+_ones.__qualname__ = "Matrix.ones"
 
 if __name__ == "__main__":
     pass

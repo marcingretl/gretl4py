@@ -335,7 +335,7 @@ public:
     template <bool ROWS>
     void rows_cols_names_set (const py::list &src) const;
 
-    void do_gretl_set_diagonal (const gretl_matrix *src);                   // set diagonal elements from @src
+    void set_diagonal (const gretl_matrix *src);                   // set diagonal elements from @src
 
     py::object get_element (int i, int j) const;
 

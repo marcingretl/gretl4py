@@ -2205,7 +2205,7 @@ GretlMatrixPtr GretlMatrix::diag (const py::sequence &seq)
     int size = (std::max)(diag.rows(), diag.cols());
     auto res = std::make_shared<GretlMatrix>(size, size, 0.0, "real");
 
-    res->do_gretl_set_diagonal(diag.get_ptr());
+    res->set_diagonal(diag.get_ptr());
 
     return res;
 }
@@ -2467,7 +2467,7 @@ void GretlMatrix::rows_cols_names_set (const py::list &src) const
 template void GretlMatrix::rows_cols_names_set<true>(const py::list&) const;
 template void GretlMatrix::rows_cols_names_set<false>(const py::list&) const;
 
-void GretlMatrix::do_gretl_set_diagonal (const gretl_matrix *src)
+void GretlMatrix::set_diagonal (const gretl_matrix *src)
 {
     //
     // interface to libgretl's gretl_matrix_set_diagonal()

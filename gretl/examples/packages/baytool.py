@@ -1,5 +1,4 @@
 import gretl
-import numpy as np
 
 
 def include_package(name: str):
@@ -58,8 +57,8 @@ def run_example():
         # IMPORTANT:
         # gretl.Matrix must be used here (NOT Python list),
         # otherwise it becomes a gretl list, not a matrix.
-        prior["beta_mean"] = gretl.Matrix([0, 10, 5000, 10000, 10000])
-        prior["beta_vcv"] = np.diag([10000**2, 25, 2500**2, 5000**2, 5000**2])
+        prior["beta_mean"] = gretl.Matrix([[0], [10], [5000], [10000], [10000]])            # this is because BayTool reguires column vector
+        prior["beta_vcv"] = gretl.Matrix.diag([10000**2, 25, 2500**2, 5000**2, 5000**2])
         prior["precision_mean"] = 4e-08
         prior["precision_df"] = 5
 

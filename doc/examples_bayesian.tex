@@ -22,7 +22,6 @@ advanced applications, the reader is referred to the package
 documentation and \texttt{`packages/baytool.py'} script.
 \begin{lstlisting}[style=pythonstylefoot]
 import gretl
-import numpy as np
 
 gretl.set('verbose', 'off')
 
@@ -43,8 +42,8 @@ X = 'const lot_size n_bedroom n_bathroom n_storeys' # covariates
 
 prior = ~gretl.Bundle() # prior set-up
 prior['type'] = 'indep' # independent Normal - IG
-prior["beta_mean"] = ~gretl.Matrix([0, 10, 5000, 10000, 10000])
-prior['beta_vcv'] = np.diag([10000**2, 25, 2500**2, 5000**2, 5000**2])
+prior["beta_mean"] = ~gretl.Matrix([[0], [10], [5000], [10000], [10000]])
+prior["beta_vcv"] = ~gretl.Matrix.diag([10000**2, 25, 2500**2, 5000**2, 5000**2])
 prior['precision_mean'] = 4e-08
 prior['precision_df'] = 5
 
