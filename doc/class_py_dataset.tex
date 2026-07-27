@@ -1037,7 +1037,7 @@ Examples:\newline
 \pythcodef{.test(.type='vartest', varlist=['x y'], robust='trimmed,5')}
 
 \gretlfpycmd{to\_dataframe()}
-\estdesc{This method exports given dataset to \pythcode{pandas.core.frame.DataFrame}.}
+\estdesc{\deprecated}
 \begin{lstlisting}[style=pythonstylefoot]
 .to_dataframe() -> pandas.core.frame.DataFrame
 \end{lstlisting}
@@ -1077,6 +1077,12 @@ Examples:\newline
 	The output file will be written in the currently set \gretlcmd{\$workdir}
 	(see \pythcode{gretl.about()['built_in_strings']['workdir']}),
 	unless the filename string contains a full path specification.}
+
+\gretlfpycmd{to\_pandas()}
+\estdesc{This method exports given dataset to \pythcode{pandas.DataFrame}.}
+\begin{lstlisting}[style=pythonstylefoot]
+.to_pandas() -> pandas.core.frame.DataFrame
+\end{lstlisting}
 
 \gretlfpycmd{transpose()}
 \estdesc{Transposes the current dataset.}

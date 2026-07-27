@@ -329,7 +329,7 @@ def show_data_status():
                 default = ""
             print(f'{d}: {dset.id:d}, {dset.source:s} {default:s} - referenced by models: {list(dset.linked_models_list)}')
 
-def _to_dataframe(self: "Dataset") -> pd.DataFrame:
+def _dataset_to_pandas(self: "Dataset") -> pd.DataFrame:
     """Method for exporting _gretl.Dataset instance as Pandas DataFrame"""
 
     # we grab data as dict + some characteristics
@@ -388,6 +388,11 @@ def _to_dataframe(self: "Dataset") -> pd.DataFrame:
     # unknown datatype -> return raw df
     return df
 
+def _to_dataframe(self: "Dataset") -> pd.DataFrame:
+    print("*** This method is deprecated and will be removed in v0.7. "
+        "Please use `to_pandas()` instead. ***")
+    return _dataset_to_pandas(self)
+
 def _package_get_help(self: "Package"):
     """
     Display package help.
@@ -418,7 +423,7 @@ def _package_get_help(self: "Package"):
 # #######################################################
 #   GretlMatrix class
 # #######################################################
-def _to_pandas(self: _gretl.Matrix, view: bool = False) -> pd.DataFrame:
+def _matrix_to_pandas(self: _gretl.Matrix, view: bool = False) -> pd.DataFrame:
     """
     Convert GretlMatrix to a pandas DataFrame.
 
