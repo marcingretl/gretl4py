@@ -2199,10 +2199,11 @@ GretlMatrixPtr GretlMatrix::identity (int n, std::optional<int> m)
 GretlMatrixPtr GretlMatrix::diag (const py::sequence &seq)
 {
     //
-    //
+    // method which mimics NumPy's diag(n) function
     //
     auto diag = GretlMatrix(seq);
-    auto res = std::make_shared<GretlMatrix>((std::max)(diag.rows(), diag.cols()));
+    int size = (std::max)(diag.rows(), diag.cols());
+    auto res = std::make_shared<GretlMatrix>(size, size, 0.0, "real");
 
     res->do_gretl_set_diagonal(diag.get_ptr());
 
