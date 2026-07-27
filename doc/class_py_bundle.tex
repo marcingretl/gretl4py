@@ -38,16 +38,16 @@ The \classpybundle class provides the following operators:
 
 \gretlfpycmd{[]}
 \estdesc{Operator for accessing, assigning, or deleting a
-	\gretlcmd{bundle} element stored under a given \textit{key}.}
+	\pythcode{gretl.Bundle} element stored under a given \textit{key}.}
 \begin{lstlisting}[style=pythonstylefoot]
-~gretl.Bundle[key] -> object
-~gretl.Bundle[key] = object
-del ~gretl.Bundle[key]
+b[key] -> object
+b[key] = object
+del b[key]
 \end{lstlisting}
-\generaldesc{This operator retrieves, inserts (updates)
-	or deletes the \pythcode{object} associated with
-	\texttt{key} in \pythcode{gretl.Bundle}.
-	The \pythcode{object} may be one of the following types:
+\generaldesc{This operator retrieves, assigns, or deletes the
+	\pythcode{object} associated with \textit{key} in a
+	\pythcode{gretl.Bundle}. The \pythcode{object} may be one of
+	the following types:
 	\pythcode{bool}, \pythcode{int}, \pythcode{float},
 	\pythcode{str}, \pythcode{numpy.ndarray},
 	or another \pythcode{gretl.Bundle}.}

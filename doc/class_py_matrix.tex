@@ -130,29 +130,27 @@ Example:\newline
 \subsubsection{\classpymatrixb operators}
 The \classpymatrix class provides the following operators:
 
-%\gretlfpycmd{[]}
-%\estdesc{Operator for accessing, assigning, or deleting a
-%	\gretlcmd{bundle} element stored under a given \textit{key}.}
-%\begin{lstlisting}[style=pythonstylefoot]
-%gretl._gretl.Bundle[key] -> object
-%gretl._gretl.Bundle[key] = object
-%del gretl._gretl.Bundle[key]
-%\end{lstlisting}
-%\generaldesc{This operator retrieves, inserts (updates)
-%	or deletes the \pythcode{object} associated with
-%	\texttt{key} in \pythcode{gretl.\_gretl.Bundle}.
-%	The \pythcode{object} may be one of the following types:
-%	\pythcode{bool}, \pythcode{int}, \pythcode{float},
-%	\pythcode{str}, \pythcode{numpy.ndarray},
-%	or another \pythcode{gretl.\_gretl.Bundle}.}
+\gretlfpycmd{[]}
+\estdesc{Operator for accessing or assigning \pythcode{gretl.Matrix} elements.}
+\begin{lstlisting}[style=pythonstylefoot]
+m[i,j] -> float | numpy.complex128
+m[slice] -> gretl.Matrix
+m[i,j] = float | numpy.complex128
+\end{lstlisting}
+Example:\\
+\pythcodef{f = m[0,0]}\\
+\pythcodef{s = m[:,-1]}\\
+\pythcodef{m[0,0] = 10 + 1j}\\
+\generaldesc{The operator retrieves or assigns values of an
+	existing \pythcode{gretl.Matrix} using Python indexing syntax.
+	Scalar indexing returns a numeric value, while slicing returns a
+	new \pythcode{gretl.Matrix}. Assignment is supported only for
+	individual matrix elements; slicing is available for retrieving
+	data only.}
 
 
 \subsubsection{\classpymatrixb static methods}
 The \classpymatrix class provides the following static methods:
-
-%gretl.Matrix.transpose()
-%gretl.Matrix.inverse()
-%gretl.Matrix.reshape()
 
 \gretlfpycmd{Matrix.diag()}
 \estdesc{Creates a square \pythcode{gretl.Matrix} with

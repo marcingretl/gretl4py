@@ -172,40 +172,47 @@
 		{all=}{all=}{4}
 		{.print}{print}{5}
 		{.range}{range}{5}
+		{complex128}{complex128}{10}
+		{numpy.array}{{\textcolor{pythtype}{numpy.array}}}{11}
 		{gretl.Matrix}{{\textcolor{pythtype}{gretl.Matrix}}}{12}
 		{gretl.Bundle}{{\textcolor{pythtype}{gretl.Bundle}}}{12}
 		{~gretl.Bundle}{gretl.Bundle}{13}
 		{~gretl.Matrix}{gretl.Matrix}{13}
 		{gretl.Dataset}{{\textcolor{pythtype}{gretl.Dataset}}}{13}
-		{gretl.Model\_hsk}{{\textcolor{pythtype}{gretl.Model\_hsk}}}{17}
-		{gretl.Model\_lad}{{\textcolor{pythtype}{gretl.Model\_lad}}}{17}
-		{gretl.Model\_nls}{{\textcolor{pythtype}{gretl.Model\_nls}}}{17}
-		{gretl.Model\_ols}{{\textcolor{pythtype}{gretl.Model\_ols}}}{17}
-		{gretl.Model\_wls}{{\textcolor{pythtype}{gretl.Model\_wls}}}{17}
-		{gretl.Model\_var}{{\textcolor{pythtype}{gretl.Model\_var}}}{17}
-		{gretl.Model\_NME}{{\textcolor{pythtype}{gretl.Model\_NME}}}{17}
-		{gretl.Model\_tsls}{{\textcolor{pythtype}{gretl.Model\_tsls}}}{18}
-		{gretl.Model\_vecm}{{\textcolor{pythtype}{gretl.Model\_vecm}}}{18}
-		{gretl.Model\_garch}{{\textcolor{pythtype}{gretl.Model\_garch}}}{19}
-		{gretl.Model\_mpols}{{\textcolor{pythtype}{gretl.Model\_mpols}}}{19}
-		{gretl.Model\_logit}{{\textcolor{pythtype}{gretl.Model\_logit}}}{19}
-		{gretl.Model\_panel}{{\textcolor{pythtype}{gretl.Model\_panel}}}{19}
-		{gretl.Model\_tobit}{{\textcolor{pythtype}{gretl.Model\_tobit}}}{19}
-		{gretl.Model\_heckit}{{\textcolor{pythtype}{gretl.Model\_heckit}}}{20}
-		{gretl.Model\_dpanel}{{\textcolor{pythtype}{gretl.Model\_dpanel}}}{20}
-		{gretl.Model\_intreg}{{\textcolor{pythtype}{gretl.Model\_intreg}}}{20}
-		{gretl.Model\_negbin}{{\textcolor{pythtype}{gretl.Model\_negbin}}}{20}
-		{gretl.Model\_probit}{{\textcolor{pythtype}{gretl.Model\_probit}}}{20}
-		{gretl.Model\_poisson}{{\textcolor{pythtype}{gretl.Model\_poisson}}}{21}
-		{gretl.Model\_duration}{{\textcolor{pythtype}{gretl.Model\_duration}}}{22}
-		{gretl.Model\_biprobit}{{\textcolor{pythtype}{gretl.Model\_biprobit}}}{22}
-		{gretl.Model\_logistic}{{\textcolor{pythtype}{gretl.Model\_logistic}}}{22}
-		{gretl.Model\_midasreg}{{\textcolor{pythtype}{gretl.Model\_midasreg}}}{22}
-		{gretl.Model\_quantreg}{{\textcolor{pythtype}{gretl.Model\_quantreg}}}{22}
+		{numpy.ndarray}{{\textcolor{pythtype}{numpy.ndarray}}}{13}
+		{gretl.Model\_ar}{{\textcolor{pythtype}{gretl.Model\_ar}}}{15}
+		{gretl.Model\_ar1}{{\textcolor{pythtype}{gretl.Model\_ar1}}}{16}
+		{gretl.Model\_hsk}{{\textcolor{pythtype}{gretl.Model\_hsk}}}{16}
+		{gretl.Model\_lad}{{\textcolor{pythtype}{gretl.Model\_lad}}}{16}
+		{gretl.Model\_nls}{{\textcolor{pythtype}{gretl.Model\_nls}}}{16}
+		{gretl.Model\_ols}{{\textcolor{pythtype}{gretl.Model\_ols}}}{16}
+		{gretl.Model\_wls}{{\textcolor{pythtype}{gretl.Model\_wls}}}{16}
+		{gretl.Model\_var}{{\textcolor{pythtype}{gretl.Model\_var}}}{16}
+		{gretl.Model\_NME}{{\textcolor{pythtype}{gretl.Model\_NME}}}{16}
+		{numpy.complex128}{{\textcolor{pythtype}{numpy.complex128}}}{16}
+		{gretl.Model\_tsls}{{\textcolor{pythtype}{gretl.Model\_tsls}}}{17}
+		{gretl.Model\_vecm}{{\textcolor{pythtype}{gretl.Model\_vecm}}}{17}
+		{gretl.Model\_garch}{{\textcolor{pythtype}{gretl.Model\_garch}}}{18}
+		{gretl.Model\_arima}{{\textcolor{pythtype}{gretl.Model\_arima}}}{18}
+		{gretl.Model\_mpols}{{\textcolor{pythtype}{gretl.Model\_mpols}}}{18}
+		{gretl.Model\_logit}{{\textcolor{pythtype}{gretl.Model\_logit}}}{18}
+		{gretl.Model\_panel}{{\textcolor{pythtype}{gretl.Model\_panel}}}{18}
+		{gretl.Model\_tobit}{{\textcolor{pythtype}{gretl.Model\_tobit}}}{18}
+		{gretl.Model\_heckit}{{\textcolor{pythtype}{gretl.Model\_heckit}}}{19}
+		{gretl.Model\_dpanel}{{\textcolor{pythtype}{gretl.Model\_dpanel}}}{19}
+		{gretl.Model\_intreg}{{\textcolor{pythtype}{gretl.Model\_intreg}}}{19}
+		{gretl.Model\_negbin}{{\textcolor{pythtype}{gretl.Model\_negbin}}}{19}
+		{gretl.Model\_probit}{{\textcolor{pythtype}{gretl.Model\_probit}}}{19}
+		{gretl.Model\_poisson}{{\textcolor{pythtype}{gretl.Model\_poisson}}}{20}
+		{gretl.Model\_duration}{{\textcolor{pythtype}{gretl.Model\_duration}}}{21}
+		{gretl.Model\_biprobit}{{\textcolor{pythtype}{gretl.Model\_biprobit}}}{21}
+		{gretl.Model\_logistic}{{\textcolor{pythtype}{gretl.Model\_logistic}}}{21}
+		{gretl.Model\_midasreg}{{\textcolor{pythtype}{gretl.Model\_midasreg}}}{21}
+		{gretl.Model\_quantreg}{{\textcolor{pythtype}{gretl.Model\_quantreg}}}{21}
 		{pandas.core.series.Series}{{\textcolor{pythtype}{pandas.core.series.Series}}}{25}
 		{pandas.core.frame.DataFrame}{{\textcolor{pythtype}{pandas.core.frame.DataFrame}}}{27}
-		{numpy.ndarray}{{\textcolor{pythtype}{numpy.ndarray}}}{13}
-		{numpy.array}{{\textcolor{pythtype}{numpy.array}}}{11}}}
+		}
+}
 
 %% Hansl syntax highlight
 \lstdefinelanguage{Hansl}{
