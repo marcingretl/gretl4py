@@ -98,6 +98,8 @@ void gretl_generate (const std::string &formula, GretlDatasetPtr dataset = nullp
 
 void do_gretl_delete_variables (const std::string &varname, const py::kwargs &kwargs, bool print = true);
 
+py::object get_uservar (const std::string &varname);
+
 template <GretlObjType OBJ_TYPE>
 py::object do_get_accessor (const std::string &name, GretlDatasetPtr dataset = nullptr, void *model = nullptr);
 

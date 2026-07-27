@@ -92,6 +92,8 @@ PYBIND11_MODULE(_gretl, m)
               return do_get_accessor<GRETL_OBJ_ANY>(name, GretlDataset::default_dataset(), nullptr);
           },
           py::arg("name").none(false));
+    m.def("get_uservar", &get_uservar,
+          py::arg("varname").none(false));
     m.def("print", &do_gretl_print<void>,
           py::arg("varlist").none(true) = "", py::kw_only());
     m.def("run_script", &gretl_hansl_execute<true>,

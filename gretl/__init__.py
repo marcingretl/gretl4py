@@ -110,7 +110,7 @@ atexit.register(_gretl._gretl4py_cleanup)
 from ._gretl import (about, version, gretldir)                              # module-related
 from ._gretl import (Bundle, Matrix)                                        # constructors
 from ._gretl import (delete, genr, include, pkg, print, set, summary)       # libgretl's commands interfaces
-from ._gretl import (varlist, run_script, run_hansl)
+from ._gretl import (varlist, run_script, run_hansl, get_uservar)
 from ._gretl import (pvalue, critical, pdf, cdf, invcdf, corr, cov)         # libgretl's functions interfaces
 from ._gretl import (get_accessor, tdisagg)
 from .gretl4py_classes import _attrs, _oddsratio, mle, nls, gmm, NLSpec

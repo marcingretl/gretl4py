@@ -952,6 +952,20 @@ template void genr<double>(const std::string&, const double&);
 template void genr<std::string>(const std::string&, const std::string&);
 template void genr<GretlMatrix>(const std::string&, const GretlMatrix&);
 
+py::object get_uservar (const std::string &varname)
+{
+    //
+    // we take uservar from stack (by name)
+    //
+    auto dataset = GretlDataset::default_dataset();
+    int err = 0;
+    auto res = gretl_generate_gretl_object(varname.c_str(), err, GRETL_OBJ_ANY, dataset ? dataset->dset : nullptr);
+
+    if (err) handle_gretl_error(err);
+
+    return variant_to_pyobject(std::move(*res));
+}
+
 [[noreturn]] void handle_gretl_error (int err, const std::string &ext_msg, const std::string &ext_msg_desc)
 {
     //
