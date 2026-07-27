@@ -83,7 +83,7 @@ py::object matrix_row_cols_names_get(const GretlMatrix &m, std::optional<int> in
     if (!index) return names;
     int i = *index;
 
-    if (i < 0 || static_cast<size_t>(i) >= names.size()) throw py::index_error("list index out of range");
+    if (i < 0) throw py::index_error("list index out of range");
 
     return py::str(names[i]);
 }
