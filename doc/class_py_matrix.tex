@@ -158,9 +158,16 @@ The \classpymatrix provides the following public attributes:
 \end{lstlisting}
 
 \gretlfpycmd{is\_complex}
-\estdesc{Returns whether the matrix is complex-valued.}
+\estdesc{Returns \pythcode{True} if the matrix is complex-valued.}
 \begin{lstlisting}[style=pythonstylefoot]
 .is_complex -> bool
+\end{lstlisting}
+
+\gretlfpycmd{is\_vector}
+\estdesc{Returns \pythcode{True} if the matrix is a vector
+	(that is, a one-dimensional matrix).}
+\begin{lstlisting}[style=pythonstylefoot]
+.is_vector -> bool
 \end{lstlisting}
 
 \gretlfpycmd{numpy\_view}

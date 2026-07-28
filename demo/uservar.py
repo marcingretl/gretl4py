@@ -61,6 +61,9 @@ gretl.print("c")
 # bundle
 gretl.genr('bundle B = _(Nrep=10^6)')
 gretl.print("B")
+b = gretl.get_uservar("B")
+print(type(b))
+exit()
 
 # list
 #gretl.genr(name='d', value=[1,2])
