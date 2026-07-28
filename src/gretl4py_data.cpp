@@ -2509,9 +2509,13 @@ py::object GretlMatrix::get_element (int i) const
     // we get one element of a vector (1D matrix)
     //
     if (!is_vector()) throw py::index_error("Ambiguous matrix index");
-    check_bounds_(i);
 
-    return py::cast(gretl_vector_get(m_, i));
+    if (is_complex()) {
+        return m_->rows == 1 ? get_element(0, i) : get_element(i, 0);
+    } else {
+        check_bounds_(i);
+        return py::cast(gretl_vector_get(m_, i));
+    }
 }
 
 GretlMatrixPtr GretlMatrix::get_slice (const py::tuple &slice) const
@@ -2576,6 +2580,29 @@ void GretlMatrix::set_element (int i, int j, T val)
 }
 template void GretlMatrix::set_element<double>(int i, int j, double val);
 template void GretlMatrix::set_element<std::complex<double>>(int i, int j, std::complex<double> val);
+
+//T: double, std::complex<double>
+template <typename T>
+void GretlMatrix::set_element (int i, T val)
+{
+    //
+    // method for setting 'val' as vector element [i]
+    //
+    if (!is_vector()) throw py::index_error("Ambiguous matrix index");
+
+    if constexpr (std::is_same_v<T, double>) {
+        if (is_complex()) throw std::invalid_argument("matrix is complex, assign a complex number (e.g. 1+2j)");
+        check_bounds_(i);
+        gretl_vector_set(m_, i, val);
+    } else if constexpr (std::is_same_v<T, std::complex<double>>) {
+        if (!is_complex()) throw std::invalid_argument("matrix is real, use double");
+        m_->rows == 1 ? set_element(0, i, val) : set_element(i, 0, val);
+    } else {
+        static_assert(always_false<T>, "GretlMatrix::set_element(): unknown type");
+    }
+}
+template void GretlMatrix::set_element<double>(int i, double val);
+template void GretlMatrix::set_element<std::complex<double>>(int i, std::complex<double> val);
 
 py::object GretlMatrix::to_numpy() const
 {

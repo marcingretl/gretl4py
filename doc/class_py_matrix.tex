@@ -132,20 +132,25 @@ The \classpymatrix class provides the following operators:
 \gretlfpycmd{[]}
 \estdesc{Operator for accessing or assigning \pythcode{gretl.Matrix} elements.}
 \begin{lstlisting}[style=pythonstylefoot]
-m[i,j] -> float | numpy.complex128
-m[slice] -> gretl.Matrix
-m[i,j] = float | numpy.complex128
+v[i] -> float | complex
+m[i,j] -> float | complex
+m[i:j] -> gretl.Matrix
+m[i:j,k:l] -> gretl.Matrix
+v[i] = float | complex
+m[i,j] = float | complex
 \end{lstlisting}
 Example:\\
+\pythcodef{v = m[0]}\\
 \pythcodef{f = m[0,0]}\\
 \pythcodef{s = m[:,-1]}\\
+\pythcodef{v[0] = 2 - .5j}\\
 \pythcodef{m[0,0] = 10 + 1j}\\
 \generaldesc{The operator retrieves or assigns values of an
 	existing \pythcode{gretl.Matrix} using Python indexing syntax.
 	Scalar indexing returns a numeric value, while slicing returns a
-	new \pythcode{gretl.Matrix}. Assignment is supported only for
-	individual matrix elements; slicing is available for retrieving
-	data only.}
+	new \pythcode{gretl.Matrix}. Both vector and matrix scalar elements
+	can be assigned. Slice assignment is not supported; slices are
+	available for retrieving data only.}
 
 
 \subsubsection{\classpymatrixb attributes}

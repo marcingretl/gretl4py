@@ -648,11 +648,15 @@ void init_gretl4py_gretl_matrix_py11 (py::module_ &m)
          {
              self.set_element<double>(ij.first, ij.second, value);
          }, py::arg("ij").none(false), py::arg("value").none(false))
+    .def("__setitem__", py::overload_cast<int, double>(&GretlMatrix::set_element<double>),
+         py::arg("i").none(false), py::arg("value").none(false))
     .def("__setitem__",
          [](GretlMatrix &self, std::pair<int, int> ij, std::complex<double> value) -> void
          {
              self.set_element<std::complex<double>>(ij.first, ij.second, value);
          }, py::arg("ij").none(false), py::arg("value").none(false))
+    .def("__setitem__", py::overload_cast<int, std::complex<double>>(&GretlMatrix::set_element<std::complex<double>>),
+         py::arg("i").none(false), py::arg("value").none(false))
     .def("__pos__", [](const GretlMatrix &self) { return GretlMatrix(self); })
     .def("__neg__", &GretlMatrix::neg)
     .def("__eq__", &GretlMatrix::alg_dot_operations<GretlMatrix, GretlMatrixAlgOperations::EQ>)

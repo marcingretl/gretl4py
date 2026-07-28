@@ -350,7 +350,10 @@ public:
     GretlMatrixPtr get_slice (const std::string &slice) const;
 
     template <typename T>
-    void set_element (int i, int j, T val);
+    void set_element (int i, int j, T val);                         // set [i,j] element of a matrix
+
+    template <typename T>
+    void set_element (int i, T val);                                // set [i] element of a vector
 
     py::object to_numpy (void) const;
 
