@@ -1645,6 +1645,19 @@ py::object GretlDataset::get_series (const std::string &series) const
     return variant_to_pyobject(std::move(*res));
 }
 
+#if 0 //not ready yet
+GretlMatrixPtr GretlDataset::get_series (const std::string &series) const
+{
+    //
+    // we return series as NumPy array
+    //
+    auto vector = gretl_vector_from_series(dset->Z[get_series_id(series)], dset->t1, dset->t2);
+    if (!vector) handle_gretl_error(E_ALLOC);
+
+    return std::make_shared<GretlMatrix>(static_cast<gretl_matrix*>(vector), false);
+}
+#endif
+
 gretl_list_ptr GretlDataset::gretllist (const std::string &formula, int *err)
 {
     //
