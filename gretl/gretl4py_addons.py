@@ -278,8 +278,8 @@ def modeltab(models: "List[GretlModel]", output: str = "print",
         for m in models:
             if var in m.parnames:
                 idx = m.parnames.index(var)
-                coeff = float(m.coeff.numpy_view[idx])
-                stderr = float(m.stderr.numpy_view[idx])
+                coeff = float(m.coeff[idx])
+                stderr = float(m.stderr[idx])
 
                 # Determine stars only if pvalues exist
                 star = ""

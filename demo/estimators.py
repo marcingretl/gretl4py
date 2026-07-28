@@ -115,7 +115,7 @@ res = gretl.arima(
     seasonal=(0,1,1),
     nc=True
 ).fit()
-assert np.isnan(res.uhat[0,0])
+assert np.isnan(res.uhat[0])
 print(res)
 
 #####################################

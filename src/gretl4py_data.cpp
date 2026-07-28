@@ -2242,6 +2242,11 @@ void GretlMatrix::check_bounds_ (int i, int j) const
     if (std::abs(i) >= m_->rows || std::abs(j) >= m_->cols) handle_gretl_error(E_BOUNDS, "[i,j]", "[" + std::to_string(i) + "," + std::to_string(j) + "]");
 }
 
+void GretlMatrix::check_bounds_ (int i) const
+{
+    if (std::abs(i) >= (std::max)(m_->rows, m_->cols)) handle_gretl_error(E_BOUNDS, "[i]", "[" + std::to_string(i) + "]");
+}
+
 gretl_matrix_ptr GretlMatrix::exec_slice_ (const std::string &slice_str) const
 {
     //
@@ -2496,6 +2501,17 @@ py::object GretlMatrix::get_element (int i, int j) const
     } else {
         return py::cast(gretl_matrix_get(m_, i, j));
     }
+}
+
+py::object GretlMatrix::get_element (int i) const
+{
+    //
+    // we get one element of a vector (1D matrix)
+    //
+    if (!is_vector()) throw py::index_error("Ambiguous matrix index");
+    check_bounds_(i);
+
+    return py::cast(gretl_vector_get(m_, i));
 }
 
 GretlMatrixPtr GretlMatrix::get_slice (const py::tuple &slice) const

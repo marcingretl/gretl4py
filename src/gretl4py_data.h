@@ -285,6 +285,8 @@ private:
 
     void check_bounds_ (int i, int j) const;                                // we check if given [i,j] are valid
 
+    void check_bounds_ (int i) const;                                       // we check if given [i] is valid (vector case)
+
     static gretl_matrix *numpy_to_matrix_ (const py::array &array);         // helper for NumPy to GretlMatrix
 
     gretl_matrix_ptr exec_slice_ (const std::string& slice_str) const;      // helper for getting slice
@@ -327,7 +329,7 @@ public:
 
     [[nodiscard]] bool is_vector (void) const noexcept;
 
-    std::string repr_impl (void);                                           // gretl_matrix printing via __repr__
+    std::string repr_impl (void);                                   // gretl_matrix printing via __repr__
 
     template <bool ROWS>
     py::list rows_cols_names_get (void) const;
@@ -335,9 +337,11 @@ public:
     template <bool ROWS>
     void rows_cols_names_set (const py::list &src) const;
 
-    void set_diagonal (const gretl_matrix *src);                   // set diagonal elements from @src
+    void set_diagonal (const gretl_matrix *src);                    // set diagonal elements from @src
 
-    py::object get_element (int i, int j) const;
+    py::object get_element (int i, int j) const;                    // get element by standard [i,j] indexing
+
+    py::object get_element (int i) const;                           // get element by [i]: special case for vectors
 
     GretlMatrixPtr get_slice (const py::tuple &slice) const;
 
