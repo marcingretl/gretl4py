@@ -167,7 +167,7 @@ Examples:\newline
 \estdesc{Returns the result of applying the Baxter--King
 	band-pass filter to the series \textit{y}.}
 \begin{lstlisting}[style=pythonstylefoot]
-.bkfilt(y: str[, f1: int = 0, f2: int = 0, k: int = 0) -> numpy.ndarray
+.bkfilt(y: str[, f1: int = 0, f2: int = 0, k: int = 0) -> gretl.Matrix
 \end{lstlisting}
 \maptof{bkfilt(y, f1, f2, k)}{series}
 \generaldesc{The optional parameters \textit{f1} and
@@ -180,7 +180,7 @@ Examples:\newline
 	Butterworth filter with order \textit{n} and frequency
 	cutoff \textit{omega} to the series \textit{y}.}
 \begin{lstlisting}[style=pythonstylefoot]
-.bwfilt(y: str, n: int, omega: float) -> numpy.ndarray
+.bwfilt(y: str, n: int, omega: float) -> gretl.Matrix
 \end{lstlisting}
 \maptof{bwfilt(y, n, omega)}{series}
 \generaldesc{The cutoff is expressed in degrees and must be
@@ -376,7 +376,7 @@ Examples:\newline
 \estdesc{Returns the cycle component from application of
 	the Hodrick--Prescott filter to series \textit{y}.}
 \begin{lstlisting}[style=pythonstylefoot]
-.hpfilt(y:str[, hp_lambda: float = 'nan', trend: bool = False, one_sided=bool]) -> numpy.ndarray
+.hpfilt(y: str[, hp_lambda: float = 'nan', trend: bool = False, one_sided: bool = False]) -> gretl.Matrix
 \end{lstlisting}
 \maptof{hpfilt(y, lambda, one-sided)}{series}
 \generaldesc{If the smoothing parameter, \textit{lambda}%
@@ -398,7 +398,7 @@ Examples:\newline
 \estdesc{Calculates the Hurst exponent (a measure of persistence
 	or long memory) for a time-series variable having at least 128 observations.}
 \begin{lstlisting}[style=pythonstylefoot]
-.hurst(series: str) -> numpy.ndarray
+.hurst(series: str) -> gretl.Matrix
 \end{lstlisting}
 \mapto[clean]{hurst ~series}
 \generaldesc{The Hurst exponent is discussed by Mandelbrot (1983).

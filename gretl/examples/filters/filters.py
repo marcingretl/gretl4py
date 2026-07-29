@@ -52,8 +52,8 @@ def run_example():
         ax.plot(x, lrm, label="LRM")
         ax.plot(x, t, label="HP trend")
         ax.plot(x, bw, label="Butterworth")
-        ax.plot(x, lrm - bk, label="Baxter–King cycle")
-        ax.plot(x, lrm - cf, label="Christiano–Fitzgerald cycle")
+        ax.plot(x, lrm - bk.numpy_view, label="Baxter-King cycle") # this is because of NaN-s
+        ax.plot(x, lrm - cf, label="Christiano-Fitzgerald cycle")
 
         ax.legend()
         plt.show()

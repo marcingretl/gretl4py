@@ -192,11 +192,11 @@ public:
     GretlMatrixPtr tdisagg (py::object Y, int s, const py::kwargs &kwargs);
 
     // filters, correlations, etc
-    DNumPyArrayFC hpfilt (const std::string &y, double hp_lambda = NADBL, bool trend = false, bool one_sided = false);
+    GretlMatrixPtr hpfilt (const std::string &y, double hp_lambda = NADBL, bool trend = false, bool one_sided = false);
 
-    DNumPyArrayFC bwfilt (const std::string &y, int n, double omega);
+    GretlMatrixPtr bwfilt (const std::string &y, int n, double omega);
 
-    DNumPyArrayFC bkfilt (const std::string &y, int f1 = 0, int f2 = 0, int k = 0);
+    GretlMatrixPtr bkfilt (const std::string &y, int f1 = 0, int f2 = 0, int k = 0);
 
     template <typename T>
     py::object corr (const T &varlist, const py::kwargs &kwargs);

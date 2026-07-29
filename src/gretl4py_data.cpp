@@ -1726,49 +1726,49 @@ std::string GretlDataset::python_list_to_formula (const py::list &list) const
     return formula;
 }
 
-DNumPyArrayFC GretlDataset::hpfilt (const std::string &y, double hp_lambda, bool trend, bool one_sided)
+GretlMatrixPtr GretlDataset::hpfilt (const std::string &y, double hp_lambda, bool trend, bool one_sided)
 {
     //
     // here we perform HP filtering
     // Note: we use hp_lambda instead of just lambda due to names clash on Python side
     //
-    DNumPyArrayFC res(dset->n);
+    auto res = std::make_shared<GretlMatrix>(dset->n, 1);
     gretlopt opt = trend ? OPT_T : OPT_NONE;
 
     // we do the job
     if (one_sided) {
-        err_ = oshp_filter(dset->Z[get_series_id(y)], res.mutable_data(), dset, hp_lambda, opt);
+        err_ = oshp_filter(dset->Z[get_series_id(y)], res->get_ptr()->val, dset, hp_lambda, opt);
     } else {
-        err_ = hp_filter(dset->Z[get_series_id(y)], res.mutable_data(), dset, hp_lambda, opt);
+        err_ = hp_filter(dset->Z[get_series_id(y)], res->get_ptr()->val, dset, hp_lambda, opt);
     }
     if (err_) handle_gretl_error(err_);
 
     return res;
 }
 
-DNumPyArrayFC GretlDataset::bwfilt (const std::string &y, int n, double omega)
+GretlMatrixPtr GretlDataset::bwfilt (const std::string &y, int n, double omega)
 {
     //
     // here we perform Butterworth filtering
     //
-    DNumPyArrayFC res(dset->n);
+    auto res = std::make_shared<GretlMatrix>(dset->n, 1);
 
     // we do the job
-    err_ = butterworth_filter(dset->Z[get_series_id(y)], res.mutable_data(), dset, n, omega);
+    err_ = butterworth_filter(dset->Z[get_series_id(y)], res->get_ptr()->val, dset, n, omega);
     if (err_) handle_gretl_error(err_);
 
     return res;
 }
 
-DNumPyArrayFC GretlDataset::bkfilt (const std::string &y, int f1, int f2, int k)
+GretlMatrixPtr GretlDataset::bkfilt (const std::string &y, int f1, int f2, int k)
 {
     //
     // here we perform Baxter-King filtering
     //
-    DNumPyArrayFC res(dset->n);
+    auto res = std::make_shared<GretlMatrix>(dset->n, 1);
 
     // we do the job
-    err_ = bkbp_filter(dset->Z[get_series_id(y)], res.mutable_data(), dset, f1, f2, k);
+    err_ = bkbp_filter(dset->Z[get_series_id(y)], res->get_ptr()->val, dset, f1, f2, k);
     if (err_) handle_gretl_error(err_);
 
     return res;
