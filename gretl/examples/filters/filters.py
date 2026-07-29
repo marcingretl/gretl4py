@@ -2,7 +2,7 @@ import gretl
 
 
 def run_example():
-    # Load Christiano–Fitzgerald filter package.
+    # Load Christiano-Fitzgerald filter package.
     try:
         CFfilt = gretl.include("cffilt")
     except FileNotFoundError:
@@ -36,7 +36,7 @@ def run_example():
 
     # Christiano–Fitzgerald filter.
     cf = gretl.cffilt(x="LRM")
-    print("\nChristiano–Fitzgerald filter results:")
+    print("\nChristiano-Fitzgerald filter results:")
     print(cf)
 
     # Plot results.
@@ -52,7 +52,7 @@ def run_example():
         ax.plot(x, lrm, label="LRM")
         ax.plot(x, t, label="HP trend")
         ax.plot(x, bw, label="Butterworth")
-        ax.plot(x, lrm - bk.numpy_view, label="Baxter-King cycle") # this is because of NaN-s
+        ax.plot(x, lrm - bk, label="Baxter-King cycle") # this is because of NaN-s
         ax.plot(x, lrm - cf, label="Christiano-Fitzgerald cycle")
 
         ax.legend()

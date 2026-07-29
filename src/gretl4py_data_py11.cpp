@@ -622,7 +622,7 @@ void init_gretl4py_gretl_matrix_py11 (py::module_ &m)
              //
              // to follow the protocol convention in 100% (dtype, copy)
              //
-             auto self = self_obj.cast<GretlMatrix>();
+             auto &self = self_obj.cast<GretlMatrix&>();
 
              if (self.is_complex()) {
                  return make_numpy_view_impl(self, py::cast(&self, py::return_value_policy::reference),
