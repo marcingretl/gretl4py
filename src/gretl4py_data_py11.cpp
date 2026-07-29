@@ -53,7 +53,7 @@ void head_tail_print (GretlDataset &dataset, int nobs)
 }
 
 template <typename T>
-py::array_t<T> make_numpy_view_impl(const GretlMatrix &m, py::handle owner, T *ptr)
+py::array_t<T> make_numpy_view_impl (const GretlMatrix &m, py::handle owner, T *ptr)
 {
     //
     // helper for making NumPy view of GretlMatrix
@@ -609,11 +609,12 @@ void init_gretl4py_gretl_matrix_py11 (py::module_ &m)
                            [](GretlMatrix &self) -> py::array
                            {
                                if (self.is_complex()) {
-                                   return make_numpy_view_impl(self, py::cast(&self, py::return_value_policy::reference),
-                                                               reinterpret_cast<std::complex<double>*>(self.z()));
+                                   return make_numpy_view_impl<std::complex<double>>(self,
+                                                                                     py::cast(&self, py::return_value_policy::reference),
+                                                                                     reinterpret_cast<std::complex<double>*>(self.z()));
                                }
 
-                               return make_numpy_view_impl(self, py::cast(&self, py::return_value_policy::reference), self.val());
+                               return make_numpy_view_impl<double>(self, py::cast(&self, py::return_value_policy::reference), self.val());
                            })
     .def("__len__", &GretlMatrix::rows)
     .def("__array__",
@@ -625,11 +626,11 @@ void init_gretl4py_gretl_matrix_py11 (py::module_ &m)
              auto &self = self_obj.cast<GretlMatrix&>();
 
              if (self.is_complex()) {
-                 return make_numpy_view_impl(self, py::cast(&self, py::return_value_policy::reference),
-                                             reinterpret_cast<std::complex<double>*>(self.z()));
+                 return make_numpy_view_impl<std::complex<double>>(self, py::cast(&self, py::return_value_policy::reference),
+                                                                   reinterpret_cast<std::complex<double>*>(self.z()));
              }
 
-             return make_numpy_view_impl(self, py::cast(&self, py::return_value_policy::reference), self.val());
+             return make_numpy_view_impl<double>(self, py::cast(&self, py::return_value_policy::reference), self.val());
          }, py::arg("dtype") = py::none(), py::arg("copy") = py::none())
     .def("__copy__", [](const GretlMatrix &self) { return GretlMatrix(self); })
     .def("__deepcopy__", [](const GretlMatrix &self, py::dict) { return GretlMatrix(self); })
