@@ -14,7 +14,7 @@ frml = 'y ~ const+' + reglist[0:-1]
 t0 = time.time()
 gmod = gretl.probit(frml, data=MyData).fit()
 t1 = time.time() - t0
-res.numpy_view[:, 0] = gmod.coeff.numpy_view[:, 0]
+res.numpy_view[:, 0] = gmod.coeff.numpy_view
 
 # probit model via statsmodels
 from statsmodels.discrete.discrete_model import Probit
