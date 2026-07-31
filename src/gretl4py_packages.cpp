@@ -621,7 +621,7 @@ GretlPackageRes GretlPackage::function_exec (const std::string &func_name, Gretl
     // we check dataset in the context of package's "data-requirement"
     if (!dataset && !(get_properties_<DataReq>("data-requirement") == FN_NODATA_OK)) throw std::runtime_error("No dataset is available");
 
-    // we must set returning type (must be released at the end)
+    // we must set returning type
     GretlPackageRes res;
     gretl_list_ptr gr_list{nullptr};
 

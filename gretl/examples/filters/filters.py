@@ -31,13 +31,15 @@ def run_example():
 
     # Baxter–King filter.
     bk = d.bkfilt(y="LRM")
-    print("\nBaxter–King filter results:")
+    print("\nBaxter-King filter results:")
     print(bk)
 
     # Christiano–Fitzgerald filter.
     cf = gretl.cffilt(x="LRM")
     print("\nChristiano-Fitzgerald filter results:")
     print(cf)
+    print(type(cf))
+    exit()
 
     # Plot results.
     try:

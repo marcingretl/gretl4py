@@ -301,15 +301,17 @@ private:
     template<typename T>
     void from_matrix_ (const MatrixData<T> &data);                          // to get source data from STL vector
 public:
-    GretlMatrix (void);                                                     // default constructor
-    GretlMatrix (const GretlMatrix &src);                                   // copy constructor
-    GretlMatrix (int rows, int cols, double fill, const std::string &type); // filled real/complex matrix
-    GretlMatrix (int rows, int cols, const std::string &dist);              // random matrix
-    GretlMatrix (double start, double end, double step = 1.0);              // sequential row vector
-    GretlMatrix (int n);                                                    // identity matrix
-    GretlMatrix (const py::array &array);                                   // NumPy to GretlMatrix
-    GretlMatrix (gretl_matrix *src, bool copy = true);                      // gretl_matrix to GretlMatrix
-    GretlMatrix (const py::sequence &seq);                                  // Python sequence to GretlMatrix
+    GretlMatrix (void);                                                             // default constructor
+    GretlMatrix (const GretlMatrix &src);                                           // copy constructor
+    GretlMatrix (int rows, int cols, double fill, const std::string &type);         // filled real/complex matrix
+    GretlMatrix (int rows, int cols, const std::string &dist);                      // random matrix
+    GretlMatrix (double start, double end, double step = 1.0);                      // sequential row vector
+    GretlMatrix (int n);                                                            // identity matrix
+    GretlMatrix (const py::array &array);                                           // NumPy to GretlMatrix
+    GretlMatrix (gretl_matrix *src, bool copy = true);                              // gretl_matrix to GretlMatrix
+    GretlMatrix (const py::sequence &seq);                                          // Python sequence to GretlMatrix
+    GretlMatrix (const double *src, int n, GretlMatrixMod mod = GRETL_MOD_NONE);    // from vector of doubles
+    GretlMatrix (const double **src, int rows, int cols);                           // from array of doubles
     ~GretlMatrix (void);
 
     static GretlMatrixPtr identity (int n, std::optional<int>);             // static method for creating an I(n,m) like indentity

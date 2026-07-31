@@ -2176,6 +2176,12 @@ GretlMatrix::GretlMatrix (const py::sequence &seq)
     }
 }
 
+GretlMatrix::GretlMatrix (const double *src, int n, GretlMatrixMod mod) : GretlMatrix(gretl_vector_from_array(src, n, mod), false)
+{}
+
+GretlMatrix::GretlMatrix (const double **src, int rows, int cols) : GretlMatrix(gretl_matrix_from_2d_array(src, rows, cols), false)
+{}
+
 GretlMatrix::~GretlMatrix (void)
 {
     if (m_) {

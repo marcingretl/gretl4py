@@ -502,8 +502,7 @@ void init_gretl4py_package_py11 (py::module_ &m)
     .def("run_sample", &GretlPackage::run_sample)
     .def("_get_help", &GretlPackage::get_help)
     .def("_function_exec",
-         [](GretlPackage &self, const std::string &name,
-            const py::args &args, const py::kwargs &kwargs) -> py::object
+         [](GretlPackage &self, const std::string &name, const py::args &args, const py::kwargs &kwargs) -> py::object
          {
              GretlPrint printer = GretlPrint();
              auto dataset = GretlDataset::default_dataset();
