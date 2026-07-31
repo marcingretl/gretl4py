@@ -584,6 +584,8 @@ void init_gretl4py_gretl_matrix_py11 (py::module_ &m)
     .def_static("eye", &GretlMatrix::identity,
                 py::arg("n").none(false), py::arg("m") = std::nullopt)
     .def_static("diag", &GretlMatrix::diag, py::arg("seq").none(false))
+    .def_static("zeros", &GretlMatrix::zeros,
+                py::arg("rows").none(false), py::arg("cols").none(false))
     .def_property_readonly("rows",
                            [](const GretlMatrix &self)
                            {

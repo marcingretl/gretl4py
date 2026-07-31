@@ -318,6 +318,8 @@ public:
 
     static GretlMatrixPtr diag (const py::sequence &seq);                   // static method for creating an I(n) with main diag filled with @seq
 
+    static GretlMatrixPtr zeros (int rows, int cols);                       // static method for creating matrix filled with zeros
+
     gretl_matrix *get_ptr (void) const;                                     // raw pointer to m_
 
     double *val (void) const;                                               // raw pointer to double storage

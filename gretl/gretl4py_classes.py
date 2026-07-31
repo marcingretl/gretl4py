@@ -454,11 +454,6 @@ def _matrix_to_pandas(self: _gretl.Matrix, view: bool = False) -> pd.DataFrame:
     return pd.DataFrame(data = self.numpy_view if view else self.to_numpy(),
                         index = rows_labels, columns = cols_labels)
 
-def _zeros(rows: int, cols: int):
-    return _gretl.Matrix(rows, cols, 0.0)
-_zeros.__name__ = "zeros"
-_zeros.__qualname__ = "Matrix.zeros"
-
 def _ones(rows: int, cols: int):
     return _gretl.Matrix(rows, cols, 1.0)
 _ones.__name__ = "ones"

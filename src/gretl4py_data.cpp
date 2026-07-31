@@ -1732,7 +1732,7 @@ GretlMatrixPtr GretlDataset::hpfilt (const std::string &y, double hp_lambda, boo
     // here we perform HP filtering
     // Note: we use hp_lambda instead of just lambda due to names clash on Python side
     //
-    auto res = std::make_shared<GretlMatrix>(dset->n, 1, 0.0, "real");
+    auto res = GretlMatrix::zeros(dset->n, 1);
     gretlopt opt = trend ? OPT_T : OPT_NONE;
 
     // we do the job
@@ -1751,7 +1751,7 @@ GretlMatrixPtr GretlDataset::bwfilt (const std::string &y, int n, double omega)
     //
     // here we perform Butterworth filtering
     //
-    auto res = std::make_shared<GretlMatrix>(dset->n, 1, 0.0, "real");
+    auto res = GretlMatrix::zeros(dset->n, 1);
 
     // we do the job
     err_ = butterworth_filter(dset->Z[get_series_id(y)], res->get_ptr()->val, dset, n, omega);
@@ -1765,7 +1765,7 @@ GretlMatrixPtr GretlDataset::bkfilt (const std::string &y, int f1, int f2, int k
     //
     // here we perform Baxter-King filtering
     //
-    auto res = std::make_shared<GretlMatrix>(dset->n, 1, 0.0, "real");
+    auto res = GretlMatrix::zeros(dset->n, 1);
 
     // we do the job
     err_ = bkbp_filter(dset->Z[get_series_id(y)], res->get_ptr()->val, dset, f1, f2, k);
@@ -2227,6 +2227,11 @@ GretlMatrixPtr GretlMatrix::diag (const py::sequence &seq)
     res->set_diagonal(diag.get_ptr());
 
     return res;
+}
+
+GretlMatrixPtr GretlMatrix::zeros (int rows, int cols)
+{
+    return std::make_shared<GretlMatrix>(rows, cols, 0.0, "real");
 }
 
 //
