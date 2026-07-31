@@ -13,6 +13,7 @@ version 0.52:
     - initial support for passing variables list as a Python's list
     - new free function: kmeans()
     - native estimators: now variables list may be passed as Python's list
+    - swich to OpenBLAS 0.3.34
 
 version 0.51:
     - function returned type: support for GRETL_TYPE_NUMERIC added
