@@ -14,12 +14,12 @@ def run_example():
     # Load dataset.
     d = gretl.get_data("denmark.gdt")
 
-    # Hodrick–Prescott filter (default).
+    # Hodrick-Prescott filter (default).
     c = d.hpfilt(y="LRM")
     print("\nHP filter cycle component:")
     print(c)
 
-    # Hodrick–Prescott filter (one-sided trend).
+    # Hodrick-Prescott filter (one-sided trend).
     t = d.hpfilt(y="LRM", one_sided=True, trend=True, hp_lambda=99.78)
     print("\nHP filter one-sided trend component:")
     print(t)
@@ -29,7 +29,7 @@ def run_example():
     print("\nButterworth filter results:")
     print(bw)
 
-    # Baxter–King filter.
+    # Baxter-King filter.
     bk = d.bkfilt(y="LRM")
     print("\nBaxter-King filter results:")
     print(bk)
@@ -38,8 +38,6 @@ def run_example():
     cf = gretl.cffilt(x="LRM")
     print("\nChristiano-Fitzgerald filter results:")
     print(cf)
-    print(type(cf))
-    exit()
 
     # Plot results.
     try:

@@ -188,10 +188,7 @@ GretlTypesPtr convert_GretlType_to_GretlTypes (GretlType t, void *gr_obj_ptr,
         break;
     }
     case GRETL_TYPE_SERIES: {
-        DNumPyArrayFC mat(n);
-
-        std::memcpy(mat.mutable_data(), static_cast<double*>(gr_obj_ptr), n * sizeof(double));
-        *res = mat;
+        *res = std::make_shared<GretlMatrix>(static_cast<double*>(gr_obj_ptr), n);
         break;
     }
     case GRETL_TYPE_LIST: {
