@@ -193,7 +193,7 @@ Examples:\newline
 \gretlfpycmd{cdf()}\label{met:gretldataset::cdf}
 \estdesc{Cumulative distribution function calculator for given \gretlcmd{series}.}
 \begin{lstlisting}[style=pythonstylefoot]
-.cdf(d: str, series: str[, param: object = None]) -> numpy.ndarray
+.cdf(d: str, series: str[, param: object = None]) -> gretl.Matrix
 \end{lstlisting}
 \maptof{cdf(d, ~series)}{matrix}
 \maptof{cdf(d, param, ~series)}{matrix}
@@ -218,8 +218,8 @@ Examples:\newline
 	\textit{varlist}, or for all variables in the data set if
 	\textit{varlist }is not given.}
 \begin{lstlisting}[style=pythonstylefoot]
-.corr() -> numpy.ndarray
-.corr(varlist: str[, OPTS]) -> numpy.ndarray
+.corr() -> gretl.Matrix
+.corr(varlist: str[, OPTS]) -> gretl.Matrix
 \end{lstlisting}
 \mapto{corr [ ~varlist ]}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
@@ -250,7 +250,7 @@ Examples:\newline
 \gretlfpycmd{cov()}
 \estdesc{Returns the covariance matrix for the variables in the list.}
 \begin{lstlisting}[style=pythonstylefoot]
-.cov(.vars: str) -> numpy.ndarray
+.cov(.vars: str) -> gretl.Matrix
 \end{lstlisting}
 \maptof{cov(y1, y2)}{matrix}
 \generaldesc{Note: this function is slightly more general than
@@ -260,7 +260,7 @@ Examples:\newline
 \gretlfpycmd{critical()}\label{met:gretldataset::critical}
 \estdesc{Critical value calculator for given \gretlcmd{series}.}
 \begin{lstlisting}[style=pythonstylefoot]
-.critical(c: str, series: str[, param: object = None]) -> numpy.ndarray
+.critical(c: str, series: str[, param: object = None]) -> gretl.Matrix
 \end{lstlisting}
 \maptof{critical(d, ~series)}{matrix}
 \maptof{critical(d, param, ~series)}{matrix}
@@ -355,9 +355,9 @@ Examples:\newline
 	(such as \gretlcmd{\$version}).}
 
 \gretlfpycmd{get\_series()}
-\estdesc{This method retrieves given \gretlcmd{series} as NumPy array.}
+\estdesc{This method retrieves given \gretlcmd{series} as \classpymatrix.}
 \begin{lstlisting}[style=pythonstylefoot]
-.get_series(series: str) -> numpy.ndarray
+.get_series(series: str) -> gretl.Matrix
 \end{lstlisting}
 
 \gretlfpycmd{head()}
@@ -433,7 +433,7 @@ Examples:\newline
 \gretlfpycmd{invcdf()}\label{met:gretldataset::invcdf}
 \estdesc{Inverse cumulative distribution function calculator for given \gretlcmd{series}.}
 \begin{lstlisting}[style=pythonstylefoot]
-.invcdf(d: str, series: str[, param: object = None]) -> numpy.ndarray
+.invcdf(d: str, series: str[, param: object = None]) -> gretl.Matrix
 \end{lstlisting}
 \maptof{invcdf(d, ~series)}{matrix}
 \maptof{invcdf(d, param, ~series)}{matrix}
@@ -536,7 +536,7 @@ Examples:\newline
 \gretlfpycmd{pad\_daily()}
 \estdesc{Pads a dated daily dataset to a complete calendar.}
 \begin{lstlisting}[style=pythonstylefoot]
-.pad_daily(days: int) -> None
+.pad_daily(days: int)
 \end{lstlisting}
 \mapto[none]{dataset pad-daily days}
 Examples:\newline
@@ -569,7 +569,7 @@ Examples:\newline
 \gretlfpycmd{pdf()}\label{met:gretldataset::pdf}
 \estdesc{Probability density function calculator for given \gretlcmd{series}.}
 \begin{lstlisting}[style=pythonstylefoot]
-.pdf(d: str, series: str[, param: object = None]) -> numpy.ndarray
+.pdf(d: str, series: str[, param: object = None]) -> gretl.Matrix
 \end{lstlisting}
 \maptof{pdf(d, ~series)}{matrix}
 \maptof{pdf(d, param, ~series)}{matrix}
@@ -605,7 +605,7 @@ Examples:\newline
 \gretlfpycmd{pvalue()}\label{met:gretldataset::pvalue}
 \estdesc{\textit{P}-value calculator for given \gretlcmd{series}.}
 \begin{lstlisting}[style=pythonstylefoot]
-.pvalue(c: str, series: str[, param: object = None]) -> numpy.ndarray
+.pvalue(c: str, series: str[, param: object = None]) -> gretl.Matrix
 \end{lstlisting}
 \maptof{pvalue(c, ~series)}{matrix}
 \maptof{pvalue(c, param, ~series)}{matrix}
@@ -640,7 +640,7 @@ Examples:\newline
 \estdesc{Constructs a new dataset by random resampling of the
 	current dataset.}
 \begin{lstlisting}[style=pythonstylefoot]
-.resample(n: int) -> None
+.resample(n: int)
 \end{lstlisting}
 \mapto[none]{dataset ~resample n}
 Examples:\newline
@@ -769,12 +769,11 @@ Examples:\newline
 	units and the time periods. The data set will be sorted as stacked
 	time series, by ascending values of the units variable, \textit{unitvar}.}
 
-
 \gretlfpycmd{sortby()}
 \estdesc{Sorts the observations in the current dataset.}
 \begin{lstlisting}[style=pythonstylefoot]
-.sortby(varlist: str) -> None
-.sortby(varlist: list) -> None
+.sortby(varlist: str)
+.sortby(varlist: list)
 \end{lstlisting}
 \mapto[none]{dataset ~sortby X}
 Examples:\newline
@@ -786,8 +785,6 @@ Examples:\newline
 	breaking keys. This method is available only for undated
 	datasets.}
 
-
-
 \gretlfpycmd{square()}
 \estdesc{Generates new series which are squares of the series
 	in \textit{varlist} (plus cross-products if the
@@ -795,7 +792,7 @@ Examples:\newline
 \begin{lstlisting}[style=pythonstylefoot]
 .square(varlist: str[, OPTS])
 \end{lstlisting}
-\mapto[0]{square varlist}
+\mapto[none]{square ~varlist}
 \generaldesc{For example, \gretlcmd{square x y} will generate 
 	$q\_x = x$ squared, $sq\_y = y$ squared and (optionally)
 	$x\_y = x \times y$. If a particular variable is a dummy
@@ -1087,7 +1084,7 @@ Examples:\newline
 \gretlfpycmd{transpose()}
 \estdesc{Transposes the current dataset.}
 \begin{lstlisting}[style=pythonstylefoot]
-.transpose() -> None
+.transpose()
 \end{lstlisting}
 \mapto[none]{dataset transpose}
 Examples:\newline
@@ -1100,7 +1097,7 @@ Examples:\newline
 \gretlfpycmd{unpad\_daily()}
 \estdesc{Removes padding from a dated daily dataset.}
 \begin{lstlisting}[style=pythonstylefoot]
-.unpad_daily() -> None
+.unpad_daily()
 \end{lstlisting}
 \mapto[none]{dataset unpad-daily}
 Examples:\newline
@@ -1112,8 +1109,8 @@ Examples:\newline
 \gretlfpycmd{xcorrgm()}
 \estdesc{Prints and/or graphs the cross-correlogram for series1 and series2.}
 \begin{lstlisting}[style=pythonstylefoot]
-.xcorrgm(varlist: str[, order: int]) -> numpy.ndarray
-.xcorrgm(series1: str, series2: str[, order: int]) -> numpy.ndarray
+.xcorrgm(varlist: str[, order: int]) -> gretl.Matrix
+.xcorrgm(series1: str, series2: str[, order: int]) -> gretl.Matrix
 \end{lstlisting}
 \mapto{xcorrgm series1 series2 [ order ]}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}

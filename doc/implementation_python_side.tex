@@ -56,8 +56,8 @@ as well as some utilities. They are listed in alphabetical order.
 \estdesc{Cumulative distribution function calculator.}
 \begin{lstlisting}[style=pythonstylefoot]
 gretl.cdf(d: str, x: float[, param: object = None]) -> float
-gretl.cdf(d: str, x: array_like[, param: object = None]) -> numpy.ndarray
-gretl.cdf(d: str, x: str[, param: object = None]) -> numpy.ndarray
+gretl.cdf(d: str, x: array_like[, param: object = None]) -> gretl.Matrix
+gretl.cdf(d: str, x: str[, param: object = None]) -> gretl.Matrix
 \end{lstlisting}
 \maptof{cdf(d, x)}{scalar | matrix}
 \maptof{cdf(d, param, x)}{scalar | matrix}
@@ -104,7 +104,7 @@ follows:
 \estdesc{Computes a (Pearson) correlation matrix treating each
 	column of \textit{X} as a variable.}
 \begin{lstlisting}[style=pythonstylefoot]
-gretl.corr(X: numpy.ndarray) -> numpy.ndarray
+gretl.corr(X: numpy.ndarray | gretl.Matrix) -> gretl.Matrix
 \end{lstlisting}
 \maptof{mcorr(X)}{matrix}
 
@@ -112,7 +112,8 @@ gretl.corr(X: numpy.ndarray) -> numpy.ndarray
 \estdesc{Computes a covariance matrix treating each
 	column of \textit{X} as a variable.}
 \begin{lstlisting}[style=pythonstylefoot]
-gretl.cov(X: numpy.ndarray[, dfcorr: int]) -> numpy.ndarray
+gretl.cov(X: numpy.ndarray[, dfcorr: int]) -> gretl.Matrix
+gretl.cov(X: gretl.Matrix[, dfcorr: int]) -> gretl.Matrix
 \end{lstlisting}
 \maptof{mcov(X)}{matrix}
 \maptof{mcov(X, dfcorr)}{matrix}
@@ -124,8 +125,8 @@ gretl.cov(X: numpy.ndarray[, dfcorr: int]) -> numpy.ndarray
 \estdesc{Critical value calculator.}
 \begin{lstlisting}[style=pythonstylefoot]
 gretl.critical(c: str, p: float[, param: object = None]) -> float
-gretl.critical(c: str, p: array_like[, param: object = None]) -> numpy.ndarray
-gretl.critical(c: str, p: str[, param: object = None]) -> numpy.ndarray
+gretl.critical(c: str, p: array_like[, param: object = None]) -> gretl.Matrix
+gretl.critical(c: str, p: str[, param: object = None]) -> gretl.Matrix
 \end{lstlisting}
 \maptof{critical(c, p)}{scalar | matrix}
 \maptof{critical(c, param, p)}{scalar | matrix}
@@ -179,7 +180,7 @@ Examples:\newline
 
 \gretlfpycmd{df2dict()}
 \begin{lstlisting}[style=pythonstylefoot]
-gretl.df2dict(dframe: pandas.core.frame.DataFrame[, pd: int, with_obs: bool = False]) -> dict
+gretl.df2dict(dframe: pandas.DataFrame[, pd: int, with_obs: bool = False]) -> dict
 \end{lstlisting}
 \generaldesc{This function converts a \pkg{pandas}
 	\texttt{DataFrame} file into a dictionary compatible with
@@ -199,6 +200,7 @@ gretl.df2dict(dframe: pandas.core.frame.DataFrame[, pd: int, with_obs: bool = Fa
 \begin{lstlisting}[style=pythonstylefoot]
 gretl.genr(formula: str, data: gretl.Dataset)
 gretl.genr(name: str, value: numpy.ndarray)
+gretl.genr(name: str, value: gretl.Matrix)
 gretl.genr(name: str, value: int)
 gretl.genr(name: str, value: float)
 gretl.genr(name: str, value: str)
@@ -257,7 +259,7 @@ gretl.get_data(src: dict | int) -> gretl.Dataset
 \gretlfpycmd{include()}
 \estdesc{Intended for including gretl function packages (see \ref{sec:classpypackage}).}
 \begin{lstlisting}[style=pythonstylefoot]
-gretl.include(filename: str) -> gretl._gretl.Package
+gretl.include(filename: str) -> gretl.Package
 \end{lstlisting}
 \mapto[clean]{include filename}
 \generaldesc{\textit{filename} should have the extension \textit{gfn}
@@ -268,8 +270,8 @@ gretl.include(filename: str) -> gretl._gretl.Package
 \estdesc{Inverse cumulative distribution function calculator.}
 \begin{lstlisting}[style=pythonstylefoot]
 gretl.invcdf(d: str, u: float[, param: object = None]) -> float
-gretl.invcdf(d: str, u: array_like[, param: object = None]) -> numpy.ndarray
-gretl.invcdf(d: str, u: str[, param: object = None]) -> numpy.ndarray
+gretl.invcdf(d: str, u: array_like[, param: object = None]) -> gretl.Matrix
+gretl.invcdf(d: str, u: str[, param: object = None]) -> gretl.Matrix
 \end{lstlisting}
 \maptof{invcdf(d, u)}{scalar | matrix}
 \maptof{invcdf(d, param, u)}{scalar | matrix}
@@ -340,8 +342,8 @@ gretl.nparray2dict(X: numpy.ndarray[, pd: int = 1, Y: numpy.ndarray, with_const:
 \estdesc{Probability density function calculator.}
 \begin{lstlisting}[style=pythonstylefoot]
 gretl.pdf(d: str, x: float[, param: object = None]) -> float
-gretl.pdf(d: str, x: array_like[, param: object = None]) -> numpy.ndarray
-gretl.pdf(d: str, x: str[, param: object = None]) -> numpy.ndarray
+gretl.pdf(d: str, x: array_like[, param: object = None]) -> gretl.Matrix
+gretl.pdf(d: str, x: str[, param: object = None]) -> gretl.Matrix
 \end{lstlisting}
 \maptof{pdf(d, x)}{scalar | matrix}
 \maptof{pdf(d, param, x)}{scalar | matrix}
@@ -425,8 +427,8 @@ Examples:\newline
 \estdesc{\textit{P}-value calculator.}
 \begin{lstlisting}[style=pythonstylefoot]
 gretl.pvalue(c: str, x: float[, param: object = None]) -> float
-gretl.pvalue(c: str, x: array_like[, param: object = None]) -> numpy.ndarray
-gretl.pvalue(c: str, x: str[, param: object = None]) -> numpy.ndarray
+gretl.pvalue(c: str, x: array_like[, param: object = None]) -> gretl.Matrix
+gretl.pvalue(c: str, x: str[, param: object = None]) -> gretl.Matrix
 \end{lstlisting}
 \maptof{pvalue(c, x)}{scalar | matrix}
 \maptof{pvalue(c, param, x)}{scalar | matrix}

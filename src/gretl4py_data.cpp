@@ -1632,31 +1632,16 @@ void GretlDataset::test (const std::string &type, const std::string &varlist, co
     move_to_python_container<GretlDataset, py::dict, py::list>(*this, std::move(res), "tests");
 }
 
-py::object GretlDataset::get_series (const std::string &series) const
-{
-    //
-    // we return series as NumPy array
-    //
-    double *x = dset->Z[get_series_id(series)];
-    auto res = convert_GretlType_to_GretlTypes(GRETL_TYPE_SERIES, x, dset->n, err_);
-
-    if (err_) handle_gretl_error(err_);
-
-    return variant_to_pyobject(std::move(*res));
-}
-
-#if 0 //not ready yet
 GretlMatrixPtr GretlDataset::get_series (const std::string &series) const
 {
     //
-    // we return series as NumPy array
+    // we return series as GretlMatrix array
     //
     auto vector = gretl_vector_from_series(dset->Z[get_series_id(series)], dset->t1, dset->t2);
     if (!vector) handle_gretl_error(E_ALLOC);
 
     return std::make_shared<GretlMatrix>(static_cast<gretl_matrix*>(vector), false);
 }
-#endif
 
 gretl_list_ptr GretlDataset::gretllist (const std::string &formula, int *err)
 {

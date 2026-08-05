@@ -128,7 +128,7 @@ PYBIND11_MODULE(_gretl, m)
           py::arg("c").none(false),
           py::arg("x").none(false),
           py::arg("params").none(true) = py::none());
-    m.def("pvalue", &matrix_functions_wrapper<GretlFunIndex::F_PVAL, py::array_t<double>>,
+    m.def("pvalue", &matrix_functions_wrapper<GretlFunIndex::F_PVAL, GretlMatrixPtr>,
           py::arg("c").none(false),
           py::arg("x").none(false),
           py::arg("params").none(true) = py::none());
@@ -140,7 +140,7 @@ PYBIND11_MODULE(_gretl, m)
           py::arg("c").none(false),
           py::arg("p").none(false),
           py::arg("params").none(true) = py::none());
-    m.def("critical", &matrix_functions_wrapper<GretlFunIndex::F_CRIT, py::array_t<double>>,
+    m.def("critical", &matrix_functions_wrapper<GretlFunIndex::F_CRIT, GretlMatrixPtr>,
           py::arg("c").none(false),
           py::arg("p").none(false),
           py::arg("params").none(true) = py::none());
@@ -152,7 +152,7 @@ PYBIND11_MODULE(_gretl, m)
           py::arg("d").none(false),
           py::arg("x").none(false),
           py::arg("params").none(true) = py::none());
-    m.def("pdf", &matrix_functions_wrapper<GretlFunIndex::F_PDF, py::array_t<double>>,
+    m.def("pdf", &matrix_functions_wrapper<GretlFunIndex::F_PDF, GretlMatrixPtr>,
           py::arg("d").none(false),
           py::arg("x").none(false),
           py::arg("params").none(true) = py::none());
@@ -164,7 +164,7 @@ PYBIND11_MODULE(_gretl, m)
           py::arg("d").none(false),
           py::arg("x").none(false),
           py::arg("params").none(true) = py::none());
-    m.def("cdf", &matrix_functions_wrapper<GretlFunIndex::F_CDF, py::array_t<double>>,
+    m.def("cdf", &matrix_functions_wrapper<GretlFunIndex::F_CDF, GretlMatrixPtr>,
           py::arg("d").none(false),
           py::arg("x").none(false),
           py::arg("params").none(true) = py::none());
@@ -176,7 +176,7 @@ PYBIND11_MODULE(_gretl, m)
           py::arg("d").none(false),
           py::arg("u").none(false),
           py::arg("params").none(true) = py::none());
-    m.def("invcdf", &matrix_functions_wrapper<GretlFunIndex::F_INVCDF, py::array_t<double>>,
+    m.def("invcdf", &matrix_functions_wrapper<GretlFunIndex::F_INVCDF, GretlMatrixPtr>,
           py::arg("d").none(false),
           py::arg("u").none(false),
           py::arg("params").none(true) = py::none());
@@ -184,10 +184,18 @@ PYBIND11_MODULE(_gretl, m)
           py::arg("d").none(false),
           py::arg("u").none(false),
           py::arg("params").none(true) = py::none());
-    m.def("cov", &matrix_cov_corr<GretlFunIndex::F_MCOV>,
+    m.def("cov", py::overload_cast<const py::array&, int>(&matrix_cov_corr<GretlFunIndex::F_MCOV>),
+          py::arg("X").none(false), py::arg("dfcorr").none(true) = 1);
+    m.def("cov", py::overload_cast<const GretlMatrixPtr, int>(&matrix_cov_corr<GretlFunIndex::F_MCOV>),
           py::arg("X").none(false), py::arg("dfcorr").none(true) = 1);
     m.def("corr",
           [](const py::array &X)
+          {
+              return matrix_cov_corr<GretlFunIndex::F_MCORR>(X);
+          },
+          py::arg("X").none(false));
+    m.def("corr",
+          [](const GretlMatrixPtr X)
           {
               return matrix_cov_corr<GretlFunIndex::F_MCORR>(X);
           },
@@ -199,6 +207,7 @@ PYBIND11_MODULE(_gretl, m)
     m.def("genr", &genr<int>, py::arg("name").none(false), py::arg("value").none(false));
     m.def("genr", &genr<double>, py::arg("name").none(false), py::arg("value").none(false));
     m.def("genr", &genr<std::string>, py::arg("name").none(false), py::arg("value").none(false));
+    m.def("genr", &genr<GretlMatrix>, py::arg("name").none(false), py::arg("value").none(false));
     m.def("pkg", &do_gretl_pkg,
           py::arg("action").none(false), py::arg("pkgname").none(false), py::kw_only());
     m.def("kmeans", py::overload_cast<const GretlMatrix&, int, const GretlBundlePtr>(&kmeans),

@@ -706,17 +706,16 @@ double gretl_get_pvalue_critval_pdf_cdf (const std::string &dist, double value,
     }
 }
 
-// T = { py::array_t<double> ; std::string }
+// T = { GretlMatrixPtr ; std::string }
 template <GretlFunIndex FI, typename T>
-py::array_t<double> matrix_functions_wrapper (const std::string &dist, const T &src,
-                                              const py::object &param)
+GretlMatrixPtr matrix_functions_wrapper (const std::string &dist, const T src, const py::object &param)
 {
     //
     // this is a wrapper for matrix operations for certain libgretl functions
     // note: function to call must be added to lambda
     //
     //lambda for selection underlying libgretl function
-    auto F = [&](double x)
+    auto F = [&](double x) -> double
     {
         if constexpr (FI == GretlFunIndex::F_PDF) {
             return gretl_get_pvalue_critval_pdf_cdf<GretlFunIndex::F_PDF>(dist, x, param);
@@ -733,11 +732,11 @@ py::array_t<double> matrix_functions_wrapper (const std::string &dist, const T &
         }
     };
 
-    py::array_t<double> src_mat, res;
+    GretlMatrixPtr src_mat, res;
 
     // handle type T
-    if constexpr (std::is_same_v<T, py::array_t<double>>) {
-        if (src.ndim() > 2) throw std::invalid_argument("given matrix has too many dimensions");
+    if constexpr (std::is_same_v<T, GretlMatrixPtr>) {
+        if (src->is_complex()) throw std::invalid_argument("given matrix is complex, should be real");
         src_mat = src;
     } else if constexpr (std::is_same_v<T, std::string>) {
         auto dataset = GretlDataset::default_dataset();
@@ -749,52 +748,39 @@ py::array_t<double> matrix_functions_wrapper (const std::string &dist, const T &
     }
 
     // determine shape
-    ssize_t n = src_mat.shape(0);
-    ssize_t k = (src_mat.ndim() == 2) ? src_mat.shape(1) : 0;
+    int rows = src_mat->rows();
+    int cols = src_mat->cols();
 
     // allocate result array and fill it with numbers
-    if (k == 0) {
-        res = py::array_t<double>(n);
-        auto r = res.mutable_unchecked<1>();
-        auto src = src_mat.unchecked<1>();
-
-        for (ssize_t i = 0; i < n; ++i) {
-            r(i) = F(src(i));
-        }
-    } else {
-        res = py::array_t<double>({n, k});
-        auto r = res.mutable_unchecked<2>();
-        auto src = src_mat.unchecked<2>();
-
-        for (ssize_t i = 0; i < n; ++i) {
-            for (ssize_t j = 0; j < k; ++j) {
-                r(i, j) = F(src(i, j));
-            }
+    res = GretlMatrix::zeros(rows, cols);
+    for (int i=0; i<rows; ++i) {
+        for (int j=0; j<cols; ++j) {
+            res->set_element(i, j, F(py::cast<double>(src_mat->get_element(i, j))));
         }
     }
 
     return res;
 }
-template py::array_t<double> matrix_functions_wrapper<GretlFunIndex::F_PDF, py::array_t<double>>(const std::string&, const py::array_t<double>&, const py::object&);
-template py::array_t<double> matrix_functions_wrapper<GretlFunIndex::F_CDF, py::array_t<double>>(const std::string&, const py::array_t<double>&, const py::object&);
-template py::array_t<double> matrix_functions_wrapper<GretlFunIndex::F_PVAL, py::array_t<double>>(const std::string&, const py::array_t<double>&, const py::object&);
-template py::array_t<double> matrix_functions_wrapper<GretlFunIndex::F_CRIT, py::array_t<double>>(const std::string&, const py::array_t<double>&, const py::object&);
-template py::array_t<double> matrix_functions_wrapper<GretlFunIndex::F_INVCDF, py::array_t<double>>(const std::string&, const py::array_t<double>&, const py::object&);
-template py::array_t<double> matrix_functions_wrapper<GretlFunIndex::F_PDF, std::string>(const std::string&, const std::string&, const py::object&);
-template py::array_t<double> matrix_functions_wrapper<GretlFunIndex::F_CDF, std::string>(const std::string&, const std::string&, const py::object&);
-template py::array_t<double> matrix_functions_wrapper<GretlFunIndex::F_PVAL, std::string>(const std::string&, const std::string&, const py::object&);
-template py::array_t<double> matrix_functions_wrapper<GretlFunIndex::F_CRIT, std::string>(const std::string&, const std::string&, const py::object&);
-template py::array_t<double> matrix_functions_wrapper<GretlFunIndex::F_INVCDF, std::string>(const std::string&, const std::string&, const py::object&);
+template GretlMatrixPtr matrix_functions_wrapper<GretlFunIndex::F_PDF, GretlMatrixPtr>(const std::string&, const GretlMatrixPtr, const py::object&);
+template GretlMatrixPtr matrix_functions_wrapper<GretlFunIndex::F_CDF, GretlMatrixPtr>(const std::string&, const GretlMatrixPtr, const py::object&);
+template GretlMatrixPtr matrix_functions_wrapper<GretlFunIndex::F_PVAL, GretlMatrixPtr>(const std::string&, const GretlMatrixPtr, const py::object&);
+template GretlMatrixPtr matrix_functions_wrapper<GretlFunIndex::F_CRIT, GretlMatrixPtr>(const std::string&, const GretlMatrixPtr, const py::object&);
+template GretlMatrixPtr matrix_functions_wrapper<GretlFunIndex::F_INVCDF, GretlMatrixPtr>(const std::string&, const GretlMatrixPtr, const py::object&);
+template GretlMatrixPtr matrix_functions_wrapper<GretlFunIndex::F_PDF, std::string>(const std::string&, const std::string, const py::object&);
+template GretlMatrixPtr matrix_functions_wrapper<GretlFunIndex::F_CDF, std::string>(const std::string&, const std::string, const py::object&);
+template GretlMatrixPtr matrix_functions_wrapper<GretlFunIndex::F_PVAL, std::string>(const std::string&, const std::string, const py::object&);
+template GretlMatrixPtr matrix_functions_wrapper<GretlFunIndex::F_CRIT, std::string>(const std::string&, const std::string, const py::object&);
+template GretlMatrixPtr matrix_functions_wrapper<GretlFunIndex::F_INVCDF, std::string>(const std::string&, const std::string, const py::object&);
 
 template <GretlFunIndex FI>
-py::object matrix_cov_corr (const py::array &X, int dfcorr)
+GretlMatrixPtr matrix_cov_corr (const py::array &X, int dfcorr)
 {
     //
     // here we perform matrix-based covariance/correlation analysis
     // this is an interface to gretl_covariance_matrix()
     //
     gretl_matrix_ptr mat{nullptr};      // gretl matrix we pass to libgretl
-    gretl_matrix_ptr res_mat{nullptr};  // gretl matrix we get from libgretl
+    GretlMatrixPtr res;
     NumPyArrayView arr_view;
     int err = 0;
 
@@ -808,22 +794,48 @@ py::object matrix_cov_corr (const py::array &X, int dfcorr)
 
     // we do the job
     if constexpr (FI == GretlFunIndex::F_MCOV) {
-        res_mat.reset(gretl_covariance_matrix(mat.get(), 0, dfcorr, &err));
+        res = std::make_shared<GretlMatrix>(gretl_covariance_matrix(mat.get(), 0, dfcorr, &err), false);
     } else if constexpr (FI == GretlFunIndex::F_MCORR) {
-        res_mat.reset(gretl_covariance_matrix(mat.get(), 1, 1, &err));
+        res = std::make_shared<GretlMatrix>(gretl_covariance_matrix(mat.get(), 1, 1, &err), false);
     } else {
         static_assert(always_false<GretlFunIndex>, "matrix_cov_corr: unknown GretlFunIndex value");
     }
     if (err) handle_gretl_error(err);
 
-    auto res = convert_GretlType_to_GretlTypes(GRETL_TYPE_MATRIX,
-                                               res_mat.get(), 0, err);
+    return res;
+}
+template GretlMatrixPtr matrix_cov_corr<GretlFunIndex::F_MCOV>(const py::array&, int);
+template GretlMatrixPtr matrix_cov_corr<GretlFunIndex::F_MCORR>(const py::array&, int);
+
+
+
+
+template <GretlFunIndex FI>
+GretlMatrixPtr matrix_cov_corr (const GretlMatrixPtr X, int dfcorr)
+{
+    //
+    // here we perform matrix-based covariance/correlation analysis
+    // this is an interface to gretl_covariance_matrix()
+    //
+    GretlMatrixPtr res;
+    int err = 0;
+
+    // we do the job
+    if constexpr (FI == GretlFunIndex::F_MCOV) {
+        res = std::make_shared<GretlMatrix>(gretl_covariance_matrix(X->get_ptr(), 0, dfcorr, &err), false);
+    } else if constexpr (FI == GretlFunIndex::F_MCORR) {
+        res = std::make_shared<GretlMatrix>(gretl_covariance_matrix(X->get_ptr(), 1, 1, &err), false);
+    } else {
+        static_assert(always_false<GretlFunIndex>, "matrix_cov_corr: unknown GretlFunIndex value");
+    }
     if (err) handle_gretl_error(err);
 
-    return variant_to_pyobject(std::move(*res));
+    return res;
 }
-template py::object matrix_cov_corr<GretlFunIndex::F_MCOV>(const py::array&, int);
-template py::object matrix_cov_corr<GretlFunIndex::F_MCORR>(const py::array&, int);
+template GretlMatrixPtr matrix_cov_corr<GretlFunIndex::F_MCOV>(const GretlMatrixPtr, int);
+template GretlMatrixPtr matrix_cov_corr<GretlFunIndex::F_MCORR>(const GretlMatrixPtr, int);
+
+
 
 void do_gretl_delete_variables (const std::string &varname, const py::kwargs &kwargs, bool print)
 {

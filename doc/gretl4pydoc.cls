@@ -128,6 +128,7 @@
 		{gretl.Matrix}{{\textcolor{pythtype}{gretl.Matrix}}}{12}
 		{gretl.Bundle}{{\textcolor{pythtype}{gretl.Bundle}}}{12}
 		{gretl.Dataset}{{\textcolor{pythtype}{gretl.Dataset}}}{13}
+		{gretl.Package}{{\textcolor{pythtype}{gretl.Package}}}{13}
 		{pandas.core.series.Series}{{\textcolor{pythtype}{pandas.core.series.Series}}}{25}
 		{numpy.ndarray}{{\textcolor{pythtype}{numpy.ndarray}}}{13}}
 }
@@ -181,6 +182,7 @@
 		{~gretl.Matrix}{gretl.Matrix}{13}
 		{gretl.Dataset}{{\textcolor{pythtype}{gretl.Dataset}}}{13}
 		{numpy.ndarray}{{\textcolor{pythtype}{numpy.ndarray}}}{13}
+		{gretl.Package}{{\textcolor{pythtype}{gretl.Package}}}{13}
 		{gretl.Model\_ar}{{\textcolor{pythtype}{gretl.Model\_ar}}}{15}
 		{gretl.Model\_ar1}{{\textcolor{pythtype}{gretl.Model\_ar1}}}{16}
 		{gretl.Model\_hsk}{{\textcolor{pythtype}{gretl.Model\_hsk}}}{16}

@@ -164,8 +164,7 @@ public:
 
     void rename (int series_id, const std::string &newname, const py::kwargs &kwargs);
 
-    py::object get_series (const std::string &series) const;
-    //GretlMatrixPtr get_series (const std::string &series) const;
+    GretlMatrixPtr get_series (const std::string &series) const;
 
     gretl_list_ptr gretllist (const std::string &formula, int *err = nullptr);
 
