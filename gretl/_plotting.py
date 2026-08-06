@@ -352,7 +352,7 @@ def _plotfitted(
             axes = [axes]  # ensure iterable
 
         for i, var in enumerate(y_name):
-            actual = self.dataset.get_series(var)
+            actual = self.dataset.get_series(var).to_numpy()
             fitted = yhat if isinstance(self, _gretl.Model_NSE) else yhat[:, eqn_no]
             min_len = min(len(actual), len(fitted))
             actual, fitted = actual[:min_len], fitted[:min_len]
@@ -379,12 +379,12 @@ def _plotfitted(
         if against:
             if isinstance(self, _gretl.Model_arima) and against != self.depvar:
                 raise ValueError("For ARIMA, only plotting against dependent variable is allowed.")
-            against_var = self.dataset.get_series(against)
+            against_var = self.dataset.get_series(against).to_numpy()
         else:
             against_var = None
 
         for var in y_name:
-            actual = self.dataset.get_series(var)
+            actual = self.dataset.get_series(var).to_numpy()
             fitted = yhat if isinstance(self, _gretl.Model_NSE) else yhat[:, eqn_no]
             min_len = min(len(actual), len(fitted))
             actual, fitted = actual[:min_len], fitted[:min_len]
@@ -471,7 +471,7 @@ def _plotresiduals(
         if against:
             if isinstance(self, _gretl.Model_arima) and against != self.depvar:
                 raise ValueError("For ARIMA, only plotting against dependent variable is allowed.")
-            against_var = self.dataset.get_series(against)
+            against_var = self.dataset.get_series(against).to_numpy()
         else:
             against_var = None
 
