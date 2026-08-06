@@ -136,6 +136,10 @@ PYBIND11_MODULE(_gretl, m)
           py::arg("c").none(false),
           py::arg("x").none(false),
           py::arg("params").none(true) = py::none());
+    m.def("pvalue", &matrix_functions_wrapper<GretlFunIndex::F_PVAL, py::sequence>,
+          py::arg("c").none(false),
+          py::arg("x").none(false),
+          py::arg("params").none(true) = py::none());
     m.def("critical", &gretl_get_pvalue_critval_pdf_cdf<GretlFunIndex::F_CRIT>,
           py::arg("c").none(false),
           py::arg("p").none(false),
@@ -145,6 +149,10 @@ PYBIND11_MODULE(_gretl, m)
           py::arg("p").none(false),
           py::arg("params").none(true) = py::none());
     m.def("critical", &matrix_functions_wrapper<GretlFunIndex::F_CRIT, std::string>,
+          py::arg("c").none(false),
+          py::arg("p").none(false),
+          py::arg("params").none(true) = py::none());
+    m.def("critical", &matrix_functions_wrapper<GretlFunIndex::F_CRIT, py::sequence>,
           py::arg("c").none(false),
           py::arg("p").none(false),
           py::arg("params").none(true) = py::none());
@@ -160,6 +168,10 @@ PYBIND11_MODULE(_gretl, m)
           py::arg("d").none(false),
           py::arg("x").none(false),
           py::arg("params").none(true) = py::none());
+    m.def("pdf", &matrix_functions_wrapper<GretlFunIndex::F_PDF, py::sequence>,
+          py::arg("d").none(false),
+          py::arg("x").none(false),
+          py::arg("params").none(true) = py::none());
     m.def("cdf", &gretl_get_pvalue_critval_pdf_cdf<GretlFunIndex::F_CDF>,
           py::arg("d").none(false),
           py::arg("x").none(false),
@@ -172,6 +184,10 @@ PYBIND11_MODULE(_gretl, m)
           py::arg("d").none(false),
           py::arg("x").none(false),
           py::arg("params").none(true) = py::none());
+    m.def("cdf", &matrix_functions_wrapper<GretlFunIndex::F_CDF, py::sequence>,
+          py::arg("d").none(false),
+          py::arg("x").none(false),
+          py::arg("params").none(true) = py::none());
     m.def("invcdf", &gretl_get_pvalue_critval_pdf_cdf<GretlFunIndex::F_INVCDF>,
           py::arg("d").none(false),
           py::arg("u").none(false),
@@ -181,6 +197,10 @@ PYBIND11_MODULE(_gretl, m)
           py::arg("u").none(false),
           py::arg("params").none(true) = py::none());
     m.def("invcdf", &matrix_functions_wrapper<GretlFunIndex::F_INVCDF, std::string>,
+          py::arg("d").none(false),
+          py::arg("u").none(false),
+          py::arg("params").none(true) = py::none());
+    m.def("invcdf", &matrix_functions_wrapper<GretlFunIndex::F_INVCDF, py::sequence>,
           py::arg("d").none(false),
           py::arg("u").none(false),
           py::arg("params").none(true) = py::none());

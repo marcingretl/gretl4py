@@ -56,7 +56,8 @@ as well as some utilities. They are listed in alphabetical order.
 \estdesc{Cumulative distribution function calculator.}
 \begin{lstlisting}[style=pythonstylefoot]
 gretl.cdf(d: str, x: float[, param: object = None]) -> float
-gretl.cdf(d: str, x: array_like[, param: object = None]) -> gretl.Matrix
+gretl.cdf(d: str, x: gretl.Matrix[, param: object = None]) -> gretl.Matrix
+gretl.cdf(d: str, x: Sequence[, param: object = None]) -> gretl.Matrix
 gretl.cdf(d: str, x: str[, param: object = None]) -> gretl.Matrix
 \end{lstlisting}
 \maptof{cdf(d, x)}{scalar | matrix}
@@ -125,7 +126,8 @@ gretl.cov(X: gretl.Matrix[, dfcorr: int]) -> gretl.Matrix
 \estdesc{Critical value calculator.}
 \begin{lstlisting}[style=pythonstylefoot]
 gretl.critical(c: str, p: float[, param: object = None]) -> float
-gretl.critical(c: str, p: array_like[, param: object = None]) -> gretl.Matrix
+gretl.critical(c: str, p: gretl.Matrix[, param: object = None]) -> gretl.Matrix
+gretl.critical(c: str, p: Sequence[, param: object = None]) -> gretl.Matrix
 gretl.critical(c: str, p: str[, param: object = None]) -> gretl.Matrix
 \end{lstlisting}
 \maptof{critical(c, p)}{scalar | matrix}
@@ -270,7 +272,8 @@ gretl.include(filename: str) -> gretl.Package
 \estdesc{Inverse cumulative distribution function calculator.}
 \begin{lstlisting}[style=pythonstylefoot]
 gretl.invcdf(d: str, u: float[, param: object = None]) -> float
-gretl.invcdf(d: str, u: array_like[, param: object = None]) -> gretl.Matrix
+gretl.invcdf(d: str, u: gretl.Matrix[, param: object = None]) -> gretl.Matrix
+gretl.invcdf(d: str, u: Sequence[, param: object = None]) -> gretl.Matrix
 gretl.invcdf(d: str, u: str[, param: object = None]) -> gretl.Matrix
 \end{lstlisting}
 \maptof{invcdf(d, u)}{scalar | matrix}
@@ -342,7 +345,8 @@ gretl.nparray2dict(X: numpy.ndarray[, pd: int = 1, Y: numpy.ndarray, with_const:
 \estdesc{Probability density function calculator.}
 \begin{lstlisting}[style=pythonstylefoot]
 gretl.pdf(d: str, x: float[, param: object = None]) -> float
-gretl.pdf(d: str, x: array_like[, param: object = None]) -> gretl.Matrix
+gretl.pdf(d: str, x: gretl.Matrix[, param: object = None]) -> gretl.Matrix
+gretl.pdf(d: str, x: Sequence[, param: object = None]) -> gretl.Matrix
 gretl.pdf(d: str, x: str[, param: object = None]) -> gretl.Matrix
 \end{lstlisting}
 \maptof{pdf(d, x)}{scalar | matrix}
@@ -427,7 +431,8 @@ Examples:\newline
 \estdesc{\textit{P}-value calculator.}
 \begin{lstlisting}[style=pythonstylefoot]
 gretl.pvalue(c: str, x: float[, param: object = None]) -> float
-gretl.pvalue(c: str, x: array_like[, param: object = None]) -> gretl.Matrix
+gretl.pvalue(c: str, x: gretl.Matrix[, param: object = None]) -> gretl.Matrix
+gretl.pvalue(c: str, x: Sequence[, param: object = None]) -> gretl.Matrix
 gretl.pvalue(c: str, x: str[, param: object = None]) -> gretl.Matrix
 \end{lstlisting}
 \maptof{pvalue(c, x)}{scalar | matrix}

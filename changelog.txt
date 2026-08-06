@@ -14,6 +14,7 @@ version 0.52:
     - new free function: kmeans()
     - native estimators: now variables list may be passed as Python's list
     - swich to OpenBLAS 0.3.34
+    - pvalue(), critical(), pdf(), cdf(), invcdf() now accept sequence as well (i.e. list, tuple)
 
 version 0.51:
     - function returned type: support for GRETL_TYPE_NUMERIC added
