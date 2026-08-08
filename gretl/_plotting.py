@@ -112,7 +112,7 @@ def _set_matrices_for_plot(model: "GretlModel", accessor: str, eqn: int) -> dict
     else:
         data = model.get_accessor(accessor)
     if isinstance(data, _gretl.Matrix):
-        data = data.to_numpy()
+        data = data.numpy_view
     if not isinstance(data, np.ndarray):
         raise ValueError("Error in getting data for plot")
 
@@ -352,7 +352,7 @@ def _plotfitted(
             axes = [axes]  # ensure iterable
 
         for i, var in enumerate(y_name):
-            actual = self.dataset.get_series(var).to_numpy()
+            actual = self.dataset.get_series(var).numpy_view
             fitted = yhat if isinstance(self, _gretl.Model_NSE) else yhat[:, eqn_no]
             min_len = min(len(actual), len(fitted))
             actual, fitted = actual[:min_len], fitted[:min_len]
@@ -379,12 +379,12 @@ def _plotfitted(
         if against:
             if isinstance(self, _gretl.Model_arima) and against != self.depvar:
                 raise ValueError("For ARIMA, only plotting against dependent variable is allowed.")
-            against_var = self.dataset.get_series(against).to_numpy()
+            against_var = self.dataset.get_series(against).numpy_view
         else:
             against_var = None
 
         for var in y_name:
-            actual = self.dataset.get_series(var).to_numpy()
+            actual = self.dataset.get_series(var).numpy_view
             fitted = yhat if isinstance(self, _gretl.Model_NSE) else yhat[:, eqn_no]
             min_len = min(len(actual), len(fitted))
             actual, fitted = actual[:min_len], fitted[:min_len]
@@ -471,7 +471,7 @@ def _plotresiduals(
         if against:
             if isinstance(self, _gretl.Model_arima) and against != self.depvar:
                 raise ValueError("For ARIMA, only plotting against dependent variable is allowed.")
-            against_var = self.dataset.get_series(against).to_numpy()
+            against_var = self.dataset.get_series(against).numpy_view
         else:
             against_var = None
 

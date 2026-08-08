@@ -15,6 +15,7 @@ version 0.52:
     - native estimators: now variables list may be passed as Python's list
     - swich to OpenBLAS 0.3.34
     - pvalue(), critical(), pdf(), cdf(), invcdf() now accept sequence as well (i.e. list, tuple)
+    - initial support for generating plots
 
 version 0.51:
     - function returned type: support for GRETL_TYPE_NUMERIC added
@@ -37,7 +38,7 @@ version 0.50:
     - mark nls, mle, gmm and system estimators as experimental
     - GretlModel::fcast() refactoring (now it mimics libgretl's 'fcast' command)
     - new GretlModel::dataset attribute which points directly to dataset used for model estimation
-    - _gretl.Dataset::varnames() method as ::varnames attribute
+    - gretl.Dataset::varnames() method as ::varnames attribute
     - new _gretl.Dataset::summary() method
     - GretlPackage: examples for BACE, BayTool, BMA, BVAR, criteria, gig, ParMA, SVAR, and TVC
     - GretlPackage: parameters may be passed as both: *agrs and *kwargs (positional or keyword)
