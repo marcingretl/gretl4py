@@ -1,0 +1,93 @@
+\section{Interoperability with \hansl}
+\subsection{Executing \hansl code}\label{sec:executing hansl_code}
+Although \gretlpy is primarily designed as a native Python
+interface to \lgretl, it also provides two convenience
+functions for executing \hansl code. The function
+\pythcode{run\_hansl()}\index{run\_hansl()}
+(see documentation on page~\ref{func:run_hansl})
+executes \hansl code supplied as a string, whereas
+\pythcode{run\_script()}\index{run\_script()}
+(see documentation on page~\ref{func:run_script})
+runs a \hansl script stored on disk.
+
+These functions are provided mainly for compatibility,
+experimentation, and migration of existing \hansl
+programs. They are **not** intended to be part of the primary
+\gretlpy programming interface, whose goal is to expose
+\lgretl functionality through a Pythonic API. Consequently,
+this functionality will remain limited and is not expected to
+be significantly extended in future releases. Users are
+therefore encouraged to use the native Python interface
+whenever possible and to regard these functions primarily as
+utilities for testing, prototyping, or reusing existing
+\hansl code.
+
+\gretlfpycmd{run\_hansl()}%\index{get\_data()}
+\estdesc{Executes \hansl code provided as a Python string. A
+	minimal example is:}
+\begin{lstlisting}[style=pythonstylefoot]
+import gretl
+
+script = """
+open bjg
+ols 1 0 2
+eval $vcv
+"""
+gretl.run_hansl(script)
+\end{lstlisting}
+
+\gretlfpycmd{run\_script()}%\index{get\_data()}
+\estdesc{Executes a \hansl script stored in an \texttt{*.inp}
+	file. A minimal example is:}
+\begin{lstlisting}[style=pythonstylefoot]
+import gretl
+
+script_path = gretl.gretldir + "/scripts/mle-advanced.inp"
+gretl.run_script(script_path)
+\end{lstlisting}
+
+
+\subsection{User-defined variables}\label{sec:userdefinedvariables}
+A second form of interoperability with \hansl is provided
+through \lgretl's so-called \textit{user-defined variables}.
+These variables do \textit{not} exist in the Python namespace;
+instead, they are stored internally by \lgretl, exactly as
+when they are created through the standard \gretl interfaces,
+such as the command-line program \texttt{gretlcli} or the
+graphical application \texttt{gretl\_x11} (or
+\texttt{gretl.exe} on Windows).
+
+Because these variables exist within \lgretl, they can be
+created, modified, and accessed by \hansl code executed via
+\pythcode{run\_hansl()} or \pythcode{run\_script()}. Likewise,
+if a \hansl script creates or modifies a user-defined variable,
+it can later be retrieved and used from \python. The following
+example demonstrates this two-way interoperability between
+\python and the \hansl/\lgretl environment.
+
+\begin{lstlisting}[style=pythonstylefoot]
+import gretl
+
+# Define a function in the hansl/libgretl environment.
+script = """
+function void foo (matrix *some_mat, scalar factor)
+some_mat = some_mat .* factor
+end function
+"""
+gretl.run_hansl(script)
+
+# Create a matrix and a scalar in Python and pass them
+# to the hansl/libgretl environment.
+gretl.genr(name="mat", value=gretl.Matrix.ones(2, 2))
+gretl.genr(name="fac", value=4.5)
+gretl.varlist(.type="matrix")
+gretl.varlist(.type="scalar")
+
+# Execute the hansl function on the user-defined variables.
+gretl.run_hansl("foo(&mat, fac)")
+
+# Retrieve the modified matrix from the hansl/libgretl environment.
+mat = gretl.get_uservar("mat")
+
+print(mat)
+\end{lstlisting}\index{genr()}\index{get\_uservar()}\index{Matrix.ones()}\index{run\_hansl()}\index{varlist()}

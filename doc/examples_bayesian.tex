@@ -52,7 +52,7 @@ opt["forecast"] = ~gretl.Matrix([1, 5000, 2, 2, 1]) # matrix of regressors for p
 gretl..set('stopwatch')
 out = gretl.BT_lm(y=y, X=X, prior=prior, opt=opt)
 print(f"Elapsed time in sec:: {gretl.get_accessor('$stopwatch'):.2f} sec.")
-\end{lstlisting}\index{pkg()}\index{include()}\index{get\_data()}\index{new\_list()}\index{set()}\index{Bundle()}\index{show\_functions()}%
+\end{lstlisting}\index{pkg()}\index{include()}\index{get\_data()}\index{set()}\index{Bundle()}\index{show\_functions()}%
 \index{BT\_lm()}
 
 
@@ -113,7 +113,7 @@ gretl..set('seed', 1000000)
 gretl..set('stopwatch')
 RES = gretl.BMA(Y='GDP_growth', X_list=Factors, Options=OPTS)
 print(f"Total execution time: {gretl.get_accessor('$stopwatch'):.2f} sec.")
-\end{lstlisting}\index{pkg()}\index{include()}\index{get\_data()}\index{new\_list()}\index{set()}\index{Bundle()}\index{show\_functions()}%
+\end{lstlisting}\index{pkg()}\index{include()}\index{get\_data()}\index{set()}\index{Bundle()}\index{show\_functions()}%
 \index{BMA()}
 
 \paragraph{ParMA} The sample script contains a binary
@@ -152,7 +152,7 @@ burn_in = 2048        # burn-in
 gretl..set('stopwatch')
 b = gretl.bma_glm(y='LFP', X=X, glm_type=modeltype, ndraw=n_iter, burn=burn_in, parms=~gretl.Bundle(seed=1234567))
 print(f"Total execution time: {gretl.get_accessor('$stopwatch'):.2f} sec.")
-\end{lstlisting}\index{pkg()}\index{include()}\index{get\_data()}\index{new\_list()}\index{set()}\index{Bundle()}\index{show\_functions()}%
+\end{lstlisting}\index{pkg()}\index{include()}\index{get\_data()}\index{set()}\index{Bundle()}\index{show\_functions()}%
 \index{bma\_glm()}
 
 \paragraph{BACE} The sample script contains a ordered
@@ -181,7 +181,7 @@ gretl..set('seed', 1000000)
 gretl..set('stopwatch')
 res = gretl.BACE(Y=dep, X_list=X, Options=~gretl.Bundle(model_type="probit"))
 print(f"Total execution time: {gretl.get_accessor('$stopwatch'):.2f} sec.")
-\end{lstlisting}\index{pkg()}\index{include()}\index{get\_data()}\index{new\_list()}\index{set()}%
+\end{lstlisting}\index{pkg()}\index{include()}\index{get\_data()}\index{set()}%
 \index{Bundle()}\index{show\_functions()}\index{BACE()}
 
 
@@ -221,5 +221,5 @@ gretl.BVAR_alpha_prior(mod=model, prior_type='Minn', prior_opt=OPT)
 gretl..set('seed', 1234)
 res = gretl.BVAR_posterior(mod=model, wat='all', opt=~gretl.Bundle(.iter=10000))
 res..print(tree=True)
-\end{lstlisting}\index{pkg()}\index{include()}\index{get\_data()}\index{new\_list()}\index{set()}\index{Bundle()}\index{show\_functions()}%
+\end{lstlisting}\index{pkg()}\index{include()}\index{get\_data()}\index{set()}\index{Bundle()}\index{show\_functions()}%
 \index{BVAR\_posterior()}\index{BVAR\_setup()}\index{BVAR\_sigma\_prior()}

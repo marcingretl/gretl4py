@@ -155,7 +155,7 @@ values for variables from different datasets, please refer to
 \gretlfpycmd{delete()}
 \estdesc{This is an all-purpose destructor. It should be used with caution; no confirmation is asked.}
 \begin{lstlisting}[style=pythonstylefoot]
-gretl._gretl.delete(varname: str)
+gretl.delete(varname: str)
 \end{lstlisting}
 \mapto[none]{delete ~varlist}
 \mapto[none]{delete ~varname}
@@ -196,9 +196,9 @@ gretl.df2dict(dframe: pandas.DataFrame[, pd: int, with_obs: bool = False]) -> di
 		treated as containing observation labels).
 \end{itemize}}
 
-\gretlfpycmd{genr()}
-\estdesc{NOTE: for comprehensive and updated info on this
-	function you'll want to refer to \cite[chapter 10]{gretl_manual}.}
+\gretlfpycmd{genr()}\label{func:gretl.genr}
+\estdesc{This function is provided primarily for interoperability with
+	\hansl; see Section~\ref{sec:userdefinedvariables} for details.}
 \begin{lstlisting}[style=pythonstylefoot]
 gretl.genr(formula: str, data: gretl.Dataset)
 gretl.genr(name: str, value: numpy.ndarray)
@@ -208,9 +208,12 @@ gretl.genr(name: str, value: float)
 gretl.genr(name: str, value: str)
 \end{lstlisting}
 \mapto[clean]{genr newvar = formula}
+\generaldesc{For comprehensive and up-to-date information on
+	the underlying \gretlcmd{genr} command and its syntax, see
+	\cite[chapter 10]{gretl_manual}.}
 
 \gretlfpycmd{get\_accessor()}
-\estdesc{Function retrieves \lgretl['s] ``dollar accessors''}
+\estdesc{Function retrieves \lgretl['s] ``dollar accessors''.}
 \begin{lstlisting}[style=pythonstylefoot]`
 gretl.get_accessor(name: str) -> object
 \end{lstlisting}
@@ -257,6 +260,15 @@ gretl.get_data(src: dict | int) -> gretl.Dataset
 	Thus, deleting the Python object removes your reference, but the
 	dataset may remain alive as long as it is the default dataset
 	or is used by another object (for example, an already estimated model).}
+
+\gretlfpycmd{get\_uservar()}\label{func:gretl.get_uservar}
+\estdesc{This function is provided primarily for interoperability with \hansl.}
+\begin{lstlisting}[style=pythonstylefoot]
+gretl.get_uservar(varname: str) -> object
+\end{lstlisting}
+\generaldesc{This function retrieves a \hansl user-defined variable
+	from \lgretl's internal space and returns it to the \python user space.
+	See Section~\ref{sec:userdefinedvariables} for details.}
 
 \gretlfpycmd{include()}
 \estdesc{Intended for including gretl function packages (see \ref{sec:classpypackage}).}

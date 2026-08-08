@@ -64,7 +64,7 @@
 \newcommand{\lgretl}[1][]{\pkg{libgretl#1}\xspace}
 \newcommand{\gretl}{\pkg{gretl}\xspace}
 \newcommand{\gretlpy}{\pkg{gretl4py}\xspace}
-\newcommand{\hansl}{\texttt{hansl}\xspace}
+\newcommand{\hansl}{\proglang{Hansl}\xspace}
 \newcommand{\deprecated}{\textcolor{brown}{deprecated}\xspace}
 \newcommand{\python}[1][]{\proglang{Python#1}\xspace}
 \newcommand{\cpp}{\proglang{C++}\xspace}
@@ -197,8 +197,7 @@ his contribution to the first version of the \gretlpy package.
 			\end{itemize}
 			\input{class_py_dataset}
 			\input{class_py_bundle}
-			\input{class_py_matrix}
-			\subsection{User-defined variables}\label{sec:userdefinedvariables}\tbw
+			\input{class_py_matrix}\hansl
 		\section{Econometric methods}
 			\input{estimators}
 			\input{class_py_model}
@@ -212,6 +211,7 @@ his contribution to the first version of the \gretlpy package.
 			\input{usage_forecasting}
 		\input{usage_contributed_packages}
 		\input{objects_life_cycle}
+		\input{running_hansl}
 	\chapter{Examples}\label{sec:examples}
 		\input{examples_poe4th}
 		\input{examples_nontrivial_econometrics}

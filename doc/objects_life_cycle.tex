@@ -1,12 +1,17 @@
 \section{Object life cycle}
-In \gretlpy, datasets and models (for example, \texttt{d} as a
+In \gretlpy, bundles, matrices, datasets, and models are
+managed through CPython's reference-counting mechanism.
+Datasets and models (for example, \texttt{d} as a
 \classpydatasetnosp instance and \texttt{m} as a
-\classpymodelnosp instance) are jointly reference-managed by
-\python and \lgretl. As in CPython itself, object lifetime is
-governed by reference counting, with additional internal
-references created during evaluation and display. Understanding
-the distinction between \emph{logical deletion} and
-\emph{physical destruction} is therefore essential.
+\classpymodelnosp instance) are additionally managed by both
+\python and \lgretl, each maintaining its own references to
+the underlying objects.
+
+As in Python, object lifetime is governed by reference
+counting, with additional internal references created during
+evaluation and display. Understanding the distinction between
+\emph{logical deletion} and \emph{object destruction} is
+therefore essential.
 
 \paragraph{Dataset ownership}
 A \classpydatasetnosp object is logically owned by \python, but it may be
