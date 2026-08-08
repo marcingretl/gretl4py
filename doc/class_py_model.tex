@@ -228,6 +228,41 @@ Examples:\newline
 .get_formula() -> str
 \end{lstlisting}
 
+\gretlfpycmd{plot()}
+\estdesc{Generates plots based on the results of the
+	\pythcode{gretl.Model} object.}
+\begin{lstlisting}[style=pythonstylefoot]
+.plot(kind: str, eqn: int = 0, multiple: bool = False, against: str = None, backend: str = None)
+\end{lstlisting}
+\where{%
+	\begin{description}
+		\item[\texttt{kind}] specifies the type of plot to generate.
+			Supported values are \textit{fitted} and \textit{residuals}.
+		\item[\texttt{eqn}] specifies the equation to plot.
+			A value of \pythcode{0} (default) plots all equations or
+			dependent variables.
+		\item[\texttt{multiple}] controls whether multiple plots are
+			displayed separately or as subplots. If \pythcode{False}
+			(default), a separate figure is produced for each variable.
+			If \pythcode{True}, all plots are arranged as subplots in a single figure.
+		\item[\texttt{against}] specifies the name of a variable in the
+			dataset against which the results are plotted, instead of
+			the default time or observation index. If provided, the
+			data are sorted by this variable before plotting.
+		\item[\texttt{backend}] specifies the \texttt{matplotlib}
+			backend to use, such as \textit{TkAgg}, \textit{QtAgg}, or
+		\textit{Agg}. If \pythcode{None}, the default backend
+			selection logic is used.
+	\end{description}%
+}\\\\
+\generaldesc{The method provides a convenient way
+	to visualize fitted values or regression residuals produced by
+	the model. For models containing multiple equations or dependent
+	variables, the \pythcode{eqn} and \pythcode{multiple} arguments
+	control which equations are plotted and how the resulting figures
+	are arranged. The \pythcode{against} argument can be used to
+	replace the default observation ordering with a user-specified
+	dataset variable.}
 
 \subsubsection{\pythcodeb{gretl.Model\_NSE} methods}
 The \pythcode{gretl.Model\_NSE} class provides the following public methods:
@@ -258,7 +293,7 @@ The \pythcode{gretl.Model\_NSE} class provides the following public methods:
 \begin{lstlisting}[style=pythonstylefoot]
 .save_ahat(name: str = '') -> str
 \end{lstlisting}
-\mapto[0]{name = \$ahat}
+\mapto[none]{name = \$ahat}
 \generaldesc{Note: if \textit{name} is not provided, the generated series 
 	will be named according to the \lgretl['s] pattern.}
 
@@ -268,7 +303,7 @@ The \pythcode{gretl.Model\_NSE} class provides the following public methods:
 \begin{lstlisting}[style=pythonstylefoot]
 .save_h(name: str = '') -> str
 \end{lstlisting}
-\mapto[0]{name = \$h}
+\mapto[none]{name = \$h}
 \generaldesc{Note: if \textit{name} is not provided, the generated series 
 	will be named according to the \lgretl['s] pattern.}
 
@@ -286,7 +321,7 @@ The \pythcode{gretl.Model\_NSE} class provides the following public methods:
 \begin{lstlisting}[style=pythonstylefoot]
 .save_uhat_sq(name: str = '') -> str
 \end{lstlisting}
-\mapto[0]{name = \$uhat\^2}
+\mapto[none]{name = \$uhat\^2}
 \generaldesc{Note: if \textit{name} is not provided, the generated series 
 	will be named according to the \lgretl['s] pattern.}
 
@@ -295,7 +330,7 @@ The \pythcode{gretl.Model\_NSE} class provides the following public methods:
 \begin{lstlisting}[style=pythonstylefoot]
 .save_yhat(name: str = '') -> str
 \end{lstlisting}
-\mapto[0]{name = \$yhat}
+\mapto[none]{name = \$yhat}
 \generaldesc{Note: if \textit{name} is not provided, the generated series 
 	will be named according to the \lgretl['s] pattern.}
 

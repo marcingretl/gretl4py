@@ -66,7 +66,7 @@
 \lstdefinestyle{pythonstyle}{
 	language=Python,
 	basicstyle=\ttfamily\small,
-	morekeywords={self,True,False},
+	morekeywords={self,True,False,None},
 	keywordstyle=\color{blue},
 	morekeywords=[2]{
 		int,
@@ -178,6 +178,7 @@
 		{numpy.array}{{\textcolor{pythtype}{numpy.array}}}{11}
 		{gretl.Matrix}{{\textcolor{pythtype}{gretl.Matrix}}}{12}
 		{gretl.Bundle}{{\textcolor{pythtype}{gretl.Bundle}}}{12}
+		{~gretl.Model}{gretl.Model}{12}
 		{~gretl.Bundle}{gretl.Bundle}{13}
 		{~gretl.Matrix}{gretl.Matrix}{13}
 		{gretl.Dataset}{{\textcolor{pythtype}{gretl.Dataset}}}{13}
