@@ -6,6 +6,6 @@ __pycache__/
 demo/memcheck
 
 # Build directories
-build/
+builddir/
 dist/
 *.egg-info/
