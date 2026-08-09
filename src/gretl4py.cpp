@@ -418,6 +418,7 @@ PYBIND11_MODULE(_gretl, m)
           },
           py::arg("method").none(false), py::kw_only());
 
+    /*
     //////////////////////////////////////////////////
     // packages
     //////////////////////////////////////////////////
@@ -428,5 +429,5 @@ PYBIND11_MODULE(_gretl, m)
 
               return GretlModelPtr(std::move(model));
           },
-          py::arg("name").none(false), py::kw_only());
+          py::arg("name").none(false), py::kw_only());*/
 }
