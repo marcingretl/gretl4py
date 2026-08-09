@@ -15,5 +15,5 @@ m2.plot('residuals', against='g')
 m3.plot('fitted', eqn=2)
 m3.plot('residuals', 1)
 
-m3.plot('fitted', multiple=True) # m3.plotfitted(multiple=True, backend="Qt6Agg")
+m3.plot('fitted', multiple=True) # m3.plot(kind="fitted", multiple=True, backend="Qt6Agg")
 m3.plot('residuals', multiple=True)
