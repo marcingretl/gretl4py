@@ -124,13 +124,6 @@ void gretl4py_init (void)
         std::filesystem::path dotdir_path = std::filesystem::path(std::string(env)) / "tmp";
 
         if (int err = gretl_set_path_by_name("dotdir", dotdir_path.string().c_str())) handle_gretl_error(err);
-
-        // we set up environment variable to for gretlmpi
-#ifdef _WIN32
-        _putenv_s("GRETL4PY_DOTDIR", dotdir_path.string().c_str());
-#else
-        setenv("GRETL4PY_DOTDIR", dotdir_path.string().c_str(), 1);
-#endif
     }
 
     // read and set GRETL_PLUGIN_PATH if available
@@ -138,6 +131,13 @@ void gretl4py_init (void)
 
     // read and set GRETL4PY_VERBOSE if available
     if (const char *env = std::getenv("GRETL4PY_VERBOSE"); env) gretl4py_verbose = std::atoi(env);
+
+    // we set up environment variable to for gretlmpi
+#ifdef _WIN32
+    _putenv_s("GRETL4PY_WORKDIR", start_dir.c_str());
+#else
+        setenv("GRETL4PY_WORKDIR", start_dir.c_str(), 1);
+#endif
 
     // force updating addons index
     if (int err = update_addons_index(global_printer.prn_ptr())) {
