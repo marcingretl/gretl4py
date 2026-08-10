@@ -108,12 +108,10 @@ void gretl4py_init (void)
     // flag the fact that we're coming from python
     gretl_set_python_mode();
 
-#if 0
     // libgretl path initialization
     ConfigPaths libgretl_paths = {};
     gretl_set_paths(&libgretl_paths);
-    py::print(gretl_bindir());
-#endif
+    //py::print(gretl_bindir());
 
     // we set/update user workdir, gretldir and dotdir to gretl4py specific
     py::module_ pathlib = py::module_::import("pathlib");
@@ -126,6 +124,13 @@ void gretl4py_init (void)
         std::filesystem::path dotdir_path = std::filesystem::path(std::string(env)) / "tmp";
 
         if (int err = gretl_set_path_by_name("dotdir", dotdir_path.string().c_str())) handle_gretl_error(err);
+
+        // we set up environment variable to for gretlmpi
+#ifdef _WIN32
+        _putenv_s("GRETL4PY_DOTDIR", dotdir_path.string().c_str());
+#else
+        setenv("GRETL4PY_DOTDIR", dotdir_path.string().c_str(), 1);
+#endif
     }
 
     // read and set GRETL_PLUGIN_PATH if available
