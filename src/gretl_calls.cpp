@@ -111,7 +111,7 @@ void gretl4py_init (void)
     // libgretl path initialization
     ConfigPaths libgretl_paths = {};
     gretl_set_paths(&libgretl_paths);
-    //py::print(gretl_bindir());
+    py::print(gretl_bindir());
 
     // we set/update user workdir, gretldir and dotdir to gretl4py specific
     py::module_ pathlib = py::module_::import("pathlib");
