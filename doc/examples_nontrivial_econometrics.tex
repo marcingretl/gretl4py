@@ -7,7 +7,7 @@ script taken from this package.
 \begin{lstlisting}[style=pythonstylefoot]
 import gretl
 
-gretl.set('verbose', 'off')
+gretl..set('verbose', 'off')
 sv = gretl.include('SVAR')
 sv.show_functions()
 
@@ -21,14 +21,14 @@ Mod = gretl.SVAR_setup(type_string='C', lY=X, lX=Z, varorder=3)
 Mod['horizon'] = 36
 gretl.SVAR_restrict(b=Mod, code='C', rR=1, c=2)
 
-gretl.set('stopwatch')
+gretl..set('stopwatch')
 gretl.SVAR_estimate(obj=Mod)
 print(f"Time (Cmodel) = {gretl.get_accessor('$stopwatch'):.2g}")
 
 fevdmat = gretl.FEVD(SVARobj=Mod)
 print(fevdmat)
 
-gretl.set('stopwatch')
+gretl..set('stopwatch')
 bfail = gretl.SVAR_boot(obj=Mod, rep=1024, alpha=0.90)
 print(f"Number of failed bootstrap iterations = {int(bfail):d}, "
 f"Time (bootstrap) = {gretl.get_accessor('$stopwatch'):.2g}")
@@ -55,6 +55,6 @@ d = gretl.get_data('OkunGer.gdt', frompkg='TVC', quiet=True)
 L = ['gGDP', 'intercept']
 
 P = gretl.TVCestimate('dU', L)
-gretl.set('echo', 'on')
+gretl..set('echo', 'on')
 \end{lstlisting}\index{pkg()}\index{include()}\index{get\_data()}\index{set()}\index{show\_functions()}%
 \index{TVCestimate()}

@@ -23,7 +23,7 @@ documentation and \texttt{`packages/baytool.py'} script.
 \begin{lstlisting}[style=pythonstylefoot]
 import gretl
 
-gretl.set('verbose', 'off')
+gretl..set('verbose', 'off')
 
 try:
   bt = gretl.include('BayTool')
@@ -32,7 +32,7 @@ except FileNotFoundError:
   bt = gretl.include('BayTool')
 bt.show_functions()
 
-gretl.set('seed', 1234567)
+gretl..set('seed', 1234567)
 
 # Koop's textbook ("Bayesian Econometrics") example on house prices
 
@@ -133,7 +133,7 @@ via MPI.
 \begin{lstlisting}[style=pythonstylefoot]
 import gretl
 
-gretl.set('verbose', 'off')
+gretl..set('verbose', 'off')
 
 try:
   bv = gretl.include('ParMA')
@@ -196,7 +196,7 @@ to the package documentation and the \texttt{packages/bvar.py} script.
 \begin{lstlisting}[style=pythonstylefoot]
 import gretl
 
-gretl.set('verbose', 'off')
+gretl..set('verbose', 'off')
 
 try:
   bv = gretl.include('BVAR')
