@@ -330,7 +330,7 @@ void do_set (const std::string &key, const std::string &value, const py::kwargs 
 
     // we do the job
     err = execute_set(key.empty() ? nullptr : key.c_str(), value.empty() ? nullptr : value.c_str(),
-                        dataset ? dataset->dset : nullptr, opt, global_printer.prn_ptr());
+                      dataset ? dataset->dset : nullptr, opt, global_printer.prn_ptr());
     global_printer.print();
     if (err) handle_gretl_error(err);
 }
