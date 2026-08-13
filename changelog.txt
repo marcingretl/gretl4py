@@ -1,6 +1,7 @@
 version 0.61:
     - initial support for MPI
     - summary(): add support for pyton list as an argument
+    - add missing tmp subdirectory
 
 version 0.60:
     - apparatus for hansl script execution
