@@ -32,7 +32,7 @@ namespace py = pybind11;
 //////////////////////////////////////////////////
 // free functions
 //////////////////////////////////////////////////
-std::string gretl4py_trim (std::string &s)
+std::string gretl4py_trim (std::string &s) noexcept
 {
     //
     // general purpose trimer
@@ -43,7 +43,7 @@ std::string gretl4py_trim (std::string &s)
     return s;
 }
 
-std::string gretl4py_to_lower (std::string s)
+std::string gretl4py_to_lower (std::string s) noexcept
 {
     //
     // convert string to lower case
@@ -82,16 +82,16 @@ void NumPyArray_extract (const py::array &arr, NumPyArrayView &view)
 
 // Note: this is needed to avoid memory leaks when
 // transferring GretlTypes to Python inside py::dict
-py::object variant_to_pyobject (GretlTypes &&val)
+py::object variant_to_pyobject (GretlTypes &&val) noexcept
 {
     return std::visit([](auto &&arg) -> py::object
     {
         using T = std::decay_t<decltype(arg)>;
 
         if constexpr (std::is_base_of_v<py::object, T>) {
-            return std::move(arg);  // steal py::dict, py::list, etc.
+            return std::move(arg);              // steal py::dict, py::list, etc.
         } else {
-            return py::cast(std::move(arg));  // move std::string, etc.
+            return py::cast(std::move(arg));    // move std::string, etc.
         }
     }, std::move(val));
 }

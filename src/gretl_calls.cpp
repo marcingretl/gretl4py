@@ -646,8 +646,7 @@ template void gretl_hansl_execute<true>(const std::string&);
 template void gretl_hansl_execute<false>(const std::string&);
 
 template <GretlFunIndex FI>
-double gretl_get_pvalue_critval_pdf_cdf (const std::string &dist, double value,
-                                         const py::object &param)
+double gretl_get_pvalue_critval_pdf_cdf (const std::string &dist, double value, const py::object &param)
 {
     //
     // general interface to selected libgretl functions from pvalues.c
