@@ -349,7 +349,7 @@ void do_gretl_summary (const T &varlist, const py::kwargs &kwargs)
     // we unpack kwargs at first
     // Note: dataset is set here
     gretlopt opt = unpack_kwargs_command(SUMMARY, dataset, kwargs);
-    if (!dataset) handle_gretl_error(E_NODATA);
+    if (!dataset && !(opt & OPT_X)) handle_gretl_error(E_NODATA);
 
     // be build gretl_list
     if (!varlist.empty()) varlist_ptr = dataset->gretllist(varlist);
@@ -361,7 +361,7 @@ void do_gretl_summary (const T &varlist, const py::kwargs &kwargs)
         err = summary_statistics_by(varlist_ptr.get(), dataset->dset, opt, global_printer.prn_ptr());
     } else if (opt & OPT_X) {
         err = matrix_command_driver(SUMMARY, varlist_ptr.get(), kwargs["matrix"].cast<std::string>().c_str(),
-                                    dataset->dset, opt, global_printer.prn_ptr());
+                                    dataset ? dataset->dset : nullptr, opt, global_printer.prn_ptr());
     } else {
         err = list_summary_driver(varlist_ptr.get(), dataset->dset, opt, global_printer.prn_ptr());
     }
