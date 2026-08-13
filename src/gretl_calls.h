@@ -52,7 +52,8 @@ public:
 //////////////////////////////////////////////////
 void do_set (const std::string &key, const std::string &value, const py::kwargs &kwargs);
 
-void do_gretl_summary (const std::string &varlist, const py::kwargs &kwargs);
+template <typename T>
+void do_gretl_summary (const T &varlist, const py::kwargs &kwargs);
 
 template <typename T>
 void do_gretl_print (const std::string &varlist, const py::kwargs &kwargs);

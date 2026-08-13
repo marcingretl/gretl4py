@@ -335,7 +335,9 @@ void do_set (const std::string &key, const std::string &value, const py::kwargs 
     if (err) handle_gretl_error(err);
 }
 
-void do_gretl_summary (const std::string &varlist, const py::kwargs &kwargs)
+// T = { std::string ; py::list }
+template <typename T>
+void do_gretl_summary (const T &varlist, const py::kwargs &kwargs)
 {
     //
     // this function mimics libgretl's 'summary' command
@@ -352,7 +354,7 @@ void do_gretl_summary (const std::string &varlist, const py::kwargs &kwargs)
     // be build gretl_list
     if (!varlist.empty()) varlist_ptr = dataset->gretllist(varlist);
 
-    // this code was taken from 'interact.c'
+    // based on 'interact.c'
     err = incompatible_options(opt, static_cast<gretlopt>(OPT_B | OPT_W));
     if (err) handle_gretl_error(err);
     if (opt & OPT_B) {
@@ -366,6 +368,8 @@ void do_gretl_summary (const std::string &varlist, const py::kwargs &kwargs)
     global_printer.print();
     if (err) handle_gretl_error(err);
 }
+template void do_gretl_summary<std::string>(const std::string&, const py::kwargs&);
+template void do_gretl_summary<py::list>(const py::list&, const py::kwargs&);
 
 // T = { GretlDataset ; void }
 template <typename T>

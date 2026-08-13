@@ -560,7 +560,8 @@ gretl.show_data_status()
 	for the variables in \textit{varlist}, or for all the variables
 	in the data set if \textit{varlist} is omitted.}
 \begin{lstlisting}[style=pythonstylefoot]
-gretl.summary(varlist: str[, OPTS])
+gretl.summary(varlist: str = ''[, OPTS])
+gretl.summary(varlist: list[, OPTS])
 \end{lstlisting}
 \mapto[none]{summary [ ~varlist ]}
 \mapto{summary --matrix=matname}
