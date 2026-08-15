@@ -66,7 +66,7 @@ import gretl
 data = gretl.get_data("bjg.gdt")
 
 model = gretl.ols(
-    "1 0 2",
+    [1, 0, 2],
     data=data
 ).fit()
 
@@ -107,7 +107,7 @@ Datasets can be manipulated directly from Python, including adding and transform
 gretl4py also provides conversion to pandas:
 
 ```python
-df = data.to_dataframe()
+df = data.to_pandas()
 ```
 
 ---
@@ -175,7 +175,7 @@ import gretl
 
 data = gretl.get_data("bjg.gdt")
 
-model = gretl.ols("1 0 2", data=data).fit()
+model = gretl.ols([1, 0, 2], data=data).fit()
 
 print(model.coeff)
 print(model.vcv)
