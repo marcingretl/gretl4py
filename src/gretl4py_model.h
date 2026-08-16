@@ -333,32 +333,4 @@ public:
     char *save_uhat (int eqn, const std::string &name = "") const;
 };
 
-//
-// libgretl contributed packages
-// extends: GretlModel
-//
-class GretlModel_package : public GretlModel
-{
-private:
-    const py::kwargs kwargs_;
-    const py::args args_;
-    GretlPackagePtr gpkg_;          // pointer to package to use
-    std::string main_func_name_;    // main function to call
-    std::string print_func_name_;   // function with role: UFUN_BUNDLE_PRINT
-    std::string fcast_func_name_;   // function with role: UFUN_BUNDLE_FCAST
-    GretlPackageRes res_;           // function results
-public:
-    GretlModel_package (const std::string &name, const py::kwargs &kwargs);
-
-    void fit (void) override;
-
-    void forecast (const py::args &args, const py::kwargs &kwargs) override;
-
-    std::string get_formula (void) const override;
-
-    py::object get_accessor (const std::string &name) const override;
-
-    void functions (void) const;
-};
-
 #endif // GRETL4PY_MODEL_H

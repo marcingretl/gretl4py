@@ -49,13 +49,11 @@ private:
     fnpkg *pkg_ = nullptr;              // pointer to package
     GretlPrint printer_ = GretlPrint(); // printer (instance wide)
     GretlBundle gb_;                    // info bundle [NOT USED YET]
-    std::string main_func_ = "";        // name of main package function
     std::vector<std::string> jel_;      // vector of JEL codes
     bool defines_estimator_ = false;    // true if package implements estimation
     FunctionMap func_ptrs_;             // pointers to package functions
     FunctionArgs func_args_;            // arguments of package functions (non sorted)
     FunctionArgsSort func_args_sorted_; // arguments of package functions (sorted)
-    MainFuncNoOptDef main_func_nd_;
     std::string full_path_;             // path to package file (full)
     std::string base_dir_;              // path to the package
     gretl_char_ptr pdfname_ = nullptr;  // name of pdf doc (if exists)
@@ -87,8 +85,6 @@ public:
     std::string repr_impl (void);
 
     py::list get_help (void);
-
-    void set_main (const std::string &name);
 
     std::string get_name (void) const;
 

@@ -217,8 +217,4 @@ void init_gretl4py_model_py11(py::module_ &m)
     .def("restrict", &GretlModel_NME::restrict, py::arg("impose").none(false), py::kw_only())
     .def("save_uhat", &GretlModel_NME::save_uhat, py::arg("eqn").none(false), py::arg("name").none(true) = "");
     gretl_model_nme.attr("__module__") = "gretl";
-
-    // GretlModel_package
-    py::class_<GretlModel_package, GretlModel, std::unique_ptr<GretlModel_package>>(m, "Model_package", py::dynamic_attr())
-        .def("functions", &GretlModel_package::functions);
 }

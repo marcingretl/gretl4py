@@ -137,23 +137,7 @@ GretlPackage::GretlPackage (const std::string &pkg_name, const std::string &suff
     // we construct function map with sorted arguments
     for (const auto &[key, el] : func_args_) func_args_sorted_.emplace(key, sort_func_args_by_id(el));
 
-    // we try to register package 'main' function (i.e. the one to call via ::fit())
-    if (func_ptrs_.size() == 1) {
-        set_main(func_ptrs_.begin()->first);
-    } else {
-        // some heuristics here
-        // at first: name of the package
-        auto it = func_ptrs_.find(pkg_name);
-
-        if (it != func_ptrs_.end()) {
-            set_main(it->first);
-        } else {
-            // second: we look for 'estimate' in function name
-            for (auto it : func_ptrs_) {
-                if (it.first.find("estimate") != std::string::npos) set_main(it.first);
-            }
-        }
-    }
+    // we check if we deal with estimator (according to JELs)
     check_if_defines_estimator_();
 
     // we grab name of PDF info
@@ -165,9 +149,7 @@ GretlPackage::GretlPackage (const std::string &pkg_name, const std::string &suff
         py::print("We use '" + pkg_name_ + "' package, version: " + oss.str()
                   + ", JEL codes: " + get_properties_<std::string>("tags")
                   + " (" + get_properties_<std::string>("author") + ")"
-                  + "\n  main function: " + (main_func_.empty() ? "none" : main_func_)
                   + ", provides estimator: " + (defines_estimator_ ? "yes" : "no"));
-        if (main_func_.empty()) py::print("warning: package main function was not found: please use ::set_main()");
         py::print();
     }
 }
@@ -439,27 +421,6 @@ py::list GretlPackage::get_help (void)
     return res;
 }
 
-void GretlPackage::set_main (const std::string &name)
-{
-    // we register main_func
-    auto it = func_ptrs_.find(name);
-
-    if (it != func_ptrs_.end()) {
-        main_func_ = name;
-    } else {
-        throw std::invalid_argument("there is no such function: " + name);
-    }
-
-    // we register all non-optional arguments with types
-    if (!main_func_nd_.empty()) main_func_nd_.clear();
-    auto main_func_args = func_args_.at(name);
-
-    for (const auto &[key, val] : main_func_args) {
-        if (!fn_param_optional(it->second, val) && !fn_param_has_default(it->second, val))
-            main_func_nd_.emplace(key, static_cast<GretlType>(fn_param_type(it->second, val)));
-    }
-}
-
 std::string GretlPackage::get_name (void) const
 {
     return pkg_name_;
@@ -499,7 +460,7 @@ void GretlPackage::show_functions (const std::string &name)
             printer_.print();
         } else {
             type = static_cast<GretlType>(user_func_get_return_type(func_ptr));
-            py::print(key, "->", gretl_type_get_name(type), (key == main_func_ ? "[main] " : ""));
+            py::print(key, "->", gretl_type_get_name(type));
             for (const auto &it : val) {
                 type = static_cast<GretlType>(fn_param_type(func_ptr, it.second));
                 auto default_value = fn_param_default(func_ptr, it.second);
@@ -561,11 +522,6 @@ GretlPackage::FunctionArgsVec GretlPackage::get_func_args (const std::string &fu
     } else {
         throw std::invalid_argument("there is no such function: " + fun_name);
     }
-}
-
-std::string GretlPackage::main_func_get_name (void) const
-{
-    return main_func_;
 }
 
 ufunc *GretlPackage::func_get_ptr (const std::string &name) const

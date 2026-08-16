@@ -491,14 +491,12 @@ void init_gretl4py_package_py11 (py::module_ &m)
                                    return self.get_long_version();
                                })
     .def("__repr__", &GretlPackage::repr_impl)
+    .def("get_functions", &GretlPackage::get_functions)
     .def("get_name", &GretlPackage::get_name)
     .def("show_functions", &GretlPackage::show_functions<false>,
          py::arg("name").none(true) = "")
     .def("show_signatures", &GretlPackage::show_functions<true>,
          py::arg("name").none(true) = "")
-    .def("set_main", &GretlPackage::set_main,
-         py::arg("name").none(false))
-    .def("get_functions", &GretlPackage::get_functions)
     .def("run_sample", &GretlPackage::run_sample)
     .def("_get_help", &GretlPackage::get_help)
     .def("_function_exec",
@@ -519,10 +517,10 @@ void init_gretl4py_package_py11 (py::module_ &m)
              bool printout = true;
 
              for (const char *key : no_printing) {
-                if (kwargs.contains(key) && is_pybool(kwargs[key]) && kwargs[key].cast<bool>()) {
+                 if (kwargs.contains(key) && is_pybool(kwargs[key]) && kwargs[key].cast<bool>()) {
                      printout = false;
                      break;
-                }
+                 }
              }
              if (printout) printer.print();
 
