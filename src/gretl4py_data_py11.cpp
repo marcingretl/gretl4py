@@ -20,7 +20,6 @@
 #include "gretl4py_data.h"
 #include "gretl_calls.h"
 #include "gretl4py_utils.h"
-#include "gretl4py_packages.h"
 
 namespace py = pybind11;
 
@@ -468,64 +467,6 @@ void init_gretl4py_dataset_py11 (py::module_ &m)
                 // we do the job
                 self.test(type, varlist, clean_kwargs);
             }, py::arg("type"), py::kw_only());
-
-    cls.attr("__module__") = "gretl";
-}
-
-//
-// GretlPackage mappings
-//
-void init_gretl4py_package_py11 (py::module_ &m)
-{
-    auto cls = py::class_<GretlPackage, GretlPackagePtr>(m, "Package", py::dynamic_attr());
-
-    cls
-    .def_property_readonly("version",
-                               [](const GretlPackage &self)
-                               {
-                                   return self.get_version();
-                               })
-    .def_property_readonly("version_long",
-                               [](const GretlPackage &self)
-                               {
-                                   return self.get_long_version();
-                               })
-    .def("__repr__", &GretlPackage::repr_impl)
-    .def("get_functions", &GretlPackage::get_functions)
-    .def("get_name", &GretlPackage::get_name)
-    .def("show_functions", &GretlPackage::show_functions<false>,
-         py::arg("name").none(true) = "")
-    .def("show_signatures", &GretlPackage::show_functions<true>,
-         py::arg("name").none(true) = "")
-    .def("run_sample", &GretlPackage::run_sample)
-    .def("_get_help", &GretlPackage::get_help)
-    .def("_function_exec",
-         [](GretlPackage &self, const std::string &name, const py::args &args, const py::kwargs &kwargs) -> py::object
-         {
-             GretlPrint printer = GretlPrint();
-             auto dataset = GretlDataset::default_dataset();
-             GretlTypesPtr val;
-             int err = 0;
-             auto res = self.function_exec(name, dataset, printer, args, kwargs);
-
-             // we construct object to return
-             val = convert_GretlType_to_GretlTypes(res.type, res.get(), res.n, err);
-             if (err) handle_gretl_error(err);
-
-             // we printout if needed
-             const char *no_printing[] = { "quiet", "silent" };
-             bool printout = true;
-
-             for (const char *key : no_printing) {
-                 if (kwargs.contains(key) && is_pybool(kwargs[key]) && kwargs[key].cast<bool>()) {
-                     printout = false;
-                     break;
-                 }
-             }
-             if (printout) printer.print();
-
-             return variant_to_pyobject(std::move(*val));
-         }, py::arg("name").none(false), py::kw_only());
 
     cls.attr("__module__") = "gretl";
 }
