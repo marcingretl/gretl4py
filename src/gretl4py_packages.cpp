@@ -108,14 +108,11 @@ GretlPackage::GretlPackage (const std::string &pkg_name, const std::string &suff
         + std::string(function_package_get_name(pkg_)) + "', provided: '" + pkg_name_ + "'");
     err_ = bundle_function_package_info(full_path_.c_str(), gb_.get_ptr());
     if (err_) handle_gretl_error(err_);
-    version_ = function_package_get_version(pkg_);
+    version_ = std::get<double>(*gb_.get_element<GretlTypesPtr>("version"));
     long_version_ = get_properties_<std::string>("version");
 
     // we initialize package functions
     function_names_init();
-
-    // we look up for JEL codes
-    jel_ = get_properties_<std::vector<std::string>>("tags");
 
     // we grab only public functions (names and indexes)
     // Note: we exclude functions with specific roles (mostly related with plotting and GUI)
@@ -137,19 +134,13 @@ GretlPackage::GretlPackage (const std::string &pkg_name, const std::string &suff
     // we construct function map with sorted arguments
     for (const auto &[key, el] : func_args_) func_args_sorted_.emplace(key, sort_func_args_by_id(el));
 
-    // we check if we deal with estimator (according to JELs)
-    check_if_defines_estimator_();
-
     // we grab name of PDF info
     if (function_package_has_PDF_doc(pkg_, &raw_ptr)) pdfname_.reset(raw_ptr);
 
     // package summary
     if (print_summary) {
-        oss << std::fixed << std::setprecision(2) << version_;
-        py::print("We use '" + pkg_name_ + "' package, version: " + oss.str()
-                  + ", JEL codes: " + get_properties_<std::string>("tags")
-                  + " (" + get_properties_<std::string>("author") + ")"
-                  + ", provides estimator: " + (defines_estimator_ ? "yes" : "no"));
+        py::print(pkg_name_ + " " + long_version_ + ", " + std::get<std::string>(*gb_.get_element<GretlTypesPtr>("date"))
+                  + " (" + get_properties_<std::string>("author") + ")" + ", JEL codes: " + get_properties_<std::string>("tags") );
         py::print();
     }
 }
@@ -192,22 +183,6 @@ bool GretlPackage::package_loaded (const std::string &pkgname)
     // here we check if give package exists in registry
     //
     return gpkgs_.count(pkgname) == 0 ? false : true;
-}
-
-void GretlPackage::check_if_defines_estimator_ (void)
-{
-    static constexpr std::array<const char*, 24> estimation_codes = {
-        "C13", "C14", "C15", "C20", "C21", "C22", "C23", "C24",
-        "C25", "C26", "C30", "C31", "C32", "C33", "C34", "C35",
-        "C36", "C40", "C41", "C51", "C52", "C53", "C54", "C58"
-    };
-
-    for (const auto &it : jel_) {
-        if (std::find(estimation_codes.begin(), estimation_codes.end(), it) != estimation_codes.end()) {
-            defines_estimator_ = true;
-            return;
-        }
-    }
 }
 
 // T = { DataReq ; std::vector<std::string> ; std::string }
@@ -496,11 +471,6 @@ py::list GretlPackage::get_functions (void) const
     for (auto &it : func_args_) res.append(it.first);
 
     return res;
-}
-
-bool GretlPackage::is_estimator (void) const
-{
-    return defines_estimator_;
 }
 
 double GretlPackage::get_version (void) const

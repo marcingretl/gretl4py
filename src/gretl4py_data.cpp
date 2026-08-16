@@ -1991,6 +1991,8 @@ T GretlBundle::get_element (const std::string &key)
         static_assert(always_false<T>, "GretlBundle::get_element: unknown type");
     }
 }
+template py::object GretlBundle::get_element<py::object>(const std::string&);
+template GretlTypesPtr GretlBundle::get_element<GretlTypesPtr>(const std::string&);
 
 template <typename T>
 void GretlBundle::set_element (const std::string &key, const T &t)

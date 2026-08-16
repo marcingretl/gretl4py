@@ -48,9 +48,7 @@ private:
     const std::string suffix_;          // filename suffix
     fnpkg *pkg_ = nullptr;              // pointer to package
     GretlPrint printer_ = GretlPrint(); // printer (instance wide)
-    GretlBundle gb_;                    // info bundle [NOT USED YET]
-    std::vector<std::string> jel_;      // vector of JEL codes
-    bool defines_estimator_ = false;    // true if package implements estimation
+    GretlBundle gb_;                    // info bundle
     FunctionMap func_ptrs_;             // pointers to package functions
     FunctionArgs func_args_;            // arguments of package functions (non sorted)
     FunctionArgsSort func_args_sorted_; // arguments of package functions (sorted)
@@ -62,8 +60,6 @@ private:
     int err_ = 0;
 
     GretlPackage (const std::string &pkg_name, const std::string &suffix, bool print_summary = true);
-
-    void check_if_defines_estimator_ (void);
 
     template <typename T>
     T get_properties_ (const char *property);
