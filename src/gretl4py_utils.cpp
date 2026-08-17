@@ -36,6 +36,7 @@
 #include "gretl4py_types.h"
 #include "gretl4py_data.h"
 #include "gretl4py_model.h"
+#include "gretl4py_bundle.h"
 extern "C" {
     #include <gretl/gretl_typemap.h>
 }

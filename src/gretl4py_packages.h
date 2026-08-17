@@ -23,6 +23,7 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
 #include "gretl4py_data.h"
+#include "gretl4py_bundle.h"
 #include "gretl_calls.h"
 extern "C" {
     #include <gretl/gretl_func.h>
