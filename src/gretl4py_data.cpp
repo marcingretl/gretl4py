@@ -19,7 +19,6 @@
 
 #include <pybind11/pybind11.h>
 #include "gretl4py_data.h"
-#include "gretl4py_types.h"
 #include "gretl4py_model.h"
 #include "gretl4py_packages.h"
 #include "gretl4py_utils.h"
@@ -28,8 +27,6 @@
 extern "C" {
     #include <gretl/var.h>
     #include <gretl/gretl_xml.h>
-    #include <gretl/dataset.h>
-    #include <gretl/system.h>
 }
 
 //////////////////////////////////////////////////
