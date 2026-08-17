@@ -1,6 +1,7 @@
 version 0.62:
     - get rid of unused GretlModel_package class
     - GretlPackage class streamlining
+    - code refactoring
 
 version 0.61:
     - summary(): add support for pyton list as an argument

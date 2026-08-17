@@ -18,7 +18,7 @@
  */
 
 #include <pybind11/pybind11.h>
-#include "gretl4py_data.h"
+#include "gretl4py_dataset.h"
 #include "gretl4py_model.h"
 #include "gretl4py_packages.h"
 #include "gretl4py_utils.h"

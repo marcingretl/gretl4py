@@ -34,7 +34,7 @@
 #include <pybind11/numpy.h>
 #include "gretl4py_utils.h"
 #include "gretl4py_types.h"
-#include "gretl4py_data.h"
+#include "gretl4py_dataset.h"
 #include "gretl4py_model.h"
 #include "gretl4py_bundle.h"
 extern "C" {

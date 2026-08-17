@@ -17,7 +17,7 @@
  *
  */
 
-#include "gretl4py_data.h"
+#include "gretl4py_dataset.h"
 #include "gretl4py_utils.h"
 
 namespace py = pybind11;

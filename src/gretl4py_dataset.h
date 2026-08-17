@@ -17,8 +17,8 @@
  *
  */
 
-#ifndef GRETL4PY_DATA_H
-#define GRETL4PY_DATA_H
+#ifndef GRETL4PY_DATASET_H
+#define GRETL4PY_DATASET_H
 
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
@@ -215,4 +215,4 @@ public:
     py::object xtab (const T &varlist, const py::kwargs &kwargs);
 };
 
-#endif // GRETL4PY_DATA_H
+#endif // GRETL4PY_DATASET_H

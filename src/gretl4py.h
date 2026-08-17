@@ -31,7 +31,7 @@ extern "C" {
     #include <gretl/uservar.h>
 }
 #include "gretl4py_types.h"
-#include "gretl4py_data.h"
+#include "gretl4py_dataset.h"
 #include "gretl4py_model.h"
 
 #define LIBGRETL_MIN_VER 55
