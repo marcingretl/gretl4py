@@ -439,31 +439,3 @@ void init_gretl4py_dataset_py11 (py::module_ &m)
 
     cls.attr("__module__") = "gretl";
 }
-
-//
-// GretlBundle mappings
-//
-void init_gretl4py_bundle_py11 (py::module_ &m)
-{
-    auto cls = py::class_<GretlBundle, GretlBundlePtr>(m, "Bundle", py::dynamic_attr());
-
-    cls
-    .def(py::init<>())                      // default constructor
-    .def(py::init<const py::kwargs&>())     // on-the-fly initializer
-    .def("__repr__", &GretlBundle::repr_impl)
-    .def("__getitem__", &GretlBundle::get_element<py::object>)
-    .def("__setitem__", &GretlBundle::set_element<bool>)
-    .def("__setitem__", &GretlBundle::set_element<int>)
-    .def("__setitem__", &GretlBundle::set_element<double>)
-    .def("__setitem__", &GretlBundle::set_element<std::string>)
-    .def("__setitem__", &GretlBundle::set_element<py::array>)
-    .def("__setitem__", &GretlBundle::set_element<GretlBundlePtr>)
-    .def("__setitem__", &GretlBundle::set_element<GretlMatrixPtr>)
-    .def("__delitem__", &GretlBundle::delete_element)
-    .def("pop", &GretlBundle::pop, py::arg("key").none(false))
-    .def("keys", &GretlBundle::keys)
-    .def("print", &GretlBundle::print<void>, py::arg("tree").none(true) = false)
-    .def("to_dict", &GretlBundle::to_dict);
-
-    cls.attr("__module__") = "gretl";
-}
