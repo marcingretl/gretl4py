@@ -22,12 +22,8 @@
 
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
-#include "gretl4py_types.h"
 #include "gretl_calls.h"
 #include <gretl/gretl_matrix.h>
-extern "C" {
-    #include <gretl/gretl_func.h>
-}
 
 namespace py = pybind11;
 
