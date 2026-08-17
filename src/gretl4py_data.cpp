@@ -18,33 +18,19 @@
  */
 
 #include <pybind11/pybind11.h>
-#include <pybind11/numpy.h>
 #include "gretl4py_data.h"
 #include "gretl4py_types.h"
 #include "gretl4py_model.h"
 #include "gretl4py_packages.h"
-#include "gretl_calls.h"
 #include "gretl4py_utils.h"
 #include <gretl/libset.h>
-#include <gretl/gretl_matrix.h>
 #include <gretl/matrix_extra.h>
-#include <gretl/gretl_model.h>
-#include <gretl/gretl_drivers.h>
 extern "C" {
     #include <gretl/var.h>
     #include <gretl/gretl_xml.h>
     #include <gretl/dataset.h>
     #include <gretl/system.h>
-    #include <gretl/uservar.h>
-    // this is because we cannot include gretl_cmatrix.h
-    int gretl_cmatrix_print (const gretl_matrix *A, const char *name, PRN *prn);
-    gretl_matrix *gretl_cmatrix_multiply (const gretl_matrix *A, const gretl_matrix *B, int *err);
-    gretl_matrix *gretl_cmatrix_divide (const gretl_matrix *A, const gretl_matrix *B, GretlMatrixMod mod, int *err);
-    gretl_matrix *gretl_cmatrix_add_sub (const gretl_matrix *A, const gretl_matrix *B, int sgn, int *err);
-    gretl_matrix *gretl_cmatrix_dot_op (const gretl_matrix *a, const gretl_matrix *b, int op, int *err);
 }
-#include <filesystem>
-#include <any>
 
 //////////////////////////////////////////////////
 // classes
