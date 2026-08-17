@@ -164,6 +164,7 @@ srcs = files(
   'src/gretl4py_data.cpp',
   'src/gretl4py_data_py11.cpp',
   'src/gretl4py_matrix.cpp',
+  'src/gretl4py_matrix_py11.cpp',
   'src/gretl4py_utils.cpp',
   'src/gretl_calls.cpp',
   'src/gretl4py_model.cpp',
