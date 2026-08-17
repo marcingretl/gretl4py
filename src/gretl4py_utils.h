@@ -22,6 +22,7 @@
 
 #include "gretl4py_types.h"
 #include "gretl4py_data.h"
+#include "gretl4py_matrix.h"
 
 namespace py = pybind11;
 
@@ -67,6 +68,10 @@ inline bool is_numpy_array_fc (const py::array &m) {
 inline bool is_pygretlbundle (const py::handle &o) { return py::isinstance<GretlBundle>(o); }
 inline bool is_pygretlmatrix (const py::handle &o) { return py::isinstance<GretlMatrix>(o); }
 
+inline std::complex<double> c_complex_to_std_complex (const double _Complex z) { return {__real__ z, __imag__ z}; }
+
+inline double _Complex std_complex_to_c_complex (std::complex<double> z) { return {z.real(), z.imag()}; }
+
 //////////////////////////////////////////////////
 // functions
 //////////////////////////////////////////////////
@@ -109,5 +114,14 @@ T c_style_char_array_to_container (const char **src, int size);
 
 template <typename T>
 T c_style_char_array_to_container (char **src, int size);
+
+template <typename T>
+void NumPyArray_to_gretl_storage (NumPyArrayView &view, T *dst, int offset = 0, bool onecol = false);
+
+std::string gretl_slice_from_int (int val);
+
+GretlSlice python_slice_to_gretl_slice (const py::slice &slice);
+
+GretlSlice python_slice_to_gretl_slice (const std::string &slice);
 
 #endif // GRETL4PY_UTILS_H

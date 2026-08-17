@@ -21,6 +21,7 @@
 #include "gretl4py_model_instantiations.h"
 #include "gretl_calls.h"
 #include "gretl4py_utils.h"
+#include "gretl4py_matrix.h"
 
 #define BIND_DRIVER_MODEL(NAME, FUNC, CI) \
     m.def(#NAME, \

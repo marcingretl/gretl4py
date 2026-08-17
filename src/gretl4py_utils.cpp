@@ -9,7 +9,20 @@
  *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See theinline GretlSlice make_gretl_slice (std::string startobs, std::string endobs, std::string slice_str, py::dict opts = {})
+ { *
+ //
+ // small helper for fast GretlSlice generation
+ //
+ GretlSlice gs;
+
+ gs.startobs = std::move(startobs);
+ gs.endobs = std::move(endobs);
+ gs.slice_str = std::move(slice_str);
+ gs.opts = std::move(opts);
+
+ return gs;
+ }
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
@@ -28,6 +41,74 @@ extern "C" {
 }
 
 namespace py = pybind11;
+
+namespace {
+// T == source type
+template <typename T>
+void real_NumPyArray_to_gretl_storage (const NumPyArrayView &view, double *dst, int offset, bool onecol)
+{
+    //
+    // Convert a NumPy array (T) to gretl_matrix (double*).
+    // - offset: column offset (used when copying a single column)
+    // - onecol: true if we're copying one column only
+    //
+    const T *src = static_cast<const T*>(view.data);
+    const bool fast_path = view.NumPyArrayFC && std::is_same_v<T, double>;
+
+    if (onecol) {
+        if (fast_path) {
+            std::memcpy(dst, src + offset * view.rows, view.rows * sizeof(double));
+        } else {
+            for (int i=0; i<view.rows; ++i) {
+                dst[i] = static_cast<double>(src[i * view.row_stride + offset * view.col_stride]);
+            }
+        }
+    } else {
+        if (fast_path) {
+            std::memcpy(dst, src, view.rows * view.cols * sizeof(double));
+        } else {
+            for (int j=0; j<view.cols; ++j) {
+                for (int i=0; i<view.rows; ++i) {
+                    dst[j * view.rows + i] = static_cast<double>(src[i * view.row_stride + j * view.col_stride]);
+                }
+            }
+        }
+    }
+}
+
+void complex_NumPyArray_to_gretl_matrix (const NumPyArrayView &view, gretl_matrix *dst)
+{
+    //
+    // Convert a NumPy std::complex<double> array to gretl_matrix (double _Complex*)
+    //
+    if (!dst->is_complex) throw std::invalid_argument("matrix must be complex");
+    const auto *src = static_cast<const std::complex<double>*>(view.data);
+
+    for (int j=0; j<view.cols; ++j) {
+        for (int i=0; i<view.rows; ++i) {
+            const auto val = src[i * view.row_stride + j * view.col_stride];
+            double _Complex z = { val.real(), val.imag() };
+
+            gretl_cmatrix_set(dst, i, j, z);
+        }
+    }
+}
+
+inline GretlSlice make_gretl_slice (std::string startobs, std::string endobs, std::string slice_str, py::dict opts = {})
+{
+    //
+    // small helper for fast GretlSlice generation
+    //
+    GretlSlice gs;
+
+    gs.startobs = std::move(startobs);
+    gs.endobs = std::move(endobs);
+    gs.slice_str = std::move(slice_str);
+    gs.opts = std::move(opts);
+
+    return gs;
+}
+}
 
 //////////////////////////////////////////////////
 // free functions
@@ -424,3 +505,100 @@ T c_style_char_array_to_container (const char **src, int size)
     return c_style_char_array_to_container<T>(reinterpret_cast<c_str_array>(src), size);
 }
 template py::list c_style_char_array_to_container<py::list>(const char**, int);
+
+template <typename T>
+void NumPyArray_to_gretl_storage (NumPyArrayView &view, T *dst, int offset, bool onecol)
+{
+    //
+    // here we copy contents of some NumPy array described by &view
+    // to storage available at *dst
+    // offset here is used when we copy to DATASET
+    //
+    double *storage = nullptr;
+
+    if constexpr (std::is_same_v<T, gretl_matrix>) {
+        storage = dst->val;
+    } else {
+        storage = dst;
+    }
+
+    if (view.is_double) {
+        real_NumPyArray_to_gretl_storage<double>(view, storage, offset, onecol);
+    } else if (view.dtype.is(py::dtype::of<float>())) {
+        real_NumPyArray_to_gretl_storage<float>(view, storage, offset, onecol);
+    } else if (view.dtype.is(py::dtype::of<int>())) {
+        real_NumPyArray_to_gretl_storage<int>(view, storage, offset, onecol);
+    } else if (view.dtype.is(py::dtype::of<int64_t>())) {
+        real_NumPyArray_to_gretl_storage<int64_t>(view, storage, offset, onecol);
+    } else if (view.is_complex) {
+        if constexpr (std::is_same_v<T, gretl_matrix>) {
+            complex_NumPyArray_to_gretl_matrix(view, reinterpret_cast<gretl_matrix*>(dst));
+        } else {
+            throw std::runtime_error("Complex NumPy -> non-complex destination not supported");
+        }
+    } else {
+        throw std::runtime_error("Unsupported NumPy dtype for conversion.");
+    }
+}
+template void NumPyArray_to_gretl_storage<double>(NumPyArrayView&, double*, int, bool);
+template void NumPyArray_to_gretl_storage<gretl_matrix>(NumPyArrayView&, gretl_matrix*, int, bool);
+
+std::string gretl_slice_from_int (int val)
+{
+    //
+    // here we manufacture gretl slicing string based on given int value (including negative ones)
+    //
+    std::string slice_str;
+
+    if (val == -1) {
+        slice_str = "end";
+    } else if (val < -1) {
+        slice_str = "end" + std::to_string(val + 1); // this is to get 0-based indexing
+    } else {
+        slice_str = std::to_string(val + 1);
+    }
+
+    return slice_str;
+}
+
+GretlSlice python_slice_to_gretl_slice (const py::slice &slice)
+{
+    //
+    // we convert Python's slice string accepted by libgretl
+    //
+    py::object start = slice.attr("start");
+    py::object stop = slice.attr("stop");
+    py::object step  = slice.attr("step");
+
+    if (!step.is_none()) {
+        if (step.cast<float>() != 1.0) throw std::invalid_argument("slice steps other than 1 are not supported");
+    }
+    std::string startobs = is_pynone(start) ? "1" : gretl_slice_from_int(start.cast<int>());
+    std::string endobs = is_pynone(stop) ? "end" : gretl_slice_from_int(stop.cast<int>() - 1);
+    std::string slice_str = startobs + ":" + endobs;
+
+    return make_gretl_slice(startobs, endobs, slice_str);
+}
+
+GretlSlice python_slice_to_gretl_slice (const std::string &slice)
+{
+    //
+    // we manufacture string accepted by libgretl
+    //
+    std::string startobs, endobs;
+    py::dict opts;
+    auto pos = slice.find(':');
+
+    if (pos != std::string::npos && slice.find(':', pos + 1) == std::string::npos) {
+        startobs = slice.substr(0, pos);
+        endobs   = slice.substr(pos + 1);
+    } else {
+        startobs = slice;
+        endobs   = "";
+        opts["restrict"] = true;
+    }
+
+    return make_gretl_slice(startobs, endobs, slice, opts);
+}
+
+

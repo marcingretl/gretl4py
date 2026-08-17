@@ -18,6 +18,7 @@
  */
 
 #include "gretl4py_data.h"
+#include "gretl4py_matrix.h"
 #include "gretl_calls.h"
 #include "gretl4py_utils.h"
 
