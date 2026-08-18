@@ -9,20 +9,7 @@
  *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See theinline GretlSlice make_gretl_slice (std::string startobs, std::string endobs, std::string slice_str, py::dict opts = {})
- { *
- //
- // small helper for fast GretlSlice generation
- //
- GretlSlice gs;
-
- gs.startobs = std::move(startobs);
- gs.endobs = std::move(endobs);
- gs.slice_str = std::move(slice_str);
- gs.opts = std::move(opts);
-
- return gs;
- }
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
