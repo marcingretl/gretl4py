@@ -355,9 +355,9 @@ void GretlModel::gretl_do_forecast_ (void *model, const py::args &args,
     printer_.print();
 }
 
-std::string GretlModel::repr_impl (void) const
+std::string GretlModel::repr_impl (void) const noexcept
 {
-    if (!estimated_) return summary_.substr(0, summary_.size() - 1);
+    if (!estimated_) return "<Model: not fitted>";
 
     return summary_;
 }

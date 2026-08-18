@@ -1,7 +1,8 @@
 version 0.62:
+    - code refactoring
     - get rid of unused GretlModel_package class
     - GretlPackage class streamlining
-    - code refactoring
+    - add "<Model: not fitted>" message when model was defined but not estimated
 
 version 0.61:
     - summary(): add support for pyton list as an argument
