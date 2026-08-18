@@ -109,6 +109,9 @@ def _model_plots(
     >>> model.plot("residuals", multiple=True)
     >>> model.plot("fitted", against="lg", backend="QtAgg")
     """
+    if self.estimated is False:
+        raise RuntimeError("Model was not estimated yet")
+
     if kind == "fitted":
         _plotfitted(self, eqn, multiple, against, backend)
     elif kind == "residuals":
