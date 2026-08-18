@@ -1314,7 +1314,8 @@ py::object GretlModel_VAR::get_accessor (const std::string &name) const
 
 std::string GretlModel_VAR::save_uhat (int eqn, const std::string &name) const
 {
-    err_ = 0;
+    // guard for cases when in previous call we wanted uhat from non-existing equation
+    if (err_ == E_BADSTAT) err_ = 0;
 
     return do_save_uhat_<GRETL_VAR>(model_, eqn, name);
 }
@@ -1465,13 +1466,16 @@ void GretlModel_VAR_VECM::restrict (const py::list &impose, const py::kwargs &kw
     do_restrict_<GRETL_VAR>(model_, impose, kwargs);
 }
 
-char *GretlModel_VAR_VECM::save_ec_term (const int nr, const std::string &name) const
+std::string GretlModel_VAR_VECM::save_ec_term (const int nr, const std::string &name) const
 {
     //
     // here we add EC to dataset of number nr
     // Note: nr must be 1-based (not 0-based)
     //
     std::string ec_term_name;
+
+    // guard for cases when in previous call we wanted ECM from non-existing equation
+    if (err_ == E_DATA) err_ = 0;
 
     // we retrive ec_term
     gretl_double_ptr ec_term(gretl_VECM_get_EC(model_, nr-1, dataset_->dset, &err_));

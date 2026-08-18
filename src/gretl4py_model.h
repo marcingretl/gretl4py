@@ -300,7 +300,7 @@ public:
 
     void restrict (const py::list &impose, const py::kwargs &kwargs);
 
-    char *save_ec_term (const int nr, const std::string &name = "") const;
+    std::string save_ec_term (const int nr, const std::string &name = "") const;
 };
 
 //
