@@ -85,11 +85,11 @@ public:
 
     int get_id (void) const;
 
-    std::string repr_impl (void) const noexcept;        // for __repr__ binding
+    std::string repr_impl (void) const noexcept;                // for __repr__ binding
 
-    GretlBundlePtr get_bundle (void) const;             // return pointer to gb_model
+    GretlBundlePtr get_bundle (void) const noexcept;            // return pointer to '$model' bundle
 
-    const GretlDatasetPtr get_dataset (void) const;     // return pointer to dataset
+    const GretlDatasetPtr get_dataset (void) const noexcept;    // return pointer to dataset
 };
 
 //

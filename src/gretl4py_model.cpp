@@ -362,12 +362,12 @@ std::string GretlModel::repr_impl (void) const noexcept
     return summary_;
 }
 
-GretlBundlePtr GretlModel::get_bundle (void) const
+GretlBundlePtr GretlModel::get_bundle (void) const noexcept
 {
     return gb_model_;
 }
 
-const GretlDatasetPtr GretlModel::get_dataset (void) const
+const GretlDatasetPtr GretlModel::get_dataset (void) const noexcept
 {
     return dataset_;
 }
