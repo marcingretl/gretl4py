@@ -76,6 +76,11 @@ void init_gretl4py_model_py11(py::module_ &m)
                             {
                                 return self.get_dataset();
                             })
+    .def_property_readonly("estimated",
+                           [](const GretlModel &self)
+                           {
+                               return self.estimated();
+                           })
     .def("__repr__", &GretlModel::repr_impl)
     .def("fit",
             [](GretlModel &self) -> GretlModel&

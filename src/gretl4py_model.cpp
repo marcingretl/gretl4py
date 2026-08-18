@@ -355,6 +355,11 @@ void GretlModel::gretl_do_forecast_ (void *model, const py::args &args,
     printer_.print();
 }
 
+void GretlModel::check_if_estimated_ (void) const
+{
+    if (estimated_) throw std::runtime_error("model already estimated");
+}
+
 std::string GretlModel::repr_impl (void) const noexcept
 {
     if (!estimated_) return "<Model: not fitted>";
@@ -372,9 +377,9 @@ const GretlDatasetPtr GretlModel::get_dataset (void) const noexcept
     return dataset_;
 }
 
-void GretlModel::check_if_estimated_ (void) const
+[[nodiscard]] bool GretlModel::estimated (void) const noexcept
 {
-    if (estimated_) throw std::runtime_error("model already estimated");
+    return estimated_;
 }
 
 //T = { GRETL_VAR, equation_system }

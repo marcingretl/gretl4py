@@ -90,6 +90,8 @@ public:
     GretlBundlePtr get_bundle (void) const noexcept;            // return pointer to '$model' bundle
 
     const GretlDatasetPtr get_dataset (void) const noexcept;    // return pointer to dataset
+
+    [[nodiscard]] bool estimated (void) const noexcept;
 };
 
 //
