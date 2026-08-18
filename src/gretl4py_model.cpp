@@ -379,7 +379,7 @@ void GretlModel::check_if_estimated_ (void) const
 
 //T = { GRETL_VAR, equation_system }
 template <typename T>
-char *GretlModel::do_save_uhat_ (T *model, int eqn, const std::string &name) const
+std::string GretlModel::do_save_uhat_ (T *model, int eqn, const std::string &name) const
 {
     //
     // here take residuals from multivariate model
@@ -1312,8 +1312,10 @@ py::object GretlModel_VAR::get_accessor (const std::string &name) const
     return do_get_accessor<GRETL_OBJ_VAR>(name, dataset_, static_cast<void*>(model_));
 }
 
-char *GretlModel_VAR::save_uhat (int eqn, const std::string &name) const
+std::string GretlModel_VAR::save_uhat (int eqn, const std::string &name) const
 {
+    err_ = 0;
+
     return do_save_uhat_<GRETL_VAR>(model_, eqn, name);
 }
 
@@ -1572,7 +1574,7 @@ void GretlModel_NME::restrict (const py::list &impose, const py::kwargs &kwargs)
     do_restrict_<equation_system>(model_, impose, kwargs);
 }
 
-char *GretlModel_NME::save_uhat (int eqn, const std::string &name) const
+std::string GretlModel_NME::save_uhat (int eqn, const std::string &name) const
 {
     return do_save_uhat_<equation_system>(model_, eqn, name);
 }

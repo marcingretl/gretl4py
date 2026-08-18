@@ -68,7 +68,7 @@ protected:
     void check_if_estimated_ (void) const;
 
     template <typename T>
-    char *do_save_uhat_ (T *model, int eqn, const std::string &name) const;
+    std::string do_save_uhat_ (T *model, int eqn, const std::string &name) const;
 
     std::string extract_additional_vars_ (py::handle src) const;
 public:
@@ -275,7 +275,7 @@ public:
 
     py::object get_accessor (const std::string &name) const override;
 
-    char *save_uhat (int eqn, const std::string &name = "") const;
+    std::string save_uhat (int eqn, const std::string &name = "") const;
 
     void test (const std::string &type, const py::kwargs &kwargs);
 
@@ -330,7 +330,7 @@ public:
 
     void restrict (const py::list &impose, const py::kwargs &kwargs);
 
-    char *save_uhat (int eqn, const std::string &name = "") const;
+    std::string save_uhat (int eqn, const std::string &name = "") const;
 };
 
 #endif // GRETL4PY_MODEL_H
