@@ -72,10 +72,10 @@ void init_gretl4py_model_py11(py::module_ &m)
 
     gretl_model
     .def_property_readonly("dataset",
-                            [](const GretlModel &self)
-                            {
-                                return self.get_dataset();
-                            })
+                           [](const GretlModel &self)
+                           {
+                               return self.get_dataset();
+                           })
     .def_property_readonly("estimated",
                            [](const GretlModel &self)
                            {
@@ -83,12 +83,12 @@ void init_gretl4py_model_py11(py::module_ &m)
                            })
     .def("__repr__", &GretlModel::repr_impl)
     .def("fit",
-            [](GretlModel &self) -> GretlModel&
-            {
-                self.fit();
+         [](GretlModel &self) -> GretlModel&
+         {
+             self.fit();
 
-                return self;
-            })
+             return self;
+         })
     .def("get_accessor", &GretlModel::get_accessor,
             py::arg("name").none(false))
     .def("fcast", &GretlModel::forecast)
@@ -109,29 +109,29 @@ void init_gretl4py_model_py11(py::module_ &m)
     .def("save_ahat", &GretlModel_NSE::gretl_get_fit_or_resid<M_AHAT>, py::arg("name").none(true) = "")
     .def("save_h", &GretlModel_NSE::gretl_get_fit_or_resid<M_H>, py::arg("name").none(true) = "")
     .def("test",
-            [](GretlModel_NSE &self, const std::string &type, const py::kwargs &kwargs)
-            {
-                //
-                // 1. handles overload resolution cleanly (keyword vs positional)
-                // 2. special-cases: "chow" which uses 'obs' instead of 'varlist'
-                //
-                py::kwargs clean_kwargs = kwargs;
-                bool with_vars = false;
-                std::string varlist;
+         [](GretlModel_NSE &self, const std::string &type, const py::kwargs &kwargs)
+         {
+             //
+             // 1. handles overload resolution cleanly (keyword vs positional)
+             // 2. special-cases: "chow" which uses 'obs' instead of 'varlist'
+             //
+             py::kwargs clean_kwargs = kwargs;
+             bool with_vars = false;
+             std::string varlist;
 
-                // we check for "vars" or "obs" for chow test
-                if (kwargs.contains("varlist")) {
-                    varlist = py::str(clean_kwargs.attr("pop")("varlist"));
-                    with_vars = true;
-                } else if (type == "chow" && kwargs.contains("obs")) {
-                    varlist = py::str(clean_kwargs.attr("pop")("obs"));
-                    with_vars = true;
-                }
+             // we check for "vars" or "obs" for chow test
+             if (kwargs.contains("varlist")) {
+                 varlist = py::str(clean_kwargs.attr("pop")("varlist"));
+                 with_vars = true;
+             } else if (type == "chow" && kwargs.contains("obs")) {
+                 varlist = py::str(clean_kwargs.attr("pop")("obs"));
+                 with_vars = true;
+             }
 
-                // we do the job
-                with_vars ? self.test(type, varlist, clean_kwargs) : self.test(type, clean_kwargs);
-            },
-            py::arg("type").none(false), py::kw_only());
+             // we do the job
+             with_vars ? self.test(type, varlist, clean_kwargs) : self.test(type, clean_kwargs);
+         },
+         py::arg("type").none(false), py::kw_only());
     gretl_model_nse.attr("__module__") = "gretl";
 
     // NSE via dedicated Driver
