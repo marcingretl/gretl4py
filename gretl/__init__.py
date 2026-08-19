@@ -42,6 +42,9 @@ os.environ.setdefault('GRETL_DATA_PATH', data_dir)
 os.environ.setdefault('GRETL_PLUGIN_PATH', lib_dir)
 os.environ.setdefault('CURL_CA_BUNDLE', str(Path(user_site) / "curl-ca-bundle.crt"))
 
+# --- Ensure 'tmp' exists in GRETL_HOME ---
+(GRETL_HOME / "tmp").mkdir(exist_ok=True)
+
 # --- Add lib_dir to PATH if not already present ---
 current_path = os.environ.get('PATH', '').split(os.pathsep)
 if lib_dir not in current_path:
@@ -51,7 +54,7 @@ if lib_dir not in current_path:
 if sys.platform == "win32":
     os.add_dll_directory(lib_dir)
 
-# --- Linux-specific OpenBLAS handling ---
+# --- Locate bundled libgretl in auditwheel-repaired Linux wheels ---
 if sys.platform == "linux":
     libs_dir = Path(__file__).parent.parent / "gretl4py.libs"
     if libs_dir.is_dir():
