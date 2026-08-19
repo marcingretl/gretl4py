@@ -318,7 +318,8 @@ gretlopt unpack_kwargs_command (GretlCmdIndex ci, T &dataset, const py::kwargs &
 
     return opt;
 }
-template gretlopt unpack_kwargs_command(GretlCmdIndex, std::nullptr_t&, const py::kwargs&);
+template gretlopt unpack_kwargs_command<GretlDatasetPtr>(GretlCmdIndex, GretlDatasetPtr&, const py::kwargs&);
+template gretlopt unpack_kwargs_command<std::nullptr_t>(GretlCmdIndex, std::nullptr_t&, const py::kwargs&);
 
 void do_set (const std::string &key, const std::string &value, const py::kwargs &kwargs)
 {
