@@ -832,6 +832,29 @@ void GretlDataset::print (const std::string &varlist, const py::kwargs &kwargs)
     do_gretl_print<GretlDataset>(varlist, final_kwargs);
 }
 
+void GretlDataset::print (const py::list &varlist, const py::kwargs &kwargs)
+{
+    //
+    // wrapper for varlist passed as list
+    //
+    std::string varlist_str = "";
+
+    if (!varlist.empty()) {
+        auto list = gretllist(varlist);
+
+        // we list is non-empty, we produce its string reprezentation
+        if (list) {
+            gretl_char_ptr list_str(gretl_list_to_string(list.get(), dset, &err_));
+
+            if (err_) handle_gretl_error(err_);
+            varlist_str = std::string(list_str.get());
+        }
+    }
+
+    // we do the job
+    print(varlist_str, kwargs);
+}
+
 void GretlDataset::smpl (const std::string &startobs, const std::string &endobs, const py::kwargs &kwargs)
 {
     //

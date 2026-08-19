@@ -102,6 +102,8 @@ public:
 
     void print (const std::string &varlist, const py::kwargs &kwargs);
 
+    void print (const py::list &varlist, const py::kwargs &kwargs);
+
     void set_as_default (void);
 
     // exporters

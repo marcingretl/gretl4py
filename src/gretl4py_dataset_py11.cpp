@@ -316,8 +316,10 @@ void init_gretl4py_dataset_py11 (py::module_ &m)
             py::arg("varlist").none(false), py::arg("order").none(true) = 0)
     .def("lags", &GretlDataset::lags<py::list>,
             py::arg("varlist").none(false), py::arg("order").none(true) = 0)
-    .def("print", &GretlDataset::print,
+    .def("print", py::overload_cast<const std::string&, const py::kwargs&>(&GretlDataset::print),
             py::arg("varlist").none(true) = "", py::kw_only())
+    .def("print", py::overload_cast<const py::list&, const py::kwargs&>(&GretlDataset::print),
+         py::arg("varlist").none(true) = py::list(), py::kw_only())
     .def("get_series", &GretlDataset::get_series,
             py::arg("series").none(false))
     .def("hpfilt", &GretlDataset::hpfilt,

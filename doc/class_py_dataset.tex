@@ -220,6 +220,7 @@ Examples:\newline
 \begin{lstlisting}[style=pythonstylefoot]
 .corr() -> gretl.Matrix
 .corr(varlist: str[, OPTS]) -> gretl.Matrix
+.corr(varlist: list[, OPTS]) -> gretl.Matrix
 \end{lstlisting}
 \mapto{corr [ ~varlist ]}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
@@ -250,7 +251,7 @@ Examples:\newline
 \gretlfpycmd{cov()}
 \estdesc{Returns the covariance matrix for the variables in the list.}
 \begin{lstlisting}[style=pythonstylefoot]
-.cov(.vars: str) -> gretl.Matrix
+.cov(.vars: str | list) -> gretl.Matrix
 \end{lstlisting}
 \maptof{cov(y1, y2)}{matrix}
 \generaldesc{Note: this function is slightly more general than
@@ -271,7 +272,7 @@ Examples:\newline
 \estdesc{The first difference of each variable in \textit{varlist}
 	is obtained and the result stored in a new variable with the prefix d\_. }
 \begin{lstlisting}[style=pythonstylefoot]
-.diff(varlist: str)
+.diff(varlist: str | list)
 \end{lstlisting}
 \mapto[none]{diff ~varlist }
 \generaldesc{Note, \gretlcmd{diff x y} creates the new variables:
@@ -283,7 +284,8 @@ Examples:\newline
 \gretlfpycmd{compact()}
 \estdesc{Compacts the current dataset to a lower frequency.}
 \begin{lstlisting}[style=pythonstylefoot]
-.compact(freq: object[, method: str = '']) -> None
+.compact(freq: int[, method: str = '']) -> None
+.compact(freq: str[, method: str = '']) -> None
 \end{lstlisting}
 \mapto[none]{dataset compact ~freq }
 Examples:\newline
@@ -299,6 +301,7 @@ Examples:\newline
 \estdesc{Marks each variable in \textit{varlist} as being discrete.}
 \begin{lstlisting}[style=pythonstylefoot]
 .discrete(varlist: str[, OPTS])
+.discrete(varlist: list[, OPTS])
 \end{lstlisting}
 \mapto{discrete ~varlist}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
@@ -317,6 +320,7 @@ Examples:\newline
 	values of that variable.}
 \begin{lstlisting}[style=pythonstylefoot]
 .dummify(varlist: str[, OPTS])
+.dummify(varlist: list[, OPTS])
 \end{lstlisting}
 \mapto{dummify ~varlist}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
@@ -445,6 +449,7 @@ Examples:\newline
 	each of the series in \textit{varlist}.}
 \begin{lstlisting}[style=pythonstylefoot]
 .lags(varlist: str[, order: int])
+.lags(varlist: list[, order: int])
 \end{lstlisting}
 \mapto{lags [ order ; ] laglist}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
@@ -469,7 +474,7 @@ Examples:\newline
 	in \textit{varlist} is obtained and the result stored in
 	a new series with the prefix ld\_. }
 \begin{lstlisting}[style=pythonstylefoot]
-.ldiff(varlist: str)
+.ldiff(varlist: str | list)
 \end{lstlisting}
 \mapto[0]{ldiff ~varlist}
 \generaldesc{Thus \gretlcmd{ldiff x y} creates the new variables
@@ -482,7 +487,7 @@ Examples:\newline
 \estdesc{The natural log of each of the series in \textit{varlist}
 	is obtained and the result stored in a new series with the prefix l\_.}
 \begin{lstlisting}[style=pythonstylefoot]
-.discrete(varlist: str)
+.discrete(varlist: str | list)
 \end{lstlisting}
 \mapto[0]{logs ~varlist}
 \generaldesc{Thus \gretlcmd{logs x y} creates the new variables
@@ -524,7 +529,7 @@ Examples:\newline
 \gretlfpycmd{orthdev()}
 \estdesc{Applicable with panel data only.}
 \begin{lstlisting}[style=pythonstylefoot]
-.orthdev(varlist: str)
+.orthdev(varlist: str | list)
 \end{lstlisting}
 \mapto[none]{orthdev ~varlist}
 \generaldesc{A series of forward orthogonal deviations is
@@ -550,6 +555,7 @@ Examples:\newline
 \estdesc{Principal Components Analysis.}
 \begin{lstlisting}[style=pythonstylefoot]
 .pca(varlist: str = ''[, OPTS])
+.pca(varlist: list = ''[, OPTS])
 \end{lstlisting}
 \mapto{pca ~varlist}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
@@ -578,8 +584,9 @@ Examples:\newline
 
 \gretlfpycmd{print()}\label{met:gretldataset::print}
 \estdesc{Dataset-dedicated printer.}
-\begin{lstlisting}[style=pythonstyle]
+\begin{lstlisting}[style=pythonstylefoot]
 .print(varlist: str[, OPTS])
+.print(varlist: list[, OPTS])
 \end{lstlisting}
 \mapto[none]{print ~varlist}
 \mapto[]{print}
