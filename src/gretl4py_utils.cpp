@@ -174,7 +174,7 @@ void get_object_from_dict (const py::dict &dict, const char *key, T &target)
     if (!dict.contains(key)) return;
 
     // lambda for handling exceptions
-    auto key_not_a = [key](const char *obj_type)
+    auto key_not_a = [key](const char *obj_type) -> void
     {
         throw std::invalid_argument(std::string("'") + key + "' must be a " + obj_type);
     };
@@ -201,8 +201,7 @@ template void get_object_from_dict<std::vector<std::string>>(const py::dict&, co
 template void get_object_from_dict<std::string>(const py::dict&, const char*, std::string&);
 template void get_object_from_dict<py::array_t<double>>(const py::dict&, const char*, py::array_t<double>&);
 
-GretlTypesPtr convert_GretlType_to_GretlTypes (GretlType t, void *gr_obj_ptr,
-                                               const int n, int &err)
+GretlTypesPtr convert_GretlType_to_GretlTypes (GretlType t, void *gr_obj_ptr, const int n, int &err)
 {
     //
     // function converts libgretl's GretlType to gretl4py's GretlTypes

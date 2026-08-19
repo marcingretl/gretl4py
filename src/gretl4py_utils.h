@@ -48,6 +48,10 @@ struct file_not_found : std::exception {
 //////////////////////////////////////////////////
 // inline functions
 //////////////////////////////////////////////////
+inline std::complex<double> c_complex_to_std_complex (const double _Complex z) { return {__real__ z, __imag__ z}; }
+
+inline double _Complex std_complex_to_c_complex (std::complex<double> z) { return {z.real(), z.imag()}; }
+
 // Python type checks
 inline bool is_pybool (const py::handle &o)    { return py::isinstance<py::bool_>(o); }
 inline bool is_pyint (const py::handle &o)     { return py::isinstance<py::int_>(o); }
@@ -69,10 +73,6 @@ inline bool is_numpy_array_fc (const py::array &m) {
 inline bool is_pygretlbundle (const py::handle &o) { return py::isinstance<GretlBundle>(o); }
 inline bool is_pygretlmatrix (const py::handle &o) { return py::isinstance<GretlMatrix>(o); }
 
-inline std::complex<double> c_complex_to_std_complex (const double _Complex z) { return {__real__ z, __imag__ z}; }
-
-inline double _Complex std_complex_to_c_complex (std::complex<double> z) { return {z.real(), z.imag()}; }
-
 //////////////////////////////////////////////////
 // functions
 //////////////////////////////////////////////////
@@ -87,14 +87,12 @@ py::object variant_to_pyobject (GretlTypes &&val) noexcept;
 template <typename T>
 void get_object_from_dict (const py::dict &dict, const char *key, T &target);
 
-GretlTypesPtr convert_GretlType_to_GretlTypes (GretlType t, void *gr_obj_ptr,
-                                               const int n, int &err);
+GretlTypesPtr convert_GretlType_to_GretlTypes (GretlType t, void *gr_obj_ptr, const int n, int &err);
 
 PythonArgInfo inspect_pyobject (py::handle obj);
 
 template <typename PyWrapped, typename Item, typename ContainerType>
-void move_to_python_container (PyWrapped &wrapped_obj, Item &&item,
-                               const char *container, const std::string &key = "");
+void move_to_python_container (PyWrapped &wrapped_obj, Item &&item, const char *container, const std::string &key = "");
 
 template <typename T>
 void load_string_to_container (T &t, const std::string &src);
