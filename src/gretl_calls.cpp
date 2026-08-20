@@ -1071,8 +1071,7 @@ bool unpack_kwargs_test (gretlopt &opt, const std::string &type, const py::kwarg
     // we return true/false if results printing wanted
     //
     GretlCmdIndex ci = MODTEST;
-    gretlopt print_opt = OPT_NONE;  // we check if (silent == true || quiet == true)
-    bool res = true;                // informs a caller whether to print results
+    gretlopt print_opt = OPT_NONE;  // to check if silent/quiet was given (any bit set means we do not print output)
 
     // we set basic opt for given test
     opt = OPT_NONE;
@@ -1166,7 +1165,6 @@ bool unpack_kwargs_test (gretlopt &opt, const std::string &type, const py::kwarg
             continue;
         } else if (key == "silent" || key == "quiet") {
             gretl_valid_long_opt(print_opt, ci, key, item.second);
-            if (print_opt != OPT_NONE) res = false;
             continue;
         } else if (key == "plot") {
             throw std::invalid_argument("invalid option flag: " + key);
@@ -1181,7 +1179,7 @@ bool unpack_kwargs_test (gretlopt &opt, const std::string &type, const py::kwarg
         gretl_valid_long_opt(opt, ci, "plot", py::handle(), "none");
     }
 
-    return res;
+    return print_opt == OPT_NONE; // no bits set means we printout results
 }
 
 GretlTypesPtr gretl_generate_gretl_object (const char *s, int &err, GretlObjType obj_type, DATASET *dset, void *model)
