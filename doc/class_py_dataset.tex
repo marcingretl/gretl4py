@@ -623,8 +623,7 @@ Examples:\newline
 \estdesc{Changes the name of \textit{series} (identified
 	by name or ID number) to \textit{newname}.}
 \begin{lstlisting}[style=pythonstylefoot]
-.rename(series: str, newname: str[, OPTS])
-.rename(series: int, newname: str[, OPTS])
+.rename(series: str | int, newname: str[, OPTS])
 \end{lstlisting}
 \mapto[none]{rename ~series~ newname}
 \mapto{rename case=style}
@@ -723,7 +722,7 @@ Examples:\newline
 	\textit{varlist} is obtained and the result stored
 	in a new variable with the prefix sd\_.}
 \begin{lstlisting}[style=pythonstylefoot]
-.sdiff(varlist: str)
+.sdiff(varlist: str | list)
 \end{lstlisting}
 \mapto[none]{sdiff ~varlist}
 \generaldesc{This command is available only for seasonal time series.}
@@ -739,7 +738,8 @@ Examples:\newline
 \estdesc{This command forces the program to interpret
 	the current data set as having a specified structure.}
 \begin{lstlisting}[style=pythonstylefoot]
-.setobs(periodicity: int, startobs: str | int[, OPTS])
+.setobs(periodicity: int, startobs: str[, OPTS])
+.setobs(periodicity: int, startobs: int[, OPTS])
 .setobs(unitvar: str, timevar: str[, OPTS])
 \end{lstlisting}
 \mapto[clean]{setobs periodicity startobs}
@@ -779,8 +779,7 @@ Examples:\newline
 \gretlfpycmd{sortby()}
 \estdesc{Sorts the observations in the current dataset.}
 \begin{lstlisting}[style=pythonstylefoot]
-.sortby(varlist: str)
-.sortby(varlist: list)
+.sortby(varlist: str | list)
 \end{lstlisting}
 \mapto[none]{dataset ~sortby X}
 Examples:\newline
@@ -798,6 +797,7 @@ Examples:\newline
 	\gretlcmd{--cross} is given).}
 \begin{lstlisting}[style=pythonstylefoot]
 .square(varlist: str[, OPTS])
+.square(varlist: list[, OPTS])
 \end{lstlisting}
 \mapto[none]{square ~varlist}
 \generaldesc{For example, \gretlcmd{square x y} will generate 
@@ -811,6 +811,7 @@ Examples:\newline
 	new series with the prefix s\_.}
 \begin{lstlisting}[style=pythonstylefoot]
 .stdize(varlist: str[, OPTS])
+.stdize(varlist: list[, OPTS])
 \end{lstlisting}
 \mapto[]{stdize ~varlist}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
@@ -916,8 +917,8 @@ Examples:\newline
 	\item[]\maptoopt{silent=True}{--silent}{don't print anything}
 \end{itemize}
 Examples:\newline
-\pythcodef{.test(.type='coint', varlist='y', indepvars='x z', order=4)}\\
-\pythcodef{.test(.type='coint', varlist='y', indepvars='x z', order=0, ct=True, skip-df=True)}
+\pythcodef{.test(.type='coint', y='y', varlist='x z', order=4)}\\
+\pythcodef{.test(.type='coint', y='y', varlist='x z', order=0, ct=True, skip-df=True)}
 
 \maptot{corrgm y [order]}{corrgm}{Correlogram of given order.}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}

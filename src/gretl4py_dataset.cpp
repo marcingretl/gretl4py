@@ -1396,7 +1396,7 @@ void GretlDataset::test (const std::string &type, const std::string &varlist, co
     ex_var = gretllist(varlist);
 
     // we set up options
-    unpack_kwargs_test(opt_, type, kwargs, order);
+    auto printout = unpack_kwargs_test(opt_, type, kwargs, order);
 
     // we perform the test
     if (type == "adf") {
@@ -1459,11 +1459,8 @@ void GretlDataset::test (const std::string &type, const std::string &varlist, co
     res[py::cast("pvalue")] = get_accessor("$pvalue");
     res[py::cast("summary")] = printer_.get_buffer();
 
-    if (kwargs.contains("silent")) {
-        auto val = kwargs["silent"];
-
-        if (!is_bool_kwarg(val, "silent")) printer_.print();
-    }
+    // we printout results
+    if (printout) printer_.print();
 
     // we register result
     move_to_python_container<GretlDataset, py::dict, py::list>(*this, std::move(res), "tests");

@@ -93,7 +93,7 @@ void gretl_valid_long_opt (gretlopt &opt, GretlCmdIndex ci, const std::string &k
 template <typename T>
 gretlopt unpack_kwargs_command (GretlCmdIndex ci, T &dataset, const py::kwargs &kwargs);
 
-void unpack_kwargs_test (gretlopt &opt, const std::string &type, const py::kwargs &kwargs, int &order);
+bool unpack_kwargs_test (gretlopt &opt, const std::string &type, const py::kwargs &kwargs, int &order);
 
 GretlTypesPtr gretl_generate_gretl_object (const char *s, int &err, GretlObjType obj_type = GRETL_OBJ_INFO, DATASET *dset = nullptr, void *model = nullptr);
 

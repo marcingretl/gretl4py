@@ -14,7 +14,7 @@ def run_example():
   ###############################################################
   print("\n****************************")
   print("adf")
-  d1.test(type="adf", varlist="LRM", order=1, silent=True)
+  d1.test(type="adf", varlist="LRM", order=1, quiet=True)
   print(d1.tests[-1]['summary'])
 
   print("\n****************************")

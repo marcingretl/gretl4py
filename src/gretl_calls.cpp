@@ -1034,7 +1034,8 @@ void gretl_valid_long_opt (gretlopt &opt, GretlCmdIndex ci, const std::string &k
     gretlopt opt_local = OPT_NONE;
     OptStatus status;
 
-    if (!is_pystr(val) && !is_pyint(val) && !is_pyfloat(val) && !is_pybool(val) && !ext_val) throw std::invalid_argument("unsupported option parameter type for " + key);
+    if (!is_pystr(val) && !is_pyint(val) && !is_pyfloat(val) && !is_pybool(val) && !ext_val)
+        throw std::invalid_argument("unsupported option parameter type for " + key);
 
     if (std::strchr(key.c_str(), '_')) {
         std::string tmp(key);
@@ -1062,17 +1063,18 @@ void gretl_valid_long_opt (gretlopt &opt, GretlCmdIndex ci, const std::string &k
     SET_OPT(opt, opt_local);
 }
 
-void unpack_kwargs_test (gretlopt &opt, const std::string &type,
-                         const py::kwargs &kwargs, int &order)
+bool unpack_kwargs_test (gretlopt &opt, const std::string &type, const py::kwargs &kwargs, int &order)
 {
     //
     // we setup test options
     // order: for autocorrelation or arch test (may change in future)
     //
     GretlCmdIndex ci = MODTEST;
-    opt = OPT_NONE;
+    gretlopt print_opt = OPT_NONE;  // we check if (silent == true || quiet == true)
+    bool res = true;                // informs a caller whether to print results
 
     // we set basic opt for given test
+    opt = OPT_NONE;
     if (type == "add") {
         ci = ADD;
     } else if (type == "adf") {
@@ -1161,8 +1163,10 @@ void unpack_kwargs_test (gretlopt &opt, const std::string &type,
         } else if (key == "order_m" && type == "levinlin") {
             // special case: we must do something with it later
             continue;
-        } else if (key == "silent") {
+        } else if (key == "silent" || key == "quiet") {
             // special case: silent is processed manually later on
+            gretl_valid_long_opt(print_opt, ci, key, item.second);
+            if (print_opt != OPT_NONE) res = false;
             continue;
         } else if (key == "plot") {
             throw std::invalid_argument("invalid option flag: " + key);
@@ -1176,6 +1180,8 @@ void unpack_kwargs_test (gretlopt &opt, const std::string &type,
         SET_OPT(opt, OPT_U);
         gretl_valid_long_opt(opt, ci, "plot", py::handle(), "none");
     }
+
+    return res;
 }
 
 GretlTypesPtr gretl_generate_gretl_object (const char *s, int &err, GretlObjType obj_type, DATASET *dset, void *model)
