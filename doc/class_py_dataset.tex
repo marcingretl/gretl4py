@@ -863,7 +863,7 @@ Examples:\newline
 \gretlfpycmd{test()}\label{met:gretldataset::test}
 \estdesc{General interface to dataset-based tests.}
 \begin{lstlisting}[style=pythonstylefoot]
-.test(.type: str[, varlist: str, OPTS])
+.test(.type: str[, varlist: str | list, OPTS])
 \end{lstlisting}
 \where{\pythcode{.type: str} refers to one of
 	the following: \textit{adf}, \textit{bds}, \textit{coint}, \textit{corrgm},
@@ -918,7 +918,7 @@ Examples:\newline
 \end{itemize}
 Examples:\newline
 \pythcodef{.test(.type='coint', y='y', varlist='x z', order=4)}\\
-\pythcodef{.test(.type='coint', y='y', varlist='x z', order=0, ct=True, skip-df=True)}
+\pythcodef{.test(.type='coint', y='y', varlist=['x', 'z'], order=0, ct=True, skip-df=True)}
 
 \maptot{corrgm y [order]}{corrgm}{Correlogram of given order.}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
@@ -941,8 +941,8 @@ Examples:\newline
 	\item[]\maptoopt{split_by='dummy'}{--split-by=dummy}{split observations by grouping variable}
 \end{itemize}
 Examples:\newline
-\pythcodef{.test(.type='difftest', varlist=['x y'])}\\
-\pythcodef{.test(.type='difftest', varlist=['x'], split_by='dummy')}
+\pythcodef{.test(.type='difftest', varlist=['x', 'y'])}\\
+\pythcodef{.test(.type='difftest', varlist='x', split_by='dummy')}
 
 \maptot{fractint ~series~ [ order ]}{fractint}{Tests for fractional integration.}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
@@ -965,9 +965,9 @@ Examples:\newline
 	\item[]\maptoopt{verbose=True}{--verbose}{print details of auxiliary regressions}
 \end{itemize}
 Examples:\newline
-\pythcodef{.test(.type='johansen', ylist=['y'], xlist=['x'], order=2)}\\
-\pythcodef{.test(.type='johansen', ylist=['y'], xlist=['x z'], order=4, verbose=True)}\\
-\pythcodef{.test(.type='johansen', ylist=['y'], xlist=['x z'], order=3, rc=True)}
+\pythcodef{.test(.type='johansen', ylist='y', xlist='x', order=2)}\\
+\pythcodef{.test(.type='johansen', ylist=['y'], xlist='x z', order=4, verbose=True)}\\
+\pythcodef{.test(.type='johansen', ylist='y', xlist=['x', 'z'], order=3, rc=True)}
 
 \maptot{kpss order ~varlist}{kpss}{Kwiatkowski, Phillips, Schmidt and Shin for stationarity.}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
@@ -1003,10 +1003,9 @@ Examples:\newline
 	\item[]\maptoopt{split_by='dummy'}{--split-by=dummy}{split observations by grouping variable}
 \end{itemize}
 Examples:\newline
-\pythcodef{.test(.type='meantest', varlist=['x y'])}\\
-\pythcodef{.test(.type='meantest', varlist=['x y'], unequal_vars=True)}\\
-\pythcodef{.test(.type='meantest', varlist=['x y'], paired=True)}\\
-\pythcodef{.test(.type='meantest', varlist=['x'], split_by='d')}
+\pythcodef{.test(.type='meantest', varlist='x y')}\\
+\pythcodef{.test(.type='meantest', varlist=['x', 'y'], unequal_vars=True)}\\
+\pythcodef{.test(.type='meantest', varlist='x', split_by='d')}
 
 \maptot{normtest ~series}{normtest}{Normality tests.}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
@@ -1036,10 +1035,10 @@ Examples:\newline
 	\item[]\maptoopt{split_by='dummy'}{--split-by=dummy}{split observations by grouping variable}
 \end{itemize}
 Examples:\newline
-\pythcodef{.test(.type='vartest', varlist=['x','y'])}\\
-\pythcodef{.test(.type='vartest', varlist=['x'], split_by='d')}\\
-\pythcodef{.test(.type='vartest', varlist=['x y'], robust='median')}\\
-\pythcodef{.test(.type='vartest', varlist=['x y'], robust='trimmed,5')}
+\pythcodef{.test(.type='vartest', varlist=['x', 'y'])}\\
+\pythcodef{.test(.type='vartest', varlist='x', split_by='d')}\\
+\pythcodef{.test(.type='vartest', varlist='x y', robust='median')}\\
+\pythcodef{.test(.type='vartest', varlist='x y', robust='trimmed,5')}
 
 \gretlfpycmd{to\_dataframe()}
 \estdesc{\deprecated}
