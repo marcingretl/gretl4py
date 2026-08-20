@@ -1455,12 +1455,12 @@ void GretlDataset::test (const std::string &type, const std::string &varlist, co
     }
     if (err_) handle_gretl_error(err_);
 
+    // we printout results
+    if (printout) printer_.print();
+
     res[py::cast("test")] = get_accessor("$test");
     res[py::cast("pvalue")] = get_accessor("$pvalue");
     res[py::cast("summary")] = printer_.get_buffer();
-
-    // we printout results
-    if (printout) printer_.print();
 
     // we register result
     move_to_python_container<GretlDataset, py::dict, py::list>(*this, std::move(res), "tests");
