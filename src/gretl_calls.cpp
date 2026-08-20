@@ -1068,6 +1068,7 @@ bool unpack_kwargs_test (gretlopt &opt, const std::string &type, const py::kwarg
     //
     // we setup test options
     // order: for autocorrelation or arch test (may change in future)
+    // we return true/false if results printing wanted
     //
     GretlCmdIndex ci = MODTEST;
     gretlopt print_opt = OPT_NONE;  // we check if (silent == true || quiet == true)
@@ -1164,7 +1165,6 @@ bool unpack_kwargs_test (gretlopt &opt, const std::string &type, const py::kwarg
             // special case: we must do something with it later
             continue;
         } else if (key == "silent" || key == "quiet") {
-            // special case: silent is processed manually later on
             gretl_valid_long_opt(print_opt, ci, key, item.second);
             if (print_opt != OPT_NONE) res = false;
             continue;
