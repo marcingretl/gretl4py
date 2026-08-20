@@ -111,7 +111,8 @@ public:
 
     py::dict to_dict (void) const;
 
-    void to_file (const std::string &filename, const std::string &varlist, const py::kwargs &kwargs);
+    template <typename T>
+    void to_file (const std::string &filename, const T &varlist, const py::kwargs &kwargs);
 
     template <typename T>
     GretlMatrixPtr to_matrix (const T &list, int startobs = 0, int endobs = 0, const std::string &missing = "ok");

@@ -535,8 +535,8 @@ py::dict GretlDataset::to_dict (void) const
     return as_dict;
 }
 
-void GretlDataset::to_file (const std::string &filename, const std::string &varlist,
-                            const py::kwargs &kwargs)
+template <typename T>
+void GretlDataset::to_file (const std::string &filename, const T &varlist, const py::kwargs &kwargs)
 {
     //
     // methods which mimics libgretl's STORE command
@@ -559,6 +559,8 @@ void GretlDataset::to_file (const std::string &filename, const std::string &varl
     if (err_) handle_gretl_error(err_);
     printer_.print();
 }
+template void GretlDataset::to_file<std::string>(const std::string&, const std::string&, const py::kwargs&);
+template void GretlDataset::to_file<py::list>(const std::string&, const py::list&, const py::kwargs&);
 
 template <typename T>
 GretlMatrixPtr GretlDataset::to_matrix (const T &list, int startobs, int endobs, const std::string &missing)

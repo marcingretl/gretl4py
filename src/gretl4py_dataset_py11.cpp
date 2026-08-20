@@ -242,9 +242,10 @@ void init_gretl4py_dataset_py11 (py::module_ &m)
     .def("tdisagg", &GretlDataset::tdisagg,
             py::arg("Y").none(false), py::arg("s").none(false), py::kw_only())
     .def("to_dict", &GretlDataset::to_dict)
-    .def("to_file", &GretlDataset::to_file,
-            py::arg("filename").none(false),
-            py::arg("varlist").none(true) = "", py::kw_only())
+    .def("to_file", py::overload_cast<const std::string&, const std::string&, const py::kwargs&>(&GretlDataset::to_file<std::string>),
+            py::arg("filename").none(false), py::arg("varlist").none(true) = "", py::kw_only())
+    .def("to_file", py::overload_cast<const std::string&, const py::list&, const py::kwargs&>(&GretlDataset::to_file<py::list>),
+         py::arg("filename").none(false), py::arg("varlist").none(true) = py::list(), py::kw_only())
     .def("to_matrix", &GretlDataset::to_matrix<std::string>,
         py::arg("list").none(true) = py::list(), py::arg("startobs").none(true) = 0,
         py::arg("endobs").none(true) = 0, py::arg("missing").none(true) = "ok")
