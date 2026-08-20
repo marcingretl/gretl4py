@@ -464,7 +464,7 @@ void GretlModel_NSE::test (const std::string &type, const py::kwargs &kwargs)
     int order = type == "corrgm" ? auto_acf_order(sample_size( dataset_->dset)) : dataset_->dset->pd;
 
     // we set up options
-    unpack_kwargs_test(opt_, type, kwargs, order);
+    auto printout = unpack_kwargs_test(opt_, type, kwargs, order);
 
     // we perform the test
     if (type == "bkw") {
@@ -500,6 +500,9 @@ void GretlModel_NSE::test (const std::string &type, const py::kwargs &kwargs)
     }
     if (err_) handle_gretl_error(err_);
 
+    // we print results if wanted
+    if (printout) printer_.print();
+
     // we manufacture resulting object
     res[py::cast("type")] = type;
     res[py::cast("options")] = kwargs;
@@ -509,12 +512,6 @@ void GretlModel_NSE::test (const std::string &type, const py::kwargs &kwargs)
 
     // we register result
     move_to_python_container<GretlModel, py::dict, py::list>(*this, std::move(res), "tests");
-
-    if (kwargs.contains("silent")) {
-        auto val = kwargs["silent"];
-
-        if (!is_bool_kwarg(val, "silent")) printer_.print();
-    }
 }
 
 void GretlModel_NSE::test (const std::string &type, const std::string &varlist, const py::kwargs &kwargs)
@@ -530,7 +527,7 @@ void GretlModel_NSE::test (const std::string &type, const std::string &varlist, 
     if (type != "chow") ex_var = dataset_->gretllist(varlist);
 
     // we set up options
-    unpack_kwargs_test(opt_, type, kwargs, order);
+    auto printout = unpack_kwargs_test(opt_, type, kwargs, order);
 
     // we perform the test
     if (type == "add") {
@@ -546,6 +543,9 @@ void GretlModel_NSE::test (const std::string &type, const std::string &varlist, 
     }
     if (err_) handle_gretl_error(err_);
 
+    // we print results if wanted
+    if (printout) printer_.print();
+
     // we manufacture resulting object
     res[py::cast("type")] = type;
     res[py::cast("options")] = kwargs;
@@ -555,12 +555,6 @@ void GretlModel_NSE::test (const std::string &type, const std::string &varlist, 
 
     // we register result
     move_to_python_container<GretlModel, py::dict, py::list>(*this, std::move(res), "tests");
-
-    if (kwargs.contains("silent")) {
-        auto val = kwargs["silent"];
-
-        if (!is_bool_kwarg(val, "silent")) printer_.print();
-    }
 }
 
 void GretlModel_NSE::restrict (const py::list &impose,

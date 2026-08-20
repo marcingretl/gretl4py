@@ -115,6 +115,7 @@ void init_gretl4py_model_py11(py::module_ &m)
              // 1. handles overload resolution cleanly (keyword vs positional)
              // 2. special-cases: "chow" which uses 'obs' instead of 'varlist'
              //
+             if (!self.estimated()) throw std::runtime_error("Model was not estimated yet");
              py::kwargs clean_kwargs = kwargs;
              bool with_vars = false;
              std::string varlist;
