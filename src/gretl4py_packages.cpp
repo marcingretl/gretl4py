@@ -30,6 +30,7 @@ extern "C" {
     #include <gretl/gretl_typemap.h>
 }
 #include <iomanip>
+#include <cstdio>
 
 extern std::unordered_set<std::string> user_vars;
 
@@ -76,7 +77,7 @@ GretlPackage::GretlPackage (const std::string &pkg_name, const std::string &suff
     };
     std::unordered_set<std::string> excluded_functions;
     std::ostringstream oss;
-    char path[MAXLEN];
+    char path[FILENAME_MAX];    // get_full_filename() requires a buffer of at least FILENAME_MAX bytes
     char *raw_ptr = nullptr;    // placeholder for PDF filename
     int idxp = 0;
 
