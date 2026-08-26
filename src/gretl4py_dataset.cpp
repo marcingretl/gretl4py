@@ -152,7 +152,7 @@ GretlDataset::GretlDataset (const py::dict &pydict) : id_(next_obj_id_++)
         std::string el = py::str(pylist[i]);
 
         std::memset(dset->S[i], '\0', OBSLEN);
-        el.copy(dset->S[i], OBSLEN, 0);
+        el.copy(dset->S[i], OBSLEN-1, 0);
     }
 
     // we fill up dset->varname
