@@ -551,6 +551,10 @@ void GretlMatrix::set_element (int i, int j, T val)
     //
     // method for setting 'val' as matrix element [i, j]
     //
+    // manual handle negative values
+    // this is because [-1,1] or [-1,-1] produced wrong results
+    if (i < 0) i = m_->rows + i;
+    if (j < 0) j = m_->cols + j;
     check_bounds_(i, j);
 
     if constexpr (std::is_same_v<T, double>) {
