@@ -93,6 +93,8 @@ GretlPackage::GretlPackage (const std::string &pkg_name, const std::string &suff
     // we load the package
     pkg_ = get_function_package_by_filename(path, &err_);
     if (err_) handle_gretl_error(err_);
+    if (pkg_name != function_package_get_name(pkg_)) throw std::runtime_error("package name mismatch: internal: '"
+        + std::string(function_package_get_name(pkg_)) + "', provided: '" + pkg_name_ + "'");
     full_path_ = path;
 
     // we setup parent dir
@@ -105,8 +107,6 @@ GretlPackage::GretlPackage (const std::string &pkg_name, const std::string &suff
     }
 
     // setup some basic info about package
-    if (pkg_name != function_package_get_name(pkg_)) throw std::runtime_error("package name mismatch: internal: '"
-        + std::string(function_package_get_name(pkg_)) + "', provided: '" + pkg_name_ + "'");
     err_ = bundle_function_package_info(full_path_.c_str(), gb_.get_ptr());
     if (err_) handle_gretl_error(err_);
     version_ = std::get<double>(*gb_.get_element<GretlTypesPtr>("version"));
