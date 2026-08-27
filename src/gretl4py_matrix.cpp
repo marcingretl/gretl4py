@@ -553,8 +553,14 @@ void GretlMatrix::set_element (int i, int j, T val)
     //
     // manual handle negative values
     // this is because [-1,1] or [-1,-1] produced wrong results
-    if (i < 0) i = m_->rows + i;
-    if (j < 0) j = m_->cols + j;
+    if (i < 0) {
+        i = m_->rows + i;
+        if (i < 0) handle_gretl_error(E_BOUNDS, "row index");
+    }
+    if (j < 0) {
+        j = m_->cols + j;
+        if (j < 0) handle_gretl_error(E_BOUNDS, "col index");
+    }
     check_bounds_(i, j);
 
     if constexpr (std::is_same_v<T, double>) {
