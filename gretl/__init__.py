@@ -25,7 +25,6 @@ import os
 import sys
 import site as _site
 import sysconfig
-import atexit
 import platform
 from pathlib import Path
 
@@ -104,8 +103,9 @@ except ImportError as e:
 from . import gretl4py_addons
 from . import gretl4py_classes
 
-# 100% safe module cleanup
-atexit.register(_gretl._gretl4py_cleanup)
+# module cleanup is now registered directly with Python's atexit module from
+# C++ (gretl4py.cpp), as an anonymous closure - so it's no longer a
+# Python-callable attribute here.
 
 # #####################################################
 # Explicit symbols import

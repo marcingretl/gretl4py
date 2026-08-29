@@ -67,7 +67,12 @@ PYBIND11_MODULE(_gretl, m)
 
     // gretl4py init/cleanup;
     gretl4py_init();
-    m.def("_gretl4py_cleanup", []() { gretl4py_cleanup(); });
+    // registered directly with Python's atexit module as an anonymous closure, so
+    // cleanup still runs while the interpreter/GIL is genuinely alive (gretl4py_cleanup()
+    // needs that - see docs/security-review round-2 follow-up for why Py_AtExit() is
+    // NOT safe here), but there is no callable module attribute for arbitrary code to
+    // invoke early.
+    py::module_::import("atexit").attr("register")(py::cpp_function([]() { gretl4py_cleanup(); }));
 
     init_gretl4py_dataset_py11(m);
     init_gretl4py_bundle_py11(m);
