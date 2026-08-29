@@ -50,6 +50,7 @@ private:
     void extract_ (py::dict &dict);                 // to convert to dict
 public:
     GretlBundle (void);                                 // default constructor with empty bundle
+    GretlBundle (const GretlBundle &other);             // copy constructor
     GretlBundle (gretl_bundle *src, bool copy = true);  // if copy==false, incoming bundle must be deallocated by libgretl
     GretlBundle (MODEL *model, DATASET *dset);          // we produce bundle from MODEL
     GretlBundle (GRETL_VAR *model, DATASET *dset);      // we produce bundle from VAR/VECM
@@ -57,12 +58,6 @@ public:
     GretlBundle (const py::kwargs &kwargs);             // for on-the-fly initialization
     ~GretlBundle (void);
 
-    // GretlBundle owns a raw gretl_bundle* (b_) and frees it in its destructor when
-    // free_b_ is set, so the implicit (shallow, pointer-copying) copy ctor/assignment
-    // would share that pointer between two owners and double-free it. These do a real
-    // deep copy instead (via gretl_bundle_copy), same as the GretlBundle(src, true)
-    // constructor, so the result is an independently-owned, safe-to-destroy bundle.
-    GretlBundle (const GretlBundle &other);
     GretlBundle &operator= (const GretlBundle &other);
 
     int get_err (void) const;

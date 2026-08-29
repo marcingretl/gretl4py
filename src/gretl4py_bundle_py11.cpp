@@ -32,6 +32,16 @@ void init_gretl4py_bundle_py11 (py::module_ &m)
     cls
     .def(py::init<>())                      // default constructor
     .def(py::init<const py::kwargs&>())     // on-the-fly initializer
+    .def("__copy__",
+         [](const GretlBundle &self) -> GretlBundlePtr
+         {
+             return std::make_shared<GretlBundle>(self);
+         }, R"doc(Return a deep copy of the bundle.)doc")
+    .def("__deepcopy__",
+         [](const GretlBundle &self, py::dict) -> GretlBundlePtr
+         {
+             return std::make_shared<GretlBundle>(self);
+         })
     .def("__repr__", &GretlBundle::repr_impl)
     .def("__getitem__", &GretlBundle::get_element<py::object>)
     .def("__setitem__", &GretlBundle::set_element<bool>)

@@ -33,6 +33,15 @@ GretlBundle::GretlBundle (void) : b_(gretl_bundle_new())
     if (!b_) handle_gretl_error(E_ALLOC);
 }
 
+GretlBundle::GretlBundle (const GretlBundle &other)
+{
+    //
+    // deep copy: 'this' gets its own independently-owned gretl_bundle
+    //
+    b_ = gretl_bundle_copy(other.b_, &err_);
+    if (err_) handle_gretl_error(err_);
+}
+
 GretlBundle::GretlBundle (MODEL *model, DATASET *dset)
 {
     b_ = bundle_from_model(model, dset, &err_);
@@ -65,15 +74,6 @@ GretlBundle::GretlBundle (gretl_bundle *src, bool copy)
         b_ = src;
         free_b_ = false;
     }
-    if (err_) handle_gretl_error(err_);
-}
-
-GretlBundle::GretlBundle (const GretlBundle &other)
-{
-    //
-    // deep copy: 'this' gets its own independently-owned gretl_bundle
-    //
-    b_ = gretl_bundle_copy(other.b_, &err_);
     if (err_) handle_gretl_error(err_);
 }
 
