@@ -813,10 +813,10 @@ int gretl_execute_script (const T &source)
 
     // dataset and model to use
     model = allocate_working_model();
-    if (model == nullptr) handle_gretl_error(E_ALLOC);
+    if (!model) handle_gretl_error(E_ALLOC);
     if (!script_dataset && !nulldata_executed) script_dataset.reset(datainfo_new());
     dset = script_dataset.get();
-    if (dset == nullptr) handle_gretl_error(E_ALLOC);
+    if (!dset) handle_gretl_error(E_ALLOC);
 
     // either we read already existing file or write tempfile
     if constexpr (std::is_same_v<T, std::filesystem::path>) {
@@ -950,7 +950,8 @@ int gretl_execute_script (const T &source)
         cli_exec_line(&state, dset, cmdprn);
     }
 
-    gretl_object_unref(model, GRETL_OBJ_EQN);
+    // we mark model to be freed on exit
+    destroy_working_model(model);
 
     // fb/fstack are process-lifetime globals; a non-QUIT early exit from the
     // main loop above (E_TOOLONG/E_PARSE) skips cli_quit()'s own fb reset, so
