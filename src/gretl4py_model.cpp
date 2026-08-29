@@ -929,6 +929,7 @@ void GretlModel_NSE_Driver_dpanel::fit (void)
     // we do the job
     if (lags_.size() > 1) {
         laglist.reset(gretl_list_new(lags_.size()));
+        if (!laglist) handle_gretl_error(E_ALLOC);
         for (size_t i=0; i<lags_.size(); i++) {
             laglist.get()[i+1] = static_cast<int>(lags_[i]);
         }

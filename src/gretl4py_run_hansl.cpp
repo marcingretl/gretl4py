@@ -34,7 +34,8 @@ extern "C" {
     #include <gretl/system.h>
 }
 #include <filesystem>
-#include <chrono>
+#include <fstream>
+#include <random>
 #ifdef _WIN32
  #include <windows.h>
 #endif
@@ -795,14 +796,39 @@ int gretl_execute_script (const T &source)
 
         if (err) handle_gretl_error(err);
         if (auto *gretldir = std::get_if<std::string>(res.get())) {
-            std::filesystem::path fullpath =
-                std::filesystem::path(*gretldir) / "tmp" / (std::to_string(std::chrono::high_resolution_clock::now().time_since_epoch().count()) + ".inp");
-            std::FILE *tmp_file = std::fopen(fullpath.string().c_str(), "w+");
+            std::filesystem::path tmp_dir = std::filesystem::path(*gretldir) / "tmp";
+            std::filesystem::path fullpath;
 
+            // unpredictable filename (128 bits of entropy) so a symlink can't be
+            // pre-planted at the path we're about to write to; retry only guards
+            // against an astronomically unlikely random collision.
+            std::random_device rd;
+            std::mt19937_64 gen(rd());
+            std::uniform_int_distribution<std::uint64_t> dist;
+
+            for (int attempt = 0; attempt < 8 && fullpath.empty(); ++attempt) {
+                char name[33];
+                std::snprintf(name, sizeof(name), "%016llx%016llx",
+                              static_cast<unsigned long long>(dist(gen)),
+                              static_cast<unsigned long long>(dist(gen)));
+                std::filesystem::path candidate = tmp_dir / (std::string("gretl4py_") + name + ".inp");
+
+                // refuse a path that already exists as anything (file or symlink)
+                // rather than silently truncating/following it
+                if (!std::filesystem::exists(std::filesystem::symlink_status(candidate))) fullpath = candidate;
+            }
+            if (fullpath.empty()) handle_gretl_error(E_FOPEN, "failed to generate temp file name");
+
+            std::ofstream tmp_file(fullpath, std::ios::out | std::ios::binary);
             if (!tmp_file) handle_gretl_error(E_FOPEN, "failed to open temp file");
-            std::fwrite(source.data(), 1, source.size(), tmp_file);
-            std::fflush(tmp_file);
-            std::fclose(tmp_file);
+            tmp_file.write(source.data(), static_cast<std::streamsize>(source.size()));
+            tmp_file.close();
+
+            // last-resort check: confirm what we wrote through is a plain file,
+            // not something a race slipped in as a symlink
+            if (!std::filesystem::is_regular_file(std::filesystem::symlink_status(fullpath))) {
+                handle_gretl_error(E_FOPEN, "temp file is not a regular file");
+            }
             std::snprintf(filearg, MAXLEN, "%s", fullpath.string().c_str());
         } else {
             throw std::runtime_error("didn't get $gretldir");
