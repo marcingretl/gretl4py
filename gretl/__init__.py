@@ -103,10 +103,6 @@ except ImportError as e:
 from . import gretl4py_addons
 from . import gretl4py_classes
 
-# module cleanup is now registered directly with Python's atexit module from
-# C++ (gretl4py.cpp), as an anonymous closure - so it's no longer a
-# Python-callable attribute here.
-
 # #####################################################
 # Explicit symbols import
 # #####################################################
