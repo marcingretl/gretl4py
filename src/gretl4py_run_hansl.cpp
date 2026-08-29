@@ -358,22 +358,52 @@ static void cli_quit (ExecState *s, PRN *cmdprn, int err)
 
 static int cli_do_pkg_sample (const char *pkgname, char *runfile, PRN *prn)
 {
+    //
+    // note: the sample script is written under a randomized filename (rather
+    // than the predictable "<pkgname>_sample.inp") with existence/symlink
+    // checks before and after writing, mirroring the fix already applied to
+    // hansl-string temp-file execution in gretl_execute_script() below - same
+    // vulnerability class (predictable path + fopen() follows symlinks).
+    //
     char *buf = nullptr;
-    int err = 0;
-
-    err = grab_package_sample(pkgname, &buf);
+    int err = grab_package_sample(pkgname, &buf);
 
     if (!err) {
-        std::string base = std::string(pkgname) + "_sample.inp";        //was: gchar *base = g_strdup_printf("%s_sample.inp", pkgname);
-        auto fname = gretl_gchar_ptr(gretl_make_dotpath(base.c_str())); //was: gchar *fname = gretl_make_dotpath(base);
-        std::FILE *fp = gretl_fopen(fname.get(), "w");
+        std::filesystem::path dotdir = gretl_dotdir();
+        std::filesystem::path fullpath;
+        std::random_device rd;
+        std::mt19937_64 gen(rd());
+        std::uniform_int_distribution<std::uint64_t> dist;
 
-        if (fp == nullptr) {
+        for (int attempt = 0; attempt < 8 && fullpath.empty(); ++attempt) {
+            char name[33];
+            std::snprintf(name, sizeof(name), "%016llx%016llx",
+                          static_cast<unsigned long long>(dist(gen)),
+                          static_cast<unsigned long long>(dist(gen)));
+            std::filesystem::path candidate = dotdir / (std::string(pkgname) + "_" + name + "_sample.inp");
+
+            if (!std::filesystem::exists(std::filesystem::symlink_status(candidate))) fullpath = candidate;
+        }
+        if (fullpath.empty()) {
+            std::free(buf);
+            return E_FOPEN;
+        }
+
+        std::ofstream fp(fullpath, std::ios::out | std::ios::binary);
+
+        if (!fp) {
             err = 1;
         } else {
-            std::fputs(buf, fp);
-            std::fclose(fp);
-            std::strcpy(runfile, fname.get());
+            fp.write(buf, static_cast<std::streamsize>(std::strlen(buf)));
+            fp.close();
+            if (!std::filesystem::is_regular_file(std::filesystem::symlink_status(fullpath))) {
+                err = 1;
+            } else if (fullpath.string().size() >= FILENAME_MAX) {
+                // caller's buffer can't hold it - fail loudly instead of truncating
+                err = 1;
+            } else {
+                std::snprintf(runfile, FILENAME_MAX, "%s", fullpath.string().c_str());
+            }
         }
         std::free(buf);
     }
@@ -461,7 +491,7 @@ static int cli_exec_line (ExecState *s, DATASET *dset, PRN *cmdprn)
     CMD *cmd = s->cmd;
     PRN *prn = s->prn;
     int old_runit = runit;
-    char runfile[MAXLEN];
+    char runfile[FILENAME_MAX];
     int renumber = 0;
     int err = 0;
 
@@ -768,8 +798,8 @@ int gretl_execute_script (const T &source)
     //int quiet = 0;    not used
     //int tool = 0;     not used
     int pkgmode = 0;
-    char filearg[MAXLEN];
-    char runfile[MAXLEN];
+    char filearg[FILENAME_MAX];
+    char runfile[FILENAME_MAX];
     //double scriptval = NADBL; not used
     CMD cmd;
     PRN *prn = global_printer.prn_ptr();
@@ -921,7 +951,18 @@ int gretl_execute_script (const T &source)
     }
 
     gretl_object_unref(model, GRETL_OBJ_EQN);
+
+    // fb/fstack are process-lifetime globals; a non-QUIT early exit from the
+    // main loop above (E_TOOLONG/E_PARSE) skips cli_quit()'s own fb reset, so
+    // without nulling fb here (and draining any leftover stacked files) a
+    // stale, already-closed FILE* would survive into the next call and be
+    // read from - a use-after-free.
     if (fb != stdin && fb != nullptr) std::fclose(fb);
+    fb = nullptr;
+    while (nfiles > 0) {
+        std::FILE *leftover = fstack[--nfiles];
+        if (leftover != nullptr && leftover != stdin) std::fclose(leftover);
+    }
     gretl_cmd_free(&cmd);
     if (err) handle_gretl_error(err);
     global_printer.print();
