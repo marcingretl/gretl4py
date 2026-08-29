@@ -158,9 +158,6 @@ void GretlModel::save_model_ (T *model)
     // We also add the @summary text produced by libgretl's printmodel().
     // FIXME: extend description for VAR, VECM, etc...
     //
-    // we record successful estimation
-    estimated_ = true;
-
     // whatever happens later, we "transfer" the model to libgretl,
     // so from that very moment libgretl owns the memory
     gretl_object_ref(model, model_obj_type_);
@@ -204,6 +201,9 @@ void GretlModel::save_model_ (T *model)
     // we finally register results on a python side
     py::object self = py::cast(this);
     gb_model_->python_register(self);
+
+    // we record successful estimation
+    estimated_ = true;
 }
 
 //T = { MODEL, GRETL_VAR, equation_system }
@@ -620,7 +620,7 @@ void GretlModel_NSE::regexp_extract_ (const std::string &formula, std::string &f
     }
     gretl4py_trim(formula_left);
     gretl4py_trim(formula_right);
-    if (formula_left.back() == ';') formula_left.pop_back();
+    if (!formula_left.empty() && formula_left.back() == ';') formula_left.pop_back();
 }
 
 //
@@ -917,6 +917,7 @@ void GretlModel_NSE_Driver_dpanel::fit (void)
 
     // we setup dpanel_list: lags + var_list
     dpanel_list.reset(gretl_list_new(var_list_.get()[0] + 2));
+    if (!dpanel_list) handle_gretl_error(E_ALLOC);
     if (lags_.size() == 1) {
         dpanel_list.get()[1] = static_cast<int>(lags_.at(0));
     } else {

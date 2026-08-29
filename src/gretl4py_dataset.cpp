@@ -354,6 +354,7 @@ void GretlDataset::allocate_dset_ (void)
 {
     free_dset_();
     dset = datainfo_new();
+    if (!dset) handle_gretl_error(E_ALLOC);
 }
 
 void GretlDataset::free_dset_ (void)

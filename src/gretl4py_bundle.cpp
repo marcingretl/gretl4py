@@ -61,9 +61,9 @@ GretlBundle::GretlBundle (gretl_bundle *src, bool copy)
     //
     if (copy) {
         b_ = gretl_bundle_copy(src, &err_);
-        free_b_ = false;
     } else {
         b_ = src;
+        free_b_ = false;
     }
     if (err_) handle_gretl_error(err_);
 }
