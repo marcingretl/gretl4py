@@ -57,6 +57,14 @@ public:
     GretlBundle (const py::kwargs &kwargs);             // for on-the-fly initialization
     ~GretlBundle (void);
 
+    // GretlBundle owns a raw gretl_bundle* (b_) and frees it in its destructor when
+    // free_b_ is set, so the implicit (shallow, pointer-copying) copy ctor/assignment
+    // would share that pointer between two owners and double-free it. These do a real
+    // deep copy instead (via gretl_bundle_copy), same as the GretlBundle(src, true)
+    // constructor, so the result is an independently-owned, safe-to-destroy bundle.
+    GretlBundle (const GretlBundle &other);
+    GretlBundle &operator= (const GretlBundle &other);
+
     int get_err (void) const;
 
     py::dict to_dict (void);                        // bundle-to-dict mapper

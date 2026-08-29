@@ -68,6 +68,27 @@ GretlBundle::GretlBundle (gretl_bundle *src, bool copy)
     if (err_) handle_gretl_error(err_);
 }
 
+GretlBundle::GretlBundle (const GretlBundle &other)
+{
+    //
+    // deep copy: 'this' gets its own independently-owned gretl_bundle
+    //
+    b_ = gretl_bundle_copy(other.b_, &err_);
+    if (err_) handle_gretl_error(err_);
+}
+
+GretlBundle &GretlBundle::operator= (const GretlBundle &other)
+{
+    if (this != &other) {
+        gretl_bundle *new_b = gretl_bundle_copy(other.b_, &err_);
+        if (err_) handle_gretl_error(err_);
+        if (free_b_ && b_ != nullptr) gretl_bundle_destroy(b_);
+        b_ = new_b;
+        free_b_ = true;
+    }
+    return *this;
+}
+
 GretlBundle::GretlBundle (const py::kwargs &kwargs) : b_(gretl_bundle_new())
 {
     //
@@ -149,7 +170,10 @@ void GretlBundle::extract_ (py::dict &dict)
         py::object val = get_element<py::object>(key_cstr);
 
         if (py::isinstance<GretlBundle>(val)) {
-            dict[key] = val.cast<GretlBundle>().to_dict();
+            // operate on the existing wrapped object rather than val.cast<GretlBundle>(),
+            // which copy-constructs a temporary GretlBundle sharing the same b_/free_b_ and
+            // would double-free b_ when that temporary is destroyed (see docs/security-review).
+            dict[key] = py::cast<GretlBundle*>(val)->to_dict();
         } else {
             dict[key] = std::move(val);
         }
