@@ -24,6 +24,7 @@
 #include "gretl4py_dataset.h"
 #include "gretl4py_model.h"
 #include "gretl4py_bundle.h"
+#include <limits>
 extern "C" {
     #include <gretl/gretl_typemap.h>
 }
@@ -133,13 +134,24 @@ void NumPyArray_extract (const py::array &arr, NumPyArrayView &view)
     //
     if (arr.ndim() > 2) throw std::runtime_error("Given array has more than two dimensions.");
 
+    // arr.shape() is a 64-bit py::ssize_t; NumPyArrayView::rows/cols are int
+    // (fed directly into gretl_matrix_alloc()'s int rows/cols and into
+    // memcpy-sized copies) - reject anything that would silently narrow/wrap
+    // instead of trusting it.
+    auto shape_to_int = [](py::ssize_t n) -> int
+    {
+        if (n < 0 || n > std::numeric_limits<int>::max()) throw std::overflow_error("NumPy array dimension too large.");
+
+        return static_cast<int>(n);
+    };
+
     view.is_double = arr.dtype().is(py::dtype::of<double>());
     view.is_complex = arr.dtype().is(py::dtype::of<std::complex<double>>());
     view.dtype = arr.dtype();
     view.base_array = arr;          // keep the NumPy array alive
     view.data = arr.request().ptr;
-    view.rows = arr.shape(0);
-    view.cols = arr.ndim() == 1 ? 1 : arr.shape(1);
+    view.rows = shape_to_int(arr.shape(0));
+    view.cols = arr.ndim() == 1 ? 1 : shape_to_int(arr.shape(1));
     view.NumPyArrayFC = is_numpy_array_fc(arr);
 
     const ssize_t itemsize = view.dtype.itemsize();
