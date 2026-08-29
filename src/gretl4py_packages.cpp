@@ -566,6 +566,15 @@ GretlPackageRes GretlPackage::function_exec (const std::string &func_name, Gretl
         res.n = dataset->dset->n; // for GRETL_TYPE_SERIES we must record length
     }
 
+    // transfer_ownership() must come after the GRETL_TYPE_NUMERIC resolution
+    // above, since it captures res.type (used to pick the right free function)
+    // by value - calling it earlier would free the returned object as the
+    // wrong type. Without this, raw_ptr was never freed at all: nothing else
+    // takes ownership of it (convert_GretlType_to_GretlTypes() only reads it
+    // via copies), so every call to a contributed package's function leaked
+    // its return value.
+    res.transfer_ownership();
+
     return res;
 }
 
