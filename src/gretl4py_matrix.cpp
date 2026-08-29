@@ -500,6 +500,12 @@ py::object GretlMatrix::get_element (int i) const
     if (is_complex()) {
         return m_->rows == 1 ? get_element(0, i) : get_element(i, 0);
     } else {
+        // manual handle negative values (same normalization as set_element(i,j))
+        // this is because gretl_vector_get() indexes raw storage with no negative-index support
+        if (i < 0) {
+            i += (std::max)(m_->rows, m_->cols);
+            if (i < 0) handle_gretl_error(E_BOUNDS, "index");
+        }
         check_bounds_(i);
         return py::cast(gretl_vector_get(m_, i));
     }
@@ -589,6 +595,12 @@ void GretlMatrix::set_element (int i, T val)
 
     if constexpr (std::is_same_v<T, double>) {
         if (is_complex()) throw std::invalid_argument("matrix is complex, assign a complex number (e.g. 1+2j)");
+        // manual handle negative values (same normalization as set_element(i,j))
+        // this is because gretl_vector_set() indexes raw storage with no negative-index support
+        if (i < 0) {
+            i += (std::max)(m_->rows, m_->cols);
+            if (i < 0) handle_gretl_error(E_BOUNDS, "index");
+        }
         check_bounds_(i);
         gretl_vector_set(m_, i, val);
     } else if constexpr (std::is_same_v<T, std::complex<double>>) {
