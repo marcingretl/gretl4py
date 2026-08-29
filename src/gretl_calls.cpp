@@ -809,6 +809,7 @@ GretlMatrixPtr matrix_cov_corr (const py::array &X, int dfcorr)
 
     // we fill-up 'mat'
     mat.reset(gretl_matrix_alloc(arr_view.rows, arr_view.cols));
+    if (!mat) handle_gretl_error(E_ALLOC);
     NumPyArray_to_gretl_storage<gretl_matrix>(arr_view, mat.get());
 
     // we do the job
