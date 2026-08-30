@@ -132,7 +132,7 @@ void NumPyArray_extract (const py::array &arr, NumPyArrayView &view)
     //
     // here we extract meta information about NumPy arrays
     //
-    if (arr.ndim() > 2) throw std::runtime_error("Given array has more than two dimensions.");
+    if (arr.ndim() == 0 || arr.ndim() > 2) throw std::runtime_error("Given array must have one or two dimensions.");
 
     // arr.shape() is a 64-bit py::ssize_t; NumPyArrayView::rows/cols are int
     // (fed directly into gretl_matrix_alloc()'s int rows/cols and into

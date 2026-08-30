@@ -242,12 +242,25 @@ gretl_matrix *GretlMatrix::numpy_to_matrix_ (const py::array& array)
 // instance
 void GretlMatrix::check_bounds_ (int i, int j) const
 {
-    if (std::abs(i) >= m_->rows || std::abs(j) >= m_->cols) handle_gretl_error(E_BOUNDS, "[i,j]", "[" + std::to_string(i) + "," + std::to_string(j) + "]");
+    // NOT std::abs(i) >= rows: std::abs(INT_MIN) is undefined behaviour
+    // (negating INT_MIN overflows int - two's complement has one more
+    // negative value than positive, so there's no representable +2^31 to
+    // return). In practice it just wraps back to INT_MIN, which is still
+    // negative, so "abs(i) >= rows" would wrongly evaluate false and let
+    // i == INT_MIN slip past this check. Expressing the same "magnitude
+    // within bounds" test as two plain comparisons avoids the negation
+    // entirely, so it's well-defined for every int, INT_MIN included.
+    if (i >= m_->rows || i < -m_->rows || j >= m_->cols || j < -m_->cols) {
+        handle_gretl_error(E_BOUNDS, "[i,j]", "[" + std::to_string(i) + "," + std::to_string(j) + "]");
+    }
 }
 
 void GretlMatrix::check_bounds_ (int i) const
 {
-    if (std::abs(i) >= (std::max)(m_->rows, m_->cols)) handle_gretl_error(E_BOUNDS, "[i]", "[" + std::to_string(i) + "]");
+    // see check_bounds_(i,j) above for why this avoids std::abs()
+    int len = (std::max)(m_->rows, m_->cols);
+
+    if (i >= len || i < -len) handle_gretl_error(E_BOUNDS, "[i]", "[" + std::to_string(i) + "]");
 }
 
 gretl_matrix_ptr GretlMatrix::exec_slice_ (const std::string &slice_str) const
