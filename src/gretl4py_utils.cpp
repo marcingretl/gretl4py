@@ -138,7 +138,11 @@ void NumPyArray_extract (const py::array &arr, NumPyArrayView &view)
     // (fed directly into gretl_matrix_alloc()'s int rows/cols and into
     // memcpy-sized copies) - reject anything that would silently narrow/wrap
     // instead of trusting it.
-    auto shape_to_int = [](py::ssize_t n) -> int
+    // Note: spelled Py_ssize_t, not py::ssize_t/ssize_t - on MSYS2/clang,
+    // <unistd.h> #defines ssize_t as a macro (__int64), and the preprocessor
+    // rewrites that token wherever it appears, including inside py::ssize_t,
+    // which then fails to parse as a type.
+    auto shape_to_int = [](Py_ssize_t n) -> int
     {
         if (n < 0 || n > std::numeric_limits<int>::max()) throw std::overflow_error("NumPy array dimension too large.");
 
@@ -154,7 +158,7 @@ void NumPyArray_extract (const py::array &arr, NumPyArrayView &view)
     view.cols = arr.ndim() == 1 ? 1 : shape_to_int(arr.shape(1));
     view.NumPyArrayFC = is_numpy_array_fc(arr);
 
-    const ssize_t itemsize = view.dtype.itemsize();
+    const Py_ssize_t itemsize = view.dtype.itemsize();
     const auto &strides = arr.strides();
 
     view.row_stride = strides[0] / itemsize;
