@@ -515,7 +515,7 @@ GretlMatrixPtr GretlMatrix::get_slice (const py::tuple &slice) const
 {
     auto res = exec_slice_(render_slice_(slice));
 
-    return std::make_shared<GretlMatrix>(res.release());
+    return std::make_shared<GretlMatrix>(res.release(), false);
 }
 
 GretlMatrixPtr GretlMatrix::get_slice (const py::slice &slice) const
@@ -540,14 +540,14 @@ GretlMatrixPtr GretlMatrix::get_slice (const py::slice &slice) const
     }
     auto res = exec_slice_(slice_str);
 
-    return std::make_shared<GretlMatrix>(res.release());
+    return std::make_shared<GretlMatrix>(res.release(), false);
 }
 
 GretlMatrixPtr GretlMatrix::get_slice (const std::string &slice) const
 {
     auto res = exec_slice_(render_slice_(slice));
 
-    return std::make_shared<GretlMatrix>(res.release());
+    return std::make_shared<GretlMatrix>(res.release(), false);
 }
 
 //T: double, std::complex<double>
