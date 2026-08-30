@@ -187,6 +187,12 @@ int GretlBundle::get_err (void) const
 
 py::dict GretlBundle::to_dict (void)
 {
+    // as_dict_ is a persistent member, reused across calls; extract_() only
+    // ever adds/overwrites keys currently present in the bundle, it never
+    // removes stale ones - without clearing first, a key deleted from the
+    // bundle between two to_dict() calls would survive forever in the
+    // returned dict.
+    as_dict_.clear();
     extract_(as_dict_);
 
     return as_dict_;
