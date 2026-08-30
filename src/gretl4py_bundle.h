@@ -39,7 +39,6 @@ class GretlBundle
 private:
     bool free_b_ = true;                            // if *b should be freed
     gretl_bundle *b_ = nullptr;                     // libgretl bundle pointer
-    py::dict as_dict_;                              // Python's dict() representation
     int err_ = 0;
 
     template <typename F>
