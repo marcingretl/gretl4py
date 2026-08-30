@@ -1409,10 +1409,12 @@ void GretlDataset::test (const std::string &type, const std::string &varlist, co
     } else if (type == "coint") {
         err_ = engle_granger_test(order, ex_var.get(), dset, opt_, printer_.prn_ptr());
     } else if (type == "corrgm") {
+        if (ex_var.get()[0] != 1) throw std::invalid_argument("corrgm takes just one series");
         err_ = corrgram(ex_var.get()[1], order, 0, dset, opt_, printer_.prn_ptr());
     } else if (type == "difftest") {
         err_ = diff_test(ex_var.get(), dset, opt_, printer_.prn_ptr());
     } else if (type == "fractint") {
+        if (ex_var.get()[0] != 1) throw std::invalid_argument("fractint takes just one series");
         err_ = fractint(ex_var.get()[1], order, dset, opt_, printer_.prn_ptr());
     } else if (type == "johansen") {
         err_ = johansen_test_simple(order, ex_var.get(), dset, opt_, printer_.prn_ptr());
@@ -1445,10 +1447,10 @@ void GretlDataset::test (const std::string &type, const std::string &varlist, co
     } else if (type == "meantest") {
         err_ = means_test(ex_var.get(), dset, opt_, printer_.prn_ptr());
     } else if (type == "normtest") {
-        if (ex_var.get()[0] > 1) throw std::invalid_argument("normtest takes just one series");
+        if (ex_var.get()[0] != 1) throw std::invalid_argument("normtest takes just one series");
         err_ = gretl_normality_test(ex_var.get()[1], dset, opt_, printer_.prn_ptr());
     } else if (type == "runs") {
-        if (ex_var.get()[0] > 1) throw std::invalid_argument("runs takes just one series");
+        if (ex_var.get()[0] != 1) throw std::invalid_argument("runs takes just one series");
         err_ = runs_test(ex_var.get()[1], dset, opt_, printer_.prn_ptr());
     } else if (type == "vartest") {
         if (ex_var.get()[0] != 2) throw std::invalid_argument("vartest takes exactly two series");
