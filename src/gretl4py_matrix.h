@@ -68,6 +68,8 @@ public:
     GretlMatrix (const double **src, int rows, int cols);                           // from array of doubles
     ~GretlMatrix (void);
 
+    GretlMatrix &operator= (const GretlMatrix &src);                                // copy assignment
+
     static GretlMatrixPtr identity (int n, std::optional<int>);             // static method for creating an I(n,m) like indentity
 
     static GretlMatrixPtr diag (const py::sequence &seq);                   // static method for creating an I(n) with main diag filled with @seq

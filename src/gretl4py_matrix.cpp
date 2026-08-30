@@ -153,6 +153,22 @@ GretlMatrix::~GretlMatrix (void)
     }
 }
 
+GretlMatrix &GretlMatrix::operator= (const GretlMatrix &src)
+{
+    //
+    // deep copy: mirrors the copy constructor - printer_/err_ are
+    //
+    if (this != &src) {
+        gretl_matrix *new_m = gretl_matrix_copy(src.get_ptr());
+
+        if (!new_m) handle_gretl_error(E_ALLOC);
+        if (m_) gretl_matrix_free(m_);
+        m_ = new_m;
+    }
+
+    return *this;
+}
+
 GretlMatrixPtr GretlMatrix::identity (int n, std::optional<int> m)
 {
     //
