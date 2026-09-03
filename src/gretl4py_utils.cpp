@@ -603,5 +603,3 @@ GretlSlice python_slice_to_gretl_slice (const std::string &slice)
 
     return make_gretl_slice(startobs, endobs, slice, opts);
 }
-
-

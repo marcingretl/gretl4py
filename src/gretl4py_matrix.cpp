@@ -318,7 +318,7 @@ template <typename T>
 void GretlMatrix::from_matrix_ (const MatrixData<T> &data)
 {
     //
-    // helper for filling up gretl_matri storage from given STL container
+    // helper for filling up gretl_matrix storage from given STL container
     //
     const int rows = static_cast<int>(data.size());
     const int cols = rows ? static_cast<int>(data[0].size()) : 0;
