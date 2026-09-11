@@ -382,7 +382,7 @@ void init_gretl4py_dataset_py11 (py::module_ &m)
     .def("xtab", &GretlDataset::xtab<py::list>,
          py::arg("varlist").none(true) = py::list(), py::kw_only())
     .def("test",
-         [](GretlDataset &self, const std::string &type, const py::kwargs &kwargs)
+         [](GretlDataset &self, const std::string &type, const py::kwargs &kwargs) -> GretlBundlePtr
          {
              //
              // here we do some pre-computations for certain tests
@@ -443,7 +443,7 @@ void init_gretl4py_dataset_py11 (py::module_ &m)
              }
 
              // we do the job
-             self.test(type, varlist, clean_kwargs);
+             return self.test(type, varlist, clean_kwargs);
         }, py::arg("type"), py::kw_only());
 
     cls.attr("__module__") = "gretl";

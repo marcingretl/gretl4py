@@ -14,13 +14,13 @@ def run_example():
   ###############################################################
   print("\n****************************")
   print("adf")
-  d1.test(type="adf", varlist="LRM", order=1, quiet=True)
-  print(d1.tests[-1]['summary'])
+  res_adf = d1.adf(varlist="LRM", order=1, quiet=True)
+  print(res_adf['summary'])
 
   print("\n****************************")
   print("bds")
-  d1.test(type="bds", varlist="LRY", order=4, quiet=False)
-  print(d1.tests[-1]['summary'])
+  res_bds = d1.bds(order=4, x="LRY", quiet=False)
+  print(res_bds['summary'])
 
   print("\n****************************")
   print("coint")

@@ -80,6 +80,8 @@ public:
     template <typename T>
     void set_element (const std::string &key, const T &t);
 
+    void set_element (const std::string &key, const py::object &obj);
+
     void delete_element (const std::string &key);
 
     py::object pop (const std::string &key);

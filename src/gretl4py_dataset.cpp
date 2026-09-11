@@ -1386,14 +1386,14 @@ py::object GretlDataset::get_accessor (const std::string &name)
     return do_get_accessor<GRETL_OBJ_DSET>(name, shared_from_this(), nullptr);
 }
 
-void GretlDataset::test (const std::string &type, const std::string &varlist, const py::kwargs &kwargs)
+GretlBundlePtr GretlDataset::test (const std::string &type, const std::string &varlist, const py::kwargs &kwargs)
 {
     //
     // this method performs test which do take a variables list
     //
-    py::dict res;
-    int order = 0;
+    GretlBundlePtr res = std::make_shared<GretlBundle>();
     gretl_list_ptr ex_var{nullptr};
+    int order = 0;
 
     // we construct list of external variables
     ex_var = gretllist(varlist);
@@ -1463,12 +1463,15 @@ void GretlDataset::test (const std::string &type, const std::string &varlist, co
     // we printout results
     if (printout) printer_.print();
 
-    res[py::cast("test")] = get_accessor("$test");
-    res[py::cast("pvalue")] = get_accessor("$pvalue");
-    res[py::cast("summary")] = printer_.get_buffer();
+    // material we return
+    res->set_element("test", get_accessor("$test"));
+    res->set_element("pvalue", get_accessor("$pvalue"));
+    res->set_element<std::string>("summary", std::string(printer_.get_buffer()));
 
     // we register result
-    move_to_python_container<GretlDataset, py::dict, py::list>(*this, std::move(res), "tests");
+    move_to_python_container<GretlDataset, py::dict, py::list>(*this, res->to_dict(), "tests");
+
+    return res;
 }
 
 GretlMatrixPtr GretlDataset::get_series (const std::string &series) const

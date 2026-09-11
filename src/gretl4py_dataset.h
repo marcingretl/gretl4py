@@ -170,7 +170,7 @@ public:
     std::string python_list_to_formula (const py::list &list) const;
 
     // tests
-    void test (const std::string &type, const std::string &varlist, const py::kwargs &kwargs);
+    GretlBundlePtr test (const std::string &type, const std::string &varlist, const py::kwargs &kwargs);
 
     // transformations
     template <typename T, GretlCmdIndex CI>

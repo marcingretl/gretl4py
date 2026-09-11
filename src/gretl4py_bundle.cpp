@@ -110,10 +110,12 @@ GretlBundle::GretlBundle (const py::kwargs &kwargs) : b_(gretl_bundle_new())
             set_element<std::string>(key_str, val.cast<std::string>());
         } else if (is_pynumarray(val)) {
             set_element<py::array>(key_str, val.cast<py::array>());
-        } else if (py::isinstance<GretlBundle>(val)) {
+        } else if (is_pygretlbundle(val)) {
             set_element<GretlBundlePtr>(key_str, val.cast<GretlBundlePtr>());
+        } else if (is_pygretlmatrix(val)) {
+            set_element<GretlMatrixPtr>(key_str, val.cast<GretlMatrixPtr>());
         } else {
-            throw std::invalid_argument("'" + key_str + "': unsupported type");
+            throw std::invalid_argument("GretlBundle: '" + key_str + "': unsupported type");
         }
     }
 }
@@ -327,6 +329,29 @@ template void GretlBundle::set_element<std::string>(const std::string&, const st
 template void GretlBundle::set_element<py::array>(const std::string&, const py::array&);
 template void GretlBundle::set_element<GretlBundlePtr>(const std::string&, const GretlBundlePtr&);
 template void GretlBundle::set_element<GretlMatrixPtr>(const std::string&, const GretlMatrixPtr&);
+
+void GretlBundle::set_element (const std::string &key, const py::object &obj)
+{
+    //
+    // overload dedicated for loading generic 'py::object' into bundle
+    //
+    if (is_pybool(obj)) {
+        err_ = gretl_bundle_set_int(b_, key.c_str(), obj.cast<bool>());
+    } else if (is_pyint(obj)) {
+        err_ = gretl_bundle_set_int(b_, key.c_str(), obj.cast<int>());
+    } else if (is_pyfloat(obj)) {
+        err_ = gretl_bundle_set_scalar(b_, key.c_str(), obj.cast<double>());
+    } else if (is_pystr(obj)) {
+        err_ = gretl_bundle_set_string(b_, key.c_str(), obj.cast<std::string>().c_str());
+    } else if (is_pygretlbundle(obj)) {
+        err_ = gretl_bundle_set_data(b_, key.c_str(), obj.cast<GretlBundlePtr>()->get_ptr(), GRETL_TYPE_BUNDLE);
+    } else if (is_pygretlmatrix(obj)) {
+        err_ = gretl_bundle_set_data(b_, key.c_str(), obj.cast<GretlMatrixPtr>()->get_ptr(), GRETL_TYPE_MATRIX);
+    } else {
+        throw std::runtime_error("GretlBundle::set_element(): unsupported type");
+    }
+    if (err_) handle_gretl_error(err_);
+}
 
 void GretlBundle::delete_element (const std::string &key)
 {

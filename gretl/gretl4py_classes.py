@@ -423,6 +423,70 @@ def _package_get_help(self: "Package"):
     else:
         raise RuntimeError(f"Unknown help type: {kind}")
 
+def _adf(self: "Dataset", order: int, varlist: str | list, **kwargs) -> "Bundle":
+    """Perform Augmented Dickey-Fuller unit-root tests.
+
+    Parameters
+    ----------
+    order : int
+        Lag order; use -1 for the Schwert rule.
+    varlist : str | list
+        Variable(s) to test.
+
+    Keyword options
+    ---------------
+    nc, c, ct, ctt : bool
+        Select deterministic terms.
+    seasonals : bool
+        Include seasonal dummies.
+    gls : bool
+        Use GLS demeaning or detrending.
+    verbose : bool | str
+        Print additional information; use "max" for full output.
+    quiet : bool
+        Suppress output.
+    difference : bool
+        Test the first difference.
+    test_down : bool | str
+        Select lag order automatically (AIC, BIC, or "tstat").
+    perron_qu : bool
+        Use the Perron-Qu lag-selection refinement.
+    """
+    return self.test(type="adf", order=order, varlist=varlist, **kwargs)
+_adf.__name__ = "adf"
+
+def _bds(self: "Dataset", order: int, x: str | list, **kwargs) -> "Bundle":
+    """
+    Perform the BDS test for nonlinearity/IID violations.
+
+    The BDS test detects general departures from linearity or IID behavior in a
+    series, and is commonly applied to regression residuals. The `order` argument
+    sets the maximum embedding dimension and must be at least 2.
+
+    Parameters
+    ----------
+    order : int
+        Maximum dimension used in the test.
+    x : str
+        Name of the series to test.
+    corr1 : float, optional
+        Target first-order correlation integral for selecting epsilon.
+    sdcrit : float, optional
+        Set epsilon as a multiple of the standard deviation of `x`.
+    boot : int, optional
+        Number of bootstrap replications. Use 0 to disable bootstrapping.
+    quiet : bool, optional
+        Suppress printed output.
+
+    Returns
+    -------
+    Matrix
+        A 2 x (`order` - 1) matrix containing test statistics in the first row
+        and p-values in the second row.
+    """
+    return self.test(type="bds", order=order, varlist=x, **kwargs)
+_bds.__name__ = "bds"
+
 # #######################################################
 #   GretlMatrix class
 # #######################################################

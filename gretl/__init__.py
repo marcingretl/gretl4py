@@ -112,13 +112,13 @@ from ._gretl import (delete, genr, include, pkg, print, set, summary)       # li
 from ._gretl import (varlist, run_script, run_hansl, get_uservar)
 from ._gretl import (pvalue, critical, pdf, cdf, invcdf, corr, cov)         # libgretl's functions interfaces
 from ._gretl import (get_accessor, tdisagg)
+from .gretl4py_addons import print_module_source, fc_print, modeltab
 from .gretl4py_classes import _attrs, _oddsratio, mle, nls, gmm, NLSpec
 from .gretl4py_classes import get_data, show_data_status
 from .gretl4py_classes import _dataset_to_pandas, _to_dataframe
 from .gretl4py_classes import _matrix_functions_wrapper, _package_get_help
-from .gretl4py_classes import _model_plots
-from .gretl4py_classes import _matrix_to_pandas, _ones
-from .gretl4py_addons import print_module_source, fc_print, modeltab
+from .gretl4py_classes import _model_plots, _matrix_to_pandas, _ones
+from .gretl4py_classes import _adf, _bds
 
 # #####################################################
 # deprecations
@@ -141,6 +141,10 @@ setattr(_gretl.Model_logit, "oddsratio", _oddsratio)        # for pretty-printin
 # gretl.Dataset class
 setattr(_gretl.Dataset, "to_pandas", _dataset_to_pandas)    # gretl data to Pandas DataFrame converter
 setattr(_gretl.Dataset, "to_dataframe", _to_dataframe)
+setattr(_gretl.Dataset, "adf", _adf)
+setattr(_gretl.Dataset, "bds", _bds)
+
+# gretl.Package class
 setattr(_gretl.Package, "get_help", _package_get_help)      # display help (either PDF or txt)
 
 # gretl.Matrix class
