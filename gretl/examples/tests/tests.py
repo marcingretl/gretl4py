@@ -47,7 +47,7 @@ def run_example():
 
   print("\n****************************")
   print("kpss")
-  d1.test(type="kpss", varlist="LRM", order=1, seasonals=True, trend=True)
+  d1.kpss(order=1, varlist="LRM", seasonals=True, trend=True)
 
   print("\n****************************")
   print("levinlin")

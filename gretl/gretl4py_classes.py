@@ -507,6 +507,10 @@ def _johansen(self: "Dataset", order: int, varlist: str | list, **kwargs) -> "Bu
     return self.test(type="johansen", varlist=varlist, order=order, **kwargs)
 _johansen.__name__ = "johansen"
 
+def _kpss(self: "Dataset", order: int, varlist: str | list, **kwargs) -> "Bundle":
+    return self.test(type="kpss", varlist=varlist, order=order, **kwargs)
+_kpss.__name__ = "kpss"
+
 # #######################################################
 #   GretlMatrix class
 # #######################################################
