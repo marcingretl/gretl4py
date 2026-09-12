@@ -24,7 +24,7 @@ def run_example():
 
   print("\n****************************")
   print("coint")
-  d1.test(type="coint", y="LRM", varlist="LRY IBO", order=4)
+  res_coint = d1.coint(depvar="LRM", indepvars="LRY IBO", order=4)
 
   print("\n****************************")
   print("corrgm")
