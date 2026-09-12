@@ -28,8 +28,8 @@ def run_example():
 
   print("\n****************************")
   print("corrgm")
-  d1.test(type="corrgm", y="LRM", order=8)
-  print(d1.tests[-1]['pvalue'])
+  res_corrgm = d1.corrgm(y="LRM", order=8)
+  print(res_corrgm['pvalue'])
 
   print("\n****************************")
   print("difftest")

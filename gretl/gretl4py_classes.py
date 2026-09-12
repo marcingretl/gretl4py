@@ -491,6 +491,10 @@ def _coint(self: "Dataset", order: int, depvar: str | list, indepvars: str | lis
     return self.test(type="coint", y=depvar, varlist=indepvars, **kwargs)
 _coint.__name__ = "coint"
 
+def _corrgm(self: "Dataset", y: str | list, order: int, **kwargs) -> "Bundle":
+    return self.test(type="corrgm", y=y, order=order, **kwargs)
+_corrgm.__name__ = "corrgm"
+
 # #######################################################
 #   GretlMatrix class
 # #######################################################
