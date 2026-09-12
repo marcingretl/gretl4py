@@ -499,6 +499,10 @@ def _difftest(self: "Dataset", x: str, y: str, **kwargs) -> "Bundle":
     return self.test(type="difftest", varlist=x + " " + y, **kwargs)
 _difftest.__name__ = "difftest"
 
+def _fractint(self: "Dataset", series: str, **kwargs) -> "Bundle":
+    return self.test(type="fractint", varlist=series, **kwargs)
+_fractint.__name__ = "fractint"
+
 # #######################################################
 #   GretlMatrix class
 # #######################################################

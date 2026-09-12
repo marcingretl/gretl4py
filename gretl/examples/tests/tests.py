@@ -39,7 +39,7 @@ def run_example():
 
   print("\n****************************")
   print("fractint")
-  d1.test(type="fractint", varlist="LRM")
+  d1.fractint(series="LRM")
 
   print("\n****************************")
   print("johansen")
