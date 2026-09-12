@@ -43,7 +43,7 @@ def run_example():
 
   print("\n****************************")
   print("johansen")
-  d1.test(type="johansen", varlist="LRM LRY IBO IDE", order=4, rc=True)
+  d1.johansen(order=4, varlist="LRM LRY IBO IDE", rc=True)
 
   print("\n****************************")
   print("kpss")

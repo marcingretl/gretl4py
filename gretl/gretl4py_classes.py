@@ -503,6 +503,10 @@ def _fractint(self: "Dataset", series: str, **kwargs) -> "Bundle":
     return self.test(type="fractint", varlist=series, **kwargs)
 _fractint.__name__ = "fractint"
 
+def _johansen(self: "Dataset", order: int, varlist: str | list, **kwargs) -> "Bundle":
+    return self.test(type="johansen", varlist=varlist, order=order, **kwargs)
+_johansen.__name__ = "johansen"
+
 # #######################################################
 #   GretlMatrix class
 # #######################################################
