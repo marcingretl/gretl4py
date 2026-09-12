@@ -487,11 +487,11 @@ def _bds(self: "Dataset", order: int, x: str | list, **kwargs) -> "Bundle":
     return self.test(type="bds", order=order, varlist=x, **kwargs)
 _bds.__name__ = "bds"
 
-def _coint(self: "Dataset", order: int, depvar: str | list, indepvars: str | list, **kwargs) -> "Bundle":
+def _coint(self: "Dataset", order: int, depvar: str, indepvars: str | list, **kwargs) -> "Bundle":
     return self.test(type="coint", y=depvar, varlist=indepvars, **kwargs)
 _coint.__name__ = "coint"
 
-def _corrgm(self: "Dataset", y: str | list, order: int, **kwargs) -> "Bundle":
+def _corrgm(self: "Dataset", y: str, order: int, **kwargs) -> "Bundle":
     return self.test(type="corrgm", y=y, order=order, **kwargs)
 _corrgm.__name__ = "corrgm"
 
