@@ -35,7 +35,7 @@ def run_example():
   print("difftest")
   d5.new_series("capp = (Vote > 1) ? CPI : NA")
   d5.new_series("cdis = (Vote == 0) ? CPI : NA")
-  d5.test(type="difftest", varlist="capp cdis", rank_sum=True)
+  d5.difftest(x="capp", y="cdis", rank_sum=True)
 
   print("\n****************************")
   print("fractint")

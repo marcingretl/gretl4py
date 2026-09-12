@@ -118,7 +118,7 @@ from .gretl4py_classes import get_data, show_data_status
 from .gretl4py_classes import _dataset_to_pandas, _to_dataframe
 from .gretl4py_classes import _matrix_functions_wrapper, _package_get_help
 from .gretl4py_classes import _model_plots, _matrix_to_pandas, _ones
-from .gretl4py_classes import _adf, _bds, _coint, _corrgm
+from .gretl4py_classes import _adf, _bds, _coint, _corrgm, _difftest
 
 # #####################################################
 # deprecations
@@ -145,6 +145,7 @@ setattr(_gretl.Dataset, "adf", _adf)
 setattr(_gretl.Dataset, "bds", _bds)
 setattr(_gretl.Dataset, "coint", _coint)
 setattr(_gretl.Dataset, "corrgm", _corrgm)
+setattr(_gretl.Dataset, "difftest", _difftest)
 
 # gretl.Package class
 setattr(_gretl.Package, "get_help", _package_get_help)      # display help (either PDF or txt)

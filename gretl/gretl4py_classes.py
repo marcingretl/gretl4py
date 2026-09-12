@@ -495,6 +495,10 @@ def _corrgm(self: "Dataset", y: str, order: int, **kwargs) -> "Bundle":
     return self.test(type="corrgm", y=y, order=order, **kwargs)
 _corrgm.__name__ = "corrgm"
 
+def _difftest(self: "Dataset", x: str, y: str, **kwargs) -> "Bundle":
+    return self.test(type="difftest", varlist=x + " " + y, **kwargs)
+_difftest.__name__ = "difftest"
+
 # #######################################################
 #   GretlMatrix class
 # #######################################################
