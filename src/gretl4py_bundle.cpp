@@ -347,8 +347,10 @@ void GretlBundle::set_element (const std::string &key, const py::object &obj)
         err_ = gretl_bundle_set_data(b_, key.c_str(), obj.cast<GretlBundlePtr>()->get_ptr(), GRETL_TYPE_BUNDLE);
     } else if (is_pygretlmatrix(obj)) {
         err_ = gretl_bundle_set_data(b_, key.c_str(), obj.cast<GretlMatrixPtr>()->get_ptr(), GRETL_TYPE_MATRIX);
+    } else if (is_pydict(obj)) {
+        err_ = gretl_bundle_set_data(b_, key.c_str(), GretlBundle(obj.cast<py::dict>()).get_ptr(), GRETL_TYPE_BUNDLE);
     } else {
-        throw std::runtime_error("GretlBundle::set_element(): unsupported type");
+        throw std::runtime_error("GretlBundle::set_element(): unsupported py::object type");
     }
     if (err_) handle_gretl_error(err_);
 }

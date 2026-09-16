@@ -455,12 +455,12 @@ py::object GretlModel_NSE::get_accessor (const std::string &name) const
     return do_get_accessor<GRETL_OBJ_EQN>(name, dataset_, static_cast<void*>(model_));
 }
 
-void GretlModel_NSE::test (const std::string &type, const py::kwargs &kwargs)
+GretlBundlePtr GretlModel_NSE::test (const std::string &type, const py::kwargs &kwargs)
 {
     //
     // this method performs test which do not take a variables list
     //
-    py::dict res;
+    GretlBundlePtr res = std::make_shared<GretlBundle>();
     int order = type == "corrgm" ? auto_acf_order(sample_size( dataset_->dset)) : dataset_->dset->pd;
 
     // we set up options
@@ -504,22 +504,24 @@ void GretlModel_NSE::test (const std::string &type, const py::kwargs &kwargs)
     if (printout) printer_.print();
 
     // we manufacture resulting object
-    res[py::cast("type")] = type;
-    res[py::cast("options")] = kwargs;
-    res[py::cast("test")] = get_accessor("$test");
-    res[py::cast("pvalue")] = get_accessor("$pvalue");
-    res[py::cast("summary")] = printer_.get_buffer();
+    res->set_element<std::string>("type", type);
+    res->set_element("options", py::object(kwargs));
+    res->set_element("test", get_accessor("$test"));
+    res->set_element("pvalue", get_accessor("$pvalue"));
+    res->set_element<std::string>("summary", std::string(printer_.get_buffer()));
 
     // we register result
-    move_to_python_container<GretlModel, py::dict, py::list>(*this, std::move(res), "tests");
+    move_to_python_container<GretlModel, py::dict, py::list>(*this, res->to_dict(), "tests");
+
+    return res;
 }
 
-void GretlModel_NSE::test (const std::string &type, const std::string &varlist, const py::kwargs &kwargs)
+GretlBundlePtr GretlModel_NSE::test (const std::string &type, const std::string &varlist, const py::kwargs &kwargs)
 {
     //
     // this method performs test which do take a variables list
     //
-    py::dict res;
+    GretlBundlePtr res = std::make_shared<GretlBundle>();
     int order = -1;
     gretl_list_ptr ex_var{nullptr};
 
@@ -547,14 +549,16 @@ void GretlModel_NSE::test (const std::string &type, const std::string &varlist, 
     if (printout) printer_.print();
 
     // we manufacture resulting object
-    res[py::cast("type")] = type;
-    res[py::cast("options")] = kwargs;
-    res[py::cast("test")] = get_accessor("$test");
-    res[py::cast("pvalue")] = get_accessor("$pvalue");
-    res[py::cast("summary")] = printer_.get_buffer();
+    res->set_element<std::string>("type", type);
+    res->set_element("options", py::object(kwargs));
+    res->set_element("test", get_accessor("$test"));
+    res->set_element("pvalue", get_accessor("$pvalue"));
+    res->set_element<std::string>("summary", std::string(printer_.get_buffer()));
 
     // we register result
-    move_to_python_container<GretlModel, py::dict, py::list>(*this, std::move(res), "tests");
+    move_to_python_container<GretlModel, py::dict, py::list>(*this, res->to_dict(), "tests");
+
+    return res;
 }
 
 void GretlModel_NSE::restrict (const py::list &impose,

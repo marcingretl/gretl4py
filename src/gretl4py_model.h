@@ -122,9 +122,9 @@ public:
     template <ModelDataIndex IDX>
     char *gretl_get_fit_or_resid (const std::string &name = "") const;
 
-    void test (const std::string &type, const py::kwargs &kwargs);
+    GretlBundlePtr test (const std::string &type, const py::kwargs &kwargs);
 
-    void test (const std::string &type, const std::string &varlist, const py::kwargs &kwargs);
+    GretlBundlePtr test (const std::string &type, const std::string &varlist, const py::kwargs &kwargs);
 
     double adj_rsq (void) const;
 };
