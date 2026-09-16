@@ -119,6 +119,10 @@ def _model_plots(
     else:
         raise ValueError(f"unknown plotting type: {kind}")
 
+def _add(self: "Model", varlist: str, **kwargs) -> "Bundle":
+    return self.test(type="add", varlist=varlist, **kwargs)
+_add.__name__ = "add"
+
 # #######################################################
 #   GretlModel_nl class
 # #######################################################

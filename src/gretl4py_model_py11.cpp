@@ -109,7 +109,7 @@ void init_gretl4py_model_py11(py::module_ &m)
     .def("save_ahat", &GretlModel_NSE::gretl_get_fit_or_resid<M_AHAT>, py::arg("name").none(true) = "")
     .def("save_h", &GretlModel_NSE::gretl_get_fit_or_resid<M_H>, py::arg("name").none(true) = "")
     .def("test",
-         [](GretlModel_NSE &self, const std::string &type, const py::kwargs &kwargs)
+         [](GretlModel_NSE &self, const std::string &type, const py::kwargs &kwargs) -> GretlBundlePtr
          {
              //
              // 1. handles overload resolution cleanly (keyword vs positional)
@@ -130,7 +130,7 @@ void init_gretl4py_model_py11(py::module_ &m)
              }
 
              // we do the job
-             with_vars ? self.test(type, varlist, clean_kwargs) : self.test(type, clean_kwargs);
+             return with_vars ? self.test(type, varlist, clean_kwargs) : self.test(type, clean_kwargs);
          },
          py::arg("type").none(false), py::kw_only());
     gretl_model_nse.attr("__module__") = "gretl";

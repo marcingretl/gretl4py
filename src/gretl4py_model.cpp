@@ -561,8 +561,7 @@ GretlBundlePtr GretlModel_NSE::test (const std::string &type, const std::string 
     return res;
 }
 
-void GretlModel_NSE::restrict (const py::list &impose,
-                               const py::kwargs &kwargs)
+void GretlModel_NSE::restrict (const py::list &impose, const py::kwargs &kwargs)
 {
     do_restrict_<MODEL>(model_, impose, kwargs);
 }
