@@ -60,7 +60,7 @@ def run_example():
 
   print("\n****************************")
   print("normtest")
-  d1.test(type="normtest", varlist="LRY", swilk=True)
+  d1.normtest(series="LRY", swilk=True)
 
   print("\n****************************")
   print("runs")

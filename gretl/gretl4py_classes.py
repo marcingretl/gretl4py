@@ -519,6 +519,10 @@ def _meantest(self: "Dataset", x: str, y: str, **kwargs) -> "Bundle":
     return self.test(type="meantest", varlist=x + " " + y, **kwargs)
 _meantest.__name__ = "meantest"
 
+def _normtest(self: "Dataset", series: str, **kwargs) -> "Bundle":
+    return self.test(type="normtest", varlist=series, **kwargs)
+_normtest.__name__ = "normtest"
+
 # #######################################################
 #   GretlMatrix class
 # #######################################################
