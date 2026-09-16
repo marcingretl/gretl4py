@@ -527,6 +527,10 @@ def _runs(self: "Dataset", series: str, **kwargs) -> "Bundle":
     return self.test(type="runs", varlist=series, **kwargs)
 _runs.__name__ = "runs"
 
+def _vartest(self: "Dataset", x: str, y: str, **kwargs) -> "Bundle":
+    return self.test(type="vartest", varlist=x + " " + y, **kwargs)
+_vartest.__name__ = "vartest"
+
 # #######################################################
 #   GretlMatrix class
 # #######################################################

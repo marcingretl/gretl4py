@@ -120,7 +120,7 @@ from .gretl4py_classes import _matrix_functions_wrapper, _package_get_help
 from .gretl4py_classes import _model_plots, _matrix_to_pandas, _ones
 from .gretl4py_classes import _adf, _bds, _coint, _corrgm, _difftest, _fractint
 from .gretl4py_classes import _johansen, _kpss, _levinlin, _meantest, _normtest
-from .gretl4py_classes import _runs
+from .gretl4py_classes import _runs, _vartest
 
 # #####################################################
 # deprecations
@@ -155,6 +155,7 @@ setattr(_gretl.Dataset, "levinlin", _levinlin)
 setattr(_gretl.Dataset, "meantest", _meantest)
 setattr(_gretl.Dataset, "normtest", _normtest)
 setattr(_gretl.Dataset, "runs", _runs)
+setattr(_gretl.Dataset, "vartest", _vartest)
 
 # gretl.Package class
 setattr(_gretl.Package, "get_help", _package_get_help)      # display help (either PDF or txt)

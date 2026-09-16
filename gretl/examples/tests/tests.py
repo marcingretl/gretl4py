@@ -68,7 +68,7 @@ def run_example():
 
   print("\n****************************")
   print("vartest")
-  d1.test(type="vartest", varlist="LRM IBO")
+  d1.vartest(x="LRM", y="IBO")
 
   ###############################################################
   # model based tests
