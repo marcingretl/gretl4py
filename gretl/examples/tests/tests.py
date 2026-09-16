@@ -51,7 +51,7 @@ def run_example():
 
   print("\n****************************")
   print("levinlin")
-  d3.test(type="levinlin", varlist="invest", order=[2,2,3,3,4,4,2,3,2,1])
+  d3.levinlin(series="invest", order=[2,2,3,3,4,4,2,3,2,1])
 
   print("\n****************************")
   print("meantest")

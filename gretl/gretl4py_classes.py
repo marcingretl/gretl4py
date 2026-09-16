@@ -511,6 +511,10 @@ def _kpss(self: "Dataset", order: int, varlist: str | list, **kwargs) -> "Bundle
     return self.test(type="kpss", varlist=varlist, order=order, **kwargs)
 _kpss.__name__ = "kpss"
 
+def _levinlin(self: "Dataset", order: int, series: str, **kwargs) -> "Bundle":
+    return self.test(type="levinlin", order=order, varlist=series, **kwargs)
+_levinlin.__name__ = "levinlin"
+
 # #######################################################
 #   GretlMatrix class
 # #######################################################

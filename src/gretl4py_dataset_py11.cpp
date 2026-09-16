@@ -422,6 +422,9 @@ void init_gretl4py_dataset_py11 (py::module_ &m)
                  } else if (key == "order" && type == "levinlin" && is_pynumarray(item.second)) {
                      // order was passed as matrix: we cannot pass it to method as order (which is <int>)
                      clean_kwargs[py::cast("order_m")] = item.second;
+                 } else if (key == "order" && type == "levinlin" && is_pygretlmatrix(item.second)) {
+                     // order was passed as GretlMatrix: we cannot pass it to method as order (which is <int>)
+                     clean_kwargs[py::cast("order_m")] = py::cast<py::array>(py::cast<GretlMatrixPtr>(item.second)->to_numpy());
                  } else if (key == "order" && type == "levinlin" && is_pylist(item.second)) {
                      // order was passed as list: we cannot pass it to method as order (which is <int>)
                      clean_kwargs[py::cast("order_m")] = py::cast<py::array>(item.second);
