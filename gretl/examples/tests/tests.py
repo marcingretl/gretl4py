@@ -55,8 +55,8 @@ def run_example():
 
   print("\n****************************")
   print("meantest")
-  d3.test(type="meantest", varlist="invest firm")
-  print(d3.tests[-1]['pvalue'])
+  res_meantest = d3.meantest(x="invest", y="firm")
+  print(res_meantest['pvalue'])
 
   print("\n****************************")
   print("normtest")

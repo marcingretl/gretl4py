@@ -515,6 +515,10 @@ def _levinlin(self: "Dataset", order: int, series: str, **kwargs) -> "Bundle":
     return self.test(type="levinlin", order=order, varlist=series, **kwargs)
 _levinlin.__name__ = "levinlin"
 
+def _meantest(self: "Dataset", x: str, y: str, **kwargs) -> "Bundle":
+    return self.test(type="meantest", varlist=x + " " + y, **kwargs)
+_meantest.__name__ = "meantest"
+
 # #######################################################
 #   GretlMatrix class
 # #######################################################

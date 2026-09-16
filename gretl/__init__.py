@@ -119,7 +119,7 @@ from .gretl4py_classes import _dataset_to_pandas, _to_dataframe
 from .gretl4py_classes import _matrix_functions_wrapper, _package_get_help
 from .gretl4py_classes import _model_plots, _matrix_to_pandas, _ones
 from .gretl4py_classes import _adf, _bds, _coint, _corrgm, _difftest, _fractint
-from .gretl4py_classes import _johansen, _kpss, _levinlin
+from .gretl4py_classes import _johansen, _kpss, _levinlin, _meantest
 
 # #####################################################
 # deprecations
@@ -151,6 +151,7 @@ setattr(_gretl.Dataset, "fractint", _fractint)
 setattr(_gretl.Dataset, "johansen", _johansen)
 setattr(_gretl.Dataset, "kpss", _kpss)
 setattr(_gretl.Dataset, "levinlin", _levinlin)
+setattr(_gretl.Dataset, "meantest", _meantest)
 
 # gretl.Package class
 setattr(_gretl.Package, "get_help", _package_get_help)      # display help (either PDF or txt)
