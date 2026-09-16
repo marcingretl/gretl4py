@@ -88,7 +88,7 @@ def run_example():
 
   print("\n****************************")
   print("bkw")
-  m1.test(type="bkw")
+  m1.bkw()
 
   print("\n****************************")
   print("chow")

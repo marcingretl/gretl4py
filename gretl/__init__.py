@@ -120,7 +120,7 @@ from .gretl4py_classes import _matrix_functions_wrapper, _package_get_help
 from .gretl4py_classes import _model_plots, _matrix_to_pandas, _ones
 from .gretl4py_classes import _adf, _bds, _coint, _corrgm, _difftest, _fractint
 from .gretl4py_classes import _johansen, _kpss, _levinlin, _meantest, _normtest
-from .gretl4py_classes import _runs, _vartest, _add
+from .gretl4py_classes import _runs, _vartest, _add, _bkw
 
 # #####################################################
 # deprecations
@@ -139,6 +139,7 @@ for fun in ['cdf', 'pdf', 'invcdf', 'pvalue', 'critical']:  # wrapper for matrix
 setattr(_gretl.Model, "attrs", _attrs)                      # for listing all object's attributes
 setattr(_gretl.Model, "plot", _model_plots)                 # wrapper for generating model-based plots
 setattr(_gretl.Model, "add", _add)
+setattr(_gretl.Model, "bkw", _bkw)
 
 setattr(_gretl.Model_logit, "oddsratio", _oddsratio)        # for pretty-printing oddsratios
 

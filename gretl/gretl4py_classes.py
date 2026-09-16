@@ -123,6 +123,10 @@ def _add(self: "Model", varlist: str, **kwargs) -> "Bundle":
     return self.test(type="add", varlist=varlist, **kwargs)
 _add.__name__ = "add"
 
+def _bkw(self: "Model", **kwargs) -> "Bundle":
+    return self.test(type="bkw", **kwargs)
+_bkw.__name__ = "bkw"
+
 # #######################################################
 #   GretlModel_nl class
 # #######################################################
