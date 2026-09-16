@@ -523,6 +523,10 @@ def _normtest(self: "Dataset", series: str, **kwargs) -> "Bundle":
     return self.test(type="normtest", varlist=series, **kwargs)
 _normtest.__name__ = "normtest"
 
+def _runs(self: "Dataset", series: str, **kwargs) -> "Bundle":
+    return self.test(type="runs", varlist=series, **kwargs)
+_runs.__name__ = "runs"
+
 # #######################################################
 #   GretlMatrix class
 # #######################################################

@@ -64,7 +64,7 @@ def run_example():
 
   print("\n****************************")
   print("runs")
-  d1.test(type="runs", varlist="LRY", difference=True)
+  d1.runs(series="LRY", difference=True)
 
   print("\n****************************")
   print("vartest")
