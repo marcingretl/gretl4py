@@ -431,6 +431,11 @@ def _package_get_help(self: "Package"):
     else:
         raise RuntimeError(f"Unknown help type: {kind}")
 
+def _dataset_old_test(self: "Dataset", type: str, **kwargs) -> "Bundle":
+    print(f'WARNING: Dataset::test(type="{type}") method is deprecated; use Dataset::{type}() instead\n')
+
+    return self._test(type=type, **kwargs)
+
 def _adf(self: "Dataset", order: int, varlist: str | list, **kwargs) -> "Bundle":
     """Perform Augmented Dickey-Fuller unit-root tests.
 
@@ -460,7 +465,7 @@ def _adf(self: "Dataset", order: int, varlist: str | list, **kwargs) -> "Bundle"
     perron_qu : bool
         Use the Perron-Qu lag-selection refinement.
     """
-    return self.test(type="adf", order=order, varlist=varlist, **kwargs)
+    return self._test(type="adf", order=order, varlist=varlist, **kwargs)
 _adf.__name__ = "adf"
 
 def _bds(self: "Dataset", order: int, x: str | list, **kwargs) -> "Bundle":
@@ -492,51 +497,51 @@ def _bds(self: "Dataset", order: int, x: str | list, **kwargs) -> "Bundle":
         A 2 x (`order` - 1) matrix containing test statistics in the first row
         and p-values in the second row.
     """
-    return self.test(type="bds", order=order, varlist=x, **kwargs)
+    return self._test(type="bds", order=order, varlist=x, **kwargs)
 _bds.__name__ = "bds"
 
 def _coint(self: "Dataset", order: int, depvar: str, indepvars: str | list, **kwargs) -> "Bundle":
-    return self.test(type="coint", y=depvar, varlist=indepvars, **kwargs)
+    return self._test(type="coint", y=depvar, varlist=indepvars, **kwargs)
 _coint.__name__ = "coint"
 
 def _corrgm(self: "Dataset", y: str, order: int, **kwargs) -> "Bundle":
-    return self.test(type="corrgm", y=y, order=order, **kwargs)
+    return self._test(type="corrgm", y=y, order=order, **kwargs)
 _corrgm.__name__ = "corrgm"
 
 def _difftest(self: "Dataset", x: str, y: str, **kwargs) -> "Bundle":
-    return self.test(type="difftest", varlist=x + " " + y, **kwargs)
+    return self._test(type="difftest", varlist=x + " " + y, **kwargs)
 _difftest.__name__ = "difftest"
 
 def _fractint(self: "Dataset", series: str, **kwargs) -> "Bundle":
-    return self.test(type="fractint", varlist=series, **kwargs)
+    return self._test(type="fractint", varlist=series, **kwargs)
 _fractint.__name__ = "fractint"
 
 def _johansen(self: "Dataset", order: int, varlist: str | list, **kwargs) -> "Bundle":
-    return self.test(type="johansen", varlist=varlist, order=order, **kwargs)
+    return self._test(type="johansen", varlist=varlist, order=order, **kwargs)
 _johansen.__name__ = "johansen"
 
 def _kpss(self: "Dataset", order: int, varlist: str | list, **kwargs) -> "Bundle":
-    return self.test(type="kpss", varlist=varlist, order=order, **kwargs)
+    return self._test(type="kpss", varlist=varlist, order=order, **kwargs)
 _kpss.__name__ = "kpss"
 
 def _levinlin(self: "Dataset", order: int, series: str, **kwargs) -> "Bundle":
-    return self.test(type="levinlin", order=order, varlist=series, **kwargs)
+    return self._test(type="levinlin", order=order, varlist=series, **kwargs)
 _levinlin.__name__ = "levinlin"
 
 def _meantest(self: "Dataset", x: str, y: str, **kwargs) -> "Bundle":
-    return self.test(type="meantest", varlist=x + " " + y, **kwargs)
+    return self._test(type="meantest", varlist=x + " " + y, **kwargs)
 _meantest.__name__ = "meantest"
 
 def _normtest(self: "Dataset", series: str, **kwargs) -> "Bundle":
-    return self.test(type="normtest", varlist=series, **kwargs)
+    return self._test(type="normtest", varlist=series, **kwargs)
 _normtest.__name__ = "normtest"
 
 def _runs(self: "Dataset", series: str, **kwargs) -> "Bundle":
-    return self.test(type="runs", varlist=series, **kwargs)
+    return self._test(type="runs", varlist=series, **kwargs)
 _runs.__name__ = "runs"
 
 def _vartest(self: "Dataset", x: str, y: str, **kwargs) -> "Bundle":
-    return self.test(type="vartest", varlist=x + " " + y, **kwargs)
+    return self._test(type="vartest", varlist=x + " " + y, **kwargs)
 _vartest.__name__ = "vartest"
 
 # #######################################################
