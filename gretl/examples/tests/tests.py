@@ -92,7 +92,7 @@ def run_example():
 
   print("\n****************************")
   print("chow")
-  m1.test(type="chow", obs="1980:1")
+  m1.chow(target="1980:1")
 
   print("\n****************************")
   print("cusum")

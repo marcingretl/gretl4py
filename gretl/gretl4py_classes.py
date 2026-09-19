@@ -120,12 +120,102 @@ def _model_plots(
         raise ValueError(f"unknown plotting type: {kind}")
 
 def _add(self: "Model", varlist: str, **kwargs) -> "Bundle":
+    """
+    Test or select variables for addition to the model.
+
+    By default, estimates an augmented model including the specified
+    variables and performs a joint Wald test of their significance.
+    Alternatively, an LM test or forward stepwise selection can be used.
+
+    Parameters
+    ----------
+    varlist : str | list
+        Variables to add to the model, or candidate variables when
+        ``auto`` is specified.
+
+    Other Parameters
+    ----------------
+    lm : bool
+        Perform an LM test instead of estimating an augmented model.
+        Available for OLS models only.
+    auto : str | float
+        Perform forward stepwise selection using ``"AIC"``, ``"BIC"``,
+        ``"HQC"``, or a significance level as the selection criterion.
+        Available for OLS models only.
+    quiet : bool
+        Print only the basic test result.
+    silent : bool
+        Suppress printed output.
+    vcv : bool
+        Print the covariance matrix for the augmented model.
+    both : bool
+        For IV models, add the variables to both the regressors and
+        instruments.
+
+    Notes
+    -----
+    By default, the augmented model replaces the original model as the
+    current model. With ``lm=True``, the original model is retained.
+    The ``lm`` and ``auto`` options cannot be combined.
+    """
     return self.test(type="add", varlist=varlist, **kwargs)
 _add.__name__ = "add"
+_add.__qualname__ = "Model.add"
 
 def _bkw(self: "Model", **kwargs) -> "Bundle":
+    """
+    Compute Belsley-Kuh-Welsch collinearity diagnostics.
+
+    Calculates the BKW table for diagnosing the degree and sources of
+    collinearity among the regressors, based on eigenanalysis of the
+    regressor correlation structure.
+
+    Other Parameters
+    ----------------
+    quiet : bool
+        Suppress printed output.
+
+    Notes
+    -----
+    The model must contain at least two independent variables. The BKW
+    diagnostics follow Belsley, Kuh and Welsch (1980) and provide a more
+    detailed analysis of collinearity than variance inflation factors.
+    """
     return self.test(type="bkw", **kwargs)
 _bkw.__name__ = "bkw"
+_bkw.__qualname__ = "Model.bkw"
+
+def _chow(self: "Model", target: str, **kwargs) -> "Bundle":
+    """
+    Perform the Chow test for structural stability.
+
+    Tests for a structural break at a specified observation, or for a
+    difference between groups defined by a dummy variable.
+
+    Parameters
+    ----------
+    target : str
+        Break observation, or the name of a dummy variable when
+        ``dummy=True``.
+
+    Other Parameters
+    ----------------
+    dummy : bool
+        Interpret ``target`` as the name of a dummy variable rather than
+        a break observation.
+    quiet : bool
+        Suppress estimates for the augmented model.
+    limit_to : str | list
+        Restrict the test to a specified subset of regressors.
+
+    Notes
+    -----
+    Without ``dummy=True``, ``target`` identifies the observation at which
+    the sample is split for the structural-break test.
+    """
+    return self.test(type="chow", obs=target, **kwargs)
+_chow.__name__ = "chow"
+_chow.__qualname__ = "Model.chow"
 
 # #######################################################
 #   GretlModel_nl class
