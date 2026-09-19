@@ -467,6 +467,7 @@ def _adf(self: "Dataset", order: int, varlist: str | list, **kwargs) -> "Bundle"
     """
     return self._test(type="adf", order=order, varlist=varlist, **kwargs)
 _adf.__name__ = "adf"
+_adf.__qualname__ = "Dataset.adf"
 
 def _bds(self: "Dataset", order: int, x: str | list, **kwargs) -> "Bundle":
     """
@@ -499,50 +500,440 @@ def _bds(self: "Dataset", order: int, x: str | list, **kwargs) -> "Bundle":
     """
     return self._test(type="bds", order=order, varlist=x, **kwargs)
 _bds.__name__ = "bds"
+_bds.__qualname__ = "Dataset.bds"
 
 def _coint(self: "Dataset", order: int, depvar: str, indepvars: str | list, **kwargs) -> "Bundle":
+    """
+    Perform the Engle-Granger cointegration test.
+
+    Tests for cointegration between a dependent variable and one or more
+    independent variables. By default, Dickey-Fuller tests are first applied
+    to the individual variables, followed by estimation of the cointegrating
+    regression and a DF test on its residuals.
+
+    Parameters
+    ----------
+    order : int
+        Lag order for the Dickey-Fuller tests. With ``test_down=True``,
+        specifies the maximum lag order.
+    depvar : str
+        Dependent variable in the cointegrating regression.
+    indepvars : str | list
+        Independent variables in the cointegrating regression.
+
+    Other Parameters
+    ----------------
+    nc : bool
+        Do not include a constant.
+    ct : bool
+        Include a constant and linear trend.
+    ctt : bool
+        Include a constant and quadratic trend.
+    seasonals : bool
+        Include seasonal dummy variables.
+    skip_df : bool
+        Skip DF tests on the individual variables.
+    test_down : bool | str
+        Select the lag order automatically by testing down, optionally
+        specifying the selection criterion.
+    verbose : bool
+        Print additional regression details.
+    silent : bool
+        Suppress output.
+
+    Notes
+    -----
+    The ``nc``, ``ct``, and ``ctt`` options are mutually exclusive.
+    P-values are based on MacKinnon (1996).
+    """
     return self._test(type="coint", y=depvar, varlist=indepvars, **kwargs)
 _coint.__name__ = "coint"
+_coint.__qualname__ = "Dataset.coint"
 
 def _corrgm(self: "Dataset", y: str, order: int, **kwargs) -> "Bundle":
+    """
+    Compute the correlogram of a time series.
+
+    Calculates the autocorrelation function (ACF) and, by default, the
+    partial autocorrelation function (PACF) using the Durbin-Levinson
+    algorithm. The Ljung-Box Q statistic for testing the white-noise
+    hypothesis is also computed.
+
+    Parameters
+    ----------
+    y : str
+        Series for which the correlogram is computed.
+    order : int, optional
+        Maximum lag. If omitted, the lag order is selected automatically
+        based on the data frequency and sample size.
+
+    Other Parameters
+    ----------------
+    plot : str
+        Plot mode (``"none"`` or ``"display"``) or output filename.
+    quiet : bool
+        Suppress printed output.
+    acf_only : bool
+        Compute only the ACF, omitting partial autocorrelations.
+    bartlett : bool
+        Use Bartlett standard errors for the ACF.
+
+    Notes
+    -----
+    By default, ACF standard errors are computed under the white-noise
+    null hypothesis. Bartlett standard errors instead provide bounds
+    associated with an MA(k) process.
+    """
     return self._test(type="corrgm", y=y, order=order, **kwargs)
 _corrgm.__name__ = "corrgm"
+_corrgm.__qualname__ = "Dataset.corrgm"
 
 def _difftest(self: "Dataset", x: str, y: str, **kwargs) -> "Bundle":
+    """
+    Perform a nonparametric test for a difference between two samples.
+
+    Supports the Sign test, Wilcoxon rank-sum test, and Wilcoxon
+    signed-rank test. The samples may be given as two series, or, for the
+    rank-sum test, obtained by splitting one series according to a dummy
+    variable.
+
+    Parameters
+    ----------
+    x : str
+        First sample.
+    y : str, optional
+        Second sample. Required unless ``split_by`` is specified.
+
+    Other Parameters
+    ----------------
+    split_by : str
+        Dummy variable defining two samples from ``x``. Available only
+        with the rank-sum test.
+    sign : bool
+        Perform the Sign test. This is the default.
+    rank_sum : bool
+        Perform the Wilcoxon rank-sum test for independent samples.
+    signed_rank : bool
+        Perform the Wilcoxon signed-rank test for paired samples.
+    verbose : bool
+        Print ranking details for the Wilcoxon tests.
+    quiet : bool
+        Suppress printed output.
+
+    Notes
+    -----
+    The Sign and signed-rank tests require paired observations. The
+    rank-sum test permits samples of different sizes and can be used with
+    ``split_by``.
+    """
     return self._test(type="difftest", varlist=x + " " + y, **kwargs)
 _difftest.__name__ = "difftest"
+_difftest.__qualname__ = "Dataset.difftest"
 
 def _fractint(self: "Dataset", series: str, **kwargs) -> "Bundle":
+    """
+    Test a time series for fractional integration (long memory).
+
+    Tests the null hypothesis that the fractional integration order is
+    zero. By default, the Local Whittle estimator is used; the GPH test
+    can be selected as an alternative or both tests can be performed.
+
+    Parameters
+    ----------
+    series : str
+        Series to test.
+    order : int, optional
+        Order used for estimation. If omitted, it is selected automatically
+        as the lesser of T/2 and T**0.6.
+
+    Other Parameters
+    ----------------
+    gph : bool
+        Use the Geweke-Porter-Hudak (GPH) test instead of Local Whittle.
+    all : bool
+        Perform both the Local Whittle and GPH tests.
+    quiet : bool
+        Suppress printed output.
+
+    Notes
+    -----
+    The Local Whittle estimator follows Robinson (1995), while the GPH
+    test follows Geweke and Porter-Hudak (1983).
+    """
     return self._test(type="fractint", varlist=series, **kwargs)
 _fractint.__name__ = "fractint"
+_fractint.__qualname__ = "Dataset.fractint"
 
 def _johansen(self: "Dataset", order: int, varlist: str | list, **kwargs) -> "Bundle":
+    """
+    Perform the Johansen cointegration test.
+
+    Tests for the cointegration rank among a set of endogenous variables
+    using the Johansen trace and maximum-eigenvalue tests.
+
+    Parameters
+    ----------
+    order : int
+        Lag order of the VAR system.
+    ylist : str | list
+        Endogenous variables to include in the cointegration system.
+
+    Other Parameters
+    ----------------
+    xlist : str | list
+        Exogenous variables entering the system unrestrictedly.
+    rxlist : str | list
+        Exogenous variables restricted to the cointegration space.
+    nc : bool
+        Include no constant.
+    rc : bool
+        Include a restricted constant.
+    uc : bool
+        Include an unrestricted constant. This is the default.
+    crt : bool
+        Include a constant and restricted trend.
+    ct : bool
+        Include a constant and unrestricted trend.
+    seasonals : bool
+        Include centered seasonal dummy variables.
+    asy : bool
+        Use asymptotic rather than sample-size-adjusted p-values.
+    quiet : bool
+        Print only the test results.
+    silent : bool
+        Suppress printed output.
+    verbose : bool
+        Print details of auxiliary regressions.
+
+    Notes
+    -----
+    The deterministic-term options ``nc``, ``rc``, ``uc``, ``crt``, and
+    ``ct`` are mutually exclusive. P-values are computed using Doornik's
+    gamma approximation.
+    """
     return self._test(type="johansen", varlist=varlist, order=order, **kwargs)
 _johansen.__name__ = "johansen"
+_johansen.__qualname__ = "Dataset.johansen"
 
 def _kpss(self: "Dataset", order: int, varlist: str | list, **kwargs) -> "Bundle":
+    """
+    Perform the KPSS test for stationarity.
+
+    Tests the null hypothesis that each specified series is stationary
+    around a constant, or around a deterministic linear trend when
+    ``trend=True``.
+
+    Parameters
+    ----------
+    order : int
+        Window size for Bartlett smoothing. A negative value selects the
+        window size automatically based on the sample size.
+    varlist : str | list
+        Series to test.
+
+    Other Parameters
+    ----------------
+    trend : bool
+        Test for stationarity around a deterministic linear trend.
+    seasonals : bool
+        Include seasonal dummy variables.
+    verbose : bool
+        Print results of the auxiliary regression.
+    quiet : bool
+        Suppress printed output.
+    difference : bool
+        Apply the test to the first difference of each series.
+
+    Notes
+    -----
+    For panel data, only one variable can be tested at a time and the
+    overall stationarity test is based, where possible, on Choi's method.
+    Critical values are based on the response-surface estimates of
+    Sephton (1995).
+    """
     return self._test(type="kpss", varlist=varlist, order=order, **kwargs)
 _kpss.__name__ = "kpss"
+_kpss.__qualname__ = "Dataset.kpss"
 
-def _levinlin(self: "Dataset", order: int, series: str, **kwargs) -> "Bundle":
+def _levinlin(self: "Dataset", order: int | list, series: str, **kwargs) -> "Bundle":
+    """
+    Perform the Levin-Lin-Chu panel unit-root test.
+
+    Tests the null hypothesis that all individual series in the panel have
+    a unit root against the alternative that none has a unit root. A common
+    AR(1) coefficient across panel units is assumed.
+
+    Parameters
+    ----------
+    order : int | array-like
+        Lag order for the ADF regressions. A scalar applies the same order
+        to all panel units; an array-like value may specify a separate
+        order for each unit.
+    series : str
+        Panel series to test.
+
+    Other Parameters
+    ----------------
+    nc : bool
+        Run the test without a constant.
+    ct : bool
+        Include a constant and linear trend.
+    quiet : bool
+        Suppress printed output.
+    verbose : bool
+        Print results for individual panel units.
+
+    Notes
+    -----
+    By default, the auxiliary ADF regressions include a constant. The
+    ``nc`` and ``ct`` options are mutually exclusive.
+    """
     return self._test(type="levinlin", order=order, varlist=series, **kwargs)
 _levinlin.__name__ = "levinlin"
+_levinlin.__qualname__ = "Dataset.levinlin"
 
 def _meantest(self: "Dataset", x: str, y: str, **kwargs) -> "Bundle":
+    """
+    Test for equality of means between two samples.
+
+    Performs a t-test of the null hypothesis that the population means are
+    equal. The samples may be given as two series or obtained by splitting
+    one series according to a dummy variable.
+
+    Parameters
+    ----------
+    x : str
+        First sample.
+    y : str, optional
+        Second sample. Required unless ``split_by`` is specified.
+
+    Other Parameters
+    ----------------
+    split_by : str
+        Dummy variable defining two samples from ``x``.
+    unequal_vars : bool
+        Allow unequal variances, using the Satterthwaite approximation
+        for the degrees of freedom.
+    paired : bool
+        Perform a paired test of a zero mean difference.
+    quiet : bool
+        Suppress printed output.
+    robust : bool
+        Use a test robust to serial correlation for time-series data.
+
+    Notes
+    -----
+    By default, the two samples are assumed to have equal variances.
+    ``split_by`` cannot be combined with ``paired`` or ``robust``.
+    """
     return self._test(type="meantest", varlist=x + " " + y, **kwargs)
 _meantest.__name__ = "meantest"
+_meantest.__qualname__ = "Dataset.meantest"
 
 def _normtest(self: "Dataset", series: str, **kwargs) -> "Bundle":
+    """
+    Test a series for normality.
+
+    Performs a normality test using the Doornik-Hansen, Shapiro-Wilk,
+    Lilliefors, or Jarque-Bera procedure. By default, the Doornik-Hansen
+    test is used.
+
+    Parameters
+    ----------
+    series : str
+        Series to test for normality.
+
+    Other Parameters
+    ----------------
+    dhansen : bool
+        Perform the Doornik-Hansen test. This is the default.
+    swilk : bool
+        Perform the Shapiro-Wilk test.
+    lillie : bool
+        Perform the Lilliefors test.
+    jbera : bool
+        Perform the Jarque-Bera test.
+    all : bool
+        Perform all available normality tests.
+    quiet : bool
+        Suppress printed output.
+
+    Notes
+    -----
+    The Doornik-Hansen and Shapiro-Wilk tests are generally preferred for
+    their small-sample properties. With ``all=True``, the recorded test
+    statistic and p-value are those from the Doornik-Hansen test.
+    """
     return self._test(type="normtest", varlist=series, **kwargs)
 _normtest.__name__ = "normtest"
+_normtest.__qualname__ = "Dataset.normtest"
 
 def _runs(self: "Dataset", series: str, **kwargs) -> "Bundle":
+    """
+    Perform the nonparametric runs test for randomness.
+
+    Tests the randomness of a series based on runs of consecutive positive
+    or negative values.
+
+    Parameters
+    ----------
+    series : str
+        Series to test.
+
+    Other Parameters
+    ----------------
+    difference : bool
+        Test the first difference of the series, so that runs represent
+        consecutive increases or decreases.
+    equal : bool
+        Assume that positive and negative values are equiprobable.
+
+    Notes
+    -----
+    By default, the test focuses on independence without assuming equal
+    probabilities of positive and negative values. To test randomness
+    around the median, subtract the series median before applying the test.
+    """
     return self._test(type="runs", varlist=series, **kwargs)
 _runs.__name__ = "runs"
+_runs.__qualname__ = "Dataset.runs"
 
 def _vartest(self: "Dataset", x: str, y: str, **kwargs) -> "Bundle":
+    """
+    Test for equality of variances between two samples.
+
+    By default, performs the standard F test of the null hypothesis that
+    the population variances are equal. Robust variants based on Levene
+    and Brown-Forsythe tests are also available.
+
+    Parameters
+    ----------
+    x : str
+        First sample.
+    y : str, optional
+        Second sample. Required unless ``split_by`` is specified.
+
+    Other Parameters
+    ----------------
+    split_by : str
+        Dummy variable defining two samples from ``x``.
+    quiet : bool
+        Suppress printed output.
+    robust : str
+        Robust test method: ``"mean"`` for Levene's test, ``"median"``
+        for the Brown-Forsythe median-based test, or ``"trimmed"`` for
+        the trimmed-mean variant. A trimming percentage may be specified
+        as, for example, ``"trimmed,5"``.
+
+    Notes
+    -----
+    The standard F test assumes normality. Robust alternatives may be
+    preferable for non-normal data, particularly the median-based test
+    for skewed data and the trimmed-mean test for fat-tailed data.
+    """
     return self._test(type="vartest", varlist=x + " " + y, **kwargs)
 _vartest.__name__ = "vartest"
+_vartest.__qualname__ = "Dataset.vartest"
 
 # #######################################################
 #   GretlMatrix class
