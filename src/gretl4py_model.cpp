@@ -462,6 +462,7 @@ GretlBundlePtr GretlModel_NSE::test (const std::string &type, const py::kwargs &
     //
     GretlBundlePtr res = std::make_shared<GretlBundle>();
     int order = type == "corrgm" ? auto_acf_order(sample_size( dataset_->dset)) : dataset_->dset->pd;
+    bool has_result = false;    // if given test produces additional results accessible via $result
 
     // we set up options
     auto printout = unpack_kwargs_test(opt_, type, kwargs, order);
@@ -469,10 +470,12 @@ GretlBundlePtr GretlModel_NSE::test (const std::string &type, const py::kwargs &
     // we perform the test
     if (type == "bkw") {
         err_ = bkw_test(model_, dataset_->dset, opt_, printer_.prn_ptr());
+        has_result = true;
     } else if (type == "cusum") {
         err_ = cusum_test(model_, dataset_->dset, opt_, printer_.prn_ptr());
     } else if (type == "leverage") {
         err_ = leverage_test(model_, dataset_->dset, opt_, printer_.prn_ptr());
+        has_result = true;
     } else if (type == "panspec") {
         err_ = panel_specification_test(model_, dataset_->dset, opt_, printer_.prn_ptr());
     } else if (type == "reset") {
@@ -509,6 +512,9 @@ GretlBundlePtr GretlModel_NSE::test (const std::string &type, const py::kwargs &
     res->set_element("test", get_accessor("$test"));
     res->set_element("pvalue", get_accessor("$pvalue"));
     res->set_element<std::string>("summary", std::string(printer_.get_buffer()));
+    if (has_result) {
+        res->set_element("result", get_accessor("$result"));
+    }
 
     // we register result
     move_to_python_container<GretlModel, py::dict, py::list>(*this, res->to_dict(), "tests");

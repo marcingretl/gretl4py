@@ -222,6 +222,11 @@ def _cusum(self: "Model", **kwargs) -> "Bundle":
 _cusum.__name__ = "cusum"
 _cusum.__qualname__ = "Model.cusum"
 
+def _leverage(self: "Model", **kwargs) -> "Bundle":
+    return self.test(type="leverage", **kwargs)
+_leverage.__name__ = "leverage"
+_leverage.__qualname__ = "Model.leverage"
+
 # #######################################################
 #   GretlModel_nl class
 # #######################################################

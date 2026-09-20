@@ -101,7 +101,7 @@ def run_example():
 
   print("\n****************************")
   print("leverage")
-  m1.test(type="leverage")
+  res_leverage = m1.leverage()
 
   print("\n****************************")
   print("omit")

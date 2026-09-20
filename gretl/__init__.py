@@ -120,7 +120,7 @@ from .gretl4py_classes import _matrix_functions_wrapper, _package_get_help
 from .gretl4py_classes import _model_plots, _matrix_to_pandas, _ones
 from .gretl4py_classes import _adf, _bds, _coint, _corrgm, _difftest, _fractint
 from .gretl4py_classes import _johansen, _kpss, _levinlin, _meantest, _normtest
-from .gretl4py_classes import _runs, _vartest, _add, _bkw, _chow, _cusum
+from .gretl4py_classes import _runs, _vartest, _add, _bkw, _chow, _cusum, _leverage
 # to be deprecated
 from .gretl4py_classes import _dataset_old_test, _oddsratio, _to_dataframe
 
@@ -145,6 +145,7 @@ setattr(_gretl.Model, "add", _add)
 setattr(_gretl.Model, "bkw", _bkw)
 setattr(_gretl.Model, "chow", _chow)
 setattr(_gretl.Model, "cusum", _cusum)
+setattr(_gretl.Model, "leverage", _leverage)
 #
 setattr(_gretl.Model_logit, "oddsratio", _oddsratio)        # for pretty-printing oddsratios
 
