@@ -35,23 +35,23 @@ def run_example():
   print("difftest")
   d5.new_series("capp = (Vote > 1) ? CPI : NA")
   d5.new_series("cdis = (Vote == 0) ? CPI : NA")
-  d5.difftest(x="capp", y="cdis", rank_sum=True)
+  res_difftest = d5.difftest(x="capp", y="cdis", rank_sum=True)
 
   print("\n****************************")
   print("fractint")
-  d1.fractint(series="LRM")
+  res_fractint = d1.fractint(series="LRM")
 
   print("\n****************************")
   print("johansen")
-  d1.johansen(order=4, varlist="LRM LRY IBO IDE", rc=True)
+  res_johansen = d1.johansen(order=4, varlist="LRM LRY IBO IDE", rc=True)
 
   print("\n****************************")
   print("kpss")
-  d1.kpss(order=1, varlist="LRM", seasonals=True, trend=True)
+  res_kpss = d1.kpss(order=1, varlist="LRM", seasonals=True, trend=True)
 
   print("\n****************************")
   print("levinlin")
-  d3.levinlin(series="invest", order=[2,2,3,3,4,4,2,3,2,1])
+  res_levinlin = d3.levinlin(series="invest", order=[2,2,3,3,4,4,2,3,2,1])
 
   print("\n****************************")
   print("meantest")
@@ -60,15 +60,15 @@ def run_example():
 
   print("\n****************************")
   print("normtest")
-  d1.normtest(series="LRY", swilk=True)
+  res_normtest = d1.normtest(series="LRY", swilk=True)
 
   print("\n****************************")
   print("runs")
-  d1.runs(series="LRY", difference=True)
+  res_runs = d1.runs(series="LRY", difference=True)
 
   print("\n****************************")
   print("vartest")
-  d1.vartest(x="LRM", y="IBO")
+  res_vartest = d1.vartest(x="LRM", y="IBO")
 
   ###############################################################
   # model based tests
@@ -88,15 +88,16 @@ def run_example():
 
   print("\n****************************")
   print("bkw")
-  m1.bkw()
+  res_bkw = m1.bkw()
 
   print("\n****************************")
   print("chow")
-  m1.chow(target="1980:1")
+  res_chow = m1.chow(target="1980:1")
 
   print("\n****************************")
   print("cusum")
-  m1.test(type="cusum", quiet=True)
+  res_cusum = m1.cusum(quiet=True)
+  print(res_cusum['pvalue'])
 
   print("\n****************************")
   print("leverage")

@@ -217,6 +217,11 @@ def _chow(self: "Model", target: str, **kwargs) -> "Bundle":
 _chow.__name__ = "chow"
 _chow.__qualname__ = "Model.chow"
 
+def _cusum(self: "Model", **kwargs) -> "Bundle":
+    return self.test(type="cusum", **kwargs)
+_cusum.__name__ = "cusum"
+_cusum.__qualname__ = "Model.cusum"
+
 # #######################################################
 #   GretlModel_nl class
 # #######################################################
