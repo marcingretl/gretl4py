@@ -20,7 +20,6 @@ def run_example():
   print("\n****************************")
   print("bds")
   res_bds = d1.bds(order=4, x="LRY", quiet=False)
-  print(res_bds['summary'])
 
   print("\n****************************")
   print("coint")

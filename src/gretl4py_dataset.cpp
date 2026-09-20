@@ -1394,6 +1394,7 @@ GretlBundlePtr GretlDataset::test (const std::string &type, const std::string &v
     GretlBundlePtr res = std::make_shared<GretlBundle>();
     gretl_list_ptr ex_var{nullptr};
     int order = 0;
+    bool has_result = false;    // if given test produces additional results accessible via $result
 
     // we construct list of external variables
     ex_var = gretllist(varlist);
@@ -1406,6 +1407,7 @@ GretlBundlePtr GretlDataset::test (const std::string &type, const std::string &v
         err_ = adf_test(order, ex_var.get(), dset, opt_, printer_.prn_ptr());
     } else if (type == "bds") {
         err_ = bds_test_driver(order, ex_var.get(), dset, opt_, printer_.prn_ptr());
+        has_result = true;
     } else if (type == "coint") {
         err_ = engle_granger_test(order, ex_var.get(), dset, opt_, printer_.prn_ptr());
     } else if (type == "corrgm") {
@@ -1416,6 +1418,7 @@ GretlBundlePtr GretlDataset::test (const std::string &type, const std::string &v
     } else if (type == "fractint") {
         if (ex_var.get()[0] != 1) throw std::invalid_argument("fractint takes just one series");
         err_ = fractint(ex_var.get()[1], order, dset, opt_, printer_.prn_ptr());
+        has_result = true;
     } else if (type == "johansen") {
         err_ = johansen_test_simple(order, ex_var.get(), dset, opt_, printer_.prn_ptr());
     } else if (type == "kpss") {
@@ -1467,6 +1470,9 @@ GretlBundlePtr GretlDataset::test (const std::string &type, const std::string &v
     res->set_element("test", get_accessor("$test"));
     res->set_element("pvalue", get_accessor("$pvalue"));
     res->set_element<std::string>("summary", std::string(printer_.get_buffer()));
+    if (has_result) {
+        res->set_element("result", get_accessor("$result"));
+    }
 
     // we register result
     move_to_python_container<GretlDataset, py::dict, py::list>(*this, res->to_dict(), "tests");
