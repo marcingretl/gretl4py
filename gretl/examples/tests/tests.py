@@ -158,7 +158,7 @@ def run_example():
   print(m3)
   print("\n****************************")
   print("panel")
-  m3.test(type="panel")
+  res_panel = m3.panel()
 
   print("\n****************************")
   print("panspec")

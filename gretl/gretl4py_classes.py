@@ -259,6 +259,11 @@ def _omit(self: "Model", varlist: str | list, **kwargs) -> "Bundle":
 _omit.__name__ = "omit"
 _omit.__qualname__ = "Model.omit"
 
+def _panel(self: "Model", **kwargs) -> "Bundle":
+    return self.test(type="panel", **kwargs)
+_panel.__name__ = "panel"
+_panel.__qualname__ = "Model.panel"
+
 def _qlrtest(self: "Model", **kwargs) -> "Bundle":
     return self.test(type="qlrtest", **kwargs)
 _qlrtest.__name__ = "qlrtest"
