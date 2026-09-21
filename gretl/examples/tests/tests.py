@@ -165,6 +165,10 @@ def run_example():
   res_panspec = m3.panspec()
   print(res_panspec)
 
+  print("\n****************************")
+  print("xdepend")
+  res_xdepend = m3.xdepend()
+
   ######################
   # RESTRICT
   ######################
@@ -199,6 +203,7 @@ def run_example():
   print(f'In m2 there is total of {len(m2.tests):d} tests')
   print(f'In m3 there is total of {len(m3.tests):d} tests')
   print(f'In m4 there is total of {len(m4.tests):d} tests')
+  print(f'In m6 there is total of {len(m6.tests):d} tests')
   print(f'In m4 there is total of {len(m4.restrictions):d} restrictions')
   print(f'In m5 there is total of {len(m5.restrictions):d} restrictions')
   print("*************************************************")
