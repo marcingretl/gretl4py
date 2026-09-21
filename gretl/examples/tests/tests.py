@@ -112,7 +112,7 @@ def run_example():
 
   print("\n****************************")
   print("reset")
-  m1.test(type="reset", cubes_only=True, robust=True)
+  res_reset = m1.reset(cubes_only=True, robust=True)
 
   print("\n****************************")
   print("white")

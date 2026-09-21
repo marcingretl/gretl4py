@@ -237,6 +237,11 @@ def _qlrtest(self: "Model", **kwargs) -> "Bundle":
 _qlrtest.__name__ = "qlrtest"
 _qlrtest.__qualname__ = "Model.qlrtest"
 
+def _reset(self: "Model", **kwargs) -> "Bundle":
+    return self.test(type="reset", **kwargs)
+_reset.__name__ = "reset"
+_reset.__qualname__ = "Model.reset"
+
 # #######################################################
 #   GretlModel_nl class
 # #######################################################
