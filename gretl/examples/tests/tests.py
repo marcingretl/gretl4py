@@ -103,6 +103,11 @@ def run_example():
   res_leverage = m1.leverage()
 
   print("\n****************************")
+  print("normality")
+  res_normality = m1.normality()
+  print(res_normality)
+
+  print("\n****************************")
   print("omit")
   res_omit = m1.omit(varlist="3")
 

@@ -227,6 +227,11 @@ def _leverage(self: "Model", **kwargs) -> "Bundle":
 _leverage.__name__ = "leverage"
 _leverage.__qualname__ = "Model.leverage"
 
+def _normality(self: "Model", **kwargs) -> "Bundle":
+    return self.test(type="normality", **kwargs)
+_normality.__name__ = "normality"
+_normality.__qualname__ = "Model.normality"
+
 def _omit(self: "Model", varlist: str | list, **kwargs) -> "Bundle":
     return self.test(type="omit", varlist=varlist, **kwargs)
 _omit.__name__ = "omit"
