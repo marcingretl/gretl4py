@@ -19,6 +19,7 @@
 
 #include "gretl4py_dataset.h"
 #include "gretl4py_utils.h"
+#include "docstrings/gretl4py_dataset_docstr.h"
 
 namespace py = pybind11;
 
@@ -110,12 +111,12 @@ void init_gretl4py_dataset_py11 (py::module_ &m)
          [](const GretlDataset &self) -> GretlDatasetPtr
          {
              return GretlDataset::clone(self);
-         }, R"doc(Return a deep copy of the dataset.)doc")
+         }, doc::Dataset::__copy__)
     .def("__deepcopy__",
          [](const GretlDataset &self, py::dict) -> GretlDatasetPtr
          {
              return GretlDataset::clone(self);
-         })
+         }, doc::Dataset::__deepcopy__)
     .def("__repr__", &GretlDataset::repr)
     .def("__getitem__", py::overload_cast<const py::slice&>(&GretlDataset::getitem_impl))
     .def("__getitem__", py::overload_cast<const std::string&>(&GretlDataset::getitem_impl))
@@ -200,12 +201,14 @@ void init_gretl4py_dataset_py11 (py::module_ &m)
          [](GretlDataset &self, const std::string &startobs, const std::string &endobs, const py::kwargs &kwargs) -> void
          {
              self.smpl(startobs, endobs, kwargs);
-         }, py::arg("startobs").none(true) = "", py::arg("endobs").none(true) = "", py::kw_only())
+         }, py::arg("startobs").none(true) = "", py::arg("endobs").none(true) = "", py::kw_only(),
+         doc::Dataset::sample)
     .def("sample",
          [](GretlDataset &self, const std::string &startobs, const py::kwargs &kwargs) -> void
          {
              self.smpl(startobs, "", kwargs);
-         }, py::arg("startobs").none(false), py::kw_only())
+         }, py::arg("startobs").none(false), py::kw_only(),
+         doc::Dataset::sample)
     .def("sample",
          [](GretlDataset &self, int startobs, int endobs, const py::kwargs &kwargs) -> void
          {
@@ -213,12 +216,14 @@ void init_gretl4py_dataset_py11 (py::module_ &m)
              std::string endobs_str = endobs == NADBL ? "" : std::to_string(endobs);
 
              self.smpl(startobs_str, endobs_str, kwargs);
-         }, py::arg("startobs").none(true) = NADBL, py::arg("endobs").none(true) = NADBL, py::kw_only())
+         }, py::arg("startobs").none(true) = NADBL, py::arg("endobs").none(true) = NADBL, py::kw_only(),
+         doc::Dataset::sample)
     .def("sample",
          [](GretlDataset &self, int startobs, const py::kwargs &kwargs) -> void
          {
              self.smpl(std::to_string(startobs), "", kwargs);
-         }, py::arg("startobs").none(false), py::kw_only())
+         }, py::arg("startobs").none(false), py::kw_only(),
+         doc::Dataset::sample)
     .def("setobs",
          [](GretlDataset &self, std::string &periodicity, const std::string &startobs, const py::kwargs &kwargs) -> void
          {
