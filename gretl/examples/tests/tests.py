@@ -104,7 +104,7 @@ def run_example():
 
   print("\n****************************")
   print("omit")
-  m1.test(type="omit", varlist="3")
+  res_omit = m1.omit(varlist="3")
 
   print("\n****************************")
   print("qlrtest")

@@ -227,6 +227,11 @@ def _leverage(self: "Model", **kwargs) -> "Bundle":
 _leverage.__name__ = "leverage"
 _leverage.__qualname__ = "Model.leverage"
 
+def _omit(self: "Model", varlist: str | list, **kwargs) -> "Bundle":
+    return self.test(type="omit", varlist=varlist, **kwargs)
+_omit.__name__ = "omit"
+_omit.__qualname__ = "Model.omit"
+
 # #######################################################
 #   GretlModel_nl class
 # #######################################################
