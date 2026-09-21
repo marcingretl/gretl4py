@@ -122,7 +122,7 @@ from .gretl4py_classes import _adf, _bds, _coint, _corrgm, _difftest, _fractint
 from .gretl4py_classes import _johansen, _kpss, _levinlin, _meantest, _normtest
 from .gretl4py_classes import _runs, _vartest, _add, _bkw, _chow, _cusum, _leverage
 from .gretl4py_classes import _omit, _qlrtest, _reset, _white, _vif, _normality
-from .gretl4py_classes import _nonlinearity, _autocorr
+from .gretl4py_classes import _nonlinearity, _autocorr, _arch
 # to be deprecated
 from .gretl4py_classes import _dataset_old_test, _oddsratio, _to_dataframe
 
@@ -144,6 +144,7 @@ for fun in ['cdf', 'pdf', 'invcdf', 'pvalue', 'critical']:  # wrapper for matrix
 setattr(_gretl.Model, "attrs", _attrs)                      # for listing all object's attributes
 setattr(_gretl.Model, "plot", _model_plots)                 # wrapper for generating model-based plots
 setattr(_gretl.Model, "add", _add)
+setattr(_gretl.Model, "arch", _arch)
 setattr(_gretl.Model, "autocorr", _autocorr)
 setattr(_gretl.Model, "bkw", _bkw)
 setattr(_gretl.Model, "chow", _chow)

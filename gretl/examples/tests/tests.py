@@ -136,11 +136,8 @@ def run_example():
   print(m2)
 
   print("\n****************************")
-  m2.test(type="arch", quiet=True)
-  print(m2.tests[-1]['type'])
-  print(m2.tests[-1]['options'])
-  print(m2.tests[-1]['test'])
-  print(m2.tests[-1]['pvalue'])
+  res_arch = m2.arch(quiet=True)
+  print(res_arch)
 
   print("\n****************************")
   print("autocorr")
