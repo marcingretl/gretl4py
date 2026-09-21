@@ -144,7 +144,7 @@ def run_example():
 
   print("\n****************************")
   print("autocorr")
-  m2.test(type="autocorr", order=4)
+  res_autocorr = m2.autocorr(order=4)
 
   print("\n****************************")
   print("corrgm")

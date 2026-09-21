@@ -162,6 +162,11 @@ def _add(self: "Model", varlist: str, **kwargs) -> "Bundle":
 _add.__name__ = "add"
 _add.__qualname__ = "Model.add"
 
+def _autocorr(self: "Model", order: int, **kwargs) -> "Bundle":
+    return self.test(type="autocorr", order=order, **kwargs)
+_autocorr.__name__ = "autocorr"
+_autocorr.__qualname__ = "Model.autocorr"
+
 def _bkw(self: "Model", **kwargs) -> "Bundle":
     """
     Compute Belsley-Kuh-Welsch collinearity diagnostics.
