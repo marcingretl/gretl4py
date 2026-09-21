@@ -108,7 +108,7 @@ def run_example():
 
   print("\n****************************")
   print("qlrtest")
-  m1.test(type="qlrtest")
+  res_qlrtest = m1.qlrtest()
 
   print("\n****************************")
   print("reset")

@@ -512,9 +512,8 @@ GretlBundlePtr GretlModel_NSE::test (const std::string &type, const py::kwargs &
     res->set_element("test", get_accessor("$test"));
     res->set_element("pvalue", get_accessor("$pvalue"));
     res->set_element<std::string>("summary", std::string(printer_.get_buffer()));
-    if (has_result) {
-        res->set_element("result", get_accessor("$result"));
-    }
+    if (has_result) res->set_element("result", get_accessor("$result"));
+    if (type == "qlrtest") res->set_element("qlrbreak", get_accessor("$qlrbreak"));
 
     // we register result
     move_to_python_container<GretlModel, py::dict, py::list>(*this, res->to_dict(), "tests");

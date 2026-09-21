@@ -232,6 +232,11 @@ def _omit(self: "Model", varlist: str | list, **kwargs) -> "Bundle":
 _omit.__name__ = "omit"
 _omit.__qualname__ = "Model.omit"
 
+def _qlrtest(self: "Model", **kwargs) -> "Bundle":
+    return self.test(type="qlrtest", **kwargs)
+_qlrtest.__name__ = "qlrtest"
+_qlrtest.__qualname__ = "Model.qlrtest"
+
 # #######################################################
 #   GretlModel_nl class
 # #######################################################
