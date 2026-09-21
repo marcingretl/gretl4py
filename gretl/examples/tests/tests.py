@@ -90,6 +90,10 @@ def run_example():
   res_bkw = m1.bkw()
 
   print("\n****************************")
+  print("breusch-pagan")
+  res_breusch_pagan = m1.breusch_pagan(robust=True)
+
+  print("\n****************************")
   print("chow")
   res_chow = m1.chow(target="1980:1")
 

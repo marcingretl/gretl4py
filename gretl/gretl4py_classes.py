@@ -195,6 +195,11 @@ def _bkw(self: "Model", **kwargs) -> "Bundle":
 _bkw.__name__ = "bkw"
 _bkw.__qualname__ = "Model.bkw"
 
+def _breusch_pagan(self: "Model", robust: bool = False, **kwargs) -> "Bundle":
+    return self.test(type="breusch-pagan", robust=robust, **kwargs)
+_breusch_pagan.__name__ = "breusch_pagan"
+_breusch_pagan.__qualname__ = "Model.breusch_pagan"
+
 def _chow(self: "Model", target: str, **kwargs) -> "Bundle":
     """
     Perform the Chow test for structural stability.
