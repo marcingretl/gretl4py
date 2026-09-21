@@ -23,8 +23,9 @@
 #include "gretl_calls.h"
 #include "gretl4py_utils.h"
 #include "gretl4py_model_instantiations.h"
+#include "docstrings/gretl4py_model_docstr.h"
 
-#define BIND_DRIVER_MODEL(NAME, FUNC, CI) \
+#define BIND_DRIVER_MODEL(NAME, FUNC, CI, DOC) \
     m.def(#NAME, \
           [](const std::string &formula, const py::kwargs &kwargs) -> GretlModelPtr \
           { \
@@ -38,7 +39,7 @@
               auto model = std::make_unique<GretlModel_NSE_Driver<FUNC, CI>>(varlist, kwargs); \
               return GretlModelPtr(std::move(model)); \
           }, \
-          py::arg("varlist").none(false), py::kw_only());
+          py::arg("varlist").none(false), py::kw_only(), DOC);
 
 static const std::string info = "The gretl4py package provides "
     "an interface to the gretl library for python3 "
@@ -353,26 +354,26 @@ PYBIND11_MODULE(_gretl, m)
           py::arg("resid").none(false), py::kw_only());
 
     // estimation via wrappers
-    BIND_DRIVER_MODEL(ols, lsq, OLS)
-    BIND_DRIVER_MODEL(wls, lsq, WLS)
-    BIND_DRIVER_MODEL(logit, logit_probit, LOGIT)
-    BIND_DRIVER_MODEL(probit, logit_probit, PROBIT)
-    BIND_DRIVER_MODEL(poisson, count_model, POISSON)
-    BIND_DRIVER_MODEL(negbin, count_model, NEGBIN)
-    BIND_DRIVER_MODEL(biprobit, biprobit_model, BIPROBIT)
-    BIND_DRIVER_MODEL(duration, duration_model, DURATION)
-    BIND_DRIVER_MODEL(heckit, heckit_model, HECKIT)
-    BIND_DRIVER_MODEL(logistic, logistic_driver, LOGISTIC)
-    BIND_DRIVER_MODEL(ar, ar_model, AR)
-    BIND_DRIVER_MODEL(ar1, ar1_model, AR1)
-    BIND_DRIVER_MODEL(lad, lad_model, LAD)
-    BIND_DRIVER_MODEL(garch, garch, GARCH)
-    BIND_DRIVER_MODEL(mpols, mp_ols, MPOLS)
-    BIND_DRIVER_MODEL(panel, panel_model, PANEL)
-    BIND_DRIVER_MODEL(tsls, ivreg, IVREG)
-    BIND_DRIVER_MODEL(hsk, hsk_model, HSK)
-    BIND_DRIVER_MODEL(intreg, interval_model, INTREG)
-    BIND_DRIVER_MODEL(midasreg, midas_model, MIDASREG)
+    BIND_DRIVER_MODEL(ols, lsq, OLS, doc::Model::ols)
+    BIND_DRIVER_MODEL(wls, lsq, WLS, "")
+    BIND_DRIVER_MODEL(logit, logit_probit, LOGIT, "")
+    BIND_DRIVER_MODEL(probit, logit_probit, PROBIT, "")
+    BIND_DRIVER_MODEL(poisson, count_model, POISSON, "")
+    BIND_DRIVER_MODEL(negbin, count_model, NEGBIN, "")
+    BIND_DRIVER_MODEL(biprobit, biprobit_model, BIPROBIT, "")
+    BIND_DRIVER_MODEL(duration, duration_model, DURATION, "")
+    BIND_DRIVER_MODEL(heckit, heckit_model, HECKIT, "")
+    BIND_DRIVER_MODEL(logistic, logistic_driver, LOGISTIC, "")
+    BIND_DRIVER_MODEL(ar, ar_model, AR, "")
+    BIND_DRIVER_MODEL(ar1, ar1_model, AR1, "")
+    BIND_DRIVER_MODEL(lad, lad_model, LAD, "")
+    BIND_DRIVER_MODEL(garch, garch, GARCH, "")
+    BIND_DRIVER_MODEL(mpols, mp_ols, MPOLS, "")
+    BIND_DRIVER_MODEL(panel, panel_model, PANEL, "")
+    BIND_DRIVER_MODEL(tsls, ivreg, IVREG, "")
+    BIND_DRIVER_MODEL(hsk, hsk_model, HSK, "")
+    BIND_DRIVER_MODEL(intreg, interval_model, INTREG, "")
+    BIND_DRIVER_MODEL(midasreg, midas_model, MIDASREG, "")
 
     //////////////////////////////////////////////////
     // VAR and VECM

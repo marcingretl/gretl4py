@@ -82,25 +82,25 @@ namespace doc::Dataset {
         quiet : bool
         Suppress reporting of the resulting sample range.
 
-        Notes
-        -----
-        Sample restrictions are cumulative by default. Use ``replace=True`` to
-        replace an existing restriction. ``replace`` cannot be combined with
-        ``contiguous``.
+    Notes
+    -----
+    Sample restrictions are cumulative by default. Use ``replace=True`` to
+    replace an existing restriction. ``replace`` cannot be combined with
+    ``contiguous``.
 
-        With ``no_missing``, observations are excluded if at least one selected
-        variable is missing; with ``no_all_missing``, they are excluded only if
-        all selected variables are missing.
+    With ``no_missing``, observations are excluded if at least one selected
+    variable is missing; with ``no_all_missing``, they are excluded only if
+    all selected variables are missing.
 
-        Random sampling is performed without replacement. Set the random-number
-        generator seed beforehand to obtain reproducible samples.
+    Random sampling is performed without replacement. Set the random-number
+    generator seed beforehand to obtain reproducible samples.
 
-        Restrictions based on dummy variables, Boolean conditions, or missing
-        values may alter time-series or panel structure. For panel data,
-        ``preserve_panel=True`` can be used to retain a nominally balanced panel.
+    Restrictions based on dummy variables, Boolean conditions, or missing
+    values may alter time-series or panel structure. For panel data,
+    ``preserve_panel=True`` can be used to retain a nominally balanced panel.
 
-        A permanent restriction cannot be undone by restoring the full sample.
-        )doc";
+    A permanent restriction cannot be undone by restoring the full sample.
+    )doc";
 
 } // namespace doc::Dataset
 

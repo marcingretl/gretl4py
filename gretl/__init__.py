@@ -229,8 +229,16 @@ def __getattr__(fun):
     if fun in dir(gretl4py_classes):
         return getattr(gretl4py_classes, fun)
 
+    model_class = getattr(_gretl, fun, None)
+
     def wrapper(*args, **kwargs):
         return __model_initializer(fun, *args, **kwargs)
+
+    wrapper.__name__ = fun
+    wrapper.__qualname__ = fun
+
+    if model_class is not None:
+        wrapper.__doc__ = model_class.__doc__
 
     return wrapper
 
