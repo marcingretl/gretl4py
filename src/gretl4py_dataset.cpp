@@ -1467,6 +1467,8 @@ GretlBundlePtr GretlDataset::test (const std::string &type, const std::string &v
     if (printout) printer_.print();
 
     // material we return
+    res->set_element<std::string>("type", type);
+    res->set_element("options", py::object(kwargs));
     res->set_element("test", get_accessor("$test"));
     res->set_element("pvalue", get_accessor("$pvalue"));
     res->set_element<std::string>("summary", std::string(printer_.get_buffer()));

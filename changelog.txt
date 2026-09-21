@@ -5,6 +5,7 @@ version 0.62:
     - add "<Model: not fitted>" message when model was defined but not estimated
     - GretlModel_VAR::save_uhat(): fix bug where err_ was not reset
     - GretlModel::estimated new read-only property
+    - new free kpsscrit() function
 
 version 0.61:
     - summary(): add support for pyton list as an argument

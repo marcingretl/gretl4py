@@ -249,6 +249,8 @@ PYBIND11_MODULE(_gretl, m)
               return do_get_tdisagg_matrix(y_obj, s, kwargs_copy);
           },
           py::arg("Y").none(false), py::arg("s").none(false), py::arg("X").none(true) = nullptr, py::kw_only());
+    m.def("kpsscrit", &do_kpsscrit,
+          py::arg("T").none(false), py::arg("trend").none(true) = false);
 
     //////////////////////////////////////////////////
     // single equation models

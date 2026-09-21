@@ -30,6 +30,7 @@ extern "C" {
     #include <gretl/gretl_www.h>
     #include <gretl/gretl_zip.h>
     #include <gretl/gretl_foreign.h>
+    #include <gretl/adf_kpss.h>
 }
 #include <filesystem>
 
@@ -1381,4 +1382,17 @@ GretlMatrixPtr do_get_tdisagg_matrix (py::object Y, int s, const py::kwargs &kwa
     global_printer.print();
 
     return std::make_shared<GretlMatrix>(m, false);
+}
+
+GretlMatrixPtr do_kpsscrit (int T, bool trend)
+{
+    //
+    // interface to libgretl's kpsscrit()
+    //
+    int err = 0;
+    auto res = std::make_shared<GretlMatrix>(kpss_critvals(T, trend, &err), false);
+
+    if (err) handle_gretl_error(err);
+
+    return res;
 }

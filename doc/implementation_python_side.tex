@@ -312,6 +312,21 @@ works by default only with the default dataset. To obtain
 inverted CDFs for variables from different datasets, please
 refer to \ref{met:gretldataset::invcdf}.
 
+\gretlfpycmd{kpsscrit()}\label{func:gretl.kpsscrit}
+\estdesc{Critical values for KPSS test.}
+\begin{lstlisting}[style=pythonstylefoot]
+gretl.kpsscrit(T: int[, trend: bool = False]) -> gretl.Matrix
+\end{lstlisting}
+\maptof{kpsscrit(T, trend)}{matrix}
+Examples:\newline
+\pythcodef{f1 = gretl.kpsscrit(100)}\\
+\pythcodef{f2 = gretl.kpsscrit(100, True)}\\
+\generaldesc{Returns a row vector containing critical values
+	at the 10, 5 and 1 percent levels for the KPSS test
+	for stationarity of a time series. \textit{T} should give
+	the number of observations and \textit{trend} should be
+	\pythcode{True} if the test includes a trend, \pythcode{False} otherwise.}
+
 \gretlfpycmd{modeltab()}
 \estdesc{Prints a \gretl-like ``model table''.}
 \begin{lstlisting}[style=pythonstylefoot]

@@ -116,4 +116,6 @@ GretlBundlePtr kmeans (const GretlMatrix &X, const GretlMatrix &centers, const G
 
 GretlMatrixPtr do_get_tdisagg_matrix (py::object Y, int s, const py::kwargs &kwargs, GretlDatasetPtr dataset = nullptr);
 
+GretlMatrixPtr do_kpsscrit (int T, bool trend = false);
+
 #endif // GRETL_CALLS_H
