@@ -103,6 +103,10 @@ def run_example():
   res_leverage = m1.leverage()
 
   print("\n****************************")
+  print("nonlinearity")
+  res_nonlinearity = m1.nonlinearity(mode="squares")
+
+  print("\n****************************")
   print("normality")
   res_normality = m1.normality()
   print(res_normality)

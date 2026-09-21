@@ -227,6 +227,13 @@ def _leverage(self: "Model", **kwargs) -> "Bundle":
 _leverage.__name__ = "leverage"
 _leverage.__qualname__ = "Model.leverage"
 
+def _nonlinearity(self: "Model", mode: str, **kwargs) -> "Bundle":
+    if mode not in ["logs", "squares"]:
+        raise ValueError(f'Test for nonlinearity, unknown mode: {mode}')
+    return self.test(type=mode, **kwargs)
+_nonlinearity.__name__ = "nonlinearity"
+_nonlinearity.__qualname__ = "Model.nonlinearity"
+
 def _normality(self: "Model", **kwargs) -> "Bundle":
     return self.test(type="normality", **kwargs)
 _normality.__name__ = "normality"
