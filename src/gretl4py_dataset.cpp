@@ -1470,9 +1470,7 @@ GretlBundlePtr GretlDataset::test (const std::string &type, const std::string &v
     res->set_element("test", get_accessor("$test"));
     res->set_element("pvalue", get_accessor("$pvalue"));
     res->set_element<std::string>("summary", std::string(printer_.get_buffer()));
-    if (has_result) {
-        res->set_element("result", get_accessor("$result"));
-    }
+    if (has_result) res->set_element("result", get_accessor("$result"));
 
     // we register result
     move_to_python_container<GretlDataset, py::dict, py::list>(*this, res->to_dict(), "tests");
