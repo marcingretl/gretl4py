@@ -264,6 +264,11 @@ def _panel(self: "Model", **kwargs) -> "Bundle":
 _panel.__name__ = "panel"
 _panel.__qualname__ = "Model.panel"
 
+def _panspec(self: "Model", **kwargs) -> "Bundle":
+    return self.test(type="panspec", **kwargs)
+_panspec.__name__ = "panspec"
+_panspec.__qualname__ = "Model.panspec"
+
 def _qlrtest(self: "Model", **kwargs) -> "Bundle":
     return self.test(type="qlrtest", **kwargs)
 _qlrtest.__name__ = "qlrtest"

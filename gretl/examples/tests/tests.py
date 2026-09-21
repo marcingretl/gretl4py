@@ -162,7 +162,8 @@ def run_example():
 
   print("\n****************************")
   print("panspec")
-  m3.test(type="panspec")
+  res_panspec = m3.panspec()
+  print(res_panspec)
 
   ######################
   # RESTRICT
