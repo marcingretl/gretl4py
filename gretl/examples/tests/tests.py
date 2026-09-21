@@ -176,7 +176,7 @@ def run_example():
   print(m4)
   print("\n****************************")
   print("coeffsum")
-  m4.test(type="coeffsum", varlist="WHITE ADMEXP")
+  res_coeffsum = m4.coeffsum(varlist="WHITE ADMEXP")
 
   print("\n****************************")
   print("restrict")

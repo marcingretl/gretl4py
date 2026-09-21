@@ -232,6 +232,11 @@ def _chow(self: "Model", target: str, **kwargs) -> "Bundle":
 _chow.__name__ = "chow"
 _chow.__qualname__ = "Model.chow"
 
+def _coeffsum(self: "Model", varlist: str | list, **kwargs) -> "Bundle":
+    return self.test(type="coeffsum", varlist=varlist, **kwargs)
+_coeffsum.__name__ = "coeffsum"
+_coeffsum.__qualname__ = "Model.coeffsum"
+
 def _comfac(self: "Model", **kwargs) -> "Bundle":
     return self.test(type="comfac", **kwargs)
 _comfac.__name__ = "comfac"
