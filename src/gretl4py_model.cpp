@@ -208,14 +208,14 @@ void GretlModel::save_model_ (T *model)
 
 //T = { MODEL, GRETL_VAR, equation_system }
 template <typename T>
-void GretlModel::do_restrict_ (T *model, const py::list &impose, const py::kwargs &kwargs)
+GretlBundlePtr GretlModel::do_restrict_ (T *model, const py::list &impose, const py::kwargs &kwargs)
 {
     //
     // we test a restriction given as impose
     // Note: this method is used in GretlModel_NSE
     // GretlModel_VAR_VECM, and GretlModel_NME
     //
-    py::dict res;
+    GretlBundlePtr res = std::make_shared<GretlBundle>();
     gretl_restriction *my_rset = nullptr;
     int save_t1 = dataset_->dset->t1;
     int save_t2 = dataset_->dset->t2;
@@ -267,18 +267,21 @@ void GretlModel::do_restrict_ (T *model, const py::list &impose, const py::kwarg
     if (err_) handle_gretl_error(err_);
 
     // we manufacture resulting object
-    res[py::cast("test")] = get_accessor("$test");
-    res[py::cast("pvalue")] = get_accessor("$pvalue");
-    res[py::cast("summary")] = printer_.get_buffer();
+    // material we return
+    res->set_element("test", get_accessor("$test"));
+    res->set_element("pvalue", get_accessor("$pvalue"));
+    res->set_element<std::string>("summary", std::string(printer_.get_buffer()));
 
     // we register result
-    move_to_python_container<GretlModel, py::dict, py::list>(*this, std::move(res), "restrictions");
+    move_to_python_container<GretlModel, py::dict, py::list>(*this, res->to_dict(), "restrictions");
 
     if (kwargs.contains("silent")) {
         auto val = kwargs["silent"];
 
         if (!is_bool_kwarg(val, "silent")) printer_.print();
     }
+
+    return res;
 }
 
 //T = { MODEL, void }
@@ -570,9 +573,9 @@ GretlBundlePtr GretlModel_NSE::test (const std::string &type, const std::string 
     return res;
 }
 
-void GretlModel_NSE::restrict (const py::list &impose, const py::kwargs &kwargs)
+GretlBundlePtr GretlModel_NSE::restrict (const py::list &impose, const py::kwargs &kwargs)
 {
-    do_restrict_<MODEL>(model_, impose, kwargs);
+    return do_restrict_<MODEL>(model_, impose, kwargs);
 }
 
 template <ModelDataIndex IDX>
@@ -1474,9 +1477,9 @@ void GretlModel_VAR_VECM::fit (void)
     save_model_<GRETL_VAR>(model_);
 }
 
-void GretlModel_VAR_VECM::restrict (const py::list &impose, const py::kwargs &kwargs)
+GretlBundlePtr GretlModel_VAR_VECM::restrict (const py::list &impose, const py::kwargs &kwargs)
 {
-    do_restrict_<GRETL_VAR>(model_, impose, kwargs);
+    return do_restrict_<GRETL_VAR>(model_, impose, kwargs);
 }
 
 std::string GretlModel_VAR_VECM::save_ec_term (const int nr, const std::string &name) const
@@ -1586,9 +1589,9 @@ void GretlModel_NME::forecast (const py::args &args, const py::kwargs &kwargs)
     py::print("GretlModel_NME::forecast(): to be written");
 }
 
-void GretlModel_NME::restrict (const py::list &impose, const py::kwargs &kwargs)
+GretlBundlePtr GretlModel_NME::restrict (const py::list &impose, const py::kwargs &kwargs)
 {
-    do_restrict_<equation_system>(model_, impose, kwargs);
+    return do_restrict_<equation_system>(model_, impose, kwargs);
 }
 
 std::string GretlModel_NME::save_uhat (int eqn, const std::string &name) const

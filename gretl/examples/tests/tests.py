@@ -180,12 +180,12 @@ def run_example():
 
   print("\n****************************")
   print("restrict")
-  m4.restrict(impose=['b[4] - b[5] = 0', 'b[3] = 0'])
-  print(m4.restrictions[-1]['pvalue'])
+  res_restrict_ols = m4.restrict(impose=['b[4] - b[5] = 0', 'b[3] = 0'])
+  print(res_restrict_ols['pvalue'])
 
   m5 = gretl.vecm(order=2, rank=1, ylist='LRM LRY', xlist='IBO IDE', rc=True, seasonals=True, data=d1).fit()
-  m5.restrict(impose=['b[2] = 0'], verbose=True)
-  print(m5.restrictions[-1]['pvalue'])
+  res_restrict_vecm = m5.restrict(impose=['b[2] = 0'], verbose=True)
+  print(res_restrict_vecm['pvalue'])
 
   ######################
   # AR1 specific

@@ -60,7 +60,7 @@ protected:
     void save_model_ (T *model);
 
     template <typename T>
-    void do_restrict_ (T *model, const py::list &impose, const py::kwargs &kwargs);
+    GretlBundlePtr do_restrict_ (T *model, const py::list &impose, const py::kwargs &kwargs);
 
     template <typename T>
     void gretl_do_forecast_ (void *model, const py::args &args, const py::kwargs &kwargs);
@@ -117,7 +117,7 @@ public:
 
     py::object get_accessor (const std::string &name) const override;
 
-    void restrict (const py::list &impose, const py::kwargs &kwargs);
+    GretlBundlePtr restrict (const py::list &impose, const py::kwargs &kwargs);
 
     template <ModelDataIndex IDX>
     char *gretl_get_fit_or_resid (const std::string &name = "") const;
@@ -300,7 +300,7 @@ public:
 
     void fit (void) override;
 
-    void restrict (const py::list &impose, const py::kwargs &kwargs);
+    GretlBundlePtr restrict (const py::list &impose, const py::kwargs &kwargs);
 
     std::string save_ec_term (const int nr, const std::string &name = "") const;
 };
@@ -330,7 +330,7 @@ public:
 
     py::object get_accessor (const std::string &name) const override;
 
-    void restrict (const py::list &impose, const py::kwargs &kwargs);
+    GretlBundlePtr restrict (const py::list &impose, const py::kwargs &kwargs);
 
     std::string save_uhat (int eqn, const std::string &name = "") const;
 };
