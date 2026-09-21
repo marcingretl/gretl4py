@@ -462,6 +462,8 @@ GretlBundlePtr GretlModel_NSE::test (const std::string &type, const py::kwargs &
     //
     GretlBundlePtr res = std::make_shared<GretlBundle>();
     int order = type == "corrgm" ? auto_acf_order(sample_size( dataset_->dset)) : dataset_->dset->pd;
+    bool has_pvalue = true;     // if pvalue is accessible via $pvalue
+    bool has_test = true;       // if test statistics is accessible via $test
     bool has_result = false;    // if given test produces additional results accessible via $result
 
     // we set up options
@@ -484,6 +486,8 @@ GretlBundlePtr GretlModel_NSE::test (const std::string &type, const py::kwargs &
         err_ = QLR_test(model_, dataset_->dset, opt_, printer_.prn_ptr());
     } else if (type == "vif") {
         err_ = vif_test(model_, dataset_->dset, opt_, printer_.prn_ptr());
+        has_result = true;
+        has_test = has_pvalue = false;
     } else if (type == "corrgm") {
         err_ = corrgram(dataset_->dset->v-1, order,
                         model_->ci == ARMA ? arma_model_get_n_arma_coeffs(model_) : 0, dataset_->dset, SET_OPT(opt_, OPT_R), printer_.prn_ptr());
@@ -509,8 +513,8 @@ GretlBundlePtr GretlModel_NSE::test (const std::string &type, const py::kwargs &
     // we manufacture resulting object
     res->set_element<std::string>("type", type);
     res->set_element("options", py::object(kwargs));
-    res->set_element("test", get_accessor("$test"));
-    res->set_element("pvalue", get_accessor("$pvalue"));
+    if (has_test) res->set_element("test", get_accessor("$test"));
+    if (has_pvalue) res->set_element("pvalue", get_accessor("$pvalue"));
     res->set_element<std::string>("summary", std::string(printer_.get_buffer()));
     if (has_result) res->set_element("result", get_accessor("$result"));
     if (type == "qlrtest") res->set_element("qlrbreak", get_accessor("$qlrbreak"));

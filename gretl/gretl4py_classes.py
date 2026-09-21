@@ -242,6 +242,19 @@ def _reset(self: "Model", **kwargs) -> "Bundle":
 _reset.__name__ = "reset"
 _reset.__qualname__ = "Model.reset"
 
+def _white(self: "Model", white_nocross: bool = False, **kwargs) -> "Bundle":
+    if white_nocross:
+        return self.test(type="white-nocross", **kwargs)
+    else:
+        return self.test(type="white", **kwargs)
+_white.__name__ = "white"
+_white.__qualname__ = "Model.white"
+
+def _vif(self: "Model", **kwargs) -> "Bundle":
+    return self.test(type="vif", **kwargs)
+_vif.__name__ = "vif"
+_vif.__qualname__ = "Model.vif"
+
 # #######################################################
 #   GretlModel_nl class
 # #######################################################

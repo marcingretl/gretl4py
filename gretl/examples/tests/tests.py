@@ -116,11 +116,11 @@ def run_example():
 
   print("\n****************************")
   print("white")
-  m1.test(type="white")
+  res_white = m1.white(white_nocross=True)
 
   print("\n****************************")
   print("vif")
-  m1.test(type="vif")
+  res_vif = m1.vif()
 
   # ARIMA
   m2 = gretl.arima(y='lg', order=(2,0,0), data=d2).fit()
