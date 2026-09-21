@@ -183,6 +183,14 @@ def run_example():
   m5.restrict(impose=['b[2] = 0'], verbose=True)
   print(m5.restrictions[-1]['pvalue'])
 
+  ######################
+  # AR1 specific
+  ######################
+  m6 = gretl.ar1(formula="1 0 2 3 4").fit()
+  print("\n****************************")
+  print("comfac")
+  res_comfac = m6.comfac()
+
   ###############################################################
   # summary
   ###############################################################

@@ -123,7 +123,7 @@ from .gretl4py_classes import _johansen, _kpss, _levinlin, _meantest, _normtest
 from .gretl4py_classes import _runs, _vartest, _add, _bkw, _chow, _cusum, _leverage
 from .gretl4py_classes import _omit, _qlrtest, _reset, _white, _vif, _normality
 from .gretl4py_classes import _nonlinearity, _autocorr, _arch, _breusch_pagan
-from .gretl4py_classes import _panel, _panspec
+from .gretl4py_classes import _panel, _panspec, _comfac
 # to be deprecated
 from .gretl4py_classes import _dataset_old_test, _oddsratio, _to_dataframe
 
@@ -150,6 +150,7 @@ setattr(_gretl.Model, "autocorr", _autocorr)
 setattr(_gretl.Model, "bkw", _bkw)
 setattr(_gretl.Model, "breusch_pagan", _breusch_pagan)
 setattr(_gretl.Model, "chow", _chow)
+setattr(_gretl.Model, "comfac", _comfac)
 setattr(_gretl.Model, "cusum", _cusum)
 setattr(_gretl.Model, "leverage", _leverage)
 setattr(_gretl.Model, "nonlinearity", _nonlinearity)

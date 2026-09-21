@@ -232,6 +232,11 @@ def _chow(self: "Model", target: str, **kwargs) -> "Bundle":
 _chow.__name__ = "chow"
 _chow.__qualname__ = "Model.chow"
 
+def _comfac(self: "Model", **kwargs) -> "Bundle":
+    return self.test(type="comfac", **kwargs)
+_comfac.__name__ = "comfac"
+_comfac.__qualname__ = "Model.comfac"
+
 def _cusum(self: "Model", **kwargs) -> "Bundle":
     return self.test(type="cusum", **kwargs)
 _cusum.__name__ = "cusum"
