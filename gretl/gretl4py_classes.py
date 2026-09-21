@@ -122,6 +122,10 @@ def _model_plots(
 ####################################
 #   tests
 ####################################
+def _model_old_test(self: "Model", type: str, **kwargs) -> "Bundle":
+    print(f'WARNING: Model::test(type="{type}") method is deprecated; use Model::{type}() instead\n')
+    return self._test(type=type, **kwargs)
+
 def _add(self: "Model", varlist: str, **kwargs) -> "Bundle":
     """
     Test or select variables for addition to the model.
@@ -161,7 +165,7 @@ def _add(self: "Model", varlist: str, **kwargs) -> "Bundle":
     current model. With ``lm=True``, the original model is retained.
     The ``lm`` and ``auto`` options cannot be combined.
     """
-    return self.test(type="add", varlist=varlist, **kwargs)
+    return self._test(type="add", varlist=varlist, **kwargs)
 _add.__name__ = "add"
 _add.__qualname__ = "Model.add"
 
@@ -185,7 +189,7 @@ def _arch(self: "Model", **kwargs) -> "Bundle":
     silent : bool
         Suppress printed output.
     """
-    return self.test(type="arch", **kwargs)
+    return self._test(type="arch", **kwargs)
 _arch.__name__ = "arch"
 _arch.__qualname__ = "Model.arch"
 
@@ -215,7 +219,7 @@ def _autocorr(self: "Model", order: int, **kwargs) -> "Bundle":
     by two-stage least squares, the corresponding test follows Godfrey
     (1994).
     """
-    return self.test(type="autocorr", order=order, **kwargs)
+    return self._test(type="autocorr", order=order, **kwargs)
 _autocorr.__name__ = "autocorr"
 _autocorr.__qualname__ = "Model.autocorr"
 
@@ -238,7 +242,7 @@ def _bkw(self: "Model", **kwargs) -> "Bundle":
     diagnostics follow Belsley, Kuh and Welsch (1980) and provide a more
     detailed analysis of collinearity than variance inflation factors.
     """
-    return self.test(type="bkw", **kwargs)
+    return self._test(type="bkw", **kwargs)
 _bkw.__name__ = "bkw"
 _bkw.__qualname__ = "Model.bkw"
 
@@ -266,7 +270,7 @@ def _breusch_pagan(self: "Model", robust: bool = False, **kwargs) -> "Bundle":
     -----
     The robust variant follows Koenker (1981).
     """
-    return self.test(type="breusch-pagan", robust=robust, **kwargs)
+    return self._test(type="breusch-pagan", robust=robust, **kwargs)
 _breusch_pagan.__name__ = "breusch_pagan"
 _breusch_pagan.__qualname__ = "Model.breusch_pagan"
 
@@ -298,7 +302,7 @@ def _chow(self: "Model", target: str, **kwargs) -> "Bundle":
     Without ``dummy=True``, ``target`` identifies the observation at which
     the sample is split for the structural-break test.
     """
-    return self.test(type="chow", obs=target, **kwargs)
+    return self._test(type="chow", obs=target, **kwargs)
 _chow.__name__ = "chow"
 _chow.__qualname__ = "Model.chow"
 
@@ -326,7 +330,7 @@ def _coeffsum(self: "Model", varlist: str | list, **kwargs) -> "Bundle":
     test, which jointly tests whether selected coefficients are all zero,
     this test concerns their sum.
     """
-    return self.test(type="coeffsum", varlist=varlist, **kwargs)
+    return self._test(type="coeffsum", varlist=varlist, **kwargs)
 _coeffsum.__name__ = "coeffsum"
 _coeffsum.__qualname__ = "Model.coeffsum"
 
@@ -349,7 +353,7 @@ def _comfac(self: "Model", **kwargs) -> "Bundle":
     This test is available only for models estimated using an AR(1)
     method, such as Hildreth-Lu.
     """
-    return self.test(type="comfac", **kwargs)
+    return self._test(type="comfac", **kwargs)
 _comfac.__name__ = "comfac"
 _comfac.__qualname__ = "Model.comfac"
 
@@ -380,7 +384,7 @@ def _cusum(self: "Model", **kwargs) -> "Bundle":
     is also reported. With ``squares=True``, the confidence band is
     calculated using the method of Edgerton and Wells (1994).
     """
-    return self.test(type="cusum", **kwargs)
+    return self._test(type="cusum", **kwargs)
 _cusum.__name__ = "cusum"
 _cusum.__qualname__ = "Model.cusum"
 
@@ -412,7 +416,7 @@ def _leverage(self: "Model", **kwargs) -> "Bundle":
     Studentized residuals. The test statistic records the leave-one-out
     cross-validation criterion.
     """
-    return self.test(type="leverage", **kwargs)
+    return self._test(type="leverage", **kwargs)
 _leverage.__name__ = "leverage"
 _leverage.__qualname__ = "Model.leverage"
 
@@ -441,7 +445,7 @@ def _nonlinearity(self: "Model", mode: str, **kwargs) -> "Bundle":
     """
     if mode not in ["logs", "squares"]:
         raise ValueError(f'Test for nonlinearity, unknown mode: {mode}')
-    return self.test(type=mode, **kwargs)
+    return self._test(type=mode, **kwargs)
 _nonlinearity.__name__ = "nonlinearity"
 _nonlinearity.__qualname__ = "Model.nonlinearity"
 
@@ -464,7 +468,7 @@ def _normality(self: "Model", **kwargs) -> "Bundle":
     The test statistic and its p-value are recorded on successful
     completion.
     """
-    return self.test(type="normality", **kwargs)
+    return self._test(type="normality", **kwargs)
 _normality.__name__ = "normality"
 _normality.__qualname__ = "Model.normality"
 
@@ -508,7 +512,7 @@ def _omit(self: "Model", varlist: str | list, **kwargs) -> "Bundle":
     improvement according to the selected criterion is possible. If no
     criterion is specified, a significance level of 0.10 is used.
     """
-    return self.test(type="omit", varlist=varlist, **kwargs)
+    return self._test(type="omit", varlist=varlist, **kwargs)
 _omit.__name__ = "omit"
 _omit.__qualname__ = "Model.omit"
 
@@ -531,7 +535,7 @@ def _panel(self: "Model", **kwargs) -> "Bundle":
     -----
     This test is available only for models estimated on panel data.
     """
-    return self.test(type="panel", **kwargs)
+    return self._test(type="panel", **kwargs)
 _panel.__name__ = "panel"
 _panel.__qualname__ = "Model.panel"
 
@@ -564,7 +568,7 @@ def _panspec(self: "Model", **kwargs) -> "Bundle":
     The test statistics and p-values are recorded as three-element vectors
     corresponding to the Wald, Breusch-Pagan, and Hausman tests.
     """
-    return self.test(type="panspec", **kwargs)
+    return self._test(type="panspec", **kwargs)
 _panspec.__name__ = "panspec"
 _panspec.__qualname__ = "Model.panspec"
 
@@ -594,7 +598,7 @@ def _qlrtest(self: "Model", **kwargs) -> "Bundle":
     recorded. If the original model was estimated with robust standard
     errors, robust Wald tests are used in place of the standard F-tests.
     """
-    return self.test(type="qlrtest", **kwargs)
+    return self._test(type="qlrtest", **kwargs)
 _qlrtest.__name__ = "qlrtest"
 _qlrtest.__qualname__ = "Model.qlrtest"
 
@@ -627,7 +631,7 @@ def _reset(self: "Model", **kwargs) -> "Bundle":
     Robust standard errors are used automatically if the original model
     was estimated with robust standard errors.
     """
-    return self.test(type="reset", **kwargs)
+    return self._test(type="reset", **kwargs)
 _reset.__name__ = "reset"
 _reset.__qualname__ = "Model.reset"
 
@@ -652,7 +656,7 @@ def _vif(self: "Model", **kwargs) -> "Bundle":
 
     The resulting VIFs are also available as a column vector.
     """
-    return self.test(type="vif", **kwargs)
+    return self._test(type="vif", **kwargs)
 _vif.__name__ = "vif"
 _vif.__qualname__ = "Model.vif"
 
@@ -681,9 +685,9 @@ def _white(self: "Model", white_nocross: bool = False, **kwargs) -> "Bundle":
     test is replaced by the HET1 test of Pesaran and Taylor (1999).
     """
     if white_nocross:
-        return self.test(type="white-nocross", **kwargs)
+        return self._test(type="white-nocross", **kwargs)
     else:
-        return self.test(type="white", **kwargs)
+        return self._test(type="white", **kwargs)
 _white.__name__ = "white"
 _white.__qualname__ = "Model.white"
 
@@ -706,7 +710,7 @@ def _xdepend(self: "Model", **kwargs) -> "Bundle":
     This test is available only for models estimated on panel data.
     The test statistic follows Pesaran (2004).
     """
-    return self.test(type="xdepend", **kwargs)
+    return self._test(type="xdepend", **kwargs)
 _xdepend.__name__ = "xdepend"
 _xdepend.__qualname__ = "Model.xdepend"
 
@@ -845,7 +849,6 @@ def _matrix_functions_wrapper(func_name: str):
         func_call = getattr(_gretl, func_name)
         # call the _gretl function with dataset, series, optional param
         return func_call(d, self.get_series(series), param)
-
     return method
 
 def get_data(src: str | dict | int, **kwargs) -> "Dataset":
@@ -1016,7 +1019,6 @@ def _package_get_help(self: "Package"):
 
 def _dataset_old_test(self: "Dataset", type: str, **kwargs) -> "Bundle":
     print(f'WARNING: Dataset::test(type="{type}") method is deprecated; use Dataset::{type}() instead\n')
-
     return self._test(type=type, **kwargs)
 
 def _adf(self: "Dataset", order: int, varlist: str | list, **kwargs) -> "Bundle":

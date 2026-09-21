@@ -108,7 +108,7 @@ void init_gretl4py_model_py11(py::module_ &m)
     .def("save_uhat_sq", &GretlModel_NSE::gretl_get_fit_or_resid<M_UHAT2>, py::arg("name").none(true) = "")
     .def("save_ahat", &GretlModel_NSE::gretl_get_fit_or_resid<M_AHAT>, py::arg("name").none(true) = "")
     .def("save_h", &GretlModel_NSE::gretl_get_fit_or_resid<M_H>, py::arg("name").none(true) = "")
-    .def("test",
+    .def("_test",
          [](GretlModel_NSE &self, const std::string &type, const py::kwargs &kwargs) -> GretlBundlePtr
          {
              //
@@ -199,7 +199,7 @@ void init_gretl4py_model_py11(py::module_ &m)
     auto gretl_model_var = py::class_<GretlModel_VAR, GretlModel, std::unique_ptr<GretlModel_VAR>>(m, "Model_var", py::dynamic_attr());
 
     gretl_model_var
-    .def("test", &GretlModel_VAR::test,
+    .def("_test", &GretlModel_VAR::test,
             py::arg("type").none(false), py::kw_only())
     .def("irf", py::overload_cast<int, int, double>(&GretlModel_VAR::irf),
             py::arg("target").none(false), py::arg("shock").none(false), py::arg("alpha").none(true) = 0)

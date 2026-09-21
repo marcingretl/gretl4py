@@ -125,7 +125,7 @@ from .gretl4py_classes import _omit, _qlrtest, _reset, _white, _vif, _normality
 from .gretl4py_classes import _nonlinearity, _autocorr, _arch, _breusch_pagan
 from .gretl4py_classes import _panel, _panspec, _comfac, _xdepend, _coeffsum
 # to be deprecated
-from .gretl4py_classes import _dataset_old_test, _oddsratio, _to_dataframe
+from .gretl4py_classes import _dataset_old_test, _model_old_test, _oddsratio, _to_dataframe
 
 # #####################################################
 # deprecations
@@ -133,6 +133,7 @@ from .gretl4py_classes import _dataset_old_test, _oddsratio, _to_dataframe
 # _oddsratio:       to be removed on 0.7
 # _to_dataframe:    to be removed on 0.7
 # Dataset::test():  to be removed on 0.7
+# Model::test():    to be removed on 0.7
 # deprecations: END
 
 # #####################################################
@@ -165,12 +166,12 @@ setattr(_gretl.Model, "vif", _vif)
 setattr(_gretl.Model, "white", _white)
 setattr(_gretl.Model, "xdepend", _xdepend)
 #
+setattr(_gretl.Model, "test", _model_old_test)
 setattr(_gretl.Model_logit, "oddsratio", _oddsratio)        # for pretty-printing oddsratios
 
 # gretl.Dataset class
 setattr(_gretl.Dataset, "to_pandas", _dataset_to_pandas)    # gretl data to Pandas DataFrame converter
 setattr(_gretl.Dataset, "to_dataframe", _to_dataframe)
-setattr(_gretl.Dataset, "test", _dataset_old_test)
 setattr(_gretl.Dataset, "adf", _adf)
 setattr(_gretl.Dataset, "bds", _bds)
 setattr(_gretl.Dataset, "coint", _coint)
@@ -184,6 +185,8 @@ setattr(_gretl.Dataset, "meantest", _meantest)
 setattr(_gretl.Dataset, "normtest", _normtest)
 setattr(_gretl.Dataset, "runs", _runs)
 setattr(_gretl.Dataset, "vartest", _vartest)
+#
+setattr(_gretl.Dataset, "test", _dataset_old_test)
 
 # gretl.Package class
 setattr(_gretl.Package, "get_help", _package_get_help)      # display help (either PDF or txt)
