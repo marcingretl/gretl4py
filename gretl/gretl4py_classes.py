@@ -119,6 +119,9 @@ def _model_plots(
     else:
         raise ValueError(f"unknown plotting type: {kind}")
 
+####################################
+#   tests
+####################################
 def _add(self: "Model", varlist: str, **kwargs) -> "Bundle":
     """
     Test or select variables for addition to the model.
@@ -163,11 +166,55 @@ _add.__name__ = "add"
 _add.__qualname__ = "Model.add"
 
 def _arch(self: "Model", **kwargs) -> "Bundle":
+    """
+    Test model residuals for ARCH effects.
+
+    Tests the null hypothesis of no autoregressive conditional
+    heteroskedasticity in the model error term.
+
+    Parameters
+    ----------
+    order : int, optional
+        Lag order of the test. If omitted, the periodicity of the data
+        is used.
+
+    Other Parameters
+    ----------------
+    quiet : bool
+        Suppress printing of the auxiliary regression.
+    silent : bool
+        Suppress printed output.
+    """
     return self.test(type="arch", **kwargs)
 _arch.__name__ = "arch"
 _arch.__qualname__ = "Model.arch"
 
 def _autocorr(self: "Model", order: int, **kwargs) -> "Bundle":
+    """
+    Test model residuals for serial correlation.
+
+    Performs the LMF test for serial correlation in an OLS model. For
+    models estimated by two-stage least squares, Godfrey's test is used.
+
+    Parameters
+    ----------
+    order : int, optional
+        Lag order of the test. If omitted, the periodicity of the data
+        is used.
+
+    Other Parameters
+    ----------------
+    quiet : bool
+        Suppress printing of the auxiliary regression.
+    silent : bool
+        Suppress printed output.
+
+    Notes
+    -----
+    For OLS models the test follows Kiviet (1986). For models estimated
+    by two-stage least squares, the corresponding test follows Godfrey
+    (1994).
+    """
     return self.test(type="autocorr", order=order, **kwargs)
 _autocorr.__name__ = "autocorr"
 _autocorr.__qualname__ = "Model.autocorr"
@@ -196,6 +243,29 @@ _bkw.__name__ = "bkw"
 _bkw.__qualname__ = "Model.bkw"
 
 def _breusch_pagan(self: "Model", robust: bool = False, **kwargs) -> "Bundle":
+    """
+    Perform the Breusch-Pagan test for heteroskedasticity.
+
+    Tests the null hypothesis of homoskedasticity using the
+    Breusch-Pagan test.
+
+    Parameters
+    ----------
+    robust : bool, optional
+        Use the Koenker robust variance estimator, making the test less
+        sensitive to the assumption of normality.
+
+    Other Parameters
+    ----------------
+    quiet : bool
+        Suppress printing of the auxiliary regression.
+    silent : bool
+        Suppress printed output.
+
+    Notes
+    -----
+    The robust variant follows Koenker (1981).
+    """
     return self.test(type="breusch-pagan", robust=robust, **kwargs)
 _breusch_pagan.__name__ = "breusch_pagan"
 _breusch_pagan.__qualname__ = "Model.breusch_pagan"
@@ -233,26 +303,142 @@ _chow.__name__ = "chow"
 _chow.__qualname__ = "Model.chow"
 
 def _coeffsum(self: "Model", varlist: str | list, **kwargs) -> "Bundle":
+    """
+    Test the sum of selected model coefficients.
+
+    Calculates the sum of the coefficients on the specified variables and
+    tests the null hypothesis that this sum is zero.
+
+    Parameters
+    ----------
+    varlist : str | list
+        Variables whose coefficients are to be summed.
+
+    Other Parameters
+    ----------------
+    quiet : bool
+        Suppress printed output.
+
+    Notes
+    -----
+    The test reports the coefficient sum, its standard error, and the
+    p-value for the null hypothesis that the sum is zero. Unlike an omit
+    test, which jointly tests whether selected coefficients are all zero,
+    this test concerns their sum.
+    """
     return self.test(type="coeffsum", varlist=varlist, **kwargs)
 _coeffsum.__name__ = "coeffsum"
 _coeffsum.__qualname__ = "Model.coeffsum"
 
 def _comfac(self: "Model", **kwargs) -> "Bundle":
+    """
+    Test the common factor restriction.
+
+    Tests the common factor restriction implied by an AR(1) model using
+    a relatively unrestricted dynamic auxiliary regression.
+
+    Other Parameters
+    ----------------
+    quiet : bool
+        Suppress printing of the auxiliary regression.
+    silent : bool
+        Suppress printed output.
+
+    Notes
+    -----
+    This test is available only for models estimated using an AR(1)
+    method, such as Hildreth-Lu.
+    """
     return self.test(type="comfac", **kwargs)
 _comfac.__name__ = "comfac"
 _comfac.__qualname__ = "Model.comfac"
 
 def _cusum(self: "Model", **kwargs) -> "Bundle":
+    """
+    Perform the CUSUM test for parameter stability.
+
+    Computes recursive one-step-ahead forecast errors and uses their
+    cumulative sum to test the stability of the parameters of an OLS
+    model.
+
+    Other Parameters
+    ----------------
+    squares : bool
+        Perform the CUSUMSQ test based on squared recursive residuals.
+    quiet : bool
+        Print only the Harvey-Collier test result.
+    plot : str
+        Plot mode (``"none"`` or ``"display"``) or output filename.
+
+    Notes
+    -----
+    The null hypothesis is parameter stability. It is rejected at the
+    5 percent significance level if the cumulative series crosses the
+    95 percent confidence band.
+
+    For the CUSUM test, the Harvey-Collier t-test for parameter stability
+    is also reported. With ``squares=True``, the confidence band is
+    calculated using the method of Edgerton and Wells (1994).
+    """
     return self.test(type="cusum", **kwargs)
 _cusum.__name__ = "cusum"
 _cusum.__qualname__ = "Model.cusum"
 
 def _leverage(self: "Model", **kwargs) -> "Bundle":
+    """
+    Compute leverage and influence diagnostics.
+
+    Calculates leverage, influence, DFFITS, and Studentized residuals for
+    the observations used in the estimation of an OLS model.
+
+    Other Parameters
+    ----------------
+    save : bool
+        Save leverage, influence, and DFFITS as series in the dataset.
+    overwrite : bool
+        Allow existing saved series to be overwritten.
+    quiet : bool
+        Suppress printed output.
+    plot : str
+        Plot mode (``"none"`` or ``"display"``) or output filename.
+
+    Notes
+    -----
+    Observations with leverage greater than ``2k/n``, where ``k`` is the
+    number of estimated parameters and ``n`` is the sample size, are
+    flagged as leverage points.
+
+    The result matrix contains leverage, influence, and externally
+    Studentized residuals. The test statistic records the leave-one-out
+    cross-validation criterion.
+    """
     return self.test(type="leverage", **kwargs)
 _leverage.__name__ = "leverage"
 _leverage.__qualname__ = "Model.leverage"
 
 def _nonlinearity(self: "Model", mode: str, **kwargs) -> "Bundle":
+    """
+    Test the model for nonlinearity.
+
+    Performs an LM test for nonlinearity using logarithmic or squared
+    transformations in the auxiliary regression.
+
+    Parameters
+    ----------
+    mode : str
+        Type of nonlinearity test: ``"logs"`` or ``"squares"``.
+
+    Other Parameters
+    ----------------
+    quiet : bool
+        Suppress printing of the auxiliary regression.
+    silent : bool
+        Suppress printed output.
+
+    Notes
+    -----
+    The test is generally available for models estimated by OLS.
+    """
     if mode not in ["logs", "squares"]:
         raise ValueError(f'Test for nonlinearity, unknown mode: {mode}')
     return self.test(type=mode, **kwargs)
@@ -260,41 +446,240 @@ _nonlinearity.__name__ = "nonlinearity"
 _nonlinearity.__qualname__ = "Model.nonlinearity"
 
 def _normality(self: "Model", **kwargs) -> "Bundle":
+    """
+    Test model residuals for normality.
+
+    Performs the Doornik-Hansen test of the null hypothesis that the
+    model error term is normally distributed.
+
+    Other Parameters
+    ----------------
+    quiet : bool
+        Suppress details of the test.
+    silent : bool
+        Suppress printed output.
+
+    Notes
+    -----
+    The test statistic and its p-value are recorded on successful
+    completion.
+    """
     return self.test(type="normality", **kwargs)
 _normality.__name__ = "normality"
 _normality.__qualname__ = "Model.normality"
 
 def _omit(self: "Model", varlist: str | list, **kwargs) -> "Bundle":
+    """
+    Test or select variables for omission from the model.
+
+    By default, performs a joint Wald test of the null hypothesis that the
+    coefficients on the specified variables are zero and estimates the
+    corresponding reduced model. Backward stepwise selection is also
+    available.
+
+    Parameters
+    ----------
+    varlist : str | list, optional
+        Variables to test or consider for omission. May be omitted when
+        ``auto`` is specified.
+
+    Other Parameters
+    ----------------
+    test_only : bool
+        Perform the test without replacing the current model.
+    chi_square : bool
+        Use the chi-square rather than F form of the Wald test.
+    quiet : bool
+        Print only the basic test result.
+    silent : bool
+        Suppress printed output.
+    vcv : bool
+        Print the covariance matrix for the reduced model.
+    auto : str | float
+        Perform backward stepwise selection using ``"AIC"``, ``"BIC"``,
+        ``"HQC"``, or a significance level as the selection criterion.
+
+    Notes
+    -----
+    By default, the reduced model replaces the original model as the
+    current model. With ``test_only=True``, the original model is retained.
+
+    With ``auto``, variables are eliminated sequentially until no further
+    improvement according to the selected criterion is possible. If no
+    criterion is specified, a significance level of 0.10 is used.
+    """
     return self.test(type="omit", varlist=varlist, **kwargs)
 _omit.__name__ = "omit"
 _omit.__qualname__ = "Model.omit"
 
 def _panel(self: "Model", **kwargs) -> "Bundle":
+    """
+    Test for groupwise heteroskedasticity in panel data.
+
+    Tests the null hypothesis of a common error variance across the
+    cross-sectional units against the alternative of groupwise
+    heteroskedasticity.
+
+    Other Parameters
+    ----------------
+    quiet : bool
+        Suppress printing of the auxiliary regression.
+    silent : bool
+        Suppress printed output.
+
+    Notes
+    -----
+    This test is available only for models estimated on panel data.
+    """
     return self.test(type="panel", **kwargs)
 _panel.__name__ = "panel"
 _panel.__qualname__ = "Model.panel"
 
 def _panspec(self: "Model", **kwargs) -> "Bundle":
+    """
+    Perform panel specification tests.
+
+    Tests a pooled OLS specification against fixed-effects and random-effects
+    alternatives. Reports the fixed-effects Wald test, the Breusch-Pagan LM
+    test for random effects, and the Hausman test.
+
+    Other Parameters
+    ----------------
+    nerlove : bool
+        Use the Nerlove method rather than the Swamy-Arora method for
+        estimating the random-effects variance components.
+    matrix_diff : bool
+        Use the matrix-difference method for the Hausman test instead of
+        the regression method.
+    quiet : bool
+        Suppress printed output.
+
+    Notes
+    -----
+    The command is available after estimation of a panel-data model by OLS.
+    The fixed-effects Wald and Breusch-Pagan tests assess pooled OLS against
+    fixed-effects and random-effects alternatives, respectively. The Hausman
+    test assesses the consistency of the random-effects estimator.
+
+    The test statistics and p-values are recorded as three-element vectors
+    corresponding to the Wald, Breusch-Pagan, and Hausman tests.
+    """
     return self.test(type="panspec", **kwargs)
 _panspec.__name__ = "panspec"
 _panspec.__qualname__ = "Model.panspec"
 
 def _qlrtest(self: "Model", **kwargs) -> "Bundle":
+    """
+    Perform the Quandt likelihood ratio test for a structural break.
+
+    Tests for a structural break at an unknown point in an OLS model. Chow
+    tests are computed over the central 70 percent of the sample, and the
+    QLR statistic is the maximum of the resulting test statistics.
+
+    Other Parameters
+    ----------------
+    limit_to : str | list
+        Restrict the test to a specified subset of regressors.
+    plot : str
+        Plot mode (``"none"`` or ``"display"``) or output filename.
+    quiet : bool
+        Suppress printed output.
+
+    Notes
+    -----
+    The test uses 15 percent trimming at each end of the sample. An
+    asymptotic p-value is computed using the method of Hansen (1997).
+
+    The break point at which the test statistic is maximized is also
+    recorded. If the original model was estimated with robust standard
+    errors, robust Wald tests are used in place of the standard F-tests.
+    """
     return self.test(type="qlrtest", **kwargs)
 _qlrtest.__name__ = "qlrtest"
 _qlrtest.__qualname__ = "Model.qlrtest"
 
 def _reset(self: "Model", **kwargs) -> "Bundle":
+    """
+    Perform Ramsey's RESET test for model specification.
+
+    Tests for nonlinearity by augmenting an OLS model with powers of the
+    fitted values and testing whether their coefficients are jointly zero.
+
+    Other Parameters
+    ----------------
+    quiet : bool
+        Suppress printing of the auxiliary regression.
+    silent : bool
+        Suppress printed output.
+    squares_only : bool
+        Perform the test using only squared fitted values.
+    cubes_only : bool
+        Perform the test using only cubed fitted values.
+    robust : bool
+        Use robust standard errors in the auxiliary regression.
+
+    Notes
+    -----
+    By default, both squared and cubed fitted values are added to the
+    auxiliary regression. The ``squares_only`` and ``cubes_only`` options
+    are mutually exclusive.
+
+    Robust standard errors are used automatically if the original model
+    was estimated with robust standard errors.
+    """
     return self.test(type="reset", **kwargs)
 _reset.__name__ = "reset"
 _reset.__qualname__ = "Model.reset"
 
 def _vif(self: "Model", **kwargs) -> "Bundle":
+    """
+    Compute variance inflation factors.
+
+    Calculates variance inflation factors (VIFs) for the regressors of the
+    estimated model as diagnostics for collinearity.
+
+    Other Parameters
+    ----------------
+    quiet : bool
+        Suppress printed output.
+
+    Notes
+    -----
+    The VIF for a regressor has a minimum value of 1, attained when it is
+    orthogonal to the other regressors. Large VIF values indicate stronger
+    collinearity; a value greater than 10 is sometimes used as a diagnostic
+    threshold.
+
+    The resulting VIFs are also available as a column vector.
+    """
     return self.test(type="vif", **kwargs)
 _vif.__name__ = "vif"
 _vif.__qualname__ = "Model.vif"
 
 def _white(self: "Model", white_nocross: bool = False, **kwargs) -> "Bundle":
+    """
+    Perform White's test for heteroskedasticity.
+
+    Tests the null hypothesis of homoskedasticity using White's test.
+
+    Parameters
+    ----------
+    white_nocross : bool, optional
+        Use only squared regressors in the auxiliary regression, omitting
+        cross-products.
+
+    Other Parameters
+    ----------------
+    quiet : bool
+        Suppress printing of the auxiliary regression.
+    silent : bool
+        Suppress printed output.
+
+    Notes
+    -----
+    For models estimated by two-stage least squares, the standard White
+    test is replaced by the HET1 test of Pesaran and Taylor (1999).
+    """
     if white_nocross:
         return self.test(type="white-nocross", **kwargs)
     else:
@@ -303,6 +688,24 @@ _white.__name__ = "white"
 _white.__qualname__ = "Model.white"
 
 def _xdepend(self: "Model", **kwargs) -> "Bundle":
+    """
+    Test for cross-sectional dependence in panel data.
+
+    Performs Pesaran's test of the null hypothesis that the model error
+    term is independently distributed across cross-sectional units.
+
+    Other Parameters
+    ----------------
+    quiet : bool
+        Suppress printing of test details.
+    silent : bool
+        Suppress printed output.
+
+    Notes
+    -----
+    This test is available only for models estimated on panel data.
+    The test statistic follows Pesaran (2004).
+    """
     return self.test(type="xdepend", **kwargs)
 _xdepend.__name__ = "xdepend"
 _xdepend.__qualname__ = "Model.xdepend"
