@@ -29,15 +29,13 @@
     m.def(#NAME, \
           [](const std::string &formula, const py::kwargs &kwargs) -> GretlModelPtr \
           { \
-              auto model = std::make_unique<GretlModel_NSE_Driver<FUNC, CI>>(formula, kwargs); \
-              return GretlModelPtr(std::move(model)); \
+              return std::make_unique<GretlModel_NSE_Driver<FUNC, CI>>(formula, kwargs); \
           }, \
           py::arg("formula").none(false), py::kw_only()); \
     m.def(#NAME, \
           [](const py::list &varlist, const py::kwargs &kwargs) -> GretlModelPtr \
           { \
-              auto model = std::make_unique<GretlModel_NSE_Driver<FUNC, CI>>(varlist, kwargs); \
-              return GretlModelPtr(std::move(model)); \
+              return std::make_unique<GretlModel_NSE_Driver<FUNC, CI>>(varlist, kwargs); \
           }, \
           py::arg("varlist").none(false), py::kw_only(), DOC);
 
@@ -84,8 +82,7 @@ PYBIND11_MODULE(_gretl, m)
 
     // gretl4py hidden functions
     m.def("_get_data", &GretlDataset::get_data,
-          py::arg("src").none(false),
-          py::arg("source").none(true) = "", py::kw_only());
+          py::arg("src").none(false), py::arg("source").none(true) = "", py::kw_only());
     m.def("_get_datasets_ids", &GretlDataset::get_dset_ids);
 
     // gretlpy public functions
@@ -108,15 +105,13 @@ PYBIND11_MODULE(_gretl, m)
           {
               do_set(variable, value, kwargs);
           },
-          py::arg("variable").none(true) = "",
-          py::arg("value").none(true) = "", py::kw_only());
+          py::arg("variable").none(true) = "", py::arg("value").none(true) = "", py::kw_only());
     m.def("set",
           [](const std::string &variable, int value, const py::kwargs &kwargs)
           {
               do_set(variable, std::to_string(value), kwargs);
           },
-          py::arg("variable").none(false),
-          py::arg("value").none(false), py::kw_only());
+          py::arg("variable").none(false), py::arg("value").none(false), py::kw_only());
     m.def("summary", py::overload_cast<const std::string&, const py::kwargs&>(&do_gretl_summary<std::string>),
           py::arg("varlist").none(true) = "", py::kw_only());
     m.def("summary", py::overload_cast<const py::list&, const py::kwargs&>(&do_gretl_summary<py::list>),
@@ -130,85 +125,45 @@ PYBIND11_MODULE(_gretl, m)
           },
           py::arg("varname").none(true) = "", py::kw_only());
     m.def("pvalue", &gretl_get_pvalue_critval_pdf_cdf<GretlFunIndex::F_PVAL>,
-          py::arg("c").none(false),
-          py::arg("x").none(false),
-          py::arg("params").none(true) = py::none());
+          py::arg("c").none(false), py::arg("x").none(false), py::arg("params").none(true) = py::none());
     m.def("pvalue", &matrix_functions_wrapper<GretlFunIndex::F_PVAL, GretlMatrixPtr>,
-          py::arg("c").none(false),
-          py::arg("x").none(false),
-          py::arg("params").none(true) = py::none());
+          py::arg("c").none(false), py::arg("x").none(false), py::arg("params").none(true) = py::none());
     m.def("pvalue", &matrix_functions_wrapper<GretlFunIndex::F_PVAL, std::string>,
-          py::arg("c").none(false),
-          py::arg("x").none(false),
-          py::arg("params").none(true) = py::none());
+          py::arg("c").none(false), py::arg("x").none(false), py::arg("params").none(true) = py::none());
     m.def("pvalue", &matrix_functions_wrapper<GretlFunIndex::F_PVAL, py::sequence>,
-          py::arg("c").none(false),
-          py::arg("x").none(false),
-          py::arg("params").none(true) = py::none());
+          py::arg("c").none(false), py::arg("x").none(false), py::arg("params").none(true) = py::none());
     m.def("critical", &gretl_get_pvalue_critval_pdf_cdf<GretlFunIndex::F_CRIT>,
-          py::arg("c").none(false),
-          py::arg("p").none(false),
-          py::arg("params").none(true) = py::none());
+          py::arg("c").none(false), py::arg("p").none(false), py::arg("params").none(true) = py::none());
     m.def("critical", &matrix_functions_wrapper<GretlFunIndex::F_CRIT, GretlMatrixPtr>,
-          py::arg("c").none(false),
-          py::arg("p").none(false),
-          py::arg("params").none(true) = py::none());
+          py::arg("c").none(false), py::arg("p").none(false), py::arg("params").none(true) = py::none());
     m.def("critical", &matrix_functions_wrapper<GretlFunIndex::F_CRIT, std::string>,
-          py::arg("c").none(false),
-          py::arg("p").none(false),
-          py::arg("params").none(true) = py::none());
+          py::arg("c").none(false), py::arg("p").none(false), py::arg("params").none(true) = py::none());
     m.def("critical", &matrix_functions_wrapper<GretlFunIndex::F_CRIT, py::sequence>,
-          py::arg("c").none(false),
-          py::arg("p").none(false),
-          py::arg("params").none(true) = py::none());
+          py::arg("c").none(false), py::arg("p").none(false), py::arg("params").none(true) = py::none());
     m.def("pdf", &gretl_get_pvalue_critval_pdf_cdf<GretlFunIndex::F_PDF>,
-          py::arg("d").none(false),
-          py::arg("x").none(false),
-          py::arg("params").none(true) = py::none());
+          py::arg("d").none(false), py::arg("x").none(false), py::arg("params").none(true) = py::none());
     m.def("pdf", &matrix_functions_wrapper<GretlFunIndex::F_PDF, GretlMatrixPtr>,
-          py::arg("d").none(false),
-          py::arg("x").none(false),
-          py::arg("params").none(true) = py::none());
+          py::arg("d").none(false), py::arg("x").none(false), py::arg("params").none(true) = py::none());
     m.def("pdf", &matrix_functions_wrapper<GretlFunIndex::F_PDF, std::string>,
-          py::arg("d").none(false),
-          py::arg("x").none(false),
-          py::arg("params").none(true) = py::none());
+          py::arg("d").none(false), py::arg("x").none(false), py::arg("params").none(true) = py::none());
     m.def("pdf", &matrix_functions_wrapper<GretlFunIndex::F_PDF, py::sequence>,
-          py::arg("d").none(false),
-          py::arg("x").none(false),
-          py::arg("params").none(true) = py::none());
+          py::arg("d").none(false), py::arg("x").none(false), py::arg("params").none(true) = py::none());
     m.def("cdf", &gretl_get_pvalue_critval_pdf_cdf<GretlFunIndex::F_CDF>,
-          py::arg("d").none(false),
-          py::arg("x").none(false),
-          py::arg("params").none(true) = py::none());
+          py::arg("d").none(false), py::arg("x").none(false), py::arg("params").none(true) = py::none());
     m.def("cdf", &matrix_functions_wrapper<GretlFunIndex::F_CDF, GretlMatrixPtr>,
-          py::arg("d").none(false),
-          py::arg("x").none(false),
-          py::arg("params").none(true) = py::none());
+          py::arg("d").none(false), py::arg("x").none(false), py::arg("params").none(true) = py::none());
     m.def("cdf", &matrix_functions_wrapper<GretlFunIndex::F_CDF, std::string>,
-          py::arg("d").none(false),
-          py::arg("x").none(false),
-          py::arg("params").none(true) = py::none());
+          py::arg("d").none(false), py::arg("x").none(false), py::arg("params").none(true) = py::none());
     m.def("cdf", &matrix_functions_wrapper<GretlFunIndex::F_CDF, py::sequence>,
-          py::arg("d").none(false),
-          py::arg("x").none(false),
-          py::arg("params").none(true) = py::none());
+          py::arg("d").none(false), py::arg("x").none(false), py::arg("params").none(true) = py::none());
     m.def("invcdf", &gretl_get_pvalue_critval_pdf_cdf<GretlFunIndex::F_INVCDF>,
-          py::arg("d").none(false),
-          py::arg("u").none(false),
-          py::arg("params").none(true) = py::none());
+          py::arg("d").none(false), py::arg("u").none(false), py::arg("params").none(true) = py::none());
     m.def("invcdf", &matrix_functions_wrapper<GretlFunIndex::F_INVCDF, GretlMatrixPtr>,
-          py::arg("d").none(false),
-          py::arg("u").none(false),
-          py::arg("params").none(true) = py::none());
+          py::arg("d").none(false), py::arg("u").none(false), py::arg("params").none(true) = py::none());
     m.def("invcdf", &matrix_functions_wrapper<GretlFunIndex::F_INVCDF, std::string>,
-          py::arg("d").none(false),
-          py::arg("u").none(false),
-          py::arg("params").none(true) = py::none());
+          py::arg("d").none(false), py::arg("u").none(false), py::arg("params").none(true) = py::none());
     m.def("invcdf", &matrix_functions_wrapper<GretlFunIndex::F_INVCDF, py::sequence>,
-          py::arg("d").none(false),
-          py::arg("u").none(false),
-          py::arg("params").none(true) = py::none());
+          py::arg("d").none(false), py::arg("u").none(false), py::arg("params").none(true) = py::none());
     m.def("cov", py::overload_cast<const py::array&, int>(&matrix_cov_corr<GretlFunIndex::F_MCOV>),
           py::arg("X").none(false), py::arg("dfcorr").none(true) = 1);
     m.def("cov", py::overload_cast<const GretlMatrixPtr, int>(&matrix_cov_corr<GretlFunIndex::F_MCOV>),
@@ -260,96 +215,73 @@ PYBIND11_MODULE(_gretl, m)
     m.def("arima",
           [](const std::string &y, const py::tuple &order, const py::kwargs &kwargs) -> GretlModelPtr
           {
-              auto model = std::make_unique<GretlModel_NSE_arima>(y, order, kwargs);
-
-              return GretlModelPtr(std::move(model));
+              return std::make_unique<GretlModel_NSE_arima>(y, order, kwargs);
           },
           py::arg("y").none(false), py::arg("order").none(false), doc::Model::arima, py::kw_only());
     m.def("quantreg",
           [](double tau, const std::string &formula, const py::kwargs &kwargs) -> GretlModelPtr
           {
-              auto model = std::make_unique<GretlModel_NSE_Driver_quantreg>(formula, tau, kwargs);
-
-              return GretlModelPtr(std::move(model));
+              return std::make_unique<GretlModel_NSE_Driver_quantreg>(formula, tau, kwargs);
           },
           py::arg("tau").none(false), py::arg("formula").none(false), py::kw_only());
     m.def("quantreg",
           [](const py::array_t<double> &tau, const std::string &formula, const py::kwargs &kwargs) -> GretlModelPtr
           {
-              auto model = std::make_unique<GretlModel_NSE_Driver_quantreg>(formula, tau, kwargs);
-
-              return GretlModelPtr(std::move(model));
+              return std::make_unique<GretlModel_NSE_Driver_quantreg>(formula, tau, kwargs);
           },
           py::arg("tau").none(false), py::arg("formula").none(false), py::kw_only());
     m.def("quantreg",
           [](double tau, const py::list &varlist, const py::kwargs &kwargs) -> GretlModelPtr
           {
-              auto model = std::make_unique<GretlModel_NSE_Driver_quantreg>(varlist, tau, kwargs);
-
-              return GretlModelPtr(std::move(model));
+              return std::make_unique<GretlModel_NSE_Driver_quantreg>(varlist, tau, kwargs);
           },
           py::arg("tau").none(false), py::arg("varlist").none(false), py::kw_only());
     m.def("quantreg",
           [](const py::array_t<double> &tau, const py::list &varlist, const py::kwargs &kwargs) -> GretlModelPtr
           {
-              auto model = std::make_unique<GretlModel_NSE_Driver_quantreg>(varlist, tau, kwargs);
-
-              return GretlModelPtr(std::move(model));
-          }, py::arg("tau").none(false), py::arg("varlist").none(false), doc::Model::quantreg, py::kw_only());
+              return std::make_unique<GretlModel_NSE_Driver_quantreg>(varlist, tau, kwargs);
+          },
+          py::arg("tau").none(false), py::arg("varlist").none(false), doc::Model::quantreg, py::kw_only());
     m.def("dpanel",
           [](int p, const std::string &formula, const py::kwargs &kwargs) -> GretlModelPtr
           {
-              auto model = std::make_unique<GretlModel_NSE_Driver_dpanel>(formula, p, kwargs);
-
-              return GretlModelPtr(std::move(model));
+              return std::make_unique<GretlModel_NSE_Driver_dpanel>(formula, p, kwargs);
           },
           py::arg("p").none(false), py::arg("formula").none(false), py::kw_only());
     m.def("dpanel",
           [](const py::array_t<int> &p, const std::string &formula, const py::kwargs &kwargs) -> GretlModelPtr
           {
-              auto model = std::make_unique<GretlModel_NSE_Driver_dpanel>(formula, p, kwargs);
-
-              return GretlModelPtr(std::move(model));
+              return std::make_unique<GretlModel_NSE_Driver_dpanel>(formula, p, kwargs);
           },
           py::arg("p").none(false), py::arg("formula").none(false), doc::Model::dpanel, py::kw_only());
      m.def("tobit",
           [](const std::string &formula, const py::kwargs &kwargs) -> GretlModelPtr
           {
-              auto model = std::make_unique<GretlModel_NSE_Driver_tobit>(formula, kwargs);
-
-              return GretlModelPtr(std::move(model));
+              return std::make_unique<GretlModel_NSE_Driver_tobit>(formula, kwargs);
           },
           py::arg("formula").none(false), py::kw_only());
      m.def("tobit",
            [](const py::list &varlist, const py::kwargs &kwargs) -> GretlModelPtr
            {
-               auto model = std::make_unique<GretlModel_NSE_Driver_tobit>(varlist, kwargs);
-
-               return GretlModelPtr(std::move(model));
+               return std::make_unique<GretlModel_NSE_Driver_tobit>(varlist, kwargs);
            },
            py::arg("varlist").none(false), doc::Model::tobit, py::kw_only());
      m.def("_nls",
           [](const std::string &function, const py::kwargs &kwargs) -> GretlModelPtr
           {
-              auto model = std::make_unique<GretlModel_NSE_nl<NLS>>(function, kwargs);
-
-              return GretlModelPtr(std::move(model));
+              return std::make_unique<GretlModel_NSE_nl<NLS>>(function, kwargs);
           },
           py::arg("function").none(false), py::kw_only());
     m.def("_mle",
           [](const std::string &loglik, const py::kwargs &kwargs) -> GretlModelPtr
           {
-              auto model = std::make_unique<GretlModel_NSE_nl<MLE>>(loglik, kwargs);
-
-              return GretlModelPtr(std::move(model));
+              return std::make_unique<GretlModel_NSE_nl<MLE>>(loglik, kwargs);
           },
           py::arg("loglik").none(false), py::kw_only());
     m.def("_gmm",
           [](const std::string &resid, const py::kwargs &kwargs) -> GretlModelPtr
           {
-              auto model = std::make_unique<GretlModel_NSE_nl<GMM>>(resid, kwargs);
-
-              return GretlModelPtr(std::move(model));
+              return std::make_unique<GretlModel_NSE_nl<GMM>>(resid, kwargs);
           },
           py::arg("resid").none(false), py::kw_only());
 
@@ -381,34 +313,26 @@ PYBIND11_MODULE(_gretl, m)
     m.def("var",
           [](int order, const std::string &ylist, const py::kwargs &kwargs) -> GretlModelPtr
           {
-              auto model = std::make_unique<GretlModel_VAR>(ylist, order, VAR, kwargs);
-
-              return GretlModelPtr(std::move(model));
+              return std::make_unique<GretlModel_VAR>(ylist, order, VAR, kwargs);
           },
           py::arg("order").none(false), py::arg("ylist").none(false), py::kw_only());
     m.def("var",
           [](int order, const py::list &varlist, const py::kwargs &kwargs) -> GretlModelPtr
           {
-              auto model = std::make_unique<GretlModel_VAR>(varlist, order, VAR, kwargs);
-
-              return GretlModelPtr(std::move(model));
+              return std::make_unique<GretlModel_VAR>(varlist, order, VAR, kwargs);
           },
           py::arg("order").none(false), py::arg("varlist").none(false), doc::Model::var, py::kw_only());
     m.def("vecm",
           [](int order, int rank, const std::string &ylist, const py::kwargs &kwargs) -> GretlModelPtr
           {
-              auto model = std::make_unique<GretlModel_VAR_VECM>(ylist, order, rank, kwargs);
-
-              return GretlModelPtr(std::move(model));
+              return std::make_unique<GretlModel_VAR_VECM>(ylist, order, rank, kwargs);
           },
           py::arg("order").none(false), py::arg("rank").none(false),
           py::arg("ylist").none(false), py::kw_only());
     m.def("vecm",
           [](int order, int rank, py::list &varlist, const py::kwargs &kwargs) -> GretlModelPtr
           {
-              auto model = std::make_unique<GretlModel_VAR_VECM>(varlist, order, rank, kwargs);
-
-              return GretlModelPtr(std::move(model));
+              return std::make_unique<GretlModel_VAR_VECM>(varlist, order, rank, kwargs);
           },
           py::arg("order").none(false), py::arg("rank").none(false),
           py::arg("varlist").none(false), doc::Model::vecm, py::kw_only());
@@ -419,9 +343,7 @@ PYBIND11_MODULE(_gretl, m)
     m.def("system",
           [](const std::string &method, const py::kwargs &kwargs) -> GretlModelPtr
           {
-              auto model = std::make_unique<GretlModel_NME>(method, kwargs);
-
-              return GretlModelPtr(std::move(model));
+              return std::make_unique<GretlModel_NME>(method, kwargs);
           },
           py::arg("method").none(false), doc::Model::system, py::kw_only());
 
