@@ -24,6 +24,7 @@
 #include "gretl4py_utils.h"
 #include "gretl4py_model_instantiations.h"
 #include "docstrings/gretl4py_model_docstr.h"
+#include "docstrings/gretl4py_functions_docstr.h"
 
 #define BIND_DRIVER_MODEL(NAME, FUNC, CI, DOC) \
     m.def(#NAME, \
@@ -131,7 +132,7 @@ PYBIND11_MODULE(_gretl, m)
     m.def("pvalue", &matrix_functions_wrapper<GretlFunIndex::F_PVAL, std::string>,
           py::arg("c").none(false), py::arg("x").none(false), py::arg("params").none(true) = py::none());
     m.def("pvalue", &matrix_functions_wrapper<GretlFunIndex::F_PVAL, py::sequence>,
-          py::arg("c").none(false), py::arg("x").none(false), py::arg("params").none(true) = py::none());
+          py::arg("c").none(false), py::arg("x").none(false), py::arg("params").none(true) = py::none(), doc::Functions::pvalue);
     m.def("critical", &gretl_get_pvalue_critval_pdf_cdf<GretlFunIndex::F_CRIT>,
           py::arg("c").none(false), py::arg("p").none(false), py::arg("params").none(true) = py::none());
     m.def("critical", &matrix_functions_wrapper<GretlFunIndex::F_CRIT, GretlMatrixPtr>,
