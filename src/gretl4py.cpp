@@ -264,7 +264,7 @@ PYBIND11_MODULE(_gretl, m)
 
               return GretlModelPtr(std::move(model));
           },
-          py::arg("y").none(false), py::arg("order").none(false), py::kw_only());
+          py::arg("y").none(false), py::arg("order").none(false), doc::Model::arima, py::kw_only());
     m.def("quantreg",
           [](double tau, const std::string &formula, const py::kwargs &kwargs) -> GretlModelPtr
           {
@@ -295,7 +295,7 @@ PYBIND11_MODULE(_gretl, m)
               auto model = std::make_unique<GretlModel_NSE_Driver_quantreg>(varlist, tau, kwargs);
 
               return GretlModelPtr(std::move(model));
-          }, py::arg("tau").none(false), py::arg("varlist").none(false), py::kw_only());
+          }, py::arg("tau").none(false), py::arg("varlist").none(false), doc::Model::quantreg, py::kw_only());
     m.def("dpanel",
           [](int p, const std::string &formula, const py::kwargs &kwargs) -> GretlModelPtr
           {
@@ -311,7 +311,7 @@ PYBIND11_MODULE(_gretl, m)
 
               return GretlModelPtr(std::move(model));
           },
-          py::arg("p").none(false), py::arg("formula").none(false), py::kw_only());
+          py::arg("p").none(false), py::arg("formula").none(false), doc::Model::dpanel, py::kw_only());
      m.def("tobit",
           [](const std::string &formula, const py::kwargs &kwargs) -> GretlModelPtr
           {
@@ -327,7 +327,7 @@ PYBIND11_MODULE(_gretl, m)
 
                return GretlModelPtr(std::move(model));
            },
-           py::arg("varlist").none(false), py::kw_only());
+           py::arg("varlist").none(false), doc::Model::tobit, py::kw_only());
      m.def("_nls",
           [](const std::string &function, const py::kwargs &kwargs) -> GretlModelPtr
           {
@@ -364,16 +364,16 @@ PYBIND11_MODULE(_gretl, m)
     BIND_DRIVER_MODEL(duration, duration_model, DURATION, doc::Model::duration)
     BIND_DRIVER_MODEL(heckit, heckit_model, HECKIT, doc::Model::heckit)
     BIND_DRIVER_MODEL(logistic, logistic_driver, LOGISTIC, doc::Model::logistic)
-    BIND_DRIVER_MODEL(ar, ar_model, AR, "")
-    BIND_DRIVER_MODEL(ar1, ar1_model, AR1, "")
-    BIND_DRIVER_MODEL(lad, lad_model, LAD, "")
-    BIND_DRIVER_MODEL(garch, garch, GARCH, "")
-    BIND_DRIVER_MODEL(mpols, mp_ols, MPOLS, "")
-    BIND_DRIVER_MODEL(panel, panel_model, PANEL, "")
-    BIND_DRIVER_MODEL(tsls, ivreg, IVREG, "")
-    BIND_DRIVER_MODEL(hsk, hsk_model, HSK, "")
-    BIND_DRIVER_MODEL(intreg, interval_model, INTREG, "")
-    BIND_DRIVER_MODEL(midasreg, midas_model, MIDASREG, "")
+    BIND_DRIVER_MODEL(ar, ar_model, AR, doc::Model::ar)
+    BIND_DRIVER_MODEL(ar1, ar1_model, AR1, doc::Model::ar1)
+    BIND_DRIVER_MODEL(lad, lad_model, LAD, doc::Model::lad)
+    BIND_DRIVER_MODEL(garch, garch, GARCH, doc::Model::garch)
+    BIND_DRIVER_MODEL(mpols, mp_ols, MPOLS, doc::Model::mpols)
+    BIND_DRIVER_MODEL(panel, panel_model, PANEL, doc::Model::panel)
+    BIND_DRIVER_MODEL(tsls, ivreg, IVREG, doc::Model::tsls)
+    BIND_DRIVER_MODEL(hsk, hsk_model, HSK, doc::Model::hsk)
+    BIND_DRIVER_MODEL(intreg, interval_model, INTREG, doc::Model::intreg)
+    BIND_DRIVER_MODEL(midasreg, midas_model, MIDASREG, doc::Model::midasreg)
 
     //////////////////////////////////////////////////
     // VAR and VECM
@@ -393,7 +393,7 @@ PYBIND11_MODULE(_gretl, m)
 
               return GretlModelPtr(std::move(model));
           },
-          py::arg("order").none(false), py::arg("varlist").none(false), py::kw_only());
+          py::arg("order").none(false), py::arg("varlist").none(false), doc::Model::var, py::kw_only());
     m.def("vecm",
           [](int order, int rank, const std::string &ylist, const py::kwargs &kwargs) -> GretlModelPtr
           {
@@ -411,7 +411,7 @@ PYBIND11_MODULE(_gretl, m)
               return GretlModelPtr(std::move(model));
           },
           py::arg("order").none(false), py::arg("rank").none(false),
-          py::arg("varlist").none(false), py::kw_only());
+          py::arg("varlist").none(false), doc::Model::vecm, py::kw_only());
 
     //////////////////////////////////////////////////
     // SYSTEMs
@@ -423,7 +423,7 @@ PYBIND11_MODULE(_gretl, m)
 
               return GretlModelPtr(std::move(model));
           },
-          py::arg("method").none(false), py::kw_only());
+          py::arg("method").none(false), doc::Model::system, py::kw_only());
 
     /*
     //////////////////////////////////////////////////
