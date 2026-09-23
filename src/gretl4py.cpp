@@ -140,7 +140,7 @@ PYBIND11_MODULE(_gretl, m)
     m.def("critical", &matrix_functions_wrapper<GretlFunIndex::F_CRIT, std::string>,
           py::arg("c").none(false), py::arg("p").none(false), py::arg("params").none(true) = py::none());
     m.def("critical", &matrix_functions_wrapper<GretlFunIndex::F_CRIT, py::sequence>,
-          py::arg("c").none(false), py::arg("p").none(false), py::arg("params").none(true) = py::none());
+          py::arg("c").none(false), py::arg("p").none(false), py::arg("params").none(true) = py::none(), doc::Functions::critical);
     m.def("pdf", &gretl_get_pvalue_critval_pdf_cdf<GretlFunIndex::F_PDF>,
           py::arg("d").none(false), py::arg("x").none(false), py::arg("params").none(true) = py::none());
     m.def("pdf", &matrix_functions_wrapper<GretlFunIndex::F_PDF, GretlMatrixPtr>,
@@ -148,7 +148,7 @@ PYBIND11_MODULE(_gretl, m)
     m.def("pdf", &matrix_functions_wrapper<GretlFunIndex::F_PDF, std::string>,
           py::arg("d").none(false), py::arg("x").none(false), py::arg("params").none(true) = py::none());
     m.def("pdf", &matrix_functions_wrapper<GretlFunIndex::F_PDF, py::sequence>,
-          py::arg("d").none(false), py::arg("x").none(false), py::arg("params").none(true) = py::none());
+          py::arg("d").none(false), py::arg("x").none(false), py::arg("params").none(true) = py::none(), doc::Functions::pdf);
     m.def("cdf", &gretl_get_pvalue_critval_pdf_cdf<GretlFunIndex::F_CDF>,
           py::arg("d").none(false), py::arg("x").none(false), py::arg("params").none(true) = py::none());
     m.def("cdf", &matrix_functions_wrapper<GretlFunIndex::F_CDF, GretlMatrixPtr>,
@@ -156,7 +156,7 @@ PYBIND11_MODULE(_gretl, m)
     m.def("cdf", &matrix_functions_wrapper<GretlFunIndex::F_CDF, std::string>,
           py::arg("d").none(false), py::arg("x").none(false), py::arg("params").none(true) = py::none());
     m.def("cdf", &matrix_functions_wrapper<GretlFunIndex::F_CDF, py::sequence>,
-          py::arg("d").none(false), py::arg("x").none(false), py::arg("params").none(true) = py::none());
+          py::arg("d").none(false), py::arg("x").none(false), py::arg("params").none(true) = py::none(), doc::Functions::cdf);
     m.def("invcdf", &gretl_get_pvalue_critval_pdf_cdf<GretlFunIndex::F_INVCDF>,
           py::arg("d").none(false), py::arg("u").none(false), py::arg("params").none(true) = py::none());
     m.def("invcdf", &matrix_functions_wrapper<GretlFunIndex::F_INVCDF, GretlMatrixPtr>,
@@ -164,11 +164,11 @@ PYBIND11_MODULE(_gretl, m)
     m.def("invcdf", &matrix_functions_wrapper<GretlFunIndex::F_INVCDF, std::string>,
           py::arg("d").none(false), py::arg("u").none(false), py::arg("params").none(true) = py::none());
     m.def("invcdf", &matrix_functions_wrapper<GretlFunIndex::F_INVCDF, py::sequence>,
-          py::arg("d").none(false), py::arg("u").none(false), py::arg("params").none(true) = py::none());
+          py::arg("d").none(false), py::arg("u").none(false), py::arg("params").none(true) = py::none(), doc::Functions::invcdf);
     m.def("cov", py::overload_cast<const py::array&, int>(&matrix_cov_corr<GretlFunIndex::F_MCOV>),
           py::arg("X").none(false), py::arg("dfcorr").none(true) = 1);
     m.def("cov", py::overload_cast<const GretlMatrixPtr, int>(&matrix_cov_corr<GretlFunIndex::F_MCOV>),
-          py::arg("X").none(false), py::arg("dfcorr").none(true) = 1);
+          py::arg("X").none(false), py::arg("dfcorr").none(true) = 1, doc::Functions::cov);
     m.def("corr",
           [](const py::array &X)
           {
@@ -180,7 +180,7 @@ PYBIND11_MODULE(_gretl, m)
           {
               return matrix_cov_corr<GretlFunIndex::F_MCORR>(X);
           },
-          py::arg("X").none(false));
+          py::arg("X").none(false), doc::Functions::corr);
     m.def("varlist", &do_gretl_varlist);
     m.def("genr", static_cast<void(*)(const std::string&, GretlDatasetPtr)>(&genr),
           py::arg("formula").none(false), py::arg("data").none(true) = std::nullopt);
@@ -194,7 +194,7 @@ PYBIND11_MODULE(_gretl, m)
     m.def("kmeans", py::overload_cast<const GretlMatrix&, int, const GretlBundlePtr>(&kmeans),
          py::arg("X").none(false), py::arg("centers").none(false), py::arg("opts").none(true) = nullptr);
     m.def("kmeans", py::overload_cast<const GretlMatrix&, const GretlMatrix&, const GretlBundlePtr>(&kmeans),
-         py::arg("X").none(false), py::arg("centers").none(false), py::arg("opts").none(true) = nullptr);
+         py::arg("X").none(false), py::arg("centers").none(false), py::arg("opts").none(true) = nullptr, doc::Functions::kmeans);
     m.def("tdisagg",
           [](const GretlMatrix &Y, int s, const GretlMatrixPtr X, const py::kwargs &kwargs) -> GretlMatrixPtr
           {
@@ -205,9 +205,9 @@ PYBIND11_MODULE(_gretl, m)
 
               return do_get_tdisagg_matrix(y_obj, s, kwargs_copy);
           },
-          py::arg("Y").none(false), py::arg("s").none(false), py::arg("X").none(true) = nullptr, py::kw_only());
+          py::arg("Y").none(false), py::arg("s").none(false), py::arg("X").none(true) = nullptr, py::kw_only(), doc::Functions::tdisagg);
     m.def("kpsscrit", &do_kpsscrit,
-          py::arg("T").none(false), py::arg("trend").none(true) = false);
+          py::arg("T").none(false), py::arg("trend").none(true) = false, doc::Functions::kpsscrit);
 
     //////////////////////////////////////////////////
     // single equation models
@@ -218,7 +218,7 @@ PYBIND11_MODULE(_gretl, m)
           {
               return std::make_unique<GretlModel_NSE_arima>(y, order, kwargs);
           },
-          py::arg("y").none(false), py::arg("order").none(false), doc::Model::arima, py::kw_only());
+          py::arg("y").none(false), py::arg("order").none(false), py::kw_only(), doc::Model::arima);
     m.def("quantreg",
           [](double tau, const std::string &formula, const py::kwargs &kwargs) -> GretlModelPtr
           {
@@ -242,7 +242,7 @@ PYBIND11_MODULE(_gretl, m)
           {
               return std::make_unique<GretlModel_NSE_Driver_quantreg>(varlist, tau, kwargs);
           },
-          py::arg("tau").none(false), py::arg("varlist").none(false), doc::Model::quantreg, py::kw_only());
+          py::arg("tau").none(false), py::arg("varlist").none(false), py::kw_only(), doc::Model::quantreg);
     m.def("dpanel",
           [](int p, const std::string &formula, const py::kwargs &kwargs) -> GretlModelPtr
           {
@@ -254,7 +254,7 @@ PYBIND11_MODULE(_gretl, m)
           {
               return std::make_unique<GretlModel_NSE_Driver_dpanel>(formula, p, kwargs);
           },
-          py::arg("p").none(false), py::arg("formula").none(false), doc::Model::dpanel, py::kw_only());
+          py::arg("p").none(false), py::arg("formula").none(false), py::kw_only(), doc::Model::dpanel);
      m.def("tobit",
           [](const std::string &formula, const py::kwargs &kwargs) -> GretlModelPtr
           {
@@ -266,7 +266,7 @@ PYBIND11_MODULE(_gretl, m)
            {
                return std::make_unique<GretlModel_NSE_Driver_tobit>(varlist, kwargs);
            },
-           py::arg("varlist").none(false), doc::Model::tobit, py::kw_only());
+           py::arg("varlist").none(false), py::kw_only(), doc::Model::tobit);
      m.def("_nls",
           [](const std::string &function, const py::kwargs &kwargs) -> GretlModelPtr
           {
@@ -322,7 +322,7 @@ PYBIND11_MODULE(_gretl, m)
           {
               return std::make_unique<GretlModel_VAR>(varlist, order, VAR, kwargs);
           },
-          py::arg("order").none(false), py::arg("varlist").none(false), doc::Model::var, py::kw_only());
+          py::arg("order").none(false), py::arg("varlist").none(false), py::kw_only(), doc::Model::var);
     m.def("vecm",
           [](int order, int rank, const std::string &ylist, const py::kwargs &kwargs) -> GretlModelPtr
           {
@@ -336,7 +336,7 @@ PYBIND11_MODULE(_gretl, m)
               return std::make_unique<GretlModel_VAR_VECM>(varlist, order, rank, kwargs);
           },
           py::arg("order").none(false), py::arg("rank").none(false),
-          py::arg("varlist").none(false), doc::Model::vecm, py::kw_only());
+          py::arg("varlist").none(false), py::kw_only(), doc::Model::vecm);
 
     //////////////////////////////////////////////////
     // SYSTEMs
@@ -346,7 +346,7 @@ PYBIND11_MODULE(_gretl, m)
           {
               return std::make_unique<GretlModel_NME>(method, kwargs);
           },
-          py::arg("method").none(false), doc::Model::system, py::kw_only());
+          py::arg("method").none(false), py::kw_only(), doc::Model::system);
 
     /*
     //////////////////////////////////////////////////
