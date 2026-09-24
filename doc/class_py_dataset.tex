@@ -163,6 +163,63 @@ Examples:\newline
 \generaldesc{This method adds data to the dataset
 	from either a \gretlmatrix or a NumPy array.}
 
+\gretlfpycmd{adf()}
+\estdesc{Performs Augmented Dickey-Fuller unit-root tests.}
+\begin{lstlisting}[style=pythonstylefoot]
+adf(order: int, varlist: str [, OPTS]) -> gretl.Bundle
+adf(order: int, varlist: list[, OPTS]) -> gretl.Bundle
+\end{lstlisting}
+\mapto{adf order ~varlist}
+\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
+	\item[]\maptoopt{nc=True}{--nc}{test without a constant}
+	\item[]\maptoopt{c=True}{--c}{with constant only}
+	\item[]\maptoopt{ct=True}{--ct}{with constant and trend}
+	\item[]\maptoopt{ctt=True}{--ctt}{with constant, trend, and trend squared}
+	\item[]\maptoopt{seasonals=True}{--seasonals}{include seasonal dummy variables}
+	\item[]\maptoopt{gls=True}{--gls}{de-mean or de-trend using GLS}
+	\item[]\maptoopt{verbose=True}{--verbose}{print regression results}
+	\item[]\maptoopt{quiet=True}{--quiet}{suppress printing of results}
+	\item[]\maptoopt{difference=True}{--difference}{use first difference of variable}
+	\item[]\maptoopt{test\_down=criterion}{--test-down[=criterion]}{automatic lag order selection}
+	\item[]\maptoopt{perron\_qu=True}{--perron-qu}{\seegretlmanual}
+\end{itemize}
+Examples:\newline
+\pythcodef{.adf(varlist='y', order=0)}\\
+\pythcodef{.adf(varlist='y', order=2, nc=True, c=True, ct=True)}\\
+\pythcodef{.adf(varlist='y', order=12, c=True, test-down=True)}\\
+\generaldesc{Performs Augmented Dickey--Fuller (ADF) tests for a unit
+	root in the variables specified in \textit{varlist}. The
+	\textit{order} argument specifies the number of lagged differences
+	included in the test regression; setting \textit{order=-1} selects
+	the lag order according to the Schwert criterion. For panel data,
+	only one variable may be tested at a time.}
+
+\gretlfpycmd{bds()}
+\estdesc{Performs the BDS test for nonlinearity/IID violations}
+\begin{lstlisting}[style=pythonstylefoot]
+bds(order: int, x: str[, OPTS]) -> gretl.Bundle
+bds(order: int, x: list[, OPTS]) -> gretl.Bundle
+\end{lstlisting}
+\mapto{bds order x}
+\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
+	\item[]\maptoopt{corr1=rho}{--corr1=rho}{\seegretlmanual}
+	\item[]\maptoopt{sdcrit=multiple}{--sdcrit=multiple}{\seegretlmanual}
+	\item[]\maptoopt{boot=N}{--boot=N}{\seegretlmanual}
+	\item[]\maptoopt{matrix=m}{--matrix=m}{use matrix input}
+	\item[]\maptoopt{quiet=True}{--quiet}{suppress printing of results}
+\end{itemize}
+Examples:\newline
+\pythcodef{.bds(varlist='x', order=5)}\\
+\pythcodef{.bds(order=3, matrix='m')}\\
+\pythcodef{.bds(varlist='x', order=4, sdcrit=2.0)}\\
+\generaldesc{Performs the BDS (Brock--Dechert--Scheinkman) test for
+	nonlinearity or departures from the IID condition in the specified
+	series. The \textit{order} argument determines the maximum embedding
+	dimension and must be at least 2. The test is based on correlation
+	integrals computed for progressively higher dimensions and reports
+	a test statistic and P-value for each dimension from 2 through
+	\textit{order}.}
+
 \gretlfpycmd{bkfilt()}
 \estdesc{Returns the result of applying the Baxter--King
 	band-pass filter to the series \textit{y}.}
@@ -199,6 +256,32 @@ Examples:\newline
 \maptof{cdf(d, param, ~series)}{matrix}
 \where{\textit{d} and \textit{param} are defined
 	as in \ref{func:gretl.cdf}.}
+
+\gretlfpycmd{coint()}
+\estdesc{Performs the Engle-Granger cointegration test.}
+\begin{lstlisting}[style=pythonstylefoot]
+.coint(order: int, depvar: str, indepvars: str[, OPTS]) -> gretl.Bundle:
+.coint(order: int, depvar: str, indepvars: list[, OPTS]) -> gretl.Bundle:
+\end{lstlisting}
+\mapto{coint order depvar indepvars}
+\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
+	\item[]\maptoopt{nc=True}{--nc}{do not include a constant}
+	\item[]\maptoopt{ct=True}{--ct}{include constant and trend}
+	\item[]\maptoopt{ctt=True}{--ctt}{include constant and quadratic trend}
+	\item[]\maptoopt{seasonals=True}{--seasonals}{include seasonal dummy variables}
+	\item[]\maptoopt{skip\_df=True}{--skip-df}{no DF tests on individual variables}
+	\item[]\maptoopt{test\_down=criterion}{--test-down[=criterion]}{automatic lag order}
+	\item[]\maptoopt{verbose=True}{--verbose}{print extra details of regressions}
+	\item[]\maptoopt{silent=True}{--silent}{don't print anything}
+\end{itemize}
+Examples:\newline
+\pythcodef{.coint(y='y', varlist='x z', order=4)}\\
+\pythcodef{.coint(y='y', varlist=['x', 'z'], order=0, ct=True, skip\_df=True)}\\
+\generaldesc{Performs the Engle--Granger cointegration test for the
+	specified dependent variable and regressors. The procedure estimates
+	the cointegrating regression and tests its residuals for a unit root.
+	The \textit{order} argument specifies the lag order used in the
+	Dickey--Fuller tests.}
 
 \gretlfpycmd{clone()}
 \estdesc{Clones the \classpydataset object (performs a deep copy).}
@@ -247,6 +330,27 @@ Examples:\newline
 	correlation $\rho$ and Kendall's rank correlation $\tau$ in
 	place of the default Pearson coefficient. When either of these
 	options is given, \textit{varlist} should contain just two variables.}
+
+\gretlfpycmd{corrgm()}
+\estdesc{Compute the correlogram of a time series.}
+\begin{lstlisting}[style=pythonstylefoot]
+corrgm(y: str, order: int[, OPTS]) -> gretl.Bundle:
+\end{lstlisting}
+\mapto{corrgm y [order]}
+\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
+	\item[]\maptoopt{plot=mode_or_filename}{--plot=mode-or-filename}{\seegretlmanual}
+	\item[]\maptoopt{silent=True}{--silent}{don't print anything}
+	\item[]\maptoopt{acf_only=True}{--acf-only}{omit partial autocorrelations}
+	\item[]\maptoopt{bartlett=True}{--bartlett}{use Bartlett standard errors}
+\end{itemize}
+Examples:\newline
+\pythcodef{.corrgm(y='x', order=12)}\\
+\pythcodef{.corrgm(y='GDP', order=12, acf\_only=True)}\\
+\generaldesc{Computes the autocorrelation function (ACF) and, by default,
+	the partial autocorrelation function (PACF) for the specified series.
+	The \textit{order} argument sets the maximum number of lags; if omitted,
+	the number of lags is selected automatically. The Ljung--Box test for
+	serial correlation up to the maximum lag is also reported.}
 
 \gretlfpycmd{cov()}
 \estdesc{Returns the covariance matrix for the variables in the list.}
@@ -911,7 +1015,7 @@ Examples:\newline
 	be retrieved through \textit{results}.}
 
 \gretlfpycmd{test()}\label{met:gretldataset::test}
-\estdesc{General interface to dataset-based tests.}
+\estdesc{General interface to dataset-based tests. \deprecated}
 \begin{lstlisting}[style=pythonstylefoot]
 .test(.type: str[, varlist: str | list, OPTS])
 \end{lstlisting}
@@ -923,63 +1027,11 @@ Examples:\newline
 	\pythcode{.tests} attribute (see \ref{attr:gretldataset::tests}).
 	The following sections describe the API associated with each test:}
 
-\maptot{adf order ~varlist}{adf}{Augmented Dickey-Fuller test.}
-\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
-	\item[]\maptoopt{nc=True}{--nc}{test without a constant}
-	\item[]\maptoopt{c=True}{--c}{with constant only}
-	\item[]\maptoopt{ct=True}{--ct}{with constant and trend}
-	\item[]\maptoopt{ctt=True}{--ctt}{with constant, trend, and trend squared}
-	\item[]\maptoopt{seasonals=True}{--seasonals}{include seasonal dummy variables}
-	\item[]\maptoopt{gls=True}{--gls}{de-mean or de-trend using GLS}
-	\item[]\maptoopt{verbose=True}{--verbose}{print regression results}
-	\item[]\maptoopt{quiet=True}{--quiet}{suppress printing of results}
-	\item[]\maptoopt{difference=True}{--difference}{use first difference of variable}
-	\item[]\maptoopt{test\_down=criterion}{--test-down[=criterion]}{automatic lag order selection}
-	\item[]\maptoopt{perron\_qu=True}{--perron-qu}{\seegretlmanual}
-\end{itemize}
-Examples:\newline
-\pythcodef{.test(.type='adf', varlist='y', order=0)}\\
-\pythcodef{.test(.type='adf', varlist='y', order=2, nc=True, c=True, ct=True)}\\
-\pythcodef{.test(.type='adf', varlist='y', order=12, c=True, test-down=True)}
 
-\maptot{bds order x}{bds}{Brock, Dechert, Scheinkman and LeBaron test for nonlinearity.}
-\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
-	\item[]\maptoopt{corr1=rho}{--corr1=rho}{\seegretlmanual}
-	\item[]\maptoopt{sdcrit=multiple}{--sdcrit=multiple}{\seegretlmanual}
-	\item[]\maptoopt{boot=N}{--boot=N}{\seegretlmanual}
-	\item[]\maptoopt{matrix=m}{--matrix=m}{use matrix input}
-	\item[]\maptoopt{quiet=True}{--quiet}{suppress printing of results}
-\end{itemize}
-Examples:\newline
-\pythcodef{.test(.type='bds', varlist='x', order=5)}\\
-\pythcodef{.test(.type='bds', order=3, matrix='m')}\\
-\pythcodef{.test(.type='bds', varlist='x', order=4, sdcrit=2.0)}
 
-\maptot{coint order depvar indepvars}{coint}{The Engle–Granger (1987) cointegration test.}
-\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
-	\item[]\maptoopt{nc=True}{--nc}{do not include a constant}
-	\item[]\maptoopt{ct=True}{--ct}{include constant and trend}
-	\item[]\maptoopt{ctt=True}{--ctt}{include constant and quadratic trend}
-	\item[]\maptoopt{seasonals=True}{--seasonals}{include seasonal dummy variables}
-	\item[]\maptoopt{skip\_df=True}{--skip-df}{no DF tests on individual variables}
-	\item[]\maptoopt{test\_down=criterion}{--test-down[=criterion]}{automatic lag order}
-	\item[]\maptoopt{verbose=True}{--verbose}{print extra details of regressions}
-	\item[]\maptoopt{silent=True}{--silent}{don't print anything}
-\end{itemize}
-Examples:\newline
-\pythcodef{.test(.type='coint', y='y', varlist='x z', order=4)}\\
-\pythcodef{.test(.type='coint', y='y', varlist=['x', 'z'], order=0, ct=True, skip-df=True)}
 
-\maptot{corrgm y [order]}{corrgm}{Correlogram of given order.}
-\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
-	\item[]\maptoopt{plot=mode_or_filename}{--plot=mode-or-filename}{\seegretlmanual}
-	\item[]\maptoopt{silent=True}{--silent}{don't print anything}
-	\item[]\maptoopt{acf_only=True}{--acf-only}{omit partial autocorrelations}
-	\item[]\maptoopt{bartlett=True}{--bartlett}{use Bartlett standard errors}
-\end{itemize}
-Examples:\newline
-\pythcodef{.test(.type='corrgm', varlist='x', order=12)}\\
-\pythcodef{.test(.type='corrgm', varlist='GDP', order=12, acf-only=True)}
+
+
 
 \maptot{difftest x y}{difftest}{Test for a difference between two sample (nonparametric)}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
