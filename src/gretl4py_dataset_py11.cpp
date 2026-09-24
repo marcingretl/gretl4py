@@ -111,12 +111,12 @@ void init_gretl4py_dataset_py11 (py::module_ &m)
          [](const GretlDataset &self) -> GretlDatasetPtr
          {
              return GretlDataset::clone(self);
-         }, doc::Dataset::__copy__)
+         }, doc::Dataset::clone)
     .def("__deepcopy__",
          [](const GretlDataset &self, py::dict) -> GretlDatasetPtr
          {
              return GretlDataset::clone(self);
-         }, doc::Dataset::__deepcopy__)
+         }, doc::Dataset::clone)
     .def("__repr__", &GretlDataset::repr)
     .def("__getitem__", py::overload_cast<const py::slice&>(&GretlDataset::getitem_impl))
     .def("__getitem__", py::overload_cast<const std::string&>(&GretlDataset::getitem_impl))
@@ -188,7 +188,7 @@ void init_gretl4py_dataset_py11 (py::module_ &m)
              // we do the job
              return self.test(type, varlist, clean_kwargs);
          }, py::arg("type"), py::kw_only())
-    .def("clone", [](const GretlDataset &self) { return GretlDataset::clone(self); })
+    .def("clone", [](const GretlDataset &self) { return GretlDataset::clone(self); }, doc::Dataset::clone)
     .def("head", &head_tail_print<HEAD>, py::arg("nobs") = 5, py::kw_only())
     .def("tail", &head_tail_print<TAIL>, py::arg("nobs") = 5, py::kw_only())
     .def("set_as_default", &GretlDataset::set_as_default)

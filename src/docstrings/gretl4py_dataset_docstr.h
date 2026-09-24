@@ -21,10 +21,7 @@
 
 namespace doc::Dataset {
 
-    inline constexpr char __copy__[] =
-    R"doc(Return a deep copy of the dataset.)doc";
-
-    inline constexpr char __deepcopy__[] =
+    inline constexpr char clone[] =
     R"doc(Return a deep copy of the dataset.)doc";
 
     inline constexpr char sample[] = R"doc(
