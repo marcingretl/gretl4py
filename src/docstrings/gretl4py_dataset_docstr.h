@@ -28,78 +28,95 @@ namespace doc::Dataset {
     R"doc(Return a deep copy of the dataset.)doc";
 
     inline constexpr char sample[] = R"doc(
-    Set or modify the current sample.
+    Set, modify, or report the current sample.
 
     Restricts the dataset sample by observation range, offsets, a dummy
     variable, a Boolean condition, missing-value criteria, or random
-    sampling. The full sample can also be restored.
+    sampling. The full sample can also be restored. Called without
+    arguments, reports the current sample.
 
     Parameters
     ----------
-    start : str | int, optional
-        First observation of the sample, an offset relative to the current
-        sample, a dummy variable, a Boolean restriction, or the number of
-        observations for random sampling, depending on the selected option.
-    end : str | int, optional
-        Last observation of the sample or an offset relative to the current
-        sample.
+    startobs : str or int, optional
+        First observation of the sample, or an argument interpreted according
+        to the selected sampling option.
+    endobs : str or int, optional
+        Last observation of the sample. Used primarily for observation,
+        panel-unit, or panel-time ranges.
 
     Other Parameters
     ----------------
+    varlist : str
+        Variable list used by sampling options that operate on a specified
+        set of variables.
     dummy : bool
-        Interpret ``start`` as a dummy variable and retain observations for
-        which it equals 1.
+        Interpret ``startobs`` as a dummy variable and retain observations
+        for which it equals 1.
     restrict : bool
-        Interpret ``start`` as a Boolean condition defining the sample.
-    replace : bool
+        Interpret ``startobs`` as a Boolean condition defining the sample.
+        replace : bool
         Replace an existing sample restriction instead of applying the new
         restriction cumulatively.
         no_missing : bool
-        Exclude observations having a missing value for any selected
-        variable.
+        Exclude observations having a missing value for any variable in
+        ``varlist``.
         no_all_missing : bool
-        Exclude observations for which all selected variables are missing.
+        Exclude observations for which all variables in ``varlist`` are
+        missing.
         contiguous : bool
-        Trim missing observations from the beginning and end of a
-        time-series sample and require the remaining sample to contain no
-        missing values.
+        Trim missing observations from the beginning and end of the sample
+        and require the remaining sample to contain no missing values.
         random : bool
-        Select the specified number of observations randomly, without
-        replacement.
+        Select the number of observations specified by ``startobs`` randomly,
+        without replacement.
         permanent : bool
-        Make the sample restriction permanent by discarding observations
-        outside the resulting sample.
+        Make the current or resulting sample restriction permanent.
         preserve_panel : bool
         Preserve the nominally balanced structure of panel data when
         applying a restriction.
         unit : bool
-        Interpret ``start`` and ``end`` as a range of panel units.
+        Interpret ``startobs`` and ``endobs`` as a range of panel units.
         time : bool
-        Interpret ``start`` and ``end`` as a range of panel time periods.
+        Interpret ``startobs`` and ``endobs`` as a range of panel time
+        periods.
         dates : bool
-        Force ``start`` and ``end`` to be interpreted as dates rather than
-        sequential observation numbers.
+        Force ``startobs`` and ``endobs`` to be interpreted as dates rather
+        than sequential observation numbers.
         quiet : bool
         Suppress reporting of the resulting sample range.
+        full : bool
+        Restore the full sample.
+
+    Returns
+    -------
+    None
 
     Notes
     -----
     Sample restrictions are cumulative by default. Use ``replace=True`` to
-    replace an existing restriction. ``replace`` cannot be combined with
-    ``contiguous``.
+    replace an existing restriction.
 
-    With ``no_missing``, observations are excluded if at least one selected
-    variable is missing; with ``no_all_missing``, they are excluded only if
-    all selected variables are missing.
+    With ``no_missing``, observations are excluded if at least one variable
+    in ``varlist`` is missing; with ``no_all_missing``, they are excluded
+    only if all variables in ``varlist`` are missing.
 
     Random sampling is performed without replacement. Set the random-number
     generator seed beforehand to obtain reproducible samples.
 
-    Restrictions based on dummy variables, Boolean conditions, or missing
-    values may alter time-series or panel structure. For panel data,
-    ``preserve_panel=True`` can be used to retain a nominally balanced panel.
+    ``permanent=True`` may also be used by itself to make the current sample
+    permanent. A permanent restriction cannot subsequently be undone by
+    restoring the full sample.
 
-    A permanent restriction cannot be undone by restoring the full sample.
+    Examples
+    --------
+    ``data.sample()``
+    ``data.sample("2000:1", "2020:4")``
+    ``data.sample(10, 100)``
+    ``data.sample("d", dummy=True)``
+    ``data.sample("x1 > 0", restrict=True)``
+    ``data.sample(100, random=True)``
+    ``data.sample(no_missing=True, varlist="x1 x2 x3")``
+    ``data.sample(full=True)``
     )doc";
 
 } // namespace doc::Dataset

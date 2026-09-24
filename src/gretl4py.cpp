@@ -181,7 +181,7 @@ PYBIND11_MODULE(_gretl, m)
               return matrix_cov_corr<GretlFunIndex::F_MCORR>(X);
           },
           py::arg("X").none(false), doc::Functions::corr);
-    m.def("varlist", &do_gretl_varlist);
+    m.def("varlist", &do_gretl_varlist, doc::Functions::varlist);
     m.def("genr", static_cast<void(*)(const std::string&, GretlDatasetPtr)>(&genr),
           py::arg("formula").none(false), py::arg("data").none(true) = std::nullopt);
     m.def("genr", &genr<py::array>, py::arg("name").none(false), py::arg("value").none(false));

@@ -912,21 +912,21 @@ void GretlDataset::smpl (const std::string &startobs, const std::string &endobs,
         err_ = check_smpl_full(opt_);
         if (!err_) err_ = restore_full_sample(dset, nullptr);
     } else if (opt_ == OPT_T && startobs.empty()) {
-        err_ = perma_sample(dset, opt_, printer_.prn_ptr(), nullptr);                                              // --permanent, by itself
+        err_ = perma_sample(dset, opt_, printer_.prn_ptr(), nullptr);                                               // --permanent, by itself
     } else if (opt_ & (OPT_U | OPT_X)) {
-        err_ = set_panel_sample(startobs.c_str(), endobs.c_str(), opt_, dset, nullptr, printer_.prn_ptr());        // panel data: --unit or --time option
+        err_ = set_panel_sample(startobs.c_str(), endobs.c_str(), opt_, dset, nullptr, printer_.prn_ptr());         // panel data: --unit or --time option
     } else if (smpl_restrict(opt_)) {
-        err_ = restrict_sample(startobs.c_str(), var_list.get(), dset, nullptr, opt_, printer_.prn_ptr(), nullptr);// --restrict, --dummy, etc.
+        err_ = restrict_sample(startobs.c_str(), var_list.get(), dset, nullptr, opt_, printer_.prn_ptr(), nullptr); // --restrict, --dummy, etc.
     } else if (startobs.empty() && endobs.empty()) {
-        print_smpl(dset, get_full_length_n(), OPT_F, printer_.prn_ptr());                                       // no args given: give a report
+        print_smpl(dset, get_full_length_n(), OPT_F, printer_.prn_ptr());                                           // no args given: give a report
         //print_smpl(dset, get_full_length_n(), OPT_NONE, GP_.prn_ptr());
         report = true;
     } else {
-        err_ = set_sample(startobs.c_str(), endobs.c_str(), dset, opt_);                                        // simple setting of t1, t2 business /
+        err_ = set_sample(startobs.c_str(), endobs.c_str(), dset, opt_);                                            // simple setting of t1, t2 business /
     }
     if (err_) handle_gretl_error(err_);
 
-    if (!report && (opt_ & OPT_Q)) print_smpl(dset, get_full_length_n(), OPT_NONE, printer_.prn_ptr());
+    if (!report && !(opt_ & OPT_Q)) print_smpl(dset, get_full_length_n(), OPT_NONE, printer_.prn_ptr());
     printer_.print();
 }
 

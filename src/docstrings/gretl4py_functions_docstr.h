@@ -495,6 +495,37 @@ namespace doc::Functions {
     ``gretl.kpsscrit(100, trend=True)``
     )doc";
 
+    inline constexpr char varlist[] = R"doc(
+    List currently defined gretl objects.
+
+    By default, prints the series in the current dataset. The listing may
+    be restricted to objects of a specified type.
+
+    Other Parameters
+    ----------------
+    type : str
+        Type of objects to list. Supported values are ``"series"``,
+        ``"scalar"``, ``"matrix"``, ``"list"``, ``"string"``,
+        ``"bundle"``, ``"array"`` and ``"accessor"``.
+
+    Returns
+    -------
+    None
+        This function prints the requested listing.
+
+    Notes
+    -----
+    With ``type="accessor"``, the function lists currently available
+    internal accessors, such as ``$nobs`` and ``$uhat``, regardless of
+    their underlying type.
+
+    Examples
+    --------
+    ``gretl.varlist()``
+    ``gretl.varlist(type="matrix")``
+    ``gretl.varlist(type="accessor")``
+    )doc";
+
 
 } // namespace doc::Dataset
 
