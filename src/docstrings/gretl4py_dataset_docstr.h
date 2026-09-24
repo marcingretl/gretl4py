@@ -167,5 +167,268 @@ namespace doc::Dataset {
     ``data.compact(52, weekstart=0)``
     )doc";
 
+    inline constexpr char expand[] = R"doc(
+    Expand time-series data to a higher frequency.
+
+    Expands all series in an annual or quarterly dataset to a higher
+    frequency by repeating the existing values.
+
+    Parameters
+    ----------
+    freq : int, optional
+        Target frequency. Annual data may be expanded to quarterly or
+        monthly frequency, and quarterly data to monthly frequency.
+        For annual data, the default target frequency is quarterly.
+
+    Returns
+    -------
+    None
+
+    Notes
+    -----
+    This operation is available only for annual or quarterly time-series
+    datasets. Annual data can be expanded to quarterly or monthly frequency,
+    while quarterly data can be expanded to monthly frequency.
+
+    Expansion simply repeats the existing lower-frequency values. For more
+    sophisticated temporal disaggregation, use ``gretl.tdisagg()``.
+
+    Examples
+    --------
+    ``data.expand()``
+    ``data.expand(12)``
+    )doc";
+
+    inline constexpr char transpose[] = R"doc(
+    Transpose the current dataset.
+
+    Interchanges observations and variables: each observation in the
+    current dataset becomes a variable, and each variable becomes an
+    observation.
+
+    Returns
+    -------
+    None
+
+    Notes
+    -----
+    This operation can be useful when data have been imported from a source
+    in which rows represent variables rather than observations.
+
+    Examples
+    --------
+    ``data.transpose()``
+    )doc";
+
+    inline constexpr char sortby[] = R"doc(
+    Sort the dataset by one or more variables.
+
+    Reorders all observations in the dataset in ascending order according
+    to the specified variable or variables.
+
+    Parameters
+    ----------
+    varlist : str or list
+        Variable or list of variables to use as sorting keys. Variables may
+        be specified by name or index.
+
+    Returns
+    -------
+    None
+
+    Notes
+    -----
+    If multiple variables are specified, sorting is hierarchical. Ties with
+    respect to the first variable are resolved using the second variable,
+    and so on until the tie is broken or the sorting keys are exhausted.
+
+    This operation is available only for undated datasets.
+
+    Examples
+    --------
+    ``data.sortby("x1")``
+    ``data.sortby("x1 x2 x3")``
+    ``data.sortby(["x1", "x2", "x3"])``
+    ``data.sortby([1, 2, 3])``
+    )doc";
+
+    inline constexpr char dsortby[] = R"doc(
+    Sort the dataset by one or more variables in descending order.
+
+    Reorders all observations in the dataset in descending order according
+    to the specified variable or variables.
+
+    Parameters
+    ----------
+    varlist : str or list
+        Variable or list of variables to use as sorting keys. Variables may
+        be specified by name or index.
+
+    Returns
+    -------
+    None
+
+    Notes
+    -----
+    If multiple variables are specified, sorting is hierarchical. Ties with
+    respect to the first variable are resolved using the second variable,
+    and so on until the tie is broken or the sorting keys are exhausted.
+
+    This operation is available only for undated datasets.
+
+    Examples
+    --------
+    ``data.dsortby("x1")``
+    ``data.dsortby("x1 x2 x3")``
+    ``data.dsortby(["x1", "x2", "x3"])``
+    ``data.dsortby([1, 2, 3])``
+    )doc";
+
+    inline constexpr char resample[] = R"doc(
+    Resample the dataset with replacement.
+
+    Draws observations randomly with replacement from the current dataset
+    and replaces the dataset with the resulting resampled data.
+
+    Parameters
+    ----------
+    n : int
+        Number of observations to draw.
+
+    Returns
+    -------
+    None
+
+    Notes
+    -----
+    Sampling is performed with replacement, so an observation may appear
+    more than once in the resampled dataset.
+
+    The random-number generator seed can be set beforehand to obtain
+    reproducible results.
+
+    Examples
+    --------
+    ``data.resample(100)``
+    )doc";
+
+    inline constexpr char pad_daily[] = R"doc(
+    Pad a daily dataset with missing observations.
+
+    Adds missing observations to a daily time-series dataset so that it
+    conforms to the specified number of days per week.
+
+    Parameters
+    ----------
+    days : int
+        Number of days per week in the padded dataset. Must be 5, 6 or 7
+        and greater than the current daily frequency.
+
+    Returns
+    -------
+    None
+
+    Notes
+    -----
+    Newly inserted observations contain missing values for all series.
+    Existing observations and their dates are preserved.
+
+    This operation applies only to daily time-series datasets.
+
+    Examples
+    --------
+    ``data.pad_daily(7)``
+    )doc";
+
+    inline constexpr char unpad_daily[] = R"doc(
+    Remove padding from a daily dataset.
+
+    Removes artificial observations containing missing values that were
+    added to regularize a daily time-series dataset.
+
+    Returns
+    -------
+    None
+
+    Notes
+    -----
+    This operation applies only to daily time-series datasets. It removes
+    observations that contain missing values for all series, reducing the
+    daily frequency where appropriate.
+
+    Examples
+    --------
+    ``data.unpad_daily()``
+    )doc";
+
+    inline constexpr char tdisagg[] = R"doc(
+    Perform temporal disaggregation of time-series data.
+
+    Converts low-frequency observations in ``Y`` to a higher frequency.
+    The expansion factor ``s`` specifies the number of high-frequency
+    observations corresponding to each low-frequency observation. Variables
+    in the current dataset may be used directly as input or covariates.
+
+    Parameters
+    ----------
+    Y : str, list or gretl.Matrix
+        Low-frequency time-series data to be disaggregated. A string or list
+        identifies one or more series in the current dataset.
+    s : int
+        Frequency expansion factor, for example 3 when converting quarterly
+        data to monthly frequency.
+
+    Other Parameters
+    ----------------
+    X : str, list or gretl.Matrix
+        High-frequency covariates used to aid the disaggregation. A string
+        or list identifies variables in the current dataset.
+    opts : gretl.Bundle
+        Options controlling the disaggregation procedure.
+    results : gretl.Bundle
+        Bundle in which details of the disaggregation procedure are stored.
+
+        Returns
+        -------
+        gretl.Matrix
+        Disaggregated high-frequency data.
+
+        Notes
+        -----
+        When ``X`` is supplied, it must contain data at the target high
+        frequency. The ``opts`` bundle controls the details of the temporal
+        disaggregation procedure, while ``results`` can be supplied to retrieve
+        additional results from the calculation.
+
+        Examples
+        --------
+        ``data.tdisagg("y", 3)``
+        ``data.tdisagg(["y1", "y2"], 3)``
+        ``data.tdisagg("y", 3, X="x")``
+        ``data.tdisagg("y", 4, opts=opts, results=results)``
+        )doc";
+
+    inline constexpr char to_dict[] = R"doc(
+    Export the dataset as a Python dictionary.
+
+    Converts the current dataset to the dictionary representation accepted
+    by gretl4py as dataset input.
+
+    Returns
+    -------
+    dict
+        Dictionary containing the variable names, observation labels,
+        data as a NumPy array, and dataset periodicity.
+
+    Notes
+    -----
+    The returned dictionary contains the entries ``varname``,
+    ``obs_labels``, ``data_array`` and ``periodicity``.
+
+    Examples
+    --------
+    ``d = data.to_dict()``
+    )doc";
+
 } // namespace doc::Dataset
 

@@ -268,12 +268,12 @@ void init_gretl4py_dataset_py11 (py::module_ &m)
          [](GretlDataset &self, int freq) -> void
          {
              self.do_modify_dataset<std::nullptr_t>(DS_EXPAND, nullptr, std::to_string(freq), py::dict());
-         }, py::arg("n").none(true) = -999)
+         }, py::arg("freq").none(true) = -999, doc::Dataset::expand)
     .def("transpose",
          [](GretlDataset &self) -> void
          {
              self.do_modify_dataset<std::nullptr_t>(DS_TRANSPOSE, nullptr, "", py::dict());
-         })
+         }, doc::Dataset::transpose)
     .def("sortby",
          [](GretlDataset &self, const std::string &varlist) -> void
          {
@@ -283,7 +283,7 @@ void init_gretl4py_dataset_py11 (py::module_ &m)
          [](GretlDataset &self, const py::list &varlist) -> void
          {
              self.do_modify_dataset<py::list>(DS_SORTBY, varlist, "", py::dict());
-         }, py::arg("varlist").none(false))
+         }, py::arg("varlist").none(false), doc::Dataset::sortby)
     .def("dsortby",
          [](GretlDataset &self, const std::string &varlist) -> void
          {
@@ -293,25 +293,25 @@ void init_gretl4py_dataset_py11 (py::module_ &m)
          [](GretlDataset &self, const py::list &varlist) -> void
          {
              self.do_modify_dataset<py::list>(DS_DSORTBY, varlist, "", py::dict());
-         }, py::arg("varlist").none(false))
+         }, py::arg("varlist").none(false), doc::Dataset::dsortby)
     .def("resample",
          [](GretlDataset &self, int n) -> void
          {
              self.do_modify_dataset<std::nullptr_t>(DS_RESAMPLE, nullptr, std::to_string(n), py::dict());
-         }, py::arg("n").none(false))
+         }, py::arg("n").none(false), doc::Dataset::resample)
     .def("pad_daily",
          [](GretlDataset &self, int days) -> void
          {
              self.do_modify_dataset<std::nullptr_t>(DS_PAD_DAILY, nullptr, std::to_string(days), py::dict());
-         }, py::arg("days").none(false))
+         }, py::arg("days").none(false), doc::Dataset::pad_daily)
     .def("unpad_daily",
          [](GretlDataset &self) -> void
          {
              self.do_modify_dataset<std::nullptr_t>(DS_UNPAD_DAILY, nullptr, "", py::dict());
-         })
+         }, doc::Dataset::unpad_daily)
     .def("tdisagg", &GretlDataset::tdisagg,
-         py::arg("Y").none(false), py::arg("s").none(false), py::kw_only())
-    .def("to_dict", &GretlDataset::to_dict)
+         py::arg("Y").none(false), py::arg("s").none(false), py::kw_only(), doc::Dataset::tdisagg)
+    .def("to_dict", &GretlDataset::to_dict, doc::Dataset::to_dict)
     .def("to_file", py::overload_cast<const std::string&, const std::string&, const py::kwargs&>(&GretlDataset::to_file<std::string>),
          py::arg("filename").none(false), py::arg("varlist").none(true) = "", py::kw_only())
     .def("to_file", py::overload_cast<const std::string&, const py::list&, const py::kwargs&>(&GretlDataset::to_file<py::list>),

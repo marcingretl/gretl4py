@@ -326,6 +326,25 @@ Examples:\newline
 	reversed; that is, the variables in \textit{varlist} are
 	marked as being continuous.}
 
+\gretlfpycmd{dsortby()}
+\estdesc{Sorts the current dataset by one or more variables in descending order.}
+\begin{lstlisting}[style=pythonstylefoot]
+.dsortby(varlist: str | list) -> None
+\end{lstlisting}
+\mapto[none]{dataset dsortby ~varlist}
+Examples:\newline
+\pythcodef{.dsortby('x1')}\\
+\pythcodef{.dsortby('x1 x2 x3')}\\
+\pythcodef{.dsortby(['x1', 'x2', 'x3'])}\\
+\pythcodef{.dsortby([1, 2, 3])}\\
+\generaldesc{Reorders all observations in the dataset in descending order
+	according to the variables specified in \textit{varlist}. Variables
+	may be specified by name or index. If multiple variables are given,
+	sorting is hierarchical: ties with respect to the first variable are
+	resolved using the second variable, and so on until the tie is broken
+	or the sorting keys are exhausted. This operation is available only
+	for undated datasets.}
+
 \gretlfpycmd{dummify()}
 \estdesc{For any suitable variables in \textit{varlist},
 	creates a set of dummy variables coding for the distinct
@@ -352,14 +371,16 @@ Examples:\newline
 \begin{lstlisting}[style=pythonstylefoot]
 .expand([freq: int]) -> None
 \end{lstlisting}
-\mapto[none]{dataset expand [ ~freq]}
+\mapto[none]{dataset expand [freq]}
 Examples:\newline
 \pythcodef{.expand()}\\
 \pythcodef{.expand(12)}\\
-\generaldesc{Expands annual or quarterly time-series data to a
-	higher frequency by repeating existing observations. Annual
-	data are expanded to quarterly frequency by default, or to
-	monthly frequency when \textit{freq=12} is specified.}
+\generaldesc{Expands all series in an annual or quarterly time-series
+	dataset to a higher frequency by repeating the existing values.
+	Annual data may be expanded to quarterly or monthly frequency, while
+	quarterly data may be expanded to monthly frequency. For annual data,
+	the default target frequency is quarterly. For more sophisticated
+	temporal disaggregation, see \pythcode{gretl.tdisagg()} on page~\pageref{tdisagg}.}
 
 \gretlfpycmd{get\_accessor()}\label{met:gretldataset::get_accessor}
 \estdesc{This method retrieves \lgretl['s] ``dollar accessors''}
@@ -551,17 +572,19 @@ Examples:\newline
 	\textit{o\_x} and \textit{o\_y}.}
 
 \gretlfpycmd{pad\_daily()}
-\estdesc{Pads a dated daily dataset to a complete calendar.}
+\estdesc{Pads a daily dataset with missing observations.}
 \begin{lstlisting}[style=pythonstylefoot]
-.pad_daily(days: int)
+.pad_daily(days: int) -> None
 \end{lstlisting}
-\mapto[none]{dataset pad-daily days}
-Examples:\newline
-\pythcodef{.pad_daily(5)}\\
-\generaldesc{Adds missing observations to a dated daily dataset
-	so that the calendar becomes complete. The parameter
-	\textit{days} specifies the number of days per week and must be
-	5, 6 or 7. Inserted observations contain only missing values.}
+\mapto[none]{dataset pad-daily ~days}
+Example:\newline
+\pythcodef{.pad\_daily(7)}\\
+\generaldesc{Adds missing observations to a daily time-series dataset
+	so that it conforms to the specified number of days per week.
+	The \textit{days} parameter must be 5, 6 or 7 and greater than the
+	current daily frequency. Newly inserted observations contain missing
+	values for all series, while existing observations and their dates
+	are preserved.}
 
 \gretlfpycmd{pca()}
 \estdesc{Principal Components Analysis.}
@@ -675,8 +698,6 @@ Examples:\newline
 \estdesc{The current sample setter/getter.}
 \begin{lstlisting}[style=pythonstylefoot]
 .sample()
-.sample(startobs: int[, OPTS])
-.sample(startobs: str[, OPTS])
 .sample(startobs: int = 'nan'[, endobs: int = 'nan', OPTS])
 .sample(periodicity: str = ''[, startobs: str = '', OPTS])
 \end{lstlisting}
@@ -750,8 +771,7 @@ Examples:\newline
 \estdesc{This command forces the program to interpret
 	the current data set as having a specified structure.}
 \begin{lstlisting}[style=pythonstylefoot]
-.setobs(periodicity: int, startobs: str[, OPTS])
-.setobs(periodicity: int, startobs: int[, OPTS])
+.setobs(periodicity: int, startobs: str | int[, OPTS])
 .setobs(unitvar: str, timevar: str[, OPTS])
 \end{lstlisting}
 \mapto[clean]{setobs periodicity startobs}
@@ -789,19 +809,23 @@ Examples:\newline
 	time series, by ascending values of the units variable, \textit{unitvar}.}
 
 \gretlfpycmd{sortby()}
-\estdesc{Sorts the observations in the current dataset.}
+\estdesc{Sorts the current dataset by one or more variables.}
 \begin{lstlisting}[style=pythonstylefoot]
-.sortby(varlist: str | list)
+.sortby(varlist: str | list) -> None
 \end{lstlisting}
-\mapto[none]{dataset ~sortby X}
+\mapto[none]{dataset sortby ~varlist}
 Examples:\newline
 \pythcodef{.sortby('x1')}\\
-\pythcodef{.sortby(['x1', 'x2'])}\\
-\generaldesc{Reorders observations by increasing values of the
-	specified variable or variables. If a list is supplied, sorting
-	is performed hierarchically using successive variables as
-	breaking keys. This method is available only for undated
-	datasets.}
+\pythcodef{.sortby('x1 x2 x3')}\\
+\pythcodef{.sortby(['x1', 'x2', 'x3'])}\\
+\pythcodef{.sortby([1, 2, 3])}\\
+\generaldesc{Reorders all observations in the dataset in ascending order
+	according to the variables specified in \textit{varlist}. Variables
+	may be specified by name or index. If multiple variables are given,
+	sorting is hierarchical: ties with respect to the first variable are
+	resolved using the second variable, and so on until the tie is broken
+	or the sorting keys are exhausted. This operation is available only
+	for undated datasets.}
 
 \gretlfpycmd{square()}
 \estdesc{Generates new series which are squares of the series
@@ -841,6 +865,19 @@ Examples:\newline
 .summary()
 \end{lstlisting}
 
+\gretlfpycmd{unpad\_daily()}
+\estdesc{Removes padding from a daily dataset.}
+\begin{lstlisting}[style=pythonstylefoot]
+.unpad_daily() -> None
+\end{lstlisting}
+\mapto[none]{dataset unpad-daily}
+Example:\newline
+\pythcodef{.unpad\_daily()}\\
+\generaldesc{Removes artificial observations containing missing values
+	from a daily time-series dataset. Observations for which all series
+	are missing are removed, reducing the daily frequency where
+	appropriate.}
+
 \gretlfpycmd{tail()}
 \estdesc{Offers a quick way to show just the bottom of a dataset.}
 \begin{lstlisting}[style=pythonstylefoot]
@@ -854,23 +891,24 @@ Examples:\newline
 %\end{lstlisting}
 
 \gretlfpycmd{tdisagg()}\label{met:gretldataset::tdisagg}
-\estdesc{Performs temporal disaggregation of a time-series dataset.}
+\estdesc{Performs temporal disaggregation of time-series data.}
 \begin{lstlisting}[style=pythonstylefoot]
-.tdisagg(Y: obj, s: int[, X: obj, opts: gretl.Bundle, results: gretl.Bundle]) -> gretl.Matrix
+.tdisagg(Y: str | list | gretl.Matrix, s: int[, X: str | list | gretl.Matrix, opts: gretl.Bundle, results: gretl.Bundle]) -> gretl.Matrix
 \end{lstlisting}
 \maptof{tdisagg(Y, X, s, opts, results)}{matrix}
 Examples:\newline
 \pythcodef{.tdisagg('y', s=3)}\\
 \pythcodef{.tdisagg(Y='y', X=['x1', 'x2'], s=3)}\\
-\generaldesc{Converts the time series represented by
-	\pythcode{Y : str | list | gretl.Matrix}
-	to a higher frequency using temporal disaggregation. The parameter
-	\textit{s} specifies the expansion factor (for example,
+\generaldesc{Converts the time-series data specified by
+	\textit{Y} to a higher frequency using temporal disaggregation.
+	The parameter \textit{s} specifies the expansion factor (for example,
 	\textit{s=3} for conversion from quarterly to monthly data).
-	The optional argument \pythcode{X: str | list | gretl.Matrix} may
-	contain higher-frequency covariates used to aid the disaggregation.
-	Additional options can be supplied via \textit{opts}, while details
-	of the disaggregation procedure can be retrieved through \textit{results}.}
+	The optional argument \textit{X} may contain higher-frequency
+	covariates used to aid the disaggregation. Both \textit{Y} and
+	\textit{X} may be specified as a string, a list, or a
+	\pythcode{gretl.Matrix}. Additional options can be supplied via
+	\textit{opts}, while details of the disaggregation procedure can
+	be retrieved through \textit{results}.}
 
 \gretlfpycmd{test()}\label{met:gretldataset::test}
 \estdesc{General interface to dataset-based tests.}
@@ -1059,12 +1097,15 @@ Examples:\newline
 \end{lstlisting}
 
 \gretlfpycmd{to\_dict()}
-\estdesc{This method exports given dataset to \pythcode{dict}.}
+\estdesc{Exports the current dataset to a \python{} dictionary.}
 \begin{lstlisting}[style=pythonstylefoot]
 .to_dict() -> dict
 \end{lstlisting}
-\generaldesc{Note: resulting \pythcode{dict} has a structure
-	defined in \ref{sec:data_format_handled}.}
+\generaldesc{Returns a \pythcode{dict} representing the current dataset
+	in the format described in Section~\ref{sec:gretl4py:data:dict}.
+	The resulting dictionary contains the variable names, observation
+	labels, data as a NumPy array, and dataset periodicity. Such a
+	dictionary can be used directly as a dataset input to \gretlpy.}
 
 \gretlfpycmd{to\_file()}
 \estdesc{This method saves data to filename.}
