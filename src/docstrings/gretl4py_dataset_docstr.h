@@ -116,5 +116,56 @@ namespace doc::Dataset {
     ``data.sample(full=True)``
     )doc";
 
+    inline constexpr char compact[] = R"doc(
+    Compact time-series data to a lower frequency.
+
+    Converts all series in the dataset to a lower frequency by aggregating
+    groups of higher-frequency observations. By default, observations are
+    aggregated using their mean.
+
+    Parameters
+    ----------
+    freq : int or str
+        Target frequency. This should normally be lower than the current
+        frequency, for example 4 when converting monthly data to quarterly.
+    method : str, optional
+        Aggregation method. Supported values are ``"sum"``, ``"first"``,
+        ``"last"`` and ``"spread"``. If omitted, the mean is used.
+
+    Other Parameters
+    ----------------
+    repday : int
+        Representative day for daily-to-weekly compaction, from 0 (Sunday)
+        to 6 (Saturday). The value for this day is used as the weekly
+        observation.
+    weekstart : int
+        Starting day of the week for daily-to-weekly compaction: 0 for
+        Sunday or 1 for Monday. For 7-day data the default is Monday.
+
+    Returns
+    -------
+    None
+
+    Notes
+    -----
+    This operation is available only for time-series datasets.
+
+    The ``"sum"`` method sums the higher-frequency observations;
+    ``"first"`` and ``"last"`` select the first and last observation,
+    respectively; and ``"spread"`` distributes the sub-period observations
+    across separate series.
+
+    Daily data with frequency 5, 6 or 7 may be compacted to weekly frequency
+    by specifying ``freq=52``. The ``repday`` and ``weekstart`` options apply
+    only to daily-to-weekly compaction.
+
+    Examples
+    --------
+    ``data.compact(4)``
+    ``data.compact(4, "last")``
+    ``data.compact(52, repday=3)``
+    ``data.compact(52, weekstart=0)``
+    )doc";
+
 } // namespace doc::Dataset
 

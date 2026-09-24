@@ -246,7 +246,7 @@ void init_gretl4py_dataset_py11 (py::module_ &m)
              self.do_modify_dataset<std::nullptr_t>(DS_INSOBS, nullptr, std::to_string(n), py::dict());
          }, py::arg("n").none(false))
     .def("compact",
-         [](GretlDataset &self, py::object freq, const std::string &method) -> void
+         [](GretlDataset &self, py::object freq, const std::string &method, const py::kwargs &kwargs) -> void
          {
              std::string formula;
 
@@ -262,8 +262,8 @@ void init_gretl4py_dataset_py11 (py::module_ &m)
 
              if (!method.empty()) formula.append(" ").append(method);
 
-             self.do_modify_dataset<std::nullptr_t>(DS_COMPACT, nullptr, formula, py::dict());
-         }, py::arg("start").none(false), py::arg("method").none(true) = "")
+             self.do_modify_dataset<std::nullptr_t>(DS_COMPACT, nullptr, formula, kwargs);
+         }, py::arg("freq").none(false), py::arg("method").none(true) = "", py::kw_only(), doc::Dataset::compact)
     .def("expand",
          [](GretlDataset &self, int freq) -> void
          {

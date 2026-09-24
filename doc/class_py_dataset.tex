@@ -284,18 +284,30 @@ Examples:\newline
 \gretlfpycmd{compact()}
 \estdesc{Compacts the current dataset to a lower frequency.}
 \begin{lstlisting}[style=pythonstylefoot]
-.compact(freq: int[, method: str = '']) -> None
-.compact(freq: str[, method: str = '']) -> None
+.compact(freq: int[, method: str = '', repday: int, weekstart: int]) -> None
+.compact(freq: str[, method: str = '', repday: int, weekstart: int]) -> None
 \end{lstlisting}
 \mapto[none]{dataset compact ~freq }
+\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
+	\item[] \maptoopt{repday=n}{--repday=n}{representative day for daily-to-weekly compaction}
+	\item[] \maptoopt{weekstart=n}{--weekstart=n}{starting day of the week}
+\end{itemize}
 Examples:\newline
 \pythcodef{.compact(4)}\\
 \pythcodef{.compact(4, 'last')}\\
+\pythcodef{.compact(52, repday=3)}\\
+\pythcodef{.compact(52, weekstart=0)}\\
 \generaldesc{Compacts all series in a time-series dataset to
 	the specified frequency. By default, higher-frequency values
 	are averaged. The optional \textit{method} parameter specifies
-	an alternative aggregation method and takes of of the following
-	values: \textit{sum}, \textit{first}, \textit{last}, or \textit{spread},}
+	an alternative aggregation method and takes one of the following
+	values: \textit{sum}, \textit{first}, \textit{last}, or \textit{spread}.
+	For compaction from daily to weekly frequency (\pythcode{freq=52}),
+	\pythcode{repday} selects a representative day, from 0 (Sunday)
+	to 6 (Saturday), whose value is used as the weekly observation.
+	Alternatively, \pythcode{weekstart} specifies the start of the week:
+	0 for Sunday or 1 for Monday. For 7-day data the default is Monday;
+	for 5- or 6-day data the week is taken to start on Monday.}
 
 \gretlfpycmd{discrete()}
 \estdesc{Marks each variable in \textit{varlist} as being discrete.}
