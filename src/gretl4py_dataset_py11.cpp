@@ -239,12 +239,12 @@ void init_gretl4py_dataset_py11 (py::module_ &m)
          [](GretlDataset &self, int n, const py::kwargs &kwargs) -> void
          {
              self.do_modify_dataset<std::nullptr_t>(DS_ADDOBS, nullptr, std::to_string(n), kwargs);
-         }, py::arg("n").none(false), py::kw_only())
+         }, py::arg("n").none(false), py::kw_only(), doc::Dataset::addobs)
     .def("insobs",
          [](GretlDataset &self, int n) -> void
          {
              self.do_modify_dataset<std::nullptr_t>(DS_INSOBS, nullptr, std::to_string(n), py::dict());
-         }, py::arg("n").none(false))
+         }, py::arg("n").none(false), doc::Dataset::insobs)
     .def("compact",
          [](GretlDataset &self, py::object freq, const std::string &method, const py::kwargs &kwargs) -> void
          {

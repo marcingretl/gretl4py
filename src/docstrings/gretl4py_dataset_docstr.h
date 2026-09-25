@@ -116,6 +116,71 @@ namespace doc::Dataset {
     ``data.sample(full=True)``
     )doc";
 
+    inline constexpr char addobs[] = R"doc(
+    Add observations to the dataset.
+
+    Adds the specified number of observations to the end of the current
+    dataset. This is primarily intended to extend the dataset for
+    forecasting.
+
+    Parameters
+    ----------
+    n : int
+        Number of observations to add. Must be positive.
+
+    Other Parameters
+    ----------------
+    panel_time : bool
+        For panel data, add ``n`` time-series observations for each
+        cross-sectional unit instead of adding ``n`` new units.
+
+    Returns
+    -------
+    None
+
+    Notes
+    -----
+    Values of most variables in the added observations are set to missing.
+    Deterministic variables recognized by gretl, including a linear trend
+    and periodic dummy variables, are extended automatically.
+
+    For panel data, the default is to add ``n`` cross-sectional units.
+    Set ``panel_time=True`` to extend the time dimension instead.
+
+    Examples
+    --------
+    ``data.addobs(24)``
+    ``data.addobs(2, panel_time=True)``
+    )doc";
+
+    inline constexpr char insobs[] = R"doc(
+    Insert an observation into the dataset.
+
+    Inserts a single observation at the specified position, shifting all
+    subsequent observations by one place.
+
+    Parameters
+    ----------
+    n : int
+        Position at which to insert the observation. Must be positive and
+        no greater than the current number of observations.
+
+    Returns
+    -------
+    None
+
+    Notes
+    -----
+    The dataset is extended by one observation. All variables except the
+    constant are set to missing at the inserted observation.
+
+    This operation is not available for panel datasets.
+
+    Examples
+    --------
+    ``data.insobs(10)``
+    )doc";
+
     inline constexpr char compact[] = R"doc(
     Compact time-series data to a lower frequency.
 
@@ -321,8 +386,8 @@ namespace doc::Dataset {
     Parameters
     ----------
     days : int
-        Number of days per week in the padded dataset. Must be 5, 6 or 7
-        and greater than the current daily frequency.
+        Number of days per week in the padded dataset. Must be 5, 6 or
+        7 and greater than or equal to the current daily frequency.
 
     Returns
     -------

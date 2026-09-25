@@ -40,9 +40,10 @@
           }, \
           py::arg("varlist").none(false), py::kw_only(), DOC);
 
-static const std::string info = "The gretl4py package provides "
-    "an interface to the gretl library for python3 "
-    "(3.11..3.14 were tested).";
+constexpr char info[] =
+    "The gretl4py package provides "
+    "an interface to the gretl library for Python 3 "
+    "(3.11--3.14 tested).";
 
 //////////////////////////////////////////////////
 // module extensions

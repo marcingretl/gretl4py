@@ -142,18 +142,20 @@ The \classpydataset provides the following public methods:
 \begin{lstlisting}[style=pythonstylefoot]
 .addobs(n: int[, OPTS]) -> None
 \end{lstlisting}
-\mapto{dataset addobs n}
+\mapto[none]{dataset addobs n}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
-	\item[]\maptoopt{panel-time=True}{--panel-time}{to add \textit{n}
-		observations to the time series for each unit}
+	\item[] \maptoopt{panel\_time}{--panel-time}{extend the time dimension of panel data}
 \end{itemize}
 Examples:\newline
 \pythcodef{.addobs(24)}\\
-\generaldesc{Adds \textit{n} observations to the end of the
-	current dataset. For panel datasets, the default action is to
-	add \textit{n} cross-sectional units; setting
-	\textit{panel\_time=True} adds \textit{n} observations to the
-	time dimension of each unit instead.}
+\pythcodef{.addobs(2, panel_time=True)}\\
+\generaldesc{Adds \textit{n} observations to the end of the current
+	dataset, primarily for forecasting purposes. Values of most variables
+	in the added observations are set to missing, while recognized
+	deterministic variables are extended automatically. For panel data,
+	the default is to add \textit{n} cross-sectional units; setting
+	\textit{panel\_time=True} instead adds \textit{n} time-series
+	observations for each unit.}
 
 \gretlfpycmd{add\_series()}
 \estdesc{Adds new series to dataset.}
@@ -563,13 +565,13 @@ Examples:\newline
 .insobs(n: int) -> None
 \end{lstlisting}
 \mapto[none]{dataset insobs n}
-Examples:\newline
+Example:\newline
 \pythcodef{.insobs(10)}\\
-\generaldesc{Inserts a single observation at position
-	\textit{n}. All subsequent observations are shifted by one
-	position and the new observation is initialized with missing
-	values (except for the constant). This method is not available
-	for panel datasets.}
+\generaldesc{Inserts a single observation at position \textit{n},
+	shifting all subsequent observations by one place and extending the
+	dataset by one observation. All variables except the constant are
+	set to missing at the inserted observation. This operation is not
+	available for panel datasets.}
 
 \gretlfpycmd{invcdf()}\label{met:gretldataset::invcdf}
 \estdesc{Inverse cumulative distribution function calculator for given \gretlcmd{series}.}
