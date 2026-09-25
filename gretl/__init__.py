@@ -221,24 +221,26 @@ def __model_initializer(model_name: str, *args, **kwargs):
         raise AttributeError(f"Model {model_name} not found in _gretl module.")
 
 def __getattr__(fun):
-    """
-    Called when a gretl.fun is called.
-    """
     if fun in dir(gretl4py_addons):
         return getattr(gretl4py_addons, fun)
+
     if fun in dir(gretl4py_classes):
         return getattr(gretl4py_classes, fun)
 
+    if fun not in _stable_estimators:
+        raise AttributeError(f"module 'gretl' has no attribute '{fun}'")
+
     model_class = getattr(_gretl, fun, None)
+
+    if model_class is None:
+        raise AttributeError(f"Model {fun} not found in _gretl module.")
 
     def wrapper(*args, **kwargs):
         return __model_initializer(fun, *args, **kwargs)
 
     wrapper.__name__ = fun
     wrapper.__qualname__ = fun
-
-    if model_class is not None:
-        wrapper.__doc__ = model_class.__doc__
+    wrapper.__doc__ = model_class.__doc__
 
     return wrapper
 
