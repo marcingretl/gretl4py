@@ -495,5 +495,164 @@ namespace doc::Dataset {
     ``d = data.to_dict()``
     )doc";
 
+    inline constexpr char to_file[] = R"doc(
+    Save dataset data to a file.
+
+    Saves the current dataset, or a selected subset of its series, to a
+    file. The output format is determined by the filename extension or
+    by the specified options.
+
+    Parameters
+    ----------
+    filename : str
+        Name or path of the output file.
+    varlist : str or list, optional
+        Series to save, specified by names or indices. By default, all
+        currently defined series are saved.
+
+    Other Parameters
+    ----------------
+    omit_obs : bool
+        Omit observation labels when writing CSV data.
+    no_header : bool
+        Omit variable names when writing CSV data.
+    gnu_octave : bool
+        Write data in GNU Octave format.
+    gnu_R : bool
+        Write data in a format suitable for R ``read.table``.
+    gzipped : bool or int
+        Apply gzip compression. An integer specifies the compression
+        level from 0 to 9.
+        jmulti : bool
+        Write data in JMulTi ASCII format.
+        dat : bool
+        Write data in PcGive ASCII format.
+        decimal_comma : bool
+        Use a decimal comma and semicolon field separator in CSV output.
+        database : bool
+        Write data in gretl database format.
+        overwrite : bool
+        Overwrite existing series when writing to a gretl database.
+        comment : str
+        Add a comment when writing CSV or database data.
+        matrix : str
+        Write the specified matrix as a dataset.
+
+    Returns
+    -------
+    None
+
+    Notes
+    -----
+    If the dataset is subsampled, only observations in the current sample
+    are saved. If ``filename`` does not contain a full path, the file is
+    written to the current gretl working directory.
+
+    Native ``.gdt`` and ``.gdtb`` formats are supported, as well as CSV,
+    text, GNU Octave and Stata formats. If no filename extension is given,
+    ``.gdt`` is assumed.
+
+    Examples
+    --------
+    ``data.to_file("data.gdt")``
+    ``data.to_file("subset.csv", ["y", "x1", "x2"])``
+    ``data.to_file("data.gdt", gzipped=6)``
+    )doc";
+
+    inline constexpr char to_matrix[] = R"doc(
+    Convert dataset data to a matrix.
+
+    Creates a gretl Matrix from selected variables and observations of
+    the current dataset.
+
+    Parameters
+    ----------
+    list : str or list, optional
+        Variables to include, specified by names or indices. By default,
+        all variables are included.
+    startobs : int, optional
+        First observation to include. If 0, the start of the current
+        sample is used.
+    endobs : int, optional
+        Last observation to include. If 0, the end of the current sample
+        is used.
+    missing : {"ok", "error", "skip"}, optional
+        Treatment of missing values. ``"ok"`` retains missing values,
+        ``"error"`` raises an error if missing values are encountered,
+        and ``"skip"`` excludes observations containing missing values.
+        Default is ``"ok"``.
+
+    Returns
+    -------
+    gretl.Matrix
+        Matrix containing the selected dataset values.
+
+    Notes
+    -----
+    The rows of the returned matrix correspond to observations and its
+    columns correspond to the selected variables.
+
+    Examples
+    --------
+    ``m = data.to_matrix()``
+    ``m = data.to_matrix(["y", "x1", "x2"])``
+    ``m = data.to_matrix("y x1 x2", missing="skip")``
+    ``m = data.to_matrix(["y", "x1"], 10, 100)``
+    )doc";
+
+    inline constexpr char add_series[] = R"doc(
+    Add a series to the dataset.
+
+    Adds a new series from a NumPy array or gretl Matrix. The input must
+    represent a vector.
+
+    Parameters
+    ----------
+    data : numpy.ndarray or gretl.Matrix
+        Data to add. The input must be a row or column vector. A
+        ``gretl.Matrix`` must contain real-valued data.
+    name : str
+        Name of the series to add.
+
+    Returns
+    -------
+    None
+
+    Notes
+    -----
+    The input data are copied into the dataset. If a series with the
+    specified name already exists, it is replaced.
+
+    Examples
+    --------
+    ``data.add_series(x, "x")``
+    ``data.add_series(gretl.Matrix(x), "x")``
+    )doc";
+
+    inline constexpr char new_series[] = R"doc(
+    Generate a new series in the dataset.
+
+    Creates a series using a gretl expression. The specification may be
+    given as a complete formula or as a series name and value expression.
+
+    Parameters
+    ----------
+    formula : str
+        Complete gretl expression defining the new series.
+    name : str
+        Name of the new series.
+    value : str
+        Gretl expression defining the values of the new series.
+
+    Returns
+    -------
+    None
+
+    Examples
+    --------
+    ``data.new_series("x2 = x^2")``
+    ``data.new_series("x2", "x^2")``
+    )doc";
+
 } // namespace doc::Dataset
 

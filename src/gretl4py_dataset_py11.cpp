@@ -315,21 +315,21 @@ void init_gretl4py_dataset_py11 (py::module_ &m)
     .def("to_file", py::overload_cast<const std::string&, const std::string&, const py::kwargs&>(&GretlDataset::to_file<std::string>),
          py::arg("filename").none(false), py::arg("varlist").none(true) = "", py::kw_only())
     .def("to_file", py::overload_cast<const std::string&, const py::list&, const py::kwargs&>(&GretlDataset::to_file<py::list>),
-         py::arg("filename").none(false), py::arg("varlist").none(true) = py::list(), py::kw_only())
+         py::arg("filename").none(false), py::arg("varlist").none(true) = py::list(), py::kw_only(), doc::Dataset::to_file)
     .def("to_matrix", &GretlDataset::to_matrix<std::string>,
         py::arg("list").none(true) = py::list(), py::arg("startobs").none(true) = 0,
         py::arg("endobs").none(true) = 0, py::arg("missing").none(true) = "ok")
     .def("to_matrix", &GretlDataset::to_matrix<py::list>,
          py::arg("list").none(true) = py::list(), py::arg("startobs").none(true) = 0,
-         py::arg("endobs").none(true) = 0, py::arg("missing").none(true) = "ok")
+         py::arg("endobs").none(true) = 0, py::arg("missing").none(true) = "ok", doc::Dataset::to_matrix)
     .def("add_series", py::overload_cast<const py::array&, const std::string&>(&GretlDataset::add_series),
          py::arg("data").none(false), py::arg("name").none(false))
     .def("add_series", py::overload_cast<const GretlMatrix&, const std::string&>(&GretlDataset::add_series),
-         py::arg("data").none(false), py::arg("name").none(false))
+         py::arg("data").none(false), py::arg("name").none(false), doc::Dataset::add_series)
     .def("new_series", py::overload_cast<const std::string&>(&GretlDataset::new_series),
          py::arg("formula").none(false))
     .def("new_series", py::overload_cast<const std::string&, const std::string&>(&GretlDataset::new_series),
-         py::arg("name").none(false), py::arg("value").none(false))
+         py::arg("name").none(false), py::arg("value").none(false), doc::Dataset::new_series)
     .def("rename", &GretlDataset::rename,
          py::arg("series").none(false), py::arg("newname").none(false), py::kw_only())
     .def("rename",

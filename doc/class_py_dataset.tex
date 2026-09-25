@@ -158,12 +158,22 @@ Examples:\newline
 	observations for each unit.}
 
 \gretlfpycmd{add\_series()}
-\estdesc{Adds new series to dataset.}
+\estdesc{Adds a series to the current dataset.}
 \begin{lstlisting}[style=pythonstylefoot]
 .add_series(data: numpy.ndarray | gretl.Matrix, name: str)
 \end{lstlisting}
-\generaldesc{This method adds data to the dataset
-	from either a \gretlmatrix or a NumPy array.}
+\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
+	\item[] \pythcode{data}: data to add, supplied as a row or column
+	vector in a NumPy array or \pythcode{gretl.Matrix}
+	\item[] \pythcode{name}: name of the series to add
+\end{itemize}
+Examples:\newline
+\pythcodef{.add_series(x, "x")}\newline
+\pythcodef{.add_series(gretl.Matrix(x), "x")}\\
+\generaldesc{Adds the supplied vector as a series to the current dataset.
+	The input data are copied into the dataset. If a series with the
+	specified name already exists, it is replaced. A \pythcode{gretl.Matrix}
+	input must contain real-valued data.}
 
 \gretlfpycmd{adf()}
 \estdesc{Performs Augmented Dickey-Fuller unit-root tests.}
@@ -784,6 +794,11 @@ Examples:\newline
 .new_series(formula: str)
 \end{lstlisting}
 \mapto[None]{genr name = value}
+\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
+	\item[]\pythcode{formula}: complete \gretl expression defining the new series
+	\item[]\pythcode{name}: name of the new series
+	\item[]\pythcode{value}: \gretl expression defining the values of the new series
+\end{itemize}
 \generaldesc{This method generates a named \gretlcmd{series}
 	as a result of any \lgretl transformation of already
 	existing variable(s). On the other hand, \textit{formula}
@@ -1226,6 +1241,33 @@ Examples:\newline
 	The output file will be written in the currently set \gretlcmd{\$workdir}
 	(see \pythcode{gretl.about()['built_in_strings']['workdir']}),
 	unless the filename string contains a full path specification.}
+
+\gretlfpycmd{to\_matrix()}
+\estdesc{Converts selected dataset data to a \gretl matrix.}
+\begin{lstlisting}[style=pythonstylefoot]
+.to_matrix(list: str | list = '', startobs: int = 0, endobs: int = 0, missing: str = 'ok') -> gretl.Matrix
+\end{lstlisting}
+\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
+	\item[]\pythcode{list}: variables to include, specified
+		by names or indices; by default all variables are included
+	\item[]\pythcode{startobs}: first observation to include;
+		0 means the start of the current sample
+	\item[]\pythcode{endobs}: last observation to include;
+		0 means the end of the current sample
+	\item[]\pythcode{missing}: treatment of missing values:
+		\pythcode{'ok'} retains them, \pythcode{'error'} raises an
+		error, and \pythcode{'skip'} excludes observations containing
+		missing values
+\end{itemize}
+Examples:\newline
+\pythcodef{.to_matrix()}\newline
+\pythcodef{.to_matrix(["y", "x1", "x2"])}\newline
+\pythcodef{.to_matrix("y x1 x2", missing="skip")}\newline
+\pythcodef{.to_matrix(["y", "x1"], 10, 100)}\\
+\generaldesc{Creates a \gretl matrix from the selected variables and
+	observations of the current dataset. Matrix rows correspond to
+	observations and columns to variables. By default, the current sample
+	range and all variables are used.}
 
 \gretlfpycmd{to\_pandas()}
 \estdesc{This method exports given dataset to \pythcode{pandas.DataFrame}.}
