@@ -297,6 +297,34 @@ Examples:\newline
 	Note that this is equivalent to:
 	\pythcodef{import copy; dataset\_copy = copy.copy(dataset)}.}
 
+\gretlfpycmd{compact()}
+\estdesc{Compacts the current dataset to a lower frequency.}
+\begin{lstlisting}[style=pythonstylefoot]
+.compact(freq: int[, method: str = '', repday: int, weekstart: int]) -> None
+.compact(freq: str[, method: str = '', repday: int, weekstart: int]) -> None
+\end{lstlisting}
+\mapto[none]{dataset compact ~freq }
+\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
+	\item[] \maptoopt{repday=n}{--repday=n}{representative day for daily-to-weekly compaction}
+	\item[] \maptoopt{weekstart=n}{--weekstart=n}{starting day of the week}
+\end{itemize}
+Examples:\newline
+\pythcodef{.compact(4)}\\
+\pythcodef{.compact(4, 'last')}\\
+\pythcodef{.compact(52, repday=3)}\\
+\pythcodef{.compact(52, weekstart=0)}\\
+\generaldesc{Compacts all series in a time-series dataset to
+	the specified frequency. By default, higher-frequency values
+	are averaged. The optional \textit{method} parameter specifies
+	an alternative aggregation method and takes one of the following
+	values: \textit{sum}, \textit{first}, \textit{last}, or \textit{spread}.
+	For compaction from daily to weekly frequency (\pythcode{freq=52}),
+	\pythcode{repday} selects a representative day, from 0 (Sunday)
+	to 6 (Saturday), whose value is used as the weekly observation.
+	Alternatively, \pythcode{weekstart} specifies the start of the week:
+	0 for Sunday or 1 for Monday. For 7-day data the default is Monday;
+	for 5- or 6-day data the week is taken to start on Monday.}
+
 \gretlfpycmd{corr()}
 \estdesc{By default, prints the pairwise correlation coefficients
 	(Pearson's product-moment correlation) for the variables in
@@ -387,33 +415,27 @@ Examples:\newline
 		d\_y &= y_t - y_{t-1}.
 	\end{align*}}
 
-\gretlfpycmd{compact()}
-\estdesc{Compacts the current dataset to a lower frequency.}
+\gretlfpycmd{difftest()}
+\estdesc{Perform a nonparametric test for a difference between two samples.}
 \begin{lstlisting}[style=pythonstylefoot]
-.compact(freq: int[, method: str = '', repday: int, weekstart: int]) -> None
-.compact(freq: str[, method: str = '', repday: int, weekstart: int]) -> None
+.difftest(x: str, y: str[, OPTS] -> gretl.Bundle
 \end{lstlisting}
-\mapto[none]{dataset compact ~freq }
+\mapto{difftest x y}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
-	\item[] \maptoopt{repday=n}{--repday=n}{representative day for daily-to-weekly compaction}
-	\item[] \maptoopt{weekstart=n}{--weekstart=n}{starting day of the week}
+	\item[]\maptoopt{sign=True}{--sign}{Sign test (default)}
+	\item[]\maptoopt{rank-sum=True}{--rank-sum}{Wilcoxon rank-sum test}
+	\item[]\maptoopt{signed_rank=True}{--signed-rank}{Wilcoxon signed-rank test}
+	\item[]\maptoopt{verbose=True}{--verbose}{print extra output}
+	\item[]\maptoopt{quiet=True}{--quiet}{suppress printed output}
+	\item[]\maptoopt{split_by='dummy'}{--split-by=dummy}{split observations by grouping variable}
 \end{itemize}
 Examples:\newline
-\pythcodef{.compact(4)}\\
-\pythcodef{.compact(4, 'last')}\\
-\pythcodef{.compact(52, repday=3)}\\
-\pythcodef{.compact(52, weekstart=0)}\\
-\generaldesc{Compacts all series in a time-series dataset to
-	the specified frequency. By default, higher-frequency values
-	are averaged. The optional \textit{method} parameter specifies
-	an alternative aggregation method and takes one of the following
-	values: \textit{sum}, \textit{first}, \textit{last}, or \textit{spread}.
-	For compaction from daily to weekly frequency (\pythcode{freq=52}),
-	\pythcode{repday} selects a representative day, from 0 (Sunday)
-	to 6 (Saturday), whose value is used as the weekly observation.
-	Alternatively, \pythcode{weekstart} specifies the start of the week:
-	0 for Sunday or 1 for Monday. For 7-day data the default is Monday;
-	for 5- or 6-day data the week is taken to start on Monday.}
+\pythcodef{.difftest('x', 'y')}\\
+\pythcodef{.difftest(x='x', split_by='dummy')}\\
+\generaldesc{Supports the Sign test, Wilcoxon rank-sum test, and Wilcoxon
+	signed-rank test. The samples may be given as two series, or, for the
+	rank-sum test, obtained by splitting one series according to a dummy
+	variable.}
 
 \gretlfpycmd{discrete()}
 \estdesc{Marks each variable in \textit{varlist} as being discrete.}
@@ -487,6 +509,21 @@ Examples:\newline
 	quarterly data may be expanded to monthly frequency. For annual data,
 	the default target frequency is quarterly. For more sophisticated
 	temporal disaggregation, see \pythcode{gretl.tdisagg()} on page~\pageref{tdisagg}.}
+
+\gretlfpycmd{fractint()}
+\estdesc{Test a time series for fractional integration (long memory).}
+\begin{lstlisting}[style=pythonstylefoot]
+.fractint(series: str[, OPTS]) -> gretl.Bundle
+\end{lstlisting}
+\mapto{fractint ~series~ [ order ]}
+\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
+	\item[]\maptoopt{gph=True}{--gph}{do Geweke and Porter-Hudak test}
+	\item[]\maptoopt{all=True}{--all}{do both tests}
+	\item[]\maptoopt{quiet=True}{--quiet}{don't print results}
+\end{itemize}
+\generaldesc{Tests the null hypothesis that the fractional integration order is
+	zero. By default, the Local Whittle estimator is used; the GPH test
+	can be selected as an alternative or both tests can be performed.}
 
 \gretlfpycmd{get\_accessor()}\label{met:gretldataset::get_accessor}
 \estdesc{This method retrieves \lgretl['s] ``dollar accessors''}
@@ -583,6 +620,55 @@ Example:\newline
 \where{\textit{d} and \textit{param} are defined
 	as in \ref{func:gretl.invcdf}.}
 
+\gretlfpycmd{johansen()}
+\estdesc{Perform the Johansen cointegration test.}
+\begin{lstlisting}[style=pythonstylefoot]
+.johansen(order: int, varlist: str[, OPTS]) -> gretl.Bundle
+.johansen(order: int, varlist: list[, OPTS]) -> gretl.Bundle
+\end{lstlisting}
+\mapto{johansen order ylist [ ; xlist ] [ ; rxlist ]}
+\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
+	\item[]\maptoopt{nc=True}{--nc}{no constant}
+	\item[]\maptoopt{rc=True}{--rc}{restricted constant}
+	\item[]\maptoopt{uc=True}{--uc}{unrestricted constant}
+	\item[]\maptoopt{crt=True}{--crt}{constant and restricted trend}
+	\item[]\maptoopt{ct=True}{--ct}{constant and unrestricted trend}
+	\item[]\maptoopt{seasonals=True}{--seasonals}{include centered seasonal dummies}
+	\item[]\maptoopt{asy=True}{--asy}{record asymptotic p-values}
+	\item[]\maptoopt{quiet=True}{--quiet}{print just the tests}
+	\item[]\maptoopt{silent=True}{--silent}{don't print anything}
+	\item[]\maptoopt{verbose=True}{--verbose}{print details of auxiliary regressions}
+\end{itemize}
+Examples:\newline
+\pythcodef{.johansen(ylist='y', xlist='x', order=2)}\\
+\pythcodef{.johansen(ylist=['y'], xlist='x z', order=4, verbose=True)}\\
+\pythcodef{.johansen(ylist='y', xlist=['x', 'z'], order=3, rc=True)}\\
+\generaldesc{Tests for the cointegration rank among a set of endogenous variables
+	using the Johansen trace and maximum-eigenvalue tests}
+
+\gretlfpycmd{kpss()}
+\estdesc{Performs the KPSS test for stationarity.}
+\begin{lstlisting}[style=pythonstylefoot]
+.kpss(order: int, varlist: str[, OPTS]) -> gretl.Bundle
+.kpss(order: int, varlist: list[, OPTS]) -> gretl.Bundle
+\end{lstlisting}
+\mapto{kpss order ~varlist}
+\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
+	\item[]\maptoopt{trend=True}{--trend}{include a trend}
+	\item[]\maptoopt{seasonals=True}{--seasonals}{include seasonal dummies}
+	\item[]\maptoopt{verbose=True}{--verbose}{print regression results}
+	\item[]\maptoopt{quiet=True}{--quiet}{suppress printing of results}
+	\item[]\maptoopt{difference=True}{--difference}{use first difference of variable}
+\end{itemize}
+Examples:\newline
+\pythcodef{.kpss(varlist='y', order=8)}\\
+\pythcodef{.kpss(varlist='x1', order=4, trend=True)}\\
+\generaldesc{Tests the null hypothesis that each specified series is stationary
+	around a constant, or around a deterministic linear trend when
+	``trend=True``. For panel data, only one variable can be tested at a time and the
+	overall stationarity test is based, where possible, on Choi's method.
+	Critical values are based on the response-surface estimates of \cite{sephton95}.}
+
 \gretlfpycmd{lags()}
 \estdesc{Creates new series which are lagged values of
 	each of the series in \textit{varlist}.}
@@ -615,12 +701,32 @@ Examples:\newline
 \begin{lstlisting}[style=pythonstylefoot]
 .ldiff(varlist: str | list)
 \end{lstlisting}
-\mapto[0]{ldiff ~varlist}
+\mapto[None]{ldiff ~varlist}
 \generaldesc{Thus \gretlcmd{ldiff x y} creates the new variables
 	\begin{align*}
 		ld\_x &= log(x) - log(x(-1)),\\
 		ld\_y &= log(y) - log(y(-1))
 	\end{align*}}
+
+\gretlfpycmd{levinlin()}
+\estdesc{Performs the Levin-Lin-Chu panel unit-root test.}
+\begin{lstlisting}[style=pythonstylefoot]
+.levinlin(order: int | list, series: str[, OPTS]) -> gretl.Bundle
+\end{lstlisting}
+\mapto{levinlin order ~series}{levinlin}
+\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
+	\item[]\maptoopt{nc=True}{--nc}{test without a constant}
+	\item[]\maptoopt{ct=True}{--ct}{with constant and trend}
+	\item[]\maptoopt{quiet=True}{--quiet}{suppress printing of results}
+	\item[]\maptoopt{verbose=True}{--verbose}{print per-unit results}
+\end{itemize}
+Examples:\newline
+\pythcodef{.levinlin(order=0, series='y')}\\
+\pythcodef{.levinlin(order=2, series='y', ct=True)}\\
+\pythcodef{.levinlin(order=[2,2,3,3,4,4], series='y')}\\
+\generaldesc{Tests the null hypothesis that all individual series in the panel have
+	a unit root against the alternative that none has a unit root. A common
+	$AR(1)$ coefficient across panel units is assumed.}
 
 \gretlfpycmd{logs()}
 \estdesc{The natural log of each of the series in \textit{varlist}
@@ -628,12 +734,33 @@ Examples:\newline
 \begin{lstlisting}[style=pythonstylefoot]
 .discrete(varlist: str | list)
 \end{lstlisting}
-\mapto[0]{logs ~varlist}
+\mapto[None]{logs ~varlist}
 \generaldesc{Thus \gretlcmd{logs x y} creates the new variables
 	\begin{align*}
 		l\_x &= log(x),\\
 		l\_y &= log(y).
 	\end{align*}}
+
+\gretlfpycmd{meantest()}
+\estdesc{Test for equality of means between two samples.}
+\begin{lstlisting}[style=pythonstylefoot]
+.meantest(x: str, y: str[, OPTS]) -> gretl.Bundle
+\end{lstlisting}
+\mapto[none]{meantest x y}
+\mapto{meantest x --split-by=dummy}
+\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
+	\item[]\maptoopt{unequal_vars=True}{--unequal-vars}{assume variances are unequal}
+	\item[]\maptoopt{paired=True}{--paired}{conduct a paired test}
+	\item[]\maptoopt{quiet=True}{--quiet}{suppress printed output}
+	\item[]\maptoopt{robust=True}{--robust}{time series only}
+	\item[]\maptoopt{split_by='dummy'}{--split-by=dummy}{split observations by grouping variable}
+\end{itemize}
+Examples:\newline
+\pythcodef{.meantest('x', 'y')}\\
+\pythcodef{.meantest(x='x', split_by='d')}\\
+\generaldesc{Performs a t-test of the null hypothesis that the population means are
+	equal. The samples may be given as two series or obtained by splitting
+	one series according to a dummy variable.}
 
 \gretlfpycmd{new\_list()}
 \estdesc{Method for defining a new \lgretl['s] \gretlcmd{list}.}
@@ -641,7 +768,7 @@ Examples:\newline
 .new_list(name: str, value: str)
 .new_list(formula: str)
 \end{lstlisting}
-\mapto[0]{list name = value}
+\mapto[None]{list name = value}
 \generaldesc{This method generates a named \gretlcmd{list}
 	consisting of variables defined in \textit{values} (either by
 	name or by variable ID). On the other hand, \textit{formula}
@@ -656,7 +783,7 @@ Examples:\newline
 .new_series(name: str, value: str)
 .new_series(formula: str)
 \end{lstlisting}
-\mapto[0]{genr name = value}
+\mapto[None]{genr name = value}
 \generaldesc{This method generates a named \gretlcmd{series}
 	as a result of any \lgretl transformation of already
 	existing variable(s). On the other hand, \textit{formula}
@@ -664,6 +791,28 @@ Examples:\newline
 	Note that these two calls are equivalent:
 	\pythcode{name='A', value='log(var1) + var2/100'} and
 	\pythcode{formula='genr A = log(var1) + var2/100'}.}
+
+\gretlfpycmd{normtest()}
+\estdesc{Tests a series for normality.}
+\begin{lstlisting}[style=pythonstylefoot]
+.normtest(series: str,[, OPTS]) -> gretl.Bundle
+\end{lstlisting}
+\mapto{normtest ~series}
+\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
+	\item[]\maptoopt{dhansen=True}{--dhansen}{Doornik–Hansen test (default)}
+	\item[]\maptoopt{swilk=True}{--swilk}{Shapiro-Wilk test}
+	\item[]\maptoopt{lillie=True}{--lillie}{Lilliefors test}
+	\item[]\maptoopt{jbera=True}{--jbera}{Jarque–Bera test}
+	\item[]\maptoopt{all=True}{--all}{do all tests}
+	\item[]\maptoopt{quiet=True}{--quiet}{suppress printed output}
+\end{itemize}
+Examples:\newline
+\pythcodef{.normtest('x')}\\
+\pythcodef{.normtest(series='x', swilk=True)}\\
+\pythcodef{.normtest(series='x', all=True)}\\
+\generaldesc{Performs a normality test using the Doornik-Hansen, Shapiro-Wilk,
+	Lilliefors, or Jarque-Bera procedure. By default, the Doornik-Hansen
+	test is used.}
 
 \gretlfpycmd{orthdev()}
 \estdesc{Applicable with panel data only.}
@@ -774,7 +923,7 @@ Example:\newline
 \end{itemize}
 Examples:\newline
 \pythcodef{.rename('x2', 'income')}\\
-\pythcodef{.rename(--case=lower)}\\
+\pythcodef{.rename(case='lower')}\\
 \generaldesc{Without the \gretlcmd{case} option this method
 	changes the name of \textit{series} (identified by name
 	or ID number) to \textit{newname}. The new name must be
@@ -799,6 +948,19 @@ Examples:\newline
 	larger than the number of observations in the original
 	dataset. The original dataset can be restored using
 	\pythcodef{.sample(full=True)}.}
+
+\gretlfpycmd{runs()}
+\estdesc{Performs the nonparametric runs test for randomness.}
+\begin{lstlisting}[style=pythonstylefoot]
+.runs(series: str[, OPTS]) -> gretl.Bundle
+\end{lstlisting}
+\mapto{runs ~series}
+\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
+	\item[]\maptoopt{difference=True}{--difference}{use first difference of variable}
+	\item[]\maptoopt{equal=True}{--equal}{positive and negative values are equiprobable}
+\end{itemize}
+\generaldesc{Tests the randomness of a series based on runs
+	of consecutive positive or negative values.}
 
 \gretlfpycmd{sample()}
 \estdesc{The current sample setter/getter.}
@@ -1018,128 +1180,6 @@ Examples:\newline
 
 \gretlfpycmd{test()}\label{met:gretldataset::test}
 \estdesc{General interface to dataset-based tests. \deprecated}
-\begin{lstlisting}[style=pythonstylefoot]
-.test(.type: str[, varlist: str | list, OPTS])
-\end{lstlisting}
-\where{\pythcode{.type: str} refers to one of
-	the following: \textit{adf}, \textit{bds}, \textit{coint}, \textit{corrgm},
-	\textit{difftest}, \textit{fractint}, \textit{johansen}, \textit{kpss},
-	\textit{levinlin}, \textit{meantest}, \textit{normtest}, \textit{runs}, \textit{vartest}.}\\\\
-
-
-
-
-
-
-
-\maptot{difftest x y}{difftest}{Test for a difference between two sample (nonparametric)}
-\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
-	\item[]\maptoopt{sign=True}{--sign}{Sign test (default)}
-	\item[]\maptoopt{rank-sum=True}{--rank-sum}{Wilcoxon rank-sum test}
-	\item[]\maptoopt{signed_rank=True}{--signed-rank}{Wilcoxon signed-rank test}
-	\item[]\maptoopt{verbose=True}{--verbose}{print extra output}
-	\item[]\maptoopt{quiet=True}{--quiet}{suppress printed output}
-	\item[]\maptoopt{split_by='dummy'}{--split-by=dummy}{split observations by grouping variable}
-\end{itemize}
-Examples:\newline
-\pythcodef{.test(.type='difftest', varlist=['x', 'y'])}\\
-\pythcodef{.test(.type='difftest', varlist='x', split_by='dummy')}
-
-\maptot{fractint ~series~ [ order ]}{fractint}{Tests for fractional integration.}
-\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
-	\item[]\maptoopt{gph=True}{--gph}{do Geweke and Porter-Hudak test}
-	\item[]\maptoopt{all=True}{--all}{do both tests}
-	\item[]\maptoopt{quiet=True}{--quiet}{don't print results}
-\end{itemize}
-
-\maptot{johansen order ylist [ ; xlist ] [ ; rxlist ]}{johansen}{Johansen test for cointegration.}
-\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
-	\item[]\maptoopt{nc=True}{--nc}{no constant}
-	\item[]\maptoopt{rc=True}{--rc}{restricted constant}
-	\item[]\maptoopt{uc=True}{--uc}{unrestricted constant}
-	\item[]\maptoopt{crt=True}{--crt}{constant and restricted trend}
-	\item[]\maptoopt{ct=True}{--ct}{constant and unrestricted trend}
-	\item[]\maptoopt{seasonals=True}{--seasonals}{include centered seasonal dummies}
-	\item[]\maptoopt{asy=True}{--asy}{record asymptotic p-values}
-	\item[]\maptoopt{quiet=True}{--quiet}{print just the tests}
-	\item[]\maptoopt{silent=True}{--silent}{don't print anything}
-	\item[]\maptoopt{verbose=True}{--verbose}{print details of auxiliary regressions}
-\end{itemize}
-Examples:\newline
-\pythcodef{.test(.type='johansen', ylist='y', xlist='x', order=2)}\\
-\pythcodef{.test(.type='johansen', ylist=['y'], xlist='x z', order=4, verbose=True)}\\
-\pythcodef{.test(.type='johansen', ylist='y', xlist=['x', 'z'], order=3, rc=True)}
-
-\maptot{kpss order ~varlist}{kpss}{Kwiatkowski, Phillips, Schmidt and Shin for stationarity.}
-\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
-	\item[]\maptoopt{trend=True}{--trend}{include a trend}
-	\item[]\maptoopt{seasonals=True}{--seasonals}{include seasonal dummies}
-	\item[]\maptoopt{verbose=True}{--verbose}{print regression results}
-	\item[]\maptoopt{quiet=True}{--quiet}{suppress printing of results}
-	\item[]\maptoopt{difference=True}{--difference}{use first difference of variable}
-\end{itemize}
-Examples:\newline
-\pythcodef{.test(.type='kpss', varlist='y', order=8)}\\
-\pythcodef{.test(.type='kpss', varlist='x1', order=4, trend=True)}
-
-\maptot{levinlin order ~series}{levinlin}{Levin, Lin and Chu panel unit-root test.}
-\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
-	\item[]\maptoopt{nc=True}{--nc}{test without a constant}
-	\item[]\maptoopt{ct=True}{--ct}{with constant and trend}
-	\item[]\maptoopt{quiet=True}{--quiet}{suppress printing of results}
-	\item[]\maptoopt{verbose=True}{--verbose}{print per-unit results}
-\end{itemize}
-Examples:\newline
-\pythcodef{.test(.type='levinlin', varlist='y', order=0)}\\
-\pythcodef{.test(.type='levinlin', varlist='y', order=2, ct=True)}\\
-\pythcodef{.test(.type='levinlin', varlist='y', order=[2,2,3,3,4,4])}
-
-\maptot[none]{meantest x y}{meantest}{\textit{t}-test means equality.}
-\maptot{meantest x --split-by=dummy}{}{}
-\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
-	\item[]\maptoopt{unequal_vars=True}{--unequal-vars}{assume variances are unequal}
-	\item[]\maptoopt{paired=True}{--paired}{conduct a paired test}
-	\item[]\maptoopt{quiet=True}{--quiet}{suppress printed output}
-	\item[]\maptoopt{robust=True}{--robust}{time series only}
-	\item[]\maptoopt{split_by='dummy'}{--split-by=dummy}{split observations by grouping variable}
-\end{itemize}
-Examples:\newline
-\pythcodef{.test(.type='meantest', varlist='x y')}\\
-\pythcodef{.test(.type='meantest', varlist=['x', 'y'], unequal_vars=True)}\\
-\pythcodef{.test(.type='meantest', varlist='x', split_by='d')}
-
-\maptot{normtest ~series}{normtest}{Normality tests.}
-\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
-	\item[]\maptoopt{dhansen=True}{--dhansen}{Doornik–Hansen test (default)}
-	\item[]\maptoopt{swilk=True}{--swilk}{Shapiro-Wilk test}
-	\item[]\maptoopt{lillie=True}{--lillie}{Lilliefors test}
-	\item[]\maptoopt{jbera=True}{--jbera}{Jarque–Bera test}
-	\item[]\maptoopt{all=True}{--all}{do all tests}
-	\item[]\maptoopt{quiet=True}{--quiet}{suppress printed output}
-\end{itemize}
-Examples:\newline
-\pythcodef{.test(.type='normtest', varlist='series')}\\
-\pythcodef{.test(.type='normtest', varlist='series', swilk=True)}\\
-\pythcodef{.test(.type='normtest', varlist='series', all=True)}
-
-\maptot{runs ~series}{runs}{Nonparametric test for randomness.}
-\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
-	\item[]\maptoopt{difference=True}{--difference}{use first difference of variable}
-	\item[]\maptoopt{equal=True}{--equal}{positive and negative values are equiprobable}
-\end{itemize}
-
-\maptot[none]{vartest x y}{vartest}{\textit{F}-test for variances equality.}
-\maptot{vartest x --split-by=dummy}{}{}
-\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
-	\item[]\maptoopt{quiet=True}{--quiet}{suppress printed output}
-	\item[]\maptoopt{robust='method'}{--robust=method}{\seegretlmanual}
-	\item[]\maptoopt{split_by='dummy'}{--split-by=dummy}{split observations by grouping variable}
-\end{itemize}
-Examples:\newline
-\pythcodef{.test(.type='vartest', varlist=['x', 'y'])}\\
-\pythcodef{.test(.type='vartest', varlist='x', split_by='d')}\\
-\pythcodef{.test(.type='vartest', varlist='x y', robust='median')}\\
-\pythcodef{.test(.type='vartest', varlist='x y', robust='trimmed,5')}
 
 \gretlfpycmd{to\_dataframe()}
 \estdesc{\deprecated}
@@ -1217,6 +1257,29 @@ Examples:\newline
 \generaldesc{Removes observations containing only missing values
 	from a padded daily dataset. The time-series structure and
 	observation dates are preserved.}
+
+\gretlfpycmd{vartest()}
+\estdesc{Test for equality of variances between two samples.}
+\begin{lstlisting}[style=pythonstylefoot]
+.vartestx: str, y: str[, OPTS]) -> gretl.Bundle
+\end{lstlisting}
+\mapto[none]{vartest x y}
+\mapto{vartest x --split-by=dummy}
+\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
+	\item[]\maptoopt{quiet=True}{--quiet}{suppress printed output}
+	\item[]\maptoopt{robust='method'}{--robust=method}{\seegretlmanual}
+	\item[]\maptoopt{split_by='dummy'}{--split-by=dummy}{split observations by grouping variable}
+\end{itemize}
+Examples:\newline
+\pythcodef{.vartest('x', 'y')}\\
+\pythcodef{.vartest(x='x', split_by='d')}\\
+\generaldesc{
+	By default, performs the standard F test of the null hypothesis that
+	the population variances are equal. Robust variants based on Levene
+	and Brown-Forsythe tests are also available. The standard \textit{F}~test
+	assumes normality. Robust alternatives may be
+	preferable for non-normal data, particularly the median-based test
+	for skewed data and the trimmed-mean test for fat-tailed data.}
 
 \gretlfpycmd{xcorrgm()}
 \estdesc{Prints and/or graphs the cross-correlogram for series1 and series2.}
