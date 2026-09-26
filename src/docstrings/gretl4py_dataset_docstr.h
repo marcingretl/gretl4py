@@ -654,5 +654,227 @@ namespace doc::Dataset {
     ``data.new_series("x2", "x^2")``
     )doc";
 
+    inline constexpr char rename[] = R"doc(
+    Rename a series or change the case of all series names.
+
+    Renames a series identified by name or ID number, or changes the
+    naming convention of all series in the current dataset.
+
+    Parameters
+    ----------
+    series : str or int
+        Name or ID number of the series to rename.
+    newname : str
+        New name for the series.
+
+    Other Parameters
+    ----------------
+    quiet : bool
+        Suppress printed output.
+    case : {"lower", "upper", "camel", "snake"}
+        Change the case of all series names. When this option is used,
+        ``series`` and ``newname`` are omitted.
+
+    Returns
+    -------
+    None
+
+    Notes
+    -----
+    A new series name must be at most 31 characters long, start with a
+    letter, and contain only letters, digits and underscores. It must not
+    duplicate the name of an existing object.
+
+    Examples
+    --------
+    ``data.rename("x2", "income")``
+    ``data.rename(2, "income")``
+    ``data.rename(case="lower")``
+    )doc";
+
+    inline constexpr char new_list[] = R"doc(
+    Generate a new named list of variables.
+
+    Creates a gretl list using a complete gretl expression or a list name
+    and value expression.
+
+    Parameters
+    ----------
+    formula : str
+        Complete gretl expression defining the list.
+    name : str
+        Name of the new list.
+    value : str
+        Gretl expression specifying the variables in the list, by name
+        or variable ID.
+
+    Returns
+    -------
+    None
+
+    Examples
+    --------
+    ``data.new_list("list A = x1 x2 x3")``
+    ``data.new_list("A", "x1 x2 x3")``
+    )doc";
+
+    inline constexpr char dummify[] = R"doc(
+    Generate dummy variables from discrete variables.
+
+    For each suitable variable in ``varlist``, creates a set of dummy
+    variables representing its distinct values.
+
+    Parameters
+    ----------
+    varlist : str or list
+        Variables to dummify, specified by names or indices.
+
+    Other Parameters
+    ----------------
+    drop_first : bool
+        Omit the dummy corresponding to the lowest value.
+    drop_last : bool
+        Omit the dummy corresponding to the highest value.
+
+    Returns
+    -------
+    None
+
+    Notes
+    -----
+    Variables are suitable if they are explicitly marked as discrete, or
+    take a relatively small number of sufficiently round distinct values.
+    By default, one dummy variable is created for each distinct value.
+
+    Examples
+    --------
+    ``data.dummify("x")``
+    ``data.dummify("x1 x2", drop_first=True)``
+    )doc";
+
+    inline constexpr char square[] = R"doc(
+    Generate squares and cross-products of variables.
+
+    Creates new series containing the squares of the variables in
+    ``varlist`` and, optionally, their cross-products.
+
+    Parameters
+    ----------
+    varlist : str or list
+        Variables to transform, specified by names or indices.
+
+    Other Parameters
+    ----------------
+    cross : bool
+        Generate cross-products in addition to squares.
+
+    Returns
+    -------
+    None
+
+    Notes
+    -----
+    Dummy variables are not squared, since their squares are identical
+    to the original variables.
+
+    Examples
+    --------
+    ``data.square("x1 x2")``
+    ``data.square(["x1", "x2"], cross=True)``
+    )doc";
+
+    inline constexpr char discrete[] = R"doc(
+    Mark variables as discrete or continuous.
+
+    Marks the variables in ``varlist`` as discrete. This affects their
+    treatment by operations that distinguish discrete from continuous
+    variables.
+
+    Parameters
+    ----------
+    varlist : str or list
+        Variables to mark, specified by names or indices.
+
+    Other Parameters
+    ----------------
+    reverse : bool
+        Mark the variables as continuous instead of discrete.
+
+    Returns
+    -------
+    None
+
+    Notes
+    -----
+    By default, variables are treated as continuous. Marking a variable
+    as discrete affects its treatment in frequency plots and makes it
+    available for ``dummify()``.
+
+    Examples
+    --------
+    ``data.discrete("x")``
+    ``data.discrete(["x1", "x2"])``
+    ``data.discrete("x", reverse=True)``
+    )doc";
+
+    inline constexpr char stdize[] = R"doc(
+    Standardize or center variables.
+
+    Creates standardized versions of the variables in ``varlist``. By
+    default, each variable is centered and divided by its sample standard
+    deviation.
+
+    Parameters
+    ----------
+    varlist : str or list
+        Variables to transform, specified by names or indices.
+
+    Other Parameters
+    ----------------
+    no_df_corr : bool
+        Do not apply a degrees-of-freedom correction when computing the
+        standard deviation.
+    center_only : bool
+        Subtract the mean without dividing by the standard deviation.
+
+    Returns
+    -------
+    None
+
+    Notes
+    -----
+    By default, the generated series have the prefix ``s_`` and the
+    standard deviation is computed with a degrees-of-freedom correction
+    of 1. With ``center_only=True``, the generated series have the prefix
+    ``c_``.
+
+    Examples
+    --------
+    ``data.stdize("x1 x2")``
+    ``data.stdize(["x1", "x2"], no_df_corr=True)``
+    ``data.stdize("x1", center_only=True)``
+    )doc";
+
+    inline constexpr char diff[] = R"doc(
+    Generate first differences of variables.
+
+    Computes the first difference of each variable in ``varlist`` and
+    stores the result as a new series with the prefix ``d_``.
+
+    Parameters
+    ----------
+    varlist : str or list
+        Variables to difference, specified by names or indices.
+
+    Returns
+    -------
+    None
+
+    Examples
+    --------
+    ``data.diff("x1 x2")``
+    ``data.diff(["x1", "x2"])``
+    )doc";
+
 } // namespace doc::Dataset
 

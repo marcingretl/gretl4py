@@ -736,6 +736,8 @@ void GretlDataset::transforms (const T &varlist, const py::kwargs &kwargs)
         err_ = list_makediscrete(var_list_raw_ptr, dset, opt_);
     } else if constexpr (CI == STDIZE) {
         err_ = list_stdgenr(var_list_raw_ptr, dset, opt_);
+    } else {
+        static_assert(always_false<std::integral_constant<GretlCmdIndex, CI>>, "GretlDataset::transforms(): unsupported command");
     }
     var_list.reset(var_list_raw_ptr);
     if (err_) handle_gretl_error(err_);
@@ -759,9 +761,8 @@ template <typename T, GretlCmdIndex CI>
 void GretlDataset::transforms_no_opts (const T &varlist)
 {
     //
-    // interface to several gretl's commands (CI)
+    // interface to transformation commands which take no options
     // which underlying engines live in tranforms.c
-    // Note: here we deal with commands which do not take arguments
     //
     gretl_list_ptr var_list{nullptr};
 
@@ -781,6 +782,8 @@ void GretlDataset::transforms_no_opts (const T &varlist)
         err_ = list_loggenr(varlist_raw_ptr, dset);
     } else if constexpr (CI == ORTHDEV) {
         err_ = list_orthdev(varlist_raw_ptr, dset);
+    } else {
+        static_assert(always_false<std::integral_constant<GretlCmdIndex, CI>>, "GretlDataset::transforms_no_opts(): unsupported command");
     }
     var_list.reset(varlist_raw_ptr);
     if (err_) handle_gretl_error(err_);

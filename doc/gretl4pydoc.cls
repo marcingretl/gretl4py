@@ -89,8 +89,9 @@
 	frame=tb,                      % Any extra options here
 	showstringspaces=false,
 	literate={{~}{$\sim$}2
-		{x1}{$x_1$}2
-		{x2}{$x_2$}2
+		{ x1}{$x_1$}3
+		{ x2}{ $x_2$}3
+		{ x3}{ $x_3$}3
 		{xk}{$x_k$}2
 		{.set}{.set}{3}
 		{.type}{type}{4}
@@ -121,9 +122,9 @@
 	frame=tb,                      % Any extra options here
 	showstringspaces=false,
 	literate={{~}{$\sim$}2
-		{x1}{$x_1$}3
-		{x2}{$x_2$}2
-		{xk}{$x_k$}1
+		{ x1}{$x_1$}3
+		{ x2}{ $x_2$}3
+		{ x3}{ $x_3$}3
 		{.type}{{\textcolor{black}{type}}}{4}
 		{gretl.Matrix}{{\textcolor{pythtype}{gretl.Matrix}}}{12}
 		{gretl.Bundle}{{\textcolor{pythtype}{gretl.Bundle}}}{12}
@@ -160,8 +161,9 @@
 	showstringspaces=false,
 	literate={
 		{~}{$\sim$}1
-		{x1}{$x_1$}2
-		{x2}{$x_2$}2
+		{ x1}{$x_1$}3
+		{ x2}{ $x_2$}3
+		{ x3}{ $x_3$}3
 		{xk}{$x_k$}2
 		{.if}{if }3
 		{.id}{.id }3

@@ -413,16 +413,20 @@ Examples:\newline
 	as in \ref{func:gretl.cdf}.}
 
 \gretlfpycmd{diff()}
-\estdesc{The first difference of each variable in \textit{varlist}
-	is obtained and the result stored in a new variable with the prefix d\_. }
+\estdesc{Generates first differences of selected variables.}
 \begin{lstlisting}[style=pythonstylefoot]
 .diff(varlist: str | list)
 \end{lstlisting}
 \mapto[none]{diff ~varlist }
-\generaldesc{Note, \gretlcmd{diff x y} creates the new variables:
+Examples:\newline
+\pythcodef{.diff('x y')}\\
+\pythcodef{.diff(['x', 'y'])}\\
+\generaldesc{The first difference of each variable in \textit{varlist}
+	is computed and stored in a new series with prefix \textit{d\_}.
+	Thus \gretlcmd{diff x y} creates the new variables
 	\begin{align*}
-		d\_x &= x_t - x_{t-1},\\
-		d\_y &= y_t - y_{t-1}.
+		d\_x &= x(t) - x(t-1),\\
+		d\_y &= y(t) - y(t-1).
 	\end{align*}}
 
 \gretlfpycmd{difftest()}
@@ -448,7 +452,7 @@ Examples:\newline
 	variable.}
 
 \gretlfpycmd{discrete()}
-\estdesc{Marks each variable in \textit{varlist} as being discrete.}
+\estdesc{Marks selected variables as discrete or continuous.}
 \begin{lstlisting}[style=pythonstylefoot]
 .discrete(varlist: str[, OPTS])
 .discrete(varlist: list[, OPTS])
@@ -457,12 +461,16 @@ Examples:\newline
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
 	\item[]\maptoopt{reverse=True}{--reverse}{mark variables as continuous}
 \end{itemize}
-\generaldesc{By default all variables are treated as continuous;
-	marking a variable as discrete allows you to select the variable
-	for the \gretlcmd{dummify} command.\newline
-	If the \gretlcmd{--reverse} flag is given, the operation is
-	reversed; that is, the variables in \textit{varlist} are
-	marked as being continuous.}
+Examples:\newline
+\pythcodef{.discrete('x')}\\
+\pythcodef{.discrete(['x1', 'x2'])}\\
+\pythcodef{.discrete('x', reverse=True)}\\
+\generaldesc{By default all variables are treated as continuous.
+	Marking a variable as discrete affects its treatment in frequency
+	plots and allows it to be selected for the \gretlcmd{dummify}
+	command. With the \pythcode{reverse} option the operation is
+	reversed; that is, the variables in \textit{varlist} are marked
+	as continuous.}
 
 \gretlfpycmd{dsortby()}
 \estdesc{Sorts the current dataset by one or more variables in descending order.}
@@ -484,9 +492,8 @@ Examples:\newline
 	for undated datasets.}
 
 \gretlfpycmd{dummify()}
-\estdesc{For any suitable variables in \textit{varlist},
-	creates a set of dummy variables coding for the distinct
-	values of that variable.}
+\estdesc{Creates dummy variables coding for the distinct values of
+	selected variables.}
 \begin{lstlisting}[style=pythonstylefoot]
 .dummify(varlist: str[, OPTS])
 .dummify(varlist: list[, OPTS])
@@ -496,18 +503,26 @@ Examples:\newline
 	\item[]\maptoopt{drop\_first=True}{--drop-first}{omit lowest value from encoding}
 	\item[]\maptoopt{drop\_last=True}{--drop-last}{omit highest value from encoding}
 \end{itemize}
-\generaldesc{Suitable variables are those that have been explicitly
-	marked as discrete, or those that take on a fairly small number
-	of values all of which are ``fairly round'' (multiples of 0.25).\newline
-	By default a dummy variable is added for each distinct value of
-	the variable in question. For example if a discrete variable
-	\textit{x} has 5 distinct values, 5 dummy variables will be added
-	to the data set, with names \textit{Dx\_1}, \textit{Dx\_2} and so on.}
+Examples:\newline
+\pythcodef{.dummify('x')}\\
+\pythcodef{.dummify(['x1', 'x2'], drop_first=True)}\\
+\generaldesc{For each suitable variable in \textit{varlist}, creates
+	a set of dummy variables coding for its distinct values. Suitable
+	variables are those that have been explicitly marked as discrete,
+	or those that take on a fairly small number of values, all of which
+	are ``fairly round'' (multiples of 0.25).\newline
+	By default, a dummy variable is added for each distinct value. For
+	example, if a discrete variable \textit{x} has 5 distinct values,
+	5 dummy variables are added to the dataset, with names
+	\textit{Dx\_1}, \textit{Dx\_2}, and so on. The
+	\pythcode{drop_first} and \pythcode{drop_last} options may be used
+	to omit the dummy corresponding to the lowest or highest value,
+	respectively.}
 
 \gretlfpycmd{expand()}
 \estdesc{Expands the current dataset to a higher frequency.}
 \begin{lstlisting}[style=pythonstylefoot]
-.expand([freq: int]) -> None
+.expand([freq: int])
 \end{lstlisting}
 \mapto[none]{dataset expand [freq]}
 Examples:\newline
@@ -773,19 +788,20 @@ Examples:\newline
 	one series according to a dummy variable.}
 
 \gretlfpycmd{new\_list()}
-\estdesc{Method for defining a new \lgretl['s] \gretlcmd{list}.}
+\estdesc{Defines a new named \gretlcmd{list}.}
 \begin{lstlisting}[style=pythonstylefoot]
-.new_list(name: str, value: str)
 .new_list(formula: str)
+.new_list(name: str, value: str)
 \end{lstlisting}
-\mapto[None]{list name = value}
-\generaldesc{This method generates a named \gretlcmd{list}
-	consisting of variables defined in \textit{values} (either by
-	name or by variable ID). On the other hand, \textit{formula}
-	should contain a string in valid \gretl['s] syntax.\newline
-	Note that these two calls are equivalent:
-	\pythcode{name='A', value='var1 var2'} and
-	\pythcode{formula='list A = var1 var2'}.}
+\mapto[none]{list name = value}
+Examples:\newline
+\pythcodef{.new_list('list A = x1 x2 x3')}\\
+\pythcodef{.new_list('A', 'x1 x2 x3')}\\
+\generaldesc{Creates a named \gretlcmd{list} of variables. The
+	\textit{value} argument specifies the variables by name or variable
+	ID, while \textit{formula} accepts a complete expression in valid
+	\gretl syntax. For example, \pythcode{.new_list('A', 'x1 x2')} and
+	\pythcode{.new_list('list A = x1 x2')} are equivalent.}
 
 \gretlfpycmd{new\_series()}
 \estdesc{Method for defining a new \lgretl['s] \gretlcmd{series}.}
@@ -802,15 +818,15 @@ Examples:\newline
 \generaldesc{This method generates a named \gretlcmd{series}
 	as a result of any \lgretl transformation of already
 	existing variable(s). On the other hand, \textit{formula}
-	should contain a string in valid \gretl['s] syntax.\newline
-	Note that these two calls are equivalent:
-	\pythcode{name='A', value='log(var1) + var2/100'} and
+	should contain a string in valid \lgretl['s] syntax.\newline
+	Note that these two calls are equivalent:\\
+	\pythcode{name='A', value='log(var1) + var2/100'}, and\\
 	\pythcode{formula='genr A = log(var1) + var2/100'}.}
 
 \gretlfpycmd{normtest()}
 \estdesc{Tests a series for normality.}
 \begin{lstlisting}[style=pythonstylefoot]
-.normtest(series: str,[, OPTS]) -> gretl.Bundle
+.normtest(series: str[, OPTS]) -> gretl.Bundle
 \end{lstlisting}
 \mapto{normtest ~series}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
@@ -925,27 +941,30 @@ Example:\newline
 	as in \ref{func:gretl.pvalue}}.
 
 \gretlfpycmd{rename()}
-\estdesc{Changes the name of \textit{series} (identified
-	by name or ID number) to \textit{newname}.}
+\estdesc{Changes the name of a series or the case of all series names.}
 \begin{lstlisting}[style=pythonstylefoot]
-.rename(series: str | int, newname: str[, OPTS])
+.rename(series: str, newname: str[, OPTS]) -> None
+.rename(case: str[, quiet: bool]) -> None
 \end{lstlisting}
 \mapto[none]{rename ~series~ newname}
 \mapto{rename case=style}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
 	\item[]\maptoopt{quiet=True}{--quiet}{suppress printed output}
-	\item[]\maptoopt{case=style}{--case}{\seegretlmanual}
+	\item[]\maptoopt{case=style}{--case=style}{change all series names;
+		\textit{style} is \pythcode{'lower'}, \pythcode{'upper'},
+		\pythcode{'camel'} or \pythcode{'snake'}}
 \end{itemize}
 Examples:\newline
 \pythcodef{.rename('x2', 'income')}\\
 \pythcodef{.rename(case='lower')}\\
-\generaldesc{Without the \gretlcmd{case} option this method
-	changes the name of \textit{series} (identified by name
-	or ID number) to \textit{newname}. The new name must be
-	of 31 characters maximum, must start with a letter, and
-	must be composed of only letters, digits, and the underscore
-	character. In addition, it must not be the name of an existing
-	object of any kind.}
+\generaldesc{Without the \gretlcmd{case} option this method changes
+	the name of \textit{series} to \textit{newname}. The new name must
+	be at most 31 characters long, must start with a letter, and may
+	contain only letters, digits and underscores. It must not duplicate
+	the name of an existing object. With the \gretlcmd{case} option,
+	no \textit{series} or \textit{newname} is specified; instead, the
+	names of all series are converted to lower case, upper case, camel
+	case or snake case according to the selected \textit{style}.}
 
 \gretlfpycmd{resample()}
 \estdesc{Constructs a new dataset by random resampling of the
@@ -1111,23 +1130,23 @@ Examples:\newline
 	for undated datasets.}
 
 \gretlfpycmd{square()}
-\estdesc{Generates new series which are squares of the series
-	in \textit{varlist} (plus cross-products if the
-	\gretlcmd{--cross} is given).}
+\estdesc{Generates squares and, optionally, cross-products of selected variables.}
 \begin{lstlisting}[style=pythonstylefoot]
 .square(varlist: str[, OPTS])
 .square(varlist: list[, OPTS])
 \end{lstlisting}
 \mapto[none]{square ~varlist}
-\generaldesc{For example, \gretlcmd{square x y} will generate 
-	$q\_x = x$ squared, $sq\_y = y$ squared and (optionally)
-	$x\_y = x \times y$. If a particular variable is a dummy
-	variable it is not squared because we will get the same variable.}
+Examples:\newline
+\pythcodef{.square('x1 x2')}\\
+\pythcodef{.square(['x1', 'x2'], cross=True)}\\
+\generaldesc{Generates new series containing the squares of the variables
+	in \textit{varlist}. For example, \gretlcmd{square x y} generates
+	$sq\_x=x^2$ and $sq\_y=y^2$; with the \pythcode{cross} option it
+	also generates $x\_y=x\times y$. Dummy variables are not squared,
+	since their squares are identical to the original variables.}
 
 \gretlfpycmd{stdize()}
-\estdesc{By default a standardized version of each of the series
-	in \textit{varlist} is obtained and the result stored in a
-	new series with the prefix s\_.}
+\estdesc{Creates standardized or centered versions of selected variables.}
 \begin{lstlisting}[style=pythonstylefoot]
 .stdize(varlist: str[, OPTS])
 .stdize(varlist: list[, OPTS])
@@ -1137,10 +1156,18 @@ Examples:\newline
 	\item[]\maptoopt{no\_df\_corr=True}{--no-df-corr}{no degrees of freedom correction}
 	\item[]\maptoopt{center\_only=True}{--center-only}{don't divide by s.d.}
 \end{itemize}
-\generaldesc{For example, \gretlcmd{stdize x y} creates
-	the new series \textit{s\_x} and \textit{s\_y}, each
-	of which is centered and divided by its sample standard
-	deviation (with a degrees of freedom correction of 1).}
+Examples:\newline
+\pythcodef{.stdize('x1 x2')}\\
+\pythcodef{.stdize(['x1', 'x2'], no_df_corr=True)}\\
+\pythcodef{.stdize('x1', center_only=True)}\\
+\generaldesc{By default, a standardized version of each variable in
+	\textit{varlist} is generated with prefix \textit{s\_}. For example,
+	\gretlcmd{stdize x y} creates \textit{s\_x} and \textit{s\_y},
+	each centered and divided by its sample standard deviation, using a
+	degrees-of-freedom correction of 1. With \pythcode{no_df_corr=True},
+	no degrees-of-freedom correction is applied. With
+	\pythcode{center_only=True}, only the mean is subtracted and the
+	generated series have prefix \textit{c\_}.}
 
 \gretlfpycmd{summary()}
 \estdesc{Prints the dataset summary.}

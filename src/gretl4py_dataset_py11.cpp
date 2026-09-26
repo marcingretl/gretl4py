@@ -333,7 +333,7 @@ void init_gretl4py_dataset_py11 (py::module_ &m)
     .def("rename", &GretlDataset::rename,
          py::arg("series").none(false), py::arg("newname").none(false), py::kw_only())
     .def("rename",
-         [](GretlDataset &self, const std::string &series, const std::string &newname, const py::kwargs &kwargs)
+         [](GretlDataset &self, const std::string &series, const std::string &newname, const py::kwargs &kwargs) -> void
          {
              self.rename(self.get_series_id(series, false), newname, kwargs);
          }, py::arg("series").none(false), py::arg("newname").none(false), py::kw_only())
@@ -341,29 +341,34 @@ void init_gretl4py_dataset_py11 (py::module_ &m)
          [](GretlDataset &self, const py::kwargs &kwargs) -> void
          {
              self.rename(-1, "", kwargs);
-         })
+         }, doc::Dataset::rename)
     .def("new_list", py::overload_cast<const std::string&>(&GretlDataset::new_list),
          py::arg("formula").none(false))
     .def("new_list", py::overload_cast<const std::string&, const std::string&>(&GretlDataset::new_list),
-         py::arg("name").none(false), py::arg("value").none(false))
+         py::arg("name").none(false), py::arg("value").none(false), doc::Dataset::new_list)
     .def("dummify", &GretlDataset::transforms<std::string, DUMMIFY>,
          py::arg("varlist").none(false), py::kw_only())
+    .def("dummify", &GretlDataset::transforms<py::list, DUMMIFY>,
+         py::arg("varlist").none(false), py::kw_only(), doc::Dataset::dummify)
     .def("square", &GretlDataset::transforms<std::string, SQUARE>,
          py::arg("varlist").none(false), py::kw_only())
+    .def("square", &GretlDataset::transforms<py::list, SQUARE>,
+         py::arg("varlist").none(false), py::kw_only(), doc::Dataset::square)
     .def("discrete", &GretlDataset::transforms<std::string, DISCRETE>,
          py::arg("varlist").none(false), py::kw_only())
+    .def("discrete", &GretlDataset::transforms<py::list, DISCRETE>,
+         py::arg("varlist").none(false), py::kw_only(), doc::Dataset::discrete)
     .def("stdize", &GretlDataset::transforms<std::string, STDIZE>,
          py::arg("varlist").none(false), py::kw_only())
-    .def("dummify", &GretlDataset::transforms<py::list, DUMMIFY>,
-         py::arg("varlist").none(false), py::kw_only())
-    .def("square", &GretlDataset::transforms<py::list, SQUARE>,
-         py::arg("varlist").none(false), py::kw_only())
-    .def("discrete", &GretlDataset::transforms<py::list, DISCRETE>,
-         py::arg("varlist").none(false), py::kw_only())
     .def("stdize", &GretlDataset::transforms<py::list, STDIZE>,
-         py::arg("varlist").none(false), py::kw_only())
+         py::arg("varlist").none(false), py::kw_only(), doc::Dataset::stdize)
     .def("diff", &GretlDataset::transforms_no_opts<std::string, DIFF>,
          py::arg("varlist").none(false))
+    .def("diff", &GretlDataset::transforms_no_opts<py::list, DIFF>,
+         py::arg("varlist").none(false), doc::Dataset::diff)
+
+
+
     .def("ldiff", &GretlDataset::transforms_no_opts<std::string, LDIFF>,
          py::arg("varlist").none(false))
     .def("sdiff", &GretlDataset::transforms_no_opts<std::string, SDIFF>,
@@ -372,8 +377,7 @@ void init_gretl4py_dataset_py11 (py::module_ &m)
          py::arg("varlist").none(false))
     .def("orthdev", &GretlDataset::transforms_no_opts<std::string, ORTHDEV>,
          py::arg("varlist").none(false))
-    .def("diff", &GretlDataset::transforms_no_opts<py::list, DIFF>,
-         py::arg("varlist").none(false))
+
     .def("ldiff", &GretlDataset::transforms_no_opts<py::list, LDIFF>,
          py::arg("varlist").none(false))
     .def("sdiff", &GretlDataset::transforms_no_opts<py::list, SDIFF>,
@@ -382,6 +386,7 @@ void init_gretl4py_dataset_py11 (py::module_ &m)
          py::arg("varlist").none(false))
     .def("orthdev", &GretlDataset::transforms_no_opts<py::list, ORTHDEV>,
          py::arg("varlist").none(false))
+
     .def("lags", &GretlDataset::lags<std::string>,
          py::arg("varlist").none(false), py::arg("order").none(true) = 0)
     .def("lags", &GretlDataset::lags<py::list>,
