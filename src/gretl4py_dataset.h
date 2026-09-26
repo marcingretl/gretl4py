@@ -198,7 +198,7 @@ public:
     py::object corr (const T &varlist, const py::kwargs &kwargs);
 
     template <typename T>
-    py::object cov (const T &vars);
+    GretlMatrixPtr cov (const T &varlist);
 
     py::object hurst (const std::string &series);
 

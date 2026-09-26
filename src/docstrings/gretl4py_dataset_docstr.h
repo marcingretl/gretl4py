@@ -1187,5 +1187,73 @@ namespace doc::Dataset {
     ``cycle = data.bkfilt("y", 6, 32, 12)``
     )doc";
 
+    inline constexpr char get_accessor[] = R"doc(
+    Retrieve a gretl dollar accessor.
+
+    Parameters
+    ----------
+    name : str
+        Name of the accessor, with or without the leading '$'.
+
+    Returns
+    -------
+    object
+        Value of the requested accessor.
+
+    Notes
+    -----
+    The accessor may be associated with the current Dataset instance or
+    may be a general gretl accessor, such as '$version'.
+    )doc";
+
+    inline constexpr char corr[] = R"doc(
+    Compute pairwise correlations for selected variables.
+
+    Parameters
+    ----------
+    varlist : str or list, optional
+        Variables to use. If omitted, all variables are used.
+
+    Other Parameters
+    ----------------
+    uniform : bool, optional
+        Use a common sample for all pairwise correlations.
+    spearman : bool, optional
+        Compute Spearman's rank correlation.
+    kendall : bool, optional
+        Compute Kendall's rank correlation.
+    verbose : bool, optional
+        Print rankings for rank correlations.
+    triangle : bool, optional
+        Plot only the lower triangle of the correlation matrix.
+    quiet : bool, optional
+        Suppress printed output.
+
+    Returns
+    -------
+    Matrix
+        Matrix containing the computed correlations.
+
+    Notes
+    -----
+    Pearson's product-moment correlation is computed by default.
+    The `spearman` and `kendall` options are mutually exclusive and
+    require exactly two variables.
+    )doc";
+
+    inline constexpr char cov[] = R"doc(
+    Compute the covariance matrix for selected variables.
+
+    Parameters
+    ----------
+    varlist : str or list, optional
+        Variables to use. If omitted, all variables are used.
+
+    Returns
+    -------
+    Matrix
+        Covariance matrix of the selected variables.
+    )doc";
+
 } // namespace doc::Dataset
 

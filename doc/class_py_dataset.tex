@@ -342,10 +342,8 @@ Examples:\newline
 	for 5- or 6-day data the week is taken to start on Monday.}
 
 \gretlfpycmd{corr()}
-\estdesc{By default, prints the pairwise correlation coefficients
-	(Pearson's product-moment correlation) for the variables in
-	\textit{varlist}, or for all variables in the data set if
-	\textit{varlist }is not given.}
+\estdesc{Computes pairwise correlations for selected variables,
+	or for all variables if none are specified.}
 \begin{lstlisting}[style=pythonstylefoot]
 .corr() -> gretl.Matrix
 .corr(varlist: str[, OPTS]) -> gretl.Matrix
@@ -357,25 +355,24 @@ Examples:\newline
 	\item[]\maptoopt{spearman=True}{--spearman}{Spearman's $\rho$}
 	\item[]\maptoopt{kendall=True}{--kendall}{Kendall's $\tau$}
 	\item[]\maptoopt{verbose=True}{--verbose}{print rankings}
-	\item[]\maptoopt{triangle=True}{--triangle}{only plot lower half, (\seegretlmanual)}
+	\item[]\maptoopt{triangle=True}{--triangle}{only plot lower half (\seegretlmanual)}
 	\item[]\maptoopt{quiet=True}{--quiet}{do not print anything}
 \end{itemize}
 Examples:\newline
 \pythcodef{.corr('y x z t')}\\
 \pythcodef{.corr('ylist', uniform=True)}\\
 \pythcodef{.corr('x y', spearman=True)}\\
-\generaldesc{The standard behavior is to use all available
-	observations for computing each pairwise coefficient, but
-	if the \gretlcmd{--uniform} option is given the sample is
-	limited (if necessary) so that the same set of observations
-	is used for all the coefficients. This option has an effect
-	only if there are differing numbers of missing values
-	for the variables used.\newline
-	The (mutually exclusive) options \gretlcmd{--spearman} and
+\generaldesc{By default, Pearson's product-moment correlations are
+	computed. The standard behavior is to use all available observations
+	for each pairwise coefficient. With \gretlcmd{--uniform}, the sample
+	is restricted, if necessary, so that the same observations are used
+	for all coefficients.\newline
+	The mutually exclusive options \gretlcmd{--spearman} and
 	\gretlcmd{--kendall} produce, respectively, Spearman's rank
-	correlation $\rho$ and Kendall's rank correlation $\tau$ in
-	place of the default Pearson coefficient. When either of these
-	options is given, \textit{varlist} should contain just two variables.}
+	correlation $\rho$ and Kendall's rank correlation $\tau$. When
+	either option is given, \textit{varlist} should contain exactly two
+	variables. The computed correlations are returned as a
+	\classpymatrix instance.}
 
 \gretlfpycmd{corrgm()}
 \estdesc{Compute the correlogram of a time series.}
@@ -399,14 +396,20 @@ Examples:\newline
 	serial correlation up to the maximum lag is also reported.}
 
 \gretlfpycmd{cov()}
-\estdesc{Returns the covariance matrix for the variables in the list.}
+\estdesc{Computes the covariance matrix for selected variables,
+	or for all variables if none are specified.}
 \begin{lstlisting}[style=pythonstylefoot]
-.cov(.vars: str | list) -> gretl.Matrix
+.cov() -> gretl.Matrix
+.cov(varlist: str | list) -> gretl.Matrix
 \end{lstlisting}
-\maptof{cov(y1, y2)}{matrix}
-\generaldesc{Note: this function is slightly more general than
-	\gretlcmd{cov()} in \gretl, since it allows passing a list
-	with an arbitrary number of variables.}
+\maptof{mcov(\{ ~varlist\})}{matrix}
+Examples:\newline
+\pythcodef{.cov()}\\
+\pythcodef{.cov('y x1 x2')}\\
+\pythcodef{.cov(['y', 'x1', 'x2'])}\\
+\generaldesc{The method treats each selected series as a variable and
+	returns their covariance matrix. If \textit{varlist} is omitted,
+	all variables in the current data set are used.}
 
 \gretlfpycmd{critical()}\label{met:gretldataset::critical}
 \estdesc{Critical value calculator for given \gretlcmd{series}.}
@@ -557,13 +560,13 @@ Examples:\newline
 	can be selected as an alternative or both tests can be performed.}
 
 \gretlfpycmd{get\_accessor()}\label{met:gretldataset::get_accessor}
-\estdesc{This method retrieves \lgretl['s] ``dollar accessors''}
+\estdesc{Retrieves a \lgretl ``dollar accessor''.}
 \begin{lstlisting}[style=pythonstylefoot]
-.get_accessor(name: str) -> object
+	.get_accessor(name: str) -> object
 \end{lstlisting}
-\generaldesc{Note: this method retrieves accessors related either
-	to the \classpydataset instance or to general \lgretl accessors
-	(such as \gretlcmd{\$version}).}
+\generaldesc{The method can retrieve accessors associated with the
+	\classpydataset instance as well as general \lgretl accessors,
+	such as \gretlcmd{\$version}.}
 
 \gretlfpycmd{get\_series()}
 \estdesc{Retrieves a \gretlcmd{series} as \classpymatrix.}

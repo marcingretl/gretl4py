@@ -401,15 +401,15 @@ void init_gretl4py_dataset_py11 (py::module_ &m)
          py::arg("y").none(false), py::arg("f1").none(true) = 0,
          py::arg("f2").none(true) = 0, py::arg("k").none(true) = 0, doc::Dataset::bkfilt)
     .def("get_accessor", &GretlDataset::get_accessor,
-         py::arg("name").none(false))
+         py::arg("name").none(false), doc::Dataset::get_accessor)
     .def("corr", &GretlDataset::corr<std::string>,
          py::arg("varlist").none(true) = "", py::kw_only())
     .def("corr", &GretlDataset::corr<py::list>,
-         py::arg("varlist").none(true) = py::list(), py::kw_only())
+         py::arg("varlist").none(true) = py::list(), py::kw_only(), doc::Dataset::corr)
     .def("cov", &GretlDataset::cov<std::string>,
-         py::arg("vars").none(true) = "")
+         py::arg("varlist").none(true) = "")
     .def("cov", &GretlDataset::cov<py::list>,
-         py::arg("vars").none(true) = py::list())
+         py::arg("varlist").none(true) = py::list(), doc::Dataset::cov)
     .def("hurst", &GretlDataset::hurst,
          py::arg("series").none(false))
     .def("xcorrgm",

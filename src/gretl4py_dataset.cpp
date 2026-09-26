@@ -1034,15 +1034,13 @@ py::object GretlDataset::corr (const T &varlist, const py::kwargs &kwargs)
     if (err_) handle_gretl_error(err_);
     printer_.print();
 
-    if (opt_ & (OPT_K | OPT_S)) return py::none();
-
     return get_accessor("$result");
 }
 template py::object GretlDataset::corr<std::string>(const std::string&, const py::kwargs&);
 template py::object GretlDataset::corr<py::list>(const py::list&, const py::kwargs&);
 
 template <typename T>
-py::object GretlDataset::cov (const T &vars)
+GretlMatrixPtr GretlDataset::cov (const T &varlist)
 {
     //
     // we compute covariance for given variables
@@ -1051,27 +1049,24 @@ py::object GretlDataset::cov (const T &vars)
     gretl_matrix_ptr mat{nullptr};
 
     // we construct list of variables
-    if (vars.empty()) {
+    if (varlist.empty()) {
         var_list.reset(full_var_list(dset, nullptr));
     } else {
         if constexpr (is_gretllist_arg_v<T>) {
-            var_list = gretllist(vars);
+            var_list = gretllist(varlist);
         } else {
-            static_assert(always_false<T>, "GretlDataset::corr(): unsupported type");
+            static_assert(always_false<T>, "GretlDataset::cov(): unsupported type");
         }
     }
 
     // we do the job
     mat.reset(gretl_covariance_matrix_from_varlist(var_list.get(), dset, nullptr, &err_));
     if (err_) handle_gretl_error(err_);
-    auto res = convert_GretlType_to_GretlTypes(GRETL_TYPE_MATRIX, mat.get(), 0, err_);
 
-    if (err_) handle_gretl_error(err_);
-
-    return variant_to_pyobject(std::move(*res));
+    return std::make_shared<GretlMatrix>(mat.release(), false);
 }
-template py::object GretlDataset::cov<std::string>(const std::string&);
-template py::object GretlDataset::cov<py::list>(const py::list&);
+template GretlMatrixPtr GretlDataset::cov<std::string>(const std::string&);
+template GretlMatrixPtr GretlDataset::cov<py::list>(const py::list&);
 
 py::object GretlDataset::hurst (const std::string &series)
 {
