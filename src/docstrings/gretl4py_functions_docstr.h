@@ -526,6 +526,57 @@ namespace doc::Functions {
     ``gretl.varlist(type="accessor")``
     )doc";
 
+    inline constexpr char print[] = R"doc(
+    Print series or user-defined gretl objects.
+
+    Prints the values of dataset series or user-defined objects such as
+    scalars, matrices, strings, bundles and arrays.
+
+    Parameters
+    ----------
+    varlist : str, optional
+        Series or object names to print. If omitted, all series in the
+        default or specified dataset are printed.
+
+    Other Parameters
+    ----------------
+    data : gretl.Dataset
+        Dataset to use instead of the default dataset.
+    byobs : bool
+        Print series by observation instead of by variable.
+    no_dates : bool
+        Use simple observation numbers instead of dates or observation
+        markers when printing by observation.
+    range : str
+        Restrict output to the specified range, given as ``"start:stop"``.
+    head : bool or int
+        Print only the first elements. An integer specifies their number;
+        the default is 5.
+    tail : bool or int
+    Print only the last elements. An integer specifies their number;
+    the default is 5.
+    midas : bool
+    Print a MIDAS list at its native frequency.
+    tree : bool
+    Recursively list the contents of nested bundles.
+
+    Returns
+    -------
+    None
+
+    Notes
+    -----
+    For series, ``range``, ``head`` and ``tail`` refer to observations;
+    for matrices to rows, for arrays to elements, and for strings to
+        lines.
+
+    Examples
+    --------
+    ``gretl.print("x1 x2")``
+    ``gretl.print("x1 x2", byobs=True)``
+    ``gretl.print("A")``
+    ``gretl.print("B", tree=True)``
+    )doc";
 
 } // namespace doc::Dataset
 

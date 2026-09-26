@@ -95,6 +95,7 @@
 		{xk}{$x_k$}2
 		{.set}{.set}{3}
 		{.type}{type}{4}
+		{.range}{range}{5}
 		{gretl.Model}{{\textcolor{pythtype}{gretl.Model}}}{11}
 		{gretl.Matrix}{{\textcolor{pythtype}{gretl.Matrix}}}{12}
 		{gretl.Bundle}{{\textcolor{pythtype}{gretl.Bundle}}}{12}

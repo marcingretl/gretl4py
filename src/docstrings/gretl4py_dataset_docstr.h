@@ -876,5 +876,316 @@ namespace doc::Dataset {
     ``data.diff(["x1", "x2"])``
     )doc";
 
+    inline constexpr char ldiff[] = R"doc(
+    Generate log differences of variables.
+
+    Computes the first difference of the natural logarithm of each
+    variable in ``varlist`` and stores the result as a new series with
+    the prefix ``ld_``.
+
+    Parameters
+    ----------
+    varlist : str or list
+        Variables to transform, specified by names or indices.
+
+    Returns
+    -------
+    None
+
+    Examples
+    --------
+    ``data.ldiff("x1 x2")``
+    ``data.ldiff(["x1", "x2"])``
+    )doc";
+
+    inline constexpr char sdiff[] = R"doc(
+    Generate seasonal differences of variables.
+
+    Computes the seasonal difference of each variable in ``varlist`` and
+    stores the result as a new series with the prefix ``sd_``.
+
+    Parameters
+    ----------
+    varlist : str or list
+        Variables to difference, specified by names or indices.
+
+    Returns
+    -------
+    None
+
+    Notes
+    -----
+    This transformation is available only for seasonal time-series data.
+
+    Examples
+    --------
+    ``data.sdiff("x1 x2")``
+    ``data.sdiff(["x1", "x2"])``
+    )doc";
+
+    inline constexpr char logs[] = R"doc(
+    Generate natural logarithms of variables.
+
+    Computes the natural logarithm of each variable in ``varlist`` and
+    stores the result as a new series with the prefix ``l_``.
+
+    Parameters
+    ----------
+    varlist : str or list
+        Variables to transform, specified by names or indices.
+
+    Returns
+    -------
+    None
+
+    Examples
+    --------
+    ``data.logs("x1 x2")``
+    ``data.logs(["x1", "x2"])``
+    )doc";
+
+    inline constexpr char orthdev[] = R"doc(
+    Generate forward orthogonal deviations.
+
+    Computes forward orthogonal deviations for each variable in ``varlist``
+    and stores the result as a new series with the prefix ``o_``.
+
+    Parameters
+    ----------
+    varlist : str or list
+        Variables to transform, specified by names or indices.
+
+    Returns
+    -------
+    None
+
+    Notes
+    -----
+    This transformation is available only for panel data.
+
+    The values are stored one period ahead of their true temporal
+    location. Thus the first observation of each time series is lost,
+    rather than the last, for compatibility with first differences.
+
+    Examples
+    --------
+    ``data.orthdev("x1 x2")``
+    ``data.orthdev(["x1", "x2"])``
+    )doc";
+
+    inline constexpr char lags[] = R"doc(
+    Generate lagged values of variables.
+
+    Creates lagged versions of each variable in ``varlist``. By default,
+    the number of lags generated equals the periodicity of the dataset.
+
+    Parameters
+    ----------
+    varlist : str or list
+        Variables to lag, specified by names or indices.
+    order : int, optional
+        Maximum lag order. If 0, the dataset periodicity is used.
+        Default is 0.
+
+    Returns
+    -------
+    None
+
+    Notes
+    -----
+    The generated series are named using the original variable name and
+    the lag order. For example, lags 1 through 4 of ``x`` are named
+    ``x_1``, ``x_2``, ``x_3`` and ``x_4``.
+
+    Examples
+    --------
+    ``data.lags("x")``
+    ``data.lags("x y", 12)``
+    ``data.lags(["x1", "x2"], 4)``
+    )doc";
+
+    inline constexpr char print[] = R"doc(
+    Print values of dataset series.
+
+    Prints the values of selected series in this dataset. If ``varlist``
+    is omitted, all series in the dataset are printed.
+
+    Parameters
+    ----------
+    varlist : str or list, optional
+        Series to print, specified by names or indices. By default, all
+        series are printed.
+
+    Other Parameters
+    ----------------
+    byobs : bool
+        Print data by observation instead of by variable.
+    no_dates : bool
+        Use simple observation numbers instead of dates or observation
+        markers when printing by observation.
+    range : str
+        Restrict output to the specified observation range, given as
+        ``"start:stop"``.
+    head : bool or int
+        Print only the first observations. An integer specifies their
+        number; the default is 5.
+    tail : bool or int
+        Print only the last observations. An integer specifies their
+        number; the default is 5.
+        midas : bool
+        Print a MIDAS list at its native frequency.
+
+    Returns
+    -------
+    None
+
+    Notes
+    -----
+    This is a dataset-specific version of the general ``gretl.print()``
+    facility. It operates on this dataset rather than the default dataset
+    and prints dataset series only; user-defined objects are not handled.
+
+    The ``data`` option of the general printer is not available, since
+    the dataset is determined by the instance.
+
+    Examples
+    --------
+    ``data.print()``
+    ``data.print("x1 x2")``
+    ``data.print(["x1", "x2"], byobs=True)``
+    ``data.print("x1 x2", head=10)``
+    )doc";
+
+    inline constexpr char get_series[] = R"doc(
+    Retrieve a series as a gretl Matrix.
+
+    Returns the values of the specified dataset series over the current
+    sample range as a column vector.
+
+    Parameters
+    ----------
+    series : str
+        Name of the series to retrieve.
+
+    Returns
+    -------
+    gretl.Matrix
+        Column vector containing the series values over the current sample.
+
+    Examples
+    --------
+    ``x = data.get_series("x")``
+    )doc";
+
+    inline constexpr char hpfilt[] = R"doc(
+    Apply the Hodrick-Prescott filter to a series.
+
+    Returns the cycle or trend component obtained by applying the
+    Hodrick-Prescott filter to the specified series.
+
+    Parameters
+    ----------
+    y : str
+        Series to filter.
+    hp_lambda : float, optional
+        Smoothing parameter. If omitted, gretl uses 100 times the square
+        of the dataset periodicity.
+    trend : bool, optional
+        Return the trend component instead of the cycle component.
+        Default is False.
+    one_sided : bool, optional
+        Use the one-sided variant of the filter, with no look-ahead.
+        Default is False.
+
+    Returns
+    -------
+    gretl.Matrix
+        Filtered series.
+
+    Notes
+    -----
+    The default smoothing parameter is 100 for annual data, 1600 for
+    quarterly data, and so on. The one-sided filter follows Stock and
+    Watson (1999).
+
+    Examples
+    --------
+    ``cycle = data.hpfilt("y")``
+    ``trend = data.hpfilt("y", trend=True)``
+    ``cycle = data.hpfilt("y", hp_lambda=1600, one_sided=True)``
+    )doc";
+
+    inline constexpr char bwfilt[] = R"doc(
+    Apply a low-pass Butterworth filter to a series.
+
+    Applies a low-pass Butterworth filter of order ``n`` and frequency
+    cutoff ``omega`` to the specified series.
+
+    Parameters
+    ----------
+    y : str
+        Series to filter.
+    n : int
+        Order of the filter.
+    omega : float
+        Frequency cutoff in degrees. Must be greater than 0 and less
+        than 180.
+
+    Returns
+    -------
+    gretl.Matrix
+        Filtered series.
+
+    Notes
+    -----
+    Smaller cutoff values restrict the pass-band to lower frequencies
+    and produce a smoother trend. Higher filter orders produce a sharper
+    cutoff, at the cost of possible numerical instability.
+
+    Examples
+    --------
+    ``trend = data.bwfilt("y", 8, 67)``
+    )doc";
+
+    inline constexpr char bkfilt[] = R"doc(
+    Apply the Baxter-King band-pass filter to a series.
+
+    Applies the Baxter-King band-pass filter to the specified series.
+
+    Parameters
+    ----------
+    y : str
+        Series to filter.
+    f1 : int, optional
+        Lower bound of the frequency range to extract. If 0, a default
+        based on the dataset periodicity is used.
+    f2 : int, optional
+        Upper bound of the frequency range to extract. If 0, a default
+        based on the dataset periodicity is used.
+    k : int, optional
+        Approximation order. If 0, a default based on the dataset
+        periodicity is used.
+
+    Returns
+    -------
+    gretl.Matrix
+        Filtered series.
+
+    Notes
+    -----
+    The default values of ``f1``, ``f2`` and ``k`` are 2, 8 and 3 for
+    annual data; 6, 32 and 12 for quarterly data; and 18, 96 and 36 for
+    monthly data.
+
+    If ``f2`` is greater than or equal to the number of available
+    observations, the low-pass version of the filter is applied and the
+    result should be interpreted as an estimate of the trend component.
+
+    Examples
+    --------
+    ``cycle = data.bkfilt("y")``
+    ``cycle = data.bkfilt("y", 6, 32, 12)``
+    )doc";
+
 } // namespace doc::Dataset
 

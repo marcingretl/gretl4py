@@ -236,13 +236,19 @@ Examples:\newline
 \estdesc{Returns the result of applying the Baxter--King
 	band-pass filter to the series \textit{y}.}
 \begin{lstlisting}[style=pythonstylefoot]
-.bkfilt(y: str[, f1: int = 0, f2: int = 0, k: int = 0) -> gretl.Matrix
+.bkfilt(y: str[, f1: int = 0, f2: int = 0, k: int = 0]) -> gretl.Matrix
 \end{lstlisting}
 \maptof{bkfilt(y, f1, f2, k)}{series}
 \generaldesc{The optional parameters \textit{f1} and
 	\textit{f2} specify the lower and upper bounds,
-	respectively, of the frequency range to extract,
-	while \textit{k} specifies the approximation order.}
+	respectively, of the frequency range to extract, while
+	\textit{k} specifies the approximation order. If omitted,
+	their default values are 2, 8 and 3 for annual data; 6, 32
+	and 12 for quarterly data; and 18, 96 and 36 for monthly
+	data. If \textit{f2} is greater than or equal to the number
+	of available observations, the low-pass version of the filter
+	is applied and the result should be interpreted as an estimate
+	of the trend component.}
 
 \gretlfpycmd{bwfilt()}
 \estdesc{Returns the result from application of a low-pass
@@ -560,10 +566,14 @@ Examples:\newline
 	(such as \gretlcmd{\$version}).}
 
 \gretlfpycmd{get\_series()}
-\estdesc{This method retrieves given \gretlcmd{series} as \classpymatrix.}
+\estdesc{Retrieves a \gretlcmd{series} as \classpymatrix.}
 \begin{lstlisting}[style=pythonstylefoot]
 .get_series(series: str) -> gretl.Matrix
 \end{lstlisting}
+Examples:\newline
+\pythcodef{.get_series('x')}\\
+\generaldesc{Returns the values of the specified \gretlcmd{series}
+	over the current sample range as a column vector.}
 
 \gretlfpycmd{head()}
 \estdesc{Offers a quick way to show just the top of a dataset.}
@@ -578,26 +588,28 @@ Examples:\newline
 %\end{lstlisting}
 
 \gretlfpycmd{hpfilt()}
-\estdesc{Returns the cycle component from application of
-	the Hodrick--Prescott filter to series \textit{y}.}
+\estdesc{Applies the Hodrick--Prescott filter to series \textit{y}.}
 \begin{lstlisting}[style=pythonstylefoot]
 .hpfilt(y: str[, hp_lambda: float = 'nan', trend: bool = False, one_sided: bool = False]) -> gretl.Matrix
 \end{lstlisting}
 \maptof{hpfilt(y, lambda, one-sided)}{series}
-\generaldesc{If the smoothing parameter, \textit{lambda}%
+Examples:\newline
+\pythcodef{cycle = .hpfilt('y')}\\
+\pythcodef{trend = .hpfilt('y', trend=True)}\\
+\pythcodef{cycle = .hpfilt('y', hp_lambda=1600, one_sided=True)}\\
+\generaldesc{By default, the cycle component of the
+	Hodrick--Prescott filter is returned. If \pythcode{trend=True},
+	the trend component is returned instead.\newline
+	If the smoothing parameter, \textit{lambda}%
 	\footnote{Note the change of the \textit{lambda} parameter
 		to \textit{hp\_lambda} in \gretlpy. This is because
 		\pythcode{lambda} is a reserved keyword in \python.},
-	is not supplied then a data-based default is used, namely
-	100 times the square of the periodicity (100 for annual
-	data, 1600 for quarterly data, and so on).\\
-	By default the filter is the usual two-sided version,
-	but if the optional third argument is given with a non-zero
-	value a one-sided variant (with no look-ahead).\\
-	The most common use of the HP filter is detrending, but if
-	it's the trend you are interested in that is easily
-	obtained by subtraction, as in:\newline
-	\pythcode{hptrend = .hpfilt(y, trend=True)}.}
+	is not supplied, a data-based default is used, namely 100 times
+	the square of the periodicity (100 for annual data, 1600 for
+	quarterly data, and so on).\newline
+	By default the usual two-sided filter is applied. With
+	\pythcode{one_sided=True}, a one-sided variant with no look-ahead
+	is computed in the manner of Stock and Watson (1999).}
 
 \gretlfpycmd{hurst()}
 \estdesc{Calculates the Hurst exponent (a measure of persistence
@@ -695,8 +707,7 @@ Examples:\newline
 	Critical values are based on the response-surface estimates of \cite{sephton95}.}
 
 \gretlfpycmd{lags()}
-\estdesc{Creates new series which are lagged values of
-	each of the series in \textit{varlist}.}
+\estdesc{Generates lagged values of selected variables.}
 \begin{lstlisting}[style=pythonstylefoot]
 .lags(varlist: str[, order: int])
 .lags(varlist: list[, order: int])
@@ -711,26 +722,30 @@ Examples:\newline
 \pythcodef{.lags('x y z', 4, bylag=True)}\\
 \generaldesc{By default the number of lags created equals the
 	periodicity of the data. For example, if the periodicity
-	is 4 (quarterly), the command lags \textit{x} creates:
+	is 4 (quarterly), \pythcode{.lags('x')} creates:
 	\begin{align*}
 		x\_1 &= x_{t-1},\\
 		x\_2 &= x_{t-2},\\
 		x\_3 &= x_{t-3},\\
 		x\_4 &= x_{t-4}.
-	\end{align*}}
+	\end{align*}
+	The optional \textit{order} argument specifies the maximum lag order.}
 
 \gretlfpycmd{ldiff()}
-\estdesc{The first difference of the natural log of each series
-	in \textit{varlist} is obtained and the result stored in
-	a new series with the prefix ld\_. }
+\estdesc{Generates log differences of selected variables.}
 \begin{lstlisting}[style=pythonstylefoot]
 .ldiff(varlist: str | list)
 \end{lstlisting}
 \mapto[None]{ldiff ~varlist}
-\generaldesc{Thus \gretlcmd{ldiff x y} creates the new variables
+Examples:\newline
+\pythcodef{.ldiff('x y')}\\
+\pythcodef{.ldiff(['x', 'y'])}\\
+\generaldesc{The first difference of the natural logarithm of each
+	variable in \textit{varlist} is computed and stored in a new series
+	with prefix \textit{ld\_}. Thus \gretlcmd{ldiff x y} creates
 	\begin{align*}
-		ld\_x &= log(x) - log(x(-1)),\\
-		ld\_y &= log(y) - log(y(-1))
+		ld\_x &= \log(x_t) - \log(x_{t-1}),\\
+		ld\_y &= \log(y_t) - \log(y_{t-1}).
 	\end{align*}}
 
 \gretlfpycmd{levinlin()}
@@ -754,16 +769,20 @@ Examples:\newline
 	$AR(1)$ coefficient across panel units is assumed.}
 
 \gretlfpycmd{logs()}
-\estdesc{The natural log of each of the series in \textit{varlist}
-	is obtained and the result stored in a new series with the prefix l\_.}
+\estdesc{Generates natural logarithms of selected variables.}
 \begin{lstlisting}[style=pythonstylefoot]
 .discrete(varlist: str | list)
 \end{lstlisting}
 \mapto[None]{logs ~varlist}
-\generaldesc{Thus \gretlcmd{logs x y} creates the new variables
+Examples:\newline
+\pythcodef{.logs('x y')}\\
+\pythcodef{.logs(['x', 'y'])}\\
+\generaldesc{The natural logarithm of each variable in
+	\textit{varlist} is computed and stored in a new series with prefix
+	\textit{l\_}. Thus \gretlcmd{logs x y} creates
 	\begin{align*}
-		l\_x &= log(x),\\
-		l\_y &= log(y).
+		l\_x &= \log(x),\\
+		l\_y &= \log(y).
 	\end{align*}}
 
 \gretlfpycmd{meantest()}
@@ -846,23 +865,29 @@ Examples:\newline
 	test is used.}
 
 \gretlfpycmd{orthdev()}
-\estdesc{Applicable with panel data only.}
+\estdesc{Generates forward orthogonal deviations of selected variables.}
 \begin{lstlisting}[style=pythonstylefoot]
 .orthdev(varlist: str | list)
 \end{lstlisting}
 \mapto[none]{orthdev ~varlist}
-\generaldesc{A series of forward orthogonal deviations is
-	obtained for each variable in \textit{varlist} and stored
-	in a new variable with the prefix \textit{o\_}.
-	Thus \gretlcmd{orthdev x y} creates the new variables
-	\textit{o\_x} and \textit{o\_y}.}
+Examples:\newline
+\pythcodef{.orthdev('x y')}\\
+\pythcodef{.orthdev(['x', 'y'])}\\
+\generaldesc{Applicable to panel data only. A series of forward
+	orthogonal deviations is computed for each variable in
+	\textit{varlist} and stored in a new series with prefix
+	\textit{o\_}. Thus \gretlcmd{orthdev x y} creates the new series
+	\textit{o\_x} and \textit{o\_y}. The values are stored one period
+	ahead of their true temporal location, so that the first observation
+	in each time series is lost rather than the last, for compatibility
+	with first differences.}
 
 \gretlfpycmd{pad\_daily()}
 \estdesc{Pads a daily dataset with missing observations.}
 \begin{lstlisting}[style=pythonstylefoot]
 .pad_daily(days: int) -> None
 \end{lstlisting}
-\mapto[none]{dataset pad-daily ~days}
+\mapto[none]{dataset pad-daily days}
 Example:\newline
 \pythcodef{.pad\_daily(7)}\\
 \generaldesc{Adds missing observations to a daily time-series dataset
@@ -906,8 +931,8 @@ Example:\newline
 \gretlfpycmd{print()}\label{met:gretldataset::print}
 \estdesc{Dataset-dedicated printer.}
 \begin{lstlisting}[style=pythonstylefoot]
-.print(varlist: str[, OPTS])
-.print(varlist: list[, OPTS])
+.print(varlist: str = ''[, OPTS])
+.print(varlist: list = [][, OPTS])
 \end{lstlisting}
 \mapto[none]{print ~varlist}
 \mapto[]{print}
@@ -928,7 +953,8 @@ Example:\newline
 	The main difference between the general printer and this
 	class-dedicated one is that, by default, the general printer
 	operates on the default dataset, whereas this printer works
-	with the dataset provided by the instance.}
+	with the dataset provided by the instance. If \textit{varlist}
+	is omitted, all series in the dataset are printed.}
 
 \gretlfpycmd{pvalue()}\label{met:gretldataset::pvalue}
 \estdesc{\textit{P}-value calculator for given \gretlcmd{series}.}
@@ -1053,14 +1079,17 @@ Examples:\newline
 	restricts the sample to observations that satisfy the given Boolean condition.}
 
 \gretlfpycmd{sdiff()}
-\estdesc{The seasonal difference of each variable in
-	\textit{varlist} is obtained and the result stored
-	in a new variable with the prefix sd\_.}
+\estdesc{Generates seasonal differences of selected variables.}
 \begin{lstlisting}[style=pythonstylefoot]
 .sdiff(varlist: str | list)
 \end{lstlisting}
 \mapto[none]{sdiff ~varlist}
-\generaldesc{This command is available only for seasonal time series.}
+Examples:\newline
+\pythcodef{.sdiff('x y')}\\
+\pythcodef{.sdiff(['x', 'y'])}\\
+\generaldesc{The seasonal difference of each variable in
+	\textit{varlist} is computed and stored in a new series with prefix
+	\textit{sd\_}. This command is available only for seasonal time series.}
 
 \gretlfpycmd{set\_as\_default()}\label{met:gretldataset:set_as_default}
 \estdesc{Sets given \pythcode{gretl.Dataset} instance

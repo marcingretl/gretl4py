@@ -366,50 +366,40 @@ void init_gretl4py_dataset_py11 (py::module_ &m)
          py::arg("varlist").none(false))
     .def("diff", &GretlDataset::transforms_no_opts<py::list, DIFF>,
          py::arg("varlist").none(false), doc::Dataset::diff)
-
-
-
     .def("ldiff", &GretlDataset::transforms_no_opts<std::string, LDIFF>,
          py::arg("varlist").none(false))
+    .def("ldiff", &GretlDataset::transforms_no_opts<py::list, LDIFF>,
+         py::arg("varlist").none(false), doc::Dataset::ldiff)
     .def("sdiff", &GretlDataset::transforms_no_opts<std::string, SDIFF>,
          py::arg("varlist").none(false))
+    .def("sdiff", &GretlDataset::transforms_no_opts<py::list, SDIFF>,
+         py::arg("varlist").none(false), doc::Dataset::sdiff)
     .def("logs", &GretlDataset::transforms_no_opts<std::string, LOGS>,
          py::arg("varlist").none(false))
+    .def("logs", &GretlDataset::transforms_no_opts<py::list, LOGS>,
+         py::arg("varlist").none(false), doc::Dataset::logs)
     .def("orthdev", &GretlDataset::transforms_no_opts<std::string, ORTHDEV>,
          py::arg("varlist").none(false))
-
-    .def("ldiff", &GretlDataset::transforms_no_opts<py::list, LDIFF>,
-         py::arg("varlist").none(false))
-    .def("sdiff", &GretlDataset::transforms_no_opts<py::list, SDIFF>,
-         py::arg("varlist").none(false))
-    .def("logs", &GretlDataset::transforms_no_opts<py::list, LOGS>,
-         py::arg("varlist").none(false))
     .def("orthdev", &GretlDataset::transforms_no_opts<py::list, ORTHDEV>,
-         py::arg("varlist").none(false))
-
+         py::arg("varlist").none(false), doc::Dataset::orthdev)
     .def("lags", &GretlDataset::lags<std::string>,
          py::arg("varlist").none(false), py::arg("order").none(true) = 0)
     .def("lags", &GretlDataset::lags<py::list>,
-         py::arg("varlist").none(false), py::arg("order").none(true) = 0)
+         py::arg("varlist").none(false), py::arg("order").none(true) = 0, doc::Dataset::lags)
     .def("print", py::overload_cast<const std::string&, const py::kwargs&>(&GretlDataset::print),
          py::arg("varlist").none(true) = "", py::kw_only())
     .def("print", py::overload_cast<const py::list&, const py::kwargs&>(&GretlDataset::print),
-         py::arg("varlist").none(true) = py::list(), py::kw_only())
+         py::arg("varlist").none(true) = py::list(), py::kw_only(), doc::Dataset::print)
     .def("get_series", &GretlDataset::get_series,
-         py::arg("series").none(false))
+         py::arg("series").none(false), doc::Dataset::get_series)
     .def("hpfilt", &GretlDataset::hpfilt,
          py::arg("y").none(false), py::arg("hp_lambda").none(true) = NADBL,
-         py::arg("trend").none(true) = false, py::arg("one_sided").none(true) = false)
-    .def("hpfilt",
-         [](GretlDataset &self, const std::string &y, double hp_lambda, bool one_sided) -> GretlMatrixPtr
-         {
-             return self.hpfilt(y, hp_lambda, false, one_sided);
-         }, py::arg("y").none(false), py::arg("hp_lambda").none(true) = NADBL, py::arg("one_sided").none(true) = false)
+         py::arg("trend").none(true) = false, py::arg("one_sided").none(true) = false, doc::Dataset::hpfilt)
     .def("bwfilt", &GretlDataset::bwfilt,
-         py::arg("y").none(false), py::arg("n").none(false), py::arg("omega").none(false))
+         py::arg("y").none(false), py::arg("n").none(false), py::arg("omega").none(false), doc::Dataset::bwfilt)
     .def("bkfilt", &GretlDataset::bkfilt,
          py::arg("y").none(false), py::arg("f1").none(true) = 0,
-         py::arg("f2").none(true) = 0, py::arg("k").none(true) = 0)
+         py::arg("f2").none(true) = 0, py::arg("k").none(true) = 0, doc::Dataset::bkfilt)
     .def("get_accessor", &GretlDataset::get_accessor,
          py::arg("name").none(false))
     .def("corr", &GretlDataset::corr<std::string>,

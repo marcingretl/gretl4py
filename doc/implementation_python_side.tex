@@ -422,7 +422,7 @@ Examples:\newline
 \gretlfpycmd{print()}\label{func:gretl.print}
 \estdesc{General \gretlpy printer.}
 \begin{lstlisting}[style=pythonstylefoot]
-gretl..print(varlist: str[, OPTS])
+gretl..print(varlist: str = ''[, OPTS])
 \end{lstlisting}
 \mapto[none]{print ~varlist}
 \mapto[]{print}
@@ -434,25 +434,31 @@ gretl..print(varlist: str[, OPTS])
 	\item[]\maptoopt{tail=lines}{--tail[=lines]}{\seegretlmanual}
 	\item[]\maptoopt{midas=True}{--midas}{\seegretlmanual}
 	\item[]\pythcode{data: gretl.Dataset}\par%
-		\hspace*{10pt}{\footnotesize\pythcode{gretl.print()} works with the specified dataset}
+	\hspace*{10pt}{\footnotesize\pythcode{gretl.print()} works with the specified dataset}
 \end{itemize}
 Examples:\newline
 \pythcodef{.print('y x', byobs=True)}\\
 \pythcodef{.print('my\_matrix')}\\
 \pythcodef{.print('my\_array', .range='3:6')}\\
 \pythcodef{.print('hflist', midas=True)}\\
-\generaldesc{In the first variant shown above (also see the
-	first example), \textit{varlist} should be a list of series
-	(either a named list or a list specified via the names
-	or ID numbers of series, separated by spaces).\newline
-	If no argument is given (the second variant shown above)
-	then the action is similar to the first case except that
-	all series in the current dataset are printed. The supported
-	options are as described above.\newline
-	Note that some specific options (such as \pythcode{tree=True}
-	for \classpybundlenosp) are available in class-dedicated printers
-	(please refer to \ref{met:gretldataset::print} and
-	\ref{met:gretlbundle::print}).}
+\generaldesc{The \pythcode{gretl.print()} function can be used to
+	print series from a dataset as well as user-defined \gretl objects,
+	including scalars, matrices, strings, bundles and arrays.\newline
+	When \textit{varlist} specifies dataset series, it may be a named
+	list or a space-separated list of series names or ID numbers.
+	If no argument is given, all series in the current dataset are
+	printed. By default, the default dataset is used; another dataset
+	may be selected via the \pythcode{data} option.\newline
+	The \pythcode{.range}, \pythcode{head} and \pythcode{tail} options
+	can be used to restrict the amount of output. For series and lists
+	they refer to observations, for matrices to rows, for arrays to
+	elements, and for strings to lines. The \pythcode{head} and
+	\pythcode{tail} options show 5 elements by default, or the number
+	specified by \textit{lines}.\newline
+	Some object-specific options are provided by class-dedicated
+	printers. For example, \pythcode{tree=True} is available for
+	\classpybundlenosp; see also \ref{met:gretldataset::print} and
+	\ref{met:gretlbundle::print}.}
 
 \gretlfpycmd{pvalue()}\label{func:gretl.pvalue}
 \estdesc{\textit{P}-value calculator.}
