@@ -168,7 +168,7 @@ PYBIND11_MODULE(_gretl, m)
           py::arg("d").none(false), py::arg("u").none(false), py::arg("params").none(true) = py::none(), doc::Functions::invcdf);
     m.def("cov", py::overload_cast<const py::array&, int>(&matrix_cov_corr<GretlFunIndex::F_MCOV>),
           py::arg("X").none(false), py::arg("dfcorr").none(true) = 1);
-    m.def("cov", py::overload_cast<const GretlMatrixPtr, int>(&matrix_cov_corr<GretlFunIndex::F_MCOV>),
+    m.def("cov", py::overload_cast<const GretlMatrixPtr&, int>(&matrix_cov_corr<GretlFunIndex::F_MCOV>),
           py::arg("X").none(false), py::arg("dfcorr").none(true) = 1, doc::Functions::cov);
     m.def("corr",
           [](const py::array &X)

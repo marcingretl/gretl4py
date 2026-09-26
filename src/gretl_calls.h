@@ -82,7 +82,7 @@ template <GretlFunIndex FI>
 GretlMatrixPtr matrix_cov_corr (const py::array &X, int dfcorr = 1);
 
 template <GretlFunIndex FI>
-GretlMatrixPtr matrix_cov_corr (const GretlMatrixPtr X, int dfcorr = 1);
+GretlMatrixPtr matrix_cov_corr (const GretlMatrixPtr &X, int dfcorr = 1);
 
 void genr (const std::string &formula, GretlDatasetPtr data);
 

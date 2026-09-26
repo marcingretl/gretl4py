@@ -829,7 +829,7 @@ template GretlMatrixPtr matrix_cov_corr<GretlFunIndex::F_MCOV>(const py::array&,
 template GretlMatrixPtr matrix_cov_corr<GretlFunIndex::F_MCORR>(const py::array&, int);
 
 template <GretlFunIndex FI>
-GretlMatrixPtr matrix_cov_corr (const GretlMatrixPtr X, int dfcorr)
+GretlMatrixPtr matrix_cov_corr (const GretlMatrixPtr &X, int dfcorr)
 {
     //
     // here we perform matrix-based covariance/correlation analysis
@@ -850,8 +850,8 @@ GretlMatrixPtr matrix_cov_corr (const GretlMatrixPtr X, int dfcorr)
 
     return res;
 }
-template GretlMatrixPtr matrix_cov_corr<GretlFunIndex::F_MCOV>(const GretlMatrixPtr, int);
-template GretlMatrixPtr matrix_cov_corr<GretlFunIndex::F_MCORR>(const GretlMatrixPtr, int);
+template GretlMatrixPtr matrix_cov_corr<GretlFunIndex::F_MCOV>(const GretlMatrixPtr&, int);
+template GretlMatrixPtr matrix_cov_corr<GretlFunIndex::F_MCORR>(const GretlMatrixPtr&, int);
 
 void do_gretl_delete_variables (const std::string &varname, const py::kwargs &kwargs, bool print)
 {
