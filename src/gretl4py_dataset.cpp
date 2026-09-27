@@ -1046,6 +1046,7 @@ GretlMatrixPtr GretlDataset::cov (const T &varlist)
     // we compute covariance for given variables
     //
     gretl_list_ptr var_list{nullptr};
+    gretl_matrix_ptr mat{nullptr};
 
     // we construct list of variables
     if (varlist.empty()) {
@@ -1059,10 +1060,10 @@ GretlMatrixPtr GretlDataset::cov (const T &varlist)
     }
 
     // we do the job
-    auto res = std::make_shared<GretlMatrix>(gretl_covariance_matrix_from_varlist(var_list.get(), dset, nullptr, &err_), false);
+    mat.reset(gretl_covariance_matrix_from_varlist(var_list.get(), dset, nullptr, &err_));
     if (err_) handle_gretl_error(err_);
 
-    return res;
+    return std::make_shared<GretlMatrix>(mat.release(), false);
 }
 template GretlMatrixPtr GretlDataset::cov<std::string>(const std::string&);
 template GretlMatrixPtr GretlDataset::cov<py::list>(const py::list&);
