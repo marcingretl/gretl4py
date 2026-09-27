@@ -800,7 +800,7 @@ GretlMatrixPtr matrix_cov_corr (const py::array &X, int dfcorr)
     // this is an interface to gretl_covariance_matrix()
     //
     gretl_matrix_ptr mat{nullptr};      // gretl matrix we pass to libgretl
-    GretlMatrixPtr res;
+    gretl_matrix_ptr res{nullptr};
     NumPyArrayView arr_view;
     int err = 0;
 
@@ -815,15 +815,15 @@ GretlMatrixPtr matrix_cov_corr (const py::array &X, int dfcorr)
 
     // we do the job
     if constexpr (FI == GretlFunIndex::F_MCOV) {
-        res = std::make_shared<GretlMatrix>(gretl_covariance_matrix(mat.get(), 0, dfcorr, &err), false);
+        res.reset(gretl_covariance_matrix(mat.get(), 0, dfcorr, &err));
     } else if constexpr (FI == GretlFunIndex::F_MCORR) {
-        res = std::make_shared<GretlMatrix>(gretl_covariance_matrix(mat.get(), 1, 1, &err), false);
+        res.reset(gretl_covariance_matrix(mat.get(), 1, 1, &err));
     } else {
         static_assert(always_false<GretlFunIndex>, "matrix_cov_corr: unknown GretlFunIndex value");
     }
     if (err) handle_gretl_error(err);
 
-    return res;
+    return std::make_shared<GretlMatrix>(res.release(), false);
 }
 template GretlMatrixPtr matrix_cov_corr<GretlFunIndex::F_MCOV>(const py::array&, int);
 template GretlMatrixPtr matrix_cov_corr<GretlFunIndex::F_MCORR>(const py::array&, int);
@@ -835,20 +835,20 @@ GretlMatrixPtr matrix_cov_corr (const GretlMatrixPtr &X, int dfcorr)
     // here we perform matrix-based covariance/correlation analysis
     // this is an interface to gretl_covariance_matrix()
     //
-    GretlMatrixPtr res;
+    gretl_matrix_ptr mat{nullptr};
     int err = 0;
 
     // we do the job
     if constexpr (FI == GretlFunIndex::F_MCOV) {
-        res = std::make_shared<GretlMatrix>(gretl_covariance_matrix(X->get_ptr(), 0, dfcorr, &err), false);
+        mat.reset(gretl_covariance_matrix(X->get_ptr(), 0, dfcorr, &err));
     } else if constexpr (FI == GretlFunIndex::F_MCORR) {
-        res = std::make_shared<GretlMatrix>(gretl_covariance_matrix(X->get_ptr(), 1, 1, &err), false);
+        mat.reset(gretl_covariance_matrix(X->get_ptr(), 1, 1, &err));
     } else {
         static_assert(always_false<GretlFunIndex>, "matrix_cov_corr: unknown GretlFunIndex value");
     }
     if (err) handle_gretl_error(err);
 
-    return res;
+    return std::make_shared<GretlMatrix>(mat.release(), false);
 }
 template GretlMatrixPtr matrix_cov_corr<GretlFunIndex::F_MCOV>(const GretlMatrixPtr&, int);
 template GretlMatrixPtr matrix_cov_corr<GretlFunIndex::F_MCORR>(const GretlMatrixPtr&, int);
