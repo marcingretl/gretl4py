@@ -54,34 +54,34 @@ namespace doc::Dataset {
         replace : bool
         Replace an existing sample restriction instead of applying the new
         restriction cumulatively.
-        no_missing : bool
+    no_missing : bool
         Exclude observations having a missing value for any variable in
         ``varlist``.
-        no_all_missing : bool
+    no_all_missing : bool
         Exclude observations for which all variables in ``varlist`` are
         missing.
-        contiguous : bool
+    contiguous : bool
         Trim missing observations from the beginning and end of the sample
         and require the remaining sample to contain no missing values.
-        random : bool
+    random : bool
         Select the number of observations specified by ``startobs`` randomly,
         without replacement.
-        permanent : bool
+    permanent : bool
         Make the current or resulting sample restriction permanent.
-        preserve_panel : bool
+    preserve_panel : bool
         Preserve the nominally balanced structure of panel data when
         applying a restriction.
-        unit : bool
+    unit : bool
         Interpret ``startobs`` and ``endobs`` as a range of panel units.
-        time : bool
+    time : bool
         Interpret ``startobs`` and ``endobs`` as a range of panel time
         periods.
-        dates : bool
+    dates : bool
         Force ``startobs`` and ``endobs`` to be interpreted as dates rather
         than sequential observation numbers.
-        quiet : bool
+    quiet : bool
         Suppress reporting of the resulting sample range.
-        full : bool
+    full : bool
         Restore the full sample.
 
     Returns
@@ -453,25 +453,25 @@ namespace doc::Dataset {
     results : gretl.Bundle
         Bundle in which details of the disaggregation procedure are stored.
 
-        Returns
-        -------
-        gretl.Matrix
-        Disaggregated high-frequency data.
+    Returns
+    -------
+    gretl.Matrix
+    Disaggregated high-frequency data.
 
-        Notes
-        -----
-        When ``X`` is supplied, it must contain data at the target high
-        frequency. The ``opts`` bundle controls the details of the temporal
-        disaggregation procedure, while ``results`` can be supplied to retrieve
-        additional results from the calculation.
+    Notes
+    -----
+    When ``X`` is supplied, it must contain data at the target high
+    frequency. The ``opts`` bundle controls the details of the temporal
+    disaggregation procedure, while ``results`` can be supplied to retrieve
+    additional results from the calculation.
 
-        Examples
-        --------
-        ``data.tdisagg("y", 3)``
-        ``data.tdisagg(["y1", "y2"], 3)``
-        ``data.tdisagg("y", 3, X="x")``
-        ``data.tdisagg("y", 4, opts=opts, results=results)``
-        )doc";
+    Examples
+    --------
+    ``data.tdisagg("y", 3)``
+    ``data.tdisagg(["y1", "y2"], 3)``
+    ``data.tdisagg("y", 3, X="x")``
+    ``data.tdisagg("y", 4, opts=opts, results=results)``
+    )doc";
 
     inline constexpr char to_dict[] = R"doc(
     Export the dataset as a Python dictionary.
@@ -523,19 +523,19 @@ namespace doc::Dataset {
     gzipped : bool or int
         Apply gzip compression. An integer specifies the compression
         level from 0 to 9.
-        jmulti : bool
+    jmulti : bool
         Write data in JMulTi ASCII format.
-        dat : bool
+    dat : bool
         Write data in PcGive ASCII format.
-        decimal_comma : bool
+    decimal_comma : bool
         Use a decimal comma and semicolon field separator in CSV output.
-        database : bool
+    database : bool
         Write data in gretl database format.
-        overwrite : bool
+    overwrite : bool
         Overwrite existing series when writing to a gretl database.
-        comment : str
+    comment : str
         Add a comment when writing CSV or database data.
-        matrix : str
+    matrix : str
         Write the specified matrix as a dataset.
 
     Returns
@@ -1032,7 +1032,7 @@ namespace doc::Dataset {
     tail : bool or int
         Print only the last observations. An integer specifies their
         number; the default is 5.
-        midas : bool
+    midas : bool
         Print a MIDAS list at its native frequency.
 
     Returns

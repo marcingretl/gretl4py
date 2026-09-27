@@ -48,18 +48,18 @@ namespace doc::Model {
     cluster : str
         Compute clustered standard errors using the specified variable to
         define clusters.
-        jackknife : bool
+    jackknife : bool
         Use the jackknife variant of robust standard errors (HC3a).
-        simple_print : bool
+    simple_print : bool
         Suppress printing of auxiliary model statistics.
-        quiet : bool
+    quiet : bool
         Suppress printed output.
-        anova : bool
+    anova : bool
         Print an analysis of variance (ANOVA) table.
-        no_df_corr : bool
+    no_df_corr : bool
         Suppress the degrees-of-freedom correction when estimating the
         error variance.
-        print_final : bool
+    print_final : bool
         Within a loop, print estimation results only on the final iteration.
 
     Returns
@@ -163,18 +163,18 @@ namespace doc::Model {
         Compute clustered standard errors using the specified variable to
         define clusters.
     multinomial : bool
-    Estimate multinomial rather than ordered logit for a non-binary
-    discrete dependent variable.
+        Estimate multinomial rather than ordered logit for a non-binary
+        discrete dependent variable.
     vcv : bool
-    Print the covariance matrix of the coefficient estimates.
+        Print the covariance matrix of the coefficient estimates.
     verbose : bool
-    Print details of the numerical iterations.
+        Print details of the numerical iterations.
     quiet : bool
-    Suppress printed output.
+        Suppress printed output.
     p_values : bool
-    Report p-values instead of slopes for binary logit.
+        Report p-values instead of slopes for binary logit.
     estrella : bool
-    Use Estrella's rather than McFadden's pseudo-R-squared.
+        Use Estrella's rather than McFadden's pseudo-R-squared.
 
     Returns
     -------
@@ -225,20 +225,20 @@ namespace doc::Model {
         Compute clustered standard errors using the specified variable to
         define clusters.
     vcv : bool
-    Print the covariance matrix of the coefficient estimates.
+        Print the covariance matrix of the coefficient estimates.
     verbose : bool
-    Print details of the numerical iterations.
+        Print details of the numerical iterations.
     quiet : bool
-    Suppress printed output.
+        Suppress printed output.
     p_values : bool
-    Report p-values instead of slopes for binary probit.
+        Report p-values instead of slopes for binary probit.
     estrella : bool
-    Use Estrella's rather than McFadden's pseudo-R-squared.
+        Use Estrella's rather than McFadden's pseudo-R-squared.
     random_effects : bool
-    Estimate a random-effects probit model for panel data.
+        Estimate a random-effects probit model for panel data.
     quadpoints : int
-    Number of Gauss-Hermite quadrature points used for random-effects
-    estimation. The default is 32.
+        Number of Gauss-Hermite quadrature points used for random-effects
+        estimation. The default is 32.
 
     Returns
     -------
@@ -289,14 +289,14 @@ namespace doc::Model {
     robust : bool
         Use QML (Huber-White) robust standard errors.
     cluster : str
-    Compute clustered standard errors using the specified variable to
-    define clusters.
+        Compute clustered standard errors using the specified variable to
+        define clusters.
     vcv : bool
-    Print the covariance matrix of the coefficient estimates.
+        Print the covariance matrix of the coefficient estimates.
     verbose : bool
-    Print details of the numerical iterations.
+        Print details of the numerical iterations.
     quiet : bool
-    Suppress printed output.
+        Suppress printed output.
 
     Returns
     -------
@@ -347,19 +347,19 @@ namespace doc::Model {
         to the linear predictor with a coefficient fixed at 1.
     model1 : bool
         Use the NegBin 1 specification instead of NegBin 2.
-        robust : bool
+    robust : bool
         Use QML robust standard errors.
-        cluster : str
+    cluster : str
         Compute clustered standard errors using the specified variable to
         define clusters.
-        opg : bool
+    opg : bool
         Compute the covariance matrix using the Outer Product of the
         Gradient (OPG).
-        vcv : bool
+    vcv : bool
         Print the covariance matrix of the coefficient estimates.
-        verbose : bool
+    verbose : bool
         Print details of the numerical iterations.
-        quiet : bool
+    quiet : bool
         Suppress printed output.
 
     Returns
@@ -413,12 +413,12 @@ namespace doc::Model {
     cluster : str
         Compute clustered standard errors using the specified variable to
         define clusters.
-        opg : bool
+    opg : bool
         Compute the covariance matrix using the Outer Product of the
         Gradient (OPG).
-        save_xbeta : bool
+    save_xbeta : bool
         Store the index functions for the two equations as fitted values.
-        verbose : bool
+    verbose : bool
         Print additional information during estimation.
 
     Returns
@@ -474,22 +474,22 @@ namespace doc::Model {
         observations.
     exponential : bool
         Use the exponential distribution.
-        loglogistic : bool
+    loglogistic : bool
         Use the log-logistic distribution.
-        lognormal : bool
+    lognormal : bool
         Use the log-normal distribution.
-        medians : bool
+    medians : bool
         Return conditional medians rather than means as fitted values.
-        robust : bool
+    robust : bool
         Use QML robust standard errors.
-        cluster : str
+    cluster : str
         Compute clustered standard errors using the specified variable to
         define clusters.
-        vcv : bool
+    vcv : bool
         Print the covariance matrix of the coefficient estimates.
-        verbose : bool
+    verbose : bool
         Print details of the numerical iterations.
-        quiet : bool
+    quiet : bool
         Suppress printed output.
 
     Returns
@@ -537,17 +537,17 @@ namespace doc::Model {
     two_step : bool
         Use Heckman's two-step estimator instead of maximum likelihood.
     vcv : bool
-    Print the covariance matrix of the coefficient estimates.
+        Print the covariance matrix of the coefficient estimates.
     opg : bool
-    Compute the covariance matrix using the Outer Product of the
-    Gradient (OPG).
+        Compute the covariance matrix using the Outer Product of the
+        Gradient (OPG).
     robust : bool
-    Use QML robust standard errors.
+        Use QML robust standard errors.
     cluster : str
-    Compute clustered standard errors using the specified variable to
-    define clusters.
+        Compute clustered standard errors using the specified variable to
+        define clusters.
     verbose : bool
-    Print additional information during estimation.
+        Print additional information during estimation.
 
     Returns
     -------
@@ -600,14 +600,14 @@ namespace doc::Model {
         exceed all observed values.
     robust : bool
         Use heteroskedasticity-robust standard errors.
-        cluster : str
+    cluster : str
         Compute clustered standard errors using the specified variable to
         define clusters.
-        vcv : bool
+    vcv : bool
         Print the covariance matrix of the coefficient estimates.
-        fixed_effects : bool
+    fixed_effects : bool
         Estimate a fixed-effects logistic model for panel data.
-        quiet : bool
+    quiet : bool
         Suppress printed output.
 
     Returns
@@ -706,12 +706,12 @@ namespace doc::Model {
     vcv : bool
         Print the covariance matrix of the coefficient estimates.
     no_corc : bool
-    Do not fine-tune Hildreth-Lu estimates using the Cochrane-Orcutt
-    procedure.
+        Do not fine-tune Hildreth-Lu estimates using the Cochrane-Orcutt
+        procedure.
     loose : bool
-    Use a looser convergence criterion for iterative estimation.
+        Use a looser convergence criterion for iterative estimation.
     quiet : bool
-    Suppress printed output.
+        Suppress printed output.
 
     Returns
     -------
@@ -821,13 +821,13 @@ namespace doc::Model {
         Suppress printed output.
         vcv : bool
         Print the covariance matrix of the coefficient estimates.
-        nc : bool
+    nc : bool
         Do not include a constant in the mean equation.
-        stdresid : bool
+    stdresid : bool
         Store standardized rather than raw residuals.
-        fcp : bool
+    fcp : bool
         Use the Fiorentini-Calzolari-Panattoni estimation algorithm.
-        arma_init : bool
+    arma_init : bool
         Initialize the variance parameters using an ARMA model.
 
     Returns
@@ -935,33 +935,33 @@ namespace doc::Model {
         Estimate the model using group fixed effects.
     random_effects : bool
         Estimate a random-effects model.
-        nerlove : bool
+    nerlove : bool
         Use the Nerlove transformation for random-effects estimation.
-        pooled : bool
+    pooled : bool
         Estimate the model using pooled OLS.
-        between : bool
+    between : bool
         Estimate the between-groups model using group means.
-        robust : bool
+    robust : bool
         Use robust standard errors.
-        cluster : str
+    cluster : str
         Compute clustered standard errors using the specified variable to
         define clusters.
-        time_dummies : bool
+    time_dummies : bool
         Include time dummy variables in the model.
-        unit_weights : bool
+    unit_weights : bool
         Estimate the model by weighted least squares using unit-specific
         residual variances.
-        iterate : bool
+    iterate : bool
         Use iterative estimation with unit weights.
-        matrix_diff : bool
+    matrix_diff : bool
         Use the matrix-difference form of the Hausman test for a
         random-effects model.
-        unbalanced : str
+    unbalanced : str
         Select the ANOVA method for an unbalanced random-effects model.
         Supported values include ``"bc"`` and ``"stata"``.
-        quiet : bool
+    quiet : bool
         Suppress additional printed output.
-        verbose : bool
+    verbose : bool
         Print additional estimation details.
 
     Returns
@@ -1019,24 +1019,24 @@ namespace doc::Model {
         Print the covariance matrix of the coefficient estimates.
     quiet : bool
         Suppress printed output.
-        no_df_corr : bool
+    no_df_corr : bool
         Suppress the degrees-of-freedom correction.
-        robust : bool
+    robust : bool
         Use heteroskedasticity-robust standard errors.
-        cluster : str
+    cluster : str
         Compute clustered standard errors using the specified variable to
         define clusters.
-        matrix_diff : bool
+    matrix_diff : bool
         Use the matrix-difference form of the Hausman test.
-        liml : bool
+    liml : bool
         Estimate the model by Limited Information Maximum Likelihood.
-        gmm : bool
+    gmm : bool
         Estimate the model by the Generalized Method of Moments.
-        two_step : bool
+    two_step : bool
         Use two-step GMM rather than one-step GMM.
-        iterate : bool
+    iterate : bool
         Iterate GMM estimation to convergence.
-        weights : str
+    weights : str
         Name of the weighting matrix to use for GMM estimation.
 
     Returns
@@ -1150,7 +1150,7 @@ namespace doc::Model {
     opg : bool
         Compute the covariance matrix using the Outer Product of the
         Gradient (OPG).
-        cluster : str
+    cluster : str
         Compute clustered standard errors using the specified variable to
         define clusters.
 
@@ -1263,28 +1263,28 @@ namespace doc::Model {
     ----------------
     verbose : bool
         Print details of the numerical iterations.
-        quiet : bool
+    quiet : bool
         Suppress printed output.
-        vcv : bool
+    vcv : bool
         Print the covariance matrix of the coefficient estimates.
-        hessian : bool
+    hessian : bool
         Require use of the numerical Hessian for the covariance matrix,
         disabling fallback to OPG.
-        opg : bool
+    opg : bool
         Use the Outer Product of the Gradient (OPG) for the covariance
         matrix.
-        nc : bool
+    nc : bool
         Do not include a constant.
-        conditional : bool
+    conditional : bool
         Use conditional rather than exact maximum likelihood.
         x_12_arima : bool
         Use X-12-ARIMA or X-13ARIMA-SEATS for estimation.
-        lbfgs : bool
+    lbfgs : bool
         Use the L-BFGS-B maximizer instead of BFGS.
-        y_diff_only : bool
+    y_diff_only : bool
         For ARIMAX models, difference only the dependent variable, leaving
         the exogenous regressors in levels.
-        lagselect : bool
+    lagselect : bool
         Perform lag-order selection instead of estimating a single model.
 
     Returns
@@ -1344,7 +1344,7 @@ namespace doc::Model {
         desired confidence level, for example ``0.95``.
     vcv : bool
         Print the covariance matrix of the coefficient estimates.
-        quiet : bool
+    quiet : bool
         Suppress printed output.
 
     Returns
@@ -1400,19 +1400,19 @@ namespace doc::Model {
     two_step : bool
         Perform two-step rather than one-step GMM estimation.
     system : bool
-    Use system GMM by adding equations in levels.
+        Use system GMM by adding equations in levels.
     collapse : bool
-    Collapse GMM-style instruments to limit instrument proliferation.
-    time_dummies : bool
-    Add time dummy variables to the model.
+        Collapse GMM-style instruments to limit instrument proliferation.
+        time_dummies : bool
+        Add time dummy variables to the model.
     dpdstyle : bool
-    Use the DPD convention for handling time dummy variables.
+        Use the DPD convention for handling time dummy variables.
     asymptotic : bool
-    Use uncorrected asymptotic standard errors for two-step estimation
-    instead of the Windmeijer finite-sample correction.
+        Use uncorrected asymptotic standard errors for two-step estimation
+        instead of the Windmeijer finite-sample correction.
     keep_extra : bool
-    Retain additional GMM information, including the weight and
-    instrument matrices, in the model results.
+        Retain additional GMM information, including the weight and
+        instrument matrices, in the model results.
 
     Returns
     -------
@@ -1474,17 +1474,17 @@ namespace doc::Model {
     vcv : bool
         Print the covariance matrix of the coefficient estimates.
     robust : bool
-    Use QML (Huber-White) robust standard errors.
+        Use QML (Huber-White) robust standard errors.
     opg : bool
-    Compute the covariance matrix using the Outer Product of the
-    Gradient (OPG).
+        Compute the covariance matrix using the Outer Product of the
+        Gradient (OPG).
     cluster : str
-    Compute clustered standard errors using the specified variable to
-    define clusters.
+        Compute clustered standard errors using the specified variable to
+        define clusters.
     verbose : bool
-    Print details of the numerical iterations.
+        Print details of the numerical iterations.
     quiet : bool
-    Suppress printed output.
+        Suppress printed output.
 
     Returns
     -------
@@ -1538,22 +1538,22 @@ namespace doc::Model {
         Include a linear trend.
     seasonals : bool
         Include seasonal dummy variables.
-        robust : bool
+    robust : bool
         Use heteroskedasticity-robust standard errors.
-        robust_hac : bool
+    robust_hac : bool
         Use standard errors robust to heteroskedasticity and autocorrelation.
-        quiet : bool
+    quiet : bool
         Suppress output for the individual VAR equations.
-        silent : bool
+    silent : bool
         Suppress all printed output.
-        impulse_responses : bool
+    impulse_responses : bool
         Print impulse-response functions.
-        variance_decomp : bool
+    variance_decomp : bool
         Print forecast-error variance decompositions.
-        lagselect : bool
+    lagselect : bool
         Perform lag-order selection instead of estimating a single VAR
         specification.
-        minlag : int
+    minlag : int
         Minimum lag order to consider when ``lagselect=True``.
 
     Returns
@@ -1612,22 +1612,22 @@ namespace doc::Model {
         Include no constant.
     rc : bool
         Include a constant restricted to the cointegration space.
-        uc : bool
+    uc : bool
         Include an unrestricted constant.
-        crt : bool
+    crt : bool
         Include a constant and a trend restricted to the cointegration
         space.
-        ct : bool
+    ct : bool
         Include a constant and an unrestricted trend.
-        seasonals : bool
+    seasonals : bool
         Include centered seasonal dummy variables.
-        quiet : bool
+    quiet : bool
         Suppress output for the individual VECM equations.
-        silent : bool
+    silent : bool
         Suppress all printed output.
-        impulse_responses : bool
+    impulse_responses : bool
         Print impulse-response functions.
-        variance_decomp : bool
+    variance_decomp : bool
         Print forecast-error variance decompositions.
 
     Returns
@@ -1689,9 +1689,9 @@ namespace doc::Model {
         estimation and ignored by estimators for which they are not
         applicable.
     verbose : bool
-    Print additional details of the estimation procedure.
+        Print additional details of the estimation procedure.
     quiet : bool
-    Suppress printed output.
+        Suppress printed output.
 
     Returns
     -------
@@ -1740,4 +1740,3 @@ namespace doc::Model {
     )doc";
 
 } // namespace doc::Model
-

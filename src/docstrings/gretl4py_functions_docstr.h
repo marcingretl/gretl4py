@@ -199,9 +199,9 @@ namespace doc::Functions {
         scalar; matrix, series and sequence inputs return a ``gretl.Matrix``
         of the same shape.
 
-        Notes
-        -----
-        The supported distributions and their parameters are:
+    Notes
+    -----
+    The supported distributions and their parameters are:
 
         - ``"z"``, ``"n"``, ``"N"``: standard normal; no parameters.
         - ``"tn"``: truncated normal; left and right truncation points.
@@ -224,11 +224,11 @@ namespace doc::Functions {
         - ``"nct"``: noncentral Student's t; degrees of freedom and
         noncentrality parameter.
 
-        For the truncated normal distribution, ``None`` may be used for an
-        infinite left or right truncation point if supported by the parameter
-        conversion interface.
+    For the truncated normal distribution, ``None`` may be used for an
+    infinite left or right truncation point if supported by the parameter
+    conversion interface.
 
-        Matrix and sequence inputs must contain real-valued elements.
+    Matrix and sequence inputs must contain real-valued elements.
 
     Examples
     --------
@@ -266,9 +266,9 @@ namespace doc::Functions {
         matrix, series and sequence inputs return a ``gretl.Matrix`` of the
         same shape.
 
-        Notes
-        -----
-        The supported distributions and their parameters are:
+    Notes
+    -----
+    The supported distributions and their parameters are:
 
         - ``"z"``, ``"n"``, ``"N"``: standard normal; no parameters.
         - ``"g"``, ``"G"``: gamma; shape and scale.
@@ -286,10 +286,10 @@ namespace doc::Functions {
         - ``"nct"``: noncentral Student's t; degrees of freedom and
         noncentrality parameter.
 
-        For the binomial and Poisson distributions, the result is the smallest
-        value whose cumulative probability is at least ``u``.
+    For the binomial and Poisson distributions, the result is the smallest
+    value whose cumulative probability is at least ``u``.
 
-        Matrix and sequence inputs must contain real-valued elements.
+    Matrix and sequence inputs must contain real-valued elements.
 
     Examples
     --------
@@ -381,11 +381,11 @@ namespace doc::Functions {
         the default), ``"hw"`` (Hartigan-Wong), or ``"random"``. Ignored
         when ``centers`` is a matrix.
     n_draws : int
-    Number of random starting points used in addition to deterministic
-    initialization. The default is 8.
+        Number of random starting points used in addition to deterministic
+        initialization. The default is 8.
     verbosity : int
-    Level of printed output, from 0 (silent, the default) to 3
-    (most detailed).
+        Level of printed output, from 0 (silent, the default) to 3
+        (most detailed).
 
     Returns
     -------
@@ -553,12 +553,12 @@ namespace doc::Functions {
         Print only the first elements. An integer specifies their number;
         the default is 5.
     tail : bool or int
-    Print only the last elements. An integer specifies their number;
-    the default is 5.
+        Print only the last elements. An integer specifies their number;
+        the default is 5.
     midas : bool
-    Print a MIDAS list at its native frequency.
+        Print a MIDAS list at its native frequency.
     tree : bool
-    Recursively list the contents of nested bundles.
+        Recursively list the contents of nested bundles.
 
     Returns
     -------
