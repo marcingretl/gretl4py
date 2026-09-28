@@ -191,7 +191,7 @@ void init_gretl4py_dataset_py11 (py::module_ &m)
     .def("clone", [](const GretlDataset &self) { return GretlDataset::clone(self); }, doc::Dataset::clone)
     .def("head", &head_tail_print<HEAD>, py::arg("nobs") = 5, py::kw_only())
     .def("tail", &head_tail_print<TAIL>, py::arg("nobs") = 5, py::kw_only())
-    .def("set_as_default", &GretlDataset::set_as_default)
+    .def("set_as_default", &GretlDataset::set_as_default, doc::Dataset::set_as_default)
     .def("summary",
          [](const GretlDataset &self) -> void
          {
@@ -411,23 +411,21 @@ void init_gretl4py_dataset_py11 (py::module_ &m)
     .def("cov", &GretlDataset::cov<py::list>,
          py::arg("varlist").none(true) = py::list(), doc::Dataset::cov)
     .def("hurst", &GretlDataset::hurst,
-         py::arg("series").none(false))
-    .def("xcorrgm",
-         [](GretlDataset &self, const std::string &varlist, int order, const py::kwargs &kwargs) -> py::object
-         {
-             return self.xcorrgm(varlist, order, kwargs);
-         }, py::arg("varlist").none(false), py::arg("order").none(true) = 0)
+         py::arg("series").none(false), doc::Dataset::hurst)
+    .def("xcorrgm", py::overload_cast<const std::string&, int, const py::kwargs&>(&GretlDataset::xcorrgm<std::string>),
+         py::arg("varlist").none(false), py::arg("order").none(true) = 0, py::kw_only())
+    .def("xcorrgm", py::overload_cast<const py::list&, int, const py::kwargs&>(&GretlDataset::xcorrgm<py::list>),
+         py::arg("varlist").none(false), py::arg("order").none(true) = 0, py::kw_only())
     .def("xcorrgm",
          [](GretlDataset &self, const std::string &series1, const std::string &series2, int order, const py::kwargs &kwargs) -> py::object
          {
-             return self.xcorrgm(series1 + " " + series2, order, kwargs);
-         }, py::arg("series1").none(false), py::arg("series2").none(false), py::arg("order").none(true) = 0)
-    .def("xcorrgm", &GretlDataset::xcorrgm<py::list>,
-         py::arg("vars").none(false), py::arg("order").none(true) = 0, py::kw_only())
+             return self.xcorrgm<std::string>(series1 + " " + series2, order, kwargs);
+         }, py::arg("series1").none(false), py::arg("series2").none(false),
+         py::arg("order").none(true) = 0, py::kw_only(), doc::Dataset::xcorrgm)
     .def("pca", &GretlDataset::pca<std::string>,
          py::arg("varlist").none(true) = "", py::kw_only())
     .def("pca", &GretlDataset::pca<py::list>,
-         py::arg("varlist").none(true) = py::list(), py::kw_only())
+         py::arg("varlist").none(true) = py::list(), py::kw_only(), doc::Dataset::pca)
     .def("kmeans", py::overload_cast<const std::string&, int, const GretlBundlePtr>(&GretlDataset::kmeans<std::string>),
          py::arg("X").none(false), py::arg("centers").none(false),
          py::arg("opts").none(true) = nullptr)
@@ -439,11 +437,11 @@ void init_gretl4py_dataset_py11 (py::module_ &m)
          py::arg("opts").none(true) = nullptr)
     .def("kmeans", py::overload_cast<const py::list&, const GretlMatrix&, const GretlBundlePtr>(&GretlDataset::kmeans<py::list>),
          py::arg("X").none(false), py::arg("centers").none(false),
-         py::arg("opts").none(true) = nullptr)
+         py::arg("opts").none(true) = nullptr, doc::Dataset::kmeans)
     .def("xtab", &GretlDataset::xtab<std::string>,
          py::arg("varlist").none(true) = "", py::kw_only())
     .def("xtab", &GretlDataset::xtab<py::list>,
-         py::arg("varlist").none(true) = py::list(), py::kw_only());
+         py::arg("varlist").none(true) = py::list(), py::kw_only(), doc::Dataset::xtab);
 
     cls.attr("__module__") = "gretl";
 }

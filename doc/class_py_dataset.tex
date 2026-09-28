@@ -615,8 +615,7 @@ Examples:\newline
 	is computed in the manner of Stock and Watson (1999).}
 
 \gretlfpycmd{hurst()}
-\estdesc{Calculates the Hurst exponent (a measure of persistence
-	or long memory) for a time-series variable having at least 128 observations.}
+\estdesc{Estimates the Hurst exponent for a time series.}
 \begin{lstlisting}[style=pythonstylefoot]
 .hurst(series: str) -> gretl.Matrix
 \end{lstlisting}
@@ -634,7 +633,9 @@ Examples:\newline
 	For sample sizes smaller than the data range, the \textit{RS}
 	value is the mean across the available samples. The exponent
 	is then estimated as the slope coefficient in a regression of
-	the log of \textit{RS} on the log of sample size.}
+	the log of \textit{RS} on the log of sample size.
+	The returned \classpymatrix contains the estimated Hurst
+	exponent and its standard error.}
 
 \gretlfpycmd{insobs()}
 \estdesc{Inserts an observation into the current dataset.}
@@ -685,6 +686,30 @@ Examples:\newline
 \pythcodef{.johansen(ylist='y', xlist=['x', 'z'], order=3, rc=True)}\\
 \generaldesc{Tests for the cointegration rank among a set of endogenous variables
 	using the Johansen trace and maximum-eigenvalue tests}
+
+\gretlfpycmd{kmeans()}
+\estdesc{Performs k-means clustering using the Hartigan--Wong algorithm.}
+\begin{lstlisting}[style=pythonstylefoot]
+.kmeans(X: str | list, centers: int[, opts: gretl.Bundle]) -> gretl.Bundle
+.kmeans(X: str | list, centers: gretl.Matrix[, opts: gretl.Bundle]) -> gretl.Bundle
+\end{lstlisting}
+\maptof{kmeans(X, centers, opts)}{bundle}
+\generaldesc{The variables in \textit{X} define the features to be
+	clustered and must not contain missing values. The \textit{centers}
+	argument may be either an integer giving the number of clusters or
+	a \classpymatrix containing the initial cluster centroids.\newline
+	The optional \textit{opts} bundle may contain \pythcode{init},
+	which selects the initialization method (\pythcode{'pc'},
+	\pythcode{'hw'} or \pythcode{'random'}), \pythcode{n_draws},
+	which specifies the number of random starting points, and
+	\pythcode{verbosity}, an integer from 0 to 3 controlling printed
+	output.\newline
+	The returned \classpybundle contains \pythcode{cluster_id}, the
+	1-based cluster assignment for each observation; \pythcode{centroids},
+	the cluster centroids together with cluster sizes and within-cluster
+	sums of squared deviations; \pythcode{within_variation}, the total
+	within-cluster variation; and \pythcode{total_variation}, the total
+	variation around the global centroid.}
 
 \gretlfpycmd{kpss()}
 \estdesc{Performs the KPSS test for stationarity.}
@@ -888,7 +913,7 @@ Examples:\newline
 \gretlfpycmd{pad\_daily()}
 \estdesc{Pads a daily dataset with missing observations.}
 \begin{lstlisting}[style=pythonstylefoot]
-.pad_daily(days: int) -> None
+.pad_daily(days: int)
 \end{lstlisting}
 \mapto[none]{dataset pad-daily days}
 Example:\newline
@@ -903,13 +928,13 @@ Example:\newline
 \gretlfpycmd{pca()}
 \estdesc{Principal Components Analysis.}
 \begin{lstlisting}[style=pythonstylefoot]
-.pca(varlist: str = ''[, OPTS])
-.pca(varlist: list = ''[, OPTS])
+.pca(varlist: str = ''[, OPTS]) -> gretl.Bundle
+.pca(varlist: list = [][, OPTS]) -> gretl.Bundle
 \end{lstlisting}
 \mapto{pca ~varlist}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
 	\item[]\maptoopt{covariance=True}{--covariance}{use the covariance matrix}
-	\item[]\maptoopt{save=n}{--save=n}{save major components}
+	\item[]\maptoopt{save=n}{--save[=n]}{save major components}
 	\item[]\maptoopt{save\_all=True}{--save-all}{save all components}
 	\item[]\maptoopt{quiet=True}{--quiet}{don't print results}
 \end{itemize}
@@ -919,7 +944,16 @@ Example:\newline
 	is given) for the variables in \textit{varlist}, along with
 	the proportion of the joint variance accounted for by each
 	component. Also prints the corresponding eigenvectors or
-	``component loadings''.}
+	``component loadings''.\newline
+	The \pythcode{save} option saves major components to the dataset
+	as series named \textit{PC1}, \textit{PC2}, and so on. Without
+	an explicit value of \textit{n}, components with eigenvalues
+	greater than the mean are saved; with \pythcode{save=n}, the
+	leading \textit{n} components are saved. The
+	\pythcode{save_all=True} option saves all components.
+	The method returns a \classpybundle containing the number of
+	observations used and dropped, the eigenvalue results, component
+	loadings, and the type of matrix used in the analysis.}
 
 \gretlfpycmd{pdf()}\label{met:gretldataset::pdf}
 \estdesc{Probability density function calculator for given \gretlcmd{series}.}
@@ -1095,11 +1129,16 @@ Examples:\newline
 	\textit{sd\_}. This command is available only for seasonal time series.}
 
 \gretlfpycmd{set\_as\_default()}\label{met:gretldataset:set_as_default}
-\estdesc{Sets given \pythcode{gretl.Dataset} instance
-	as default detaset.}
+\estdesc{Sets this \classpydataset instance as the default dataset.}
 \begin{lstlisting}[style=pythonstylefoot]
 .set_as_default()
 \end{lstlisting}
+\generaldesc{The first dataset loaded into \gretlpy is automatically
+	set as the default dataset. The default dataset is used by
+	\gretlpy functions that require a dataset when one is not
+	specified explicitly. Calling this method makes the current
+	instance the default dataset, replacing any previously selected
+	default dataset in this role.}
 
 \gretlfpycmd{setobs()}
 \estdesc{This command forces the program to interpret
@@ -1383,21 +1422,57 @@ Examples:\newline
 	for skewed data and the trimmed-mean test for fat-tailed data.}
 
 \gretlfpycmd{xcorrgm()}
-\estdesc{Prints and/or graphs the cross-correlogram for series1 and series2.}
+\estdesc{Computes the cross-correlogram of two series.}
 \begin{lstlisting}[style=pythonstylefoot]
-.xcorrgm(varlist: str[, order: int]) -> gretl.Matrix
-.xcorrgm(series1: str, series2: str[, order: int]) -> gretl.Matrix
+.xcorrgm(varlist: str | list[, order: int = 0, OPTS]) -> gretl.Matrix
+.xcorrgm(series1: str, series2: str[, order: int = 0, OPTS]) -> gretl.Matrix
 \end{lstlisting}
 \mapto{xcorrgm series1 series2 [ order ]}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
-	\item[]\maptoopt{silent=True}{--silent}{suppress printed output}
+	\item[]\maptoopt{quiet=True}{--quiet}{suppress printed output}
 \end{itemize}
 Examples:\newline
-\pythcodef{.xcorrgm('x y', order=12)}\\
+\pythcodef{.xcorrgm('x y', 12)}\\
+\pythcodef{.xcorrgm(['x', 'y'], 12)}\\
+\pythcodef{.xcorrgm('x', 'y', 12)}\\
 \generaldesc{The values are the sample correlation coefficients
-	between the current value of series1 and successive leads
-	and lags of series2.\newline
+	between the current value of \textit{series1} and successive leads
+	and lags of \textit{series2}.\newline
 	If an \textit{order} value is specified the length of the
 	cross-correlogram is limited to at most that number of leads
-	and lags, otherwise the length is determined automatically,
-	as a function of the frequency of the data and the number of observations.}
+	and lags; otherwise the length is determined automatically,
+	as a function of the frequency of the data and the number of
+	observations.\newline
+	The returned \classpymatrix contains the lags in the first
+	column and the corresponding cross-correlations in the second.}
+
+\gretlfpycmd{xtab()}
+\estdesc{Computes cross-tabulations of discrete variables.}
+\begin{lstlisting}[style=pythonstylefoot]
+.xtab(varlist: str = ''[, OPTS]) -> gretl.Matrix
+.xtab(varlist: list = [][, OPTS]) -> gretl.Matrix
+\end{lstlisting}
+\mapto{xtab ylist [ ; xlist ]}
+\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
+	\item[]\maptoopt{row=True}{--row}{display row percentages}
+	\item[]\maptoopt{column=True}{--column}{display column percentages}
+	\item[]\maptoopt{zeros=True}{--zeros}{display zero entries}
+	\item[]\maptoopt{no\_totals=True}{--no-totals}{suppress marginal counts}
+	\item[]\maptoopt{matrix=matname}{--matrix=matname}{use frequencies from a named matrix}
+	\item[]\maptoopt{quiet=True}{--quiet}{suppress printed output}
+	\item[]\maptoopt{tex=filename}{--tex[=filename]}{produce \LaTeX{} output}
+	\item[]\maptoopt{equal=True}{--equal}{highlight equal values in \LaTeX{} output}
+\end{itemize}
+\generaldesc{Given a single list, computes a cross-tabulation for
+	each combination of the variables in \textit{varlist}. If two
+	lists are supplied, separated by a semicolon, each variable in
+	the first list is cross-tabulated by row against each variable
+	in the second list by column. All variables must be marked as
+	discrete.\newline
+	By default, cells contain frequency counts; these may be replaced
+	by row or column percentages using the corresponding options.
+	Pearson's chi-square test for independence is reported when the
+	expected frequencies satisfy the required minimum condition; for
+	a $2\times2$ table, Fisher's exact test is also reported.\newline
+	The method returns the cross-tabulation results as a
+	\classpymatrix.}

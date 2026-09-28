@@ -1089,7 +1089,7 @@ py::object GretlDataset::hurst (const std::string &series)
 }
 
 template <typename T>
-py::object GretlDataset::xcorrgm (const T &vars, int order, const py::kwargs &kwargs)
+py::object GretlDataset::xcorrgm (const T &varlist, int order, const py::kwargs &kwargs)
 {
     //
     // we perform cross-correlogram for vars
@@ -1103,7 +1103,7 @@ py::object GretlDataset::xcorrgm (const T &vars, int order, const py::kwargs &kw
 
     // we construct list of variables
     if constexpr (is_gretllist_arg_v<T>) {
-        var_list = gretllist(vars);
+        var_list = gretllist(varlist);
     } else {
         static_assert(always_false<T>, "GretlDataset::xcorrgm(): unsupported type");
     }
@@ -1152,7 +1152,8 @@ py::object GretlDataset::pca (const T &varlist, const py::kwargs &kwargs)
     if (err_) handle_gretl_error(err_);
     err_ = call_pca_plugin(cmat.get(), dset, opt_, prn);
     if (err_) handle_gretl_error(err_);
-    if (static_cast<gretlopt>(opt_ & (OPT_O | OPT_A)) && gretl_messages_on()) pputs(prn, _("Generated principal component series\n")); /* results saved as series */
+    if (static_cast<gretlopt>(opt_ & (OPT_O | OPT_A)) && gretl_messages_on())
+        pputs(prn, _("Generated principal component series\n")); /* results saved as series */
     printer_.print();
 
     return get_accessor("$result");

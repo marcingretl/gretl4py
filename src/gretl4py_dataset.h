@@ -203,7 +203,7 @@ public:
     py::object hurst (const std::string &series);
 
     template <typename T>
-    py::object xcorrgm (const T &vars, int order, const py::kwargs &kwargs);
+    py::object xcorrgm (const T &varlist, int order, const py::kwargs &kwargs);
 
     template <typename T>
     py::object pca (const T &varlist, const py::kwargs &kwargs);

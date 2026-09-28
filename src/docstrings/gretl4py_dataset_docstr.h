@@ -1255,5 +1255,250 @@ namespace doc::Dataset {
         Covariance matrix of the selected variables.
     )doc";
 
+    inline constexpr char xcorrgm[] = R"doc(
+    Compute the cross-correlogram of two series.
+
+    Computes the sample cross-correlations between the current value of
+    the first series and successive leads and lags of the second series.
+
+    Parameters
+    ----------
+    varlist : str or list
+        Two series, specified by names or indices.
+    series1 : str
+        First series.
+    series2 : str
+        Second series.
+    order : int, optional
+        Maximum number of leads and lags. If 0, the order is selected
+        automatically based on the dataset periodicity and sample size.
+
+    Other Parameters
+    ----------------
+    plot : str
+        Plot mode or output filename. Use ``"none"`` to suppress the plot
+        or ``"display"`` to force display.
+    quiet : bool
+        Suppress printed output.
+
+    Returns
+    -------
+    gretl.Matrix
+    Two-column matrix containing lags in the first column and
+    cross-correlations in the second.
+
+    Examples
+    --------
+    ``m = data.xcorrgm("x y", 12)``
+    ``m = data.xcorrgm(["x", "y"], 12)``
+    ``m = data.xcorrgm("x", "y", 12)``
+    )doc";
+
+    inline constexpr char pca[] = R"doc(
+    Perform Principal Components Analysis.
+
+    Computes principal components for the variables in ``varlist``,
+    using the correlation matrix by default.
+
+    Parameters
+    ----------
+    varlist : str or list, optional
+        Variables to include, specified by names or indices.
+
+    Other Parameters
+    ----------------
+    covariance : bool
+        Use the covariance matrix instead of the correlation matrix.
+    save : bool or int
+        Save major components as series. If True, components with
+        eigenvalues greater than the mean are saved. An integer specifies
+        the number of leading components to save.
+    save_all : bool
+        Save all components as series.
+    quiet : bool
+        Suppress printed results.
+
+    Returns
+    -------
+    gretl.Bundle
+    Bundle containing the PCA results. Its principal members are
+    ``n`` (number of observations used), ``n_dropped`` (number of
+    observations dropped), ``eigenvals`` (eigenvalue results),
+    ``loadings`` (component loadings), and ``matrix_type``
+    (``"correlation"`` or ``"covariance"``).
+
+    Notes
+    -----
+    Unless ``quiet=True``, the eigenvalues, proportions of joint variance,
+    and corresponding eigenvectors (component loadings) are printed.
+
+    Saved components are added to the dataset as ``PC1``, ``PC2``, and
+    so on.
+
+    Examples
+    --------
+    ``res = data.pca("x1 x2 x3")``
+    ``res = data.pca(["x1", "x2", "x3"], covariance=True)``
+    ``res = data.pca("x1 x2 x3", save=2)``
+    )doc";
+
+    inline constexpr char kmeans[] = R"doc(
+    Perform k-means clustering.
+
+    Applies the Hartigan-Wong k-means algorithm (ASA136) to the variables
+    in ``X``, minimizing the within-cluster sum of squared Euclidean
+    distances.
+
+    Parameters
+    ----------
+    X : str or list
+        Variables defining the features, specified by names or indices.
+        Missing values are not permitted.
+    centers : int or gretl.Matrix
+        Either the number of clusters or a matrix containing the initial
+        cluster centroids. In the latter case, the matrix must have one
+        row per cluster and one column per feature.
+    opts : gretl.Bundle, optional
+        Options controlling initialization and execution. Supported
+        members are ``init``, ``n_draws`` and ``verbosity``.
+
+    Returns
+    -------
+    gretl.Bundle
+        Bundle containing ``cluster_id``, ``centroids``,
+        ``within_variation`` and ``total_variation``.
+
+    Notes
+    -----
+    ``init`` selects the automatic initialization method and may be
+    ``"pc"`` (Principal Components, the default), ``"hw"`` (Hartigan-Wong)
+    or ``"random"``. It is ignored if ``centers`` is a matrix.
+
+    ``n_draws`` specifies the number of random starting points, with
+    default 8. ``verbosity`` takes an integer from 0 to 3, with 0
+    giving silent operation.
+
+    ``cluster_id`` is an m-vector containing the 1-based cluster
+    assignment for each observation. ``centroids`` has one row per
+    cluster; its feature columns contain the centroid coordinates,
+    followed by the number of observations in the cluster and the
+    within-cluster sum of squared deviations.
+
+    ``within_variation`` is the total within-cluster variation, while
+    ``total_variation`` is the total variation around the global centroid.
+
+    Examples
+    --------
+    ``res = data.kmeans("x1 x2 x3", 3)``
+    ``res = data.kmeans(["x1", "x2", "x3"], 3)``
+    ``res = data.kmeans("x1 x2 x3", initial_centers)``
+    )doc";
+
+    inline constexpr char xtab[] = R"doc(
+    Compute cross-tabulations of discrete variables.
+
+    Computes contingency tables for the variables in ``varlist``. All
+    variables must be marked as discrete.
+
+    Parameters
+    ----------
+    varlist : str or list, optional
+        Variables to cross-tabulate, specified by names or indices.
+        Two lists may be separated by a semicolon in the string form.
+
+    Other Parameters
+    ----------------
+    row : bool
+        Display row percentages instead of frequency counts.
+    column : bool
+        Display column percentages instead of frequency counts.
+    zeros : bool
+        Display cells with zero counts explicitly.
+    no_totals : bool
+        Suppress marginal counts.
+    matrix : str
+        Use a named matrix containing precomputed frequencies instead
+        of dataset variables.
+    quiet : bool
+        Suppress printed output.
+    tex : bool or str
+        Produce LaTeX output, optionally writing it to the specified file.
+    equal : bool
+        Highlight equal row and column values in LaTeX output.
+
+    Returns
+    -------
+    gretl.Matrix
+    Contingency table containing the cross-tabulation results.
+
+    Notes
+    -----
+    With a single list, a cross-tabulation is computed for each pair of
+    variables. If two lists are separated by a semicolon, each variable
+    in the first list is cross-tabulated by row against each variable in
+    the second list by column.
+
+    Pearson's chi-square test for independence is computed when the
+    expected frequencies satisfy the required minimum condition. For a
+    2-by-2 table, Fisher's exact test is also reported.
+
+    Examples
+    --------
+    ``tab = data.xtab("x1 x2")``
+    ``data.xtab("x1 ; x2 x3", row=True)``
+    ``data.xtab(["x1", "x2"], quiet=True)``
+    )doc";
+
+    inline constexpr char hurst[] = R"doc(
+    Estimate the Hurst exponent of a time series.
+
+    Estimates the Hurst exponent, a measure of persistence or long memory,
+    for a time-series variable having at least 128 observations.
+
+    Parameters
+    ----------
+    series : str
+        Series for which the Hurst exponent is to be estimated.
+
+    Returns
+    -------
+    gretl.Matrix
+        Matrix containing the estimated Hurst exponent and its standard
+        error.
+
+    Notes
+    -----
+    The exponent is estimated using binary sub-sampling and a regression
+    of the logarithm of the rescaled range on the logarithm of sample
+    size.
+
+    A Hurst exponent of 0.5 corresponds to the benchmark of white noise.
+    Values above 0.5 indicate persistence, while values below 0.5 indicate
+    anti-persistence.
+
+    Examples
+    --------
+    ``res = data.hurst("x")``
+    )doc";
+
+    inline constexpr char set_as_default[] = R"doc(
+    Set this dataset as the default dataset.
+
+    Makes this Dataset instance the default dataset used by gretl4py
+    functions that operate on a dataset without receiving one explicitly.
+
+    The first dataset loaded into gretl4py is automatically set as the
+    default dataset. Calling this method changes the default to the current
+    instance.
+
+    Returns
+    -------
+    None
+
+    Examples
+    --------
+    ``data.set_as_default()``
+    )doc";
+
 } // namespace doc::Dataset
 
