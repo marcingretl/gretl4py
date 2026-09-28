@@ -1559,5 +1559,104 @@ namespace doc::Dataset {
     ``res = data.summary("x1", by="group")``
     )doc";
 
+    inline constexpr char head[] = R"doc(
+    Print the first observations of the dataset.
+
+    Parameters
+    ----------
+    nobs : int, optional
+        Number of observations to print. Default is 5.
+
+    Returns
+    -------
+    None
+
+    Examples
+    --------
+    ``data.head()``
+    ``data.head(nobs=10)``
+    )doc";
+
+    inline constexpr char tail[] = R"doc(
+    Print the last observations of the dataset.
+
+    Parameters
+    ----------
+    nobs : int, optional
+        Number of observations to print. Default is 5.
+
+    Returns
+    -------
+    None
+
+    Examples
+    --------
+    ``data.tail()``
+    ``data.tail(nobs=10)``
+    )doc";
+
+    inline constexpr char setobs[] = R"doc(
+    Set the structure of the dataset.
+
+    Specifies how the current dataset is to be interpreted: as
+    cross-sectional, time-series, or panel data. Panel structure may
+    alternatively be defined using variables that identify the
+    cross-sectional units and time periods.
+
+    Parameters
+    ----------
+    periodicity : int or str
+        Data frequency or panel periodicity. For time-series data, common
+        values include 1 (annual), 4 (quarterly), 12 (monthly), 52
+        (weekly), 5, 6 or 7 (daily), and 24 (hourly). With
+        ``panel_vars=True``, this argument instead specifies the name of
+        the variable identifying the cross-sectional units.
+    startobs : str or int
+        Starting observation. For time-series data this specifies the
+        starting date. With ``panel_vars=True``, it instead specifies the
+        name of the variable identifying the time periods.
+
+    Other Parameters
+    ----------------
+    cross_section : bool
+        Interpret the dataset as cross-sectional data.
+    time_series : bool
+        Interpret the dataset as time-series data.
+    special_time_series : bool
+        Use a non-standard interpretation of the time-series periodicity.
+    stacked_cross_section : bool
+        Interpret the dataset as a panel organized as stacked
+        cross-sections.
+    stacked_time_series : bool
+        Interpret the dataset as a panel organized as stacked time series.
+    panel_vars : bool
+        Define panel structure using unit and time index variables.
+    panel_time : bool
+        Set information on the time dimension of an existing panel.
+    panel_groups : bool
+        Set group labels for an existing panel.
+
+    Returns
+    -------
+    None
+
+    Notes
+    -----
+    If no option specifying the dataset structure is given, gretl attempts
+    to infer the structure from the supplied arguments.
+
+    For panel data specified via periodicity, the starting observation
+    should normally be ``"1:1"``. For cross-sectional data it should be 1.
+    Daily and weekly starting dates may be specified as ``"YYYY-MM-DD"``.
+
+    Examples
+    --------
+    ``data.setobs(4, "1990:1", time_series=True)``
+    ``data.setobs(12, "1978:03")``
+    ``data.setobs(1, 1, cross_section=True)``
+    ``data.setobs(20, "1:1", stacked_time_series=True)``
+    ``data.setobs("unit", "year", panel_vars=True)``
+    )doc";
+
 } // namespace doc::Dataset
 

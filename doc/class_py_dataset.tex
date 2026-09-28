@@ -579,10 +579,13 @@ Examples:\newline
 	over the current sample range as a column vector.}
 
 \gretlfpycmd{head()}
-\estdesc{Offers a quick way to show just the top of a dataset.}
+\estdesc{Prints the first observations of the dataset.}
 \begin{lstlisting}[style=pythonstylefoot]
 .head(nobs: int = 5)
 \end{lstlisting}
+\generaldesc{Prints the first \textit{nobs} observations of all
+	variables in the dataset. By default, the first 5 observations
+	are shown.}
 
 %\gretlfpycmd{headT()}
 %\estdesc{Offers a quick way to show just the top of a transposed dataset.}
@@ -1150,7 +1153,7 @@ Examples:\newline
 	default dataset in this role.}
 
 \gretlfpycmd{setobs()}
-\estdesc{This command forces the program to interpret
+\estdesc{This method forces the program to interpret
 	the current data set as having a specified structure.}
 \begin{lstlisting}[style=pythonstylefoot]
 .setobs(periodicity: int, startobs: str | int[, OPTS])
@@ -1169,26 +1172,33 @@ Examples:\newline
 	\item[]\maptoopt{panel\_groups=True}{--panel-groups}{\seegretlmanual}
 \end{itemize}
 Examples:\newline
-\pythcodef{.setobs(4, '1990:1', time\_series=True}\\
+\pythcodef{.setobs(4, '1990:1', time\_series=True)}\\
 \pythcodef{.setobs(12, '1978:03')}\\
 \pythcodef{.setobs(1, 1, cross\_section=True)}\\
 \pythcodef{.setobs(20, '1:1', stacked\_time\_series=True)}\\
-\pythcodef{.setobs(unit, year, panel\_vars=True)}\\
-\generaldesc{In the first and in the second form of the method
-	the periodicity, which must be an integer, represents frequency
-	in the case of time-series data (1 = annual; 4 = quarterly;
-	12 = monthly; 52 = weekly; 5, 6, or 7 = daily; 24 = hourly).
-	In the case of panel data the periodicity means the number of
-	lines per data block: this corresponds to the number of
-	cross-sectional units in the case of stacked cross-sections,
-	or the number of time periods in the case of stacked time series.
-	In the case of simple cross-sectional data the periodicity should
-	be set to 1.\newline
-	The third form of the method (which requires the \gretlcmd{--panel-vars}
-	flag) may be used to impose a panel interpretation when the data
-	set contains variables that uniquely identify the cross-sectional
-	units and the time periods. The data set will be sorted as stacked
-	time series, by ascending values of the units variable, \textit{unitvar}.}
+\pythcodef{.setobs('unit', 'year', panel\_vars=True)}\\
+\generaldesc{In the first form of the method the periodicity,
+	which must be an integer, represents frequency in the case of
+	time-series data (1 = annual; 4 = quarterly; 12 = monthly;
+	52 = weekly; 5, 6, or 7 = daily; 24 = hourly). In the case of
+	panel data the periodicity represents the number of observations
+	per data block: this corresponds to the number of cross-sectional
+	units in the case of stacked cross-sections, or the number of time
+	periods in the case of stacked time series. In the case of simple
+	cross-sectional data the periodicity should be set to 1.\newline
+	The starting observation represents the starting date in the case
+	of time-series data. Subperiods, such as quarters or months, should
+	be separated from the year by a colon. In the case of panel data
+	the starting observation should normally be given as
+	\pythcode{'1:1'}, and in the case of cross-sectional data as 1.
+	Starting observations for daily or weekly data may be specified
+	in the form \pythcode{'YYYY-MM-DD'}.\newline
+	The second form of the method, which requires
+	\pythcode{panel_vars=True}, may be used to impose a panel
+	interpretation when the dataset contains variables that uniquely
+	identify the cross-sectional units and the time periods. The
+	dataset is sorted as stacked time series, by ascending values of
+	the units variable, \textit{unitvar}.}
 
 \gretlfpycmd{sortby()}
 \estdesc{Sorts the current dataset by one or more variables.}
@@ -1290,10 +1300,13 @@ Example:\newline
 	appropriate.}
 
 \gretlfpycmd{tail()}
-\estdesc{Offers a quick way to show just the bottom of a dataset.}
+\estdesc{Prints the last observations of the dataset.}
 \begin{lstlisting}[style=pythonstylefoot]
 .tail(nobs: int = 5)
 \end{lstlisting}
+\generaldesc{Prints the last \textit{nobs} observations of all
+	variables in the dataset. By default, the last 5 observations
+	are shown.}
 
 %\gretlfpycmd{tailT()}
 %\estdesc{Offers a quick way to show just the bottom of a transposed dataset.}

@@ -189,8 +189,8 @@ void init_gretl4py_dataset_py11 (py::module_ &m)
              return self.test(type, varlist, clean_kwargs);
          }, py::arg("type"), py::kw_only())
     .def("clone", [](const GretlDataset &self) { return GretlDataset::clone(self); }, doc::Dataset::clone)
-    .def("head", &head_tail_print<HEAD>, py::arg("nobs") = 5, py::kw_only())
-    .def("tail", &head_tail_print<TAIL>, py::arg("nobs") = 5, py::kw_only())
+    .def("head", &head_tail_print<HEAD>, py::arg("nobs") = 5, py::kw_only(), doc::Dataset::head)
+    .def("tail", &head_tail_print<TAIL>, py::arg("nobs") = 5, py::kw_only(), doc::Dataset::tail)
     .def("set_as_default", &GretlDataset::set_as_default, doc::Dataset::set_as_default)
     .def("info",
          [](const GretlDataset &self) -> void
@@ -200,8 +200,7 @@ void init_gretl4py_dataset_py11 (py::module_ &m)
     .def("summary", py::overload_cast<const std::string&, const py::kwargs&>(&GretlDataset::summary<std::string>),
          py::arg("varlist").none(true) = "", py::kw_only())
     .def("summary", py::overload_cast<const py::list&, const py::kwargs&>(&GretlDataset::summary<py::list>),
-         py::arg("varlist").none(true) = py::list(), py::kw_only())
-
+         py::arg("varlist").none(true) = py::list(), py::kw_only(), doc::Dataset::summary)
     .def("sample",
          [](GretlDataset &self, const std::string &startobs, const std::string &endobs, const py::kwargs &kwargs) -> void
          {
@@ -239,7 +238,7 @@ void init_gretl4py_dataset_py11 (py::module_ &m)
          [](GretlDataset &self, int periodicity, int startobs, const py::kwargs &kwargs) -> void
          {
              self.setobs(std::to_string(periodicity), std::to_string(startobs), kwargs);
-         }, py::arg("periodicity").none(false), py::arg("startobs").none(false), py::kw_only())
+         }, py::arg("periodicity").none(false), py::arg("startobs").none(false), py::kw_only(), doc::Dataset::setobs)
     .def("addobs",
          [](GretlDataset &self, int n, const py::kwargs &kwargs) -> void
          {
