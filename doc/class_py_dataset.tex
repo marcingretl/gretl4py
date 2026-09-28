@@ -11,7 +11,7 @@ The \classpydataset class provides the following operators:
 \gretlfpycmd{[]}
 \estdesc{Slicing operator for a \classpydataset instance, used to reduce
 	its dimension(s).}
-\begin{lstlisting}[style=pythonstyle]
+\begin{lstlisting}[style=pythonstylefoot]
 d[rule: slice | list | str] -> gretl.Dataset
 \end{lstlisting}
 \where{\pythcodef{rule} is either a sample range, a list of variables,
@@ -104,7 +104,7 @@ The \classpydataset provides the following public attributes:
 	the full path to that file is displayed here.}
 
 \gretlfpycmd{tests}\label{attr:gretldataset::tests}
-\estdesc{List storing summaries of tests performed on datasets.}
+\estdesc{List storing summaries of tests performed on datasets.\deprecated}
 \begin{lstlisting}[style=pythonstylefoot]
 .tests -> list
 \end{lstlisting}
@@ -160,7 +160,7 @@ Examples:\newline
 \gretlfpycmd{add\_series()}
 \estdesc{Adds a series to the current dataset.}
 \begin{lstlisting}[style=pythonstylefoot]
-.add_series(data: numpy.ndarray | gretl.Matrix, name: str)
+.add_series(data: numpy.ndarray~ | gretl.Matrix, name: str)
 \end{lstlisting}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
 	\item[] \pythcode{data}: data to add, supplied as a row or column
@@ -178,8 +178,7 @@ Examples:\newline
 \gretlfpycmd{adf()}
 \estdesc{Performs Augmented Dickey-Fuller unit-root tests.}
 \begin{lstlisting}[style=pythonstylefoot]
-adf(order: int, varlist: str [, OPTS]) -> gretl.Bundle
-adf(order: int, varlist: list[, OPTS]) -> gretl.Bundle
+.adf(order: int, varlist: str | list[, OPTS]) -> gretl.Bundle
 \end{lstlisting}
 \mapto{adf order ~varlist}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
@@ -209,8 +208,7 @@ Examples:\newline
 \gretlfpycmd{bds()}
 \estdesc{Performs the BDS test for nonlinearity/IID violations}
 \begin{lstlisting}[style=pythonstylefoot]
-bds(order: int, x: str[, OPTS]) -> gretl.Bundle
-bds(order: int, x: list[, OPTS]) -> gretl.Bundle
+.bds(order: int, x: str | list[, OPTS]) -> gretl.Bundle
 \end{lstlisting}
 \mapto{bds order x}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
@@ -278,8 +276,7 @@ Examples:\newline
 \gretlfpycmd{coint()}
 \estdesc{Performs the Engle-Granger cointegration test.}
 \begin{lstlisting}[style=pythonstylefoot]
-.coint(order: int, depvar: str, indepvars: str[, OPTS]) -> gretl.Bundle:
-.coint(order: int, depvar: str, indepvars: list[, OPTS]) -> gretl.Bundle:
+.coint(order: int, depvar: str, indepvars: str | list[, OPTS]) -> gretl.Bundle
 \end{lstlisting}
 \mapto{coint order depvar indepvars}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
@@ -316,8 +313,7 @@ Examples:\newline
 \gretlfpycmd{compact()}
 \estdesc{Compacts the current dataset to a lower frequency.}
 \begin{lstlisting}[style=pythonstylefoot]
-.compact(freq: int[, method: str = '', repday: int, weekstart: int]) -> None
-.compact(freq: str[, method: str = '', repday: int, weekstart: int]) -> None
+.compact(freq: int | str[, method: str = '', repday: int, weekstart: int])
 \end{lstlisting}
 \mapto[none]{dataset compact ~freq }
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
@@ -346,8 +342,7 @@ Examples:\newline
 	or for all variables if none are specified.}
 \begin{lstlisting}[style=pythonstylefoot]
 .corr() -> gretl.Matrix
-.corr(varlist: str[, OPTS]) -> gretl.Matrix
-.corr(varlist: list[, OPTS]) -> gretl.Matrix
+.corr(varlist: str | list[, OPTS]) -> gretl.Matrix
 \end{lstlisting}
 \mapto{corr [ ~varlist ]}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
@@ -463,8 +458,7 @@ Examples:\newline
 \gretlfpycmd{discrete()}
 \estdesc{Marks selected variables as discrete or continuous.}
 \begin{lstlisting}[style=pythonstylefoot]
-.discrete(varlist: str[, OPTS])
-.discrete(varlist: list[, OPTS])
+.discrete(varlist: str | list[, OPTS])
 \end{lstlisting}
 \mapto{discrete ~varlist}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
@@ -484,7 +478,7 @@ Examples:\newline
 \gretlfpycmd{dsortby()}
 \estdesc{Sorts the current dataset by one or more variables in descending order.}
 \begin{lstlisting}[style=pythonstylefoot]
-.dsortby(varlist: str | list) -> None
+.dsortby(varlist: str | list)
 \end{lstlisting}
 \mapto[none]{dataset dsortby ~varlist}
 Examples:\newline
@@ -504,8 +498,7 @@ Examples:\newline
 \estdesc{Creates dummy variables coding for the distinct values of
 	selected variables.}
 \begin{lstlisting}[style=pythonstylefoot]
-.dummify(varlist: str[, OPTS])
-.dummify(varlist: list[, OPTS])
+.dummify(varlist: str | list[, OPTS])
 \end{lstlisting}
 \mapto{dummify ~varlist}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
@@ -1203,7 +1196,7 @@ Examples:\newline
 \gretlfpycmd{sortby()}
 \estdesc{Sorts the current dataset by one or more variables.}
 \begin{lstlisting}[style=pythonstylefoot]
-.sortby(varlist: str | list) -> None
+.sortby(varlist: str | list)
 \end{lstlisting}
 \mapto[none]{dataset sortby ~varlist}
 Examples:\newline
@@ -1218,27 +1211,6 @@ Examples:\newline
 	resolved using the second variable, and so on until the tie is broken
 	or the sorting keys are exhausted. This operation is available only
 	for undated datasets.}
-
-\gretlfpycmd{summary()}\label{met:gretldataset::summary}
-\estdesc{Computes summary statistics for variables in the dataset.}
-\begin{lstlisting}[style=pythonstylefoot]
-.summary(varlist: str = ''[, OPTS]) -> gretl.Matrix | None
-.summary(varlist: list = [][, OPTS]) -> gretl.Matrix | None
-\end{lstlisting}
-\mapto[none]{summary [ ~varlist ]}
-\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
-	\item[]\maptoopt{simple=True}{--simple}{basic statistics only}
-	\item[]\maptoopt{weight='wtvar'}{--weight=wtvar}{weighting variable}
-	\item[]\maptoopt{by='byvar'}{--by=byvar}{\seegretlmanual}
-	\item[]\maptoopt{quiet=True}{--quiet}{suppress printed output}
-\end{itemize}
-\generaldesc{Computes descriptive statistics for the variables in
-	\textit{varlist}, or for all variables in the dataset if
-	\textit{varlist} is omitted. The resulting table is returned as a
-	\classpymatrix. With the \gretlcmd{--by} option, a matrix is returned
-	only when a single variable is explicitly specified; otherwise
-	\pythcode{None} is returned. The \gretlcmd{--by} and
-	\gretlcmd{--weight} options are mutually exclusive.}
 
 \gretlfpycmd{square()}
 \estdesc{Generates squares and, optionally, cross-products of selected variables.}
@@ -1280,16 +1252,31 @@ Examples:\newline
 	\pythcode{center_only=True}, only the mean is subtracted and the
 	generated series have prefix \textit{c\_}.}
 
-\gretlfpycmd{summary()}
-\estdesc{Prints the dataset summary.}
+\gretlfpycmd{summary()}\label{met:gretldataset::summary}
+\estdesc{Computes summary statistics for variables in the dataset.}
 \begin{lstlisting}[style=pythonstylefoot]
-.summary()
+.summary(varlist: str = ''[, OPTS]) -> gretl.Matrix~ | None
+.summary(varlist: list = [][, OPTS]) -> gretl.Matrix~ | None
 \end{lstlisting}
+\mapto[none]{summary [ ~varlist ]}
+\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
+	\item[]\maptoopt{simple=True}{--simple}{basic statistics only}
+	\item[]\maptoopt{weight='wtvar'}{--weight=wtvar}{weighting variable}
+	\item[]\maptoopt{by='byvar'}{--by=byvar}{\seegretlmanual}
+	\item[]\maptoopt{quiet=True}{--quiet}{suppress printed output}
+\end{itemize}
+\generaldesc{Computes descriptive statistics for the variables in
+	\textit{varlist}, or for all variables in the dataset if
+	\textit{varlist} is omitted. The resulting table is returned as a
+	\classpymatrix. With the \gretlcmd{--by} option, a matrix is returned
+	only when a single variable is explicitly specified; otherwise
+	\pythcode{None} is returned. The \gretlcmd{--by} and
+	\gretlcmd{--weight} options are mutually exclusive.}
 
 \gretlfpycmd{unpad\_daily()}
 \estdesc{Removes padding from a daily dataset.}
 \begin{lstlisting}[style=pythonstylefoot]
-.unpad_daily() -> None
+.unpad_daily()
 \end{lstlisting}
 \mapto[none]{dataset unpad-daily}
 Example:\newline

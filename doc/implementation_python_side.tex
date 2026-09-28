@@ -105,7 +105,7 @@ follows:
 \estdesc{Computes a (Pearson) correlation matrix treating each
 	column of \textit{X} as a variable.}
 \begin{lstlisting}[style=pythonstylefoot]
-gretl.corr(X: numpy.ndarray | gretl.Matrix) -> gretl.Matrix
+gretl.corr(X: numpy.ndarray~ | gretl.Matrix) -> gretl.Matrix
 \end{lstlisting}
 \maptof{mcorr(X)}{matrix}
 
@@ -113,8 +113,7 @@ gretl.corr(X: numpy.ndarray | gretl.Matrix) -> gretl.Matrix
 \estdesc{Computes a covariance matrix treating each
 	column of \textit{X} as a variable.}
 \begin{lstlisting}[style=pythonstylefoot]
-gretl.cov(X: numpy.ndarray[, dfcorr: int]) -> gretl.Matrix
-gretl.cov(X: gretl.Matrix[, dfcorr: int]) -> gretl.Matrix
+gretl.cov(X: numpy.ndarray~ | gretl.Matrix[, dfcorr: int]) -> gretl.Matrix
 \end{lstlisting}
 \maptof{mcov(X)}{matrix}
 \maptof{mcov(X, dfcorr)}{matrix}
@@ -580,8 +579,8 @@ gretl.show_data_status()
 \estdesc{Computes summary statistics for dataset variables or for
 	the columns of a matrix.}
 \begin{lstlisting}[style=pythonstylefoot]
-gretl.summary(varlist: str = ''[, OPTS]) -> gretl.Matrix | None
-gretl.summary(varlist: list = [][, OPTS]) -> gretl.Matrix | None
+gretl.summary(varlist: str = ''[, OPTS]) -> gretl.Matrix~ | None
+gretl.summary(varlist: list = [][, OPTS]) -> gretl.Matrix~ | None
 \end{lstlisting}
 \mapto[none]{summary [ ~varlist ]}
 \mapto{summary --matrix=matname}
@@ -623,7 +622,7 @@ Examples:\newline
 \gretlfpycmd{varlist()}
 \estdesc{Prints a listing of the series in the default dataset (if any).}
 \begin{lstlisting}[style=pythonstylefoot]
-gretl.varlist([.type: str ])
+gretl.varlist([.type: str])
 \end{lstlisting}
 \mapto{varlist}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
