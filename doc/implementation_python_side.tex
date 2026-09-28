@@ -577,16 +577,21 @@ gretl.show_data_status()
 \end{itemize}}
 
 \gretlfpycmd{summary()}
-\estdesc{Computes summary statistics for variables in the default \classpydataset.}
+\estdesc{Computes summary statistics for dataset variables or for
+	the columns of a matrix.}
 \begin{lstlisting}[style=pythonstylefoot]
 gretl.summary(varlist: str = ''[, OPTS]) -> gretl.Matrix | None
 gretl.summary(varlist: list = [][, OPTS]) -> gretl.Matrix | None
+gretl.summary(matrix: gretl.Matrix[, OPTS]) -> gretl.Matrix
 \end{lstlisting}
 \mapto[none]{summary [ ~varlist ]}
-\generaldesc{This function is equivalent to the
+\mapto{summary --matrix=matname}\\
+\generaldesc{The first two forms are equivalent to the
 	\classpydataset \gretlfpycmd{summary()} method applied to the
-	default dataset; see Section~\ref{met:gretldataset::summary}
-	for details and available options.}
+	default dataset; see \ref{met:gretldataset::summary} for details
+	and available options. The third form is equivalent to the
+	\classpymatrix \gretlfpycmd{summary()} method; see
+	\ref{met:gretlmatrix::summary}.}
 
 \gretlfpycmd{tdisagg()}\label{tdisagg}
 \estdesc{Performs temporal disaggregation of a matrix.}

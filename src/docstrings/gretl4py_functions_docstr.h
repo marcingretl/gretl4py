@@ -579,44 +579,50 @@ namespace doc::Functions {
     )doc";
 
     inline constexpr char summary[] = R"doc(
-    Compute summary statistics for dataset variables.
+    Compute summary statistics.
 
-    Computes descriptive statistics for the variables in ``varlist``,
-    or for all variables if ``varlist`` is omitted. The operation is
-    performed on the default Dataset.
+    Computes descriptive statistics either for variables in the default
+    Dataset or for the columns of a Matrix.
 
     Parameters
     ----------
     varlist : str or list, optional
-        Variables to summarize, specified by names or indices.
+        Variables to summarize in the default Dataset, specified by names
+        or indices. If omitted, all variables are summarized.
+    matrix : gretl.Matrix
+        Matrix whose columns are to be summarized.
 
     Other Parameters
     ----------------
     simple : bool
         Report basic statistics only.
     weight : str
-        Variable to use for weighting the observations.
+        Variable to use for weighting the observations. Available only
+        for the Dataset-based form.
     by : str
-        Discrete variable by which to group the observations.
+        Discrete variable by which to group the observations. Available
+        only for the Dataset-based form.
     quiet : bool
         Suppress printed output.
 
     Returns
     -------
     gretl.Matrix or None
-        Matrix containing the summary statistics. With ``by``, a matrix
-        is returned only when a single variable is explicitly specified;
-        otherwise ``None`` is returned.
+    Matrix containing the summary statistics. For the Dataset-based
+    form with ``by``, a matrix is returned only when a single variable
+        is explicitly specified; otherwise ``None`` is returned.
 
     Notes
     -----
-    The ``by`` and ``weight`` options are mutually exclusive.
+    The ``by`` and ``weight`` options are mutually exclusive. They are
+    not available when summarizing a Matrix.
 
     Examples
     --------
     ``res = gretl.summary()``
     ``res = gretl.summary("x1 x2")``
     ``res = gretl.summary(["x1", "x2"], simple=True)``
+    ``res = gretl.summary(M)``
     )doc";
 
 } // namespace doc::Dataset

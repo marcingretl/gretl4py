@@ -345,7 +345,7 @@ template <typename T>
 py::object do_gretl_summary (const T &varlist, const py::kwargs &kwargs)
 {
     //
-    // this function mimics libgretl's 'summary' command
+    // this function mimics libgretl's 'summary' command: dataset-based version
     //
     auto dataset = GretlDataset::default_dataset();
 
