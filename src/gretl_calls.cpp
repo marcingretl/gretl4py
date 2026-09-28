@@ -345,8 +345,21 @@ template <typename T>
 py::object do_gretl_summary (const T &varlist, const py::kwargs &kwargs)
 {
     //
-    // this function mimics libgretl's 'summary' command: dataset-based version
+    // interface to libgretl's 'summary' command
     //
+    // here we deal with --matrix=matrix case
+    if (kwargs.contains("matrix")) {
+        if (!varlist.empty()) throw std::invalid_argument("varlist and matrix cannot be specified together");
+        auto obj = kwargs["matrix"];
+
+        if (!is_pygretlmatrix(obj)) throw std::invalid_argument("matrix must be a gretl.Matrix instance");
+        auto mat = obj.cast<GretlMatrixPtr>();
+        py::kwargs kwargs_copy = kwargs;
+
+        kwargs_copy.attr("pop")("matrix");
+        return mat->summary(kwargs_copy);
+    }
+
     auto dataset = GretlDataset::default_dataset();
 
     if (!dataset) handle_gretl_error(E_NODATA);

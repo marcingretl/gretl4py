@@ -581,19 +581,20 @@ namespace doc::Functions {
     inline constexpr char summary[] = R"doc(
     Compute summary statistics.
 
-    Computes descriptive statistics either for variables in the default
-    Dataset or for the columns of a Matrix.
+    Computes descriptive statistics for variables in the default Dataset,
+    or for the columns of a Matrix specified via ``matrix``.
 
     Parameters
     ----------
     varlist : str or list, optional
         Variables to summarize in the default Dataset, specified by names
         or indices. If omitted, all variables are summarized.
-    matrix : gretl.Matrix
-        Matrix whose columns are to be summarized.
 
     Other Parameters
     ----------------
+    matrix : gretl.Matrix
+        Matrix whose columns are to be summarized. Cannot be used together
+        with ``varlist``.
     simple : bool
         Report basic statistics only.
     weight : str
@@ -610,19 +611,19 @@ namespace doc::Functions {
     gretl.Matrix or None
     Matrix containing the summary statistics. For the Dataset-based
     form with ``by``, a matrix is returned only when a single variable
-        is explicitly specified; otherwise ``None`` is returned.
+    is explicitly specified; otherwise ``None`` is returned.
 
     Notes
     -----
     The ``by`` and ``weight`` options are mutually exclusive. They are
-    not available when summarizing a Matrix.
+    not available when ``matrix`` is specified.
 
     Examples
     --------
     ``res = gretl.summary()``
     ``res = gretl.summary("x1 x2")``
     ``res = gretl.summary(["x1", "x2"], simple=True)``
-    ``res = gretl.summary(M)``
+    ``res = gretl.summary(matrix=M)``
     )doc";
 
 } // namespace doc::Dataset
