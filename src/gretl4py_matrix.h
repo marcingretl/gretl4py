@@ -118,6 +118,8 @@ public:
 
     py::object to_numpy (void) const;
 
+    py::object summary (const py::kwargs &kwargs);
+
     // matrix-algebra methods
     GretlMatrixPtr neg (void) const;
 

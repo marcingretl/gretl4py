@@ -473,7 +473,7 @@ py::list GretlDataset::get_obs_labels (void) const
     return static_cast<bool>(dataset_is_cross_section(dset));
 }
 
-std::string GretlDataset::summary (bool print) const noexcept
+std::string GretlDataset::info (bool quiet) const noexcept
 {
     //
     // method prints basic info about dataset
@@ -483,10 +483,48 @@ std::string GretlDataset::summary (bool print) const noexcept
     print_sample_status(dset, prn);
     pprintf(prn, "\n");
     list_series(dset, OPT_NONE, prn);
-    if (print) printer_.print();
+    if (!quiet) printer_.print();
 
     return printer_.get_buffer();
 }
+
+// T = { std::string ; py::list }
+template <typename T>
+py::object GretlDataset::summary (const T &varlist, const py::kwargs &kwargs)
+{
+    //
+    // this function mimics libgretl's 'summary' command
+    //
+    gretl_list_ptr varlist_ptr{nullptr};
+    std::nullptr_t fake_dataset = nullptr;
+    bool no_result = false;
+
+    // we unpack kwargs at first
+    gretlopt opt = unpack_kwargs_command(SUMMARY, fake_dataset, kwargs);
+    if (opt & OPT_X) throw std::invalid_argument("for matrices, please use the gretl.Matrix.summary() method");
+
+    // we build gretl_list
+    if (!varlist.empty()) varlist_ptr = gretllist(varlist);
+
+    // based on 'interact.c'
+    err_ = incompatible_options(opt, static_cast<gretlopt>(OPT_B | OPT_W));
+    if (err_) handle_gretl_error(err_);
+    last_result_cleanup();
+    if (opt & OPT_B) {
+        err_ = summary_statistics_by(varlist_ptr.get(), dset, opt, printer_.prn_ptr());
+        no_result = !varlist_ptr || varlist_ptr.get()[0] > 1;
+    } else {
+        err_ = list_summary_driver(varlist_ptr.get(), dset, opt, printer_.prn_ptr());
+    }
+    printer_.print();
+    if (err_) handle_gretl_error(err_);
+
+    if (no_result) return py::none();
+
+    return get_accessor("$result");
+}
+template py::object GretlDataset::summary<std::string>(const std::string&, const py::kwargs&);
+template py::object GretlDataset::summary<py::list>(const py::list&, const py::kwargs&);
 
 py::dict GretlDataset::to_dict (void) const
 {
@@ -811,7 +849,7 @@ std::string GretlDataset::repr (void) const
     std::string ret = (from_file_ ? "Read datafile: " : "Loaded: ") + source + "\n";
 
     // we add summary
-    ret += summary(false);
+    ret += info(false);
 
     // if dataset read from file, we try to append dataset info
     if (from_file_ && std::filesystem::exists(source)) {

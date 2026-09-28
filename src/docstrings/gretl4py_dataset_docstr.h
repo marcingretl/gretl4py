@@ -1500,5 +1500,64 @@ namespace doc::Dataset {
     ``data.set_as_default()``
     )doc";
 
+    inline constexpr char info[] = R"doc(
+    Print basic information about the dataset.
+
+    Displays the dataset structure, including its type, frequency,
+    observation range and number of observations, followed by a list
+    of variables.
+
+    Returns
+    -------
+    None
+
+    Examples
+    --------
+    ``data.info()``
+    )doc";
+
+    inline constexpr char summary[] = R"doc(
+    Compute summary statistics for dataset variables.
+
+    Computes descriptive statistics for the variables in ``varlist``,
+    or for all variables in the dataset if ``varlist`` is omitted.
+
+    Parameters
+    ----------
+    varlist : str or list, optional
+        Variables to summarize, specified by names or indices.
+
+    Other Parameters
+    ----------------
+    simple : bool
+        Report basic statistics only.
+    weight : str
+        Variable to use for weighting the observations.
+    by : str
+        Discrete variable by which to group the observations.
+    quiet : bool
+        Suppress printed output.
+
+    Returns
+    -------
+    gretl.Matrix or None
+        Matrix containing the summary statistics. With ``by``, a matrix
+        is returned only when a single variable is explicitly specified;
+        otherwise ``None`` is returned.
+
+    Notes
+    -----
+    The ``by`` and ``weight`` options are mutually exclusive.
+
+    For summary statistics of a matrix, use ``gretl.Matrix.summary()``.
+
+    Examples
+    --------
+    ``res = data.summary()``
+    ``res = data.summary("x1 x2")``
+    ``res = data.summary(["x1", "x2"], simple=True)``
+    ``res = data.summary("x1", by="group")``
+    )doc";
+
 } // namespace doc::Dataset
 

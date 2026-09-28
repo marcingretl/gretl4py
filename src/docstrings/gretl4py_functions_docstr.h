@@ -578,5 +578,46 @@ namespace doc::Functions {
     ``gretl.print("B", tree=True)``
     )doc";
 
+    inline constexpr char summary[] = R"doc(
+    Compute summary statistics for dataset variables.
+
+    Computes descriptive statistics for the variables in ``varlist``,
+    or for all variables if ``varlist`` is omitted. The operation is
+    performed on the default Dataset.
+
+    Parameters
+    ----------
+    varlist : str or list, optional
+        Variables to summarize, specified by names or indices.
+
+    Other Parameters
+    ----------------
+    simple : bool
+        Report basic statistics only.
+    weight : str
+        Variable to use for weighting the observations.
+    by : str
+        Discrete variable by which to group the observations.
+    quiet : bool
+        Suppress printed output.
+
+    Returns
+    -------
+    gretl.Matrix or None
+        Matrix containing the summary statistics. With ``by``, a matrix
+        is returned only when a single variable is explicitly specified;
+        otherwise ``None`` is returned.
+
+    Notes
+    -----
+    The ``by`` and ``weight`` options are mutually exclusive.
+
+    Examples
+    --------
+    ``res = gretl.summary()``
+    ``res = gretl.summary("x1 x2")``
+    ``res = gretl.summary(["x1", "x2"], simple=True)``
+    )doc";
+
 } // namespace doc::Dataset
 

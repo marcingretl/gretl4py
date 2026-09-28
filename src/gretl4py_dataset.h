@@ -130,7 +130,10 @@ public:
 
     py::list get_obs_labels (void) const;
 
-    std::string summary (bool print = true) const noexcept;
+    std::string info (bool quiet = true) const noexcept;
+
+    template <typename T>
+    py::object summary (const T &varlist, const py::kwargs &kwargs);
 
     // dataset management
     void setobs (const std::string &periodicity, const std::string &startobs, const py::kwargs &kwargs);

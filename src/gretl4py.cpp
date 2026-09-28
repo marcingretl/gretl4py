@@ -117,7 +117,7 @@ PYBIND11_MODULE(_gretl, m)
     m.def("summary", py::overload_cast<const std::string&, const py::kwargs&>(&do_gretl_summary<std::string>),
           py::arg("varlist").none(true) = "", py::kw_only());
     m.def("summary", py::overload_cast<const py::list&, const py::kwargs&>(&do_gretl_summary<py::list>),
-          py::arg("varlist").none(true) = py::list(), py::kw_only());
+          py::arg("varlist").none(true) = py::list(), py::kw_only(), doc::Functions::summary);
     m.def("include", &do_gretl_include,
           py::arg("filename").none(false));
     m.def("delete",

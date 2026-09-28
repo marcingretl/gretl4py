@@ -317,6 +317,19 @@ The \classpymatrix class provides the following public methods:
 	\pythcode{list}. The number of elements in \textit{names}
 	must equal the number of rows of the matrix.}
 
+\gretlfpycmd{summary()}\label{met:gretlmatrix::summary}
+\estdesc{Computes summary statistics for the columns of the matrix.}
+\begin{lstlisting}[style=pythonstylefoot]
+.summary([OPTS]) -> gretl.Matrix
+\end{lstlisting}
+\mapto{summary --matrix=matname}
+\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
+	\item[]\maptoopt{simple=True}{--simple}{basic statistics only}
+	\item[]\maptoopt{quiet=True}{--quiet}{suppress printed output}
+\end{itemize}
+\generaldesc{Computes descriptive statistics for the columns of the
+	\classpymatrix and returns the resulting table as a \classpymatrix.}
+
 \gretlfpycmd{to\_numpy()}
 \estdesc{Returns a deep copy of the \classpymatrix as a NumPy array.}
 \begin{lstlisting}[style=pythonstylefoot]

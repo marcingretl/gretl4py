@@ -22,6 +22,7 @@
 #include "gretl4py_types.h"
 #include "gretl4py_utils.h"
 #include <gretl/matrix_extra.h>
+#include <gretl/gretl_drivers.h>
 extern "C" {
     #include <gretl/uservar.h>
     // this is because we cannot include gretl_cmatrix.h
@@ -667,6 +668,32 @@ py::object GretlMatrix::to_numpy() const
     }
 
     return variant_to_pyobject(std::move(*res));
+}
+
+py::object GretlMatrix::summary (const py::kwargs& kwargs)
+{
+    //
+    // this function mimics libgretl's 'summary' command for matrix case only
+    //
+    std::nullptr_t fake_dataset = nullptr;
+    py::dict kwargs_copy(kwargs);
+    const char *matrix_name = "__gretl4py_matrix_summary";
+
+    // we unpack kwargs at first
+    kwargs_copy["matrix"] = matrix_name;
+    gretlopt opt = unpack_kwargs_command(SUMMARY, fake_dataset, kwargs_copy);
+
+    // based on 'interact.c'
+    err_ = incompatible_options(opt, static_cast<gretlopt>(OPT_B | OPT_W));
+    if (err_) handle_gretl_error(err_);
+    auto uv = alt_user_var_add(matrix_name, GRETL_TYPE_MATRIX, m_);
+    if (err_) handle_gretl_error(err_);
+    err_ = matrix_command_driver(SUMMARY, nullptr, matrix_name, nullptr, opt, printer_.prn_ptr());
+    user_var_unstack_value(uv);
+    if (err_) handle_gretl_error(err_);
+    printer_.print();
+
+    return do_get_accessor<GRETL_OBJ_ANY>("$result", fake_dataset, nullptr);
 }
 
 GretlMatrixPtr GretlMatrix::neg (void) const

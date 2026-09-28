@@ -637,6 +637,15 @@ Examples:\newline
 	The returned \classpymatrix contains the estimated Hurst
 	exponent and its standard error.}
 
+\gretlfpycmd{info()}\label{met:gretldataset::info}
+\estdesc{Prints basic information about the dataset.}
+\begin{lstlisting}[style=pythonstylefoot]
+.info()
+\end{lstlisting}
+\generaldesc{Displays the dataset type, frequency, observation
+	range and number of observations, followed by a list of
+	variables in the dataset.}
+
 \gretlfpycmd{insobs()}
 \estdesc{Inserts an observation into the current dataset.}
 \begin{lstlisting}[style=pythonstylefoot]
@@ -1199,6 +1208,27 @@ Examples:\newline
 	resolved using the second variable, and so on until the tie is broken
 	or the sorting keys are exhausted. This operation is available only
 	for undated datasets.}
+
+\gretlfpycmd{summary()}\label{met:gretldataset::summary}
+\estdesc{Computes summary statistics for variables in the dataset.}
+\begin{lstlisting}[style=pythonstylefoot]
+.summary(varlist: str = ''[, OPTS]) -> gretl.Matrix | None
+.summary(varlist: list = [][, OPTS]) -> gretl.Matrix | None
+\end{lstlisting}
+\mapto[none]{summary [ ~varlist ]}
+\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
+	\item[]\maptoopt{simple=True}{--simple}{basic statistics only}
+	\item[]\maptoopt{weight='wtvar'}{--weight=wtvar}{weighting variable}
+	\item[]\maptoopt{by='byvar'}{--by=byvar}{\seegretlmanual}
+	\item[]\maptoopt{quiet=True}{--quiet}{suppress printed output}
+\end{itemize}
+\generaldesc{Computes descriptive statistics for the variables in
+	\textit{varlist}, or for all variables in the dataset if
+	\textit{varlist} is omitted. The resulting table is returned as a
+	\classpymatrix. With the \gretlcmd{--by} option, a matrix is returned
+	only when a single variable is explicitly specified; otherwise
+	\pythcode{None} is returned. The \gretlcmd{--by} and
+	\gretlcmd{--weight} options are mutually exclusive.}
 
 \gretlfpycmd{square()}
 \estdesc{Generates squares and, optionally, cross-products of selected variables.}

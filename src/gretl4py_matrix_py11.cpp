@@ -19,6 +19,7 @@
 
 #include "gretl4py_matrix.h"
 #include "gretl4py_utils.h"
+#include "docstrings/gretl4py_matrix_docstr.h"
 
 namespace py = pybind11;
 
@@ -318,7 +319,8 @@ void init_gretl4py_gretl_matrix_py11 (py::module_ &m)
     .def("rnameget", &matrix_row_cols_names_get<true>, py::arg("row").none(true) = std::nullopt)
     .def("cnameget", &matrix_row_cols_names_get<false>, py::arg("col").none(true) = std::nullopt)
     .def("rnameset", &GretlMatrix::rows_cols_names_set<true>, py::arg("names").none(false))
-    .def("cnameset", &GretlMatrix::rows_cols_names_set<false>, py::arg("names").none(false));
+    .def("cnameset", &GretlMatrix::rows_cols_names_set<false>, py::arg("names").none(false))
+    .def("summary", &GretlMatrix::summary, doc::Matrix::summary);
 
     cls.attr("__module__") = "gretl";
 }

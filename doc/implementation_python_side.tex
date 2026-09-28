@@ -577,26 +577,16 @@ gretl.show_data_status()
 \end{itemize}}
 
 \gretlfpycmd{summary()}
-\estdesc{In its first form, this command prints summary statistics
-	for the variables in \textit{varlist}, or for all the variables
-	in the data set if \textit{varlist} is omitted.}
+\estdesc{Computes summary statistics for variables in the default \classpydataset.}
 \begin{lstlisting}[style=pythonstylefoot]
-gretl.summary(varlist: str = ''[, OPTS])
-gretl.summary(varlist: list[, OPTS])
+gretl.summary(varlist: str = ''[, OPTS]) -> gretl.Matrix | None
+gretl.summary(varlist: list = [][, OPTS]) -> gretl.Matrix | None
 \end{lstlisting}
 \mapto[none]{summary [ ~varlist ]}
-\mapto{summary --matrix=matname}
-\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
-	\item[]\maptoopt{simple=True}{--simple}{basic statistics only}
-	\item[]\maptoopt{weight='wtvar'}{--weight=wtvar}{weighting variable}
-	\item[]\maptoopt{by='byvar'}{--by=byvar}{\seegretlmanual}
-	\item[]\pythcode{data: gretl.Dataset}\par%
-	\hspace*{10pt}{\footnotesize\pythcode{gretl.summary()} works with the specified dataset}
-\end{itemize}
-\generaldesc{The table of statistics produced by \gretlcmd{summary}
-	can be retrieved in matrix form via the \gretlcmd{\$result}
-	accessor. When the \gretlcmd{--by} option is given, this accessor
-	is produced only if \textit{varlist} contains a single series.}
+\generaldesc{This function is equivalent to the
+	\classpydataset \gretlfpycmd{summary()} method applied to the
+	default dataset; see Section~\ref{met:gretldataset::summary}
+	for details and available options.}
 
 \gretlfpycmd{tdisagg()}\label{tdisagg}
 \estdesc{Performs temporal disaggregation of a matrix.}

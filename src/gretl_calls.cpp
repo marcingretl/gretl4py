@@ -342,39 +342,19 @@ void do_set (const std::string &key, const std::string &value, const py::kwargs 
 
 // T = { std::string ; py::list }
 template <typename T>
-void do_gretl_summary (const T &varlist, const py::kwargs &kwargs)
+py::object do_gretl_summary (const T &varlist, const py::kwargs &kwargs)
 {
     //
     // this function mimics libgretl's 'summary' command
     //
-    GretlDatasetPtr dataset = nullptr;
-    gretl_list_ptr varlist_ptr{nullptr};
-    int err = 0;
+    auto dataset = GretlDataset::default_dataset();
 
-    // we unpack kwargs at first
-    // Note: dataset is set here
-    gretlopt opt = unpack_kwargs_command(SUMMARY, dataset, kwargs);
-    if (!dataset && !(opt & OPT_X)) handle_gretl_error(E_NODATA);
+    if (!dataset) handle_gretl_error(E_NODATA);
 
-    // be build gretl_list
-    if (!varlist.empty()) varlist_ptr = dataset->gretllist(varlist);
-
-    // based on 'interact.c'
-    err = incompatible_options(opt, static_cast<gretlopt>(OPT_B | OPT_W));
-    if (err) handle_gretl_error(err);
-    if (opt & OPT_B) {
-        err = summary_statistics_by(varlist_ptr.get(), dataset->dset, opt, global_printer.prn_ptr());
-    } else if (opt & OPT_X) {
-        err = matrix_command_driver(SUMMARY, varlist_ptr.get(), kwargs["matrix"].cast<std::string>().c_str(),
-                                    dataset ? dataset->dset : nullptr, opt, global_printer.prn_ptr());
-    } else {
-        err = list_summary_driver(varlist_ptr.get(), dataset->dset, opt, global_printer.prn_ptr());
-    }
-    global_printer.print();
-    if (err) handle_gretl_error(err);
+    return dataset->summary(varlist, kwargs);
 }
-template void do_gretl_summary<std::string>(const std::string&, const py::kwargs&);
-template void do_gretl_summary<py::list>(const py::list&, const py::kwargs&);
+template py::object do_gretl_summary<std::string>(const std::string&, const py::kwargs&);
+template py::object do_gretl_summary<py::list>(const py::list&, const py::kwargs&);
 
 // T = { GretlDataset ; void }
 template <typename T>
