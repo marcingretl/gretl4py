@@ -158,7 +158,7 @@ The \classpydataset provides the following public methods:
 \gretlfpycmd{addobs()}
 \estdesc{Adds observations to the current dataset.}
 \begin{lstlisting}[style=pythonstylefoot]
-.addobs(n: int[, OPTS]) -> None
+.addobs(n: int[, OPTS])
 \end{lstlisting}
 \mapto[none]{dataset addobs n}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
@@ -663,7 +663,7 @@ Examples:\newline
 \gretlfpycmd{insobs()}
 \estdesc{Inserts an observation into the current dataset.}
 \begin{lstlisting}[style=pythonstylefoot]
-.insobs(n: int) -> None
+.insobs(n: int)
 \end{lstlisting}
 \mapto[none]{dataset insobs n}
 Example:\newline
@@ -1029,8 +1029,8 @@ Example:\newline
 \gretlfpycmd{rename()}
 \estdesc{Changes the name of a series or the case of all series names.}
 \begin{lstlisting}[style=pythonstylefoot]
-.rename(series: str, newname: str[, OPTS]) -> None
-.rename(case: str[, quiet: bool]) -> None
+.rename(series: str, newname: str[, OPTS])
+.rename(case: str[, quiet: bool])
 \end{lstlisting}
 \mapto[none]{rename ~series~ newname}
 \mapto{rename case=style}

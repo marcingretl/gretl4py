@@ -627,4 +627,3 @@ namespace doc::Functions {
     )doc";
 
 } // namespace doc::Dataset
-
