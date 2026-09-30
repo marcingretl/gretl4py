@@ -15,7 +15,7 @@ The \classpydataset class provides the following operators:
 d[rule: slice | list | str] -> gretl.Dataset
 \end{lstlisting}
 \where{\pythcodef{rule} is either a sample range, a list of variables,
-	or a logical expression that can be applied to the dataset.}\\
+	or a logical expression that can be applied to the dataset.}\\\\
 \generaldesc{Using this operator, a dataset may be sub-sampled along one
 	or both dimensions, that is, observations and/or variables. It is
 	important to remember that slicing always returns a copy of the
@@ -213,9 +213,9 @@ Examples:\newline
 	\item[]\maptoopt{perron\_qu=True}{--perron-qu}{\seegretlmanual}
 \end{itemize}
 Examples:\newline
-\pythcodef{.adf(varlist='y', order=0)}\\
-\pythcodef{.adf(varlist='y', order=2, nc=True, c=True, ct=True)}\\
-\pythcodef{.adf(varlist='y', order=12, c=True, test-down=True)}\\
+\pythcodef{r1 = data.adf(varlist='y', order=0)}\\
+\pythcodef{r2 = data.adf(varlist='y', order=2, nc=True, c=True, ct=True)}\\
+\pythcodef{r3 = data.adf(varlist='y', order=12, c=True, test-down=True)}\\
 \generaldesc{Performs Augmented Dickey--Fuller (ADF) tests for a unit
 	root in the variables specified in \textit{varlist}. The
 	\textit{order} argument specifies the number of lagged differences
@@ -237,9 +237,9 @@ Examples:\newline
 	\item[]\maptoopt{quiet=True}{--quiet}{suppress printing of results}
 \end{itemize}
 Examples:\newline
-\pythcodef{.bds(varlist='x', order=5)}\\
-\pythcodef{.bds(order=3, matrix='m')}\\
-\pythcodef{.bds(varlist='x', order=4, sdcrit=2.0)}\\
+\pythcodef{r1 = data.bds(varlist='x', order=5)}\\
+\pythcodef{r2 = data.bds(order=3, matrix='m')}\\
+\pythcodef{r3 = data.bds(varlist='x', order=4, sdcrit=2.0)}\\
 \generaldesc{Performs the BDS (Brock--Dechert--Scheinkman) test for
 	nonlinearity or departures from the IID condition in the specified
 	series. The \textit{order} argument determines the maximum embedding
@@ -308,8 +308,8 @@ Examples:\newline
 	\item[]\maptoopt{silent=True}{--silent}{don't print anything}
 \end{itemize}
 Examples:\newline
-\pythcodef{.coint(y='y', varlist='x z', order=4)}\\
-\pythcodef{.coint(y='y', varlist=['x', 'z'], order=0, ct=True, skip\_df=True)}\\
+\pythcodef{r1 = data.coint(y='y', varlist='x z', order=4)}\\
+\pythcodef{r2 = data.coint(y='y', varlist=['x', 'z'], order=0, ct=True, skip\_df=True)}\\
 \generaldesc{Performs the Engle--Granger cointegration test for the
 	specified dependent variable and regressors. The procedure estimates
 	the cointegrating regression and tests its residuals for a unit root.
@@ -339,10 +339,10 @@ Examples:\newline
 	\item[] \maptoopt{weekstart=n}{--weekstart=n}{starting day of the week}
 \end{itemize}
 Examples:\newline
-\pythcodef{.compact(4)}\\
-\pythcodef{.compact(4, 'last')}\\
-\pythcodef{.compact(52, repday=3)}\\
-\pythcodef{.compact(52, weekstart=0)}\\
+\pythcodef{data.compact(4)}\\
+\pythcodef{data.compact(4, 'last')}\\
+\pythcodef{data.compact(52, repday=3)}\\
+\pythcodef{data.compact(52, weekstart=0)}\\
 \generaldesc{Compacts all series in a time-series dataset to
 	the specified frequency. By default, higher-frequency values
 	are averaged. The optional \textit{method} parameter specifies
@@ -372,9 +372,9 @@ Examples:\newline
 	\item[]\maptoopt{quiet=True}{--quiet}{do not print anything}
 \end{itemize}
 Examples:\newline
-\pythcodef{.corr('y x z t')}\\
-\pythcodef{.corr('ylist', uniform=True)}\\
-\pythcodef{.corr('x y', spearman=True)}\\
+\pythcodef{r1 = data.corr('y x z t')}\\
+\pythcodef{r2 = data.corr('ylist', uniform=True)}\\
+\pythcodef{r3 = data.corr('x y', spearman=True)}\\
 \generaldesc{By default, Pearson's product-moment correlations are
 	computed. The standard behavior is to use all available observations
 	for each pairwise coefficient. With \gretlcmd{--uniform}, the sample
@@ -399,8 +399,8 @@ corrgm(y: str, order: int[, OPTS]) -> gretl.Bundle:
 	\item[]\maptoopt{bartlett=True}{--bartlett}{use Bartlett standard errors}
 \end{itemize}
 Examples:\newline
-\pythcodef{.corrgm(y='x', order=12)}\\
-\pythcodef{.corrgm(y='GDP', order=12, acf\_only=True)}\\
+\pythcodef{r1 = data.corrgm(y='x', order=12)}\\
+\pythcodef{r2 = data.corrgm(y='GDP', order=12, acf\_only=True)}\\
 \generaldesc{Computes the autocorrelation function (ACF) and, by default,
 	the partial autocorrelation function (PACF) for the specified series.
 	The \textit{order} argument sets the maximum number of lags; if omitted,
@@ -417,9 +417,9 @@ Examples:\newline
 \maptof{mcov(\{ dataset \})}{matrix}
 \maptof{mcov(\{ ~varlist\})}{matrix}
 Examples:\newline
-\pythcodef{.cov()}\\
-\pythcodef{.cov('y x1 x2')}\\
-\pythcodef{.cov(['y', 'x1', 'x2'])}\\
+\pythcodef{r1 = data.cov()}\\
+\pythcodef{r2 = data.cov('y x1 x2')}\\
+\pythcodef{r3 = data.cov(['y', 'x1', 'x2'])}\\
 \generaldesc{The method treats each selected series as a variable and
 	returns their covariance matrix. If \textit{varlist} is omitted,
 	all variables in the current data set are used.}
@@ -441,8 +441,8 @@ Examples:\newline
 \end{lstlisting}
 \mapto[none]{diff ~varlist }
 Examples:\newline
-\pythcodef{.diff('x y')}\\
-\pythcodef{.diff(['x', 'y'])}\\
+\pythcodef{data.diff('x y')}\\
+\pythcodef{data.diff(['x', 'y'])}\\
 \generaldesc{The first difference of each variable in \textit{varlist}
 	is computed and stored in a new series with prefix \textit{d\_}.
 	Thus \gretlcmd{diff x y} creates the new variables
@@ -466,8 +466,8 @@ Examples:\newline
 	\item[]\maptoopt{split_by='dummy'}{--split-by=dummy}{split observations by grouping variable}
 \end{itemize}
 Examples:\newline
-\pythcodef{.difftest('x', 'y')}\\
-\pythcodef{.difftest(x='x', split_by='dummy')}\\
+\pythcodef{r1 = data.difftest('x', 'y')}\\
+\pythcodef{r2 = data.difftest(x='x', split_by='dummy')}\\
 \generaldesc{Supports the Sign test, Wilcoxon rank-sum test, and Wilcoxon
 	signed-rank test. The samples may be given as two series, or, for the
 	rank-sum test, obtained by splitting one series according to a dummy
@@ -483,9 +483,9 @@ Examples:\newline
 	\item[]\maptoopt{reverse=True}{--reverse}{mark variables as continuous}
 \end{itemize}
 Examples:\newline
-\pythcodef{.discrete('x')}\\
-\pythcodef{.discrete(['x1', 'x2'])}\\
-\pythcodef{.discrete('x', reverse=True)}\\
+\pythcodef{data.discrete('x')}\\
+\pythcodef{data.discrete(['x1', 'x2'])}\\
+\pythcodef{data.discrete('x', reverse=True)}\\
 \generaldesc{By default all variables are treated as continuous.
 	Marking a variable as discrete affects its treatment in frequency
 	plots and allows it to be selected for the \gretlcmd{dummify}
@@ -500,10 +500,9 @@ Examples:\newline
 \end{lstlisting}
 \mapto[none]{dataset dsortby ~varlist}
 Examples:\newline
-\pythcodef{.dsortby('x1')}\\
-\pythcodef{.dsortby('x1 x2 x3')}\\
-\pythcodef{.dsortby(['x1', 'x2', 'x3'])}\\
-\pythcodef{.dsortby([1, 2, 3])}\\
+\pythcodef{data.dsortby('x1 x2 x3')}\\
+\pythcodef{data.dsortby(['x1', 'x2', 'x3'])}\\
+\pythcodef{data.dsortby([1, 2, 3])}\\
 \generaldesc{Reorders all observations in the dataset in descending order
 	according to the variables specified in \textit{varlist}. Variables
 	may be specified by name or index. If multiple variables are given,
@@ -524,8 +523,8 @@ Examples:\newline
 	\item[]\maptoopt{drop\_last=True}{--drop-last}{omit highest value from encoding}
 \end{itemize}
 Examples:\newline
-\pythcodef{.dummify('x')}\\
-\pythcodef{.dummify(['x1', 'x2'], drop_first=True)}\\
+\pythcodef{data.dummify('x')}\\
+\pythcodef{data.dummify(['x1', 'x2'], drop_first=True)}\\
 \generaldesc{For each suitable variable in \textit{varlist}, creates
 	a set of dummy variables coding for its distinct values. Suitable
 	variables are those that have been explicitly marked as discrete,
@@ -546,8 +545,8 @@ Examples:\newline
 \end{lstlisting}
 \mapto[none]{dataset expand [freq]}
 Examples:\newline
-\pythcodef{.expand()}\\
-\pythcodef{.expand(12)}\\
+\pythcodef{data.expand()}\\
+\pythcodef{data.expand(12)}\\
 \generaldesc{Expands all series in an annual or quarterly time-series
 	dataset to a higher frequency by repeating the existing values.
 	Annual data may be expanded to quarterly or monthly frequency, while
@@ -573,7 +572,7 @@ Examples:\newline
 \gretlfpycmd{get\_accessor()}\label{met:gretldataset::get_accessor}
 \estdesc{Retrieves a \lgretl ``dollar accessor''.}
 \begin{lstlisting}[style=pythonstylefoot]
-	.get_accessor(name: str) -> object
+.get_accessor(name: str) -> object
 \end{lstlisting}
 \generaldesc{The method can retrieve accessors associated with the
 	\classpydataset instance as well as general \lgretl accessors,
@@ -585,7 +584,7 @@ Examples:\newline
 .get_series(series: str) -> gretl.Matrix
 \end{lstlisting}
 Examples:\newline
-\pythcodef{.get_series('x')}\\
+\pythcodef{r = data.get_series('x')}\\
 \generaldesc{Returns the values of the specified \gretlcmd{series}
 	over the current sample range as a column vector.}
 
@@ -611,9 +610,9 @@ Examples:\newline
 \end{lstlisting}
 \maptof{hpfilt(y, lambda, one-sided)}{series}
 Examples:\newline
-\pythcodef{cycle = .hpfilt('y')}\\
-\pythcodef{trend = .hpfilt('y', trend=True)}\\
-\pythcodef{cycle = .hpfilt('y', hp_lambda=1600, one_sided=True)}\\
+\pythcodef{cycle = data.hpfilt('y')}\\
+\pythcodef{trend = data.hpfilt('y', trend=True)}\\
+\pythcodef{cycle = data.hpfilt('y', hp_lambda=1600, one_sided=True)}\\
 \generaldesc{By default, the cycle component of the
 	Hodrick--Prescott filter is returned. If \pythcode{trend=True},
 	the trend component is returned instead.\newline
@@ -667,7 +666,7 @@ Examples:\newline
 \end{lstlisting}
 \mapto[none]{dataset insobs n}
 Example:\newline
-\pythcodef{.insobs(10)}\\
+\pythcodef{data.insobs(10)}\\
 \generaldesc{Inserts a single observation at position \textit{n},
 	shifting all subsequent observations by one place and extending the
 	dataset by one observation. All variables except the constant are
@@ -704,17 +703,16 @@ Example:\newline
 	\item[]\maptoopt{verbose=True}{--verbose}{print details of auxiliary regressions}
 \end{itemize}
 Examples:\newline
-\pythcodef{.johansen(ylist='y', xlist='x', order=2)}\\
-\pythcodef{.johansen(ylist=['y'], xlist='x z', order=4, verbose=True)}\\
-\pythcodef{.johansen(ylist='y', xlist=['x', 'z'], order=3, rc=True)}\\
+\pythcodef{r1 = data.johansen(ylist='y', xlist='x', order=2)}\\
+\pythcodef{r2 = data.johansen(ylist=['y'], xlist='x z', order=4, verbose=True)}\\
+\pythcodef{r3 = data.johansen(ylist='y', xlist=['x', 'z'], order=3, rc=True)}\\
 \generaldesc{Tests for the cointegration rank among a set of endogenous variables
 	using the Johansen trace and maximum-eigenvalue tests}
 
 \gretlfpycmd{kmeans()}
 \estdesc{Performs k-means clustering using the Hartigan--Wong algorithm.}
 \begin{lstlisting}[style=pythonstylefoot]
-.kmeans(X: str | list, centers: int[, opts: gretl.Bundle]) -> gretl.Bundle
-.kmeans(X: str | list, centers: gretl.Matrix[, opts: gretl.Bundle]) -> gretl.Bundle
+.kmeans(X: str | list, centers: int | gretl.Matrix[, opts: gretl.Bundle]) -> gretl.Bundle
 \end{lstlisting}
 \maptof{kmeans(X, centers, opts)}{bundle}
 \generaldesc{The variables in \textit{X} define the features to be
@@ -737,8 +735,7 @@ Examples:\newline
 \gretlfpycmd{kpss()}
 \estdesc{Performs the KPSS test for stationarity.}
 \begin{lstlisting}[style=pythonstylefoot]
-.kpss(order: int, varlist: str[, OPTS]) -> gretl.Bundle
-.kpss(order: int, varlist: list[, OPTS]) -> gretl.Bundle
+.kpss(order: int, varlist: str | list[, OPTS]) -> gretl.Bundle
 \end{lstlisting}
 \mapto{kpss order ~varlist}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
@@ -749,8 +746,8 @@ Examples:\newline
 	\item[]\maptoopt{difference=True}{--difference}{use first difference of variable}
 \end{itemize}
 Examples:\newline
-\pythcodef{.kpss(varlist='y', order=8)}\\
-\pythcodef{.kpss(varlist='x1', order=4, trend=True)}\\
+\pythcodef{r1 = data.kpss(varlist='y', order=8)}\\
+\pythcodef{r2 = data.kpss(varlist='x1', order=4, trend=True)}\\
 \generaldesc{Tests the null hypothesis that each specified series is stationary
 	around a constant, or around a deterministic linear trend when
 	``trend=True``. For panel data, only one variable can be tested at a time and the
@@ -760,17 +757,16 @@ Examples:\newline
 \gretlfpycmd{lags()}
 \estdesc{Generates lagged values of selected variables.}
 \begin{lstlisting}[style=pythonstylefoot]
-.lags(varlist: str[, order: int])
-.lags(varlist: list[, order: int])
+.lags(varlist: str | list[, order: int])
 \end{lstlisting}
 \mapto{lags [ order ; ] laglist}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
 	\item[]\maptoopt{bylag=True}{--bylag}{order terms by lag}
 \end{itemize}
 Examples:\newline
-\pythcodef{.lags('x y')}\\
-\pythcodef{.lags('x y', 12)}\\
-\pythcodef{.lags('x y z', 4, bylag=True)}\\
+\pythcodef{data.lags('x y')}\\
+\pythcodef{data.lags('x y', 12)}\\
+\pythcodef{data.lags('x y z', 4, bylag=True)}\\
 \generaldesc{By default the number of lags created equals the
 	periodicity of the data. For example, if the periodicity
 	is 4 (quarterly), \pythcode{.lags('x')} creates:
@@ -789,8 +785,8 @@ Examples:\newline
 \end{lstlisting}
 \mapto[None]{ldiff ~varlist}
 Examples:\newline
-\pythcodef{.ldiff('x y')}\\
-\pythcodef{.ldiff(['x', 'y'])}\\
+\pythcodef{data.ldiff('x y')}\\
+\pythcodef{data.ldiff(['x', 'y'])}\\
 \generaldesc{The first difference of the natural logarithm of each
 	variable in \textit{varlist} is computed and stored in a new series
 	with prefix \textit{ld\_}. Thus \gretlcmd{ldiff x y} creates
@@ -812,12 +808,13 @@ Examples:\newline
 	\item[]\maptoopt{verbose=True}{--verbose}{print per-unit results}
 \end{itemize}
 Examples:\newline
-\pythcodef{.levinlin(order=0, series='y')}\\
-\pythcodef{.levinlin(order=2, series='y', ct=True)}\\
-\pythcodef{.levinlin(order=[2,2,3,3,4,4], series='y')}\\
-\generaldesc{Tests the null hypothesis that all individual series in the panel have
-	a unit root against the alternative that none has a unit root. A common
-	$AR(1)$ coefficient across panel units is assumed.}
+\pythcodef{r1 = data.levinlin(order=0, series='y')}\\
+\pythcodef{r2 = data.levinlin(order=2, series='y', ct=True)}\\
+\pythcodef{r3 = data.levinlin(order=[2,2,3,3,4,4], series='y')}\\
+\generaldesc{Tests the null hypothesis that all individual
+	series in the panel have a unit root against the alternative
+	that none has a unit root. A common $AR(1)$ coefficient
+	across panel units is assumed.}
 
 \gretlfpycmd{logs()}
 \estdesc{Generates natural logarithms of selected variables.}
@@ -826,8 +823,8 @@ Examples:\newline
 \end{lstlisting}
 \mapto[None]{logs ~varlist}
 Examples:\newline
-\pythcodef{.logs('x y')}\\
-\pythcodef{.logs(['x', 'y'])}\\
+\pythcodef{data.logs('x y')}\\
+\pythcodef{data.logs(['x', 'y'])}\\
 \generaldesc{The natural logarithm of each variable in
 	\textit{varlist} is computed and stored in a new series with prefix
 	\textit{l\_}. Thus \gretlcmd{logs x y} creates
@@ -851,11 +848,12 @@ Examples:\newline
 	\item[]\maptoopt{split_by='dummy'}{--split-by=dummy}{split observations by grouping variable}
 \end{itemize}
 Examples:\newline
-\pythcodef{.meantest('x', 'y')}\\
-\pythcodef{.meantest(x='x', split_by='d')}\\
-\generaldesc{Performs a t-test of the null hypothesis that the population means are
-	equal. The samples may be given as two series or obtained by splitting
-	one series according to a dummy variable.}
+\pythcodef{r1 = data.meantest('x', 'y')}\\
+\pythcodef{r2 = data.meantest(x='x', split_by='d')}\\
+\generaldesc{Performs a t-test of the null hypothesis that
+	the population means are equal. The samples may be given
+	as two series or obtained by splitting one series
+	according to a dummy variable.}
 
 \gretlfpycmd{new\_list()}
 \estdesc{Defines a new named \gretlcmd{list}.}
@@ -865,13 +863,13 @@ Examples:\newline
 \end{lstlisting}
 \mapto[none]{list name = value}
 Examples:\newline
-\pythcodef{.new_list('list A = x1 x2 x3')}\\
-\pythcodef{.new_list('A', 'x1 x2 x3')}\\
+\pythcodef{data.new_list('list A = x1 x2 x3')}\\
+\pythcodef{data.new_list('A', 'x1 x2 x3')}\\
 \generaldesc{Creates a named \gretlcmd{list} of variables. The
 	\textit{value} argument specifies the variables by name or variable
 	ID, while \textit{formula} accepts a complete expression in valid
-	\gretl syntax. For example, \pythcode{.new_list('A', 'x1 x2')} and
-	\pythcode{.new_list('list A = x1 x2')} are equivalent.}
+	\gretl syntax. For example, \pythcode{data.new_list('A', 'x1 x2')} and
+	\pythcode{data.new_list('list A = x1 x2')} are equivalent.}
 
 \gretlfpycmd{new\_series()}
 \estdesc{Method for defining a new \lgretl['s] \gretlcmd{series}.}
@@ -890,8 +888,8 @@ Examples:\newline
 	existing variable(s). On the other hand, \textit{formula}
 	should contain a string in valid \lgretl['s] syntax.\newline
 	Note that these two calls are equivalent:\\
-	\pythcode{name='A', value='log(var1) + var2/100'}, and\\
-	\pythcode{formula='genr A = log(var1) + var2/100'}.}
+	\pythcode{data.new_series(name='A', value='log(var1) + var2/100')}, and\\
+	\pythcode{data.new_series(formula='genr A = log(var1) + var2/100')}.}
 
 \gretlfpycmd{normtest()}
 \estdesc{Tests a series for normality.}
@@ -908,12 +906,12 @@ Examples:\newline
 	\item[]\maptoopt{quiet=True}{--quiet}{suppress printed output}
 \end{itemize}
 Examples:\newline
-\pythcodef{.normtest('x')}\\
-\pythcodef{.normtest(series='x', swilk=True)}\\
-\pythcodef{.normtest(series='x', all=True)}\\
-\generaldesc{Performs a normality test using the Doornik-Hansen, Shapiro-Wilk,
-	Lilliefors, or Jarque-Bera procedure. By default, the Doornik-Hansen
-	test is used.}
+\pythcodef{r1 = data.normtest('x')}\\
+\pythcodef{r2 = data.normtest(series='x', swilk=True)}\\
+\pythcodef{r3 = data.normtest(series='x', all=True)}\\
+\generaldesc{Performs a normality test using the Doornik-Hansen,
+	Shapiro-Wilk, Lilliefors, or Jarque-Bera procedure. By default,
+	the Doornik-Hansen test is used.}
 
 \gretlfpycmd{orthdev()}
 \estdesc{Generates forward orthogonal deviations of selected variables.}
@@ -922,8 +920,8 @@ Examples:\newline
 \end{lstlisting}
 \mapto[none]{orthdev ~varlist}
 Examples:\newline
-\pythcodef{.orthdev('x y')}\\
-\pythcodef{.orthdev(['x', 'y'])}\\
+\pythcodef{data.orthdev('x y')}\\
+\pythcodef{data.orthdev(['x', 'y'])}\\
 \generaldesc{Applicable to panel data only. A series of forward
 	orthogonal deviations is computed for each variable in
 	\textit{varlist} and stored in a new series with prefix
@@ -940,7 +938,7 @@ Examples:\newline
 \end{lstlisting}
 \mapto[none]{dataset pad-daily days}
 Example:\newline
-\pythcodef{.pad\_daily(7)}\\
+\pythcodef{data.pad\_daily(7)}\\
 \generaldesc{Adds missing observations to a daily time-series dataset
 	so that it conforms to the specified number of days per week.
 	The \textit{days} parameter must be 5, 6 or 7 and greater than the
@@ -1041,8 +1039,8 @@ Example:\newline
 		\pythcode{'camel'} or \pythcode{'snake'}}
 \end{itemize}
 Examples:\newline
-\pythcodef{.rename('x2', 'income')}\\
-\pythcodef{.rename(case='lower')}\\
+\pythcodef{data.rename('x2', 'income')}\\
+\pythcodef{data.rename(case='lower')}\\
 \generaldesc{Without the \gretlcmd{case} option this method changes
 	the name of \textit{series} to \textit{newname}. The new name must
 	be at most 31 characters long, must start with a letter, and may
@@ -1060,7 +1058,7 @@ Examples:\newline
 \end{lstlisting}
 \mapto[none]{dataset ~resample n}
 Examples:\newline
-\pythcodef{.resample(500)}\\
+\pythcodef{data.resample(500)}\\
 \generaldesc{Creates a new dataset by sampling observations
 	with replacement from the current dataset. The parameter
 	\textit{n} specifies the number of observations in the
@@ -1115,12 +1113,12 @@ Examples:\newline
 	\item[]\maptoopt{quiet=True}{--quiet}{don't report sample range}
 \end{itemize}
 Examples:\newline
-\pythcodef{.sample(3, 10)}\\
-\pythcodef{.sample('1960:2', '1982:4')}\\
-\pythcodef{.sample(1, -1)}\\
-\pythcodef{.sample('x > 3000', restrict=True)}\\
-\pythcodef{.sample('y > 3000', restrict=True, replace=True))}\\
-\pythcodef{.sample(100, random=True)}\\
+\pythcodef{data.sample(3, 10)}\\
+\pythcodef{data.sample('1960:2', '1982:4')}\\
+\pythcodef{data.sample(1, -1)}\\
+\pythcodef{data.sample('x > 3000', restrict=True)}\\
+\pythcodef{data.sample('y > 3000', restrict=True, replace=True))}\\
+\pythcodef{data.sample(100, random=True)}\\
 \generaldesc{When no arguments are given, it displays the
 	current sample range, otherwise it sets the sample range.
 	The range can be defined in several ways. In the first
@@ -1145,8 +1143,8 @@ Examples:\newline
 \end{lstlisting}
 \mapto[none]{sdiff ~varlist}
 Examples:\newline
-\pythcodef{.sdiff('x y')}\\
-\pythcodef{.sdiff(['x', 'y'])}\\
+\pythcodef{data.sdiff('x y')}\\
+\pythcodef{data.sdiff(['x', 'y'])}\\
 \generaldesc{The seasonal difference of each variable in
 	\textit{varlist} is computed and stored in a new series with prefix
 	\textit{sd\_}. This command is available only for seasonal time series.}
@@ -1183,11 +1181,11 @@ Examples:\newline
 	\item[]\maptoopt{panel\_groups=True}{--panel-groups}{\seegretlmanual}
 \end{itemize}
 Examples:\newline
-\pythcodef{.setobs(4, '1990:1', time\_series=True)}\\
-\pythcodef{.setobs(12, '1978:03')}\\
-\pythcodef{.setobs(1, 1, cross\_section=True)}\\
-\pythcodef{.setobs(20, '1:1', stacked\_time\_series=True)}\\
-\pythcodef{.setobs('unit', 'year', panel\_vars=True)}\\
+\pythcodef{data..setobs(4, '1990:1', time\_series=True)}\\
+\pythcodef{data..setobs(12, '1978:03')}\\
+\pythcodef{data..setobs(1, 1, cross\_section=True)}\\
+\pythcodef{data..setobs(20, '1:1', stacked\_time\_series=True)}\\
+\pythcodef{data..setobs('unit', 'year', panel\_vars=True)}\\
 \generaldesc{In the first form of the method the periodicity,
 	which must be an integer, represents frequency in the case of
 	time-series data (1 = annual; 4 = quarterly; 12 = monthly;
@@ -1216,12 +1214,12 @@ Examples:\newline
 \begin{lstlisting}[style=pythonstylefoot]
 .sortby(varlist: str | list)
 \end{lstlisting}
-\mapto[none]{dataset sortby ~varlist}
+\mapto[none]{dataset ~sortby ~varlist}
 Examples:\newline
-\pythcodef{.sortby('x1')}\\
-\pythcodef{.sortby('x1 x2 x3')}\\
-\pythcodef{.sortby(['x1', 'x2', 'x3'])}\\
-\pythcodef{.sortby([1, 2, 3])}\\
+\pythcodef{data.sortby('x1')}\\
+\pythcodef{data.sortby('x1 x2 x3')}\\
+\pythcodef{data.sortby(['x1', 'x2', 'x3'])}\\
+\pythcodef{data.sortby([1, 2, 3])}\\
 \generaldesc{Reorders all observations in the dataset in ascending order
 	according to the variables specified in \textit{varlist}. Variables
 	may be specified by name or index. If multiple variables are given,
@@ -1233,13 +1231,12 @@ Examples:\newline
 \gretlfpycmd{square()}
 \estdesc{Generates squares and, optionally, cross-products of selected variables.}
 \begin{lstlisting}[style=pythonstylefoot]
-.square(varlist: str[, OPTS])
-.square(varlist: list[, OPTS])
+.square(varlist: str | list[, OPTS])
 \end{lstlisting}
 \mapto[none]{square ~varlist}
 Examples:\newline
-\pythcodef{.square('x1 x2')}\\
-\pythcodef{.square(['x1', 'x2'], cross=True)}\\
+\pythcodef{data.square('x1 x2')}\\
+\pythcodef{data.square(['x1', 'x2'], cross=True)}\\
 \generaldesc{Generates new series containing the squares of the variables
 	in \textit{varlist}. For example, \gretlcmd{square x y} generates
 	$sq\_x=x^2$ and $sq\_y=y^2$; with the \pythcode{cross} option it
@@ -1249,8 +1246,7 @@ Examples:\newline
 \gretlfpycmd{stdize()}
 \estdesc{Creates standardized or centered versions of selected variables.}
 \begin{lstlisting}[style=pythonstylefoot]
-.stdize(varlist: str[, OPTS])
-.stdize(varlist: list[, OPTS])
+.stdize(varlist: str | list[, OPTS])
 \end{lstlisting}
 \mapto[]{stdize ~varlist}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
@@ -1258,9 +1254,9 @@ Examples:\newline
 	\item[]\maptoopt{center\_only=True}{--center-only}{don't divide by s.d.}
 \end{itemize}
 Examples:\newline
-\pythcodef{.stdize('x1 x2')}\\
-\pythcodef{.stdize(['x1', 'x2'], no_df_corr=True)}\\
-\pythcodef{.stdize('x1', center_only=True)}\\
+\pythcodef{data.stdize('x1 x2')}\\
+\pythcodef{data.stdize(['x1', 'x2'], no_df_corr=True)}\\
+\pythcodef{data.stdize('x1', center_only=True)}\\
 \generaldesc{By default, a standardized version of each variable in
 	\textit{varlist} is generated with prefix \textit{s\_}. For example,
 	\gretlcmd{stdize x y} creates \textit{s\_x} and \textit{s\_y},
@@ -1298,7 +1294,7 @@ Examples:\newline
 \end{lstlisting}
 \mapto[none]{dataset unpad-daily}
 Example:\newline
-\pythcodef{.unpad\_daily()}\\
+\pythcodef{data.unpad\_daily()}\\
 \generaldesc{Removes artificial observations containing missing values
 	from a daily time-series dataset. Observations for which all series
 	are missing are removed, reducing the daily frequency where
@@ -1326,8 +1322,8 @@ Example:\newline
 \end{lstlisting}
 \maptof{tdisagg(Y, X, s, opts, results)}{matrix}
 Examples:\newline
-\pythcodef{.tdisagg('y', s=3)}\\
-\pythcodef{.tdisagg(Y='y', X=['x1', 'x2'], s=3)}\\
+\pythcodef{r1 = data.tdisagg('y', s=3)}\\
+\pythcodef{r2 = data.tdisagg(Y='y', X=['x1', 'x2'], s=3)}\\
 \generaldesc{Converts the time-series data specified by
 	\textit{Y} to a higher frequency using temporal disaggregation.
 	The parameter \textit{s} specifies the expansion factor (for example,
@@ -1339,8 +1335,8 @@ Examples:\newline
 	\textit{opts}, while details of the disaggregation procedure can
 	be retrieved through \textit{results}.}
 
-\gretlfpycmd{test()}\label{met:gretldataset::test}
-\estdesc{General interface to dataset-based tests. \deprecated}
+\gretlfpycmd{test()}
+\estdesc{\deprecated}
 
 \gretlfpycmd{to\_dataframe()}
 \estdesc{\deprecated}
@@ -1406,10 +1402,10 @@ Examples:\newline
 		missing values
 \end{itemize}
 Examples:\newline
-\pythcodef{.to_matrix()}\newline
-\pythcodef{.to_matrix(["y", "x1", "x2"])}\newline
-\pythcodef{.to_matrix("y x1 x2", missing="skip")}\newline
-\pythcodef{.to_matrix(["y", "x1"], 10, 100)}\\
+\pythcodef{r1 = data.to_matrix()}\newline
+\pythcodef{r2 = data.to_matrix(['y', 'x1', 'x2'])}\newline
+\pythcodef{r3 = data.to_matrix('y x1 x2', missing='skip')}\newline
+\pythcodef{r4 = data.to_matrix(['y', 'x1'], 10, 100)}\\
 \generaldesc{Creates a \gretl matrix from the selected variables and
 	observations of the current dataset. Matrix rows correspond to
 	observations and columns to variables. By default, the current sample
@@ -1428,7 +1424,7 @@ Examples:\newline
 \end{lstlisting}
 \mapto[none]{dataset transpose}
 Examples:\newline
-\pythcodef{.transpose()}\\
+\pythcodef{data.transpose()}\\
 \generaldesc{Interchanges observations and variables in the
 	dataset, so that rows become columns and columns become rows.
 	This method may be useful when importing data where variables
@@ -1441,7 +1437,7 @@ Examples:\newline
 \end{lstlisting}
 \mapto[none]{dataset unpad-daily}
 Examples:\newline
-\pythcodef{.unpad\_daily()}\\
+\pythcodef{data.unpad\_daily()}\\
 \generaldesc{Removes observations containing only missing values
 	from a padded daily dataset. The time-series structure and
 	observation dates are preserved.}
@@ -1459,15 +1455,15 @@ Examples:\newline
 	\item[]\maptoopt{split_by='dummy'}{--split-by=dummy}{split observations by grouping variable}
 \end{itemize}
 Examples:\newline
-\pythcodef{.vartest('x', 'y')}\\
-\pythcodef{.vartest(x='x', split_by='d')}\\
-\generaldesc{
-	By default, performs the standard F test of the null hypothesis that
-	the population variances are equal. Robust variants based on Levene
-	and Brown-Forsythe tests are also available. The standard \textit{F}~test
-	assumes normality. Robust alternatives may be
-	preferable for non-normal data, particularly the median-based test
-	for skewed data and the trimmed-mean test for fat-tailed data.}
+\pythcodef{r1 = data.vartest('x', 'y')}\\
+\pythcodef{r2 = data.vartest(x='x', split_by='d')}\\
+\generaldesc{By default, performs the standard \textit{F} test
+	of the null hypothesis that the population variances are equal.
+	Robust variants based on Levene and Brown-Forsythe tests are
+	also available. The standard \textit{F}~test assumes normality.
+	Robust alternatives may be 	preferable for non-normal data,
+	particularly the median-based test for skewed data and the
+	trimmed-mean test for fat-tailed data.}
 
 \gretlfpycmd{xcorrgm()}
 \estdesc{Computes the cross-correlogram of two series.}
@@ -1480,9 +1476,9 @@ Examples:\newline
 	\item[]\maptoopt{quiet=True}{--quiet}{suppress printed output}
 \end{itemize}
 Examples:\newline
-\pythcodef{.xcorrgm('x y', 12)}\\
-\pythcodef{.xcorrgm(['x', 'y'], 12)}\\
-\pythcodef{.xcorrgm('x', 'y', 12)}\\
+\pythcodef{r1 = data.xcorrgm('x y', 12)}\\
+\pythcodef{r2 = data.xcorrgm(['x', 'y'], 12)}\\
+\pythcodef{r3 = data.xcorrgm('x', 'y', 12)}\\
 \generaldesc{The values are the sample correlation coefficients
 	between the current value of \textit{series1} and successive leads
 	and lags of \textit{series2}.\newline
