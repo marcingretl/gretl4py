@@ -44,64 +44,80 @@ d[rule: slice | list | str] -> gretl.Dataset
 The \classpydataset provides the following public attributes:
 
 \gretlfpycmd{id}
-\estdesc{Returns instance dataset id.}
+\estdesc{Returns the identifier of the \classpydataset instance.}
 \begin{lstlisting}[style=pythonstylefoot]
 .id -> int
 \end{lstlisting}
+\generaldesc{The identifier is assigned automatically when the
+	\classpydataset instance is created.}
 
-\gretlfpycmd{is\_cross\_section }
-\estdesc{Checks if we deal with cross section  dataset.}
+\gretlfpycmd{is\_cross\_section}
+\estdesc{Checks whether the dataset is cross-sectional.}
 \begin{lstlisting}[style=pythonstylefoot]
 .is_cross_section -> bool
 \end{lstlisting}
 
 \gretlfpycmd{is\_default}\label{attr:gretldataset:is_default}
-\estdesc{Checks if dataset is marked as ``default''.}
+\estdesc{Indicates whether this is the default dataset.}
 \begin{lstlisting}[style=pythonstylefoot]
 .is_default -> bool
 \end{lstlisting}
-\generaldesc{To set given dataset as default, please
-	refer to \ref{met:gretldataset:set_as_default}.}
+\generaldesc{To set a dataset as the default, see
+	\ref{met:gretldataset:set_as_default}.}
 
 \gretlfpycmd{is\_panel}
-\estdesc{Checks if we deal with panel dataset.}
+\estdesc{Checks whether the dataset is panel data.}
 \begin{lstlisting}[style=pythonstylefoot]
 .is_panel -> bool
 \end{lstlisting}
 
-\gretlfpycmd{is\_time\_series }
-\estdesc{Checks if we deal with time series.}
+\gretlfpycmd{is\_time\_series}
+\estdesc{Checks whether the dataset is time-series.}
 \begin{lstlisting}[style=pythonstylefoot]
 .is_time_series -> bool
 \end{lstlisting}
 
 \gretlfpycmd{k}
-\estdesc{Returns the number of series in the dataset (including the constant).}
+\estdesc{Returns the number of series in the dataset, including the constant.}
 \begin{lstlisting}[style=pythonstylefoot]
 .k -> int
 \end{lstlisting}
 \generaldesc{This is equivalent to calling \pythcode{.get_accessor("$nvars")}.}
 
 \gretlfpycmd{linked\_models\_list}
-\estdesc{Returns models that use this dataset.}
+\estdesc{Returns the identifiers of models that use this dataset.}
 \begin{lstlisting}[style=pythonstylefoot]
 .linked_models_list -> set
 \end{lstlisting}
+\generaldesc{Returns a set containing the identifiers of all
+	\classpymodel instances linked to this \classpydataset.}
 
 \gretlfpycmd{n}
-\estdesc{Returns the number of observations in the currently selected sample.}
+\estdesc{Returns the total number of observations in the dataset.}
 \begin{lstlisting}[style=pythonstylefoot]
 .n -> int
 \end{lstlisting}
-\generaldesc{This is equivalent to calling \pythcode{.get_accessor("$nobs")}.}
+\generaldesc{Unlike the \gretlcmd{\$nobs} accessor, which gives the
+	number of observations in the current sample, this attribute gives
+	the total number of observations in the dataset.}
+
+\gretlfpycmd{obs\_labels}
+\estdesc{Returns the observation labels of the dataset.}
+\begin{lstlisting}[style=pythonstylefoot]
+.obs_labels -> list
+\end{lstlisting}
+\generaldesc{Returns a list of strings containing one label for each
+	observation in the dataset. The labels reflect the structure and
+	periodicity of the dataset.}
 
 \gretlfpycmd{source}
-\estdesc{Prints the source of the given dataset.}
+\estdesc{Returns information on the source of the dataset.}
 \begin{lstlisting}[style=pythonstylefoot]
 .source -> str
 \end{lstlisting}
-\generaldesc{If the dataset was loaded from a file,
-	the full path to that file is displayed here.}
+\generaldesc{For a dataset loaded from a file, this attribute gives
+	the full path to that file. For a cloned dataset, it also identifies
+	the dataset as a copy of another \classpydataset.}
 
 \gretlfpycmd{tests}\label{attr:gretldataset::tests}
 \estdesc{List storing summaries of tests performed on datasets.\deprecated}
@@ -128,10 +144,12 @@ The \classpydataset provides the following public attributes:
 \end{generaldescenv}
 
 \gretlfpycmd{varnames}
-\estdesc{Retrieves variables names.}
+\estdesc{Returns the names of the series in the dataset.}
 \begin{lstlisting}[style=pythonstylefoot]
 .varnames -> list
 \end{lstlisting}
+\generaldesc{Returns a list containing the names of all series in the
+	dataset, including the constant.}
 
 
 \subsubsection{\classpydatasetb methods}

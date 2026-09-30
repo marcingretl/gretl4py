@@ -60,53 +60,53 @@ void init_gretl4py_dataset_py11 (py::module_ &m)
     auto cls = py::class_<GretlDataset, GretlDatasetPtr>(m, "Dataset", py::dynamic_attr());
 
     cls
-    .def_readonly("is_default", &GretlDataset::is_default)
-    .def_readonly("source", &GretlDataset::source)
+    .def_readonly("is_default", &GretlDataset::is_default, doc::Dataset::is_default)
+    .def_readonly("source", &GretlDataset::source, doc::Dataset::source)
     .def_property_readonly("is_panel",
                            [](const GretlDataset &self)
                            {
                                return self.is_panel();
-                           })
+                           }, doc::Dataset::is_panel)
     .def_property_readonly("is_time_series",
                            [](const GretlDataset &self)
                            {
                                return self.is_time_series();
-                           })
+                           }, doc::Dataset::is_time_series)
     .def_property_readonly("is_cross_section",
                            [](const GretlDataset &self)
                            {
                                return self.is_cross_section();
-                           })
+                           }, doc::Dataset::is_cross_section)
     .def_property_readonly("n",
                            [](const GretlDataset &self)
                            {
                                return self.dset->n;
-                           })
+                           }, doc::Dataset::n)
     .def_property_readonly("k",
                            [](const GretlDataset &self)
                            {
                                return self.dset->v;
-                           })
+                           }, doc::Dataset::k)
     .def_property_readonly("obs_labels",
                            [](const GretlDataset &self)
                            {
                                return self.get_obs_labels();
-                           })
+                           }, doc::Dataset::obs_labels)
     .def_property_readonly("id",
                            [](const GretlDataset &self)
                            {
                                return self.get_id();
-                           })
+                           }, doc::Dataset::id)
     .def_property_readonly("linked_models_list",
                            [](const GretlDataset &self)
                            {
                                return self.linked_models_list();
-                           })
+                           }, doc::Dataset::linked_models_list)
     .def_property_readonly("varnames",
                            [](const GretlDataset &self)
                            {
                                return self.varnames();
-                           })
+                           }, doc::Dataset::varnames)
     .def("__copy__",
          [](const GretlDataset &self) -> GretlDatasetPtr
          {

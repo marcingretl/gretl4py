@@ -21,6 +21,113 @@
 
 namespace doc::Dataset {
 
+    inline constexpr char k[] = R"doc(
+    Number of series in the dataset.
+
+    Returns
+    -------
+    int
+        Number of series, including the constant.
+    )doc";
+
+    inline constexpr char n[] = R"doc(
+    Number of observations in the dataset.
+
+    Returns
+    -------
+    int
+        Total number of observations in the Dataset.
+    )doc";
+
+    inline constexpr char obs_labels[] = R"doc(
+    Observation labels of the dataset.
+
+    Returns
+    -------
+    list
+        List of strings containing the observation labels, one for each
+        observation in the Dataset.
+    )doc";
+
+    inline constexpr char id[] = R"doc(
+    Identifier of the Dataset instance.
+
+    Returns
+    -------
+    int
+        Unique identifier assigned to this Dataset instance.
+    )doc";
+
+    inline constexpr char linked_models_list[] = R"doc(
+    Identifiers of models linked to the Dataset.
+
+    Returns
+    -------
+    set
+        Set of identifiers of models that use this Dataset.
+    )doc";
+
+    inline constexpr char varnames[] = R"doc(
+    Names of the series in the Dataset.
+
+    Returns
+    -------
+    list
+        List of series names, including the constant.
+    )doc";
+
+    inline constexpr char is_cross_section[] = R"doc(
+    Whether the dataset is cross-sectional.
+
+    Returns
+    -------
+    bool
+        ``True`` if the dataset is cross-sectional, ``False`` otherwise.
+    )doc";
+
+    inline constexpr char is_time_series[] = R"doc(
+    Whether the dataset is time-series.
+
+    Returns
+    -------
+    bool
+        ``True`` if the dataset is time-series, ``False`` otherwise.
+    )doc";
+
+    inline constexpr char is_panel[] = R"doc(
+    Whether the dataset is panel data.
+
+    Returns
+    -------
+    bool
+        ``True`` if the dataset is panel data, ``False`` otherwise.
+    )doc";
+
+    inline constexpr char is_default[] = R"doc(
+    Whether this is the default dataset.
+
+    Returns
+    -------
+    bool
+        ``True`` if this Dataset is the default dataset, ``False`` otherwise.
+
+    See Also
+    --------
+    set_as_default
+        Set this Dataset as the default dataset.
+    )doc";
+
+    inline constexpr char source[] = R"doc(
+    Source of the dataset.
+
+    Returns
+    -------
+    str
+        String identifying the source of the Dataset. For a dataset loaded
+        from a file, this is its full path. For a cloned Dataset, the source
+        also identifies it as a copy of another Dataset.
+    )doc";
+
     inline constexpr char clone[] =
     R"doc(Return a deep copy of the dataset.)doc";
 
