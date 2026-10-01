@@ -1,6 +1,5 @@
 import gretl
 
-
 def run_example():
     # Load dataset.
     d1 = gretl.get_data("denmark.gdt")
@@ -44,28 +43,27 @@ def run_example():
     m1.fcast(vname="LRY", out_of_sample=True)
 
     # Impulse response functions (IRFs).
-    print("\nIRFs")
-    m1.irf(target=0, shock=0)
-    m1.irf(target="LRM", shock="LRY", alpha=0.1)
-    m1.irf(target=1, shock=0, alpha=0.1)
+    irf1 = m1.irf(target=0, shock=0)
+    irf2 = m1.irf(target="LRM", shock="LRY", alpha=0.1)
+    irf3 = m1.irf(target=1, shock=0, alpha=0.1)
 
     print("\nIRF outputs:")
-    print(m1.irfs[0])
-    print(m1.irfs[1])
-    print(m1.irfs[-1])
+    print(irf1)
+    print(irf2)
+    print(irf3)
 
     # IRF plotting (optional dependency).
     try:
         import matplotlib.pyplot as plt
 
         irf = m1.irfs[-1]
-        y = irf["results"].numpy_view[:, 0]
-        l = irf["results"].numpy_view[:, 1]
-        u = irf["results"].numpy_view[:, 2]
+        y = irf2.numpy_view[:, 0]
+        l = irf2.numpy_view[:, 1]
+        u = irf2.numpy_view[:, 2]
         x = list(range(1, len(y) + 1))
 
-        shock_name = irf["shock_name"]
-        target_name = irf["target_name"]
+        shock_name = "LRY"
+        target_name = "LRM"
 
         fig, ax = plt.subplots()
         ax.set_title(
