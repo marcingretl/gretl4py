@@ -1,8 +1,9 @@
 import gretl
 
 # for matrix
-gretl.genr('M', value=gretl.Matrix(10, 10, 'normal'))
-gretl.summary(matrix="M")
+M = gretl.Matrix(10, 10, 'normal')
+gretl.summary(matrix=M)
+M.summary()
 
 # for variables, we need a dataset in place
 d1 = gretl.get_data("greene19_1.gdt")

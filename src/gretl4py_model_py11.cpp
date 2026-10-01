@@ -20,6 +20,7 @@
 #include "gretl4py_model.h"
 #include "gretl4py_bundle.h"
 #include "gretl4py_model_instantiations.h"
+#include "docstrings/gretl4py_model_docstr.h"
 
 namespace py = pybind11;
 
@@ -75,12 +76,12 @@ void init_gretl4py_model_py11(py::module_ &m)
                            [](const GretlModel &self)
                            {
                                return self.get_dataset();
-                           })
+                           }, doc::Model::dataset)
     .def_property_readonly("estimated",
                            [](const GretlModel &self)
                            {
                                return self.estimated();
-                           })
+                           }, doc::Model::estimated)
     .def("__repr__", &GretlModel::repr_impl)
     .def("fit",
          [](GretlModel &self) -> GretlModel&
@@ -88,26 +89,31 @@ void init_gretl4py_model_py11(py::module_ &m)
              self.fit();
 
              return self;
-         })
+         }, doc::Model::fit)
     .def("get_accessor", &GretlModel::get_accessor,
-            py::arg("name").none(false))
-    .def("fcast", &GretlModel::forecast)
-    .def("get_formula", &GretlModel::get_formula)
-    .def("get_bundle", &GretlModel::get_bundle);
+            py::arg("name").none(false), doc::Model::get_accessor)
+    .def("fcast", &GretlModel::forecast, doc::Model::fcast)
+    .def("get_formula", &GretlModel::get_formula, doc::Model::get_formula)
+    .def("get_bundle", &GretlModel::get_bundle, doc::Model::get_bundle);
     gretl_model.attr("__module__") = "gretl";
 
     // Native Single Equation libgretl MODEL (NSE)
     auto gretl_model_nse = py::class_<GretlModel_NSE, GretlModel, std::unique_ptr<GretlModel_NSE>>(m, "Model_NSE", py::dynamic_attr());
 
     gretl_model_nse
-    .def_property_readonly("adj_rsq", &GretlModel_NSE::adj_rsq)
+    .def_property_readonly("adj_rsq", &GretlModel_NSE::adj_rsq, doc::Model::adj_rsq)
     .def("restrict", &GretlModel_NSE::restrict,
-            py::arg("impose").none(false), py::kw_only())
-    .def("save_yhat", &GretlModel_NSE::gretl_get_fit_or_resid<M_YHAT>, py::arg("name").none(true) = "")
-    .def("save_uhat", &GretlModel_NSE::gretl_get_fit_or_resid<M_UHAT>, py::arg("name").none(true) = "")
-    .def("save_uhat_sq", &GretlModel_NSE::gretl_get_fit_or_resid<M_UHAT2>, py::arg("name").none(true) = "")
-    .def("save_ahat", &GretlModel_NSE::gretl_get_fit_or_resid<M_AHAT>, py::arg("name").none(true) = "")
-    .def("save_h", &GretlModel_NSE::gretl_get_fit_or_resid<M_H>, py::arg("name").none(true) = "")
+            py::arg("impose").none(false), py::kw_only(), doc::Model::restrict)
+    .def("save_yhat", &GretlModel_NSE::gretl_get_fit_or_resid<M_YHAT>,
+         py::arg("name").none(true) = "", doc::Model::save_yhat)
+    .def("save_uhat", &GretlModel_NSE::gretl_get_fit_or_resid<M_UHAT>,
+         py::arg("name").none(true) = "", doc::Model::save_uhat)
+    .def("save_uhat_sq", &GretlModel_NSE::gretl_get_fit_or_resid<M_UHAT2>,
+         py::arg("name").none(true) = "", doc::Model::save_uhat_sq)
+    .def("save_ahat", &GretlModel_NSE::gretl_get_fit_or_resid<M_AHAT>,
+         py::arg("name").none(true) = "", doc::Model::save_ahat)
+    .def("save_h", &GretlModel_NSE::gretl_get_fit_or_resid<M_H>,
+         py::arg("name").none(true) = "", doc::Model::save_h)
     .def("_test",
          [](GretlModel_NSE &self, const std::string &type, const py::kwargs &kwargs) -> GretlBundlePtr
          {
@@ -205,7 +211,8 @@ void init_gretl4py_model_py11(py::module_ &m)
             py::arg("target").none(false), py::arg("shock").none(false), py::arg("alpha").none(true) = 0)
     .def("irf", py::overload_cast<const std::string&, const std::string&, double>(&GretlModel_VAR::irf),
             py::arg("target").none(false), py::arg("shock").none(false), py::arg("alpha").none(true) = 0)
-    .def("save_uhat", &GretlModel_VAR::save_uhat, py::arg("eqn").none(false), py::arg("name").none(true) = "");
+    .def("save_uhat", &GretlModel_VAR::save_uhat,
+         py::arg("eqn").none(false), py::arg("name").none(true) = "", doc::Model::save_uhat);
     gretl_model_var.attr("__module__") = "gretl";
 
     // VECM
@@ -213,7 +220,8 @@ void init_gretl4py_model_py11(py::module_ &m)
     py::class_<GretlModel_VAR_VECM, GretlModel_VAR, std::unique_ptr<GretlModel_VAR_VECM>>(m, "Model_vecm", py::dynamic_attr());
 
     gretl_model_var_vecm
-    .def("restrict", &GretlModel_VAR_VECM::restrict, py::arg("impose").none(false), py::kw_only())
+    .def("restrict", &GretlModel_VAR_VECM::restrict,
+         py::arg("impose").none(false), py::kw_only(), doc::Model::restrict)
     .def("save_ec_term", &GretlModel_VAR_VECM::save_ec_term, py::arg("nr").none(false), py::arg("name").none(true) = "");
     gretl_model_var_vecm.attr("__module__") = "gretl";
 
@@ -221,7 +229,9 @@ void init_gretl4py_model_py11(py::module_ &m)
     auto gretl_model_nme = py::class_<GretlModel_NME, GretlModel, std::unique_ptr<GretlModel_NME>>(m, "System", py::dynamic_attr());
 
     gretl_model_nme
-    .def("restrict", &GretlModel_NME::restrict, py::arg("impose").none(false), py::kw_only())
-    .def("save_uhat", &GretlModel_NME::save_uhat, py::arg("eqn").none(false), py::arg("name").none(true) = "");
+    .def("restrict", &GretlModel_NME::restrict,
+         py::arg("impose").none(false), py::kw_only(), doc::Model::restrict)
+    .def("save_uhat", &GretlModel_NME::save_uhat,
+         py::arg("eqn").none(false), py::arg("name").none(true) = "", doc::Model::save_uhat);
     gretl_model_nme.attr("__module__") = "gretl";
 }

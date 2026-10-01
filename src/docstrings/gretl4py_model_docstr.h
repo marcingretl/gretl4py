@@ -21,6 +21,246 @@
 
 namespace doc::Model {
 
+    inline constexpr char dataset[] = R"doc(
+    Dataset used by the model.
+
+    Returns
+    -------
+    gretl.Dataset
+        Dataset associated with this Model instance.
+    )doc";
+
+    inline constexpr char estimated[] = R"doc(
+    Whether the model has been estimated.
+
+    Returns
+    -------
+    bool
+        ``True`` if the model has been estimated, ``False`` otherwise.
+    )doc";
+
+    inline constexpr char adj_rsq[] = R"doc(
+    Adjusted R-squared of the estimated model.
+
+    Returns
+    -------
+    float
+        Adjusted R-squared.
+    )doc";
+
+    inline constexpr char get_accessor[] = R"doc(
+    Retrieve a gretl dollar accessor.
+
+    Retrieves accessors related either to the Model instance or to general
+    gretl accessors.
+
+    Parameters
+    ----------
+    name : str
+        Name of the accessor, including the ``$`` prefix.
+
+    Returns
+    -------
+    object
+        Value of the requested accessor.
+
+    Examples
+    --------
+    ``model.get_accessor("$coeff")``
+    ``model.get_accessor("$version")``
+    )doc";
+
+    inline constexpr char get_formula[] = R"doc(
+    Return the model specification.
+
+    Returns
+    -------
+    str
+        Model specification.
+    )doc";
+
+    inline constexpr char get_bundle[] = R"doc(
+    Return the model results as a gretl Bundle.
+
+    The returned Bundle corresponds to gretl's ``$model`` accessor and
+    contains model-related results and accessors.
+
+    Returns
+    -------
+    gretl.Bundle
+        Bundle containing the model results.
+    )doc";
+
+    inline constexpr char fcast[] = R"doc(
+    Generate forecasts based on the estimated model.
+
+    Parameters
+    ----------
+    *args
+        Forecast range, optional variable name, and, for recursive
+        forecasts, the number of steps ahead.
+
+    Other Parameters
+    ----------------
+    dynamic : bool
+        Generate dynamic forecasts.
+    static : bool
+        Generate static forecasts.
+    out_of_sample : bool
+        Generate post-sample forecasts.
+    no_stats : bool
+        Suppress forecast statistics.
+    stats_only : bool
+        Print forecast statistics only.
+    quiet : bool
+        Suppress all output.
+    recursive : bool
+        Generate recursive forecasts.
+    exponentiate : bool or int
+        Exponentiate forecasts of a logged dependent variable. An integer
+        value specifies the bias adjustment method.
+    integrate : bool
+        Integrate forecasts of a differenced dependent variable.
+    all_probs : bool
+        Generate probabilities for all possible outcomes.
+    plot : str
+        Filename for saving the forecast plot.
+
+    Examples
+    --------
+    ``model.fcast("1997:1", "2001:4", "f1")``
+    ``model.fcast("fit2")``
+    ``model.fcast("2004:1", "2008:3", 4, "rfcast", recursive=True)``
+    )doc";
+
+    inline constexpr char fit[] = R"doc(
+    Estimate the specified model.
+
+    Executes the underlying implementation of the estimator specified
+    by this Model instance.
+
+    Returns
+    -------
+    self
+        The estimated Model instance.
+    )doc";
+
+    inline constexpr char restrict[] = R"doc(
+    Impose restrictions on the estimated model.
+
+    Parameters
+    ----------
+    impose : list
+        List of strings defining the restrictions.
+
+    Other Parameters
+    ----------------
+    quiet : bool
+        Suppress restricted estimates.
+    silent : bool
+        Suppress all output.
+    wald : bool
+        Use a Wald test for system estimators.
+    bootstrap : bool
+        Bootstrap the test if possible.
+    full : bool
+        Set restricted estimates as the last model, where applicable.
+
+    Returns
+    -------
+    gretl.Bundle
+    Bundle containing the test statistic (``test``), p-value
+    (``pvalue``), and printed output (``summary``).
+
+    Examples
+    --------
+    ``model.restrict(["b[1] = 0", "b[2] - b[3] = 0"])``
+    )doc";
+
+    inline constexpr char save_yhat[] = R"doc(
+    Add fitted values to the dataset.
+
+    Parameters
+    ----------
+    name : str, optional
+        Name of the generated series. If omitted, a name is generated
+        according to the gretl naming convention.
+
+    Returns
+    -------
+    str
+        Name of the series added to the dataset.
+    )doc";
+
+    inline constexpr char save_uhat[] = R"doc(
+    Add residuals to the dataset.
+
+    The interpretation of the residuals depends on the estimator. For
+    example, for an ARMA model they are one-step-ahead forecast errors,
+    while for a probit model they are generalized residuals.
+
+    Parameters
+    ----------
+    name : str, optional
+        Name of the generated series. If omitted, a name is generated
+        according to the gretl naming convention.
+
+    Returns
+    -------
+    str
+        Name of the series added to the dataset.
+    )doc";
+
+    inline constexpr char save_uhat_sq[] = R"doc(
+    Add squared residuals to the dataset.
+
+    Parameters
+    ----------
+    name : str, optional
+        Name of the generated series. If omitted, a name is generated
+        according to the gretl naming convention.
+
+    Returns
+    -------
+    str
+        Name of the series added to the dataset.
+    )doc";
+
+    inline constexpr char save_ahat[] = R"doc(
+    Add estimates of the individual effects to the dataset.
+
+    This method is applicable to fixed-effects and random-effects panel
+    data models.
+
+    Parameters
+    ----------
+    name : str, optional
+        Name of the generated series. If omitted, a name is generated
+        according to the gretl naming convention.
+
+    Returns
+    -------
+    str
+        Name of the series added to the dataset.
+    )doc";
+
+    inline constexpr char save_h[] = R"doc(
+    Add the estimated conditional variance to the dataset.
+
+    This method is applicable to GARCH models.
+
+    Parameters
+    ----------
+    name : str, optional
+        Name of the generated series. If omitted, a name is generated
+        according to the gretl naming convention.
+
+    Returns
+    -------
+    str
+        Name of the series added to the dataset.
+    )doc";
+
     inline constexpr char ols[] = R"doc(
     Specify a linear model for estimation by ordinary least squares.
 

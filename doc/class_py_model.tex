@@ -21,7 +21,7 @@ The \classpymodel class provides the following public attributes.\newline
 Note, that some of them may be available for certain estimators only.
 
 \gretlfpycmd{adj\_rsq}
-\estdesc{Holds R-squared.}
+\estdesc{Returns adjusted R-squared.}
 \begin{lstlisting}[style=pythonstylefoot]
 .adj_rsq -> float
 \end{lstlisting}
@@ -57,13 +57,13 @@ Note, that some of them may be available for certain estimators only.
 \end{lstlisting}
 
 \gretlfpycmd{dataset}
-\estdesc{Reference to the \classpydataset instance used for model estimation.}
+\estdesc{Returns the \classpydataset instance associated with the model.}
 \begin{lstlisting}[style=pythonstylefoot]
 .dataset -> gretl.Dataset
 \end{lstlisting}
 
 \gretlfpycmd{estimated}
-\estdesc{Informs whether the model has already been estimated.}
+\estdesc{Indicates whether the model has been estimated.}
 \begin{lstlisting}[style=pythonstylefoot]
 .estimated -> bool
 \end{lstlisting}
@@ -163,14 +163,17 @@ The \classpymodel provides the following public methods:
 	are printed, otherwise the Python type is shown.}
 
 \gretlfpycmd{fcast()}\label{met:gretlmodel::fcast}
-\estdesc{Generates predictions based on estimated model.}
+\estdesc{Generates forecasts based on the estimated model.}
 \begin{lstlisting}[style=pythonstylefoot]
 .fcast(**args[, OPTS])
 \end{lstlisting}
-\mapto[0]{fcast [startobs endobs] [vname]}
+\mapto[none]{fcast [startobs endobs] [vname]}
 \mapto{fcast [startobs endobs] steps-ahead [vname] --recursive}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
 	\item[]\maptoopt{dynamic=True}{--dynamic}{create dynamic forecast}
+	\item[]\maptoopt{exponentiate=True}{--exponentiate}{exponentiate forecasts of a logged dependent variable}
+	\item[]\maptoopt{exponentiate=adjust}{--exponentiate=adjust}{exponentiate forecasts with the specified bias adjustment}
+	\item[]\maptoopt{integrate=True}{--integrate}{integrate forecasts of a differenced dependent variable}
 	\item[]\maptoopt{static=True}{--static}{create static forecast}
 	\item[]\maptoopt{out\_of\_sample=True}{--out-of-sample}{generate post-sample forecast}
 	\item[]\maptoopt{no\_stats=True}{--no-stats}{do not print forecast statistics}
@@ -181,9 +184,9 @@ The \classpymodel provides the following public methods:
 %	\item[]\maptoopt{plot=filename}{--plot=filename}{save forecast plot to file}
 \end{itemize}
 Examples:\newline
-\pythcodef{.fcast('1997:1', '2001:4', 'f1')}\\
-\pythcodef{.fcast('fit2')}\\
-\pythcodef{.fcast('2004:1', '2008:3', 4, 'rfcast', recursive=True)}\\
+\pythcodef{model.fcast('1997:1', '2001:4', 'f1')}\\
+\pythcodef{model.fcast('fit2')}\\
+\pythcodef{model.fcast('2004:1', '2008:3', 4, 'rfcast', recursive=True)}\\
 \generaldesc{Forecasts are generated for a certain
 	range of observations: if \textit{startobs} and
 	\textit{endobs} are given, for that range (if possible);
@@ -205,31 +208,30 @@ Examples:\newline
 	using the accessor \gretlcmd{\$fcast}, and the standard errors,
 	if available, via \gretlcmd{\$fcse}.}
 
-
 \gretlfpycmd{fit()}
-\estdesc{Executes the underlying implementation of
-	the specified estimator in \gretlpy.}
+\estdesc{Executes the underlying implementation of the
+	specified estimator in \gretlpy.}
 \begin{lstlisting}[style=pythonstylefoot]
 .fit() -> self
 \end{lstlisting}
 
 \gretlfpycmd{get\_accessor()}\label{met:gretlmodel::get_accessor}
-\estdesc{This method retrieves model-based \lgretl['s] ``dollar accessors''.}
+\estdesc{This method retrieves \lgretl['s] ``dollar accessors''.}
 \begin{lstlisting}[style=pythonstylefoot]
 .get_accessor(name: str) -> object
 \end{lstlisting}
-\generaldesc{Note: this method retrieves accessors related either
-	to the \classpymodel or to general \lgretl accessors
+\generaldesc{This method retrieves accessors related either
+	to the \classpymodel instance or to general \lgretl accessors
 	(such as \gretlcmd{\$version}).}
 
 \gretlfpycmd{get\_bundle()}
-\estdesc{Returns \lgretl['s] \gretlcmd{\$model} bundle.}
+\estdesc{Returns the \lgretl \gretlcmd{\$model} bundle.}
 \begin{lstlisting}[style=pythonstylefoot]
 .get_bundle() -> gretl.Bundle
 \end{lstlisting}
 
 \gretlfpycmd{get\_formula()}
-\estdesc{Returns model specification.}
+\estdesc{Returns the model specification.}
 \begin{lstlisting}[style=pythonstylefoot]
 .get_formula() -> str
 \end{lstlisting}
@@ -290,8 +292,13 @@ The \pythcode{gretl.Model\_NSE} class provides the following public methods:
 	\item[]\maptoopt{quiet=True}{--quiet}{don't print restricted estimates}
 	\item[]\maptoopt{silent=True}{--silent}{don't print anything}
 	\item[]\maptoopt{bootstrap=True}{--bootstrap}{bootstrap the test if possible}
-	\item[]\maptoopt{full=True}{--full}{\seegretlmanual}
+	\item[]\maptoopt{full=True}{--full}{set restricted estimates as the last model (\seegretlmanual)}
 \end{itemize}
+\generaldesc{The \textit{impose} argument is a list of strings defining
+	the restrictions. On successful completion, the returned
+	\classpybundle contains the test statistic (\gretlcmd{test}),
+	its p-value (\gretlcmd{pvalue}), and the printed output
+	(\gretlcmd{summary}).}
 
 \gretlfpycmd{save\_ahat()}
 \estdesc{Adds the estimates of the individual effects to the dataset
@@ -300,8 +307,8 @@ The \pythcode{gretl.Model\_NSE} class provides the following public methods:
 .save_ahat(name: str = '') -> str
 \end{lstlisting}
 \mapto[none]{name = \$ahat}
-\generaldesc{Note: if \textit{name} is not provided, the generated series 
-	will be named according to the \lgretl['s] pattern.}
+\generaldesc{If \textit{name} is not provided, the generated series
+	is named according to the \lgretl naming convention.}
 
 \gretlfpycmd{save\_h()}
 \estdesc{Adds the estimated conditional variance to the dataset
@@ -310,26 +317,29 @@ The \pythcode{gretl.Model\_NSE} class provides the following public methods:
 .save_h(name: str = '') -> str
 \end{lstlisting}
 \mapto[none]{name = \$h}
-\generaldesc{Note: if \textit{name} is not provided, the generated series 
-	will be named according to the \lgretl['s] pattern.}
+\generaldesc{If \textit{name} is not provided, the generated series
+	is named according to the \lgretl naming convention.}
 
 \gretlfpycmd{save\_uhat()}
 \estdesc{Adds residuals to the dataset under the given name.}
 \begin{lstlisting}[style=pythonstylefoot]
 .save_uhat(name: str = '') -> str
 \end{lstlisting}
-\mapto[0]{name = \$uhat}
-\generaldesc{Note: if \textit{name} is not provided, the generated series 
-	will be named according to the \lgretl['s] pattern.}
+\mapto[none]{name = \$uhat}
+\generaldesc{If \textit{name} is not provided, the generated series
+	is named according to the \lgretl naming convention. The
+	interpretation of the residuals depends on the estimator. For
+	example, for an ARMA model they are one-step-ahead forecast
+	errors, while for a probit model they are generalized residuals.}
 
 \gretlfpycmd{save\_uhat\_sq()}
-\estdesc{Adds squares of residuals to the dataset under the given name.}
+\estdesc{Adds squared residuals to the dataset under the given name.}
 \begin{lstlisting}[style=pythonstylefoot]
 .save_uhat_sq(name: str = '') -> str
 \end{lstlisting}
 \mapto[none]{name = \$uhat\^2}
-\generaldesc{Note: if \textit{name} is not provided, the generated series 
-	will be named according to the \lgretl['s] pattern.}
+\generaldesc{If \textit{name} is not provided, the generated series
+	is named according to the \lgretl naming convention.}
 
 \gretlfpycmd{save\_yhat()}
 \estdesc{Adds fitted values to the dataset under the given name.}
@@ -337,8 +347,8 @@ The \pythcode{gretl.Model\_NSE} class provides the following public methods:
 .save_yhat(name: str = '') -> str
 \end{lstlisting}
 \mapto[none]{name = \$yhat}
-\generaldesc{Note: if \textit{name} is not provided, the generated series 
-	will be named according to the \lgretl['s] pattern.}
+\generaldesc{If \textit{name} is not provided, the generated series
+	is named according to the \lgretl naming convention.}
 
 \gretlfpycmd{test()}\label{met:gretlmodel::test}
 \estdesc{General interface to model-based tests.}
@@ -602,7 +612,7 @@ The \pythcode{gretl.Model\_var} class provides the following public methods:
 The \pythcode{gretl.Model\_vecm} class provides the following public methods:
 
 \gretlfpycmd{restrict()}
-\estdesc{Imposes a set of (usually linear) restrictions on the system of equations.}
+\estdesc{Imposes a set of (usually linear) restrictions on the VECM.}
 \begin{lstlisting}[style=pythonstylefoot]
 .restrict(impose: list[, OPTS]) -> gretl.Bundle
 \end{lstlisting}
@@ -610,12 +620,14 @@ The \pythcode{gretl.Model\_vecm} class provides the following public methods:
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
 	\item[]\maptoopt{quiet=True}{--quiet}{don't print restricted estimates}
 	\item[]\maptoopt{silent=True}{--silent}{don't print anything}
-	\item[]\maptoopt{bootstrap=True}{--bootstrap}{bootstrap the test if possible}
-	\item[]\maptoopt{full=True}{--full}{\seegretlmanual}
+	\item[]\maptoopt{full=True}{--full}{set restricted estimates as the last model (\seegretlmanual)}
 \end{itemize}
-\generaldesc{If the \gretlcmd{--wald} option is given the,
-	restriction is tested right away, via a Wald $\chi^2$
-	test on the covariance matrix.}
+\generaldesc{The \textit{impose} argument is a list of strings defining
+	the restrictions. On successful completion, the returned
+	\classpybundle contains the test statistic (\gretlcmd{test}),
+	its p-value (\gretlcmd{pvalue}), and the printed output
+	(\gretlcmd{summary}). See the \gretl User's Guide for details
+	on restrictions in Vector Error Correction Models.}
 
 \gretlfpycmd{save\_ec\_term()}
 \estdesc{Adds the error-correction term from the specified equation
@@ -642,12 +654,15 @@ The \pythcode{gretl.Model\_NME} class provides the following public methods:
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
 	\item[]\maptoopt{quiet=True}{--quiet}{don't print restricted estimates}
 	\item[]\maptoopt{silent=True}{--silent}{don't print anything}
-	\item[]\maptoopt{bootstrap=True}{--bootstrap}{bootstrap the test if possible}
-	\item[]\maptoopt{full=True}{--full}{\seegretlmanual}
+	\item[]\maptoopt{wald=True}{--wald}{perform a Wald test}
 \end{itemize}
-\generaldesc{If the \gretlcmd{--wald} option is given the,
-	restriction is tested right away, via a Wald $\chi^2$
-	test on the covariance matrix.}
+\generaldesc{The \textit{impose} argument is a list of strings defining
+	the restrictions. If the \gretlcmd{--wald} option is given,
+	the restrictions are tested immediately via a Wald $\chi^2$
+	test on the covariance matrix. On successful completion, the
+	returned \classpybundle contains the test statistic
+	(\gretlcmd{test}), its p-value (\gretlcmd{pvalue}), and the
+	printed output (\gretlcmd{summary}).}
 
 \gretlfpycmd{save\_uhat()}
 \estdesc{Adds residuals from specified equation to the dataset under the given name.}
