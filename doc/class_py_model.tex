@@ -499,80 +499,172 @@ Examples:\newline
 \end{itemize}
 
 
-\subsubsection{\pythcodeb{gretl.Model\_NSE\_nl} methods}
+\subsubsection{\pythcodeb{gretl.Model\_nls} methods}
 \begin{quote}\Large\centering Note: this class is \experimental\end{quote}
-The \pythcode{gretl.Model\_NSE\_nl} class provides the following public methods:
+The \pythcode{gretl.Model\_nls} class provides the following public methods:
 
 \gretlfpycmd{add\_deriv()}
-\estdesc{\tbw -- \experimental}
-\begin{lstlisting}[style=pythonstyle]
-.add_deriv(line=str) -> self
+\estdesc{Adds an analytical derivative of the regression function
+	with respect to a model parameter.}
+\begin{lstlisting}[style=pythonstylefoot]
+.add_deriv(line: str) -> self
 \end{lstlisting}
+\mapto[none]{deriv line}\\
+\generaldesc{The \textit{line} argument specifies a parameter followed
+	by an equals sign and an expression for the derivative. This method
+	may be called repeatedly to specify derivatives with respect to
+	successive model parameters.}
 
 \gretlfpycmd{add\_initval()}
-\estdesc{\tbw -- \experimental}
-\begin{lstlisting}[style=pythonstyle]
-.add_initval(varname=str, values=float) -> self
+\estdesc{Sets an initial value for a parameter of the nonlinear
+	least-squares model.}
+\begin{lstlisting}[style=pythonstylefoot]
+.add_initval(name: str, value: float) -> self
 \end{lstlisting}
-
-\gretlfpycmd{add\_orthog()}
-\estdesc{\tbw -- \experimental}
-\begin{lstlisting}[style=pythonstyle]
-.add_orthog(line=str) -> self
-\end{lstlisting}
+\generaldesc{The specified value is used as the starting value of the
+	parameter in nonlinear least-squares estimation.}
 
 \gretlfpycmd{add\_params()}
-\estdesc{\tbw -- \experimental}
-\begin{lstlisting}[style=pythonstyle]
-.add_params(line=str) -> self
+\estdesc{Specifies the parameters to be estimated in a nonlinear
+	least-squares model.}
+\begin{lstlisting}[style=pythonstylefoot]
+.add_params(line: str) -> self
 \end{lstlisting}
+\mapto[none]{params line}\\
+\generaldesc{This method is used when analytical derivatives are not
+	supplied. In this case the Jacobian is computed numerically.
+	Parameter names in \textit{line} may be separated by spaces or commas.}
+
+\gretlfpycmd{add\_param\_names()}\label{met:gretlmodelnls::test}
+\estdesc{Specifies informative names for the model parameters.}
+\begin{lstlisting}[style=pythonstylefoot]
+.add_param_names(line: str) -> self
+\end{lstlisting}
+\mapto[none]{param\_names "line"}\\
+\generaldesc{The names specified in \textit{line} are used when
+	displaying estimation results and do not affect the parameter names
+	used in the model specification.}
+
+
+\subsubsection{\pythcodeb{gretl.Model\_mle} methods}
+\begin{quote}\Large\centering Note: this class is \experimental\end{quote}
+The \pythcode{gretl.Model\_mle} class provides the following public methods:
+
+\gretlfpycmd{add\_deriv()}
+\estdesc{Adds an analytical derivative of the log-likelihood function
+	with respect to a model parameter.}
+\begin{lstlisting}[style=pythonstylefoot]
+.add_deriv(line: str) -> self
+\end{lstlisting}
+\mapto[none]{deriv line}\\
+\generaldesc{The \textit{line} argument specifies a parameter followed
+	by an equals sign and an expression for the derivative. This method
+	may be called repeatedly to specify derivatives with respect to
+	successive model parameters.}
+
+\gretlfpycmd{add\_initval()}
+\estdesc{Sets an initial value for a parameter of the maximum
+	likelihood model.}
+\begin{lstlisting}[style=pythonstylefoot]
+.add_initval(name: str, value: float) -> self
+\end{lstlisting}
+\generaldesc{The specified value is used as the starting value of the
+	parameter in maximum likelihood estimation.}
+
+\gretlfpycmd{add\_params()}
+\estdesc{Specifies the parameters to be estimated in a maximum
+	likelihood model.}
+\begin{lstlisting}[style=pythonstylefoot]
+	.add_params(line: str) -> self
+\end{lstlisting}
+\mapto[none]{params line}\\
+\generaldesc{This method is used when analytical derivatives are not
+	supplied, in which case they are computed numerically. The parameters
+	listed in \textit{line} may be scalars, vectors, or a combination
+	of the two.}
 
 \gretlfpycmd{add\_param\_names()}
-\estdesc{\tbw -- \experimental}
-\begin{lstlisting}[style=pythonstyle]
-.add_param_names(line=str) -> self
+\estdesc{Specifies informative names for the model parameters.}
+\begin{lstlisting}[style=pythonstylefoot]
+.add_param_names(line: str) -> self
 \end{lstlisting}
+\generaldesc{See description on \pageref{met:gretlmodelnls::test}.}
 
 \gretlfpycmd{add\_statements()}
-\estdesc{\tbw -- \experimental}
-\begin{lstlisting}[style=pythonstyle]
-.add_statements(line=str) -> self
+\estdesc{Adds a statement to the maximum likelihood specification.}
+\begin{lstlisting}[style=pythonstylefoot]
+.add_statements(line: str) -> self
 \end{lstlisting}
+\mapto[none]{line}\\
+\generaldesc{The statement specified by \textit{line} may be used to
+	compute auxiliary quantities required for evaluating the
+	log-likelihood function. This method may be called repeatedly
+	to add successive statements.}
+
+
+\subsubsection{\pythcodeb{gretl.Model\_gmm} methods}
+\begin{quote}\Large\centering Note: this class is \experimental\end{quote}
+The \pythcode{gretl.Model\_gmm} class provides the following public methods:
+
+\gretlfpycmd{add\_initval()}
+\estdesc{Sets an initial value for a parameter of the GMM model.}
+\begin{lstlisting}[style=pythonstylefoot]
+.add_initval(name: str, value: float) -> self
+\end{lstlisting}
+\generaldesc{The specified value is used as the starting value of the
+	parameter in GMM estimation.}
+
+\gretlfpycmd{add\_orthog()}
+\estdesc{Adds a set of orthogonality conditions for GMM estimation.}
+\begin{lstlisting}[style=pythonstylefoot]
+.add_orthog(line: str) -> self
+\end{lstlisting}
+\mapto[none]{orthog line}\\
+\generaldesc{The \textit{line} argument specifies the residual or error
+	term followed by a semicolon and the associated instruments. This
+	method may be called repeatedly to add successive sets of
+	orthogonality conditions.}
+
+\gretlfpycmd{add\_params()}
+\estdesc{Specifies the parameters to be estimated in a GMM model.}
+\begin{lstlisting}[style=pythonstylefoot]
+.add_params(line: str) -> self
+\end{lstlisting}
+\mapto{params line}
+
+\gretlfpycmd{add\_param\_names()}
+\estdesc{Specifies informative names for the model parameters.}
+\begin{lstlisting}[style=pythonstylefoot]
+.add_param_names(line: str) -> self
+\end{lstlisting}
+\generaldesc{See description on \pageref{met:gretlmodelnls::test}.}
+
+\gretlfpycmd{add\_statements()}
+\estdesc{Adds a statement to the GMM specification.}
+\begin{lstlisting}[style=pythonstylefoot]
+.add_statements(line: str) -> self
+\end{lstlisting}
+\mapto[none]{line}\\
+\generaldesc{The statement specified by \textit{line} may be used to
+	update quantities required for evaluating the orthogonality
+	conditions. This method may be called repeatedly to add successive
+	statements.}
 
 \gretlfpycmd{add\_weights()}
-\estdesc{\tbw -- \experimental}
-\begin{lstlisting}[style=pythonstyle]
-.add_weights(line=str) -> self
+\estdesc{Specifies the initial weighting matrix for GMM estimation.}
+\begin{lstlisting}[style=pythonstylefoot]
+.add_weights(line: str) -> self
 \end{lstlisting}
+\mapto[none]{weights line}\\
+\generaldesc{The \textit{line} argument specifies the matrix containing
+	the initial weights used in GMM estimation.}
 
 
 \subsubsection{\pythcodeb{gretl.Model\_var} attributes}
 The \pythcode{gretl.Model\_var} class provides the following public attributes:
 
-\gretlfpycmd{irfs}\label{met:gretlmodel::irfs}
-\estdesc{List storing summaries of computed IRFs.}
-\begin{generaldescenv}
-	This is a \pythcode{list} of \pythcode{dict} objects that is
-	created immediately after the first IRF is computed (see
-	\ref{met:gretlmodel::irf}). That is, this attribute is
-	\emph{not} created when the \pythcode{gretl.Model_var}
-	instance itself is initialized. Each \pythcode{dict}
-	containing IRF results has the following structure:
-	\begin{lstlisting}[style=pythonstylefoot]
-{
- "target":       <target series ID>,
- "target_name":  <target series name>,
- "shock":        <shock series ID>,
- "shock_name":   <shock series name>, 
- "results":      <gretl.Matrix containing the IRF estimates>,
- "alpha":        <significance level, .if supplied>
-}
-	\end{lstlisting}
-	Results from consecutive IRF computations are appended to this
-	attribute. Therefore, to access the results of the most recently
-	computed IRF, one can use \pythcode{irfs[-1]}.
-\end{generaldescenv}
-
+\gretlfpycmd{irfs}
+\estdesc{\deprecated}
 
 \subsubsection{\pythcodeb{gretl.Model\_var} methods}
 The \pythcode{gretl.Model\_var} class provides the following public methods:
@@ -581,10 +673,9 @@ The \pythcode{gretl.Model\_var} class provides the following public methods:
 \estdesc{Computes impulse response functions (IRFs) for a VAR or VECM,
 	traced out over the default forecast horizon.}
 \begin{lstlisting}[style=pythonstylefoot]
-.irf(target: int, shock: int, alpha: float = 0)
-.irf(target: str, shock: str, alpha: float = 0)
+.irf(target: int | str, shock: int | str, alpha: float = 0) -> gretl.Matrix
 \end{lstlisting}
-\maptof{irf(target, shock, alpha)}{None}
+\maptof{irf(target, shock, alpha)}{matrix}
 \generaldesc{The \textit{target} and \textit{shock} arguments may be
 	specified either as variable names or as 1-based indices of the
 	endogenous variables in the system. A value of \texttt{0} denotes
@@ -592,20 +683,18 @@ The \pythcode{gretl.Model\_var} class provides the following public methods:
 	target variable) correspond to a one-standard-deviation innovation
 	in the shock variable. If \textit{alpha} is given a suitable
 	positive value, the estimates include a $1-\alpha$ confidence
-	interval (for example, \texttt{alpha=0.1} yields a 90\% interval).
-	Each call appends a new entry to the \pythcode{irfs} attribute,
-	with the IRF estimates stored under the \pythcode{"results"} key
-	of the corresponding dictionary.}
+	interval (for example, \texttt{alpha=0.1} yields a 90\% interval).}
 
 \gretlfpycmd{save\_uhat()}
-\estdesc{Adds residuals from specified equation to the dataset under the given name.}
+\estdesc{Adds residuals from the specified equation to the dataset
+	under the given name.}
 \begin{lstlisting}[style=pythonstylefoot]
 .save_uhat(eqn: int, name: str = '') -> str
 \end{lstlisting}
 \mapto[0]{series name = \$uhat[, eqn]}
-\generaldesc{Note: if \textit{name} is not provided, the generated series 
-	will be named according to the following pattern: \texttt{m\_ID\_uhat}, 
-	where \texttt{ID} is the equation's ID.}
+\generaldesc{The \textit{eqn} argument is the 1-based equation number.
+	If \textit{name} is not provided, the generated series is named
+	according to the \lgretl naming convention.}
 
 
 \subsubsection{\pythcodeb{gretl.Model\_vecm} methods}
@@ -635,11 +724,12 @@ The \pythcode{gretl.Model\_vecm} class provides the following public methods:
 \begin{lstlisting}[style=pythonstylefoot]
 .save_ec_term(nr: int, name: str = '') -> str
 \end{lstlisting}
-\mapto[0]{series name = \$ec[, nr]}
-\generaldesc{Note: if \textit{name} is not provided, the generated series
-	will be named according to the following pattern:
-	\texttt{m\_EC\_\textit{nr}}, where \textit{nr} is the
-	error-correction term number.}
+\mapto[none]{series name = \$ec[, nr]}
+\generaldesc{The \textit{nr} argument is the 1-based number of the
+	error-correction term to retrieve. If \textit{name} is not provided,
+	the generated series is named according to the pattern
+	\texttt{m\textit{id}\_EC\textit{nr}}, where \textit{id} is the model
+	identifier and \textit{nr} is the error-correction term number.}
 
 
 \subsubsection{\pythcodeb{gretl.Model\_NME} methods}
@@ -665,12 +755,14 @@ The \pythcode{gretl.Model\_NME} class provides the following public methods:
 	printed output (\gretlcmd{summary}).}
 
 \gretlfpycmd{save\_uhat()}
-\estdesc{Adds residuals from specified equation to the dataset under the given name.}
+\estdesc{Adds residuals from the specified equation to the dataset
+	under the given name.}
 \begin{lstlisting}[style=pythonstylefoot]
 .save_uhat(eqn: int, name: str = '') -> str
 \end{lstlisting}
-\mapto[0]{series name = \$uhat[, eqn]}
-\generaldesc{Note: if \textit{name} is not provided, the generated series 
-	will be named according to the following pattern: \texttt{m\_ID\_uhat}, 
-	where \texttt{ID} is the equation's ID.}
+\mapto[none]{series name = \$uhat[, eqn]}
+\generaldesc{The \textit{eqn} argument is the 1-based equation number.
+	If \textit{name} is not provided, the generated series is named
+	according to the pattern \texttt{m\_ID\_uhat}, where \texttt{ID}
+	is the equation's ID.}
 

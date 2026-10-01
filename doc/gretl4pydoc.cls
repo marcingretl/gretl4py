@@ -103,6 +103,9 @@
 		{gretl.Package}{{\textcolor{pythtype}{gretl.Package}}}{13}
 		{numpy.ndarray}{{\textcolor{pythtype}{numpy.ndarray}}}{13}
 		{gretl.Model\_var}{{\textcolor{pythtype}{gretl.Model\_var}}}{16}
+		{gretl.Model\_nls}{{\textcolor{pythtype}{gretl.Model\_nls}}}{16}
+		{gretl.Model\_mle}{{\textcolor{pythtype}{gretl.Model\_mle}}}{16}
+		{gretl.Model\_gmm}{{\textcolor{pythtype}{gretl.Model\_gmm}}}{16}
 		{gretl.Model\_NSE}{{\textcolor{pythtype}{gretl.Model\_NSE}}}{16}
 		{gretl.Model\_NME}{{\textcolor{pythtype}{gretl.Model\_NME}}}{16}
 		{pandas.DataFrame}{{\textcolor{pythtype}{pandas.DataFrame}}}{16}

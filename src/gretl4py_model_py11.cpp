@@ -19,6 +19,7 @@
 
 #include "gretl4py_model.h"
 #include "gretl4py_bundle.h"
+#include "gretl4py_matrix.h"
 #include "gretl4py_model_instantiations.h"
 #include "docstrings/gretl4py_model_docstr.h"
 
@@ -172,33 +173,36 @@ void init_gretl4py_model_py11(py::module_ &m)
     py::class_<GretlModel_NSE_nl<NLS>, GretlModel_NSE, std::unique_ptr<GretlModel_NSE_nl<NLS>>>(m, "Model_nls", py::dynamic_attr());
 
     gretl_model_nse_nl_nls
-    .def("add_params", &nl_add_line_to_parse<NLS, PARAMS>)
-    .def("add_param_names", &nl_add_line_to_parse<NLS, PARAM_NAMES>)
-    .def("add_deriv", &nl_add_line_to_parse<NLS, DERIV>)
-    .def("add_initval", &nl_add_init_value<NLS>, py::arg("varname").none(false), py::arg("value").none(false));
+    .def("add_params", &nl_add_line_to_parse<NLS, PARAMS>, doc::Model::nls_add_params)
+    .def("add_param_names", &nl_add_line_to_parse<NLS, PARAM_NAMES>, doc::Model::add_param_names)
+    .def("add_deriv", &nl_add_line_to_parse<NLS, DERIV>, doc::Model::nls_add_deriv)
+    .def("add_initval", &nl_add_init_value<NLS>,
+         py::arg("varname").none(false), py::arg("value").none(false), doc::Model::nls_add_initval);
     gretl_model_nse_nl_nls.attr("__module__") = "gretl";
 
     auto gretl_model_nse_nl_mle =
     py::class_<GretlModel_NSE_nl<MLE>, GretlModel_NSE, std::unique_ptr<GretlModel_NSE_nl<MLE>>>(m, "Model_mle", py::dynamic_attr());
 
     gretl_model_nse_nl_mle
-    .def("add_params", &nl_add_line_to_parse<MLE, PARAMS>)
-    .def("add_param_names", &nl_add_line_to_parse<MLE, PARAM_NAMES>)
-    .def("add_deriv", &nl_add_line_to_parse<MLE, DERIV>)
-    .def("add_statements", &nl_add_line_to_parse<MLE, STATEMENTS>)
-    .def("add_initval", &nl_add_init_value<MLE>, py::arg("varname").none(false), py::arg("value").none(false));
+    .def("add_params", &nl_add_line_to_parse<MLE, PARAMS>, doc::Model::mle_add_params)
+    .def("add_param_names", &nl_add_line_to_parse<MLE, PARAM_NAMES>, doc::Model::add_param_names)
+    .def("add_deriv", &nl_add_line_to_parse<MLE, DERIV>, doc::Model::mle_add_deriv)
+    .def("add_statements", &nl_add_line_to_parse<MLE, STATEMENTS>, doc::Model::mle_add_statements)
+    .def("add_initval", &nl_add_init_value<MLE>,
+         py::arg("varname").none(false), py::arg("value").none(false), doc::Model::mle_add_initval);
     gretl_model_nse_nl_mle.attr("__module__") = "gretl";
 
     auto gretl_model_nse_nl_gmm =
     py::class_<GretlModel_NSE_nl<GMM>, GretlModel_NSE, std::unique_ptr<GretlModel_NSE_nl<GMM>>>(m, "Model_gmm", py::dynamic_attr());
 
     gretl_model_nse_nl_gmm
-    .def("add_params", &nl_add_line_to_parse<GMM, PARAMS>)
-    .def("add_param_names", &nl_add_line_to_parse<GMM, PARAM_NAMES>)
-    .def("add_weights", &nl_add_line_to_parse<GMM, WEIGHTS>)
-    .def("add_orthog", &nl_add_line_to_parse<GMM, ORTHOG>)
-    .def("add_statements", &nl_add_line_to_parse<GMM, STATEMENTS>)
-    .def("add_initval", &nl_add_init_value<GMM>, py::arg("varname").none(false), py::arg("value").none(false));
+    .def("add_params", &nl_add_line_to_parse<GMM, PARAMS>, doc::Model::gmm_add_params)
+    .def("add_param_names", &nl_add_line_to_parse<GMM, PARAM_NAMES>, doc::Model::add_param_names)
+    .def("add_weights", &nl_add_line_to_parse<GMM, WEIGHTS>, doc::Model::gmm_add_weights)
+    .def("add_orthog", &nl_add_line_to_parse<GMM, ORTHOG>, doc::Model::gmm_add_orthog)
+    .def("add_statements", &nl_add_line_to_parse<GMM, STATEMENTS>, doc::Model::gmm_add_statements)
+    .def("add_initval", &nl_add_init_value<GMM>,
+         py::arg("varname").none(false), py::arg("value").none(false), doc::Model::gmm_add_initval);
     gretl_model_nse_nl_gmm.attr("__module__") = "gretl";
 
     // VAR
@@ -208,11 +212,13 @@ void init_gretl4py_model_py11(py::module_ &m)
     .def("_test", &GretlModel_VAR::test,
             py::arg("type").none(false), py::kw_only())
     .def("irf", py::overload_cast<int, int, double>(&GretlModel_VAR::irf),
-            py::arg("target").none(false), py::arg("shock").none(false), py::arg("alpha").none(true) = 0)
+            py::arg("target").none(false), py::arg("shock").none(false),
+         py::arg("alpha").none(true) = 0)
     .def("irf", py::overload_cast<const std::string&, const std::string&, double>(&GretlModel_VAR::irf),
-            py::arg("target").none(false), py::arg("shock").none(false), py::arg("alpha").none(true) = 0)
+            py::arg("target").none(false), py::arg("shock").none(false),
+         py::arg("alpha").none(true) = 0, doc::Model::irf)
     .def("save_uhat", &GretlModel_VAR::save_uhat,
-         py::arg("eqn").none(false), py::arg("name").none(true) = "", doc::Model::save_uhat);
+         py::arg("eqn").none(false), py::arg("name").none(true) = "", doc::Model::save_system_uhat);
     gretl_model_var.attr("__module__") = "gretl";
 
     // VECM
@@ -222,7 +228,8 @@ void init_gretl4py_model_py11(py::module_ &m)
     gretl_model_var_vecm
     .def("restrict", &GretlModel_VAR_VECM::restrict,
          py::arg("impose").none(false), py::kw_only(), doc::Model::restrict)
-    .def("save_ec_term", &GretlModel_VAR_VECM::save_ec_term, py::arg("nr").none(false), py::arg("name").none(true) = "");
+    .def("save_ec_term", &GretlModel_VAR_VECM::save_ec_term,
+         py::arg("nr").none(false), py::arg("name").none(true) = "", doc::Model::save_ec_term);
     gretl_model_var_vecm.attr("__module__") = "gretl";
 
     // Native Multiple Equation libgretl SYSTEM (NME) GretlModel_NME
@@ -232,6 +239,6 @@ void init_gretl4py_model_py11(py::module_ &m)
     .def("restrict", &GretlModel_NME::restrict,
          py::arg("impose").none(false), py::kw_only(), doc::Model::restrict)
     .def("save_uhat", &GretlModel_NME::save_uhat,
-         py::arg("eqn").none(false), py::arg("name").none(true) = "", doc::Model::save_uhat);
+         py::arg("eqn").none(false), py::arg("name").none(true) = "", doc::Model::save_system_uhat);
     gretl_model_nme.attr("__module__") = "gretl";
 }

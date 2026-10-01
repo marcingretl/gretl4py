@@ -1354,31 +1354,35 @@ int GretlModel_VAR::find_variable_nr_ (const std::string &variable_name)
     return -1; // not found
 }
 
-void GretlModel_VAR::irf (int target, int shock, double alpha)
+GretlMatrixPtr GretlModel_VAR::irf (int target, int shock, double alpha)
 {
     //
     // this method mimics gretl's irf() function
     //
-    py::dict res;
+    GretlMatrixPtr res = nullptr;
+    GretlBundlePtr res_bundle = std::make_shared<GretlBundle>();
 
     // we compute IRFs
     gretl_matrix_ptr irf(gretl_VAR_get_impulse_response(model_, target, shock, default_VAR_horizon(dataset_->dset), alpha, dataset_->dset, &err_));
 
     if (err_) handle_gretl_error(err_);
+    res = std::make_shared<GretlMatrix>(irf.release(), false);
 
     // we manufacture resulting object
-    res[py::cast("target")] = target;
-    res[py::cast("target_name")] = dataset_->dset->varname[gretl_VAR_get_variable_number(model_, target)];
-    res[py::cast("shock")] = shock;
-    res[py::cast("shock_name")] = dataset_->dset->varname[gretl_VAR_get_variable_number(model_, shock)];
-    res[py::cast("results")] = std::make_shared<GretlMatrix>(irf.release(), false);
-    if (alpha > 0.0) res[py::cast("alpha")] = alpha;
+    res_bundle->set_element<int>("type", target);
+    res_bundle->set_element<std::string>("target_name", dataset_->dset->varname[gretl_VAR_get_variable_number(model_, target)]);
+    res_bundle->set_element<int>("shock", shock);
+    res_bundle->set_element<std::string>("shock_name", dataset_->dset->varname[gretl_VAR_get_variable_number(model_, shock)]);
+    res_bundle->set_element<GretlMatrixPtr>("results", res);
+    if (alpha > 0.0) res_bundle->set_element<double>("alpha", alpha);
 
     // we register result
-    move_to_python_container<GretlModel, py::dict, py::list>(*this, std::move(res), "irfs");
+    move_to_python_container<GretlModel, py::dict, py::list>(*this, res_bundle->to_dict(), "irfs");
+
+    return res;
 }
 
-void GretlModel_VAR::irf (const std::string &target, const std::string &shock, double alpha)
+GretlMatrixPtr GretlModel_VAR::irf (const std::string &target, const std::string &shock, double alpha)
 {
     //
     // this method mimics gretl's irf() function
@@ -1401,7 +1405,7 @@ void GretlModel_VAR::irf (const std::string &target, const std::string &shock, d
     if (shock_int == -1) throw std::invalid_argument("shock value is invalid");
 
     // we do the job
-    irf(target_int, shock_int, alpha);
+    return irf(target_int, shock_int, alpha);
 }
 
 //

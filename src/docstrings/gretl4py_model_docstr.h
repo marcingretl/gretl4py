@@ -261,6 +261,266 @@ namespace doc::Model {
         Name of the series added to the dataset.
     )doc";
 
+    inline constexpr char nls_add_params[] = R"doc(
+    Specify the parameters to be estimated.
+
+    Use this method when analytical derivatives are not supplied. The
+    Jacobian is then computed numerically.
+
+    Parameters
+    ----------
+    line : str
+        Space- or comma-separated list of parameter names.
+
+    Returns
+    -------
+    self
+        The Model instance.
+
+    Examples
+    --------
+    ``model.add_params("a b g")``
+    )doc";
+
+    inline constexpr char mle_add_params[] = R"doc(
+    Specify the parameters to be estimated.
+
+    Use this method when analytical derivatives are not supplied. The
+    derivatives are then computed numerically.
+
+    Parameters
+    ----------
+    line : str
+        Space-separated list of parameters. Parameters may be scalars,
+        vectors, or a combination of the two.
+
+    Returns
+    -------
+    self
+        The Model instance.
+
+    Examples
+    --------
+    ``model.add_params("p")``
+    )doc";
+
+    inline constexpr char gmm_add_params[] = R"doc(
+    Specify the parameters to be estimated.
+
+    Parameters
+    ----------
+    line : str
+        Space-separated list of parameters.
+
+    Returns
+    -------
+    self
+        The Model instance.
+
+    Examples
+    --------
+    ``model.add_params("b")``
+    )doc";
+
+    inline constexpr char add_param_names[] = R"doc(
+    Specify names for the model parameters.
+
+    These names are used when displaying estimation results and may be
+    more informative than the parameter names used in the model
+    specification.
+
+    Parameters
+    ----------
+    line : str
+        Space-separated list of parameter names.
+
+    Returns
+    -------
+    self
+        The Model instance.
+
+    Examples
+    --------
+    ``model.add_param_names("alpha beta gamma")``
+    )doc";
+
+    inline constexpr char nls_add_deriv[] = R"doc(
+    Add an analytical derivative of the regression function.
+
+    Parameters
+    ----------
+    line : str
+        Derivative specification in the form ``parameter = expression``.
+
+    Returns
+    -------
+    self
+        The Model instance.
+
+    Examples
+    --------
+    ``model.add_deriv("a = 1")``
+    ``model.add_deriv("b = Y^g")``
+    ``model.add_deriv("g = b * Y^g * log(Y)")``
+    )doc";
+
+    inline constexpr char mle_add_deriv[] = R"doc(
+    Add an analytical derivative of the log-likelihood function.
+
+    Parameters
+    ----------
+    line : str
+        Derivative specification in the form ``parameter = expression``.
+
+    Returns
+    -------
+    self
+        The Model instance.
+
+    Examples
+    --------
+    ``model.add_deriv("p = X/p - (1-X)/(1-p)")``
+    )doc";
+
+    inline constexpr char nls_add_initval[] = R"doc(
+    Set an initial value for a model parameter.
+
+    Parameters
+    ----------
+    name : str
+        Name of the parameter.
+    value : float
+        Initial value of the parameter.
+
+    Returns
+    -------
+    self
+        The Model instance.
+
+    Examples
+    --------
+    ``model.add_initval("a", 1.0)``
+    )doc";
+
+    inline constexpr char mle_add_initval[] = R"doc(
+    Set an initial value for a model parameter.
+
+    Parameters
+    ----------
+    name : str
+        Name of the parameter.
+    value : float
+        Initial value of the parameter.
+
+    Returns
+    -------
+    self
+        The Model instance.
+
+    Examples
+    --------
+    ``model.add_initval("p", 0.5)``
+    )doc";
+
+    inline constexpr char gmm_add_initval[] = R"doc(
+    Set an initial value for a model parameter.
+
+    Parameters
+    ----------
+    name : str
+        Name of the parameter.
+    value : float
+        Initial value of the parameter.
+
+    Returns
+    -------
+    self
+        The Model instance.
+
+    Examples
+    --------
+    ``model.add_initval("b", 1.0)``
+    )doc";
+
+    inline constexpr char mle_add_statements[] = R"doc(
+    Add a statement to the maximum likelihood specification.
+
+    Statements may be used to compute auxiliary quantities required
+    for evaluating the log-likelihood function.
+
+    Parameters
+    ----------
+    line : str
+        Hansl statement to be evaluated as part of the model specification.
+
+    Returns
+    -------
+    self
+        The Model instance.
+
+    Examples
+    --------
+    ``model.add_statements("...")``
+    )doc";
+
+    inline constexpr char gmm_add_statements[] = R"doc(
+    Add a statement to the GMM specification.
+
+    Statements may be used to update quantities required for evaluating
+    the orthogonality conditions.
+
+    Parameters
+    ----------
+    line : str
+        Hansl statement to be evaluated as part of the model specification.
+
+    Returns
+    -------
+    self
+        The Model instance.
+
+    Examples
+    --------
+    ``model.add_statements("e = y - X*b")``
+    )doc";
+
+    inline constexpr char gmm_add_weights[] = R"doc(
+    Specify the initial weighting matrix for GMM estimation.
+
+    Parameters
+    ----------
+    line : str
+        Name of the matrix containing the initial weights.
+
+    Returns
+    -------
+    self
+        The Model instance.
+
+    Examples
+    --------
+    ``model.add_weights("V")``
+    )doc";
+
+    inline constexpr char gmm_add_orthog[] = R"doc(
+    Add a set of orthogonality conditions for GMM estimation.
+
+    Parameters
+    ----------
+    line : str
+        Orthogonality specification, giving the residual or error term
+        followed by a semicolon and the associated instruments.
+
+    Returns
+    -------
+    self
+        The Model instance.
+
+    Examples
+    --------
+    ``model.add_orthog("e ; W")``
+    )doc";
+
     inline constexpr char ols[] = R"doc(
     Specify a linear model for estimation by ordinary least squares.
 
@@ -1977,6 +2237,68 @@ namespace doc::Model {
         ],
         endogs="y1 y2"
     ).fit()``
+    )doc";
+
+    inline constexpr char irf[] = R"doc(
+    Compute impulse response functions for the VAR or VECM.
+
+    Parameters
+    ----------
+    target : int or str
+        Target variable, specified by name or 1-based index. Zero denotes
+        all target variables.
+    shock : int or str
+        Shock variable, specified by name or 1-based index. Zero denotes
+        all shock variables.
+    alpha : float, optional
+        Significance level for bootstrap confidence intervals. If zero,
+        only point estimates are computed.
+
+    Returns
+    -------
+    gretl.Matrix
+        Impulse response estimates. If ``alpha`` is positive, the matrix
+        also contains lower and upper confidence bounds.
+
+    Notes
+    -----
+    Responses are expressed in the units of the target variable and
+    correspond to a one-standard-deviation innovation in the shock
+    variable.
+    )doc";
+
+    inline constexpr char save_ec_term[] = R"doc(
+    Add an error-correction term to the dataset.
+
+    Parameters
+    ----------
+    nr : int
+        1-based number of the error-correction term to retrieve.
+    name : str, optional
+        Name of the generated series. If omitted, a name is generated
+        from the model identifier and error-correction term number.
+
+    Returns
+    -------
+    str
+        Name of the series added to the dataset.
+    )doc";
+
+    inline constexpr char save_system_uhat[] = R"doc(
+    Add residuals from a specified equation to the dataset.
+
+    Parameters
+    ----------
+    eqn : int
+        1-based equation number.
+    name : str, optional
+        Name of the generated series. If omitted, the name follows the
+        pattern ``m_ID_uhat``, where ``ID`` is the equation's ID.
+
+    Returns
+    -------
+    str
+        Name of the series added to the dataset.
     )doc";
 
 } // namespace doc::Model
