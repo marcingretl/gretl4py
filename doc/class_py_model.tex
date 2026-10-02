@@ -111,28 +111,7 @@ Note, that some of them may be available for certain estimators only.
 \end{lstlisting}
 
 \gretlfpycmd{tests}\label{attr:gretlmodel::tests}
-\estdesc{List storing summaries of tests performed on model.}
-\begin{lstlisting}[style=pythonstylefoot]
-.tests -> list
-\end{lstlisting}
-\begin{generaldescenv}
-	This is a \pythcode{list} of \pythcode{dict} objects that is
-	created immediately after the first test (see
-	\ref{met:gretlmodel::test}) is performed. That is, this attribute is
-	\emph{not} created when the \pythcode{gretl.Model} instance itself is
-	initialized. Each \pythcode{dict} containing test results has the
-	following structure:
-	\begin{lstlisting}[style=pythonstylefoot]
-{
-"test":    <test statistic>,
-"pvalue":  <p-value>,
-"summary": <textual output>
-}
-	\end{lstlisting}
-	Results from consecutive tests are appended to the \pythcode{tests}
-	attribute. Therefore, to access the results of the most recently
-	performed test, one can use \pythcode{tests[-1]}.
-\end{generaldescenv}
+\estdesc{\deprecatedv{0.70}}
 
 \gretlfpycmd{uhat}
 \estdesc{Holds model residuals.}
@@ -275,12 +254,56 @@ Examples:\newline
 \subsubsection{\pythcodeb{gretl.Model\_NSE} methods}
 The \pythcode{gretl.Model\_NSE} class provides the following public methods:
 
+\gretlfpycmd{arch()}
+\estdesc{Tests the model residuals for autoregressive conditional
+	heteroskedasticity (ARCH).}
+\begin{lstlisting}[style=pythonstylefoot]
+.arch(order: int | None = None[, OPTS]) -> gretl.Bundle
+\end{lstlisting}
+\mapto{modtest [ order ] --arch}
+\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
+	\item[]\maptoopt{quiet=True}{--quiet}{don't print details}
+	\item[]\maptoopt{silent=True}{--silent}{don't print anything}
+\end{itemize}
+\generaldesc{The null hypothesis is that the model error term exhibits
+	no ARCH effects up to the specified lag order. If \textit{order} is
+	\pythcode{None}, the periodicity of the data is used.}
+
+\gretlfpycmd{autocorr()}
+\estdesc{Test for serial correlation.}
+\begin{lstlisting}[style=pythonstylefoot]
+.autocorr(order: int | None = None[, OPTS]) -> gretl.Bundle
+\end{lstlisting}
+\mapto{modtest [ order ] --autocorr}
+\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
+	\item[]\maptoopt{quiet=True}{--quiet}{don't print details}
+	\item[]\maptoopt{silent=True}{--silent}{don't print anything}
+\end{itemize}
+\generaldesc{The null hypothesis is that the model error term exhibits
+	no serial correlation up to the specified lag order. If
+	\textit{order} is \pythcode{None}, the periodicity of the data is
+	used. For OLS models the LMF test is used; for models estimated by
+	two-stage least squares, Godfrey's test is used.}
+
+\gretlfpycmd{bkw()}
+\estdesc{Belsley-Kuh-Welsch diagnostics for collinearity.}
+\begin{lstlisting}[style=pythonstylefoot]
+.bkw([OPTS]) -> gretl.Bundle
+\end{lstlisting}
+\mapto{bkw}
+\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
+	\item[]\maptoopt{quiet=True}{--quiet}{don't print anything}
+\end{itemize}
+\generaldesc{The model must contain at least two independent variables.
+	The BKW diagnostics follow Belsley, Kuh and Welsch (1980) and provide
+	a more detailed analysis of collinearity than variance inflation
+	factors.}
+
 \gretlfpycmd{oddsratio()}
-\estdesc{\deprecated}
+\estdesc{\deprecatedv{0.70}}
 \begin{lstlisting}[style=pythonstylefoot]
 .oddsratio()
 \end{lstlisting}
-\estdesc{\error{to be removed on 0.7}}
 
 \gretlfpycmd{restrict()}
 \estdesc{Imposes a set of (usually linear) restrictions on the model.}
@@ -351,38 +374,14 @@ The \pythcode{gretl.Model\_NSE} class provides the following public methods:
 	is named according to the \lgretl naming convention.}
 
 \gretlfpycmd{test()}\label{met:gretlmodel::test}
-\estdesc{General interface to model-based tests.}
-\begin{lstlisting}[style=pythonstylefoot]
-.test(.type: str[, varlist: str, OPTS])
-\end{lstlisting}
-\where{\pythcode{.type: str} refers to one of
-	the following: \textit{arch}, \textit{autocorr}, \textit{bkw},
-	\textit{breusch-pagan}, \textit{comfac} \textit{corrgm}, \textit{cusum},
-	\textit{leverage}, \textit{logs}, \textit{normality}, \textit{panel},
-	\textit{panspec}, \textit{qlrtest}, \textit{reset}, \textit{squares},
-	\textit{vif}, \textit{white}, \textit{white-nocross}, \textit{xdepend}.}\\\\
-\generaldesc{Results of performed tests are appended to the
-	\pythcode{.tests} attribute (see \ref{attr:gretlmodel::tests}).
-	The following sections describe the API associated with each test:}\\
+\estdesc{\deprecatedv{0.70}}
 
-\maptot{modtest [ order ]}{arch}{Test for ARCH effect of specified order.}
-\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
-	\item[]\maptoopt{arch=True}{--arch}{ARCH}
-	\item[]\maptoopt{quiet=True}{--quiet}{don't print details}
-	\item[]\maptoopt{silent=True}{--silent}{don't print anything}
-\end{itemize}
 
-\maptot{modtest [ order ]}{autocorr}{Test for serial correlation.}
-\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
-	\item[]\maptoopt{autocorr=True}{--autocorr}{serial correlation}
-	\item[]\maptoopt{quiet=True}{--quiet}{don't print details}
-	\item[]\maptoopt{silent=True}{--silent}{don't print anything}
-\end{itemize}
 
-\maptot{bkw}{bkw}{Belsley, Kuh and Welsch test for collinearity.}
-\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
-	\item[]\maptoopt{quiet=True}{--quiet}{don't print anything}
-\end{itemize}
+
+
+
+
 
 \maptot{modtest [ order ]}{breusch-pagan}{Breusch-Pagan test for heteroskedasticity.}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}

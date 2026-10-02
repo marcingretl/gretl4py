@@ -169,7 +169,7 @@ def _add(self: "Model", varlist: str, **kwargs) -> "Bundle":
 _add.__name__ = "add"
 _add.__qualname__ = "Model.add"
 
-def _arch(self: "Model", **kwargs) -> "Bundle":
+def _arch(self: "Model", order: int | None = None, **kwargs) -> "Bundle":
     """
     Test model residuals for ARCH effects.
 
@@ -187,13 +187,21 @@ def _arch(self: "Model", **kwargs) -> "Bundle":
     quiet : bool
         Suppress printing of the auxiliary regression.
     silent : bool
-        Suppress printed output.
+        Suppress all printed output.
+
+    Returns
+    -------
+    Bundle
+        Test results.
     """
+    if order is not None:
+        kwargs["order"] = order
+
     return self._test(type="arch", **kwargs)
 _arch.__name__ = "arch"
 _arch.__qualname__ = "Model.arch"
 
-def _autocorr(self: "Model", order: int, **kwargs) -> "Bundle":
+def _autocorr(self: "Model", order: int | None = None, **kwargs) -> "Bundle":
     """
     Test model residuals for serial correlation.
 
@@ -211,7 +219,12 @@ def _autocorr(self: "Model", order: int, **kwargs) -> "Bundle":
     quiet : bool
         Suppress printing of the auxiliary regression.
     silent : bool
-        Suppress printed output.
+        Suppress all printed output.
+
+    Returns
+    -------
+    Bundle
+        Test results.
 
     Notes
     -----
@@ -219,7 +232,10 @@ def _autocorr(self: "Model", order: int, **kwargs) -> "Bundle":
     by two-stage least squares, the corresponding test follows Godfrey
     (1994).
     """
-    return self._test(type="autocorr", order=order, **kwargs)
+    if order is not None:
+        kwargs["order"] = order
+
+    return self._test(type="autocorr", **kwargs)
 _autocorr.__name__ = "autocorr"
 _autocorr.__qualname__ = "Model.autocorr"
 

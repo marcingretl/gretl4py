@@ -120,28 +120,7 @@ The \classpydataset provides the following public attributes:
 	the dataset as a copy of another \classpydataset.}
 
 \gretlfpycmd{tests}\label{attr:gretldataset::tests}
-\estdesc{List storing summaries of tests performed on datasets.\deprecated}
-\begin{lstlisting}[style=pythonstylefoot]
-.tests -> list
-\end{lstlisting}
-\begin{generaldescenv}
-	This is a \pythcode{list} of \pythcode{dict} objects that is
-	created immediately after the first test (see
-	\ref{met:gretldataset::test}) is performed. That is, this attribute is
-	\emph{not} created when the \pythcode{gretl.Dataset} instance itself is
-	initialized. Each \pythcode{dict} containing test results has the
-	following structure:
-	\begin{lstlisting}[style=pythonstylefoot]
-{
- "test":    <test statistic>,
- "pvalue":  <p-value>,
- "summary": <textual output>
-}
-	\end{lstlisting}
-	Results from consecutive tests are appended to the \pythcode{tests}
-	attribute. Therefore, to access the results of the most recently
-	performed test, one can use \pythcode{tests[-1]}.
-\end{generaldescenv}
+\estdesc{\deprecatedv{0.70}}
 
 \gretlfpycmd{varnames}
 \estdesc{Returns the names of the series in the dataset.}
