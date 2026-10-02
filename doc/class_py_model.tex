@@ -299,6 +299,40 @@ The \pythcode{gretl.Model\_NSE} class provides the following public methods:
 	a more detailed analysis of collinearity than variance inflation
 	factors.}
 
+\gretlfpycmd{breusch\_pagan()}
+\estdesc{Breusch--Pagan test for heteroskedasticity.}
+\begin{lstlisting}[style=pythonstylefoot]
+.breusch_pagan(robust: bool = False[, OPTS]) -> gretl.Bundle
+\end{lstlisting}
+\mapto{modtest --breusch-pagan}
+\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
+	\item[]\maptoopt{robust=True}{--robust}{use the Koenker robust variance estimator}
+	\item[]\maptoopt{quiet=True}{--quiet}{don't print details}
+	\item[]\maptoopt{silent=True}{--silent}{don't print anything}
+\end{itemize}
+\generaldesc{The null hypothesis is homoskedasticity. If
+	\pythcode{robust=True}, the robust variance estimator proposed by
+	Koenker (1981) is used, making the test less sensitive to the
+	assumption of normality.}
+
+\gretlfpycmd{comfac()}
+\estdesc{Test of the common factor restriction in $AR(1)$ models.}
+\begin{lstlisting}[style=pythonstylefoot]
+.comfac([OPTS]) -> gretl.Bundle
+\end{lstlisting}
+\mapto{modtest --comfac}
+\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
+	\item[]\maptoopt{quiet=True}{--quiet}{don't print details}
+	\item[]\maptoopt{silent=True}{--silent}{don't print anything}
+\end{itemize}
+\generaldesc{This test is available only for models estimated using an
+	$AR(1)$ method, such as Hildreth-Lu. The auxiliary regression takes
+	the form of a relatively unrestricted dynamic model, which is used
+	to test the common factor restriction implicit in the $AR(1)$ specification.}
+
+
+
+
 \gretlfpycmd{oddsratio()}
 \estdesc{\deprecatedv{0.70}}
 \begin{lstlisting}[style=pythonstylefoot]
@@ -383,20 +417,9 @@ The \pythcode{gretl.Model\_NSE} class provides the following public methods:
 
 
 
-\maptot{modtest [ order ]}{breusch-pagan}{Breusch-Pagan test for heteroskedasticity.}
-\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
-	\item[]\maptoopt{breusch\_pagan=True}{--breusch-pagan}{heteroskedasticity, Breusch-Pagan}
-	\item[]\maptoopt{robust=True}{--robust}{robust variance estimate}
-	\item[]\maptoopt{quiet=True}{--quiet}{don't print details}
-	\item[]\maptoopt{silent=True}{--silent}{don't print anything}
-\end{itemize}
 
-\maptot{modtest [ order ]}{comfac}{Common factor restriction (AR1 models only).}
-\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
-	\item[]\maptoopt{comfac=True}{--comfac}{common factor restriction, AR1 models only}
-	\item[]\maptoopt{quiet=True}{--quiet}{don't print details}
-	\item[]\maptoopt{silent=True}{--silent}{don't print anything}
-\end{itemize}
+
+
 
 \maptot{corrgm y [ order ]}{corrgm}{Correlogram of given order.}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
