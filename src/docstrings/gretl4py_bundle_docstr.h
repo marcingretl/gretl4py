@@ -62,4 +62,83 @@ namespace doc::Bundle {
         An independent copy of the Bundle.
     )doc";
 
+    inline constexpr char getitem[] = R"doc(
+    Return the Bundle element stored under the given key.
+
+    Parameters
+    ----------
+    key : str
+        Bundle element name.
+
+    Returns
+    -------
+    object
+        Value associated with the key.
+    )doc";
+
+    inline constexpr char setitem[] = R"doc(
+    Set a Bundle element.
+
+    Parameters
+    ----------
+    key : str
+        Bundle element name.
+    value : bool, int, float, str, numpy.ndarray, gretl.Bundle, or gretl.Matrix
+        Value to store.
+    )doc";
+
+    inline constexpr char delitem[] = R"doc(
+    Delete the Bundle element stored under the given key.
+
+    Parameters
+    ----------
+    key : str
+        Bundle element name.
+    )doc";
+
+    inline constexpr char pop[] = R"doc(
+    Remove and return the Bundle element stored under the given key.
+
+    Parameters
+    ----------
+    key : str
+        Bundle element name.
+
+    Returns
+    -------
+    object
+        Value associated with the key.
+    )doc";
+
+    inline constexpr char keys[] = R"doc(
+    Return the Bundle keys.
+
+    Returns
+    -------
+    list of str
+        Names of the elements stored in the Bundle. If the Bundle is
+        empty, an empty list is returned.
+    )doc";
+
+    inline constexpr char print[] = R"doc(
+    Print the contents of the Bundle in gretl style.
+
+    Parameters
+    ----------
+    tree : bool, optional
+        If True, recursively print the contents of nested Bundles.
+        Otherwise, print only the top-level elements.
+    )doc";
+
+    inline constexpr char to_dict[] = R"doc(
+    Convert the Bundle to a Python dictionary.
+
+    Nested Bundle objects are converted recursively to dictionaries.
+
+    Returns
+    -------
+    dict
+        Dictionary containing the Bundle elements.
+    )doc";
+
 } // namespace doc::Bundle

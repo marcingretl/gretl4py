@@ -44,19 +44,21 @@ void init_gretl4py_bundle_py11 (py::module_ &m)
              return std::make_shared<GretlBundle>(self);
          }, doc::Bundle::deepcopy)
     .def("__repr__", &GretlBundle::repr_impl)
-    .def("__getitem__", &GretlBundle::get_element<py::object>)
+    .def("__getitem__", &GretlBundle::get_element<py::object>, doc::Bundle::getitem)
     .def("__setitem__", &GretlBundle::set_element<bool>)
     .def("__setitem__", &GretlBundle::set_element<int>)
     .def("__setitem__", &GretlBundle::set_element<double>)
     .def("__setitem__", &GretlBundle::set_element<std::string>)
     .def("__setitem__", &GretlBundle::set_element<py::array>)
     .def("__setitem__", &GretlBundle::set_element<GretlBundlePtr>)
-    .def("__setitem__", &GretlBundle::set_element<GretlMatrixPtr>)
-    .def("__delitem__", &GretlBundle::delete_element)
-    .def("pop", &GretlBundle::pop, py::arg("key").none(false))
-    .def("keys", &GretlBundle::keys)
-    .def("print", &GretlBundle::print<void>, py::arg("tree").none(true) = false)
-    .def("to_dict", &GretlBundle::to_dict);
+    .def("__setitem__", &GretlBundle::set_element<GretlMatrixPtr>, doc::Bundle::setitem)
+    .def("__delitem__", &GretlBundle::delete_element, doc::Bundle::delitem)
+    .def("pop", &GretlBundle::pop,
+         py::arg("key").none(false), doc::Bundle::pop)
+    .def("keys", &GretlBundle::keys, doc::Bundle::keys)
+    .def("print", &GretlBundle::print<void>,
+         py::arg("tree").none(true) = false, doc::Bundle::print)
+    .def("to_dict", &GretlBundle::to_dict, doc::Bundle::to_dict);
 
     cls.attr("__module__") = "gretl";
 }

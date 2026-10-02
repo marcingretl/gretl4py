@@ -50,20 +50,22 @@ del b[key]
 	the following types:
 	\pythcode{bool}, \pythcode{int}, \pythcode{float},
 	\pythcode{str}, \pythcode{numpy.ndarray},
-	or another \pythcode{gretl.Bundle}.}
+	\pythcode{gretl.Matrix}, or another \pythcode{gretl.Bundle}.}
 
 
 \subsubsection{\classpybundleb public methods}
 The \classpybundle class provides the following public methods:
 
 \gretlfpycmd{keys()}
-\estdesc{Returns all keys stored in the \gretlcmd{bundle}.}
+\estdesc{Returns the names of all elements stored in the bundle.}
 \begin{lstlisting}[style=pythonstylefoot]
 .keys() -> list
 \end{lstlisting}
+\maptof{getkeys(b)}{array}\\
+\generaldesc{If the bundle is empty, an empty list is returned.}
 
 \gretlfpycmd{pop()}
-\estdesc{Deletes and returns the data item stored under \textit{key},
+\estdesc{Removes and returns the data item stored under \textit{key},
 	if such an item is present.}
 \begin{lstlisting}[style=pythonstylefoot]
 .pop(key: str) -> object
@@ -74,13 +76,16 @@ The \classpybundle class provides the following public methods:
 \begin{lstlisting}[style=pythonstylefoot]
 .print(tree: bool = False)
 \end{lstlisting}
-\generaldesc{If \pythcode{tree=True} the effect is that if the
-	specified \gretlcmd{bundle} contains further bundles, or
-	arrays of bundles, their contents are listed. Otherwise
-	only the top-level members of the bundle are listed.}
+\mapto[none]{print ~bundle~}
+\mapto[none]{print ~bundle~ --tree}\\
+\generaldesc{If \pythcode{tree=True}, the contents of nested bundles
+	are also listed. Otherwise only the top-level members of the bundle
+	are listed.}
 
 \gretlfpycmd{to\_dict()}
-\estdesc{Converts \gretl's \gretlcmd{bundle} to \python['s] \pythcode{dict}.}
+\estdesc{Converts the \gretlcmd{bundle} to a \python{} \pythcode{dict}.}
 \begin{lstlisting}[style=pythonstylefoot]
 .to_dict() -> dict
 \end{lstlisting}
+\generaldesc{Nested \pythcode{gretl.Bundle} objects are recursively
+	converted to \pythcode{dict} objects.}
