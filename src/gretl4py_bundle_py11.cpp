@@ -19,6 +19,7 @@
 
 #include "gretl4py_bundle.h"
 #include "gretl4py_utils.h"
+#include "docstrings/gretl4py_bundle_docstr.h"
 
 namespace py = pybind11;
 
@@ -30,18 +31,18 @@ void init_gretl4py_bundle_py11 (py::module_ &m)
     auto cls = py::class_<GretlBundle, GretlBundlePtr>(m, "Bundle", py::dynamic_attr());
 
     cls
-    .def(py::init<>())                      // default constructor
-    .def(py::init<const py::kwargs&>())     // on-the-fly initializer
+    .def(py::init<>())                                          // default constructor
+    .def(py::init<const py::kwargs&>(), doc::Bundle::bundle)    // on-the-fly initializer
     .def("__copy__",
          [](const GretlBundle &self) -> GretlBundlePtr
          {
              return std::make_shared<GretlBundle>(self);
-         }, R"doc(Return a deep copy of the bundle.)doc")
+         }, doc::Bundle::copy)
     .def("__deepcopy__",
          [](const GretlBundle &self, py::dict) -> GretlBundlePtr
          {
              return std::make_shared<GretlBundle>(self);
-         })
+         }, doc::Bundle::deepcopy)
     .def("__repr__", &GretlBundle::repr_impl)
     .def("__getitem__", &GretlBundle::get_element<py::object>)
     .def("__setitem__", &GretlBundle::set_element<bool>)
