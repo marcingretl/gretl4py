@@ -56,7 +56,6 @@ def run_example():
     try:
         import matplotlib.pyplot as plt
 
-        irf = m1.irfs[-1]
         y = irf2.numpy_view[:, 0]
         l = irf2.numpy_view[:, 1]
         u = irf2.numpy_view[:, 2]

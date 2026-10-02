@@ -267,7 +267,7 @@
 		xmin, xpx, zeromiss, zeros, bwrite, bread, mpibcast, mpireduce, array, defbundle,
 		mat2list, strftime, fzero, tdisagg, kpsscrit, kmeans, getkeys, _},
 	morekeywords=[3]{bool, int, list, matrix, scalar, series, string, bundle,
-		void, bundles, null, const},
+		void, bundles, null, const, strings},
 	morekeywords=[4]{\$nobs, \$stopwatch, \$sysinfo, \$now, \$model, \$result,
 		\$uhat, \$yhat, \$version, \$workdir, \$h, \$ahat, \$ec, \$gretldir,
 		\$fcast, \$fcse},

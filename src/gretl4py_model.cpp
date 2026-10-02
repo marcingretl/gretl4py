@@ -1359,27 +1359,12 @@ GretlMatrixPtr GretlModel_VAR::irf (int target, int shock, double alpha)
     //
     // this method mimics gretl's irf() function
     //
-    GretlMatrixPtr res = nullptr;
-    GretlBundlePtr res_bundle = std::make_shared<GretlBundle>();
-
     // we compute IRFs
-    gretl_matrix_ptr irf(gretl_VAR_get_impulse_response(model_, target, shock, default_VAR_horizon(dataset_->dset), alpha, dataset_->dset, &err_));
+    gretl_matrix_ptr res_irf(gretl_VAR_get_impulse_response(model_, target, shock, default_VAR_horizon(dataset_->dset), alpha, dataset_->dset, &err_));
 
     if (err_) handle_gretl_error(err_);
-    res = std::make_shared<GretlMatrix>(irf.release(), false);
 
-    // we manufacture resulting object
-    res_bundle->set_element<int>("type", target);
-    res_bundle->set_element<std::string>("target_name", dataset_->dset->varname[gretl_VAR_get_variable_number(model_, target)]);
-    res_bundle->set_element<int>("shock", shock);
-    res_bundle->set_element<std::string>("shock_name", dataset_->dset->varname[gretl_VAR_get_variable_number(model_, shock)]);
-    res_bundle->set_element<GretlMatrixPtr>("results", res);
-    if (alpha > 0.0) res_bundle->set_element<double>("alpha", alpha);
-
-    // we register result
-    move_to_python_container<GretlModel, py::dict, py::list>(*this, res_bundle->to_dict(), "irfs");
-
-    return res;
+    return std::make_shared<GretlMatrix>(res_irf.release(), false);
 }
 
 GretlMatrixPtr GretlModel_VAR::irf (const std::string &target, const std::string &shock, double alpha)
