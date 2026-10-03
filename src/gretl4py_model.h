@@ -279,7 +279,7 @@ public:
 
     std::string save_uhat (int eqn, const std::string &name = "") const;
 
-    void test (const std::string &type, const py::kwargs &kwargs);
+    GretlBundlePtr test (const std::string &type, const py::kwargs &kwargs);
 
     GretlMatrixPtr irf (int target, int shock, double alpha = 0);
 

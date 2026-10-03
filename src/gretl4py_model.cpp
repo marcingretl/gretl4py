@@ -1278,9 +1278,9 @@ void GretlModel_VAR::forecast (const py::args &args, const py::kwargs &kwargs)
     gretl_do_forecast_<void>(model_, args, kwargs);
 }
 
-void GretlModel_VAR::test (const std::string &type, const py::kwargs &kwargs)
+GretlBundlePtr GretlModel_VAR::test (const std::string &type, const py::kwargs &kwargs)
 {
-    py::dict res;
+    GretlBundlePtr res = std::make_shared<GretlBundle>();
     int order = dataset_->dset->pd;
 
     // basic check
@@ -1302,20 +1302,22 @@ void GretlModel_VAR::test (const std::string &type, const py::kwargs &kwargs)
     if (err_) handle_gretl_error(err_);
 
      // we manufacture resulting object
-    res[py::cast("type")] = type;
-    res[py::cast("options")] = kwargs;
-    res[py::cast("test")] = get_accessor("$test");
-    res[py::cast("pvalue")] = get_accessor("$pvalue");
-    res[py::cast("summary")] = printer_.get_buffer();
+    res->set_element<std::string>("type", type);
+    res->set_element("options", py::object(kwargs));
+    res->set_element("test", get_accessor("$test"));
+    res->set_element("pvalue", get_accessor("$pvalue"));
+    res->set_element<std::string>("summary", std::string(printer_.get_buffer()));
 
     // we register result
-    move_to_python_container<GretlModel, py::dict, py::list>(*this, std::move(res), "tests");
+    move_to_python_container<GretlModel, py::dict, py::list>(*this, res->to_dict(), "tests");
 
     if (kwargs.contains("silent")) {
         auto val = kwargs["silent"];
 
         if (!is_bool_kwarg(val, "silent")) printer_.print();
     }
+
+    return res;
 }
 
 std::string GretlModel_VAR::get_formula (void) const
