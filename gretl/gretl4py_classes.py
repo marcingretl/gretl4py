@@ -594,8 +594,6 @@ def _qlrtest(self: "Model", **kwargs) -> "Bundle":
     ----------------
     limit_to : str | list
         Restrict the test to a specified subset of regressors.
-    plot : str
-        Plot mode (``"none"`` or ``"display"``) or output filename.
     quiet : bool
         Suppress printed output.
 

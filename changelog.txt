@@ -1,6 +1,7 @@
 version 0.62:
     - code refactoring
     - use of pybind11 3.1.0
+    - drop support for Python 3.11
     - get rid of unused GretlModel_package class
     - GretlPackage class streamlining
     - add "<Model: not fitted>" message when model was defined but not estimated

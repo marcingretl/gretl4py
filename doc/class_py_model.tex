@@ -438,18 +438,33 @@ The \pythcode{gretl.Model\_NSE} class provides the following public methods:
 	p-values are recorded as three-element vectors corresponding to the
 	Wald, Breusch--Pagan, and Hausman tests.}
 
-
-
-
-
-
-\maptot{qlrtest}{qlrtest}{Quandt likelihood ratio test for a structural break.}
+\gretlfpycmd{qlrtest()}
+\estdesc{Quandt likelihood-ratio test for a structural break.}
+\begin{lstlisting}[style=pythonstylefoot]
+	.qlrtest([OPTS]) -> gretl.Bundle
+\end{lstlisting}
+\mapto{qlrtest}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
 	\item[]\maptoopt{limit\_to=.list}{--limit-to=list}{limit test to subset of regressors}
 	\item[]\maptoopt{quiet=True}{--quiet}{suppress printed output}
 \end{itemize}
+\generaldesc{Tests for a structural break at an unknown point in an OLS model.
+	Chow tests are computed over the central 70 percent of the sample
+	(15 percent trimming at each end), and the QLR statistic is the maximum
+	of the resulting test statistics. An asymptotic p-value is computed
+	using the method of Hansen (1997).
+	
+	The break point at which the test statistic is maximized is also
+	recorded. If the original model was estimated with robust standard
+	errors, robust Wald tests are used in place of the standard
+	\textit{F}-tests.}
 
-\maptot{reset}{reset}{Ramsey's regression equation specification error test.}
+\gretlfpycmd{reset()}
+\estdesc{Ramsey RESET (regression equation specification error test).}
+\begin{lstlisting}[style=pythonstylefoot]
+.reset([OPTS]) -> gretl.Bundle
+\end{lstlisting}
+\mapto{reset}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
 	\item[]\maptoopt{quiet=True}{--quiet}{don't print the auxiliary regression}
 	\item[]\maptoopt{silent=True}{--silent}{don't print anything}
@@ -457,15 +472,13 @@ The \pythcode{gretl.Model\_NSE} class provides the following public methods:
 	\item[]\maptoopt{cubes\_only=True}{--cubes-only}{compute the test using only the cubes}
 	\item[]\maptoopt{robust=True}{--robust}{use robust standard errors in auxiliary regression}
 \end{itemize}
-
-
-
-
-
-
-
-
-
+\generaldesc{Tests for nonlinearity by augmenting an OLS model with powers of the
+	fitted values and testing whether their coefficients are jointly zero.
+	By default, both squared and cubed fitted values are added to the
+	auxiliary regression. The \pythcode{squares\_only=True} and
+	\pythcode{cubes\_only=True} options are mutually exclusive. Robust
+	standard errors are used automatically if the original model was
+	estimated with robust standard errors.}
 
 \gretlfpycmd{restrict()}
 \estdesc{Imposes a set of (usually linear) restrictions on the model.}
@@ -538,46 +551,54 @@ The \pythcode{gretl.Model\_NSE} class provides the following public methods:
 \gretlfpycmd{test()}\label{met:gretlmodel::test}
 \estdesc{\deprecatedv{0.70}}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-\maptot{vif}{vif}{Variance Inflation Factor.}
+\gretlfpycmd{vif()}
+\estdesc{Variance inflation factors for the model regressors.}
+\begin{lstlisting}[style=pythonstylefoot]
+.vif([OPTS]) -> gretl.Bundle
+\end{lstlisting}
+\mapto{vif}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
 	\item[]\maptoopt{quiet=True}{--quiet}{don't print anything}
 \end{itemize}
+\generaldesc{Calculates variance inflation factors (VIFs) for the regressors of the
+	estimated model as diagnostics for collinearity. The VIF for a regressor
+	has a minimum value of 1, attained when it is orthogonal to the other
+	regressors. Large VIF values indicate stronger collinearity; a value
+	greater than 10 is sometimes used as a diagnostic threshold. The
+	resulting VIFs are also available as a column vector.}
 
-\maptot{modtest [ order ]}{white}{White's test for heteroskedasticity.}
+\gretlfpycmd{white()}
+\estdesc{White's test for heteroskedasticity.}
+\begin{lstlisting}[style=pythonstylefoot]
+.white(white_nocross: bool = False[, OPTS]) -> gretl.Bundle
+\end{lstlisting}
+\mapto[none]{modtest --white}
+\mapto[]{modtest --white-nocross}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
-	\item[]\maptoopt{white=True}{--white}{heteroskedasticity, White's test}
+	\item[]\maptoopt{quiet=True}{--quiet}{don't print the auxiliary regression}
+	\item[]\maptoopt{silent=True}{--silent}{don't print anything}
+\end{itemize}
+\generaldesc{Tests the null hypothesis of homoskedasticity using White's test.
+	By default, the auxiliary regression includes squares and cross-products
+	of the regressors. If \pythcode{white\_nocross=True}, only squared
+	regressors are included, with cross-products omitted. For models
+	estimated by two-stage least squares, the standard White test is
+	replaced by the HET1 test of Pesaran and Taylor (1999).}
+
+\gretlfpycmd{xdepend()}
+\estdesc{Test for cross-sectional dependence in panel data.}
+\begin{lstlisting}[style=pythonstylefoot]
+.xdepend([OPTS]) -> gretl.Bundle
+\end{lstlisting}
+\mapto{modtest --xdepend}
+\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
 	\item[]\maptoopt{quiet=True}{--quiet}{don't print details}
 	\item[]\maptoopt{silent=True}{--silent}{don't print anything}
 \end{itemize}
-
-\maptot{modtest [ order ]}{white-nocross}{White's test for heteroskedasticity (squares only).}
-\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
-	\item[]\maptoopt{white\_nocross=True}{--white-nocross}{White's test, squares only}
-	\item[]\maptoopt{quiet=True}{--quiet}{don't print details}
-	\item[]\maptoopt{silent=True}{--silent}{don't print anything}
-\end{itemize}
-
-\maptot{modtest [ order ]}{xdepend}{Test for cross-sectional dependence (panel data only).}
-\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
-	\item[]\maptoopt{xdepend=True}{--xdepend}{cross-sectional dependence, panel data only}
-	\item[]\maptoopt{quiet=True}{--quiet}{don't print details}
-	\item[]\maptoopt{silent=True}{--silent}{don't print anything}
-\end{itemize}
+\generaldesc{Performs Pesaran's test of the null hypothesis that the model error
+	term is independently distributed across cross-sectional units.
+	This test is available only for panel-data models. The test statistic
+	follows Pesaran (2004).}
 
 
 \subsubsection{\pythcodeb{gretl.Model\_nls} methods}
