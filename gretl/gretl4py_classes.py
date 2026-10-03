@@ -196,7 +196,6 @@ def _arch(self: "Model", order: int | None = None, **kwargs) -> "Bundle":
     """
     if order is not None:
         kwargs["order"] = order
-
     return self._test(type="arch", **kwargs)
 _arch.__name__ = "arch"
 _arch.__qualname__ = "Model.arch"
@@ -234,7 +233,6 @@ def _autocorr(self: "Model", order: int | None = None, **kwargs) -> "Bundle":
     """
     if order is not None:
         kwargs["order"] = order
-
     return self._test(type="autocorr", **kwargs)
 _autocorr.__name__ = "autocorr"
 _autocorr.__qualname__ = "Model.autocorr"
@@ -387,8 +385,6 @@ def _cusum(self: "Model", **kwargs) -> "Bundle":
         Perform the CUSUMSQ test based on squared recursive residuals.
     quiet : bool
         Print only the Harvey-Collier test result.
-    plot : str
-        Plot mode (``"none"`` or ``"display"``) or output filename.
 
     Notes
     -----
@@ -403,6 +399,29 @@ def _cusum(self: "Model", **kwargs) -> "Bundle":
     return self._test(type="cusum", **kwargs)
 _cusum.__name__ = "cusum"
 _cusum.__qualname__ = "Model.cusum"
+
+def _groupwise_heteroskedasticity(self: "Model", **kwargs) -> "Bundle":
+    """
+    Test for groupwise heteroskedasticity in panel data.
+
+    Tests the null hypothesis of a common error variance across the
+    cross-sectional units against the alternative of groupwise
+    heteroskedasticity.
+
+    Other Parameters
+    ----------------
+    quiet : bool
+        Suppress printing of the auxiliary regression.
+    silent : bool
+        Suppress printed output.
+
+    Notes
+    -----
+    This test is available only for models estimated on panel data.
+    """
+    return self._test(type="panel", **kwargs)
+_groupwise_heteroskedasticity.__name__ = "groupwise_heteroskedasticity"
+_groupwise_heteroskedasticity.__qualname__ = "Model.groupwise_heteroskedasticity"
 
 def _leverage(self: "Model", **kwargs) -> "Bundle":
     """
@@ -419,8 +438,6 @@ def _leverage(self: "Model", **kwargs) -> "Bundle":
         Allow existing saved series to be overwritten.
     quiet : bool
         Suppress printed output.
-    plot : str
-        Plot mode (``"none"`` or ``"display"``) or output filename.
 
     Notes
     -----
@@ -531,29 +548,6 @@ def _omit(self: "Model", varlist: str | list, **kwargs) -> "Bundle":
     return self._test(type="omit", varlist=varlist, **kwargs)
 _omit.__name__ = "omit"
 _omit.__qualname__ = "Model.omit"
-
-def _panel(self: "Model", **kwargs) -> "Bundle":
-    """
-    Test for groupwise heteroskedasticity in panel data.
-
-    Tests the null hypothesis of a common error variance across the
-    cross-sectional units against the alternative of groupwise
-    heteroskedasticity.
-
-    Other Parameters
-    ----------------
-    quiet : bool
-        Suppress printing of the auxiliary regression.
-    silent : bool
-        Suppress printed output.
-
-    Notes
-    -----
-    This test is available only for models estimated on panel data.
-    """
-    return self._test(type="panel", **kwargs)
-_panel.__name__ = "panel"
-_panel.__qualname__ = "Model.panel"
 
 def _panspec(self: "Model", **kwargs) -> "Bundle":
     """

@@ -123,7 +123,7 @@ from .gretl4py_classes import _johansen, _kpss, _levinlin, _meantest, _normtest
 from .gretl4py_classes import _runs, _vartest, _add, _bkw, _chow, _cusum, _leverage
 from .gretl4py_classes import _omit, _qlrtest, _reset, _white, _vif, _normality
 from .gretl4py_classes import _nonlinearity, _autocorr, _arch, _breusch_pagan
-from .gretl4py_classes import _panel, _panspec, _comfac, _xdepend, _coeffsum
+from .gretl4py_classes import _groupwise_heteroskedasticity, _panspec, _comfac, _xdepend, _coeffsum
 # to be deprecated
 from .gretl4py_classes import _dataset_old_test, _model_old_test, _oddsratio, _to_dataframe
 
@@ -154,11 +154,11 @@ setattr(_gretl.Model, "chow", _chow)
 setattr(_gretl.Model, "coeffsum", _coeffsum)
 setattr(_gretl.Model, "comfac", _comfac)
 setattr(_gretl.Model, "cusum", _cusum)
+setattr(_gretl.Model, "groupwise_heteroskedasticity", _groupwise_heteroskedasticity)
 setattr(_gretl.Model, "leverage", _leverage)
 setattr(_gretl.Model, "nonlinearity", _nonlinearity)
 setattr(_gretl.Model, "normality", _normality)
 setattr(_gretl.Model, "omit", _omit)
-setattr(_gretl.Model, "panel", _panel)
 setattr(_gretl.Model, "panspec", _panspec)
 setattr(_gretl.Model, "qlrtest", _qlrtest)
 setattr(_gretl.Model, "reset", _reset)

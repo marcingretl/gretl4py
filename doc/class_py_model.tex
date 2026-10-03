@@ -330,14 +330,142 @@ The \pythcode{gretl.Model\_NSE} class provides the following public methods:
 	the form of a relatively unrestricted dynamic model, which is used
 	to test the common factor restriction implicit in the $AR(1)$ specification.}
 
+\gretlfpycmd{cusum()}
+\estdesc{Cumulative Sum (CUSUM) test of recursive residuals.}
+\begin{lstlisting}[style=pythonstylefoot]
+.cusum([OPTS]) -> gretl.Bundle
+\end{lstlisting}
+\mapto{cusum}
+\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
+	\item[]\maptoopt{squares=True}{--squares}{perform the CUSUMSQ test}
+	\item[]\maptoopt{quiet=True}{--quiet}{just print the Harvey--Collier test}
+\end{itemize}
+\generaldesc{The null hypothesis is parameter stability. It is rejected at the
+	5 percent significance level if the cumulative series crosses the
+	95 percent confidence band. For the CUSUM test, the Harvey--Collier
+	\textit{t}-test for parameter stability is also reported. With
+	\pythcode{squares=True}, the confidence band is calculated using the
+	method of Edgerton and Wells (1994).}
 
+\gretlfpycmd{groupwise\_heteroskedasticity()}
+\estdesc{Test for groupwise heteroskedasticity in panel data.}
+\begin{lstlisting}[style=pythonstylefoot]
+.groupwise_heteroskedasticity([OPTS]) -> gretl.Bundle
+\end{lstlisting}
+\mapto{modtest --panel}
+\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
+	\item[]\maptoopt{quiet=True}{--quiet}{don't print details}
+	\item[]\maptoopt{silent=True}{--silent}{don't print anything}
+\end{itemize}
+\generaldesc{Tests the null hypothesis of a common error variance across the
+	cross-sectional units against the alternative of groupwise
+	heteroskedasticity. This test is available only for models estimated
+	on panel data.}
 
+\gretlfpycmd{leverage()}
+\estdesc{Computes leverage statistics for each observation.}
+\begin{lstlisting}[style=pythonstylefoot]
+.leverage([OPTS]) -> gretl.Bundle
+\end{lstlisting}
+\mapto{leverage}
+\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
+	\item[]\maptoopt{save=True}{--save}{save the resulting series}
+	\item[]\maptoopt{overwrite=True}{--overwrite}{overwrite existing series}
+	\item[]\maptoopt{quiet=True}{--quiet}{don't print results}
+\end{itemize}
+\generaldesc{Observations with leverage greater than $2k/n$, where
+	\textit{k} is the number of estimated parameters and \textit{n}
+	is the sample size, are flagged as leverage points. The result
+	matrix contains leverage, influence, and externally Studentized
+	residuals. The test statistic records the leave-one-out
+	cross-validation criterion.}
+
+\gretlfpycmd{nonlinearity()}
+\estdesc{LM test for nonlinearity of the model.}
+\begin{lstlisting}[style=pythonstylefoot]
+.nonlinearity(mode: str[, OPTS]) -> gretl.Bundle
+\end{lstlisting}
+\mapto[none]{modtest --logs}
+\mapto[]{modtest --squares}
+\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
+	\item[]\maptoopt{quiet=True}{--quiet}{don't print details}
+	\item[]\maptoopt{silent=True}{--silent}{don't print anything}
+\end{itemize}
+\generaldesc{The \textit{mode} argument selects the form of the
+	nonlinearity test: \pythcode{'logs'} uses logarithmic transformations,
+	while \pythcode{'squares'} uses squared transformations in the
+	auxiliary regression. The test is generally available for models
+	estimated by OLS.}
+
+\gretlfpycmd{normality()}
+\estdesc{Test for normality of residuals.}
+\begin{lstlisting}[style=pythonstylefoot]
+.normality([OPTS]) -> gretl.Bundle
+\end{lstlisting}
+\mapto{modtest --normality}
+\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
+	\item[]\maptoopt{quiet=True}{--quiet}{don't print details}
+	\item[]\maptoopt{silent=True}{--silent}{don't print anything}
+\end{itemize}
+\generaldesc{Performs the Doornik--Hansen test of the null
+	hypothesis that the model error term is normally distributed.
+	The test statistic and its p-value are recorded on successful
+	completion.}
 
 \gretlfpycmd{oddsratio()}
 \estdesc{\deprecatedv{0.70}}
 \begin{lstlisting}[style=pythonstylefoot]
 .oddsratio()
 \end{lstlisting}
+
+\gretlfpycmd{panspec()}
+\estdesc{Performs panel specification tests.}
+\begin{lstlisting}[style=pythonstylefoot]
+.panspec([OPTS]) -> gretl.Bundle
+\end{lstlisting}
+\mapto{panspec}
+\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
+	\item[]\maptoopt{nerlove=True}{--nerlove}{use Nerlove method for random effects}
+	\item[]\maptoopt{matrix\_diff=True}{--matrix_diff}{use matrix-difference method for Hausman test}
+	\item[]\maptoopt{quiet=True}{--quiet}{suppress printed output}
+\end{itemize}
+\generaldesc{Tests a pooled OLS specification against fixed-effects and
+	random-effects alternatives. The command is available after estimation
+	of a panel-data model by OLS. The fixed-effects Wald and Breusch--Pagan
+	tests assess pooled OLS against fixed-effects and random-effects
+	alternatives, respectively, while the Hausman test assesses the
+	consistency of the random-effects estimator. The test statistics and
+	p-values are recorded as three-element vectors corresponding to the
+	Wald, Breusch--Pagan, and Hausman tests.}
+
+
+
+
+
+
+\maptot{qlrtest}{qlrtest}{Quandt likelihood ratio test for a structural break.}
+\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
+	\item[]\maptoopt{limit\_to=.list}{--limit-to=list}{limit test to subset of regressors}
+	\item[]\maptoopt{quiet=True}{--quiet}{suppress printed output}
+\end{itemize}
+
+\maptot{reset}{reset}{Ramsey's regression equation specification error test.}
+\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
+	\item[]\maptoopt{quiet=True}{--quiet}{don't print the auxiliary regression}
+	\item[]\maptoopt{silent=True}{--silent}{don't print anything}
+	\item[]\maptoopt{squares\_only=True}{--squares-only}{compute the test using only the squares}
+	\item[]\maptoopt{cubes\_only=True}{--cubes-only}{compute the test using only the cubes}
+	\item[]\maptoopt{robust=True}{--robust}{use robust standard errors in auxiliary regression}
+\end{itemize}
+
+
+
+
+
+
+
+
+
 
 \gretlfpycmd{restrict()}
 \estdesc{Imposes a set of (usually linear) restrictions on the model.}
@@ -421,78 +549,9 @@ The \pythcode{gretl.Model\_NSE} class provides the following public methods:
 
 
 
-\maptot{corrgm y [ order ]}{corrgm}{Correlogram of given order.}
-\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
-	\item[]\maptoopt{silent=True}{--silent}{don't print anything}
-	\item[]\maptoopt{acf\_only=True}{--acf-only}{omit partial autocorrelations}
-	\item[]\maptoopt{bartlett=True}{--bartlett}{use Bartlett standard errors}
-\end{itemize}
-Examples:\newline
-\pythcodef{.test(.type='corrgm', y='x', order=12)}\\
-\pythcodef{.test(.type='corrgm', y='GDP', order=12, acf\_only=True)}\\
 
-\maptot{cusum}{cusum}{Cumulative Sum (CUSUM) test of recursive residuals.}
-\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
-	\item[]\maptoopt{squares=True}{--squares}{perform the CUSUMSQ test}
-	\item[]\maptoopt{quiet=True}{--quiet}{just print the Harvey--Collier test}
-\end{itemize}
 
-\maptot{leverage}{leverage}{Calculates the leverage for each data point.}
-\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
-	\item[]\maptoopt{save=True}{--save}{save the resulting series}
-	\item[]\maptoopt{overwrite=True}{--overwrite}{OK to overwrite existing series}
-	\item[]\maptoopt{quiet=True}{--quiet}{don't print results}
-\end{itemize}
 
-\maptot{modtest [ order ]}{logs}{Test for nonlinearity (logarithms).}
-\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
-	\item[]\maptoopt{logs=True}{--logs}{nonlinearity, logs}
-	\item[]\maptoopt{quiet=True}{--quiet}{don't print details}
-	\item[]\maptoopt{silent=True}{--silent}{don't print anything}
-\end{itemize}
-
-\maptot{modtest [ order ]}{normality}{Test for normality of residual.}
-\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
-	\item[]\maptoopt{normality=True}{--normality}{normality of residual}
-	\item[]\maptoopt{quiet=True}{--quiet}{don't print details}
-	\item[]\maptoopt{silent=True}{--silent}{don't print anything}
-\end{itemize}
-
-\maptot{modtest [ order ]}{panel}{Test for heteroskedasticity, groupwise.}
-\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
-	\item[]\maptoopt{panel=True}{--panel}{heteroskedasticity, groupwise}
-	\item[]\maptoopt{quiet=True}{--quiet}{don't print details}
-	\item[]\maptoopt{silent=True}{--silent}{don't print anything}
-\end{itemize}
-
-\maptot{panspec}{panspec}{Tests the simple pooled specification (OLS) against the most common alternatives.}
-\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
-	\item[]\maptoopt{nerlove=True}{--nerlove}{use Nerlove method for random effects}
-	\item[]\maptoopt{matrix\_diff=True}{--matrix_diff}{use matrix-difference method for Hausman test}
-	\item[]\maptoopt{quiet=True}{--quiet}{Suppress printed output}
-\end{itemize}
-
-\maptot{qlrtest}{qlrtest}{Quandt likelihood ratio test for a structural break.}
-\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
-	\item[]\maptoopt{limit\_to=.list}{--limit-to=list}{limit test to subset of regressors}
-	\item[]\maptoopt{quiet=True}{--quiet}{suppress printed output}
-\end{itemize}
-
-\maptot{reset}{reset}{Ramsey's regression equation specification error test.}
-\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
-	\item[]\maptoopt{quiet=True}{--quiet}{don't print the auxiliary regression}
-	\item[]\maptoopt{silent=True}{--silent}{don't print anything}
-	\item[]\maptoopt{squares\_only=True}{--squares-only}{compute the test using only the squares}
-	\item[]\maptoopt{cubes\_only=True}{--cubes-only}{compute the test using only the cubes}
-	\item[]\maptoopt{robust=True}{--robust}{use robust standard errors in auxiliary regression}
-\end{itemize}
-
-\maptot{modtest [ order ]}{squares}{Test for nonlinearity (squares).}
-\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
-	\item[]\maptoopt{squares=True}{--squares}{nonlinearity, squares}
-	\item[]\maptoopt{quiet=True}{--quiet}{don't print details}
-	\item[]\maptoopt{silent=True}{--silent}{don't print anything}
-\end{itemize}
 
 \maptot{vif}{vif}{Variance Inflation Factor.}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}

@@ -158,7 +158,7 @@ def run_example():
   print(m3)
   print("\n****************************")
   print("panel")
-  res_panel = m3.panel()
+  res_panel = m3.groupwise_heteroskedasticity()
 
   print("\n****************************")
   print("panspec")
