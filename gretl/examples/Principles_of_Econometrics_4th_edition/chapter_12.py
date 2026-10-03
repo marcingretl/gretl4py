@@ -42,16 +42,16 @@ def run_example():
     print("\n12.3.6. The Dickey-Fuller Test: An Example")
     usa.set_as_default()
     usa.diff('f')
-    usa.test(type='adf', order=1, varlist='f b', c=True, verbose=True)
+    usa.adf(order=1, varlist='f b', c=True, verbose=True)
 
     print("\n12.3.7. Order of Integration")
-    usa.test(type='adf', varlist='f b', nc=True, difference=True, verbose=True)
+    usa.adf(order=0, varlist='f b', nc=True, difference=True, verbose=True)
 
     ############################################
     # 12.4. Cointegration
     ############################################
     print("\n12.4. Cointegration")
-    usa.test(type='coint', order=1, y='b', varlist='f', verbose=True)      # (12.9)
+    usa.coint(order=1, depvar='b', indepvars='f', verbose=True)             # (12.9)
 
     print("\n12.4.2. The Error Correction Model")
     usa.diff('b')

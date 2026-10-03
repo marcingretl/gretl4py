@@ -1139,7 +1139,7 @@ def _coint(self: "Dataset", order: int, depvar: str, indepvars: str | list, **kw
     The ``nc``, ``ct``, and ``ctt`` options are mutually exclusive.
     P-values are based on MacKinnon (1996).
     """
-    return self._test(type="coint", y=depvar, varlist=indepvars, **kwargs)
+    return self._test(type="coint", y=depvar, varlist=indepvars, order=order, **kwargs)
 _coint.__name__ = "coint"
 _coint.__qualname__ = "Dataset.coint"
 
@@ -1162,8 +1162,6 @@ def _corrgm(self: "Dataset", y: str, order: int, **kwargs) -> "Bundle":
 
     Other Parameters
     ----------------
-    plot : str
-        Plot mode (``"none"`` or ``"display"``) or output filename.
     quiet : bool
         Suppress printed output.
     acf_only : bool
