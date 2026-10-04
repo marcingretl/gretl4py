@@ -22,17 +22,17 @@ def run_example():
     print(m1.get_accessor("$sigma"))
 
     # Model-based tests.
-    m1.test(type="autocorr", order=3)
     print("Autocorrelation test statistics:")
-    print(m1.tests[-1]["test"])
+    m1_autocorr = m1.autocorr(order=3)
+    print(m1_autocorr["test"])
 
-    m1.test(type="arch")
+    m1_arch = m1.arch()
     print("ARCH test p-values:")
-    print(m1.tests[-1]["pvalue"])
+    print(m1_arch["pvalue"])
 
-    m1.test(type="normality", silent=True)
+    m1_normality = m1.normality(silent=True)
     print("Normality test summary:")
-    print(m1.tests[-1]["summary"])
+    print(m1_normality["summary"])
 
     # Save residuals.
     uhat_name = m1.save_uhat(eqn=1)

@@ -143,30 +143,35 @@ for fun in ['cdf', 'pdf', 'invcdf', 'pvalue', 'critical']:  # wrapper for matrix
     setattr(_gretl.Dataset, fun, _matrix_functions_wrapper(func_name=fun))
 
 # gretl.Model class
-setattr(_gretl.Model, "attrs", _attrs)                      # for listing all object's attributes
-setattr(_gretl.Model, "plot", _model_plots)                 # wrapper for generating model-based plots
-setattr(_gretl.Model, "add", _add)
-setattr(_gretl.Model, "arch", _arch)
-setattr(_gretl.Model, "autocorr", _autocorr)
-setattr(_gretl.Model, "bkw", _bkw)
-setattr(_gretl.Model, "breusch_pagan", _breusch_pagan)
-setattr(_gretl.Model, "chow", _chow)
-setattr(_gretl.Model, "coeffsum", _coeffsum)
-setattr(_gretl.Model, "comfac", _comfac)
-setattr(_gretl.Model, "cusum", _cusum)
-setattr(_gretl.Model, "groupwise_heteroskedasticity", _groupwise_heteroskedasticity)
-setattr(_gretl.Model, "leverage", _leverage)
-setattr(_gretl.Model, "nonlinearity", _nonlinearity)
-setattr(_gretl.Model, "normality", _normality)
-setattr(_gretl.Model, "omit", _omit)
-setattr(_gretl.Model, "panspec", _panspec)
-setattr(_gretl.Model, "qlrtest", _qlrtest)
-setattr(_gretl.Model, "reset", _reset)
-setattr(_gretl.Model, "vif", _vif)
-setattr(_gretl.Model, "white", _white)
-setattr(_gretl.Model, "xdepend", _xdepend)
+setattr(_gretl.Model_NSE, "attrs", _attrs)                      # for listing all object's attributes
+setattr(_gretl.Model_NSE, "plot", _model_plots)                 # wrapper for generating model-based plots
+setattr(_gretl.Model_NSE, "add", _add)
+setattr(_gretl.Model_NSE, "arch", _arch)
+setattr(_gretl.Model_NSE, "autocorr", _autocorr)
+setattr(_gretl.Model_NSE, "bkw", _bkw)
+setattr(_gretl.Model_NSE, "breusch_pagan", _breusch_pagan)
+setattr(_gretl.Model_NSE, "chow", _chow)
+setattr(_gretl.Model_NSE, "coeffsum", _coeffsum)
+setattr(_gretl.Model_NSE, "comfac", _comfac)
+setattr(_gretl.Model_NSE, "cusum", _cusum)
+setattr(_gretl.Model_NSE, "groupwise_heteroskedasticity", _groupwise_heteroskedasticity)
+setattr(_gretl.Model_NSE, "leverage", _leverage)
+setattr(_gretl.Model_NSE, "nonlinearity", _nonlinearity)
+setattr(_gretl.Model_NSE, "normality", _normality)
+setattr(_gretl.Model_NSE, "omit", _omit)
+setattr(_gretl.Model_NSE, "panspec", _panspec)
+setattr(_gretl.Model_NSE, "qlrtest", _qlrtest)
+setattr(_gretl.Model_NSE, "reset", _reset)
+setattr(_gretl.Model_NSE, "vif", _vif)
+setattr(_gretl.Model_NSE, "white", _white)
+setattr(_gretl.Model_NSE, "xdepend", _xdepend)
 #
-setattr(_gretl.Model, "test", _model_old_test)
+setattr(_gretl.Model_var, "arch", _arch)
+setattr(_gretl.Model_var, "autocorr", _autocorr)
+setattr(_gretl.Model_var, "normality", _normality)
+#
+setattr(_gretl.Model_NSE, "test", _model_old_test)
+setattr(_gretl.Model_var, "test", _model_old_test)
 setattr(_gretl.Model_logit, "oddsratio", _oddsratio)        # for pretty-printing oddsratios
 
 # gretl.Dataset class
