@@ -205,7 +205,7 @@ _stable_estimators = ["arima", "ols", "wls", "logit",
     "probit", "poisson", "negbin", "biprobit", "duration",
     "heckit", "logistic", "ar", "ar1", "lad", "garch", "mpols",
     "panel", "tsls", "tobit", "quantreg", "var", "vecm",
-    "hsk", "dpanel", "intreg", "midasreg"]
+    "hsk", "dpanel", "intreg", "midasreg", "system"]
 
 # #####################################################
 # Direct use of gretl.Model for the model instantiation

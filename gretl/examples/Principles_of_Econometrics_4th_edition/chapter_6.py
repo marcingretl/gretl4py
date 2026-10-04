@@ -22,9 +22,9 @@ def run_example():
     print("\n6.1.1. Testing the Effect of Advertising: the F-Test")
     andy.new_series(name='advertsq', value='advert^2')
     andy_u = gretl.ols('sales const price advert advertsq').fit()
-    andy_u.test(type='omit', varlist='advert advertsq', silent=True)
-    print(andy_u.tests[-1]['summary'])
-    print(f'keys available for a user: {andy_u.tests[-1].keys()}')
+    andy_u_omit = andy_u.omit(varlist='advert advertsq', silent=True)
+    print(andy_u_omit['summary'])
+    print(f'keys available for a user: {andy_u_omit.keys()}')
 
     print("\n6.1.2. Testing the Significance of the Model")
     F_val = andy_u.Fstat
@@ -78,8 +78,8 @@ def run_example():
     gretl.modeltab(mdls)
 
     print("\n6.3.5. RESET")
-    FAM_kl.test(type='reset', squares_only=True, quiet=True)
-    FAM_kl.test(type='reset', quiet=True)
+    FAM_kl.reset(squares_only=True)
+    FAM_kl.reset()
 
     ############################################
     # 6.4. Poor Data, Collinearity, and Insignificance
@@ -91,7 +91,7 @@ def run_example():
     print(CARS_1)
     print(CARS_2)
     cars.corr()
-    CARS_2.test(type='vif')
+    CARS_2.vif()
 
 if __name__ == "__main__":
     run_example()

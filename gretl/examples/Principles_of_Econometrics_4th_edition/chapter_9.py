@@ -37,7 +37,7 @@ def run_example():
     # 9.3.2. Serial Correlation in Output Growth
     ############################################
     print("\n9.3.2. Serially Correlated Errors")
-    okun.test(type='corrgm', y='g', order=12, acf_only=True)
+    okun.corrgm(y='g', order=12, acf_only=True)
 
     ############################################
     # 9.3.2a. A Phillips Curve
@@ -49,7 +49,7 @@ def run_example():
     PC = gretl.ols(formula='inf const d_u', simple=True).fit()  # (9.22)
     print(PC)
     PC.save_uhat(name='PC_e')
-    phillips_aus.test(type='corrgm', y='PC_e', order=12, acf_only=True)
+    phillips_aus.corrgm(y='PC_e', order=12, acf_only=True)
 
     ############################################
     # 9.4. Other Tests For Serially Correlated Errors
@@ -100,7 +100,7 @@ def run_example():
     PC_ARDL_1_0 = gretl.ols(formula='inf const inf(-1) d_u', simple=True).fit()         # (9.56)
     print(PC_ARDL_1_0)
     PC_ARDL_1_0.save_uhat(name='PC_ARDL_1_0_e')
-    phillips_aus.test(type='corrgm', y='PC_ARDL_1_0_e', order=12, acf_only=True)
+    phillips_aus.corrgm(y='PC_ARDL_1_0_e', order=12, acf_only=True)
     PC_ARDL_4_1 = gretl.ols(formula='inf const inf(-1 to -4) d_u').fit()                # (9.57)
     print(PC_ARDL_4_1)
     print("\nTable 9.4 AIC and SC Values for Philips Curve ARDL Models")

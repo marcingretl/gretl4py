@@ -348,6 +348,7 @@ PYBIND11_MODULE(_gretl, m)
               return std::make_unique<GretlModel_NME>(method, kwargs);
           },
           py::arg("method").none(false), py::kw_only(), doc::Model::system);
+}
 
     /*
     //////////////////////////////////////////////////
@@ -361,4 +362,4 @@ PYBIND11_MODULE(_gretl, m)
               return GretlModelPtr(std::move(model));
           },
           py::arg("name").none(false), py::kw_only());*/
-}
+

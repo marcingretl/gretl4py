@@ -33,7 +33,7 @@ def run_example():
   FOOD_fe = gretl.ols(formula='FOOD_f_e_sq const income', simple=True).fit()        # (8.17)
   crit_val = gretl.critical(c='x', p=0.05, params=FOOD_fe.ncoeff-1)
   print(f'chi^2 = {FOOD_fe.trsq:.3}, critical value = {crit_val:.3}')
-  FOOD_f.test(type='white', quiet=True)
+  FOOD_f.white()
 
   print("\n8.2.3. The Goldfeld-Quandt Test")
   cps2.set_as_default()

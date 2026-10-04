@@ -46,7 +46,7 @@ def run_example():
   spec = 'wage const educ black female blackfemale south midwest west'
   WAGE_reg = gretl.ols(spec, simple=True).fit()   # (7.8)
   print(WAGE_reg)
-  WAGE_reg.test(type='omit', varlist='south midwest west')
+  WAGE_reg.omit('south midwest west')
   print(f'critival value: {gretl.critical('F', p=0.01, params=[3, WAGE_reg.df]):.5}')
 
   print("\n7.2.3. Testing the Equivalence of Two Regressions")
@@ -66,7 +66,7 @@ def run_example():
   print()
   mdls = [WAGE_full, WAGE_nonsouth, WAGE_south]
   gretl.modeltab(mdls)
-  WAGE_full.test(type='omit', varlist='south educsouth blacksouth femalesouth blackfemalesouth')
+  WAGE_full.omit('south educsouth blacksouth femalesouth blackfemalesouth')
 
   ############################################
   # 7.3. Log-Linear Models
