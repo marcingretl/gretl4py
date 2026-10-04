@@ -143,7 +143,7 @@ for fun in ['cdf', 'pdf', 'invcdf', 'pvalue', 'critical']:  # wrapper for matrix
     setattr(_gretl.Dataset, fun, _matrix_functions_wrapper(func_name=fun))
 
 # gretl.Model class
-setattr(_gretl.Model_NSE, "attrs", _attrs)                      # for listing all object's attributes
+setattr(_gretl.Model, "attrs", _attrs)                          # for listing all object's attributes
 setattr(_gretl.Model_NSE, "plot", _model_plots)                 # wrapper for generating model-based plots
 setattr(_gretl.Model_NSE, "add", _add)
 setattr(_gretl.Model_NSE, "arch", _arch)
