@@ -120,10 +120,8 @@ from .gretl4py_classes import _matrix_functions_wrapper, _package_get_help
 from .gretl4py_classes import _model_plots, _matrix_to_pandas, _ones
 from .gretl4py_classes import _adf, _bds, _coint, _corrgm, _difftest, _fractint
 from .gretl4py_classes import _johansen, _kpss, _levinlin, _meantest, _normtest
-from .gretl4py_classes import _runs, _vartest, _add, _bkw, _chow, _cusum, _leverage
-from .gretl4py_classes import _omit, _qlrtest, _reset, _white, _vif, _normality
-from .gretl4py_classes import _nonlinearity, _autocorr, _arch, _breusch_pagan
-from .gretl4py_classes import _groupwise_heteroskedasticity, _panspec, _comfac, _xdepend, _coeffsum
+from .gretl4py_classes import _runs, _vartest
+from ._gretl4py_model_api import setup_model_api
 # to be deprecated
 from .gretl4py_classes import _dataset_old_test, _model_old_test, _oddsratio, _to_dataframe
 
@@ -143,39 +141,13 @@ for fun in ['cdf', 'pdf', 'invcdf', 'pvalue', 'critical']:  # wrapper for matrix
     setattr(_gretl.Dataset, fun, _matrix_functions_wrapper(func_name=fun))
 
 # gretl.Model class
-setattr(_gretl.Model, "attrs", _attrs)                          # for listing all object's attributes
-setattr(_gretl.Model, "plot", _model_plots)                     # wrapper for generating model-based plots
-setattr(_gretl.Model_NSE, "arch", _arch)
-setattr(_gretl.Model_NSE, "autocorr", _autocorr)
-setattr(_gretl.Model_NSE, "bkw", _bkw)
-setattr(_gretl.Model_NSE, "coeffsum", _coeffsum)
-setattr(_gretl.Model_NSE, "normality", _normality)
-setattr(_gretl.Model_NSE, "omit", _omit)
-setattr(_gretl.Model_ar1, "comfac", _comfac)
-setattr(_gretl.Model_dpanel, "xdepend", _xdepend)
-setattr(_gretl.Model_ols, "add", _add)
-setattr(_gretl.Model_ols, "breusch_pagan", _breusch_pagan)
-setattr(_gretl.Model_ols, "chow", _chow)
-setattr(_gretl.Model_ols, "cusum", _cusum)
-setattr(_gretl.Model_ols, "groupwise_heteroskedasticity", _groupwise_heteroskedasticity)
-setattr(_gretl.Model_ols, "leverage", _leverage)
-setattr(_gretl.Model_ols, "nonlinearity", _nonlinearity)
-setattr(_gretl.Model_ols, "panspec", _panspec)
-setattr(_gretl.Model_ols, "qlrtest", _qlrtest)
-setattr(_gretl.Model_ols, "reset", _reset)
-setattr(_gretl.Model_ols, "vif", _vif)
-setattr(_gretl.Model_ols, "white", _white)
-setattr(_gretl.Model_ols, "xdepend", _xdepend)
-setattr(_gretl.Model_panel, "groupwise_heteroskedasticity", _groupwise_heteroskedasticity)
-setattr(_gretl.Model_panel, "xdepend", _xdepend)
-setattr(_gretl.Model_var, "arch", _arch)
-setattr(_gretl.Model_var, "autocorr", _autocorr)
-setattr(_gretl.Model_var, "normality", _normality)
-_gretl.Model_arima.omit = 'Sorry, command not available for this estimator'
-# going to be deprecated
+setattr(_gretl.Model, "attrs", _attrs)                  # for listing all object's attributes
+setattr(_gretl.Model, "plot", _model_plots)             # wrapper for generating model-based plots
 setattr(_gretl.Model_NSE, "test", _model_old_test)
 setattr(_gretl.Model_var, "test", _model_old_test)
-setattr(_gretl.Model_logit, "oddsratio", _oddsratio)        # for pretty-printing oddsratios
+setattr(_gretl.Model_logit, "oddsratio", _oddsratio)    # for pretty-printing oddsratios
+setup_model_api(_gretl)                                 # for now only model-based tests
+del setup_model_api
 
 # gretl.Dataset class
 setattr(_gretl.Dataset, "to_pandas", _dataset_to_pandas)    # gretl data to Pandas DataFrame converter
