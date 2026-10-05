@@ -35,8 +35,8 @@ if sys.platform == "win32" and sys.maxsize > 2**32:
 
 # Files inside gretl/ to include
 package_files = [
-    'gretl4py_addons.py',
-    'gretl4py_classes.py',
+    '_gretl4py_addons.py',
+    '_gretl4py_classes.py',
     '_gretl4py_model_api.py',
     '_plotting.py',
     '__init__.py',

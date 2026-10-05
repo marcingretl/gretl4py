@@ -100,8 +100,8 @@ except ImportError as e:
     if sys.platform == "win32":
         raise RuntimeError(vc_redist_message()) from e
     raise
-from . import gretl4py_addons
-from . import gretl4py_classes
+from . import _gretl4py_addons
+from . import _gretl4py_classes
 
 # #####################################################
 # Explicit symbols import
@@ -112,18 +112,18 @@ from ._gretl import (delete, genr, include, pkg, print, set, summary)       # li
 from ._gretl import (varlist, run_script, run_hansl, get_uservar)
 from ._gretl import (pvalue, critical, pdf, cdf, invcdf, corr, cov)         # libgretl's functions interfaces
 from ._gretl import (get_accessor, tdisagg, kpsscrit)
-from .gretl4py_addons import print_module_source, fc_print, modeltab
-from .gretl4py_classes import _attrs, mle, nls, gmm, NLSpec
-from .gretl4py_classes import get_data, show_data_status
-from .gretl4py_classes import _dataset_to_pandas
-from .gretl4py_classes import _matrix_functions_wrapper, _package_get_help
-from .gretl4py_classes import _model_plots, _matrix_to_pandas, _ones
-from .gretl4py_classes import _adf, _bds, _coint, _corrgm, _difftest, _fractint
-from .gretl4py_classes import _johansen, _kpss, _levinlin, _meantest, _normtest
-from .gretl4py_classes import _runs, _vartest
+from ._gretl4py_addons import print_module_source, fc_print, modeltab
+from ._gretl4py_classes import _attrs, mle, nls, gmm, NLSpec
+from ._gretl4py_classes import get_data, show_data_status
+from ._gretl4py_classes import _dataset_to_pandas
+from ._gretl4py_classes import _matrix_functions_wrapper, _package_get_help
+from ._gretl4py_classes import _model_plots, _matrix_to_pandas, _ones
+from ._gretl4py_classes import _adf, _bds, _coint, _corrgm, _difftest, _fractint
+from ._gretl4py_classes import _johansen, _kpss, _levinlin, _meantest, _normtest
+from ._gretl4py_classes import _runs, _vartest
 from ._gretl4py_model_api import setup_model_api
 # to be deprecated
-from .gretl4py_classes import _dataset_old_test, _model_old_test, _oddsratio, _to_dataframe
+from ._gretl4py_classes import _dataset_old_test, _model_old_test, _oddsratio, _to_dataframe
 
 # #####################################################
 # deprecations
@@ -143,11 +143,12 @@ for fun in ['cdf', 'pdf', 'invcdf', 'pvalue', 'critical']:  # wrapper for matrix
 # gretl.Model class
 setattr(_gretl.Model, "attrs", _attrs)                  # for listing all object's attributes
 setattr(_gretl.Model, "plot", _model_plots)             # wrapper for generating model-based plots
+setup_model_api(_gretl)                                 # for now only model-based tests
+del setup_model_api
+# going to be deprecated
 setattr(_gretl.Model_NSE, "test", _model_old_test)
 setattr(_gretl.Model_var, "test", _model_old_test)
 setattr(_gretl.Model_logit, "oddsratio", _oddsratio)    # for pretty-printing oddsratios
-setup_model_api(_gretl)                                 # for now only model-based tests
-del setup_model_api
 
 # gretl.Dataset class
 setattr(_gretl.Dataset, "to_pandas", _dataset_to_pandas)    # gretl data to Pandas DataFrame converter
@@ -201,11 +202,11 @@ def __model_initializer(model_name: str, *args, **kwargs):
         raise AttributeError(f"Model {model_name} not found in _gretl module.")
 
 def __getattr__(fun):
-    if fun in dir(gretl4py_addons):
-        return getattr(gretl4py_addons, fun)
+    if fun in dir(_gretl4py_addons):
+        return getattr(_gretl4py_addons, fun)
 
-    if fun in dir(gretl4py_classes):
-        return getattr(gretl4py_classes, fun)
+    if fun in dir(_gretl4py_classes):
+        return getattr(_gretl4py_classes, fun)
 
     if fun not in _stable_estimators:
         raise AttributeError(f"module 'gretl' has no attribute '{fun}'")

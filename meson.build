@@ -211,8 +211,8 @@ copy_binary_part = custom_target('copy_binary_to_gretl',
 ###########################################################################
 install_data(
   'gretl/__init__.py',
-  'gretl/gretl4py_addons.py',
-  'gretl/gretl4py_classes.py',
+  'gretl/_gretl4py_addons.py',
+  'gretl/_gretl4py_classes.py',
   'gretl/_gretl4py_model_api.py',
   'gretl/_plotting.py',
   'gretl/curl-ca-bundle.crt',

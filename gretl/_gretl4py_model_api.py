@@ -18,12 +18,12 @@
  *
 """
 
-from .gretl4py_classes import _adf, _bds, _coint, _corrgm, _difftest, _fractint
-from .gretl4py_classes import _johansen, _kpss, _levinlin, _meantest, _normtest
-from .gretl4py_classes import _runs, _vartest, _add, _bkw, _chow, _cusum, _leverage
-from .gretl4py_classes import _omit, _qlrtest, _reset, _white, _vif, _normality
-from .gretl4py_classes import _nonlinearity, _autocorr, _arch, _breusch_pagan
-from .gretl4py_classes import _groupwise_heteroskedasticity, _panspec, _comfac, _xdepend, _coeffsum
+from ._gretl4py_classes import _adf, _bds, _coint, _corrgm, _difftest, _fractint
+from ._gretl4py_classes import _johansen, _kpss, _levinlin, _meantest, _normtest
+from ._gretl4py_classes import _runs, _vartest, _add, _bkw, _chow, _cusum, _leverage
+from ._gretl4py_classes import _omit, _qlrtest, _reset, _white, _vif, _normality
+from ._gretl4py_classes import _nonlinearity, _autocorr, _arch, _breusch_pagan
+from ._gretl4py_classes import _groupwise_heteroskedasticity, _panspec, _comfac, _xdepend, _coeffsum
 
 """
 Configure estimator-specific methods for gretl model classes.
@@ -34,7 +34,7 @@ dataset or on properties of an individual fitted model are checked at
 run time by libgretl.
 """
 
-from .gretl4py_classes import (
+from ._gretl4py_classes import (
     _add,
     _arch,
     _autocorr,

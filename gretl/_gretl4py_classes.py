@@ -25,7 +25,7 @@ import numpy as np
 import pandas as pd
 from typing import TypedDict, NotRequired, Dict, List, Any
 from typing import Optional
-from .gretl4py_addons import _pd_to_pandas_str_format
+from ._gretl4py_addons import _pd_to_pandas_str_format
 from ._plotting import _plotfitted, _plotresiduals
 from . import _gretl
 
