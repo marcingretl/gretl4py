@@ -3,7 +3,7 @@
 <gretl-function-package name="gig" needs-time-series-data="true" minver="2026c" lives-in-subdir="true">
 <author email="r.lucchetti@univpm.it">Riccardo &quot;Jack&quot; Lucchetti and Stefano Balietti</author>
 <version>2026c-git</version>
-<date>2025-03-19</date>
+<date>2026-09-17</date>
 <description>An assortment of univariate GARCH models</description>
 <tags>C22</tags>
 <label>gig</label>
@@ -408,18 +408,53 @@ return ret
 </code>
 </gretl-function>
 <gretl-function name="gig_plot" type="void">
- <params count="1">
+ <params count="2">
   <param name="model" type="bundleref"/>
+  <param name="opts_in" type="bundle" optional="true"/>
  </params>
-<code>string buffer = gig_grph(model.depvarname, model.uhat, model.h)
-gnuplot --inbuf=buffer --output=&quot;display&quot;
+<code># process options
+opts = _(output=&quot;display&quot;, title=sprintf(&quot;%s: Residuals and conditional sd&quot;, model.depvarname), fontsize=9)
+
+if exists(opts_in)
+  opts = opts_in + opts
+endif
+out = opts.output
+fspec = sprintf(&quot;sans,%d&quot;, round(opts.fontsize))
+
+series u = model.uhat
+series s = sqrt(model.h)
+smpl ok(s) --restrict
+
+scalar t1 = $t1
+scalar t2 = $t2
+
+lo = -s
+list PLT = u s lo
+
+plot PLT
+  options with-lines time-series single-yaxis
+  option font=&quot;@fspec&quot;
+  literal set nokey
+  literal set linetype 3 pt 2 lc rgb &quot;#0000FF&quot;
+  printf &quot;set title '%s'\n&quot;, opts.title
+end plot --output=&quot;@out&quot;
 </code>
 </gretl-function>
 <gretl-function name="gig_dplot" type="void">
- <params count="1">
+ <params count="2">
   <param name="model" type="bundleref"/>
+  <param name="opts_in" type="bundle" optional="true"/>
  </params>
-<code>series eps = model.stduhat
+<code># process options
+opts = _(output=&quot;display&quot;, fontsize=9)
+
+if exists(opts_in)
+  opts = opts_in + opts
+endif
+out = opts.output
+fspec = sprintf(&quot;sans,%d&quot;, round(opts.fontsize))
+
+series eps = model.stduhat
 matrix X = kdensity(eps)
 scalar dtype = model.cdist
 theta = model.coeff
@@ -463,7 +498,7 @@ elif dtype == 4 # Skewed-GED
 endif
 
 string buffer = gig_dgrph(X~d, descstr)
-gnuplot --inbuf=buffer --output=&quot;display&quot;
+gnuplot --inbuf=buffer --output=&quot;@out&quot; --font=&quot;@fspec&quot;
 </code>
 </gretl-function>
 <gretl-function name="gig_vfgraph" type="void">
@@ -485,16 +520,17 @@ matrix hinit = h[rows(h)-before:]
 matrix gp1 = ( hinit | me ) ~ seq(0,horizon+before)'
 matrix gp2 = ( hinit ~ 0 ) | ((q0+q1) ~ (q1-q0))/2
 
-string ylab = sprintf(&quot;set ylabel 'conditional variance for %s'&quot;,    mod.depvarname)
+string ylab = sprintf(&quot;set ylabel 'conditional variance for %s'&quot;, mod.depvarname)
 string titlelab = sprintf(&quot;set title \&quot;%s\&quot;&quot;, s_modeltype(&amp;mod))
+matrix bmat = gp1[,1] ~ gp2[,2]
+bundle bspec = _(bandmat=&quot;bmat&quot;, style=&quot;fill&quot;)
 plot gp1
   option --with-lines
   option --fit=none
-  option --band=gp2
-  option --band-style=fill
+  option --band=bspec
   literal @ylab
   literal @titlelab
-  literal unset xlabel
+  literal set xlabel &quot;time&quot;
 end plot --output=display
 </code>
 </gretl-function>
@@ -1769,112 +1805,6 @@ if verbose &gt; 2
   endloop
   printf &quot;\n&quot;
 endif
-</code>
-</gretl-function>
-<gretl-function name="dateton" type="scalar" private="1">
- <params count="1">
-  <param name="t" type="scalar"/>
- </params>
-<code>scalar ret dd mm yy
-string s = obslabel(t)
-scalar pd = $pd
-
-if $version&lt;10913
-  string datefmt = &quot;%d/%d/%d&quot;
-else
-  string datefmt = &quot;%d-%d-%d&quot;
-endif
-
-if (pd==5) || (pd==6) || (pd==7)
-  sscanf(s,datefmt, yy, mm, dd)
-  ret = yy + ok(mm)*(mm-1)/12 + ok(dd)*(dd-1)*12/365
-elif (pd==12) || (pd==4)
-  sscanf(s,&quot;%d:%d&quot;, yy, mm)
-  ret = yy + ok(mm)*(mm-1)/pd
-else
-  ret = t
-endif
-
-return ret
-</code>
-</gretl-function>
-<gretl-function name="do_xtics" type="string" private="1">
- <params count="5">
-  <param name="t1" type="scalar"/>
-  <param name="t2" type="scalar"/>
-  <param name="d1" type="scalar"/>
-  <param name="d2" type="scalar"/>
-  <param name="n" type="scalar"/>
- </params>
-<code>string ret = &quot;set xtics(&quot;
-s = seq(1,n)/n - 1/(2*n)
-s_d = d1 + s .* (d2 - d1)
-t = t1 + (t2 - t1)/(2*n)
-
-loop i = 1 .. n
-  string tmp = sprintf(&quot;'%s' %g&quot;, obslabel(round(t)), s_d[i])
-  ret += tmp
-  if i==n
-    ret += &quot;)&quot;
-  else
-    ret += &quot;, &quot;
-  endif
-  t += (t2 - t1)/n
-endloop
-
-return ret
-</code>
-</gretl-function>
-<gretl-function name="gig_grph" type="string" private="1">
- <params count="3">
-  <param name="yname" type="string"/>
-  <param name="u" type="series"/>
-  <param name="h" type="series"/>
- </params>
-<code>series s = sqrt(h)
-smpl ok(s) --restrict
-
-scalar t1 = $t1
-scalar t2 = $t2
-
-### FIXME 10/11/2020: this can probably be made much smarter by using
-### more recent calendar functions
-scalar d1 = dateton(t1)
-scalar d2 = dateton(t2)
-scalar incr = (d2-d1)/($nobs-1)
-series xt = d1 + incr*(time - min(time))
-
-set force_decpoint on
-string gpbuf = &quot;&quot;
-
-outfile --buffer=gpbuf
-  printf &quot;set nokey\n&quot;
-  #    printf &quot;unset xzeroaxis\n&quot;
-
-  printf &quot;set title '%s: Residuals and conditional sd'\n&quot;, yname
-  printf &quot;%s\n&quot;, do_xtics(t1, t2, d1, d2, 6)
-
-  printf &quot;plot '-' using 1:2 title 'residual' w lines, \\\n&quot;
-  printf &quot;'-' using 1:2 w lines lt 2, \\\n&quot;
-  printf &quot;'-' using 1:2 w lines lt 2 \n&quot;
-
-  loop t = t1 .. t2
-    printf &quot;%12.6f %12.6f\n&quot;, xt[t], u[t]
-  endloop
-  printf &quot;e\n&quot;
-  loop t = t1 .. t2
-    printf &quot;%12.6f %12.6f\n&quot;, xt[t], s[t]
-  endloop
-  printf &quot;e\n&quot;
-  loop t = t1 .. t2
-    printf &quot;%12.6f %12.6f\n&quot;, xt[t], -s[t]
-  endloop
-  printf &quot;e\n&quot;
-
-end outfile
-set force_decpoint off
-
-return gpbuf
 </code>
 </gretl-function>
 <gretl-function name="gig_dgrph" type="string" private="1">

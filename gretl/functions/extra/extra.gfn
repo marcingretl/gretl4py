@@ -1176,6 +1176,82 @@ endif
 return ret
 </code>
 </gretl-function>
+<gretl-function name="convex_hull" type="matrix">
+ <params count="1">
+  <param name="P" type="matrix" const="true"/>
+ </params>
+<code># Convex hull function using the Jarvis march (gift wrapping) algorithm
+# Input: P - matrix where each row is a 2D point [x, y]
+# Output: matrix containing the points on the convex hull in order
+
+errorif(cols(P) != 2, &quot;convex_hull: imput matrix should have 2 columns&quot;)
+scalar n = rows(P)
+
+# Edge case: need at least 3 points to form a hull
+if n &lt; 3
+  ret = {}
+else
+
+  # Preserve row labels (point names) if they exist
+  strings labs = rnameget(P)
+  scalar has_labs = nelem(labs) &gt; 0
+  matrix sel = zeros(n, 1)
+
+  # Find the leftmost point - guaranteed to be on the hull
+  scalar lmost = iminc(P[,1])
+  scalar p = lmost
+
+  scalar k = 1
+
+  # Jarvis march main loop: wrap around the point set until returning to start
+  loop while p != lmost || k == 1
+    # Record the current hull point
+    sel[k++] = p
+
+    # Start with the next point in cyclic order (candidate for next hull point)
+    scalar q = (p % n) + 1
+
+    # Find the point that makes the most counterclockwise turn from p
+    loop i = 1..n
+      # If point i is more counterclockwise than current candidate q,
+      # then i becomes the new candidate
+      if is_anticlockwise(P[p,], P[i,], P[q,])
+        q = i
+      endif
+    endloop
+
+    # Move to the next hull point
+    p = q
+  endloop
+
+  # Trim the selection vector to actual hull size and extract hull points
+  sel = sel[1:k-1]
+  ret = P[sel,]
+
+  # Restore row labels if they were present in input
+  if has_labs
+    rnameset(ret, labs[sel])
+  endif
+endif
+
+return ret
+</code>
+</gretl-function>
+<gretl-function name="is_anticlockwise" type="scalar" private="1">
+ <params count="3">
+  <param name="p" type="matrix"/>
+  <param name="q" type="matrix"/>
+  <param name="r" type="matrix"/>
+ </params>
+<code># Helper function to determine the orientation of three ordered points
+# Uses the cross product to check if the turn from p-&gt;q to q-&gt;r is counterclockwise
+# Cross product: (q-p) × (r-q)
+# Negative value indicates counterclockwise orientation
+scalar val = (q[2] - p[2]) * (r[1] - q[1]) - (q[1] - p[1]) * (r[2] - q[2])
+# Returns 1 if counterclockwise (val &lt; 0), 0 otherwise
+return sgn(val) == -1
+</code>
+</gretl-function>
 <gretl-function name="splitfname_check" type="void" private="1">
  <params count="2">
   <param name="out" type="strings"/>
@@ -1480,7 +1556,7 @@ eval drill(x, {1,3}, 2)		# multiple rows
 eval drill(x, 2, {1,3})		# multiple columns
 
 
-print &quot;---- combinations -----&quot;  ##
+print &quot;---- combinations -----&quot; 
 matrix bucket = {1, 3, 5, 6, 7}
 eval combinations(bucket, 3)
 
@@ -1490,6 +1566,12 @@ matrix A = mtemp'mtemp
 matrix X = mnormal(3,5)
 print  &quot; compare the columns:&quot;
 eval vech(qform(X',A)) ~ qformvech(X') * vech(A)
+
+print &quot;---- convex_hull -----&quot;
+cloud = {0,0; 0,2; 2,0; 2,2; 1,1}
+rnameset(cloud, &quot;external &quot;*4 ~ &quot;internal&quot;)
+hull = convex_hull(cloud)
+print cloud hull
 
 ## end of matrix-related functions ##
 
