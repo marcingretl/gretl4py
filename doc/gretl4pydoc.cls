@@ -8,7 +8,7 @@
 \RequirePackage[pdftex]{xcolor}
 \RequirePackage[]{graphicx}
 
-\RequirePackage{dirtree,xargs,xspace,url,pifont,makeidx,ifthen,caption,subcaption,fancyvrb,tikz,pdflscape,catchfile,amsmath,xstring}
+\RequirePackage{dirtree,xargs,xspace,url,pifont,makeidx,ifthen,caption,subcaption,fancyvrb,tikz,pdflscape,catchfile,amsmath,amssymb,xstring}
 \RequirePackage[toc,title]{appendix}
 \RequirePackage[final]{listings}
 \usepackage{gretlwp}

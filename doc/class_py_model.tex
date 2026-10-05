@@ -251,8 +251,184 @@ Examples:\newline
 	replace the default observation ordering with a user-specified
 	dataset variable.}
 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% ----------------------------------------------------------------------
+% Model_NSE methods
+% ----------------------------------------------------------------------
+
 \subsubsection{\pythcodeb{gretl.Model\_NSE} methods}
-The \pythcode{gretl.Model\_NSE} class provides the following public methods:
+The \pythcode{gretl.Model_NSE} class provides methods common to
+single-equation models. Estimator-specific diagnostic and specification
+methods are documented separately below. Their availability depends on
+the estimator class and, in some cases, on properties of the dataset or
+the fitted model.
+
+\gretlfpycmd{restrict()}
+\estdesc{Imposes a set of (usually linear) restrictions on the model.}
+\begin{lstlisting}[style=pythonstylefoot]
+.restrict(impose: list[, OPTS]) -> gretl.Bundle
+\end{lstlisting}
+\mapto{restrict impose end restrict}
+\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
+	\item[]\maptoopt{quiet=True}{--quiet}{don't print restricted estimates}
+	\item[]\maptoopt{silent=True}{--silent}{don't print anything}
+	\item[]\maptoopt{bootstrap=True}{--bootstrap}{bootstrap the test if possible}
+	\item[]\maptoopt{full=True}{--full}{set restricted estimates as the last model (\seegretlmanual)}
+\end{itemize}
+\generaldesc{The \textit{impose} argument is a list of strings defining
+	the restrictions. On successful completion, the returned
+	\classpybundle contains the test statistic (\gretlcmd{test}),
+	its p-value (\gretlcmd{pvalue}), and the printed output
+	(\gretlcmd{summary}).}
+
+\gretlfpycmd{save\_uhat()}
+\estdesc{Adds residuals to the dataset under the given name.}
+\begin{lstlisting}[style=pythonstylefoot]
+.save_uhat(name: str = '') -> str
+\end{lstlisting}
+\mapto[none]{name = \$uhat}
+\generaldesc{If \textit{name} is not provided, the generated series
+	is named according to the \lgretl naming convention. The
+	interpretation of the residuals depends on the estimator. For
+	example, for an ARMA model they are one-step-ahead forecast
+	errors, while for a probit model they are generalized residuals.}
+
+\gretlfpycmd{save\_uhat\_sq()}
+\estdesc{Adds squared residuals to the dataset under the given name.}
+\begin{lstlisting}[style=pythonstylefoot]
+.save_uhat_sq(name: str = '') -> str
+\end{lstlisting}
+\mapto[none]{name = \$uhat\^2}
+\generaldesc{If \textit{name} is not provided, the generated series
+	is named according to the \lgretl naming convention.}
+
+\gretlfpycmd{save\_yhat()}
+\estdesc{Adds fitted values to the dataset under the given name.}
+\begin{lstlisting}[style=pythonstylefoot]
+.save_yhat(name: str = '') -> str
+\end{lstlisting}
+\mapto[none]{name = \$yhat}
+\generaldesc{If \textit{name} is not provided, the generated series
+	is named according to the \lgretl naming convention.}
+
+\gretlfpycmd{oddsratio()}
+\estdesc{\deprecatedv{0.70}}
+\begin{lstlisting}[style=pythonstylefoot]
+.oddsratio()
+\end{lstlisting}
+
+\gretlfpycmd{test()}\label{met:gretlmodel::test}
+\estdesc{\deprecatedv{0.70}}
+
+% ----------------------------------------------------------------------
+% Model diagnostics and specification tests
+% ----------------------------------------------------------------------
+
+\subsubsection{Model diagnostics and specification tests}\label{sec:model-tests}
+The following methods provide diagnostic and specification tests for
+estimated models. They are exposed only by model classes for which the
+corresponding operation is potentially applicable. Some tests impose
+additional requirements that cannot be determined from the estimator
+class alone; these requirements are checked at run time by \lgretl.
+
+For example, \pythcode{xdepend()} is available for
+\pythcode{Model\_ols} because an OLS model may represent pooled
+estimation using panel data. The requirement that the underlying
+dataset is actually panel data is checked at run time.
+
+Table~\ref{tab:model-method-availability} summarizes estimator-level
+availability. A check mark indicates that the method is exposed by the
+corresponding model class; it does not imply that all possible uses of
+the method are valid for every fitted model of that class.
+
+\begin{table}[htbp]
+	\centering
+	\caption{Availability of model diagnostic and specification methods}\label{tab:model-method-availability}
+	\small
+	\begin{subtable}{\textwidth}
+		\centering
+		\caption{General diagnostic tests}
+		\begin{tabular}{lcccccc}
+			\hline
+			Model & ARCH & Autocorr. & BKW & Normality & White & VIF \\
+			\hline
+			ARIMA       & \checkmark & \checkmark & \checkmark & \checkmark & --         & -- \\
+			OLS         & \checkmark & \checkmark & \checkmark & \checkmark & \checkmark & \checkmark \\
+			WLS         & \checkmark & --         & \checkmark & \checkmark & --         & \checkmark \\
+			LOGIT       & \checkmark & --         & \checkmark & --         & --         & \checkmark \\
+			PROBIT      & \checkmark & --         & \checkmark & \checkmark & --         & \checkmark \\
+			POISSON     & \checkmark & --         & \checkmark & \checkmark & --         & \checkmark \\
+			NEGBIN      & \checkmark & --         & \checkmark & \checkmark & --         & \checkmark \\
+			DURATION    & \checkmark & --         & \checkmark & --         & --         & \checkmark \\
+			HECKIT      & \checkmark & --         & \checkmark & --         & --         & \checkmark \\
+			LOGISTIC    & \checkmark & --         & \checkmark & \checkmark & --         & \checkmark \\
+			AR          & \checkmark & --         & \checkmark & \checkmark & --         & \checkmark \\
+			AR1         & \checkmark & --         & \checkmark & \checkmark & --         & \checkmark \\
+			LAD         & \checkmark & --         & \checkmark & \checkmark & --         & \checkmark \\
+			GARCH       & --         & --         & \checkmark & \checkmark & --         & -- \\
+			MPOLS       & \checkmark & --         & \checkmark & \checkmark & --         & \checkmark \\
+			PANEL       & \checkmark & \checkmark & \checkmark & \checkmark & --         & -- \\
+			IVREG       & \checkmark & \checkmark & \checkmark & \checkmark & \checkmark & -- \\
+			HSK         & \checkmark & --         & \checkmark & \checkmark & --         & \checkmark \\
+			INTREG      & \checkmark & --         & \checkmark & \checkmark & --         & \checkmark \\
+			MIDASREG    & --         & --         & \checkmark & \checkmark & --         & -- \\
+			QUANTREG    & \checkmark & --         & \checkmark & \checkmark & --         & \checkmark \\
+			TOBIT       & \checkmark & --         & \checkmark & \checkmark & --         & \checkmark \\
+			DPANEL      & \checkmark & --         & \checkmark & \checkmark & --         & -- \\
+			NLS         & --         & --         & \checkmark & \checkmark & --         & -- \\
+			MLE         & --         & --         & \checkmark & --         & --         & -- \\
+			GMM         & --         & --         & \checkmark & \checkmark & --         & -- \\
+			VAR/VECM    & \checkmark & \checkmark & --         & \checkmark & --         & -- \\
+			\hline
+		\end{tabular}
+	\end{subtable}
+	
+	\medskip
+	
+	\begin{subtable}{\textwidth}
+		\centering
+		\caption{OLS and panel-data diagnostics}
+		\begin{tabular}{lcccccccc}
+			\hline
+			Model & BP & CUSUM & Leverage & Nonlin. & Panspec & QLR & RESET & XDep \\
+			\hline
+			OLS    & \checkmark & \checkmark & \checkmark & \checkmark &
+			\checkmark & \checkmark & \checkmark & \checkmark \\
+			PANEL  & -- & -- & -- & -- & -- & -- & -- & \checkmark \\
+			\hline
+		\end{tabular}
+	\end{subtable}
+	
+	\medskip
+	
+	\begin{subtable}{\textwidth}
+		\centering
+		\caption{Additional estimator-specific diagnostics}
+		\begin{tabular}{lcc}
+			\hline
+			Model & Groupwise heteroskedasticity & COMFAC \\
+			\hline
+			OLS    & \checkmark & -- \\
+			PANEL  & \checkmark & -- \\
+			AR1    & --         & \checkmark \\
+			\hline
+		\end{tabular}
+	\end{subtable}
+\end{table}
+
+In Table~\ref{tab:model-method-availability}, ``BP'' denotes the
+Breusch--Pagan test, ``Nonlin.'' denotes the nonlinearity test, and
+``XDep'' denotes the cross-sectional dependence test. Several entries
+are subject to additional run-time conditions. In particular,
+panel-data diagnostics require a panel dataset, while some
+time-series diagnostics require time-series data or impose restrictions
+on the specification of the fitted model.
+
+
+% ----------------------------------------------------------------------
+% Individual diagnostic and specification methods
+% ----------------------------------------------------------------------
 
 \gretlfpycmd{arch()}
 \estdesc{Tests the model residuals for autoregressive conditional
@@ -286,7 +462,7 @@ The \pythcode{gretl.Model\_NSE} class provides the following public methods:
 	two-stage least squares, Godfrey's test is used.}
 
 \gretlfpycmd{bkw()}
-\estdesc{Belsley-Kuh-Welsch diagnostics for collinearity.}
+\estdesc{Belsley--Kuh--Welsch diagnostics for collinearity.}
 \begin{lstlisting}[style=pythonstylefoot]
 .bkw([OPTS]) -> gretl.Bundle
 \end{lstlisting}
@@ -326,7 +502,7 @@ The \pythcode{gretl.Model\_NSE} class provides the following public methods:
 	\item[]\maptoopt{silent=True}{--silent}{don't print anything}
 \end{itemize}
 \generaldesc{This test is available only for models estimated using an
-	$AR(1)$ method, such as Hildreth-Lu. The auxiliary regression takes
+	$AR(1)$ method, such as Hildreth--Lu. The auxiliary regression takes
 	the form of a relatively unrestricted dynamic model, which is used
 	to test the common factor restriction implicit in the $AR(1)$ specification.}
 
@@ -412,12 +588,6 @@ The \pythcode{gretl.Model\_NSE} class provides the following public methods:
 	The test statistic and its p-value are recorded on successful
 	completion.}
 
-\gretlfpycmd{oddsratio()}
-\estdesc{\deprecatedv{0.70}}
-\begin{lstlisting}[style=pythonstylefoot]
-.oddsratio()
-\end{lstlisting}
-
 \gretlfpycmd{panspec()}
 \estdesc{Performs panel specification tests.}
 \begin{lstlisting}[style=pythonstylefoot]
@@ -441,7 +611,7 @@ The \pythcode{gretl.Model\_NSE} class provides the following public methods:
 \gretlfpycmd{qlrtest()}
 \estdesc{Quandt likelihood-ratio test for a structural break.}
 \begin{lstlisting}[style=pythonstylefoot]
-	.qlrtest([OPTS]) -> gretl.Bundle
+.qlrtest([OPTS]) -> gretl.Bundle
 \end{lstlisting}
 \mapto{qlrtest}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
@@ -453,7 +623,6 @@ The \pythcode{gretl.Model\_NSE} class provides the following public methods:
 	(15 percent trimming at each end), and the QLR statistic is the maximum
 	of the resulting test statistics. An asymptotic p-value is computed
 	using the method of Hansen (1997).
-	
 	The break point at which the test statistic is maximized is also
 	recorded. If the original model was estimated with robust standard
 	errors, robust Wald tests are used in place of the standard
@@ -475,81 +644,10 @@ The \pythcode{gretl.Model\_NSE} class provides the following public methods:
 \generaldesc{Tests for nonlinearity by augmenting an OLS model with powers of the
 	fitted values and testing whether their coefficients are jointly zero.
 	By default, both squared and cubed fitted values are added to the
-	auxiliary regression. The \pythcode{squares\_only=True} and
-	\pythcode{cubes\_only=True} options are mutually exclusive. Robust
+	auxiliary regression. The \pythcode{squares_only=True} and
+	\pythcode{cubes_only=True} options are mutually exclusive. Robust
 	standard errors are used automatically if the original model was
 	estimated with robust standard errors.}
-
-\gretlfpycmd{restrict()}
-\estdesc{Imposes a set of (usually linear) restrictions on the model.}
-\begin{lstlisting}[style=pythonstylefoot]
-.restrict(impose: list[, OPTS]) -> gretl.Bundle
-\end{lstlisting}
-\mapto{restrict impose end restrict}
-\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
-	\item[]\maptoopt{quiet=True}{--quiet}{don't print restricted estimates}
-	\item[]\maptoopt{silent=True}{--silent}{don't print anything}
-	\item[]\maptoopt{bootstrap=True}{--bootstrap}{bootstrap the test if possible}
-	\item[]\maptoopt{full=True}{--full}{set restricted estimates as the last model (\seegretlmanual)}
-\end{itemize}
-\generaldesc{The \textit{impose} argument is a list of strings defining
-	the restrictions. On successful completion, the returned
-	\classpybundle contains the test statistic (\gretlcmd{test}),
-	its p-value (\gretlcmd{pvalue}), and the printed output
-	(\gretlcmd{summary}).}
-
-\gretlfpycmd{save\_ahat()}
-\estdesc{Adds the estimates of the individual effects to the dataset
-	(fixed-effects or random-effects panel data model only).}
-\begin{lstlisting}[style=pythonstylefoot]
-.save_ahat(name: str = '') -> str
-\end{lstlisting}
-\mapto[none]{name = \$ahat}
-\generaldesc{If \textit{name} is not provided, the generated series
-	is named according to the \lgretl naming convention.}
-
-\gretlfpycmd{save\_h()}
-\estdesc{Adds the estimated conditional variance to the dataset
-	under the given name (GARCH model only).}
-\begin{lstlisting}[style=pythonstylefoot]
-.save_h(name: str = '') -> str
-\end{lstlisting}
-\mapto[none]{name = \$h}
-\generaldesc{If \textit{name} is not provided, the generated series
-	is named according to the \lgretl naming convention.}
-
-\gretlfpycmd{save\_uhat()}
-\estdesc{Adds residuals to the dataset under the given name.}
-\begin{lstlisting}[style=pythonstylefoot]
-.save_uhat(name: str = '') -> str
-\end{lstlisting}
-\mapto[none]{name = \$uhat}
-\generaldesc{If \textit{name} is not provided, the generated series
-	is named according to the \lgretl naming convention. The
-	interpretation of the residuals depends on the estimator. For
-	example, for an ARMA model they are one-step-ahead forecast
-	errors, while for a probit model they are generalized residuals.}
-
-\gretlfpycmd{save\_uhat\_sq()}
-\estdesc{Adds squared residuals to the dataset under the given name.}
-\begin{lstlisting}[style=pythonstylefoot]
-.save_uhat_sq(name: str = '') -> str
-\end{lstlisting}
-\mapto[none]{name = \$uhat\^2}
-\generaldesc{If \textit{name} is not provided, the generated series
-	is named according to the \lgretl naming convention.}
-
-\gretlfpycmd{save\_yhat()}
-\estdesc{Adds fitted values to the dataset under the given name.}
-\begin{lstlisting}[style=pythonstylefoot]
-.save_yhat(name: str = '') -> str
-\end{lstlisting}
-\mapto[none]{name = \$yhat}
-\generaldesc{If \textit{name} is not provided, the generated series
-	is named according to the \lgretl naming convention.}
-
-\gretlfpycmd{test()}\label{met:gretlmodel::test}
-\estdesc{\deprecatedv{0.70}}
 
 \gretlfpycmd{vif()}
 \estdesc{Variance inflation factors for the model regressors.}
@@ -580,7 +678,7 @@ The \pythcode{gretl.Model\_NSE} class provides the following public methods:
 \end{itemize}
 \generaldesc{Tests the null hypothesis of homoskedasticity using White's test.
 	By default, the auxiliary regression includes squares and cross-products
-	of the regressors. If \pythcode{white\_nocross=True}, only squared
+	of the regressors. If \pythcode{white_nocross=True}, only squared
 	regressors are included, with cross-products omitted. For models
 	estimated by two-stage least squares, the standard White test is
 	replaced by the HET1 test of Pesaran and Taylor (1999).}
@@ -597,8 +695,42 @@ The \pythcode{gretl.Model\_NSE} class provides the following public methods:
 \end{itemize}
 \generaldesc{Performs Pesaran's test of the null hypothesis that the model error
 	term is independently distributed across cross-sectional units.
-	This test is available only for panel-data models. The test statistic
-	follows Pesaran (2004).}
+	This test is available only for models estimated on panel data. The
+	test statistic follows Pesaran (2004).}
+
+
+% ----------------------------------------------------------------------
+% Estimator-specific methods
+% ----------------------------------------------------------------------
+\subsubsection{Estimator-specific methods}
+A small number of methods are specific to a particular estimator and
+are therefore documented separately below.
+
+
+\subsubsection{\pythcodeb{gretl.Model_panel}}
+\gretlfpycmd{save\_ahat()}
+\estdesc{Adds the estimates of the individual effects to the dataset
+	(fixed-effects or random-effects panel data model only).}
+\begin{lstlisting}[style=pythonstylefoot]
+.save_ahat(name: str = '') -> str
+\end{lstlisting}
+\mapto[none]{name = \$ahat}
+\generaldesc{If \textit{name} is not provided, the generated series
+	is named according to the \lgretl naming convention.}
+
+
+\subsubsection{\pythcodeb{gretl.Model_garch}}
+\gretlfpycmd{save\_h()}
+\estdesc{Adds the estimated conditional variance to the dataset
+	under the given name (GARCH model only).}
+\begin{lstlisting}[style=pythonstylefoot]
+.save_h(name: str = '') -> str
+\end{lstlisting}
+\mapto[none]{name = \$h}
+\generaldesc{If \textit{name} is not provided, the generated series
+	is named according to the \lgretl naming convention.}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 
 
 \subsubsection{\pythcodeb{gretl.Model\_nls} methods}
@@ -768,8 +900,42 @@ The \pythcode{gretl.Model\_var} class provides the following public attributes:
 \gretlfpycmd{irfs}
 \estdesc{\deprecatedv{0.62}}
 
-\subsubsection{\pythcodeb{gretl.Model\_var} methods}
-The \pythcode{gretl.Model\_var} class provides the following public methods:
+
+\subsubsection{\pythcodeb{gretl.Model\_var}}
+The \pythcode{gretl.Model\_var} class provides the
+following diagnostic methods. They are also available
+for \pythcode{gretl.Model\_vecm}, which inherits from
+\pythcode{gretl.Model\_var}.
+
+\gretlfpycmd{arch()}
+\estdesc{Tests the model residuals for autoregressive conditional
+	heteroskedasticity (ARCH).}
+\begin{lstlisting}[style=pythonstylefoot]
+.arch(order: int | None = None[, OPTS]) -> gretl.Bundle
+\end{lstlisting}
+\mapto{modtest [ order ] --arch}
+\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
+	\item[]\maptoopt{quiet=True}{--quiet}{don't print details}
+	\item[]\maptoopt{silent=True}{--silent}{don't print anything}
+\end{itemize}
+\generaldesc{The null hypothesis is that the model residuals exhibit
+	no ARCH effects up to the specified lag order. If \textit{order} is
+	\pythcode{None}, the periodicity of the data is used.}
+
+\gretlfpycmd{autocorr()}
+\estdesc{Test for serial correlation in the model residuals.}
+\begin{lstlisting}[style=pythonstylefoot]
+.autocorr(order: int | None = None[, OPTS]) -> gretl.Bundle
+\end{lstlisting}
+\mapto{modtest [ order ] --autocorr}
+\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
+	\item[]\maptoopt{quiet=True}{--quiet}{don't print details}
+	\item[]\maptoopt{silent=True}{--silent}{don't print anything}
+\end{itemize}
+\generaldesc{The null hypothesis is that the model residuals
+	exhibit no serial correlation up to the specified lag order.
+	If \textit{order} is \pythcode{None}, the periodicity of
+	the data is used.}
 
 \gretlfpycmd{irf()}\label{met:gretlmodel::irf}
 \estdesc{Computes impulse response functions (IRFs) for a VAR or VECM,
@@ -786,6 +952,20 @@ The \pythcode{gretl.Model\_var} class provides the following public methods:
 	in the shock variable. If \textit{alpha} is given a suitable
 	positive value, the estimates include a $1-\alpha$ confidence
 	interval (for example, \texttt{alpha=0.1} yields a 90\% interval).}
+
+\gretlfpycmd{normality()}
+\estdesc{Test for normality of the model residuals.}
+\begin{lstlisting}[style=pythonstylefoot]
+.normality([OPTS]) -> gretl.Bundle
+\end{lstlisting}
+\mapto{modtest --normality}
+\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
+	\item[]\maptoopt{quiet=True}{--quiet}{don't print details}
+	\item[]\maptoopt{silent=True}{--silent}{don't print anything}
+\end{itemize}
+\generaldesc{Tests the null hypothesis that the model residuals are
+	normally distributed. The test statistic and its p-value are
+	recorded on successful completion.}
 
 \gretlfpycmd{save\_uhat()}
 \estdesc{Adds residuals from the specified equation to the dataset
