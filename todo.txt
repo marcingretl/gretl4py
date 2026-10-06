@@ -6,3 +6,8 @@ TODOS:
 
 1. add copying plugins as meson option
 
+2. add MPI support
+
+3. improve plotting
+
+4. finalize API for mle, nls, gmm and system estimators

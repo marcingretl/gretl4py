@@ -1,29 +1,141 @@
-\chapter*{Introduction}\addcontentsline{toc}{chapter}{Introduction}\label{sec:introduction}
-The \gretlpy package is a software collection that
-provides an interface to \lgretl \citep{gretl_manual}
-for the \python{3.xx} (3.11, 3.12, 3.13, and 3.14 were tested)
-language and consists of the following elements:
+\chapter*{Introduction}
+\addcontentsline{toc}{chapter}{Introduction}
+\label{sec:introduction}
+
+\gretlpy is a \python package providing direct access to the
+functionality of \lgretl \citep{gretl_manual}. Its main purpose is to
+make the econometric, statistical, and data-management facilities of
+\gretl available from within the \python ecosystem, while preserving
+the computational efficiency and functionality of the underlying
+\lgretl library.
+
+Unlike an independent reimplementation of \gretl functionality in
+\python, \gretlpy acts as an interface to \lgretl itself. Econometric
+estimation, statistical testing, data manipulation, and other
+computationally intensive operations are therefore performed by
+\lgretl, while \python provides the user-facing programming
+environment. This design makes it possible to combine \gretl's
+econometric capabilities with the general-purpose scientific computing
+and data-analysis tools available in \python.
+
+At the lowest level, \gretlpy provides binary bindings between
+\python and \lgretl. These bindings are implemented in \cpp using
+\pkg{pybind11} \citep[see][for details]{pybind11}. On top of the
+bindings, \gretlpy provides a set of \python-accessible classes and
+utility functions designed to expose \lgretl objects and operations in
+a form natural to \python users.
+
+The overall architecture can be summarized as follows:
+
+\begin{center}\small
+\begin{BVerbatim}
++------------------+      +----------------------+      +------------------+
+|      Python      | <--> |       gretl4py       | <--> |     libgretl     |
++------------------+      +----------------------+      +------------------+
+|                         |                             |
+| User writes             | C++ bindings via            | C API for data,
+| Python code             | pybind11                    | econometrics,
+|                         |                             | models, matrices,
+| Python objects          | Conversion between          | bundles, function
+| (NumPy, pandas,         | Python and libgretl         | packages, etc.
+| lists, dicts, etc.)     | types and objects           |
+|                         |                             |
+\end{BVerbatim}
+\end{center}
+
+Thus, \gretlpy serves both as a binding layer and as an adaptation
+layer between the two environments. It translates between native
+\python objects and the corresponding \lgretl data structures where
+appropriate, and provides dedicated classes for objects whose
+functionality cannot conveniently be represented by standard
+\python types alone.
+
+The principal \gretlpy classes include:
 \begin{itemize}
-	\item binary bindings written in \cpp,
-	\item dedicated classes implemented in \cpp and exposed to \python
-		(see Section~\ref{sec:class_py_model}),
-	\item a set of utility functions implemented in \python
-	(see Sections~\ref{sec:module_related_python}--\ref{sec:data_management_python}).
+	\item \classpydataset, which represents a \gretl dataset and
+	provides access to data manipulation, transformations,
+	statistical tests, and related operations;
+	\item \classpymatrix, which provides native access to
+	\gretl matrices, including indexing, slicing, row and column
+	names, and efficient interoperability with \pkg{NumPy};
+	\item \classpybundle, which provides access to \gretl bundles
+	through a dictionary-like interface;
+	\item \classpymodel and its subclasses, which represent
+	econometric models estimated by \lgretl and provide access
+	to model results, diagnostics, forecasting, and other
+	post-estimation operations;
+	\item \pythcode{gretl.Package}, which provides an interface to
+	\gretl function packages and makes it possible to call
+	functions written in \hansl directly from \python.
 \end{itemize}
-On \cpp level, we use \pkg{pyind11} \citep[see][for details]{pybind11}.
 
-The package is distributed in \texttt{wheel} format
-(\url{https://packaging.python.org/en/latest/glossary/#term-Wheel}).
+In addition to these classes, the package exposes a substantial part
+of the \lgretl functionality through module-level functions and
+methods. This includes econometric estimators, statistical tests,
+time-series and panel-data operations, data transformations, filtering,
+forecasting, and utilities for working with native \gretl objects.
+Where useful, \gretlpy also provides higher-level \python wrappers
+around the underlying \lgretl interface.
+
+A central design principle of \gretlpy is interoperability rather than
+the creation of a separate data and numerical ecosystem. In
+particular, data can be exchanged with commonly used \python
+structures such as lists, dictionaries, \pkg{NumPy} arrays, and
+\pkg{pandas} objects. For example, a \gretl matrix can be accessed
+through a \pkg{NumPy} view without an unnecessary copy, while a
+\gretl dataset can be converted to a \pkg{pandas} data frame. This
+allows \lgretl computations to form part of a larger \python workflow
+without requiring all data processing or analysis to be performed
+within \gretlpy itself.
+
+Econometric models follow a similar design. Model specifications are
+constructed in \python, while estimation is carried out by \lgretl.
+The resulting objects are represented by estimator-specific subclasses
+of \classpymodel. These objects provide access to estimated
+coefficients and other model results as well as applicable diagnostic
+tests, specification tests, forecasts, residuals, and related
+post-estimation functionality. The interface therefore reflects the
+capabilities of the underlying \gretl model while presenting them
+through a \python object-oriented API.
+
+An important additional goal is interoperability with the existing
+\gretl ecosystem. \gretlpy can work with \gretl datasets and matrices,
+execute \hansl code, and access functions supplied by \gretl function
+packages. Consequently, existing \gretl functionality does not
+necessarily have to be rewritten in \python in order to be used in a
+\python-based analysis.
+
+The package can therefore be viewed as providing three complementary
+levels of functionality:
+\begin{enumerate}
+	\item direct bindings to \lgretl functionality;
+	\item object-oriented interfaces to native \gretl data structures,
+	models, and function packages;
+	\item \python-level utilities that facilitate integration with
+	the wider scientific \python ecosystem.
+\end{enumerate}
+
+The remainder of this manual describes these interfaces in detail.
+Chapter~\ref{sec:implementation} introduces the implementation and the
+main \gretlpy data structures and econometric interfaces. Subsequent
+chapters describe their practical use, including data management,
+model estimation and testing, forecasting, function packages, and
+execution of \hansl code. The final part of the manual provides
+extended examples illustrating how these components can be combined
+in empirical applications.
 
 
-\section*{Warning}
+\section*{Documentation status}
+
 \begin{quote}
-	This documentation is continuously updated but does
-	not yet cover all \gretlpy~\gretlpyversion features.
+	This documentation is continuously updated and may not yet cover
+	all features available in the current \gretlpy~\gretlpyversion
+	release.
 \end{quote}
 
 
 \section*{To do}
+
 \begin{quote}
 	\input{../todo.txt}
 \end{quote}

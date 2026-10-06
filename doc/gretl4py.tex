@@ -135,6 +135,8 @@
 \renewcommand*\l@figure{\@dottedtocline{1}{1.5em}{3em}}%
 \makeatother
 
+\includeonly{introduction}
+
 \begin{document}
 	\pagestyle{headings}
 \begin{titlepage}
@@ -179,7 +181,7 @@ his contribution to the first version of the \gretlpy package.
 %	\listoftodos
 	\tableofcontents
 
-	\input{introduction}
+	\include{introduction}
 	\include{installation}
 	\include{Implementation}
 	\include{Usage_of_the_package}
