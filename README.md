@@ -17,8 +17,27 @@ gretl4py provides a Python interface to **libgretl**, the numerical and economet
 
 gretl4py is not a separate econometrics library. It is a bridge between Python and `libgretl`: estimation and many numerical operations are performed by the mature gretl engine, while Python provides the programming environment and ecosystem around it.
 
-> **Windows users:** gretl4py requires the Microsoft Visual C++ 2022 Redistributable (x64).
-> Download it from <https://aka.ms/vs/17/release/vc_redist.x64.exe>.
+The overall architecture is:
+
+```text
++------------------+      +----------------------+      +------------------+
+|      Python      | <--> |       gretl4py       | <--> |     libgretl     |
++------------------+      +----------------------+      +------------------+
+|                         |                             |
+| User writes             | C++ bindings via            | C API for data,
+| Python code             | pybind11                    | econometrics,
+|                         |                             | models, matrices,
+| Python objects          | Conversion between          | bundles, function
+| (NumPy, pandas,         | Python and libgretl         | packages, etc.
+| lists, dicts, etc.)     | types and objects           |
+|                         |                             |
+```
+
+> **Supported Python versions:** 3.11, 3.12, 3.13, and 3.14.
+>
+> **Windows users:** gretl4py requires the appropriate Microsoft Visual C++ 2022
+> Redistributable (v14.x). See Microsoft's
+> [latest supported Visual C++ Redistributable downloads](https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist).
 
 ---
 
@@ -37,6 +56,7 @@ gretl4py provides:
 - gretl's hansl language, allowing Python programs to execute hansl code and exchange user-defined variables with `libgretl`.
 - **gretl function packages**, making functionality implemented in hansl packages directly usable from Python.
 - LIBSVM-based machine-learning functionality available through gretl.
+- Plotting support integrated with matplotlib.
 
 The package is designed to allow users to combine the econometric functionality of gretl with the broader Python ecosystem, including NumPy, pandas, matplotlib, and other scientific and statistical libraries.
 
@@ -44,15 +64,59 @@ The package is designed to allow users to combine the econometric functionality 
 
 ## Installation
 
-The recommended way to install gretl4py is with `pip`:
+For normal use, installing a pre-built gretl4py package is recommended.
+
+### PyPI
+
+On GNU/Linux:
 
 ```bash
-pip install gretl4py
+python3 -m pip install gretl4py
 ```
 
-Pre-built packages are available for supported Python versions and platforms.
+On macOS, use a user installation:
 
-For platform-specific requirements and available distributions, see the
+```bash
+python3 -m pip install --user gretl4py
+```
+
+On MS Windows:
+
+```bash
+python.exe -m pip install gretl4py
+```
+
+### Conda
+
+Pre-built gretl4py packages are also available through Conda:
+
+```bash
+conda install -c marcin_gretlconference.org gretl4py
+```
+
+### Development snapshots
+
+Pre-built development snapshots are available from the
+[gretl4py snapshots area](https://sourceforge.net/projects/gretl/files/gretl4py/snapshots/).
+
+Download the wheel matching the Python version, operating system, and architecture,
+then install it with `pip`. On macOS, add the `--user` option.
+
+### Verifying the installation
+
+On GNU/Linux or macOS:
+
+```bash
+python3 -c "import gretl; gretl.about(True)"
+```
+
+On MS Windows:
+
+```bash
+python.exe -c "import gretl; gretl.about(True)"
+```
+
+For platform-specific requirements and distributions, see the
 [gretl4py project page](https://gretl.sourceforge.net/gretl4py.html).
 
 ---
@@ -112,7 +176,7 @@ series, working with lists, and passing datasets to estimators.
 gretl4py also provides conversion to pandas:
 
 ```python
-df = data.to_pandas()
+df = data.to_dataframe()
 ```
 
 ---
@@ -161,8 +225,9 @@ documentation for details.
 
 ## Estimation
 
-gretl4py exposes a range of gretl estimators through Python. Depending on the model,
-these include:
+gretl4py exposes a range of gretl estimators through Python. Estimator functions return
+model objects; estimation is performed by calling `.fit()`. Depending on the model,
+the available estimators include:
 
 - OLS and weighted least squares
 - AR and ARIMA
@@ -512,14 +577,33 @@ particular feature is intended to be used.
 
 A gretl4py installation contains:
 
-1. `libgretl` and its plugins together with the required runtime dependencies;
-2. the compiled `_gretl` Python extension module providing the binding to `libgretl`;
+1. the compiled `_gretl` Python extension module providing the binding to `libgretl`;
+2. `libgretl` and the gretl plugins bundled for use by gretl4py;
 3. Python-level helper modules and utilities;
 4. example modules and scripts;
 5. bundled datasets and other supporting resources.
 
 The Python extension is implemented using C++ and pybind11, while the underlying
-econometric functionality is provided by `libgretl`.
+econometric functionality is provided by `libgretl`. Some functionality provided by
+individual gretl plugins may require additional runtime libraries; the exact requirements
+depend on the platform and the functionality being used.
+
+---
+
+## Building from source
+
+For normal use, pre-built packages are recommended. Source builds use Meson and Ninja
+and require a suitable `libgretl` development environment.
+
+On MS Windows (x86-64 and ARM64), native builds use the Microsoft Windows SDK,
+LLVM/Clang, and the
+[libgretl for MS SDK](https://sourceforge.net/projects/libgretl-for-ms-sdk/) stack.
+MSVC cannot currently be used to build gretl4py because of an ABI incompatibility
+arising from the representation of complex numbers. Additional libraries required by
+individual gretl plugins must be supplied separately where needed.
+
+The PDF manual contains the complete and current build instructions for GNU/Linux,
+macOS, and MS Windows.
 
 ---
 
