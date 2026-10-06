@@ -176,7 +176,7 @@ series, working with lists, and passing datasets to estimators.
 gretl4py also provides conversion to pandas:
 
 ```python
-df = data.to_dataframe()
+df = data.to_pandas()
 ```
 
 ---
@@ -309,6 +309,7 @@ A package is loaded with `gretl.include()`:
 ```python
 import gretl
 
+gretl.pkg("install", "BMA")
 BMA = gretl.include("BMA")
 ```
 
@@ -335,7 +336,7 @@ opt["Nrank"] = 5
 
 result = gretl.BMA(
     Y="GDP_growth",
-    X_list="2..13",
+    X_list=list(range(2, 14)),
     quiet=True,
     Options=opt
 )
