@@ -1,0 +1,23 @@
+\chapter{Implementation}\label{sec:implementation}
+\input{implementation_python_side}
+
+\section{Data structures}
+The \lgretl defines and operates on several native (and thus internal) data types and structures:
+\begin{itemize}
+	\item \texttt{dataset}: the basic \lgretl type for
+	managing data (see \ref{sec:classpydataset}),
+	\item \gretlcmd{bundle}: an all-purpose \pythcode{dict}-like
+	container (see \ref{sec:classpybundle}),
+	\item user-defined variables stored internally by \lgretl,
+	such as \gretlcmd{scalar}, \gretlcmd{matrix}, \gretlcmd{list},
+	and \gretlcmd{array} (see \ref{sec:userdefinedvariables}).
+\end{itemize}
+
+\input{class_py_dataset}
+\input{class_py_bundle}
+\input{class_py_matrix}\hansl
+
+\section{Econometric methods}
+\input{estimators}
+\input{class_py_model}
+\input{class_py_package}

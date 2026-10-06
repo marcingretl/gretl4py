@@ -180,55 +180,23 @@ his contribution to the first version of the \gretlpy package.
 	\tableofcontents
 
 	\input{introduction}
-	\input{installation}
-	\chapter{Implementation}\label{sec:implementation}
-		\input{implementation_python_side}
-		\section{Data structures}
-			The \lgretl defines and operates on several native (and thus internal) data types and structures:
-			\begin{itemize}
-				\item \texttt{dataset}: the basic \lgretl type for
-					managing data (see \ref{sec:classpydataset}),
-				\item \gretlcmd{bundle}: an all-purpose \pythcode{dict}-like
-					container (see \ref{sec:classpybundle}),
-				\item user-defined variables stored internally by \lgretl,
-					such as \gretlcmd{scalar}, \gretlcmd{matrix}, \gretlcmd{list},
-					and \gretlcmd{array} (see \ref{sec:userdefinedvariables}).
-			\end{itemize}
-			\input{class_py_dataset}
-			\input{class_py_bundle}
-			\input{class_py_matrix}\hansl
-		\section{Econometric methods}
-			\input{estimators}
-			\input{class_py_model}
-			\input{class_py_package}
-	\input{usage}
-		\input{module_related_tools_usage}
-		\input{data_management}
-			\subsection{Statistical tests}\tbw
-		\input{usage_native_estimators}
-			\subsection{Model testing}\tbw
-			\input{usage_forecasting}
-		\input{usage_contributed_packages}
-		\input{objects_life_cycle}
-		\input{running_hansl}
-	\chapter{Examples}\label{sec:examples}
-		\input{examples_poe4th}
-		\input{examples_nontrivial_econometrics}
-		\input{examples_bayesian}
-		\input{examples_statsmodels}
+	\include{installation}
+	\include{Implementation}
+	\include{Usage_of_the_package}
+	\include{Examples}
 
 	\clearpage
 	\phantomsection
 	\listoffigures
 	\addcontentsline{toc}{chapter}{\listfigurename}
-	
+
 	\phantomsection
 	\printindex
 	\addcontentsline{toc}{chapter}{Index}
-	
+
 	\bibliographystyle{abbrvnat}
 	\bibliography{gretl4py.bib}
-	
+
 	\appendix
 		\input{gretldataset_pydict}
 		\input{gretlmodel_hierarchy}
