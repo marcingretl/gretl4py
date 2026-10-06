@@ -1,5 +1,5 @@
 version 0.62:
-    - code refactoring
+    - code refactoring (including docs)
     - use of pybind11 3.1.0
     - drop support for Python 3.11
     - get rid of unused GretlModel_package class
@@ -8,8 +8,9 @@ version 0.62:
     - GretlModel_VAR::save_uhat(): fix bug where err_ was not reset
     - GretlModel::estimated new read-only property
     - new free kpsscrit() function
-    - GretlDataset::test() and GretlModel::test() method deprecated
-    - start wrinting docstring-s
+    - GretlDataset::test() and GretlModel::test() methods deprecated
+    - new dataset- and model-based statistical tests API
+    - docstring-s for most of the functions, methods and attributes
 
 version 0.61:
     - summary(): add support for pyton list as an argument

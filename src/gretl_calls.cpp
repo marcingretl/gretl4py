@@ -220,6 +220,7 @@ GretlBundlePtr about (bool do_print)
         std::cout << " [" << COMPILER_IDENT << "]" << std::endl;
         std::cout << "\t+ pybind11     v" << py11_ver << std::endl;
         std::cout << "\t+ libgretl-1.0 v" << lg_ver << std::endl;
+        std::cout << "\ncontact: marcin[at]gretlconference.org" << std::endl;
         if (!gb_sysinfo->get_err()) {
             std::cout << std::endl << "libgretl $sysinfo:" << std::endl;
             gb_sysinfo->print<void>();
