@@ -25,10 +25,13 @@ bindings, \gretlpy provides a set of \python-accessible classes and
 utility functions designed to expose \lgretl objects and operations in
 a form natural to \python users.
 
-The overall architecture can be summarized as follows:
-
-\begin{center}\small
-\begin{BVerbatim}
+The overall architecture is summarized in
+Table~\ref{tab::overall_architecture}:
+\begin{table}[!h]
+	\caption{Overall \gretlpy architecture.}%
+	\label{tab::overall_architecture}
+	\begin{center}\small
+	\begin{BVerbatim}
 +------------------+      +----------------------+      +------------------+
 |      Python      | <--> |       gretl4py       | <--> |     libgretl     |
 +------------------+      +----------------------+      +------------------+
@@ -40,8 +43,9 @@ The overall architecture can be summarized as follows:
 | (NumPy, pandas,         | Python and libgretl         | packages, etc.
 | lists, dicts, etc.)     | types and objects           |
 |                         |                             |
-\end{BVerbatim}
-\end{center}
+	\end{BVerbatim}
+	\end{center}
+\end{table}
 
 Thus, \gretlpy serves both as a binding layer and as an adaptation
 layer between the two environments. It translates between native

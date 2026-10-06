@@ -13,7 +13,7 @@ from zipfile import BadZipFile
 TMP_WHLS_DIR = Path("/tmp/whls")
 DEFAULT_BASE_URL = "https://sourceforge.net/projects/gretl/files/gretl4py/"
 FALLBACK_URL = "https://master.dl.sourceforge.net/project/gretl/gretl4py/snapshots/"
-VER="0.61"
+VER="0.62"
 
 def download_wheel(url: str, dest_folder: Path) -> Path:
     """

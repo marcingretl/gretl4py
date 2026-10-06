@@ -350,9 +350,9 @@ the method are valid for every fitted model of that class.
 		\centering
 		\caption{General diagnostic tests}
 		\begin{tabular}{lcccccc}
-			\hline
+			\hline\hline
 			Model & ARCH & Autocorr. & BKW & Normality & White & VIF \\
-			\hline
+			\hline\hline
 			ARIMA       & \checkmark & \checkmark & \checkmark & \checkmark & --         & -- \\
 			OLS         & \checkmark & \checkmark & \checkmark & \checkmark & \checkmark & \checkmark \\
 			WLS         & \checkmark & --         & \checkmark & \checkmark & --         & \checkmark \\
@@ -390,9 +390,9 @@ the method are valid for every fitted model of that class.
 		\centering
 		\caption{OLS and panel-data diagnostics}
 		\begin{tabular}{lcccccccc}
-			\hline
+			\hline\hline
 			Model & BP & CUSUM & Leverage & Nonlin. & Panspec & QLR & RESET & XDep \\
-			\hline
+			\hline\hline
 			OLS    & \checkmark & \checkmark & \checkmark & \checkmark &
 			\checkmark & \checkmark & \checkmark & \checkmark \\
 			PANEL  & -- & -- & -- & -- & -- & -- & -- & \checkmark \\
@@ -406,9 +406,9 @@ the method are valid for every fitted model of that class.
 		\centering
 		\caption{Additional estimator-specific diagnostics}
 		\begin{tabular}{lcc}
-			\hline
+			\hline\hline
 			Model & Groupwise heteroskedasticity & COMFAC \\
-			\hline
+			\hline\hline
 			OLS    & \checkmark & -- \\
 			PANEL  & \checkmark & -- \\
 			AR1    & --         & \checkmark \\
@@ -430,7 +430,7 @@ on the specification of the fitted model.
 % Individual diagnostic and specification methods
 % ----------------------------------------------------------------------
 
-\gretlfpycmd{arch()}
+\gretlfpycmd{arch()}\label{met:gretlmodelnse::arch}
 \estdesc{Tests the model residuals for autoregressive conditional
 	heteroskedasticity (ARCH).}
 \begin{lstlisting}[style=pythonstylefoot]
@@ -445,7 +445,7 @@ on the specification of the fitted model.
 	no ARCH effects up to the specified lag order. If \textit{order} is
 	\pythcode{None}, the periodicity of the data is used.}
 
-\gretlfpycmd{autocorr()}
+\gretlfpycmd{autocorr()}\label{met:gretlmodelnse::autocorr}
 \estdesc{Test for serial correlation.}
 \begin{lstlisting}[style=pythonstylefoot]
 .autocorr(order: int | None = None[, OPTS]) -> gretl.Bundle
@@ -573,7 +573,7 @@ on the specification of the fitted model.
 	auxiliary regression. The test is generally available for models
 	estimated by OLS.}
 
-\gretlfpycmd{normality()}
+\gretlfpycmd{normality()}\label{met:gretlmodelnse::normality}
 \estdesc{Test for normality of residuals.}
 \begin{lstlisting}[style=pythonstylefoot]
 .normality([OPTS]) -> gretl.Bundle
@@ -913,29 +913,20 @@ for \pythcode{gretl.Model\_vecm}, which inherits from
 \begin{lstlisting}[style=pythonstylefoot]
 .arch(order: int | None = None[, OPTS]) -> gretl.Bundle
 \end{lstlisting}
-\mapto{modtest [ order ] --arch}
-\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
-	\item[]\maptoopt{quiet=True}{--quiet}{don't print details}
-	\item[]\maptoopt{silent=True}{--silent}{don't print anything}
-\end{itemize}
-\generaldesc{The null hypothesis is that the model residuals exhibit
-	no ARCH effects up to the specified lag order. If \textit{order} is
-	\pythcode{None}, the periodicity of the data is used.}
+\mapto[none]{modtest [ order ] --arch}
+\generaldesc{For details, see the documentation of the
+	\pythcode{::arch()} method on
+	page~\pageref{met:gretlmodelnse::arch}.}
 
 \gretlfpycmd{autocorr()}
 \estdesc{Test for serial correlation in the model residuals.}
 \begin{lstlisting}[style=pythonstylefoot]
 .autocorr(order: int | None = None[, OPTS]) -> gretl.Bundle
 \end{lstlisting}
-\mapto{modtest [ order ] --autocorr}
-\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
-	\item[]\maptoopt{quiet=True}{--quiet}{don't print details}
-	\item[]\maptoopt{silent=True}{--silent}{don't print anything}
-\end{itemize}
-\generaldesc{The null hypothesis is that the model residuals
-	exhibit no serial correlation up to the specified lag order.
-	If \textit{order} is \pythcode{None}, the periodicity of
-	the data is used.}
+\mapto[none]{modtest [ order ] --autocorr}
+\generaldesc{For details, see the documentation of the
+	\pythcode{::autocorr()} method on
+	page~\pageref{met:gretlmodelnse::autocorr}.}
 
 \gretlfpycmd{irf()}\label{met:gretlmodel::irf}
 \estdesc{Computes impulse response functions (IRFs) for a VAR or VECM,
@@ -958,14 +949,10 @@ for \pythcode{gretl.Model\_vecm}, which inherits from
 \begin{lstlisting}[style=pythonstylefoot]
 .normality([OPTS]) -> gretl.Bundle
 \end{lstlisting}
-\mapto{modtest --normality}
-\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
-	\item[]\maptoopt{quiet=True}{--quiet}{don't print details}
-	\item[]\maptoopt{silent=True}{--silent}{don't print anything}
-\end{itemize}
-\generaldesc{Tests the null hypothesis that the model residuals are
-	normally distributed. The test statistic and its p-value are
-	recorded on successful completion.}
+\mapto[none]{modtest --normality}
+\generaldesc{For details, see the documentation of the
+	\pythcode{::normality()} method on
+	page~\pageref{met:gretlmodelnse::normality}.}
 
 \gretlfpycmd{save\_uhat()}
 \estdesc{Adds residuals from the specified equation to the dataset
@@ -973,7 +960,7 @@ for \pythcode{gretl.Model\_vecm}, which inherits from
 \begin{lstlisting}[style=pythonstylefoot]
 .save_uhat(eqn: int, name: str = '') -> str
 \end{lstlisting}
-\mapto[0]{series name = \$uhat[, eqn]}
+\mapto[none]{series name = \$uhat[, eqn]}
 \generaldesc{The \textit{eqn} argument is the 1-based equation number.
 	If \textit{name} is not provided, the generated series is named
 	according to the \lgretl naming convention.}
@@ -981,24 +968,6 @@ for \pythcode{gretl.Model\_vecm}, which inherits from
 
 \subsubsection{\pythcodeb{gretl.Model\_vecm} methods}
 The \pythcode{gretl.Model\_vecm} class provides the following public methods:
-
-\gretlfpycmd{restrict()}
-\estdesc{Imposes a set of (usually linear) restrictions on the VECM.}
-\begin{lstlisting}[style=pythonstylefoot]
-.restrict(impose: list[, OPTS]) -> gretl.Bundle
-\end{lstlisting}
-\mapto{restrict impose end restrict}
-\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
-	\item[]\maptoopt{quiet=True}{--quiet}{don't print restricted estimates}
-	\item[]\maptoopt{silent=True}{--silent}{don't print anything}
-	\item[]\maptoopt{full=True}{--full}{set restricted estimates as the last model (\seegretlmanual)}
-\end{itemize}
-\generaldesc{The \textit{impose} argument is a list of strings defining
-	the restrictions. On successful completion, the returned
-	\classpybundle contains the test statistic (\gretlcmd{test}),
-	its p-value (\gretlcmd{pvalue}), and the printed output
-	(\gretlcmd{summary}). See the \gretl User's Guide for details
-	on restrictions in Vector Error Correction Models.}
 
 \gretlfpycmd{save\_ec\_term()}
 \estdesc{Adds the error-correction term from the specified equation

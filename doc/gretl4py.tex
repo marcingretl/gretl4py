@@ -135,7 +135,7 @@
 \renewcommand*\l@figure{\@dottedtocline{1}{1.5em}{3em}}%
 \makeatother
 
-\includeonly{introduction}
+%\includeonly{Implementation}
 
 \begin{document}
 	\pagestyle{headings}
@@ -181,16 +181,27 @@ his contribution to the first version of the \gretlpy package.
 %	\listoftodos
 	\tableofcontents
 
-	\include{introduction}
-	\include{installation}
+	\include{Introduction}
+	\include{Installation}
 	\include{Implementation}
 	\include{Usage_of_the_package}
 	\include{Examples}
 
 	\clearpage
+	\begingroup
+	\raggedbottom
+	
 	\phantomsection
-	\listoffigures
+	\addcontentsline{toc}{chapter}{\listtablename}
+	\listoftables
+
+	\clearpage
+	\phantomsection
 	\addcontentsline{toc}{chapter}{\listfigurename}
+	\listoffigures
+
+	\endgroup
+	\clearpage
 
 	\phantomsection
 	\printindex

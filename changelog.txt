@@ -9,8 +9,9 @@ version 0.62:
     - GretlModel::estimated new read-only property
     - new free kpsscrit() function
     - GretlDataset::test() and GretlModel::test() methods deprecated
-    - new dataset- and model-based statistical tests API
+    - new dataset- and model-based statistical tests API (see examples/tests/tests.py)
     - docstring-s for most of the functions, methods and attributes
+    - massive PDF docs update
 
 version 0.61:
     - summary(): add support for pyton list as an argument
