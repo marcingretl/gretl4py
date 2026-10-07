@@ -450,7 +450,7 @@ exposes the underlying matrix storage directly and therefore avoids a data copy.
 Datasets can be converted to pandas DataFrames with:
 
 ```python
-dataframe = dataset.to_dataframe()
+dataframe = dataset.to_pandas()
 ```
 
 This makes it possible to use gretl for estimation while using NumPy, pandas,
