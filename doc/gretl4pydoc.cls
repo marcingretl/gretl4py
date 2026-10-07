@@ -182,6 +182,7 @@
 		{.range}{range}{5}
 		{complex128}{complex128}{10}
 		{numpy.array}{{\textcolor{pythtype}{numpy.array}}}{11}
+		{gretl.Model}{\textcolor{pythtype}{gretl.Model}}{11}
 		{gretl.Matrix}{{\textcolor{pythtype}{gretl.Matrix}}}{12}
 		{gretl.Bundle}{{\textcolor{pythtype}{gretl.Bundle}}}{12}
 		{~gretl.Model}{gretl.Model}{12}

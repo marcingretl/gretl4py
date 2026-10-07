@@ -78,12 +78,12 @@ def run_example():
   print(m1)
 
   print("\n****************************")
-  res_add = m1.add(varlist="IDE", silent=True)
+  res_add, new_m1 = m1.add(varlist=[4], auto="BIC", quiet=True)
   print(res_add['type'])
   print(res_add['options'])
   print(res_add['test'])
   print(res_add['pvalue'])
-  print(res_add['summary'])
+  print(new_m1)
 
   print("\n****************************")
   print("bkw")
@@ -117,7 +117,7 @@ def run_example():
 
   print("\n****************************")
   print("omit")
-  res_omit = m1.omit(varlist="3")
+  res_omit = m1.omit(varlist=[3])
 
   print("\n****************************")
   print("qlrtest")

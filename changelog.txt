@@ -1,6 +1,6 @@
 version 0.63:
     - model-based tests: fix bug where 'varlist' was passed as list
-    - ::omit() test: make 'auto' option temporarily unavailable
+    - add() and omit() tests: 'auto' option works fine
 
 version 0.62:
     - code refactoring (including docs)

@@ -439,7 +439,7 @@ on the specification of the fitted model.
 \gretlfpycmd{add()}
 \estdesc{Test or select variables for addition to the model.}
 \begin{lstlisting}[style=pythonstylefoot]
-.add(varlist: str | list[, OPTS]) -> gretl.Bundle
+.add(varlist: str | list[, OPTS]) -> gretl.Bundle | tuple[gretl.Bundle, gretl.Model]
 \end{lstlisting}
 \mapto{add ~varlist}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
@@ -462,7 +462,10 @@ on the specification of the fitted model.
 	\pythcode{auto} options are available for OLS models only and cannot
 	be combined. By default, the augmented model replaces the original
 	model as the current model; with \pythcode{lm=True}, the original
-	model is retained.}
+	model is retained. When \pythcode{auto} is specified, the method
+	returns a tuple containing the test results as a
+	\pythcode{gretl.Bundle} and the selected model as a
+	\pythcode{gretl.Model}.}
 
 \gretlfpycmd{arch()}\label{met:gretlmodelnse::arch}
 \estdesc{Tests the model residuals for autoregressive conditional
@@ -659,9 +662,11 @@ on the specification of the fitted model.
 \gretlfpycmd{omit()}
 \estdesc{Test or select variables for omission from the model.}
 \begin{lstlisting}[style=pythonstylefoot]
-.omit(varlist: str | list[, OPTS]) -> gretl.Bundle
+.omit(varlist: str | list[, OPTS]) -> gretl.Bundle | tuple[gretl.Bundle, gretl.Model]
 \end{lstlisting}
-\mapto{omit ~varlist}
+\mapto[none]{omit ~varlist}
+\mapto[none]{omit --auto=BIC}
+\mapto{omit --auto=0.05}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
 	\item[]\maptoopt{test_only=True}{--test-only}{perform the test without replacing the current model}
 	\item[]\maptoopt{chi_square=True}{--chi-square}{use the chi-square rather than F form of the Wald test}
@@ -681,7 +686,10 @@ on the specification of the fitted model.
 	selection, eliminating variables sequentially until no further
 	improvement according to AIC, BIC, HQC, or a specified significance
 	level is possible. If no selection criterion is specified, a
-	significance level of 0.10 is used.}
+	significance level of 0.10 is used. When \pythcode{auto} is
+	specified, the method returns a tuple containing the test results
+	as a \pythcode{gretl.Bundle} and the selected model as a
+	\pythcode{gretl.Model}.}
 
 \gretlfpycmd{panspec()}
 \estdesc{Performs panel specification tests.}

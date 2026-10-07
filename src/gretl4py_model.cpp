@@ -1075,6 +1075,7 @@ void GretlModel_NSE_OLS_add_omit<CI>::fit (void)
     // we check if we deal with clean model
     check_if_estimated_();
 
+    // we do the job
     if constexpr (CI == ADD) {
         err_ = add_test_full(src_model_, model_, addvars_, dataset_->dset, test_opt_, printer_.prn_ptr());
     } else if constexpr (CI == OMIT) {
@@ -1082,12 +1083,15 @@ void GretlModel_NSE_OLS_add_omit<CI>::fit (void)
     } else {
         static_assert(always_false<GretlCmdIndex>, "GretlModel_NSE_OLS_add_omit<CI>::add_omit_auto: unsupported CI");
     }
-    if (err_) handle_gretl_error(err_);
 
-    printer_.print();
-
-    // we save results
-    save_model_<MODEL>(model_);
+    // if there was no change in a varlist, just print a report
+    if (err_ == E_NOADD || err_ == E_NOOMIT) {
+        printer_.print();
+    } else {
+        if (err_) handle_gretl_error(err_);
+        // we save results
+        save_model_<MODEL>(model_);
+    }
 }
 
 // explicit instantiations for ADD and OMIT

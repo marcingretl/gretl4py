@@ -126,7 +126,7 @@ def _model_old_test(self: "Model", type: str, **kwargs) -> "Bundle":
     print(f'WARNING: Model::test(type="{type}") method is deprecated; use Model::{type}() instead\n')
     return self._test(type=type, **kwargs)
 
-def _add(self: "Model", varlist: str | list, **kwargs) -> "Bundle":
+def _add(self: "Model", varlist: str | list, **kwargs) -> "Bundle | tuple[Bundle, Model]":
     """
     Test or select variables for addition to the model.
 
@@ -507,7 +507,7 @@ def _normality(self: "Model", **kwargs) -> "Bundle":
 _normality.__name__ = "normality"
 _normality.__qualname__ = "Model.normality"
 
-def _omit(self: "Model", varlist: str | list = None, **kwargs) -> "Bundle":
+def _omit(self: "Model", varlist: str | list = None, **kwargs) -> "Bundle | tuple[Bundle, Model]":
     """
     Test or select variables for omission from the model.
 
