@@ -123,9 +123,9 @@ void init_gretl4py_model_py11(py::module_ &m)
              // 2. special-cases: "chow" which uses 'obs' instead of 'varlist'
              //
              if (!self.estimated()) throw std::runtime_error("Model was not estimated yet");
+             py::object varlist;
              py::kwargs clean_kwargs = kwargs;
              bool with_vars = false;
-             py::object varlist;
 
              // we check for "vars" or "obs" for chow test
              if (kwargs.contains("varlist")) {

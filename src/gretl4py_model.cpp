@@ -534,8 +534,8 @@ GretlBundlePtr GretlModel_NSE::test (const std::string &type, const py::object &
     // this method performs test which do take a variables list
     //
     GretlBundlePtr res = std::make_shared<GretlBundle>();
-    int order = -1;
     gretl_list_ptr ex_var{nullptr};
+    int order = -1;
 
     // we construct list of external variables
     if (type != "chow") {

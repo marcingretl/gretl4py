@@ -505,7 +505,7 @@ def _normality(self: "Model", **kwargs) -> "Bundle":
 _normality.__name__ = "normality"
 _normality.__qualname__ = "Model.normality"
 
-def _omit(self: "Model", varlist: str | list, **kwargs) -> "Bundle":
+def _omit(self: "Model", varlist: str | list = None, **kwargs) -> "Bundle":
     """
     Test or select variables for omission from the model.
 
@@ -545,6 +545,8 @@ def _omit(self: "Model", varlist: str | list, **kwargs) -> "Bundle":
     improvement according to the selected criterion is possible. If no
     criterion is specified, a significance level of 0.10 is used.
     """
+    if varlist is None and "auto" in kwargs:
+        raise NotImplementedError("'auto' option is temporarily unavailable")
     return self._test(type="omit", varlist=varlist, **kwargs)
 _omit.__name__ = "omit"
 _omit.__qualname__ = "Model.omit"

@@ -343,43 +343,46 @@ corresponding model class; it does not imply that all possible uses of
 the method are valid for every fitted model of that class.
 
 \begin{table}[htbp]
-	\centering
-	\caption{Availability of model diagnostic and specification methods}\label{tab:model-method-availability}
-	\small
+	\centering\scriptsize
+	\caption{Availability of model diagnostic and specification methods}
+	\label{tab:model-method-availability}
+	
 	\begin{subtable}{\textwidth}
 		\centering
-		\caption{General diagnostic tests}
-		\begin{tabular}{lcccccc}
+		\caption{General diagnostic and specification methods}
+		\begin{tabular}{lccccccccc}
 			\hline\hline
-			Model & ARCH & Autocorr. & BKW & Normality & White & VIF \\
+			Estimator & ARCH & Autocorr. & BKW & Normality & White & VIF &
+			ADD & OMIT & Coeffsum \\
 			\hline\hline
-			ARIMA       & \checkmark & \checkmark & \checkmark & \checkmark & --         & -- \\
-			OLS         & \checkmark & \checkmark & \checkmark & \checkmark & \checkmark & \checkmark \\
-			WLS         & \checkmark & --         & \checkmark & \checkmark & --         & \checkmark \\
-			LOGIT       & \checkmark & --         & \checkmark & --         & --         & \checkmark \\
-			PROBIT      & \checkmark & --         & \checkmark & \checkmark & --         & \checkmark \\
-			POISSON     & \checkmark & --         & \checkmark & \checkmark & --         & \checkmark \\
-			NEGBIN      & \checkmark & --         & \checkmark & \checkmark & --         & \checkmark \\
-			DURATION    & \checkmark & --         & \checkmark & --         & --         & \checkmark \\
-			HECKIT      & \checkmark & --         & \checkmark & --         & --         & \checkmark \\
-			LOGISTIC    & \checkmark & --         & \checkmark & \checkmark & --         & \checkmark \\
-			AR          & \checkmark & --         & \checkmark & \checkmark & --         & \checkmark \\
-			AR1         & \checkmark & --         & \checkmark & \checkmark & --         & \checkmark \\
-			LAD         & \checkmark & --         & \checkmark & \checkmark & --         & \checkmark \\
-			GARCH       & --         & --         & \checkmark & \checkmark & --         & -- \\
-			MPOLS       & \checkmark & --         & \checkmark & \checkmark & --         & \checkmark \\
-			PANEL       & \checkmark & \checkmark & \checkmark & \checkmark & --         & -- \\
-			IVREG       & \checkmark & \checkmark & \checkmark & \checkmark & \checkmark & -- \\
-			HSK         & \checkmark & --         & \checkmark & \checkmark & --         & \checkmark \\
-			INTREG      & \checkmark & --         & \checkmark & \checkmark & --         & \checkmark \\
-			MIDASREG    & --         & --         & \checkmark & \checkmark & --         & -- \\
-			QUANTREG    & \checkmark & --         & \checkmark & \checkmark & --         & \checkmark \\
-			TOBIT       & \checkmark & --         & \checkmark & \checkmark & --         & \checkmark \\
-			DPANEL      & \checkmark & --         & \checkmark & \checkmark & --         & -- \\
-			NLS         & --         & --         & \checkmark & \checkmark & --         & -- \\
-			MLE         & --         & --         & \checkmark & --         & --         & -- \\
-			GMM         & --         & --         & \checkmark & \checkmark & --         & -- \\
-			VAR/VECM    & \checkmark & \checkmark & --         & \checkmark & --         & -- \\
+			\pythcode{arima()}    & \checkmark & \checkmark & \checkmark & \checkmark & --         & --         & --         & --         & \checkmark \\
+			\pythcode{ols()}      & \checkmark & \checkmark & \checkmark & \checkmark & \checkmark & \checkmark & \checkmark & \checkmark & \checkmark \\
+			\pythcode{wls()}      & \checkmark & --         & \checkmark & \checkmark & --         & \checkmark & \checkmark & \checkmark & \checkmark \\
+			\pythcode{logit()}    & \checkmark & --         & \checkmark & --         & --         & \checkmark & \checkmark & \checkmark & \checkmark \\
+			\pythcode{probit()}   & \checkmark & --         & \checkmark & \checkmark & --         & \checkmark & \checkmark & \checkmark & \checkmark \\
+			\pythcode{poisson()}  & \checkmark & --         & \checkmark & \checkmark & --         & \checkmark & \checkmark & \checkmark & \checkmark \\
+			\pythcode{negbin()}   & \checkmark & --         & \checkmark & \checkmark & --         & \checkmark & \checkmark & \checkmark & \checkmark \\
+			\pythcode{duration()} & \checkmark & --         & \checkmark & --         & --         & \checkmark & \checkmark & \checkmark & \checkmark \\
+			\pythcode{heckit()}   & \checkmark & --         & \checkmark & --         & --         & \checkmark & --         & \checkmark & \checkmark \\
+			\pythcode{logistic()} & \checkmark & --         & \checkmark & \checkmark & --         & \checkmark & \checkmark & \checkmark & \checkmark \\
+			\pythcode{ar()}       & \checkmark & --         & \checkmark & \checkmark & --         & \checkmark & \checkmark & \checkmark & \checkmark \\
+			\pythcode{ar1()}      & \checkmark & --         & \checkmark & \checkmark & --         & \checkmark & \checkmark & \checkmark & \checkmark \\
+			\pythcode{lad()}      & \checkmark & --         & \checkmark & \checkmark & --         & \checkmark & \checkmark & \checkmark & \checkmark \\
+			\pythcode{garch()}    & --         & --         & \checkmark & \checkmark & --         & --         & --         & --         & \checkmark \\
+			\pythcode{mpols()}    & \checkmark & --         & \checkmark & \checkmark & --         & \checkmark & \checkmark & \checkmark & \checkmark \\
+			\pythcode{panel()}    & \checkmark & \checkmark & \checkmark & \checkmark & --         & --         & \checkmark & \checkmark & \checkmark \\
+			\pythcode{ivreg()}    & \checkmark & \checkmark & \checkmark & \checkmark & \checkmark & --         & \checkmark & \checkmark & \checkmark \\
+			\pythcode{hsk()}      & \checkmark & --         & \checkmark & \checkmark & --         & \checkmark & \checkmark & \checkmark & \checkmark \\
+			\pythcode{intreg()}   & \checkmark & --         & \checkmark & \checkmark & --         & \checkmark & --         & --         & \checkmark \\
+			\pythcode{midasreg()} & --         & --         & \checkmark & \checkmark & --         & --         & --         & --         & -- \\
+			\pythcode{quantreg()} & \checkmark & --         & \checkmark & \checkmark & --         & \checkmark & \checkmark & \checkmark & \checkmark \\
+			\pythcode{tobit()}    & \checkmark & --         & \checkmark & \checkmark & --         & \checkmark & \checkmark & \checkmark & \checkmark \\
+			\pythcode{dpanel()}   & \checkmark & --         & \checkmark & \checkmark & --         & --         & \checkmark & --         & \checkmark \\
+			\pythcode{nls()}      & --         & --         & \checkmark & \checkmark & --         & --         & --         & --         & -- \\
+			\pythcode{mle()}      & --         & --         & \checkmark & --         & --         & --         & --         & --         & -- \\
+			\pythcode{gmm()}      & --         & --         & \checkmark & \checkmark & --         & --         & --         & --         & -- \\
+			\pythcode{var()}      & \checkmark & \checkmark & --         & \checkmark & --         & --         & --         & --         & -- \\
+			\pythcode{vecm()}     & \checkmark & \checkmark & --         & \checkmark & --         & --         & --         & --         & -- \\
 			\hline
 		\end{tabular}
 	\end{subtable}
@@ -389,13 +392,16 @@ the method are valid for every fitted model of that class.
 	\begin{subtable}{\textwidth}
 		\centering
 		\caption{OLS and panel-data diagnostics}
-		\begin{tabular}{lcccccccc}
+		\begin{tabular}{lccccccccc}
 			\hline\hline
-			Model & BP & CUSUM & Leverage & Nonlin. & Panspec & QLR & RESET & XDep \\
+			Estimator & BP & Chow & CUSUM & Leverage & Nonlin. &
+			Panspec & QLR & RESET & XDep \\
 			\hline\hline
-			OLS    & \checkmark & \checkmark & \checkmark & \checkmark &
-			\checkmark & \checkmark & \checkmark & \checkmark \\
-			PANEL  & -- & -- & -- & -- & -- & -- & -- & \checkmark \\
+			\pythcode{ols()}   & \checkmark & \checkmark & \checkmark &
+			\checkmark & \checkmark & \checkmark &
+			\checkmark & \checkmark & \checkmark \\
+			\pythcode{panel()} & -- & -- & -- & -- & -- & -- & -- & -- &
+			\checkmark \\
 			\hline
 		\end{tabular}
 	\end{subtable}
@@ -407,21 +413,22 @@ the method are valid for every fitted model of that class.
 		\caption{Additional estimator-specific diagnostics}
 		\begin{tabular}{lcc}
 			\hline\hline
-			Model & Groupwise heteroskedasticity & COMFAC \\
+			Estimator & Groupwise heteroskedasticity & COMFAC \\
 			\hline\hline
-			OLS    & \checkmark & -- \\
-			PANEL  & \checkmark & -- \\
-			AR1    & --         & \checkmark \\
+			\pythcode{ols()}   & \checkmark & -- \\
+			\pythcode{panel()} & \checkmark & -- \\
+			\pythcode{ar1()}   & --         & \checkmark \\
 			\hline
 		\end{tabular}
 	\end{subtable}
 \end{table}
 
 In Table~\ref{tab:model-method-availability}, ``BP'' denotes the
-Breusch--Pagan test, ``Nonlin.'' denotes the nonlinearity test, and
-``XDep'' denotes the cross-sectional dependence test. Several entries
-are subject to additional run-time conditions. In particular,
-panel-data diagnostics require a panel dataset, while some
+Breusch--Pagan test, ``Nonlin.'' denotes the nonlinearity test,
+``XDep'' denotes the cross-sectional dependence test, while ``ADD''
+and ``OMIT'' denote addition and omission tests, respectively.
+Several entries are subject to additional run-time conditions. In
+particular, panel-data diagnostics require a panel dataset, while some
 time-series diagnostics require time-series data or impose restrictions
 on the specification of the fitted model.
 
@@ -429,6 +436,33 @@ on the specification of the fitted model.
 % ----------------------------------------------------------------------
 % Individual diagnostic and specification methods
 % ----------------------------------------------------------------------
+\gretlfpycmd{add()}
+\estdesc{Test or select variables for addition to the model.}
+\begin{lstlisting}[style=pythonstylefoot]
+.add(varlist: str | list[, OPTS]) -> gretl.Bundle
+\end{lstlisting}
+\mapto{add ~varlist}
+\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
+	\item[]\maptoopt{lm=True}{--lm}{perform an LM test instead of estimating an augmented model}
+	\item[]\maptoopt{auto="AIC"}{--auto=AIC}{perform forward selection using AIC}
+	\item[]\maptoopt{auto="BIC"}{--auto=BIC}{perform forward selection using BIC}
+	\item[]\maptoopt{auto="HQC"}{--auto=HQC}{perform forward selection using HQC}
+	\item[]\maptoopt{auto=value}{--auto=value}{perform forward selection using a significance level}
+	\item[]\maptoopt{quiet=True}{--quiet}{print only the basic test result}
+	\item[]\maptoopt{silent=True}{--silent}{suppress printed output}
+	\item[]\maptoopt{vcv=True}{--vcv}{print the covariance matrix for the augmented model}
+	\item[]\maptoopt{both=True}{--both}{for IV models, add the variables to both the regressors and instruments}
+\end{itemize}
+\generaldesc{By default, an augmented model including the variables
+	specified in \pythcode{varlist} is estimated and their joint
+	significance is tested using a Wald test. Alternatively,
+	\pythcode{lm=True} performs an LM test, while \pythcode{auto} invokes
+	forward stepwise selection using AIC, BIC, HQC, or a significance
+	level as the selection criterion. The \pythcode{lm} and
+	\pythcode{auto} options are available for OLS models only and cannot
+	be combined. By default, the augmented model replaces the original
+	model as the current model; with \pythcode{lm=True}, the original
+	model is retained.}
 
 \gretlfpycmd{arch()}\label{met:gretlmodelnse::arch}
 \estdesc{Tests the model residuals for autoregressive conditional
@@ -490,6 +524,40 @@ on the specification of the fitted model.
 	\pythcode{robust=True}, the robust variance estimator proposed by
 	Koenker (1981) is used, making the test less sensitive to the
 	assumption of normality.}
+
+\gretlfpycmd{chow()}
+\estdesc{Chow test for structural stability.}
+\begin{lstlisting}[style=pythonstylefoot]
+.chow(target: str[, OPTS]) -> gretl.Bundle
+\end{lstlisting}
+\mapto{chow}
+\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
+	\item[]\maptoopt{dummy=True}{--dummy}{interpret \pythcode{target} as the name of a dummy variable}
+	\item[]\maptoopt{quiet=True}{--quiet}{suppress estimates for the augmented model}
+	\item[]\maptoopt{limit_to=varlist}{--limit-to=varlist}{restrict the test to a specified subset of regressors}
+\end{itemize}
+\generaldesc{Tests for a structural break at the observation
+	specified by \pythcode{target}. With \pythcode{dummy=True},
+	\pythcode{target} is instead interpreted as the name of a
+	dummy 	variable defining the two groups to be compared.
+	The \pythcode{limit_to} option restricts the test to a
+	specified subset of regressors.}
+
+\gretlfpycmd{coeffsum()}
+\estdesc{Test the sum of selected model coefficients.}
+\begin{lstlisting}[style=pythonstylefoot]
+.coeffsum(varlist: str | list[, OPTS]) -> gretl.Bundle
+\end{lstlisting}
+\mapto{coeffsum ~varlist}
+\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
+	\item[]\maptoopt{quiet=True}{--quiet}{suppress printed output}
+\end{itemize}
+\generaldesc{Calculates the sum of the coefficients on the variables
+	specified in \textit{varlist} and tests the null hypothesis that
+	this sum is zero. The test reports the coefficient sum, its standard
+	error, and the associated p-value. Unlike an \gretlcmdf{omit} test,
+	which jointly tests whether the selected coefficients are all zero,
+	this test concerns their sum.}
 
 \gretlfpycmd{comfac()}
 \estdesc{Test of the common factor restriction in $AR(1)$ models.}
@@ -587,6 +655,33 @@ on the specification of the fitted model.
 	hypothesis that the model error term is normally distributed.
 	The test statistic and its p-value are recorded on successful
 	completion.}
+
+\gretlfpycmd{omit()}
+\estdesc{Test or select variables for omission from the model.}
+\begin{lstlisting}[style=pythonstylefoot]
+.omit(varlist: str | list[, OPTS]) -> gretl.Bundle
+\end{lstlisting}
+\mapto{omit ~varlist}
+\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
+	\item[]\maptoopt{test_only=True}{--test-only}{perform the test without replacing the current model}
+	\item[]\maptoopt{chi_square=True}{--chi-square}{use the chi-square rather than F form of the Wald test}
+	\item[]\maptoopt{quiet=True}{--quiet}{print only the basic test result}
+	\item[]\maptoopt{silent=True}{--silent}{suppress printed output}
+	\item[]\maptoopt{vcv=True}{--vcv}{print the covariance matrix for the reduced model}
+	\item[]\maptoopt{auto="AIC"}{--auto=AIC}{perform backward selection using AIC}
+	\item[]\maptoopt{auto="BIC"}{--auto=BIC}{perform backward selection using BIC}
+	\item[]\maptoopt{auto="HQC"}{--auto=HQC}{perform backward selection using HQC}
+	\item[]\maptoopt{auto=value}{--auto=value}{perform backward selection using a significance level}
+\end{itemize}
+\generaldesc{By default, a joint Wald test of the null hypothesis that
+	the coefficients on the variables specified in \pythcode{varlist}
+	are zero is performed and the corresponding reduced model is
+	estimated. With \pythcode{test_only=True}, the original model is
+	retained. Alternatively, \pythcode{auto} invokes backward stepwise
+	selection, eliminating variables sequentially until no further
+	improvement according to AIC, BIC, HQC, or a specified significance
+	level is possible. If no selection criterion is specified, a
+	significance level of 0.10 is used.}
 
 \gretlfpycmd{panspec()}
 \estdesc{Performs panel specification tests.}
