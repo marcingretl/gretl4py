@@ -546,7 +546,7 @@ def _omit(self: "Model", varlist: str | list = None, **kwargs) -> "Bundle":
     criterion is specified, a significance level of 0.10 is used.
     """
     if varlist is None and "auto" in kwargs:
-        raise NotImplementedError("'auto' option is temporarily unavailable")
+        return self._omit_auto(**kwargs)
     return self._test(type="omit", varlist=varlist, **kwargs)
 _omit.__name__ = "omit"
 _omit.__qualname__ = "Model.omit"

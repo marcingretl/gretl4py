@@ -126,6 +126,9 @@ public:
 
     GretlBundlePtr test (const std::string &type, const py::object &varlist, const py::kwargs &kwargs);
 
+    template <GretlCmdIndex CI>
+    std::pair<GretlBundlePtr, GretlModelPtr> add_omit_auto(const py::kwargs &kwargs);
+
     double adj_rsq (void) const;
 };
 
@@ -250,6 +253,26 @@ public:
     void add_line_to_parse (const std::string &keyword, const std::string &val);
 
     void add_init_value (const std::string &varname, double value);
+};
+
+//
+// OLS for add/omit tests
+// extends: GretlModel_NSE
+//
+template <GretlCmdIndex CI>
+class GretlModel_NSE_OLS_add_omit : public GretlModel_NSE
+{
+private:
+    const std::string formula_;         // formula defining model
+    MODEL *src_model_;                  // source model
+    gretlopt test_opt_;
+public:
+    GretlModel_NSE_OLS_add_omit (MODEL *src, GretlDatasetPtr src_dataset, gretlopt opt);
+    ~GretlModel_NSE_OLS_add_omit (void);
+
+    void fit (void) override;
+
+    std::string get_formula (void) const override;
 };
 
 //

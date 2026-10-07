@@ -139,7 +139,14 @@ void init_gretl4py_model_py11(py::module_ &m)
              // we do the job
              return with_vars ? self.test(type, varlist, clean_kwargs) : self.test(type, clean_kwargs);
          },
-         py::arg("type").none(false), py::kw_only());
+         py::arg("type").none(false), py::kw_only())
+    .def("_omit_auto",
+         [](GretlModel_NSE &self, const py::kwargs &kwargs) -> py::tuple
+         {
+             auto [bundle, model] = self.add_omit_auto<OMIT>(kwargs);
+
+             return py::make_tuple(py::cast(bundle),py::cast(std::move(model)));
+         });
     gretl_model_nse.attr("__module__") = "gretl";
 
     // NSE via dedicated Driver
@@ -204,6 +211,16 @@ void init_gretl4py_model_py11(py::module_ &m)
     .def("add_initval", &nl_add_init_value<GMM>,
          py::arg("varname").none(false), py::arg("value").none(false), doc::Model::gmm_add_initval);
     gretl_model_nse_nl_gmm.attr("__module__") = "gretl";
+
+    /*
+    auto gretl_model_nse_ols_add =
+    py::class_<GretlModel_NSE_OLS_add_omit<ADD>, GretlModel_NSE, std::unique_ptr<GretlModel_NSE_OLS_add_omit<ADD>>>(m, "Model_ols_add", py::dynamic_attr());
+    gretl_model_nse_ols_add.attr("__module__") = "gretl";
+
+    auto gretl_model_nse_ols_omit =
+    py::class_<GretlModel_NSE_OLS_add_omit<OMIT>, GretlModel_NSE, std::unique_ptr<GretlModel_NSE_OLS_add_omit<OMIT>>>(m, "Model_ols_omit", py::dynamic_attr());
+    gretl_model_nse_ols_omit.attr("__module__") = "gretl";
+    */
 
     // VAR
     auto gretl_model_var = py::class_<GretlModel_VAR, GretlModel, std::unique_ptr<GretlModel_VAR>>(m, "Model_var", py::dynamic_attr());
