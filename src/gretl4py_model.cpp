@@ -1058,8 +1058,8 @@ GretlModel_NSE_OLS_add_omit<CI>::GretlModel_NSE_OLS_add_omit (MODEL *src, GretlD
                                     : GretlModel_NSE_Driver<lsq, OLS>(), addvars_(addvars)
 {
     if (!src) throw std::runtime_error("didn't got model");
-    src_model_ = src;
     if (!src_dataset) handle_gretl_error(E_NODATA);
+    src_model_ = src;
     dataset_ = src_dataset;
     test_opt_ = opt;
     gretl_model_init(model_, dataset_->dset);
@@ -1084,12 +1084,11 @@ void GretlModel_NSE_OLS_add_omit<CI>::fit (void)
         static_assert(always_false<GretlCmdIndex>, "GretlModel_NSE_OLS_add_omit<CI>::add_omit_auto: unsupported CI");
     }
 
-    // if there was no change in a varlist, just print a report
-    if (err_ == E_NOADD || err_ == E_NOOMIT) {
-        printer_.print();
-    } else {
+    printer_.print();
+
+    // if there was no change in a varlist, we don't save model
+    if (err_ != E_NOADD && err_ != E_NOOMIT) {
         if (err_) handle_gretl_error(err_);
-        // we save results
         save_model_<MODEL>(model_);
     }
 }
