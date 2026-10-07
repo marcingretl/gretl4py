@@ -126,7 +126,7 @@ def _model_old_test(self: "Model", type: str, **kwargs) -> "Bundle":
     print(f'WARNING: Model::test(type="{type}") method is deprecated; use Model::{type}() instead\n')
     return self._test(type=type, **kwargs)
 
-def _add(self: "Model", varlist: str, **kwargs) -> "Bundle":
+def _add(self: "Model", varlist: str | list, **kwargs) -> "Bundle":
     """
     Test or select variables for addition to the model.
 

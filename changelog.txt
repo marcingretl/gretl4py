@@ -1,3 +1,6 @@
+version 0.63:
+    - model-based tests: fix bug where 'varlist' was passed as list
+
 version 0.62:
     - code refactoring (including docs)
     - use of pybind11 3.1.0

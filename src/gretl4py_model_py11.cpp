@@ -125,14 +125,14 @@ void init_gretl4py_model_py11(py::module_ &m)
              if (!self.estimated()) throw std::runtime_error("Model was not estimated yet");
              py::kwargs clean_kwargs = kwargs;
              bool with_vars = false;
-             std::string varlist;
+             py::object varlist;
 
              // we check for "vars" or "obs" for chow test
              if (kwargs.contains("varlist")) {
-                 varlist = py::str(clean_kwargs.attr("pop")("varlist"));
+                 varlist = clean_kwargs.attr("pop")("varlist");
                  with_vars = true;
              } else if (type == "chow" && kwargs.contains("obs")) {
-                 varlist = py::str(clean_kwargs.attr("pop")("obs"));
+                 varlist = clean_kwargs.attr("pop")("obs");
                  with_vars = true;
              }
 

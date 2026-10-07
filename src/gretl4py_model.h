@@ -124,7 +124,7 @@ public:
 
     GretlBundlePtr test (const std::string &type, const py::kwargs &kwargs);
 
-    GretlBundlePtr test (const std::string &type, const std::string &varlist, const py::kwargs &kwargs);
+    GretlBundlePtr test (const std::string &type, const py::object &varlist, const py::kwargs &kwargs);
 
     double adj_rsq (void) const;
 };

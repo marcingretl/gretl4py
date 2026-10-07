@@ -886,7 +886,7 @@ void GretlDataset::print (const py::list &varlist, const py::kwargs &kwargs)
     if (!varlist.empty()) {
         auto list = gretllist(varlist);
 
-        // we list is non-empty, we produce its string reprezentation
+        // if list is non-empty, we produce its string reprezentation
         if (list) {
             gretl_char_ptr list_str(gretl_list_to_string(list.get(), dset, &err_));
 

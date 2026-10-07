@@ -528,7 +528,7 @@ GretlBundlePtr GretlModel_NSE::test (const std::string &type, const py::kwargs &
     return res;
 }
 
-GretlBundlePtr GretlModel_NSE::test (const std::string &type, const std::string &varlist, const py::kwargs &kwargs)
+GretlBundlePtr GretlModel_NSE::test (const std::string &type, const py::object &varlist, const py::kwargs &kwargs)
 {
     //
     // this method performs test which do take a variables list
@@ -538,7 +538,17 @@ GretlBundlePtr GretlModel_NSE::test (const std::string &type, const std::string 
     gretl_list_ptr ex_var{nullptr};
 
     // we construct list of external variables
-    if (type != "chow") ex_var = dataset_->gretllist(varlist);
+    if (type != "chow") {
+        if (is_pystr(varlist)) {
+            ex_var = dataset_->gretllist(varlist.cast<std::string>());
+        } else if (is_pylist(varlist)) {
+            ex_var = dataset_->gretllist(varlist.cast<py::list>());
+        } else {
+            throw std::invalid_argument("'varlist': unsupported type");
+        }
+    } else if (!is_pystr(varlist)) {
+        throw std::invalid_argument("'varlist' must be a string");
+    }
 
     // we set up options
     auto printout = unpack_kwargs_test(opt_, type, kwargs, order);
@@ -547,7 +557,7 @@ GretlBundlePtr GretlModel_NSE::test (const std::string &type, const std::string 
     if (type == "add") {
         err_ = add_test(model_, ex_var.get(), dataset_->dset, opt_, printer_.prn_ptr());
     } else if (type == "chow") {
-        err_ = chow_test_driver(varlist.c_str(), model_, dataset_->dset, opt_, printer_.prn_ptr());
+        err_ = chow_test_driver(varlist.cast<std::string>().c_str(), model_, dataset_->dset, opt_, printer_.prn_ptr());
     } else if (type == "coeffsum") {
         err_ = gretl_sum_test(ex_var.get(), model_, dataset_->dset, opt_, printer_.prn_ptr());
     } else if (type == "omit") {
