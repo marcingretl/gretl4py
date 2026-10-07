@@ -591,10 +591,21 @@ std::pair<GretlBundlePtr, GretlModelPtr> GretlModel_NSE::add_omit_auto (const py
     // this method performs ADD or OMIT tests with '--auto=' option
     //
     GretlBundlePtr res = std::make_shared<GretlBundle>();
+    py::kwargs clean_kwargs = kwargs;
+    gretl_list_ptr ex_var{nullptr};
     int order = -1;
     std::string type;
 
     if constexpr (CI == ADD) {
+        py::object varlist = clean_kwargs.attr("pop")("varlist");
+
+        if (is_pystr(varlist)) {
+            ex_var = dataset_->gretllist(varlist.cast<std::string>());
+        } else if (is_pylist(varlist)) {
+            ex_var = dataset_->gretllist(varlist.cast<py::list>());
+        } else {
+            throw std::invalid_argument("'varlist': unsupported type");
+        }
         type = "add";
     } else if constexpr (CI == OMIT) {
         type = "omit";
@@ -603,10 +614,10 @@ std::pair<GretlBundlePtr, GretlModelPtr> GretlModel_NSE::add_omit_auto (const py
     }
 
     // we set up options
-    auto printout = unpack_kwargs_test(opt_, type, kwargs, order);
+    auto printout = unpack_kwargs_test(opt_, type, clean_kwargs, order);
 
     // we do the job
-    auto m = std::make_unique<GretlModel_NSE_OLS_add_omit<CI>>(model_, dataset_, opt_);
+    auto m = std::make_unique<GretlModel_NSE_OLS_add_omit<CI>>(model_, dataset_, opt_, ex_var.get());
     m->fit();
 
     // we print results if wanted
@@ -1039,6 +1050,51 @@ void GretlModel_NSE_Driver_tobit::fit (void)
 }
 
 //
+// OLS for add/omit tests
+// extends: GretlModel_NSE_Driver<lsq, OLS>
+//
+template <GretlCmdIndex CI>
+GretlModel_NSE_OLS_add_omit<CI>::GretlModel_NSE_OLS_add_omit (MODEL *src, GretlDatasetPtr src_dataset, gretlopt opt, const int *addvars)
+                                    : GretlModel_NSE_Driver<lsq, OLS>(), addvars_(addvars)
+{
+    if (!src) throw std::runtime_error("didn't got model");
+    src_model_ = src;
+    if (!src_dataset) handle_gretl_error(E_NODATA);
+    dataset_ = src_dataset;
+    test_opt_ = opt;
+    gretl_model_init(model_, dataset_->dset);
+    if (!model_) handle_gretl_error(E_ALLOC);
+}
+
+template <GretlCmdIndex CI>
+GretlModel_NSE_OLS_add_omit<CI>::~GretlModel_NSE_OLS_add_omit (void) = default;
+
+template <GretlCmdIndex CI>
+void GretlModel_NSE_OLS_add_omit<CI>::fit (void)
+{
+    // we check if we deal with clean model
+    check_if_estimated_();
+
+    if constexpr (CI == ADD) {
+        err_ = add_test_full(src_model_, model_, addvars_, dataset_->dset, test_opt_, printer_.prn_ptr());
+    } else if constexpr (CI == OMIT) {
+        err_ = omit_test_full(src_model_, model_, nullptr, dataset_->dset, test_opt_, printer_.prn_ptr());
+    } else {
+        static_assert(always_false<GretlCmdIndex>, "GretlModel_NSE_OLS_add_omit<CI>::add_omit_auto: unsupported CI");
+    }
+    if (err_) handle_gretl_error(err_);
+
+    printer_.print();
+
+    // we save results
+    save_model_<MODEL>(model_);
+}
+
+// explicit instantiations for ADD and OMIT
+template class GretlModel_NSE_OLS_add_omit<ADD>;
+template class GretlModel_NSE_OLS_add_omit<OMIT>;
+
+//
 // NLS,MLE,GMM via plugin
 // extends: GretlModel_NSE
 //
@@ -1249,74 +1305,6 @@ template void GretlModel_NSE_nl<MLE>::add_line_to_parse<false>(const std::string
 template class GretlModel_NSE_nl<GMM>;
 template void GretlModel_NSE_nl<GMM>::add_line_to_parse<true>(const std::string&, const std::string&);
 template void GretlModel_NSE_nl<GMM>::add_line_to_parse<false>(const std::string&, const std::string&);
-
-
-
-//
-// OLS for add/omit tests
-// extends: GretlModel_NSE
-//
-template <GretlCmdIndex CI>
-GretlModel_NSE_OLS_add_omit<CI>::GretlModel_NSE_OLS_add_omit (MODEL *src, GretlDatasetPtr src_dataset, gretlopt opt)
-                                : GretlModel_NSE(OLS, py::dict())
-{
-    if (!src) throw std::runtime_error("didn't got model");
-    src_model_ = src;
-    if (!src_dataset) handle_gretl_error(E_NODATA);
-    dataset_ = src_dataset;
-    test_opt_ = opt;
-    gretl_model_init(model_, dataset_->dset);
-    if (!model_) handle_gretl_error(E_ALLOC);
-}
-
-template <GretlCmdIndex CI>
-GretlModel_NSE_OLS_add_omit<CI>::~GretlModel_NSE_OLS_add_omit (void) = default;
-
-template <GretlCmdIndex CI>
-void GretlModel_NSE_OLS_add_omit<CI>::fit (void)
-{
-    py::print("GretlModel_NSE_OLS_add_omit::fit()", static_cast<int>(CI));
-    // we check if we deal with clean model
-    check_if_estimated_();
-
-    if constexpr (CI == ADD) {
-        err_ = add_test_full(src_model_, model_, nullptr, dataset_->dset, test_opt_, printer_.prn_ptr());
-    } else if constexpr (CI == OMIT) {
-        err_ = omit_test_full(src_model_, model_, nullptr, dataset_->dset, test_opt_, printer_.prn_ptr());
-    } else {
-        static_assert(always_false<GretlCmdIndex>, "GretlModel_NSE_OLS_add_omit<CI>::add_omit_auto: unsupported CI");
-    }
-    if (err_) handle_gretl_error(err_);
-
-    printer_.print();
-
-    // we save results
-    save_model_<MODEL>(model_);
-}
-
-template <GretlCmdIndex CI>
-std::string GretlModel_NSE_OLS_add_omit<CI>::get_formula (void) const
-{
-    py::print("GretlModel_NSE_OLS_add_omit::get_formula():", formula_);
-
-    return formula_;
-}
-
-// explicit instantiations for ADD and OMIT
-template class GretlModel_NSE_OLS_add_omit<ADD>;
-template class GretlModel_NSE_OLS_add_omit<OMIT>;
-
-
-
-
-
-
-
-
-
-
-
-
 
 //
 // VAR libgretl MODEL

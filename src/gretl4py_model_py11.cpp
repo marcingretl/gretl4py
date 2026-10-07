@@ -140,12 +140,19 @@ void init_gretl4py_model_py11(py::module_ &m)
              return with_vars ? self.test(type, varlist, clean_kwargs) : self.test(type, clean_kwargs);
          },
          py::arg("type").none(false), py::kw_only())
+    .def("_add_auto",
+         [](GretlModel_NSE &self, const py::kwargs &kwargs) -> py::tuple
+         {
+             auto [bundle, model] = self.add_omit_auto<ADD>(kwargs);
+
+             return py::make_tuple(py::cast(bundle), py::cast(std::move(model)));
+         })
     .def("_omit_auto",
          [](GretlModel_NSE &self, const py::kwargs &kwargs) -> py::tuple
          {
              auto [bundle, model] = self.add_omit_auto<OMIT>(kwargs);
 
-             return py::make_tuple(py::cast(bundle),py::cast(std::move(model)));
+             return py::make_tuple(py::cast(bundle), py::cast(std::move(model)));
          });
     gretl_model_nse.attr("__module__") = "gretl";
 
@@ -212,15 +219,13 @@ void init_gretl4py_model_py11(py::module_ &m)
          py::arg("varname").none(false), py::arg("value").none(false), doc::Model::gmm_add_initval);
     gretl_model_nse_nl_gmm.attr("__module__") = "gretl";
 
-    /*
     auto gretl_model_nse_ols_add =
-    py::class_<GretlModel_NSE_OLS_add_omit<ADD>, GretlModel_NSE, std::unique_ptr<GretlModel_NSE_OLS_add_omit<ADD>>>(m, "Model_ols_add", py::dynamic_attr());
+    py::class_<GretlModel_NSE_OLS_add_omit<ADD>, GretlModel_NSE_Driver<lsq, OLS>, std::unique_ptr<GretlModel_NSE_OLS_add_omit<ADD>>>(m, "Model_ols_add", py::dynamic_attr());
     gretl_model_nse_ols_add.attr("__module__") = "gretl";
 
     auto gretl_model_nse_ols_omit =
-    py::class_<GretlModel_NSE_OLS_add_omit<OMIT>, GretlModel_NSE, std::unique_ptr<GretlModel_NSE_OLS_add_omit<OMIT>>>(m, "Model_ols_omit", py::dynamic_attr());
+    py::class_<GretlModel_NSE_OLS_add_omit<OMIT>, GretlModel_NSE_Driver<lsq, OLS>, std::unique_ptr<GretlModel_NSE_OLS_add_omit<OMIT>>>(m, "Model_ols_omit", py::dynamic_attr());
     gretl_model_nse_ols_omit.attr("__module__") = "gretl";
-    */
 
     // VAR
     auto gretl_model_var = py::class_<GretlModel_VAR, GretlModel, std::unique_ptr<GretlModel_VAR>>(m, "Model_var", py::dynamic_attr());

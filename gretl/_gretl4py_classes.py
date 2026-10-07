@@ -165,6 +165,8 @@ def _add(self: "Model", varlist: str | list, **kwargs) -> "Bundle":
     current model. With ``lm=True``, the original model is retained.
     The ``lm`` and ``auto`` options cannot be combined.
     """
+    if "auto" in kwargs:
+        return self._add_auto(varlist=varlist, **kwargs)
     return self._test(type="add", varlist=varlist, **kwargs)
 _add.__name__ = "add"
 _add.__qualname__ = "Model.add"
