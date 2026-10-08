@@ -1765,4 +1765,32 @@ namespace doc::Dataset {
     ``data.setobs("unit", "year", panel_vars=True)``
     )doc";
 
+    inline constexpr char ljungbox[] = R"doc(
+    Compute the Ljung-Box Q' statistic for a series.
+
+    Parameters
+    ----------
+    y : str or int
+        Name or ID of the series to test.
+    p : int
+        Lag order, at least 1 and less than the number of available observations.
+
+    Returns
+    -------
+    float
+        Ljung-Box Q' statistic.
+
+    Notes
+    -----
+    The test is computed over the current sample, adjusted for missing
+    observations at its endpoints. Under the null hypothesis of no serial
+    correlation, the statistic is asymptotically chi-square distributed
+    with p degrees of freedom.
+
+    Examples
+    --------
+    >>> q = data.ljungbox("y", 12)
+    >>> pv = gretl.pvalue("X", 12, q)
+    )doc";
+
 } // namespace doc::Dataset

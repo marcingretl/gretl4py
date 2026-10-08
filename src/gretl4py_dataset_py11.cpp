@@ -445,7 +445,11 @@ void init_gretl4py_dataset_py11 (py::module_ &m)
     .def("xtab", &GretlDataset::xtab<std::string>,
          py::arg("varlist").none(true) = "", py::kw_only())
     .def("xtab", &GretlDataset::xtab<py::list>,
-         py::arg("varlist").none(true) = py::list(), py::kw_only(), doc::Dataset::xtab);
+         py::arg("varlist").none(true) = py::list(), py::kw_only(), doc::Dataset::xtab)
+    .def("ljungbox", py::overload_cast<int, int>(&GretlDataset::ljungbox),
+         py::arg("y").none(false), py::arg("p").none(false))
+    .def("ljungbox", py::overload_cast<const std::string&, int>(&GretlDataset::ljungbox),
+         py::arg("y").none(false), py::arg("p").none(false), doc::Dataset::ljungbox);
 
     cls.attr("__module__") = "gretl";
 }

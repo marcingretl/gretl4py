@@ -219,6 +219,10 @@ public:
 
     template <typename T>
     py::object xtab (const T &varlist, const py::kwargs &kwargs);
+
+    double ljungbox (int y, int p);
+
+    double ljungbox (const std::string &y, int p);
 };
 
 #endif // GRETL4PY_DATASET_H

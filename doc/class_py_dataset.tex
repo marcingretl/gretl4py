@@ -795,6 +795,20 @@ Examples:\newline
 	that none has a unit root. A common $AR(1)$ coefficient
 	across panel units is assumed.}
 
+\gretlfpycmd{ljungbox()}\label{met:gretldataset::ljungbox}
+\estdesc{Compute the Ljung--Box Q' statistic for a series.}
+\begin{lstlisting}[style=pythonstylefoot]
+.ljungbox(y: str | int, p: int) -> float
+\end{lstlisting}
+\maptof{ljungbox(y, p)}{scalar}
+\generaldesc{Computes the Ljung-Box Q' statistic for the series
+	\textit{y}, specified by name or ID, using lag order
+	\textit{p} over the current sample range. The lag order
+	must be at least 1 and less than the number of available
+	observations. The statistic can be referred to the chi-square distribution
+	with \pythcode{p} degrees of freedom to test the null hypothesis
+	of no serial correlation. See also \pythcode{pvalue()}.}
+
 \gretlfpycmd{logs()}
 \estdesc{Generates natural logarithms of selected variables.}
 \begin{lstlisting}[style=pythonstylefoot]

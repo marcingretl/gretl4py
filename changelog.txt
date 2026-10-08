@@ -1,6 +1,7 @@
 version 0.63:
     - model-based tests: fix bug where 'varlist' was passed as list
     - add() and omit() tests: 'auto' option works fine
+    - new GretlDataset::ljungbox() method
 
 version 0.62:
     - code refactoring (including docs)

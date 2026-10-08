@@ -1643,3 +1643,33 @@ GretlMatrixPtr GretlDataset::bkfilt (const std::string &y, int f1, int f2, int k
 
     return res;
 }
+
+double GretlDataset::ljungbox (int y, int p)
+{
+    //
+    // interface to libgretl's ljungbox() function
+    //
+    if (y < 1 || y > dset->v-1) handle_gretl_error(E_UNKVAR);
+    if (p <= 0) {
+        gretl_errmsg_sprintf(_("Invalid lag order %d"), p);
+        handle_gretl_error(E_DATA);
+    }
+
+    double res = 0.0;
+    int t1 = dset->t1;
+    int t2 = dset->t2;
+    const double *x = dset->Z[y];
+
+    if (!x) handle_gretl_error(E_DATA);
+    err_ = series_adjust_sample(x, &t1, &t2);
+    if (err_) handle_gretl_error(err_);
+    res = ljung_box(p, t1, t2, x, &err_);
+    if (err_) handle_gretl_error(err_);
+
+    return res;
+}
+
+double GretlDataset::ljungbox (const std::string &y, int p)
+{
+    return ljungbox(get_series_id(y), p);
+}
