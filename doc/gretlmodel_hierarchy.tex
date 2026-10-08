@@ -1,47 +1,234 @@
-\chapter[gretl.Model class hierarchy]{\protect\classpymodel hierarchy}\label{sec:classpymodel_hierarchy}
+%\chapter[gretl.Model class hierarchy]{\protect\classpymodel hierarchy}\label{sec:classpymodel_hierarchy}
+%\begin{landscape}
+%	\begin{figure}
+%		\begin{tikzpicture}[
+%			box/.style={rectangle, draw, rounded corners, minimum width=4cm, minimum height=1cm, align=center},
+%			level distance=2.5cm, sibling distance=5cm,
+%			edge/.style={-{Latex}}
+%			]
+%
+%			% Base class
+%			\node[box] (GretlModel) {GretlModel};
+%
+%			% NSE branch
+%			\node[box, below=of GretlModel, xshift=-8cm] (GretlModel_NSE) {GretlModel\_NSE};
+%			\node[box, below=of GretlModel_NSE, xshift=-2cm] (GretlModel_NSE_Driver) {GretlModel\_NSE\_Driver};
+%			\node[box, below=of GretlModel_NSE_Driver, xshift=-3cm] (GretlModel_NSE_Driver_quantreg) {GretlModel\_NSE\_Driver\_quantreg};
+%			\node[box, below=of GretlModel_NSE_Driver, xshift=3cm] (GretlModel_NSE_Driver_dpanel) {GretlModel\_NSE\_Driver\_dpanel};
+%			\node[box, below=of GretlModel_NSE_Driver_dpanel] (GretlModel_NSE_Driver_tobit) {GretlModel\_NSE\_Driver\_tobit};
+%
+%			% NSE plugin
+%			\node[box, below=of GretlModel_NSE, xshift=6cm] (GretlModel_NSE_nl) {GretlModel\_NSE\_nl};
+%
+%			% VAR branch
+%			\node[box, below=of GretlModel, xshift=6cm] (GretlModel_VAR) {GretlModel\_VAR};
+%			\node[box, below=of GretlModel_VAR] (GretlModel_VAR_VECM) {GretlModel\_VAR\_VECM};
+%
+%			% NME branch
+%			\node[box, below=of GretlModel, yshift=-10cm] (GretlModel_NME) {GretlModel\_NME};
+%
+%			% Connections
+%			\draw[edge] (GretlModel) -- (GretlModel_NSE);
+%			\draw[edge] (GretlModel_NSE) -- (GretlModel_NSE_Driver);
+%			\draw[edge] (GretlModel_NSE_Driver) -- (GretlModel_NSE_Driver_quantreg);
+%			\draw[edge] (GretlModel_NSE_Driver) -- (GretlModel_NSE_Driver_dpanel);
+%			\draw[edge] (GretlModel_NSE_Driver) -- (GretlModel_NSE_Driver_tobit);
+%			\draw[edge] (GretlModel_NSE) -- (GretlModel_NSE_nl);
+%			
+%			\draw[edge] (GretlModel) -- (GretlModel_VAR);
+%			\draw[edge] (GretlModel_VAR) -- (GretlModel_VAR_VECM);
+%
+%			\draw[edge] (GretlModel) -- (GretlModel_NME);
+%
+%		\end{tikzpicture}
+%		\caption{\protect\classpymodel hierarchy}
+%		\label{fig:model_class_hierarchy}
+%	\end{figure}
+%\end{landscape}
+
+
+\chapter[gretl.Model class hierarchy]{\protect\classpymodel hierarchy}
+\label{sec:classpymodel_hierarchy}
+
+The \classpymodel class provides the common interface for
+econometric models in \gretlpy. Model-specific classes inherit
+from this base class, either directly or through intermediate
+classes.
+
+Figure~\ref{fig:model_class_hierarchy} illustrates the Python
+class hierarchy. The three main branches are
+\texttt{Model\_NSE}, \texttt{Model\_var}, and \texttt{System}.
+The \texttt{Model\_NSE} branch contains single-equation models,
+while \texttt{Model\_vecm} extends \texttt{Model\_var}.
+The classes \texttt{Model\_ols\_add} and
+\texttt{Model\_ols\_omit} inherit from \texttt{Model\_ols}.
+
 \begin{landscape}
 	\begin{figure}
+		\centering
+		
 		\begin{tikzpicture}[
-			box/.style={rectangle, draw, rounded corners, minimum width=4cm, minimum height=1cm, align=center},
-			level distance=2.5cm, sibling distance=5cm,
-			edge/.style={-{Latex}}
+			font=\small,
+			model/.style={
+				rectangle,
+				draw,
+				rounded corners=2pt,
+				minimum width=3.0cm,
+				minimum height=0.62cm,
+				align=center,
+				inner sep=3pt
+			},
+			base/.style={
+				model,
+				fill=gray!20,
+				font=\small\bfseries
+			},
+			special/.style={
+				model,
+				fill=blue!8
+			},
+			group/.style={
+				draw=gray!65,
+				rounded corners=5pt,
+				fill=gray!4,
+				inner sep=12pt
+			},
+			inheritance/.style={
+				-{Latex[length=2mm]},
+				thick
+			}
 			]
-
-			% Base class
-			\node[box] (GretlModel) {GretlModel};
-
-			% NSE branch
-			\node[box, below=of GretlModel, xshift=-8cm] (GretlModel_NSE) {GretlModel\_NSE};
-			\node[box, below=of GretlModel_NSE, xshift=-2cm] (GretlModel_NSE_Driver) {GretlModel\_NSE\_Driver};
-			\node[box, below=of GretlModel_NSE_Driver, xshift=-3cm] (GretlModel_NSE_Driver_quantreg) {GretlModel\_NSE\_Driver\_quantreg};
-			\node[box, below=of GretlModel_NSE_Driver, xshift=3cm] (GretlModel_NSE_Driver_dpanel) {GretlModel\_NSE\_Driver\_dpanel};
-			\node[box, below=of GretlModel_NSE_Driver_dpanel] (GretlModel_NSE_Driver_tobit) {GretlModel\_NSE\_Driver\_tobit};
-
-			% NSE plugin
-			\node[box, below=of GretlModel_NSE, xshift=6cm] (GretlModel_NSE_nl) {GretlModel\_NSE\_nl};
-
-			% VAR branch
-			\node[box, below=of GretlModel, xshift=6cm] (GretlModel_VAR) {GretlModel\_VAR};
-			\node[box, below=of GretlModel_VAR] (GretlModel_VAR_VECM) {GretlModel\_VAR\_VECM};
-
-			% NME branch
-			\node[box, below=of GretlModel, yshift=-10cm] (GretlModel_NME) {GretlModel\_NME};
-
-			% Connections
-			\draw[edge] (GretlModel) -- (GretlModel_NSE);
-			\draw[edge] (GretlModel_NSE) -- (GretlModel_NSE_Driver);
-			\draw[edge] (GretlModel_NSE_Driver) -- (GretlModel_NSE_Driver_quantreg);
-			\draw[edge] (GretlModel_NSE_Driver) -- (GretlModel_NSE_Driver_dpanel);
-			\draw[edge] (GretlModel_NSE_Driver) -- (GretlModel_NSE_Driver_tobit);
-			\draw[edge] (GretlModel_NSE) -- (GretlModel_NSE_nl);
 			
-			\draw[edge] (GretlModel) -- (GretlModel_VAR);
-			\draw[edge] (GretlModel_VAR) -- (GretlModel_VAR_VECM);
-
-			\draw[edge] (GretlModel) -- (GretlModel_NME);
-
+			% ==================================================
+			% Main hierarchy
+			% ==================================================
+			
+			\node[base] (base) at (0,0) {Model};
+			
+			\node[base] (nse) at (-7,-1.5) {Model\_NSE};
+			\node[model] (var) at (0,-1.5) {Model\_var};
+			\node[model] (system) at (7,-1.5) {System};
+			
+			\coordinate (rootsplit) at ($(base.south)+(0,-0.55)$);
+			
+			\draw[thick] (base.south) -- (rootsplit);
+			\draw[inheritance] (rootsplit) -| (nse.north);
+			\draw[inheritance] (rootsplit) -- (var.north);
+			\draw[inheritance] (rootsplit) -| (system.north);
+			
+			% VAR branch
+			
+			\node[model] (vecm) at (0,-2.8) {Model\_vecm};
+			
+			\draw[inheritance] (var.south) -- (vecm.north);
+			
+			% ==================================================
+			% Single-equation models
+			% ==================================================
+			
+			\begin{scope}[shift={(-10,-5)}]
+				
+				% Column 1: OLS family
+				
+				\node[special] (ols) at (0,0) {Model\_ols};
+				
+				\node[special] (olsadd) at (-1.6,-1.15)
+				{Model\_ols\_add};
+				
+				\node[special] (olsomit) at (1.6,-1.15)
+				{Model\_ols\_omit};
+				
+				\node[model] (wls) at (0,-2.15) {Model\_wls};
+				\node[model] (logit) at (0,-3.05) {Model\_logit};
+				\node[model] (probit) at (0,-3.95) {Model\_probit};
+				\node[model] (poisson) at (0,-4.85) {Model\_poisson};
+				\node[model] (negbin) at (0,-5.75) {Model\_negbin};
+				\node[model] (biprobit) at (0,-6.65) {Model\_biprobit};
+				\node[model] (duration) at (0,-7.55) {Model\_duration};
+				
+				% Column 2
+				
+				\node[model] (heckit) at (5.7,0) {Model\_heckit};
+				\node[model] (logistic) at (5.7,-0.9) {Model\_logistic};
+				\node[model] (ar) at (5.7,-1.8) {Model\_ar};
+				\node[model] (ar1) at (5.7,-2.7) {Model\_ar1};
+				\node[model] (lad) at (5.7,-3.6) {Model\_lad};
+				\node[model] (garch) at (5.7,-4.5) {Model\_garch};
+				\node[model] (mpols) at (5.7,-5.4) {Model\_mpols};
+				\node[model] (panel) at (5.7,-6.3) {Model\_panel};
+				
+				% Column 3
+				
+				\node[model] (ivreg) at (9.5,0) {Model\_ivreg};
+				\node[model] (hsk) at (9.5,-0.9) {Model\_hsk};
+				\node[model] (intreg) at (9.5,-1.8) {Model\_intreg};
+				\node[model] (midasreg) at (9.5,-2.7) {Model\_midasreg};
+				\node[model] (quantreg) at (9.5,-3.6) {Model\_quantreg};
+				\node[model] (tobit) at (9.5,-4.5) {Model\_tobit};
+				\node[model] (dpanel) at (9.5,-5.4) {Model\_dpanel};
+				\node[model] (arima) at (9.5,-6.3) {Model\_arima};
+				
+				% Column 4: nonlinear models
+				
+				\node[model] (nls) at (13.3,0) {Model\_nls};
+				\node[model] (mle) at (13.3,-0.9) {Model\_mle};
+				\node[model] (gmm) at (13.3,-1.8) {Model\_gmm};
+				
+			\end{scope}
+			
+			% ==================================================
+			% OLS inheritance
+			% ==================================================
+			
+			\coordinate (olssplit) at ($(ols.south)+(0,-0.35)$);
+			
+			\draw[thick] (ols.south) -- (olssplit);
+			\draw[inheritance] (olssplit) -| (olsadd.north);
+			\draw[inheritance] (olssplit) -| (olsomit.north);
+			
+			% ==================================================
+			% NSE group
+			% ==================================================
+			
+			\begin{scope}[on background layer]
+				
+				\node[group,
+				fit=(ols)(olsadd)(olsomit)
+				(wls)(logit)(probit)(poisson)(negbin)
+				(biprobit)(duration)
+				(heckit)(logistic)(ar)(ar1)(lad)
+				(garch)(mpols)(panel)
+				(ivreg)(hsk)(intreg)(midasreg)
+				(quantreg)(tobit)(dpanel)(arima)
+				(nls)(mle)(gmm)
+				] (nsegroup) {};
+				
+			\end{scope}
+			
+			% Group title: centered on upper border
+			
+			\node[
+			font=\small\bfseries,
+			fill=white,
+			inner sep=3pt,
+			anchor=south
+			] at ($(nsegroup.north)+(0,0.08)$)
+			{Subclasses of Model\_NSE};
+			
+			% Connection from Model_NSE to group
+			
+			\draw[inheritance]
+			(nse.south) -- (nse.south |- nsegroup.north);
+			
 		\end{tikzpicture}
-		\caption{\protect\classpymodel hierarchy}
+		
+		\caption{Python class hierarchy of econometric models
+			in \gretlpy. The shaded area groups subclasses of
+			\texttt{Model\_NSE}. All classes within this group
+			inherit directly from \texttt{Model\_NSE}, except
+			\texttt{Model\_ols\_add} and \texttt{Model\_ols\_omit},
+			which inherit from \texttt{Model\_ols}.}
 		\label{fig:model_class_hierarchy}
+		
 	\end{figure}
 \end{landscape}
