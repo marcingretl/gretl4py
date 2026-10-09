@@ -19,6 +19,8 @@
 
 // explicit instantiations for all required (F, CI) pairs
 extern template class GretlModel_NSE_Driver<lsq, OLS>;
+extern template class GretlModel_NSE_OLS_add_omit<ADD>;
+extern template class GretlModel_NSE_OLS_add_omit<OMIT>;
 extern template class GretlModel_NSE_Driver<lsq, WLS>;
 extern template class GretlModel_NSE_Driver<logit_probit, LOGIT>;
 extern template class GretlModel_NSE_Driver<logit_probit, PROBIT>;
