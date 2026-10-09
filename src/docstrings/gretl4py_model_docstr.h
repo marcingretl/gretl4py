@@ -530,14 +530,10 @@ namespace doc::Model {
 
     Parameters
     ----------
-    formula : str
-        Model specification as a gretl-style variable list or formula.
-        Variables may be specified by name or index; the value 0 denotes
-        the constant term.
-    varlist : list
-        Model specification as a list of variables, with the dependent
-        variable first. Variables may be specified by name or index; the
-        value 0 denotes the constant term.
+    formula : str or list
+        Model specification as a gretl-style variable list or formula,
+        or as a list of variable names or IDs. The dependent variable
+        comes first; the value 0 denotes the constant term.
 
     Other Parameters
     ----------------
@@ -597,14 +593,11 @@ namespace doc::Model {
 
     Parameters
     ----------
-    formula : str
-        Model specification as a gretl-style variable list or formula.
-        The first variable is the weighting variable, followed by the
-        dependent variable and regressors.
-    varlist : list
-        Model specification as a list of variables, with the weighting
-        variable first, the dependent variable second, followed by the
-        regressors.
+    formula : str or list
+        Model specification as a gretl-style variable list or formula,
+        or as a list of variable names or IDs. The weighting variable
+        comes first, followed by the dependent variable and regressors.
+        The value 0 denotes the constant term.
 
     Other Parameters
     ----------------
@@ -614,14 +607,14 @@ namespace doc::Model {
         Use heteroskedasticity-robust standard errors.
     quiet : bool
         Suppress printed output.
-        allow_zeros : bool
+    allow_zeros : bool
         Allow zero weights together with positive weights.
 
     Returns
     -------
     gretl.Model_wls
-        A WLS model instance derived from the abstract ``gretl.Model``
-        base class. Call ``fit()`` to estimate the model.
+    A WLS model instance derived from the abstract ``gretl.Model``
+    base class. Call ``fit()`` to estimate the model.
 
     Notes
     -----
@@ -646,14 +639,10 @@ namespace doc::Model {
 
     Parameters
     ----------
-    formula : str
-        Model specification as a gretl-style variable list or formula.
-        Variables may be specified by name or index; the value 0 denotes
-        the constant term.
-    varlist : list
-        Model specification as a list of variables, with the dependent
-        variable first. Variables may be specified by name or index; the
-        value 0 denotes the constant term.
+    formula : str or list
+        Model specification as a gretl-style variable list or formula,
+        or as a list of variable names or IDs. The dependent variable
+        comes first; the value 0 denotes the constant term.
 
     Other Parameters
     ----------------
@@ -679,8 +668,8 @@ namespace doc::Model {
     Returns
     -------
     gretl.Model_logit
-        A logit model instance derived from the abstract ``gretl.Model``
-        base class. Call ``fit()`` to estimate the model.
+    A logit model instance derived from the abstract ``gretl.Model``
+    base class. Call ``fit()`` to estimate the model.
 
     Notes
     -----
@@ -708,14 +697,10 @@ namespace doc::Model {
 
     Parameters
     ----------
-    formula : str
-        Model specification as a gretl-style variable list or formula.
-        Variables may be specified by name or index; the value 0 denotes
-        the constant term.
-    varlist : list
-        Model specification as a list of variables, with the dependent
-        variable first. Variables may be specified by name or index; the
-        value 0 denotes the constant term.
+    formula : str or list
+        Model specification as a gretl-style variable list or formula,
+        or as a list of variable names or IDs. The dependent variable
+        comes first; the value 0 denotes the constant term.
 
     Other Parameters
     ----------------
@@ -743,14 +728,18 @@ namespace doc::Model {
     Returns
     -------
     gretl.Model_probit
-        A probit model instance derived from the abstract ``gretl.Model``
-        base class. Call ``fit()`` to estimate the model.
+    A probit model instance derived from the abstract ``gretl.Model``
+    base class. Call ``fit()`` to estimate the model.
 
     Notes
     -----
     For binary probit, slopes evaluated at the means of the regressors are
     reported in place of p-values by default; use ``p_values=True`` to
     report p-values instead.
+
+    By default, standard errors are based on the negative inverse of the
+    Hessian. ``robust=True`` requests QML standard errors, while ``cluster``
+    requests cluster-robust standard errors.
 
     For random-effects panel probit, the likelihood is evaluated using
     Gauss-Hermite quadrature. Increasing ``quadpoints`` may improve numerical
@@ -772,14 +761,10 @@ namespace doc::Model {
 
     Parameters
     ----------
-    formula : str
-        Model specification as a gretl-style variable list or formula.
-        Variables may be specified by name or index; the value 0 denotes
-        the constant term.
-    varlist : list
-        Model specification as a list of variables, with the dependent
-        variable first. Variables may be specified by name or index; the
-        value 0 denotes the constant term.
+    formula : str or list
+        Model specification as a gretl-style variable list or formula,
+        or as a list of variable names or IDs. The dependent variable
+        comes first; the value 0 denotes the constant term.
 
     Other Parameters
     ----------------
@@ -801,8 +786,8 @@ namespace doc::Model {
     Returns
     -------
     gretl.Model_poisson
-        A Poisson model instance derived from the abstract ``gretl.Model``
-        base class. Call ``fit()`` to estimate the model.
+    A Poisson model instance derived from the abstract ``gretl.Model``
+    base class. Call ``fit()`` to estimate the model.
 
     Notes
     -----
@@ -817,7 +802,8 @@ namespace doc::Model {
     Examples
     --------
     ``gretl.poisson("y 0 x1 x2").fit()``
-    ``gretl.poisson(["y", "const", "x1", "x2"]).fit()``
+    ``gretl.poisson("y 0 x1 x2 ; exposure").fit()``
+    ``gretl.poisson([["y", "const", "x1", "x2"], ["exposure"]]).fit()``
     )doc";
 
     inline constexpr char negbin[] = R"doc(
@@ -831,20 +817,14 @@ namespace doc::Model {
 
     Parameters
     ----------
-    formula : str
-        Model specification as a gretl-style variable list or formula.
-        Variables may be specified by name or index; the value 0 denotes
-        the constant term.
-    varlist : list
-        Model specification as a list of variables, with the dependent
-        variable first. Variables may be specified by name or index; the
-        value 0 denotes the constant term.
+    formula : str or list
+        Model specification as a gretl-style variable list or as a list
+        of variable names or IDs. The dependent variable comes first;
+        the value 0 denotes the constant term. An optional offset variable
+        may be specified after a semicolon, or using a nested Python list.
 
     Other Parameters
     ----------------
-    offset : str
-        Name of a strictly positive scale variable. Its logarithm is added
-        to the linear predictor with a coefficient fixed at 1.
     model1 : bool
         Use the NegBin 1 specification instead of NegBin 2.
     robust : bool
@@ -865,8 +845,8 @@ namespace doc::Model {
     Returns
     -------
     gretl.Model_negbin
-        A Negative Binomial model instance derived from the abstract
-        ``gretl.Model`` base class. Call ``fit()`` to estimate the model.
+    A Negative Binomial model instance derived from the abstract
+    ``gretl.Model`` base class. Call ``fit()`` to estimate the model.
 
     Notes
     -----
@@ -875,6 +855,10 @@ namespace doc::Model {
     specification uses ``mu * (1 + alpha)``. The Poisson model is the
     restricted case in which ``alpha = 0``.
 
+    An optional offset variable accounts for exposure or scale effects.
+    Its logarithm enters the linear predictor with a coefficient fixed
+    at 1. The offset variable must be strictly positive.
+
     By default, standard errors are based on a numerical approximation to
     the Hessian. ``opg=True`` uses the OPG covariance matrix, while
     ``robust=True`` computes a QML sandwich covariance matrix.
@@ -882,27 +866,26 @@ namespace doc::Model {
     Examples
     --------
     ``gretl.negbin("y 0 x1 x2").fit()``
-    ``gretl.negbin(["y", "const", "x1", "x2"]).fit()``
+    ``gretl.negbin("y 0 x1 x2 ; exposure").fit()``
+    ``gretl.negbin([["y", "const", "x1", "x2"], ["exposure"]]).fit()``
     )doc";
 
     inline constexpr char biprobit[] = R"doc(
     Specify a bivariate probit model for estimation by maximum likelihood.
 
     Creates a bivariate probit model specification for two binary dependent
-    variables. Each equation may have its own set of regressors. The two
-    disturbances are assumed to follow a bivariate normal distribution with
-    correlation parameter ``rho``.
+    variables. The equations may share a common set of regressors or have
+    separate sets of regressors. The disturbances follow a bivariate normal
+    distribution with correlation parameter ``rho``.
 
     Parameters
     ----------
-    formula : str
-        Model specification as two gretl-style variable lists separated by
-        a semicolon. The first variable in each list is the dependent
-        variable, followed by the regressors.
-    varlist : list
-        Model specification as a list containing two variable lists, one
-        for each equation. The first variable in each inner list is the
-        dependent variable, followed by the regressors.
+    formula : str or list
+        Model specification as a gretl-style variable list or as a list
+        of variable names or IDs. The first two variables are the dependent
+        variables, followed by the regressors. The value 0 denotes the
+        constant term. An optional second set of regressors may be specified
+        after a semicolon or using a nested Python list.
 
     Other Parameters
     ----------------
@@ -924,17 +907,21 @@ namespace doc::Model {
     Returns
     -------
     gretl.Model_biprobit
-        A bivariate probit model instance derived from the abstract
-        ``gretl.Model`` base class. Call ``fit()`` to estimate the model.
+    A bivariate probit model instance derived from the abstract
+    ``gretl.Model`` base class. Call ``fit()`` to estimate the model.
 
     Notes
     -----
+    If only one set of regressors is specified, it is used in both
+    equations. Otherwise, the first set applies to the first equation
+    and the second set to the second equation.
+
     By default, standard errors are based on the analytical Hessian.
     ``opg=True`` uses the OPG covariance matrix, while ``robust=True``
     computes a QML sandwich covariance matrix.
 
-    The estimated correlation ``rho`` between the disturbances of the two
-    equations is included as the last element of the coefficient vector.
+    The estimated correlation ``rho`` between the disturbances is included
+    as the last element of the coefficient vector.
 
     By default, fitted values contain probabilities for the four joint
     outcomes ``(1,1)``, ``(1,0)``, ``(0,1)`` and ``(0,0)``. With
@@ -942,9 +929,9 @@ namespace doc::Model {
 
     Examples
     --------
-    ``gretl.biprobit("y1 y2 const x1 x2 ; const x3 x4").fit()``
-
-    ``gretl.biprobit([["y1", "y2", "const", "x1", "x2"], ["const", "x3", "x4"]]).fit()``
+    ``gretl.biprobit("y1 y2 0 x1 x2").fit()``
+    ``gretl.biprobit("y1 y2 0 x1 x2 ; 0 x3 x4").fit()``
+    ``gretl.biprobit([["y1", "y2", 0, "x1", "x2"], [0, "x3", "x4"]]).fit()``
     )doc";
 
     inline constexpr char duration[] = R"doc(
@@ -958,20 +945,15 @@ namespace doc::Model {
 
     Parameters
     ----------
-    formula : str
-        Model specification as a gretl-style variable list or formula.
-        Variables may be specified by name or index; the value 0 denotes
-        the constant term.
-    varlist : list
-        Model specification as a list of variables, with the dependent
-        variable first. Variables may be specified by name or index; the
-        value 0 denotes the constant term.
+    formula : str or list
+        Model specification as a gretl-style variable list or as a list
+        of variable names or IDs. The dependent variable comes first;
+        the value 0 denotes the constant term. An optional right-censoring
+        variable may be specified after a semicolon or using a nested
+        Python list.
 
     Other Parameters
     ----------------
-    censvar : str
-        Right-censoring variable. Non-zero values identify censored
-        observations.
     exponential : bool
         Use the exponential distribution.
     loglogistic : bool
@@ -995,19 +977,22 @@ namespace doc::Model {
     Returns
     -------
     gretl.Model_duration
-        A duration model instance derived from the abstract ``gretl.Model``
-        base class. Call ``fit()`` to estimate the model.
+    A duration model instance derived from the abstract ``gretl.Model``
+    base class. Call ``fit()`` to estimate the model.
 
     Notes
     -----
-    Right-censored observations can be identified using ``censvar``. By
-    default, fitted values are conditional means of duration; with
+    Right-censored observations can be identified using an optional
+    censoring variable. Non-zero values indicate right-censored cases.
+
+    By default, fitted values are conditional means of duration; with
     ``medians=True`` they are conditional medians instead.
 
     Examples
     --------
-    ``gretl.duration("y const x1 x2").fit()``
-    ``gretl.duration(["y", "const", "x1", "x2"]).fit()``
+    ``gretl.duration("y 0 x1 x2").fit()``
+    ``gretl.duration("y 0 x1 x2 ; cens").fit()``
+    ``gretl.duration([["y", 0, "x1", "x2"], ["cens"]]).fit()``
     )doc";
 
     inline constexpr char heckit[] = R"doc(
@@ -1020,15 +1005,12 @@ namespace doc::Model {
 
     Parameters
     ----------
-    formula : str
+    formula : str or list
         Model specification as two gretl-style variable lists separated by
-        a semicolon. The first list specifies the outcome equation and the
-        second specifies the selection equation.
-    varlist : list
-        Model specification as a list containing two variable lists. The
-        first specifies the outcome equation and the second specifies the
-        selection equation. In each list, the dependent variable comes
-        first, followed by the regressors.
+        a semicolon, or as a nested Python list. The first list specifies
+        the outcome equation and the second specifies the selection
+        equation. In each list, the dependent variable comes first,
+        followed by the regressors; the value 0 denotes the constant term.
 
     Other Parameters
     ----------------
@@ -1052,8 +1034,8 @@ namespace doc::Model {
     Returns
     -------
     gretl.Model_heckit
-        A Heckman sample-selection model instance derived from the abstract
-        ``gretl.Model`` base class. Call ``fit()`` to estimate the model.
+    A Heckman sample-selection model instance derived from the abstract
+    ``gretl.Model`` base class. Call ``fit()`` to estimate the model.
 
     Notes
     -----
@@ -1068,9 +1050,8 @@ namespace doc::Model {
 
     Examples
     --------
-    ``gretl.heckit("y const x1 x2 ; s const x3 x4").fit()``
-
-    ``gretl.heckit([["y", "const", "x1", "x2"], ["s", "const", "x3", "x4"]]).fit()``
+    ``gretl.heckit("y 0 x1 x2 ; ys 0 x3 x4").fit()``
+    ``gretl.heckit([["y", 0, "x1", "x2"], ["ys", 0, "x3", "x4"]]).fit()``
     )doc";
 
     inline constexpr char logistic[] = R"doc(
@@ -1084,14 +1065,10 @@ namespace doc::Model {
 
     Parameters
     ----------
-    formula : str
-        Model specification as a gretl-style variable list or formula.
-        Variables may be specified by name or index; the value 0 denotes
-        the constant term.
-    varlist : list
-        Model specification as a list of variables, with the dependent
-        variable first. Variables may be specified by name or index; the
-        value 0 denotes the constant term.
+    formula : str or list
+        Model specification as a gretl-style variable list or formula,
+        or as a list of variable names or IDs. The dependent variable
+        comes first; the value 0 denotes the constant term.
 
     Other Parameters
     ----------------
@@ -1113,14 +1090,14 @@ namespace doc::Model {
     Returns
     -------
     gretl.Model_logistic
-        A logistic model instance derived from the abstract ``gretl.Model``
-        base class. Call ``fit()`` to estimate the model.
+    A logistic model instance derived from the abstract ``gretl.Model``
+    base class. Call ``fit()`` to estimate the model.
 
     Notes
     -----
-    If the dependent variable lies between 0 and 1, ``ymax`` defaults to 1;
-    if it lies between 0 and 100, it defaults to 100. A different maximum
-        can be specified explicitly using ``ymax``.
+    If all values of the dependent variable lie between 0 and 1, ``ymax``
+    defaults to 1; otherwise, if they lie between 0 and 100, it defaults
+    to 100. A different maximum can be specified using ``ymax``.
 
     For panel data, ``fixed_effects=True`` applies the within transformation
     to the logistic transform of the dependent variable. For a binary
@@ -1128,8 +1105,9 @@ namespace doc::Model {
 
     Examples
     --------
-    ``gretl.logistic("y const x1 x2").fit()``
+    ``gretl.logistic("y 0 x1 x2").fit()``
     ``gretl.logistic(["y", "const", "x1", "x2"]).fit()``
+    ``gretl.logistic("y 0 x1 x2", ymax=50).fit()``
     )doc";
 
     inline constexpr char ar[] = R"doc(
@@ -1141,21 +1119,19 @@ namespace doc::Model {
 
     Parameters
     ----------
-    formula : str
-        Model specification consisting of the residual lags followed by a
-        semicolon and a gretl-style variable list. The first variable after
-        the semicolon is the dependent variable, followed by the regressors.
-    varlist : list
-        Model specification as a list containing two lists. The first gives
-        the residual lags and the second gives the dependent variable
-        followed by the regressors.
+    formula : str or list
+        Model specification consisting of residual lags followed by a
+        semicolon and a gretl-style variable list, or as a nested Python
+        list. The first list specifies the residual lags; the second
+        contains the dependent variable followed by the regressors.
+        The value 0 denotes the constant term.
 
     Other Parameters
     ----------------
     vcv : bool
         Print the covariance matrix of the coefficient estimates.
     quiet : bool
-        Suppress printed output.
+        Suppress printing of parameter estimates.
 
     Returns
     -------
@@ -1166,17 +1142,16 @@ namespace doc::Model {
     Notes
     -----
     Estimation uses the generalized Cochrane-Orcutt iterative procedure.
-    Iteration terminates when successive error sums of squares differ by no
-    more than 0.005 percent or after 20 iterations.
+    Iteration terminates when successive error sums of squares differ by
+    no more than 0.005 percent or after 20 iterations.
 
     The residual lags need not be consecutive, allowing higher-order
     autoregressive error structures to be specified directly.
 
     Examples
     --------
-    ``gretl.ar("1 3 4 ; y const x1 x2 x3").fit()``
-
-    ``gretl.ar([[1, 3, 4], ["y", "const", "x1", "x2", "x3"]]).fit()``
+    ``gretl.ar("1 3 4 ; y 0 x1 x2 x3").fit()``
+    ``gretl.ar([[1, 3, 4], ["y", 0, "x1", "x2", "x3"]]).fit()``
     )doc";
 
     inline constexpr char ar1[] = R"doc(
@@ -1188,14 +1163,10 @@ namespace doc::Model {
 
     Parameters
     ----------
-    formula : str
-        Model specification as a gretl-style variable list or formula.
-        Variables may be specified by name or index; the value 0 denotes
-        the constant term.
-    varlist : list
-        Model specification as a list of variables, with the dependent
-        variable first. Variables may be specified by name or index; the
-        value 0 denotes the constant term.
+    formula : str or list
+        Model specification as a gretl-style variable list or formula,
+        or as a list of variable names or IDs. The dependent variable
+        comes first; the value 0 denotes the constant term.
 
     Other Parameters
     ----------------
@@ -1210,14 +1181,14 @@ namespace doc::Model {
         procedure.
     loose : bool
         Use a looser convergence criterion for iterative estimation.
-    quiet : bool
+        quiet : bool
         Suppress printed output.
 
     Returns
     -------
     gretl.Model_ar1
-        An AR(1)-error model instance derived from the abstract
-        ``gretl.Model`` base class. Call ``fit()`` to estimate the model.
+    An AR(1)-error model instance derived from the abstract
+    ``gretl.Model`` base class. Call ``fit()`` to estimate the model.
 
     Notes
     -----
@@ -1236,28 +1207,25 @@ namespace doc::Model {
 
     Examples
     --------
-    ``gretl.ar1("y const x1 x2").fit()``
+    ``gretl.ar1("y 0 x1 x2").fit()``
     ``gretl.ar1(["y", "const", "x1", "x2"]).fit()``
+    ``gretl.ar1("y 0 x1 x2", pwe=True).fit()``
     )doc";
 
     inline constexpr char lad[] = R"doc(
     Specify a least absolute deviations regression model.
 
     Creates a regression model specification in which the coefficients are
-    chosen to minimize the sum of the absolute deviations between observed
+    chosen to minimize the sum of absolute deviations between observed
     and fitted values. Estimation uses the Barrodale-Roberts simplex
     algorithm.
 
     Parameters
     ----------
-    formula : str
-        Model specification as a gretl-style variable list or formula.
-        Variables may be specified by name or index; the value 0 denotes
-        the constant term.
-    varlist : list
-        Model specification as a list of variables, with the dependent
-        variable first. Variables may be specified by name or index; the
-        value 0 denotes the constant term.
+    formula : str or list
+        Model specification as a gretl-style variable list or formula,
+        or as a list of variable names or IDs. The dependent variable
+        comes first; the value 0 denotes the constant term.
 
     Other Parameters
     ----------------
@@ -1271,24 +1239,27 @@ namespace doc::Model {
     Returns
     -------
     gretl.Model_lad
-        A least absolute deviations model instance derived from the abstract
-        ``gretl.Model`` base class. Call ``fit()`` to estimate the model.
+    A least absolute deviations model instance derived from the
+    abstract ``gretl.Model`` base class. Call ``fit()`` to estimate
+    the model.
 
     Notes
     -----
-    Standard errors are computed by bootstrap using 500 replications. The
-    covariance matrix printed with ``vcv=True`` is based on the same
-    bootstrap. With ``no_vcv=True``, covariance matrix computation is
-    skipped and standard errors are not available.
+    Standard errors are computed by bootstrap using 500 replications.
+    The covariance matrix printed with ``vcv=True`` is based on the
+    same bootstrap. With ``no_vcv=True``, covariance matrix computation
+    is skipped and standard errors are not available.
 
-    LAD estimation can be relatively slow for large samples or models with
-    many regressors. In such cases, median regression via ``quantreg`` may
-    be faster; ``quantreg`` uses the Frisch-Newton algorithm and analytical
-    rather than bootstrap standard errors.
+    A warning is issued if the solution is not unique.
+
+    LAD estimation can be relatively slow for large samples or models
+    with many regressors. In such cases, median regression via
+    ``quantreg`` may be faster; ``quantreg`` uses the Frisch-Newton
+    algorithm and analytical rather than bootstrap standard errors.
 
     Examples
     --------
-    ``gretl.lad("y const x1 x2").fit()``
+    ``gretl.lad("y 0 x1 x2").fit()``
     ``gretl.lad(["y", "const", "x1", "x2"]).fit()``
     )doc";
 
@@ -1302,14 +1273,12 @@ namespace doc::Model {
 
     Parameters
     ----------
-    formula : str
+    formula : str or list
         Model specification consisting of the GARCH orders ``p`` and ``q``
-        followed by a semicolon and a gretl-style variable list for the mean
-        equation.
-    varlist : list
-        Model specification as a list containing two lists. The first gives
-        the GARCH orders ``[p, q]`` and the second gives the dependent
-        variable followed by any regressors in the mean equation.
+        followed by a semicolon and a gretl-style variable list, or as a
+        nested Python list. The first list specifies the orders ``[p, q]``;
+        the second contains the dependent variable and optional regressors.
+        A constant is included automatically unless ``nc=True``.
 
     Other Parameters
     ----------------
@@ -1319,7 +1288,7 @@ namespace doc::Model {
         Print details of the numerical iterations.
     quiet : bool
         Suppress printed output.
-        vcv : bool
+    vcv : bool
         Print the covariance matrix of the coefficient estimates.
     nc : bool
         Do not include a constant in the mean equation.
@@ -1333,29 +1302,33 @@ namespace doc::Model {
     Returns
     -------
     gretl.Model_garch
-        A GARCH model instance derived from the abstract ``gretl.Model``
-        base class. Call ``fit()`` to estimate the model.
+    A GARCH model instance derived from the abstract ``gretl.Model``
+    base class. Call ``fit()`` to estimate the model.
 
     Notes
     -----
-    If ``p`` is positive, ``q`` must also be positive. A standard ARCH model
-    can be specified with ``p = 0`` and ``q > 0``. The sum of ``p`` and
-    ``q`` must not exceed 5.
+    If ``p`` is positive, ``q`` must also be positive. A standard ARCH
+    model can be specified with ``p = 0`` and ``q > 0``. The sum of
+    ``p`` and ``q`` must not exceed 5.
 
-    By default, estimation uses gretl's native BFGS-based algorithm and the
-    covariance matrix is based on the Hessian. ``robust=True`` requests the
-    QML (White) covariance matrix. With ``fcp=True``, the
+    By default, estimation uses gretl's native BFGS-based algorithm and
+    the covariance matrix is based on the Hessian. ``robust=True`` requests
+    the QML (White) covariance matrix. With ``fcp=True``, the
     Fiorentini-Calzolari-Panattoni algorithm is used instead.
 
-    By default, variance parameters are initialized from an initial OLS
-    regression. ``arma_init=True`` instead obtains starting values from an
-    initial ARMA model, which may improve convergence in some cases.
+    By default, variance parameters are initialized using an initial OLS
+    regression. ``arma_init=True`` obtains starting values from an ARMA
+    model, which may improve convergence.
+
+    The residuals and estimated conditional variance are available via
+    ``uhat`` and ``h``, respectively. With ``stdresid=True``, residuals
+    are standardized by the conditional standard deviation.
 
     Examples
     --------
-    ``gretl.garch("1 1 ; y const x1 x2").fit()``
-
-    ``gretl.garch([[1, 1], ["y", "const", "x1", "x2"]]).fit()``
+    ``gretl.garch("1 1 ; y").fit()``
+    ``gretl.garch("1 1 ; y x1 x2", robust=True).fit()``
+    ``gretl.garch([[1, 1], ["y", "x1", "x2"]]).fit()``
     )doc";
 
     inline constexpr char mpols[] = R"doc(
@@ -1367,14 +1340,12 @@ namespace doc::Model {
 
     Parameters
     ----------
-    formula : str
-        Model specification as a gretl-style variable list or formula.
-        Variables may be specified by name or index; the value 0 denotes
-        the constant term.
-    varlist : list
-        Model specification as a list of variables, with the dependent
-        variable first. Variables may be specified by name or index; the
-        value 0 denotes the constant term.
+    formula : str or list
+        Model specification as a gretl-style variable list or formula,
+        or as a list of variable names or IDs. The dependent variable
+        comes first; the value 0 denotes the constant term. Optional
+        powers of the last regressor may be specified after a semicolon
+        or using a nested Python list.
 
     Other Parameters
     ----------------
@@ -1388,24 +1359,25 @@ namespace doc::Model {
     Returns
     -------
     gretl.Model_mpols
-        A multiple-precision OLS model instance derived from the abstract
-        ``gretl.Model`` base class. Call ``fit()`` to estimate the model.
+    A multiple-precision OLS model instance derived from the abstract
+    ``gretl.Model`` base class. Call ``fit()`` to estimate the model.
 
     Notes
     -----
-    Calculations use 256 bits of precision by default. The precision can be
-    changed by setting the ``GRETL_MP_BITS`` environment variable before
-    starting Python.
+    Calculations use 256 bits of precision by default. The precision can
+    be increased by setting the ``GRETL_MP_BITS`` environment variable
+    before starting Python.
 
-    An extended specification may include powers of the last regressor after
-    a semicolon. These additional terms are computed and stored using
-    multiple-precision arithmetic. For example, ``"y const x ; 2 3 4"``
-    adds the second, third and fourth powers of ``x`` to the regression.
+    An optional list of powers may follow the regressors, separated by
+    a semicolon. These powers apply to the last regressor and the
+    resulting terms are computed using multiple-precision arithmetic.
 
     Examples
     --------
-    ``gretl.mpols("y const x1 x2").fit()``
+    ``gretl.mpols("y 0 x1 x2").fit()``
     ``gretl.mpols(["y", "const", "x1", "x2"]).fit()``
+    ``gretl.mpols("y 0 x ; 2 3 4").fit()``
+    ``gretl.mpols([["y", 0, "x"], [2, 3, 4]]).fit()``
     )doc";
 
     inline constexpr char panel[] = R"doc(
@@ -1418,14 +1390,10 @@ namespace doc::Model {
 
     Parameters
     ----------
-    formula : str
-        Model specification as a gretl-style variable list or formula.
-        Variables may be specified by name or index; the value 0 denotes
-        the constant term.
-    varlist : list
-        Model specification as a list of variables, with the dependent
-        variable first. Variables may be specified by name or index; the
-        value 0 denotes the constant term.
+    formula : str or list
+        Model specification as a gretl-style variable list or formula,
+        or as a list of variable names or IDs. The dependent variable
+        comes first; the value 0 denotes the constant term.
 
     Other Parameters
     ----------------
@@ -1436,7 +1404,7 @@ namespace doc::Model {
     random_effects : bool
         Estimate a random-effects model.
     nerlove : bool
-        Use the Nerlove transformation for random-effects estimation.
+        Use the Nerlove method for random-effects estimation.
     pooled : bool
         Estimate the model using pooled OLS.
     between : bool
@@ -1444,8 +1412,8 @@ namespace doc::Model {
     robust : bool
         Use robust standard errors.
     cluster : str
-        Compute clustered standard errors using the specified variable to
-        define clusters.
+        Compute clustered standard errors using the specified variable
+        to define clusters.
     time_dummies : bool
         Include time dummy variables in the model.
     unit_weights : bool
@@ -1458,58 +1426,56 @@ namespace doc::Model {
         random-effects model.
     unbalanced : str
         Select the ANOVA method for an unbalanced random-effects model.
-        Supported values include ``"bc"`` and ``"stata"``.
+        Supported values are ``"bc"`` and ``"stata"``.
     quiet : bool
-        Suppress additional printed output.
+        Reduce printed output.
     verbose : bool
         Print additional estimation details.
 
     Returns
     -------
     gretl.Model_panel
-        A panel-data model instance derived from the abstract ``gretl.Model``
-        base class. Call ``fit()`` to estimate the model.
+    A panel-data model instance derived from the abstract ``gretl.Model``
+    base class. Call ``fit()`` to estimate the model.
 
     Notes
     -----
     The fixed-effects estimator is used by default and is implemented using
-    the within transformation. With ``random_effects=True``, random-effects
-    estimation uses the Swamy-Arora method by default; ``nerlove=True``
-    selects the Nerlove method instead.
+    the within transformation. With ``random_effects=True``, estimation
+    uses the Swamy-Arora method by default; ``nerlove=True`` selects the
+    Nerlove method instead.
 
     With ``robust=True``, the default panel-robust covariance estimator is
-    the Arellano HAC estimator, clustered by panel unit. Other panel-robust
-    covariance estimators may be selected through gretl's ``panel_robust``
-    setting or explicitly via ``cluster``.
+    the Arellano HAC estimator, clustered by panel unit. Alternative
+    estimators include PCSE and Driscoll-Kraay standard errors, selected
+    through gretl's ``panel_robust`` setting.
 
-    ``iterate=True`` applies only with ``unit_weights=True``. If the
-    iteration converges, the resulting estimates are maximum likelihood.
+    ``iterate=True`` applies only with ``unit_weights=True``. If iteration
+    converges, the resulting estimates are maximum likelihood.
     ``matrix_diff`` and ``unbalanced`` apply only to random-effects models.
 
     Examples
     --------
-    ``gretl.panel("y const x1 x2").fit()``
+    ``gretl.panel("y 0 x1 x2").fit()``
     ``gretl.panel(["y", "const", "x1", "x2"]).fit()``
+    ``gretl.panel("y 0 x1 x2", random_effects=True).fit()``
     )doc";
 
     inline constexpr char tsls[] = R"doc(
     Specify an instrumental-variables model for estimation.
 
-    Creates an IV model specification consisting of the regression equation
-    and a set of instruments. By default, estimation is by two-stage least
+    Creates an IV model specification consisting of a regression equation
+    and a set of instruments. By default, estimation uses two-stage least
     squares (TSLS). Limited Information Maximum Likelihood (LIML) and
     Generalized Method of Moments (GMM) estimation are also available.
 
     Parameters
     ----------
-    formula : str
-        Model specification as two gretl-style variable lists separated by
-        a semicolon. The first specifies the dependent variable and
-        regressors, while the second specifies the instruments.
-    varlist : list
-        Model specification as a list containing two variable lists. The
-        first contains the dependent variable followed by the regressors,
-        while the second contains the instruments.
+    formula : str or list
+        Model specification as two gretl-style variable lists separated
+        by a semicolon, or as a nested Python list. The first specifies
+        the dependent variable and regressors, while the second specifies
+        the instruments. The value 0 denotes the constant term.
 
     Other Parameters
     ----------------
@@ -1524,16 +1490,15 @@ namespace doc::Model {
     robust : bool
         Use heteroskedasticity-robust standard errors.
     cluster : str
-        Compute clustered standard errors using the specified variable to
-        define clusters.
+        Compute clustered standard errors using the specified variable.
     matrix_diff : bool
-        Use the matrix-difference form of the Hausman test.
+        Use the matrix-difference method for the Hausman test.
     liml : bool
         Estimate the model by Limited Information Maximum Likelihood.
     gmm : bool
         Estimate the model by the Generalized Method of Moments.
     two_step : bool
-        Use two-step GMM rather than one-step GMM.
+        Use two-step rather than one-step GMM.
     iterate : bool
         Iterate GMM estimation to convergence.
     weights : str
@@ -1542,32 +1507,36 @@ namespace doc::Model {
     Returns
     -------
     gretl.Model_tsls
-        An instrumental-variables model instance derived from the abstract
-        ``gretl.Model`` base class. Call ``fit()`` to estimate the model.
+    An instrumental-variables model instance derived from the
+    abstract ``gretl.Model`` base class. Call ``fit()`` to
+    estimate the model.
 
     Notes
     -----
-    The instrument list must contain at least as many variables as the
-    regressor list for the model to be identified. Exogenous regressors
-    should normally appear in both the regressor and instrument lists.
+    The instrument list must contain at least as many variables as
+    the regressor list for the model to be identified. Exogenous
+    regressors should also appear in the instrument list.
 
-    For TSLS, diagnostic output includes a Hausman test and, for an
-    overidentified model, the Sargan test of overidentifying restrictions.
-    Under i.i.d. errors, a weak-instruments test is also reported for TSLS
-    and LIML estimation. These tests can be suppressed with
-    ``no_tests=True``.
+    TSLS diagnostic output includes a Hausman test and, for
+    overidentified models, the Sargan test of overidentifying
+    restrictions. Under i.i.d. errors, a weak-instruments test
+    is also reported for TSLS and LIML estimation.
 
-    ``two_step``, ``iterate`` and ``weights`` apply only to GMM estimation.
-    For a just-identified model, TSLS, LIML and GMM produce equivalent
-    estimates; for an overidentified model they generally differ.
+    The Hausman and Sargan statistics are available through the
+    ``hausman`` and ``sargan`` accessors, respectively, when applicable.
+
+    The ``two_step``, ``iterate`` and ``weights`` options apply only
+    to GMM estimation. The default GMM weighting matrix is the
+    identity matrix.
+
+    For just-identified models, TSLS, LIML and GMM yield equivalent
+    estimates; for overidentified models they generally differ.
 
     Examples
     --------
-    ``gretl.tsls(
-        "y const x1 x2 ; const x1 z1 z2"
-    ).fit()``
-
-    ``gretl.tsls([["y", "const", "x1", "x2"], ["const", "x1", "z1", "z2"]]).fit()``
+    ``gretl.tsls("y 0 x1 x2 ; 0 x1 z1 z2").fit()``
+    ``gretl.tsls([["y", 0, "x1", "x2"], [0, "x1", "z1", "z2"]]).fit()``
+    ``gretl.tsls("y 0 x1 x2 ; 0 x1 z1 z2", liml=True).fit()``
     )doc";
 
     inline constexpr char hsk[] = R"doc(
@@ -1580,14 +1549,10 @@ namespace doc::Model {
 
     Parameters
     ----------
-    formula : str
-        Model specification as a gretl-style variable list or formula.
-        Variables may be specified by name or index; the value 0 denotes
-        the constant term.
-    varlist : list
-        Model specification as a list of variables, with the dependent
-        variable first. Variables may be specified by name or index; the
-        value 0 denotes the constant term.
+    formula : str or list
+        Model specification as a gretl-style variable list or formula,
+        or as a list of variable names or IDs. The dependent variable
+        comes first; the value 0 denotes the constant term.
 
     Other Parameters
     ----------------
@@ -1601,43 +1566,47 @@ namespace doc::Model {
     Returns
     -------
     gretl.Model_hsk
-        A heteroskedasticity-corrected model instance derived from the
-        abstract ``gretl.Model`` base class. Call ``fit()`` to estimate
-        the model.
+    A heteroskedasticity-corrected model instance derived from the
+    abstract ``gretl.Model`` base class. Call ``fit()`` to estimate
+    the model.
 
     Notes
     -----
-    Estimation proceeds in three stages. First, the model is estimated by
-    OLS. Second, the logarithm of the squared OLS residuals is regressed on
-    the original regressors and, by default, their squares. Finally, the
-    model is estimated by weighted least squares using the reciprocal of
-    the estimated error variance as the weight.
+    Estimation proceeds in three stages. First, the model is estimated
+    by OLS. Second, the logarithm of the squared OLS residuals is
+    regressed on the original regressors and, by default, their squares.
+    Finally, the model is estimated by weighted least squares using
+    the reciprocal of the estimated error variance as the weight.
 
-    With ``no_squares=True``, only the original regressors are included in
-    the auxiliary variance regression.
+    The weights are calculated as ``1 / exp(u_star)``, where ``u_star``
+    denotes the fitted values from the auxiliary regression. This
+    transformation ensures positive estimated variances.
+
+    With ``no_squares=True``, only the original regressors are included
+    in the auxiliary variance regression.
 
     Examples
     --------
-    ``gretl.hsk("y const x1 x2").fit()``
+    ``gretl.hsk("y 0 x1 x2").fit()``
     ``gretl.hsk(["y", "const", "x1", "x2"]).fit()``
+    ``gretl.hsk("y 0 x1 x2", no_squares=True).fit()``
     )doc";
 
     inline constexpr char intreg[] = R"doc(
     Specify an interval regression model for estimation by maximum likelihood.
 
     Creates an interval regression model specification for a dependent
-    variable observed as an interval rather than necessarily as an exact
-    value. The lower and upper bounds are specified by separate variables.
+    variable observed within an interval rather than necessarily as an
+    exact value. The lower and upper bounds are specified by separate
+    variables.
 
     Parameters
     ----------
-    formula : str
-        Model specification as a gretl-style variable list. The first two
-        variables give the lower and upper bounds of the dependent variable,
-        followed by the regressors.
-    varlist : list
-        Model specification as a list of variables, with the lower and upper
-        bounds first, followed by the regressors.
+    formula : str or list
+        Model specification as a gretl-style variable list, or as a list
+        of variable names or IDs. The first two variables specify the
+        lower and upper bounds of the dependent variable, followed by
+        the regressors. The value 0 denotes the constant term.
 
     Other Parameters
     ----------------
@@ -1651,21 +1620,20 @@ namespace doc::Model {
         Compute the covariance matrix using the Outer Product of the
         Gradient (OPG).
     cluster : str
-        Compute clustered standard errors using the specified variable to
-        define clusters.
+        Compute clustered standard errors using the specified variable.
 
     Returns
     -------
     gretl.Model_intreg
-        An interval regression model instance derived from the abstract
-        ``gretl.Model`` base class. Call ``fit()`` to estimate the model.
+    An interval regression model instance derived from the abstract
+    ``gretl.Model`` base class. Call ``fit()`` to estimate the model.
 
     Notes
     -----
-    The model assumes a normally distributed disturbance term. An exact
-    observation can be represented by equal lower and upper bounds.
-    A missing lower bound indicates left censoring, while a missing upper
-    bound indicates right censoring.
+    The model assumes a normally distributed disturbance term and is
+    estimated by maximum likelihood. Exact observations are represented
+    by equal lower and upper bounds. Missing lower or upper bounds
+    indicate left- or right-unbounded intervals, respectively.
 
     By default, standard errors are based on the negative inverse of the
     Hessian. ``robust=True`` computes a QML sandwich covariance matrix,
@@ -1673,24 +1641,26 @@ namespace doc::Model {
 
     Examples
     --------
-    ``gretl.intreg("ymin ymax const x1 x2").fit()``
-    ``gretl.intreg(["ymin", "ymax", "const", "x1", "x2"]).fit()``
+    ``gretl.intreg("ymin ymax 0 x1 x2").fit()``
+    ``gretl.intreg(["ymin", "ymax", 0, "x1", "x2"]).fit()``
+    ``gretl.intreg("ymin ymax 0 x1 x2", robust=True).fit()``
     )doc";
 
     inline constexpr char midasreg[] = R"doc(
     Specify a MIDAS regression model for least-squares estimation.
 
-    Creates a Mixed Data Sampling (MIDAS) model combining regressors observed
-    at the frequency of the dependent variable with one or more regressors
-    observed at a higher frequency. Depending on the parameterization of the
-    high-frequency terms, estimation is by OLS or nonlinear least squares.
+    Creates a Mixed Data Sampling (MIDAS) model combining regressors
+    observed at the frequency of the dependent variable with one or
+    more higher-frequency regressors. Depending on the parameterization,
+    estimation uses OLS or nonlinear least squares (NLS).
 
     Parameters
     ----------
     formula : str
         Model specification consisting of the dependent variable and
-        same-frequency regressors, followed by a semicolon and one or more
-        high-frequency MIDAS terms specified using ``mds()`` or ``mdsl()``.
+        same-frequency regressors, followed by a semicolon and one or
+        more high-frequency terms specified using ``mds()`` or ``mdsl()``.
+        The value 0 denotes the constant term.
 
     Other Parameters
     ----------------
@@ -1701,39 +1671,38 @@ namespace doc::Model {
     quiet : bool
         Suppress printed output.
     levenberg : bool
-        Use the Levenberg-Marquardt algorithm for nonlinear least-squares
-        estimation.
+        Force use of the Levenberg-Marquardt algorithm for NLS estimation.
 
     Returns
     -------
     gretl.Model_midasreg
-        A MIDAS regression model instance derived from the abstract
-        ``gretl.Model`` base class. Call ``fit()`` to estimate the model.
+    A MIDAS regression model instance derived from the abstract
+    ``gretl.Model`` base class. Call ``fit()`` to estimate the model.
 
     Notes
     -----
     Same-frequency regressors appear before the semicolon, while
-    high-frequency terms are specified after it using ``mds()`` or
-    ``mdsl()``.
+    higher-frequency terms are specified using ``mds()`` or ``mdsl()``.
+    The former specifies a MIDAS list and a range of lags; the latter
+    uses a list containing the required lags.
 
-    Supported MIDAS parameterizations are ``umidas`` (0), ``nealmon`` (1),
+    Supported parameterizations are ``umidas`` (0), ``nealmon`` (1),
     ``beta0`` (2), ``betan`` (3), ``almonp`` (4), and ``beta1`` (5).
-    U-MIDAS is estimated by OLS; the other parameterizations are estimated
-    by nonlinear least squares.
+    U-MIDAS is estimated by OLS; other specifications use NLS.
 
-    For nonlinear specifications, initial parameter values may be supplied
-    through a vector. For parameterizations with a fixed number of
-    parameters, ``null`` can be used to request automatic initialization.
-    An integer can also be used to specify the required number of parameters
-    where applicable.
+    Nonlinear specifications require initial parameter values, which
+    may be supplied as a vector, requested automatically using ``null``
+    where supported, or specified by the number of parameters.
 
-    By default, normalized exponential Almon and beta specifications are
-    estimated using a combination of constrained BFGS and OLS.
-    ``levenberg=True`` forces use of the Levenberg-Marquardt algorithm.
+    For normalized exponential Almon and beta specifications, the
+    default estimator combines constrained BFGS and OLS.
+    ``levenberg=True`` selects the Levenberg-Marquardt algorithm.
 
     Examples
     --------
-    ``gretl.midasreg("y const y(-1) ; mdsl(XL, 2, theta)").fit()``
+    ``gretl.midasreg("y 0 y(-1) ; mds(X, 1, 9, 1, theta)").fit()``
+    ``gretl.midasreg("y 0 y(-1) ; mds(X, 1, 9, 0)").fit()``
+    ``gretl.midasreg("y 0 y(-1) ; mdsl(XL, 2, theta)").fit()``
     )doc";
 
     inline constexpr char arima[] = R"doc(
@@ -1820,57 +1789,58 @@ namespace doc::Model {
     inline constexpr char quantreg[] = R"doc(
     Specify a quantile regression model.
 
-    Creates a quantile regression specification for one or more conditional
-    quantiles of the dependent variable. A single quantile or a sequence of
-    quantiles may be requested.
+    Estimates one or more conditional quantiles of the dependent variable.
+    Call ``fit()`` to estimate the model.
 
     Parameters
     ----------
-    tau : float or list
-        Conditional quantile or sequence of quantiles to estimate. Each
-        value must lie in the range 0.01 to 0.99.
-    formula : str
-        Model specification as a gretl-style variable list or formula.
-        Variables may be specified by name or index; the value 0 denotes
-        the constant term.
+    tau : float or numpy.ndarray
+        Conditional quantile or sequence of quantiles to estimate.
+        Each value must lie in the range 0.01 to 0.99.
+    formula : str or list
+        Model specification as a gretl-style variable list or formula,
+        or a list of variable names or IDs. The value 0 denotes the
+        constant term.
 
     Other Parameters
     ----------------
     robust : bool
-        Use standard errors robust to heteroskedasticity.
+        Use heteroskedasticity-robust standard errors or confidence intervals.
     intervals : bool or float
-        Report confidence intervals instead of standard errors. If ``True``,
-        90 percent confidence intervals are computed. A float specifies the
-        desired confidence level, for example ``0.95``.
+        Compute confidence intervals instead of standard errors.
+        ``True`` selects the default 90% level; a float specifies
+        another confidence level, e.g. ``0.95``.
     vcv : bool
-        Print the covariance matrix of the coefficient estimates.
+        Print the covariance matrix.
     quiet : bool
         Suppress printed output.
 
     Returns
     -------
     gretl.Model_quantreg
-        A quantile regression model instance derived from the abstract
-        ``gretl.Model`` base class. Call ``fit()`` to estimate the model.
+    Quantile regression model instance. Call ``fit()`` to estimate.
 
     Notes
     -----
-    By default, standard errors are computed using the asymptotic method of
-    Koenker and Bassett. With ``robust=True``, heteroskedasticity-robust
-    standard errors are computed using the Koenker-Zhao method.
+    Standard errors are based on Koenker and Bassett (1978), or on
+    Koenker and Zhao (1994) when ``robust=True``.
 
-    With ``intervals`` enabled, confidence intervals are computed by rank
-    inversion and may be asymmetric around the point estimates. The default
-    confidence level is 90 percent.
+    Confidence intervals are computed by rank inversion and may be
+    asymmetric. With ``robust=True``, the method of Koenker and
+    Machado (1999) is used.
 
-    When ``tau`` contains multiple quantiles, all requested quantile
-    regressions are estimated and collected in a single model result.
+    For multiple quantiles, ``coeff`` and ``stderr`` are matrices
+    with one column per quantile. The ``rq_sequence`` entry in the
+    model results provides the combined coefficient and standard
+    error output.
 
     Examples
     --------
-    ``gretl.quantreg(tau=0.75, formula="y const x1 x2").fit()``
-    ``gretl.quantreg(tau=0.25, formula="y const x1 x2", robust=True).fit()``
-    ``gretl.quantreg(tau=[0.25, 0.5, 0.75], formula="y const x1 x2").fit()``
+    >>> m = gretl.quantreg(0.5, "y const x1 x2").fit()
+    >>> m = gretl.quantreg(0.25, ["y", "const", "x1", "x2"],
+    ...                   robust=True).fit()
+    >>> m = gretl.quantreg([0.25, 0.5, 0.75],
+    ...                   "y const x1 x2", intervals=0.95).fit()
     )doc";
 
     inline constexpr char dpanel[] = R"doc(
@@ -1903,7 +1873,7 @@ namespace doc::Model {
         Use system GMM by adding equations in levels.
     collapse : bool
         Collapse GMM-style instruments to limit instrument proliferation.
-        time_dummies : bool
+    time_dummies : bool
         Add time dummy variables to the model.
     dpdstyle : bool
         Use the DPD convention for handling time dummy variables.
@@ -1956,14 +1926,10 @@ namespace doc::Model {
 
     Parameters
     ----------
-    formula : str
-        Model specification as a gretl-style variable list or formula.
-        Variables may be specified by name or index; the value 0 denotes
-        the constant term.
-    varlist : list
-        Model specification as a list of variables, with the dependent
-        variable first. Variables may be specified by name or index; the
-        value 0 denotes the constant term.
+    formula : str or list
+        Model specification as a gretl-style variable list or formula,
+        or as a list of variable names or IDs. The dependent variable
+        comes first; the value 0 denotes the constant term.
 
     Other Parameters
     ----------------
@@ -2021,12 +1987,12 @@ namespace doc::Model {
 
     Parameters
     ----------
-    ylist : str or list
-        Endogenous variables of the VAR. Do not include their lags explicitly;
-        they are generated automatically.
     order : int
         Lag order of the VAR. With ``lagselect=True``, this specifies the
         maximum lag order to consider.
+    ylist : str or list
+        Endogenous variables of the VAR. Do not include their lags explicitly;
+        they are generated automatically.
 
     Other Parameters
     ----------------
@@ -2082,7 +2048,10 @@ namespace doc::Model {
     --------
     ``gretl.var(order=2, ylist="y1 y2").fit()``
 
-    ``gretl.var(order=2, ylist=["y1", "y2"], xlist=["x1", "x2"],trend=True, seasonals=True).fit()``
+    ``gretl.var(
+        order=2, ylist=["y1", "y2"],
+        xlist=["x1", "x2"], trend=True, seasonals=True
+    ).fit()``
     )doc";
 
     inline constexpr char vecm[] = R"doc(

@@ -1,24 +1,31 @@
 \subsection[gretl.Model class]{\classpymodelnosp}\label{sec:class_py_model}
-The \gretlpy module implements the \classpymodelnosp, which is used
-to manage the definition, estimation, and output of econometric models.
-Through this class, \gretlpy provides interfaces to native \lgretl
-estimators, as well as support for model-based testing and forecasting,
-including impulse response analysis for VAR and VECM models.\newline
-Note that a direct call to the \classpymodel constructor is not possible.
-Instead, users must rely on dedicated factory functions (see
-Section~\ref{sec:estimators_python}).
+The \gretlpy module provides the \classpymodelnosp,
+which serves as the common interface for defining,
+estimating, and managing econometric models and their
+results. Through this class and its subclasses, \gretlpy
+provides access to native \lgretl estimators, as well as
+facilities for model-based testing and forecasting,
+including impulse response analysis for VAR and VECM models.
+Model-specific classes inherit from \classpymodelnosp,
+either directly or through intermediate classes.
 
-An important distinction is that, although methods in \gretlpy are
-defined statically, most class attributes are created dynamically and
-originate from the so-called \gretlcmd{\$model} accessor. That is, all
-post-estimation results that are available in \gretl under
-\gretlcmd{\$model} are automatically attached to the corresponding
-\classpymodel instance in \gretlpy. Hierarchy of this class is shown
-at Figure~\ref{fig:model_class_hierarchy} in Appendix~\ref{sec:classpymodel_hierarchy}.
+Note that \classpymodel cannot be instantiated directly.
+Instead, users must create model instances using dedicated
+factory functions (see Section~\ref{sec:estimators_python}).
+
+An important distinction is that, while methods in \gretlpy
+are defined statically, most model-specific attributes are
+made available dynamically through the \gretlcmd{\$model}
+accessor. In particular, post-estimation results exposed by
+\gretl through \gretlcmd{\$model} can be accessed as attributes
+of the corresponding \classpymodel instance in \gretlpy.
+The Python class hierarchy is illustrated in Figure~\ref{fig:model_class_hierarchy}.
+
+\input{gretlmodel_hierarchy}
 
 \subsubsection{\classpymodelb attributes}
-The \classpymodel class provides the following public attributes.\newline
-Note, that some of them may be available for certain estimators only.
+
+The \classpymodel class provides the following public attributes. Note that some attributes are available only for specific estimators.
 
 \gretlfpycmd{adj\_rsq}
 \estdesc{Returns adjusted R-squared.}

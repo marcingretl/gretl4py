@@ -38,7 +38,7 @@
           { \
               return std::make_unique<GretlModel_NSE_Driver<FUNC, CI>>(varlist, kwargs); \
           }, \
-          py::arg("varlist").none(false), py::kw_only(), DOC);
+          py::arg("formula").none(false), py::kw_only(), DOC);
 
 constexpr char info[] =
     "The gretl4py package provides "
@@ -337,7 +337,7 @@ PYBIND11_MODULE(_gretl, m)
               return std::make_unique<GretlModel_VAR_VECM>(varlist, order, rank, kwargs);
           },
           py::arg("order").none(false), py::arg("rank").none(false),
-          py::arg("varlist").none(false), py::kw_only(), doc::Model::vecm);
+          py::arg("ylist").none(false), py::kw_only(), doc::Model::vecm);
 
     //////////////////////////////////////////////////
     // SYSTEMs
@@ -347,7 +347,7 @@ PYBIND11_MODULE(_gretl, m)
           {
               return std::make_unique<GretlModel_NME>(method, kwargs);
           },
-          py::arg("method").none(false), py::kw_only(), doc::Model::system);
+          py::arg("method").none(false), py::kw_only()); //, doc::Model::system, to be used when API will be fixed
 }
 
     /*

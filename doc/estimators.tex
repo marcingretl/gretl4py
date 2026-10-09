@@ -7,88 +7,211 @@ Note:
 		Section~\ref{sec:estimators_python_examples}.
 \end{itemize}
 
-\est{ar}
-\estdesc{Computes parameter estimates using the
-	generalized Cochrane-Orcutt iterative procedure.}
+\gretlfpycmd{ar()}
+\estdesc{Specify a linear regression model with autoregressive
+	errors, estimated using the generalized Cochrane--Orcutt
+	iterative procedure.}
 \begin{lstlisting}[style=pythonstylefoot]
-gretl.ar(formula: str[, data: gretl.Dataset, OPTS]) -> gretl.Model_ar
+gretl.ar(formula: str | list[, OPTS]) -> gretl.Model_ar
 \end{lstlisting}
 \mapto[none]{ar ~lags ; depvar indepvars}
 \noRformula
 \begin{itemize}
 	\item[]\maptoopt{vcv=True}{--vcv}{print covariance matrix}
+	\item[]\maptoopt{quiet=True}{--quiet}{suppress printing of parameter estimates}
 \end{itemize}
+\generaldesc{The model specification begins with a list of
+	residual lags, followed by a semicolon and the dependent
+	variable and regressors. The residual lags need not be
+	consecutive.
+	
+	When using Python lists, the residual lags and model variables
+	are represented by nested lists. For example, the specifications
+	\pythcode{"1 3 4 ; y 0 x1 x2 x3"} and
+	\pythcode{[[1, 3, 4], ["y", 0, "x1", "x2", "x3"]]}
+	are equivalent.
+	
+	Estimation uses the generalized Cochrane--Orcutt iterative
+	procedure. Iteration terminates when successive error sums
+	of squares differ by no more than 0.005 percent, or after
+	20 iterations.}
 
-\est{ar1}
-\estdesc{Computes feasible GLS estimates for a model in which the error
-	term is assumed to follow a first-order autoregressive process.}
+\gretlfpycmd{ar1()}
+\estdesc{Specify a linear regression model with first-order
+	autoregressive errors, estimated by feasible generalized
+	least squares.}
 \begin{lstlisting}[style=pythonstylefoot]
-gretl.ar1(formula: str[, data: gretl.Dataset, OPTS]) -> gretl.Model_ar1
+gretl.ar1(formula: str | list[, OPTS]) -> gretl.Model_ar1
 \end{lstlisting}
 \mapto{ar1 depvar indepvars}
 \begin{itemize}
-	\item[]\maptoopt{hilu=True}{--hilu}{use Hildreth-Lu procedure}
-	\item[]\maptoopt{pwe=True}{--pwe}{use Prais–Winsten estimator}
+	\item[]\maptoopt{hilu=True}{--hilu}{use Hildreth--Lu procedure}
+	\item[]\maptoopt{pwe=True}{--pwe}{use Prais--Winsten estimator}
 	\item[]\maptoopt{vcv=True}{--vcv}{print covariance matrix}
+	\item[]\maptoopt{no\_corc=True}{--no-corc}{skip Cochrane--Orcutt refinement of Hildreth--Lu estimates}
+	\item[]\maptoopt{loose=True}{--loose}{use a looser convergence criterion}
+	\item[]\maptoopt{quiet=True}{--quiet}{suppress printing of results}
 \end{itemize}
+\generaldesc{By default, estimation uses the iterative
+	Cochrane--Orcutt procedure. Convergence is achieved when
+	successive estimates of the autocorrelation coefficient
+	differ by no more than $10^{-6}$, or by no more than
+	$0.001$ if \pythcode{loose=True} is specified.
+	An error is reported if convergence is not achieved
+	within 100 iterations.
+	
+	With \pythcode{pwe=True}, the Prais--Winsten estimator
+	is used. Unlike Cochrane--Orcutt, this procedure retains
+	the first observation.
+	
+	With \pythcode{hilu=True}, the Hildreth--Lu search
+	procedure is used. Its results are subsequently refined
+	using Cochrane--Orcutt iterations, unless
+	\pythcode{no\_corc=True} is specified. This option has
+	no effect with other estimators.}
 
-\est{arima}
-\estdesc{Estimates a univariate SARIMA (Seasonal Autoregressive, Integrated, Moving Average) model.}
+\gretlfpycmd{arima()}
+\estdesc{Specify an ARIMA, SARIMA or ARIMAX model for maximum-likelihood estimation.}
 \begin{lstlisting}[style=pythonstylefoot]
-gretl.arima(y: str, order: tuple[int, int, int][, data: gretl.Dataset, seasonal: tuple[int, int, int], OPTS]) -> gretl.Model_arima
+gretl.arima(y: str, order: tuple[int, int, int], seasonal: tuple[int, int, int] = None,
+	x: str | list = None[, OPTS]) -> gretl.Model_arima
 \end{lstlisting}
-\mapto{arima p d q [; P D Q ] ; depvar}
+\mapto{arima p d q [; P D Q] ; depvar [indepvars]}
 \begin{itemize}
-	\item[]\maptoopt{verbose=True}{--verbose}{print details of iterations}
+	\item[]\maptoopt{verbose=True}{--verbose}{print details of numerical iterations}
+	\item[]\maptoopt{quiet=True}{--quiet}{suppress printing of results}
 	\item[]\maptoopt{vcv=True}{--vcv}{print covariance matrix}
-	\item[]\maptoopt{hessian=True}{--hessian}{disables the fallback to outer
-		product of the gradient (OPG)}
-	\item[]\maptoopt{opg=True}{--opg}{forces use of the OPG method}
+	\item[]\maptoopt{hessian=True}{--hessian}{disable fallback to OPG}
+	\item[]\maptoopt{opg=True}{--opg}{use the outer product of the gradient}
 	\item[]\maptoopt{nc=True}{--nc}{do not include a constant}
 	\item[]\maptoopt{conditional=True}{--conditional}{use conditional maximum likelihood}
-	\item[]\maptoopt{x\_12\_arima=True}{--x-12-arima}{use X-12-ARIMA, or X13, for estimation}
-	\item[]\maptoopt{lbfgs=True}{--lbfgs}{use L-BFGS-B maximizer}
-%	\item[]\maptoopt{lagselect=True}{--lagselect}{information criteria
-%		and log-likelihood for a number of AR(I)MA specifications
-%		are printed}
+	\item[]\maptoopt{x\_12\_arima=True}{--x-12-arima}{use X-12-ARIMA or X-13ARIMA-SEATS}
+	\item[]\maptoopt{lbfgs=True}{--lbfgs}{use the L-BFGS-B maximizer}
+	\item[]\maptoopt{y\_diff\_only=True}{--y-diff-only}{difference only the dependent variable}
+	%\item[]\maptoopt{lagselect=True}{--lagselect}{perform lag-order selection}
 \end{itemize}
+\generaldesc{The argument \pythcode{order} specifies the non-seasonal
+	ARIMA orders $(p,d,q)$, while \pythcode{seasonal} optionally specifies
+	the seasonal orders $(P,D,Q)$. Exogenous regressors can be supplied
+	via \pythcode{x} to specify an ARIMAX model.
+	
+	By default, estimation uses exact maximum likelihood. The
+	\pythcode{conditional} option selects conditional maximum likelihood.
+	Under native exact ML, the covariance matrix is based on the
+	numerical Hessian, with fallback to the outer product of the
+	gradient (OPG). The \pythcode{hessian} and \pythcode{opg} options
+	control this behavior.
+	
+	For ARIMAX models with non-zero differencing, both the dependent
+	variable and the regressors are differenced by default.
+	The \pythcode{y\_diff\_only} option leaves the regressors in levels.
+	
+%	With \pythcode{lagselect=True}, the AR and MA orders are treated
+%	as maximum orders, and a table of information criteria and
+%	log-likelihood values is produced instead of estimates for
+%	a single specification.
+	}
 
-\est{biprobit}
-\estdesc{Estimates a bivariate probit model, using
-	the Newton-Raphson method to maximize the likelihood.}
+\gretlfpycmd{biprobit()}
+\estdesc{Specify a bivariate probit model for estimation
+	by maximum likelihood, allowing the two equations to
+	share regressors or have separate sets of regressors.}
 \begin{lstlisting}[style=pythonstylefoot]
-gretl.biprobit(formula: str[, data: gretl.Dataset, OPTS]) -> gretl.Model_biprobit
+gretl.biprobit(formula: str | list[, OPTS]) -> gretl.Model_biprobit
 \end{lstlisting}
 \mapto{biprobit depvar1 depvar2 indepvars1 [; indepvars2]}
 \begin{itemize}
 	\item[]\maptoopt{vcv=True}{--vcv}{print covariance matrix}
-	\item[]\maptoopt{robust=True}{--robust}{robust standard errors}
-	\item[]\maptoopt{opg=True}{--opg}{forces use of the OPG method}
-	\item[]\maptoopt{save\_xbeta=True}{--save-xbeta}{save values of the index
-		functions for the respective equations}
-	\item[]\maptoopt{verbose=True}{--verbose}{print extra information}
+	\item[]\maptoopt{robust=True}{--robust}{use QML robust standard errors}
+	\item[]\maptoopt{cluster="clustvar"}{--cluster=clustvar}{compute clustered standard errors}
+	\item[]\maptoopt{opg=True}{--opg}{use the Outer Product of the Gradient covariance matrix}
+	\item[]\maptoopt{save\_xbeta=True}{--save-xbeta}{save the index functions as fitted values}
+	\item[]\maptoopt{verbose=True}{--verbose}{print additional information}
 \end{itemize}
-\noRformula
+\noRformula\\
+\generaldesc{The first two variables specify the binary dependent
+	variables. If only one set of regressors is provided, it is used
+	in both equations. Otherwise, the regressors preceding the
+	semicolon apply to the first equation, and those following
+	the semicolon apply to the second equation.
+	
+	When using Python lists, semicolon-separated variable lists
+	are represented by nested lists. For example, the specifications
+	\pythcode{"y1 y2 0 x1 x2 ; 0 x3 x4"} and
+	\pythcode{[["y1", "y2", 0, "x1", "x2"], [0, "x3", "x4"]]}
+	are equivalent.
+	
+	By default, standard errors are computed using the analytical
+	Hessian. The \pythcode{opg} option selects the Outer Product
+	of the Gradient covariance matrix, while \pythcode{robust}
+	requests QML sandwich standard errors. The \pythcode{cluster}
+	option computes cluster-robust standard errors.
+	
+	The estimated correlation parameter $\rho$ is included as
+	the last element of the coefficient vector.
+	
+	By default, fitted values contain the probabilities of the
+	four joint outcomes $(1,1)$, $(1,0)$, $(0,1)$ and $(0,0)$.
+	With \pythcode{save\_xbeta=True}, the fitted values contain
+	the index functions for the two equations instead.}
 
-\est{dpanel}
-\estdesc{Carries out estimation of dynamic panel data models.}
+\gretlfpycmd{dpanel()}
+\estdesc{Specify a dynamic panel-data model for estimation using
+	difference GMM (GMM-DIF) or system GMM (GMM-SYS).}
 \begin{lstlisting}[style=pythonstylefoot]
-gretl.dpanel(p: int | numpy.array, formula: str[, data: gretl.Dataset, OPTS]) -> gretl.Model_dpanel
+gretl.dpanel(p: int | numpy.ndarray, formula: str[, OPTS]) -> gretl.Model_dpanel
 \end{lstlisting}
 \mapto{dpanel p ; depvar indepvars [ ; instruments ]}
 \begin{itemize}
+	\item[]\maptoopt{quiet=True}{--quiet}{suppress printing of results}
 	\item[]\maptoopt{vcv=True}{--vcv}{print covariance matrix}
-	\item[]\maptoopt{two\_step=True}{--two-step}{perform 2-step GMM estimation}
-	\item[]\maptoopt{system=True}{--system}{add equations in levels}
-	\item[]\maptoopt{collapse=True}{--collapse}{\seegretlmanual}
+	\item[]\maptoopt{two\_step=True}{--two-step}{perform two-step GMM estimation}
+	\item[]\maptoopt{system=True}{--system}{add equations in levels (GMM-SYS)}
+	\item[]\maptoopt{collapse=True}{--collapse}{collapse GMM-style instruments}
 	\item[]\maptoopt{time\_dummies=True}{--time-dummies}{add time dummy variables}
-	\item[]\maptoopt{dpdstyle=True}{--dpdstyle}{emulate DPD package for Ox}
-	\item[]\maptoopt{asymptotic=True}{--asymptotic}{uncorrected asymptotic standard errors}
-	\item[]\maptoopt{keep\_extra=True}{--keep-extra}{\seegretlmanual}
+	\item[]\maptoopt{dpdstyle=True}{--dpdstyle}{use the DPD convention for time dummies}
+	\item[]\maptoopt{asymptotic=True}{--asymptotic}{use uncorrected asymptotic standard errors}
+	\item[]\maptoopt{keep\_extra=True}{--keep-extra}{retain GMM weight and instrument matrices}
 \end{itemize}
-\noRformula
+\noRformula\\
+\generaldesc{The argument \textit{p} specifies the autoregressive
+	order of the dependent variable. It may be an integer or an array
+	of possibly non-contiguous lag orders. The dependent variable and
+	regressors are specified in levels; the required differencing is
+	performed automatically.
+	
+	By default, difference GMM (GMM-DIF) is used. Setting
+	\pythcode{system=True} adds equations in levels, producing
+	the system GMM (GMM-SYS) estimator.
+	
+	The optional instrument specification follows a semicolon.
+	If omitted, all independent variables are assumed to be strictly
+	exogenous. Otherwise, strictly exogenous regressors must also
+	be included in the instrument list. The \pythcode{GMM()}
+	and \pythcode{GMMlevel()} terms specify lagged GMM-style
+	instruments for the differenced and levels equations, respectively.
+	The \pythcode{collapse} option limits instrument proliferation.
+	
+	One-step GMM with robust standard errors is used by default.
+	With \pythcode{two\_step=True}, the Windmeijer finite-sample
+	correction is applied to the standard errors, unless
+	\pythcode{asymptotic=True} is specified.
+	
+	Estimation results include tests for first- and second-order
+	autocorrelation, tests of overidentifying restrictions, and
+	a Wald test for the joint significance of the regressors.
+	First-order autocorrelation in differenced residuals is not
+	in itself problematic, whereas second-order autocorrelation
+	violates the maintained assumptions.
+	
+	The \pythcode{time\_dummies} option adds time dummy variables,
+	entered in differenced form by default. With
+	\pythcode{dpdstyle=True}, they are entered in levels.
+	The \pythcode{keep\_extra} option retains the GMM weight
+	and instrument matrices in the model results.
+	See also \seegretlmanual.}
 
-\est{duration}
+\gretlfpycmd{duration()}
 \estdesc{By default the Weibull distribution is used
 	but the exponential, log-logistic and log-normal
 	distributions are also available.}
@@ -106,159 +229,442 @@ gretl.duration(formula: str[, data: gretl.Dataset, OPTS]) -> gretl.Model_duratio
 	\item[]\maptoopt{verbose=True}{--verbose}{print details of iterations}
 \end{itemize}
 
-\est{garch}
-\estdesc{Estimates a GARCH model, either a univariate model or,
-	if indepvars are specified, including the given exogenous variables.}
+\gretlfpycmd{duration()}
+\estdesc{Specify a parametric duration model for estimation
+	by maximum likelihood. The dependent variable represents
+	duration and must be strictly positive. By default, the
+	Weibull distribution is used, but exponential, log-logistic
+	and log-normal specifications are also available.}
 \begin{lstlisting}[style=pythonstylefoot]
-gretl.garch(formula: str[, data: gretl.Dataset, OPTS]) -> gretl.Model_garch
+gretl.duration(formula: str | list[, OPTS]) -> gretl.Model_duration
 \end{lstlisting}
-\mapto{garch p q ; depvar [indepvars]}
+\mapto{duration depvar indepvars [; censvar]}
 \begin{itemize}
-	\item[]\maptoopt{robust=True}{--robust}{robust standard errors}
-	\item[]\maptoopt{verbose=True}{--verbose}{print details of iterations}
+	\item[]\maptoopt{exponential=True}{--exponential}{use exponential distribution}
+	\item[]\maptoopt{loglogistic=True}{--loglogistic}{use log-logistic distribution}
+	\item[]\maptoopt{lognormal=True}{--lognormal}{use log-normal distribution}
+	\item[]\maptoopt{medians=True}{--medians}{use conditional medians as fitted values}
+	\item[]\maptoopt{robust=True}{--robust}{use QML robust standard errors}
+	\item[]\maptoopt{cluster="clustvar"}{--cluster=clustvar}{compute clustered standard errors}
 	\item[]\maptoopt{vcv=True}{--vcv}{print covariance matrix}
-	\item[]\maptoopt{nc=True}{--nc}{do not include a constant}
-	\item[]\maptoopt{stdresid=True}{--stdresid}{standardize the residuals}
-	\item[]\maptoopt{fcp=True}{--fcp}{use Fiorentini, Calzolari, Panattoni algorithm}
-	\item[]\maptoopt{arma\_init=True}{--arma-init}{initial variance parameters from ARMA}
+	\item[]\maptoopt{verbose=True}{--verbose}{print details of numerical iterations}
+	\item[]\maptoopt{quiet=True}{--quiet}{suppress printing of results}
 \end{itemize}
-\noRformula
+\generaldesc{The dependent variable represents the duration
+	of a state or event, such as the length of an unemployment
+	spell. All duration values must be strictly positive.
+	
+	An optional right-censoring variable may be specified after
+	a semicolon. Non-zero values of this variable identify
+	right-censored observations.
+	
+	When using Python lists, semicolon-separated variable lists
+	are represented by nested lists. For example, the specifications
+	\pythcode{"y 0 x1 x2 ; cens"} and
+	\pythcode{[["y", 0, "x1", "x2"], ["cens"]]}
+	are equivalent.
+	
+	By default, the fitted values obtained through the
+	\gretlcmd{\$yhat} accessor are conditional means of duration.
+	With \pythcode{medians=True}, the fitted values are conditional
+	medians instead.}
 
-\est{heckit}
-\estdesc{Heckman-type selection model. In the specification,
-	the list before the semicolon represents the outcome equation,
-	and the second list represents the selection equation. The
-	dependent variable in the selection equation (ys in the
-	example above) must be a binary variable.}
+\gretlfpycmd{garch()}
+\estdesc{Specify a Generalized Autoregressive Conditional
+	Heteroskedasticity (GARCH) model for estimation by maximum
+	likelihood. The model may include exogenous regressors
+	in the conditional mean equation.}
 \begin{lstlisting}[style=pythonstylefoot]
-gretl.heckit(formula: str[, data: gretl.Dataset, OPTS]) -> gretl.Model_heckit
+gretl.garch(formula: str | list[, OPTS]) -> gretl.Model_garch
+\end{lstlisting}
+\mapto[none]{garch p q ; depvar [indepvars]}
+\begin{itemize}
+	\item[]\maptoopt{robust=True}{--robust}{use QML robust standard errors}
+	\item[]\maptoopt{verbose=True}{--verbose}{print details of numerical iterations}
+	\item[]\maptoopt{quiet=True}{--quiet}{suppress printing of results}
+	\item[]\maptoopt{vcv=True}{--vcv}{print covariance matrix}
+	\item[]\maptoopt{nc=True}{--nc}{exclude the constant from the mean equation}
+	\item[]\maptoopt{stdresid=True}{--stdresid}{standardize the residuals}
+	\item[]\maptoopt{fcp=True}{--fcp}{use the Fiorentini--Calzolari--Panattoni algorithm}
+	\item[]\maptoopt{arma\_init=True}{--arma-init}{initialize variance parameters using ARMA}
+\end{itemize}
+\noRformula\\\\
+\generaldesc{The model specification begins with the GARCH
+	and ARCH orders $p$ and $q$, followed by a semicolon and
+	the dependent variable with optional regressors.
+	The order $p$ specifies the GARCH component, while $q$
+	specifies the ARCH component. If $p>0$, then $q$ must
+	also be positive. The sum $p+q$ must not exceed 5.
+	
+	A constant is automatically included in the conditional
+	mean equation unless \pythcode{nc=True} is specified.
+	
+	When using Python lists, the lag orders and model variables
+	are represented by nested lists. For example, the specifications
+	\pythcode{"1 1 ; y x1 x2"} and
+	\pythcode{[[1, 1], ["y", "x1", "x2"]]}
+	are equivalent.
+	
+	By default, estimation uses the native BFGS algorithm,
+	and the covariance matrix is based on the Hessian.
+	The \pythcode{robust} option requests the QML (White)
+	covariance matrix, while \pythcode{fcp} selects the
+	Fiorentini--Calzolari--Panattoni algorithm.
+	
+	The variance parameters are initialized using an initial
+	OLS regression. With \pythcode{arma\_init=True}, starting
+	values are obtained from an ARMA model, which may improve
+	convergence.
+	
+	The residuals and estimated conditional variance are
+	available through the \gretlcmd{\$uhat} and
+	\gretlcmd{\$h} accessors, respectively.
+	With \pythcode{stdresid=True}, the residuals are divided
+	by the estimated conditional standard deviation.}
+
+\gretlfpycmd{heckit()}
+\estdesc{Specify a Heckman sample-selection model consisting
+	of an outcome equation and a selection equation. The dependent
+	variable in the selection equation must be binary.}
+\begin{lstlisting}[style=pythonstylefoot]
+gretl.heckit(formula: str | list[, OPTS]) -> gretl.Model_heckit
 \end{lstlisting}
 \mapto{heckit depvar indepvars ; selection ~equation}
 \begin{itemize}
+	\item[]\maptoopt{quiet=True}{--quiet}{suppress printing of results}
 	\item[]\maptoopt{two\_step=True}{--two-step}{perform two-step estimation}
 	\item[]\maptoopt{vcv=True}{--vcv}{print covariance matrix}
-	\item[]\maptoopt{opg=True}{--opg}{OPG standard errors}
-	\item[]\maptoopt{robust=True}{--robust}{robust standard errors}
-	\item[]\maptoopt{verbose=True}{--verbose}{print extra output}
+	\item[]\maptoopt{opg=True}{--opg}{use the Outer Product of the Gradient covariance matrix}
+	\item[]\maptoopt{robust=True}{--robust}{use QML robust standard errors}
+	\item[]\maptoopt{cluster="clustvar"}{--cluster=clustvar}{compute clustered standard errors}
+	\item[]\maptoopt{verbose=True}{--verbose}{print additional information}
 \end{itemize}
-\noRformula
+\noRformula\\
+\generaldesc{The specification consists of two equations separated
+	by a semicolon. The first equation describes the outcome variable,
+	while the second specifies the selection mechanism. The dependent
+	variable in the selection equation must be binary.
+	
+	When using Python lists, the two equations are represented
+	by nested lists. For example, the specifications
+	\pythcode{"y 0 x1 x2 ; ys 0 x3 x4"} and
+	\pythcode{[["y", 0, "x1", "x2"], ["ys", 0, "x3", "x4"]]}
+	are equivalent.
+	
+	By default, the model is estimated by maximum likelihood,
+	and the covariance matrix is computed using the negative
+	inverse of the Hessian. The \pythcode{opg} option selects
+	the Outer Product of the Gradient covariance matrix,
+	while \pythcode{robust} requests QML standard errors.
+	
+	With \pythcode{two\_step=True}, Heckman's two-step estimator
+	is used instead. In this case, the covariance matrix for
+	the outcome equation is adjusted to account for the
+	two-step estimation procedure.}
 
-\est{hsk}
-\estdesc{Applicable where heteroskedasticity is present in the form
-	of an unknown function of the regressors which can be approximated
-	by a quadratic relationship.}
+\gretlfpycmd{hsk()}
+\estdesc{Specify a heteroskedasticity-corrected linear regression
+	model, estimated by feasible weighted least squares.
+	The error variance is modeled as a function of the regressors.}
 \begin{lstlisting}[style=pythonstylefoot]
-gretl.hsk(formula: str[, data: gretl.Dataset, OPTS]) -> gretl.Model_hsk
+gretl.hsk(formula: str | list[, OPTS]) -> gretl.Model_hsk
 \end{lstlisting}
 \mapto{hsk depvar indepvars}
-\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
-	\item[]\maptoopt{no\_squares=True}{--no-squares}{\seegretlmanual}
+\begin{itemize}
+	\item[]\maptoopt{no\_squares=True}{--no-squares}{exclude squared regressors from the variance equation}
 	\item[]\maptoopt{vcv=True}{--vcv}{print covariance matrix}
+	\item[]\maptoopt{quiet=True}{--quiet}{suppress printing of results}
 \end{itemize}
+\generaldesc{The estimator is designed for models in which
+	heteroskedasticity can be approximated by a quadratic
+	function of the regressors. It may provide more efficient
+	coefficient estimates and consistent standard errors
+	compared with OLS.
+	
+	Estimation proceeds in three stages. First, the model
+	is estimated by OLS. Second, an auxiliary regression
+	of the logarithm of squared OLS residuals is performed
+	on the original regressors and, by default, their squares.
+	With \pythcode{no\_squares=True}, the squared regressors
+	are omitted.
+	
+	Finally, weighted least squares is performed using
+	the reciprocal of the estimated conditional error variance.
+	Specifically, the weights are calculated as
+	$w_i = 1/\exp(\hat{u}_i^*)$, where $\hat{u}_i^*$
+	denotes the fitted value from the auxiliary regression.
+	The exponential transformation ensures that the estimated
+	variances are positive.}
 
-\est{intreg}
-\estdesc{Estimates an interval regression model.}
+\gretlfpycmd{intreg()}
+\estdesc{Specify an interval regression model for estimation
+	by maximum likelihood, where the dependent variable is
+	observed within an interval rather than necessarily
+	as an exact value.}
 \begin{lstlisting}[style=pythonstylefoot]
-gretl.intreg(formula: str[, data: gretl.Dataset, OPTS]) -> gretl.Model_intreg
+gretl.intreg(formula: str | list[, OPTS]) -> gretl.Model_intreg
 \end{lstlisting}
 \mapto{intreg minvar maxvar indepvars}
 \begin{itemize}
-	\item[]\maptoopt{verbose=True}{--verbose}{print details of iterations}
-	\item[]\maptoopt{robust=True}{--robust}{robust standard errors}
-	\item[]\maptoopt{opg=True}{--opg}{\seegretlmanual}
-	\item[]\maptoopt{cluster=clustvar}{--cluster=clustvar}{\seegretlmanual}
+	\item[]\maptoopt{quiet=True}{--quiet}{suppress printing of results}
+	\item[]\maptoopt{verbose=True}{--verbose}{print details of numerical iterations}
+	\item[]\maptoopt{robust=True}{--robust}{use QML robust standard errors}
+	\item[]\maptoopt{opg=True}{--opg}{use the outer product of the gradient}
+	\item[]\maptoopt{cluster="clustvar"}{--cluster=clustvar}{use clustered standard errors}
 \end{itemize}
-\noRformula
+\noRformula\\\\
+\generaldesc{The model assumes a latent dependent variable
+	$y_i^* = x_i'\beta + u_i$, where the disturbance term
+	is normally distributed. Instead of observing $y_i^*$
+	directly, the data provide lower and upper bounds,
+	$m_i \leq y_i^* \leq M_i$.
+	
+	The first two variables in the model specification
+	define these bounds. Equal bounds represent exact
+	observations. Missing values in \pythcode{minvar}
+	indicate left-unbounded intervals, while missing
+	values in \pythcode{maxvar} indicate right-unbounded
+	intervals.
+	
+	Estimation is performed by maximum likelihood.
+	By default, the covariance matrix is computed as
+	the negative inverse of the Hessian. With
+	\pythcode{robust=True}, a QML (Huber--White)
+	sandwich covariance matrix is used instead.
+	Alternatively, \pythcode{opg=True} requests a
+	covariance matrix based solely on the outer product
+	of the gradient.}
 
-\est{lad}
+\gretlfpycmd{lad()}
 \estdesc{Calculates a regression that minimizes the sum of
-	the absolute deviations of the observed from the
-	fitted values of the dependent variable.}
+	absolute deviations between observed and fitted values
+	of the dependent variable.}
 \begin{lstlisting}[style=pythonstylefoot]
-gretl.lad(formula: str[, data: gretl.Dataset, OPTS]) -> gretl.Model_lad
+gretl.lad(formula: str | list[, OPTS]) -> gretl.Model_lad
 \end{lstlisting}
 \mapto{lad depvar indepvars}
 \begin{itemize}
 	\item[]\maptoopt{vcv=True}{--vcv}{print covariance matrix}
-	\item[]\maptoopt{no\_vcv=True}{--no-vcv}{don't compute covariance matrix}
+	\item[]\maptoopt{no\_vcv=True}{--no-vcv}{skip computation of covariance matrix and standard errors}
+	\item[]\maptoopt{quiet=True}{--quiet}{suppress printing of results}
 \end{itemize}
+\generaldesc{Coefficient estimates are obtained using the
+	Barrodale--Roberts simplex algorithm. A warning is issued
+	if the solution is not unique.
+	
+	By default, standard errors are computed using 500 bootstrap
+	replications. The covariance matrix, printed when
+	\pythcode{vcv=True} is specified, is based on the same
+	bootstrap procedure. The \pythcode{no\_vcv=True} option
+	skips this computation, in which case standard errors
+	are not available.
+	
+	LAD estimation may be relatively slow for large samples
+	or models with many regressors. In such cases, median
+	regression using \gretlfpycmd{quantreg()} may be preferable,
+	since it uses the faster Frisch--Newton algorithm and
+	provides analytical rather than bootstrap standard errors.}
 
-\est{logistic}
-\estdesc{Logistic regression: carries out an OLS
-	regression using the logistic transformation
-	of the dependent variable.}
+\gretlfpycmd{logistic()}
+\estdesc{Specify a linear model using a logistic transformation
+	of the dependent variable, estimated by ordinary least squares.
+	The dependent variable must be strictly positive.}
 \begin{lstlisting}[style=pythonstylefoot]
-gretl.logistic(formula: str[, data: gretl.Dataset, OPTS]) -> gretl.Model_logistic
+gretl.logistic(formula: str | list[, OPTS]) -> gretl.Model_logistic
 \end{lstlisting}
 \mapto{logistic depvar indepvars}
 \begin{itemize}
-	\item[]\maptoopt{robust=True}{--robust}{robust standard errors}
+	\item[]\maptoopt{ymax=50}{--ymax=50}{specify the asymptotic maximum of the dependent variable}
+	\item[]\maptoopt{robust=True}{--robust}{use robust standard errors}
+	\item[]\maptoopt{cluster="clustvar"}{--cluster=clustvar}{compute clustered standard errors}
 	\item[]\maptoopt{vcv=True}{--vcv}{print covariance matrix}
 	\item[]\maptoopt{fixed\_effects=True}{--fixed-effects}{estimate with group fixed effects}
+	\item[]\maptoopt{quiet=True}{--quiet}{suppress printing of results}
 \end{itemize}
+\generaldesc{The model is estimated by applying ordinary least
+	squares to a logistic transformation of the dependent variable.
+	The dependent variable must be strictly positive and bounded
+	above by an asymptotic maximum, denoted by $y^*$.
+	
+	If all observed values lie between 0 and 1, the default value
+	of $y^*$ is 1; otherwise, if they lie between 0 and 100, the
+	default is 100. A different maximum can be specified using
+	the \pythcode{ymax} option, provided it exceeds all observed
+	values of the dependent variable.
+	
+	Fitted values and residuals are transformed back to the
+	original scale using the inverse logistic transformation.
+	Since this transformation is nonlinear, the reported values
+	involve an approximation.
+	
+	For panel data, \pythcode{fixed\_effects=True} enables
+	estimation with individual fixed effects by subtracting
+	group means from the transformed dependent variable.
+	
+	For a binary dependent variable, the \gretlfpycmd{logit()}
+	estimator should be used instead.}
 
-\est{logit}
-\estdesc{By default the slopes with respect to each of
-	the independent variables are calculated (at the means
-	of those variables) and these slopes replace the usual
-	p-values in the regression output.}
+\gretlfpycmd{logit()}
+\estdesc{Specify a binary, ordered, or multinomial logit model
+	for estimation by maximum likelihood.}
 \begin{lstlisting}[style=pythonstylefoot]
-gretl.logit(formula: str[, data: gretl.Dataset, OPTS]) -> gretl.Model_logit
+gretl.logit(formula: str | list[, OPTS]) -> gretl.Model_logit
 \end{lstlisting}
 \mapto{logit depvar indepvars}
 \begin{itemize}
-	\item[]\maptoopt{robust=True}{--robust}{robust standard errors}
+	\item[]\maptoopt{robust=True}{--robust}{use QML (Huber--White) robust standard errors}
+	\item[]\maptoopt{cluster="clustvar"}{--cluster=clustvar}{compute clustered standard errors}
 	\item[]\maptoopt{multinomial=True}{--multinomial}{estimate multinomial logit}
 	\item[]\maptoopt{vcv=True}{--vcv}{print covariance matrix}
-	\item[]\maptoopt{verbose=True}{--verbose}{print details of iterations}
+	\item[]\maptoopt{verbose=True}{--verbose}{print details of numerical iterations}
+	\item[]\maptoopt{quiet=True}{--quiet}{suppress printing of results}
 	\item[]\maptoopt{p\_values=True}{--p-values}{show p-values instead of slopes}
-	\item[]\maptoopt{estrella=True}{--estrella}{select pseudo-R-squared variant}
+	\item[]\maptoopt{estrella=True}{--estrella}{use Estrella's pseudo-R-squared}
 \end{itemize}
+\generaldesc{For a binary dependent variable, the model is estimated
+	using binary logit. If the dependent variable is non-binary but
+	discrete, ordered logit is estimated by default. Multinomial
+	logit can be requested using \pythcode{multinomial=True}.
+	
+	For binary logit, the estimated coefficients represent effects
+	on the log odds. By default, slopes evaluated at the means
+	of the regressors are reported instead of p-values.
+	This behavior can be disabled using \pythcode{p\_values=True}.
+	
+	Standard errors are based on the negative inverse of the Hessian
+	by default. The \pythcode{robust} option requests QML
+	(Huber--White) standard errors, while \pythcode{cluster}
+	requests cluster-robust standard errors.
+	
+	By default, McFadden's pseudo-R-squared is reported.
+	For binary logit, Estrella's alternative can be selected
+	using \pythcode{estrella=True}.}
 
-\est{midasreg}
-\estdesc{Carries out least-squares estimation (either NLS or OLS,
-	depending on the specification) of a MIDAS (Mixed Data Sampling) model.}
+\gretlfpycmd{midasreg()}
+\estdesc{Specify a Mixed Data Sampling (MIDAS) regression model
+	for least-squares estimation, combining regressors observed
+	at different frequencies. Depending on the parameterization,
+	estimation uses OLS or nonlinear least squares (NLS).}
 \begin{lstlisting}[style=pythonstylefoot]
-gretl.midasreg(formula: str[, data: gretl.Dataset, OPTS]) -> gretl.Model_midasreg
+gretl.midasreg(formula: str[, OPTS]) -> gretl.Model_midasreg
 \end{lstlisting}
 \mapto{midasreg depvar indepvars ; MIDAS-terms}
 \begin{itemize}
 	\item[]\maptoopt{vcv=True}{--vcv}{print covariance matrix}
-	\item[]\maptoopt{robust=True}{--robust}{robust standard errors}
+	\item[]\maptoopt{robust=True}{--robust}{use robust standard errors}
 	\item[]\maptoopt{quiet=True}{--quiet}{suppress printing of results}
-	\item[]\maptoopt{levenberg=True}{--levenberg}{force use of the Levenberg–Marquardt algorithm}
+	\item[]\maptoopt{levenberg=True}{--levenberg}{use the Levenberg--Marquardt algorithm}
 \end{itemize}
+\generaldesc{The model specification consists of the dependent
+	variable and regressors observed at the same frequency,
+	followed by a semicolon and one or more higher-frequency
+	MIDAS terms. The latter are specified using either
+	\pythcode{mds()} or \pythcode{mdsl()}.
+	
+	The \pythcode{mds()} specification takes a MIDAS list,
+	minimum and maximum lag orders, a parameterization type,
+	and an optional initialization argument. The
+	\pythcode{mdsl()} specification uses a list containing
+	the required lags, followed by the parameterization type
+	and an optional initialization argument.
+	
+	Six parameterizations are supported:
+	\pythcode{umidas} (0), unrestricted MIDAS;
+	\pythcode{nealmon} (1), normalized exponential Almon;
+	\pythcode{beta0} (2), normalized beta with zero last lag;
+	\pythcode{betan} (3), normalized beta with non-zero last lag;
+	\pythcode{almonp} (4), non-normalized Almon polynomial;
+	and \pythcode{beta1} (5), beta with the first parameter
+	fixed at one.
+	
+	U-MIDAS specifications are estimated by OLS, while the
+	remaining parameterizations require nonlinear least squares.
+	Initial values for nonlinear parameters may be supplied
+	using a vector, requested automatically using
+	\pythcode{null} where supported, or specified by giving
+	the required number of parameters.
+	
+	For normalized exponential Almon and normalized beta
+	parameterizations, the default estimation procedure
+	combines constrained BFGS and OLS. The
+	\pythcode{levenberg=True} option forces use of the
+	Levenberg--Marquardt algorithm.}
 
-\est{mpols}
-\estdesc{Computes OLS estimates for the specified model using multiple
-	precision floating-point arithmetic.}
+\gretlfpycmd{mpols()}
+\estdesc{Specify a linear regression model for high-precision
+	OLS estimation using multiple-precision floating-point
+	arithmetic provided by the GNU Multiple Precision (GMP)
+	library.}
 \begin{lstlisting}[style=pythonstylefoot]
-gretl.mpols(formula: str[, data: gretl.Dataset, OPTS]) -> gretl.Model_mpols
+gretl.mpols(formula: str | list[, OPTS]) -> gretl.Model_mpols
 \end{lstlisting}
-\mapto{mpols depvar indepvars}
+\mapto{mpols depvar indepvars [; powers]}
 \begin{itemize}
 	\item[]\maptoopt{vcv=True}{--vcv}{print covariance matrix}
-	\item[]\maptoopt{simple\_print=True}{--simple-print}{do not print auxiliary statistics}
+	\item[]\maptoopt{simple\_print=True}{--simple-print}{suppress auxiliary model statistics}
+	\item[]\maptoopt{quiet=True}{--quiet}{suppress printing of results}
 \end{itemize}
+\generaldesc{Estimation uses multiple-precision floating-point
+	arithmetic, with 256 bits of precision by default.
+	The precision can be increased by setting the
+	\pythcode{GRETL\_MP\_BITS} environment variable before
+	starting Python.
+	
+	Optionally, a list of powers may be specified after a
+	semicolon. These powers are applied to the last regressor
+	in the model specification, and the resulting terms are
+	computed and stored using multiple-precision arithmetic.
+	
+	When using Python lists, the semicolon-separated components
+	are represented by nested lists. For example, the specifications
+	\pythcode{"y 0 x ; 2 3 4"} and
+	\pythcode{[["y", 0, "x"], [2, 3, 4]]}
+	are equivalent. Both specify a regression of $y$ on
+	a constant, $x$, $x^2$, $x^3$ and $x^4$.}
 
-\est{negbin}
-\estdesc{Estimates a Negative Binomial model. The dependent
-	variable is taken to represent a count of the occurrence
-	of events of some sort, and must have only non-negative
-	integer values.}
+\gretlfpycmd{negbin()}
+\estdesc{Specify a Negative Binomial regression model for estimation
+	by maximum likelihood. The dependent variable represents a count
+	and must contain only non-negative integer values.}
 \begin{lstlisting}[style=pythonstylefoot]
-gretl.negbin(formula: str[, data: gretl.Dataset, OPTS]) -> gretl.Model_negbin
+gretl.negbin(formula: str | list[, OPTS]) -> gretl.Model_negbin
 \end{lstlisting}
-\mapto{negbin depvar indepvars}
+\mapto{negbin depvar indepvars [; offset]}
 \begin{itemize}
-	\item[]\maptoopt{model1=True}{--model1}{use NegBin 1 model}
-	\item[]\maptoopt{robust=True}{--robust}{QML covariance matrix}
-	\item[]\maptoopt{opg=True}{--opg}{forces use of the OPG method}
+	\item[]\maptoopt{model1=True}{--model1}{use the NegBin 1 specification}
+	\item[]\maptoopt{robust=True}{--robust}{use QML robust standard errors}
+	\item[]\maptoopt{cluster="clustvar"}{--cluster=clustvar}{compute clustered standard errors}
+	\item[]\maptoopt{opg=True}{--opg}{use the Outer Product of the Gradient covariance matrix}
 	\item[]\maptoopt{vcv=True}{--vcv}{print covariance matrix}
-	\item[]\maptoopt{verbose=True}{--verbose}{print details of iterations}
+	\item[]\maptoopt{verbose=True}{--verbose}{print details of numerical iterations}
+	\item[]\maptoopt{quiet=True}{--quiet}{suppress printing of results}
 \end{itemize}
+\generaldesc{By default, the NegBin~2 specification is estimated,
+	with conditional variance $\mu(1+\alpha\mu)$, where $\mu$
+	denotes the conditional mean. The \pythcode{model1=True}
+	option selects the NegBin 1 specification, with conditional
+	variance $\mu(1+\alpha)$. The Poisson model corresponds
+	to the restricted case $\alpha=0$.
+	
+	An optional offset variable may be specified after a semicolon
+	in the model specification. Its logarithm enters the linear
+	predictor with a coefficient fixed at 1. The offset variable
+	must be strictly positive.
+	
+	When using Python lists, semicolon-separated variable lists
+	are represented by nested lists. For example, the specifications
+	\pythcode{"y 0 x1 x2 ; exposure"} and
+	\pythcode{[["y", "const", "x1", "x2"], ["exposure"]]}
+	are equivalent.
+	
+	By default, standard errors are based on a numerical
+	approximation to the Hessian. The \pythcode{opg} option
+	selects the Outer Product of the Gradient covariance matrix,
+	while \pythcode{robust} requests QML sandwich standard errors.
+	The \pythcode{cluster} option computes cluster-robust
+	standard errors.}
 
-\est{nls}
+\gretlfpycmd{nls()}
 \estdesc{Performs Nonlinear Least Squares (NLS) estimation using
 	a modified version of the Levenberg-Marquardt algorithm -- \experimental.}
 \begin{lstlisting}[style=pythonstylefoot]
@@ -267,79 +673,177 @@ gretl.nls(formula: str[, data: gretl.Dataset, OPTS]) -> gretl.Model_nls
 \mapto[none]{nls function [ derivatives ]}
 \generaldesc{\tbw}
 
-\est{ols}
-\estdesc{Computes ordinary least squares (OLS) estimates
-	with \texttt{depvar} as the dependent variable and
-	\texttt{indepvars} as the list of independent variables.}
+\gretlfpycmd{ols()}
+\estdesc{Specify a linear model for estimation by ordinary least squares (OLS).}
 \begin{lstlisting}[style=pythonstylefoot]
-gretl.ols(formula: str[, data: gretl.Dataset, OPTS]) -> gretl.Model_ols
+gretl.ols(formula: str | list[, OPTS]) -> gretl.Model_ols
 \end{lstlisting}
 \mapto{ols depvar indepvars}
 \begin{itemize}
 	\item[]\maptoopt{vcv=True}{--vcv}{print covariance matrix}
-	\item[]\maptoopt{robust=True}{--robust}{robust standard errors}
-	\item[]\maptoopt{jackknife=True}{--jackknife}{selecting an
-		\texttt{hc\_version} of 3a, \cite[see][]{gretl_command} for details}
-	\item[]\maptoopt{simple\_print=True}{--simple-print}{do not print auxiliary statistics}
-	\item[]\maptoopt{avova=True}{--avova}{print an ANOVA table}
-	\item[]\maptoopt{no\_df\_corr=True}{--no-df-corr}{suppress degrees of freedom correction}
+	\item[]\maptoopt{robust=True}{--robust}{use heteroskedasticity-robust standard errors}
+	\item[]\maptoopt{cluster="clustvar"}{--cluster=clustvar}{compute clustered standard errors}
+	\item[]\maptoopt{jackknife=True}{--jackknife}{use the HC3a variant of robust standard errors}
+	\item[]\maptoopt{simple\_print=True}{--simple-print}{suppress auxiliary model statistics}
+	\item[]\maptoopt{quiet=True}{--quiet}{suppress printing of results}
+	\item[]\maptoopt{anova=True}{--anova}{print an ANOVA table}
+	\item[]\maptoopt{no\_df\_corr=True}{--no-df-corr}{suppress degrees-of-freedom correction}
+	\item[]\maptoopt{print\_final=True}{--print-final}{print results only on the final loop iteration}
 \end{itemize}
+\generaldesc{The model may be specified using a \lgretl-style
+	variable list, a formula, or a Python list of variable names
+	or IDs. The dependent variable comes first, and the value
+	0 denotes the constant term.
+	
+	The \pythcode{robust} option computes heteroskedasticity-robust
+	standard errors using the currently selected HC estimator.
+	The \pythcode{jackknife} option selects HC3a, while
+	\pythcode{cluster} produces standard errors clustered by
+	the distinct values of the specified variable.
+	
+	By default, the estimated error variance uses a
+	degrees-of-freedom correction, which can be disabled using
+	\pythcode{no\_df\_corr=True}.
+	
+	The \pythcode{print\_final} option is applicable only within
+	loops and suppresses estimation output until the final iteration.}
 
-\est{panel}
-\estdesc{By default the fixed effects estimator is used; this is implemented
-	by subtracting the group or unit means from the original data.}
+\gretlfpycmd{panel()}
+\estdesc{Specify a linear panel-data model for estimation.
+	By default, the fixed-effects estimator is used, but
+	random-effects, pooled OLS, between-groups and
+	unit-weighted estimators are also available.}
 \begin{lstlisting}[style=pythonstylefoot]
-gretl.panel(formula: str[, data: gretl.Dataset, OPTS]) -> gretl.Model_panel
+gretl.panel(formula: str | list[, OPTS]) -> gretl.Model_panel
 \end{lstlisting}
 \mapto{panel depvar indepvars}
 \begin{itemize}
 	\item[]\maptoopt{vcv=True}{--vcv}{print covariance matrix}
 	\item[]\maptoopt{fixed\_effects=True}{--fixed-effects}{estimate with group fixed effects}
-	\item[]\maptoopt{random\_effects=True}{--random-effects}{random effects or GLS model}
-	\item[]\maptoopt{nerlove=True}{--nerlove}{use the Nerlove transformation}
+	\item[]\maptoopt{random\_effects=True}{--random-effects}{estimate a random-effects model}
+	\item[]\maptoopt{nerlove=True}{--nerlove}{use the Nerlove method}
 	\item[]\maptoopt{pooled=True}{--pooled}{estimate via pooled OLS}
 	\item[]\maptoopt{between=True}{--between}{estimate the between-groups model}
-	\item[]\maptoopt{robust=True}{--robust}{robust standard errors \cite[see][]{gretl_command}}
-	\item[]\maptoopt{unit\_weights=True}{--unit-weights}{weighted least squares}
-	\item[]\maptoopt{iterate=True}{--iterate}{iterative estimation}
+	\item[]\maptoopt{robust=True}{--robust}{use robust standard errors \cite[see][]{gretl_command}}
+	\item[]\maptoopt{cluster="cvar"}{--cluster=cvar}{compute clustered standard errors}
+	\item[]\maptoopt{time\_dummies=True}{--time-dummies}{include time dummy variables}
+	\item[]\maptoopt{unit\_weights=True}{--unit-weights}{estimate using unit-weighted least squares}
+	\item[]\maptoopt{iterate=True}{--iterate}{use iterative estimation}
 	\item[]\maptoopt{matrix\_diff=True}{--matrix-diff}{compute Hausman test via matrix difference}
-	\item[]\maptoopt{verbose=True}{--verbose}{more verbose output}
+	\item[]\maptoopt{unbalanced="bc"}{--unbalanced=bc}{use the Baltagi--Chang method for unbalanced panels}
+	\item[]\maptoopt{unbalanced="stata"}{--unbalanced=stata}{use the Stata-compatible method for unbalanced panels}
+	\item[]\maptoopt{quiet=True}{--quiet}{reduce printed output}
+	\item[]\maptoopt{verbose=True}{--verbose}{print additional estimation details}
 \end{itemize}
+\generaldesc{By default, the model is estimated using group
+	fixed effects, implemented by subtracting unit means
+	from the original data.
+	
+	With \pythcode{random\_effects=True}, the Swamy--Arora
+	estimator is used by default. The \pythcode{nerlove=True}
+	option selects the Nerlove method instead. For random-effects
+	models, \pythcode{matrix\_diff=True} requests the
+	matrix-difference form of the Hausman test.
+	
+	Alternatively, \pythcode{pooled=True} estimates pooled OLS,
+	while \pythcode{between=True} estimates a regression using
+	group means. With \pythcode{unit\_weights=True}, weighted
+	least squares is used, with weights based on unit-specific
+	residual variances. The \pythcode{iterate=True} option
+	enables iterative estimation in this case; convergence
+	yields maximum likelihood estimates.
+	
+	With \pythcode{robust=True}, the default covariance
+	estimator is the Arellano HAC estimator, clustered by
+	panel unit. Alternative estimators include Panel Corrected
+	Standard Errors (PCSE) and Driscoll--Kraay standard errors,
+	selectable through gretl's \gretlcmd{set panel_robust}
+	command. The \pythcode{cluster} option provides additional
+	clustering possibilities.
+	
+	For unbalanced random-effects models, the
+	\pythcode{unbalanced} option selects the ANOVA method.
+	Supported values are \pythcode{"bc"} for the
+	Baltagi--Chang method and \pythcode{"stata"} for
+	compatibility with Stata's \pythcode{xtreg, sa} estimator.}
 
-\est{poisson}
-\estdesc{The dependent variable is taken to represent the occurrence
-	of events of some sort, and must take on only non-negative integer values.}
+\gretlfpycmd{poisson()}
+\estdesc{Specify a Poisson regression model for estimation
+	by maximum likelihood. The dependent variable represents
+	a count and must contain only non-negative integer values.}
 \begin{lstlisting}[style=pythonstylefoot]
-gretl.poisson(formula: str[, data: gretl.Dataset, OPTS]) -> gretl.Model_poisson
+gretl.poisson(formula: str | list[, OPTS]) -> gretl.Model_poisson
 \end{lstlisting}
 \mapto{poisson depvar indepvars [; offset]}
 \begin{itemize}
-	\item[]\maptoopt{robust=True}{--robust}{robust standard errors}
+	\item[]\maptoopt{robust=True}{--robust}{use QML (Huber--White) robust standard errors}
+	\item[]\maptoopt{cluster="clustvar"}{--cluster=clustvar}{compute clustered standard errors}
 	\item[]\maptoopt{vcv=True}{--vcv}{print covariance matrix}
-	\item[]\maptoopt{verbose=True}{--verbose}{print details of iterations}
+	\item[]\maptoopt{verbose=True}{--verbose}{print details of numerical iterations}
+	\item[]\maptoopt{quiet=True}{--quiet}{suppress printing of results}
 \end{itemize}
-\noRformula
+\noRformula\\
+\generaldesc{The conditional mean of the dependent variable is modeled
+	as an exponential function of the regressors, corresponding to
+	a logarithmic link function.
+	
+	An optional offset variable may be specified after a semicolon
+	in the model specification. Its logarithm enters the linear
+	predictor with a coefficient fixed at 1. The offset variable
+	must be strictly positive.
+	
+	When using Python lists, semicolon-separated variable lists
+	are represented by nested lists. For example, the specifications
+	\pythcode{"y 0 x1 x2 ; exposure"} and
+	\pythcode{[["y", "const", "x1", "x2"], ["exposure"]]}
+	are equivalent.
+	
+	By default, standard errors are computed using the negative
+	inverse of the Hessian. The \pythcode{robust} option requests
+	QML (Huber--White) standard errors, while \pythcode{cluster}
+	requests cluster-robust standard errors.}
 
-\est{probit}
-\estdesc{By default the slopes with respect to each of
-	the independent variables are calculated (at the means
-	of those variables) and these slopes replace the usual
-	p-values in the regression output.}
+\gretlfpycmd{probit()}
+\estdesc{Specify a binary, ordered, or random-effects panel probit
+	model for estimation by maximum likelihood.}
 \begin{lstlisting}[style=pythonstylefoot]
-gretl.probit(formula: str[, data: gretl.Dataset, OPTS]) -> gretl.Model_probit
+gretl.probit(formula: str | list[, OPTS]) -> gretl.Model_probit
 \end{lstlisting}
 \mapto{probit depvar indepvars}
 \begin{itemize}
-	\item[]\maptoopt{robust=True}{--robust}{robust standard errors}
+	\item[]\maptoopt{robust=True}{--robust}{use QML (Huber--White) robust standard errors}
+	\item[]\maptoopt{cluster="clustvar"}{--cluster=clustvar}{compute clustered standard errors}
 	\item[]\maptoopt{vcv=True}{--vcv}{print covariance matrix}
-	\item[]\maptoopt{verbose=True}{--verbose}{print details of iterations}
+	\item[]\maptoopt{verbose=True}{--verbose}{print details of numerical iterations}
+	\item[]\maptoopt{quiet=True}{--quiet}{suppress printing of results}
 	\item[]\maptoopt{p\_values=True}{--p-values}{show p-values instead of slopes}
-	\item[]\maptoopt{estrella=True}{--estrella}{select pseudo-R-squared variant}
-	\item[]\maptoopt{random\_effects=True}{--random-effects}{estimates a
-		random effects panel probit model}
+	\item[]\maptoopt{estrella=True}{--estrella}{use Estrella's pseudo-R-squared}
+	\item[]\maptoopt{random\_effects=True}{--random-effects}{estimate a random-effects panel probit model}
+	\item[]\maptoopt{quadpoints=k}{--quadpoints=k}{set the number of Gauss--Hermite quadrature points}
 \end{itemize}
+\generaldesc{For a binary dependent variable, binary probit is estimated.
+	If the dependent variable is non-binary but discrete, ordered probit
+	is estimated instead.
+	
+	For binary probit, slopes evaluated at the means of the regressors
+	are reported instead of p-values by default. This behavior can be
+	disabled using \pythcode{p\_values=True}.
+	
+	Standard errors are based on the negative inverse of the Hessian
+	by default. The \pythcode{robust} option requests QML
+	(Huber--White) standard errors, while \pythcode{cluster}
+	requests cluster-robust standard errors.
+	
+	The \pythcode{random\_effects=True} option enables random-effects
+	probit estimation for panel data. The likelihood is evaluated using
+	Gauss--Hermite quadrature, with 32 quadrature points by default.
+	The number of points can be adjusted using \pythcode{quadpoints}.
+	
+	By default, McFadden's pseudo-R-squared is reported.
+	For binary probit, Estrella's alternative can be selected
+	using \pythcode{estrella=True}.}
 
-\est{system}
+\gretlfpycmd{system()}
 \estdesc{System of equations -- \experimental.}
 \begin{lstlisting}[style=pythonstylefoot]
 gretl.system(method: str[,data: gretl.Dataset, OPTS]) -> gretl.Model_NME
@@ -347,101 +851,260 @@ gretl.system(method: str[,data: gretl.Dataset, OPTS]) -> gretl.Model_NME
 \mapto[none]{system method=estimator}
 \generaldesc{\tbw}
 
-\est{quantreg}
+\gretlfpycmd{quantreg()}
 \estdesc{Quantile regression}
 \begin{lstlisting}[style=pythonstylefoot]
-gretl.quantreg(tau: float | numpy.array, formula: str[, data: gretl.Dataset, OPTS]) -> gretl.Model_quantreg
+gretl.quantreg(tau: float | numpy.ndarray, formula: str | list[, OPTS]) -> gretl.Model_quantreg
 \end{lstlisting}
 \mapto{quantreg tau depvar indepvars}
 \begin{itemize}
-	\item[]\maptoopt{robust=True}{--robust}{robust standard errors}
-	\item[]\maptoopt{intervals=True}{--intervals=[level]}{compute confidence intervals}
+	\item[]\maptoopt{robust=True}{--robust}{heteroskedasticity-robust standard errors or confidence intervals}
+	\item[]\maptoopt{intervals=True}{--intervals}{compute 90\% confidence intervals}
+	\item[]\maptoopt{intervals=0.95}{--intervals=0.95}{specify the confidence level}
 	\item[]\maptoopt{vcv=True}{--vcv}{print covariance matrix}
 	\item[]\maptoopt{quiet=True}{--quiet}{suppress printing of results}
 \end{itemize}
+\generaldesc{The argument \textit{tau} specifies a conditional
+	quantile or a sequence of quantiles, with values between
+	0.01 and 0.99. The regression specification follows the
+	same conventions as \gretlfpycmd{ols()}.
+	
+	By default, standard errors are computed using the asymptotic
+	method of Koenker and Bassett (1978). The \pythcode{robust}
+	option selects the heteroskedasticity-robust method of
+	Koenker and Zhao (1994).
+	
+	The \textit{intervals} option produces confidence intervals
+	instead of standard errors, using rank inversion. The default
+	confidence level is 90\%. With \pythcode{robust=True}, the
+	intervals follow Koenker and Machado (1999).
+	
+	When multiple quantiles are specified, the coefficient and
+	standard error results are matrices with one column per
+	quantile. The combined results are also available under
+	\pythcode{rq_sequence} in the model results.}
 
-\est{tobit}
-\estdesc{Estimates a Tobit model}
+\gretlfpycmd{tobit()}
+\estdesc{Specify a Tobit model for maximum-likelihood estimation.}
 \begin{lstlisting}[style=pythonstylefoot]
-gretl.tobit(formula: str[, data: gretl.Dataset, OPTS]) -> gretl.Model_tobit
+gretl.tobit(formula: str | list[, OPTS]) -> gretl.Model_tobit
 \end{lstlisting}
-\mapto{tobit tau depvar indepvars}
+\mapto{tobit depvar indepvars}
 \begin{itemize}
-	\item[]\maptoopt{llimit=lval}{--llimit=lval}{specify left bound}
-	\item[]\maptoopt{rlimit=lval}{--rlimit=lval}{specify right bound}
+	\item[]\maptoopt{llimit=lval}{--llimit=lval}{specify the left censoring bound}
+	\item[]\maptoopt{rlimit=rval}{--rlimit=rval}{specify the right censoring bound}
 	\item[]\maptoopt{vcv=True}{--vcv}{print covariance matrix}
-	\item[]\maptoopt{robust=True}{--robust}{robust standard errors}
-	\item[]\maptoopt{opg=True}{--opg}{standard errors are based on the outer product of the gradient alone}
-	\item[]\maptoopt{quiet=verbose}{--verbose}{print details of iterations}
+	\item[]\maptoopt{robust=True}{--robust}{use QML robust standard errors}
+	\item[]\maptoopt{opg=True}{--opg}{use the outer product of the gradient for the covariance matrix}
+	\item[]\maptoopt{cluster="clustvar"}{--cluster=clustvar}{compute cluster-robust standard errors}
+	\item[]\maptoopt{verbose=True}{--verbose}{print details of numerical iterations}
 	\item[]\maptoopt{quiet=True}{--quiet}{suppress printing of results}
 \end{itemize}
+\generaldesc{The Tobit model is appropriate for a censored dependent
+	variable. By default, the dependent variable is assumed to be
+	left-censored at zero and uncensored on the right.
+	
+	The \textit{llimit} and \textit{rlimit} options specify
+	alternative censoring bounds. If only \pythcode{rlimit} is
+	specified, the dependent variable is assumed to be uncensored
+	on the left.
+	
+	By default, the covariance matrix is based on the negative
+	inverse Hessian. The \pythcode{robust} option selects QML
+	(Huber--White) robust standard errors, while \pythcode{opg}
+	uses the outer product of the gradient. The \pythcode{cluster}
+	option specifies a variable identifying clusters for
+	cluster-robust inference.
+	
+	The Tobit model is a special case of interval regression.
+	See also \gretlfpycmd{intreg()}.}
 
-\est{tsls}
-\estdesc{Computes Instrumental Variables (IV) estimates,
-	by default using two-stage least squares (TSLS).}
+\gretlfpycmd{tsls()}
+\estdesc{Specify an instrumental-variables model for estimation,
+	by default using two-stage least squares (TSLS).
+	Limited Information Maximum Likelihood (LIML) and
+	Generalized Method of Moments (GMM) estimation are
+	also supported.}
 \begin{lstlisting}[style=pythonstylefoot]
-gretl.tsls(formula: str[, data: gretl.Dataset, OPTS]) -> gretl.Model_tsls
+gretl.tsls(formula: str | list[, OPTS]) -> gretl.Model_tsls
 \end{lstlisting}
 \mapto{tsls depvar indepvars ; instruments}
 \begin{itemize}
-	\item[]\maptoopt{no\_tests=True}{--no-tests }{don't do diagnostic tests}
+	\item[]\maptoopt{no\_tests=True}{--no-tests}{suppress diagnostic tests}
 	\item[]\maptoopt{vcv=True}{--vcv}{print covariance matrix}
-	\item[]\maptoopt{no\_df\_corr=True}{--no-df-corr }{no degrees-of-freedom correction}
-	\item[]\maptoopt{robust=True}{--robust}{robust standard errors}
+	\item[]\maptoopt{quiet=True}{--quiet}{suppress printing of results}
+	\item[]\maptoopt{no\_df\_corr=True}{--no-df-corr}{suppress degrees-of-freedom correction}
+	\item[]\maptoopt{robust=True}{--robust}{use robust standard errors}
+	\item[]\maptoopt{cluster="clustvar"}{--cluster=clustvar}{use clustered standard errors}
+	\item[]\maptoopt{matrix\_diff=True}{--matrix-diff}{use matrix-difference Hausman test}
 	\item[]\maptoopt{liml=True}{--liml}{use Limited Information Maximum Likelihood}
 	\item[]\maptoopt{gmm=True}{--gmm}{use the Generalized Method of Moments}
+	\item[]\maptoopt{two\_step=True}{--two-step}{use two-step GMM}
+	\item[]\maptoopt{iterate=True}{--iterate}{iterate GMM to convergence}
+	\item[]\maptoopt{weights="Wmat"}{--weights=Wmat}{specify GMM weighting matrix}
 \end{itemize}
+\generaldesc{The model specification consists of two variable
+	lists separated by a semicolon. The first specifies the
+	dependent variable and regressors, while the second
+	specifies the instruments. The instrument list must
+	contain at least as many variables as the regressor
+	list. Exogenous regressors should appear in both lists.
+	
+	When using Python lists, the two components are represented
+	by nested lists. For example, the specifications
+	\pythcode{"y 0 x1 x2 ; 0 x1 z1 z2"} and
+	\pythcode{[["y", 0, "x1", "x2"], [0, "x1", "z1", "z2"]]}
+	are equivalent.
+	
+	By default, TSLS estimation includes the Hausman test
+	of OLS consistency and, for overidentified models,
+	the Sargan test of overidentifying restrictions.
+	The corresponding statistics are available through
+	the \gretlcmd{\$hausman} and \gretlcmd{\$sargan}
+	accessors, respectively.
+	
+	For TSLS and LIML estimation under i.i.d.\ errors,
+	a weak-instruments test is also reported. With a single
+	endogenous regressor, the test is based on the first-stage
+	F statistic; otherwise, it uses the smallest eigenvalue
+	of the corresponding matrix statistic.
+	
+	The \pythcode{matrix\_diff=True} option selects the
+	matrix-difference method for the Hausman test instead
+	of the default regression-based method.
+	
+	Alternatively, \pythcode{liml=True} selects Limited
+	Information Maximum Likelihood estimation, while
+	\pythcode{gmm=True} selects the Generalized Method
+	of Moments. For just-identified models, these estimators
+	yield equivalent results, but they generally differ
+	for overidentified models.
+	
+	For GMM estimation, \pythcode{two\_step=True} enables
+	two-step estimation, \pythcode{iterate=True} iterates
+	the estimator to convergence, and \pythcode{weights}
+	specifies a weighting matrix. By default, the GMM
+	weighting matrix is the identity matrix.}
 
-\est{wls}
-\estdesc{Computes weighted least squares (WLS) estimates
-	using \texttt{wtvar} as the weight, \texttt{depvar}
-	as the dependent variable, and \texttt{indepvars}
-	as the list of independent variables.}
+\gretlfpycmd{wls()}
+\estdesc{Specify a linear model for estimation by weighted least squares (WLS).}
 \begin{lstlisting}[style=pythonstylefoot]
-gretl.wls(formula: str[, data: gretl.Dataset, OPTS]) -> gretl.Model_wls
+	gretl.wls(formula: str | list[, OPTS]) -> gretl.Model_wls
 \end{lstlisting}
 \mapto{wls wtvar depvar indepvars}
 \begin{itemize}
 	\item[]\maptoopt{vcv=True}{--vcv}{print covariance matrix}
-	\item[]\maptoopt{robust=True}{--robust}{robust standard errors}
-	\item[]\maptoopt{allow\_zeros=True}{--allow-zeros}{to mix zero weights with positive ones}
+	\item[]\maptoopt{robust=True}{--robust}{use heteroskedasticity-robust standard errors}
+	\item[]\maptoopt{quiet=True}{--quiet}{suppress printing of results}
+	\item[]\maptoopt{allow\_zeros=True}{--allow-zeros}{allow zero weights together with positive weights}
 \end{itemize}
-\noRformula
+\noRformula\\
+\generaldesc{The first variable specifies the weights, followed by
+	the dependent variable and regressors. The model can be specified
+	using a \lgretl-style variable list or a Python list of variable
+	names or IDs.
+	
+	WLS estimation is equivalent to OLS applied to the variables
+	multiplied by the square root of the weights, although the
+	coefficient of determination is computed differently.
+	
+	The weighting variable should normally contain strictly positive
+	values. If it is a binary variable, WLS is equivalent to OLS
+	on the subsample with nonzero weights. Other combinations of
+	zero and positive weights require \pythcode{allow\_zeros=True}.}
 
-\est{var}
-\estdesc{Sets up and estimates (using OLS) a vector autoregression (VAR)}
+\gretlfpycmd{var()}
+\estdesc{Specify a vector autoregression (VAR) model for estimation
+	by ordinary least squares.}
 \begin{lstlisting}[style=pythonstylefoot]
-gretl.var(order: int, ylist: str[, data: gretl.Dataset, OPTS]) -> gretl.Model_var
+gretl.var(order: int, ylist: str | list[, OPTS]) -> gretl.Model_var
 \end{lstlisting}
-\mapto{var order ylist [;xlist]}
+\mapto{var order ylist [; xlist]}
 \begin{itemize}
+	\item[]\maptoopt{xlist="x1 x2"}{; xlist}{include exogenous regressors}
 	\item[]\maptoopt{nc=True}{--nc}{do not include a constant}
 	\item[]\maptoopt{trend=True}{--trend}{include a linear trend}
 	\item[]\maptoopt{seasonals=True}{--seasonals}{include seasonal dummy variables}
-	\item[]\maptoopt{robust=True}{--robust}{robust standard errors}
+	\item[]\maptoopt{robust=True}{--robust}{heteroskedasticity-robust standard errors}
 	\item[]\maptoopt{robust\_hac=True}{--robust-hac}{HAC standard errors}
-	\item[]\maptoopt{quiet=True}{--quiet}{skip output of individual equations}
-	\item[]\maptoopt{silent=True}{--silent}{don't print anything}
+	\item[]\maptoopt{quiet=True}{--quiet}{suppress output of individual equations}
+	\item[]\maptoopt{silent=True}{--silent}{suppress all printed output}
 	\item[]\maptoopt{impulse\_responses=True}{--impulse-responses}{print impulse responses}
-	\item[]\maptoopt{variance\_decomp=True}{--variance-decomp}{print variance decompositions}
+	\item[]\maptoopt{variance\_decomp=True}{--variance-decomp}{print forecast-error variance decompositions}
+	\item[]\maptoopt{lagselect=True}{--lagselect}{perform lag-order selection}
+	\item[]\maptoopt{minlag=0}{--minlag=0}{specify minimum lag order for lag selection}
 \end{itemize}
-\noRformula
+\noRformula\\
+\generaldesc{The argument \pythcode{order} specifies the VAR lag
+	order, while \pythcode{ylist} identifies the endogenous variables.
+	Their lags are generated automatically. Optional exogenous
+	regressors can be specified via \pythcode{xlist}.
+	
+	A constant is included by default, unless \pythcode{nc=True}
+	is specified. A linear trend and seasonal dummy variables may
+	be added using the corresponding options.
+	
+	Impulse responses and forecast-error variance decompositions
+	are based on the Cholesky decomposition of the contemporaneous
+	covariance matrix. Their results therefore depend on the
+	ordering of endogenous variables in \pythcode{ylist}.
+	
+	With \pythcode{lagselect=True}, \pythcode{order} is interpreted
+	as the maximum lag order. The resulting table reports
+	likelihood-ratio tests and the AIC, BIC and HQC information
+	criteria. The \pythcode{minlag} option controls the minimum
+	lag order considered.}
 
-\est{vecm}
-\estdesc{A VECM model}
+\gretlfpycmd{vecm()}
+\estdesc{Specify a vector error-correction model (VECM) for
+	cointegrated time series.}
 \begin{lstlisting}[style=pythonstylefoot]
-gretl.vecm(order: int, rank: int, ylist: str[, data: gretl.Dataset, OPTS]) -> gretl.Model_vecm
+gretl.vecm(order: int, rank: int, ylist: str | list[, OPTS]) -> gretl.Model_vecm
 \end{lstlisting}
-\mapto{var order ylist [;xlist]}
+\mapto{vecm order rank ylist [; xlist] [; rxlist]}
 \begin{itemize}
-	\item[]\maptoopt{nc=True}{--nc}{no constant}
-	\item[]\maptoopt{trend=True}{--trend}{include a linear trend}
-	\item[]\maptoopt{seasonals=True}{--seasonals}{include seasonal dummy variables}
-	\item[]\maptoopt{robust=True}{--robust}{robust standard errors}
-	\item[]\maptoopt{robust\_hac=True}{--robust-hac}{HAC standard errors}
-	\item[]\maptoopt{quiet=True}{--quiet}{skip output of individual equations}
-	\item[]\maptoopt{silent=True}{--silent}{don't print anything}
+	\item[]\maptoopt{nc=True}{--nc}{include no constant}
+	\item[]\maptoopt{rc=True}{--rc}{include a restricted constant}
+	\item[]\maptoopt{uc=True}{--uc}{include an unrestricted constant}
+	\item[]\maptoopt{crt=True}{--crt}{include a constant and restricted trend}
+	\item[]\maptoopt{ct=True}{--ct}{include a constant and unrestricted trend}
+	\item[]\maptoopt{seasonals=True}{--seasonals}{include centered seasonal dummy variables}
+	\item[]\maptoopt{quiet=True}{--quiet}{suppress output of individual equations}
+	\item[]\maptoopt{silent=True}{--silent}{suppress all printed output}
 	\item[]\maptoopt{impulse\_responses=True}{--impulse-responses}{print impulse responses}
-	\item[]\maptoopt{variance\_decomp=True}{--variance-decomp}{print variance decompositions}
+	\item[]\maptoopt{variance\_decomp=True}{--variance-decomp}{print forecast-error variance decompositions}
 \end{itemize}
-\noRformula
+\noRformula\\
+\generaldesc{The argument \pythcode{order} specifies the lag order
+	of the underlying VAR system. The corresponding VECM contains
+	\pythcode{order - 1} lags of the differenced endogenous variables.
+	The argument \pythcode{rank} specifies the cointegration rank,
+	which must be positive and cannot exceed the number of
+	endogenous variables.
+	
+	The variables in \pythcode{ylist} should be integrated of
+	order one and are specified in levels. Optional exogenous
+	variables may be supplied through \pythcode{xlist} and
+	\pythcode{rxlist}, separated by semicolons. Variables in
+	\pythcode{xlist} enter the model unrestrictedly, while those
+	in \pythcode{rxlist} are restricted to the cointegration space.
+	
+	By default, an unrestricted constant is included (Johansen's
+	case 3). The mutually exclusive options \pythcode{nc},
+	\pythcode{rc}, \pythcode{crt} and \pythcode{ct} select
+	alternative deterministic specifications (cases 1, 2, 4
+	and 5, respectively). The \pythcode{uc} option explicitly
+	selects the default specification.
+	
+	The \pythcode{seasonals} option adds centered seasonal dummy
+	variables and is available for quarterly and monthly data.
+	
+	Impulse responses and forecast-error variance decompositions
+	are based on Cholesky identification and therefore depend
+	on the ordering of endogenous variables.
+	
+	Following estimation, the Johansen adjustment and
+	cointegration matrices are available through the
+	\pythcode{jalpha} and \pythcode{jbeta} model results,
+	while \pythcode{jvbeta} provides the estimated variance
+	matrix of the cointegrating coefficients.}
