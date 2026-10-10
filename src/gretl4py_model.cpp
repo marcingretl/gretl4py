@@ -290,8 +290,7 @@ GretlBundlePtr GretlModel::do_restrict_ (T *model, const py::list &impose, const
 
 //T = { MODEL, void }
 template <typename T>
-void GretlModel::gretl_do_forecast_ (void *model, const py::args &args,
-                                     const py::kwargs &kwargs)
+void GretlModel::gretl_do_forecast_ (void *model, const py::args &args, const py::kwargs &kwargs)
 {
     //
     // method calls libgretl's do_forecast() function

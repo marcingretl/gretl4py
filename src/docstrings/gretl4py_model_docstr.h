@@ -537,6 +537,9 @@ namespace doc::Model {
 
     Other Parameters
     ----------------
+    data : gretl.Dataset, optional
+        Dataset to use for model estimation. If omitted, the currently
+        default dataset is used.
     vcv : bool
         Print the covariance matrix of the coefficient estimates.
     robust : bool
@@ -601,6 +604,9 @@ namespace doc::Model {
 
     Other Parameters
     ----------------
+    data : gretl.Dataset, optional
+        Dataset to use for model estimation. If omitted, the currently
+        default dataset is used.
     vcv : bool
         Print the covariance matrix of the coefficient estimates.
     robust : bool
@@ -646,6 +652,9 @@ namespace doc::Model {
 
     Other Parameters
     ----------------
+    data : gretl.Dataset, optional
+        Dataset to use for model estimation. If omitted, the currently
+        default dataset is used.
     robust : bool
         Use QML (Huber-White) robust standard errors.
     cluster : str
@@ -704,6 +713,9 @@ namespace doc::Model {
 
     Other Parameters
     ----------------
+    data : gretl.Dataset, optional
+        Dataset to use for model estimation. If omitted, the currently
+        default dataset is used.
     robust : bool
         Use QML (Huber-White) robust standard errors.
     cluster : str
@@ -768,6 +780,9 @@ namespace doc::Model {
 
     Other Parameters
     ----------------
+    data : gretl.Dataset, optional
+        Dataset to use for model estimation. If omitted, the currently
+        default dataset is used.
     offset : str
         Name of a strictly positive scale variable. Its logarithm is added
         to the linear predictor with a coefficient fixed at 1.
@@ -825,6 +840,9 @@ namespace doc::Model {
 
     Other Parameters
     ----------------
+    data : gretl.Dataset, optional
+        Dataset to use for model estimation. If omitted, the currently
+        default dataset is used.
     model1 : bool
         Use the NegBin 1 specification instead of NegBin 2.
     robust : bool
@@ -889,6 +907,9 @@ namespace doc::Model {
 
     Other Parameters
     ----------------
+    data : gretl.Dataset, optional
+        Dataset to use for model estimation. If omitted, the currently
+        default dataset is used.
     vcv : bool
         Print the covariance matrix of the coefficient estimates.
     robust : bool
@@ -954,6 +975,9 @@ namespace doc::Model {
 
     Other Parameters
     ----------------
+    data : gretl.Dataset, optional
+        Dataset to use for model estimation. If omitted, the currently
+        default dataset is used.
     exponential : bool
         Use the exponential distribution.
     loglogistic : bool
@@ -1014,6 +1038,9 @@ namespace doc::Model {
 
     Other Parameters
     ----------------
+    data : gretl.Dataset, optional
+        Dataset to use for model estimation. If omitted, the currently
+        default dataset is used.
     quiet : bool
         Suppress printed output.
     two_step : bool
@@ -1072,6 +1099,9 @@ namespace doc::Model {
 
     Other Parameters
     ----------------
+    data : gretl.Dataset, optional
+        Dataset to use for model estimation. If omitted, the currently
+        default dataset is used.
     ymax : float
         Specify the asymptotic maximum of the dependent variable. It must
         exceed all observed values.
@@ -1128,6 +1158,9 @@ namespace doc::Model {
 
     Other Parameters
     ----------------
+    data : gretl.Dataset, optional
+        Dataset to use for model estimation. If omitted, the currently
+        default dataset is used.
     vcv : bool
         Print the covariance matrix of the coefficient estimates.
     quiet : bool
@@ -1170,6 +1203,9 @@ namespace doc::Model {
 
     Other Parameters
     ----------------
+    data : gretl.Dataset, optional
+        Dataset to use for model estimation. If omitted, the currently
+        default dataset is used.
     hilu : bool
         Use the Hildreth-Lu search procedure.
     pwe : bool
@@ -1229,6 +1265,9 @@ namespace doc::Model {
 
     Other Parameters
     ----------------
+    data : gretl.Dataset, optional
+        Dataset to use for model estimation. If omitted, the currently
+        default dataset is used.
     vcv : bool
         Print the covariance matrix of the coefficient estimates.
     no_vcv : bool
@@ -1282,6 +1321,9 @@ namespace doc::Model {
 
     Other Parameters
     ----------------
+    data : gretl.Dataset, optional
+        Dataset to use for model estimation. If omitted, the currently
+        default dataset is used.
     robust : bool
         Use QML (White) robust standard errors.
     verbose : bool
@@ -1349,6 +1391,9 @@ namespace doc::Model {
 
     Other Parameters
     ----------------
+    data : gretl.Dataset, optional
+        Dataset to use for model estimation. If omitted, the currently
+        default dataset is used.
     vcv : bool
         Print the covariance matrix of the coefficient estimates.
     simple_print : bool
@@ -1397,6 +1442,9 @@ namespace doc::Model {
 
     Other Parameters
     ----------------
+    data : gretl.Dataset, optional
+        Dataset to use for model estimation. If omitted, the currently
+        default dataset is used.
     vcv : bool
         Print the covariance matrix of the coefficient estimates.
     fixed_effects : bool
@@ -1479,6 +1527,9 @@ namespace doc::Model {
 
     Other Parameters
     ----------------
+    data : gretl.Dataset, optional
+        Dataset to use for model estimation. If omitted, the currently
+        default dataset is used.
     no_tests : bool
         Suppress diagnostic tests.
     vcv : bool
@@ -1556,6 +1607,9 @@ namespace doc::Model {
 
     Other Parameters
     ----------------
+    data : gretl.Dataset, optional
+        Dataset to use for model estimation. If omitted, the currently
+        default dataset is used.
     no_squares : bool
         Exclude squared regressors from the auxiliary variance regression.
     vcv : bool
@@ -1610,6 +1664,9 @@ namespace doc::Model {
 
     Other Parameters
     ----------------
+    data : gretl.Dataset, optional
+        Dataset to use for model estimation. If omitted, the currently
+        default dataset is used.
     quiet : bool
         Suppress printed output.
     verbose : bool
@@ -1664,6 +1721,9 @@ namespace doc::Model {
 
     Other Parameters
     ----------------
+    data : gretl.Dataset, optional
+        Dataset to use for model estimation. If omitted, the currently
+        default dataset is used.
     vcv : bool
         Print the covariance matrix of the coefficient estimates.
     robust : bool
@@ -1730,6 +1790,9 @@ namespace doc::Model {
 
     Other Parameters
     ----------------
+    data : gretl.Dataset, optional
+        Dataset to use for model estimation. If omitted, the currently
+        default dataset is used.
     verbose : bool
         Print details of the numerical iterations.
     quiet : bool
@@ -1804,6 +1867,9 @@ namespace doc::Model {
 
     Other Parameters
     ----------------
+    data : gretl.Dataset, optional
+        Dataset to use for model estimation. If omitted, the currently
+        default dataset is used.
     robust : bool
         Use heteroskedasticity-robust standard errors or confidence intervals.
     intervals : bool or float
@@ -1863,6 +1929,9 @@ namespace doc::Model {
 
     Other Parameters
     ----------------
+    data : gretl.Dataset, optional
+        Dataset to use for model estimation. If omitted, the currently
+        default dataset is used.
     quiet : bool
         Suppress printed output.
     vcv : bool
@@ -1933,6 +2002,9 @@ namespace doc::Model {
 
     Other Parameters
     ----------------
+    data : gretl.Dataset, optional
+        Dataset to use for model estimation. If omitted, the currently
+        default dataset is used.
     llimit : float
         Specify the left censoring bound.
     rlimit : float
@@ -1996,6 +2068,9 @@ namespace doc::Model {
 
     Other Parameters
     ----------------
+    data : gretl.Dataset, optional
+        Dataset to use for model estimation. If omitted, the currently
+        default dataset is used.
     xlist : str or list
         Exogenous variables to include in each equation.
     nc : bool
@@ -2073,6 +2148,9 @@ namespace doc::Model {
 
     Other Parameters
     ----------------
+    data : gretl.Dataset, optional
+        Dataset to use for model estimation. If omitted, the currently
+        default dataset is used.
     xlist : str or list
         Exogenous variables that enter the model unrestrictedly.
     rxlist : str or list

@@ -98,9 +98,10 @@ gretl.ar1(formula: str | list[, OPTS]) -> gretl.Model_ar1
 	no effect with other estimators.}
 
 \gretlfpycmd{arima()}
-\estdesc{Specify an ARIMA, SARIMA or ARIMAX model for maximum-likelihood estimation.}
+\estdesc{Specify an ARIMA, SARIMA or ARIMAX model for
+	maximum-likelihood estimation.}
 \begin{lstlisting}[style=pythonstylefoot]
-gretl.arima(depvar: str, order: tuple(int, int, int)[, seasonal: tuple(int, int, int) = None, indepvars: str | list = None, OPTS]) -> gretl.Model_arima
+gretl.arima(depvar: str, order: tuple[, seasonal: tuple = None, indepvars: str | list = None, OPTS]) -> gretl.Model_arima
 \end{lstlisting}
 \mapto{arima p d q [; P D Q] ; depvar [indepvars]}
 \begin{itemize}
@@ -116,27 +117,40 @@ gretl.arima(depvar: str, order: tuple(int, int, int)[, seasonal: tuple(int, int,
 	\item[]\maptoopt{y\_diff\_only=True}{--y-diff-only}{difference only the dependent variable}
 	%\item[]\maptoopt{lagselect=True}{--lagselect}{perform lag-order selection}
 \end{itemize}
-\generaldesc{The argument \pythcode{order} specifies the non-seasonal
-	ARIMA orders $(p,d,q)$, while \pythcode{seasonal} optionally specifies
-	the seasonal orders $(P,D,Q)$. Exogenous regressors can be supplied
-	via \pythcode{x} to specify an ARIMAX model.
+\generaldesc{The argument \pythcode{depvar} specifies the
+	dependent variable, while \pythcode{order} defines the
+	non-seasonal ARIMA orders $(p,d,q)$. The optional
+	\pythcode{seasonal} argument specifies the seasonal
+	orders $(P,D,Q)$. Exogenous regressors can be supplied
+	via \pythcode{indepvars} to specify an ARIMAX model.
 	
-	By default, estimation uses exact maximum likelihood. The
-	\pythcode{conditional} option selects conditional maximum likelihood.
-	Under native exact ML, the covariance matrix is based on the
-	numerical Hessian, with fallback to the outer product of the
-	gradient (OPG). The \pythcode{hessian} and \pythcode{opg} options
-	control this behavior.
+	In the absence of exogenous regressors, a constant is
+	included by default unless \pythcode{nc=True} is specified.
+	When exogenous regressors are present, the constant must
+	be included explicitly in \pythcode{indepvars}.
 	
-	For ARIMAX models with non-zero differencing, both the dependent
-	variable and the regressors are differenced by default.
-	The \pythcode{y\_diff\_only} option leaves the regressors in levels.
+	By default, estimation uses native exact maximum likelihood.
+	Conditional maximum likelihood can be selected using
+	\pythcode{conditional=True}. Alternatively, estimation
+	can be performed using X-12-ARIMA or X-13ARIMA-SEATS.
 	
-%	With \pythcode{lagselect=True}, the AR and MA orders are treated
-%	as maximum orders, and a table of information criteria and
-%	log-likelihood values is produced instead of estimates for
-%	a single specification.
-	}
+	Under native exact ML, the covariance matrix is based
+	on the numerical Hessian, with fallback to the outer
+	product of the gradient (OPG). The mutually exclusive
+	options \pythcode{hessian=True} and \pythcode{opg=True}
+	control this behavior. The \pythcode{lbfgs=True} option
+	selects the L-BFGS-B maximizer instead of BFGS.
+	
+	For ARIMAX models with non-zero differencing, both the
+	dependent variable and the regressors are differenced
+	by default. The \pythcode{y\_diff\_only=True} option
+	leaves the regressors in levels.
+	
+	%With \pythcode{lagselect=True}, the AR and MA orders are
+	%treated as maximum orders, and a table of information
+	%criteria and log-likelihood values is produced instead
+	%of estimates for a single specification.
+}
 
 \gretlfpycmd{biprobit()}
 \estdesc{Specify a bivariate probit model for estimation

@@ -2,6 +2,7 @@ version 0.63:
     - model-based tests: fix bug where 'varlist' was passed as list
     - add() and omit() tests: 'auto' option works fine
     - new GretlDataset::ljungbox() method
+    - arima(): rename the positional argument 'y' to 'depvar' and the keyword-only argument 'xlist' to 'indepvars' for consistency with other estimators
     - some doc updates
 
 version 0.62:

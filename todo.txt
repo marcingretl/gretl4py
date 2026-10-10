@@ -11,3 +11,5 @@ TODOS:
 3. improve plotting
 
 4. finalize API for mle, nls, gmm and system estimators
+
+5. make ::fcast() return bundle
