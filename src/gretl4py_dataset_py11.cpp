@@ -45,7 +45,7 @@ void head_tail_print (GretlDataset &dataset, int nobs)
     } else if constexpr (mode == TAIL) {
         opts["tail"] = nobs;
     } else {
-        static_assert(always_false<HeadTail>, "head_tail_print: unknown mode");
+        static_assert(always_false<std::integral_constant<HeadTail, mode>>, "head_tail_print: unknown mode");
     }
 
     dataset.print("", opts);

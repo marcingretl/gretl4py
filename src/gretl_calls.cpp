@@ -813,7 +813,7 @@ GretlMatrixPtr matrix_cov_corr (const py::array &X, int dfcorr)
     } else if constexpr (FI == GretlFunIndex::F_MCORR) {
         res.reset(gretl_covariance_matrix(mat.get(), 1, 1, &err));
     } else {
-        static_assert(always_false<GretlFunIndex>, "matrix_cov_corr: unknown GretlFunIndex value");
+        static_assert(always_false<std::integral_constant<GretlFunIndex, FI>>, "matrix_cov_corr: unknown GretlFunIndex value");
     }
     if (err) handle_gretl_error(err);
 
@@ -838,7 +838,7 @@ GretlMatrixPtr matrix_cov_corr (const GretlMatrixPtr &X, int dfcorr)
     } else if constexpr (FI == GretlFunIndex::F_MCORR) {
         mat.reset(gretl_covariance_matrix(X->get_ptr(), 1, 1, &err));
     } else {
-        static_assert(always_false<GretlFunIndex>, "matrix_cov_corr: unknown GretlFunIndex value");
+        static_assert(always_false<std::integral_constant<GretlFunIndex, FI>>, "matrix_cov_corr: unknown GretlFunIndex value");
     }
     if (err) handle_gretl_error(err);
 
