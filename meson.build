@@ -194,16 +194,32 @@ ext_mod = python.extension_module(
 )
 
 ###########################################################################
-# Copy binary to gretl
+# Copy binary to gretl (development and wheel packaging)
 ###########################################################################
-python_cmd = [python, '-c', 'import sys, shutil; shutil.copy2(sys.argv[1], sys.argv[2])']
-copy_cmd = python_cmd + ['@INPUT@', join_paths(build_output_dir, gretl_mod_filename)]
-
-copy_binary_part = custom_target('copy_binary_to_gretl',
+copy_binary_part = custom_target(
+  'copy_binary_to_gretl',
   input: ext_mod,
   output: 'copied-stamp',
-  command: copy_cmd,
-  build_by_default: true
+  command: [
+    python, '-c',
+    '''
+    import pathlib
+    import shutil
+    import sys
+
+    src = pathlib.Path(sys.argv[1])
+    dst = pathlib.Path(sys.argv[2])
+    stamp = pathlib.Path(sys.argv[3])
+
+    dst.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(src, dst)
+    stamp.touch()
+    ''',
+    '@INPUT@',
+    build_output_dir / gretl_mod_filename,
+    '@OUTPUT@',
+  ],
+  build_by_default: true,
 )
 
 ###########################################################################
