@@ -139,15 +139,15 @@ public:
 class GretlModel_NSE_arima : public GretlModel_NSE
 {
 private:
-    const std::string y_;   // name of y process
-    int y_number_;          // number of y process in the context of GD
-    int seasonal_ = 0;      // number of seasonal elements
-    int exogenous_ = 0;     // number of exogenous variables
-    gretl_list_ptr xlist_;  // list of exogenous variables
+    const std::string y_;       // name of y process
+    int y_number_;              // number of y process in the context of GD
+    int seasonal_ = 0;          // number of seasonal elements
+    int exogenous_ = 0;         // number of exogenous variables
+    gretl_list_ptr indepvars_;  // list of exogenous variables
     int p_, d_, q_;
     int P_, D_, Q_;
 public:
-    GretlModel_NSE_arima (const std::string &y, const py::tuple &tup, const py::kwargs &kwargs);
+    GretlModel_NSE_arima (const std::string &depvar, const py::tuple &tup, const py::kwargs &kwargs);
     ~GretlModel_NSE_arima (void);
 
     void fit (void) override;

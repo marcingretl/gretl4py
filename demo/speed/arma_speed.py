@@ -7,7 +7,7 @@ res = gretl.Matrix(9,2)
 
 # arma model via gretl
 t0 = time.time()
-gmod = gretl.arima(y="y", order=arimaSpec, data=MyDict).fit()
+gmod = gretl.arima(depvar="y", order=arimaSpec, data=MyDict).fit()
 t1 = time.time() - t0
 res.numpy_view[:, 0] = gmod.coeff.numpy_view
 

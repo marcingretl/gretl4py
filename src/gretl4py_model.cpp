@@ -89,29 +89,33 @@ GretlModel::GretlModel (GretlObjType model_obj_type, GretlCmdIndex ci, const py:
                 // special case: we use already allocated object of GretlDataset class
                 this->dataset_ = item.second.cast<GretlDatasetPtr>();
                 continue;
-            } else if (key == "quiet" && !(ci_ == VAR || ci_ == VECM)) {
-                throw std::invalid_argument("invalid option flag: " + key);
+            } else if (key == "indepvars" && ci_ == ARMA) {
+                // ARIMA special: here we only check if 'indepvars' is a string or list, but we must do something with it elsewhere
+                if (!is_pystr(item.second) && !is_pylist(item.second)) throw std::invalid_argument("'indepvars' must be a string or list");
+                continue;
             } else if (key == "seasonal" && ci_ == ARMA) {
-                // arima special: we check seasonal
+                // ARIMA special: we check seasonal
                 if (!is_pytuple(kwargs["seasonal"])) throw std::invalid_argument("'seasonal' must be a tuple");
                 continue;
             } else if (key == "lagselect" && (ci_ == ARMA || ci_ == VAR)) {
                 throw std::invalid_argument("'lagselect' option for (S)ARIMA and VAR is temporarily unavailable");
-            } else if ((key == "llimit" || key == "rlimit") && ci_ == TOBIT) {
-                // TOBIT special: we check (l/r)limit
-                if (!is_pynumeric(item.second)) throw std::invalid_argument("both 'llimit' and 'rlimit' must be numeric");
-                continue;
-            } else if (key == "xlist" && (ci_ == ARMA || ci_ == VAR || ci_ == VECM)) {
-                // var special: here we only check if xlist is a string or list, but we must do something with it elsewhere
+            } else if (key == "quiet" && !(ci_ == VAR || ci_ == VECM)) {
+                throw std::invalid_argument("invalid option flag: " + key);
+            } else if (key == "xlist" && (ci_ == VAR || ci_ == VECM)) {
+                // VAR/VECM special: here we only check if xlist is a string or list, but we must do something with it elsewhere
                 if (!is_pystr(item.second) && !is_pylist(item.second)) throw std::invalid_argument("'xlist' must be a string or list");
                 continue;
             } else if (key == "rxlist" && ci_ == VECM) {
-                // var special: here we only check if rxlist is a string or list, but we must do something with it elsewhere
+                // VECM special: here we only check if rxlist is a string or list, but we must do something with it elsewhere
                 if (!is_pystr(item.second) && !is_pylist(item.second)) throw std::invalid_argument("'rxlist' must be a string or list");
                 continue;
             } else if (key == "instruments" && ci_ == DPANEL) {
-                // var special: here we only check if instruments is a string, but we must do something with it elsewhere
+                // DPANEL special: here we only check if instruments is a string, but we must do something with it elsewhere
                 if (!is_pystr(item.second)) throw std::invalid_argument("'instruments' must be a string");
+                continue;
+            } else if ((key == "llimit" || key == "rlimit") && ci_ == TOBIT) {
+                // TOBIT special: we check (l/r)limit
+                if (!is_pynumeric(item.second)) throw std::invalid_argument("both 'llimit' and 'rlimit' must be numeric");
                 continue;
             } else if ((key == "params" || key == "param_names" || key == "initvals") && (ci_ == NLS || ci_ == MLE || ci_ == GMM)) {
                 // NLS/MLE/GMM special case: we deal with these in class constructor
@@ -157,9 +161,8 @@ void GretlModel::save_model_ (T *model)
     // a Python side using as intermediate step the $model or $system
     // bundle produced by libgretl.
     // We also add the @summary text produced by libgretl's printmodel().
-    // FIXME: extend description for VAR, VECM, etc...
     //
-    // whatever happens later, we "transfer" the model to libgretl,
+    // NOTE: whatever happens later, we "transfer" the model to libgretl,
     // so from that very moment libgretl owns the memory
     gretl_object_ref(model, model_obj_type_);
 
@@ -703,8 +706,8 @@ void GretlModel_NSE::regexp_extract_ (const std::string &formula, std::string &f
 //
 // NSE via arima plugin
 //
-GretlModel_NSE_arima::GretlModel_NSE_arima (const std::string &y, const py::tuple &tup, const py::kwargs &kwargs)
-                                            : GretlModel_NSE(ARMA, kwargs), y_(y)
+GretlModel_NSE_arima::GretlModel_NSE_arima (const std::string &depvar, const py::tuple &tup, const py::kwargs &kwargs)
+                                            : GretlModel_NSE(ARMA, kwargs), y_(depvar)
 {
     // lambda for ARIMA order
     auto get_arima_order = [](const py::tuple &tup, int &p, int &d, int &q)
@@ -724,7 +727,7 @@ GretlModel_NSE_arima::GretlModel_NSE_arima (const std::string &y, const py::tupl
     };
 
     // we set up "y"
-    y_number_ = this->dataset_->get_series_id(y, false);
+    y_number_ = this->dataset_->get_series_id(depvar, false);
     if (y_number_ == -1) handle_gretl_error(E_UNKVAR);
 
     // we set up non-seasonal parameters
@@ -741,12 +744,12 @@ GretlModel_NSE_arima::GretlModel_NSE_arima (const std::string &y, const py::tupl
     }
 
     // we add exogenous variables if present
-    if (kwargs.contains("xlist")) {
-        auto xlist = extract_additional_vars_(kwargs["xlist"]);
+    if (kwargs.contains("indepvars")) {
+        auto indepvars = extract_additional_vars_(kwargs["indepvars"]);
 
-        if (!xlist.empty()) {
-            xlist_ = this->dataset_->gretllist(xlist);
-            exogenous_ = xlist_.get()[0];
+        if (!indepvars.empty()) {
+            indepvars_ = this->dataset_->gretllist(indepvars);
+            exogenous_ = indepvars_.get()[0];
         }
     }
 }
@@ -781,7 +784,7 @@ void GretlModel_NSE_arima::fit (void)
     var_list_.get()[i++] = y_number_;
     if (exogenous_) {
         for (int j=1; j<=exogenous_; j++) {
-            var_list_.get()[i++] = xlist_.get()[j];
+            var_list_.get()[i++] = indepvars_.get()[j];
         }
     }
 

@@ -110,7 +110,7 @@ print(res)
 #####################################
 bjg.set_as_default()
 res = gretl.arima(
-    y='lg',
+    depvar='lg',
     order=(0,1,2),
     seasonal=(0,1,1),
     nc=True

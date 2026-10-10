@@ -17,7 +17,7 @@ m1.fcast()
 #gretl.fc_print(m1.forecasts[-1])
 
 # ARIMA
-m2 = gretl.arima(y="price", order=(1,1,1)).fit()
+m2 = gretl.arima(depvar="price", order=(1,1,1)).fit()
 print(m2)
 m2.fcast(5, 10)
 m2.fcast(out_of_sample=True)

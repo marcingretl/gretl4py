@@ -215,11 +215,11 @@ PYBIND11_MODULE(_gretl, m)
     //////////////////////////////////////////////////
     // direct calls
     m.def("arima",
-          [](const std::string &y, const py::tuple &order, const py::kwargs &kwargs) -> GretlModelPtr
+          [](const std::string &depvar, const py::tuple &order, const py::kwargs &kwargs) -> GretlModelPtr
           {
-              return std::make_unique<GretlModel_NSE_arima>(y, order, kwargs);
+              return std::make_unique<GretlModel_NSE_arima>(depvar, order, kwargs);
           },
-          py::arg("y").none(false), py::arg("order").none(false), py::kw_only(), doc::Model::arima);
+          py::arg("depvar").none(false), py::arg("order").none(false), py::kw_only(), doc::Model::arima);
     m.def("quantreg",
           [](double tau, const std::string &formula, const py::kwargs &kwargs) -> GretlModelPtr
           {

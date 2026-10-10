@@ -45,18 +45,20 @@
 %		\label{fig:model_class_hierarchy}
 %	\end{figure}
 %\end{landscape}
-Figure~\ref{fig:model_class_hierarchy} illustrates the Python
-class hierarchy. The three main branches are
+Figure~\ref{fig:model_class_hierarchy} depicts the Python
+class hierarchy, which comprises three main branches:
 \texttt{Model\_NSE}, \texttt{Model\_var}, and \texttt{System}.
-The \texttt{Model\_NSE} branch contains single-equation models,
-while \texttt{Model\_vecm} extends \texttt{Model\_var}.
-The classes \texttt{Model\_ols\_add} and
-\texttt{Model\_ols\_omit} inherit from \texttt{Model\_ols}.
+The \texttt{Model\_NSE} branch represents single-equation
+models, whereas \texttt{Model\_vecm} is derived from
+\texttt{Model\_var}. The shaded area highlights the subclasses
+of \texttt{Model\_NSE}, all of which inherit directly from
+this class, with two exceptions: \texttt{Model\_ols\_add}
+and \texttt{Model\_ols\_omit}, both of which inherit from
+\texttt{Model\_ols}.
 
 \begin{landscape}
 	\begin{figure}
 		\centering
-		
 		\begin{tikzpicture}[
 			font=\small,
 			model/.style={
@@ -209,16 +211,8 @@ The classes \texttt{Model\_ols\_add} and
 			
 			\draw[inheritance]
 			(nse.south) -- (nse.south |- nsegroup.north);
-			
 		\end{tikzpicture}
-		
-		\caption{Python class hierarchy of econometric models
-			in \gretlpy. The shaded area groups subclasses of
-			\texttt{Model\_NSE}. All classes within this group
-			inherit directly from \texttt{Model\_NSE}, except
-			\texttt{Model\_ols\_add} and \texttt{Model\_ols\_omit},
-			which inherit from \texttt{Model\_ols}.}
+		\caption{Python class hierarchy of econometric models in \gretlpy.}
 		\label{fig:model_class_hierarchy}
-		
 	\end{figure}
 \end{landscape}

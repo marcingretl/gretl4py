@@ -1,11 +1,38 @@
 \subsection{Native estimators}\label{sec:estimators_python}
-Note:
-\begin{itemize}
-	\item All functions outlined below are factory functions,
-		i.e., they return an allocated \classpymodel instance.
-	\item The definition of \textit{formula} can be found in
-		Section~\ref{sec:estimators_python_examples}.
-\end{itemize}
+
+This section describes the factory functions provided by
+\gretlpy for accessing native \lgretl estimators. Each
+function creates and returns an instance of the corresponding
+model-specific class, derived from the abstract
+\classpymodel base class. These functions do not perform
+estimation themselves; instead, they construct a model
+specification that can subsequently be estimated by calling
+the \pythcode{fit()} method.
+
+All estimator functions share a common calling convention.
+The \textit{formula} argument specifies the dependent
+variable, regressors, and, where applicable, additional
+elements required by a particular estimator. Depending on
+the function, the specification may be supplied as a string
+or a Python list. The supported forms of model specification
+are discussed in Section~\ref{sec:estimators_python_examples}.
+
+Estimator-specific options are passed as keyword arguments
+(\textit{OPTS}). These generally correspond to the options
+available for the respective commands in \lgretl. In addition,
+all estimator functions accept the optional keyword argument
+\pythcode{data}, which takes an instance of
+\classpydataset and specifies the dataset associated with
+the model. If \pythcode{data} is omitted, the currently
+default dataset is used (see \ref{sec:globalandindivodual()}
+for details).
+
+The descriptions below provide the Python function
+signatures, their correspondence to native \lgretl commands,
+and the supported estimation options. The return type
+indicates the model-specific class created by each factory
+function. Estimation results become available through the
+returned object after calling \pythcode{fit()}.
 
 \gretlfpycmd{ar()}
 \estdesc{Specify a linear regression model with autoregressive
@@ -73,8 +100,7 @@ gretl.ar1(formula: str | list[, OPTS]) -> gretl.Model_ar1
 \gretlfpycmd{arima()}
 \estdesc{Specify an ARIMA, SARIMA or ARIMAX model for maximum-likelihood estimation.}
 \begin{lstlisting}[style=pythonstylefoot]
-gretl.arima(y: str, order: tuple[int, int, int], seasonal: tuple[int, int, int] = None,
-	x: str | list = None[, OPTS]) -> gretl.Model_arima
+gretl.arima(depvar: str, order: tuple(int, int, int)[, seasonal: tuple(int, int, int) = None, indepvars: str | list = None, OPTS]) -> gretl.Model_arima
 \end{lstlisting}
 \mapto{arima p d q [; P D Q] ; depvar [indepvars]}
 \begin{itemize}
