@@ -32,7 +32,7 @@ py::object matrix_row_cols_names_get (const GretlMatrix &m, std::optional<int> i
     //
     auto names = m.rows_cols_names_get<ROWS>();
 
-    if (!index) return names;
+    if (!index) return std::move(names);
     int i = *index;
 
     if (i < 0) throw py::index_error("list index out of range");

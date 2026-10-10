@@ -612,7 +612,7 @@ std::pair<GretlBundlePtr, GretlModelPtr> GretlModel_NSE::add_omit_auto (const py
     } else if constexpr (CI == OMIT) {
         type = "omit";
     } else {
-        static_assert(always_false<GretlCmdIndex>, "GretlModel_NSE::add_omit_auto<CI>: unsupported CI");
+        static_assert(always_false<std::integral_constant<GretlCmdIndex, CI>>, "GretlModel_NSE::add_omit_auto<CI>: unsupported CI");
     }
 
     // we set up options
@@ -1083,7 +1083,7 @@ void GretlModel_NSE_OLS_add_omit<CI>::fit (void)
     } else if constexpr (CI == OMIT) {
         err_ = omit_test_full(src_model_, model_, nullptr, dataset_->dset, test_opt_, printer_.prn_ptr());
     } else {
-        static_assert(always_false<GretlCmdIndex>, "GretlModel_NSE_OLS_add_omit<CI>::add_omit_auto: unsupported CI");
+        static_assert(always_false<std::integral_constant<GretlCmdIndex, CI>>, "GretlModel_NSE::add_omit_auto<CI>: unsupported CI");
     }
 
     printer_.print();
