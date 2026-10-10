@@ -1,3 +1,4 @@
+
 [build-system]
 requires = ["setuptools>=65", "wheel"]
 build-backend = "setuptools.build_meta"
@@ -5,29 +6,31 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "gretl4py"
 dynamic = ["version"]
+description = "Python bindings for gretl"
+readme = { file = "README.md", content-type = "text/markdown" }
+requires-python = ">=3.12"
+license = "GPL-3.0-or-later"
+license-files = ["LICENSE"]
+
 authors = [
     { name = "Marcin Błażejowski", email = "marcin@gretlconference.org" }
 ]
-classifiers = [
-    "Programming Language :: Python :: 3",
-    "Programming Language :: C++",
-    "Operating System :: OS Independent",
-    "Development Status :: 4 - Beta",
-    "Intended Audience :: Developers",
-    "Intended Audience :: Science/Research",
-    "Intended Audience :: End Users/Desktop",
-    "Topic :: Scientific/Engineering"
-]
-requires-python = ">=3.11"
-description = "Python bindings for gretl"
-readme = { file = "README.md", content-type = "text/markdown" }
+
 dependencies = [
     "numpy>=1.22",
     "matplotlib>=3.7",
     "pandas>=2.3",
 ]
-license = "GPL-3.0-or-later"
-license-files = ["LICENSE"]
+
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: C++",
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: End Users/Desktop",
+    "Topic :: Scientific/Engineering",
+]
 
 [project.urls]
 Documentation = "https://gretl.sourceforge.net/gretl4py.html"
@@ -41,14 +44,13 @@ exclude = ["**/__pycache__"]
 "gretl" = [
     "_gretl*",
     "_bundled_addons.txt",
-    "gretl4py_addons.py",
-    "gretl4py_classes.py",
+    "_gretl4py_addons.py",
+    "_gretl4py_classes.py",
+    "_gretl4py_model_api.py",
     "_plotting.py",
-    "__init__.py",
-	"curl-ca-bundle.crt",
+    "curl-ca-bundle.crt",
     "lib/*",
     "data/*",
-    "tmp/*",
     "examples/*",
     "functions/*",
     "scripts/*",
