@@ -202,19 +202,7 @@ copy_binary_part = custom_target(
   output: 'copied-stamp',
   command: [
     python, '-c',
-    '''
-    import pathlib
-    import shutil
-    import sys
-
-    src = pathlib.Path(sys.argv[1])
-    dst = pathlib.Path(sys.argv[2])
-    stamp = pathlib.Path(sys.argv[3])
-
-    dst.parent.mkdir(parents=True, exist_ok=True)
-    shutil.copy2(src, dst)
-    stamp.touch()
-    ''',
+    'import pathlib, shutil, sys; src = pathlib.Path(sys.argv[1]); dst = pathlib.Path(sys.argv[2]); dst.parent.mkdir(parents=True, exist_ok=True); shutil.copy2(src, dst); pathlib.Path(sys.argv[3]).touch()',
     '@INPUT@',
     build_output_dir / gretl_mod_filename,
     '@OUTPUT@',
