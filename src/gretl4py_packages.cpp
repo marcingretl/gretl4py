@@ -413,7 +413,6 @@ void GretlPackage::show_functions (const std::string &name)
     //
     if (func_args_sorted_.empty()) throw std::runtime_error("no available functions");
 
-    GretlType type;
     std::string type_str;
     ufunc *func_ptr;
     std::unordered_multiset<std::string> func_to_show;
@@ -436,7 +435,7 @@ void GretlPackage::show_functions (const std::string &name)
             print_function_signature(func_ptr, printer_.prn_ptr());
             printer_.print();
         } else {
-            type = static_cast<GretlType>(user_func_get_return_type(func_ptr));
+            auto type = static_cast<GretlType>(user_func_get_return_type(func_ptr));
             py::print(key, "->", gretl_type_get_name(type));
             for (const auto &it : val) {
                 type = static_cast<GretlType>(fn_param_type(func_ptr, it.second));
