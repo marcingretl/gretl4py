@@ -211,7 +211,7 @@ copy_binary_part = custom_target(
 )
 
 ###########################################################################
-# Standard install for .py files and resources
+# Install Python files and resources
 ###########################################################################
 install_data(
   'gretl/__init__.py',
@@ -219,14 +219,53 @@ install_data(
   'gretl/_gretl4py_classes.py',
   'gretl/_gretl4py_model_api.py',
   'gretl/_plotting.py',
+  'gretl/_bundled_addons.txt',
   'gretl/curl-ca-bundle.crt',
   install_dir: python_gretl_dir,
 )
-meson.add_install_script(
+
+###########################################################################
+# Install resource directories
+###########################################################################
+foreach dirname : ['lib', 'data', 'examples', 'scripts']
+  install_subdir(
+    'gretl' / dirname,
+    install_dir: python_gretl_dir,
+  )
+endforeach
+
+###########################################################################
+# Install bundled function packages
+###########################################################################
+bundled_file = meson.project_source_root() / 'gretl/_bundled_addons.txt'
+
+bundled_addons = run_command(
   python,
-  meson.project_source_root() / 'install.py',
-  python_gretl_dir,
-)
+  '-c',
+  'import pathlib, sys; print(*[line.strip() for line in pathlib.Path(sys.argv[1]).read_text(encoding="utf-8").splitlines() if line.strip()], sep=chr(10))',
+  bundled_file,
+  check: true,
+).stdout().strip()
+
+if bundled_addons != ''
+  foreach addon : bundled_addons.split('\n')
+    addon_path = 'gretl/functions' / addon
+
+    if fs.is_dir(addon_path)
+      install_subdir(
+        addon_path,
+        install_dir: python_gretl_dir / 'functions',
+      )
+    elif fs.is_file(addon_path)
+      install_data(
+        addon_path,
+        install_dir: python_gretl_dir / 'functions',
+      )
+    else
+      error('Bundled addon not found: ' + addon_path)
+    endif
+  endforeach
+endif
 
 ###########################################################################
 # Generating 'gretl4py_version.h' header
