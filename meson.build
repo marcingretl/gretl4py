@@ -11,11 +11,12 @@ is_unix    = not is_windows
 ###########################################################################
 # User-defined options
 ###########################################################################
-PYTHON_EXE  = get_option('PYTHON_EXE')
-STACK_PATH  = get_option('STACK_PATH')
-GRETL_PATH  = get_option('GRETL_PATH')
-LOCAL_INST  = get_option('LOCAL_INST')
-LLVM_RT_PATH= get_option('LLVM_RT_PATH')
+PYTHON_EXE          = get_option('PYTHON_EXE')
+STACK_PATH          = get_option('STACK_PATH')
+GRETL_PATH          = get_option('GRETL_PATH')
+LOCAL_INST          = get_option('LOCAL_INST')
+LLVM_RT_PATH        = get_option('LLVM_RT_PATH')
+GRETL_INSTALL_PATH  = get_option('GRETL_INSTALL_PATH')
 
 ###########################################################################
 # Windows-specific libgretl
@@ -96,6 +97,64 @@ else
   ).stdout().strip()
 endif
 python_gretl_dir = python_sitepkg_dir / 'gretl'
+
+###########################################################################
+# Locate installed gretl runtime resources
+###########################################################################
+if GRETL_INSTALL_PATH != ''
+  gretl_install_root = GRETL_INSTALL_PATH.replace('\\', '/')
+else
+  gretl_install_root = ''
+
+  if is_windows
+    candidates = ['C:/Program Files/gretl']
+  elif is_darwin
+    candidates = ['/Applications/Gretl.app']
+  else
+    candidates = ['/usr/local', '/usr']
+  endif
+
+  foreach candidate : candidates
+    if is_windows
+      plugin_dir = candidate / 'plugins'
+    elif is_darwin
+      plugin_dir = candidate / 'Contents/Resources/lib/gretl-gtk3'
+    else
+      plugin_dir = candidate / 'lib/gretl-gtk3'
+    endif
+
+    if fs.is_dir(plugin_dir)
+      gretl_install_root = candidate
+      break
+    endif
+  endforeach
+endif
+
+if gretl_install_root == ''
+  error('Cannot locate installed gretl. Set -DGRETL_INSTALL_PATH=...')
+endif
+
+if is_windows
+  gretl_plugins_dir = gretl_install_root / 'plugins'
+  gretl_runtime_dir = gretl_install_root
+else
+  if is_darwin
+    gretl_plugins_dir = gretl_install_root / 'Contents/Resources/lib/gretl-gtk3'
+  else
+    gretl_plugins_dir = gretl_install_root / 'lib/gretl-gtk3'
+  endif
+endif
+
+if not fs.is_dir(gretl_plugins_dir)
+  error('gretl plugins directory not found: ' + gretl_plugins_dir)
+endif
+
+message('gretl installation: ' + gretl_install_root)
+message('gretl plugins: ' + gretl_plugins_dir)
+
+if is_windows
+  message('gretl runtime DLLs: ' + gretl_runtime_dir)
+endif
 
 ###########################################################################
 # pybind11
@@ -207,6 +266,34 @@ copy_binary_part = custom_target(
     build_output_dir / gretl_mod_filename,
     '@OUTPUT@',
   ],
+  build_by_default: true,
+)
+
+###########################################################################
+# Prepare runtime resources (plugins and DLLs)
+###########################################################################
+# Copy runtime files into the source package for development and wheel builds.
+# Do not remove unrelated files from gretl/lib (e.g., future MPI resources).
+runtime_args = [
+  '--plugins', gretl_plugins_dir,
+  '--destination', meson.project_source_root() / 'gretl/lib',
+  '--stamp', '@OUTPUT@',
+]
+
+if is_windows
+  runtime_args += [
+    '--extension', '.dll',
+    '--runtime', gretl_runtime_dir,
+  ]
+else
+  runtime_args += ['--extension', '.so']
+endif
+
+prepare_runtime = custom_target(
+  'prepare_gretl_runtime',
+  input: files('scripts/prepare_runtime.py'),
+  output: 'runtime-prepared.stamp',
+  command: [python, '@INPUT@'] + runtime_args,
   build_by_default: true,
 )
 

@@ -4,6 +4,10 @@ option('PYTHON_EXE', type: 'string', value: '', description: 'Path to Python exe
 # Local or system-wide install
 option('LOCAL_INST', type: 'boolean', value: true, description: 'Install to user site-packages instead of system-wide')
 
+# Installed gretl distribution (plugins and runtime libraries)
+option('GRETL_INSTALL_PATH', type: 'string', value: '',
+       description: 'Path to installed gretl distribution for runtime resources')
+
 # Windows only:
 #Path to libgretl stack (relative or absolute) from https://sourceforge.net/projects/libgretl-for-ms-sdk/
 option('STACK_PATH', type: 'string',
