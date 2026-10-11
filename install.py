@@ -26,14 +26,19 @@ import shutil
 import glob
 
 # Setup directories
-PYTHON_PATH = site.getusersitepackages()
 SUFFIX = sysconfig.get_config_var('EXT_SUFFIX')
 MODULE = f'_gretl{SUFFIX}'
-MODULE_PATH = os.path.normpath(f'{PYTHON_PATH}/gretl')
+MODULE_PATH = os.path.abspath(sys.argv[1])
 SOURCE_DIR = os.path.dirname(os.path.abspath(__file__))
 major, minor = sys.version_info[:2]
 PYVER = f"{major}.{minor}"
 BUILD_DIR = os.path.join(SOURCE_DIR, 'gretl')
+DESTDIR = os.environ.get("DESTDIR")
+if DESTDIR:
+    MODULE_PATH = os.path.join(
+        DESTDIR,
+        os.path.splitdrive(MODULE_PATH)[1].lstrip("/\\")
+    )
 
 # Copy compiled shared object
 SRC = os.path.join(BUILD_DIR, MODULE)
@@ -106,8 +111,7 @@ except FileExistsError:
     pass
 
 # We printout summary
-print('gretl4py files were installed to:')
-print(sysconfig.os.path.normpath(f'{PYTHON_PATH:s}/gretl'))
+print(f'gretl4py files were installed to: {MODULE_PATH}')
 
 # We put stamp
 with open('resources-installed.stamp', 'w') as f:

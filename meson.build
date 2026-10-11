@@ -190,7 +190,7 @@ ext_mod = python.extension_module(
   ],
   include_directories: gretl4py_inc,
   install: true,
-  install_dir: python_sitepkg_dir,
+  install_dir: python_gretl_dir,
 )
 
 ###########################################################################
@@ -222,7 +222,11 @@ install_data(
   'gretl/curl-ca-bundle.crt',
   install_dir: python_gretl_dir,
 )
-meson.add_install_script(python, join_paths(meson.project_source_root(), 'install.py'))
+meson.add_install_script(
+  python,
+  meson.project_source_root() / 'install.py',
+  python_gretl_dir,
+)
 
 ###########################################################################
 # Generating 'gretl4py_version.h' header
