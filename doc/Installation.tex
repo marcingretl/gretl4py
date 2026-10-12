@@ -73,18 +73,20 @@ on the system. The latest supported version is available at
 \end{center}
 
 
+
 \paragraph{GNU/Linux.}
 On some GNU/Linux distributions, installation of packages using
 \texttt{pip} into the system Python environment may be restricted.
-For this reason, \gretlpy provides the \texttt{webinstall.py} script,
-available from the project's source repository:
+For this reason, \gretlpy provides the \texttt{webinstall.py}
+utility, located in the \texttt{scripts} directory of the
+project's source repository:
 
 \begin{center}
-	\url{https://sourceforge.net/p/gretl/gretl4py/ci/master/tree/}.
+	\url{https://sourceforge.net/p/gretl/gretl4py/ci/master/tree/scripts/}
 \end{center}
 
-The script downloads an appropriate \texttt{wheel} file and installs
-it in the user's Python environment.
+The script downloads an appropriate binary wheel and installs
+it into the user's Python environment.
 
 
 \subsection{Verifying the installation}
@@ -112,56 +114,112 @@ in Figure~\ref{fig:mswindows_about}.
 \end{figure}
 
 
+
 \section{Compilation from Source}\label{sec:compilation}
 Compilation from source requires a working \gretl installation and
-the tools required to build the \cpp extension module. The exact
-setup depends on the operating system.
+the tools needed to build the native \cpp extension module.
+The \gretlpy build system supports GNU/Linux, macOS, and MS Windows,
+including both x86-64 and ARM64 architectures where applicable.
+Although the build procedure is largely platform-independent,
+some compiler, linker, and runtime requirements differ between
+operating systems.
+
+In addition to compiling the extension module, the build system
+automatically prepares the native \gretl resources needed by
+\gretlpy. These include \gretl plugins and, on MS Windows,
+the dynamic libraries supplied with the installed \gretl
+distribution.
 
 
 \subsection{Common requirements}
-The \gretlpy build system uses \pkg{Meson} and \pkg{Ninja}. A
-\cpp compiler with C++17 support is required. The package also
-requires access to \lgretl and the libraries needed by it.
+The \gretlpy build system is based on \pkg{Meson} and \pkg{Ninja}.
+A \cpp compiler supporting C++17 is required, together with a
+supported \python installation and the development files needed
+to compile a \python extension module.
 
-On MS Windows, \gretlpy cannot be built using the Microsoft Visual
-C++ compiler (MSVC), due to incompatibilities in the representation
-of complex numbers between MSVC and the toolchain used to build
-\lgretl. A compatible compiler must therefore be used instead.
-The \pkg{Clang} compiler is used and tested for the official
-\gretlpy Windows builds.
+The build also requires access to \lgretl and its associated
+libraries. A working installation of \gretl must be available
+on the target system, since the build system uses it for locating
+the native runtime resources.
 
-The source tree contains the \texttt{gretl/lib} directory, which is
-used for \lgretl-related libraries that have to be made available to
-the \gretlpy package. The contents required in this directory depend
-on the operating system.
+The \gretlpy source tree contains the \texttt{gretl/lib}
+directory. This directory is used to collect native resources
+that are subsequently included in the installed package and
+in binary wheel distributions.
 
-On MS Windows, the required DLLs, including \lgretl, plugins, and
-their dependencies, must be available there. On GNU/Linux and macOS,
-the directory is used for the required \gretl plugins.
+The contents of this directory depend on the target platform:
+on GNU/Linux and macOS, it contains the required \gretl plugins,
+typically shared libraries with the \texttt{.so} extension;
+on MS Windows, it contains both \gretl plugins and the runtime
+DLLs distributed with \gretl.
+
+These files are collected automatically during compilation.
+Consequently, manually creating symbolic links to plugins or
+copying DLLs into \texttt{gretl/lib} is normally unnecessary.
+Existing unrelated files and subdirectories are preserved,
+while files with matching names may be overwritten.
+
+Note that \gretlpy uses a native build: the architecture of the
+compiler, \python interpreter, \lgretl libraries, and plugins
+must be mutually compatible.
 
 
 \subsection{Build options}
-The build can be configured using several \pkg{Meson} options. The
-following options are common to all supported platforms:
+The build can be configured using several \pkg{Meson} options.
+The following options are common to all supported platforms:
 
 \begin{description}
 	\item[\texttt{-DPYTHON\_EXE=path}] specifies the \python
-		executable to be used. If not given explicitly, the
-		default executable selected by the build system is used.
-	\item[\texttt{-DLOCAL\_INST=true|false}] controls the installation
-		location. The default value is \texttt{true}, which installs
-		\gretlpy in the user's \texttt{site-packages} directory
-		rather than system-wide.
+		executable to be used. If omitted, the default executable
+		selected by the build system is used.
+	\item[\texttt{-DLOCAL\_INST=true|false}] controls the
+		installation location. The default is \texttt{true},
+		which selects the user's \python \texttt{site-packages}
+		directory rather than a system-wide installation.
+	\item[\texttt{-DGRETL\_INSTALL\_PATH=path}] specifies the
+		root directory of an existing \gretl installation from
+		which native runtime resources are collected. If omitted
+		or set to an empty string, the build system attempts to
+		locate the installation automatically.
 \end{description}
 
-For example, a particular \python installation can be selected using:
+For example, a particular \python installation can be selected
+using:
 
 \begin{verbatim}
 meson setup builddir -DPYTHON_EXE=/usr/bin/python3.14
 \end{verbatim}
 
-Platform-specific options are described in the corresponding sections
-below.
+The \texttt{GRETL\_INSTALL\_PATH} option is particularly useful
+when \gretl is installed in a non-standard directory or when
+multiple installations are available.
+
+By default, the build system searches for \gretl runtime
+resources in the following locations:
+
+\begin{description}
+	\item[GNU/Linux:] \texttt{/usr/local} and \texttt{/usr}, in that order,
+	\item[macOS:] \texttt{/Applications/Gretl.app},
+	\item[MS Windows:] \texttt{C:/Program Files/gretl}.
+\end{description}
+
+The installation is identified by the presence of the expected
+plugins directory. If no suitable installation is found,
+configuration fails with an error message indicating that
+\texttt{GRETL\_INSTALL\_PATH} should be specified.
+
+The option can also be changed when reconfiguring an existing
+build directory:
+
+\begin{verbatim}
+meson setup builddir --reconfigure \
+	-DGRETL_INSTALL_PATH=/path/to/gretl
+\end{verbatim}
+
+The build system reports the detected installation directory
+and the locations from which native resources will be copied.
+
+Platform-specific options are described below.
 
 
 \subsection{GNU/Linux}\label{sec:linux-compile}
@@ -169,42 +227,56 @@ Before compiling \gretlpy on GNU/Linux, ensure that the following
 components are installed:
 
 \begin{enumerate}
-	\item \pkg{Meson}, \pkg{Ninja}, \pkg{pkg-config}, and \gretl
-	(see \url{https://gretl.sourceforge.net} for details);
-	\item a \cpp compiler with C++17 support. The \texttt{g++},
-	\texttt{clang++}, and \texttt{icpx} compilers have been tested.
+	\item \pkg{Meson}, \pkg{Ninja}, \pkg{pkg-config}, and
+	\gretl (see \url{https://gretl.sourceforge.net}),
+	\item a \cpp compiler supporting C++17. The \texttt{g++},
+		\texttt{clang++}, and \texttt{icpx} compilers have been tested,
+	\item the development files and libraries required
+		to compile and link against \lgretl.
 \end{enumerate}
 
-The required \gretl plugins must be available in
-\texttt{gretl/lib}. They may be provided using symbolic links to the
-plugins installed on the system. For example, from the root directory
-of the \gretlpy source tree:
+On GNU/Linux, \gretlpy uses the \pkg{pkg-config} mechanism
+to locate the \lgretl development libraries.
+
+The build system also searches for installed \gretl plugins
+in the \texttt{lib/gretl-gtk3} subdirectory of the detected
+installation root. For example, the default locations include:
 
 \begin{verbatim}
-cd gretl/lib
-ln -s /path/to/plugins/*.so .
+/usr/local/lib/gretl-gtk3
+/usr/lib/gretl-gtk3
 \end{verbatim}
 
-Here, \texttt{/path/to/plugins} must be replaced by the actual
-directory containing the installed \gretl plugins.
+During compilation, the available plugin files with the
+\texttt{.so} extension are copied automatically into
+\texttt{gretl/lib}. No manual preparation of this directory
+is required for a standard installation.
 
-The package can then be configured and compiled from the root
-directory of the source tree using:
+From the root directory of the \gretlpy source tree,
+configure and compile the package using:
 
 \begin{verbatim}
 meson setup builddir
-ninja -C builddir
+meson compile -C builddir
 \end{verbatim}
 
-To install the resulting package, run:
+For a non-standard \gretl installation, specify its root
+directory explicitly, for example:
 
 \begin{verbatim}
-ninja -C builddir install
+meson setup builddir \
+	-DGRETL_INSTALL_PATH=/opt/gretl
 \end{verbatim}
 
-The build process generates the binary \python extension module,
-whose filename depends on the \python version and target platform,
-for example:
+The resulting package can be installed using:
+
+\begin{verbatim}
+meson install -C builddir
+\end{verbatim}
+
+The build generates a native \python extension module whose
+filename depends on the \python version and target architecture.
+For example:
 
 \begin{verbatim}
 _gretl.cpython-314-x86_64-linux-gnu.so
@@ -213,114 +285,288 @@ _gretl.cpython-314-x86_64-linux-gnu.so
 
 \subsection{macOS}\label{sec:macos-compile}
 Compilation on macOS uses the same \pkg{Meson} and \pkg{Ninja}
-build system. The location of the \gretl installation is specified
-using the \texttt{GRETL\_PATH} option.
+build system. Both Intel (\texttt{x86\_64}) and Apple Silicon
+(\texttt{arm64}) architectures are supported.
 
-For a standard installation of \gretl in the Applications directory,
-the package can be configured using:
+For a standard \gretl installation, the application bundle is
+located at:
+
+\begin{verbatim}
+	/Applications/Gretl.app
+\end{verbatim}
+
+Two build options are relevant on macOS:
+
+\begin{description}
+	\item[\texttt{-DGRETL\_PATH=path}] specifies the
+		directory used to locate the \gretl development
+		headers and libraries during compilation and linking,
+	\item[\texttt{-DGRETL\_INSTALL\_PATH=path}] specifies
+		the root of the \gretl application bundle from
+		which runtime plugins are collected.
+\end{description}
+
+These options serve different purposes. In particular,
+\texttt{GRETL\_PATH} normally points to the
+\texttt{Contents/Resources} directory inside the application
+bundle, whereas \texttt{GRETL\_INSTALL\_PATH} points to the
+application bundle itself.
+
+For a standard installation, the package can be configured
+using:
 
 \begin{verbatim}
 meson setup builddir \
- -DGRETL_PATH="/Applications/Gretl.app/Contents/Resources"
+	-DGRETL_PATH="/Applications/Gretl.app/Contents/Resources"
 \end{verbatim}
 
-The \texttt{GRETL\_PATH} option may be changed if \gretl
-is installed at another location.
-
-The package can then be compiled and installed using:
+If \gretl is installed in a non-standard location, both
+paths may need to be specified:
 
 \begin{verbatim}
-ninja -C builddir
-ninja -C builddir install
+meson setup builddir \
+	-DGRETL_PATH="/path/to/Gretl.app/Contents/Resources" \
+	-DGRETL_INSTALL_PATH="/path/to/Gretl.app"
 \end{verbatim}
+
+The build system locates the plugins in:
+
+\begin{verbatim}
+Gretl.app/Contents/Resources/lib/gretl-gtk3
+\end{verbatim}
+
+All available plugin files with the \texttt{.so} extension
+are copied automatically into \texttt{gretl/lib} during
+compilation.
+
+Compile and install the package using:
+
+\begin{verbatim}
+meson compile -C builddir
+meson install -C builddir
+\end{verbatim}
+
+The same resource preparation mechanism is used for native
+Intel and Apple Silicon builds and for builds targeting
+both architectures.
 
 
 \subsection{MS Windows}\label{sec:windows-compile}
-Native compilation of \gretlpy on MS Windows is supported for both
-x86-64 and ARM64. The following components are required:
+Native compilation of \gretlpy on MS Windows is supported
+for both x86-64 (AMD64) and ARM64 architectures.
+
+The following components are required:
 
 \begin{enumerate}
-	\item \pkg{Meson} and \pkg{Ninja};
-	\item a supported \python installation;
-	\item the Microsoft Windows SDK;
-	\item the LLVM toolchain, including the \pkg{Clang} C/C++ compiler;
-	\item the \pkg{libgretl for MS SDK} stack;
-	\item additional libraries required by the \gretl plugins
-		to be included in the \gretlpy installation.
+	\item \pkg{Meson} and \pkg{Ninja},
+	\item a supported \python installation matching
+		the target architecture,
+	\item the Microsoft Windows SDK,
+	\item the LLVM toolchain, including the \pkg{Clang}
+		\cpp compiler and the \pkg{LLD} linker,
+	\item the \pkg{libgretl for MS SDK} stack,
+	\item an installed \gretl distribution containing
+		the native plugins and runtime libraries required
+		by the target architecture.
 \end{enumerate}
 
-The Microsoft Visual C++ compiler (MSVC) cannot currently be used to
-build \gretlpy. This restriction results from an ABI incompatibility
-arising from differences in the representation of complex numbers
-between MSVC and the compiler toolchain used to build \lgretl.
-The official Windows builds of \gretlpy are therefore compiled using
-\pkg{Clang}.
+The Microsoft Visual C++ compiler (MSVC) cannot currently
+be used to compile \gretlpy. This restriction results
+from an ABI incompatibility involving the representation
+of complex numbers in MSVC and the compiler toolchain
+used to build \lgretl.
 
-A native Windows-compatible \lgretl stack is provided by the
-\pkg{libgretl for MS SDK} project:
+The official Windows builds of \gretlpy therefore use
+\pkg{Clang}, together with the Microsoft Windows SDK
+and the \pkg{LLD} linker.
+
+A Windows-compatible \lgretl development stack is
+provided by the \pkg{libgretl for MS SDK} project:
 
 \begin{center}
 	\url{https://sourceforge.net/projects/libgretl-for-ms-sdk/}
 \end{center}
 
-Pre-built versions of the stack can be downloaded from:
+Pre-built versions of the stack are available at:
 
 \begin{center}
 	\url{https://sourceforge.net/projects/libgretl-for-ms-sdk/files/}
 \end{center}
 
-The stack provides the libraries required for compiling and linking
-\gretlpy against \lgretl. It does not, however, provide all libraries
-that may be required at run time by individual \gretl plugins.
-Such additional dependencies must be supplied separately by the user.
-
-The location of the downloaded stack is specified using the
-\texttt{STACK\_PATH} \pkg{Meson} option:
+The stack supplies the headers and libraries needed
+for compiling and linking against \lgretl. Its location
+is specified using the \texttt{STACK\_PATH} option:
 
 \begin{verbatim}
 -DSTACK_PATH="C:/path/to/libgretl-for-ms-sdk/stack"
 \end{verbatim}
 
-In addition, the location of the LLVM \texttt{clang\_rt} runtime
-libraries must be specified using:
+The \texttt{LLVM\_RT\_PATH} option specifies the directory
+containing the LLVM compiler runtime libraries
+(\pkg{compiler-rt}). These libraries may be required to
+resolve compiler-generated helper functions for complex
+arithmetic, such as \texttt{\_\_divdc3}, particularly
+on Windows ARM64.
+
+For example:
 
 \begin{verbatim}
 -DLLVM_RT_PATH="C:/Program Files/LLVM/lib/clang/22/lib/windows"
 \end{verbatim}
 
-For example, the build can be configured using:
+This option is toolchain-dependent and is not generally
+required for Windows AMD64 builds. It may also be omitted
+on ARM64 if the required runtime functions are already
+provided by the selected toolchain.
+
+Unlike GNU/Linux and macOS, the Windows build collects
+two categories of native runtime resources:
+
+\begin{enumerate}
+	\item \gretl plugins, obtained from the
+	\texttt{plugins} subdirectory of the installed
+	\gretl distribution;
+	
+	\item runtime DLLs, obtained from the root
+	directory of that installation.
+\end{enumerate}
+
+Both groups are copied automatically into
+\texttt{gretl/lib}. The build system does not maintain
+a fixed list of required DLLs: it collects the DLLs
+available in the corresponding installation.
+
+This approach accommodates differences in the native
+dependencies of x86-64 and ARM64 distributions,
+including differences arising from the compilers and
+numerical libraries used to build \lgretl.
+
+For a standard x86-64 installation, the \gretl
+runtime resources are located automatically under:
 
 \begin{verbatim}
-meson setup builddir \
- -DSTACK_PATH="C:/path/to/libgretl-for-ms-sdk/stack" \
- -DLLVM_RT_PATH="C:/Program Files/LLVM/lib/clang/22/lib/windows"
+C:/Program Files/gretl
 \end{verbatim}
 
-If a particular \python executable is to be used, it can be specified
-at the same time:
+A build can be configured from PowerShell using:
 
 \begin{verbatim}
-meson setup builddir \
- -DPYTHON_EXE="C:/path/to/python.exe" \
- -DSTACK_PATH="C:/path/to/libgretl-for-ms-sdk/stack" \
- -DLLVM_RT_PATH="C:/Program Files/LLVM/lib/clang/22/lib/windows"
+meson setup builddir `
+	"-DPYTHON_EXE=C:/Program Files/Python312/python.exe" `
+	"-DSTACK_PATH=C:/path/to/libgretl-for-ms-sdk/stack"
 \end{verbatim}
 
-The additional DLLs required by the \gretl plugins included with
-\gretlpy must be made available in the \texttt{gretl/lib} directory.
+If required by the toolchain, the
+\texttt{LLVM\_RT\_PATH} option can be added to the
+same command.
 
-Once the build has been configured successfully, compile and install
-\gretlpy using:
+The \texttt{GRETL\_INSTALL\_PATH} option can be used
+to select a different \gretl installation. For example,
+an ARM64 build using a custom installation directory
+can be configured as follows:
 
 \begin{verbatim}
-ninja -C builddir
-ninja -C builddir install
+meson setup builddir `
+	"-DPYTHON_EXE=C:/Program Files/Python312-arm64/python.exe" `
+	"-DSTACK_PATH=C:/path/to/libgretl-for-ms-sdk/stack" `
+	"-DGRETL_INSTALL_PATH=C:/msys64/opt/gretl_clang_ucrt"
 \end{verbatim}
+
+In these examples, the backtick character is the
+PowerShell line-continuation character. It must be
+the last character on a continued line.
+
+The compiler, \python interpreter, \lgretl libraries,
+and installed \gretl runtime resources must all target
+the same architecture. Selecting an ARM64 \python
+executable alone does not change the architecture
+of the compiler used by \pkg{Meson}.
+
+After configuration, the architecture reported by
+\pkg{Meson} should therefore be checked. For example,
+a native ARM64 build should report:
+
+\begin{verbatim}
+Host machine cpu family: aarch64
+Host machine cpu: aarch64
+\end{verbatim}
+
+Compile and install the package using:
+
+\begin{verbatim}
+meson compile -C builddir
+meson install -C builddir
+\end{verbatim}
+
+During compilation, the resource preparation script
+reports the number of copied plugin and runtime DLLs.
+These numbers may differ between architectures and
+between \gretl installations.
+
+Note that collecting the DLLs distributed with
+\gretl does not necessarily include dependencies
+installed elsewhere on the system. Such dependencies
+must be available when the resulting package is used.
+
+
+\subsection{Building Binary Wheels}
+In addition to direct installation, \gretlpy can be
+distributed as a binary \python wheel.
+
+The wheel-building process uses the prepared source
+tree, including the compiled extension module and
+the native runtime resources collected in
+\texttt{gretl/lib}.
+
+After configuring and compiling the package, a wheel
+can be built using:
+
+\begin{verbatim}
+python -m build --wheel
+\end{verbatim}
+
+Alternatively, the build can be performed without
+creating an isolated build environment:
+
+\begin{verbatim}
+python -m build --wheel --no-isolation
+\end{verbatim}
+
+In the latter case, the necessary build dependencies
+must already be installed in the selected \python
+environment.
+
+The resulting wheel is written to the \texttt{dist}
+directory. Its filename identifies the \python
+version, ABI, and target platform.
+
+For example, a Windows AMD64 wheel for \python 3.12
+may be named:
+
+\begin{verbatim}
+gretl4py-0.64-cp312-cp312-win_amd64.whl
+\end{verbatim}
+
+The corresponding Windows ARM64 wheel uses the
+\texttt{win\_arm64} platform tag.
+
+Before building wheels for different operating
+systems or architectures from the same source tree,
+care should be taken to avoid retaining native
+libraries from an earlier build. The runtime
+preparation step overwrites files with matching
+names but does not remove unrelated files already
+present in \texttt{gretl/lib}.
+
+The generated wheel should therefore be inspected
+to ensure that it contains only resources appropriate
+for the target platform.
 
 
 \subsection{Testing the Build}
-After compilation and installation, the resulting \gretlpy
-installation can be tested in the same way as a pre-built package.
+After compilation and installation, the resulting
+\gretlpy package can be tested in the same way
+as a pre-built distribution.
 
 On GNU/Linux or macOS:
 
@@ -334,5 +580,25 @@ On MS Windows:
 python.exe -c "import gretl; gretl.about(True)"
 \end{verbatim}
 
-The command should complete without an import error and display
-information about the installed \gretlpy and \lgretl environment.
+The command should complete without an import error
+and display information about the installed
+\gretlpy and \lgretl environment.
+
+A successful import confirms that the extension
+module and its immediate dependencies can be loaded.
+It does not, however, guarantee that every native
+\gretl plugin is available and functional.
+
+For this reason, testing should also include
+representative econometric operations and statistical
+tests that rely on dynamically loaded \gretl plugins.
+
+When testing a wheel, it is advisable to install it
+in a clean \python environment and run the tests
+outside the \gretlpy source directory. This helps
+ensure that the installed package is being used
+rather than files from the source tree.
+
+The native extension, bundled runtime libraries,
+and dynamically loaded plugins should all be
+verified on each supported target architecture.
