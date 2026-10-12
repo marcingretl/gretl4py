@@ -136,7 +136,7 @@ def run_example():
   res_vif = m1.vif()
 
   # ARIMA
-  m2 = gretl.arima(y='lg', order=(2,0,0), data=d2).fit()
+  m2 = gretl.arima(depvar='lg', order=(2,0,0), data=d2).fit()
   print(m2)
 
   print("\n****************************")
