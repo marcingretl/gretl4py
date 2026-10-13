@@ -44,7 +44,7 @@ private:
 
     static gretl_matrix *numpy_to_matrix_ (const py::array &array);         // helper for NumPy to GretlMatrix
 
-    gretl_matrix_ptr exec_slice_ (const std::string& slice_str) const;      // helper for getting slice
+    gretl_matrix_ptr exec_slice_ (const std::string &slice_str) const;      // helper for getting slice
 
     std::string render_slice_ (const py::tuple &slice) const;               // tuple slice to libgretl string slice
 

@@ -399,14 +399,13 @@ int GretlMatrix::cols (void) const
 
 std::string GretlMatrix::repr_impl (void)
 {
-    err_ = 0;
-
     if (is_complex()) {
+        err_ = 0;
         err_ = gretl_cmatrix_print(m_, nullptr, printer_.prn_ptr());
+        if (err_) handle_gretl_error(err_);
     } else {
         gretl_matrix_print_to_prn(m_, nullptr, printer_.prn_ptr());
     }
-    if (err_) handle_gretl_error(err_);
 
     return printer_.get_buffer();
 }
