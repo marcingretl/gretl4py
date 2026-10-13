@@ -17,7 +17,10 @@
  *
  */
 
-// explicit instantiations for all required (F, CI) pairs
+#ifndef GRETL4PY_MODEL_INSTANTIATION_H
+#define GRETL4PY_MODEL_INSTANTIATION_H
+
+// explicit instantiation declarations for required model template specializations
 extern template class GretlModel_NSE_Driver<lsq, OLS>;
 extern template class GretlModel_NSE_OLS_add_omit<ADD>;
 extern template class GretlModel_NSE_OLS_add_omit<OMIT>;
@@ -44,3 +47,5 @@ extern template class GretlModel_NSE_Driver<midas_model, MIDASREG>;
 extern template class GretlModel_NSE_nl<NLS>;
 extern template class GretlModel_NSE_nl<MLE>;
 extern template class GretlModel_NSE_nl<GMM>;
+
+#endif // GRETL4PY_MODEL_INSTANTIATION_H

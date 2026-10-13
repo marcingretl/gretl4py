@@ -101,7 +101,7 @@ except FileNotFoundError:
   gretl.include('BMA')
 
 d = gretl.get_data('FLS_41t72', frompkg='BMA')
-Factors = "2..42"
+Factors = list(range(2, 43))
 
 OPTS = ~gretl.Bundle()
 OPTS['Nrep'] = 3000000
@@ -175,7 +175,7 @@ bc.show_functions()
 
 d = gretl.get_data('nels.gdt', frompkg='BACE', quiet=True)
 dep = 'psechoice'
-X = '2..14'
+X = list(range(2, 15))
 
 gretl..set('seed', 1000000)
 gretl..set('stopwatch')
