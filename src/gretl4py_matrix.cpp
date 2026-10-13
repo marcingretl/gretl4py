@@ -828,8 +828,17 @@ GretlMatrix &GretlMatrix::alg_inplace_operations (const T &rhs)
     } else if constexpr (KIND == GretlMatrixAlgOperations::ITRUEDIV && std::is_same_v<T, double>) {
         gretl_matrix_divide_by_scalar(m_, rhs);
     } else if constexpr (KIND == GretlMatrixAlgOperations::IPOW && !std::is_same_v<T, double>) {
-        for (int i=0; i<m_->rows*m_->cols; ++i) {
-            m_->val[i] = std::pow(m_->val[i], rhs_matrix->val[i]);
+        if (rhs_matrix->rows == 1 && rhs_matrix->cols == 1) {
+            const double exponent = rhs_matrix->val[0];
+
+            for (int i = 0; i < m_->rows * m_->cols; ++i) {
+                m_->val[i] = std::pow(m_->val[i], exponent);
+            }
+        } else {
+            if (m_->rows != rhs_matrix->rows || m_->cols != rhs_matrix->cols) handle_gretl_error(E_NONCONF);
+                for (int i = 0; i < m_->rows * m_->cols; ++i) {
+                    m_->val[i] = std::pow(m_->val[i], rhs_matrix->val[i]);
+                }
         }
     } else if constexpr (KIND == GretlMatrixAlgOperations::IPOW && std::is_same_v<T, double>) {
         for (int i=0; i<m_->rows*m_->cols; ++i) {
