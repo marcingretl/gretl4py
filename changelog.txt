@@ -1,6 +1,9 @@
 version 0.64:
     - reworked the build system to use Meson/Ninja exclusively, removing the legacy `install.py` script and improving cross-platform support
     - fixed a bug in `GretlMatrix::from_matrix_()` affecting complex matrices
+    - fixed element-wise in-place exponentiation (**=) with scalar and matrix exponents
+    - improved error handling in matrix arithmetic operations and Matrix.summary()
+    - fixed negative indexing in Matrix.__getitem__() to return scalar values instead of 1×1 matrices
     - some doc updates
 
 version 0.63:
