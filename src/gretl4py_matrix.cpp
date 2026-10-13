@@ -970,12 +970,16 @@ GretlMatrixPtr GretlMatrix::alg_dot_operations (const T &rhs) const
         rhs_matrix = rhs_storage.get();
     } else if constexpr (std::is_same_v<T, double>) {
         rhs_storage.reset(gretl_matrix_alloc(1, 1));
+        if (!rhs_storage) handle_gretl_error(E_ALLOC);
+
         rhs_matrix = rhs_storage.get();
         gretl_matrix_set(rhs_matrix, 0, 0, rhs);
     } else if constexpr (std::is_same_v<T, std::complex<double>>) {
         double _Complex z = { rhs.real(), rhs.imag() };
 
         rhs_storage.reset(gretl_cmatrix_new(1, 1));
+        if (!rhs_storage) handle_gretl_error(E_ALLOC);
+
         rhs_matrix = rhs_storage.get();
         gretl_cmatrix_set(rhs_matrix, 0, 0, z);
     } else {
