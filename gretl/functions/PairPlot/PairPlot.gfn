@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <gretl-functions>
-<gretl-function-package name="PairPlot" minver="2026c">
+<gretl-function-package name="PairPlot" minver="2026d">
 <author email="atecon@posteo.de">Artur Tarassow and Allin Cottrell</author>
-<version>2026c-git</version>
+<version>2026d-git</version>
 <date>2026-06-11</date>
 <description>Scatterplot matrix with factor separation</description>
 <tags>C88</tags>
