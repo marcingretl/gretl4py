@@ -243,7 +243,7 @@ gretl_matrix *GretlMatrix::numpy_to_matrix_ (const py::array &array)
 // instance
 void GretlMatrix::check_bounds_ (int i, int j) const
 {
-    // NOT std::abs(i) >= rows: std::abs(INT_MIN) is undefined behaviour
+    // NOTE std::abs(i) >= rows: std::abs(INT_MIN) is undefined behaviour
     // (negating INT_MIN overflows int - two's complement has one more
     // negative value than positive, so there's no representable +2^31 to
     // return). In practice it just wraps back to INT_MIN, which is still
@@ -509,14 +509,10 @@ py::object GretlMatrix::get_element (int i, int j) const
     // method for getting matrix element [i, j]
     //
     check_bounds_(i, j);
-    if (i < 0 || j < 0) {
-        auto res = std::make_unique<GretlTypes>();
-        auto mat = exec_slice_(gretl_slice_from_int(i) + "," + gretl_slice_from_int(j));
 
-        *res = std::make_shared<GretlMatrix>(mat.release(), false);
+    if (i < 0) i += m_->rows;
+    if (j < 0) j += m_->cols;
 
-        return variant_to_pyobject(std::move(*res));
-    }
     if (is_complex()) {
         return py::cast(c_complex_to_std_complex(gretl_cmatrix_get(m_, i, j)));
     } else {
@@ -691,7 +687,7 @@ py::object GretlMatrix::summary (const py::kwargs& kwargs)
     err_ = incompatible_options(opt, static_cast<gretlopt>(OPT_B | OPT_W));
     if (err_) handle_gretl_error(err_);
     auto uv = alt_user_var_add(matrix_name, GRETL_TYPE_MATRIX, m_);
-    if (err_) handle_gretl_error(err_);
+    if (!uv) handle_gretl_error(E_ALLOC);
     err_ = matrix_command_driver(SUMMARY, nullptr, matrix_name, nullptr, opt, printer_.prn_ptr());
     user_var_unstack_value(uv);
     if (err_) handle_gretl_error(err_);
