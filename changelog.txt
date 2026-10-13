@@ -1,3 +1,8 @@
+version 0.64:
+    - reworked the build system to use Meson/Ninja exclusively, removing the legacy `install.py` script and improving cross-platform support
+    - fixed a bug in `GretlMatrix::from_matrix_()` affecting complex matrices
+    - some doc updates
+
 version 0.63:
     - model-based tests: fix bug where 'varlist' was passed as list
     - add() and omit() tests: 'auto' option works fine

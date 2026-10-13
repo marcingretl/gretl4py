@@ -218,7 +218,7 @@ GretlMatrixPtr GretlMatrix::zeros (int rows, int cols)
 // private methods
 //
 // static
-gretl_matrix *GretlMatrix::numpy_to_matrix_ (const py::array& array)
+gretl_matrix *GretlMatrix::numpy_to_matrix_ (const py::array &array)
 {
     //
     // from NumPy source
@@ -315,6 +315,7 @@ std::string GretlMatrix::render_slice_ (const std::string &slice) const
     return python_slice_to_gretl_slice(slice).slice_str;
 }
 
+// T = {double ; std::complex<double>}
 template <typename T>
 void GretlMatrix::from_matrix_ (const MatrixData<T> &data)
 {
@@ -330,7 +331,13 @@ void GretlMatrix::from_matrix_ (const MatrixData<T> &data)
     }
 
     // we allocate memory
-    m_ = gretl_matrix_alloc(rows, cols);
+    if constexpr (std::is_same_v<T, double>) {
+        m_ = gretl_matrix_alloc(rows, cols);
+    } else if constexpr (std::is_same_v<T, std::complex<double>>) {
+        m_ = gretl_cmatrix_new(rows, cols);
+    } else {
+        static_assert(always_false<T>, "from_matrix_(): unknown Container type");
+    }
     if (!m_) handle_gretl_error(E_ALLOC);
 
     // we do the job
@@ -341,15 +348,12 @@ void GretlMatrix::from_matrix_ (const MatrixData<T> &data)
             }
         }
     } else if constexpr (std::is_same_v<T, std::complex<double>>) {
-        double _Complex z;
         for (int i=0; i<rows; ++i) {
             for (int j=0; j<cols; ++j) {
-                z = { data[i][j].real(), data[i][j].imag() };
+                const double _Complex z = { data[i][j].real(), data[i][j].imag() };
                 gretl_cmatrix_set(m_, i, j, z);
             }
         }
-    } else {
-        static_assert(always_false<T>, "from_matrix_(): unknown Container type");
     }
 }
 

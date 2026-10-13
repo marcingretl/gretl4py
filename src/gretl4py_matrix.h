@@ -68,7 +68,7 @@ public:
     GretlMatrix (const double **src, int rows, int cols);                           // from array of doubles
     ~GretlMatrix (void);
 
-    GretlMatrix &operator= (const GretlMatrix &src);                                // copy assignment
+    GretlMatrix &operator= (const GretlMatrix &src);                        // copy assignment
 
     static GretlMatrixPtr identity (int n, std::optional<int>);             // static method for creating an I(n,m) like indentity
 
@@ -90,7 +90,7 @@ public:
 
     [[nodiscard]] bool is_vector (void) const noexcept;
 
-    std::string repr_impl (void);                                   // gretl_matrix printing via __repr__
+    std::string repr_impl (void);                                           // gretl_matrix printing via __repr__
 
     template <bool ROWS>
     py::list rows_cols_names_get (void) const;
@@ -98,11 +98,11 @@ public:
     template <bool ROWS>
     void rows_cols_names_set (const py::list &src) const;
 
-    void set_diagonal (const gretl_matrix *src);                    // set diagonal elements from @src
+    void set_diagonal (const gretl_matrix *src);                            // set diagonal elements from @src
 
-    py::object get_element (int i, int j) const;                    // get element by standard [i,j] indexing
+    py::object get_element (int i, int j) const;                            // get element by standard [i,j] indexing
 
-    py::object get_element (int i) const;                           // get element by [i]: special case for vectors
+    py::object get_element (int i) const;                                   // get element by [i]: special case for vectors
 
     GretlMatrixPtr get_slice (const py::tuple &slice) const;
 
@@ -111,10 +111,10 @@ public:
     GretlMatrixPtr get_slice (const std::string &slice) const;
 
     template <typename T>
-    void set_element (int i, int j, T val);                         // set [i,j] element of a matrix
+    void set_element (int i, int j, T val);                                 // set [i,j] element of a matrix
 
     template <typename T>
-    void set_element (int i, T val);                                // set [i] element of a vector
+    void set_element (int i, T val);                                        // set [i] element of a vector
 
     py::object to_numpy (void) const;
 
