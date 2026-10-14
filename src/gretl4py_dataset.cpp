@@ -220,7 +220,7 @@ GretlDataset::GretlDataset (const GretlDataset &src) : id_(next_obj_id_++)
     for (int i=0; i<src.dset->v-1; ++i) {
         std::memset(dset->varname[i+1], '\0', VNAMELEN);
         gretl_normalize_varname(dset->varname[i+1], src.dset->varname[i+1], 1, 0);
-        copy_varinfo(dset->varinfo[i], src.dset->varinfo[i]);
+        copy_varinfo(dset->varinfo[i+1], src.dset->varinfo[i+1]);
     }
 
     // dset->S
