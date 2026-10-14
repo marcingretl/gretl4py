@@ -282,10 +282,8 @@ T GretlBundle::get_element (const std::string &key)
     // we get bundle element by name (key)
     // and return either py::object or GretlTypesPtr
     //
-    GretlType gtype = gretl_bundle_get_member_type(b_, key.c_str(), &err_);
-
-    if (err_) handle_gretl_error(err_);
-    auto *data = gretl_bundle_get_target(b_, key.c_str(), &gtype, &err_);
+    GretlType gtype = GRETL_TYPE_NONE;
+    void *data = gretl_bundle_get_data(b_, key.c_str(), &gtype, &err_);
 
     if (err_) handle_gretl_error(err_);
     auto val = convert_GretlType_to_GretlTypes(gtype == GRETL_TYPE_SERIES ? GRETL_TYPE_MATRIX : gtype, data, 0, err_);
