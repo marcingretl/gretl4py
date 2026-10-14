@@ -46,20 +46,29 @@ GretlBundle::GretlBundle (MODEL *model, DATASET *dset)
 {
     b_ = bundle_from_model(model, dset, &err_);
     if (err_) handle_gretl_error(err_);
+    if (!b_) handle_gretl_error(E_ALLOC);
 }
 
 GretlBundle::GretlBundle (GRETL_VAR *model, DATASET *dset) : b_(gretl_bundle_new())
 {
     if (!b_) handle_gretl_error(E_ALLOC);
     err_ = gretl_VAR_bundlize(model, dset, b_);
-    if (err_) handle_gretl_error(err_);
+    if (err_) {
+        gretl_bundle_destroy(b_);
+        b_ = nullptr;
+        handle_gretl_error(err_);
+    }
 }
 
 GretlBundle::GretlBundle (equation_system *model) : b_(gretl_bundle_new())
 {
     if (!b_) handle_gretl_error(E_ALLOC);
     err_ = equation_system_bundlize(model, b_);
-    if (err_) handle_gretl_error(err_);
+    if (err_) {
+        gretl_bundle_destroy(b_);
+        b_ = nullptr;
+        handle_gretl_error(err_);
+    }
 }
 
 GretlBundle::GretlBundle (gretl_bundle *src, bool copy)
@@ -74,6 +83,7 @@ GretlBundle::GretlBundle (gretl_bundle *src, bool copy)
         b_ = src;
     }
     if (err_) handle_gretl_error(err_);
+    if (!b_) handle_gretl_error(E_ALLOC);
 }
 
 GretlBundle &GretlBundle::operator= (const GretlBundle &other)
@@ -96,26 +106,32 @@ GretlBundle::GretlBundle (const py::kwargs &kwargs) : b_(gretl_bundle_new())
     if (!b_) handle_gretl_error(E_ALLOC);
 
     // we iterate over kwargs
-    for (const auto &[key, val] : kwargs) {
-        auto key_str = key.cast<std::string>();
+    try {
+        for (const auto &[key, val] : kwargs) {
+            auto key_str = key.cast<std::string>();
 
-        if (is_pybool(val)) {
-            set_element<bool>(key_str, val.cast<bool>());
-        } else if (is_pyint(val)) {
-            set_element<int>(key_str, val.cast<int>());
-        } else if (is_pyfloat(val)) {
-            set_element<double>(key_str, val.cast<double>());
-        } else if (is_pystr(val)) {
-            set_element<std::string>(key_str, val.cast<std::string>());
-        } else if (is_pynumarray(val)) {
-            set_element<py::array>(key_str, val.cast<py::array>());
-        } else if (is_pygretlbundle(val)) {
-            set_element<GretlBundlePtr>(key_str, val.cast<GretlBundlePtr>());
-        } else if (is_pygretlmatrix(val)) {
-            set_element<GretlMatrixPtr>(key_str, val.cast<GretlMatrixPtr>());
-        } else {
-            throw std::invalid_argument("GretlBundle: '" + key_str + "': unsupported type");
+            if (is_pybool(val)) {
+                set_element<bool>(key_str, val.cast<bool>());
+            } else if (is_pyint(val)) {
+                set_element<int>(key_str, val.cast<int>());
+            } else if (is_pyfloat(val)) {
+                set_element<double>(key_str, val.cast<double>());
+            } else if (is_pystr(val)) {
+                set_element<std::string>(key_str, val.cast<std::string>());
+            } else if (is_pynumarray(val)) {
+                set_element<py::array>(key_str, val.cast<py::array>());
+            } else if (is_pygretlbundle(val)) {
+                set_element<GretlBundlePtr>(key_str, val.cast<GretlBundlePtr>());
+            } else if (is_pygretlmatrix(val)) {
+                set_element<GretlMatrixPtr>(key_str, val.cast<GretlMatrixPtr>());
+            } else {
+                throw std::invalid_argument("GretlBundle: '" + key_str + "': unsupported type");
+            }
         }
+    } catch (...) {
+        gretl_bundle_destroy(b_);
+        b_ = nullptr;
+        throw;
     }
 }
 
