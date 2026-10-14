@@ -163,10 +163,7 @@ void GretlBundle::for_each_bundle_element_ (F &&f)
 
     // we do the job
     for (int i=0; i<n_keys; ++i) {
-        const char *key_cstr = keys.get()[i];
-        py::str key(key_cstr);
-
-        f(key, key_cstr);
+        f(keys.get()[i]);
     }
 }
 
@@ -175,8 +172,8 @@ void GretlBundle::extract_ (const py::object &obj)
     //
     // we register bundle contents as attributes of given obj
     //
-    for_each_bundle_element_([&](py::str, const char *key_cstr) {
-        py::setattr(obj, key_cstr, get_element<py::object>(key_cstr));
+    for_each_bundle_element_([&](const char *key) {
+        py::setattr(obj, key, get_element<py::object>(key));
     });
 }
 
@@ -185,16 +182,16 @@ void GretlBundle::extract_ (py::dict &dict)
     //
     // we extrac bundle to given dict
     //
-    for_each_bundle_element_([&](py::str key, const char *key_cstr) {
-        py::object val = get_element<py::object>(key_cstr);
+    for_each_bundle_element_([&](const char *key) {
+        py::object val = get_element<py::object>(key);
 
         if (py::isinstance<GretlBundle>(val)) {
             // operate on the existing wrapped object rather than val.cast<GretlBundle>(),
             // which copy-constructs a temporary GretlBundle sharing the same b_/free_b_ and
             // would double-free b_ when that temporary is destroyed (see docs/security-review).
-            dict[key] = py::cast<GretlBundle*>(val)->to_dict();
+            dict[py::str(key)] = py::cast<GretlBundle*>(val)->to_dict();
         } else {
-            dict[key] = std::move(val);
+            dict[py::str(key)] = std::move(val);
         }
     });
 }
