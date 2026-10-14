@@ -1188,7 +1188,6 @@ py::object GretlDataset::xcorrgm (const T &varlist, int order, const py::kwargs 
     //
     gretl_list_ptr var_list{nullptr};
     std::nullptr_t fake_dataset = nullptr;
-    bool silent = false;
 
     // we unpack kwargs
     opt_ = unpack_kwargs_command(XCORRGM, fake_dataset, kwargs);
@@ -1203,7 +1202,6 @@ py::object GretlDataset::xcorrgm (const T &varlist, int order, const py::kwargs 
     // we do the job
     err_ = xcorrgram(var_list.get(), order, dset, opt_, printer_.prn_ptr());
     if (err_) handle_gretl_error(err_);
-    if (!silent) printer_.print();
 
     return get_accessor("$result");
 }

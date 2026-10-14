@@ -1022,8 +1022,7 @@ py::object get_uservar (const std::string &varname)
     throw std::runtime_error(msg);
 }
 
-void gretl_valid_long_opt (gretlopt &opt, GretlCmdIndex ci, const std::string &key,
-                           const py::handle &val, const char *ext_val)
+void gretl_valid_long_opt (gretlopt &opt, GretlCmdIndex ci, const std::string &key, const py::handle &val, const char *ext_val)
 {
     // should be a regular gretl option: check its validity in
     // the context of @ci
