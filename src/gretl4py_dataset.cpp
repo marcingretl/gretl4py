@@ -1434,16 +1434,10 @@ GretlMatrixPtr GretlDataset::tdisagg (py::object Y, int s, const py::kwargs &kwa
 {
     // we exclude a pure matrix-based cases
     if (is_pygretlmatrix(Y)) {
-        if (!kwargs.contains("X")) {
-            const std::string msg = "is gretl.Matrix object, please use gretl.tdisagg() instead";
-            handle_gretl_error(E_INVARG, "Y", msg);
-        } else {
-            auto X = kwargs["X"];
-
-            if (!X.is_none() && is_pygretlmatrix(X)) {
-                const std::string msg = "both arguments are gretl.Matrix objects, please use gretl.tdisagg() instead";
-                handle_gretl_error(E_INVARG, "Y and X", msg);
-            }
+        if (!kwargs.contains("X") || kwargs["X"].is_none()) {
+            handle_gretl_error(E_INVARG, "Y", "is gretl.Matrix object without dataset-based X; please use gretl.tdisagg() instead");
+        } else if (is_pygretlmatrix(kwargs["X"])) {
+            handle_gretl_error(E_INVARG, "Y and X", "both arguments are gretl.Matrix objects; please use gretl.tdisagg() instead");
         }
     }
 
