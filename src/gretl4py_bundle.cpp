@@ -328,7 +328,8 @@ void GretlBundle::set_element (const std::string &key, const T &t)
         if (!mat) handle_gretl_error(E_ALLOC);
 
         NumPyArray_to_gretl_storage<gretl_matrix>(arr_view, mat.get());
-        err_ = gretl_bundle_donate_data(b_, key.c_str(), mat.release(), GRETL_TYPE_MATRIX);
+        err_ = gretl_bundle_donate_data(b_, key.c_str(), mat.get(), GRETL_TYPE_MATRIX);
+        if (!err_) mat.release();
     } else {
         static_assert(always_false<U>, "GretlBundle::set_element(): unknown type");
     }
