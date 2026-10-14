@@ -709,7 +709,6 @@ void GretlDataset::add_series (const py::array &data, const std::string &name)
         gretl_double_ptr data_copy(static_cast<double*>(std::malloc(dset->n * sizeof(double))));
 
         if (!data_copy) handle_gretl_error(E_ALLOC);
-        // actual work
         NumPyArray_to_gretl_storage<double>(view, data_copy.get(), 0, true);
         add_or_replace_allocated_series_(std::move(data_copy), name, dset->n);
     } else {
@@ -732,14 +731,32 @@ void GretlDataset::add_series (const GretlMatrix &data, const std::string &name)
         // we use std::malloc since memory will be deallocated by libgretl
         gretl_double_ptr data_copy(static_cast<double*>(std::malloc(dset->n * sizeof(double))));
 
+        if (!data_copy) handle_gretl_error(E_ALLOC);
         std::memcpy(data_copy.get(), data.val(), dset->n * sizeof(double));
         add_or_replace_allocated_series_(std::move(data_copy), name, dset->n);
     } else {
-        const char *tmp_matrix_name = "gretl4py_mattodset";
+        // find an unused name for the temporary matrix
+        const std::string prefix = "gretl4py_mattodset";
+        std::string tmp_name = prefix;
+        int suffix = 0;
 
-        genr<GretlMatrix>(tmp_matrix_name, data);
-        gretl_generate<GRETL_TYPE_SERIES>(tmp_matrix_name, shared_from_this(), name);
-        do_gretl_delete_variables(tmp_matrix_name, py::dict(), false);
+        while (get_user_var_by_name(tmp_name.c_str()) != nullptr || get_series_id(tmp_name, false) >= 0) {
+            tmp_name = prefix + "_" + std::to_string(++suffix);
+        }
+        genr<GretlMatrix>(tmp_name, data);
+
+        try {
+            gretl_generate<GRETL_TYPE_SERIES>(tmp_name, shared_from_this(), name);
+        } catch (...) {
+            try {
+                do_gretl_delete_variables(tmp_name, py::dict(), false);
+            } catch (...) {
+                // Preserve the original exception
+            }
+            throw;
+        }
+
+        do_gretl_delete_variables(tmp_name, py::dict(), false);
     }
 }
 
