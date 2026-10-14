@@ -130,7 +130,7 @@ public:
 
     py::list get_obs_labels (void) const;
 
-    std::string info (bool quiet = true) const noexcept;
+    std::string info (bool quiet = true) const;
 
     template <typename T>
     py::object summary (const T &varlist, const py::kwargs &kwargs);

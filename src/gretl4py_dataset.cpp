@@ -509,7 +509,7 @@ py::list GretlDataset::get_obs_labels (void) const
     return static_cast<bool>(dataset_is_cross_section(dset));
 }
 
-std::string GretlDataset::info (bool quiet) const noexcept
+std::string GretlDataset::info (bool quiet) const
 {
     //
     // method prints basic info about dataset
