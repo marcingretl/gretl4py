@@ -27,6 +27,7 @@
 extern "C" {
     #include <gretl/var.h>
     #include <gretl/gretl_xml.h>
+    #include <gretl/uservar.h>
 }
 
 //////////////////////////////////////////////////
@@ -369,7 +370,7 @@ std::set<int> GretlDataset::get_dset_ids (void)
     return res;
 }
 
-GretlDatasetPtr GretlDataset::default_dataset (void)
+GretlDatasetPtr GretlDataset::default_dataset (void) noexcept
 {
     return default_dataset_.lock();
 }
@@ -402,6 +403,17 @@ void GretlDataset::add_or_replace_allocated_series_ (gretl_double_ptr data, cons
 
     // we check if we add new or replace series
     int v = get_series_id(name, false);
+
+    if (v == 0) {
+        throw std::invalid_argument("cannot replace the constant series");
+    } else if (v < 0) {
+        err_ = check_varname(name.c_str());
+        if (err_) handle_gretl_error(err_);
+        if (user_var_get_type_by_name(name.c_str()) != GRETL_TYPE_NONE) {
+            gretl_errmsg_set("There is already an object of this name");
+            handle_gretl_error(E_DATA);
+        }
+    }
 
     // we do the job
     double *data_ptr = data.release();

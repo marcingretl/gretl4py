@@ -87,7 +87,7 @@ public:
 
     static std::set<int> get_dset_ids (void);
 
-    static GretlDatasetPtr default_dataset (void);
+    static GretlDatasetPtr default_dataset (void) noexcept;
 
     // instance management
     int get_id (void) const noexcept;
