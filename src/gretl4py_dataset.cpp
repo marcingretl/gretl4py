@@ -708,6 +708,7 @@ void GretlDataset::add_series (const py::array &data, const std::string &name)
         // we use std::malloc since memory will be deallocated by libgretl
         gretl_double_ptr data_copy(static_cast<double*>(std::malloc(dset->n * sizeof(double))));
 
+        if (!data_copy) handle_gretl_error(E_ALLOC);
         // actual work
         NumPyArray_to_gretl_storage<double>(view, data_copy.get(), 0, true);
         add_or_replace_allocated_series_(std::move(data_copy), name, dset->n);
