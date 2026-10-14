@@ -658,8 +658,12 @@ GretlMatrixPtr GretlDataset::to_matrix (const T &list, int startobs, int endobs,
         }
     }
 
-    if (startobs && startobs < 1) throw std::invalid_argument("startobs cannot be < 1");
-    if (endobs && endobs > dset->n) throw std::invalid_argument("endobs cannot greater than total number of observations");
+    const int t1 = startobs ? startobs : dset->t1;
+    const int t2 = endobs ? endobs : dset->t2;
+
+    if (t1 < 0 || t1 >= dset->n) throw std::invalid_argument("startobs out of range");
+    if (t2 < 0 || t2 >= dset->n) throw std::invalid_argument("endobs out of range");
+    if (t1 > t2) throw std::invalid_argument("startobs cannot be greater than endobs");
     if (missing == "ok") {
         missop_code = M_MISSING_OK;
     } else if (missing == "error") {
@@ -669,10 +673,7 @@ GretlMatrixPtr GretlDataset::to_matrix (const T &list, int startobs, int endobs,
     } else {
         throw std::invalid_argument("unknown value for missing");
     }
-    res = std::make_shared<GretlMatrix>(gretl_matrix_data_subset(gretl_list.get(), dset,
-                                                                 startobs ? startobs : dset->t1,
-                                                                 endobs ? endobs : dset->t2, missop_code,
-                                                                 &err_), false);
+    res = std::make_shared<GretlMatrix>(gretl_matrix_data_subset(gretl_list.get(), dset, t1, t2, missop_code, &err_), false);
     if (err_) handle_gretl_error(err_);
 
     return res;
