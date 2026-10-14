@@ -104,7 +104,7 @@ void init_gretl4py_model_py11(py::module_ &m)
     gretl_model_nse
     .def_property_readonly("adj_rsq", &GretlModel_NSE::adj_rsq, doc::Model::adj_rsq)
     .def("restrict", &GretlModel_NSE::restrict,
-            py::arg("impose").none(false), py::kw_only(), doc::Model::restrict)
+         py::arg("impose").none(false), py::kw_only(), doc::Model::restrict)
     .def("save_yhat", &GretlModel_NSE::gretl_get_fit_or_resid<M_YHAT>,
          py::arg("name").none(true) = "", doc::Model::save_yhat)
     .def("save_uhat", &GretlModel_NSE::gretl_get_fit_or_resid<M_UHAT>,
