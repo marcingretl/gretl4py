@@ -125,55 +125,61 @@ GretlDataset::GretlDataset (const py::dict &pydict) : id_(next_obj_id_++)
         }
     };
 
-    // we allocate memory
-    allocate_dset_();
+    try {
+        // we allocate memory
+        allocate_dset_();
 
-    // we fill up dset->Z
-    get_object_from_dict<py::array_t<double>>(pydict, "data_array", pyarray);
-    NumPyArray_extract(pyarray, arr_view);
-    if (!arr_view.data) throw std::runtime_error("NumPy array: null pointer.");
-    dset->n = arr_view.rows;
-    dset->v = arr_view.cols + 1;
-    err_ = allocate_Z(dset, OPT_NONE);
-    if (err_) handle_gretl_error(err_);
-    for (int i=1; i<dset->v; i++) {
-        NumPyArray_to_gretl_storage<double>(arr_view, dset->Z[i], i-1, true);
+        // we fill up dset->Z
+        get_object_from_dict<py::array_t<double>>(pydict, "data_array", pyarray);
+        NumPyArray_extract(pyarray, arr_view);
+        if (!arr_view.data) throw std::runtime_error("NumPy array: null pointer.");
+        dset->n = arr_view.rows;
+        dset->v = arr_view.cols + 1;
+        err_ = allocate_Z(dset, OPT_NONE);
+        if (err_) handle_gretl_error(err_);
+        for (int i=1; i<dset->v; i++) {
+            NumPyArray_to_gretl_storage<double>(arr_view, dset->Z[i], i-1, true);
+        }
+        dset->t1 = 0;
+        dset->t2 = dset->n-1;
+
+        // we allocate memory for varnames and obs markers
+        if (dataset_allocate_varnames(dset) || dataset_allocate_obs_markers(dset)) handle_gretl_error(E_ALLOC);
+
+        // we fill up dset->S
+        pylist = pydict[py::cast("obs_labels")];
+        if (pylist.size() != static_cast<long unsigned int>(dset->n)) throw std::invalid_argument("Number of obs_labels is different than number of observations.");
+        for (int i=0; i<dset->n; ++i) {
+            std::string el = py::str(pylist[i]);
+
+            std::memset(dset->S[i], '\0', OBSLEN);
+            el.copy(dset->S[i], OBSLEN-1, 0);
+        }
+
+        // we fill up dset->varname
+        pylist = pydict[py::cast("varname")];
+        if (pylist.size() != static_cast<long unsigned int>(dset->v-1)) throw std::invalid_argument("Number of varnames is different than number of variables.");
+        for (int i=0; i<dset->v-1; i++) {
+            if (!is_pystr(pylist[i])) throw std::runtime_error("name of variable " + std::to_string(i) + " not a string");
+            auto el = py::cast<std::string>(pylist[i]);
+
+            std::memset(dset->varname[i+1], '\0', VNAMELEN);
+            gretl_normalize_varname(dset->varname[i+1], el.c_str(), 1, 0);
+        }
+
+        // The following actions work fine if the python dict we're working with
+        // was created by GretlDataset::to_dict (that is, starting from a gretl
+        // dataset in libgretl's memory-space).
+        dset->structure = get_int_from_pydict("structure", 0);
+        err_ = set_obs(std::to_string(get_int_from_pydict("periodicity", 1)).c_str(), dset->S[0], dset, setobs_opt_from_structure(dset->structure));
+        if (err_) handle_gretl_error(err_);
+
+        // we set obs labels
+        set_obs_labels_();
+    } catch (...) {
+        free_dset_();
+        throw;
     }
-    dset->t1 = 0;
-    dset->t2 = dset->n-1;
-
-    // we allocate memory for varnames and obs markers
-    if (dataset_allocate_varnames(dset) || dataset_allocate_obs_markers(dset)) handle_gretl_error(E_ALLOC);
-
-    // we fill up dset->S
-    pylist = pydict[py::cast("obs_labels")];
-    if (pylist.size() != static_cast<long unsigned int>(dset->n)) throw std::invalid_argument("Number of obs_labels is different than number of observations.");
-    for (int i=0; i<dset->n; ++i) {
-        std::string el = py::str(pylist[i]);
-
-        std::memset(dset->S[i], '\0', OBSLEN);
-        el.copy(dset->S[i], OBSLEN-1, 0);
-    }
-
-    // we fill up dset->varname
-    pylist = pydict[py::cast("varname")];
-    if (pylist.size() != static_cast<long unsigned int>(dset->v-1)) throw std::invalid_argument("Number of varnames is different than number of variables.");
-    for (int i=0; i<dset->v-1; i++) {
-        if (!is_pystr(pylist[i])) throw std::runtime_error("name of variable " + std::to_string(i) + " not a string");
-        auto el = py::cast<std::string>(pylist[i]);
-
-        std::memset(dset->varname[i+1], '\0', VNAMELEN);
-        gretl_normalize_varname(dset->varname[i+1], el.c_str(), 1, 0);
-    }
-
-    // The following actions work fine if the python dict we're working with
-    // was created by GretlDataset::to_dict (that is, starting from a gretl
-    // dataset in libgretl's memory-space).
-    dset->structure = get_int_from_pydict("structure", 0);
-    set_obs(std::to_string(get_int_from_pydict("periodicity", 1)).c_str(), dset->S[0], dset, setobs_opt_from_structure(dset->structure));
-
-    // we set obs labels
-    set_obs_labels_();
 }
 
 GretlDataset::GretlDataset (const GretlDataset &src) : id_(next_obj_id_++)
