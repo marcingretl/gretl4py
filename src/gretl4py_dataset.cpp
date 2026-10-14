@@ -61,29 +61,31 @@ GretlDataset::GretlDataset (const std::string &fname, const py::dict &kwargs) : 
         }
     }
 
-    allocate_dset_();
-    if (!dset) handle_gretl_error(E_ALLOC);
+    try {
+        allocate_dset_();
+        if (!dset) handle_gretl_error(E_ALLOC);
 
-    // we try to read the file
-    err_ = gretl_get_data(full_path.empty() ? fname.c_str() : full_path.c_str(), dset, OPT_NONE, printer_.prn_ptr());
-    if (!quiet || err_) printer_.print();
-    if (err_) {
-        destroy_dataset(dset);
-        handle_gretl_error(err_, full_path.empty() ? fname : full_path);
+        // we try to read the file
+        err_ = gretl_get_data(full_path.empty() ? fname.c_str() : full_path.c_str(), dset, OPT_NONE, printer_.prn_ptr());
+        if (!quiet || err_) printer_.print();
+        if (err_) handle_gretl_error(err_, full_path.empty() ? fname : full_path);
+
+        // we try to read dataset description
+        if (full_path.empty()) {
+            char buf[MAXLEN] = {0};
+
+            strncpy(buf, fname.c_str(), MAXLEN-1);
+            if (auto ptr = gretl_addpath(buf, 0)) source = std::string(ptr);
+        } else {
+            source = full_path;
+        }
+
+        // we set obs labels
+        set_obs_labels_();
+    } catch (...) {
+        free_dset_();
+        throw;
     }
-
-    // we try to read dataset description
-    if (full_path.empty()) {
-        char buf[MAXLEN] = {0};
-
-        strncpy(buf, fname.c_str(), MAXLEN-1);
-        if (auto ptr = gretl_addpath(buf, 0)) source = std::string(ptr);
-    } else {
-        source = full_path;
-    }
-
-    // we set obs labels
-    set_obs_labels_();
 }
 
 GretlDataset::GretlDataset (const py::dict &pydict) : id_(next_obj_id_++)
@@ -279,13 +281,13 @@ GretlDatasetPtr GretlDataset::get_dset_by_id_ (int id)
     //
     // we return pointer to already registered dataset
     //
-    auto dset_reg = get_dset_ids();
-
-    if (!dset_reg.count(id)) throw std::invalid_argument("there is no dataset with id = " + std::to_string(id));
-
     auto it = dataset_.find(id);
 
-    return it->second.lock();
+    if (it != dataset_.end()) {
+        if (auto dataset = it->second.lock()) return dataset;
+        dataset_.erase(it);
+    }
+    throw std::invalid_argument("there is no dataset with id = " + std::to_string(id));
 }
 
 void GretlDataset::register_dset_ (const GretlDatasetPtr dataset )
@@ -334,14 +336,14 @@ GretlDatasetPtr GretlDataset::get_data (const py::object &src, const std::string
     }
     if (!dataset) handle_gretl_error(E_DATA);
 
-    // we set default (id needed)
-    if (!default_dataset_.lock()) dataset->set_as_default();
-
     // we set info
     if (!source.empty() && dataset->source.empty()) dataset->source = source;
 
     // we register dataset
     if (register_dataset) register_dset_(dataset);
+
+    // we set default (id needed)
+    if (!default_dataset_.lock()) dataset->set_as_default();
 
     return dataset;
 }
@@ -1312,7 +1314,7 @@ void GretlDataset::setobs (const std::string &periodicity,
     printer_.print();
 }
 
-void GretlDataset::set_as_default (void)
+void GretlDataset::set_as_default (void) noexcept
 {
     if (auto current_default = default_dataset_.lock()) current_default->is_default = false;
     default_dataset_ = weak_from_this();

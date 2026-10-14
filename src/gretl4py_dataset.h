@@ -104,7 +104,7 @@ public:
 
     void print (const py::list &varlist, const py::kwargs &kwargs);
 
-    void set_as_default (void);
+    void set_as_default (void) noexcept;
 
     // exporters
     py::object get_accessor (const std::string &name);
