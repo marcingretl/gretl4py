@@ -183,65 +183,81 @@ GretlDataset::GretlDataset (const GretlDataset &src) : id_(next_obj_id_++)
     //
     if (!src.dset) handle_gretl_error(E_DATA);
 
-    allocate_dset_();
-    if (!dset) handle_gretl_error(E_ALLOC);
-
-    // simple types
-    dset->v = src.dset->v;
-    dset->n = src.dset->n;
-    dset->pd = src.dset->pd;
-    dset->structure = src.dset->structure;
-    dset->sd0 = src.dset->sd0;
-    dset->t1 = src.dset->t1;
-    dset->t2 = src.dset->t2;
-    dset->markers = src.dset->markers;
-    dset->rseed = src.dset->rseed;
-    dset->auxiliary = src.dset->auxiliary;
-    dset->n_varinfo = src.dset->n_varinfo;
-    dset->panel_pd = src.dset->panel_pd;
-    dset->panel_sd0 = src.dset->panel_sd0;
-    std::strncpy(dset->stobs, src.dset->stobs, OBSLEN);
-    std::strncpy(dset->endobs, src.dset->endobs, OBSLEN);
-
-    // we allocate memory
-    err_ = allocate_Z(dset, OPT_NONE);
-    if (err_) handle_gretl_error(err_);
-    err_ = dataset_allocate_varnames(dset);
-    if (err_) handle_gretl_error(err_);
-    err_ = dataset_allocate_obs_markers(dset);
-    if (err_) handle_gretl_error(err_);
-
-    // dset->Z
-    for (int i=1; i<dset->v; ++i) {
-        std::memcpy(dset->Z[i], src.dset->Z[i], src.dset->n * sizeof(double));
-    }
-
-    // dset->varname and dset->VARINFO
-    for (int i=0; i<src.dset->v-1; ++i) {
-        std::memset(dset->varname[i+1], '\0', VNAMELEN);
-        gretl_normalize_varname(dset->varname[i+1], src.dset->varname[i+1], 1, 0);
-        copy_varinfo(dset->varinfo[i+1], src.dset->varinfo[i+1]);
-    }
-
-    // dset->S
-    copy_dataset_obs_info(dset, src.dset);
-
     // simple strings
-    if (src.dset->descrip)     dset->descrip     = strdup(src.dset->descrip);
-    if (src.dset->submask)     dset->submask     = strdup(src.dset->submask);
-    if (src.dset->restriction) dset->restriction = strdup(src.dset->restriction);
-    if (src.dset->padmask)     dset->padmask     = strdup(src.dset->padmask);
-    if (src.dset->mapfile)     dset->mapfile     = strdup(src.dset->mapfile);
-    if (src.dset->pangrps)     dset->pangrps     = strdup(src.dset->pangrps);
+    auto strdup_local = [](const char *s) -> char*
+    {
+        if (!s) return nullptr;
+        char *p = strdup(s);
 
-    // we set obs labels
-    set_obs_labels_();
+        if (!p) handle_gretl_error(E_ALLOC);
 
-    // we mark it as copy of ...
-    if (!src.source.empty()) {
-        source = src.source + " (copy of " + std::to_string(src.get_id()) + ")";
-    } else {
-        source = "copy of dataset " + std::to_string(src.get_id());
+        return p;
+    };
+
+    try {
+        allocate_dset_();
+        if (!dset) handle_gretl_error(E_ALLOC);
+
+        // simple types
+        dset->v = src.dset->v;
+        dset->n = src.dset->n;
+        dset->pd = src.dset->pd;
+        dset->structure = src.dset->structure;
+        dset->sd0 = src.dset->sd0;
+        dset->t1 = src.dset->t1;
+        dset->t2 = src.dset->t2;
+        dset->markers = src.dset->markers;
+        dset->rseed = src.dset->rseed;
+        dset->auxiliary = src.dset->auxiliary;
+        dset->n_varinfo = src.dset->n_varinfo;
+        dset->panel_pd = src.dset->panel_pd;
+        dset->panel_sd0 = src.dset->panel_sd0;
+        std::strncpy(dset->stobs, src.dset->stobs, OBSLEN);
+        std::strncpy(dset->endobs, src.dset->endobs, OBSLEN);
+
+        // we allocate memory
+        err_ = allocate_Z(dset, OPT_NONE);
+        if (err_) handle_gretl_error(err_);
+        err_ = dataset_allocate_varnames(dset);
+        if (err_) handle_gretl_error(err_);
+        err_ = dataset_allocate_obs_markers(dset);
+        if (err_) handle_gretl_error(err_);
+
+        // dset->Z
+        for (int i=1; i<dset->v; ++i) {
+            std::memcpy(dset->Z[i], src.dset->Z[i], src.dset->n * sizeof(double));
+        }
+
+        // dset->varname and dset->VARINFO
+        for (int i=0; i<src.dset->v-1; ++i) {
+            std::memset(dset->varname[i+1], '\0', VNAMELEN);
+            gretl_normalize_varname(dset->varname[i+1], src.dset->varname[i+1], 1, 0);
+            copy_varinfo(dset->varinfo[i+1], src.dset->varinfo[i+1]);
+        }
+
+        // dset->S
+        copy_dataset_obs_info(dset, src.dset);
+
+        // simple strings
+        if (src.dset->descrip)     dset->descrip     = strdup_local(src.dset->descrip);
+        if (src.dset->submask)     dset->submask     = strdup_local(src.dset->submask);
+        if (src.dset->restriction) dset->restriction = strdup_local(src.dset->restriction);
+        if (src.dset->padmask)     dset->padmask     = strdup_local(src.dset->padmask);
+        if (src.dset->mapfile)     dset->mapfile     = strdup_local(src.dset->mapfile);
+        if (src.dset->pangrps)     dset->pangrps     = strdup_local(src.dset->pangrps);
+
+        // we set obs labels
+        set_obs_labels_();
+
+        // we mark it as copy of ...
+        if (!src.source.empty()) {
+            source = src.source + " (copy of " + std::to_string(src.get_id()) + ")";
+        } else {
+            source = "copy of dataset " + std::to_string(src.get_id());
+        }
+    } catch (...) {
+        free_dset_();
+        throw;
     }
 }
 

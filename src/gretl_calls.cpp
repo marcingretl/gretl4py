@@ -1009,6 +1009,7 @@ py::object get_uservar (const std::string &varname)
 
     gretl_error_clear();
 
+    if (err == E_ALLOC) throw std::bad_alloc();
     if (err == E_FOPEN) throw file_not_found(msg + ": " + ext_msg);
     if (err == E_BOUNDS) {
         build_msg();
