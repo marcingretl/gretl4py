@@ -1306,7 +1306,7 @@ py::object GretlDataset::xtab (const T &varlist, const py::kwargs &kwargs)
         if constexpr (is_gretllist_arg_v<T>) {
             var_list = gretllist(varlist);
         } else {
-            static_assert(always_false<T>, "GretlDataset::corr(): unsupported type");
+            static_assert(always_false<T>, "GretlDataset::xtab(): unsupported type");
         }
     }
 
