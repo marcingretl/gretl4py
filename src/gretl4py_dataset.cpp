@@ -175,7 +175,7 @@ GretlDataset::GretlDataset (const py::dict &pydict) : id_(next_obj_id_++)
         // dataset in libgretl's memory-space).
         dset->structure = get_int_from_pydict("structure", 0);
         err_ = set_obs(std::to_string(get_int_from_pydict("periodicity", 1)).c_str(), dset->S[0], dset, setobs_opt_from_structure(dset->structure));
-        if (err_) handle_gretl_error(err_);
+        //if (err_) handle_gretl_error(err_);
 
         // we set obs labels
         set_obs_labels_();
@@ -867,18 +867,15 @@ void GretlDataset::transforms_no_opts (const T &varlist)
     }
 
     // we do the job
-    int *varlist_raw_ptr = var_list.release();
-
     if constexpr (CI == DIFF || CI == LDIFF || CI == SDIFF) {
-        err_ = list_diffgenr(varlist_raw_ptr, CI, dset);
+        err_ = list_diffgenr(var_list.get(), CI, dset);
     } else if constexpr (CI == LOGS) {
-        err_ = list_loggenr(varlist_raw_ptr, dset);
+        err_ = list_loggenr(var_list.get(), dset);
     } else if constexpr (CI == ORTHDEV) {
-        err_ = list_orthdev(varlist_raw_ptr, dset);
+        err_ = list_orthdev(var_list.get(), dset);
     } else {
-        static_assert(always_false<std::integral_constant<GretlCmdIndex, CI>>, "GretlDataset::transforms_no_opts(): unsupported command");
+        static_assert(always_false<std::integral_constant<GretlCmdIndex, CI>>,"GretlDataset::transforms_no_opts(): unsupported command");
     }
-    var_list.reset(varlist_raw_ptr);
     if (err_) handle_gretl_error(err_);
 
     // based on interact.c
