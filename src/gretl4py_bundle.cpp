@@ -72,7 +72,6 @@ GretlBundle::GretlBundle (gretl_bundle *src, bool copy)
         b_ = gretl_bundle_copy(src, &err_);
     } else {
         b_ = src;
-        free_b_ = false;
     }
     if (err_) handle_gretl_error(err_);
 }
