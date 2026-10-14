@@ -905,9 +905,10 @@ std::string GretlDataset::repr (void) const
 
     // if dataset read from file, we try to append dataset info
     if (from_file_ && std::filesystem::exists(source)) {
-        gretl_char_ptr desc(gretl_get_gdt_description(source.c_str(), &err_));
+        int err = 0;
+        gretl_char_ptr desc(gretl_get_gdt_description(source.c_str(), &err));
 
-        if (!err_ && desc) {
+        if (err && desc) {
             ret.push_back('\n');
             ret += desc.get();
         }
@@ -999,6 +1000,7 @@ void GretlDataset::smpl (const std::string &startobs, const std::string &endobs,
     opt_ = unpack_kwargs_command(SMPL, fake_dataset, kwargs_copy);
 
     // we do the job
+    err_ = 0;
     if (!dset || dset->n <= 0) {
         err_ = E_NODATA;
     } else if (opt_ & OPT_F) {
