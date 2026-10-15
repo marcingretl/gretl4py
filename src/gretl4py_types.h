@@ -87,6 +87,22 @@ struct StringsArrayDeleter {
 };
 using strings_array_ptr = std::unique_ptr<char*, StringsArrayDeleter>;
 
+// gretl_bundle
+struct GretlBundleDeleter {
+    void operator() (gretl_bundle *ptr) const noexcept {
+        gretl_bundle_destroy(ptr);
+    }
+};
+using gretl_bundle_ptr = std::unique_ptr<gretl_bundle, GretlBundleDeleter>;
+
+// gretl_array
+struct GretlArrayDeleter {
+    void operator() (gretl_array *ptr) const noexcept {
+        gretl_array_destroy(ptr);
+    }
+};
+using gretl_array_ptr = std::unique_ptr<gretl_array, GretlArrayDeleter>;
+
 // DATASET
 struct GretlDATASETDeleter {
     void operator() (DATASET *ptr) const { destroy_dataset(ptr); }

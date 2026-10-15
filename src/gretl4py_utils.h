@@ -87,6 +87,7 @@ py::object variant_to_pyobject (GretlTypes &&val) noexcept;
 template <typename T>
 void get_object_from_dict (const py::dict &dict, const char *key, T &target);
 
+template <bool take_ownership = false>
 GretlTypesPtr convert_GretlType_to_GretlTypes (GretlType t, void *gr_obj_ptr, const int n, int &err);
 
 PythonArgInfo inspect_pyobject (py::handle obj);

@@ -974,7 +974,7 @@ template void genr<double>(const std::string&, const double&);
 template void genr<std::string>(const std::string&, const std::string&);
 template void genr<GretlMatrix>(const std::string&, const GretlMatrix&);
 
-py::object get_uservar (const std::string &varname)
+py::object get_uservar2 (const std::string &varname)
 {
     //
     // we take uservar from stack (by name)
@@ -984,6 +984,43 @@ py::object get_uservar (const std::string &varname)
     auto res = gretl_generate_gretl_object(varname.c_str(), err, GRETL_OBJ_ANY, dataset ? dataset->dset : nullptr);
 
     if (err) handle_gretl_error(err);
+    user_vars.erase(varname);
+
+    return variant_to_pyobject(std::move(*res));
+}
+
+py::object get_uservar (const std::string &varname)
+{
+    //
+    // we grab uservar from stack (by name)
+    //
+    auto dataset = GretlDataset::default_dataset();
+    int err = 0;
+
+    // find the user variable in libgretl's registry.
+    user_var *uvar = get_user_var_by_name(varname.c_str());
+
+    if (!uvar) {
+        err = E_UNKVAR;
+        handle_gretl_error(err);
+    }
+
+    // retrieve the type and detach the value.
+    GretlType type = user_var_get_type(uvar);
+    void *raw = user_var_steal_value(uvar);
+
+    // convert the detached value, transferring ownership.
+    auto res = convert_GretlType_to_GretlTypes<true>(type, raw, dataset ? dataset->dset->n : 0, err);
+
+    if (err) {
+        // restore the uservar's data
+        user_var_set_pointer(uvar, raw);
+        handle_gretl_error(err);
+    } else {
+        // remove the empty variable from both: libgretl's and gretl4py's registry
+        user_var_delete(uvar);
+        user_vars.erase(varname);
+    }
 
     return variant_to_pyobject(std::move(*res));
 }
@@ -1196,9 +1233,10 @@ GretlTypesPtr gretl_generate_gretl_object (const char *s, int &err, GretlObjType
 
     // we grab object from stack (note: if model was passed we use it)
     if (model != nullptr) set_genr_model(model, obj_type);
+    py::print("*** gretl_generate_gretl_object(): ", s);
     resp = generate_gretl_object(s, dset, &t, &err);
     if (model != nullptr) unset_genr_model();
-    if (!err) res = convert_GretlType_to_GretlTypes(t, resp, dset->n, err);
+    if (!err) res = convert_GretlType_to_GretlTypes<true>(t, resp, dset->n, err);
     if (err) handle_gretl_error(err);
 
     return res;

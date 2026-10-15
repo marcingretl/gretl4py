@@ -217,14 +217,61 @@ template void get_object_from_dict<std::vector<std::string>>(const py::dict&, co
 template void get_object_from_dict<std::string>(const py::dict&, const char*, std::string&);
 template void get_object_from_dict<py::array_t<double>>(const py::dict&, const char*, py::array_t<double>&);
 
+template <bool take_ownership>
 GretlTypesPtr convert_GretlType_to_GretlTypes (GretlType t, void *gr_obj_ptr, const int n, int &err)
 {
     //
-    // function converts libgretl's GretlType to gretl4py's GretlTypes
-    // *gr_obj_ptr: pointer to libgretl's object
-    // n - GRETL_TYPE_SERIES special case (series length)
+    // Convert a libgretl object to a GretlTypesPtr.
+    //
+    // Parameters:
+    //   t              - Type of the source libgretl object.
+    //   gr_obj_ptr     - Pointer to the source object.
+    //   n              - Number of observations (relevant for series).
+    //   err            - Error code, set if conversion fails.
+    //   take_ownership - Whether to take ownership of the source object
+    //                    (default: false).
+    //
+    // Ownership rules:
+    //
+    // - GRETL_TYPE_NONE and GRETL_TYPE_VOID may have a null source pointer.
+    //   For all other types, a null pointer raises E_NODATA.
+    //
+    // - If take_ownership is false, the source object is borrowed and
+    //   remains owned by the caller. The converter must not modify or
+    //   destroy it.
+    //
+    // - If take_ownership is true, the converter assumes responsibility
+    //   for the source object, including when conversion fails.
+    //
+    // - For GRETL_TYPE_MATRIX and GRETL_TYPE_BUNDLE, ownership can be
+    //   transferred directly to the corresponding C++ wrapper without
+    //   copying the underlying object.
+    //
+    // - For GRETL_TYPE_STRING, GRETL_TYPE_LIST, GRETL_TYPE_SERIES and
+    //   GRETL_TYPE_ARRAY, the converter creates an independent result
+    //   and releases the source object using the appropriate deleter.
+    //   Array elements remain owned by their parent array during
+    //   recursive conversion.
+    //
+    // - GRETL_TYPE_DOUBLE is always treated as a borrowed pointer,
+    //   regardless of take_ownership. Its value is copied, but the
+    //   source pointer is never freed.
+    //
+    // The returned GretlTypesPtr owns its converted data independently
+    // of the source object.
+    //
+    // Ownership transfer must be exception-safe. A source object taken
+    // into ownership must be released exactly once, even if conversion
+    // fails. Calling release() is permitted only when ownership is
+    // actually transferred to another object.
     //
     auto res = std::make_unique<GretlTypes>();
+
+    // we early reject bad results
+    if (!gr_obj_ptr && t != GRETL_TYPE_NONE && t != GRETL_TYPE_VOID) {
+        err = E_NODATA;
+        handle_gretl_error(err);
+    }
 
     switch (t) {
     case GRETL_TYPE_NONE: {
@@ -244,43 +291,76 @@ GretlTypesPtr convert_GretlType_to_GretlTypes (GretlType t, void *gr_obj_ptr, co
         *res = *(static_cast<double*>(gr_obj_ptr));
         break;
     case GRETL_TYPE_STRING: {
-        *res = static_cast<char*>(gr_obj_ptr);
+        auto *raw = static_cast<char*>(gr_obj_ptr);
+
+        if constexpr (take_ownership) {
+            gretl_char_ptr ptr(raw);
+
+            *res = std::string(ptr.get());
+        } else {
+            *res = std::string(raw);
+        }
         break;
     }
     case GRETL_TYPE_MATRIX: {
-        *res = std::make_shared<GretlMatrix>(static_cast<gretl_matrix*>(gr_obj_ptr));
+        py::print("\n***mam macierz, --take_ownership=", take_ownership);
+        auto *raw = static_cast<gretl_matrix*>(gr_obj_ptr);
+
+        if constexpr (take_ownership) {
+            gretl_matrix_ptr ptr(raw);
+
+            *res = std::make_shared<GretlMatrix>(ptr.release(), false);
+        } else {
+            *res = std::make_shared<GretlMatrix>(raw, true);
+        }
         break;
     }
     case GRETL_TYPE_BUNDLE: {
-        *res = std::make_shared<GretlBundle>(static_cast<gretl_bundle*>(gr_obj_ptr));
+        auto *raw = static_cast<gretl_bundle*>(gr_obj_ptr);
+
+        if constexpr (take_ownership) {
+            gretl_bundle_ptr ptr(raw);
+
+            *res = std::make_shared<GretlBundle>(ptr.release(), false);
+        } else {
+            *res = std::make_shared<GretlBundle>(raw, true);
+        }
         break;
     }
     case GRETL_TYPE_ARRAY:
     case GRETL_TYPE_MATRICES:
     case GRETL_TYPE_STRINGS:
     case GRETL_TYPE_BUNDLES: {
-        gretl_array *a = static_cast<gretl_array*>(gr_obj_ptr);
+        auto *a = static_cast<gretl_array*>(gr_obj_ptr);
+        gretl_array_ptr ptr(take_ownership ? a : nullptr);
         py::list py_list;
         GretlType tmp;
 
-        for (int i=0; i<gretl_array_get_length(a); i++) {
+        for (int i=0; i<gretl_array_get_length(a); ++i) {
             tmp = gretl_array_get_content_type(a);
-            auto element = convert_GretlType_to_GretlTypes(tmp, gretl_array_get_element(a, i, &tmp, &err), n, err);
+            auto element = convert_GretlType_to_GretlTypes<false>(tmp, gretl_array_get_element(a, i, &tmp, &err), n, err);
+
+            if (err) handle_gretl_error(err);
+
             py_list.append(variant_to_pyobject(std::move(*element)));
         }
         *res = py_list;
         break;
     }
     case GRETL_TYPE_SERIES: {
-        *res = std::make_shared<GretlMatrix>(static_cast<double*>(gr_obj_ptr), n);
+        auto *raw = static_cast<double*>(gr_obj_ptr);
+        gretl_double_ptr ptr(take_ownership ? raw : nullptr);
+
+        *res = std::make_shared<GretlMatrix>(raw, n);
         break;
     }
     case GRETL_TYPE_LIST: {
-        int *l = static_cast<int*>(gr_obj_ptr);
+        auto *raw = static_cast<int*>(gr_obj_ptr);
+        gretl_list_ptr ptr(take_ownership ? raw : nullptr);
         py::list py_list;
 
-        for (int i=1; i<=l[0]; ++i) {
-            py_list.append(l[i]);
+        for (int i = 1; i <= raw[0]; ++i) {
+            py_list.append(raw[i]);
         }
         *res = py_list;
         break;
@@ -292,6 +372,8 @@ GretlTypesPtr convert_GretlType_to_GretlTypes (GretlType t, void *gr_obj_ptr, co
 
     return res;
 }
+template GretlTypesPtr convert_GretlType_to_GretlTypes<false>(GretlType, void*, const int, int&);
+template GretlTypesPtr convert_GretlType_to_GretlTypes<true>(GretlType, void*, const int, int&);
 
 PythonArgInfo inspect_pyobject (py::handle obj)
 {
