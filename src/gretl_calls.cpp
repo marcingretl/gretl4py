@@ -77,7 +77,7 @@ static std::string extract_varname (std::string formula)
     iss >> first >> second;
 
     if (std::find(keywords.begin(), keywords.end(), first) != keywords.end() && !second.empty()) {
-        formula = formula.substr(formula.find(second));
+        formula = formula.substr(first.size());
         gretl4py_trim(formula);
     }
 
@@ -974,53 +974,28 @@ template void genr<double>(const std::string&, const double&);
 template void genr<std::string>(const std::string&, const std::string&);
 template void genr<GretlMatrix>(const std::string&, const GretlMatrix&);
 
-py::object get_uservar2 (const std::string &varname)
-{
-    //
-    // we take uservar from stack (by name)
-    //
-    auto dataset = GretlDataset::default_dataset();
-    int err = 0;
-    auto res = gretl_generate_gretl_object(varname.c_str(), err, GRETL_OBJ_ANY, dataset ? dataset->dset : nullptr);
-
-    if (err) handle_gretl_error(err);
-    user_vars.erase(varname);
-
-    return variant_to_pyobject(std::move(*res));
-}
-
 py::object get_uservar (const std::string &varname)
 {
     //
-    // we grab uservar from stack (by name)
+    // we grab (i.e. steal) uservar from stack (by name)
     //
     auto dataset = GretlDataset::default_dataset();
     int err = 0;
-
-    // find the user variable in libgretl's registry.
     user_var *uvar = get_user_var_by_name(varname.c_str());
 
-    if (!uvar) {
-        err = E_UNKVAR;
-        handle_gretl_error(err);
-    }
+    if (!uvar) handle_gretl_error(E_UNKVAR);
 
-    // retrieve the type and detach the value.
+    // detach the value and remove the empty registry entry.
     GretlType type = user_var_get_type(uvar);
     void *raw = user_var_steal_value(uvar);
 
-    // convert the detached value, transferring ownership.
+    user_var_delete(uvar);
+    user_vars.erase(varname);
+
+    // convert the detached value, transferring ownership
     auto res = convert_GretlType_to_GretlTypes<true>(type, raw, dataset ? dataset->dset->n : 0, err);
 
-    if (err) {
-        // restore the uservar's data
-        user_var_set_pointer(uvar, raw);
-        handle_gretl_error(err);
-    } else {
-        // remove the empty variable from both: libgretl's and gretl4py's registry
-        user_var_delete(uvar);
-        user_vars.erase(varname);
-    }
+    if (err) handle_gretl_error(err);
 
     return variant_to_pyobject(std::move(*res));
 }
@@ -1262,12 +1237,16 @@ void gretl_generate (const std::string &formula, GretlDatasetPtr dataset, const 
     // determine whether to use an explicit name or parse it from formula
     if (name.empty()) {
         err = generate(formula.c_str(), dataset ? dataset->dset : nullptr, GR_TYPE, OPT_NONE, global_printer.prn_ptr());
-        if constexpr (GR_TYPE != GRETL_TYPE_SERIES) varname = extract_varname(formula);
+        if constexpr (GR_TYPE != GRETL_TYPE_SERIES) {
+            varname = extract_varname(formula);
+        }
     } else {
         const std::string expr = name + "=" + formula;
 
         err = generate(expr.c_str(), dataset ? dataset->dset : nullptr, GR_TYPE, OPT_NONE, global_printer.prn_ptr());
-        if constexpr (GR_TYPE != GRETL_TYPE_SERIES) varname = name;
+        if constexpr (GR_TYPE != GRETL_TYPE_SERIES) {
+            varname = name;
+        }
     }
     if (err) handle_gretl_error(err);
 
