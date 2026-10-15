@@ -67,7 +67,8 @@ static std::string extract_varname (std::string formula)
     // extract user var name from formula
     // note: if used only in one place (gretl_generate) must be rewritten as lambda!!!
     //
-    static const std::array<std::string_view, 7> keywords{ "arrays", "bundle", "list", "matrix", "scalar", "series", "string" };
+    static const std::array<std::string_view, 10> keywords{ "arrays", "bundle", "bundles",
+        "list", "matrix", "matrices", "scalar", "series", "string", "strings"};
 
     gretl4py_trim(formula);
 
@@ -1251,7 +1252,7 @@ void gretl_generate (const std::string &formula, GretlDatasetPtr dataset, const 
 
     // register user-defined variable name (if applicable)
     if constexpr (GR_TYPE != GRETL_TYPE_SERIES) {
-        if (!varname.empty()) user_vars.insert(varname);
+        if (!varname.empty() && varname.find_first_of(".[") == std::string::npos) user_vars.insert(varname);
     }
 
     global_printer.print();

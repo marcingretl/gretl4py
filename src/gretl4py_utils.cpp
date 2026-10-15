@@ -303,7 +303,6 @@ GretlTypesPtr convert_GretlType_to_GretlTypes (GretlType t, void *gr_obj_ptr, co
         break;
     }
     case GRETL_TYPE_MATRIX: {
-        py::print("\n***mam macierz, --take_ownership=", take_ownership);
         auto *raw = static_cast<gretl_matrix*>(gr_obj_ptr);
 
         if constexpr (take_ownership) {
