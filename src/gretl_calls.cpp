@@ -1208,7 +1208,6 @@ GretlTypesPtr gretl_generate_gretl_object (const char *s, int &err, GretlObjType
 
     // we grab object from stack (note: if model was passed we use it)
     if (model != nullptr) set_genr_model(model, obj_type);
-    py::print("*** gretl_generate_gretl_object(): ", s);
     resp = generate_gretl_object(s, dset, &t, &err);
     if (model != nullptr) unset_genr_model();
     if (!err) res = convert_GretlType_to_GretlTypes<true>(t, resp, dset->n, err);
