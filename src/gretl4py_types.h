@@ -53,6 +53,12 @@ struct GretlDoubleDeleter {
 };
 using gretl_double_ptr = std::unique_ptr<double, GretlDoubleDeleter>;
 
+// standard int
+struct GretlIntDeleter {
+    void operator() (int *ptr) const { std::free(ptr); }
+};
+using gretl_int_ptr = std::unique_ptr<int, GretlIntDeleter>;
+
 // gretl_matrix
 struct GretlMatrixDeleter {
     void operator() (gretl_matrix *ptr) const noexcept { gretl_matrix_free(ptr); }

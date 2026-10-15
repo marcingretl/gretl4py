@@ -77,11 +77,7 @@ GretlBundle::GretlBundle (gretl_bundle *src, bool copy)
     // Here we either steal or make a copy of src
     // Note: if copy, 'src' _must_ be deallocated by libgretl
     //
-    if (copy) {
-        b_ = gretl_bundle_copy(src, &err_);
-    } else {
-        b_ = src;
-    }
+    copy ? b_ = gretl_bundle_copy(src, &err_) : b_ = src;
     if (err_) handle_gretl_error(err_);
     if (!b_) handle_gretl_error(E_ALLOC);
 }

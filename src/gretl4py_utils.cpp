@@ -284,12 +284,19 @@ GretlTypesPtr convert_GretlType_to_GretlTypes (GretlType t, void *gr_obj_ptr, co
         break;
     }
     case GRETL_TYPE_INT: {
-        *res = *(static_cast<int*>(gr_obj_ptr));
+        auto *raw = static_cast<int*>(gr_obj_ptr);
+        gretl_int_ptr ptr(take_ownership ? raw : nullptr);
+
+        *res = *raw;
         break;
     }
-    case GRETL_TYPE_DOUBLE:
-        *res = *(static_cast<double*>(gr_obj_ptr));
+    case GRETL_TYPE_DOUBLE: {
+        auto *raw = static_cast<double*>(gr_obj_ptr);
+        gretl_double_ptr ptr(take_ownership ? raw : nullptr);
+
+        *res = *raw;
         break;
+    }
     case GRETL_TYPE_STRING: {
         auto *raw = static_cast<char*>(gr_obj_ptr);
 
@@ -308,7 +315,8 @@ GretlTypesPtr convert_GretlType_to_GretlTypes (GretlType t, void *gr_obj_ptr, co
         if constexpr (take_ownership) {
             gretl_matrix_ptr ptr(raw);
 
-            *res = std::make_shared<GretlMatrix>(ptr.release(), false);
+            *res = std::make_shared<GretlMatrix>(ptr.get(), false);
+            ptr.release();
         } else {
             *res = std::make_shared<GretlMatrix>(raw, true);
         }
@@ -320,7 +328,8 @@ GretlTypesPtr convert_GretlType_to_GretlTypes (GretlType t, void *gr_obj_ptr, co
         if constexpr (take_ownership) {
             gretl_bundle_ptr ptr(raw);
 
-            *res = std::make_shared<GretlBundle>(ptr.release(), false);
+            *res = std::make_shared<GretlBundle>(ptr.get(), false);
+            ptr.release();
         } else {
             *res = std::make_shared<GretlBundle>(raw, true);
         }
