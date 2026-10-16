@@ -8,8 +8,14 @@
 
 4. Private class member names are suffixed with `_`.
 
-5. We use smart pointers whenever appropriate.
+5. We prefer RAII (Resource Acquisition Is Initialization) and smart pointers over manual resource management. Resources acquired from libgretl should be managed using appropriate deleters.
 
-6. We prefer anonymous namespaces over `static` functions for translation-unit-local helpers.
+6. We make ownership semantics explicit. Borrowed pointers must not be freed, and ownership transfers should be performed deliberately, using `release()` only when ownership has been successfully transferred.
+
+7. We strive for exception-safe code. Resources must be released correctly even when an operation fails or throws an exception.
+
+8. We use `const` wherever appropriate to express immutability and prevent unintended modifications.
+
+9. We prefer anonymous namespaces over `static` functions for translation-unit-local helpers.
 
 Marcin
