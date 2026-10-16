@@ -253,9 +253,9 @@ GretlTypesPtr convert_GretlType_to_GretlTypes (GretlType t, void *gr_obj_ptr, co
     //   Array elements remain owned by their parent array during
     //   recursive conversion.
     //
-    // - GRETL_TYPE_DOUBLE is always treated as a borrowed pointer,
-    //   regardless of take_ownership. Its value is copied, but the
-    //   source pointer is never freed.
+    // - GRETL_TYPE_INT and GRETL_TYPE_DOUBLE are copied by value.
+    //   If take_ownership is true, the source allocation is freed
+    //   after conversion.
     //
     // The returned GretlTypesPtr owns its converted data independently
     // of the source object.
@@ -314,9 +314,10 @@ GretlTypesPtr convert_GretlType_to_GretlTypes (GretlType t, void *gr_obj_ptr, co
 
         if constexpr (take_ownership) {
             gretl_matrix_ptr ptr(raw);
+            auto obj = std::make_shared<GretlMatrix>(ptr.get(), false);
 
-            *res = std::make_shared<GretlMatrix>(ptr.get(), false);
             ptr.release();
+            *res = std::move(obj);
         } else {
             *res = std::make_shared<GretlMatrix>(raw, true);
         }
@@ -327,9 +328,10 @@ GretlTypesPtr convert_GretlType_to_GretlTypes (GretlType t, void *gr_obj_ptr, co
 
         if constexpr (take_ownership) {
             gretl_bundle_ptr ptr(raw);
+            auto obj = std::make_shared<GretlBundle>(ptr.get(), false);
 
-            *res = std::make_shared<GretlBundle>(ptr.get(), false);
             ptr.release();
+            *res = std::move(obj);
         } else {
             *res = std::make_shared<GretlBundle>(raw, true);
         }

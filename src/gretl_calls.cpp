@@ -980,22 +980,34 @@ py::object get_uservar (const std::string &varname)
     //
     // we grab (i.e. steal) uservar from stack (by name)
     //
-    auto dataset = GretlDataset::default_dataset();
-    int err = 0;
     user_var *uvar = get_user_var_by_name(varname.c_str());
 
     if (!uvar) handle_gretl_error(E_UNKVAR);
-
-    // detach the value and remove the empty registry entry.
     GretlType type = user_var_get_type(uvar);
-    void *raw = user_var_steal_value(uvar);
 
-    user_var_delete(uvar);
+    // we only deal with supported types
+    switch (type) {
+        case GRETL_TYPE_INT:
+        case GRETL_TYPE_DOUBLE:
+        case GRETL_TYPE_STRING:
+        case GRETL_TYPE_MATRIX:
+        case GRETL_TYPE_BUNDLE:
+        case GRETL_TYPE_ARRAY:
+        case GRETL_TYPE_MATRICES:
+        case GRETL_TYPE_STRINGS:
+        case GRETL_TYPE_BUNDLES:
+        case GRETL_TYPE_SERIES:
+        case GRETL_TYPE_LIST:
+            break;
+        default:
+            throw std::runtime_error(std::string("Unsupported user variable type: ") + gretl_type_get_name(type));
+    }
+    auto dataset = GretlDataset::default_dataset();
+    void *raw = user_var_unstack_value(uvar);
+    int err = 0;
+
     user_vars.erase(varname);
-
-    // convert the detached value, transferring ownership
     auto res = convert_GretlType_to_GretlTypes<true>(type, raw, dataset ? dataset->dset->n : 0, err);
-
     if (err) handle_gretl_error(err);
 
     return variant_to_pyobject(std::move(*res));
