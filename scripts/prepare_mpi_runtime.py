@@ -60,6 +60,11 @@ def main() -> None:
         for dirname in ('bin', 'lib', 'lib64', 'share', 'etc'):
             copy_directory(prefix / dirname, mpi_dir / dirname)
 
+        # Remove documentation not required by the MPI runtime.
+        # Keep share/openmpi, share/prrte and share/pmix runtime resources.
+        for dirname in ('doc', 'man'):
+            shutil.rmtree(mpi_dir / 'share' / dirname, ignore_errors=True)
+
         # Remove compiler wrappers and unrelated development tools from bin.
         # Preserve runtime libraries and non-ELF PRRTE/PMIx data in lib.
         bindir = mpi_dir / 'bin'
