@@ -40,7 +40,8 @@ def main() -> None:
     # Clear any private runtime left by a previous wheel build.
     if mpi_dir.exists():
         shutil.rmtree(mpi_dir)
-    target = dest / 'gretlmpi'
+    # Preserve the platform-specific executable extension.
+    target = dest / ('gretlmpi.exe' if os.name == 'nt' else 'gretlmpi')
     if args.disable:
         # A no-MPI build must not inherit artifacts from an earlier build.
         target.unlink(missing_ok=True)

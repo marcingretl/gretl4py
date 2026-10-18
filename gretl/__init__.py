@@ -75,6 +75,11 @@ if gretlmpi.is_file():
     if not os.access(gretlmpi, os.X_OK):
         raise RuntimeError(f"Invalid gretlmpi executable: {gretlmpi}")
 
+    # Make gretlmpi available to child processes on all platforms.
+    current_path = os.environ.get("PATH", "").split(os.pathsep)
+    if str(GRETL_HOME) not in current_path:
+        os.environ["PATH"] = str(GRETL_HOME) + os.pathsep + os.environ.get("PATH", "")
+
     # Configure the bundled Open MPI runtime on Linux.
     if sys.platform == "linux":
         mpi_home = GRETL_HOME / "mpi"

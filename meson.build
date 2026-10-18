@@ -314,18 +314,23 @@ if NOMPI
   # Remove MPI artifacts from previous builds of this source tree.
   mpi_args += ['--disable']
 else
-  if is_windows or is_darwin
-    error('MPI staging is currently implemented for Linux only; use -DNOMPI=true on this platform')
+  if is_darwin
+    error('MPI staging is currently not implemented for macOS; use -DNOMPI=true on this platform')
   endif
 
   # The gretl executable is supplied by the installed gretl distribution.
-  gretlmpi_path = gretl_install_root / 'bin/gretlmpi'
+  # Windows uses MS-MPI installed separately; only gretlmpi.exe is staged.
+  if is_windows
+    gretlmpi_path = gretl_install_root / 'gretlmpi.exe'
+  else
+    gretlmpi_path = gretl_install_root / 'bin/gretlmpi'
+  endif
   if not fs.is_file(gretlmpi_path)
     error('gretlmpi not found: ' + gretlmpi_path)
   endif
   mpi_args += ['--gretlmpi', gretlmpi_path]
 
-  if not LOCAL_INST
+  if not LOCAL_INST and host_machine.system() == 'linux'
     # Use an explicit Open MPI prefix for reproducible wheel builds.
     if MPI_PATH == ''
       error('Set -DMPI_PATH=... when building a wheel with MPI')
