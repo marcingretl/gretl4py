@@ -27,6 +27,6 @@ option('GRETL_PATH', type: 'string',
 option('NOMPI', type: 'boolean', value: false,
        description: 'Do not stage gretlmpi or an MPI runtime')
 
-# Open MPI installation prefix used for distributable Linux wheels.
-option('OPENMPI_PATH', type: 'string', value: '',
-       description: 'Open MPI prefix for bundling in non-local builds')
+# MPI installation prefix used for distributable Linux wheels (currently Open MPI).
+option('MPI_PATH', type: 'string', value: '',
+       description: 'MPI installation prefix for bundling in non-local builds (currently Open MPI)')

@@ -29,7 +29,7 @@ def main() -> None:
     parser.add_argument('--gretlmpi', type=Path)
     parser.add_argument('--disable', action='store_true')
     parser.add_argument('--destination', type=Path, required=True)
-    parser.add_argument('--openmpi', type=Path)
+    parser.add_argument('--mpi-path', type=Path)
     parser.add_argument('--stamp', type=Path, required=True)
     args = parser.parse_args()
 
@@ -52,8 +52,8 @@ def main() -> None:
     shutil.copy2(args.gretlmpi, target)
     target.chmod(target.stat().st_mode | 0o111)
 
-    if args.openmpi:
-        prefix = args.openmpi.resolve()
+    if args.mpi_path:
+        prefix = args.mpi_path.resolve()
         if not (prefix / 'bin/mpiexec').exists():
             raise FileNotFoundError(f'Open MPI launcher not found in {prefix}')
         # Preserve PRRTE, PMIx, MCA data and auxiliary executables.

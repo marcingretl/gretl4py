@@ -19,7 +19,7 @@ LLVM_RT_PATH        = get_option('LLVM_RT_PATH')
 GRETL_INSTALL_PATH  = get_option('GRETL_INSTALL_PATH')
 # MPI staging is optional and independent of the Python extension.
 NOMPI               = get_option('NOMPI')
-OPENMPI_PATH        = get_option('OPENMPI_PATH')
+MPI_PATH            = get_option('MPI_PATH')
 
 ###########################################################################
 # Windows-specific libgretl
@@ -327,10 +327,10 @@ else
 
   if not LOCAL_INST
     # Use an explicit Open MPI prefix for reproducible wheel builds.
-    if OPENMPI_PATH == ''
-      error('Set -DOPENMPI_PATH=... when building a wheel with MPI')
+    if MPI_PATH == ''
+      error('Set -DMPI_PATH=... when building a wheel with MPI')
     endif
-    mpi_args += ['--openmpi', OPENMPI_PATH]
+    mpi_args += ['--mpi-path', MPI_PATH]
   endif
 endif
 
