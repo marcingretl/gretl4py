@@ -17,6 +17,9 @@ GRETL_PATH          = get_option('GRETL_PATH')
 LOCAL_INST          = get_option('LOCAL_INST')
 LLVM_RT_PATH        = get_option('LLVM_RT_PATH')
 GRETL_INSTALL_PATH  = get_option('GRETL_INSTALL_PATH')
+# MPI staging is optional and independent of the Python extension.
+NOMPI               = get_option('NOMPI')
+OPENMPI_PATH        = get_option('OPENMPI_PATH')
 
 ###########################################################################
 # Windows-specific libgretl
@@ -92,7 +95,7 @@ if LOCAL_INST
   ).stdout().strip()
 else
   python_sitepkg_dir = run_command(
-    python, '-c', 'import sysconfig; print(sysconfig.get_paths()[\"platlib\"])',
+    python, '-c', 'import sysconfig; print(sysconfig.get_paths()["platlib"])',
     check: true
   ).stdout().strip()
 endif
@@ -298,6 +301,48 @@ prepare_runtime = custom_target(
 )
 
 ###########################################################################
+# Stage MPI executables and the private Open MPI runtime (Linux Tier 1)
+###########################################################################
+# Local installations reuse system MPI; distributable builds stage a private copy.
+# NOMPI disables MPI staging without affecting the Python extension.
+mpi_args = [
+  '--destination', meson.project_source_root() / 'gretl',
+  '--stamp', '@OUTPUT@',
+]
+
+if NOMPI
+  # Remove MPI artifacts from previous builds of this source tree.
+  mpi_args += ['--disable']
+else
+  if is_windows or is_darwin
+    error('MPI staging is currently implemented for Linux only; use -DNOMPI=true on this platform')
+  endif
+
+  # The gretl executable is supplied by the installed gretl distribution.
+  gretlmpi_path = gretl_install_root / 'bin/gretlmpi'
+  if not fs.is_file(gretlmpi_path)
+    error('gretlmpi not found: ' + gretlmpi_path)
+  endif
+  mpi_args += ['--gretlmpi', gretlmpi_path]
+
+  if not LOCAL_INST
+    # Use an explicit Open MPI prefix for reproducible wheel builds.
+    if OPENMPI_PATH == ''
+      error('Set -DOPENMPI_PATH=... when building a wheel with MPI')
+    endif
+    mpi_args += ['--openmpi', OPENMPI_PATH]
+  endif
+endif
+
+prepare_mpi = custom_target(
+  'prepare_mpi_runtime',
+  input: files('scripts/prepare_mpi_runtime.py'),
+  output: 'mpi-prepared.stamp',
+  command: [python, '@INPUT@'] + mpi_args,
+  build_by_default: true,
+)
+
+###########################################################################
 # Install Python files and resources
 ###########################################################################
 install_data(
@@ -314,6 +359,7 @@ install_data(
 ###########################################################################
 # Install resource directories
 ###########################################################################
+# MPI files are staged by the preparation target; packaging reads the source tree.
 foreach dirname : ['lib', 'data', 'examples', 'scripts']
   install_subdir(
     'gretl' / dirname,

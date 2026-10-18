@@ -11,5 +11,9 @@ recursive-include gretl/examples *
 recursive-include gretl/functions *
 recursive-include gretl/scripts *
 
+# MPI executable and bundled Open MPI runtime
+include gretl/gretlmpi
+recursive-include gretl/mpi *
+
 # Exclude all bytecode, caches, and temp files
 global-exclude __pycache__ *.py[cod] *.pyo .DS_Store

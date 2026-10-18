@@ -39,7 +39,7 @@ GRETL_HOME = Path(package_dir).resolve()
 os.environ.setdefault('GRETL_HOME', str(GRETL_HOME))
 os.environ.setdefault('GRETL_DATA_PATH', data_dir)
 os.environ.setdefault('GRETL_PLUGIN_PATH', lib_dir)
-os.environ.setdefault('CURL_CA_BUNDLE', str(Path(user_site) / "curl-ca-bundle.crt"))
+os.environ.setdefault('CURL_CA_BUNDLE', str(GRETL_HOME / "curl-ca-bundle.crt"))
 
 # --- Ensure 'tmp' exists in GRETL_HOME ---
 (GRETL_HOME / "tmp").mkdir(exist_ok=True)
@@ -66,15 +66,32 @@ if sys.platform == "linux":
 if user_site not in sys.path:
     sys.path.insert(0, user_site)
 
-# --- Ensure gretlmpi(.exe) exists
-# if sys.platform == "win32":
-#     gretlmpi = Path(GRETL_HOME) / "gretlmpi.exe"
-# else:
-#     gretlmpi = Path(GRETL_HOME) / "gretlmpi"
-# if not gretlmpi.exists():
-#     raise RuntimeError(f"Missing bundled gretlmpi executable: {gretlmpi}")
-# if not gretlmpi.is_file() or not os.access(gretlmpi, os.X_OK):
-#     raise RuntimeError(f"Invalid gretlmpi executable: {gretlmpi}")
+# --- Configure MPI runtime if gretlmpi is available ---
+gretlmpi = GRETL_HOME / (
+    "gretlmpi.exe" if sys.platform == "win32" else "gretlmpi"
+)
+
+if gretlmpi.is_file():
+    if not os.access(gretlmpi, os.X_OK):
+        raise RuntimeError(f"Invalid gretlmpi executable: {gretlmpi}")
+
+    # Configure the bundled Open MPI runtime on Linux.
+    if sys.platform == "linux":
+        mpi_home = GRETL_HOME / "mpi"
+        mpi_bin = mpi_home / "bin"
+
+        if (mpi_bin / "mpiexec").is_file():
+            # Override the original Open MPI and PRRTE installation prefixes.
+            os.environ["OPAL_PREFIX"] = str(mpi_home)
+            os.environ["PRTE_PREFIX"] = str(mpi_home)
+
+            # Make bundled MPI launchers and gretlmpi available to child processes.
+            current_path = os.environ.get("PATH", "").split(os.pathsep)
+            for directory in (str(mpi_bin), str(GRETL_HOME)):
+                if directory not in current_path:
+                    current_path.insert(0, directory)
+
+            os.environ["PATH"] = os.pathsep.join(current_path)
 
 # ###########################################
 # gretl4py stuff
