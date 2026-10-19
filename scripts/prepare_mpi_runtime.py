@@ -124,8 +124,51 @@ def stage_openmpi_macos(prefix: Path, mpi_dir: Path, target: Path) -> None:
     if not (prefix / 'lib').is_dir():
         raise FileNotFoundError(f'OpenMPI libraries not found in {prefix}')
 
-    for dirname in ('bin', 'lib', 'lib64', 'share', 'etc'):
-        copy_directory(prefix / dirname, mpi_dir / dirname)
+    # Gretl.app is a shared prefix, not a dedicated OpenMPI installation.
+    # Copying its entire lib/ would also bundle GTK, wxWidgets, libgretl, etc.
+    shared_prefix = any((prefix / 'lib').glob('libgretl*.dylib'))
+    if shared_prefix:
+        bindir = mpi_dir / 'bin'
+        bindir.mkdir(parents=True, exist_ok=True)
+        launchers = ('mpiexec', 'mpirun', 'prterun', 'prted',
+                     'orted', 'orterun')
+        for name in launchers:
+            src = prefix / 'bin' / name
+            if src.is_file():
+                shutil.copy2(src, bindir / name, follow_symlinks=True)
+
+        # Core MPI/PMIx/PRRTE/ORTE libraries and dynamically loaded plugins.
+        # General dependencies are deliberately left to delocate.
+        library_patterns = (
+            'libmpi*.dylib', 'libopen-pal*.dylib',
+            'libopen-rte*.dylib', 'libpmix*.dylib',
+            'libprrte*.dylib', 'liborte*.dylib',
+            'liboshmem*.dylib',
+        )
+        plugin_dirs = ('openmpi', 'pmix', 'prrte', 'orte')
+        for libname in ('lib', 'lib64'):
+            srcdir = prefix / libname
+            if not srcdir.is_dir():
+                continue
+            dstdir = mpi_dir / libname
+            dstdir.mkdir(parents=True, exist_ok=True)
+            for pattern in library_patterns:
+                for src in srcdir.glob(pattern):
+                    if src.is_file():
+                        shutil.copy2(src, dstdir / src.name,
+                                     follow_symlinks=True)
+            for name in plugin_dirs:
+                copy_directory(srcdir / name, dstdir / name)
+
+        for name in ('openmpi', 'pmix', 'prrte', 'orte'):
+            copy_directory(prefix / 'share' / name,
+                           mpi_dir / 'share' / name)
+            copy_directory(prefix / 'etc' / name,
+                           mpi_dir / 'etc' / name)
+    else:
+        # Dedicated OpenMPI prefix (e.g. /opt/openmpi).
+        for dirname in ('bin', 'lib', 'lib64', 'share', 'etc'):
+            copy_directory(prefix / dirname, mpi_dir / dirname)
     for dirname in ('doc', 'man'):
         shutil.rmtree(mpi_dir / 'share' / dirname, ignore_errors=True)
     bindir = mpi_dir / 'bin'
