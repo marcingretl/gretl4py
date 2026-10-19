@@ -4,6 +4,7 @@
 import argparse
 import os
 import shutil
+import sys
 import subprocess
 from pathlib import Path
 
@@ -73,12 +74,80 @@ def main() -> None:
                     raise FileNotFoundError(f'MS-MPI runtime file not found: {src}')
                 dst.parent.mkdir(parents=True, exist_ok=True)
                 shutil.copy2(src, dst)
+        elif sys.platform == "darwin":
+            stage_openmpi_macos(prefix, mpi_dir, target)
         else:
             stage_openmpi(prefix, mpi_dir, target)
 
     # Meson uses the stamp to track successful staging.
     args.stamp.parent.mkdir(parents=True, exist_ok=True)
     args.stamp.touch()
+
+
+def is_macho(path: Path) -> bool:
+    if not path.is_file() or path.is_symlink():
+        return False
+    with path.open('rb') as f:
+        return f.read(4) in (
+            b'\xfe\xed\xfa\xce', b'\xce\xfa\xed\xfe',
+            b'\xfe\xed\xfa\xcf', b'\xcf\xfa\xed\xfe',
+            b'\xca\xfe\xba\xbe', b'\xbe\xba\xfe',
+            b'\xca\xfe\xba\xbf', b'\xbf\xba\xfe\xca',
+        )
+
+
+def patch_macho(path: Path, libdir: Path) -> None:
+    """Redirect bundled MPI library dependencies to their private copies."""
+    if not is_macho(path):
+        return
+    relative_lib = os.path.relpath(libdir, path.parent)
+    loader_lib = '@loader_path/' + relative_lib
+    output = subprocess.run(['otool', '-L', str(path)], check=True,
+                            capture_output=True, text=True).stdout
+    for line in output.splitlines()[1:]:
+        dep = line.strip().split(' (compatibility version', 1)[0]
+        if not dep:
+            continue
+        name = Path(dep).name
+        if (libdir / name).is_file() and dep != loader_lib + '/' + name:
+            subprocess.run(['install_name_tool', '-change', dep,
+                            loader_lib + '/' + name, str(path)], check=True)
+    if path.parent == libdir and path.suffix == '.dylib':
+        subprocess.run(['install_name_tool', '-id', '@rpath/' + path.name,
+                        str(path)], check=True)
+
+
+def stage_openmpi_macos(prefix: Path, mpi_dir: Path, target: Path) -> None:
+    """Stage either a conventional OpenMPI prefix or Gretl.app's MPI runtime."""
+    if not (prefix / 'bin/mpiexec').is_file():
+        raise FileNotFoundError(f'OpenMPI launcher not found in {prefix}')
+    if not (prefix / 'lib').is_dir():
+        raise FileNotFoundError(f'OpenMPI libraries not found in {prefix}')
+
+    for dirname in ('bin', 'lib', 'lib64', 'share', 'etc'):
+        copy_directory(prefix / dirname, mpi_dir / dirname)
+    for dirname in ('doc', 'man'):
+        shutil.rmtree(mpi_dir / 'share' / dirname, ignore_errors=True)
+    bindir = mpi_dir / 'bin'
+    for entry in bindir.iterdir():
+        if entry.name not in ('mpiexec', 'mpirun', 'prterun', 'prted',
+                              'orted', 'orterun') and entry.is_file():
+            entry.unlink()
+    for libname in ('lib', 'lib64'):
+        libdir = mpi_dir / libname
+        if libdir.is_dir():
+            for item in libdir.rglob('*'):
+                if item.is_file() and item.suffix in ('.a', '.la'):
+                    item.unlink()
+            for pkgdir in libdir.rglob('pkgconfig'):
+                if pkgdir.is_dir():
+                    shutil.rmtree(pkgdir)
+
+    libdir = mpi_dir / 'lib'
+    # Rewrite references to bundled libraries, including MCA/PMIx plugins.
+    for path in [target, *bindir.rglob('*'), *libdir.rglob('*')]:
+        if path.is_file():
+            patch_macho(path, libdir)
 
 
 def stage_openmpi(prefix: Path, mpi_dir: Path, target: Path) -> None:

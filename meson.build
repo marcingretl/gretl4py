@@ -314,14 +314,12 @@ if NOMPI
   # Remove MPI artifacts from previous builds of this source tree.
   mpi_args += ['--disable']
 else
-  if is_darwin
-    error('MPI staging is currently not implemented for macOS; use -DNOMPI=true on this platform')
-  endif
-
   # The gretl executable is supplied by the installed gretl distribution.
   # Windows x86_64 uses system MS-MPI; Windows ARM64 bundles its runtime.
   if is_windows
     gretlmpi_path = gretl_install_root / 'gretlmpi.exe'
+  elif is_darwin
+    gretlmpi_path = gretl_install_root / 'Contents/Resources/bin/gretlmpi'
   else
     gretlmpi_path = gretl_install_root / 'bin/gretlmpi'
   endif
@@ -330,7 +328,30 @@ else
   endif
   mpi_args += ['--gretlmpi', gretlmpi_path]
 
-  # Bundle MPI for distributable Linux and Windows ARM64 builds.
+  # macOS: explicit MPI_PATH wins; otherwise /opt/openmpi, then Gretl.app.
+  # Only choose a prefix containing both a launcher and shared libraries.
+  if is_darwin
+    if MPI_PATH != ''
+      mpi_prefix = MPI_PATH.replace('\\', '/')
+      if not fs.is_file(mpi_prefix / 'bin/mpiexec') or not fs.is_dir(mpi_prefix / 'lib')
+        error('Invalid explicit MPI_PATH: ' + mpi_prefix)
+      endif
+    else
+      mpi_prefix = ''
+      foreach candidate : ['/opt/openmpi', GRETL_PATH]
+        if fs.is_file(candidate / 'bin/mpiexec') and fs.is_dir(candidate / 'lib')
+          mpi_prefix = candidate
+          break
+        endif
+      endforeach
+      if mpi_prefix == ''
+        error('OpenMPI not found: checked /opt/openmpi and GRETL_PATH; set -DMPI_PATH=...')
+      endif
+    endif
+    message('macOS OpenMPI runtime: ' + mpi_prefix)
+    mpi_args += ['--mpi-path', mpi_prefix]
+  endif
+
   # Windows x86_64 keeps using a separately installed MS-MPI runtime.
   if not LOCAL_INST and (host_machine.system() == 'linux' or (is_windows and arch == 'aarch64'))
     if MPI_PATH == ''

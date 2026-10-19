@@ -98,6 +98,19 @@ if gretlmpi.is_file():
 
             os.environ["PATH"] = os.pathsep.join(current_path)
 
+    # Configure the private Open MPI runtime on macOS.
+    elif sys.platform == "darwin":
+        mpi_home = GRETL_HOME / "mpi"
+        mpi_bin = mpi_home / "bin"
+        if (mpi_bin / "mpiexec").is_file():
+            os.environ["OPAL_PREFIX"] = str(mpi_home)
+            # Open MPI 5 uses PRRTE; Open MPI 4 uses ORTE.
+            if (mpi_bin / "prterun").exists() or (mpi_bin / "prted").exists():
+                os.environ["PRTE_PREFIX"] = str(mpi_home)
+            current_path = os.environ.get("PATH", "").split(os.pathsep)
+            if str(mpi_bin) not in current_path:
+                os.environ["PATH"] = str(mpi_bin) + os.pathsep + os.environ.get("PATH", "")
+
     # Configure the bundled MS-MPI launchers on Windows ARM64.
     # Windows x86_64 uses a separately installed MS-MPI runtime.
     elif sys.platform == "win32":
