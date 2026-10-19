@@ -103,6 +103,8 @@ if gretlmpi.is_file():
         mpi_home = GRETL_HOME / "mpi"
         mpi_bin = mpi_home / "bin"
         if (mpi_bin / "mpiexec").is_file():
+            # Pass the bundled MPI launcher path to the native extension.
+            os.environ["GRETL_MPIEXEC"] = str(mpi_bin / "mpiexec")
             os.environ["OPAL_PREFIX"] = str(mpi_home)
             # Open MPI 5 uses PRRTE; Open MPI 4 uses ORTE.
             if (mpi_bin / "prterun").exists() or (mpi_bin / "prted").exists():

@@ -112,6 +112,12 @@ void gretl4py_init (void)
 
     // libgretl path initialization
     ConfigPaths libgretl_paths = {};
+#ifdef __APPLE__
+    // Use the bundled Open MPI launcher on macOS
+    if (const char *env = std::getenv("GRETL_MPIEXEC"); env && *env) {
+        g_strlcpy(libgretl_paths.mpiexec, env, sizeof libgretl_paths.mpiexec);
+    }
+#endif
     gretl_set_paths(&libgretl_paths);
     py::print(gretl_bindir());
     py::print(libgretl_paths.mpiexec);
