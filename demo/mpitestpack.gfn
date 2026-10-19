@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gretl-functions>
+<gretl-function-package name="mpitestpack" no-data-ok="true" minver="2018a">
+<author email="marcin@gretlconference.pl">Marcin Błażejowski</author>
+<version>1.0</version>
+<date>2026-10-19</date>
+<description>gretl4py mpi testing package</description>
+<tags>C10 none</tags>
+<help>
+...
+</help>
+<gretl-function name="mpitest" type="bundle">
+<code>bundle res
+mpi
+    printf &quot;\nI am: %d\n&quot;, $mpirank
+    mpibarrier()
+
+    if $mpirank == 0
+        bundle res
+
+        res.r = $mpisize
+        printf &quot;\n$dotdir: %s\n&quot;, $dotdir
+        bwrite(res, &quot;gretl4py_mpi_res&quot;)
+    endif
+end mpi
+
+res = bread(&quot;gretl4py_mpi_res&quot;)
+
+return res
+</code>
+</gretl-function>
+<sample-script>
+include mpitestpack.gfn
+b = mpitest()
+eval b
+</sample-script>
+</gretl-function-package>
+</gretl-functions>
