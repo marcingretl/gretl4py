@@ -98,6 +98,15 @@ if gretlmpi.is_file():
 
             os.environ["PATH"] = os.pathsep.join(current_path)
 
+    # Configure the bundled MS-MPI launchers on Windows ARM64.
+    # Windows x86_64 uses a separately installed MS-MPI runtime.
+    elif sys.platform == "win32":
+        mpi_bin = GRETL_HOME / "mpi" / "bin"
+        if (mpi_bin / "mpiexec.exe").is_file():
+            current_path = os.environ.get("PATH", "").split(os.pathsep)
+            if str(mpi_bin) not in current_path:
+                os.environ["PATH"] = str(mpi_bin) + os.pathsep + os.environ.get("PATH", "")
+
 # ###########################################
 # gretl4py stuff
 # ###########################################

@@ -27,6 +27,6 @@ option('GRETL_PATH', type: 'string',
 option('NOMPI', type: 'boolean', value: false,
        description: 'Do not stage gretlmpi or an MPI runtime')
 
-# MPI installation prefix for bundled Open MPI on Linux; Windows uses system MS-MPI.
+# MPI installation prefix for bundled Open MPI on Linux or MS-MPI on Windows ARM64.
 option('MPI_PATH', type: 'string', value: '',
-       description: 'Open MPI installation prefix for non-local Linux builds (not used on Windows)')
+       description: 'MPI installation prefix for bundled runtimes (Linux and Windows ARM64)')

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Stage gretlmpi and, for wheel builds, a private Linux Open MPI runtime."""
+"""Stage gretlmpi and private MPI runtimes for distributable builds."""
 
 import argparse
 import os
@@ -40,11 +40,15 @@ def main() -> None:
     # Clear any private runtime left by a previous wheel build.
     if mpi_dir.exists():
         shutil.rmtree(mpi_dir)
+    # Clear stale executables from builds for either platform.
+    for name in ('gretlmpi', 'gretlmpi.exe'):
+        (dest / name).unlink(missing_ok=True)
+    # Remove an MS-MPI DLL left by an earlier Windows ARM64 wheel build.
+    (dest / 'lib' / 'msmpi.dll').unlink(missing_ok=True)
     # Preserve the platform-specific executable extension.
     target = dest / ('gretlmpi.exe' if os.name == 'nt' else 'gretlmpi')
     if args.disable:
         # A no-MPI build must not inherit artifacts from an earlier build.
-        target.unlink(missing_ok=True)
         args.stamp.parent.mkdir(parents=True, exist_ok=True)
         args.stamp.touch()
         return
@@ -55,55 +59,76 @@ def main() -> None:
 
     if args.mpi_path:
         prefix = args.mpi_path.resolve()
-        if not (prefix / 'bin/mpiexec').exists():
-            raise FileNotFoundError(f'Open MPI launcher not found in {prefix}')
-        # Preserve PRRTE, PMIx, MCA data and auxiliary executables.
-        for dirname in ('bin', 'lib', 'lib64', 'share', 'etc'):
-            copy_directory(prefix / dirname, mpi_dir / dirname)
-
-        # Remove documentation not required by the MPI runtime.
-        # Keep share/openmpi, share/prrte and share/pmix runtime resources.
-        for dirname in ('doc', 'man'):
-            shutil.rmtree(mpi_dir / 'share' / dirname, ignore_errors=True)
-
-        # Remove compiler wrappers and unrelated development tools from bin.
-        # Preserve runtime libraries and non-ELF PRRTE/PMIx data in lib.
-        bindir = mpi_dir / 'bin'
-        for entry in bindir.iterdir():
-            if entry.name not in ('mpiexec', 'mpirun', 'prterun', 'prted', 'orted'):
-                if entry.is_file() or entry.is_symlink():
-                    entry.unlink()
-
-        # Drop development-only files; preserve shared libraries and runtime data.
-        for libname in ('lib', 'lib64'):
-            libdir = mpi_dir / libname
-            if libdir.exists():
-                for item in libdir.rglob('*'):
-                    if item.is_file() and item.suffix in ('.a', '.la'):
-                        item.unlink()
-                for pkgdir in libdir.rglob('pkgconfig'):
-                    if pkgdir.is_dir():
-                        shutil.rmtree(pkgdir)
-
-        # Relative ELF lookup paths for bundled launchers and shared libraries.
-        for executable in bindir.iterdir():
-            patch_elf(executable, '$ORIGIN/../lib:$ORIGIN/../lib64')
-        for libname in ('lib', 'lib64'):
-            libdir = mpi_dir / libname
-            if libdir.exists():
-                for item in libdir.rglob('*'):
-                    if item.is_file():
-                        relative = os.path.relpath(libdir, item.parent)
-                        patch_elf(item, '$ORIGIN:' + '$ORIGIN/' + relative)
-
-        # gretlmpi finds the private MPI libraries alongside the launcher.
-        # Replace build-machine paths; libgretl needs separate wheel repair.
-        subprocess.run(['patchelf', '--set-rpath',
-                        '$ORIGIN/mpi/lib:$ORIGIN/mpi/lib64', str(target)], check=True)
+        if os.name == 'nt':
+            # Windows ARM64: copy only runtime binaries, not MSYS2 development files.
+            runtime_files = {
+                'lib/msmpi.dll': 'lib/msmpi.dll',
+                'bin/mpiexec.exe': 'mpi/bin/mpiexec.exe',
+                'bin/smpd.exe': 'mpi/bin/smpd.exe',
+            }
+            for source, destination in runtime_files.items():
+                src = prefix / source
+                dst = dest / destination
+                if not src.is_file():
+                    raise FileNotFoundError(f'MS-MPI runtime file not found: {src}')
+                dst.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy2(src, dst)
+        else:
+            stage_openmpi(prefix, mpi_dir, target)
 
     # Meson uses the stamp to track successful staging.
     args.stamp.parent.mkdir(parents=True, exist_ok=True)
     args.stamp.touch()
+
+
+def stage_openmpi(prefix: Path, mpi_dir: Path, target: Path) -> None:
+    """Stage the private Linux Open MPI runtime and patch ELF search paths."""
+    if not (prefix / 'bin/mpiexec').exists():
+        raise FileNotFoundError(f'Open MPI launcher not found in {prefix}')
+    # Preserve PRRTE, PMIx, MCA data and auxiliary executables.
+    for dirname in ('bin', 'lib', 'lib64', 'share', 'etc'):
+        copy_directory(prefix / dirname, mpi_dir / dirname)
+
+    # Remove documentation not required by the MPI runtime.
+    # Keep share/openmpi, share/prrte and share/pmix runtime resources.
+    for dirname in ('doc', 'man'):
+        shutil.rmtree(mpi_dir / 'share' / dirname, ignore_errors=True)
+
+    # Remove compiler wrappers and unrelated development tools from bin.
+    # Preserve runtime libraries and non-ELF PRRTE/PMIx data in lib.
+    bindir = mpi_dir / 'bin'
+    for entry in bindir.iterdir():
+        if entry.name not in ('mpiexec', 'mpirun', 'prterun', 'prted', 'orted'):
+            if entry.is_file() or entry.is_symlink():
+                entry.unlink()
+
+    # Drop development-only files; preserve shared libraries and runtime data.
+    for libname in ('lib', 'lib64'):
+        libdir = mpi_dir / libname
+        if libdir.exists():
+            for item in libdir.rglob('*'):
+                if item.is_file() and item.suffix in ('.a', '.la'):
+                    item.unlink()
+            for pkgdir in libdir.rglob('pkgconfig'):
+                if pkgdir.is_dir():
+                    shutil.rmtree(pkgdir)
+
+    # Relative ELF lookup paths for bundled launchers and shared libraries.
+    for executable in bindir.iterdir():
+        patch_elf(executable, '$ORIGIN/../lib:$ORIGIN/../lib64')
+    for libname in ('lib', 'lib64'):
+        libdir = mpi_dir / libname
+        if libdir.exists():
+            for item in libdir.rglob('*'):
+                if item.is_file():
+                    relative = os.path.relpath(libdir, item.parent)
+                    patch_elf(item, '$ORIGIN:' + '$ORIGIN/' + relative)
+
+    # gretlmpi finds the private MPI libraries alongside the launcher.
+    # Replace build-machine paths; libgretl needs separate wheel repair.
+    subprocess.run(['patchelf', '--set-rpath',
+                    '$ORIGIN/mpi/lib:$ORIGIN/mpi/lib64', str(target)], check=True)
+
 
 
 if __name__ == '__main__':

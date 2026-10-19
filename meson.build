@@ -301,7 +301,7 @@ prepare_runtime = custom_target(
 )
 
 ###########################################################################
-# Stage MPI executables and the private Open MPI runtime (Linux Tier 1)
+# Stage MPI executables and bundled MPI runtimes (Linux and Windows ARM64)
 ###########################################################################
 # Local installations reuse system MPI; distributable builds stage a private copy.
 # NOMPI disables MPI staging without affecting the Python extension.
@@ -319,7 +319,7 @@ else
   endif
 
   # The gretl executable is supplied by the installed gretl distribution.
-  # Windows uses MS-MPI installed separately; only gretlmpi.exe is staged.
+  # Windows x86_64 uses system MS-MPI; Windows ARM64 bundles its runtime.
   if is_windows
     gretlmpi_path = gretl_install_root / 'gretlmpi.exe'
   else
@@ -330,10 +330,11 @@ else
   endif
   mpi_args += ['--gretlmpi', gretlmpi_path]
 
-  if not LOCAL_INST and host_machine.system() == 'linux'
-    # Use an explicit Open MPI prefix for reproducible wheel builds.
+  # Bundle MPI for distributable Linux and Windows ARM64 builds.
+  # Windows x86_64 keeps using a separately installed MS-MPI runtime.
+  if not LOCAL_INST and (host_machine.system() == 'linux' or (is_windows and arch == 'aarch64'))
     if MPI_PATH == ''
-      error('Set -DMPI_PATH=... when building a wheel with MPI')
+      error('Set -DMPI_PATH=... when building a wheel with bundled MPI')
     endif
     mpi_args += ['--mpi-path', MPI_PATH]
   endif
