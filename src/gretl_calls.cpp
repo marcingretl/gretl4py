@@ -102,7 +102,8 @@ static std::string extract_varname (std::string formula)
 void gretl4py_init (void)
 {
     // check libgretl version
-    if (libgretl_version() < LIBGRETL_MIN_VER) throw std::runtime_error("gretl4py requires libgretl-1.0 version " + std::to_string(LIBGRETL_MIN_VER) + " or higher");
+    if (libgretl_version() < LIBGRETL_MIN_VER)
+        throw std::runtime_error("gretl4py requires libgretl-1.0 version " + std::to_string(LIBGRETL_MIN_VER) + " or higher");
 
     // initialize libgretl
     libgretl_init();
@@ -115,7 +116,8 @@ void gretl4py_init (void)
 #ifdef __APPLE__
     // Use the bundled Open MPI launcher on macOS
     if (const char *env = std::getenv("GRETL_MPIEXEC"); env && *env) {
-        g_strlcpy(libgretl_paths.mpiexec, env, sizeof libgretl_paths.mpiexec);
+        if (std::strlen(env) >= sizeof libgretl_paths.mpiexec) throw std::runtime_error("GRETL_MPIEXEC path is too long");
+        std::strcpy(libgretl_paths.mpiexec, env);
     }
 #endif
     gretl_set_paths(&libgretl_paths);
