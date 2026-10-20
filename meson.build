@@ -369,6 +369,14 @@ prepare_mpi = custom_target(
   build_by_default: true,
 )
 
+# Windows x86_64 uses the system MS-MPI runtime, but still needs gretlmpi.exe.
+if is_windows and arch == 'x86_64' and not NOMPI
+  install_data(
+    gretlmpi_path,
+    install_dir: python_gretl_dir,
+  )
+endif
+
 ###########################################################################
 # Install Python files and resources
 ###########################################################################
