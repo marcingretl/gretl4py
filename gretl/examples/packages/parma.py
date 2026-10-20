@@ -52,6 +52,15 @@ def run_example():
     # MCMC configuration
     n_iter = 32 * 1024   # posterior draws after burn-in
     burn_in = 2048       # burn-in period
+    
+    options = gretl.Bundle()
+    options["seed"] = 1_234_567
+    
+    # use MPI if available
+    if gretl.about()["sysinfo"]["mpi"]:
+        options["mpi"] = gretl.about()["sysinfo"]["ncores"]
+    else:
+        options["mpi"] = 1
 
     # ------------------------------------------------------------
     # Bayesian Model Averaging for GLM
@@ -64,7 +73,7 @@ def run_example():
         model_type,
         n_iter,
         burn_in,
-        gretl.Bundle(seed=1_234_567),
+        options,
     )
 
     print_timer()

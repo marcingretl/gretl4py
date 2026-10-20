@@ -6,6 +6,7 @@ version 0.64:
     - fixed negative indexing in Matrix.__getitem__() to return scalar values instead of 1×1 matrices
     - some doc updates
     - fix potential memory-leaks when generating gretl objects
+    - MPI support added
 
 version 0.63:
     - model-based tests: fix bug where 'varlist' was passed as list

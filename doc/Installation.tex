@@ -18,12 +18,6 @@ The current release can be installed using \texttt{pip}:
 python3 -m pip install gretl4py
 \end{verbatim}
 
-On macOS, the \texttt{--user} option should be used:
-
-\begin{verbatim}
-python3 -m pip install --user gretl4py
-\end{verbatim}
-
 On MS Windows, the corresponding command is typically:
 
 \begin{verbatim}
@@ -53,32 +47,44 @@ for the operating system and \python version in use, and install it
 using \texttt{pip}. For example:
 
 \begin{verbatim}
-python.exe -m pip install gretl4py-0.2-cp313-cp313-win_amd64.whl
+python3 -m pip install path/to/gretl4py-<version>-<tags>.whl
 \end{verbatim}
-On macOS, add the \texttt{--user} option to the \texttt{pip}
-command shown above.
-
-The actual filename depends on the \gretlpy version, \python version,
-operating system, and hardware architecture.
+Here, \texttt{<version>} and \texttt{<tags>} represent the version
+number and compatibility tags in the actual wheel filename.
+The appropriate file depends on the operating system, \python
+version, and hardware architecture.
 
 
 \subsection{Platform-specific notes}
 \paragraph{MS Windows.}
-\gretlpy requires the Microsoft Visual C++ 2022 Redistributable
-(v14.x). Please make sure that the appropriate runtime is installed
-on the system. The latest supported version is available at
+\gretlpy requires the Microsoft Visual C++ Redistributable
+(v14.x). Please make sure that the appropriate runtime is
+installed on the system.
+
+For MPI functionality on Windows x86-64, Microsoft MPI
+(MS-MPI) is also required, regardless of whether \gretlpy
+is installed from a pre-built wheel or compiled locally.
+The MS-MPI runtime must be installed and its launcher,
+\texttt{mpiexec.exe}, must be available.
+MS-MPI is not required for non-MPI operations.
+
+Further information and downloads are available at:
 
 \begin{center}
-	\url{https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist}.
+	\url{https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist}
 \end{center}
 
+\begin{center}
+	\url{https://learn.microsoft.com/en-us/message-passing-interface/microsoft-mpi}
+\end{center}
 
 
 \paragraph{GNU/Linux.}
 On some GNU/Linux distributions, installation of packages using
 \texttt{pip} into the system Python environment may be restricted.
-For this reason, \gretlpy provides the \texttt{webinstall.py}
-utility, located in the \texttt{scripts} directory of the
+In such cases, a virtual environment or user installation may be
+appropriate. As an alternative, \gretlpy provides the
+\texttt{webinstall.py} utility, located in the \texttt{scripts} directory of the
 project's source repository:
 
 \begin{center}
@@ -87,6 +93,17 @@ project's source repository:
 
 The script downloads an appropriate binary wheel and installs
 it into the user's Python environment.
+
+
+\paragraph{macOS.}
+The appropriate installation procedure depends on the Python
+ distribution in use (e.g., python.org, Conda, or MacPorts) and
+ the configuration of the Python environment. In many cases,
+ the standard \texttt{pip} command is sufficient. If installation
+ into a distribution-managed environment is restricted, a virtual
+ environment or, where supported, the \texttt{--user} option may
+ be used. The \texttt{--user} option is generally not appropriate
+ for Conda or standard virtual environments.
 
 
 \subsection{Verifying the installation}
@@ -143,15 +160,14 @@ on the target system, since the build system uses it for locating
 the native runtime resources.
 
 The \gretlpy source tree contains the \texttt{gretl/lib}
-directory. This directory is used to collect native resources
-that are subsequently included in the installed package and
-in binary wheel distributions.
+directory, which is used to collect native resources
+required by the installed package.
 
 The contents of this directory depend on the target platform:
-on GNU/Linux and macOS, it contains the required \gretl plugins,
-typically shared libraries with the \texttt{.so} extension;
-on MS Windows, it contains both \gretl plugins and the runtime
-DLLs distributed with \gretl.
+on GNU/Linux and macOS, it contains the required \gretl plugins
+(\texttt{.so} files); on MS Windows, it contains the corresponding
+plugins (\texttt{.dll} files), together with runtime DLLs
+distributed with \gretl.
 
 These files are collected automatically during compilation.
 Consequently, manually creating symbolic links to plugins or
@@ -181,6 +197,16 @@ The following options are common to all supported platforms:
 		which native runtime resources are collected. If omitted
 		or set to an empty string, the build system attempts to
 		locate the installation automatically.
+	\item[\texttt{-DNOMPI=true|false}] controls the preparation
+		of MPI runtime resources. The default is \texttt{false}.
+		Setting this option to \texttt{true} skips staging
+		\texttt{gretlmpi} and MPI runtime files without affecting
+		compilation of the \gretlpy extension module.
+	\item[\texttt{-DMPI\_PATH=path}] specifies an MPI installation
+		prefix. On macOS, this option overrides automatic Open MPI
+		detection. On GNU/Linux and Windows ARM64, it is used
+		when preparing a private MPI runtime for distribution;
+		it is not needed for ordinary local installations.
 \end{description}
 
 For example, a particular \python installation can be selected
@@ -346,9 +372,17 @@ meson compile -C builddir
 meson install -C builddir
 \end{verbatim}
 
-The same resource preparation mechanism is used for native
-Intel and Apple Silicon builds and for builds targeting
-both architectures.
+With MPI enabled (the default), the macOS build requires an
+Open MPI installation. The build system first checks
+\texttt{/opt/openmpi} and then \texttt{GRETL\_PATH}.
+An alternative installation can be selected explicitly using
+\texttt{-DMPI\_PATH=path}. To skip preparing MPI resources,
+configure the build with \texttt{-DNOMPI=true}.
+
+The same resource preparation mechanism is used for Intel and
+Apple Silicon builds. In all cases, the architectures of the Python
+interpreter, extension module, \lgretl libraries, and plugins
+must be compatible.
 
 
 \subsection{MS Windows}\label{sec:windows-compile}
@@ -509,59 +543,6 @@ installed elsewhere on the system. Such dependencies
 must be available when the resulting package is used.
 
 
-\subsection{Building Binary Wheels}
-In addition to direct installation, \gretlpy can be
-distributed as a binary \python wheel.
-
-The wheel-building process uses the prepared source
-tree, including the compiled extension module and
-the native runtime resources collected in
-\texttt{gretl/lib}.
-
-After configuring and compiling the package, a wheel
-can be built using:
-
-\begin{verbatim}
-python -m build --wheel
-\end{verbatim}
-
-Alternatively, the build can be performed without
-creating an isolated build environment:
-
-\begin{verbatim}
-python -m build --wheel --no-isolation
-\end{verbatim}
-
-In the latter case, the necessary build dependencies
-must already be installed in the selected \python
-environment.
-
-The resulting wheel is written to the \texttt{dist}
-directory. Its filename identifies the \python
-version, ABI, and target platform.
-
-For example, a Windows AMD64 wheel for \python 3.12
-may be named:
-
-\begin{verbatim}
-gretl4py-0.64-cp312-cp312-win_amd64.whl
-\end{verbatim}
-
-The corresponding Windows ARM64 wheel uses the
-\texttt{win\_arm64} platform tag.
-
-Before building wheels for different operating
-systems or architectures from the same source tree,
-care should be taken to avoid retaining native
-libraries from an earlier build. The runtime
-preparation step overwrites files with matching
-names but does not remove unrelated files already
-present in \texttt{gretl/lib}.
-
-The generated wheel should therefore be inspected
-to ensure that it contains only resources appropriate
-for the target platform.
-
 
 \subsection{Testing the Build}
 After compilation and installation, the resulting
@@ -593,12 +574,24 @@ For this reason, testing should also include
 representative econometric operations and statistical
 tests that rely on dynamically loaded \gretl plugins.
 
-When testing a wheel, it is advisable to install it
-in a clean \python environment and run the tests
-outside the \gretlpy source directory. This helps
-ensure that the installed package is being used
-rather than files from the source tree.
+MPI functionality can be tested using the example
+\texttt{mpi.py} script and the accompanying
+\texttt{mpitestpack.gfn} function package, both provided
+with the \gretlpy source distribution.
 
-The native extension, bundled runtime libraries,
+The test requires a working MPI runtime and the
+\texttt{gretlmpi} executable. On Windows x86-64,
+Microsoft MPI (MS-MPI) must also be installed,
+as described in the platform-specific installation
+notes above.
+
+Successful execution confirms that \gretlpy can
+invoke the configured MPI launcher and perform
+parallel computations.
+
+It is advisable to run these tests outside the \gretlpy source
+directory to ensure that the installed package is being used.
+
+The native extension, runtime libraries,
 and dynamically loaded plugins should all be
 verified on each supported target architecture.
