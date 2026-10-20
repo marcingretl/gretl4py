@@ -380,6 +380,7 @@ install_data(
   'gretl/_plotting.py',
   'gretl/_bundled_addons.txt',
   'gretl/curl-ca-bundle.crt',
+  'gretl/COPYING',
   install_dir: python_gretl_dir,
 )
 
