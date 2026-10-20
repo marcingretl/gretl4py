@@ -121,8 +121,6 @@ void gretl4py_init (void)
     }
 #endif
     gretl_set_paths(&libgretl_paths);
-    py::print(gretl_bindir());
-    py::print(libgretl_paths.mpiexec);
 
     // we set/update user workdir, gretldir and dotdir to gretl4py specific
     py::module_ pathlib = py::module_::import("pathlib");
@@ -185,7 +183,8 @@ void gretl4py_cleanup (void)
 
 GretlBundlePtr about (bool do_print)
 {
-    static const std::unordered_set<std::string> lgretl_strings = { "dotdir", "gnuplot", "gretldir", "seats", "tramo", "tramodir", "workdir", "x12a", "x12adir" };
+    static const std::unordered_set<std::string> lgretl_strings =
+    { "dotdir", "gnuplot", "gretldir", "seats", "tramo", "tramodir", "workdir", "x12a", "x12adir" };
     GretlBundlePtr gb_strings = std::make_shared<GretlBundle>();
     GretlBundlePtr res = std::make_shared<GretlBundle>();
     std::string mod_ver, lg_ver, py11_ver;
@@ -198,43 +197,46 @@ GretlBundlePtr about (bool do_print)
 
     gretl_push_c_numeric_locale();
 
-    mod_ver = std::string(GRETL4PY_VERSION).substr(0,4);
-    py11_ver = std::to_string(PYBIND11_VERSION_MAJOR);
-    py11_ver += "." + std::to_string(PYBIND11_VERSION_MINOR);
-    py11_ver += "." + std::to_string(PYBIND11_VERSION_PATCH);
+    mod_ver = std::string(GRETL4PY_VERSION).substr(0, 4);
+    py11_ver = std::to_string(PYBIND11_VERSION_MAJOR) + "." +
+        std::to_string(PYBIND11_VERSION_MINOR) + "." +
+        std::to_string(PYBIND11_VERSION_PATCH);
     lg_ver = std::to_string(libgretl_version());
 
-    // built-in strings
-    for (const auto &it : lgretl_strings) {
-        auto val = std::string(get_built_in_string_by_name(it.c_str()));
+    // Built-in strings
+    for (const auto &name : lgretl_strings) {
+        const char *value = get_built_in_string_by_name(name.c_str());
 
-        gb_strings->set_element<std::string>(it, val);
+        gb_strings->set_element<std::string>(name, value ? std::string(value) : std::string{});
     }
 
-    res->set_element<std::string>(std::string("mod_ver"), mod_ver);
-    res->set_element<std::string>(std::string("py11_ver"), py11_ver);
-    res->set_element<std::string>(std::string("lg_ver"), lg_ver);
+    // we construct res bundle
+    res->set_element<std::string>("mod_ver", mod_ver);
+    res->set_element<std::string>("py11_ver", py11_ver);
+    res->set_element<std::string>("lg_ver", lg_ver);
+
     if (gb_sysinfo->get_err()) {
-        std::cerr << errmsg_get_with_default(gb_sysinfo->get_err()) << std::endl;
+        std::cerr << errmsg_get_with_default(gb_sysinfo->get_err()) << '\n';
     } else {
-        res->set_element<GretlBundlePtr>(std::string("sysinfo"), gb_sysinfo );
+        res->set_element<GretlBundlePtr>("sysinfo", gb_sysinfo);
     }
-    res->set_element<GretlBundlePtr>(std::string("built_in_strings"), gb_strings );
+    res->set_element<GretlBundlePtr>("built_in_strings", gb_strings);
 
     if (do_print || gretl4py_verbose) {
-        std::cout << gretl4py_logo() << std::endl;
-        std::cout << "gretl4py v" << mod_ver;
-        std::cout << " [" << COMPILER_IDENT << "]" << std::endl;
-        std::cout << "\t+ pybind11     v" << py11_ver << std::endl;
-        std::cout << "\t+ libgretl-1.0 v" << lg_ver << std::endl;
-        std::cout << "\ncontact: marcin[at]gretlconference.org" << std::endl;
+        std::cout << gretl4py_logo()
+            << "\ngretl4py v" << mod_ver
+            << " [" << COMPILER_IDENT << "]\n"
+            << "\t+ pybind11     v" << py11_ver << '\n'
+            << "\t+ libgretl-1.0 v" << lg_ver << "\n\n"
+            << "contact: marcin[at]gretlconference.org\n";
         if (!gb_sysinfo->get_err()) {
-            std::cout << std::endl << "libgretl $sysinfo:" << std::endl;
+            std::cout << "\nlibgretl $sysinfo:\n";
             gb_sysinfo->print<void>();
         }
-        std::cout << "libgretl built-in strings:" << std::endl;
+        std::cout << "libgretl built-in strings:\n";
         gb_strings->print<void>();
-        py::print("gretl_plugin_path = \"" + std::string(gretl_plugin_path()) + "\"\n");
+        std::cout << "gretl_plugin_path = " << gretl_plugin_path() << '\n'
+            << "MPI launcher      = " << gretl_mpiexec() << "\n\n";
     }
 
     gretl_pop_c_numeric_locale();
