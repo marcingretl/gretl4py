@@ -86,11 +86,13 @@ GretlBundle &GretlBundle::operator= (const GretlBundle &other)
 {
     if (this != &other) {
         gretl_bundle *new_b = gretl_bundle_copy(other.b_, &err_);
+
         if (err_) handle_gretl_error(err_);
         if (free_b_ && b_ != nullptr) gretl_bundle_destroy(b_);
         b_ = new_b;
         free_b_ = true;
     }
+
     return *this;
 }
 
