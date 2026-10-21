@@ -1209,12 +1209,16 @@ void GretlModel_NSE_nl<CI>::fit (void)
     // we set up all model definition lines
     do_nl_parse_line_<std::string>("params", &params_);
     do_nl_parse_line_<std::string>("param_names", &param_names_);
-    if constexpr (CI == NLS || CI == MLE) do_nl_parse_line_<std::vector<std::string>>("deriv", &deriv_);
+    if constexpr (CI == NLS || CI == MLE) {
+        do_nl_parse_line_<std::vector<std::string>>("deriv", &deriv_);
+    }
     if constexpr (CI == GMM) {
         do_nl_parse_line_<std::vector<std::string>>("orthog", &orthog_);
         do_nl_parse_line_<std::string>("weights", &weights_);
     }
-    if constexpr (CI == MLE || CI == GMM) do_nl_parse_line_<std::vector<std::string>>("statements", &statements_);
+    if constexpr (CI == MLE || CI == GMM) {
+        do_nl_parse_line_<std::vector<std::string>>("statements", &statements_);
+    }
 
     // we do the job
     *model_ = nl_model( dataset_->dset, opt_, printer_.prn_ptr());
