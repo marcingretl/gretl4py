@@ -299,6 +299,7 @@ void GretlModel::gretl_do_forecast_ (void *model, const py::args &args, const py
     static constexpr std::array<const char*, max_positional_args> positional_args = {
         "startobs", "endobs", "steps_ahead", "vname"
     };
+    GretlPlot plotter;
     std::string param = "";
     py::kwargs clean_kwargs = kwargs;
     int n_args = py::len(args);
@@ -350,7 +351,7 @@ void GretlModel::gretl_do_forecast_ (void *model, const py::args &args, const py
     }
 
     // we work with kwargs
-    opt_ = unpack_kwargs_command(FCAST, dataset_, clean_kwargs);
+    opt_ = unpack_kwargs_command(FCAST, dataset_, clean_kwargs, &plotter);
 
     // we do the job
     if constexpr (std::is_same_v<T, MODEL>) gretl_model_protect(static_cast<MODEL*>(model));

@@ -19,7 +19,6 @@
 
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
-#include <pybind11/eval.h>
 #include "gretl4py_utils.h"
 #include "gretl4py_types.h"
 #include "gretl4py_dataset.h"
@@ -29,8 +28,6 @@
 extern "C" {
     #include <gretl/gretl_typemap.h>
 }
-#include <random>
-#include <filesystem>
 
 namespace py = pybind11;
 
@@ -99,43 +96,6 @@ inline GretlSlice make_gretl_slice (std::string startobs, std::string endobs, st
     gs.opts = std::move(opts);
 
     return gs;
-}
-
-std::string& plot_filename_storage (void)
-{
-    //
-    // return a reference to the shared storage for the current plot filename
-    //
-    static std::string filename;
-
-    return filename;
-}
-
-std::string random_plot_name (void)
-{
-    //
-    // generate a random filename with a 128-bit identifier to minimize
-    // collisions between independent processes, including MPI workers
-    //
-    // generate a random 128-bit identifier
-    std::random_device rd;
-    std::array<unsigned int, 4> words;
-
-    for (auto &word : words) {
-        word = rd();
-    }
-
-    std::ostringstream os;
-    os << "gptranslate_";
-
-    for (const auto word : words) {
-        os << std::hex << std::setw(8)
-        << std::setfill('0') << word;
-    }
-
-    os << ".gp";
-
-    return os.str();
 }
 }
 
@@ -734,71 +694,4 @@ GretlSlice python_slice_to_gretl_slice (const std::string &slice)
     }
 
     return make_gretl_slice(startobs, endobs, slice, opts);
-}
-
-template <bool generate>
-std::string plot_filename (void)
-{
-    std::string &filename = plot_filename_storage();
-
-    if constexpr (generate) {
-        // Generate and store a new unique plot filename.
-        filename = (std::filesystem::path(gretl_dotdir()) / random_plot_name()).string();
-        return filename;
-    } else {
-        // Retrieve and clear the pending plot filename.
-        std::string result = std::move(filename);
-
-        filename.clear();
-        return result;
-    }
-}
-template std::string plot_filename<true>();
-template std::string plot_filename<false>();
-
-bool translate_plot (void)
-{
-    //
-    // translate a generated gnuplot script into a matplotlib Python script
-    // return false if libgretl did not generate a plot
-    //
-    // locate the translator in the gretl4py installation directory
-    static std::filesystem::path executor = do_get_accessor<GRETL_OBJ_ANY>("$gretldir", GretlDataset::default_dataset(), nullptr).cast<std::string>();
-    const std::string gpfile = plot_filename<false>();
-
-    if (gpfile.empty() || !std::filesystem::is_regular_file(gpfile)) return false;
-
-    std::filesystem::path pyfile = gpfile;
-    pyfile.replace_extension(".py");
-
-#ifdef _WIN32
-    executor /= "gp-executor.exe";
-#else
-    executor /= "gp-executor";
-#endif
-
-    if (!std::filesystem::is_regular_file(executor)) throw std::runtime_error("gp-executor not found: " + executor.string());
-
-    // Translate the gnuplot script without executing Python.
-    const std::string command =
-        "\"" + executor.string() + "\" --output=\"" +
-        pyfile.string() + "\" \"" + gpfile + "\"";
-
-    const int status = std::system(command.c_str());
-
-    if (status != 0 || !std::filesystem::is_regular_file(pyfile)) throw std::runtime_error("gptranslate failed: " + gpfile);
-
-    // Execute the generated matplotlib script in the current Python interpreter.
-    py::gil_scoped_acquire gil;
-    py::dict globals;
-    globals["__name__"] = "__main__";
-    globals["__file__"] = pyfile.string();
-
-    py::eval_file(pyfile.string(), globals);
-
-    // Remove temporary plot scripts after successful execution.
-    std::filesystem::remove(gpfile);
-    std::filesystem::remove(pyfile);
-
-    return true;
 }

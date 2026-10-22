@@ -1100,6 +1100,7 @@ py::object GretlDataset::corr (const T &varlist, const py::kwargs &kwargs)
     //
     // general interface for computing correlations
     //
+    GretlPlot plotter;
     gretl_list_ptr var_list{nullptr};
     std::nullptr_t fake_dataset = nullptr;
 
@@ -1113,7 +1114,7 @@ py::object GretlDataset::corr (const T &varlist, const py::kwargs &kwargs)
     }
 
     // we unpack kwargs;
-    opt_ = unpack_kwargs_command(CORR, fake_dataset, kwargs);
+    opt_ = unpack_kwargs_command(CORR, fake_dataset, kwargs, &plotter);
 
     // we do the job
     if (opt_ & OPT_K) {
@@ -1127,7 +1128,7 @@ py::object GretlDataset::corr (const T &varlist, const py::kwargs &kwargs)
 
     // print and translate the generated gnuplot script, if available
     printer_.print();
-    if (translate_plot()) py::print("gptranslate: translation completed");
+    plotter.display();
 
     return get_accessor("$result");
 }
@@ -1477,6 +1478,7 @@ GretlBundlePtr GretlDataset::test (const std::string &type, const std::string &v
     //
     // this method performs test which do take a variables list
     //
+    GretlPlot plotter;
     GretlBundlePtr res = std::make_shared<GretlBundle>();
     gretl_list_ptr ex_var{nullptr};
     int order = 0;
@@ -1486,7 +1488,7 @@ GretlBundlePtr GretlDataset::test (const std::string &type, const std::string &v
     ex_var = gretllist(varlist);
 
     // we set up options
-    auto printout = unpack_kwargs_test(opt_, type, kwargs, order);
+    auto printout = unpack_kwargs_test(opt_, type, kwargs, order, &plotter);
 
     // we perform the test
     if (type == "adf") {
@@ -1551,6 +1553,8 @@ GretlBundlePtr GretlDataset::test (const std::string &type, const std::string &v
 
     // we printout results
     if (printout) printer_.print();
+    py::print("********************************");
+    plotter.display();
 
     // material we return
     res->set_element<std::string>("type", type);
