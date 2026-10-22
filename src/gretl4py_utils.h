@@ -124,4 +124,9 @@ GretlSlice python_slice_to_gretl_slice (const py::slice &slice);
 
 GretlSlice python_slice_to_gretl_slice (const std::string &slice);
 
+template <bool generate = true>
+std::string plot_filename (void);
+
+bool translate_plot (void);
+
 #endif // GRETL4PY_UTILS_H

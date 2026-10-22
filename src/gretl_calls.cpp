@@ -94,7 +94,7 @@ static std::string extract_varname (std::string formula)
 
     return gretl4py_trim(varname);
 }
-}
+} // namespace
 
 //////////////////////////////////////////////////
 // module related tools
@@ -315,16 +315,13 @@ gretlopt unpack_kwargs_command (GretlCmdIndex ci, T &dataset, const py::kwargs &
                     continue;
                 }
             }
-            if (key == "plot") {
-                throw std::invalid_argument("'plot' option not available");
+            if (key == "plot" && is_pystr(item.second) && item.second.cast<std::string>() == "display") {
+                gretl_valid_long_opt(opt, ci, key, py::handle(), plot_filename<true>().c_str());
             } else {
                 gretl_valid_long_opt(opt, ci, key, item.second);
             }
         }
     }
-
-    // we force --plot=none for certain commands
-    if (ci == XCORRGM || ci == CORR) gretl_valid_long_opt(opt, ci, "plot", py::handle(), "none");
 
     // if we didn't get dataset, let use global
     if constexpr (std::is_same_v<T, GretlDatasetPtr>) {

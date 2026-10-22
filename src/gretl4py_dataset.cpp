@@ -1124,7 +1124,10 @@ py::object GretlDataset::corr (const T &varlist, const py::kwargs &kwargs)
         err_ = gretl_corrmx(var_list.get(), dset, opt_, printer_.prn_ptr());
     }
     if (err_) handle_gretl_error(err_);
+
+    // print and translate the generated gnuplot script, if available
     printer_.print();
+    if (translate_plot()) py::print("gptranslate: translation completed");
 
     return get_accessor("$result");
 }
