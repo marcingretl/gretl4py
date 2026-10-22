@@ -223,6 +223,8 @@ public:
     double ljungbox (int y, int p);
 
     double ljungbox (const std::string &y, int p);
+
+    void plotnew (int varnum);
 };
 
 #endif // GRETL4PY_DATASET_H

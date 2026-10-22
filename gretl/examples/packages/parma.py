@@ -82,4 +82,8 @@ def run_example():
 
 
 if __name__ == "__main__":
-    run_example()
+    d = gretl.get_data("mroz87.gdt", quiet=True)
+
+    res = run_example()
+    gretl.marginal_graph(res, "HE")
+

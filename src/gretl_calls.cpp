@@ -291,24 +291,17 @@ const char *GretlPrint::get_buffer (void)
     return gretl_print_get_buffer(prn_);
 }
 
-
-
 //
 // GretlPlot class methods
 //
 GretlPlot::~GretlPlot (void)
 {
-    // Remove only temporary plot files.
+    // remove only temporary plot files.
     if (temporary_) {
         std::error_code ec;
 
-        if (!gpfile_.empty()) {
-            std::filesystem::remove(gpfile_, ec);
-        }
-
-        if (!pyfile_.empty()) {
-            std::filesystem::remove(pyfile_, ec);
-        }
+        if (!gpfile_.empty()) std::filesystem::remove(gpfile_, ec);
+        if (!pyfile_.empty()) std::filesystem::remove(pyfile_, ec);
     }
 }
 
@@ -341,7 +334,9 @@ std::string GretlPlot::random_plot_name (void)
 
 std::string GretlPlot::filename (void)
 {
-    // Generate and store a unique temporary gnuplot filename.
+    //
+    // generate and store a unique temporary gnuplot filename
+    //
     gpfile_ = std::filesystem::path(gretl_dotdir()) / random_plot_name();
 
     pyfile_ = gpfile_;
@@ -355,12 +350,12 @@ std::string GretlPlot::filename (void)
 bool GretlPlot::translate (void)
 {
     //
-    // Translate a generated gnuplot script into a matplotlib Python script.
-    // Return false if libgretl did not generate a plot.
+    // translate a generated gnuplot script into a matplotlib Python script
+    // return false if libgretl did not generate a plot
     //
     if (gpfile_.empty() || !std::filesystem::is_regular_file(gpfile_)) return false;
 
-    // Locate the translator in the gretl4py installation directory.
+    // locate the translator in the gretl4py installation directory
     static const std::filesystem::path executor = [] {
         std::filesystem::path path =
             do_get_accessor<GRETL_OBJ_ANY>("$gretldir", GretlDataset::default_dataset(), nullptr).cast<std::string>();
@@ -374,11 +369,8 @@ bool GretlPlot::translate (void)
 
     if (!std::filesystem::is_regular_file(executor)) throw std::runtime_error("gp-executor not found: " + executor.string());
 
-    // Translate the gnuplot script without executing Python.
-    const std::string command =
-        "\"" + executor.string() + "\" --output=\"" +
-        pyfile_.string() + "\" \"" + gpfile_.string() + "\"";
-
+    // translate the gnuplot script without executing Python (execute command)
+    const std::string command = "\"" + executor.string() + "\" --output=\"" + pyfile_.string() + "\" \"" + gpfile_.string() + "\"";
     const int status = std::system(command.c_str());
 
     if (status != 0 || !std::filesystem::is_regular_file(pyfile_)) throw std::runtime_error("gptranslate failed: " + gpfile_.string());
@@ -388,10 +380,10 @@ bool GretlPlot::translate (void)
 
 void GretlPlot::display (void)
 {
-    // Translate the plot before displaying it.
+    // translate the plot before displaying it
     if (!translate()) return;
 
-    // Execute the generated matplotlib script in the current Python interpreter.
+    // execute the generated matplotlib script in the current Python interpreter
     py::gil_scoped_acquire gil;
     py::dict globals;
 
@@ -400,13 +392,6 @@ void GretlPlot::display (void)
 
     py::eval_file(pyfile_.string(), globals);
 }
-
-
-
-
-
-
-
 
 //////////////////////////////////////////////////
 // functions

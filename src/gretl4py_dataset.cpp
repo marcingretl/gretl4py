@@ -28,6 +28,7 @@ extern "C" {
     #include <gretl/var.h>
     #include <gretl/gretl_xml.h>
     #include <gretl/uservar.h>
+    #include <gretl/graphing.h>
 }
 
 //////////////////////////////////////////////////
@@ -1725,4 +1726,42 @@ double GretlDataset::ljungbox (int y, int p)
 double GretlDataset::ljungbox (const std::string &y, int p)
 {
     return ljungbox(get_series_id(y), p);
+}
+
+void GretlDataset::plotnew (int varnum)
+{
+    if (varnum <= 0) {
+        handle_gretl_error(E_UNKVAR);
+    }
+
+    GretlPlot plotter;
+    py::module_ locale = py::module_::import("locale");
+    py::object category = locale.attr("LC_NUMERIC");
+    py::object previous = locale.attr("setlocale")(category);
+
+    locale.attr("setlocale")(category, "C");
+
+    try {
+        if (is_cross_section()) {
+            //do_freq_dist();
+            py::print("trzeba zrobić");
+        } else if (multi_unit_panel_sample(dset)) {
+            //do_panel_plot(varnum);
+            py::print("trzeba zrobić");
+        } else {
+            int list[2] = {1, varnum};
+            const std::string filename = plotter.filename();
+
+            err_ = set_optval_string(GNUPLOT, OPT_U, filename.c_str());
+            if (err_) handle_gretl_error(err_);
+            err_ = gnuplot(list, nullptr, dset, static_cast<gretlopt>(OPT_O | OPT_T | OPT_U));
+            if (err_) handle_gretl_error(err_);
+        }
+    } catch (...) {
+        locale.attr("setlocale")(category, previous);
+        throw;
+    }
+
+    locale.attr("setlocale")(category, previous);
+    plotter.display();
 }
