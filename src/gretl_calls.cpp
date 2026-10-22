@@ -391,6 +391,13 @@ void GretlPlot::display (void)
     globals["__file__"] = pyfile_.string();
 
     py::eval_file(pyfile_.string(), globals);
+
+    // display all figures without blocking subsequent plot commands
+    py::module_ plt = py::module_::import("matplotlib.pyplot");
+    plt.attr("show")(py::arg("block") = false);
+
+    // process pending GUI events
+    plt.attr("pause")(0.1);
 }
 
 //////////////////////////////////////////////////
