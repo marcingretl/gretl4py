@@ -153,7 +153,6 @@ void GretlBundle::for_each_bundle_element_ (F &&f)
     char **raw_ptr = gretl_bundle_get_keys_raw(b_, &n_keys);
 
     if (!raw_ptr) throw std::runtime_error("failed to obtain bundle keys");
-
     strings_array_ptr keys(raw_ptr, StringsArrayDeleter{});
 
     keys.get_deleter().nstrs = n_keys;
