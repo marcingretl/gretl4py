@@ -416,7 +416,7 @@ void NumPyArray_extract (const py::array &arr, NumPyArrayView &view)
     // which then fails to parse as a type.
     auto shape_to_int = [](Py_ssize_t n) -> int
     {
-        if (n < 0 || n > std::numeric_limits<int>::max()) throw std::overflow_error("NumPy array dimension too large.");
+        if (n < 0 || n > (std::numeric_limits<int>::max)()) throw std::overflow_error("NumPy array dimension too large.");
 
         return static_cast<int>(n);
     };
