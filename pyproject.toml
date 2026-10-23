@@ -52,6 +52,7 @@ exclude = ["**/__pycache__"]
     "COPYING",
     "lib/*",
     "data/*",
+    "data/gnuplot/*.gpsty",
     "examples/*",
     "functions/*",
     "scripts/*",

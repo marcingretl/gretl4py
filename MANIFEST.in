@@ -11,6 +11,7 @@ recursive-include gretl/tmp *
 recursive-include gretl/examples *
 recursive-include gretl/functions *
 recursive-include gretl/scripts *
+recursive-include gretl/data/gnuplot *.gpsty
 
 # gptranslate executable
 include gretl/gp-executor*
