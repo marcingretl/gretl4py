@@ -57,6 +57,8 @@ public:
 class GretlPlot
 {
 private:
+    static std::filesystem::path executor_;
+
     std::filesystem::path gpfile_;
     std::filesystem::path pyfile_;
     bool temporary_ = false;
@@ -67,6 +69,8 @@ public:
     GretlPlot (void) = default;
     GretlPlot (const GretlPlot&) = delete;
     ~GretlPlot (void);
+
+    static void init_executor (void);
 
     GretlPlot &operator= (const GretlPlot&) = delete;
 

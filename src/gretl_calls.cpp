@@ -159,6 +159,9 @@ void gretl4py_init (void)
         handle_gretl_error(err);
     }
 
+    // plotting initialization
+    GretlPlot::init_executor();
+
     // verbose output
     if (gretl4py_verbose) std::printf("libgretl initialized\n");
 }
@@ -292,6 +295,12 @@ const char *GretlPrint::get_buffer (void)
 }
 
 //
+// GretlPlot
+//
+// Static path to the gp-executor binary.
+std::filesystem::path GretlPlot::executor_;
+
+//
 // GretlPlot class methods
 //
 GretlPlot::~GretlPlot (void)
@@ -303,6 +312,20 @@ GretlPlot::~GretlPlot (void)
         if (!gpfile_.empty()) std::filesystem::remove(gpfile_, ec);
         if (!pyfile_.empty()) std::filesystem::remove(pyfile_, ec);
     }
+}
+
+void GretlPlot::init_executor (void)
+{
+    // Locate gp-executor in the gretl4py installation directory.
+    executor_ = do_get_accessor<GRETL_OBJ_ANY>("$gretldir", GretlDataset::default_dataset(), nullptr).cast<std::string>();
+
+#ifdef _WIN32
+    executor_ /= "gp-executor.exe";
+#else
+    executor_ /= "gp-executor";
+#endif
+
+    if (!std::filesystem::is_regular_file(executor_)) throw std::runtime_error("gp-executor not found: " + executor_.string());
 }
 
 std::string GretlPlot::random_plot_name (void)
@@ -355,21 +378,8 @@ bool GretlPlot::translate (void)
     //
     if (gpfile_.empty() || !std::filesystem::is_regular_file(gpfile_)) return false;
 
-    // locate the translator in the gretl4py installation directory
-    static const std::filesystem::path executor = [] {
-        std::filesystem::path path =
-            do_get_accessor<GRETL_OBJ_ANY>("$gretldir", GretlDataset::default_dataset(), nullptr).cast<std::string>();
-#ifdef _WIN32
-        path /= "gp-executor.exe";
-#else
-        path /= "gp-executor";
-#endif
-        return path;
-    }();
-
-    if (!std::filesystem::is_regular_file(executor)) throw std::runtime_error("gp-executor not found: " + executor.string());
-
     // translate the gnuplot script without executing Python (execute command)
+    const auto &executor = executor_;
     const std::string command = "\"" + executor.string() + "\" --output=\"" + pyfile_.string() + "\" \"" + gpfile_.string() + "\"";
     const int status = std::system(command.c_str());
 
