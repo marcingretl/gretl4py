@@ -56,5 +56,8 @@ exclude = ["**/__pycache__"]
     "functions/*",
     "scripts/*",
     "gretlmpi",
+    "gretlmpi.exe",
+    "gp-executor",
+    "gp-executor.exe",
     "mpi/**/*",
 ]

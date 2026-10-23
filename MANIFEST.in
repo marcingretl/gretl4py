@@ -12,6 +12,9 @@ recursive-include gretl/examples *
 recursive-include gretl/functions *
 recursive-include gretl/scripts *
 
+# gptranslate executable
+include gretl/gp-executor*
+
 # MPI executable and bundled MPI runtime
 include gretl/gretlmpi*
 recursive-include gretl/mpi *

@@ -20,6 +20,7 @@ GRETL_INSTALL_PATH  = get_option('GRETL_INSTALL_PATH')
 # MPI staging is optional and independent of the Python extension.
 NOMPI               = get_option('NOMPI')
 MPI_PATH            = get_option('MPI_PATH')
+GP_EXECUTOR_PATH    = get_option('GP_EXECUTOR_PATH')
 
 ###########################################################################
 # Windows-specific libgretl
@@ -270,6 +271,56 @@ copy_binary_part = custom_target(
     '@OUTPUT@',
   ],
   build_by_default: true,
+)
+
+###########################################################################
+# Stage the prebuilt gptranslate executable next to gretlmpi.
+###########################################################################
+if GP_EXECUTOR_PATH == ''
+  error('Set -DGP_EXECUTOR_PATH=... to the prebuilt gp-executor binary')
+endif
+
+gp_executor_source = GP_EXECUTOR_PATH.replace('\\', '/')
+gp_executor_name = 'gp-executor'
+if is_windows
+  gp_executor_name = 'gp-executor.exe'
+endif
+if not fs.is_file(gp_executor_source)
+  error('gp-executor not found: ' + gp_executor_source)
+endif
+
+# Stage in the source package so setuptools wheels include the executable.
+prepare_gp_executor = custom_target(
+  'prepare_gp_executor',
+  input: files('scripts/prepare_runtime.py'),
+  output: 'gp-executor-prepared.stamp',
+  command: [python, '-c',
+    'import pathlib, shutil, sys; src = pathlib.Path(sys.argv[1]); dst = pathlib.Path(sys.argv[2]); dst.parent.mkdir(parents=True, exist_ok=True); shutil.copy2(src, dst); pathlib.Path(sys.argv[3]).touch()',
+    gp_executor_source,
+    meson.project_source_root() / 'gretl' / gp_executor_name,
+    '@OUTPUT@'],
+  build_by_default: true,
+)
+
+# Install alongside the Python extension and gretlmpi.
+meson.add_install_script(
+  python, '-c',
+  '''
+import os
+import pathlib
+import shutil
+import sys
+
+source = pathlib.Path(sys.argv[1])
+destination = pathlib.Path(sys.argv[2])
+destdir = os.environ.get('DESTDIR', '')
+if destdir:
+    destination = pathlib.Path(destdir) / pathlib.Path(os.path.splitdrive(str(destination))[1].lstrip('/\\'))
+destination.mkdir(parents=True, exist_ok=True)
+shutil.copy2(source, destination / source.name)
+''',
+  gp_executor_source,
+  python_gretl_dir,
 )
 
 ###########################################################################
