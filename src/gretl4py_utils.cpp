@@ -177,6 +177,13 @@ void GretlPlot::init_queue (void)
         throw std::runtime_error("cannot set GRETL4PY_PLOT_QUEUE");
     }
     queue_dir_ = std::move(candidate);
+
+    // Register cleanup once, after successful queue initialization.
+    // Each process removes only its own session directory.
+    if (std::atexit(&GretlPlot::cleanup_queue_) != 0) {
+        cleanup_queue_();
+        throw std::runtime_error("cannot register plot queue cleanup");
+    }
 }
 
 void GretlPlot::drain_queue (void)
@@ -197,24 +204,31 @@ void GretlPlot::drain_queue (void)
 
     py::gil_scoped_acquire gil;
     for (const auto &script : scripts) {
-        py::dict globals;
-        globals["__name__"] = "__main__";
-        globals["__file__"] = script.string();
-
         // keep a failed script for inspection; remove only successful ones
-        py::eval_file(script.string(), globals);
+        execute_script_(script);
         std::filesystem::remove(script);
     }
 
     // display all figures after evaluating every script in this batch
-    py::module_ plt = py::module_::import("matplotlib.pyplot");
-    plt.attr("show")(py::arg("block") = false);
-    plt.attr("pause")(0.1);
+    show_figures_();
 }
 
 [[nodiscard]] std::string GretlPlot::get_executor_path (void)
 {
     return executor_.string();
+}
+
+void GretlPlot::cleanup_queue_ (void) noexcept
+{
+    // Remove only the plot queue owned by this process.
+    // Never remove the shared parent directory or other sessions.
+    if (queue_dir_.empty()) return;
+
+    std::error_code ec;
+    std::filesystem::remove_all(queue_dir_, ec);
+
+    // Cleanup must not throw during process termination.
+    queue_dir_.clear();
 }
 
 std::string GretlPlot::random_plot_name (void)
@@ -277,6 +291,23 @@ bool GretlPlot::translate (void)
     return true;
 }
 
+void GretlPlot::execute_script_ (const std::filesystem::path &script)
+{
+    // execute the generated matplotlib script in the current Python interpreter
+    py::dict globals;
+    globals["__name__"] = "__main__";
+    globals["__file__"] = script.string();
+
+    py::eval_file(script.string(), globals);
+}
+
+void GretlPlot::show_figures_ (void)
+{
+    // display all figures without blocking subsequent plot commands
+    py::module_ plt = py::module_::import("matplotlib.pyplot");
+    plt.attr("show")(py::arg("block") = false);
+}
+
 void GretlPlot::display (void)
 {
     // translate the plot before displaying it
@@ -284,19 +315,10 @@ void GretlPlot::display (void)
 
     // execute the generated matplotlib script in the current Python interpreter
     py::gil_scoped_acquire gil;
-    py::dict globals;
-
-    globals["__name__"] = "__main__";
-    globals["__file__"] = pyfile_.string();
-
-    py::eval_file(pyfile_.string(), globals);
+    execute_script_(pyfile_);
 
     // display all figures without blocking subsequent plot commands
-    py::module_ plt = py::module_::import("matplotlib.pyplot");
-    plt.attr("show")(py::arg("block") = false);
-
-    // process pending GUI events
-    plt.attr("pause")(0.1);
+    show_figures_();
 }
 
 //////////////////////////////////////////////////

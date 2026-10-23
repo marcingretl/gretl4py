@@ -92,6 +92,13 @@ private:
 
     static std::string random_plot_name (void);
 
+    // execute a generated matplotlib script; the caller must hold the GIL
+    static void execute_script_ (const std::filesystem::path &script);
+
+    // display pending figures and process GUI events; the caller holds the GIL
+    static void show_figures_ (void);
+
+    static void cleanup_queue_ (void) noexcept;
 public:
     GretlPlot (void) = default;
     GretlPlot (const GretlPlot&) = delete;
@@ -100,6 +107,7 @@ public:
     static void init_executor (void);
 
     static void init_queue (void);
+
     static void drain_queue (void);
 
     [[nodiscard]] static std::string get_executor_path (void);
