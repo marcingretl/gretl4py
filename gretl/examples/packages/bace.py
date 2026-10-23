@@ -44,4 +44,7 @@ def run_example():
 
 
 if __name__ == "__main__":
-    run_example()
+    d = gretl.get_data("nels.gdt", frompkg="BACE", quiet=True)
+    res = run_example()
+    gretl.BACE_Plot(res)
+

@@ -30,6 +30,8 @@ extern "C" {
 }
 #include <limits>
 #include <random>
+#include <vector>
+#include <cstdlib>
 
 namespace py = pybind11;
 
@@ -109,6 +111,7 @@ inline GretlSlice make_gretl_slice (std::string startobs, std::string endobs, st
 //
 // Static path to the gp-executor binary.
 std::filesystem::path GretlPlot::executor_;
+std::filesystem::path GretlPlot::queue_dir_;
 
 //
 // GretlPlot class methods
@@ -136,6 +139,77 @@ void GretlPlot::init_executor (void)
     #endif
 
     if (!std::filesystem::is_regular_file(executor_)) throw std::runtime_error("gp-executor not found: " + executor_.string());
+}
+
+void GretlPlot::init_queue (void)
+{
+    // Initialize one private queue per Python process. The random directory
+    // name prevents collisions between independent processes and MPI workers.
+    if (!queue_dir_.empty()) return;
+
+    const auto root = std::filesystem::path(gretl_dotdir()) / "queue";
+    std::filesystem::create_directories(root);
+
+    std::random_device rd;
+    std::filesystem::path candidate;
+    bool created = false;
+
+    for (int attempt = 0; attempt < 32; ++attempt) {
+        std::ostringstream name;
+        name << "session_" << std::hex << rd() << rd() << rd() << rd();
+        candidate = root / name.str();
+        if (std::filesystem::create_directory(candidate)) {
+            created = true;
+            break;
+        }
+    }
+    if (!created) throw std::runtime_error("cannot create a unique plot queue directory");
+
+    // gp-executor is a separate process and receives this path via its environment.
+    const std::string path = candidate.string();
+#ifdef _WIN32
+    if (_putenv_s("GRETL4PY_PLOT_QUEUE", path.c_str()) != 0) {
+#else
+    if (setenv("GRETL4PY_PLOT_QUEUE", path.c_str(), 1) != 0) {
+#endif
+        std::error_code ec;
+        std::filesystem::remove(candidate, ec);
+        throw std::runtime_error("cannot set GRETL4PY_PLOT_QUEUE");
+    }
+    queue_dir_ = std::move(candidate);
+}
+
+void GretlPlot::drain_queue (void)
+{
+    // Only complete .py files are published by gp-executor; .tmp files
+    // are deliberately ignored until their atomic rename has completed.
+    if (queue_dir_.empty()) return;
+
+    std::vector<std::filesystem::path> scripts;
+    for (const auto &entry : std::filesystem::directory_iterator(queue_dir_)) {
+        if (entry.is_regular_file() && entry.path().extension() == ".py")
+            scripts.push_back(entry.path());
+    }
+    if (scripts.empty()) return;
+
+    // gp-executor prefixes filenames with a padded creation timestamp.
+    std::sort(scripts.begin(), scripts.end());
+
+    py::gil_scoped_acquire gil;
+    for (const auto &script : scripts) {
+        py::dict globals;
+        globals["__name__"] = "__main__";
+        globals["__file__"] = script.string();
+
+        // Keep a failed script for inspection; remove only successful ones.
+        py::eval_file(script.string(), globals);
+        //std::filesystem::remove(script);
+    }
+
+    // Display all figures after evaluating every script in this batch.
+    py::module_ plt = py::module_::import("matplotlib.pyplot");
+    plt.attr("show")(py::arg("block") = false);
+    plt.attr("pause")(0.1);
 }
 
 [[nodiscard]] std::string GretlPlot::get_executor_path (void)

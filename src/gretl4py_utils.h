@@ -84,6 +84,7 @@ class GretlPlot
 {
 private:
     static std::filesystem::path executor_;
+    static std::filesystem::path queue_dir_;
 
     std::filesystem::path gpfile_;
     std::filesystem::path pyfile_;
@@ -97,6 +98,9 @@ public:
     ~GretlPlot (void);
 
     static void init_executor (void);
+
+    static void init_queue (void);
+    static void drain_queue (void);
 
     [[nodiscard]] static std::string get_executor_path (void);
 

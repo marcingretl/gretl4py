@@ -161,4 +161,7 @@ def run_example():
 
 
 if __name__ == "__main__":
-    run_example()
+    d = gretl.get_data("AnglinGencay.gdt", frompkg="BayTool", quiet=True)
+
+    res = run_example()
+    gretl.BT_paramplot(res)
