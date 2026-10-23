@@ -99,7 +99,7 @@ private:
     // execute a generated matplotlib script; the caller must hold the GIL
     static void execute_script_ (const std::filesystem::path &script);
 
-    // display pending figures and process GUI events; the caller holds the GIL
+    // display pending figures and wait for their windows to close; caller holds the GIL
     static void show_figures_ (void);
 
     static void cleanup_queue_ (void) noexcept;

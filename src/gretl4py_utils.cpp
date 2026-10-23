@@ -191,6 +191,10 @@ void GretlPlot::init_queue (void)
     if (!created) throw std::runtime_error("cannot create a unique plot queue directory");
 
     // gp-executor is a separate process and receives this path via its environment.
+    // Preserve the previous value so a failed initialization can restore it.
+    const char *previous = std::getenv("GRETL4PY_PLOT_QUEUE");
+    const bool had_previous = previous != nullptr;
+    const std::string previous_value = had_previous ? previous : "";
     const std::string path = candidate.string();
 #ifdef _WIN32
     if (_putenv_s("GRETL4PY_PLOT_QUEUE", path.c_str()) != 0) {
@@ -204,10 +208,27 @@ void GretlPlot::init_queue (void)
     queue_dir_ = std::move(candidate);
     queue_owner_pid_ = pid;
 
-    // Register cleanup once, after successful queue initialization.
-    // Each process removes only its own session directory.
+    // Register cleanup after successful queue initialization. A forked child
+    // may register another handler; the PID check makes inherited handlers safe.
+    // The static queue_dir_ is initialized before this registration, so its
+    // destructor runs after this cleanup handler during normal termination.
     if (std::atexit(&GretlPlot::cleanup_queue_) != 0) {
         cleanup_queue_();
+
+        // Restore the inherited or previous environment on registration failure.
+#ifdef _WIN32
+        if (had_previous) {
+            _putenv_s("GRETL4PY_PLOT_QUEUE", previous_value.c_str());
+        } else {
+            _putenv_s("GRETL4PY_PLOT_QUEUE", "");
+        }
+#else
+        if (had_previous) {
+            setenv("GRETL4PY_PLOT_QUEUE", previous_value.c_str(), 1);
+        } else {
+            unsetenv("GRETL4PY_PLOT_QUEUE");
+        }
+#endif
         throw std::runtime_error("cannot register plot queue cleanup");
     }
 }
@@ -332,7 +353,7 @@ void GretlPlot::execute_script_ (const std::filesystem::path &script)
 
 void GretlPlot::show_figures_ (void)
 {
-    // display all figures without blocking subsequent plot commands
+    // display all figures and wait until their windows are closed
     py::module_ plt = py::module_::import("matplotlib.pyplot");
     plt.attr("show")(py::arg("block") = true);
 }
@@ -346,7 +367,7 @@ void GretlPlot::display (void)
     py::gil_scoped_acquire gil;
     execute_script_(pyfile_);
 
-    // display all figures without blocking subsequent plot commands
+    // display all figures and wait until their windows are closed
     show_figures_();
 }
 
