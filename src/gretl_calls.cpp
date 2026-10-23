@@ -158,6 +158,10 @@ void gretl4py_init (void)
 
     // plotting initialization
     GretlPlot::init_executor();
+    const std::string executor = GretlPlot::get_executor_path();
+
+    if (executor.size() >= sizeof libgretl_paths.gnuplot) throw std::runtime_error("gp-executor path is too long");
+    if (int err = gretl_set_path_by_name("gnuplot", executor.c_str())) handle_gretl_error(err);
 
     // verbose output
     if (gretl4py_verbose) std::printf("libgretl initialized\n");

@@ -138,6 +138,11 @@ void GretlPlot::init_executor (void)
     if (!std::filesystem::is_regular_file(executor_)) throw std::runtime_error("gp-executor not found: " + executor_.string());
 }
 
+[[nodiscard]] std::string GretlPlot::get_executor_path (void)
+{
+    return executor_.string();
+}
+
 std::string GretlPlot::random_plot_name (void)
 {
     //

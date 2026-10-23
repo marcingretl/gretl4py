@@ -98,6 +98,8 @@ public:
 
     static void init_executor (void);
 
+    [[nodiscard]] static std::string get_executor_path (void);
+
     GretlPlot &operator= (const GretlPlot&) = delete;
 
     std::string filename (void);
