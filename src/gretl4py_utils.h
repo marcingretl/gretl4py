@@ -24,6 +24,7 @@
 #include "gretl4py_dataset.h"
 #include "gretl4py_matrix.h"
 #include "gretl4py_bundle.h"
+#include <filesystem>
 
 namespace py = pybind11;
 
@@ -72,6 +73,39 @@ inline bool is_numpy_array_fc (const py::array &m) {
 }
 inline bool is_pygretlbundle (const py::handle &o) { return py::isinstance<GretlBundle>(o); }
 inline bool is_pygretlmatrix (const py::handle &o) { return py::isinstance<GretlMatrix>(o); }
+
+//////////////////////////////////////////////////
+// classes
+//////////////////////////////////////////////////
+//
+// Class to handle plotting
+//
+class GretlPlot
+{
+private:
+    static std::filesystem::path executor_;
+
+    std::filesystem::path gpfile_;
+    std::filesystem::path pyfile_;
+    bool temporary_ = false;
+
+    static std::string random_plot_name (void);
+
+public:
+    GretlPlot (void) = default;
+    GretlPlot (const GretlPlot&) = delete;
+    ~GretlPlot (void);
+
+    static void init_executor (void);
+
+    GretlPlot &operator= (const GretlPlot&) = delete;
+
+    std::string filename (void);
+
+    bool translate (void);
+
+    void display (void);
+};
 
 //////////////////////////////////////////////////
 // functions

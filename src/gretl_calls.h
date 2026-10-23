@@ -21,7 +21,6 @@
 #define GRETL_CALLS_H
 
 #include "gretl4py_types.h"
-#include <filesystem>
 
 namespace py = pybind11;
 
@@ -49,36 +48,6 @@ public:
     void print (void);
 
     const char *get_buffer (void);
-};
-
-//
-// Class to handle plotting
-//
-class GretlPlot
-{
-private:
-    static std::filesystem::path executor_;
-
-    std::filesystem::path gpfile_;
-    std::filesystem::path pyfile_;
-    bool temporary_ = false;
-
-    static std::string random_plot_name (void);
-
-public:
-    GretlPlot (void) = default;
-    GretlPlot (const GretlPlot&) = delete;
-    ~GretlPlot (void);
-
-    static void init_executor (void);
-
-    GretlPlot &operator= (const GretlPlot&) = delete;
-
-    std::string filename (void);
-
-    bool translate (void);
-
-    void display (void);
 };
 
 //////////////////////////////////////////////////
