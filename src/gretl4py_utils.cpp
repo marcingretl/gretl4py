@@ -33,6 +33,12 @@ extern "C" {
 #include <vector>
 #include <cstdlib>
 
+#ifdef _WIN32
+#include <windows.h>
+#else
+#include <unistd.h>
+#endif
+
 namespace py = pybind11;
 
 namespace {
@@ -112,6 +118,7 @@ inline GretlSlice make_gretl_slice (std::string startobs, std::string endobs, st
 // Static path to the gp-executor binary.
 std::filesystem::path GretlPlot::executor_;
 std::filesystem::path GretlPlot::queue_dir_;
+unsigned long long GretlPlot::queue_owner_pid_ = 0;
 
 //
 // GretlPlot class methods
@@ -141,11 +148,29 @@ void GretlPlot::init_executor (void)
     if (!std::filesystem::is_regular_file(executor_)) throw std::runtime_error("gp-executor not found: " + executor_.string());
 }
 
+unsigned long long GretlPlot::current_pid_ (void) noexcept
+{
+    // Identify the current process, including a child created by fork().
+#ifdef _WIN32
+    return static_cast<unsigned long long>(GetCurrentProcessId());
+#else
+    return static_cast<unsigned long long>(getpid());
+#endif
+}
+
 void GretlPlot::init_queue (void)
 {
     // Initialize one private queue per Python process. The random directory
     // name prevents collisions between independent processes and MPI workers.
-    if (!queue_dir_.empty()) return;
+    const auto pid = current_pid_();
+    if (!queue_dir_.empty() && queue_owner_pid_ == pid) return;
+
+    // A forked child inherits the parent's static path, but must create
+    // its own queue rather than reuse or delete the parent's directory.
+    if (queue_owner_pid_ != pid) {
+        queue_dir_.clear();
+        queue_owner_pid_ = 0;
+    }
 
     const auto root = std::filesystem::path(gretl_dotdir()) / "queue";
     std::filesystem::create_directories(root);
@@ -177,6 +202,7 @@ void GretlPlot::init_queue (void)
         throw std::runtime_error("cannot set GRETL4PY_PLOT_QUEUE");
     }
     queue_dir_ = std::move(candidate);
+    queue_owner_pid_ = pid;
 
     // Register cleanup once, after successful queue initialization.
     // Each process removes only its own session directory.
@@ -190,7 +216,8 @@ void GretlPlot::drain_queue (void)
 {
     // only complete .py files are published by gp-executor; .tmp files
     // are deliberately ignored until their atomic rename has completed
-    if (queue_dir_.empty()) return;
+    // A forked child must not drain scripts belonging to its parent.
+    if (queue_dir_.empty() || queue_owner_pid_ != current_pid_()) return;
 
     std::vector<std::filesystem::path> scripts;
     for (const auto &entry : std::filesystem::directory_iterator(queue_dir_)) {
@@ -222,13 +249,15 @@ void GretlPlot::cleanup_queue_ (void) noexcept
 {
     // Remove only the plot queue owned by this process.
     // Never remove the shared parent directory or other sessions.
-    if (queue_dir_.empty()) return;
+    // Inherited atexit handlers must not delete the parent's queue.
+    if (queue_dir_.empty() || queue_owner_pid_ != current_pid_()) return;
 
     std::error_code ec;
     std::filesystem::remove_all(queue_dir_, ec);
 
     // Cleanup must not throw during process termination.
     queue_dir_.clear();
+    queue_owner_pid_ = 0;
 }
 
 std::string GretlPlot::random_plot_name (void)
@@ -305,7 +334,7 @@ void GretlPlot::show_figures_ (void)
 {
     // display all figures without blocking subsequent plot commands
     py::module_ plt = py::module_::import("matplotlib.pyplot");
-    plt.attr("show")(py::arg("block") = false);
+    plt.attr("show")(py::arg("block") = true);
 }
 
 void GretlPlot::display (void)

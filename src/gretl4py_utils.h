@@ -85,6 +85,10 @@ class GretlPlot
 private:
     static std::filesystem::path executor_;
     static std::filesystem::path queue_dir_;
+    static unsigned long long queue_owner_pid_;
+
+    // Return the current OS process identifier on Windows and POSIX systems.
+    static unsigned long long current_pid_ (void) noexcept;
 
     std::filesystem::path gpfile_;
     std::filesystem::path pyfile_;
