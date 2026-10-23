@@ -132,11 +132,11 @@ void GretlPlot::init_executor (void)
     // Locate gp-executor in the gretl4py installation directory.
     executor_ = do_get_accessor<GRETL_OBJ_ANY>("$gretldir", GretlDataset::default_dataset(), nullptr).cast<std::string>();
 
-    #ifdef _WIN32
+#ifdef _WIN32
     executor_ /= "gp-executor.exe";
-    #else
+#else
     executor_ /= "gp-executor";
-    #endif
+#endif
 
     if (!std::filesystem::is_regular_file(executor_)) throw std::runtime_error("gp-executor not found: " + executor_.string());
 }
@@ -181,8 +181,8 @@ void GretlPlot::init_queue (void)
 
 void GretlPlot::drain_queue (void)
 {
-    // Only complete .py files are published by gp-executor; .tmp files
-    // are deliberately ignored until their atomic rename has completed.
+    // only complete .py files are published by gp-executor; .tmp files
+    // are deliberately ignored until their atomic rename has completed
     if (queue_dir_.empty()) return;
 
     std::vector<std::filesystem::path> scripts;
@@ -201,12 +201,12 @@ void GretlPlot::drain_queue (void)
         globals["__name__"] = "__main__";
         globals["__file__"] = script.string();
 
-        // Keep a failed script for inspection; remove only successful ones.
+        // keep a failed script for inspection; remove only successful ones
         py::eval_file(script.string(), globals);
-        //std::filesystem::remove(script);
+        std::filesystem::remove(script);
     }
 
-    // Display all figures after evaluating every script in this batch.
+    // display all figures after evaluating every script in this batch
     py::module_ plt = py::module_::import("matplotlib.pyplot");
     plt.attr("show")(py::arg("block") = false);
     plt.attr("pause")(0.1);
