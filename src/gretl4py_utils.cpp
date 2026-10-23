@@ -333,7 +333,13 @@ bool GretlPlot::translate (void)
 
     // translate the gnuplot script without executing Python (execute command)
     const auto &executor = executor_;
-    const std::string command = "\"" + executor.string() + "\" --output=\"" + pyfile_.string() + "\" \"" + gpfile_.string() + "\"";
+    std::string command = "\"" + executor.string() + "\" --output=\"" + pyfile_.string() + "\" \"" + gpfile_.string() + "\"";
+
+#ifdef _WIN32
+    // cmd.exe requires an additional pair of quotes around the entire command
+    command = "\"" + command + "\"";
+#endif
+
     const int status = std::system(command.c_str());
 
     if (status != 0 || !std::filesystem::is_regular_file(pyfile_)) throw std::runtime_error("gptranslate failed: " + gpfile_.string());
