@@ -375,6 +375,9 @@ void GretlPlot::display (void)
     // translate the plot before displaying it
     if (!translate()) return;
 
+    // do not display plots explicitly saved to disk
+    if (!display_) return;
+
     // execute the generated matplotlib script in the current Python interpreter
     py::gil_scoped_acquire gil;
     execute_script_(pyfile_);
@@ -396,6 +399,20 @@ void GretlPlot::set_source (const std::filesystem::path &path)
 
     temporary_ = true;
     source_owned_ = false;
+}
+
+void GretlPlot::store (const std::filesystem::path &path)
+{
+    //
+    // preserve the user-specified plot and its Python translation
+    //
+    gpfile_ = std::filesystem::absolute(path);
+    pyfile_ = gpfile_;
+    pyfile_.replace_extension(".py");
+
+    temporary_ = false;
+    source_owned_ = false;
+    display_ = false;
 }
 
 //////////////////////////////////////////////////

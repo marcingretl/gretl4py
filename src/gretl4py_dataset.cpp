@@ -1554,7 +1554,6 @@ GretlBundlePtr GretlDataset::test (const std::string &type, const std::string &v
 
     // we printout results
     if (printout) printer_.print();
-    py::print("********************************");
     plotter.display();
 
     // material we return
@@ -1728,6 +1727,7 @@ double GretlDataset::ljungbox (const std::string &y, int p)
     return ljungbox(get_series_id(y), p);
 }
 
+/*
 void GretlDataset::plotnew (int varnum)
 {
     if (varnum <= 0) {
@@ -1765,3 +1765,15 @@ void GretlDataset::plotnew (int varnum)
     locale.attr("setlocale")(category, previous);
     plotter.display();
 }
+*/
+
+template <typename T>
+py::object GretlDataset::plot (const T &yvars, const py::kwargs &kwargs)
+{
+    //
+    // mimic libgretl 'gnuplot' command
+    //
+    return do_execute_plot_call<GNUPLOT, T>(yvars, shared_from_this(), "", kwargs);
+}
+template py::object GretlDataset::plot<std::string>(const std::string&, const py::kwargs&);
+template py::object GretlDataset::plot<py::list>(const py::list&, const py::kwargs&);

@@ -118,4 +118,7 @@ GretlMatrixPtr do_get_tdisagg_matrix (py::object Y, int s, const py::kwargs &kwa
 
 GretlMatrixPtr do_kpsscrit (int T, bool trend = false);
 
+template <GretlCmdIndex CI, typename T>
+py::object do_execute_plot_call (const T &varlist, const GretlDatasetPtr dataset, const std::string &literal, const py::kwargs &kwargs);
+
 #endif // GRETL_CALLS_H

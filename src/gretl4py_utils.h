@@ -86,14 +86,15 @@ private:
     static std::filesystem::path executor_;
     static std::filesystem::path queue_dir_;
     static unsigned long long queue_owner_pid_;
-    bool source_owned_ = false;
-
-    // Return the current OS process identifier on Windows and POSIX systems.
-    static unsigned long long current_pid_ (void) noexcept;
 
     std::filesystem::path gpfile_;
     std::filesystem::path pyfile_;
     bool temporary_ = false;
+    bool source_owned_ = false;
+    bool display_ = true;
+
+    // return the current OS process identifier on Windows and POSIX systems
+    static unsigned long long current_pid_ (void) noexcept;
 
     static std::string random_plot_name (void);
 
@@ -126,6 +127,8 @@ public:
     void display (void);
 
     void set_source (const std::filesystem::path &path);
+
+    void store (const std::filesystem::path &path);
 };
 
 //////////////////////////////////////////////////

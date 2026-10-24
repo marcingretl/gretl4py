@@ -450,8 +450,10 @@ void init_gretl4py_dataset_py11 (py::module_ &m)
          py::arg("y").none(false), py::arg("p").none(false))
     .def("ljungbox", py::overload_cast<const std::string&, int>(&GretlDataset::ljungbox),
          py::arg("y").none(false), py::arg("p").none(false), doc::Dataset::ljungbox)
-    .def("plotnew", &GretlDataset::plotnew,
-         py::arg("var").none(false));
+    .def("plot", py::overload_cast<const std::string&, const py::kwargs&>(&GretlDataset::plot<std::string>),
+         py::arg("yvars").none(false), py::kw_only())
+    .def("plot", py::overload_cast<const py::list&, const py::kwargs&>(&GretlDataset::plot<py::list>),
+         py::arg("yvars").none(false), py::kw_only());
 
     cls.attr("__module__") = "gretl";
 }

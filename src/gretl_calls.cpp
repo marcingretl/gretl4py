@@ -93,6 +93,17 @@ static std::string extract_varname (std::string formula)
 
     return gretl4py_trim(varname);
 }
+
+[[nodiscard]] bool command_option_is_set (GretlCmdIndex ci, gretlopt opt, const char *name)
+{
+    //
+    // we check if given @ci has a given option @name set in current call
+    //
+    OptStatus status = OPT_NO_PARM;
+    gretlopt flag = valid_long_opt(ci, name, &status);
+
+    return flag != OPT_NONE && (opt & flag) != 0;
+}
 } // namespace
 
 //////////////////////////////////////////////////
@@ -1201,12 +1212,16 @@ bool unpack_kwargs_test (gretlopt &opt, const std::string &type, const py::kwarg
         } else if (key == "silent" || key == "quiet") {
             gretl_valid_long_opt(print_opt, ci, key, item.second);
             continue;
-        } else if (key == "plot" && is_pystr(item.second) && item.second.cast<std::string>() == "display") {
+        } else if (key == "plot" && is_pystr(item.second)) {
             if (!plotter) throw std::logic_error("no plotter available");
+            const std::string val = item.second.cast<std::string>();
 
-            gretl_valid_long_opt(opt, ci, key, py::handle(), plotter->filename().c_str());
-        } else if (key == "plotA") {
-            throw std::invalid_argument("invalid option flag: " + key);
+            if (val == "display") {
+                gretl_valid_long_opt(opt, ci, key, py::handle(), plotter->filename().c_str());
+            } else {
+                gretl_valid_long_opt(opt, ci, key, item.second);
+                if (val != "none") plotter->store(val);
+            }
         } else {
             gretl_valid_long_opt(opt, ci, key, item.second);
         }
@@ -1437,3 +1452,67 @@ GretlMatrixPtr do_kpsscrit (int T, bool trend)
 
     return res;
 }
+
+template <GretlCmdIndex CI, typename T>
+py::object do_execute_plot_call (const T &varlist, const GretlDatasetPtr dataset, const std::string &literal, const py::kwargs &kwargs)
+{
+    //
+    // general interface to libgretl plotting apparatus
+    // based on execute_plot_call() from interact.c
+    //
+    GretlPlot plotter;
+    gretl_list_ptr gretl_list{nullptr};
+    std::nullptr_t fake_dataset = nullptr; // NOTE: we do not pass dataset to unpack_kwargs_command
+    int err = 0;
+
+    // we construct list of variables
+    if (varlist.empty()) handle_gretl_error(E_NOVARS);
+    if constexpr (is_gretllist_arg_v<T>) {
+        gretl_list = dataset->gretllist(varlist);
+    } else {
+        static_assert(always_false<T>, "do_plot(): unsupported type");
+    }
+
+    gretlopt opt = unpack_kwargs_command(CI, fake_dataset, kwargs);
+
+    // now we check if an option "--output" was set for current command
+    if (command_option_is_set(CI, opt, "output")) {
+        // Check whether the output is a native graphical format.
+        static const std::unordered_set<std::string> formats = {
+            ".eps", ".pdf", ".png", ".emf", ".html",
+            ".svg", ".fig", ".tex", ".tikz"
+        };
+        const std::string filename = kwargs["output"].cast<std::string>();
+
+        if (filename != "display") {
+            const std::string ext = std::filesystem::path(filename).extension().string();
+
+            if (formats.find(ext) == formats.end()) plotter.store(filename);
+        }
+    } else {
+        gretl_valid_long_opt(opt, CI, "output", py::handle(), plotter.filename().c_str());
+    }
+
+    // we do the job
+    if constexpr (CI == GNUPLOT) {
+        if (opt & (OPT_I | OPT_i)) {
+            //err = gnuplot_process_input(cmd->param, opt, prn);
+            py::print("to be implemented");
+        } else if (opt & OPT_C) {
+            //err = xy_plot_with_control(cmd->list, cmd->param, dset, opt);
+            py::print("to be implemented");
+        } else {
+            err = gnuplot(gretl_list.get(), literal.c_str(), dataset->dset, opt);
+        }
+    } else {
+        static_assert(always_false<std::integral_constant<GretlCmdIndex, CI>>, "do_plot(): unsupported command");
+    }
+    if (err) handle_gretl_error(err);
+
+    // translate and display the plot, if requested
+    plotter.display();
+
+    return py::none();
+}
+template py::object do_execute_plot_call<GNUPLOT, std::string>(const std::string&, GretlDatasetPtr, const std::string&, const py::kwargs&);
+template py::object do_execute_plot_call<GNUPLOT, py::list>(const py::list&, GretlDatasetPtr, const std::string&, const py::kwargs&);
