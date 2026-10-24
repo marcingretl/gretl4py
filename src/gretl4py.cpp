@@ -209,6 +209,16 @@ PYBIND11_MODULE(_gretl, m)
           py::arg("Y").none(false), py::arg("s").none(false), py::arg("X").none(true) = nullptr, py::kw_only(), doc::Functions::tdisagg);
     m.def("kpsscrit", &do_kpsscrit,
           py::arg("T").none(false), py::arg("trend").none(true) = false, doc::Functions::kpsscrit);
+    m.def("plot",
+          [](const std::string &path) -> void
+          {
+              // display an existing gnuplot script using the GretlPlot backend
+              GretlPlot plot;
+
+              plot.set_source(path);
+              plot.display();
+          },
+          py::arg("path"), "Display an existing gnuplot (.plt) file using Matplotlib.");
 
     //////////////////////////////////////////////////
     // single equation models

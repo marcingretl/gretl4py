@@ -155,7 +155,7 @@ from ._gretl import (Bundle, Matrix)                                        # co
 from ._gretl import (delete, genr, include, pkg, print, set, summary)       # libgretl's commands interfaces
 from ._gretl import (varlist, run_script, run_hansl, get_uservar)
 from ._gretl import (pvalue, critical, pdf, cdf, invcdf, corr, cov)         # libgretl's functions interfaces
-from ._gretl import (get_accessor, tdisagg, kpsscrit)
+from ._gretl import (get_accessor, tdisagg, kpsscrit, plot)
 from ._gretl4py_addons import print_module_source, fc_print, modeltab
 from ._gretl4py_classes import _attrs, mle, nls, gmm, NLSpec
 from ._gretl4py_classes import get_data, show_data_status

@@ -125,12 +125,17 @@ unsigned long long GretlPlot::queue_owner_pid_ = 0;
 //
 GretlPlot::~GretlPlot (void)
 {
-    // remove only temporary plot files.
+    // Remove only temporary files owned by GretlPlot.
     if (temporary_) {
         std::error_code ec;
 
-        if (!gpfile_.empty()) std::filesystem::remove(gpfile_, ec);
-        if (!pyfile_.empty()) std::filesystem::remove(pyfile_, ec);
+        if (source_owned_ && !gpfile_.empty()) {
+            std::filesystem::remove(gpfile_, ec);
+        }
+
+        if (!pyfile_.empty()) {
+            std::filesystem::remove(pyfile_, ec);
+        }
     }
 }
 
@@ -319,6 +324,7 @@ std::string GretlPlot::filename (void)
     pyfile_.replace_extension(".py");
 
     temporary_ = true;
+    source_owned_ = true;
 
     return gpfile_.string();
 }
@@ -375,6 +381,21 @@ void GretlPlot::display (void)
 
     // display all figures and wait until their windows are closed
     show_figures_();
+}
+
+void GretlPlot::set_source (const std::filesystem::path &path)
+{
+    // Validate the user-supplied gnuplot script.
+    if (!std::filesystem::is_regular_file(path)) throw std::runtime_error("Plot file not found: " + path.string());
+
+    // Preserve the original file and generate Python in the temporary directory.
+    gpfile_ = std::filesystem::absolute(path);
+
+    pyfile_ = std::filesystem::path(gretl_dotdir()) / random_plot_name();
+    pyfile_.replace_extension(".py");
+
+    temporary_ = true;
+    source_owned_ = false;
 }
 
 //////////////////////////////////////////////////

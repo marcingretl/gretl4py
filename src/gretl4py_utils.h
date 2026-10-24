@@ -86,6 +86,7 @@ private:
     static std::filesystem::path executor_;
     static std::filesystem::path queue_dir_;
     static unsigned long long queue_owner_pid_;
+    bool source_owned_ = false;
 
     // Return the current OS process identifier on Windows and POSIX systems.
     static unsigned long long current_pid_ (void) noexcept;
@@ -123,6 +124,8 @@ public:
     bool translate (void);
 
     void display (void);
+
+    void set_source (const std::filesystem::path &path);
 };
 
 //////////////////////////////////////////////////
