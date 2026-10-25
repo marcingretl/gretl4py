@@ -99,7 +99,7 @@ private:
     static std::string random_plot_name (void);
 
     // execute a generated matplotlib script; the caller must hold the GIL
-    static void execute_script_ (const std::filesystem::path &script);
+    static py::object execute_script_ (const std::filesystem::path &script);
 
     // display pending figures and wait for their windows to close; caller holds the GIL
     static void show_figures_ (void);
@@ -124,7 +124,7 @@ public:
 
     bool translate (void);
 
-    void display (void);
+    py::object display (void);
 
     void set_source (const std::filesystem::path &path);
 

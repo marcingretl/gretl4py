@@ -1514,10 +1514,7 @@ py::object do_execute_plot_call (const T &varlist, const GretlDatasetPtr dataset
     }
     if (err) handle_gretl_error(err);
 
-    // translate and display the plot, if requested
-    plotter.display();
-
-    return py::none();
+    return plotter.display();
 }
 template py::object do_execute_plot_call<GNUPLOT, std::string>(const std::string&, GretlDatasetPtr, const std::string&, const py::kwargs&);
 template py::object do_execute_plot_call<GNUPLOT, py::list>(const py::list&, GretlDatasetPtr, const std::string&, const py::kwargs&);

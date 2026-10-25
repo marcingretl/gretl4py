@@ -353,14 +353,22 @@ bool GretlPlot::translate (void)
     return true;
 }
 
-void GretlPlot::execute_script_ (const std::filesystem::path &script)
+py::object GretlPlot::execute_script_(const std::filesystem::path &script)
 {
-    // execute the generated matplotlib script in the current Python interpreter
+    // Execute the generated matplotlib script in the current Python
+    // interpreter, using a dedicated namespace.
     py::dict globals;
     globals["__name__"] = "__main__";
     globals["__file__"] = script.string();
 
     py::eval_file(script.string(), globals);
+
+    // Retrieve the Figure explicitly created by gptranslate.
+    // Keep a Python reference so the object remains accessible
+    // after the script has finished executing.
+    if (globals.contains("fig")) return py::reinterpret_borrow<py::object>(globals["fig"]);
+
+    return py::none();
 }
 
 void GretlPlot::show_figures_ (void)
@@ -368,23 +376,25 @@ void GretlPlot::show_figures_ (void)
     // display all figures and wait until their windows are closed
     py::module_ plt = py::module_::import("matplotlib.pyplot");
 
-    plt.attr("show")(py::arg("block") = true);
+    plt.attr("show")(py::arg("block") = false);
 }
 
-void GretlPlot::display (void)
+py::object GretlPlot::display()
 {
-    // translate the plot before displaying it
-    if (!translate()) return;
+    // Translate the plot before displaying it.
+    if (!translate()) return py::none();
 
-    // do not display plots explicitly saved to disk
-    if (!display_) return;
+    // Do not display plots explicitly saved to disk.
+    if (!display_) return py::none();
 
-    // execute the generated matplotlib script in the current Python interpreter
+    // Execute the generated matplotlib script in the current Python interpreter.
     py::gil_scoped_acquire gil;
-    execute_script_(pyfile_);
+    py::object fig = execute_script_(pyfile_);
 
-    // display all figures and wait until their windows are closed
+    // Display all figures and wait until their windows are closed.
     show_figures_();
+
+    return fig;
 }
 
 void GretlPlot::set_source (const std::filesystem::path &path)
