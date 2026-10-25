@@ -1096,6 +1096,11 @@ void gretl_valid_long_opt (gretlopt &opt, GretlCmdIndex ci, const std::string &k
     if (status == OPT_NO_PARM) {
         // no parameter wanted, but we'll accept a boolean
         if (!ext_val && !is_bool_kwarg(val)) return;
+    } else if (!ext_val && is_pybool(val)) {
+        // a boolean enables or disables an option without supplying
+        // an optional string parameter
+        if (!val.cast<bool>()) return;
+        if (status == OPT_NEEDS_PARM) throw std::invalid_argument("option requires a parameter: " + key);
     } else {
         // an option parameter is accepted, perhaps required
         if (ext_val) {
@@ -1505,7 +1510,7 @@ py::object do_execute_plot_call (const T &varlist, const GretlDatasetPtr dataset
             err = gnuplot(gretl_list.get(), literal.c_str(), dataset->dset, opt);
         }
     } else {
-        static_assert(always_false<std::integral_constant<GretlCmdIndex, CI>>, "do_plot(): unsupported command");
+        static_assert(always_false<std::integral_constant<GretlCmdIndex, CI>>, "do_execute_plot_call(): unsupported command");
     }
     if (err) handle_gretl_error(err);
 

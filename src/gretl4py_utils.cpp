@@ -367,6 +367,7 @@ void GretlPlot::show_figures_ (void)
 {
     // display all figures and wait until their windows are closed
     py::module_ plt = py::module_::import("matplotlib.pyplot");
+
     plt.attr("show")(py::arg("block") = true);
 }
 
