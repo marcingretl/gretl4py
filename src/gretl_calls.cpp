@@ -32,6 +32,9 @@ extern "C" {
     #include <gretl/gretl_foreign.h>
     #include <gretl/adf_kpss.h>
 }
+#include <random>
+#include <sstream>
+#include <iomanip>
 
 #if defined(_WIN32)
 # include <gretl/gretl_win32.h>
@@ -969,22 +972,31 @@ void genr (const std::string &name, const T &value)
 
         NumPyArray_extract(value, view);
         uv_ptr = gretl_matrix_alloc(view.rows, view.cols);
+
         if (uv_ptr == nullptr) handle_gretl_error(E_ALLOC);
         NumPyArray_to_gretl_storage<gretl_matrix>(view, static_cast<gretl_matrix*>(uv_ptr));
     } else if constexpr (std::is_same_v<T, GretlMatrix>) {
         uv_type = GRETL_TYPE_MATRIX;
         uv_ptr = static_cast<gretl_matrix*>(gretl_matrix_copy(value.get_ptr()));
+
         if (uv_ptr == nullptr) handle_gretl_error(E_ALLOC);
     } else if constexpr (std::is_same_v<T, double> || std::is_same_v<T, int>) {
         uv_type = GRETL_TYPE_DOUBLE;
         uv_ptr = std::malloc(sizeof(double));
+
         if (uv_ptr == nullptr) handle_gretl_error(E_ALLOC);
         *static_cast<double*>(uv_ptr) = static_cast<double>(value);
     } else if constexpr (std::is_same_v<T, std::string>) {
         uv_type = GRETL_TYPE_STRING;
         uv_ptr = std::malloc(value.size() + 1);
+
         if (uv_ptr == nullptr) handle_gretl_error(E_ALLOC);
         std::strcpy(static_cast<char*>(uv_ptr), value.c_str());
+    } else if constexpr (std::is_same_v<T, GretlBundle>) {
+        uv_type = GRETL_TYPE_BUNDLE;
+        uv_ptr = static_cast<gretl_bundle*>(gretl_bundle_copy(value.get_ptr(), &err));
+
+        if (err) handle_gretl_error(err);
     } else {
         static_assert(always_false<T>, "genr(): unknown type");
     }
@@ -999,6 +1011,7 @@ template void genr<int>(const std::string&, const int&);
 template void genr<double>(const std::string&, const double&);
 template void genr<std::string>(const std::string&, const std::string&);
 template void genr<GretlMatrix>(const std::string&, const GretlMatrix&);
+template void genr<GretlBundle>(const std::string&, const GretlBundle&);
 
 py::object get_uservar (const std::string &varname)
 {
@@ -1468,7 +1481,22 @@ py::object do_execute_plot_call (const T &varlist, const GretlDatasetPtr dataset
     GretlPlot plotter;
     gretl_list_ptr gretl_list{nullptr};
     std::nullptr_t fake_dataset = nullptr; // NOTE: we do not pass dataset to unpack_kwargs_command
+    py::kwargs clean_kwargs = kwargs;
+    std::string name;
     int err = 0;
+
+    // Generate a temporary name for an object registered in libgretl.
+    auto random_name = []() -> std::string
+    {
+        thread_local std::mt19937_64 gen(std::random_device{}());
+        thread_local std::uniform_int_distribution<uint64_t> dist;
+
+        std::ostringstream ss;
+        ss << "_plotband_" << std::hex << std::setw(16)
+        << std::setfill('0') << dist(gen);
+
+        return ss.str();
+    };
 
     // we construct list of variables
     if (varlist.empty()) handle_gretl_error(E_NOVARS);
@@ -1478,7 +1506,21 @@ py::object do_execute_plot_call (const T &varlist, const GretlDatasetPtr dataset
         static_assert(always_false<T>, "do_plot(): unsupported type");
     }
 
-    gretlopt opt = unpack_kwargs_command(CI, fake_dataset, kwargs);
+    // We must manually handle some special kwargs classes.
+    if (clean_kwargs.contains("band")) {
+        auto obj = clean_kwargs["band"];
+
+        if (!is_pygretlbundle(obj)) handle_gretl_error(E_INVARG, "band", "must be Bundle");
+        auto b = obj.cast<GretlBundlePtr>();
+        name = random_name();
+
+        // Register the bundle in gretl's namespace.
+        genr<GretlBundle>(name, *b);
+
+        // Replace the Python object with its registered name.
+        clean_kwargs["band"] = name;
+    }
+    gretlopt opt = unpack_kwargs_command(CI, fake_dataset, clean_kwargs);
 
     // now we check if an option "--output" was set for current command
     if (command_option_is_set(CI, opt, "output")) {
@@ -1502,16 +1544,18 @@ py::object do_execute_plot_call (const T &varlist, const GretlDatasetPtr dataset
     if constexpr (CI == GNUPLOT) {
         if (opt & (OPT_I | OPT_i)) {
             //err = gnuplot_process_input(cmd->param, opt, prn);
-            py::print("to be implemented");
+            throw std::invalid_argument("gnuplot input mode unsupported");
         } else if (opt & OPT_C) {
-            //err = xy_plot_with_control(cmd->list, cmd->param, dset, opt);
-            py::print("to be implemented");
+            err = xy_plot_with_control(gretl_list.get(), literal.c_str(), dataset->dset, opt);
         } else {
             err = gnuplot(gretl_list.get(), literal.c_str(), dataset->dset, opt);
         }
     } else {
         static_assert(always_false<std::integral_constant<GretlCmdIndex, CI>>, "do_execute_plot_call(): unsupported command");
     }
+
+    // we must unregister libgretl object
+    if (!name.empty()) do_gretl_delete_variables(name, py::dict(), false);
     if (err) handle_gretl_error(err);
 
     return plotter.display();
