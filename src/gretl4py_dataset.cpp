@@ -1474,7 +1474,7 @@ py::object GretlDataset::get_accessor (const std::string &name)
     return do_get_accessor<GRETL_OBJ_DSET>(name, shared_from_this(), nullptr);
 }
 
-GretlBundlePtr GretlDataset::test (const std::string &type, const std::string &varlist, const py::kwargs &kwargs)
+std::pair<GretlBundlePtr, py::object> GretlDataset::test (const std::string &type, const std::string &varlist, const py::kwargs &kwargs)
 {
     //
     // this method performs test which do take a variables list
@@ -1552,9 +1552,10 @@ GretlBundlePtr GretlDataset::test (const std::string &type, const std::string &v
     }
     if (err_) handle_gretl_error(err_);
 
-    // we printout results
+    // Print the test results and retrieve the generated matplotlib Figure,
+    // if the test produced a plot.
     if (printout) printer_.print();
-    plotter.display();
+    py::object fig = plotter.display();
 
     // material we return
     res->set_element<std::string>("type", type);
@@ -1567,7 +1568,7 @@ GretlBundlePtr GretlDataset::test (const std::string &type, const std::string &v
     // we register result
     move_to_python_container<GretlDataset, py::dict, py::list>(*this, res->to_dict(), "tests");
 
-    return res;
+    return {res, std::move(fig)};
 }
 
 GretlMatrixPtr GretlDataset::get_series (const std::string &series) const
@@ -1726,46 +1727,6 @@ double GretlDataset::ljungbox (const std::string &y, int p)
 {
     return ljungbox(get_series_id(y), p);
 }
-
-/*
-void GretlDataset::plotnew (int varnum)
-{
-    if (varnum <= 0) {
-        handle_gretl_error(E_UNKVAR);
-    }
-
-    GretlPlot plotter;
-    py::module_ locale = py::module_::import("locale");
-    py::object category = locale.attr("LC_NUMERIC");
-    py::object previous = locale.attr("setlocale")(category);
-
-    locale.attr("setlocale")(category, "C");
-
-    try {
-        if (is_cross_section()) {
-            //do_freq_dist();
-            py::print("trzeba zrobić");
-        } else if (multi_unit_panel_sample(dset)) {
-            //do_panel_plot(varnum);
-            py::print("trzeba zrobić");
-        } else {
-            int list[2] = {1, varnum};
-            const std::string filename = plotter.filename();
-
-            err_ = set_optval_string(GNUPLOT, OPT_U, filename.c_str());
-            if (err_) handle_gretl_error(err_);
-            err_ = gnuplot(list, nullptr, dset, static_cast<gretlopt>(OPT_O | OPT_T | OPT_U));
-            if (err_) handle_gretl_error(err_);
-        }
-    } catch (...) {
-        locale.attr("setlocale")(category, previous);
-        throw;
-    }
-
-    locale.attr("setlocale")(category, previous);
-    plotter.display();
-}
-*/
 
 template <typename T>
 py::object GretlDataset::plot (const T &yvars, const py::kwargs &kwargs)

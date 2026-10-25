@@ -122,7 +122,7 @@ void init_gretl4py_dataset_py11 (py::module_ &m)
     .def("__getitem__", py::overload_cast<const std::string&>(&GretlDataset::getitem_impl))
     .def("__getitem__", py::overload_cast<const py::list&>(&GretlDataset::getitem_impl))
     .def("_test",
-         [](GretlDataset &self, const std::string &type, const py::kwargs &kwargs) -> GretlBundlePtr
+         [](GretlDataset &self, const std::string &type, const py::kwargs &kwargs) -> py::object
          {
              //
              // here we do some pre-computations for certain tests
@@ -185,8 +185,14 @@ void init_gretl4py_dataset_py11 (py::module_ &m)
                  varlist = vars_val;
              }
 
-             // we do the job
-             return self.test(type, varlist, clean_kwargs);
+             // Execute the test and retrieve its statistical results and optional figure.
+             auto [bundle, fig] = self.test(type, varlist, clean_kwargs);
+
+             // Return the bundle alone if the test did not produce a figure.
+             if (fig.is_none()) return py::cast(bundle);
+
+             // Return both results when a matplotlib Figure is available.
+             return py::make_tuple(py::cast(bundle), std::move(fig));
          }, py::arg("type"), py::kw_only())
     .def("clone", [](const GretlDataset &self) { return GretlDataset::clone(self); }, doc::Dataset::clone)
     .def("head", &head_tail_print<HEAD>, py::arg("nobs") = 5, py::kw_only(), doc::Dataset::head)

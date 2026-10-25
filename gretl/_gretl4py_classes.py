@@ -1147,7 +1147,7 @@ def _coint(self: "Dataset", order: int, depvar: str, indepvars: str | list, **kw
 _coint.__name__ = "coint"
 _coint.__qualname__ = "Dataset.coint"
 
-def _corrgm(self: "Dataset", y: str, order: int, **kwargs) -> "Bundle":
+def _corrgm(self: "Dataset", y: str, order: int, **kwargs) -> "Bundle | tuple[Bundle, Figure]":
     """
     Compute the correlogram of a time series.
 
@@ -1172,6 +1172,12 @@ def _corrgm(self: "Dataset", y: str, order: int, **kwargs) -> "Bundle":
         Compute only the ACF, omitting partial autocorrelations.
     bartlett : bool
         Use Bartlett standard errors for the ACF.
+
+    Returns
+    -------
+    Bundle or tuple[Bundle, matplotlib.figure.Figure]
+        A Bundle containing the test results. If a plot is generated,
+        returns a tuple containing the Bundle and the matplotlib Figure.
 
     Notes
     -----
