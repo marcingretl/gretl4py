@@ -63,6 +63,26 @@ static GretlPrint global_printer = GretlPrint();
 std::unordered_set<std::string> user_vars;              // registry of user variables
 
 namespace {
+// Automatically unregister a temporary libgretl user variable.
+struct TemporaryUserVar {
+    std::string name;
+
+    ~TemporaryUserVar() noexcept
+    {
+        if (!name.empty()) {
+            const int err = user_var_delete_by_name(name.c_str(), nullptr);
+
+            if (!err) {
+                user_vars.erase(name);
+            } else {
+                std::cerr << "Failed to delete temporary variable '"
+                << name << "': "
+                << errmsg_get_with_default(err) << std::endl;
+            }
+        }
+    }
+};
+
 static std::string extract_varname (std::string formula)
 {
     //
@@ -957,7 +977,7 @@ void genr (const std::string &formula, GretlDatasetPtr data)
     gretl_generate<GRETL_TYPE_ANY>(formula, data ? data : GretlDataset::default_dataset());
 }
 
-// T = { py::array ; int ; double ; std::string , GretlMatrix}
+// T = { py::array ; int ; double ; std::string , GretlMatrix, GRETL_TYPE_BUNDLE }
 template <typename T>
 void genr (const std::string &name, const T &value)
 {
@@ -1482,7 +1502,7 @@ py::object do_execute_plot_call (const T &varlist, const GretlDatasetPtr dataset
     gretl_list_ptr gretl_list{nullptr};
     std::nullptr_t fake_dataset = nullptr; // NOTE: we do not pass dataset to unpack_kwargs_command
     py::kwargs clean_kwargs = kwargs;
-    std::string name;
+    TemporaryUserVar uv_tmp;
     int err = 0;
 
     // Generate a temporary name for an object registered in libgretl.
@@ -1512,12 +1532,15 @@ py::object do_execute_plot_call (const T &varlist, const GretlDatasetPtr dataset
 
         if (!is_pygretlbundle(obj)) handle_gretl_error(E_INVARG, "band", "must be Bundle");
         auto b = obj.cast<GretlBundlePtr>();
-        name = random_name();
+        const std::string name = random_name();
 
-        // Register the bundle in gretl's namespace.
+        // Register a copy of bundle in gretl's namespace.
         genr<GretlBundle>(name, *b);
 
-        // Replace the Python object with its registered name.
+        // Enable automatic cleanup after successful registration.
+        uv_tmp.name = name;
+
+        // Pass the registered name to libgretl.
         clean_kwargs["band"] = name;
     }
     gretlopt opt = unpack_kwargs_command(CI, fake_dataset, clean_kwargs);
@@ -1555,7 +1578,6 @@ py::object do_execute_plot_call (const T &varlist, const GretlDatasetPtr dataset
     }
 
     // we must unregister libgretl object
-    if (!name.empty()) do_gretl_delete_variables(name, py::dict(), false);
     if (err) handle_gretl_error(err);
 
     return plotter.display();
