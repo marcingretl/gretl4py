@@ -1074,9 +1074,9 @@ gretl_array_ptr python_list_to_gretl_array (const py::list &items, GretlType typ
         throw py::type_error("Explicit gretl array type does not match Python list");
     }
 
-    const py::ssize_t n = py::len(items);
+    const auto n = py::len(items);
 
-    if (n > std::numeric_limits<int>::max()) throw py::value_error("Python list is too large for gretl array");
+    if (n > (std::numeric_limits<int>::max)()) throw py::value_error("Python list is too large for gretl array");
     int err = 0;
     gretl_array_ptr array(gretl_array_new(type, static_cast<int>(n), &err));
 
