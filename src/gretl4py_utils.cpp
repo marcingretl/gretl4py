@@ -400,7 +400,7 @@ py::object GretlPlot::display()
 void GretlPlot::set_source (const std::filesystem::path &path)
 {
     // Validate the user-supplied gnuplot script.
-    if (!std::filesystem::is_regular_file(path)) throw std::runtime_error("Plot file not found: " + path.string());
+    if (!std::filesystem::is_regular_file(path)) throw file_not_found("Plot file not found: " + path.string());
 
     // Preserve the original file and generate Python in the temporary directory.
     gpfile_ = std::filesystem::absolute(path);

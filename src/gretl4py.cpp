@@ -92,22 +92,16 @@ PYBIND11_MODULE(_gretl, m)
           [](const std::string &name)
           {
               return do_get_accessor<GRETL_OBJ_ANY>(name, GretlDataset::default_dataset(), nullptr);
-          },
-          py::arg("name").none(false));
-    m.def("get_uservar", &get_uservar,
-          py::arg("varname").none(false));
-    m.def("print", &do_gretl_print<void>,
-          py::arg("varlist").none(true) = "", py::kw_only(), doc::Functions::print);
-    m.def("run_script", &gretl_hansl_execute<true>,
-          py::arg("filename").none(false));
-    m.def("run_hansl", &gretl_hansl_execute<false>,
-          py::arg("code").none(false));
+          }, py::arg("name").none(false));
+    m.def("get_uservar", &get_uservar, py::arg("varname").none(false));
+    m.def("print", &do_gretl_print<void>, py::arg("varlist").none(true) = "", py::kw_only(), doc::Functions::print);
+    m.def("run_script", &gretl_hansl_execute<true>, py::arg("filename").none(false));
+    m.def("run_hansl", &gretl_hansl_execute<false>, py::arg("code").none(false));
     m.def("set",
           [](const std::string &variable, const std::string &value, const py::kwargs &kwargs)
           {
               do_set(variable, value, kwargs);
-          },
-          py::arg("variable").none(true) = "", py::arg("value").none(true) = "", py::kw_only());
+          }, py::arg("variable").none(true) = "", py::arg("value").none(true) = "", py::kw_only());
     m.def("set",
           [](const std::string &variable, int value, const py::kwargs &kwargs)
           {
@@ -124,8 +118,7 @@ PYBIND11_MODULE(_gretl, m)
           [](const std::string &varname, const py::kwargs &kwargs)
           {
               do_gretl_delete_variables(varname, kwargs);
-          },
-          py::arg("varname").none(true) = "", py::kw_only());
+          }, py::arg("varname").none(true) = "", py::kw_only());
     m.def("pvalue", &gretl_get_pvalue_critval_pdf_cdf<GretlFunIndex::F_PVAL>,
           py::arg("c").none(false), py::arg("x").none(false), py::arg("params").none(true) = py::none());
     m.def("pvalue", &matrix_functions_wrapper<GretlFunIndex::F_PVAL, GretlMatrixPtr>,
