@@ -7,6 +7,8 @@ version 0.64:
     - some doc updates
     - fix potential memory-leaks when generating gretl objects
     - MPI support added
+    - adding gretl arrays via genr (must be passed as list of items)
+    - new plotting apparatus (via gp-executor)
 
 version 0.63:
     - model-based tests: fix bug where 'varlist' was passed as list

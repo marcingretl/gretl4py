@@ -138,6 +138,9 @@ struct GretlResourceDeleter {
             case GRETL_TYPE_MATRICES:
             case GRETL_TYPE_STRINGS:
             case GRETL_TYPE_BUNDLES:
+            case GRETL_TYPE_ARRAYS:
+            case GRETL_TYPE_LISTS:
+            case GRETL_TYPE_ARRAY:
                 gretl_array_destroy(static_cast<gretl_array*>(ptr));
                 break;
             case GRETL_TYPE_DOUBLE:

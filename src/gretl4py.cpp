@@ -190,6 +190,7 @@ PYBIND11_MODULE(_gretl, m)
     m.def("genr", &genr<double>, py::arg("name").none(false), py::arg("value").none(false));
     m.def("genr", &genr<std::string>, py::arg("name").none(false), py::arg("value").none(false));
     m.def("genr", &genr<GretlMatrix>, py::arg("name").none(false), py::arg("value").none(false));
+    m.def("genr", &genr<py::list>, py::arg("name").none(false), py::arg("value").none(false));
     m.def("pkg", &do_gretl_pkg,
           py::arg("action").none(false), py::arg("pkgname").none(false), py::kw_only());
     m.def("kmeans", py::overload_cast<const GretlMatrix&, int, const GretlBundlePtr>(&kmeans),

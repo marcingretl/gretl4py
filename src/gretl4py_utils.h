@@ -182,4 +182,9 @@ GretlSlice python_slice_to_gretl_slice (const py::slice &slice);
 
 GretlSlice python_slice_to_gretl_slice (const std::string &slice);
 
+// Determine the type of a Python list, validating nested lists recursively.
+GretlType get_pyarray_type (const py::list &items);
+
+gretl_array_ptr python_list_to_gretl_array (const py::list &items, GretlType type = GRETL_TYPE_NONE);
+
 #endif // GRETL4PY_UTILS_H

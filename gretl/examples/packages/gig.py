@@ -30,6 +30,7 @@ def run_example():
 
     # Estimate model
     gretl.gig_estimate(gig_model)
+    gretl.gig_plot(gig_model)
 
     # ------------------------------------------------------------
     # Native gretl GARCH comparison

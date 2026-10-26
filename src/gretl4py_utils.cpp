@@ -1022,3 +1022,112 @@ GretlSlice python_slice_to_gretl_slice (const std::string &slice)
 
     return make_gretl_slice(startobs, endobs, slice, opts);
 }
+
+GretlType get_pyarray_type (const py::list &items)
+{
+    //
+    // Determine the gretl array type of a Python list.
+    // Nested lists are validated recursively.
+    // Empty lists have type GRETL_TYPE_ANY.
+    //
+    GretlType type = GRETL_TYPE_NONE;
+
+    for (const auto &item : items) {
+        GretlType current = GRETL_TYPE_NONE;
+
+        if (is_pygretlbundle(item)) {
+            current = GRETL_TYPE_BUNDLES;
+        } else if (is_pygretlmatrix(item) || is_pynumarray(item)) {
+            current = GRETL_TYPE_MATRICES;
+        } else if (is_pystr(item)) {
+            current = GRETL_TYPE_STRINGS;
+        } else if (is_pylist(item)) {
+            // Validate the nested list independently.
+            get_pyarray_type(py::reinterpret_borrow<py::list>(item));
+            current = GRETL_TYPE_ARRAYS;
+        } else {
+            throw py::type_error("Unsupported element type in Python list");
+        }
+
+        if (type == GRETL_TYPE_NONE) {
+            type = current;
+        } else if (type != current) {
+            throw py::type_error("Python list elements must have a common gretl array type");
+        }
+    }
+
+    return type == GRETL_TYPE_NONE ? GRETL_TYPE_ANY : type;
+}
+
+gretl_array_ptr python_list_to_gretl_array (const py::list &items, GretlType type)
+{
+    //
+    // Convert a Python list into an independently owned gretl array.
+    // Nested lists are converted recursively and ownership is managed by RAII.
+    //
+    // Validate the complete structure before allocating storage.
+    const GretlType inferred = get_pyarray_type(items);
+
+    if (type == GRETL_TYPE_NONE || type == GRETL_TYPE_ANY) {
+        type = inferred;
+    } else if (inferred != GRETL_TYPE_ANY && type != inferred) {
+        throw py::type_error("Explicit gretl array type does not match Python list");
+    }
+
+    const py::ssize_t n = py::len(items);
+
+    if (n > std::numeric_limits<int>::max()) throw py::value_error("Python list is too large for gretl array");
+    int err = 0;
+    gretl_array_ptr array(gretl_array_new(type, static_cast<int>(n), &err));
+
+    if (err || !array) handle_gretl_error(err ? err : E_ALLOC);
+
+    int i = 0;
+
+    for (const auto &item : items) {
+        err = 0;
+
+        if (is_pygretlbundle(item)) {
+            auto bundle = item.cast<GretlBundlePtr>();
+
+            // Copy the Python-owned bundle.
+            err = gretl_array_set_element(array.get(), i, bundle->get_ptr(), GRETL_TYPE_BUNDLE, 1);
+        } else if (is_pygretlmatrix(item)) {
+            auto matrix = item.cast<GretlMatrixPtr>();
+
+            // Copy the Python-owned matrix.
+            err = gretl_array_set_element(array.get(), i, matrix->get_ptr(),GRETL_TYPE_MATRIX, 1);
+        } else if (is_pynumarray(item)) {
+            NumPyArrayView view;
+
+            NumPyArray_extract(py::reinterpret_borrow<py::array>(item), view);
+
+            // Allocate an independent gretl matrix.
+            gretl_matrix_ptr matrix(gretl_matrix_alloc(view.rows, view.cols));
+
+            if (!matrix) handle_gretl_error(E_ALLOC);
+            NumPyArray_to_gretl_storage<gretl_matrix>(view, matrix.get());
+
+            // Donate the newly allocated matrix to the array.
+            err = gretl_array_set_element(array.get(), i, matrix.get(), GRETL_TYPE_MATRIX, 0);
+            if (!err) matrix.release();
+        } else if (is_pystr(item)) {
+            std::string value = py::cast<std::string>(item);
+
+            // libgretl duplicates the string.
+            err = gretl_array_set_element(array.get(), i, value.data(), GRETL_TYPE_STRING, 1);
+        } else if (is_pylist(item)) {
+            // Recursively convert the nested list.
+            gretl_array_ptr nested = python_list_to_gretl_array(py::reinterpret_borrow<py::list>(item));
+
+            // Donate the nested array to its parent.
+            err = gretl_array_set_element(array.get(), i, nested.get(), GRETL_TYPE_ARRAY, 0);
+            if (!err) nested.release();
+        }
+
+        if (err) handle_gretl_error(err);
+        ++i;
+    }
+
+    return array;
+}

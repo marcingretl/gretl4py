@@ -977,7 +977,7 @@ void genr (const std::string &formula, GretlDatasetPtr data)
     gretl_generate<GRETL_TYPE_ANY>(formula, data ? data : GretlDataset::default_dataset());
 }
 
-// T = { py::array ; int ; double ; std::string , GretlMatrix, GRETL_TYPE_BUNDLE }
+// T = { py::array ; int ; double ; std::string , GretlMatrix, GRETL_TYPE_BUNDLE, py::list }
 template <typename T>
 void genr (const std::string &name, const T &value)
 {
@@ -1017,13 +1017,23 @@ void genr (const std::string &name, const T &value)
         uv_ptr = static_cast<gretl_bundle*>(gretl_bundle_copy(value.get_ptr(), &err));
 
         if (err) handle_gretl_error(err);
+    } else if constexpr (std::is_same_v<T, py::list>) {
+        // Register the array using its specific element type.
+        gretl_array_ptr array = python_list_to_gretl_array(value);
+        uv_type = gretl_array_get_type(array.get());
+
+        uv_ptr = array.release();
     } else {
         static_assert(always_false<T>, "genr(): unknown type");
     }
 
     // we finally register variable
     err = user_var_add(name.c_str(), uv_type, uv_ptr);
-    if (err) handle_gretl_error(err);
+    if (err) {
+        // Registration failed: ownership was not transferred to libgretl.
+        GretlResourceDeleter{uv_type}(uv_ptr);
+        handle_gretl_error(err);
+    }
     user_vars.insert(name);
 }
 template void genr<py::array>(const std::string&, const py::array&);
@@ -1032,6 +1042,7 @@ template void genr<double>(const std::string&, const double&);
 template void genr<std::string>(const std::string&, const std::string&);
 template void genr<GretlMatrix>(const std::string&, const GretlMatrix&);
 template void genr<GretlBundle>(const std::string&, const GretlBundle&);
+template void genr<py::list>(const std::string&, const py::list&);
 
 py::object get_uservar (const std::string &varname)
 {
