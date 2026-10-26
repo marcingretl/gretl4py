@@ -77,13 +77,11 @@ def run_example():
     )
 
     print_timer()
+    
+    gretl.marginal_graph(result, "HE")
 
-    return result
+    return
 
 
 if __name__ == "__main__":
-    d = gretl.get_data("mroz87.gdt", quiet=True)
-
-    res = run_example()
-    gretl.marginal_graph(res, "HE")
-
+    run_example()

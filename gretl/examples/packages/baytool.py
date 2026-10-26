@@ -69,6 +69,8 @@ def run_example():
         start_timer()
         out = gretl.BT_lm(y, X, prior, opt)
         print_timer()
+        
+        gretl.BT_paramplot(out)
 
         return out
 
@@ -161,6 +163,4 @@ def run_example():
 
 
 if __name__ == "__main__":
-    res = run_example()
-    d = gretl.get_data("AnglinGencay.gdt", frompkg="BayTool", quiet=True)
-    gretl.BT_paramplot(res)
+    run_example()    

@@ -39,11 +39,12 @@ def run_example():
 
     elapsed = gretl.get_accessor("$stopwatch")
     print(f"\nTotal execution time: {elapsed:.2f} seconds")
+    
+    gretl.BACE_Plot(result)
 
-    return result
+    return
 
 
 if __name__ == "__main__":
-    res = run_example()
-    d = gretl.get_data("nels.gdt", frompkg="BACE", quiet=True)
-    gretl.BACE_Plot(res)
+    run_example()
+    

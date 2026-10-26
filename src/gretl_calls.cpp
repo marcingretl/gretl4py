@@ -65,11 +65,12 @@ std::unordered_set<std::string> user_vars;              // registry of user vari
 namespace {
 // Automatically unregister a temporary libgretl user variable.
 struct TemporaryUserVar {
-    std::string name;
+    std::vector<std::string> names;
 
     ~TemporaryUserVar() noexcept
     {
-        if (!name.empty()) {
+        // Unregister all temporary libgretl variables.
+        for (const auto &name : names) {
             const int err = user_var_delete_by_name(name.c_str(), nullptr);
 
             if (!err) {
@@ -1511,7 +1512,7 @@ py::object do_execute_plot_call (const T &varlist, const GretlDatasetPtr dataset
     //
     GretlPlot plotter;
     gretl_list_ptr gretl_list{nullptr};
-    std::nullptr_t fake_dataset = nullptr; // NOTE: we do not pass dataset to unpack_kwargs_command
+    std::nullptr_t fake_dataset = nullptr; // NOTE: we do not pass dataset to unpack_kwargs_command!!!
     py::kwargs clean_kwargs = kwargs;
     TemporaryUserVar uv_tmp;
     int err = 0;
@@ -1549,11 +1550,31 @@ py::object do_execute_plot_call (const T &varlist, const GretlDatasetPtr dataset
         genr<GretlBundle>(name, *b);
 
         // Enable automatic cleanup after successful registration.
-        uv_tmp.name = name;
+        uv_tmp.names.push_back(name);
 
         // Pass the registered name to libgretl.
         clean_kwargs["band"] = name;
     }
+
+    // Register a temporary array of bundles for the "bands" option.
+    if (clean_kwargs.contains("bands")) {
+        auto obj = clean_kwargs["bands"];
+
+        if (!is_pylist(obj)) handle_gretl_error(E_INVARG, "bands", "must be a list");
+        py::list bands = py::reinterpret_borrow<py::list>(obj);
+
+        // Validate the array type before registration.
+        if (get_pyarray_type(bands) != GRETL_TYPE_BUNDLES) handle_gretl_error(E_INVARG, "bands", "must contain Bundle objects");
+        const std::string name = random_name();
+
+        genr<py::list>(name, bands);
+        uv_tmp.names.push_back(name);
+
+        // Pass the registered array name to libgretl.
+        clean_kwargs["bands"] = name;
+    }
+
+    // now we process options using 'clean_kwargs'
     gretlopt opt = unpack_kwargs_command(CI, fake_dataset, clean_kwargs);
 
     // now we check if an option "--output" was set for current command
