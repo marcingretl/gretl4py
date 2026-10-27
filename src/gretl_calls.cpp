@@ -357,6 +357,13 @@ gretlopt unpack_kwargs_command (GretlCmdIndex ci, T &dataset, const py::kwargs &
                 if (!plotter) throw std::logic_error("no plotter available");
 
                 gretl_valid_long_opt(opt, ci, key, py::handle(), plotter->filename().c_str());
+            } else if (key == "matrix" && (ci == GNUPLOT || ci == SCATTERS || ci == BXPLOT)) {
+                // matrix-based plots are handled separately by gretl.plot()
+                throw std::invalid_argument("for matrix-based plots, use gretl.plot() instead");
+            } else if (ci == GNUPLOT && key == "input") {
+                throw std::invalid_argument("for gnuplot script-based plots, use gretl.plot() instead");
+            } else if (ci == GNUPLOT && key == "inbuf") {
+                throw std::invalid_argument("option '--" + key + "' is not supported");
             } else {
                 gretl_valid_long_opt(opt, ci, key, item.second);
             }
@@ -1597,10 +1604,7 @@ py::object do_execute_plot_call (const T &varlist, const GretlDatasetPtr dataset
 
     // we do the job
     if constexpr (CI == GNUPLOT) {
-        if (opt & (OPT_I | OPT_i)) {
-            //err = gnuplot_process_input(cmd->param, opt, prn);
-            throw std::invalid_argument("gnuplot input mode unsupported");
-        } else if (opt & OPT_C) {
+        if (opt & OPT_C) {
             err = xy_plot_with_control(gretl_list.get(), literal.c_str(), dataset->dset, opt);
         } else {
             err = gnuplot(gretl_list.get(), literal.c_str(), dataset->dset, opt);
