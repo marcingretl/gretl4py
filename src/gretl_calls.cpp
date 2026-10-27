@@ -353,24 +353,29 @@ gretlopt unpack_kwargs_command (T &dataset, const py::kwargs &kwargs, GretlPlot 
                     continue;
                 }
             }
+
+            // commands special (including banned options)
+            if constexpr (CI == GNUPLOT || CI == SCATTERS || CI == BXPLOT) {
+                // matrix-based plots are handled separately by gretl.plot()
+                if (key == "matrix") throw std::invalid_argument("for matrix-based plots, use gretl.plot() instead");
+            }
+            if constexpr (CI == GNUPLOT) {
+                if (key == "input") throw std::invalid_argument("for gnuplot script-based plots, use gretl.plot() instead");
+                if (key == "inbuf") throw std::invalid_argument("option '--" + key + "' is not supported");
+            }
+
+            // finally, we evaluate options
             if (key == "plot" && is_pystr(item.second) && item.second.cast<std::string>() == "display") {
                 if (!plotter) throw std::logic_error("no plotter available");
 
                 gretl_valid_long_opt(opt, CI, key, py::handle(), plotter->filename().c_str());
-            } else if (key == "matrix" && (CI == GNUPLOT || CI == SCATTERS || CI == BXPLOT)) {
-                // matrix-based plots are handled separately by gretl.plot()
-                throw std::invalid_argument("for matrix-based plots, use gretl.plot() instead");
-            } else if (CI == GNUPLOT && key == "input") {
-                throw std::invalid_argument("for gnuplot script-based plots, use gretl.plot() instead");
-            } else if (CI == GNUPLOT && key == "inbuf") {
-                throw std::invalid_argument("option '--" + key + "' is not supported");
             } else {
                 gretl_valid_long_opt(opt, CI, key, item.second);
             }
         }
     }
 
-    // if we didn't get dataset, let use global
+    // if no dataset was supplied, use the default dataset
     if constexpr (std::is_same_v<T, GretlDatasetPtr>) {
         if (!dataset) dataset = GretlDataset::default_dataset();
     }
