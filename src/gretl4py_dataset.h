@@ -224,8 +224,12 @@ public:
 
     double ljungbox (const std::string &y, int p);
 
+    // plots
     template <typename T>
     py::object plot (const T &yvars, const py::kwargs &kwargs);
+
+    template <typename T>
+    py::object boxplot (const T &yvars, const py::kwargs &kwargs);
 };
 
 #endif // GRETL4PY_DATASET_H

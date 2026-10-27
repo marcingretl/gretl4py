@@ -456,10 +456,10 @@ void init_gretl4py_dataset_py11 (py::module_ &m)
          py::arg("y").none(false), py::arg("p").none(false))
     .def("ljungbox", py::overload_cast<const std::string&, int>(&GretlDataset::ljungbox),
          py::arg("y").none(false), py::arg("p").none(false), doc::Dataset::ljungbox)
-    .def("plot", py::overload_cast<const std::string&, const py::kwargs&>(&GretlDataset::plot<std::string>),
-         py::arg("yvars").none(false), py::kw_only())
-    .def("plot", py::overload_cast<const py::list&, const py::kwargs&>(&GretlDataset::plot<py::list>),
-         py::arg("yvars").none(false), py::kw_only());
+    .def("plot", &GretlDataset::plot<std::string>, py::arg("yvars").none(false), py::kw_only())
+    .def("plot", &GretlDataset::plot<py::list>, py::arg("yvars").none(false), py::kw_only(), doc::Dataset::plot)
+    .def("boxplot", &GretlDataset::boxplot<std::string>, py::arg("varlist").none(false), py::kw_only())
+    .def("boxplot", &GretlDataset::boxplot<py::list>, py::arg("varlist").none(false), py::kw_only(), doc::Dataset::boxplot);
 
     cls.attr("__module__") = "gretl";
 }

@@ -224,6 +224,7 @@
 		{gretl.Model\_logistic}{{\textcolor{pythtype}{gretl.Model\_logistic}}}{21}
 		{gretl.Model\_midasreg}{{\textcolor{pythtype}{gretl.Model\_midasreg}}}{21}
 		{gretl.Model\_quantreg}{{\textcolor{pythtype}{gretl.Model\_quantreg}}}{21}
+		{matplotlib.figure.Figure}{{\textcolor{pythtype}{matplotlib.figure.Figure}}}{24}
 		{pandas.core.series.Series}{{\textcolor{pythtype}{pandas.core.series.Series}}}{25}
 		{pandas.core.frame.DataFrame}{{\textcolor{pythtype}{pandas.core.frame.DataFrame}}}{27}
 		}

@@ -1737,3 +1737,14 @@ py::object GretlDataset::plot (const T &yvars, const py::kwargs &kwargs)
 }
 template py::object GretlDataset::plot<std::string>(const std::string&, const py::kwargs&);
 template py::object GretlDataset::plot<py::list>(const py::list&, const py::kwargs&);
+
+template <typename T>
+py::object GretlDataset::boxplot (const T &yvars, const py::kwargs &kwargs)
+{
+    //
+    // mimic libgretl 'boxplot' command
+    //
+    return do_execute_plot_call<BXPLOT, T>(yvars, shared_from_this(), "", kwargs);
+}
+template py::object GretlDataset::boxplot<std::string>(const std::string&, const py::kwargs&);
+template py::object GretlDataset::boxplot<py::list>(const py::list&, const py::kwargs&);

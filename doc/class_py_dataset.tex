@@ -245,6 +245,55 @@ Examples:\newline
 	is applied and the result should be interpreted as an estimate
 	of the trend component.}
 
+\gretlfpycmd{boxplot()}
+\estdesc{Generates boxplots for dataset series using \lgretl and Matplotlib.}
+\begin{lstlisting}[style=pythonstylefoot]
+.boxplot(varlist: str | list[, OPTS]) -> matplotlib.figure.Figure
+\end{lstlisting}
+\mapto[None]{boxplot ~varlist}
+\mapto[None]{boxplot ~varlist --notches}
+\mapto[None]{boxplot ~varlist --panel}
+\mapto{boxplot ~varlist --factorized}
+\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
+	\item[]\maptoopt{notches=True}{--notches}{show a 90 percent confidence interval for the median}
+	\item[]\maptoopt{factorized=True}{--factorized}{produce boxplots conditional on a discrete factor}
+	\item[]\maptoopt{panel=True}{--panel}{produce separate boxplots for each panel unit}
+\end{itemize}
+Examples:\newline
+\pythcodef{fig = data.boxplot("y")}\\
+\pythcodef{fig = data.boxplot("y1 y2 y3")}\\
+\pythcodef{fig = data.boxplot(["y1", "y2"])}\\
+\pythcodef{fig = data.boxplot("wage gender", factorized=True)}\\
+\pythcodef{fig = data.boxplot("y", panel=True, notches=True)}\\
+\generaldesc{Generates boxplots representing the distribution of one
+	or more dataset series. Each box extends from the first quartile
+	to the third quartile, enclosing the middle 50 percent of the
+	observations. The horizontal line inside the box indicates the
+	median, while a plus sign denotes the mean.
+	
+	The whiskers extend up to 1.5 times the interquartile range
+	beyond the first and third quartiles. Observations outside
+	this range are treated as outliers and displayed as individual
+	points.
+	
+	Setting \textit{notches=True} adds a bootstrap-based 90 percent
+	confidence interval for the median, represented by dashed
+	horizontal lines.
+	
+	The \textit{factorized} option produces separate boxplots for
+	each distinct value of a discrete factor variable. In this
+	case, \textit{varlist} must contain exactly two variables:
+	the target variable followed by the factor variable.
+	
+	For panel datasets, setting \textit{panel=True} produces a
+	separate boxplot for each panel unit. This option requires
+	exactly one variable in \textit{varlist}.
+	
+	Plot generation is performed by \lgretl, while the resulting
+	\gnuplot script is translated into Python code by \gptranslate
+	and rendered using Matplotlib. The method returns a Matplotlib
+	Figure object.}
+
 \gretlfpycmd{bwfilt()}
 \estdesc{Returns the result from application of a low-pass
 	Butterworth filter with order \textit{n} and frequency
@@ -978,6 +1027,61 @@ Example:\newline
 \maptof{pdf(d, param, ~series)}{matrix}
 \where{\textit{d} and \textit{param} are
 	defined as in \ref{func:gretl.pdf}.}
+
+\gretlfpycmd{plot()}
+\estdesc{Generates X--Y and time-series plots using \lgretl and Matplotlib.}
+\begin{lstlisting}[style=pythonstylefoot]
+.plot(yvars: str | list[, OPTS]) -> matplotlib.figure.Figure
+\end{lstlisting}
+\mapto[None]{gnuplot yvars}
+\mapto[None]{gnuplot yvars xvar}
+\mapto[None]{gnuplot yvars --time-series}
+\mapto[None]{gnuplot yvars xvar factor --factorized}
+\mapto{gnuplot yvar xvar zvars --control}
+\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
+	\item[]\maptoopt{with\_lines=True}{--with-lines}{draw lines instead of points}
+	\item[]\maptoopt{with\_lp=True}{--with-lp}{draw lines and points}
+	\item[]\maptoopt{with\_impulses=True}{--with-impulses}{draw vertical impulses}
+	\item[]\maptoopt{with\_boxes=True}{--with-boxes}{draw histogram-style boxes}
+	\item[]\maptoopt{with\_steps=True}{--with-steps}{draw step graphs}
+	\item[]\maptoopt{time\_series=True}{--time-series}{plot against time}
+	\item[]\maptoopt{single\_yaxis=True}{--single-yaxis}{force a single Y axis}
+	\item[]\maptoopt{y2axis=varspec}{--y2axis=varspec}{specify variables for the secondary Y axis}
+	\item[]\maptoopt{ylogscale=base}{--ylogscale[=base]}{use a logarithmic Y axis}
+	\item[]\maptoopt{control=True}{--control}{plot residuals after controlling for other variables}
+	\item[]\maptoopt{factorized=varspec}{--factorized[=varspec]}{distinguish observations by a discrete factor}
+	\item[]\maptoopt{fit=fitspec}{--fit=fitspec}{specify a fitted line}
+	\item[]\maptoopt{font=fontspec}{--font=fontspec}{specify the plot font}
+	\item[]\maptoopt{band=bundle}{--band=bundle}{add a band defined by a bundle}
+	\item[]\maptoopt{bands=array}{--bands=array}{add multiple bands}
+\end{itemize}
+Examples:\newline
+\pythcodef{fig = data.plot("y x")}\\
+\pythcodef{fig = data.plot(["y1", "y2", "x"])}\\
+\pythcodef{fig = data.plot("y1 y2", time\_series=True, with\_lines=True)}\\
+\pythcodef{fig = data.plot("y x", fit="quadratic")}\\
+\pythcodef{fig = data.plot("y x z", control=True)}\\
+\generaldesc{Generates graphical representations of dataset series
+	using the native \lgretl{} plotting functionality. For ordinary
+	X--Y plots, the last variable in \textit{yvars} is interpreted
+	as the X variable, while preceding variables are plotted on the
+	Y axis. When \textit{time\_series=True}, all specified variables
+	are plotted against time.
+	
+	By default, observations are represented by points. Various
+	plotting styles are available, including lines, impulses,
+	boxes, and steps. For multiple Y variables, a secondary axis
+	may be selected automatically or explicitly using
+	\textit{y2axis}.
+	
+	The \textit{fit} option allows fitted curves to be added to
+	bivariate plots, while \textit{control} produces a plot of
+	residualized variables after accounting for specified controls.
+	
+	Plot generation is performed by \lgretl, while the resulting
+	\gnuplot script is translated into Python code by \gptranslate
+	and rendered using Matplotlib. The method returns a Matplotlib
+	Figure object.}
 
 \gretlfpycmd{print()}\label{met:gretldataset::print}
 \estdesc{Dataset-dedicated printer.}
