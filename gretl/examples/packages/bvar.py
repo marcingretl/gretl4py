@@ -66,6 +66,9 @@ def run_example():
 
     # Display results as tree structure
     res.print(tree=True)
+    
+    gretl.BVAR_fcast_plot(res)
+    gretl.BVAR_irf_plot(res)
 
     return res
 

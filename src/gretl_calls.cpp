@@ -31,6 +31,7 @@ extern "C" {
     #include <gretl/gretl_zip.h>
     #include <gretl/gretl_foreign.h>
     #include <gretl/adf_kpss.h>
+    #include <gretl/boxplots.h>
 }
 #include <random>
 #include <sstream>
@@ -1639,6 +1640,8 @@ py::object do_execute_plot_call (const T &varlist, const GretlDatasetPtr dataset
         } else {
             err = gnuplot(gretl_list.get(), literal.c_str(), dataset->dset, opt);
         }
+    } else if constexpr (CI == BXPLOT) {
+        err = boxplots(gretl_list.get(), literal.c_str(), dataset->dset, opt);
     } else {
         static_assert(always_false<std::integral_constant<GretlCmdIndex, CI>>, "do_execute_plot_call(): unsupported command");
     }
@@ -1650,3 +1653,5 @@ py::object do_execute_plot_call (const T &varlist, const GretlDatasetPtr dataset
 }
 template py::object do_execute_plot_call<GNUPLOT, std::string>(const std::string&, GretlDatasetPtr, const std::string&, const py::kwargs&);
 template py::object do_execute_plot_call<GNUPLOT, py::list>(const py::list&, GretlDatasetPtr, const std::string&, const py::kwargs&);
+template py::object do_execute_plot_call<BXPLOT, std::string>(const std::string&, GretlDatasetPtr, const std::string&, const py::kwargs&);
+template py::object do_execute_plot_call<BXPLOT, py::list>(const py::list&, GretlDatasetPtr, const std::string&, const py::kwargs&);
