@@ -351,7 +351,7 @@ void GretlModel::gretl_do_forecast_ (void *model, const py::args &args, const py
     }
 
     // we work with kwargs
-    opt_ = unpack_kwargs_command(FCAST, dataset_, clean_kwargs, &plotter);
+    opt_ = unpack_kwargs_command<FCAST>( dataset_, clean_kwargs, &plotter);
 
     // we do the job
     if constexpr (std::is_same_v<T, MODEL>) gretl_model_protect(static_cast<MODEL*>(model));

@@ -680,7 +680,7 @@ py::object GretlMatrix::summary (const py::kwargs& kwargs)
 
     // we unpack kwargs at first
     kwargs_copy["matrix"] = matrix_name;
-    gretlopt opt = unpack_kwargs_command(SUMMARY, fake_dataset, kwargs_copy);
+    gretlopt opt = unpack_kwargs_command<SUMMARY>(fake_dataset, kwargs_copy);
 
     // based on 'interact.c'
     err_ = incompatible_options(opt, static_cast<gretlopt>(OPT_B | OPT_W));

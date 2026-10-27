@@ -330,8 +330,8 @@ const char *GretlPrint::get_buffer (void)
 //////////////////////////////////////////////////
 // functions
 //////////////////////////////////////////////////
-template <typename T>
-gretlopt unpack_kwargs_command (GretlCmdIndex ci, T &dataset, const py::kwargs &kwargs, GretlPlot *plotter)
+template <GretlCmdIndex CI, typename T>
+gretlopt unpack_kwargs_command (T &dataset, const py::kwargs &kwargs, GretlPlot *plotter)
 {
     //
     // unpack kwargs for libgretl's command interfaces
@@ -356,16 +356,16 @@ gretlopt unpack_kwargs_command (GretlCmdIndex ci, T &dataset, const py::kwargs &
             if (key == "plot" && is_pystr(item.second) && item.second.cast<std::string>() == "display") {
                 if (!plotter) throw std::logic_error("no plotter available");
 
-                gretl_valid_long_opt(opt, ci, key, py::handle(), plotter->filename().c_str());
-            } else if (key == "matrix" && (ci == GNUPLOT || ci == SCATTERS || ci == BXPLOT)) {
+                gretl_valid_long_opt(opt, CI, key, py::handle(), plotter->filename().c_str());
+            } else if (key == "matrix" && (CI == GNUPLOT || CI == SCATTERS || CI == BXPLOT)) {
                 // matrix-based plots are handled separately by gretl.plot()
                 throw std::invalid_argument("for matrix-based plots, use gretl.plot() instead");
-            } else if (ci == GNUPLOT && key == "input") {
+            } else if (CI == GNUPLOT && key == "input") {
                 throw std::invalid_argument("for gnuplot script-based plots, use gretl.plot() instead");
-            } else if (ci == GNUPLOT && key == "inbuf") {
+            } else if (CI == GNUPLOT && key == "inbuf") {
                 throw std::invalid_argument("option '--" + key + "' is not supported");
             } else {
-                gretl_valid_long_opt(opt, ci, key, item.second);
+                gretl_valid_long_opt(opt, CI, key, item.second);
             }
         }
     }
@@ -377,8 +377,23 @@ gretlopt unpack_kwargs_command (GretlCmdIndex ci, T &dataset, const py::kwargs &
 
     return opt;
 }
-template gretlopt unpack_kwargs_command<GretlDatasetPtr>(GretlCmdIndex, GretlDatasetPtr&, const py::kwargs&, GretlPlot*);
-template gretlopt unpack_kwargs_command<std::nullptr_t>(GretlCmdIndex, std::nullptr_t&, const py::kwargs&, GretlPlot*);
+//NOTE: we make explicit template instantiations only for call from external TU
+template gretlopt unpack_kwargs_command<CORR, std::nullptr_t>(std::nullptr_t&, const py::kwargs&, GretlPlot*);
+template gretlopt unpack_kwargs_command<DATAMOD, std::nullptr_t>(std::nullptr_t&, const py::kwargs&, GretlPlot*);
+template gretlopt unpack_kwargs_command<DISCRETE, std::nullptr_t>(std::nullptr_t&, const py::kwargs&, GretlPlot*);
+template gretlopt unpack_kwargs_command<DUMMIFY, std::nullptr_t>(std::nullptr_t&, const py::kwargs&, GretlPlot*);
+template gretlopt unpack_kwargs_command<FCAST, GretlDatasetPtr>(GretlDatasetPtr&, const py::kwargs&, GretlPlot*);
+template gretlopt unpack_kwargs_command<GNUPLOT, std::nullptr_t>(std::nullptr_t&, const py::kwargs&, GretlPlot*);
+template gretlopt unpack_kwargs_command<PCA, std::nullptr_t>(std::nullptr_t&, const py::kwargs&, GretlPlot*);
+template gretlopt unpack_kwargs_command<RENAME, std::nullptr_t>(std::nullptr_t&, const py::kwargs&, GretlPlot*);
+template gretlopt unpack_kwargs_command<SETOBS, std::nullptr_t>(std::nullptr_t&, const py::kwargs&, GretlPlot*);
+template gretlopt unpack_kwargs_command<SMPL, std::nullptr_t>(std::nullptr_t&, const py::kwargs&, GretlPlot*);
+template gretlopt unpack_kwargs_command<SQUARE, std::nullptr_t>(std::nullptr_t&, const py::kwargs&, GretlPlot*);
+template gretlopt unpack_kwargs_command<STDIZE, std::nullptr_t>(std::nullptr_t&, const py::kwargs&, GretlPlot*);
+template gretlopt unpack_kwargs_command<STORE, std::nullptr_t>(std::nullptr_t&, const py::kwargs&, GretlPlot*);
+template gretlopt unpack_kwargs_command<SUMMARY, std::nullptr_t>(std::nullptr_t&, const py::kwargs&, GretlPlot*);
+template gretlopt unpack_kwargs_command<XCORRGM, std::nullptr_t>(std::nullptr_t&, const py::kwargs&, GretlPlot*);
+template gretlopt unpack_kwargs_command<XTAB, std::nullptr_t>(std::nullptr_t&, const py::kwargs&, GretlPlot*);
 
 void do_set (const std::string &key, const std::string &value, const py::kwargs &kwargs)
 {
@@ -389,7 +404,7 @@ void do_set (const std::string &key, const std::string &value, const py::kwargs 
     int err = 0;
 
     // we unpack kwargs at first
-    gretlopt opt = unpack_kwargs_command(SET, dataset, kwargs);
+    gretlopt opt = unpack_kwargs_command<SET>(dataset, kwargs);
 
     // we do the job
     err = execute_set(key.empty() ? nullptr : key.c_str(), value.empty() ? nullptr : value.c_str(),
@@ -456,7 +471,7 @@ void do_gretl_print (const std::string &varlist, const py::kwargs &kwargs)
     };
 
     if (py::len(kwargs) > 0) {
-        opt = unpack_kwargs_command(PRINT, dataset, kwargs);
+        opt = unpack_kwargs_command<PRINT>(dataset, kwargs);
     } else {
         // if we don't have kwargs, we must assign dataset manually
         dataset = GretlDataset::default_dataset();
@@ -515,7 +530,7 @@ void do_gretl_varlist (const py::kwargs &kwargs)
     //
     GretlDatasetPtr dataset = nullptr;
 
-    auto opt = unpack_kwargs_command(VARLIST, dataset, kwargs);
+    auto opt = unpack_kwargs_command<VARLIST>(dataset, kwargs);
 
     // we do the job (based on interact.c)
     if (opt & OPT_T) {
@@ -615,7 +630,7 @@ void do_gretl_pkg (const std::string &action, const std::string &pkgname, const 
     int err = 0;
 
     // we check options
-    auto opt = unpack_kwargs_command(PKG, fake_dataset, kwargs);
+    auto opt = unpack_kwargs_command<PKG>(fake_dataset, kwargs);
 
     err = incompatible_options(opt, static_cast<gretlopt>(OPT_L | OPT_S));
     if (err) handle_gretl_error(err);
@@ -922,7 +937,7 @@ void do_gretl_delete_variables (const std::string &varname, const py::kwargs &kw
     if (!varname.empty() && GretlPackage::package_loaded(varname)) throw std::invalid_argument("in gretl4py, the 'delete' function does not work with packages");
 
     if (py::len(kwargs) > 0) {
-        opt = unpack_kwargs_command(DELEET, dataset, kwargs);
+        opt = unpack_kwargs_command<DELEET>(dataset, kwargs);
         if (kwargs.contains("type")) type_to_delete = kwargs["type"].cast<std::string>();
     } else {
         // if we don't have kwargs, we must assign GD manually
@@ -1582,7 +1597,7 @@ py::object do_execute_plot_call (const T &varlist, const GretlDatasetPtr dataset
     }
 
     // now we process options using 'clean_kwargs'
-    gretlopt opt = unpack_kwargs_command(CI, fake_dataset, clean_kwargs);
+    gretlopt opt = unpack_kwargs_command<CI>(fake_dataset, clean_kwargs);
 
     // now we check if an option "--output" was set for current command
     if (command_option_is_set(CI, opt, "output")) {

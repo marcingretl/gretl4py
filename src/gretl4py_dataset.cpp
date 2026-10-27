@@ -537,10 +537,9 @@ py::object GretlDataset::summary (const T &varlist, const py::kwargs &kwargs)
     bool no_result = false;
 
     // we unpack kwargs at first
-    gretlopt opt = unpack_kwargs_command(SUMMARY, fake_dataset, kwargs);
-    if (opt & OPT_X) throw std::invalid_argument("for matrices, please use the gretl.Matrix.summary() method");
+    gretlopt opt = unpack_kwargs_command<SUMMARY>(fake_dataset, kwargs);
 
-    // we build gretl_list
+    if (opt & OPT_X) throw std::invalid_argument("for matrices, please use the gretl.Matrix.summary() method");
     if (!varlist.empty()) varlist_ptr = gretllist(varlist);
 
     // based on 'interact.c'
@@ -624,7 +623,7 @@ void GretlDataset::to_file (const std::string &filename, const T &varlist, const
     if (!varlist.empty()) var_list = gretllist(varlist);
 
     // we unpack kwargs;
-    opt_ = unpack_kwargs_command(STORE, fake_dataset, kwargs);
+    opt_ = unpack_kwargs_command<STORE>(fake_dataset, kwargs);
 
     // we do the job
     if (opt_ & OPT_A) {
@@ -792,7 +791,7 @@ void GretlDataset::rename (int series_id, const std::string &newname, const py::
     //
     std::nullptr_t fake_dataset = nullptr;
 
-    opt_ = unpack_kwargs_command(RENAME, fake_dataset, kwargs);
+    opt_ = unpack_kwargs_command<RENAME>(fake_dataset, kwargs);
 
     // we do the job
     err_ = rename_series(dset, series_id, newname.c_str(), opt_);
@@ -810,7 +809,7 @@ void GretlDataset::transforms (const T &varlist, const py::kwargs &kwargs)
     gretl_list_ptr var_list{nullptr};
 
     // we unpack kwargs;
-    opt_ = unpack_kwargs_command(CI, fake_dataset, kwargs);
+    opt_ = unpack_kwargs_command<CI>(fake_dataset, kwargs);
 
     // we construct list of variables
     if constexpr (is_gretllist_arg_v<T>) {
@@ -998,7 +997,7 @@ void GretlDataset::smpl (const std::string &startobs, const std::string &endobs,
     }
 
     // we unpack kwargs;
-    opt_ = unpack_kwargs_command(SMPL, fake_dataset, kwargs_copy);
+    opt_ = unpack_kwargs_command<SMPL>(fake_dataset, kwargs_copy);
 
     // we do the job
     err_ = 0;
@@ -1115,7 +1114,7 @@ py::object GretlDataset::corr (const T &varlist, const py::kwargs &kwargs)
     }
 
     // we unpack kwargs;
-    opt_ = unpack_kwargs_command(CORR, fake_dataset, kwargs, &plotter);
+    opt_ = unpack_kwargs_command<CORR>(fake_dataset, kwargs, &plotter);
 
     // we do the job
     if (opt_ & OPT_K) {
@@ -1195,7 +1194,7 @@ py::object GretlDataset::xcorrgm (const T &varlist, int order, const py::kwargs 
     std::nullptr_t fake_dataset = nullptr;
 
     // we unpack kwargs
-    opt_ = unpack_kwargs_command(XCORRGM, fake_dataset, kwargs);
+    opt_ = unpack_kwargs_command<XCORRGM>(fake_dataset, kwargs);
 
     // we construct list of variables
     if constexpr (is_gretllist_arg_v<T>) {
@@ -1235,7 +1234,7 @@ py::object GretlDataset::pca (const T &varlist, const py::kwargs &kwargs)
     }
 
     // we unpack kwargs;
-    opt_ = unpack_kwargs_command(PCA, fake_dataset, kwargs);
+    opt_ = unpack_kwargs_command<PCA>(fake_dataset, kwargs);
 
     // we do the job (based on interact.c)
     VMatrix_ptr cmat{nullptr};
@@ -1302,7 +1301,7 @@ py::object GretlDataset::xtab (const T &varlist, const py::kwargs &kwargs)
     std::nullptr_t fake_dataset = nullptr;
 
     // we unpack kwargs;
-    opt_ = unpack_kwargs_command(XTAB, fake_dataset, kwargs);
+    opt_ = unpack_kwargs_command<XTAB>(fake_dataset, kwargs);
 
     // we construct list of variables
     if (varlist.empty()) {
@@ -1334,7 +1333,7 @@ void GretlDataset::setobs (const std::string &periodicity,
     std::nullptr_t fake_dataset = nullptr;
 
     // we unpack kwargs;
-    opt_ = unpack_kwargs_command(SETOBS, fake_dataset, kwargs);
+    opt_ = unpack_kwargs_command<SETOBS>(fake_dataset, kwargs);
 
     // we do the job (based on interact.c)
     err_ = set_obs(periodicity.c_str(), startobs.c_str(), dset, opt_);
@@ -1417,7 +1416,7 @@ void GretlDataset::do_modify_dataset (DatasetOp op, const T &list, const std::st
     }
 
     // we unpack kwargs;
-    opt_ = unpack_kwargs_command(DATAMOD, fake_dataset, kwargs);
+    opt_ = unpack_kwargs_command<DATAMOD>(fake_dataset, kwargs);
 
     // we handle special cases here
     if (op == DS_EXPAND && param == "-999") {
