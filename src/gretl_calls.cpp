@@ -363,21 +363,19 @@ gretlopt unpack_kwargs_command (T &dataset, const py::kwargs &kwargs, GretlPlot 
                 if (key == "input") throw std::invalid_argument("for gnuplot script-based plots, use gretl.plot() instead");
                 if (key == "inbuf") throw std::invalid_argument("option '--" + key + "' is not supported");
             }
-
-            // special case: we use GretlDataset class object passed by kwargs
-            if constexpr (std::is_same_v<T, GretlDatasetPtr>) {
-                if (key == "data") {
-                    dataset = item.second.cast<GretlDatasetPtr>();
-                    continue;
-                }
-            }
-
-            // special case: commands with --plot option
             if constexpr (cmd_plot_opt_ok(CI)) {
                 if (key == "plot" && is_pystr(item.second) && item.second.cast<std::string>() == "display") {
                     if (!plotter) throw std::logic_error("no plotter available");
 
                     gretl_valid_long_opt(opt, CI, key, py::handle(), plotter->filename().c_str());
+                    continue;
+                }
+            }
+
+            // special case: we use GretlDataset class object passed by kwargs
+            if constexpr (std::is_same_v<T, GretlDatasetPtr>) {
+                if (key == "data") {
+                    dataset = item.second.cast<GretlDatasetPtr>();
                     continue;
                 }
             }
