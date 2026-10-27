@@ -1448,6 +1448,44 @@ GretlMatrixPtr GretlDataset::tdisagg (py::object Y, int s, const py::kwargs &kwa
     return do_get_tdisagg_matrix(Y, s, kwargs, shared_from_this());
 }
 
+template <typename T>
+py::list GretlDataset::hflags (int lmin, int lmax, const T &hfvars)
+{
+    //
+    // interface to libretl's hflags function
+    //
+    gretl_list_ptr gretl_list{nullptr};
+
+    // we construct gretl_list based on hfvars
+    if (hfvars.empty()) handle_gretl_error(E_NOVARS);
+    if constexpr (is_gretllist_arg_v<T>) {
+        gretl_list = gretllist(hfvars);
+    } else {
+        static_assert(always_false<T>, "GretlDataset::hflags(): unsupported type");
+    }
+    auto cfac = gretl_list.get()[0];
+
+    if (cfac < 2) handle_gretl_error(E_INVARG, "hflags: not a MIDAS list");
+
+    // we do the job
+    auto *list = gretl_list.release();
+    err_ = list_laggenr(&list, lmin, lmax, nullptr, dset, cfac, OPT_L);
+    gretl_list.reset(list);
+    if (err_) handle_gretl_error(err_);
+
+    // return the names of the generated series
+    std::vector<std::string> res;
+    res.reserve(gretl_list.get()[0]);
+
+    for (int i=1; i<=gretl_list.get()[0]; ++i) {
+        res.push_back(dset->varname[gretl_list.get()[i]]);
+    }
+
+    return py::cast(res);
+}
+template py::list GretlDataset::hflags<std::string>(int, int, const std::string&);
+template py::list GretlDataset::hflags<py::list>(int, int, const py::list&);
+
 py::list GretlDataset::varnames (void) const
 {
     return c_style_char_array_to_container<py::list>(dset->varname, dset->v);
@@ -1748,3 +1786,14 @@ py::object GretlDataset::boxplot (const T &yvars, const py::kwargs &kwargs)
 }
 template py::object GretlDataset::boxplot<std::string>(const std::string&, const py::kwargs&);
 template py::object GretlDataset::boxplot<py::list>(const py::list&, const py::kwargs&);
+
+template <typename T>
+py::object GretlDataset::hfplot (const T &yvars, const py::kwargs &kwargs)
+{
+    //
+    // mimic libgretl 'hfplot' command
+    //
+    return do_execute_plot_call<HFPLOT, T>(yvars, shared_from_this(), "", kwargs);
+}
+template py::object GretlDataset::hfplot<std::string>(const std::string&, const py::kwargs&);
+template py::object GretlDataset::hfplot<py::list>(const py::list&, const py::kwargs&);

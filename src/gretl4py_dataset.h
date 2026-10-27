@@ -188,6 +188,9 @@ public:
     template <typename T>
     void do_modify_dataset (DatasetOp op, const T &list, const std::string &param, const py::kwargs &kwargs);
 
+    template <typename T>
+    py::list hflags (int lmin, int lmax, const T &hfvars);
+
     GretlMatrixPtr tdisagg (py::object Y, int s, const py::kwargs &kwargs);
 
     // filters, correlations, etc
@@ -230,6 +233,9 @@ public:
 
     template <typename T>
     py::object boxplot (const T &yvars, const py::kwargs &kwargs);
+
+    template <typename T>
+    py::object hfplot (const T &yvars, const py::kwargs &kwargs);
 };
 
 #endif // GRETL4PY_DATASET_H

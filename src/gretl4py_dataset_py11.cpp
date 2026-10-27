@@ -321,6 +321,10 @@ void init_gretl4py_dataset_py11 (py::module_ &m)
          }, doc::Dataset::unpad_daily)
     .def("tdisagg", &GretlDataset::tdisagg,
          py::arg("Y").none(false), py::arg("s").none(false), py::kw_only(), doc::Dataset::tdisagg)
+    .def("hflags", &GretlDataset::hflags<std::string>,
+         py::arg("minlag").none(false), py::arg("maxlag").none(false), py::arg("hfvars").none(false))
+    .def("hflags", &GretlDataset::hflags<py::list>,
+         py::arg("minlag").none(false), py::arg("maxlag").none(false), py::arg("hfvars").none(false))
     .def("to_dict", &GretlDataset::to_dict, doc::Dataset::to_dict)
     .def("to_file", py::overload_cast<const std::string&, const std::string&, const py::kwargs&>(&GretlDataset::to_file<std::string>),
          py::arg("filename").none(false), py::arg("varlist").none(true) = "", py::kw_only())
@@ -459,7 +463,9 @@ void init_gretl4py_dataset_py11 (py::module_ &m)
     .def("plot", &GretlDataset::plot<std::string>, py::arg("yvars").none(false), py::kw_only())
     .def("plot", &GretlDataset::plot<py::list>, py::arg("yvars").none(false), py::kw_only(), doc::Dataset::plot)
     .def("boxplot", &GretlDataset::boxplot<std::string>, py::arg("varlist").none(false), py::kw_only())
-    .def("boxplot", &GretlDataset::boxplot<py::list>, py::arg("varlist").none(false), py::kw_only(), doc::Dataset::boxplot);
+    .def("boxplot", &GretlDataset::boxplot<py::list>, py::arg("varlist").none(false), py::kw_only(), doc::Dataset::boxplot)
+    .def("hfplot", &GretlDataset::hfplot<std::string>, py::arg("hflist").none(false), py::kw_only())
+    .def("hfplot", &GretlDataset::hfplot<py::list>, py::arg("hflist").none(false), py::kw_only());
 
     cls.attr("__module__") = "gretl";
 }
