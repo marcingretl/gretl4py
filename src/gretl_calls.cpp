@@ -63,6 +63,14 @@ static GretlPrint global_printer = GretlPrint();
 std::unordered_set<std::string> user_vars;              // registry of user variables
 
 namespace {
+// Commands supporting the --plot option.
+constexpr bool cmd_plot_opt_ok (GretlCmdIndex ci)
+{
+    return ci == CORR || ci == CORRGM || ci == CUSUM || ci == FCAST
+        || ci == FREQ || ci == HURST || ci == LEVERAGE || ci == PERGM
+        || ci == QLRTEST || ci == XCORRGM;
+}
+
 // Automatically unregister a temporary libgretl user variable.
 struct TemporaryUserVar {
     std::vector<std::string> names;
@@ -364,14 +372,18 @@ gretlopt unpack_kwargs_command (T &dataset, const py::kwargs &kwargs, GretlPlot 
                 }
             }
 
-            // finally, we evaluate options
-            if (key == "plot" && is_pystr(item.second) && item.second.cast<std::string>() == "display") {
-                if (!plotter) throw std::logic_error("no plotter available");
+            // special case: commands with --plot option
+            if constexpr (cmd_plot_opt_ok(CI)) {
+                if (key == "plot" && is_pystr(item.second) && item.second.cast<std::string>() == "display") {
+                    if (!plotter) throw std::logic_error("no plotter available");
 
-                gretl_valid_long_opt(opt, CI, key, py::handle(), plotter->filename().c_str());
-            } else {
-                gretl_valid_long_opt(opt, CI, key, item.second);
+                    gretl_valid_long_opt(opt, CI, key, py::handle(), plotter->filename().c_str());
+                    continue;
+                }
             }
+
+            // finally, we evaluate options
+            gretl_valid_long_opt(opt, CI, key, item.second);
         }
     }
 
