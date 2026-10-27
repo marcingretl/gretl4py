@@ -1452,7 +1452,8 @@ template <typename T>
 py::list GretlDataset::hflags (int lmin, int lmax, const T &hfvars)
 {
     //
-    // interface to libretl's hflags function
+    // interface to libretl's hflags() function
+    // based on hf_list_make_lags() grom geneval.c
     //
     gretl_list_ptr gretl_list{nullptr};
 
@@ -1465,6 +1466,7 @@ py::list GretlDataset::hflags (int lmin, int lmax, const T &hfvars)
     }
     auto cfac = gretl_list.get()[0];
 
+    if (!cfac) return py::list();
     if (cfac < 2) handle_gretl_error(E_INVARG, "hflags: not a MIDAS list");
 
     // we do the job

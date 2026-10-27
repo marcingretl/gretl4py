@@ -268,7 +268,7 @@
 		transp, trimr, typestr, uniform, uniq, unvech, upper, urcpval, values,
 		varname, varnum, varsimul, vec, vech, weekday, wmean, wsd, wvar, xmax,
 		xmin, xpx, zeromiss, zeros, bwrite, bread, mpibcast, mpireduce, array, defbundle,
-		mat2list, strftime, fzero, tdisagg, kpsscrit, kmeans, getkeys, _},
+		mat2list, strftime, fzero, tdisagg, kpsscrit, kmeans, getkeys, hflags, _},
 	morekeywords=[3]{bool, int, list, matrix, scalar, series, string, bundle,
 		void, bundles, null, const, strings},
 	morekeywords=[4]{\$nobs, \$stopwatch, \$sysinfo, \$now, \$model, \$result,

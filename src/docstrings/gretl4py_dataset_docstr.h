@@ -1944,4 +1944,51 @@ namespace doc::Dataset {
         >>> fig = panel_data.boxplot("y", panel=True, notches=True)
         )doc";
 
+    inline constexpr char hflags[] = R"doc(
+    Generate high-frequency lags or leads from a MIDAS variable list.
+
+    Parameters
+    ----------
+    lmin : int
+        Minimum high-frequency lag. Negative values indicate leads.
+    lmax : int
+        Maximum high-frequency lag. Positive values indicate lags.
+    hfvars : str or list
+        MIDAS variable specification containing at least two
+        high-frequency series, given as variable names or IDs.
+
+    Returns
+    -------
+    list[str]
+        Names of the generated high-frequency lag or lead series,
+        ordered from lmin to lmax.
+
+    Notes
+    -----
+    This method maps to the gretl ``hflags`` function and uses
+    libgretl's native high-frequency lag generation mechanism.
+
+    The number of high-frequency periods within each low-frequency
+    period is determined by the number of variables in hfvars,
+    which must be at least two.
+
+    Positive lag orders refer to past high-frequency observations,
+    while negative orders refer to future observations (leads).
+    Lag zero denotes the first high-frequency period within a
+    low-frequency period, such as the first month of a quarter
+    or the first day of a month.
+
+    The generated series are added to the current dataset and
+    their names are returned as a Python list.
+
+    Examples
+    --------
+    >>> d = gretl.get_data("gdp_midas.gdt")
+    >>> hfvars = "ld_payems_m3 ld_payems_m2 ld_payems_m1"
+    >>> lags = d.hflags(3, 11, hfvars)
+    >>> fig = d.hfplot([lags, hfvars], with_lines=True, time_series=True)
+
+    >>> leads_and_lags = d.hflags(-3, 5, hfvars)
+    )doc";
+
 } // namespace doc::Dataset

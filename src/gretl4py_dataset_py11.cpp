@@ -324,7 +324,7 @@ void init_gretl4py_dataset_py11 (py::module_ &m)
     .def("hflags", &GretlDataset::hflags<std::string>,
          py::arg("minlag").none(false), py::arg("maxlag").none(false), py::arg("hfvars").none(false))
     .def("hflags", &GretlDataset::hflags<py::list>,
-         py::arg("minlag").none(false), py::arg("maxlag").none(false), py::arg("hfvars").none(false))
+         py::arg("minlag").none(false), py::arg("maxlag").none(false), py::arg("hfvars").none(false), doc::Dataset::hflags)
     .def("to_dict", &GretlDataset::to_dict, doc::Dataset::to_dict)
     .def("to_file", py::overload_cast<const std::string&, const std::string&, const py::kwargs&>(&GretlDataset::to_file<std::string>),
          py::arg("filename").none(false), py::arg("varlist").none(true) = "", py::kw_only())

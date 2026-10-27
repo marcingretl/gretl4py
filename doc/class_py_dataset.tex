@@ -631,6 +631,32 @@ Examples:\newline
 %.headT(nobs: int = 5)
 %\end{lstlisting}
 
+\gretlfpycmd{hflags()}
+\estdesc{Generates high-frequency lags or leads from a MIDAS variable list.}
+\begin{lstlisting}[style=pythonstylefoot]
+.hflags(lmin: int, lmax: int, hfvars: str | list) -> list[str]
+\end{lstlisting}
+\maptof{hflags(minlag, maxlag, hfvars)}{list}
+\generaldesc{Generates high-frequency lags or leads from the MIDAS
+	variables specified in \textit{hfvars}. The arguments
+	\textit{lmin} and \textit{lmax} determine the range of
+	high-frequency lag orders to be generated, inclusive of
+	both endpoints.
+	
+	Positive values indicate lags, while negative values indicate
+	leads. For example, setting \textit{lmin=-3} and
+	\textit{lmax=5} generates nine series corresponding to three
+	leads, the contemporaneous value, and five lags.
+	
+	High-frequency lag zero corresponds to the first high-frequency
+	period within a low-frequency period, such as the first month
+	of a quarter or the first day of a month.
+	
+	The \textit{hfvars} argument accepts a string or a Python list
+	specifying the MIDAS variables. The number of variables
+	determines the high-frequency compaction factor and must be
+	at least two.}
+
 \gretlfpycmd{hpfilt()}
 \estdesc{Applies the Hodrick--Prescott filter to series \textit{y}.}
 \begin{lstlisting}[style=pythonstylefoot]
