@@ -346,14 +346,6 @@ gretlopt unpack_kwargs_command (T &dataset, const py::kwargs &kwargs, GretlPlot 
             if (!is_pystr(item.first)) throw std::invalid_argument("option key must be a string");
             const std::string &key = item.first.cast<std::string>();
 
-            // special case: we use GretlDataset class object passed by kwargs
-            if constexpr (std::is_same_v<T, GretlDatasetPtr>) {
-                if (key == "data") {
-                    dataset = item.second.cast<GretlDatasetPtr>();
-                    continue;
-                }
-            }
-
             // commands special (including banned options)
             if constexpr (CI == GNUPLOT || CI == SCATTERS || CI == BXPLOT) {
                 // matrix-based plots are handled separately by gretl.plot()
@@ -362,6 +354,14 @@ gretlopt unpack_kwargs_command (T &dataset, const py::kwargs &kwargs, GretlPlot 
             if constexpr (CI == GNUPLOT) {
                 if (key == "input") throw std::invalid_argument("for gnuplot script-based plots, use gretl.plot() instead");
                 if (key == "inbuf") throw std::invalid_argument("option '--" + key + "' is not supported");
+            }
+
+            // special case: we use GretlDataset class object passed by kwargs
+            if constexpr (std::is_same_v<T, GretlDatasetPtr>) {
+                if (key == "data") {
+                    dataset = item.second.cast<GretlDatasetPtr>();
+                    continue;
+                }
             }
 
             // finally, we evaluate options
