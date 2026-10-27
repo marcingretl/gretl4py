@@ -1844,6 +1844,9 @@ namespace doc::Dataset {
         Name of an array of band bundles.
     plot : str, optional
         Use "display" to request graphical output.
+    output : str, optional
+        Output filename. When specified, the original gnuplot script
+        and its translated Python counterpart are saved to files.
 
     Returns
     -------
@@ -1901,6 +1904,9 @@ namespace doc::Dataset {
     panel : bool, optional
         Generate separate boxplots for each panel unit. Requires
         panel data and exactly one variable in varlist.
+    output : str, optional
+        Output filename. When specified, the original gnuplot script
+        and its translated Python counterpart are saved to files.
 
     Returns
     -------
@@ -1989,6 +1995,60 @@ namespace doc::Dataset {
     >>> fig = d.hfplot([lags, hfvars], with_lines=True, time_series=True)
 
     >>> leads_and_lags = d.hflags(-3, 5, hfvars)
+    )doc";
+
+    inline constexpr char hfplot[] = R"doc(
+    Plot high-frequency MIDAS series, optionally with low-frequency series.
+
+    Parameters
+    ----------
+    hflist : str or list
+        MIDAS variable specification containing the high-frequency
+        series to plot. Optionally, a second list of low-frequency
+        series may be supplied as [hflist, lflist].
+    with_lines : bool, optional
+        Plot using lines instead of points.
+    time_series : bool, optional
+        Put time on the horizontal axis.
+    output : str, optional
+        Output filename. When specified, the original gnuplot script
+        and its translated Python counterpart are saved to files.
+
+    Returns
+    -------
+    matplotlib.figure.Figure or None
+        Matplotlib Figure containing the generated plot, or None
+        when output is specified.
+
+    Notes
+    -----
+    This method maps to the gretl ``hfplot`` command.
+
+    The first argument specifies a MIDAS list of high-frequency
+    variables. An optional second list specifies one or more
+    regular (low-frequency) variables observed at the base
+    frequency of the dataset.
+
+    In gretl syntax, the two lists are separated by a semicolon.
+    In Python, they can be supplied as a two-element list
+    containing the high-frequency and low-frequency specifications.
+
+    Plot generation is performed by libgretl. The resulting
+    gnuplot script is translated into Python code by gptranslate
+    and rendered using Matplotlib.
+
+    When output is specified, two files are generated: the
+    original gnuplot script (.gp) and the translated Python
+    script (.py).
+
+    Examples
+    --------
+    >>> d = gretl.get_data("gdp_midas.gdt")
+    >>> hfvars = "ld_payems_m3 ld_payems_m2 ld_payems_m1"
+    >>> lags = d.hflags(3, 11, hfvars)
+    >>> fig = d.hfplot(lags, with_lines=True, time_series=True)
+    >>> fig = d.hfplot([lags, hfvars], with_lines=True, time_series=True)
+    >>> d.hfplot([lags, hfvars], output="midas.gp")
     )doc";
 
 } // namespace doc::Dataset

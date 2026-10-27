@@ -681,6 +681,53 @@ Examples:\newline
 	\pythcode{one_sided=True}, a one-sided variant with no look-ahead
 	is computed in the manner of Stock and Watson (1999).}
 
+
+\gretlfpycmd{hfplot()}
+\estdesc{Plots high-frequency MIDAS series, optionally together with
+	series observed at the base frequency of the dataset.}
+\begin{lstlisting}[style=pythonstylefoot]
+.hfplot(hflist: str | list[, OPTS]) -> matplotlib.figure.Figure | None
+\end{lstlisting}
+\mapto[None]{hfplot hflist}
+\mapto{hfplot hflist ; lflist}
+\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
+	\item[]\maptoopt{with\_lines=True}{--with-lines}{plot using lines instead of points}
+	\item[]\maptoopt{time\_series=True}{--time-series}{put time on the horizontal axis}
+	\item[]\maptoopt{output=filename}{--output=filename}{save the generated gnuplot and Python scripts}
+\end{itemize}
+Examples:\newline
+\pythcodef{d = gretl.get\_data("gdp\_midas.gdt")}\\
+\pythcodef{hfvars = "ld\_payems\_m3 ld\_payems\_m2 ld\_payems\_m1"}\\
+\pythcodef{lags = d.hflags(3, 11, hfvars)}\\
+\pythcodef{fig = d.hfplot(lags, with\_lines=True, time\_series=True)}\\
+\pythcodef{fig = d.hfplot([lags, hfvars], with\_lines=True, time\_series=True)}\\
+\pythcodef{d.hfplot([lags, hfvars], output="midas.gp")}\\
+\generaldesc{Provides a means of plotting high-frequency MIDAS
+	series, optionally together with one or more series observed
+	at the base frequency of the dataset.
+	
+	The first argument must specify a MIDAS list containing the
+	high-frequency series to be plotted. An optional second list
+	may specify regular (low-frequency) series.
+	
+	In the original \lgretl command, the high-frequency and
+	low-frequency lists are separated by a semicolon. In
+	\gretlpy, the two specifications can be passed as a
+	two-element Python list, with the high-frequency list first
+	and the low-frequency list second.
+	
+	Plot generation is performed by \lgretl, while the resulting
+	\gnuplot script is translated into Python code by
+	\gptranslate and rendered using Matplotlib.
+	
+	By default, the method returns a Matplotlib Figure object.
+	When the \texttt{output} option is specified, two files are
+	generated: the original \gnuplot script (\texttt{.gp}) and
+	its translated Python counterpart (\texttt{.py}), and the
+	method returns \texttt{None}.}
+
+
+
 \gretlfpycmd{hurst()}
 \estdesc{Estimates the Hurst exponent for a time series.}
 \begin{lstlisting}[style=pythonstylefoot]
