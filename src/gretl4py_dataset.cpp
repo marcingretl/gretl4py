@@ -1799,3 +1799,16 @@ py::object GretlDataset::hfplot (const T &yvars, const py::kwargs &kwargs)
 }
 template py::object GretlDataset::hfplot<std::string>(const std::string&, const py::kwargs&);
 template py::object GretlDataset::hfplot<py::list>(const py::list&, const py::kwargs&);
+
+
+
+template <typename T>
+py::object GretlDataset::panplot (const T &plotvar, const py::kwargs &kwargs)
+{
+    //
+    // mimic libgretl 'panplot' command
+    //
+    return do_execute_plot_call<PANPLOT, T>(plotvar, shared_from_this(), "", kwargs);
+}
+template py::object GretlDataset::panplot<std::string>(const std::string&, const py::kwargs&);
+template py::object GretlDataset::panplot<py::list>(const py::list&, const py::kwargs&);

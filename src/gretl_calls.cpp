@@ -1644,6 +1644,8 @@ py::object do_execute_plot_call (const T &varlist, const GretlDatasetPtr dataset
         err = boxplots(gretl_list.get(), literal.c_str(), dataset->dset, opt);
     } else if constexpr (CI == HFPLOT) {
         err = hf_plot(gretl_list.get(), literal.c_str(), dataset->dset, opt);
+    } else if constexpr (CI == PANPLOT) {
+        err = cli_panel_plot(gretl_list.get(), literal.c_str(), dataset->dset, opt);
     } else {
         static_assert(always_false<std::integral_constant<GretlCmdIndex, CI>>, "do_execute_plot_call(): unsupported command");
     }
@@ -1659,3 +1661,5 @@ template py::object do_execute_plot_call<BXPLOT, std::string>(const std::string&
 template py::object do_execute_plot_call<BXPLOT, py::list>(const py::list&, GretlDatasetPtr, const std::string&, const py::kwargs&);
 template py::object do_execute_plot_call<HFPLOT, std::string>(const std::string&, GretlDatasetPtr, const std::string&, const py::kwargs&);
 template py::object do_execute_plot_call<HFPLOT, py::list>(const py::list&, GretlDatasetPtr, const std::string&, const py::kwargs&);
+template py::object do_execute_plot_call<PANPLOT, std::string>(const std::string&, GretlDatasetPtr, const std::string&, const py::kwargs&);
+template py::object do_execute_plot_call<PANPLOT, py::list>(const py::list&, GretlDatasetPtr, const std::string&, const py::kwargs&);

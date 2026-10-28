@@ -2051,4 +2051,71 @@ namespace doc::Dataset {
     >>> d.hfplot([lags, hfvars], output="midas.gp")
     )doc";
 
+    inline constexpr char panplot[] = R"doc(
+    Plot a panel-data series using the specified graphical mode.
+
+    Parameters
+    ----------
+    plotvar : str
+        Name of the panel-data series to plot.
+    means : bool, optional
+        Plot the time series of cross-sectional group means.
+    overlay : bool, optional
+        Overlay the time series for individual groups in a single plot.
+        Available for panels with at most 130 groups.
+    sequence : bool, optional
+        Plot the time series for individual groups in sequence.
+        Available for panels with at most 130 groups.
+    grid : bool, optional
+        Arrange individual group plots in a grid.
+        Available for panels with at most 16 groups.
+    stack : bool, optional
+        Arrange individual group plots vertically.
+        Available for panels with at most 6 groups.
+    boxplots : bool, optional
+        Plot a separate boxplot for each group, arranged in sequence.
+        Available for panels with at most 150 groups.
+    boxplot : bool, optional
+        Produce a single boxplot summarizing all groups.
+    font : str, optional
+        Font specification for the plot.
+    output : str, optional
+        Output filename. If specified, the gnuplot script is saved
+        to the given file and the translated Matplotlib Python script
+        is saved alongside it with the '.py' extension.
+
+    Returns
+    -------
+    matplotlib.figure.Figure or None
+    The Matplotlib figure if `output` is not specified.
+    Otherwise, None.
+
+    Notes
+    -----
+    This method is specific to panel datasets. Exactly one graphical
+    mode should be selected.
+
+    Except for `means` and `boxplot`, the plots represent variation
+    in both the time-series and cross-sectional dimensions.
+
+    The number of groups refers to the groups in the current sample,
+    not necessarily the full dataset. For large panels, the sample
+    can be restricted to a smaller set of groups before plotting.
+
+    When `output` is specified, gretl4py generates both the original
+    gnuplot script and its translated Matplotlib Python counterpart.
+    No Matplotlib figure is returned in this case.
+
+    Examples
+    --------
+    >>> d.panplot("Y", overlay=True)
+    >>> d.panplot("Y", means=True)
+    >>> d.panplot("Y", grid=True)
+    >>> d.panplot("Y", stack=True)
+    >>> d.panplot("Y", boxplots=True)
+    >>> d.panplot("Y", boxplot=True)
+    >>> d.panplot("Y", sequence=True)
+    >>> d.panplot("Y", overlay=True, output="/tmp/panel.gp")
+    )doc";
+
 } // namespace doc::Dataset

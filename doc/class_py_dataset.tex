@@ -681,7 +681,6 @@ Examples:\newline
 	\pythcode{one_sided=True}, a one-sided variant with no look-ahead
 	is computed in the manner of Stock and Watson (1999).}
 
-
 \gretlfpycmd{hfplot()}
 \estdesc{Plots high-frequency MIDAS series, optionally together with
 	series observed at the base frequency of the dataset.}
@@ -725,8 +724,6 @@ Examples:\newline
 	generated: the original \gnuplot script (\texttt{.gp}) and
 	its translated Python counterpart (\texttt{.py}), and the
 	method returns \texttt{None}.}
-
-
 
 \gretlfpycmd{hurst()}
 \estdesc{Estimates the Hurst exponent for a time series.}
@@ -1060,6 +1057,60 @@ Example:\newline
 	current daily frequency. Newly inserted observations contain missing
 	values for all series, while existing observations and their dates
 	are preserved.}
+
+\gretlfpycmd{panplot()}\label{met:gretldataset::panplot}
+\estdesc{This method produces graphical representations of a
+	panel-data series, allowing the user to visualize variation
+	across time and individual panel units.}
+\begin{lstlisting}[style=pythonstylefoot]
+.panplot(plotvar: str[, OPTS]) -> matplotlib.figure.Figure
+\end{lstlisting}
+\mapto{panplot plotvar}
+\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
+	\item[]\maptoopt{means=True}{--means}{plot the time series
+		of cross-sectional group means}
+	\item[]\maptoopt{overlay=True}{--overlay}{overlay individual
+		group time series in a single plot ($N \leq 130$)}
+	\item[]\maptoopt{sequence=True}{--sequence}{plot individual
+		group time series in sequence ($N \leq 130$)}
+	\item[]\maptoopt{grid=True}{--grid}{arrange individual
+		group plots in a grid ($N \leq 16$)}
+	\item[]\maptoopt{stack=True}{--stack}{arrange individual
+		group plots vertically ($N \leq 6$)}
+	\item[]\maptoopt{boxplots=True}{--boxplots}{produce separate
+		boxplots for individual groups ($N \leq 150$)}
+	\item[]\maptoopt{boxplot=True}{--boxplot}{produce a single
+		boxplot summarizing all groups}
+	\item[]\maptoopt{font=fontspec}{--font=fontspec}{specify
+		the font used in the plot}
+	\item[]\maptoopt{output=filename}{--output=filename}{save
+		the generated gnuplot and Python scripts}
+\end{itemize}
+Examples:\newline
+\pythcodef{d.panplot("Y", overlay=True)}\\
+\pythcodef{d.panplot("Y", means=True)}\\
+\pythcodef{d.panplot("Y", grid=True)}\\
+\pythcodef{d.panplot("Y", stack=True)}\\
+\pythcodef{d.panplot("Y", boxplots=True)}\\
+\pythcodef{d.panplot("Y", overlay=True, output="/tmp/panel.gp")}\\
+\generaldesc{The method is designed specifically for panel datasets.
+	The graphical mode is selected using one of the options listed
+	above. Except for \texttt{means=True} and
+	\texttt{boxplot=True}, the resulting plots explicitly represent
+	variation in both the time-series and cross-sectional dimensions.
+	
+	Some graphical modes impose limits on the number of panel units
+	in the current sample. If the panel contains more units than
+	permitted by a given mode, the sample can be temporarily
+	restricted to a smaller range of units.
+	
+	By default, the method returns a
+	\texttt{matplotlib.figure.Figure} object. If the
+	\texttt{output} argument is specified, the original gnuplot
+	script is saved to the requested filename, while the translated
+	Matplotlib Python script is saved alongside it with the
+	\texttt{.py} extension. In this case, the method returns
+	\texttt{None}.}
 
 \gretlfpycmd{pca()}
 \estdesc{Principal Components Analysis.}

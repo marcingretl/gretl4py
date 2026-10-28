@@ -242,7 +242,7 @@
 		omit, open, orthdev, outfile, panel, pca, pergm, poisson, print, printf, probit, pvalue,
 		qlrtest, qqplot, quantreg, quit, rename, reset, restrict, rmplot, run, runs, scatters,
 		sdiff, set, setinfo, setobs, setmiss, shell, smpl, spearman, sprintf, square, sscanf, store,
-		summary, system, tabprint, textplot, tobit, tsls, var, varlist, vartest, vecm, vif,
+		summary, system, tabprint, textplot, tobit, tsls, var, varlist, vartest, vecm, vif, panplot,
 		wls, xcorrgm, xtab, mpi, gibbs, return, params, pkg, midasreg, johansen, bkw, panspec, stdize},
 	morekeywords=[2]{abs, acos, acosh, aggregate, argname, asin, asinh, atan, atanh, bessel,
 		BFGSmax, bkfilt, boxcox, bwfilt, cdemean, cdf, cdiv, ceil, cholesky, chowlin,

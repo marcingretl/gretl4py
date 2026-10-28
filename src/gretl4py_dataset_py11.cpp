@@ -465,7 +465,9 @@ void init_gretl4py_dataset_py11 (py::module_ &m)
     .def("boxplot", &GretlDataset::boxplot<std::string>, py::arg("varlist").none(false), py::kw_only())
     .def("boxplot", &GretlDataset::boxplot<py::list>, py::arg("varlist").none(false), py::kw_only(), doc::Dataset::boxplot)
     .def("hfplot", &GretlDataset::hfplot<std::string>, py::arg("hflist").none(false), py::kw_only())
-    .def("hfplot", &GretlDataset::hfplot<py::list>, py::arg("hflist").none(false), py::kw_only(), doc::Dataset::hfplot);
+    .def("hfplot", &GretlDataset::hfplot<py::list>, py::arg("hflist").none(false), py::kw_only(), doc::Dataset::hfplot)
+    .def("panplot", &GretlDataset::panplot<std::string>, py::arg("plotvar").none(false), py::kw_only())
+    .def("panplot", &GretlDataset::panplot<py::list>, py::arg("plotvar").none(false), py::kw_only(), doc::Dataset::panplot);
 
     cls.attr("__module__") = "gretl";
 }
