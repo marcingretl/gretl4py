@@ -302,26 +302,21 @@ prepare_gp_executor = custom_target(
   build_by_default: true,
 )
 
-# Install alongside the Python extension and gretlmpi.
-meson.add_install_script(
-  python, '-c',
-  '''
-import os
-import pathlib
-import shutil
-import sys
-
-source = pathlib.Path(sys.argv[1])
-destination = pathlib.Path(sys.argv[2])
-destdir = os.environ.get('DESTDIR', '')
-if destdir:
-    destination = pathlib.Path(destdir) / pathlib.Path(os.path.splitdrive(str(destination))[1].lstrip('/\\'))
-destination.mkdir(parents=True, exist_ok=True)
-shutil.copy2(source, destination / source.name)
-''',
-  gp_executor_source,
-  python_gretl_dir,
-)
+# Install the executable alongside the Python extension and gretlmpi.
+# Keep the executable bit on Unix; install_data defaults to regular file mode.
+# The build target above also stages the binary in the source package for wheels.
+if is_windows
+  install_data(
+    gp_executor_source,
+    install_dir: python_gretl_dir,
+  )
+else
+  install_data(
+    gp_executor_source,
+    install_dir: python_gretl_dir,
+    install_mode: 'rwxr-xr-x',
+  )
+endif
 
 ###########################################################################
 # Prepare runtime resources (plugins and DLLs)
