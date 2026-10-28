@@ -1646,11 +1646,11 @@ py::object do_execute_plot_call (const T &varlist, const GretlDatasetPtr dataset
         err = hf_plot(gretl_list.get(), literal.c_str(), dataset->dset, opt);
     } else if constexpr (CI == PANPLOT) {
         err = cli_panel_plot(gretl_list.get(), literal.c_str(), dataset->dset, opt);
+    } else if constexpr (CI == QQPLOT) {
+        err = qq_plot(gretl_list.get(), dataset->dset, opt);
     } else {
         static_assert(always_false<std::integral_constant<GretlCmdIndex, CI>>, "do_execute_plot_call(): unsupported command");
     }
-
-    // we must unregister libgretl object
     if (err) handle_gretl_error(err);
 
     return plotter.display();
@@ -1663,3 +1663,5 @@ template py::object do_execute_plot_call<HFPLOT, std::string>(const std::string&
 template py::object do_execute_plot_call<HFPLOT, py::list>(const py::list&, GretlDatasetPtr, const std::string&, const py::kwargs&);
 template py::object do_execute_plot_call<PANPLOT, std::string>(const std::string&, GretlDatasetPtr, const std::string&, const py::kwargs&);
 template py::object do_execute_plot_call<PANPLOT, py::list>(const py::list&, GretlDatasetPtr, const std::string&, const py::kwargs&);
+template py::object do_execute_plot_call<QQPLOT, std::string>(const std::string&, GretlDatasetPtr, const std::string&, const py::kwargs&);
+template py::object do_execute_plot_call<QQPLOT, py::list>(const py::list&, GretlDatasetPtr, const std::string&, const py::kwargs&);

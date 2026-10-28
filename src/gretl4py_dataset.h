@@ -239,6 +239,9 @@ public:
 
     template <typename T>
     py::object panplot (const T &plotvar, const py::kwargs &kwargs);
+
+    template <typename T>
+    py::object qqplot (const T &plotvar, const py::kwargs &kwargs);
 };
 
 #endif // GRETL4PY_DATASET_H
