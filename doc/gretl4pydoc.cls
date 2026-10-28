@@ -239,7 +239,7 @@
 		eqnprint, equation, estimate, fcast, foreign, fractint, freq, function, garch, genr, gmm, gnuplot,
 		graphpg, hausman, heckit, help, hsk, hurst, if, include, info, intreg, join, kalman, kpss, labels,
 		lad, lags, ldiff, leverage, levinlin, logistic, logit, logs, loop, mahal, makepkg, markers,
-		meantest, mle, modeltab, modprint, modtest, mpols, negbin, nls, normtest, nulldata, ols,
+		meantest, mle, modeltab, modprint, modtest, mpols, negbin, nls, normtest, nulldata, ols, kdplot,
 		omit, open, orthdev, outfile, panel, pca, pergm, poisson, print, printf, probit, pvalue,
 		qlrtest, qqplot, quantreg, quit, rename, reset, restrict, rmplot, run, runs, scatters,
 		sdiff, set, setinfo, setobs, setmiss, shell, smpl, spearman, sprintf, square, sscanf, store,

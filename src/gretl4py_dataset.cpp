@@ -1821,3 +1821,14 @@ py::object GretlDataset::qqplot (const T &plotvar, const py::kwargs &kwargs)
 }
 template py::object GretlDataset::qqplot<std::string>(const std::string&, const py::kwargs&);
 template py::object GretlDataset::qqplot<py::list>(const py::list&, const py::kwargs&);
+
+template <typename T>
+py::object GretlDataset::kdplot (const T &plotvar, const py::kwargs &kwargs)
+{
+    //
+    // mimic libgretl 'kdplot' command
+    //
+    return do_execute_plot_call<KDPLOT, T>(plotvar, shared_from_this(), "", kwargs);
+}
+template py::object GretlDataset::kdplot<std::string>(const std::string&, const py::kwargs&);
+template py::object GretlDataset::kdplot<py::list>(const py::list&, const py::kwargs&);
