@@ -166,19 +166,20 @@
 	showstringspaces=false,
 	literate={
 		{~}{$\sim$}1
+		{xk}{$x_k$}2
+		{.|}{ | }2
 		{ x1}{$x_1$}3
 		{ x2}{ $x_2$}3
 		{ x3}{ $x_3$}3
-		{xk}{$x_k$}2
 		{.if}{if }3
 		{.id}{.id }3
 		{.set}{set}{3}
 		{.type}{type}{4}
 		{.vars}{vars}{4}
 		{.iter}{iter}{4}
-		{.list}{list }5
 		{-sum}{-sum}{4}
 		{all=}{all=}{4}
+		{.list}{list }5
 		{.print}{print}{5}
 		{.range}{range}{5}
 		{complex128}{complex128}{10}

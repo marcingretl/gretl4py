@@ -2118,4 +2118,70 @@ namespace doc::Dataset {
     >>> d.panplot("Y", overlay=True, output="/tmp/panel.gp")
     )doc";
 
+    inline constexpr char qqplot[] = R"doc(
+    Produce a quantile-quantile (Q-Q) plot.
+
+    Parameters
+    ----------
+    y : str
+        Name of the series whose empirical quantiles are plotted.
+    x : str, optional
+        Name of a second series whose empirical quantiles are used
+        as the reference distribution. If omitted, the reference
+        is the normal distribution.
+    z_scores : bool, optional
+        Standardize the data before constructing the normal Q-Q plot.
+        Applicable only when `x` is not specified.
+    raw : bool, optional
+        Plot the unstandardized empirical quantiles against the
+        quantiles of the standard normal distribution.
+        Applicable only when `x` is not specified.
+    output : str, optional
+        Output filename. If specified, the original gnuplot script
+        is saved to the given file and the translated Matplotlib
+        Python script is saved alongside it with the '.py' extension.
+
+    Returns
+    -------
+    matplotlib.figure.Figure or None
+        The Matplotlib figure if `output` is not specified.
+        Otherwise, None.
+
+    Notes
+    -----
+    With a single series argument, the method produces a normal Q-Q
+    plot. At least 20 valid observations must be available in the
+    current sample.
+
+    By default, empirical quantiles are plotted against quantiles
+    of a normal distribution having the same mean and variance as
+    the sample data.
+
+    Two alternative normalizations are available:
+
+    - `z_scores=True` standardizes the sample data and plots the
+    resulting quantiles against the standard normal distribution.
+    - `raw=True` preserves the original data values and plots their
+    empirical quantiles against the standard normal distribution.
+
+    The `z_scores` and `raw` options are mutually exclusive.
+
+    With two series arguments, the method plots the empirical
+    quantiles of `y` against those of `x`. Neither series is
+    standardized, and the normal-reference options do not apply.
+
+    When `output` is specified, gretl4py generates both the
+    gnuplot script and its translated Matplotlib Python script.
+    No Matplotlib figure is returned.
+
+    Examples
+    --------
+    >>> d.qqplot("Y")
+    >>> d.qqplot("Y", z_scores=True)
+    >>> d.qqplot("Y", raw=True)
+    >>> d.qqplot("Y", "X")
+    >>> d.qqplot("Y", output="/tmp/qqplot.gp")
+    >>> d.qqplot("Y", "X", output="/tmp/qqplot_xy.gp")
+    )doc";
+
 } // namespace doc::Dataset

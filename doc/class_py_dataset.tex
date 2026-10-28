@@ -248,7 +248,7 @@ Examples:\newline
 \gretlfpycmd{boxplot()}
 \estdesc{Generates boxplots for dataset series using \lgretl and Matplotlib.}
 \begin{lstlisting}[style=pythonstylefoot]
-.boxplot(varlist: str | list[, OPTS]) -> matplotlib.figure.Figure
+.boxplot(varlist: str | list[, OPTS]) -> matplotlib.figure.Figure .| None
 \end{lstlisting}
 \mapto[None]{boxplot ~varlist}
 \mapto[None]{boxplot ~varlist --notches}
@@ -685,7 +685,7 @@ Examples:\newline
 \estdesc{Plots high-frequency MIDAS series, optionally together with
 	series observed at the base frequency of the dataset.}
 \begin{lstlisting}[style=pythonstylefoot]
-.hfplot(hflist: str | list[, OPTS]) -> matplotlib.figure.Figure | None
+.hfplot(hflist: str | list[, OPTS]) -> matplotlib.figure.Figure .| None
 \end{lstlisting}
 \mapto[None]{hfplot hflist}
 \mapto{hfplot hflist ; lflist}
@@ -1063,7 +1063,7 @@ Example:\newline
 	panel-data series, allowing the user to visualize variation
 	across time and individual panel units.}
 \begin{lstlisting}[style=pythonstylefoot]
-.panplot(plotvar: str[, OPTS]) -> matplotlib.figure.Figure
+.panplot(plotvar: str[, OPTS]) -> matplotlib.figure.Figure .| None
 \end{lstlisting}
 \mapto{panplot plotvar}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
@@ -1155,7 +1155,7 @@ Examples:\newline
 \gretlfpycmd{plot()}
 \estdesc{Generates X--Y and time-series plots using \lgretl and Matplotlib.}
 \begin{lstlisting}[style=pythonstylefoot]
-.plot(yvars: str | list[, OPTS]) -> matplotlib.figure.Figure
+.plot(yvars: str | list[, OPTS]) -> matplotlib.figure.Figure .| None
 \end{lstlisting}
 \mapto[None]{gnuplot yvars}
 \mapto[None]{gnuplot yvars xvar}
@@ -1244,6 +1244,58 @@ Examples:\newline
 \maptof{pvalue(c, param, ~series)}{matrix}
 \where{\textit{c} and \textit{param} are defined
 	as in \ref{func:gretl.pvalue}}.
+
+\gretlfpycmd{qqplot()}\label{met:gretldataset::qqplot}
+\estdesc{This method produces a quantile-quantile (Q-Q) plot,
+	comparing the empirical distribution of a series either
+	with a normal distribution or with the empirical distribution
+	of another series.}
+
+\begin{lstlisting}[style=pythonstylefoot]
+.qqplot(y: str[, x: str, OPTS]) -> matplotlib.figure.Figure .| None
+\end{lstlisting}
+\mapto[None]{qqplot y}
+\mapto{qqplot y x}
+\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
+	\item[]\maptoopt{z\_scores=True}{--z-scores}{standardize
+		the data before constructing a normal Q-Q plot}
+	\item[]\maptoopt{raw=True}{--raw}{plot the original empirical
+		quantiles against the standard normal distribution}
+	\item[]\maptoopt{output=filename}{--output=filename}{save
+		the generated gnuplot and Python scripts}
+\end{itemize}
+Examples:\newline
+\pythcodef{d.qqplot("Y")}\\
+\pythcodef{d.qqplot("Y", z_scores=True)}\\
+\pythcodef{d.qqplot("Y", raw=True)}\\
+\pythcodef{d.qqplot("Y", "X")}\\
+\pythcodef{d.qqplot("Y", output="/tmp/qqplot.gp")}\\
+\pythcodef{d.qqplot("Y", "X", output="/tmp/qqplot_xy.gp")}\\
+\generaldesc{When a single series is specified, the method
+	produces a normal Q-Q plot. The empirical quantiles of the
+	selected series are compared with the theoretical quantiles
+	of a normal distribution. At least 20 valid observations
+	must be available in the current sample.
+	
+	By default, the reference normal distribution has the same
+	mean and variance as the sample data. Alternatively,
+	\texttt{z\_scores=True} standardizes the data before plotting,
+	while \texttt{raw=True} compares the original empirical
+	quantiles with those of the standard normal distribution.
+	These two options are mutually exclusive.
+	
+	When two series are specified, the method compares the
+	empirical quantiles of the first series with those of the
+	second series. Neither series is standardized, and the
+	normal-reference options are not applicable.
+	
+	By default, the method returns a
+	\texttt{matplotlib.figure.Figure} object. If the
+	\texttt{output} argument is specified, the original gnuplot
+	script is saved to the requested filename and the translated
+	Matplotlib Python script is saved alongside it with the
+	\texttt{.py} extension. In this case, the method returns
+	\texttt{None}.}
 
 \gretlfpycmd{rename()}
 \estdesc{Changes the name of a series or the case of all series names.}
