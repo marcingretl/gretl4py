@@ -19,7 +19,7 @@ def run_example():
     # Load TVC package (time-varying coefficient models)
     # ------------------------------------------------------------
     include_package("TVCplots")
-    tvc = include_package("TVC")    
+    tvc = include_package("TVC")
     tvc.show_functions()
 
     # ------------------------------------------------------------

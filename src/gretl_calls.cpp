@@ -684,7 +684,14 @@ void do_gretl_pkg (const std::string &action, const std::string &pkgname, const 
             }
             localfile = functions_dir / pkgname_remote;
             py::print("installing:", pkgname_remote, "->", localfile.string());
+            // we add .zip if file has no suffix
+            if (!has_suffix(pkgname_remote_c.get(), ".zip") && !has_suffix(pkgname_remote_c.get(), ".gfn")) pkgname_remote.append(".zip");
             err = retrieve_remote_function_package(pkgname_remote.c_str(), localfile.string().c_str(), staging);
+            if (err) {
+                // we try .gfn if .zip does not exist
+                pkgname_remote.replace(pkgname_remote.size()-3, 3, "gfn");
+                err = retrieve_remote_function_package(pkgname_remote.c_str(), localfile.string().c_str(), staging);
+            }
         }
         if (err) handle_gretl_error(err);
 
