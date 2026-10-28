@@ -32,6 +32,7 @@ extern "C" {
 #include <random>
 #include <vector>
 #include <cstdlib>
+#include <iomanip>
 
 #ifdef _WIN32
 #include <windows.h>
