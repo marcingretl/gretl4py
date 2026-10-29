@@ -368,7 +368,7 @@ py::object GretlPlot::execute_script_(const std::filesystem::path &script)
     // Retrieve the Figure explicitly created by gptranslate.
     // Keep a Python reference so the object remains accessible
     // after the script has finished executing.
-    if (globals.contains("fig")) return py::reinterpret_borrow<py::object>(globals["fig"]);
+    if (globals.contains("fig")) return globals["fig"].cast<py::object>();
 
     return py::none();
 }
