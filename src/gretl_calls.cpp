@@ -1568,19 +1568,6 @@ py::object do_execute_plot_call (const T &varlist, const GretlDatasetPtr dataset
     TemporaryUserVar uv_tmp;
     int err = 0;
 
-    // Generate a temporary name for an object registered in libgretl.
-    auto random_name = []() -> std::string
-    {
-        thread_local std::mt19937_64 gen(std::random_device{}());
-        thread_local std::uniform_int_distribution<uint64_t> dist;
-
-        std::ostringstream ss;
-        ss << "_plotband_" << std::hex << std::setw(16)
-        << std::setfill('0') << dist(gen);
-
-        return ss.str();
-    };
-
     // we construct list of variables
     if (varlist.empty()) handle_gretl_error(E_NOVARS);
     if constexpr (is_gretllist_arg_v<T>) {
@@ -1590,6 +1577,19 @@ py::object do_execute_plot_call (const T &varlist, const GretlDatasetPtr dataset
     }
 
     if constexpr (CI == GNUPLOT) {
+        // Generate a temporary name for an object registered in libgretl.
+        auto random_name = []() -> std::string
+        {
+            thread_local std::mt19937_64 gen(std::random_device{}());
+            thread_local std::uniform_int_distribution<uint64_t> dist;
+
+            std::ostringstream ss;
+            ss << "_plotband_" << std::hex << std::setw(16)
+            << std::setfill('0') << dist(gen);
+
+            return ss.str();
+        };
+
         // We must manually handle some special kwargs classes.
         if (clean_kwargs.contains("band")) {
             auto obj = clean_kwargs["band"];
