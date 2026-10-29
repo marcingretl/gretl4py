@@ -1850,7 +1850,7 @@ py::object GretlDataset::tsplots (const T &varlist, const py::kwargs &kwargs)
     //
     // mimic libgretl 'tsplots' command
     //
-    auto clean_kwargs = kwargs;
+    py::kwargs clean_kwargs = kwargs;
 
     clean_kwargs["time_series"] = true;
 
@@ -1858,3 +1858,11 @@ py::object GretlDataset::tsplots (const T &varlist, const py::kwargs &kwargs)
 }
 template py::object GretlDataset::tsplots<std::string>(const std::string&, const py::kwargs&);
 template py::object GretlDataset::tsplots<py::list>(const py::list&, const py::kwargs&);
+
+py::object GretlDataset::rmplot (const std::string &series, const py::kwargs &kwargs)
+{
+    //
+    // mimic libgretl 'rmplot' command
+    //
+    return do_execute_plot_call<RMPLOT, std::string>(series, shared_from_this(), "", kwargs);
+}

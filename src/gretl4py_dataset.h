@@ -251,6 +251,8 @@ public:
 
     template <typename T>
     py::object tsplots (const T &varlist, const py::kwargs &kwargs);
+
+    py::object rmplot (const std::string &series, const py::kwargs &kwargs);
 };
 
 #endif // GRETL4PY_DATASET_H

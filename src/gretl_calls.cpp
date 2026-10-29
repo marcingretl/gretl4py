@@ -1559,6 +1559,7 @@ py::object do_execute_plot_call (const T &varlist, const GretlDatasetPtr dataset
     //
     // general interface to libgretl plotting apparatus
     // based on execute_plot_call() from interact.c
+    // in addition, RMPLOT is handled here as well
     //
     GretlPlot plotter;
     gretl_list_ptr gretl_list{nullptr};
@@ -1588,40 +1589,42 @@ py::object do_execute_plot_call (const T &varlist, const GretlDatasetPtr dataset
         static_assert(always_false<T>, "do_plot(): unsupported type");
     }
 
-    // We must manually handle some special kwargs classes.
-    if (clean_kwargs.contains("band")) {
-        auto obj = clean_kwargs["band"];
+    if constexpr (CI == GNUPLOT) {
+        // We must manually handle some special kwargs classes.
+        if (clean_kwargs.contains("band")) {
+            auto obj = clean_kwargs["band"];
 
-        if (!is_pygretlbundle(obj)) handle_gretl_error(E_INVARG, "band", "must be Bundle");
-        auto b = obj.cast<GretlBundlePtr>();
-        const std::string name = random_name();
+            if (!is_pygretlbundle(obj)) handle_gretl_error(E_INVARG, "band", "must be Bundle");
+            auto b = obj.cast<GretlBundlePtr>();
+            const std::string name = random_name();
 
-        // Register a copy of bundle in gretl's namespace.
-        genr<GretlBundle>(name, *b);
+            // Register a copy of bundle in gretl's namespace.
+            genr<GretlBundle>(name, *b);
 
-        // Enable automatic cleanup after successful registration.
-        uv_tmp.names.push_back(name);
+            // Enable automatic cleanup after successful registration.
+            uv_tmp.names.push_back(name);
 
-        // Pass the registered name to libgretl.
-        clean_kwargs["band"] = name;
-    }
+            // Pass the registered name to libgretl.
+            clean_kwargs["band"] = name;
+        }
 
-    // Register a temporary array of bundles for the "bands" option.
-    if (clean_kwargs.contains("bands")) {
-        auto obj = clean_kwargs["bands"];
+        // Register a temporary array of bundles for the "bands" option.
+        if (clean_kwargs.contains("bands")) {
+            auto obj = clean_kwargs["bands"];
 
-        if (!is_pylist(obj)) handle_gretl_error(E_INVARG, "bands", "must be a list");
-        py::list bands = py::reinterpret_borrow<py::list>(obj);
+            if (!is_pylist(obj)) handle_gretl_error(E_INVARG, "bands", "must be a list");
+            py::list bands = py::reinterpret_borrow<py::list>(obj);
 
-        // Validate the array type before registration.
-        if (get_pyarray_type(bands) != GRETL_TYPE_BUNDLES) handle_gretl_error(E_INVARG, "bands", "must contain Bundle objects");
-        const std::string name = random_name();
+            // Validate the array type before registration.
+            if (get_pyarray_type(bands) != GRETL_TYPE_BUNDLES) handle_gretl_error(E_INVARG, "bands", "must contain Bundle objects");
+            const std::string name = random_name();
 
-        genr<py::list>(name, bands);
-        uv_tmp.names.push_back(name);
+            genr<py::list>(name, bands);
+            uv_tmp.names.push_back(name);
 
-        // Pass the registered array name to libgretl.
-        clean_kwargs["bands"] = name;
+            // Pass the registered array name to libgretl.
+            clean_kwargs["bands"] = name;
+        }
     }
 
     // now we process options using 'clean_kwargs'
@@ -1664,10 +1667,16 @@ py::object do_execute_plot_call (const T &varlist, const GretlDatasetPtr dataset
         err = kd_plot(gretl_list.get(), dataset->dset, opt);
     } else if constexpr (CI == SCATTERS) {
         err = multi_plots(gretl_list.get(), dataset->dset, opt);
+    } else if constexpr (CI == RMPLOT) {
+        err = rmplot(gretl_list.get(), dataset->dset, opt, global_printer.prn_ptr());
     } else {
         static_assert(always_false<std::integral_constant<GretlCmdIndex, CI>>, "do_execute_plot_call(): unsupported command");
     }
     if (err) handle_gretl_error(err);
+
+    if constexpr (CI == RMPLOT) {
+        global_printer.print();
+    }
 
     return plotter.display();
 }
@@ -1685,3 +1694,4 @@ template py::object do_execute_plot_call<KDPLOT, std::string>(const std::string&
 template py::object do_execute_plot_call<KDPLOT, py::list>(const py::list&, GretlDatasetPtr, const std::string&, const py::kwargs&);
 template py::object do_execute_plot_call<SCATTERS, std::string>(const std::string&, GretlDatasetPtr, const std::string&, const py::kwargs&);
 template py::object do_execute_plot_call<SCATTERS, py::list>(const py::list&, GretlDatasetPtr, const std::string&, const py::kwargs&);
+template py::object do_execute_plot_call<RMPLOT, std::string>(const std::string&, GretlDatasetPtr, const std::string&, const py::kwargs&);
