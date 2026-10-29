@@ -473,7 +473,9 @@ void init_gretl4py_dataset_py11 (py::module_ &m)
     .def("kdplot", &GretlDataset::kdplot<std::string>, py::arg("y").none(false), py::kw_only())
     .def("kdplot", &GretlDataset::kdplot<py::list>, py::arg("y").none(false), py::kw_only(), doc::Dataset::kdplot)
     .def("scatters", &GretlDataset::scatters<std::string>, py::arg("yvar").none(false), py::kw_only())
-    .def("scatters", &GretlDataset::scatters<py::list>, py::arg("yvar").none(false), py::kw_only());
+    .def("scatters", &GretlDataset::scatters<py::list>, py::arg("yvar").none(false), py::kw_only(), doc::Dataset::scatters)
+    .def("tsplots", &GretlDataset::tsplots<std::string>, py::arg("yvar").none(false), py::kw_only())
+    .def("tsplots", &GretlDataset::tsplots<py::list>, py::arg("yvar").none(false), py::kw_only(), doc::Dataset::tsplots);
 
     cls.attr("__module__") = "gretl";
 }

@@ -1446,6 +1446,43 @@ Examples:\newline
 	where the value is 1. The fourth form, using \gretlcmd{--restrict}
 	restricts the sample to observations that satisfy the given Boolean condition.}
 
+\gretlfpycmd{scatters()}\label{met:gretldataset::scatters}
+\estdesc{Generate multiple pairwise scatterplots on a single canvas.}
+\begin{lstlisting}[style=pythonstylefoot]
+.scatters(varlist: str | list[, OPTS]) -> matplotlib.figure.Figure .| None
+\end{lstlisting}
+\mapto{scatters yvar ; xvars | yvars ; xvar}
+\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
+	\item[]\maptoopt{with_lines=True}{--with-lines}{draw line graphs instead of scatterplots}
+	\item[]\maptoopt{output="filename"}{--output=filename}{send output to the specified file}
+\end{itemize}
+Examples:\newline
+\pythcodef{data.scatters('y ; x1 x2 x3')}\\
+\pythcodef{data.scatters('y1 y2 y3 ; x')}\\
+\pythcodef{data.scatters('y1 y2 y3 ; x', with_lines=True)}\\
+\pythcodef{data.scatters('y ; x1 x2 x3', output='scatters.png')}\\
+\generaldesc{Generates multiple pairwise graphs of one variable
+	against several other variables. The \texttt{varlist} argument
+	contains two groups of variables separated by a semicolon.
+	Either the first group contains a single variable to be
+	plotted on the y-axis against all variables in the second
+	group, or the second group contains a single variable to be
+	plotted on the x-axis against all variables in the first group.
+	
+	By default, observations are represented as points. Setting
+	\texttt{with\_lines=True} produces line graphs instead.
+	
+	A maximum of 16 plots can be generated on a single canvas;
+	any additional variables are ignored. Such collections of
+	scatterplots are useful for exploratory data analysis,
+	particularly for examining relationships between variables.
+	
+	This method corresponds to the \lgretl command
+	\gretlcmd{scatters}. See also \pythcode{::tsplots()}
+	(\ref{met:gretldataset::tsplots})
+	for plotting multiple time series and the \gretlcmd{gridplot}
+	command for more flexible arrangements of multiple plots.}
+
 \gretlfpycmd{sdiff()}
 \estdesc{Generates seasonal differences of selected variables.}
 \begin{lstlisting}[style=pythonstylefoot]
@@ -1596,6 +1633,28 @@ Examples:\newline
 	only when a single variable is explicitly specified; otherwise
 	\pythcode{None} is returned. The \gretlcmd{--by} and
 	\gretlcmd{--weight} options are mutually exclusive.}
+
+\gretlfpycmd{tsplots()}\label{met:gretldataset::tsplots}
+\estdesc{Plot multiple time series on a single canvas.}
+\begin{lstlisting}[style=pythonstylefoot]
+.tsplots(varlist: str | list[, OPTS]) -> matplotlib.figure.Figure .| None
+\end{lstlisting}
+\mapto{tsplots ~varlist}
+\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
+	\item[]\maptoopt{output="filename"}{--output=filename}{send output to the specified file}
+\end{itemize}
+Examples:\newline
+\pythcodef{data.tsplots('y x z')}\\
+\pythcodef{data.tsplots(['y', 'x', 'z'])}\\
+\generaldesc{Provides an easy way of plotting multiple time series,
+	up to a maximum of 16, on a single canvas. The \texttt{varlist}
+	argument specifies the series to be plotted, either by their
+	names or ID numbers.
+	
+	This method corresponds to the \lgretl command
+	\gretlcmd{tsplots}. See also \pythcode{::scatters()}
+	(\ref{met:gretldataset::scatters}) for producing multiple
+	scatterplots for more flexible arrangements of multiple plots.}
 
 \gretlfpycmd{unpad\_daily()}
 \estdesc{Removes padding from a daily dataset.}

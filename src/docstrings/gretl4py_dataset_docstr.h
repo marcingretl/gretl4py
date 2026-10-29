@@ -2229,4 +2229,66 @@ namespace doc::Dataset {
     >>> d.kdplot("LF", output="density.gp")
     )doc";
 
+    inline constexpr char tsplots[] = R"doc(
+    Plot multiple time series on a single canvas.
+
+    This method corresponds to the gretl ``tsplots`` command and
+    produces up to 16 individual time-series plots arranged in a
+    single figure.
+
+    Parameters
+    ----------
+    varlist : str or list
+        Names or ID numbers of the series to be plotted.
+    output : str, optional
+        Filename for saving the generated gnuplot script and its translated
+        Python script. If omitted, the plot is rendered using Matplotlib.
+
+    Returns
+    -------
+    object
+        The result of the plotting operation.
+
+    Notes
+    -----
+    The method uses the same underlying implementation as ``scatters()``,
+    with the ``time_series`` option enabled.
+    )doc";
+
+
+    inline constexpr char scatters[] = R"doc(
+    Generate multiple pairwise scatterplots on a single canvas.
+
+    This method corresponds to the gretl ``scatters`` command. It plots
+    one dependent variable against several explanatory variables, or
+    several dependent variables against one explanatory variable.
+    A maximum of 16 plots can be generated.
+
+    Parameters
+    ----------
+    varlist : str or list
+        Variables to be plotted, separated into two groups by a
+        semicolon. The first group specifies the y-axis variables
+        and the second group specifies the x-axis variables.
+        One of the groups must contain exactly one variable.
+    with_lines : bool, optional
+        Draw line graphs instead of scatterplots (default: False).
+    output : str, optional
+        Filename to which the plot should be written.
+
+    Returns
+    -------
+    matplotlib.figure.Figure or None
+        The Matplotlib figure, or None if no figure is returned.
+
+    Notes
+    -----
+    Any variables exceeding the maximum of 16 plots are ignored.
+
+    See Also
+    --------
+    tsplots : Plot multiple time series on a single canvas.
+    )doc";
+
+
 } // namespace doc::Dataset

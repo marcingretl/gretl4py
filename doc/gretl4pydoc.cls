@@ -241,7 +241,7 @@
 		lad, lags, ldiff, leverage, levinlin, logistic, logit, logs, loop, mahal, makepkg, markers,
 		meantest, mle, modeltab, modprint, modtest, mpols, negbin, nls, normtest, nulldata, ols, kdplot,
 		omit, open, orthdev, outfile, panel, pca, pergm, poisson, print, printf, probit, pvalue,
-		qlrtest, qqplot, quantreg, quit, rename, reset, restrict, rmplot, run, runs, scatters,
+		qlrtest, qqplot, quantreg, quit, rename, reset, restrict, rmplot, run, runs, scatters, tsplots,
 		sdiff, set, setinfo, setobs, setmiss, shell, smpl, spearman, sprintf, square, sscanf, store,
 		summary, system, tabprint, textplot, tobit, tsls, var, varlist, vartest, vecm, vif, panplot,
 		wls, xcorrgm, xtab, mpi, gibbs, return, params, pkg, midasreg, johansen, bkw, panspec, stdize},

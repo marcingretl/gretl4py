@@ -1843,3 +1843,18 @@ py::object GretlDataset::scatters (const T &yvar, const py::kwargs &kwargs)
 }
 template py::object GretlDataset::scatters<std::string>(const std::string&, const py::kwargs&);
 template py::object GretlDataset::scatters<py::list>(const py::list&, const py::kwargs&);
+
+template <typename T>
+py::object GretlDataset::tsplots (const T &varlist, const py::kwargs &kwargs)
+{
+    //
+    // mimic libgretl 'tsplots' command
+    //
+    auto clean_kwargs = kwargs;
+
+    clean_kwargs["time_series"] = true;
+
+    return do_execute_plot_call<SCATTERS, T>(varlist, shared_from_this(), "", clean_kwargs);
+}
+template py::object GretlDataset::tsplots<std::string>(const std::string&, const py::kwargs&);
+template py::object GretlDataset::tsplots<py::list>(const py::list&, const py::kwargs&);
