@@ -55,6 +55,7 @@ def run_example():
     # ------------------------------------------------------------
     fevd = gretl.FEVD(model)
     print(fevd)
+    gretl.IRFplot(model)
 
     # ------------------------------------------------------------
     # Bootstrap inference

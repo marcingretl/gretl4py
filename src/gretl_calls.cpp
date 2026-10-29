@@ -674,6 +674,7 @@ void do_gretl_pkg (const std::string &action, const std::string &pkgname, const 
         } else {
             // we retrieve package from SF
             std::string pkgname_remote;
+            bool try_gfn = false;
 
             if (staging) {
                 pkgname_remote = pkgname;
@@ -684,10 +685,14 @@ void do_gretl_pkg (const std::string &action, const std::string &pkgname, const 
             }
             localfile = functions_dir / pkgname_remote;
             py::print("installing:", pkgname_remote, "->", localfile.string());
+
             // we add .zip if file has no suffix
-            if (!has_suffix(pkgname_remote_c.get(), ".zip") && !has_suffix(pkgname_remote_c.get(), ".gfn")) pkgname_remote.append(".zip");
+            if (!has_suffix(pkgname_remote_c.get(), ".zip") && !has_suffix(pkgname_remote_c.get(), ".gfn")) {
+                pkgname_remote.append(".zip");
+                try_gfn = true;
+            }
             err = retrieve_remote_function_package(pkgname_remote.c_str(), localfile.string().c_str(), staging);
-            if (err) {
+            if (err && try_gfn) {
                 // we try .gfn if .zip does not exist
                 pkgname_remote.replace(pkgname_remote.size()-3, 3, "gfn");
                 err = retrieve_remote_function_package(pkgname_remote.c_str(), localfile.string().c_str(), staging);
@@ -1657,6 +1662,8 @@ py::object do_execute_plot_call (const T &varlist, const GretlDatasetPtr dataset
         err = qq_plot(gretl_list.get(), dataset->dset, opt);
     } else if constexpr (CI == KDPLOT) {
         err = kd_plot(gretl_list.get(), dataset->dset, opt);
+    } else if constexpr (CI == SCATTERS) {
+        err = multi_plots(gretl_list.get(), dataset->dset, opt);
     } else {
         static_assert(always_false<std::integral_constant<GretlCmdIndex, CI>>, "do_execute_plot_call(): unsupported command");
     }
@@ -1676,3 +1683,5 @@ template py::object do_execute_plot_call<QQPLOT, std::string>(const std::string&
 template py::object do_execute_plot_call<QQPLOT, py::list>(const py::list&, GretlDatasetPtr, const std::string&, const py::kwargs&);
 template py::object do_execute_plot_call<KDPLOT, std::string>(const std::string&, GretlDatasetPtr, const std::string&, const py::kwargs&);
 template py::object do_execute_plot_call<KDPLOT, py::list>(const py::list&, GretlDatasetPtr, const std::string&, const py::kwargs&);
+template py::object do_execute_plot_call<SCATTERS, std::string>(const std::string&, GretlDatasetPtr, const std::string&, const py::kwargs&);
+template py::object do_execute_plot_call<SCATTERS, py::list>(const py::list&, GretlDatasetPtr, const std::string&, const py::kwargs&);

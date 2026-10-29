@@ -1832,3 +1832,14 @@ py::object GretlDataset::kdplot (const T &plotvar, const py::kwargs &kwargs)
 }
 template py::object GretlDataset::kdplot<std::string>(const std::string&, const py::kwargs&);
 template py::object GretlDataset::kdplot<py::list>(const py::list&, const py::kwargs&);
+
+template <typename T>
+py::object GretlDataset::scatters (const T &yvar, const py::kwargs &kwargs)
+{
+    //
+    // mimic libgretl 'scatters' command
+    //
+    return do_execute_plot_call<SCATTERS, T>(yvar, shared_from_this(), "", kwargs);
+}
+template py::object GretlDataset::scatters<std::string>(const std::string&, const py::kwargs&);
+template py::object GretlDataset::scatters<py::list>(const py::list&, const py::kwargs&);
