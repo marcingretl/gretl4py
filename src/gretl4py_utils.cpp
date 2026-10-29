@@ -359,6 +359,7 @@ py::object GretlPlot::execute_script_(const std::filesystem::path &script)
     // Execute the generated matplotlib script in the current Python
     // interpreter, using a dedicated namespace.
     py::dict globals;
+
     globals["__name__"] = "__main__";
     globals["__file__"] = script.string();
 
@@ -390,9 +391,27 @@ py::object GretlPlot::display()
 
     // Execute the generated matplotlib script in the current Python interpreter.
     py::gil_scoped_acquire gil;
+
+    // Preserve LC_NUMERIC across Matplotlib backend initialization.
+    struct NumericLocaleGuard {
+        std::string saved_;
+
+        NumericLocaleGuard()
+        {
+            const char *loc = std::setlocale(LC_NUMERIC, nullptr);
+
+            if (loc) saved_ = loc;
+        }
+
+        ~NumericLocaleGuard()
+        {
+            if (!saved_.empty()) std::setlocale(LC_NUMERIC, saved_.c_str());
+        }
+    } locale_guard;
+
     py::object fig = execute_script_(pyfile_);
 
-    // Display all figures and wait until their windows are closed.
+    // Display all figures using the selected Matplotlib backend.
     show_figures_();
 
     return fig;
