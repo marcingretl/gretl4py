@@ -105,6 +105,8 @@ protected:
 
     template <GretlCmdIndex CI>
     void regexp_extract_ (const std::string &formula, std::string &formula_left, std::string &formula_right);    // for extracting formula from regular expression
+
+    DATASET *get_model_dataset_ (gretlopt opt = OPT_NONE);
 public:
     GretlModel_NSE (GretlCmdIndex ci, const py::kwargs &kwargs);
     virtual ~GretlModel_NSE (void);
@@ -130,6 +132,8 @@ public:
     std::pair<GretlBundlePtr, GretlModelPtr> add_omit_auto (const py::kwargs &kwargs);
 
     double adj_rsq (void) const;
+
+    py::object plot (const std::string &type, const std::string &xvar = "");
 };
 
 //

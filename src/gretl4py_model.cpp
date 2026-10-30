@@ -164,7 +164,7 @@ void GretlModel::save_model_ (T *model)
     //
     // NOTE: whatever happens later, we "transfer" the model to libgretl,
     // so from that very moment libgretl owns the memory
-    gretl_object_ref(model, model_obj_type_);
+    gretl_object_ref(model, model_obj_type_); // FIXME: we need another flag, i.e. bool model_registered_ = true/false for destructor
 
     // if any errors recorded, we throw an exception here
     if constexpr (std::is_same_v<T, MODEL>) {
@@ -452,6 +452,61 @@ GretlModel_NSE::~GretlModel_NSE (void)
     }
 }
 
+template <GretlCmdIndex CI>
+void GretlModel_NSE::regexp_extract_ (const std::string &formula, std::string &formula_left, std::string &formula_right)
+{
+    //
+    // method for extraction model formula from regular expression
+    //
+    std::regex formula_regex;
+
+    // We extract GMM(...) or mds(l) blocks into formula_right, and remove them from formula_left
+    if constexpr (CI == DPANEL) {
+        formula_regex = std::regex(R"(GMM\s*\([^()]*\))");
+    } else if constexpr (CI == MIDASREG) {
+        formula_regex = std::regex(R"((mds|mdsl)\s*\([^()]*\))");
+    }
+
+    std::sregex_iterator begin(formula.begin(), formula.end(), formula_regex);
+    std::sregex_iterator end;
+
+    formula_left = formula;
+    formula_right.clear();
+
+    for (auto it = begin; it != end; ++it) {
+        formula_right += it->str() + " ";
+        formula_left.erase(formula_left.find(it->str()), it->str().length());
+    }
+    gretl4py_trim(formula_left);
+    gretl4py_trim(formula_right);
+    if (!formula_left.empty() && formula_left.back() == ';') formula_left.pop_back();
+}
+
+DATASET *GretlModel_NSE::get_model_dataset_ (gretlopt opt)
+{
+    //
+    // this method mimics maybe_get_model_data() from gui/library.c
+    //
+    DATASET *dset = dataset_->dset;
+
+    err_ = 0;
+    if (gretl_is_between_model(model_)) {
+        // Between models use their attached group-means dataset.
+        dset = model_->dataset;
+        if (!dset) {
+            gretl_errmsg_set("The group-means dataset is not available");
+            err_ = E_DATA;
+        }
+    } else if (model_sample_problem(model_, dset)) {
+        // Reconstruct the estimation sample when subsamples differ.
+        err_ = add_dataset_to_model(model_, dset, opt);
+        if (!err_) dset = model_->dataset;
+    }
+    if (err_) handle_gretl_error(err_);
+
+    return dset;
+}
+
 void GretlModel_NSE::forecast (const py::args &args, const py::kwargs &kwargs)
 {
     gretl_do_forecast_<MODEL>(model_, args, kwargs);
@@ -673,34 +728,95 @@ double GretlModel_NSE::adj_rsq (void) const
     return model_->adjrsq;
 }
 
-template <GretlCmdIndex CI>
-void GretlModel_NSE::regexp_extract_ (const std::string &formula, std::string &formula_left, std::string &formula_right)
+py::object GretlModel_NSE::plot (const std::string &type, const std::string &xvar)
 {
     //
-    // method for extraction model formula from regular expression
+    // general model plotter
+    // For now: residuals or actual and fitted values against time or a selected variable.
     //
-    std::regex formula_regex;
+    if (!estimated_) throw std::runtime_error("model is not estimated");
 
-    // We extract GMM(...) or mds(l) blocks into formula_right, and remove them from formula_left
-    if constexpr (CI == DPANEL) {
-        formula_regex = std::regex(R"(GMM\s*\([^()]*\))");
-    } else if constexpr (CI == MIDASREG) {
-        formula_regex = std::regex(R"((mds|mdsl)\s*\([^()]*\))");
+    // Select the dataset corresponding to the estimation sample.
+    GretlPlot plotter;
+    DATASET *dset = get_model_dataset_();
+    int plotlist[4] = {0};
+    gretlopt opt = OPT_NONE;
+
+    // Resolve the variable on the horizontal axis.
+    int x = 0;
+
+    if (!xvar.empty()) {
+        x = current_series_index(dset, xvar.c_str());
+        if (x < 0) throw py::value_error("Unknown variable: " + xvar);
     }
 
-    std::sregex_iterator begin(formula.begin(), formula.end(), formula_regex);
-    std::sregex_iterator end;
+    if (type == "fitted") {
+        // based on fit_actual_plot() from gui/library.c
+        opt = OPT_A;
 
-    formula_left = formula;
-    formula_right.clear();
+        // Force libgretl to write the plot to our temporary file.
+        gretl_valid_long_opt(opt, GNUPLOT, "output", py::handle(), plotter.filename().c_str());
 
-    for (auto it = begin; it != end; ++it) {
-        formula_right += it->str() + " ";
-        formula_left.erase(formula_left.find(it->str()), it->str().length());
+        // Prefer a fitted-value formula when available.
+        gretl_char_ptr formula(gretl_model_get_fitted_formula(model_, x, dset));
+
+        if (formula) {
+            plotlist[0] = 3;
+            plotlist[1] = 0;
+            plotlist[2] = gretl_model_get_depvar(model_);
+            plotlist[3] = x;
+            err_ = gnuplot(plotlist, formula.get(), dset, opt);
+        } else {
+            // Make a private copy only when using the user's dataset.
+            // An attached model dataset can be modified temporarily.
+            GretlDatasetPtr plot_data;
+
+            if (dset == dataset_->dset) {
+                plot_data = GretlDataset::clone(*dataset_);
+                dset = plot_data->dset;
+            }
+
+            // Restore the attached model dataset after plotting.
+            // A private dataset copy is cleaned up by its destructor.
+            struct TemporarySeriesGuard {
+                DATASET *dset;
+                int origv;
+                bool active;
+
+                ~TemporarySeriesGuard()
+                {
+                    if (active && dset->v > origv) dataset_drop_last_variables(dset, dset->v - origv);
+                }
+            };
+
+            TemporarySeriesGuard guard{
+                dset, dset->v, !plot_data
+            };
+
+            // Add fitted values temporarily.
+            err_ = genr_fit_resid(model_, dset, M_YHAT);
+
+            if (!err_) {
+                plotlist[0] = 3;
+                plotlist[1] = dset->v - 1;
+                plotlist[2] = gretl_model_get_depvar(model_);
+
+                if (x) {
+                    plotlist[3] = x;
+                } else {
+                    plotlist[0] = 2;
+                    SET_OPT(opt, OPT_T);
+                    if (dataset_is_time_series(dset)) SET_OPT(opt, OPT_O);
+                }
+                err_ = gnuplot(plotlist, nullptr, dset, opt);
+            }
+        }
+        if (err_) handle_gretl_error(err_);
+
+        return plotter.display();
     }
-    gretl4py_trim(formula_left);
-    gretl4py_trim(formula_right);
-    if (!formula_left.empty() && formula_left.back() == ';') formula_left.pop_back();
+
+    throw py::value_error("Unsupported plot type: " + type);
 }
 
 //
