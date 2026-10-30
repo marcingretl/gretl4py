@@ -54,6 +54,7 @@ def run_example():
     # ARIMAX
     m = gretl.arima(depvar="LRY", order=(1, 1, 1), indepvars="IBO", data=d2).fit()
     print(m)
+    m.plot_new("fitted")
 
 if __name__ == "__main__":
     run_example()

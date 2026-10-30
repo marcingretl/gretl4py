@@ -46,7 +46,7 @@ def run_example():
         random_effects=True
     ).fit()
     print(m)
-
+    m.plot_new("fitted")
 
 if __name__ == "__main__":
     run_example()

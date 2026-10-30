@@ -71,6 +71,8 @@ protected:
     std::string do_save_uhat_ (T *model, int eqn, const std::string &name) const;
 
     std::string extract_additional_vars_ (py::handle src) const;
+
+    void prepare_plot_ (GretlPlot &plotter, gretlopt opt);
 public:
     explicit GretlModel (GretlObjType model_obj_type, GretlCmdIndex ci, const py::kwargs &kwargs);
     virtual ~GretlModel (void);

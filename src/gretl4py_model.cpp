@@ -430,6 +430,14 @@ std::string GretlModel::extract_additional_vars_ (py::handle src) const
     throw std::invalid_argument("additional variables must be a string or a list");
 }
 
+void GretlModel::prepare_plot_ (GretlPlot &plotter, gretlopt opt)
+{
+    //
+    // convenient method for plotting pre-settings
+    //
+    gretl_valid_long_opt(opt, GNUPLOT, "output", py::handle(), plotter.filename().c_str());
+}
+
 //////////////////////////////////////////////////
 // single equation models
 //////////////////////////////////////////////////
@@ -791,7 +799,7 @@ py::object GretlModel_NSE::plot (const std::string &type, const std::string &xva
         opt = OPT_A;
 
         // Force libgretl to write the plot to our temporary file.
-        gretl_valid_long_opt(opt, GNUPLOT, "output", py::handle(), plotter.filename().c_str());
+        prepare_plot_(plotter, opt);
 
         // Prefer a fitted-value formula when available.
         gretl_char_ptr formula(gretl_model_get_fitted_formula(model_, x, dset));
