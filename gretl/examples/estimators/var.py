@@ -16,6 +16,10 @@ def run_example():
     ).fit()
 
     print(m1)
+    m1.plot_new("residuals")
+    m1.plot_new("residuals", 2)
+    m1.plot_new("residuals", mode="multiple")
+    exit()
 
     # Sigma matrix.
     print("Sigma matrix:")

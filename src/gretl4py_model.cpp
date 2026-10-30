@@ -430,12 +430,15 @@ std::string GretlModel::extract_additional_vars_ (py::handle src) const
     throw std::invalid_argument("additional variables must be a string or a list");
 }
 
-void GretlModel::prepare_plot_ (GretlPlot &plotter, gretlopt opt)
+void GretlModel::prepare_plot_(GretlPlot &plotter, gretlopt opt, bool multiple)
 {
     //
     // convenient method for plotting pre-settings
     //
-    gretl_valid_long_opt(opt, GNUPLOT, "output", py::handle(), plotter.filename().c_str());
+    // Multiple plots use SCATTERS; regular plots use GNUPLOT.
+    const GretlCmdIndex ci = multiple ? SCATTERS : GNUPLOT;
+
+    gretl_valid_long_opt(opt, ci, "output", py::handle(), plotter.filename().c_str());
 }
 
 //////////////////////////////////////////////////
@@ -820,7 +823,6 @@ py::object GretlModel_NSE::plot (const std::string &type, const std::string &xva
                 plotlist[0] = 3;
                 plotlist[1] = dset->v - 1;
                 plotlist[2] = gretl_model_get_depvar(model_);
-
                 if (x) {
                     plotlist[3] = x;
                 } else {
@@ -854,7 +856,6 @@ py::object GretlModel_NSE::plot (const std::string &type, const std::string &xva
                 plotlist[0] = 1;
                 plotlist[1] = uhatno;
                 strcpy(dset->varname[uhatno], "residual");
-
                 if (yno > 0) {
                     std::string label = "residual for " +
                     std::string(dset->varname[yno]);
@@ -1695,6 +1696,37 @@ GretlMatrixPtr GretlModel_VAR::irf (const std::string &target, const std::string
 
     // we do the job
     return irf(target_int, shock_int, alpha);
+}
+
+py::object GretlModel_VAR::plot (const std::string &type, int equation, const std::string &mode)
+{
+    // At first, we reject bad options
+    if (!estimated_) throw std::runtime_error("model is not estimated");
+    if (type != "residuals") throw py::value_error("Unsupported plot type: " + type);
+    if (mode != "combined" && mode != "multiple") throw py::value_error("Unsupported residual plot mode: " + mode);
+
+    const gretl_matrix *E = gretl_VAR_get_residual_matrix(model_);
+    const int neqns = E != nullptr ? gretl_matrix_cols(E) : 0;
+
+    if (equation < 0 || equation > neqns) throw py::value_error("Equation number is out of range");
+    if (mode == "multiple" && equation != 0) throw py::value_error("Equation must be 0 for multiple residual plots");
+
+    GretlPlot plotter;
+    DATASET *dset = dataset_->dset;
+
+    // Register the output file for the selected plot type.
+    prepare_plot_(plotter, OPT_NONE, mode == "multiple");
+
+    if (mode == "multiple") {
+        // Generate separate residual plots for all equations.
+        err_ = gretl_system_residual_mplot(model_, ci_, dset);
+    } else {
+        // Equation 0 selects the combined residual plot.
+        err_ = gretl_system_residual_plot(model_, ci_, equation, dset);
+    }
+    if (err_) handle_gretl_error(err_);
+
+    return plotter.display();
 }
 
 //

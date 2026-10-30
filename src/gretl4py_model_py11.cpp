@@ -244,7 +244,17 @@ void init_gretl4py_model_py11(py::module_ &m)
          py::arg("target").none(false), py::arg("shock").none(false),
          py::arg("alpha").none(true) = 0, doc::Model::irf)
     .def("save_uhat", &GretlModel_VAR::save_uhat,
-         py::arg("eqn").none(false), py::arg("name").none(true) = "", doc::Model::save_system_uhat);
+         py::arg("eqn").none(false), py::arg("name").none(true) = "", doc::Model::save_system_uhat)
+    .def("plot_new",
+         [](GretlModel_VAR &self, const std::string &type, int equation) -> py::object
+         {
+             return self.plot(type, equation, "combined");
+         }, py::arg("type").none(false), py::arg("equation") = 0)
+    .def("plot_new",
+         [](GretlModel_VAR &self, const std::string &type, const std::string &mode) -> py::object
+         {
+             return self.plot(type, 0, mode);
+         }, py::arg("type").none(false), py::arg("mode").none(false));
     gretl_model_var.attr("__module__") = "gretl";
 
     // VECM

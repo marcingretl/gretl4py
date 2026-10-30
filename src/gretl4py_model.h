@@ -72,7 +72,7 @@ protected:
 
     std::string extract_additional_vars_ (py::handle src) const;
 
-    void prepare_plot_ (GretlPlot &plotter, gretlopt opt);
+    void prepare_plot_ (GretlPlot &plotter, gretlopt opt, bool multiple = false);
 public:
     explicit GretlModel (GretlObjType model_obj_type, GretlCmdIndex ci, const py::kwargs &kwargs);
     virtual ~GretlModel (void);
@@ -313,6 +313,8 @@ public:
     GretlMatrixPtr irf (int target, int shock, double alpha = 0);
 
     GretlMatrixPtr irf (const std::string &target, const std::string &shock, double alpha = 0);
+
+    py::object plot (const std::string &type, int equation, const std::string &mode);
 };
 
 //
