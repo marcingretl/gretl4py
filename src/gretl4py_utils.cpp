@@ -169,6 +169,7 @@ void GretlPlot::init_queue (void)
     // Initialize one private queue per Python process. The random directory
     // name prevents collisions between independent processes and MPI workers.
     const auto pid = current_pid_();
+
     if (!queue_dir_.empty() && queue_owner_pid_ == pid) return;
 
     // A forked child inherits the parent's static path, but must create
@@ -340,7 +341,7 @@ bool GretlPlot::translate (void)
 
     // translate the gnuplot script without executing Python (execute command)
     const auto &executor = executor_;
-    std::string command = "\"" + executor.string() + "\" --output=\"" + pyfile_.string() + "\" \"" + gpfile_.string() + "\"";
+    std::string command = "\"" + executor.string() + "\" --no-show --output=\"" + pyfile_.string() + "\" \"" + gpfile_.string() + "\"";
 
 #ifdef _WIN32
     // cmd.exe requires an additional pair of quotes around the entire command
@@ -375,7 +376,7 @@ py::object GretlPlot::execute_script_(const std::filesystem::path &script)
 
 void GretlPlot::show_figures_ (void)
 {
-    // display all figures and wait until their windows are closed
+    // Display all figures without blocking the Python interpreter.
     py::module_ plt = py::module_::import("matplotlib.pyplot");
 
     plt.attr("show")(py::arg("block") = false);

@@ -38,7 +38,8 @@ def run_example():
     # Initialize variance parameters from an ARMA model.
     m = gretl.garch(spec, arma_init=True).fit()
     print(m)
-    m.plot_new("residuals")
+    fig = m.plot_new("residuals")
+    fig.show()
 
 
 if __name__ == "__main__":
