@@ -830,35 +830,46 @@ py::object GretlModel_NSE::plot (const std::string &type, const std::string &xva
         // Force libgretl to write the plot to our temporary file.
         gretl_valid_long_opt(opt, GNUPLOT, "output", py::handle(), plotter.filename().c_str());
 
-        prepare_temporary_series();
+        if (ci_ == GARCH && !(model_->opt & OPT_Z) && x == 0) {
+            // Use libgretl's dedicated GARCH residual plot.
+            err_ = garch_resid_plot(model_, dset);
+        } else {
+            prepare_temporary_series();
 
-        // Add residuals temporarily.
-        err_ = genr_fit_resid(model_, dset, M_UHAT);
+            // Add residuals temporarily.
+            err_ = genr_fit_resid(model_, dset, M_UHAT);
 
-        if (!err_) {
-            const int uhatno = dset->v - 1;
-            const int yno = gretl_model_get_depvar(model_);
+            if (!err_) {
+                const int uhatno = dset->v - 1;
+                const int yno = gretl_model_get_depvar(model_);
 
-            plotlist[0] = 1;
-            plotlist[1] = uhatno;
-            strcpy(dset->varname[uhatno], "residual");
+                plotlist[0] = 1;
+                plotlist[1] = uhatno;
+                strcpy(dset->varname[uhatno], "residual");
 
-            if (yno > 0) {
-                std::string label = "residual for " +
-                std::string(dset->varname[yno]);
+                if (yno > 0) {
+                    std::string label = "residual for " +
+                    std::string(dset->varname[yno]);
 
-                series_set_label(dset, uhatno, label.c_str());
+                    series_set_label(dset, uhatno, label.c_str());
+                }
+                if (x) {
+                    // Plot residuals against the selected variable.
+                    plotlist[0] = 2;
+                    plotlist[2] = x;
+                } else {
+                    // Plot residuals against observations or time.
+                    SET_OPT(opt, OPT_T);
+                    if (dataset_is_time_series(dset) || dataset_is_panel(dset)) SET_OPT(opt, OPT_O);
+                }
+
+                // Match the GUI treatment of standardized GARCH residuals.
+                if (ci_ == GARCH && (model_->opt & OPT_Z)) {
+                    series_set_display_name(dset, uhatno, "standardized residual");
+                    opt = static_cast<gretlopt>(opt & ~OPT_R);
+                }
+                err_ = gnuplot(plotlist, nullptr, dset, opt);
             }
-            if (x) {
-                // Plot residuals against the selected variable.
-                plotlist[0] = 2;
-                plotlist[2] = x;
-            } else {
-                // Plot residuals against observations or time.
-                SET_OPT(opt, OPT_T);
-                if (dataset_is_time_series(dset) || dataset_is_panel(dset)) SET_OPT(opt, OPT_O);
-            }
-            err_ = gnuplot(plotlist, nullptr, dset, opt);
         }
     } else {
         throw py::value_error("Unsupported plot type: " + type);
