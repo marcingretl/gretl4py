@@ -750,6 +750,42 @@ py::object GretlModel_NSE::plot (const std::string &type, const std::string &xva
         if (x < 0) throw py::value_error("Unknown variable: " + xvar);
     }
 
+    // Make a private copy only when using the user's dataset.
+    // An attached model dataset can be modified temporarily.
+    GretlDatasetPtr plot_data;
+
+    auto prepare_plot_data = [&]() {
+        if (dset == dataset_->dset) {
+            plot_data = GretlDataset::clone(*dataset_);
+            dset = plot_data->dset;
+        }
+    };
+
+    // Restore the attached model dataset after plotting.
+    // A private dataset copy is cleaned up by its destructor.
+    struct TemporarySeriesGuard {
+        DATASET *dset = nullptr;
+        int origv = 0;
+        bool active = false;
+
+        ~TemporarySeriesGuard()
+        {
+            if (active && dset->v > origv) {
+                dataset_drop_last_variables(dset, dset->v - origv);
+            }
+        }
+    };
+
+    TemporarySeriesGuard guard;
+
+    // Prepare the dataset and register temporary-series cleanup.
+    auto prepare_temporary_series = [&]() {
+        prepare_plot_data();
+        guard.dset = dset;
+        guard.origv = dset->v;
+        guard.active = !plot_data;
+    };
+
     if (type == "fitted") {
         // based on fit_actual_plot() from gui/library.c
         opt = OPT_A;
@@ -767,31 +803,7 @@ py::object GretlModel_NSE::plot (const std::string &type, const std::string &xva
             plotlist[3] = x;
             err_ = gnuplot(plotlist, formula.get(), dset, opt);
         } else {
-            // Make a private copy only when using the user's dataset.
-            // An attached model dataset can be modified temporarily.
-            GretlDatasetPtr plot_data;
-
-            if (dset == dataset_->dset) {
-                plot_data = GretlDataset::clone(*dataset_);
-                dset = plot_data->dset;
-            }
-
-            // Restore the attached model dataset after plotting.
-            // A private dataset copy is cleaned up by its destructor.
-            struct TemporarySeriesGuard {
-                DATASET *dset;
-                int origv;
-                bool active;
-
-                ~TemporarySeriesGuard()
-                {
-                    if (active && dset->v > origv) dataset_drop_last_variables(dset, dset->v - origv);
-                }
-            };
-
-            TemporarySeriesGuard guard{
-                dset, dset->v, !plot_data
-            };
+            prepare_temporary_series();
 
             // Add fitted values temporarily.
             err_ = genr_fit_resid(model_, dset, M_YHAT);
@@ -811,12 +823,50 @@ py::object GretlModel_NSE::plot (const std::string &type, const std::string &xva
                 err_ = gnuplot(plotlist, nullptr, dset, opt);
             }
         }
-        if (err_) handle_gretl_error(err_);
+    } else if (type == "residuals") {
+        // Based on resid_plot() from gui/library.c.
+        opt = OPT_R;
 
-        return plotter.display();
+        // Force libgretl to write the plot to our temporary file.
+        gretl_valid_long_opt(opt, GNUPLOT, "output", py::handle(), plotter.filename().c_str());
+
+        prepare_temporary_series();
+
+        // Add residuals temporarily.
+        err_ = genr_fit_resid(model_, dset, M_UHAT);
+
+        if (!err_) {
+            const int uhatno = dset->v - 1;
+            const int yno = gretl_model_get_depvar(model_);
+
+            plotlist[0] = 1;
+            plotlist[1] = uhatno;
+            strcpy(dset->varname[uhatno], "residual");
+
+            if (yno > 0) {
+                std::string label = "residual for " +
+                std::string(dset->varname[yno]);
+
+                series_set_label(dset, uhatno, label.c_str());
+            }
+            if (x) {
+                // Plot residuals against the selected variable.
+                plotlist[0] = 2;
+                plotlist[2] = x;
+            } else {
+                // Plot residuals against observations or time.
+                SET_OPT(opt, OPT_T);
+                if (dataset_is_time_series(dset) || dataset_is_panel(dset)) SET_OPT(opt, OPT_O);
+            }
+            err_ = gnuplot(plotlist, nullptr, dset, opt);
+        }
+    } else {
+        throw py::value_error("Unsupported plot type: " + type);
     }
 
-    throw py::value_error("Unsupported plot type: " + type);
+    if (err_) handle_gretl_error(err_);
+
+    return plotter.display();
 }
 
 //
