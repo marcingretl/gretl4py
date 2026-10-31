@@ -39,7 +39,7 @@ def run_example():
     m = gretl.garch(spec, arma_init=True).fit()
     print(m)
     fig = m.plot_new("residuals")
-    fig.show()
+    #fig.show()
 
 
 if __name__ == "__main__":
