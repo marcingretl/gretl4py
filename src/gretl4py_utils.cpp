@@ -341,7 +341,14 @@ bool GretlPlot::translate (void)
 
     // translate the gnuplot script without executing Python (execute command)
     const auto &executor = executor_;
-    std::string command = "\"" + executor.string() + "\" --output=\"" + pyfile_.string() + "\" \"" + gpfile_.string() + "\"";
+    std::string command = "\"" + executor.string() + "\"";
+
+#ifdef _WIN32
+    // Select PySide6/QtAgg in generated Python scripts on Windows.
+    command += " --qtagg";
+#endif
+
+    command += " --output=\"" + pyfile_.string() + "\" \"" + gpfile_.string() + "\"";
 
 #ifdef _WIN32
     // cmd.exe requires an additional pair of quotes around the entire command
