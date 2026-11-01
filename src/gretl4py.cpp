@@ -85,8 +85,7 @@ PYBIND11_MODULE(_gretl, m)
     m.def("get_plot_auto_show", &GretlPlot::get_auto_show, doc::Functions::get_plot_auto_show);
 
     // gretl4py hidden functions
-    m.def("_get_data", &GretlDataset::get_data,
-          py::arg("src").none(false), py::arg("source").none(true) = "", py::kw_only());
+    m.def("_get_data", &GretlDataset::get_data, py::arg("src").none(false), py::arg("source").none(true) = "", py::kw_only());
     m.def("_get_datasets_ids", &GretlDataset::get_dset_ids);
 
     // gretlpy public functions
@@ -355,17 +354,3 @@ PYBIND11_MODULE(_gretl, m)
           },
           py::arg("method").none(false), py::kw_only()); //, doc::Model::system, to be used when API will be fixed
 }
-
-    /*
-    //////////////////////////////////////////////////
-    // packages
-    //////////////////////////////////////////////////
-    m.def("package",
-          [](const std::string &name, const py::kwargs &kwargs) -> GretlModelPtr
-          {
-              auto model = std::make_unique<GretlModel_package>(name, kwargs);
-
-              return GretlModelPtr(std::move(model));
-          },
-          py::arg("name").none(false), py::kw_only());*/
-
