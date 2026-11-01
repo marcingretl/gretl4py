@@ -345,7 +345,7 @@ bool GretlPlot::translate (void)
 
 #ifdef _WIN32
     // Select PySide6/QtAgg in generated Python scripts on Windows.
-    command += " --qtagg";
+    command += " --backend=QtAgg";
 #endif
 
     command += " --output=\"" + pyfile_.string() + "\" \"" + gpfile_.string() + "\"";
