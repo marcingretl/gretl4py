@@ -1698,31 +1698,42 @@ GretlMatrixPtr GretlModel_VAR::irf (const std::string &target, const std::string
     return irf(target_int, shock_int, alpha);
 }
 
-py::object GretlModel_VAR::plot (const std::string &type, int equation, const std::string &mode)
+py::object GretlModel_VAR::plot (const std::string &type, std::optional<int> equation, std::optional<std::string> mode)
 {
+    //
+    // general VAR plotter, i.e. we deal with residuals, roots and IRFs
+    //
+    const int eqn = equation.value_or(0);
+    const std::string plot_mode = mode.value_or("combined");
+
     // At first, we reject bad options
     if (!estimated_) throw std::runtime_error("model is not estimated");
-    if (type != "residuals") throw py::value_error("Unsupported plot type: " + type);
-    if (mode != "combined" && mode != "multiple") throw py::value_error("Unsupported residual plot mode: " + mode);
+    if (type != "residuals" && type != "inverse_roots") throw py::value_error("Unsupported plot type: " + type);
 
-    const gretl_matrix *E = gretl_VAR_get_residual_matrix(model_);
-    const int neqns = E != nullptr ? gretl_matrix_cols(E) : 0;
-
-    if (equation < 0 || equation > neqns) throw py::value_error("Equation number is out of range");
-    if (mode == "multiple" && equation != 0) throw py::value_error("Equation must be 0 for multiple residual plots");
+    if (type == "inverse_roots") {
+        if (equation.has_value() || mode.has_value()) throw py::type_error("inverse_roots does not accept equation or mode");
+    } else {
+        if (plot_mode != "combined" && plot_mode != "multiple") throw py::value_error("Unsupported residual plot mode: " + plot_mode);
+        if (eqn < 0 || eqn > model_->neqns) throw py::value_error("Equation number is out of range");
+        if (plot_mode == "multiple" && eqn != 0) throw py::value_error("Equation must be 0 for multiple residual plots");
+    }
 
     GretlPlot plotter;
     DATASET *dset = dataset_->dset;
 
     // Register the output file for the selected plot type.
-    prepare_plot_(plotter, OPT_NONE, mode == "multiple");
+    prepare_plot_(plotter, OPT_NONE, plot_mode == "multiple");
 
-    if (mode == "multiple") {
+    // we do the job
+    if (type == "inverse_roots") {
+        // Plot inverse roots of the VAR characteristic polynomial.
+        err_ = gretl_VAR_roots_plot(model_);
+    } else if (plot_mode == "multiple") {
         // Generate separate residual plots for all equations.
         err_ = gretl_system_residual_mplot(model_, ci_, dset);
     } else {
         // Equation 0 selects the combined residual plot.
-        err_ = gretl_system_residual_plot(model_, ci_, equation, dset);
+        err_ = gretl_system_residual_plot(model_, ci_, eqn, dset);
     }
     if (err_) handle_gretl_error(err_);
 
