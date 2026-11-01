@@ -1,5 +1,7 @@
 import gretl
 
+# Disable automatic display.
+gretl.set_plot_auto_show(False)
 
 def run_example():
     # Load dataset.
