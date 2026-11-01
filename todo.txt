@@ -4,12 +4,8 @@ BUGS:
 
 TODOS:
 
-1. add copying plugins as meson option
+1. improve plotting
 
-2. add MPI support
+2. finalize API for mle, nls, gmm and system estimators
 
-3. improve plotting
-
-4. finalize API for mle, nls, gmm and system estimators
-
-5. make ::fcast() return bundle
+3. make ::fcast() return bundle

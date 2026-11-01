@@ -81,10 +81,8 @@ PYBIND11_MODULE(_gretl, m)
     m.attr("version") = GRETL4PY_VERSION;
     m.attr("gretldir") = do_get_accessor<GRETL_OBJ_ANY>("$gretldir", GretlDataset::default_dataset(), nullptr);
     m.def("about", &about, py::arg("do_print") = false);
-    m.def("set_plot_auto_show", &GretlPlot::set_auto_show,
-          py::arg("enabled"), "Enable or disable automatic display of generated plots.");
-    m.def("get_plot_auto_show", &GretlPlot::get_auto_show,
-          "Return whether automatic plot display is enabled.");
+    m.def("set_plot_auto_show", &GretlPlot::set_auto_show, py::arg("enabled"), doc::Functions::set_plot_auto_show);
+    m.def("get_plot_auto_show", &GretlPlot::get_auto_show, doc::Functions::get_plot_auto_show);
 
     // gretl4py hidden functions
     m.def("_get_data", &GretlDataset::get_data,
