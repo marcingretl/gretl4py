@@ -144,6 +144,94 @@ GretlPlot::~GretlPlot (void)
 //
 // static methods
 //
+void GretlPlot::cleanup_queue_ (void) noexcept
+{
+    //
+    // Remove only the plot queue owned by this process.
+    // Never remove the shared parent directory or other sessions.
+    // Inherited atexit handlers must not delete the parent's queue.
+    //
+    if (queue_dir_.empty() || queue_owner_pid_ != current_pid_()) return;
+
+    std::error_code ec;
+    std::filesystem::remove_all(queue_dir_, ec);
+
+    // Cleanup must not throw during process termination.
+    queue_dir_.clear();
+    queue_owner_pid_ = 0;
+}
+
+std::string GretlPlot::random_plot_name (void)
+{
+    //
+    // generate a random filename with a 128-bit identifier to minimize
+    // collisions between independent processes, including MPI workers
+    //
+    // generate a random 128-bit identifier
+    std::random_device rd;
+    std::array<unsigned int, 4> words;
+
+    for (auto &word : words) {
+        word = rd();
+    }
+
+    std::ostringstream os;
+    os << "gptranslate_";
+
+    for (const auto word : words) {
+        os << std::hex << std::setw(8)
+        << std::setfill('0') << word;
+    }
+
+    os << ".gp";
+
+    return os.str();
+}
+
+unsigned long long GretlPlot::current_pid_ (void) noexcept
+{
+    //
+    // Identify the current process, including a child created by fork().
+    // return the current OS process identifier on Windows and POSIX systems
+    //
+    #ifdef _WIN32
+    return static_cast<unsigned long long>(GetCurrentProcessId());
+    #else
+    return static_cast<unsigned long long>(getpid());
+    #endif
+}
+
+py::object GretlPlot::execute_script_(const std::filesystem::path &script)
+{
+    //
+    // Execute a generated matplotlib script; the caller must hold the GIL
+    // interpreter, using a dedicated namespace.
+    //
+    py::dict globals;
+
+    globals["__name__"] = "__main__";
+    globals["__file__"] = script.string();
+
+    py::eval_file(script.string(), globals);
+
+    // Retrieve the Figure explicitly created by gptranslate.
+    // Keep a Python reference so the object remains accessible
+    // after the script has finished executing.
+    if (globals.contains("fig")) return globals["fig"].cast<py::object>();
+
+    return py::none();
+}
+
+void GretlPlot::show_figures_ (void)
+{
+    //
+    // Display pending figures and wait for their windows to close; caller holds the GIL
+    //
+    py::module_ plt = py::module_::import("matplotlib.pyplot");
+
+    plt.attr("show")(py::arg("block") = false);
+}
+
 void GretlPlot::set_auto_show (bool enabled) noexcept
 {
     // Set the global automatic plot display policy.
@@ -155,6 +243,9 @@ bool GretlPlot::get_auto_show (void) noexcept
     return auto_show_;
 }
 
+//
+// instance methods
+//
 void GretlPlot::init_executor (void)
 {
     // Locate gp-executor in the gretl4py installation directory.
@@ -169,20 +260,12 @@ void GretlPlot::init_executor (void)
     if (!std::filesystem::is_regular_file(executor_)) throw std::runtime_error("gp-executor not found: " + executor_.string());
 }
 
-unsigned long long GretlPlot::current_pid_ (void) noexcept
-{
-    // Identify the current process, including a child created by fork().
-#ifdef _WIN32
-    return static_cast<unsigned long long>(GetCurrentProcessId());
-#else
-    return static_cast<unsigned long long>(getpid());
-#endif
-}
-
 void GretlPlot::init_queue (void)
 {
+    //
     // Initialize one private queue per Python process. The random directory
     // name prevents collisions between independent processes and MPI workers.
+    //
     const auto pid = current_pid_();
 
     if (!queue_dir_.empty() && queue_owner_pid_ == pid) return;
@@ -257,9 +340,11 @@ void GretlPlot::init_queue (void)
 
 void GretlPlot::drain_queue (void)
 {
+    //
     // only complete .py files are published by gp-executor; .tmp files
     // are deliberately ignored until their atomic rename has completed
     // A forked child must not drain scripts belonging to its parent.
+    //
     if (queue_dir_.empty() || queue_owner_pid_ != current_pid_()) return;
 
     std::vector<std::filesystem::path> scripts;
@@ -286,48 +371,6 @@ void GretlPlot::drain_queue (void)
 [[nodiscard]] std::string GretlPlot::get_executor_path (void)
 {
     return executor_.string();
-}
-
-void GretlPlot::cleanup_queue_ (void) noexcept
-{
-    // Remove only the plot queue owned by this process.
-    // Never remove the shared parent directory or other sessions.
-    // Inherited atexit handlers must not delete the parent's queue.
-    if (queue_dir_.empty() || queue_owner_pid_ != current_pid_()) return;
-
-    std::error_code ec;
-    std::filesystem::remove_all(queue_dir_, ec);
-
-    // Cleanup must not throw during process termination.
-    queue_dir_.clear();
-    queue_owner_pid_ = 0;
-}
-
-std::string GretlPlot::random_plot_name (void)
-{
-    //
-    // generate a random filename with a 128-bit identifier to minimize
-    // collisions between independent processes, including MPI workers
-    //
-    // generate a random 128-bit identifier
-    std::random_device rd;
-    std::array<unsigned int, 4> words;
-
-    for (auto &word : words) {
-        word = rd();
-    }
-
-    std::ostringstream os;
-    os << "gptranslate_";
-
-    for (const auto word : words) {
-        os << std::hex << std::setw(8)
-        << std::setfill('0') << word;
-    }
-
-    os << ".gp";
-
-    return os.str();
 }
 
 std::string GretlPlot::filename (void)
@@ -379,33 +422,6 @@ bool GretlPlot::translate (void)
     if (status != 0 || !std::filesystem::is_regular_file(pyfile_)) throw std::runtime_error("gptranslate failed: " + gpfile_.string());
 
     return true;
-}
-
-py::object GretlPlot::execute_script_(const std::filesystem::path &script)
-{
-    // Execute the generated matplotlib script in the current Python
-    // interpreter, using a dedicated namespace.
-    py::dict globals;
-
-    globals["__name__"] = "__main__";
-    globals["__file__"] = script.string();
-
-    py::eval_file(script.string(), globals);
-
-    // Retrieve the Figure explicitly created by gptranslate.
-    // Keep a Python reference so the object remains accessible
-    // after the script has finished executing.
-    if (globals.contains("fig")) return globals["fig"].cast<py::object>();
-
-    return py::none();
-}
-
-void GretlPlot::show_figures_ (void)
-{
-    // Display all figures without blocking the Python interpreter.
-    py::module_ plt = py::module_::import("matplotlib.pyplot");
-
-    plt.attr("show")(py::arg("block") = false);
 }
 
 py::object GretlPlot::display()

@@ -1,5 +1,4 @@
 import gretl
-import matplotlib.pyplot as plt
 
 
 def run_example():
@@ -40,7 +39,10 @@ def run_example():
     m = gretl.garch(spec, arma_init=True).fit()
     print(m)
     fig = m.plot_new("residuals")
-    plt.show(block=True)
+
+    # uncomment to plot figure
+    #import matplotlib.pyplot as plt
+    #plt.show(block=True)
 
 
 if __name__ == "__main__":

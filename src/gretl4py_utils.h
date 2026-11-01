@@ -86,23 +86,20 @@ private:
     static std::filesystem::path executor_;     // path to gnuplot replacement
     static std::filesystem::path queue_dir_;    // queue path (handled automatically)
     static unsigned long long queue_owner_pid_; // which process owns queue
-    static bool auto_show_;                     // if we show plots for executed scripts
+    static bool auto_show_;                     // whether we show plots for executed scripts
 
-    std::filesystem::path gpfile_;
-    std::filesystem::path pyfile_;
-    bool temporary_ = false;
-    bool source_owned_ = false;
-    bool display_ = true;
+    std::filesystem::path gpfile_;              // path to the source gnuplot script
+    std::filesystem::path pyfile_;              // path to the generated Python script
+    bool temporary_ = false;                    // whether generated files are temporary
+    bool source_owned_ = false;                 // whether GretlPlot owns the source file
+    bool display_ = true;                       // whether to execute and display the plot
 
-    // return the current OS process identifier on Windows and POSIX systems
     static unsigned long long current_pid_ (void) noexcept;
 
     static std::string random_plot_name (void);
 
-    // execute a generated matplotlib script; the caller must hold the GIL
     static py::object execute_script_ (const std::filesystem::path &script);
 
-    // display pending figures and wait for their windows to close; caller holds the GIL
     static void show_figures_ (void);
 
     static void cleanup_queue_ (void) noexcept;
