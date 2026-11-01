@@ -120,6 +120,7 @@ inline GretlSlice make_gretl_slice (std::string startobs, std::string endobs, st
 std::filesystem::path GretlPlot::executor_;
 std::filesystem::path GretlPlot::queue_dir_;
 unsigned long long GretlPlot::queue_owner_pid_ = 0;
+bool GretlPlot::auto_show_ = true;
 
 //
 // GretlPlot class methods
@@ -138,6 +139,20 @@ GretlPlot::~GretlPlot (void)
             std::filesystem::remove(pyfile_, ec);
         }
     }
+}
+
+//
+// static methods
+//
+void GretlPlot::set_auto_show (bool enabled) noexcept
+{
+    // Set the global automatic plot display policy.
+    auto_show_ = enabled;
+}
+
+bool GretlPlot::get_auto_show (void) noexcept
+{
+    return auto_show_;
 }
 
 void GretlPlot::init_executor (void)
@@ -348,6 +363,10 @@ bool GretlPlot::translate (void)
     command += " --backend=QtAgg";
 #endif
 
+    // gretl4py manages plot display; suppress plt.show() in generated scripts.
+    // Keep plt.show() in standalone Python scripts saved to disk.
+    if (display_) command += " --no-show";
+
     command += " --output=\"" + pyfile_.string() + "\" \"" + gpfile_.string() + "\"";
 
 #ifdef _WIN32
@@ -420,7 +439,7 @@ py::object GretlPlot::display()
     py::object fig = execute_script_(pyfile_);
 
     // Display all figures using the selected Matplotlib backend.
-    show_figures_();
+    if (auto_show_) show_figures_();
 
     return fig;
 }

@@ -83,9 +83,10 @@ inline bool is_pygretlmatrix (const py::handle &o) { return py::isinstance<Gretl
 class GretlPlot
 {
 private:
-    static std::filesystem::path executor_;
-    static std::filesystem::path queue_dir_;
-    static unsigned long long queue_owner_pid_;
+    static std::filesystem::path executor_;     // path to gnuplot replacement
+    static std::filesystem::path queue_dir_;    // queue path (handled automatically)
+    static unsigned long long queue_owner_pid_; // which process owns queue
+    static bool auto_show_;                     // if we show plots for executed scripts
 
     std::filesystem::path gpfile_;
     std::filesystem::path pyfile_;
@@ -110,6 +111,8 @@ public:
     GretlPlot (const GretlPlot&) = delete;
     ~GretlPlot (void);
 
+    GretlPlot &operator= (const GretlPlot&) = delete;
+
     static void init_executor (void);
 
     static void init_queue (void);
@@ -118,7 +121,9 @@ public:
 
     [[nodiscard]] static std::string get_executor_path (void);
 
-    GretlPlot &operator= (const GretlPlot&) = delete;
+    static void set_auto_show (bool enabled) noexcept;
+
+    [[nodiscard]] static bool get_auto_show (void) noexcept;
 
     std::string filename (void);
 
