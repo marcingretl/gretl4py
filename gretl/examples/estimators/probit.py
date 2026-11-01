@@ -46,7 +46,12 @@ def run_example():
         random_effects=True
     ).fit()
     print(m)
-    m.plot_new("fitted")
+    fig = m.plot_new("fitted")
+
+    # uncomment to plot figure
+    #import matplotlib.pyplot as plt
+    #plt.show(block=True)
+
 
 if __name__ == "__main__":
     run_example()
