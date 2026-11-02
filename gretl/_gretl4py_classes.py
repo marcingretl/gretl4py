@@ -26,7 +26,6 @@ import pandas as pd
 from typing import TypedDict, NotRequired, Dict, List, Any
 from typing import Optional
 from ._gretl4py_addons import _pd_to_pandas_str_format
-from ._plotting import _plotfitted, _plotresiduals
 from . import _gretl
 
 # #######################################################
@@ -49,75 +48,6 @@ def _oddsratio(self: "Model_logit"):
     print("WARNING: oddsratios() is deprecated; use model.oddsratios instead\n")
 
     return self.oddsratios
-
-def _model_plots(
-    self: "GretlModel",
-    kind: str,
-    eqn: int = 0,
-    multiple: bool = False,
-    against: str | None = None,
-    backend: str | None = None
-):
-    """
-    General dispatcher for model-based plots.
-
-    This method provides a unified entry point for generating plots associated
-    with a fitted model, such as fitted-versus-actual plots or residual plots.
-    The specific plot to generate is selected via the ``kind`` argument and
-    delegated to the corresponding internal plotting routine.
-
-    Parameters
-    ----------
-    kind : str
-        Type of plot to generate. Supported values are:
-
-        - ``"fitted"`` : Plot fitted values against observed data.
-        - ``"residuals"`` : Plot regression residuals.
-
-    eqn : int, optional
-        Equation number to plot. Use ``0`` to plot all equations or dependent
-        variables (default).
-
-    multiple : bool, optional
-        If ``False`` (default), a separate figure is produced for each variable.
-        If ``True``, all plots are arranged as subplots in a single figure.
-
-    against : str, optional
-        Name of a variable in the dataset to plot against instead of the default
-        time or observation index. If provided, data are sorted by this variable
-        before plotting.
-
-    backend : str, optional
-        Name of the matplotlib backend to use (e.g. ``"TkAgg"``, ``"QtAgg"``,
-        ``"Agg"``). If None, the default backend selection logic is used.
-
-    Raises
-    ------
-    ValueError
-        If ``kind`` does not correspond to a supported plot type.
-
-    Notes
-    -----
-    - This method is intended as an internal wrapper for all model-related plots.
-    - Backend selection applies to all plots generated during this call.
-    - Public plotting methods may delegate to this dispatcher to ensure
-      consistent behavior.
-
-    Examples
-    --------
-    >>> model.plot("fitted")
-    >>> model.plot("residuals", multiple=True)
-    >>> model.plot("fitted", against="lg", backend="QtAgg")
-    """
-    if self.estimated is False:
-        raise RuntimeError("Model was not estimated yet")
-
-    if kind == "fitted":
-        _plotfitted(self, eqn, multiple, against, backend)
-    elif kind == "residuals":
-        _plotresiduals(self, eqn, multiple, against, backend)
-    else:
-        raise ValueError(f"unknown plotting type: {kind}")
 
 ####################################
 #   tests

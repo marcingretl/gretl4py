@@ -155,7 +155,7 @@ from ._gretl import (Bundle, Matrix)                                        # co
 from ._gretl import (delete, genr, include, pkg, print, set, summary)       # libgretl's commands interfaces
 from ._gretl import (varlist, run_script, run_hansl, get_uservar)
 from ._gretl import (pvalue, critical, pdf, cdf, invcdf, corr, cov)         # libgretl's functions interfaces
-from ._gretl import (get_accessor, tdisagg, kpsscrit, plot)
+from ._gretl import (get_accessor, tdisagg, kpsscrit)
 from ._gretl import (set_plot_auto_show, get_plot_auto_show)
 
 from ._gretl4py_addons import print_module_source, fc_print, modeltab
@@ -163,7 +163,7 @@ from ._gretl4py_classes import _attrs, mle, nls, gmm, NLSpec
 from ._gretl4py_classes import get_data, show_data_status
 from ._gretl4py_classes import _dataset_to_pandas
 from ._gretl4py_classes import _matrix_functions_wrapper, _package_get_help
-from ._gretl4py_classes import _model_plots, _matrix_to_pandas, _ones
+from ._gretl4py_classes import _matrix_to_pandas, _ones
 from ._gretl4py_classes import _adf, _bds, _coint, _corrgm, _difftest, _fractint
 from ._gretl4py_classes import _johansen, _kpss, _levinlin, _meantest, _normtest
 from ._gretl4py_classes import _runs, _vartest
@@ -188,7 +188,6 @@ for fun in ['cdf', 'pdf', 'invcdf', 'pvalue', 'critical']:  # wrapper for matrix
 
 # gretl.Model class
 setattr(_gretl.Model, "attrs", _attrs)                  # for listing all object's attributes
-setattr(_gretl.Model, "plot", _model_plots)             # wrapper for generating model-based plots
 setup_model_api(_gretl)                                 # for now only model-based tests
 del setup_model_api
 # going to be deprecated
