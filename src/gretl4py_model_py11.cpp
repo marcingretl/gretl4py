@@ -2,6 +2,9 @@
  *  gretl -- Gnu Regression, Econometrics and Time-series Library
  *  Copyright (C) 2001 Allin Cottrell and Riccardo "Jack" Lucchetti
  *
+ *  gretl4py -- Python bindings for gretl
+ *  Copyright (C) 2024 Marcin Błażejowski
+ *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
@@ -115,7 +118,7 @@ void init_gretl4py_model_py11(py::module_ &m)
          py::arg("name").none(true) = "", doc::Model::save_ahat)
     .def("save_h", &GretlModel_NSE::gretl_get_fit_or_resid<M_H>,
          py::arg("name").none(true) = "", doc::Model::save_h)
-    .def("plot_new", &GretlModel_NSE::plot,
+    .def("_plot", &GretlModel_NSE::plot,
          py::arg("type").none(false), py::arg("xvar").none(true) = "")
     .def("_test",
          [](GretlModel_NSE &self, const std::string &type, const py::kwargs &kwargs) -> GretlBundlePtr
@@ -245,7 +248,7 @@ void init_gretl4py_model_py11(py::module_ &m)
          py::arg("alpha").none(true) = 0, doc::Model::irf)
     .def("save_uhat", &GretlModel_VAR::save_uhat,
          py::arg("eqn").none(false), py::arg("name").none(true) = "", doc::Model::save_system_uhat)
-    .def("plot_new", &GretlModel_VAR::plot,
+    .def("_plot", &GretlModel_VAR::plot,
          py::arg("type").none(false), py::arg("equation") = std::nullopt, py::arg("mode") = std::nullopt,
          py::arg("periods") = std::nullopt, py::arg("alpha") = std::nullopt, py::arg("error_bars") = std::nullopt);
     gretl_model_var.attr("__module__") = "gretl";

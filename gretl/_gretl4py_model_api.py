@@ -3,6 +3,9 @@
  *  gretl -- Gnu Regression, Econometrics and Time-series Library
  *  Copyright (C) 2001 Allin Cottrell and Riccardo "Jack" Lucchetti
  *
+ *  gretl4py -- Python bindings for gretl
+ *  Copyright (C) 2024 Marcin Błażejowski
+ *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
@@ -16,7 +19,7 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
-"""
+ """
 
 from ._gretl4py_classes import _adf, _bds, _coint, _corrgm, _difftest, _fractint
 from ._gretl4py_classes import _johansen, _kpss, _levinlin, _meantest, _normtest

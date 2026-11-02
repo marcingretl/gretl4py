@@ -3,6 +3,9 @@
  *  gretl -- Gnu Regression, Econometrics and Time-series Library
  *  Copyright (C) 2001 Allin Cottrell and Riccardo "Jack" Lucchetti
  *
+ *  gretl4py -- Python bindings for gretl
+ *  Copyright (C) 2024 Marcin Błażejowski
+ *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
@@ -159,6 +162,7 @@ from ._gretl import (get_accessor, tdisagg, kpsscrit)
 from ._gretl import (set_plot_auto_show, get_plot_auto_show)
 
 from ._gretl4py_addons import print_module_source, fc_print, modeltab
+
 from ._gretl4py_classes import _attrs, mle, nls, gmm, NLSpec
 from ._gretl4py_classes import get_data, show_data_status
 from ._gretl4py_classes import _dataset_to_pandas
@@ -167,7 +171,12 @@ from ._gretl4py_classes import _matrix_to_pandas, _ones
 from ._gretl4py_classes import _adf, _bds, _coint, _corrgm, _difftest, _fractint
 from ._gretl4py_classes import _johansen, _kpss, _levinlin, _meantest, _normtest
 from ._gretl4py_classes import _runs, _vartest
+
 from ._gretl4py_model_api import setup_model_api
+
+from ._plot_proxy import _install_plot_proxies
+_install_plot_proxies(_gretl.Model_NSE, _gretl.Model_var, _gretl.Model_vecm)
+
 # to be deprecated
 from ._gretl4py_classes import _dataset_old_test, _model_old_test, _oddsratio, _to_dataframe
 
