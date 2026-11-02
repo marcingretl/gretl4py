@@ -1698,7 +1698,8 @@ GretlMatrixPtr GretlModel_VAR::irf (const std::string &target, const std::string
     return irf(target_int, shock_int, alpha);
 }
 
-py::object GretlModel_VAR::plot (const std::string &type, std::optional<int> equation, std::optional<std::string> mode)
+py::object GretlModel_VAR::plot (const std::string &type, std::optional<int> equation, std::optional<std::string> mode,
+                                 std::optional<int> periods, std::optional<double> alpha, std::optional<bool> error_bars)
 {
     //
     // general VAR plotter, i.e. we deal with residuals, roots and IRFs
@@ -1709,7 +1710,7 @@ py::object GretlModel_VAR::plot (const std::string &type, std::optional<int> equ
 
     // At first, we reject bad options
     if (!estimated_) throw std::runtime_error("model is not estimated");
-    if (type != "residuals" && type != "inverse_roots") throw std::invalid_argument("Unsupported plot type: " + type);
+    if (type != "residuals" && type != "inverse_roots" && type != "irf_combined") throw std::invalid_argument("Unsupported plot type: " + type);
 
     if (type == "inverse_roots") {
         if (equation.has_value() || mode.has_value()) throw py::type_error("inverse_roots does not accept equation or mode");
@@ -1725,6 +1726,10 @@ py::object GretlModel_VAR::plot (const std::string &type, std::optional<int> equ
     // we do the job
     if (type == "inverse_roots") {
         err_ = gretl_VAR_roots_plot(model_);
+    } else if (type == "irf_combined") {
+        // Generate the n-by-n grid of impulse responses using libgretl.
+        err_ = gretl_VAR_plot_multiple_irf(model_, periods.value_or(default_VAR_horizon(dataset_->dset)),
+                                           alpha.value_or(0.0), dataset_->dset, error_bars.value_or(false));
     } else if (plot_mode == "multiple") {
         err_ = gretl_system_residual_mplot(model_, ci_, dataset_->dset);
     } else {

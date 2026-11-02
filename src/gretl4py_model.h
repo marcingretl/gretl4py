@@ -315,7 +315,8 @@ public:
     GretlMatrixPtr irf (const std::string &target, const std::string &shock, double alpha = 0);
 
     py::object plot (const std::string &type, std::optional<int> equation = std::nullopt,
-                     std::optional<std::string> mode = std::nullopt);
+                     std::optional<std::string> mode = std::nullopt, std::optional<int> periods = std::nullopt,
+                     std::optional<double> alpha  = std::nullopt, std::optional<bool> error_bars = std::nullopt);
 };
 
 //

@@ -246,7 +246,8 @@ void init_gretl4py_model_py11(py::module_ &m)
     .def("save_uhat", &GretlModel_VAR::save_uhat,
          py::arg("eqn").none(false), py::arg("name").none(true) = "", doc::Model::save_system_uhat)
     .def("plot_new", &GretlModel_VAR::plot,
-         py::arg("type").none(false), py::arg("equation") = std::nullopt, py::arg("mode") = std::nullopt);
+         py::arg("type").none(false), py::arg("equation") = std::nullopt, py::arg("mode") = std::nullopt,
+         py::arg("periods") = std::nullopt, py::arg("alpha") = std::nullopt, py::arg("error_bars") = std::nullopt);
     gretl_model_var.attr("__module__") = "gretl";
 
     // VECM
