@@ -47,7 +47,6 @@ exclude = ["**/__pycache__"]
     "_gretl4py_addons.py",
     "_gretl4py_classes.py",
     "_gretl4py_model_api.py",
-    "_plot_proxy.py",
     "curl-ca-bundle.crt",
     "COPYING",
     "lib/*",

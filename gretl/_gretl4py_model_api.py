@@ -61,6 +61,89 @@ from ._gretl4py_classes import (
 )
 
 
+# ------------------------------------------------------------------
+# Model plotting proxy classes
+# ------------------------------------------------------------------
+# Named plotting methods delegate to the native _plot() bindings.
+# VECM extends the VAR interface with error-correction plots.
+
+class _NSEPlots:
+    """Plotting interface for single-equation models."""
+
+    __slots__ = ("_model",)
+
+    def __init__(self, model):
+        self._model = model
+
+    def residuals(self, xvar: str = ""):
+        """Plot residuals, optionally against a named variable."""
+        return self._model._plot("residuals", xvar=xvar)
+
+    def fitted_actual(self, xvar: str = ""):
+        """Plot observed and fitted values, optionally against a variable."""
+        return self._model._plot("fitted", xvar=xvar)
+
+
+
+class _VARPlots:
+    """Plotting interface for VAR models."""
+
+    __slots__ = ("_model",)
+
+    def __init__(self, model):
+        self._model = model
+
+    def residuals(self, equation: int = 0, mode: str = "combined"):
+        """Plot VAR residuals, optionally selecting an equation or layout.
+
+        Parameters
+        ----------
+        equation : int, default 0
+            Equation number; 0 requests the combined residual plot.
+        mode : {"combined", "multiple"}, default "combined"
+            Use "multiple" for a grid of separate equation plots.
+        """
+        return self._model._plot("residuals", equation=equation, mode=mode)
+
+    def inverse_roots(self):
+        """Plot inverse roots of the VAR characteristic polynomial."""
+        return self._model._plot("inverse_roots")
+
+    def irf_combined(
+        self,
+        periods: int | None = None,
+        alpha: float = 0.0,
+        error_bars: bool = False,
+    ):
+        """Plot the grid of impulse responses for all equation pairs.
+
+        Parameters
+        ----------
+        periods : int or None, default None
+            IRF horizon; None uses the libgretl default horizon.
+        alpha : float, default 0.0
+            Bootstrap confidence-interval tail probability; 0 omits the
+            intervals (for example, 0.10 requests 90% intervals).
+        error_bars : bool, default False
+            Show error bars instead of shaded confidence intervals.
+        """
+        return self._model._plot(
+            "irf_combined",
+            periods=periods,
+            alpha=alpha,
+            error_bars=error_bars,
+        )
+
+
+class _VECMPlots(_VARPlots):
+    """VAR plots extended with VECM-specific error-correction plots."""
+
+    def ec_plot(self):
+        """Plot the VECM error-correction terms (requires the _plot_ec binding)."""
+        # This native method belongs to Model_vecm only, not Model_var.
+        return self._model._plot_ec()
+
+
 def setup_model_api(_gretl):
     """
     Attach methods to the appropriate model classes.
@@ -353,3 +436,22 @@ def setup_model_api(_gretl):
             (_gretl.Model_var,),
             name,
         )
+
+    # ------------------------------------------------------------------
+    # Model plotting interfaces
+    # ------------------------------------------------------------------
+
+    # All single-equation model subclasses inherit the NSE plotting methods.
+    _gretl.Model_NSE.plot = property(
+        _NSEPlots, doc="Named plotting methods for a single-equation model."
+    )
+
+    # VAR models expose their own residual, root and IRF plots.
+    _gretl.Model_var.plot = property(
+        _VARPlots, doc="Named plotting methods for a VAR model."
+    )
+
+    # Override the inherited VAR property with the VECM-specific proxy.
+    _gretl.Model_vecm.plot = property(
+        _VECMPlots, doc="Named plotting methods for a VECM model."
+    )

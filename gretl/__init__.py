@@ -174,9 +174,6 @@ from ._gretl4py_classes import _runs, _vartest
 
 from ._gretl4py_model_api import setup_model_api
 
-from ._plot_proxy import _install_plot_proxies
-_install_plot_proxies(_gretl.Model_NSE, _gretl.Model_var, _gretl.Model_vecm)
-
 # to be deprecated
 from ._gretl4py_classes import _dataset_old_test, _model_old_test, _oddsratio, _to_dataframe
 

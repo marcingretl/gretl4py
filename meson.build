@@ -451,7 +451,6 @@ install_data(
   'gretl/_gretl4py_addons.py',
   'gretl/_gretl4py_classes.py',
   'gretl/_gretl4py_model_api.py',
-  'gretl/_plot_proxy.py',
   'gretl/_bundled_addons.txt',
   'gretl/curl-ca-bundle.crt',
   'gretl/COPYING',
