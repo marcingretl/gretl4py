@@ -21,12 +21,17 @@
  *
  """
 
+from __future__ import annotations
+from typing import TYPE_CHECKING
 from ._gretl4py_classes import _adf, _bds, _coint, _corrgm, _difftest, _fractint
 from ._gretl4py_classes import _johansen, _kpss, _levinlin, _meantest, _normtest
 from ._gretl4py_classes import _runs, _vartest, _add, _bkw, _chow, _cusum, _leverage
 from ._gretl4py_classes import _omit, _qlrtest, _reset, _white, _vif, _normality
 from ._gretl4py_classes import _nonlinearity, _autocorr, _arch, _breusch_pagan
 from ._gretl4py_classes import _groupwise_heteroskedasticity, _panspec, _comfac, _xdepend, _coeffsum
+
+if TYPE_CHECKING:
+    from matplotlib.figure import Figure
 
 """
 Configure estimator-specific methods for gretl model classes.
@@ -75,11 +80,11 @@ class _NSEPlots:
     def __init__(self, model):
         self._model = model
 
-    def residuals(self, xvar: str = ""):
+    def residuals(self, xvar: str = "") -> Figure | None:
         """Plot residuals, optionally against a named variable."""
         return self._model._plot("residuals", xvar=xvar)
 
-    def fitted_actual(self, xvar: str = ""):
+    def fitted_actual(self, xvar: str = "") -> Figure | None:
         """Plot observed and fitted values, optionally against a variable."""
         return self._model._plot("fitted", xvar=xvar)
 
@@ -93,19 +98,19 @@ class _VARPlots:
     def __init__(self, model):
         self._model = model
 
-    def residuals(self, equation: int = 0, mode: str = "combined"):
-        """Plot VAR residuals, optionally selecting an equation or layout.
+    def residuals(self, mode: str = "combined", equation: int = 0) -> Figure | None:
+        """Plot VAR residuals, optionally selecting a layout or equation.
 
         Parameters
         ----------
-        equation : int, default 0
-            Equation number; 0 requests the combined residual plot.
         mode : {"combined", "multiple"}, default "combined"
             Use "multiple" for a grid of separate equation plots.
+        equation : int, default 0
+            Equation number; 0 requests the combined residual plot.
         """
         return self._model._plot("residuals", equation=equation, mode=mode)
 
-    def inverse_roots(self):
+    def inverse_roots(self) -> Figure | None:
         """Plot inverse roots of the VAR characteristic polynomial."""
         return self._model._plot("inverse_roots")
 
@@ -114,7 +119,7 @@ class _VARPlots:
         periods: int | None = None,
         alpha: float = 0.0,
         error_bars: bool = False,
-    ):
+    ) -> Figure | None:
         """Plot the grid of impulse responses for all equation pairs.
 
         Parameters
@@ -138,7 +143,7 @@ class _VARPlots:
 class _VECMPlots(_VARPlots):
     """VAR plots extended with VECM-specific error-correction plots."""
 
-    def ec_plot(self):
+    def ec_plot(self) -> Figure | None:
         """Plot the VECM error-correction terms (requires the _plot_ec binding)."""
         # This native method belongs to Model_vecm only, not Model_var.
         return self._model._plot_ec()

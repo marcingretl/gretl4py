@@ -228,7 +228,7 @@ py::object GretlPlot::execute_script_(const std::filesystem::path &script)
 void GretlPlot::show_figures_ (void)
 {
     //
-    // Display pending figures and wait for their windows to close; caller holds the GIL
+    // Display pending figures without blocking; caller holds the GIL.
     //
     py::module_ plt = py::module_::import("matplotlib.pyplot");
 
