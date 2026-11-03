@@ -98,17 +98,67 @@ class _VARPlots:
     def __init__(self, model):
         self._model = model
 
-    def residuals(self, mode: str = "combined", equation: int = 0) -> Figure | None:
-        """Plot VAR residuals, optionally selecting a layout or equation.
+    def residuals(self, mode: str | int = "combined", equation: int = 0) -> Figure | None:
+        """Plot VAR residuals using a selected layout or equation.
 
         Parameters
         ----------
-        mode : {"combined", "multiple"}, default "combined"
-            Use "multiple" for a grid of separate equation plots.
+        mode : str or int, default "combined"
+            Plot layout or equation number:
+            - "combined" or "c": combined residual plot.
+            - "multiple" or "m": separate residual plots.
+            - Positive integer: residuals of the selected equation.
         equation : int, default 0
-            Equation number; 0 requests the combined residual plot.
+            Equation number (1-based). Zero selects all equations.
+            Cannot be combined with "multiple" mode or an integer
+            passed as the first argument.
         """
-        return self._model._plot("residuals", equation=equation, mode=mode)
+        # Validate the optional equation number.
+        if type(equation) is not int:
+            raise TypeError("'equation' must be an integer")
+
+        if equation < 0:
+            raise ValueError("'equation' must be a non-negative integer")
+
+        if isinstance(mode, str):
+            # A string selects the plot layout.
+            modes = {
+                "combined": "combined",
+                "c": "combined",
+                "multiple": "multiple",
+                "m": "multiple",
+            }
+
+            plot_mode = modes.get(mode.lower())
+
+            if plot_mode is None:
+                raise ValueError(
+                    f"Unknown residual plot mode: {mode!r}. "
+                    "Expected 'combined' ('c') or 'multiple' ('m')."
+                )
+
+            if plot_mode == "multiple" and equation != 0:
+                raise ValueError("'equation' must be 0 when mode is 'multiple'")
+        elif type(mode) is int:
+            # A positive integer selects an individual equation.
+            if mode <= 0:
+                raise ValueError("Equation number must be a positive integer (1-based)")
+
+            if equation != 0:
+                raise TypeError(
+                    "Specify the equation number either as the first "
+                    "argument or via 'equation', not both"
+                )
+
+            equation = mode
+            plot_mode = "combined"
+        else:
+            raise TypeError(
+                f"'mode' must be a string or integer, "
+                f"not {type(mode).__name__}"
+            )
+
+        return self._model._plot("residuals", equation=equation, mode=plot_mode)
 
     def inverse_roots(self) -> Figure | None:
         """Plot inverse roots of the VAR characteristic polynomial."""
