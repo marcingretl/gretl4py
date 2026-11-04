@@ -294,7 +294,16 @@ class _VECMPlots(_VARPlots):
     """VAR plots extended with VECM-specific error-correction plots."""
 
     def ec_plot(self) -> Figure | None:
-        """Plot the VECM error-correction terms (requires the _plot_ec binding)."""
+        """Plot the error-correction terms of an estimated VECM.
+
+        For cointegration rank one, a single error-correction term is plotted.
+        For higher ranks, all error-correction terms are shown in one figure.
+
+        Returns
+        -------
+        matplotlib.figure.Figure or None
+            The generated plot, if available.
+        """
         # This native method belongs to Model_vecm only, not Model_var.
         return self._model._plot_ec()
 

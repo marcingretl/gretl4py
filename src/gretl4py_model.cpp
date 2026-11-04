@@ -1951,6 +1951,25 @@ std::string GretlModel_VAR_VECM::save_ec_term (const int nr, const std::string &
     return dataset_->add_series(std::move(ec_term), name.empty() ? ec_term_name : name, dataset_->dset->n);
 }
 
+py::object GretlModel_VAR_VECM::plot_ec (void)
+{
+    //
+    // Plot the error-correction terms of an estimated VECM.
+    //
+    if (!estimated_) throw std::runtime_error("VECM model has not been estimated");
+
+    GretlPlot plotter;
+
+    // Register the output file for the EC plot.
+    prepare_plot_(plotter, OPT_NONE);
+
+    // Generate the combined EC plot using libgretl.
+    err_ = gretl_VECM_combined_EC_plot(model_, dataset_->dset);
+    if (err_) handle_gretl_error(err_);
+
+    return plotter.display();
+}
+
 //
 // Native Multiple Equation libgretl SYSTEM (NME)
 // extends: GretlModel

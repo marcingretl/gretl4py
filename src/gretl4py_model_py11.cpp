@@ -264,7 +264,8 @@ void init_gretl4py_model_py11(py::module_ &m)
     .def("restrict", &GretlModel_VAR_VECM::restrict,
          py::arg("impose").none(false), py::kw_only(), doc::Model::restrict)
     .def("save_ec_term", &GretlModel_VAR_VECM::save_ec_term,
-         py::arg("nr").none(false), py::arg("name").none(true) = "", doc::Model_VAR::save_ec_term);
+         py::arg("nr").none(false), py::arg("name").none(true) = "", doc::Model_VAR::save_ec_term)
+    .def("_plot_ec", &GretlModel_VAR_VECM::plot_ec);
     gretl_model_var_vecm.attr("__module__") = "gretl";
 
     // Native Multiple Equation libgretl SYSTEM (NME) GretlModel_NME

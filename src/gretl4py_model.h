@@ -346,6 +346,8 @@ public:
     GretlBundlePtr restrict (const py::list &impose, const py::kwargs &kwargs);
 
     std::string save_ec_term (const int nr, const std::string &name = "") const;
+
+    py::object plot_ec (void);
 };
 
 //
