@@ -131,6 +131,8 @@ public:
 
     int get_series_id (const std::string &series, const bool verbose = true) const;
 
+    const char *get_series_name (int id) const;
+
     py::list get_obs_labels (void) const;
 
     std::string info (bool quiet = true) const;

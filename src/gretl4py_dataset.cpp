@@ -493,6 +493,18 @@ int GretlDataset::get_series_id (const std::string &series, const bool verbose) 
     return var_num;
 }
 
+const char *GretlDataset::get_series_name (int id) const
+{
+    //
+    // This method is intended for internal C++ use only (not exposed to Python).
+    // NOTE: Returns a non-owning pointer managed by the dataset.
+    // The caller must not free it or use it after the dataset is destroyed.
+    //
+    if (id < 0 || id >= dset->v) throw std::out_of_range("GretlDataset::get_series_name: variable ID out of range");
+
+    return dset->varname[id];
+}
+
 py::list GretlDataset::get_obs_labels (void) const
 {
     return py::cast(obs_labels_);

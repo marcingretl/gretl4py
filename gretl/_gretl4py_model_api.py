@@ -88,8 +88,6 @@ class _NSEPlots:
         """Plot observed and fitted values, optionally against a variable."""
         return self._model._plot("fitted", xvar=xvar)
 
-
-
 class _VARPlots:
     """Plotting interface for VAR models."""
 
@@ -189,6 +187,46 @@ class _VARPlots:
             error_bars=error_bars,
         )
 
+    def irf(
+        self,
+        targ: int | str,
+        shock: int | str,
+        periods: int | None = None,
+        alpha: float = 0.0,
+        error_bars: bool = False,
+    ) -> Figure | None:
+        """Plot the impulse response of a target variable to a given shock.
+
+        Parameters
+        ----------
+        targ : int or str
+            Target variable, specified by its zero-based position
+            among the endogenous variables or by its name.
+        shock : int or str
+            Shock variable, specified by its zero-based position
+            among the endogenous variables or by its name.
+        periods : int or None, default None
+            IRF horizon; None uses the libgretl default horizon.
+        alpha : float, default 0.0
+            Bootstrap confidence-interval tail probability; 0 omits
+            the intervals (e.g., 0.10 requests 90% intervals).
+        error_bars : bool, default False
+            Show error bars instead of shaded confidence intervals.
+
+        Returns
+        -------
+        matplotlib.figure.Figure or None
+            The generated plot, if available.
+        """
+        return self._model._plot(
+            "irf",
+            targ=targ,
+            shock=shock,
+            periods=periods,
+            alpha=alpha,
+            error_bars=error_bars,
+        )
+_VARPlots.irf.__qualname__ = "gretl.Model_var.plot.irf"
 
 class _VECMPlots(_VARPlots):
     """VAR plots extended with VECM-specific error-correction plots."""
@@ -197,7 +235,6 @@ class _VECMPlots(_VARPlots):
         """Plot the VECM error-correction terms (requires the _plot_ec binding)."""
         # This native method belongs to Model_vecm only, not Model_var.
         return self._model._plot_ec()
-
 
 def setup_model_api(_gretl):
     """
