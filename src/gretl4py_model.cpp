@@ -1778,7 +1778,8 @@ template void GretlModel_VAR::set_cholesky_order<py::list>(const py::list&);
 
 py::object GretlModel_VAR::plot (const std::string &type, std::optional<int> equation, std::optional<std::string> mode,
                                  std::optional<int> periods, std::optional<double> alpha, std::optional<bool> error_bars,
-                                 std::variant<int, std::string> targ, std::variant<int, std::string> shock)
+                                 std::variant<int, std::string> targ, std::variant<int, std::string> shock,
+                                 std::optional<bool> histogram)
 {
     //
     // general VAR plotter, i.e. we deal with residuals, roots and IRFs
@@ -1787,9 +1788,33 @@ py::object GretlModel_VAR::plot (const std::string &type, std::optional<int> equ
     const int eqn = equation.value_or(0);
     const std::string plot_mode = mode.value_or("combined");
 
+    auto resolve = [this](const std::variant<int, std::string> &arg, const char *name) -> int
+    {
+        //
+        // Resolve target and shock to zero-based equation numbers.
+        // String arguments identify endogenous variables by name.
+        //
+        int idx;
+
+        if (auto p = std::get_if<int>(&arg)) {
+            idx = *p;
+        } else {
+            idx = find_variable_nr_(std::get<std::string>(arg));
+        }
+
+        if (idx < 0 || idx >= model_->neqns) {
+            throw py::value_error(std::string("Invalid VAR target/shock '") + name
+            + "': expected an endogenous variable name or a zero-based "
+            "equation index in [0, " + std::to_string(model_->neqns - 1) + "]");
+        }
+
+        return idx;
+    };
+
     // At first, we reject bad options
     if (!estimated_) throw std::runtime_error("model is not estimated");
-    if (type != "residuals" && type != "inverse_roots" && type != "irf" && type != "irf_combined") throw std::invalid_argument("Unsupported plot type: " + type);
+    if (type != "residuals" && type != "inverse_roots" && type != "irf"
+        && type != "irf_combined" && type != "fevd") throw std::invalid_argument("Unsupported plot type: " + type);
 
     if (type == "inverse_roots") {
         if (equation.has_value() || mode.has_value()) throw py::type_error("inverse_roots does not accept equation or mode");
@@ -1809,32 +1834,12 @@ py::object GretlModel_VAR::plot (const std::string &type, std::optional<int> equ
         err_ = gretl_VAR_plot_multiple_irf(model_, periods.value_or(default_VAR_horizon(dataset_->dset)),
                                            alpha.value_or(0.0), dataset_->dset, error_bars.value_or(false));
     } else if (type == "irf") {
-        auto resolve = [this](const std::variant<int, std::string> &arg, const char *name) -> int
-        {
-            //
-            // Resolve target and shock to zero-based equation numbers.
-            // String arguments identify endogenous variables by name.
-            //
-            int idx;
-
-            if (auto p = std::get_if<int>(&arg)) {
-                idx = *p;
-            } else {
-                 idx = find_variable_nr_(std::get<std::string>(arg));
-            }
-
-            if (idx < 0 || idx >= model_->neqns) {
-                throw py::value_error(std::string("Invalid VAR target/shock '") + name
-                    + "': expected an endogenous variable name or a zero-based "
-                    "equation index in [0, " + std::to_string(model_->neqns - 1) + "]");
-            }
-
-            return idx;
-        };
-
         err_ = gretl_VAR_plot_impulse_response(model_, resolve(targ, "targ"), resolve(shock, "shock"),
                                                periods.value_or(default_VAR_horizon(dataset_->dset)),
                                                alpha.value_or(0.0), dataset_->dset, error_bars.value_or(false));
+    } else if (type == "fevd") {
+        err_ = gretl_VAR_plot_FEVD(model_, resolve(targ, "targ"), periods.value_or(default_VAR_horizon(dataset_->dset)),
+                                   dataset_->dset, histogram.value_or(true));
     } else if (plot_mode == "multiple") {
         err_ = gretl_system_residual_mplot(model_, ci_, dataset_->dset);
     } else {

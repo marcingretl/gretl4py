@@ -244,7 +244,51 @@ class _VARPlots:
             alpha=alpha,
             error_bars=error_bars,
         )
+
+    def fevd(
+        self,
+        targ: int | str,
+        periods: int | None = None,
+        histogram: bool = True,
+        cholesky_order: str | list | None = None,
+    ) -> Figure | None:
+        """Plot the forecast error variance decomposition for a target variable.
+
+        Parameters
+        ----------
+        targ : int or str
+            Target variable, specified by its zero-based position
+            among the endogenous variables or by its name.
+        periods : int or None, default None
+            Forecast horizon; None uses the libgretl default horizon.
+        histogram : bool, default True
+            Show a stacked bar graph if True, or a line graph otherwise.
+        cholesky_order : str or list or None, default None
+            Cholesky ordering of endogenous variables, specified by names
+            or dataset variable IDs. None preserves the current ordering;
+            an empty string or list restores the default ordering.
+            The specified ordering is retained by the model.
+
+        Returns
+        -------
+        matplotlib.figure.Figure or None
+            The generated plot, if available.
+        """
+        if cholesky_order is not None:
+            self._model.set_cholesky_order(cholesky_order)
+
+        return self._model._plot(
+            "fevd",
+            targ=targ,
+            periods=periods,
+            histogram=histogram,
+        )
+
+_VARPlots.residuals.__qualname__ = "gretl.Model_var.plot.residuals"
+_VARPlots.inverse_roots.__qualname__ = "gretl.Model_var.plot.inverse_roots"
+_VARPlots.irf_combined.__qualname__ = "gretl.Model_var.plot.irf_combined"
 _VARPlots.irf.__qualname__ = "gretl.Model_var.plot.irf"
+_VARPlots.fevd.__qualname__ = "gretl.Model_var.plot.fevd"
 
 class _VECMPlots(_VARPlots):
     """VAR plots extended with VECM-specific error-correction plots."""

@@ -241,7 +241,7 @@ void init_gretl4py_model_py11(py::module_ &m)
     .def("_plot", &GretlModel_VAR::plot,
          py::arg("type").none(false), py::arg("equation") = std::nullopt, py::arg("mode") = std::nullopt,
          py::arg("periods") = std::nullopt, py::arg("alpha") = std::nullopt, py::arg("error_bars") = std::nullopt,
-         py::arg("targ").none(true) = -1, py::arg("shock").none(true) = -1)
+         py::arg("targ") = -1, py::arg("shock") = -1, py::arg("histogram") = true)
     .def("_test", &GretlModel_VAR::test,
          py::arg("type").none(false), py::kw_only())
     .def("irf", py::overload_cast<int, int, double>(&GretlModel_VAR::irf),
