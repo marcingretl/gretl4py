@@ -307,6 +307,8 @@ class _VECMPlots(_VARPlots):
         # This native method belongs to Model_vecm only, not Model_var.
         return self._model._plot_ec()
 
+_VECMPlots.ec_plot.__qualname__ = "gretl.Model_vecm.plot.ec_plot"
+
 def setup_model_api(_gretl):
     """
     Attach methods to the appropriate model classes.
