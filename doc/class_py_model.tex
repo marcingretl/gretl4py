@@ -328,6 +328,45 @@ the fitted model.
 \gretlfpycmd{test()}\label{met:gretlmodel::test}
 \estdesc{\deprecatedv{0.70}}
 
+
+
+\subsubsection{\pythcodeb{gretl.Model\_VAR} methods}
+\gretlfpycmd{set\_cholesky\_order()}\label{met:gretlmodelvar::set_cholesky_order}
+
+\estdesc{This method sets the Cholesky ordering of endogenous variables
+	in an estimated VAR or VECM model.}
+\begin{lstlisting}[style=pythonstylefoot]
+.set_cholesky_order(varlist: str = "") -> None
+.set_cholesky_order(varlist: list) -> None
+\end{lstlisting}
+\generaldesc{The \texttt{varlist} argument specifies a complete permutation
+	of the endogenous variables, either as a space-separated string or
+	as a Python list containing variable names or dataset variable IDs.
+	Integer values refer to dataset variable IDs, not to equation indices.
+	
+	The specified ordering is used for the Cholesky decomposition
+	of the residual covariance matrix and therefore affects subsequent
+	impulse response functions (IRFs) and forecast error variance
+	decompositions (FEVDs). The ordering is retained by the model
+	until explicitly changed or reset.
+	
+	An empty string or an empty list restores the default ordering
+	defined by the original model specification. The method does not
+	modify the estimated VAR/VECM coefficients or require re-estimation.
+	
+	For example, assuming a VAR model with endogenous variables
+	\texttt{LRM}, \texttt{LRY}, \texttt{IBO}, and \texttt{IDE}:}
+\begin{lstlisting}[style=pythonstylefoot]
+m.set_cholesky_order("IBO LRM IDE LRY")
+m.set_cholesky_order(["IBO", "LRM", "IDE", "LRY"])
+m.set_cholesky_order([3, 1, 4, 2])
+
+# Restore the default Cholesky ordering
+m.set_cholesky_order()
+\end{lstlisting}
+
+
+
 % ----------------------------------------------------------------------
 % Model diagnostics and specification tests
 % ----------------------------------------------------------------------

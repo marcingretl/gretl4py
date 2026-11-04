@@ -296,6 +296,8 @@ protected:
     GRETL_VAR *model_ = nullptr;    // libgretl GRETL_VAR struct
 
     int find_variable_nr_ (const std::string &variable_name);
+
+    int find_variable_nr_ (int id);
 public:
     GretlModel_VAR (const std::string &ylist, const int order, GretlCmdIndex ci, const py::kwargs &kwargs);
     GretlModel_VAR (const py::list &varlist, const int order, GretlCmdIndex ci, const py::kwargs &kwargs);
@@ -316,6 +318,9 @@ public:
     GretlMatrixPtr irf (int target, int shock, double alpha = 0);
 
     GretlMatrixPtr irf (const std::string &target, const std::string &shock, double alpha = 0);
+
+    template <typename T>
+    void set_cholesky_order (const T &varlist);
 
     py::object plot (const std::string &type, std::optional<int> equation = std::nullopt,
                      std::optional<std::string> mode = std::nullopt, std::optional<int> periods = std::nullopt,

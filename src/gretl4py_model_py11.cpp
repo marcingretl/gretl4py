@@ -238,6 +238,10 @@ void init_gretl4py_model_py11(py::module_ &m)
     auto gretl_model_var = py::class_<GretlModel_VAR, GretlModel, std::unique_ptr<GretlModel_VAR>>(m, "Model_var", py::dynamic_attr());
 
     gretl_model_var
+    .def("_plot", &GretlModel_VAR::plot,
+         py::arg("type").none(false), py::arg("equation") = std::nullopt, py::arg("mode") = std::nullopt,
+         py::arg("periods") = std::nullopt, py::arg("alpha") = std::nullopt, py::arg("error_bars") = std::nullopt,
+         py::arg("targ").none(true) = -1, py::arg("shock").none(true) = -1)
     .def("_test", &GretlModel_VAR::test,
          py::arg("type").none(false), py::kw_only())
     .def("irf", py::overload_cast<int, int, double>(&GretlModel_VAR::irf),
@@ -245,13 +249,11 @@ void init_gretl4py_model_py11(py::module_ &m)
          py::arg("alpha").none(true) = 0)
     .def("irf", py::overload_cast<const std::string&, const std::string&, double>(&GretlModel_VAR::irf),
          py::arg("target").none(false), py::arg("shock").none(false),
-         py::arg("alpha").none(true) = 0, doc::Model::irf)
+         py::arg("alpha").none(true) = 0, doc::Model_VAR::irf)
     .def("save_uhat", &GretlModel_VAR::save_uhat,
          py::arg("eqn").none(false), py::arg("name").none(true) = "", doc::Model::save_system_uhat)
-    .def("_plot", &GretlModel_VAR::plot,
-         py::arg("type").none(false), py::arg("equation") = std::nullopt, py::arg("mode") = std::nullopt,
-         py::arg("periods") = std::nullopt, py::arg("alpha") = std::nullopt, py::arg("error_bars") = std::nullopt,
-         py::arg("targ").none(true) = -1, py::arg("shock").none(true) = -1);
+    .def("set_cholesky_order", &GretlModel_VAR::set_cholesky_order<std::string>, py::arg("varlist") = "")
+    .def("set_cholesky_order", &GretlModel_VAR::set_cholesky_order<py::list>, py::arg("varlist"), doc::Model_VAR::set_cholesky_order);
     gretl_model_var.attr("__module__") = "gretl";
 
     // VECM
@@ -262,7 +264,7 @@ void init_gretl4py_model_py11(py::module_ &m)
     .def("restrict", &GretlModel_VAR_VECM::restrict,
          py::arg("impose").none(false), py::kw_only(), doc::Model::restrict)
     .def("save_ec_term", &GretlModel_VAR_VECM::save_ec_term,
-         py::arg("nr").none(false), py::arg("name").none(true) = "", doc::Model::save_ec_term);
+         py::arg("nr").none(false), py::arg("name").none(true) = "", doc::Model_VAR::save_ec_term);
     gretl_model_var_vecm.attr("__module__") = "gretl";
 
     // Native Multiple Equation libgretl SYSTEM (NME) GretlModel_NME

@@ -1651,9 +1651,20 @@ int GretlModel_VAR::find_variable_nr_ (const std::string &variable_name)
     // in the fitted VAR/VECM model.
     //
     for (int i=1; i<=model_->neqns; ++i) {
-        if (variable_name == dataset_->get_series_name(model_->ylist[i])) {
-            return i - 1;
-        }
+        if (variable_name == dataset_->get_series_name(model_->ylist[i])) return i - 1;
+    }
+
+    return -1; // not found
+}
+
+int GretlModel_VAR::find_variable_nr_ (int id)
+{
+    //
+    // Find the zero-based equation index of an endogenous variable
+    // using its dataset variable ID.
+    //
+    for (int i=1; i<=model_->neqns; ++i) {
+        if (model_->ylist[i] == id) return i - 1;
     }
 
     return -1; // not found
@@ -1698,6 +1709,73 @@ GretlMatrixPtr GretlModel_VAR::irf (const std::string &target, const std::string
     return irf(target_int, shock_int, alpha);
 }
 
+template <typename T>
+void GretlModel_VAR::set_cholesky_order (const T &varlist)
+{
+    //
+    // Set the Cholesky ordering of endogenous variables.
+    // An empty list restores the default VAR/VECM equation order.
+    //
+    if (!estimated_) throw std::runtime_error("VAR/VECM model has not been estimated");
+
+    gretl_list_ptr vars{nullptr};
+    err_ = 0;
+
+    // Convert the variable specification to dataset variable IDs.
+    if (varlist.empty()) {
+        err_ = gretl_VAR_set_ordering(model_, nullptr);
+        if (err_) handle_gretl_error(err_);
+        return;
+    } else {
+        if constexpr (is_gretllist_arg_v<T>) {
+            vars = dataset_->gretllist(varlist);
+        } else {
+            static_assert(always_false<T>, "GretlModel_VAR::set_cholesky_order(): unsupported type");
+        }
+    }
+    if (vars.get()[0] != model_->neqns) throw std::invalid_argument("Cholesky ordering must include all endogenous variables");
+
+    // Convert dataset IDs to zero-based VAR equation indices.
+    // Check that the ordering is a valid permutation.
+    std::vector<int> indices;
+    std::vector<bool> seen(model_->neqns, false);
+    bool default_order = true;
+
+    indices.reserve(model_->neqns);
+
+    for (int i=1; i<=model_->neqns; ++i) {
+        const int idx = find_variable_nr_(vars.get()[i]);
+
+        if (idx < 0) throw std::invalid_argument("Cholesky ordering contains a non-endogenous variable");
+        if (seen[idx]) throw std::invalid_argument("Cholesky ordering contains duplicate variables");
+
+        seen[idx] = true;
+        indices.push_back(idx);
+
+        if (idx != i - 1) default_order = false;
+    }
+
+    // Restore the default ordering, if requested.
+    if (default_order) {
+        err_ = gretl_VAR_set_ordering(model_, nullptr);
+        if (err_) handle_gretl_error(err_);
+        return;
+    }
+
+    // Construct the ordering vector and transfer its ownership to libgretl.
+    gretl_matrix_ptr ordvec(gretl_vector_alloc(model_->neqns));
+
+    if (!ordvec) handle_gretl_error(E_ALLOC);
+    for (int i=0; i<model_->neqns; ++i) {
+        ordvec->val[i] = indices[i];
+    }
+
+    err_ = gretl_VAR_set_ordering(model_, ordvec.release());
+    if (err_) handle_gretl_error(err_);
+}
+template void GretlModel_VAR::set_cholesky_order<std::string>(const std::string&);
+template void GretlModel_VAR::set_cholesky_order<py::list>(const py::list&);
+
 py::object GretlModel_VAR::plot (const std::string &type, std::optional<int> equation, std::optional<std::string> mode,
                                  std::optional<int> periods, std::optional<double> alpha, std::optional<bool> error_bars,
                                  std::variant<int, std::string> targ, std::variant<int, std::string> shock)
@@ -1728,7 +1806,6 @@ py::object GretlModel_VAR::plot (const std::string &type, std::optional<int> equ
     if (type == "inverse_roots") {
         err_ = gretl_VAR_roots_plot(model_);
     } else if (type == "irf_combined") {
-        // Generate the n-by-n grid of impulse responses using libgretl.
         err_ = gretl_VAR_plot_multiple_irf(model_, periods.value_or(default_VAR_horizon(dataset_->dset)),
                                            alpha.value_or(0.0), dataset_->dset, error_bars.value_or(false));
     } else if (type == "irf") {

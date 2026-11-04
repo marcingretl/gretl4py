@@ -2286,6 +2286,27 @@ namespace doc::Model {
     ).fit()``
     )doc";
 
+    inline constexpr char save_system_uhat[] = R"doc(
+    Add residuals from a specified equation to the dataset.
+
+    Parameters
+    ----------
+    eqn : int
+        1-based equation number.
+    name : str, optional
+        Name of the generated series. If omitted, the name follows the
+        pattern ``m_ID_uhat``, where ``ID`` is the equation's ID.
+
+    Returns
+    -------
+    str
+        Name of the series added to the dataset.
+    )doc";
+
+} // namespace doc::Model
+
+namespace doc::Model_VAR {
+
     inline constexpr char irf[] = R"doc(
     Compute impulse response functions for the VAR or VECM.
 
@@ -2331,21 +2352,37 @@ namespace doc::Model {
         Name of the series added to the dataset.
     )doc";
 
-    inline constexpr char save_system_uhat[] = R"doc(
-    Add residuals from a specified equation to the dataset.
+    inline constexpr char set_cholesky_order[] = R"doc(
+    Set the Cholesky ordering of endogenous variables in a VAR or VECM.
+
+    The ordering is used to identify orthogonalized shocks in subsequent
+    impulse-response and forecast-error variance decomposition calculations.
+    It does not change the estimated VAR/VECM equations.
 
     Parameters
     ----------
-    eqn : int
-        1-based equation number.
-    name : str, optional
-        Name of the generated series. If omitted, the name follows the
-        pattern ``m_ID_uhat``, where ``ID`` is the equation's ID.
+    varlist : str or list, optional
+        A complete permutation of the endogenous variables, specified as
+        a space-separated string or a Python list of variable names or
+        dataset variable IDs. An empty string or list restores the default
+        ordering from the original model specification.
 
     Returns
     -------
-    str
-        Name of the series added to the dataset.
+    None
+
+    Notes
+    -----
+    The selected ordering is retained by the model until changed or reset.
+    Integer values refer to dataset variable IDs, not zero-based equation
+    indices.
+
+    Examples
+    --------
+    ``m.set_cholesky_order("IBO LRM IDE LRY")``
+    ``m.set_cholesky_order(["IBO", "LRM", "IDE", "LRY"])``
+    ``m.set_cholesky_order([3, 1, 4, 2])``
+    ``m.set_cholesky_order()``
     )doc";
 
-} // namespace doc::Model
+} // namespace doc::Model_VAR

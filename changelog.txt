@@ -10,6 +10,7 @@ version 0.64:
     - adding gretl arrays via genr (must be passed as list of items)
     - new plotting apparatus (via gp-executor)
     - new gretlDataset::hflags() method
+    = new gretl.Model_var::set_cholesky_order() method
 
 version 0.63:
     - model-based tests: fix bug where 'varlist' was passed as list

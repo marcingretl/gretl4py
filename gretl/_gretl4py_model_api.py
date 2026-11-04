@@ -167,6 +167,7 @@ class _VARPlots:
         periods: int | None = None,
         alpha: float = 0.0,
         error_bars: bool = False,
+        cholesky_order: str | list | None = None,
     ) -> Figure | None:
         """Plot the grid of impulse responses for all equation pairs.
 
@@ -179,13 +180,21 @@ class _VARPlots:
             intervals (for example, 0.10 requests 90% intervals).
         error_bars : bool, default False
             Show error bars instead of shaded confidence intervals.
+        cholesky_order : str or list or None, default None
+            Cholesky ordering of endogenous variables, specified by names
+            or dataset variable IDs. None preserves the current ordering;
+            an empty string or list restores the default ordering.
+            The specified ordering is retained by the model.
         """
+        if cholesky_order is not None:
+            self._model.set_cholesky_order(cholesky_order)
+
         return self._model._plot(
             "irf_combined",
             periods=periods,
             alpha=alpha,
             error_bars=error_bars,
-        )
+    )
 
     def irf(
         self,
@@ -194,6 +203,7 @@ class _VARPlots:
         periods: int | None = None,
         alpha: float = 0.0,
         error_bars: bool = False,
+        cholesky_order: str | list | None = None,
     ) -> Figure | None:
         """Plot the impulse response of a target variable to a given shock.
 
@@ -212,12 +222,20 @@ class _VARPlots:
             the intervals (e.g., 0.10 requests 90% intervals).
         error_bars : bool, default False
             Show error bars instead of shaded confidence intervals.
+        cholesky_order : str or list or None, default None
+            Cholesky ordering of endogenous variables, specified by names
+            or dataset variable IDs. None preserves the current ordering;
+            an empty string or list restores the default ordering.
+            The specified ordering is retained by the model.
 
         Returns
         -------
         matplotlib.figure.Figure or None
             The generated plot, if available.
         """
+        if cholesky_order is not None:
+            self._model.set_cholesky_order(cholesky_order)
+
         return self._model._plot(
             "irf",
             targ=targ,
