@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <gretl-functions>
-<gretl-function-package name="logging" no-data-ok="true" minver="2026d" lives-in-subdir="true">
+<gretl-function-package name="logging" no-data-ok="true" minver="2026e" lives-in-subdir="true">
 <author email="atecon@posteo.de">Artur Tarassow</author>
-<version>2026d-git</version>
+<version>2026e</version>
 <date>2021-07-08</date>
 <description>Structured logging for script execution</description>
 <tags>C81</tags>

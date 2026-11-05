@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <gretl-functions>
-<gretl-function-package name="regls" no-data-ok="true" minver="2026d" lives-in-subdir="true">
+<gretl-function-package name="regls" no-data-ok="true" minver="2026e" lives-in-subdir="true">
 <author email="cottrell@wfu.edu">Allin Cottrell</author>
-<version>2026d-git</version>
+<version>2026e</version>
 <date>2026-01-21</date>
 <description>Regularized least squares</description>
 <tags>C20 C52</tags>

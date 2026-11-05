@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <gretl-functions>
-<gretl-function-package name="extra" no-data-ok="true" minver="2026d" lives-in-subdir="true">
+<gretl-function-package name="extra" no-data-ok="true" minver="2026e" lives-in-subdir="true">
 <author email="&lt;use the mailing list or trackers&gt;">The gretl team</author>
-<version>2026d-git</version>
+<version>2026e</version>
 <date>2024-03-07</date>
 <description>extra functions for hansl scripting</description>
 <tags>C88</tags>

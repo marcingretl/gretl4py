@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <gretl-functions>
-<gretl-function-package name="dbnomics" no-data-ok="true" minver="2026d" lives-in-subdir="true">
+<gretl-function-package name="dbnomics" no-data-ok="true" minver="2026e" lives-in-subdir="true">
 <author email="r.lucchetti@univpm.it">Riccardo &quot;Jack&quot; Lucchetti and Allin Cottrell</author>
-<version>2026d-git</version>
+<version>2026e</version>
 <date>2025-09-06</date>
 <description>obtain data via dbnomics</description>
 <tags>C81</tags>
