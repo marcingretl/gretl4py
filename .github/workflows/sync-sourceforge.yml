@@ -1,0 +1,44 @@
+
+name: Sync gretl4py from SourceForge
+
+on:
+  # Synchronize every hour at minute 17
+  schedule:
+    - cron: '17 * * * *'
+
+  # Allow manual synchronization
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sourceforge-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Check out the GitHub repository with full history
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # Fetch upstream changes from SourceForge
+      - name: Fetch SourceForge
+        run: |
+          git remote add sourceforge https://git.code.sf.net/p/gretl/gretl4py
+          git fetch --tags sourceforge master
+
+      # Merge upstream changes, preserving this workflow
+      - name: Synchronize GitHub
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git merge --no-edit sourceforge/master
+          git push origin "HEAD:${GITHUB_REF_NAME}"
+          git push origin --tags
