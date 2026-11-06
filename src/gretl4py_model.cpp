@@ -124,7 +124,7 @@ private:
 public:
     NSEPlotContext (MODEL *model, GretlCmdIndex ci, const GretlDatasetPtr &source,
                     DATASET *dset, GretlPlot &plotter, PRN *prn, int x)
-    : model_(model), ci_(ci), source_(source), dset_(dset), plotter_(plotter), prn_(prn), x_(x)
+                    : model_(model), ci_(ci), source_(source), dset_(dset), plotter_(plotter), prn_(prn), x_(x)
     {}
 
     NSEPlotContext (const NSEPlotContext&) = delete;
@@ -134,9 +134,7 @@ public:
     {
         // Restore the attached model dataset after plotting.
         // A private dataset copy is cleaned up by its destructor.
-        if (restore_ && dset_->v > origv_) {
-            dataset_drop_last_variables(dset_, dset_->v - origv_);
-        }
+        if (restore_ && dset_->v > origv_) dataset_drop_last_variables(dset_, dset_->v - origv_);
     }
 
     int fitted (void);
