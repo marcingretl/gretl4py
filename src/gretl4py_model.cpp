@@ -745,7 +745,8 @@ double GretlModel_NSE::adj_rsq (void) const
     return model_->adjrsq;
 }
 
-py::object GretlModel_NSE::plot (const std::string &type, const std::string &xvar, std::optional<int> order)
+py::object GretlModel_NSE::plot (const std::string &type, const std::string &xvar, std::optional<int> order,
+                                 bool bartlett, std::optional<int> width, bool log)
 {
     //
     // general model plotter
@@ -755,12 +756,18 @@ py::object GretlModel_NSE::plot (const std::string &type, const std::string &xva
 
     // Select the dataset corresponding to the estimation sample.
     GretlPlot plotter;
-    DATASET *dset = get_model_dataset_(type == "correlogram" ? OPT_G : OPT_NONE);
+    DATASET *dset = get_model_dataset_(type == "correlogram" || type == "periodogram" || type == "qqplot" ? OPT_G : OPT_NONE);
     int plotlist[4] = {0};
     gretlopt opt = OPT_NONE;
 
     if (type == "correlogram" && !xvar.empty()) throw std::invalid_argument("correlogram does not accept xvar");
+    if (type == "qqplot" && !xvar.empty()) throw py::type_error("qqplot does not accept xvar");
     if (type != "correlogram" && order.has_value()) throw std::invalid_argument("order is supported only for correlogram");
+    if (type == "periodogram" && !xvar.empty()) throw py::type_error("periodogram does not accept xvar");
+    // Periodogram settings must not silently affect other plot types.
+    if (type != "periodogram" && (bartlett || width.has_value() || log))
+        throw std::invalid_argument("bartlett, width and log are supported only for periodogram");
+    if (type == "periodogram" && width.has_value() && !bartlett) throw std::invalid_argument("width requires bartlett=True");
 
     // Resolve the variable on the horizontal axis.
     int x = 0;
@@ -915,12 +922,55 @@ py::object GretlModel_NSE::plot (const std::string &type, const std::string &xva
             opt = static_cast<gretlopt>(OPT_R | OPT_U);
             err_ = corrgram(dset->v - 1, lag_order, npq, dset, opt, printer_.prn_ptr());
         }
+    } else if (type == "periodogram") {
+        // Plot the periodogram of model residuals.
+        // Based on residual_periodogram_callback() from gui/library.c.
+        prepare_temporary_series();
+
+        // Add model residuals temporarily.
+        err_ = genr_fit_resid(model_, dset, M_UHAT);
+
+        if (!err_) {
+            // Use the GUI bandwidth default when Bartlett smoothing is requested.
+            const int T = sample_size(dset);
+            const int bandwidth = bartlett ? width.value_or(auto_spectrum_order(T, OPT_O)) : 0;
+
+            // The Bartlett window must fit within the estimation sample.
+            if (bartlett && (bandwidth < 2 || bandwidth > T / 2)) throw py::value_error("width must be between 2 and half the sample size");
+
+            // Request a plot file even in batch mode.
+            opt = OPT_U;
+            gretl_valid_long_opt(opt, PERGM, "plot", py::handle(), plotter.filename().c_str());
+            if (bartlett) SET_OPT(opt, OPT_O);
+            if (log) SET_OPT(opt, OPT_L);
+
+            // Delegate spectral estimation and plotting to libgretl.
+            err_ = residual_periodogram(dset->Z[dset->v - 1], bandwidth, dset, opt, printer_.prn_ptr());
+        }
+    } else if (type == "qqplot") {
+        // Plot the normal Q-Q graph of model residuals.
+        // Based on residual_qq_plot() from gui/library.c.
+        prepare_temporary_series();
+
+        // Add model residuals temporarily.
+        err_ = genr_fit_resid(model_, dset, M_UHAT);
+
+        if (!err_) {
+            plotlist[0] = 1;
+            plotlist[1] = dset->v - 1;
+
+            // Route Q-Q plot output to the temporary Gnuplot file.
+            opt = OPT_U;
+            gretl_valid_long_opt(opt, QQPLOT, "output", py::handle(), plotter.filename().c_str());
+
+            // Use the GUI defaults: sample-scaled normal quantiles and y = x.
+            err_ = qq_plot(plotlist, dset, OPT_NONE);
+        }
     } else {
         throw py::value_error("Unsupported plot type: " + type);
     }
-
     if (err_) handle_gretl_error(err_);
-    if (type == "correlogram") printer_.print();
+    if (type == "correlogram" || type == "periodogram") printer_.print();
 
     return plotter.display();
 }

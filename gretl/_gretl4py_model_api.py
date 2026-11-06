@@ -103,6 +103,33 @@ class _NSEPlots:
         """
         return self._model._plot("correlogram", order=order)
 
+    def periodogram(self, bartlett: bool = False, width: int | None = None, log: bool = False):
+        """Plot the residual periodogram.
+
+        Parameters
+        ----------
+        bartlett : bool, default False
+            Estimate the spectrum using a Bartlett lag window.
+        width : int or None, default None
+            Bartlett window width; None uses libgretl's GUI default.
+            A custom width requires bartlett=True.
+        log : bool, default False
+            Show the spectrum on a logarithmic scale.
+        """
+        return self._model._plot(
+            "periodogram", bartlett=bartlett, width=width, log=log
+        )
+
+    def qqplot(self):
+        """Plot the normal Q-Q graph of model residuals."""
+        return self._model._plot("qqplot")
+
+_NSEPlots.residuals.__qualname__ = "gretl.Model_NSE.plot.residuals"
+_NSEPlots.fitted_actual.__qualname__ = "gretl.Model_NSE.plot.fitted_actual"
+_NSEPlots.correlogram.__qualname__ = "gretl.Model_NSE.plot.correlogram"
+_NSEPlots.periodogram.__qualname__ = "gretl.Model_NSE.plot.periodogram"
+_NSEPlots.qqplot.__qualname__ = "gretl.Model_NSE.plot.qqplot"
+
 class _VARPlots:
     """Plotting interface for VAR models."""
 
