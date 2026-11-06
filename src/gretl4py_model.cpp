@@ -31,11 +31,13 @@ extern "C" {
     #include <gretl/varprint.h>
     #include <gretl/system.h>
     #include <gretl/compare.h>
+    #include <gretl/matrix_extra.h>
 }
 #include <gretl/forecast.h>
 #include <string>
 #include <regex>
 #include <algorithm>
+#include <cmath>
 
 #define GRETL4PY_MODEL_DEBUG 0
 
@@ -146,6 +148,9 @@ public:
     int periodogram (bool bartlett, std::optional<int> width, bool log);
 
     int qqplot (void);
+
+    int confidence_ellipse (const std::variant<int, std::string> &first,
+                            const std::variant<int, std::string> &second, double alpha);
 };
 
 int NSEPlotContext::fitted (void)
@@ -302,6 +307,76 @@ int NSEPlotContext::qqplot (void)
     // Use the GUI defaults: sample-scaled normal quantiles and y = x.
     return qq_plot(plotlist, dset_, OPT_NONE);
 }
+
+int NSEPlotContext::confidence_ellipse (const std::variant<int, std::string> &first,
+                                        const std::variant<int, std::string> &second, double alpha)
+{
+    // Plot the joint confidence region of two model coefficients.
+    // Based on do_confidence_region() from gui/library.c.
+    if (!(std::isfinite)(alpha) || alpha <= 0.0 || alpha >= 1.0) throw std::invalid_argument("alpha must be strictly between 0 and 1");
+    if (model_->dfd <= 0) throw std::invalid_argument("confidence ellipse requires positive residual degrees of freedom");
+    if (model_->ncoeff < 2) throw std::invalid_argument("confidence ellipse requires at least two coefficients");
+
+    // Resolve zero-based indices and parameter names as reported by libgretl.
+    auto resolve = [this](const std::variant<int, std::string> &parameter) -> int
+    {
+        if (const auto *index = std::get_if<int>(&parameter)) {
+            if (*index < 0 || *index >= model_->ncoeff) throw std::invalid_argument("coefficient index out of range");
+            return *index;
+        }
+
+        const std::string &name = std::get<std::string>(parameter);
+        int found = -1;
+        char pname[VNAMELEN] = {0};
+
+        for (int k=0; k<model_->ncoeff; ++k) {
+            gretl_model_get_param_name(model_, dset_, k, pname);
+            if (name == pname) {
+                if (found >= 0) throw std::invalid_argument("ambiguous coefficient name: " + name);
+                found = k;
+            }
+        }
+        if (found < 0) throw std::invalid_argument("unknown coefficient name: " + name);
+        return found;
+    };
+
+    const int i = resolve(first);
+    const int j = resolve(second);
+    if (i == j) throw std::invalid_argument("select two distinct coefficients");
+
+    // Extract the 2x2 coefficient covariance matrix in model order.
+    std::vector<char> mask(model_->ncoeff, 0);
+    mask[i] = mask[j] = 1;
+    int err = 0;
+    gretl_matrix_ptr V(gretl_vcv_matrix_from_model(model_, mask.data(), &err));
+
+    if (err) return err;
+    if (!V) return E_ALLOC;
+
+    // The user chooses the order of the axes; swap the diagonal variances
+    // when the requested coefficient order differs from the model order.
+    // The off-diagonal covariance is unchanged for a symmetric 2x2 matrix.
+    if (i > j) {
+        const double v00 = gretl_matrix_get(V.get(), 0, 0);
+        const double v11 = gretl_matrix_get(V.get(), 1, 1);
+        gretl_matrix_set(V.get(), 0, 0, v11);
+        gretl_matrix_set(V.get(), 1, 1, v00);
+    }
+
+    double estimates[2] = {model_->coeff[i], model_->coeff[j]};
+    const double tcrit = student_cdf_inverse(model_->dfd, 1.0 - alpha / 2.0);
+    const double Fcrit = 2.0 * snedecor_critval(2, model_->dfd, alpha);
+    char iname[VNAMELEN] = {0};
+    char jname[VNAMELEN] = {0};
+    gretl_model_get_param_name(model_, dset_, i, iname);
+    gretl_model_get_param_name(model_, dset_, j, jname);
+
+    // PLOT_ELLIPSE reads the output file setting from GNUPLOT.
+    register_output_(GNUPLOT, "output", OPT_NONE);
+
+    return confidence_ellipse_plot(V.get(), estimates, tcrit, Fcrit, alpha, iname, jname);
+}
+
 } // namespace
 
 //
@@ -1021,6 +1096,23 @@ py::object GretlModel_NSE::plot (const std::string &type, const std::string &xva
     }
     if (err_) handle_gretl_error(err_);
     if (type == "correlogram" || type == "periodogram") printer_.print();
+
+    return plotter.display();
+}
+
+py::object GretlModel_NSE::plot_confidence_ellipse (const std::variant<int, std::string> &first,
+                                                    const std::variant<int, std::string> &second, double alpha)
+{
+    // Confidence ellipses operate on model coefficients, not residual series.
+    if (!estimated_) throw std::runtime_error("model is not estimated");
+
+    GretlPlot plotter;
+    DATASET *dset = get_model_dataset_();
+    NSEPlotContext ctx(model_, ci_, dataset_, dset, plotter, printer_.prn_ptr(), 0);
+
+    err_ = ctx.confidence_ellipse(first, second, alpha);
+    if (err_) handle_gretl_error(err_);
+    printer_.print();
 
     return plotter.display();
 }

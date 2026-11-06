@@ -141,6 +141,9 @@ public:
 
     py::object plot (const std::string &type, const std::string &xvar = "", std::optional<int> order = std::nullopt,
                      bool bartlett = false, std::optional<int> width = std::nullopt, bool log = false);
+
+    py::object plot_confidence_ellipse (const std::variant<int, std::string> &first,
+                                        const std::variant<int, std::string> &second, double alpha = 0.05);
 };
 
 //

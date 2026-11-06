@@ -124,11 +124,24 @@ class _NSEPlots:
         """Plot the normal Q-Q graph of model residuals."""
         return self._model._plot("qqplot")
 
+    def confidence_ellipse(self, first: int | str, second: int | str, alpha: float = 0.05) -> Figure | None:
+        """Plot the joint confidence ellipse of two model coefficients.
+
+        Parameters
+        ----------
+        first, second : int or str
+            Zero-based coefficient indices or parameter names.
+        alpha : float, default 0.05
+            Non-coverage probability (0.05 gives a 95% confidence region).
+        """
+        return self._model._plot_confidence_ellipse(first, second, alpha)
+
 _NSEPlots.residuals.__qualname__ = "gretl.Model_NSE.plot.residuals"
 _NSEPlots.fitted_actual.__qualname__ = "gretl.Model_NSE.plot.fitted_actual"
 _NSEPlots.correlogram.__qualname__ = "gretl.Model_NSE.plot.correlogram"
 _NSEPlots.periodogram.__qualname__ = "gretl.Model_NSE.plot.periodogram"
 _NSEPlots.qqplot.__qualname__ = "gretl.Model_NSE.plot.qqplot"
+_NSEPlots.confidence_ellipse.__qualname__ = "gretl.Model_NSE.plot.confidence_ellipse"
 
 class _VARPlots:
     """Plotting interface for VAR models."""
