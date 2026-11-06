@@ -344,6 +344,8 @@ prepare_runtime = custom_target(
   output: 'runtime-prepared.stamp',
   command: [python, '@INPUT@'] + runtime_args,
   build_by_default: true,
+  # Always refresh runtime binaries, even when the sources appear unchanged.
+  build_always_stale: true,
 )
 
 ###########################################################################

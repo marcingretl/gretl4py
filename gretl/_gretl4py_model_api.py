@@ -88,6 +88,21 @@ class _NSEPlots:
         """Plot observed and fitted values, optionally against a variable."""
         return self._model._plot("fitted", xvar=xvar)
 
+    def correlogram(self, order: int | None = None) -> Figure | None:
+        """Plot the autocorrelation and partial autocorrelation of model residuals.
+
+        Parameters
+        ----------
+        order : int or None, default None
+            Maximum lag order. None uses the libgretl default.
+
+        Returns
+        -------
+        matplotlib.figure.Figure or None
+            The generated plot, if available.
+        """
+        return self._model._plot("correlogram", order=order)
+
 class _VARPlots:
     """Plotting interface for VAR models."""
 

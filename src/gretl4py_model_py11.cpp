@@ -119,7 +119,7 @@ void init_gretl4py_model_py11(py::module_ &m)
     .def("save_h", &GretlModel_NSE::gretl_get_fit_or_resid<M_H>,
          py::arg("name").none(true) = "", doc::Model::save_h)
     .def("_plot", &GretlModel_NSE::plot,
-         py::arg("type").none(false), py::arg("xvar").none(true) = "")
+         py::arg("type").none(false), py::arg("xvar").none(true) = "", py::arg("order") = std::nullopt)
     .def("_test",
          [](GretlModel_NSE &self, const std::string &type, const py::kwargs &kwargs) -> GretlBundlePtr
          {

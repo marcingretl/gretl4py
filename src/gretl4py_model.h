@@ -50,6 +50,7 @@ protected:
     const GretlObjType model_obj_type_; // libgretl's object type (in model context)
     const GretlCmdIndex ci_;            // command index used
     bool estimated_ = false;            // if model already estimated
+    bool model_registered_ = false;     // if model was registered in libgretl
     gretlopt opt_ = OPT_NONE;           // instance-wide options (including tests and forecasts)
     mutable int err_ = 0;               // holds libgretl errors (instance-wide)
     GretlDatasetPtr dataset_;           // dataset used
@@ -138,7 +139,7 @@ public:
 
     double adj_rsq (void) const;
 
-    py::object plot (const std::string &type, const std::string &xvar = "");
+    py::object plot (const std::string &type, const std::string &xvar = "", std::optional<int> order = std::nullopt);
 };
 
 //

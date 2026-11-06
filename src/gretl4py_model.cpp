@@ -165,17 +165,18 @@ void GretlModel::save_model_ (T *model)
     // bundle produced by libgretl.
     // We also add the @summary text produced by libgretl's printmodel().
     //
-    // NOTE: whatever happens later, we "transfer" the model to libgretl,
-    // so from that very moment libgretl owns the memory
-    gretl_object_ref(model, model_obj_type_); // FIXME: we need another flag, i.e. bool model_registered_ = true/false for destructor
-
-    // if any errors recorded, we throw an exception here
+    // Check estimation errors before acquiring a libgretl reference.
     if constexpr (std::is_same_v<T, MODEL>) {
         err_ = model->errcode;
     } else if constexpr (std::is_same_v<T, GRETL_VAR>) {
         err_ = model->err;
     }
     if (err_) handle_gretl_error(err_);
+
+    // Acquire the reference owned by this C++ wrapper.
+    // This reference must be released in the model destructor.
+    gretl_object_ref(model, model_obj_type_);
+    model_registered_ = true;
 
     // we link model to the dataset used for estimation
     dataset_->linked_models_add(id_);
@@ -459,10 +460,12 @@ GretlModel_NSE::GretlModel_NSE (GretlCmdIndex ci, const py::kwargs &kwargs) : Gr
 
 GretlModel_NSE::~GretlModel_NSE (void)
 {
-    if (!this->estimated_ && this->model_ != nullptr) {
-        gretl_model_free(this->model_);
+    if (!model_) return;
+
+    if (model_registered_) {
+        gretl_object_unref(model_, model_obj_type_);
     } else {
-        gretl_object_unref(this->model_, this->model_obj_type_);
+        gretl_model_free(model_);
     }
 }
 
@@ -742,7 +745,7 @@ double GretlModel_NSE::adj_rsq (void) const
     return model_->adjrsq;
 }
 
-py::object GretlModel_NSE::plot (const std::string &type, const std::string &xvar)
+py::object GretlModel_NSE::plot (const std::string &type, const std::string &xvar, std::optional<int> order)
 {
     //
     // general model plotter
@@ -752,23 +755,27 @@ py::object GretlModel_NSE::plot (const std::string &type, const std::string &xva
 
     // Select the dataset corresponding to the estimation sample.
     GretlPlot plotter;
-    DATASET *dset = get_model_dataset_();
+    DATASET *dset = get_model_dataset_(type == "correlogram" ? OPT_G : OPT_NONE);
     int plotlist[4] = {0};
     gretlopt opt = OPT_NONE;
+
+    if (type == "correlogram" && !xvar.empty()) throw std::invalid_argument("correlogram does not accept xvar");
+    if (type != "correlogram" && order.has_value()) throw std::invalid_argument("order is supported only for correlogram");
 
     // Resolve the variable on the horizontal axis.
     int x = 0;
 
     if (!xvar.empty()) {
         x = current_series_index(dset, xvar.c_str());
-        if (x < 0) throw py::value_error("Unknown variable: " + xvar);
+        if (x < 0) throw std::invalid_argument("Unknown variable: " + xvar);
     }
 
     // Make a private copy only when using the user's dataset.
     // An attached model dataset can be modified temporarily.
     GretlDatasetPtr plot_data;
 
-    auto prepare_plot_data = [&]() {
+    auto prepare_plot_data = [&]() -> void
+    {
         if (dset == dataset_->dset) {
             plot_data = GretlDataset::clone(*dataset_);
             dset = plot_data->dset;
@@ -777,7 +784,8 @@ py::object GretlModel_NSE::plot (const std::string &type, const std::string &xva
 
     // Restore the attached model dataset after plotting.
     // A private dataset copy is cleaned up by its destructor.
-    struct TemporarySeriesGuard {
+    struct TemporarySeriesGuard
+    {
         DATASET *dset = nullptr;
         int origv = 0;
         bool active = false;
@@ -860,8 +868,7 @@ py::object GretlModel_NSE::plot (const std::string &type, const std::string &xva
                 plotlist[1] = uhatno;
                 strcpy(dset->varname[uhatno], "residual");
                 if (yno > 0) {
-                    std::string label = "residual for " +
-                    std::string(dset->varname[yno]);
+                    std::string label = "residual for " + std::string(dset->varname[yno]);
 
                     series_set_label(dset, uhatno, label.c_str());
                 }
@@ -883,11 +890,37 @@ py::object GretlModel_NSE::plot (const std::string &type, const std::string &xva
                 err_ = gnuplot(plotlist, nullptr, dset, opt);
             }
         }
+    } else if (type == "correlogram") {
+        // Plot the correlogram of model residuals.
+        // Based on residual_correlogram_callback() from gui/library.c.
+        prepare_temporary_series();
+
+        // Add model residuals temporarily.
+        err_ = genr_fit_resid(model_, dset, M_UHAT);
+
+        if (!err_) {
+            // Account for estimated ARMA coefficients in the Ljung-Box test.
+            const int npq = model_->ci == ARMA ? arma_model_get_n_arma_coeffs(model_) : 0;
+
+            // Use the GUI default lag order unless explicitly specified.
+            const int lag_order = order.value_or(auto_acf_order(sample_size(dset)));
+
+            if (lag_order < 1) throw std::invalid_argument("order must be positive");
+
+            // Register the correlogram plot output.
+            opt = OPT_U;
+            gretl_valid_long_opt(opt, CORRGM, "plot", py::handle(), plotter.filename().c_str());
+
+            // Compute and plot the residual correlogram.
+            opt = static_cast<gretlopt>(OPT_R | OPT_U);
+            err_ = corrgram(dset->v - 1, lag_order, npq, dset, opt, printer_.prn_ptr());
+        }
     } else {
         throw py::value_error("Unsupported plot type: " + type);
     }
 
     if (err_) handle_gretl_error(err_);
+    if (type == "correlogram") printer_.print();
 
     return plotter.display();
 }
