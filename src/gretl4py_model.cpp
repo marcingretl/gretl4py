@@ -745,6 +745,238 @@ double GretlModel_NSE::adj_rsq (void) const
     return model_->adjrsq;
 }
 
+namespace {
+// Keep temporary plot series and a private dataset copy alive during plotting.
+// The cleanup behavior matches the former TemporarySeriesGuard in plot().
+class NSEPlotContext
+{
+private:
+    MODEL *model_;                  // fitted single-equation model (not owned)
+    GretlCmdIndex ci_;              // estimator command index
+    const GretlDatasetPtr &source_; // original dataset (not owned)
+    DATASET *dset_;                 // plotting dataset, possibly a private copy
+    GretlPlot &plotter_;            // plot output owner
+    PRN *prn_;                      // libgretl printer (not owned)
+    int x_;                         // horizontal-axis variable number
+    GretlDatasetPtr plot_data_;     // optional private dataset copy
+    int origv_ = 0;                 // original variable count for attached data
+    bool prepared_ = false;         // whether temporary data were prepared
+    bool restore_ = false;          // whether to drop attached temporary series
+
+    // Make a private copy only when using the user's dataset.
+    // An attached model dataset can be modified temporarily.
+    // Prepare the dataset and register temporary-series cleanup.
+    void prepare_temporary_series_ (void)
+    {
+        if (prepared_) return;
+
+        if (dset_ == source_->dset) {
+            plot_data_ = GretlDataset::clone(*source_);
+            dset_ = plot_data_->dset;
+        } else {
+            origv_ = dset_->v;
+            restore_ = true;
+        }
+        prepared_ = true;
+    }
+
+    // Add fitted values or residuals with shared dataset cleanup.
+    int add_model_series_ (ModelDataIndex which)
+    {
+        prepare_temporary_series_();
+        return genr_fit_resid(model_, dset_, which);
+    }
+
+    // Register the temporary Gnuplot output for a libgretl command.
+    void register_output_ (GretlCmdIndex command, const char *key, gretlopt opt)
+    {
+        gretl_valid_long_opt(opt, command, key, py::handle(), plotter_.filename().c_str());
+    }
+public:
+    NSEPlotContext (MODEL *model, GretlCmdIndex ci, const GretlDatasetPtr &source,
+                    DATASET *dset, GretlPlot &plotter, PRN *prn, int x)
+        : model_(model), ci_(ci), source_(source), dset_(dset), plotter_(plotter), prn_(prn), x_(x)
+    {}
+
+    NSEPlotContext (const NSEPlotContext&) = delete;
+    NSEPlotContext &operator= (const NSEPlotContext&) = delete;
+
+    ~NSEPlotContext (void)
+    {
+        // Restore the attached model dataset after plotting.
+        // A private dataset copy is cleaned up by its destructor.
+        if (restore_ && dset_->v > origv_) {
+            dataset_drop_last_variables(dset_, dset_->v - origv_);
+        }
+    }
+
+    int fitted (void);
+
+    int residuals (void);
+
+    int correlogram (std::optional<int> order);
+
+    int periodogram (bool bartlett, std::optional<int> width, bool log);
+
+    int qqplot (void);
+};
+
+int NSEPlotContext::fitted (void)
+{
+    // based on fit_actual_plot() from gui/library.c
+    gretlopt opt = OPT_A;
+    int plotlist[4] = {0};
+
+    // Force libgretl to write the plot to our temporary file.
+    register_output_(GNUPLOT, "output", opt);
+
+    // Prefer a fitted-value formula when available.
+    gretl_char_ptr formula(gretl_model_get_fitted_formula(model_, x_, dset_));
+
+    if (formula) {
+        plotlist[0] = 3;
+        plotlist[1] = 0;
+        plotlist[2] = gretl_model_get_depvar(model_);
+        plotlist[3] = x_;
+        return gnuplot(plotlist, formula.get(), dset_, opt);
+    }
+
+    // Add fitted values temporarily.
+    const int err = add_model_series_(M_YHAT);
+    if (err) return err;
+
+    plotlist[0] = 3;
+    plotlist[1] = dset_->v - 1;
+    plotlist[2] = gretl_model_get_depvar(model_);
+    if (x_) {
+        plotlist[3] = x_;
+    } else {
+        plotlist[0] = 2;
+        SET_OPT(opt, OPT_T);
+        if (dataset_is_time_series(dset_)) SET_OPT(opt, OPT_O);
+    }
+    return gnuplot(plotlist, nullptr, dset_, opt);
+}
+
+int NSEPlotContext::residuals (void)
+{
+    // Based on resid_plot() from gui/library.c.
+    gretlopt opt = OPT_R;
+    int plotlist[4] = {0};
+
+    // Force libgretl to write the plot to our temporary file.
+    register_output_(GNUPLOT, "output", opt);
+
+    if (ci_ == GARCH && !(model_->opt & OPT_Z) && x_ == 0) {
+        // Use libgretl's dedicated GARCH residual plot.
+        return garch_resid_plot(model_, dset_);
+    }
+
+    // Add residuals temporarily.
+    const int err = add_model_series_(M_UHAT);
+    if (err) return err;
+
+    const int uhatno = dset_->v - 1;
+    const int yno = gretl_model_get_depvar(model_);
+
+    plotlist[0] = 1;
+    plotlist[1] = uhatno;
+    strcpy(dset_->varname[uhatno], "residual");
+    if (yno > 0) {
+        std::string label = "residual for " + std::string(dset_->varname[yno]);
+
+        series_set_label(dset_, uhatno, label.c_str());
+    }
+    if (x_) {
+        // Plot residuals against the selected variable.
+        plotlist[0] = 2;
+        plotlist[2] = x_;
+    } else {
+        // Plot residuals against observations or time.
+        SET_OPT(opt, OPT_T);
+        if (dataset_is_time_series(dset_) || dataset_is_panel(dset_)) SET_OPT(opt, OPT_O);
+    }
+
+    // Match the GUI treatment of standardized GARCH residuals.
+    if (ci_ == GARCH && (model_->opt & OPT_Z)) {
+        series_set_display_name(dset_, uhatno, "standardized residual");
+        opt = static_cast<gretlopt>(opt & ~OPT_R);
+    }
+    return gnuplot(plotlist, nullptr, dset_, opt);
+}
+
+int NSEPlotContext::correlogram (std::optional<int> order)
+{
+    // Plot the correlogram of model residuals.
+    // Based on residual_correlogram_callback() from gui/library.c.
+
+    // Add model residuals temporarily.
+    const int err = add_model_series_(M_UHAT);
+    if (err) return err;
+
+    // Account for estimated ARMA coefficients in the Ljung-Box test.
+    const int npq = model_->ci == ARMA ? arma_model_get_n_arma_coeffs(model_) : 0;
+
+    // Use the GUI default lag order unless explicitly specified.
+    const int lag_order = order.value_or(auto_acf_order(sample_size(dset_)));
+
+    if (lag_order < 1) throw std::invalid_argument("order must be positive");
+
+    // Register the correlogram plot output.
+    register_output_(CORRGM, "plot", OPT_U);
+
+    // Compute and plot the residual correlogram.
+    const gretlopt opt = static_cast<gretlopt>(OPT_R | OPT_U);
+    return corrgram(dset_->v - 1, lag_order, npq, dset_, opt, prn_);
+}
+
+int NSEPlotContext::periodogram (bool bartlett, std::optional<int> width, bool log)
+{
+    // Plot the periodogram of model residuals.
+    // Based on residual_periodogram_callback() from gui/library.c.
+
+    // Add model residuals temporarily.
+    const int err = add_model_series_(M_UHAT);
+    if (err) return err;
+
+    // Use the GUI bandwidth default when Bartlett smoothing is requested.
+    const int T = sample_size(dset_);
+    const int bandwidth = bartlett ? width.value_or(auto_spectrum_order(T, OPT_O)) : 0;
+
+    // The Bartlett window must fit within the estimation sample.
+    if (bartlett && (bandwidth < 2 || bandwidth > T / 2)) throw py::value_error("width must be between 2 and half the sample size");
+
+    // Request a plot file even in batch mode.
+    register_output_(PERGM, "plot", OPT_U);
+    gretlopt opt = OPT_U;
+    if (bartlett) SET_OPT(opt, OPT_O);
+    if (log) SET_OPT(opt, OPT_L);
+
+    // Delegate spectral estimation and plotting to libgretl.
+    return residual_periodogram(dset_->Z[dset_->v - 1], bandwidth, dset_, opt, prn_);
+}
+
+int NSEPlotContext::qqplot (void)
+{
+    // Plot the normal Q-Q graph of model residuals.
+    // Based on residual_qq_plot() from gui/library.c.
+
+    // Add model residuals temporarily.
+    const int err = add_model_series_(M_UHAT);
+    if (err) return err;
+
+    int plotlist[4] = {0};
+    plotlist[0] = 1;
+    plotlist[1] = dset_->v - 1;
+
+    // Route Q-Q plot output to the temporary Gnuplot file.
+    register_output_(QQPLOT, "output", OPT_U);
+
+    // Use the GUI defaults: sample-scaled normal quantiles and y = x.
+    return qq_plot(plotlist, dset_, OPT_NONE);
+}
+} // namespace
+
 py::object GretlModel_NSE::plot (const std::string &type, const std::string &xvar, std::optional<int> order,
                                  bool bartlett, std::optional<int> width, bool log)
 {
@@ -757,8 +989,6 @@ py::object GretlModel_NSE::plot (const std::string &type, const std::string &xva
     // Select the dataset corresponding to the estimation sample.
     GretlPlot plotter;
     DATASET *dset = get_model_dataset_(type == "correlogram" || type == "periodogram" || type == "qqplot" ? OPT_G : OPT_NONE);
-    int plotlist[4] = {0};
-    gretlopt opt = OPT_NONE;
 
     if (type == "correlogram" && !xvar.empty()) throw std::invalid_argument("correlogram does not accept xvar");
     if (type == "qqplot" && !xvar.empty()) throw py::type_error("qqplot does not accept xvar");
@@ -777,195 +1007,19 @@ py::object GretlModel_NSE::plot (const std::string &type, const std::string &xva
         if (x < 0) throw std::invalid_argument("Unknown variable: " + xvar);
     }
 
-    // Make a private copy only when using the user's dataset.
-    // An attached model dataset can be modified temporarily.
-    GretlDatasetPtr plot_data;
-
-    auto prepare_plot_data = [&]() -> void
-    {
-        if (dset == dataset_->dset) {
-            plot_data = GretlDataset::clone(*dataset_);
-            dset = plot_data->dset;
-        }
-    };
-
-    // Restore the attached model dataset after plotting.
-    // A private dataset copy is cleaned up by its destructor.
-    struct TemporarySeriesGuard
-    {
-        DATASET *dset = nullptr;
-        int origv = 0;
-        bool active = false;
-
-        ~TemporarySeriesGuard()
-        {
-            if (active && dset->v > origv) {
-                dataset_drop_last_variables(dset, dset->v - origv);
-            }
-        }
-    };
-
-    TemporarySeriesGuard guard;
-
-    // Prepare the dataset and register temporary-series cleanup.
-    auto prepare_temporary_series = [&]() {
-        prepare_plot_data();
-        guard.dset = dset;
-        guard.origv = dset->v;
-        guard.active = !plot_data;
-    };
+    // Keep the selected dataset and any temporary series alive until display().
+    NSEPlotContext ctx(model_, ci_, dataset_, dset, plotter, printer_.prn_ptr(), x);
 
     if (type == "fitted") {
-        // based on fit_actual_plot() from gui/library.c
-        opt = OPT_A;
-
-        // Force libgretl to write the plot to our temporary file.
-        prepare_plot_(plotter, opt);
-
-        // Prefer a fitted-value formula when available.
-        gretl_char_ptr formula(gretl_model_get_fitted_formula(model_, x, dset));
-
-        if (formula) {
-            plotlist[0] = 3;
-            plotlist[1] = 0;
-            plotlist[2] = gretl_model_get_depvar(model_);
-            plotlist[3] = x;
-            err_ = gnuplot(plotlist, formula.get(), dset, opt);
-        } else {
-            prepare_temporary_series();
-
-            // Add fitted values temporarily.
-            err_ = genr_fit_resid(model_, dset, M_YHAT);
-
-            if (!err_) {
-                plotlist[0] = 3;
-                plotlist[1] = dset->v - 1;
-                plotlist[2] = gretl_model_get_depvar(model_);
-                if (x) {
-                    plotlist[3] = x;
-                } else {
-                    plotlist[0] = 2;
-                    SET_OPT(opt, OPT_T);
-                    if (dataset_is_time_series(dset)) SET_OPT(opt, OPT_O);
-                }
-                err_ = gnuplot(plotlist, nullptr, dset, opt);
-            }
-        }
+        err_ = ctx.fitted();
     } else if (type == "residuals") {
-        // Based on resid_plot() from gui/library.c.
-        opt = OPT_R;
-
-        // Force libgretl to write the plot to our temporary file.
-        gretl_valid_long_opt(opt, GNUPLOT, "output", py::handle(), plotter.filename().c_str());
-
-        if (ci_ == GARCH && !(model_->opt & OPT_Z) && x == 0) {
-            // Use libgretl's dedicated GARCH residual plot.
-            err_ = garch_resid_plot(model_, dset);
-        } else {
-            prepare_temporary_series();
-
-            // Add residuals temporarily.
-            err_ = genr_fit_resid(model_, dset, M_UHAT);
-
-            if (!err_) {
-                const int uhatno = dset->v - 1;
-                const int yno = gretl_model_get_depvar(model_);
-
-                plotlist[0] = 1;
-                plotlist[1] = uhatno;
-                strcpy(dset->varname[uhatno], "residual");
-                if (yno > 0) {
-                    std::string label = "residual for " + std::string(dset->varname[yno]);
-
-                    series_set_label(dset, uhatno, label.c_str());
-                }
-                if (x) {
-                    // Plot residuals against the selected variable.
-                    plotlist[0] = 2;
-                    plotlist[2] = x;
-                } else {
-                    // Plot residuals against observations or time.
-                    SET_OPT(opt, OPT_T);
-                    if (dataset_is_time_series(dset) || dataset_is_panel(dset)) SET_OPT(opt, OPT_O);
-                }
-
-                // Match the GUI treatment of standardized GARCH residuals.
-                if (ci_ == GARCH && (model_->opt & OPT_Z)) {
-                    series_set_display_name(dset, uhatno, "standardized residual");
-                    opt = static_cast<gretlopt>(opt & ~OPT_R);
-                }
-                err_ = gnuplot(plotlist, nullptr, dset, opt);
-            }
-        }
+        err_ = ctx.residuals();
     } else if (type == "correlogram") {
-        // Plot the correlogram of model residuals.
-        // Based on residual_correlogram_callback() from gui/library.c.
-        prepare_temporary_series();
-
-        // Add model residuals temporarily.
-        err_ = genr_fit_resid(model_, dset, M_UHAT);
-
-        if (!err_) {
-            // Account for estimated ARMA coefficients in the Ljung-Box test.
-            const int npq = model_->ci == ARMA ? arma_model_get_n_arma_coeffs(model_) : 0;
-
-            // Use the GUI default lag order unless explicitly specified.
-            const int lag_order = order.value_or(auto_acf_order(sample_size(dset)));
-
-            if (lag_order < 1) throw std::invalid_argument("order must be positive");
-
-            // Register the correlogram plot output.
-            opt = OPT_U;
-            gretl_valid_long_opt(opt, CORRGM, "plot", py::handle(), plotter.filename().c_str());
-
-            // Compute and plot the residual correlogram.
-            opt = static_cast<gretlopt>(OPT_R | OPT_U);
-            err_ = corrgram(dset->v - 1, lag_order, npq, dset, opt, printer_.prn_ptr());
-        }
+        err_ = ctx.correlogram(order);
     } else if (type == "periodogram") {
-        // Plot the periodogram of model residuals.
-        // Based on residual_periodogram_callback() from gui/library.c.
-        prepare_temporary_series();
-
-        // Add model residuals temporarily.
-        err_ = genr_fit_resid(model_, dset, M_UHAT);
-
-        if (!err_) {
-            // Use the GUI bandwidth default when Bartlett smoothing is requested.
-            const int T = sample_size(dset);
-            const int bandwidth = bartlett ? width.value_or(auto_spectrum_order(T, OPT_O)) : 0;
-
-            // The Bartlett window must fit within the estimation sample.
-            if (bartlett && (bandwidth < 2 || bandwidth > T / 2)) throw py::value_error("width must be between 2 and half the sample size");
-
-            // Request a plot file even in batch mode.
-            opt = OPT_U;
-            gretl_valid_long_opt(opt, PERGM, "plot", py::handle(), plotter.filename().c_str());
-            if (bartlett) SET_OPT(opt, OPT_O);
-            if (log) SET_OPT(opt, OPT_L);
-
-            // Delegate spectral estimation and plotting to libgretl.
-            err_ = residual_periodogram(dset->Z[dset->v - 1], bandwidth, dset, opt, printer_.prn_ptr());
-        }
+        err_ = ctx.periodogram(bartlett, width, log);
     } else if (type == "qqplot") {
-        // Plot the normal Q-Q graph of model residuals.
-        // Based on residual_qq_plot() from gui/library.c.
-        prepare_temporary_series();
-
-        // Add model residuals temporarily.
-        err_ = genr_fit_resid(model_, dset, M_UHAT);
-
-        if (!err_) {
-            plotlist[0] = 1;
-            plotlist[1] = dset->v - 1;
-
-            // Route Q-Q plot output to the temporary Gnuplot file.
-            opt = OPT_U;
-            gretl_valid_long_opt(opt, QQPLOT, "output", py::handle(), plotter.filename().c_str());
-
-            // Use the GUI defaults: sample-scaled normal quantiles and y = x.
-            err_ = qq_plot(plotlist, dset, OPT_NONE);
-        }
+        err_ = ctx.qqplot();
     } else {
         throw py::value_error("Unsupported plot type: " + type);
     }
