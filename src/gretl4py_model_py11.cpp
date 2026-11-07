@@ -118,6 +118,7 @@ void init_gretl4py_model_py11(py::module_ &m)
          py::arg("name").none(true) = "", doc::Model::save_ahat)
     .def("save_h", &GretlModel_NSE::gretl_get_fit_or_resid<M_H>,
          py::arg("name").none(true) = "", doc::Model::save_h)
+    .def("confidence_intervals", &GretlModel_NSE::confidence_intervals, doc::Model::confidence_intervals)
     .def("_plot", &GretlModel_NSE::plot,
          py::arg("type").none(false), py::arg("xvar").none(true) = "", py::arg("order") = std::nullopt,
          py::arg("bartlett") = false, py::arg("width") = std::nullopt, py::arg("log") = false)

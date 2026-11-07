@@ -2303,6 +2303,24 @@ namespace doc::Model {
         Name of the series added to the dataset.
     )doc";
 
+    inline constexpr char confidence_intervals[] = R"doc(
+    Compute and display confidence intervals for the estimated model coefficients.
+
+    By default, 95% confidence intervals are computed using the standard
+    errors of the coefficient estimates. The results are also printed
+    in the standard gretl format.
+
+    Returns
+    -------
+    gretl.Matrix
+        Matrix containing coefficient estimates and their lower and upper
+        confidence bounds.
+
+    Examples
+    --------
+    ``ci = model.confidence_intervals()``
+    )doc";
+
 } // namespace doc::Model
 
 namespace doc::Model_VAR {

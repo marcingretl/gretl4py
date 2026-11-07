@@ -136,16 +136,24 @@ class _NSEPlots:
         """
         return self._model._plot_confidence_ellipse(first, second, alpha)
 
-    def leverage(self):
-        """Plot leverage and influence of observations in an OLS model."""
-        return self._model._plot("leverage")
-
 _NSEPlots.residuals.__qualname__ = "gretl.Model_NSE.plot.residuals"
 _NSEPlots.fitted_actual.__qualname__ = "gretl.Model_NSE.plot.fitted_actual"
 _NSEPlots.correlogram.__qualname__ = "gretl.Model_NSE.plot.correlogram"
 _NSEPlots.periodogram.__qualname__ = "gretl.Model_NSE.plot.periodogram"
 _NSEPlots.qqplot.__qualname__ = "gretl.Model_NSE.plot.qqplot"
 _NSEPlots.confidence_ellipse.__qualname__ = "gretl.Model_NSE.plot.confidence_ellipse"
+
+
+class _OLSPlots(_NSEPlots):
+    """Extend single-equation plots with OLS-only diagnostics."""
+
+    def leverage(self) -> Figure | None:
+        """Plot leverage and influence of observations in an OLS model."""
+        return self._model._plot("leverage")
+
+
+_OLSPlots.leverage.__qualname__ = "gretl.Model_ols.plot.leverage"
+
 
 class _VARPlots:
     """Plotting interface for VAR models."""
@@ -668,6 +676,11 @@ def setup_model_api(_gretl):
     # All single-equation model subclasses inherit the NSE plotting methods.
     _gretl.Model_NSE.plot = property(
         _NSEPlots, doc="Named plotting methods for a single-equation model."
+    )
+
+    # Match the OLS-only availability of the leverage diagnostic test.
+    _gretl.Model_ols.plot = property(
+        _OLSPlots, doc="Named plotting methods for an OLS model."
     )
 
     # VAR models expose their own residual, root and IRF plots.

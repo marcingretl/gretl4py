@@ -141,6 +141,8 @@ public:
 
     double adj_rsq (void) const;
 
+    GretlMatrixPtr confidence_intervals (void);
+
     py::object plot (const std::string &type, const std::string &xvar = "", std::optional<int> order = std::nullopt,
                      bool bartlett = false, std::optional<int> width = std::nullopt, bool log = false);
 

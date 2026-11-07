@@ -271,6 +271,18 @@ methods are documented separately below. Their availability depends on
 the estimator class and, in some cases, on properties of the dataset or
 the fitted model.
 
+\gretlfpycmd{confidence\_intervals()}\label{met:gretlmodel_nse::confidence_intervals}
+\estdesc{This method computes and displays 95\% confidence intervals\newline
+	for the estimated model coefficients.}
+\begin{lstlisting}[style=pythonstylefoot]
+.confidence_intervals() -> gretl.Matrix
+\end{lstlisting}
+\generaldesc{The method prints a table of coefficient estimates and
+	their confidence intervals, following the standard \lgretl
+	output format. It also returns a \classpymatrix instance
+	containing the confidence interval results for further analysis
+	in Python.}
+
 \gretlfpycmd{restrict()}
 \estdesc{Imposes a set of (usually linear) restrictions on the model.}
 \begin{lstlisting}[style=pythonstylefoot]
@@ -332,12 +344,10 @@ the fitted model.
 
 \subsubsection{\pythcodeb{gretl.Model\_VAR} methods}
 \gretlfpycmd{set\_cholesky\_order()}\label{met:gretlmodelvar::set_cholesky_order}
-
-\estdesc{This method sets the Cholesky ordering of endogenous variables
+\estdesc{This method sets the Cholesky ordering of endogenous variables\newline
 	in an estimated VAR or VECM model.}
 \begin{lstlisting}[style=pythonstylefoot]
-.set_cholesky_order(varlist: str = "") -> None
-.set_cholesky_order(varlist: list) -> None
+.set_cholesky_order(varlist: list | str = "") -> None
 \end{lstlisting}
 \generaldesc{The \texttt{varlist} argument specifies a complete permutation
 	of the endogenous variables, either as a space-separated string or

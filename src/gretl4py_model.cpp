@@ -1092,6 +1092,28 @@ double GretlModel_NSE::adj_rsq (void) const
     return model_->adjrsq;
 }
 
+GretlMatrixPtr GretlModel_NSE::confidence_intervals (void)
+{
+    //
+    // based on library.c
+    //
+    std::unique_ptr<CoeffIntervals, decltype(&free_coeff_intervals)>
+        cf(gretl_model_get_coeff_intervals(model_, dataset_->dset, OPT_NONE), &free_coeff_intervals);
+
+    // we do the job
+    if (!cf) handle_gretl_error(E_ALLOC);
+    err_ = print_coeff_intervals(cf.get(), printer_.prn_ptr());
+    if (err_) handle_gretl_error(err_);
+    printer_.print();
+
+    // we construct resulting matrix
+    gretl_matrix_ptr mat(conf_intervals_matrix(cf.get()));
+
+    if (!mat) handle_gretl_error(E_ALLOC);
+
+    return std::make_shared<GretlMatrix>(mat.release(), false);
+}
+
 py::object GretlModel_NSE::plot (const std::string &type, const std::string &xvar, std::optional<int> order,
                                  bool bartlett, std::optional<int> width, bool log)
 {
