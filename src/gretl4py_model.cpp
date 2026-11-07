@@ -151,6 +151,8 @@ public:
     int qqplot (void);
 
     int confidence_ellipse (int i, int j, double alpha);
+
+    int leverage (void);
 };
 
 int NSEPlotContext::fitted (void)
@@ -259,7 +261,10 @@ int NSEPlotContext::correlogram (std::optional<int> order)
     // Register the correlogram plot output.
     register_output_(CORRGM, "plot", OPT_U);
 
-    return corrgram(dset_->v - 1, lag_order, npq, dset_, static_cast<gretlopt>(OPT_R | OPT_U), prn_);
+    // Compute and plot the residual correlogram.
+    const gretlopt opt = static_cast<gretlopt>(OPT_R | OPT_U);
+
+    return corrgram(dset_->v - 1, lag_order, npq, dset_, opt, prn_);
 }
 
 int NSEPlotContext::periodogram (bool bartlett, std::optional<int> width, bool log)
@@ -277,13 +282,15 @@ int NSEPlotContext::periodogram (bool bartlett, std::optional<int> width, bool l
     const int bandwidth = bartlett ? width.value_or(auto_spectrum_order(T, OPT_O)) : 0;
 
     // The Bartlett window must fit within the estimation sample.
-    if (bartlett && (bandwidth < 2 || bandwidth > T / 2)) throw std::invalid_argument("width must be between 2 and half the sample size");
+    if (bartlett && (bandwidth < 2 || bandwidth > T / 2)) throw py::value_error("width must be between 2 and half the sample size");
 
     // Request a plot file even in batch mode.
     register_output_(PERGM, "plot", OPT_U);
     gretlopt opt = OPT_U;
     if (bartlett) SET_OPT(opt, OPT_O);
     if (log) SET_OPT(opt, OPT_L);
+
+    // Delegate spectral estimation and plotting to libgretl.
 
     return residual_periodogram(dset_->Z[dset_->v - 1], bandwidth, dset_, opt, prn_);
 }
@@ -297,6 +304,7 @@ int NSEPlotContext::qqplot (void)
     const int err = add_model_series_(M_UHAT);
 
     if (err) return err;
+
     int plotlist[4] = {0};
     plotlist[0] = 1;
     plotlist[1] = dset_->v - 1;
@@ -344,7 +352,6 @@ int NSEPlotContext::confidence_ellipse (int i, int j, double alpha)
     const double Fcrit = 2.0 * snedecor_critval(2, model_->dfd, alpha);
     char iname[VNAMELEN] = {0};
     char jname[VNAMELEN] = {0};
-
     gretl_model_get_param_name(model_, dset_, i, iname);
     gretl_model_get_param_name(model_, dset_, j, jname);
 
@@ -352,6 +359,36 @@ int NSEPlotContext::confidence_ellipse (int i, int j, double alpha)
     register_output_(GNUPLOT, "output", OPT_NONE);
 
     return confidence_ellipse_plot(V.get(), estimates, tcrit, Fcrit, alpha, iname, jname);
+}
+
+int NSEPlotContext::leverage (void)
+{
+    //
+    // Plot leverage and influence of observations in the fitted OLS model.
+    // Based on do_leverage() from gui/library.c and plugin/leverage.c.
+    // The temporary result matrix is not returned or registered in $result.
+    //
+    if (model_->ci != OLS) return E_OLSONLY;
+    if (model_->rsq == 1.0 || model_->dfd <= 0)
+        throw std::runtime_error("leverage plot is unavailable for an exact-fit model");
+
+    // Load the same plugin used by the GUI and leverage_test().
+    using LeverageFunction = gretl_matrix *(*)(const MODEL *, DATASET *, gretlopt, PRN *, int *);
+    const auto model_leverage = reinterpret_cast<LeverageFunction>(get_plugin_function("model_leverage"));
+    if (!model_leverage) return E_FOPEN;
+
+    // OPT_U is required for gnuplot_graph_wanted() in batch mode.
+    register_output_(LEVERAGE, "plot", OPT_U);
+
+    // Capture the textual output locally: the public API returns only a plot.
+    int err = 0;
+    gretl_matrix_ptr result(model_leverage(model_, dset_, OPT_U, prn_, &err));
+
+    if (err) return err;
+    if (!result) return E_ALLOC;
+
+    // The plugin has already written the two-panel Gnuplot script.
+    return 0;
 }
 
 } // namespace
@@ -1070,6 +1107,7 @@ py::object GretlModel_NSE::plot (const std::string &type, const std::string &xva
 
     if (type == "correlogram" && !xvar.empty()) throw std::invalid_argument("correlogram does not accept xvar");
     if (type == "qqplot" && !xvar.empty()) throw py::type_error("qqplot does not accept xvar");
+    if (type == "leverage" && !xvar.empty()) throw py::type_error("leverage does not accept xvar");
     if (type != "correlogram" && order.has_value()) throw std::invalid_argument("order is supported only for correlogram");
     if (type == "periodogram" && !xvar.empty()) throw py::type_error("periodogram does not accept xvar");
     // Periodogram settings must not silently affect other plot types.
@@ -1098,11 +1136,13 @@ py::object GretlModel_NSE::plot (const std::string &type, const std::string &xva
         err_ = ctx.periodogram(bartlett, width, log);
     } else if (type == "qqplot") {
         err_ = ctx.qqplot();
+    } else if (type == "leverage") {
+        err_ = ctx.leverage();
     } else {
         throw py::value_error("Unsupported plot type: " + type);
     }
     if (err_) handle_gretl_error(err_);
-    if (type == "correlogram" || type == "periodogram") printer_.print();
+    if (type == "correlogram" || type == "periodogram" || type == "leverage") printer_.print();
 
     return plotter.display();
 }

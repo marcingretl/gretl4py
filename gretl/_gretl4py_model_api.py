@@ -136,6 +136,10 @@ class _NSEPlots:
         """
         return self._model._plot_confidence_ellipse(first, second, alpha)
 
+    def leverage(self):
+        """Plot leverage and influence of observations in an OLS model."""
+        return self._model._plot("leverage")
+
 _NSEPlots.residuals.__qualname__ = "gretl.Model_NSE.plot.residuals"
 _NSEPlots.fitted_actual.__qualname__ = "gretl.Model_NSE.plot.fitted_actual"
 _NSEPlots.correlogram.__qualname__ = "gretl.Model_NSE.plot.correlogram"
