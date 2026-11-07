@@ -2321,6 +2321,23 @@ namespace doc::Model {
     ``ci = model.confidence_intervals()``
     )doc";
 
+    inline constexpr char anova[] = R"doc(
+    Print the analysis of variance (ANOVA) table for an estimated OLS model.
+
+    The table presents the decomposition of the total sum of squares into
+    explained and residual components, together with the associated degrees
+    of freedom, mean squares, and F-statistic.
+
+    Notes
+    -----
+    This method is available only for OLS models. Results are printed
+    to standard output.
+
+    Examples
+    --------
+    ``model.anova()``
+    )doc";
+
 } // namespace doc::Model
 
 namespace doc::Model_VAR {

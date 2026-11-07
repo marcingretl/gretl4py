@@ -1097,6 +1097,7 @@ GretlMatrixPtr GretlModel_NSE::confidence_intervals (void)
     //
     // based on library.c
     //
+    if (!estimated_) throw std::runtime_error("model is not estimated");
     std::unique_ptr<CoeffIntervals, decltype(&free_coeff_intervals)>
         cf(gretl_model_get_coeff_intervals(model_, dataset_->dset, OPT_NONE), &free_coeff_intervals);
 
@@ -1112,6 +1113,19 @@ GretlMatrixPtr GretlModel_NSE::confidence_intervals (void)
     if (!mat) handle_gretl_error(E_ALLOC);
 
     return std::make_shared<GretlMatrix>(mat.release(), false);
+}
+
+void GretlModel_NSE::anova (void)
+{
+    //
+    // Print the analysis of variance table for an OLS model.
+    //
+    if (!estimated_) throw std::runtime_error("model is not estimated");
+    if (ci_ != OLS) throw std::invalid_argument("ANOVA is available only for OLS models");
+
+    err_ = ols_print_anova(model_, printer_.prn_ptr());
+    if (err_) handle_gretl_error(err_);
+    printer_.print();
 }
 
 py::object GretlModel_NSE::plot (const std::string &type, const std::string &xvar, std::optional<int> order,

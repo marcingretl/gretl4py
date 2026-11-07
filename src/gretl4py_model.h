@@ -143,6 +143,8 @@ public:
 
     GretlMatrixPtr confidence_intervals (void);
 
+    void anova (void);
+
     py::object plot (const std::string &type, const std::string &xvar = "", std::optional<int> order = std::nullopt,
                      bool bartlett = false, std::optional<int> width = std::nullopt, bool log = false);
 

@@ -40,6 +40,11 @@ void bind_driver_model (py::module_ &m, const std::string &name)
     auto cls = py::class_<T, Base, std::unique_ptr<T>>(m, name.c_str(), py::dynamic_attr());
 
     cls.attr("__module__") = "gretl";
+
+    // OLS-specific methods.
+    if constexpr (std::is_same_v<T, GretlModel_NSE_Driver<lsq, OLS>>) {
+        cls.def("anova", &GretlModel_NSE::anova, doc::Model::anova);
+    }
 }
 
 template <GretlCmdIndex CI, NLLineType type>

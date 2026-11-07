@@ -271,6 +271,21 @@ methods are documented separately below. Their availability depends on
 the estimator class and, in some cases, on properties of the dataset or
 the fitted model.
 
+\gretlfpycmd{anova()}\label{met:gretlmodel_nse::anova}
+\estdesc{This method performs an analysis of variance (ANOVA)
+	for an estimated OLS model.}
+\begin{lstlisting}[style=pythonstylefoot]
+.anova() -> None
+\end{lstlisting}
+\generaldesc{The method prints the ANOVA table, including the
+	decomposition of the total sum of squares into explained and
+	residual components, the corresponding degrees of freedom,
+	mean squares, and the overall \textit{F}-statistic.
+	
+	This method is available exclusively for models estimated
+	using ordinary least squares (\classpymodel OLS).
+	No value is returned.}
+
 \gretlfpycmd{confidence\_intervals()}\label{met:gretlmodel_nse::confidence_intervals}
 \estdesc{This method computes and displays 95\% confidence intervals\newline
 	for the estimated model coefficients.}
