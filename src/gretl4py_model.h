@@ -113,6 +113,8 @@ protected:
     void regexp_extract_ (const std::string &formula, std::string &formula_left, std::string &formula_right);    // for extracting formula from regular expression
 
     DATASET *get_model_dataset_ (gretlopt opt = OPT_NONE);
+
+    int resolve_coefficient_ (const std::variant<int, std::string> &parameter, DATASET *dset = nullptr) const;
 public:
     GretlModel_NSE (GretlCmdIndex ci, const py::kwargs &kwargs);
     virtual ~GretlModel_NSE (void);

@@ -149,8 +149,7 @@ public:
 
     int qqplot (void);
 
-    int confidence_ellipse (const std::variant<int, std::string> &first,
-                            const std::variant<int, std::string> &second, double alpha);
+    int confidence_ellipse (int i, int j, double alpha);
 };
 
 int NSEPlotContext::fitted (void)
@@ -308,40 +307,16 @@ int NSEPlotContext::qqplot (void)
     return qq_plot(plotlist, dset_, OPT_NONE);
 }
 
-int NSEPlotContext::confidence_ellipse (const std::variant<int, std::string> &first,
-                                        const std::variant<int, std::string> &second, double alpha)
+int NSEPlotContext::confidence_ellipse (int i, int j, double alpha)
 {
+    //
     // Plot the joint confidence region of two model coefficients.
     // Based on do_confidence_region() from gui/library.c.
+    // @i and @j are zero-based coefficient indices.
+    //
     if (!(std::isfinite)(alpha) || alpha <= 0.0 || alpha >= 1.0) throw std::invalid_argument("alpha must be strictly between 0 and 1");
     if (model_->dfd <= 0) throw std::invalid_argument("confidence ellipse requires positive residual degrees of freedom");
     if (model_->ncoeff < 2) throw std::invalid_argument("confidence ellipse requires at least two coefficients");
-
-    // Resolve zero-based indices and parameter names as reported by libgretl.
-    auto resolve = [this](const std::variant<int, std::string> &parameter) -> int
-    {
-        if (const auto *index = std::get_if<int>(&parameter)) {
-            if (*index < 0 || *index >= model_->ncoeff) throw std::invalid_argument("coefficient index out of range");
-            return *index;
-        }
-
-        const std::string &name = std::get<std::string>(parameter);
-        int found = -1;
-        char pname[VNAMELEN] = {0};
-
-        for (int k=0; k<model_->ncoeff; ++k) {
-            gretl_model_get_param_name(model_, dset_, k, pname);
-            if (name == pname) {
-                if (found >= 0) throw std::invalid_argument("ambiguous coefficient name: " + name);
-                found = k;
-            }
-        }
-        if (found < 0) throw std::invalid_argument("unknown coefficient name: " + name);
-        return found;
-    };
-
-    const int i = resolve(first);
-    const int j = resolve(second);
     if (i == j) throw std::invalid_argument("select two distinct coefficients");
 
     // Extract the 2x2 coefficient covariance matrix in model order.
@@ -827,6 +802,35 @@ DATASET *GretlModel_NSE::get_model_dataset_ (gretlopt opt)
     return dset;
 }
 
+int GretlModel_NSE::resolve_coefficient_ (const std::variant<int, std::string> &parameter, DATASET *dset) const
+{
+    //
+    // Resolve a model coefficient specified by its zero-based index or name.
+    // Return the coefficient index, rejecting invalid or ambiguous identifiers.
+    //
+    // int part
+    if (const auto *index = std::get_if<int>(&parameter)) {
+        if (*index < 0 || *index >= model_->ncoeff) throw std::invalid_argument("coefficient index out of range");
+        return *index;
+    }
+
+    // std::string part
+    const std::string &name = std::get<std::string>(parameter);
+    int idx = -1;
+    char pname[VNAMELEN] = {0};
+
+    for (int k=0; k<model_->ncoeff; ++k) {
+        gretl_model_get_param_name(model_, dset ? dset : dataset_->dset, k, pname);
+        if (name == pname) {
+            if (idx >= 0) throw std::invalid_argument("ambiguous coefficient name: " + name);
+            idx = k;
+        }
+    }
+    if (idx < 0) throw std::invalid_argument("unknown coefficient name: " + name);
+
+    return idx;
+}
+
 void GretlModel_NSE::forecast (const py::args &args, const py::kwargs &kwargs)
 {
     gretl_do_forecast_<MODEL>(model_, args, kwargs);
@@ -1110,7 +1114,7 @@ py::object GretlModel_NSE::plot_confidence_ellipse (const std::variant<int, std:
     DATASET *dset = get_model_dataset_();
     NSEPlotContext ctx(model_, ci_, dataset_, dset, plotter, printer_.prn_ptr(), 0);
 
-    err_ = ctx.confidence_ellipse(first, second, alpha);
+    err_ = ctx.confidence_ellipse(resolve_coefficient_(first), resolve_coefficient_(second), alpha);
     if (err_) handle_gretl_error(err_);
     printer_.print();
 
