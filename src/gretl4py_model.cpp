@@ -115,6 +115,7 @@ private:
     int add_model_series_ (ModelDataIndex which)
     {
         prepare_temporary_series_();
+
         return genr_fit_resid(model_, dset_, which);
     }
 
@@ -174,8 +175,8 @@ int NSEPlotContext::fitted (void)
 
     // Add fitted values temporarily.
     const int err = add_model_series_(M_YHAT);
-    if (err) return err;
 
+    if (err) return err;
     plotlist[0] = 3;
     plotlist[1] = dset_->v - 1;
     plotlist[2] = gretl_model_get_depvar(model_);
@@ -186,6 +187,7 @@ int NSEPlotContext::fitted (void)
         SET_OPT(opt, OPT_T);
         if (dataset_is_time_series(dset_)) SET_OPT(opt, OPT_O);
     }
+
     return gnuplot(plotlist, nullptr, dset_, opt);
 }
 
@@ -198,13 +200,12 @@ int NSEPlotContext::residuals (void)
     // Force libgretl to write the plot to our temporary file.
     register_output_(GNUPLOT, "output", opt);
 
-    if (ci_ == GARCH && !(model_->opt & OPT_Z) && x_ == 0) {
-        // Use libgretl's dedicated GARCH residual plot.
-        return garch_resid_plot(model_, dset_);
-    }
+    // Use libgretl's dedicated GARCH residual plot.
+    if (ci_ == GARCH && !(model_->opt & OPT_Z) && x_ == 0) return garch_resid_plot(model_, dset_);
 
     // Add residuals temporarily.
     const int err = add_model_series_(M_UHAT);
+
     if (err) return err;
 
     const int uhatno = dset_->v - 1;
@@ -233,6 +234,7 @@ int NSEPlotContext::residuals (void)
         series_set_display_name(dset_, uhatno, "standardized residual");
         opt = static_cast<gretlopt>(opt & ~OPT_R);
     }
+
     return gnuplot(plotlist, nullptr, dset_, opt);
 }
 
@@ -243,6 +245,7 @@ int NSEPlotContext::correlogram (std::optional<int> order)
 
     // Add model residuals temporarily.
     const int err = add_model_series_(M_UHAT);
+
     if (err) return err;
 
     // Account for estimated ARMA coefficients in the Ljung-Box test.
@@ -256,9 +259,7 @@ int NSEPlotContext::correlogram (std::optional<int> order)
     // Register the correlogram plot output.
     register_output_(CORRGM, "plot", OPT_U);
 
-    // Compute and plot the residual correlogram.
-    const gretlopt opt = static_cast<gretlopt>(OPT_R | OPT_U);
-    return corrgram(dset_->v - 1, lag_order, npq, dset_, opt, prn_);
+    return corrgram(dset_->v - 1, lag_order, npq, dset_, static_cast<gretlopt>(OPT_R | OPT_U), prn_);
 }
 
 int NSEPlotContext::periodogram (bool bartlett, std::optional<int> width, bool log)
@@ -268,6 +269,7 @@ int NSEPlotContext::periodogram (bool bartlett, std::optional<int> width, bool l
 
     // Add model residuals temporarily.
     const int err = add_model_series_(M_UHAT);
+
     if (err) return err;
 
     // Use the GUI bandwidth default when Bartlett smoothing is requested.
@@ -275,7 +277,7 @@ int NSEPlotContext::periodogram (bool bartlett, std::optional<int> width, bool l
     const int bandwidth = bartlett ? width.value_or(auto_spectrum_order(T, OPT_O)) : 0;
 
     // The Bartlett window must fit within the estimation sample.
-    if (bartlett && (bandwidth < 2 || bandwidth > T / 2)) throw py::value_error("width must be between 2 and half the sample size");
+    if (bartlett && (bandwidth < 2 || bandwidth > T / 2)) throw std::invalid_argument("width must be between 2 and half the sample size");
 
     // Request a plot file even in batch mode.
     register_output_(PERGM, "plot", OPT_U);
@@ -283,7 +285,6 @@ int NSEPlotContext::periodogram (bool bartlett, std::optional<int> width, bool l
     if (bartlett) SET_OPT(opt, OPT_O);
     if (log) SET_OPT(opt, OPT_L);
 
-    // Delegate spectral estimation and plotting to libgretl.
     return residual_periodogram(dset_->Z[dset_->v - 1], bandwidth, dset_, opt, prn_);
 }
 
@@ -294,8 +295,8 @@ int NSEPlotContext::qqplot (void)
 
     // Add model residuals temporarily.
     const int err = add_model_series_(M_UHAT);
-    if (err) return err;
 
+    if (err) return err;
     int plotlist[4] = {0};
     plotlist[0] = 1;
     plotlist[1] = dset_->v - 1;
@@ -343,6 +344,7 @@ int NSEPlotContext::confidence_ellipse (int i, int j, double alpha)
     const double Fcrit = 2.0 * snedecor_critval(2, model_->dfd, alpha);
     char iname[VNAMELEN] = {0};
     char jname[VNAMELEN] = {0};
+
     gretl_model_get_param_name(model_, dset_, i, iname);
     gretl_model_get_param_name(model_, dset_, j, jname);
 
