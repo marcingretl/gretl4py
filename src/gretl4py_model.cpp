@@ -820,6 +820,7 @@ int GretlModel_NSE::resolve_coefficient_ (const std::variant<int, std::string> &
     char pname[VNAMELEN] = {0};
 
     for (int k=0; k<model_->ncoeff; ++k) {
+        pname[0] = '\0';
         gretl_model_get_param_name(model_, dset ? dset : dataset_->dset, k, pname);
         if (name == pname) {
             if (idx >= 0) throw std::invalid_argument("ambiguous coefficient name: " + name);
@@ -1114,7 +1115,7 @@ py::object GretlModel_NSE::plot_confidence_ellipse (const std::variant<int, std:
     DATASET *dset = get_model_dataset_();
     NSEPlotContext ctx(model_, ci_, dataset_, dset, plotter, printer_.prn_ptr(), 0);
 
-    err_ = ctx.confidence_ellipse(resolve_coefficient_(first), resolve_coefficient_(second), alpha);
+    err_ = ctx.confidence_ellipse(resolve_coefficient_(first, dset), resolve_coefficient_(second, dset), alpha);
     if (err_) handle_gretl_error(err_);
     printer_.print();
 
