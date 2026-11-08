@@ -293,7 +293,7 @@ the fitted model.
 \begin{lstlisting}[style=pythonstylefoot]
 .bootstrap(coefficient: int | str, reps: int = 1000, alpha: float = 0.05,
 	statistic: str = "ci", method: str = "residuals", plot: bool = False,
-	save: str | None = None) -> object
+	save: str | None = None) -> matplotlib.figure.Figure .| None
 \end{lstlisting}
 \generaldesc{The method performs bootstrap inference using the
 	native \lgretl implementation. The \texttt{coefficient}

@@ -352,8 +352,7 @@ void GretlPlot::drain_queue (void)
 
     std::vector<std::filesystem::path> scripts;
     for (const auto &entry : std::filesystem::directory_iterator(queue_dir_)) {
-        if (entry.is_regular_file() && entry.path().extension() == ".py")
-            scripts.push_back(entry.path());
+        if (entry.is_regular_file() && entry.path().extension() == ".py") scripts.push_back(entry.path());
     }
     if (scripts.empty()) return;
 
