@@ -286,6 +286,36 @@ the fitted model.
 	using ordinary least squares (\classpymodel OLS).
 	No value is returned.}
 
+\gretlfpycmd{bootstrap()}\label{met:gretlmodel_nse::bootstrap}
+\estdesc{This method performs bootstrap inference for a selected
+	coefficient of an\newline estimated single-equation model
+	via OLS or WLS only.}
+\begin{lstlisting}[style=pythonstylefoot]
+.bootstrap(coefficient: int | str, reps: int = 1000, alpha: float = 0.05,
+	statistic: str = "ci", method: str = "residuals", plot: bool = False,
+	save: str | None = None) -> object
+\end{lstlisting}
+\generaldesc{The method performs bootstrap inference using the
+	native \lgretl implementation. The \texttt{coefficient}
+	argument identifies the coefficient to be analyzed, either
+	by its numerical index or by its name.
+	
+	The \texttt{reps} argument specifies the number of bootstrap
+	replications, while \texttt{alpha} determines the significance
+	level. The \texttt{statistic} argument selects the type of
+	bootstrap inference, and \texttt{method} specifies the
+	resampling procedure.
+	
+	Bootstrap results are printed using the standard \lgretl
+	output mechanism. Setting \pythcode{plot=True} generates a
+	graphical representation of the bootstrap distribution
+	through \texttt{gptranslate} and the Matplotlib backend.
+	
+	If graphical output is requested, the method returns a
+	Matplotlib figure object. Otherwise, \texttt{None} is returned.
+	The optional \texttt{save} argument specifies a filename
+	for saving the generated plot.}
+
 \gretlfpycmd{confidence\_intervals()}\label{met:gretlmodel_nse::confidence_intervals}
 \estdesc{This method computes and displays 95\% confidence intervals\newline
 	for the estimated model coefficients.}

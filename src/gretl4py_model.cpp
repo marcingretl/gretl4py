@@ -32,6 +32,7 @@ extern "C" {
     #include <gretl/system.h>
     #include <gretl/compare.h>
     #include <gretl/matrix_extra.h>
+    #include <gretl/bootstrap.h>
 }
 #include <gretl/forecast.h>
 #include <string>
@@ -1126,6 +1127,83 @@ void GretlModel_NSE::anova (void)
     err_ = ols_print_anova(model_, printer_.prn_ptr());
     if (err_) handle_gretl_error(err_);
     printer_.print();
+}
+
+py::object GretlModel_NSE::bootstrap (const std::variant<int, std::string> &coefficient, int reps,
+                                      double alpha, const std::string &statistic, const std::string &method,
+                                      bool plot, const std::optional<std::string> &save)
+{
+    //
+    // Bootstrap confidence intervals or p-values for an OLS/WLS coefficient.
+    // Based on do_bootstrap() from gui/library.c.
+    //
+    if (!estimated_) throw std::runtime_error("model is not estimated");
+    if (!bootstrap_ok(model_->ci)) throw std::invalid_argument("bootstrap is available only for OLS and WLS models");
+
+    // Validate the number of replications and significance level.
+    if (reps < 1) throw std::invalid_argument("reps must be positive");
+    if (!(std::isfinite)(alpha) || alpha <= 0.0 || alpha >= 1.0)
+        throw std::invalid_argument("alpha must be strictly between 0 and 1");
+
+    opt_ = OPT_NONE;
+
+    // Select the bootstrap statistic.
+    if (statistic == "ci") {
+        // Default: percentile confidence interval.
+    } else if (statistic == "studentized") {
+        SET_OPT(opt_, OPT_T);
+    } else if (statistic == "pvalue") {
+        SET_OPT(opt_, OPT_P);
+    } else {
+        throw std::invalid_argument("unsupported bootstrap statistic: " + statistic);
+    }
+
+    // Select the bootstrap resampling method.
+    if (method == "residuals") {
+        // Default: resample empirical residuals.
+    } else if (method == "pairs") {
+        SET_OPT(opt_, OPT_X);
+    } else if (method == "wild") {
+        SET_OPT(opt_, OPT_W);
+    } else if (method == "normal") {
+        SET_OPT(opt_, OPT_N);
+    } else {
+        throw std::invalid_argument("unsupported bootstrap method: " + method);
+    }
+
+    // Select the dataset and resolve the coefficient index.
+    GretlPlot plotter;
+    DATASET *dset = get_model_dataset_();
+    const int idx = resolve_coefficient_(coefficient, dset);
+
+    // Request a kernel-density plot of the bootstrap distribution.
+    // Request a kernel-density plot of the bootstrap distribution.
+    if (plot) {
+        SET_OPT(opt_, OPT_G);
+        gretlopt opt_local = OPT_NONE;
+        gretl_valid_long_opt(opt_local, KDPLOT, "output", py::handle(), plotter.filename().c_str());
+    }
+
+    // Preserve bootstrap replications for saving to a GDT file.
+    if (save.has_value()) {
+        if (save->empty()) throw std::invalid_argument("save filename must not be empty");
+        SET_OPT(opt_, OPT_A);
+    }
+
+    // Perform the bootstrap analysis using libgretl.
+    err_ = bootstrap_analysis(model_, idx, reps, alpha, dset, opt_, printer_.prn_ptr());
+    if (err_) handle_gretl_error(err_);
+
+    // Save the bootstrap replication data if requested.
+    if (save.has_value()) {
+        err_ = bootstrap_save_data(save->c_str());
+        if (err_) handle_gretl_error(err_);
+    }
+
+    printer_.print();
+
+    // Return the figure only when plotting was requested.
+    return plot ? plotter.display() : py::none();
 }
 
 py::object GretlModel_NSE::plot (const std::string &type, const std::string &xvar, std::optional<int> order,

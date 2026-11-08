@@ -2338,6 +2338,46 @@ namespace doc::Model {
     ``model.anova()``
     )doc";
 
+    inline constexpr char bootstrap[] = R"doc(
+    Perform bootstrap inference for a selected model coefficient.
+
+    Computes bootstrap confidence intervals or test statistics using
+    the native gretl bootstrap implementation.
+
+    Parameters
+    ----------
+    coefficient : int or str
+        Coefficient to be analyzed, specified by index or name.
+    reps : int, optional
+        Number of bootstrap replications.
+    alpha : float, optional
+        Significance level for bootstrap inference.
+    statistic : str, optional
+        Type of bootstrap inference to perform.
+    method : str, optional
+        Bootstrap resampling method.
+    plot : bool, optional
+        If ``True``, generate a plot of the bootstrap distribution.
+    save : str or None, optional
+        Filename for saving the generated plot.
+
+    Returns
+    -------
+    matplotlib.figure.Figure or None
+        Matplotlib figure if ``plot=True``, otherwise ``None``.
+
+    Notes
+    -----
+    Bootstrap results are printed using the native gretl output
+    mechanism. Graphical output is generated through gptranslate
+    and the Matplotlib backend.
+
+    Examples
+    --------
+    ``model.bootstrap("IBO")``
+    ``fig = model.bootstrap("IBO", reps=1999, plot=True)``
+    )doc";
+
 } // namespace doc::Model
 
 namespace doc::Model_VAR {

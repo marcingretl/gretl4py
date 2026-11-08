@@ -45,6 +45,14 @@ void bind_driver_model (py::module_ &m, const std::string &name)
     if constexpr (std::is_same_v<T, GretlModel_NSE_Driver<lsq, OLS>>) {
         cls.def("anova", &GretlModel_NSE::anova, doc::Model::anova);
     }
+
+    // Bind methods available for OLS and WLS models.
+    if constexpr (std::is_same_v<T, GretlModel_NSE_Driver<lsq, OLS>> || std::is_same_v<T, GretlModel_NSE_Driver<lsq, WLS>>) {
+        cls.def("bootstrap", &GretlModel_NSE::bootstrap,
+                py::arg("coefficient"), py::kw_only(),
+                py::arg("reps") = 1000, py::arg("alpha") = 0.05, py::arg("statistic") = "ci",
+                py::arg("method") = "residuals", py::arg("plot") = false, py::arg("save") = py::none(), doc::Model::bootstrap);
+    }
 }
 
 template <GretlCmdIndex CI, NLLineType type>

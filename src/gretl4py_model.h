@@ -145,6 +145,10 @@ public:
 
     void anova (void);
 
+    py::object bootstrap (const std::variant<int, std::string> &coefficient, int reps = 1000, double alpha = 0.05,
+                          const std::string &statistic = "ci", const std::string &method = "residuals",
+                          bool plot = false, const std::optional<std::string> &save = std::nullopt);
+
     py::object plot (const std::string &type, const std::string &xvar = "", std::optional<int> order = std::nullopt,
                      bool bartlett = false, std::optional<int> width = std::nullopt, bool log = false);
 
