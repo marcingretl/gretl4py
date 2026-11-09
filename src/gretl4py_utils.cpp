@@ -367,7 +367,7 @@ void GretlPlot::drain_queue (void)
     }
 
     // display all figures after evaluating every script in this batch
-    show_figures_();
+    if (auto_show_) show_figures_();
 }
 
 [[nodiscard]] std::string GretlPlot::get_executor_path (void)
