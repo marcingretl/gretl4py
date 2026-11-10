@@ -96,9 +96,9 @@ gretl.cdf(d: str, x: str[, param: object = None]) -> gretl.Matrix
 Examples:\newline
 \pythcodef{p1 = gretl.cdf('N', -2.5)}\\
 \pythcodef{p2 = gretl.cdf('X', 5.67, 3)}\\
-\pythcodef{p3 = gretl.cdf('D', 0.25, [-1, 1])}\\
+\pythcodef{p3 = gretl.cdf('D', 0.25, [-1, 1])}
 \generaldesc{Returns $P(X \leq x)$, where the distribution
-	of \textit{X} is determined by the string \textit{d}.}\\
+	of \textit{X} is determined by the string \textit{d}.}
 If \textit{x} is of type:
 \begin{itemize}
 	\item \pythcode{list}, \pythcode{tuple}, or \pythcode{NumPy array},
@@ -164,7 +164,7 @@ gretl.critical(c: str, p: str[, param: object = None]) -> gretl.Matrix
 \maptof{critical(c, param, p)}{scalar | matrix}
 Examples:\newline
 \pythcodef{c1 = gretl.critical('t', 0.025, 20)}\\
-\pythcodef{c2 = gretl.critical('F', 0.05, [4, 48])}\\
+\pythcodef{c2 = gretl.critical('F', 0.05, [4, 48])}
 \generaldesc{Returns \textit{x} such that $P(X > x) = p$, where
 	the distribution \textit{X} is determined by the character \textit{c}:}
 \begin{footnotesize}\begin{itemize}
@@ -199,7 +199,7 @@ gretl.delete(varname: str)
 Examples:\newline
 \pythcodef{.delete(varlist)}\\
 \pythcodef{.delete(varname)}\\
-\pythcodef{.delete(.type='type-name')}\\
+\pythcodef{.delete(.type='type-name')}
 \generaldesc{In the first form above, varlist is a list of series,
 	given by name or ID number. Note that when you delete series
 	any series with higher ID numbers than those on the deletion
@@ -249,7 +249,7 @@ gretl.get_accessor(name: str) -> object
 \end{lstlisting}
 Examples:\newline
 \pythcodef{.get\_accessor('\$version')}\\
-\pythcodef{.get\_accessor('\$stopwatch')}\\
+\pythcodef{.get\_accessor('\$stopwatch')}
 \generaldesc{Note: \pythcode{gretl.get\_accessor()} works by default
 	only with the default dataset. To access accessors related to
 	different datasets or models, please refer to
@@ -324,7 +324,7 @@ gretl.invcdf(d: str, u: str[, param: object = None]) -> gretl.Matrix
 	such that $P(X \leq x) = u$, for $u \in [0, 1]$. For a discrete
 	distribution (Binomial or Poisson), returns the smallest
 	\textit{x} such that $P(X \leq x) \geq u$. The distribution
-	of \textit{X} is determined by the string d:}\\
+	of \textit{X} is determined by the string d:}
 \begin{footnotesize}\begin{itemize}
 		\item \textbf{Standard normal} (\texttt{d = z, n, N}): no additional arguments
 		\item \textbf{Gamma} (\texttt{g} or \texttt{G}): shape; scaletional arguments
@@ -350,7 +350,7 @@ gretl.kpsscrit(T: int[, trend: bool = False]) -> gretl.Matrix
 \maptof{kpsscrit(T, trend)}{matrix}
 Examples:\newline
 \pythcodef{f1 = gretl.kpsscrit(100)}\\
-\pythcodef{f2 = gretl.kpsscrit(100, True)}\\
+\pythcodef{f2 = gretl.kpsscrit(100, True)}
 \generaldesc{Returns a row vector containing critical values
 	at the 10, 5 and 1 percent levels for the KPSS test
 	for stationarity of a time series. \textit{T} should give
@@ -411,9 +411,9 @@ gretl.pdf(d: str, x: str[, param: object = None]) -> gretl.Matrix
 Examples:\newline
 \pythcodef{f1 = gretl.pdf('N', -2.5)}\\
 \pythcodef{f2 = gretl.pdf('X', x, 3)}\\
-\pythcodef{f3 = gretl.pdf('W', x, [shape, scale])}\\
+\pythcodef{f3 = gretl.pdf('W', x, [shape, scale])}
 \generaldesc{Returns the density at \textit{x} of the
-	distribution identified by the code \textit{d}:}\\
+	distribution identified by the code \textit{d}:}
 \begin{footnotesize}\begin{itemize}
 		\item \textbf{Standard normal} (\texttt{d = z, n, N}): no additional arguments
 		\item \textbf{Student's $t$} (\texttt{t}): degrees of freedom
@@ -470,7 +470,7 @@ Examples:\newline
 \pythcodef{.print('y x', byobs=True)}\\
 \pythcodef{.print('my\_matrix')}\\
 \pythcodef{.print('my\_array', .range='3:6')}\\
-\pythcodef{.print('hflist', midas=True)}\\
+\pythcodef{.print('hflist', midas=True)}
 \generaldesc{The \pythcode{gretl.print()} function can be used to
 	print series from a dataset as well as user-defined \gretl objects,
 	including scalars, matrices, strings, bundles and arrays.\newline
@@ -503,7 +503,7 @@ gretl.pvalue(c: str, x: str[, param: object = None]) -> gretl.Matrix
 Examples:\newline
 \pythcodef{p1 = gretl.pvalue('z', 2.2)}\\
 \pythcodef{p2 = gretl.pvalue('X', 5.67, 3)}\\
-\pythcodef{p3 = gretl.pvalue('F', 5.67, [3, 30])}\\
+\pythcodef{p3 = gretl.pvalue('F', 5.67, [3, 30])}
 \generaldesc{Returns $P(X > x)$, where the distribution of
 	\textit{X} is determined by the character \textit{c}:}
 \begin{footnotesize}\begin{itemize}
@@ -638,7 +638,7 @@ gretl.tdisagg(Y: gretl.Matrix, s: int[, X: gretl.Matrix, opts: gretl.Bundle, res
 \maptof{tdisagg(Y, X, s, opts, results)}{matrix}
 Examples:\newline
 \pythcodef{gretl.tdisagg(m1, s=3)}\\
-\pythcodef{gretl.tdisagg(Y=m1, X=m2, s=3)}\\
+\pythcodef{gretl.tdisagg(Y=m1, X=m2, s=3)}
 \generaldesc{Converts the time series stored in
 	\pythcode{Y : gretl.Matrix} to a higher frequency using temporal disaggregation.
 	The parameter \textit{s} specifies the expansion factor (for example,

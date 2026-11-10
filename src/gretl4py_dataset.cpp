@@ -1582,6 +1582,7 @@ std::pair<GretlBundlePtr, py::object> GretlDataset::test (const std::string &typ
     auto printout = unpack_kwargs_test(opt_, type, kwargs, order, &plotter);
 
     // we perform the test
+    last_result_cleanup();
     if (type == "adf") {
         err_ = adf_test(order, ex_var.get(), dset, opt_, printer_.prn_ptr());
     } else if (type == "bds") {

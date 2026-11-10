@@ -866,6 +866,7 @@ std::pair<GretlBundlePtr, py::object> GretlModel_NSE::test (const std::string &t
     auto printout = unpack_kwargs_test(opt_, type, kwargs, order, &plotter);
 
     // we perform the test
+    last_result_cleanup();
     if (type == "bkw") {
         err_ = bkw_test(model_, dataset_->dset, opt_, printer_.prn_ptr());
         has_result = true;
@@ -949,6 +950,7 @@ std::pair<GretlBundlePtr, py::object> GretlModel_NSE::test (const std::string &t
     auto printout = unpack_kwargs_test(opt_, type, kwargs, order);
 
     // we perform the test
+    last_result_cleanup();
     if (type == "add") {
         err_ = add_test(model_, ex_var.get(), dataset_->dset, opt_, printer_.prn_ptr());
     } else if (type == "chow") {

@@ -15,7 +15,7 @@ The \classpydataset class provides the following operators:
 d[rule: slice | list | str] -> gretl.Dataset
 \end{lstlisting}
 \where{\pythcodef{rule} is either a sample range, a list of variables,
-	or a logical expression that can be applied to the dataset.}\\\\
+	or a logical expression that can be applied to the dataset.}
 \generaldesc{Using this operator, a dataset may be sub-sampled along one
 	or both dimensions, that is, observations and/or variables. It is
 	important to remember that slicing always returns a copy of the
@@ -145,7 +145,7 @@ The \classpydataset provides the following public methods:
 \end{itemize}
 Examples:\newline
 \pythcodef{.addobs(24)}\\
-\pythcodef{.addobs(2, panel_time=True)}\\
+\pythcodef{.addobs(2, panel_time=True)}
 \generaldesc{Adds \textit{n} observations to the end of the current
 	dataset, primarily for forecasting purposes. Values of most variables
 	in the added observations are set to missing, while recognized
@@ -166,7 +166,7 @@ Examples:\newline
 \end{itemize}
 Examples:\newline
 \pythcodef{.add_series(x, "x")}\newline
-\pythcodef{.add_series(gretl.Matrix(x), "x")}\\
+\pythcodef{.add_series(gretl.Matrix(x), "x")}
 \generaldesc{Adds the supplied vector as a series to the current dataset.
 	The input data are copied into the dataset. If a series with the
 	specified name already exists, it is replaced. A \pythcode{gretl.Matrix}
@@ -194,7 +194,7 @@ Examples:\newline
 Examples:\newline
 \pythcodef{r1 = data.adf(varlist='y', order=0)}\\
 \pythcodef{r2 = data.adf(varlist='y', order=2, nc=True, c=True, ct=True)}\\
-\pythcodef{r3 = data.adf(varlist='y', order=12, c=True, test-down=True)}\\
+\pythcodef{r3 = data.adf(varlist='y', order=12, c=True, test-down=True)}
 \generaldesc{Performs Augmented Dickey--Fuller (ADF) tests for a unit
 	root in the variables specified in \textit{varlist}. The
 	\textit{order} argument specifies the number of lagged differences
@@ -218,7 +218,7 @@ Examples:\newline
 Examples:\newline
 \pythcodef{r1 = data.bds(varlist='x', order=5)}\\
 \pythcodef{r2 = data.bds(order=3, matrix='m')}\\
-\pythcodef{r3 = data.bds(varlist='x', order=4, sdcrit=2.0)}\\
+\pythcodef{r3 = data.bds(varlist='x', order=4, sdcrit=2.0)}
 \generaldesc{Performs the BDS (Brock--Dechert--Scheinkman) test for
 	nonlinearity or departures from the IID condition in the specified
 	series. The \textit{order} argument determines the maximum embedding
@@ -264,7 +264,7 @@ Examples:\newline
 \pythcodef{fig = data.boxplot("y1 y2 y3")}\\
 \pythcodef{fig = data.boxplot(["y1", "y2"])}\\
 \pythcodef{fig = data.boxplot("wage gender", factorized=True)}\\
-\pythcodef{fig = data.boxplot("y", panel=True, notches=True)}\\
+\pythcodef{fig = data.boxplot("y", panel=True, notches=True)}
 \generaldesc{Generates boxplots representing the distribution of one
 	or more dataset series. Each box extends from the first quartile
 	to the third quartile, enclosing the middle 50 percent of the
@@ -337,7 +337,7 @@ Examples:\newline
 \end{itemize}
 Examples:\newline
 \pythcodef{r1 = data.coint(y='y', varlist='x z', order=4)}\\
-\pythcodef{r2 = data.coint(y='y', varlist=['x', 'z'], order=0, ct=True, skip\_df=True)}\\
+\pythcodef{r2 = data.coint(y='y', varlist=['x', 'z'], order=0, ct=True, skip\_df=True)}
 \generaldesc{Performs the Engle--Granger cointegration test for the
 	specified dependent variable and regressors. The procedure estimates
 	the cointegrating regression and tests its residuals for a unit root.
@@ -370,7 +370,7 @@ Examples:\newline
 \pythcodef{data.compact(4)}\\
 \pythcodef{data.compact(4, 'last')}\\
 \pythcodef{data.compact(52, repday=3)}\\
-\pythcodef{data.compact(52, weekstart=0)}\\
+\pythcodef{data.compact(52, weekstart=0)}
 \generaldesc{Compacts all series in a time-series dataset to
 	the specified frequency. By default, higher-frequency values
 	are averaged. The optional \textit{method} parameter specifies
@@ -406,7 +406,7 @@ Examples:\newline
 \pythcodef{r2, fig2 = data.corr('ylist', uniform=True)}\\
 \pythcodef{r3, fig3 = data.corr('x y', spearman=True)}\\
 \pythcodef{r4, fig4 = data.corr('y x z', plot='display', triangle=True)}\\
-\pythcodef{r5, fig5 = data.corr(matrix='X', plot='display')}\\
+\pythcodef{r5, fig5 = data.corr(matrix='X', plot='display')}
 \generaldesc{Computes pairwise correlation coefficients for the
 	specified variables, or for all variables in the dataset
 	if no variable list is supplied. By default, Pearson's
@@ -476,7 +476,7 @@ corrgm(y: str, order: int = 0[, OPTS]) -> tuple[gretl.Bundle, matplotlib.figure.
 Examples:\newline
 \pythcodef{r1 = data.corrgm(y='x', order=12)}\\
 \pythcodef{r2 = data.corrgm(y='GDP', acf\_only=True)}\\
-\pythcodef{r3, fig = data.corrgm(y='GDP', order=12, plot='display')}\\
+\pythcodef{r3, fig = data.corrgm(y='GDP', order=12, plot='display')}
 \generaldesc{Computes the autocorrelation function (ACF) and,
 	by default, the partial autocorrelation function (PACF) using
 	the Durbin--Levinson algorithm. The \textit{y} argument
@@ -534,7 +534,7 @@ Examples:\newline
 Examples:\newline
 \pythcodef{r1 = data.cov()}\\
 \pythcodef{r2 = data.cov('y x1 x2')}\\
-\pythcodef{r3 = data.cov(['y', 'x1', 'x2'])}\\
+\pythcodef{r3 = data.cov(['y', 'x1', 'x2'])}
 \generaldesc{The method treats each selected series as a variable and
 	returns their covariance matrix. If \textit{varlist} is omitted,
 	all variables in the current data set are used.}
@@ -557,7 +557,7 @@ Examples:\newline
 \mapto[none]{diff ~varlist }
 Examples:\newline
 \pythcodef{data.diff('x y')}\\
-\pythcodef{data.diff(['x', 'y'])}\\
+\pythcodef{data.diff(['x', 'y'])}
 \generaldesc{The first difference of each variable in \textit{varlist}
 	is computed and stored in a new series with prefix \textit{d\_}.
 	Thus \gretlcmd{diff x y} creates the new variables
@@ -582,7 +582,7 @@ Examples:\newline
 \end{itemize}
 Examples:\newline
 \pythcodef{r1 = data.difftest('x', 'y')}\\
-\pythcodef{r2 = data.difftest(x='x', split_by='dummy')}\\
+\pythcodef{r2 = data.difftest(x='x', split_by='dummy')}
 \generaldesc{Supports the Sign test, Wilcoxon rank-sum test, and Wilcoxon
 	signed-rank test. The samples may be given as two series, or, for the
 	rank-sum test, obtained by splitting one series according to a dummy
@@ -600,7 +600,7 @@ Examples:\newline
 Examples:\newline
 \pythcodef{data.discrete('x')}\\
 \pythcodef{data.discrete(['x1', 'x2'])}\\
-\pythcodef{data.discrete('x', reverse=True)}\\
+\pythcodef{data.discrete('x', reverse=True)}
 \generaldesc{By default all variables are treated as continuous.
 	Marking a variable as discrete affects its treatment in frequency
 	plots and allows it to be selected for the \gretlcmd{dummify}
@@ -617,7 +617,7 @@ Examples:\newline
 Examples:\newline
 \pythcodef{data.dsortby('x1 x2 x3')}\\
 \pythcodef{data.dsortby(['x1', 'x2', 'x3'])}\\
-\pythcodef{data.dsortby([1, 2, 3])}\\
+\pythcodef{data.dsortby([1, 2, 3])}
 \generaldesc{Reorders all observations in the dataset in descending order
 	according to the variables specified in \textit{varlist}. Variables
 	may be specified by name or index. If multiple variables are given,
@@ -639,7 +639,7 @@ Examples:\newline
 \end{itemize}
 Examples:\newline
 \pythcodef{data.dummify('x')}\\
-\pythcodef{data.dummify(['x1', 'x2'], drop_first=True)}\\
+\pythcodef{data.dummify(['x1', 'x2'], drop_first=True)}
 \generaldesc{For each suitable variable in \textit{varlist}, creates
 	a set of dummy variables coding for its distinct values. Suitable
 	variables are those that have been explicitly marked as discrete,
@@ -661,7 +661,7 @@ Examples:\newline
 \mapto[none]{dataset expand [freq]}
 Examples:\newline
 \pythcodef{data.expand()}\\
-\pythcodef{data.expand(12)}\\
+\pythcodef{data.expand(12)}
 \generaldesc{Expands all series in an annual or quarterly time-series
 	dataset to a higher frequency by repeating the existing values.
 	Annual data may be expanded to quarterly or monthly frequency, while
@@ -705,7 +705,7 @@ Examples:\newline
 \pythcodef{r2, fig2 = data.freq('x', nbins=5)}\\
 \pythcodef{r3, fig3 = data.freq('x', min=0, binwidth=0.1)}\\
 \pythcodef{r4, fig4 = data.freq('x', normal=True, plot='display')}\\
-\pythcodef{r5, fig5 = data.freq('x', gamma=True, plot='display')}\\
+\pythcodef{r5, fig5 = data.freq('x', gamma=True, plot='display')}
 \generaldesc{Computes the frequency distribution of the specified
 	series and optionally tests whether its distribution is
 	consistent with a normal or gamma distribution.
@@ -778,7 +778,7 @@ Examples:\newline
 .get_series(series: str) -> gretl.Matrix
 \end{lstlisting}
 Examples:\newline
-\pythcodef{r = data.get_series('x')}\\
+\pythcodef{r = data.get_series('x')}
 \generaldesc{Returns the values of the specified \gretlcmd{series}
 	over the current sample range as a column vector.}
 
@@ -832,7 +832,7 @@ Examples:\newline
 Examples:\newline
 \pythcodef{cycle = data.hpfilt('y')}\\
 \pythcodef{trend = data.hpfilt('y', trend=True)}\\
-\pythcodef{cycle = data.hpfilt('y', hp_lambda=1600, one_sided=True)}\\
+\pythcodef{cycle = data.hpfilt('y', hp_lambda=1600, one_sided=True)}
 \generaldesc{By default, the cycle component of the
 	Hodrick--Prescott filter is returned. If \pythcode{trend=True},
 	the trend component is returned instead.\newline
@@ -866,7 +866,7 @@ Examples:\newline
 \pythcodef{lags = d.hflags(3, 11, hfvars)}\\
 \pythcodef{fig = d.hfplot(lags, with\_lines=True, time\_series=True)}\\
 \pythcodef{fig = d.hfplot([lags, hfvars], with\_lines=True, time\_series=True)}\\
-\pythcodef{d.hfplot([lags, hfvars], output="midas.gp")}\\
+\pythcodef{d.hfplot([lags, hfvars], output="midas.gp")}
 \generaldesc{Provides a means of plotting high-frequency MIDAS
 	series, optionally together with one or more series observed
 	at the base frequency of the dataset.
@@ -902,7 +902,7 @@ Examples:\newline
 \end{itemize}
 Examples:\newline
 \pythcodef{r1, fig1 = data.hurst('x')}\\
-\pythcodef{r2, fig2 = data.hurst('x', plot='display')}\\
+\pythcodef{r2, fig2 = data.hurst('x', plot='display')}
 \generaldesc{Estimates the Hurst exponent, a measure of persistence
 	or long memory, for a time-series variable containing at least
 	128 observations.
@@ -967,7 +967,7 @@ Examples:\newline
 \end{lstlisting}
 \mapto[none]{dataset insobs n}
 Example:\newline
-\pythcodef{data.insobs(10)}\\
+\pythcodef{data.insobs(10)}
 \generaldesc{Inserts a single observation at position \textit{n},
 	shifting all subsequent observations by one place and extending the
 	dataset by one observation. All variables except the constant are
@@ -1006,7 +1006,7 @@ Example:\newline
 Examples:\newline
 \pythcodef{r1 = data.johansen(ylist='y', xlist='x', order=2)}\\
 \pythcodef{r2 = data.johansen(ylist=['y'], xlist='x z', order=4, verbose=True)}\\
-\pythcodef{r3 = data.johansen(ylist='y', xlist=['x', 'z'], order=3, rc=True)}\\
+\pythcodef{r3 = data.johansen(ylist='y', xlist=['x', 'z'], order=3, rc=True)}
 \generaldesc{Tests for the cointegration rank among a set of endogenous variables
 	using the Johansen trace and maximum-eigenvalue tests}
 
@@ -1026,7 +1026,7 @@ Examples:\newline
 \pythcodef{data.kdplot('LF', alt=True)}\\
 \pythcodef{data.kdplot('LF', scale=1.5)}\\
 \pythcodef{data.kdplot('LF', alt=True, scale=0.8)}\\
-\pythcodef{data.kdplot('LF', output='density.gp')}\\
+\pythcodef{data.kdplot('LF', output='density.gp')}
 \generaldesc{Plots a kernel density estimate for the specified series.
 	By default, the Gaussian kernel is used. Setting \texttt{alt=True}
 	selects the Epanechnikov kernel instead.
@@ -1085,7 +1085,7 @@ Examples:\newline
 \end{itemize}
 Examples:\newline
 \pythcodef{r1 = data.kpss(varlist='y', order=8)}\\
-\pythcodef{r2 = data.kpss(varlist='x1', order=4, trend=True)}\\
+\pythcodef{r2 = data.kpss(varlist='x1', order=4, trend=True)}
 \generaldesc{Tests the null hypothesis that each specified series is stationary
 	around a constant, or around a deterministic linear trend when
 	``trend=True``. For panel data, only one variable can be tested at a time and the
@@ -1104,7 +1104,7 @@ Examples:\newline
 Examples:\newline
 \pythcodef{data.lags('x y')}\\
 \pythcodef{data.lags('x y', 12)}\\
-\pythcodef{data.lags('x y z', 4, bylag=True)}\\
+\pythcodef{data.lags('x y z', 4, bylag=True)}
 \generaldesc{By default the number of lags created equals the
 	periodicity of the data. For example, if the periodicity
 	is 4 (quarterly), \pythcode{.lags('x')} creates:
@@ -1124,7 +1124,7 @@ Examples:\newline
 \mapto[None]{ldiff ~varlist}
 Examples:\newline
 \pythcodef{data.ldiff('x y')}\\
-\pythcodef{data.ldiff(['x', 'y'])}\\
+\pythcodef{data.ldiff(['x', 'y'])}
 \generaldesc{The first difference of the natural logarithm of each
 	variable in \textit{varlist} is computed and stored in a new series
 	with prefix \textit{ld\_}. Thus \gretlcmd{ldiff x y} creates
@@ -1148,7 +1148,7 @@ Examples:\newline
 Examples:\newline
 \pythcodef{r1 = data.levinlin(order=0, series='y')}\\
 \pythcodef{r2 = data.levinlin(order=2, series='y', ct=True)}\\
-\pythcodef{r3 = data.levinlin(order=[2,2,3,3,4,4], series='y')}\\
+\pythcodef{r3 = data.levinlin(order=[2,2,3,3,4,4], series='y')}
 \generaldesc{Tests the null hypothesis that all individual
 	series in the panel have a unit root against the alternative
 	that none has a unit root. A common $AR(1)$ coefficient
@@ -1176,7 +1176,7 @@ Examples:\newline
 \mapto[None]{logs ~varlist}
 Examples:\newline
 \pythcodef{data.logs('x y')}\\
-\pythcodef{data.logs(['x', 'y'])}\\
+\pythcodef{data.logs(['x', 'y'])}
 \generaldesc{The natural logarithm of each variable in
 	\textit{varlist} is computed and stored in a new series with prefix
 	\textit{l\_}. Thus \gretlcmd{logs x y} creates
@@ -1201,7 +1201,7 @@ Examples:\newline
 \end{itemize}
 Examples:\newline
 \pythcodef{r1 = data.meantest('x', 'y')}\\
-\pythcodef{r2 = data.meantest(x='x', split_by='d')}\\
+\pythcodef{r2 = data.meantest(x='x', split_by='d')}
 \generaldesc{Performs a t-test of the null hypothesis that
 	the population means are equal. The samples may be given
 	as two series or obtained by splitting one series
@@ -1216,7 +1216,7 @@ Examples:\newline
 \mapto[none]{list name = value}
 Examples:\newline
 \pythcodef{data.new_list('list A = x1 x2 x3')}\\
-\pythcodef{data.new_list('A', 'x1 x2 x3')}\\
+\pythcodef{data.new_list('A', 'x1 x2 x3')}
 \generaldesc{Creates a named \gretlcmd{list} of variables. The
 	\textit{value} argument specifies the variables by name or variable
 	ID, while \textit{formula} accepts a complete expression in valid
@@ -1260,7 +1260,7 @@ Examples:\newline
 Examples:\newline
 \pythcodef{r1 = data.normtest('x')}\\
 \pythcodef{r2 = data.normtest(series='x', swilk=True)}\\
-\pythcodef{r3 = data.normtest(series='x', all=True)}\\
+\pythcodef{r3 = data.normtest(series='x', all=True)}
 \generaldesc{Performs a normality test using the Doornik-Hansen,
 	Shapiro-Wilk, Lilliefors, or Jarque-Bera procedure. By default,
 	the Doornik-Hansen test is used.}
@@ -1273,7 +1273,7 @@ Examples:\newline
 \mapto[none]{orthdev ~varlist}
 Examples:\newline
 \pythcodef{data.orthdev('x y')}\\
-\pythcodef{data.orthdev(['x', 'y'])}\\
+\pythcodef{data.orthdev(['x', 'y'])}
 \generaldesc{Applicable to panel data only. A series of forward
 	orthogonal deviations is computed for each variable in
 	\textit{varlist} and stored in a new series with prefix
@@ -1290,7 +1290,7 @@ Examples:\newline
 \end{lstlisting}
 \mapto[none]{dataset pad-daily days}
 Example:\newline
-\pythcodef{data.pad\_daily(7)}\\
+\pythcodef{data.pad\_daily(7)}
 \generaldesc{Adds missing observations to a daily time-series dataset
 	so that it conforms to the specified number of days per week.
 	The \textit{days} parameter must be 5, 6 or 7 and greater than the
@@ -1332,7 +1332,7 @@ Examples:\newline
 \pythcodef{d.panplot("Y", grid=True)}\\
 \pythcodef{d.panplot("Y", stack=True)}\\
 \pythcodef{d.panplot("Y", boxplots=True)}\\
-\pythcodef{d.panplot("Y", overlay=True, output="/tmp/panel.gp")}\\
+\pythcodef{d.panplot("Y", overlay=True, output="/tmp/panel.gp")}
 \generaldesc{The method is designed specifically for panel datasets.
 	The graphical mode is selected using one of the options listed
 	above. Except for \texttt{means=True} and
@@ -1424,7 +1424,7 @@ Examples:\newline
 \pythcodef{fig = data.plot(["y1", "y2", "x"])}\\
 \pythcodef{fig = data.plot("y1 y2", time\_series=True, with\_lines=True)}\\
 \pythcodef{fig = data.plot("y x", fit="quadratic")}\\
-\pythcodef{fig = data.plot("y x z", control=True)}\\
+\pythcodef{fig = data.plot("y x z", control=True)}
 \generaldesc{Generates graphical representations of dataset series
 	using the native \lgretl{} plotting functionality. For ordinary
 	X--Y plots, the last variable in \textit{yvars} is interpreted
@@ -1510,7 +1510,7 @@ Examples:\newline
 \pythcodef{d.qqplot("Y", raw=True)}\\
 \pythcodef{d.qqplot("Y", "X")}\\
 \pythcodef{d.qqplot("Y", output="/tmp/qqplot.gp")}\\
-\pythcodef{d.qqplot("Y", "X", output="/tmp/qqplot_xy.gp")}\\
+\pythcodef{d.qqplot("Y", "X", output="/tmp/qqplot_xy.gp")}
 \generaldesc{When a single series is specified, the method
 	produces a normal Q-Q plot. The empirical quantiles of the
 	selected series are compared with the theoretical quantiles
@@ -1553,7 +1553,7 @@ Examples:\newline
 \end{itemize}
 Examples:\newline
 \pythcodef{data.rename('x2', 'income')}\\
-\pythcodef{data.rename(case='lower')}\\
+\pythcodef{data.rename(case='lower')}
 \generaldesc{Without the \gretlcmd{case} option this method changes
 	the name of \textit{series} to \textit{newname}. The new name must
 	be at most 31 characters long, must start with a letter, and may
@@ -1571,7 +1571,7 @@ Examples:\newline
 \end{lstlisting}
 \mapto[none]{dataset ~resample n}
 Examples:\newline
-\pythcodef{data.resample(500)}\\
+\pythcodef{data.resample(500)}
 \generaldesc{Creates a new dataset by sampling observations
 	with replacement from the current dataset. The parameter
 	\textit{n} specifies the number of observations in the
@@ -1631,7 +1631,7 @@ Examples:\newline
 \pythcodef{data.sample(1, -1)}\\
 \pythcodef{data.sample('x > 3000', restrict=True)}\\
 \pythcodef{data.sample('y > 3000', restrict=True, replace=True))}\\
-\pythcodef{data.sample(100, random=True)}\\
+\pythcodef{data.sample(100, random=True)}
 \generaldesc{When no arguments are given, it displays the
 	current sample range, otherwise it sets the sample range.
 	The range can be defined in several ways. In the first
@@ -1663,7 +1663,7 @@ Examples:\newline
 \pythcodef{data.scatters('y ; x1 x2 x3')}\\
 \pythcodef{data.scatters('y1 y2 y3 ; x')}\\
 \pythcodef{data.scatters('y1 y2 y3 ; x', with_lines=True)}\\
-\pythcodef{data.scatters('y ; x1 x2 x3', output='scatters.png')}\\
+\pythcodef{data.scatters('y ; x1 x2 x3', output='scatters.png')}
 \generaldesc{Generates multiple pairwise graphs of one variable
 	against several other variables. The \texttt{varlist} argument
 	contains two groups of variables separated by a semicolon.
@@ -1694,7 +1694,7 @@ Examples:\newline
 \mapto[none]{sdiff ~varlist}
 Examples:\newline
 \pythcodef{data.sdiff('x y')}\\
-\pythcodef{data.sdiff(['x', 'y'])}\\
+\pythcodef{data.sdiff(['x', 'y'])}
 \generaldesc{The seasonal difference of each variable in
 	\textit{varlist} is computed and stored in a new series with prefix
 	\textit{sd\_}. This command is available only for seasonal time series.}
@@ -1735,7 +1735,7 @@ Examples:\newline
 \pythcodef{data..setobs(12, '1978:03')}\\
 \pythcodef{data..setobs(1, 1, cross\_section=True)}\\
 \pythcodef{data..setobs(20, '1:1', stacked\_time\_series=True)}\\
-\pythcodef{data..setobs('unit', 'year', panel\_vars=True)}\\
+\pythcodef{data..setobs('unit', 'year', panel\_vars=True)}
 \generaldesc{In the first form of the method the periodicity,
 	which must be an integer, represents frequency in the case of
 	time-series data (1 = annual; 4 = quarterly; 12 = monthly;
@@ -1769,7 +1769,7 @@ Examples:\newline
 \pythcodef{data.sortby('x1')}\\
 \pythcodef{data.sortby('x1 x2 x3')}\\
 \pythcodef{data.sortby(['x1', 'x2', 'x3'])}\\
-\pythcodef{data.sortby([1, 2, 3])}\\
+\pythcodef{data.sortby([1, 2, 3])}
 \generaldesc{Reorders all observations in the dataset in ascending order
 	according to the variables specified in \textit{varlist}. Variables
 	may be specified by name or index. If multiple variables are given,
@@ -1786,7 +1786,7 @@ Examples:\newline
 \mapto[none]{square ~varlist}
 Examples:\newline
 \pythcodef{data.square('x1 x2')}\\
-\pythcodef{data.square(['x1', 'x2'], cross=True)}\\
+\pythcodef{data.square(['x1', 'x2'], cross=True)}
 \generaldesc{Generates new series containing the squares of the variables
 	in \textit{varlist}. For example, \gretlcmd{square x y} generates
 	$sq\_x=x^2$ and $sq\_y=y^2$; with the \pythcode{cross} option it
@@ -1806,7 +1806,7 @@ Examples:\newline
 Examples:\newline
 \pythcodef{data.stdize('x1 x2')}\\
 \pythcodef{data.stdize(['x1', 'x2'], no_df_corr=True)}\\
-\pythcodef{data.stdize('x1', center_only=True)}\\
+\pythcodef{data.stdize('x1', center_only=True)}
 \generaldesc{By default, a standardized version of each variable in
 	\textit{varlist} is generated with prefix \textit{s\_}. For example,
 	\gretlcmd{stdize x y} creates \textit{s\_x} and \textit{s\_y},
@@ -1848,7 +1848,7 @@ Examples:\newline
 \end{itemize}
 Examples:\newline
 \pythcodef{data.tsplots('y x z')}\\
-\pythcodef{data.tsplots(['y', 'x', 'z'])}\\
+\pythcodef{data.tsplots(['y', 'x', 'z'])}
 \generaldesc{Provides an easy way of plotting multiple time series,
 	up to a maximum of 16, on a single canvas. The \texttt{varlist}
 	argument specifies the series to be plotted, either by their
@@ -1866,7 +1866,7 @@ Examples:\newline
 \end{lstlisting}
 \mapto[none]{dataset unpad-daily}
 Example:\newline
-\pythcodef{data.unpad\_daily()}\\
+\pythcodef{data.unpad\_daily()}
 \generaldesc{Removes artificial observations containing missing values
 	from a daily time-series dataset. Observations for which all series
 	are missing are removed, reducing the daily frequency where
@@ -1895,7 +1895,7 @@ Example:\newline
 \maptof{tdisagg(Y, X, s, opts, results)}{matrix}
 Examples:\newline
 \pythcodef{r1 = data.tdisagg('y', s=3)}\\
-\pythcodef{r2 = data.tdisagg(Y='y', X=['x1', 'x2'], s=3)}\\
+\pythcodef{r2 = data.tdisagg(Y='y', X=['x1', 'x2'], s=3)}
 \generaldesc{Converts the time-series data specified by
 	\textit{Y} to a higher frequency using temporal disaggregation.
 	The parameter \textit{s} specifies the expansion factor (for example,
@@ -1977,7 +1977,7 @@ Examples:\newline
 \pythcodef{r1 = data.to_matrix()}\newline
 \pythcodef{r2 = data.to_matrix(['y', 'x1', 'x2'])}\newline
 \pythcodef{r3 = data.to_matrix('y x1 x2', missing='skip')}\newline
-\pythcodef{r4 = data.to_matrix(['y', 'x1'], 10, 100)}\\
+\pythcodef{r4 = data.to_matrix(['y', 'x1'], 10, 100)}
 \generaldesc{Creates a \gretl matrix from the selected variables and
 	observations of the current dataset. Matrix rows correspond to
 	observations and columns to variables. By default, the current sample
@@ -1996,7 +1996,7 @@ Examples:\newline
 \end{lstlisting}
 \mapto[none]{dataset transpose}
 Examples:\newline
-\pythcodef{data.transpose()}\\
+\pythcodef{data.transpose()}
 \generaldesc{Interchanges observations and variables in the
 	dataset, so that rows become columns and columns become rows.
 	This method may be useful when importing data where variables
@@ -2009,7 +2009,7 @@ Examples:\newline
 \end{lstlisting}
 \mapto[none]{dataset unpad-daily}
 Examples:\newline
-\pythcodef{data.unpad\_daily()}\\
+\pythcodef{data.unpad\_daily()}
 \generaldesc{Removes observations containing only missing values
 	from a padded daily dataset. The time-series structure and
 	observation dates are preserved.}
@@ -2028,7 +2028,7 @@ Examples:\newline
 \end{itemize}
 Examples:\newline
 \pythcodef{r1 = data.vartest('x', 'y')}\\
-\pythcodef{r2 = data.vartest(x='x', split_by='d')}\\
+\pythcodef{r2 = data.vartest(x='x', split_by='d')}
 \generaldesc{By default, performs the standard \textit{F} test
 	of the null hypothesis that the population variances are equal.
 	Robust variants based on Levene and Brown-Forsythe tests are
@@ -2053,7 +2053,7 @@ Examples:\newline
 \pythcodef{r2, fig2 = data.xcorrgm(['x', 'y'], 12)}\\
 \pythcodef{r3, fig3 = data.xcorrgm('x', 'y', 12)}\\
 \pythcodef{r4, fig4 = data.xcorrgm('x', 'y', plot='display')}\\
-\pythcodef{r5, fig5 = data.xcorrgm('x y', plot='none')}\\
+\pythcodef{r5, fig5 = data.xcorrgm('x y', plot='none')}
 \generaldesc{Computes the sample cross-correlation coefficients
 	between the current value of \textit{series1} and successive
 	leads and lags of \textit{series2}.

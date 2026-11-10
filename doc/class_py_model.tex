@@ -172,7 +172,7 @@ The \classpymodel provides the following public methods:
 Examples:\newline
 \pythcodef{model.fcast('1997:1', '2001:4', 'f1')}\\
 \pythcodef{model.fcast('fit2')}\\
-\pythcodef{model.fcast('2004:1', '2008:3', 4, 'rfcast', recursive=True)}\\
+\pythcodef{model.fcast('2004:1', '2008:3', 4, 'rfcast', recursive=True)}
 \generaldesc{Forecasts are generated for a certain
 	range of observations: if \textit{startobs} and
 	\textit{endobs} are given, for that range (if possible);
@@ -248,7 +248,7 @@ Examples:\newline
 		\textit{Agg}. If \pythcode{None}, the default backend
 			selection logic is used.
 	\end{description}%
-}\\\\
+}
 \generaldesc{The method provides a convenient way
 	to visualize fitted values or regression residuals produced by
 	the model. For models containing multiple equations or dependent
@@ -692,7 +692,7 @@ on the specification of the fitted model.
 Examples:\newline
 \pythcodef{r1, fig1 = model.cusum(plot='display')}\\
 \pythcodef{r2, fig2 = model.cusum(squares=True, plot='display')}\\
-\pythcodef{r3, fig3 = model.cusum(quiet=True, plot='none')}\\
+\pythcodef{r3, fig3 = model.cusum(quiet=True, plot='none')}
 \generaldesc{Performs the cumulative sum (CUSUM) test for
 	parameter stability following the estimation of a model
 	by ordinary least squares (OLS). The test is based on
@@ -768,7 +768,7 @@ Examples:\newline
 Examples:\newline
 \pythcodef{r1, fig1 = model.leverage(plot='display')}\\
 \pythcodef{r2, fig2 = model.leverage(save=True, quiet=True)}\\
-\pythcodef{r3, fig3 = model.leverage(plot='none')}\\
+\pythcodef{r3, fig3 = model.leverage(plot='none')}
 \generaldesc{Computes leverage and influence diagnostics following
 	the estimation of an ordinary least squares (OLS) model.
 	For each observation in the estimation sample, the method
@@ -926,7 +926,7 @@ Examples:\newline
 Examples:\newline
 \pythcodef{r1, fig1 = model.qlrtest(plot='display')}\\
 \pythcodef{r2, fig2 = model.qlrtest(limit\_to='L', plot='display')}\\
-\pythcodef{r3, fig3 = model.qlrtest(quiet=True, plot='none')}\\
+\pythcodef{r3, fig3 = model.qlrtest(quiet=True, plot='none')}
 \generaldesc{Performs the Quandt likelihood ratio (QLR) test for
 	a structural break at an unknown point in time, following
 	the estimation of an ordinary least squares (OLS) model
@@ -1091,7 +1091,7 @@ The \pythcode{gretl.Model\_nls} class provides the following public methods:
 \begin{lstlisting}[style=pythonstylefoot]
 .add_deriv(line: str) -> self
 \end{lstlisting}
-\mapto[none]{deriv line}\\
+\mapto[none]{deriv line}
 \generaldesc{The \textit{line} argument specifies a parameter followed
 	by an equals sign and an expression for the derivative. This method
 	may be called repeatedly to specify derivatives with respect to
@@ -1112,7 +1112,7 @@ The \pythcode{gretl.Model\_nls} class provides the following public methods:
 \begin{lstlisting}[style=pythonstylefoot]
 .add_params(line: str) -> self
 \end{lstlisting}
-\mapto[none]{params line}\\
+\mapto[none]{params line}
 \generaldesc{This method is used when analytical derivatives are not
 	supplied. In this case the Jacobian is computed numerically.
 	Parameter names in \textit{line} may be separated by spaces or commas.}
@@ -1122,7 +1122,7 @@ The \pythcode{gretl.Model\_nls} class provides the following public methods:
 \begin{lstlisting}[style=pythonstylefoot]
 .add_param_names(line: str) -> self
 \end{lstlisting}
-\mapto[none]{param\_names "line"}\\
+\mapto[none]{param\_names "line"}
 \generaldesc{The names specified in \textit{line} are used when
 	displaying estimation results and do not affect the parameter names
 	used in the model specification.}
@@ -1138,7 +1138,7 @@ The \pythcode{gretl.Model\_mle} class provides the following public methods:
 \begin{lstlisting}[style=pythonstylefoot]
 .add_deriv(line: str) -> self
 \end{lstlisting}
-\mapto[none]{deriv line}\\
+\mapto[none]{deriv line}
 \generaldesc{The \textit{line} argument specifies a parameter followed
 	by an equals sign and an expression for the derivative. This method
 	may be called repeatedly to specify derivatives with respect to
@@ -1159,7 +1159,7 @@ The \pythcode{gretl.Model\_mle} class provides the following public methods:
 \begin{lstlisting}[style=pythonstylefoot]
 	.add_params(line: str) -> self
 \end{lstlisting}
-\mapto[none]{params line}\\
+\mapto[none]{params line}
 \generaldesc{This method is used when analytical derivatives are not
 	supplied, in which case they are computed numerically. The parameters
 	listed in \textit{line} may be scalars, vectors, or a combination
@@ -1177,7 +1177,7 @@ The \pythcode{gretl.Model\_mle} class provides the following public methods:
 \begin{lstlisting}[style=pythonstylefoot]
 .add_statements(line: str) -> self
 \end{lstlisting}
-\mapto[none]{line}\\
+\mapto[none]{line}
 \generaldesc{The statement specified by \textit{line} may be used to
 	compute auxiliary quantities required for evaluating the
 	log-likelihood function. This method may be called repeatedly
@@ -1201,7 +1201,7 @@ The \pythcode{gretl.Model\_gmm} class provides the following public methods:
 \begin{lstlisting}[style=pythonstylefoot]
 .add_orthog(line: str) -> self
 \end{lstlisting}
-\mapto[none]{orthog line}\\
+\mapto[none]{orthog line}
 \generaldesc{The \textit{line} argument specifies the residual or error
 	term followed by a semicolon and the associated instruments. This
 	method may be called repeatedly to add successive sets of
@@ -1226,7 +1226,7 @@ The \pythcode{gretl.Model\_gmm} class provides the following public methods:
 \begin{lstlisting}[style=pythonstylefoot]
 .add_statements(line: str) -> self
 \end{lstlisting}
-\mapto[none]{line}\\
+\mapto[none]{line}
 \generaldesc{The statement specified by \textit{line} may be used to
 	update quantities required for evaluating the orthogonality
 	conditions. This method may be called repeatedly to add successive
@@ -1237,7 +1237,7 @@ The \pythcode{gretl.Model\_gmm} class provides the following public methods:
 \begin{lstlisting}[style=pythonstylefoot]
 .add_weights(line: str) -> self
 \end{lstlisting}
-\mapto[none]{weights line}\\
+\mapto[none]{weights line}
 \generaldesc{The \textit{line} argument specifies the matrix containing
 	the initial weights used in GMM estimation.}
 

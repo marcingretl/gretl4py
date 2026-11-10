@@ -85,8 +85,19 @@
 		Instead, \pythcode{formula} takes \gretl's default syntax
 		as outlined in Equation~\ref{eq:Gstyle}.\end{minipage}}
 \newcommand{\gretlfpycmd}[1]{\vspace*{10pt}\noindent\protect\textcolor{red}{\pythcode{#1}}\index{#1}}
-\newcommand{\generaldesc}[1]{\hspace*{17pt}\begin{minipage}[t]{0.95\columnwidth}%
-		\small#1\end{minipage}}
+%\newcommand{\generaldesc}[1]{\hspace*{17pt}\begin{minipage}[t]{0.95\columnwidth}\small#1\end{minipage}}
+\newcommand{\generaldesc}[1]{%
+	% Use a page-breakable paragraph rather than a minipage for long descriptions.
+	\vspace{10pt}
+	\par
+	\begingroup
+	\small
+	\leftskip=0pt
+	\rightskip=6pt
+	\noindent
+	#1\par
+	\endgroup
+}
 \newcommand{\gretldataset}{gretl.Dataset\xspace}
 \newcommand{\gretlmatrix}{gretl.Matrix\xspace}
 \newcommand{\gretlbundle}{gretl.Bundle\xspace}
@@ -141,6 +152,7 @@
 \includeonly{Implementation}
 
 \begin{document}
+	\raggedbottom
 	\pagestyle{headings}
 \begin{titlepage}
 \centering

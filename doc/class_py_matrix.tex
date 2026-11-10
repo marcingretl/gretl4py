@@ -21,7 +21,7 @@ The \classpymatrix provides the following constructors:
 \end{lstlisting}
 \maptof{\{\}}{matrix}
 Example:\newline
-\pythcodef{m = ~gretl.Matrix()}\\
+\pythcodef{m = ~gretl.Matrix()}
 \generaldesc{Constructs an empty \pythcode{gretl.Matrix} object.}
 
 \gretlfpycmd{Matrix()}
@@ -33,7 +33,7 @@ Example:\newline
 \maptof{ones(.rows, .cols) .* fill}{matrix}
 Example:\newline
 \pythcodef{m = ~gretl.Matrix(3, 2, 3.4)}\\
-\pythcodef{m = ~gretl.Matrix(3, 2, -1.4, 'complex')}\\
+\pythcodef{m = ~gretl.Matrix(3, 2, -1.4, 'complex')}
 \generaldesc{Constructs a $rows\times cols$ \pythcode{gretl.Matrix},
 	optionally filled with \textit{fill}. For
 	\pythcode{type = 'complex'}, the user gets a complex matrix
@@ -48,7 +48,7 @@ Example:\newline
 \maptof{muniform(.rows, .cols)}{matrix}
 Example:\newline
 \pythcodef{m = ~gretl.Matrix(3, 2, 'normal')}\\
-\pythcodef{m = ~gretl.Matrix(3, 4, 'U')}\\
+\pythcodef{m = ~gretl.Matrix(3, 4, 'U')}
 \generaldesc{Constructs a $rows\times cols$ random \pythcode{gretl.Matrix}.
 	The pseudo-random values are drawn from one of the following distributions:
 	\begin{itemize}
@@ -67,7 +67,7 @@ Example:\newline
 \maptof{seq(a, b, k)}{matrix}
 Example:\newline
 \pythcodef{m = ~gretl.Matrix(1.0, 5.0)}\\
-\pythcodef{m = ~gretl.Matrix(10.0, 4.0, 2.0)}\\
+\pythcodef{m = ~gretl.Matrix(10.0, 4.0, 2.0)}
 \generaldesc{Given two arguments, returns a row vector
 	containing values from \textit{a} to \textit{b} with
 	a step size of~1, or~$-1$ if \textit{a} is greater
@@ -89,7 +89,7 @@ Example:\newline
 \end{lstlisting}
 \maptof{I(n)}{matrix}
 Example:\newline
-\pythcodef{m = ~gretl.Matrix(3)}\\
+\pythcodef{m = ~gretl.Matrix(3)}
 \generaldesc{Constructs an $n\times n$ \pythcode{gretl.Matrix}
 	with ones on the main diagonal and zeros elsewhere.}
 
@@ -100,7 +100,7 @@ Example:\newline
 \end{lstlisting}
 Example:\newline
 \pythcodef{v = ~gretl.Matrix(np.array([1, 2, 3, 4]))}\\
-\pythcodef{m = ~gretl.Matrix(np.array([[1, 2], [3, 4]]))}\\
+\pythcodef{m = ~gretl.Matrix(np.array([[1, 2], [3, 4]]))}
 \generaldesc{Constructs a \pythcode{gretl.Matrix} as a deep
 	copy of an existing \pythcode{numpy.ndarray}. If the input is
 	a one-dimensional NumPy array, it is interpreted as a column
@@ -113,7 +113,7 @@ Example:\newline
 \end{lstlisting}
 Example:\newline
 \pythcodef{v = ~gretl.Matrix([1, 2, 3, 4])}\\
-\pythcodef{m = ~gretl.Matrix([[1, 2], [3, 4]])}\\
+\pythcodef{m = ~gretl.Matrix([[1, 2], [3, 4]])}
 \generaldesc{Constructs a \pythcode{gretl.Matrix} from a
 	Python \pythcode{Sequence}. The input \pythcode{seq} must be a
 	Python sequence (e.g., a \pythcode{list} or \pythcode{tuple}).
@@ -144,7 +144,7 @@ Example:\\
 \pythcodef{f = m[0,0]}\\
 \pythcodef{s = m[:,-1]}\\
 \pythcodef{v[0] = 2 - .5j}\\
-\pythcodef{m[0,0] = 10 + 1j}\\
+\pythcodef{m[0,0] = 10 + 1j}
 \generaldesc{The operator retrieves or assigns values of an
 	existing \pythcode{gretl.Matrix} using Python indexing syntax.
 	Scalar indexing returns a numeric value, while slicing returns a
@@ -217,7 +217,7 @@ The \classpymatrix class provides the following static methods:
 ~gretl.Matrix.diag(seq: Sequence) -> gretl.Matrix
 \end{lstlisting}
 Example:\newline
-\pythcodef{m = ~gretl.Matrix.diag([1, 2, 3])}\\
+\pythcodef{m = ~gretl.Matrix.diag([1, 2, 3])}
 \generaldesc{Constructs an $n\times n$ \pythcode{gretl.Matrix},
 	where \textit{n} is the length of \textit{seq}, with
 	the main diagonal set to the elements of \textit{seq}.
@@ -231,7 +231,7 @@ Example:\newline
 \maptof{I(n, m)}{matrix}
 Example:\newline
 \pythcodef{m = ~gretl.Matrix.I(3)}\\
-\pythcodef{m = ~gretl.Matrix.I(3, 4)}\\
+\pythcodef{m = ~gretl.Matrix.I(3, 4)}
 \generaldesc{Constructs an $n\times n$ or $n\times m$
 	\pythcode{gretl.Matrix} with ones on the main diagonal
 	and zeros elsewhere.}
@@ -243,7 +243,7 @@ Example:\newline
 \end{lstlisting}
 \maptof{ones(.rows, .cols)}{matrix}
 Example:\newline
-\pythcodef{m = ~gretl.Matrix.ones(3, 4)}\\
+\pythcodef{m = ~gretl.Matrix.ones(3, 4)}
 \generaldesc{Constructs a \textit{rows}$\times$\textit{cols}
 	\pythcode{gretl.Matrix} with all elements set to one.}
 
@@ -254,7 +254,7 @@ Example:\newline
 \end{lstlisting}
 \maptof{zeros(.rows, .cols)}{matrix}
 Example:\newline
-\pythcodef{m = ~gretl.Matrix.zeros(3, 4)}\\
+\pythcodef{m = ~gretl.Matrix.zeros(3, 4)}
 \generaldesc{Constructs a \textit{rows}$\times$\textit{cols}
 	\pythcode{gretl.Matrix} with all elements set to zero.}
 

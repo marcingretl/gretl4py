@@ -25,7 +25,7 @@ The \classpybundle provides the following constructors:
 \end{lstlisting}
 \maptof{\_(**kwargs)}{bundle}
 Example:\newline
-\pythcodef{b = ~gretl.Bundle(x=10, name="foo", mat=numpy.array([[1,2],[3,4]]))}\\
+\pythcodef{b = ~gretl.Bundle(x=10, name="foo", mat=numpy.array([[1,2],[3,4]]))}
 \generaldesc{Construct a \gretlcmd{bundle} optionally initialized
 	with keyword arguments. Each keyword becomes a key in the
 	\gretlcmd{bundle}, with its value stored according to type
@@ -61,7 +61,7 @@ The \classpybundle class provides the following public methods:
 \begin{lstlisting}[style=pythonstylefoot]
 .keys() -> list
 \end{lstlisting}
-\maptof{getkeys(b)}{strings}\\
+\maptof{getkeys(b)}{strings}
 \generaldesc{If the bundle is empty, an empty list is returned.}
 
 \gretlfpycmd{pop()}
@@ -77,7 +77,7 @@ The \classpybundle class provides the following public methods:
 .print(tree: bool = False)
 \end{lstlisting}
 \mapto[none]{print ~bundle~}
-\mapto[none]{print ~bundle~ --tree}\\
+\mapto[none]{print ~bundle~ --tree}
 \generaldesc{If \pythcode{tree=True}, the contents of nested bundles
 	are also listed. Otherwise only the top-level members of the bundle
 	are listed.}
