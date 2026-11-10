@@ -1163,6 +1163,7 @@ py::object get_uservar (const std::string &varname)
         build_msg();
         throw py::index_error(msg);
     }
+    if (err == 1) throw std::invalid_argument(ext_msg); // special case, used for corr()
     if (arg_errors.count(err)) {
         build_msg();
         throw std::invalid_argument(msg);

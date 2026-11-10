@@ -383,37 +383,83 @@ Examples:\newline
 	0 for Sunday or 1 for Monday. For 7-day data the default is Monday;
 	for 5- or 6-day data the week is taken to start on Monday.}
 
-\gretlfpycmd{corr()}
-\estdesc{Computes pairwise correlations for selected variables,
-	or for all variables if none are specified.}
+\gretlfpycmd{corr()}\label{met:gretldataset::corr}
+\estdesc{Compute pairwise correlations for selected variables
+	or for all variables in the dataset.}
 \begin{lstlisting}[style=pythonstylefoot]
-.corr() -> gretl.Matrix
-.corr(varlist: str | list[, OPTS]) -> gretl.Matrix
+.corr([OPTS]) -> tuple[gretl.Matrix, matplotlib.figure.Figure .| None]
+.corr(varlist: str | list[, OPTS]) -> tuple[gretl.Matrix, matplotlib.figure.Figure .| None]
 \end{lstlisting}
-\mapto{corr [ ~varlist ]}
+\mapto{corr [~varlist]}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
-	\item[]\maptoopt{uniform=True}{--uniform}{ensure uniform sample}
+	\item[]\maptoopt{matrix=matname}{--matrix}{compute correlations from a named matrix}
+	\item[]\maptoopt{uniform=True}{--uniform}{ensure a uniform sample}
 	\item[]\maptoopt{spearman=True}{--spearman}{Spearman's $\rho$}
 	\item[]\maptoopt{kendall=True}{--kendall}{Kendall's $\tau$}
 	\item[]\maptoopt{verbose=True}{--verbose}{print rankings}
-	\item[]\maptoopt{triangle=True}{--triangle}{only plot lower half (\seegretlmanual)}
-	\item[]\maptoopt{quiet=True}{--quiet}{do not print anything}
+	\item[]\maptoopt{plot=mode-or-filename}{--plot}{control graphical output}
+	\item[]\maptoopt{triangle=True}{--triangle}{plot only the lower triangle}
+	\item[]\maptoopt{quiet=True}{--quiet}{suppress printed output}
 \end{itemize}
 Examples:\newline
-\pythcodef{r1 = data.corr('y x z t')}\\
-\pythcodef{r2 = data.corr('ylist', uniform=True)}\\
-\pythcodef{r3 = data.corr('x y', spearman=True)}\\
-\generaldesc{By default, Pearson's product-moment correlations are
-	computed. The standard behavior is to use all available observations
-	for each pairwise coefficient. With \gretlcmd{--uniform}, the sample
-	is restricted, if necessary, so that the same observations are used
-	for all coefficients.\newline
-	The mutually exclusive options \gretlcmd{--spearman} and
-	\gretlcmd{--kendall} produce, respectively, Spearman's rank
-	correlation $\rho$ and Kendall's rank correlation $\tau$. When
-	either option is given, \textit{varlist} should contain exactly two
-	variables. The computed correlations are returned as a
-	\classpymatrix instance.}
+\pythcodef{r1, fig1 = data.corr('y x z t')}\\
+\pythcodef{r2, fig2 = data.corr('ylist', uniform=True)}\\
+\pythcodef{r3, fig3 = data.corr('x y', spearman=True)}\\
+\pythcodef{r4, fig4 = data.corr('y x z', plot='display', triangle=True)}\\
+\pythcodef{r5, fig5 = data.corr(matrix='X', plot='display')}\\
+\generaldesc{Computes pairwise correlation coefficients for the
+	specified variables, or for all variables in the dataset
+	if no variable list is supplied. By default, Pearson's
+	product-moment correlations are calculated.
+	
+	The standard behavior is to use all available observations
+	for each pairwise coefficient. Consequently, different
+	correlation coefficients may be based on different samples.
+	Setting \pythcode{uniform=True} restricts the sample,
+	if necessary, so that the same observations are used for
+	all coefficients. This is particularly important when
+	the resulting correlation matrix is intended for further
+	matrix-based computations, since pairwise deletion of
+	missing observations does not guarantee that the matrix
+	is positive semidefinite.
+	
+	The mutually exclusive options \pythcode{spearman=True}
+	and \pythcode{kendall=True} produce, respectively,
+	Spearman's rank correlation $\rho$ and Kendall's rank
+	correlation $\tau$ instead of the default Pearson
+	coefficient. When either option is specified,
+	\textit{varlist} must contain exactly two variables.
+	The \pythcode{verbose=True} option prints the original
+	and ranked data when computing rank correlations.
+	
+	Alternatively, correlations can be computed from the
+	columns of a named \lgretl matrix using the
+	\pythcode{matrix} option. In this case,
+	\pythcode{spearman=True} and \pythcode{kendall=True}
+	are not available.
+	
+	When more than two series are selected, a heatmap of
+	the correlation matrix can be generated. Graphical
+	output is controlled by the \pythcode{plot} option.
+	The supported values are \pythcode{"none"} (suppress
+	the plot), \pythcode{"display"} (request graphical
+	output), or a filename to which the plot is saved.
+	If this option is omitted, plotting follows the
+	current \lgretl execution mode.
+	
+	When plotting is active, setting
+	\pythcode{triangle=True} displays only the lower
+	triangle of the correlation matrix. The
+	\pythcode{quiet=True} option suppresses printed output.
+	
+	The automatic display of generated Matplotlib figures
+	is controlled separately by
+	\pythcode{gretl.set\_plot\_auto\_show()}.
+	
+	The method returns a tuple containing a \classpymatrix
+	with the computed correlation coefficients and an
+	optional Matplotlib Figure. If no figure is returned,
+	the second element of the tuple is \pythcode{None}.}
 
 \gretlfpycmd{corrgm()}\label{met:gretldataset::corrgm}
 \estdesc{Compute the correlogram of a time series.}

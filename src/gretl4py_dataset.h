@@ -206,7 +206,7 @@ public:
     GretlMatrixPtr bkfilt (const std::string &y, int f1 = 0, int f2 = 0, int k = 0);
 
     template <typename T>
-    py::object corr (const T &varlist, const py::kwargs &kwargs);
+    std::pair<py::object, py::object> corr (const T &varlist, const py::kwargs &kwargs);
 
     template <typename T>
     GretlMatrixPtr cov (const T &varlist);

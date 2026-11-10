@@ -1110,7 +1110,7 @@ GretlDatasetPtr GretlDataset::getitem_impl (const py::list &slice)
 }
 
 template <typename T>
-py::object GretlDataset::corr (const T &varlist, const py::kwargs &kwargs)
+std::pair<py::object, py::object> GretlDataset::corr (const T &varlist, const py::kwargs &kwargs)
 {
     //
     // general interface for computing correlations
@@ -1139,16 +1139,15 @@ py::object GretlDataset::corr (const T &varlist, const py::kwargs &kwargs)
     } else {
         err_ = gretl_corrmx(var_list.get(), dset, opt_, printer_.prn_ptr());
     }
-    if (err_) handle_gretl_error(err_);
+    if (err_) handle_gretl_error(err_, err_ == 1 ? printer_.get_buffer() : "");
 
     // print and translate the generated gnuplot script, if available
     printer_.print();
-    plotter.display();
 
-    return get_accessor("$result");
+    return {get_accessor("$result"), plotter.display()};
 }
-template py::object GretlDataset::corr<std::string>(const std::string&, const py::kwargs&);
-template py::object GretlDataset::corr<py::list>(const py::list&, const py::kwargs&);
+template std::pair<py::object, py::object> GretlDataset::corr<std::string>(const std::string&, const py::kwargs&);
+template std::pair<py::object, py::object> GretlDataset::corr<py::list>(const py::list&, const py::kwargs&);
 
 template <typename T>
 GretlMatrixPtr GretlDataset::cov (const T &varlist)

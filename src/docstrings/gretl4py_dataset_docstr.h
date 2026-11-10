@@ -1316,36 +1316,81 @@ namespace doc::Dataset {
     inline constexpr char corr[] = R"doc(
     Compute pairwise correlations for selected variables.
 
+    By default, computes Pearson's product-moment correlations using
+    all available observations for each pair of variables. Spearman's
+    rho and Kendall's tau are also supported.
+
     Parameters
     ----------
     varlist : str or list, optional
-        Variables to use. If omitted, all variables are used.
+        Variables for which correlations are computed. If omitted,
+        all variables in the dataset are used, unless a named matrix
+        is specified.
 
     Other Parameters
     ----------------
+    matrix : str, optional
+        Name of a gretl matrix whose columns are to be correlated,
+        instead of using series from the dataset.
     uniform : bool, optional
         Use a common sample for all pairwise correlations.
     spearman : bool, optional
-        Compute Spearman's rank correlation.
+        Compute Spearman's rank correlation instead of Pearson's
+        correlation. Requires exactly two variables.
     kendall : bool, optional
-        Compute Kendall's rank correlation.
-    verbose : bool, optional
-        Print rankings for rank correlations.
+        Compute Kendall's rank correlation instead of Pearson's
+        correlation. Requires exactly two variables.
+        verbose : bool, optional
+        Print the original and ranked data when computing rank
+        correlations.
+    plot : str, optional
+        Plot mode or output filename. Supported values are ``"none"``
+        (suppress the plot), ``"display"`` (request graphical output),
+        or a filename to save the plot.
     triangle : bool, optional
-        Plot only the lower triangle of the correlation matrix.
+        Display only the lower triangle of the correlation matrix
+        when generating a heatmap.
     quiet : bool, optional
         Suppress printed output.
 
     Returns
     -------
-    Matrix
-        Matrix containing the computed correlations.
+    tuple[Matrix, matplotlib.figure.Figure | None]
+    A tuple containing a GretlMatrix with the computed correlations
+    and an optional Matplotlib Figure. The second element is
+    ``None`` if no figure is returned.
 
     Notes
     -----
-    Pearson's product-moment correlation is computed by default.
-    The `spearman` and `kendall` options are mutually exclusive and
-    require exactly two variables.
+    By default, each pairwise correlation is computed using all
+    available observations. Consequently, different coefficients
+    may be based on different samples.
+
+    With ``uniform=True``, a common sample is used for all pairwise
+    correlations. This is recommended when the resulting correlation
+    matrix is intended for further matrix-based computations, since
+    pairwise deletion of missing observations does not guarantee
+    that the correlation matrix is positive semidefinite.
+
+    The ``spearman`` and ``kendall`` options are mutually exclusive
+    and require exactly two variables. Neither option is available
+    when correlations are computed from a named matrix.
+
+    When more than two series are selected, a heatmap of the
+    correlation matrix may be generated. Setting ``triangle=True``
+    restricts the heatmap to its lower triangle.
+
+    If ``plot`` is omitted, graphical output follows the current
+    gretl execution mode. Automatic display of generated figures
+    is controlled separately by ``gretl.set_plot_auto_show()``.
+
+    Examples
+    --------
+    ``R, fig = data.corr("y x1 x2 x3")``
+    ``R, fig = data.corr("ylist", uniform=True)``
+    ``R, fig = data.corr("x y", spearman=True)``
+    ``R, fig = data.corr("y x1 x2", plot="display", triangle=True)``
+    ``R, fig = data.corr(matrix="X", plot="display")``
     )doc";
 
     inline constexpr char cov[] = R"doc(
