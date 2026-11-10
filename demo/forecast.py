@@ -31,11 +31,13 @@ f5.show()
 print("VAR")
 m4 = gretl.var(1, "g lg", data=d2, quiet=True).fit()
 #print(m4)
-m4.fcast(d2.n-2, d2.n, out_of_sample=True)
+b6, f6 = m4.fcast(d2.n-2, d2.n, "g", out_of_sample=True, plot='display')
+f6.show()
 
 # VECM
 print("VECM")
 m5 = gretl.vecm(1, 1, "g lg", data=d2, quiet=True).fit()
-m5.fcast(d2.n-1, d2.n, out_of_sample=False)
+b7, f7 = m5.fcast(d2.n-1, d2.n, "g", out_of_sample=False, plot='display')
+f7.show()
 
 plt.show(block=True)

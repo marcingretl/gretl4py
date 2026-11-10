@@ -1944,9 +1944,7 @@ void GretlModel_VAR::fit (void)
 
 std::pair<py::object, py::object> GretlModel_VAR::forecast (const py::args &args, const py::kwargs &kwargs)
 {
-    gretl_do_forecast_<void>(model_, args, kwargs);
-
-    return {py::none(), py::none()};
+    return gretl_do_forecast_<void>(model_, args, kwargs);
 }
 
 GretlBundlePtr GretlModel_VAR::test (const std::string &type, const py::kwargs &kwargs)
