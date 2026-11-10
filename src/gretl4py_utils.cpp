@@ -36,6 +36,7 @@ extern "C" {
 #include <vector>
 #include <cstdlib>
 #include <iomanip>
+#include <locale.h>
 
 #ifdef _WIN32
 #include <windows.h>
@@ -443,14 +444,13 @@ py::object GretlPlot::display()
 
         NumericLocaleGuard()
         {
-            const char *loc = std::setlocale(LC_NUMERIC, nullptr);
-
+            const char *loc = ::setlocale(LC_NUMERIC, nullptr); // this is due to some macOS SDK incompatibilities
             if (loc) saved_ = loc;
         }
 
         ~NumericLocaleGuard()
         {
-            if (!saved_.empty()) std::setlocale(LC_NUMERIC, saved_.c_str());
+            if (!saved_.empty()) ::setlocale(LC_NUMERIC, saved_.c_str());
         }
     } locale_guard;
 
