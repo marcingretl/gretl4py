@@ -580,7 +580,7 @@ GretlBundlePtr GretlModel::do_restrict_ (T *model, const py::list &impose, const
 
 //T = { MODEL, void }
 template <typename T>
-void GretlModel::gretl_do_forecast_ (void *model, const py::args &args, const py::kwargs &kwargs)
+std::pair<py::object, py::object> GretlModel::gretl_do_forecast_ (void *model, const py::args &args, const py::kwargs &kwargs)
 {
     //
     // method calls libgretl's do_forecast() function
@@ -631,7 +631,6 @@ void GretlModel::gretl_do_forecast_ (void *model, const py::args &args, const py
 
             add_to_param(obj);
         }
-        if (!left) return;
         for (int i=max_positional_args-left; i<max_positional_args; ++i) {
             const char *key = positional_args[i];
             py::object obj = clean_kwargs.attr("pop")(key, py::none());
@@ -654,7 +653,8 @@ void GretlModel::gretl_do_forecast_ (void *model, const py::args &args, const py
     }
     if (err_) handle_gretl_error(err_);
     printer_.print();
-    plotter.display();
+
+    return {get_accessor("$result"), plotter.display()};
 }
 
 void GretlModel::check_if_estimated_ (void) const
@@ -845,9 +845,9 @@ int GretlModel_NSE::resolve_coefficient_ (const std::variant<int, std::string> &
     return idx;
 }
 
-void GretlModel_NSE::forecast (const py::args &args, const py::kwargs &kwargs)
+std::pair<py::object, py::object> GretlModel_NSE::forecast (const py::args &args, const py::kwargs &kwargs)
 {
-    gretl_do_forecast_<MODEL>(model_, args, kwargs);
+    return gretl_do_forecast_<MODEL>(model_, args, kwargs);
 }
 
 py::object GretlModel_NSE::get_accessor (const std::string &name) const
@@ -1942,9 +1942,11 @@ void GretlModel_VAR::fit (void)
     save_model_<GRETL_VAR>(model_);
 }
 
-void GretlModel_VAR::forecast (const py::args &args, const py::kwargs &kwargs)
+std::pair<py::object, py::object> GretlModel_VAR::forecast (const py::args &args, const py::kwargs &kwargs)
 {
     gretl_do_forecast_<void>(model_, args, kwargs);
+
+    return {py::none(), py::none()};
 }
 
 GretlBundlePtr GretlModel_VAR::test (const std::string &type, const py::kwargs &kwargs)
@@ -2412,9 +2414,11 @@ py::object GretlModel_NME::get_accessor (const std::string &name) const
     return do_get_accessor<GRETL_OBJ_SYS>(name, dataset_, static_cast<void*>(model_));
 }
 
-void GretlModel_NME::forecast (const py::args &args, const py::kwargs &kwargs)
+std::pair<py::object, py::object> GretlModel_NME::forecast (const py::args &args, const py::kwargs &kwargs)
 {
     py::print("GretlModel_NME::forecast(): to be written");
+
+    return {py::none(), py::none()};
 }
 
 GretlBundlePtr GretlModel_NME::restrict (const py::list &impose, const py::kwargs &kwargs)

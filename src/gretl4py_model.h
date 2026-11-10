@@ -67,7 +67,7 @@ protected:
     GretlBundlePtr do_restrict_ (T *model, const py::list &impose, const py::kwargs &kwargs);
 
     template <typename T>
-    void gretl_do_forecast_ (void *model, const py::args &args, const py::kwargs &kwargs);
+    std::pair<py::object, py::object> gretl_do_forecast_ (void *model, const py::args &args, const py::kwargs &kwargs);
 
     void check_if_estimated_ (void) const;
 
@@ -83,7 +83,7 @@ public:
 
     virtual void fit (void) = 0;
 
-    virtual void forecast (const py::args &args, const py::kwargs &kwargs) = 0;
+    virtual std::pair<py::object, py::object> forecast (const py::args &args, const py::kwargs &kwargs) = 0;
 
     virtual std::string get_formula (void) const = 0;
 
@@ -123,7 +123,7 @@ public:
 
     std::string get_formula (void) const override = 0;
 
-    void forecast (const py::args &args, const py::kwargs &kwargs) override;
+    std::pair<py::object, py::object> forecast (const py::args &args, const py::kwargs &kwargs) override;
 
     py::object get_accessor (const std::string &name) const override;
 
@@ -320,7 +320,7 @@ public:
 
     void fit (void) override;
 
-    void forecast (const py::args &args, const py::kwargs &kwargs) override;
+    std::pair<py::object, py::object> forecast (const py::args &args, const py::kwargs &kwargs) override;
 
     std::string get_formula (void) const override;
 
@@ -384,7 +384,7 @@ public:
 
     void fit (void) override;
 
-    void forecast (const py::args &args, const py::kwargs &kwargs) override;
+    std::pair<py::object, py::object> forecast (const py::args &args, const py::kwargs &kwargs) override;
 
     std::string get_formula (void) const override;
 
