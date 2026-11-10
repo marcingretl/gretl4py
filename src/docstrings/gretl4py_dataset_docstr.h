@@ -1382,9 +1382,6 @@ namespace doc::Dataset {
 
     Other Parameters
     ----------------
-    plot : str
-        Plot mode or output filename. Use ``"none"`` to suppress the plot
-        or ``"display"`` to force display.
     quiet : bool
         Suppress printed output.
 

@@ -678,22 +678,65 @@ on the specification of the fitted model.
 	the form of a relatively unrestricted dynamic model, which is used
 	to test the common factor restriction implicit in the $AR(1)$ specification.}
 
-\gretlfpycmd{cusum()}
-\estdesc{Cumulative Sum (CUSUM) test of recursive residuals.}
+\gretlfpycmd{cusum()}\label{met:gretlmodel::cusum}
+\estdesc{Perform the CUSUM or CUSUMSQ test for parameter stability.}
 \begin{lstlisting}[style=pythonstylefoot]
-.cusum([OPTS]) -> gretl.Bundle
+.cusum([OPTS]) -> tuple[gretl.Bundle, matplotlib.figure.Figure .| None]
 \end{lstlisting}
 \mapto{cusum}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
 	\item[]\maptoopt{squares=True}{--squares}{perform the CUSUMSQ test}
-	\item[]\maptoopt{quiet=True}{--quiet}{just print the Harvey--Collier test}
+	\item[]\maptoopt{quiet=True}{--quiet}{print only the Harvey--Collier test}
+	\item[]\maptoopt{plot=mode-or-filename}{--plot}{control graphical output}
 \end{itemize}
-\generaldesc{The null hypothesis is parameter stability. It is rejected at the
-	5 percent significance level if the cumulative series crosses the
-	95 percent confidence band. For the CUSUM test, the Harvey--Collier
-	\textit{t}-test for parameter stability is also reported. With
-	\pythcode{squares=True}, the confidence band is calculated using the
-	method of Edgerton and Wells (1994).}
+Examples:\newline
+\pythcodef{r1, fig1 = model.cusum(plot='display')}\\
+\pythcodef{r2, fig2 = model.cusum(squares=True, plot='display')}\\
+\pythcodef{r3, fig3 = model.cusum(quiet=True, plot='none')}\\
+\generaldesc{Performs the cumulative sum (CUSUM) test for
+	parameter stability following the estimation of a model
+	by ordinary least squares (OLS). The test is based on
+	recursive one-step-ahead forecast errors obtained from
+	a sequence of expanding-window regressions.
+	
+	The first regression uses the first \textit{k} observations,
+	where \textit{k} denotes the number of estimated parameters,
+	to predict the dependent variable at observation $k+1$.
+	Subsequent regressions extend the estimation sample
+	by one observation at a time.
+	
+	By default, the cumulative sum of scaled recursive
+	residuals is computed. Setting \pythcode{squares=True}
+	selects the CUSUMSQ test, which uses the cumulative
+	sum of squared recursive residuals instead.
+	
+	The null hypothesis is parameter stability. It is
+	rejected at the 5 percent significance level if the
+	cumulative series crosses the corresponding 95 percent
+	confidence band.
+	
+	For the standard CUSUM test, the Harvey--Collier
+	\textit{t}-test for parameter stability is also reported.
+	For the CUSUMSQ test, the confidence band is calculated
+	using the algorithm of Edgerton and Wells (1994).
+	
+	The \pythcode{quiet=True} option suppresses the cumulative
+	series output and prints only the Harvey--Collier test
+	result.
+	
+	Graphical output is controlled by the \texttt{plot}
+	option. The supported values are \texttt{"none"}
+	(suppress the plot), \texttt{"display"} (request
+	graphical output), or a filename to which the plot
+	is saved. If the option is omitted, plotting follows
+	the current \lgretl execution mode. The automatic
+	display of generated Matplotlib figures is controlled
+	separately by \pythcode{gretl.set\_plot\_auto\_show()}.
+	
+	The method returns a tuple containing a \classpybundle
+	with the test results and an optional Matplotlib Figure.
+	If no figure is returned, the second element of the
+	tuple is \pythcode{None}.}
 
 \gretlfpycmd{groupwise\_heteroskedasticity()}
 \estdesc{Test for groupwise heteroskedasticity in panel data.}
@@ -710,23 +753,79 @@ on the specification of the fitted model.
 	heteroskedasticity. This test is available only for models estimated
 	on panel data.}
 
-\gretlfpycmd{leverage()}
-\estdesc{Computes leverage statistics for each observation.}
+\gretlfpycmd{leverage()}\label{met:gretlmodel::leverage}
+\estdesc{Compute leverage and influence diagnostics for an OLS model.}
 \begin{lstlisting}[style=pythonstylefoot]
-.leverage([OPTS]) -> gretl.Bundle
+.leverage([, OPTS]) -> tuple[gretl.Bundle, matplotlib.figure.Figure .| None]
 \end{lstlisting}
 \mapto{leverage}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
-	\item[]\maptoopt{save=True}{--save}{save the resulting series}
+	\item[]\maptoopt{save=True}{--save}{save leverage, influence, and DFFITS series}
 	\item[]\maptoopt{overwrite=True}{--overwrite}{overwrite existing series}
-	\item[]\maptoopt{quiet=True}{--quiet}{don't print results}
+	\item[]\maptoopt{quiet=True}{--quiet}{suppress printed results}
+	\item[]\maptoopt{plot=mode-or-filename}{--plot}{control graphical output}
 \end{itemize}
-\generaldesc{Observations with leverage greater than $2k/n$, where
-	\textit{k} is the number of estimated parameters and \textit{n}
-	is the sample size, are flagged as leverage points. The result
-	matrix contains leverage, influence, and externally Studentized
-	residuals. The test statistic records the leave-one-out
-	cross-validation criterion.}
+Examples:\newline
+\pythcodef{r1, fig1 = model.leverage(plot='display')}\\
+\pythcodef{r2, fig2 = model.leverage(save=True, quiet=True)}\\
+\pythcodef{r3, fig3 = model.leverage(plot='none')}\\
+\generaldesc{Computes leverage and influence diagnostics following
+	the estimation of an ordinary least squares (OLS) model.
+	For each observation in the estimation sample, the method
+	calculates its leverage, influence measure, DFFITS statistic,
+	and externally Studentized residual.
+	
+	The leverage of observation \textit{i}, denoted by $h_i$, is the
+	corresponding diagonal element of the hat matrix and lies
+	between zero and one. Observations with leverage exceeding
+	$2k/n$, where \textit{k} denotes the number of estimated parameters
+	and \textit{n} is the sample size, are flagged as leverage points.
+	
+	The influence measure is defined as
+	$u_i h_i/(1-h_i)$, where $u_i$ is the residual associated
+	with observation \textit{i}. DFFITS measures the effect of omitting
+	an observation from the estimation sample on its fitted value.
+	It is calculated using the externally Studentized residual
+	$r_i$ as
+	\[
+	\mathrm{DFFITS}_i =
+	r_i \sqrt{\frac{h_i}{1-h_i}}.
+	\]
+	
+	Setting \pythcode{save=True} adds three series containing
+	leverage, influence, and DFFITS values to the current dataset.
+	Their default names are \texttt{lever}, \texttt{influ},
+	and \texttt{dffits}, respectively. If these names already
+	exist, unique names are generated unless
+	\pythcode{overwrite=True} is specified. The
+	\pythcode{quiet=True} option suppresses printed results.
+	
+	The resulting \classpybundle contains a three-column
+	\classpymatrix under the key \texttt{result}. The first
+	column holds leverage values, the second contains influence
+	measures, and the third contains externally Studentized
+	residuals. Note that the third column does not contain
+	DFFITS values; these can be calculated using the formula
+	given above.
+	
+	The \texttt{test} key contains the leave-one-out
+	cross-validation criterion, defined as the sum of squared
+	prediction errors obtained by estimating the model with
+	each observation omitted in turn. The \texttt{summary}
+	key contains the printed diagnostic results.
+	
+	Graphical output is controlled by the \pythcode{plot} option.
+	The supported values are \texttt{"none"} (suppress the plot),
+	\texttt{"display"} (request graphical output), or a filename
+	to which the plot is saved. If the option is omitted,
+	plotting follows the current \lgretl execution mode.
+	The automatic display of generated Matplotlib figures is
+	controlled separately by \pythcode{gretl.set\_plot\_auto\_show()}.
+	
+	The method returns a tuple containing the \classpybundle
+	with diagnostic results and an optional Matplotlib Figure.
+	If no figure is returned, the second element is
+	\pythcode{None}.}
 
 \gretlfpycmd{nonlinearity()}
 \estdesc{LM test for nonlinearity of the model.}
@@ -812,25 +911,70 @@ on the specification of the fitted model.
 	p-values are recorded as three-element vectors corresponding to the
 	Wald, Breusch--Pagan, and Hausman tests.}
 
-\gretlfpycmd{qlrtest()}
-\estdesc{Quandt likelihood-ratio test for a structural break.}
+
+\gretlfpycmd{qlrtest()}\label{met:gretlmodel::qlrtest}
+\estdesc{Perform the Quandt likelihood ratio (QLR) test for a structural break.}
 \begin{lstlisting}[style=pythonstylefoot]
-.qlrtest([OPTS]) -> gretl.Bundle
+	.qlrtest([, OPTS]) -> tuple[gretl.Bundle, matplotlib.figure.Figure | None]
 \end{lstlisting}
 \mapto{qlrtest}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
-	\item[]\maptoopt{limit\_to=.list}{--limit-to=list}{limit test to subset of regressors}
+	\item[]\maptoopt{limit\_to=list}{--limit-to=list}{limit the test to a subset of regressors}
+	\item[]\maptoopt{plot=mode-or-filename}{--plot}{control graphical output}
 	\item[]\maptoopt{quiet=True}{--quiet}{suppress printed output}
 \end{itemize}
-\generaldesc{Tests for a structural break at an unknown point in an OLS model.
-	Chow tests are computed over the central 70 percent of the sample
-	(15 percent trimming at each end), and the QLR statistic is the maximum
-	of the resulting test statistics. An asymptotic p-value is computed
-	using the method of Hansen (1997).
-	The break point at which the test statistic is maximized is also
-	recorded. If the original model was estimated with robust standard
-	errors, robust Wald tests are used in place of the standard
-	\textit{F}-tests.}
+Examples:\newline
+\pythcodef{r1, fig1 = model.qlrtest(plot='display')}\\
+\pythcodef{r2, fig2 = model.qlrtest(limit\_to='L', plot='display')}\\
+\pythcodef{r3, fig3 = model.qlrtest(quiet=True, plot='none')}\\
+\generaldesc{Performs the Quandt likelihood ratio (QLR) test for
+	a structural break at an unknown point in time, following
+	the estimation of an ordinary least squares (OLS) model
+	using time-series data.
+	
+	The null hypothesis is parameter stability against the
+	alternative of a structural break at an unknown date.
+	The test applies 15 percent trimming at each end of the
+	estimation sample, restricting the set of potential break
+	points to the central 70 percent of the observations.
+	
+	A Chow test is performed at each candidate break point,
+	and the QLR statistic is defined as the maximum of the
+	resulting test statistics. If the original model was
+	estimated using robust standard errors, robust Wald
+	statistics are used instead of the conventional
+	\textit{F}-statistics.
+	
+	The asymptotic p-value of the QLR statistic is calculated
+	using the method proposed by Hansen (1997).
+	
+	The \pythcode{limit\_to} option restricts the test to a
+	subset of the original regressors. Its argument must
+	identify a named \lgretl list containing only regressors
+	from the estimated model. The constant must not be included
+	in this list.
+	
+	The \pythcode{quiet=True} option suppresses printed output.
+	
+	Graphical output is controlled by the \pythcode{plot}
+	option. The supported values are \pythcode{"none"}
+	(suppress the plot), \pythcode{"display"} (request
+	graphical output), or a filename to which the plot
+	is saved. If the option is omitted, plotting follows
+	the current \lgretl execution mode. The automatic
+	display of generated Matplotlib figures is controlled
+	separately by \pythcode{gretl.set\_plot\_auto\_show()}.
+	
+	The method returns a tuple containing a \classpybundle
+	with the test results and an optional Matplotlib Figure.
+	The \classpybundle includes the QLR statistic under
+	the key \pythcode{"test"}, its asymptotic p-value under
+	\pythcode{"pvalue"}, and the observation index at which
+	the statistic is maximized under \pythcode{"qlrbreak"}.
+	The printed results are available under \pythcode{"summary"}.
+	
+	If no figure is returned, the second element of the
+	tuple is \pythcode{None}.}
 
 \gretlfpycmd{reset()}
 \estdesc{Ramsey RESET (regression equation specification error test).}

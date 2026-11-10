@@ -132,9 +132,9 @@ public:
     template <ModelDataIndex IDX>
     char *gretl_get_fit_or_resid (const std::string &name = "") const;
 
-    GretlBundlePtr test (const std::string &type, const py::kwargs &kwargs);
+    std::pair<GretlBundlePtr, py::object> test (const std::string &type, const py::kwargs &kwargs);
 
-    GretlBundlePtr test (const std::string &type, const py::object &varlist, const py::kwargs &kwargs);
+    std::pair<GretlBundlePtr, py::object> test (const std::string &type, const py::object &varlist, const py::kwargs &kwargs);
 
     template <GretlCmdIndex CI>
     std::pair<GretlBundlePtr, GretlModelPtr> add_omit_auto (const py::kwargs &kwargs);

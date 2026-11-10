@@ -152,8 +152,6 @@ public:
     int qqplot (void);
 
     int confidence_ellipse (int i, int j, double alpha);
-
-    int leverage (void);
 };
 
 int NSEPlotContext::fitted (void)
@@ -360,36 +358,6 @@ int NSEPlotContext::confidence_ellipse (int i, int j, double alpha)
     register_output_(GNUPLOT, "output", OPT_NONE);
 
     return confidence_ellipse_plot(V.get(), estimates, tcrit, Fcrit, alpha, iname, jname);
-}
-
-int NSEPlotContext::leverage (void)
-{
-    //
-    // Plot leverage and influence of observations in the fitted OLS model.
-    // Based on do_leverage() from gui/library.c and plugin/leverage.c.
-    // The temporary result matrix is not returned or registered in $result.
-    //
-    if (model_->ci != OLS) return E_OLSONLY;
-    if (model_->rsq == 1.0 || model_->dfd <= 0)
-        throw std::runtime_error("leverage plot is unavailable for an exact-fit model");
-
-    // Load the same plugin used by the GUI and leverage_test().
-    using LeverageFunction = gretl_matrix *(*)(const MODEL *, DATASET *, gretlopt, PRN *, int *);
-    const auto model_leverage = reinterpret_cast<LeverageFunction>(get_plugin_function("model_leverage"));
-    if (!model_leverage) return E_FOPEN;
-
-    // OPT_U is required for gnuplot_graph_wanted() in batch mode.
-    register_output_(LEVERAGE, "plot", OPT_U);
-
-    // Capture the textual output locally: the public API returns only a plot.
-    int err = 0;
-    gretl_matrix_ptr result(model_leverage(model_, dset_, OPT_U, prn_, &err));
-
-    if (err) return err;
-    if (!result) return E_ALLOC;
-
-    // The plugin has already written the two-panel Gnuplot script.
-    return 0;
 }
 
 } // namespace
@@ -882,19 +850,20 @@ py::object GretlModel_NSE::get_accessor (const std::string &name) const
     return do_get_accessor<GRETL_OBJ_EQN>(name, dataset_, static_cast<void*>(model_));
 }
 
-GretlBundlePtr GretlModel_NSE::test (const std::string &type, const py::kwargs &kwargs)
+std::pair<GretlBundlePtr, py::object> GretlModel_NSE::test (const std::string &type, const py::kwargs &kwargs)
 {
     //
     // this method performs test which do not take a variables list
     //
     GretlBundlePtr res = std::make_shared<GretlBundle>();
+    GretlPlot plotter;
+    bool has_pvalue = true;                                 // if pvalue is accessible via $pvalue
+    bool has_test = true;                                   // if test statistics is accessible via $test
+    bool has_result = false;                                // if given test produces additional results accessible via $result
     int order = type == "corrgm" ? auto_acf_order(sample_size( dataset_->dset)) : dataset_->dset->pd;
-    bool has_pvalue = true;     // if pvalue is accessible via $pvalue
-    bool has_test = true;       // if test statistics is accessible via $test
-    bool has_result = false;    // if given test produces additional results accessible via $result
 
     // we set up options
-    auto printout = unpack_kwargs_test(opt_, type, kwargs, order);
+    auto printout = unpack_kwargs_test(opt_, type, kwargs, order, &plotter);
 
     // we perform the test
     if (type == "bkw") {
@@ -936,6 +905,7 @@ GretlBundlePtr GretlModel_NSE::test (const std::string &type, const py::kwargs &
 
     // we print results if wanted
     if (printout) printer_.print();
+    py::object fig = plotter.display();
 
     // we manufacture resulting object
     res->set_element<std::string>("type", type);
@@ -949,15 +919,16 @@ GretlBundlePtr GretlModel_NSE::test (const std::string &type, const py::kwargs &
     // we register result
     move_to_python_container<GretlModel, py::dict, py::list>(*this, res->to_dict(), "tests");
 
-    return res;
+    return {res, std::move(fig)};
 }
 
-GretlBundlePtr GretlModel_NSE::test (const std::string &type, const py::object &varlist, const py::kwargs &kwargs)
+std::pair<GretlBundlePtr, py::object> GretlModel_NSE::test (const std::string &type, const py::object &varlist, const py::kwargs &kwargs)
 {
     //
     // this method performs test which do take a variables list
     //
     GretlBundlePtr res = std::make_shared<GretlBundle>();
+    GretlPlot plotter;
     gretl_list_ptr ex_var{nullptr};
     int order = -1;
 
@@ -993,6 +964,7 @@ GretlBundlePtr GretlModel_NSE::test (const std::string &type, const py::object &
 
     // we print results if wanted
     if (printout) printer_.print();
+    py::object fig = plotter.display();
 
     // we manufacture resulting object
     res->set_element<std::string>("type", type);
@@ -1004,7 +976,7 @@ GretlBundlePtr GretlModel_NSE::test (const std::string &type, const py::object &
     // we register result
     move_to_python_container<GretlModel, py::dict, py::list>(*this, res->to_dict(), "tests");
 
-    return res;
+    return {res, std::move(fig)};
 }
 
 template <GretlCmdIndex CI>
@@ -1250,13 +1222,11 @@ py::object GretlModel_NSE::plot (const std::string &type, const std::string &xva
         err_ = ctx.periodogram(bartlett, width, log);
     } else if (type == "qqplot") {
         err_ = ctx.qqplot();
-    } else if (type == "leverage") {
-        err_ = ctx.leverage();
     } else {
         throw py::value_error("Unsupported plot type: " + type);
     }
     if (err_) handle_gretl_error(err_);
-    if (type == "correlogram" || type == "periodogram" || type == "leverage") printer_.print();
+    if (type == "correlogram" || type == "periodogram") printer_.print();
 
     return plotter.display();
 }

@@ -415,25 +415,66 @@ Examples:\newline
 	variables. The computed correlations are returned as a
 	\classpymatrix instance.}
 
-\gretlfpycmd{corrgm()}
+\gretlfpycmd{corrgm()}\label{met:gretldataset::corrgm}
 \estdesc{Compute the correlogram of a time series.}
 \begin{lstlisting}[style=pythonstylefoot]
-corrgm(y: str, order: int[, OPTS]) -> gretl.Bundle:
+corrgm(y: str, order: int = 0[, OPTS]) -> tuple[gretl.Bundle, matplotlib.figure.Figure .| None]
 \end{lstlisting}
 \mapto{corrgm y [order]}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
-	\item[]\maptoopt{silent=True}{--silent}{don't print anything}
-	\item[]\maptoopt{acf_only=True}{--acf-only}{omit partial autocorrelations}
+	\item[]\maptoopt{plot=mode-or-filename}{--plot}{control graphical output}
+	\item[]\maptoopt{quiet=True}{--quiet}{suppress printed output}
+	\item[]\maptoopt{acf\_only=True}{--acf-only}{omit partial autocorrelations}
 	\item[]\maptoopt{bartlett=True}{--bartlett}{use Bartlett standard errors}
 \end{itemize}
 Examples:\newline
 \pythcodef{r1 = data.corrgm(y='x', order=12)}\\
-\pythcodef{r2 = data.corrgm(y='GDP', order=12, acf\_only=True)}\\
-\generaldesc{Computes the autocorrelation function (ACF) and, by default,
-	the partial autocorrelation function (PACF) for the specified series.
-	The \textit{order} argument sets the maximum number of lags; if omitted,
-	the number of lags is selected automatically. The Ljung--Box test for
-	serial correlation up to the maximum lag is also reported.}
+\pythcodef{r2 = data.corrgm(y='GDP', acf\_only=True)}\\
+\pythcodef{r3, fig = data.corrgm(y='GDP', order=12, plot='display')}\\
+\generaldesc{Computes the autocorrelation function (ACF) and,
+	by default, the partial autocorrelation function (PACF) using
+	the Durbin--Levinson algorithm. The \textit{y} argument
+	specifies the series to be analyzed, while \textit{order}
+	determines the maximum number of lags. If omitted or set
+	to zero, the number of lags is selected automatically based
+	on the data frequency and sample size.
+	
+	The method also reports the Ljung--Box Q statistic, which
+	tests the joint null hypothesis that the autocorrelations
+	up to the maximum lag are zero. The statistic and its
+	P-value are available in the resulting \classpybundle
+	under the keys \texttt{test} and \texttt{pvalue},
+	respectively.
+	
+	By default, the standard errors of the ACF are calculated
+	under the null hypothesis that the series is white noise,
+	using $1/\sqrt{T}$, where \textit{T} denotes the sample size.
+	Setting \texttt{bartlett=True} selects Bartlett standard
+	errors instead. These are associated with the hypothesis
+	that the series follows a moving average process of order
+	\textit{k}, $MA(k)$. If the autocorrelations beyond lag
+	\textit{k} fall within the corresponding confidence bounds,
+	the $MA(k)$ hypothesis is not rejected on this basis. The
+	selected standard errors also determine the confidence bounds
+	displayed in the ACF plot.
+	
+	The \texttt{acf\_only=True} option suppresses partial
+	autocorrelations, while \texttt{quiet=True} suppresses
+	printed output.
+	
+	Graphical output is controlled by the \texttt{plot} option.
+	The supported values are \texttt{"none"} (suppress the plot),
+	\texttt{"display"} (request graphical output), or a filename
+	to which the plot is saved. If this option is omitted,
+	plotting follows the current \lgretl execution mode.
+	The automatic display of generated Matplotlib figures is
+	controlled separately by \texttt{gretl.set\_plot\_auto\_show()}.
+	
+	The method returns a \classpybundle containing the test
+	results, including the Ljung--Box statistic, its P-value,
+	and the printed summary. When a Matplotlib figure is
+	generated, the return value is a tuple containing the
+	\classpybundle and the Figure object.}
 
 \gretlfpycmd{cov()}
 \estdesc{Computes the covariance matrix for selected variables,

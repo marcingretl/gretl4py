@@ -408,9 +408,9 @@ bool GretlPlot::translate (void)
     command += " --backend=QtAgg";
 #endif
 
-    // gretl4py manages plot display; suppress plt.show() in generated scripts.
-    // Keep plt.show() in standalone Python scripts saved to disk.
-    if (display_) command += " --no-show";
+    // gretl4py manages plot display via auto_show_; gp-executor now generates
+    // display-neutral Python scripts by default, including saved translations.
+    // Standalone users may explicitly request plt.show() via --add-show.
 
     command += " --output=\"" + pyfile_.string() + "\" \"" + gpfile_.string() + "\"";
 

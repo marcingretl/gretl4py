@@ -29,6 +29,7 @@ def run_example():
     # Global settings
     # ------------------------------------------------------------
     gretl.set("verbose", "off")
+    gretl.set_plot_auto_show(True)
 
     # ------------------------------------------------------------
     # Load ParMA package (Bayesian model averaging for GLMs)
@@ -52,10 +53,10 @@ def run_example():
     # MCMC configuration
     n_iter = 32 * 1024   # posterior draws after burn-in
     burn_in = 2048       # burn-in period
-    
+
     options = gretl.Bundle()
     options["seed"] = 1_234_567
-    
+
     # use MPI if available
     if gretl.about()["sysinfo"]["mpi"]:
         options["mpi"] = gretl.about()["sysinfo"]["ncores"]
@@ -77,7 +78,7 @@ def run_example():
     )
 
     print_timer()
-    
+
     gretl.marginal_graph(result, "HE")
 
     return
@@ -85,3 +86,6 @@ def run_example():
 
 if __name__ == "__main__":
     run_example()
+
+    import matplotlib.pyplot as plt
+    plt.show()
