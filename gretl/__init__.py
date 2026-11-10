@@ -161,7 +161,7 @@ from ._gretl import (pvalue, critical, pdf, cdf, invcdf, corr, cov)         # li
 from ._gretl import (get_accessor, tdisagg, kpsscrit)
 from ._gretl import (set_plot_auto_show, get_plot_auto_show)
 
-from ._gretl4py_addons import print_module_source, fc_print, modeltab
+from ._gretl4py_addons import print_module_source, modeltab
 
 from ._gretl4py_classes import _attrs, mle, nls, gmm, NLSpec
 from ._gretl4py_classes import get_data, show_data_status

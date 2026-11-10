@@ -189,19 +189,6 @@ def series2dict(Y, pd: int = 1, varname: str = "y") -> dict:
 
     return d
 
-def fc_print(fc: dict):
-    try:
-        from tabulate import tabulate
-    except ModuleNotFoundError:
-        print('*** warning: fc_print() requires \'tabulate\' package ***\n')
-        return
-    print(f'\nForecast for obs {fc["t1"]} to {fc["t2"]} with {fc["confidence"]} percent interval\n')
-    print(tabulate(fc['data'], headers=fc['data_labels'], tablefmt="plain"))
-    print("")
-    print(f'Forecast evaluation statistics\n')
-    print(tabulate(fc['stats'], headers=[], showindex=fc['stats_labels'], tablefmt="plain"))
-    print("")
-
 def print_module_source(module: str):
     """
     Prints the full source code of the given imported module.

@@ -641,15 +641,20 @@ void GretlModel::gretl_do_forecast_ (void *model, const py::args &args, const py
     }
 
     // we work with kwargs
-    opt_ = unpack_kwargs_command<FCAST>( dataset_, clean_kwargs, &plotter);
+    opt_ = unpack_kwargs_command<FCAST>(dataset_, clean_kwargs, &plotter);
 
     // we do the job
-    if constexpr (std::is_same_v<T, MODEL>) gretl_model_protect(static_cast<MODEL*>(model));
+    if constexpr (std::is_same_v<T, MODEL>) {
+        gretl_model_protect(static_cast<MODEL*>(model));
+    }
     set_as_last_model(model, model_obj_type_);
     err_ = do_forecast(param.c_str(), dataset_->dset, opt_, printer_.prn_ptr());
-    if constexpr (std::is_same_v<T, MODEL>) gretl_model_unprotect(static_cast<MODEL*>(model));
+    if constexpr (std::is_same_v<T, MODEL>) {
+        gretl_model_unprotect(static_cast<MODEL*>(model));
+    }
     if (err_) handle_gretl_error(err_);
     printer_.print();
+    plotter.display();
 }
 
 void GretlModel::check_if_estimated_ (void) const

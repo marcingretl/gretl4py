@@ -1,5 +1,7 @@
 import gretl
 
+gretl.set_plot_auto_show(True)
+
 # load datasets
 d1 = gretl.get_data('data4-1.gdt')
 d2 = gretl.get_data('bjg.gdt')
@@ -14,7 +16,6 @@ m1.fcast(5, 10)
 m1.fcast(out_of_sample=True)
 m1.fcast(5, 10, 3, "price", recursive=True)
 m1.fcast()
-#gretl.fc_print(m1.forecasts[-1])
 
 # ARIMA
 m2 = gretl.arima(depvar="price", order=(1,1,1)).fit()
@@ -23,7 +24,6 @@ m2.fcast(5, 10)
 m2.fcast(out_of_sample=True)
 print(m2.get_accessor("$fcast"))
 #m2.fcast()
-#gretl.fc_print(m2.forecasts[-1])
 
 
 # VAR
