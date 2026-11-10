@@ -1263,6 +1263,56 @@ std::pair<py::object, py::object> GretlDataset::xcorrgm (const T &varlist, int o
 template std::pair<py::object, py::object> GretlDataset::xcorrgm<std::string>(const std::string&, int, const py::kwargs&);
 template std::pair<py::object, py::object> GretlDataset::xcorrgm<py::list>(const py::list&, int, const py::kwargs&);
 
+
+# if 0 // not yet
+std::pair<GretlMatrixPtr, py::object> GretlDataset::pergm (
+    const std::string &series, int bandwidth, const py::kwargs &kwargs)
+{
+    //
+    // compute the periodogram and optionally generate its plot
+    //
+    if (series.empty()) handle_gretl_error(E_NOVARS);
+
+    GretlPlot plotter;
+    gretl_matrix_ptr mat{nullptr};
+    std::nullptr_t fake_dataset = nullptr;
+
+    // unpack command options
+    opt_ = unpack_kwargs_command<PERGM>(fake_dataset, kwargs, &plotter);
+
+    // validate the bandwidth
+    if (bandwidth < 0) {
+        throw std::invalid_argument("bandwidth must be non-negative");
+    }
+
+    // an explicit bandwidth implies Bartlett spectral estimation
+    if (bandwidth > 0) {
+        opt_ |= OPT_O;
+    }
+
+    // the matrix function uses -1 for the ordinary periodogram
+    const int width = (opt_ & OPT_O) ? bandwidth : -1;
+    const int varno = get_series_id(series);
+
+    // execute the gretl command to produce textual and graphical output
+    err_ = periodogram(varno, bandwidth, dset, opt_, printer_.prn_ptr());
+    if (err_) handle_gretl_error(err_, printer_.get_buffer());
+
+    // retrieve the spectral density as a matrix
+    mat.reset(periodogram_matrix(dset->Z[varno], dset->t1,
+                                 dset->t2, width, &err_));
+    if (err_) handle_gretl_error(err_);
+
+    // print results and translate the generated gnuplot script
+    printer_.print();
+
+    // return the spectral density matrix and optional matplotlib figure
+    return {std::make_shared<GretlMatrix>(mat.release(), false),
+        plotter.display()};
+}
+#endif
+
+
 template <typename T>
 py::object GretlDataset::pca (const T &varlist, const py::kwargs &kwargs)
 {
