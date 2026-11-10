@@ -12,6 +12,7 @@ version 0.64:
     - new gretlDataset::hflags() method
     - new gretl.Model_var::set_cholesky_order() method
     - new gretl.Model_NSE methods: ::confidence_intervals(), ::bootstrap()
+    - new GretlDataset::freq() method
 
 version 0.63:
     - model-based tests: fix bug where 'varlist' was passed as list

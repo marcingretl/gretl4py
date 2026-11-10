@@ -1197,6 +1197,43 @@ std::pair<py::object, py::object> GretlDataset::hurst (const std::string &series
     return {get_accessor("$result"), plotter.display()};
 }
 
+std::pair<GretlBundlePtr, py::object> GretlDataset::freq (const std::string &var, const py::kwargs &kwargs)
+{
+    //
+    // method mimics freq command (based on interact.c)
+    //
+    if (var.empty()) handle_gretl_error(E_NOVARS);
+
+    GretlPlot plotter;
+    GretlBundlePtr res = std::make_shared<GretlBundle>();
+    std::nullptr_t fake_dataset = nullptr;
+
+    // we unpack kwargs
+    opt_ = unpack_kwargs_command<FREQ>(fake_dataset, kwargs, &plotter);
+
+    // we do the job
+    last_result_cleanup();
+    err_ = freqdist(get_series_id(var), dset, opt_, printer_.prn_ptr());
+    if (err_) handle_gretl_error(err_);
+    printer_.print();
+
+    // material we return
+    res->set_element("result", get_accessor("$result"));
+    res->set_element<std::string>("summary", std::string(printer_.get_buffer()));
+    // include test results only if a valid test was performed
+    if (opt_ & (OPT_Z | OPT_O)) {
+        const double test = get_last_test_statistic();
+        const double pval = get_last_pvalue();
+
+        if ((std::isfinite)(test) && (std::isfinite)(pval)) {
+            res->set_element<double>("test", test);
+            res->set_element<double>("pvalue", pval);
+        }
+    }
+
+    return {std::move(res), plotter.display()};
+}
+
 template <typename T>
 std::pair<py::object, py::object> GretlDataset::xcorrgm (const T &varlist, int order, const py::kwargs &kwargs)
 {

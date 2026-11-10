@@ -429,6 +429,7 @@ void init_gretl4py_dataset_py11 (py::module_ &m)
          py::arg("varlist").none(true) = py::list(), doc::Dataset::cov)
     .def("hurst", &GretlDataset::hurst,
          py::arg("series"), py::arg("plot").none(true) = "", doc::Dataset::hurst)
+    .def("freq", &GretlDataset::freq, py::arg("var").none(false), py::kw_only(), doc::Dataset::freq)
     .def("xcorrgm", py::overload_cast<const std::string&, int, const py::kwargs&>(&GretlDataset::xcorrgm<std::string>),
          py::arg("varlist").none(false), py::arg("order").none(true) = 0, py::kw_only())
     .def("xcorrgm", py::overload_cast<const py::list&, int, const py::kwargs&>(&GretlDataset::xcorrgm<py::list>),

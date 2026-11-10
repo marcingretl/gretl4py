@@ -213,6 +213,8 @@ public:
 
     std::pair<py::object, py::object> hurst (const std::string &series, const std::string &plot);
 
+    std::pair<GretlBundlePtr, py::object> freq (const std::string &var, const py::kwargs &kwargs);
+
     template <typename T>
     std::pair<py::object, py::object> xcorrgm (const T &varlist, int order, const py::kwargs &kwargs);
 

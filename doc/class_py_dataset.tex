@@ -684,6 +684,85 @@ Examples:\newline
 	zero. By default, the Local Whittle estimator is used; the GPH test
 	can be selected as an alternative or both tests can be performed.}
 
+\gretlfpycmd{freq()}\label{met:gretldataset::freq}
+\estdesc{Compute the frequency distribution of a series,
+	optionally testing for the normal or gamma distribution.}
+\begin{lstlisting}[style=pythonstylefoot]
+.freq(var: str[, OPTS]) -> tuple[gretl.Bundle, matplotlib.figure.Figure .| None]
+\end{lstlisting}
+\mapto{freq var}
+\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
+	\item[]\maptoopt{nbins=n}{--nbins}{specify the number of bins}
+	\item[]\maptoopt{.min=minval}{--min}{specify the lower limit of the first bin}
+	\item[]\maptoopt{binwidth=width}{--binwidth}{specify the bin width}
+	\item[]\maptoopt{normal=True}{--normal}{test for the normal distribution}
+	\item[]\maptoopt{gamma=True}{--gamma}{test for the gamma distribution}
+	\item[]\maptoopt{silent=True}{--silent}{suppress printed output}
+	\item[]\maptoopt{plot=mode-.or-filename}{--plot}{control graphical output}
+\end{itemize}
+Examples:\newline
+\pythcodef{r1, fig1 = data.freq('x')}\\
+\pythcodef{r2, fig2 = data.freq('x', nbins=5)}\\
+\pythcodef{r3, fig3 = data.freq('x', min=0, binwidth=0.1)}\\
+\pythcodef{r4, fig4 = data.freq('x', normal=True, plot='display')}\\
+\pythcodef{r5, fig5 = data.freq('x', gamma=True, plot='display')}\\
+\generaldesc{Computes the frequency distribution of the specified
+	series and optionally tests whether its distribution is
+	consistent with a normal or gamma distribution.
+	
+	For continuous data, the number and width of the bins are
+	selected automatically unless specified explicitly.
+	The \pythcode{nbins} option determines the number of bins,
+	while \pythcode{min} and \pythcode{binwidth} allow the
+	lower limit of the first bin and the bin width to be
+	specified directly. For discrete data, binning is
+	not performed by default.
+	
+	Setting \pythcode{normal=True} performs the Doornik--Hansen
+	chi-square test for the null hypothesis of normality.
+	Alternatively, \pythcode{gamma=True} performs Locke's
+	nonparametric test for the null hypothesis that the
+	variable follows a gamma distribution (Locke, 1976;
+	Shapiro and Chen, 2001). The gamma distribution is
+	parameterized in terms of shape and scale.
+	
+	The \pythcode{silent=True} option suppresses printed output,
+	which is useful when only numerical results or graphical
+	output are required.
+	
+	Graphical output is controlled by the \pythcode{plot}
+	option. The supported values are \pythcode{"none"}
+	(suppress the plot), \pythcode{"display"} (request
+	graphical output), or a filename to which the plot
+	is saved. If this option is omitted, plotting follows
+	the current \lgretl execution mode.
+	
+	When a distribution test is requested, the corresponding
+	theoretical density is superimposed on the histogram.
+	The automatic display of generated Matplotlib figures
+	is controlled separately by
+	\pythcode{gretl.set\_plot\_auto\_show()}.
+	
+	The method returns a tuple containing a \classpybundle
+	with the frequency distribution and optional test results,
+	and an optional Matplotlib Figure.
+	
+	The \classpybundle always contains two entries:
+	\pythcode{"result"}, holding a \classpymatrix with the
+	frequency distribution, and \pythcode{"summary"}, containing
+	the captured textual output.
+	
+	When \pythcode{normal=True} or \pythcode{gamma=True}
+	is specified and valid test results are obtained, the
+	\classpybundle additionally contains \pythcode{"test"},
+	holding the test statistic, and \pythcode{"pvalue"},
+	holding the corresponding P-value. These entries are
+	omitted if no distribution test is requested or if
+	valid test results are unavailable.
+	
+	If no figure is returned, the second element of the
+	tuple is \pythcode{None}.}
+
 \gretlfpycmd{get\_accessor()}\label{met:gretldataset::get_accessor}
 \estdesc{Retrieves a \lgretl ``dollar accessor''.}
 \begin{lstlisting}[style=pythonstylefoot]

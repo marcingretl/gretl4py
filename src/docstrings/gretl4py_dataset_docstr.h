@@ -2383,5 +2383,95 @@ namespace doc::Dataset {
     tsplots : Plot multiple time series on a single canvas.
     )doc";
 
+    inline constexpr char freq[] = R"doc(
+    Compute the frequency distribution of a series.
+
+    Constructs a frequency table for a selected series, with
+    automatic binning for continuous data. Optionally performs
+    a test for the normal or gamma distribution.
+
+    Parameters
+    ----------
+    var : str
+        Name of the series for which the frequency distribution
+        is computed.
+
+    Other Parameters
+    ----------------
+    nbins : int, optional
+        Number of bins for continuous data. By default, the
+        number of bins is determined automatically.
+    min : float, optional
+        Lower limit of the leftmost bin.
+    binwidth : float, optional
+        Width of the bins for continuous data.
+    normal : bool, optional
+        Perform the Doornik-Hansen chi-square test for normality.
+    gamma : bool, optional
+        Perform Locke's nonparametric test for the gamma
+        distribution.
+    silent : bool, optional
+        Suppress printed output.
+    plot : str, optional
+        Plot mode or output filename. Supported values are ``"none"``
+        (suppress the plot), ``"display"`` (request graphical output),
+        or a filename to save the plot.
+
+    Returns
+    -------
+    tuple[Bundle, matplotlib.figure.Figure | None]
+    A tuple containing a Bundle with the frequency distribution
+    and optional test results, and an optional Matplotlib Figure.
+    The second element is ``None`` if no figure is returned.
+
+    Notes
+    -----
+    For continuous data, the number and width of the bins are
+    determined automatically unless specified explicitly.
+    Alternatively, binning can be controlled by specifying the
+    lower limit and bin width. Discrete data are not binned
+    by default.
+
+    With ``normal=True``, the Doornik-Hansen chi-square test
+    for normality is performed. With ``gamma=True``, Locke's
+    nonparametric test for the gamma distribution is performed.
+    The gamma distribution uses the shape-scale parameterization.
+
+    The returned Bundle always contains the following entries:
+
+    ``result``
+    A GretlMatrix containing the frequency distribution.
+    ``summary``
+    The captured textual output, which may be empty if
+    ``silent=True`` is specified.
+
+    When a distribution test is requested and valid results
+    are obtained, the Bundle also contains:
+
+    ``test``
+    The distribution test statistic.
+    ``pvalue``
+    The corresponding p-value.
+
+    These optional entries are omitted if no distribution test
+    is requested or if valid test results are unavailable.
+
+    When plotting is enabled, the frequency distribution is
+    displayed as a histogram, optionally accompanied by the
+    corresponding theoretical density.
+
+    If ``plot`` is omitted, graphical output follows the current
+    gretl execution mode. Automatic display of generated figures
+    is controlled separately by ``gretl.set_plot_auto_show()``.
+
+    Examples
+    --------
+    ``res, fig = data.freq("x")``
+    ``res, fig = data.freq("x", nbins=5)``
+    ``res, fig = data.freq("x", min=0, binwidth=0.1)``
+    ``res, fig = data.freq("x", normal=True, plot="display")``
+    ``res, fig = data.freq("x", gamma=True, plot="display")``
+    ``res, fig = data.freq("x", silent=True, plot="none")``
+    )doc";
 
 } // namespace doc::Dataset

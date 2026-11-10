@@ -413,6 +413,7 @@ template gretlopt unpack_kwargs_command<STORE, std::nullptr_t>(std::nullptr_t&, 
 template gretlopt unpack_kwargs_command<SUMMARY, std::nullptr_t>(std::nullptr_t&, const py::kwargs&, GretlPlot*);
 template gretlopt unpack_kwargs_command<XCORRGM, std::nullptr_t>(std::nullptr_t&, const py::kwargs&, GretlPlot*);
 template gretlopt unpack_kwargs_command<XTAB, std::nullptr_t>(std::nullptr_t&, const py::kwargs&, GretlPlot*);
+template gretlopt unpack_kwargs_command<FREQ, std::nullptr_t>(std::nullptr_t&, const py::kwargs&, GretlPlot*);
 
 void do_set (const std::string &key, const std::string &value, const py::kwargs &kwargs)
 {

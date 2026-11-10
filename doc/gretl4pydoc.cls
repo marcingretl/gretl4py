@@ -175,6 +175,7 @@
 		{.id}{.id }3
 		{.or}{or}3
 		{.set}{set}{3}
+		{.min}{min}{3}
 		{.type}{type}{4}
 		{.vars}{vars}{4}
 		{.iter}{iter}{4}
