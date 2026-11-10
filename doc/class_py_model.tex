@@ -149,50 +149,175 @@ The \classpymodel provides the following public methods:
 	are printed, otherwise the Python type is shown.}
 
 \gretlfpycmd{fcast()}\label{met:gretlmodel::fcast}
-\estdesc{Generates forecasts based on the estimated model.}
+\estdesc{Generate forecasts based on the estimated model,
+	optionally including standard errors, confidence intervals,
+	evaluation statistics, and graphical output.}
 \begin{lstlisting}[style=pythonstylefoot]
-.fcast(**args[, OPTS])
+.fcast(*args[, OPTS]) -> tuple[gretl.Bundle .| gretl.Matrix, matplotlib.figure.Figure .| None]
 \end{lstlisting}
 \mapto[none]{fcast [startobs endobs] [vname]}
 \mapto{fcast [startobs endobs] steps-ahead [vname] --recursive}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
-	\item[]\maptoopt{dynamic=True}{--dynamic}{create dynamic forecast}
-	\item[]\maptoopt{exponentiate=True}{--exponentiate}{exponentiate forecasts of a logged dependent variable}
-	\item[]\maptoopt{exponentiate=adjust}{--exponentiate=adjust}{exponentiate forecasts with the specified bias adjustment}
-	\item[]\maptoopt{integrate=True}{--integrate}{integrate forecasts of a differenced dependent variable}
-	\item[]\maptoopt{static=True}{--static}{create static forecast}
-	\item[]\maptoopt{out\_of\_sample=True}{--out-of-sample}{generate post-sample forecast}
-	\item[]\maptoopt{no\_stats=True}{--no-stats}{do not print forecast statistics}
-	\item[]\maptoopt{stats\_only=True}{--stats-only}{only print forecast statistics}
-	\item[]\maptoopt{quiet=True}{--quiet}{do not print anything}
-	\item[]\maptoopt{recursive=True}{--recursive}{recursive forecasting (\seegretlmanual)}
-	\item[]\maptoopt{all\_probs=True}{--all-probs}{print all forecast probabilities (\seegretlmanual)}
-%	\item[]\maptoopt{plot=filename}{--plot=filename}{save forecast plot to file}
+	\item[]\maptoopt{dynamic=True}{--dynamic}{generate dynamic forecasts}
+	\item[]\maptoopt{static=True}{--static}{generate static forecasts}
+	\item[]\maptoopt{out\_of\_sample=True}{--out-of-sample}{generate post-sample forecasts}
+	\item[]\maptoopt{no\_stats=True}{--no-stats}{suppress forecast statistics}
+	\item[]\maptoopt{stats\_only=True}{--stats-only}{print only forecast statistics}
+	\item[]\maptoopt{quiet=True}{--quiet}{suppress printed output}
+	\item[]\maptoopt{recursive=True}{--recursive}{generate recursive forecasts}
+	\item[]\maptoopt{exponentiate=True}{--exponentiate}{exponentiate forecasts of a logged variable}
+	\item[]\maptoopt{exponentiate=adjust}{--exponentiate=adjust}{specify the bias correction}
+	\item[]\maptoopt{integrate=True}{--integrate}{integrate forecasts of a differenced variable}
+	\item[]\maptoopt{all\_probs=True}{--all-probs}{return probabilities for all outcomes}
+	\item[]\maptoopt{plot=filename}{--plot=filename}{save or display the forecast plot}
 \end{itemize}
 Examples:\newline
-\pythcodef{model.fcast('1997:1', '2001:4', 'f1')}\\
-\pythcodef{model.fcast('fit2')}\\
-\pythcodef{model.fcast('2004:1', '2008:3', 4, 'rfcast', recursive=True)}
-\generaldesc{Forecasts are generated for a certain
-	range of observations: if \textit{startobs} and
-	\textit{endobs} are given, for that range (if possible);
-	otherwise if the \gretlcmd{--out-of-sample} option is given,
-	for observations following the range over which the model
-	was estimated; otherwise over the currently defined sample
-	range. If an out-of-sample forecast is requested but no
-	relevant observations are available, an error is flagged.
-	Depending on the nature of the model, standard errors may
-	also be generated.\newline
-	For a single equation model, then the optional \textit{vname}
-	argument has the following effect: the forecast values are
-	not printed, but are saved to the dataset under the given name.
-	If the last model is a system of equations, \textit{vname} has
-	a different effect, namely selecting a particular endogenous
-	variable for forecasting (the default being to produce forecasts
-	for all the endogenous variables). In the system case, or if
-	\textit{vname} is not given, the forecast values can be retrieved
-	using the accessor \gretlcmd{\$fcast}, and the standard errors,
-	if available, via \gretlcmd{\$fcse}.}
+\pythcodef{r1, fig1 = model.fcast(5, 10, plot='display')}\\
+\pythcodef{r2, fig2 = model.fcast(out\_of\_sample=True)}\\
+\pythcodef{r3, fig3 = model.fcast(startobs=5, endobs=10)}\\
+\pythcodef{r4, fig4 = model.fcast(5, 10, vname='fit')}\\
+\pythcodef{r5, fig5 = model.fcast(7, 10, 1, recursive=True)}\\
+\pythcodef{r6, fig6 = model.fcast('g', out\_of\_sample=True)}\\
+\pythcodef{P, fig = model.fcast(all\_probs=True)}\\
+\pythcodef{P, fig = model.fcast(vname='P', all\_probs=True)}\\
+\generaldesc{Generates forecasts based on an estimated
+	single-equation or multivariate model. The forecast range
+	can be specified using the arguments \textit{startobs}
+	and \textit{endobs}. If these are omitted, forecasts
+	are produced over the current sample unless
+	\pythcode{out\_of\_sample=True} is specified, in which
+	case post-estimation forecasts are generated.
+	
+	The arguments \textit{startobs}, \textit{endobs},
+	\textit{steps\_ahead}, and \textit{vname} can be supplied
+	positionally or by keyword. Positional and keyword
+	arguments may also be combined.
+	
+	For single-equation models, the optional \textit{vname}
+	argument specifies the name of a series in which the
+	forecasts are saved. For multivariate models, it selects
+	an endogenous variable to be forecast. If no variable
+	is selected, forecasts are generated for all endogenous
+	variables.
+	
+	\textbf{Static and dynamic forecasts.}
+	
+	For dynamic models, static forecasts use observed lagged
+	values of the dependent variable, whereas dynamic forecasts
+	may use previously generated forecast values. By default,
+	static forecasts are produced within the estimation sample
+	and dynamic forecasts are used out of sample, when applicable.
+	
+	The \pythcode{static=True} and \pythcode{dynamic=True}
+	options explicitly select the forecasting method.
+	
+	\textbf{Recursive forecasts.}
+	
+	Setting \pythcode{recursive=True} generates recursive
+	forecasts based on expanding-window estimations. This
+	option is available for single-equation models estimated
+	by OLS.
+	
+	The \textit{steps\_ahead} argument specifies the forecast
+	horizon and is required when \pythcode{recursive=True}
+	is selected. Recursive forecasts are dynamic when
+	applicable.
+	
+	\textbf{Transformed forecasts.}
+	
+	For single-equation OLS models whose dependent variable
+	is recognized as the logarithm of another variable,
+	\pythcode{exponentiate=True} produces forecasts in levels
+	rather than logarithms.
+	
+	By default, a bias correction is applied to the point
+	forecasts. The correction can be controlled using
+	\pythcode{exponentiate=adjust}, where \textit{adjust}
+	takes the value 1 for the normal correction, 2 for
+	the smearing estimator, or 3 for no correction.
+	
+	Similarly, \pythcode{integrate=True} produces forecasts
+	in levels when the dependent variable is recognized as
+	a first difference of another variable.
+	
+	\textbf{Forecast results.}
+	
+	Under normal operation, the method returns a tuple
+	containing a \classpybundle and an optional Matplotlib
+	Figure.
+	
+	The \classpybundle corresponds to the \lgretl
+	\gretlcmd{\$result} accessor and contains the forecast
+	values under the key \pythcode{"fcast"}. Forecast
+	standard errors, when available, are stored under
+	\pythcode{"fcse"}.
+	
+	The bundle may also contain confidence interval bounds
+	under \pythcode{"lower"} and \pythcode{"upper"}, together
+	with \pythcode{"alpha"} and \pythcode{"coverage"}.
+	The first and last forecast observations are recorded
+	under \pythcode{"t1"} and \pythcode{"t2"}.
+	
+	For single-equation models, additional members include
+	\pythcode{"depvar"} and \pythcode{"method"}. If observed
+	values are available over the forecast range, forecast
+	evaluation statistics may be provided under
+	\pythcode{"eval\_stats"}, with the corresponding number
+	of observations under \pythcode{"eval\_obs"}.
+	
+	The \pythcode{"transform"} member indicates whether
+	the forecasts are untransformed, exponentiated, or
+	integrated. With exponentiated forecasts, the bundle
+	also records information on the bias correction applied.
+	
+	Note that forecast standard errors and confidence
+	interval bounds may be available for fewer observations
+	than the point forecasts.
+	
+	\textbf{Outcome probabilities.}
+	
+	For ordered or multinomial response models, setting
+	\pythcode{all\_probs=True} returns predicted probabilities
+	for every possible outcome rather than conventional
+	forecasts.
+	
+	In this case, the first returned element is a
+	\classpymatrix with one column per outcome, instead
+	of a \classpybundle. The optional \textit{vname}
+	argument can be used to save the probability matrix
+	under a specified name.
+	
+	The \pythcode{all\_probs=True} option is incompatible
+	with the \pythcode{plot} option.
+	
+	\textbf{Graphical output.}
+	
+	The \pythcode{plot} option accepts a filename or
+	\pythcode{"display"} to request graphical output.
+	For multivariate models, a forecast plot can be
+	generated only when a single endogenous variable
+	is selected using \textit{vname}.
+	
+	The automatic display of generated Matplotlib figures
+	is controlled separately by
+	\pythcode{gretl.set\_plot\_auto\_show()}.
+	
+	The second returned element contains the Matplotlib
+	Figure, or \pythcode{None} if no figure was generated.
+	
+	\textbf{Forecast evaluation and output.}
+	
+	The \pythcode{no\_stats=True} option suppresses forecast
+	evaluation statistics, while \pythcode{stats\_only=True}
+	prints only these statistics. Setting
+	\pythcode{quiet=True} suppresses printed output.
+	
+	The availability of forecast standard errors depends
+	on the model and forecasting method. For static linear
+	models, they incorporate parameter uncertainty, while
+	dynamic forecast standard errors generally do not.
+	Forecast standard errors are not currently available
+	for nonlinear models.}
 
 \gretlfpycmd{fit()}
 \estdesc{Executes the underlying implementation of the
