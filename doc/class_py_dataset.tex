@@ -812,28 +812,65 @@ Examples:\newline
 	its translated Python counterpart (\texttt{.py}), and the
 	method returns \texttt{None}.}
 
-\gretlfpycmd{hurst()}
-\estdesc{Estimates the Hurst exponent for a time series.}
+\gretlfpycmd{hurst()}\label{met:gretldataset::hurst}
+\estdesc{Estimate the Hurst exponent of a time series.}
 \begin{lstlisting}[style=pythonstylefoot]
-.hurst(series: str) -> gretl.Matrix
+.hurst(series: str[, OPTS]) -> tuple[gretl.Matrix, matplotlib.figure.Figure .| None]
 \end{lstlisting}
 \mapto[clean]{hurst ~series}
-\generaldesc{The Hurst exponent is discussed by Mandelbrot (1983).
-	In theoretical terms it is the exponent, \textit{H}, in the relationship
+\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
+	\item[]\maptoopt{plot=mode-.or-filename}{--plot}{control graphical output}
+\end{itemize}
+Examples:\newline
+\pythcodef{r1, fig1 = data.hurst('x')}\\
+\pythcodef{r2, fig2 = data.hurst('x', plot='display')}\\
+\generaldesc{Estimates the Hurst exponent, a measure of persistence
+	or long memory, for a time-series variable containing at least
+	128 observations.
+	
+	The Hurst exponent is discussed by Mandelbrot (1983).
+	In theoretical terms, it is the exponent \textit{H}
+	in the relationship
 	\[
-		RS(x) = an^H,
+	RS(n) = an^H,
 	\]
-	where \textit{RS} is the ``rescaled range'' of the variable
-	\textit{x} in samples of size \textit{n} and \textit{a} is
-	a constant. In gretl, the exponent is estimated using binary
-	sub-sampling: we start with the entire data range, then the
-	two halves of the range, then the four quarters, and so on.
-	For sample sizes smaller than the data range, the \textit{RS}
-	value is the mean across the available samples. The exponent
-	is then estimated as the slope coefficient in a regression of
-	the log of \textit{RS} on the log of sample size.
-	The returned \classpymatrix contains the estimated Hurst
-	exponent and its standard error.}
+	where \textit{RS} denotes the rescaled range for samples
+	of size \textit{n}, and \textit{a} is a constant.
+	
+	The rescaled range is defined as the range (maximum minus
+	minimum) of the cumulative deviations from the sample mean,
+	divided by the sample standard deviation.
+	
+	In \lgretl, the Hurst exponent is estimated using binary
+	sub-sampling. Starting with the entire sample, the data
+	range is successively divided into two halves, four quarters,
+	and so on. For each sample size, the rescaled range is
+	averaged across the available subsamples. The exponent
+	is then estimated as the slope coefficient in a regression
+	of the logarithm of \textit{RS} on the logarithm of the
+	sample size.
+	
+	A Hurst exponent of 0.5 corresponds to the white-noise
+	benchmark. Values significantly above 0.5 indicate
+	persistence or long memory, while values below 0.5
+	indicate anti-persistence. Although the theoretical
+	exponent is bounded between zero and one, finite-sample
+	estimates may exceed one.
+	
+	Graphical output is controlled by the \pythcode{plot}
+	argument. The intended supported values are
+	\pythcode{"none"} (suppress the plot),
+	\pythcode{"display"} (request graphical output),
+	or a filename to which the plot is saved.
+	The automatic display of generated Matplotlib figures
+	is controlled separately by
+	\pythcode{gretl.set\_plot\_auto\_show()}.
+	
+	The method returns a tuple containing a \classpymatrix
+	with the estimated Hurst exponent and its standard error,
+	and an optional Matplotlib Figure. If no figure is
+	returned, the second element of the tuple is
+	\pythcode{None}.}
 
 \gretlfpycmd{info()}\label{met:gretldataset::info}
 \estdesc{Prints basic information about the dataset.}
@@ -1921,30 +1958,56 @@ Examples:\newline
 	particularly the median-based test for skewed data and the
 	trimmed-mean test for fat-tailed data.}
 
-\gretlfpycmd{xcorrgm()}
-\estdesc{Computes the cross-correlogram of two series.}
+\gretlfpycmd{xcorrgm()}\label{met:gretldataset::xcorrgm}
+\estdesc{Compute the cross-correlogram of two time series.}
 \begin{lstlisting}[style=pythonstylefoot]
-.xcorrgm(varlist: str | list[, order: int = 0, OPTS]) -> gretl.Matrix
-.xcorrgm(series1: str, series2: str[, order: int = 0, OPTS]) -> gretl.Matrix
+.xcorrgm(varlist: str | list[, order: int = 0, OPTS]) -> tuple[gretl.Matrix, matplotlib.figure.Figure .| None]
+.xcorrgm(series1: str, series2: str[, order: int = 0, OPTS]) -> tuple[gretl.Matrix, matplotlib.figure.Figure .| None]
 \end{lstlisting}
 \mapto{xcorrgm series1 series2 [ order ]}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
+	\item[]\maptoopt{plot=mode-.or-filename}{--plot}{control graphical output}
 	\item[]\maptoopt{quiet=True}{--quiet}{suppress printed output}
 \end{itemize}
 Examples:\newline
-\pythcodef{r1 = data.xcorrgm('x y', 12)}\\
-\pythcodef{r2 = data.xcorrgm(['x', 'y'], 12)}\\
-\pythcodef{r3 = data.xcorrgm('x', 'y', 12)}\\
-\generaldesc{The values are the sample correlation coefficients
-	between the current value of \textit{series1} and successive leads
-	and lags of \textit{series2}.\newline
-	If an \textit{order} value is specified the length of the
-	cross-correlogram is limited to at most that number of leads
-	and lags; otherwise the length is determined automatically,
-	as a function of the frequency of the data and the number of
-	observations.\newline
-	The returned \classpymatrix contains the lags in the first
-	column and the corresponding cross-correlations in the second.}
+\pythcodef{r1, fig1 = data.xcorrgm('x y', 12)}\\
+\pythcodef{r2, fig2 = data.xcorrgm(['x', 'y'], 12)}\\
+\pythcodef{r3, fig3 = data.xcorrgm('x', 'y', 12)}\\
+\pythcodef{r4, fig4 = data.xcorrgm('x', 'y', plot='display')}\\
+\pythcodef{r5, fig5 = data.xcorrgm('x y', plot='none')}\\
+\generaldesc{Computes the sample cross-correlation coefficients
+	between the current value of \textit{series1} and successive
+	leads and lags of \textit{series2}.
+	
+	The two variables can be specified as a space-separated string,
+	a Python list, or two separate string arguments.
+	
+	The \textit{order} argument specifies the maximum number
+	of leads and lags to be included in the cross-correlogram.
+	If omitted or set to zero, the number of leads and lags
+	is selected automatically based on the frequency of the
+	data and the number of available observations.
+	
+	Graphical output is controlled by the \pythcode{plot} option.
+	The supported values are \pythcode{"none"} (suppress the plot),
+	\pythcode{"display"} (request graphical output), or a
+	filename to which the plot is saved. If the option is omitted,
+	plotting follows the current \lgretl execution mode.
+	
+	The \pythcode{quiet=True} option suppresses printed output.
+	
+	Automatic display of generated Matplotlib figures is
+	controlled separately by
+	\pythcode{gretl.set\_plot\_auto\_show()}.
+	
+	The method returns a tuple containing a \classpymatrix
+	and an optional Matplotlib Figure. The matrix contains
+	two columns: the first holds the leads and lags, while
+	the second contains the corresponding sample
+	cross-correlation coefficients.
+	
+	If no figure is returned, the second element of the
+	tuple is \pythcode{None}.}
 
 \gretlfpycmd{xtab()}
 \estdesc{Computes cross-tabulations of discrete variables.}

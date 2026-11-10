@@ -173,6 +173,7 @@
 		{ x3}{ $x_3$}3
 		{.if}{if }3
 		{.id}{.id }3
+		{.or}{or}3
 		{.set}{set}{3}
 		{.type}{type}{4}
 		{.vars}{vars}{4}

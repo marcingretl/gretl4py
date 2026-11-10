@@ -1178,37 +1178,37 @@ GretlMatrixPtr GretlDataset::cov (const T &varlist)
 template GretlMatrixPtr GretlDataset::cov<std::string>(const std::string&);
 template GretlMatrixPtr GretlDataset::cov<py::list>(const py::list&);
 
-py::object GretlDataset::hurst (const std::string &series)
+std::pair<py::object, py::object> GretlDataset::hurst (const std::string &series, const std::string &plot)
 {
     //
     // we compute the Hurst exponent for given series
     //
+    GretlPlot plotter;
     gretl_list_ptr var_list{nullptr};
     opt_ = OPT_NONE;
 
-    // we switch off gnuplot
-    gretl_valid_long_opt(opt_, HURST, "plot", py::handle(), "none");
-
     // we do the job
+    if (!plot.empty()) gretl_valid_long_opt(opt_, HURST, "plot", py::handle(), plotter.filename().c_str());
     var_list = gretllist(series);
     err_ = hurstplot(var_list.get(), dset, opt_, printer_.prn_ptr());
     if (err_) handle_gretl_error(err_);
     printer_.print();
 
-    return get_accessor("$result");
+    return {get_accessor("$result"), plotter.display()};
 }
 
 template <typename T>
-py::object GretlDataset::xcorrgm (const T &varlist, int order, const py::kwargs &kwargs)
+std::pair<py::object, py::object> GretlDataset::xcorrgm (const T &varlist, int order, const py::kwargs &kwargs)
 {
     //
     // we perform cross-correlogram for vars
     //
+    GretlPlot plotter;
     gretl_list_ptr var_list{nullptr};
     std::nullptr_t fake_dataset = nullptr;
 
     // we unpack kwargs
-    opt_ = unpack_kwargs_command<XCORRGM>(fake_dataset, kwargs);
+    opt_ = unpack_kwargs_command<XCORRGM>(fake_dataset, kwargs, &plotter);
 
     // we construct list of variables
     if constexpr (is_gretllist_arg_v<T>) {
@@ -1221,10 +1221,10 @@ py::object GretlDataset::xcorrgm (const T &varlist, int order, const py::kwargs 
     err_ = xcorrgram(var_list.get(), order, dset, opt_, printer_.prn_ptr());
     if (err_) handle_gretl_error(err_);
 
-    return get_accessor("$result");
+    return {get_accessor("$result"), plotter.display()};
 }
-template py::object GretlDataset::xcorrgm<std::string>(const std::string&, int, const py::kwargs&);
-template py::object GretlDataset::xcorrgm<py::list>(const py::list&, int, const py::kwargs&);
+template std::pair<py::object, py::object> GretlDataset::xcorrgm<std::string>(const std::string&, int, const py::kwargs&);
+template std::pair<py::object, py::object> GretlDataset::xcorrgm<py::list>(const py::list&, int, const py::kwargs&);
 
 template <typename T>
 py::object GretlDataset::pca (const T &varlist, const py::kwargs &kwargs)

@@ -211,10 +211,10 @@ public:
     template <typename T>
     GretlMatrixPtr cov (const T &varlist);
 
-    py::object hurst (const std::string &series);
+    std::pair<py::object, py::object> hurst (const std::string &series, const std::string &plot);
 
     template <typename T>
-    py::object xcorrgm (const T &varlist, int order, const py::kwargs &kwargs);
+    std::pair<py::object, py::object> xcorrgm (const T &varlist, int order, const py::kwargs &kwargs);
 
     template <typename T>
     py::object pca (const T &varlist, const py::kwargs &kwargs);

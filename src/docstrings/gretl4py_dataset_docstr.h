@@ -1408,39 +1408,64 @@ namespace doc::Dataset {
     )doc";
 
     inline constexpr char xcorrgm[] = R"doc(
-    Compute the cross-correlogram of two series.
+    Compute the cross-correlogram of two time series.
 
-    Computes the sample cross-correlations between the current value of
-    the first series and successive leads and lags of the second series.
+    Computes the sample cross-correlations between the current value
+    of the first series and successive leads and lags of the second
+    series.
 
     Parameters
     ----------
     varlist : str or list
-        Two series, specified by names or indices.
+        Two series specified by names or indices.
     series1 : str
-        First series.
+        Name of the first series (alternative calling convention).
     series2 : str
-        Second series.
+        Name of the second series (alternative calling convention).
     order : int, optional
-        Maximum number of leads and lags. If 0, the order is selected
-        automatically based on the dataset periodicity and sample size.
+        Maximum number of leads and lags. If zero (default),
+        the order is selected automatically based on the data
+        frequency and sample size.
 
     Other Parameters
     ----------------
-    quiet : bool
-        Suppress printed output.
+    plot : str, optional
+        Plot mode or output filename. Supported values are ``"none"``
+        (suppress the plot), ``"display"`` (request graphical output),
+        or a filename to save the plot.
+    quiet : bool, optional
+    Suppress printed output.
 
     Returns
     -------
-    gretl.Matrix
-    Two-column matrix containing lags in the first column and
-    cross-correlations in the second.
+    tuple[Matrix, matplotlib.figure.Figure | None]
+    A tuple containing a two-column GretlMatrix and an optional
+    Matplotlib Figure. The first column contains the lags and
+    leads, and the second contains the corresponding sample
+    cross-correlations. The Figure is ``None`` if no plot
+    is returned.
+
+    Notes
+    -----
+    The cross-correlogram measures the sample correlation between
+    the current value of the first series and successive leads
+    and lags of the second series.
+
+    If ``order`` is positive, at most that many leads and lags
+    are included. Otherwise, the order is determined automatically
+    from the data frequency and the number of observations.
+
+    If ``plot`` is omitted, graphical output follows the current
+    gretl execution mode. Automatic display of generated figures
+    is controlled separately by ``gretl.set_plot_auto_show()``.
 
     Examples
     --------
-    ``m = data.xcorrgm("x y", 12)``
-    ``m = data.xcorrgm(["x", "y"], 12)``
-    ``m = data.xcorrgm("x", "y", 12)``
+    ``R, fig = data.xcorrgm("x y", 12)``
+    ``R, fig = data.xcorrgm(["x", "y"], 12)``
+    ``R, fig = data.xcorrgm("x", "y", 12)``
+    ``R, fig = data.xcorrgm("x", "y", plot="display")``
+    ``R, fig = data.xcorrgm("x y", plot="none")``
     )doc";
 
     inline constexpr char pca[] = R"doc(
@@ -1601,34 +1626,60 @@ namespace doc::Dataset {
     inline constexpr char hurst[] = R"doc(
     Estimate the Hurst exponent of a time series.
 
-    Estimates the Hurst exponent, a measure of persistence or long memory,
-    for a time-series variable having at least 128 observations.
+    Estimates the Hurst exponent, a measure of persistence or long
+    memory, using the rescaled range (R/S) method. The series must
+    contain at least 128 observations.
 
     Parameters
     ----------
     series : str
-        Series for which the Hurst exponent is to be estimated.
+        Name of the series for which the Hurst exponent is estimated.
+    plot : str, optional
+        Plot mode or output filename. The intended supported values
+        are ``"none"`` (suppress the plot), ``"display"`` (request
+        graphical output), or a filename to save the plot.
 
     Returns
     -------
-    gretl.Matrix
-        Matrix containing the estimated Hurst exponent and its standard
-        error.
+    tuple[Matrix, matplotlib.figure.Figure | None]
+        A tuple containing a GretlMatrix with the estimated Hurst
+        exponent and its standard error, and an optional Matplotlib
+        Figure. The second element is ``None`` if no figure is returned.
 
     Notes
     -----
-    The exponent is estimated using binary sub-sampling and a regression
-    of the logarithm of the rescaled range on the logarithm of sample
-    size.
+    The Hurst exponent H characterizes the scaling relationship
 
-    A Hurst exponent of 0.5 corresponds to the benchmark of white noise.
-    Values above 0.5 indicate persistence, while values below 0.5 indicate
-    anti-persistence.
+    RS(n) = a * n**H
+
+    where RS(n) is the rescaled range for samples of size n and a
+    is a constant. The rescaled range is calculated as the range
+    of cumulative deviations from the sample mean, divided by
+    the sample standard deviation.
+
+    The exponent is estimated using binary sub-sampling of the
+    observed series. The sample is successively divided into
+    two halves, four quarters, and so on. For each sample size,
+    the rescaled ranges are averaged across the available
+    subsamples.
+
+    The Hurst exponent is then estimated as the slope coefficient
+    in a regression of log(RS) on log(n).
+
+    A value of H = 0.5 is the white-noise benchmark. Values
+    significantly above 0.5 indicate persistence, while values
+    below 0.5 indicate anti-persistence. Although the theoretical
+    range is between 0 and 1, finite-sample estimates may exceed 1.
+
+    Automatic display of generated Matplotlib figures is controlled
+    separately by ``gretl.set_plot_auto_show()``.
 
     Examples
     --------
-    ``res = data.hurst("x")``
+    ``result, fig = data.hurst("x")``
+    ``result, fig = data.hurst("x", plot="display")``
     )doc";
+
 
     inline constexpr char set_as_default[] = R"doc(
     Set this dataset as the default dataset.

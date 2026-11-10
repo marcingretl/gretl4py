@@ -428,13 +428,13 @@ void init_gretl4py_dataset_py11 (py::module_ &m)
     .def("cov", &GretlDataset::cov<py::list>,
          py::arg("varlist").none(true) = py::list(), doc::Dataset::cov)
     .def("hurst", &GretlDataset::hurst,
-         py::arg("series").none(false), doc::Dataset::hurst)
+         py::arg("series"), py::arg("plot").none(true) = "", doc::Dataset::hurst)
     .def("xcorrgm", py::overload_cast<const std::string&, int, const py::kwargs&>(&GretlDataset::xcorrgm<std::string>),
          py::arg("varlist").none(false), py::arg("order").none(true) = 0, py::kw_only())
     .def("xcorrgm", py::overload_cast<const py::list&, int, const py::kwargs&>(&GretlDataset::xcorrgm<py::list>),
          py::arg("varlist").none(false), py::arg("order").none(true) = 0, py::kw_only())
     .def("xcorrgm",
-         [](GretlDataset &self, const std::string &series1, const std::string &series2, int order, const py::kwargs &kwargs) -> py::object
+         [](GretlDataset &self, const std::string &series1, const std::string &series2, int order, const py::kwargs &kwargs) -> std::pair<py::object, py::object>
          {
              return self.xcorrgm<std::string>(series1 + " " + series2, order, kwargs);
          }, py::arg("series1").none(false), py::arg("series2").none(false),
