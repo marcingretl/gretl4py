@@ -772,6 +772,28 @@ py::object GretlMatrix::plot (const T &cols, const py::kwargs &kwargs)
 template py::object GretlMatrix::plot<std::string>(const std::string&, const py::kwargs&);
 template py::object GretlMatrix::plot<py::list>(const py::list&, const py::kwargs&);
 
+template <typename T>
+py::object GretlMatrix::boxplot (const T &cols, const py::kwargs &kwargs)
+{
+    //
+    // mimic libgretl 'boxplot' command
+    //
+    return plot_via_matrix_command_driver_<BXPLOT, T>(cols, kwargs);
+}
+template py::object GretlMatrix::boxplot<std::string>(const std::string&, const py::kwargs&);
+template py::object GretlMatrix::boxplot<py::list>(const py::list&, const py::kwargs&);
+
+template <typename T>
+py::object GretlMatrix::scatters (const T &cols, const py::kwargs &kwargs)
+{
+    //
+    // mimic libgretl 'scatters' command
+    //
+    return plot_via_matrix_command_driver_<SCATTERS, T>(cols, kwargs);
+}
+template py::object GretlMatrix::scatters<std::string>(const std::string&, const py::kwargs&);
+template py::object GretlMatrix::scatters<py::list>(const py::list&, const py::kwargs&);
+
 GretlMatrixPtr GretlMatrix::neg (void) const
 {
     //

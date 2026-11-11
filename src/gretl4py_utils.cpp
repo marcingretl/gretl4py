@@ -848,8 +848,7 @@ PythonArgInfo inspect_pyobject (py::handle obj)
 
 // Here we move item to named container for given instance
 template <typename PyWrapped, typename Item, typename ContainerType>
-void move_to_python_container (PyWrapped &wrapped_obj, Item &&item,
-                               const char *container, const std::string &key)
+void move_to_python_container (PyWrapped &wrapped_obj, Item &&item, const char *container, const std::string &key)
 {
     py::gil_scoped_acquire gil;
     py::object obj = py::cast(wrapped_obj);
