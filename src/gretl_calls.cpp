@@ -353,6 +353,9 @@ gretlopt unpack_kwargs_command (T &dataset, const py::kwargs &kwargs, GretlPlot 
     static_assert(std::is_same_v<T, GretlDatasetPtr> || std::is_same_v<T, std::nullptr_t>, "dataset must be GretlDatasetPtr or std::nullptr_t");
     gretlopt opt = OPT_NONE;
 
+    // remove non-persistent option parameters left by previous calls
+    clear_stored_options_for_command(CI);
+
     if (py::len(kwargs) > 0) {
         for (auto &item : kwargs) {
             if (!is_pystr(item.first)) throw std::invalid_argument("option key must be a string");

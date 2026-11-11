@@ -381,10 +381,8 @@ py::object GretlMatrix::plot_via_matrix_command_driver_ (const T &cols, const py
     } else if constexpr (std::is_same_v<T, py::list>) {
         if (!cols.empty()) {
             int cols_size = static_cast<int>(cols.size());
-            gretl_matrix_ptr m(gretl_vector_alloc(cols_size));
-            // list.reset(gretl_list_new(cols_size));
 
-            if (!m) handle_gretl_error(E_ALLOC);
+            list.reset(gretl_list_new(cols_size));
             for (int i=0; i<cols_size; ++i) {
                 py::handle el = cols[i];
                 int col = 0;
@@ -400,9 +398,8 @@ py::object GretlMatrix::plot_via_matrix_command_driver_ (const T &cols, const py
                 } else {
                     throw std::invalid_argument("cols elements must be integers or strings");
                 }
-                gretl_vector_set(m.get(), i, col);
+                list.get()[i+1] = col;
             }
-            list.reset(gretl_auxlist_from_vector(m.get(), &err_));
         }
     } else {
         static_assert(always_false<T>, "GretlMatrix::plot_via_matrix_command_driver_(): unsupported type");
