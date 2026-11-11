@@ -412,11 +412,6 @@ py::object GretlMatrix::plot_via_matrix_command_driver_ (const T &cols, const py
     // we add --matrix option manually
     gretl_valid_long_opt(opt, CI, "matrix", py::handle(), matrix_name);
 
-    // register a temporary output file for graphical display
-    // preserve an explicitly requested output filename
-    if (!kwargs_copy.contains("output") || kwargs_copy["output"].cast<std::string>() == "display")
-        gretl_valid_long_opt(opt, CI, "output", py::handle(), plotter.filename().c_str());
-
     // we do the job
     auto uv = alt_user_var_add(matrix_name, GRETL_TYPE_MATRIX, m_);
     if (!uv) handle_gretl_error(E_ALLOC);

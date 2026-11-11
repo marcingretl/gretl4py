@@ -75,6 +75,14 @@ constexpr bool cmd_plot_opt_ok (GretlCmdIndex ci)
         || ci == QLRTEST || ci == XCORRGM;
 }
 
+// Commands supporting the --output option.
+constexpr bool cmd_output_opt_ok (GretlCmdIndex ci)
+{
+    return ci == GNUPLOT || ci == BXPLOT || ci == HFPLOT
+        || ci == PANPLOT || ci == QQPLOT || ci == KDPLOT
+        || ci == SCATTERS || ci == RMPLOT;
+}
+
 // Automatically unregister a temporary libgretl user variable.
 struct TemporaryUserVar {
     std::vector<std::string> names;
@@ -130,16 +138,6 @@ static std::string extract_varname (std::string formula)
     return gretl4py_trim(varname);
 }
 
-[[nodiscard]] bool command_option_is_set (GretlCmdIndex ci, gretlopt opt, const char *name)
-{
-    //
-    // we check if given @ci has a given option @name set in current call
-    //
-    OptStatus status = OPT_NO_PARM;
-    gretlopt flag = valid_long_opt(ci, name, &status);
-
-    return flag != OPT_NONE && (opt & flag) != 0;
-}
 } // namespace
 
 //////////////////////////////////////////////////
@@ -387,6 +385,11 @@ gretlopt unpack_kwargs_command (T &dataset, const py::kwargs &kwargs, GretlPlot 
                 }
             }
 
+            // the output option is handled separately for graphical commands
+            if constexpr (cmd_output_opt_ok(CI)) {
+                if (key == "output" && plotter) continue;
+            }
+
             // finally, we evaluate options
             gretl_valid_long_opt(opt, CI, key, item.second);
         }
@@ -395,6 +398,33 @@ gretlopt unpack_kwargs_command (T &dataset, const py::kwargs &kwargs, GretlPlot 
     // if no dataset was supplied, use the default dataset
     if constexpr (std::is_same_v<T, GretlDatasetPtr>) {
         if (!dataset) dataset = GretlDataset::default_dataset();
+    }
+
+    // configure output for graphical commands
+    if constexpr (cmd_output_opt_ok(CI)) {
+        if (plotter) {
+            // Check whether the output is a native graphical format.
+            static const std::unordered_set<std::string> formats = {
+                ".eps", ".pdf", ".png", ".emf", ".html",
+                ".svg", ".fig", ".tex", ".tikz"
+            };
+
+            // By default, display the graph.
+            const std::string filename = kwargs.contains("output") ? kwargs["output"].cast<std::string>() : "display";
+
+            if (filename == "display") {
+                // Register a temporary output file for graphical display.
+                gretl_valid_long_opt(opt, CI, "output", py::handle(), plotter->filename().c_str());
+            } else {
+                // Register the requested output file.
+                gretl_valid_long_opt(opt, CI, "output", py::handle(), filename.c_str());
+
+                // Preserve output files that are not native graphical formats.
+                const std::string ext = std::filesystem::path(filename).extension().string();
+
+                if (formats.find(ext) == formats.end()) plotter->store(filename);
+            }
+        }
     }
 
     return opt;
@@ -1637,25 +1667,7 @@ py::object do_execute_plot_call (const T &varlist, const GretlDatasetPtr dataset
     }
 
     // now we process options using 'clean_kwargs'
-    gretlopt opt = unpack_kwargs_command<CI>(fake_dataset, clean_kwargs);
-
-    // now we check if an option "--output" was set for current command
-    if (command_option_is_set(CI, opt, "output")) {
-        // Check whether the output is a native graphical format.
-        static const std::unordered_set<std::string> formats = {
-            ".eps", ".pdf", ".png", ".emf", ".html",
-            ".svg", ".fig", ".tex", ".tikz"
-        };
-        const std::string filename = kwargs["output"].cast<std::string>();
-
-        if (filename != "display") {
-            const std::string ext = std::filesystem::path(filename).extension().string();
-
-            if (formats.find(ext) == formats.end()) plotter.store(filename);
-        }
-    } else {
-        gretl_valid_long_opt(opt, CI, "output", py::handle(), plotter.filename().c_str());
-    }
+    gretlopt opt = unpack_kwargs_command<CI>(fake_dataset, clean_kwargs, &plotter);
 
     // we do the job
     if constexpr (CI == GNUPLOT) {
