@@ -594,9 +594,9 @@ std::pair<py::object, py::object> GretlModel::gretl_do_forecast_ (void *model, c
     GretlPlot plotter;
     std::string param = "";
     int n_args = py::len(args);
+    py::kwargs clean_kwargs;
 
     // make an independent copy of kwargs
-    py::kwargs clean_kwargs;
     for (const auto &item : kwargs) {
         clean_kwargs[item.first] = item.second;
     }
@@ -636,7 +636,8 @@ std::pair<py::object, py::object> GretlModel::gretl_do_forecast_ (void *model, c
             double x = arg.cast<double>();
             long double y = static_cast<long double>(x);
 
-            if (!(std::isfinite)(x) || std::floor(x) != x || y < static_cast<long double>(std::numeric_limits<long>::lowest())
+            if (!(std::isfinite)(x) || std::floor(x) != x
+                    || y < static_cast<long double>(std::numeric_limits<long>::lowest())
                     || y > static_cast<long double>(std::numeric_limits<long>::max())) {
                 handle_gretl_error(E_INVARG, "Invalid argument in fcast(): " + std::string(key) + "=" + py::str(arg).cast<std::string>());
                 }
@@ -646,20 +647,13 @@ std::pair<py::object, py::object> GretlModel::gretl_do_forecast_ (void *model, c
         }
 
         // libgretl expects each argument to occupy one field
-        if (s.empty() || s.find_first_of(" \t\n\r") != std::string::npos) {
-            throw std::invalid_argument("Invalid argument in fcast(): " + std::string(key));
-        }
-
+        if (s.empty() || s.find_first_of(" \t\n\r") != std::string::npos) throw std::invalid_argument("Invalid argument in fcast(): " + std::string(key));
         if (!param.empty()) param.append(" ");
         param += s;
     };
 
     // we unpack args
-    if (n_args > max_positional_args) {
-        throw std::invalid_argument(
-            "too many positional arguments: " +
-            std::to_string(n_args) + " (max = 4)");
-    }
+    if (n_args > max_positional_args) throw std::invalid_argument("too many positional arguments: " + std::to_string(n_args) + " (max = 4)");
 
     // map positional arguments according to the fcast syntax
     std::array<int, max_positional_args> positions = {-1, -1, -1, -1};
@@ -686,9 +680,7 @@ std::pair<py::object, py::object> GretlModel::gretl_do_forecast_ (void *model, c
             positions[1] = 1;
             if (n_args == 3) positions[2] = 3;
         } else if (n_args == 4) {
-            throw std::invalid_argument(
-                "fcast() accepts at most 3 positional arguments "
-                "without recursive=True");
+            throw std::invalid_argument("fcast() accepts at most 3 positional arguments without recursive=True");
         }
     }
 
@@ -696,12 +688,7 @@ std::pair<py::object, py::object> GretlModel::gretl_do_forecast_ (void *model, c
     for (int i=0; i<n_args; ++i) {
         int idx = positions[i];
 
-        if (supplied[idx]) {
-            throw py::type_error(
-                "multiple values for argument '" +
-                std::string(positional_args[idx]) + "'");
-        }
-
+        if (supplied[idx]) throw std::invalid_argument("multiple values for argument '" + std::string(positional_args[idx]) + "'");
         values[idx] = args[i];
         supplied[idx] = true;
     }
@@ -712,26 +699,10 @@ std::pair<py::object, py::object> GretlModel::gretl_do_forecast_ (void *model, c
     };
 
     // validate the selected forecast syntax
-    if (has_arg(0) != has_arg(1)) {
-        throw std::invalid_argument(
-            "startobs and endobs must be specified together");
-    }
-
-    if (recursive && !has_arg(2)) {
-        throw std::invalid_argument(
-            "steps_ahead is required when recursive=True");
-    }
-
-    if (!recursive && has_arg(2)) {
-        throw std::invalid_argument(
-            "steps_ahead requires recursive=True");
-    }
-
-    if (out_of_sample && has_arg(0)) {
-        throw std::invalid_argument(
-            "startobs and endobs cannot be combined with "
-            "out_of_sample=True");
-    }
+    if (has_arg(0) != has_arg(1)) throw std::invalid_argument("startobs and endobs must be specified together");
+    if (recursive && !has_arg(2)) throw std::invalid_argument("steps_ahead is required when recursive=True");
+    if (!recursive && has_arg(2)) throw std::invalid_argument("steps_ahead requires recursive=True");
+    if (out_of_sample && has_arg(0)) throw std::invalid_argument( "startobs and endobs cannot be combined with out_of_sample=True");
 
     // construct the command string in the order expected by libgretl
     for (int i=0; i<max_positional_args; ++i) {
@@ -742,19 +713,14 @@ std::pair<py::object, py::object> GretlModel::gretl_do_forecast_ (void *model, c
 
     // we do the job
     last_result_cleanup();
-
     if constexpr (std::is_same_v<T, MODEL>) {
         gretl_model_protect(static_cast<MODEL*>(model));
     }
-
     set_as_last_model(model, model_obj_type_);
-    err_ = do_forecast(param.c_str(), dataset_->dset,
-                       opt_, printer_.prn_ptr());
-
+    err_ = do_forecast(param.c_str(), dataset_->dset, opt_, printer_.prn_ptr());
     if constexpr (std::is_same_v<T, MODEL>) {
         gretl_model_unprotect(static_cast<MODEL*>(model));
     }
-
     if (err_) handle_gretl_error(err_);
     printer_.print();
 
@@ -766,19 +732,12 @@ std::pair<py::object, py::object> GretlModel::gretl_do_forecast_ (void *model, c
             // named probability matrix: return an independent copy
             const std::string name = values[3].cast<std::string>();
 
-            if (user_var_get_type_by_name(name.c_str()) != GRETL_TYPE_MATRIX) {
-                throw std::runtime_error(
-                    "Forecast probability matrix not found: " + name);
-            }
+            if (user_var_get_type_by_name(name.c_str()) != GRETL_TYPE_MATRIX)
+                throw std::runtime_error("Forecast probability matrix not found: " + name);
 
-            auto *mat = static_cast<gretl_matrix*>(
-                user_var_get_value_by_name(name.c_str()));
+            auto *mat = static_cast<gretl_matrix*>(user_var_get_value_by_name(name.c_str()));
 
-            if (mat == nullptr) {
-                throw std::runtime_error(
-                    "Forecast probability matrix not found: " + name);
-            }
-
+            if (mat == nullptr) throw std::runtime_error("Forecast probability matrix not found: " + name);
             result = py::cast(std::make_shared<GretlMatrix>(mat, true));
         } else {
             // unnamed probability matrix is available via $fcast

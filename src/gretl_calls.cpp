@@ -1565,6 +1565,7 @@ py::object do_execute_plot_call (const T &varlist, const GretlDatasetPtr dataset
     // general interface to libgretl plotting apparatus
     // based on execute_plot_call() from interact.c
     // in addition, RMPLOT is handled here as well
+    // NOTE: by definition, we do not handle matrix operations here (via matrix_command_driver())
     //
     GretlPlot plotter;
     gretl_list_ptr gretl_list{nullptr};
