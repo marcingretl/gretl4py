@@ -361,7 +361,7 @@ gretlopt unpack_kwargs_command (T &dataset, const py::kwargs &kwargs, GretlPlot 
             // commands special (including banned options)
             if constexpr (CI == GNUPLOT || CI == SCATTERS || CI == BXPLOT) {
                 // matrix-based plots are handled separately by gretl.plot()
-                if (key == "matrix") throw std::invalid_argument("for matrix-based plots, use gretl.plot() instead");
+                if (key == "matrix") throw std::invalid_argument("for matrix-based plots, use gretl.Matrix.plot() instead");
             }
             if constexpr (CI == GNUPLOT) {
                 if (key == "input") throw std::invalid_argument("for gnuplot script-based plots, use gretl.plot() instead");

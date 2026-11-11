@@ -28,6 +28,7 @@
 #include <gretl/gretl_drivers.h>
 extern "C" {
     #include <gretl/uservar.h>
+    #include <gretl/gretl_list.h>
     // this is because we cannot include gretl_cmatrix.h
     int gretl_cmatrix_print (const gretl_matrix *A, const char *name, PRN *prn);
     gretl_matrix *gretl_cmatrix_multiply (const gretl_matrix *A, const gretl_matrix *B, int *err);
@@ -358,6 +359,76 @@ void GretlMatrix::from_matrix_ (const MatrixData<T> &data)
             }
         }
     }
+}
+
+template<GretlCmdIndex CI, typename T>
+py::object GretlMatrix::plot_via_matrix_command_driver_ (const T &cols, const py::kwargs &kwargs)
+{
+    //
+    // this method generates plots via matrix_command_driver()
+    // based on 'interact.c'
+    //
+    GretlPlot plotter;
+    std::nullptr_t fake_dataset = nullptr;
+    gretl_list_ptr list{nullptr};
+    py::dict kwargs_copy(kwargs);
+    const char *matrix_name = "__gretl4py_matrix_plot";
+
+    // we construct the list of selected matrix columns, if any
+    err_ = 0;
+    if constexpr (std::is_same_v<T, std::string>) {
+        if (!cols.empty()) list.reset(gretl_list_from_string(cols.c_str(), &err_));
+    } else if constexpr (std::is_same_v<T, py::list>) {
+        if (!cols.empty()) {
+            int cols_size = static_cast<int>(cols.size());
+            gretl_matrix_ptr m(gretl_vector_alloc(cols_size));
+            // list.reset(gretl_list_new(cols_size));
+
+            if (!m) handle_gretl_error(E_ALLOC);
+            for (int i=0; i<cols_size; ++i) {
+                py::handle el = cols[i];
+                int col = 0;
+
+                if (is_pystr(el)) {
+                    const std::string s = el.cast<std::string>();
+                    std::size_t pos = 0;
+
+                    col = std::stoi(s, &pos);
+                    if (pos != s.size()) throw std::invalid_argument("cols elements must be valid integers");
+                } else if (is_pyint(el)) {
+                    col = el.cast<int>();
+                } else {
+                    throw std::invalid_argument("cols elements must be integers or strings");
+                }
+                gretl_vector_set(m.get(), i, col);
+            }
+            list.reset(gretl_auxlist_from_vector(m.get(), &err_));
+        }
+    } else {
+        static_assert(always_false<T>, "GretlMatrix::plot_via_matrix_command_driver_(): unsupported type");
+    }
+    if (err_) handle_gretl_error(err_);
+
+    // we unpack kwargs at first
+    gretlopt opt = unpack_kwargs_command<CI>(fake_dataset, kwargs_copy, &plotter);
+
+    // we add --matrix option manually
+    gretl_valid_long_opt(opt, CI, "matrix", py::handle(), matrix_name);
+
+    // register a temporary output file for graphical display
+    // preserve an explicitly requested output filename
+    if (!kwargs_copy.contains("output") || kwargs_copy["output"].cast<std::string>() == "display")
+        gretl_valid_long_opt(opt, CI, "output", py::handle(), plotter.filename().c_str());
+
+    // we do the job
+    auto uv = alt_user_var_add(matrix_name, GRETL_TYPE_MATRIX, m_);
+    if (!uv) handle_gretl_error(E_ALLOC);
+    err_ = matrix_command_driver(CI, list.get(), matrix_name, nullptr, opt, printer_.prn_ptr());
+    user_var_unstack_value(uv);
+    if (err_) handle_gretl_error(err_);
+    printer_.print();
+
+    return plotter.display();
 }
 
 //
@@ -697,6 +768,17 @@ py::object GretlMatrix::summary (const py::kwargs& kwargs)
 
     return do_get_accessor<GRETL_OBJ_ANY>("$result", fake_dataset, nullptr);
 }
+
+template <typename T>
+py::object GretlMatrix::plot (const T &cols, const py::kwargs &kwargs)
+{
+    //
+    // mimic libgretl 'gnuplot' command
+    //
+    return plot_via_matrix_command_driver_<GNUPLOT, T>(cols, kwargs);
+}
+template py::object GretlMatrix::plot<std::string>(const std::string&, const py::kwargs&);
+template py::object GretlMatrix::plot<py::list>(const py::list&, const py::kwargs&);
 
 GretlMatrixPtr GretlMatrix::neg (void) const
 {

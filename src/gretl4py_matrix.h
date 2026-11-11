@@ -57,6 +57,9 @@ private:
 
     template<typename T>
     void from_matrix_ (const MatrixData<T> &data);                          // to get source data from STL vector
+
+    template<GretlCmdIndex CI, typename T>
+    py::object plot_via_matrix_command_driver_ (const T &cols, const py::kwargs &kwargs);
 public:
     GretlMatrix (void);                                                             // default constructor
     GretlMatrix (const GretlMatrix &src);                                           // copy constructor
@@ -122,6 +125,16 @@ public:
     py::object to_numpy (void) const;
 
     py::object summary (const py::kwargs &kwargs);
+
+    // plots
+    template <typename T>
+    py::object plot (const T &cols, const py::kwargs &kwargs);
+
+    template <typename T>
+    py::object boxplot (const T &cols, const py::kwargs &kwargs);
+
+    template <typename T>
+    py::object scatters (const T &cols, const py::kwargs &kwargs);
 
     // matrix-algebra methods
     GretlMatrixPtr neg (void) const;

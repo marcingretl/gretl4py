@@ -323,7 +323,9 @@ void init_gretl4py_gretl_matrix_py11 (py::module_ &m)
     .def("cnameget", &matrix_row_cols_names_get<false>, py::arg("col").none(true) = std::nullopt)
     .def("rnameset", &GretlMatrix::rows_cols_names_set<true>, py::arg("names").none(false))
     .def("cnameset", &GretlMatrix::rows_cols_names_set<false>, py::arg("names").none(false))
-    .def("summary", &GretlMatrix::summary, doc::Matrix::summary);
+    .def("summary", &GretlMatrix::summary, doc::Matrix::summary)
+    .def("plot", &GretlMatrix::plot<std::string>,
+         py::arg("cols").none(true) = "", py::kw_only());
 
     cls.attr("__module__") = "gretl";
 }
