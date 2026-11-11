@@ -325,11 +325,11 @@ void init_gretl4py_gretl_matrix_py11 (py::module_ &m)
     .def("cnameset", &GretlMatrix::rows_cols_names_set<false>, py::arg("names").none(false))
     .def("summary", &GretlMatrix::summary, doc::Matrix::summary)
     .def("plot", &GretlMatrix::plot<std::string>, py::arg("cols").none(true) = "", py::kw_only())
-    .def("plot", &GretlMatrix::plot<py::list>, py::arg("cols").none(true) = "", py::kw_only())
+    .def("plot", &GretlMatrix::plot<py::list>, py::arg("cols").none(true) = "", py::kw_only(), doc::Matrix::plot)
     .def("boxplot", &GretlMatrix::boxplot<std::string>, py::arg("cols").none(true) = "", py::kw_only())
-    .def("boxplot", &GretlMatrix::boxplot<py::list>, py::arg("cols").none(true) = "", py::kw_only())
+    .def("boxplot", &GretlMatrix::boxplot<py::list>, py::arg("cols").none(true) = "", py::kw_only(), doc::Matrix::boxplot)
     .def("scatters", &GretlMatrix::scatters<std::string>, py::arg("cols").none(true) = "", py::kw_only())
-    .def("scatters", &GretlMatrix::scatters<py::list>, py::arg("cols").none(true) = "", py::kw_only());
+    .def("scatters", &GretlMatrix::scatters<py::list>, py::arg("cols").none(true) = "", py::kw_only(), doc::Matrix::scatters);
 
     cls.attr("__module__") = "gretl";
 }
