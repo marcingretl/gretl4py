@@ -265,7 +265,7 @@ private:
     // user_var
     struct GretlTemporaryUserVarDeleter {
         void operator() (user_var *ptr) const noexcept {
-            user_var_unstack_value(ptr);
+            if (ptr) (void) user_var_unstack_value(ptr);
         }
     };
     using gretl_temporary_user_var_ptr = std::unique_ptr<user_var, GretlTemporaryUserVarDeleter>;
