@@ -744,9 +744,10 @@ py::object GretlMatrix::summary (const py::kwargs &kwargs)
     //
     // this function mimics libgretl's 'summary' command for matrix case only
     //
+    TemporaryUserVar uv_tmp;
     std::nullptr_t fake_dataset = nullptr;
-    py::dict kwargs_copy(kwargs);
-    const char *matrix_name = "__gretl4py_matrix_summary";
+    py::kwargs kwargs_copy = kwargs;
+    const std::string matrix_name = uv_tmp.register_user_var<GretlMatrix>(*shared_from_this());
 
     // we unpack kwargs at first
     kwargs_copy["matrix"] = matrix_name;
@@ -755,10 +756,7 @@ py::object GretlMatrix::summary (const py::kwargs &kwargs)
     // based on 'interact.c'
     err_ = incompatible_options(opt, static_cast<gretlopt>(OPT_B | OPT_W));
     if (err_) handle_gretl_error(err_);
-    auto uv = alt_user_var_add(matrix_name, GRETL_TYPE_MATRIX, m_);
-    if (!uv) handle_gretl_error(E_ALLOC);
-    err_ = matrix_command_driver(SUMMARY, nullptr, matrix_name, nullptr, opt, printer_.prn_ptr());
-    user_var_unstack_value(uv);
+    err_ = matrix_command_driver(SUMMARY, nullptr, matrix_name.c_str(), nullptr, opt, printer_.prn_ptr());
     if (err_) handle_gretl_error(err_);
     printer_.print();
 
