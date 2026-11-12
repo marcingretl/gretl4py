@@ -83,27 +83,6 @@ constexpr bool cmd_output_opt_ok (GretlCmdIndex ci)
         || ci == SCATTERS || ci == RMPLOT;
 }
 
-// Automatically unregister a temporary libgretl user variable.
-struct TemporaryUserVar {
-    std::vector<std::string> names;
-
-    ~TemporaryUserVar() noexcept
-    {
-        // Unregister all temporary libgretl variables.
-        for (const auto &name : names) {
-            const int err = user_var_delete_by_name(name.c_str(), nullptr);
-
-            if (!err) {
-                user_vars.erase(name);
-            } else {
-                std::cerr << "Failed to delete temporary variable '"
-                << name << "': "
-                << errmsg_get_with_default(err) << std::endl;
-            }
-        }
-    }
-};
-
 static std::string extract_varname (std::string formula)
 {
     //
@@ -139,6 +118,22 @@ static std::string extract_varname (std::string formula)
 }
 
 } // namespace
+
+TemporaryUserVar::~TemporaryUserVar (void) noexcept
+{
+    // Unregister all temporary libgretl variables.
+    for (const auto &name : names) {
+        const int err = user_var_delete_by_name(name.c_str(), nullptr);
+
+        if (!err) {
+            user_vars.erase(name);
+        } else {
+            std::cerr << "Failed to delete temporary variable '"
+            << name << "': "
+            << errmsg_get_with_default(err) << std::endl;
+        }
+    }
+}
 
 //////////////////////////////////////////////////
 // module related tools

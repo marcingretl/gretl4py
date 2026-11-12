@@ -27,6 +27,9 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 #include <gretl/libgretl.h>
+extern "C" {
+    #include <gretl/uservar.h>
+}
 #include <iostream>
 
 // Workaround for gettext redefinition
@@ -239,6 +242,17 @@ struct GretlSlice {
     std::string endobs;
     std::string slice_str;
     py::dict opts;
+};
+
+// Automatically unregister temporary libgretl user variables.
+struct TemporaryUserVar {
+    std::vector<std::string> names;
+
+    TemporaryUserVar (void) = default;
+    TemporaryUserVar (const TemporaryUserVar&) = delete;
+    TemporaryUserVar &operator=(const TemporaryUserVar&) = delete;
+
+    ~TemporaryUserVar (void) noexcept;
 };
 
 // this enum is to mimic enum(s) from genparse.h
