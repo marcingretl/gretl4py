@@ -1,5 +1,6 @@
 import gretl
-
+import numpy as np
+import matplotlib.pyplot as plt
 
 def run_example():
     # Load dataset.
@@ -17,8 +18,7 @@ def run_example():
     ).fit()
 
     print(m1)
-    m1.plot_new("residuals", mode="multiple")
-    exit()
+    m1.plot.residuals(mode="multiple")
 
     # Jalpha matrix.
     print("Jalpha:")
@@ -64,32 +64,54 @@ def run_example():
     print(irf2)
     print(irf3)
 
-    # IRF plotting (optional dependency).
-    try:
-        import matplotlib.pyplot as plt
+    # IRF plotting
+    # Extract the IRF and its lower and upper deviations.
+    a = irf2.numpy_view
+    y, l, u = a[:, 0], a[:, 1], a[:, 2]
 
-        y = irf2.numpy_view[:, 0]
-        l = irf2.numpy_view[:, 1]
-        u = irf2.numpy_view[:, 2]
-        x = list(range(1, len(y) + 1))
+    shock_name = "LRY"
+    target_name = "LRM"
 
-        shock_name = "LRY"
-        target_name = "LRM"
+    # Construct the confidence band: center and half-width.
+    bandmat = gretl.Matrix(np.column_stack((
+        y + (u - l) / 2,
+        (l + u) / 2
+    )))
 
-        fig, ax = plt.subplots()
-        ax.set_title(
+    band = gretl.Bundle()
+    band["bandmat"] = bandmat
+    band["factor"] = 1.0
+    band["style"] = "fill"
+
+    # Generate the IRF plot using libgretl and gptranslate.
+    fig = irf2.plot(
+        "1",
+        time_series=True,
+        with_lp=True,
+        band=band
+    )
+
+    # Adjust the figure layout and title.
+    if fig is not None:
+        fig.axes[0].set_title(
             f"{target_name}: responses to a one-standard-error shock in {shock_name}"
         )
-
-        ax.plot(x, y, "-")
-        ax.fill_between(x, y - l, y + u, alpha=0.2)
-        ax.plot(x, y, "o")
-
-        plt.show()
-
-    except ModuleNotFoundError:
-        print("Please install 'matplotlib' to enable plotting.")
+        fig.subplots_adjust(top=0.95)
+        fig.canvas.draw_idle()    
+    
+    # # Pure Matplotlib implementation
+    # x = list(range(1, len(y) + 1))
+    # shock_name = "LRY"
+    # target_name = "LRM"
+    # fig, ax = plt.subplots()
+    # ax.set_title(
+    #     f"{target_name}: responses to a one-standard-error shock in {shock_name}"
+    # )
+    # ax.plot(x, y, "-")
+    # ax.fill_between(x, y - l, y + u, alpha=0.2)
+    # ax.plot(x, y, "o")
 
 
 if __name__ == "__main__":
     run_example()
+    plt.show()

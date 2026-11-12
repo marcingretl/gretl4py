@@ -369,9 +369,10 @@ py::object GretlMatrix::plot_via_matrix_command_driver_ (const T &cols, const py
     // based on 'interact.c'
     //
     GretlPlot plotter;
+    TemporaryUserVar uv_tmp;
     std::nullptr_t fake_dataset = nullptr;
     gretl_list_ptr list{nullptr};
-    py::dict kwargs_copy(kwargs);
+    py::kwargs kwargs_copy = kwargs;
     const char *matrix_name = "__gretl4py_matrix_plot";
 
     // we construct the list of selected matrix columns, if any
@@ -405,6 +406,12 @@ py::object GretlMatrix::plot_via_matrix_command_driver_ (const T &cols, const py
         static_assert(always_false<T>, "GretlMatrix::plot_via_matrix_command_driver_(): unsupported type");
     }
     if (err_) handle_gretl_error(err_);
+
+    if constexpr (CI == GNUPLOT) {
+        // Register temporary bundles for graphical bands.
+        if (kwargs_copy.contains("band")) plotter.add_band(uv_tmp, kwargs_copy);
+        if (kwargs_copy.contains("bands")) plotter.add_bands(uv_tmp, kwargs_copy);
+    }
 
     // we unpack kwargs at first
     gretlopt opt = unpack_kwargs_command<CI>(fake_dataset, kwargs_copy, &plotter);

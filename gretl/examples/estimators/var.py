@@ -1,4 +1,5 @@
 import gretl
+import numpy as np
 import matplotlib.pyplot as plt
 
 def run_example():
@@ -56,78 +57,56 @@ def run_example():
     print(irf2)
     print(irf3)
 
-    # IRF plotting (optional dependency).
-    try:
-        import matplotlib.pyplot as plt
+    # IRF plotting
+    # Extract the IRF and its lower and upper deviations.
+    a = irf2.numpy_view
+    y, l, u = a[:, 0], a[:, 1], a[:, 2]
 
-        y = irf2.numpy_view[:, 0]
-        l = irf2.numpy_view[:, 1]
-        u = irf2.numpy_view[:, 2]
-        x = list(range(1, len(y) + 1))
+    lower = y - l
+    upper = y + u
 
-        shock_name = "LRY"
-        target_name = "LRM"
+    # Construct the band matrix: center and half-width.
+    bandmat = gretl.Matrix(
+        np.column_stack((
+            (lower + upper) / 2,
+            (upper - lower) / 2
+        ))
+    )
 
-        fig, ax = plt.subplots()
-        ax.set_title(
-            f"{target_name}: responses to a one-standard-error shock in {shock_name}"
-        )
-
-        ax.plot(x, y, "-")
-        ax.fill_between(x, y - l, y + u, alpha=0.2)
-        ax.plot(x, y, "o")
-
-        plt.show()
-
-    except ModuleNotFoundError:
-        print("Please install 'matplotlib' to enable plotting.")        
+    # Configure the shaded confidence band.
+    band = gretl.Bundle()
+    band["bandmat"] = bandmat
+    band["factor"] = 1.0
+    band["style"] = "fill"
     
-    # import numpy as np
-    # from uuid import uuid4
-    # 
-    # # Extract the IRF and its lower and upper deviations.
-    # a = irf2.numpy_view
-    # y, l, u = a[:, 0], a[:, 1], a[:, 2]
-    # 
-    # lower = y - l
-    # upper = y + u
-    # 
-    # # Construct the band matrix: center and half-width.
-    # bandmat = gretl.Matrix(
-    #     np.column_stack((
-    #         (lower + upper) / 2,
-    #         (upper - lower) / 2
-    #     ))
+    # Plot the IRF using lines and points.
+    fig = irf2.plot(
+        "1",
+        time_series=True,
+        with_lp=True,
+        band=band
+    )
+
+    # Set the title on the returned Matplotlib figure.
+    if fig is not None:
+        fig.axes[0].set_title(
+            "LRM: responses to a one-standard-error shock in LRY"
+        )
+        fig.subplots_adjust(top=0.95)
+        fig.canvas.draw_idle()
+    
+    # # Pure Matplotlib implementation
+    # x = list(range(1, len(y) + 1))
+    # shock_name = "LRY"
+    # target_name = "LRM"
+    # fig, ax = plt.subplots()
+    # ax.set_title(
+    #     f"{target_name}: responses to a one-standard-error shock in {shock_name}"
     # )
-    # 
-    # # Configure the shaded confidence band.
-    # band = gretl.Bundle()
-    # band["bandmat"] = bandmat
-    # band["factor"] = 1.0
-    # band["style"] = "fill"
-    # 
-    # # Register the bundle temporarily in libgretl.
-    # name = "irfband_" + uuid4().hex[:12]
-    # gretl.genr(name=name, value=band)
-    # 
-    # try:
-    #     # Plot the IRF using lines and points.
-    #     fig = irf2.plot(
-    #         "1",
-    #         time_series=True,
-    #         with_lp=True,
-    #         band=name
-    #     )
-    # finally:
-    #     # Remove the temporary bundle from libgretl.
-    #     gretl.get_uservar(name)
-    # 
-    # # Set the title on the returned Matplotlib figure.
-    # if fig is not None:
-    #     fig.axes[0].set_title(
-    #         "LRM: responses to a one-standard-error shock in LRY"
-    #     )
-    #     fig.canvas.draw_idle()
+    # ax.plot(x, y, "-")
+    # ax.fill_between(x, y - l, y + u, alpha=0.2)
+    # ax.plot(x, y, "o")
+
 
 if __name__ == "__main__":
     run_example()

@@ -491,6 +491,32 @@ void GretlPlot::store (const std::filesystem::path &path)
     display_ = false;
 }
 
+void GretlPlot::add_band (TemporaryUserVar &uv_tmp, py::kwargs &kwargs)
+{
+    //
+    // method adds --band element to plot
+    //
+    py::object obj = kwargs["band"];
+
+    if (!is_pygretlbundle(obj)) handle_gretl_error(E_INVARG, "band", "must be Bundle");
+    kwargs["band"] = uv_tmp.register_user_var<GretlBundle>(*obj.cast<GretlBundlePtr>());
+}
+
+void GretlPlot::add_bands (TemporaryUserVar &uv_tmp, py::kwargs &kwargs)
+{
+    //
+    // method adds --bands element to plot
+    //
+    py::object obj = kwargs["bands"];
+
+    if (!is_pylist(obj)) handle_gretl_error(E_INVARG, "bands", "must be a list");
+    py::list bands = py::reinterpret_borrow<py::list>(obj);
+
+    // Validate the array type before registration.
+    if (get_pyarray_type(bands) != GRETL_TYPE_BUNDLES) handle_gretl_error(E_INVARG, "bands", "must contain Bundle objects");
+    kwargs["bands"] = uv_tmp.register_user_var<py::list>(bands);
+}
+
 //////////////////////////////////////////////////
 // free functions
 //////////////////////////////////////////////////

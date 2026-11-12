@@ -119,46 +119,6 @@ static std::string extract_varname (std::string formula)
 
 } // namespace
 
-TemporaryUserVar::~TemporaryUserVar (void) noexcept
-{
-    // Unregister all temporary libgretl variables.
-    for (const auto &name : names) {
-        const int err = user_var_delete_by_name(name.c_str(), nullptr);
-
-        if (!err) {
-            user_vars.erase(name);
-        } else {
-            std::cerr << "Failed to delete temporary variable '"
-            << name << "': "
-            << errmsg_get_with_default(err) << std::endl;
-        }
-    }
-}
-
-template<typename T>
-const char *TemporaryUserVar::register_user_var (const T &obj)
-{
-    //
-    // Generate a temporary name for an object registered in libgretl.
-    //
-    if constexpr (!std::is_same_v<T, py::list> && !std::is_same_v<T, GretlBundle>) {
-        static_assert(always_false<T>, "TemporaryUserVar::register_user_var(): unsupported type");
-    }
-    std::ostringstream ss;
-    thread_local std::mt19937_64 gen(std::random_device{}());
-    thread_local std::uniform_int_distribution<uint64_t> dist;
-
-    ss << "_plotband_" << std::hex << std::setw(16)
-    << std::setfill('0') << dist(gen);
-    current_var_name_ = ss.str();
-    if (current_var_name_.empty()) throw std::runtime_error("temporary variable name generation failed");
-
-    genr<T>(current_var_name_, obj);
-    names.push_back(current_var_name_);
-
-    return current_var_name_.c_str();
-}
-
 //////////////////////////////////////////////////
 // module related tools
 //////////////////////////////////////////////////
@@ -355,6 +315,51 @@ const char *GretlPrint::get_buffer (void)
 {
     return gretl_print_get_buffer(prn_);
 }
+
+//
+// TemporaryUserVar class methods
+//
+TemporaryUserVar::~TemporaryUserVar (void) noexcept
+{
+    // Unregister all temporary libgretl variables.
+    for (const auto &name : names) {
+        const int err = user_var_delete_by_name(name.c_str(), nullptr);
+
+        if (!err) {
+            user_vars.erase(name);
+        } else {
+            std::cerr << "Failed to delete temporary variable '"
+            << name << "': "
+            << errmsg_get_with_default(err) << std::endl;
+        }
+    }
+}
+
+template<typename T>
+const char *TemporaryUserVar::register_user_var (const T &obj)
+{
+    //
+    // Generate a temporary name for an object registered in libgretl.
+    //
+    if constexpr (!std::is_same_v<T, py::list> && !std::is_same_v<T, GretlBundle>) {
+        static_assert(always_false<T>, "TemporaryUserVar::register_user_var(): unsupported type");
+    }
+    std::ostringstream ss;
+    thread_local std::mt19937_64 gen(std::random_device{}());
+    thread_local std::uniform_int_distribution<uint64_t> dist;
+
+    ss << "_tmpgretl4pyuv_" << std::hex << std::setw(16)
+    << std::setfill('0') << dist(gen);
+    current_var_name_ = ss.str();
+    if (current_var_name_.empty()) throw std::runtime_error("temporary variable name generation failed");
+
+    genr<T>(current_var_name_, obj);
+    names.push_back(current_var_name_);
+
+    return current_var_name_.c_str();
+}
+template const char *TemporaryUserVar::register_user_var<GretlBundle>(const GretlBundle&);
+template const char *TemporaryUserVar::register_user_var<py::list>(const py::list&);
 
 //////////////////////////////////////////////////
 // functions
@@ -1619,10 +1624,10 @@ py::object do_execute_plot_call (const T &varlist, const GretlDatasetPtr dataset
     // NOTE: by definition, we do not handle matrix operations here (via matrix_command_driver())
     //
     GretlPlot plotter;
+    TemporaryUserVar uv_tmp;
     gretl_list_ptr gretl_list{nullptr};
     std::nullptr_t fake_dataset = nullptr; // NOTE: we do not pass dataset to unpack_kwargs_command!!!
     py::kwargs clean_kwargs = kwargs;
-    TemporaryUserVar uv_tmp;
     int err = 0;
 
     // we construct list of variables
@@ -1634,27 +1639,9 @@ py::object do_execute_plot_call (const T &varlist, const GretlDatasetPtr dataset
     }
 
     if constexpr (CI == GNUPLOT) {
-        // We must manually handle some special kwargs classes.
-        if (clean_kwargs.contains("band")) {
-            auto obj = clean_kwargs["band"];
-
-            if (!is_pygretlbundle(obj)) handle_gretl_error(E_INVARG, "band", "must be Bundle");
-            auto b = obj.cast<GretlBundlePtr>();
-
-            clean_kwargs["band"] = uv_tmp.register_user_var<GretlBundle>(*b);
-        }
-
-        // Register a temporary array of bundles for the "bands" option.
-        if (clean_kwargs.contains("bands")) {
-            auto obj = clean_kwargs["bands"];
-
-            if (!is_pylist(obj)) handle_gretl_error(E_INVARG, "bands", "must be a list");
-            py::list bands = py::reinterpret_borrow<py::list>(obj);
-
-            // Validate the array type before registration.
-            if (get_pyarray_type(bands) != GRETL_TYPE_BUNDLES) handle_gretl_error(E_INVARG, "bands", "must contain Bundle objects");
-            clean_kwargs["bands"] = uv_tmp.register_user_var<py::list>(bands);
-        }
+        // Register temporary bundles for graphical bands.
+        if (clean_kwargs.contains("band")) plotter.add_band(uv_tmp, clean_kwargs);
+        if (clean_kwargs.contains("bands")) plotter.add_bands(uv_tmp, clean_kwargs);
     }
 
     // now we process options using 'clean_kwargs'

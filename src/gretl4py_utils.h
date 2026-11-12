@@ -134,6 +134,10 @@ public:
     void set_source (const std::filesystem::path &path);
 
     void store (const std::filesystem::path &path);
+
+    void add_band (TemporaryUserVar &uv_tmp, py::kwargs &kwargs);
+
+    void add_bands (TemporaryUserVar &uv_tmp, py::kwargs &kwargs);
 };
 
 //////////////////////////////////////////////////

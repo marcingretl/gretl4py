@@ -245,6 +245,7 @@ struct GretlSlice {
 };
 
 // Automatically unregister temporary libgretl user variables.
+// NOTE: The class is implemented in gretl_calls.cpp
 struct TemporaryUserVar {
 private:
     std::string current_var_name_ = "";     // name of currently handled variable
