@@ -447,12 +447,12 @@ double _Complex *GretlMatrix::z (void) const
     return m_->z;
 }
 
-int GretlMatrix::rows (void) const
+int GretlMatrix::rows (void) const noexcept
 {
     return m_->rows;
 }
 
-int GretlMatrix::cols (void) const
+int GretlMatrix::cols (void) const noexcept
 {
     return m_->cols;
 }

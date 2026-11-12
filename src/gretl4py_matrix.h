@@ -88,9 +88,9 @@ public:
 
     double _Complex *z (void) const;                                        // raw pointer to complex storage
 
-    int rows (void) const;
+    int rows (void) const noexcept;
 
-    int cols (void) const;
+    int cols (void) const noexcept;
 
     [[nodiscard]] bool is_complex (void) const noexcept;
 
