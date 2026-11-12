@@ -247,9 +247,6 @@ struct GretlSlice {
 // Automatically unregister temporary libgretl user variables.
 // NOTE: The class is implemented in gretl_calls.cpp
 struct TemporaryUserVar {
-private:
-    std::string current_var_name_ = "";     // name of currently handled variable
-public:
     std::vector<std::string> names;
 
     TemporaryUserVar (void) = default;
@@ -259,7 +256,7 @@ public:
     ~TemporaryUserVar (void) noexcept;
 
     template<typename T>
-    const char *register_user_var (const T &obj);   // returns name of currently handled variable
+    [[nodiscard]] std::string register_user_var (const T &obj);   // returns name of currently handled variable
 };
 
 // this enum is to mimic enum(s) from genparse.h

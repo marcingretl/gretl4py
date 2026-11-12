@@ -373,7 +373,7 @@ py::object GretlMatrix::plot_via_matrix_command_driver_ (const T &cols, const py
     std::nullptr_t fake_dataset = nullptr;
     gretl_list_ptr list{nullptr};
     py::kwargs kwargs_copy = kwargs;
-    const char *matrix_name = "__gretl4py_matrix_plot";
+    const std::string matrix_name = uv_tmp.register_user_var<GretlMatrix>(*shared_from_this());
 
     // we construct the list of selected matrix columns, if any
     err_ = 0;
@@ -417,13 +417,10 @@ py::object GretlMatrix::plot_via_matrix_command_driver_ (const T &cols, const py
     gretlopt opt = unpack_kwargs_command<CI>(fake_dataset, kwargs_copy, &plotter);
 
     // we add --matrix option manually
-    gretl_valid_long_opt(opt, CI, "matrix", py::handle(), matrix_name);
+    gretl_valid_long_opt(opt, CI, "matrix", py::handle(), matrix_name.c_str());
 
     // we do the job
-    auto uv = alt_user_var_add(matrix_name, GRETL_TYPE_MATRIX, m_);
-    if (!uv) handle_gretl_error(E_ALLOC);
-    err_ = matrix_command_driver(CI, list.get(), matrix_name, nullptr, opt, printer_.prn_ptr());
-    user_var_unstack_value(uv);
+    err_ = matrix_command_driver(CI, list.get(), matrix_name.c_str(), nullptr, opt, printer_.prn_ptr());
     if (err_) handle_gretl_error(err_);
     printer_.print();
 

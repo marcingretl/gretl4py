@@ -336,12 +336,12 @@ TemporaryUserVar::~TemporaryUserVar (void) noexcept
 }
 
 template<typename T>
-const char *TemporaryUserVar::register_user_var (const T &obj)
+[[nodiscard]] std::string TemporaryUserVar::register_user_var (const T &obj)
 {
     //
     // Generate a temporary name for an object registered in libgretl.
     //
-    if constexpr (!std::is_same_v<T, py::list> && !std::is_same_v<T, GretlBundle>) {
+    if constexpr (!std::is_same_v<T, py::list> && !std::is_same_v<T, GretlBundle> && !std::is_same_v<T, GretlMatrix>) {
         static_assert(always_false<T>, "TemporaryUserVar::register_user_var(): unsupported type");
     }
     std::ostringstream ss;
@@ -350,16 +350,17 @@ const char *TemporaryUserVar::register_user_var (const T &obj)
 
     ss << "_tmpgretl4pyuv_" << std::hex << std::setw(16)
     << std::setfill('0') << dist(gen);
-    current_var_name_ = ss.str();
-    if (current_var_name_.empty()) throw std::runtime_error("temporary variable name generation failed");
+    const std::string tmp_var_name = ss.str();
 
-    genr<T>(current_var_name_, obj);
-    names.push_back(current_var_name_);
+    if (tmp_var_name.empty()) throw std::runtime_error("temporary variable name generation failed");
+    genr<T>(tmp_var_name, obj);
+    names.push_back(tmp_var_name);
 
-    return current_var_name_.c_str();
+    return tmp_var_name;
 }
-template const char *TemporaryUserVar::register_user_var<GretlBundle>(const GretlBundle&);
-template const char *TemporaryUserVar::register_user_var<py::list>(const py::list&);
+template std::string TemporaryUserVar::register_user_var<GretlBundle>(const GretlBundle&);
+template std::string TemporaryUserVar::register_user_var<GretlMatrix>(const GretlMatrix&);
+template std::string TemporaryUserVar::register_user_var<py::list>(const py::list&);
 
 //////////////////////////////////////////////////
 // functions

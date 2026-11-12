@@ -34,7 +34,7 @@ namespace py = pybind11;
 //
 // Class to handle 'gretl_matrix' type
 //
-class GretlMatrix
+class GretlMatrix : public std::enable_shared_from_this<GretlMatrix>
 {
 private:
     gretl_matrix *m_ = nullptr;                                             // libgretl gretl_matrix raw pointer
