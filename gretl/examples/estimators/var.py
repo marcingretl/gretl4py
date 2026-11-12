@@ -1,4 +1,5 @@
 import gretl
+import matplotlib.pyplot as plt
 
 def run_example():
     # Load dataset.
@@ -16,10 +17,9 @@ def run_example():
     ).fit()
 
     print(m1)
-    m1.plot_new("residuals")
-    m1.plot_new("residuals", 2)
-    m1.plot_new("residuals", mode="multiple")
-    exit()
+    m1.plot.residuals()
+    m1.plot.residuals(2)
+    m1.plot.residuals(mode="multiple")
 
     # Sigma matrix.
     print("Sigma matrix:")
@@ -80,8 +80,55 @@ def run_example():
         plt.show()
 
     except ModuleNotFoundError:
-        print("Please install 'matplotlib' to enable plotting.")
-
+        print("Please install 'matplotlib' to enable plotting.")        
+    
+    # import numpy as np
+    # from uuid import uuid4
+    # 
+    # # Extract the IRF and its lower and upper deviations.
+    # a = irf2.numpy_view
+    # y, l, u = a[:, 0], a[:, 1], a[:, 2]
+    # 
+    # lower = y - l
+    # upper = y + u
+    # 
+    # # Construct the band matrix: center and half-width.
+    # bandmat = gretl.Matrix(
+    #     np.column_stack((
+    #         (lower + upper) / 2,
+    #         (upper - lower) / 2
+    #     ))
+    # )
+    # 
+    # # Configure the shaded confidence band.
+    # band = gretl.Bundle()
+    # band["bandmat"] = bandmat
+    # band["factor"] = 1.0
+    # band["style"] = "fill"
+    # 
+    # # Register the bundle temporarily in libgretl.
+    # name = "irfband_" + uuid4().hex[:12]
+    # gretl.genr(name=name, value=band)
+    # 
+    # try:
+    #     # Plot the IRF using lines and points.
+    #     fig = irf2.plot(
+    #         "1",
+    #         time_series=True,
+    #         with_lp=True,
+    #         band=name
+    #     )
+    # finally:
+    #     # Remove the temporary bundle from libgretl.
+    #     gretl.get_uservar(name)
+    # 
+    # # Set the title on the returned Matplotlib figure.
+    # if fig is not None:
+    #     fig.axes[0].set_title(
+    #         "LRM: responses to a one-standard-error shock in LRY"
+    #     )
+    #     fig.canvas.draw_idle()
 
 if __name__ == "__main__":
     run_example()
+    plt.show()

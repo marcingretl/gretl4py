@@ -371,7 +371,6 @@ gretlopt unpack_kwargs_command (T &dataset, const py::kwargs &kwargs, GretlPlot 
             if constexpr (cmd_plot_opt_ok(CI)) {
                 if (key == "plot" && is_pystr(item.second) && item.second.cast<std::string>() == "display") {
                     if (!plotter) throw std::logic_error("no plotter available");
-
                     gretl_valid_long_opt(opt, CI, key, py::handle(), plotter->filename().c_str());
                     continue;
                 }
