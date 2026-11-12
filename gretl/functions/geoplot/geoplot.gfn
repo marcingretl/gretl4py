@@ -2,7 +2,7 @@
 <gretl-functions>
 <gretl-function-package name="geoplot" no-data-ok="true" minver="2026e" lives-in-subdir="true">
 <author email="cottrell@wfu.edu">Allin Cottrell and Riccardo &quot;Jack&quot; Lucchetti</author>
-<version>2026e</version>
+<version>2026e-git</version>
 <date>2023-05-01</date>
 <description>geospatial plotting</description>
 <tags>C81 C88</tags>

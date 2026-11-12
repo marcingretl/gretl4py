@@ -2,7 +2,7 @@
 <gretl-functions>
 <gretl-function-package name="regls" no-data-ok="true" minver="2026e" lives-in-subdir="true">
 <author email="cottrell@wfu.edu">Allin Cottrell</author>
-<version>2026e</version>
+<version>2026e-git</version>
 <date>2026-01-21</date>
 <description>Regularized least squares</description>
 <tags>C20 C52</tags>

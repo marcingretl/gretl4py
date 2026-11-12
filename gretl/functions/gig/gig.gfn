@@ -2,7 +2,7 @@
 <gretl-functions>
 <gretl-function-package name="gig" needs-time-series-data="true" minver="2026e" lives-in-subdir="true">
 <author email="r.lucchetti@univpm.it">Riccardo &quot;Jack&quot; Lucchetti and Stefano Balietti</author>
-<version>2026e</version>
+<version>2026e-git</version>
 <date>2026-09-17</date>
 <description>An assortment of univariate GARCH models</description>
 <tags>C22</tags>

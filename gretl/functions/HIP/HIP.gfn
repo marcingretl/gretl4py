@@ -2,7 +2,7 @@
 <gretl-functions>
 <gretl-function-package name="HIP" minver="2026e" lives-in-subdir="true">
 <author email="r.lucchetti@univpm.it">Riccardo &quot;Jack&quot; Lucchetti and Claudia Pigini</author>
-<version>2026e</version>
+<version>2026e-git</version>
 <date>2023-09-14</date>
 <description>Heteroskedastic IV Probit</description>
 <tags>C25 C26</tags>

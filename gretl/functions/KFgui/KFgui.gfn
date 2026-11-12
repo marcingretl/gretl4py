@@ -2,7 +2,7 @@
 <gretl-functions>
 <gretl-function-package name="KFgui" minver="2026e" lives-in-subdir="true">
 <author email="r.lucchetti@univpm.it">Riccardo &quot;Jack&quot; Lucchetti</author>
-<version>2026e</version>
+<version>2026e-git</version>
 <date>2022-01-15</date>
 <description>Kalman Filter GUI</description>
 <tags>C32</tags>

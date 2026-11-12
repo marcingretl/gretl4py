@@ -2,7 +2,7 @@
 <gretl-functions>
 <gretl-function-package name="SVAR" needs-time-series-data="true" minver="2026e" lives-in-subdir="true">
 <author email="r.lucchetti@univpm.it">Riccardo &quot;Jack&quot; Lucchetti and Sven Schreiber</author>
-<version>2026e</version>
+<version>2026e-git</version>
 <date>2024-10-20</date>
 <description>Structural VARs</description>
 <tags>C32</tags>

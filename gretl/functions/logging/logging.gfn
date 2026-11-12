@@ -2,7 +2,7 @@
 <gretl-functions>
 <gretl-function-package name="logging" no-data-ok="true" minver="2026e" lives-in-subdir="true">
 <author email="atecon@posteo.de">Artur Tarassow</author>
-<version>2026e</version>
+<version>2026e-git</version>
 <date>2021-07-08</date>
 <description>Structured logging for script execution</description>
 <tags>C81</tags>

@@ -2,7 +2,7 @@
 <gretl-functions>
 <gretl-function-package name="PairPlot" minver="2026e" lives-in-subdir="true">
 <author email="atecon@posteo.de">Artur Tarassow and Allin Cottrell</author>
-<version>2026e</version>
+<version>2026e-git</version>
 <date>2026-10-22</date>
 <description>Scatterplot matrix with factor separation</description>
 <tags>C88</tags>
