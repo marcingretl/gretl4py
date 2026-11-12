@@ -42,7 +42,7 @@ namespace py = pybind11;
 //////////////////////////////////////////////////
 // libgretl 'list' (i.e., *int)
 struct GretlListDeleter {
-    void operator() (int *ptr) const
+    void operator() (int *ptr) const noexcept
     {
         #if defined(_WIN32)
             gretl_list_free(ptr);
@@ -55,37 +55,49 @@ using gretl_list_ptr = std::unique_ptr<int, GretlListDeleter>;
 
 // standard double
 struct GretlDoubleDeleter {
-    void operator() (double *ptr) const { std::free(ptr); }
+    void operator() (double *ptr) const noexcept {
+        std::free(ptr);
+    }
 };
 using gretl_double_ptr = std::unique_ptr<double, GretlDoubleDeleter>;
 
 // standard int
 struct GretlIntDeleter {
-    void operator() (int *ptr) const { std::free(ptr); }
+    void operator() (int *ptr) const noexcept {
+        std::free(ptr);
+    }
 };
 using gretl_int_ptr = std::unique_ptr<int, GretlIntDeleter>;
 
 // gretl_matrix
 struct GretlMatrixDeleter {
-    void operator() (gretl_matrix *ptr) const noexcept { gretl_matrix_free(ptr); }
+    void operator() (gretl_matrix *ptr) const noexcept {
+        gretl_matrix_free(ptr);
+    }
 };
 using gretl_matrix_ptr = std::unique_ptr<gretl_matrix, GretlMatrixDeleter>;
 
 // libgretl Vmatrix
 struct GretlVMatrixDeleter {
-    void operator() (VMatrix *ptr) const { free_vmatrix(ptr); }
+    void operator() (VMatrix *ptr) const noexcept {
+        free_vmatrix(ptr);
+    }
 };
 using VMatrix_ptr = std::unique_ptr<VMatrix, GretlVMatrixDeleter>;
 
 // GLib char
 struct GretlGcharDeleter {
-    void operator() (gchar *ptr) const { g_free(ptr); }
+    void operator() (gchar *ptr) const noexcept {
+        g_free(ptr);
+    }
 };
 using gretl_gchar_ptr = std::unique_ptr<gchar, GretlGcharDeleter>;
 
 // standard char*
 struct GretlcharDeleter {
-    void operator() (char *ptr) const { std::free(ptr); }
+    void operator() (char *ptr) const noexcept {
+        std::free(ptr);
+    }
 };
 using gretl_char_ptr = std::unique_ptr<char, GretlcharDeleter>;
 
@@ -98,6 +110,14 @@ struct StringsArrayDeleter {
     }
 };
 using strings_array_ptr = std::unique_ptr<char*, StringsArrayDeleter>;
+
+// user_var
+struct GretlTemporaryUserVarDeleter {
+    void operator() (user_var *ptr) const noexcept {
+        user_var_unstack_value(ptr);
+    }
+};
+using gretl_temporary_user_var_ptr = std::unique_ptr<user_var, GretlTemporaryUserVarDeleter>;
 
 // gretl_bundle
 struct GretlBundleDeleter {
@@ -117,7 +137,9 @@ using gretl_array_ptr = std::unique_ptr<gretl_array, GretlArrayDeleter>;
 
 // DATASET
 struct GretlDATASETDeleter {
-    void operator() (DATASET *ptr) const { destroy_dataset(ptr); }
+    void operator() (DATASET *ptr) const noexcept {
+        destroy_dataset(ptr);
+    }
 };
 using gretl_dataset_ptr = std::unique_ptr<DATASET, GretlDATASETDeleter>;
 
@@ -125,7 +147,7 @@ using gretl_dataset_ptr = std::unique_ptr<DATASET, GretlDATASETDeleter>;
 struct GretlResourceDeleter {
     GretlType type = GRETL_TYPE_NONE;
 
-    void operator() (void *ptr) const {
+    void operator() (void *ptr) const noexcept {
         if (!ptr) return;
 
         switch (type) {
@@ -218,6 +240,9 @@ struct PythonArgInfo {
 
 // struct for holding results returned by functions from contributed packages
 struct GretlPackageRes {
+private:
+    GretlResourcePtr ptr = {nullptr, GretlResourceDeleter{GRETL_TYPE_NONE}};
+public:
     void *raw_ptr = nullptr;            // pointer to returned value
     GretlType type = GRETL_TYPE_NONE;   // type of returned object
     int n = 0;                          // GRETL_TYPE_SERIES special case: length
@@ -231,9 +256,6 @@ struct GretlPackageRes {
     void transfer_ownership (void) {
         ptr = GretlResourcePtr(raw_ptr, GretlResourceDeleter{type});
     }
-
-private:
-    GretlResourcePtr ptr = {nullptr, GretlResourceDeleter{GRETL_TYPE_NONE}};
 };
 
 // struct used to render Python's slice into libgretl's slicing expression
@@ -247,6 +269,9 @@ struct GretlSlice {
 // Automatically unregister temporary libgretl user variables.
 // NOTE: The class is implemented in gretl_calls.cpp
 struct TemporaryUserVar {
+private:
+    std::vector<gretl_temporary_user_var_ptr> borrowed_;        // borrowed libgretl variables, unregistered automatically
+public:
     std::vector<std::string> names;
 
     TemporaryUserVar (void) = default;
@@ -256,7 +281,7 @@ struct TemporaryUserVar {
     ~TemporaryUserVar (void) noexcept;
 
     template<typename T>
-    [[nodiscard]] std::string register_user_var (const T &obj);   // returns name of currently handled variable
+    [[nodiscard]] std::string register_user_var (const T &obj); // returns name of currently handled variable
 };
 
 // this enum is to mimic enum(s) from genparse.h

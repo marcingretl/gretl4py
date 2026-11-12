@@ -344,17 +344,25 @@ template<typename T>
     if constexpr (!std::is_same_v<T, py::list> && !std::is_same_v<T, GretlBundle> && !std::is_same_v<T, GretlMatrix>) {
         static_assert(always_false<T>, "TemporaryUserVar::register_user_var(): unsupported type");
     }
+
     std::ostringstream ss;
     thread_local std::mt19937_64 gen(std::random_device{}());
     thread_local std::uniform_int_distribution<uint64_t> dist;
 
     ss << "_tmpgretl4pyuv_" << std::hex << std::setw(16)
     << std::setfill('0') << dist(gen);
-    const std::string tmp_var_name = ss.str();
+    std::string tmp_var_name = ss.str();
 
-    if (tmp_var_name.empty()) throw std::runtime_error("temporary variable name generation failed");
-    genr<T>(tmp_var_name, obj);
-    names.push_back(tmp_var_name);
+    if constexpr (std::is_same_v<T, GretlMatrix>) {
+        // Register the existing matrix without copying its data.
+        gretl_temporary_user_var_ptr uv(alt_user_var_add(tmp_var_name.c_str(), GRETL_TYPE_MATRIX, obj.get_ptr()));
+
+        if (!uv) handle_gretl_error(E_ALLOC);
+        borrowed_.push_back(std::move(uv));
+    } else {
+        genr<T>(tmp_var_name, obj);
+        names.push_back(tmp_var_name);
+    }
 
     return tmp_var_name;
 }

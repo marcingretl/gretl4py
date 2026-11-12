@@ -739,7 +739,7 @@ py::object GretlMatrix::to_numpy() const
     return variant_to_pyobject(std::move(*res));
 }
 
-py::object GretlMatrix::summary (const py::kwargs& kwargs)
+py::object GretlMatrix::summary (const py::kwargs &kwargs)
 {
     //
     // this function mimics libgretl's 'summary' command for matrix case only
