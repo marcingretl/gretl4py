@@ -111,14 +111,6 @@ struct StringsArrayDeleter {
 };
 using strings_array_ptr = std::unique_ptr<char*, StringsArrayDeleter>;
 
-// user_var
-struct GretlTemporaryUserVarDeleter {
-    void operator() (user_var *ptr) const noexcept {
-        user_var_unstack_value(ptr);
-    }
-};
-using gretl_temporary_user_var_ptr = std::unique_ptr<user_var, GretlTemporaryUserVarDeleter>;
-
 // gretl_bundle
 struct GretlBundleDeleter {
     void operator() (gretl_bundle *ptr) const noexcept {
@@ -270,6 +262,14 @@ struct GretlSlice {
 // NOTE: The class is implemented in gretl_calls.cpp
 struct TemporaryUserVar {
 private:
+    // user_var
+    struct GretlTemporaryUserVarDeleter {
+        void operator() (user_var *ptr) const noexcept {
+            user_var_unstack_value(ptr);
+        }
+    };
+    using gretl_temporary_user_var_ptr = std::unique_ptr<user_var, GretlTemporaryUserVarDeleter>;
+
     std::vector<gretl_temporary_user_var_ptr> borrowed_;        // borrowed libgretl variables, unregistered automatically
 public:
     std::vector<std::string> names;
