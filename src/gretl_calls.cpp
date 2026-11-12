@@ -135,6 +135,30 @@ TemporaryUserVar::~TemporaryUserVar (void) noexcept
     }
 }
 
+template<typename T>
+const char *TemporaryUserVar::register_user_var (const T &obj)
+{
+    //
+    // Generate a temporary name for an object registered in libgretl.
+    //
+    if constexpr (!std::is_same_v<T, py::list> && !std::is_same_v<T, GretlBundle>) {
+        static_assert(always_false<T>, "TemporaryUserVar::register_user_var(): unsupported type");
+    }
+    std::ostringstream ss;
+    thread_local std::mt19937_64 gen(std::random_device{}());
+    thread_local std::uniform_int_distribution<uint64_t> dist;
+
+    ss << "_plotband_" << std::hex << std::setw(16)
+    << std::setfill('0') << dist(gen);
+    current_var_name_ = ss.str();
+    if (current_var_name_.empty()) throw std::runtime_error("temporary variable name generation failed");
+
+    genr<T>(current_var_name_, obj);
+    names.push_back(current_var_name_);
+
+    return current_var_name_.c_str();
+}
+
 //////////////////////////////////////////////////
 // module related tools
 //////////////////////////////////////////////////
@@ -1610,35 +1634,14 @@ py::object do_execute_plot_call (const T &varlist, const GretlDatasetPtr dataset
     }
 
     if constexpr (CI == GNUPLOT) {
-        // Generate a temporary name for an object registered in libgretl.
-        auto random_name = []() -> std::string
-        {
-            thread_local std::mt19937_64 gen(std::random_device{}());
-            thread_local std::uniform_int_distribution<uint64_t> dist;
-
-            std::ostringstream ss;
-            ss << "_plotband_" << std::hex << std::setw(16)
-            << std::setfill('0') << dist(gen);
-
-            return ss.str();
-        };
-
         // We must manually handle some special kwargs classes.
         if (clean_kwargs.contains("band")) {
             auto obj = clean_kwargs["band"];
 
             if (!is_pygretlbundle(obj)) handle_gretl_error(E_INVARG, "band", "must be Bundle");
             auto b = obj.cast<GretlBundlePtr>();
-            const std::string name = random_name();
 
-            // Register a copy of bundle in gretl's namespace.
-            genr<GretlBundle>(name, *b);
-
-            // Enable automatic cleanup after successful registration.
-            uv_tmp.names.push_back(name);
-
-            // Pass the registered name to libgretl.
-            clean_kwargs["band"] = name;
+            clean_kwargs["band"] = uv_tmp.register_user_var<GretlBundle>(*b);
         }
 
         // Register a temporary array of bundles for the "bands" option.
@@ -1650,13 +1653,7 @@ py::object do_execute_plot_call (const T &varlist, const GretlDatasetPtr dataset
 
             // Validate the array type before registration.
             if (get_pyarray_type(bands) != GRETL_TYPE_BUNDLES) handle_gretl_error(E_INVARG, "bands", "must contain Bundle objects");
-            const std::string name = random_name();
-
-            genr<py::list>(name, bands);
-            uv_tmp.names.push_back(name);
-
-            // Pass the registered array name to libgretl.
-            clean_kwargs["bands"] = name;
+            clean_kwargs["bands"] = uv_tmp.register_user_var<py::list>(bands);
         }
     }
 
