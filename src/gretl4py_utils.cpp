@@ -198,14 +198,14 @@ unsigned long long GretlPlot::current_pid_ (void) noexcept
     // Identify the current process, including a child created by fork().
     // return the current OS process identifier on Windows and POSIX systems
     //
-    #ifdef _WIN32
+#ifdef _WIN32
     return static_cast<unsigned long long>(GetCurrentProcessId());
-    #else
+#else
     return static_cast<unsigned long long>(getpid());
-    #endif
+#endif
 }
 
-py::object GretlPlot::execute_script_(const std::filesystem::path &script)
+py::object GretlPlot::execute_script_ (const std::filesystem::path &script)
 {
     //
     // Execute a generated matplotlib script; the caller must hold the GIL
@@ -361,6 +361,7 @@ void GretlPlot::drain_queue (void)
     std::sort(scripts.begin(), scripts.end());
 
     py::gil_scoped_acquire gil;
+
     for (const auto &script : scripts) {
         // keep a failed script for inspection; remove only successful ones
         execute_script_(script);
@@ -427,7 +428,7 @@ bool GretlPlot::translate (void)
     return true;
 }
 
-py::object GretlPlot::display()
+py::object GretlPlot::display (void)
 {
     // Translate the plot before displaying it.
     if (!translate()) return py::none();
