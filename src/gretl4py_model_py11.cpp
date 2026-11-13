@@ -2,6 +2,9 @@
  *  gretl -- Gnu Regression, Econometrics and Time-series Library
  *  Copyright (C) 2001 Allin Cottrell and Riccardo "Jack" Lucchetti
  *
+ *  gretl4py -- Python bindings for gretl
+ *  Copyright (C) 2024 Marcin Błażejowski
+ *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
@@ -37,6 +40,19 @@ void bind_driver_model (py::module_ &m, const std::string &name)
     auto cls = py::class_<T, Base, std::unique_ptr<T>>(m, name.c_str(), py::dynamic_attr());
 
     cls.attr("__module__") = "gretl";
+
+    // OLS-specific methods.
+    if constexpr (std::is_same_v<T, GretlModel_NSE_Driver<lsq, OLS>>) {
+        cls.def("anova", &GretlModel_NSE::anova, doc::Model::anova);
+    }
+
+    // Bind methods available for OLS and WLS models.
+    if constexpr (std::is_same_v<T, GretlModel_NSE_Driver<lsq, OLS>> || std::is_same_v<T, GretlModel_NSE_Driver<lsq, WLS>>) {
+        cls.def("bootstrap", &GretlModel_NSE::bootstrap,
+                py::arg("coefficient"), py::kw_only(),
+                py::arg("reps") = 1000, py::arg("alpha") = 0.05, py::arg("statistic") = "ci",
+                py::arg("method") = "residuals", py::arg("plot") = false, py::arg("save") = py::none(), doc::Model::bootstrap);
+    }
 }
 
 template <GretlCmdIndex CI, NLLineType type>
@@ -115,8 +131,14 @@ void init_gretl4py_model_py11(py::module_ &m)
          py::arg("name").none(true) = "", doc::Model::save_ahat)
     .def("save_h", &GretlModel_NSE::gretl_get_fit_or_resid<M_H>,
          py::arg("name").none(true) = "", doc::Model::save_h)
+    .def("confidence_intervals", &GretlModel_NSE::confidence_intervals, doc::Model::confidence_intervals)
+    .def("_plot", &GretlModel_NSE::plot,
+         py::arg("type").none(false), py::arg("xvar").none(true) = "", py::arg("order") = std::nullopt,
+         py::arg("bartlett") = false, py::arg("width") = std::nullopt, py::arg("log") = false)
+    .def("_plot_confidence_ellipse", &GretlModel_NSE::plot_confidence_ellipse,
+         py::arg("first").none(false), py::arg("second").none(false), py::arg("alpha") = 0.05)
     .def("_test",
-         [](GretlModel_NSE &self, const std::string &type, const py::kwargs &kwargs) -> GretlBundlePtr
+         [](GretlModel_NSE &self, const std::string &type, const py::kwargs &kwargs) -> std::pair<GretlBundlePtr, py::object>
          {
              //
              // 1. handles overload resolution cleanly (keyword vs positional)
@@ -233,6 +255,10 @@ void init_gretl4py_model_py11(py::module_ &m)
     auto gretl_model_var = py::class_<GretlModel_VAR, GretlModel, std::unique_ptr<GretlModel_VAR>>(m, "Model_var", py::dynamic_attr());
 
     gretl_model_var
+    .def("_plot", &GretlModel_VAR::plot,
+         py::arg("type").none(false), py::arg("equation") = std::nullopt, py::arg("mode") = std::nullopt,
+         py::arg("periods") = std::nullopt, py::arg("alpha") = std::nullopt, py::arg("error_bars") = std::nullopt,
+         py::arg("targ") = -1, py::arg("shock") = -1, py::arg("histogram") = true)
     .def("_test", &GretlModel_VAR::test,
          py::arg("type").none(false), py::kw_only())
     .def("irf", py::overload_cast<int, int, double>(&GretlModel_VAR::irf),
@@ -240,9 +266,11 @@ void init_gretl4py_model_py11(py::module_ &m)
          py::arg("alpha").none(true) = 0)
     .def("irf", py::overload_cast<const std::string&, const std::string&, double>(&GretlModel_VAR::irf),
          py::arg("target").none(false), py::arg("shock").none(false),
-         py::arg("alpha").none(true) = 0, doc::Model::irf)
+         py::arg("alpha").none(true) = 0, doc::Model_VAR::irf)
     .def("save_uhat", &GretlModel_VAR::save_uhat,
-         py::arg("eqn").none(false), py::arg("name").none(true) = "", doc::Model::save_system_uhat);
+         py::arg("eqn").none(false), py::arg("name").none(true) = "", doc::Model::save_system_uhat)
+    .def("set_cholesky_order", &GretlModel_VAR::set_cholesky_order<std::string>, py::arg("varlist") = "")
+    .def("set_cholesky_order", &GretlModel_VAR::set_cholesky_order<py::list>, py::arg("varlist"), doc::Model_VAR::set_cholesky_order);
     gretl_model_var.attr("__module__") = "gretl";
 
     // VECM
@@ -253,7 +281,8 @@ void init_gretl4py_model_py11(py::module_ &m)
     .def("restrict", &GretlModel_VAR_VECM::restrict,
          py::arg("impose").none(false), py::kw_only(), doc::Model::restrict)
     .def("save_ec_term", &GretlModel_VAR_VECM::save_ec_term,
-         py::arg("nr").none(false), py::arg("name").none(true) = "", doc::Model::save_ec_term);
+         py::arg("nr").none(false), py::arg("name").none(true) = "", doc::Model_VAR::save_ec_term)
+    .def("_plot_ec", &GretlModel_VAR_VECM::plot_ec);
     gretl_model_var_vecm.attr("__module__") = "gretl";
 
     // Native Multiple Equation libgretl SYSTEM (NME) GretlModel_NME

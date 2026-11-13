@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <gretl-functions>
-<gretl-function-package name="kmeans" minver="2026d" lives-in-subdir="true">
+<gretl-function-package name="kmeans" minver="2026e" lives-in-subdir="true">
 <author email="atecon@posteo.de">Artur Tarassow and Allin Cottrell</author>
-<version>2026d-git</version>
+<version>2026e-git</version>
 <date>2026-10-09</date>
 <description>K-means clustering algorithm</description>
 <tags>C13 C52</tags>

@@ -2,6 +2,9 @@
  *  gretl -- Gnu Regression, Econometrics and Time-series Library
  *  Copyright (C) 2001 Allin Cottrell and Riccardo "Jack" Lucchetti
  *
+ *  gretl4py -- Python bindings for gretl
+ *  Copyright (C) 2024 Marcin Błażejowski
+ *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
@@ -28,6 +31,8 @@ extern "C" {
     #include <gretl/var.h>
     #include <gretl/gretl_xml.h>
     #include <gretl/uservar.h>
+    #include <gretl/graphing.h>
+    #include <gretl/nonparam.h>
 }
 
 //////////////////////////////////////////////////
@@ -489,6 +494,18 @@ int GretlDataset::get_series_id (const std::string &series, const bool verbose) 
     return var_num;
 }
 
+const char *GretlDataset::get_series_name (int id) const
+{
+    //
+    // This method is intended for internal C++ use only (not exposed to Python).
+    // NOTE: Returns a non-owning pointer managed by the dataset.
+    // The caller must not free it or use it after the dataset is destroyed.
+    //
+    if (id < 0 || id >= dset->v) throw std::out_of_range("GretlDataset::get_series_name: variable ID out of range");
+
+    return dset->varname[id];
+}
+
 py::list GretlDataset::get_obs_labels (void) const
 {
     return py::cast(obs_labels_);
@@ -536,10 +553,9 @@ py::object GretlDataset::summary (const T &varlist, const py::kwargs &kwargs)
     bool no_result = false;
 
     // we unpack kwargs at first
-    gretlopt opt = unpack_kwargs_command(SUMMARY, fake_dataset, kwargs);
-    if (opt & OPT_X) throw std::invalid_argument("for matrices, please use the gretl.Matrix.summary() method");
+    gretlopt opt = unpack_kwargs_command<SUMMARY>(fake_dataset, kwargs);
 
-    // we build gretl_list
+    if (opt & OPT_X) throw std::invalid_argument("for matrices, please use the gretl.Matrix.summary() method");
     if (!varlist.empty()) varlist_ptr = gretllist(varlist);
 
     // based on 'interact.c'
@@ -623,7 +639,7 @@ void GretlDataset::to_file (const std::string &filename, const T &varlist, const
     if (!varlist.empty()) var_list = gretllist(varlist);
 
     // we unpack kwargs;
-    opt_ = unpack_kwargs_command(STORE, fake_dataset, kwargs);
+    opt_ = unpack_kwargs_command<STORE>(fake_dataset, kwargs);
 
     // we do the job
     if (opt_ & OPT_A) {
@@ -791,7 +807,7 @@ void GretlDataset::rename (int series_id, const std::string &newname, const py::
     //
     std::nullptr_t fake_dataset = nullptr;
 
-    opt_ = unpack_kwargs_command(RENAME, fake_dataset, kwargs);
+    opt_ = unpack_kwargs_command<RENAME>(fake_dataset, kwargs);
 
     // we do the job
     err_ = rename_series(dset, series_id, newname.c_str(), opt_);
@@ -809,7 +825,7 @@ void GretlDataset::transforms (const T &varlist, const py::kwargs &kwargs)
     gretl_list_ptr var_list{nullptr};
 
     // we unpack kwargs;
-    opt_ = unpack_kwargs_command(CI, fake_dataset, kwargs);
+    opt_ = unpack_kwargs_command<CI>(fake_dataset, kwargs);
 
     // we construct list of variables
     if constexpr (is_gretllist_arg_v<T>) {
@@ -997,7 +1013,7 @@ void GretlDataset::smpl (const std::string &startobs, const std::string &endobs,
     }
 
     // we unpack kwargs;
-    opt_ = unpack_kwargs_command(SMPL, fake_dataset, kwargs_copy);
+    opt_ = unpack_kwargs_command<SMPL>(fake_dataset, kwargs_copy);
 
     // we do the job
     err_ = 0;
@@ -1095,11 +1111,12 @@ GretlDatasetPtr GretlDataset::getitem_impl (const py::list &slice)
 }
 
 template <typename T>
-py::object GretlDataset::corr (const T &varlist, const py::kwargs &kwargs)
+std::pair<py::object, py::object> GretlDataset::corr (const T &varlist, const py::kwargs &kwargs)
 {
     //
     // general interface for computing correlations
     //
+    GretlPlot plotter;
     gretl_list_ptr var_list{nullptr};
     std::nullptr_t fake_dataset = nullptr;
 
@@ -1113,7 +1130,7 @@ py::object GretlDataset::corr (const T &varlist, const py::kwargs &kwargs)
     }
 
     // we unpack kwargs;
-    opt_ = unpack_kwargs_command(CORR, fake_dataset, kwargs);
+    opt_ = unpack_kwargs_command<CORR>(fake_dataset, kwargs, &plotter);
 
     // we do the job
     if (opt_ & OPT_K) {
@@ -1123,13 +1140,15 @@ py::object GretlDataset::corr (const T &varlist, const py::kwargs &kwargs)
     } else {
         err_ = gretl_corrmx(var_list.get(), dset, opt_, printer_.prn_ptr());
     }
-    if (err_) handle_gretl_error(err_);
+    if (err_) handle_gretl_error(err_, err_ == 1 ? printer_.get_buffer() : "");
+
+    // print and translate the generated gnuplot script, if available
     printer_.print();
 
-    return get_accessor("$result");
+    return {get_accessor("$result"), plotter.display()};
 }
-template py::object GretlDataset::corr<std::string>(const std::string&, const py::kwargs&);
-template py::object GretlDataset::corr<py::list>(const py::list&, const py::kwargs&);
+template std::pair<py::object, py::object> GretlDataset::corr<std::string>(const std::string&, const py::kwargs&);
+template std::pair<py::object, py::object> GretlDataset::corr<py::list>(const py::list&, const py::kwargs&);
 
 template <typename T>
 GretlMatrixPtr GretlDataset::cov (const T &varlist)
@@ -1160,37 +1179,74 @@ GretlMatrixPtr GretlDataset::cov (const T &varlist)
 template GretlMatrixPtr GretlDataset::cov<std::string>(const std::string&);
 template GretlMatrixPtr GretlDataset::cov<py::list>(const py::list&);
 
-py::object GretlDataset::hurst (const std::string &series)
+std::pair<py::object, py::object> GretlDataset::hurst (const std::string &series, const std::string &plot)
 {
     //
     // we compute the Hurst exponent for given series
     //
+    GretlPlot plotter;
     gretl_list_ptr var_list{nullptr};
     opt_ = OPT_NONE;
 
-    // we switch off gnuplot
-    gretl_valid_long_opt(opt_, HURST, "plot", py::handle(), "none");
-
     // we do the job
+    if (!plot.empty()) gretl_valid_long_opt(opt_, HURST, "plot", py::handle(), plotter.filename().c_str());
     var_list = gretllist(series);
     err_ = hurstplot(var_list.get(), dset, opt_, printer_.prn_ptr());
     if (err_) handle_gretl_error(err_);
     printer_.print();
 
-    return get_accessor("$result");
+    return {get_accessor("$result"), plotter.display()};
+}
+
+std::pair<GretlBundlePtr, py::object> GretlDataset::freq (const std::string &var, const py::kwargs &kwargs)
+{
+    //
+    // method mimics freq command (based on interact.c)
+    //
+    if (var.empty()) handle_gretl_error(E_NOVARS);
+
+    GretlPlot plotter;
+    GretlBundlePtr res = std::make_shared<GretlBundle>();
+    std::nullptr_t fake_dataset = nullptr;
+
+    // we unpack kwargs
+    opt_ = unpack_kwargs_command<FREQ>(fake_dataset, kwargs, &plotter);
+
+    // we do the job
+    last_result_cleanup();
+    err_ = freqdist(get_series_id(var), dset, opt_, printer_.prn_ptr());
+    if (err_) handle_gretl_error(err_);
+    printer_.print();
+
+    // material we return
+    res->set_element("result", get_accessor("$result"));
+    res->set_element<std::string>("summary", std::string(printer_.get_buffer()));
+    // include test results only if a valid test was performed
+    if (opt_ & (OPT_Z | OPT_O)) {
+        const double test = get_last_test_statistic();
+        const double pval = get_last_pvalue();
+
+        if ((std::isfinite)(test) && (std::isfinite)(pval)) {
+            res->set_element<double>("test", test);
+            res->set_element<double>("pvalue", pval);
+        }
+    }
+
+    return {std::move(res), plotter.display()};
 }
 
 template <typename T>
-py::object GretlDataset::xcorrgm (const T &varlist, int order, const py::kwargs &kwargs)
+std::pair<py::object, py::object> GretlDataset::xcorrgm (const T &varlist, int order, const py::kwargs &kwargs)
 {
     //
     // we perform cross-correlogram for vars
     //
+    GretlPlot plotter;
     gretl_list_ptr var_list{nullptr};
     std::nullptr_t fake_dataset = nullptr;
 
     // we unpack kwargs
-    opt_ = unpack_kwargs_command(XCORRGM, fake_dataset, kwargs);
+    opt_ = unpack_kwargs_command<XCORRGM>(fake_dataset, kwargs, &plotter);
 
     // we construct list of variables
     if constexpr (is_gretllist_arg_v<T>) {
@@ -1203,10 +1259,60 @@ py::object GretlDataset::xcorrgm (const T &varlist, int order, const py::kwargs 
     err_ = xcorrgram(var_list.get(), order, dset, opt_, printer_.prn_ptr());
     if (err_) handle_gretl_error(err_);
 
-    return get_accessor("$result");
+    return {get_accessor("$result"), plotter.display()};
 }
-template py::object GretlDataset::xcorrgm<std::string>(const std::string&, int, const py::kwargs&);
-template py::object GretlDataset::xcorrgm<py::list>(const py::list&, int, const py::kwargs&);
+template std::pair<py::object, py::object> GretlDataset::xcorrgm<std::string>(const std::string&, int, const py::kwargs&);
+template std::pair<py::object, py::object> GretlDataset::xcorrgm<py::list>(const py::list&, int, const py::kwargs&);
+
+
+# if 0 // not yet
+std::pair<GretlMatrixPtr, py::object> GretlDataset::pergm (
+    const std::string &series, int bandwidth, const py::kwargs &kwargs)
+{
+    //
+    // compute the periodogram and optionally generate its plot
+    //
+    if (series.empty()) handle_gretl_error(E_NOVARS);
+
+    GretlPlot plotter;
+    gretl_matrix_ptr mat{nullptr};
+    std::nullptr_t fake_dataset = nullptr;
+
+    // unpack command options
+    opt_ = unpack_kwargs_command<PERGM>(fake_dataset, kwargs, &plotter);
+
+    // validate the bandwidth
+    if (bandwidth < 0) {
+        throw std::invalid_argument("bandwidth must be non-negative");
+    }
+
+    // an explicit bandwidth implies Bartlett spectral estimation
+    if (bandwidth > 0) {
+        opt_ |= OPT_O;
+    }
+
+    // the matrix function uses -1 for the ordinary periodogram
+    const int width = (opt_ & OPT_O) ? bandwidth : -1;
+    const int varno = get_series_id(series);
+
+    // execute the gretl command to produce textual and graphical output
+    err_ = periodogram(varno, bandwidth, dset, opt_, printer_.prn_ptr());
+    if (err_) handle_gretl_error(err_, printer_.get_buffer());
+
+    // retrieve the spectral density as a matrix
+    mat.reset(periodogram_matrix(dset->Z[varno], dset->t1,
+                                 dset->t2, width, &err_));
+    if (err_) handle_gretl_error(err_);
+
+    // print results and translate the generated gnuplot script
+    printer_.print();
+
+    // return the spectral density matrix and optional matplotlib figure
+    return {std::make_shared<GretlMatrix>(mat.release(), false),
+        plotter.display()};
+}
+#endif
+
 
 template <typename T>
 py::object GretlDataset::pca (const T &varlist, const py::kwargs &kwargs)
@@ -1230,7 +1336,7 @@ py::object GretlDataset::pca (const T &varlist, const py::kwargs &kwargs)
     }
 
     // we unpack kwargs;
-    opt_ = unpack_kwargs_command(PCA, fake_dataset, kwargs);
+    opt_ = unpack_kwargs_command<PCA>(fake_dataset, kwargs);
 
     // we do the job (based on interact.c)
     VMatrix_ptr cmat{nullptr};
@@ -1297,7 +1403,7 @@ py::object GretlDataset::xtab (const T &varlist, const py::kwargs &kwargs)
     std::nullptr_t fake_dataset = nullptr;
 
     // we unpack kwargs;
-    opt_ = unpack_kwargs_command(XTAB, fake_dataset, kwargs);
+    opt_ = unpack_kwargs_command<XTAB>(fake_dataset, kwargs);
 
     // we construct list of variables
     if (varlist.empty()) {
@@ -1329,7 +1435,7 @@ void GretlDataset::setobs (const std::string &periodicity,
     std::nullptr_t fake_dataset = nullptr;
 
     // we unpack kwargs;
-    opt_ = unpack_kwargs_command(SETOBS, fake_dataset, kwargs);
+    opt_ = unpack_kwargs_command<SETOBS>(fake_dataset, kwargs);
 
     // we do the job (based on interact.c)
     err_ = set_obs(periodicity.c_str(), startobs.c_str(), dset, opt_);
@@ -1412,7 +1518,7 @@ void GretlDataset::do_modify_dataset (DatasetOp op, const T &list, const std::st
     }
 
     // we unpack kwargs;
-    opt_ = unpack_kwargs_command(DATAMOD, fake_dataset, kwargs);
+    opt_ = unpack_kwargs_command<DATAMOD>(fake_dataset, kwargs);
 
     // we handle special cases here
     if (op == DS_EXPAND && param == "-999") {
@@ -1444,6 +1550,46 @@ GretlMatrixPtr GretlDataset::tdisagg (py::object Y, int s, const py::kwargs &kwa
     return do_get_tdisagg_matrix(Y, s, kwargs, shared_from_this());
 }
 
+template <typename T>
+py::list GretlDataset::hflags (int lmin, int lmax, const T &hfvars)
+{
+    //
+    // interface to libretl's hflags() function
+    // based on hf_list_make_lags() grom geneval.c
+    //
+    gretl_list_ptr gretl_list{nullptr};
+
+    // we construct gretl_list based on hfvars
+    if (hfvars.empty()) handle_gretl_error(E_NOVARS);
+    if constexpr (is_gretllist_arg_v<T>) {
+        gretl_list = gretllist(hfvars);
+    } else {
+        static_assert(always_false<T>, "GretlDataset::hflags(): unsupported type");
+    }
+    auto cfac = gretl_list.get()[0];
+
+    if (!cfac) return py::list();
+    if (cfac < 2) handle_gretl_error(E_INVARG, "hflags: not a MIDAS list");
+
+    // we do the job
+    auto *list = gretl_list.release();
+    err_ = list_laggenr(&list, lmin, lmax, nullptr, dset, cfac, OPT_L);
+    gretl_list.reset(list);
+    if (err_) handle_gretl_error(err_);
+
+    // return the names of the generated series
+    std::vector<std::string> res;
+    res.reserve(gretl_list.get()[0]);
+
+    for (int i=1; i<=gretl_list.get()[0]; ++i) {
+        res.push_back(dset->varname[gretl_list.get()[i]]);
+    }
+
+    return py::cast(res);
+}
+template py::list GretlDataset::hflags<std::string>(int, int, const std::string&);
+template py::list GretlDataset::hflags<py::list>(int, int, const py::list&);
+
 py::list GretlDataset::varnames (void) const
 {
     return c_style_char_array_to_container<py::list>(dset->varname, dset->v);
@@ -1469,11 +1615,12 @@ py::object GretlDataset::get_accessor (const std::string &name)
     return do_get_accessor<GRETL_OBJ_DSET>(name, shared_from_this(), nullptr);
 }
 
-GretlBundlePtr GretlDataset::test (const std::string &type, const std::string &varlist, const py::kwargs &kwargs)
+std::pair<GretlBundlePtr, py::object> GretlDataset::test (const std::string &type, const std::string &varlist, const py::kwargs &kwargs)
 {
     //
     // this method performs test which do take a variables list
     //
+    GretlPlot plotter;
     GretlBundlePtr res = std::make_shared<GretlBundle>();
     gretl_list_ptr ex_var{nullptr};
     int order = 0;
@@ -1483,9 +1630,10 @@ GretlBundlePtr GretlDataset::test (const std::string &type, const std::string &v
     ex_var = gretllist(varlist);
 
     // we set up options
-    auto printout = unpack_kwargs_test(opt_, type, kwargs, order);
+    auto printout = unpack_kwargs_test(opt_, type, kwargs, order, &plotter);
 
     // we perform the test
+    last_result_cleanup();
     if (type == "adf") {
         err_ = adf_test(order, ex_var.get(), dset, opt_, printer_.prn_ptr());
     } else if (type == "bds") {
@@ -1546,8 +1694,10 @@ GretlBundlePtr GretlDataset::test (const std::string &type, const std::string &v
     }
     if (err_) handle_gretl_error(err_);
 
-    // we printout results
+    // Print the test results and retrieve the generated matplotlib Figure,
+    // if the test produced a plot.
     if (printout) printer_.print();
+    py::object fig = plotter.display();
 
     // material we return
     res->set_element<std::string>("type", type);
@@ -1560,7 +1710,7 @@ GretlBundlePtr GretlDataset::test (const std::string &type, const std::string &v
     // we register result
     move_to_python_container<GretlDataset, py::dict, py::list>(*this, res->to_dict(), "tests");
 
-    return res;
+    return {res, std::move(fig)};
 }
 
 GretlMatrixPtr GretlDataset::get_series (const std::string &series) const
@@ -1718,4 +1868,104 @@ double GretlDataset::ljungbox (int y, int p)
 double GretlDataset::ljungbox (const std::string &y, int p)
 {
     return ljungbox(get_series_id(y), p);
+}
+
+template <typename T>
+py::object GretlDataset::plot (const T &yvars, const py::kwargs &kwargs)
+{
+    //
+    // mimic libgretl 'gnuplot' command
+    //
+    return do_execute_plot_call<GNUPLOT, T>(yvars, shared_from_this(), "", kwargs);
+}
+template py::object GretlDataset::plot<std::string>(const std::string&, const py::kwargs&);
+template py::object GretlDataset::plot<py::list>(const py::list&, const py::kwargs&);
+
+template <typename T>
+py::object GretlDataset::boxplot (const T &yvars, const py::kwargs &kwargs)
+{
+    //
+    // mimic libgretl 'boxplot' command
+    //
+    return do_execute_plot_call<BXPLOT, T>(yvars, shared_from_this(), "", kwargs);
+}
+template py::object GretlDataset::boxplot<std::string>(const std::string&, const py::kwargs&);
+template py::object GretlDataset::boxplot<py::list>(const py::list&, const py::kwargs&);
+
+template <typename T>
+py::object GretlDataset::hfplot (const T &yvars, const py::kwargs &kwargs)
+{
+    //
+    // mimic libgretl 'hfplot' command
+    //
+    return do_execute_plot_call<HFPLOT, T>(yvars, shared_from_this(), "", kwargs);
+}
+template py::object GretlDataset::hfplot<std::string>(const std::string&, const py::kwargs&);
+template py::object GretlDataset::hfplot<py::list>(const py::list&, const py::kwargs&);
+
+template <typename T>
+py::object GretlDataset::panplot (const T &plotvar, const py::kwargs &kwargs)
+{
+    //
+    // mimic libgretl 'panplot' command
+    //
+    return do_execute_plot_call<PANPLOT, T>(plotvar, shared_from_this(), "", kwargs);
+}
+template py::object GretlDataset::panplot<std::string>(const std::string&, const py::kwargs&);
+template py::object GretlDataset::panplot<py::list>(const py::list&, const py::kwargs&);
+
+template <typename T>
+py::object GretlDataset::qqplot (const T &plotvar, const py::kwargs &kwargs)
+{
+    //
+    // mimic libgretl 'qqplot' command
+    //
+    return do_execute_plot_call<QQPLOT, T>(plotvar, shared_from_this(), "", kwargs);
+}
+template py::object GretlDataset::qqplot<std::string>(const std::string&, const py::kwargs&);
+template py::object GretlDataset::qqplot<py::list>(const py::list&, const py::kwargs&);
+
+template <typename T>
+py::object GretlDataset::kdplot (const T &plotvar, const py::kwargs &kwargs)
+{
+    //
+    // mimic libgretl 'kdplot' command
+    //
+    return do_execute_plot_call<KDPLOT, T>(plotvar, shared_from_this(), "", kwargs);
+}
+template py::object GretlDataset::kdplot<std::string>(const std::string&, const py::kwargs&);
+template py::object GretlDataset::kdplot<py::list>(const py::list&, const py::kwargs&);
+
+template <typename T>
+py::object GretlDataset::scatters (const T &yvar, const py::kwargs &kwargs)
+{
+    //
+    // mimic libgretl 'scatters' command
+    //
+    return do_execute_plot_call<SCATTERS, T>(yvar, shared_from_this(), "", kwargs);
+}
+template py::object GretlDataset::scatters<std::string>(const std::string&, const py::kwargs&);
+template py::object GretlDataset::scatters<py::list>(const py::list&, const py::kwargs&);
+
+template <typename T>
+py::object GretlDataset::tsplots (const T &varlist, const py::kwargs &kwargs)
+{
+    //
+    // mimic libgretl 'tsplots' command
+    //
+    py::kwargs clean_kwargs = kwargs;
+
+    clean_kwargs["time_series"] = true;
+
+    return do_execute_plot_call<SCATTERS, T>(varlist, shared_from_this(), "", clean_kwargs);
+}
+template py::object GretlDataset::tsplots<std::string>(const std::string&, const py::kwargs&);
+template py::object GretlDataset::tsplots<py::list>(const py::list&, const py::kwargs&);
+
+py::object GretlDataset::rmplot (const std::string &series, const py::kwargs &kwargs)
+{
+    //
+    // mimic libgretl 'rmplot' command
+    //
+    return do_execute_plot_call<RMPLOT, std::string>(series, shared_from_this(), "", kwargs);
 }

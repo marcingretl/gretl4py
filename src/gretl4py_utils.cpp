@@ -2,6 +2,9 @@
  *  gretl -- Gnu Regression, Econometrics and Time-series Library
  *  Copyright (C) 2001 Allin Cottrell and Riccardo "Jack" Lucchetti
  *
+ *  gretl4py -- Python bindings for gretl
+ *  Copyright (C) 2024 Marcin Błażejowski
+ *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
@@ -19,15 +22,28 @@
 
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
+#include <pybind11/eval.h>
 #include "gretl4py_utils.h"
 #include "gretl4py_types.h"
 #include "gretl4py_dataset.h"
 #include "gretl4py_model.h"
 #include "gretl4py_bundle.h"
-#include <limits>
+#include "gretl4py_packages.h"
 extern "C" {
     #include <gretl/gretl_typemap.h>
 }
+#include <limits>
+#include <random>
+#include <vector>
+#include <cstdlib>
+#include <iomanip>
+#include <locale.h>
+
+#ifdef _WIN32
+#include <windows.h>
+#else
+#include <unistd.h>
+#endif
 
 namespace py = pybind11;
 
@@ -100,6 +116,414 @@ inline GretlSlice make_gretl_slice (std::string startobs, std::string endobs, st
 }
 
 //////////////////////////////////////////////////
+// classes
+//////////////////////////////////////////////////
+//
+// GretlPlot
+//
+// Static path to the gp-executor binary.
+std::filesystem::path GretlPlot::executor_;
+std::filesystem::path GretlPlot::queue_dir_;
+unsigned long long GretlPlot::queue_owner_pid_ = 0;
+bool GretlPlot::auto_show_ = true;
+
+//
+// GretlPlot class methods
+//
+GretlPlot::~GretlPlot (void)
+{
+    // Remove only temporary files owned by GretlPlot.
+    if (temporary_) {
+        std::error_code ec;
+
+        if (source_owned_ && !gpfile_.empty()) {
+            std::filesystem::remove(gpfile_, ec);
+        }
+
+        if (!pyfile_.empty()) {
+            std::filesystem::remove(pyfile_, ec);
+        }
+    }
+}
+
+//
+// static methods
+//
+void GretlPlot::cleanup_queue_ (void) noexcept
+{
+    //
+    // Remove only the plot queue owned by this process.
+    // Never remove the shared parent directory or other sessions.
+    // Inherited atexit handlers must not delete the parent's queue.
+    //
+    if (queue_dir_.empty() || queue_owner_pid_ != current_pid_()) return;
+
+    std::error_code ec;
+    std::filesystem::remove_all(queue_dir_, ec);
+
+    // Cleanup must not throw during process termination.
+    queue_dir_.clear();
+    queue_owner_pid_ = 0;
+}
+
+std::string GretlPlot::random_plot_name (void)
+{
+    //
+    // generate a random filename with a 128-bit identifier to minimize
+    // collisions between independent processes, including MPI workers
+    //
+    // generate a random 128-bit identifier
+    std::random_device rd;
+    std::array<unsigned int, 4> words;
+
+    for (auto &word : words) {
+        word = rd();
+    }
+
+    std::ostringstream os;
+    os << "gptranslate_";
+
+    for (const auto word : words) {
+        os << std::hex << std::setw(8)
+        << std::setfill('0') << word;
+    }
+
+    os << ".gp";
+
+    return os.str();
+}
+
+unsigned long long GretlPlot::current_pid_ (void) noexcept
+{
+    //
+    // Identify the current process, including a child created by fork().
+    // return the current OS process identifier on Windows and POSIX systems
+    //
+#ifdef _WIN32
+    return static_cast<unsigned long long>(GetCurrentProcessId());
+#else
+    return static_cast<unsigned long long>(getpid());
+#endif
+}
+
+py::object GretlPlot::execute_script_ (const std::filesystem::path &script)
+{
+    //
+    // Execute a generated matplotlib script; the caller must hold the GIL
+    // interpreter, using a dedicated namespace.
+    //
+    py::dict globals;
+
+    globals["__name__"] = "__main__";
+    globals["__file__"] = script.string();
+
+    py::eval_file(script.string(), globals);
+
+    // Retrieve the Figure explicitly created by gptranslate.
+    // Keep a Python reference so the object remains accessible
+    // after the script has finished executing.
+    if (globals.contains("fig")) return globals["fig"].cast<py::object>();
+
+    return py::none();
+}
+
+void GretlPlot::show_figures_ (void)
+{
+    //
+    // Display pending figures without blocking; caller holds the GIL.
+    //
+    py::module_ plt = py::module_::import("matplotlib.pyplot");
+
+    plt.attr("show")(py::arg("block") = false);
+}
+
+void GretlPlot::set_auto_show (bool enabled) noexcept
+{
+    // Set the global automatic plot display policy.
+    auto_show_ = enabled;
+}
+
+bool GretlPlot::get_auto_show (void) noexcept
+{
+    return auto_show_;
+}
+
+//
+// instance methods
+//
+void GretlPlot::init_executor (void)
+{
+    // Locate gp-executor in the gretl4py installation directory.
+    executor_ = do_get_accessor<GRETL_OBJ_ANY>("$gretldir", GretlDataset::default_dataset(), nullptr).cast<std::string>();
+
+#ifdef _WIN32
+    executor_ /= "gp-executor.exe";
+#else
+    executor_ /= "gp-executor";
+#endif
+
+    if (!std::filesystem::is_regular_file(executor_)) throw std::runtime_error("gp-executor not found: " + executor_.string());
+}
+
+void GretlPlot::init_queue (void)
+{
+    //
+    // Initialize one private queue per Python process. The random directory
+    // name prevents collisions between independent processes and MPI workers.
+    //
+    const auto pid = current_pid_();
+
+    if (!queue_dir_.empty() && queue_owner_pid_ == pid) return;
+
+    // A forked child inherits the parent's static path, but must create
+    // its own queue rather than reuse or delete the parent's directory.
+    if (queue_owner_pid_ != pid) {
+        queue_dir_.clear();
+        queue_owner_pid_ = 0;
+    }
+
+    const auto root = std::filesystem::path(gretl_dotdir()) / "queue";
+    std::filesystem::create_directories(root);
+
+    std::random_device rd;
+    std::filesystem::path candidate;
+    bool created = false;
+
+    for (int attempt = 0; attempt < 32; ++attempt) {
+        std::ostringstream name;
+        name << "session_" << std::hex << rd() << rd() << rd() << rd();
+        candidate = root / name.str();
+        if (std::filesystem::create_directory(candidate)) {
+            created = true;
+            break;
+        }
+    }
+    if (!created) throw std::runtime_error("cannot create a unique plot queue directory");
+
+    // gp-executor is a separate process and receives this path via its environment.
+    // Preserve the previous value so a failed initialization can restore it.
+    const char *previous = std::getenv("GRETL4PY_PLOT_QUEUE");
+    const bool had_previous = previous != nullptr;
+    const std::string previous_value = had_previous ? previous : "";
+    const std::string path = candidate.string();
+#ifdef _WIN32
+    if (_putenv_s("GRETL4PY_PLOT_QUEUE", path.c_str()) != 0) {
+#else
+    if (setenv("GRETL4PY_PLOT_QUEUE", path.c_str(), 1) != 0) {
+#endif
+        std::error_code ec;
+        std::filesystem::remove(candidate, ec);
+        throw std::runtime_error("cannot set GRETL4PY_PLOT_QUEUE");
+    }
+    queue_dir_ = std::move(candidate);
+    queue_owner_pid_ = pid;
+
+    // Register cleanup after successful queue initialization. A forked child
+    // may register another handler; the PID check makes inherited handlers safe.
+    // The static queue_dir_ is initialized before this registration, so its
+    // destructor runs after this cleanup handler during normal termination.
+    if (std::atexit(&GretlPlot::cleanup_queue_) != 0) {
+        cleanup_queue_();
+
+        // Restore the inherited or previous environment on registration failure.
+#ifdef _WIN32
+        if (had_previous) {
+            _putenv_s("GRETL4PY_PLOT_QUEUE", previous_value.c_str());
+        } else {
+            _putenv_s("GRETL4PY_PLOT_QUEUE", "");
+        }
+#else
+        if (had_previous) {
+            setenv("GRETL4PY_PLOT_QUEUE", previous_value.c_str(), 1);
+        } else {
+            unsetenv("GRETL4PY_PLOT_QUEUE");
+        }
+#endif
+        throw std::runtime_error("cannot register plot queue cleanup");
+    }
+}
+
+void GretlPlot::drain_queue (GretlPackagePtr pkg)
+{
+    //
+    // only complete .py files are published by gp-executor; .tmp files
+    // are deliberately ignored until their atomic rename has completed
+    // A forked child must not drain scripts belonging to its parent.
+    // @pkg is where we're adding plots
+    //
+    if (queue_dir_.empty() || queue_owner_pid_ != current_pid_()) return;
+
+    std::vector<std::filesystem::path> scripts;
+    for (const auto &entry : std::filesystem::directory_iterator(queue_dir_)) {
+        if (entry.is_regular_file() && entry.path().extension() == ".py") scripts.push_back(entry.path());
+    }
+    if (scripts.empty()) return;
+
+    // gp-executor prefixes filenames with a padded creation timestamp.
+    std::sort(scripts.begin(), scripts.end());
+
+    py::gil_scoped_acquire gil;
+
+    for (const auto &script : scripts) {
+        // keep a failed script for inspection; remove only successful ones
+        py::object fig = execute_script_(script);
+
+        std::filesystem::remove(script);
+        // we register generated plot in 'plots' list
+        if (pkg) move_to_python_container<GretlPackage, py::object, py::list>(*pkg, std::move(fig), "plots");
+    }
+
+    // display all figures after evaluating every script in this batch
+    if (auto_show_) show_figures_();
+}
+
+[[nodiscard]] std::string GretlPlot::get_executor_path (void)
+{
+    return executor_.string();
+}
+
+std::string GretlPlot::filename (void)
+{
+    //
+    // generate and store a unique temporary gnuplot filename
+    //
+    gpfile_ = std::filesystem::path(gretl_dotdir()) / random_plot_name();
+
+    pyfile_ = gpfile_;
+    pyfile_.replace_extension(".py");
+
+    temporary_ = true;
+    source_owned_ = true;
+
+    return gpfile_.string();
+}
+
+bool GretlPlot::translate (void)
+{
+    //
+    // translate a generated gnuplot script into a matplotlib Python script
+    // return false if libgretl did not generate a plot
+    //
+    if (gpfile_.empty() || !std::filesystem::is_regular_file(gpfile_)) return false;
+
+    // translate the gnuplot script without executing Python (execute command)
+    const auto &executor = executor_;
+    std::string command = "\"" + executor.string() + "\"";
+
+#ifdef _WIN32
+    // Select PySide6/QtAgg in generated Python scripts on Windows.
+    command += " --backend=QtAgg";
+#endif
+
+    // gretl4py manages plot display via auto_show_; gp-executor now generates
+    // display-neutral Python scripts by default, including saved translations.
+    // Standalone users may explicitly request plt.show() via --add-show.
+
+    command += " --output=\"" + pyfile_.string() + "\" \"" + gpfile_.string() + "\"";
+
+#ifdef _WIN32
+    // cmd.exe requires an additional pair of quotes around the entire command
+    command = "\"" + command + "\"";
+#endif
+
+    const int status = std::system(command.c_str());
+
+    if (status != 0 || !std::filesystem::is_regular_file(pyfile_)) throw std::runtime_error("gptranslate failed: " + gpfile_.string());
+
+    return true;
+}
+
+py::object GretlPlot::display (void)
+{
+    // Translate the plot before displaying it.
+    if (!translate()) return py::none();
+
+    // Do not display plots explicitly saved to disk.
+    if (!display_) return py::none();
+
+    // Execute the generated matplotlib script in the current Python interpreter.
+    py::gil_scoped_acquire gil;
+
+    // Preserve LC_NUMERIC across Matplotlib backend initialization.
+    struct NumericLocaleGuard {
+        std::string saved_;
+
+        NumericLocaleGuard()
+        {
+            const char *loc = ::setlocale(LC_NUMERIC, nullptr); // this is due to some macOS SDK incompatibilities
+            if (loc) saved_ = loc;
+        }
+
+        ~NumericLocaleGuard()
+        {
+            if (!saved_.empty()) ::setlocale(LC_NUMERIC, saved_.c_str());
+        }
+    } locale_guard;
+
+    py::object fig = execute_script_(pyfile_);
+
+    // Display all figures using the selected Matplotlib backend.
+    if (auto_show_) show_figures_();
+
+    return fig;
+}
+
+void GretlPlot::set_source (const std::filesystem::path &path)
+{
+    // Validate the user-supplied gnuplot script.
+    if (!std::filesystem::is_regular_file(path)) throw file_not_found("Plot file not found: " + path.string());
+
+    // Preserve the original file and generate Python in the temporary directory.
+    gpfile_ = std::filesystem::absolute(path);
+
+    pyfile_ = std::filesystem::path(gretl_dotdir()) / random_plot_name();
+    pyfile_.replace_extension(".py");
+
+    temporary_ = true;
+    source_owned_ = false;
+}
+
+void GretlPlot::store (const std::filesystem::path &path)
+{
+    //
+    // preserve the user-specified plot and its Python translation
+    //
+    gpfile_ = std::filesystem::absolute(path);
+    pyfile_ = gpfile_;
+    pyfile_.replace_extension(".py");
+
+    temporary_ = false;
+    source_owned_ = false;
+    display_ = false;
+}
+
+void GretlPlot::add_band (TemporaryUserVar &uv_tmp, py::kwargs &kwargs)
+{
+    //
+    // method adds --band element to plot
+    //
+    py::object obj = kwargs["band"];
+
+    if (!is_pygretlbundle(obj)) handle_gretl_error(E_INVARG, "band", "must be Bundle");
+    kwargs["band"] = uv_tmp.register_user_var<GretlBundle>(*obj.cast<GretlBundlePtr>());
+}
+
+void GretlPlot::add_bands (TemporaryUserVar &uv_tmp, py::kwargs &kwargs)
+{
+    //
+    // method adds --bands element to plot
+    //
+    py::object obj = kwargs["bands"];
+
+    if (!is_pylist(obj)) handle_gretl_error(E_INVARG, "bands", "must be a list");
+    py::list bands = py::reinterpret_borrow<py::list>(obj);
+
+    // Validate the array type before registration.
+    if (get_pyarray_type(bands) != GRETL_TYPE_BUNDLES) handle_gretl_error(E_INVARG, "bands", "must contain Bundle objects");
+    kwargs["bands"] = uv_tmp.register_user_var<py::list>(bands);
+}
+
+//////////////////////////////////////////////////
 // free functions
 //////////////////////////////////////////////////
 std::string gretl4py_trim (std::string &s) noexcept
@@ -144,7 +568,7 @@ void NumPyArray_extract (const py::array &arr, NumPyArrayView &view)
     // which then fails to parse as a type.
     auto shape_to_int = [](Py_ssize_t n) -> int
     {
-        if (n < 0 || n > std::numeric_limits<int>::max()) throw std::overflow_error("NumPy array dimension too large.");
+        if (n < 0 || n > (std::numeric_limits<int>::max)()) throw std::overflow_error("NumPy array dimension too large.");
 
         return static_cast<int>(n);
     };
@@ -454,11 +878,15 @@ PythonArgInfo inspect_pyobject (py::handle obj)
     return info;
 }
 
-// Here we move item to named container for given instance
 template <typename PyWrapped, typename Item, typename ContainerType>
-void move_to_python_container (PyWrapped &wrapped_obj, Item &&item,
-                               const char *container, const std::string &key)
+void move_to_python_container (PyWrapped &wrapped_obj, Item &&item, const char *container, const std::string &key)
 {
+    //
+    // Here we move item to named container for given instance
+    // @wrapped_obj is an object we're adding to
+    // @container is where we're adding
+    // @item is what we're adding
+    //
     py::gil_scoped_acquire gil;
     py::object obj = py::cast(wrapped_obj);
 
@@ -694,4 +1122,113 @@ GretlSlice python_slice_to_gretl_slice (const std::string &slice)
     }
 
     return make_gretl_slice(startobs, endobs, slice, opts);
+}
+
+GretlType get_pyarray_type (const py::list &items)
+{
+    //
+    // Determine the gretl array type of a Python list.
+    // Nested lists are validated recursively.
+    // Empty lists have type GRETL_TYPE_ANY.
+    //
+    GretlType type = GRETL_TYPE_NONE;
+
+    for (const auto &item : items) {
+        GretlType current = GRETL_TYPE_NONE;
+
+        if (is_pygretlbundle(item)) {
+            current = GRETL_TYPE_BUNDLES;
+        } else if (is_pygretlmatrix(item) || is_pynumarray(item)) {
+            current = GRETL_TYPE_MATRICES;
+        } else if (is_pystr(item)) {
+            current = GRETL_TYPE_STRINGS;
+        } else if (is_pylist(item)) {
+            // Validate the nested list independently.
+            get_pyarray_type(py::reinterpret_borrow<py::list>(item));
+            current = GRETL_TYPE_ARRAYS;
+        } else {
+            throw py::type_error("Unsupported element type in Python list");
+        }
+
+        if (type == GRETL_TYPE_NONE) {
+            type = current;
+        } else if (type != current) {
+            throw py::type_error("Python list elements must have a common gretl array type");
+        }
+    }
+
+    return type == GRETL_TYPE_NONE ? GRETL_TYPE_ANY : type;
+}
+
+gretl_array_ptr python_list_to_gretl_array (const py::list &items, GretlType type)
+{
+    //
+    // Convert a Python list into an independently owned gretl array.
+    // Nested lists are converted recursively and ownership is managed by RAII.
+    //
+    // Validate the complete structure before allocating storage.
+    const GretlType inferred = get_pyarray_type(items);
+
+    if (type == GRETL_TYPE_NONE || type == GRETL_TYPE_ANY) {
+        type = inferred;
+    } else if (inferred != GRETL_TYPE_ANY && type != inferred) {
+        throw py::type_error("Explicit gretl array type does not match Python list");
+    }
+
+    const auto n = py::len(items);
+
+    if (n > (std::numeric_limits<int>::max)()) throw py::value_error("Python list is too large for gretl array");
+    int err = 0;
+    gretl_array_ptr array(gretl_array_new(type, static_cast<int>(n), &err));
+
+    if (err || !array) handle_gretl_error(err ? err : E_ALLOC);
+
+    int i = 0;
+
+    for (const auto &item : items) {
+        err = 0;
+
+        if (is_pygretlbundle(item)) {
+            auto bundle = item.cast<GretlBundlePtr>();
+
+            // Copy the Python-owned bundle.
+            err = gretl_array_set_element(array.get(), i, bundle->get_ptr(), GRETL_TYPE_BUNDLE, 1);
+        } else if (is_pygretlmatrix(item)) {
+            auto matrix = item.cast<GretlMatrixPtr>();
+
+            // Copy the Python-owned matrix.
+            err = gretl_array_set_element(array.get(), i, matrix->get_ptr(),GRETL_TYPE_MATRIX, 1);
+        } else if (is_pynumarray(item)) {
+            NumPyArrayView view;
+
+            NumPyArray_extract(py::reinterpret_borrow<py::array>(item), view);
+
+            // Allocate an independent gretl matrix.
+            gretl_matrix_ptr matrix(gretl_matrix_alloc(view.rows, view.cols));
+
+            if (!matrix) handle_gretl_error(E_ALLOC);
+            NumPyArray_to_gretl_storage<gretl_matrix>(view, matrix.get());
+
+            // Donate the newly allocated matrix to the array.
+            err = gretl_array_set_element(array.get(), i, matrix.get(), GRETL_TYPE_MATRIX, 0);
+            if (!err) matrix.release();
+        } else if (is_pystr(item)) {
+            std::string value = py::cast<std::string>(item);
+
+            // libgretl duplicates the string.
+            err = gretl_array_set_element(array.get(), i, value.data(), GRETL_TYPE_STRING, 1);
+        } else if (is_pylist(item)) {
+            // Recursively convert the nested list.
+            gretl_array_ptr nested = python_list_to_gretl_array(py::reinterpret_borrow<py::list>(item));
+
+            // Donate the nested array to its parent.
+            err = gretl_array_set_element(array.get(), i, nested.get(), GRETL_TYPE_ARRAY, 0);
+            if (!err) nested.release();
+        }
+
+        if (err) handle_gretl_error(err);
+        ++i;
+    }
+
+    return array;
 }

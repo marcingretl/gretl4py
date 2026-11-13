@@ -2,6 +2,9 @@
  *  gretl -- Gnu Regression, Econometrics and Time-series Library
  *  Copyright (C) 2001 Allin Cottrell and Riccardo "Jack" Lucchetti
  *
+ *  gretl4py -- Python bindings for gretl
+ *  Copyright (C) 2024 Marcin Błażejowski
+ *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
@@ -31,8 +34,11 @@ extern "C" {
     #include <gretl/gretl_zip.h>
     #include <gretl/gretl_foreign.h>
     #include <gretl/adf_kpss.h>
+    #include <gretl/boxplots.h>
 }
-#include <filesystem>
+#include <random>
+#include <sstream>
+#include <iomanip>
 
 #if defined(_WIN32)
 # include <gretl/gretl_win32.h>
@@ -61,6 +67,22 @@ static GretlPrint global_printer = GretlPrint();
 std::unordered_set<std::string> user_vars;              // registry of user variables
 
 namespace {
+// Commands supporting the --plot option.
+constexpr bool cmd_plot_opt_ok (GretlCmdIndex ci)
+{
+    return ci == CORR || ci == CORRGM || ci == CUSUM || ci == FCAST
+        || ci == FREQ || ci == HURST || ci == LEVERAGE || ci == PERGM
+        || ci == QLRTEST || ci == XCORRGM;
+}
+
+// Commands supporting the --output option.
+constexpr bool cmd_output_opt_ok (GretlCmdIndex ci)
+{
+    return ci == GNUPLOT || ci == BXPLOT || ci == HFPLOT
+        || ci == PANPLOT || ci == QQPLOT || ci == KDPLOT
+        || ci == SCATTERS || ci == RMPLOT;
+}
+
 static std::string extract_varname (std::string formula)
 {
     //
@@ -94,15 +116,22 @@ static std::string extract_varname (std::string formula)
 
     return gretl4py_trim(varname);
 }
-}
+
+} // namespace
 
 //////////////////////////////////////////////////
 // module related tools
 //////////////////////////////////////////////////
 void gretl4py_init (void)
 {
+    //
+    // module initialization (including libgretl initialization)
+    //
+    ConfigPaths libgretl_paths = {};
+
     // check libgretl version
-    if (libgretl_version() < LIBGRETL_MIN_VER) throw std::runtime_error("gretl4py requires libgretl-1.0 version " + std::to_string(LIBGRETL_MIN_VER) + " or higher");
+    if (libgretl_version() < LIBGRETL_MIN_VER)
+        throw std::runtime_error("gretl4py requires libgretl-1.0 version " + std::to_string(LIBGRETL_MIN_VER) + " or higher");
 
     // initialize libgretl
     libgretl_init();
@@ -110,13 +139,15 @@ void gretl4py_init (void)
     // flag the fact that we're coming from python
     gretl_set_python_mode();
 
-#if 0
     // libgretl path initialization
-    ConfigPaths libgretl_paths = {};
-    gretl_set_paths(&libgretl_paths);
-    py::print(gretl_bindir());
-    py::print(libgretl_paths.mpiexec);
+#ifdef __APPLE__
+    // use the bundled Open MPI launcher on macOS
+    if (const char *env = std::getenv("GRETL_MPIEXEC"); env && *env) {
+        if (std::strlen(env) >= sizeof libgretl_paths.mpiexec) throw std::runtime_error("GRETL_MPIEXEC path is too long");
+        std::strcpy(libgretl_paths.mpiexec, env);
+    }
 #endif
+    gretl_set_paths(&libgretl_paths);
 
     // we set/update user workdir, gretldir and dotdir to gretl4py specific
     py::module_ pathlib = py::module_::import("pathlib");
@@ -149,6 +180,10 @@ void gretl4py_init (void)
         handle_gretl_error(err);
     }
 
+    // plotting initialization
+    GretlPlot::init_executor();
+    if (int err = gretl_set_path_by_name("gnuplot", GretlPlot::get_executor_path().c_str())) handle_gretl_error(err);
+
     // verbose output
     if (gretl4py_verbose) std::printf("libgretl initialized\n");
 }
@@ -179,7 +214,8 @@ void gretl4py_cleanup (void)
 
 GretlBundlePtr about (bool do_print)
 {
-    static const std::unordered_set<std::string> lgretl_strings = { "dotdir", "gnuplot", "gretldir", "seats", "tramo", "tramodir", "workdir", "x12a", "x12adir" };
+    static const std::unordered_set<std::string> lgretl_strings =
+    { "dotdir", "gnuplot", "gretldir", "seats", "tramo", "tramodir", "workdir", "x12a", "x12adir" };
     GretlBundlePtr gb_strings = std::make_shared<GretlBundle>();
     GretlBundlePtr res = std::make_shared<GretlBundle>();
     std::string mod_ver, lg_ver, py11_ver;
@@ -192,43 +228,46 @@ GretlBundlePtr about (bool do_print)
 
     gretl_push_c_numeric_locale();
 
-    mod_ver = std::string(GRETL4PY_VERSION).substr(0,4);
-    py11_ver = std::to_string(PYBIND11_VERSION_MAJOR);
-    py11_ver += "." + std::to_string(PYBIND11_VERSION_MINOR);
-    py11_ver += "." + std::to_string(PYBIND11_VERSION_PATCH);
+    mod_ver = std::string(GRETL4PY_VERSION).substr(0, 4);
+    py11_ver = std::to_string(PYBIND11_VERSION_MAJOR) + "." +
+        std::to_string(PYBIND11_VERSION_MINOR) + "." +
+        std::to_string(PYBIND11_VERSION_PATCH);
     lg_ver = std::to_string(libgretl_version());
 
-    // built-in strings
-    for (const auto &it : lgretl_strings) {
-        auto val = std::string(get_built_in_string_by_name(it.c_str()));
+    // Built-in strings
+    for (const auto &name : lgretl_strings) {
+        const char *value = get_built_in_string_by_name(name.c_str());
 
-        gb_strings->set_element<std::string>(it, val);
+        gb_strings->set_element<std::string>(name, value ? std::string(value) : std::string{});
     }
 
-    res->set_element<std::string>(std::string("mod_ver"), mod_ver);
-    res->set_element<std::string>(std::string("py11_ver"), py11_ver);
-    res->set_element<std::string>(std::string("lg_ver"), lg_ver);
+    // we construct res bundle
+    res->set_element<std::string>("mod_ver", mod_ver);
+    res->set_element<std::string>("py11_ver", py11_ver);
+    res->set_element<std::string>("lg_ver", lg_ver);
+
     if (gb_sysinfo->get_err()) {
-        std::cerr << errmsg_get_with_default(gb_sysinfo->get_err()) << std::endl;
+        std::cerr << errmsg_get_with_default(gb_sysinfo->get_err()) << '\n';
     } else {
-        res->set_element<GretlBundlePtr>(std::string("sysinfo"), gb_sysinfo );
+        res->set_element<GretlBundlePtr>("sysinfo", gb_sysinfo);
     }
-    res->set_element<GretlBundlePtr>(std::string("built_in_strings"), gb_strings );
+    res->set_element<GretlBundlePtr>("built_in_strings", gb_strings);
 
     if (do_print || gretl4py_verbose) {
-        std::cout << gretl4py_logo() << std::endl;
-        std::cout << "gretl4py v" << mod_ver;
-        std::cout << " [" << COMPILER_IDENT << "]" << std::endl;
-        std::cout << "\t+ pybind11     v" << py11_ver << std::endl;
-        std::cout << "\t+ libgretl-1.0 v" << lg_ver << std::endl;
-        std::cout << "\ncontact: marcin[at]gretlconference.org" << std::endl;
+        std::cout << gretl4py_logo()
+            << "\ngretl4py v" << mod_ver
+            << " [" << COMPILER_IDENT << "]\n"
+            << "\t+ pybind11     v" << py11_ver << '\n'
+            << "\t+ libgretl-1.0 v" << lg_ver << "\n\n"
+            << "contact: marcin[at]gretlconference.org\n";
         if (!gb_sysinfo->get_err()) {
-            std::cout << std::endl << "libgretl $sysinfo:" << std::endl;
+            std::cout << "\nlibgretl $sysinfo:\n";
             gb_sysinfo->print<void>();
         }
-        std::cout << "libgretl built-in strings:" << std::endl;
+        std::cout << "libgretl built-in strings:\n";
         gb_strings->print<void>();
-        py::print("gretl_plugin_path = \"" + std::string(gretl_plugin_path()) + "\"\n");
+        std::cout << "gretl_plugin_path = " << gretl_plugin_path() << '\n'
+            << "MPI launcher      = " << gretl_mpiexec() << "\n\n";
     }
 
     gretl_pop_c_numeric_locale();
@@ -277,11 +316,65 @@ const char *GretlPrint::get_buffer (void)
     return gretl_print_get_buffer(prn_);
 }
 
+//
+// TemporaryUserVar class methods
+//
+TemporaryUserVar::~TemporaryUserVar (void) noexcept
+{
+    // Unregister all temporary libgretl variables.
+    for (const auto &name : names) {
+        const int err = user_var_delete_by_name(name.c_str(), nullptr);
+
+        if (!err) {
+            user_vars.erase(name);
+        } else {
+            std::cerr << "Failed to delete temporary variable '"
+            << name << "': "
+            << errmsg_get_with_default(err) << std::endl;
+        }
+    }
+}
+
+template<typename T>
+[[nodiscard]] std::string TemporaryUserVar::register_user_var (const T &obj)
+{
+    //
+    // Generate a temporary name for an object registered in libgretl.
+    //
+    if constexpr (!std::is_same_v<T, py::list> && !std::is_same_v<T, GretlBundle> && !std::is_same_v<T, GretlMatrix>) {
+        static_assert(always_false<T>, "TemporaryUserVar::register_user_var(): unsupported type");
+    }
+
+    std::ostringstream ss;
+    thread_local std::mt19937_64 gen(std::random_device{}());
+    thread_local std::uniform_int_distribution<uint64_t> dist;
+
+    ss << "_tmpgretl4pyuv_" << std::hex << std::setw(16)
+    << std::setfill('0') << dist(gen);
+    std::string tmp_var_name = ss.str();
+
+    if constexpr (std::is_same_v<T, GretlMatrix>) {
+        // Register the existing matrix without copying its data.
+        gretl_temporary_user_var_ptr uv(alt_user_var_add(tmp_var_name.c_str(), GRETL_TYPE_MATRIX, obj.get_ptr()));
+
+        if (!uv) handle_gretl_error(E_ALLOC);
+        borrowed_.push_back(std::move(uv));
+    } else {
+        genr<T>(tmp_var_name, obj);
+        names.push_back(tmp_var_name);
+    }
+
+    return tmp_var_name;
+}
+template std::string TemporaryUserVar::register_user_var<GretlBundle>(const GretlBundle&);
+template std::string TemporaryUserVar::register_user_var<GretlMatrix>(const GretlMatrix&);
+template std::string TemporaryUserVar::register_user_var<py::list>(const py::list&);
+
 //////////////////////////////////////////////////
 // functions
 //////////////////////////////////////////////////
-template <typename T>
-gretlopt unpack_kwargs_command (GretlCmdIndex ci, T &dataset, const py::kwargs &kwargs)
+template <GretlCmdIndex CI, typename T>
+gretlopt unpack_kwargs_command (T &dataset, const py::kwargs &kwargs, GretlPlot *plotter)
 {
     //
     // unpack kwargs for libgretl's command interfaces
@@ -291,10 +384,30 @@ gretlopt unpack_kwargs_command (GretlCmdIndex ci, T &dataset, const py::kwargs &
     static_assert(std::is_same_v<T, GretlDatasetPtr> || std::is_same_v<T, std::nullptr_t>, "dataset must be GretlDatasetPtr or std::nullptr_t");
     gretlopt opt = OPT_NONE;
 
+    // remove non-persistent option parameters left by previous calls
+    clear_stored_options_for_command(CI);
+
     if (py::len(kwargs) > 0) {
         for (auto &item : kwargs) {
             if (!is_pystr(item.first)) throw std::invalid_argument("option key must be a string");
             const std::string &key = item.first.cast<std::string>();
+
+            // commands special (including banned options)
+            if constexpr (CI == GNUPLOT || CI == SCATTERS || CI == BXPLOT) {
+                // matrix-based plots are handled separately by gretl.plot()
+                if (key == "matrix") throw std::invalid_argument("for matrix-based plots, use gretl.Matrix.plot() instead");
+            }
+            if constexpr (CI == GNUPLOT) {
+                if (key == "input") throw std::invalid_argument("for gnuplot script-based plots, use gretl.plot() instead");
+                if (key == "inbuf") throw std::invalid_argument("option '--" + key + "' is not supported");
+            }
+            if constexpr (cmd_plot_opt_ok(CI)) {
+                if (key == "plot" && is_pystr(item.second) && item.second.cast<std::string>() == "display") {
+                    if (!plotter) throw std::logic_error("no plotter available");
+                    gretl_valid_long_opt(opt, CI, key, py::handle(), plotter->filename().c_str());
+                    continue;
+                }
+            }
 
             // special case: we use GretlDataset class object passed by kwargs
             if constexpr (std::is_same_v<T, GretlDatasetPtr>) {
@@ -303,26 +416,69 @@ gretlopt unpack_kwargs_command (GretlCmdIndex ci, T &dataset, const py::kwargs &
                     continue;
                 }
             }
-            if (key == "plot") {
-                throw std::invalid_argument("'plot' option not available");
-            } else {
-                gretl_valid_long_opt(opt, ci, key, item.second);
+
+            // the output option is handled separately for graphical commands
+            if constexpr (cmd_output_opt_ok(CI)) {
+                if (key == "output" && plotter) continue;
             }
+
+            // finally, we evaluate options
+            gretl_valid_long_opt(opt, CI, key, item.second);
         }
     }
 
-    // we force --plot=none for certain commands
-    if (ci == XCORRGM || ci == CORR) gretl_valid_long_opt(opt, ci, "plot", py::handle(), "none");
-
-    // if we didn't get dataset, let use global
+    // if no dataset was supplied, use the default dataset
     if constexpr (std::is_same_v<T, GretlDatasetPtr>) {
         if (!dataset) dataset = GretlDataset::default_dataset();
     }
 
+    // configure output for graphical commands
+    if constexpr (cmd_output_opt_ok(CI)) {
+        if (plotter) {
+            // Check whether the output is a native graphical format.
+            static const std::unordered_set<std::string> formats = {
+                ".eps", ".pdf", ".png", ".emf", ".html",
+                ".svg", ".fig", ".tex", ".tikz"
+            };
+
+            // By default, display the graph.
+            const std::string filename = kwargs.contains("output") ? kwargs["output"].cast<std::string>() : "display";
+
+            if (filename == "display") {
+                // Register a temporary output file for graphical display.
+                gretl_valid_long_opt(opt, CI, "output", py::handle(), plotter->filename().c_str());
+            } else {
+                // Register the requested output file.
+                gretl_valid_long_opt(opt, CI, "output", py::handle(), filename.c_str());
+
+                // Preserve output files that are not native graphical formats.
+                const std::string ext = std::filesystem::path(filename).extension().string();
+
+                if (formats.find(ext) == formats.end()) plotter->store(filename);
+            }
+        }
+    }
+
     return opt;
 }
-template gretlopt unpack_kwargs_command<GretlDatasetPtr>(GretlCmdIndex, GretlDatasetPtr&, const py::kwargs&);
-template gretlopt unpack_kwargs_command<std::nullptr_t>(GretlCmdIndex, std::nullptr_t&, const py::kwargs&);
+//NOTE: we make explicit template instantiations only for call from external TU
+template gretlopt unpack_kwargs_command<CORR, std::nullptr_t>(std::nullptr_t&, const py::kwargs&, GretlPlot*);
+template gretlopt unpack_kwargs_command<DATAMOD, std::nullptr_t>(std::nullptr_t&, const py::kwargs&, GretlPlot*);
+template gretlopt unpack_kwargs_command<DISCRETE, std::nullptr_t>(std::nullptr_t&, const py::kwargs&, GretlPlot*);
+template gretlopt unpack_kwargs_command<DUMMIFY, std::nullptr_t>(std::nullptr_t&, const py::kwargs&, GretlPlot*);
+template gretlopt unpack_kwargs_command<FCAST, GretlDatasetPtr>(GretlDatasetPtr&, const py::kwargs&, GretlPlot*);
+template gretlopt unpack_kwargs_command<GNUPLOT, std::nullptr_t>(std::nullptr_t&, const py::kwargs&, GretlPlot*);
+template gretlopt unpack_kwargs_command<PCA, std::nullptr_t>(std::nullptr_t&, const py::kwargs&, GretlPlot*);
+template gretlopt unpack_kwargs_command<RENAME, std::nullptr_t>(std::nullptr_t&, const py::kwargs&, GretlPlot*);
+template gretlopt unpack_kwargs_command<SETOBS, std::nullptr_t>(std::nullptr_t&, const py::kwargs&, GretlPlot*);
+template gretlopt unpack_kwargs_command<SMPL, std::nullptr_t>(std::nullptr_t&, const py::kwargs&, GretlPlot*);
+template gretlopt unpack_kwargs_command<SQUARE, std::nullptr_t>(std::nullptr_t&, const py::kwargs&, GretlPlot*);
+template gretlopt unpack_kwargs_command<STDIZE, std::nullptr_t>(std::nullptr_t&, const py::kwargs&, GretlPlot*);
+template gretlopt unpack_kwargs_command<STORE, std::nullptr_t>(std::nullptr_t&, const py::kwargs&, GretlPlot*);
+template gretlopt unpack_kwargs_command<SUMMARY, std::nullptr_t>(std::nullptr_t&, const py::kwargs&, GretlPlot*);
+template gretlopt unpack_kwargs_command<XCORRGM, std::nullptr_t>(std::nullptr_t&, const py::kwargs&, GretlPlot*);
+template gretlopt unpack_kwargs_command<XTAB, std::nullptr_t>(std::nullptr_t&, const py::kwargs&, GretlPlot*);
+template gretlopt unpack_kwargs_command<FREQ, std::nullptr_t>(std::nullptr_t&, const py::kwargs&, GretlPlot*);
 
 void do_set (const std::string &key, const std::string &value, const py::kwargs &kwargs)
 {
@@ -333,7 +489,7 @@ void do_set (const std::string &key, const std::string &value, const py::kwargs 
     int err = 0;
 
     // we unpack kwargs at first
-    gretlopt opt = unpack_kwargs_command(SET, dataset, kwargs);
+    gretlopt opt = unpack_kwargs_command<SET>(dataset, kwargs);
 
     // we do the job
     err = execute_set(key.empty() ? nullptr : key.c_str(), value.empty() ? nullptr : value.c_str(),
@@ -400,7 +556,7 @@ void do_gretl_print (const std::string &varlist, const py::kwargs &kwargs)
     };
 
     if (py::len(kwargs) > 0) {
-        opt = unpack_kwargs_command(PRINT, dataset, kwargs);
+        opt = unpack_kwargs_command<PRINT>(dataset, kwargs);
     } else {
         // if we don't have kwargs, we must assign dataset manually
         dataset = GretlDataset::default_dataset();
@@ -459,7 +615,7 @@ void do_gretl_varlist (const py::kwargs &kwargs)
     //
     GretlDatasetPtr dataset = nullptr;
 
-    auto opt = unpack_kwargs_command(VARLIST, dataset, kwargs);
+    auto opt = unpack_kwargs_command<VARLIST>(dataset, kwargs);
 
     // we do the job (based on interact.c)
     if (opt & OPT_T) {
@@ -559,7 +715,7 @@ void do_gretl_pkg (const std::string &action, const std::string &pkgname, const 
     int err = 0;
 
     // we check options
-    auto opt = unpack_kwargs_command(PKG, fake_dataset, kwargs);
+    auto opt = unpack_kwargs_command<PKG>(fake_dataset, kwargs);
 
     err = incompatible_options(opt, static_cast<gretlopt>(OPT_L | OPT_S));
     if (err) handle_gretl_error(err);
@@ -587,6 +743,7 @@ void do_gretl_pkg (const std::string &action, const std::string &pkgname, const 
         } else {
             // we retrieve package from SF
             std::string pkgname_remote;
+            bool try_gfn = false;
 
             if (staging) {
                 pkgname_remote = pkgname;
@@ -597,7 +754,18 @@ void do_gretl_pkg (const std::string &action, const std::string &pkgname, const 
             }
             localfile = functions_dir / pkgname_remote;
             py::print("installing:", pkgname_remote, "->", localfile.string());
+
+            // we add .zip if file has no suffix
+            if (!has_suffix(pkgname_remote_c.get(), ".zip") && !has_suffix(pkgname_remote_c.get(), ".gfn")) {
+                pkgname_remote.append(".zip");
+                try_gfn = true;
+            }
             err = retrieve_remote_function_package(pkgname_remote.c_str(), localfile.string().c_str(), staging);
+            if (err && try_gfn) {
+                // we try .gfn if .zip does not exist
+                pkgname_remote.replace(pkgname_remote.size()-3, 3, "gfn");
+                err = retrieve_remote_function_package(pkgname_remote.c_str(), localfile.string().c_str(), staging);
+            }
         }
         if (err) handle_gretl_error(err);
 
@@ -632,6 +800,9 @@ void gretl_hansl_execute (const std::string &script)
     // we mimics 'run' command
     int err = 0;
 
+    // Initialize the plot queue before executing hansl.
+    GretlPlot::init_queue();
+
     if constexpr (RUN) {
         std::filesystem::path path{script};
 
@@ -640,6 +811,10 @@ void gretl_hansl_execute (const std::string &script)
     } else {
         err = gretl_execute_script<std::string>(script);
     }
+
+    // Execute all generated Matplotlib scripts after hansl finishes.
+    if (!err) GretlPlot::drain_queue();
+
     if (err) handle_gretl_error(err);
 }
 template void gretl_hansl_execute<true>(const std::string&);
@@ -866,7 +1041,7 @@ void do_gretl_delete_variables (const std::string &varname, const py::kwargs &kw
     if (!varname.empty() && GretlPackage::package_loaded(varname)) throw std::invalid_argument("in gretl4py, the 'delete' function does not work with packages");
 
     if (py::len(kwargs) > 0) {
-        opt = unpack_kwargs_command(DELEET, dataset, kwargs);
+        opt = unpack_kwargs_command<DELEET>(dataset, kwargs);
         if (kwargs.contains("type")) type_to_delete = kwargs["type"].cast<std::string>();
     } else {
         // if we don't have kwargs, we must assign GD manually
@@ -929,7 +1104,7 @@ void genr (const std::string &formula, GretlDatasetPtr data)
     gretl_generate<GRETL_TYPE_ANY>(formula, data ? data : GretlDataset::default_dataset());
 }
 
-// T = { py::array ; int ; double ; std::string , GretlMatrix}
+// T = { py::array ; int ; double ; std::string , GretlMatrix, GRETL_TYPE_BUNDLE, py::list }
 template <typename T>
 void genr (const std::string &name, const T &value)
 {
@@ -944,29 +1119,48 @@ void genr (const std::string &name, const T &value)
 
         NumPyArray_extract(value, view);
         uv_ptr = gretl_matrix_alloc(view.rows, view.cols);
+
         if (uv_ptr == nullptr) handle_gretl_error(E_ALLOC);
         NumPyArray_to_gretl_storage<gretl_matrix>(view, static_cast<gretl_matrix*>(uv_ptr));
     } else if constexpr (std::is_same_v<T, GretlMatrix>) {
         uv_type = GRETL_TYPE_MATRIX;
         uv_ptr = static_cast<gretl_matrix*>(gretl_matrix_copy(value.get_ptr()));
+
         if (uv_ptr == nullptr) handle_gretl_error(E_ALLOC);
     } else if constexpr (std::is_same_v<T, double> || std::is_same_v<T, int>) {
         uv_type = GRETL_TYPE_DOUBLE;
         uv_ptr = std::malloc(sizeof(double));
+
         if (uv_ptr == nullptr) handle_gretl_error(E_ALLOC);
         *static_cast<double*>(uv_ptr) = static_cast<double>(value);
     } else if constexpr (std::is_same_v<T, std::string>) {
         uv_type = GRETL_TYPE_STRING;
         uv_ptr = std::malloc(value.size() + 1);
+
         if (uv_ptr == nullptr) handle_gretl_error(E_ALLOC);
         std::strcpy(static_cast<char*>(uv_ptr), value.c_str());
+    } else if constexpr (std::is_same_v<T, GretlBundle>) {
+        uv_type = GRETL_TYPE_BUNDLE;
+        uv_ptr = static_cast<gretl_bundle*>(gretl_bundle_copy(value.get_ptr(), &err));
+
+        if (err) handle_gretl_error(err);
+    } else if constexpr (std::is_same_v<T, py::list>) {
+        // Register the array using its specific element type.
+        gretl_array_ptr array = python_list_to_gretl_array(value);
+        uv_type = gretl_array_get_type(array.get());
+
+        uv_ptr = array.release();
     } else {
         static_assert(always_false<T>, "genr(): unknown type");
     }
 
     // we finally register variable
     err = user_var_add(name.c_str(), uv_type, uv_ptr);
-    if (err) handle_gretl_error(err);
+    if (err) {
+        // Registration failed: ownership was not transferred to libgretl.
+        GretlResourceDeleter{uv_type}(uv_ptr);
+        handle_gretl_error(err);
+    }
     user_vars.insert(name);
 }
 template void genr<py::array>(const std::string&, const py::array&);
@@ -974,6 +1168,8 @@ template void genr<int>(const std::string&, const int&);
 template void genr<double>(const std::string&, const double&);
 template void genr<std::string>(const std::string&, const std::string&);
 template void genr<GretlMatrix>(const std::string&, const GretlMatrix&);
+template void genr<GretlBundle>(const std::string&, const GretlBundle&);
+template void genr<py::list>(const std::string&, const py::list&);
 
 py::object get_uservar (const std::string &varname)
 {
@@ -1040,6 +1236,7 @@ py::object get_uservar (const std::string &varname)
         build_msg();
         throw py::index_error(msg);
     }
+    if (err == 1) throw std::invalid_argument(ext_msg); // special case, used for corr()
     if (arg_errors.count(err)) {
         build_msg();
         throw std::invalid_argument(msg);
@@ -1071,6 +1268,11 @@ void gretl_valid_long_opt (gretlopt &opt, GretlCmdIndex ci, const std::string &k
     if (status == OPT_NO_PARM) {
         // no parameter wanted, but we'll accept a boolean
         if (!ext_val && !is_bool_kwarg(val)) return;
+    } else if (!ext_val && is_pybool(val)) {
+        // a boolean enables or disables an option without supplying
+        // an optional string parameter
+        if (!val.cast<bool>()) return;
+        if (status == OPT_NEEDS_PARM) throw std::invalid_argument("option requires a parameter: " + key);
     } else {
         // an option parameter is accepted, perhaps required
         if (ext_val) {
@@ -1084,7 +1286,7 @@ void gretl_valid_long_opt (gretlopt &opt, GretlCmdIndex ci, const std::string &k
     SET_OPT(opt, opt_local);
 }
 
-bool unpack_kwargs_test (gretlopt &opt, const std::string &type, const py::kwargs &kwargs, int &order)
+bool unpack_kwargs_test (gretlopt &opt, const std::string &type, const py::kwargs &kwargs, int &order, GretlPlot *plotter)
 {
     //
     // we setup test options
@@ -1187,18 +1389,26 @@ bool unpack_kwargs_test (gretlopt &opt, const std::string &type, const py::kwarg
         } else if (key == "silent" || key == "quiet") {
             gretl_valid_long_opt(print_opt, ci, key, item.second);
             continue;
-        } else if (key == "plot") {
-            throw std::invalid_argument("invalid option flag: " + key);
+        } else if (key == "plot" && is_pystr(item.second)) {
+            if (!plotter) throw std::logic_error("no plotter available");
+            const std::string val = item.second.cast<std::string>();
+
+            if (val == "display") {
+                gretl_valid_long_opt(opt, ci, key, py::handle(), plotter->filename().c_str());
+            } else {
+                gretl_valid_long_opt(opt, ci, key, item.second);
+                if (val != "none") plotter->store(val);
+            }
         } else {
             gretl_valid_long_opt(opt, ci, key, item.second);
         }
     }
 
     // we force --plot=none for tests
-    if (type == "cusum" || type == "leverage" || type == "qlrtest" || type == "corrgm") {
+    /*if (type == "cusum" || type == "leverage" || type == "qlrtest" || type == "corrgm") {
         SET_OPT(opt, OPT_U);
         gretl_valid_long_opt(opt, ci, "plot", py::handle(), "none");
-    }
+    }*/
 
     return print_opt == OPT_NONE; // no bits set means we printout results
 }
@@ -1419,3 +1629,84 @@ GretlMatrixPtr do_kpsscrit (int T, bool trend)
 
     return res;
 }
+
+template <GretlCmdIndex CI, typename T>
+py::object do_execute_plot_call (const T &varlist, const GretlDatasetPtr dataset, const std::string &literal, const py::kwargs &kwargs)
+{
+    //
+    // general interface to libgretl plotting apparatus
+    // based on execute_plot_call() from interact.c
+    // in addition, RMPLOT is handled here as well
+    // NOTE: by definition, we do not handle matrix operations here (via matrix_command_driver())
+    //
+    GretlPlot plotter;
+    TemporaryUserVar uv_tmp;
+    gretl_list_ptr gretl_list{nullptr};
+    std::nullptr_t fake_dataset = nullptr; // NOTE: we do not pass dataset to unpack_kwargs_command!!!
+    py::kwargs clean_kwargs = kwargs;
+    int err = 0;
+
+    // we construct list of variables
+    if (varlist.empty()) handle_gretl_error(E_NOVARS);
+    if constexpr (is_gretllist_arg_v<T>) {
+        gretl_list = dataset->gretllist(varlist);
+    } else {
+        static_assert(always_false<T>, "do_plot(): unsupported type");
+    }
+
+    if constexpr (CI == GNUPLOT) {
+        // Register temporary bundles for graphical bands.
+        if (clean_kwargs.contains("band")) plotter.add_band(uv_tmp, clean_kwargs);
+        if (clean_kwargs.contains("bands")) plotter.add_bands(uv_tmp, clean_kwargs);
+    }
+
+    // now we process options using 'clean_kwargs'
+    gretlopt opt = unpack_kwargs_command<CI>(fake_dataset, clean_kwargs, &plotter);
+
+    // we do the job
+    if constexpr (CI == GNUPLOT) {
+        if (opt & OPT_C) {
+            err = xy_plot_with_control(gretl_list.get(), literal.c_str(), dataset->dset, opt);
+        } else {
+            err = gnuplot(gretl_list.get(), literal.c_str(), dataset->dset, opt);
+        }
+    } else if constexpr (CI == BXPLOT) {
+        err = boxplots(gretl_list.get(), literal.c_str(), dataset->dset, opt);
+    } else if constexpr (CI == HFPLOT) {
+        err = hf_plot(gretl_list.get(), literal.c_str(), dataset->dset, opt);
+    } else if constexpr (CI == PANPLOT) {
+        err = cli_panel_plot(gretl_list.get(), literal.c_str(), dataset->dset, opt);
+    } else if constexpr (CI == QQPLOT) {
+        err = qq_plot(gretl_list.get(), dataset->dset, opt);
+    } else if constexpr (CI == KDPLOT) {
+        err = kd_plot(gretl_list.get(), dataset->dset, opt);
+    } else if constexpr (CI == SCATTERS) {
+        err = multi_plots(gretl_list.get(), dataset->dset, opt);
+    } else if constexpr (CI == RMPLOT) {
+        err = rmplot(gretl_list.get(), dataset->dset, opt, global_printer.prn_ptr());
+    } else {
+        static_assert(always_false<std::integral_constant<GretlCmdIndex, CI>>, "do_execute_plot_call(): unsupported command");
+    }
+    if (err) handle_gretl_error(err);
+
+    if constexpr (CI == RMPLOT) {
+        global_printer.print();
+    }
+
+    return plotter.display();
+}
+template py::object do_execute_plot_call<GNUPLOT, std::string>(const std::string&, GretlDatasetPtr, const std::string&, const py::kwargs&);
+template py::object do_execute_plot_call<GNUPLOT, py::list>(const py::list&, GretlDatasetPtr, const std::string&, const py::kwargs&);
+template py::object do_execute_plot_call<BXPLOT, std::string>(const std::string&, GretlDatasetPtr, const std::string&, const py::kwargs&);
+template py::object do_execute_plot_call<BXPLOT, py::list>(const py::list&, GretlDatasetPtr, const std::string&, const py::kwargs&);
+template py::object do_execute_plot_call<HFPLOT, std::string>(const std::string&, GretlDatasetPtr, const std::string&, const py::kwargs&);
+template py::object do_execute_plot_call<HFPLOT, py::list>(const py::list&, GretlDatasetPtr, const std::string&, const py::kwargs&);
+template py::object do_execute_plot_call<PANPLOT, std::string>(const std::string&, GretlDatasetPtr, const std::string&, const py::kwargs&);
+template py::object do_execute_plot_call<PANPLOT, py::list>(const py::list&, GretlDatasetPtr, const std::string&, const py::kwargs&);
+template py::object do_execute_plot_call<QQPLOT, std::string>(const std::string&, GretlDatasetPtr, const std::string&, const py::kwargs&);
+template py::object do_execute_plot_call<QQPLOT, py::list>(const py::list&, GretlDatasetPtr, const std::string&, const py::kwargs&);
+template py::object do_execute_plot_call<KDPLOT, std::string>(const std::string&, GretlDatasetPtr, const std::string&, const py::kwargs&);
+template py::object do_execute_plot_call<KDPLOT, py::list>(const py::list&, GretlDatasetPtr, const std::string&, const py::kwargs&);
+template py::object do_execute_plot_call<SCATTERS, std::string>(const std::string&, GretlDatasetPtr, const std::string&, const py::kwargs&);
+template py::object do_execute_plot_call<SCATTERS, py::list>(const py::list&, GretlDatasetPtr, const std::string&, const py::kwargs&);
+template py::object do_execute_plot_call<RMPLOT, std::string>(const std::string&, GretlDatasetPtr, const std::string&, const py::kwargs&);

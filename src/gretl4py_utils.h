@@ -2,6 +2,9 @@
  *  gretl -- Gnu Regression, Econometrics and Time-series Library
  *  Copyright (C) 2001 Allin Cottrell and Riccardo "Jack" Lucchetti
  *
+ *  gretl4py -- Python bindings for gretl
+ *  Copyright (C) 2024 Marcin Błażejowski
+ *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
@@ -24,6 +27,7 @@
 #include "gretl4py_dataset.h"
 #include "gretl4py_matrix.h"
 #include "gretl4py_bundle.h"
+#include <filesystem>
 
 namespace py = pybind11;
 
@@ -72,6 +76,69 @@ inline bool is_numpy_array_fc (const py::array &m) {
 }
 inline bool is_pygretlbundle (const py::handle &o) { return py::isinstance<GretlBundle>(o); }
 inline bool is_pygretlmatrix (const py::handle &o) { return py::isinstance<GretlMatrix>(o); }
+
+//////////////////////////////////////////////////
+// classes
+//////////////////////////////////////////////////
+//
+// Class to handle plotting
+//
+class GretlPlot
+{
+private:
+    static std::filesystem::path executor_;     // path to gnuplot replacement
+    static std::filesystem::path queue_dir_;    // queue path (handled automatically)
+    static unsigned long long queue_owner_pid_; // which process owns queue
+    static bool auto_show_;                     // whether we show plots for executed scripts
+
+    std::filesystem::path gpfile_;              // path to the source gnuplot script
+    std::filesystem::path pyfile_;              // path to the generated Python script
+    bool temporary_ = false;                    // whether generated files are temporary
+    bool source_owned_ = false;                 // whether GretlPlot owns the source file
+    bool display_ = true;                       // whether to execute and display the plot
+
+    static unsigned long long current_pid_ (void) noexcept;
+
+    static std::string random_plot_name (void);
+
+    static py::object execute_script_ (const std::filesystem::path &script);
+
+    static void show_figures_ (void);
+
+    static void cleanup_queue_ (void) noexcept;
+public:
+    GretlPlot (void) = default;
+    GretlPlot (const GretlPlot&) = delete;
+    ~GretlPlot (void);
+
+    GretlPlot &operator= (const GretlPlot&) = delete;
+
+    static void init_executor (void);
+
+    static void init_queue (void);
+
+    static void drain_queue (GretlPackagePtr pkg = nullptr);
+
+    [[nodiscard]] static std::string get_executor_path (void);
+
+    static void set_auto_show (bool enabled) noexcept;
+
+    [[nodiscard]] static bool get_auto_show (void) noexcept;
+
+    std::string filename (void);
+
+    bool translate (void);
+
+    py::object display (void);
+
+    void set_source (const std::filesystem::path &path);
+
+    void store (const std::filesystem::path &path);
+
+    void add_band (TemporaryUserVar &uv_tmp, py::kwargs &kwargs);
+
+    void add_bands (TemporaryUserVar &uv_tmp, py::kwargs &kwargs);
+};
 
 //////////////////////////////////////////////////
 // functions
@@ -123,5 +190,10 @@ std::string gretl_slice_from_int (int val);
 GretlSlice python_slice_to_gretl_slice (const py::slice &slice);
 
 GretlSlice python_slice_to_gretl_slice (const std::string &slice);
+
+// Determine the type of a Python list, validating nested lists recursively.
+GretlType get_pyarray_type (const py::list &items);
+
+gretl_array_ptr python_list_to_gretl_array (const py::list &items, GretlType type = GRETL_TYPE_NONE);
 
 #endif // GRETL4PY_UTILS_H

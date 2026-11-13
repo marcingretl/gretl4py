@@ -69,6 +69,8 @@ def run_example():
         start_timer()
         out = gretl.BT_lm(y, X, prior, opt)
         print_timer()
+        
+        gretl.BT_paramplot(out)
 
         return out
 
@@ -161,4 +163,4 @@ def run_example():
 
 
 if __name__ == "__main__":
-    run_example()
+    run_example()    

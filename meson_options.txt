@@ -22,3 +22,15 @@ option('LLVM_RT_PATH', type: 'string',
 option('GRETL_PATH', type: 'string',
        value: '/Applications/Gretl.app/Contents/Resources',
        description: 'Path to gretl installation (macOS)')
+
+# Disable MPI support files without affecting the gretl4py extension.
+option('NOMPI', type: 'boolean', value: false,
+       description: 'Do not stage gretlmpi or an MPI runtime')
+
+# MPI installation prefix for bundled Open MPI on Linux or MS-MPI on Windows ARM64.
+option('MPI_PATH', type: 'string', value: '',
+       description: 'MPI installation prefix for bundled runtimes (Linux and Windows ARM64)')
+
+# Path to the prebuilt gptranslate executable (gp-executor / gp-executor.exe).
+option('GP_EXECUTOR_PATH', type: 'string', value: '',
+       description: 'Path to the prebuilt gp-executor binary')

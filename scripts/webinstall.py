@@ -43,16 +43,29 @@ def download_wheel(url: str, dest_folder: Path) -> Path:
     print(f"Downloaded to {dest_path}")
     return dest_path
 
+
 def extract_wheel(wheel_path: Path, extract_to: Path):
     """
-    Extracts the contents of a wheel file to a directory.
+    Extracts a wheel and restores Unix file permissions.
     """
     extract_to.mkdir(parents=True, exist_ok=True)
     print(f"Extracting {wheel_path.name} ...")
+
     try:
-        with zipfile.ZipFile(wheel_path, 'r') as zip_ref:
+        with zipfile.ZipFile(wheel_path, "r") as zip_ref:
             zip_ref.extractall(extract_to)
+
+            # Restore Unix permissions stored in the wheel.
+            for info in zip_ref.infolist():
+                if info.create_system == 3:
+                    mode = (info.external_attr >> 16) & 0o7777
+                    if mode:
+                        target = extract_to / info.filename
+                        if target.exists() and not target.is_symlink():
+                            os.chmod(target, mode)
+
         print(f"Extracted to {extract_to}")
+
     except BadZipFile:
         print(f"Error: {wheel_path.name} is not a valid zip file.")
         sys.exit(1)

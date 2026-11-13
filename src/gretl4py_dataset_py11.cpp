@@ -2,6 +2,9 @@
  *  gretl -- Gnu Regression, Econometrics and Time-series Library
  *  Copyright (C) 2001 Allin Cottrell and Riccardo "Jack" Lucchetti
  *
+ *  gretl4py -- Python bindings for gretl
+ *  Copyright (C) 2024 Marcin Błażejowski
+ *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
@@ -122,7 +125,7 @@ void init_gretl4py_dataset_py11 (py::module_ &m)
     .def("__getitem__", py::overload_cast<const std::string&>(&GretlDataset::getitem_impl))
     .def("__getitem__", py::overload_cast<const py::list&>(&GretlDataset::getitem_impl))
     .def("_test",
-         [](GretlDataset &self, const std::string &type, const py::kwargs &kwargs) -> GretlBundlePtr
+         [](GretlDataset &self, const std::string &type, const py::kwargs &kwargs) -> py::object
          {
              //
              // here we do some pre-computations for certain tests
@@ -185,8 +188,14 @@ void init_gretl4py_dataset_py11 (py::module_ &m)
                  varlist = vars_val;
              }
 
-             // we do the job
-             return self.test(type, varlist, clean_kwargs);
+             // Execute the test and retrieve its statistical results and optional figure.
+             auto [bundle, fig] = self.test(type, varlist, clean_kwargs);
+
+             // Return the bundle alone if the test did not produce a figure.
+             if (fig.is_none()) return py::cast(bundle);
+
+             // Return both results when a matplotlib Figure is available.
+             return py::make_tuple(py::cast(bundle), std::move(fig));
          }, py::arg("type"), py::kw_only())
     .def("clone", [](const GretlDataset &self) { return GretlDataset::clone(self); }, doc::Dataset::clone)
     .def("head", &head_tail_print<HEAD>, py::arg("nobs") = 5, py::kw_only(), doc::Dataset::head)
@@ -315,6 +324,10 @@ void init_gretl4py_dataset_py11 (py::module_ &m)
          }, doc::Dataset::unpad_daily)
     .def("tdisagg", &GretlDataset::tdisagg,
          py::arg("Y").none(false), py::arg("s").none(false), py::kw_only(), doc::Dataset::tdisagg)
+    .def("hflags", &GretlDataset::hflags<std::string>,
+         py::arg("minlag").none(false), py::arg("maxlag").none(false), py::arg("hfvars").none(false))
+    .def("hflags", &GretlDataset::hflags<py::list>,
+         py::arg("minlag").none(false), py::arg("maxlag").none(false), py::arg("hfvars").none(false), doc::Dataset::hflags)
     .def("to_dict", &GretlDataset::to_dict, doc::Dataset::to_dict)
     .def("to_file", py::overload_cast<const std::string&, const std::string&, const py::kwargs&>(&GretlDataset::to_file<std::string>),
          py::arg("filename").none(false), py::arg("varlist").none(true) = "", py::kw_only())
@@ -415,13 +428,14 @@ void init_gretl4py_dataset_py11 (py::module_ &m)
     .def("cov", &GretlDataset::cov<py::list>,
          py::arg("varlist").none(true) = py::list(), doc::Dataset::cov)
     .def("hurst", &GretlDataset::hurst,
-         py::arg("series").none(false), doc::Dataset::hurst)
+         py::arg("series"), py::arg("plot").none(true) = "", doc::Dataset::hurst)
+    .def("freq", &GretlDataset::freq, py::arg("var").none(false), py::kw_only(), doc::Dataset::freq)
     .def("xcorrgm", py::overload_cast<const std::string&, int, const py::kwargs&>(&GretlDataset::xcorrgm<std::string>),
          py::arg("varlist").none(false), py::arg("order").none(true) = 0, py::kw_only())
     .def("xcorrgm", py::overload_cast<const py::list&, int, const py::kwargs&>(&GretlDataset::xcorrgm<py::list>),
          py::arg("varlist").none(false), py::arg("order").none(true) = 0, py::kw_only())
     .def("xcorrgm",
-         [](GretlDataset &self, const std::string &series1, const std::string &series2, int order, const py::kwargs &kwargs) -> py::object
+         [](GretlDataset &self, const std::string &series1, const std::string &series2, int order, const py::kwargs &kwargs) -> std::pair<py::object, py::object>
          {
              return self.xcorrgm<std::string>(series1 + " " + series2, order, kwargs);
          }, py::arg("series1").none(false), py::arg("series2").none(false),
@@ -449,7 +463,24 @@ void init_gretl4py_dataset_py11 (py::module_ &m)
     .def("ljungbox", py::overload_cast<int, int>(&GretlDataset::ljungbox),
          py::arg("y").none(false), py::arg("p").none(false))
     .def("ljungbox", py::overload_cast<const std::string&, int>(&GretlDataset::ljungbox),
-         py::arg("y").none(false), py::arg("p").none(false), doc::Dataset::ljungbox);
+         py::arg("y").none(false), py::arg("p").none(false), doc::Dataset::ljungbox)
+    .def("plot", &GretlDataset::plot<std::string>, py::arg("yvars").none(false), py::kw_only())
+    .def("plot", &GretlDataset::plot<py::list>, py::arg("yvars").none(false), py::kw_only(), doc::Dataset::plot)
+    .def("boxplot", &GretlDataset::boxplot<std::string>, py::arg("varlist").none(false), py::kw_only())
+    .def("boxplot", &GretlDataset::boxplot<py::list>, py::arg("varlist").none(false), py::kw_only(), doc::Dataset::boxplot)
+    .def("hfplot", &GretlDataset::hfplot<std::string>, py::arg("hflist").none(false), py::kw_only())
+    .def("hfplot", &GretlDataset::hfplot<py::list>, py::arg("hflist").none(false), py::kw_only(), doc::Dataset::hfplot)
+    .def("panplot", &GretlDataset::panplot<std::string>, py::arg("plotvar").none(false), py::kw_only())
+    .def("panplot", &GretlDataset::panplot<py::list>, py::arg("plotvar").none(false), py::kw_only(), doc::Dataset::panplot)
+    .def("qqplot", &GretlDataset::qqplot<std::string>, py::arg("y").none(false), py::kw_only())
+    .def("qqplot", &GretlDataset::qqplot<py::list>, py::arg("y").none(false), py::kw_only(), doc::Dataset::qqplot)
+    .def("kdplot", &GretlDataset::kdplot<std::string>, py::arg("y").none(false), py::kw_only())
+    .def("kdplot", &GretlDataset::kdplot<py::list>, py::arg("y").none(false), py::kw_only(), doc::Dataset::kdplot)
+    .def("scatters", &GretlDataset::scatters<std::string>, py::arg("yvar").none(false), py::kw_only())
+    .def("scatters", &GretlDataset::scatters<py::list>, py::arg("yvar").none(false), py::kw_only(), doc::Dataset::scatters)
+    .def("tsplots", &GretlDataset::tsplots<std::string>, py::arg("yvar").none(false), py::kw_only())
+    .def("tsplots", &GretlDataset::tsplots<py::list>, py::arg("yvar").none(false), py::kw_only(), doc::Dataset::tsplots)
+    .def("rmplot", &GretlDataset::rmplot, py::arg("series").none(false), py::kw_only());
 
     cls.attr("__module__") = "gretl";
 }

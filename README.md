@@ -38,6 +38,9 @@ The overall architecture is:
 > **Windows users:** gretl4py requires the appropriate Microsoft Visual C++ 2022
 > Redistributable (v14.x). See Microsoft's
 > [latest supported Visual C++ Redistributable downloads](https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist).
+> On Windows x86-64 (AMD64), MPI functionality additionally requires
+> [Microsoft MPI (MS-MPI)](https://learn.microsoft.com/en-us/message-passing-interface/microsoft-mpi),
+> installed separately. MS-MPI is not required for ordinary, non-MPI use of gretl4py.
 
 ---
 
@@ -54,7 +57,7 @@ gretl4py provides:
 - Bundles and other gretl objects, allowing Python code to interact directly with objects used by `libgretl`.
 - NumPy and pandas interoperability, including conversion to NumPy arrays and pandas DataFrames and, where appropriate, zero-copy views of matrix data.
 - gretl's hansl language, allowing Python programs to execute hansl code and exchange user-defined variables with `libgretl`.
-- **gretl function packages**, making functionality implemented in hansl packages directly usable from Python.
+- [gretl function packages](https://packages.gretlconference.org/), making functionality implemented in hansl packages directly usable from Python.
 - LIBSVM-based machine-learning functionality available through gretl.
 - Plotting support integrated with matplotlib.
 
@@ -582,12 +585,29 @@ A gretl4py installation contains:
 2. `libgretl` and the gretl plugins bundled for use by gretl4py;
 3. Python-level helper modules and utilities;
 4. example modules and scripts;
-5. bundled datasets and other supporting resources.
+5. bundled datasets and other supporting resources;
+6. the `COPYING` file containing the GNU GPL v3 license text;
+7. the `gretlmpi` executable (`gretlmpi.exe` on Windows), unless MPI staging is disabled.
 
 The Python extension is implemented using C++ and pybind11, while the underlying
 econometric functionality is provided by `libgretl`. Some functionality provided by
 individual gretl plugins may require additional runtime libraries; the exact requirements
 depend on the platform and the functionality being used.
+
+### MPI support
+
+The `gretlmpi` executable is included when MPI support files are enabled.
+The MPI runtime itself is platform-dependent:
+
+- **GNU/Linux:** `gretlmpi` uses the system MPI installation; a bundled
+  `gretl/mpi/` directory is not required.
+- **macOS:** the package can include a bundled Open MPI runtime under `gretl/mpi/`.
+- **Windows x86-64:** `gretlmpi.exe` requires an external Microsoft MPI (MS-MPI)
+  installation.
+
+When building from source, `meson install -C build` installs the prepared
+`gretlmpi` executable and any staged MPI runtime files. Set `-DNOMPI=true`
+to omit these MPI support files.
 
 ---
 

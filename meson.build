@@ -17,6 +17,10 @@ GRETL_PATH          = get_option('GRETL_PATH')
 LOCAL_INST          = get_option('LOCAL_INST')
 LLVM_RT_PATH        = get_option('LLVM_RT_PATH')
 GRETL_INSTALL_PATH  = get_option('GRETL_INSTALL_PATH')
+# MPI staging is optional and independent of the Python extension.
+NOMPI               = get_option('NOMPI')
+MPI_PATH            = get_option('MPI_PATH')
+GP_EXECUTOR_PATH    = get_option('GP_EXECUTOR_PATH')
 
 ###########################################################################
 # Windows-specific libgretl
@@ -92,7 +96,7 @@ if LOCAL_INST
   ).stdout().strip()
 else
   python_sitepkg_dir = run_command(
-    python, '-c', 'import sysconfig; print(sysconfig.get_paths()[\"platlib\"])',
+    python, '-c', 'import sysconfig; print(sysconfig.get_paths()["platlib"])',
     check: true
   ).stdout().strip()
 endif
@@ -270,6 +274,51 @@ copy_binary_part = custom_target(
 )
 
 ###########################################################################
+# Stage the prebuilt gptranslate executable next to gretlmpi.
+###########################################################################
+if GP_EXECUTOR_PATH == ''
+  error('Set -DGP_EXECUTOR_PATH=... to the prebuilt gp-executor binary')
+endif
+
+gp_executor_source = GP_EXECUTOR_PATH.replace('\\', '/')
+gp_executor_name = 'gp-executor'
+if is_windows
+  gp_executor_name = 'gp-executor.exe'
+endif
+if not fs.is_file(gp_executor_source)
+  error('gp-executor not found: ' + gp_executor_source)
+endif
+
+# Stage in the source package so setuptools wheels include the executable.
+prepare_gp_executor = custom_target(
+  'prepare_gp_executor',
+  input: files('scripts/prepare_runtime.py'),
+  output: 'gp-executor-prepared.stamp',
+  command: [python, '-c',
+    'import pathlib, shutil, sys; src = pathlib.Path(sys.argv[1]); dst = pathlib.Path(sys.argv[2]); dst.parent.mkdir(parents=True, exist_ok=True); shutil.copy2(src, dst); pathlib.Path(sys.argv[3]).touch()',
+    gp_executor_source,
+    meson.project_source_root() / 'gretl' / gp_executor_name,
+    '@OUTPUT@'],
+  build_by_default: true,
+)
+
+# Install the executable alongside the Python extension and gretlmpi.
+# Keep the executable bit on Unix; install_data defaults to regular file mode.
+# The build target above also stages the binary in the source package for wheels.
+if is_windows
+  install_data(
+    gp_executor_source,
+    install_dir: python_gretl_dir,
+  )
+else
+  install_data(
+    gp_executor_source,
+    install_dir: python_gretl_dir,
+    install_mode: 'rwxr-xr-x',
+  )
+endif
+
+###########################################################################
 # Prepare runtime resources (plugins and DLLs)
 ###########################################################################
 # Copy runtime files into the source package for development and wheel builds.
@@ -295,7 +344,106 @@ prepare_runtime = custom_target(
   output: 'runtime-prepared.stamp',
   command: [python, '@INPUT@'] + runtime_args,
   build_by_default: true,
+  # Always refresh runtime binaries, even when the sources appear unchanged.
+  build_always_stale: true,
 )
+
+###########################################################################
+# Stage MPI executables and bundled MPI runtimes (Linux and Windows ARM64)
+###########################################################################
+# Local installations reuse system MPI; distributable builds stage a private copy.
+# NOMPI disables MPI staging without affecting the Python extension.
+mpi_args = [
+  '--destination', meson.project_source_root() / 'gretl',
+  '--stamp', '@OUTPUT@',
+]
+
+if NOMPI
+  # Remove MPI artifacts from previous builds of this source tree.
+  mpi_args += ['--disable']
+else
+  # The gretl executable is supplied by the installed gretl distribution.
+  # Windows x86_64 uses system MS-MPI; Windows ARM64 bundles its runtime.
+  if is_windows
+    gretlmpi_path = gretl_install_root / 'gretlmpi.exe'
+  elif is_darwin
+    gretlmpi_path = gretl_install_root / 'Contents/Resources/bin/gretlmpi'
+  else
+    gretlmpi_path = gretl_install_root / 'bin/gretlmpi'
+  endif
+  if not fs.is_file(gretlmpi_path)
+    error('gretlmpi not found: ' + gretlmpi_path)
+  endif
+  mpi_args += ['--gretlmpi', gretlmpi_path]
+
+  # macOS: explicit MPI_PATH wins; otherwise /opt/openmpi, then Gretl.app.
+  # Only choose a prefix containing both a launcher and shared libraries.
+  if is_darwin
+    if MPI_PATH != ''
+      mpi_prefix = MPI_PATH.replace('\\', '/')
+      if not fs.is_file(mpi_prefix / 'bin/mpiexec') or not fs.is_dir(mpi_prefix / 'lib')
+        error('Invalid explicit MPI_PATH: ' + mpi_prefix)
+      endif
+    else
+      mpi_prefix = ''
+      foreach candidate : ['/opt/openmpi', GRETL_PATH]
+        if fs.is_file(candidate / 'bin/mpiexec') and fs.is_dir(candidate / 'lib')
+          mpi_prefix = candidate
+          break
+        endif
+      endforeach
+      if mpi_prefix == ''
+        error('OpenMPI not found: checked /opt/openmpi and GRETL_PATH; set -DMPI_PATH=...')
+      endif
+    endif
+    message('macOS OpenMPI runtime: ' + mpi_prefix)
+    mpi_args += ['--mpi-path', mpi_prefix]
+  endif
+
+  # Windows x86_64 keeps using a separately installed MS-MPI runtime.
+  if not LOCAL_INST and (host_machine.system() == 'linux' or (is_windows and arch == 'aarch64'))
+    if MPI_PATH == ''
+      error('Set -DMPI_PATH=... when building a wheel with bundled MPI')
+    endif
+    mpi_args += ['--mpi-path', MPI_PATH]
+  endif
+endif
+
+prepare_mpi = custom_target(
+  'prepare_mpi_runtime',
+  input: files('scripts/prepare_mpi_runtime.py'),
+  output: 'mpi-prepared.stamp',
+  command: [python, '@INPUT@'] + mpi_args,
+  build_by_default: true,
+)
+
+# Install the MPI artifacts staged for the current platform.
+# This runs after the build targets, so files generated by prepare_mpi exist.
+if not NOMPI
+  meson.add_install_script(
+    python, '-c',
+    '''
+import os
+import pathlib
+import shutil
+import sys
+
+source = pathlib.Path(sys.argv[1])
+destination = pathlib.Path(sys.argv[2])
+destdir = os.environ.get('DESTDIR', '')
+if destdir:
+    destination = pathlib.Path(destdir) / pathlib.Path(os.path.splitdrive(str(destination))[1].lstrip('/\\'))
+destination.mkdir(parents=True, exist_ok=True)
+
+name = 'gretlmpi.exe' if os.name == 'nt' else 'gretlmpi'
+shutil.copy2(source / name, destination / name)
+if (source / 'mpi').is_dir():
+    shutil.copytree(source / 'mpi', destination / 'mpi', dirs_exist_ok=True)
+''',
+    meson.project_source_root() / 'gretl',
+    python_gretl_dir,
+  )
+endif
 
 ###########################################################################
 # Install Python files and resources
@@ -305,15 +453,16 @@ install_data(
   'gretl/_gretl4py_addons.py',
   'gretl/_gretl4py_classes.py',
   'gretl/_gretl4py_model_api.py',
-  'gretl/_plotting.py',
   'gretl/_bundled_addons.txt',
   'gretl/curl-ca-bundle.crt',
+  'gretl/COPYING',
   install_dir: python_gretl_dir,
 )
 
 ###########################################################################
 # Install resource directories
 ###########################################################################
+# MPI files are staged by the preparation target; packaging reads the source tree.
 foreach dirname : ['lib', 'data', 'examples', 'scripts']
   install_subdir(
     'gretl' / dirname,

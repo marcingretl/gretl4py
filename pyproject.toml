@@ -20,6 +20,7 @@ dependencies = [
     "numpy>=1.22",
     "matplotlib>=3.7",
     "pandas>=2.3",
+    "PySide6>=6.7; sys_platform == 'win32'",
 ]
 
 classifiers = [
@@ -47,11 +48,17 @@ exclude = ["**/__pycache__"]
     "_gretl4py_addons.py",
     "_gretl4py_classes.py",
     "_gretl4py_model_api.py",
-    "_plotting.py",
     "curl-ca-bundle.crt",
+    "COPYING",
     "lib/*",
     "data/*",
+    "data/gnuplot/*.gpsty",
     "examples/*",
     "functions/*",
     "scripts/*",
+    "gretlmpi",
+    "gretlmpi.exe",
+    "gp-executor",
+    "gp-executor.exe",
+    "mpi/**/*",
 ]

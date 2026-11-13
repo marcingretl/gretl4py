@@ -2,6 +2,9 @@
  *  gretl -- Gnu Regression, Econometrics and Time-series Library
  *  Copyright (C) 2001 Allin Cottrell and Riccardo "Jack" Lucchetti
  *
+ *  gretl4py -- Python bindings for gretl
+ *  Copyright (C) 2024 Marcin Błażejowski
+ *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
@@ -28,11 +31,15 @@ extern "C" {
     #include <gretl/varprint.h>
     #include <gretl/system.h>
     #include <gretl/compare.h>
+    #include <gretl/matrix_extra.h>
+    #include <gretl/bootstrap.h>
+    #include <gretl/uservar.h>
 }
 #include <gretl/forecast.h>
 #include <string>
 #include <regex>
 #include <algorithm>
+#include <cmath>
 
 #define GRETL4PY_MODEL_DEBUG 0
 
@@ -71,7 +78,290 @@ constexpr bool use_lcdop_sig (void)
     //const int *list, int ci, DATASET *dset, gretlopt opt, PRN *prn
     return CI == POISSON || CI == NEGBIN;
 }
+
+// Keep temporary plot series and a private dataset copy alive during plotting.
+// The cleanup behavior matches the former TemporarySeriesGuard in plot().
+class NSEPlotContext
+{
+private:
+    MODEL *model_;                  // fitted single-equation model (not owned)
+    GretlCmdIndex ci_;              // estimator command index
+    const GretlDatasetPtr &source_; // original dataset (not owned)
+    DATASET *dset_;                 // plotting dataset, possibly a private copy
+    GretlPlot &plotter_;            // plot output owner
+    PRN *prn_;                      // libgretl printer (not owned)
+    int x_;                         // horizontal-axis variable number
+    GretlDatasetPtr plot_data_;     // optional private dataset copy
+    int origv_ = 0;                 // original variable count for attached data
+    bool prepared_ = false;         // whether temporary data were prepared
+    bool restore_ = false;          // whether to drop attached temporary series
+
+    // Make a private copy only when using the user's dataset.
+    // An attached model dataset can be modified temporarily.
+    // Prepare the dataset and register temporary-series cleanup.
+    void prepare_temporary_series_ (void)
+    {
+        if (prepared_) return;
+
+        if (dset_ == source_->dset) {
+            plot_data_ = GretlDataset::clone(*source_);
+            dset_ = plot_data_->dset;
+        } else {
+            origv_ = dset_->v;
+            restore_ = true;
+        }
+        prepared_ = true;
+    }
+
+    // Add fitted values or residuals with shared dataset cleanup.
+    int add_model_series_ (ModelDataIndex which)
+    {
+        prepare_temporary_series_();
+
+        return genr_fit_resid(model_, dset_, which);
+    }
+
+    // Register the temporary Gnuplot output for a libgretl command.
+    void register_output_ (GretlCmdIndex command, const char *key, gretlopt opt)
+    {
+        gretl_valid_long_opt(opt, command, key, py::handle(), plotter_.filename().c_str());
+    }
+public:
+    NSEPlotContext (MODEL *model, GretlCmdIndex ci, const GretlDatasetPtr &source,
+                    DATASET *dset, GretlPlot &plotter, PRN *prn, int x)
+                    : model_(model), ci_(ci), source_(source), dset_(dset), plotter_(plotter), prn_(prn), x_(x)
+    {}
+
+    NSEPlotContext (const NSEPlotContext&) = delete;
+    NSEPlotContext &operator= (const NSEPlotContext&) = delete;
+
+    ~NSEPlotContext (void)
+    {
+        // Restore the attached model dataset after plotting.
+        // A private dataset copy is cleaned up by its destructor.
+        if (restore_ && dset_->v > origv_) dataset_drop_last_variables(dset_, dset_->v - origv_);
+    }
+
+    int fitted (void);
+
+    int residuals (void);
+
+    int correlogram (std::optional<int> order);
+
+    int periodogram (bool bartlett, std::optional<int> width, bool log);
+
+    int qqplot (void);
+
+    int confidence_ellipse (int i, int j, double alpha);
+};
+
+int NSEPlotContext::fitted (void)
+{
+    // based on fit_actual_plot() from gui/library.c
+    gretlopt opt = OPT_A;
+    int plotlist[4] = {0};
+
+    // Force libgretl to write the plot to our temporary file.
+    register_output_(GNUPLOT, "output", opt);
+
+    // Prefer a fitted-value formula when available.
+    gretl_char_ptr formula(gretl_model_get_fitted_formula(model_, x_, dset_));
+
+    if (formula) {
+        plotlist[0] = 3;
+        plotlist[1] = 0;
+        plotlist[2] = gretl_model_get_depvar(model_);
+        plotlist[3] = x_;
+        return gnuplot(plotlist, formula.get(), dset_, opt);
+    }
+
+    // Add fitted values temporarily.
+    const int err = add_model_series_(M_YHAT);
+
+    if (err) return err;
+    plotlist[0] = 3;
+    plotlist[1] = dset_->v - 1;
+    plotlist[2] = gretl_model_get_depvar(model_);
+    if (x_) {
+        plotlist[3] = x_;
+    } else {
+        plotlist[0] = 2;
+        SET_OPT(opt, OPT_T);
+        if (dataset_is_time_series(dset_)) SET_OPT(opt, OPT_O);
+    }
+
+    return gnuplot(plotlist, nullptr, dset_, opt);
 }
+
+int NSEPlotContext::residuals (void)
+{
+    // Based on resid_plot() from gui/library.c.
+    gretlopt opt = OPT_R;
+    int plotlist[4] = {0};
+
+    // Force libgretl to write the plot to our temporary file.
+    register_output_(GNUPLOT, "output", opt);
+
+    // Use libgretl's dedicated GARCH residual plot.
+    if (ci_ == GARCH && !(model_->opt & OPT_Z) && x_ == 0) return garch_resid_plot(model_, dset_);
+
+    // Add residuals temporarily.
+    const int err = add_model_series_(M_UHAT);
+
+    if (err) return err;
+
+    const int uhatno = dset_->v - 1;
+    const int yno = gretl_model_get_depvar(model_);
+
+    plotlist[0] = 1;
+    plotlist[1] = uhatno;
+    strcpy(dset_->varname[uhatno], "residual");
+    if (yno > 0) {
+        std::string label = "residual for " + std::string(dset_->varname[yno]);
+
+        series_set_label(dset_, uhatno, label.c_str());
+    }
+    if (x_) {
+        // Plot residuals against the selected variable.
+        plotlist[0] = 2;
+        plotlist[2] = x_;
+    } else {
+        // Plot residuals against observations or time.
+        SET_OPT(opt, OPT_T);
+        if (dataset_is_time_series(dset_) || dataset_is_panel(dset_)) SET_OPT(opt, OPT_O);
+    }
+
+    // Match the GUI treatment of standardized GARCH residuals.
+    if (ci_ == GARCH && (model_->opt & OPT_Z)) {
+        series_set_display_name(dset_, uhatno, "standardized residual");
+        opt = static_cast<gretlopt>(opt & ~OPT_R);
+    }
+
+    return gnuplot(plotlist, nullptr, dset_, opt);
+}
+
+int NSEPlotContext::correlogram (std::optional<int> order)
+{
+    // Plot the correlogram of model residuals.
+    // Based on residual_correlogram_callback() from gui/library.c.
+
+    // Add model residuals temporarily.
+    const int err = add_model_series_(M_UHAT);
+
+    if (err) return err;
+
+    // Account for estimated ARMA coefficients in the Ljung-Box test.
+    const int npq = model_->ci == ARMA ? arma_model_get_n_arma_coeffs(model_) : 0;
+
+    // Use the GUI default lag order unless explicitly specified.
+    const int lag_order = order.value_or(auto_acf_order(sample_size(dset_)));
+
+    if (lag_order < 1) throw std::invalid_argument("order must be positive");
+
+    // Register the correlogram plot output.
+    register_output_(CORRGM, "plot", OPT_U);
+
+    // Compute and plot the residual correlogram.
+    const gretlopt opt = static_cast<gretlopt>(OPT_R | OPT_U);
+
+    return corrgram(dset_->v - 1, lag_order, npq, dset_, opt, prn_);
+}
+
+int NSEPlotContext::periodogram (bool bartlett, std::optional<int> width, bool log)
+{
+    // Plot the periodogram of model residuals.
+    // Based on residual_periodogram_callback() from gui/library.c.
+
+    // Add model residuals temporarily.
+    const int err = add_model_series_(M_UHAT);
+
+    if (err) return err;
+
+    // Use the GUI bandwidth default when Bartlett smoothing is requested.
+    const int T = sample_size(dset_);
+    const int bandwidth = bartlett ? width.value_or(auto_spectrum_order(T, OPT_O)) : 0;
+
+    // The Bartlett window must fit within the estimation sample.
+    if (bartlett && (bandwidth < 2 || bandwidth > T / 2)) throw py::value_error("width must be between 2 and half the sample size");
+
+    // Request a plot file even in batch mode.
+    register_output_(PERGM, "plot", OPT_U);
+    gretlopt opt = OPT_U;
+    if (bartlett) SET_OPT(opt, OPT_O);
+    if (log) SET_OPT(opt, OPT_L);
+
+    // Delegate spectral estimation and plotting to libgretl.
+
+    return residual_periodogram(dset_->Z[dset_->v - 1], bandwidth, dset_, opt, prn_);
+}
+
+int NSEPlotContext::qqplot (void)
+{
+    // Plot the normal Q-Q graph of model residuals.
+    // Based on residual_qq_plot() from gui/library.c.
+
+    // Add model residuals temporarily.
+    const int err = add_model_series_(M_UHAT);
+
+    if (err) return err;
+
+    int plotlist[4] = {0};
+    plotlist[0] = 1;
+    plotlist[1] = dset_->v - 1;
+
+    // Route Q-Q plot output to the temporary Gnuplot file.
+    register_output_(QQPLOT, "output", OPT_U);
+
+    // Use the GUI defaults: sample-scaled normal quantiles and y = x.
+    return qq_plot(plotlist, dset_, OPT_NONE);
+}
+
+int NSEPlotContext::confidence_ellipse (int i, int j, double alpha)
+{
+    //
+    // Plot the joint confidence region of two model coefficients.
+    // Based on do_confidence_region() from gui/library.c.
+    // @i and @j are zero-based coefficient indices.
+    //
+    if (!(std::isfinite)(alpha) || alpha <= 0.0 || alpha >= 1.0) throw std::invalid_argument("alpha must be strictly between 0 and 1");
+    if (model_->dfd <= 0) throw std::invalid_argument("confidence ellipse requires positive residual degrees of freedom");
+    if (model_->ncoeff < 2) throw std::invalid_argument("confidence ellipse requires at least two coefficients");
+    if (i == j) throw std::invalid_argument("select two distinct coefficients");
+
+    // Extract the 2x2 coefficient covariance matrix in model order.
+    std::vector<char> mask(model_->ncoeff, 0);
+    mask[i] = mask[j] = 1;
+    int err = 0;
+    gretl_matrix_ptr V(gretl_vcv_matrix_from_model(model_, mask.data(), &err));
+
+    if (err) return err;
+    if (!V) return E_ALLOC;
+
+    // The user chooses the order of the axes; swap the diagonal variances
+    // when the requested coefficient order differs from the model order.
+    // The off-diagonal covariance is unchanged for a symmetric 2x2 matrix.
+    if (i > j) {
+        const double v00 = gretl_matrix_get(V.get(), 0, 0);
+        const double v11 = gretl_matrix_get(V.get(), 1, 1);
+        gretl_matrix_set(V.get(), 0, 0, v11);
+        gretl_matrix_set(V.get(), 1, 1, v00);
+    }
+
+    double estimates[2] = {model_->coeff[i], model_->coeff[j]};
+    const double tcrit = student_cdf_inverse(model_->dfd, 1.0 - alpha / 2.0);
+    const double Fcrit = 2.0 * snedecor_critval(2, model_->dfd, alpha);
+    char iname[VNAMELEN] = {0};
+    char jname[VNAMELEN] = {0};
+    gretl_model_get_param_name(model_, dset_, i, iname);
+    gretl_model_get_param_name(model_, dset_, j, jname);
+
+    // PLOT_ELLIPSE reads the output file setting from GNUPLOT.
+    register_output_(GNUPLOT, "output", OPT_NONE);
+
+    return confidence_ellipse_plot(V.get(), estimates, tcrit, Fcrit, alpha, iname, jname);
+}
+
+} // namespace
 
 //
 // GretlModel class methods
@@ -162,17 +452,18 @@ void GretlModel::save_model_ (T *model)
     // bundle produced by libgretl.
     // We also add the @summary text produced by libgretl's printmodel().
     //
-    // NOTE: whatever happens later, we "transfer" the model to libgretl,
-    // so from that very moment libgretl owns the memory
-    gretl_object_ref(model, model_obj_type_);
-
-    // if any errors recorded, we throw an exception here
+    // Check estimation errors before acquiring a libgretl reference.
     if constexpr (std::is_same_v<T, MODEL>) {
         err_ = model->errcode;
     } else if constexpr (std::is_same_v<T, GRETL_VAR>) {
         err_ = model->err;
     }
     if (err_) handle_gretl_error(err_);
+
+    // Acquire the reference owned by this C++ wrapper.
+    // This reference must be released in the model destructor.
+    gretl_object_ref(model, model_obj_type_);
+    model_registered_ = true;
 
     // we link model to the dataset used for estimation
     dataset_->linked_models_add(id_);
@@ -191,7 +482,7 @@ void GretlModel::save_model_ (T *model)
         static_assert(always_false<T>, "GretlModel::save_model_(): unknown type");
     }
     if (err_) handle_gretl_error(err_);
-    summary_ = std::string( printer_.get_buffer());   // for safety
+    summary_ = std::string(printer_.get_buffer());   // for safety
 
     // we produce $model or $system bundle based on estimated @model
     if constexpr (std::is_same_v<T, equation_system>) {
@@ -290,7 +581,7 @@ GretlBundlePtr GretlModel::do_restrict_ (T *model, const py::list &impose, const
 
 //T = { MODEL, void }
 template <typename T>
-void GretlModel::gretl_do_forecast_ (void *model, const py::args &args, const py::kwargs &kwargs)
+std::pair<py::object, py::object> GretlModel::gretl_do_forecast_ (void *model, const py::args &args, const py::kwargs &kwargs)
 {
     //
     // method calls libgretl's do_forecast() function
@@ -299,66 +590,166 @@ void GretlModel::gretl_do_forecast_ (void *model, const py::args &args, const py
     static constexpr std::array<const char*, max_positional_args> positional_args = {
         "startobs", "endobs", "steps_ahead", "vname"
     };
+
+    GretlPlot plotter;
     std::string param = "";
-    py::kwargs clean_kwargs = kwargs;
     int n_args = py::len(args);
+    py::kwargs clean_kwargs;
+
+    // make an independent copy of kwargs
+    for (const auto &item : kwargs) {
+        clean_kwargs[item.first] = item.second;
+    }
+
+    // store named forecast arguments separately from command options
+    std::array<py::object, max_positional_args> values = {
+        py::none(), py::none(), py::none(), py::none()
+    };
+    std::array<bool, max_positional_args> supplied = {};
+
+    for (int i=0; i<max_positional_args; ++i) {
+        const char *key = positional_args[i];
+
+        if (clean_kwargs.contains(key)) {
+            values[i] = clean_kwargs.attr("pop")(key);
+            supplied[i] = true;
+        }
+    }
+
+    // we work with kwargs
+    opt_ = unpack_kwargs_command<FCAST>(dataset_, clean_kwargs, &plotter);
+
+    const bool recursive = (opt_ & OPT_R) != 0;
+    const bool out_of_sample = (opt_ & OPT_O) != 0;
+    const bool all_probs = (opt_ & OPT_L) != 0;
 
     // lambda for param construction
-    auto add_to_param = [&param](py::object &arg, const char *key = nullptr)
+    auto add_to_param = [&param](const py::object &arg, const char *key)
     {
         std::string s;
 
         if (is_pystr(arg)) {
             s = arg.cast<std::string>();
         } else if (is_pyint(arg)) {
-            s = std::to_string(arg.cast<int>());
+            s = std::to_string(arg.cast<long>());
         } else if (is_pyfloat(arg)) {
             double x = arg.cast<double>();
+            long double y = static_cast<long double>(x);
 
-            if (std::floor(x) != x) {
-                std::string prefix = key && *key ? std::string(key) + "=" : "";
-
-                handle_gretl_error(E_INVARG, "Invalid positional argument in forecast(): " + prefix + py::str(arg).cast<std::string>());
-            }
-            s = std::to_string(static_cast<long>(x));
+            if (!(std::isfinite)(x) || std::floor(x) != x
+                    || y < static_cast<long double>(std::numeric_limits<long>::lowest())
+                    || y > static_cast<long double>(std::numeric_limits<long>::max())) {
+                handle_gretl_error(E_INVARG, "Invalid argument in fcast(): " + std::string(key) + "=" + py::str(arg).cast<std::string>());
+                }
+                s = std::to_string(static_cast<long>(x));
         } else {
-            handle_gretl_error(E_INVARG, "Invalid positional argument in forecast(): " + py::str(arg).cast<std::string>());
+            handle_gretl_error(E_INVARG, "Invalid argument in fcast(): " + std::string(key) + "=" + py::str(arg).cast<std::string>());
         }
 
+        // libgretl expects each argument to occupy one field
+        if (s.empty() || s.find_first_of(" \t\n\r") != std::string::npos) throw std::invalid_argument("Invalid argument in fcast(): " + std::string(key));
         if (!param.empty()) param.append(" ");
         param += s;
     };
 
     // we unpack args
-    if (n_args > max_positional_args) throw std::invalid_argument("too many positional arguments: " + std::to_string(py::len(args)) + " (max = 4)");
-    if (n_args <= max_positional_args) {
-        int left = max_positional_args - n_args;
+    if (n_args > max_positional_args) throw std::invalid_argument("too many positional arguments: " + std::to_string(n_args) + " (max = 4)");
 
-        for (int i=0; i<n_args; ++i) {
-            if (clean_kwargs.contains(positional_args[i])) throw py::type_error("multiple values for argument '" + std::string(positional_args[i]) + "'");
-            py::object obj = args[i];
+    // map positional arguments according to the fcast syntax
+    std::array<int, max_positional_args> positions = {-1, -1, -1, -1};
 
-            add_to_param(obj);
+    if (recursive) {
+        if (n_args == 1 || n_args == 2) {
+            // steps_ahead [vname]
+            positions[0] = 2;
+            if (n_args == 2) positions[1] = 3;
+        } else if (n_args >= 3) {
+            // startobs endobs steps_ahead [vname]
+            positions[0] = 0;
+            positions[1] = 1;
+            positions[2] = 2;
+            if (n_args == 4) positions[3] = 3;
         }
-        if (!left) return;
-        for (int i=max_positional_args-left; i<max_positional_args; ++i) {
-            const char *key = positional_args[i];
-            py::object obj = clean_kwargs.attr("pop")(key, py::none());
-
-            if (!obj.is_none()) add_to_param(obj, key);
+    } else {
+        if (n_args == 1) {
+            // vname
+            positions[0] = 3;
+        } else if (n_args == 2 || n_args == 3) {
+            // startobs endobs [vname]
+            positions[0] = 0;
+            positions[1] = 1;
+            if (n_args == 3) positions[2] = 3;
+        } else if (n_args == 4) {
+            throw std::invalid_argument("fcast() accepts at most 3 positional arguments without recursive=True");
         }
     }
 
-    // we work with kwargs
-    opt_ = unpack_kwargs_command(FCAST, dataset_, clean_kwargs);
+    // merge positional and named arguments, rejecting duplicates
+    for (int i=0; i<n_args; ++i) {
+        int idx = positions[i];
+
+        if (supplied[idx]) throw std::invalid_argument("multiple values for argument '" + std::string(positional_args[idx]) + "'");
+        values[idx] = args[i];
+        supplied[idx] = true;
+    }
+
+    // treat explicitly supplied None values as omitted arguments
+    auto has_arg = [&values, &supplied](int i) {
+        return supplied[i] && !values[i].is_none();
+    };
+
+    // validate the selected forecast syntax
+    if (has_arg(0) != has_arg(1)) throw std::invalid_argument("startobs and endobs must be specified together");
+    if (recursive && !has_arg(2)) throw std::invalid_argument("steps_ahead is required when recursive=True");
+    if (!recursive && has_arg(2)) throw std::invalid_argument("steps_ahead requires recursive=True");
+    if (out_of_sample && has_arg(0)) throw std::invalid_argument( "startobs and endobs cannot be combined with out_of_sample=True");
+
+    // construct the command string in the order expected by libgretl
+    for (int i=0; i<max_positional_args; ++i) {
+        if (has_arg(i)) {
+            add_to_param(values[i], positional_args[i]);
+        }
+    }
 
     // we do the job
-    if constexpr (std::is_same_v<T, MODEL>) gretl_model_protect(static_cast<MODEL*>(model));
+    last_result_cleanup();
+    if constexpr (std::is_same_v<T, MODEL>) {
+        gretl_model_protect(static_cast<MODEL*>(model));
+    }
     set_as_last_model(model, model_obj_type_);
     err_ = do_forecast(param.c_str(), dataset_->dset, opt_, printer_.prn_ptr());
-    if constexpr (std::is_same_v<T, MODEL>) gretl_model_unprotect(static_cast<MODEL*>(model));
+    if constexpr (std::is_same_v<T, MODEL>) {
+        gretl_model_unprotect(static_cast<MODEL*>(model));
+    }
     if (err_) handle_gretl_error(err_);
     printer_.print();
+
+    // retrieve the result according to the forecast type
+    py::object result;
+
+    if (all_probs) {
+        if (has_arg(3)) {
+            // named probability matrix: return an independent copy
+            const std::string name = values[3].cast<std::string>();
+
+            if (user_var_get_type_by_name(name.c_str()) != GRETL_TYPE_MATRIX)
+                throw std::runtime_error("Forecast probability matrix not found: " + name);
+
+            auto *mat = static_cast<gretl_matrix*>(user_var_get_value_by_name(name.c_str()));
+
+            if (mat == nullptr) throw std::runtime_error("Forecast probability matrix not found: " + name);
+            result = py::cast(std::make_shared<GretlMatrix>(mat, true));
+        } else {
+            // unnamed probability matrix is available via $fcast
+            result = get_accessor("$fcast");
+        }
+    } else {
+        // standard forecast results are stored in $result
+        result = get_accessor("$result");
+    }
+
+    // return the forecast results and optional matplotlib figure
+    return {std::move(result), plotter.display()};
 }
 
 void GretlModel::check_if_estimated_ (void) const
@@ -429,6 +820,17 @@ std::string GretlModel::extract_additional_vars_ (py::handle src) const
     throw std::invalid_argument("additional variables must be a string or a list");
 }
 
+void GretlModel::prepare_plot_(GretlPlot &plotter, gretlopt opt, bool multiple)
+{
+    //
+    // convenient method for plotting pre-settings
+    //
+    // Multiple plots use SCATTERS; regular plots use GNUPLOT.
+    const GretlCmdIndex ci = multiple ? SCATTERS : GNUPLOT;
+
+    gretl_valid_long_opt(opt, ci, "output", py::handle(), plotter.filename().c_str());
+}
+
 //////////////////////////////////////////////////
 // single equation models
 //////////////////////////////////////////////////
@@ -444,16 +846,103 @@ GretlModel_NSE::GretlModel_NSE (GretlCmdIndex ci, const py::kwargs &kwargs) : Gr
 
 GretlModel_NSE::~GretlModel_NSE (void)
 {
-    if (!this->estimated_ && this->model_ != nullptr) {
-        gretl_model_free(this->model_);
+    if (!model_) return;
+
+    if (model_registered_) {
+        gretl_object_unref(model_, model_obj_type_);
     } else {
-        gretl_object_unref(this->model_, this->model_obj_type_);
+        gretl_model_free(model_);
     }
 }
 
-void GretlModel_NSE::forecast (const py::args &args, const py::kwargs &kwargs)
+template <GretlCmdIndex CI>
+void GretlModel_NSE::regexp_extract_ (const std::string &formula, std::string &formula_left, std::string &formula_right)
 {
-    gretl_do_forecast_<MODEL>(model_, args, kwargs);
+    //
+    // method for extraction model formula from regular expression
+    //
+    std::regex formula_regex;
+
+    // We extract GMM(...) or mds(l) blocks into formula_right, and remove them from formula_left
+    if constexpr (CI == DPANEL) {
+        formula_regex = std::regex(R"(GMM\s*\([^()]*\))");
+    } else if constexpr (CI == MIDASREG) {
+        formula_regex = std::regex(R"((mds|mdsl)\s*\([^()]*\))");
+    }
+
+    std::sregex_iterator begin(formula.begin(), formula.end(), formula_regex);
+    std::sregex_iterator end;
+
+    formula_left = formula;
+    formula_right.clear();
+
+    for (auto it = begin; it != end; ++it) {
+        formula_right += it->str() + " ";
+        formula_left.erase(formula_left.find(it->str()), it->str().length());
+    }
+    gretl4py_trim(formula_left);
+    gretl4py_trim(formula_right);
+    if (!formula_left.empty() && formula_left.back() == ';') formula_left.pop_back();
+}
+
+DATASET *GretlModel_NSE::get_model_dataset_ (gretlopt opt)
+{
+    //
+    // this method mimics maybe_get_model_data() from gui/library.c
+    //
+    DATASET *dset = dataset_->dset;
+
+    err_ = 0;
+    if (gretl_is_between_model(model_)) {
+        // Between models use their attached group-means dataset.
+        dset = model_->dataset;
+        if (!dset) {
+            gretl_errmsg_set("The group-means dataset is not available");
+            err_ = E_DATA;
+        }
+    } else if (model_sample_problem(model_, dset)) {
+        // Reconstruct the estimation sample when subsamples differ.
+        err_ = add_dataset_to_model(model_, dset, opt);
+        if (!err_) dset = model_->dataset;
+    }
+    if (err_) handle_gretl_error(err_);
+
+    return dset;
+}
+
+int GretlModel_NSE::resolve_coefficient_ (const std::variant<int, std::string> &parameter, DATASET *dset) const
+{
+    //
+    // Resolve a model coefficient specified by its zero-based index or name.
+    // Return the coefficient index, rejecting invalid or ambiguous identifiers.
+    //
+    // int part
+    if (const auto *index = std::get_if<int>(&parameter)) {
+        if (*index < 0 || *index >= model_->ncoeff) throw std::invalid_argument("coefficient index out of range");
+        return *index;
+    }
+
+    // std::string part
+    const std::string &name = std::get<std::string>(parameter);
+    int idx = -1;
+    char pname[VNAMELEN] = {0};
+
+    for (int k=0; k<model_->ncoeff; ++k) {
+        pname[0] = '\0';
+        gretl_model_get_param_name(model_, dset ? dset : dataset_->dset, k, pname);
+        if (name == pname) {
+            if (idx >= 0) throw std::invalid_argument("ambiguous coefficient name: " + name);
+            idx = k;
+        }
+    }
+    if (idx < 0) throw std::invalid_argument("unknown coefficient name: " + name);
+
+    return idx;
+}
+
+std::pair<py::object, py::object> GretlModel_NSE::forecast (const py::args &args, const py::kwargs &kwargs)
+{
+    return gretl_do_forecast_<MODEL>(model_, args, kwargs);
 }
 
 py::object GretlModel_NSE::get_accessor (const std::string &name) const
@@ -461,21 +950,23 @@ py::object GretlModel_NSE::get_accessor (const std::string &name) const
     return do_get_accessor<GRETL_OBJ_EQN>(name, dataset_, static_cast<void*>(model_));
 }
 
-GretlBundlePtr GretlModel_NSE::test (const std::string &type, const py::kwargs &kwargs)
+std::pair<GretlBundlePtr, py::object> GretlModel_NSE::test (const std::string &type, const py::kwargs &kwargs)
 {
     //
     // this method performs test which do not take a variables list
     //
     GretlBundlePtr res = std::make_shared<GretlBundle>();
+    GretlPlot plotter;
+    bool has_pvalue = true;                                 // if pvalue is accessible via $pvalue
+    bool has_test = true;                                   // if test statistics is accessible via $test
+    bool has_result = false;                                // if given test produces additional results accessible via $result
     int order = type == "corrgm" ? auto_acf_order(sample_size( dataset_->dset)) : dataset_->dset->pd;
-    bool has_pvalue = true;     // if pvalue is accessible via $pvalue
-    bool has_test = true;       // if test statistics is accessible via $test
-    bool has_result = false;    // if given test produces additional results accessible via $result
 
     // we set up options
-    auto printout = unpack_kwargs_test(opt_, type, kwargs, order);
+    auto printout = unpack_kwargs_test(opt_, type, kwargs, order, &plotter);
 
     // we perform the test
+    last_result_cleanup();
     if (type == "bkw") {
         err_ = bkw_test(model_, dataset_->dset, opt_, printer_.prn_ptr());
         has_result = true;
@@ -515,6 +1006,7 @@ GretlBundlePtr GretlModel_NSE::test (const std::string &type, const py::kwargs &
 
     // we print results if wanted
     if (printout) printer_.print();
+    py::object fig = plotter.display();
 
     // we manufacture resulting object
     res->set_element<std::string>("type", type);
@@ -528,15 +1020,16 @@ GretlBundlePtr GretlModel_NSE::test (const std::string &type, const py::kwargs &
     // we register result
     move_to_python_container<GretlModel, py::dict, py::list>(*this, res->to_dict(), "tests");
 
-    return res;
+    return {res, std::move(fig)};
 }
 
-GretlBundlePtr GretlModel_NSE::test (const std::string &type, const py::object &varlist, const py::kwargs &kwargs)
+std::pair<GretlBundlePtr, py::object> GretlModel_NSE::test (const std::string &type, const py::object &varlist, const py::kwargs &kwargs)
 {
     //
     // this method performs test which do take a variables list
     //
     GretlBundlePtr res = std::make_shared<GretlBundle>();
+    GretlPlot plotter;
     gretl_list_ptr ex_var{nullptr};
     int order = -1;
 
@@ -557,6 +1050,7 @@ GretlBundlePtr GretlModel_NSE::test (const std::string &type, const py::object &
     auto printout = unpack_kwargs_test(opt_, type, kwargs, order);
 
     // we perform the test
+    last_result_cleanup();
     if (type == "add") {
         err_ = add_test(model_, ex_var.get(), dataset_->dset, opt_, printer_.prn_ptr());
     } else if (type == "chow") {
@@ -572,6 +1066,7 @@ GretlBundlePtr GretlModel_NSE::test (const std::string &type, const py::object &
 
     // we print results if wanted
     if (printout) printer_.print();
+    py::object fig = plotter.display();
 
     // we manufacture resulting object
     res->set_element<std::string>("type", type);
@@ -583,7 +1078,7 @@ GretlBundlePtr GretlModel_NSE::test (const std::string &type, const py::object &
     // we register result
     move_to_python_container<GretlModel, py::dict, py::list>(*this, res->to_dict(), "tests");
 
-    return res;
+    return {res, std::move(fig)};
 }
 
 template <GretlCmdIndex CI>
@@ -672,34 +1167,187 @@ double GretlModel_NSE::adj_rsq (void) const
     return model_->adjrsq;
 }
 
-template <GretlCmdIndex CI>
-void GretlModel_NSE::regexp_extract_ (const std::string &formula, std::string &formula_left, std::string &formula_right)
+GretlMatrixPtr GretlModel_NSE::confidence_intervals (void)
 {
     //
-    // method for extraction model formula from regular expression
+    // based on library.c
     //
-    std::regex formula_regex;
+    if (!estimated_) throw std::runtime_error("model is not estimated");
+    std::unique_ptr<CoeffIntervals, decltype(&free_coeff_intervals)>
+        cf(gretl_model_get_coeff_intervals(model_, dataset_->dset, OPT_NONE), &free_coeff_intervals);
 
-    // We extract GMM(...) or mds(l) blocks into formula_right, and remove them from formula_left
-    if constexpr (CI == DPANEL) {
-        formula_regex = std::regex(R"(GMM\s*\([^()]*\))");
-    } else if constexpr (CI == MIDASREG) {
-        formula_regex = std::regex(R"((mds|mdsl)\s*\([^()]*\))");
+    // we do the job
+    if (!cf) handle_gretl_error(E_ALLOC);
+    err_ = print_coeff_intervals(cf.get(), printer_.prn_ptr());
+    if (err_) handle_gretl_error(err_);
+    printer_.print();
+
+    // we construct resulting matrix
+    gretl_matrix_ptr mat(conf_intervals_matrix(cf.get()));
+
+    if (!mat) handle_gretl_error(E_ALLOC);
+
+    return std::make_shared<GretlMatrix>(mat.release(), false);
+}
+
+void GretlModel_NSE::anova (void)
+{
+    //
+    // Print the analysis of variance table for an OLS model.
+    //
+    if (!estimated_) throw std::runtime_error("model is not estimated");
+    if (ci_ != OLS) throw std::invalid_argument("ANOVA is available only for OLS models");
+
+    err_ = ols_print_anova(model_, printer_.prn_ptr());
+    if (err_) handle_gretl_error(err_);
+    printer_.print();
+}
+
+py::object GretlModel_NSE::bootstrap (const std::variant<int, std::string> &coefficient, int reps,
+                                      double alpha, const std::string &statistic, const std::string &method,
+                                      bool plot, const std::optional<std::string> &save)
+{
+    //
+    // Bootstrap confidence intervals or p-values for an OLS/WLS coefficient.
+    // Based on do_bootstrap() from gui/library.c.
+    //
+    if (!estimated_) throw std::runtime_error("model is not estimated");
+    if (!bootstrap_ok(model_->ci)) throw std::invalid_argument("bootstrap is available only for OLS and WLS models");
+
+    // Validate the number of replications and significance level.
+    if (reps < 1) throw std::invalid_argument("reps must be positive");
+    if (!(std::isfinite)(alpha) || alpha <= 0.0 || alpha >= 1.0)
+        throw std::invalid_argument("alpha must be strictly between 0 and 1");
+
+    opt_ = OPT_NONE;
+
+    // Select the bootstrap statistic.
+    if (statistic == "ci") {
+        // Default: percentile confidence interval.
+    } else if (statistic == "studentized") {
+        SET_OPT(opt_, OPT_T);
+    } else if (statistic == "pvalue") {
+        SET_OPT(opt_, OPT_P);
+    } else {
+        throw std::invalid_argument("unsupported bootstrap statistic: " + statistic);
     }
 
-    std::sregex_iterator begin(formula.begin(), formula.end(), formula_regex);
-    std::sregex_iterator end;
-
-    formula_left = formula;
-    formula_right.clear();
-
-    for (auto it = begin; it != end; ++it) {
-        formula_right += it->str() + " ";
-        formula_left.erase(formula_left.find(it->str()), it->str().length());
+    // Select the bootstrap resampling method.
+    if (method == "residuals") {
+        // Default: resample empirical residuals.
+    } else if (method == "pairs") {
+        SET_OPT(opt_, OPT_X);
+    } else if (method == "wild") {
+        SET_OPT(opt_, OPT_W);
+    } else if (method == "normal") {
+        SET_OPT(opt_, OPT_N);
+    } else {
+        throw std::invalid_argument("unsupported bootstrap method: " + method);
     }
-    gretl4py_trim(formula_left);
-    gretl4py_trim(formula_right);
-    if (!formula_left.empty() && formula_left.back() == ';') formula_left.pop_back();
+
+    // Select the dataset and resolve the coefficient index.
+    GretlPlot plotter;
+    DATASET *dset = get_model_dataset_();
+    const int idx = resolve_coefficient_(coefficient, dset);
+
+    // Request a kernel-density plot of the bootstrap distribution.
+    // Request a kernel-density plot of the bootstrap distribution.
+    if (plot) {
+        SET_OPT(opt_, OPT_G);
+        gretlopt opt_local = OPT_NONE;
+        gretl_valid_long_opt(opt_local, KDPLOT, "output", py::handle(), plotter.filename().c_str());
+    }
+
+    // Preserve bootstrap replications for saving to a GDT file.
+    if (save.has_value()) {
+        if (save->empty()) throw std::invalid_argument("save filename must not be empty");
+        SET_OPT(opt_, OPT_A);
+    }
+
+    // Perform the bootstrap analysis using libgretl.
+    err_ = bootstrap_analysis(model_, idx, reps, alpha, dset, opt_, printer_.prn_ptr());
+    if (err_) handle_gretl_error(err_);
+
+    // Save the bootstrap replication data if requested.
+    if (save.has_value()) {
+        err_ = bootstrap_save_data(save->c_str());
+        if (err_) handle_gretl_error(err_);
+    }
+
+    printer_.print();
+
+    // Return the figure only when plotting was requested.
+    return plot ? plotter.display() : py::none();
+}
+
+py::object GretlModel_NSE::plot (const std::string &type, const std::string &xvar, std::optional<int> order,
+                                 bool bartlett, std::optional<int> width, bool log)
+{
+    //
+    // general model plotter
+    // For now: residuals or actual and fitted values against time or a selected variable.
+    //
+    if (!estimated_) throw std::runtime_error("model is not estimated");
+
+    // Select the dataset corresponding to the estimation sample.
+    GretlPlot plotter;
+    DATASET *dset = get_model_dataset_(type == "correlogram" || type == "periodogram" || type == "qqplot" ? OPT_G : OPT_NONE);
+
+    if (type == "correlogram" && !xvar.empty()) throw std::invalid_argument("correlogram does not accept xvar");
+    if (type == "qqplot" && !xvar.empty()) throw py::type_error("qqplot does not accept xvar");
+    if (type == "leverage" && !xvar.empty()) throw py::type_error("leverage does not accept xvar");
+    if (type != "correlogram" && order.has_value()) throw std::invalid_argument("order is supported only for correlogram");
+    if (type == "periodogram" && !xvar.empty()) throw py::type_error("periodogram does not accept xvar");
+    // Periodogram settings must not silently affect other plot types.
+    if (type != "periodogram" && (bartlett || width.has_value() || log))
+        throw std::invalid_argument("bartlett, width and log are supported only for periodogram");
+    if (type == "periodogram" && width.has_value() && !bartlett) throw std::invalid_argument("width requires bartlett=True");
+
+    // Resolve the variable on the horizontal axis.
+    int x = 0;
+
+    if (!xvar.empty()) {
+        x = current_series_index(dset, xvar.c_str());
+        if (x < 0) throw std::invalid_argument("Unknown variable: " + xvar);
+    }
+
+    // Keep the selected dataset and any temporary series alive until display().
+    NSEPlotContext ctx(model_, ci_, dataset_, dset, plotter, printer_.prn_ptr(), x);
+
+    if (type == "fitted") {
+        err_ = ctx.fitted();
+    } else if (type == "residuals") {
+        err_ = ctx.residuals();
+    } else if (type == "correlogram") {
+        err_ = ctx.correlogram(order);
+    } else if (type == "periodogram") {
+        err_ = ctx.periodogram(bartlett, width, log);
+    } else if (type == "qqplot") {
+        err_ = ctx.qqplot();
+    } else {
+        throw py::value_error("Unsupported plot type: " + type);
+    }
+    if (err_) handle_gretl_error(err_);
+    if (type == "correlogram" || type == "periodogram") printer_.print();
+
+    return plotter.display();
+}
+
+py::object GretlModel_NSE::plot_confidence_ellipse (const std::variant<int, std::string> &first,
+                                                    const std::variant<int, std::string> &second, double alpha)
+{
+    // Confidence ellipses operate on model coefficients, not residual series.
+    if (!estimated_) throw std::runtime_error("model is not estimated");
+
+    GretlPlot plotter;
+    DATASET *dset = get_model_dataset_();
+    NSEPlotContext ctx(model_, ci_, dataset_, dset, plotter, printer_.prn_ptr(), 0);
+
+    err_ = ctx.confidence_ellipse(resolve_coefficient_(first, dset), resolve_coefficient_(second, dset), alpha);
+    if (err_) handle_gretl_error(err_);
+    printer_.print();
+
+    return plotter.display();
 }
 
 //
@@ -1209,12 +1857,16 @@ void GretlModel_NSE_nl<CI>::fit (void)
     // we set up all model definition lines
     do_nl_parse_line_<std::string>("params", &params_);
     do_nl_parse_line_<std::string>("param_names", &param_names_);
-    if constexpr (CI == NLS || CI == MLE) do_nl_parse_line_<std::vector<std::string>>("deriv", &deriv_);
+    if constexpr (CI == NLS || CI == MLE) {
+        do_nl_parse_line_<std::vector<std::string>>("deriv", &deriv_);
+    }
     if constexpr (CI == GMM) {
         do_nl_parse_line_<std::vector<std::string>>("orthog", &orthog_);
         do_nl_parse_line_<std::string>("weights", &weights_);
     }
-    if constexpr (CI == MLE || CI == GMM) do_nl_parse_line_<std::vector<std::string>>("statements", &statements_);
+    if constexpr (CI == MLE || CI == GMM) {
+        do_nl_parse_line_<std::vector<std::string>>("statements", &statements_);
+    }
 
     // we do the job
     *model_ = nl_model( dataset_->dset, opt_, printer_.prn_ptr());
@@ -1385,9 +2037,9 @@ void GretlModel_VAR::fit (void)
     save_model_<GRETL_VAR>(model_);
 }
 
-void GretlModel_VAR::forecast (const py::args &args, const py::kwargs &kwargs)
+std::pair<py::object, py::object> GretlModel_VAR::forecast (const py::args &args, const py::kwargs &kwargs)
 {
-    gretl_do_forecast_<void>(model_, args, kwargs);
+    return gretl_do_forecast_<void>(model_, args, kwargs);
 }
 
 GretlBundlePtr GretlModel_VAR::test (const std::string &type, const py::kwargs &kwargs)
@@ -1453,16 +2105,24 @@ std::string GretlModel_VAR::save_uhat (int eqn, const std::string &name) const
 int GretlModel_VAR::find_variable_nr_ (const std::string &variable_name)
 {
     //
-    // here we find the number of given variable in the context of VAR/VECM
+    // Find the zero-based equation index of an endogenous variable
+    // in the fitted VAR/VECM model.
     //
-    std::istringstream iss(vars_);
-    std::string token;
-    int pos = 0;
+    for (int i=1; i<=model_->neqns; ++i) {
+        if (variable_name == dataset_->get_series_name(model_->ylist[i])) return i - 1;
+    }
 
-    while (iss >> token) {
-        if (token == ";") break;
-        if (token == variable_name) return pos;
-        ++pos;
+    return -1; // not found
+}
+
+int GretlModel_VAR::find_variable_nr_ (int id)
+{
+    //
+    // Find the zero-based equation index of an endogenous variable
+    // using its dataset variable ID.
+    //
+    for (int i=1; i<=model_->neqns; ++i) {
+        if (model_->ylist[i] == id) return i - 1;
     }
 
     return -1; // not found
@@ -1505,6 +2165,147 @@ GretlMatrixPtr GretlModel_VAR::irf (const std::string &target, const std::string
 
     // we do the job
     return irf(target_int, shock_int, alpha);
+}
+
+template <typename T>
+void GretlModel_VAR::set_cholesky_order (const T &varlist)
+{
+    //
+    // Set the Cholesky ordering of endogenous variables.
+    // An empty list restores the default VAR/VECM equation order.
+    //
+    if (!estimated_) throw std::runtime_error("VAR/VECM model has not been estimated");
+
+    gretl_list_ptr vars{nullptr};
+    err_ = 0;
+
+    // Convert the variable specification to dataset variable IDs.
+    if (varlist.empty()) {
+        err_ = gretl_VAR_set_ordering(model_, nullptr);
+        if (err_) handle_gretl_error(err_);
+        return;
+    } else {
+        if constexpr (is_gretllist_arg_v<T>) {
+            vars = dataset_->gretllist(varlist);
+        } else {
+            static_assert(always_false<T>, "GretlModel_VAR::set_cholesky_order(): unsupported type");
+        }
+    }
+    if (vars.get()[0] != model_->neqns) throw std::invalid_argument("Cholesky ordering must include all endogenous variables");
+
+    // Convert dataset IDs to zero-based VAR equation indices.
+    // Check that the ordering is a valid permutation.
+    std::vector<int> indices;
+    std::vector<bool> seen(model_->neqns, false);
+    bool default_order = true;
+
+    indices.reserve(model_->neqns);
+
+    for (int i=1; i<=model_->neqns; ++i) {
+        const int idx = find_variable_nr_(vars.get()[i]);
+
+        if (idx < 0) throw std::invalid_argument("Cholesky ordering contains a non-endogenous variable");
+        if (seen[idx]) throw std::invalid_argument("Cholesky ordering contains duplicate variables");
+
+        seen[idx] = true;
+        indices.push_back(idx);
+
+        if (idx != i - 1) default_order = false;
+    }
+
+    // Restore the default ordering, if requested.
+    if (default_order) {
+        err_ = gretl_VAR_set_ordering(model_, nullptr);
+        if (err_) handle_gretl_error(err_);
+        return;
+    }
+
+    // Construct the ordering vector and transfer its ownership to libgretl.
+    gretl_matrix_ptr ordvec(gretl_vector_alloc(model_->neqns));
+
+    if (!ordvec) handle_gretl_error(E_ALLOC);
+    for (int i=0; i<model_->neqns; ++i) {
+        ordvec->val[i] = indices[i];
+    }
+
+    err_ = gretl_VAR_set_ordering(model_, ordvec.release());
+    if (err_) handle_gretl_error(err_);
+}
+template void GretlModel_VAR::set_cholesky_order<std::string>(const std::string&);
+template void GretlModel_VAR::set_cholesky_order<py::list>(const py::list&);
+
+py::object GretlModel_VAR::plot (const std::string &type, std::optional<int> equation, std::optional<std::string> mode,
+                                 std::optional<int> periods, std::optional<double> alpha, std::optional<bool> error_bars,
+                                 std::variant<int, std::string> targ, std::variant<int, std::string> shock,
+                                 std::optional<bool> histogram)
+{
+    //
+    // general VAR plotter, i.e. we deal with residuals, roots and IRFs
+    //
+    GretlPlot plotter;
+    const int eqn = equation.value_or(0);
+    const std::string plot_mode = mode.value_or("combined");
+
+    auto resolve = [this](const std::variant<int, std::string> &arg, const char *name) -> int
+    {
+        //
+        // Resolve target and shock to zero-based equation numbers.
+        // String arguments identify endogenous variables by name.
+        //
+        int idx;
+
+        if (auto p = std::get_if<int>(&arg)) {
+            idx = *p;
+        } else {
+            idx = find_variable_nr_(std::get<std::string>(arg));
+        }
+
+        if (idx < 0 || idx >= model_->neqns) {
+            throw py::value_error(std::string("Invalid VAR target/shock '") + name
+            + "': expected an endogenous variable name or a zero-based "
+            "equation index in [0, " + std::to_string(model_->neqns - 1) + "]");
+        }
+
+        return idx;
+    };
+
+    // At first, we reject bad options
+    if (!estimated_) throw std::runtime_error("model is not estimated");
+    if (type != "residuals" && type != "inverse_roots" && type != "irf"
+        && type != "irf_combined" && type != "fevd") throw std::invalid_argument("Unsupported plot type: " + type);
+
+    if (type == "inverse_roots") {
+        if (equation.has_value() || mode.has_value()) throw py::type_error("inverse_roots does not accept equation or mode");
+    } else {
+        if (plot_mode != "combined" && plot_mode != "multiple") throw std::invalid_argument("Unsupported residual plot mode: " + plot_mode);
+        if (eqn < 0 || eqn > model_->neqns) throw std::invalid_argument("Equation number is out of range");
+        if (plot_mode == "multiple" && eqn != 0) throw std::invalid_argument("Equation must be 0 for multiple residual plots");
+    }
+
+    // Register the output file for the selected plot type.
+    prepare_plot_(plotter, OPT_NONE, plot_mode == "multiple");
+
+    // we do the job
+    if (type == "inverse_roots") {
+        err_ = gretl_VAR_roots_plot(model_);
+    } else if (type == "irf_combined") {
+        err_ = gretl_VAR_plot_multiple_irf(model_, periods.value_or(default_VAR_horizon(dataset_->dset)),
+                                           alpha.value_or(0.0), dataset_->dset, error_bars.value_or(false));
+    } else if (type == "irf") {
+        err_ = gretl_VAR_plot_impulse_response(model_, resolve(targ, "targ"), resolve(shock, "shock"),
+                                               periods.value_or(default_VAR_horizon(dataset_->dset)),
+                                               alpha.value_or(0.0), dataset_->dset, error_bars.value_or(false));
+    } else if (type == "fevd") {
+        err_ = gretl_VAR_plot_FEVD(model_, resolve(targ, "targ"), periods.value_or(default_VAR_horizon(dataset_->dset)),
+                                   dataset_->dset, histogram.value_or(true));
+    } else if (plot_mode == "multiple") {
+        err_ = gretl_system_residual_mplot(model_, ci_, dataset_->dset);
+    } else {
+        err_ = gretl_system_residual_plot(model_, ci_, eqn, dataset_->dset);
+    }
+    if (err_) handle_gretl_error(err_);
+
+    return plotter.display();
 }
 
 //
@@ -1608,6 +2409,25 @@ std::string GretlModel_VAR_VECM::save_ec_term (const int nr, const std::string &
     return dataset_->add_series(std::move(ec_term), name.empty() ? ec_term_name : name, dataset_->dset->n);
 }
 
+py::object GretlModel_VAR_VECM::plot_ec (void)
+{
+    //
+    // Plot the error-correction terms of an estimated VECM.
+    //
+    if (!estimated_) throw std::runtime_error("VECM model has not been estimated");
+
+    GretlPlot plotter;
+
+    // Register the output file for the EC plot.
+    prepare_plot_(plotter, OPT_NONE);
+
+    // Generate the combined EC plot using libgretl.
+    err_ = gretl_VECM_combined_EC_plot(model_, dataset_->dset);
+    if (err_) handle_gretl_error(err_);
+
+    return plotter.display();
+}
+
 //
 // Native Multiple Equation libgretl SYSTEM (NME)
 // extends: GretlModel
@@ -1687,9 +2507,11 @@ py::object GretlModel_NME::get_accessor (const std::string &name) const
     return do_get_accessor<GRETL_OBJ_SYS>(name, dataset_, static_cast<void*>(model_));
 }
 
-void GretlModel_NME::forecast (const py::args &args, const py::kwargs &kwargs)
+std::pair<py::object, py::object> GretlModel_NME::forecast (const py::args &args, const py::kwargs &kwargs)
 {
     py::print("GretlModel_NME::forecast(): to be written");
+
+    return {py::none(), py::none()};
 }
 
 GretlBundlePtr GretlModel_NME::restrict (const py::list &impose, const py::kwargs &kwargs)

@@ -2,6 +2,9 @@
  *  gretl -- Gnu Regression, Econometrics and Time-series Library
  *  Copyright (C) 2001 Allin Cottrell and Riccardo "Jack" Lucchetti
  *
+ *  gretl4py -- Python bindings for gretl
+ *  Copyright (C) 2024 Marcin Błażejowski
+ *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
@@ -86,11 +89,13 @@ GretlBundle &GretlBundle::operator= (const GretlBundle &other)
 {
     if (this != &other) {
         gretl_bundle *new_b = gretl_bundle_copy(other.b_, &err_);
+
         if (err_) handle_gretl_error(err_);
         if (free_b_ && b_ != nullptr) gretl_bundle_destroy(b_);
         b_ = new_b;
         free_b_ = true;
     }
+
     return *this;
 }
 
@@ -151,7 +156,6 @@ void GretlBundle::for_each_bundle_element_ (F &&f)
     char **raw_ptr = gretl_bundle_get_keys_raw(b_, &n_keys);
 
     if (!raw_ptr) throw std::runtime_error("failed to obtain bundle keys");
-
     strings_array_ptr keys(raw_ptr, StringsArrayDeleter{});
 
     keys.get_deleter().nstrs = n_keys;

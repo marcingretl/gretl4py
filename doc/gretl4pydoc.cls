@@ -166,19 +166,22 @@
 	showstringspaces=false,
 	literate={
 		{~}{$\sim$}1
+		{xk}{$x_k$}2
+		{.|}{ | }2
 		{ x1}{$x_1$}3
 		{ x2}{ $x_2$}3
 		{ x3}{ $x_3$}3
-		{xk}{$x_k$}2
 		{.if}{if }3
 		{.id}{.id }3
+		{.or}{or}3
 		{.set}{set}{3}
+		{.min}{min}{3}
 		{.type}{type}{4}
 		{.vars}{vars}{4}
 		{.iter}{iter}{4}
-		{.list}{list }5
 		{-sum}{-sum}{4}
 		{all=}{all=}{4}
+		{.list}{list }5
 		{.print}{print}{5}
 		{.range}{range}{5}
 		{complex128}{complex128}{10}
@@ -224,6 +227,7 @@
 		{gretl.Model\_logistic}{{\textcolor{pythtype}{gretl.Model\_logistic}}}{21}
 		{gretl.Model\_midasreg}{{\textcolor{pythtype}{gretl.Model\_midasreg}}}{21}
 		{gretl.Model\_quantreg}{{\textcolor{pythtype}{gretl.Model\_quantreg}}}{21}
+		{matplotlib.figure.Figure}{{\textcolor{pythtype}{matplotlib.figure.Figure}}}{24}
 		{pandas.core.series.Series}{{\textcolor{pythtype}{pandas.core.series.Series}}}{25}
 		{pandas.core.frame.DataFrame}{{\textcolor{pythtype}{pandas.core.frame.DataFrame}}}{27}
 		}
@@ -237,11 +241,11 @@
 		eqnprint, equation, estimate, fcast, foreign, fractint, freq, function, garch, genr, gmm, gnuplot,
 		graphpg, hausman, heckit, help, hsk, hurst, if, include, info, intreg, join, kalman, kpss, labels,
 		lad, lags, ldiff, leverage, levinlin, logistic, logit, logs, loop, mahal, makepkg, markers,
-		meantest, mle, modeltab, modprint, modtest, mpols, negbin, nls, normtest, nulldata, ols,
+		meantest, mle, modeltab, modprint, modtest, mpols, negbin, nls, normtest, nulldata, ols, kdplot,
 		omit, open, orthdev, outfile, panel, pca, pergm, poisson, print, printf, probit, pvalue,
-		qlrtest, qqplot, quantreg, quit, rename, reset, restrict, rmplot, run, runs, scatters,
+		qlrtest, qqplot, quantreg, quit, rename, reset, restrict, rmplot, run, runs, scatters, tsplots,
 		sdiff, set, setinfo, setobs, setmiss, shell, smpl, spearman, sprintf, square, sscanf, store,
-		summary, system, tabprint, textplot, tobit, tsls, var, varlist, vartest, vecm, vif,
+		summary, system, tabprint, textplot, tobit, tsls, var, varlist, vartest, vecm, vif, panplot,
 		wls, xcorrgm, xtab, mpi, gibbs, return, params, pkg, midasreg, johansen, bkw, panspec, stdize},
 	morekeywords=[2]{abs, acos, acosh, aggregate, argname, asin, asinh, atan, atanh, bessel,
 		BFGSmax, bkfilt, boxcox, bwfilt, cdemean, cdf, cdiv, ceil, cholesky, chowlin,
@@ -267,7 +271,7 @@
 		transp, trimr, typestr, uniform, uniq, unvech, upper, urcpval, values,
 		varname, varnum, varsimul, vec, vech, weekday, wmean, wsd, wvar, xmax,
 		xmin, xpx, zeromiss, zeros, bwrite, bread, mpibcast, mpireduce, array, defbundle,
-		mat2list, strftime, fzero, tdisagg, kpsscrit, kmeans, getkeys, _},
+		mat2list, strftime, fzero, tdisagg, kpsscrit, kmeans, getkeys, hflags, hfplot, _},
 	morekeywords=[3]{bool, int, list, matrix, scalar, series, string, bundle,
 		void, bundles, null, const, strings},
 	morekeywords=[4]{\$nobs, \$stopwatch, \$sysinfo, \$now, \$model, \$result,

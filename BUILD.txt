@@ -1,0 +1,81 @@
+gretl4py — Building from Source
+===============================
+
+For most users, installation from PyPI or Conda is recommended. This
+file provides a short guide to compiling gretl4py locally. For complete
+platform-specific instructions, consult the Installation chapter of the
+gretl4py documentation.
+
+Requirements
+------------
+
+- A supported Python installation and Python development headers
+- Meson and Ninja
+- A C++17-compatible compiler
+- pybind11 and the development headers and libraries for libgretl
+- An installed gretl distribution supplying native runtime resources
+
+Platform-specific toolchains and library requirements differ. On
+GNU/Linux, libgretl is located using pkg-config. On macOS, the build
+uses the gretl installation (typically /Applications/Gretl.app). On
+Windows, compilation requires Clang/LLD, the Windows SDK, and the
+libgretl for MS SDK stack; MSVC is not supported.
+
+Build and install
+-----------------
+
+From the root of the gretl4py source tree:
+
+    meson setup builddir
+    meson compile -C builddir
+    meson install -C builddir
+
+To change options for an existing build directory, use
+`meson setup builddir --reconfigure` with the desired -D options.
+
+Meson options
+-------------
+
+Common options:
+
+    -DPYTHON_EXE=/path/to/python   Select the Python interpreter
+    -DLOCAL_INST=true|false       Install into user site-packages (default: true)
+    -DGRETL_INSTALL_PATH=/path    Select installed gretl runtime resources
+    -DNOMPI=true|false           Skip staging gretlmpi and MPI runtime files
+    -DMPI_PATH=/path             Select an MPI installation prefix
+
+Platform-specific options:
+
+    macOS:   -DGRETL_PATH=/path   gretl headers and libraries
+    Windows: -DSTACK_PATH=/path  libgretl for MS SDK stack
+             -DLLVM_RT_PATH=/path LLVM compiler runtime directory
+
+`NOMPI` defaults to false. MPI resource preparation depends on the
+platform and the available MPI installation. Set -DNOMPI=true if MPI
+support files are not needed or cannot be provided.
+
+Runtime resources
+-----------------
+
+The build automatically collects gretl plugins into gretl/lib:
+.so files on GNU/Linux and macOS, and .dll files on Windows. On
+Windows, additional runtime DLLs are collected from the installed
+gretl distribution. Manual copying or symbolic linking of plugins
+into gretl/lib is normally unnecessary.
+
+Testing
+-------
+
+After installation, check that the native extension loads:
+
+    python3 -c "import gretl; gretl.about(True)"
+
+On Windows, use the appropriate Python executable (for example,
+python.exe). MPI can be tested using the example mpi.py script and
+its accompanying mpitestpack.gfn function package. On Windows x86-64,
+MPI functionality requires Microsoft MPI (MS-MPI).
+
+Documentation
+-------------
+
+https://gretl.sourceforge.net/gretl4py.html

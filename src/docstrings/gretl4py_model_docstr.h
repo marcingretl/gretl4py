@@ -94,43 +94,151 @@ namespace doc::Model {
     inline constexpr char fcast[] = R"doc(
     Generate forecasts based on the estimated model.
 
+    Produces forecasts for single-equation or multivariate models,
+    optionally including forecast standard errors, confidence intervals,
+    evaluation statistics, and graphical output.
+
     Parameters
     ----------
     *args
-        Forecast range, optional variable name, and, for recursive
-        forecasts, the number of steps ahead.
+        Positional forecast arguments. Supported forms are:
+
+        ``fcast()``
+            Forecast over the current sample.
+        ``fcast(vname)``
+            Save forecasts to a named series or select an endogenous
+            variable in a multivariate model.
+        ``fcast(startobs, endobs[, vname])``
+            Forecast over a specified observation range.
+        ``fcast(steps_ahead[, vname], recursive=True)``
+            Generate recursive forecasts.
+        ``fcast(startobs, endobs, steps_ahead[, vname], recursive=True)``
+            Generate recursive forecasts over a specified range.
+
+        The arguments ``startobs``, ``endobs``, ``steps_ahead``,
+        and ``vname`` can also be passed as keyword arguments
+        or combined with positional arguments.
 
     Other Parameters
     ----------------
-    dynamic : bool
-        Generate dynamic forecasts.
-    static : bool
-        Generate static forecasts.
-    out_of_sample : bool
-        Generate post-sample forecasts.
-    no_stats : bool
-        Suppress forecast statistics.
-    stats_only : bool
-        Print forecast statistics only.
-    quiet : bool
-        Suppress all output.
-    recursive : bool
-        Generate recursive forecasts.
-    exponentiate : bool or int
-        Exponentiate forecasts of a logged dependent variable. An integer
-        value specifies the bias adjustment method.
-    integrate : bool
-        Integrate forecasts of a differenced dependent variable.
-    all_probs : bool
-        Generate probabilities for all possible outcomes.
-    plot : str
-        Filename for saving the forecast plot.
+    startobs : str or int, optional
+        First observation of the forecast range.
+    endobs : str or int, optional
+        Last observation of the forecast range.
+    steps_ahead : int, optional
+        Forecast horizon for recursive forecasting. Requires
+        ``recursive=True``.
+    vname : str, optional
+        Name of the series or matrix used to store forecasts,
+        or an endogenous variable to forecast in a system model.
+    dynamic : bool, optional
+        Generate dynamic forecasts from the earliest possible date.
+    static : bool, optional
+        Generate static one-step-ahead forecasts.
+    out_of_sample : bool, optional
+        Generate forecasts following the estimation sample.
+    no_stats : bool, optional
+        Suppress forecast evaluation statistics.
+    stats_only : bool, optional
+        Print only forecast evaluation statistics.
+    quiet : bool, optional
+        Suppress printed output.
+    recursive : bool, optional
+        Generate recursive forecasts from expanding-window
+        estimations. Available for single-equation OLS models.
+    exponentiate : bool or int, optional
+        Exponentiate forecasts of a logged dependent variable.
+        Integer values select the bias adjustment method:
+        1 for normal, 2 for smearing, and 3 for no correction.
+    integrate : bool, optional
+        Integrate forecasts of a differenced dependent variable
+        to obtain forecasts in levels.
+    all_probs : bool, optional
+        Return predicted probabilities for all possible outcomes
+        in ordered or multinomial response models.
+    plot : str, optional
+        Plot output filename or ``"display"`` to request graphical
+        output. Not available with ``all_probs=True``.
+
+    Returns
+    -------
+    tuple[Bundle | Matrix, matplotlib.figure.Figure | None]
+    A tuple containing the forecast results and an optional
+    Matplotlib Figure.
+
+    Normally, the first element is a Bundle containing the
+    forecast results. With ``all_probs=True``, it is a
+    GretlMatrix containing predicted outcome probabilities.
+
+    The second element is ``None`` if no figure is returned.
+
+    Notes
+    -----
+    Forecasts are generated over the specified observation range.
+    If no range is given, the current sample is used, unless
+    ``out_of_sample=True`` requests post-estimation forecasts.
+
+    For dynamic models, static forecasts use observed lagged
+    values, while dynamic forecasts may substitute previously
+    forecast values. By default, forecasts are static within
+    the estimation sample and dynamic outside it, when applicable.
+
+    Recursive forecasts are available for single-equation OLS
+    models. Each forecast is based on a model re-estimated using
+    observations available up to the specified forecast horizon.
+
+    The returned Bundle contains the following members:
+
+    ``fcast``
+    Forecast values.
+    ``fcse``
+    Forecast standard errors, when available.
+    ``lower``, ``upper``
+    Confidence interval bounds, when available.
+    ``alpha``, ``coverage``
+    Confidence interval significance level and coverage.
+    ``t1``, ``t2``
+    First and last forecast observations.
+    ``depvar``, ``method``
+    Dependent variable and forecast method, for
+    single-equation models.
+    ``eval_stats``, ``eval_obs``
+    Forecast evaluation statistics and the number of
+    observations used, when available.
+    ``transform``
+    Forecast transformation: ``"none"``, ``"exponentiate"``,
+    or ``"integrate"``.
+
+    Additional information on bias correction is included
+    when exponentiated forecasts are produced.
+
+    Forecast standard errors and confidence intervals may
+    cover fewer observations than the forecast values.
+
+    With ``all_probs=True``, the first returned element is
+    a matrix with one column per possible outcome. The option
+    is incompatible with ``plot``.
+
+    For single-equation models, ``vname`` saves forecast values
+    to the dataset. For multivariate models, it selects an
+    endogenous variable for forecasting.
+
+    Automatic display of generated figures is controlled
+    separately by ``gretl.set_plot_auto_show()``.
 
     Examples
     --------
-    ``model.fcast("1997:1", "2001:4", "f1")``
-    ``model.fcast("fit2")``
-    ``model.fcast("2004:1", "2008:3", 4, "rfcast", recursive=True)``
+    ``res, fig = model.fcast()``
+    ``res, fig = model.fcast(5, 10, plot="display")``
+    ``res, fig = model.fcast(out_of_sample=True)``
+    ``res, fig = model.fcast(startobs=5, endobs=10)``
+    ``res, fig = model.fcast(5, 10, vname="fit")``
+    ``res, fig = model.fcast("fit", startobs=5, endobs=10)``
+    ``res, fig = model.fcast(7, 10, 1, recursive=True)``
+    ``res, fig = model.fcast(4, recursive=True)``
+    ``res, fig = model.fcast("g", out_of_sample=True)``
+    ``P, fig = model.fcast(all_probs=True)``
+    ``P, fig = model.fcast(vname="P", all_probs=True)``
     )doc";
 
     inline constexpr char fit[] = R"doc(
@@ -2286,6 +2394,102 @@ namespace doc::Model {
     ).fit()``
     )doc";
 
+    inline constexpr char save_system_uhat[] = R"doc(
+    Add residuals from a specified equation to the dataset.
+
+    Parameters
+    ----------
+    eqn : int
+        1-based equation number.
+    name : str, optional
+        Name of the generated series. If omitted, the name follows the
+        pattern ``m_ID_uhat``, where ``ID`` is the equation's ID.
+
+    Returns
+    -------
+    str
+        Name of the series added to the dataset.
+    )doc";
+
+    inline constexpr char confidence_intervals[] = R"doc(
+    Compute and display confidence intervals for the estimated model coefficients.
+
+    By default, 95% confidence intervals are computed using the standard
+    errors of the coefficient estimates. The results are also printed
+    in the standard gretl format.
+
+    Returns
+    -------
+    gretl.Matrix
+        Matrix containing coefficient estimates and their lower and upper
+        confidence bounds.
+
+    Examples
+    --------
+    ``ci = model.confidence_intervals()``
+    )doc";
+
+    inline constexpr char anova[] = R"doc(
+    Print the analysis of variance (ANOVA) table for an estimated OLS model.
+
+    The table presents the decomposition of the total sum of squares into
+    explained and residual components, together with the associated degrees
+    of freedom, mean squares, and F-statistic.
+
+    Notes
+    -----
+    This method is available only for OLS models. Results are printed
+    to standard output.
+
+    Examples
+    --------
+    ``model.anova()``
+    )doc";
+
+    inline constexpr char bootstrap[] = R"doc(
+    Perform bootstrap inference for a selected model coefficient.
+
+    Computes bootstrap confidence intervals or test statistics using
+    the native gretl bootstrap implementation.
+
+    Parameters
+    ----------
+    coefficient : int or str
+        Coefficient to be analyzed, specified by index or name.
+    reps : int, optional
+        Number of bootstrap replications.
+    alpha : float, optional
+        Significance level for bootstrap inference.
+    statistic : str, optional
+        Type of bootstrap inference to perform.
+    method : str, optional
+        Bootstrap resampling method.
+    plot : bool, optional
+        If ``True``, generate a plot of the bootstrap distribution.
+    save : str or None, optional
+        Filename for saving the generated plot.
+
+    Returns
+    -------
+    matplotlib.figure.Figure or None
+        Matplotlib figure if ``plot=True``, otherwise ``None``.
+
+    Notes
+    -----
+    Bootstrap results are printed using the native gretl output
+    mechanism. Graphical output is generated through gptranslate
+    and the Matplotlib backend.
+
+    Examples
+    --------
+    ``model.bootstrap("IBO")``
+    ``fig = model.bootstrap("IBO", reps=1999, plot=True)``
+    )doc";
+
+} // namespace doc::Model
+
+namespace doc::Model_VAR {
+
     inline constexpr char irf[] = R"doc(
     Compute impulse response functions for the VAR or VECM.
 
@@ -2331,21 +2535,37 @@ namespace doc::Model {
         Name of the series added to the dataset.
     )doc";
 
-    inline constexpr char save_system_uhat[] = R"doc(
-    Add residuals from a specified equation to the dataset.
+    inline constexpr char set_cholesky_order[] = R"doc(
+    Set the Cholesky ordering of endogenous variables in a VAR or VECM.
+
+    The ordering is used to identify orthogonalized shocks in subsequent
+    impulse-response and forecast-error variance decomposition calculations.
+    It does not change the estimated VAR/VECM equations.
 
     Parameters
     ----------
-    eqn : int
-        1-based equation number.
-    name : str, optional
-        Name of the generated series. If omitted, the name follows the
-        pattern ``m_ID_uhat``, where ``ID`` is the equation's ID.
+    varlist : str or list, optional
+        A complete permutation of the endogenous variables, specified as
+        a space-separated string or a Python list of variable names or
+        dataset variable IDs. An empty string or list restores the default
+        ordering from the original model specification.
 
     Returns
     -------
-    str
-        Name of the series added to the dataset.
+    None
+
+    Notes
+    -----
+    The selected ordering is retained by the model until changed or reset.
+    Integer values refer to dataset variable IDs, not zero-based equation
+    indices.
+
+    Examples
+    --------
+    ``m.set_cholesky_order("IBO LRM IDE LRY")``
+    ``m.set_cholesky_order(["IBO", "LRM", "IDE", "LRY"])``
+    ``m.set_cholesky_order([3, 1, 4, 2])``
+    ``m.set_cholesky_order()``
     )doc";
 
-} // namespace doc::Model
+} // namespace doc::Model_VAR

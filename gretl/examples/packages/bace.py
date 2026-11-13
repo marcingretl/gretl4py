@@ -21,6 +21,9 @@ def run_example():
 
     # Measure execution time.
     gretl.set("stopwatch")
+    
+    # We force generating plots
+    gretl.set_plot_auto_show(True)
 
     # Run Bayesian Averaging of Classical Estimates (BACE).
     result = gretl.BACE(
@@ -40,8 +43,13 @@ def run_example():
     elapsed = gretl.get_accessor("$stopwatch")
     print(f"\nTotal execution time: {elapsed:.2f} seconds")
 
-    return result
+    return
 
 
 if __name__ == "__main__":
     run_example()
+    
+    if gretl.get_plot_auto_show():
+        import matplotlib.pyplot as plt
+        plt.show()
+

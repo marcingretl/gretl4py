@@ -3,6 +3,9 @@
  *  gretl -- Gnu Regression, Econometrics and Time-series Library
  *  Copyright (C) 2001 Allin Cottrell and Riccardo "Jack" Lucchetti
  *
+ *  gretl4py -- Python bindings for gretl
+ *  Copyright (C) 2024 Marcin Błażejowski
+ *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
@@ -185,19 +188,6 @@ def series2dict(Y, pd: int = 1, varname: str = "y") -> dict:
     d['periodicity'] = pd
 
     return d
-
-def fc_print(fc: dict):
-    try:
-        from tabulate import tabulate
-    except ModuleNotFoundError:
-        print('*** warning: fc_print() requires \'tabulate\' package ***\n')
-        return
-    print(f'\nForecast for obs {fc["t1"]} to {fc["t2"]} with {fc["confidence"]} percent interval\n')
-    print(tabulate(fc['data'], headers=fc['data_labels'], tablefmt="plain"))
-    print("")
-    print(f'Forecast evaluation statistics\n')
-    print(tabulate(fc['stats'], headers=[], showindex=fc['stats_labels'], tablefmt="plain"))
-    print("")
 
 def print_module_source(module: str):
     """

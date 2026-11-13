@@ -2,6 +2,9 @@
  *  gretl -- Gnu Regression, Econometrics and Time-series Library
  *  Copyright (C) 2001 Allin Cottrell and Riccardo "Jack" Lucchetti
  *
+ *  gretl4py -- Python bindings for gretl
+ *  Copyright (C) 2024 Marcin Błażejowski
+ *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
@@ -34,7 +37,7 @@ extern "C" {
 #include "gretl4py_dataset.h"
 #include "gretl4py_model.h"
 
-#define LIBGRETL_MIN_VER 56
+#define LIBGRETL_MIN_VER 57
 
 #define GRETL_PYBIND11_DEBUG 0
 
@@ -43,20 +46,17 @@ namespace py = pybind11;
 //////////////////////////////////////////////////
 // module related tools
 //////////////////////////////////////////////////
-inline std::string gretl4py_logo (void)
+inline std::string gretl4py_logo()
 {
-    std::string logo = "";
-
-    logo +="                _   _   ___\n";
-    logo +="               | | | | /   |\n";
-    logo +="  __ _ _ __ ___| |_| |/ /| |_ __  _   _\n";
-    logo +=" / _` | '__/ _ \\ __| / /_| | '_ \\| | | |\n";
-    logo +="| (_| | | |  __/ |_| \\___  | |_) | |_| |\n";
-    logo +=" \\__, |_|  \\___|\\__|_|   |_/ .__/ \\__, |\n";
-    logo +="  __/ |                    | |     __/ |\n";
-    logo +=" |___/                     |_|    |___/\n";
-
-    return logo;
+    return R"(                _   _   ___
+               | | | | /   |
+  __ _ _ __ ___| |_| |/ /| |_ __  _   _
+ / _` | '__/ _ \ __| / /_| | '_ \| | | |
+| (_| | | |  __/ |_| \___  | |_) | |_| |
+ \__, |_|  \___|\__|_|   |_/ .__/ \__, |
+  __/ |                    | |     __/ |
+ |___/                     |_|    |___/
+)";
 }
 
 void gretl4py_init (void);

@@ -1,5 +1,7 @@
 import gretl
 
+# Disable automatic display.
+gretl.set_plot_auto_show(False)
 
 def run_example():
     # Load dataset.
@@ -27,7 +29,7 @@ def run_example():
     m = gretl.garch(spec, nc=True).fit()
     print(m)
 
-    # Save standardized residuals.
+    # Standardized residuals.
     m = gretl.garch(spec, stdresid=True).fit()
     print(m)
 
@@ -38,6 +40,11 @@ def run_example():
     # Initialize variance parameters from an ARMA model.
     m = gretl.garch(spec, arma_init=True).fit()
     print(m)
+    fig = m.plot_new("residuals")
+
+    # uncomment to plot figure
+    #import matplotlib.pyplot as plt
+    #plt.show(block=True)
 
 
 if __name__ == "__main__":

@@ -1316,36 +1316,81 @@ namespace doc::Dataset {
     inline constexpr char corr[] = R"doc(
     Compute pairwise correlations for selected variables.
 
+    By default, computes Pearson's product-moment correlations using
+    all available observations for each pair of variables. Spearman's
+    rho and Kendall's tau are also supported.
+
     Parameters
     ----------
     varlist : str or list, optional
-        Variables to use. If omitted, all variables are used.
+        Variables for which correlations are computed. If omitted,
+        all variables in the dataset are used, unless a named matrix
+        is specified.
 
     Other Parameters
     ----------------
+    matrix : str, optional
+        Name of a gretl matrix whose columns are to be correlated,
+        instead of using series from the dataset.
     uniform : bool, optional
         Use a common sample for all pairwise correlations.
     spearman : bool, optional
-        Compute Spearman's rank correlation.
+        Compute Spearman's rank correlation instead of Pearson's
+        correlation. Requires exactly two variables.
     kendall : bool, optional
-        Compute Kendall's rank correlation.
-    verbose : bool, optional
-        Print rankings for rank correlations.
+        Compute Kendall's rank correlation instead of Pearson's
+        correlation. Requires exactly two variables.
+        verbose : bool, optional
+        Print the original and ranked data when computing rank
+        correlations.
+    plot : str, optional
+        Plot mode or output filename. Supported values are ``"none"``
+        (suppress the plot), ``"display"`` (request graphical output),
+        or a filename to save the plot.
     triangle : bool, optional
-        Plot only the lower triangle of the correlation matrix.
+        Display only the lower triangle of the correlation matrix
+        when generating a heatmap.
     quiet : bool, optional
         Suppress printed output.
 
     Returns
     -------
-    Matrix
-        Matrix containing the computed correlations.
+    tuple[Matrix, matplotlib.figure.Figure | None]
+    A tuple containing a GretlMatrix with the computed correlations
+    and an optional Matplotlib Figure. The second element is
+    ``None`` if no figure is returned.
 
     Notes
     -----
-    Pearson's product-moment correlation is computed by default.
-    The `spearman` and `kendall` options are mutually exclusive and
-    require exactly two variables.
+    By default, each pairwise correlation is computed using all
+    available observations. Consequently, different coefficients
+    may be based on different samples.
+
+    With ``uniform=True``, a common sample is used for all pairwise
+    correlations. This is recommended when the resulting correlation
+    matrix is intended for further matrix-based computations, since
+    pairwise deletion of missing observations does not guarantee
+    that the correlation matrix is positive semidefinite.
+
+    The ``spearman`` and ``kendall`` options are mutually exclusive
+    and require exactly two variables. Neither option is available
+    when correlations are computed from a named matrix.
+
+    When more than two series are selected, a heatmap of the
+    correlation matrix may be generated. Setting ``triangle=True``
+    restricts the heatmap to its lower triangle.
+
+    If ``plot`` is omitted, graphical output follows the current
+    gretl execution mode. Automatic display of generated figures
+    is controlled separately by ``gretl.set_plot_auto_show()``.
+
+    Examples
+    --------
+    ``R, fig = data.corr("y x1 x2 x3")``
+    ``R, fig = data.corr("ylist", uniform=True)``
+    ``R, fig = data.corr("x y", spearman=True)``
+    ``R, fig = data.corr("y x1 x2", plot="display", triangle=True)``
+    ``R, fig = data.corr(matrix="X", plot="display")``
     )doc";
 
     inline constexpr char cov[] = R"doc(
@@ -1363,42 +1408,64 @@ namespace doc::Dataset {
     )doc";
 
     inline constexpr char xcorrgm[] = R"doc(
-    Compute the cross-correlogram of two series.
+    Compute the cross-correlogram of two time series.
 
-    Computes the sample cross-correlations between the current value of
-    the first series and successive leads and lags of the second series.
+    Computes the sample cross-correlations between the current value
+    of the first series and successive leads and lags of the second
+    series.
 
     Parameters
     ----------
     varlist : str or list
-        Two series, specified by names or indices.
+        Two series specified by names or indices.
     series1 : str
-        First series.
+        Name of the first series (alternative calling convention).
     series2 : str
-        Second series.
+        Name of the second series (alternative calling convention).
     order : int, optional
-        Maximum number of leads and lags. If 0, the order is selected
-        automatically based on the dataset periodicity and sample size.
+        Maximum number of leads and lags. If zero (default),
+        the order is selected automatically based on the data
+        frequency and sample size.
 
     Other Parameters
     ----------------
-    plot : str
-        Plot mode or output filename. Use ``"none"`` to suppress the plot
-        or ``"display"`` to force display.
-    quiet : bool
-        Suppress printed output.
+    plot : str, optional
+        Plot mode or output filename. Supported values are ``"none"``
+        (suppress the plot), ``"display"`` (request graphical output),
+        or a filename to save the plot.
+    quiet : bool, optional
+    Suppress printed output.
 
     Returns
     -------
-    gretl.Matrix
-    Two-column matrix containing lags in the first column and
-    cross-correlations in the second.
+    tuple[Matrix, matplotlib.figure.Figure | None]
+    A tuple containing a two-column GretlMatrix and an optional
+    Matplotlib Figure. The first column contains the lags and
+    leads, and the second contains the corresponding sample
+    cross-correlations. The Figure is ``None`` if no plot
+    is returned.
+
+    Notes
+    -----
+    The cross-correlogram measures the sample correlation between
+    the current value of the first series and successive leads
+    and lags of the second series.
+
+    If ``order`` is positive, at most that many leads and lags
+    are included. Otherwise, the order is determined automatically
+    from the data frequency and the number of observations.
+
+    If ``plot`` is omitted, graphical output follows the current
+    gretl execution mode. Automatic display of generated figures
+    is controlled separately by ``gretl.set_plot_auto_show()``.
 
     Examples
     --------
-    ``m = data.xcorrgm("x y", 12)``
-    ``m = data.xcorrgm(["x", "y"], 12)``
-    ``m = data.xcorrgm("x", "y", 12)``
+    ``R, fig = data.xcorrgm("x y", 12)``
+    ``R, fig = data.xcorrgm(["x", "y"], 12)``
+    ``R, fig = data.xcorrgm("x", "y", 12)``
+    ``R, fig = data.xcorrgm("x", "y", plot="display")``
+    ``R, fig = data.xcorrgm("x y", plot="none")``
     )doc";
 
     inline constexpr char pca[] = R"doc(
@@ -1559,34 +1626,60 @@ namespace doc::Dataset {
     inline constexpr char hurst[] = R"doc(
     Estimate the Hurst exponent of a time series.
 
-    Estimates the Hurst exponent, a measure of persistence or long memory,
-    for a time-series variable having at least 128 observations.
+    Estimates the Hurst exponent, a measure of persistence or long
+    memory, using the rescaled range (R/S) method. The series must
+    contain at least 128 observations.
 
     Parameters
     ----------
     series : str
-        Series for which the Hurst exponent is to be estimated.
+        Name of the series for which the Hurst exponent is estimated.
+    plot : str, optional
+        Plot mode or output filename. The intended supported values
+        are ``"none"`` (suppress the plot), ``"display"`` (request
+        graphical output), or a filename to save the plot.
 
     Returns
     -------
-    gretl.Matrix
-        Matrix containing the estimated Hurst exponent and its standard
-        error.
+    tuple[Matrix, matplotlib.figure.Figure | None]
+        A tuple containing a GretlMatrix with the estimated Hurst
+        exponent and its standard error, and an optional Matplotlib
+        Figure. The second element is ``None`` if no figure is returned.
 
     Notes
     -----
-    The exponent is estimated using binary sub-sampling and a regression
-    of the logarithm of the rescaled range on the logarithm of sample
-    size.
+    The Hurst exponent H characterizes the scaling relationship
 
-    A Hurst exponent of 0.5 corresponds to the benchmark of white noise.
-    Values above 0.5 indicate persistence, while values below 0.5 indicate
-    anti-persistence.
+    RS(n) = a * n**H
+
+    where RS(n) is the rescaled range for samples of size n and a
+    is a constant. The rescaled range is calculated as the range
+    of cumulative deviations from the sample mean, divided by
+    the sample standard deviation.
+
+    The exponent is estimated using binary sub-sampling of the
+    observed series. The sample is successively divided into
+    two halves, four quarters, and so on. For each sample size,
+    the rescaled ranges are averaged across the available
+    subsamples.
+
+    The Hurst exponent is then estimated as the slope coefficient
+    in a regression of log(RS) on log(n).
+
+    A value of H = 0.5 is the white-noise benchmark. Values
+    significantly above 0.5 indicate persistence, while values
+    below 0.5 indicate anti-persistence. Although the theoretical
+    range is between 0 and 1, finite-sample estimates may exceed 1.
+
+    Automatic display of generated Matplotlib figures is controlled
+    separately by ``gretl.set_plot_auto_show()``.
 
     Examples
     --------
-    ``res = data.hurst("x")``
+    ``result, fig = data.hurst("x")``
+    ``result, fig = data.hurst("x", plot="display")``
     )doc";
+
 
     inline constexpr char set_as_default[] = R"doc(
     Set this dataset as the default dataset.
@@ -1791,6 +1884,594 @@ namespace doc::Dataset {
     --------
     >>> q = data.ljungbox("y", 12)
     >>> pv = gretl.pvalue("X", 12, q)
+    )doc";
+
+    inline constexpr char plot[] = R"doc(
+    Plot dataset series using libgretl and Matplotlib.
+
+    Parameters
+    ----------
+    yvars : str or list
+        Variable specification. For ordinary X-Y plots, the last
+        variable is used as the X variable and the preceding variables
+        are plotted on the Y axis. With time_series=True, all specified
+        variables are plotted against time.
+    **kwargs
+        Additional options corresponding to the gretl gnuplot command.
+
+    Other Parameters
+    ----------------
+    with_lines : bool or str, optional
+        Draw lines instead of points. A string can specify the
+        variables to which this style applies.
+    with_lp : bool or str, optional
+        Draw lines and points.
+    with_impulses : bool or str, optional
+        Draw vertical impulses.
+    with_boxes : bool or str, optional
+        Draw histogram-style boxes.
+    with_steps : bool or str, optional
+        Draw step graphs.
+    time_series : bool, optional
+        Plot variables against time.
+    single_yaxis : bool, optional
+        Force all variables onto a single Y axis.
+    y2axis : str, optional
+        Specify variables to plot on the secondary Y axis.
+    ylogscale : bool or float, optional
+        Use a logarithmic Y axis, optionally specifying its base.
+    control : bool, optional
+        Plot the residuals from regressions of Y and X on the
+        specified control variables.
+    factorized : bool or str, optional
+        Distinguish observations according to a discrete factor
+        variable.
+    fit : str, optional
+        Fitted line specification: "none", "linear", "inverse",
+        "quadratic", "cubic", "semilog", "linlog", or "loess".
+    font : str, optional
+        Font specification for the plot.
+    band : str, optional
+        Name of a gretl bundle specifying a band.
+    bands : str, optional
+        Name of an array of band bundles.
+    plot : str, optional
+        Use "display" to request graphical output.
+    output : str, optional
+        Output filename. When specified, the original gnuplot script
+        and its translated Python counterpart are saved to files.
+
+    Returns
+    -------
+    matplotlib.figure.Figure
+    Matplotlib figure containing the generated plot.
+
+    Notes
+    -----
+    This method maps to the gretl ``gnuplot`` command. Plot scripts
+    are generated by libgretl and translated into Matplotlib code
+    by gptranslate.
+
+    For ordinary X-Y plots, observations are represented by points
+    unless another plotting style is requested.
+
+    When several Y variables are specified, libgretl may automatically
+    assign variables to a secondary Y axis based on their scales.
+    This behavior can be overridden using single_yaxis or y2axis.
+
+    The control option requires at least three variables: Y, X,
+    and one or more control variables. It plots the residuals
+    from regressing Y and X on the controls.
+
+    Matrix-based plots and existing gnuplot script files are handled
+    separately by the module-level gretl.plot() function.
+
+    Examples
+    --------
+    >>> fig = data.plot("y x")
+    >>> fig = data.plot(["y1", "y2", "x"])
+    >>> fig = data.plot("y1 y2", time_series=True, with_lines=True)
+    >>> fig = data.plot("y x", fit="quadratic")
+    >>> fig = data.plot("y x z", control=True)
+    >>> fig = data.plot("y1 y2 x", y2axis="y2")
+    )doc";
+
+    inline constexpr char boxplot[] = R"doc(
+    Generate boxplots for dataset series using libgretl and Matplotlib.
+
+    Parameters
+    ----------
+    varlist : str or list
+        Names or IDs of the series to plot. For factorized boxplots,
+        exactly two variables must be specified: the target variable
+        followed by the discrete factor variable.
+
+    Other Parameters
+    ----------------
+    notches : bool, optional
+        Show a bootstrap-based 90 percent confidence interval for
+        the median, represented by dashed horizontal lines.
+    factorized : bool, optional
+        Generate boxplots conditional on the values of a discrete
+        factor variable. Requires exactly two variables in varlist.
+    panel : bool, optional
+        Generate separate boxplots for each panel unit. Requires
+        panel data and exactly one variable in varlist.
+    output : str, optional
+        Output filename. When specified, the original gnuplot script
+        and its translated Python counterpart are saved to files.
+
+    Returns
+    -------
+    matplotlib.figure.Figure
+        Matplotlib figure containing the generated boxplots.
+
+        Notes
+        -----
+        This method maps to the gretl ``boxplot`` command. Plot scripts
+        are generated by libgretl and translated into Matplotlib code
+        by gptranslate.
+
+        Each box extends from the first quartile (Q1) to the third
+        quartile (Q3), enclosing the middle 50 percent of observations.
+        The horizontal line inside the box indicates the median, while
+        a plus sign (+) marks the mean.
+
+        Whiskers extend up to 1.5 times the interquartile range (IQR)
+        beyond the quartiles. Observations outside this range are
+        displayed as individual points.
+
+        With notches=True, a bootstrap-based 90 percent confidence
+        interval for the median is shown using dashed horizontal lines.
+
+        With factorized=True, the first variable is plotted separately
+        for each distinct value of the second variable.
+
+        With panel=True, separate boxplots are produced for each panel
+        unit, allowing comparison of distributions across groups.
+
+        For matrix-based boxplots, use the module-level gretl.plot()
+        interface instead.
+
+        Examples
+        --------
+        >>> fig = data.boxplot("y")
+        >>> fig = data.boxplot("y1 y2 y3")
+        >>> fig = data.boxplot(["y1", "y2"])
+        >>> fig = data.boxplot("wage gender", factorized=True)
+        >>> fig = panel_data.boxplot("y", panel=True)
+        >>> fig = panel_data.boxplot("y", panel=True, notches=True)
+        )doc";
+
+    inline constexpr char hflags[] = R"doc(
+    Generate high-frequency lags or leads from a MIDAS variable list.
+
+    Parameters
+    ----------
+    lmin : int
+        Minimum high-frequency lag. Negative values indicate leads.
+    lmax : int
+        Maximum high-frequency lag. Positive values indicate lags.
+    hfvars : str or list
+        MIDAS variable specification containing at least two
+        high-frequency series, given as variable names or IDs.
+
+    Returns
+    -------
+    list[str]
+        Names of the generated high-frequency lag or lead series,
+        ordered from lmin to lmax.
+
+    Notes
+    -----
+    This method maps to the gretl ``hflags`` function and uses
+    libgretl's native high-frequency lag generation mechanism.
+
+    The number of high-frequency periods within each low-frequency
+    period is determined by the number of variables in hfvars,
+    which must be at least two.
+
+    Positive lag orders refer to past high-frequency observations,
+    while negative orders refer to future observations (leads).
+    Lag zero denotes the first high-frequency period within a
+    low-frequency period, such as the first month of a quarter
+    or the first day of a month.
+
+    The generated series are added to the current dataset and
+    their names are returned as a Python list.
+
+    Examples
+    --------
+    >>> d = gretl.get_data("gdp_midas.gdt")
+    >>> hfvars = "ld_payems_m3 ld_payems_m2 ld_payems_m1"
+    >>> lags = d.hflags(3, 11, hfvars)
+    >>> fig = d.hfplot([lags, hfvars], with_lines=True, time_series=True)
+
+    >>> leads_and_lags = d.hflags(-3, 5, hfvars)
+    )doc";
+
+    inline constexpr char hfplot[] = R"doc(
+    Plot high-frequency MIDAS series, optionally with low-frequency series.
+
+    Parameters
+    ----------
+    hflist : str or list
+        MIDAS variable specification containing the high-frequency
+        series to plot. Optionally, a second list of low-frequency
+        series may be supplied as [hflist, lflist].
+    with_lines : bool, optional
+        Plot using lines instead of points.
+    time_series : bool, optional
+        Put time on the horizontal axis.
+    output : str, optional
+        Output filename. When specified, the original gnuplot script
+        and its translated Python counterpart are saved to files.
+
+    Returns
+    -------
+    matplotlib.figure.Figure or None
+        Matplotlib Figure containing the generated plot, or None
+        when output is specified.
+
+    Notes
+    -----
+    This method maps to the gretl ``hfplot`` command.
+
+    The first argument specifies a MIDAS list of high-frequency
+    variables. An optional second list specifies one or more
+    regular (low-frequency) variables observed at the base
+    frequency of the dataset.
+
+    In gretl syntax, the two lists are separated by a semicolon.
+    In Python, they can be supplied as a two-element list
+    containing the high-frequency and low-frequency specifications.
+
+    Plot generation is performed by libgretl. The resulting
+    gnuplot script is translated into Python code by gptranslate
+    and rendered using Matplotlib.
+
+    When output is specified, two files are generated: the
+    original gnuplot script (.gp) and the translated Python
+    script (.py).
+
+    Examples
+    --------
+    >>> d = gretl.get_data("gdp_midas.gdt")
+    >>> hfvars = "ld_payems_m3 ld_payems_m2 ld_payems_m1"
+    >>> lags = d.hflags(3, 11, hfvars)
+    >>> fig = d.hfplot(lags, with_lines=True, time_series=True)
+    >>> fig = d.hfplot([lags, hfvars], with_lines=True, time_series=True)
+    >>> d.hfplot([lags, hfvars], output="midas.gp")
+    )doc";
+
+    inline constexpr char panplot[] = R"doc(
+    Plot a panel-data series using the specified graphical mode.
+
+    Parameters
+    ----------
+    plotvar : str
+        Name of the panel-data series to plot.
+    means : bool, optional
+        Plot the time series of cross-sectional group means.
+    overlay : bool, optional
+        Overlay the time series for individual groups in a single plot.
+        Available for panels with at most 130 groups.
+    sequence : bool, optional
+        Plot the time series for individual groups in sequence.
+        Available for panels with at most 130 groups.
+    grid : bool, optional
+        Arrange individual group plots in a grid.
+        Available for panels with at most 16 groups.
+    stack : bool, optional
+        Arrange individual group plots vertically.
+        Available for panels with at most 6 groups.
+    boxplots : bool, optional
+        Plot a separate boxplot for each group, arranged in sequence.
+        Available for panels with at most 150 groups.
+    boxplot : bool, optional
+        Produce a single boxplot summarizing all groups.
+    font : str, optional
+        Font specification for the plot.
+    output : str, optional
+        Output filename. If specified, the gnuplot script is saved
+        to the given file and the translated Matplotlib Python script
+        is saved alongside it with the '.py' extension.
+
+    Returns
+    -------
+    matplotlib.figure.Figure or None
+    The Matplotlib figure if `output` is not specified.
+    Otherwise, None.
+
+    Notes
+    -----
+    This method is specific to panel datasets. Exactly one graphical
+    mode should be selected.
+
+    Except for `means` and `boxplot`, the plots represent variation
+    in both the time-series and cross-sectional dimensions.
+
+    The number of groups refers to the groups in the current sample,
+    not necessarily the full dataset. For large panels, the sample
+    can be restricted to a smaller set of groups before plotting.
+
+    When `output` is specified, gretl4py generates both the original
+    gnuplot script and its translated Matplotlib Python counterpart.
+    No Matplotlib figure is returned in this case.
+
+    Examples
+    --------
+    >>> d.panplot("Y", overlay=True)
+    >>> d.panplot("Y", means=True)
+    >>> d.panplot("Y", grid=True)
+    >>> d.panplot("Y", stack=True)
+    >>> d.panplot("Y", boxplots=True)
+    >>> d.panplot("Y", boxplot=True)
+    >>> d.panplot("Y", sequence=True)
+    >>> d.panplot("Y", overlay=True, output="/tmp/panel.gp")
+    )doc";
+
+    inline constexpr char qqplot[] = R"doc(
+    Produce a quantile-quantile (Q-Q) plot.
+
+    Parameters
+    ----------
+    y : str
+        Name of the series whose empirical quantiles are plotted.
+    x : str, optional
+        Name of a second series whose empirical quantiles are used
+        as the reference distribution. If omitted, the reference
+        is the normal distribution.
+    z_scores : bool, optional
+        Standardize the data before constructing the normal Q-Q plot.
+        Applicable only when `x` is not specified.
+    raw : bool, optional
+        Plot the unstandardized empirical quantiles against the
+        quantiles of the standard normal distribution.
+        Applicable only when `x` is not specified.
+    output : str, optional
+        Output filename. If specified, the original gnuplot script
+        is saved to the given file and the translated Matplotlib
+        Python script is saved alongside it with the '.py' extension.
+
+    Returns
+    -------
+    matplotlib.figure.Figure or None
+        The Matplotlib figure if `output` is not specified.
+        Otherwise, None.
+
+    Notes
+    -----
+    With a single series argument, the method produces a normal Q-Q
+    plot. At least 20 valid observations must be available in the
+    current sample.
+
+    By default, empirical quantiles are plotted against quantiles
+    of a normal distribution having the same mean and variance as
+    the sample data.
+
+    Two alternative normalizations are available:
+
+    - `z_scores=True` standardizes the sample data and plots the
+    resulting quantiles against the standard normal distribution.
+    - `raw=True` preserves the original data values and plots their
+    empirical quantiles against the standard normal distribution.
+
+    The `z_scores` and `raw` options are mutually exclusive.
+
+    With two series arguments, the method plots the empirical
+    quantiles of `y` against those of `x`. Neither series is
+    standardized, and the normal-reference options do not apply.
+
+    When `output` is specified, gretl4py generates both the
+    gnuplot script and its translated Matplotlib Python script.
+    No Matplotlib figure is returned.
+
+    Examples
+    --------
+    >>> d.qqplot("Y")
+    >>> d.qqplot("Y", z_scores=True)
+    >>> d.qqplot("Y", raw=True)
+    >>> d.qqplot("Y", "X")
+    >>> d.qqplot("Y", output="/tmp/qqplot.gp")
+    >>> d.qqplot("Y", "X", output="/tmp/qqplot_xy.gp")
+    )doc";
+
+    inline constexpr char kdplot[] = R"doc(
+    Plots a kernel density estimate for a specified series.
+
+    By default, the Gaussian kernel is used. Setting ``alt=True`` selects
+    the Epanechnikov kernel instead. The degree of smoothing can be adjusted
+    using the ``scale`` parameter, which has a default value of 1.0.
+    Higher values produce smoother density estimates.
+
+    Parameters
+    ----------
+    y : str
+        Name of the series for which the kernel density is estimated.
+    alt : bool, optional
+        If True, use the Epanechnikov kernel instead of the Gaussian kernel.
+        Default is False.
+    scale : float, optional
+        Scaling factor for the bandwidth. Higher values increase smoothing.
+        Default is 1.0.
+    output : str, optional
+        Filename for saving the generated gnuplot script and its translated
+        Python script. If omitted, the plot is rendered using Matplotlib.
+
+    Returns
+    -------
+    matplotlib.figure.Figure or None
+        A Matplotlib Figure if ``output`` is not specified; otherwise None.
+
+    Notes
+    -----
+    The kernel density plot is generated by libgretl and translated into
+    Matplotlib code by gptranslate.
+
+    For a more flexible approach to kernel density estimation, including
+    retrieval of the estimated density as a matrix, see the ``kdensity``
+    function.
+
+    Examples
+    --------
+    >>> d.kdplot("LF")
+    >>> d.kdplot("LF", alt=True)
+    >>> d.kdplot("LF", scale=1.5)
+    >>> d.kdplot("LF", alt=True, scale=0.8)
+    >>> d.kdplot("LF", output="density.gp")
+    )doc";
+
+    inline constexpr char tsplots[] = R"doc(
+    Plot multiple time series on a single canvas.
+
+    This method corresponds to the gretl ``tsplots`` command and
+    produces up to 16 individual time-series plots arranged in a
+    single figure.
+
+    Parameters
+    ----------
+    varlist : str or list
+        Names or ID numbers of the series to be plotted.
+    output : str, optional
+        Filename for saving the generated gnuplot script and its translated
+        Python script. If omitted, the plot is rendered using Matplotlib.
+
+    Returns
+    -------
+    object
+        The result of the plotting operation.
+
+    Notes
+    -----
+    The method uses the same underlying implementation as ``scatters()``,
+    with the ``time_series`` option enabled.
+    )doc";
+
+
+    inline constexpr char scatters[] = R"doc(
+    Generate multiple pairwise scatterplots on a single canvas.
+
+    This method corresponds to the gretl ``scatters`` command. It plots
+    one dependent variable against several explanatory variables, or
+    several dependent variables against one explanatory variable.
+    A maximum of 16 plots can be generated.
+
+    Parameters
+    ----------
+    varlist : str or list
+        Variables to be plotted, separated into two groups by a
+        semicolon. The first group specifies the y-axis variables
+        and the second group specifies the x-axis variables.
+        One of the groups must contain exactly one variable.
+    with_lines : bool, optional
+        Draw line graphs instead of scatterplots (default: False).
+    output : str, optional
+        Filename to which the plot should be written.
+
+    Returns
+    -------
+    matplotlib.figure.Figure or None
+        The Matplotlib figure, or None if no figure is returned.
+
+    Notes
+    -----
+    Any variables exceeding the maximum of 16 plots are ignored.
+
+    See Also
+    --------
+    tsplots : Plot multiple time series on a single canvas.
+    )doc";
+
+    inline constexpr char freq[] = R"doc(
+    Compute the frequency distribution of a series.
+
+    Constructs a frequency table for a selected series, with
+    automatic binning for continuous data. Optionally performs
+    a test for the normal or gamma distribution.
+
+    Parameters
+    ----------
+    var : str
+        Name of the series for which the frequency distribution
+        is computed.
+
+    Other Parameters
+    ----------------
+    nbins : int, optional
+        Number of bins for continuous data. By default, the
+        number of bins is determined automatically.
+    min : float, optional
+        Lower limit of the leftmost bin.
+    binwidth : float, optional
+        Width of the bins for continuous data.
+    normal : bool, optional
+        Perform the Doornik-Hansen chi-square test for normality.
+    gamma : bool, optional
+        Perform Locke's nonparametric test for the gamma
+        distribution.
+    silent : bool, optional
+        Suppress printed output.
+    plot : str, optional
+        Plot mode or output filename. Supported values are ``"none"``
+        (suppress the plot), ``"display"`` (request graphical output),
+        or a filename to save the plot.
+
+    Returns
+    -------
+    tuple[Bundle, matplotlib.figure.Figure | None]
+    A tuple containing a Bundle with the frequency distribution
+    and optional test results, and an optional Matplotlib Figure.
+    The second element is ``None`` if no figure is returned.
+
+    Notes
+    -----
+    For continuous data, the number and width of the bins are
+    determined automatically unless specified explicitly.
+    Alternatively, binning can be controlled by specifying the
+    lower limit and bin width. Discrete data are not binned
+    by default.
+
+    With ``normal=True``, the Doornik-Hansen chi-square test
+    for normality is performed. With ``gamma=True``, Locke's
+    nonparametric test for the gamma distribution is performed.
+    The gamma distribution uses the shape-scale parameterization.
+
+    The returned Bundle always contains the following entries:
+
+    ``result``
+    A GretlMatrix containing the frequency distribution.
+    ``summary``
+    The captured textual output, which may be empty if
+    ``silent=True`` is specified.
+
+    When a distribution test is requested and valid results
+    are obtained, the Bundle also contains:
+
+    ``test``
+    The distribution test statistic.
+    ``pvalue``
+    The corresponding p-value.
+
+    These optional entries are omitted if no distribution test
+    is requested or if valid test results are unavailable.
+
+    When plotting is enabled, the frequency distribution is
+    displayed as a histogram, optionally accompanied by the
+    corresponding theoretical density.
+
+    If ``plot`` is omitted, graphical output follows the current
+    gretl execution mode. Automatic display of generated figures
+    is controlled separately by ``gretl.set_plot_auto_show()``.
+
+    Examples
+    --------
+    ``res, fig = data.freq("x")``
+    ``res, fig = data.freq("x", nbins=5)``
+    ``res, fig = data.freq("x", min=0, binwidth=0.1)``
+    ``res, fig = data.freq("x", normal=True, plot="display")``
+    ``res, fig = data.freq("x", gamma=True, plot="display")``
+    ``res, fig = data.freq("x", silent=True, plot="none")``
     )doc";
 
 } // namespace doc::Dataset

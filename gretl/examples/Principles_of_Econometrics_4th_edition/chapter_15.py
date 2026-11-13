@@ -7,13 +7,18 @@ import gretl
 
 def run_example():
   # check gretl4py version
-  assert float(gretl.version) >= 0.41, "required gretl4py 0.41 or higher"
+  assert float(gretl.version) >= 0.63, "required gretl4py 0.63 or higher"
 
   # switch of verbosity
   gretl.set('verbose', 'off')
 
   # we load addon for Hausman-Taylor estimator
-  HT = gretl.include("hausman_taylor.gfn")
+  try:
+    HT = gretl.include("hausman_taylor.gfn")
+  except FileNotFoundError:
+    print("Installing the 'hausman_taylor' package...")
+    gretl.pkg("install", "hausman_taylor")
+    package = gretl.include("hausman_taylor")
 
   # force libgretl to use the decimal point character
   gretl.set('force_decpoint', 'on')
@@ -107,14 +112,13 @@ def run_example():
   # 15.6 The Hausman-Taylor Estimator
   ############################################
   print("\n15.6. The Hausman-Taylor Estimator")
-  #HT.show_functions()
-  nls_panel.new_list(name="EXO", value="exper exper2 tenure tenure2 union black")
-  nls_panel.new_list(name="NDO", value="south educ")
-  #gretl.print("NDO", list=True)
-  HT_e = gretl.hausman_taylor(y='lwage', L1='EXO', L2='NDO', verbosity=0)               # (15.38)
+  HT.show_functions()
+  EXO = ['exper', 'exper2', 'tenure', 'tenure2', 'union', 'black']
+  NDO = ['south', 'educ']
+  HT_e = gretl.hausman_taylor(y='lwage', Lexo=EXO, Lndo=NDO, verbosity=0)               # (15.38)
   print("\nTable 15.10 Hausman-Taylor Estimates of Wage Equation")
-  gretl.ht_print(b=HT_e)
-
+  gretl.ht_print(HT_e)
+  exit()
 
   ############################################
   # 15.7 Sets of Regression Equations

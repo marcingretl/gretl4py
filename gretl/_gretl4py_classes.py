@@ -3,6 +3,9 @@
  *  gretl -- Gnu Regression, Econometrics and Time-series Library
  *  Copyright (C) 2001 Allin Cottrell and Riccardo "Jack" Lucchetti
  *
+ *  gretl4py -- Python bindings for gretl
+ *  Copyright (C) 2024 Marcin Błażejowski
+ *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
@@ -17,6 +20,7 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  """
+
 import inspect
 import sys
 import os
@@ -26,7 +30,6 @@ import pandas as pd
 from typing import TypedDict, NotRequired, Dict, List, Any
 from typing import Optional
 from ._gretl4py_addons import _pd_to_pandas_str_format
-from ._plotting import _plotfitted, _plotresiduals
 from . import _gretl
 
 # #######################################################
@@ -49,75 +52,6 @@ def _oddsratio(self: "Model_logit"):
     print("WARNING: oddsratios() is deprecated; use model.oddsratios instead\n")
 
     return self.oddsratios
-
-def _model_plots(
-    self: "GretlModel",
-    kind: str,
-    eqn: int = 0,
-    multiple: bool = False,
-    against: str | None = None,
-    backend: str | None = None
-):
-    """
-    General dispatcher for model-based plots.
-
-    This method provides a unified entry point for generating plots associated
-    with a fitted model, such as fitted-versus-actual plots or residual plots.
-    The specific plot to generate is selected via the ``kind`` argument and
-    delegated to the corresponding internal plotting routine.
-
-    Parameters
-    ----------
-    kind : str
-        Type of plot to generate. Supported values are:
-
-        - ``"fitted"`` : Plot fitted values against observed data.
-        - ``"residuals"`` : Plot regression residuals.
-
-    eqn : int, optional
-        Equation number to plot. Use ``0`` to plot all equations or dependent
-        variables (default).
-
-    multiple : bool, optional
-        If ``False`` (default), a separate figure is produced for each variable.
-        If ``True``, all plots are arranged as subplots in a single figure.
-
-    against : str, optional
-        Name of a variable in the dataset to plot against instead of the default
-        time or observation index. If provided, data are sorted by this variable
-        before plotting.
-
-    backend : str, optional
-        Name of the matplotlib backend to use (e.g. ``"TkAgg"``, ``"QtAgg"``,
-        ``"Agg"``). If None, the default backend selection logic is used.
-
-    Raises
-    ------
-    ValueError
-        If ``kind`` does not correspond to a supported plot type.
-
-    Notes
-    -----
-    - This method is intended as an internal wrapper for all model-related plots.
-    - Backend selection applies to all plots generated during this call.
-    - Public plotting methods may delegate to this dispatcher to ensure
-      consistent behavior.
-
-    Examples
-    --------
-    >>> model.plot("fitted")
-    >>> model.plot("residuals", multiple=True)
-    >>> model.plot("fitted", against="lg", backend="QtAgg")
-    """
-    if self.estimated is False:
-        raise RuntimeError("Model was not estimated yet")
-
-    if kind == "fitted":
-        _plotfitted(self, eqn, multiple, against, backend)
-    elif kind == "residuals":
-        _plotresiduals(self, eqn, multiple, against, backend)
-    else:
-        raise ValueError(f"unknown plotting type: {kind}")
 
 ####################################
 #   tests
@@ -373,30 +307,60 @@ def _comfac(self: "Model", **kwargs) -> "Bundle":
 _comfac.__name__ = "comfac"
 _comfac.__qualname__ = "Model.comfac"
 
-def _cusum(self: "Model", **kwargs) -> "Bundle":
-    """
-    Perform the CUSUM test for parameter stability.
 
-    Computes recursive one-step-ahead forecast errors and uses their
-    cumulative sum to test the stability of the parameters of an OLS
-    model.
+def _cusum(self: "Model", **kwargs) -> "tuple[Bundle, Figure | None]":
+    """
+    Perform the CUSUM or CUSUMSQ test for parameter stability.
+
+    Tests the stability of the parameters of an OLS model using
+    recursive one-step-ahead forecast errors. By default, the
+    cumulative sum of scaled recursive residuals (CUSUM) is used.
+    Alternatively, the cumulative sum of squared recursive
+    residuals (CUSUMSQ) can be computed.
 
     Other Parameters
     ----------------
-    squares : bool
-        Perform the CUSUMSQ test based on squared recursive residuals.
-    quiet : bool
-        Print only the Harvey-Collier test result.
+    squares : bool, optional
+        Perform the CUSUMSQ test instead of the standard CUSUM test.
+    quiet : bool, optional
+        Suppress the cumulative series output and print only the
+        Harvey-Collier test result.
+    plot : str, optional
+        Plot mode or output filename. Supported values are ``"none"``
+        (suppress the plot), ``"display"`` (request graphical output),
+        or a filename to save the plot.
+
+    Returns
+    -------
+    tuple[Bundle, matplotlib.figure.Figure | None]
+        A tuple containing a Bundle with the test results and an
+        optional Matplotlib Figure. The second element is ``None``
+        if no figure is returned.
 
     Notes
     -----
-    The null hypothesis is parameter stability. It is rejected at the
-    5 percent significance level if the cumulative series crosses the
-    95 percent confidence band.
+    The null hypothesis is parameter stability. Recursive residuals
+    are obtained from a sequence of expanding-window regressions,
+    starting with a sample containing as many observations as
+    there are estimated parameters.
 
-    For the CUSUM test, the Harvey-Collier t-test for parameter stability
-    is also reported. With ``squares=True``, the confidence band is
-    calculated using the method of Edgerton and Wells (1994).
+    The null hypothesis is rejected at the 5% significance level
+    if the cumulative series crosses the 95% confidence band.
+
+    For the standard CUSUM test, the Harvey-Collier t-test for
+    parameter stability is also reported. With ``squares=True``,
+    the confidence band is calculated using the algorithm of
+    Edgerton and Wells (1994).
+
+    If ``plot`` is omitted, graphical output follows the current
+    gretl execution mode. Automatic display of generated figures
+    is controlled separately by ``gretl.set_plot_auto_show()``.
+
+    Examples
+    --------
+    ``result, fig = model.cusum(plot="display")``
+    ``result, fig = model.cusum(squares=True, plot="display")``
+    ``result, fig = model.cusum(quiet=True, plot="none")``
     """
     return self._test(type="cusum", **kwargs)
 _cusum.__name__ = "cusum"
@@ -425,31 +389,78 @@ def _groupwise_heteroskedasticity(self: "Model", **kwargs) -> "Bundle":
 _groupwise_heteroskedasticity.__name__ = "groupwise_heteroskedasticity"
 _groupwise_heteroskedasticity.__qualname__ = "Model.groupwise_heteroskedasticity"
 
-def _leverage(self: "Model", **kwargs) -> "Bundle":
-    """
-    Compute leverage and influence diagnostics.
 
-    Calculates leverage, influence, DFFITS, and Studentized residuals for
-    the observations used in the estimation of an OLS model.
+def _leverage(self: "Model", **kwargs) -> "tuple[Bundle, Figure | None]":
+    """
+    Compute leverage and influence diagnostics for an OLS model.
+
+    Computes leverage values, influence measures, DFFITS, and
+    externally Studentized residuals for the observations used
+    in the estimation of an OLS model.
 
     Other Parameters
     ----------------
-    save : bool
+    save : bool, optional
         Save leverage, influence, and DFFITS as series in the dataset.
-    overwrite : bool
-        Allow existing saved series to be overwritten.
-    quiet : bool
-        Suppress printed output.
+        The default series names are ``lever``, ``influ``, and
+        ``dffits``, respectively.
+    overwrite : bool, optional
+        Allow existing series to be overwritten when ``save=True``.
+        Otherwise, unique series names are generated.
+    quiet : bool, optional
+        Suppress printed results.
+    plot : str, optional
+        Plot mode or output filename. Supported values are ``"none"``
+        (suppress the plot), ``"display"`` (request graphical output),
+        or a filename to save the plot.
+
+    Returns
+    -------
+    tuple[Bundle, matplotlib.figure.Figure | None]
+        A tuple containing a Bundle with the diagnostic results and
+        an optional Matplotlib Figure. The second element is ``None``
+        if no figure is returned.
 
     Notes
     -----
-    Observations with leverage greater than ``2k/n``, where ``k`` is the
-    number of estimated parameters and ``n`` is the sample size, are
-    flagged as leverage points.
+    The leverage of observation i is the corresponding diagonal
+    element of the hat matrix and lies between 0 and 1.
+    Observations with leverage exceeding ``2k/n``, where ``k`` is
+    the number of estimated parameters and ``n`` is the sample size,
+    are flagged as leverage points.
 
-    The result matrix contains leverage, influence, and externally
-    Studentized residuals. The test statistic records the leave-one-out
-    cross-validation criterion.
+    The influence measure is defined as ``u*h/(1-h)``, where ``u``
+    denotes the residual and ``h`` the leverage. DFFITS measures
+    the effect of deleting an observation on its fitted value.
+
+    The resulting Bundle contains the following entries:
+
+    ``result``
+        A three-column GretlMatrix containing leverage, influence,
+        and externally Studentized residuals, respectively.
+    ``test``
+        The leave-one-out cross-validation criterion, calculated
+        as the sum of squared prediction errors obtained by omitting
+        each observation from the estimation sample.
+    ``summary``
+        The printed diagnostic results.
+
+    Note that the third column of ``result`` contains externally
+    Studentized residuals, not DFFITS. The latter can be computed as
+
+        DFFITS = r * sqrt(h / (1 - h))
+
+    where ``r`` denotes the externally Studentized residual.
+
+    If ``plot`` is omitted, graphical output follows the current
+    gretl execution mode. Automatic display of generated figures
+    is controlled separately by ``gretl.set_plot_auto_show()``.
+
+    Examples
+    --------
+    ``result, fig = model.leverage(plot="display")``
+    ``result, fig = model.leverage(save=True, quiet=True)``
+    ``result, fig = model.leverage(plot="none")``
     """
     return self._test(type="leverage", **kwargs)
 _leverage.__name__ = "leverage"
@@ -586,29 +597,70 @@ def _panspec(self: "Model", **kwargs) -> "Bundle":
 _panspec.__name__ = "panspec"
 _panspec.__qualname__ = "Model.panspec"
 
-def _qlrtest(self: "Model", **kwargs) -> "Bundle":
-    """
-    Perform the Quandt likelihood ratio test for a structural break.
 
-    Tests for a structural break at an unknown point in an OLS model. Chow
-    tests are computed over the central 70 percent of the sample, and the
-    QLR statistic is the maximum of the resulting test statistics.
+def _qlrtest(self: "Model", **kwargs) -> "tuple[Bundle, Figure | None]":
+    """
+    Perform the Quandt likelihood ratio (QLR) test for a structural break.
+
+    Tests for a structural break at an unknown point in an OLS model
+    estimated on time-series data. A sequence of Chow tests is performed
+    over the central 70 percent of the estimation sample, and the QLR
+    statistic is the maximum of the resulting test statistics.
 
     Other Parameters
     ----------------
-    limit_to : str | list
-        Restrict the test to a specified subset of regressors.
-    quiet : bool
+    limit_to : str, optional
+        Name of a gretl list containing a subset of the original
+        regressors to be tested for parameter instability. The list
+        must not include the constant.
+    plot : str, optional
+        Plot mode or output filename. Supported values are ``"none"``
+        (suppress the plot), ``"display"`` (request graphical output),
+        or a filename to save the plot.
+    quiet : bool, optional
         Suppress printed output.
+
+    Returns
+    -------
+    tuple[Bundle, matplotlib.figure.Figure | None]
+        A tuple containing a Bundle with the test results and an
+        optional Matplotlib Figure. The second element is ``None``
+        if no figure is returned.
 
     Notes
     -----
-    The test uses 15 percent trimming at each end of the sample. An
-    asymptotic p-value is computed using the method of Hansen (1997).
+    The null hypothesis is parameter stability against the alternative
+    of a structural break at an unknown date. The test applies
+    15 percent trimming at each end of the estimation sample.
 
-    The break point at which the test statistic is maximized is also
-    recorded. If the original model was estimated with robust standard
-    errors, robust Wald tests are used in place of the standard F-tests.
+    At each candidate break point, a Chow test is performed.
+    If the original model was estimated using robust standard errors,
+    robust Wald statistics are used instead of the usual F-statistics.
+
+    The QLR statistic is the maximum of these statistics.
+    Its asymptotic p-value is computed using the method of
+    Hansen (1997).
+
+    The resulting Bundle contains the following entries:
+
+    ``test``
+        The QLR test statistic.
+    ``pvalue``
+        The asymptotic p-value.
+    ``qlrbreak``
+        The observation index at which the test statistic is maximized.
+    ``summary``
+        The printed test results.
+
+    If ``plot`` is omitted, graphical output follows the current
+    gretl execution mode. Automatic display of generated figures
+    is controlled separately by ``gretl.set_plot_auto_show()``.
+
+    Examples
+    --------
+    ``result, fig = model.qlrtest(plot="display")``
+    ``result, fig = model.qlrtest(limit_to="L", plot="display")``
+    ``result, fig = model.qlrtest(quiet=True, plot="none")``
     """
     return self._test(type="qlrtest", **kwargs)
 _qlrtest.__name__ = "qlrtest"
@@ -1147,37 +1199,70 @@ def _coint(self: "Dataset", order: int, depvar: str, indepvars: str | list, **kw
 _coint.__name__ = "coint"
 _coint.__qualname__ = "Dataset.coint"
 
-def _corrgm(self: "Dataset", y: str, order: int, **kwargs) -> "Bundle":
+
+
+def _corrgm(self: "Dataset", y: str, order: int = 0,
+            **kwargs) -> "Bundle | tuple[Bundle, Figure]":
     """
     Compute the correlogram of a time series.
 
-    Calculates the autocorrelation function (ACF) and, by default, the
+    Computes the autocorrelation function (ACF) and, by default, the
     partial autocorrelation function (PACF) using the Durbin-Levinson
     algorithm. The Ljung-Box Q statistic for testing the white-noise
-    hypothesis is also computed.
+    hypothesis is also reported.
 
     Parameters
     ----------
     y : str
-        Series for which the correlogram is computed.
+        Name of the series for which the correlogram is computed.
     order : int, optional
-        Maximum lag. If omitted, the lag order is selected automatically
-        based on the data frequency and sample size.
+        Maximum number of lags. If zero (default), the lag order is
+        selected automatically based on the data frequency and
+        sample size.
 
     Other Parameters
     ----------------
-    quiet : bool
+    plot : str, optional
+        Plot mode or output filename. Supported values are ``"none"``
+        (suppress the plot), ``"display"`` (request graphical output),
+        or a filename to save the plot.
+    quiet : bool, optional
         Suppress printed output.
-    acf_only : bool
+    acf_only : bool, optional
         Compute only the ACF, omitting partial autocorrelations.
-    bartlett : bool
+    bartlett : bool, optional
         Use Bartlett standard errors for the ACF.
+
+    Returns
+    -------
+    Bundle or tuple[Bundle, matplotlib.figure.Figure]
+        A Bundle containing the test statistic, p-value, and summary.
+        If a Matplotlib figure is generated, a tuple containing the
+        Bundle and Figure is returned instead.
 
     Notes
     -----
     By default, ACF standard errors are computed under the white-noise
-    null hypothesis. Bartlett standard errors instead provide bounds
-    associated with an MA(k) process.
+    null hypothesis, using ``1 / sqrt(T)``, where ``T`` denotes the
+    sample size.
+
+    With ``bartlett=True``, Bartlett standard errors are used instead.
+    These provide confidence bounds associated with the hypothesis
+    that the series follows a moving average process of order k,
+    MA(k). The Bartlett bounds also apply to the ACF plot.
+
+    The Ljung-Box Q statistic tests the joint null hypothesis that
+    autocorrelations up to the maximum lag are zero.
+
+    If ``plot`` is omitted, graphical output follows the current
+    gretl execution mode. Automatic display of generated figures
+    is controlled separately by ``gretl.set_plot_auto_show()``.
+
+    Examples
+    --------
+    ``r = data.corrgm("x", order=12)``
+    ``r = data.corrgm("GDP", acf_only=True)``
+    ``r, fig = data.corrgm("GDP", order=12, plot="display")``
     """
     return self._test(type="corrgm", y=y, order=order, **kwargs)
 _corrgm.__name__ = "corrgm"

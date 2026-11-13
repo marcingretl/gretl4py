@@ -1,4 +1,5 @@
 import gretl
+import matplotlib.pyplot as plt
 
 def run_example():
   # datasets used
@@ -99,7 +100,7 @@ def run_example():
 
   print("\n****************************")
   print("cusum")
-  res_cusum = m1.cusum(quiet=True)
+  res_cusum, f = m1.cusum(quiet=True, plot="display")
   print(res_cusum['pvalue'])
 
   print("\n****************************")
@@ -210,3 +211,4 @@ def run_example():
 
 if __name__ == "__main__":
     run_example()
+    plt.show()

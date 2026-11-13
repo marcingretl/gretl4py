@@ -2,6 +2,9 @@
  *  gretl -- Gnu Regression, Econometrics and Time-series Library
  *  Copyright (C) 2001 Allin Cottrell and Riccardo "Jack" Lucchetti
  *
+ *  gretl4py -- Python bindings for gretl
+ *  Copyright (C) 2024 Marcin Błażejowski
+ *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
@@ -81,10 +84,11 @@ PYBIND11_MODULE(_gretl, m)
     m.attr("version") = GRETL4PY_VERSION;
     m.attr("gretldir") = do_get_accessor<GRETL_OBJ_ANY>("$gretldir", GretlDataset::default_dataset(), nullptr);
     m.def("about", &about, py::arg("do_print") = false);
+    m.def("set_plot_auto_show", &GretlPlot::set_auto_show, py::arg("enabled"), doc::Functions::set_plot_auto_show);
+    m.def("get_plot_auto_show", &GretlPlot::get_auto_show, doc::Functions::get_plot_auto_show);
 
     // gretl4py hidden functions
-    m.def("_get_data", &GretlDataset::get_data,
-          py::arg("src").none(false), py::arg("source").none(true) = "", py::kw_only());
+    m.def("_get_data", &GretlDataset::get_data, py::arg("src").none(false), py::arg("source").none(true) = "", py::kw_only());
     m.def("_get_datasets_ids", &GretlDataset::get_dset_ids);
 
     // gretlpy public functions
@@ -92,22 +96,16 @@ PYBIND11_MODULE(_gretl, m)
           [](const std::string &name)
           {
               return do_get_accessor<GRETL_OBJ_ANY>(name, GretlDataset::default_dataset(), nullptr);
-          },
-          py::arg("name").none(false));
-    m.def("get_uservar", &get_uservar,
-          py::arg("varname").none(false));
-    m.def("print", &do_gretl_print<void>,
-          py::arg("varlist").none(true) = "", py::kw_only(), doc::Functions::print);
-    m.def("run_script", &gretl_hansl_execute<true>,
-          py::arg("filename").none(false));
-    m.def("run_hansl", &gretl_hansl_execute<false>,
-          py::arg("code").none(false));
+          }, py::arg("name").none(false));
+    m.def("get_uservar", &get_uservar, py::arg("varname").none(false));
+    m.def("print", &do_gretl_print<void>, py::arg("varlist").none(true) = "", py::kw_only(), doc::Functions::print);
+    m.def("run_script", &gretl_hansl_execute<true>, py::arg("filename").none(false));
+    m.def("run_hansl", &gretl_hansl_execute<false>, py::arg("code").none(false));
     m.def("set",
           [](const std::string &variable, const std::string &value, const py::kwargs &kwargs)
           {
               do_set(variable, value, kwargs);
-          },
-          py::arg("variable").none(true) = "", py::arg("value").none(true) = "", py::kw_only());
+          }, py::arg("variable").none(true) = "", py::arg("value").none(true) = "", py::kw_only());
     m.def("set",
           [](const std::string &variable, int value, const py::kwargs &kwargs)
           {
@@ -124,8 +122,7 @@ PYBIND11_MODULE(_gretl, m)
           [](const std::string &varname, const py::kwargs &kwargs)
           {
               do_gretl_delete_variables(varname, kwargs);
-          },
-          py::arg("varname").none(true) = "", py::kw_only());
+          }, py::arg("varname").none(true) = "", py::kw_only());
     m.def("pvalue", &gretl_get_pvalue_critval_pdf_cdf<GretlFunIndex::F_PVAL>,
           py::arg("c").none(false), py::arg("x").none(false), py::arg("params").none(true) = py::none());
     m.def("pvalue", &matrix_functions_wrapper<GretlFunIndex::F_PVAL, GretlMatrixPtr>,
@@ -190,6 +187,7 @@ PYBIND11_MODULE(_gretl, m)
     m.def("genr", &genr<double>, py::arg("name").none(false), py::arg("value").none(false));
     m.def("genr", &genr<std::string>, py::arg("name").none(false), py::arg("value").none(false));
     m.def("genr", &genr<GretlMatrix>, py::arg("name").none(false), py::arg("value").none(false));
+    m.def("genr", &genr<py::list>, py::arg("name").none(false), py::arg("value").none(false));
     m.def("pkg", &do_gretl_pkg,
           py::arg("action").none(false), py::arg("pkgname").none(false), py::kw_only());
     m.def("kmeans", py::overload_cast<const GretlMatrix&, int, const GretlBundlePtr>(&kmeans),
@@ -209,6 +207,16 @@ PYBIND11_MODULE(_gretl, m)
           py::arg("Y").none(false), py::arg("s").none(false), py::arg("X").none(true) = nullptr, py::kw_only(), doc::Functions::tdisagg);
     m.def("kpsscrit", &do_kpsscrit,
           py::arg("T").none(false), py::arg("trend").none(true) = false, doc::Functions::kpsscrit);
+    m.def("plot",
+          [](const std::string &path) -> void
+          {
+              // display an existing gnuplot script using the GretlPlot backend
+              GretlPlot plot;
+
+              plot.set_source(path);
+              plot.display();
+          },
+          py::arg("path"), "Display an existing gnuplot (.plt) file using Matplotlib.");
 
     //////////////////////////////////////////////////
     // single equation models
@@ -349,17 +357,3 @@ PYBIND11_MODULE(_gretl, m)
           },
           py::arg("method").none(false), py::kw_only()); //, doc::Model::system, to be used when API will be fixed
 }
-
-    /*
-    //////////////////////////////////////////////////
-    // packages
-    //////////////////////////////////////////////////
-    m.def("package",
-          [](const std::string &name, const py::kwargs &kwargs) -> GretlModelPtr
-          {
-              auto model = std::make_unique<GretlModel_package>(name, kwargs);
-
-              return GretlModelPtr(std::move(model));
-          },
-          py::arg("name").none(false), py::kw_only());*/
-

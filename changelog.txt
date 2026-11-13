@@ -6,6 +6,13 @@ version 0.64:
     - fixed negative indexing in Matrix.__getitem__() to return scalar values instead of 1×1 matrices
     - some doc updates
     - fix potential memory-leaks when generating gretl objects
+    - MPI support added
+    - adding gretl arrays via genr (must be passed as list of items)
+    - new plotting apparatus (via gp-executor)
+    - new gretlDataset::hflags() method
+    - new gretl.Model_var::set_cholesky_order() method
+    - new gretl.Model_NSE methods: ::confidence_intervals(), ::bootstrap()
+    - new GretlDataset::freq() method
 
 version 0.63:
     - model-based tests: fix bug where 'varlist' was passed as list

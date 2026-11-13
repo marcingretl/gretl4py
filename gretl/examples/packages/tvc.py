@@ -18,6 +18,7 @@ def run_example():
     # ------------------------------------------------------------
     # Load TVC package (time-varying coefficient models)
     # ------------------------------------------------------------
+    include_package("TVCplots")
     tvc = include_package("TVC")
     tvc.show_functions()
 
@@ -36,7 +37,7 @@ def run_example():
     P = gretl.TVCestimate(
         "dU",
         L,
-        plt=False,
+        plt=True,
     )
 
     # Alternative specification with scaling ratios:
@@ -45,7 +46,7 @@ def run_example():
     #     "dU",
     #     L,
     #     ratios=gretl.Matrix([1, 0.8]),
-    #     plt=False,
+    #     plt=True,
     # )
 
     # ------------------------------------------------------------

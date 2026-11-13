@@ -168,7 +168,7 @@ gretl.biprobit(formula: str | list[, OPTS]) -> gretl.Model_biprobit
 	\item[]\maptoopt{save\_xbeta=True}{--save-xbeta}{save the index functions as fitted values}
 	\item[]\maptoopt{verbose=True}{--verbose}{print additional information}
 \end{itemize}
-\noRformula\\
+\noRformula
 \generaldesc{The first two variables specify the binary dependent
 	variables. If only one set of regressors is provided, it is used
 	in both equations. Otherwise, the regressors preceding the
@@ -213,7 +213,7 @@ gretl.dpanel(p: int | numpy.ndarray, formula: str[, OPTS]) -> gretl.Model_dpanel
 	\item[]\maptoopt{asymptotic=True}{--asymptotic}{use uncorrected asymptotic standard errors}
 	\item[]\maptoopt{keep\_extra=True}{--keep-extra}{retain GMM weight and instrument matrices}
 \end{itemize}
-\noRformula\\
+\noRformula
 \generaldesc{The argument \textit{p} specifies the autoregressive
 	order of the dependent variable. It may be an integer or an array
 	of possibly non-contiguous lag orders. The dependent variable and
@@ -328,7 +328,7 @@ gretl.garch(formula: str | list[, OPTS]) -> gretl.Model_garch
 	\item[]\maptoopt{fcp=True}{--fcp}{use the Fiorentini--Calzolari--Panattoni algorithm}
 	\item[]\maptoopt{arma\_init=True}{--arma-init}{initialize variance parameters using ARMA}
 \end{itemize}
-\noRformula\\\\
+\noRformula
 \generaldesc{The model specification begins with the GARCH
 	and ARCH orders $p$ and $q$, followed by a semicolon and
 	the dependent variable with optional regressors.
@@ -379,7 +379,7 @@ gretl.heckit(formula: str | list[, OPTS]) -> gretl.Model_heckit
 	\item[]\maptoopt{cluster="clustvar"}{--cluster=clustvar}{compute clustered standard errors}
 	\item[]\maptoopt{verbose=True}{--verbose}{print additional information}
 \end{itemize}
-\noRformula\\
+\noRformula
 \generaldesc{The specification consists of two equations separated
 	by a semicolon. The first equation describes the outcome variable,
 	while the second specifies the selection mechanism. The dependent
@@ -452,7 +452,7 @@ gretl.intreg(formula: str | list[, OPTS]) -> gretl.Model_intreg
 	\item[]\maptoopt{opg=True}{--opg}{use the outer product of the gradient}
 	\item[]\maptoopt{cluster="clustvar"}{--cluster=clustvar}{use clustered standard errors}
 \end{itemize}
-\noRformula\\\\
+\noRformula
 \generaldesc{The model assumes a latent dependent variable
 	$y_i^* = x_i'\beta + u_i$, where the disturbance term
 	is normally distributed. Instead of observing $y_i^*$
@@ -822,7 +822,7 @@ gretl.poisson(formula: str | list[, OPTS]) -> gretl.Model_poisson
 	\item[]\maptoopt{verbose=True}{--verbose}{print details of numerical iterations}
 	\item[]\maptoopt{quiet=True}{--quiet}{suppress printing of results}
 \end{itemize}
-\noRformula\\
+\noRformula
 \generaldesc{The conditional mean of the dependent variable is modeled
 	as an exponential function of the regressors, corresponding to
 	a logarithmic link function.
@@ -1038,7 +1038,7 @@ gretl.tsls(formula: str | list[, OPTS]) -> gretl.Model_tsls
 	\item[]\maptoopt{quiet=True}{--quiet}{suppress printing of results}
 	\item[]\maptoopt{allow\_zeros=True}{--allow-zeros}{allow zero weights together with positive weights}
 \end{itemize}
-\noRformula\\
+\noRformula
 \generaldesc{The first variable specifies the weights, followed by
 	the dependent variable and regressors. The model can be specified
 	using a \lgretl-style variable list or a Python list of variable
@@ -1074,7 +1074,7 @@ gretl.var(order: int, ylist: str | list[, OPTS]) -> gretl.Model_var
 	\item[]\maptoopt{lagselect=True}{--lagselect}{perform lag-order selection}
 	\item[]\maptoopt{minlag=0}{--minlag=0}{specify minimum lag order for lag selection}
 \end{itemize}
-\noRformula\\
+\noRformula
 \generaldesc{The argument \pythcode{order} specifies the VAR lag
 	order, while \pythcode{ylist} identifies the endogenous variables.
 	Their lags are generated automatically. Optional exogenous
@@ -1114,7 +1114,7 @@ gretl.vecm(order: int, rank: int, ylist: str | list[, OPTS]) -> gretl.Model_vecm
 	\item[]\maptoopt{impulse\_responses=True}{--impulse-responses}{print impulse responses}
 	\item[]\maptoopt{variance\_decomp=True}{--variance-decomp}{print forecast-error variance decompositions}
 \end{itemize}
-\noRformula\\
+\noRformula
 \generaldesc{The argument \pythcode{order} specifies the lag order
 	of the underlying VAR system. The corresponding VECM contains
 	\pythcode{order - 1} lags of the differenced endogenous variables.

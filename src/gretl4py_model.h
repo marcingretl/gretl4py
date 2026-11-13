@@ -2,6 +2,9 @@
  *  gretl -- Gnu Regression, Econometrics and Time-series Library
  *  Copyright (C) 2001 Allin Cottrell and Riccardo "Jack" Lucchetti
  *
+ *  gretl4py -- Python bindings for gretl
+ *  Copyright (C) 2024 Marcin Błażejowski
+ *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
@@ -47,6 +50,7 @@ protected:
     const GretlObjType model_obj_type_; // libgretl's object type (in model context)
     const GretlCmdIndex ci_;            // command index used
     bool estimated_ = false;            // if model already estimated
+    bool model_registered_ = false;     // if model was registered in libgretl
     gretlopt opt_ = OPT_NONE;           // instance-wide options (including tests and forecasts)
     mutable int err_ = 0;               // holds libgretl errors (instance-wide)
     GretlDatasetPtr dataset_;           // dataset used
@@ -63,7 +67,7 @@ protected:
     GretlBundlePtr do_restrict_ (T *model, const py::list &impose, const py::kwargs &kwargs);
 
     template <typename T>
-    void gretl_do_forecast_ (void *model, const py::args &args, const py::kwargs &kwargs);
+    std::pair<py::object, py::object> gretl_do_forecast_ (void *model, const py::args &args, const py::kwargs &kwargs);
 
     void check_if_estimated_ (void) const;
 
@@ -71,13 +75,15 @@ protected:
     std::string do_save_uhat_ (T *model, int eqn, const std::string &name) const;
 
     std::string extract_additional_vars_ (py::handle src) const;
+
+    void prepare_plot_ (GretlPlot &plotter, gretlopt opt, bool multiple = false);
 public:
     explicit GretlModel (GretlObjType model_obj_type, GretlCmdIndex ci, const py::kwargs &kwargs);
     virtual ~GretlModel (void);
 
     virtual void fit (void) = 0;
 
-    virtual void forecast (const py::args &args, const py::kwargs &kwargs) = 0;
+    virtual std::pair<py::object, py::object> forecast (const py::args &args, const py::kwargs &kwargs) = 0;
 
     virtual std::string get_formula (void) const = 0;
 
@@ -105,6 +111,10 @@ protected:
 
     template <GretlCmdIndex CI>
     void regexp_extract_ (const std::string &formula, std::string &formula_left, std::string &formula_right);    // for extracting formula from regular expression
+
+    DATASET *get_model_dataset_ (gretlopt opt = OPT_NONE);
+
+    int resolve_coefficient_ (const std::variant<int, std::string> &parameter, DATASET *dset = nullptr) const;
 public:
     GretlModel_NSE (GretlCmdIndex ci, const py::kwargs &kwargs);
     virtual ~GretlModel_NSE (void);
@@ -113,7 +123,7 @@ public:
 
     std::string get_formula (void) const override = 0;
 
-    void forecast (const py::args &args, const py::kwargs &kwargs) override;
+    std::pair<py::object, py::object> forecast (const py::args &args, const py::kwargs &kwargs) override;
 
     py::object get_accessor (const std::string &name) const override;
 
@@ -122,14 +132,28 @@ public:
     template <ModelDataIndex IDX>
     char *gretl_get_fit_or_resid (const std::string &name = "") const;
 
-    GretlBundlePtr test (const std::string &type, const py::kwargs &kwargs);
+    std::pair<GretlBundlePtr, py::object> test (const std::string &type, const py::kwargs &kwargs);
 
-    GretlBundlePtr test (const std::string &type, const py::object &varlist, const py::kwargs &kwargs);
+    std::pair<GretlBundlePtr, py::object> test (const std::string &type, const py::object &varlist, const py::kwargs &kwargs);
 
     template <GretlCmdIndex CI>
     std::pair<GretlBundlePtr, GretlModelPtr> add_omit_auto (const py::kwargs &kwargs);
 
     double adj_rsq (void) const;
+
+    GretlMatrixPtr confidence_intervals (void);
+
+    void anova (void);
+
+    py::object bootstrap (const std::variant<int, std::string> &coefficient, int reps = 1000, double alpha = 0.05,
+                          const std::string &statistic = "ci", const std::string &method = "residuals",
+                          bool plot = false, const std::optional<std::string> &save = std::nullopt);
+
+    py::object plot (const std::string &type, const std::string &xvar = "", std::optional<int> order = std::nullopt,
+                     bool bartlett = false, std::optional<int> width = std::nullopt, bool log = false);
+
+    py::object plot_confidence_ellipse (const std::variant<int, std::string> &first,
+                                        const std::variant<int, std::string> &second, double alpha = 0.05);
 };
 
 //
@@ -287,6 +311,8 @@ protected:
     GRETL_VAR *model_ = nullptr;    // libgretl GRETL_VAR struct
 
     int find_variable_nr_ (const std::string &variable_name);
+
+    int find_variable_nr_ (int id);
 public:
     GretlModel_VAR (const std::string &ylist, const int order, GretlCmdIndex ci, const py::kwargs &kwargs);
     GretlModel_VAR (const py::list &varlist, const int order, GretlCmdIndex ci, const py::kwargs &kwargs);
@@ -294,7 +320,7 @@ public:
 
     void fit (void) override;
 
-    void forecast (const py::args &args, const py::kwargs &kwargs) override;
+    std::pair<py::object, py::object> forecast (const py::args &args, const py::kwargs &kwargs) override;
 
     std::string get_formula (void) const override;
 
@@ -307,6 +333,15 @@ public:
     GretlMatrixPtr irf (int target, int shock, double alpha = 0);
 
     GretlMatrixPtr irf (const std::string &target, const std::string &shock, double alpha = 0);
+
+    template <typename T>
+    void set_cholesky_order (const T &varlist);
+
+    py::object plot (const std::string &type, std::optional<int> equation = std::nullopt,
+                     std::optional<std::string> mode = std::nullopt, std::optional<int> periods = std::nullopt,
+                     std::optional<double> alpha = std::nullopt, std::optional<bool> error_bars = std::nullopt,
+                     std::variant<int, std::string> targ = -1, std::variant<int, std::string> shock = -1,
+                     std::optional<bool> histogram = true);
 };
 
 //
@@ -326,6 +361,8 @@ public:
     GretlBundlePtr restrict (const py::list &impose, const py::kwargs &kwargs);
 
     std::string save_ec_term (const int nr, const std::string &name = "") const;
+
+    py::object plot_ec (void);
 };
 
 //
@@ -347,7 +384,7 @@ public:
 
     void fit (void) override;
 
-    void forecast (const py::args &args, const py::kwargs &kwargs) override;
+    std::pair<py::object, py::object> forecast (const py::args &args, const py::kwargs &kwargs) override;
 
     std::string get_formula (void) const override;
 

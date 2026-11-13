@@ -2,6 +2,9 @@
  *  gretl -- Gnu Regression, Econometrics and Time-series Library
  *  Copyright (C) 2001 Allin Cottrell and Riccardo "Jack" Lucchetti
  *
+ *  gretl4py -- Python bindings for gretl
+ *  Copyright (C) 2024 Marcin Błażejowski
+ *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
@@ -35,7 +38,8 @@ namespace py = pybind11;
 //
 // Class to handle contributed packages
 //
-class GretlPackage {
+class GretlPackage : public std::enable_shared_from_this<GretlPackage>
+{
 private:
     using FunctionMap = std::map<std::string, ufunc*>;                      // map of pointers to functions in package
     using FunctionArgs = std::map<std::string, std::map<std::string, int>>; // map of arguments and their id-s for public functions

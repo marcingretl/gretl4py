@@ -145,12 +145,21 @@ bv.show_functions()
 d = gretl.get_data('mroz87.gdt', quiet=True)
 X = "KL6 WA WE HA HE HW MTR UN CIT AX"
 
-modeltype = "probit"
+modeltype = 'probit'
 n_iter = 32 * 1024    # drawings after burn-in
 burn_in = 2048        # burn-in
 
+options = ~gretl.Bundle()
+options["seed"] = 1_234_567
+
+# use MPI if available
+if gretl.about()['sysinfo']['mpi']:
+  options['mpi'] = gretl.about()['sysinfo']['ncores']
+else:
+  options['mpi'] = 1
+
 gretl..set('stopwatch')
-b = gretl.bma_glm(y='LFP', X=X, glm_type=modeltype, ndraw=n_iter, burn=burn_in, parms=~gretl.Bundle(seed=1234567))
+b = gretl.bma_glm(y='LFP', X=X, glm_type=modeltype, ndraw=n_iter, burn=burn_in, parms=options)
 print(f"Total execution time: {gretl.get_accessor('$stopwatch'):.2f} sec.")
 \end{lstlisting}\index{pkg()}\index{include()}\index{get\_data()}\index{set()}\index{Bundle()}\index{show\_functions()}%
 \index{bma\_glm()}

@@ -2,6 +2,9 @@
  *  gretl -- Gnu Regression, Econometrics and Time-series Library
  *  Copyright (C) 2001 Allin Cottrell and Riccardo "Jack" Lucchetti
  *
+ *  gretl4py -- Python bindings for gretl
+ *  Copyright (C) 2024 Marcin Błażejowski
+ *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
@@ -128,6 +131,8 @@ public:
 
     int get_series_id (const std::string &series, const bool verbose = true) const;
 
+    const char *get_series_name (int id) const;
+
     py::list get_obs_labels (void) const;
 
     std::string info (bool quiet = true) const;
@@ -173,7 +178,7 @@ public:
     std::string python_list_to_formula (const py::list &list) const;
 
     // tests
-    GretlBundlePtr test (const std::string &type, const std::string &varlist, const py::kwargs &kwargs);
+    std::pair<GretlBundlePtr, py::object> test (const std::string &type, const std::string &varlist, const py::kwargs &kwargs);
 
     // transformations
     template <typename T, GretlCmdIndex CI>
@@ -188,6 +193,9 @@ public:
     template <typename T>
     void do_modify_dataset (DatasetOp op, const T &list, const std::string &param, const py::kwargs &kwargs);
 
+    template <typename T>
+    py::list hflags (int lmin, int lmax, const T &hfvars);
+
     GretlMatrixPtr tdisagg (py::object Y, int s, const py::kwargs &kwargs);
 
     // filters, correlations, etc
@@ -198,15 +206,17 @@ public:
     GretlMatrixPtr bkfilt (const std::string &y, int f1 = 0, int f2 = 0, int k = 0);
 
     template <typename T>
-    py::object corr (const T &varlist, const py::kwargs &kwargs);
+    std::pair<py::object, py::object> corr (const T &varlist, const py::kwargs &kwargs);
 
     template <typename T>
     GretlMatrixPtr cov (const T &varlist);
 
-    py::object hurst (const std::string &series);
+    std::pair<py::object, py::object> hurst (const std::string &series, const std::string &plot);
+
+    std::pair<GretlBundlePtr, py::object> freq (const std::string &var, const py::kwargs &kwargs);
 
     template <typename T>
-    py::object xcorrgm (const T &varlist, int order, const py::kwargs &kwargs);
+    std::pair<py::object, py::object> xcorrgm (const T &varlist, int order, const py::kwargs &kwargs);
 
     template <typename T>
     py::object pca (const T &varlist, const py::kwargs &kwargs);
@@ -223,6 +233,33 @@ public:
     double ljungbox (int y, int p);
 
     double ljungbox (const std::string &y, int p);
+
+    // plots
+    template <typename T>
+    py::object plot (const T &yvars, const py::kwargs &kwargs);
+
+    template <typename T>
+    py::object boxplot (const T &yvars, const py::kwargs &kwargs);
+
+    template <typename T>
+    py::object hfplot (const T &yvars, const py::kwargs &kwargs);
+
+    template <typename T>
+    py::object panplot (const T &plotvar, const py::kwargs &kwargs);
+
+    template <typename T>
+    py::object qqplot (const T &plotvar, const py::kwargs &kwargs);
+
+    template <typename T>
+    py::object kdplot (const T &plotvar, const py::kwargs &kwargs);
+
+    template <typename T>
+    py::object scatters (const T &yvar, const py::kwargs &kwargs);
+
+    template <typename T>
+    py::object tsplots (const T &varlist, const py::kwargs &kwargs);
+
+    py::object rmplot (const std::string &series, const py::kwargs &kwargs);
 };
 
 #endif // GRETL4PY_DATASET_H

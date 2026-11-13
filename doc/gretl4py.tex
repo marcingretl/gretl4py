@@ -64,6 +64,8 @@
 \newcommand{\lgretl}[1][]{\pkg{libgretl#1}\xspace}
 \newcommand{\gretl}{\pkg{gretl}\xspace}
 \newcommand{\gretlpy}{\pkg{gretl4py}\xspace}
+\newcommand{\gnuplot}{\pkg{gnuplot}\xspace}
+\newcommand{\gptranslate}{\pkg{gptranslate}\xspace}
 \newcommand{\hansl}{\proglang{Hansl}\xspace}
 \newcommand{\deprecated}{\textcolor{brown}{deprecated}\xspace}
 \newcommand{\deprecatedv}[1]{\textcolor{brown}{deprecated as of #1 release}\xspace}
@@ -83,8 +85,19 @@
 		Instead, \pythcode{formula} takes \gretl's default syntax
 		as outlined in Equation~\ref{eq:Gstyle}.\end{minipage}}
 \newcommand{\gretlfpycmd}[1]{\vspace*{10pt}\noindent\protect\textcolor{red}{\pythcode{#1}}\index{#1}}
-\newcommand{\generaldesc}[1]{\hspace*{17pt}\begin{minipage}[t]{0.95\columnwidth}%
-		\small#1\end{minipage}}
+%\newcommand{\generaldesc}[1]{\hspace*{17pt}\begin{minipage}[t]{0.95\columnwidth}\small#1\end{minipage}}
+\newcommand{\generaldesc}[1]{%
+	% Use a page-breakable paragraph rather than a minipage for long descriptions.
+	\vspace{10pt}
+	\par
+	\begingroup
+	\small
+	\leftskip=0pt
+	\rightskip=6pt
+	\noindent
+	#1\par
+	\endgroup
+}
 \newcommand{\gretldataset}{gretl.Dataset\xspace}
 \newcommand{\gretlmatrix}{gretl.Matrix\xspace}
 \newcommand{\gretlbundle}{gretl.Bundle\xspace}
@@ -136,9 +149,10 @@
 \renewcommand*\l@figure{\@dottedtocline{1}{1.5em}{3em}}%
 \makeatother
 
-%\includeonly{Installation}
+%\includeonly{Implementation}
 
 \begin{document}
+	\raggedbottom
 	\pagestyle{headings}
 \begin{titlepage}
 \centering

@@ -15,7 +15,7 @@ The \classpydataset class provides the following operators:
 d[rule: slice | list | str] -> gretl.Dataset
 \end{lstlisting}
 \where{\pythcodef{rule} is either a sample range, a list of variables,
-	or a logical expression that can be applied to the dataset.}\\\\
+	or a logical expression that can be applied to the dataset.}
 \generaldesc{Using this operator, a dataset may be sub-sampled along one
 	or both dimensions, that is, observations and/or variables. It is
 	important to remember that slicing always returns a copy of the
@@ -145,7 +145,7 @@ The \classpydataset provides the following public methods:
 \end{itemize}
 Examples:\newline
 \pythcodef{.addobs(24)}\\
-\pythcodef{.addobs(2, panel_time=True)}\\
+\pythcodef{.addobs(2, panel_time=True)}
 \generaldesc{Adds \textit{n} observations to the end of the current
 	dataset, primarily for forecasting purposes. Values of most variables
 	in the added observations are set to missing, while recognized
@@ -166,7 +166,7 @@ Examples:\newline
 \end{itemize}
 Examples:\newline
 \pythcodef{.add_series(x, "x")}\newline
-\pythcodef{.add_series(gretl.Matrix(x), "x")}\\
+\pythcodef{.add_series(gretl.Matrix(x), "x")}
 \generaldesc{Adds the supplied vector as a series to the current dataset.
 	The input data are copied into the dataset. If a series with the
 	specified name already exists, it is replaced. A \pythcode{gretl.Matrix}
@@ -194,7 +194,7 @@ Examples:\newline
 Examples:\newline
 \pythcodef{r1 = data.adf(varlist='y', order=0)}\\
 \pythcodef{r2 = data.adf(varlist='y', order=2, nc=True, c=True, ct=True)}\\
-\pythcodef{r3 = data.adf(varlist='y', order=12, c=True, test-down=True)}\\
+\pythcodef{r3 = data.adf(varlist='y', order=12, c=True, test-down=True)}
 \generaldesc{Performs Augmented Dickey--Fuller (ADF) tests for a unit
 	root in the variables specified in \textit{varlist}. The
 	\textit{order} argument specifies the number of lagged differences
@@ -218,7 +218,7 @@ Examples:\newline
 Examples:\newline
 \pythcodef{r1 = data.bds(varlist='x', order=5)}\\
 \pythcodef{r2 = data.bds(order=3, matrix='m')}\\
-\pythcodef{r3 = data.bds(varlist='x', order=4, sdcrit=2.0)}\\
+\pythcodef{r3 = data.bds(varlist='x', order=4, sdcrit=2.0)}
 \generaldesc{Performs the BDS (Brock--Dechert--Scheinkman) test for
 	nonlinearity or departures from the IID condition in the specified
 	series. The \textit{order} argument determines the maximum embedding
@@ -244,6 +244,55 @@ Examples:\newline
 	of available observations, the low-pass version of the filter
 	is applied and the result should be interpreted as an estimate
 	of the trend component.}
+
+\gretlfpycmd{boxplot()}
+\estdesc{Generates boxplots for dataset series using \lgretl and Matplotlib.}
+\begin{lstlisting}[style=pythonstylefoot]
+.boxplot(varlist: str | list[, OPTS]) -> matplotlib.figure.Figure .| None
+\end{lstlisting}
+\mapto[None]{boxplot ~varlist}
+\mapto[None]{boxplot ~varlist --notches}
+\mapto[None]{boxplot ~varlist --panel}
+\mapto{boxplot ~varlist --factorized}
+\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
+	\item[]\maptoopt{notches=True}{--notches}{show a 90 percent confidence interval for the median}
+	\item[]\maptoopt{factorized=True}{--factorized}{produce boxplots conditional on a discrete factor}
+	\item[]\maptoopt{panel=True}{--panel}{produce separate boxplots for each panel unit}
+\end{itemize}
+Examples:\newline
+\pythcodef{fig = data.boxplot("y")}\\
+\pythcodef{fig = data.boxplot("y1 y2 y3")}\\
+\pythcodef{fig = data.boxplot(["y1", "y2"])}\\
+\pythcodef{fig = data.boxplot("wage gender", factorized=True)}\\
+\pythcodef{fig = data.boxplot("y", panel=True, notches=True)}
+\generaldesc{Generates boxplots representing the distribution of one
+	or more dataset series. Each box extends from the first quartile
+	to the third quartile, enclosing the middle 50 percent of the
+	observations. The horizontal line inside the box indicates the
+	median, while a plus sign denotes the mean.
+	
+	The whiskers extend up to 1.5 times the interquartile range
+	beyond the first and third quartiles. Observations outside
+	this range are treated as outliers and displayed as individual
+	points.
+	
+	Setting \textit{notches=True} adds a bootstrap-based 90 percent
+	confidence interval for the median, represented by dashed
+	horizontal lines.
+	
+	The \textit{factorized} option produces separate boxplots for
+	each distinct value of a discrete factor variable. In this
+	case, \textit{varlist} must contain exactly two variables:
+	the target variable followed by the factor variable.
+	
+	For panel datasets, setting \textit{panel=True} produces a
+	separate boxplot for each panel unit. This option requires
+	exactly one variable in \textit{varlist}.
+	
+	Plot generation is performed by \lgretl, while the resulting
+	\gnuplot script is translated into Python code by \gptranslate
+	and rendered using Matplotlib. The method returns a Matplotlib
+	Figure object.}
 
 \gretlfpycmd{bwfilt()}
 \estdesc{Returns the result from application of a low-pass
@@ -288,7 +337,7 @@ Examples:\newline
 \end{itemize}
 Examples:\newline
 \pythcodef{r1 = data.coint(y='y', varlist='x z', order=4)}\\
-\pythcodef{r2 = data.coint(y='y', varlist=['x', 'z'], order=0, ct=True, skip\_df=True)}\\
+\pythcodef{r2 = data.coint(y='y', varlist=['x', 'z'], order=0, ct=True, skip\_df=True)}
 \generaldesc{Performs the Engle--Granger cointegration test for the
 	specified dependent variable and regressors. The procedure estimates
 	the cointegrating regression and tests its residuals for a unit root.
@@ -321,7 +370,7 @@ Examples:\newline
 \pythcodef{data.compact(4)}\\
 \pythcodef{data.compact(4, 'last')}\\
 \pythcodef{data.compact(52, repday=3)}\\
-\pythcodef{data.compact(52, weekstart=0)}\\
+\pythcodef{data.compact(52, weekstart=0)}
 \generaldesc{Compacts all series in a time-series dataset to
 	the specified frequency. By default, higher-frequency values
 	are averaged. The optional \textit{method} parameter specifies
@@ -334,57 +383,144 @@ Examples:\newline
 	0 for Sunday or 1 for Monday. For 7-day data the default is Monday;
 	for 5- or 6-day data the week is taken to start on Monday.}
 
-\gretlfpycmd{corr()}
-\estdesc{Computes pairwise correlations for selected variables,
-	or for all variables if none are specified.}
+\gretlfpycmd{corr()}\label{met:gretldataset::corr}
+\estdesc{Compute pairwise correlations for selected variables
+	or for all variables in the dataset.}
 \begin{lstlisting}[style=pythonstylefoot]
-.corr() -> gretl.Matrix
-.corr(varlist: str | list[, OPTS]) -> gretl.Matrix
+.corr([OPTS]) -> tuple[gretl.Matrix, matplotlib.figure.Figure .| None]
+.corr(varlist: str | list[, OPTS]) -> tuple[gretl.Matrix, matplotlib.figure.Figure .| None]
 \end{lstlisting}
-\mapto{corr [ ~varlist ]}
+\mapto{corr [~varlist]}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
-	\item[]\maptoopt{uniform=True}{--uniform}{ensure uniform sample}
+	\item[]\maptoopt{matrix=matname}{--matrix}{compute correlations from a named matrix}
+	\item[]\maptoopt{uniform=True}{--uniform}{ensure a uniform sample}
 	\item[]\maptoopt{spearman=True}{--spearman}{Spearman's $\rho$}
 	\item[]\maptoopt{kendall=True}{--kendall}{Kendall's $\tau$}
 	\item[]\maptoopt{verbose=True}{--verbose}{print rankings}
-	\item[]\maptoopt{triangle=True}{--triangle}{only plot lower half (\seegretlmanual)}
-	\item[]\maptoopt{quiet=True}{--quiet}{do not print anything}
+	\item[]\maptoopt{plot=mode-or-filename}{--plot}{control graphical output}
+	\item[]\maptoopt{triangle=True}{--triangle}{plot only the lower triangle}
+	\item[]\maptoopt{quiet=True}{--quiet}{suppress printed output}
 \end{itemize}
 Examples:\newline
-\pythcodef{r1 = data.corr('y x z t')}\\
-\pythcodef{r2 = data.corr('ylist', uniform=True)}\\
-\pythcodef{r3 = data.corr('x y', spearman=True)}\\
-\generaldesc{By default, Pearson's product-moment correlations are
-	computed. The standard behavior is to use all available observations
-	for each pairwise coefficient. With \gretlcmd{--uniform}, the sample
-	is restricted, if necessary, so that the same observations are used
-	for all coefficients.\newline
-	The mutually exclusive options \gretlcmd{--spearman} and
-	\gretlcmd{--kendall} produce, respectively, Spearman's rank
-	correlation $\rho$ and Kendall's rank correlation $\tau$. When
-	either option is given, \textit{varlist} should contain exactly two
-	variables. The computed correlations are returned as a
-	\classpymatrix instance.}
+\pythcodef{r1, fig1 = data.corr('y x z t')}\\
+\pythcodef{r2, fig2 = data.corr('ylist', uniform=True)}\\
+\pythcodef{r3, fig3 = data.corr('x y', spearman=True)}\\
+\pythcodef{r4, fig4 = data.corr('y x z', plot='display', triangle=True)}\\
+\pythcodef{r5, fig5 = data.corr(matrix='X', plot='display')}
+\generaldesc{Computes pairwise correlation coefficients for the
+	specified variables, or for all variables in the dataset
+	if no variable list is supplied. By default, Pearson's
+	product-moment correlations are calculated.
+	
+	The standard behavior is to use all available observations
+	for each pairwise coefficient. Consequently, different
+	correlation coefficients may be based on different samples.
+	Setting \pythcode{uniform=True} restricts the sample,
+	if necessary, so that the same observations are used for
+	all coefficients. This is particularly important when
+	the resulting correlation matrix is intended for further
+	matrix-based computations, since pairwise deletion of
+	missing observations does not guarantee that the matrix
+	is positive semidefinite.
+	
+	The mutually exclusive options \pythcode{spearman=True}
+	and \pythcode{kendall=True} produce, respectively,
+	Spearman's rank correlation $\rho$ and Kendall's rank
+	correlation $\tau$ instead of the default Pearson
+	coefficient. When either option is specified,
+	\textit{varlist} must contain exactly two variables.
+	The \pythcode{verbose=True} option prints the original
+	and ranked data when computing rank correlations.
+	
+	Alternatively, correlations can be computed from the
+	columns of a named \lgretl matrix using the
+	\pythcode{matrix} option. In this case,
+	\pythcode{spearman=True} and \pythcode{kendall=True}
+	are not available.
+	
+	When more than two series are selected, a heatmap of
+	the correlation matrix can be generated. Graphical
+	output is controlled by the \pythcode{plot} option.
+	The supported values are \pythcode{"none"} (suppress
+	the plot), \pythcode{"display"} (request graphical
+	output), or a filename to which the plot is saved.
+	If this option is omitted, plotting follows the
+	current \lgretl execution mode.
+	
+	When plotting is active, setting
+	\pythcode{triangle=True} displays only the lower
+	triangle of the correlation matrix. The
+	\pythcode{quiet=True} option suppresses printed output.
+	
+	The automatic display of generated Matplotlib figures
+	is controlled separately by
+	\pythcode{gretl.set\_plot\_auto\_show()}.
+	
+	The method returns a tuple containing a \classpymatrix
+	with the computed correlation coefficients and an
+	optional Matplotlib Figure. If no figure is returned,
+	the second element of the tuple is \pythcode{None}.}
 
-\gretlfpycmd{corrgm()}
+\gretlfpycmd{corrgm()}\label{met:gretldataset::corrgm}
 \estdesc{Compute the correlogram of a time series.}
 \begin{lstlisting}[style=pythonstylefoot]
-corrgm(y: str, order: int[, OPTS]) -> gretl.Bundle:
+corrgm(y: str, order: int = 0[, OPTS]) -> tuple[gretl.Bundle, matplotlib.figure.Figure .| None]
 \end{lstlisting}
 \mapto{corrgm y [order]}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
-	\item[]\maptoopt{silent=True}{--silent}{don't print anything}
-	\item[]\maptoopt{acf_only=True}{--acf-only}{omit partial autocorrelations}
+	\item[]\maptoopt{plot=mode-or-filename}{--plot}{control graphical output}
+	\item[]\maptoopt{quiet=True}{--quiet}{suppress printed output}
+	\item[]\maptoopt{acf\_only=True}{--acf-only}{omit partial autocorrelations}
 	\item[]\maptoopt{bartlett=True}{--bartlett}{use Bartlett standard errors}
 \end{itemize}
 Examples:\newline
 \pythcodef{r1 = data.corrgm(y='x', order=12)}\\
-\pythcodef{r2 = data.corrgm(y='GDP', order=12, acf\_only=True)}\\
-\generaldesc{Computes the autocorrelation function (ACF) and, by default,
-	the partial autocorrelation function (PACF) for the specified series.
-	The \textit{order} argument sets the maximum number of lags; if omitted,
-	the number of lags is selected automatically. The Ljung--Box test for
-	serial correlation up to the maximum lag is also reported.}
+\pythcodef{r2 = data.corrgm(y='GDP', acf\_only=True)}\\
+\pythcodef{r3, fig = data.corrgm(y='GDP', order=12, plot='display')}
+\generaldesc{Computes the autocorrelation function (ACF) and,
+	by default, the partial autocorrelation function (PACF) using
+	the Durbin--Levinson algorithm. The \textit{y} argument
+	specifies the series to be analyzed, while \textit{order}
+	determines the maximum number of lags. If omitted or set
+	to zero, the number of lags is selected automatically based
+	on the data frequency and sample size.
+	
+	The method also reports the Ljung--Box Q statistic, which
+	tests the joint null hypothesis that the autocorrelations
+	up to the maximum lag are zero. The statistic and its
+	P-value are available in the resulting \classpybundle
+	under the keys \texttt{test} and \texttt{pvalue},
+	respectively.
+	
+	By default, the standard errors of the ACF are calculated
+	under the null hypothesis that the series is white noise,
+	using $1/\sqrt{T}$, where \textit{T} denotes the sample size.
+	Setting \texttt{bartlett=True} selects Bartlett standard
+	errors instead. These are associated with the hypothesis
+	that the series follows a moving average process of order
+	\textit{k}, $MA(k)$. If the autocorrelations beyond lag
+	\textit{k} fall within the corresponding confidence bounds,
+	the $MA(k)$ hypothesis is not rejected on this basis. The
+	selected standard errors also determine the confidence bounds
+	displayed in the ACF plot.
+	
+	The \texttt{acf\_only=True} option suppresses partial
+	autocorrelations, while \texttt{quiet=True} suppresses
+	printed output.
+	
+	Graphical output is controlled by the \texttt{plot} option.
+	The supported values are \texttt{"none"} (suppress the plot),
+	\texttt{"display"} (request graphical output), or a filename
+	to which the plot is saved. If this option is omitted,
+	plotting follows the current \lgretl execution mode.
+	The automatic display of generated Matplotlib figures is
+	controlled separately by \texttt{gretl.set\_plot\_auto\_show()}.
+	
+	The method returns a \classpybundle containing the test
+	results, including the Ljung--Box statistic, its P-value,
+	and the printed summary. When a Matplotlib figure is
+	generated, the return value is a tuple containing the
+	\classpybundle and the Figure object.}
 
 \gretlfpycmd{cov()}
 \estdesc{Computes the covariance matrix for selected variables,
@@ -398,7 +534,7 @@ Examples:\newline
 Examples:\newline
 \pythcodef{r1 = data.cov()}\\
 \pythcodef{r2 = data.cov('y x1 x2')}\\
-\pythcodef{r3 = data.cov(['y', 'x1', 'x2'])}\\
+\pythcodef{r3 = data.cov(['y', 'x1', 'x2'])}
 \generaldesc{The method treats each selected series as a variable and
 	returns their covariance matrix. If \textit{varlist} is omitted,
 	all variables in the current data set are used.}
@@ -421,7 +557,7 @@ Examples:\newline
 \mapto[none]{diff ~varlist }
 Examples:\newline
 \pythcodef{data.diff('x y')}\\
-\pythcodef{data.diff(['x', 'y'])}\\
+\pythcodef{data.diff(['x', 'y'])}
 \generaldesc{The first difference of each variable in \textit{varlist}
 	is computed and stored in a new series with prefix \textit{d\_}.
 	Thus \gretlcmd{diff x y} creates the new variables
@@ -446,7 +582,7 @@ Examples:\newline
 \end{itemize}
 Examples:\newline
 \pythcodef{r1 = data.difftest('x', 'y')}\\
-\pythcodef{r2 = data.difftest(x='x', split_by='dummy')}\\
+\pythcodef{r2 = data.difftest(x='x', split_by='dummy')}
 \generaldesc{Supports the Sign test, Wilcoxon rank-sum test, and Wilcoxon
 	signed-rank test. The samples may be given as two series, or, for the
 	rank-sum test, obtained by splitting one series according to a dummy
@@ -464,7 +600,7 @@ Examples:\newline
 Examples:\newline
 \pythcodef{data.discrete('x')}\\
 \pythcodef{data.discrete(['x1', 'x2'])}\\
-\pythcodef{data.discrete('x', reverse=True)}\\
+\pythcodef{data.discrete('x', reverse=True)}
 \generaldesc{By default all variables are treated as continuous.
 	Marking a variable as discrete affects its treatment in frequency
 	plots and allows it to be selected for the \gretlcmd{dummify}
@@ -481,7 +617,7 @@ Examples:\newline
 Examples:\newline
 \pythcodef{data.dsortby('x1 x2 x3')}\\
 \pythcodef{data.dsortby(['x1', 'x2', 'x3'])}\\
-\pythcodef{data.dsortby([1, 2, 3])}\\
+\pythcodef{data.dsortby([1, 2, 3])}
 \generaldesc{Reorders all observations in the dataset in descending order
 	according to the variables specified in \textit{varlist}. Variables
 	may be specified by name or index. If multiple variables are given,
@@ -503,7 +639,7 @@ Examples:\newline
 \end{itemize}
 Examples:\newline
 \pythcodef{data.dummify('x')}\\
-\pythcodef{data.dummify(['x1', 'x2'], drop_first=True)}\\
+\pythcodef{data.dummify(['x1', 'x2'], drop_first=True)}
 \generaldesc{For each suitable variable in \textit{varlist}, creates
 	a set of dummy variables coding for its distinct values. Suitable
 	variables are those that have been explicitly marked as discrete,
@@ -525,7 +661,7 @@ Examples:\newline
 \mapto[none]{dataset expand [freq]}
 Examples:\newline
 \pythcodef{data.expand()}\\
-\pythcodef{data.expand(12)}\\
+\pythcodef{data.expand(12)}
 \generaldesc{Expands all series in an annual or quarterly time-series
 	dataset to a higher frequency by repeating the existing values.
 	Annual data may be expanded to quarterly or monthly frequency, while
@@ -548,6 +684,85 @@ Examples:\newline
 	zero. By default, the Local Whittle estimator is used; the GPH test
 	can be selected as an alternative or both tests can be performed.}
 
+\gretlfpycmd{freq()}\label{met:gretldataset::freq}
+\estdesc{Compute the frequency distribution of a series,
+	optionally testing for the normal or gamma distribution.}
+\begin{lstlisting}[style=pythonstylefoot]
+.freq(var: str[, OPTS]) -> tuple[gretl.Bundle, matplotlib.figure.Figure .| None]
+\end{lstlisting}
+\mapto{freq var}
+\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
+	\item[]\maptoopt{nbins=n}{--nbins}{specify the number of bins}
+	\item[]\maptoopt{.min=minval}{--min}{specify the lower limit of the first bin}
+	\item[]\maptoopt{binwidth=width}{--binwidth}{specify the bin width}
+	\item[]\maptoopt{normal=True}{--normal}{test for the normal distribution}
+	\item[]\maptoopt{gamma=True}{--gamma}{test for the gamma distribution}
+	\item[]\maptoopt{silent=True}{--silent}{suppress printed output}
+	\item[]\maptoopt{plot=mode-.or-filename}{--plot}{control graphical output}
+\end{itemize}
+Examples:\newline
+\pythcodef{r1, fig1 = data.freq('x')}\\
+\pythcodef{r2, fig2 = data.freq('x', nbins=5)}\\
+\pythcodef{r3, fig3 = data.freq('x', min=0, binwidth=0.1)}\\
+\pythcodef{r4, fig4 = data.freq('x', normal=True, plot='display')}\\
+\pythcodef{r5, fig5 = data.freq('x', gamma=True, plot='display')}
+\generaldesc{Computes the frequency distribution of the specified
+	series and optionally tests whether its distribution is
+	consistent with a normal or gamma distribution.
+	
+	For continuous data, the number and width of the bins are
+	selected automatically unless specified explicitly.
+	The \pythcode{nbins} option determines the number of bins,
+	while \pythcode{min} and \pythcode{binwidth} allow the
+	lower limit of the first bin and the bin width to be
+	specified directly. For discrete data, binning is
+	not performed by default.
+	
+	Setting \pythcode{normal=True} performs the Doornik--Hansen
+	chi-square test for the null hypothesis of normality.
+	Alternatively, \pythcode{gamma=True} performs Locke's
+	nonparametric test for the null hypothesis that the
+	variable follows a gamma distribution (Locke, 1976;
+	Shapiro and Chen, 2001). The gamma distribution is
+	parameterized in terms of shape and scale.
+	
+	The \pythcode{silent=True} option suppresses printed output,
+	which is useful when only numerical results or graphical
+	output are required.
+	
+	Graphical output is controlled by the \pythcode{plot}
+	option. The supported values are \pythcode{"none"}
+	(suppress the plot), \pythcode{"display"} (request
+	graphical output), or a filename to which the plot
+	is saved. If this option is omitted, plotting follows
+	the current \lgretl execution mode.
+	
+	When a distribution test is requested, the corresponding
+	theoretical density is superimposed on the histogram.
+	The automatic display of generated Matplotlib figures
+	is controlled separately by
+	\pythcode{gretl.set\_plot\_auto\_show()}.
+	
+	The method returns a tuple containing a \classpybundle
+	with the frequency distribution and optional test results,
+	and an optional Matplotlib Figure.
+	
+	The \classpybundle always contains two entries:
+	\pythcode{"result"}, holding a \classpymatrix with the
+	frequency distribution, and \pythcode{"summary"}, containing
+	the captured textual output.
+	
+	When \pythcode{normal=True} or \pythcode{gamma=True}
+	is specified and valid test results are obtained, the
+	\classpybundle additionally contains \pythcode{"test"},
+	holding the test statistic, and \pythcode{"pvalue"},
+	holding the corresponding P-value. These entries are
+	omitted if no distribution test is requested or if
+	valid test results are unavailable.
+	
+	If no figure is returned, the second element of the
+	tuple is \pythcode{None}.}
+
 \gretlfpycmd{get\_accessor()}\label{met:gretldataset::get_accessor}
 \estdesc{Retrieves a \lgretl ``dollar accessor''.}
 \begin{lstlisting}[style=pythonstylefoot]
@@ -563,7 +778,7 @@ Examples:\newline
 .get_series(series: str) -> gretl.Matrix
 \end{lstlisting}
 Examples:\newline
-\pythcodef{r = data.get_series('x')}\\
+\pythcodef{r = data.get_series('x')}
 \generaldesc{Returns the values of the specified \gretlcmd{series}
 	over the current sample range as a column vector.}
 
@@ -582,6 +797,32 @@ Examples:\newline
 %.headT(nobs: int = 5)
 %\end{lstlisting}
 
+\gretlfpycmd{hflags()}
+\estdesc{Generates high-frequency lags or leads from a MIDAS variable list.}
+\begin{lstlisting}[style=pythonstylefoot]
+.hflags(lmin: int, lmax: int, hfvars: str | list) -> list[str]
+\end{lstlisting}
+\maptof{hflags(minlag, maxlag, hfvars)}{list}
+\generaldesc{Generates high-frequency lags or leads from the MIDAS
+	variables specified in \textit{hfvars}. The arguments
+	\textit{lmin} and \textit{lmax} determine the range of
+	high-frequency lag orders to be generated, inclusive of
+	both endpoints.
+	
+	Positive values indicate lags, while negative values indicate
+	leads. For example, setting \textit{lmin=-3} and
+	\textit{lmax=5} generates nine series corresponding to three
+	leads, the contemporaneous value, and five lags.
+	
+	High-frequency lag zero corresponds to the first high-frequency
+	period within a low-frequency period, such as the first month
+	of a quarter or the first day of a month.
+	
+	The \textit{hfvars} argument accepts a string or a Python list
+	specifying the MIDAS variables. The number of variables
+	determines the high-frequency compaction factor and must be
+	at least two.}
+
 \gretlfpycmd{hpfilt()}
 \estdesc{Applies the Hodrick--Prescott filter to series \textit{y}.}
 \begin{lstlisting}[style=pythonstylefoot]
@@ -591,7 +832,7 @@ Examples:\newline
 Examples:\newline
 \pythcodef{cycle = data.hpfilt('y')}\\
 \pythcodef{trend = data.hpfilt('y', trend=True)}\\
-\pythcodef{cycle = data.hpfilt('y', hp_lambda=1600, one_sided=True)}\\
+\pythcodef{cycle = data.hpfilt('y', hp_lambda=1600, one_sided=True)}
 \generaldesc{By default, the cycle component of the
 	Hodrick--Prescott filter is returned. If \pythcode{trend=True},
 	the trend component is returned instead.\newline
@@ -606,28 +847,109 @@ Examples:\newline
 	\pythcode{one_sided=True}, a one-sided variant with no look-ahead
 	is computed in the manner of Stock and Watson (1999).}
 
-\gretlfpycmd{hurst()}
-\estdesc{Estimates the Hurst exponent for a time series.}
+\gretlfpycmd{hfplot()}
+\estdesc{Plots high-frequency MIDAS series, optionally together with
+	series observed at the base frequency of the dataset.}
 \begin{lstlisting}[style=pythonstylefoot]
-.hurst(series: str) -> gretl.Matrix
+.hfplot(hflist: str | list[, OPTS]) -> matplotlib.figure.Figure .| None
+\end{lstlisting}
+\mapto[None]{hfplot hflist}
+\mapto{hfplot hflist ; lflist}
+\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
+	\item[]\maptoopt{with\_lines=True}{--with-lines}{plot using lines instead of points}
+	\item[]\maptoopt{time\_series=True}{--time-series}{put time on the horizontal axis}
+	\item[]\maptoopt{output=filename}{--output=filename}{save the generated gnuplot and Python scripts}
+\end{itemize}
+Examples:\newline
+\pythcodef{d = gretl.get\_data("gdp\_midas.gdt")}\\
+\pythcodef{hfvars = "ld\_payems\_m3 ld\_payems\_m2 ld\_payems\_m1"}\\
+\pythcodef{lags = d.hflags(3, 11, hfvars)}\\
+\pythcodef{fig = d.hfplot(lags, with\_lines=True, time\_series=True)}\\
+\pythcodef{fig = d.hfplot([lags, hfvars], with\_lines=True, time\_series=True)}\\
+\pythcodef{d.hfplot([lags, hfvars], output="midas.gp")}
+\generaldesc{Provides a means of plotting high-frequency MIDAS
+	series, optionally together with one or more series observed
+	at the base frequency of the dataset.
+	
+	The first argument must specify a MIDAS list containing the
+	high-frequency series to be plotted. An optional second list
+	may specify regular (low-frequency) series.
+	
+	In the original \lgretl command, the high-frequency and
+	low-frequency lists are separated by a semicolon. In
+	\gretlpy, the two specifications can be passed as a
+	two-element Python list, with the high-frequency list first
+	and the low-frequency list second.
+	
+	Plot generation is performed by \lgretl, while the resulting
+	\gnuplot script is translated into Python code by
+	\gptranslate and rendered using Matplotlib.
+	
+	By default, the method returns a Matplotlib Figure object.
+	When the \texttt{output} option is specified, two files are
+	generated: the original \gnuplot script (\texttt{.gp}) and
+	its translated Python counterpart (\texttt{.py}), and the
+	method returns \texttt{None}.}
+
+\gretlfpycmd{hurst()}\label{met:gretldataset::hurst}
+\estdesc{Estimate the Hurst exponent of a time series.}
+\begin{lstlisting}[style=pythonstylefoot]
+.hurst(series: str[, OPTS]) -> tuple[gretl.Matrix, matplotlib.figure.Figure .| None]
 \end{lstlisting}
 \mapto[clean]{hurst ~series}
-\generaldesc{The Hurst exponent is discussed by Mandelbrot (1983).
-	In theoretical terms it is the exponent, \textit{H}, in the relationship
+\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
+	\item[]\maptoopt{plot=mode-.or-filename}{--plot}{control graphical output}
+\end{itemize}
+Examples:\newline
+\pythcodef{r1, fig1 = data.hurst('x')}\\
+\pythcodef{r2, fig2 = data.hurst('x', plot='display')}
+\generaldesc{Estimates the Hurst exponent, a measure of persistence
+	or long memory, for a time-series variable containing at least
+	128 observations.
+	
+	The Hurst exponent is discussed by Mandelbrot (1983).
+	In theoretical terms, it is the exponent \textit{H}
+	in the relationship
 	\[
-		RS(x) = an^H,
+	RS(n) = an^H,
 	\]
-	where \textit{RS} is the ``rescaled range'' of the variable
-	\textit{x} in samples of size \textit{n} and \textit{a} is
-	a constant. In gretl, the exponent is estimated using binary
-	sub-sampling: we start with the entire data range, then the
-	two halves of the range, then the four quarters, and so on.
-	For sample sizes smaller than the data range, the \textit{RS}
-	value is the mean across the available samples. The exponent
-	is then estimated as the slope coefficient in a regression of
-	the log of \textit{RS} on the log of sample size.
-	The returned \classpymatrix contains the estimated Hurst
-	exponent and its standard error.}
+	where \textit{RS} denotes the rescaled range for samples
+	of size \textit{n}, and \textit{a} is a constant.
+	
+	The rescaled range is defined as the range (maximum minus
+	minimum) of the cumulative deviations from the sample mean,
+	divided by the sample standard deviation.
+	
+	In \lgretl, the Hurst exponent is estimated using binary
+	sub-sampling. Starting with the entire sample, the data
+	range is successively divided into two halves, four quarters,
+	and so on. For each sample size, the rescaled range is
+	averaged across the available subsamples. The exponent
+	is then estimated as the slope coefficient in a regression
+	of the logarithm of \textit{RS} on the logarithm of the
+	sample size.
+	
+	A Hurst exponent of 0.5 corresponds to the white-noise
+	benchmark. Values significantly above 0.5 indicate
+	persistence or long memory, while values below 0.5
+	indicate anti-persistence. Although the theoretical
+	exponent is bounded between zero and one, finite-sample
+	estimates may exceed one.
+	
+	Graphical output is controlled by the \pythcode{plot}
+	argument. The intended supported values are
+	\pythcode{"none"} (suppress the plot),
+	\pythcode{"display"} (request graphical output),
+	or a filename to which the plot is saved.
+	The automatic display of generated Matplotlib figures
+	is controlled separately by
+	\pythcode{gretl.set\_plot\_auto\_show()}.
+	
+	The method returns a tuple containing a \classpymatrix
+	with the estimated Hurst exponent and its standard error,
+	and an optional Matplotlib Figure. If no figure is
+	returned, the second element of the tuple is
+	\pythcode{None}.}
 
 \gretlfpycmd{info()}\label{met:gretldataset::info}
 \estdesc{Prints basic information about the dataset.}
@@ -645,7 +967,7 @@ Examples:\newline
 \end{lstlisting}
 \mapto[none]{dataset insobs n}
 Example:\newline
-\pythcodef{data.insobs(10)}\\
+\pythcodef{data.insobs(10)}
 \generaldesc{Inserts a single observation at position \textit{n},
 	shifting all subsequent observations by one place and extending the
 	dataset by one observation. All variables except the constant are
@@ -684,9 +1006,46 @@ Example:\newline
 Examples:\newline
 \pythcodef{r1 = data.johansen(ylist='y', xlist='x', order=2)}\\
 \pythcodef{r2 = data.johansen(ylist=['y'], xlist='x z', order=4, verbose=True)}\\
-\pythcodef{r3 = data.johansen(ylist='y', xlist=['x', 'z'], order=3, rc=True)}\\
+\pythcodef{r3 = data.johansen(ylist='y', xlist=['x', 'z'], order=3, rc=True)}
 \generaldesc{Tests for the cointegration rank among a set of endogenous variables
 	using the Johansen trace and maximum-eigenvalue tests}
+
+\gretlfpycmd{kdplot()}
+\estdesc{Plot a kernel density estimate for a specified series.}
+\begin{lstlisting}[style=pythonstylefoot]
+.kdplot(y: str[, OPTS]) -> matplotlib.figure.Figure .| None
+\end{lstlisting}
+\mapto{kdplot y}
+\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
+	\item[]\maptoopt{alt=True}{--alt}{use the Epanechnikov kernel instead of the Gaussian kernel}
+	\item[]\maptoopt{scale=s}{--scale=s}{scale the bandwidth by a factor of \textit{s} (default: 1.0)}
+	\item[]\maptoopt{output='filename'}{--output=filename}{save the generated plot scripts to the specified file}
+\end{itemize}
+Examples:\newline
+\pythcodef{data.kdplot('LF')}\\
+\pythcodef{data.kdplot('LF', alt=True)}\\
+\pythcodef{data.kdplot('LF', scale=1.5)}\\
+\pythcodef{data.kdplot('LF', alt=True, scale=0.8)}\\
+\pythcodef{data.kdplot('LF', output='density.gp')}
+\generaldesc{Plots a kernel density estimate for the specified series.
+	By default, the Gaussian kernel is used. Setting \texttt{alt=True}
+	selects the Epanechnikov kernel instead.
+	
+	The degree of smoothing can be adjusted using the \texttt{scale}
+	option, which has a default value of 1.0. Higher values produce
+	smoother density estimates, while lower values result in less
+	smoothing.
+	
+	The plot is generated by \lgretl{} and translated into Matplotlib
+	code by \texttt{gptranslate}. If \texttt{output} is omitted, the
+	method returns a Matplotlib \texttt{Figure} object. Otherwise,
+	the generated gnuplot script and its corresponding translated
+	Python script are saved to files, and the method returns
+	\texttt{None}.
+	
+	For a more flexible approach to kernel density estimation,
+	including the possibility of retrieving the estimated density
+	as a matrix, see the \gretlcmd{kdensity} function.}
 
 \gretlfpycmd{kmeans()}
 \estdesc{Performs k-means clustering using the Hartigan--Wong algorithm.}
@@ -726,7 +1085,7 @@ Examples:\newline
 \end{itemize}
 Examples:\newline
 \pythcodef{r1 = data.kpss(varlist='y', order=8)}\\
-\pythcodef{r2 = data.kpss(varlist='x1', order=4, trend=True)}\\
+\pythcodef{r2 = data.kpss(varlist='x1', order=4, trend=True)}
 \generaldesc{Tests the null hypothesis that each specified series is stationary
 	around a constant, or around a deterministic linear trend when
 	``trend=True``. For panel data, only one variable can be tested at a time and the
@@ -745,7 +1104,7 @@ Examples:\newline
 Examples:\newline
 \pythcodef{data.lags('x y')}\\
 \pythcodef{data.lags('x y', 12)}\\
-\pythcodef{data.lags('x y z', 4, bylag=True)}\\
+\pythcodef{data.lags('x y z', 4, bylag=True)}
 \generaldesc{By default the number of lags created equals the
 	periodicity of the data. For example, if the periodicity
 	is 4 (quarterly), \pythcode{.lags('x')} creates:
@@ -765,7 +1124,7 @@ Examples:\newline
 \mapto[None]{ldiff ~varlist}
 Examples:\newline
 \pythcodef{data.ldiff('x y')}\\
-\pythcodef{data.ldiff(['x', 'y'])}\\
+\pythcodef{data.ldiff(['x', 'y'])}
 \generaldesc{The first difference of the natural logarithm of each
 	variable in \textit{varlist} is computed and stored in a new series
 	with prefix \textit{ld\_}. Thus \gretlcmd{ldiff x y} creates
@@ -789,7 +1148,7 @@ Examples:\newline
 Examples:\newline
 \pythcodef{r1 = data.levinlin(order=0, series='y')}\\
 \pythcodef{r2 = data.levinlin(order=2, series='y', ct=True)}\\
-\pythcodef{r3 = data.levinlin(order=[2,2,3,3,4,4], series='y')}\\
+\pythcodef{r3 = data.levinlin(order=[2,2,3,3,4,4], series='y')}
 \generaldesc{Tests the null hypothesis that all individual
 	series in the panel have a unit root against the alternative
 	that none has a unit root. A common $AR(1)$ coefficient
@@ -817,7 +1176,7 @@ Examples:\newline
 \mapto[None]{logs ~varlist}
 Examples:\newline
 \pythcodef{data.logs('x y')}\\
-\pythcodef{data.logs(['x', 'y'])}\\
+\pythcodef{data.logs(['x', 'y'])}
 \generaldesc{The natural logarithm of each variable in
 	\textit{varlist} is computed and stored in a new series with prefix
 	\textit{l\_}. Thus \gretlcmd{logs x y} creates
@@ -842,7 +1201,7 @@ Examples:\newline
 \end{itemize}
 Examples:\newline
 \pythcodef{r1 = data.meantest('x', 'y')}\\
-\pythcodef{r2 = data.meantest(x='x', split_by='d')}\\
+\pythcodef{r2 = data.meantest(x='x', split_by='d')}
 \generaldesc{Performs a t-test of the null hypothesis that
 	the population means are equal. The samples may be given
 	as two series or obtained by splitting one series
@@ -857,7 +1216,7 @@ Examples:\newline
 \mapto[none]{list name = value}
 Examples:\newline
 \pythcodef{data.new_list('list A = x1 x2 x3')}\\
-\pythcodef{data.new_list('A', 'x1 x2 x3')}\\
+\pythcodef{data.new_list('A', 'x1 x2 x3')}
 \generaldesc{Creates a named \gretlcmd{list} of variables. The
 	\textit{value} argument specifies the variables by name or variable
 	ID, while \textit{formula} accepts a complete expression in valid
@@ -901,7 +1260,7 @@ Examples:\newline
 Examples:\newline
 \pythcodef{r1 = data.normtest('x')}\\
 \pythcodef{r2 = data.normtest(series='x', swilk=True)}\\
-\pythcodef{r3 = data.normtest(series='x', all=True)}\\
+\pythcodef{r3 = data.normtest(series='x', all=True)}
 \generaldesc{Performs a normality test using the Doornik-Hansen,
 	Shapiro-Wilk, Lilliefors, or Jarque-Bera procedure. By default,
 	the Doornik-Hansen test is used.}
@@ -914,7 +1273,7 @@ Examples:\newline
 \mapto[none]{orthdev ~varlist}
 Examples:\newline
 \pythcodef{data.orthdev('x y')}\\
-\pythcodef{data.orthdev(['x', 'y'])}\\
+\pythcodef{data.orthdev(['x', 'y'])}
 \generaldesc{Applicable to panel data only. A series of forward
 	orthogonal deviations is computed for each variable in
 	\textit{varlist} and stored in a new series with prefix
@@ -931,13 +1290,67 @@ Examples:\newline
 \end{lstlisting}
 \mapto[none]{dataset pad-daily days}
 Example:\newline
-\pythcodef{data.pad\_daily(7)}\\
+\pythcodef{data.pad\_daily(7)}
 \generaldesc{Adds missing observations to a daily time-series dataset
 	so that it conforms to the specified number of days per week.
 	The \textit{days} parameter must be 5, 6 or 7 and greater than the
 	current daily frequency. Newly inserted observations contain missing
 	values for all series, while existing observations and their dates
 	are preserved.}
+
+\gretlfpycmd{panplot()}\label{met:gretldataset::panplot}
+\estdesc{This method produces graphical representations of a
+	panel-data series, allowing the user to visualize variation
+	across time and individual panel units.}
+\begin{lstlisting}[style=pythonstylefoot]
+.panplot(plotvar: str[, OPTS]) -> matplotlib.figure.Figure .| None
+\end{lstlisting}
+\mapto{panplot plotvar}
+\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
+	\item[]\maptoopt{means=True}{--means}{plot the time series
+		of cross-sectional group means}
+	\item[]\maptoopt{overlay=True}{--overlay}{overlay individual
+		group time series in a single plot ($N \leq 130$)}
+	\item[]\maptoopt{sequence=True}{--sequence}{plot individual
+		group time series in sequence ($N \leq 130$)}
+	\item[]\maptoopt{grid=True}{--grid}{arrange individual
+		group plots in a grid ($N \leq 16$)}
+	\item[]\maptoopt{stack=True}{--stack}{arrange individual
+		group plots vertically ($N \leq 6$)}
+	\item[]\maptoopt{otots=True}{--boxplots}{produce separate
+		boxplots for individual groups ($N \leq 150$)}
+	\item[]\maptoopt{boxplot=True}{--boxplot}{produce a single
+		boxplot summarizing all groups}
+	\item[]\maptoopt{font=fontspec}{--font=fontspec}{specify
+		the font used in the plot}
+	\item[]\maptoopt{output=filename}{--output=filename}{save
+		the generated gnuplot and Python scripts}
+\end{itemize}
+Examples:\newline
+\pythcodef{d.panplot("Y", overlay=True)}\\
+\pythcodef{d.panplot("Y", means=True)}\\
+\pythcodef{d.panplot("Y", grid=True)}\\
+\pythcodef{d.panplot("Y", stack=True)}\\
+\pythcodef{d.panplot("Y", boxplots=True)}\\
+\pythcodef{d.panplot("Y", overlay=True, output="/tmp/panel.gp")}
+\generaldesc{The method is designed specifically for panel datasets.
+	The graphical mode is selected using one of the options listed
+	above. Except for \texttt{means=True} and
+	\texttt{boxplot=True}, the resulting plots explicitly represent
+	variation in both the time-series and cross-sectional dimensions.
+	
+	Some graphical modes impose limits on the number of panel units
+	in the current sample. If the panel contains more units than
+	permitted by a given mode, the sample can be temporarily
+	restricted to a smaller range of units.
+	
+	By default, the method returns a
+	\texttt{matplotlib.figure.Figure} object. If the
+	\texttt{output} argument is specified, the original gnuplot
+	script is saved to the requested filename, while the translated
+	Matplotlib Python script is saved alongside it with the
+	\texttt{.py} extension. In this case, the method returns
+	\texttt{None}.}
 
 \gretlfpycmd{pca()}
 \estdesc{Principal Components Analysis.}
@@ -979,6 +1392,61 @@ Example:\newline
 \where{\textit{d} and \textit{param} are
 	defined as in \ref{func:gretl.pdf}.}
 
+\gretlfpycmd{plot()}
+\estdesc{Generates X--Y and time-series plots using \lgretl and Matplotlib.}
+\begin{lstlisting}[style=pythonstylefoot]
+.plot(yvars: str | list[, OPTS]) -> matplotlib.figure.Figure .| None
+\end{lstlisting}
+\mapto[None]{gnuplot yvars}
+\mapto[None]{gnuplot yvars xvar}
+\mapto[None]{gnuplot yvars --time-series}
+\mapto[None]{gnuplot yvars xvar factor --factorized}
+\mapto{gnuplot yvar xvar zvars --control}
+\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
+	\item[]\maptoopt{with\_lines=True}{--with-lines}{draw lines instead of points}
+	\item[]\maptoopt{with\_lp=True}{--with-lp}{draw lines and points}
+	\item[]\maptoopt{with\_impulses=True}{--with-impulses}{draw vertical impulses}
+	\item[]\maptoopt{with\_boxes=True}{--with-boxes}{draw histogram-style boxes}
+	\item[]\maptoopt{with\_steps=True}{--with-steps}{draw step graphs}
+	\item[]\maptoopt{time\_series=True}{--time-series}{plot against time}
+	\item[]\maptoopt{single\_yaxis=True}{--single-yaxis}{force a single Y axis}
+	\item[]\maptoopt{y2axis=varspec}{--y2axis=varspec}{specify variables for the secondary Y axis}
+	\item[]\maptoopt{ylogscale=base}{--ylogscale[=base]}{use a logarithmic Y axis}
+	\item[]\maptoopt{control=True}{--control}{plot residuals after controlling for other variables}
+	\item[]\maptoopt{factorized=varspec}{--factorized[=varspec]}{distinguish observations by a discrete factor}
+	\item[]\maptoopt{fit=fitspec}{--fit=fitspec}{specify a fitted line}
+	\item[]\maptoopt{font=fontspec}{--font=fontspec}{specify the plot font}
+	\item[]\maptoopt{band=bundle}{--band=bundle}{add a band defined by a bundle}
+	\item[]\maptoopt{bands=array}{--bands=array}{add multiple bands}
+\end{itemize}
+Examples:\newline
+\pythcodef{fig = data.plot("y x")}\\
+\pythcodef{fig = data.plot(["y1", "y2", "x"])}\\
+\pythcodef{fig = data.plot("y1 y2", time\_series=True, with\_lines=True)}\\
+\pythcodef{fig = data.plot("y x", fit="quadratic")}\\
+\pythcodef{fig = data.plot("y x z", control=True)}
+\generaldesc{Generates graphical representations of dataset series
+	using the native \lgretl{} plotting functionality. For ordinary
+	X--Y plots, the last variable in \textit{yvars} is interpreted
+	as the X variable, while preceding variables are plotted on the
+	Y axis. When \textit{time\_series=True}, all specified variables
+	are plotted against time.
+	
+	By default, observations are represented by points. Various
+	plotting styles are available, including lines, impulses,
+	boxes, and steps. For multiple Y variables, a secondary axis
+	may be selected automatically or explicitly using
+	\textit{y2axis}.
+	
+	The \textit{fit} option allows fitted curves to be added to
+	bivariate plots, while \textit{control} produces a plot of
+	residualized variables after accounting for specified controls.
+	
+	Plot generation is performed by \lgretl, while the resulting
+	\gnuplot script is translated into Python code by \gptranslate
+	and rendered using Matplotlib. The method returns a Matplotlib
+	Figure object.}
+
 \gretlfpycmd{print()}\label{met:gretldataset::print}
 \estdesc{Dataset-dedicated printer.}
 \begin{lstlisting}[style=pythonstylefoot]
@@ -1017,6 +1485,58 @@ Example:\newline
 \where{\textit{c} and \textit{param} are defined
 	as in \ref{func:gretl.pvalue}}.
 
+\gretlfpycmd{qqplot()}\label{met:gretldataset::qqplot}
+\estdesc{This method produces a quantile-quantile (Q-Q) plot,
+	comparing the empirical distribution of a series either
+	with a normal distribution or with the empirical distribution
+	of another series.}
+
+\begin{lstlisting}[style=pythonstylefoot]
+.qqplot(y: str[, x: str, OPTS]) -> matplotlib.figure.Figure .| None
+\end{lstlisting}
+\mapto[None]{qqplot y}
+\mapto{qqplot y x}
+\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
+	\item[]\maptoopt{z\_scores=True}{--z-scores}{standardize
+		the data before constructing a normal Q-Q plot}
+	\item[]\maptoopt{raw=True}{--raw}{plot the original empirical
+		quantiles against the standard normal distribution}
+	\item[]\maptoopt{output=filename}{--output=filename}{save
+		the generated gnuplot and Python scripts}
+\end{itemize}
+Examples:\newline
+\pythcodef{d.qqplot("Y")}\\
+\pythcodef{d.qqplot("Y", z_scores=True)}\\
+\pythcodef{d.qqplot("Y", raw=True)}\\
+\pythcodef{d.qqplot("Y", "X")}\\
+\pythcodef{d.qqplot("Y", output="/tmp/qqplot.gp")}\\
+\pythcodef{d.qqplot("Y", "X", output="/tmp/qqplot_xy.gp")}
+\generaldesc{When a single series is specified, the method
+	produces a normal Q-Q plot. The empirical quantiles of the
+	selected series are compared with the theoretical quantiles
+	of a normal distribution. At least 20 valid observations
+	must be available in the current sample.
+	
+	By default, the reference normal distribution has the same
+	mean and variance as the sample data. Alternatively,
+	\texttt{z\_scores=True} standardizes the data before plotting,
+	while \texttt{raw=True} compares the original empirical
+	quantiles with those of the standard normal distribution.
+	These two options are mutually exclusive.
+	
+	When two series are specified, the method compares the
+	empirical quantiles of the first series with those of the
+	second series. Neither series is standardized, and the
+	normal-reference options are not applicable.
+	
+	By default, the method returns a
+	\texttt{matplotlib.figure.Figure} object. If the
+	\texttt{output} argument is specified, the original gnuplot
+	script is saved to the requested filename and the translated
+	Matplotlib Python script is saved alongside it with the
+	\texttt{.py} extension. In this case, the method returns
+	\texttt{None}.}
+
 \gretlfpycmd{rename()}
 \estdesc{Changes the name of a series or the case of all series names.}
 \begin{lstlisting}[style=pythonstylefoot]
@@ -1033,7 +1553,7 @@ Example:\newline
 \end{itemize}
 Examples:\newline
 \pythcodef{data.rename('x2', 'income')}\\
-\pythcodef{data.rename(case='lower')}\\
+\pythcodef{data.rename(case='lower')}
 \generaldesc{Without the \gretlcmd{case} option this method changes
 	the name of \textit{series} to \textit{newname}. The new name must
 	be at most 31 characters long, must start with a letter, and may
@@ -1051,7 +1571,7 @@ Examples:\newline
 \end{lstlisting}
 \mapto[none]{dataset ~resample n}
 Examples:\newline
-\pythcodef{data.resample(500)}\\
+\pythcodef{data.resample(500)}
 \generaldesc{Creates a new dataset by sampling observations
 	with replacement from the current dataset. The parameter
 	\textit{n} specifies the number of observations in the
@@ -1111,7 +1631,7 @@ Examples:\newline
 \pythcodef{data.sample(1, -1)}\\
 \pythcodef{data.sample('x > 3000', restrict=True)}\\
 \pythcodef{data.sample('y > 3000', restrict=True, replace=True))}\\
-\pythcodef{data.sample(100, random=True)}\\
+\pythcodef{data.sample(100, random=True)}
 \generaldesc{When no arguments are given, it displays the
 	current sample range, otherwise it sets the sample range.
 	The range can be defined in several ways. In the first
@@ -1129,6 +1649,43 @@ Examples:\newline
 	where the value is 1. The fourth form, using \gretlcmd{--restrict}
 	restricts the sample to observations that satisfy the given Boolean condition.}
 
+\gretlfpycmd{scatters()}\label{met:gretldataset::scatters}
+\estdesc{Generate multiple pairwise scatterplots on a single canvas.}
+\begin{lstlisting}[style=pythonstylefoot]
+.scatters(varlist: str | list[, OPTS]) -> matplotlib.figure.Figure .| None
+\end{lstlisting}
+\mapto{scatters yvar ; xvars | yvars ; xvar}
+\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
+	\item[]\maptoopt{with_lines=True}{--with-lines}{draw line graphs instead of scatterplots}
+	\item[]\maptoopt{output="filename"}{--output=filename}{send output to the specified file}
+\end{itemize}
+Examples:\newline
+\pythcodef{data.scatters('y ; x1 x2 x3')}\\
+\pythcodef{data.scatters('y1 y2 y3 ; x')}\\
+\pythcodef{data.scatters('y1 y2 y3 ; x', with_lines=True)}\\
+\pythcodef{data.scatters('y ; x1 x2 x3', output='scatters.png')}
+\generaldesc{Generates multiple pairwise graphs of one variable
+	against several other variables. The \texttt{varlist} argument
+	contains two groups of variables separated by a semicolon.
+	Either the first group contains a single variable to be
+	plotted on the y-axis against all variables in the second
+	group, or the second group contains a single variable to be
+	plotted on the x-axis against all variables in the first group.
+	
+	By default, observations are represented as points. Setting
+	\texttt{with\_lines=True} produces line graphs instead.
+	
+	A maximum of 16 plots can be generated on a single canvas;
+	any additional variables are ignored. Such collections of
+	scatterplots are useful for exploratory data analysis,
+	particularly for examining relationships between variables.
+	
+	This method corresponds to the \lgretl command
+	\gretlcmd{scatters}. See also \pythcode{::tsplots()}
+	(\ref{met:gretldataset::tsplots})
+	for plotting multiple time series and the \gretlcmd{gridplot}
+	command for more flexible arrangements of multiple plots.}
+
 \gretlfpycmd{sdiff()}
 \estdesc{Generates seasonal differences of selected variables.}
 \begin{lstlisting}[style=pythonstylefoot]
@@ -1137,7 +1694,7 @@ Examples:\newline
 \mapto[none]{sdiff ~varlist}
 Examples:\newline
 \pythcodef{data.sdiff('x y')}\\
-\pythcodef{data.sdiff(['x', 'y'])}\\
+\pythcodef{data.sdiff(['x', 'y'])}
 \generaldesc{The seasonal difference of each variable in
 	\textit{varlist} is computed and stored in a new series with prefix
 	\textit{sd\_}. This command is available only for seasonal time series.}
@@ -1178,7 +1735,7 @@ Examples:\newline
 \pythcodef{data..setobs(12, '1978:03')}\\
 \pythcodef{data..setobs(1, 1, cross\_section=True)}\\
 \pythcodef{data..setobs(20, '1:1', stacked\_time\_series=True)}\\
-\pythcodef{data..setobs('unit', 'year', panel\_vars=True)}\\
+\pythcodef{data..setobs('unit', 'year', panel\_vars=True)}
 \generaldesc{In the first form of the method the periodicity,
 	which must be an integer, represents frequency in the case of
 	time-series data (1 = annual; 4 = quarterly; 12 = monthly;
@@ -1212,7 +1769,7 @@ Examples:\newline
 \pythcodef{data.sortby('x1')}\\
 \pythcodef{data.sortby('x1 x2 x3')}\\
 \pythcodef{data.sortby(['x1', 'x2', 'x3'])}\\
-\pythcodef{data.sortby([1, 2, 3])}\\
+\pythcodef{data.sortby([1, 2, 3])}
 \generaldesc{Reorders all observations in the dataset in ascending order
 	according to the variables specified in \textit{varlist}. Variables
 	may be specified by name or index. If multiple variables are given,
@@ -1229,7 +1786,7 @@ Examples:\newline
 \mapto[none]{square ~varlist}
 Examples:\newline
 \pythcodef{data.square('x1 x2')}\\
-\pythcodef{data.square(['x1', 'x2'], cross=True)}\\
+\pythcodef{data.square(['x1', 'x2'], cross=True)}
 \generaldesc{Generates new series containing the squares of the variables
 	in \textit{varlist}. For example, \gretlcmd{square x y} generates
 	$sq\_x=x^2$ and $sq\_y=y^2$; with the \pythcode{cross} option it
@@ -1249,7 +1806,7 @@ Examples:\newline
 Examples:\newline
 \pythcodef{data.stdize('x1 x2')}\\
 \pythcodef{data.stdize(['x1', 'x2'], no_df_corr=True)}\\
-\pythcodef{data.stdize('x1', center_only=True)}\\
+\pythcodef{data.stdize('x1', center_only=True)}
 \generaldesc{By default, a standardized version of each variable in
 	\textit{varlist} is generated with prefix \textit{s\_}. For example,
 	\gretlcmd{stdize x y} creates \textit{s\_x} and \textit{s\_y},
@@ -1280,6 +1837,28 @@ Examples:\newline
 	\pythcode{None} is returned. The \gretlcmd{--by} and
 	\gretlcmd{--weight} options are mutually exclusive.}
 
+\gretlfpycmd{tsplots()}\label{met:gretldataset::tsplots}
+\estdesc{Plot multiple time series on a single canvas.}
+\begin{lstlisting}[style=pythonstylefoot]
+.tsplots(varlist: str | list[, OPTS]) -> matplotlib.figure.Figure .| None
+\end{lstlisting}
+\mapto{tsplots ~varlist}
+\begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
+	\item[]\maptoopt{output="filename"}{--output=filename}{send output to the specified file}
+\end{itemize}
+Examples:\newline
+\pythcodef{data.tsplots('y x z')}\\
+\pythcodef{data.tsplots(['y', 'x', 'z'])}
+\generaldesc{Provides an easy way of plotting multiple time series,
+	up to a maximum of 16, on a single canvas. The \texttt{varlist}
+	argument specifies the series to be plotted, either by their
+	names or ID numbers.
+	
+	This method corresponds to the \lgretl command
+	\gretlcmd{tsplots}. See also \pythcode{::scatters()}
+	(\ref{met:gretldataset::scatters}) for producing multiple
+	scatterplots for more flexible arrangements of multiple plots.}
+
 \gretlfpycmd{unpad\_daily()}
 \estdesc{Removes padding from a daily dataset.}
 \begin{lstlisting}[style=pythonstylefoot]
@@ -1287,7 +1866,7 @@ Examples:\newline
 \end{lstlisting}
 \mapto[none]{dataset unpad-daily}
 Example:\newline
-\pythcodef{data.unpad\_daily()}\\
+\pythcodef{data.unpad\_daily()}
 \generaldesc{Removes artificial observations containing missing values
 	from a daily time-series dataset. Observations for which all series
 	are missing are removed, reducing the daily frequency where
@@ -1316,7 +1895,7 @@ Example:\newline
 \maptof{tdisagg(Y, X, s, opts, results)}{matrix}
 Examples:\newline
 \pythcodef{r1 = data.tdisagg('y', s=3)}\\
-\pythcodef{r2 = data.tdisagg(Y='y', X=['x1', 'x2'], s=3)}\\
+\pythcodef{r2 = data.tdisagg(Y='y', X=['x1', 'x2'], s=3)}
 \generaldesc{Converts the time-series data specified by
 	\textit{Y} to a higher frequency using temporal disaggregation.
 	The parameter \textit{s} specifies the expansion factor (for example,
@@ -1398,7 +1977,7 @@ Examples:\newline
 \pythcodef{r1 = data.to_matrix()}\newline
 \pythcodef{r2 = data.to_matrix(['y', 'x1', 'x2'])}\newline
 \pythcodef{r3 = data.to_matrix('y x1 x2', missing='skip')}\newline
-\pythcodef{r4 = data.to_matrix(['y', 'x1'], 10, 100)}\\
+\pythcodef{r4 = data.to_matrix(['y', 'x1'], 10, 100)}
 \generaldesc{Creates a \gretl matrix from the selected variables and
 	observations of the current dataset. Matrix rows correspond to
 	observations and columns to variables. By default, the current sample
@@ -1417,7 +1996,7 @@ Examples:\newline
 \end{lstlisting}
 \mapto[none]{dataset transpose}
 Examples:\newline
-\pythcodef{data.transpose()}\\
+\pythcodef{data.transpose()}
 \generaldesc{Interchanges observations and variables in the
 	dataset, so that rows become columns and columns become rows.
 	This method may be useful when importing data where variables
@@ -1430,7 +2009,7 @@ Examples:\newline
 \end{lstlisting}
 \mapto[none]{dataset unpad-daily}
 Examples:\newline
-\pythcodef{data.unpad\_daily()}\\
+\pythcodef{data.unpad\_daily()}
 \generaldesc{Removes observations containing only missing values
 	from a padded daily dataset. The time-series structure and
 	observation dates are preserved.}
@@ -1449,7 +2028,7 @@ Examples:\newline
 \end{itemize}
 Examples:\newline
 \pythcodef{r1 = data.vartest('x', 'y')}\\
-\pythcodef{r2 = data.vartest(x='x', split_by='d')}\\
+\pythcodef{r2 = data.vartest(x='x', split_by='d')}
 \generaldesc{By default, performs the standard \textit{F} test
 	of the null hypothesis that the population variances are equal.
 	Robust variants based on Levene and Brown-Forsythe tests are
@@ -1458,30 +2037,56 @@ Examples:\newline
 	particularly the median-based test for skewed data and the
 	trimmed-mean test for fat-tailed data.}
 
-\gretlfpycmd{xcorrgm()}
-\estdesc{Computes the cross-correlogram of two series.}
+\gretlfpycmd{xcorrgm()}\label{met:gretldataset::xcorrgm}
+\estdesc{Compute the cross-correlogram of two time series.}
 \begin{lstlisting}[style=pythonstylefoot]
-.xcorrgm(varlist: str | list[, order: int = 0, OPTS]) -> gretl.Matrix
-.xcorrgm(series1: str, series2: str[, order: int = 0, OPTS]) -> gretl.Matrix
+.xcorrgm(varlist: str | list[, order: int = 0, OPTS]) -> tuple[gretl.Matrix, matplotlib.figure.Figure .| None]
+.xcorrgm(series1: str, series2: str[, order: int = 0, OPTS]) -> tuple[gretl.Matrix, matplotlib.figure.Figure .| None]
 \end{lstlisting}
 \mapto{xcorrgm series1 series2 [ order ]}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
+	\item[]\maptoopt{plot=mode-.or-filename}{--plot}{control graphical output}
 	\item[]\maptoopt{quiet=True}{--quiet}{suppress printed output}
 \end{itemize}
 Examples:\newline
-\pythcodef{r1 = data.xcorrgm('x y', 12)}\\
-\pythcodef{r2 = data.xcorrgm(['x', 'y'], 12)}\\
-\pythcodef{r3 = data.xcorrgm('x', 'y', 12)}\\
-\generaldesc{The values are the sample correlation coefficients
-	between the current value of \textit{series1} and successive leads
-	and lags of \textit{series2}.\newline
-	If an \textit{order} value is specified the length of the
-	cross-correlogram is limited to at most that number of leads
-	and lags; otherwise the length is determined automatically,
-	as a function of the frequency of the data and the number of
-	observations.\newline
-	The returned \classpymatrix contains the lags in the first
-	column and the corresponding cross-correlations in the second.}
+\pythcodef{r1, fig1 = data.xcorrgm('x y', 12)}\\
+\pythcodef{r2, fig2 = data.xcorrgm(['x', 'y'], 12)}\\
+\pythcodef{r3, fig3 = data.xcorrgm('x', 'y', 12)}\\
+\pythcodef{r4, fig4 = data.xcorrgm('x', 'y', plot='display')}\\
+\pythcodef{r5, fig5 = data.xcorrgm('x y', plot='none')}
+\generaldesc{Computes the sample cross-correlation coefficients
+	between the current value of \textit{series1} and successive
+	leads and lags of \textit{series2}.
+	
+	The two variables can be specified as a space-separated string,
+	a Python list, or two separate string arguments.
+	
+	The \textit{order} argument specifies the maximum number
+	of leads and lags to be included in the cross-correlogram.
+	If omitted or set to zero, the number of leads and lags
+	is selected automatically based on the frequency of the
+	data and the number of available observations.
+	
+	Graphical output is controlled by the \pythcode{plot} option.
+	The supported values are \pythcode{"none"} (suppress the plot),
+	\pythcode{"display"} (request graphical output), or a
+	filename to which the plot is saved. If the option is omitted,
+	plotting follows the current \lgretl execution mode.
+	
+	The \pythcode{quiet=True} option suppresses printed output.
+	
+	Automatic display of generated Matplotlib figures is
+	controlled separately by
+	\pythcode{gretl.set\_plot\_auto\_show()}.
+	
+	The method returns a tuple containing a \classpymatrix
+	and an optional Matplotlib Figure. The matrix contains
+	two columns: the first holds the leads and lags, while
+	the second contains the corresponding sample
+	cross-correlation coefficients.
+	
+	If no figure is returned, the second element of the
+	tuple is \pythcode{None}.}
 
 \gretlfpycmd{xtab()}
 \estdesc{Computes cross-tabulations of discrete variables.}

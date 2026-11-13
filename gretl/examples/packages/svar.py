@@ -49,27 +49,38 @@ def run_example():
     gretl.SVAR_estimate(model)
 
     print(f"Time (SVAR estimation) = {gretl.get_accessor('$stopwatch'):.2g}")
+    
+    # ------------------------------------------------------------
+    # HD (Plot Historical Decomposition)
+    # ------------------------------------------------------------
+    gretl.HDplot(model, 2)
 
     # ------------------------------------------------------------
     # FEVD (Forecast Error Variance Decomposition)
     # ------------------------------------------------------------
     fevd = gretl.FEVD(model)
     print(fevd)
+    gretl.IRFplot(model)
 
     # ------------------------------------------------------------
     # Bootstrap inference
     # ------------------------------------------------------------
     gretl.set("stopwatch")
 
-    failed = gretl.SVAR_boot(model, 1024, 0.90)
+    # failed = gretl.SVAR_boot(model, 1024, 0.90)
+    # 
+    # print(
+    #     f"Bootstrap failures = {int(failed)}, "
+    #     f"time = {gretl.get_accessor('$stopwatch'):.2g}"
+    # )
+    
+    # All lots are saved in plots lists.
+    print(sv.plots)    
 
-    print(
-        f"Bootstrap failures = {int(failed)}, "
-        f"time = {gretl.get_accessor('$stopwatch'):.2g}"
-    )
-
-    return model, fevd, failed
+    return model, fevd
 
 
 if __name__ == "__main__":
     run_example()
+    import matplotlib.pyplot as plt
+    plt.show()

@@ -3,6 +3,9 @@
  *  gretl -- Gnu Regression, Econometrics and Time-series Library
  *  Copyright (C) 2001 Allin Cottrell and Riccardo "Jack" Lucchetti
  *
+ *  gretl4py -- Python bindings for gretl
+ *  Copyright (C) 2024 Marcin Błażejowski
+ *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
@@ -39,7 +42,7 @@ GRETL_HOME = Path(package_dir).resolve()
 os.environ.setdefault('GRETL_HOME', str(GRETL_HOME))
 os.environ.setdefault('GRETL_DATA_PATH', data_dir)
 os.environ.setdefault('GRETL_PLUGIN_PATH', lib_dir)
-os.environ.setdefault('CURL_CA_BUNDLE', str(Path(user_site) / "curl-ca-bundle.crt"))
+os.environ.setdefault('CURL_CA_BUNDLE', str(GRETL_HOME / "curl-ca-bundle.crt"))
 
 # --- Ensure 'tmp' exists in GRETL_HOME ---
 (GRETL_HOME / "tmp").mkdir(exist_ok=True)
@@ -66,15 +69,59 @@ if sys.platform == "linux":
 if user_site not in sys.path:
     sys.path.insert(0, user_site)
 
-# --- Ensure gretlmpi(.exe) exists
-# if sys.platform == "win32":
-#     gretlmpi = Path(GRETL_HOME) / "gretlmpi.exe"
-# else:
-#     gretlmpi = Path(GRETL_HOME) / "gretlmpi"
-# if not gretlmpi.exists():
-#     raise RuntimeError(f"Missing bundled gretlmpi executable: {gretlmpi}")
-# if not gretlmpi.is_file() or not os.access(gretlmpi, os.X_OK):
-#     raise RuntimeError(f"Invalid gretlmpi executable: {gretlmpi}")
+# --- Configure MPI runtime if gretlmpi is available ---
+gretlmpi = GRETL_HOME / (
+    "gretlmpi.exe" if sys.platform == "win32" else "gretlmpi"
+)
+
+if gretlmpi.is_file():
+    if not os.access(gretlmpi, os.X_OK):
+        raise RuntimeError(f"Invalid gretlmpi executable: {gretlmpi}")
+
+    # Make gretlmpi available to child processes on all platforms.
+    current_path = os.environ.get("PATH", "").split(os.pathsep)
+    if str(GRETL_HOME) not in current_path:
+        os.environ["PATH"] = str(GRETL_HOME) + os.pathsep + os.environ.get("PATH", "")
+
+    # Configure the bundled Open MPI runtime on Linux.
+    if sys.platform == "linux":
+        mpi_home = GRETL_HOME / "mpi"
+        mpi_bin = mpi_home / "bin"
+
+        if (mpi_bin / "mpiexec").is_file():
+            # Override the original Open MPI and PRRTE installation prefixes.
+            os.environ["OPAL_PREFIX"] = str(mpi_home)
+            os.environ["PRTE_PREFIX"] = str(mpi_home)
+
+            # Make bundled MPI launchers and gretlmpi available to child processes.
+            current_path = os.environ.get("PATH", "").split(os.pathsep)
+            for directory in (str(mpi_bin), str(GRETL_HOME)):
+                if directory not in current_path:
+                    current_path.insert(0, directory)
+
+            os.environ["PATH"] = os.pathsep.join(current_path)
+
+    # Configure the private Open MPI runtime on macOS.
+    elif sys.platform == "darwin":
+        mpi_home = GRETL_HOME / "mpi"
+        mpi_bin = mpi_home / "bin"
+        if (mpi_bin / "mpiexec").is_file():
+            # Pass the bundled MPI launcher path to the native extension.
+            os.environ["GRETL_MPIEXEC"] = str(mpi_bin / "mpiexec")
+            # Do not override OPAL_PREFIX or PRTE_PREFIX: doing so can
+            # prevent the bundled Open MPI launcher from starting processes.
+            current_path = os.environ.get("PATH", "").split(os.pathsep)
+            if str(mpi_bin) not in current_path:
+                os.environ["PATH"] = str(mpi_bin) + os.pathsep + os.environ.get("PATH", "")
+
+    # Configure the bundled MS-MPI launchers on Windows ARM64.
+    # Windows x86_64 uses a separately installed MS-MPI runtime.
+    elif sys.platform == "win32":
+        mpi_bin = GRETL_HOME / "mpi" / "bin"
+        if (mpi_bin / "mpiexec.exe").is_file():
+            current_path = os.environ.get("PATH", "").split(os.pathsep)
+            if str(mpi_bin) not in current_path:
+                os.environ["PATH"] = str(mpi_bin) + os.pathsep + os.environ.get("PATH", "")
 
 # ###########################################
 # gretl4py stuff
@@ -112,16 +159,21 @@ from ._gretl import (delete, genr, include, pkg, print, set, summary)       # li
 from ._gretl import (varlist, run_script, run_hansl, get_uservar)
 from ._gretl import (pvalue, critical, pdf, cdf, invcdf, corr, cov)         # libgretl's functions interfaces
 from ._gretl import (get_accessor, tdisagg, kpsscrit)
-from ._gretl4py_addons import print_module_source, fc_print, modeltab
+from ._gretl import (set_plot_auto_show, get_plot_auto_show)
+
+from ._gretl4py_addons import print_module_source, modeltab
+
 from ._gretl4py_classes import _attrs, mle, nls, gmm, NLSpec
 from ._gretl4py_classes import get_data, show_data_status
 from ._gretl4py_classes import _dataset_to_pandas
 from ._gretl4py_classes import _matrix_functions_wrapper, _package_get_help
-from ._gretl4py_classes import _model_plots, _matrix_to_pandas, _ones
+from ._gretl4py_classes import _matrix_to_pandas, _ones
 from ._gretl4py_classes import _adf, _bds, _coint, _corrgm, _difftest, _fractint
 from ._gretl4py_classes import _johansen, _kpss, _levinlin, _meantest, _normtest
 from ._gretl4py_classes import _runs, _vartest
+
 from ._gretl4py_model_api import setup_model_api
+
 # to be deprecated
 from ._gretl4py_classes import _dataset_old_test, _model_old_test, _oddsratio, _to_dataframe
 
@@ -142,7 +194,6 @@ for fun in ['cdf', 'pdf', 'invcdf', 'pvalue', 'critical']:  # wrapper for matrix
 
 # gretl.Model class
 setattr(_gretl.Model, "attrs", _attrs)                  # for listing all object's attributes
-setattr(_gretl.Model, "plot", _model_plots)             # wrapper for generating model-based plots
 setup_model_api(_gretl)                                 # for now only model-based tests
 del setup_model_api
 # going to be deprecated

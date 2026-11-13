@@ -149,50 +149,175 @@ The \classpymodel provides the following public methods:
 	are printed, otherwise the Python type is shown.}
 
 \gretlfpycmd{fcast()}\label{met:gretlmodel::fcast}
-\estdesc{Generates forecasts based on the estimated model.}
+\estdesc{Generate forecasts based on the estimated model,
+	optionally including standard errors, confidence intervals,
+	evaluation statistics, and graphical output.}
 \begin{lstlisting}[style=pythonstylefoot]
-.fcast(**args[, OPTS])
+.fcast(*args[, OPTS]) -> tuple[gretl.Bundle .| gretl.Matrix, matplotlib.figure.Figure .| None]
 \end{lstlisting}
 \mapto[none]{fcast [startobs endobs] [vname]}
 \mapto{fcast [startobs endobs] steps-ahead [vname] --recursive}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
-	\item[]\maptoopt{dynamic=True}{--dynamic}{create dynamic forecast}
-	\item[]\maptoopt{exponentiate=True}{--exponentiate}{exponentiate forecasts of a logged dependent variable}
-	\item[]\maptoopt{exponentiate=adjust}{--exponentiate=adjust}{exponentiate forecasts with the specified bias adjustment}
-	\item[]\maptoopt{integrate=True}{--integrate}{integrate forecasts of a differenced dependent variable}
-	\item[]\maptoopt{static=True}{--static}{create static forecast}
-	\item[]\maptoopt{out\_of\_sample=True}{--out-of-sample}{generate post-sample forecast}
-	\item[]\maptoopt{no\_stats=True}{--no-stats}{do not print forecast statistics}
-	\item[]\maptoopt{stats\_only=True}{--stats-only}{only print forecast statistics}
-	\item[]\maptoopt{quiet=True}{--quiet}{do not print anything}
-	\item[]\maptoopt{recursive=True}{--recursive}{recursive forecasting (\seegretlmanual)}
-	\item[]\maptoopt{all\_probs=True}{--all-probs}{print all forecast probabilities (\seegretlmanual)}
-%	\item[]\maptoopt{plot=filename}{--plot=filename}{save forecast plot to file}
+	\item[]\maptoopt{dynamic=True}{--dynamic}{generate dynamic forecasts}
+	\item[]\maptoopt{static=True}{--static}{generate static forecasts}
+	\item[]\maptoopt{out\_of\_sample=True}{--out-of-sample}{generate post-sample forecasts}
+	\item[]\maptoopt{no\_stats=True}{--no-stats}{suppress forecast statistics}
+	\item[]\maptoopt{stats\_only=True}{--stats-only}{print only forecast statistics}
+	\item[]\maptoopt{quiet=True}{--quiet}{suppress printed output}
+	\item[]\maptoopt{recursive=True}{--recursive}{generate recursive forecasts}
+	\item[]\maptoopt{exponentiate=True}{--exponentiate}{exponentiate forecasts of a logged variable}
+	\item[]\maptoopt{exponentiate=adjust}{--exponentiate=adjust}{specify the bias correction}
+	\item[]\maptoopt{integrate=True}{--integrate}{integrate forecasts of a differenced variable}
+	\item[]\maptoopt{all\_probs=True}{--all-probs}{return probabilities for all outcomes}
+	\item[]\maptoopt{plot=filename}{--plot=filename}{save or display the forecast plot}
 \end{itemize}
 Examples:\newline
-\pythcodef{model.fcast('1997:1', '2001:4', 'f1')}\\
-\pythcodef{model.fcast('fit2')}\\
-\pythcodef{model.fcast('2004:1', '2008:3', 4, 'rfcast', recursive=True)}\\
-\generaldesc{Forecasts are generated for a certain
-	range of observations: if \textit{startobs} and
-	\textit{endobs} are given, for that range (if possible);
-	otherwise if the \gretlcmd{--out-of-sample} option is given,
-	for observations following the range over which the model
-	was estimated; otherwise over the currently defined sample
-	range. If an out-of-sample forecast is requested but no
-	relevant observations are available, an error is flagged.
-	Depending on the nature of the model, standard errors may
-	also be generated.\newline
-	For a single equation model, then the optional \textit{vname}
-	argument has the following effect: the forecast values are
-	not printed, but are saved to the dataset under the given name.
-	If the last model is a system of equations, \textit{vname} has
-	a different effect, namely selecting a particular endogenous
-	variable for forecasting (the default being to produce forecasts
-	for all the endogenous variables). In the system case, or if
-	\textit{vname} is not given, the forecast values can be retrieved
-	using the accessor \gretlcmd{\$fcast}, and the standard errors,
-	if available, via \gretlcmd{\$fcse}.}
+\pythcodef{r1, fig1 = model.fcast(5, 10, plot='display')}\\
+\pythcodef{r2, fig2 = model.fcast(out\_of\_sample=True)}\\
+\pythcodef{r3, fig3 = model.fcast(startobs=5, endobs=10)}\\
+\pythcodef{r4, fig4 = model.fcast(5, 10, vname='fit')}\\
+\pythcodef{r5, fig5 = model.fcast(7, 10, 1, recursive=True)}\\
+\pythcodef{r6, fig6 = model.fcast('g', out\_of\_sample=True)}\\
+\pythcodef{P, fig = model.fcast(all\_probs=True)}\\
+\pythcodef{P, fig = model.fcast(vname='P', all\_probs=True)}\\
+\generaldesc{Generates forecasts based on an estimated
+	single-equation or multivariate model. The forecast range
+	can be specified using the arguments \textit{startobs}
+	and \textit{endobs}. If these are omitted, forecasts
+	are produced over the current sample unless
+	\pythcode{out\_of\_sample=True} is specified, in which
+	case post-estimation forecasts are generated.
+	
+	The arguments \textit{startobs}, \textit{endobs},
+	\textit{steps\_ahead}, and \textit{vname} can be supplied
+	positionally or by keyword. Positional and keyword
+	arguments may also be combined.
+	
+	For single-equation models, the optional \textit{vname}
+	argument specifies the name of a series in which the
+	forecasts are saved. For multivariate models, it selects
+	an endogenous variable to be forecast. If no variable
+	is selected, forecasts are generated for all endogenous
+	variables.
+	
+	\textbf{Static and dynamic forecasts.}
+	
+	For dynamic models, static forecasts use observed lagged
+	values of the dependent variable, whereas dynamic forecasts
+	may use previously generated forecast values. By default,
+	static forecasts are produced within the estimation sample
+	and dynamic forecasts are used out of sample, when applicable.
+	
+	The \pythcode{static=True} and \pythcode{dynamic=True}
+	options explicitly select the forecasting method.
+	
+	\textbf{Recursive forecasts.}
+	
+	Setting \pythcode{recursive=True} generates recursive
+	forecasts based on expanding-window estimations. This
+	option is available for single-equation models estimated
+	by OLS.
+	
+	The \textit{steps\_ahead} argument specifies the forecast
+	horizon and is required when \pythcode{recursive=True}
+	is selected. Recursive forecasts are dynamic when
+	applicable.
+	
+	\textbf{Transformed forecasts.}
+	
+	For single-equation OLS models whose dependent variable
+	is recognized as the logarithm of another variable,
+	\pythcode{exponentiate=True} produces forecasts in levels
+	rather than logarithms.
+	
+	By default, a bias correction is applied to the point
+	forecasts. The correction can be controlled using
+	\pythcode{exponentiate=adjust}, where \textit{adjust}
+	takes the value 1 for the normal correction, 2 for
+	the smearing estimator, or 3 for no correction.
+	
+	Similarly, \pythcode{integrate=True} produces forecasts
+	in levels when the dependent variable is recognized as
+	a first difference of another variable.
+	
+	\textbf{Forecast results.}
+	
+	Under normal operation, the method returns a tuple
+	containing a \classpybundle and an optional Matplotlib
+	Figure.
+	
+	The \classpybundle corresponds to the \lgretl
+	\gretlcmd{\$result} accessor and contains the forecast
+	values under the key \pythcode{"fcast"}. Forecast
+	standard errors, when available, are stored under
+	\pythcode{"fcse"}.
+	
+	The bundle may also contain confidence interval bounds
+	under \pythcode{"lower"} and \pythcode{"upper"}, together
+	with \pythcode{"alpha"} and \pythcode{"coverage"}.
+	The first and last forecast observations are recorded
+	under \pythcode{"t1"} and \pythcode{"t2"}.
+	
+	For single-equation models, additional members include
+	\pythcode{"depvar"} and \pythcode{"method"}. If observed
+	values are available over the forecast range, forecast
+	evaluation statistics may be provided under
+	\pythcode{"eval\_stats"}, with the corresponding number
+	of observations under \pythcode{"eval\_obs"}.
+	
+	The \pythcode{"transform"} member indicates whether
+	the forecasts are untransformed, exponentiated, or
+	integrated. With exponentiated forecasts, the bundle
+	also records information on the bias correction applied.
+	
+	Note that forecast standard errors and confidence
+	interval bounds may be available for fewer observations
+	than the point forecasts.
+	
+	\textbf{Outcome probabilities.}
+	
+	For ordered or multinomial response models, setting
+	\pythcode{all\_probs=True} returns predicted probabilities
+	for every possible outcome rather than conventional
+	forecasts.
+	
+	In this case, the first returned element is a
+	\classpymatrix with one column per outcome, instead
+	of a \classpybundle. The optional \textit{vname}
+	argument can be used to save the probability matrix
+	under a specified name.
+	
+	The \pythcode{all\_probs=True} option is incompatible
+	with the \pythcode{plot} option.
+	
+	\textbf{Graphical output.}
+	
+	The \pythcode{plot} option accepts a filename or
+	\pythcode{"display"} to request graphical output.
+	For multivariate models, a forecast plot can be
+	generated only when a single endogenous variable
+	is selected using \textit{vname}.
+	
+	The automatic display of generated Matplotlib figures
+	is controlled separately by
+	\pythcode{gretl.set\_plot\_auto\_show()}.
+	
+	The second returned element contains the Matplotlib
+	Figure, or \pythcode{None} if no figure was generated.
+	
+	\textbf{Forecast evaluation and output.}
+	
+	The \pythcode{no\_stats=True} option suppresses forecast
+	evaluation statistics, while \pythcode{stats\_only=True}
+	prints only these statistics. Setting
+	\pythcode{quiet=True} suppresses printed output.
+	
+	The availability of forecast standard errors depends
+	on the model and forecasting method. For static linear
+	models, they incorporate parameter uncertainty, while
+	dynamic forecast standard errors generally do not.
+	Forecast standard errors are not currently available
+	for nonlinear models.}
 
 \gretlfpycmd{fit()}
 \estdesc{Executes the underlying implementation of the
@@ -248,7 +373,7 @@ Examples:\newline
 		\textit{Agg}. If \pythcode{None}, the default backend
 			selection logic is used.
 	\end{description}%
-}\\\\
+}
 \generaldesc{The method provides a convenient way
 	to visualize fitted values or regression residuals produced by
 	the model. For models containing multiple equations or dependent
@@ -270,6 +395,63 @@ single-equation models. Estimator-specific diagnostic and specification
 methods are documented separately below. Their availability depends on
 the estimator class and, in some cases, on properties of the dataset or
 the fitted model.
+
+\gretlfpycmd{anova()}\label{met:gretlmodel_nse::anova}
+\estdesc{This method performs an analysis of variance (ANOVA)
+	for an estimated OLS model.}
+\begin{lstlisting}[style=pythonstylefoot]
+.anova() -> None
+\end{lstlisting}
+\generaldesc{The method prints the ANOVA table, including the
+	decomposition of the total sum of squares into explained and
+	residual components, the corresponding degrees of freedom,
+	mean squares, and the overall \textit{F}-statistic.
+	
+	This method is available exclusively for models estimated
+	using ordinary least squares (\classpymodel OLS).
+	No value is returned.}
+
+\gretlfpycmd{bootstrap()}\label{met:gretlmodel_nse::bootstrap}
+\estdesc{This method performs bootstrap inference for a selected
+	coefficient of an\newline estimated single-equation model
+	via OLS or WLS only.}
+\begin{lstlisting}[style=pythonstylefoot]
+.bootstrap(coefficient: int | str, reps: int = 1000, alpha: float = 0.05,
+	statistic: str = "ci", method: str = "residuals", plot: bool = False,
+	save: str | None = None) -> matplotlib.figure.Figure .| None
+\end{lstlisting}
+\generaldesc{The method performs bootstrap inference using the
+	native \lgretl implementation. The \texttt{coefficient}
+	argument identifies the coefficient to be analyzed, either
+	by its numerical index or by its name.
+	
+	The \texttt{reps} argument specifies the number of bootstrap
+	replications, while \texttt{alpha} determines the significance
+	level. The \texttt{statistic} argument selects the type of
+	bootstrap inference, and \texttt{method} specifies the
+	resampling procedure.
+	
+	Bootstrap results are printed using the standard \lgretl
+	output mechanism. Setting \pythcode{plot=True} generates a
+	graphical representation of the bootstrap distribution
+	through \texttt{gptranslate} and the Matplotlib backend.
+	
+	If graphical output is requested, the method returns a
+	Matplotlib figure object. Otherwise, \texttt{None} is returned.
+	The optional \texttt{save} argument specifies a filename
+	for saving the generated plot.}
+
+\gretlfpycmd{confidence\_intervals()}\label{met:gretlmodel_nse::confidence_intervals}
+\estdesc{This method computes and displays 95\% confidence intervals\newline
+	for the estimated model coefficients.}
+\begin{lstlisting}[style=pythonstylefoot]
+.confidence_intervals() -> gretl.Matrix
+\end{lstlisting}
+\generaldesc{The method prints a table of coefficient estimates and
+	their confidence intervals, following the standard \lgretl
+	output format. It also returns a \classpymatrix instance
+	containing the confidence interval results for further analysis
+	in Python.}
 
 \gretlfpycmd{restrict()}
 \estdesc{Imposes a set of (usually linear) restrictions on the model.}
@@ -327,6 +509,43 @@ the fitted model.
 
 \gretlfpycmd{test()}\label{met:gretlmodel::test}
 \estdesc{\deprecatedv{0.70}}
+
+
+
+\subsubsection{\pythcodeb{gretl.Model\_VAR} methods}
+\gretlfpycmd{set\_cholesky\_order()}\label{met:gretlmodelvar::set_cholesky_order}
+\estdesc{This method sets the Cholesky ordering of endogenous variables\newline
+	in an estimated VAR or VECM model.}
+\begin{lstlisting}[style=pythonstylefoot]
+.set_cholesky_order(varlist: list | str = "") -> None
+\end{lstlisting}
+\generaldesc{The \texttt{varlist} argument specifies a complete permutation
+	of the endogenous variables, either as a space-separated string or
+	as a Python list containing variable names or dataset variable IDs.
+	Integer values refer to dataset variable IDs, not to equation indices.
+	
+	The specified ordering is used for the Cholesky decomposition
+	of the residual covariance matrix and therefore affects subsequent
+	impulse response functions (IRFs) and forecast error variance
+	decompositions (FEVDs). The ordering is retained by the model
+	until explicitly changed or reset.
+	
+	An empty string or an empty list restores the default ordering
+	defined by the original model specification. The method does not
+	modify the estimated VAR/VECM coefficients or require re-estimation.
+	
+	For example, assuming a VAR model with endogenous variables
+	\texttt{LRM}, \texttt{LRY}, \texttt{IBO}, and \texttt{IDE}:}
+\begin{lstlisting}[style=pythonstylefoot]
+m.set_cholesky_order("IBO LRM IDE LRY")
+m.set_cholesky_order(["IBO", "LRM", "IDE", "LRY"])
+m.set_cholesky_order([3, 1, 4, 2])
+
+# Restore the default Cholesky ordering
+m.set_cholesky_order()
+\end{lstlisting}
+
+
 
 % ----------------------------------------------------------------------
 % Model diagnostics and specification tests
@@ -584,22 +803,65 @@ on the specification of the fitted model.
 	the form of a relatively unrestricted dynamic model, which is used
 	to test the common factor restriction implicit in the $AR(1)$ specification.}
 
-\gretlfpycmd{cusum()}
-\estdesc{Cumulative Sum (CUSUM) test of recursive residuals.}
+\gretlfpycmd{cusum()}\label{met:gretlmodel::cusum}
+\estdesc{Perform the CUSUM or CUSUMSQ test for parameter stability.}
 \begin{lstlisting}[style=pythonstylefoot]
-.cusum([OPTS]) -> gretl.Bundle
+.cusum([OPTS]) -> tuple[gretl.Bundle, matplotlib.figure.Figure .| None]
 \end{lstlisting}
 \mapto{cusum}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
 	\item[]\maptoopt{squares=True}{--squares}{perform the CUSUMSQ test}
-	\item[]\maptoopt{quiet=True}{--quiet}{just print the Harvey--Collier test}
+	\item[]\maptoopt{quiet=True}{--quiet}{print only the Harvey--Collier test}
+	\item[]\maptoopt{plot=mode-or-filename}{--plot}{control graphical output}
 \end{itemize}
-\generaldesc{The null hypothesis is parameter stability. It is rejected at the
-	5 percent significance level if the cumulative series crosses the
-	95 percent confidence band. For the CUSUM test, the Harvey--Collier
-	\textit{t}-test for parameter stability is also reported. With
-	\pythcode{squares=True}, the confidence band is calculated using the
-	method of Edgerton and Wells (1994).}
+Examples:\newline
+\pythcodef{r1, fig1 = model.cusum(plot='display')}\\
+\pythcodef{r2, fig2 = model.cusum(squares=True, plot='display')}\\
+\pythcodef{r3, fig3 = model.cusum(quiet=True, plot='none')}
+\generaldesc{Performs the cumulative sum (CUSUM) test for
+	parameter stability following the estimation of a model
+	by ordinary least squares (OLS). The test is based on
+	recursive one-step-ahead forecast errors obtained from
+	a sequence of expanding-window regressions.
+	
+	The first regression uses the first \textit{k} observations,
+	where \textit{k} denotes the number of estimated parameters,
+	to predict the dependent variable at observation $k+1$.
+	Subsequent regressions extend the estimation sample
+	by one observation at a time.
+	
+	By default, the cumulative sum of scaled recursive
+	residuals is computed. Setting \pythcode{squares=True}
+	selects the CUSUMSQ test, which uses the cumulative
+	sum of squared recursive residuals instead.
+	
+	The null hypothesis is parameter stability. It is
+	rejected at the 5 percent significance level if the
+	cumulative series crosses the corresponding 95 percent
+	confidence band.
+	
+	For the standard CUSUM test, the Harvey--Collier
+	\textit{t}-test for parameter stability is also reported.
+	For the CUSUMSQ test, the confidence band is calculated
+	using the algorithm of Edgerton and Wells (1994).
+	
+	The \pythcode{quiet=True} option suppresses the cumulative
+	series output and prints only the Harvey--Collier test
+	result.
+	
+	Graphical output is controlled by the \texttt{plot}
+	option. The supported values are \texttt{"none"}
+	(suppress the plot), \texttt{"display"} (request
+	graphical output), or a filename to which the plot
+	is saved. If the option is omitted, plotting follows
+	the current \lgretl execution mode. The automatic
+	display of generated Matplotlib figures is controlled
+	separately by \pythcode{gretl.set\_plot\_auto\_show()}.
+	
+	The method returns a tuple containing a \classpybundle
+	with the test results and an optional Matplotlib Figure.
+	If no figure is returned, the second element of the
+	tuple is \pythcode{None}.}
 
 \gretlfpycmd{groupwise\_heteroskedasticity()}
 \estdesc{Test for groupwise heteroskedasticity in panel data.}
@@ -616,23 +878,79 @@ on the specification of the fitted model.
 	heteroskedasticity. This test is available only for models estimated
 	on panel data.}
 
-\gretlfpycmd{leverage()}
-\estdesc{Computes leverage statistics for each observation.}
+\gretlfpycmd{leverage()}\label{met:gretlmodel::leverage}
+\estdesc{Compute leverage and influence diagnostics for an OLS model.}
 \begin{lstlisting}[style=pythonstylefoot]
-.leverage([OPTS]) -> gretl.Bundle
+.leverage([, OPTS]) -> tuple[gretl.Bundle, matplotlib.figure.Figure .| None]
 \end{lstlisting}
 \mapto{leverage}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
-	\item[]\maptoopt{save=True}{--save}{save the resulting series}
+	\item[]\maptoopt{save=True}{--save}{save leverage, influence, and DFFITS series}
 	\item[]\maptoopt{overwrite=True}{--overwrite}{overwrite existing series}
-	\item[]\maptoopt{quiet=True}{--quiet}{don't print results}
+	\item[]\maptoopt{quiet=True}{--quiet}{suppress printed results}
+	\item[]\maptoopt{plot=mode-or-filename}{--plot}{control graphical output}
 \end{itemize}
-\generaldesc{Observations with leverage greater than $2k/n$, where
-	\textit{k} is the number of estimated parameters and \textit{n}
-	is the sample size, are flagged as leverage points. The result
-	matrix contains leverage, influence, and externally Studentized
-	residuals. The test statistic records the leave-one-out
-	cross-validation criterion.}
+Examples:\newline
+\pythcodef{r1, fig1 = model.leverage(plot='display')}\\
+\pythcodef{r2, fig2 = model.leverage(save=True, quiet=True)}\\
+\pythcodef{r3, fig3 = model.leverage(plot='none')}
+\generaldesc{Computes leverage and influence diagnostics following
+	the estimation of an ordinary least squares (OLS) model.
+	For each observation in the estimation sample, the method
+	calculates its leverage, influence measure, DFFITS statistic,
+	and externally Studentized residual.
+	
+	The leverage of observation \textit{i}, denoted by $h_i$, is the
+	corresponding diagonal element of the hat matrix and lies
+	between zero and one. Observations with leverage exceeding
+	$2k/n$, where \textit{k} denotes the number of estimated parameters
+	and \textit{n} is the sample size, are flagged as leverage points.
+	
+	The influence measure is defined as
+	$u_i h_i/(1-h_i)$, where $u_i$ is the residual associated
+	with observation \textit{i}. DFFITS measures the effect of omitting
+	an observation from the estimation sample on its fitted value.
+	It is calculated using the externally Studentized residual
+	$r_i$ as
+	\[
+	\mathrm{DFFITS}_i =
+	r_i \sqrt{\frac{h_i}{1-h_i}}.
+	\]
+	
+	Setting \pythcode{save=True} adds three series containing
+	leverage, influence, and DFFITS values to the current dataset.
+	Their default names are \texttt{lever}, \texttt{influ},
+	and \texttt{dffits}, respectively. If these names already
+	exist, unique names are generated unless
+	\pythcode{overwrite=True} is specified. The
+	\pythcode{quiet=True} option suppresses printed results.
+	
+	The resulting \classpybundle contains a three-column
+	\classpymatrix under the key \texttt{result}. The first
+	column holds leverage values, the second contains influence
+	measures, and the third contains externally Studentized
+	residuals. Note that the third column does not contain
+	DFFITS values; these can be calculated using the formula
+	given above.
+	
+	The \texttt{test} key contains the leave-one-out
+	cross-validation criterion, defined as the sum of squared
+	prediction errors obtained by estimating the model with
+	each observation omitted in turn. The \texttt{summary}
+	key contains the printed diagnostic results.
+	
+	Graphical output is controlled by the \pythcode{plot} option.
+	The supported values are \texttt{"none"} (suppress the plot),
+	\texttt{"display"} (request graphical output), or a filename
+	to which the plot is saved. If the option is omitted,
+	plotting follows the current \lgretl execution mode.
+	The automatic display of generated Matplotlib figures is
+	controlled separately by \pythcode{gretl.set\_plot\_auto\_show()}.
+	
+	The method returns a tuple containing the \classpybundle
+	with diagnostic results and an optional Matplotlib Figure.
+	If no figure is returned, the second element is
+	\pythcode{None}.}
 
 \gretlfpycmd{nonlinearity()}
 \estdesc{LM test for nonlinearity of the model.}
@@ -718,25 +1036,70 @@ on the specification of the fitted model.
 	p-values are recorded as three-element vectors corresponding to the
 	Wald, Breusch--Pagan, and Hausman tests.}
 
-\gretlfpycmd{qlrtest()}
-\estdesc{Quandt likelihood-ratio test for a structural break.}
+
+\gretlfpycmd{qlrtest()}\label{met:gretlmodel::qlrtest}
+\estdesc{Perform the Quandt likelihood ratio (QLR) test for a structural break.}
 \begin{lstlisting}[style=pythonstylefoot]
-.qlrtest([OPTS]) -> gretl.Bundle
+	.qlrtest([, OPTS]) -> tuple[gretl.Bundle, matplotlib.figure.Figure | None]
 \end{lstlisting}
 \mapto{qlrtest}
 \begin{itemize}\setlength{\itemsep}{0.3em}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
-	\item[]\maptoopt{limit\_to=.list}{--limit-to=list}{limit test to subset of regressors}
+	\item[]\maptoopt{limit\_to=list}{--limit-to=list}{limit the test to a subset of regressors}
+	\item[]\maptoopt{plot=mode-or-filename}{--plot}{control graphical output}
 	\item[]\maptoopt{quiet=True}{--quiet}{suppress printed output}
 \end{itemize}
-\generaldesc{Tests for a structural break at an unknown point in an OLS model.
-	Chow tests are computed over the central 70 percent of the sample
-	(15 percent trimming at each end), and the QLR statistic is the maximum
-	of the resulting test statistics. An asymptotic p-value is computed
-	using the method of Hansen (1997).
-	The break point at which the test statistic is maximized is also
-	recorded. If the original model was estimated with robust standard
-	errors, robust Wald tests are used in place of the standard
-	\textit{F}-tests.}
+Examples:\newline
+\pythcodef{r1, fig1 = model.qlrtest(plot='display')}\\
+\pythcodef{r2, fig2 = model.qlrtest(limit\_to='L', plot='display')}\\
+\pythcodef{r3, fig3 = model.qlrtest(quiet=True, plot='none')}
+\generaldesc{Performs the Quandt likelihood ratio (QLR) test for
+	a structural break at an unknown point in time, following
+	the estimation of an ordinary least squares (OLS) model
+	using time-series data.
+	
+	The null hypothesis is parameter stability against the
+	alternative of a structural break at an unknown date.
+	The test applies 15 percent trimming at each end of the
+	estimation sample, restricting the set of potential break
+	points to the central 70 percent of the observations.
+	
+	A Chow test is performed at each candidate break point,
+	and the QLR statistic is defined as the maximum of the
+	resulting test statistics. If the original model was
+	estimated using robust standard errors, robust Wald
+	statistics are used instead of the conventional
+	\textit{F}-statistics.
+	
+	The asymptotic p-value of the QLR statistic is calculated
+	using the method proposed by Hansen (1997).
+	
+	The \pythcode{limit\_to} option restricts the test to a
+	subset of the original regressors. Its argument must
+	identify a named \lgretl list containing only regressors
+	from the estimated model. The constant must not be included
+	in this list.
+	
+	The \pythcode{quiet=True} option suppresses printed output.
+	
+	Graphical output is controlled by the \pythcode{plot}
+	option. The supported values are \pythcode{"none"}
+	(suppress the plot), \pythcode{"display"} (request
+	graphical output), or a filename to which the plot
+	is saved. If the option is omitted, plotting follows
+	the current \lgretl execution mode. The automatic
+	display of generated Matplotlib figures is controlled
+	separately by \pythcode{gretl.set\_plot\_auto\_show()}.
+	
+	The method returns a tuple containing a \classpybundle
+	with the test results and an optional Matplotlib Figure.
+	The \classpybundle includes the QLR statistic under
+	the key \pythcode{"test"}, its asymptotic p-value under
+	\pythcode{"pvalue"}, and the observation index at which
+	the statistic is maximized under \pythcode{"qlrbreak"}.
+	The printed results are available under \pythcode{"summary"}.
+	
+	If no figure is returned, the second element of the
+	tuple is \pythcode{None}.}
 
 \gretlfpycmd{reset()}
 \estdesc{Ramsey RESET (regression equation specification error test).}
@@ -853,7 +1216,7 @@ The \pythcode{gretl.Model\_nls} class provides the following public methods:
 \begin{lstlisting}[style=pythonstylefoot]
 .add_deriv(line: str) -> self
 \end{lstlisting}
-\mapto[none]{deriv line}\\
+\mapto[none]{deriv line}
 \generaldesc{The \textit{line} argument specifies a parameter followed
 	by an equals sign and an expression for the derivative. This method
 	may be called repeatedly to specify derivatives with respect to
@@ -874,7 +1237,7 @@ The \pythcode{gretl.Model\_nls} class provides the following public methods:
 \begin{lstlisting}[style=pythonstylefoot]
 .add_params(line: str) -> self
 \end{lstlisting}
-\mapto[none]{params line}\\
+\mapto[none]{params line}
 \generaldesc{This method is used when analytical derivatives are not
 	supplied. In this case the Jacobian is computed numerically.
 	Parameter names in \textit{line} may be separated by spaces or commas.}
@@ -884,7 +1247,7 @@ The \pythcode{gretl.Model\_nls} class provides the following public methods:
 \begin{lstlisting}[style=pythonstylefoot]
 .add_param_names(line: str) -> self
 \end{lstlisting}
-\mapto[none]{param\_names "line"}\\
+\mapto[none]{param\_names "line"}
 \generaldesc{The names specified in \textit{line} are used when
 	displaying estimation results and do not affect the parameter names
 	used in the model specification.}
@@ -900,7 +1263,7 @@ The \pythcode{gretl.Model\_mle} class provides the following public methods:
 \begin{lstlisting}[style=pythonstylefoot]
 .add_deriv(line: str) -> self
 \end{lstlisting}
-\mapto[none]{deriv line}\\
+\mapto[none]{deriv line}
 \generaldesc{The \textit{line} argument specifies a parameter followed
 	by an equals sign and an expression for the derivative. This method
 	may be called repeatedly to specify derivatives with respect to
@@ -921,7 +1284,7 @@ The \pythcode{gretl.Model\_mle} class provides the following public methods:
 \begin{lstlisting}[style=pythonstylefoot]
 	.add_params(line: str) -> self
 \end{lstlisting}
-\mapto[none]{params line}\\
+\mapto[none]{params line}
 \generaldesc{This method is used when analytical derivatives are not
 	supplied, in which case they are computed numerically. The parameters
 	listed in \textit{line} may be scalars, vectors, or a combination
@@ -939,7 +1302,7 @@ The \pythcode{gretl.Model\_mle} class provides the following public methods:
 \begin{lstlisting}[style=pythonstylefoot]
 .add_statements(line: str) -> self
 \end{lstlisting}
-\mapto[none]{line}\\
+\mapto[none]{line}
 \generaldesc{The statement specified by \textit{line} may be used to
 	compute auxiliary quantities required for evaluating the
 	log-likelihood function. This method may be called repeatedly
@@ -963,7 +1326,7 @@ The \pythcode{gretl.Model\_gmm} class provides the following public methods:
 \begin{lstlisting}[style=pythonstylefoot]
 .add_orthog(line: str) -> self
 \end{lstlisting}
-\mapto[none]{orthog line}\\
+\mapto[none]{orthog line}
 \generaldesc{The \textit{line} argument specifies the residual or error
 	term followed by a semicolon and the associated instruments. This
 	method may be called repeatedly to add successive sets of
@@ -988,7 +1351,7 @@ The \pythcode{gretl.Model\_gmm} class provides the following public methods:
 \begin{lstlisting}[style=pythonstylefoot]
 .add_statements(line: str) -> self
 \end{lstlisting}
-\mapto[none]{line}\\
+\mapto[none]{line}
 \generaldesc{The statement specified by \textit{line} may be used to
 	update quantities required for evaluating the orthogonality
 	conditions. This method may be called repeatedly to add successive
@@ -999,7 +1362,7 @@ The \pythcode{gretl.Model\_gmm} class provides the following public methods:
 \begin{lstlisting}[style=pythonstylefoot]
 .add_weights(line: str) -> self
 \end{lstlisting}
-\mapto[none]{weights line}\\
+\mapto[none]{weights line}
 \generaldesc{The \textit{line} argument specifies the matrix containing
 	the initial weights used in GMM estimation.}
 

@@ -626,4 +626,26 @@ namespace doc::Functions {
     ``res = gretl.summary(matrix=M)``
     )doc";
 
+    inline constexpr char set_plot_auto_show[] = R"doc(
+    Enable or disable automatic display of generated plots.
+
+    Automatic display is enabled by default. Disabling it does not
+    affect plot generation or the returned Matplotlib Figure objects.
+
+    Parameters
+    ----------
+    enabled : bool
+        Whether to display generated plots automatically.
+    )doc";
+
+    inline constexpr char get_plot_auto_show[] = R"doc(
+    Return the current automatic plot display setting.
+
+    Returns
+    -------
+    bool
+        True if automatic plot display is enabled, False otherwise.
+    )doc";
+
+
 } // namespace doc::Dataset
