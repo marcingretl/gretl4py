@@ -49,6 +49,11 @@ def run_example():
     gretl.SVAR_estimate(model)
 
     print(f"Time (SVAR estimation) = {gretl.get_accessor('$stopwatch'):.2g}")
+    
+    # ------------------------------------------------------------
+    # HD (Plot Historical Decomposition)
+    # ------------------------------------------------------------
+    gretl.HDplot(model, 2)
 
     # ------------------------------------------------------------
     # FEVD (Forecast Error Variance Decomposition)
@@ -62,43 +67,17 @@ def run_example():
     # ------------------------------------------------------------
     gretl.set("stopwatch")
 
-    failed = gretl.SVAR_boot(model, 1024, 0.90)
+    # failed = gretl.SVAR_boot(model, 1024, 0.90)
+    # 
+    # print(
+    #     f"Bootstrap failures = {int(failed)}, "
+    #     f"time = {gretl.get_accessor('$stopwatch'):.2g}"
+    # )
 
-    print(
-        f"Bootstrap failures = {int(failed)}, "
-        f"time = {gretl.get_accessor('$stopwatch'):.2g}"
-    )
-
-    return model, fevd, failed
+    return model, fevd
 
 
 if __name__ == "__main__":
     run_example()
     import matplotlib.pyplot as plt
     plt.show()
-
-    exit()
-
-import gretl
-
-# Load the Stock-Watson dataset.
-d = gretl.get_data("sw_ch14.gdt")
-
-# Prepare the endogenous variables.
-d.new_series(name="infl", value="400*ldiff(PUNEW)")
-d.rename("LHUR", "unemp")
-
-X = "unemp infl"
-Z = "const"
-
-# Load the SVAR package.
-sv = gretl.include("SVAR")
-
-# Set up and estimate the structural VAR.
-Mod = gretl.SVAR_setup("C", X, Z, 3)
-gretl.SVAR_restrict(Mod, "C", 1, 2)
-gretl.SVAR_estimate(Mod)
-
-# Plot the historical decomposition for inflation.
-gretl.HDplot(Mod, 2)
-
