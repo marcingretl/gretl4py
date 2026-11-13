@@ -811,11 +811,10 @@ void gretl_hansl_execute (const std::string &script)
     } else {
         err = gretl_execute_script<std::string>(script);
     }
+    if (err) handle_gretl_error(err);
 
     // Execute all generated Matplotlib scripts after hansl finishes.
-    if (!err) GretlPlot::drain_queue();
-
-    if (err) handle_gretl_error(err);
+    GretlPlot::drain_queue();
 }
 template void gretl_hansl_execute<true>(const std::string&);
 template void gretl_hansl_execute<false>(const std::string&);
