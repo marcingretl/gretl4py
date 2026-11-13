@@ -32,6 +32,7 @@ extern "C" {
     #include <gretl/gretl_xml.h>
     #include <gretl/uservar.h>
     #include <gretl/graphing.h>
+    #include <gretl/nonparam.h>
 }
 
 //////////////////////////////////////////////////
