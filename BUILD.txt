@@ -14,6 +14,7 @@ Requirements
 - A C++17-compatible compiler
 - pybind11 and the development headers and libraries for libgretl
 - An installed gretl distribution supplying native runtime resources
+- Working gp-executor (see https://github.com/marcingretl/gptranslate)
 
 Platform-specific toolchains and library requirements differ. On
 GNU/Linux, libgretl is located using pkg-config. On macOS, the build
@@ -38,11 +39,12 @@ Meson options
 
 Common options:
 
-    -DPYTHON_EXE=/path/to/python   Select the Python interpreter
-    -DLOCAL_INST=true|false       Install into user site-packages (default: true)
-    -DGRETL_INSTALL_PATH=/path    Select installed gretl runtime resources
-    -DNOMPI=true|false           Skip staging gretlmpi and MPI runtime files
-    -DMPI_PATH=/path             Select an MPI installation prefix
+    -DPYTHON_EXE=/path/to/python    Select the Python interpreter
+    -DLOCAL_INST=true|false         Install into user site-packages (default: true)
+    -DGRETL_INSTALL_PATH=/path      Select installed gretl runtime resources
+    -DNOMPI=true|false              Skip staging gretlmpi and MPI runtime files
+    -DMPI_PATH=/path                Select an MPI installation prefix
+    -DGP_EXECUTOR_PATH=/path        Location of gp-executor
 
 Platform-specific options:
 
