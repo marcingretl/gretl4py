@@ -57,7 +57,7 @@ gretl4py provides:
 - Bundles and other gretl objects, allowing Python code to interact directly with objects used by `libgretl`.
 - NumPy and pandas interoperability, including conversion to NumPy arrays and pandas DataFrames and, where appropriate, zero-copy views of matrix data.
 - gretl's hansl language, allowing Python programs to execute hansl code and exchange user-defined variables with `libgretl`.
-- **gretl function packages**, making functionality implemented in hansl packages directly usable from Python.
+- [gretl function packages](https://packages.gretlconference.org/), making functionality implemented in hansl packages directly usable from Python.
 - LIBSVM-based machine-learning functionality available through gretl.
 - Plotting support integrated with matplotlib.
 
