@@ -800,6 +800,9 @@ void gretl_hansl_execute (const std::string &script)
     // we mimics 'run' command
     int err = 0;
 
+    // Initialize the plot queue before executing hansl.
+    GretlPlot::init_queue();
+
     if constexpr (RUN) {
         std::filesystem::path path{script};
 
@@ -808,6 +811,10 @@ void gretl_hansl_execute (const std::string &script)
     } else {
         err = gretl_execute_script<std::string>(script);
     }
+
+    // Execute all generated Matplotlib scripts after hansl finishes.
+    if (!err) GretlPlot::drain_queue();
+
     if (err) handle_gretl_error(err);
 }
 template void gretl_hansl_execute<true>(const std::string&);

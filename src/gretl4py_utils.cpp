@@ -370,7 +370,7 @@ void GretlPlot::drain_queue (GretlPackagePtr pkg)
 
         std::filesystem::remove(script);
         // we register generated plot in 'plots' list
-        move_to_python_container<GretlPackage, py::object, py::list>(*pkg, std::move(fig), "plots");
+        if (pkg) move_to_python_container<GretlPackage, py::object, py::list>(*pkg, std::move(fig), "plots");
     }
 
     // display all figures after evaluating every script in this batch
