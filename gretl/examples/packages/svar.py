@@ -73,6 +73,9 @@ def run_example():
     #     f"Bootstrap failures = {int(failed)}, "
     #     f"time = {gretl.get_accessor('$stopwatch'):.2g}"
     # )
+    
+    # All lots are saved in plots lists.
+    print(sv.plots)    
 
     return model, fevd
 

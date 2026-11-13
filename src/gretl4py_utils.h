@@ -117,7 +117,7 @@ public:
 
     static void init_queue (void);
 
-    static void drain_queue (void);
+    static void drain_queue (GretlPackagePtr pkg);
 
     [[nodiscard]] static std::string get_executor_path (void);
 

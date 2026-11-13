@@ -38,7 +38,8 @@ namespace py = pybind11;
 //
 // Class to handle contributed packages
 //
-class GretlPackage {
+class GretlPackage : public std::enable_shared_from_this<GretlPackage>
+{
 private:
     using FunctionMap = std::map<std::string, ufunc*>;                      // map of pointers to functions in package
     using FunctionArgs = std::map<std::string, std::map<std::string, int>>; // map of arguments and their id-s for public functions

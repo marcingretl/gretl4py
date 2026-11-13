@@ -28,6 +28,7 @@
 #include "gretl4py_dataset.h"
 #include "gretl4py_model.h"
 #include "gretl4py_bundle.h"
+#include "gretl4py_packages.h"
 extern "C" {
     #include <gretl/gretl_typemap.h>
 }
@@ -342,12 +343,13 @@ void GretlPlot::init_queue (void)
     }
 }
 
-void GretlPlot::drain_queue (void)
+void GretlPlot::drain_queue (GretlPackagePtr pkg)
 {
     //
     // only complete .py files are published by gp-executor; .tmp files
     // are deliberately ignored until their atomic rename has completed
     // A forked child must not drain scripts belonging to its parent.
+    // @pkg is where we're adding plots
     //
     if (queue_dir_.empty() || queue_owner_pid_ != current_pid_()) return;
 
@@ -364,8 +366,10 @@ void GretlPlot::drain_queue (void)
 
     for (const auto &script : scripts) {
         // keep a failed script for inspection; remove only successful ones
-        execute_script_(script);
+        py::object fig = execute_script_(script);
         std::filesystem::remove(script);
+        // we register generated plot in 'plots' list
+        move_to_python_container<GretlPackage, py::object, py::list>(*pkg, std::move(fig), "plots");
     }
 
     // display all figures after evaluating every script in this batch
@@ -873,10 +877,15 @@ PythonArgInfo inspect_pyobject (py::handle obj)
     return info;
 }
 
-// Here we move item to named container for given instance
 template <typename PyWrapped, typename Item, typename ContainerType>
 void move_to_python_container (PyWrapped &wrapped_obj, Item &&item, const char *container, const std::string &key)
 {
+    //
+    // Here we move item to named container for given instance
+    // @wrapped_obj is an object we're adding to
+    // @container is where we're adding
+    // @item is what we're adding
+    //
     py::gil_scoped_acquire gil;
     py::object obj = py::cast(wrapped_obj);
 
