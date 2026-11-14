@@ -1,0 +1,7 @@
+# candlesticks v1.1: OHLC candles without the optional volume panel.
+# The input list MUST be in the order Open, Close, Low, High.
+open data/cocacola.gdt
+list OHLC = KO_o KO_c KO_l KO_h
+
+bundle options = _(show_colors=1, title="Coca-Cola OHLC", rotate_xtics=30, number_of_xtics=8)
+plot_candlesticks(OHLC, options)

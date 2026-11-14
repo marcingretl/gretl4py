@@ -282,5 +282,98 @@ open "some_other.bin"
             self.assertEqual(candidates_from_csv(csvfile, False), ["PairPlot"])
 
 
+class CustomSuiteBatchTests(unittest.TestCase):
+    """Custom plotting fixtures use the existing batch runner and CSV format."""
+
+    def arguments(self, out: Path, **kwargs):
+        args = argparse.Namespace(
+            packages=[], candidates=False, catalog=out / "catalog.csv",
+            contributed_only=False, offset=0, limit=None, out=out, timeout=60,
+            source="auto", samples=None, continue_on_error=False,
+            skip_bin=False, custom="priority5", cases=None,
+        )
+        for name, value in kwargs.items():
+            setattr(args, name, value)
+        return args
+
+    def test_custom_cases_use_existing_batch_protocol(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            out = Path(tmp)
+            args = self.arguments(out, cases=["02_color_xy", "04_candlesticks_basic"])
+            responses = [
+                CommandResult(0, "[RESULT] Active Matplotlib figures: 2\n", None),
+                CommandResult(0, "[RESULT] Active Matplotlib figures: 0\n", None),
+            ]
+            with patch("probe_package_batch.run_command", side_effect=responses) as run:
+                self.assertEqual(run_batch(args), 0)
+            commands = [call.args[0] for call in run.call_args_list]
+            self.assertEqual(len(commands), 2)
+            self.assertIn("--custom", commands[0])
+            self.assertIn("priority5", commands[0])
+            self.assertIn("02_color_xy", commands[0])
+            self.assertIn("04_candlesticks_basic", commands[1])
+            with (out / "batch_results.csv").open(newline="", encoding="utf-8") as fh:
+                rows = list(csv.DictReader(fh))
+            self.assertEqual([r["status"] for r in rows], ["PASS", "NO_FIGURES"])
+            self.assertEqual([r["package"] for r in rows], ["color_xy", "candlesticks"])
+            self.assertEqual(rows[0]["sample"], "custom/priority5/02_color_xy.inp")
+            self.assertTrue(all(Path(r["log"]).is_file() for r in rows))
+
+    def test_custom_failure_stops_by_default(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            out = Path(tmp)
+            args = self.arguments(out, cases=["01_TVCplots", "02_color_xy"])
+            with patch("probe_package_batch.run_command", return_value=CommandResult(
+                    1, "[FAIL] unexpected error\n", "process exited with status 1")) as run:
+                self.assertEqual(run_batch(args), 1)
+                self.assertEqual(run.call_count, 1)
+            with (out / "batch_results.csv").open(newline="", encoding="utf-8") as fh:
+                rows = list(csv.DictReader(fh))
+            self.assertEqual([r["status"] for r in rows], ["FAIL"])
+
+    def test_custom_continue_and_limit(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            out = Path(tmp)
+            args = self.arguments(out, cases=["01_TVCplots", "02_color_xy", "06_SankeyPlot"],
+                                  offset=1, limit=2, continue_on_error=True)
+            responses = [
+                CommandResult(1, "[FAIL] error\n", "process exited with status 1"),
+                CommandResult(0, "[RESULT] Active Matplotlib figures: 1\n", None),
+            ]
+            with patch("probe_package_batch.run_command", side_effect=responses) as run:
+                self.assertEqual(run_batch(args), 1)
+            self.assertEqual(run.call_count, 2)
+            with (out / "batch_results.csv").open(newline="", encoding="utf-8") as fh:
+                rows = list(csv.DictReader(fh))
+            self.assertEqual([r["status"] for r in rows], ["FAIL", "PASS"])
+            self.assertIn("02_color_xy", rows[0]["sample"])
+            self.assertIn("06_SankeyPlot", rows[1]["sample"])
+
+    def test_custom_unknown_case_rejected_before_execution(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            args = self.arguments(Path(tmp), cases=["not_a_case"])
+            with patch("probe_package_batch.run_command") as run:
+                with self.assertRaisesRegex(ValueError, "Unknown cases"):
+                    run_batch(args)
+                run.assert_not_called()
+
+    def test_custom_bin_preflight_uses_existing_skip_logic(self):
+        from probe_package_sample import CustomCase
+        with tempfile.TemporaryDirectory() as tmp:
+            out = Path(tmp)
+            script = out / "samples" / "bin_test.inp"
+            script.parent.mkdir()
+            script.write_text("# test\nopen foo.bin\n", encoding="utf-8")
+            args = self.arguments(out, skip_bin=True)
+            with patch("probe_package_batch.load_custom_cases",
+                       return_value=[CustomCase("bin_test", "BACE", script, out)]):
+                with patch("probe_package_batch.run_command") as run:
+                    self.assertEqual(run_batch(args), 0)
+                    run.assert_not_called()
+            with (out / "batch_results.csv").open(newline="", encoding="utf-8") as fh:
+                rows = list(csv.DictReader(fh))
+            self.assertEqual(rows[0]["status"], "SKIPPED_BIN")
+
+
 if __name__ == "__main__":
     unittest.main()

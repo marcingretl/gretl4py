@@ -18,7 +18,7 @@ import sys
 
 from audit_config import AUDIT_ROOT, CONTRIBUTED_DIR, RESULTS_ROOT
 from probe_package_sample import (
-    find_downloaded_contributed, native_error_reason, resolve_sample_name,
+    find_downloaded_contributed, load_custom_cases, native_error_reason, resolve_sample_name,
 )
 
 PROBE = Path(__file__).resolve().with_name("probe_package_sample.py")
@@ -137,19 +137,41 @@ def record_result(report: Path, row: dict[str, str]) -> None:
 
 def run_batch(args: argparse.Namespace) -> int:
     """Prepare each package, execute its examples, stop on first failure."""
-    packages = list(dict.fromkeys(args.packages))
-    if args.candidates:
-        packages += [p for p in candidates_from_csv(args.catalog, args.contributed_only)
-                     if p not in packages]
-    # Apply the offset to the complete, deduplicated candidate list before
-    # limiting the batch, so subsequent batches can skip already-tested packages.
-    packages = packages[args.offset:]
-    if args.limit is not None:
-        packages = packages[:args.limit]
-    if not packages:
-        raise ValueError("No packages selected. Specify a name or --candidates")
+    custom = getattr(args, "custom", None)
+    # Custom suites are independent of the installed-example candidate list.
+    # They still share the same subprocess, preflight, logs and CSV handling.
+    if custom:
+        cases = load_custom_cases(custom)
+        requested = getattr(args, "cases", None)
+        if requested:
+            by_name = {case.name: case for case in cases}
+            unknown = [name for name in requested if name not in by_name]
+            if unknown:
+                raise ValueError(f"Unknown cases in {custom}: {', '.join(unknown)}")
+            cases = [by_name[name] for name in dict.fromkeys(requested)]
+        cases = cases[args.offset:]
+        if args.limit is not None:
+            cases = cases[:args.limit]
+        if not cases:
+            raise ValueError(f"No custom cases selected from {custom}")
+    else:
+        packages = list(dict.fromkeys(args.packages))
+        if args.candidates:
+            packages += [p for p in candidates_from_csv(args.catalog, args.contributed_only)
+                         if p not in packages]
+        # Apply the offset to the complete, deduplicated candidate list before
+        # limiting the batch, so subsequent batches can skip already-tested packages.
+        packages = packages[args.offset:]
+        if args.limit is not None:
+            packages = packages[:args.limit]
+        if not packages:
+            raise ValueError("No packages selected. Specify a name or --candidates")
 
-    out = args.out.resolve()
+    # Use a distinct report directory by default so a custom run cannot
+    # overwrite the 95-package baseline or another suite's results.
+    default_out = (RESULTS_ROOT / "batch" / "custom" / custom if custom
+                   else RESULTS_ROOT / "batch")
+    out = (args.out if args.out is not None else default_out).expanduser().resolve()
     (out / "logs").mkdir(parents=True, exist_ok=True)
     report = out / "batch_results.csv"
     # Keep separate reports for separate invocations; do not mix stale results.
@@ -167,6 +189,34 @@ def run_batch(args: argparse.Namespace) -> int:
         print(f"[{status}] {pkg} / {sample}: {reason}")
         if status == "FAIL":
             print(f"        Full diagnostic log: {log}")
+
+    if custom:
+        print(f"[CUSTOM] {custom}: {len(cases)} reviewed case(s)", flush=True)
+        for fixture in cases:
+            pkg, chosen = fixture.package, f"custom/{custom}/{fixture.name}.inp"
+            if args.skip_bin:
+                # Apply the same database preflight to maintained fixtures.
+                reference = bin_database_reference(fixture.script)
+                if reference is not None:
+                    line_number, filename = reference
+                    reason = f"requires .bin database: open {filename} (line {line_number})"
+                    result = CommandResult(0, f"[SKIPPED_BIN] {chosen}: {reason}\n", None)
+                    save(pkg, chosen, result, "SKIPPED_BIN", reason)
+                    continue
+            print(f"[PREPARE] {pkg} / {fixture.name}", flush=True)
+            command = [sys.executable, "-u", str(PROBE), pkg, "--source", args.source,
+                       "--custom", custom, "--case", fixture.name,
+                       "--approved", "--_worker", "--out",
+                       str(out / "images" / safe_stem(pkg) / safe_stem(fixture.name))]
+            result = run_command(command, args.timeout)
+            status, reason = classify(result)
+            save(pkg, chosen, result, status, reason)
+            if status == "FAIL" and not args.continue_on_error:
+                break
+        print(f"[SUMMARY] PASS={totals['PASS']}, NO_FIGURES={totals['NO_FIGURES']}, "
+              f"NO_SAMPLES={totals['NO_SAMPLES']}, SKIPPED_BIN={totals['SKIPPED_BIN']}, "
+              f"FAIL={totals['FAIL']} | {report}")
+        return 1 if totals["FAIL"] else 0
 
     for pkg in packages:
         # Installing or including the package is performed in a dedicated
@@ -245,6 +295,10 @@ def run_batch(args: argparse.Namespace) -> int:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("packages", nargs="*", help="Names of packages to test")
+    parser.add_argument("--custom", metavar="SUITE",
+                        help="Run maintained plotting cases from tests/SUITE/manifest.csv")
+    parser.add_argument("--cases", nargs="+", metavar="CASE",
+                        help="Select individual custom case IDs (requires --custom)")
     parser.add_argument("--candidates", action="store_true",
                         help="Also run packages selected by the static scan")
     parser.add_argument("--catalog", type=Path, default=AUDIT_ROOT / "plot_packages.csv")
@@ -263,12 +317,17 @@ def main() -> int:
                         help="Continue after failures; default is to stop on the first error")
     parser.add_argument("--skip-bin", action="store_true",
                         help="Skip examples with a literal hansl 'open *.bin' command")
-    parser.add_argument("--out", type=Path, default=RESULTS_ROOT / "batch")
+    parser.add_argument("--out", type=Path, default=None,
+                        help="Report directory (custom suites use a separate directory by default)")
     parser.add_argument("--approved", action="store_true",
                         help="Confirm that you have reviewed and approved all selected examples")
     args = parser.parse_args()
     if not args.approved:
         parser.error("Refusing to run third-party code without --approved")
+    if args.custom and (args.packages or args.candidates or args.samples or args.contributed_only):
+        parser.error("--custom cannot be combined with package/example discovery options")
+    if args.cases and not args.custom:
+        parser.error("--cases requires --custom")
     if args.timeout <= 0 or (args.limit is not None and args.limit <= 0):
         parser.error("--timeout and --limit must be positive")
     if args.offset < 0:

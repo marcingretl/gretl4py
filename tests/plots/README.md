@@ -1,4 +1,4 @@
-# gretl function-package plotting audit (stage 1)
+# gretl function-package plotting audit
 
 This is a **static inventory and manual integration-test toolkit** for discovering
 plot-producing gretl packages. It does not claim runtime compatibility merely
@@ -160,6 +160,61 @@ create a fixture for each genuinely graphical public function, use reproducible
 datasets, call it with stable parameters, preserve the generated `.gp` on
 failure, and render the resulting Python in `Agg` while checking figure data.
 Only then can failures in `gptranslate` be classified and fixed systematically.
+
+## 5. Maintained plotting fixtures (stage 2)
+
+The candidate audit uses example scripts distributed by package authors. To
+exercise specific public plotting functions even when a package has no installed
+`.inp` examples, **the same batch runner** also supports maintained local
+fixtures under `tests/SUITE/`. There is no second runner to maintain. A suite
+contains `manifest.csv` (`case,package,script`), reviewed `samples/*.inp` and,
+where necessary, `data/*.gdt`. Only paths inside that suite are accepted.
+
+The first suite is **`priority5`**, containing six fixtures for five packages
+(`TVCplots`, `color_xy`, `gnuplot_piechart`, `candlesticks`, `SankeyPlot`). Two
+unmodified `.gdt` files from the supplied package archives are included.
+These examples invoke public hansl functions and are independent of the
+upstream `examples/` directories.
+
+```bash
+# Run just color_xy; case IDs are listed in tests/priority5/manifest.csv.
+python probe_package_batch.py --custom priority5 \
+    --cases 02_color_xy --approved
+
+# Run all six fixtures, including both candlestick variants.
+python probe_package_batch.py --custom priority5 \
+    --approved --continue-on-error
+
+# Optional: choose the output directory or run a subset.
+python probe_package_batch.py --custom priority5 \
+    --cases 01_TVCplots 03_gnuplot_piechart \
+    --approved --continue-on-error --out /tmp/gretl-priority5
+```
+
+The same subprocess isolation, Matplotlib `Agg` backend, cached-package loading,
+known native-error detection, timeout, `--skip-bin`, `PASS`/`NO_FIGURES`/`FAIL`
+classification and CSV/log/PNG writing are reused. The audit worker changes
+Python's cwd to the suite directory and also executes `set workdir` to make
+gretl's relative `open data/...` paths work. `--approved` is still mandatory.
+Do not mix `--custom` with `--candidates`, positional packages or `--samples`;
+use `--cases` to select individual fixtures. `--offset` and `--limit` can also
+select a slice of the custom suite.
+
+By default custom reports live in
+`package_plot_results/batch/custom/priority5/`, **separate from the previous
+95-package batch snapshot**. Custom `batch_results.csv` retains the existing
+`package,sample,status,reason,log` columns, with sample identifiers such as
+`custom/priority5/02_color_xy.inp`. Figure PNGs and logs use the same structure
+as standard batch reports. A `PASS` means successful execution and an active
+Matplotlib figure, **not proven visual equivalence with gnuplot**.
+
+The source-based `priority5` scripts have been checked statically; a real
+end-to-end run with gretl4py is still required. Upstream `TVCplots` may write
+`Settings.xml` in its installed package directory. `gnuplot_piechart` and
+`candlesticks` also produce transient `.plt` scripts, and the latter can remove
+them after executing; preserve failed `.gp`/`.plt` output for investigations.
+For further tests, add another suite directory and manifest, rather than
+creating a new Python runner.
 
 ## Safety and limits
 

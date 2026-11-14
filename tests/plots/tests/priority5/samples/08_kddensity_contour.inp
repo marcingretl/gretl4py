@@ -1,0 +1,5 @@
+# kddensity: bivariate kernel density with 2D contour lines.
+# A modest grid keeps the integration case fast and reproducible.
+open data/cocacola.gdt
+bundle options = _(ngrid=21, isos=5, type=1, title="Open versus close: density contours", dest="display")
+bundle result = kddensity(KO_o, KO_c, options)

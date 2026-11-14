@@ -234,5 +234,82 @@ class ProbeTests(unittest.TestCase):
         self.assertEqual(installed_examples_dir(FakeModule, "PairPlot"), expected)
 
 
+class CustomSuiteTests(unittest.TestCase):
+    """Reviewed fixtures cannot escape the audit tree and sync gretl's workdir."""
+
+    def test_priority5_manifest_has_twelve_valid_scripts(self):
+        from probe_package_sample import load_custom_cases
+        cases = load_custom_cases("priority5")
+        # Keep the six passing original cases and append six more reviewed cases.
+        self.assertEqual(len(cases), 12)
+        self.assertEqual(
+            [c.name for c in cases[:6]],
+            ["01_TVCplots", "02_color_xy", "03_gnuplot_piechart",
+             "04_candlesticks_basic", "05_candlesticks_volume", "06_SankeyPlot"],
+        )
+        self.assertEqual(
+            [c.name for c in cases[6:]],
+            ["07_bandplot", "08_kddensity_contour", "09_kddensity_heatmap",
+             "10_season_plot", "11_MDS", "12_corresp"],
+        )
+        self.assertEqual([c.package for c in cases].count("candlesticks"), 2)
+        self.assertTrue(all(c.script.is_file() for c in cases))
+        self.assertTrue(all(c.script.is_relative_to(c.workdir) for c in cases))
+
+    def test_reject_unsafe_suite_and_manifest_paths(self):
+        from probe_package_sample import load_custom_cases
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self.assertRaises(ValueError, load_custom_cases, "../bad", root)
+            folder = root / "bad_suite"
+            folder.mkdir()
+            (folder / "manifest.csv").write_text(
+                "case,package,script\nevil,Evil,samples/../../outside.inp\n", encoding="utf-8"
+            )
+            with self.assertRaisesRegex(ValueError, "Invalid custom fixture path"):
+                load_custom_cases("bad_suite", root)
+
+    def test_reject_symlink_escape_and_duplicate_case(self):
+        from probe_package_sample import load_custom_cases
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            folder = root / "suite"
+            (folder / "samples").mkdir(parents=True)
+            outside = root / "outside.inp"
+            outside.write_text("# external\n", encoding="utf-8")
+            (folder / "samples" / "test.inp").symlink_to(outside)
+            (folder / "manifest.csv").write_text(
+                "case,package,script\ntest,TVCplots,samples/test.inp\n", encoding="utf-8"
+            )
+            with self.assertRaisesRegex(ValueError, "Missing or unsafe"):
+                load_custom_cases("suite", root)
+            (folder / "samples" / "test.inp").unlink()
+            (folder / "samples" / "test.inp").write_text("# valid\n")
+            (folder / "manifest.csv").write_text(
+                "case,package,script\ntest,TVCplots,samples/test.inp\n"
+                "test,TVCplots,samples/test.inp\n", encoding="utf-8"
+            )
+            with self.assertRaisesRegex(ValueError, "duplicate"):
+                load_custom_cases("suite", root)
+
+    def test_workdir_helper_updates_python_and_libgretl(self):
+        from probe_package_sample import execute_with_workdir
+        from unittest.mock import Mock
+        import os
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp).resolve()
+            script = root / "case.inp"
+            script.write_text("# test\n")
+            start = Path.cwd()
+            api = Mock()
+            def on_run(_script):
+                self.assertEqual(Path.cwd(), root)
+            api.run_script.side_effect = on_run
+            execute_with_workdir(api, script, root)
+            self.assertEqual(Path.cwd(), start)
+            api.run_hansl.assert_called_once_with(f'set workdir "{root}"')
+            api.run_script.assert_called_once_with(str(script))
+
+
 if __name__ == "__main__":
     unittest.main()

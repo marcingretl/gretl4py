@@ -99,6 +99,40 @@ focused retest did not produce a figure, but it completed without an error.
 - Production-quality reproducible plotting tests covering each public API
   entry point and a visual reference comparison are **not completed**.
 
+## Stage 2: maintained plotting fixtures (prepared, not yet executed)
+
+Six source-based hansl fixtures for five packages without installed examples
+are now integrated into the existing `probe_package_batch.py` and
+`probe_package_sample.py`, rather than using a separate runner. The new suite is
+`tests/priority5/` and is selected with `--custom priority5`. It includes:
+
+| Package | Fixture(s) | Key construction |
+| --- | --- | --- |
+| `TVCplots` | `01_TVCplots` | confidence bands, transparent fill |
+| `color_xy` | `02_color_xy` | palette-coloured `splot`, datablock |
+| `gnuplot_piechart` | `03_gnuplot_piechart` | circle arcs, angle/label positioning |
+| `candlesticks` | `04_candlesticks_basic`, `05_candlesticks_volume` | OHLC and multiplot |
+| `SankeyPlot` | `06_SankeyPlot` | rectangles, user functions, filled curves |
+
+Fixtures reuse the existing worker isolation, native-error detection and
+CSV/log/PNG formats. Suite-specific default report directories prevent
+custom runs from overwriting the original 95-package results. The package
+test helper now explicitly synchronizes both Python cwd and libgretl's
+`$workdir`; this also preserves the verified BVAR fix.
+
+The offline unit suite in this updated snapshot passes **53 tests** (the
+previous 44 plus nine new integration/manifest unit tests). **The six real
+plotting cases have not yet been executed in a gretl4py environment** and are
+not counted as PASS. Start with:
+
+```bash
+python probe_package_batch.py --custom priority5 \
+    --cases 02_color_xy --approved
+```
+
+The original 95-package summary above remains a historical snapshot; these
+new fixtures do not retroactively change its counts.
+
 ## Next actions
 
 1. Rerun the unit tests and then the complete 95-candidate batch after the

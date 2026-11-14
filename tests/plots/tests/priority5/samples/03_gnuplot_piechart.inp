@@ -1,0 +1,4 @@
+# gnuplot_piechart v1.2: sectors made via 'set obj circle arc', screen labels.
+# Package is loaded by run_priority5.py.
+matrix shares = {32; 27; 21; 20}
+string plot_script = gnuplot_piechart(shares, "Alpha Beta Gamma Delta")

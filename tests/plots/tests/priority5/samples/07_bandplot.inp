@@ -1,0 +1,7 @@
+# bandplot: confidence band for an OLS slope, drawn with a filled band.
+# The package is loaded by the existing custom-case runner.
+open data/cocacola.gdt
+
+# bandplot() accepts the $model bundle, and xcol is 1-based.
+ols KO_c const KO_o
+bandplot($model, 2, 0.95, 2)

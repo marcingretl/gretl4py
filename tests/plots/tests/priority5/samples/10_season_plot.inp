@@ -1,0 +1,8 @@
+# season_plot: use a complete synthetic quarterly series spanning 20 years.
+# Several years and quarters provide non-constant frequency groups for
+# aggregation, without missing values or external data dependencies.
+nulldata 80
+setobs 4 2000:1 --time-series
+series y = 100 + 0.1 * $obsmajor + 2 * $obsminor
+bundle seasons = set_season_plot(y)
+do_season_plot(seasons, "obsmajor")
