@@ -1,0 +1,10 @@
+# MDS: a symmetric Euclidean distance matrix for four square vertices.
+# Plotting the result exercises point labels and an internally generated
+# gnuplot script passed via gnuplot --input.
+nulldata 4
+matrix D = {0, 1, 1, 1.4142135623730951; \
+            1, 0, 1.4142135623730951, 1; \
+            1, 1.4142135623730951, 0, 1; \
+            1.4142135623730951, 1, 1, 0}
+bundle result = MDS(D, 2)
+MDS_plot(result)

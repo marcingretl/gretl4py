@@ -1,0 +1,5 @@
+# kddensity: the same input as the contour case, but pm3d heatmap output.
+# This covers the alternate gnuplot path through set pm3d / splot.
+open data/cocacola.gdt
+bundle options = _(ngrid=21, type=2, title="Open versus close: density heatmap", dest="display")
+bundle result = kddensity(KO_o, KO_c, options)

@@ -237,10 +237,21 @@ class ProbeTests(unittest.TestCase):
 class CustomSuiteTests(unittest.TestCase):
     """Reviewed fixtures cannot escape the audit tree and sync gretl's workdir."""
 
-    def test_priority5_manifest_has_six_valid_scripts(self):
+    def test_priority5_manifest_has_twelve_valid_scripts(self):
         from probe_package_sample import load_custom_cases
         cases = load_custom_cases("priority5")
-        self.assertEqual(len(cases), 6)
+        # Keep the six passing original cases and append six more reviewed cases.
+        self.assertEqual(len(cases), 12)
+        self.assertEqual(
+            [c.name for c in cases[:6]],
+            ["01_TVCplots", "02_color_xy", "03_gnuplot_piechart",
+             "04_candlesticks_basic", "05_candlesticks_volume", "06_SankeyPlot"],
+        )
+        self.assertEqual(
+            [c.name for c in cases[6:]],
+            ["07_bandplot", "08_kddensity_contour", "09_kddensity_heatmap",
+             "10_season_plot", "11_MDS", "12_corresp"],
+        )
         self.assertEqual([c.package for c in cases].count("candlesticks"), 2)
         self.assertTrue(all(c.script.is_file() for c in cases))
         self.assertTrue(all(c.script.is_relative_to(c.workdir) for c in cases))

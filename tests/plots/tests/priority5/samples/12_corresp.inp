@@ -1,0 +1,9 @@
+# corresp: correspondence analysis and row/column biplot labels.
+# The 3x3 count matrix has positive row and column totals and supports
+# the first two correspondence-analysis axes.
+nulldata 4
+matrix X = {30, 10, 5; \
+             8, 25, 10; \
+             5, 10, 30}
+bundle result = ca_matrix(X)
+ca_plot(&result, 1, 2)
