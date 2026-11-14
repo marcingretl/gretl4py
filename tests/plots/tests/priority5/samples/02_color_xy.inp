@@ -1,0 +1,10 @@
+# color_xy v2.1: inline $DATA, mapped splot and palette-coloured lines/points.
+# Package is loaded by run_priority5.py.
+nulldata 60
+setobs 12 2022:01 --time-series
+series x = sin(0.25 * time) + 0.025 * time
+series y = cos(0.20 * time) - 0.012 * time
+
+# Exercise both line and point drawing, and both directions of grid lines.
+bundle opts = _(title="Time-coloured XY trajectory", type="both", grid="both", dark2light=0)
+color_xy(x, y, opts)

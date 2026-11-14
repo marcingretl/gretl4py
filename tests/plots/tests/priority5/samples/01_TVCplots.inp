@@ -1,0 +1,10 @@
+# TVCplots v3.0: native confidence bands with opacity and fill style.
+# Package is loaded by run_priority5.py; run with its bundled data directory.
+open data/series_with_stderr.gdt
+
+# Each coefficient series must be immediately followed by its standard error.
+list P = coeff_gGDP stderr_gGDP coeff_intercept stderr_intercept
+
+# Line width, confidence-band factor, opacity, line/band colours, band information.
+# -1.96 selects a fixed factor without requiring confidence-level optimization.
+TVCplots(P, 2, -1.96, 0.35, "0000ff", "4488dd", 0)

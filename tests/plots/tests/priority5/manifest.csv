@@ -1,0 +1,7 @@
+case,package,script
+01_TVCplots,TVCplots,samples/01_TVCplots.inp
+02_color_xy,color_xy,samples/02_color_xy.inp
+03_gnuplot_piechart,gnuplot_piechart,samples/03_gnuplot_piechart.inp
+04_candlesticks_basic,candlesticks,samples/04_candlesticks_basic.inp
+05_candlesticks_volume,candlesticks,samples/05_candlesticks_volume.inp
+06_SankeyPlot,SankeyPlot,samples/06_SankeyPlot.inp

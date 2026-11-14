@@ -1,0 +1,7 @@
+# candlesticks v1.1: OHLC plus volume exercises two-panel multiplot layout.
+# The fifth list element adds a volume series to the lower panel.
+open data/cocacola.gdt
+list OHLCV = KO_o KO_c KO_l KO_h KO_v
+
+bundle options = _(show_colors=1, title="Coca-Cola OHLC and volume", rotate_xtics=30, number_of_xtics=8)
+plot_candlesticks(OHLCV, options)

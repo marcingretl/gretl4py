@@ -1,0 +1,7 @@
+# SankeyPlot v1.0: gnuplot function definitions, object rectangles, filledcurves.
+# Keep all flows positive to exercise the maximum number of ribbon segments.
+matrix flows = {20, 5, 1; 3, 17, 7; 4, 2, 15}
+
+# The public function returns the generated gnuplot script.
+bundle options = _(title="Three-by-three flow diagram")
+string plot_script = SankeyPlot(flows, options)

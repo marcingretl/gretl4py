@@ -8,7 +8,9 @@ Contributed packages are installed only from previously downloaded local files.
 
 from __future__ import annotations
 import argparse
-from contextlib import chdir, nullcontext
+import csv
+from dataclasses import dataclass
+from contextlib import chdir
 import os
 from pathlib import Path
 import re
@@ -16,6 +18,9 @@ import subprocess
 import sys
 
 from audit_config import CONTRIBUTED_DIR, RESULTS_ROOT
+
+# A custom fixture suite is data for this auditor, not an independent runner.
+CUSTOM_TEST_ROOT = Path(__file__).resolve().parent / "tests"
 
 
 def find_downloaded_contributed(name: str, directory: Path = CONTRIBUTED_DIR) -> Path | None:
@@ -195,6 +200,66 @@ def sample_working_directory(script: Path, examples_dir: Path) -> Path | None:
     return None
 
 
+@dataclass(frozen=True)
+class CustomCase:
+    """One reviewed hansl fixture and its installed package dependency."""
+    name: str
+    package: str
+    script: Path
+    workdir: Path
+
+
+def load_custom_cases(suite: str, root: Path = CUSTOM_TEST_ROOT) -> list[CustomCase]:
+    """Load a reviewed suite; reject traversal and scripts outside its directory."""
+    if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_-]*", suite):
+        raise ValueError(f"Invalid custom suite name: {suite!r}")
+    base = root.resolve()
+    workdir = (base / suite).resolve()
+    if not workdir.is_relative_to(base):
+        raise ValueError(f"Custom suite escapes test root: {suite}")
+    manifest = workdir / "manifest.csv"
+    if not manifest.is_file():
+        raise FileNotFoundError(f"Custom suite manifest not found: {manifest}")
+    cases: list[CustomCase] = []
+    names: set[str] = set()
+    with manifest.open(newline="", encoding="utf-8-sig") as fh:
+        reader = csv.DictReader(fh)
+        if reader.fieldnames != ["case", "package", "script"]:
+            raise ValueError(f"Invalid custom suite manifest columns: {manifest}")
+        for row in reader:
+            if any(row.get(key) is None for key in ("case", "package", "script")):
+                raise ValueError(f"Incomplete custom fixture row in {manifest}")
+            name, package, relative = (row[key].strip() for key in ("case", "package", "script"))
+            if (not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_-]*", name)
+                    or name in names):
+                raise ValueError(f"Invalid or duplicate custom case: {name!r}")
+            if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_.-]*", package):
+                raise ValueError(f"Invalid custom package name: {package!r}")
+            # All fixture scripts live under samples/, never outside the suite.
+            if (not relative.startswith("samples/") or "\\" in relative
+                    or any(part in {"", ".", ".."} for part in relative.split("/"))):
+                raise ValueError(f"Invalid custom fixture path: {relative!r}")
+            script = (workdir / relative).resolve()
+            if (not script.is_relative_to(workdir / "samples")
+                    or not script.is_file() or script.suffix != ".inp"):
+                raise ValueError(f"Missing or unsafe custom fixture: {relative!r}")
+            cases.append(CustomCase(name, package, script, workdir))
+            names.add(name)
+    if not cases:
+        raise ValueError(f"Custom suite contains no cases: {suite}")
+    return cases
+
+
+def execute_with_workdir(gretl, script: Path, workdir: Path) -> None:
+    """Synchronize Python's cwd and libgretl's $workdir for relative data paths."""
+    # A script may change libgretl's workdir; every example runs in its own
+    # process so no restoration of libgretl state is necessary afterwards.
+    location = str(workdir.resolve()).replace('"', '\\"')
+    with chdir(workdir):
+        gretl.run_hansl(f'set workdir "{location}"')
+        gretl.run_script(str(script))
+
+
 # libgretl may print a native error without raising a Python exception.
 # Probe invocations therefore run in a supervised child process, whose
 # combined output can be examined before reporting success.
@@ -238,6 +303,10 @@ def main() -> int:
     parser.add_argument("package", help="Package name, e.g. SVAR or PairPlot")
     parser.add_argument("--source", choices=("auto", "addon", "contributed"), default="auto",
                         help="Auto-detect from downloaded contributed files (default)")
+    parser.add_argument("--custom", metavar="SUITE",
+                        help="Run a reviewed fixture from tests/SUITE/")
+    parser.add_argument("--case", metavar="CASE",
+                        help="Case name from the custom suite's manifest.csv")
     parser.add_argument("--sample", metavar="NAME",
                         help="Run an installed .inp example, optionally in a subdirectory (e.g. Traditional/BlQuah.inp)")
     parser.add_argument("--list-samples", action="store_true",
@@ -259,6 +328,10 @@ def main() -> int:
         parser.error("Refusing to execute third-party package code without --approved")
     if args.prepare and args.list_samples:
         parser.error("Use either --prepare or --list-samples")
+    if bool(args.custom) != bool(args.case):
+        parser.error("--custom and --case must be specified together")
+    if args.custom and (args.sample or args.prepare or args.list_samples or args.examples_dir):
+        parser.error("--custom cannot be mixed with installed-sample options")
 
     # The parent examines native diagnostic output. The worker executes code.
     if not args.list_samples and not args._worker:
@@ -304,34 +377,45 @@ def main() -> int:
         if pkg is None:
             raise RuntimeError("gretl.include() did not return a package")
 
-        # Addons and contributed packages share recursive example discovery.
-        # The package-loading mechanism is intentionally unchanged.
-        directory = installed_examples_dir(gretl, args.package, args.examples_dir)
-        script = choose_sample_script(directory, args.sample)
-        if script is None:
-            raise FileNotFoundError(
-                f"No installed .inp examples found in {directory}. "
-                "Use --examples-dir if the package stores examples elsewhere."
-            )
-
-        relative = sample_relative_name(directory.resolve(), script)
-        print(f"[SAMPLE] Execute approved example: {relative}")
-        if script.parent == directory.resolve() and script.name == args.package + "_sample.inp":
-            # Preserve the original run_sample() path for conventional samples.
-            pkg.run_sample()
+        if args.custom:
+            # Custom fixtures use the same package loader and output handling
+            # as installed examples, but never depend on upstream .inp files.
+            cases = load_custom_cases(args.custom)
+            fixture = next((item for item in cases if item.name == args.case), None)
+            if fixture is None or fixture.package != args.package:
+                raise ValueError(f"Case {args.case!r} is not registered for {args.package!r}")
+            print(f"[SAMPLE] Execute reviewed custom fixture: {args.custom}/{fixture.name}")
+            print(f"[WORKDIR] {fixture.workdir}", flush=True)
+            execute_with_workdir(gretl, fixture.script, fixture.workdir)
         else:
-            # run_script() accepts an absolute path and preserves the
-            # file context, unlike raw text with run_hansl().
-            # A few examples also require package-root-relative data paths.
-            workdir = sample_working_directory(script, directory)
-            if workdir is not None:
-                print(f"[CWD] Package-root-relative example data: {workdir}", flush=True)
-            # Apply the override only to this sample, then restore the cwd.
-            with chdir(workdir) if workdir is not None else nullcontext():
+            # Addons and contributed packages share recursive example discovery.
+            # The package-loading mechanism is intentionally unchanged.
+            directory = installed_examples_dir(gretl, args.package, args.examples_dir)
+            script = choose_sample_script(directory, args.sample)
+            if script is None:
+                raise FileNotFoundError(
+                    f"No installed .inp examples found in {directory}. "
+                    "Use --examples-dir if the package stores examples elsewhere."
+                )
+
+            relative = sample_relative_name(directory.resolve(), script)
+            print(f"[SAMPLE] Execute approved example: {relative}")
+            if script.parent == directory.resolve() and script.name == args.package + "_sample.inp":
+                # Preserve the original run_sample() path for conventional samples.
+                pkg.run_sample()
+            else:
+                # run_script() accepts an absolute path and preserves the
+                # file context, unlike raw text with run_hansl().
+                # A few examples also require package-root-relative data paths.
+                workdir = sample_working_directory(script, directory)
                 if workdir is not None:
-                    # Synchronize libgretl's workdir with the Python working directory.
-                    gretl.run_hansl(f'set workdir "{workdir}"')
-                gretl.run_script(str(script))
+                    print(f"[CWD] Package-root-relative example data: {workdir}", flush=True)
+                    # Both workdir mechanisms must agree for gretl's `open`.
+                    execute_with_workdir(gretl, script, workdir)
+                else:
+                    # Leave unrelated examples' existing cwd behavior untouched.
+                    gretl.run_script(str(script))
+
         numbers = plt.get_fignums()
         print(f"[RESULT] Active Matplotlib figures: {len(numbers)}")
         for index, number in enumerate(numbers, 1):
