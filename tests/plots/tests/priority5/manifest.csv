@@ -11,3 +11,8 @@ case,package,script
 10_season_plot,season_plot,samples/10_season_plot.inp
 11_MDS,MDS,samples/11_MDS.inp
 12_corresp,corresp,samples/12_corresp.inp
+13_coefcomp,coefcomp,samples/13_coefcomp.inp
+14_roc,roc,samples/14_roc.inp
+15_fdensity,fdensity,samples/15_fdensity.inp
+16_ARMA_IRF,ARMA_IRF,samples/16_ARMA_IRF.inp
+17_LocalProjection,LocalProjection,samples/17_LocalProjection.inp

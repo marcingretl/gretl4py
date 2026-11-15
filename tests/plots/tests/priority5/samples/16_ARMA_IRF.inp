@@ -1,0 +1,10 @@
+# ARMA_IRF: fit a simple univariate AR(1) and plot its Wold representation.
+# The package expects a model bundle produced by gretl's arima command.
+set seed 20261114
+# nulldata creates the observation index series used below.
+nulldata 180
+setobs 4 1980:1 --time-series
+series y = 0.6*sin(index/5) + 0.3*cos(index/11) + normal()
+arima 1 0 0 ; y
+bundle estimated_model = $model
+wrplot(estimated_model, 12)

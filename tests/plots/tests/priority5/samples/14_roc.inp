@@ -1,0 +1,8 @@
+# roc: a non-degenerate binary outcome and deterministic probability scores.
+# Verbose level 2 asks the package to render both ROC and threshold charts.
+# The sine term guarantees overlapping score distributions without randomness.
+# nulldata creates the observation index series used below.
+nulldata 96
+series y = (index > 48)
+series p = 0.35 + 0.30*y + 0.28*sin(index)
+bundle result = roc(y, p, 2)

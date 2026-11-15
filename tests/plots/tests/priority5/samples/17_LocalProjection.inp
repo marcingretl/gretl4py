@@ -1,0 +1,13 @@
+# LocalProjection: linear local-projection IRF with a small synthetic system.
+# The public estimator renders a filled confidence band during estimation.
+# Use a fixed seed, short horizon, and explicit endogenous/exogenous lists.
+set seed 20261114
+# nulldata creates the observation index series used below.
+nulldata 160
+setobs 4 1980:1 --time-series
+series y1 = 0.6*sin(index/5) + 0.2*cos(index/9) + normal()
+series y2 = 0.5*cos(index/7) + 0.3*sin(index/13) + normal()
+series z = 0.4*sin(index/3) + normal()
+list endogenous = y1 y2
+list exogenous = z
+bundle result = lin_local_projection(endogenous, exogenous, 6, 1, 2)
