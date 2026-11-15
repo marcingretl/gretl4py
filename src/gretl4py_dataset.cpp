@@ -48,6 +48,7 @@ GretlDataset::GretlDataset (const std::string &fname, const py::dict &kwargs) : 
     //
     std::string full_path = "";
     bool quiet = false;
+    int err = 0;
 
     // we look for 'frompkg' option
     if (py::len(kwargs) > 0) {
@@ -72,9 +73,9 @@ GretlDataset::GretlDataset (const std::string &fname, const py::dict &kwargs) : 
         if (!dset) handle_gretl_error(E_ALLOC);
 
         // we try to read the file
-        err_ = gretl_get_data(full_path.empty() ? fname.c_str() : full_path.c_str(), dset, OPT_NONE, printer_.prn_ptr());
-        if (!quiet || err_) printer_.print();
-        if (err_) handle_gretl_error(err_, full_path.empty() ? fname : full_path);
+        err = gretl_get_data(full_path.empty() ? fname.c_str() : full_path.c_str(), dset, OPT_NONE, printer_.prn_ptr());
+        if (!quiet || err) printer_.print();
+        if (err) handle_gretl_error(err, full_path.empty() ? fname : full_path);
 
         // we try to read dataset description
         if (full_path.empty()) {
@@ -102,6 +103,7 @@ GretlDataset::GretlDataset (const py::dict &pydict) : id_(next_obj_id_++)
     py::list pylist;
     py::array_t<double> pyarray;
     NumPyArrayView arr_view;
+    int err = 0;
 
     // lambda for getting int from pydict
     auto get_int_from_pydict = [&pydict](const char *key, int deflt) -> int
@@ -143,8 +145,8 @@ GretlDataset::GretlDataset (const py::dict &pydict) : id_(next_obj_id_++)
         if (!arr_view.data) throw std::runtime_error("NumPy array: null pointer.");
         dset->n = arr_view.rows;
         dset->v = arr_view.cols + 1;
-        err_ = allocate_Z(dset, OPT_NONE);
-        if (err_) handle_gretl_error(err_);
+        err = allocate_Z(dset, OPT_NONE);
+        if (err) handle_gretl_error(err);
         for (int i=1; i<dset->v; i++) {
             NumPyArray_to_gretl_storage<double>(arr_view, dset->Z[i], i-1, true);
         }
@@ -179,7 +181,7 @@ GretlDataset::GretlDataset (const py::dict &pydict) : id_(next_obj_id_++)
         // was created by GretlDataset::to_dict (that is, starting from a gretl
         // dataset in libgretl's memory-space).
         dset->structure = get_int_from_pydict("structure", 0);
-        err_ = set_obs(std::to_string(get_int_from_pydict("periodicity", 1)).c_str(), dset->S[0], dset, setobs_opt_from_structure(dset->structure));
+        err = set_obs(std::to_string(get_int_from_pydict("periodicity", 1)).c_str(), dset->S[0], dset, setobs_opt_from_structure(dset->structure));
         //if (err_) handle_gretl_error(err_);
 
         // we set obs labels
@@ -195,6 +197,8 @@ GretlDataset::GretlDataset (const GretlDataset &src) : id_(next_obj_id_++)
     //
     // copy constructor
     //
+    int err = 0;
+
     if (!src.dset) handle_gretl_error(E_DATA);
 
     // simple strings
@@ -230,12 +234,12 @@ GretlDataset::GretlDataset (const GretlDataset &src) : id_(next_obj_id_++)
         std::strncpy(dset->endobs, src.dset->endobs, OBSLEN);
 
         // we allocate memory
-        err_ = allocate_Z(dset, OPT_NONE);
-        if (err_) handle_gretl_error(err_);
-        err_ = dataset_allocate_varnames(dset);
-        if (err_) handle_gretl_error(err_);
-        err_ = dataset_allocate_obs_markers(dset);
-        if (err_) handle_gretl_error(err_);
+        err = allocate_Z(dset, OPT_NONE);
+        if (err) handle_gretl_error(err);
+        err = dataset_allocate_varnames(dset);
+        if (err) handle_gretl_error(err);
+        err = dataset_allocate_obs_markers(dset);
+        if (err) handle_gretl_error(err);
 
         // dset->Z
         for (int i=1; i<dset->v; ++i) {
@@ -408,12 +412,13 @@ void GretlDataset::add_or_replace_allocated_series_ (gretl_double_ptr data, cons
 
     // we check if we add new or replace series
     int v = get_series_id(name, false);
+    int err = 0;
 
     if (v == 0) {
         throw std::invalid_argument("cannot replace the constant series");
     } else if (v < 0) {
-        err_ = check_varname(name.c_str());
-        if (err_) handle_gretl_error(err_);
+        err = check_varname(name.c_str());
+        if (err) handle_gretl_error(err);
         if (user_var_get_type_by_name(name.c_str()) != GRETL_TYPE_NONE) {
             gretl_errmsg_set("There is already an object of this name");
             handle_gretl_error(E_DATA);
@@ -424,27 +429,27 @@ void GretlDataset::add_or_replace_allocated_series_ (gretl_double_ptr data, cons
     double *data_ptr = data.release();
 
     if (v > 0) {
-        err_ = dataset_replace_series(dset, v, data_ptr, label.get(), DS_GRAB_VALUES);
+        err = dataset_replace_series(dset, v, data_ptr, label.get(), DS_GRAB_VALUES);
     } else {
-        err_ = dataset_add_allocated_series(dset, data_ptr);
+        err = dataset_add_allocated_series(dset, data_ptr);
     }
-    if (err_) {
+    if (err) {
         std::free(data_ptr);
-        handle_gretl_error(err_);
+        handle_gretl_error(err);
     }
 
     // finally, we prepare summary
     if (v > 0) {
-        err_ = pprintf(printer_.prn_ptr(), "Replaced series %s (ID %d)", name.c_str(), v);
+        err = pprintf(printer_.prn_ptr(), "Replaced series %s (ID %d)", name.c_str(), v);
     } else {
         // we setup name and description for new series
         v = dset->v-1;
-        err_ = rename_series(dset, v, name.c_str(), OPT_NONE);
-        if (err_) handle_gretl_error(err_);
+        err = rename_series(dset, v, name.c_str(), OPT_NONE);
+        if (err) handle_gretl_error(err);
         gretl_series_set_label(v, label.get());
-        err_ = pprintf(printer_.prn_ptr(), "Generated series %s (ID %d)", name.c_str(), v);
+        err = pprintf(printer_.prn_ptr(), "Generated series %s (ID %d)", name.c_str(), v);
     }
-    if (err_ == -1) handle_gretl_error(E_ALLOC);
+    if (err == -1) handle_gretl_error(E_ALLOC);
     printer_.print();
 }
 
@@ -469,13 +474,14 @@ GretlDatasetPtr GretlDataset::exec_slice_ (GretlSlice slice_params)
     //
     auto res = GretlDatasetPtr(new GretlDataset(*this));
     auto opts = slice_params.opts;
+    int err = 0;
 
     opts["quiet"] = true;
     res->smpl(slice_params.startobs, slice_params.endobs, opts);
-    err_ = perma_sample(res->dset, OPT_T, printer_.prn_ptr(), nullptr);
-    if (err_) {
+    err = perma_sample(res->dset, OPT_T, printer_.prn_ptr(), nullptr);
+    if (err) {
         printer_.print();
-        handle_gretl_error(err_);
+        handle_gretl_error(err);
     }
 
     return res;
@@ -551,6 +557,7 @@ py::object GretlDataset::summary (const T &varlist, const py::kwargs &kwargs)
     gretl_list_ptr varlist_ptr{nullptr};
     std::nullptr_t fake_dataset = nullptr;
     bool no_result = false;
+    int err = 0;
 
     // we unpack kwargs at first
     gretlopt opt = unpack_kwargs_command<SUMMARY>(fake_dataset, kwargs);
@@ -559,17 +566,17 @@ py::object GretlDataset::summary (const T &varlist, const py::kwargs &kwargs)
     if (!varlist.empty()) varlist_ptr = gretllist(varlist);
 
     // based on 'interact.c'
-    err_ = incompatible_options(opt, static_cast<gretlopt>(OPT_B | OPT_W));
-    if (err_) handle_gretl_error(err_);
+    err = incompatible_options(opt, static_cast<gretlopt>(OPT_B | OPT_W));
+    if (err) handle_gretl_error(err);
     last_result_cleanup();
     if (opt & OPT_B) {
-        err_ = summary_statistics_by(varlist_ptr.get(), dset, opt, printer_.prn_ptr());
+        err = summary_statistics_by(varlist_ptr.get(), dset, opt, printer_.prn_ptr());
         no_result = !varlist_ptr || varlist_ptr.get()[0] > 1;
     } else {
-        err_ = list_summary_driver(varlist_ptr.get(), dset, opt, printer_.prn_ptr());
+        err = list_summary_driver(varlist_ptr.get(), dset, opt, printer_.prn_ptr());
     }
     printer_.print();
-    if (err_) handle_gretl_error(err_);
+    if (err) handle_gretl_error(err);
 
     if (no_result) return py::none();
 
@@ -634,6 +641,7 @@ void GretlDataset::to_file (const std::string &filename, const T &varlist, const
     //
     gretl_list_ptr var_list{nullptr};
     std::nullptr_t fake_dataset = nullptr;
+    int err = 0;
 
     // we handle varlist
     if (!varlist.empty()) var_list = gretllist(varlist);
@@ -643,11 +651,11 @@ void GretlDataset::to_file (const std::string &filename, const T &varlist, const
 
     // we do the job
     if (opt_ & OPT_A) {
-        err_ = write_matrix_as_dataset(filename.c_str(), opt_, printer_.prn_ptr());
+        err = write_matrix_as_dataset(filename.c_str(), opt_, printer_.prn_ptr());
     } else {
-        err_ = write_data(filename.c_str(), var_list.get(), dset, opt_, printer_.prn_ptr());
+        err = write_data(filename.c_str(), var_list.get(), dset, opt_, printer_.prn_ptr());
     }
-    if (err_) handle_gretl_error(err_);
+    if (err) handle_gretl_error(err);
     printer_.print();
 }
 template void GretlDataset::to_file<std::string>(const std::string&, const std::string&, const py::kwargs&);
@@ -662,6 +670,7 @@ GretlMatrixPtr GretlDataset::to_matrix (const T &list, int startobs, int endobs,
     GretlMatrixPtr res{nullptr};
     gretl_list_ptr gretl_list{nullptr};
     MMissingCode missop_code;
+    int err = 0;
 
     // we construct list of variables
     if (list.empty()) {
@@ -689,8 +698,8 @@ GretlMatrixPtr GretlDataset::to_matrix (const T &list, int startobs, int endobs,
     } else {
         throw std::invalid_argument("unknown value for missing");
     }
-    res = std::make_shared<GretlMatrix>(gretl_matrix_data_subset(gretl_list.get(), dset, t1, t2, missop_code, &err_), false);
-    if (err_) handle_gretl_error(err_);
+    res = std::make_shared<GretlMatrix>(gretl_matrix_data_subset(gretl_list.get(), dset, t1, t2, missop_code, &err), false);
+    if (err) handle_gretl_error(err);
 
     return res;
 }
@@ -810,8 +819,9 @@ void GretlDataset::rename (int series_id, const std::string &newname, const py::
     opt_ = unpack_kwargs_command<RENAME>(fake_dataset, kwargs);
 
     // we do the job
-    err_ = rename_series(dset, series_id, newname.c_str(), opt_);
-    if (err_) handle_gretl_error(err_);
+    int err = rename_series(dset, series_id, newname.c_str(), opt_);
+
+    if (err) handle_gretl_error(err);
 }
 
 template <typename T, GretlCmdIndex CI>
@@ -823,6 +833,7 @@ void GretlDataset::transforms (const T &varlist, const py::kwargs &kwargs)
     //
     std::nullptr_t fake_dataset = nullptr;
     gretl_list_ptr var_list{nullptr};
+    int err = 0;
 
     // we unpack kwargs;
     opt_ = unpack_kwargs_command<CI>(fake_dataset, kwargs);
@@ -838,18 +849,18 @@ void GretlDataset::transforms (const T &varlist, const py::kwargs &kwargs)
     int *var_list_raw_ptr = var_list.release();
 
     if constexpr (CI == SQUARE) {
-        err_ = list_xpxgenr(&var_list_raw_ptr, dset, opt_);
+        err = list_xpxgenr(&var_list_raw_ptr, dset, opt_);
     } else if constexpr (CI == DUMMIFY) {
-        err_ = list_dumgenr(&var_list_raw_ptr, dset, opt_);
+        err = list_dumgenr(&var_list_raw_ptr, dset, opt_);
     } else if constexpr (CI == DISCRETE) {
-        err_ = list_makediscrete(var_list_raw_ptr, dset, opt_);
+        err = list_makediscrete(var_list_raw_ptr, dset, opt_);
     } else if constexpr (CI == STDIZE) {
-        err_ = list_stdgenr(var_list_raw_ptr, dset, opt_);
+        err = list_stdgenr(var_list_raw_ptr, dset, opt_);
     } else {
         static_assert(always_false<std::integral_constant<GretlCmdIndex, CI>>, "GretlDataset::transforms(): unsupported command");
     }
     var_list.reset(var_list_raw_ptr);
-    if (err_) handle_gretl_error(err_);
+    if (err) handle_gretl_error(err);
 
     // based on interact.c
     maybe_list_series(dset, printer_.prn_ptr());
@@ -874,6 +885,7 @@ void GretlDataset::transforms_no_opts (const T &varlist)
     // which underlying engines live in tranforms.c
     //
     gretl_list_ptr var_list{nullptr};
+    int err = 0;
 
     // we construct list of external variables
     if constexpr (is_gretllist_arg_v<T>) {
@@ -884,15 +896,15 @@ void GretlDataset::transforms_no_opts (const T &varlist)
 
     // we do the job
     if constexpr (CI == DIFF || CI == LDIFF || CI == SDIFF) {
-        err_ = list_diffgenr(var_list.get(), CI, dset);
+        err = list_diffgenr(var_list.get(), CI, dset);
     } else if constexpr (CI == LOGS) {
-        err_ = list_loggenr(var_list.get(), dset);
+        err = list_loggenr(var_list.get(), dset);
     } else if constexpr (CI == ORTHDEV) {
-        err_ = list_orthdev(var_list.get(), dset);
+        err = list_orthdev(var_list.get(), dset);
     } else {
         static_assert(always_false<std::integral_constant<GretlCmdIndex, CI>>,"GretlDataset::transforms_no_opts(): unsupported command");
     }
-    if (err_) handle_gretl_error(err_);
+    if (err) handle_gretl_error(err);
 
     // based on interact.c
     maybe_list_series(dset, printer_.prn_ptr());
@@ -951,15 +963,16 @@ void GretlDataset::print (const py::list &varlist, const py::kwargs &kwargs)
     // wrapper for varlist passed as list
     //
     std::string varlist_str = "";
+    int err = 0;
 
     if (!varlist.empty()) {
         auto list = gretllist(varlist);
 
         // if list is non-empty, we produce its string reprezentation
         if (list) {
-            gretl_char_ptr list_str(gretl_list_to_string(list.get(), dset, &err_));
+            gretl_char_ptr list_str(gretl_list_to_string(list.get(), dset, &err));
 
-            if (err_) handle_gretl_error(err_);
+            if (err) handle_gretl_error(err);
             varlist_str = std::string(list_str.get());
         }
     }
@@ -1004,6 +1017,7 @@ void GretlDataset::smpl (const std::string &startobs, const std::string &endobs,
     std::string vars;
     bool report = false;
     py::dict kwargs_copy = kwargs;
+    int err = 0;
 
     // note: we modify kwargs here!!!!
     if (kwargs_copy.contains("varlist")) {
@@ -1016,26 +1030,25 @@ void GretlDataset::smpl (const std::string &startobs, const std::string &endobs,
     opt_ = unpack_kwargs_command<SMPL>(fake_dataset, kwargs_copy);
 
     // we do the job
-    err_ = 0;
     if (!dset || dset->n <= 0) {
-        err_ = E_NODATA;
+        err = E_NODATA;
     } else if (opt_ & OPT_F) {
-        err_ = check_smpl_full(opt_);
-        if (!err_) err_ = restore_full_sample(dset, nullptr);
+        err = check_smpl_full(opt_);
+        if (!err) err = restore_full_sample(dset, nullptr);
     } else if (opt_ == OPT_T && startobs.empty()) {
-        err_ = perma_sample(dset, opt_, printer_.prn_ptr(), nullptr);                                               // --permanent, by itself
+        err = perma_sample(dset, opt_, printer_.prn_ptr(), nullptr);                                               // --permanent, by itself
     } else if (opt_ & (OPT_U | OPT_X)) {
-        err_ = set_panel_sample(startobs.c_str(), endobs.c_str(), opt_, dset, nullptr, printer_.prn_ptr());         // panel data: --unit or --time option
+        err = set_panel_sample(startobs.c_str(), endobs.c_str(), opt_, dset, nullptr, printer_.prn_ptr());         // panel data: --unit or --time option
     } else if (smpl_restrict(opt_)) {
-        err_ = restrict_sample(startobs.c_str(), var_list.get(), dset, nullptr, opt_, printer_.prn_ptr(), nullptr); // --restrict, --dummy, etc.
+        err = restrict_sample(startobs.c_str(), var_list.get(), dset, nullptr, opt_, printer_.prn_ptr(), nullptr); // --restrict, --dummy, etc.
     } else if (startobs.empty() && endobs.empty()) {
         print_smpl(dset, get_full_length_n(), OPT_F, printer_.prn_ptr());                                           // no args given: give a report
         //print_smpl(dset, get_full_length_n(), OPT_NONE, GP_.prn_ptr());
         report = true;
     } else {
-        err_ = set_sample(startobs.c_str(), endobs.c_str(), dset, opt_);                                            // simple setting of t1, t2 business /
+        err = set_sample(startobs.c_str(), endobs.c_str(), dset, opt_);                                            // simple setting of t1, t2 business /
     }
-    if (err_) handle_gretl_error(err_);
+    if (err) handle_gretl_error(err);
 
     if (!report && !(opt_ & OPT_Q)) print_smpl(dset, get_full_length_n(), OPT_NONE, printer_.prn_ptr());
     printer_.print();
@@ -1079,6 +1092,7 @@ GretlDatasetPtr GretlDataset::getitem_impl (const py::list &slice)
     std::string slice_str;
     gretl_list_ptr drop_list{nullptr};
     auto res = GretlDatasetPtr(new GretlDataset(*this));
+    int err = 0;
 
     // we parse slice / list / string
     std::ostringstream oss;
@@ -1093,14 +1107,14 @@ GretlDatasetPtr GretlDataset::getitem_impl (const py::list &slice)
 
     // we construct list of variables to drop
     gretl_list_ptr full_list(full_var_list(dset, nullptr));
-    drop_list = gretl_list_ptr(gretl_list_drop(full_list.get(), slice_list.get(), &err_));
-    if (err_) handle_gretl_error(err_);
+    drop_list = gretl_list_ptr(gretl_list_drop(full_list.get(), slice_list.get(), &err));
+    if (err) handle_gretl_error(err);
 
     // we do the job
-    err_ = gretl_delete_variables(drop_list.get(), nullptr, OPT_F, res->dset, nullptr, printer_.prn_ptr());   // dropping variables
-    if (err_) {
+    err = gretl_delete_variables(drop_list.get(), nullptr, OPT_F, res->dset, nullptr, printer_.prn_ptr());   // dropping variables
+    if (err) {
         printer_.print();
-        handle_gretl_error(err_);
+        handle_gretl_error(err);
     }
     res->source += " slice: " + slice_str;
 
@@ -1119,6 +1133,7 @@ std::pair<py::object, py::object> GretlDataset::corr (const T &varlist, const py
     GretlPlot plotter;
     gretl_list_ptr var_list{nullptr};
     std::nullptr_t fake_dataset = nullptr;
+    int err = 0;
 
     // we construct list of variables (if needed)
     if (!varlist.empty()) {
@@ -1134,13 +1149,13 @@ std::pair<py::object, py::object> GretlDataset::corr (const T &varlist, const py
 
     // we do the job
     if (opt_ & OPT_K) {
-        err_ = kendall_tau(var_list.get(), dset, opt_, printer_.prn_ptr());
+        err = kendall_tau(var_list.get(), dset, opt_, printer_.prn_ptr());
     } else if (opt_ & OPT_S) {
-        err_ = spearman_rho(var_list.get(), dset, opt_, printer_.prn_ptr());
+        err = spearman_rho(var_list.get(), dset, opt_, printer_.prn_ptr());
     } else {
-        err_ = gretl_corrmx(var_list.get(), dset, opt_, printer_.prn_ptr());
+        err = gretl_corrmx(var_list.get(), dset, opt_, printer_.prn_ptr());
     }
-    if (err_) handle_gretl_error(err_, err_ == 1 ? printer_.get_buffer() : "");
+    if (err) handle_gretl_error(err, err == 1 ? printer_.get_buffer() : "");
 
     // print and translate the generated gnuplot script, if available
     printer_.print();
@@ -1158,6 +1173,7 @@ GretlMatrixPtr GretlDataset::cov (const T &varlist)
     //
     gretl_list_ptr var_list{nullptr};
     gretl_matrix_ptr mat{nullptr};
+    int err = 0;
 
     // we construct list of variables
     if (varlist.empty()) {
@@ -1171,8 +1187,8 @@ GretlMatrixPtr GretlDataset::cov (const T &varlist)
     }
 
     // we do the job
-    mat.reset(gretl_covariance_matrix_from_varlist(var_list.get(), dset, nullptr, &err_));
-    if (err_) handle_gretl_error(err_);
+    mat.reset(gretl_covariance_matrix_from_varlist(var_list.get(), dset, nullptr, &err));
+    if (err) handle_gretl_error(err);
 
     return std::make_shared<GretlMatrix>(mat.release(), false);
 }
@@ -1191,8 +1207,9 @@ std::pair<py::object, py::object> GretlDataset::hurst (const std::string &series
     // we do the job
     if (!plot.empty()) gretl_valid_long_opt(opt_, HURST, "plot", py::handle(), plotter.filename().c_str());
     var_list = gretllist(series);
-    err_ = hurstplot(var_list.get(), dset, opt_, printer_.prn_ptr());
-    if (err_) handle_gretl_error(err_);
+    int err = hurstplot(var_list.get(), dset, opt_, printer_.prn_ptr());
+
+    if (err) handle_gretl_error(err);
     printer_.print();
 
     return {get_accessor("$result"), plotter.display()};
@@ -1208,14 +1225,15 @@ std::pair<GretlBundlePtr, py::object> GretlDataset::freq (const std::string &var
     GretlPlot plotter;
     GretlBundlePtr res = std::make_shared<GretlBundle>();
     std::nullptr_t fake_dataset = nullptr;
+    int err = 0;
 
     // we unpack kwargs
     opt_ = unpack_kwargs_command<FREQ>(fake_dataset, kwargs, &plotter);
 
     // we do the job
     last_result_cleanup();
-    err_ = freqdist(get_series_id(var), dset, opt_, printer_.prn_ptr());
-    if (err_) handle_gretl_error(err_);
+    err = freqdist(get_series_id(var), dset, opt_, printer_.prn_ptr());
+    if (err) handle_gretl_error(err);
     printer_.print();
 
     // material we return
@@ -1256,8 +1274,9 @@ std::pair<py::object, py::object> GretlDataset::xcorrgm (const T &varlist, int o
     }
 
     // we do the job
-    err_ = xcorrgram(var_list.get(), order, dset, opt_, printer_.prn_ptr());
-    if (err_) handle_gretl_error(err_);
+    int err = xcorrgram(var_list.get(), order, dset, opt_, printer_.prn_ptr());
+
+    if (err) handle_gretl_error(err);
 
     return {get_accessor("$result"), plotter.display()};
 }
@@ -1341,13 +1360,14 @@ py::object GretlDataset::pca (const T &varlist, const py::kwargs &kwargs)
     // we do the job (based on interact.c)
     VMatrix_ptr cmat{nullptr};
     PRN *prn = printer_.prn_ptr();
+    int err = 0;
 
     // adding OPT_N ensures a uniform sample
     // for the correlation or covariance matrix
-    cmat.reset(corrlist(PCA, var_list.get(), dset, static_cast<gretlopt>(opt_ | OPT_N), &err_));
-    if (err_) handle_gretl_error(err_);
-    err_ = call_pca_plugin(cmat.get(), dset, opt_, prn);
-    if (err_) handle_gretl_error(err_);
+    cmat.reset(corrlist(PCA, var_list.get(), dset, static_cast<gretlopt>(opt_ | OPT_N), &err));
+    if (err) handle_gretl_error(err);
+    err = call_pca_plugin(cmat.get(), dset, opt_, prn);
+    if (err) handle_gretl_error(err);
     if (static_cast<gretlopt>(opt_ & (OPT_O | OPT_A)) && gretl_messages_on())
         pputs(prn, _("Generated principal component series\n")); /* results saved as series */
     printer_.print();
@@ -1364,10 +1384,10 @@ GretlBundlePtr GretlDataset::kmeans (const T &varlist, int centers, const GretlB
     // here we perform kmeans analysis
     //
     gretl_list_ptr list(gretllist(varlist));
-    auto res = std::make_shared<GretlBundle>(gretl_kmeans(nullptr, list.get(), centers, nullptr,
-                                                          opts ? opts->get_ptr() : nullptr, dset,
-                                                          printer_.prn_ptr(), &err_), false);
-    if (err_) handle_gretl_error(err_);
+    int err = 0;
+    auto res = std::make_shared<GretlBundle>(gretl_kmeans(nullptr, list.get(), centers, nullptr, opts ? opts->get_ptr() : nullptr, dset, printer_.prn_ptr(), &err), false);
+
+    if (err) handle_gretl_error(err);
     printer_.print();
 
     return res;
@@ -1382,10 +1402,10 @@ GretlBundlePtr GretlDataset::kmeans (const T &varlist, const GretlMatrix &center
     // here we perform kmeans analysis
     //
     gretl_list_ptr list(gretllist(varlist));
-    auto res = std::make_shared<GretlBundle>(gretl_kmeans(nullptr, list.get(), 0, centers.get_ptr(),
-                                                          opts ? opts->get_ptr() : nullptr, dset,
-                                                          printer_.prn_ptr(), &err_), false);
-    if (err_) handle_gretl_error(err_);
+    int err = 0;
+    auto res = std::make_shared<GretlBundle>(gretl_kmeans(nullptr, list.get(), 0, centers.get_ptr(), opts ? opts->get_ptr() : nullptr, dset, printer_.prn_ptr(), &err), false);
+
+    if (err) handle_gretl_error(err);
     printer_.print();
 
     return res;
@@ -1417,8 +1437,9 @@ py::object GretlDataset::xtab (const T &varlist, const py::kwargs &kwargs)
     }
 
     // we do the job
-    err_ = crosstab(var_list.get(), dset, opt_, printer_.prn_ptr());
-    if (err_) handle_gretl_error(err_);
+    int err = crosstab(var_list.get(), dset, opt_, printer_.prn_ptr());
+
+    if (err) handle_gretl_error(err);
     printer_.print();
 
     return get_accessor("$result");
@@ -1438,8 +1459,9 @@ void GretlDataset::setobs (const std::string &periodicity,
     opt_ = unpack_kwargs_command<SETOBS>(fake_dataset, kwargs);
 
     // we do the job (based on interact.c)
-    err_ = set_obs(periodicity.c_str(), startobs.c_str(), dset, opt_);
-    if (err_) handle_gretl_error(err_);
+    int err = set_obs(periodicity.c_str(), startobs.c_str(), dset, opt_);
+
+    if (err) handle_gretl_error(err);
     if (dset->n > 0) {
         if (!(opt_ & (OPT_I | OPT_G))) print_smpl(dset, 0, OPT_NONE, printer_.prn_ptr());
     } else {
@@ -1482,9 +1504,10 @@ void GretlDataset::lags (const T &varlist, int order)
 
     // we do the job
     int *var_list_raw_ptr = var_list.release();
-    err_ = list_laggenr(&var_list_raw_ptr, 1, order, nullptr, dset, 0, OPT_NONE);
+    int err = list_laggenr(&var_list_raw_ptr, 1, order, nullptr, dset, 0, OPT_NONE);
+
     var_list.reset(var_list_raw_ptr);
-    if (err_) handle_gretl_error(err_);
+    if (err) handle_gretl_error(err);
 
     // based on interact.c
     maybe_list_series(dset, printer_.prn_ptr());
@@ -1528,8 +1551,9 @@ void GretlDataset::do_modify_dataset (DatasetOp op, const T &list, const std::st
     }
 
     // we do the job
-    err_ = modify_dataset(dset, op, var_list.get(), param_ptr, opt_, printer_.prn_ptr());
-    if (err_) handle_gretl_error(err_);
+    int err = modify_dataset(dset, op, var_list.get(), param_ptr, opt_, printer_.prn_ptr());
+
+    if (err) handle_gretl_error(err);
     printer_.print();
 }
 template void GretlDataset::do_modify_dataset<std::string>(DatasetOp, const std::string&, const std::string&, const py::kwargs&);
@@ -1573,9 +1597,10 @@ py::list GretlDataset::hflags (int lmin, int lmax, const T &hfvars)
 
     // we do the job
     auto *list = gretl_list.release();
-    err_ = list_laggenr(&list, lmin, lmax, nullptr, dset, cfac, OPT_L);
+    int err = list_laggenr(&list, lmin, lmax, nullptr, dset, cfac, OPT_L);
+
     gretl_list.reset(list);
-    if (err_) handle_gretl_error(err_);
+    if (err) handle_gretl_error(err);
 
     // return the names of the generated series
     std::vector<std::string> res;
@@ -1625,6 +1650,7 @@ std::pair<GretlBundlePtr, py::object> GretlDataset::test (const std::string &typ
     gretl_list_ptr ex_var{nullptr};
     int order = 0;
     bool has_result = false;    // if given test produces additional results accessible via $result
+    int err = 0;
 
     // we construct list of external variables
     ex_var = gretllist(varlist);
@@ -1635,25 +1661,25 @@ std::pair<GretlBundlePtr, py::object> GretlDataset::test (const std::string &typ
     // we perform the test
     last_result_cleanup();
     if (type == "adf") {
-        err_ = adf_test(order, ex_var.get(), dset, opt_, printer_.prn_ptr());
+        err = adf_test(order, ex_var.get(), dset, opt_, printer_.prn_ptr());
     } else if (type == "bds") {
-        err_ = bds_test_driver(order, ex_var.get(), dset, opt_, printer_.prn_ptr());
+        err = bds_test_driver(order, ex_var.get(), dset, opt_, printer_.prn_ptr());
         has_result = true;
     } else if (type == "coint") {
-        err_ = engle_granger_test(order, ex_var.get(), dset, opt_, printer_.prn_ptr());
+        err = engle_granger_test(order, ex_var.get(), dset, opt_, printer_.prn_ptr());
     } else if (type == "corrgm") {
         if (ex_var.get()[0] != 1) throw std::invalid_argument("corrgm takes just one series");
-        err_ = corrgram(ex_var.get()[1], order, 0, dset, opt_, printer_.prn_ptr());
+        err = corrgram(ex_var.get()[1], order, 0, dset, opt_, printer_.prn_ptr());
     } else if (type == "difftest") {
-        err_ = diff_test(ex_var.get(), dset, opt_, printer_.prn_ptr());
+        err = diff_test(ex_var.get(), dset, opt_, printer_.prn_ptr());
     } else if (type == "fractint") {
         if (ex_var.get()[0] != 1) throw std::invalid_argument("fractint takes just one series");
-        err_ = fractint(ex_var.get()[1], order, dset, opt_, printer_.prn_ptr());
+        err = fractint(ex_var.get()[1], order, dset, opt_, printer_.prn_ptr());
         has_result = true;
     } else if (type == "johansen") {
-        err_ = johansen_test_simple(order, ex_var.get(), dset, opt_, printer_.prn_ptr());
+        err = johansen_test_simple(order, ex_var.get(), dset, opt_, printer_.prn_ptr());
     } else if (type == "kpss") {
-        err_ = kpss_test(order, ex_var.get(), dset, opt_, printer_.prn_ptr());
+        err = kpss_test(order, ex_var.get(), dset, opt_, printer_.prn_ptr());
     } else if (type == "levinlin") {
         // if we have 'order_m' it means that values were passed as matrix
         if (kwargs.contains("order_m")) {
@@ -1674,25 +1700,25 @@ std::pair<GretlBundlePtr, py::object> GretlDataset::test (const std::string &typ
                     i++;
                 }
             }
-            err_ = llc_test_driver(mat.str().c_str(), ex_var.get(), dset, opt_, printer_.prn_ptr());
+            err = llc_test_driver(mat.str().c_str(), ex_var.get(), dset, opt_, printer_.prn_ptr());
         } else {
-            err_ = llc_test_driver(std::to_string(order).c_str(), ex_var.get(), dset, opt_, printer_.prn_ptr());
+            err = llc_test_driver(std::to_string(order).c_str(), ex_var.get(), dset, opt_, printer_.prn_ptr());
         }
     } else if (type == "meantest") {
-        err_ = means_test(ex_var.get(), dset, opt_, printer_.prn_ptr());
+        err = means_test(ex_var.get(), dset, opt_, printer_.prn_ptr());
     } else if (type == "normtest") {
         if (ex_var.get()[0] != 1) throw std::invalid_argument("normtest takes just one series");
-        err_ = gretl_normality_test(ex_var.get()[1], dset, opt_, printer_.prn_ptr());
+        err = gretl_normality_test(ex_var.get()[1], dset, opt_, printer_.prn_ptr());
     } else if (type == "runs") {
         if (ex_var.get()[0] != 1) throw std::invalid_argument("runs takes just one series");
-        err_ = runs_test(ex_var.get()[1], dset, opt_, printer_.prn_ptr());
+        err = runs_test(ex_var.get()[1], dset, opt_, printer_.prn_ptr());
     } else if (type == "vartest") {
         if (ex_var.get()[0] != 2) throw std::invalid_argument("vartest takes exactly two series");
-        err_ = vars_test(ex_var.get(), dset, opt_, printer_.prn_ptr());
+        err = vars_test(ex_var.get(), dset, opt_, printer_.prn_ptr());
     } else {
         throw std::invalid_argument(type + " is a model-based test");
     }
-    if (err_) handle_gretl_error(err_);
+    if (err) handle_gretl_error(err);
 
     // Print the test results and retrieve the generated matplotlib Figure,
     // if the test produced a plot.
@@ -1733,19 +1759,20 @@ gretl_list_ptr GretlDataset::gretllist (const std::string &formula, int *err)
     //
     gretl_list_ptr res;
     std::string tmp = formula;
-    if (err) *err = 0;
+    int err_local = 0;
 
     // convert a simple R-style formula to a gretl list specification.
     std::replace(tmp.begin(), tmp.end(), '~', ' ');
     std::replace(tmp.begin(), tmp.end(), '+', ' ');
 
     // do the job
-    res.reset(generate_list(tmp.c_str(), dset, 0, &err_));
-    if (err_) {
+    if (err) *err = 0;
+    res.reset(generate_list(tmp.c_str(), dset, 0, &err_local));
+    if (err_local) {
         if (err) {
-            *err = err_;
+            *err = err_local;
         } else {
-            handle_gretl_error(err_);
+            handle_gretl_error(err_local);
         }
     }
 
@@ -1800,14 +1827,15 @@ GretlMatrixPtr GretlDataset::hpfilt (const std::string &y, double hp_lambda, boo
     //
     auto res = GretlMatrix::zeros(dset->n, 1);
     gretlopt opt = trend ? OPT_T : OPT_NONE;
+    int err = 0;
 
     // we do the job
     if (one_sided) {
-        err_ = oshp_filter(dset->Z[get_series_id(y)], res->get_ptr()->val, dset, hp_lambda, opt);
+        err = oshp_filter(dset->Z[get_series_id(y)], res->get_ptr()->val, dset, hp_lambda, opt);
     } else {
-        err_ = hp_filter(dset->Z[get_series_id(y)], res->get_ptr()->val, dset, hp_lambda, opt);
+        err = hp_filter(dset->Z[get_series_id(y)], res->get_ptr()->val, dset, hp_lambda, opt);
     }
-    if (err_) handle_gretl_error(err_);
+    if (err) handle_gretl_error(err);
 
     return res;
 }
@@ -1820,8 +1848,9 @@ GretlMatrixPtr GretlDataset::bwfilt (const std::string &y, int n, double omega)
     auto res = GretlMatrix::zeros(dset->n, 1);
 
     // we do the job
-    err_ = butterworth_filter(dset->Z[get_series_id(y)], res->get_ptr()->val, dset, n, omega);
-    if (err_) handle_gretl_error(err_);
+    int err = butterworth_filter(dset->Z[get_series_id(y)], res->get_ptr()->val, dset, n, omega);
+
+    if (err) handle_gretl_error(err);
 
     return res;
 }
@@ -1834,8 +1863,9 @@ GretlMatrixPtr GretlDataset::bkfilt (const std::string &y, int f1, int f2, int k
     auto res = GretlMatrix::zeros(dset->n, 1);
 
     // we do the job
-    err_ = bkbp_filter(dset->Z[get_series_id(y)], res->get_ptr()->val, dset, f1, f2, k);
-    if (err_) handle_gretl_error(err_);
+    int err = bkbp_filter(dset->Z[get_series_id(y)], res->get_ptr()->val, dset, f1, f2, k);
+
+    if (err) handle_gretl_error(err);
 
     return res;
 }
@@ -1855,12 +1885,13 @@ double GretlDataset::ljungbox (int y, int p)
     int t1 = dset->t1;
     int t2 = dset->t2;
     const double *x = dset->Z[y];
+    int err = 0;
 
     if (!x) handle_gretl_error(E_DATA);
-    err_ = series_adjust_sample(x, &t1, &t2);
-    if (err_) handle_gretl_error(err_);
-    res = ljung_box(p, t1, t2, x, &err_);
-    if (err_) handle_gretl_error(err_);
+    err = series_adjust_sample(x, &t1, &t2);
+    if (err) handle_gretl_error(err);
+    res = ljung_box(p, t1, t2, x, &err);
+    if (err) handle_gretl_error(err);
 
     return res;
 }
