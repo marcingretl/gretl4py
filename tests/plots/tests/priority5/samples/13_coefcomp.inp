@@ -1,0 +1,9 @@
+# coefcomp: compare three deterministic coefficient estimates and intervals.
+# This covers a labeled y-axis, datablock input, and horizontal x-error bars.
+# The package is included by the existing custom-case runner.
+nulldata 12
+bundle comparison = cc_init("Coefficient comparison", "Effect estimate", 0.95)
+cc_add(&comparison, 0.42, 0.12, "Baseline")
+cc_add(&comparison, 0.31, 0.10, "With controls")
+cc_add(&comparison, 0.38, 0.08, "Robust")
+cc_plot(comparison)

@@ -4,6 +4,15 @@ This is a **static inventory and manual integration-test toolkit** for discoveri
 plot-producing gretl packages. It does not claim runtime compatibility merely
 because a plotting keyword appears in a package.
 
+## Verified status (15 November 2026)
+
+- **`gptranslate`: 83/83 Meson tests passed** (`meson test -C build --print-errorlogs`), as reported from the current build.
+- **`priority5`: 17/17 reviewed integration cases passed**, covering **15 gretl packages** and producing **19 Matplotlib figures** in one complete batch run.
+- **Audit runner: 54/54 offline unit tests passed** (`python -m unittest discover -p 'test_*.py' -q`, verified against the current 17-case fixture tree).
+- The **95-candidate exploratory batch** remains a separate *historical* run from 14 November 2026. It has not yet been repeated after the latest fixes. See [STATUS.md](STATUS.md).
+
+An integration **PASS** means the executed hansl sample completed without a detected error and left at least one active Matplotlib figure; it does **not** establish pixel-for-pixel agreement with gnuplot, complete package coverage, or correctness of every visual element.
+
 ## Sources
 
 - Contributed catalog: <https://gretl.sourceforge.net/cgi-bin/gretldata.cgi>
@@ -160,82 +169,6 @@ create a fixture for each genuinely graphical public function, use reproducible
 datasets, call it with stable parameters, preserve the generated `.gp` on
 failure, and render the resulting Python in `Agg` while checking figure data.
 Only then can failures in `gptranslate` be classified and fixed systematically.
-
-## 5. Maintained plotting fixtures (stage 2)
-
-The candidate audit uses example scripts distributed by package authors. To
-exercise specific public plotting functions even when a package has no installed
-`.inp` examples, **the same batch runner** also supports maintained local
-fixtures under `tests/SUITE/`. There is no second runner to maintain. A suite
-contains `manifest.csv` (`case,package,script`), reviewed `samples/*.inp` and,
-where necessary, `data/*.gdt`. Only paths inside that suite are accepted.
-
-The first suite is **`priority5`**, containing six fixtures for five packages
-(`TVCplots`, `color_xy`, `gnuplot_piechart`, `candlesticks`, `SankeyPlot`). Two
-unmodified `.gdt` files from the supplied package archives are included.
-These examples invoke public hansl functions and are independent of the
-upstream `examples/` directories.
-
-```bash
-# Run just color_xy; case IDs are listed in tests/priority5/manifest.csv.
-python probe_package_batch.py --custom priority5 \
-    --cases 02_color_xy --approved
-
-# Run all six fixtures, including both candlestick variants.
-python probe_package_batch.py --custom priority5 \
-    --approved --continue-on-error
-
-# Optional: choose the output directory or run a subset.
-python probe_package_batch.py --custom priority5 \
-    --cases 01_TVCplots 03_gnuplot_piechart \
-    --approved --continue-on-error --out /tmp/gretl-priority5
-```
-
-The same subprocess isolation, Matplotlib `Agg` backend, cached-package loading,
-known native-error detection, timeout, `--skip-bin`, `PASS`/`NO_FIGURES`/`FAIL`
-classification and CSV/log/PNG writing are reused. The audit worker changes
-Python's cwd to the suite directory and also executes `set workdir` to make
-gretl's relative `open data/...` paths work. `--approved` is still mandatory.
-Do not mix `--custom` with `--candidates`, positional packages or `--samples`;
-use `--cases` to select individual fixtures. `--offset` and `--limit` can also
-select a slice of the custom suite.
-
-By default custom reports live in
-`package_plot_results/batch/custom/priority5/`, **separate from the previous
-95-package batch snapshot**. Custom `batch_results.csv` retains the existing
-`package,sample,status,reason,log` columns, with sample identifiers such as
-`custom/priority5/02_color_xy.inp`. Figure PNGs and logs use the same structure
-as standard batch reports. A `PASS` means successful execution and an active
-Matplotlib figure, **not proven visual equivalence with gnuplot**.
-
-The source-based `priority5` scripts have been checked statically; a real
-end-to-end run with gretl4py is still required. Upstream `TVCplots` may write
-`Settings.xml` in its installed package directory. `gnuplot_piechart` and
-`candlesticks` also produce transient `.plt` scripts, and the latter can remove
-them after executing; preserve failed `.gp`/`.plt` output for investigations.
-For further tests, add another suite directory and manifest, rather than
-creating a new Python runner.
-
-## Safety and limits
-
-Scanning never runs packages or contacts domains beyond the configured official
-repositories. Running sample scripts is an opt-in, separate action. Don't run
-unreviewed samples in a privileged environment; they can write files, invoke
-external programs or use the network. Scans use keyword heuristics, and therefore
-are neither a full hansl call graph nor a dynamic rendering proof.
-
-## Local self-test
-
-```bash
-python -m unittest discover -p 'test_*.py' -q
-```
-
-The most recent reported run executed 44 tests successfully (14 November 2026).
-Some tests intentionally print `[FAIL]` or native error messages while checking
-error handling; the `unittest` result (`OK` or `FAILED`) determines whether the
-test suite passed. That run preceded the final `set workdir` adjustment, which
-was subsequently verified by a focused BVAR example run. Rerun the unit tests
-after any further code changes.
 
 ## 4. Batch probe: isolated examples, stop on first error
 
@@ -409,3 +342,110 @@ python probe_package_batch.py --candidates --contributed-only \
 `--offset` defaults to 0. `--offset` must not be negative. Ordering follows
 the scanner's current `plot_packages.csv` and may change if the catalog
 is rescanned or sorted differently.
+## 5. Maintained plotting fixtures (`priority5`)
+
+Installed examples do not always exercise a package's plotting functions, and
+many packages have no `.inp` examples at all. The existing batch runner therefore
+also supports **reviewed, local integration fixtures** in `tests/SUITE/`, without
+creating a second runner. Each suite contains `manifest.csv`
+(`case,package,script`), `samples/*.inp` and optional `data/*.gdt`. Paths in the
+manifest must remain within the suite directory.
+
+The `priority5` suite was expanded in three stages and now contains **17
+confirmed passing cases for 15 packages**:
+
+| Case | Package | Plot feature covered | Figures in full run |
+| --- | --- | --- | ---: |
+| `01_TVCplots` | `TVCplots` | TVC plots and confidence bands | 2 |
+| `02_color_xy` | `color_xy` | palette-coloured 2D mapping of XYZ values | 1 |
+| `03_gnuplot_piechart` | `gnuplot_piechart` | sectors, labels and gnuplot objects | 1 |
+| `04_candlesticks_basic` | `candlesticks` | OHLC candles | 1 |
+| `05_candlesticks_volume` | `candlesticks` | candles plus a volume panel | 1 |
+| `06_SankeyPlot` | `SankeyPlot` | rectangles, fill and curves | 1 |
+| `07_bandplot` | `bandplot` | confidence bands | 1 |
+| `08_kddensity_contour` | `kddensity` | gridded XYZ contour lines | 1 |
+| `09_kddensity_heatmap` | `kddensity` | `pm3d` heatmap | 1 |
+| `10_season_plot` | `season_plot` | quarterly seasonal plot, linetype loop | 1 |
+| `11_MDS` | `MDS` | labelled MDS coordinates | 1 |
+| `12_corresp` | `corresp` | correspondence-analysis biplot and label styling | 1 |
+| `13_coefcomp` | `coefcomp` | explicit named tics and horizontal error bars | 1 |
+| `14_roc` | `roc` | ROC and threshold charts, aligned labels | 2 |
+| `15_fdensity` | `fdensity` | grouped kernel densities | 1 |
+| `16_ARMA_IRF` | `ARMA_IRF` | ARMA impulse response | 1 |
+| `17_LocalProjection` | `LocalProjection` | local-projection IRF and confidence band | 1 |
+| **Total** | **15 distinct packages** | **17 cases** | **19** |
+
+The fixtures invoke public package functions via hansl. The small synthetic
+datasets use fixed seeds or deterministic formulas; the earlier tests reuse
+provided `.gdt` files. For example, the quarterly `season_plot` fixture avoids
+missing data, `fdensity` passes a hansl list, and the four stage-3 time-indexed
+fixtures use the `index` series created by `nulldata` (not `$obs`).
+
+From this directory:
+
+```bash
+# Run the complete suite. This exact command was confirmed PASS=17, FAIL=0.
+python probe_package_batch.py --custom priority5 \
+    --approved --continue-on-error
+
+# Limit the run to selected cases.
+python probe_package_batch.py --custom priority5 \
+    --cases 13_coefcomp 14_roc --approved --continue-on-error
+
+# Send results to a distinct directory, preserving earlier runs.
+python probe_package_batch.py --custom priority5 \
+    --approved --continue-on-error --out /tmp/gretl-priority5
+```
+
+The runner shares the normal subprocess isolation, cached-package loading,
+Matplotlib `Agg` capture, native-error checks, timeout handling, output
+classification and CSV/log/PNG report formats. Its worker uses the suite as
+Python's working directory and synchronizes libgretl's `$workdir` so that
+relative `open data/...` works. `--approved` is mandatory.
+
+The suite must not be mixed with `--candidates`, positional packages or
+`--samples`. Use `--cases` for specific fixtures; `--offset` and `--limit`
+can select consecutive fixture slices.
+
+Reports are written to:
+
+```text
+package_plot_results/batch/custom/priority5/
+├── batch_results.csv
+├── logs/
+└── images/
+```
+
+This is deliberately separate from the 95-candidate exploratory run.
+`batch_results.csv` uses the same `package,sample,status,reason,log` fields;
+example identifiers include `custom/priority5/14_roc.inp`. The results
+record **execution and figure creation**, not a validated match against the
+original gnuplot rendering. Inspect the 19 PNGs before describing the cases
+as visually equivalent.
+
+Some upstream packages create temporary `.plt` or other files; for example,
+`TVCplots` can write `Settings.xml` and `candlesticks` may remove its transient
+plot scripts. Preserve the generated gnuplot file when investigating a new
+translator failure. Extend this suite through its manifest or create another
+suite directory, **not another Python runner**.
+
+## Safety and limits
+
+Scanning never runs packages or contacts domains beyond the configured official
+repositories. Running sample scripts is an opt-in, separate action. Don't run
+unreviewed samples in a privileged environment; they can write files, invoke
+external programs or use the network. Scans use keyword heuristics, and therefore
+are neither a full hansl call graph nor a dynamic rendering proof.
+
+## Local self-test
+
+```bash
+python -m unittest discover -p 'test_*.py' -q
+```
+
+The current 17-case fixture tree passed **54 tests** in the local offline
+unit-test run on 15 November 2026. Some mocked error-path tests intentionally
+print `[FAIL]` or native diagnostic messages; the final `unittest` result
+(`OK` or `FAILED`) determines whether the unit suite passed. These tests do
+not replace the end-to-end `gretl4py` and Meson runs reported above.
+

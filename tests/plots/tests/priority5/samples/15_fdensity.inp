@@ -1,0 +1,9 @@
+# fdensity: factorized kernel densities for two groups with ample observations.
+# A fixed seed makes each grouped density and its plot reproducible.
+set seed 20261114
+nulldata 240
+series group = (index > 120)
+series x = 1.4*group + normal()
+# The public fdensity() function takes a list of series.
+list L = x
+bundles results = fdensity(L, group)

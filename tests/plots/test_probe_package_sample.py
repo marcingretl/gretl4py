@@ -237,24 +237,42 @@ class ProbeTests(unittest.TestCase):
 class CustomSuiteTests(unittest.TestCase):
     """Reviewed fixtures cannot escape the audit tree and sync gretl's workdir."""
 
-    def test_priority5_manifest_has_twelve_valid_scripts(self):
+    def test_priority5_manifest_has_seventeen_valid_scripts(self):
         from probe_package_sample import load_custom_cases
         cases = load_custom_cases("priority5")
-        # Keep the six passing original cases and append six more reviewed cases.
-        self.assertEqual(len(cases), 12)
+        # Retain all 12 passing cases and add five source-reviewed package probes.
+        self.assertEqual(len(cases), 17)
         self.assertEqual(
             [c.name for c in cases[:6]],
             ["01_TVCplots", "02_color_xy", "03_gnuplot_piechart",
              "04_candlesticks_basic", "05_candlesticks_volume", "06_SankeyPlot"],
         )
         self.assertEqual(
-            [c.name for c in cases[6:]],
+            [c.name for c in cases[6:12]],
             ["07_bandplot", "08_kddensity_contour", "09_kddensity_heatmap",
              "10_season_plot", "11_MDS", "12_corresp"],
+        )
+        self.assertEqual(
+            [c.name for c in cases[12:]],
+            ["13_coefcomp", "14_roc", "15_fdensity",
+             "16_ARMA_IRF", "17_LocalProjection"],
         )
         self.assertEqual([c.package for c in cases].count("candlesticks"), 2)
         self.assertTrue(all(c.script.is_file() for c in cases))
         self.assertTrue(all(c.script.is_relative_to(c.workdir) for c in cases))
+
+    def test_stage3_fixtures_use_valid_index_and_list_argument(self):
+        from probe_package_sample import load_custom_cases
+        cases = {case.name: case for case in load_custom_cases("priority5")}
+        for case_name in ("14_roc", "15_fdensity", "16_ARMA_IRF", "17_LocalProjection"):
+            source = cases[case_name].script.read_text(encoding="utf-8")
+            # `nulldata` creates `index`; `$obs` is not a hansl accessor.
+            self.assertNotIn("$obs", source, msg=case_name)
+            self.assertIn("index", source, msg=case_name)
+        # The fdensity() package requires list for its first argument.
+        source = cases["15_fdensity"].script.read_text(encoding="utf-8")
+        self.assertIn("list L = x", source)
+        self.assertIn("fdensity(L, group)", source)
 
     def test_reject_unsafe_suite_and_manifest_paths(self):
         from probe_package_sample import load_custom_cases
