@@ -39,7 +39,6 @@ class GretlMatrix : public std::enable_shared_from_this<GretlMatrix>
 private:
     gretl_matrix *m_ = nullptr;                                             // libgretl gretl_matrix raw pointer
     mutable GretlPrint printer_ = GretlPrint();                             // printer (instance wide)
-    mutable int err_ = 0;
 
     void check_bounds_ (int i, int j) const;                                // we check if given [i,j] are valid
 
