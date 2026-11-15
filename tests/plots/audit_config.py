@@ -6,9 +6,7 @@ Change PROJECT_ROOT here if the audit project is moved elsewhere.
 from pathlib import Path
 
 # Main directory containing this audit toolkit.
-PROJECT_ROOT = Path(
-    "/home/marcin/cvs/Gretl/gretl-gretl4py/tests/plots/gretl_package_plot_audit"
-)
+PROJECT_ROOT = Path(__file__).resolve().parent
 
 # Downloaded contributed packages are installed from these cached files.
 AUDIT_ROOT = PROJECT_ROOT / "audit"
