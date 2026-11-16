@@ -81,8 +81,6 @@ public:
     static bool package_loaded (const std::string &pkgname);
 
     // instance methods
-    int get_err (void) const;
-
     std::string repr_impl (void);
 
     py::list get_help (void);

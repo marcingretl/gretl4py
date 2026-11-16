@@ -365,11 +365,6 @@ void GretlPackage::unpack_kwargs_package_ (const std::string &func_name, fncall 
     }
 }
 
-int GretlPackage::get_err (void) const
-{
-    return err_;
-}
-
 std::string GretlPackage::repr_impl (void)
 {
     err_ = print_function_package_info(full_path_.c_str(), 0, printer_.prn_ptr());
