@@ -245,12 +245,7 @@ GretlBundlePtr about (bool do_print)
     res->set_element<std::string>("mod_ver", mod_ver);
     res->set_element<std::string>("py11_ver", py11_ver);
     res->set_element<std::string>("lg_ver", lg_ver);
-
-    if (gb_sysinfo->get_err()) {
-        std::cerr << errmsg_get_with_default(gb_sysinfo->get_err()) << '\n';
-    } else {
-        res->set_element<GretlBundlePtr>("sysinfo", gb_sysinfo);
-    }
+    res->set_element<GretlBundlePtr>("sysinfo", gb_sysinfo);
     res->set_element<GretlBundlePtr>("built_in_strings", gb_strings);
 
     if (do_print || gretl4py_verbose) {
@@ -260,10 +255,8 @@ GretlBundlePtr about (bool do_print)
             << "\t+ pybind11     v" << py11_ver << '\n'
             << "\t+ libgretl-1.0 v" << lg_ver << "\n\n"
             << "contact: marcin[at]gretlconference.org\n";
-        if (!gb_sysinfo->get_err()) {
-            std::cout << "\nlibgretl $sysinfo:\n";
-            gb_sysinfo->print<void>();
-        }
+        std::cout << "\nlibgretl $sysinfo:\n";
+        gb_sysinfo->print<void>();
         std::cout << "libgretl built-in strings:\n";
         gb_strings->print<void>();
         std::cout << "gretl_plugin_path = " << gretl_plugin_path() << '\n'
@@ -271,7 +264,6 @@ GretlBundlePtr about (bool do_print)
     }
 
     gretl_pop_c_numeric_locale();
-    if (res->get_err()) std::cerr << errmsg_get_with_default(res->get_err()) << std::endl;
 
     return res;
 }

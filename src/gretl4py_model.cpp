@@ -485,13 +485,12 @@ void GretlModel::save_model_ (T *model)
     summary_ = std::string(printer_.get_buffer());   // for safety
 
     // we produce $model or $system bundle based on estimated @model
+    // as of 2026.11.16 we don't check bundel's internal err since all constructors throws exceptions
     if constexpr (std::is_same_v<T, equation_system>) {
         gb_model_ = std::make_shared<GretlBundle>(model);
     } else {
         gb_model_ = std::make_shared<GretlBundle>(model, dataset_->dset);
     }
-    err_ = gb_model_->get_err();
-    if (err_) handle_gretl_error(err_);
 
     // we finally register results on a python side
     py::object self = py::cast(this);

@@ -41,36 +41,42 @@ GretlBundle::GretlBundle (const GretlBundle &other)
     //
     // deep copy: 'this' gets its own independently-owned gretl_bundle
     //
-    b_ = gretl_bundle_copy(other.b_, &err_);
-    if (err_) handle_gretl_error(err_);
+    int err = 0;
+
+    b_ = gretl_bundle_copy(other.b_, &err);
+    if (err) handle_gretl_error(err);
 }
 
 GretlBundle::GretlBundle (MODEL *model, DATASET *dset)
 {
-    b_ = bundle_from_model(model, dset, &err_);
-    if (err_) handle_gretl_error(err_);
+    int err = 0;
+
+    b_ = bundle_from_model(model, dset, &err);
+    if (err) handle_gretl_error(err);
     if (!b_) handle_gretl_error(E_ALLOC);
 }
 
 GretlBundle::GretlBundle (GRETL_VAR *model, DATASET *dset) : b_(gretl_bundle_new())
 {
     if (!b_) handle_gretl_error(E_ALLOC);
-    err_ = gretl_VAR_bundlize(model, dset, b_);
-    if (err_) {
+    int err = gretl_VAR_bundlize(model, dset, b_);
+
+    if (err) {
         gretl_bundle_destroy(b_);
         b_ = nullptr;
-        handle_gretl_error(err_);
+        handle_gretl_error(err);
     }
 }
 
 GretlBundle::GretlBundle (equation_system *model) : b_(gretl_bundle_new())
 {
     if (!b_) handle_gretl_error(E_ALLOC);
-    err_ = equation_system_bundlize(model, b_);
-    if (err_) {
+    int err = equation_system_bundlize(model, b_);
+
+    if (err) {
         gretl_bundle_destroy(b_);
         b_ = nullptr;
-        handle_gretl_error(err_);
+        handle_gretl_error(err);
     }
 }
 
@@ -80,17 +86,20 @@ GretlBundle::GretlBundle (gretl_bundle *src, bool copy)
     // Here we either steal or make a copy of src
     // Note: if copy, 'src' _must_ be deallocated by libgretl
     //
-    copy ? b_ = gretl_bundle_copy(src, &err_) : b_ = src;
-    if (err_) handle_gretl_error(err_);
+    int err = 0;
+
+    copy ? b_ = gretl_bundle_copy(src, &err) : b_ = src;
+    if (err) handle_gretl_error(err);
     if (!b_) handle_gretl_error(E_ALLOC);
 }
 
 GretlBundle &GretlBundle::operator= (const GretlBundle &other)
 {
     if (this != &other) {
-        gretl_bundle *new_b = gretl_bundle_copy(other.b_, &err_);
+        int err = 0;
+        gretl_bundle *new_b = gretl_bundle_copy(other.b_, &err);
 
-        if (err_) handle_gretl_error(err_);
+        if (err) handle_gretl_error(err);
         if (free_b_ && b_ != nullptr) gretl_bundle_destroy(b_);
         b_ = new_b;
         free_b_ = true;
@@ -196,11 +205,6 @@ void GretlBundle::extract_ (py::dict &dict)
     });
 }
 
-int GretlBundle::get_err (void) const
-{
-    return err_;
-}
-
 py::dict GretlBundle::to_dict (void)
 {
     py::dict res;
@@ -223,14 +227,15 @@ T GretlBundle::print (bool tree)
     // note: if 'tree', we print bundle tree representation
     //
     GretlPrint printer = GretlPrint();
+    int err = 0;
 
     // we do the job
     if (tree) {
-        err_ = gretl_bundle_print_tree(b_, printer.prn_ptr());
+        err = gretl_bundle_print_tree(b_, printer.prn_ptr());
     } else {
-        err_ = gretl_bundle_print(b_, printer.prn_ptr());
+        err = gretl_bundle_print(b_, printer.prn_ptr());
     }
-    if (err_) handle_gretl_error(err_);
+    if (err) handle_gretl_error(err);
 
     // we either just print or return buffer
     if constexpr (std::is_same_v<T, void>) {
@@ -245,12 +250,10 @@ template void GretlBundle::print<void>(bool);
 
 std::string GretlBundle::repr_impl (void)
 {
-    if (err_) return "";
-
     return print<std::string>();
 }
 
-gretl_bundle *GretlBundle::get_ptr (void) const
+gretl_bundle *GretlBundle::get_ptr (void) const noexcept
 {
     return b_;
 }
@@ -283,12 +286,13 @@ T GretlBundle::get_element (const std::string &key)
     // and return either py::object or GretlTypesPtr
     //
     GretlType gtype = GRETL_TYPE_NONE;
-    void *data = gretl_bundle_get_data(b_, key.c_str(), &gtype, &err_);
+    int err = 0;
+    void *data = gretl_bundle_get_data(b_, key.c_str(), &gtype, &err);
 
-    if (err_) handle_gretl_error(err_);
-    auto val = convert_GretlType_to_GretlTypes(gtype == GRETL_TYPE_SERIES ? GRETL_TYPE_MATRIX : gtype, data, 0, err_);
+    if (err) handle_gretl_error(err);
+    auto val = convert_GretlType_to_GretlTypes(gtype == GRETL_TYPE_SERIES ? GRETL_TYPE_MATRIX : gtype, data, 0, err);
 
-    if (err_) handle_gretl_error(err_);
+    if (err) handle_gretl_error(err);
     if constexpr (std::is_same_v<T, py::object>) {
         return variant_to_pyobject(std::move(*val));
     } else if constexpr (std::is_same_v<T, GretlTypesPtr>) {
@@ -307,17 +311,18 @@ void GretlBundle::set_element (const std::string &key, const T &t)
     // we set bundle element by name (key)
     //
     using U = std::decay_t<T>;
+    int err = 0;
 
     if constexpr (std::is_same_v<U, bool> || std::is_same_v<U, int>) {
-        err_ = gretl_bundle_set_int(b_, key.c_str(), t);
+        err = gretl_bundle_set_int(b_, key.c_str(), t);
     } else if constexpr (std::is_same_v<U, double>) {
-        err_ = gretl_bundle_set_scalar(b_, key.c_str(), t);
+        err = gretl_bundle_set_scalar(b_, key.c_str(), t);
     } else if constexpr (std::is_same_v<U, std::string>) {
-        err_ = gretl_bundle_set_string(b_, key.c_str(), t.c_str());
+        err = gretl_bundle_set_string(b_, key.c_str(), t.c_str());
     } else if constexpr (std::is_same_v<U, GretlBundlePtr>) {
-        err_ = gretl_bundle_set_data(b_, key.c_str(), t->get_ptr(), GRETL_TYPE_BUNDLE);
+        err = gretl_bundle_set_data(b_, key.c_str(), t->get_ptr(), GRETL_TYPE_BUNDLE);
     } else if constexpr (std::is_same_v<U, GretlMatrixPtr>) {
-        err_ = gretl_bundle_set_data(b_, key.c_str(), t->get_ptr(), GRETL_TYPE_MATRIX);
+        err = gretl_bundle_set_data(b_, key.c_str(), t->get_ptr(), GRETL_TYPE_MATRIX);
     } else if constexpr (std::is_same_v<U, py::array>) {
         NumPyArrayView arr_view;
         gretl_matrix_ptr mat{nullptr};
@@ -328,12 +333,12 @@ void GretlBundle::set_element (const std::string &key, const T &t)
         if (!mat) handle_gretl_error(E_ALLOC);
 
         NumPyArray_to_gretl_storage<gretl_matrix>(arr_view, mat.get());
-        err_ = gretl_bundle_donate_data(b_, key.c_str(), mat.get(), GRETL_TYPE_MATRIX);
-        if (!err_) mat.release();
+        err = gretl_bundle_donate_data(b_, key.c_str(), mat.get(), GRETL_TYPE_MATRIX);
+        if (!err) mat.release();
     } else {
         static_assert(always_false<U>, "GretlBundle::set_element(): unknown type");
     }
-    if (err_) handle_gretl_error(err_);
+    if (err) handle_gretl_error(err);
 }
 template void GretlBundle::set_element<bool>(const std::string&, const bool&);
 template void GretlBundle::set_element<int>(const std::string&, const int&);
@@ -348,24 +353,26 @@ void GretlBundle::set_element (const std::string &key, const py::object &obj)
     //
     // overload dedicated for loading generic 'py::object' into bundle
     //
+    int err = 0;
+
     if (is_pybool(obj)) {
-        err_ = gretl_bundle_set_int(b_, key.c_str(), obj.cast<bool>());
+        err = gretl_bundle_set_int(b_, key.c_str(), obj.cast<bool>());
     } else if (is_pyint(obj)) {
-        err_ = gretl_bundle_set_int(b_, key.c_str(), obj.cast<int>());
+        err = gretl_bundle_set_int(b_, key.c_str(), obj.cast<int>());
     } else if (is_pyfloat(obj)) {
-        err_ = gretl_bundle_set_scalar(b_, key.c_str(), obj.cast<double>());
+        err = gretl_bundle_set_scalar(b_, key.c_str(), obj.cast<double>());
     } else if (is_pystr(obj)) {
-        err_ = gretl_bundle_set_string(b_, key.c_str(), obj.cast<std::string>().c_str());
+        err = gretl_bundle_set_string(b_, key.c_str(), obj.cast<std::string>().c_str());
     } else if (is_pygretlbundle(obj)) {
-        err_ = gretl_bundle_set_data(b_, key.c_str(), obj.cast<GretlBundlePtr>()->get_ptr(), GRETL_TYPE_BUNDLE);
+        err = gretl_bundle_set_data(b_, key.c_str(), obj.cast<GretlBundlePtr>()->get_ptr(), GRETL_TYPE_BUNDLE);
     } else if (is_pygretlmatrix(obj)) {
-        err_ = gretl_bundle_set_data(b_, key.c_str(), obj.cast<GretlMatrixPtr>()->get_ptr(), GRETL_TYPE_MATRIX);
+        err = gretl_bundle_set_data(b_, key.c_str(), obj.cast<GretlMatrixPtr>()->get_ptr(), GRETL_TYPE_MATRIX);
     } else if (is_pydict(obj)) {
-        err_ = gretl_bundle_set_data(b_, key.c_str(), GretlBundle(obj.cast<py::dict>()).get_ptr(), GRETL_TYPE_BUNDLE);
+        err = gretl_bundle_set_data(b_, key.c_str(), GretlBundle(obj.cast<py::dict>()).get_ptr(), GRETL_TYPE_BUNDLE);
     } else {
         throw std::runtime_error("GretlBundle::set_element(): unsupported py::object type");
     }
-    if (err_) handle_gretl_error(err_);
+    if (err) handle_gretl_error(err);
 }
 
 void GretlBundle::delete_element (const std::string &key)
@@ -373,8 +380,9 @@ void GretlBundle::delete_element (const std::string &key)
     //
     // deletes the data item under @key if such an item is present
     //
-    err_ = gretl_bundle_delete_data(b_, key.c_str());
-    if (err_) handle_gretl_error(err_);
+    int err = gretl_bundle_delete_data(b_, key.c_str());
+
+    if (err) handle_gretl_error(err);
 }
 
 py::object GretlBundle::pop (const std::string &key)
