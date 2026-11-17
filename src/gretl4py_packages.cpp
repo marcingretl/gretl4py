@@ -127,7 +127,9 @@ GretlPackage::GretlPackage (const std::string &pkg_name, const std::string &suff
     }
 
     // we register functions metadata
+    // The iterator also returns unpackaged functions, which must not be exported.
     while (const char *func_name = next_available_function_name(pkg_, &idxp)) {
+        if (get_function_from_package(func_name, pkg_) == nullptr) continue;
         if (gretl_is_public_user_function(func_name) && !excluded_functions.count(func_name)) register_function_metadata(func_name);
     }
     // workaround for packages in which the _only_ one public
