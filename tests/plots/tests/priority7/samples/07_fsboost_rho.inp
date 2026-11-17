@@ -1,0 +1,13 @@
+# fsboost: draw residual-correlation paths over forward-stagewise iterations.
+# Cap the iterations so this fixture is suitable for a quick isolated probe.
+set seed 20261117
+nulldata 140
+setobs 4 1990:1 --time-series
+series x1 = normal()
+series x2 = normal()
+series x3 = normal()
+series y = 2*x1 - 0.9*x2 + 0.3*x3 + 0.4*normal()
+list X = x1 x2 x3
+bundle opts = _(max_num_iterations=150, early_stopping_rounds=20, learning_rate=0.05, verbose=0)
+bundle m = fsreg(y, X, opts)
+plot_rho_values(m)

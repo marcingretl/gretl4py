@@ -1,0 +1,9 @@
+case,package,script
+01_Winters_forecast,Winters,samples/01_Winters_forecast.inp
+02_Winters_components,Winters,samples/02_Winters_components.inp
+03_tsdecomp_vertical,tsdecomp,samples/03_tsdecomp_vertical.inp
+04_tsdecomp_horizontal,tsdecomp,samples/04_tsdecomp_horizontal.inp
+05_hamilcycle,hamilcycle,samples/05_hamilcycle.inp
+06_ZivotAndrews,ZivotAndrews,samples/06_ZivotAndrews.inp
+07_fsboost_rho,fsboost,samples/07_fsboost_rho.inp
+08_fsboost_coefficients,fsboost,samples/08_fsboost_coefficients.inp

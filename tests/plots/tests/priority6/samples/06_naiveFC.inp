@@ -1,0 +1,9 @@
+# naiveFC: random-walk forecast with a Matplotlib time-series chart.
+# Avoid an external dataset and request the public plot function explicitly.
+set seed 20261117
+nulldata 112
+setobs 4 1998:1 --time-series
+series y = 30 + 0.08*index + 0.75*sin(2*$pi*index/4) + 0.3*normal()
+bundle opts = _(h=8, verbose=0, filename="display")
+bundle b = naiveFC(y, "rwFC", opts)
+naivePlot(&b)

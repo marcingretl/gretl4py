@@ -1,0 +1,8 @@
+# tsdecomp: classical additive decomposition in a three-row gridplot.
+# The package builds three plot buffers, then combines them using gridplot.
+set seed 20261117
+nulldata 120
+setobs 4 1995:1 --time-series
+series y = 25 + 0.08*index + 2.0*sin(2*$pi*index/4) + 0.5*normal()
+bundle d = clc_decompose(y)
+scalar rc = plot_decompose(y, d, _(layout="vertical", title="Classical decomposition"))

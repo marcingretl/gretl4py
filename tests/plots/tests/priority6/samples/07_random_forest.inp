@@ -1,0 +1,15 @@
+# random_forest: run the R-backed estimator and draw feature importances.
+# Requires the installed R package randomForest and gretl4py's package filter fix.
+# This plot uses gnuplot 'with boxxy' and inline named data, so it is a useful
+# compatibility probe; it is not assumed to pass before the first execution.
+set seed 20261117
+nulldata 200
+setobs 4 1975:1 --time-series
+series x1 = normal()
+series x2 = normal()
+series x3 = normal()
+series y = 0.9*x1 - 0.5*x2 + 0.2*x3 + 0.3*normal()
+list X = x1 x2 x3
+bundle opts = _(n_train=150, tune=0, verbose=0, seed=20261117)
+bundle result = random_forest(y, X, opts)
+rf_plot(&result)

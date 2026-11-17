@@ -4,12 +4,17 @@ This is a **static inventory and manual integration-test toolkit** for discoveri
 plot-producing gretl packages. It does not claim runtime compatibility merely
 because a plotting keyword appears in a package.
 
-## Verified status (15 November 2026)
+## Verified status (17 November 2026)
 
-- **`gptranslate`: 83/83 Meson tests passed** (`meson test -C build --print-errorlogs`), as reported from the current build.
-- **`priority5`: 17/17 reviewed integration cases passed**, covering **15 gretl packages** and producing **19 Matplotlib figures** in one complete batch run.
-- **Audit runner: 54/54 offline unit tests passed** (`python -m unittest discover -p 'test_*.py' -q`, verified against the current 17-case fixture tree).
-- The **95-candidate exploratory batch** remains a separate *historical* run from 14 November 2026. It has not yet been repeated after the latest fixes. See [STATUS.md](STATUS.md).
+- **`priority5`: 17/17 PASS**, covering 15 gretl packages and generating 19 Matplotlib figures.
+- **`priority6`: 7/7 PASS**, covering 5 additional packages and generating 7 figures.
+- **`priority7`: 8/8 PASS**, covering 5 additional packages and generating 8 figures.
+- **Maintained integration total: 32/32 PASS, 34 figures, 25 distinct packages**, confirmed by complete batch runs for all three suites.
+- **`gptranslate` Meson regression:** the user confirmed that the full test suite passes after the latest `fsboost` fix on 17 November 2026. The exact updated test count was not supplied; the earlier explicitly numbered full run was 83/83 on 15 November.
+- **Latest 95-candidate exploratory batch (17 November): 56 PASS, 0 FAIL**, generating 177 figures from passing examples. Other outcomes and skip policies are documented below.
+- **Audit runner offline unit tests:** the previously recorded verification was 54/54 PASS on 15 November, before the most recent audit filtering changes. A new complete count has not been reported.
+
+The maintained suites and the 95-candidate exploratory batch are **separate test sets**; figures and PASS counts should not be presented as unique plots across those sets. See [STATUS.md](STATUS.md) for dated results and limitations.
 
 An integration **PASS** means the executed hansl sample completed without a detected error and left at least one active Matplotlib figure; it does **not** establish pixel-for-pixel agreement with gnuplot, complete package coverage, or correctness of every visual element.
 
@@ -28,11 +33,17 @@ packages are outside the default scope.
 
 ## Local configuration
 
-Edit **`audit_config.py`** to change the base directory. The default is:
+The audit toolkit is located directly in `tests/plots/`, alongside `audit/`,
+`package_plot_results/` and the probe scripts. The preferred portable setting
+in **`audit_config.py`** is:
 
 ```python
-PROJECT_ROOT = Path("/home/marcin/cvs/Gretl/gretl-gretl4py/tests/plots/gretl_package_plot_audit")
+PROJECT_ROOT = Path(__file__).resolve().parent
 ```
+
+This avoids erroneously searching for a nested
+`tests/plots/gretl_package_plot_audit/audit/` directory. Adjust the setting
+only if the toolkit has intentionally been moved elsewhere.
 
 Downloaded contributed packages are kept in `PROJECT_ROOT/audit/contributed/`.
 Plots from the manual probe are saved under `PROJECT_ROOT/package_plot_results/`.
@@ -210,20 +221,22 @@ python probe_package_batch.py --candidates --contributed-only --approved
 
 ### Full candidate batch and focused BVAR regression
 
-Following review of the installed examples, the 95-candidate exploratory pass
-was run as:
+The latest complete exploratory audit of 95 candidates was run on
+**17 November 2026**, after the R integration and package-enumeration fixes:
 
 ```bash
 python probe_package_batch.py --candidates \
-    --approved --continue-on-error --skip-bin
+    --approved --continue-on-error --skip-bin \
+    --skip-missing-includes
 ```
 
-The **14 November 2026 full-run snapshot** reported 54 `PASS` examples
-(175 active Matplotlib figures in total), 31 `NO_FIGURES`, 71 `NO_SAMPLES`,
-4 `SKIPPED_BIN` and 8 `FAIL`. These counts mix **example-level outcomes**
-with package-level `NO_SAMPLES` and one preparation failure; they are not
-95 independent plotting tests. See `STATUS.md` for the failure triage and
-subsequent focused retest.
+Its summary was **56 `PASS`, 33 `NO_FIGURES`, 72 `NO_SAMPLES`,
+4 `SKIPPED_BIN`, 2 `SKIPPED_INCLUDE` and 0 `FAIL`**. The 56 passing
+examples produced 177 active Matplotlib figures. These statuses mix
+example-level outcomes with package-level `NO_SAMPLES`; they are **not**
+95 independent plotting tests. The earlier 14 November snapshot (54 `PASS`,
+31 `NO_FIGURES`, 71 `NO_SAMPLES`, 4 `SKIPPED_BIN`, 8 `FAIL`, 175 figures)
+remains in [STATUS.md](STATUS.md) for comparison.
 
 The BVAR example `Usage_examples/BVAR_large.inp` loads data via:
 
@@ -243,9 +256,8 @@ python probe_package_batch.py BVAR \
 ```
 
 The verified result is `NO_FIGURES` with `FAIL=0` (the script finishes, but
-does not leave an active Matplotlib figure). A complete candidate rerun **after**
-this change has not yet been reported; do not overwrite the full-run baseline
-with the focused result.
+does not leave an active Matplotlib figure). This classification was also
+confirmed in the full 17 November 2026 candidate rerun.
 
 Reports are placed in `package_plot_results/batch/`:
 
@@ -259,8 +271,11 @@ missing result marker, or a timeout; `NO_FIGURES` means the sample finished
 without a detected error but no active figure was found; `NO_SAMPLES` means a
 package (addon or contributed) has no installed `.inp` examples to run;
 `SKIPPED_BIN` means an example was deliberately not executed because it
-uses a native `.bin` database. Neither `NO_FIGURES` nor `NO_SAMPLES` proves
-that a package lacks plot functionality. The batch returns a nonzero exit
+uses a native `.bin` database; `SKIPPED_INCLUDE` means a literal `.inp`
+`include` target is unavailable and the user requested
+`--skip-missing-includes`. The generated `session.inp` artifact is **always
+excluded** from installed-example discovery, including for BACE. Neither
+`NO_FIGURES` nor `NO_SAMPLES` proves that a package lacks plot functionality. The batch returns a nonzero exit
 status if any failure is recorded. A `FAIL` must be classified from its log;
 it does not automatically indicate a `gptranslate` defect.
 
@@ -328,6 +343,26 @@ database paths computed at runtime. Such failures can still occur and should be
 investigated normally. All previous behavior is preserved without `--skip-bin`.
 
 
+### Skip examples with missing literal `.inp` includes
+
+Use `--skip-missing-includes` to classify incomplete upstream examples without
+misreporting them as translator failures. The filter detects literal missing
+`.inp` references in `include` commands and records `SKIPPED_INCLUDE` with
+the missing filename and source line. It does **not** resolve dynamic hansl
+expressions or repair upstream scripts.
+
+```bash
+python probe_package_batch.py --candidates \
+    --approved --continue-on-error --skip-bin \
+    --skip-missing-includes
+```
+
+In the latest candidate audit, `MAR/MAR_sample.inp` referenced the missing
+`MAR_10.inp`, and `DCC/dj.inp` referenced the missing `DCC.inp`; both were
+classified as `SKIPPED_INCLUDE`. The runtime-generated `session.inp` file
+is permanently excluded from sample discovery; it must never be counted as
+a BACE example. These skips are **not** successful plot translations.
+
 ## Continue candidate batches with `--offset`
 
 The optional `--offset N` skips the first N packages in the selected,
@@ -342,7 +377,7 @@ python probe_package_batch.py --candidates --contributed-only \
 `--offset` defaults to 0. `--offset` must not be negative. Ordering follows
 the scanner's current `plot_packages.csv` and may change if the catalog
 is rescanned or sorted differently.
-## 5. Maintained plotting fixtures (`priority5`)
+## 5. Maintained plotting fixtures (`priority5`–`priority7`)
 
 Installed examples do not always exercise a package's plotting functions, and
 many packages have no `.inp` examples at all. The existing batch runner therefore
@@ -351,7 +386,23 @@ creating a second runner. Each suite contains `manifest.csv`
 (`case,package,script`), `samples/*.inp` and optional `data/*.gdt`. Paths in the
 manifest must remain within the suite directory.
 
-The `priority5` suite was expanded in three stages and now contains **17
+Three suites are now maintained and verified under the **same batch runner**:
+
+| Suite | Cases | Distinct packages | Figures | Verified result |
+| --- | ---: | ---: | ---: | --- |
+| `priority5` | 17 | 15 | 19 | **17/17 PASS** |
+| `priority6` | 7 | 5 | 7 | **7/7 PASS** |
+| `priority7` | 8 | 5 | 8 | **8/8 PASS** |
+| **Total** | **32** | **25** | **34** | **32/32 PASS** |
+
+All three full custom batches were reported on 15–17 November 2026, with
+**zero `FAIL` and zero skipped cases**. A `PASS` means a script completed and
+produced at least one active Matplotlib figure; visual equivalence to gnuplot
+has not been established.
+
+### `priority5` (17 cases)
+
+The `priority5` suite was expanded in three stages and contains **17
 confirmed passing cases for 15 packages**:
 
 | Case | Package | Plot feature covered | Figures in full run |
@@ -429,6 +480,93 @@ plot scripts. Preserve the generated gnuplot file when investigating a new
 translator failure. Extend this suite through its manifest or create another
 suite directory, **not another Python runner**.
 
+### `priority6` (7 cases; complete 17 November 2026)
+
+`priority6` adds five packages without installed runnable `.inp` examples.
+The synthetic fixtures are under `tests/priority6/`.
+
+| Case | Package | Plot feature covered | Figures |
+| --- | --- | --- | ---: |
+| `01_Brown_linear` | `Brown` | Linear exponential-smoothing plot | 1 |
+| `02_Brown_quadratic` | `Brown` | Quadratic exponential-smoothing plot | 1 |
+| `03_Holt_forecast` | `Holt` | Forecast/fitted series | 1 |
+| `04_Holt_components` | `Holt` | `tsplots` component panels | 1 |
+| `05_BreitungCandelonTest` | `BreitungCandelonTest` | Frequency-domain test plot | 1 |
+| `06_naiveFC` | `naiveFC` | Random-walk forecast with `set style line` | 1 |
+| `07_random_forest` | `random_forest` | R-backed variable-importance chart, `with boxxy` | 1 |
+| **Total** | **5 packages** | **7 cases** | **7** |
+
+```bash
+python probe_package_batch.py --custom priority6 \
+    --approved --continue-on-error
+# [SUMMARY] PASS=7, NO_FIGURES=0, NO_SAMPLES=0,
+# SKIPPED_BIN=0, SKIPPED_INCLUDE=0, FAIL=0
+
+# Focused cases, if necessary:
+python probe_package_batch.py --custom priority6 \
+    --cases 06_naiveFC 07_random_forest --approved --continue-on-error
+```
+
+The original installed `Brown` 1.4 used an obsolete hansl `sprintf` form;
+updating to `Brown` 1.6 allowed both fixtures to complete. The `naiveFC`
+test identified a valid `set style line ... lc rgb ... lt ...` declaration
+without `lw`. The `random_forest` test exercised `with boxxy`, `ytic(1)`,
+per-row rectangle geometry and arithmetic expressions in `set offsets`.
+These translator gaps were fixed and tested without changing libgretl or the
+upstream packages. `random_forest` also requires a working embedded R setup,
+the R `randomForest` package and the gretl4py package-function filtering fix.
+
+Results: `package_plot_results/batch/custom/priority6/`.
+
+### `priority7` (8 cases; complete 17 November 2026)
+
+`priority7` adds eight deterministic fixtures for five further packages:
+
+| Case | Package | Plot feature covered | Figures |
+| --- | --- | --- | ---: |
+| `01_Winters_forecast` | `Winters` | Seasonal forecast and confidence bands | 1 |
+| `02_Winters_components` | `Winters` | Component panels | 1 |
+| `03_tsdecomp_vertical` | `tsdecomp` | Vertical three-panel `gridplot` | 1 |
+| `04_tsdecomp_horizontal` | `tsdecomp` | Horizontal three-panel `gridplot` | 1 |
+| `05_hamilcycle` | `hamilcycle` | Hamilton cycle plot | 1 |
+| `06_ZivotAndrews` | `ZivotAndrews` | Structural break statistic / critical values | 1 |
+| `07_fsboost_rho` | `fsboost` | Residual-correlation paths | 1 |
+| `08_fsboost_coefficients` | `fsboost` | Coefficient paths with per-series point sizes | 1 |
+| **Total** | **5 packages** | **8 cases** | **8** |
+
+```bash
+python probe_package_batch.py --custom priority7 \
+    --approved --continue-on-error
+# [SUMMARY] PASS=8, NO_FIGURES=0, NO_SAMPLES=0,
+# SKIPPED_BIN=0, SKIPPED_INCLUDE=0, FAIL=0
+
+# The correct case identifiers are `07_fsboost_rho` and
+# `08_fsboost_coefficients` (not `07_fsboost_residuals`).
+python probe_package_batch.py --custom priority7 \
+    --cases 07_fsboost_rho 08_fsboost_coefficients \
+    --approved --continue-on-error
+```
+
+Both `tsdecomp` layouts pass without further translator changes. The
+`fsboost` coefficient-path fixture exposed `set style line N ps 0.02`,
+with only a point-size modifier; `gptranslate` now accepts `ps`/`pointsize`
+and preserves marker sizing in the Matplotlib output. The companion
+`fsboost` residual-correlation fixture passes unchanged.
+
+Results: `package_plot_results/batch/custom/priority7/`.
+
+### Re-run all maintained suites
+
+```bash
+python probe_package_batch.py --custom priority5 --approved --continue-on-error
+python probe_package_batch.py --custom priority6 --approved --continue-on-error
+python probe_package_batch.py --custom priority7 --approved --continue-on-error
+```
+
+Each suite has a separate report directory. `--cases` selects individual
+fixtures and `--out` can preserve dated snapshots. The custom suites do not
+alter the default 95-candidate batch or its status classification.
+
 ## Safety and limits
 
 Scanning never runs packages or contacts domains beyond the configured official
@@ -443,8 +581,10 @@ are neither a full hansl call graph nor a dynamic rendering proof.
 python -m unittest discover -p 'test_*.py' -q
 ```
 
-The current 17-case fixture tree passed **54 tests** in the local offline
-unit-test run on 15 November 2026. Some mocked error-path tests intentionally
+The previously recorded audit-runner verification passed **54 tests** in a
+local offline unit-test run on 15 November 2026. That count predates the
+`session.inp` exclusion and `SKIPPED_INCLUDE` changes; a new full unit-test
+count has not been supplied. Some mocked error-path tests intentionally
 print `[FAIL]` or native diagnostic messages; the final `unittest` result
 (`OK` or `FAILED`) determines whether the unit suite passed. These tests do
 not replace the end-to-end `gretl4py` and Meson runs reported above.
