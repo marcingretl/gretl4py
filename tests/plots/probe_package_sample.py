@@ -95,7 +95,10 @@ def list_sample_scripts(directory: Path) -> list[Path]:
     if not directory.is_dir():
         return []
     return sorted(
-        (p for p in directory.rglob("*") if p.is_file() and p.suffix.lower() == ".inp"),
+        # session.inp is an interactive session artifact, never a package example.
+        (p for p in directory.rglob("*")
+         if p.is_file() and p.suffix.lower() == ".inp"
+         and p.name.casefold() != "session.inp"),
         key=lambda p: (p.relative_to(directory).as_posix().casefold(),
                        p.relative_to(directory).as_posix()),
     )

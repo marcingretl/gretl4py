@@ -202,6 +202,35 @@ class BatchTests(unittest.TestCase):
                 self.assertEqual(run.call_count, 1)
             self.assertEqual(self.read_report(out)[0]["status"], "NO_SAMPLES")
 
+    def test_missing_inp_include_detector(self):
+        from probe_package_batch import missing_literal_inp_include
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp) / "DCC"
+            examples = root / "examples"
+            examples.mkdir(parents=True)
+            sample = examples / "dj.inp"
+            sample.write_text("# include ignored.inp\ninclude DCC.inp\n")
+            self.assertEqual(missing_literal_inp_include(sample), (2, "DCC.inp"))
+            (root / "DCC.inp").write_text("# present\n")
+            self.assertIsNone(missing_literal_inp_include(sample))
+
+    def test_skip_missing_inp_include_is_explicit(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            out = Path(tmp)
+            examples = out / "DCC" / "examples"
+            examples.mkdir(parents=True)
+            (examples / "dj.inp").write_text("include DCC.inp\n")
+            args = self.args(out)
+            args.packages = ["DCC"]
+            args.skip_missing_includes = True
+            responses = [CommandResult(0, f"[EXAMPLES] {examples}\n[EXAMPLE] dj.inp\n", None)]
+            with patch("probe_package_batch.run_command", side_effect=responses) as run:
+                self.assertEqual(run_batch(args), 0)
+                self.assertEqual(run.call_count, 1)
+            row = self.read_report(out)[0]
+            self.assertEqual(row["status"], "SKIPPED_INCLUDE")
+            self.assertIn("DCC.inp", row["reason"])
+
     def test_skip_bin_detector_real_cffilt_example(self):
         source = """# open ignored.bin
 # Replicate Christiano and Fitzgerald (2003)
