@@ -157,14 +157,20 @@ void gretl4py_init (void)
     if (int err = gretl_set_path_by_name("workdir", start_dir.c_str())) handle_gretl_error(err);
     if (const char *env = std::getenv("GRETL_HOME"); env) {
         if (int err = gretl_set_path_by_name("gretldir", env)) handle_gretl_error(err);
+
         std::filesystem::path dotdir_path = std::filesystem::path(std::string(env)) / "tmp";
 
-        if (int err = gretl_set_path_by_name("dotdir", dotdir_path.string().c_str())) handle_gretl_error(err);
+        // Ensure the trailing directory separator expected by libgretl.
+        dotdir_path += std::filesystem::path::preferred_separator;
+        const std::string dotdir = dotdir_path.string();
+
+        if (int err = gretl_set_path_by_name("dotdir", dotdir.c_str())) handle_gretl_error(err);
+
         // we set up environment variable to for gretlmpi
 #ifdef _WIN32
-        _putenv_s("GRETL4PY_DOTDIR", dotdir_path.string().c_str());
+        _putenv_s("GRETL4PY_DOTDIR", dotdir.c_str());
 #else
-        setenv("GRETL4PY_DOTDIR", dotdir_path.string().c_str(), 1);
+        setenv("GRETL4PY_DOTDIR", dotdir.c_str(), 1);
 #endif
     }
 
