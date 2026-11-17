@@ -313,13 +313,13 @@ A package is loaded with `gretl.include()`:
 import gretl
 
 gretl.pkg("install", "BMA")
-BMA = gretl.include("BMA")
+bma = gretl.include("BMA")
 ```
 
 The returned package object can be inspected, for example:
 
 ```python
-BMA.show_functions()
+bma.show_functions()
 ```
 
 After a package has been included, its functions are available through the `gretl`
@@ -328,7 +328,7 @@ module. For example:
 ```python
 import gretl
 
-BMA = gretl.include("BMA")
+bma = gretl.include("BMA")
 
 data = gretl.get_data("FLS_41t72.gdt", frompkg="BMA")
 
