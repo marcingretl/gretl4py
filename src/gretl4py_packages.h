@@ -62,7 +62,6 @@ private:
     gretl_char_ptr pdfname_ = nullptr;  // name of pdf doc (if exists)
     double version_;                    // package version (numeric)
     std::string long_version_;          // package "long" version (string)
-    int err_ = 0;
 
     GretlPackage (const std::string &pkg_name, const std::string &suffix, bool print_summary = true);
 
@@ -81,8 +80,6 @@ public:
     static bool package_loaded (const std::string &pkgname);
 
     // instance methods
-    int get_err (void) const;
-
     std::string repr_impl (void);
 
     py::list get_help (void);

@@ -42,7 +42,6 @@ class GretlBundle
 private:
     bool free_b_ = true;                            // if *b should be freed
     gretl_bundle *b_ = nullptr;                     // libgretl bundle pointer
-    int err_ = 0;
 
     template <typename F>
     void for_each_bundle_element_ (F &&f);
@@ -62,15 +61,13 @@ public:
 
     GretlBundle &operator= (const GretlBundle &other);
 
-    int get_err (void) const;
-
     py::dict to_dict (void);                        // bundle-to-dict mapper
 
     void python_register (py::object &obj);         // register bundle contents in python object
 
     std::string repr_impl (void);                   // bundle printing via __repr__
 
-    gretl_bundle *get_ptr (void) const;             // raw gretl_bundle pointer
+    gretl_bundle *get_ptr (void) const noexcept;    // raw gretl_bundle pointer
 
     py::list keys (void);
 

@@ -82,19 +82,20 @@ GretlPackage::GretlPackage (const std::string &pkg_name, const std::string &suff
     char path[FILENAME_MAX];    // get_full_filename() requires a buffer of at least FILENAME_MAX bytes
     char *raw_ptr = nullptr;    // placeholder for PDF filename
     int idxp = 0;
+    int err = 0;
 
     // we try to find a path to the package
     *path = '\0';
     if (suffix.empty()) {
-        err_ = get_full_filename((pkg_name + ".gfn").c_str(), path, OPT_I);
+        err = get_full_filename((pkg_name + ".gfn").c_str(), path, OPT_I);
     } else {
-        err_ = get_full_filename((pkg_name + suffix).c_str(), path, OPT_I);
+        err = get_full_filename((pkg_name + suffix).c_str(), path, OPT_I);
     }
-    if (err_) handle_gretl_error(err_, pkg_name);
+    if (err) handle_gretl_error(err, pkg_name);
 
     // we load the package
-    pkg_ = get_function_package_by_filename(path, &err_);
-    if (err_) handle_gretl_error(err_);
+    pkg_ = get_function_package_by_filename(path, &err);
+    if (err) handle_gretl_error(err);
     if (pkg_name != function_package_get_name(pkg_)) throw std::runtime_error("package name mismatch: internal: '"
         + std::string(function_package_get_name(pkg_)) + "', provided: '" + pkg_name_ + "'");
     full_path_ = path;
@@ -109,8 +110,8 @@ GretlPackage::GretlPackage (const std::string &pkg_name, const std::string &suff
     }
 
     // setup some basic info about package
-    err_ = bundle_function_package_info(full_path_.c_str(), gb_.get_ptr());
-    if (err_) handle_gretl_error(err_);
+    err = bundle_function_package_info(full_path_.c_str(), gb_.get_ptr());
+    if (err) handle_gretl_error(err);
     version_ = std::get<double>(*gb_.get_element<GretlTypesPtr>("version"));
     long_version_ = get_properties_<std::string>("version");
 
@@ -126,7 +127,9 @@ GretlPackage::GretlPackage (const std::string &pkg_name, const std::string &suff
     }
 
     // we register functions metadata
+    // The iterator also returns unpackaged functions, which must not be exported.
     while (const char *func_name = next_available_function_name(pkg_, &idxp)) {
+        if (get_function_from_package(func_name, pkg_) == nullptr) continue;
         if (gretl_is_public_user_function(func_name) && !excluded_functions.count(func_name)) register_function_metadata(func_name);
     }
     // workaround for packages in which the _only_ one public
@@ -150,8 +153,9 @@ GretlPackage::GretlPackage (const std::string &pkg_name, const std::string &suff
 
 GretlPackage::~GretlPackage (void)
 {
-    err_ = function_package_unload_full(pkg_name_.c_str());
-    if (err_) std::cerr << errmsg_get_with_default(err_) << std::endl;
+    int err = function_package_unload_full(pkg_name_.c_str());
+
+    if (err) std::cerr << errmsg_get_with_default(err) << std::endl;
 }
 
 void GretlPackage::clear_registry (void)
@@ -198,14 +202,15 @@ T GretlPackage::get_properties_ (const char *property)
     T res;
     gchar *val_raw = nullptr;
     gretl_gchar_ptr val{nullptr};
+    int err = 0;
 
     if constexpr (std::is_same_v<T, DataReq>) {
-        err_ = function_package_get_properties(pkg_, property, &res, nullptr);
+        err = function_package_get_properties(pkg_, property, &res, nullptr);
     } else {
-        err_ = function_package_get_properties(pkg_, property, &val_raw, nullptr);
+        err = function_package_get_properties(pkg_, property, &val_raw, nullptr);
         val.reset(val_raw);
     }
-    if (err_) handle_gretl_error(err_);
+    if (err) handle_gretl_error(err);
 
     // we produce output
     if constexpr (std::is_same_v<T, DataReq>) {
@@ -259,13 +264,14 @@ void GretlPackage::unpack_kwargs_package_ (const std::string &func_name, fncall 
     void *arg_value;        // pointer to variable's value to be pushed on stack
     GretlType arg_type;     // variable's type
     double darg_value;      // value to be pushed on stack (if double)
+    int err = 0;
 
     for (const auto &[key, arg_no] : func_name_args) {
         if (!kwargs.contains(key)) {
             // if parameter is [optional] and _does not_ have [default] (i.e. does not have default value), we must set it to GRETL_TYPE_NONE
             if (fn_param_optional(func_get_ptr(func_name), arg_no) && !fn_param_has_default(func_get_ptr(func_name), arg_no)) {
-                err_ = push_function_arg(func_call, key.c_str(), nullptr, GRETL_TYPE_NONE, nullptr);
-                if (err_) handle_gretl_error(err_);
+                err = push_function_arg(func_call, key.c_str(), nullptr, GRETL_TYPE_NONE, nullptr);
+                if (err) handle_gretl_error(err);
             }
             continue;
         }
@@ -281,16 +287,16 @@ void GretlPackage::unpack_kwargs_package_ (const std::string &func_name, fncall 
             arg_name = py::cast<std::string>(val);
             int vnum = dataset->get_series_id(arg_name);
 
-            err_ = push_function_arg(func_call, arg_name.c_str(), nullptr, GRETL_TYPE_USERIES, &vnum);
-            if (err_) handle_gretl_error(err_);
+            err = push_function_arg(func_call, arg_name.c_str(), nullptr, GRETL_TYPE_USERIES, &vnum);
+            if (err) handle_gretl_error(err);
             continue;
         } else if (arginfo.gtype == GRETL_TYPE_BUNDLE) {
             // note: here we deal with both: GRETL_TYPE_BUNDLE and GRETL_TYPE_BUNDLE_REF
             // final distinction is made by key_type
             auto gb = val.cast<GretlBundlePtr>();
 
-            err_ = push_function_arg(func_call, nullptr, nullptr, key_type, gb->get_ptr());
-            if (err_) handle_gretl_error(err_);
+            err = push_function_arg(func_call, nullptr, nullptr, key_type, gb->get_ptr());
+            if (err) handle_gretl_error(err);
             continue;
         } else if (arginfo.gtype == GRETL_TYPE_MATRIX) {
             // note: here we deal with both: GRETL_TYPE_MATRIX and GRETL_TYPE_MATRIX_REF
@@ -298,7 +304,7 @@ void GretlPackage::unpack_kwargs_package_ (const std::string &func_name, fncall 
             if (arginfo.pytype == "GretlMatrix") {
                 auto gm = val.cast<GretlMatrixPtr>();
 
-                err_ = push_function_arg(func_call, nullptr, nullptr, key_type, gm->get_ptr());
+                err = push_function_arg(func_call, nullptr, nullptr, key_type, gm->get_ptr());
             } else {
                 if (key_type == GRETL_TYPE_MATRIX_REF) handle_gretl_error(E_INVARG, key.c_str(), "must be GretlMatrix, not NumPy");
                 NumPyArrayView arr_view;
@@ -310,16 +316,16 @@ void GretlPackage::unpack_kwargs_package_ (const std::string &func_name, fncall 
                 mat.reset(gretl_matrix_alloc(arr_view.rows, arr_view.cols));
                 if (!mat) handle_gretl_error(E_ALLOC);
                 NumPyArray_to_gretl_storage<gretl_matrix>(arr_view, mat.get());
-                err_ = push_function_arg(func_call, key.c_str(), nullptr, GRETL_TYPE_MATRIX, mat.release());
+                err = push_function_arg(func_call, key.c_str(), nullptr, GRETL_TYPE_MATRIX, mat.release());
             }
-            if (err_) handle_gretl_error(err_);
+            if (err) handle_gretl_error(err);
             continue;
         } else if (arginfo.gtype == GRETL_TYPE_LIST) {
             if (!dataset) handle_gretl_error(E_NODATA);
             auto list = dataset->gretllist(val.cast<py::list>());
 
-            err_ = push_function_arg(func_call, key.c_str(), nullptr, GRETL_TYPE_LIST, list.release());
-            if (err_) handle_gretl_error(err_);
+            err = push_function_arg(func_call, key.c_str(), nullptr, GRETL_TYPE_LIST, list.release());
+            if (err) handle_gretl_error(err);
             continue;
         } else if (arginfo.gtype == GRETL_TYPE_STRING) {
             // special case: we need to know if we deal with
@@ -337,15 +343,15 @@ void GretlPackage::unpack_kwargs_package_ (const std::string &func_name, fncall 
 
                 // for reference, we change uv type!!!
                 arg_type = is_ref_user_var ? gretl_type_get_ref_type(user_var_get_type(uv)) : user_var_get_type(uv);
-                err_ = push_function_arg(func_call, arg_name.c_str(), uv, arg_type, user_var_get_value(uv));
-                if (err_) handle_gretl_error(err_);
+                err = push_function_arg(func_call, arg_name.c_str(), uv, arg_type, user_var_get_value(uv));
+                if (err) handle_gretl_error(err);
                 continue;
             } else if (key_type == GRETL_TYPE_LIST) {
                 if (!dataset) handle_gretl_error(E_NODATA);
                 auto list = dataset->gretllist(val.cast<std::string>());
 
-                err_ = push_function_arg(func_call, key.c_str(), nullptr, GRETL_TYPE_LIST, list.release());
-                if (err_) handle_gretl_error(err_);
+                err = push_function_arg(func_call, key.c_str(), nullptr, GRETL_TYPE_LIST, list.release());
+                if (err) handle_gretl_error(err);
                 continue;
             } else {
                 char *arg_name_copy = strdup(arg_name.c_str());
@@ -360,20 +366,16 @@ void GretlPackage::unpack_kwargs_package_ (const std::string &func_name, fncall 
         } else {
             throw std::runtime_error("variable " + key + ": unsupported type: " + arginfo.pytype);
         }
-        err_ = push_function_arg(func_call, key.c_str(), nullptr, arg_type, arg_value);
-        if (err_) handle_gretl_error(err_);
+        err = push_function_arg(func_call, key.c_str(), nullptr, arg_type, arg_value);
+        if (err) handle_gretl_error(err);
     }
-}
-
-int GretlPackage::get_err (void) const
-{
-    return err_;
 }
 
 std::string GretlPackage::repr_impl (void)
 {
-    err_ = print_function_package_info(full_path_.c_str(), 0, printer_.prn_ptr());
-    if (err_) handle_gretl_error(err_);
+    int err = print_function_package_info(full_path_.c_str(), 0, printer_.prn_ptr());
+
+    if (err) handle_gretl_error(err);
 
     return printer_.get_buffer();
 }
@@ -392,8 +394,9 @@ py::list GretlPackage::get_help (void)
         res.append(pdf_path.string());
     } else {
         res.append("txt");
-        err_ = print_function_package_help(full_path_.c_str(), nullptr, printer_.prn_ptr());
-        if (err_) handle_gretl_error(err_);
+        int err = print_function_package_help(full_path_.c_str(), nullptr, printer_.prn_ptr());
+
+        if (err) handle_gretl_error(err);
         res.append(printer_.get_buffer());
     }
 
@@ -529,6 +532,7 @@ GretlPackageRes GretlPackage::function_exec (const std::string &func_name, Gretl
 
     py::kwargs merged_kwargs = kwargs;  // we copy kwargs to handle posssible args
     auto n_args = args.size();          // we handle args (positional parameters, if exist)
+    int err = 0;
 
     if (n_args > 0) {
         auto func_args = func_args_sorted_.at(func_name);
@@ -560,8 +564,8 @@ GretlPackageRes GretlPackage::function_exec (const std::string &func_name, Gretl
     GretlPlot::init_queue();
 
     // function execution
-    err_ = gretl_function_exec(func_call, res.type, dataset ? dataset->dset : nullptr, res.out_ptr(), printer.prn_ptr());
-    if (err_) handle_gretl_error(err_);
+    err = gretl_function_exec(func_call, res.type, dataset ? dataset->dset : nullptr, res.out_ptr(), printer.prn_ptr());
+    if (err) handle_gretl_error(err);
 
     // execute plots generated by the function package
     GretlPlot::drain_queue(shared_from_this());
@@ -603,6 +607,7 @@ void GretlPackage::run_sample (void)
     std::filesystem::path sample_path = get_examples_path(pkg_name_ + "_sample.inp");
 
     if (!std::filesystem::exists(sample_path) || !std::filesystem::is_regular_file(sample_path)) handle_gretl_error(E_FOPEN, sample_path.string());
-    err_ = gretl_execute_script<std::filesystem::path>(sample_path);
-    if (err_) handle_gretl_error(err_);
+    int err = gretl_execute_script<std::filesystem::path>(sample_path);
+
+    if (err) handle_gretl_error(err);
 }

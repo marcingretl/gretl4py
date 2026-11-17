@@ -56,7 +56,6 @@ private:
     mutable GretlTypesPtr res_other_;                                   // other results (accessor, tests, etc)
     gretlopt opt_ = OPT_NONE;                                           // instance-wide options
     std::vector<std::string> obs_labels_;                               // observation labels
-    mutable int err_ = 0;
 
     GretlDataset (const std::string &fname, const py::dict &kwargs);    // load dataset from file (with optional flags as kwargs)
     GretlDataset (const py::dict &pydict);                              // load dataset from Python's dictionary

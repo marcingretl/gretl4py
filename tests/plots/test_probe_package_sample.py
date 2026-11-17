@@ -102,6 +102,20 @@ class ProbeTests(unittest.TestCase):
             self.assertEqual(choose_sample_script(examples, "iris1"), (examples / "iris1.inp").resolve())
             self.assertEqual(choose_sample_script(examples, "iris1.inp"), (examples / "iris1.inp").resolve())
 
+    def test_session_artifact_is_never_an_installed_example(self):
+        with tempfile.TemporaryDirectory() as temp:
+            examples = Path(temp) / "BACE" / "examples"
+            nested = examples / "legacy"
+            nested.mkdir(parents=True)
+            (examples / "session.inp").write_text("# interactive session artifact\n")
+            (nested / "SESSION.INP").write_text("# nested interactive session artifact\n")
+            genuine = examples / "logit.inp"
+            genuine.write_text("# actual sample\n")
+            self.assertEqual(list_sample_scripts(examples), [genuine])
+            self.assertEqual(choose_sample_script(examples), genuine.resolve())
+            with self.assertRaises(FileNotFoundError):
+                choose_sample_script(examples, "session.inp")
+
     def test_conventional_sample_is_preferred(self):
         with tempfile.TemporaryDirectory() as temp:
             examples = Path(temp) / "SVAR" / "examples"

@@ -102,8 +102,10 @@ GretlMatrix::GretlMatrix (double start, double end, double step)
     //
     // row vector, containing values from @start to @end, in decreasing order if @start > @end
     //
-    m_ = gretl_matrix_seq(start, end, step, &err_);
-    if (err_) handle_gretl_error(err_);
+    int err = 0;
+
+    m_ = gretl_matrix_seq(start, end, step, &err);
+    if (err) handle_gretl_error(err);
 }
 
 GretlMatrix::GretlMatrix (int n) : m_(gretl_identity_matrix_new(n))
@@ -278,12 +280,12 @@ gretl_matrix_ptr GretlMatrix::exec_slice_ (const std::string &slice_str) const
     gretl_matrix_ptr res{nullptr};
     int err = 0;
 
-    err_ = private_matrix_add_as_shell(m_, tmp.c_str());
-    if (err_) handle_gretl_error(err_);
-    res.reset(generate_matrix(expr.c_str(), nullptr, &err));
-    err_ = user_var_delete_by_name(tmp.c_str(), nullptr);
+    err = private_matrix_add_as_shell(m_, tmp.c_str());
     if (err) handle_gretl_error(err);
-    if (err_) handle_gretl_error(err_);
+    res.reset(generate_matrix(expr.c_str(), nullptr, &err));
+    err = user_var_delete_by_name(tmp.c_str(), nullptr);
+    if (err) handle_gretl_error(err);
+    if (err) handle_gretl_error(err);
 
     return res;
 }
@@ -374,11 +376,12 @@ py::object GretlMatrix::plot_via_matrix_command_driver_ (const T &cols, const py
     gretl_list_ptr list{nullptr};
     py::kwargs kwargs_copy = kwargs;
     const std::string matrix_name = uv_tmp.register_user_var<GretlMatrix>(*shared_from_this());
+    int err = 0;
 
     // we construct the list of selected matrix columns, if any
-    err_ = 0;
+    err = 0;
     if constexpr (std::is_same_v<T, std::string>) {
-        if (!cols.empty()) list.reset(gretl_list_from_string(cols.c_str(), &err_));
+        if (!cols.empty()) list.reset(gretl_list_from_string(cols.c_str(), &err));
     } else if constexpr (std::is_same_v<T, py::list>) {
         if (!cols.empty()) {
             int cols_size = static_cast<int>(cols.size());
@@ -405,7 +408,7 @@ py::object GretlMatrix::plot_via_matrix_command_driver_ (const T &cols, const py
     } else {
         static_assert(always_false<T>, "GretlMatrix::plot_via_matrix_command_driver_(): unsupported type");
     }
-    if (err_) handle_gretl_error(err_);
+    if (err) handle_gretl_error(err);
 
     if constexpr (CI == GNUPLOT) {
         // Register temporary bundles for graphical bands.
@@ -420,8 +423,8 @@ py::object GretlMatrix::plot_via_matrix_command_driver_ (const T &cols, const py
     gretl_valid_long_opt(opt, CI, "matrix", py::handle(), matrix_name.c_str());
 
     // we do the job
-    err_ = matrix_command_driver(CI, list.get(), matrix_name.c_str(), nullptr, opt, printer_.prn_ptr());
-    if (err_) handle_gretl_error(err_);
+    err = matrix_command_driver(CI, list.get(), matrix_name.c_str(), nullptr, opt, printer_.prn_ptr());
+    if (err) handle_gretl_error(err);
     printer_.print();
 
     return plotter.display();
@@ -470,9 +473,8 @@ int GretlMatrix::cols (void) const noexcept
 std::string GretlMatrix::repr_impl (void)
 {
     if (is_complex()) {
-        err_ = 0;
-        err_ = gretl_cmatrix_print(m_, nullptr, printer_.prn_ptr());
-        if (err_) handle_gretl_error(err_);
+        int err = gretl_cmatrix_print(m_, nullptr, printer_.prn_ptr());
+        if (err) handle_gretl_error(err);
     } else {
         gretl_matrix_print_to_prn(m_, nullptr, printer_.prn_ptr());
     }
@@ -568,8 +570,8 @@ void GretlMatrix::set_diagonal (const gretl_matrix *src)
     // interface to libgretl's gretl_matrix_set_diagonal()
     //
     if (src == nullptr) throw std::invalid_argument("diagonal must not be empty");
-    err_ = gretl_matrix_set_diagonal(m_, src, 0.0);
-    if (err_) handle_gretl_error(err_);
+    int err = gretl_matrix_set_diagonal(m_, src, 0.0);
+    if (err) handle_gretl_error(err);
 }
 
 py::object GretlMatrix::get_element (int i, int j) const
@@ -748,16 +750,17 @@ py::object GretlMatrix::summary (const py::kwargs &kwargs)
     std::nullptr_t fake_dataset = nullptr;
     py::kwargs kwargs_copy = kwargs;
     const std::string matrix_name = uv_tmp.register_user_var<GretlMatrix>(*shared_from_this());
+    int err = 0;
 
     // we unpack kwargs at first
     kwargs_copy["matrix"] = matrix_name;
     gretlopt opt = unpack_kwargs_command<SUMMARY>(fake_dataset, kwargs_copy);
 
     // based on 'interact.c'
-    err_ = incompatible_options(opt, static_cast<gretlopt>(OPT_B | OPT_W));
-    if (err_) handle_gretl_error(err_);
-    err_ = matrix_command_driver(SUMMARY, nullptr, matrix_name.c_str(), nullptr, opt, printer_.prn_ptr());
-    if (err_) handle_gretl_error(err_);
+    err = incompatible_options(opt, static_cast<gretlopt>(OPT_B | OPT_W));
+    if (err) handle_gretl_error(err);
+    err = matrix_command_driver(SUMMARY, nullptr, matrix_name.c_str(), nullptr, opt, printer_.prn_ptr());
+    if (err) handle_gretl_error(err);
     printer_.print();
 
     return do_get_accessor<GRETL_OBJ_ANY>("$result", fake_dataset, nullptr);
@@ -818,6 +821,7 @@ GretlMatrixPtr GretlMatrix::alg_operations (const T &rhs) const
     gretl_matrix *rhs_matrix = nullptr;         // right-hand side, used in any kind of operation
     gretl_matrix_ptr rhs_storage{nullptr};      // if we need a temporary unique_ptr to rhs (for py::array)
     gretl_matrix_ptr res{nullptr};
+    int err = 0;
 
     // we check template parameters
     if constexpr (std::is_same_v<T, GretlMatrix>) {
@@ -832,34 +836,34 @@ GretlMatrixPtr GretlMatrix::alg_operations (const T &rhs) const
     // we do the job
     if constexpr (KIND == GretlMatrixAlgOperations::ADD) {
         if (is_complex() || rhs_matrix->is_complex) {
-            res.reset(gretl_cmatrix_add_sub(m_, rhs_matrix, 1, &err_));
+            res.reset(gretl_cmatrix_add_sub(m_, rhs_matrix, 1, &err));
         } else {
             res.reset(gretl_matrix_alloc(m_->rows, m_->cols));
-            err_ = gretl_matrix_add(m_, rhs_matrix, res.get());
+            err = gretl_matrix_add(m_, rhs_matrix, res.get());
         }
     } else if constexpr (KIND == GretlMatrixAlgOperations::SUB) {
         if (is_complex() || rhs_matrix->is_complex) {
-            res.reset(gretl_cmatrix_add_sub(m_, rhs_matrix, -1, &err_));
+            res.reset(gretl_cmatrix_add_sub(m_, rhs_matrix, -1, &err));
         } else {
             res.reset(gretl_matrix_alloc(m_->rows, m_->cols));
-            err_ = gretl_matrix_subtract(m_, rhs_matrix, res.get());
+            err = gretl_matrix_subtract(m_, rhs_matrix, res.get());
         }
     } else if constexpr (KIND == GretlMatrixAlgOperations::MATMUL) {
         if (is_complex() || rhs_matrix->is_complex) {
-            res.reset(gretl_cmatrix_multiply(m_, rhs_matrix, &err_));
+            res.reset(gretl_cmatrix_multiply(m_, rhs_matrix, &err));
         } else {
-            res.reset(gretl_matrix_multiply_new(m_, rhs_matrix, &err_));
+            res.reset(gretl_matrix_multiply_new(m_, rhs_matrix, &err));
         }
     } else if constexpr (KIND == GretlMatrixAlgOperations::TRUEDIV) {
         if (is_complex() || rhs_matrix->is_complex) {
-            res.reset(gretl_cmatrix_divide(m_, rhs_matrix, GRETL_MOD_TRANSPOSE, &err_));
+            res.reset(gretl_cmatrix_divide(m_, rhs_matrix, GRETL_MOD_TRANSPOSE, &err));
         } else {
-            res.reset(gretl_matrix_divide(m_, rhs_matrix, GRETL_MOD_TRANSPOSE, &err_));
+            res.reset(gretl_matrix_divide(m_, rhs_matrix, GRETL_MOD_TRANSPOSE, &err));
         }
     } else {
         static_assert(always_false<T>, "Unsupported GretlMatrixAlgOperations value");
     }
-    if (err_) handle_gretl_error(err_);
+    if (err) handle_gretl_error(err);
 
     return std::make_shared<GretlMatrix>(res.release(), false);
 }
@@ -884,6 +888,7 @@ GretlMatrix &GretlMatrix::alg_inplace_operations (const T &rhs)
     //
     gretl_matrix *rhs_matrix = nullptr;           // right-hand side, used in any kind of operation
     gretl_matrix_ptr rhs_storage{nullptr};        // if we need a temporary unique_ptr to rhs (for py::array)
+    int err = 0;
 
     // we define scalar-only operations
     constexpr bool scalar_only = (KIND == GretlMatrixAlgOperations::IMUL
@@ -916,9 +921,9 @@ GretlMatrix &GretlMatrix::alg_inplace_operations (const T &rhs)
 
     // we do the job
     if constexpr (KIND == GretlMatrixAlgOperations::IADD) {
-        err_ = gretl_matrix_add_to(m_, rhs_matrix);
+        err = gretl_matrix_add_to(m_, rhs_matrix);
     } else if constexpr (KIND == GretlMatrixAlgOperations::ISUB) {
-        err_ = gretl_matrix_subtract_from(m_, rhs_matrix);
+        err = gretl_matrix_subtract_from(m_, rhs_matrix);
     } else if constexpr (KIND == GretlMatrixAlgOperations::IMUL && std::is_same_v<T, double>) {
         gretl_matrix_multiply_by_scalar(m_, rhs);
     } else if constexpr (KIND == GretlMatrixAlgOperations::ITRUEDIV && std::is_same_v<T, double>) {
@@ -943,7 +948,7 @@ GretlMatrix &GretlMatrix::alg_inplace_operations (const T &rhs)
     } else {
         static_assert(always_false<T>, "Unsupported GretlMatrixAlgOperations value");
     }
-    if (err_) handle_gretl_error(err_);
+    if (err) handle_gretl_error(err);
 
     return *this;
 }
@@ -1057,6 +1062,7 @@ GretlMatrixPtr GretlMatrix::alg_dot_operations (const T &rhs) const
     gretl_matrix *rhs_matrix = nullptr;           // right-hand side, used in any kind of operation
     gretl_matrix_ptr rhs_storage{nullptr};        // if we need a temporary unique_ptr to rhs (for py::array)
     gretl_matrix_ptr res{nullptr};
+    int err = 0;
 
     // we check template parameters
     if constexpr (std::is_same_v<T, GretlMatrix>) {
@@ -1085,75 +1091,75 @@ GretlMatrixPtr GretlMatrix::alg_dot_operations (const T &rhs) const
     // we do the job
     if constexpr (KIND == GretlMatrixAlgOperations::ADD) {
         if (is_complex() || rhs_matrix->is_complex) {
-            res.reset(gretl_cmatrix_dot_op(m_, rhs_matrix, '+', &err_));
+            res.reset(gretl_cmatrix_dot_op(m_, rhs_matrix, '+', &err));
         } else {
-            res.reset(gretl_matrix_dot_op(m_, rhs_matrix, '+', &err_));
+            res.reset(gretl_matrix_dot_op(m_, rhs_matrix, '+', &err));
         }
     } else if constexpr (KIND == GretlMatrixAlgOperations::SUB) {
         if (is_complex() || rhs_matrix->is_complex) {
-            res.reset(gretl_cmatrix_dot_op(m_, rhs_matrix, '-', &err_));
+            res.reset(gretl_cmatrix_dot_op(m_, rhs_matrix, '-', &err));
         } else {
-            res.reset(gretl_matrix_dot_op(m_, rhs_matrix, '-', &err_));
+            res.reset(gretl_matrix_dot_op(m_, rhs_matrix, '-', &err));
         }
     } else if constexpr (KIND == GretlMatrixAlgOperations::MUL) {
         if (is_complex() || rhs_matrix->is_complex) {
-            res.reset(gretl_cmatrix_dot_op(m_, rhs_matrix, '*', &err_));
+            res.reset(gretl_cmatrix_dot_op(m_, rhs_matrix, '*', &err));
         } else {
-            res.reset(gretl_matrix_dot_op(m_, rhs_matrix, '*', &err_));
+            res.reset(gretl_matrix_dot_op(m_, rhs_matrix, '*', &err));
         }
     } else if constexpr (KIND == GretlMatrixAlgOperations::TRUEDIV) {
         if (is_complex() || rhs_matrix->is_complex) {
-            res.reset(gretl_cmatrix_dot_op(m_, rhs_matrix, '/', &err_));
+            res.reset(gretl_cmatrix_dot_op(m_, rhs_matrix, '/', &err));
         } else {
-            res.reset(gretl_matrix_dot_op(m_, rhs_matrix, '/', &err_));
+            res.reset(gretl_matrix_dot_op(m_, rhs_matrix, '/', &err));
         }
     } else if constexpr (KIND == GretlMatrixAlgOperations::POW) {
         //(has_negative_base(m_) && has_non_integer_exponent(rhs_matrix))
         if (is_complex() || rhs_matrix->is_complex) {
-            res.reset(gretl_cmatrix_dot_op(m_, rhs_matrix, '^', &err_));
+            res.reset(gretl_cmatrix_dot_op(m_, rhs_matrix, '^', &err));
         } else {
-            res.reset(gretl_matrix_dot_op(m_, rhs_matrix, '^', &err_));
+            res.reset(gretl_matrix_dot_op(m_, rhs_matrix, '^', &err));
         }
     } else if constexpr (KIND == GretlMatrixAlgOperations::EQ) {
         if (is_complex() || rhs_matrix->is_complex) {
-            res.reset(gretl_cmatrix_dot_op(m_, rhs_matrix, '=', &err_));
+            res.reset(gretl_cmatrix_dot_op(m_, rhs_matrix, '=', &err));
         } else {
-            res.reset(gretl_matrix_dot_op(m_, rhs_matrix, '=', &err_));
+            res.reset(gretl_matrix_dot_op(m_, rhs_matrix, '=', &err));
         }
     } else if constexpr (KIND == GretlMatrixAlgOperations::NE) {
         if (is_complex() || rhs_matrix->is_complex) {
-            res.reset(gretl_cmatrix_dot_op(m_, rhs_matrix, '!', &err_));
+            res.reset(gretl_cmatrix_dot_op(m_, rhs_matrix, '!', &err));
         } else {
-            res.reset(gretl_matrix_dot_op(m_, rhs_matrix, '!', &err_));
+            res.reset(gretl_matrix_dot_op(m_, rhs_matrix, '!', &err));
         }
     } else if constexpr (KIND == GretlMatrixAlgOperations::LT) {
         if (is_complex() || rhs_matrix->is_complex) {
-            res.reset(gretl_cmatrix_dot_op(m_, rhs_matrix, '<', &err_));
+            res.reset(gretl_cmatrix_dot_op(m_, rhs_matrix, '<', &err));
         } else {
-            res.reset(gretl_matrix_dot_op(m_, rhs_matrix, '<', &err_));
+            res.reset(gretl_matrix_dot_op(m_, rhs_matrix, '<', &err));
         }
     } else if constexpr (KIND == GretlMatrixAlgOperations::LE) {
         if (is_complex() || rhs_matrix->is_complex) {
-            res.reset(gretl_cmatrix_dot_op(m_, rhs_matrix, '[', &err_));
+            res.reset(gretl_cmatrix_dot_op(m_, rhs_matrix, '[', &err));
         } else {
-            res.reset(gretl_matrix_dot_op(m_, rhs_matrix, '[', &err_));
+            res.reset(gretl_matrix_dot_op(m_, rhs_matrix, '[', &err));
         }
     } else if constexpr (KIND == GretlMatrixAlgOperations::GT) {
         if (is_complex() || rhs_matrix->is_complex) {
-            res.reset(gretl_cmatrix_dot_op(m_, rhs_matrix, '>', &err_));
+            res.reset(gretl_cmatrix_dot_op(m_, rhs_matrix, '>', &err));
         } else {
-            res.reset(gretl_matrix_dot_op(m_, rhs_matrix, '>', &err_));
+            res.reset(gretl_matrix_dot_op(m_, rhs_matrix, '>', &err));
         }
     } else if constexpr (KIND == GretlMatrixAlgOperations::GE) {
         if (is_complex() || rhs_matrix->is_complex) {
-            res.reset(gretl_cmatrix_dot_op(m_, rhs_matrix, ']', &err_));
+            res.reset(gretl_cmatrix_dot_op(m_, rhs_matrix, ']', &err));
         } else {
-            res.reset(gretl_matrix_dot_op(m_, rhs_matrix, ']', &err_));
+            res.reset(gretl_matrix_dot_op(m_, rhs_matrix, ']', &err));
         }
     } else {
         static_assert(always_false<T>, "Unsupported GretlMatrixAlgOperations value");
     }
-    if (err_) handle_gretl_error(err_);
+    if (err) handle_gretl_error(err);
 
     return std::make_shared<GretlMatrix>(res.release(), false);
 }

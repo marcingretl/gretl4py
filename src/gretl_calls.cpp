@@ -157,14 +157,20 @@ void gretl4py_init (void)
     if (int err = gretl_set_path_by_name("workdir", start_dir.c_str())) handle_gretl_error(err);
     if (const char *env = std::getenv("GRETL_HOME"); env) {
         if (int err = gretl_set_path_by_name("gretldir", env)) handle_gretl_error(err);
+
         std::filesystem::path dotdir_path = std::filesystem::path(std::string(env)) / "tmp";
 
-        if (int err = gretl_set_path_by_name("dotdir", dotdir_path.string().c_str())) handle_gretl_error(err);
+        // Ensure the trailing directory separator expected by libgretl.
+        dotdir_path += std::filesystem::path::preferred_separator;
+        const std::string dotdir = dotdir_path.string();
+
+        if (int err = gretl_set_path_by_name("dotdir", dotdir.c_str())) handle_gretl_error(err);
+
         // we set up environment variable to for gretlmpi
 #ifdef _WIN32
-        _putenv_s("GRETL4PY_DOTDIR", dotdir_path.string().c_str());
+        _putenv_s("GRETL4PY_DOTDIR", dotdir.c_str());
 #else
-        setenv("GRETL4PY_DOTDIR", dotdir_path.string().c_str(), 1);
+        setenv("GRETL4PY_DOTDIR", dotdir.c_str(), 1);
 #endif
     }
 
@@ -245,12 +251,7 @@ GretlBundlePtr about (bool do_print)
     res->set_element<std::string>("mod_ver", mod_ver);
     res->set_element<std::string>("py11_ver", py11_ver);
     res->set_element<std::string>("lg_ver", lg_ver);
-
-    if (gb_sysinfo->get_err()) {
-        std::cerr << errmsg_get_with_default(gb_sysinfo->get_err()) << '\n';
-    } else {
-        res->set_element<GretlBundlePtr>("sysinfo", gb_sysinfo);
-    }
+    res->set_element<GretlBundlePtr>("sysinfo", gb_sysinfo);
     res->set_element<GretlBundlePtr>("built_in_strings", gb_strings);
 
     if (do_print || gretl4py_verbose) {
@@ -260,10 +261,8 @@ GretlBundlePtr about (bool do_print)
             << "\t+ pybind11     v" << py11_ver << '\n'
             << "\t+ libgretl-1.0 v" << lg_ver << "\n\n"
             << "contact: marcin[at]gretlconference.org\n";
-        if (!gb_sysinfo->get_err()) {
-            std::cout << "\nlibgretl $sysinfo:\n";
-            gb_sysinfo->print<void>();
-        }
+        std::cout << "\nlibgretl $sysinfo:\n";
+        gb_sysinfo->print<void>();
         std::cout << "libgretl built-in strings:\n";
         gb_strings->print<void>();
         std::cout << "gretl_plugin_path = " << gretl_plugin_path() << '\n'
@@ -271,7 +270,6 @@ GretlBundlePtr about (bool do_print)
     }
 
     gretl_pop_c_numeric_locale();
-    if (res->get_err()) std::cerr << errmsg_get_with_default(res->get_err()) << std::endl;
 
     return res;
 }

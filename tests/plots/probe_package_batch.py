@@ -31,6 +31,11 @@ BIN_OPEN_MARKER = re.compile(
     r"^\s*open\s+(?:[\"']([^\"']+\.bin)[\"']|([^\s#;]+\.bin))(?=\s|$|;)",
     re.IGNORECASE,
 )
+# Only literal .inp includes can be checked without executing arbitrary hansl.
+INP_INCLUDE_MARKER = re.compile(
+    r"^\s*include\s+(?:[\"']([^\"']+\.inp)[\"']|([^\s#;]+\.inp))(?=\s|$|;)",
+    re.IGNORECASE,
+)
 
 
 
@@ -107,6 +112,34 @@ def bin_database_reference(sample: Path) -> tuple[int, str] | None:
     return None
 
 
+def missing_literal_inp_include(sample: Path) -> tuple[int, str] | None:
+    """Report a missing literal .inp include relative to the installed package.
+
+    This conservative check intentionally ignores .gfn references, computed
+    paths and include files outside the sample/package directories.
+    """
+    package_root = sample.parent
+    for parent in sample.parents:
+        if parent.name == "examples":
+            package_root = parent.parent
+            break
+
+    with sample.open(encoding="utf-8-sig", errors="replace") as fh:
+        for number, line in enumerate(fh, 1):
+            if line.lstrip().startswith("#"):
+                continue
+            match = INP_INCLUDE_MARKER.match(line)
+            if match is None:
+                continue
+            filename = match.group(1) or match.group(2)
+            path = Path(filename)
+            # Accept includes supplied alongside the script or at package root.
+            paths = [path] if path.is_absolute() else [sample.parent / path, package_root / path]
+            if not any(candidate.is_file() for candidate in paths):
+                return number, filename
+    return None
+
+
 def installed_sample_path(preparation_output: str, sample: str) -> Path:
     """Resolve a discovered sample against the installed examples directory."""
     found = EXAMPLES_DIR_MARKER.search(preparation_output)
@@ -177,7 +210,8 @@ def run_batch(args: argparse.Namespace) -> int:
     # Keep separate reports for separate invocations; do not mix stale results.
     report.unlink(missing_ok=True)
 
-    totals = {"PASS": 0, "FAIL": 0, "NO_FIGURES": 0, "NO_SAMPLES": 0, "SKIPPED_BIN": 0}
+    totals = {"PASS": 0, "FAIL": 0, "NO_FIGURES": 0, "NO_SAMPLES": 0,
+              "SKIPPED_BIN": 0, "SKIPPED_INCLUDE": 0}
 
     def save(pkg: str, sample: str, result: CommandResult, status: str, reason: str) -> None:
         key = f"{safe_stem(pkg)}__{safe_stem(sample)}"
@@ -215,6 +249,7 @@ def run_batch(args: argparse.Namespace) -> int:
                 break
         print(f"[SUMMARY] PASS={totals['PASS']}, NO_FIGURES={totals['NO_FIGURES']}, "
               f"NO_SAMPLES={totals['NO_SAMPLES']}, SKIPPED_BIN={totals['SKIPPED_BIN']}, "
+              f"SKIPPED_INCLUDE={totals['SKIPPED_INCLUDE']}, "
               f"FAIL={totals['FAIL']} | {report}")
         return 1 if totals["FAIL"] else 0
 
@@ -273,6 +308,26 @@ def run_batch(args: argparse.Namespace) -> int:
                     save(pkg, chosen, result, "SKIPPED_BIN", reason)
                     continue
 
+            if getattr(args, "skip_missing_includes", False) and sample:
+                # Do not classify stale, incomplete third-party examples as
+                # translator failures. Record each skipped example explicitly.
+                try:
+                    reference = missing_literal_inp_include(
+                        installed_sample_path(prepare.output, sample)
+                    )
+                except (OSError, ValueError) as exc:
+                    result = CommandResult(1, f"[PREFLIGHT] {exc}\n", str(exc))
+                    save(pkg, chosen, result, "FAIL", str(exc))
+                    if not args.continue_on_error:
+                        break
+                    continue
+                if reference is not None:
+                    line_number, filename = reference
+                    reason = f"missing .inp include: {filename} (line {line_number})"
+                    result = CommandResult(0, f"[SKIPPED_INCLUDE] {chosen}: {reason}\n", None)
+                    save(pkg, chosen, result, "SKIPPED_INCLUDE", reason)
+                    continue
+
             command = [sys.executable, "-u", str(PROBE), pkg, "--source", args.source,
                        "--approved", "--_worker", "--out",
                        str(out / "images" / safe_stem(pkg) / safe_stem(chosen))]
@@ -288,6 +343,7 @@ def run_batch(args: argparse.Namespace) -> int:
 
     print(f"[SUMMARY] PASS={totals['PASS']}, NO_FIGURES={totals['NO_FIGURES']}, "
           f"NO_SAMPLES={totals['NO_SAMPLES']}, SKIPPED_BIN={totals['SKIPPED_BIN']}, "
+              f"SKIPPED_INCLUDE={totals['SKIPPED_INCLUDE']}, "
           f"FAIL={totals['FAIL']} | {report}")
     return 1 if totals["FAIL"] else 0
 
@@ -317,6 +373,8 @@ def main() -> int:
                         help="Continue after failures; default is to stop on the first error")
     parser.add_argument("--skip-bin", action="store_true",
                         help="Skip examples with a literal hansl 'open *.bin' command")
+    parser.add_argument("--skip-missing-includes", action="store_true",
+                        help="Skip examples referring to missing literal .inp files")
     parser.add_argument("--out", type=Path, default=None,
                         help="Report directory (custom suites use a separate directory by default)")
     parser.add_argument("--approved", action="store_true",
