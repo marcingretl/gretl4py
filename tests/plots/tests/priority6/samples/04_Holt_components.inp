@@ -1,0 +1,8 @@
+# Holt: display level, trend and irregular components (ptype=2).
+# This path exercises the package's 'tsplots' command rather than a simple plot.
+set seed 20261117
+nulldata 120
+setobs 4 1996:1 --time-series
+series y = 30 + 0.13*index + 1.3*sin(2*$pi*index/4) + 0.3*normal()
+bundle h = Holt(y)
+Holt_plot(&h, 2)

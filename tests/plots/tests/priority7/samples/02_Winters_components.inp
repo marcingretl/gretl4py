@@ -1,0 +1,9 @@
+# Winters: visualize level, trend, seasonal and irregular components.
+# This exercises the package's tsplots branch, independently of the forecast chart.
+set seed 20261117
+nulldata 120
+setobs 4 1995:1 --time-series
+series y = 40 + 0.12*index + 3.0*sin(2*$pi*index/4) + 0.5*normal()
+bundle specs = _(additive=1, ntest=0, verbose=0)
+bundle w = Winters(y, specs)
+Winters_plot(&w, 2)

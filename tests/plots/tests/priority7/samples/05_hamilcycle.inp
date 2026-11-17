@@ -1,0 +1,7 @@
+# hamilcycle: quarterly Hamilton-filter cycle over a synthetic series.
+# The public function is invoked with plotting enabled and an explicit title.
+set seed 20261117
+nulldata 160
+setobs 4 1985:1 --time-series
+series y = 60 + 0.07*index + 1.5*sin(2*$pi*index/18) + 0.4*normal()
+series cyc = hamilcycle(y, 1, "Synthetic quarterly cycle")

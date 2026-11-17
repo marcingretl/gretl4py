@@ -1,0 +1,8 @@
+case,package,script
+01_Brown_linear,Brown,samples/01_Brown_linear.inp
+02_Brown_quadratic,Brown,samples/02_Brown_quadratic.inp
+03_Holt_forecast,Holt,samples/03_Holt_forecast.inp
+04_Holt_components,Holt,samples/04_Holt_components.inp
+05_BreitungCandelonTest,BreitungCandelonTest,samples/05_BreitungCandelonTest.inp
+06_naiveFC,naiveFC,samples/06_naiveFC.inp
+07_random_forest,random_forest,samples/07_random_forest.inp

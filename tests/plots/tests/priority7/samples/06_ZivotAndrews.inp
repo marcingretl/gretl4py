@@ -1,0 +1,8 @@
+# ZivotAndrews: plot the rolling break-location test statistic and critical values.
+# Keep the fixed lag order low to make the repeated regressions inexpensive.
+set seed 20261117
+nulldata 140
+setobs 4 1990:1 --time-series
+series y = 10 + 0.05*index + 0.7*sin(2*$pi*index/20) + 0.6*normal()
+bundle za = ZA_test(y, 1, _(maxlag=2, method="fixed", verbosity=0))
+ZA_plot(za)

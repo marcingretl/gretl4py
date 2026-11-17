@@ -1,0 +1,8 @@
+# BreitungCandelonTest: frequency-domain causality curve and critical value.
+# The public function requests a displayed matrix-based line/points graph.
+set seed 20261117
+nulldata 160
+setobs 4 1980:1 --time-series
+series cause = normal()
+series target = 0.6*cause + 0.4*normal()
+matrix bc = BreitungCandelonTest(target, cause, null, 3, 40)

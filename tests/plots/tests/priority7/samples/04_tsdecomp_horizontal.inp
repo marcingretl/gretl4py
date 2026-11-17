@@ -1,0 +1,8 @@
+# tsdecomp: the same decomposition in a three-column gridplot.
+# This tests the alternate gridplot layout and per-panel titles.
+set seed 20261117
+nulldata 120
+setobs 4 1995:1 --time-series
+series y = 25 + 0.08*index + 2.0*sin(2*$pi*index/4) + 0.5*normal()
+bundle d = clc_decompose(y)
+scalar rc = plot_decompose(y, d, _(layout="horizontal", title="Classical decomposition"))

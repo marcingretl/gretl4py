@@ -1,0 +1,8 @@
+# Brown: synthetic quarterly series, linear triple-exponential smoothing plot.
+# This exercises a bundle-plot function generating an ordinary time-series plot.
+set seed 20261117
+nulldata 120
+setobs 4 1996:1 --time-series
+series y = 30 + 0.09*index + 1.8*sin(2*$pi*index/4) + 0.4*normal()
+bundle b = Brown(y, 0.22)
+Brown_plot(&b, 0)
