@@ -69,8 +69,7 @@ private:
 
     void free_dset_ (void);
 
-    void add_or_replace_allocated_series_ (gretl_double_ptr data, const std::string &name, int n,
-                                           gretl_gchar_ptr label = nullptr);
+    void add_or_replace_allocated_series_ (gretl_double_ptr data, const std::string &name, int n, gretl_gchar_ptr label = nullptr);
 
     void set_obs_labels_ (void);
 

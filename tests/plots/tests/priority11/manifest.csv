@@ -1,0 +1,9 @@
+case,package,script
+01_FEP_linlin,FEP,samples/01_FEP_linlin.inp
+02_FEP_quadquad,FEP,samples/02_FEP_quadquad.inp
+03_FEP_compare_linlin,FEP,samples/03_FEP_compare_linlin.inp
+04_FEP_compare_quadquad,FEP,samples/04_FEP_compare_quadquad.inp
+05_PTconf_GG_all,PTconf,samples/05_PTconf_GG_all.inp
+06_PTconf_SWP_all,PTconf,samples/06_PTconf_SWP_all.inp
+07_PTconf_GG_first,PTconf,samples/07_PTconf_GG_first.inp
+08_PTconf_SWP_second,PTconf,samples/08_PTconf_SWP_second.inp

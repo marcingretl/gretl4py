@@ -1,0 +1,9 @@
+case,package,script
+01_DynMultCalc_dynamic95,DynMultCalc,samples/01_DynMultCalc_dynamic95.inp
+02_DynMultCalc_cumulative95,DynMultCalc,samples/02_DynMultCalc_cumulative95.inp
+03_DynMultCalc_MA90,DynMultCalc,samples/03_DynMultCalc_MA90.inp
+04_DynMultCalc_dynamic99,DynMultCalc,samples/04_DynMultCalc_dynamic99.inp
+05_ghosts_spectrum,ghosts,samples/05_ghosts_spectrum.inp
+06_ghosts_coherence,ghosts,samples/06_ghosts_coherence.inp
+07_ghosts_phase,ghosts,samples/07_ghosts_phase.inp
+08_ghosts_comboplot,ghosts,samples/08_ghosts_comboplot.inp

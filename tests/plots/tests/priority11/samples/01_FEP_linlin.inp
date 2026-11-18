@@ -1,0 +1,3 @@
+# FEP: single asymmetric lin-lin loss and its confidence interval.
+# This exercises the public DrawLoss() branch for p=1.
+DrawLoss(1, 0.25, 0.0025)

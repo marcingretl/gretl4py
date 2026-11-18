@@ -1,0 +1,8 @@
+# PanelTools: fractional cross-section quantiles and custom plot styling.
+# This is the alternate pxquantile path of the public plotting function.
+set seed 20261117
+nulldata 160
+setobs 20 1:1 --stacked-time-series
+series y = 10 + 0.03*index + normal()
+bundle opts = _(quantiles={0.1, 0.5, 0.9}, title="Panel conditional quantiles", key_position="top left", linewidth=1.5)
+scalar err = panplot_quantile(y, 1, opts)

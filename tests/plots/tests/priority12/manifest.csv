@@ -1,0 +1,9 @@
+case,package,script
+01_PairPlot_triangle,PairPlot,samples/01_PairPlot_triangle.inp
+02_PairPlot_matrix_groups,PairPlot,samples/02_PairPlot_matrix_groups.inp
+03_PairPlot_row_mean,PairPlot,samples/03_PairPlot_row_mean.inp
+04_PairPlot_column_median,PairPlot,samples/04_PairPlot_column_median.inp
+05_ketvals_OLS_slope95,ketvals,samples/05_ketvals_OLS_slope95.inp
+06_ketvals_OLS_intercept90,ketvals,samples/06_ketvals_OLS_intercept90.inp
+07_ketvals_IV_slope95,ketvals,samples/07_ketvals_IV_slope95.inp
+08_ketvals_IV_intercept90,ketvals,samples/08_ketvals_IV_intercept90.inp

@@ -1,0 +1,4 @@
+# FEP: ensure a valid workfile exists before package inclusion.
+# The public loss-plot functions themselves need no estimated model.
+nulldata 120
+setobs 4 1990:1 --time-series

@@ -1,0 +1,3 @@
+# FEP: single asymmetric quadratic loss and its confidence interval.
+# This exercises the public DrawLoss() branch for p=2.
+DrawLoss(2, 0.70, 0.0025)

@@ -1,0 +1,3 @@
+# FEP: compare two asymmetric quad-quad loss curves.
+# This exercises the two-loss drawing branch for p=2.
+DrawLoss2(2, 0.30, 0.0025, 0.65, 0.0025)

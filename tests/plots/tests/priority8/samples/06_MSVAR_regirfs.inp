@@ -1,0 +1,14 @@
+# MSVAR: public multi-panel gridplot of regime impulse-response matrices.
+# Two shocks, two response variables and 18 horizons without costly MS estimation.
+open denmark
+matrix irf1 = zeros(2, 18)
+matrix irf2 = zeros(2, 18)
+loop h=1..18 -q
+  irf1[1,h] = 0.8*exp(-0.15*(h-1))
+  irf1[2,h] = 0.4*exp(-0.12*(h-1))*sin(0.35*(h-1))
+  irf2[1,h] = -0.3*exp(-0.20*(h-1))
+  irf2[2,h] = 0.6*exp(-0.14*(h-1))
+endloop
+matrices irfs = defarray(irf1, irf2)
+bundle opts = _(title="Synthetic regime impulse responses")
+MS_regirf_plot(irfs, opts)

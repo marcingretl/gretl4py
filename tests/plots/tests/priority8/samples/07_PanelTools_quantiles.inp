@@ -1,0 +1,7 @@
+# PanelTools: default cross-sectional quantiles through the panel time axis.
+# Eight individuals with 20 observations each, in stacked-time-series layout.
+set seed 20261117
+nulldata 160
+setobs 20 1:1 --stacked-time-series
+series y = 10 + 0.03*index + normal()
+scalar err = panplot_quantile(y)

@@ -1,0 +1,3 @@
+# FEP: two lin-lin loss functions and their confidence intervals.
+# Contrast left-heavy and right-heavy losses through public DrawLoss2().
+DrawLoss2(1, 0.25, 0.0016, 0.75, 0.0016)
