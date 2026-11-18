@@ -52,7 +52,6 @@ protected:
     bool estimated_ = false;            // if model already estimated
     bool model_registered_ = false;     // if model was registered in libgretl
     gretlopt opt_ = OPT_NONE;           // instance-wide options (including tests and forecasts)
-    mutable int err_ = 0;               // holds libgretl errors (instance-wide)
     GretlDatasetPtr dataset_;           // dataset used
     gretl_list_ptr var_list_{nullptr};  // libgretl list of variables
     bool var_list_from_list_ = false;   // whether varlist was passed directly as Python's list (i.e. not as formula)

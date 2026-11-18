@@ -3,9 +3,9 @@
 ## Executive summary
 
 The 95-candidate exploratory audit has **zero execution failures** in its
-latest complete run (17 November). All ten separately maintained
-integration suites, `priority5` through `priority14`, are now complete:
-**88/88 PASS, 100 Matplotlib figures and 42 distinct packages**. The full
+latest complete run (17 November). All eleven separately maintained
+integration suites, `priority5` through `priority15`, are now complete:
+**96/96 PASS, 115 Matplotlib figures and 44 distinct packages**. The full
 `gptranslate` Meson regression was also reported as passing after the latest
 point-size fix on 17 November, without an updated numerical test count.
 
@@ -23,19 +23,20 @@ point-size fix on 17 November, without an updated numerical test count.
 | `priority12` integration suite | **8/8 PASS, 8 figures** | 18 Nov 2026; full batch |
 | `priority13` integration suite | **8/8 PASS, 13 figures** | 18 Nov 2026; full batch |
 | `priority14` integration suite | **8/8 PASS, 8 figures** | 18 Nov 2026; full batch after fixture correction |
-| **Maintained suites combined** | **88/88 PASS, 100 figures** | 42 distinct packages, no skips |
+| `priority15` integration suite | **8/8 PASS, 15 figures** | 18 Nov 2026; full batch after BayTool fixture fix |
+| **Maintained suites combined** | **96/96 PASS, 115 figures** | 44 distinct packages, no skips |
 | `gptranslate` Meson suite | **PASS** | Full regression confirmed 17 Nov 2026; updated count not provided |
 | Earlier numbered Meson run | 83/83 PASS | 15 Nov 2026, before priority6/7 changes |
 | Audit runner offline unit tests | 54/54 PASS | Earlier local verification, 15 Nov 2026 |
 
-The 177 figures from the candidate audit and 100 figures from the maintained
+The 177 figures from the candidate audit and 115 figures from the maintained
 suites describe **different runs**; they should not be combined as a count
 of unique plots. `PASS` verifies successful example execution and the presence
 of at least one active Matplotlib figure; it does not establish visual
 identity with gnuplot or exhaustive coverage. A fresh complete audit-runner
 unit-test count after the latest filtering changes has not been supplied.
 
-## Maintained integration suites: priority5–priority14 complete
+## Maintained integration suites: priority5–priority15 complete
 
 | Stage | Cases | Distinct packages introduced | Figures | Result |
 | --- | --- | ---: | ---: | --- |
@@ -343,6 +344,39 @@ python probe_package_batch.py --custom priority14 \
 
 Results: `package_plot_results/batch/custom/priority14/`.
 
+### `priority15`: eight cases, two packages, fifteen figures
+
+| Case | Package | Result |
+| --- | --- | --- |
+| `01_BayTool_density_x1` | BayTool | PASS, 1 figure |
+| `02_BayTool_density_x2_epanech` | BayTool | PASS, 1 figure |
+| `03_BayTool_trace_single` | BayTool | PASS, 3 figures |
+| `04_BayTool_trace_pair` | BayTool | PASS, 6 figures |
+| `05_ParMA_marginal_x1` | ParMA | PASS, 1 figure |
+| `06_ParMA_marginal_grid` | ParMA | PASS, 1 figure |
+| `07_ParMA_trace_x1` | ParMA | PASS, 1 figure |
+| `08_ParMA_trace_x2` | ParMA | PASS, 1 figure |
+
+The full batch was confirmed on 18 November 2026:
+**PASS=8, NO_FIGURES=0, NO_SAMPLES=0, SKIPPED_BIN=0,
+SKIPPED_INCLUDE=0, FAIL=0**. `BayTool` generated 11 figures and `ParMA`
+generated four. The BayTool density probes initially failed at
+`BT_paramplot(out, "x1")`: its second argument requires a **strings** array,
+not a scalar `string`. The final fixtures use `defarray("x1")` and
+`defarray("x2")`. A previous explicit-prior change was not the cause of
+this error; ordinary `BT_lm` estimation also succeeded in the user's
+standalone hansl test. These were fixture/API problems rather than
+translator defects. No `gptranslate` or libgretl changes were required.
+
+```bash
+python probe_package_batch.py --custom priority15 \
+    --approved --continue-on-error
+# [SUMMARY] PASS=8, NO_FIGURES=0, NO_SAMPLES=0,
+# SKIPPED_BIN=0, SKIPPED_INCLUDE=0, FAIL=0
+```
+
+Results: `package_plot_results/batch/custom/priority15/`.
+
 ### Combined maintained integration coverage
 
 | Suite | Packages | Cases | Figures | Result |
@@ -357,7 +391,8 @@ Results: `package_plot_results/batch/custom/priority14/`.
 | `priority12` | 2 | 8 | 8 | 8/8 PASS |
 | `priority13` | 2 | 8 | 13 | 8/8 PASS |
 | `priority14` | 2 | 8 | 8 | 8/8 PASS |
-| **Total** | **42** | **88** | **100** | **88/88 PASS** |
+| `priority15` | 2 | 8 | 15 | 8/8 PASS |
+| **Total** | **44** | **96** | **115** | **96/96 PASS** |
 
 ### Translation capabilities exercised by the maintained cases
 
@@ -499,26 +534,30 @@ eight distinct `gptranslate` defects.
 Python's cwd and libgretl's `$workdir` to the package root when needed.
 Its sample execution is now classified as `NO_FIGURES`, not `FAIL`.
 
+`priority15` adds BayTool posterior density and MCMC diagnostic plots,
+and ParMA posterior marginals and diagnostic charts. The BayTool argument-
+type issue was a fixture error; no translator changes were necessary.
+
 ## Next actions
 
 1. **Retain the confirmed baselines:** keep the 17 November 95-candidate
-   run (56 PASS / 0 FAIL) and the ten maintained suite reports
-   (17/17, 7/7, and eight 8/8 PASS) separately. Focused invocations may overwrite
+   run (56 PASS / 0 FAIL) and the eleven maintained suite reports
+   (17/17, 7/7, and nine 8/8 PASS) separately. Focused invocations may overwrite
    the default `batch_results.csv`; preserve dated copies where needed.
 2. **Audit-runner self-tests:** rerun `python -m unittest discover -p
    'test_*.py' -q` after the `session.inp` and `SKIPPED_INCLUDE` changes;
    the last explicitly counted result was 54/54 on 15 November.
-3. **Visual validation:** inspect the 100 maintained figures, particularly
+3. **Visual validation:** inspect the 115 maintained figures, particularly
    `random_forest` rectangle geometry, `fsboost` marker sizes and both
    `tsdecomp` layouts. Compare axes, labels, palettes, bounds and legends
    with the intended output rather than relying only on active figures.
 4. **Classify `NO_FIGURES`:** investigate representative examples among the
    33 cases, distinguishing genuinely nonplotting examples from paths not
    exercised or captured by the audit.
-5. **Expand coverage (`priority15`):** begin exploratory fixtures for
-   `BayTool` and `ParMA`, exercising their actual posterior-density and
-   MCMC diagnostic plotting functions. Use small MCMC counts for graph
-   smoke tests only, and keep these unrun cases out of verified totals.
+5. **Expand coverage (`priority16`):** prepare exploratory fixtures for
+   `pcaTools` and `BVAR`, exercising PCA scree/biplot graphics, posterior
+   forecast bands and Bayesian IRF grids. Check local `pcaTools`
+   installation; keep unrun cases out of verified totals.
 6. **Retain explicit skipped statuses:** do not count the 4 `.bin` and
    2 missing-include examples as passing plots; keep `session.inp` always
    excluded. Update the gptranslate changelog and review commits as needed.
