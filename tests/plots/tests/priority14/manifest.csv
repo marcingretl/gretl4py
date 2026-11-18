@@ -1,0 +1,9 @@
+case,package,script
+01_kmeans_scatter,kmeans,samples/01_kmeans_scatter.inp
+02_kmeans_scree,kmeans,samples/02_kmeans_scree.inp
+03_kmeans_silhouette,kmeans,samples/03_kmeans_silhouette.inp
+04_kmeans_silhouette_grid,kmeans,samples/04_kmeans_silhouette_grid.inp
+05_GHegy_fixed4_trend,GHegy,samples/05_GHegy_fixed4_trend.inp
+06_GHegy_bic8_dummies,GHegy,samples/06_GHegy_bic8_dummies.inp
+07_GHegy_fixed2_dummies,GHegy,samples/07_GHegy_fixed2_dummies.inp
+08_GHegy_bic6_trend,GHegy,samples/08_GHegy_bic6_trend.inp

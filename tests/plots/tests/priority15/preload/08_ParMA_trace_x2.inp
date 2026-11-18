@@ -1,0 +1,3 @@
+# ParMA: initialize a dataset before package inclusion.
+# The sample will replace this with its own synthetic probit dataset.
+nulldata 180

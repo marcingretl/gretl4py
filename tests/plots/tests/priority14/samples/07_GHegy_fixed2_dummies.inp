@@ -1,0 +1,9 @@
+# GHegy: synthetic quarterly I(1) series, independent of external data.
+# Estimation settings below exercise the package's seasonal test plot.
+set seed 20261118
+nulldata 200
+setobs 4 1970:1 --time-series
+series y = cum(normal()) + 0.35*normal()
+# Smaller fixed AR order in an otherwise comparable setup.
+bundle test = GHegy_test(y, 0, 2, 2, 0)
+GHegy_test_plot(&test)

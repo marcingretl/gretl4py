@@ -1,0 +1,4 @@
+# GHegy: activate a quarterly time-series workfile before inclusion.
+# The standalone sample replaces this workfile with its own observations.
+nulldata 200
+setobs 4 1970:1 --time-series

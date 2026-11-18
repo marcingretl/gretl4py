@@ -1,0 +1,21 @@
+# BayTool: reproducible, low-dimensional synthetic Gaussian regression.
+# The short MCMC runs below test plotting, not posterior accuracy.
+set seed 20261118
+include BayTool.gfn
+nulldata 160
+series x1 = normal()
+series x2 = normal()
+series y = 1 + 1.5*x1 - 0.8*x2 + 0.7*normal()
+list X = const x1 x2
+# Use the explicit Normal--inverse-Gamma prior setup documented by BayTool.
+# Supply conformable 3 x 1 and 3 x 3 beta-prior matrices for const, x1, x2.
+bundle prior = defbundle()
+prior.type = "indep"
+prior.beta_mean = zeros(3, 1)
+prior.beta_vcv = I(3)
+prior.sigma_a = 2
+prior.sigma_b = 1
+bundle opt = _(iter=1000, burn=200, mpi=1, verbose=0)
+# The Epanechnikov option exercises an alternative kernel path.
+bundle out = BT_lm(y, X, prior, opt)
+BT_paramplot(out, "x2", _(scale=0.8, epanech=1))

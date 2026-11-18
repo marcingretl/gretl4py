@@ -1,0 +1,11 @@
+# TVC: reproducible synthetic quarterly regression with gradually changing coefficients.
+# A modest independent noise term avoids an exact regression fit.
+set seed 20261118
+nulldata 144
+setobs 4 1990:1 --time-series
+genr time
+series x = normal()
+series y = 0.8 + 0.004*time + (0.9 - 0.003*time)*x + 0.3*normal()
+list L = const x
+# A negative first ratio permits intercept drift; zero fixes the slope.
+bundle b = TVCestimate(y, L, {-0.05,0}, 1, 0)

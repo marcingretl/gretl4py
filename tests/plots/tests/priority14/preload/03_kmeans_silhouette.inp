@@ -1,0 +1,3 @@
+# kmeans: supply a valid workfile before package inclusion.
+# The standalone sample creates its own clustering data.
+nulldata 120
