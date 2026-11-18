@@ -1,0 +1,14 @@
+# lagreg: PDL forecast with 90 percent confidence limits.
+# Future values of the external regressor are supplied explicitly.
+set seed 20261117
+nulldata 160
+setobs 4 1980:1 --time-series
+series x = normal()
+series y = 2 + 0.8*x + 0.3*x(-1) + 0.2*x(-2) + 0.4*normal()
+bundle b = pdl(y, x, {4,2,0}, const, "-q")
+scalar t2 = $t2
+dataset addobs 4
+loop i=1..4 -q
+    x[t2+i] = 0.25*i
+endloop
+matrix F = fcast_pdl(&b, 4, 0.90, 1, 0)

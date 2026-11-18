@@ -1,0 +1,14 @@
+# PTconf: SWP transitory components with asymptotic confidence bands.
+# Exercise the second decomposition method for both variables.
+# PTconf: perform an actual rank-one cointegrated-system decomposition.
+# Synthetic I(1) series share a common trend but have independent noise.
+set seed 20261118
+nulldata 160
+setobs 4 1980:1 --time-series
+series common = cum(normal())
+series y1 = common + 0.18*normal()
+series y2 = 1.1*common + 0.22*normal()
+list Y = y1 y2
+bundle b = setupPT(2, 1, Y)
+putPTconf(&b)
+plotPTtrans(b, Y, 2, 0)

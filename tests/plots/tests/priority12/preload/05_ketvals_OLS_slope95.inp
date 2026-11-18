@@ -1,0 +1,4 @@
+# ketvals: initialize quarterly observations before inclusion.
+# The main fixture replaces the data with synthetic IV/OLS data.
+nulldata 120
+setobs 4 1990:1 --time-series

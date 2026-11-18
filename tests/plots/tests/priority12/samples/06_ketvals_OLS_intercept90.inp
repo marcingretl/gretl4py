@@ -1,0 +1,15 @@
+# ketvals: small synthetic model with two relevant external instruments.
+# The common disturbance makes x endogenous; z and z2 remain exogenous.
+set seed 20261118
+nulldata 120
+setobs 4 1990:1 --time-series
+series z = normal()
+series z2 = normal()
+series u = normal()
+series x = 0.8*z + 0.3*z2 + 0.35*u + 0.5*normal()
+series y = 0.4 + 1.1*x + u
+list X = const x
+list Z = const z z2
+# Separate intercept plot with an explicit 90 percent confidence band.
+bundle mod = tv_OLS(y, X, 0.6, 0)
+coeff_plot(mod, 1, 0.90)

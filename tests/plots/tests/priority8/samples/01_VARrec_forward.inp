@@ -1,0 +1,12 @@
+# VARrec: forward recursive VAR coefficient estimation.
+# Use synthetic quarterly data and display the public recursive confidence-band plot.
+set seed 20261117
+nulldata 64
+setobs 4 2000:1 --time-series
+series y1 = 0.65*normal() + 0.1*index
+series y2 = 0.35*y1 + 0.5*normal()
+list Y = y1 y2
+list X = const
+bundle b = setupVARrec(Y, X, 1, 1, 0, 1.96, 0, "display")
+VARrec(&b)
+VARrecplot(&b)

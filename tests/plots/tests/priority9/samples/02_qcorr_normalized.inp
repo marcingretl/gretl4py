@@ -1,0 +1,12 @@
+# qcorr: bootstrap-normalized cross-quantilogram heatmap.
+# A small fixed bootstrap count probes the normalized palette plot path.
+set seed 20261117
+nulldata 180
+setobs 4 1980:1 --time-series
+series y1 = normal()
+series y2 = 0.4*y1 + normal()
+list Y = y1 y2
+bundle opt = _(maxlag=3, bootstrap=1, iter=29, normalize=1, x_axis={0.25,0.5,0.75}, y_axis={0.25,0.5,0.75})
+bundle b = cqgm(Y, opt)
+bundle graph = _(lag={1}, zerowhite=1, display=1)
+cqgm_plot(b, "n_heatmap", graph)

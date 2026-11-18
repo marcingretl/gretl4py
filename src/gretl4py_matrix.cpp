@@ -379,7 +379,6 @@ py::object GretlMatrix::plot_via_matrix_command_driver_ (const T &cols, const py
     int err = 0;
 
     // we construct the list of selected matrix columns, if any
-    err = 0;
     if constexpr (std::is_same_v<T, std::string>) {
         if (!cols.empty()) list.reset(gretl_list_from_string(cols.c_str(), &err));
     } else if constexpr (std::is_same_v<T, py::list>) {

@@ -1,0 +1,9 @@
+case,package,script
+01_qcorr_heatmap,qcorr,samples/01_qcorr_heatmap.inp
+02_qcorr_normalized,qcorr,samples/02_qcorr_normalized.inp
+03_qcorr_lagplot,qcorr,samples/03_qcorr_lagplot.inp
+04_qcorr_testplot,qcorr,samples/04_qcorr_testplot.inp
+05_lagreg_forecast90,lagreg,samples/05_lagreg_forecast90.inp
+06_lagreg_forecast95,lagreg,samples/06_lagreg_forecast95.inp
+07_lagreg_irf,lagreg,samples/07_lagreg_irf.inp
+08_lagreg_cumirf,lagreg,samples/08_lagreg_cumirf.inp

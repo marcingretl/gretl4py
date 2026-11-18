@@ -1,0 +1,9 @@
+case,package,script
+01_VARrec_forward,VARrec,samples/01_VARrec_forward.inp
+02_VARrec_backward,VARrec,samples/02_VARrec_backward.inp
+03_johansenrec_eigen,johansenrec,samples/03_johansenrec_eigen.inp
+04_johansenrec_beta,johansenrec,samples/04_johansenrec_beta.inp
+05_BEKK_combo,BEKK,samples/05_BEKK_combo.inp
+06_MSVAR_regirfs,MSVAR,samples/06_MSVAR_regirfs.inp
+07_PanelTools_quantiles,PanelTools,samples/07_PanelTools_quantiles.inp
+08_PanelTools_xquantiles,PanelTools,samples/08_PanelTools_xquantiles.inp

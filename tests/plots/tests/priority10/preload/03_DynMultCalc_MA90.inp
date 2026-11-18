@@ -1,0 +1,4 @@
+# DynMultCalc: provide a valid dataset before the package is included.
+# The corresponding main fixture reinitializes its own observations.
+nulldata 180
+setobs 4 1980:1 --time-series

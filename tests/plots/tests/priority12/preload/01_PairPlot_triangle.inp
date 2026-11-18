@@ -1,0 +1,3 @@
+# PairPlot: initialize a workfile before the package is loaded.
+# The main sample replaces this placeholder data.
+nulldata 96

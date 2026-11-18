@@ -1,0 +1,9 @@
+# lagreg: ordinary impulse response of a distributed-lag (PDL) model.
+# Standard errors and confidence bounds use the package's delta method.
+set seed 20261117
+nulldata 160
+setobs 4 1980:1 --time-series
+series x = normal()
+series y = 2 + 0.8*x + 0.3*x(-1) + 0.2*x(-2) + 0.4*normal()
+bundle b = pdl(y, x, {4,2,0}, const, "-q")
+matrix H = irf_l(&b)

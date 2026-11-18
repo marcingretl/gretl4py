@@ -1,0 +1,13 @@
+# PairPlot: independent synthetic cross-sectional data for an isolated plot.
+# The three covariates are correlated but non-collinear.
+set seed 20261118
+nulldata 96
+series x1 = normal()
+series x2 = 0.65*x1 + 0.7*normal()
+series x3 = -0.4*x1 + 0.8*normal()
+list X = x1 x2 x3
+# Discrete factor, every pair of variables, with a title.
+series grp = (x1 > 0)
+setinfo grp --discrete
+bundle opts = _(type="matrix", title="Factorized scatterplot matrix", grid=1)
+PairPlot(X, grp, opts)

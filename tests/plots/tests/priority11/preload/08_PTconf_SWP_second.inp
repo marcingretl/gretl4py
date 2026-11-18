@@ -1,0 +1,4 @@
+# PTconf: supply quarterly data before loading the package, if required.
+# The selected main fixture replaces these observations.
+nulldata 160
+setobs 4 1980:1 --time-series

@@ -1,0 +1,11 @@
+# johansenrec: recursive beta-constancy statistic and critical value plot.
+# Use a rank-one synthetic cointegrated system without exogenous regressors.
+set seed 20261117
+nulldata 84
+setobs 4 2000:1 --time-series
+series rw = cum(normal())
+series y1 = rw + 0.20*normal()
+series y2 = rw + 0.35*normal()
+list Y = y1 y2
+list noexo = null
+bundle b = johansenrecbeta(2, 1, Y, 2, 56, noexo, noexo, 20, "display")

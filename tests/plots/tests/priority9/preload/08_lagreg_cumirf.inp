@@ -1,0 +1,4 @@
+# lagreg: initialize a valid time-series dataset before package inclusion.
+# The corresponding sample still resets the data to remain standalone.
+nulldata 160
+setobs 4 1980:1 --time-series
