@@ -1,0 +1,13 @@
+# kmeans: separated synthetic clusters with reproducible observations.
+# Preserve a full, non-missing data sample for the clustering functions.
+set seed 20261118
+nulldata 120
+genr time
+series segment = (time > 40) + (time > 80)
+series x1 = normal() + 3*segment
+series x2 = normal() - 2*segment
+series x3 = 0.5*normal() + 1.5*segment
+list X = x1 x2 x3
+# A silhouette chart draws cluster-specific samples and a mean line.
+bundle km = kmeans_fit(X, 3)
+kmeans_sil_plot(km, X)

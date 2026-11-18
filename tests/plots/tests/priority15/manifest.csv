@@ -1,0 +1,9 @@
+case,package,script
+01_BayTool_density_x1,BayTool,samples/01_BayTool_density_x1.inp
+02_BayTool_density_x2_epanech,BayTool,samples/02_BayTool_density_x2_epanech.inp
+03_BayTool_trace_single,BayTool,samples/03_BayTool_trace_single.inp
+04_BayTool_trace_pair,BayTool,samples/04_BayTool_trace_pair.inp
+05_ParMA_marginal_x1,ParMA,samples/05_ParMA_marginal_x1.inp
+06_ParMA_marginal_grid,ParMA,samples/06_ParMA_marginal_grid.inp
+07_ParMA_trace_x1,ParMA,samples/07_ParMA_trace_x1.inp
+08_ParMA_trace_x2,ParMA,samples/08_ParMA_trace_x2.inp

@@ -1,0 +1,3 @@
+# QMLSV: activate the installed sample before gretl4py includes the package.
+# The main script reopens it and selects the documented 500 observations.
+open b-g.gdt --quiet

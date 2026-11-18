@@ -713,7 +713,7 @@ void GretlMatrix::set_element (int i, T val)
 template void GretlMatrix::set_element<double>(int i, double val);
 template void GretlMatrix::set_element<std::complex<double>>(int i, std::complex<double> val);
 
-py::object GretlMatrix::to_numpy() const
+py::object GretlMatrix::to_numpy (void) const
 {
     //
     // here we construct NumPy as a deep copy of gretl_matrix

@@ -1,0 +1,8 @@
+# QMLSV: use the canonical Bollerslev-Ghysels returns supplied with gretl.
+# The 500-observation subsample follows the package manual's worked example.
+open b-g.gdt --quiet
+smpl 1475 1974
+# Harvey-Shephard QML, random-walk volatility and Student-t(8) innovations.
+# This follows the alternative model shown in the published manual.
+bundle m = qml_sv(Y, 2, 1, 1, 1, 8, 0)
+qml_plot(&m, 1, 0)

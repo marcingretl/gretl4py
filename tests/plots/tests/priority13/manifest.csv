@@ -1,0 +1,9 @@
+case,package,script
+01_QMLSV_standard_volatility,QMLSV,samples/01_QMLSV_standard_volatility.inp
+02_QMLSV_standard_density,QMLSV,samples/02_QMLSV_standard_density.inp
+03_QMLSV_standard_both,QMLSV,samples/03_QMLSV_standard_both.inp
+04_QMLSV_HS_volatility,QMLSV,samples/04_QMLSV_HS_volatility.inp
+05_TVC_both_varying,TVC,samples/05_TVC_both_varying.inp
+06_TVC_slope_varying,TVC,samples/06_TVC_slope_varying.inp
+07_TVC_intercept_varying,TVC,samples/07_TVC_intercept_varying.inp
+08_TVC_ml_fixed,TVC,samples/08_TVC_ml_fixed.inp

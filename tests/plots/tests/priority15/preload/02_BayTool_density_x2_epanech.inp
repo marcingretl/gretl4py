@@ -1,0 +1,3 @@
+# BayTool: load a valid workfile before package inclusion.
+# The sample builds its own synthetic regression dataset.
+nulldata 160

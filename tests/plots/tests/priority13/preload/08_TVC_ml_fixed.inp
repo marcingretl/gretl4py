@@ -1,0 +1,4 @@
+# TVC: activate a time-series workfile before loading the package.
+# The sample creates a fresh reproducible dataset for its estimation.
+nulldata 144
+setobs 4 1990:1 --time-series

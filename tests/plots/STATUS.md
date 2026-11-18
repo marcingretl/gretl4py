@@ -3,9 +3,9 @@
 ## Executive summary
 
 The 95-candidate exploratory audit has **zero execution failures** in its
-latest complete run (17 November). All seven separately maintained
-integration suites, `priority5` through `priority11`, are now complete:
-**64/64 PASS, 71 Matplotlib figures and 36 distinct packages**. The full
+latest complete run (17 November). All eleven separately maintained
+integration suites, `priority5` through `priority15`, are now complete:
+**96/96 PASS, 115 Matplotlib figures and 44 distinct packages**. The full
 `gptranslate` Meson regression was also reported as passing after the latest
 point-size fix on 17 November, without an updated numerical test count.
 
@@ -20,19 +20,23 @@ point-size fix on 17 November, without an updated numerical test count.
 | `priority9` integration suite | **8/8 PASS, 8 figures** | reported by 18 Nov 2026; full batch |
 | `priority10` integration suite | **8/8 PASS, 8 figures** | 18 Nov 2026; full batch |
 | `priority11` integration suite | **8/8 PASS, 10 figures** | 18 Nov 2026; full batch |
-| **Maintained suites combined** | **64/64 PASS, 71 figures** | 36 distinct packages, no skips |
+| `priority12` integration suite | **8/8 PASS, 8 figures** | 18 Nov 2026; full batch |
+| `priority13` integration suite | **8/8 PASS, 13 figures** | 18 Nov 2026; full batch |
+| `priority14` integration suite | **8/8 PASS, 8 figures** | 18 Nov 2026; full batch after fixture correction |
+| `priority15` integration suite | **8/8 PASS, 15 figures** | 18 Nov 2026; full batch after BayTool fixture fix |
+| **Maintained suites combined** | **96/96 PASS, 115 figures** | 44 distinct packages, no skips |
 | `gptranslate` Meson suite | **PASS** | Full regression confirmed 17 Nov 2026; updated count not provided |
 | Earlier numbered Meson run | 83/83 PASS | 15 Nov 2026, before priority6/7 changes |
 | Audit runner offline unit tests | 54/54 PASS | Earlier local verification, 15 Nov 2026 |
 
-The 177 figures from the candidate audit and 71 figures from the maintained
+The 177 figures from the candidate audit and 115 figures from the maintained
 suites describe **different runs**; they should not be combined as a count
 of unique plots. `PASS` verifies successful example execution and the presence
 of at least one active Matplotlib figure; it does not establish visual
 identity with gnuplot or exhaustive coverage. A fresh complete audit-runner
 unit-test count after the latest filtering changes has not been supplied.
 
-## Maintained integration suites: priority5–priority11 complete
+## Maintained integration suites: priority5–priority15 complete
 
 | Stage | Cases | Distinct packages introduced | Figures | Result |
 | --- | --- | ---: | ---: | --- |
@@ -237,6 +241,142 @@ python probe_package_batch.py --custom priority11 \
 
 Results: `package_plot_results/batch/custom/priority11/`.
 
+### `priority12`: eight cases, two packages, eight figures
+
+| Case | Package | Result |
+| --- | --- | --- |
+| `01_PairPlot_triangle` | PairPlot | PASS, 1 figure |
+| `02_PairPlot_matrix_groups` | PairPlot | PASS, 1 figure |
+| `03_PairPlot_row_mean` | PairPlot | PASS, 1 figure |
+| `04_PairPlot_column_median` | PairPlot | PASS, 1 figure |
+| `05_ketvals_OLS_slope95` | ketvals | PASS, 1 figure |
+| `06_ketvals_OLS_intercept90` | ketvals | PASS, 1 figure |
+| `07_ketvals_IV_slope95` | ketvals | PASS, 1 figure |
+| `08_ketvals_IV_intercept90` | ketvals | PASS, 1 figure |
+
+The complete batch was confirmed on 18 November 2026:
+**PASS=8, NO_FIGURES=0, NO_SAMPLES=0, SKIPPED_BIN=0,
+SKIPPED_INCLUDE=0, FAIL=0**. `PairPlot` covers triangular, matrix,
+row and column layouts, including grouped centroids. `ketvals` covers
+four time-varying OLS/IV coefficient plots with 90% and 95% confidence
+levels. All eight tests generated one Matplotlib figure each. No new
+`gptranslate` parser changes were required. Visual equivalence with
+gnuplot was not assessed.
+
+```bash
+python probe_package_batch.py --custom priority12 \
+    --approved --continue-on-error
+# [SUMMARY] PASS=8, NO_FIGURES=0, NO_SAMPLES=0,
+# SKIPPED_BIN=0, SKIPPED_INCLUDE=0, FAIL=0
+```
+
+Results: `package_plot_results/batch/custom/priority12/`.
+
+### `priority13`: eight cases, two packages, thirteen figures
+
+| Case | Package | Result |
+| --- | --- | --- |
+| `01_QMLSV_standard_volatility` | QMLSV | PASS, 1 figure |
+| `02_QMLSV_standard_density` | QMLSV | PASS, 1 figure |
+| `03_QMLSV_standard_both` | QMLSV | PASS, 2 figures |
+| `04_QMLSV_HS_volatility` | QMLSV | PASS, 1 figure |
+| `05_TVC_both_varying` | TVC | PASS, 2 figures |
+| `06_TVC_slope_varying` | TVC | PASS, 2 figures |
+| `07_TVC_intercept_varying` | TVC | PASS, 2 figures |
+| `08_TVC_ml_fixed` | TVC | PASS, 2 figures |
+
+The complete batch was confirmed on 18 November 2026:
+**PASS=8, NO_FIGURES=0, NO_SAMPLES=0, SKIPPED_BIN=0,
+SKIPPED_INCLUDE=0, FAIL=0**. `QMLSV` covers volatility and standardized
+residual-density plots, including the Harvey–Shephard variant; `TVC`
+covers drifting coefficient paths under fixed ratio and ML configurations.
+All eight cases executed successfully, yielding thirteen Matplotlib figures.
+No new `gptranslate` parser changes were required. These runs verify plot
+creation, not pixel-identical appearance relative to gnuplot.
+
+```bash
+python probe_package_batch.py --custom priority13 \
+    --approved --continue-on-error
+# [SUMMARY] PASS=8, NO_FIGURES=0, NO_SAMPLES=0,
+# SKIPPED_BIN=0, SKIPPED_INCLUDE=0, FAIL=0
+```
+
+Results: `package_plot_results/batch/custom/priority13/`.
+
+### `priority14`: eight cases, two packages, eight figures
+
+| Case | Package | Result |
+| --- | --- | --- |
+| `01_kmeans_scatter` | kmeans | PASS, 1 figure |
+| `02_kmeans_scree` | kmeans | PASS, 1 figure |
+| `03_kmeans_silhouette` | kmeans | PASS, 1 figure |
+| `04_kmeans_silhouette_grid` | kmeans | PASS, 1 figure |
+| `05_GHegy_fixed4_trend` | GHegy | PASS, 1 figure |
+| `06_GHegy_bic8_dummies` | GHegy | PASS, 1 figure |
+| `07_GHegy_fixed2_dummies` | GHegy | PASS, 1 figure |
+| `08_GHegy_bic6_trend` | GHegy | PASS, 1 figure |
+
+The complete batch was confirmed on 18 November 2026:
+**PASS=8, NO_FIGURES=0, NO_SAMPLES=0, SKIPPED_BIN=0,
+SKIPPED_INCLUDE=0, FAIL=0**. The four `kmeans` cases cover cluster scatter,
+scree/elbow and silhouette plots (including a two-column layout). The four
+`GHegy` cases cover fixed and BIC-selected seasonal-test lag settings.
+Earlier exploratory failures were **not translator regressions**:
+
+- `GHegy_pvalue()` initially could not read its ancillary coefficient
+  matrices via `mread()`; the required installation/data-file issue was
+  resolved before the successful rerun.
+- The `kmeans` scree fixture incorrectly assigned the return value of
+  `kmeans_screeplot()`, which returns `void`. A fixture-only correction
+  changed `matrix elbow = kmeans_screeplot(X, 6)` to
+  `kmeans_screeplot(X, 6)`, with a comment.
+
+No changes to the `gptranslate` parser or libgretl were necessary.
+The **100 figure** milestone represents successful Matplotlib figure
+creation, not a visual equivalence claim relative to gnuplot.
+
+```bash
+python probe_package_batch.py --custom priority14 \
+    --approved --continue-on-error
+# [SUMMARY] PASS=8, NO_FIGURES=0, NO_SAMPLES=0,
+# SKIPPED_BIN=0, SKIPPED_INCLUDE=0, FAIL=0
+```
+
+Results: `package_plot_results/batch/custom/priority14/`.
+
+### `priority15`: eight cases, two packages, fifteen figures
+
+| Case | Package | Result |
+| --- | --- | --- |
+| `01_BayTool_density_x1` | BayTool | PASS, 1 figure |
+| `02_BayTool_density_x2_epanech` | BayTool | PASS, 1 figure |
+| `03_BayTool_trace_single` | BayTool | PASS, 3 figures |
+| `04_BayTool_trace_pair` | BayTool | PASS, 6 figures |
+| `05_ParMA_marginal_x1` | ParMA | PASS, 1 figure |
+| `06_ParMA_marginal_grid` | ParMA | PASS, 1 figure |
+| `07_ParMA_trace_x1` | ParMA | PASS, 1 figure |
+| `08_ParMA_trace_x2` | ParMA | PASS, 1 figure |
+
+The full batch was confirmed on 18 November 2026:
+**PASS=8, NO_FIGURES=0, NO_SAMPLES=0, SKIPPED_BIN=0,
+SKIPPED_INCLUDE=0, FAIL=0**. `BayTool` generated 11 figures and `ParMA`
+generated four. The BayTool density probes initially failed at
+`BT_paramplot(out, "x1")`: its second argument requires a **strings** array,
+not a scalar `string`. The final fixtures use `defarray("x1")` and
+`defarray("x2")`. A previous explicit-prior change was not the cause of
+this error; ordinary `BT_lm` estimation also succeeded in the user's
+standalone hansl test. These were fixture/API problems rather than
+translator defects. No `gptranslate` or libgretl changes were required.
+
+```bash
+python probe_package_batch.py --custom priority15 \
+    --approved --continue-on-error
+# [SUMMARY] PASS=8, NO_FIGURES=0, NO_SAMPLES=0,
+# SKIPPED_BIN=0, SKIPPED_INCLUDE=0, FAIL=0
+```
+
+Results: `package_plot_results/batch/custom/priority15/`.
+
 ### Combined maintained integration coverage
 
 | Suite | Packages | Cases | Figures | Result |
@@ -248,7 +388,11 @@ Results: `package_plot_results/batch/custom/priority11/`.
 | `priority9` | 2 | 8 | 8 | 8/8 PASS |
 | `priority10` | 2 | 8 | 8 | 8/8 PASS |
 | `priority11` | 2 | 8 | 10 | 8/8 PASS |
-| **Total** | **36** | **64** | **71** | **64/64 PASS** |
+| `priority12` | 2 | 8 | 8 | 8/8 PASS |
+| `priority13` | 2 | 8 | 13 | 8/8 PASS |
+| `priority14` | 2 | 8 | 8 | 8/8 PASS |
+| `priority15` | 2 | 8 | 15 | 8/8 PASS |
+| **Total** | **44** | **96** | **115** | **96/96 PASS** |
 
 ### Translation capabilities exercised by the maintained cases
 
@@ -280,8 +424,13 @@ lag/test plots, PDL forecasts and impulse-response figures without additional
 parser changes. `priority10` adds dynamic and cumulative multipliers,
 spectral/coherence/phase plots and a four-panel `ghosts` figure, again
 without a parser change. `priority11` adds FEP loss curves and GG/SWP
-transitory-component plots without additional parser changes. No new
-complete Meson-suite count was supplied. The
+transitory-component plots without additional parser changes. `priority12` adds triangular,
+grouped and centroid scatterplot matrices in `PairPlot`, plus time-varying
+OLS/IV coefficient plots in `ketvals`; no new parser changes were required.
+`priority13` adds QMLSV volatility/residual-density figures and TVC
+coefficient-path figures. `priority14` adds kmeans scree/silhouette plots
+and GHegy seasonal-test plots. Neither required a translator change.
+No new complete Meson-suite count was supplied. The
 maintained hansl fixtures were updated separately when failures stemmed
 from test data or call signatures. No fix required modifying libgretl or
 upstream package source code; Brown was updated to an existing later release.
@@ -385,25 +534,30 @@ eight distinct `gptranslate` defects.
 Python's cwd and libgretl's `$workdir` to the package root when needed.
 Its sample execution is now classified as `NO_FIGURES`, not `FAIL`.
 
+`priority15` adds BayTool posterior density and MCMC diagnostic plots,
+and ParMA posterior marginals and diagnostic charts. The BayTool argument-
+type issue was a fixture error; no translator changes were necessary.
+
 ## Next actions
 
 1. **Retain the confirmed baselines:** keep the 17 November 95-candidate
-   run (56 PASS / 0 FAIL) and the seven maintained suite reports
-   (17/17, 7/7, 8/8, 8/8, 8/8, 8/8 and 8/8 PASS) separately. Focused invocations may overwrite
+   run (56 PASS / 0 FAIL) and the eleven maintained suite reports
+   (17/17, 7/7, and nine 8/8 PASS) separately. Focused invocations may overwrite
    the default `batch_results.csv`; preserve dated copies where needed.
 2. **Audit-runner self-tests:** rerun `python -m unittest discover -p
    'test_*.py' -q` after the `session.inp` and `SKIPPED_INCLUDE` changes;
    the last explicitly counted result was 54/54 on 15 November.
-3. **Visual validation:** inspect the 71 maintained figures, particularly
+3. **Visual validation:** inspect the 115 maintained figures, particularly
    `random_forest` rectangle geometry, `fsboost` marker sizes and both
    `tsdecomp` layouts. Compare axes, labels, palettes, bounds and legends
    with the intended output rather than relying only on active figures.
 4. **Classify `NO_FIGURES`:** investigate representative examples among the
    33 cases, distinguishing genuinely nonplotting examples from paths not
    exercised or captured by the audit.
-5. **Expand coverage (`priority12`):** run the eight new exploratory
-   fixtures for `PairPlot` and `ketvals` using the existing `--custom` runner.
-   These cases are not yet verified and are excluded from the totals.
+5. **Expand coverage (`priority16`):** prepare exploratory fixtures for
+   `pcaTools` and `BVAR`, exercising PCA scree/biplot graphics, posterior
+   forecast bands and Bayesian IRF grids. Check local `pcaTools`
+   installation; keep unrun cases out of verified totals.
 6. **Retain explicit skipped statuses:** do not count the 4 `.bin` and
    2 missing-include examples as passing plots; keep `session.inp` always
    excluded. Update the gptranslate changelog and review commits as needed.
@@ -412,7 +566,7 @@ Its sample execution is now classified as `NO_FIGURES`, not `FAIL`.
 
 Static scanning is heuristic and does not prove that a function's plotting
 path is reachable through its public API. `NO_SAMPLES` and `NO_FIGURES` are
-not equivalent to absent graphing functionality. The 64-case maintained integration
+not equivalent to absent graphing functionality. The 88-case maintained integration
 suites and the 56 successful candidate examples verify runtime translation
 and figure creation, but neither assures pixel-identical output relative to
 gnuplot. The **zero-FAIL** result is qualified by the explicit skip policies

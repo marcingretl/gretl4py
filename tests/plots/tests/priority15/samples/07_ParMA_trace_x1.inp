@@ -1,0 +1,15 @@
+# ParMA: synthetic probit with two strong predictors and one nuisance covariate.
+# A single process avoids reliance on external MPI setup in this plotting audit.
+# Only 4096 draws (256 burn-in): sufficient for a smoke test, not inference.
+set seed 20261118
+nulldata 180
+series x1 = normal()
+series x2 = normal()
+series x3 = normal()
+series latent = -0.1 + 1.6*x1 - 1.2*x2 + 0.2*x3 + normal()
+series y = (latent > 0)
+list X = x1 x2 x3
+bundle params = _(mpi=1, seed=20261118, display=0)
+bundle b = bma_glm(y, X, "probit", 4096, 256, params)
+# Request direct plotting of trace, ACF and running mean for x1.
+mcmc_checks(b, "plot", _(display=1, plotlist="x1"))

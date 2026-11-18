@@ -1,0 +1,14 @@
+# BayTool: reproducible, low-dimensional synthetic Gaussian regression.
+# The short MCMC runs below test plotting, not posterior accuracy.
+set seed 20261118
+include BayTool.gfn
+nulldata 160
+series x1 = normal()
+series x2 = normal()
+series y = 1 + 1.5*x1 - 0.8*x2 + 0.7*normal()
+list X = const x1 x2
+bundle prior = _(type="indep", sigma_a=2, sigma_b=1)
+bundle opt = _(iter=1000, burn=200, mpi=1, verbose=0)
+# Two rows exercise the multi-parameter diagnostic plotting path.
+matrix draws = mnormal(2, 700)
+BT_check_plot(draws)
