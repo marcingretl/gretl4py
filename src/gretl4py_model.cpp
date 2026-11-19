@@ -596,13 +596,8 @@ std::pair<py::object, py::object> GretlModel::gretl_do_forecast_ (void *model, c
     GretlPlot plotter;
     std::string param = "";
     int n_args = py::len(args);
-    py::kwargs clean_kwargs;
+    auto clean_kwargs = copy_dict_or_kwargs<py::kwargs>(kwargs);
     int err = 0;
-
-    // make an independent copy of kwargs
-    for (const auto &item : kwargs) {
-        clean_kwargs[item.first] = item.second;
-    }
 
     // store named forecast arguments separately from command options
     std::array<py::object, max_positional_args> values = {
@@ -1094,8 +1089,8 @@ std::pair<GretlBundlePtr, GretlModelPtr> GretlModel_NSE::add_omit_auto (const py
     // this method performs ADD or OMIT tests with '--auto=' option
     //
     GretlBundlePtr res = std::make_shared<GretlBundle>();
-    py::kwargs clean_kwargs = kwargs;
     gretl_list_ptr ex_var{nullptr};
+    auto clean_kwargs = copy_dict_or_kwargs<py::kwargs>(kwargs);
     int order = -1;
     std::string type;
 
@@ -1128,7 +1123,7 @@ std::pair<GretlBundlePtr, GretlModelPtr> GretlModel_NSE::add_omit_auto (const py
 
     // we manufacture resulting object
     res->set_element<std::string>("type", type);
-    res->set_element("options", py::object(kwargs));
+    res->set_element("options", py::object(clean_kwargs));
     res->set_element("test", get_accessor("$test"));
     res->set_element("pvalue", get_accessor("$pvalue"));
     res->set_element<std::string>("summary", std::string(printer_.get_buffer()));

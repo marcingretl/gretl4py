@@ -78,7 +78,7 @@ inline bool is_pygretlbundle (const py::handle &o) { return py::isinstance<Gretl
 inline bool is_pygretlmatrix (const py::handle &o) { return py::isinstance<GretlMatrix>(o); }
 
 template <typename T>
-T copy_dict_or_kwargs (const T &src)
+inline T copy_dict_or_kwargs (const T &src)
 {
     //
     // Independent copy of the dict/kwargs mapping; the values themselves are shared.
