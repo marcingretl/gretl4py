@@ -1642,8 +1642,8 @@ py::object do_execute_plot_call (const T &varlist, const GretlDatasetPtr dataset
     GretlPlot plotter;
     TemporaryUserVar uv_tmp;
     gretl_list_ptr gretl_list{nullptr};
-    std::nullptr_t fake_dataset = nullptr; // NOTE: we do not pass dataset to unpack_kwargs_command!!!
-    py::kwargs clean_kwargs = kwargs;
+    std::nullptr_t fake_dataset = nullptr;                      // NOTE: we do not pass dataset to unpack_kwargs_command!!!
+    auto clean_kwargs = copy_dict_or_kwargs<py::kwargs>(kwargs);
     int err = 0;
 
     // we construct list of variables

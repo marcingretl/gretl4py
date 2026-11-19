@@ -1984,7 +1984,7 @@ py::object GretlDataset::tsplots (const T &varlist, const py::kwargs &kwargs)
     //
     // mimic libgretl 'tsplots' command
     //
-    py::kwargs clean_kwargs = kwargs;
+    auto clean_kwargs = copy_dict_or_kwargs<py::kwargs>(kwargs);
 
     clean_kwargs["time_series"] = true;
 
