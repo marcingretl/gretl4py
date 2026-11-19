@@ -282,8 +282,10 @@ GretlBundlePtr about (bool do_print)
 //
 GretlPrint::GretlPrint (PrnType prn_type) : prn_type_(prn_type)
 {
-    prn_ = gretl_print_new(this->prn_type_, &err_);
-    if (err_) handle_gretl_error(err_);
+    int err = 0;
+
+    prn_ = gretl_print_new(this->prn_type_, &err);
+    if (err) handle_gretl_error(err);
 }
 
 GretlPrint::~GretlPrint (void)
@@ -295,8 +297,9 @@ PRN *GretlPrint::prn_ptr (void)
 {
     // at first we always reset a buffer
     if (prn_type_ == GRETL_PRINT_BUFFER) {
-        err_ = gretl_print_reset_buffer(prn_);
-        if (err_) handle_gretl_error(err_);
+        const int err = gretl_print_reset_buffer(prn_);
+
+        if (err) handle_gretl_error(err);
     }
 
     return prn_;
