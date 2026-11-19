@@ -77,6 +77,21 @@ inline bool is_numpy_array_fc (const py::array &m) {
 inline bool is_pygretlbundle (const py::handle &o) { return py::isinstance<GretlBundle>(o); }
 inline bool is_pygretlmatrix (const py::handle &o) { return py::isinstance<GretlMatrix>(o); }
 
+template <typename T>
+T copy_dict_or_kwargs (const T &src)
+{
+    //
+    // Independent copy of the dict/kwargs mapping; the values themselves are shared.
+    //
+    static_assert(std::is_base_of_v<py::dict, T>, "copy_dict_or_kwargs(): unsupported type");
+
+    PyObject *raw = PyDict_Copy(src.ptr());
+
+    if (!raw) throw py::error_already_set();
+
+    return py::reinterpret_steal<T>(raw);
+}
+
 //////////////////////////////////////////////////
 // classes
 //////////////////////////////////////////////////
