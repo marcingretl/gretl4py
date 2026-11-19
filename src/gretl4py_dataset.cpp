@@ -946,7 +946,7 @@ std::string GretlDataset::repr (void) const
 
 void GretlDataset::print (const std::string &varlist, const py::kwargs &kwargs)
 {
-    py::dict final_kwargs = kwargs;
+    auto final_kwargs = copy_dict_or_kwargs<py::kwargs>(kwargs);
 
     // check for banned options
     if (kwargs.contains("data")) throw std::invalid_argument("'data': option not available");
@@ -1013,12 +1013,11 @@ void GretlDataset::smpl (const std::string &startobs, const std::string &endobs,
 
     gretl_list_ptr var_list{nullptr};
     std::nullptr_t fake_dataset = nullptr;
+    auto kwargs_copy = copy_dict_or_kwargs<py::kwargs>(kwargs);
     std::string vars;
     bool report = false;
-    py::dict kwargs_copy = kwargs;
     int err = 0;
 
-    // note: we modify kwargs here!!!!
     if (kwargs_copy.contains("varlist")) {
         get_object_from_dict<std::string>(kwargs_copy, "varlist", vars);
         kwargs_copy.attr("pop")("varlist");

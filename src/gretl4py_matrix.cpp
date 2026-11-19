@@ -374,7 +374,7 @@ py::object GretlMatrix::plot_via_matrix_command_driver_ (const T &cols, const py
     TemporaryUserVar uv_tmp;
     std::nullptr_t fake_dataset = nullptr;
     gretl_list_ptr list{nullptr};
-    py::kwargs kwargs_copy = kwargs;
+    auto kwargs_copy = copy_dict_or_kwargs<py::kwargs>(kwargs);
     const std::string matrix_name = uv_tmp.register_user_var<GretlMatrix>(*shared_from_this());
     int err = 0;
 
@@ -747,7 +747,7 @@ py::object GretlMatrix::summary (const py::kwargs &kwargs)
     //
     TemporaryUserVar uv_tmp;
     std::nullptr_t fake_dataset = nullptr;
-    py::kwargs kwargs_copy = kwargs;
+    auto kwargs_copy = copy_dict_or_kwargs<py::kwargs>(kwargs);
     const std::string matrix_name = uv_tmp.register_user_var<GretlMatrix>(*shared_from_this());
     int err = 0;
 

@@ -513,7 +513,7 @@ py::object do_gretl_summary (const T &varlist, const py::kwargs &kwargs)
 
         if (!is_pygretlmatrix(obj)) throw std::invalid_argument("matrix must be a gretl.Matrix instance");
         auto mat = obj.cast<GretlMatrixPtr>();
-        py::kwargs kwargs_copy = kwargs;
+        auto kwargs_copy = copy_dict_or_kwargs<py::kwargs>(kwargs);
 
         kwargs_copy.attr("pop")("matrix");
         return mat->summary(kwargs_copy);
