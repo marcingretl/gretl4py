@@ -1304,7 +1304,6 @@ py::object GretlModel_NSE::plot (const std::string &type, const std::string &xva
 
     if (type == "correlogram" && !xvar.empty()) throw std::invalid_argument("correlogram does not accept xvar");
     if (type == "qqplot" && !xvar.empty()) throw py::type_error("qqplot does not accept xvar");
-    if (type == "leverage" && !xvar.empty()) throw py::type_error("leverage does not accept xvar");
     if (type != "correlogram" && order.has_value()) throw std::invalid_argument("order is supported only for correlogram");
     if (type == "periodogram" && !xvar.empty()) throw py::type_error("periodogram does not accept xvar");
     // Periodogram settings must not silently affect other plot types.
@@ -1334,7 +1333,7 @@ py::object GretlModel_NSE::plot (const std::string &type, const std::string &xva
     } else if (type == "qqplot") {
         err = ctx.qqplot();
     } else {
-        throw py::value_error("Unsupported plot type: " + type);
+        throw std::invalid_argument("Unsupported plot type: " + type);
     }
     if (err) handle_gretl_error(err);
     if (type == "correlogram" || type == "periodogram") printer_.print();
@@ -1351,7 +1350,7 @@ py::object GretlModel_NSE::plot_confidence_ellipse (const std::variant<int, std:
     GretlPlot plotter;
     DATASET *dset = get_model_dataset_();
     NSEPlotContext ctx(model_, ci_, dataset_, dset, plotter, printer_.prn_ptr(), 0);
-    int err = ctx.confidence_ellipse(resolve_coefficient_(first, dset), resolve_coefficient_(second, dset), alpha);
+    const int err = ctx.confidence_ellipse(resolve_coefficient_(first, dset), resolve_coefficient_(second, dset), alpha);
 
     if (err) handle_gretl_error(err);
     printer_.print();
