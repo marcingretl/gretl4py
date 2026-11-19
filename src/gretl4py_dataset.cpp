@@ -182,7 +182,6 @@ GretlDataset::GretlDataset (const py::dict &pydict) : id_(next_obj_id_++)
         // dataset in libgretl's memory-space).
         dset->structure = get_int_from_pydict("structure", 0);
         err = set_obs(std::to_string(get_int_from_pydict("periodicity", 1)).c_str(), dset->S[0], dset, setobs_opt_from_structure(dset->structure));
-        //if (err_) handle_gretl_error(err_);
 
         // we set obs labels
         set_obs_labels_();
@@ -1317,7 +1316,7 @@ std::pair<GretlMatrixPtr, py::object> GretlDataset::pergm (
 
     // execute the gretl command to produce textual and graphical output
     err = periodogram(varno, bandwidth, dset, opt_, printer_.prn_ptr());
-    if (err) handle_gretl_error(err_, printer_.get_buffer());
+    if (err) handle_gretl_error(err, printer_.get_buffer());
 
     // retrieve the spectral density as a matrix
     mat.reset(periodogram_matrix(dset->Z[varno], dset->t1,
