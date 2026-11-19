@@ -69,6 +69,28 @@ static GretlPrint global_printer = GretlPrint();
 static gretl_dataset_ptr script_dataset{nullptr};  // dataset for subsequent script calls
 static bool nulldata_executed = false;             // flag that script_dataset was created/modified by 'nulldata' command
 
+namespace {
+// Removes the temporary hansl script written by run_hansl() when it goes out of
+// scope, including when an exception is thrown. Errors are ignored on purpose:
+// cleanup must never throw.
+struct TempScriptGuard {
+    std::filesystem::path path;
+
+    TempScriptGuard (void) = default;
+    TempScriptGuard (const TempScriptGuard&) = delete;
+    TempScriptGuard &operator= (const TempScriptGuard&) = delete;
+
+    ~TempScriptGuard (void)
+    {
+        if (path.empty()) return;
+
+        std::error_code ec;
+
+        std::filesystem::remove(path, ec);
+    }
+};
+}
+
 #ifdef _WIN32
 static void line_ensure_utf8 (char *line)
 {
@@ -112,15 +134,17 @@ static void printline (const char *s)
     }
 }
 
-static void gretl_abort (char *line)
+// Report a fatal script error.
+// Unlike gretlcli we must NOT terminate the process here: we live inside a
+// Python interpreter. The caller leaves the command loop, the regular cleanup
+// runs and the error is raised as a Python exception by handle_gretl_error().
+static void gretl_report_fatal (const char *line)
 {
     const char *tokline = get_parser_errline();
 
-    std::fprintf(stderr, "\ngretlcli: error executing script: halting\n");
+    std::fprintf(stderr, "\ngretl4py: error executing script: halting\n");
     if (tokline != nullptr && *tokline != '\0' && std::strcmp(tokline, line)) std::fprintf(stderr, "> %s\n", tokline);
     if (*line != '\0') std::fprintf(stderr, "> %s\n", line);
-
-    std::exit(EXIT_FAILURE);
 }
 
 static int cli_parse_object_request (const char *line, char *objname, char **param,
@@ -809,6 +833,7 @@ int gretl_execute_script (const T &source)
     PRN *cmdprn = nullptr;
     gretlopt opt = OPT_NONE;
     int err = 0;
+    TempScriptGuard temp_script;    // deletes the temporary script (if any) on every exit path
 
     // we assume "batch" mode every time
     SET_OPT(opt, OPT_BATCH);
@@ -854,6 +879,7 @@ int gretl_execute_script (const T &source)
 
             std::ofstream tmp_file(fullpath, std::ios::out | std::ios::binary);
             if (!tmp_file) handle_gretl_error(E_FOPEN, "failed to open temp file");
+            temp_script.path = fullpath;
             tmp_file.write(source.data(), static_cast<std::streamsize>(source.size()));
             tmp_file.close();
 
@@ -885,13 +911,17 @@ int gretl_execute_script (const T &source)
             std::sprintf(line, "run %s", runfile);
         }
         err = cli_exec_line(&state, dset, cmdprn);
-        if (err && fb == nullptr) std::exit(EXIT_FAILURE);
+        // note: if err && fb == nullptr the main loop below is skipped and we fall
+        // through to the cleanup code, which raises the error (no exit() here)
     }
     *linecopy = '\0';
 
     // enter main command loop
     while (cmd.ci != QUIT && fb != nullptr) {
-        if (err && gretl_error_is_fatal()) gretl_abort(linecopy);
+        if (err && gretl_error_is_fatal()) {
+            gretl_report_fatal(linecopy);
+            break;
+        }
         if (gretl_execute_loop()) {
             state.cmd->ci = RUNLOOP;
             err = cli_exec_line(&state, dset, cmdprn);

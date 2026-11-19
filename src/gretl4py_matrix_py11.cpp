@@ -57,7 +57,20 @@ py::array_t<T> make_numpy_view_impl (const GretlMatrix &m, py::handle owner, T *
 
     return py::array_t<T>({m.rows(), m.cols()}, {sizeof(T), sizeof(T) * m.rows()}, ptr, owner);
 }
+
+py::array make_matrix_numpy_view (GretlMatrix &self)
+{
+    //
+    // zero-copy NumPy view of a GretlMatrix (real or complex); the Python object
+    // owning the matrix is kept alive by the returned array
+    //
+    py::object owner = py::cast(&self, py::return_value_policy::reference);
+
+    if (self.is_complex()) return make_numpy_view_impl<std::complex<double>>(self, owner, reinterpret_cast<std::complex<double>*>(self.z()));
+
+    return make_numpy_view_impl<double>(self, owner, self.val());
 }
+} // namespace
 
 //
 // GretlMatrix mappings
@@ -108,29 +121,35 @@ void init_gretl4py_gretl_matrix_py11 (py::module_ &m)
     .def_property_readonly("numpy_view",
                            [](GretlMatrix &self) -> py::array
                            {
-                               if (self.is_complex()) {
-                                   return make_numpy_view_impl<std::complex<double>>(self,
-                                                                                     py::cast(&self, py::return_value_policy::reference),
-                                                                                     reinterpret_cast<std::complex<double>*>(self.z()));
-                               }
-
-                               return make_numpy_view_impl<double>(self, py::cast(&self, py::return_value_policy::reference), self.val());
+                               return make_matrix_numpy_view(self);
                            })
     .def("__len__", &GretlMatrix::rows)
     .def("__array__",
-         [](py::object self_obj, py::object , py::object ) -> py::array
+         [](py::object self_obj, py::object dtype, py::object copy) -> py::array
          {
              //
-             // to follow the protocol convention in 100% (dtype, copy)
+             // NumPy __array__ protocol (NumPy >= 2): honour both 'dtype' and 'copy'
+             //   copy=None  -> zero-copy view whenever possible (np.asarray)
+             //   copy=True  -> always an independent array (np.array)
+             //   copy=False -> never copy: refuse when a dtype conversion would be needed
              //
              auto &self = self_obj.cast<GretlMatrix&>();
+             py::array view = make_matrix_numpy_view(self);
+             const bool copy_given = !copy.is_none();
+             const bool copy_requested = copy_given && copy.cast<bool>();
 
-             if (self.is_complex()) {
-                 return make_numpy_view_impl<std::complex<double>>(self, py::cast(&self, py::return_value_policy::reference),
-                                                                   reinterpret_cast<std::complex<double>*>(self.z()));
+             if (!dtype.is_none()) {
+                 const py::dtype wanted = py::dtype::from_args(dtype);
+
+                 if (!view.dtype().equal(wanted)) {
+                     if (copy_given && !copy_requested) throw py::value_error("unable to avoid a copy: a dtype conversion was requested");
+
+                     return view.attr("astype")(wanted).cast<py::array>();
+                 }
              }
+             if (copy_requested) return view.attr("copy")().cast<py::array>();
 
-             return make_numpy_view_impl<double>(self, py::cast(&self, py::return_value_policy::reference), self.val());
+             return view;
          }, py::arg("dtype") = py::none(), py::arg("copy") = py::none())
     .def("__copy__", [](const GretlMatrix &self) { return GretlMatrix(self); })
     .def("__deepcopy__", [](const GretlMatrix &self, py::dict) { return GretlMatrix(self); })

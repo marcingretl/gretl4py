@@ -149,7 +149,7 @@ std::string gretl4py_to_lower (std::string s) noexcept;
 
 void NumPyArray_extract (const py::array &arr, NumPyArrayView &view);
 
-py::object variant_to_pyobject (GretlTypes &&val) noexcept;
+py::object variant_to_pyobject (GretlTypes &&val);
 
 template <typename T>
 void get_object_from_dict (const py::dict &dict, const char *key, T &target);

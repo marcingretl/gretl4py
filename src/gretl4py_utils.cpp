@@ -113,7 +113,7 @@ inline GretlSlice make_gretl_slice (std::string startobs, std::string endobs, st
 
     return gs;
 }
-}
+} // namespace
 
 //////////////////////////////////////////////////
 // classes
@@ -591,7 +591,7 @@ void NumPyArray_extract (const py::array &arr, NumPyArrayView &view)
 
 // Note: this is needed to avoid memory leaks when
 // transferring GretlTypes to Python inside py::dict
-py::object variant_to_pyobject (GretlTypes &&val) noexcept
+py::object variant_to_pyobject (GretlTypes &&val)
 {
     return std::visit([](auto &&arg) -> py::object
     {
