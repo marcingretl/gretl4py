@@ -1147,13 +1147,13 @@ GretlType get_pyarray_type (const py::list &items)
             get_pyarray_type(py::reinterpret_borrow<py::list>(item));
             current = GRETL_TYPE_ARRAYS;
         } else {
-            throw py::type_error("Unsupported element type in Python list");
+            throw std::invalid_argument("Unsupported element type in Python list");
         }
 
         if (type == GRETL_TYPE_NONE) {
             type = current;
         } else if (type != current) {
-            throw py::type_error("Python list elements must have a common gretl array type");
+            throw std::invalid_argument("Python list elements must have a common gretl array type");
         }
     }
 
@@ -1172,7 +1172,7 @@ gretl_array_ptr python_list_to_gretl_array (const py::list &items, GretlType typ
     if (type == GRETL_TYPE_NONE || type == GRETL_TYPE_ANY) {
         type = inferred;
     } else if (inferred != GRETL_TYPE_ANY && type != inferred) {
-        throw py::type_error("Explicit gretl array type does not match Python list");
+        throw std::invalid_argument("Explicit gretl array type does not match Python list");
     }
 
     const auto n = py::len(items);

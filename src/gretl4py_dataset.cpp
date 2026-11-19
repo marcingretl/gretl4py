@@ -1296,6 +1296,7 @@ std::pair<GretlMatrixPtr, py::object> GretlDataset::pergm (
     GretlPlot plotter;
     gretl_matrix_ptr mat{nullptr};
     std::nullptr_t fake_dataset = nullptr;
+    int err = 0;
 
     // unpack command options
     opt_ = unpack_kwargs_command<PERGM>(fake_dataset, kwargs, &plotter);
@@ -1315,13 +1316,13 @@ std::pair<GretlMatrixPtr, py::object> GretlDataset::pergm (
     const int varno = get_series_id(series);
 
     // execute the gretl command to produce textual and graphical output
-    err_ = periodogram(varno, bandwidth, dset, opt_, printer_.prn_ptr());
-    if (err_) handle_gretl_error(err_, printer_.get_buffer());
+    err = periodogram(varno, bandwidth, dset, opt_, printer_.prn_ptr());
+    if (err) handle_gretl_error(err_, printer_.get_buffer());
 
     // retrieve the spectral density as a matrix
     mat.reset(periodogram_matrix(dset->Z[varno], dset->t1,
-                                 dset->t2, width, &err_));
-    if (err_) handle_gretl_error(err_);
+                                 dset->t2, width, &err));
+    if (err) handle_gretl_error(err);
 
     // print results and translate the generated gnuplot script
     printer_.print();
