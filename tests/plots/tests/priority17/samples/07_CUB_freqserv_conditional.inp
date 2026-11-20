@@ -1,0 +1,13 @@
+# CUB: use the official ordinal survey data shipped with the package.
+# The original example's univer.gdt file is required by --frompkg=CUB.
+set seed 20261118
+open univer.gdt --frompkg=CUB --quiet
+# Include the binary regular-user indicator in uncertainty and feeling.
+list Y = freqserv
+list W = freqserv
+# CUB 2.0 passes the uncertainty and feeling covariates via options.
+bundle opts = _(Y=Y, W=W)
+bundle mod = CUB_setup(officeho, opts)
+CUB_estimate(&mod)
+# Draw two conditional distributions at freqserv=0 and freqserv=1.
+CUB_dplot(mod, freqserv)

@@ -1,0 +1,12 @@
+# pcaTools: reproducible correlated synthetic observations.
+# We use an ordinary non-sparse PCA here to focus on drawing paths.
+set seed 20261118
+nulldata 160
+genr time
+series a = normal()
+series b = 0.7*a + 0.8*normal()
+series c = -0.4*a + 0.3*b + 0.7*normal()
+list X = a b c
+# Standardized PCA with the default scree-plot styling.
+bundle pc = pcaEst(X, _(do_stdize=1, use_vcv=0))
+pcaScreeplot(pc)

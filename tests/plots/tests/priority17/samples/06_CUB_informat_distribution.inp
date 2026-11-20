@@ -1,0 +1,8 @@
+# CUB: use the official ordinal survey data shipped with the package.
+# The original example's univer.gdt file is required by --frompkg=CUB.
+set seed 20261118
+open univer.gdt --frompkg=CUB --quiet
+# Repeat the fitted/observed distribution path for another rating item.
+bundle mod = CUB_setup(informat)
+CUB_estimate(&mod)
+CUB_dplot(mod)

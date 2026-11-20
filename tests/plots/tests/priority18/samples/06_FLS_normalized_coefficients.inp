@@ -1,0 +1,10 @@
+# FLS: estimate flexible least squares on the airline log-series.
+# The coefficient matrix is converted to series and plotted by native gretl commands.
+open bjg.gdt --quiet
+genr time
+list X = const time
+# Normalized X'X metric tests alternative coefficient scaling.
+bundle fit = FLS(lg, X, _(mu=10, smooth=1, metric=1))
+matrix B = fit.coeff
+list coeffs = mat2list(B, "flsnorm")
+gnuplot coeffs --time-series --with-lines --output=display

@@ -1,0 +1,4 @@
+# BVAR: initialize quarterly data before package inclusion.
+# The plotting fixture independently rebuilds the workfile.
+nulldata 160
+setobs 4 1980:1 --time-series

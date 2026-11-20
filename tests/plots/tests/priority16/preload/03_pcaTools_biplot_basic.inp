@@ -1,0 +1,3 @@
+# pcaTools: initialize a valid workfile before package inclusion.
+# The plotting fixture builds the reproducible dataset itself.
+nulldata 160

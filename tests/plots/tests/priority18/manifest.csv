@@ -1,0 +1,9 @@
+case,package,script
+01_STSM_BSM_overlay,StrucTiSM,samples/01_STSM_BSM_overlay.inp
+02_STSM_BSM_components,StrucTiSM,samples/02_STSM_BSM_components.inp
+03_STSM_BSM_grid,StrucTiSM,samples/03_STSM_BSM_grid.inp
+04_STSM_LLT_components,StrucTiSM,samples/04_STSM_LLT_components.inp
+05_FLS_identity_coefficients,FLS,samples/05_FLS_identity_coefficients.inp
+06_FLS_normalized_coefficients,FLS,samples/06_FLS_normalized_coefficients.inp
+07_FLS_unsmoothed_coefficients,FLS,samples/07_FLS_unsmoothed_coefficients.inp
+08_FLS_mu_comparison,FLS,samples/08_FLS_mu_comparison.inp

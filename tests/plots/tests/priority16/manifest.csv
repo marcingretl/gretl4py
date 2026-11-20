@@ -1,0 +1,9 @@
+case,package,script
+01_pcaTools_scree_std,pcaTools,samples/01_pcaTools_scree_std.inp
+02_pcaTools_scree_cov,pcaTools,samples/02_pcaTools_scree_cov.inp
+03_pcaTools_biplot_basic,pcaTools,samples/03_pcaTools_biplot_basic.inp
+04_pcaTools_biplot_factor,pcaTools,samples/04_pcaTools_biplot_factor.inp
+05_BVAR_fcast_single,BVAR,samples/05_BVAR_fcast_single.inp
+06_BVAR_fcast_grid,BVAR,samples/06_BVAR_fcast_grid.inp
+07_BVAR_sirf_selected,BVAR,samples/07_BVAR_sirf_selected.inp
+08_BVAR_irf_grid,BVAR,samples/08_BVAR_irf_grid.inp

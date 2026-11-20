@@ -1,0 +1,8 @@
+# gig: use the documented quarterly gretl data set and GARCH specification.
+# Plot-only integration test; no forecasting or model comparison is implied.
+set seed 20261118
+open b-g.gdt --quiet
+bundle mod = gig_setup(Y, 3, const)
+gig_estimate(&mod)
+# Plot function returns void and must not be assigned.
+gig_dplot(&mod, _(fontsize=11))
