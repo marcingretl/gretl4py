@@ -1,0 +1,6 @@
+# basis_functions: EXAMPLE=2 from the embedded sample script.
+# Restricted cubic spline with Chebyshev knots, plotted from a sorted matrix.
+open rac3d.gdt --quiet
+poisson HSCORE const rcspline(AGE, 3, 2)
+matrix plt = msortby({ $yhat, AGE }, 2)
+gnuplot --matrix=plt --output=display --with-lines --fit=none

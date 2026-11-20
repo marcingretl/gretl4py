@@ -1,0 +1,24 @@
+# BACE: reviewed custom plotting case based on BACE/examples/FLS_41t72.inp.
+# Preserve the package example workflow while checking Matplotlib output.
+# Plot-audit adaptation: bound stochastic work and request native BACE plots.
+set verbose off
+set seed 1000000
+
+# We load packages
+include BACE.gfn
+
+# We open Growth dataset
+open FLS_41t72.gdt --frompkg=BACE --quiet
+
+# We specify list of explanatory variables
+# Use a smaller representative subset of the original 41 covariates.
+list X = 2..14
+
+# We set number of MC3 draws
+# The original sample uses 3*10^6 draws; use fewer for a plotting smoke test.
+scalar N = 5000
+
+set stopwatch
+BACE(Growth, X, _(model_prior="binomial", bic_type="bic", \
+  avg_model_size=7, Nrank=20, Nrep=N, burn=33, do_joint="myq", do_plot=1, show_progress=0))
+printf "Total execution time: %.2f sec.\n", $stopwatch

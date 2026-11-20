@@ -1,0 +1,7 @@
+# Holt 2.0: test user-selected forecast confidence intervals.
+open auspop.gdt --frompkg=Holt --quiet
+# Trigger genuine out-of-sample forecasts and supply two CI levels.
+dataset addobs 6
+bundle hb = Holt(pop)
+matrix ci = {70, 90}
+Holt_plot(&hb, 1, ci)

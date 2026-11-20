@@ -1,0 +1,4 @@
+# GFE declares needs-panel-data=true; supply a valid balanced panel before load.
+# Each sample then opens the package-provided Acemoglu_etal panel dataset.
+nulldata 70
+setobs 7 1:1 --stacked-time-series

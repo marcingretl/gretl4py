@@ -1,0 +1,41 @@
+# DFM: preserve the original Labor.inp smoothed employment-component plot.
+# Source: DFM/examples/Labor.inp (package data and QML/EM estimation).
+set verbose off
+include DFM.gfn
+
+open Labor.gdt --quiet --frompkg=DFM
+list xlist = dataset - CES0000000001
+
+Mod = DFM_Setup(xlist, 1, 2, 4) # q=1 , s=2 , p=4
+
+set stopwatch
+DFM_Estimate(&Mod, 3)
+printf "\n\nElapsed time: %g seconds\n", $stopwatch
+DFM_Printout(&Mod, 1)
+
+# Save estimation results in a bundle held in Mod
+results = Mod.results
+
+Lambda = results.Lambda # matrix: store factor loadings
+ML_Fac = results.ML_Fac # matrix: store factors f(t),...,f(t-s)
+
+# Create the smoothed common component CCt
+matrix mVec = {}
+matrix mVac = eigensym( qform( Lambda , mcov(ML_Fac) ) , &mVec )
+matrix mFhat = ML_Fac*(Lambda')*mVec[,cols(mVec)]
+
+m = mean(CES0000000001)
+s = sd(CES0000000001)
+series CCt = m + (cdemean(mFhat)/sdc(mFhat,rows(mFhat)-1)) * s
+
+list plotList = CCt CES0000000001
+setinfo CCt --graph-name="Smoothed employment component"
+setinfo CES0000000001 --graph-name="Total nonfarm employment"
+
+plot plotList
+    options time-series with-lines
+    literal unset xzeroaxis
+    literal set grid ytics back lt 1 dt 2 lw 0.5  lc rgb "#808080"
+    literal set key left bottom
+    literal set ylabel "Percent change"
+end plot --output=display

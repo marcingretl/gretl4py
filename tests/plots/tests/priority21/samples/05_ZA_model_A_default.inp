@@ -1,0 +1,6 @@
+# ZivotAndrews: model A (level break) with the default lag selector.
+# Data and response variable follow the package's official PDF example.
+open np.gdt --quiet
+series y = log(rpcgnp)
+bundle za = ZA_test(y, 1)
+ZA_plot(za)

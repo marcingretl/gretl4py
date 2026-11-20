@@ -1,0 +1,26 @@
+# ETS: reviewed custom plotting case based on ETS/examples/Holt.inp.
+# Preserve the package example workflow while checking Matplotlib output.
+set verbose off
+include ETS.gfn
+open data3-6.gdt
+
+# Estimate the local linear trend, setting aside
+# the last 3 observations for testing
+bundle b1 = ETS(Ct, _(trend=1, seasonal=0, ntest=3))
+printf "Testing: RMSE %g, MAE %g\n", b1.RMSE_test, b1.MAE_test
+
+# As above, but using pre-given parameters
+bundle b2 = ETS(Ct, _(trend=1, seasonal=0, theta={0.3, 0.1}, ntest=3))
+printf "Testing: RMSE %g, MAE %g\n", b2.RMSE_test, b2.MAE_test
+
+# Extract the smoothed series (estimated version)
+series Ct_Holt = b1.Ct_fcast
+# Plot actual and predicted
+ETS_plot(&b1, 1)
+
+# Forecast 4 out-of-sample observations
+dataset addobs 4
+bundle bf = ETS(Ct, _(trend=1, seasonal=0))
+series Ct_Holtpred = bf.Ct_fcast
+# Plot actual and forecast
+ETS_plot(&bf, 1)

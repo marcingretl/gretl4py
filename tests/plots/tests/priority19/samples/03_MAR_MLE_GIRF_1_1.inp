@@ -1,0 +1,17 @@
+# MAR 1.0: matrix-valued autoregression on the package's official dataset.
+# This fixture bypasses the upstream MAR_sample.inp -> MAR_10.inp include.
+set seed 20261120
+open Datavec.gdt --frompkg=MAR --quiet
+# Four 2-element column lists form a 2 x 4 matrix time series.
+list S1 = V1 V2
+list S2 = V3 V4
+list S3 = V5 V6
+list S4 = V7 V8
+lists X = defarray(S1, S2, S3, S4)
+# The public IRF function consumes the estimated model bundle.
+bundle bdl
+# Estimate with an intercept; method 2 is MLE.
+MAR(X, 1, 1, 2, 100, &bdl)
+# Omitted fourth argument selects the documented TABLE & PLOT mode.
+# MLE; shock on row 1, column 1; generalized impulse response over 8 periods.
+MAR_IRFs(1, 1, 8, , &bdl)

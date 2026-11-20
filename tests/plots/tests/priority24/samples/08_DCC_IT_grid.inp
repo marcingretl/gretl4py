@@ -1,0 +1,26 @@
+# DCC: use the source package IT-companies sample and arrange each pairwise
+# conditional correlation in its own gridplot panel.
+set verbose off
+include DCC.gfn
+open IT_companies.gdt --quiet --frompkg=DCC
+list Prices = IBM AAPL RHT
+smpl 2014-01-01 ;
+list Returns = null
+loop foreach i Prices --quiet
+    series ret = 100 * misszero(ldiff($i))
+    Returns += genseries(tolower("$i"), ret)
+endloop
+bundle st1 = DCC_Step1(Returns)
+list E = mat2list(st1.E)
+list H = mat2list(st1.H)
+bundle mod = DCC_Setup(E, H, 3, 0)
+scalar err = DCC_Estimate(&mod, _(verbosity=0))
+list COR = DCC_GetCorrel(mod)
+# gpbuild captures each pair's native Gnuplot output; gridplot combines them.
+strings panels
+gpbuild panels
+    gnuplot CondCorr_01_02 --time-series --with-lines
+    gnuplot CondCorr_01_03 --time-series --with-lines
+    gnuplot CondCorr_02_03 --time-series --with-lines
+end gpbuild
+gridplot panels --rows=3 --output=display

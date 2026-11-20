@@ -1,0 +1,13 @@
+# BVAR 0.4: synthetic, correlated quarterly data; short MC smoke test.
+# Posterior coefficient histogram requires retaining individual draws.
+set seed 20261120
+nulldata 160
+setobs 4 1980:1 --time-series
+series a = normal()
+series b = 0.35*a + normal()
+list Y = a b
+list A = a
+bundle mod = BVAR_setup(Y, 1, "diff")
+bundle post = BVAR_posterior(mod, "coeff", _(iter=399, summ_only=0, mpi_np=1))
+# First equation's coefficient distributions combined using gridplot.
+BVAR_post_plot(post, "coeff", A, _(grid=1, gridfontsize=10))

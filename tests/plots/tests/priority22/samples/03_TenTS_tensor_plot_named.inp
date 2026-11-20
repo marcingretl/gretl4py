@@ -1,0 +1,23 @@
+# TenTS: use authentic trade observations and named tensor dimensions.
+# Average over time and aggregate both partner and direction dimensions.
+# tensor_plot() must create categorical xtics and correctly labelled series.
+open trade_data.gdt --frompkg=TenTS --quiet
+matrix X = {dataset}
+scalar T = $nobs
+matrix dims = {T, 4, 5, 2, 2}
+strings time_names = obslabel({obs})
+strings countries = defarray("Germany", "Spain", "France", "Italy")
+strings sectors = defarray("Food", "Crude_mat", "Fuels", "Chemicals", "Other_man")
+strings flows = defarray("Imports", "Exports")
+strings partners = defarray("Extra_EU", "EU")
+arrays names = array(cols(dims))
+names[1] = time_names
+names[2] = countries
+names[3] = sectors
+names[4] = flows
+names[5] = partners
+bundle A = tensorize(X, dims, 1, names)
+A = tensor_mean(A, 1, 1)
+A = tensor_aggr(A, 4, 1)
+A = tensor_aggr(A, 3, 1)
+tensor_plot(A, 1)

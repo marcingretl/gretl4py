@@ -1,0 +1,6 @@
+# basis_functions: EXAMPLE=3 from the embedded sample script.
+# Unrestricted cubic spline, using the same sorted matrix plotting path.
+open rac3d.gdt --quiet
+poisson HSCORE const cspline(AGE, 1)
+matrix plt = msortby({ $yhat, AGE }, 2)
+gnuplot --matrix=plt --output=display --with-lines --fit=none

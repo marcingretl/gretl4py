@@ -1,0 +1,8 @@
+# basis_functions: EXAMPLE=5 from the embedded sample script.
+# Repeated fractional powers exercise the function's naming/term logic.
+open mroz87.gdt --quiet
+matrix pwrs = {-1, 0.5, 0.5, 1, 2}
+logit LFP const fracpoly(WA, pwrs) --p-values
+P = $yhat
+ndx = lincomb($xlist, $coeff)
+gnuplot ndx P WA --output=display

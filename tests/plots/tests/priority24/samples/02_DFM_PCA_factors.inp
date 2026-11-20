@@ -1,0 +1,10 @@
+# DFM: use the package-native factor plotting API with PCA estimation.
+# The original Labor example supplies the same data, but here we request method 1.
+set verbose off
+include DFM.gfn
+open Labor.gdt --quiet --frompkg=DFM
+list xlist = dataset - CES0000000001
+bundle Mod = DFM_Setup(xlist, 2, 0, 1)
+scalar err = DFM_Estimate(&Mod, 1)
+# ptype=0: plot principal component factors with scatters.
+DFM_Plot(&Mod, 0)

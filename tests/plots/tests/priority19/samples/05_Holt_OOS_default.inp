@@ -1,0 +1,7 @@
+# Holt 2.0: reproduce its documented out-of-sample forecast example.
+open auspop.gdt --frompkg=Holt --quiet
+# The dataset ends in 2017; extend it to show ten out-of-sample forecasts.
+dataset addobs 10
+bundle hb = Holt(pop)
+# Native package plot: observed values, forecasts, and default intervals.
+Holt_plot(&hb, 1)

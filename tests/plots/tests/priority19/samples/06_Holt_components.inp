@@ -1,0 +1,7 @@
+# Holt 2.0: render the package's level/trend/irregular tripartite view.
+open auspop.gdt --frompkg=Holt --quiet
+# Use the documented extension and optimized smoothing parameters.
+dataset addobs 10
+bundle hb = Holt(pop)
+# Native package plot, ptype 2: three panels of estimated components.
+Holt_plot(&hb, 2)

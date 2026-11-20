@@ -1,0 +1,18 @@
+# dcm: wide-data model as in sample_wide.inp, but visualize the effects.
+# dcm_meff("income", bun) computes effects for all four alternatives.
+set verbose off
+include dcm.gfn
+open tunafish_small_wide.gdt --quiet --frompkg=dcm
+list X = const income
+list DISPLAY = display_br1 display_br2 display_br3 display_br4
+list FEATURE = feature_br1 feature_br2 feature_br3 feature_br4
+lists Z = defarray(DISPLAY, FEATURE)
+znames = defarray("display", "feature")
+series id = time
+bundle bun = dcm_setup_wide(choice, id, X, Z, znames)
+bun.base = 2
+err = dcm_estimate(&bun)
+matrix M = dcm_meff("income", bun)
+# With --matrix, gretl takes the last column as the x-axis variable.
+matrix plt = M ~ seq(1, rows(M))'
+gnuplot --matrix=plt --with-lines --fit=none --output=display

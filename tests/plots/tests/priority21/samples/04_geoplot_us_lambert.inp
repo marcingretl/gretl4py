@@ -1,0 +1,6 @@
+# geoplot: US Lambert azimuthal projection with explicit axis ticks.
+# Test transformed polygon coordinates and axis labels in the translator.
+set seed 20261120
+open us-states.geojson --frompkg=geoplot --quiet
+series z = normal()
+geoplot(z, _(title="US states: Lambert projection", palette="blues", projection="EPSG2163", tics=1))

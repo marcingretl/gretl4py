@@ -1,0 +1,4 @@
+# geoplot: original state polygon boundaries from the official addon GeoJSON.
+# Exercise the native map writer with no quantitative payload.
+open us-states.geojson --frompkg=geoplot --quiet
+geoplot(null, _(title="US states: boundaries"))

@@ -1,0 +1,7 @@
+# basis_functions: EXAMPLE=1 in the package's embedded sample script.
+# Default restricted cubic spline on WA and a three-series logit plot.
+open mroz87.gdt --quiet
+logit LFP const rcspline(WA, 3) --p-values
+P = $yhat
+ndx = lincomb($xlist, $coeff)
+gnuplot ndx P WA --output=display

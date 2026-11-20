@@ -1,0 +1,36 @@
+# DCC: the official package sample (DCC.gfn), adapted only for local data.
+# This executes the real univariate GARCH stage and DCC correlation accessor.
+# turn off unwanted output
+set verbose off
+
+# include package
+include DCC.gfn
+
+# read the dataset
+open IT_companies.gdt --quiet --frompkg=DCC
+list Prices = IBM AAPL RHT # MSFT
+smpl 2014-01-01 ;
+
+# compute returns
+list Returns = null
+loop foreach i Prices --quiet
+    series ret = 100 * misszero(ldiff($i))
+    Returns += genseries(tolower("$i"), ret)
+endloop
+
+# --- DATA PREPARATION -------------------------------------------------
+# this will run a battery of GARCH(1,1) models. If you want something
+# fancier, do it by hand
+bundle st1 = DCC_Step1(Returns)
+list E = mat2list(st1.E)
+list H = mat2list(st1.H)
+
+# --- MODEL SETUP AND ESTIMATION ----------------------------------------
+scalar modeltype = 3
+scalar target = 0
+bundle mod = DCC_Setup(E, H, modeltype, target)
+set bfgs_verbskip 5
+scalar err = DCC_Estimate(&mod, _(verbosity=0))
+list COR = DCC_GetCorrel(mod)
+# Original sample: plot the three conditional-correlation series.
+scatters COR --output=display

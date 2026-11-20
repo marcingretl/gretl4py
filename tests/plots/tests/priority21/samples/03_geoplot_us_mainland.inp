@@ -1,0 +1,7 @@
+# geoplot: filter polygon geometries by their state postal identifier.
+# This follows the contiguous-USA sub-sample method in the official manual.
+set seed 20261120
+open us-states.geojson --frompkg=geoplot --quiet
+series z = normal()
+smpl postal != "AK" && postal != "HI" --restrict
+geoplot(z, _(title="Contiguous states", palette="blues"))

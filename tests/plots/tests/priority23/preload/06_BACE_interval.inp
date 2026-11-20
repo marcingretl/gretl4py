@@ -1,0 +1,4 @@
+# Establish a valid time-series dataset before the package is loaded.
+# The fixture opens its actual stock or --frompkg dataset afterward.
+nulldata 144
+setobs 12 1949:01 --time-series

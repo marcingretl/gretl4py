@@ -1,0 +1,9 @@
+case,package,script
+01_GFE_timevarying,GFE,samples/01_GFE_timevarying.inp
+02_GFE_timeinvariant,GFE,samples/02_GFE_timeinvariant.inp
+03_GFE_effect_distribution,GFE,samples/03_GFE_effect_distribution.inp
+04_GFE_BIC_groups,GFE,samples/04_GFE_BIC_groups.inp
+05_dcm_meff_sample,dcm,samples/05_dcm_meff_sample.inp
+06_dcm_fishing_probabilities,dcm,samples/06_dcm_fishing_probabilities.inp
+07_dcm_wide_probabilities,dcm,samples/07_dcm_wide_probabilities.inp
+08_dcm_wide_income_effects,dcm,samples/08_dcm_wide_income_effects.inp
