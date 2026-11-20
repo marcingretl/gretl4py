@@ -105,7 +105,8 @@ def run_example():
 
   print("\n****************************")
   print("leverage")
-  res_leverage = m1.leverage()
+  res_leverage, f_lev = m1.leverage(plot="display")
+  print(res_leverage)
 
   print("\n****************************")
   print("nonlinearity")
