@@ -23,6 +23,7 @@
 #include "gretl4py_model.h"
 #include "gretl4py_bundle.h"
 #include "gretl4py_matrix.h"
+#include "gretl4py_utils.h"
 #include "gretl4py_model_instantiations.h"
 #include "docstrings/gretl4py_model_docstr.h"
 
@@ -146,7 +147,7 @@ void init_gretl4py_model_py11(py::module_ &m)
              //
              if (!self.estimated()) throw std::runtime_error("Model was not estimated yet");
              py::object varlist;
-             py::kwargs clean_kwargs = kwargs;
+             auto clean_kwargs = copy_dict_or_kwargs<py::kwargs>(kwargs);
              bool with_vars = false;
 
              // we check for "vars" or "obs" for chow test

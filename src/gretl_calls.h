@@ -38,7 +38,6 @@ class GretlPrint
 private:
     PRN *prn_ = nullptr;        // libgretl PRN struct
     PrnType prn_type_;          // libgretl printer type
-    int err_ = 0;
 public:
     GretlPrint (PrnType prn_type = GRETL_PRINT_BUFFER); // by default we use buffered printer
     GretlPrint (const GretlPrint&) = delete;            // we do not allow for copy-constructor

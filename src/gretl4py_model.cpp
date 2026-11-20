@@ -596,13 +596,8 @@ std::pair<py::object, py::object> GretlModel::gretl_do_forecast_ (void *model, c
     GretlPlot plotter;
     std::string param = "";
     int n_args = py::len(args);
-    py::kwargs clean_kwargs;
+    auto clean_kwargs = copy_dict_or_kwargs<py::kwargs>(kwargs);
     int err = 0;
-
-    // make an independent copy of kwargs
-    for (const auto &item : kwargs) {
-        clean_kwargs[item.first] = item.second;
-    }
 
     // store named forecast arguments separately from command options
     std::array<py::object, max_positional_args> values = {
@@ -1094,8 +1089,8 @@ std::pair<GretlBundlePtr, GretlModelPtr> GretlModel_NSE::add_omit_auto (const py
     // this method performs ADD or OMIT tests with '--auto=' option
     //
     GretlBundlePtr res = std::make_shared<GretlBundle>();
-    py::kwargs clean_kwargs = kwargs;
     gretl_list_ptr ex_var{nullptr};
+    auto clean_kwargs = copy_dict_or_kwargs<py::kwargs>(kwargs);
     int order = -1;
     std::string type;
 
@@ -1128,7 +1123,7 @@ std::pair<GretlBundlePtr, GretlModelPtr> GretlModel_NSE::add_omit_auto (const py
 
     // we manufacture resulting object
     res->set_element<std::string>("type", type);
-    res->set_element("options", py::object(kwargs));
+    res->set_element("options", py::object(clean_kwargs));
     res->set_element("test", get_accessor("$test"));
     res->set_element("pvalue", get_accessor("$pvalue"));
     res->set_element<std::string>("summary", std::string(printer_.get_buffer()));
@@ -1259,7 +1254,6 @@ py::object GretlModel_NSE::bootstrap (const std::variant<int, std::string> &coef
     int err = 0;
 
     // Request a kernel-density plot of the bootstrap distribution.
-    // Request a kernel-density plot of the bootstrap distribution.
     if (plot) {
         SET_OPT(opt_, OPT_G);
         gretlopt opt_local = OPT_NONE;
@@ -1304,7 +1298,6 @@ py::object GretlModel_NSE::plot (const std::string &type, const std::string &xva
 
     if (type == "correlogram" && !xvar.empty()) throw std::invalid_argument("correlogram does not accept xvar");
     if (type == "qqplot" && !xvar.empty()) throw py::type_error("qqplot does not accept xvar");
-    if (type == "leverage" && !xvar.empty()) throw py::type_error("leverage does not accept xvar");
     if (type != "correlogram" && order.has_value()) throw std::invalid_argument("order is supported only for correlogram");
     if (type == "periodogram" && !xvar.empty()) throw py::type_error("periodogram does not accept xvar");
     // Periodogram settings must not silently affect other plot types.
@@ -1334,7 +1327,7 @@ py::object GretlModel_NSE::plot (const std::string &type, const std::string &xva
     } else if (type == "qqplot") {
         err = ctx.qqplot();
     } else {
-        throw py::value_error("Unsupported plot type: " + type);
+        throw std::invalid_argument("Unsupported plot type: " + type);
     }
     if (err) handle_gretl_error(err);
     if (type == "correlogram" || type == "periodogram") printer_.print();
@@ -1351,7 +1344,7 @@ py::object GretlModel_NSE::plot_confidence_ellipse (const std::variant<int, std:
     GretlPlot plotter;
     DATASET *dset = get_model_dataset_();
     NSEPlotContext ctx(model_, ci_, dataset_, dset, plotter, printer_.prn_ptr(), 0);
-    int err = ctx.confidence_ellipse(resolve_coefficient_(first, dset), resolve_coefficient_(second, dset), alpha);
+    const int err = ctx.confidence_ellipse(resolve_coefficient_(first, dset), resolve_coefficient_(second, dset), alpha);
 
     if (err) handle_gretl_error(err);
     printer_.print();

@@ -28,6 +28,7 @@
 #include "gretl4py_matrix.h"
 #include "gretl4py_bundle.h"
 #include <filesystem>
+#include <type_traits>
 
 namespace py = pybind11;
 
@@ -76,6 +77,21 @@ inline bool is_numpy_array_fc (const py::array &m) {
 }
 inline bool is_pygretlbundle (const py::handle &o) { return py::isinstance<GretlBundle>(o); }
 inline bool is_pygretlmatrix (const py::handle &o) { return py::isinstance<GretlMatrix>(o); }
+
+template <typename T>
+inline T copy_dict_or_kwargs (const T &src)
+{
+    //
+    // Independent copy of the dict/kwargs mapping; the values themselves are shared.
+    //
+    static_assert(std::is_base_of_v<py::dict, T>, "copy_dict_or_kwargs(): unsupported type");
+
+    PyObject *raw = PyDict_Copy(src.ptr());
+
+    if (!raw) throw py::error_already_set();
+
+    return py::reinterpret_steal<T>(raw);
+}
 
 //////////////////////////////////////////////////
 // classes
@@ -149,7 +165,7 @@ std::string gretl4py_to_lower (std::string s) noexcept;
 
 void NumPyArray_extract (const py::array &arr, NumPyArrayView &view);
 
-py::object variant_to_pyobject (GretlTypes &&val) noexcept;
+py::object variant_to_pyobject (GretlTypes &&val);
 
 template <typename T>
 void get_object_from_dict (const py::dict &dict, const char *key, T &target);

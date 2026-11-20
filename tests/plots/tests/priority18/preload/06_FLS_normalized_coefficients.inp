@@ -1,0 +1,4 @@
+# Supply a valid monthly workfile before loading the package.
+# The fixture replaces it with the standard bjg.gdt dataset.
+nulldata 144
+setobs 12 1949:01 --time-series

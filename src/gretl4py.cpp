@@ -198,7 +198,7 @@ PYBIND11_MODULE(_gretl, m)
           [](const GretlMatrix &Y, int s, const GretlMatrixPtr X, const py::kwargs &kwargs) -> GretlMatrixPtr
           {
               py::object y_obj = py::cast(Y);
-              py::kwargs kwargs_copy = kwargs;
+              auto kwargs_copy = copy_dict_or_kwargs<py::kwargs>(kwargs);
 
               if (X) kwargs_copy["X"] = X;
 

@@ -1,0 +1,5 @@
+# StrucTiSM: estimate the documented local linear trend shortcut.
+# This checks plotting of model components, not a package-native plotting function.
+open bjg.gdt --quiet
+list comps = LLT(lg)
+scatters comps --time-series --output=display

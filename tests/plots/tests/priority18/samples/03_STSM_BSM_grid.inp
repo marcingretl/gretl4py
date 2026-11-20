@@ -1,0 +1,14 @@
+# StrucTiSM: estimate a documented basic structural model on the airline data.
+# Plots are made from the package's returned component series, not by a public plot API.
+open bjg.gdt --quiet
+bundle mod = STSM_setup(lg, 1, 1, 2, 2)
+STSM_estimate(&mod)
+list comps = STSM_components(mod)
+# Capture three component plots in one gridplot figure.
+strings figs
+gpbuild figs
+    gnuplot lg_level --time-series --with-lines
+    gnuplot lg_seas --time-series --with-lines
+    gnuplot lg_irreg --time-series --with-lines
+end gpbuild
+gridplot figs --cols=2 --output=display

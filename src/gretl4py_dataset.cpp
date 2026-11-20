@@ -182,7 +182,6 @@ GretlDataset::GretlDataset (const py::dict &pydict) : id_(next_obj_id_++)
         // dataset in libgretl's memory-space).
         dset->structure = get_int_from_pydict("structure", 0);
         err = set_obs(std::to_string(get_int_from_pydict("periodicity", 1)).c_str(), dset->S[0], dset, setobs_opt_from_structure(dset->structure));
-        //if (err_) handle_gretl_error(err_);
 
         // we set obs labels
         set_obs_labels_();
@@ -947,7 +946,7 @@ std::string GretlDataset::repr (void) const
 
 void GretlDataset::print (const std::string &varlist, const py::kwargs &kwargs)
 {
-    py::dict final_kwargs = kwargs;
+    auto final_kwargs = copy_dict_or_kwargs<py::kwargs>(kwargs);
 
     // check for banned options
     if (kwargs.contains("data")) throw std::invalid_argument("'data': option not available");
@@ -1014,12 +1013,11 @@ void GretlDataset::smpl (const std::string &startobs, const std::string &endobs,
 
     gretl_list_ptr var_list{nullptr};
     std::nullptr_t fake_dataset = nullptr;
+    auto kwargs_copy = copy_dict_or_kwargs<py::kwargs>(kwargs);
     std::string vars;
     bool report = false;
-    py::dict kwargs_copy = kwargs;
     int err = 0;
 
-    // note: we modify kwargs here!!!!
     if (kwargs_copy.contains("varlist")) {
         get_object_from_dict<std::string>(kwargs_copy, "varlist", vars);
         kwargs_copy.attr("pop")("varlist");
@@ -1296,6 +1294,7 @@ std::pair<GretlMatrixPtr, py::object> GretlDataset::pergm (
     GretlPlot plotter;
     gretl_matrix_ptr mat{nullptr};
     std::nullptr_t fake_dataset = nullptr;
+    int err = 0;
 
     // unpack command options
     opt_ = unpack_kwargs_command<PERGM>(fake_dataset, kwargs, &plotter);
@@ -1315,13 +1314,13 @@ std::pair<GretlMatrixPtr, py::object> GretlDataset::pergm (
     const int varno = get_series_id(series);
 
     // execute the gretl command to produce textual and graphical output
-    err_ = periodogram(varno, bandwidth, dset, opt_, printer_.prn_ptr());
-    if (err_) handle_gretl_error(err_, printer_.get_buffer());
+    err = periodogram(varno, bandwidth, dset, opt_, printer_.prn_ptr());
+    if (err) handle_gretl_error(err, printer_.get_buffer());
 
     // retrieve the spectral density as a matrix
     mat.reset(periodogram_matrix(dset->Z[varno], dset->t1,
-                                 dset->t2, width, &err_));
-    if (err_) handle_gretl_error(err_);
+                                 dset->t2, width, &err));
+    if (err) handle_gretl_error(err);
 
     // print results and translate the generated gnuplot script
     printer_.print();
@@ -1984,7 +1983,7 @@ py::object GretlDataset::tsplots (const T &varlist, const py::kwargs &kwargs)
     //
     // mimic libgretl 'tsplots' command
     //
-    py::kwargs clean_kwargs = kwargs;
+    auto clean_kwargs = copy_dict_or_kwargs<py::kwargs>(kwargs);
 
     clean_kwargs["time_series"] = true;
 

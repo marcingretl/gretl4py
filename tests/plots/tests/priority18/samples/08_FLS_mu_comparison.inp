@@ -1,0 +1,14 @@
+# FLS: estimate flexible least squares on the airline log-series.
+# The coefficient matrix is converted to series and plotted by native gretl commands.
+open bjg.gdt --quiet
+genr time
+list X = const time
+# Compare the slope coefficient under weak and strong penalties.
+bundle weak = FLS(lg, X, _(mu=0.5, smooth=1, metric=0))
+bundle strong = FLS(lg, X, _(mu=100, smooth=1, metric=0))
+matrix W = weak.coeff
+matrix S = strong.coeff
+list lw = mat2list(W, "weak")
+list ls = mat2list(S, "strong")
+list slope_paths = weak2 strong2
+gnuplot slope_paths --time-series --with-lines --output=display

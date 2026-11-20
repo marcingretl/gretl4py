@@ -530,20 +530,20 @@ GretlPackageRes GretlPackage::function_exec (const std::string &func_name, Gretl
 
     if (!func_call) throw std::runtime_error("unable to load '" + func_name + "' function");
 
-    py::kwargs merged_kwargs = kwargs;  // we copy kwargs to handle posssible args
-    auto n_args = args.size();          // we handle args (positional parameters, if exist)
+    auto merged_kwargs = copy_dict_or_kwargs<py::kwargs>(kwargs);   // we copy kwargs to handle posssible args
+    auto n_args = args.size();                                      // we handle args (positional parameters, if exist)
     int err = 0;
 
     if (n_args > 0) {
         auto func_args = func_args_sorted_.at(func_name);
 
         if (n_args > func_args.size())
-            throw py::type_error("number of positional arguments bigger than total number of '" + func_name
-                                 + "' function arguments (" + std::to_string(func_args.size()) + ")");
+            throw std::invalid_argument("number of positional arguments bigger than total number of '" + func_name
+                                            + "' function arguments (" + std::to_string(func_args.size()) + ")");
         for (size_t i = 0; i < n_args; ++i) {
             const std::string &arg_name = func_args.at(i).first;
 
-            if (merged_kwargs.contains(arg_name)) throw py::type_error("multiple values for argument '" + arg_name + "'");
+            if (merged_kwargs.contains(arg_name)) throw std::invalid_argument("multiple values for argument '" + arg_name + "'");
             merged_kwargs[arg_name.c_str()] = args[i];
         }
     }

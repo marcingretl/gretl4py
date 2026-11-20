@@ -1,0 +1,13 @@
+# BVAR: stable two-variable synthetic quarterly workfile.
+# Short posterior simulations are smoke tests, not reliable inference.
+set seed 20261118
+nulldata 160
+setobs 4 1980:1 --time-series
+series a = normal()
+series b = 0.35*a + normal()
+list Y = a b
+bundle mod = BVAR_setup(Y, 1, "diff")
+# Posterior predictive path with a single selected dependent variable.
+bundle post = BVAR_posterior(mod, "fcast", _(iter=399, fcast_h=8, mpi_np=1))
+list SELECT = a
+BVAR_fcast_plot(post, SELECT, _(grid=0))

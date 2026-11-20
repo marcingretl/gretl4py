@@ -1,0 +1,9 @@
+case,package,script
+01_gig_garch_volatility,gig,samples/01_gig_garch_volatility.inp
+02_gig_garch_density,gig,samples/02_gig_garch_density.inp
+03_gig_gjr_volatility,gig,samples/03_gig_gjr_volatility.inp
+04_gig_gjr_density,gig,samples/04_gig_gjr_density.inp
+05_CUB_officeho_distribution,CUB,samples/05_CUB_officeho_distribution.inp
+06_CUB_informat_distribution,CUB,samples/06_CUB_informat_distribution.inp
+07_CUB_freqserv_conditional,CUB,samples/07_CUB_freqserv_conditional.inp
+08_CUB_freqserv_average,CUB,samples/08_CUB_freqserv_average.inp

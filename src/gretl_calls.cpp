@@ -282,8 +282,10 @@ GretlBundlePtr about (bool do_print)
 //
 GretlPrint::GretlPrint (PrnType prn_type) : prn_type_(prn_type)
 {
-    prn_ = gretl_print_new(this->prn_type_, &err_);
-    if (err_) handle_gretl_error(err_);
+    int err = 0;
+
+    prn_ = gretl_print_new(this->prn_type_, &err);
+    if (err) handle_gretl_error(err);
 }
 
 GretlPrint::~GretlPrint (void)
@@ -295,8 +297,9 @@ PRN *GretlPrint::prn_ptr (void)
 {
     // at first we always reset a buffer
     if (prn_type_ == GRETL_PRINT_BUFFER) {
-        err_ = gretl_print_reset_buffer(prn_);
-        if (err_) handle_gretl_error(err_);
+        const int err = gretl_print_reset_buffer(prn_);
+
+        if (err) handle_gretl_error(err);
     }
 
     return prn_;
@@ -510,7 +513,7 @@ py::object do_gretl_summary (const T &varlist, const py::kwargs &kwargs)
 
         if (!is_pygretlmatrix(obj)) throw std::invalid_argument("matrix must be a gretl.Matrix instance");
         auto mat = obj.cast<GretlMatrixPtr>();
-        py::kwargs kwargs_copy = kwargs;
+        auto kwargs_copy = copy_dict_or_kwargs<py::kwargs>(kwargs);
 
         kwargs_copy.attr("pop")("matrix");
         return mat->summary(kwargs_copy);
@@ -683,7 +686,7 @@ void do_gretl_pkg (const std::string &action, const std::string &pkgname, const 
         //
         strings_array_ptr depends(nullptr, StringsArrayDeleter{});
         std::filesystem::path gfnname;                              // full path to .gfn
-        int ndeps, err = 0;
+        int ndeps = 0, err = 0;
 
         // map zip -> gfn
         if (localfile.extension() == ".zip") {
@@ -1639,8 +1642,8 @@ py::object do_execute_plot_call (const T &varlist, const GretlDatasetPtr dataset
     GretlPlot plotter;
     TemporaryUserVar uv_tmp;
     gretl_list_ptr gretl_list{nullptr};
-    std::nullptr_t fake_dataset = nullptr; // NOTE: we do not pass dataset to unpack_kwargs_command!!!
-    py::kwargs clean_kwargs = kwargs;
+    std::nullptr_t fake_dataset = nullptr;                      // NOTE: we do not pass dataset to unpack_kwargs_command!!!
+    auto clean_kwargs = copy_dict_or_kwargs<py::kwargs>(kwargs);
     int err = 0;
 
     // we construct list of variables

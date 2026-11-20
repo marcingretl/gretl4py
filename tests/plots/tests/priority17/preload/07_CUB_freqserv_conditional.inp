@@ -1,0 +1,3 @@
+# CUB: provide a valid workfile while gretl4py includes the package.
+# The sample later opens CUB's bundled univer.gdt survey dataset.
+nulldata 160
