@@ -56,30 +56,14 @@ void bind_driver_model (py::module_ &m, const std::string &name)
     }
 }
 
-template <GretlCmdIndex CI, NLLineType type>
-GretlModel_NSE_nl<CI> &nl_add_line_to_parse (GretlModel_NSE_nl<CI> &model, const std::string &line)
+//
+// GretlModel helpers
+//
+GretlModel& fit (GretlModel &self)
 {
-    constexpr bool is_str = (type == PARAMS || type == PARAM_NAMES || type == WEIGHTS);
+    self.fit();
 
-    constexpr const char *keyword =
-        type == PARAMS      ? "params" :
-        type == PARAM_NAMES ? "param_names" :
-        type == WEIGHTS     ? "weights" :
-        type == DERIV       ? "deriv" :
-        type == ORTHOG      ? "orthog" :
-                              "statements";
-
-    model.template add_line_to_parse<is_str>(keyword, line);
-
-    return model;
-}
-
-template <GretlCmdIndex CI>
-GretlModel_NSE_nl<CI> &nl_add_init_value (GretlModel_NSE_nl<CI> &model, const std::string &varname, double value)
-{
-    model.add_init_value(varname, value);
-
-    return model;
+    return self;
 }
 
 //
@@ -132,6 +116,35 @@ std::pair<GretlBundlePtr, GretlModelPtr> omit_auto (GretlModel_NSE &self, const 
     //
     return self.add_omit_auto<OMIT>(kwargs);
 }
+
+//
+// GretlModel_NSE_nl helpers
+//
+template <GretlCmdIndex CI, NLLineType type>
+GretlModel_NSE_nl<CI> &nl_add_line_to_parse (GretlModel_NSE_nl<CI> &model, const std::string &line)
+{
+    constexpr bool is_str = (type == PARAMS || type == PARAM_NAMES || type == WEIGHTS);
+
+    constexpr const char *keyword =
+    type == PARAMS      ? "params" :
+    type == PARAM_NAMES ? "param_names" :
+    type == WEIGHTS     ? "weights" :
+    type == DERIV       ? "deriv" :
+    type == ORTHOG      ? "orthog" :
+    "statements";
+
+    model.template add_line_to_parse<is_str>(keyword, line);
+
+    return model;
+}
+
+template <GretlCmdIndex CI>
+GretlModel_NSE_nl<CI> &nl_add_init_value (GretlModel_NSE_nl<CI> &model, const std::string &varname, double value)
+{
+    model.add_init_value(varname, value);
+
+    return model;
+}
 } // namespace
 
 // GretlModel mappings
@@ -141,26 +154,11 @@ void init_gretl4py_model_py11(py::module_ &m)
     auto gretl_model = py::class_<GretlModel, GretlModelPtr>(m, "Model", py::dynamic_attr());
 
     gretl_model
-    .def_property_readonly("dataset",
-                           [](const GretlModel &self)
-                           {
-                               return self.get_dataset();
-                           }, doc::Model::dataset)
-    .def_property_readonly("estimated",
-                           [](const GretlModel &self)
-                           {
-                               return self.estimated();
-                           }, doc::Model::estimated)
+    .def_property_readonly("dataset", [](const GretlModel &self) -> GretlDatasetPtr { return self.get_dataset(); }, doc::Model::dataset)
+    .def_property_readonly("estimated", [](const GretlModel &self) -> bool { return self.estimated(); }, doc::Model::estimated)
     .def("__repr__", &GretlModel::repr_impl)
-    .def("fit",
-         [](GretlModel &self) -> GretlModel&
-         {
-             self.fit();
-
-             return self;
-         }, doc::Model::fit)
-    .def("get_accessor", &GretlModel::get_accessor,
-         py::arg("name").none(false), doc::Model::get_accessor)
+    .def("fit", &fit, doc::Model::fit)
+    .def("get_accessor", &GretlModel::get_accessor, py::arg("name").none(false), doc::Model::get_accessor)
     .def("fcast", &GretlModel::forecast, doc::Model::fcast)
     .def("get_formula", &GretlModel::get_formula, doc::Model::get_formula)
     .def("get_bundle", &GretlModel::get_bundle, doc::Model::get_bundle);
