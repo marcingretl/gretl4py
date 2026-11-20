@@ -53,7 +53,116 @@ void head_tail_print (GretlDataset &dataset, int nobs)
 
     dataset.print("", opts);
 }
+
+//
+// helpers for Dataset._test(): pure Python <-> C++ glue, kept out of the registration chain
+//
+
+struct TestKwargs {
+    std::string y;          // 'y' option (if any)
+    std::string vars;       // 'varlist' option converted to a string
+    py::kwargs rest;        // everything else: passed on to GretlDataset::test()
+};
+
+// 'varlist' given as a string or as a list of names/indices -> blank-separated names
+std::string varlist_to_string (GretlDataset &self, const py::handle &value)
+{
+    std::string vars_val;
+
+    if (is_pystr(value)) {
+        vars_val = value.cast<std::string>();
+    } else if (is_pylist(value)) {
+        auto list = value.cast<py::list>();
+        auto varnames = self.varnames();
+
+        if (py::len(list) == 0) {
+            vars_val = "";
+        } else {
+            for (const auto &el : list) {
+                if (is_pystr(el)) {
+                    vars_val += el.cast<std::string>();
+                } else if (is_pyint(el)) {
+                    vars_val += varnames[el].cast<std::string>();
+                } else {
+                    throw std::invalid_argument("list elements must be integers or strings");
+                }
+                vars_val += " ";
+            }
+            gretl4py_trim(vars_val);
+        }
+    } else {
+        throw std::invalid_argument("varlist: unsupported type");
+    }
+
+    return vars_val;
 }
+
+TestKwargs split_test_kwargs (GretlDataset &self, const std::string &type, const py::kwargs &kwargs)
+{
+    TestKwargs res;
+
+    for (const auto &item : kwargs) {
+        std::string key = std::string(py::str(item.first));
+
+        if (key == "y") {
+            res.y = std::string(py::str(item.second));
+        } else if (key == "varlist") {
+            res.vars = varlist_to_string(self, item.second);
+        } else if (key == "order" && type == "levinlin" && is_pynumarray(item.second)) {
+            // order was passed as matrix: we cannot pass it to method as order (which is <int>)
+            res.rest[py::cast("order_m")] = item.second;
+        } else if (key == "order" && type == "levinlin" && is_pygretlmatrix(item.second)) {
+            // order was passed as GretlMatrix: we cannot pass it to method as order (which is <int>)
+            res.rest[py::cast("order_m")] = py::cast<py::array>(py::cast<GretlMatrixPtr>(item.second)->to_numpy());
+        } else if (key == "order" && type == "levinlin" && is_pylist(item.second)) {
+            // order was passed as list: we cannot pass it to method as order (which is <int>)
+            res.rest[py::cast("order_m")] = py::cast<py::array>(item.second);
+        } else {
+            res.rest[item.first] = item.second;
+        }
+    }
+
+    return res;
+}
+
+std::string test_varlist (const std::string &type, const TestKwargs &args)
+{
+    //
+    // which series a test works on depends on the test type
+    //
+    if (type == "coint") {
+        if (args.y.empty() || args.vars.empty()) throw std::invalid_argument("Both 'y' and 'varlist' are required for 'coint'");
+
+        return args.y + " " + args.vars;
+    }
+    if (type == "corrgm") {
+        if (args.y.empty()) throw std::invalid_argument("'y' is required");
+
+        return args.y;
+    }
+    if (args.vars.empty()) throw std::invalid_argument("'varlist' is required");
+
+    return args.vars;
+}
+
+py::object dataset_test (GretlDataset &self, const std::string &type, const py::kwargs &kwargs)
+{
+    //
+    // here we do some pre-computations for certain tests
+    //
+    TestKwargs args = split_test_kwargs(self, type, kwargs);
+    const std::string varlist = test_varlist(type, args);
+
+    // Execute the test and retrieve its statistical results and optional figure.
+    auto [bundle, fig] = self.test(type, varlist, args.rest);
+
+    // Return the bundle alone if the test did not produce a figure.
+    if (fig.is_none()) return py::cast(bundle);
+
+    // Return both results when a matplotlib Figure is available.
+    return py::make_tuple(py::cast(bundle), std::move(fig));
+}
+} // namespace
 
 //
 // GretlDataset mappings
@@ -124,79 +233,7 @@ void init_gretl4py_dataset_py11 (py::module_ &m)
     .def("__getitem__", py::overload_cast<const py::slice&>(&GretlDataset::getitem_impl))
     .def("__getitem__", py::overload_cast<const std::string&>(&GretlDataset::getitem_impl))
     .def("__getitem__", py::overload_cast<const py::list&>(&GretlDataset::getitem_impl))
-    .def("_test",
-         [](GretlDataset &self, const std::string &type, const py::kwargs &kwargs) -> py::object
-         {
-             //
-             // here we do some pre-computations for certain tests
-             //
-             std::string y_val, vars_val, varlist;
-             py::kwargs clean_kwargs;
-
-             for (const auto &item : kwargs) {
-                 std::string key = std::string(py::str(item.first));
-                 if (key == "y") {
-                     y_val = std::string(py::str(item.second));
-                 } else if (key == "varlist") {
-                     if (is_pystr(item.second)) {
-                         vars_val = item.second.cast<std::string>();
-                     } else if (is_pylist(item.second)) {
-                         auto list = item.second.cast<py::list>();
-                         auto varnames = self.varnames();
-
-                         if (py::len(list) == 0) {
-                             vars_val = "";
-                         } else {
-                             for (const auto &el : list) {
-                                 if (is_pystr(el)) {
-                                     vars_val += el.cast<std::string>();
-                                 } else if (is_pyint(el)) {
-                                     vars_val += varnames[el].cast<std::string>();
-                                 } else {
-                                     throw std::invalid_argument("list elements must be integers or strings");
-                                 }
-                                 vars_val += " ";
-                             }
-                             gretl4py_trim(vars_val);
-                         }
-                     } else {
-                         throw std::invalid_argument("varlist: unsupported type");
-                     }
-                 } else if (key == "order" && type == "levinlin" && is_pynumarray(item.second)) {
-                     // order was passed as matrix: we cannot pass it to method as order (which is <int>)
-                     clean_kwargs[py::cast("order_m")] = item.second;
-                 } else if (key == "order" && type == "levinlin" && is_pygretlmatrix(item.second)) {
-                     // order was passed as GretlMatrix: we cannot pass it to method as order (which is <int>)
-                     clean_kwargs[py::cast("order_m")] = py::cast<py::array>(py::cast<GretlMatrixPtr>(item.second)->to_numpy());
-                 } else if (key == "order" && type == "levinlin" && is_pylist(item.second)) {
-                     // order was passed as list: we cannot pass it to method as order (which is <int>)
-                     clean_kwargs[py::cast("order_m")] = py::cast<py::array>(item.second);
-                 } else {
-                     clean_kwargs[item.first] = item.second;
-                 }
-             }
-
-             // some special cases
-             if (type == "coint") {
-                 if (y_val.empty() || vars_val.empty()) throw std::invalid_argument("Both 'y' and 'varlist' are required for 'coint'");
-                 varlist = y_val + " " + vars_val;
-             } else if (type == "corrgm") {
-                 if (y_val.empty()) throw std::invalid_argument("'y' is required");
-                 varlist = y_val;
-             } else {
-                 if (vars_val.empty()) throw std::invalid_argument("'varlist' is required");
-                 varlist = vars_val;
-             }
-
-             // Execute the test and retrieve its statistical results and optional figure.
-             auto [bundle, fig] = self.test(type, varlist, clean_kwargs);
-
-             // Return the bundle alone if the test did not produce a figure.
-             if (fig.is_none()) return py::cast(bundle);
-
-             // Return both results when a matplotlib Figure is available.
-             return py::make_tuple(py::cast(bundle), std::move(fig));
-         }, py::arg("type"), py::kw_only())
+    .def("_test", &dataset_test, py::arg("type"), py::kw_only())
     .def("clone", [](const GretlDataset &self) { return GretlDataset::clone(self); }, doc::Dataset::clone)
     .def("head", &head_tail_print<HEAD>, py::arg("nobs") = 5, py::kw_only(), doc::Dataset::head)
     .def("tail", &head_tail_print<TAIL>, py::arg("nobs") = 5, py::kw_only(), doc::Dataset::tail)
