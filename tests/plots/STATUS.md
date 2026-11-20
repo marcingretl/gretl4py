@@ -1,11 +1,11 @@
-# Status at 2026-11-18
+# Status at 2026-11-20
 
 ## Executive summary
 
 The 95-candidate exploratory audit has **zero execution failures** in its
-latest complete run (17 November). All eleven separately maintained
-integration suites, `priority5` through `priority15`, are now complete:
-**96/96 PASS, 115 Matplotlib figures and 44 distinct packages**. The full
+latest complete run (17 November). All fourteen separately maintained
+integration suites, `priority5` through `priority18`, are now complete:
+**120/120 PASS, 139 Matplotlib figures and 50 distinct packages**. The full
 `gptranslate` Meson regression was also reported as passing after the latest
 point-size fix on 17 November, without an updated numerical test count.
 
@@ -24,19 +24,22 @@ point-size fix on 17 November, without an updated numerical test count.
 | `priority13` integration suite | **8/8 PASS, 13 figures** | 18 Nov 2026; full batch |
 | `priority14` integration suite | **8/8 PASS, 8 figures** | 18 Nov 2026; full batch after fixture correction |
 | `priority15` integration suite | **8/8 PASS, 15 figures** | 18 Nov 2026; full batch after BayTool fixture fix |
-| **Maintained suites combined** | **96/96 PASS, 115 figures** | 44 distinct packages, no skips |
+| `priority16` integration suite | **8/8 PASS, 8 figures** | 18 Nov 2026; full batch after pcaTools parser fix |
+| `priority17` integration suite | **8/8 PASS, 8 figures** | 19 Nov 2026; full batch after CUB 2.0 fixture API fix |
+| `priority18` integration suite | **8/8 PASS, 8 figures** | 20 Nov 2026; full batch, package-output plotting |
+| **Maintained suites combined** | **120/120 PASS, 139 figures** | 50 distinct packages, no skips |
 | `gptranslate` Meson suite | **PASS** | Full regression confirmed 17 Nov 2026; updated count not provided |
 | Earlier numbered Meson run | 83/83 PASS | 15 Nov 2026, before priority6/7 changes |
 | Audit runner offline unit tests | 54/54 PASS | Earlier local verification, 15 Nov 2026 |
 
-The 177 figures from the candidate audit and 115 figures from the maintained
+The 177 figures from the candidate audit and 139 figures from the maintained
 suites describe **different runs**; they should not be combined as a count
 of unique plots. `PASS` verifies successful example execution and the presence
 of at least one active Matplotlib figure; it does not establish visual
 identity with gnuplot or exhaustive coverage. A fresh complete audit-runner
 unit-test count after the latest filtering changes has not been supplied.
 
-## Maintained integration suites: priority5–priority15 complete
+## Maintained integration suites: priority5–priority18 complete
 
 | Stage | Cases | Distinct packages introduced | Figures | Result |
 | --- | --- | ---: | ---: | --- |
@@ -377,6 +380,106 @@ python probe_package_batch.py --custom priority15 \
 
 Results: `package_plot_results/batch/custom/priority15/`.
 
+### `priority16`: eight cases, two packages, eight figures
+
+| Case | Package | Result |
+| --- | --- | --- |
+| `01_pcaTools_scree_std` | pcaTools | PASS, 1 figure |
+| `02_pcaTools_scree_cov` | pcaTools | PASS, 1 figure |
+| `03_pcaTools_biplot_basic` | pcaTools | PASS, 1 figure |
+| `04_pcaTools_biplot_factor` | pcaTools | PASS, 1 figure |
+| `05_BVAR_fcast_single` | BVAR | PASS, 1 figure |
+| `06_BVAR_fcast_grid` | BVAR | PASS, 1 figure |
+| `07_BVAR_sirf_selected` | BVAR | PASS, 1 figure |
+| `08_BVAR_irf_grid` | BVAR | PASS, 1 figure |
+
+The full batch was confirmed on 18 November 2026:
+**PASS=8, NO_FIGURES=0, NO_SAMPLES=0, SKIPPED_BIN=0,
+SKIPPED_INCLUDE=0, FAIL=0**. `pcaTools` (installed locally from package
+sources) generates scree plots and grouped/un-grouped PCA biplots. `BVAR`
+generates forecasts and structural/reduced-form IRF grids. The two initial
+biplot failures exposed actual `gptranslate` limitations: `set arrow`,
+label `tc rgb` and font modifiers, and tic-label text colour on main/secondary
+axes. Translator/parser/Plot IR/Matplotlib changes and headless regressions
+were prepared and verified separately; the patched gretl4py environment
+subsequently passed both biplots and all eight priority16 tests. No upstream
+libgretl or package source modifications were required.
+
+```bash
+python probe_package_batch.py --custom priority16 \
+    --approved --continue-on-error
+# [SUMMARY] PASS=8, NO_FIGURES=0, NO_SAMPLES=0,
+# SKIPPED_BIN=0, SKIPPED_INCLUDE=0, FAIL=0
+```
+
+Results: `package_plot_results/batch/custom/priority16/`.
+
+### `priority17`: eight cases, two packages, eight figures
+
+| Case | Package | Result |
+| --- | --- | --- |
+| `01_gig_garch_volatility` | gig | PASS, 1 figure |
+| `02_gig_garch_density` | gig | PASS, 1 figure |
+| `03_gig_gjr_volatility` | gig | PASS, 1 figure |
+| `04_gig_gjr_density` | gig | PASS, 1 figure |
+| `05_CUB_officeho_distribution` | CUB | PASS, 1 figure |
+| `06_CUB_informat_distribution` | CUB | PASS, 1 figure |
+| `07_CUB_freqserv_conditional` | CUB | PASS, 1 figure |
+| `08_CUB_freqserv_average` | CUB | PASS, 1 figure |
+
+The complete batch was confirmed on 19 November 2026:
+**PASS=8, NO_FIGURES=0, NO_SAMPLES=0, SKIPPED_BIN=0,
+SKIPPED_INCLUDE=0, FAIL=0**. `gig` generated four GARCH/GJR volatility
+and density figures. `CUB` generated four unconditional and covariate-based
+ordinal-distribution figures. The initial failures of the final two CUB
+fixtures were caused by an obsolete three-argument `CUB_setup(y, Y, W)`
+call. The installed CUB 2.0 interface is `CUB_setup(y, opts)` with `Y`
+and `W` lists in the options bundle; correcting those fixtures resolved
+both failures. No changes to `gptranslate`, libgretl or upstream package
+code were required.
+
+```bash
+python probe_package_batch.py --custom priority17 \
+    --approved --continue-on-error
+# [SUMMARY] PASS=8, NO_FIGURES=0, NO_SAMPLES=0,
+# SKIPPED_BIN=0, SKIPPED_INCLUDE=0, FAIL=0
+```
+
+Results: `package_plot_results/batch/custom/priority17/`.
+
+### `priority18`: eight cases, two packages, eight figures
+
+| Case | Package | Result |
+| --- | --- | --- |
+| `01_STSM_BSM_overlay` | StrucTiSM | PASS, 1 figure |
+| `02_STSM_BSM_components` | StrucTiSM | PASS, 1 figure |
+| `03_STSM_BSM_grid` | StrucTiSM | PASS, 1 figure |
+| `04_STSM_LLT_components` | StrucTiSM | PASS, 1 figure |
+| `05_FLS_identity_coefficients` | FLS | PASS, 1 figure |
+| `06_FLS_normalized_coefficients` | FLS | PASS, 1 figure |
+| `07_FLS_unsmoothed_coefficients` | FLS | PASS, 1 figure |
+| `08_FLS_mu_comparison` | FLS | PASS, 1 figure |
+
+The complete batch was confirmed on 20 November 2026:
+**PASS=8, NO_FIGURES=0, NO_SAMPLES=0, SKIPPED_BIN=0,
+SKIPPED_INCLUDE=0, FAIL=0**. `StrucTiSM` supplies BSM and LLT
+estimated components, and `FLS` supplies smoothed and unsmoothed
+coefficient paths; the fixture scripts draw these outputs using gretl's
+standard graphics commands. Accordingly these are **package-output**
+rather than package-native plot-API integration cases. All eight scripts
+produced one Matplotlib figure each. No translator, libgretl or
+package changes were required. Passing figure creation does not prove
+visual equivalence to native gnuplot rendering.
+
+```bash
+python probe_package_batch.py --custom priority18 \
+    --approved --continue-on-error
+# [SUMMARY] PASS=8, NO_FIGURES=0, NO_SAMPLES=0,
+# SKIPPED_BIN=0, SKIPPED_INCLUDE=0, FAIL=0
+```
+
+Results: `package_plot_results/batch/custom/priority18/`.
+
 ### Combined maintained integration coverage
 
 | Suite | Packages | Cases | Figures | Result |
@@ -392,7 +495,10 @@ Results: `package_plot_results/batch/custom/priority15/`.
 | `priority13` | 2 | 8 | 13 | 8/8 PASS |
 | `priority14` | 2 | 8 | 8 | 8/8 PASS |
 | `priority15` | 2 | 8 | 15 | 8/8 PASS |
-| **Total** | **44** | **96** | **115** | **96/96 PASS** |
+| `priority16` | 2 | 8 | 8 | 8/8 PASS |
+| `priority17` | 2 | 8 | 8 | 8/8 PASS |
+| `priority18` | 2 | 8 | 8 | 8/8 PASS |
+| **Total** | **50** | **120** | **139** | **120/120 PASS** |
 
 ### Translation capabilities exercised by the maintained cases
 
@@ -413,6 +519,9 @@ The integration work uncovered and tested real constructs including:
   labels and `with boxxy` rectangles used by `random_forest`.
 - Vertical and horizontal `gridplot` layouts generated by `tsdecomp`,
   and Matplotlib marker sizing for `fsboost` coefficient paths.
+- PCA loading vectors via `set arrow`/`unset arrow`, named text colours and
+  fonts in `set label`, and tic-label colours on primary and secondary axes
+  (`pcaTools` biplots); these were corrected in the translator in priority16.
 
 Translation/parser changes were accompanied by dedicated tests within
 `gptranslate`. The earlier 15 November full Meson regression passed **83/83**;
@@ -430,6 +539,10 @@ OLS/IV coefficient plots in `ketvals`; no new parser changes were required.
 `priority13` adds QMLSV volatility/residual-density figures and TVC
 coefficient-path figures. `priority14` adds kmeans scree/silhouette plots
 and GHegy seasonal-test plots. Neither required a translator change.
+`priority15` adds BayTool/ParMA MCMC and posterior-density diagnostics,
+without parser changes. `priority16` adds PCA biplots and BVAR posterior
+forecasts/IRFs; PCA biplots required real `gptranslate` arrow/label/tic
+parsing and rendering corrections.
 No new complete Meson-suite count was supplied. The
 maintained hansl fixtures were updated separately when failures stemmed
 from test data or call signatures. No fix required modifying libgretl or
@@ -537,27 +650,37 @@ Its sample execution is now classified as `NO_FIGURES`, not `FAIL`.
 `priority15` adds BayTool posterior density and MCMC diagnostic plots,
 and ParMA posterior marginals and diagnostic charts. The BayTool argument-
 type issue was a fixture error; no translator changes were necessary.
+`priority16` adds pcaTools scree/biplot graphs and BVAR forecast/IRF plots.
+The initial biplot failures were resolved by a real translator compatibility
+patch; all eight cases passed in the subsequent full run.
+
+`priority17` adds gig GARCH/GJR plots and CUB ordinal distribution plots;
+two fixture calls were adapted to CUB 2.0 API.
+`priority18` adds StrucTiSM state/component figures and FLS coefficient
+paths via standard gretl graphics commands. The full eight-case batch
+passed on 20 November 2026; these are package-output plotting tests, not
+new package-native plotting APIs.
 
 ## Next actions
 
 1. **Retain the confirmed baselines:** keep the 17 November 95-candidate
-   run (56 PASS / 0 FAIL) and the eleven maintained suite reports
-   (17/17, 7/7, and nine 8/8 PASS) separately. Focused invocations may overwrite
+   run (56 PASS / 0 FAIL) and the fourteen maintained suite reports
+   (17/17, 7/7, and twelve 8/8 PASS) separately. Focused invocations may overwrite
    the default `batch_results.csv`; preserve dated copies where needed.
 2. **Audit-runner self-tests:** rerun `python -m unittest discover -p
    'test_*.py' -q` after the `session.inp` and `SKIPPED_INCLUDE` changes;
    the last explicitly counted result was 54/54 on 15 November.
-3. **Visual validation:** inspect the 115 maintained figures, particularly
+3. **Visual validation:** inspect the 139 maintained figures, particularly
    `random_forest` rectangle geometry, `fsboost` marker sizes and both
    `tsdecomp` layouts. Compare axes, labels, palettes, bounds and legends
    with the intended output rather than relying only on active figures.
 4. **Classify `NO_FIGURES`:** investigate representative examples among the
    33 cases, distinguishing genuinely nonplotting examples from paths not
    exercised or captured by the audit.
-5. **Expand coverage (`priority16`):** prepare exploratory fixtures for
-   `pcaTools` and `BVAR`, exercising PCA scree/biplot graphics, posterior
-   forecast bands and Bayesian IRF grids. Check local `pcaTools`
-   installation; keep unrun cases out of verified totals.
+5. **Expand coverage (`priority19`):** prioritize genuinely package-native
+   plotting APIs not yet in the 50-package set; inspect current package sources
+   and examples before committing new fixture signatures. Keep package-output
+   plotting probes explicitly classified separately.
 6. **Retain explicit skipped statuses:** do not count the 4 `.bin` and
    2 missing-include examples as passing plots; keep `session.inp` always
    excluded. Update the gptranslate changelog and review commits as needed.
@@ -566,7 +689,7 @@ type issue was a fixture error; no translator changes were necessary.
 
 Static scanning is heuristic and does not prove that a function's plotting
 path is reachable through its public API. `NO_SAMPLES` and `NO_FIGURES` are
-not equivalent to absent graphing functionality. The 88-case maintained integration
+not equivalent to absent graphing functionality. The 120-case maintained integration
 suites and the 56 successful candidate examples verify runtime translation
 and figure creation, but neither assures pixel-identical output relative to
 gnuplot. The **zero-FAIL** result is qualified by the explicit skip policies

@@ -1254,7 +1254,6 @@ py::object GretlModel_NSE::bootstrap (const std::variant<int, std::string> &coef
     int err = 0;
 
     // Request a kernel-density plot of the bootstrap distribution.
-    // Request a kernel-density plot of the bootstrap distribution.
     if (plot) {
         SET_OPT(opt_, OPT_G);
         gretlopt opt_local = OPT_NONE;

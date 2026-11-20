@@ -686,7 +686,7 @@ void do_gretl_pkg (const std::string &action, const std::string &pkgname, const 
         //
         strings_array_ptr depends(nullptr, StringsArrayDeleter{});
         std::filesystem::path gfnname;                              // full path to .gfn
-        int ndeps, err = 0;
+        int ndeps = 0, err = 0;
 
         // map zip -> gfn
         if (localfile.extension() == ".zip") {
