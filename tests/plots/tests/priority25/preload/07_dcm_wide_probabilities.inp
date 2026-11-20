@@ -1,0 +1,3 @@
+# Initialize a dataset before the runner loads dcm.
+# Each sample subsequently opens a local dataset bundled with the package.
+nulldata 100

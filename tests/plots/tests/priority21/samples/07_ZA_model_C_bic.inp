@@ -1,0 +1,6 @@
+# ZivotAndrews: model C (level and trend breaks) with BIC lag selection.
+# A smaller maximum lag suits the moderate Nelson-Plosser sample.
+open np.gdt --quiet
+series y = log(rpcgnp)
+bundle za = ZA_test(y, 3, _(method="bic", maxlag=6))
+ZA_plot(za)

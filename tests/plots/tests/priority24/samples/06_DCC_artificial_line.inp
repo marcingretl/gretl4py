@@ -1,0 +1,21 @@
+# DCC: simulated correlated innovations adapted from examples/artif.inp.
+# Reduce the dimension and length to bound a figure-generation probe.
+set verbose off
+include DCC.gfn
+set seed 24022023
+nulldata 600
+setobs 1 1 --special
+scalar n = 3
+matrix mH = exp(0.1 + filter(mnormal($nobs, n)*0.2, -0.9, 0.99))
+scalar rho = 0.95
+matrix R = rho + (1-rho) * I(n)
+matrix K = cholesky(R)
+matrix mE = (mnormal($nobs, n) * K') .* sqrt(mH)
+list H = mat2list(mH, "h")
+list E = mat2list(mE, "e")
+bundle Mod = DCC_Setup(E, H, 3, 0)
+scalar err = DCC_Estimate(&Mod, _(analytical=0, verbosity=0))
+list COR = DCC_GetCorrel(Mod)
+# Plot all three dynamic conditional correlations against observation number.
+# The artificial observations have --special rather than calendar dates.
+gnuplot COR --with-lines --time-series --output=display

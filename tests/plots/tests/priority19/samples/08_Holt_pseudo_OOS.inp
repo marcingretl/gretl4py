@@ -1,0 +1,5 @@
+# Holt 2.0: test pseudo-out-of-sample forecasts without adding observations.
+open auspop.gdt --frompkg=Holt --quiet
+# Reserve the last four annual observations for testing.
+bundle hb = Holt(pop, _(ntest=4))
+Holt_plot(&hb, 1)

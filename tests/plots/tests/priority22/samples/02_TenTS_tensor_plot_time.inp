@@ -1,0 +1,11 @@
+# TenTS: use the installed real monthly trade dataset from the package.
+# Aggregate partners, trade direction and sectors; plot four country histories.
+open trade_data.gdt --frompkg=TenTS --quiet
+matrix X = {dataset}
+scalar T = $nobs
+matrix dims = {T, 4, 5, 2, 2}
+bundle A = tensorize(X, dims, 1)
+A = tensor_aggr(A, 5, 1)
+A = tensor_aggr(A, 4, 1)
+A = tensor_aggr(A, 3, 1)
+tensor_plot(A, 1)

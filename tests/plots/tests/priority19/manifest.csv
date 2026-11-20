@@ -1,0 +1,9 @@
+case,package,script
+01_MAR_LSE_GIRF_1_2,MAR,samples/01_MAR_LSE_GIRF_1_2.inp
+02_MAR_LSE_GIRF_2_1,MAR,samples/02_MAR_LSE_GIRF_2_1.inp
+03_MAR_MLE_GIRF_1_1,MAR,samples/03_MAR_MLE_GIRF_1_1.inp
+04_MAR_MLE_GIRF_2_4,MAR,samples/04_MAR_MLE_GIRF_2_4.inp
+05_Holt_OOS_default,Holt,samples/05_Holt_OOS_default.inp
+06_Holt_components,Holt,samples/06_Holt_components.inp
+07_Holt_CI_70_90,Holt,samples/07_Holt_CI_70_90.inp
+08_Holt_pseudo_OOS,Holt,samples/08_Holt_pseudo_OOS.inp

@@ -1,0 +1,31 @@
+# TenTS: adapt the actual four-country gpbuild/gridplot sample in TenTS.gfn.
+# Use observed imports and exports to test the package plot API without
+# running the much more expensive TenAr estimation in the original example.
+open trade_data.gdt --frompkg=TenTS --quiet
+matrix X = {dataset}
+scalar T = $nobs
+scalar ncountries = 4
+matrix dims = {T, ncountries, 5, 2, 2}
+strings time_names = obslabel({obs})
+strings countries = defarray("Germany", "Spain", "France", "Italy")
+strings sectors = defarray("Food", "Crude_mat", "Fuels", "Chemicals", "Other_man")
+strings flows = defarray("Imports", "Exports")
+strings partners = defarray("Extra_EU", "EU")
+arrays names = array(cols(dims))
+names[1] = time_names
+names[2] = countries
+names[3] = sectors
+names[4] = flows
+names[5] = partners
+bundle A = tensorize(X, dims, 1, names)
+A = tensor_aggr(A, 5, 1)
+A = tensor_aggr(A, 3, 1)
+# Keep one country at a time; each panel contains imports and exports.
+bundle filt = empty
+gpbuild trade_panels
+    loop i = 1 .. ncountries
+        filt["2"] = i
+        tensor_plot(A, 1, filt)
+    endloop
+end gpbuild
+gridplot trade_panels --rows=4 --fontsize=7 --output=display --title="Observed trade flows by country"

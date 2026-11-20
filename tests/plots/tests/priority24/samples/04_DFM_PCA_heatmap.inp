@@ -1,0 +1,10 @@
+# DFM: test the package-generated correlation heatmap with matrix image data.
+# The observations and variable labels are taken from the archived Labor.gdt.
+set verbose off
+include DFM.gfn
+open Labor.gdt --quiet --frompkg=DFM
+list xlist = dataset - CES0000000001
+bundle Mod = DFM_Setup(xlist, 3, 0, 1)
+scalar err = DFM_Estimate(&Mod, 1)
+# ptype=2 generates an inline matrix and calls gnuplot --input=... .
+DFM_Plot(&Mod, 2)

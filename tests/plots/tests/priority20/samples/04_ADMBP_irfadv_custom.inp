@@ -1,0 +1,11 @@
+# ADMBP: exercise its documented advanced native plotting function.
+# The gretl `display` target is intentional: the audit counts active figures.
+# fontsize=11 and lw=2 are within documented argument ranges.
+include ADMBP.gfn
+
+open AWM.gdt --quiet
+matrix point = {0.65; 0.50; 0.37; 0.26; 0.17; 0.10; 0.05; 0.01}
+matrix lo = {0.40; 0.27; 0.15; 0.05; -0.03; -0.09; -0.12; -0.14}
+matrix hi = {0.90; 0.73; 0.59; 0.47; 0.37; 0.29; 0.22; 0.16}
+matrix m = point ~ lo ~ hi
+irf_plotadv(m, "display", "Advanced multiplier plot", "Horizon", "Effect", 11, 2.0)

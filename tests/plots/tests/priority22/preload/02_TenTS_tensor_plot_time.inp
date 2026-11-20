@@ -1,0 +1,4 @@
+# Establish a valid workfile before loading the package.
+# The reviewed fixture subsequently opens its actual data source.
+nulldata 144
+setobs 12 1949:01 --time-series

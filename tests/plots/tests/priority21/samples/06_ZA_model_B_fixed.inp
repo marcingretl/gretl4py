@@ -1,0 +1,6 @@
+# ZivotAndrews: model B (trend break) and a fixed lag length.
+# This variant uses the documented fixed/maxlag options bundle.
+open np.gdt --quiet
+series y = log(rpcgnp)
+bundle za = ZA_test(y, 2, _(method="fixed", maxlag=7))
+ZA_plot(za)

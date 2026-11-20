@@ -1,0 +1,16 @@
+# dcm: conditional logit from the package's fishing.inp example.
+# Plot the four estimated choice probabilities against observation index.
+set verbose off
+include dcm.gfn
+open fishing.gdt --quiet --frompkg=dcm
+list Price = pbeach ppier pprivate pcharter
+list Catch = qbeach qpier qprivate qcharter
+lists Z = defarray(Price, Catch)
+znames = defarray("Price", "Catch rate")
+series id = time
+bundle bun = dcm_setup_wide(mode, id, null, Z, znames)
+err = dcm_estimate(&bun)
+matrix P = bun.phat
+# With --matrix, gretl takes the last column as the x-axis variable.
+matrix plt = P ~ seq(1, rows(P))'
+gnuplot --matrix=plt --with-lines --fit=none --output=display

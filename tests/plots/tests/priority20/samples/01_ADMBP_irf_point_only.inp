@@ -1,0 +1,8 @@
+# ADMBP: native irf_plot() plotting path, isolated from bootstrap estimation.
+# This is an integration smoke test for a supplied multiplier matrix.
+# An eleven-period positive decaying response, without confidence intervals.
+include ADMBP.gfn
+
+open AWM.gdt --quiet
+matrix m = {0.90; 0.71; 0.55; 0.42; 0.31; 0.22; 0.15; 0.10; 0.06; 0.03; 0.01}
+irf_plot(m, "Positive impulse response", "Horizon", "Multiplier")

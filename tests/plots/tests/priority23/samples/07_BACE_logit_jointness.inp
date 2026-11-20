@@ -1,0 +1,41 @@
+# BACE: reviewed custom plotting case based on BACE/examples/logit.inp.
+# Preserve the package example workflow while checking Matplotlib output.
+# Plot-audit adaptation: bound stochastic work and request native BACE plots.
+set verbose off
+set seed 1000000
+
+# We load packages
+include BACE.gfn
+
+# We load birthwt dataset
+open birthwt.gdt --frompkg=BACE --quiet
+
+# We specify list of explanatory variables
+list X = age lwt Drace_2 Drace_3 smoke ptl ht ui ftv
+
+set stopwatch
+RES = BACE(low, X, _(model_type="logit", model_prior="none", \
+ bic_type="hbic", do_joint="myq", binary_threshold=0.6, Nrep=5000, do_plot=1, show_progress=0))
+printf "Total execution time: %.2f sec.\n\n\n\n", $stopwatch
+
+/*
+Suppose we want to calculate Doppelhofer-Weeks Measure instead of
+already computed Ley-Steel Measure. Since the type of jointness measure
+is controlled by do_join field in the result bundle, the only thing
+we have to do is to set the value of do_join to 2 and print BACE
+results again. The code should be as follows:
+*/
+RES["do_joint"] = 1
+BACE_Print(&RES)
+
+/*
+Suppose we want privide a vector with individual prior inclusion
+probabilities for each variable. The code would be as follows:
+*/
+matrix priorIP = {0.1 ; 0.2 ; 0.3 ; 0.4 ; 0.5 ; 0.6 ; 0.7 ; 0.8 ; 0.9}
+rnameset(priorIP, X)
+
+set stopwatch
+RES = BACE(low, X, _(model_type="logit", psi=priorIP, \
+ bic_type="hbic", do_joint="myq", binary_threshold=0.6, Nrep=5000, do_plot=1, show_progress=0))
+printf "Total execution time: %.2f sec.\n\n\n\n", $stopwatch

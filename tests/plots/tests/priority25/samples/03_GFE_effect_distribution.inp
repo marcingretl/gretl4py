@@ -1,0 +1,11 @@
+# GFE: retrieve the package's group fixed-effect series.
+# The native boxplot tests a second graph type for the returned panel data.
+set verbose off
+include GFE.gfn
+open Acemoglu_etal.gdt --quiet --frompkg=GFE
+set seed 231761287
+list X = lag_dem lag_income
+opts = _(tvar=1, algorithm=2, randstarts=4, parallel=0, verbose=0)
+bundle mod = gfe_estimate(fhpolrigaug, X, 3, opts)
+series grouped_effect = group_fx(mod)
+boxplot grouped_effect --output=display

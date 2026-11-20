@@ -1,0 +1,9 @@
+case,package,script
+01_geoplot_us_outlines,geoplot,samples/01_geoplot_us_outlines.inp
+02_geoplot_us_blue_palette,geoplot,samples/02_geoplot_us_blue_palette.inp
+03_geoplot_us_mainland,geoplot,samples/03_geoplot_us_mainland.inp
+04_geoplot_us_lambert,geoplot,samples/04_geoplot_us_lambert.inp
+05_ZA_model_A_default,ZivotAndrews,samples/05_ZA_model_A_default.inp
+06_ZA_model_B_fixed,ZivotAndrews,samples/06_ZA_model_B_fixed.inp
+07_ZA_model_C_bic,ZivotAndrews,samples/07_ZA_model_C_bic.inp
+08_ZA_model_A_aic,ZivotAndrews,samples/08_ZA_model_A_aic.inp

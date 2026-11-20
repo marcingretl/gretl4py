@@ -1,0 +1,44 @@
+# dcm: unmodified core of the supplied meff_sample.inp example.
+# The plot is a factorized boxplot of individual income marginal effects.
+include dcm.gfn
+open tunafish.gdt --frompkg=dcm
+
+### create artificial x dummy for checking
+set seed 20190207
+vals = values(hhid)
+series xdum = replace(hhid, vals, muniform(rows(vals),1) .< 0.5)
+
+### now estimate the model
+list x = const income xdum
+list z = display netprice
+bundle bun = dcm_setup_long(alt, choice, hhid, x, z)
+bun.base = 2
+err = dcm_estimate(&bun)
+dcm_printout(bun)
+
+###
+### marginal effects at the average (Stata 13-style)
+###
+
+dcm_meff("income", bun, 1)
+dcm_meff("xdum", bun, 1)
+dcm_meff("display", bun, 1)
+dcm_meff("netprice", bun, 1)
+
+###
+### individual marginal effects
+###
+
+B = dcm_meff("income", bun)
+summary --matrix=B
+
+### recast as series
+series sample = bun.valid
+
+series meff_income = NA
+loop i = 1 .. cols(B)
+    smpl sample && alt == i --restrict --replace
+    series meff_income = B[,i]
+endloop
+smpl full
+boxplot meff_income alt --factorized --output=display

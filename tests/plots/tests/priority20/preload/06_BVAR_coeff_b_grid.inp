@@ -1,0 +1,4 @@
+# Initialize the gretl workspace before the package is loaded.
+# BVAR fixtures create their own dataset after package inclusion.
+nulldata 160
+setobs 4 1980:1 --time-series

@@ -1,0 +1,10 @@
+# GFE: Bonhomme-Manresa data, time-varying grouped fixed effects.
+# Preserve the package's group_plot() path; limit starts to bound the probe.
+set verbose off
+include GFE.gfn
+open Acemoglu_etal.gdt --quiet --frompkg=GFE
+set seed 231761287
+list X = lag_dem lag_income
+opts = _(tvar=1, algorithm=2, randstarts=4, parallel=0, verbose=0)
+bundle mod = gfe_estimate(fhpolrigaug, X, 3, opts)
+group_plot(mod)

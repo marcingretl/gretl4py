@@ -1,0 +1,6 @@
+# ZivotAndrews: model A with AIC lag selection instead of default tstat.
+# This checks another package-native breakpoint test-statistic plot.
+open np.gdt --quiet
+series y = log(rpcgnp)
+bundle za = ZA_test(y, 1, _(method="aic", maxlag=8))
+ZA_plot(za)

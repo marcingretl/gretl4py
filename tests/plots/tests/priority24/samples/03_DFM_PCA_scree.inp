@@ -1,0 +1,10 @@
+# DFM: exercise the native scree-plot path and its Gnuplot decorations.
+# PCA only; the package example Labor.gdt avoids staticfactor and .bin dependencies.
+set verbose off
+include DFM.gfn
+open Labor.gdt --quiet --frompkg=DFM
+list xlist = dataset - CES0000000001
+bundle Mod = DFM_Setup(xlist, 5, 0, 1)
+scalar err = DFM_Estimate(&Mod, 1)
+# ptype=1 invokes the package screeplot() using its estimated eigenvalues.
+DFM_Plot(&Mod, 1)

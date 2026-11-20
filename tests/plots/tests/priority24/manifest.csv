@@ -1,0 +1,9 @@
+case,package,script
+01_DFM_Labor_smoothed,DFM,samples/01_DFM_Labor_smoothed.inp
+02_DFM_PCA_factors,DFM,samples/02_DFM_PCA_factors.inp
+03_DFM_PCA_scree,DFM,samples/03_DFM_PCA_scree.inp
+04_DFM_PCA_heatmap,DFM,samples/04_DFM_PCA_heatmap.inp
+05_DCC_IT_sample,DCC,samples/05_DCC_IT_sample.inp
+06_DCC_artificial_line,DCC,samples/06_DCC_artificial_line.inp
+07_DCC_indices_correlations,DCC,samples/07_DCC_indices_correlations.inp
+08_DCC_IT_grid,DCC,samples/08_DCC_IT_grid.inp

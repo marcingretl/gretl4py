@@ -1,0 +1,10 @@
+# GFE: the same documented data with time-invariant grouped effects.
+# group_plot() now uses its box-plot branch rather than a time-path plot.
+set verbose off
+include GFE.gfn
+open Acemoglu_etal.gdt --quiet --frompkg=GFE
+set seed 231761287
+list X = lag_dem lag_income
+opts = _(tvar=0, algorithm=2, randstarts=4, parallel=0, verbose=0)
+bundle mod = gfe_estimate(fhpolrigaug, X, 3, opts)
+group_plot(mod)

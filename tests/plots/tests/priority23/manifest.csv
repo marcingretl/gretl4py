@@ -1,0 +1,9 @@
+case,package,script
+01_ETS_confidence,ETS,samples/01_ETS_confidence.inp
+02_ETS_ema,ETS,samples/02_ETS_ema.inp
+03_ETS_Holt,ETS,samples/03_ETS_Holt.inp
+04_ETS_Winters,ETS,samples/04_ETS_Winters.inp
+05_BACE_FLS_growth_subset,BACE,samples/05_BACE_FLS_growth_subset.inp
+06_BACE_interval,BACE,samples/06_BACE_interval.inp
+07_BACE_logit_jointness,BACE,samples/07_BACE_logit_jointness.inp
+08_BACE_tobit,BACE,samples/08_BACE_tobit.inp

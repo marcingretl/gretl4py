@@ -1,0 +1,11 @@
+# ETS: reviewed custom plotting case based on ETS/examples/ema.inp.
+# Preserve the package example workflow while checking Matplotlib output.
+set verbose off
+include ETS.gfn
+open australia.gdt --quiet
+
+series dPAU = diff(PAU)
+bundle b = ETS(dPAU, _(trend=0, seasonal=0))
+printf "estimated alpha = %g\n", b.theta
+series smo = b.dPAU_fcast
+ETS_plot(&b, 1)

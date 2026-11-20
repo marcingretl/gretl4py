@@ -56,18 +56,82 @@ void bind_driver_model (py::module_ &m, const std::string &name)
     }
 }
 
+//
+// GretlModel helpers
+//
+GretlModel& fit (GretlModel &self)
+{
+    self.fit();
+
+    return self;
+}
+
+//
+// GretlModel_NSE helpers
+//
+py::object model_test (GretlModel_NSE &self, const std::string &type, const py::kwargs &kwargs)
+{
+    //
+    // test wrapper:
+    // 1. handles overload resolution cleanly (keyword vs positional)
+    // 2. special-cases: "chow" which uses 'obs' instead of 'varlist'
+    //
+    if (!self.estimated()) throw std::runtime_error("Model was not estimated yet");
+
+    py::object varlist;
+    auto clean_kwargs = copy_dict_or_kwargs<py::kwargs>(kwargs);
+    bool with_vars = false;
+
+    // we check for "varslist" or "obs" fin case of Chow test
+    if (kwargs.contains("varlist")) {
+        varlist = clean_kwargs.attr("pop")("varlist");
+        with_vars = true;
+    } else if (type == "chow" && kwargs.contains("obs")) {
+        varlist = clean_kwargs.attr("pop")("obs");
+        with_vars = true;
+    }
+
+    // Execute the test and retrieve its statistical results and optional figure.
+    auto [bundle, fig] = with_vars ? self.test(type, varlist, clean_kwargs) : self.test(type, clean_kwargs);
+
+    // Return the bundle alone if the test did not produce a figure.
+    if (fig.is_none()) return py::cast(bundle);
+
+    // Return both results when a matplotlib Figure is available.
+    return py::make_tuple(py::cast(bundle), std::move(fig));
+}
+
+std::pair<GretlBundlePtr, GretlModelPtr> add_auto (GretlModel_NSE &self, const py::kwargs &kwargs)
+{
+    //
+    // add 'auto' only!!!
+    //
+    return self.add_omit_auto<ADD>(kwargs);
+}
+
+std::pair<GretlBundlePtr, GretlModelPtr> omit_auto (GretlModel_NSE &self, const py::kwargs &kwargs)
+{
+    //
+    // omit 'auto' only!!!
+    //
+    return self.add_omit_auto<OMIT>(kwargs);
+}
+
+//
+// GretlModel_NSE_nl helpers
+//
 template <GretlCmdIndex CI, NLLineType type>
 GretlModel_NSE_nl<CI> &nl_add_line_to_parse (GretlModel_NSE_nl<CI> &model, const std::string &line)
 {
     constexpr bool is_str = (type == PARAMS || type == PARAM_NAMES || type == WEIGHTS);
 
     constexpr const char *keyword =
-        type == PARAMS      ? "params" :
-        type == PARAM_NAMES ? "param_names" :
-        type == WEIGHTS     ? "weights" :
-        type == DERIV       ? "deriv" :
-        type == ORTHOG      ? "orthog" :
-                              "statements";
+    type == PARAMS      ? "params" :
+    type == PARAM_NAMES ? "param_names" :
+    type == WEIGHTS     ? "weights" :
+    type == DERIV       ? "deriv" :
+    type == ORTHOG      ? "orthog" :
+    "statements";
 
     model.template add_line_to_parse<is_str>(keyword, line);
 
@@ -81,7 +145,7 @@ GretlModel_NSE_nl<CI> &nl_add_init_value (GretlModel_NSE_nl<CI> &model, const st
 
     return model;
 }
-}
+} // namespace
 
 // GretlModel mappings
 void init_gretl4py_model_py11(py::module_ &m)
@@ -90,26 +154,11 @@ void init_gretl4py_model_py11(py::module_ &m)
     auto gretl_model = py::class_<GretlModel, GretlModelPtr>(m, "Model", py::dynamic_attr());
 
     gretl_model
-    .def_property_readonly("dataset",
-                           [](const GretlModel &self)
-                           {
-                               return self.get_dataset();
-                           }, doc::Model::dataset)
-    .def_property_readonly("estimated",
-                           [](const GretlModel &self)
-                           {
-                               return self.estimated();
-                           }, doc::Model::estimated)
+    .def_property_readonly("dataset", [](const GretlModel &self) -> GretlDatasetPtr { return self.get_dataset(); }, doc::Model::dataset)
+    .def_property_readonly("estimated", [](const GretlModel &self) -> bool { return self.estimated(); }, doc::Model::estimated)
     .def("__repr__", &GretlModel::repr_impl)
-    .def("fit",
-         [](GretlModel &self) -> GretlModel&
-         {
-             self.fit();
-
-             return self;
-         }, doc::Model::fit)
-    .def("get_accessor", &GretlModel::get_accessor,
-         py::arg("name").none(false), doc::Model::get_accessor)
+    .def("fit", &fit, doc::Model::fit)
+    .def("get_accessor", &GretlModel::get_accessor, py::arg("name").none(false), doc::Model::get_accessor)
     .def("fcast", &GretlModel::forecast, doc::Model::fcast)
     .def("get_formula", &GretlModel::get_formula, doc::Model::get_formula)
     .def("get_bundle", &GretlModel::get_bundle, doc::Model::get_bundle);
@@ -138,44 +187,9 @@ void init_gretl4py_model_py11(py::module_ &m)
          py::arg("bartlett") = false, py::arg("width") = std::nullopt, py::arg("log") = false)
     .def("_plot_confidence_ellipse", &GretlModel_NSE::plot_confidence_ellipse,
          py::arg("first").none(false), py::arg("second").none(false), py::arg("alpha") = 0.05)
-    .def("_test",
-         [](GretlModel_NSE &self, const std::string &type, const py::kwargs &kwargs) -> std::pair<GretlBundlePtr, py::object>
-         {
-             //
-             // 1. handles overload resolution cleanly (keyword vs positional)
-             // 2. special-cases: "chow" which uses 'obs' instead of 'varlist'
-             //
-             if (!self.estimated()) throw std::runtime_error("Model was not estimated yet");
-             py::object varlist;
-             auto clean_kwargs = copy_dict_or_kwargs<py::kwargs>(kwargs);
-             bool with_vars = false;
-
-             // we check for "vars" or "obs" for chow test
-             if (kwargs.contains("varlist")) {
-                 varlist = clean_kwargs.attr("pop")("varlist");
-                 with_vars = true;
-             } else if (type == "chow" && kwargs.contains("obs")) {
-                 varlist = clean_kwargs.attr("pop")("obs");
-                 with_vars = true;
-             }
-
-             // we do the job
-             return with_vars ? self.test(type, varlist, clean_kwargs) : self.test(type, clean_kwargs);
-         }, py::arg("type").none(false), py::kw_only())
-    .def("_add_auto",
-         [](GretlModel_NSE &self, const py::kwargs &kwargs) -> py::tuple
-         {
-             auto [bundle, model] = self.add_omit_auto<ADD>(kwargs);
-
-             return py::make_tuple(py::cast(bundle), py::cast(std::move(model)));
-         })
-    .def("_omit_auto",
-         [](GretlModel_NSE &self, const py::kwargs &kwargs) -> py::tuple
-         {
-             auto [bundle, model] = self.add_omit_auto<OMIT>(kwargs);
-
-             return py::make_tuple(py::cast(bundle), py::cast(std::move(model)));
-         });
+    .def("_test", &model_test, py::arg("type").none(false), py::kw_only())
+    .def("_add_auto", &add_auto)
+    .def("_omit_auto", &omit_auto);
     gretl_model_nse.attr("__module__") = "gretl";
 
     // NSE via dedicated Driver

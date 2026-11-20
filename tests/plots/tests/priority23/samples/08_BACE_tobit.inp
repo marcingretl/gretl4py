@@ -1,0 +1,21 @@
+# BACE: reviewed custom plotting case based on BACE/examples/tobit.inp.
+# Preserve the package example workflow while checking Matplotlib output.
+# Plot-audit adaptation: bound stochastic work and request native BACE plots.
+set verbose off
+set seed 1000000
+
+# We load packages
+include BACE.gfn
+
+# We load tobit dataset [https://stats.oarc.ucla.edu/r/dae/tobit-models/]
+open tobit.gdt --frompkg=BACE --quiet
+
+# We specify list of explanatory variables
+list X = read math proggeneral progvocational
+
+#########################################################################
+#	BACE 																#
+#########################################################################
+set stopwatch
+BACE(apt, X, _(model_type="tobit", high=800, Nrep=5000, do_plot=1, show_progress=0))
+printf "Total execution time: %.2f sec.\n", $stopwatch

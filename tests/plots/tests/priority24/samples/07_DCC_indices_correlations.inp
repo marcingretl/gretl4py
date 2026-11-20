@@ -1,0 +1,24 @@
+# DCC: based on examples/Indices.inp, without modifying package estimators.
+# Use three rather than four market indices to keep the probe bounded.
+# turn off unwanted output
+set verbose off
+# include package
+include DCC.gfn
+# --- DATA PREPARATION -----------------------------------------------
+# read the dataset
+open MktIndices.gdt --frompkg=DCC --quiet
+list Prices = Nasdaq Eurostoxx Nikkei
+smpl 2014-01-01 ;
+list Returns = ldiff(Prices)
+scalar VAR_lags = 1
+bundle S1 = DCC_Step1(Returns, VAR_lags, 0)
+list E = mat2list(S1.E)
+list H = mat2list(S1.H)
+# --- MODEL SETUP AND ESTIMATION -------------------------------------
+scalar has_target = 1
+scalar modeltype = 3 # 0 = unrestricted, 1 = Cholesky, 2 = rank-1, 3 = scalar
+bundle DModel = DCC_Setup(E, H, modeltype, has_target)
+scalar err = DCC_Estimate(&DModel, _(analytical=0, verbosity=0))
+list COR = DCC_GetCorrel(DModel)
+# Native gnuplot: combined dynamic correlations for the three markets.
+gnuplot COR --time-series --with-lines --output=display

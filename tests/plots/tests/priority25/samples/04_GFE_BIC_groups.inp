@@ -1,0 +1,10 @@
+# GFE: a bounded variant of the package's BIC model-selection example.
+# The original example uses G=15 and 24 starts; here G<=3 and two starts.
+set verbose off
+include GFE.gfn
+open Acemoglu_etal.gdt --quiet --frompkg=GFE
+set seed 231761287
+list X = lag_dem lag_income
+opts = _(tvar=1, algorithm=2, randstarts=2, parallel=0, verbose=0, BICselect=1)
+bundle mod = gfe_estimate(fhpolrigaug, X, 3, opts)
+group_plot(mod)

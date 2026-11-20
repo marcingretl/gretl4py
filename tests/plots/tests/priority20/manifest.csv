@@ -1,0 +1,9 @@
+case,package,script
+01_ADMBP_irf_point_only,ADMBP,samples/01_ADMBP_irf_point_only.inp
+02_ADMBP_irf_with_bounds,ADMBP,samples/02_ADMBP_irf_with_bounds.inp
+03_ADMBP_irf_negative_bounds,ADMBP,samples/03_ADMBP_irf_negative_bounds.inp
+04_ADMBP_irfadv_custom,ADMBP,samples/04_ADMBP_irfadv_custom.inp
+05_BVAR_coeff_a_grid,BVAR,samples/05_BVAR_coeff_a_grid.inp
+06_BVAR_coeff_b_grid,BVAR,samples/06_BVAR_coeff_b_grid.inp
+07_BVAR_coeff_a_separate,BVAR,samples/07_BVAR_coeff_a_separate.inp
+08_BVAR_coeff_all_grid,BVAR,samples/08_BVAR_coeff_all_grid.inp

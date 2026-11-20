@@ -132,12 +132,10 @@ std::string test_varlist (const std::string &type, const TestKwargs &args)
     //
     if (type == "coint") {
         if (args.y.empty() || args.vars.empty()) throw std::invalid_argument("Both 'y' and 'varlist' are required for 'coint'");
-
         return args.y + " " + args.vars;
     }
     if (type == "corrgm") {
         if (args.y.empty()) throw std::invalid_argument("'y' is required");
-
         return args.y;
     }
     if (args.vars.empty()) throw std::invalid_argument("'varlist' is required");
@@ -174,61 +172,17 @@ void init_gretl4py_dataset_py11 (py::module_ &m)
     cls
     .def_readonly("is_default", &GretlDataset::is_default, doc::Dataset::is_default)
     .def_readonly("source", &GretlDataset::source, doc::Dataset::source)
-    .def_property_readonly("is_panel",
-                           [](const GretlDataset &self)
-                           {
-                               return self.is_panel();
-                           }, doc::Dataset::is_panel)
-    .def_property_readonly("is_time_series",
-                           [](const GretlDataset &self)
-                           {
-                               return self.is_time_series();
-                           }, doc::Dataset::is_time_series)
-    .def_property_readonly("is_cross_section",
-                           [](const GretlDataset &self)
-                           {
-                               return self.is_cross_section();
-                           }, doc::Dataset::is_cross_section)
-    .def_property_readonly("n",
-                           [](const GretlDataset &self)
-                           {
-                               return self.dset->n;
-                           }, doc::Dataset::n)
-    .def_property_readonly("k",
-                           [](const GretlDataset &self)
-                           {
-                               return self.dset->v;
-                           }, doc::Dataset::k)
-    .def_property_readonly("obs_labels",
-                           [](const GretlDataset &self)
-                           {
-                               return self.get_obs_labels();
-                           }, doc::Dataset::obs_labels)
-    .def_property_readonly("id",
-                           [](const GretlDataset &self)
-                           {
-                               return self.get_id();
-                           }, doc::Dataset::id)
-    .def_property_readonly("linked_models_list",
-                           [](const GretlDataset &self)
-                           {
-                               return self.linked_models_list();
-                           }, doc::Dataset::linked_models_list)
-    .def_property_readonly("varnames",
-                           [](const GretlDataset &self)
-                           {
-                               return self.varnames();
-                           }, doc::Dataset::varnames)
-    .def("__copy__",
-         [](const GretlDataset &self) -> GretlDatasetPtr
-         {
-             return GretlDataset::clone(self);
-         }, doc::Dataset::clone)
-    .def("__deepcopy__",
-         [](const GretlDataset &self, py::dict) -> GretlDatasetPtr
-         {
-             return GretlDataset::clone(self);
-         }, doc::Dataset::clone)
+    .def_property_readonly("is_panel", [](const GretlDataset &self) -> bool { return self.is_panel(); }, doc::Dataset::is_panel)
+    .def_property_readonly("is_time_series", [](const GretlDataset &self) -> bool { return self.is_time_series(); }, doc::Dataset::is_time_series)
+    .def_property_readonly("is_cross_section", [](const GretlDataset &self) -> bool { return self.is_cross_section(); }, doc::Dataset::is_cross_section)
+    .def_property_readonly("n", [](const GretlDataset &self) -> int { return self.dset->n; }, doc::Dataset::n)
+    .def_property_readonly("k", [](const GretlDataset &self) -> int { return self.dset->v; }, doc::Dataset::k)
+    .def_property_readonly("obs_labels", [](const GretlDataset &self) -> py::list { return self.get_obs_labels(); }, doc::Dataset::obs_labels)
+    .def_property_readonly("id", [](const GretlDataset &self) -> int { return self.get_id(); }, doc::Dataset::id)
+    .def_property_readonly("linked_models_list", [](const GretlDataset &self) -> std::unordered_set<int> { return self.linked_models_list(); }, doc::Dataset::linked_models_list)
+    .def_property_readonly("varnames", [](const GretlDataset &self) -> py::list { return self.varnames(); }, doc::Dataset::varnames)
+    .def("__copy__", [](const GretlDataset &self) -> GretlDatasetPtr { return GretlDataset::clone(self); }, doc::Dataset::clone)
+    .def("__deepcopy__", [](const GretlDataset &self, py::dict) -> GretlDatasetPtr { return GretlDataset::clone(self); }, doc::Dataset::clone)
     .def("__repr__", &GretlDataset::repr)
     .def("__getitem__", py::overload_cast<const py::slice&>(&GretlDataset::getitem_impl))
     .def("__getitem__", py::overload_cast<const std::string&>(&GretlDataset::getitem_impl))
@@ -238,25 +192,12 @@ void init_gretl4py_dataset_py11 (py::module_ &m)
     .def("head", &head_tail_print<HEAD>, py::arg("nobs") = 5, py::kw_only(), doc::Dataset::head)
     .def("tail", &head_tail_print<TAIL>, py::arg("nobs") = 5, py::kw_only(), doc::Dataset::tail)
     .def("set_as_default", &GretlDataset::set_as_default, doc::Dataset::set_as_default)
-    .def("info",
-         [](const GretlDataset &self) -> void
-         {
-             self.info(false);
-         }, doc::Dataset::info)
-    .def("summary", py::overload_cast<const std::string&, const py::kwargs&>(&GretlDataset::summary<std::string>),
-         py::arg("varlist").none(true) = "", py::kw_only())
-    .def("summary", py::overload_cast<const py::list&, const py::kwargs&>(&GretlDataset::summary<py::list>),
-         py::arg("varlist").none(true) = py::list(), py::kw_only(), doc::Dataset::summary)
-    .def("sample",
-         [](GretlDataset &self, const std::string &startobs, const std::string &endobs, const py::kwargs &kwargs) -> void
-         {
-             self.smpl(startobs, endobs, kwargs);
-         }, py::arg("startobs").none(true) = "", py::arg("endobs").none(true) = "", py::kw_only())
-    .def("sample",
-         [](GretlDataset &self, const std::string &startobs, const py::kwargs &kwargs) -> void
-         {
-             self.smpl(startobs, "", kwargs);
-         }, py::arg("startobs").none(false), py::kw_only())
+    .def("info", [](const GretlDataset &self) -> void { self.info(false); }, doc::Dataset::info)
+    .def("summary", py::overload_cast<const std::string&, const py::kwargs&>(&GretlDataset::summary<std::string>), py::arg("varlist").none(true) = "", py::kw_only())
+    .def("summary", py::overload_cast<const py::list&, const py::kwargs&>(&GretlDataset::summary<py::list>), py::arg("varlist").none(true) = py::list(), py::kw_only(), doc::Dataset::summary)
+    .def("sample", [](GretlDataset &self, const std::string &startobs, const std::string &endobs, const py::kwargs &kwargs) -> void { self.smpl(startobs, endobs, kwargs); },
+         py::arg("startobs").none(true) = "", py::arg("endobs").none(true) = "", py::kw_only())
+    .def("sample", [](GretlDataset &self, const std::string &startobs, const py::kwargs &kwargs) -> void { self.smpl(startobs, "", kwargs); }, py::arg("startobs").none(false), py::kw_only())
     .def("sample",
          [](GretlDataset &self, int startobs, int endobs, const py::kwargs &kwargs) -> void
          {
@@ -265,36 +206,17 @@ void init_gretl4py_dataset_py11 (py::module_ &m)
 
              self.smpl(startobs_str, endobs_str, kwargs);
          }, py::arg("startobs").none(true) = NADBL, py::arg("endobs").none(true) = NADBL, py::kw_only())
-    .def("sample",
-         [](GretlDataset &self, int startobs, const py::kwargs &kwargs) -> void
-         {
-             self.smpl(std::to_string(startobs), "", kwargs);
-         }, py::arg("startobs").none(false), py::kw_only(), doc::Dataset::sample)
-    .def("setobs",
-         [](GretlDataset &self, std::string &periodicity, const std::string &startobs, const py::kwargs &kwargs) -> void
-         {
-             self.setobs(periodicity, startobs, kwargs);
-         }, py::arg("periodicity").none(false), py::arg("startobs").none(false), py::kw_only())
-    .def("setobs",
-         [](GretlDataset &self, int periodicity, const std::string &startobs, const py::kwargs &kwargs) -> void
-         {
-             self.setobs(std::to_string(periodicity), startobs, kwargs);
-         }, py::arg("periodicity").none(false), py::arg("startobs").none(false), py::kw_only())
-    .def("setobs",
-         [](GretlDataset &self, int periodicity, int startobs, const py::kwargs &kwargs) -> void
-         {
-             self.setobs(std::to_string(periodicity), std::to_string(startobs), kwargs);
-         }, py::arg("periodicity").none(false), py::arg("startobs").none(false), py::kw_only(), doc::Dataset::setobs)
-    .def("addobs",
-         [](GretlDataset &self, int n, const py::kwargs &kwargs) -> void
-         {
-             self.do_modify_dataset<std::nullptr_t>(DS_ADDOBS, nullptr, std::to_string(n), kwargs);
-         }, py::arg("n").none(false), py::kw_only(), doc::Dataset::addobs)
-    .def("insobs",
-         [](GretlDataset &self, int n) -> void
-         {
-             self.do_modify_dataset<std::nullptr_t>(DS_INSOBS, nullptr, std::to_string(n), py::dict());
-         }, py::arg("n").none(false), doc::Dataset::insobs)
+    .def("sample", [](GretlDataset &self, int startobs, const py::kwargs &kwargs) -> void { self.smpl(std::to_string(startobs), "", kwargs);}, py::arg("startobs").none(false), py::kw_only(), doc::Dataset::sample)
+    .def("setobs", [](GretlDataset &self, std::string &periodicity, const std::string &startobs, const py::kwargs &kwargs) -> void { self.setobs(periodicity, startobs, kwargs); },
+         py::arg("periodicity").none(false), py::arg("startobs").none(false), py::kw_only())
+    .def("setobs", [](GretlDataset &self, int periodicity, const std::string &startobs, const py::kwargs &kwargs) -> void { self.setobs(std::to_string(periodicity), startobs, kwargs); },
+         py::arg("periodicity").none(false), py::arg("startobs").none(false), py::kw_only())
+    .def("setobs", [](GretlDataset &self, int periodicity, int startobs, const py::kwargs &kwargs) -> void { self.setobs(std::to_string(periodicity), std::to_string(startobs), kwargs); },
+         py::arg("periodicity").none(false), py::arg("startobs").none(false), py::kw_only(), doc::Dataset::setobs)
+    .def("addobs", [](GretlDataset &self, int n, const py::kwargs &kwargs) -> void { self.do_modify_dataset<std::nullptr_t>(DS_ADDOBS, nullptr, std::to_string(n), kwargs); },
+         py::arg("n").none(false), py::kw_only(), doc::Dataset::addobs)
+    .def("insobs", [](GretlDataset &self, int n) -> void { self.do_modify_dataset<std::nullptr_t>(DS_INSOBS, nullptr, std::to_string(n), py::dict()); },
+         py::arg("n").none(false), doc::Dataset::insobs)
     .def("compact",
          [](GretlDataset &self, py::object freq, const std::string &method, const py::kwargs &kwargs) -> void
          {
@@ -314,68 +236,32 @@ void init_gretl4py_dataset_py11 (py::module_ &m)
 
              self.do_modify_dataset<std::nullptr_t>(DS_COMPACT, nullptr, formula, kwargs);
          }, py::arg("freq").none(false), py::arg("method").none(true) = "", py::kw_only(), doc::Dataset::compact)
-    .def("expand",
-         [](GretlDataset &self, int freq) -> void
-         {
-             self.do_modify_dataset<std::nullptr_t>(DS_EXPAND, nullptr, std::to_string(freq), py::dict());
-         }, py::arg("freq").none(true) = -999, doc::Dataset::expand)
-    .def("transpose",
-         [](GretlDataset &self) -> void
-         {
-             self.do_modify_dataset<std::nullptr_t>(DS_TRANSPOSE, nullptr, "", py::dict());
-         }, doc::Dataset::transpose)
-    .def("sortby",
-         [](GretlDataset &self, const std::string &varlist) -> void
-         {
-             self.do_modify_dataset<std::string>(DS_SORTBY, varlist, "", py::dict());
-         }, py::arg("varlist").none(false))
-    .def("sortby",
-         [](GretlDataset &self, const py::list &varlist) -> void
-         {
-             self.do_modify_dataset<py::list>(DS_SORTBY, varlist, "", py::dict());
-         }, py::arg("varlist").none(false), doc::Dataset::sortby)
-    .def("dsortby",
-         [](GretlDataset &self, const std::string &varlist) -> void
-         {
-             self.do_modify_dataset<std::string>(DS_DSORTBY, varlist, "", py::dict());
-         }, py::arg("varlist").none(false))
-    .def("dsortby",
-         [](GretlDataset &self, const py::list &varlist) -> void
-         {
-             self.do_modify_dataset<py::list>(DS_DSORTBY, varlist, "", py::dict());
-         }, py::arg("varlist").none(false), doc::Dataset::dsortby)
-    .def("resample",
-         [](GretlDataset &self, int n) -> void
-         {
-             self.do_modify_dataset<std::nullptr_t>(DS_RESAMPLE, nullptr, std::to_string(n), py::dict());
-         }, py::arg("n").none(false), doc::Dataset::resample)
-    .def("pad_daily",
-         [](GretlDataset &self, int days) -> void
-         {
-             self.do_modify_dataset<std::nullptr_t>(DS_PAD_DAILY, nullptr, std::to_string(days), py::dict());
-         }, py::arg("days").none(false), doc::Dataset::pad_daily)
-    .def("unpad_daily",
-         [](GretlDataset &self) -> void
-         {
-             self.do_modify_dataset<std::nullptr_t>(DS_UNPAD_DAILY, nullptr, "", py::dict());
-         }, doc::Dataset::unpad_daily)
-    .def("tdisagg", &GretlDataset::tdisagg,
-         py::arg("Y").none(false), py::arg("s").none(false), py::kw_only(), doc::Dataset::tdisagg)
-    .def("hflags", &GretlDataset::hflags<std::string>,
-         py::arg("minlag").none(false), py::arg("maxlag").none(false), py::arg("hfvars").none(false))
-    .def("hflags", &GretlDataset::hflags<py::list>,
-         py::arg("minlag").none(false), py::arg("maxlag").none(false), py::arg("hfvars").none(false), doc::Dataset::hflags)
+    .def("expand", [](GretlDataset &self, int freq) -> void { self.do_modify_dataset<std::nullptr_t>(DS_EXPAND, nullptr, std::to_string(freq), py::dict()); },
+         py::arg("freq").none(true) = -999, doc::Dataset::expand)
+    .def("transpose", [](GretlDataset &self) -> void { self.do_modify_dataset<std::nullptr_t>(DS_TRANSPOSE, nullptr, "", py::dict()); }, doc::Dataset::transpose)
+    .def("sortby", [](GretlDataset &self, const std::string &varlist) -> void { self.do_modify_dataset<std::string>(DS_SORTBY, varlist, "", py::dict()); }, py::arg("varlist").none(false))
+    .def("sortby", [](GretlDataset &self, const py::list &varlist) -> void { self.do_modify_dataset<py::list>(DS_SORTBY, varlist, "", py::dict()); },
+         py::arg("varlist").none(false), doc::Dataset::sortby)
+    .def("dsortby", [](GretlDataset &self, const std::string &varlist) -> void { self.do_modify_dataset<std::string>(DS_DSORTBY, varlist, "", py::dict()); }, py::arg("varlist").none(false))
+    .def("dsortby", [](GretlDataset &self, const py::list &varlist) -> void { self.do_modify_dataset<py::list>(DS_DSORTBY, varlist, "", py::dict()); },
+         py::arg("varlist").none(false), doc::Dataset::dsortby)
+    .def("resample", [](GretlDataset &self, int n) -> void { self.do_modify_dataset<std::nullptr_t>(DS_RESAMPLE, nullptr, std::to_string(n), py::dict()); },
+         py::arg("n").none(false), doc::Dataset::resample)
+    .def("pad_daily", [](GretlDataset &self, int days) -> void { self.do_modify_dataset<std::nullptr_t>(DS_PAD_DAILY, nullptr, std::to_string(days), py::dict()); },
+         py::arg("days").none(false), doc::Dataset::pad_daily)
+    .def("unpad_daily", [](GretlDataset &self) -> void { self.do_modify_dataset<std::nullptr_t>(DS_UNPAD_DAILY, nullptr, "", py::dict()); }, doc::Dataset::unpad_daily)
+    .def("tdisagg", &GretlDataset::tdisagg, py::arg("Y").none(false), py::arg("s").none(false), py::kw_only(), doc::Dataset::tdisagg)
+    .def("hflags", &GretlDataset::hflags<std::string>, py::arg("minlag").none(false), py::arg("maxlag").none(false), py::arg("hfvars").none(false))
+    .def("hflags", &GretlDataset::hflags<py::list>, py::arg("minlag").none(false), py::arg("maxlag").none(false), py::arg("hfvars").none(false), doc::Dataset::hflags)
     .def("to_dict", &GretlDataset::to_dict, doc::Dataset::to_dict)
     .def("to_file", py::overload_cast<const std::string&, const std::string&, const py::kwargs&>(&GretlDataset::to_file<std::string>),
          py::arg("filename").none(false), py::arg("varlist").none(true) = "", py::kw_only())
     .def("to_file", py::overload_cast<const std::string&, const py::list&, const py::kwargs&>(&GretlDataset::to_file<py::list>),
          py::arg("filename").none(false), py::arg("varlist").none(true) = py::list(), py::kw_only(), doc::Dataset::to_file)
     .def("to_matrix", &GretlDataset::to_matrix<std::string>,
-        py::arg("list").none(true) = py::list(), py::arg("startobs").none(true) = 0,
-        py::arg("endobs").none(true) = 0, py::arg("missing").none(true) = "ok")
+         py::arg("list").none(true) = py::list(), py::arg("startobs").none(true) = 0, py::arg("endobs").none(true) = 0, py::arg("missing").none(true) = "ok")
     .def("to_matrix", &GretlDataset::to_matrix<py::list>,
-         py::arg("list").none(true) = py::list(), py::arg("startobs").none(true) = 0,
-         py::arg("endobs").none(true) = 0, py::arg("missing").none(true) = "ok", doc::Dataset::to_matrix)
+         py::arg("list").none(true) = py::list(), py::arg("startobs").none(true) = 0, py::arg("endobs").none(true) = 0, py::arg("missing").none(true) = "ok", doc::Dataset::to_matrix)
     .def("add_series", py::overload_cast<const py::array&, const std::string&>(&GretlDataset::add_series),
          py::arg("data").none(false), py::arg("name").none(false))
     .def("add_series", py::overload_cast<const GretlMatrix&, const std::string&>(&GretlDataset::add_series),
@@ -386,86 +272,46 @@ void init_gretl4py_dataset_py11 (py::module_ &m)
          py::arg("name").none(false), py::arg("value").none(false), doc::Dataset::new_series)
     .def("rename", &GretlDataset::rename,
          py::arg("series").none(false), py::arg("newname").none(false), py::kw_only())
-    .def("rename",
-         [](GretlDataset &self, const std::string &series, const std::string &newname, const py::kwargs &kwargs) -> void
+    .def("rename", [](GretlDataset &self, const std::string &series, const std::string &newname, const py::kwargs &kwargs) -> void
          {
              self.rename(self.get_series_id(series, false), newname, kwargs);
          }, py::arg("series").none(false), py::arg("newname").none(false), py::kw_only())
-    .def("rename",
-         [](GretlDataset &self, const py::kwargs &kwargs) -> void
-         {
-             self.rename(-1, "", kwargs);
-         }, doc::Dataset::rename)
-    .def("new_list", py::overload_cast<const std::string&>(&GretlDataset::new_list),
-         py::arg("formula").none(false))
-    .def("new_list", py::overload_cast<const std::string&, const std::string&>(&GretlDataset::new_list),
-         py::arg("name").none(false), py::arg("value").none(false), doc::Dataset::new_list)
-    .def("dummify", &GretlDataset::transforms<std::string, DUMMIFY>,
-         py::arg("varlist").none(false), py::kw_only())
-    .def("dummify", &GretlDataset::transforms<py::list, DUMMIFY>,
-         py::arg("varlist").none(false), py::kw_only(), doc::Dataset::dummify)
-    .def("square", &GretlDataset::transforms<std::string, SQUARE>,
-         py::arg("varlist").none(false), py::kw_only())
-    .def("square", &GretlDataset::transforms<py::list, SQUARE>,
-         py::arg("varlist").none(false), py::kw_only(), doc::Dataset::square)
-    .def("discrete", &GretlDataset::transforms<std::string, DISCRETE>,
-         py::arg("varlist").none(false), py::kw_only())
-    .def("discrete", &GretlDataset::transforms<py::list, DISCRETE>,
-         py::arg("varlist").none(false), py::kw_only(), doc::Dataset::discrete)
-    .def("stdize", &GretlDataset::transforms<std::string, STDIZE>,
-         py::arg("varlist").none(false), py::kw_only())
-    .def("stdize", &GretlDataset::transforms<py::list, STDIZE>,
-         py::arg("varlist").none(false), py::kw_only(), doc::Dataset::stdize)
-    .def("diff", &GretlDataset::transforms_no_opts<std::string, DIFF>,
-         py::arg("varlist").none(false))
-    .def("diff", &GretlDataset::transforms_no_opts<py::list, DIFF>,
-         py::arg("varlist").none(false), doc::Dataset::diff)
-    .def("ldiff", &GretlDataset::transforms_no_opts<std::string, LDIFF>,
-         py::arg("varlist").none(false))
-    .def("ldiff", &GretlDataset::transforms_no_opts<py::list, LDIFF>,
-         py::arg("varlist").none(false), doc::Dataset::ldiff)
-    .def("sdiff", &GretlDataset::transforms_no_opts<std::string, SDIFF>,
-         py::arg("varlist").none(false))
-    .def("sdiff", &GretlDataset::transforms_no_opts<py::list, SDIFF>,
-         py::arg("varlist").none(false), doc::Dataset::sdiff)
-    .def("logs", &GretlDataset::transforms_no_opts<std::string, LOGS>,
-         py::arg("varlist").none(false))
-    .def("logs", &GretlDataset::transforms_no_opts<py::list, LOGS>,
-         py::arg("varlist").none(false), doc::Dataset::logs)
-    .def("orthdev", &GretlDataset::transforms_no_opts<std::string, ORTHDEV>,
-         py::arg("varlist").none(false))
-    .def("orthdev", &GretlDataset::transforms_no_opts<py::list, ORTHDEV>,
-         py::arg("varlist").none(false), doc::Dataset::orthdev)
-    .def("lags", &GretlDataset::lags<std::string>,
-         py::arg("varlist").none(false), py::arg("order").none(true) = 0)
-    .def("lags", &GretlDataset::lags<py::list>,
-         py::arg("varlist").none(false), py::arg("order").none(true) = 0, doc::Dataset::lags)
-    .def("print", py::overload_cast<const std::string&, const py::kwargs&>(&GretlDataset::print),
-         py::arg("varlist").none(true) = "", py::kw_only())
-    .def("print", py::overload_cast<const py::list&, const py::kwargs&>(&GretlDataset::print),
-         py::arg("varlist").none(true) = py::list(), py::kw_only(), doc::Dataset::print)
-    .def("get_series", &GretlDataset::get_series,
-         py::arg("series").none(false), doc::Dataset::get_series)
-    .def("hpfilt", &GretlDataset::hpfilt,
-         py::arg("y").none(false), py::arg("hp_lambda").none(true) = NADBL,
-         py::arg("trend").none(true) = false, py::arg("one_sided").none(true) = false, doc::Dataset::hpfilt)
-    .def("bwfilt", &GretlDataset::bwfilt,
-         py::arg("y").none(false), py::arg("n").none(false), py::arg("omega").none(false), doc::Dataset::bwfilt)
-    .def("bkfilt", &GretlDataset::bkfilt,
-         py::arg("y").none(false), py::arg("f1").none(true) = 0,
-         py::arg("f2").none(true) = 0, py::arg("k").none(true) = 0, doc::Dataset::bkfilt)
-    .def("get_accessor", &GretlDataset::get_accessor,
-         py::arg("name").none(false), doc::Dataset::get_accessor)
-    .def("corr", &GretlDataset::corr<std::string>,
-         py::arg("varlist").none(true) = "", py::kw_only())
-    .def("corr", &GretlDataset::corr<py::list>,
-         py::arg("varlist").none(true) = py::list(), py::kw_only(), doc::Dataset::corr)
-    .def("cov", &GretlDataset::cov<std::string>,
-         py::arg("varlist").none(true) = "")
-    .def("cov", &GretlDataset::cov<py::list>,
-         py::arg("varlist").none(true) = py::list(), doc::Dataset::cov)
-    .def("hurst", &GretlDataset::hurst,
-         py::arg("series"), py::arg("plot").none(true) = "", doc::Dataset::hurst)
+    .def("rename", [](GretlDataset &self, const py::kwargs &kwargs) -> void { self.rename(-1, "", kwargs); }, doc::Dataset::rename)
+    .def("new_list", py::overload_cast<const std::string&>(&GretlDataset::new_list), py::arg("formula").none(false))
+    .def("new_list", py::overload_cast<const std::string&, const std::string&>(&GretlDataset::new_list), py::arg("name").none(false), py::arg("value").none(false), doc::Dataset::new_list)
+    .def("dummify", &GretlDataset::transforms<std::string, DUMMIFY>, py::arg("varlist").none(false), py::kw_only())
+    .def("dummify", &GretlDataset::transforms<py::list, DUMMIFY>, py::arg("varlist").none(false), py::kw_only(), doc::Dataset::dummify)
+    .def("square", &GretlDataset::transforms<std::string, SQUARE>, py::arg("varlist").none(false), py::kw_only())
+    .def("square", &GretlDataset::transforms<py::list, SQUARE>, py::arg("varlist").none(false), py::kw_only(), doc::Dataset::square)
+    .def("discrete", &GretlDataset::transforms<std::string, DISCRETE>, py::arg("varlist").none(false), py::kw_only())
+    .def("discrete", &GretlDataset::transforms<py::list, DISCRETE>, py::arg("varlist").none(false), py::kw_only(), doc::Dataset::discrete)
+    .def("stdize", &GretlDataset::transforms<std::string, STDIZE>, py::arg("varlist").none(false), py::kw_only())
+    .def("stdize", &GretlDataset::transforms<py::list, STDIZE>, py::arg("varlist").none(false), py::kw_only(), doc::Dataset::stdize)
+    .def("diff", &GretlDataset::transforms_no_opts<std::string, DIFF>, py::arg("varlist").none(false))
+    .def("diff", &GretlDataset::transforms_no_opts<py::list, DIFF>, py::arg("varlist").none(false), doc::Dataset::diff)
+    .def("ldiff", &GretlDataset::transforms_no_opts<std::string, LDIFF>, py::arg("varlist").none(false))
+    .def("ldiff", &GretlDataset::transforms_no_opts<py::list, LDIFF>, py::arg("varlist").none(false), doc::Dataset::ldiff)
+    .def("sdiff", &GretlDataset::transforms_no_opts<std::string, SDIFF>, py::arg("varlist").none(false))
+    .def("sdiff", &GretlDataset::transforms_no_opts<py::list, SDIFF>, py::arg("varlist").none(false), doc::Dataset::sdiff)
+    .def("logs", &GretlDataset::transforms_no_opts<std::string, LOGS>, py::arg("varlist").none(false))
+    .def("logs", &GretlDataset::transforms_no_opts<py::list, LOGS>, py::arg("varlist").none(false), doc::Dataset::logs)
+    .def("orthdev", &GretlDataset::transforms_no_opts<std::string, ORTHDEV>, py::arg("varlist").none(false))
+    .def("orthdev", &GretlDataset::transforms_no_opts<py::list, ORTHDEV>, py::arg("varlist").none(false), doc::Dataset::orthdev)
+    .def("lags", &GretlDataset::lags<std::string>, py::arg("varlist").none(false), py::arg("order").none(true) = 0)
+    .def("lags", &GretlDataset::lags<py::list>, py::arg("varlist").none(false), py::arg("order").none(true) = 0, doc::Dataset::lags)
+    .def("print", py::overload_cast<const std::string&, const py::kwargs&>(&GretlDataset::print), py::arg("varlist").none(true) = "", py::kw_only())
+    .def("print", py::overload_cast<const py::list&, const py::kwargs&>(&GretlDataset::print), py::arg("varlist").none(true) = py::list(), py::kw_only(), doc::Dataset::print)
+    .def("get_series", &GretlDataset::get_series, py::arg("series").none(false), doc::Dataset::get_series)
+    .def("hpfilt", &GretlDataset::hpfilt, py::arg("y").none(false),
+         py::arg("hp_lambda").none(true) = NADBL, py::arg("trend").none(true) = false, py::arg("one_sided").none(true) = false, doc::Dataset::hpfilt)
+    .def("bwfilt", &GretlDataset::bwfilt, py::arg("y").none(false), py::arg("n").none(false), py::arg("omega").none(false), doc::Dataset::bwfilt)
+    .def("bkfilt", &GretlDataset::bkfilt, py::arg("y").none(false), py::arg("f1").none(true) = 0, py::arg("f2").none(true) = 0, py::arg("k").none(true) = 0, doc::Dataset::bkfilt)
+    .def("get_accessor", &GretlDataset::get_accessor, py::arg("name").none(false), doc::Dataset::get_accessor)
+    .def("corr", &GretlDataset::corr<std::string>, py::arg("varlist").none(true) = "", py::kw_only())
+    .def("corr", &GretlDataset::corr<py::list>, py::arg("varlist").none(true) = py::list(), py::kw_only(), doc::Dataset::corr)
+    .def("cov", &GretlDataset::cov<std::string>, py::arg("varlist").none(true) = "")
+    .def("cov", &GretlDataset::cov<py::list>, py::arg("varlist").none(true) = py::list(), doc::Dataset::cov)
+    .def("hurst", &GretlDataset::hurst, py::arg("series"), py::arg("plot").none(true) = "", doc::Dataset::hurst)
     .def("freq", &GretlDataset::freq, py::arg("var").none(false), py::kw_only(), doc::Dataset::freq)
     .def("xcorrgm", py::overload_cast<const std::string&, int, const py::kwargs&>(&GretlDataset::xcorrgm<std::string>),
          py::arg("varlist").none(false), py::arg("order").none(true) = 0, py::kw_only())
@@ -477,30 +323,20 @@ void init_gretl4py_dataset_py11 (py::module_ &m)
              return self.xcorrgm<std::string>(series1 + " " + series2, order, kwargs);
          }, py::arg("series1").none(false), py::arg("series2").none(false),
          py::arg("order").none(true) = 0, py::kw_only(), doc::Dataset::xcorrgm)
-    .def("pca", &GretlDataset::pca<std::string>,
-         py::arg("varlist").none(true) = "", py::kw_only())
-    .def("pca", &GretlDataset::pca<py::list>,
-         py::arg("varlist").none(true) = py::list(), py::kw_only(), doc::Dataset::pca)
+    .def("pca", &GretlDataset::pca<std::string>, py::arg("varlist").none(true) = "", py::kw_only())
+    .def("pca", &GretlDataset::pca<py::list>, py::arg("varlist").none(true) = py::list(), py::kw_only(), doc::Dataset::pca)
     .def("kmeans", py::overload_cast<const std::string&, int, const GretlBundlePtr>(&GretlDataset::kmeans<std::string>),
-         py::arg("X").none(false), py::arg("centers").none(false),
-         py::arg("opts").none(true) = nullptr)
+         py::arg("X").none(false), py::arg("centers").none(false), py::arg("opts").none(true) = nullptr)
     .def("kmeans", py::overload_cast<const py::list&, int, const GretlBundlePtr>(&GretlDataset::kmeans<py::list>),
-         py::arg("X").none(false), py::arg("centers").none(false),
-         py::arg("opts").none(true) = nullptr)
+         py::arg("X").none(false), py::arg("centers").none(false), py::arg("opts").none(true) = nullptr)
     .def("kmeans", py::overload_cast<const std::string&, const GretlMatrix&, const GretlBundlePtr>(&GretlDataset::kmeans<std::string>),
-         py::arg("X").none(false), py::arg("centers").none(false),
-         py::arg("opts").none(true) = nullptr)
+         py::arg("X").none(false), py::arg("centers").none(false), py::arg("opts").none(true) = nullptr)
     .def("kmeans", py::overload_cast<const py::list&, const GretlMatrix&, const GretlBundlePtr>(&GretlDataset::kmeans<py::list>),
-         py::arg("X").none(false), py::arg("centers").none(false),
-         py::arg("opts").none(true) = nullptr, doc::Dataset::kmeans)
-    .def("xtab", &GretlDataset::xtab<std::string>,
-         py::arg("varlist").none(true) = "", py::kw_only())
-    .def("xtab", &GretlDataset::xtab<py::list>,
-         py::arg("varlist").none(true) = py::list(), py::kw_only(), doc::Dataset::xtab)
-    .def("ljungbox", py::overload_cast<int, int>(&GretlDataset::ljungbox),
-         py::arg("y").none(false), py::arg("p").none(false))
-    .def("ljungbox", py::overload_cast<const std::string&, int>(&GretlDataset::ljungbox),
-         py::arg("y").none(false), py::arg("p").none(false), doc::Dataset::ljungbox)
+         py::arg("X").none(false), py::arg("centers").none(false), py::arg("opts").none(true) = nullptr, doc::Dataset::kmeans)
+    .def("xtab", &GretlDataset::xtab<std::string>, py::arg("varlist").none(true) = "", py::kw_only())
+    .def("xtab", &GretlDataset::xtab<py::list>, py::arg("varlist").none(true) = py::list(), py::kw_only(), doc::Dataset::xtab)
+    .def("ljungbox", py::overload_cast<int, int>(&GretlDataset::ljungbox), py::arg("y").none(false), py::arg("p").none(false))
+    .def("ljungbox", py::overload_cast<const std::string&, int>(&GretlDataset::ljungbox), py::arg("y").none(false), py::arg("p").none(false), doc::Dataset::ljungbox)
     .def("plot", &GretlDataset::plot<std::string>, py::arg("yvars").none(false), py::kw_only())
     .def("plot", &GretlDataset::plot<py::list>, py::arg("yvars").none(false), py::kw_only(), doc::Dataset::plot)
     .def("boxplot", &GretlDataset::boxplot<std::string>, py::arg("varlist").none(false), py::kw_only())

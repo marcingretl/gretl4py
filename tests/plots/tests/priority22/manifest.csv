@@ -1,0 +1,9 @@
+case,package,script
+01_TenTS_decomp_original,TenTS,samples/01_TenTS_decomp_original.inp
+02_TenTS_tensor_plot_time,TenTS,samples/02_TenTS_tensor_plot_time.inp
+03_TenTS_tensor_plot_named,TenTS,samples/03_TenTS_tensor_plot_named.inp
+04_TenTS_trade_grid,TenTS,samples/04_TenTS_trade_grid.inp
+05_basis_rcspline_logit,basis_functions,samples/05_basis_rcspline_logit.inp
+06_basis_rcspline_poisson,basis_functions,samples/06_basis_rcspline_poisson.inp
+07_basis_cspline_poisson,basis_functions,samples/07_basis_cspline_poisson.inp
+08_basis_fracpoly_logit,basis_functions,samples/08_basis_fracpoly_logit.inp

@@ -1,0 +1,107 @@
+# TenTS: original decomp.inp from the contributed package (2026-08-30).
+# Exercises three latent-factor curves in gpbuild/gridplot plus correlation plot.
+set verbose off
+
+clear --all
+include TenTS.gfn
+
+#	Monthly import/export data (in milions of €) for 4 EU nations across 5 sectors,
+#	broken down by EU vs. Extra-EU trade partners.
+
+open trade_data.gdt --frompkg=TenTS --quiet
+matrix X = {dataset}
+
+
+#	Define dimensions of the tensor
+scalar npartners = 2
+scalar nmonths = $nobs
+scalar ncountries = 4
+scalar nsectors = 5
+scalar flow_direction = 2
+
+
+#	Row-vector containing tensor dimensions
+matrix dims = {nmonths, ncountries, nsectors, flow_direction, npartners}
+
+#	Create the tensor
+bundle A = tensorize(X, dims)
+
+#	Sum values across partners (Extra_EU + EU): tensor has now 4 dimensions
+bundle A = tensor_aggr(A,5,1)
+# store tensor order
+scalar N = cols(A.dims)
+
+# compute yearly percentage change
+list Xlist = mat2list(unfold(A,1))
+Xlist = sdiff(log(Xlist))
+X = 100*{Xlist}
+smpl 2003:01 2025:12 --permanent
+
+
+# standardize data
+means = meanc(X)
+stds = sdc(X)
+std_X = (X .- means)./stds
+
+# tensorize yearly percentage change and
+# update dimensions
+Z = tensorize(std_X, {$nobs,ncountries, nsectors, flow_direction})
+dims = Z.dims
+
+# consider nfacs latent components in the time dimension
+scalar nfacs = 2
+
+# TUCKER: tot_param = (Π core_dims[i]) + Σ dims[i] x core_dims[i]
+# core tensor dimension
+core_dims = min(nfacs.*ones(1, N), dims)
+tu_params = prodr(core_dims) + sumr(dims .* core_dims)
+ret_tuck = tuck_decomp( Z, core_dims )
+tuck_hat = ((unfold(ret_tuck.approx,1)) .* stds) .+ means
+list tuck_F = mat2list(ret_tuck.A[1],"tuck_")
+
+# CANDECOMP: tot_param: ( Σ dims[i] ) x nfacs
+# set seed for random initialization
+set seed 123
+cp_params = sumr(dims) * nfacs
+ret_cp = cp_decomp(Z, nfacs)
+cp_hat = (unfold(ret_cp.approx,1) .* stds) .+ means
+list cp_F = mat2list(ret_cp.A[1], "cp_")
+
+# PCA: tot_param: T * nfacs + (d_2 * d_3 * d_4) * nfacs
+pc = princomp(std_X, nfacs, 1)
+list pc_F = mat2list(pc, "PCA_")
+betas = mols(pc, std_X)
+pc_params = nelem(pc) + nelem(betas)
+pc_hat = ((pc*betas') .* stds) .+ means
+
+# compute mse for the three decompositions
+scalar den = prodr(Z.dims)
+e_tuck = vec( X - tuck_hat )
+mse_tuck = e_tuck'e_tuck / den
+
+e_cp = vec( X - cp_hat )
+mse_cp = e_cp'e_cp / den
+
+e_pc = vec( X - pc_hat )
+mse_pc = e_pc'e_pc / den
+
+mse = mse_tuck | mse_cp | mse_pc
+tot_param = tu_params | cp_params | pc_params
+
+# Create final results table
+matrix results = tot_param ~ mse
+rnameset(results, "Tucker CP PCA")
+cnameset(results, "Params MSE")
+print results
+
+# plot the latent components in the time dimension
+gpbuild tplot
+    gnuplot tuck_F --with-lines --time-series
+    gnuplot cp_F --with-lines --time-series
+    gnuplot pc_F --with-lines --time-series
+end gpbuild
+
+gridplot tplot --rows=3 --output=display
+
+# plot correlation matrix
+corr tuck_F cp_F pc_F --plot=display --quiet

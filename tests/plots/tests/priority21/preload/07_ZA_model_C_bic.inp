@@ -1,0 +1,3 @@
+# Initialize an active workfile before loading ZivotAndrews.
+# The sample opens the actual geographic or time-series dataset.
+nulldata 120

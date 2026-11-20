@@ -1,0 +1,15 @@
+# ETS: reviewed custom plotting case based on ETS/examples/Winters.inp.
+# Preserve the package example workflow while checking Matplotlib output.
+set verbose off
+include ETS.gfn
+open data9-3.gdt
+
+# With multiplicative seasonals
+bundle BWM = ETS(reskwh, _(trend=1, seasonal=2, ntest=4))
+series reskwh_mul = BWM.reskwh_fcast
+ETS_plot(&BWM, 1)
+
+# Compare use of additive seasonals
+bundle BWA = ETS(reskwh, _(trend=1, seasonal=1, ntest=4))
+series reskwh_add = BWA.reskwh_fcast
+ETS_plot(&BWA, 1)

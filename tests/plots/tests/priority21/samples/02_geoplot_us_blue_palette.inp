@@ -1,0 +1,6 @@
+# geoplot: map with a reproducible synthetic quantitative payload.
+# Exercise color mapping, polygon borders and the native legend.
+set seed 20261120
+open us-states.geojson --frompkg=geoplot --quiet
+series z = normal()
+geoplot(z, _(title="US states: synthetic values", palette="blues", border=1))
