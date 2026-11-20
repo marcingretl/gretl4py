@@ -1,0 +1,15 @@
+# cffilt: original package example artificial.inp, excluding the include line.
+# This exercises the band-pass filter and the gpbuild/gridplot spectrum display.
+nulldata 256
+set seed 260593
+setobs 1 1 --special
+y = filter(normal(), 1, {1.8, -0.9})
+flt = cffilt(y, 12, 60)
+dif = y - flt
+# Use the current gretl branch of the package's original sample.
+gpbuild spectra
+    pergm y --silent
+    pergm flt --silent
+    pergm dif --silent
+end gpbuild
+gridplot spectra --rows=1 --width=1200 --output=display

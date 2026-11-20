@@ -1,0 +1,6 @@
+# cffilt: data and filter boundaries are taken from frbatlanta.inp.
+# Plot the observed GDP together with its Christiano-Fitzgerald trend.
+open gdp.gdt --frompkg=cffilt --quiet
+series cycle = cffilt(GDP, 2, 8)
+series trend = GDP - cycle
+gnuplot GDP trend --time-series --with-lines --output=display

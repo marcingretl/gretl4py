@@ -1,0 +1,9 @@
+case,package,script
+01_cffilt_artificial_spectra,cffilt,samples/01_cffilt_artificial_spectra.inp
+02_cffilt_annual_GDP,cffilt,samples/02_cffilt_annual_GDP.inp
+03_cffilt_monthly_list,cffilt,samples/03_cffilt_monthly_list.inp
+04_cffilt_bands_grid,cffilt,samples/04_cffilt_bands_grid.inp
+05_CH_dummies_residuals,Canova_Hansen,samples/05_CH_dummies_residuals.inp
+06_CH_trigonometric_fitted,Canova_Hansen,samples/06_CH_trigonometric_fitted.inp
+07_CH_diff_dummies_residuals,Canova_Hansen,samples/07_CH_diff_dummies_residuals.inp
+08_CH_diff_trig_fitted,Canova_Hansen,samples/08_CH_diff_trig_fitted.inp

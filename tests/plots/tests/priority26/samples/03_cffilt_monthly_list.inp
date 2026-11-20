@@ -1,0 +1,7 @@
+# cffilt: exercise the public cffilt_list() bulk interface on monthly data.
+# Use the established bjg.gdt dataset to avoid the original .bin dependency.
+open bjg.gdt --quiet
+series dlg = diff(lg)
+list X = lg dlg
+list CF = cffilt_list(X, 18, 96)
+gnuplot CF --time-series --with-lines --output=display
