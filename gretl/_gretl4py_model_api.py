@@ -23,12 +23,6 @@
 
 from __future__ import annotations
 from typing import TYPE_CHECKING
-from ._gretl4py_classes import _adf, _bds, _coint, _corrgm, _difftest, _fractint
-from ._gretl4py_classes import _johansen, _kpss, _levinlin, _meantest, _normtest
-from ._gretl4py_classes import _runs, _vartest, _add, _bkw, _chow, _cusum, _leverage
-from ._gretl4py_classes import _omit, _qlrtest, _reset, _white, _vif, _normality
-from ._gretl4py_classes import _nonlinearity, _autocorr, _arch, _breusch_pagan
-from ._gretl4py_classes import _groupwise_heteroskedasticity, _panspec, _comfac, _xdepend, _coeffsum
 
 if TYPE_CHECKING:
     from matplotlib.figure import Figure

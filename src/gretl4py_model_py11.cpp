@@ -117,18 +117,20 @@ py::object model_test (GretlModel_NSE &self, const std::string &type, const py::
     return py::make_tuple(py::cast(bundle), std::move(fig));
 }
 
-py::tuple add_auto (GretlModel_NSE &self, const py::kwargs &kwargs)
+std::pair<GretlBundlePtr, GretlModelPtr> add_auto (GretlModel_NSE &self, const py::kwargs &kwargs)
 {
-    auto [bundle, model] = self.add_omit_auto<ADD>(kwargs);
-
-    return py::make_tuple(py::cast(bundle), py::cast(std::move(model)));
+    //
+    // add 'auto' only!!!
+    //
+    return self.add_omit_auto<ADD>(kwargs);
 }
 
-py::tuple omit_auto (GretlModel_NSE &self, const py::kwargs &kwargs)
+std::pair<GretlBundlePtr, GretlModelPtr> omit_auto (GretlModel_NSE &self, const py::kwargs &kwargs)
 {
-    auto [bundle, model] = self.add_omit_auto<OMIT>(kwargs);
-
-    return py::make_tuple(py::cast(bundle), py::cast(std::move(model)));
+    //
+    // omit 'auto' only!!!
+    //
+    return self.add_omit_auto<OMIT>(kwargs);
 }
 } // namespace
 
