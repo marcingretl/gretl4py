@@ -1,0 +1,22 @@
+# TsCrossValidation 0.3: plot actual crossvalid() results using the
+# official sample's plot-matrix recipe (this package has no plot API).
+open denmark.gdt --quiet
+lags dataset
+# Reproduce the package's original ARDL and G2S comparison.
+scalar p = 2
+list xlist = const LRM(-1 to -p) LRY(0 to -p) IBO(0 to -p) IDE(0 to -p)
+matrix CV1 = crossvalid(LRM, xlist, 25, 4, 1, 3)
+ols LRM xlist --quiet
+omit --auto=0.10
+list xlist = $xlist
+matrix CV2 = crossvalid(LRM, xlist, 25, 4, 1, 3)
+string score_title = "Mean absolute error"
+strings names = defarray("ARDL(2,2)", "ARDL+G2S")
+matrix mplot = CV1[2,]' ~ CV2[2,]'
+cnameset(mplot, names)
+plot mplot
+    options with-lines time-series
+    literal set key top right
+    printf "set title \"%s\"", score_title
+    literal set xlabel "Forecast horizon"
+end plot --output=display

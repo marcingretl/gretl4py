@@ -1,0 +1,11 @@
+# var_chow: adapted from the original Australian VAR example.
+# A shorter valid quarterly window limits the cost of the native bootstrap.
+# VAR(2) needs more observations and fewer parameters for stable bootstrap covariance matrices.
+# The minimum declared bootstrap count is 99; do not replace native graphs.
+open australia --quiet
+smpl 1976:1 1990:4
+list Y = IUS PUS
+list Y = diff(Y)
+list X = null
+set seed 290108
+matrix result = var_chow(Y, X, 2, 2, "every", 99, "display")

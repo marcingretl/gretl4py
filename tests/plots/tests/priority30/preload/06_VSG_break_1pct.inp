@@ -1,0 +1,4 @@
+# VSG_test: give the probe a time-series dataset before package loading.
+# The reviewed fixture opens its chosen real dataset after load.
+nulldata 144
+setobs 4 1974:1 --time-series

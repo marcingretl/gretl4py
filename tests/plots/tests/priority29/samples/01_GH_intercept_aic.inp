@@ -1,0 +1,8 @@
+# Gregory-Hansen (1996) original Joe (1996) packaged quarterly data.
+# Explore the native package's regime-shift test profile across break dates.
+open joe96_data.gdt --frompkg=gregory_hansen --quiet
+smpl 1960:1 1990:4
+list L = ynr sr
+bundle opts = _(model="c", criteria="aic", adf_maxlag=4)
+bundle fit = estimateGH(md, L, opts)
+plotGH(fit)

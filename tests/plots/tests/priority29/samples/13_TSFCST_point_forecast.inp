@@ -1,0 +1,5 @@
+# tsfcst: actual theta-method forecasts from the standard Box-Jenkins dataset.
+# The package-native fcast_plot() handles points and optional forecast bands.
+open bjg.gdt --quiet
+matrix forecasts = stheta(lg, 12, "noseas, noprint", {80})
+fcast_plot(lg, forecasts, NA, 0)
