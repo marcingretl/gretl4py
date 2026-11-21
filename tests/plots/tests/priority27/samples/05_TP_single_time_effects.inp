@@ -1,0 +1,25 @@
+# Threshold_Panel: use the package's Hansen (1999) investment panel example.
+# Preserve the original variable transformations and balanced 8-unit subsample.
+open ThresholdPanel_data_joe99.gdt --frompkg=Threshold_Panel --quiet
+setobs 15 1:1 --stacked-time-series
+rename v1 inva
+rename v2 vala
+rename v3 cfa
+rename v4 debta
+series vala2 = vala^2
+series vala3 = vala^3
+series debtval = debta*vala
+list exo = vala vala2 vala3 debta debtval
+list exo1 = lags(1, exo)
+list rexo = cfa
+list rexo1 = lags(1, rexo)
+series thresh = debta(-1)
+list Lall = inva exo1 rexo1 thresh
+smpl 1:01 8:15
+smpl Lall --balanced --no-missing
+# Source sample's single-threshold model, with time effects and fewer replications.
+set seed 270105
+bundle opts = _(nthresholds=1, nboot=29, nquantiles=80, with_timeeffects=1)
+bundle model = estimateTpm(inva, exo1, rexo1, thresh, opts)
+# Invoke the public LR profile plot function without a file path.
+plotTpm(model)

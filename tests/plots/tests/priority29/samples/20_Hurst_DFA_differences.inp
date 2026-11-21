@@ -1,0 +1,7 @@
+# gen_hurst: real public R/S or DFA plot (suppress_printout must be zero).
+# The built-in bjg.gdt series provides at least 128 usable observations.
+open bjg.gdt --quiet
+series d_lg = diff(lg)
+smpl d_lg --contiguous
+scalar hurst_exp = gen_hurst(d_lg, 1, 1.4, 8, 0)
+print hurst_exp

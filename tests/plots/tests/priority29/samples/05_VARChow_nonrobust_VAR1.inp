@@ -1,0 +1,10 @@
+# var_chow: adapted from the original Australian VAR example.
+# A shorter valid quarterly window limits the cost of the native bootstrap.
+# The minimum declared bootstrap count is 99; do not replace native graphs.
+open australia --quiet
+smpl 1976:1 1987:4
+list Y = IUS PUS e2
+list Y = diff(Y)
+list X = null
+set seed 290105
+matrix result = var_chow(Y, X, 1, 1, "every", 99, "display")

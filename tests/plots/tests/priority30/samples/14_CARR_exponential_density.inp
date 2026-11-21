@@ -1,0 +1,9 @@
+# carr 0.81: fit the actual exponential/Weibull CARR estimator.
+# The upstream sample downloads external data. Here use observed weekly
+# NYSE close-to-close changes as a strictly positive range proxy.
+# This proxy is for a graphics integration test, not CARR inference.
+open nysewk --quiet
+series R = 100 * abs(ldiff(close)) + 0.1
+smpl R --contiguous
+bundle fit = carr(R, 1, 1, null, 1, 0, 0)
+carr_plot_density(&fit)

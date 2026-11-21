@@ -1,0 +1,6 @@
+# delayspectral 1.0: estimate the actual phase-delay ARDL model.
+# phasedelay() renders two original package graphs on each call.
+# Reuse the original Hall dataset and variable pairing from its sample.
+open hall --quiet
+list C = vwr(-1 to -2)
+matrix phout = phasedelay(consrat, ewr, C, 3, 4, 0.95, 1, 1)

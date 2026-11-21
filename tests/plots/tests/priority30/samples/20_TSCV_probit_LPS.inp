@@ -1,0 +1,20 @@
+# TsCrossValidation 0.3: plot actual crossvalid() results using the
+# official sample's plot-matrix recipe (this package has no plot API).
+open denmark.gdt --quiet
+lags dataset
+# Use the two original probit specifications from the package sample.
+series y = (diff(LRM) >= mean(diff(LRM)))
+list xlist = const time
+matrix CV1 = crossvalid(y, xlist, 25, 4, 2, 2)
+list xlist = const time y(-1)
+matrix CV2 = crossvalid(y, xlist, 25, 4, 2, 2)
+string score_title = "Log Probability Score"
+strings names = defarray("Static+trend", "AR(1)+trend")
+matrix mplot = CV1[2,]' ~ CV2[2,]'
+cnameset(mplot, names)
+plot mplot
+    options with-lines time-series
+    literal set key top right
+    printf "set title \"%s\"", score_title
+    literal set xlabel "Forecast horizon"
+end plot --output=display

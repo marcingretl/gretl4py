@@ -1,0 +1,4 @@
+# thresh_infer: start with a valid quarterly time-series dataset before package loading.
+# The actual fixture opens the standard denmark.gdt example.
+nulldata 80
+setobs 4 1975:1 --time-series

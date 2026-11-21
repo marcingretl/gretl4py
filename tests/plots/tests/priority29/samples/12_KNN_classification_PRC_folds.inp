@@ -1,0 +1,22 @@
+# knn: genuine k-fold cross-validation and native package CV plotting.
+# This package depends on extra and CvDataSplitter; install full dependencies.
+open denmark.gdt --quiet
+list x = LRM IBO IDE
+# Derive a binary classification target, as in the package's CV sample.
+# Classify above-median changes in observed output rather than its trending level.
+# The level-based target made all fold precision values constant for k=1,
+# which the native boxplot cannot represent.
+series growth = diff(LRY)
+series yclass = (growth > median(growth))
+series y = yclass
+setinfo y --discrete
+smpl --no-missing y x
+set seed 290112
+matrix neighbors = seq(1, 5)
+bundle opts = _(splitters="kfold", kfold_nsplits=5, scoring_classification="PRC")
+bundle fit = knn_fit(y, x, neighbors, opts)
+# Inspect all cross-validation scores before plotting.
+matrix scores = drill(fit.Scores, null, \
+    instrings(cnameget(fit.mean_scores), "PRC"))
+print scores
+knn_plot_cvscores(fit)

@@ -1,0 +1,12 @@
+# ARprobit: reproduce the original cycles-and-spread example using package data.
+# Fit probabilities are produced by the actual exported ARprobit() estimator.
+open cycles_and_spread.gdt --frompkg=ARprobit --quiet
+series spread = tcm10y - tbsm3m
+smpl 1955:4 2005:4
+# Original sample's gappy lag specification without latent-index dynamics.
+list explain = const spread(-4)
+bundle fit = ARprobit(y, explain, {2, 2}, FALSE)
+# Reproduce the sample's probability plot with recession shading.
+series probs = fit.yhat
+bundle recshades = _(dummy="y")
+gnuplot probs --time-series --output=display --with-lines --band=recshades

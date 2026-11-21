@@ -1,0 +1,4 @@
+# staticfactor: initialize a dataset before the probe loads the function package.
+# The reviewed fixture then opens the actual package data.
+nulldata 80
+setobs 4 1975:1 --time-series

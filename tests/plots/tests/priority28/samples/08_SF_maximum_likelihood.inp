@@ -1,0 +1,7 @@
+# staticfactor: use the original six-series example from bg2.gdt.
+# SF_plot() is the package's public scree-plot function, not a replacement plot.
+open bg2.gdt --frompkg=staticfactor --quiet
+list X = bg2cost1 .. bg2cost6
+# Source example: maximum-likelihood two-factor estimation.
+bundle fit = staticfactor(X, 2, 2)
+SF_plot(&fit)

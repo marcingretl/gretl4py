@@ -1,0 +1,21 @@
+# uniFCextensions 1.2: model-window wrapper calls the package's
+# bootstrapped multi-band plot generator (not a replacement graphic).
+# The simple autoregression needs no future exogenous observations.
+open denmark.gdt --quiet
+set seed 300011
+ols LRY 0 LRY(-1) LRY(-2) --quiet
+# GUI_uniFCboot() requires an active GUI model window, unavailable in script mode.
+# Use the documented bootstrap API and the original multi-band plot helper.
+bundle mod = $model
+matrix FCq = uniFCboot(mod, 5, 299, {0.05}, null, 0)
+strings colheads = cnameget(FCq)
+matrix central = FCq[,1]
+cnameset(central, colheads[1])
+matrix index = seq(2, cols(FCq))
+matrix bands = FCq[,index]
+cnameset(bands, colheads[index])
+plot_multibands("Forecasts of LRY", "forecast horizon", central, bands)
+
+# The package plot block writes the native gpttmp01.plt in batch mode.
+# Display that exact script; do not recreate forecast bands.
+gnuplot --input="gpttmp01.plt" --output=display

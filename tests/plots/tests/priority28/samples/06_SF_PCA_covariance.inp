@@ -1,0 +1,10 @@
+# staticfactor: use the original six-series example from bg2.gdt.
+# SF_plot() is the package's public scree-plot function, not a replacement plot.
+open bg2.gdt --frompkg=staticfactor --quiet
+# The original bg2cost variables are standardized (variance approximately one).
+# Rescale one observed variable to make covariance PCA differ from correlation PCA.
+series bg2cost1_scaled = 2 * bg2cost1
+list X = bg2cost1_scaled bg2cost2 bg2cost3 bg2cost4 bg2cost5 bg2cost6
+# Public covariance option: three-factor principal-components solution.
+bundle fit = staticfactor(X, 3, 1, 0, 0, 1)
+SF_plot(&fit)

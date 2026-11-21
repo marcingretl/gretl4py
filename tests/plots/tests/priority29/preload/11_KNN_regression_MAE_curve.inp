@@ -1,0 +1,4 @@
+# knn: initialize an appropriate dataset before the probe loads the package.
+# The reviewed sample script opens its own data source afterward.
+nulldata 144
+setobs 4 1974:1 --time-series
