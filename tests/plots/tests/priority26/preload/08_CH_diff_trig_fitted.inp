@@ -1,0 +1,4 @@
+# Both packages require time-series data when the runner loads the package.
+# The actual test replaces these placeholder observations with source data.
+nulldata 144
+setobs 12 1949:01 --time-series

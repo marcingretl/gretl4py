@@ -1,0 +1,8 @@
+# Canova_Hansen: documented monthly car-sales example, seasonal dummies.
+# Use the package bundle-plot residuals path, then explicitly display its result.
+open data9-9.gdt --quiet
+list X_list = null
+bundle CH = Canova_Hansen(nocars, 0, 0, 0, 0, X_list, 0)
+CH_test_bundle_plot(&CH, 0)
+series ch_resid = CH["uhat"]
+gnuplot ch_resid --time-series --with-lines --output=display

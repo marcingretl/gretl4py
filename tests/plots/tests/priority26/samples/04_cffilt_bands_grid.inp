@@ -1,0 +1,16 @@
+# cffilt: adapt the package's replication grid without fedstl.bin.
+# Separate output series preserve the three distinct band-pass periods.
+open bjg.gdt --quiet
+series growth = 100 * diff(lg)
+series cf_short = cffilt(growth, 6, 24)
+series cf_medium = cffilt(growth, 18, 96)
+series cf_long = cffilt(growth, 48, 120)
+# Capture the observed growth rate and three CF filtered components.
+strings bandfigs
+gpbuild bandfigs
+    gnuplot growth --time-series --with-lines
+    gnuplot cf_short --time-series --with-lines
+    gnuplot cf_medium --time-series --with-lines
+    gnuplot cf_long --time-series --with-lines
+end gpbuild
+gridplot bandfigs --rows=2 --output=display

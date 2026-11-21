@@ -1,0 +1,8 @@
+# Canova_Hansen: trigonometric seasonal terms, without differencing.
+# The bundle-plot fitted-series path is also invoked for native coverage.
+open data9-9.gdt --quiet
+list X_list = null
+bundle CH = Canova_Hansen(nocars, 0, 1, 0, 0, X_list, 0)
+CH_test_bundle_plot(&CH, 1)
+series ch_fitted = CH["yhat"]
+gnuplot nocars ch_fitted --time-series --with-lines --output=display
