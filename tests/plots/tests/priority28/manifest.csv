@@ -1,0 +1,9 @@
+case,package,script
+01_ARprobit_sample_AR,ARprobit,samples/01_ARprobit_sample_AR.inp
+02_ARprobit_gappy_static,ARprobit,samples/02_ARprobit_gappy_static.inp
+03_ARprobit_static_lag1,ARprobit,samples/03_ARprobit_static_lag1.inp
+04_ARprobit_shorter_spread_lag,ARprobit,samples/04_ARprobit_shorter_spread_lag.inp
+05_SF_PCA_correlation,staticfactor,samples/05_SF_PCA_correlation.inp
+06_SF_PCA_covariance,staticfactor,samples/06_SF_PCA_covariance.inp
+07_SF_principal_factors,staticfactor,samples/07_SF_principal_factors.inp
+08_SF_maximum_likelihood,staticfactor,samples/08_SF_maximum_likelihood.inp

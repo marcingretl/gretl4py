@@ -1,0 +1,4 @@
+# Threshold_Panel requires panel data before package loading.
+# The fixture replaces these dummy observations with its bundled panel dataset.
+nulldata 60
+setobs 15 1:1 --stacked-time-series

@@ -1,0 +1,9 @@
+# thresh_infer: use the actual quarterly Denmark example from the package's sample script.
+# Remove missing observations before the Hansen (2000) test/estimation routines.
+open denmark.gdt --quiet
+series mg = diff(LRM)
+list rhs = IBO IDE
+smpl --no-missing mg rhs
+# Public threshold test: homoskedastic errors and a bounded bootstrap.
+set seed 270101
+bundle test = H_thresh_test(mg, rhs, IDE, FALSE, 49, 0.95, 0.15, 1)
