@@ -323,18 +323,20 @@ void init_gretl4py_gretl_matrix_py11 (py::module_ &m)
     .def("__rtruediv__",
          [](const GretlMatrix &self, double val) -> GretlMatrixPtr
          {
-             auto res = self.alg_dot_operations<double, GretlMatrixAlgOperations::TRUEDIV>(1.0);
+             // Reflected division requires the scalar as the left operand.
+             GretlMatrix lhs(1, 1, val, "real");
 
-             res->alg_inplace_operations<double, GretlMatrixAlgOperations::IMUL>(val);
-
-             return res;
+             return lhs.alg_dot_operations<GretlMatrix, GretlMatrixAlgOperations::TRUEDIV>(self);
          })
     .def("__rtruediv__",
          [](const GretlMatrix &self, std::complex<double> val) -> GretlMatrixPtr
          {
-             auto res = self.alg_dot_operations<std::complex<double>, GretlMatrixAlgOperations::TRUEDIV>(1.0);
+             // Use a complex 1x1 left operand for complex scalar division.
+             GretlMatrix lhs(1, 1, 0.0, "complex");
 
-             return res->alg_dot_operations<std::complex<double>, GretlMatrixAlgOperations::MUL>(val);
+             lhs.set_element<std::complex<double>>(0, 0, val);
+
+             return lhs.alg_dot_operations<GretlMatrix, GretlMatrixAlgOperations::TRUEDIV>(self);
          })
     .def("copy", [](const GretlMatrix &self) { return GretlMatrix(self); })
     .def("to_numpy", &GretlMatrix::to_numpy)
