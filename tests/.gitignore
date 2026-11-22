@@ -14,3 +14,7 @@ plots/tests/priority*/20????????????-*.plt
 # Leftovers from manually applying source patches.
 *.orig
 *.rej
+
+# Downloaded package sources used for plot compatibility audits.
+plots/audit/contributed/
+plots/audit/addons_source/

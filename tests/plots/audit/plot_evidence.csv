@@ -1,0 +1,1041 @@
+package,origin,file,function,line,kind,statement
+ADMBP,contributed,contributed/ADMBP.zip!ADMBP/ADMBP.gfn,irf_plot,1,possible_plot,/* Plot dynamic multipliers. */
+ADMBP,contributed,contributed/ADMBP.zip!ADMBP/ADMBP.gfn,irf_plot,3,direct_plot,plot m
+ADMBP,contributed,contributed/ADMBP.zip!ADMBP/ADMBP.gfn,irf_plot,13,possible_plot,end plot --output=display
+ADMBP,contributed,contributed/ADMBP.zip!ADMBP/ADMBP.gfn,irf_plotadv,4,direct_plot,plot mplot
+ADMBP,contributed,contributed/ADMBP.zip!ADMBP/ADMBP.gfn,irf_plotadv,15,gnuplot_source,"printf ""set style line 11 lc rgb \""#808080\"" lt 1"""
+ADMBP,contributed,contributed/ADMBP.zip!ADMBP/ADMBP.gfn,irf_plotadv,19,gnuplot_source,"printf ""set style line 12 lc rgb \""#808080\"" lt 0 lw 1"""
+ADMBP,contributed,contributed/ADMBP.zip!ADMBP/ADMBP.gfn,irf_plotadv,25,possible_plot,"end plot --output=""@fname"""
+ADMBP,contributed,contributed/ADMBP.zip!ADMBP/ADMBP.gfn,<sample>,60,direct_plot,scatters ECM ECMrc --with-lines --output=display
+ARMA_IRF,contributed,contributed/ARMA_IRF.gfn,wrplot,26,direct_plot,plot plt
+ARMA_IRF,contributed,contributed/ARMA_IRF.gfn,wrplot,31,possible_plot,"end plot --output=""@dest"""
+ARMA_IRF,contributed,contributed/ARMA_IRF.gfn,wrplot,33,direct_plot,plot plt
+ARMA_IRF,contributed,contributed/ARMA_IRF.gfn,wrplot,36,possible_plot,"end plot --output=""@dest"""
+ARprobit,contributed,contributed/ARprobit.gfn,<sample>,21,direct_plot,gnuplot probs --time-series --output=display --with-lines --band=recshades
+ARprobit,contributed,contributed/ARprobit.zip!ARprobit/ARprobit.gfn,<sample>,21,direct_plot,gnuplot probs --time-series --output=display --with-lines --band=recshades
+BACE,contributed,contributed/BACE.zip!BACE/BACE.gfn,BACE_Plot,2,possible_plot,BACE result bundle plot function.
+BACE,contributed,contributed/BACE.zip!BACE/BACE.gfn,BACE_Plot,13,gnuplot_source,"elif $sysinfo.gui_mode || strstr($gnuplot, ""gp-executor"") != """" # gretl4py workaround"
+BACE,contributed,contributed/BACE.zip!BACE/BACE.gfn,BACE_Plot,39,possible_plot,"printf ""Variables Inclusions: there is just one model in ranking, nothing to plot.\n"""
+BACE,contributed,contributed/BACE.zip!BACE/BACE.gfn,BACE_Plot,65,possible_plot,catch plot plotmat
+BACE,contributed,contributed/BACE.zip!BACE/BACE.gfn,BACE_Plot,74,possible_plot,"end plot --output=""@output"""
+BACE,contributed,contributed/BACE.zip!BACE/BACE.gfn,BACE_Plot,82,possible_plot,"printf ""CDF of Model Size: there is just one model in ranking, nothing to plot.\n"""
+BACE,contributed,contributed/BACE.zip!BACE/BACE.gfn,BACE_Plot,87,possible_plot,catch plot plotmat
+BACE,contributed,contributed/BACE.zip!BACE/BACE.gfn,BACE_Plot,94,possible_plot,"end plot --output=""@output"""
+BACE,contributed,contributed/BACE.zip!BACE/BACE.gfn,BACE_Plot,107,gnuplot_source,outfile --buffer=plotmat_str
+BACE,contributed,contributed/BACE.zip!BACE/BACE.gfn,BACE_Plot,109,gnuplot_source,end outfile
+BACE,contributed,contributed/BACE.zip!BACE/BACE.gfn,BACE_Plot,111,possible_plot,catch plot
+BACE,contributed,contributed/BACE.zip!BACE/BACE.gfn,BACE_Plot,114,gnuplot_source,literal set style fill solid 1.00 border lt -1
+BACE,contributed,contributed/BACE.zip!BACE/BACE.gfn,BACE_Plot,115,gnuplot_source,literal set style histogram clustered gap 1 title textcolor lt -1
+BACE,contributed,contributed/BACE.zip!BACE/BACE.gfn,BACE_Plot,116,gnuplot_source,literal set style data histograms
+BACE,contributed,contributed/BACE.zip!BACE/BACE.gfn,BACE_Plot,124,possible_plot,"literal plot $map using 2:xtic(1) title 'Prior', '' u 3 title 'PIP'"
+BACE,contributed,contributed/BACE.zip!BACE/BACE.gfn,BACE_Plot,125,possible_plot,"end plot --output=""@output"""
+BACE,contributed,contributed/BACE.zip!BACE/BACE.gfn,BACE_Plot,145,possible_plot,catch plot plotmat
+BACE,contributed,contributed/BACE.zip!BACE/BACE.gfn,BACE_Plot,154,possible_plot,"end plot --output=""@output"""
+BACE,contributed,contributed/BACE.zip!BACE/BACE.gfn,BACE_Plot,182,possible_plot,catch plot plotmat
+BACE,contributed,contributed/BACE.zip!BACE/BACE.gfn,BACE_Plot,185,possible_plot,"end plot --output=""@output"""
+BACE,contributed,contributed/BACE.zip!BACE/BACE.gfn,BACE_Plot,188,possible_plot,catch plot plotmat
+BACE,contributed,contributed/BACE.zip!BACE/BACE.gfn,BACE_Plot,193,possible_plot,"end plot --output=""@output"""
+BACE,contributed,contributed/BACE.zip!BACE/BACE.gfn,BACE_Plot,228,possible_plot,catch plot plotmat
+BACE,contributed,contributed/BACE.zip!BACE/BACE.gfn,BACE_Plot,235,possible_plot,"end plot --output=""@output"""
+BACE,contributed,contributed/BACE.zip!BACE/BACE.gfn,BACE_main,10,possible_plot,string model_id # string containing model id (0-1 'image')
+BACE,contributed,contributed/BACE.zip!BACE/BACE.gfn,BACE_bcheck,25,gnuplot_source,"if $sysinfo[""gui_mode""] || strstr($gnuplot, ""gp-executor"") != """" # gretl4py workaround"
+BACE,contributed,contributed/BACE.zip!BACE/BACE.gfn,BACE_heatmap,2,possible_plot,"M - BACE result bundle, MODE - string indicating image mode {""inclusions"", ""jointness""}"
+BACE,contributed,contributed/BACE.zip!BACE/BACE.gfn,BACE_heatmap,3,gnuplot_source,basename	- basename for gnuplot output specification
+BACE,contributed,contributed/BACE.zip!BACE/BACE.gfn,BACE_heatmap,106,possible_plot,catch plot
+BACE,contributed,contributed/BACE.zip!BACE/BACE.gfn,BACE_heatmap,130,possible_plot,literal plot $map matrix with image
+BACE,contributed,contributed/BACE.zip!BACE/BACE.gfn,BACE_heatmap,131,possible_plot,"end plot --output=""@output"""
+BACE,contributed,contributed/BACE.zip!BACE/BACE.gfn,BACE_get_plot_outname,2,possible_plot,Function makes string for plot output: either 'display' (in gui mode)
+BACE,contributed,contributed/BACE.zip!BACE/BACE.gfn,BACE_get_plot_outname,14,possible_plot,"errorif(nelem(instrings(ok, sfx)) == 0, sprintf(""Unsupported plot filename suffix '%s'"", sfx))"
+BACE,contributed,contributed/BACE.zip!BACE/BACE.gfn,BACE_get_plot_outname,21,possible_plot,"errorif(s != ""display"", sprintf(""Invalid plot output spec '%s'"", s))"
+BACE,contributed,contributed/BACE.zip!BACE/BACE.gfn,BACE_contingency_heatmap,2,direct_plot,Plot a classification confusion matrix.
+BACE,contributed,contributed/BACE.zip!BACE/BACE.gfn,BACE_contingency_heatmap,101,possible_plot,catch plot
+BACE,contributed,contributed/BACE.zip!BACE/BACE.gfn,BACE_contingency_heatmap,132,possible_plot,literal plot $colors matrix with image
+BACE,contributed,contributed/BACE.zip!BACE/BACE.gfn,BACE_contingency_heatmap,133,possible_plot,"end plot --output=""@output"""
+BACE,contributed,contributed/BACE.zip!BACE/examples/UKM1.txt,<standalone>,376,gnuplot_source,as described in the help for the 'gnuplot' command
+BEKK,contributed,contributed/BEKK.zip!BEKK/BEKK.gfn,BEKK_ComboPlot,22,direct_plot,gpbuild plots
+BEKK,contributed,contributed/BEKK.zip!BEKK/BEKK.gfn,BEKK_ComboPlot,29,direct_plot,plot v
+BEKK,contributed,contributed/BEKK.zip!BEKK/BEKK.gfn,BEKK_ComboPlot,34,possible_plot,end plot
+BEKK,contributed,contributed/BEKK.zip!BEKK/BEKK.gfn,BEKK_ComboPlot,38,direct_plot,plot x
+BEKK,contributed,contributed/BEKK.zip!BEKK/BEKK.gfn,BEKK_ComboPlot,43,possible_plot,end plot
+BEKK,contributed,contributed/BEKK.zip!BEKK/BEKK.gfn,BEKK_ComboPlot,46,direct_plot,plot x
+BEKK,contributed,contributed/BEKK.zip!BEKK/BEKK.gfn,BEKK_ComboPlot,51,possible_plot,end plot
+BEKK,contributed,contributed/BEKK.zip!BEKK/BEKK.gfn,BEKK_ComboPlot,56,gnuplot_source,end gpbuild
+BEKK,contributed,contributed/BEKK.zip!BEKK/BEKK.gfn,BEKK_ComboPlot,61,direct_plot,"gridplot plots --fontsize=8 --width=width --height=height --output=""@dest"""
+BMA,contributed,contributed/BMA.zip!BMA/BMA.gfn,BMA_Plot,2,possible_plot,BMA result bundle plot function.
+BMA,contributed,contributed/BMA.zip!BMA/BMA.gfn,BMA_Plot,16,gnuplot_source,"terminal_opts = sprintf(""%s"", ""set terminal windows"")"
+BMA,contributed,contributed/BMA.zip!BMA/BMA.gfn,BMA_Plot,18,gnuplot_source,"terminal_opts = sprintf(""%s\n%s"", ""set terminal png"", ""set output '| display png:-'"")"
+BMA,contributed,contributed/BMA.zip!BMA/BMA.gfn,BMA_Plot,32,possible_plot,"printf ""Variables Inclusions: there is just one model in ranking, nothing to plot.\n"""
+BMA,contributed,contributed/BMA.zip!BMA/BMA.gfn,BMA_Plot,61,possible_plot,catch plot plotmat
+BMA,contributed,contributed/BMA.zip!BMA/BMA.gfn,BMA_Plot,71,possible_plot,end plot --output=@output
+BMA,contributed,contributed/BMA.zip!BMA/BMA.gfn,BMA_Plot,79,possible_plot,"printf ""CDF of Model Size: there is just one model in ranking, nothing to plot.\n"""
+BMA,contributed,contributed/BMA.zip!BMA/BMA.gfn,BMA_Plot,87,possible_plot,catch plot plotmat
+BMA,contributed,contributed/BMA.zip!BMA/BMA.gfn,BMA_Plot,95,possible_plot,end plot --output=@output
+BMA,contributed,contributed/BMA.zip!BMA/BMA.gfn,BMA_Plot,110,gnuplot_source,outfile --buffer=plotmat_str
+BMA,contributed,contributed/BMA.zip!BMA/BMA.gfn,BMA_Plot,112,gnuplot_source,end outfile
+BMA,contributed,contributed/BMA.zip!BMA/BMA.gfn,BMA_Plot,113,possible_plot,catch plot
+BMA,contributed,contributed/BMA.zip!BMA/BMA.gfn,BMA_Plot,117,gnuplot_source,literal set style fill solid 1.00 border lt -1
+BMA,contributed,contributed/BMA.zip!BMA/BMA.gfn,BMA_Plot,118,gnuplot_source,literal set style histogram clustered gap 1 title textcolor lt -1
+BMA,contributed,contributed/BMA.zip!BMA/BMA.gfn,BMA_Plot,119,gnuplot_source,literal set style data histograms
+BMA,contributed,contributed/BMA.zip!BMA/BMA.gfn,BMA_Plot,127,possible_plot,"literal plot $map using 2:xtic(1) title 'Prior', '' u 3 title 'PIP'"
+BMA,contributed,contributed/BMA.zip!BMA/BMA.gfn,BMA_Plot,128,possible_plot,end plot --output=@output
+BMA,contributed,contributed/BMA.zip!BMA/BMA.gfn,BMA_Plot,140,possible_plot,catch plot plotmat
+BMA,contributed,contributed/BMA.zip!BMA/BMA.gfn,BMA_Plot,149,possible_plot,end plot --output=@output
+BMA,contributed,contributed/BMA.zip!BMA/BMA.gfn,BMA_Plot,178,possible_plot,catch plot plotmat
+BMA,contributed,contributed/BMA.zip!BMA/BMA.gfn,BMA_Plot,187,possible_plot,end plot --output=@output
+BMA,contributed,contributed/BMA.zip!BMA/BMA.gfn,BMA_main,9,possible_plot,string model_id # string containing model id (0-1 'image')
+BMA,contributed,contributed/BMA.zip!BMA/BMA.gfn,BMA_heatmap,2,possible_plot,"M  - BMA result bundle, MODE  - string indicating image mode {""inclusions"", ""jointness""}"
+BMA,contributed,contributed/BMA.zip!BMA/BMA.gfn,BMA_heatmap,3,gnuplot_source,basename	- basename for gnuplot files
+BMA,contributed,contributed/BMA.zip!BMA/BMA.gfn,BMA_heatmap,99,gnuplot_source,"terminal_opts = sprintf(""set term pngcairo font \""Vera,9\"" size %d,%d noenhanced"", width, height)"
+BMA,contributed,contributed/BMA.zip!BMA/BMA.gfn,BMA_heatmap,103,gnuplot_source,"terminal_opts = sprintf(""%s"", ""set terminal windows"")"
+BMA,contributed,contributed/BMA.zip!BMA/BMA.gfn,BMA_heatmap,105,gnuplot_source,"terminal_opts = sprintf(""%s\n%s"", ""set terminal png"", ""set output '| display png:-'"")"
+BMA,contributed,contributed/BMA.zip!BMA/BMA.gfn,BMA_heatmap,110,possible_plot,catch plot
+BMA,contributed,contributed/BMA.zip!BMA/BMA.gfn,BMA_heatmap,136,possible_plot,literal plot $map matrix with image
+BMA,contributed,contributed/BMA.zip!BMA/BMA.gfn,BMA_heatmap,137,possible_plot,end plot --output=@output
+BNdecomp,contributed,contributed/BNdecomp.gfn,<sample>,15,direct_plot,gnuplot Y m_pred m_auto --time-series --with-lines --output=display
+BVAR,contributed,contributed/BVAR.zip!BVAR/BVAR.gfn,BVAR_post_plot,31,gnuplot_source,if opt.grid # gridplot case
+BVAR,contributed,contributed/BVAR.zip!BVAR/BVAR.gfn,BVAR_post_plot,41,optional_plot,freq j --matrix=target --silent --plot=@to_save
+BVAR,contributed,contributed/BVAR.zip!BVAR/BVAR.gfn,BVAR_post_plot,68,gnuplot_source,if opt.grid # gridplot case
+BVAR,contributed,contributed/BVAR.zip!BVAR/BVAR.gfn,BVAR_post_plot,78,optional_plot,"freq j --matrix=target --silent --plot=""@to_save"""
+BVAR,contributed,contributed/BVAR.zip!BVAR/BVAR.gfn,BVAR_post_plot,112,gnuplot_source,if opt.grid # gridplot case
+BVAR,contributed,contributed/BVAR.zip!BVAR/BVAR.gfn,BVAR_post_plot,122,possible_plot,"catch freq j --matrix=target --silent --plot=""@to_save"""
+BVAR,contributed,contributed/BVAR.zip!BVAR/BVAR.gfn,BVAR_fcast_plot,55,gnuplot_source,if opt.grid # gridplot case
+BVAR,contributed,contributed/BVAR.zip!BVAR/BVAR.gfn,BVAR_fcast_plot,126,direct_plot,plot to_plot
+BVAR,contributed,contributed/BVAR.zip!BVAR/BVAR.gfn,BVAR_fcast_plot,136,possible_plot,end plot --outbuf=fcast_plot[$i]
+BVAR,contributed,contributed/BVAR.zip!BVAR/BVAR.gfn,BVAR_fcast_plot,139,direct_plot,plot to_plot
+BVAR,contributed,contributed/BVAR.zip!BVAR/BVAR.gfn,BVAR_fcast_plot,148,possible_plot,end plot --outbuf=fcast_plot[$i]
+BVAR,contributed,contributed/BVAR.zip!BVAR/BVAR.gfn,BVAR_fcast_plot,159,direct_plot,plot to_plot
+BVAR,contributed,contributed/BVAR.zip!BVAR/BVAR.gfn,BVAR_fcast_plot,168,possible_plot,end plot --output=@to_save
+BVAR,contributed,contributed/BVAR.zip!BVAR/BVAR.gfn,BVAR_fcast_plot,171,direct_plot,plot to_plot
+BVAR,contributed,contributed/BVAR.zip!BVAR/BVAR.gfn,BVAR_fcast_plot,180,possible_plot,end plot --output=@to_save
+BVAR,contributed,contributed/BVAR.zip!BVAR/BVAR.gfn,BVAR_fcast_plot,187,direct_plot,plot to_plot
+BVAR,contributed,contributed/BVAR.zip!BVAR/BVAR.gfn,BVAR_fcast_plot,197,possible_plot,end plot --output=@to_save
+BVAR,contributed,contributed/BVAR.zip!BVAR/BVAR.gfn,BVAR_fcast_plot,200,direct_plot,plot to_plot
+BVAR,contributed,contributed/BVAR.zip!BVAR/BVAR.gfn,BVAR_fcast_plot,210,possible_plot,end plot --output=@to_save
+BVAR,contributed,contributed/BVAR.zip!BVAR/BVAR.gfn,BVAR_fcast_plot,230,gnuplot_source,"setopt gridplot --title=""@title"""
+BVAR,contributed,contributed/BVAR.zip!BVAR/BVAR.gfn,BVAR_fcast_plot,234,direct_plot,"gridplot fcast_plot --output=""@to_save"" --fontsize=opt.gridfontsize"
+BVAR,contributed,contributed/BVAR.zip!BVAR/BVAR.gfn,BVAR_irf_plot,1,gnuplot_source,set force_decpoint on  # unset at the end (redundant?); because of printf in gnuplot etc.
+BVAR,contributed,contributed/BVAR.zip!BVAR/BVAR.gfn,BVAR_irf_plot,33,gnuplot_source,if opt.grid # gridplot case
+BVAR,contributed,contributed/BVAR.zip!BVAR/BVAR.gfn,BVAR_irf_plot,107,direct_plot,plot mat_to_plot
+BVAR,contributed,contributed/BVAR.zip!BVAR/BVAR.gfn,BVAR_irf_plot,117,possible_plot,end plot --outbuf=irf_plot[count]
+BVAR,contributed,contributed/BVAR.zip!BVAR/BVAR.gfn,BVAR_irf_plot,121,direct_plot,plot mat_to_plot
+BVAR,contributed,contributed/BVAR.zip!BVAR/BVAR.gfn,BVAR_irf_plot,131,possible_plot,end plot --outbuf=irf_plot[count]
+BVAR,contributed,contributed/BVAR.zip!BVAR/BVAR.gfn,BVAR_irf_plot,140,direct_plot,plot mat_to_plot
+BVAR,contributed,contributed/BVAR.zip!BVAR/BVAR.gfn,BVAR_irf_plot,149,possible_plot,end plot --output=@to_save
+BVAR,contributed,contributed/BVAR.zip!BVAR/BVAR.gfn,BVAR_irf_plot,153,direct_plot,plot mat_to_plot
+BVAR,contributed,contributed/BVAR.zip!BVAR/BVAR.gfn,BVAR_irf_plot,162,possible_plot,end plot --output=@to_save
+BVAR,contributed,contributed/BVAR.zip!BVAR/BVAR.gfn,BVAR_irf_plot,183,gnuplot_source,"setopt gridplot --title=""@title"""
+BVAR,contributed,contributed/BVAR.zip!BVAR/BVAR.gfn,BVAR_irf_plot,185,direct_plot,"gridplot irf_plot --output=""@to_save"" --fontsize=opt.gridfontsize"
+BVAR,contributed,contributed/BVAR.zip!BVAR/BVAR.gfn,plot_option_warning,20,possible_plot,"printf ""Warning! Wrong/Not admissible plot format! Set to default (display)\n"""
+BVAR,contributed,contributed/BVAR.zip!BVAR/BVAR.gfn,plot_option_warning,30,possible_plot,"printf ""Warning! Wrong type of plot, set to default (s_irf)\n"""
+BVAR,contributed,contributed/BVAR.zip!BVAR/BVAR.gfn,plot_post_warning,9,possible_plot,"printf ""-\""coeff\"" for plot of sampled coeff;\n"""
+BVAR,contributed,contributed/BVAR.zip!BVAR/BVAR.gfn,plot_post_warning,10,possible_plot,"printf ""-\""fcast\"" for plot of sampled predicted values;\n"""
+BVAR,contributed,contributed/BVAR.zip!BVAR/BVAR.gfn,plot_post_warning,11,possible_plot,"printf ""-\""irf\"" for plot of sampled irfs;\n"""
+BVAR,contributed,contributed/BVAR.zip!BVAR/BVAR.gfn,do_post_gridplot,5,possible_plot,"errorif(!instring(""coeff fcast irf"", strstrip(wat)), ""plot type not recognized"")"
+BVAR,contributed,contributed/BVAR.zip!BVAR/BVAR.gfn,do_post_gridplot,9,gnuplot_source,if opt.keys && $version > 20240	# gridplot --title option in 2024b
+BVAR,contributed,contributed/BVAR.zip!BVAR/BVAR.gfn,do_post_gridplot,18,gnuplot_source,"setopt gridplot --title=""@title"""
+BVAR,contributed,contributed/BVAR.zip!BVAR/BVAR.gfn,do_post_gridplot,20,direct_plot,"gridplot plotarr --output=""@to_save"" --fontsize=opt.gridfontsize"
+BayTool,contributed,contributed/BayTool.zip!BayTool/BayTool.gfn,BT_paramplot,26,direct_plot,plot kd
+BayTool,contributed,contributed/BayTool.zip!BayTool/BayTool.gfn,BT_paramplot,29,possible_plot,"end plot --output=""@save_st"""
+BayTool,contributed,contributed/BayTool.zip!BayTool/BayTool.gfn,BT_paramplot,40,direct_plot,plot kd
+BayTool,contributed,contributed/BayTool.zip!BayTool/BayTool.gfn,BT_paramplot,43,possible_plot,"end plot --output=""@save_st"""
+BayTool,contributed,contributed/BayTool.zip!BayTool/BayTool.gfn,BT_check_plot,4,possible_plot,"If the matrix has rownames, than the string name can be used to select which to plot"
+BayTool,contributed,contributed/BayTool.zip!BayTool/BayTool.gfn,BT_GUI,153,possible_plot,"BT_paramplot(out, names ) # plot required series"
+BayTool,contributed,contributed/BayTool.zip!BayTool/BayTool.gfn,plot_opt_check,10,possible_plot,"plot_opt.save = ""display"" # plot on screen as default"
+BayTool,contributed,contributed/BayTool.zip!BayTool/BayTool.gfn,timeplot,11,direct_plot,plot  par
+BayTool,contributed,contributed/BayTool.zip!BayTool/BayTool.gfn,timeplot,17,possible_plot,"end plot --output=""@save_st"""
+BayTool,contributed,contributed/BayTool.zip!BayTool/BayTool.gfn,timeplot,25,direct_plot,plot  mean_par
+BayTool,contributed,contributed/BayTool.zip!BayTool/BayTool.gfn,timeplot,31,possible_plot,"end plot --output=""@save_st"""
+BayTool,contributed,contributed/BayTool.zip!BayTool/BayTool.gfn,timeplot,38,direct_plot,plot  acf
+BayTool,contributed,contributed/BayTool.zip!BayTool/BayTool.gfn,timeplot,44,possible_plot,"end plot --output=""@save_st"""
+BreitungCandelonTest,contributed,contributed/BreitungCandelonTest.gfn,BCtest_fromto,5,possible_plot,Or for a general graph instead just look at everything from 0 to pi.
+BreitungCandelonTest,contributed,contributed/BreitungCandelonTest.gfn,BreitungCandelonTest,39,gnuplot_source,"b.pltsource = TRUE	# produce gnuplot source anyway, as before"
+BreitungCandelonTest,contributed,contributed/BreitungCandelonTest.gfn,plotBC,10,possible_plot,"print ""Warning, appending '.pdf' to plot path input"""
+BreitungCandelonTest,contributed,contributed/BreitungCandelonTest.gfn,plotBC,22,gnuplot_source,setopt gnuplot --matrix=BCoutput
+BreitungCandelonTest,contributed,contributed/BreitungCandelonTest.gfn,plotBC,23,gnuplot_source,setopt gnuplot --with-lines=2
+BreitungCandelonTest,contributed,contributed/BreitungCandelonTest.gfn,plotBC,24,gnuplot_source,setopt gnuplot --with-lp=1
+BreitungCandelonTest,contributed,contributed/BreitungCandelonTest.gfn,plotBC,25,gnuplot_source,setopt gnuplot --single-yaxis
+BreitungCandelonTest,contributed,contributed/BreitungCandelonTest.gfn,plotBC,27,gnuplot_source,if !exists(pdfORdisp)	# default: output gnuplot source file
+BreitungCandelonTest,contributed,contributed/BreitungCandelonTest.gfn,plotBC,31,direct_plot,"gnuplot 2 3 1 --output=""BreitungCandelonTest_plotsource.plt"" {@vrng;}"
+BreitungCandelonTest,contributed,contributed/BreitungCandelonTest.gfn,plotBC,34,direct_plot,"gnuplot 2 3 1 --output=""@pdfORdisp"" {@vrng;}"
+Brown,contributed,contributed/Brown.gfn,Brown_plot,8,direct_plot,gnuplot @sy @lname --with-lines --time-series --output=display
+Brown,contributed,contributed/Brown.gfn,Brown_plot,10,direct_plot,gnuplot @sy @qname --with-lines --time-series --output=display
+CSDpanel,contributed,contributed/CSDpanel.zip!CSDpanel/CSDpanel.gfn,testCSD,89,optional_plot,corr --matrix=mres --plot=display
+CUB,contributed,contributed/CUB.zip!CUB/examples/multiplot.inp,<standalone>,15,possible_plot,matrix coord = CUB_multiplot(My)            # perfom estimation and obtain the scatter plot
+CUB,contributed,contributed/CUB.zip!CUB/examples/multiplot.inp,<standalone>,21,possible_plot,"matrix coord = CUB_multiplot(My, opts)      # perfom estimation and obtain the scatter plot"
+CUB,contributed,contributed/CUB.zip!CUB/CUB.gfn,simple_plot,21,direct_plot,plot pf
+CUB,contributed,contributed/CUB.zip!CUB/CUB.gfn,simple_plot,30,gnuplot_source,literal set style fill solid 0.25 border
+CUB,contributed,contributed/CUB.zip!CUB/CUB.gfn,simple_plot,37,possible_plot,"end plot --output=""@outplot"""
+CUB,contributed,contributed/CUB.zip!CUB/CUB.gfn,simple_plot,46,direct_plot,plot pf
+CUB,contributed,contributed/CUB.zip!CUB/CUB.gfn,simple_plot,58,gnuplot_source,literal set style fill solid 0.8 border
+CUB,contributed,contributed/CUB.zip!CUB/CUB.gfn,simple_plot,63,possible_plot,"end plot --output=""@outplot"""
+CUB,contributed,contributed/CUB.zip!CUB/CUB.gfn,plot_vs_dummy,34,direct_plot,plot pf
+CUB,contributed,contributed/CUB.zip!CUB/CUB.gfn,plot_vs_dummy,43,gnuplot_source,literal set style fill solid 0.25 border
+CUB,contributed,contributed/CUB.zip!CUB/CUB.gfn,plot_vs_dummy,49,possible_plot,"end plot --output=""@outplot"""
+CUB,contributed,contributed/CUB.zip!CUB/CUB.gfn,multi_noellipse,13,direct_plot,plot coord_trans
+CUB,contributed,contributed/CUB.zip!CUB/CUB.gfn,multi_noellipse,25,possible_plot,"end plot --output=""@actdest"""
+CUB,contributed,contributed/CUB.zip!CUB/CUB.gfn,plot_ellipse,22,direct_plot,plot coord_trans
+CUB,contributed,contributed/CUB.zip!CUB/CUB.gfn,plot_ellipse,38,possible_plot,"end plot --output=""@tmpfile"""
+CUB,contributed,contributed/CUB.zip!CUB/CUB.gfn,plot_ellipse,50,possible_plot,"if strlen(line_i) > 4 && line_i[1:5] == ""plot """
+CUB,contributed,contributed/CUB.zip!CUB/CUB.gfn,plot_ellipse,69,direct_plot,"gnuplot --inbuf=bufstr --output=""@actdest"""
+CUB,contributed,contributed/CUB.zip!CUB/CUB.gfn,<sample>,20,possible_plot,CUB_dplot(mod0)                             # plot estimated distribution
+CUB,contributed,contributed/CUB.zip!CUB/CUB.gfn,<sample>,32,possible_plot,"CUB_dplot(mod1, freqserv)                    # plot distribution condi to freqserv dummy"
+Canova_Hansen,contributed,contributed/Canova_Hansen.gfn,CH_test_bundle_plot,7,direct_plot,gnuplot uhat --time-series --with-lines
+Canova_Hansen,contributed,contributed/Canova_Hansen.gfn,CH_test_bundle_plot,9,direct_plot,gnuplot @sy yhat --time-series --with-lines
+Canova_Hansen,contributed,contributed/Canova_Hansen.gfn,CH_calculo_prev,9,gnuplot_source,"outfile ""@dotdir/CHregress.txt"""
+Canova_Hansen,contributed,contributed/Canova_Hansen.gfn,CH_calculo_prev,11,gnuplot_source,end outfile
+Canova_Hansen,contributed,contributed/Canova_Hansen.gfn,CH_calculo_prev,17,gnuplot_source,"outfile ""@dotdir/CHregress.txt"""
+Canova_Hansen,contributed,contributed/Canova_Hansen.gfn,CH_calculo_prev,19,gnuplot_source,end outfile
+Canova_Hansen,contributed,contributed/Canova_Hansen.zip!Canova_Hansen/Canova_Hansen.gfn,CH_test_bundle_plot,7,direct_plot,gnuplot uhat --time-series --with-lines
+Canova_Hansen,contributed,contributed/Canova_Hansen.zip!Canova_Hansen/Canova_Hansen.gfn,CH_test_bundle_plot,9,direct_plot,gnuplot @sy yhat --time-series --with-lines
+Canova_Hansen,contributed,contributed/Canova_Hansen.zip!Canova_Hansen/Canova_Hansen.gfn,CH_calculo_prev,9,gnuplot_source,"outfile ""@dotdir/CHregress.txt"""
+Canova_Hansen,contributed,contributed/Canova_Hansen.zip!Canova_Hansen/Canova_Hansen.gfn,CH_calculo_prev,11,gnuplot_source,end outfile
+Canova_Hansen,contributed,contributed/Canova_Hansen.zip!Canova_Hansen/Canova_Hansen.gfn,CH_calculo_prev,17,gnuplot_source,"outfile ""@dotdir/CHregress.txt"""
+Canova_Hansen,contributed,contributed/Canova_Hansen.zip!Canova_Hansen/Canova_Hansen.gfn,CH_calculo_prev,19,gnuplot_source,end outfile
+DCC,contributed,contributed/DCC.zip!DCC/DCC.gfn,<sample>,41,direct_plot,scatters COR --output=display
+DCC,contributed,contributed/DCC.zip!DCC/examples/compare_vs_BEKK.inp,<standalone>,67,direct_plot,gnuplot CondCorr_01_02 cor12_BEKK --time-series --output=display --with-lines
+DFM,contributed,contributed/DFM.zip!DFM/DFM.gfn,DFM_Plot,14,direct_plot,scatters F --output=display
+DFM,contributed,contributed/DFM.zip!DFM/DFM.gfn,DFM_Plot,16,direct_plot,gnuplot F --output=display --time-series --with-lines
+DFM,contributed,contributed/DFM.zip!DFM/DFM.gfn,heatmap,23,gnuplot_source,outfile --tempfile=tmpfilename --quiet
+DFM,contributed,contributed/DFM.zip!DFM/DFM.gfn,heatmap,82,possible_plot,"printf ""plot $data matrix with image\n"""
+DFM,contributed,contributed/DFM.zip!DFM/DFM.gfn,heatmap,83,gnuplot_source,end outfile
+DFM,contributed,contributed/DFM.zip!DFM/DFM.gfn,heatmap,86,direct_plot,"gnuplot --input=""@tmpfilename"" --output=display"
+DFM,contributed,contributed/DFM.zip!DFM/DFM.gfn,screeplot,6,possible_plot,"string title = ""Scree plot (Principal Components)"""
+DFM,contributed,contributed/DFM.zip!DFM/DFM.gfn,screeplot,9,direct_plot,plot plotmat
+DFM,contributed,contributed/DFM.zip!DFM/DFM.gfn,screeplot,14,gnuplot_source,"literal set style line 101 lt 1 lw 1 lc rgb ""#343434"""
+DFM,contributed,contributed/DFM.zip!DFM/DFM.gfn,screeplot,17,gnuplot_source,"literal set style line 102 lt 1 dt 2 lw 0.6 lc rgb ""#808080"""
+DFM,contributed,contributed/DFM.zip!DFM/DFM.gfn,screeplot,20,gnuplot_source,"literal set object rectangle from screen 0,0 to screen 1,1 behind fillcolor rgb ""#C2C2C2"" fillstyle solid noborder"
+DFM,contributed,contributed/DFM.zip!DFM/DFM.gfn,screeplot,21,gnuplot_source,"literal set object rectangle from graph 0,0 to graph 1,1 behind fillcolor rgb ""#F5F5F5"" fillstyle solid noborder"
+DFM,contributed,contributed/DFM.zip!DFM/DFM.gfn,screeplot,29,possible_plot,literal plot '-' using 1:2 w linespoint lw 0.75 ps 1.5 pt 13
+DFM,contributed,contributed/DFM.zip!DFM/DFM.gfn,screeplot,30,possible_plot,end plot --output=display
+DFM,contributed,contributed/DFM.zip!DFM/DFM.gfn,<sample>,33,direct_plot,scatters level slope curvature --output=display
+DFM,contributed,contributed/DFM.zip!DFM/examples/Labor.inp,<standalone>,30,possible_plot,"setinfo CCt --graph-name=""Smoothed employment component"""
+DFM,contributed,contributed/DFM.zip!DFM/examples/Labor.inp,<standalone>,31,possible_plot,"setinfo CES0000000001 --graph-name=""Total nonfarm employment"""
+DFM,contributed,contributed/DFM.zip!DFM/examples/Labor.inp,<standalone>,33,direct_plot,plot plotList
+DFM,contributed,contributed/DFM.zip!DFM/examples/Labor.inp,<standalone>,39,possible_plot,end plot --output=display
+DYconn,contributed,contributed/DYconn.gfn,DYdynamic_plot,2,direct_plot,plot dynamic connectedness from DYdynamic_VAR
+DYconn,contributed,contributed/DYconn.gfn,DYdynamic_plot,6,gnuplot_source,"- myopts: bundle (optional) with key ""grid"" (Bool) for gridplot"
+DYconn,contributed,contributed/DYconn.gfn,DYdynamic_plot,86,direct_plot,gnuplot @sname @plot_opti
+DYconn,contributed,contributed/DYconn.gfn,DYdynamic_plot,90,direct_plot,gridplot myplot --output=display
+DYconn,contributed,contributed/DYconn.gfn,DYdynamic_plot,111,direct_plot,gnuplot @sname @plot_opti
+DYconn,contributed,contributed/DYconn.gfn,DYdynamic_plot,134,direct_plot,gnuplot @sname @plot_opti
+DYconn,contributed,contributed/DYconn.gfn,DYdynamic_plot,138,direct_plot,gridplot myplot --output=display
+DYconn,contributed,contributed/DYconn.zip!DYconn/examples/CS_replication.inp,<standalone>,106,possible_plot,"DYdynamic_plot(dynamicB, ""tot"", _(bnd=0.95)) # plot a confidence band of 0.95"
+DYconn,contributed,contributed/DYconn.zip!DYconn/DYconn.gfn,DYdynamic_plot,2,direct_plot,plot dynamic connectedness from DYdynamic_VAR
+DYconn,contributed,contributed/DYconn.zip!DYconn/DYconn.gfn,DYdynamic_plot,6,gnuplot_source,"- myopts: bundle (optional) with key ""grid"" (Bool) for gridplot"
+DYconn,contributed,contributed/DYconn.zip!DYconn/DYconn.gfn,DYdynamic_plot,86,direct_plot,gnuplot @sname @plot_opti
+DYconn,contributed,contributed/DYconn.zip!DYconn/DYconn.gfn,DYdynamic_plot,90,direct_plot,gridplot myplot --output=display
+DYconn,contributed,contributed/DYconn.zip!DYconn/DYconn.gfn,DYdynamic_plot,111,direct_plot,gnuplot @sname @plot_opti
+DYconn,contributed,contributed/DYconn.zip!DYconn/DYconn.gfn,DYdynamic_plot,134,direct_plot,gnuplot @sname @plot_opti
+DYconn,contributed,contributed/DYconn.zip!DYconn/DYconn.gfn,DYdynamic_plot,138,direct_plot,gridplot myplot --output=display
+DynMultCalc,contributed,contributed/DynMultCalc.zip!DynMultCalc/DynMultCalc.gfn,multi_plot,20,direct_plot,plot plt
+DynMultCalc,contributed,contributed/DynMultCalc.zip!DynMultCalc/DynMultCalc.gfn,multi_plot,26,possible_plot,end plot --output=@targ
+ETS,contributed,contributed/ETS.zip!ETS/ETS.gfn,ETS_plot,28,direct_plot,plot P
+ETS,contributed,contributed/ETS.zip!ETS/ETS.gfn,ETS_plot,31,possible_plot,end plot --output=display
+ETS,contributed,contributed/ETS.zip!ETS/ETS.gfn,ETS_plot,33,direct_plot,gnuplot @yname forecast --time --with-lines --output=display
+ETS,contributed,contributed/ETS.zip!ETS/ETS.gfn,ETS_plot,44,direct_plot,tsplots @cs irreg --output=display
+FEP,contributed,contributed/FEP.zip!FEP/FEP.gfn,DrawLoss,28,direct_plot,plot mplot
+FEP,contributed,contributed/FEP.zip!FEP/FEP.gfn,DrawLoss,36,gnuplot_source,"literal set style line 12 lc rgb ""#808080"" lt 0 lw 1	# light grey color"
+FEP,contributed,contributed/FEP.zip!FEP/FEP.gfn,DrawLoss,42,possible_plot,"end plot --output=""@fpath"""
+FEP,contributed,contributed/FEP.zip!FEP/FEP.gfn,DrawLoss2,44,direct_plot,plot mplot
+FEP,contributed,contributed/FEP.zip!FEP/FEP.gfn,DrawLoss2,53,gnuplot_source,"literal set style line 12 lc rgb ""#808080"" lt 0 lw 1	# light grey color"
+FEP,contributed,contributed/FEP.zip!FEP/FEP.gfn,DrawLoss2,62,possible_plot,"end plot --output=""@fpath"""
+FEP,contributed,contributed/FEP.zip!FEP/FEP.gfn,<sample>,147,possible_plot,"b.lossdraw = ""display""	# 'no=no draw, 'display'=immediate plot, 'Path+filename'"
+FLS,contributed,contributed/FLS.zip!FLS/FLS.gfn,FLS_GUI,21,direct_plot,scatters B
+FLS,contributed,contributed/FLS.zip!FLS/FLS.gfn,FLS_GUI,28,direct_plot,gpbuild plots
+FLS,contributed,contributed/FLS.zip!FLS/FLS.gfn,FLS_GUI,33,direct_plot,plot PLT
+FLS,contributed,contributed/FLS.zip!FLS/FLS.gfn,FLS_GUI,36,possible_plot,end plot
+FLS,contributed,contributed/FLS.zip!FLS/FLS.gfn,FLS_GUI,38,gnuplot_source,end gpbuild
+FLS,contributed,contributed/FLS.zip!FLS/FLS.gfn,FLS_GUI,40,direct_plot,gridplot plots --output=display
+FLS,contributed,contributed/FLS.zip!FLS/FLS.gfn,FLS_GUI,43,possible_plot,"printf ""A plot should have appeared\n"""
+FLS,contributed,contributed/FLS.zip!FLS/FLS.gfn,<sample>,29,direct_plot,scatters B HB --output=display
+FLS,contributed,contributed/FLS.zip!FLS/FLS.gfn,<sample>,31,possible_plot,"printf ""A plot should have appeared\n"""
+FLS,contributed,contributed/FLS.zip!FLS/examples/fls_vs_hp.inp,<standalone>,13,direct_plot,gnuplot hp bfls --time-series --with-lines --output=display
+FLS,contributed,contributed/FLS.zip!FLS/examples/fls_compare_to_R.inp,<standalone>,55,direct_plot,scatters G R --output=display
+FMOLS,contributed,contributed/FMOLS.gfn,<sample>,23,direct_plot,gnuplot EC --with-lines --time-series --output=display \
+FRED_get,contributed,contributed/FRED_get.gfn,set_fred_key,7,gnuplot_source,"outfile ""@fkfname"" --quiet"
+FRED_get,contributed,contributed/FRED_get.gfn,set_fred_key,9,gnuplot_source,end outfile
+FRED_get,contributed,contributed/FRED_get.gfn,writecsv,3,gnuplot_source,outfile --tempfile=tfname
+FRED_get,contributed,contributed/FRED_get.gfn,writecsv,10,gnuplot_source,end outfile
+GFE,contributed,contributed/GFE.zip!GFE/GFE.gfn,group_plot,15,direct_plot,plot plt
+GFE,contributed,contributed/GFE.zip!GFE/GFE.gfn,group_plot,19,gnuplot_source,literal set style fill solid 0.5
+GFE,contributed,contributed/GFE.zip!GFE/GFE.gfn,group_plot,22,possible_plot,end plot --output=@out
+GFE,contributed,contributed/GFE.zip!GFE/GFE.gfn,group_plot,27,direct_plot,plot plt
+GFE,contributed,contributed/GFE.zip!GFE/GFE.gfn,group_plot,34,possible_plot,end plot --output=@out
+GHegy,contributed,contributed/GHegy.gfn,GHegy_test,37,gnuplot_source,outfile @dotdir/tmpols.mod
+GHegy,contributed,contributed/GHegy.gfn,GHegy_test,40,gnuplot_source,end outfile
+GHegy,contributed,contributed/GHegy.gfn,GHegy_test_plot,21,direct_plot,scatters x1 --with-lines --output=display
+GHegy,contributed,contributed/GHegy.gfn,GHegy_test_plot,24,direct_plot,scatters x --with-lines --output=display
+GHegy,contributed,contributed/GHegy.zip!GHegy/GHegy.gfn,GHegy_test,37,gnuplot_source,outfile @dotdir/tmpols.mod
+GHegy,contributed,contributed/GHegy.zip!GHegy/GHegy.gfn,GHegy_test,40,gnuplot_source,end outfile
+GHegy,contributed,contributed/GHegy.zip!GHegy/GHegy.gfn,GHegy_test_plot,21,direct_plot,scatters x1 --with-lines --output=display
+GHegy,contributed,contributed/GHegy.zip!GHegy/GHegy.gfn,GHegy_test_plot,24,direct_plot,scatters x --with-lines --output=display
+Holt,contributed,contributed/Holt.zip!Holt/Holt.gfn,Holt_plot,13,direct_plot,plot P
+Holt,contributed,contributed/Holt.zip!Holt/Holt.gfn,Holt_plot,16,possible_plot,end plot --output=display
+Holt,contributed,contributed/Holt.zip!Holt/Holt.gfn,Holt_plot,18,direct_plot,gnuplot @yname forecast --time --with-lines --output=display
+Holt,contributed,contributed/Holt.zip!Holt/Holt.gfn,Holt_plot,22,direct_plot,tsplots level trend irreg --output=display
+Imputer,contributed,contributed/Imputer.gfn,<sample>,68,direct_plot,gnuplot lg filled --with-lines --time-series --output=display
+LocalProjection,contributed,contributed/LocalProjection.zip!LocalProjection/LocalProjection.gfn,rs_local_projection,302,direct_plot,plot Welchy
+LocalProjection,contributed,contributed/LocalProjection.zip!LocalProjection/LocalProjection.gfn,rs_local_projection,313,possible_plot,end plot --output=display
+LocalProjection,contributed,contributed/LocalProjection.zip!LocalProjection/LocalProjection.gfn,rs_local_projection,324,direct_plot,plot Transition
+LocalProjection,contributed,contributed/LocalProjection.zip!LocalProjection/LocalProjection.gfn,rs_local_projection,330,possible_plot,end plot --output=display
+LocalProjection,contributed,contributed/LocalProjection.zip!LocalProjection/LocalProjection.gfn,plotIRF,6,direct_plot,plot IRFmatrix
+LocalProjection,contributed,contributed/LocalProjection.zip!LocalProjection/LocalProjection.gfn,plotIRF,16,possible_plot,end plot --output=display
+LocalProjection,contributed,contributed/LocalProjection.zip!LocalProjection/LocalProjection.gfn,plotIRF,18,direct_plot,plot IRFmatrix
+LocalProjection,contributed,contributed/LocalProjection.zip!LocalProjection/LocalProjection.gfn,plotIRF,28,possible_plot,end plot --output=display
+MAR,contributed,contributed/MAR.zip!MAR/MAR.gfn,MAR_IRFs,82,direct_plot,gpbuild IRFplot
+MAR,contributed,contributed/MAR.zip!MAR/MAR.gfn,MAR_IRFs,84,direct_plot,gnuplot i 1 --matrix=IRF --with-lines --fit=none
+MAR,contributed,contributed/MAR.zip!MAR/MAR.gfn,MAR_IRFs,86,gnuplot_source,end gpbuild
+MAR,contributed,contributed/MAR.zip!MAR/MAR.gfn,MAR_IRFs,87,direct_plot,gridplot IRFplot --fontsize=12 --height=800 --rows=n --title=@S --output=display
+MDS,contributed,contributed/MDS.gfn,MDS_plot,7,possible_plot,"string title = sprintf(""MDS graph for model %s"", argname(b))"
+MDS,contributed,contributed/MDS.gfn,add_labels,8,possible_plot,"match = !strncmp(line,""plot"", 4)"
+MDS,contributed,contributed/MDS.gfn,tmpfilename,8,gnuplot_source,outfile --tempfile=ret
+MDS,contributed,contributed/MDS.gfn,tmpfilename,9,gnuplot_source,end outfile
+MDS,contributed,contributed/MDS.gfn,plot_coord,26,direct_plot,plot coord
+MDS,contributed,contributed/MDS.gfn,plot_coord,35,possible_plot,"end plot --output=""@tfn"""
+MDS,contributed,contributed/MDS.gfn,plot_coord,39,gnuplot_source,"outfile ""@tfn"" --quiet"
+MDS,contributed,contributed/MDS.gfn,plot_coord,41,gnuplot_source,end outfile
+MDS,contributed,contributed/MDS.gfn,plot_coord,43,gnuplot_source,"catch gnuplot --input=""@tfn"" --output=""@dest"""
+MDS,contributed,contributed/MDS.gfn,plot_coord,46,gnuplot_source,"printf ""Gnuplot exited with error %d: %s\n"", err, errmsg(err)"
+MSVAR,contributed,contributed/MSVAR.zip!MSVAR/MSVAR.gfn,MS_regirf_plot,5,possible_plot,"errorif($version < 20232, ""gretl 2023c or later required for this plot type"")"
+MSVAR,contributed,contributed/MSVAR.zip!MSVAR/MSVAR.gfn,MS_regirf_plot,28,possible_plot,setopt plot --outbuf=plotcodes[count]
+MSVAR,contributed,contributed/MSVAR.zip!MSVAR/MSVAR.gfn,MS_regirf_plot,31,direct_plot,plot mtemp
+MSVAR,contributed,contributed/MSVAR.zip!MSVAR/MSVAR.gfn,MS_regirf_plot,53,possible_plot,end plot
+MSVAR,contributed,contributed/MSVAR.zip!MSVAR/MSVAR.gfn,MS_regirf_plot,58,direct_plot,"gridplot plotcodes --rows=nvar --output=display --title=""@title"""
+MSVAR,contributed,contributed/MSVAR.zip!MSVAR/MSVAR.gfn,<sample>,42,direct_plot,gnuplot Lplot --time-series --output=display --with-lines
+PTconf,contributed,contributed/PTconf.zip!PTconf/examples/sample_money_demand.inp,<standalone>,36,direct_plot,gnuplot LRM_GG --with-lines --time-series --output=display
+PTconf,contributed,contributed/PTconf.zip!PTconf/examples/sample_money_demand.inp,<standalone>,40,direct_plot,tsplots L --output=display
+PTconf,contributed,contributed/PTconf.zip!PTconf/examples/sample_money_demand.inp,<standalone>,45,direct_plot,tsplots LRM_GG gap --output=display
+PTconf,contributed,contributed/PTconf.zip!PTconf/examples/sample_money_demand.inp,<standalone>,48,direct_plot,gnuplot gap --with-lines --time-series --output=display
+PTconf,contributed,contributed/PTconf.zip!PTconf/PTconf.gfn,plotPTtrans,28,direct_plot,plot $i_trans@kind
+PTconf,contributed,contributed/PTconf.zip!PTconf/PTconf.gfn,plotPTtrans,32,possible_plot,end plot --output=display
+PairPlot,contributed,contributed/PairPlot.gfn,get_plot_type,1,possible_plot,/* Retrieve plot type. */
+PairPlot,contributed,contributed/PairPlot.gfn,get_gridplot_opts,1,gnuplot_source,"/* construct an options string for the ""gridplot"" command */"
+PairPlot,contributed,contributed/PairPlot.gfn,get_gp_opts,1,gnuplot_source,"/* construct an options string for gretl's ""gnuplot"" command */"
+PairPlot,contributed,contributed/PairPlot.gfn,call_gridplot,1,possible_plot,/* Called if there's more than one component plot. */
+PairPlot,contributed,contributed/PairPlot.gfn,call_gridplot,12,direct_plot,gpbuild plotspecs
+PairPlot,contributed,contributed/PairPlot.gfn,call_gridplot,14,gnuplot_source,end gpbuild
+PairPlot,contributed,contributed/PairPlot.gfn,call_gridplot,16,gnuplot_source,"catch gridplot plotspecs @grid_opts --output=""@outspec"""
+PairPlot,contributed,contributed/PairPlot.gfn,get_n_plots,1,possible_plot,/* Figure the total number of plots required. */
+PairPlot,contributed,contributed/PairPlot.gfn,write_pp_plots,1,possible_plot,/* Common code for the single-plot and multiplot cases.
+PairPlot,contributed,contributed/PairPlot.gfn,write_pp_plots,2,possible_plot,- In the single case we construct one plot-specification buffer
+PairPlot,contributed,contributed/PairPlot.gfn,write_pp_plots,4,possible_plot,- In the multiplot case we construct two or more plot specs and
+PairPlot,contributed,contributed/PairPlot.gfn,write_pp_plots,5,gnuplot_source,"pass them in turn to gretl's ""gnuplot"" command, in the context"
+PairPlot,contributed,contributed/PairPlot.gfn,write_pp_plots,6,gnuplot_source,of a gpbuild block in call_gridplot(). In this case the return
+PairPlot,contributed,contributed/PairPlot.gfn,write_pp_plots,31,gnuplot_source,outfile --buffer=buffer
+PairPlot,contributed,contributed/PairPlot.gfn,write_pp_plots,51,gnuplot_source,end outfile
+PairPlot,contributed,contributed/PairPlot.gfn,write_pp_plots,52,gnuplot_source,if self.n_plots > 1 # using gridplot
+PairPlot,contributed,contributed/PairPlot.gfn,write_pp_plots,53,direct_plot,gnuplot --inbuf=buffer @gp_opts
+PairPlot,contributed,contributed/PairPlot.gfn,write_centroids,9,possible_plot,- 'centroid_pointsize': An integer that determines the point size of the centroids in the plot.
+PairPlot,contributed,contributed/PairPlot.gfn,print_using_cmd,1,gnuplot_source,/* Print gnuplot data details. */
+PairPlot,contributed,contributed/PairPlot.gfn,write_plot_cmd,1,gnuplot_source,/* Compile gnuplot initial commands. */
+PairPlot,contributed,contributed/PairPlot.gfn,write_plot_cmd,3,possible_plot,"printf ""plot \\\n"""
+PairPlot,contributed,contributed/PairPlot.gfn,write_key_spec,8,possible_plot,"points by writing the key into a blank region of the grid, for the first plot only. In this case use the regular"
+PairPlot,contributed,contributed/PairPlot.gfn,write_key_spec,9,direct_plot,plot font.
+PairPlot,contributed,contributed/PairPlot.gfn,write_options,1,gnuplot_source,/* Write gnuplot options. */
+PairPlot,contributed,contributed/PairPlot.gfn,write_options,18,gnuplot_source,"printf ""set style line 12 lc rgb '#808080' lt 0 lw 1\n"""
+PairPlot,contributed,contributed/PairPlot.gfn,calculate_pointsize,2,possible_plot,of variables to plot. */
+PairPlot,contributed,contributed/PairPlot.gfn,calculate_fontsize,2,possible_plot,of variables to plot. */
+PairPlot,contributed,contributed/PairPlot.gfn,calculate_plot_width,1,possible_plot,/* Compute optimal width of plot as a function of the number
+PairPlot,contributed,contributed/PairPlot.gfn,calculate_plot_width,2,possible_plot,of variables to plot. */
+PairPlot,contributed,contributed/PairPlot.gfn,calculate_plot_height,1,possible_plot,/* Compute optimal height of plot as a function of the number
+PairPlot,contributed,contributed/PairPlot.gfn,calculate_plot_height,2,possible_plot,of variables to plot. */
+PairPlot,contributed,contributed/PairPlot.gfn,call_gnuplot,1,possible_plot,/* Called if just a single plot is to be produced. */
+PairPlot,contributed,contributed/PairPlot.gfn,call_gnuplot,7,gnuplot_source,"catch gnuplot --inbuf=buffer @gp_opts --output=""@outspec"""
+PairPlot,contributed,contributed/PairPlot.gfn,<sample>,9,possible_plot,if SAMPLE == 1  # simple plot of the iris data
+PairPlot,contributed,contributed/PairPlot.gfn,<sample>,14,possible_plot,elif SAMPLE == 2  # fancier plot of the iris data
+PairPlot,contributed,contributed/PairPlot.zip!PairPlot/PairPlot.gfn,get_plot_type,1,possible_plot,/* Retrieve plot type. */
+PairPlot,contributed,contributed/PairPlot.zip!PairPlot/PairPlot.gfn,get_gridplot_opts,1,gnuplot_source,"/* construct an options string for the ""gridplot"" command */"
+PairPlot,contributed,contributed/PairPlot.zip!PairPlot/PairPlot.gfn,get_gp_opts,1,gnuplot_source,"/* construct an options string for gretl's ""gnuplot"" command */"
+PairPlot,contributed,contributed/PairPlot.zip!PairPlot/PairPlot.gfn,call_gridplot,1,possible_plot,/* Called if there's more than one component plot. */
+PairPlot,contributed,contributed/PairPlot.zip!PairPlot/PairPlot.gfn,call_gridplot,12,direct_plot,gpbuild plotspecs
+PairPlot,contributed,contributed/PairPlot.zip!PairPlot/PairPlot.gfn,call_gridplot,14,gnuplot_source,end gpbuild
+PairPlot,contributed,contributed/PairPlot.zip!PairPlot/PairPlot.gfn,call_gridplot,16,gnuplot_source,"catch gridplot plotspecs @grid_opts --output=""@outspec"""
+PairPlot,contributed,contributed/PairPlot.zip!PairPlot/PairPlot.gfn,get_n_plots,1,possible_plot,/* Figure the total number of plots required. */
+PairPlot,contributed,contributed/PairPlot.zip!PairPlot/PairPlot.gfn,write_pp_plots,1,possible_plot,/* Common code for the single-plot and multiplot cases.
+PairPlot,contributed,contributed/PairPlot.zip!PairPlot/PairPlot.gfn,write_pp_plots,2,possible_plot,- In the single case we construct one plot-specification buffer
+PairPlot,contributed,contributed/PairPlot.zip!PairPlot/PairPlot.gfn,write_pp_plots,4,possible_plot,- In the multiplot case we construct two or more plot specs and
+PairPlot,contributed,contributed/PairPlot.zip!PairPlot/PairPlot.gfn,write_pp_plots,5,gnuplot_source,"pass them in turn to gretl's ""gnuplot"" command, in the context"
+PairPlot,contributed,contributed/PairPlot.zip!PairPlot/PairPlot.gfn,write_pp_plots,6,gnuplot_source,of a gpbuild block in call_gridplot(). In this case the return
+PairPlot,contributed,contributed/PairPlot.zip!PairPlot/PairPlot.gfn,write_pp_plots,31,gnuplot_source,outfile --buffer=buffer
+PairPlot,contributed,contributed/PairPlot.zip!PairPlot/PairPlot.gfn,write_pp_plots,51,gnuplot_source,end outfile
+PairPlot,contributed,contributed/PairPlot.zip!PairPlot/PairPlot.gfn,write_pp_plots,52,gnuplot_source,if self.n_plots > 1 # using gridplot
+PairPlot,contributed,contributed/PairPlot.zip!PairPlot/PairPlot.gfn,write_pp_plots,53,direct_plot,gnuplot --inbuf=buffer @gp_opts
+PairPlot,contributed,contributed/PairPlot.zip!PairPlot/PairPlot.gfn,write_centroids,9,possible_plot,- 'centroid_pointsize': An integer that determines the point size of the centroids in the plot.
+PairPlot,contributed,contributed/PairPlot.zip!PairPlot/PairPlot.gfn,print_using_cmd,1,gnuplot_source,/* Print gnuplot data details. */
+PairPlot,contributed,contributed/PairPlot.zip!PairPlot/PairPlot.gfn,write_plot_cmd,1,gnuplot_source,/* Compile gnuplot initial commands. */
+PairPlot,contributed,contributed/PairPlot.zip!PairPlot/PairPlot.gfn,write_plot_cmd,3,possible_plot,"printf ""plot \\\n"""
+PairPlot,contributed,contributed/PairPlot.zip!PairPlot/PairPlot.gfn,write_key_spec,8,possible_plot,"points by writing the key into a blank region of the grid, for the first plot only. In this case use the regular"
+PairPlot,contributed,contributed/PairPlot.zip!PairPlot/PairPlot.gfn,write_key_spec,9,direct_plot,plot font.
+PairPlot,contributed,contributed/PairPlot.zip!PairPlot/PairPlot.gfn,write_options,1,gnuplot_source,/* Write gnuplot options. */
+PairPlot,contributed,contributed/PairPlot.zip!PairPlot/PairPlot.gfn,write_options,18,gnuplot_source,"printf ""set style line 12 lc rgb '#808080' lt 0 lw 1\n"""
+PairPlot,contributed,contributed/PairPlot.zip!PairPlot/PairPlot.gfn,calculate_pointsize,2,possible_plot,of variables to plot. */
+PairPlot,contributed,contributed/PairPlot.zip!PairPlot/PairPlot.gfn,calculate_fontsize,2,possible_plot,of variables to plot. */
+PairPlot,contributed,contributed/PairPlot.zip!PairPlot/PairPlot.gfn,calculate_plot_width,1,possible_plot,/* Compute optimal width of plot as a function of the number
+PairPlot,contributed,contributed/PairPlot.zip!PairPlot/PairPlot.gfn,calculate_plot_width,2,possible_plot,of variables to plot. */
+PairPlot,contributed,contributed/PairPlot.zip!PairPlot/PairPlot.gfn,calculate_plot_height,1,possible_plot,/* Compute optimal height of plot as a function of the number
+PairPlot,contributed,contributed/PairPlot.zip!PairPlot/PairPlot.gfn,calculate_plot_height,2,possible_plot,of variables to plot. */
+PairPlot,contributed,contributed/PairPlot.zip!PairPlot/PairPlot.gfn,call_gnuplot,1,possible_plot,/* Called if just a single plot is to be produced. */
+PairPlot,contributed,contributed/PairPlot.zip!PairPlot/PairPlot.gfn,call_gnuplot,7,gnuplot_source,"catch gnuplot --inbuf=buffer @gp_opts --output=""@outspec"""
+PairPlot,contributed,contributed/PairPlot.zip!PairPlot/PairPlot.gfn,<sample>,9,possible_plot,if SAMPLE == 1  # simple plot of the iris data
+PairPlot,contributed,contributed/PairPlot.zip!PairPlot/PairPlot.gfn,<sample>,14,possible_plot,elif SAMPLE == 2  # fancier plot of the iris data
+PanelTools,contributed,contributed/PanelTools.gfn,panplot_quantile,1,possible_plot,/* Plot quantiles of cross-section dimension over time.
+PanelTools,contributed,contributed/PanelTools.gfn,panplot_quantile,33,possible_plot,"print ""ERROR: Nothing to plot due to missing values."""
+PanelTools,contributed,contributed/PanelTools.gfn,panplot_quantile,50,direct_plot,plot L
+PanelTools,contributed,contributed/PanelTools.gfn,panplot_quantile,65,possible_plot,"end plot --output=""@filename"""
+PanelTools,contributed,contributed/PanelTools.gfn,yrange_string,2,gnuplot_source,"return: string, gnuplot command */"
+PanelTools,contributed,contributed/PanelTools.gfn,get_options_timedim,1,gnuplot_source,/* Compile gnuplot code for setting xtics in date format. */
+PanelTools,contributed,contributed/PanelTools.gfn,get_line_options,1,gnuplot_source,/* Compile the gnuplot command string for tweaking lines.
+PanelTools,contributed,contributed/PanelTools.gfn,<sample>,31,possible_plot,"bundle Plot = _(title = ""Cross-sectional quantiles over time"","
+PanelTools,contributed,contributed/PanelTools.gfn,<sample>,36,possible_plot,"panplot_quantile(invest, TRUE, Plot)"
+ParMA,contributed,contributed/ParMA.zip!ParMA/ParMA.gfn,marginal_graph,90,direct_plot,plot res2
+ParMA,contributed,contributed/ParMA.zip!ParMA/ParMA.gfn,marginal_graph,94,gnuplot_source,literal set style fill solid 1 border
+ParMA,contributed,contributed/ParMA.zip!ParMA/ParMA.gfn,marginal_graph,97,possible_plot,end plot --outbuf=plot_collection[i]
+ParMA,contributed,contributed/ParMA.zip!ParMA/ParMA.gfn,marginal_graph,99,direct_plot,plot res2
+ParMA,contributed,contributed/ParMA.zip!ParMA/ParMA.gfn,marginal_graph,102,gnuplot_source,literal set style fill solid 1 border
+ParMA,contributed,contributed/ParMA.zip!ParMA/ParMA.gfn,marginal_graph,105,possible_plot,"end plot --output=""@wheretosave"""
+ParMA,contributed,contributed/ParMA.zip!ParMA/ParMA.gfn,marginal_graph,110,direct_plot,"gridplot plot_collection --output=""@wheretosave"""
+ParMA,contributed,contributed/ParMA.zip!ParMA/ParMA.gfn,mcmc_checks,3,possible_plot,"- what = ""plot"" for time series and ACF and mean convergence plot;"
+ParMA,contributed,contributed/ParMA.zip!ParMA/ParMA.gfn,mcmc_checks,12,possible_plot,"iii) opt.condition = bool, if 1 condition the related statistic or plot on"
+ParMA,contributed,contributed/ParMA.zip!ParMA/ParMA.gfn,mcmc_checks,15,possible_plot,"v) opt.display = bool, if 1 display the graph instead of saving (default 0)"
+ParMA,contributed,contributed/ParMA.zip!ParMA/ParMA.gfn,mcmc_checks,16,possible_plot,"vi) opt.namesave = string, file extension for plot files, default pdf"
+ParMA,contributed,contributed/ParMA.zip!ParMA/ParMA.gfn,mcmc_checks,32,possible_plot,"if what != ""plot"" && what != ""ESS"" && what != ""Geweke"" && what != ""HW"""
+ParMA,contributed,contributed/ParMA.zip!ParMA/ParMA.gfn,mcmc_checks,36,possible_plot,"printf ""Pls, select: \""plot\"", \""ESS\"", \""Geweke\"" or \""HW\""\n"""
+ParMA,contributed,contributed/ParMA.zip!ParMA/ParMA.gfn,mcmc_checks,53,possible_plot,"if what == ""plot"" || what == ""ESS"""
+ParMA,contributed,contributed/ParMA.zip!ParMA/ParMA.gfn,mcmc_checks,64,possible_plot,"if what == ""plot"" #for plot only -- due to the number of potential plots the user can choose only some variables"
+ParMA,contributed,contributed/ParMA.zip!ParMA/ParMA.gfn,mcmc_checks,162,possible_plot,"if what == ""plot"""
+ParMA,contributed,contributed/ParMA.zip!ParMA/ParMA.gfn,timeplot,11,direct_plot,gpbuild plots
+ParMA,contributed,contributed/ParMA.zip!ParMA/ParMA.gfn,timeplot,15,direct_plot,"gnuplot --matrix=beta_print --with-lines --fit=none {set title ""Time series plot""; set xtics rotate by 30 offset -2,-1.5;}"
+ParMA,contributed,contributed/ParMA.zip!ParMA/ParMA.gfn,timeplot,21,direct_plot,"gnuplot --matrix=acf_print --with-impulses --fit=none {set title ""ACF""; }"
+ParMA,contributed,contributed/ParMA.zip!ParMA/ParMA.gfn,timeplot,28,direct_plot,"gnuplot --matrix=mean_print --with-lines --fit=none  {set title ""Sample mean convergence for @name""; set xtics rotate by 30 offset -2,-1.5;}"
+ParMA,contributed,contributed/ParMA.zip!ParMA/ParMA.gfn,timeplot,29,gnuplot_source,end gpbuild
+ParMA,contributed,contributed/ParMA.zip!ParMA/ParMA.gfn,timeplot,31,direct_plot,"gridplot plots --output=""@where"""
+ParMA,contributed,contributed/ParMA.zip!ParMA/ParMA.gfn,<sample>,27,possible_plot,"marginal_graph(b, HE) # marginal plot for the posterior density of HE options"
+ParMA,contributed,contributed/ParMA.zip!ParMA/ParMA.gfn,<sample>,28,possible_plot,"mcmc_checks(b, ""plot"", _(display=1, plotlist = ""HE""))"
+RollingStats,contributed,contributed/RollingStats.gfn,movstats,12,possible_plot,"setinfo ret --graph-name=""@desc"""
+RollingStats,contributed,contributed/RollingStats.gfn,<sample>,60,direct_plot,gnuplot bhat --with-lines --time-series --output=display
+RollingStats,contributed,contributed/RollingStats.gfn,<sample>,78,direct_plot,gnuplot bconst bar1 --with-lines --time-series --output=display
+RollingStats,contributed,contributed/RollingStats.gfn,<sample>,93,direct_plot,gnuplot correl --with-lines --time-series --output=display \
+SETAR,contributed,contributed/SETAR.gfn,SETAR,254,direct_plot,gnuplot lrc lrs otv --with-lines --output=display --single-yaxis { set title 'Confidence interval for Threshold'; set yrange [0:@upyy];}
+SankeyPlot,contributed,contributed/SankeyPlot.gfn,SankeyPlot,59,gnuplot_source,"boxfmt = ""set object %d rect from %g,%g to %g, %g fc rgb \""0xaa%06x\"" noclip fillstyle solid 0.5"""
+SankeyPlot,contributed,contributed/SankeyPlot.gfn,SankeyPlot,84,gnuplot_source,"fmtstr = ""'+' using 1:(bot_%d_%d($1)):(top_%d_%d($1)) with filledcurves lc rgb \""0xbb%06x\"""""
+SankeyPlot,contributed,contributed/SankeyPlot.gfn,SankeyPlot,107,direct_plot,"gnuplot --inbuf=gp --output=""@dest"""
+SankeyPlot,contributed,contributed/SankeyPlot.gfn,smcurve_gpstring,2,gnuplot_source,This function creates a string defining a cubic function in gnuplot
+SankeyPlot,contributed,contributed/SankeyPlot.gfn,sankey_func,2,gnuplot_source,This function creates a gnuplot snipptes with the functions defining
+StrucTiSM,contributed,contributed/StrucTiSM.zip!StrucTiSM/StrucTiSM.gfn,STSM_GUIplot,5,possible_plot,"errorif(err, ""No forecast results to plot"")"
+StrucTiSM,contributed,contributed/StrucTiSM.zip!StrucTiSM/StrucTiSM.gfn,STSM_GUIplot,35,possible_plot,"setinfo eps --graph-name=""Auxiliary residuals"""
+StrucTiSM,contributed,contributed/StrucTiSM.zip!StrucTiSM/StrucTiSM.gfn,STSM_GUIplot,41,possible_plot,if !seasonal && ptype == 1 # (seasonal plot not -yet?- supported for FC)
+StrucTiSM,contributed,contributed/StrucTiSM.zip!StrucTiSM/StrucTiSM.gfn,STSM_GUIplot,42,direct_plot,plot G
+StrucTiSM,contributed,contributed/StrucTiSM.zip!StrucTiSM/StrucTiSM.gfn,STSM_GUIplot,44,possible_plot,end plot --output=display
+StrucTiSM,contributed,contributed/StrucTiSM.zip!StrucTiSM/StrucTiSM.gfn,STSM_GUIplot,47,direct_plot,plot G
+StrucTiSM,contributed,contributed/StrucTiSM.zip!StrucTiSM/StrucTiSM.gfn,STSM_GUIplot,51,possible_plot,end plot --output=display
+StrucTiSM,contributed,contributed/StrucTiSM.zip!StrucTiSM/StrucTiSM.gfn,STSM_GUIplot,54,direct_plot,gpbuild diags
+StrucTiSM,contributed,contributed/StrucTiSM.zip!StrucTiSM/StrucTiSM.gfn,STSM_GUIplot,55,direct_plot,gnuplot eps --time-series --with-lines
+StrucTiSM,contributed,contributed/StrucTiSM.zip!StrucTiSM/StrucTiSM.gfn,STSM_GUIplot,56,direct_plot,qqplot eps
+StrucTiSM,contributed,contributed/StrucTiSM.zip!StrucTiSM/StrucTiSM.gfn,STSM_GUIplot,59,gnuplot_source,end gpbuild
+StrucTiSM,contributed,contributed/StrucTiSM.zip!StrucTiSM/StrucTiSM.gfn,STSM_GUIplot,61,direct_plot,gridplot diags --font=7
+StrucTiSM,contributed,contributed/StrucTiSM.zip!StrucTiSM/StrucTiSM.gfn,seas_plot_old,4,direct_plot,plot y_lev
+StrucTiSM,contributed,contributed/StrucTiSM.zip!StrucTiSM/StrucTiSM.gfn,seas_plot_old,7,possible_plot,"end plot --output=""@fname1"""
+StrucTiSM,contributed,contributed/StrucTiSM.zip!StrucTiSM/StrucTiSM.gfn,seas_plot_old,8,direct_plot,plot sea
+StrucTiSM,contributed,contributed/StrucTiSM.zip!StrucTiSM/StrucTiSM.gfn,seas_plot_old,11,possible_plot,"end plot --output=""@fname2"""
+StrucTiSM,contributed,contributed/StrucTiSM.zip!StrucTiSM/StrucTiSM.gfn,seas_plot_old,12,gnuplot_source,"buf = sprintf(""set multiplot\nset size 1, 0.5\nset origin 0.0, 0.5\n"")"
+StrucTiSM,contributed,contributed/StrucTiSM.zip!StrucTiSM/StrucTiSM.gfn,seas_plot_old,21,gnuplot_source,"outfile ""@fname"""
+StrucTiSM,contributed,contributed/StrucTiSM.zip!StrucTiSM/StrucTiSM.gfn,seas_plot_old,23,gnuplot_source,end outfile
+StrucTiSM,contributed,contributed/StrucTiSM.zip!StrucTiSM/StrucTiSM.gfn,seas_plot_old,25,direct_plot,"gnuplot --input=""@fname"" --output=display"
+StrucTiSM,contributed,contributed/StrucTiSM.zip!StrucTiSM/StrucTiSM.gfn,seas_plot,1,direct_plot,gpbuild plots
+StrucTiSM,contributed,contributed/StrucTiSM.zip!StrucTiSM/StrucTiSM.gfn,seas_plot,2,direct_plot,plot y_lev
+StrucTiSM,contributed,contributed/StrucTiSM.zip!StrucTiSM/StrucTiSM.gfn,seas_plot,5,possible_plot,end plot
+StrucTiSM,contributed,contributed/StrucTiSM.zip!StrucTiSM/StrucTiSM.gfn,seas_plot,7,direct_plot,plot sea
+StrucTiSM,contributed,contributed/StrucTiSM.zip!StrucTiSM/StrucTiSM.gfn,seas_plot,12,possible_plot,end plot
+StrucTiSM,contributed,contributed/StrucTiSM.zip!StrucTiSM/StrucTiSM.gfn,seas_plot,13,gnuplot_source,end gpbuild
+StrucTiSM,contributed,contributed/StrucTiSM.zip!StrucTiSM/StrucTiSM.gfn,seas_plot,15,direct_plot,gridplot plots --output=display
+StrucTiSM,contributed,contributed/StrucTiSM.zip!StrucTiSM/StrucTiSM.gfn,<sample>,34,direct_plot,plot PLT
+StrucTiSM,contributed,contributed/StrucTiSM.zip!StrucTiSM/StrucTiSM.gfn,<sample>,38,possible_plot,end plot --output=display
+StrucTiSM,contributed,contributed/StrucTiSM.zip!StrucTiSM/StrucTiSM.gfn,<sample>,43,possible_plot,"setinfo sd_eps --graph-name=""Aux. residuals (measurement)"""
+StrucTiSM,contributed,contributed/StrucTiSM.zip!StrucTiSM/StrucTiSM.gfn,<sample>,44,direct_plot,gnuplot sd_eps --time-series --with-lines --output=display
+StrucTiSM,contributed,contributed/StrucTiSM.zip!StrucTiSM/StrucTiSM.gfn,<sample>,46,possible_plot,"setinfo sd_eta --graph-name=""Aux. residuals (trend)"""
+StrucTiSM,contributed,contributed/StrucTiSM.zip!StrucTiSM/StrucTiSM.gfn,<sample>,47,direct_plot,gnuplot sd_eta --time-series --with-lines --output=display
+StrucTiSM,contributed,contributed/StrucTiSM.zip!StrucTiSM/StrucTiSM.gfn,<sample>,71,direct_plot,tsplots IAU comps --output=display
+StrucTiSM,contributed,contributed/StrucTiSM.zip!StrucTiSM/StrucTiSM.gfn,<sample>,100,direct_plot,tsplots reskwh comps --output=display
+StrucTiSM,contributed,contributed/StrucTiSM.zip!StrucTiSM/StrucTiSM.gfn,<sample>,127,direct_plot,tsplots lg comps --output=display
+StrucTiSM,contributed,contributed/StrucTiSM.zip!StrucTiSM/StrucTiSM.gfn,<sample>,162,direct_plot,tsplots ldownloads comps --output=display
+StrucTiSM,contributed,contributed/StrucTiSM.zip!StrucTiSM/StrucTiSM.gfn,<sample>,163,direct_plot,gnuplot ldownloads_seas --with-lines --time-series --output=display
+StrucTiSM,contributed,contributed/StrucTiSM.zip!StrucTiSM/StrucTiSM.gfn,<sample>,182,direct_plot,tsplots l_payroll comps --output=display
+StrucTiSM,contributed,contributed/StrucTiSM.zip!StrucTiSM/StrucTiSM.gfn,<sample>,208,direct_plot,plot ToPlot
+StrucTiSM,contributed,contributed/StrucTiSM.zip!StrucTiSM/StrucTiSM.gfn,<sample>,212,possible_plot,end plot --output=display
+StrucTiSM,contributed,contributed/StrucTiSM.zip!StrucTiSM/examples/fcast_test.inp,<standalone>,38,direct_plot,gnuplot y yhat -to --output=display \
+StrucTiSM,contributed,contributed/StrucTiSM.zip!StrucTiSM/examples/forecasting.inp,<standalone>,55,direct_plot,plot X
+StrucTiSM,contributed,contributed/StrucTiSM.zip!StrucTiSM/examples/forecasting.inp,<standalone>,58,possible_plot,end plot --output=display
+StrucTiSM,contributed,contributed/StrucTiSM.zip!StrucTiSM/examples/roadacc.inp,<standalone>,18,direct_plot,gnuplot lk lk_hat --with-lines --time-series --output=display
+TVC,contributed,contributed/TVC.zip!TVC/TVC.gfn,TVCestimate,27,gnuplot_source,outfile null
+TVC,contributed,contributed/TVC.zip!TVC/TVC.gfn,TVCestimate,29,gnuplot_source,end outfile
+TVC,contributed,contributed/TVC.zip!TVC/TVC.gfn,histogram,29,optional_plot,freq --matrix=R2series --nbins=100 --silent --plot=none # get frequencies
+TVC,contributed,contributed/TVC.zip!TVC/TVC.gfn,histogram,54,direct_plot,plot result
+TVC,contributed,contributed/TVC.zip!TVC/TVC.gfn,histogram,60,gnuplot_source,literal set style fill solid 0.25 border
+TVC,contributed,contributed/TVC.zip!TVC/TVC.gfn,histogram,63,gnuplot_source,"literal set style arrow 3 head filled size screen 0.03,15,45 ls 1 linecolor ""red"""
+TVC,contributed,contributed/TVC.zip!TVC/TVC.gfn,histogram,74,gnuplot_source,"literal set object 1 circle at ""@R2inistr"",screen ""@doty"" size ""@Radius"" fillcolor rgb 'red' fillstyle solid front"
+TVC,contributed,contributed/TVC.zip!TVC/TVC.gfn,histogram,83,gnuplot_source,"literal set object 2 circle at ""@R2strstr"",screen ""@doty"" size ""@Radius"" fillcolor rgb 'blue' fillstyle solid front"
+TVC,contributed,contributed/TVC.zip!TVC/TVC.gfn,histogram,91,possible_plot,end plot --output=display
+TVC,contributed,contributed/TVC.zip!TVC/TVC.gfn,<sample>,28,possible_plot,"remove the tick for the command ""Plot result""."
+TVCplots,contributed,contributed/TVCplots.zip!TVCplots/TVCplots.gfn,TVCplt,31,direct_plot,plot coeff
+TVCplots,contributed,contributed/TVCplots.zip!TVCplots/TVCplots.gfn,TVCplt,37,gnuplot_source,literal set style fill transparent solid @its noborder   # opacity
+TVCplots,contributed,contributed/TVCplots.zip!TVCplots/TVCplots.gfn,TVCplt,41,possible_plot,end plot --output=display
+TVCplots,contributed,contributed/TVCplots.zip!TVCplots/TVCplots.gfn,color2HEX,9,gnuplot_source,"string message = sprintf(""\n\""%s\"" is not a valid GNUplot color name. "",colr)"
+TenTS,contributed,contributed/TenTS.zip!TenTS/TenTS.gfn,tensor_plot,43,direct_plot,plot time_mat
+TenTS,contributed,contributed/TenTS.zip!TenTS/TenTS.gfn,tensor_plot,48,possible_plot,end plot --output=display
+TenTS,contributed,contributed/TenTS.zip!TenTS/TenTS.gfn,tensor_plot,50,direct_plot,gnuplot --matrix=time_mat --with-lines --time-series --single-yaxis --output=display
+TenTS,contributed,contributed/TenTS.zip!TenTS/TenTS.gfn,check_missing_names,3,possible_plot,This function is used in plot_names() to ensure that there are not missing values in names to plot.
+TenTS,contributed,contributed/TenTS.zip!TenTS/TenTS.gfn,print_results,35,gnuplot_source,outfile --buffer=output_i
+TenTS,contributed,contributed/TenTS.zip!TenTS/TenTS.gfn,print_results,39,gnuplot_source,end outfile
+TenTS,contributed,contributed/TenTS.zip!TenTS/TenTS.gfn,<sample>,101,direct_plot,gpbuild balance_plot
+TenTS,contributed,contributed/TenTS.zip!TenTS/TenTS.gfn,<sample>,106,gnuplot_source,end gpbuild
+TenTS,contributed,contributed/TenTS.zip!TenTS/TenTS.gfn,<sample>,108,direct_plot,"gridplot balance_plot --rows=4 --fontsize=7   --output=display  --title=""Trade Balance: Real vs Fitted Values"""
+TenTS,contributed,contributed/TenTS.zip!TenTS/examples/decomp.inp,<standalone>,96,direct_plot,gpbuild tplot
+TenTS,contributed,contributed/TenTS.zip!TenTS/examples/decomp.inp,<standalone>,97,direct_plot,gnuplot tuck_F --with-lines --time-series
+TenTS,contributed,contributed/TenTS.zip!TenTS/examples/decomp.inp,<standalone>,98,direct_plot,gnuplot cp_F --with-lines --time-series
+TenTS,contributed,contributed/TenTS.zip!TenTS/examples/decomp.inp,<standalone>,99,direct_plot,gnuplot pc_F --with-lines --time-series
+TenTS,contributed,contributed/TenTS.zip!TenTS/examples/decomp.inp,<standalone>,100,gnuplot_source,end gpbuild
+TenTS,contributed,contributed/TenTS.zip!TenTS/examples/decomp.inp,<standalone>,102,direct_plot,gridplot tplot --rows=3 --output=display
+TenTS,contributed,contributed/TenTS.zip!TenTS/examples/decomp.inp,<standalone>,105,optional_plot,corr tuck_F cp_F pc_F --plot=display --quiet
+Threshold_Panel,contributed,contributed/Threshold_Panel.gfn,plotTpm,1,possible_plot,/* Plot thresholds estimation results plus confidence intervals.
+Threshold_Panel,contributed,contributed/Threshold_Panel.gfn,plotTpm,16,direct_plot,plot mplot
+Threshold_Panel,contributed,contributed/Threshold_Panel.gfn,plotTpm,27,gnuplot_source,"literal set style line 11 lc rgb ""#808080"" lt 1"
+Threshold_Panel,contributed,contributed/Threshold_Panel.gfn,plotTpm,31,gnuplot_source,"literal set style line 12 lc rgb ""#808080"" lt 0 lw 1  # light grey color"
+Threshold_Panel,contributed,contributed/Threshold_Panel.gfn,plotTpm,39,possible_plot,"end plot --output=""@filename"""
+Threshold_Panel,contributed,contributed/Threshold_Panel.gfn,<sample>,55,possible_plot,/* Plot the Likelihood Ratio test confidence interval jointly with the
+Threshold_Panel,contributed,contributed/Threshold_Panel.zip!Threshold_Panel/Threshold_Panel.gfn,plotTpm,1,possible_plot,/* Plot thresholds estimation results plus confidence intervals.
+Threshold_Panel,contributed,contributed/Threshold_Panel.zip!Threshold_Panel/Threshold_Panel.gfn,plotTpm,16,direct_plot,plot mplot
+Threshold_Panel,contributed,contributed/Threshold_Panel.zip!Threshold_Panel/Threshold_Panel.gfn,plotTpm,27,gnuplot_source,"literal set style line 11 lc rgb ""#808080"" lt 1"
+Threshold_Panel,contributed,contributed/Threshold_Panel.zip!Threshold_Panel/Threshold_Panel.gfn,plotTpm,31,gnuplot_source,"literal set style line 12 lc rgb ""#808080"" lt 0 lw 1  # light grey color"
+Threshold_Panel,contributed,contributed/Threshold_Panel.zip!Threshold_Panel/Threshold_Panel.gfn,plotTpm,39,possible_plot,"end plot --output=""@filename"""
+Threshold_Panel,contributed,contributed/Threshold_Panel.zip!Threshold_Panel/Threshold_Panel.gfn,<sample>,55,possible_plot,/* Plot the Likelihood Ratio test confidence interval jointly with the
+TsCrossValidation,contributed,contributed/TsCrossValidation.gfn,<sample>,30,direct_plot,plot mplot
+TsCrossValidation,contributed,contributed/TsCrossValidation.gfn,<sample>,35,possible_plot,end plot --output=display
+TsCrossValidation,contributed,contributed/TsCrossValidation.gfn,<sample>,61,direct_plot,plot mplot
+TsCrossValidation,contributed,contributed/TsCrossValidation.gfn,<sample>,66,possible_plot,end plot --output=display
+VARrec,contributed,contributed/VARrec.gfn,VARrecplot,27,gnuplot_source,"string plotopt = sprintf(""set term pdf font 'Helvetica,%d' lw %d"", b.fsize, b.linew)"
+VARrec,contributed,contributed/VARrec.gfn,VARrecplot,34,possible_plot,"printf ""Error: Please check the options for the plot!\n"""
+VARrec,contributed,contributed/VARrec.gfn,do_plot,1,possible_plot,catch plot beta
+VARrec,contributed,contributed/VARrec.gfn,do_plot,6,gnuplot_source,"literal set style line 11 lc rgb ""#808080"" lt 1"
+VARrec,contributed,contributed/VARrec.gfn,do_plot,8,gnuplot_source,"literal set style line 12 lc rgb ""#808080"" lt 0 lw 1"
+VARrec,contributed,contributed/VARrec.gfn,do_plot,13,possible_plot,"end plot --output=""@dest"""
+VSG_test,contributed,contributed/VSG_test.gfn,VSG_test,79,possible_plot,if Figure
+VSG_test,contributed,contributed/VSG_test.gfn,VSG_test,80,direct_plot,gnuplot y Deterministic --time-series --with-lines {set title 'Deterministic Trend'; set xlabel 'time'; set ylabel 'y'; set nokey;}
+VSG_test,contributed,contributed/VSG_test.gfn,VSG_test,143,possible_plot,if Figure
+VSG_test,contributed,contributed/VSG_test.gfn,VSG_test,144,direct_plot,gnuplot y Deterministic --time-series --with-lines {set title 'Deterministic Trend'; set xlabel 'time'; set ylabel 'y'; set nokey;}
+Winters,contributed,contributed/Winters.zip!Winters/Winters.gfn,Winters_plot,28,direct_plot,plot P
+Winters,contributed,contributed/Winters.zip!Winters/Winters.gfn,Winters_plot,31,possible_plot,end plot --output=display
+Winters,contributed,contributed/Winters.zip!Winters/Winters.gfn,Winters_plot,33,direct_plot,gnuplot @yname forecast --time --with-lines --output=display
+Winters,contributed,contributed/Winters.zip!Winters/Winters.gfn,Winters_plot,37,direct_plot,tsplots level trend seasonal irreg --output=display
+Winters,contributed,contributed/Winters.zip!Winters/Winters.gfn,<sample>,10,direct_plot,gnuplot y forecast --time --with-lines --output=display
+Winters,contributed,contributed/Winters.zip!Winters/Winters.gfn,<sample>,11,direct_plot,tsplots level trend seasonal --output=display
+ZivotAndrews,contributed,contributed/ZivotAndrews.zip!ZivotAndrews/ZivotAndrews.gfn,ZA_plot,11,possible_plot,"setinfo teststat --graph-name=""Test statistic"""
+ZivotAndrews,contributed,contributed/ZivotAndrews.zip!ZivotAndrews/ZivotAndrews.gfn,ZA_plot,12,possible_plot,"setinfo cv05 --graph-name=""5% critical value"""
+ZivotAndrews,contributed,contributed/ZivotAndrews.zip!ZivotAndrews/ZivotAndrews.gfn,ZA_plot,13,possible_plot,"setinfo cv10 --graph-name=""10% critical value"""
+ZivotAndrews,contributed,contributed/ZivotAndrews.zip!ZivotAndrews/ZivotAndrews.gfn,ZA_plot,16,direct_plot,plot  PLT
+ZivotAndrews,contributed,contributed/ZivotAndrews.zip!ZivotAndrews/ZivotAndrews.gfn,ZA_plot,20,possible_plot,end plot --output=@ofile
+a_eff,contributed,contributed/a_eff.zip!a_eff/a_eff.gfn,mk_formula2,31,gnuplot_source,outfile mybuf --buffer --quiet
+a_eff,contributed,contributed/a_eff.zip!a_eff/a_eff.gfn,mk_formula2,33,gnuplot_source,outfile --close
+bandplot,contributed,contributed/bandplot.gfn,bandplot,28,direct_plot,plot plotmat
+bandplot,contributed,contributed/bandplot.gfn,bandplot,35,possible_plot,end plot --output=display
+basis_functions,contributed,contributed/basis_functions.zip!basis_functions/basis_functions.gfn,<sample>,13,direct_plot,gnuplot ndx P WA --output=display
+basis_functions,contributed,contributed/basis_functions.zip!basis_functions/basis_functions.gfn,<sample>,19,direct_plot,gnuplot --matrix=plt --output=display --with-lines --fit=none
+basis_functions,contributed,contributed/basis_functions.zip!basis_functions/basis_functions.gfn,<sample>,25,direct_plot,gnuplot --matrix=plt --output=display --with-lines --fit=none
+basis_functions,contributed,contributed/basis_functions.zip!basis_functions/basis_functions.gfn,<sample>,33,direct_plot,gnuplot ndx P WA --output=display
+basis_functions,contributed,contributed/basis_functions.zip!basis_functions/basis_functions.gfn,<sample>,41,direct_plot,gnuplot ndx P WA --output=display
+basis_functions,contributed,contributed/basis_functions.zip!basis_functions/basis_functions.gfn,<sample>,65,direct_plot,gnuplot ndx P WA --output=display
+basis_functions,contributed,contributed/basis_functions.zip!basis_functions/basis_functions.gfn,<sample>,71,direct_plot,gnuplot fit lg --output=display --time-series --with-lines
+basis_functions,contributed,contributed/basis_functions.zip!basis_functions/basis_functions.gfn,<sample>,77,direct_plot,gnuplot fit cnt --output=display --time-series --with-lines
+candlesticks,contributed,contributed/candlesticks.gfn,compile_gnuplot_commands,4,gnuplot_source,"outfile ""@filename"" --quiet"
+candlesticks,contributed,contributed/candlesticks.gfn,compile_gnuplot_commands,24,gnuplot_source,"printf(""set multiplot layout 2,1\n"")"
+candlesticks,contributed,contributed/candlesticks.gfn,compile_gnuplot_commands,32,gnuplot_source,"printf(""set style fill solid border lt 10\n"")"
+candlesticks,contributed,contributed/candlesticks.gfn,compile_gnuplot_commands,40,possible_plot,"printf(""plot '-' using 0:1:2:3:4:($4 < $1 ? -1 : 1) notitle with candlesticks lt 10 palette\n"")"
+candlesticks,contributed,contributed/candlesticks.gfn,compile_gnuplot_commands,61,gnuplot_source,"printf(""set style line 1 lw 3\n"")"
+candlesticks,contributed,contributed/candlesticks.gfn,compile_gnuplot_commands,62,gnuplot_source,"printf(""set style fill solid border lt 1\n"")"
+candlesticks,contributed,contributed/candlesticks.gfn,compile_gnuplot_commands,65,gnuplot_source,"printf(""set style fill solid border lt 10\n"")"
+candlesticks,contributed,contributed/candlesticks.gfn,compile_gnuplot_commands,71,possible_plot,"printf(""plot '-' using 0:1:($3 == 0 ? 0 : ($3 < $2 ? 1 : -1)) notitle with boxes palette\n"")"
+candlesticks,contributed,contributed/candlesticks.gfn,compile_gnuplot_commands,79,gnuplot_source,end outfile
+candlesticks,contributed,contributed/candlesticks.gfn,compile_gnuplot_chart,1,gnuplot_source,/* Actual call of gnuplot command. */
+candlesticks,contributed,contributed/candlesticks.gfn,compile_gnuplot_chart,4,direct_plot,"gnuplot --input=""@input_filename"" --output=""@output_filename"""
+candlesticks,contributed,contributed/candlesticks.zip!candlesticks/candlesticks.gfn,compile_gnuplot_commands,4,gnuplot_source,"outfile ""@filename"" --quiet"
+candlesticks,contributed,contributed/candlesticks.zip!candlesticks/candlesticks.gfn,compile_gnuplot_commands,24,gnuplot_source,"printf(""set multiplot layout 2,1\n"")"
+candlesticks,contributed,contributed/candlesticks.zip!candlesticks/candlesticks.gfn,compile_gnuplot_commands,32,gnuplot_source,"printf(""set style fill solid border lt 10\n"")"
+candlesticks,contributed,contributed/candlesticks.zip!candlesticks/candlesticks.gfn,compile_gnuplot_commands,40,possible_plot,"printf(""plot '-' using 0:1:2:3:4:($4 < $1 ? -1 : 1) notitle with candlesticks lt 10 palette\n"")"
+candlesticks,contributed,contributed/candlesticks.zip!candlesticks/candlesticks.gfn,compile_gnuplot_commands,61,gnuplot_source,"printf(""set style line 1 lw 3\n"")"
+candlesticks,contributed,contributed/candlesticks.zip!candlesticks/candlesticks.gfn,compile_gnuplot_commands,62,gnuplot_source,"printf(""set style fill solid border lt 1\n"")"
+candlesticks,contributed,contributed/candlesticks.zip!candlesticks/candlesticks.gfn,compile_gnuplot_commands,65,gnuplot_source,"printf(""set style fill solid border lt 10\n"")"
+candlesticks,contributed,contributed/candlesticks.zip!candlesticks/candlesticks.gfn,compile_gnuplot_commands,71,possible_plot,"printf(""plot '-' using 0:1:($3 == 0 ? 0 : ($3 < $2 ? 1 : -1)) notitle with boxes palette\n"")"
+candlesticks,contributed,contributed/candlesticks.zip!candlesticks/candlesticks.gfn,compile_gnuplot_commands,79,gnuplot_source,end outfile
+candlesticks,contributed,contributed/candlesticks.zip!candlesticks/candlesticks.gfn,compile_gnuplot_chart,1,gnuplot_source,/* Actual call of gnuplot command. */
+candlesticks,contributed,contributed/candlesticks.zip!candlesticks/candlesticks.gfn,compile_gnuplot_chart,4,direct_plot,"gnuplot --input=""@input_filename"" --output=""@output_filename"""
+carr,contributed,contributed/carr.gfn,carr_plot_R,4,direct_plot,"gnuplot @dep_name lambda --time --with-lines --output=""display"""
+carr,contributed,contributed/carr.gfn,carr_plot_density,9,direct_plot,"gnuplot 2 1 --matrix=d  --with-lines --suppress-fitted --output=""display"""
+cffilt,contributed,contributed/cffilt.gfn,cffilt_GUI,7,direct_plot,plot ret
+cffilt,contributed,contributed/cffilt.gfn,cffilt_GUI,11,possible_plot,end plot --output=display
+cffilt,contributed,contributed/cffilt.gfn,<sample>,26,direct_plot,gnuplot bk_y cf_y --time-series --with-lines --output=display
+cffilt,contributed,contributed/cffilt.gfn,<sample>,35,direct_plot,scatters CF --output=display
+cffilt,contributed,contributed/cffilt.zip!cffilt/examples/artificial.inp,<standalone>,15,optional_plot,pergm y   --plot=display
+cffilt,contributed,contributed/cffilt.zip!cffilt/examples/artificial.inp,<standalone>,16,optional_plot,pergm flt --plot=display
+cffilt,contributed,contributed/cffilt.zip!cffilt/examples/artificial.inp,<standalone>,17,optional_plot,pergm dif --plot=display
+cffilt,contributed,contributed/cffilt.zip!cffilt/examples/artificial.inp,<standalone>,20,direct_plot,gpbuild spectra
+cffilt,contributed,contributed/cffilt.zip!cffilt/examples/artificial.inp,<standalone>,24,gnuplot_source,end gpbuild
+cffilt,contributed,contributed/cffilt.zip!cffilt/examples/artificial.inp,<standalone>,26,direct_plot,gridplot spectra --rows=1 --width=1200 --output=display
+cffilt,contributed,contributed/cffilt.zip!cffilt/examples/replication.inp,<standalone>,16,possible_plot,setopt plot persist --time-series --with-lines
+cffilt,contributed,contributed/cffilt.zip!cffilt/examples/replication.inp,<standalone>,18,direct_plot,gpbuild CFRepli
+cffilt,contributed,contributed/cffilt.zip!cffilt/examples/replication.inp,<standalone>,19,direct_plot,plot X
+cffilt,contributed,contributed/cffilt.zip!cffilt/examples/replication.inp,<standalone>,21,possible_plot,end plot
+cffilt,contributed,contributed/cffilt.zip!cffilt/examples/replication.inp,<standalone>,24,direct_plot,plot B
+cffilt,contributed,contributed/cffilt.zip!cffilt/examples/replication.inp,<standalone>,27,possible_plot,end plot
+cffilt,contributed,contributed/cffilt.zip!cffilt/examples/replication.inp,<standalone>,30,direct_plot,plot C
+cffilt,contributed,contributed/cffilt.zip!cffilt/examples/replication.inp,<standalone>,33,possible_plot,end plot
+cffilt,contributed,contributed/cffilt.zip!cffilt/examples/replication.inp,<standalone>,36,direct_plot,plot D
+cffilt,contributed,contributed/cffilt.zip!cffilt/examples/replication.inp,<standalone>,39,possible_plot,end plot
+cffilt,contributed,contributed/cffilt.zip!cffilt/examples/replication.inp,<standalone>,40,gnuplot_source,end gpbuild
+cffilt,contributed,contributed/cffilt.zip!cffilt/examples/replication.inp,<standalone>,42,direct_plot,gridplot CFRepli --output=display
+cffilt,contributed,contributed/cffilt.zip!cffilt/cffilt.gfn,cffilt_GUI,7,direct_plot,plot ret
+cffilt,contributed,contributed/cffilt.zip!cffilt/cffilt.gfn,cffilt_GUI,11,possible_plot,end plot --output=display
+cffilt,contributed,contributed/cffilt.zip!cffilt/cffilt.gfn,<sample>,26,direct_plot,gnuplot bk_y cf_y --time-series --with-lines --output=display
+cffilt,contributed,contributed/cffilt.zip!cffilt/cffilt.gfn,<sample>,35,direct_plot,scatters CF --output=display
+coefcomp,contributed,contributed/coefcomp.gfn,cc_plot,5,gnuplot_source,outfile --tempfile=infname
+coefcomp,contributed,contributed/coefcomp.gfn,cc_plot,9,possible_plot,"printf ""plot $CCData with xerrorbars lc black pt 7\n\n"""
+coefcomp,contributed,contributed/coefcomp.gfn,cc_plot,10,gnuplot_source,end outfile
+coefcomp,contributed,contributed/coefcomp.gfn,cc_plot,12,direct_plot,"gnuplot --input=""@infname"" --output=""@outfname"""
+cointARDL,contributed,contributed/cointARDL.zip!cointARDL/cointARDL.gfn,<sample>,70,direct_plot,gnuplot x y --with-lines --time-series --output=display \
+color_xy,contributed,contributed/color_xy.gfn,color_xy,11,possible_plot,"title = inbundle(opt, title) ? gp_sanitize(opt.title) : sprintf(""\""Color xy plot of %s vs %s\"""", argname(x), argname(y))"
+color_xy,contributed,contributed/color_xy.gfn,color_xy,57,gnuplot_source,outfile --buffer=ret
+color_xy,contributed,contributed/color_xy.gfn,color_xy,89,gnuplot_source,"printf ""splot $DATA using 3:2:1 with %s lw 2 lt palette\n"", how"
+color_xy,contributed,contributed/color_xy.gfn,color_xy,90,gnuplot_source,end outfile
+color_xy,contributed,contributed/color_xy.gfn,color_xy,93,direct_plot,"gnuplot --inbuf=ret --output=""@out"""
+color_xy,contributed,contributed/color_xy.gfn,colorxy_GUI,8,possible_plot,"opts.title = sprintf(""Color xy plot of %s vs %s"", argname(x), argname(y))"
+corresp,contributed,contributed/corresp.gfn,adcgrph,39,gnuplot_source,outfile @fn
+corresp,contributed,contributed/corresp.gfn,adcgrph,109,possible_plot,"printf ""plot \""-\"" with dots\n"""
+corresp,contributed,contributed/corresp.gfn,adcgrph,123,gnuplot_source,end outfile
+corresp,contributed,contributed/corresp.gfn,adcgrph,127,direct_plot,"gnuplot --input=""@fn"" --output=""@out"""
+corresp,contributed,contributed/corresp.zip!corresp/corresp.gfn,adcgrph,39,gnuplot_source,outfile @fn
+corresp,contributed,contributed/corresp.zip!corresp/corresp.gfn,adcgrph,109,possible_plot,"printf ""plot \""-\"" with dots\n"""
+corresp,contributed,contributed/corresp.zip!corresp/corresp.gfn,adcgrph,123,gnuplot_source,end outfile
+corresp,contributed,contributed/corresp.zip!corresp/corresp.gfn,adcgrph,127,direct_plot,"gnuplot --input=""@fn"" --output=""@out"""
+dcm,contributed,contributed/dcm.zip!dcm/examples/meff_sample.inp,<standalone>,42,direct_plot,boxplot meff_income alt --factorized --output=display
+delayspectral,contributed,contributed/delayspectral.gfn,phasedelay,61,gnuplot_source,setopt gnuplot persist --with-lines --output=display
+delayspectral,contributed,contributed/delayspectral.gfn,phasedelay,63,direct_plot,gnuplot 2 3 1 --matrix=checks
+delayspectral,contributed,contributed/delayspectral.gfn,phasedelay,67,direct_plot,gnuplot 2 3 4 1 --matrix=tdlUWwCI --single-yaxis { set ylabel 'periods'; }
+ema_tools,contributed,contributed/ema_tools.gfn,<sample>,16,direct_plot,gnuplot dPAU suav_opt --with-lines --time-series --output=display
+fcModels,contributed,contributed/fcModels.gfn,<sample>,7,direct_plot,gnuplot djclose djclose_ma1_out --with-lines --time-series --output=display
+fcModels,contributed,contributed/fcModels.gfn,<sample>,8,direct_plot,gnuplot djclose djclose_ols_out --with-lines --time-series --output=display
+fdensity,contributed,contributed/fdensity.gfn,fdensity,13,possible_plot,"The function iterates over each series in `L`, performing density estimation grouped by the unique values in `d`. It supports various customization options through `opts`, such as bandwidth selection, plot customization, and handling of missing values. If `L` "
+fdensity,contributed,contributed/fdensity.gfn,fdensity,15,possible_plot,"The `opts` bundle can include options like bandwidth (`scale`), minimum observations per group (`MINOBS`), plot titles, axis labels, and more. The function automatically handles the naming of series and groups for plot legends and titles."
+fdensity,contributed,contributed/fdensity.gfn,fdensity,18,possible_plot,"- To perform density estimation on series `y` and `z` grouped by `g`, with custom bandwidth and plot titles:"
+fdensity,contributed,contributed/fdensity.gfn,fdensity,44,direct_plot,gpbuild Plots
+fdensity,contributed,contributed/fdensity.gfn,fdensity,52,gnuplot_source,end gpbuild
+fdensity,contributed,contributed/fdensity.gfn,gridplot_fdensity,2,possible_plot,"This function creates a grid plot from a series of plot filenames, arranging them based on the number of series analyzed in the density estimation process. It automatically adjusts the grid's dimensions to best fit the number of plots, aiming for a square-like"
+fdensity,contributed,contributed/fdensity.gfn,gridplot_fdensity,5,possible_plot,- Plots (const strings): A list of filenames (strings) for the plots to be included in the grid. Each filename should correspond to a plot generated from density estimation results.
+fdensity,contributed,contributed/fdensity.gfn,gridplot_fdensity,6,possible_plot,- self (const bundle): A bundle containing configuration options for the grid plot. Expected keys include:
+fdensity,contributed,contributed/fdensity.gfn,gridplot_fdensity,7,possible_plot,- width (scalar): The base width for each plot in the grid. The total width of the grid plot will be adjusted based on the number of plots.
+fdensity,contributed,contributed/fdensity.gfn,gridplot_fdensity,8,possible_plot,- height (scalar): The base height for each plot in the grid. The total height of the grid plot will be adjusted similarly.
+fdensity,contributed,contributed/fdensity.gfn,gridplot_fdensity,10,possible_plot,- dest (string): The destination filename for the generated grid plot.
+fdensity,contributed,contributed/fdensity.gfn,gridplot_fdensity,11,possible_plot,- title (string): The overall title for the grid plot.
+fdensity,contributed,contributed/fdensity.gfn,gridplot_fdensity,18,direct_plot,"gridplot Plots --width=width --height=height --title=""@title"" --output=""@dest"""
+fdensity,contributed,contributed/fdensity.gfn,plot_fdensity,8,possible_plot,*    opts - A bundle containing the plot options.
+fdensity,contributed,contributed/fdensity.gfn,plot_fdensity,40,direct_plot,plot fdata
+fdensity,contributed,contributed/fdensity.gfn,plot_fdensity,52,possible_plot,end plot
+fdensity,contributed,contributed/fdensity.gfn,<sample>,13,optional_plot,freq x --silent --plot=display
+fdensity,contributed,contributed/fdensity.gfn,<sample>,14,direct_plot,boxplot x d --factorized --output=display
+fdensity,contributed,contributed/fdensity.gfn,<sample>,24,possible_plot,"print ""a plot should have appeared"""
+fdensity,contributed,contributed/fdensity.gfn,<sample>,28,possible_plot,"print ""a plot should have appeared"""
+fdensity,contributed,contributed/fdensity.gfn,<sample>,37,possible_plot,"print ""a plot should have appeared"""
+fdensity,contributed,contributed/fdensity.gfn,<sample>,51,possible_plot,"print ""a plot should have appeared"""
+fdensity,contributed,contributed/fdensity.gfn,<sample>,63,possible_plot,"print ""a plot with a restricted x-range should have appeared"""
+fsboost,contributed,contributed/fsboost.zip!fsboost/fsboost.gfn,plot_rho_values,1,possible_plot,/* Plot correlation coefficients. */
+fsboost,contributed,contributed/fsboost.zip!fsboost/fsboost.gfn,plot_rho_values,10,direct_plot,plot mplot
+fsboost,contributed,contributed/fsboost.zip!fsboost/fsboost.gfn,plot_rho_values,18,possible_plot,"end plot --output=""@filename"""
+fsboost,contributed,contributed/fsboost.zip!fsboost/fsboost.gfn,plot_coefficient_paths,1,possible_plot,/* Plot coefficient paths. */
+fsboost,contributed,contributed/fsboost.zip!fsboost/fsboost.gfn,plot_coefficient_paths,13,gnuplot_source,"linestyles += sprintf(""set style line %d ps 0.02\n"", $i)"
+fsboost,contributed,contributed/fsboost.zip!fsboost/fsboost.gfn,plot_coefficient_paths,17,direct_plot,plot mplot
+fsboost,contributed,contributed/fsboost.zip!fsboost/fsboost.gfn,plot_coefficient_paths,26,possible_plot,"end plot --output=""@filename"""
+gen_hurst,contributed,contributed/gen_hurst.gfn,gen_hurst,76,direct_plot,"gnuplot 2 1 --output=display --fit=linear --matrix=logfl_n {set xlabel ""log(sample size)""; set ylabel ""log(RS)""; set title ""(alternative) Rescaled-range plot"";}"
+gen_hurst,contributed,contributed/gen_hurst.gfn,gen_hurst,81,direct_plot,"gnuplot 2 1 --output=display --fit=linear --matrix=logfl_n {set xlabel ""log(sample size)""; set ylabel ""log(F)""; set title ""Detrended Fluctuation plot"";}"
+gen_hurst,contributed,contributed/gen_hurst.gfn,<sample>,11,optional_plot,hurst djclose --plot=display
+getYahoo,contributed,contributed/getYahoo.gfn,getYahoo,109,possible_plot,slabel=jsongetb(s).chart.result[1].meta.shortName
+getYahoo,contributed,contributed/getYahoo.gfn,getYahoo,112,possible_plot,"setinfo @sQcode_$j -d ""@slabel/Yahoo finance"" --graph-name=""@slabel"""
+getYahoo,contributed,contributed/getYahoo.gfn,getYahoo_url,3,possible_plot,"baseURL=""https://query1.finance.yahoo.com/v8/finance/chart/"""
+getYahoo,contributed,contributed/getYahoo.gfn,write_tmpCSV,40,possible_plot,yfc_result = jsongetb(s).chart.result[1]
+getYahoo,contributed,contributed/getYahoo.gfn,write_tmpCSV,46,gnuplot_source,"outfile ""@fname"" --quiet"
+getYahoo,contributed,contributed/getYahoo.gfn,write_tmpCSV,52,gnuplot_source,end outfile
+ghosts,contributed,contributed/ghosts.zip!ghosts/examples/FedStL.inp,<standalone>,40,possible_plot,"u <- spec.pgram(x, spans, taper=0.1, plot=F, fast=F);"
+ghosts,contributed,contributed/ghosts.zip!ghosts/examples/FedStL.inp,<standalone>,47,direct_plot,gnuplot 2 1 --matrix=fromR --with-lines --fit=none --output=display
+ghosts,contributed,contributed/ghosts.zip!ghosts/ghosts.gfn,spplot,14,direct_plot,plot grph
+ghosts,contributed,contributed/ghosts.zip!ghosts/ghosts.gfn,spplot,22,possible_plot,end plot --output=display
+ghosts,contributed,contributed/ghosts.zip!ghosts/ghosts.gfn,coplot,4,direct_plot,plot grph
+ghosts,contributed,contributed/ghosts.zip!ghosts/ghosts.gfn,coplot,14,possible_plot,end plot --output=display
+ghosts,contributed,contributed/ghosts.zip!ghosts/ghosts.gfn,phplot,10,possible_plot,"string title = sprintf(""Phase plot for %s and %s"", S.names[i], S.names[j])"
+ghosts,contributed,contributed/ghosts.zip!ghosts/ghosts.gfn,phplot,11,direct_plot,plot grph
+ghosts,contributed,contributed/ghosts.zip!ghosts/ghosts.gfn,phplot,20,possible_plot,end plot --output=display
+ghosts,contributed,contributed/ghosts.zip!ghosts/ghosts.gfn,comboplot,5,direct_plot,gpbuild combo
+ghosts,contributed,contributed/ghosts.zip!ghosts/ghosts.gfn,comboplot,11,gnuplot_source,end gpbuild
+ghosts,contributed,contributed/ghosts.zip!ghosts/ghosts.gfn,comboplot,13,direct_plot,gridplot combo --output=display
+ghosts,contributed,contributed/ghosts.zip!ghosts/ghosts.gfn,spplot2,16,direct_plot,plot grph
+ghosts,contributed,contributed/ghosts.zip!ghosts/ghosts.gfn,spplot2,25,possible_plot,end plot --output=display
+gnuplot_piechart,contributed,contributed/gnuplot_piechart.gfn,gnuplot_piechart,5,possible_plot,"funcerr ""Too many values. You'd better use another type of chart"""
+gnuplot_piechart,contributed,contributed/gnuplot_piechart.gfn,gnuplot_piechart,34,gnuplot_source,"outfile ""@fname"" --quiet # ""@fname"" --write <- so this change (in 1.11?) probably caused the bug with the blanks in paths?"
+gnuplot_piechart,contributed,contributed/gnuplot_piechart.gfn,gnuplot_piechart,38,gnuplot_source,"print ""set angles degrees; set yrange [0:1]; set size ratio 1.0; set style fill solid 1.0 border -1"""
+gnuplot_piechart,contributed,contributed/gnuplot_piechart.gfn,gnuplot_piechart,45,possible_plot,"printf ""set label \""%s\"" at graph B+cos(%f*pi)*h, graph B+sin(%f*pi)*h center front\n"", pielabels[1], d, d # s1"
+gnuplot_piechart,contributed,contributed/gnuplot_piechart.gfn,gnuplot_piechart,46,possible_plot,"printf ""set label \""%.1f%%\"" at graph B+cos(%f*pi)*b, graph B+sin(%f*pi)*b center front tc rgb \""white\""\n"", A[1,2]*100, d, d"
+gnuplot_piechart,contributed,contributed/gnuplot_piechart.gfn,gnuplot_piechart,50,possible_plot,"printf ""set label \""%s\"" at graph B+cos((%f+%f)*pi)*h, graph B+sin((%f+%f)*pi)*h center front\n"", pielabels[j], d1, dm2, d1, dm2 # s$j"
+gnuplot_piechart,contributed,contributed/gnuplot_piechart.gfn,gnuplot_piechart,51,possible_plot,"printf ""set label \""%.1f%%\"" at graph B+cos((%f+%f)*pi)*b, graph B+sin((%f+%f)*pi)*b center front tc rgb \""white\""\n"", A[j,2]*100, d1, dm2, d1, dm2"
+gnuplot_piechart,contributed,contributed/gnuplot_piechart.gfn,gnuplot_piechart,53,possible_plot,"print ""plot 2"""
+gnuplot_piechart,contributed,contributed/gnuplot_piechart.gfn,gnuplot_piechart,54,gnuplot_source,end outfile # --close
+gnuplot_piechart,contributed,contributed/gnuplot_piechart.gfn,gnuplot_piechart,56,direct_plot,"gnuplot --input=""@fname"" --output=display"
+graphlasso,contributed,contributed/graphlasso.gfn,graphlasso,39,gnuplot_source,outfile stderr
+graphlasso,contributed,contributed/graphlasso.gfn,graphlasso,41,gnuplot_source,end outfile
+gregory_hansen,contributed,contributed/gregory_hansen.gfn,plotGH,1,possible_plot,/* Plot information on break points detected.
+gregory_hansen,contributed,contributed/gregory_hansen.gfn,plotGH,6,direct_plot,plot mplot
+gregory_hansen,contributed,contributed/gregory_hansen.gfn,plotGH,10,possible_plot,"end plot --output=""@filename"""
+gregory_hansen,contributed,contributed/gregory_hansen.zip!gregory_hansen/gregory_hansen.gfn,plotGH,1,possible_plot,/* Plot information on break points detected.
+gregory_hansen,contributed,contributed/gregory_hansen.zip!gregory_hansen/gregory_hansen.gfn,plotGH,6,direct_plot,plot mplot
+gregory_hansen,contributed,contributed/gregory_hansen.zip!gregory_hansen/gregory_hansen.gfn,plotGH,10,possible_plot,"end plot --output=""@filename"""
+hamilcycle,contributed,contributed/hamilcycle.gfn,hamilplot,2,possible_plot,"setinfo diff2pd --graph-name=""Random walk"""
+hamilcycle,contributed,contributed/hamilcycle.gfn,hamilplot,3,possible_plot,"setinfo hamcyc --graph-name=""Hamilton regression"""
+hamilcycle,contributed,contributed/hamilcycle.gfn,hamilplot,5,direct_plot,plot PLT
+hamilcycle,contributed,contributed/hamilcycle.gfn,hamilplot,11,possible_plot,end plot --output=display
+heatmap,contributed,contributed/heatmap.gfn,heatmap,16,possible_plot,"errorif(self.do_contour == TRUE && xmin(nrows_mat, ncols_mat) == 1, ""Cannot do a contour plot of a vector"")"
+heatmap,contributed,contributed/heatmap.gfn,heatmap_func,1,possible_plot,"/* This function produces a heatmap plot of a two-variable function,"
+heatmap,contributed,contributed/heatmap.gfn,contour_plot,1,possible_plot,/* Create a contour plot: ensure clevels is set (default 8) and call heatmap().
+heatmap,contributed,contributed/heatmap.gfn,pm3d_plot,41,possible_plot,strings self.varnames = varnames(Input) # TODO: retrieve graph-names if specified
+heatmap,contributed,contributed/heatmap.gfn,print_colorbox,1,gnuplot_source,/* Print gnuplot command to set colorbox with optional parameters from self.
+heatmap,contributed,contributed/heatmap.gfn,print_palette_jet,1,gnuplot_source,/* Print the MATLAB 'jet' color palette for gnuplot pm3d plots.
+heatmap,contributed,contributed/heatmap.gfn,makepalette,1,gnuplot_source,/* Create a color palette definition for gnuplot. */
+heatmap,contributed,contributed/heatmap.gfn,colchk,6,gnuplot_source,"strings colours = strsplit(readfile(""@gretldir/data/gnuplot/gpcolors.txt""))"
+heatmap,contributed,contributed/heatmap.gfn,colchk,15,gnuplot_source,"strings colours = strsplit(readfile(""@gretldir/data/gnuplot/gpcolors.txt""))"
+heatmap,contributed,contributed/heatmap.gfn,create_heatmap_plot,1,possible_plot,/* Main function for creating a heatmap plot */
+heatmap,contributed,contributed/heatmap.gfn,create_heatmap_plot,34,direct_plot,"gnuplot --input=""@buffer_file"" --output=""@dest"""
+heatmap,contributed,contributed/heatmap.gfn,write_gnuplot_heatmap,1,gnuplot_source,/* Function writing the actual gnuplot commands for heatmap */
+heatmap,contributed,contributed/heatmap.gfn,write_gnuplot_heatmap,18,gnuplot_source,outfile --tempfile=buffer_file
+heatmap,contributed,contributed/heatmap.gfn,write_gnuplot_heatmap,67,gnuplot_source,end outfile
+heatmap,contributed,contributed/heatmap.gfn,create_contour_plot,1,possible_plot,/* Main function for creating a contour plot */
+heatmap,contributed,contributed/heatmap.gfn,create_contour_plot,6,direct_plot,"gnuplot --input=""@buffer"" --output=""@dest"""
+heatmap,contributed,contributed/heatmap.gfn,write_gnuplot_contour,1,gnuplot_source,/* Function writing the actual gnuplot commands for contour plot */
+heatmap,contributed,contributed/heatmap.gfn,write_gnuplot_contour,7,gnuplot_source,outfile --tempfile=buffer_file
+heatmap,contributed,contributed/heatmap.gfn,write_gnuplot_contour,46,gnuplot_source,end outfile
+heatmap,contributed,contributed/heatmap.gfn,create_pm3d_plot,1,gnuplot_source,/* Prepare limits and invoke gnuplot for pm3d splot. */
+heatmap,contributed,contributed/heatmap.gfn,create_pm3d_plot,31,direct_plot,"gnuplot --input=""@buffer_file"" --output=""@filename"""
+heatmap,contributed,contributed/heatmap.gfn,write_gnuplot_pm3d,1,gnuplot_source,/* Write gnuplot script for a pm3d splot.
+heatmap,contributed,contributed/heatmap.gfn,write_gnuplot_pm3d,8,gnuplot_source,outfile --tempfile=buffer_file
+heatmap,contributed,contributed/heatmap.gfn,write_gnuplot_pm3d,60,gnuplot_source,end outfile
+heatmap,contributed,contributed/heatmap.gfn,print_creation_message,1,possible_plot,/* Prints a message indicating the plot was created. */
+heatmap,contributed,contributed/heatmap.gfn,print_creation_message,4,possible_plot,"printf ""%s created plot\n"", self.plottype"
+heatmap,contributed,contributed/heatmap.gfn,print_creation_message,6,possible_plot,"printf ""%s for %s created plot\n"", self.plottype, self.name_mat"
+heatmap,contributed,contributed/heatmap.gfn,print_contour_settings,1,gnuplot_source,/* Print gnuplot commands to set contour settings for pm3d plots. */
+heatmap,contributed,contributed/heatmap.gfn,print_user_contour_level,1,gnuplot_source,/* Print gnuplot command to set user-specified discrete contour levels.
+heatmap,contributed,contributed/heatmap.gfn,print_isosamples,1,gnuplot_source,/* Print gnuplot set isosamples command using a 2-element matrix.
+heatmap,contributed,contributed/heatmap.gfn,print_splot_matrix_lines,1,gnuplot_source,/* Print the gnuplot command for splotting the matrix with lines for contour plot only. */
+heatmap,contributed,contributed/heatmap.gfn,print_splot_matrix_lines,2,gnuplot_source,"printf ""splot $data matrix with lines\n"""
+heatmap,contributed,contributed/heatmap.gfn,print_splot_matrix_labels,1,gnuplot_source,/* Print the gnuplot command for splotting the matrix with labels for contour plot only. */
+heatmap,contributed,contributed/heatmap.gfn,print_splot_matrix_labels,5,gnuplot_source,"printf ""splot $data matrix with labels boxed\n"""
+heatmap,contributed,contributed/heatmap.gfn,print_plot_matrix_image,1,gnuplot_source,/* Print the gnuplot command for plotting the matrix as an image */
+heatmap,contributed,contributed/heatmap.gfn,print_plot_matrix_image,3,possible_plot,"printf ""plot $data matrix with image"""
+heatmap,contributed,contributed/heatmap.gfn,print_grid_resolution,1,gnuplot_source,/* Print the gnuplot command for setting the grid resolution */
+heatmap,contributed,contributed/heatmap.gfn,print_add_grid_pm3d,1,gnuplot_source,/* This function prints the gnuplot commands to add grid lines to the pm3d plot. */
+heatmap,contributed,contributed/heatmap.gfn,print_add_grid_pm3d,4,gnuplot_source,"printf ""set pm3d at s hidden3d 100\n""  # works only with gnuplot >= 6.1"
+heatmap,contributed,contributed/heatmap.gfn,print_add_grid_pm3d,9,gnuplot_source,"printf ""set style line 100 lc rgb '#000000' lt 1 lw 0.6\n"""
+heatmap,contributed,contributed/heatmap.gfn,print_splot_matrix_pm3d_lines,1,gnuplot_source,/* Print the gnuplot commands for a pm3d splot using a matrix input */
+heatmap,contributed,contributed/heatmap.gfn,print_splot_matrix_pm3d_lines,10,gnuplot_source,"printf ""splot $data matrix with pm3d \n"""
+heatmap,contributed,contributed/heatmap.gfn,print_splot_block_pm3d,1,gnuplot_source,/* Print the gnuplot command for a pm3d splot using x y z table input.
+heatmap,contributed,contributed/heatmap.gfn,print_splot_block_pm3d,7,gnuplot_source,"printf ""splot $data using 1:2:3 with pm3d palette\n"""
+heatmap,contributed,contributed/heatmap.gfn,print_data_grid_style,1,gnuplot_source,"/* Print matrix data for gnuplot using what's called the ""grid"" style."
+heatmap,contributed,contributed/heatmap.gfn,print_data_grid_style,2,gnuplot_source,URL: https://psy.swansea.ac.uk/staff/Carter/gnuplot/gnuplot_3d.htm */
+heatmap,contributed,contributed/heatmap.gfn,print_border_pm3d,1,gnuplot_source,/* Print gnuplot command to set border for pm3d plots */
+heatmap,contributed,contributed/heatmap.gfn,print_add_grid,1,gnuplot_source,/* This function prints the gnuplot commands to add grid lines to the plot. */
+heatmap,contributed,contributed/heatmap.gfn,print_autoscale_fix,1,gnuplot_source,/* Print the gnuplot command to set autoscale fix */
+heatmap,contributed,contributed/heatmap.gfn,print_xrange,1,gnuplot_source,/* Print gnuplot set xrange command for columns */
+heatmap,contributed,contributed/heatmap.gfn,print_yrange,1,gnuplot_source,/* Print gnuplot set yrange command for rows */
+heatmap,contributed,contributed/heatmap.gfn,print_xyzrange,1,gnuplot_source,/* Print gnuplot set *range command for columns */
+heatmap,contributed,contributed/heatmap.gfn,print_axis_label,1,gnuplot_source,/* Print the gnuplot set xlabel/ylabel/zlabel command with optional font size.
+heatmap,contributed,contributed/heatmap.gfn,print_datetics,1,gnuplot_source,/* Print gnuplot commands to set axis tics from an ISO8601 integer series.
+heatmap,contributed,contributed/heatmap.gfn,print_gnuplot_time_axis,2,gnuplot_source,Print gnuplot commands for date axis using timefmt and displayfmt.
+heatmap,contributed,contributed/heatmap.gfn,gnuplot_version,1,gnuplot_source,/* Retrieve installed gnuplot version as integer. */
+heatmap,contributed,contributed/heatmap.gfn,gnuplot_version,4,gnuplot_source,"scalar version = $version >= 20240 ? atof(strsub($sysinfo.gnuplot, ""."", """")) : 500"
+heatmap,contributed,contributed/heatmap.zip!heatmap/examples/correlations.inp,<standalone>,10,optional_plot,corr X --plot=display
+heatmap,contributed,contributed/heatmap.zip!heatmap/heatmap.gfn,heatmap,16,possible_plot,"errorif(self.do_contour == TRUE && xmin(nrows_mat, ncols_mat) == 1, ""Cannot do a contour plot of a vector"")"
+heatmap,contributed,contributed/heatmap.zip!heatmap/heatmap.gfn,heatmap_func,1,possible_plot,"/* This function produces a heatmap plot of a two-variable function,"
+heatmap,contributed,contributed/heatmap.zip!heatmap/heatmap.gfn,contour_plot,1,possible_plot,/* Create a contour plot: ensure clevels is set (default 8) and call heatmap().
+heatmap,contributed,contributed/heatmap.zip!heatmap/heatmap.gfn,pm3d_plot,41,possible_plot,strings self.varnames = varnames(Input) # TODO: retrieve graph-names if specified
+heatmap,contributed,contributed/heatmap.zip!heatmap/heatmap.gfn,print_colorbox,1,gnuplot_source,/* Print gnuplot command to set colorbox with optional parameters from self.
+heatmap,contributed,contributed/heatmap.zip!heatmap/heatmap.gfn,print_palette_jet,1,gnuplot_source,/* Print the MATLAB 'jet' color palette for gnuplot pm3d plots.
+heatmap,contributed,contributed/heatmap.zip!heatmap/heatmap.gfn,makepalette,1,gnuplot_source,/* Create a color palette definition for gnuplot. */
+heatmap,contributed,contributed/heatmap.zip!heatmap/heatmap.gfn,colchk,6,gnuplot_source,"strings colours = strsplit(readfile(""@gretldir/data/gnuplot/gpcolors.txt""))"
+heatmap,contributed,contributed/heatmap.zip!heatmap/heatmap.gfn,colchk,15,gnuplot_source,"strings colours = strsplit(readfile(""@gretldir/data/gnuplot/gpcolors.txt""))"
+heatmap,contributed,contributed/heatmap.zip!heatmap/heatmap.gfn,create_heatmap_plot,1,possible_plot,/* Main function for creating a heatmap plot */
+heatmap,contributed,contributed/heatmap.zip!heatmap/heatmap.gfn,create_heatmap_plot,34,direct_plot,"gnuplot --input=""@buffer_file"" --output=""@dest"""
+heatmap,contributed,contributed/heatmap.zip!heatmap/heatmap.gfn,write_gnuplot_heatmap,1,gnuplot_source,/* Function writing the actual gnuplot commands for heatmap */
+heatmap,contributed,contributed/heatmap.zip!heatmap/heatmap.gfn,write_gnuplot_heatmap,18,gnuplot_source,outfile --tempfile=buffer_file
+heatmap,contributed,contributed/heatmap.zip!heatmap/heatmap.gfn,write_gnuplot_heatmap,67,gnuplot_source,end outfile
+heatmap,contributed,contributed/heatmap.zip!heatmap/heatmap.gfn,create_contour_plot,1,possible_plot,/* Main function for creating a contour plot */
+heatmap,contributed,contributed/heatmap.zip!heatmap/heatmap.gfn,create_contour_plot,6,direct_plot,"gnuplot --input=""@buffer"" --output=""@dest"""
+heatmap,contributed,contributed/heatmap.zip!heatmap/heatmap.gfn,write_gnuplot_contour,1,gnuplot_source,/* Function writing the actual gnuplot commands for contour plot */
+heatmap,contributed,contributed/heatmap.zip!heatmap/heatmap.gfn,write_gnuplot_contour,7,gnuplot_source,outfile --tempfile=buffer_file
+heatmap,contributed,contributed/heatmap.zip!heatmap/heatmap.gfn,write_gnuplot_contour,46,gnuplot_source,end outfile
+heatmap,contributed,contributed/heatmap.zip!heatmap/heatmap.gfn,create_pm3d_plot,1,gnuplot_source,/* Prepare limits and invoke gnuplot for pm3d splot. */
+heatmap,contributed,contributed/heatmap.zip!heatmap/heatmap.gfn,create_pm3d_plot,31,direct_plot,"gnuplot --input=""@buffer_file"" --output=""@filename"""
+heatmap,contributed,contributed/heatmap.zip!heatmap/heatmap.gfn,write_gnuplot_pm3d,1,gnuplot_source,/* Write gnuplot script for a pm3d splot.
+heatmap,contributed,contributed/heatmap.zip!heatmap/heatmap.gfn,write_gnuplot_pm3d,8,gnuplot_source,outfile --tempfile=buffer_file
+heatmap,contributed,contributed/heatmap.zip!heatmap/heatmap.gfn,write_gnuplot_pm3d,60,gnuplot_source,end outfile
+heatmap,contributed,contributed/heatmap.zip!heatmap/heatmap.gfn,print_creation_message,1,possible_plot,/* Prints a message indicating the plot was created. */
+heatmap,contributed,contributed/heatmap.zip!heatmap/heatmap.gfn,print_creation_message,4,possible_plot,"printf ""%s created plot\n"", self.plottype"
+heatmap,contributed,contributed/heatmap.zip!heatmap/heatmap.gfn,print_creation_message,6,possible_plot,"printf ""%s for %s created plot\n"", self.plottype, self.name_mat"
+heatmap,contributed,contributed/heatmap.zip!heatmap/heatmap.gfn,print_contour_settings,1,gnuplot_source,/* Print gnuplot commands to set contour settings for pm3d plots. */
+heatmap,contributed,contributed/heatmap.zip!heatmap/heatmap.gfn,print_user_contour_level,1,gnuplot_source,/* Print gnuplot command to set user-specified discrete contour levels.
+heatmap,contributed,contributed/heatmap.zip!heatmap/heatmap.gfn,print_isosamples,1,gnuplot_source,/* Print gnuplot set isosamples command using a 2-element matrix.
+heatmap,contributed,contributed/heatmap.zip!heatmap/heatmap.gfn,print_splot_matrix_lines,1,gnuplot_source,/* Print the gnuplot command for splotting the matrix with lines for contour plot only. */
+heatmap,contributed,contributed/heatmap.zip!heatmap/heatmap.gfn,print_splot_matrix_lines,2,gnuplot_source,"printf ""splot $data matrix with lines\n"""
+heatmap,contributed,contributed/heatmap.zip!heatmap/heatmap.gfn,print_splot_matrix_labels,1,gnuplot_source,/* Print the gnuplot command for splotting the matrix with labels for contour plot only. */
+heatmap,contributed,contributed/heatmap.zip!heatmap/heatmap.gfn,print_splot_matrix_labels,5,gnuplot_source,"printf ""splot $data matrix with labels boxed\n"""
+heatmap,contributed,contributed/heatmap.zip!heatmap/heatmap.gfn,print_plot_matrix_image,1,gnuplot_source,/* Print the gnuplot command for plotting the matrix as an image */
+heatmap,contributed,contributed/heatmap.zip!heatmap/heatmap.gfn,print_plot_matrix_image,3,possible_plot,"printf ""plot $data matrix with image"""
+heatmap,contributed,contributed/heatmap.zip!heatmap/heatmap.gfn,print_grid_resolution,1,gnuplot_source,/* Print the gnuplot command for setting the grid resolution */
+heatmap,contributed,contributed/heatmap.zip!heatmap/heatmap.gfn,print_add_grid_pm3d,1,gnuplot_source,/* This function prints the gnuplot commands to add grid lines to the pm3d plot. */
+heatmap,contributed,contributed/heatmap.zip!heatmap/heatmap.gfn,print_add_grid_pm3d,4,gnuplot_source,"printf ""set pm3d at s hidden3d 100\n""  # works only with gnuplot >= 6.1"
+heatmap,contributed,contributed/heatmap.zip!heatmap/heatmap.gfn,print_add_grid_pm3d,9,gnuplot_source,"printf ""set style line 100 lc rgb '#000000' lt 1 lw 0.6\n"""
+heatmap,contributed,contributed/heatmap.zip!heatmap/heatmap.gfn,print_splot_matrix_pm3d_lines,1,gnuplot_source,/* Print the gnuplot commands for a pm3d splot using a matrix input */
+heatmap,contributed,contributed/heatmap.zip!heatmap/heatmap.gfn,print_splot_matrix_pm3d_lines,10,gnuplot_source,"printf ""splot $data matrix with pm3d \n"""
+heatmap,contributed,contributed/heatmap.zip!heatmap/heatmap.gfn,print_splot_block_pm3d,1,gnuplot_source,/* Print the gnuplot command for a pm3d splot using x y z table input.
+heatmap,contributed,contributed/heatmap.zip!heatmap/heatmap.gfn,print_splot_block_pm3d,7,gnuplot_source,"printf ""splot $data using 1:2:3 with pm3d palette\n"""
+heatmap,contributed,contributed/heatmap.zip!heatmap/heatmap.gfn,print_data_grid_style,1,gnuplot_source,"/* Print matrix data for gnuplot using what's called the ""grid"" style."
+heatmap,contributed,contributed/heatmap.zip!heatmap/heatmap.gfn,print_data_grid_style,2,gnuplot_source,URL: https://psy.swansea.ac.uk/staff/Carter/gnuplot/gnuplot_3d.htm */
+heatmap,contributed,contributed/heatmap.zip!heatmap/heatmap.gfn,print_border_pm3d,1,gnuplot_source,/* Print gnuplot command to set border for pm3d plots */
+heatmap,contributed,contributed/heatmap.zip!heatmap/heatmap.gfn,print_add_grid,1,gnuplot_source,/* This function prints the gnuplot commands to add grid lines to the plot. */
+heatmap,contributed,contributed/heatmap.zip!heatmap/heatmap.gfn,print_autoscale_fix,1,gnuplot_source,/* Print the gnuplot command to set autoscale fix */
+heatmap,contributed,contributed/heatmap.zip!heatmap/heatmap.gfn,print_xrange,1,gnuplot_source,/* Print gnuplot set xrange command for columns */
+heatmap,contributed,contributed/heatmap.zip!heatmap/heatmap.gfn,print_yrange,1,gnuplot_source,/* Print gnuplot set yrange command for rows */
+heatmap,contributed,contributed/heatmap.zip!heatmap/heatmap.gfn,print_xyzrange,1,gnuplot_source,/* Print gnuplot set *range command for columns */
+heatmap,contributed,contributed/heatmap.zip!heatmap/heatmap.gfn,print_axis_label,1,gnuplot_source,/* Print the gnuplot set xlabel/ylabel/zlabel command with optional font size.
+heatmap,contributed,contributed/heatmap.zip!heatmap/heatmap.gfn,print_datetics,1,gnuplot_source,/* Print gnuplot commands to set axis tics from an ISO8601 integer series.
+heatmap,contributed,contributed/heatmap.zip!heatmap/heatmap.gfn,print_gnuplot_time_axis,2,gnuplot_source,Print gnuplot commands for date axis using timefmt and displayfmt.
+heatmap,contributed,contributed/heatmap.zip!heatmap/heatmap.gfn,gnuplot_version,1,gnuplot_source,/* Retrieve installed gnuplot version as integer. */
+heatmap,contributed,contributed/heatmap.zip!heatmap/heatmap.gfn,gnuplot_version,4,gnuplot_source,"scalar version = $version >= 20240 ? atof(strsub($sysinfo.gnuplot, ""."", """")) : 500"
+johansenrec,contributed,contributed/johansenrec.gfn,johansenreceig,8,gnuplot_source,setopt gnuplot persist --with-lines --single-yaxis --time-series
+johansenrec,contributed,contributed/johansenrec.gfn,johansenreceig,180,direct_plot,"gnuplot ksi$i up low --output=""@temp"" {set title 'Log-odds of eigenvalues';}"
+johansenrec,contributed,contributed/johansenrec.gfn,johansenreceig,188,direct_plot,"gnuplot sum_ksi up low --output=""@temp"" {set title 'Log-odds of sum of eigenvalues';}"
+johansenrec,contributed,contributed/johansenrec.gfn,johansenreceig,209,direct_plot,"gnuplot lTeststats --output=""@temp"" {set title 'Stability tests for eigenvalues';}"
+johansenrec,contributed,contributed/johansenrec.gfn,johansenreceig,219,direct_plot,"gnuplot lTeststats --output=""@temp"" {set title 'Stability test, based on maximum fluctuation of all eigenvalues';}"
+johansenrec,contributed,contributed/johansenrec.gfn,johansenrecbeta,98,direct_plot,"gnuplot critval5pct betatest --time-series --with-lines --single-yaxis --output=""@temp"" {set title 'Test of beta constancy';}"
+kddensity,contributed,contributed/kddensity.gfn,kdd_plot,23,possible_plot,"title = ""Bivariate kernel density plot"""
+kddensity,contributed,contributed/kddensity.gfn,kdd_plot,35,gnuplot_source,"outfile ""@pltfname"" --quiet"
+kddensity,contributed,contributed/kddensity.gfn,kdd_plot,68,gnuplot_source,"printf ""set term pdfcairo\n"""
+kddensity,contributed,contributed/kddensity.gfn,kdd_plot,72,gnuplot_source,"printf ""splot '-' with lines\n"""
+kddensity,contributed,contributed/kddensity.gfn,kdd_plot,75,gnuplot_source,end outfile
+kddensity,contributed,contributed/kddensity.gfn,kdd_plot,77,direct_plot,"gnuplot --input=""@pltfname"" @outopt"
+ketvals,contributed,contributed/ketvals.zip!ketvals/ketvals.gfn,coeff_plot,14,direct_plot,plot coef
+ketvals,contributed,contributed/ketvals.zip!ketvals/ketvals.gfn,coeff_plot,24,possible_plot,"end plot --output=""@real_dest"""
+ketvals,contributed,contributed/ketvals.zip!ketvals/ketvals.gfn,<sample>,41,direct_plot,plot lrm
+ketvals,contributed,contributed/ketvals.zip!ketvals/ketvals.gfn,<sample>,45,possible_plot,end plot --output=display
+ketvals,contributed,contributed/ketvals.zip!ketvals/examples/simple.inp,<standalone>,22,direct_plot,gnuplot b_ols b_iv --with-lines --time-series --output=display
+ketvals,contributed,contributed/ketvals.zip!ketvals/examples/auto_bwidth.inp,<standalone>,25,direct_plot,gnuplot b_ols b_iv --with-lines --time-series --output=display
+ketvals,contributed,contributed/ketvals.zip!ketvals/examples/ar1.inp,<standalone>,6,possible_plot,set seed 787878 # this produces a figure similar to the one in the paper
+kmeans,contributed,contributed/kmeans.gfn,kmeans_plot,1,possible_plot,/* Plot clusters in 2-dimensions. */
+kmeans,contributed,contributed/kmeans.gfn,kmeans_screeplot,1,possible_plot,/* Create a scree plot. */
+kmeans,contributed,contributed/kmeans.gfn,kmeans_screeplot,28,direct_plot,plot mplot
+kmeans,contributed,contributed/kmeans.gfn,kmeans_screeplot,35,possible_plot,"end plot --output=""@fname"""
+kmeans,contributed,contributed/kmeans.gfn,kmeans_sil_plot,1,possible_plot,/* Create a silhouette plot for the fitted kmeans model.
+kmeans,contributed,contributed/kmeans.gfn,kmeans_sil_plot,42,direct_plot,plot cluster_sil_values
+kmeans,contributed,contributed/kmeans.gfn,kmeans_sil_plot,53,possible_plot,end plot --outbuf=plotfiles[k]
+kmeans,contributed,contributed/kmeans.gfn,kmeans_sil_plot,56,direct_plot,"gridplot plotfiles --cols=columns --width=width --height=height --output=""@filename"""
+kmeans,contributed,contributed/kmeans.gfn,<sample>,85,possible_plot,/* You can also manipulate the plot if wanted:
+kmeans,contributed,contributed/kmeans.gfn,<sample>,88,possible_plot,"Model.filename = ""foo2.png""     # pass filename for storing plot"
+knn,contributed,contributed/knn.gfn,knn_plot_score,8,possible_plot,"*        The name of the output file. If not provided, the plot will be displayed."
+knn,contributed,contributed/knn.gfn,knn_plot_score,12,possible_plot,*    - The plot will show the optimal score for each value of k.
+knn,contributed,contributed/knn.gfn,knn_plot_score,14,possible_plot,"*    - The title of the plot includes the optimal score, the optimal k value, and the cross-validation method used."
+knn,contributed,contributed/knn.gfn,knn_plot_score,15,possible_plot,*    - The plot will be displayed or saved to a file based on the provided filename.
+knn,contributed,contributed/knn.gfn,knn_plot_score,29,direct_plot,"gnuplot --matrix=toplot --with-lines --fit=none --output=""@fname"" {set grid; set xlabel ""k neighbors"" font "",13""; set ylabel ""mean of @metric"" font "",13""; set title ""@title"" font "",13""; set linetype 1 lw 2; }"
+knn,contributed,contributed/knn.gfn,knn_plot_score,31,possible_plot,"print ""WARNING: Plot requires cross-validation results and/or multiple neighbors to evaluate."""
+knn,contributed,contributed/knn.gfn,knn_plot_cvscores,8,possible_plot,"*        The name of the output file. If not provided, the plot will be displayed."
+knn,contributed,contributed/knn.gfn,knn_plot_cvscores,12,possible_plot,*    - The plot will show a boxplot of the distribution of the scores across folds for each value of k.
+knn,contributed,contributed/knn.gfn,knn_plot_cvscores,14,possible_plot,*    - The plot will be displayed or saved to a file based on the provided filename.
+knn,contributed,contributed/knn.gfn,knn_plot_cvscores,31,direct_plot,"gnuplot --matrix=scores --time-series --output=""@fname"" {set grid; set xlabel ""neighbors"" font "",13""; set ylabel ""Distribution of @metric across folds"" font "",13""; set title ""@title"" font "",13""; set linetype 1 lw 2; }"
+knn,contributed,contributed/knn.gfn,knn_plot_cvscores,33,direct_plot,"boxplot --matrix=scores --output=""@fname"" {set grid; set xlabel ""neighbors"" font "",13""; set ylabel ""Distribution of @metric across folds"" font "",13""; set title ""@title"" font "",13""; set linetype 1 lw 2; }"
+knn,contributed,contributed/knn.gfn,knn_plot_cvscores,36,possible_plot,"print ""WARNING: Plot requires cross-validation results."""
+lagreg,contributed,contributed/lagreg.zip!lagreg/lagreg.gfn,fcast_pdl,102,direct_plot,"gnuplot forecast --time-series --band=forecast,Bs,zv --with-lines --output=display --band-style=fill,0xbbddff { set title '@tititi'; set ylabel 'actual, forecasts';}"
+lagreg,contributed,contributed/lagreg.zip!lagreg/lagreg.gfn,irf_plot22,31,direct_plot,plot m
+lagreg,contributed,contributed/lagreg.zip!lagreg/lagreg.gfn,irf_plot22,35,gnuplot_source,literal set style line 1 lt 1 lc 1
+lagreg,contributed,contributed/lagreg.zip!lagreg/lagreg.gfn,irf_plot22,36,gnuplot_source,literal set style line  2 lt 2 lc 1
+lagreg,contributed,contributed/lagreg.zip!lagreg/lagreg.gfn,irf_plot22,37,gnuplot_source,literal set style line  3 lt 2 lc 1
+lagreg,contributed,contributed/lagreg.zip!lagreg/lagreg.gfn,irf_plot22,43,possible_plot,end plot --output=display
+lagreg,contributed,contributed/lagreg.zip!lagreg/lagreg.gfn,irf_plot22,45,direct_plot,plot m
+lagreg,contributed,contributed/lagreg.zip!lagreg/lagreg.gfn,irf_plot22,49,gnuplot_source,literal set style line 1 lt 1 lc 1
+lagreg,contributed,contributed/lagreg.zip!lagreg/lagreg.gfn,irf_plot22,50,gnuplot_source,literal set style line  2 lt 2 lc 1
+lagreg,contributed,contributed/lagreg.zip!lagreg/lagreg.gfn,irf_plot22,51,gnuplot_source,literal set style line  3 lt 2 lc 1
+lagreg,contributed,contributed/lagreg.zip!lagreg/lagreg.gfn,irf_plot22,56,possible_plot,end plot --output=display
+lagreg,contributed,contributed/lagreg.zip!lagreg/lagreg.gfn,irf_plot22,60,direct_plot,plot m
+lagreg,contributed,contributed/lagreg.zip!lagreg/lagreg.gfn,irf_plot22,71,possible_plot,end plot --output=display
+lagreg,contributed,contributed/lagreg.zip!lagreg/lagreg.gfn,irf_plot22,73,direct_plot,plot m
+lagreg,contributed,contributed/lagreg.zip!lagreg/lagreg.gfn,irf_plot22,83,possible_plot,end plot --output=display
+lagreg,contributed,contributed/lagreg.zip!lagreg/lagreg.gfn,irf_plot22,98,direct_plot,plot m
+lagreg,contributed,contributed/lagreg.zip!lagreg/lagreg.gfn,irf_plot22,105,possible_plot,end plot --output=display
+lagreg,contributed,contributed/lagreg.zip!lagreg/lagreg.gfn,irf_plot22,107,direct_plot,plot m
+lagreg,contributed,contributed/lagreg.zip!lagreg/lagreg.gfn,irf_plot22,113,possible_plot,end plot --output=display
+latextab,contributed,contributed/latextab.gfn,write_file,3,gnuplot_source,"outfile ""@filename"""
+latextab,contributed,contributed/latextab.gfn,write_file,5,gnuplot_source,end outfile
+latextab,contributed,contributed/latextab.gfn,compile_texcode,6,gnuplot_source,catch outfile --buffer=buffer
+latextab,contributed,contributed/latextab.gfn,compile_texcode,34,gnuplot_source,end outfile
+naiveFC,contributed,contributed/naiveFC.zip!naiveFC/naiveFC.gfn,naivePlot,22,possible_plot,"setinfo y --graph-name=""Actuals"""
+naiveFC,contributed,contributed/naiveFC.zip!naiveFC/naiveFC.gfn,naivePlot,34,possible_plot,"setinfo fc_$i --graph-name=""@str"""
+naiveFC,contributed,contributed/naiveFC.zip!naiveFC/naiveFC.gfn,naivePlot,44,possible_plot,"setinfo fc_$i --graph-name=""@str"""
+naiveFC,contributed,contributed/naiveFC.zip!naiveFC/naiveFC.gfn,naivePlot,48,possible_plot,"setinfo fc_$i --graph-name=""@meth""	#""Point-Fc"""
+naiveFC,contributed,contributed/naiveFC.zip!naiveFC/naiveFC.gfn,naivePlot,52,possible_plot,"setinfo fc_$i --graph-name=""@s"""
+naiveFC,contributed,contributed/naiveFC.zip!naiveFC/naiveFC.gfn,naivePlot,55,possible_plot,"setinfo fc_$i --graph-name=""@s"""
+naiveFC,contributed,contributed/naiveFC.zip!naiveFC/naiveFC.gfn,naivePlot,77,direct_plot,plot lplot
+naiveFC,contributed,contributed/naiveFC.zip!naiveFC/naiveFC.gfn,naivePlot,94,gnuplot_source,"literal set style line 11 lc rgb ""#808080"" lt 1"
+naiveFC,contributed,contributed/naiveFC.zip!naiveFC/naiveFC.gfn,naivePlot,98,gnuplot_source,"literal set style line 12 lc rgb ""#808080"" lt 0 lw 1	# light grey color"
+naiveFC,contributed,contributed/naiveFC.zip!naiveFC/naiveFC.gfn,naivePlot,104,possible_plot,"end plot --output=""@out"""
+naiveFC,contributed,contributed/naiveFC.zip!naiveFC/naiveFC.gfn,naivePlot,106,direct_plot,plot lplot
+naiveFC,contributed,contributed/naiveFC.zip!naiveFC/naiveFC.gfn,naivePlot,116,gnuplot_source,"literal set style line 11 lc rgb ""#808080"" lt 1"
+naiveFC,contributed,contributed/naiveFC.zip!naiveFC/naiveFC.gfn,naivePlot,120,gnuplot_source,"literal set style line 12 lc rgb ""#808080"" lt 0 lw 1	# light grey color"
+naiveFC,contributed,contributed/naiveFC.zip!naiveFC/naiveFC.gfn,naivePlot,126,possible_plot,"end plot --output=""@out"""
+naiveFC,contributed,contributed/naiveFC.zip!naiveFC/naiveFC.gfn,GUI_naiveFC,11,possible_plot,if Plot
+naiveFC,contributed,contributed/naiveFC.zip!naiveFC/naiveFC.gfn,defaultNaiveFcOpts,6,possible_plot,scalar self.fan = 0						# plot fan chart  (not supported yet)
+naiveFC,contributed,contributed/naiveFC.zip!naiveFC/naiveFC.gfn,<sample>,33,possible_plot,naivePlot(&b)						# plot forecast results
+naiveFC,contributed,contributed/naiveFC.zip!naiveFC/naiveFC.gfn,<sample>,43,possible_plot,b.preobs_fc = 15					# optional: set no. of pre.-forecast periods obs. to plot
+naiveFC,contributed,contributed/naiveFC.zip!naiveFC/naiveFC.gfn,<sample>,117,possible_plot,b.preobs_fc = 5					# set no. of pre.-forecast periods obs. to plot
+nic_gig,contributed,contributed/nic_gig.gfn,nic_plot_from_gig,39,gnuplot_source,outfile @fname
+nic_gig,contributed,contributed/nic_gig.gfn,nic_plot_from_gig,53,possible_plot,"printf ""plot garch_nic(x) title 'GARCH(1,1)' w lines lt 1, \\\n"""
+nic_gig,contributed,contributed/nic_gig.gfn,nic_plot_from_gig,55,gnuplot_source,end outfile
+nic_gig,contributed,contributed/nic_gig.gfn,nic_plot_from_gig,57,direct_plot,gnuplot --input=@fname --output=display
+parallel_specs,contributed,contributed/parallel_specs.gfn,write_usercode,2,gnuplot_source,"catch outfile ""@filename_usercode"" --quiet"
+parallel_specs,contributed,contributed/parallel_specs.gfn,write_usercode,5,gnuplot_source,end outfile
+parallel_specs,contributed,contributed/parallel_specs.gfn,invoke_mpi,7,gnuplot_source,"outfile ""@outname"" --quiet"
+parallel_specs,contributed,contributed/parallel_specs.gfn,invoke_mpi,17,gnuplot_source,end outfile
+parallel_specs,contributed,contributed/parallel_specs.gfn,<sample>,89,gnuplot_source,outfile code4PS.inp --quiet
+parallel_specs,contributed,contributed/parallel_specs.gfn,<sample>,103,gnuplot_source,end outfile
+pkgchecker,contributed,contributed/pkgchecker.gfn,function_statistics,2,possible_plot,matrix graph = compile_dependency_graph(Metadata)
+pkgchecker,contributed,contributed/pkgchecker.gfn,function_statistics,3,possible_plot,"matrix n_function_calls = summarize_graph(graph, getkeys(Metadata))"
+pkgchecker,contributed,contributed/pkgchecker.gfn,function_statistics,5,possible_plot,"return _(graph, n_function_calls, dead_functions)"
+pkgchecker,contributed,contributed/pkgchecker.gfn,summarize_graph,2,possible_plot,assert(nelem(function_names) == rows(graph))
+pkgchecker,contributed,contributed/pkgchecker.gfn,summarize_graph,3,possible_plot,matrix m = sumr(graph)
+pkgchecker,contributed,contributed/pkgchecker.gfn,compile_dependency_graph,3,possible_plot,"matrix graph = zeros(nelem(Metadata), nelem(Metadata))"
+pkgchecker,contributed,contributed/pkgchecker.gfn,compile_dependency_graph,8,possible_plot,"graph[i,j] = TRUE"
+pkgchecker,contributed,contributed/pkgchecker.gfn,compile_dependency_graph,12,possible_plot,"rnameset(graph, getkeys(Metadata))"
+pkgchecker,contributed,contributed/pkgchecker.gfn,compile_dependency_graph,13,possible_plot,"cnameset(graph, getkeys(Metadata))"
+pkgchecker,contributed,contributed/pkgchecker.gfn,compile_dependency_graph,14,possible_plot,return graph
+pkgchecker,contributed,contributed/pkgchecker.gfn,<sample>,14,possible_plot,bundle Graph = function_statistics(Meta)
+pkgchecker,contributed,contributed/pkgchecker.gfn,<sample>,15,possible_plot,print Graph
+pkgchecker,contributed,contributed/pkgchecker.gfn,<sample>,17,possible_plot,eval Graph.n_function_calls
+pkgchecker,contributed,contributed/pkgchecker.gfn,<sample>,18,possible_plot,eval Graph.dead_functions
+pkgchecker,contributed,contributed/pkgchecker.gfn,<sample>,32,possible_plot,"heatmap(Graph.graph, _(title=""1st level dependency (rows"", do_labels=FALSE))"
+qcorr,contributed,contributed/qcorr.zip!qcorr/qcorr.gfn,cqgm_plot,72,direct_plot,plot to_plot
+qcorr,contributed,contributed/qcorr.zip!qcorr/qcorr.gfn,cqgm_plot,74,gnuplot_source,literal set style fill solid 0.5 border
+qcorr,contributed,contributed/qcorr.zip!qcorr/qcorr.gfn,cqgm_plot,82,possible_plot,"end plot --output=""@dest"""
+qcorr,contributed,contributed/qcorr.zip!qcorr/qcorr.gfn,cqgm_plot,112,direct_plot,plot test_plot
+qcorr,contributed,contributed/qcorr.zip!qcorr/qcorr.gfn,cqgm_plot,122,possible_plot,"end plot --output=""@dest"""
+qcorr,contributed,contributed/qcorr.zip!qcorr/qcorr.gfn,<sample>,55,possible_plot,elif CASE == 3 #lag plot for aaa-quantile 0.9 and fedfunds-quantile 0.1
+qcorr,contributed,contributed/qcorr.zip!qcorr/qcorr.gfn,<sample>,68,possible_plot,elif CASE == 4 #LB plot for aaa-quantile 0.9 and fedfunds-quantile 0.1
+random_forest,contributed,contributed/random_forest.zip!random_forest/random_forest.gfn,rf_plot,29,gnuplot_source,outfile --buffer=plotbuf -q
+random_forest,contributed,contributed/random_forest.zip!random_forest/random_forest.gfn,rf_plot,36,gnuplot_source,"printf ""set style fill solid 0.6\n"""
+random_forest,contributed,contributed/random_forest.zip!random_forest/random_forest.gfn,rf_plot,44,possible_plot,"printf ""plot $data using (0.5*$2):0:(0.5*$2):(bw/2.):ytic(1) with boxxy\n"""
+random_forest,contributed,contributed/random_forest.zip!random_forest/random_forest.gfn,rf_plot,45,gnuplot_source,end outfile
+random_forest,contributed,contributed/random_forest.zip!random_forest/random_forest.gfn,rf_plot,48,direct_plot,"gnuplot --inbuf=plotbuf --output=""@outspec"""
+random_forest,contributed,contributed/random_forest.zip!random_forest/random_forest.gfn,rf_setup,29,possible_plot,"res <- tuneRF(x=L$x, y=y, trace=verbose, plot=FALSE)"
+roc,contributed,contributed/roc.zip!roc/roc.gfn,roc,68,direct_plot,plot figmat
+roc,contributed,contributed/roc.zip!roc/roc.gfn,roc,79,possible_plot,end plot --output=display
+roc,contributed,contributed/roc.zip!roc/roc.gfn,roc,83,direct_plot,plot figmat
+roc,contributed,contributed/roc.zip!roc/roc.gfn,roc,90,possible_plot,"printf ""set label \""Max correct = %.3g at threshold %.3g\"" at graph 0.1, 0.05 left front"", maxfcp, figmat[optyhat,2]"
+roc,contributed,contributed/roc.zip!roc/roc.gfn,roc,91,possible_plot,end plot --output=display
+roc,contributed,contributed/roc.zip!roc/roc.gfn,mroc,68,direct_plot,plot figmat
+roc,contributed,contributed/roc.zip!roc/roc.gfn,mroc,79,possible_plot,end plot --output=display
+roc,contributed,contributed/roc.zip!roc/roc.gfn,mroc,83,direct_plot,plot figmat
+roc,contributed,contributed/roc.zip!roc/roc.gfn,mroc,90,possible_plot,"printf ""set label \""Max correct = %.3g at threshold %.3g\"" at graph 0.1, 0.05 left front"", maxfcp, figmat[optyhat,2]"
+roc,contributed,contributed/roc.zip!roc/roc.gfn,mroc,91,possible_plot,end plot --output=display
+roc,contributed,contributed/roc.zip!roc/roc.gfn,<sample>,16,direct_plot,gnuplot --matrix=figmat --output=display --with-lines --fit=none \
+roc,contributed,contributed/roc.zip!roc/roc.gfn,<sample>,24,direct_plot,gnuplot --matrix=figmat --output=display --with-lines --fit=none \
+season_plot,contributed,contributed/season_plot.gfn,set_season_plot,1,gnuplot_source,"/*  Compile matrices holding grouped data for plotting, and write the gnuplot-files. */"
+season_plot,contributed,contributed/season_plot.gfn,get_plot_opts_string,1,gnuplot_source,/* Convert bundle items referring to gridplot options into string which can be used
+season_plot,contributed,contributed/season_plot.gfn,get_plot_opts_string,2,gnuplot_source,for the gridplot command. */
+season_plot,contributed,contributed/season_plot.gfn,plot_all,1,possible_plot,/* Plot all plots on single canvas. */
+season_plot,contributed,contributed/season_plot.gfn,plot_all,5,direct_plot,"gridplot F --output=""@filename"" @plot_opts"
+season_plot,contributed,contributed/season_plot.gfn,plot_single,1,possible_plot,/* Create for each plot an own canvas. */
+season_plot,contributed,contributed/season_plot.gfn,plot_single,13,direct_plot,"gridplot to_be_plotted --output=""@filename"" @plot_opts"
+season_plot,contributed,contributed/season_plot.gfn,multiplot_settings,1,gnuplot_source,/* Settings for gridplot command. */
+season_plot,contributed,contributed/season_plot.gfn,pivot_by_column_name,18,possible_plot,"matrix index_vector = values(m[, pos_index_column]) # will be the x-axis in the following plot"
+season_plot,contributed,contributed/season_plot.gfn,seasplot,1,possible_plot,"/* Execute actual plotting. Create the ""gpfile_id""-th figure. */"
+season_plot,contributed,contributed/season_plot.gfn,seasplot,9,direct_plot,plot m
+season_plot,contributed,contributed/season_plot.gfn,seasplot,16,possible_plot,end plot --outbuf=buffer
+season_plot,contributed,contributed/season_plot.gfn,<sample>,53,possible_plot,"string b.title = ""Seasonal plot with small font size"""
+staticfactor,contributed,contributed/staticfactor.gfn,SF_plot,11,possible_plot,"string tistr = sprintf(""Scree plot from model %s"", argname(b))"
+staticfactor,contributed,contributed/staticfactor.gfn,SF_plot,12,direct_plot,plot g
+staticfactor,contributed,contributed/staticfactor.gfn,SF_plot,15,possible_plot,"literal set title ""@tistr"" # ""Scree plot"""
+staticfactor,contributed,contributed/staticfactor.gfn,SF_plot,16,possible_plot,"end plot --output=""@fname"""
+staticfactor,contributed,contributed/staticfactor.zip!staticfactor/staticfactor.gfn,SF_plot,11,possible_plot,"string tistr = sprintf(""Scree plot from model %s"", argname(b))"
+staticfactor,contributed,contributed/staticfactor.zip!staticfactor/staticfactor.gfn,SF_plot,12,direct_plot,plot g
+staticfactor,contributed,contributed/staticfactor.zip!staticfactor/staticfactor.gfn,SF_plot,15,possible_plot,"literal set title ""@tistr"" # ""Scree plot"""
+staticfactor,contributed,contributed/staticfactor.zip!staticfactor/staticfactor.gfn,SF_plot,16,possible_plot,"end plot --output=""@fname"""
+thresh_infer,contributed,contributed/thresh_infer.gfn,H_thresh_estim,203,direct_plot,gnuplot --matrix=mtemp --with-lines --single-yaxis --output=display {set title 'Confidence Interval Construction for Threshold';}
+thresh_infer,contributed,contributed/thresh_infer.gfn,H_thresh_test,155,direct_plot,gnuplot --matrix=mtemp {set title 'F Test For Threshold ';} --with-lines --single-yaxis --output=display
+thresh_infer,contributed,contributed/thresh_infer.zip!thresh_infer/thresh_infer.gfn,H_thresh_estim,203,direct_plot,gnuplot --matrix=mtemp --with-lines --single-yaxis --output=display {set title 'Confidence Interval Construction for Threshold';}
+thresh_infer,contributed,contributed/thresh_infer.zip!thresh_infer/thresh_infer.gfn,H_thresh_test,155,direct_plot,gnuplot --matrix=mtemp {set title 'F Test For Threshold ';} --with-lines --single-yaxis --output=display
+tsdecomp,contributed,contributed/tsdecomp.gfn,clc_decompose,36,possible_plot,"setinfo trend --description=""Trend-cycle component (classical decomposition)"" --graph-name=""Trend-cycle"""
+tsdecomp,contributed,contributed/tsdecomp.gfn,clc_decompose,37,possible_plot,"setinfo season --description=""Seasonal component (classical decomposition)"" --graph-name=""Seasonal"""
+tsdecomp,contributed,contributed/tsdecomp.gfn,clc_decompose,38,possible_plot,"setinfo remainder --description=""Remainder component (classical decomposition)"" --graph-name=""Remainder"""
+tsdecomp,contributed,contributed/tsdecomp.gfn,stl_decompose,72,possible_plot,"setinfo trend --description=""Trend-cycle component (STL decomposition)"" --graph-name=""Trend-cycle"""
+tsdecomp,contributed,contributed/tsdecomp.gfn,stl_decompose,73,possible_plot,"setinfo season --description=""Seasonal component (STL decomposition)"" --graph-name=""Seasonal"""
+tsdecomp,contributed,contributed/tsdecomp.gfn,stl_decompose,74,possible_plot,"setinfo remainder --description=""Remainder component (STL decomposition)"" --graph-name=""Remainder"""
+tsdecomp,contributed,contributed/tsdecomp.gfn,plot_decompose,1,possible_plot,/* Plot the components of a classical decomposition as a grid plot
+tsdecomp,contributed,contributed/tsdecomp.gfn,plot_decompose,9,possible_plot,"opts.output: path+filename of the output file; if not set or empty, the plot is shown on screen."
+tsdecomp,contributed,contributed/tsdecomp.gfn,plot_decompose,10,possible_plot,"opts.layout: ""vertical"" (default; grid plot with three rows), ""horizontal"" (grid plot with three columns) or ""separate"" (three"
+tsdecomp,contributed,contributed/tsdecomp.gfn,plot_decompose,13,possible_plot,"opts.width, opts.height: size in pixels of the grid plot or, for"
+tsdecomp,contributed,contributed/tsdecomp.gfn,plot_decompose,14,possible_plot,"separate plots, of each plot. Default (0): 800x900 (vertical), 1200x400 (horizontal) and 600x400 (separate)."
+tsdecomp,contributed,contributed/tsdecomp.gfn,plot_decompose,15,possible_plot,opts.title: overall title of the plot (default: none; ignored for
+tsdecomp,contributed,contributed/tsdecomp.gfn,plot_decompose,16,possible_plot,separate plots as each plot has its own title).
+tsdecomp,contributed,contributed/tsdecomp.gfn,plot_decompose,81,direct_plot,plot Ltrend
+tsdecomp,contributed,contributed/tsdecomp.gfn,plot_decompose,87,possible_plot,end plot --outbuf=Plots[1]
+tsdecomp,contributed,contributed/tsdecomp.gfn,plot_decompose,89,direct_plot,plot Lseason
+tsdecomp,contributed,contributed/tsdecomp.gfn,plot_decompose,97,possible_plot,end plot --outbuf=Plots[2]
+tsdecomp,contributed,contributed/tsdecomp.gfn,plot_decompose,99,direct_plot,plot Lremainder
+tsdecomp,contributed,contributed/tsdecomp.gfn,plot_decompose,107,possible_plot,end plot --outbuf=Plots[3]
+tsdecomp,contributed,contributed/tsdecomp.gfn,plot_decompose,118,gnuplot_source,"catch gridplot One --width=self.width --height=self.height  --output=""@fname"""
+tsdecomp,contributed,contributed/tsdecomp.gfn,plot_decompose,121,possible_plot,"printf ""Error: failed to create plot for %s component.\n"", components[i]"
+tsdecomp,contributed,contributed/tsdecomp.gfn,plot_decompose,131,gnuplot_source,"catch gridplot Plots --rows=n_rows --width=self.width --height=self.height --title=""@ttl"" --output=""@dest"""
+tsdecomp,contributed,contributed/tsdecomp.gfn,plot_default_values,4,possible_plot,"string self.output = """"         # empty: show plot on screen"
+tsfcst,contributed,contributed/tsfcst.gfn,decompcl,16,possible_plot,"figure = (aggregate(season,lincomb(seasonals(),seq(1,f)),mean)[,3])'"
+tsfcst,contributed,contributed/tsfcst.gfn,decompcl,17,possible_plot,mfig = meanr(figure)
+tsfcst,contributed,contributed/tsfcst.gfn,decompcl,19,possible_plot,figure = figure / mfig
+tsfcst,contributed,contributed/tsfcst.gfn,decompcl,21,possible_plot,figure = figure - mfig
+tsfcst,contributed,contributed/tsfcst.gfn,decompcl,24,possible_plot,"sss0 = figure[seq(sta0,f)]"
+tsfcst,contributed,contributed/tsfcst.gfn,decompcl,29,possible_plot,"mmm = mshape(figure,1,periods*(f+1))"
+tsfcst,contributed,contributed/tsfcst.gfn,decompcl,57,possible_plot,"matrix bun[""figure""] = figure"
+tsfcst,contributed,contributed/tsfcst.gfn,fcast_plot,34,possible_plot,"printf ""\na meaningful plot.\n"""
+tsfcst,contributed,contributed/tsfcst.gfn,fcast_plot,64,direct_plot,plot plt
+tsfcst,contributed,contributed/tsfcst.gfn,fcast_plot,70,possible_plot,end plot --output=display
+tsfcst,contributed,contributed/tsfcst.gfn,fcast_plot,75,direct_plot,plot plt
+tsfcst,contributed,contributed/tsfcst.gfn,fcast_plot,82,possible_plot,end plot --output=display
+tsfcst,contributed,contributed/tsfcst.gfn,fcast_plot,93,direct_plot,plot plt
+tsfcst,contributed,contributed/tsfcst.gfn,fcast_plot,100,possible_plot,end plot --output=display
+tsfcst,contributed,contributed/tsfcst.gfn,mdecompose2,15,possible_plot,"figure = (aggregate(season,lincomb(seasonals(),seq(1,f)),mean)[,3])'"
+tsfcst,contributed,contributed/tsfcst.gfn,mdecompose2,16,possible_plot,mfig = meanr(figure)
+tsfcst,contributed,contributed/tsfcst.gfn,mdecompose2,18,possible_plot,figure = figure / mfig
+tsfcst,contributed,contributed/tsfcst.gfn,mdecompose2,20,possible_plot,figure = figure - mfig
+tsfcst,contributed,contributed/tsfcst.gfn,mdecompose2,23,possible_plot,"sss0 = figure[seq(sta0,f)]"
+tsfcst,contributed,contributed/tsfcst.gfn,mdecompose2,27,possible_plot,"mmm = mshape(figure,1,periods*(f+1))"
+uniFCextensions,contributed,contributed/uniFCextensions.gfn,GUI_uniFCboot,136,gnuplot_source,if $version >= 20240 && H > 1	# otherwise gnuplot complains (with just a single obs)
+uniFCextensions,contributed,contributed/uniFCextensions.gfn,GUI_uniFCboot,145,direct_plot,plot temp
+uniFCextensions,contributed,contributed/uniFCextensions.gfn,GUI_uniFCboot,149,possible_plot,end plot
+uniFCextensions,contributed,contributed/uniFCextensions.gfn,plot_multibands,28,possible_plot,"errorif(numbands > 9, ""cannot plot more than nine bands"")"
+uniFCextensions,contributed,contributed/uniFCextensions.gfn,plot_multibands,46,direct_plot,plot temp
+uniFCextensions,contributed,contributed/uniFCextensions.gfn,plot_multibands,51,possible_plot,end plot
+var_chow,contributed,contributed/var_chow.gfn,var_chow,385,gnuplot_source,"string plotopt = ""set term png enh ; set yrange [0:1.1]; set style line 1 lw 5 ; set style line 2 lw 3 ; set style line 3 lw 3;              set key outside below"""
+var_chow,contributed,contributed/var_chow.gfn,var_chow,386,direct_plot,gnuplot boot_chow_bp ten five --time-series --with-lines --with-impulses=boot_chow_bp --output=display --single-yaxis { set title 'break point Chow test: bootstrapped pvalue (@replicat repl.)'; @plotopt ; }
+var_chow,contributed,contributed/var_chow.gfn,var_chow,387,direct_plot,gnuplot boot_chow_ss ten five --time-series --with-lines --with-impulses=boot_chow_ss --output=display --single-yaxis { set title 'sample-split Chow test: bootstrapped pvalue (@replicat repl.)'; @plotopt ; }
+var_chow,contributed,contributed/var_chow.gfn,var_chow,388,direct_plot,gnuplot boot_chow_fc ten five --time-series --with-lines --with-impulses=boot_chow_fc --output=display --single-yaxis { set title 'Chow forecast test: bootstrapped pvalue (@replicat repl.)'; @plotopt ; }
+wstats,contributed,contributed/wstats.gfn,<sample>,17,direct_plot,plot plt
+wstats,contributed,contributed/wstats.gfn,<sample>,21,gnuplot_source,literal set style fill solid 0.3
+wstats,contributed,contributed/wstats.gfn,<sample>,22,possible_plot,end plot --output=display
+yahoo_get,contributed,contributed/yahoo_get.gfn,build_yahoo_url,3,possible_plot,https://query1.finance.yahoo.com/v8/finance/chart/IBM?period1=1517788800&period2=1527206400&interval=1d
+yahoo_get,contributed,contributed/yahoo_get.gfn,build_yahoo_url,48,possible_plot,"string baseurl = ""https://query1.finance.yahoo.com/v8/finance/chart/"""
+yahoo_get,contributed,contributed/yahoo_get.gfn,json2csv,1,possible_plot,bundle b = chart.result[1]
+yahoo_get,contributed,contributed/yahoo_get.gfn,write_tempfile,11,possible_plot,catch bundle chart = jsongetb(s).chart
+yahoo_get,contributed,contributed/yahoo_get.gfn,write_tempfile,21,possible_plot,if typeof(chart.error) == 5
+yahoo_get,contributed,contributed/yahoo_get.gfn,write_tempfile,22,possible_plot,"if chart.error.code == ""Not Found"""
+yahoo_get,contributed,contributed/yahoo_get.gfn,write_tempfile,24,possible_plot,"elif chart.error.code == ""Bad Request"""
+yahoo_get,contributed,contributed/yahoo_get.gfn,write_tempfile,28,possible_plot,msg = chart.error.description
+yahoo_get,contributed,contributed/yahoo_get.gfn,write_tempfile,34,gnuplot_source,outfile --quiet --tempfile=fname
+yahoo_get,contributed,contributed/yahoo_get.gfn,write_tempfile,35,possible_plot,err = json2csv(chart)
+yahoo_get,contributed,contributed/yahoo_get.gfn,write_tempfile,36,gnuplot_source,end outfile
+yahoo_get,contributed,contributed/yahoo_get.gfn,get_dividends,32,possible_plot,json_err = tmp.chart.error
+yahoo_get,contributed,contributed/yahoo_get.gfn,get_dividends,38,possible_plot,catch bundle div = tmp.chart.result[1].events.dividends
+yahoo_get,contributed,contributed/yahoo_get.gfn,<sample>,42,direct_plot,gnuplot dj_min dj_max dj_mean --time-series --with-lines --output=display
