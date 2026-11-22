@@ -1,3 +1,24 @@
+# Current status: 22 November 2026
+
+The maintained plotting audit is complete: **28 suites (`priority5` through
+`priority32`), 250/250 cases PASS, and 311 generated Matplotlib figures**.
+Those totals come from the verified release-audit runs. The 250 cases are
+listed in the maintained suite manifests; see the
+[thematic suite index](tests/README.md) and per-suite README files.
+
+The `gptranslate 0.13` regression suite separately reached **103/103 PASS**.
+This figure is **not** part of the 250 package integration cases.
+
+**Interpretation:** automated `PASS` checks execution and figure creation.
+Image appearance and semantics require separate review; the `Imputer` missing
+value gap in `priority32` is a documented example of an issue found only by
+looking at the image and fixed before the 0.13 release.
+
+The detailed dated material below remains intact as an **historical status
+snapshot through `priority18`**, not a current aggregate.
+
+---
+
 # Status at 2026-11-20
 
 ## Executive summary
