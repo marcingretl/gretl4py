@@ -88,7 +88,7 @@ see what's actually exercised.
 | `conftest.py` | Installed-package import guard, shared fixtures (`bjg_dataset`, `criteria_package`), `run_in_subprocess()` helper |
 | `test_matrix.py` | `GretlMatrix`: negative indexing, `INT_MIN` bounds UB, `get_slice()` leak, missing `operator=`, 0-d NumPy array rejection |
 | `test_bundle.py` | `GretlBundle`: the double-free regression from fixing the original leak, copy/deepcopy protocol, matrix-from-array |
-| `test_dataset_test.py` | `Dataset.test()`: the `corrgm`/`fractint`/`normtest`/`runs` missing-bounds-check bug |
+| `test_dataset_test.py` | Named dataset methods (`corrgm`, `fractint`, `normtest`, `runs`): missing-bounds-check regression tests |
 | `test_packages.py` | `GretlPackage`: the `transfer_ownership()` leak (every package-function call leaked its return value) |
 | `test_hansl.py` | `run_hansl`/`run_script`: stack buffer overflow, stale-`fb` use-after-free, `MODEL` lifecycle leak, the original crash scenario |
 | `test_dataset_audit.py` | Dataset operations and API contracts added in October 2026 |
@@ -135,7 +135,7 @@ similar against a standalone repro script instead.
 **Fixtures load real data, not synthetic stand-ins.** `bjg_dataset` is
 gretl's bundled airline-passengers time series; `criteria_package` is a
 small, real, network-free `.gfn` package. Several of the bugs here (the
-`Dataset.test()` ones especially) only reproduce against a genuine
+dataset diagnostic tests especially) only reproduce against a genuine
 time-series dataset — a hand-built cross-section wasn't enough during the
 original investigation, so don't swap these for something synthetic
 without checking.

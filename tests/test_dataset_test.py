@@ -1,5 +1,5 @@
 """
-GretlDataset.test() regression tests - the corrgm/fractint/normtest/runs
+GretlDataset named-method regression tests - the corrgm/fractint/normtest/runs
 missing-bounds-check bug (round-2/round-3 finding), reported and reproduced
 by Marcin against a real time-series dataset.
 
