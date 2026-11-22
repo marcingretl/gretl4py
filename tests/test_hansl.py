@@ -13,17 +13,14 @@ like it "passed" or "failed" purely because of what an earlier, unrelated
 test left behind in the same process - a fresh process is what actually
 matches how these bugs originally reproduced.
 """
-import resource
 
 import pytest
 
 import gretl
 
+from rss_helper import rss_kb as _rss_kb
+
 from conftest import run_in_subprocess
-
-
-def _rss_kb():
-    return resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
 
 
 def test_basic_execution():
