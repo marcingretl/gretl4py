@@ -78,3 +78,6 @@ htmlcov/
 /doc/*.txss2
 /doc/*.vrb
 /doc/gretl4py.pdf
+
+# Automatically generated package index
+/addons.idx
