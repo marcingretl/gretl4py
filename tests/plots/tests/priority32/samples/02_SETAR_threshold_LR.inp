@@ -1,0 +1,9 @@
+# SETAR 1.5: exercise the package's own LR confidence-profile graph.
+# Its official example uses a remotely fetched lynx dataset; avoid that dependency.
+# Box-Jenkins monthly passenger growth provides a genuine local time series.
+# No linearity bootstrap: the native threshold confidence plot is unconditional.
+open bjg.gdt --quiet
+series y = diff(lg)
+set seed 320102
+list fitted = SETAR(y, 2, 2, null, 0, 0)
+# SETAR() itself issues gnuplot ... --single-yaxis with a dynamic yrange.

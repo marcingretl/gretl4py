@@ -1,0 +1,14 @@
+# RollingStats: follow the package sample's rolling correlation example.
+# movstats() returns an aligned series after calculating 16-observation windows.
+# The sample's user function supplies the correlation statistic per window.
+open denmark.gdt --quiet
+function scalar correlation(const list L)
+    corr L --quiet
+    return $result[1,2]
+end function
+list L = diff(LRM) diff(LRY)
+smpl L --no-missing
+series correl = movstats(L, "correlation", 16, 0)
+# Use the sample's native plot command and preserve the observation dates.
+gnuplot correl --with-lines --time-series --output=display \
+    { set title "RollingStats: rolling bivariate correlation"; }

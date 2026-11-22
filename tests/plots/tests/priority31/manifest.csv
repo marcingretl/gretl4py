@@ -1,0 +1,7 @@
+case,package,script
+01_BMA_inclusion_heatmap,BMA,samples/01_BMA_inclusion_heatmap.inp
+02_BMA_custom_histogram,BMA,samples/02_BMA_custom_histogram.inp
+03_BMA_jointness_heatmap,BMA,samples/03_BMA_jointness_heatmap.inp
+04_BMA_prediction_bars,BMA,samples/04_BMA_prediction_bars.inp
+05_NIC_piecewise_gjr_garch,nic_gig,samples/05_NIC_piecewise_gjr_garch.inp
+06_Wstats_weighted_boxes,wstats,samples/06_Wstats_weighted_boxes.inp

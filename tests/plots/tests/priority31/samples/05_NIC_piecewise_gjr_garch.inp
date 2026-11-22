@@ -1,0 +1,13 @@
+# nic_gig 1.0: exact public-package sample pattern, using observed NYSE data.
+# Tests function definitions, powers, a ternary x < 0, and function-only plot.
+# Requires the complete gig package as a dependency.
+open nysewk --quiet
+setobs 52 1966-01-05 --time-series
+series Stock = interpol(close)
+series StockReturns = ldiff(Stock)
+smpl +1
+bundle mod_g = gig_setup(StockReturns, 1, const, null, 1)
+gig_estimate(&mod_g, 0)
+bundle mod_gjr = gig_setup(StockReturns, 3, const, null, 1)
+gig_estimate(&mod_gjr, 0)
+nic_plot_from_gig(mod_g, mod_gjr)

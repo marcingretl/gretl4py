@@ -1,0 +1,13 @@
+# Imputer 0.2: follow the package sample using the observed bjg time series.
+# Keep a genuine block of NA values to check discontinuities in the graph.
+# Use the package's public impute() method; do not reconstruct its values.
+open bjg.gdt --quiet
+series gappy = lg
+smpl 1954:3 1955:6
+gappy = NA
+smpl full
+series filled = impute(gappy, "backfill")
+# Compare the original, deliberately incomplete, and package-imputed series.
+# Translation must preserve the gap in gappy instead of joining across NA.
+gnuplot lg gappy filled --with-lines --time-series --output=display \
+    { set title "Imputer: missing and backfilled observations"; }

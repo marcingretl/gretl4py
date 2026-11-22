@@ -1,0 +1,28 @@
+# BMA: estimate a genuine model and use the package's BMA_Plot() output.
+# In batch mode BMA_Plot() writes timestamped original gnuplot scripts.
+# Find and replay the requested file without changing any plotting command.
+open denmark.gdt --quiet
+set seed 310103
+list X = LRY IBO IDE
+bundle fit = BMA(LRM, X, _(Nrep=2800, Nrank=5, verbosity=0, do_plot=0, do_joint="dw1"))
+scalar stamp_start = $now[1]
+BMA_Plot(&fit)
+scalar stamp_stop = $now[1]
+# Scan the seconds spanning BMA_Plot(): the filename is decided inside the function.
+scalar found = 0
+string candidate, script_text
+loop n = 0..(stamp_stop - stamp_start + 1) --quiet
+    if !found
+        candidate = sprintf("%s-Jointness.plt", strftime(stamp_start + n, "%Y%m%d%H%M%S"))
+        catch script_text = readfile(candidate)
+        if !$error
+            found = 1
+            # Translate and render the exact package-generated gnuplot script.
+            gnuplot --input=@candidate --output=display
+        endif
+    endif
+endloop
+if !found
+    # Failing loudly is preferable to silently passing with a stale plot.
+    gnuplot --input="__priority31_bma_missing_Jointness.plt" --output=display
+endif

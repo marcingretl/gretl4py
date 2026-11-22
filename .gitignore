@@ -9,3 +9,75 @@ demo/memcheck
 builddir/
 dist/
 *.egg-info/
+
+# Python caches and local test artifacts
+*.py[cod]
+.pytest_cache/
+.hypothesis/
+.coverage
+.coverage.*
+htmlcov/
+
+# Local build tree and wheel distribution outputs
+/build/
+/WHLs/
+*.whl
+
+# Developer-specific IDE files and source-code indexes
+/.kdev4/
+/.vscode/
+/*.kdev4
+/cscope.out
+
+# Platform-specific native binaries placed under the gretl package tree.
+# The recursive patterns cover gretl/ itself and its lib/ subdirectory.
+# Linux: shared objects (including versioned library names).
+/gretl/**/*.so
+/gretl/**/*.so.*
+# macOS: dynamic libraries and loadable bundles.
+/gretl/**/*.dylib
+/gretl/**/*.bundle
+# Windows: DLLs, Python extensions, import libraries and linker outputs.
+/gretl/**/*.dll
+/gretl/**/*.pyd
+/gretl/**/*.dll.a
+/gretl/**/*.lib
+/gretl/**/*.exp
+/gretl/**/*.pdb
+# Static library outputs (all platforms).
+/gretl/**/*.a
+
+# Bundled executables and runtime data copied into the local source tree.
+# These rules do not affect the installed gretl4py package in site-packages.
+/gretl/gp-executor
+/gretl/gp-executor.exe
+/gretl/gretlmpi
+/gretl/gretlmpi.exe
+/gretl/tmp/
+/gretl/tmpgpttmp.py
+
+# Generated LaTeX files; documentation source files remain visible.
+/doc/*.aux
+/doc/*.bbl
+/doc/*.bcf
+/doc/*.blg
+/doc/*.fdb_latexmk
+/doc/*.fls
+/doc/*.idx
+/doc/*.ilg
+/doc/*.ind
+/doc/*.lof
+/doc/*.log
+/doc/*.lot
+/doc/*.nav
+/doc/*.out
+/doc/*.run.xml
+/doc/*.snm
+/doc/*.synctex.gz
+/doc/*.toc
+/doc/*.txss2
+/doc/*.vrb
+/doc/gretl4py.pdf
+
+# Automatically generated package index
+/addons.idx

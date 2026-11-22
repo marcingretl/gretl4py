@@ -1,0 +1,14 @@
+# RollingStats: reproduce the package sample's expanding-window AR(1).
+# A user-defined estimator is called by moving_stats() on each longer window.
+# This checks that result rows map back to the correct observation dates.
+open denmark.gdt --quiet
+function scalar my_AR1(const series y)
+    ols y const y(-1) --quiet
+    return $coeff[2]
+end function
+bundle B = moving_stats(LRM, "my_AR1", 10, 1)
+# Use the observation numbers returned by the public package function.
+smpl B.obsnum[1] B.obsnum[end]
+series bhat = B.result
+gnuplot bhat --with-lines --time-series --output=display \
+    { set title "RollingStats: expanding-window AR(1) coefficient"; }

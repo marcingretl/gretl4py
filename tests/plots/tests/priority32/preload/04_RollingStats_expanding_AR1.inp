@@ -1,0 +1,4 @@
+# Load time-series data before the harness loads RollingStats.
+# The reviewed case opens its own original dataset afterwards.
+nulldata 144
+setobs 4 1974:1 --time-series

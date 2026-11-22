@@ -1,0 +1,5 @@
+case,package,script
+01_Imputer_missing_backfill,Imputer,samples/01_Imputer_missing_backfill.inp
+02_SETAR_threshold_LR,SETAR,samples/02_SETAR_threshold_LR.inp
+03_RollingStats_rolling_correlation,RollingStats,samples/03_RollingStats_rolling_correlation.inp
+04_RollingStats_expanding_AR1,RollingStats,samples/04_RollingStats_expanding_AR1.inp

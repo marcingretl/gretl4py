@@ -1,12 +1,63 @@
 # gretl4py test suite
 
-This exists because gretl4py had no automated tests at all before the
+## Current test map (November 2026)
+
+The repository has two complementary layers. **Core/API tests** live directly
+in `tests/` and are collected by `pytest`; **package-plotting integration
+fixtures** live in [`plots/tests/`](plots/tests/README.md) and are executed by
+the approved `probe_package_batch.py` runner. The plotting audit also has its
+own offline `pytest` tests of the runner. Plotting `.inp` samples are **not**
+collected by pytest automatically.
+
+| Area | Files | Main purpose |
+| --- | --- | --- |
+| Matrix indexing and ownership | `test_matrix.py`, `test_matrix_properties.py` | Bounds, copies, slicing, NumPy conversion, property-based cases |
+| Bundle ownership and API | `test_bundle.py` | Nested bundles, copies, value lifetime, element handling |
+| Dataset operations | `test_dataset_audit.py` | Dataset API contracts: transforms, sample, correlation, PCA, k-means |
+| Dataset test dispatch | `test_dataset_test.py` | Bounds checks and econometric tests such as `corrgm` and `runs` |
+| Hansl execution | `test_hansl.py` | `run_hansl` / `run_script`, subprocess state isolation |
+| gretl function packages | `test_packages.py` | Loading, argument validation, returned-value ownership |
+| Plotting audit infrastructure | `plots/test_*.py` | Offline catalog, safety, batch runner, and fixture-selection tests |
+| Plotting integration | `plots/tests/priority5`–`priority32` | 250 real package cases; run with `--approved` after reviewing sources |
+
+The older sections below document the August 2026 security-review origins
+and subsequent Dataset API expansion. **Not every current test represents a
+previously observed bug**: some are functional contract or property-based
+checks. The status of the graph-producing package suites is documented in
+[`plots/STATUS.md`](plots/STATUS.md) and their thematic index in
+[`plots/tests/README.md`](plots/tests/README.md).
+
+From the repository root:
+
+```bash
+# Core/API tests (requires a built, loadable gretl extension; hypothesis for
+# test_matrix_properties.py).
+python3 -m pytest tests/test_*.py -v
+
+# Offline plotting-runner tests (no third-party samples executed).
+python3 -m pytest tests/plots/test_*.py -v
+
+# One approved package-plot suite, run separately from pytest.
+cd tests/plots
+python3 probe_package_batch.py --custom priority32 --approved --continue-on-error
+```
+
+### Outputs versus source fixtures
+
+The uploaded test tree contains caches (`__pycache__`, `.pytest_cache`,
+`.hypothesis`) and produced plotting artifacts (`package_plot_results`,
+timestamped `.plt` files). They are **not test inputs**. Preserve the
+hand-reviewed `manifest.csv`, `samples/`, `preload/` and any deliberately
+bundled `data/` directories; do not blindly delete or move them.
+
+## Historical notes: August 2026 security-review regressions
+
+The original test layer exists because gretl4py had no automated tests at all before the
 2026-08 security review — every one of the dozen-plus real bugs found that
 month (buffer overflows, double-frees, leaks, missing bounds checks, a
 memory-lifecycle bug that took three attempts to actually fix) was found by
-hand, and would have gone unnoticed indefinitely without one. Every test
-here is a **regression test for a specific, verified bug from that review**
-— not speculative coverage. If it's here, it once broke something real.
+hand, and would have gone unnoticed indefinitely without one. The earliest tests here were **regression tests for specific, verified
+bugs from that review**. Functional and property-based tests were added later.
 
 ## Running
 
@@ -15,10 +66,17 @@ cd tests
 python3 -m pytest -v
 ```
 
-No install step needed — `conftest.py` puts the repo root and `build/` on
-`sys.path` directly, the same way the fixes were verified by hand during
-the review. Just make sure the C++ extension is built (`meson compile -C
-../build`, or however you normally build it) before running.
+The `gretl` package must be installed in the Python environment running
+pytest. The tests deliberately do not add the source checkout or `build/` to
+`sys.path`. Before running, you can verify the active installation with:
+
+```bash
+python3 -c "import gretl; print(gretl.__file__)"
+```
+
+Plot tests must use the `gp-executor` bundled with that installed package;
+do not copy an executable into the source tree or use an external gptranslate
+installation.
 
 Optional, if you want it: `pip install pytest-cov` and add `--cov=gretl` to
 see what's actually exercised.
@@ -27,14 +85,22 @@ see what's actually exercised.
 
 | File | Covers |
 |---|---|
-| `conftest.py` | Path setup, shared fixtures (`bjg_dataset`, `criteria_package`), `run_in_subprocess()` helper |
+| `conftest.py` | Installed-package import guard, shared fixtures (`bjg_dataset`, `criteria_package`), `run_in_subprocess()` helper |
 | `test_matrix.py` | `GretlMatrix`: negative indexing, `INT_MIN` bounds UB, `get_slice()` leak, missing `operator=`, 0-d NumPy array rejection |
 | `test_bundle.py` | `GretlBundle`: the double-free regression from fixing the original leak, copy/deepcopy protocol, matrix-from-array |
 | `test_dataset_test.py` | `Dataset.test()`: the `corrgm`/`fractint`/`normtest`/`runs` missing-bounds-check bug |
 | `test_packages.py` | `GretlPackage`: the `transfer_ownership()` leak (every package-function call leaked its return value) |
 | `test_hansl.py` | `run_hansl`/`run_script`: stack buffer overflow, stale-`fb` use-after-free, `MODEL` lifecycle leak, the original crash scenario |
+| `test_dataset_audit.py` | Dataset operations and API contracts added in October 2026 |
+| `test_matrix_properties.py` | Hypothesis-driven matrix indexing and construction checks |
 
 ## Design decisions worth knowing about
+
+**Installed package only.** `conftest.py` rejects imports from the source
+checkout, and `run_in_subprocess()` verifies that each child process imports
+the same installed package as its parent. No source/build path injection is
+used. The bundled `gp-executor` requirement is separate and should be checked
+in the plotting integration tests.
 
 **Subprocess isolation for `run_hansl`/`run_script` tests.** `test_hansl.py`
 runs its scenarios via `run_in_subprocess()` (see `conftest.py`) instead of

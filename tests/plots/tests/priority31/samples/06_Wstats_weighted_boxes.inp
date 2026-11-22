@@ -1,0 +1,16 @@
+# wstats 1.3: adapt the package's original weighted-frequency plot recipe.
+# Use actual denmark observations, not a fabricated frequency matrix.
+# Tests 'with boxes', relative boxwidth, and partially transparent fill.
+open denmark.gdt --quiet
+series group = (LRY > median(LRY)) + 1
+setinfo group --discrete
+series weights = abs(IBO) + 1
+matrix frequencies = wfreq(group, weights)
+matrix plotted = frequencies[,{3,1}]
+cnameset(plotted, "Weighted Group")
+plot plotted
+    literal set linetype 1 pt 1 lc rgb "#444444"
+    option with-boxes
+    literal set boxwidth 0.4 relative
+    literal set style fill solid 0.3
+end plot --output=display

@@ -84,8 +84,10 @@ def test_expand_annual_to_quarterly(denmark):
 
 @pytest.mark.parametrize("varlist", ["LRM LRY", ["LRM", "LRY"]])
 def test_corr_and_cov_overloads(denmark, varlist):
-    corr = denmark.corr(varlist)
+    # corr() returns the result matrix and an optional matplotlib Figure.
+    corr, fig = denmark.corr(varlist)
     cov = denmark.cov(varlist)
+    assert fig is None
     assert (corr.rows, corr.cols) == (2, 2)
     assert (cov.rows, cov.cols) == (2, 2)
     np.testing.assert_allclose(
@@ -96,7 +98,9 @@ def test_corr_and_cov_overloads(denmark, varlist):
 
 @pytest.mark.parametrize("varlist", ["LRM LRY", ["LRM", "LRY"]])
 def test_xcorrgm(denmark, varlist):
-    result = denmark.xcorrgm(varlist, 4)
+    # xcorrgm() returns the result matrix and an optional matplotlib Figure.
+    result, fig = denmark.xcorrgm(varlist, 4)
+    assert fig is None
     assert (result.rows, result.cols) == (9, 2)
 
 

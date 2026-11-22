@@ -4,7 +4,32 @@ This is a **static inventory and manual integration-test toolkit** for discoveri
 plot-producing gretl packages. It does not claim runtime compatibility merely
 because a plotting keyword appears in a package.
 
-## Verified status (17 November 2026)
+## Current entry points and status (22 November 2026)
+
+- **Maintained package fixtures:** `priority5`–`priority32`, **250/250 PASS**
+  and **311 figures** in the completed release audit. The 250-case count is
+  independently reproducible by summing the 28 `manifest.csv` files; the
+  figure count is from the confirmed batch runs, not a manifest prediction.
+- **gptranslate:** 103 regression tests passed during the 0.13 release gate.
+  These are a separate test suite from the plotting fixtures.
+- **Start here:** [`tests/README.md`](tests/README.md) is the thematic index
+  of all 28 maintained suites, with links to each suite's own README.
+- **Run one suite:** `python probe_package_batch.py --custom priority32
+  --approved --continue-on-error` from `tests/plots/`.
+- **Run offline tool tests:** `python3 -m pytest test_package_plot_audit.py
+  test_probe_package_batch.py test_probe_package_sample.py -v`.
+
+The audit includes **manual visual checks**. A `PASS` from the runner means
+successful execution and at least one captured figure; it does not by itself
+prove that the image is correct. `priority32` exposed precisely such a
+visually incorrect line across an `NA` gap, subsequently corrected in
+`gptranslate 0.13`.
+
+The sections below retain the original exploratory-audit workflows and the
+historical results recorded when they were written. Their smaller totals are
+not the final release count.
+
+## Historical snapshot (17 November 2026)
 
 - **`priority5`: 17/17 PASS**, covering 15 gretl packages and generating 19 Matplotlib figures.
 - **`priority6`: 7/7 PASS**, covering 5 additional packages and generating 7 figures.

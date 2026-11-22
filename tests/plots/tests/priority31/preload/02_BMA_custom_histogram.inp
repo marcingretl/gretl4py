@@ -1,0 +1,4 @@
+# Load a minimal time-series dataset before the test framework loads BMA.
+# The reviewed case opens its own real dataset after the package is loaded.
+nulldata 144
+setobs 4 1974:1 --time-series

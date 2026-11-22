@@ -1,0 +1,20 @@
+# Generated Python/test-runner caches.
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.hypothesis/
+
+# Generated plot-run reports and temporary gnuplot scripts.
+plots/package_plot_results/
+plots/gretl_package_plot_audit/package_plot_results/
+plots/tests/priority*/gpttmp*.plt
+plots/tests/priority*/20??????-*.plt
+plots/tests/priority*/20????????????-*.plt
+
+# Leftovers from manually applying source patches.
+*.orig
+*.rej
+
+# Downloaded package sources used for plot compatibility audits.
+plots/audit/contributed/
+plots/audit/addons_source/
