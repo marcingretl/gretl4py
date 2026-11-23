@@ -4,16 +4,13 @@ fixing the original leak (round-2, finding #07) and the missing null-check
 after gretl_matrix_alloc() in set_element<py::array>.
 """
 import copy
-import resource
 
 import numpy as np
 import pytest
 
 import gretl
 
-
-def _rss_kb():
-    return resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+from rss_helper import rss_kb as _rss_kb
 
 
 def test_basic_bundle():

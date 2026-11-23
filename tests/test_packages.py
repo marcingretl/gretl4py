@@ -4,15 +4,12 @@ GretlPackage regression tests - covers the transfer_ownership() bug
 returned, so every call into a contributed package leaked its return value,
 regardless of type: matrix, string, or bundle).
 """
-import resource
 
 import pytest
 
 import gretl
 
-
-def _rss_kb():
-    return resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+from rss_helper import rss_kb as _rss_kb
 
 
 def test_package_loads_and_lists_functions(criteria_package):

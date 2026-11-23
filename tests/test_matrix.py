@@ -3,16 +3,13 @@ GretlMatrix regression tests - one per bug found/fixed in the 2026-08
 security review, plus basic correctness checks for the surrounding
 behavior so a fix can't "succeed" by breaking something else.
 """
-import resource
 
 import numpy as np
 import pytest
 
 import gretl
 
-
-def _rss_kb():
-    return resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+from rss_helper import rss_kb as _rss_kb
 
 
 # --- negative indexing (finding #02) ---------------------------------------

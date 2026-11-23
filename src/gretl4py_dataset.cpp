@@ -1662,7 +1662,7 @@ std::pair<GretlBundlePtr, py::object> GretlDataset::test (const std::string &typ
     if (type == "adf") {
         err = adf_test(order, ex_var.get(), dset, opt_, printer_.prn_ptr());
     } else if (type == "bds") {
-        err = bds_test_driver(order, ex_var.get(), dset, opt_, printer_.prn_ptr());
+        err = bds_test_driver(order, gretl_is_null_list(ex_var.get()) ? nullptr : ex_var.get(), dset, opt_, printer_.prn_ptr());
         has_result = true;
     } else if (type == "coint") {
         err = engle_granger_test(order, ex_var.get(), dset, opt_, printer_.prn_ptr());
