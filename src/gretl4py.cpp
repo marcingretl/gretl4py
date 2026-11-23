@@ -43,6 +43,7 @@
           }, \
           py::arg("formula").none(false), py::kw_only(), DOC);
 
+namespace {
 constexpr char info[] =
     "The gretl4py package provides "
     "an interface to the gretl library for Python 3 "
@@ -56,6 +57,18 @@ void run_gnuplot (const std::string &filename)
     plot.set_source(filename);
     plot.display();
 }
+
+GretlMatrixPtr tdisagg (const GretlMatrix &Y, int s, const GretlMatrixPtr X, const py::kwargs &kwargs)
+{
+    py::object y_obj = py::cast(Y);
+    auto kwargs_copy = copy_dict_or_kwargs<py::kwargs>(kwargs);
+
+    if (X) kwargs_copy["X"] = X;
+
+    return do_get_tdisagg_matrix(y_obj, s, kwargs_copy);
+}
+
+} // namespace
 
 //////////////////////////////////////////////////
 // module extensions
@@ -177,18 +190,8 @@ PYBIND11_MODULE(_gretl, m)
           py::arg("X").none(false), py::arg("dfcorr").none(true) = 1);
     m.def("cov", py::overload_cast<const GretlMatrixPtr&, int>(&matrix_cov_corr<GretlFunIndex::F_MCOV>),
           py::arg("X").none(false), py::arg("dfcorr").none(true) = 1, doc::Functions::cov);
-    m.def("corr",
-          [](const py::array &X)
-          {
-              return matrix_cov_corr<GretlFunIndex::F_MCORR>(X);
-          },
-          py::arg("X").none(false));
-    m.def("corr",
-          [](const GretlMatrixPtr X)
-          {
-              return matrix_cov_corr<GretlFunIndex::F_MCORR>(X);
-          },
-          py::arg("X").none(false), doc::Functions::corr);
+    m.def("corr", [](const py::array &X) { return matrix_cov_corr<GretlFunIndex::F_MCORR>(X); }, py::arg("X").none(false));
+    m.def("corr", [](const GretlMatrixPtr X) { return matrix_cov_corr<GretlFunIndex::F_MCORR>(X); }, py::arg("X").none(false), doc::Functions::corr);
     m.def("varlist", &do_gretl_varlist, doc::Functions::varlist);
     m.def("genr", static_cast<void(*)(const std::string&, GretlDatasetPtr)>(&genr),
           py::arg("formula").none(false), py::arg("data").none(true) = std::nullopt);
@@ -198,25 +201,13 @@ PYBIND11_MODULE(_gretl, m)
     m.def("genr", &genr<std::string>, py::arg("name").none(false), py::arg("value").none(false));
     m.def("genr", &genr<GretlMatrix>, py::arg("name").none(false), py::arg("value").none(false));
     m.def("genr", &genr<py::list>, py::arg("name").none(false), py::arg("value").none(false));
-    m.def("pkg", &do_gretl_pkg,
-          py::arg("action").none(false), py::arg("pkgname").none(false), py::kw_only());
+    m.def("pkg", &do_gretl_pkg, py::arg("action").none(false), py::arg("pkgname").none(false), py::kw_only());
     m.def("kmeans", py::overload_cast<const GretlMatrix&, int, const GretlBundlePtr>(&kmeans),
          py::arg("X").none(false), py::arg("centers").none(false), py::arg("opts").none(true) = nullptr);
     m.def("kmeans", py::overload_cast<const GretlMatrix&, const GretlMatrix&, const GretlBundlePtr>(&kmeans),
          py::arg("X").none(false), py::arg("centers").none(false), py::arg("opts").none(true) = nullptr, doc::Functions::kmeans);
-    m.def("tdisagg",
-          [](const GretlMatrix &Y, int s, const GretlMatrixPtr X, const py::kwargs &kwargs) -> GretlMatrixPtr
-          {
-              py::object y_obj = py::cast(Y);
-              auto kwargs_copy = copy_dict_or_kwargs<py::kwargs>(kwargs);
-
-              if (X) kwargs_copy["X"] = X;
-
-              return do_get_tdisagg_matrix(y_obj, s, kwargs_copy);
-          },
-          py::arg("Y").none(false), py::arg("s").none(false), py::arg("X").none(true) = nullptr, py::kw_only(), doc::Functions::tdisagg);
-    m.def("kpsscrit", &do_kpsscrit,
-          py::arg("T").none(false), py::arg("trend").none(true) = false, doc::Functions::kpsscrit);
+    m.def("tdisagg", &tdisagg, py::arg("Y").none(false), py::arg("s").none(false), py::arg("X").none(true) = nullptr, py::kw_only(), doc::Functions::tdisagg);
+    m.def("kpsscrit", &do_kpsscrit, py::arg("T").none(false), py::arg("trend").none(true) = false, doc::Functions::kpsscrit);
 
     //////////////////////////////////////////////////
     // single equation models
