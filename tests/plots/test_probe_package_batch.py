@@ -299,7 +299,8 @@ open "some_other.bin"
     def test_installed_sample_path_rejects_escape(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            self.assertEqual(installed_sample_path(f"[EXAMPLES] {root}\n", "a.inp"), root / "a.inp")
+            # macOS may resolve /var to /private/var in returned paths.
+            self.assertEqual(installed_sample_path(f"[EXAMPLES] {root}\n", "a.inp"), (root / "a.inp").resolve())
             with self.assertRaises(ValueError):
                 installed_sample_path(f"[EXAMPLES] {root}\n", "../bad.inp")
 
