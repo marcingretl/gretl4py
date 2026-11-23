@@ -1670,6 +1670,7 @@ std::pair<GretlBundlePtr, py::object> GretlDataset::test (const std::string &typ
         if (ex_var.get()[0] != 1) throw std::invalid_argument("corrgm takes just one series");
         err = corrgram(ex_var.get()[1], order, 0, dset, opt_, printer_.prn_ptr());
     } else if (type == "difftest") {
+        if (gretl_list_n_distinct_members(ex_var.get()) != 2) handle_gretl_error(E_MISSDATA);
         err = diff_test(ex_var.get(), dset, opt_, printer_.prn_ptr());
     } else if (type == "fractint") {
         if (ex_var.get()[0] != 1) throw std::invalid_argument("fractint takes just one series");
