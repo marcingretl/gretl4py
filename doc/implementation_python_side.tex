@@ -527,7 +527,7 @@ for variables from different datasets, please refer to \ref{met:gretldataset::pv
 \gretlfpycmd{print\_module\_source()}\label{func:print_module_source}
 \estdesc{Prints the contents of a specified module.}
 \begin{lstlisting}[style=pythonstylefoot]
-gretl.print_module_source(module: str) -> None
+gretl..print_module_source(module: str) -> None
 \end{lstlisting}
 \generaldesc{This function is primarily used to display
 	the contents of scripts located in the \texttt{gretl/examples}
@@ -535,16 +535,17 @@ gretl.print_module_source(module: str) -> None
 
 \gretlfpycmd{run\_gnuplot()}\label{func:run_gnuplot}
 \estdesc{Processes an existing \gnuplot script and displays
-	the resulting plot using Matplotlib.}
+	the resulting plot using\newline Matplotlib.}
 \begin{lstlisting}[style=pythonstylefoot]
-gretl.run_gnuplot(filename: str) -> None
+gretl.run_gnuplot(filename: str) -> matplotlib.figure.Figure
 \end{lstlisting}
 \generaldesc{Reads a \gnuplot script from the file specified by
 	\pythcode{filename} and processes it using the \gretlpy
 	plotting backend. The script is translated into Python code
 	and rendered using Matplotlib, without invoking the external
 	\gnuplot executable. The script must use syntax supported
-	by the plotting backend.}
+	by the plotting backend. Function returns a Matplotlib
+	Figure object.}
 
 \gretlfpycmd{run\_hansl()}\label{func:run_hansl}
 \estdesc{Executes \hansl code.}

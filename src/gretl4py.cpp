@@ -55,13 +55,14 @@ constexpr char info[] =
     "an interface to the gretl library for Python 3 "
     "(3.11--3.14 tested).";
 
-void run_gnuplot (const std::string &filename)
+py::object run_gnuplot (const std::string &filename)
 {
     // display an existing gnuplot script using the GretlPlot backend
     GretlPlot plot;
 
     plot.set_source(filename);
-    plot.display();
+
+    return plot.display();
 }
 
 GretlMatrixPtr tdisagg (const GretlMatrix &Y, int s, const GretlMatrixPtr X, const py::kwargs &kwargs)
