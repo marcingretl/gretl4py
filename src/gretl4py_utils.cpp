@@ -410,8 +410,8 @@ bool GretlPlot::translate (void)
     const auto &executor = executor_;
     std::string command = "\"" + executor.string() + "\"";
 
-#ifdef _WIN32
-    // Select PySide6/QtAgg in generated Python scripts on Windows.
+#if defined(_WIN32) || defined(__APPLE__)
+    // Select PySide6/QtAgg in generated Python scripts on Windows and macOS.
     command += " --backend=QtAgg";
 #endif
 

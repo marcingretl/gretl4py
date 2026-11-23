@@ -78,3 +78,33 @@ del d
 gretl.show_data_status()
 \end{lstlisting}\index{show\_data\_status()}
 The dataset may still appear as registered for some time.
+
+\paragraph{Matplotlib backends.}
+The plotting functionality in \gretlpy relies on Matplotlib
+for rendering and displaying figures. Unless explicitly
+configured, the choice of the graphical backend is left
+to Matplotlib and the user's Python environment.
+
+In particular, \gretlpy does not require a specific Qt
+binding. The Matplotlib \pythcode{QtAgg} backend supports
+both Qt~5 and Qt~6, through compatible Python bindings
+such as PyQt5 and PySide6. On macOS, Matplotlib may also
+use its native \pythcode{MacOSX} backend.
+
+The availability of graphical backends depends on the
+operating system, Python version, and installed packages.
+For example, older macOS releases may support PyQt5 but
+not recent versions of PySide6.
+
+The selected backend can be inspected using
+\pythcode{matplotlib.get_backend()}. Users who require a
+specific backend can configure it using the standard
+Matplotlib mechanisms, including the \pythcode{MPLBACKEND}
+environment variable.
+
+Note that the lifetime of graphical windows is managed
+by Matplotlib. After a figure window has been closed,
+calling \pythcode{Figure.show()} on the original figure
+may not reopen it, depending on the backend and Matplotlib
+version. This does not affect the returned Figure object,
+which can still be modified or saved.
