@@ -95,7 +95,7 @@ class ProbeTests(unittest.TestCase):
             p = Path(temp)
             gfn = p / "tvcplots.GFN"
             gfn.write_bytes(b"example")
-            self.assertEqual(find_downloaded_contributed("TVCplots", p), gfn.resolve())
+            self.assertTrue(find_downloaded_contributed("TVCplots", p).samefile(gfn))
 
     def test_reject_path_as_package_name(self):
         with self.assertRaises(ValueError):
