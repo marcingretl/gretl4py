@@ -29,6 +29,17 @@ class FakeGretl:
         self.installed.add(Path(path).stem)
 
 
+def _symlink_to_or_skip(testcase: unittest.TestCase, link: Path, target: Path) -> None:
+    # Creating symlinks on Windows may require Developer Mode or privileges.
+    # Skip only the symlink-specific test, never unrelated path validation.
+    try:
+        link.symlink_to(target)
+    except OSError as exc:
+        if getattr(exc, "winerror", None) == 1314:
+            testcase.skipTest("Windows does not allow creating file symlinks")
+        raise
+
+
 class ProbeTests(unittest.TestCase):
     def test_addon_never_installs_even_if_cached(self):
         with tempfile.TemporaryDirectory() as temp:
@@ -150,7 +161,7 @@ class ProbeTests(unittest.TestCase):
             examples.mkdir(parents=True)
             outside = root / "outside.inp"
             outside.write_text("# outside\n")
-            (examples / "escape.inp").symlink_to(outside)
+            _symlink_to_or_skip(self, examples / "escape.inp", outside)
             with self.assertRaisesRegex(ValueError, "outside"):
                 choose_sample_script(examples, "escape")
 
@@ -189,7 +200,16 @@ class ProbeTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "Ambiguous sample"):
                 choose_sample_script(examples, "test")
 
-    def test_nested_traversal_and_symlink_are_rejected(self):
+    def test_nested_traversal_is_rejected(self):
+        # Check traversal independently so a Windows symlink permission error
+        # cannot prevent these input-validation assertions from running.
+        for name in ("../outside.inp", "Traditional/../other.inp", "/tmp/foo.inp",
+                     "Traditional//test.inp", "C:/foo.inp", r"Traditional\foo.inp"):
+            with self.subTest(name=name):
+                with self.assertRaises(ValueError):
+                    resolve_sample_name(["Traditional/external.inp"], name)
+
+    def test_nested_symlink_outside_directory_is_rejected(self):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)
             examples = root / "SVAR" / "examples"
@@ -197,12 +217,7 @@ class ProbeTests(unittest.TestCase):
             nested.mkdir(parents=True)
             external = root / "outside.inp"
             external.write_text("# external\n")
-            (nested / "external.inp").symlink_to(external)
-            for name in ("../outside.inp", "Traditional/../other.inp", "/tmp/foo.inp",
-                         "Traditional//test.inp", "C:/foo.inp", r"Traditional\foo.inp"):
-                with self.subTest(name=name):
-                    with self.assertRaises(ValueError):
-                        resolve_sample_name(["Traditional/external.inp"], name)
+            _symlink_to_or_skip(self, nested / "external.inp", external)
             with self.assertRaisesRegex(ValueError, "outside"):
                 choose_sample_script(examples, "Traditional/external.inp")
 
@@ -242,10 +257,12 @@ class ProbeTests(unittest.TestCase):
             self.assertEqual(sample_working_directory(script, examples), package.resolve())
 
     def test_installed_examples_dir_uses_gretl_module_path(self):
-        class FakeModule:
-            __file__ = "/tmp/testsite/gretl/__init__.py"
-        expected = Path("/tmp/testsite/gretl/functions/PairPlot/examples")
-        self.assertEqual(installed_examples_dir(FakeModule, "PairPlot"), expected)
+        # TemporaryDirectory provides an absolute native path on both OSes.
+        with tempfile.TemporaryDirectory() as temp:
+            class FakeModule:
+                __file__ = str(Path(temp) / "gretl" / "__init__.py")
+            expected = Path(FakeModule.__file__).resolve().parent / "functions" / "PairPlot" / "examples"
+            self.assertEqual(installed_examples_dir(FakeModule, "PairPlot"), expected)
 
 
 class CustomSuiteTests(unittest.TestCase):
@@ -301,7 +318,7 @@ class CustomSuiteTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "Invalid custom fixture path"):
                 load_custom_cases("bad_suite", root)
 
-    def test_reject_symlink_escape_and_duplicate_case(self):
+    def test_reject_symlink_escape(self):
         from probe_package_sample import load_custom_cases
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -309,13 +326,21 @@ class CustomSuiteTests(unittest.TestCase):
             (folder / "samples").mkdir(parents=True)
             outside = root / "outside.inp"
             outside.write_text("# external\n", encoding="utf-8")
-            (folder / "samples" / "test.inp").symlink_to(outside)
+            _symlink_to_or_skip(self, folder / "samples" / "test.inp", outside)
             (folder / "manifest.csv").write_text(
                 "case,package,script\ntest,TVCplots,samples/test.inp\n", encoding="utf-8"
             )
             with self.assertRaisesRegex(ValueError, "Missing or unsafe"):
                 load_custom_cases("suite", root)
-            (folder / "samples" / "test.inp").unlink()
+
+    def test_reject_duplicate_case(self):
+        # Duplicate manifest names must be checked even if file symlinks
+        # cannot be created on this Windows installation.
+        from probe_package_sample import load_custom_cases
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            folder = root / "suite"
+            (folder / "samples").mkdir(parents=True)
             (folder / "samples" / "test.inp").write_text("# valid\n")
             (folder / "manifest.csv").write_text(
                 "case,package,script\ntest,TVCplots,samples/test.inp\n"

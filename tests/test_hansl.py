@@ -34,9 +34,14 @@ def test_long_include_filename_does_not_crash():
     # own internal bound - "strncat_bounded" - can reject it and let the
     # script continue) - the only real invariant is that the process
     # doesn't crash.
+    # Windows raises FileNotFoundError when libgretl rejects the long name;
+    # this is a controlled failure, not the buffer overflow being tested.
     result = run_in_subprocess(
         'import gretl\n'
-        f'gretl.run_hansl(\'include "\' + "A" * 2000 + \'"\')\n'
+        'try:\n'
+        '    gretl.run_hansl(\'include "\' + "A" * 2000 + \'"\')\n'
+        'except FileNotFoundError:\n'
+        '    pass\n'
         'print("SURVIVED")\n'
     )
     assert "SURVIVED" in result.stdout, result.stderr
@@ -78,10 +83,15 @@ def test_include_filename_at_exact_filename_max_boundary(length):
     # from MAXLEN (512) to exactly FILENAME_MAX. Sweep both sides of that
     # exact boundary, not just "very long" - off-by-one is exactly the kind
     # of thing a boundary-unaware test would miss.
+    # An overlong include may be rejected by an exception instead of
+    # continuing; both paths must leave the Python process alive.
     result = run_in_subprocess(
         'import gretl\n'
         f'name = "A" * {length}\n'
-        'gretl.run_hansl(\'include "\' + name + \'"\')\n'
+        'try:\n'
+        '    gretl.run_hansl(\'include "\' + name + \'"\')\n'
+        'except FileNotFoundError:\n'
+        '    pass\n'
         'print("SURVIVED")\n'
     )
     assert "SURVIVED" in result.stdout, result.stderr
