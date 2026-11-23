@@ -43,6 +43,12 @@
           }, \
           py::arg("formula").none(false), py::kw_only(), DOC);
 
+void init_gretl4py_dataset_py11 (py::module_ &m);
+void init_gretl4py_bundle_py11 (py::module_ &m);
+void init_gretl4py_packages_py11 (py::module_ &m);
+void init_gretl4py_model_py11 (py::module_ &m);
+void init_gretl4py_gretl_matrix_py11 (py::module_ &m);
+
 namespace {
 constexpr char info[] =
     "The gretl4py package provides "
@@ -73,12 +79,6 @@ GretlMatrixPtr tdisagg (const GretlMatrix &Y, int s, const GretlMatrixPtr X, con
 //////////////////////////////////////////////////
 // module extensions
 //////////////////////////////////////////////////
-void init_gretl4py_dataset_py11 (py::module_ &m);
-void init_gretl4py_bundle_py11 (py::module_ &m);
-void init_gretl4py_packages_py11 (py::module_ &m);
-void init_gretl4py_model_py11 (py::module_ &m);
-void init_gretl4py_gretl_matrix_py11 (py::module_ &m);
-
 PYBIND11_MODULE(_gretl, m)
 {
     // exceptions
