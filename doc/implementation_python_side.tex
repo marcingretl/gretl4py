@@ -527,16 +527,30 @@ for variables from different datasets, please refer to \ref{met:gretldataset::pv
 \gretlfpycmd{print\_module\_source()}\label{func:print_module_source}
 \estdesc{Prints the contents of a specified module.}
 \begin{lstlisting}[style=pythonstylefoot]
-gretl.print_module_source(module: str)
+gretl..print_module_source(module: str) -> None
 \end{lstlisting}
 \generaldesc{This function is primarily used to display
 	the contents of scripts located in the \texttt{gretl/examples}
 	directory. An example is shown in Section~\ref{sec:usage_of_the_package}.}
 
+\gretlfpycmd{run\_gnuplot()}\label{func:run_gnuplot}
+\estdesc{Processes an existing \gnuplot script and displays
+	the resulting plot using\newline Matplotlib.}
+\begin{lstlisting}[style=pythonstylefoot]
+gretl.run_gnuplot(filename: str) -> matplotlib.figure.Figure
+\end{lstlisting}
+\generaldesc{Reads a \gnuplot script from the file specified by
+	\pythcode{filename} and processes it using the \gretlpy
+	plotting backend. The script is translated into Python code
+	and rendered using Matplotlib, without invoking the external
+	\gnuplot executable. The script must use syntax supported
+	by the plotting backend. Function returns a Matplotlib
+	Figure object.}
+
 \gretlfpycmd{run\_hansl()}\label{func:run_hansl}
 \estdesc{Executes \hansl code.}
 \begin{lstlisting}[style=pythonstylefoot]
-gretl.run_hansl(code: str)
+gretl.run_hansl(code: str) -> None
 \end{lstlisting}
 \generaldesc{Executes any valid \hansl code passed as a
 	\pythcode{str}. Note: if the code contains more than
@@ -545,7 +559,7 @@ gretl.run_hansl(code: str)
 \gretlfpycmd{run\_script()}\label{func:run_script}
 \estdesc{Executes a \hansl script from a file.}
 \begin{lstlisting}[style=pythonstylefoot]
-gretl.run_script(filename: str)
+gretl.run_script(filename: str) -> None
 \end{lstlisting}
 \mapto[none]{run filename}
 \generaldesc{Executes any valid \hansl script stored in the

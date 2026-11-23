@@ -28,6 +28,7 @@
 #include "gretl4py_model_instantiations.h"
 #include "docstrings/gretl4py_model_docstr.h"
 #include "docstrings/gretl4py_functions_docstr.h"
+#include <pybind11/stl/filesystem.h>
 
 #define BIND_DRIVER_MODEL(NAME, FUNC, CI, DOC) \
     m.def(#NAME, \
@@ -43,20 +44,43 @@
           }, \
           py::arg("formula").none(false), py::kw_only(), DOC);
 
-constexpr char info[] =
-    "The gretl4py package provides "
-    "an interface to the gretl library for Python 3 "
-    "(3.11--3.14 tested).";
-
-//////////////////////////////////////////////////
-// module extensions
-//////////////////////////////////////////////////
 void init_gretl4py_dataset_py11 (py::module_ &m);
 void init_gretl4py_bundle_py11 (py::module_ &m);
 void init_gretl4py_packages_py11 (py::module_ &m);
 void init_gretl4py_model_py11 (py::module_ &m);
 void init_gretl4py_gretl_matrix_py11 (py::module_ &m);
 
+namespace {
+constexpr char info[] =
+    "The gretl4py package provides "
+    "an interface to the gretl library for Python 3 "
+    "(3.11--3.14 tested).";
+
+py::object run_gnuplot (const std::string &filename)
+{
+    // display an existing gnuplot script using the GretlPlot backend
+    GretlPlot plot;
+
+    plot.set_source(filename);
+
+    return plot.display();
+}
+
+GretlMatrixPtr tdisagg (const GretlMatrix &Y, int s, const GretlMatrixPtr X, const py::kwargs &kwargs)
+{
+    py::object y_obj = py::cast(Y);
+    auto kwargs_copy = copy_dict_or_kwargs<py::kwargs>(kwargs);
+
+    if (X) kwargs_copy["X"] = X;
+
+    return do_get_tdisagg_matrix(y_obj, s, kwargs_copy);
+}
+
+} // namespace
+
+//////////////////////////////////////////////////
+// module extensions
+//////////////////////////////////////////////////
 PYBIND11_MODULE(_gretl, m)
 {
     // exceptions
@@ -86,6 +110,7 @@ PYBIND11_MODULE(_gretl, m)
     m.def("about", &about, py::arg("do_print") = false);
     m.def("set_plot_auto_show", &GretlPlot::set_auto_show, py::arg("enabled"), doc::Functions::set_plot_auto_show);
     m.def("get_plot_auto_show", &GretlPlot::get_auto_show, doc::Functions::get_plot_auto_show);
+    m.def("set_mpi_launcher", &set_mpi_launcher, py::arg("path"));
 
     // gretl4py hidden functions
     m.def("_get_data", &GretlDataset::get_data, py::arg("src").none(false), py::arg("source").none(true) = "", py::kw_only());
@@ -101,6 +126,7 @@ PYBIND11_MODULE(_gretl, m)
     m.def("print", &do_gretl_print<void>, py::arg("varlist").none(true) = "", py::kw_only(), doc::Functions::print);
     m.def("run_script", &gretl_hansl_execute<true>, py::arg("filename").none(false));
     m.def("run_hansl", &gretl_hansl_execute<false>, py::arg("code").none(false));
+    m.def("run_gnuplot", &run_gnuplot, py::arg("filename"), "Render an existing gnuplot script using Matplotlib.");
     m.def("set",
           [](const std::string &variable, const std::string &value, const py::kwargs &kwargs)
           {
@@ -167,18 +193,8 @@ PYBIND11_MODULE(_gretl, m)
           py::arg("X").none(false), py::arg("dfcorr").none(true) = 1);
     m.def("cov", py::overload_cast<const GretlMatrixPtr&, int>(&matrix_cov_corr<GretlFunIndex::F_MCOV>),
           py::arg("X").none(false), py::arg("dfcorr").none(true) = 1, doc::Functions::cov);
-    m.def("corr",
-          [](const py::array &X)
-          {
-              return matrix_cov_corr<GretlFunIndex::F_MCORR>(X);
-          },
-          py::arg("X").none(false));
-    m.def("corr",
-          [](const GretlMatrixPtr X)
-          {
-              return matrix_cov_corr<GretlFunIndex::F_MCORR>(X);
-          },
-          py::arg("X").none(false), doc::Functions::corr);
+    m.def("corr", [](const py::array &X) { return matrix_cov_corr<GretlFunIndex::F_MCORR>(X); }, py::arg("X").none(false));
+    m.def("corr", [](const GretlMatrixPtr X) { return matrix_cov_corr<GretlFunIndex::F_MCORR>(X); }, py::arg("X").none(false), doc::Functions::corr);
     m.def("varlist", &do_gretl_varlist, doc::Functions::varlist);
     m.def("genr", static_cast<void(*)(const std::string&, GretlDatasetPtr)>(&genr),
           py::arg("formula").none(false), py::arg("data").none(true) = std::nullopt);
@@ -188,35 +204,13 @@ PYBIND11_MODULE(_gretl, m)
     m.def("genr", &genr<std::string>, py::arg("name").none(false), py::arg("value").none(false));
     m.def("genr", &genr<GretlMatrix>, py::arg("name").none(false), py::arg("value").none(false));
     m.def("genr", &genr<py::list>, py::arg("name").none(false), py::arg("value").none(false));
-    m.def("pkg", &do_gretl_pkg,
-          py::arg("action").none(false), py::arg("pkgname").none(false), py::kw_only());
+    m.def("pkg", &do_gretl_pkg, py::arg("action").none(false), py::arg("pkgname").none(false), py::kw_only());
     m.def("kmeans", py::overload_cast<const GretlMatrix&, int, const GretlBundlePtr>(&kmeans),
          py::arg("X").none(false), py::arg("centers").none(false), py::arg("opts").none(true) = nullptr);
     m.def("kmeans", py::overload_cast<const GretlMatrix&, const GretlMatrix&, const GretlBundlePtr>(&kmeans),
          py::arg("X").none(false), py::arg("centers").none(false), py::arg("opts").none(true) = nullptr, doc::Functions::kmeans);
-    m.def("tdisagg",
-          [](const GretlMatrix &Y, int s, const GretlMatrixPtr X, const py::kwargs &kwargs) -> GretlMatrixPtr
-          {
-              py::object y_obj = py::cast(Y);
-              auto kwargs_copy = copy_dict_or_kwargs<py::kwargs>(kwargs);
-
-              if (X) kwargs_copy["X"] = X;
-
-              return do_get_tdisagg_matrix(y_obj, s, kwargs_copy);
-          },
-          py::arg("Y").none(false), py::arg("s").none(false), py::arg("X").none(true) = nullptr, py::kw_only(), doc::Functions::tdisagg);
-    m.def("kpsscrit", &do_kpsscrit,
-          py::arg("T").none(false), py::arg("trend").none(true) = false, doc::Functions::kpsscrit);
-    m.def("plot",
-          [](const std::string &path) -> void
-          {
-              // display an existing gnuplot script using the GretlPlot backend
-              GretlPlot plot;
-
-              plot.set_source(path);
-              plot.display();
-          },
-          py::arg("path"), "Display an existing gnuplot (.plt) file using Matplotlib.");
+    m.def("tdisagg", &tdisagg, py::arg("Y").none(false), py::arg("s").none(false), py::arg("X").none(true) = nullptr, py::kw_only(), doc::Functions::tdisagg);
+    m.def("kpsscrit", &do_kpsscrit, py::arg("T").none(false), py::arg("trend").none(true) = false, doc::Functions::kpsscrit);
 
     //////////////////////////////////////////////////
     // single equation models

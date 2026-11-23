@@ -24,6 +24,7 @@
 #define GRETL_CALLS_H
 
 #include "gretl4py_types.h"
+#include <filesystem>
 
 namespace py = pybind11;
 
@@ -56,6 +57,8 @@ public:
 // functions
 //////////////////////////////////////////////////
 void do_set (const std::string &key, const std::string &value, const py::kwargs &kwargs);
+
+void set_mpi_launcher (const std::filesystem::path &path);
 
 template <typename T>
 py::object do_gretl_summary (const T &varlist, const py::kwargs &kwargs);

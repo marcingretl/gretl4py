@@ -21,6 +21,7 @@ dependencies = [
     "matplotlib>=3.7",
     "pandas>=2.3",
     "PySide6>=6.7; sys_platform == 'win32'",
+    "PyQt5>=5.15.10; sys_platform == 'darwin'",
 ]
 
 classifiers = [

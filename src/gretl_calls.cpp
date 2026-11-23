@@ -61,12 +61,14 @@ extern "C" {
     int update_addons_index (PRN *prn);                 // from addons_utils.c
 }
 
-// global variables (some used outside this file)
-static int gretl4py_verbose = 0;
-static GretlPrint global_printer = GretlPrint();
+// global variables used outside this file
 std::unordered_set<std::string> user_vars;              // registry of user variables
 
 namespace {
+static int gretl4py_verbose = 0;
+static GretlPrint global_printer = GretlPrint();
+static ConfigPaths libgretl_paths = {};
+
 // Commands supporting the --plot option.
 constexpr bool cmd_plot_opt_ok (GretlCmdIndex ci)
 {
@@ -127,8 +129,6 @@ void gretl4py_init (void)
     //
     // module initialization (including libgretl initialization)
     //
-    ConfigPaths libgretl_paths = {};
-
     // check libgretl version
     if (libgretl_version() < LIBGRETL_MIN_VER)
         throw std::runtime_error("gretl4py requires libgretl-1.0 version " + std::to_string(LIBGRETL_MIN_VER) + " or higher");
@@ -272,6 +272,27 @@ GretlBundlePtr about (bool do_print)
     gretl_pop_c_numeric_locale();
 
     return res;
+}
+
+void set_mpi_launcher (const std::filesystem::path &path)
+{
+    //
+    // we allow a user to define mpiexec to use
+    //
+    const std::string path_str = path.string();
+
+    if (path_str.empty() || path_str.find('\0') != std::string::npos) throw std::invalid_argument("Invalid MPI launcher path");
+    if (path_str.size() >= sizeof libgretl_paths.mpiexec) throw std::runtime_error(path_str + " path is too long");
+
+    // we must preserve current gnuplot path
+    const std::string gnuplot_path = gretl_gnuplot_path();
+
+    std::strcpy(libgretl_paths.mpiexec, path_str.c_str());
+    std::strcpy(libgretl_paths.gnuplot, gnuplot_path.c_str());
+
+    const int err = gretl_update_paths(&libgretl_paths, OPT_NONE);
+
+    if (err) handle_gretl_error(err);
 }
 
 //////////////////////////////////////////////////
