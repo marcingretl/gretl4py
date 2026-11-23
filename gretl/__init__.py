@@ -153,7 +153,7 @@ from . import _gretl4py_classes
 # #####################################################
 # Explicit symbols import
 # #####################################################
-from ._gretl import (about, version, gretldir)                              # module-related
+from ._gretl import (about, version, gretldir, set_mpi_launcher)            # module-related
 from ._gretl import (Bundle, Matrix)                                        # constructors
 from ._gretl import (delete, genr, include, pkg, print, set, summary)       # libgretl's commands interfaces
 from ._gretl import (varlist, run_script, run_hansl, run_gnuplot, get_uservar)
