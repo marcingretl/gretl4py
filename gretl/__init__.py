@@ -156,7 +156,7 @@ from . import _gretl4py_classes
 from ._gretl import (about, version, gretldir)                              # module-related
 from ._gretl import (Bundle, Matrix)                                        # constructors
 from ._gretl import (delete, genr, include, pkg, print, set, summary)       # libgretl's commands interfaces
-from ._gretl import (varlist, run_script, run_hansl, get_uservar)
+from ._gretl import (varlist, run_script, run_hansl, run_gnuplot, get_uservar)
 from ._gretl import (pvalue, critical, pdf, cdf, invcdf, corr, cov)         # libgretl's functions interfaces
 from ._gretl import (get_accessor, tdisagg, kpsscrit)
 from ._gretl import (set_plot_auto_show, get_plot_auto_show)

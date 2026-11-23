@@ -14,6 +14,7 @@ version 0.64:
     - new gretl.Model_NSE methods: ::confidence_intervals(), ::bootstrap()
     - new GretlDataset::freq() method
     - fix setting 'dotdir' (lack of trailing separator) which resulted in errors with R code execution
+    - bds() and difftest() fixes
 
 version 0.63:
     - model-based tests: fix bug where 'varlist' was passed as list

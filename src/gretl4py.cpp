@@ -48,6 +48,15 @@ constexpr char info[] =
     "an interface to the gretl library for Python 3 "
     "(3.11--3.14 tested).";
 
+void run_gnuplot (const std::string &filename)
+{
+    // display an existing gnuplot script using the GretlPlot backend
+    GretlPlot plot;
+
+    plot.set_source(filename);
+    plot.display();
+}
+
 //////////////////////////////////////////////////
 // module extensions
 //////////////////////////////////////////////////
@@ -101,6 +110,7 @@ PYBIND11_MODULE(_gretl, m)
     m.def("print", &do_gretl_print<void>, py::arg("varlist").none(true) = "", py::kw_only(), doc::Functions::print);
     m.def("run_script", &gretl_hansl_execute<true>, py::arg("filename").none(false));
     m.def("run_hansl", &gretl_hansl_execute<false>, py::arg("code").none(false));
+    m.def("run_gnuplot", &run_gnuplot, py::arg("filename"), "Render an existing gnuplot script using Matplotlib.");
     m.def("set",
           [](const std::string &variable, const std::string &value, const py::kwargs &kwargs)
           {
@@ -207,16 +217,6 @@ PYBIND11_MODULE(_gretl, m)
           py::arg("Y").none(false), py::arg("s").none(false), py::arg("X").none(true) = nullptr, py::kw_only(), doc::Functions::tdisagg);
     m.def("kpsscrit", &do_kpsscrit,
           py::arg("T").none(false), py::arg("trend").none(true) = false, doc::Functions::kpsscrit);
-    m.def("plot",
-          [](const std::string &path) -> void
-          {
-              // display an existing gnuplot script using the GretlPlot backend
-              GretlPlot plot;
-
-              plot.set_source(path);
-              plot.display();
-          },
-          py::arg("path"), "Display an existing gnuplot (.plt) file using Matplotlib.");
 
     //////////////////////////////////////////////////
     // single equation models
