@@ -647,5 +647,30 @@ namespace doc::Functions {
         True if automatic plot display is enabled, False otherwise.
     )doc";
 
+    inline constexpr char set_mpi_launcher[] = R"doc(
+    Set the path to the MPI launcher executable.
+
+    By default, gretl4py automatically detects an MPI launcher at startup.
+    This function overrides the detected executable with a user-specified
+    path. This is particularly useful in HPC environments where a specific
+    MPI implementation is required.
+
+    Parameters
+    ----------
+    path : os.PathLike | str | bytes
+        Path to the MPI launcher executable (e.g., mpiexec or mpirun).
+
+    Returns
+    -------
+    None
+
+    Examples
+    --------
+    >>> import gretl
+    >>> gretl.set_mpi_launcher("/usr/bin/mpiexec.mpich")
+
+    >>> from pathlib import Path
+    >>> gretl.set_mpi_launcher(Path("/usr/bin/mpiexec.mpich"))
+    )doc";
 
 } // namespace doc::Dataset

@@ -110,7 +110,7 @@ PYBIND11_MODULE(_gretl, m)
     m.def("about", &about, py::arg("do_print") = false);
     m.def("set_plot_auto_show", &GretlPlot::set_auto_show, py::arg("enabled"), doc::Functions::set_plot_auto_show);
     m.def("get_plot_auto_show", &GretlPlot::get_auto_show, doc::Functions::get_plot_auto_show);
-    m.def("set_mpi_launcher", &set_mpi_launcher, py::arg("path"));
+    m.def("set_mpi_launcher", &set_mpi_launcher, py::arg("path"), doc::Functions::set_mpi_launcher);
 
     // gretl4py hidden functions
     m.def("_get_data", &GretlDataset::get_data, py::arg("src").none(false), py::arg("source").none(true) = "", py::kw_only());

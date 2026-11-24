@@ -51,6 +51,19 @@ gretl.gretldir -> str
 \generaldesc{This attribute is equivalent to calling
 	\pythcode{gretl.get_accessor('\$gretldir')}.}
 
+\gretlfpycmd{set\_mpi\_launcher()}\label{func:set_mpi_launcher}
+\estdesc{Sets the path to the MPI launcher executable.}
+\begin{lstlisting}[style=pythonstylefoot]
+gretl.set_mpi_launcher(path: os.PathLike .| str .| bytes) -> None
+\end{lstlisting}
+\generaldesc{By default, \gretlpy automatically detects an MPI
+	launcher at startup. This function allows the user to override
+	the detected executable by specifying a custom path.
+	This is particularly useful in high-performance computing (HPC)
+	environments, where users may need to employ the MPI launcher
+	provided by the cluster's MPI installation. The specified
+	launcher is used for subsequent MPI executions.}
+
 \gretlfpycmd{set\_plot\_auto\_show()}\label{func:set_plot_auto_show}
 \estdesc{This function enables or disables automatic display of plots.}
 \begin{lstlisting}[style=pythonstylefoot]
