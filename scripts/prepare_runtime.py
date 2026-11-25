@@ -34,6 +34,15 @@ def main() -> None:
     destination = Path(args.destination)
     destination.mkdir(parents=True, exist_ok=True)
 
+    # Remove obsolete versioned libgretl DLLs from previous builds.
+    if args.extension == ".dll" and runtime:
+        runtime_names = {source.name.lower() for source in runtime}
+
+        for old_dll in destination.glob("libgretl-*.dll"):
+            if old_dll.name.lower() not in runtime_names:
+                print(f"Removing obsolete library: {old_dll}")
+                old_dll.unlink()
+
     # Copy runtime DLLs first; plugin DLLs take precedence on name collisions.
     for source in runtime:
         shutil.copy2(source, destination / source.name)
