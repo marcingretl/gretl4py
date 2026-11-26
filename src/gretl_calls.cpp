@@ -190,7 +190,6 @@ void gretl4py_init (void)
     // Note: we copy gnuplot path to libgretl_paths to preserve it for subseqent calls to gretl_update_paths()
     GretlPlot::init_executor();
     if (int err = gretl_set_path_by_name("gnuplot", GretlPlot::get_executor_path().c_str())) handle_gretl_error(err);
-    std::strcpy(libgretl_paths.gnuplot, gretl_gnuplot_path());
 
     // verbose output
     if (gretl4py_verbose) std::printf("libgretl initialized\n");
@@ -285,10 +284,16 @@ void set_mpi_launcher (const std::filesystem::path &path)
 
     if (path_str.empty() || path_str.find('\0') != std::string::npos) throw std::invalid_argument("Invalid MPI launcher path");
     if (path_str.size() >= sizeof libgretl_paths.mpiexec) throw std::runtime_error(path_str + " path is too long");
+    const std::string current_gnuplot = gretl_gnuplot_path();
+
+    // we set mpiexec and restore gnuplot
+    // NOTE: we cannot do it via libgretl_paths due to possible ABI mismatch on windows (--enable-pkgbuild)
     std::strcpy(libgretl_paths.mpiexec, path_str.c_str());
     const int err = gretl_update_paths(&libgretl_paths, OPT_NONE);
+    const int err2 = gretl_set_path_by_name("gnuplot", current_gnuplot.c_str());
 
     if (err) handle_gretl_error(err);
+    if (err2) handle_gretl_error(err2);
 }
 
 //////////////////////////////////////////////////
