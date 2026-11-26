@@ -500,33 +500,23 @@ return ret
 
 matrix ret = {}
 scalar n = nelem(x)
-scalar same_dim = 1
 
 if n == 0
   return ret
 endif
 
-### check sizes
-nr = rows(x[1])
-nc = cols(x[1])
-
-loop i = 2..n
-  same_dim = same_dim &amp;&amp; (rows(x[i]) == nr) &amp;&amp; (cols(x[i]) == nc)
-  if !same_dim
-    printf &quot;Matrix number %d with different dimensions\n&quot;, i
-    funcerr &quot;Not all matrices are the same size.&quot;
-  endif
-endloop
+scalar nr = rows(x[1])
+scalar nc = cols(x[1])
 
 ### process specs
 matrix rs = seq(1, nr)'	# default
-if exists(rowspec)
-  rs = (rowspec[1] == 0) ? rs : vec(rowspec) # force to column
+if exists(rowspec) &amp;&amp; rowspec[1] != 0
+  rs = vec(rowspec) # force to column
 endif
 
 matrix cs = seq(1, nc)' # default
-if exists(colspec)
-  cs = (colspec[1] == 0) ? cs : vec(colspec) # force to column
+if exists(colspec) &amp;&amp; colspec[1] != 0
+  cs = vec(colspec) # force to column
 endif
 
 ### check for multiple or illegal specs
@@ -535,32 +525,62 @@ scalar ncspec = rows(cs)
 
 if xmin(nrspec, ncspec) &gt; 1
   funcerr &quot;Cannot have multiple row and column specifications&quot;
-
 elif minc(rs|cs) &lt; 0
   funcerr &quot;Negative specification not allowed&quot;
-
 elif maxc(rs) &gt; nr
   printf &quot;(matrices have %d rows, but %d wanted)\n&quot;, nr, maxc(rs)
   funcerr &quot;Incorrect row specification&quot;
-
 elif maxc(cs) &gt; nc
   printf &quot;(matrices have %d columns, but %d wanted)\n&quot;, nc, maxc(cs)
   funcerr &quot;Incorrect column specification&quot;
 endif
 
 ### do the actual drilling
-if nrspec == 1
-  ret = flatten(x)[rs,]
-  ret = transp(mshape(ret, nc, n))
-  ret = ret[,cs]
+# Two strategies: for small matrices, copying the whole array via
+# flatten() is cheaper than looping over its elements; for large
+# ones, a loop that touches only the wanted elements is much faster.
 
-elif ncspec == 1
-  ret = flatten(x,1)[,cs]
-  ret = mshape(ret, nr, n)
-  ret = ret[rs,]
+scalar OK = 0
+if nr * nc &lt;= 200
+  # flatten(x) fails unless all rows are equal; flatten(x, 2)
+  # fails unless all sizes are equal, and skips empty matrices:
+  # together these ensure that all matrices are nr x nc
+  catch scalar hc = cols(flatten(x))
+  if !$error
+    catch matrix V = flatten(x, 2)
+    OK = !$error &amp;&amp; cols(V) == n
+  endif
+  if OK
+    ret = V[rs + nr * (cs - 1),]   # (nrspec * ncspec) x n
+  endif
+else
+  ret = zeros(n, nrspec * ncspec)
+  OK = 1
+  loop i = 1..n
+    if rows(x[i]) != nr || cols(x[i]) != nc
+      OK = 0
+      break
+    endif
+    ret[i,] = vec(x[i][rs, cs])'
+  endloop
+  if OK
+    ret = ret'   # (nrspec * ncspec) x n
+  endif
 endif
 
-return ret
+if !OK
+  # locate the offending matrix
+  loop i = 2..n
+    if rows(x[i]) != nr || cols(x[i]) != nc
+      printf &quot;Matrix number %d with different dimensions\n&quot;, i
+      break
+    endif
+  endloop
+  funcerr &quot;Not all matrices are the same size.&quot;
+endif
+
+# one row: n x ncspec; else nrspec x n
+return nrspec == 1 ? ret' : ret
 </code>
 </gretl-function>
 <gretl-function name="combinations" type="matrix">
